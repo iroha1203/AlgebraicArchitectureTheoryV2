@@ -5,6 +5,7 @@ use std::collections::BTreeSet;
 use archsig::atom::parse_jsonl;
 use archsig::geometry::{Geometry, local};
 use archsig::law::{Reading, ReadingForm};
+use archsig::structure::Structure;
 
 fn reading(form: ReadingForm) -> Reading {
     Reading { name: "r".to_string(), form, at: "test.law:1".to_string() }
@@ -50,13 +51,14 @@ fn a_channel_belongs_to_the_locals_of_its_senders_and_receivers() {
     )
     .unwrap();
     let r = reading(ReadingForm::Dir { depth: 2 });
-    let g = Geometry::new(&r, &atoms, &atoms);
+    let s = Structure::new(atoms.clone());
+    let g = Geometry::new(&r, &s, &s);
     let both: BTreeSet<String> = ["shop/order", "shop/payment"].iter().map(|s| s.to_string()).collect();
-    assert_eq!(g.element_locals("channel:queue:order-placed:amount"), both);
-    assert_eq!(g.element_locals("channel:queue:order-placed"), both);
+    assert_eq!(g.element_locals("channel:queue:order-placed:amount").unwrap(), both);
+    assert_eq!(g.element_locals("channel:queue:order-placed").unwrap(), both);
     // 送る Atom は、送る操作の局所とチャネルの局所すべてに属する。
-    assert_eq!(g.atom_locals(&atoms[1]), both);
+    assert_eq!(g.atom_locals(&atoms[1]).unwrap(), both);
     // 候補の中で定義した要素は `file` の局所に属する。定義を観測していない要素は、どの局所にも属さない。
-    assert_eq!(g.element_locals("lib.external").into_iter().collect::<Vec<_>>(), ["vendor"]);
-    assert!(g.element_locals("shop.unknown.f").is_empty());
+    assert_eq!(g.element_locals("lib.external").unwrap().into_iter().collect::<Vec<_>>(), ["vendor"]);
+    assert!(g.element_locals("shop.unknown.f").unwrap().is_empty());
 }

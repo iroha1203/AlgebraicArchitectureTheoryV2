@@ -1548,8 +1548,9 @@ fn a_type_named_by_a_call_that_the_plan_redefines_is_still_unread() {
 }
 
 #[test]
-fn an_external_type_the_plan_redefines_stays_external() {
-    // 変更前の m.S は resolves で外部を指す。候補が m.S を定義し直しても、外部の型としてたどらず、条件に並べる。
+fn an_external_type_the_plan_redefines_is_read_as_the_plan_defines_it() {
+    // 変更前の m.S は resolves で外部を指す。候補が m.S を定義し直せば、変更後の構造では候補の定義をその型のすべてとしてたどる。
+    // 変更後でたどった m.S.q の型 int に着く。変更前の構造でたどる書き込みでは、m.S は外部の型のままである(設計 §5.4)。
     let repo = Repo::new("below-external-redefined");
     repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
     repo.map(
@@ -1558,6 +1559,7 @@ fn an_external_type_the_plan_redefines_stays_external() {
             "{}{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{F_WRITES_A}",
             r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 "#
         ),
     );
@@ -1571,7 +1573,7 @@ fn an_external_type_the_plan_redefines_stays_external() {
     let r = result(&s, "m.f");
     assert_eq!(r["outcome"], "holds", "{s}");
     let d = repo.run(&["show", r["id"].as_str().unwrap()]);
-    assert!(d["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 m.S は、意味を持つフィールドを持たないとみなす"), "{d}");
+    assert!(d["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 int は、意味を持つフィールドを持たないとみなす"), "{d}");
 }
 
 #[test]
@@ -3160,10 +3162,25 @@ fn the_body_of_a_callee_is_compared_without_noise_and_with_care() {
 {"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:22@blob:aaaaaaa"}
 "#), h2);
     assert_eq!((o.as_deref(), r.as_deref()), (Some("silent"), Some("unchecked")), "{s}");
-    // 手順の via だけを変える。
+    // 手順の via だけを変える。本体は、`via` と `object` の列を道で解いた場所で比べる。
+    // m.O.s の定義を読んでいなければ、変更前の道が決まらないので、その道の沈黙(m.O.s を読む)で沈黙する。
     let (o, r, s) = outcome(
         "callee-via",
         &format!("{g_def}{}", r#"{"kind": "writes", "subject": "m.g", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#),
+        r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.g", "object": "m.S.p", "value": "1", "at": "plan:p"}
+"#,
+    );
+    assert_eq!((o.as_deref(), r.as_deref()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.O.s"), "{s}");
+    // 道が決まれば、via を通る場所 [m.O.s, m.S.p] と via のない場所 [m.S.p] は違うので、本体が違う。
+    let (o, r, s) = outcome(
+        "callee-via-read",
+        &format!("{g_def}{}", r#"{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
 "#),
         r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
 {"kind": "writes", "subject": "m.g", "object": "m.S.p", "value": "1", "at": "plan:p"}
@@ -3765,8 +3782,9 @@ fn a_type_that_pointed_to_an_external_before_is_not_silent_when_the_plan_redefin
 }
 
 #[test]
-fn the_field_right_under_a_redefined_unread_type_is_still_named() {
-    // 定義し直した未読の型 m.C でも、直下のフィールドの名前 m.C.x は決まる(第3章の `<型>.<名前>`)。候補が m.C.x を消せば、m.g は `missing` である。
+fn the_field_right_under_a_redefined_unread_type_is_silent() {
+    // 定義し直した未読の型 m.C は、受け継ぎが分からないので、直下のフィールド m.C.x も段で決まらない(設計 §3.3、§3.6)。
+    // 候補が m.C.x を消しても、m.g が m.C.x を使うかは決まらず、変更前の m.C の読む所(c.py)で沈黙する。
     let repo = Repo::new("redefined-unread-type-field");
     repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
     repo.map(
@@ -3790,7 +3808,10 @@ fn the_field_right_under_a_redefined_unread_type_is_still_named() {
 "#,
     );
     let s = repo.run(&["plan", "check", "p"]);
-    assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["kind"] == "missing"), "{s}");
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["kind"] == "missing"), "{s}");
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).unwrap();
+    assert_eq!(r["outcome"], "silent", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
 
 #[test]

@@ -5,11 +5,14 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value as Json, json};
 
-use crate::atom::{Atom, parse_location};
+use crate::atom::Atom;
 use crate::expr::BinOp;
 use crate::geometry::Split;
 use crate::law::{LawSet, Rule};
-use crate::structure::{Gap, Overlay, Reason, Resolution, STEP_LIMIT, Silence, State, StepKind, Structure, Value, question_at};
+use crate::structure::{
+    Answer, Form, Overlay, Reason, Resolution, STEP_LIMIT, Silence, Start, State, StepKind, Structure, Value, Why, after_operation, below, form, is_local,
+    is_question, owner, param_name, question_at,
+};
 
 /// 分岐の数の上限。超えたら `limit` で沈黙する。
 pub const BRANCH_LIMIT: usize = 256;
@@ -385,7 +388,7 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
             continue;
         }
         // 局所ごとの意味 Atom を要素へ配るには読みの幾何が要る(設計 §3.2、§6)。この PRD では配らないので、確かめられない。
-        let local = before.meanings.iter().any(|(e, ms)| e.starts_with("local:") && ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)));
+        let local = before.meanings.iter().any(|(e, ms)| is_local(e) && ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)));
         if local {
             let mut f = Finding::silent("change", Some(&law.name), meaning, Silence::new(Reason::Unchecked));
             f.theory = Some(THEORY_CHANGES.to_string());
@@ -459,7 +462,7 @@ pub fn implemented(
     let mapping = Mapping::new(overlay);
     for law in laws.laws.iter().filter(|l| matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep)) {
         let Some(meaning) = law.about.as_deref() else { continue };
-        for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
+        for (e, _) in before.meanings.iter().filter(|(e, _)| !is_local(e) && has_meaning(before, e, meaning)) {
             for t in mapping.to.get(e.as_str()).into_iter().flatten() {
                 // 行き先の種類が決まらなければ(曖昧、`value` のない `defines`、定義を読んでいない)、意味を持つかも決まらない(設計 §3.2、§5.1)。
                 let f = match corresponds_kind(after, overlay, t) {
@@ -497,7 +500,7 @@ pub fn implemented(
     // 観測されていないと言えるのは、それが観測されるはずのソースの構造を読んでいるときだけである(設計 §5.1)。
     for (a, source) in &overlay.unobserved {
         let f = match source {
-            Some(p) if after.observed.contains(&(p.clone(), "structure".to_string())) => mismatch(a, json!({"planned": a, "observed": null})),
+            Some(p) if after.observed(p, "structure") => mismatch(a, json!({"planned": a, "observed": null})),
             Some(p) => Finding::silent("change", None, &a.subject, Silence { reason: Reason::Unread, read: Some(p.clone()), element: None, scope: Some("structure".to_string()) }),
             None => Finding::silent("change", None, &a.subject, Silence { reason: Reason::Unread, read: None, element: Some(a.subject.clone()), scope: None }),
         };
@@ -596,11 +599,11 @@ fn defined_at(s: &Structure, name: &str) -> Option<String> {
 /// 元のフィールドの意味が変更前の読んだ範囲から決まるときに決まる。`prior` は変更前の構造と対応。
 fn meaning_known(prior: Option<(&Structure, &Mapping)>, s: &Structure, field: &str, meaning: &str) -> Result<(), Silence> {
     // 種類の決まらないフィールド(二か所の `defines` など)は、どの定義のソースで意味を読むかが決まらない。
-    if s.elements.get(field).is_some_and(|e| e.undecided()) {
-        return Err(Silence::new(Reason::Unresolved));
-    }
-    let Some(at) = defined_at(s, field) else { return s.kind(field).map(|_| ()) };
-    if at.starts_with("plan:") {
+    let f = match s.element(field) {
+        Ok(Answer::Element(f)) => f,
+        _ => return s.kind(field).map(|_| ()),
+    };
+    if f.planned {
         if let Some((before, mapping)) = prior {
             for from in mapping.from.get(field).into_iter().flatten() {
                 meaning_known(None, before, from, meaning)?;
@@ -608,9 +611,9 @@ fn meaning_known(prior: Option<(&Structure, &Mapping)>, s: &Structure, field: &s
         }
         return Ok(());
     }
-    let path = parse_location(&at).map(|l| l.path).unwrap_or(at);
+    let Some(path) = f.defined.into_iter().next() else { return Ok(()) };
     let scope = format!("meaning:{meaning}");
-    if s.observed.contains(&(path.clone(), scope.clone())) {
+    if s.observed(&path, &scope) {
         Ok(())
     } else {
         Err(Silence { reason: Reason::Unread, read: Some(path), element: None, scope: Some(scope) })
@@ -621,47 +624,16 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
     s.meanings.get(field).is_some_and(|ms| ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)))
 }
 
-/// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものを返す。
-/// 構造が `<型>.<名前>` を名指しているのに定義を読んでいなければ、そのフィールドは分からないので、
-/// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。曖昧なフィールドも沈黙する。`names` は `s.mentioned()`。
-/// 沈黙はそのフィールドだけのもので、ほかのフィールドは返す。最初の沈黙を一緒に返す。
-/// 候補が `removes` した要素は、名指されていても沈黙しない。
-fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>, ty: &str) -> (Vec<String>, Option<Silence>) {
-    let prefix = format!("{ty}.");
-    let member = |n: &str| n.strip_prefix(&prefix).is_some_and(|rest| !rest.is_empty() && !rest.contains('.') && !rest.starts_with('$') && !rest.contains("->"));
-    let removed = |n: &str| removes.iter().any(|x| n == x || n.starts_with(&format!("{x}.")) || n.starts_with(&format!("{x}->")));
-    let mut silence = names
-        .range(prefix.clone()..)
-        .take_while(|n| n.starts_with(&prefix))
-        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n))
-        .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
-    let mut out = Vec::new();
-    for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
-        // 種類の決まらない要素(`value` のない `defines`)も、フィールドかもしれないので問い合わせる。
-        if !member(name) || !(e.kinds.contains("field") || e.kinds.contains("")) {
-            continue;
-        }
-        match s.kind(name) {
-            Ok(_) => out.push(name.clone()),
-            Err(e) => {
-                silence.get_or_insert(e);
-            }
-        }
-    }
-    (out, silence)
-}
-
-/// 書き込みの場所より先の場所をたどる(設計 §5.4)。たどったフィールドの数と、フィールドを観測していない型を持つ。
+/// 書き込みの場所より先の場所をたどる(設計 §5.4)。たどったフィールドの数と、外部の型を持つ。
+/// 型のフィールドと、その先にたどる型は、フィールド一覧(設計 §3.3)で決める。
 #[derive(Default)]
 struct Below<'a> {
-    /// 変更前の構造と対応。候補が定義し直した型の元の解決と、候補が定義したフィールドの元の意味を見るのに使う。
+    /// 変更前の構造と対応。候補が定義したフィールドの元の意味を見るのに使う。
     prior: Option<(&'a Structure, &'a Mapping<'a>)>,
     /// 一つの書き込みの場所からたどったフィールドの数。
     count: usize,
     /// `resolves` が外部を指す型。意味を持つフィールドを持たないとみなす。
     external: BTreeSet<String>,
-    /// 候補が `removes` した要素。
-    removes: BTreeSet<String>,
     /// 比べる場所を決める所と、比べる場所の値を読む所の沈黙。ほかの場所で反例が決まれば結論に関わらないので、最初の一つを最後まで持つ(設計 §5.4)。
     pending: Option<Silence>,
 }
@@ -687,76 +659,54 @@ impl Below<'_> {
         }
     }
 
-    /// フィールド `field` の型をたどる。`prefix` は `field` までの場所、`types` はたどってきた型の列。
-    fn descend(&mut self, s: &Structure, field: &str, meaning: &str, prefix: &mut Vec<String>, types: &mut Vec<String>, out: &mut Vec<Vec<String>>) -> Result<(), Silence> {
-        // 型のないフィールドと、種類の決まらないフィールド(二か所の `defines` など)は、その先が決まらない。
-        let ty = s.elements.get(field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone()).ok_or_else(|| Silence::new(Reason::Unresolved))?;
-        if types.contains(&ty) {
-            // 型がめぐり、その先に意味を持つフィールドがあれば、場所が限りなく伸びるので `limit` で沈黙する。
-            if self.reaches(s, field, &ty, meaning, &mut BTreeSet::new())? {
-                return Err(Silence::new(Reason::Limit));
-            }
-        } else if self.known(s, field, &ty)? {
-            types.push(ty.clone());
-            let r = self.walk(s, &ty, meaning, prefix, types, out);
-            types.pop();
-            r?;
-        }
-        Ok(())
-    }
-
-    /// フィールド `field` の型 `ty` をたどれるか。定義を読んだ型ならたどる。
-    /// `?` の型、曖昧な型、型でない要素は沈黙する(マニュアル第3章、設計 §3.2)。
-    /// 定義を読んでいない型は、設計 §3.3 のとおりに沈黙する。`resolves` が外部を指す型はたどらず、`external` に積む。
-    fn known(&mut self, s: &Structure, field: &str, ty: &str) -> Result<bool, Silence> {
-        if ty.starts_with('?') {
-            return Err(match s.atoms.iter().find(|a| a.kind == "defines" && a.subject == field) {
+    /// フィールド `field` の型。型のないフィールドと、種類の決まらないフィールド(二か所の `defines` など)は、その先が決まらない。
+    /// `?` の型は、その型を書いたフィールドの定義の場所を返す(マニュアル第5章 問い3)。
+    fn type_of(s: &Structure, field: &str) -> Result<String, Silence> {
+        let ty = match s.element(field) {
+            Ok(Answer::Element(f)) => f.ty,
+            Ok(_) => None,
+            Err(u) => return Err(u.silence),
+        };
+        match ty {
+            Some(t) if is_question(&t) => Err(match s.atoms.iter().find(|a| a.kind == "defines" && a.subject == field) {
                 Some(a) => question_at(a),
                 None => Silence::new(Reason::Unresolved),
-            });
-        }
-        if s.elements.contains_key(ty) {
-            // 候補が定義し直した型でも、変更前にその型を名指していて定義を読んでいなければ、元のフィールドは分からない(設計 §5.1)。
-            // 変更前の構造で、定義を読んでいない要素として沈黙する(3.3)。変更前が名指さない型は、候補が新しく定義した型である。
-            if let Some((prior, _)) = self.prior
-                && s.redefines_unread(prior, &prior.mentioned(), ty)
-            {
-                if let Some(Resolution::External(_)) = prior.resolves.get(ty) {
-                    // 変更前に外部を指していた型は、外部の型としてたどらない。
-                    self.external.insert(ty.to_string());
-                    return Ok(false);
-                }
-                return Err(prior.kind(ty).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
-            }
-            return match s.kind(ty)? {
-                "type" => Ok(true),
-                _ => Err(Silence::new(Reason::Unresolved)),
-            };
-        }
-        match s.resolves.get(ty) {
-            Some(Resolution::External(_)) => {
-                self.external.insert(ty.to_string());
-                Ok(false)
-            }
-            _ => Err(s.kind(ty).err().unwrap_or_else(|| Silence::new(Reason::Unread))),
+            }),
+            Some(t) => Ok(t),
+            None => Err(Silence::new(Reason::Unresolved)),
         }
     }
 
-    /// たどる型 `ty` のフィールド。たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
-    fn fields(&mut self, s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
-        let (out, silence) = fields_of(s, &s.mentioned(), &self.removes, ty);
+    /// 型 `ty` のフィールド一覧。外部の型はたどらず、`external` に積む。
+    fn fields_of(&mut self, s: &Structure, ty: &str) -> Result<(Vec<String>, Option<Silence>), Silence> {
+        let list = s.fields(ty).map_err(|u| u.silence)?;
+        if list.external {
+            self.external.insert(ty.to_string());
+        }
+        Ok((list.fields, list.silence))
+    }
+
+    /// フィールド `field` の型をたどる。`prefix` は `field` までの場所、`types` はたどってきた型の列。
+    fn descend(&mut self, s: &Structure, field: &str, meaning: &str, prefix: &mut Vec<String>, types: &mut Vec<String>, out: &mut Vec<Vec<String>>) -> Result<(), Silence> {
+        let ty = Self::type_of(s, field)?;
+        if types.contains(&ty) {
+            // 型がめぐり、その先に意味を持つフィールドがあれば、場所が限りなく伸びるので `limit` で沈黙する。
+            if self.reaches(s, &ty, meaning)? {
+                return Err(Silence::new(Reason::Limit));
+            }
+            return Ok(());
+        }
+        let (fields, silence) = self.fields_of(s, &ty)?;
         self.hold(silence.map_or(Ok(()), Err));
-        self.count += out.len();
+        // たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
+        self.count += fields.len();
         if self.count > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
-        Ok(out)
-    }
-
-    /// たどったフィールドが意味を持つかが読んだ範囲から決まらなければ、沈黙を積み、その場所を比べる場所に入れない。
-    fn walk(&mut self, s: &Structure, ty: &str, meaning: &str, prefix: &mut Vec<String>, types: &mut Vec<String>, out: &mut Vec<Vec<String>>) -> Result<(), Silence> {
-        for f in self.fields(s, ty)? {
+        types.push(ty);
+        for f in fields {
             prefix.push(f.clone());
+            // たどったフィールドが意味を持つかが読んだ範囲から決まらなければ、沈黙を積み、その場所を比べる場所に入れない。
             let known = meaning_known(self.prior, s, &f, meaning);
             if known.is_ok() && has_meaning(s, &f, meaning) {
                 out.push(prefix.clone());
@@ -766,26 +716,27 @@ impl Below<'_> {
             self.hold(r);
             prefix.pop();
         }
+        types.pop();
         Ok(())
     }
 
-    /// フィールド `field` の型 `ty` から、フィールドの型をたどって、意味 `meaning` を持つフィールドに着くか。めぐりを確かめるためのたどりで、上限には数えない。
-    fn reaches(&mut self, s: &Structure, field: &str, ty: &str, meaning: &str, seen: &mut BTreeSet<String>) -> Result<bool, Silence> {
+    /// 型 `ty` から、フィールドの型をたどって、意味 `meaning` を持つフィールドに着くか。めぐりを確かめるためのたどりで、上限には数えない。
+    fn reaches(&mut self, s: &Structure, ty: &str, meaning: &str) -> Result<bool, Silence> {
         // 再帰せず、たどる型の列を持って順に見る。型は一度だけ見るので、型の数で終わる。
-        let mut todo = vec![(field.to_string(), ty.to_string())];
-        while let Some((field, ty)) = todo.pop() {
-            if !seen.insert(ty.clone()) || !self.known(s, &field, &ty)? {
+        let mut seen = BTreeSet::new();
+        let mut todo = vec![ty.to_string()];
+        while let Some(ty) = todo.pop() {
+            if !seen.insert(ty.clone()) {
                 continue;
             }
-            // 分からないフィールドの沈黙は、`walk` がこの型をたどるときに積んでいる。
-            let (fs, _) = fields_of(s, &s.mentioned(), &self.removes, &ty);
+            // 分からないフィールドの沈黙は、この型をたどるときに積んでいる。
+            let (fs, _) = self.fields_of(s, &ty)?;
             for f in fs {
                 meaning_known(self.prior, s, &f, meaning)?;
                 if has_meaning(s, &f, meaning) {
                     return Ok(true);
                 }
-                let t = s.elements[&f].ty.clone().ok_or_else(|| Silence::new(Reason::Unresolved))?;
-                todo.push((f, t));
+                todo.push(Self::type_of(s, &f)?);
             }
         }
         Ok(false)
@@ -806,7 +757,7 @@ fn commute(
     for (a, b) in &overlay.corresponds {
         // 外部の要素は、観測した要素へ書き込まない呼び出し先として扱う(設計 §3.4)。両端が外部なら比べるものがなく、組ではない。
         // 片方だけが外部なら、その端の種類の問い合わせが沈黙する(下)。
-        let external = |s: &Structure, n: &str| !s.elements.contains_key(n) && matches!(s.resolves.get(n), Some(Resolution::External(_)));
+        let external = |s: &Structure, n: &str| matches!(s.element(n), Ok(Answer::External(_)));
         if external(before, a) && external(after, b) {
             continue;
         }
@@ -818,14 +769,14 @@ fn commute(
         }
         let (ka, kb) = (corresponds_kind(before, overlay, a), corresponds_kind(after, overlay, b));
         // 片方の端が操作でないと決まっていれば、比べる組ではない。
-        if matches!(ka, Ok(k) if k != "operation") || matches!(kb, Ok(k) if k != "operation") {
+        if matches!(&ka, Ok(k) if k != "operation") || matches!(&kb, Ok(k) if k != "operation") {
             continue;
         }
         // 片方だけが外部の組は、外部でない端の沈黙(読めば決まる所を持つ)を先に返す。
         let pair = match (ka, kb) {
             (Err(_), Err(t)) if external(before, a) => Err(t),
             (Err(s), _) | (_, Err(s)) => Err(s),
-            _ => compare(before, after, mapping, &overlay.removes, a, b, meaning, fresh),
+            _ => compare(before, after, mapping, a, b, meaning, fresh),
         };
         let mut f = match pair {
             Ok(f) => f,
@@ -844,7 +795,7 @@ fn commute(
 }
 
 /// 対応の端の種類。候補の対応に書いた `?` の名前なら、その対応の場所を返す(マニュアル第5章 問い8)。
-fn corresponds_kind<'a>(after: &'a Structure, overlay: &Overlay, name: &str) -> Result<&'a str, Silence> {
+fn corresponds_kind(after: &Structure, overlay: &Overlay, name: &str) -> Result<String, Silence> {
     match overlay.questions.get(name) {
         Some(a) => Err(question_at(a)),
         None => after.kind(name),
@@ -856,7 +807,6 @@ fn compare(
     before: &Structure,
     after: &Structure,
     mapping: &Mapping,
-    removes: &BTreeSet<String>,
     a: &str,
     b: &str,
     meaning: &str,
@@ -873,14 +823,14 @@ fn compare(
     let mut places: BTreeSet<Vec<String>> = after
         .meanings
         .iter()
-        .filter(|(f, _)| after.kind(f) == Ok("field") && has_meaning(after, f, meaning))
+        .filter(|(f, _)| after.kind(f).is_ok_and(|k| k == "field") && has_meaning(after, f, meaning))
         .map(|(f, _)| vec![f.clone()])
         .collect();
     let prior = Some((before, mapping));
     // 意味 Atom があっても、意味を持つかを読んでいないフィールド(候補が定義したフィールドで、元を読んでいないものを含む)は、
     // 意味が決まらないので比べない。その値が二つの順番で食い違うのは書き込みがあるときで、その沈黙は下で持つ。
     places.retain(|q| meaning_known(prior, after, &q[0], meaning).is_ok());
-    let mut below = Below { prior, removes: removes.clone(), ..Below::default() };
+    let mut below = Below { prior, ..Below::default() };
     for br in &run1 {
         for w in &br.writes {
             for k in 1..=w.place.len() {
@@ -929,7 +879,7 @@ fn compare(
     let mut compared = Vec::new();
     let mut calls = false;
     // 呼び出し先(変更前の名前)ごとの、本体が変わったか。
-    let mut bodies: BTreeMap<String, bool> = BTreeMap::new();
+    let mut bodies: BTreeMap<String, Option<Silence>> = BTreeMap::new();
     let mut pairs = 0;
     for b1 in &run1 {
         for b2 in &run2 {
@@ -937,8 +887,8 @@ fn compare(
             let lits2: Vec<(Value, bool)> =
                 b2.literals.iter().map(|l| Ok((normalize(mapping.back_value(&l.atom)?), l.truth))).collect::<Result<_, Silence>>()?;
             // 本体の変わった呼び出し先の呼び出しを条件に含めば、同じ項とみなせないので、分岐の組み方が決まらない。
-            if b1.literals.iter().map(|l| &l.atom).chain(lits2.iter().map(|(x, _)| x)).any(|x| changed_call(before, after, mapping, x, &mut bodies)) {
-                return Err(Silence::new(Reason::Unchecked));
+            if let Some(s) = b1.literals.iter().map(|l| &l.atom).chain(lits2.iter().map(|(x, _)| x)).find_map(|x| changed_call(before, after, mapping, x, &mut bodies)) {
+                return Err(s);
             }
             if b1.literals.iter().any(|l| lits2.iter().any(|(x, t)| x == &l.atom && *t != l.truth)) {
                 continue;
@@ -969,8 +919,8 @@ fn compare(
                     }
                 };
                 // 本体の変わった呼び出し先の呼び出しを含む値は、同じ項とみなせないので比べず、沈黙を最後まで持つ。
-                if changed_call(before, after, mapping, &v1, &mut bodies) || changed_call(before, after, mapping, &v2, &mut bodies) {
-                    below.hold(Err(Silence::new(Reason::Unchecked)));
+                if let Some(s) = changed_call(before, after, mapping, &v1, &mut bodies).or_else(|| changed_call(before, after, mapping, &v2, &mut bodies)) {
+                    below.hold(Err(s));
                     continue;
                 }
                 calls |= has_call(&v1) || has_call(&v2);
@@ -1029,21 +979,31 @@ fn compare(
     })
 }
 
-/// 値 `v`(変更前の名前)が、変更前と変更後で本体の違う呼び出し先を呼ぶか。
+/// 値 `v`(変更前の名前)が、変更前と変更後で本体の違う呼び出し先を呼ぶか。違えば、その沈黙を返す。
 /// 変更後の呼び出し先は、対応の行き先である。行き先が二つ以上なら、どれか一つでも本体が違えば違うとする。行き先がなければ同じ名前である。
-fn changed_call(before: &Structure, after: &Structure, mapping: &Mapping, v: &Value, bodies: &mut BTreeMap<String, bool>) -> bool {
+/// 本体が決まらなければ、本体が違うときと同じに扱う。道が決まらないなら、沈黙の理由と読む所はその道の沈黙のものである(設計 §5.4)。
+fn changed_call(before: &Structure, after: &Structure, mapping: &Mapping, v: &Value, bodies: &mut BTreeMap<String, Option<Silence>>) -> Option<Silence> {
     let mut names = BTreeSet::new();
     call_names(v, &mut names);
-    names.into_iter().any(|n| {
-        *bodies.entry(n.clone()).or_insert_with(|| {
-            // 読めない式があって本体を比べられなければ、違うとする。
-            let Some(old) = body(before, &n) else { return true };
-            let differs = |t: &str| body(after, t).is_none_or(|b| b != old);
-            match mapping.to.get(n.as_str()) {
-                Some(targets) => targets.iter().any(|t| differs(t)),
-                None => differs(&n),
-            }
-        })
+    names.into_iter().find_map(|n| {
+        bodies
+            .entry(n.clone())
+            .or_insert_with(|| {
+                let old = match body(before, &n) {
+                    Ok(b) => b,
+                    Err(s) => return Some(s),
+                };
+                let differs = |t: &str| match body(after, t) {
+                    Ok(b) if b == old => None,
+                    Ok(_) => Some(Silence::new(Reason::Unchecked)),
+                    Err(s) => Some(s),
+                };
+                match mapping.to.get(n.as_str()) {
+                    Some(targets) => targets.iter().find_map(|t| differs(t)),
+                    None => differs(&n),
+                }
+            })
+            .clone()
     })
 }
 
@@ -1062,14 +1022,16 @@ fn call_names(v: &Value, out: &mut BTreeSet<String>) {
     }
 }
 
-/// 操作 `op` の本体。`op` とそこから呼ぶ操作の構造 Atom(定義と解決を除く)を、種類、呼び出しの名前、`object`、`via`、`value`、`when` の字句で並べたもの。
-/// 定義からは、引数の名前と型を並べる。
+/// 操作 `op` の本体。`op` とそこから呼ぶ操作の構造 Atom(定義と解決を除く)を、種類、呼び出しの名前、`object`、`via`、`value`、`when` で並べたもの。
+/// `reads`・`writes` の `object` と `via` の列と、`value`・`when` の式の中の道は、字句ではなく道(設計 §3.3)で解いた場所で並べる
+/// (名前だけの要素の列は字句で並べる)。定義からは、引数の名前と型を並べる。
 /// 手順(書き込み、呼び出し、送信、戻り値)は手順の順のまま並べる(戻り値の後の手順のように、順に意味がある)。ほかの Atom は順によらない。
 /// そこから呼ぶ操作は、`calls` の `object` と、`value`・`when` の式の中の呼び出しである。たどった先がさらに呼ぶ操作も含む。
 /// 定義のない操作は、その解決(`resolves` の指す先。重なりは一つ)も並べる。
-/// `?` が関わる Atom(`?` の値、`?` で始まる名前)、構文として読めない式、字句の数が上限を超えた式、決まらない解決があれば、
-/// 入力から本体が決まらないので、比べられない(None)。
-fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
+/// `?` が関わる Atom(`?` の値、`?` で始まる名前、道のフィールド、引数の名前と型)、構文として読めない式、字句の数が上限を超えた式、
+/// 決まらない解決があれば、入力から本体が決まらないので、`unchecked` を返す。道が決まらなければ、その道の沈黙を返す。
+fn body(s: &Structure, op: &str) -> Result<Vec<String>, Silence> {
+    let unchecked = || Silence::new(Reason::Unchecked);
     let mut seen = BTreeSet::new();
     let mut todo = vec![op.to_string()];
     let mut out = Vec::new();
@@ -1077,75 +1039,120 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
         if !seen.insert(o.clone()) {
             continue;
         }
-        let call = format!("{o}->");
-        // 呼び出しの Atom は、どの呼び出しか(`->` から後の名前)も比べる。
-        let key = |a: &Atom| format!("{}|{}|{:?}|{:?}|{:?}|{:?}", a.kind, &a.subject[o.len()..], a.object, a.via, a.value, a.when);
         let steps = s.steps(&o);
         let mut rest: Vec<&Atom> = s
             .atoms
             .iter()
-            .filter(|a| a.is_structure() && !matches!(a.kind.as_str(), "defines" | "resolves") && (a.subject == o || a.subject.starts_with(&call)))
+            .filter(|a| a.is_structure() && !matches!(a.kind.as_str(), "defines" | "resolves") && after_operation(&o, &a.subject).is_some())
             .filter(|a| !steps.iter().any(|x| std::ptr::eq(*x, *a)))
             .collect();
-        rest.sort_by_key(|a| key(a));
+        let mut keyed: Vec<(bool, String, Vec<String>)> = Vec::new();
+        for (step, a) in steps.iter().map(|a| (true, *a)).chain(rest.drain(..).map(|a| (false, a))) {
+            let (key, calls) = atom_key(s, &o, a)?;
+            keyed.push((step, key, calls));
+        }
+        let (mut steps, mut rest): (Vec<_>, Vec<_>) = keyed.into_iter().partition(|(step, _, _)| *step);
+        rest.sort_by(|x, y| x.1.cmp(&y.1));
         // 操作の区切り。名前は入れない(呼び出し先の名前の違いは見ない)。
         out.push("op".to_string());
-        if let Some(e) = s.elements.get(&o).filter(|e| e.kinds.contains("operation")) {
+        match s.element(&o) {
             // 定義からは、引数の名前と型を比べる。
-            if e.params.iter().any(|(n, t)| n.starts_with('?') || t.starts_with('?')) {
-                return None;
-            }
-            out.push(format!("params|{:?}", e.params));
-        } else {
-            let r = s.resolves.get(&o);
-            if matches!(r, Some(Resolution::Undecided)) || matches!(r, Some(Resolution::Source(x)) if x.starts_with('?')) {
-                return None;
-            }
-            out.push(format!("resolves|{r:?}"));
-        }
-        for a in steps.iter().copied().chain(rest) {
-            if a.object.iter().chain(a.via.iter().flatten()).any(|x| x.starts_with('?')) {
-                return None;
-            }
-            out.push(key(a));
-            if a.kind == "calls"
-                && let Some(c) = &a.object
-            {
-                todo.push(c.clone());
-            }
-            let mut called = BTreeSet::new();
-            for text in [&a.value, &a.when].into_iter().flatten() {
-                match crate::expr::parse(text) {
-                    // 字句の数が上限を超えた式は、構文として読めるかを確かめていないので、読めない式と同じに扱う。
-                    Ok(crate::expr::Expr::TooLong(_)) | Err(_) => return None,
-                    Ok(e) => {
-                        if !expr_calls(&e, &mut called) {
-                            return None;
-                        }
-                    }
+            Ok(Answer::Element(e)) if e.kind == "operation" => {
+                if e.params.iter().any(|(n, t)| is_question(n) || is_question(t)) {
+                    return Err(unchecked());
                 }
+                out.push(format!("params|{:?}", e.params));
             }
-            todo.extend(called);
+            Err(u) if u.why == Why::Ambiguous => return Err(unchecked()),
+            _ => {
+                let r = s.resolution(&o);
+                if matches!(r, Some(Resolution::Undecided)) || matches!(r, Some(Resolution::Source(x)) if is_question(x)) {
+                    return Err(unchecked());
+                }
+                out.push(format!("resolves|{r:?}"));
+            }
+        }
+        for (_, key, calls) in steps.drain(..).chain(rest.drain(..)) {
+            out.push(key);
+            todo.extend(calls);
         }
     }
-    Some(out)
+    Ok(out)
 }
 
-/// 式が呼ぶ操作の名前を集める。式に `?` が関われば(`?` の値、`?` で始まる名前と道のフィールド)、偽を返す。
-fn expr_calls(e: &crate::expr::Expr, out: &mut BTreeSet<String>) -> bool {
-    use crate::expr::Expr;
-    match e {
-        Expr::Unknown => false,
-        Expr::Name(n) => !n.starts_with('?'),
-        Expr::Path(_, fields) => !fields.iter().any(|f| f.starts_with('?')),
-        Expr::Call(n, args) => {
-            out.insert(n.clone());
-            !n.starts_with('?') && args.iter().all(|a| expr_calls(a, out))
-        }
-        Expr::Not(x) | Expr::Neg(x) => expr_calls(x, out),
-        Expr::Bin(_, a, b) => expr_calls(a, out) && expr_calls(b, out),
-        _ => true,
+/// 本体の Atom の並べ方と、そこから呼ぶ操作。呼び出しの Atom は、どの呼び出しか(`->` から後の名前)も比べる。
+fn atom_key(s: &Structure, o: &str, a: &Atom) -> Result<(String, Vec<String>), Silence> {
+    let unchecked = || Silence::new(Reason::Unchecked);
+    if a.object.iter().chain(a.via.iter().flatten()).any(|x| is_question(x)) {
+        return Err(unchecked());
     }
+    let place = match a.kind.as_str() {
+        "reads" | "writes" => {
+            let names: Vec<String> = a.via.iter().flatten().chain(a.object.as_ref()).cloned().collect();
+            let c = s.column(&names);
+            match c.walk.stop {
+                Some(u) if u.why == Why::Question => return Err(unchecked()),
+                Some(u) => return Err(u.silence),
+                None => format!("{:?}", c.walk.place),
+            }
+        }
+        _ => format!("{:?}|{:?}", a.object, a.via),
+    };
+    let mut called = BTreeSet::new();
+    let mut exprs = Vec::new();
+    for text in [&a.value, &a.when] {
+        exprs.push(match text {
+            None => "-".to_string(),
+            Some(t) => match crate::expr::parse(t) {
+                // 字句の数が上限を超えた式は、構文として読めるかを確かめていないので、読めない式と同じに扱う。
+                Ok(crate::expr::Expr::TooLong(_)) | Err(_) => return Err(unchecked()),
+                Ok(e) => expr_key(s, o, &e, &mut called)?,
+            },
+        });
+    }
+    let mut calls = Vec::new();
+    if a.kind == "calls"
+        && let Some(c) = &a.object
+    {
+        calls.push(match s.element(c) {
+            Ok(Answer::Element(e)) if e.kind == "operation" => e.name,
+            _ => c.clone(),
+        });
+    }
+    calls.extend(called);
+    Ok((format!("{}|{}|{}|{}|{}", a.kind, after_operation(o, &a.subject).unwrap_or(""), place, exprs[0], exprs[1]), calls))
+}
+
+/// 式の並べ方。道は解いた場所に置き換える。式が呼ぶ操作の名前を集める。
+fn expr_key(s: &Structure, op: &str, e: &crate::expr::Expr, called: &mut BTreeSet<String>) -> Result<String, Silence> {
+    use crate::expr::Expr;
+    let unchecked = || Silence::new(Reason::Unchecked);
+    Ok(match e {
+        Expr::Unknown | Expr::TooLong(_) => return Err(unchecked()),
+        Expr::Name(n) | Expr::Const(n) if is_question(n) => return Err(unchecked()),
+        Expr::Name(n) | Expr::Const(n) => n.clone(),
+        Expr::Path(p, fields) if fields.is_empty() => format!("${p}"),
+        Expr::Path(_, fields) if fields.iter().any(|f| is_question(f)) => return Err(unchecked()),
+        Expr::Path(p, fields) => {
+            let w = s.walk(Start::Param(&param_name(op, p)), fields);
+            match w.stop {
+                Some(u) if u.why == Why::Question => return Err(unchecked()),
+                Some(u) => return Err(u.silence),
+                None => format!("{:?}", w.place),
+            }
+        }
+        Expr::Call(n, args) => {
+            if is_question(n) {
+                return Err(unchecked());
+            }
+            called.insert(n.clone());
+            let args: Vec<String> = args.iter().map(|x| expr_key(s, op, x, called)).collect::<Result<_, _>>()?;
+            format!("{n}({})", args.join(","))
+        }
+        Expr::Not(x) => format!("not({})", expr_key(s, op, x, called)?),
+        Expr::Neg(x) => format!("neg({})", expr_key(s, op, x, called)?),
+        Expr::Bin(o, x, y) => format!("({:?} {} {})", o, expr_key(s, op, x, called)?, expr_key(s, op, y, called)?),
+    })
 }
 
 fn has_call(v: &Value) -> bool {
@@ -1224,7 +1231,7 @@ fn keep(
         out.push(Finding { reason: Some("unread"), next: unread, ..finding(meaning, "silent", None, Json::Null) });
     }
     let mut kept = Vec::new();
-    for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
+    for (e, _) in before.meanings.iter().filter(|(e, _)| !is_local(e) && has_meaning(before, e, meaning)) {
         // 変更前の要素の定義を読んでいなければ、それが何で、どこへ対応するかが決まらない。
         if let Err(s) = before.kind(e) {
             out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..Finding::silent("change", Some(law), e, s) });
@@ -1258,7 +1265,7 @@ fn keep(
 /// 持ち主の操作か、その行き先の種類が決まらなければ(曖昧、`value` のない `defines`、定義を読んでいない)、
 /// 同じ名前の引数があるかも決まらない。その沈黙を返す(定義を読んでいなければ、その読む所を持つ)。
 fn owner_undecided(before: &Structure, after: &Structure, overlay: &Overlay, mapping: &Mapping, e: &str) -> Option<Silence> {
-    let (op, _) = e.split_once(".$")?;
+    let Form::Param { owner: op, .. } = form(e) else { return None };
     before.kind(op).err().or_else(|| mapping.to.get(op).into_iter().flatten().find_map(|t| corresponds_kind(after, overlay, t).err()))
 }
 
@@ -1268,13 +1275,17 @@ fn owner_undecided(before: &Structure, after: &Structure, overlay: &Overlay, map
 /// 候補が `removes` した要素は、消えることが候補で決まっているので沈黙しない。
 /// 引数(`<操作>.$<名前>`)と呼び出し(`<操作>-><呼び出し先>`)は、持ち主の操作の定義のソースで見る。
 fn unobserved_after(before: &Structure, after: &Structure, overlay: &Overlay, after_sources: &[String], e: &str) -> Option<Silence> {
-    if overlay.removes.iter().any(|x| e == x || e.starts_with(&format!("{x}.")) || e.starts_with(&format!("{x}->"))) {
+    if overlay.removes.iter().any(|x| below(x, e)) {
         return None;
     }
-    let owner = e.split_once(".$").or_else(|| e.split_once("->")).map(|(op, _)| op);
-    let at = defined_at(before, e).or_else(|| owner.and_then(|op| defined_at(before, op)))?;
-    let path = parse_location(&at)?.path;
-    (after_sources.contains(&path) && !after.observed.contains(&(path.clone(), "structure".to_string())))
+    let path = match before.element(e) {
+        Ok(Answer::Element(f)) => f.defined.into_iter().next(),
+        _ => match before.element(owner(e)) {
+            Ok(Answer::Element(f)) => f.defined.into_iter().next(),
+            _ => None,
+        },
+    }?;
+    (after_sources.contains(&path) && !after.observed(&path, "structure"))
         .then(|| Silence { reason: Reason::Unread, read: Some(path), element: None, scope: Some("structure".to_string()) })
 }
 
@@ -1282,7 +1293,7 @@ fn unobserved_after(before: &Structure, after: &Structure, overlay: &Overlay, af
 fn unread_sources(s: &Structure, sources: &[String], scope: &str) -> Vec<Silence> {
     sources
         .iter()
-        .filter(|src| !s.observed.contains(&((*src).clone(), scope.to_string())))
+        .filter(|src| !s.observed(src, scope))
         .map(|src| Silence { reason: Reason::Unread, read: Some(src.clone()), element: None, scope: Some(scope.to_string()) })
         .collect()
 }
@@ -1306,10 +1317,12 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
                 _ => continue,
             };
             for n in names.into_iter().filter(|n| !n.is_empty() && !decided.contains(*n)) {
-                let undecided = !after.elements.contains_key(n) && matches!(after.resolves.get(n), Some(Resolution::Undecided));
-                if let Err(s) = after.kind(n)
-                    && (s.reason == Reason::Unread || undecided)
-                {
+                let silence = match after.element(n) {
+                    Err(u) if u.silence.reason == Reason::Unread || u.why == Why::Undecided => Some(u.silence),
+                    Ok(Answer::Bare(_)) => after.kind(n).err(),
+                    _ => None,
+                };
+                if let Some(s) = silence {
                     unknown.entry(n.to_string()).or_insert(s);
                 }
             }
@@ -1337,21 +1350,16 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
     // 使うと決まった操作(`missing`)、変更後で操作でないと決まり変更前でも操作でないと決まるか定義を読んでいない要素、
     // 変更後で定義を読んでいない要素(上の沈黙)は除く。変更前で曖昧な要素は沈黙する。
     for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
-        match (before.kind(op), after.kind(op)) {
+        match (before.kind(op).as_deref(), after.kind(op).as_deref()) {
             _ if decided.contains(op.as_str()) => continue,
             (Ok("operation"), _) | (_, Ok("operation")) => {}
             (Ok(_) | Err(Silence { reason: Reason::Unread, .. }), Ok(_)) | (_, Err(Silence { reason: Reason::Unread, .. })) => continue,
             _ => {}
         }
         let mut next: Vec<Silence> = Vec::new();
-        for (gap, a) in gaps {
-            // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったものは、変更前の構造で問い合わせる(§5.4 と同じ)。
-            let s = match gap {
-                Gap::Redefined(_) => before.untraced(gap, a),
-                _ => after.untraced(gap, a),
-            };
-            if !next.contains(&s) {
-                next.push(s);
+        for s in gaps {
+            if !next.contains(s) {
+                next.push(s.clone());
             }
         }
         out.push(Finding {
@@ -1372,14 +1380,21 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
 /// 操作でないと決まった名前は結論にしない。
 /// 変更前か変更後のどちらかで種類が決まらなければ(曖昧、`value` のない `defines`)、沈黙する。それ以外は変更前で問い合わせる。
 fn missing(before: &Structure, after: &Structure, op: &str, uses: &BTreeSet<String>) -> Option<Finding> {
-    let undecided = after.elements.contains_key(op).then(|| after.kind(op)).and_then(|k| k.err()).filter(|s| matches!(s.reason, Reason::Unresolved));
-    let kind = match undecided {
-        Some(s) => Err(s),
-        None => before.kind(op),
+    let kind = match after.element(op) {
+        Err(u) if u.why == Why::Ambiguous => Err(u.silence),
+        _ => before.kind(op),
     };
     let f = match kind {
         // 構造 Atom の `subject` は操作である(マニュアル第3章)。
-        Ok("operation") | Err(Silence { reason: Reason::Unread, .. }) => Finding {
+        Ok(k) if k == "operation" => Finding {
+            outcome: "fails",
+            kind: Some("missing"),
+            at: defined_at(before, op).into_iter().collect(),
+            basis: json!({"operation": op, "uses": uses}),
+            check: json!({"operation": op, "uses": uses}),
+            ..Finding::default()
+        },
+        Err(Silence { reason: Reason::Unread, .. }) => Finding {
             outcome: "fails",
             kind: Some("missing"),
             at: defined_at(before, op).into_iter().collect(),

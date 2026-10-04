@@ -30,7 +30,7 @@ fn resolves_in_a_plan_keeps_the_unchanged_definition() {
     let s = Structure::new(o.after);
     assert_eq!(s.kind("m.g").unwrap(), "operation", "g の定義が残る");
     assert_eq!(s.unfold("n.h").unwrap().len(), 2, "h から g を呼び、g の書き込みが残る");
-    assert!(s.resolves.contains_key("m.g"), "resolves は名前の解決として加わる");
+    assert!(s.resolution("m.g").is_some(), "resolves は名前の解決として加わる");
 }
 
 const ORDER: &str = r#"{"kind": "defines", "subject": "shop.order.model.Order", "value": "type", "at": "shop/order/model.py:7"}
@@ -56,8 +56,8 @@ const SPLIT: &str = r#"{"kind": "plan", "subject": "split-order", "base": "a1b2c
 fn fields_of_a_removed_type_are_gone() {
     let o = overlay(&atoms(ORDER), &atoms(SPLIT));
     let s = Structure::new(o.after.clone());
-    assert!(!s.elements.contains_key("shop.order.model.Order"));
-    assert!(!s.elements.contains_key("shop.order.model.Order.payment_ref"), "消えた型のフィールドも消える");
+    assert!(!s.element_names().any(|n| n == "shop.order.model.Order"));
+    assert!(!s.element_names().any(|n| n == "shop.order.model.Order.payment_ref"), "消えた型のフィールドも消える");
     assert_eq!(s.kind("shop.payment.model.OrderPayment.ref").unwrap(), "field");
     // 意味は対応の行き先へ移る。
     assert_eq!(s.meanings["shop.payment.model.OrderPayment.ref"][0].meaning.as_deref(), Some("payment-info"));
@@ -174,7 +174,7 @@ fn removing_an_element_does_not_drop_a_source_with_a_similar_path() {
     );
     let plan = atoms(r#"{"kind": "removes", "subject": "setup", "at": "plan:p"}"#);
     let s = Structure::new(overlay(&before, &plan).after);
-    assert!(s.observed.contains(&("setup.c".to_string(), "structure".to_string())));
+    assert!(s.observed("setup.c", "structure"));
 }
 
 #[test]

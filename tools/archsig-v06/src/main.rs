@@ -9,7 +9,7 @@ use archsig::atom::{self, Atom};
 use archsig::engine;
 use archsig::geometry::Geometry;
 use archsig::result;
-use archsig::structure::{Structure, overlay};
+use archsig::structure::{Structure, overlay_on};
 
 #[derive(Parser)]
 #[command(name = "archsig", version, about = "コードから観測した Atom と Law の上で、アーキテクチャを計算する")]
@@ -100,9 +100,9 @@ fn run(cli: Cli) -> Result<Value, String> {
             if !laws.errors.is_empty() {
                 return Ok(json!({"law_errors": laws.errors}));
             }
-            let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
-            let o = overlay(&before, &store.plan(&plan)?);
-            let (b, a) = (Structure::new(before), Structure::new(o.after.clone()));
+            let b = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
+            let o = overlay_on(&b, &store.plan(&plan)?);
+            let a = o.structure();
             let sources = store.sources(&laws)?;
             let findings = engine::plan_check(&b, &a, &o, &laws, &sources, &sources);
             let not_computed = engine::not_computed(&laws);
@@ -117,10 +117,11 @@ fn run(cli: Cli) -> Result<Value, String> {
                 Some(r) => laws.readings.iter().find(|x| &x.name == r).ok_or_else(|| format!("読み {r} が宣言されていない"))?,
                 None => laws.readings.first().ok_or("読みが一つも宣言されていない")?,
             };
-            let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
+            let b = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
             let atoms = store.plan(&plan)?;
-            let o = overlay(&before, &atoms);
-            let split = Geometry::new(reading, &[before, atoms.clone()].concat(), &o.after).split(&atoms);
+            let o = overlay_on(&b, &atoms);
+            let a = o.structure();
+            let split = Geometry::new(reading, &a, &b).split(&atoms);
             let (findings, split) = engine::plan_split(&plan, &o, split, &laws);
             if let Some(split) = split {
                 let base = atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.as_deref());
@@ -140,7 +141,7 @@ fn run(cli: Cli) -> Result<Value, String> {
             };
             let old = Store::open(&before)?;
             let o = archsig::structure::observed_overlay(&old.map()?, &store.map()?, &atoms);
-            let (b, a) = (Structure::new(old.map()?), Structure::new(o.after.clone()));
+            let (b, a) = (Structure::new(old.map()?), o.structure());
             let findings = engine::implemented(&b, &a, &o, &laws, &old.sources(&laws)?, &store.sources(&laws)?);
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "compare", &findings, &not_computed))
@@ -182,8 +183,8 @@ fn run(cli: Cli) -> Result<Value, String> {
     }
 }
 
-/// 候補 `plan` の元が別の候補(`plan:<名前>`)なら、その候補を先に重ねた Atom の列を返す。
-fn with_base(store: &Store, map: Vec<Atom>, plan: &str, seen: &mut Vec<String>) -> Result<Vec<Atom>, String> {
+/// 候補 `plan` の元が別の候補(`plan:<名前>`)なら、その候補を先に重ねた構造を返す(設計 §3.6)。
+fn with_base(store: &Store, map: Vec<Atom>, plan: &str, seen: &mut Vec<String>) -> Result<Structure, String> {
     if seen.iter().any(|p| p == plan) {
         return Err(format!("候補の元がめぐっている: {}", seen.join(" -> ")));
     }
@@ -192,8 +193,8 @@ fn with_base(store: &Store, map: Vec<Atom>, plan: &str, seen: &mut Vec<String>) 
     match atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.as_deref()).and_then(|b| b.strip_prefix("plan:")) {
         Some(base) => {
             let under = with_base(store, map, base, seen)?;
-            Ok(overlay(&under, &store.plan(base)?).after)
+            Ok(overlay_on(&under, &store.plan(base)?).structure())
         }
-        None => Ok(map),
+        None => Ok(Structure::new(map)),
     }
 }
