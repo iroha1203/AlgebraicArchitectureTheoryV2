@@ -999,3 +999,7 @@ import ResearchLean.AG.AbelianLiftingObstruction.GroupExtension
 import ResearchLean.AG.AbelianLiftingObstruction.ProtocolExtension
 import ResearchLean.AG.AbelianLiftingObstruction.C4Witness
 import ResearchLean.AG.AbelianLiftingObstruction.S3Witness
+import ResearchLean.AG.VisibleCycleReflection.AtomInput
+import ResearchLean.AG.VisibleCycleReflection.OpenSupport
+import ResearchLean.AG.VisibleCycleReflection.OpenSupportContinuity
+import ResearchLean.AG.VisibleCycleReflection.ActualCover
