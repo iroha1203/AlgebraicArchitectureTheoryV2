@@ -1549,8 +1549,8 @@ fn a_type_named_by_a_call_that_the_plan_redefines_is_still_unread() {
 
 #[test]
 fn an_external_type_the_plan_redefines_is_read_as_the_plan_defines_it() {
-    // 変更前の m.S は resolves で外部を指す。候補が m.S を定義し直せば、変更後の構造では候補の定義をその型のすべてとしてたどる。
-    // 変更後でたどった m.S.q の型 int に着く。変更前の構造でたどる書き込みでは、m.S は外部の型のままである(設計 §5.4)。
+    // 変更前の m.S は resolves で外部を指す。候補が m.S を定義し直せば、候補の定義をその型のすべてとしてたどり、m.S.q の型 int に着く。
+    // 変更前の構造でたどる書き込みでは m.S は外部の型だが、変更後の構造が候補の定義でたどるので、外部の型 m.S は条件に並べない(設計 §5.4)。
     let repo = Repo::new("below-external-redefined");
     repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
     repo.map(
@@ -1574,6 +1574,7 @@ fn an_external_type_the_plan_redefines_is_read_as_the_plan_defines_it() {
     assert_eq!(r["outcome"], "holds", "{s}");
     let d = repo.run(&["show", r["id"].as_str().unwrap()]);
     assert!(d["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 int は、意味を持つフィールドを持たないとみなす"), "{d}");
+    assert!(!d["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 m.S は、意味を持つフィールドを持たないとみなす"), "{d}");
 }
 
 #[test]
@@ -4171,4 +4172,47 @@ fn a_correspondence_from_an_external_end_returns_what_the_other_end_needs() {
     let r = result(&s, "m.new");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "n.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
+fn a_name_not_settled_by_its_head_is_not_passed_over_for_removes() {
+    // m.o は書き直さず、値 m.C.f.g() で呼ぶ。m.C.f.g の頭 m.C.f はフィールドで型ではないので、名前は決まらない(設計 §3.3 規則 8)。
+    // 型を読んでいない頭 m.T の下の m.T.g() も、受け継ぎが分からないので名指す要素が決まらない。
+    // どちらも、候補が m.U.g を消すとき、消える要素を使わないとは言えないので沈黙する(設計 §3.6)。
+    for (name, value) in [("head-is-a-field", "m.C.f.g()"), ("head-type-unread", "m.T.g()")] {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &format!(
+            "{}{{\"kind\": \"writes\", \"subject\": \"m.o\", \"object\": \"m.C.p\", \"value\": \"{value}\", \"at\": \"m.py:21@blob:aaaaaaa\"}}\n",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C.f", "value": "field", "type": "m.U", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.C.p", "meaning": "payment-info", "uses": ["m.py:21@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U.g", "value": "operation", "params": {}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.k", "value": "operation", "params": {"t": "m.T"}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.o", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+"#
+        ));
+        repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.U.g\", \"at\": \"plan:p\"}\n");
+        let s = repo.run(&["plan", "check", "p"]);
+        let silent = s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.o" && r["law"].is_null() && r["outcome"] == "silent");
+        assert!(silent, "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_removed_name_the_old_structure_only_names_is_not_unread_below() {
+    // 変更前は m.S.p を resolves で名指すだけで、定義を読んでいない。候補が m.S.p を消す。
+    // 変更前の構造で書いた場所より先をたどるときも、removes した要素は沈黙の対象にしない(設計 §5.4)。
+    let atoms = format!("{O_S}{}{F_WRITES_A}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.S.p", "object": "b.py", "at": "m.py:1@blob:aaaaaaa"}
+"#);
+    let plan = format!("{PLAN_WRITES_B}{}", "{\"kind\": \"removes\", \"subject\": \"m.S.p\", \"at\": \"plan:p\"}\n");
+    let (s, r) = below_case("below-removed-only-named", &atoms, &plan);
+    assert_eq!(r["outcome"], "holds", "{s}");
 }

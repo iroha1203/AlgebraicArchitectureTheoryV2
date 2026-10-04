@@ -1,5 +1,6 @@
 //! 幾何(設計 §6、マニュアル第4章)。読みと Atom から、局所と重なりを作る。
 
+use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
 
 use globset::{GlobBuilder, GlobSetBuilder};
@@ -42,23 +43,29 @@ pub struct Geometry<'a> {
     after: &'a Structure,
     /// 変更前の構造。`removes` した要素と、対応の元の要素はここで見つかる。
     before: &'a Structure,
+    /// 局所を求めている途中のチャネル。送り受けする操作がめぐっても、一度だけたどる。
+    busy: RefCell<BTreeSet<String>>,
 }
 
 impl<'a> Geometry<'a> {
     /// `after` は候補を重ねた構造、`before` は変更前の構造。候補がなければ同じ構造を渡す。
     pub fn new(reading: &'a Reading, after: &'a Structure, before: &'a Structure) -> Geometry<'a> {
-        Geometry { reading, after, before }
+        Geometry { reading, after, before, busy: RefCell::new(BTreeSet::new()) }
     }
 
     /// 要素が属する局所。決まらなければ、その沈黙。どの局所にも属さなければ空。
     pub fn element_locals(&self, name: &str) -> Result<BTreeSet<String>, Silence> {
         // チャネルとその項目は、送る操作と受け取る操作の局所すべてに属する。送り受けする操作は、候補を重ねた後の列から探す。
         if let Some(ops) = self.after.channel_operations(name) {
-            let mut out = BTreeSet::new();
-            for op in ops {
-                out.extend(self.element_locals(op)?);
+            if !self.busy.borrow_mut().insert(name.to_string()) {
+                return Ok(BTreeSet::new());
             }
-            return Ok(out);
+            let r = ops.iter().try_fold(BTreeSet::new(), |mut out, op| {
+                out.extend(self.element_locals(op)?);
+                Ok(out)
+            });
+            self.busy.borrow_mut().remove(name);
+            return r;
         }
         let after = self.after.element(name);
         match &after {

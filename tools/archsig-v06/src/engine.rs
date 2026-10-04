@@ -659,24 +659,6 @@ impl Below<'_> {
         }
     }
 
-    /// フィールド `field` の型。型のないフィールドと、種類の決まらないフィールド(二か所の `defines` など)は、その先が決まらない。
-    /// `?` の型は、その型を書いたフィールドの定義の場所を返す(マニュアル第5章 問い3)。
-    fn type_of(s: &Structure, field: &str) -> Result<String, Silence> {
-        let ty = match s.element(field) {
-            Ok(Answer::Element(f)) => f.ty,
-            Ok(_) => None,
-            Err(u) => return Err(u.silence),
-        };
-        match ty {
-            Some(t) if is_question(&t) => Err(match s.atoms.iter().find(|a| a.kind == "defines" && a.subject == field) {
-                Some(a) => question_at(a),
-                None => Silence::new(Reason::Unresolved),
-            }),
-            Some(t) => Ok(t),
-            None => Err(Silence::new(Reason::Unresolved)),
-        }
-    }
-
     /// 型 `ty` のフィールド一覧。外部の型はたどらず、`external` に積む。
     fn fields_of(&mut self, s: &Structure, ty: &str) -> Result<(Vec<String>, Option<Silence>), Silence> {
         let list = s.fields(ty).map_err(|u| u.silence)?;
@@ -688,7 +670,7 @@ impl Below<'_> {
 
     /// フィールド `field` の型をたどる。`prefix` は `field` までの場所、`types` はたどってきた型の列。
     fn descend(&mut self, s: &Structure, field: &str, meaning: &str, prefix: &mut Vec<String>, types: &mut Vec<String>, out: &mut Vec<Vec<String>>) -> Result<(), Silence> {
-        let ty = Self::type_of(s, field)?;
+        let ty = s.field_type(field).map_err(|u| u.silence)?;
         if types.contains(&ty) {
             // 型がめぐり、その先に意味を持つフィールドがあれば、場所が限りなく伸びるので `limit` で沈黙する。
             if self.reaches(s, &ty, meaning)? {
@@ -736,7 +718,7 @@ impl Below<'_> {
                 if has_meaning(s, &f, meaning) {
                     return Ok(true);
                 }
-                todo.push(Self::type_of(s, &f)?);
+                todo.push(s.field_type(&f).map_err(|u| u.silence)?);
             }
         }
         Ok(false)
@@ -753,6 +735,8 @@ fn commute(
     meaning: &str,
     fresh: &dyn Fn(&str) -> bool,
 ) -> Vec<Finding> {
+    // 変更前の構造で書いた場所より先をたどるときも、候補が `removes` した要素は沈黙の対象にしない(設計 §5.4)。
+    let walked = before.with_removes(&overlay.removes);
     let mut out = Vec::new();
     for (a, b) in &overlay.corresponds {
         // 外部の要素は、観測した要素へ書き込まない呼び出し先として扱う(設計 §3.4)。両端が外部なら比べるものがなく、組ではない。
@@ -776,7 +760,7 @@ fn commute(
         let pair = match (ka, kb) {
             (Err(_), Err(t)) if external(before, a) => Err(t),
             (Err(s), _) | (_, Err(s)) => Err(s),
-            _ => compare(before, after, mapping, a, b, meaning, fresh),
+            _ => compare(before, &walked, after, mapping, a, b, meaning, fresh),
         };
         let mut f = match pair {
             Ok(f) => f,
@@ -805,6 +789,7 @@ fn corresponds_kind(after: &Structure, overlay: &Overlay, name: &str) -> Result<
 #[allow(clippy::too_many_arguments)]
 fn compare(
     before: &Structure,
+    walked: &Structure,
     after: &Structure,
     mapping: &Mapping,
     a: &str,
@@ -849,7 +834,7 @@ fn compare(
             }
             // 変更前の書き込みは、変更前の型でたどって対応で変更後の名前に写した場所と、
             // 写した書き込みの場所から変更後の型でたどった場所の、両方を比べる。
-            for p in below.places(before, &w.place, meaning) {
+            for p in below.places(walked, &w.place, meaning) {
                 for q in mapping.places(&p) {
                     let known = meaning_known(prior, after, q.last().unwrap(), meaning);
                     if known.is_ok() && has_meaning(after, q.last().unwrap(), meaning) {
@@ -959,7 +944,7 @@ fn compare(
                         "move_then_after": {"writes": writes_json(&b2.writes)},
                         "diverging": diverging,
                     }),
-                    conditions: conditions(&ext1, &ext2, calls, &below.external),
+                    conditions: conditions(&ext1, &ext2, calls, &external(after, &below.external)),
                     ..Finding::default()
                 });
             }
@@ -974,7 +959,7 @@ fn compare(
         outcome: "holds",
         basis: json!({"before": a, "after": b, "meaning": meaning}),
         check: json!({"branches": compared}),
-        conditions: conditions(&ext1, &ext2, calls, &below.external),
+        conditions: conditions(&ext1, &ext2, calls, &external(after, &below.external)),
         ..Finding::default()
     })
 }
@@ -1162,6 +1147,12 @@ fn has_call(v: &Value) -> bool {
         Value::Bin(_, a, b) => has_call(a) || has_call(b),
         _ => false,
     }
+}
+
+/// 意味を持つフィールドを持たないとみなした外部の型のうち、結論に関わるもの。
+/// 変更前の構造でたどった所でだけ外部の型でも、変更後の構造で型に決まれば、変更後の構造がその定義でたどるので関わらない(設計 §5.4)。
+fn external(after: &Structure, types: &BTreeSet<String>) -> BTreeSet<String> {
+    types.iter().filter(|t| !matches!(after.element(t), Ok(Answer::Element(e)) if e.kind == "type")).cloned().collect()
 }
 
 fn conditions(e1: &BTreeSet<String>, e2: &BTreeSet<String>, calls: bool, types: &BTreeSet<String>) -> Vec<String> {

@@ -334,3 +334,20 @@ reading module = dir(depth: 1)
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c/x.py"), "{s}");
 }
+
+#[test]
+fn channels_that_send_to_each_other_do_not_loop() {
+    // 送る Atom の subject にチャネルを書いた(第3章の形に反する)候補でも、局所を求めるたどりはめぐらずに終わる。
+    let repo = Repo::new("split-channel-loop");
+    repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
+    repo.write("a/f.py", "# source\n");
+    repo.map("a/f.py", "{\"kind\": \"observed\", \"subject\": \"a/f.py\", \"scope\": \"structure\", \"at\": \"a/f.py@blob:aaaaaaa\"}\n");
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "sends", "subject": "channel:queue:a:b", "object": "channel:queue:c:d", "value": "1", "at": "plan:p"}
+{"kind": "sends", "subject": "channel:queue:c:d", "object": "channel:queue:a:b", "value": "1", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "split", "p"]);
+    assert!(s["results"].as_array().is_some(), "{s}");
+}

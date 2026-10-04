@@ -612,7 +612,8 @@ struct Tracer<'a> {
 
 impl Tracer<'_> {
     /// Atom の名前 `n` を要素(名前)で解いた要素。名前だけの要素は、字句どおりの名前を名指す。
-    /// 名前そのものの定義が分からなくても、名指す要素はその名前である。段で決まらなかった名前と `?` の名前は、名指す要素が決まらない。
+    /// 名前そのものの定義(`defines` か `resolves`)で決まらないだけなら、名指す要素はその名前である。
+    /// `?` の名前と、頭、持ち主、段で決まらない名前は、名指す要素が決まらない。
     fn name(&self, n: &str, a: &Atom, found: &mut Named) {
         if is_question(n) {
             found.gaps.push(locate(question(), a));
@@ -638,9 +639,9 @@ impl Tracer<'_> {
                     Err(b) => found.gaps.push(gap(b.silence, a)),
                     _ => found.gaps.push(gap(u.silence, a)),
                 },
-                Some(_) => found.gaps.push(gap(u.silence, a)),
-                None if u.why == Why::Question => found.gaps.push(gap(u.silence, a)),
-                None => {}
+                // 名前そのものの定義で決まらないだけなら、名指すのはその名前である。頭、持ち主、段で決まらなければ、名指す要素が決まらない。
+                None if u.itself => {}
+                _ => found.gaps.push(gap(u.silence, a)),
             },
         }
     }
