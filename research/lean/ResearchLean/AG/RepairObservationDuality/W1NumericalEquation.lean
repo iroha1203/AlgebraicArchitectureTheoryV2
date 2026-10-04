@@ -112,6 +112,24 @@ theorem differential_apply (p : Permissions) (a : Corrections) :
 /-- Basic API for the entire generated RHS. -/
 theorem rhsLinear_apply (v : Values) : rhsLinear v = ![v false,v true,0,0] := rfl
 
+/-- Basic scalar API for the original authored always edge e, used by the native differential comparison. -/
+theorem correctionValue_e (u h z v : ZMod 3) :
+    W1AuthoredOperations.correctionValue u h z v edgeE = u := by
+  simp [W1AuthoredOperations.correctionValue]
+
+/-- Basic scalar API for the original authored candidate b, used by the native differential comparison. -/
+theorem correctionValue_b (u h z v : ZMod 3) :
+    W1AuthoredOperations.correctionValue u h z v edgeB = z := by
+  simp [W1AuthoredOperations.correctionValue,edgeB,edgeE,edgeA]
+
+/-- Basic scalar API for the original authored candidate c, used by the native differential comparison. -/
+theorem correctionValue_c (u h z v : ZMod 3) :
+    W1AuthoredOperations.correctionValue u h z v edgeC = v := by
+  simp [W1AuthoredOperations.correctionValue,edgeC,edgeE,edgeA,edgeB]
+
+/-- Basic projection API for the same original six edge names, used by the native differential comparison. -/
+theorem name_value (e : Fin 6) : (name e).2.2 = e := rfl
+
 /-- The first two rows are exactly the same original full native differential on every correction. -/
 theorem original_differential (x y : ZMod 3) (a : Corrections) (f : Bool) :
     faceCoordinates true x y
@@ -121,23 +139,23 @@ theorem original_differential (x y : ZMod 3) (a : Corrections) (f : Bool) :
       differential (fun _ => true) a (if f then 1 else 0) := by
   cases f
   · rw [relative_d1_first,relativeCochain_value,relativeCochain_value]
-    simp [W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,differential,geometry]
+    simp [name_value,correctionValue_e,correctionValue_b,differential_apply]
   · rw [relative_d1_second_negative,relativeCochain_value,relativeCochain_value,relativeCochain_value]
-    simp [W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,edgeC,differential,geometry]
+    simp [name_value,correctionValue_e,correctionValue_b,correctionValue_c,differential_apply]
 
 /-- The same actual signed defect supplies both original face RHS values; b0 is zero. -/
 theorem original_rhs (v : Values) (f : Bool) :
     faceCoordinates true (v false) (v true) (-actualDefect true (v false) (v true)) f =
       affineRhs rhsLinear 0 v (if f then 1 else 0) := by
   rw [signedDefect_coordinates]
-  cases f <;> simp [affineRhs,rhsLinear]
+  cases f <;> simp [affineRhs_apply,rhsLinear_apply]
 
 /-- The complete equation is precisely both original authored Laws and both original candidate masks. -/
 theorem equation_iff (p : Permissions) (v : Values) (a : Corrections) :
     differential p a = affineRhs rhsLinear 0 v ↔
       Equations true (v false) (v true) (parameters a) ∧ Allowed (allowed p) (parameters a) := by
   rw [differential_apply]
-  simp only [affineRhs,zero_add,rhsLinear_apply]
+  simp only [affineRhs_apply,zero_add,rhsLinear_apply]
   constructor
   · intro h
     have h0 := congrFun h 0
@@ -180,28 +198,28 @@ theorem solvable_iff (p : Permissions) (v : Values) :
     have hv := h.2.2 (by simpa [c_mem] using hc)
     change a 2 = 0 at hz
     change a 3 = 0 at hv
-    have hx : a 0 = v false := by simpa [parameters,hz] using h.1.1
-    have hy : a 0 = v true := by simpa [parameters,hz,hv] using h.1.2
+    have hx : a 0 = v false := by simpa [parameters_u,parameters_z,hz] using h.1.1
+    have hy : a 0 = v true := by simpa [parameters_u,parameters_z,parameters_v,hz,hv] using h.1.2
     exact Or.inl (hy.symm.trans hx)
   · rintro (he | hb | hc)
     · refine ⟨![v false,0,0,0],?_⟩
       rw [differential_apply]
       ext i
-      fin_cases i <;> simp [affineRhs,rhsLinear_apply,he]
+      fin_cases i <;> simp [affineRhs_apply,rhsLinear_apply,he]
     · let u := 2 * (v false + v true)
       have hchar : ∀ x y : ZMod 3, 2 * (x + y) - (x - 2 * (x + y)) = y := by decide
       refine ⟨![u,0,v false - u,0],?_⟩
       rw [differential_apply]
       ext i
       fin_cases i
-      · simp [affineRhs,rhsLinear_apply]
-      · simpa [affineRhs,rhsLinear_apply,u] using hchar (v false) (v true)
-      · simp [hb,affineRhs,rhsLinear_apply]
-      · simp [affineRhs,rhsLinear_apply]
+      · simp [affineRhs_apply,rhsLinear_apply]
+      · simpa [affineRhs_apply,rhsLinear_apply,u] using hchar (v false) (v true)
+      · simp [hb,affineRhs_apply,rhsLinear_apply]
+      · simp [affineRhs_apply,rhsLinear_apply]
     · refine ⟨![v false,0,0,v true - v false],?_⟩
       rw [differential_apply]
       ext i
-      fin_cases i <;> simp [hc,affineRhs,rhsLinear_apply]
+      fin_cases i <;> simp [hc,affineRhs_apply,rhsLinear_apply]
 
 /-- The residual native cokernel detects exactly the same full original feasibility. -/
 theorem residual_kernel_iff (p : Permissions) (v : Values) :
@@ -209,7 +227,8 @@ theorem residual_kernel_iff (p : Permissions) (v : Values) :
       v true = v false ∨ p false = true ∨ p true = true := by
   change (LinearMap.range (differential p)).mkQ (rhsLinear v) = 0 ↔ _
   have h : (∃ a, differential p a = rhsLinear v) ↔
-      Solvable (differential p) (affineRhs rhsLinear 0) v := by simp only [Solvable,affineRhs,zero_add]
+      Solvable (differential p) (affineRhs rhsLinear 0) v := by
+    simp only [solvable_iff_exists,affineRhs_apply,zero_add]
   exact (Submodule.Quotient.mk_eq_zero (LinearMap.range (differential p))).trans
     (h.trans (solvable_iff p v))
 
@@ -244,7 +263,7 @@ theorem private_values (p : Permissions) (r : ZMod 3) :
     differential p ![0,r,0,0] = affineRhs rhsLinear 0 (0 : Values) := by
   rw [differential_apply]
   ext i
-  fin_cases i <;> simp [affineRhs,rhsLinear_apply]
+  fin_cases i <;> simp [affineRhs_apply,rhsLinear_apply]
 
 /-- The original empty mask rejects the actual nonzero ry input, but either original single candidate permits it. -/
 theorem permission_examples :

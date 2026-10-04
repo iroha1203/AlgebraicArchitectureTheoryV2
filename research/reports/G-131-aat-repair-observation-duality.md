@@ -1183,3 +1183,330 @@ audits:
 変更した三 source の exact prefix だけを再検証し、全153公開宣言の個別公理記録を更新した。
 追加八補題と変更箇所は exit 0、warning なし、標準公理のみ。残る九 source/raw は同一 bytes。
 直接対応の資格・finding 解消と新 head の CI は PR 監査に固定し、今回の差分だけで全体完了としない。
+
+## C11 selection：同じ F2 四辺 K+ の数値補正と零回参照式
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 11
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: 8241bddce433837dbea9d76003aff851600dd616
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "C10受理 PR #5227 / Issue #5133 comment5973223904"
+  proof_dag_predecessors: ["C1–C10", "G-130 NativeAffine全操作/全核/微分/独立実修復対応"]
+  milestone: "G-131 E 最後の四辺 K+ 指定要求を同じ原始入力から放電"
+  proof_obligations: ["二頂点・四辺 e/a/b/c・二面 e=aとce=b・固定a/b・候補cの構成", "全F2二値の物理実現とa(0)/b(0)の全実評価", "同じnative微分/負defectからu=b1,u+z=b2と全補正/独立実修復の往復", "候補c許可時の全数値出力の2回adaptive最適値と有限達成/元実復元", "値取得なしに参照/逆/合成ASTを生成してe:=a,c:=b∘a⁻¹を零回出力", "両言語が同じ元二面の実等号を満たす"]
+  exit_criteria: ["元四辺と型付き面/固定/candidate/全核を保持", "全実入力・全パラメータの実現と原始評価", "同じ実方程式/全数値補正とG130による元native実修復", "数値2回の下限・停止正答達成・全値復元", "同じ実操作の参照式生成と零回/両面の実等号", "非空虚性/正負述語・全宣言個別公理と共通scan"]
+  selection_reason: "Eの残る出力言語差を同じ実修復とC/Dへ接続し、A–E最終累積判定の候補へ進める"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["RepairObservationDuality/KPlusInput.lean", "KPlus full actual/native coordinates and numerical/reference queries"]
+  risks: ["三辺W5の候補なし分類を四辺K+へ直接適用しない", "参照式を具体数値値へ混入しない", "四辺の全実操作/二面を保持", "原始問い合わせ以外から未知値をcontrollerへ渡さない"]
+  unchecked: ["K+構成・検証・独立PR査読", "別の最終A–E累積四本照合"]
+```
+
+C11 の終了条件を実装前に固定した。W5 の候補なし `global_iff` は使用せず、
+n1017 §5.3 と再利用表 §4 の同じ四辺表示を構成する。
+C10 までの証拠は受理済みで、今回の選定は E の残義務全体を扱う。
+
+## C11 result proposal：四辺 K+ の全数値2回と同じ両面の参照式0回
+
+n1017 §5.3 の二頂点 s/t、四辺 e/a/b:s→t と c:t→t、二面 e=a と ce=b を
+`KPlusInput.geometry` に保持した。固定部分は全頂点と a/b、候補は元の c のみ。
+常時辺 e と候補 c を許した場合を扱う。三辺 W5 の `global_iff` は使用していない。
+全物理入力は a/b の全 native affine projection kernel の対であり、値は実操作の零点評価。
+`values_realize` と `realize_values` により全 F2² の実現と全物理入力の両方向を証明した。
+
+`KPlusActualRepairs.RealRepairs` は既存の独立な native affine repair 型をそのまま用いる。
+元四操作・元線形成分・元二面・固定 a/b によって定義した後、修復の e/c 零点から u/z を読む。
+`coordinates_operations` は元四操作の全一致、`actualCoordinatesEquiv` は全数値解との両方向、
+`nativeCoordinatesEquiv` は G-130 の同じ元 categorical repair への両方向を与える。
+
+`KPlusNativeEquation` は元二頂点の**全核**を全 F2 に線形同定し、完全な基底を構成した。
+固定補正を課す前の native d1 は e−a と e+c−b。固定 a/b を零にした全 cochain を u/z で構成し、
+逆に任意の全 native cochain がこの構成に戻ることを証明した。
+同じ元実経路の負 defect は (b₁,b₂) であり、生成する D は (u,u+z)、b0=0、B=I。
+二行の行列はこの同じ全微分から値取得前に生成する。
+`restore_native_real` と `restore_native_correction` は元実操作と全四辺補正の一致を保持する。
+
+`KPlusNumericalQueries` は一般 C の replay 下限と C9 の有限生成を適用する。
+全方向から選ぶ finite argmin の最小集合は二原始 index、全停止正答 adaptive controller の最適値も二回。
+controller に渡すのは既知の構造と履歴だけで、有限 visible reader と G-130 の generated section が
+全 u/z の値を返す。`answer_exists` は全物理入力で実際に some h が得られることを証明する。
+その h は同じ元実修復へ戻り、`restoreAnswer_values` が全数値値の保存を確認する。
+
+`KPlusReferencePrograms` の出力は原始 a/b の `ref`、`inverse`、`compose` だけを含む有限 AST。
+数値定数・後続原始問い合わせ・未知値の thunk を補正値に混ぜていない。
+入力値によらず `e:=a,c:=b∘a⁻¹` の AST を構成し、同じ物理 a/b を解釈に用いる。
+独立な `ValidProgram` は元二面の全操作等号そのもので、`program_valid` は全物理入力で両面を証明する。
+`restore` は同じ元四操作・元線形部・固定 a/b の actual repair を返す。
+構成した controller は全 physical input で停止・正答し空 trace を持ち、その worst と全正答 adaptive controller の optimum が零であることを `correct/run/worst_zero/optimum_zero` が証明する。
+数値と参照の fiber は同じ全入力 (`physical_fiber`) で、`same_faces` と `optimum_difference` によって
+同じ二面の実等号と出力言語別の二回／零回を対応させた。
+
+### C11 material premise と proof-use
+
+| premise | role / provenance / proof-use |
+| --- | --- |
+| 同じ二頂点・四原始辺・二面・固定 a/b・元候補 c | discharge-required、`geometry/fixedRegion/candidates/edge_partition/candidate_not_fixed` で構成。実経路、全 native d1、復元、両出力へ使用 |
+| 全原始物理入力、全値の実現、全実評価 | discharge-required、`Inputs/values/realize/values_realize/realize_values/original_evaluation`。一般 optimum の全入力・識別不能下限、全 actual Correct/Run へ使用 |
+| 全核・核輸送・基底・元線形成分・二面の projected 一致 | discharge-required、G-130 の native whole kernel と `reference_linear/linear_faces/kernelCoordinate/bases/basis_value`。同じ native equation と全復元に使用 |
+| 原始 word から全微分、負 defect、B=I、全数値解との両方向 | discharge-required、`native_first/native_second/signed_defect/full_cochain/original_differential/equation_iff/actualCoordinatesEquiv/nativeCoordinatesEquiv`。有限行列、replay 最適値、同じ実修復へ使用 |
+| 全数値 output・有限最小 plan・visible 取得・生成 section・停止正答 | discharge-required、`sufficient/minimum_two/plan_points/points_card/correct/run/answer_exists/optimal/restoreAnswer_values`。未知の物理値を next に渡さない |
+| 参照 AST・逆と合成・同じ元実面・停止と最適零回 | discharge-required、`Expression/Program/program/interpret/valid_iff/program_valid/restore/correct/run/optimum_zero/same_faces`。値取得なしの syntax 生成から解釈と元操作の両面へ使用 |
+| 正しい数値 h / 正しい参照 p を復元 API に渡す条件 | direction-hypothesis。一般復元 API の入力であり、全入力 controller の正答は上の構成から別に放電 |
+| G-130 native 操作・核・修復同値、一般 C と C9 の有限構成 | 受理済み依存の同じ signature・引数・現在 source を読む。全候補 secondQuotient や W5 の入力を四辺へ読み替えない |
+| 新規独立数値／参照述語の非空虚性 | `equations_examples` と `program_examples`。それぞれ同じ物理 input に正例と負例を与え、構文が許されただけで ValidProgram を通さない |
+
+### C11 検証証拠
+
+5 source の非aggregate focused checks と exact source-prefix の全個別 `#print axioms` が exit 0、warning なし。
+明示公開宣言160件と AST の生成公開宣言65件、計225件すべてで、依存公理は標準三公理以内。
+各 source の末尾 `#assert_standard_axioms_only` も全現在 module の公開宣言を検査する。
+Research 全体 build、全 file elaboration loop、ローカル Formal フル build は実行していない。
+公理 audit の各 command は `cd research/lean && lake env lean .tmp/G131Cycle11/<Stem>Audit.lean`、
+同名 source の全内容を prefix とし、その現在 module の全個別公理出力を raw 記録へ保持する。
+次表は source と stdout+stderr の SHA256。AST の全生成宣言も個別出力に含めた。
+
+| source | 個別公理件数 | source SHA256 | raw SHA256 |
+| --- | --- | --- | --- |
+| `KPlusInput.lean` | 47 | `2c51fb3a4a3f44dc038a51da023a9c632a6795d1d31d65a1429c37e40805445d` | `a7f13a7754db9707849ff4dd80c4f655d6704f06395b2395aa244279c516409b` |
+| `KPlusActualRepairs.lean` | 32 | `10bead39d757b4a2add273894fe025b494cc5f4460e1c6e9fce994b49b1ebc93` | `c70f91f7ad696ca97c8df870674f6059bc32d12af1432eb1d31d523fa85adfb6` |
+| `KPlusNativeEquation.lean` | 28 | `a1f96652efe05730a036237b509c91108f71e06ed3ff0f467b4c12a62251f053` | `4455de0a204fc5336d3559cbd668935d6467e7a2db0402a0cc8fcc14ecbda035` |
+| `KPlusNumericalQueries.lean` | 22 | `ec6497fa0ddd5ed4522d18fb2c16fbe6f6cdebcff5a25e408fe50bd69b1e40c7` | `5c51ce15beab029c1ba5ab016b4f3d3c90760f6f82f19164d441c1feed816ff1` |
+| `KPlusReferencePrograms.lean` | 96 | `e6e3cd0394214aa591f2137be17dac759de92ac34b38df91e06c1d30a77a687d` | `87f27097397f1e2cb93c8da5417656a3cb058687f43dae660dd47aef6f1d5181` |
+
+共通 scan は `git diff --check`、変更七 artifact の hidden/bidi、placeholder、privacy/local path、
+Formal→Research import 方向を確認する。標準独立 PR 査読・root acceptance・必要 CI と
+その後の**別の**全 A–E 累積四本査読は PR 上の固定 head 記録で確定する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Eの同じF2四辺K+を構成し、全数値2回の下限/有限達成/全実復元と、原始参照/逆/合成ASTの零回/同じ両実面へ接続"
+  exit_criteria_status: ["同じ原始四辺/二面/固定/candidate", "全物理入力・全F2二値実現・実評価", "全native核/基底と元全d1/負defect/全数値往復", "全adaptive数値2回と有限停止正答達成/全値・実復元", "値に依存しないAST生成/零回最適/元両面", "正負述語と全225個別公理clean"]
+  split_reason: none
+  completion_candidate: yes
+  lean_artifacts: [KPlusInput.lean, KPlusActualRepairs.lean, KPlusNativeEquation.lean, KPlusNumericalQueries.lean, KPlusReferencePrograms.lean]
+  evidence: [values_realize, realize_values, original_evaluation, coordinates_operations, actualCoordinatesEquiv, nativeCoordinatesEquiv, full_cochain, native_first, native_second, signed_defect, original_differential, equation_iff, restore_native_correction, numerical_cost, physical_cost, plan_points, points_card, correct, run, answer_exists, optimal, restoreAnswer_values, program_valid, program_examples, optimum_zero, same_faces, optimum_difference]
+  claim_mapping:
+    source_labels: ["G-131 E最後のF2 K+", "n1017 §5.3", "再利用map §4"]
+    conjuncts: ["同じ原始操作/全実現/評価", "候補c許可と全補正", "同じ元native方程式/全値/実復元", "数値2回の全適応下限と有限達成", "零回参照ASTと全元両面等号"]
+    undischarged_assumptions: []
+    acceptance_point: "指定Eの最後の構成義務を同じ元実修復と一般C/Dへ適用する到達点。最終累積判定は別gate"
+    port_status: unported
+  remaining_proof_obligations: ["標準PR review/root acceptance/CI", "同じfixed GOALへの別の全A–E最終四本判定"]
+audits:
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "標準PR gateの後、固定headで最終packetと別の累積四本査読を実行"
+```
+
+現在の全体判定は `target-proof-checkpoint`。completion candidate は査読前の提案であり、
+四本すべてと統合判定が `No major findings`、全共通 gate が pass になるまで全体完了にしない。
+
+## 最終 A–E 累積照合の対応（C11 completion candidate）
+
+固定 target は active commit `dbed043cb514e8c964589d2e12e982750c87ae83` の GOAL blob
+`054fea81b916c4d4a470b74af3e13c6cc5dde01c`。現在カード blob
+`61ba46c3af2266cbaafcc2a1f00137b9b08299c9` の変更は設計リンクだけで、target A–E は同じ。
+同じ fixed commit の target theorem loop / acceptance / completion ledger / math-lean-review / 共有検査基準を
+読み、現行適用版が同内容であることを照合する。n1017 の SHA256 は
+`5eb80b86b932abc5ca923166f879e29473dcbe38c172b57e55326a134841b996`。
+
+| target / 完了条件 | 累積実体の接続（各詳細・前提・方向・使用先は上の cycle 節） |
+| --- | --- |
+| A：同じ原始入力族・全S・負defect・D_S・q_S・元実修復 | C3 `SelectedCokernel/NativeCorrectionEquation` の任意S商・同じ面代表元・元独立修復。C4–5 `RelativeAffineDefect/PrimitiveAffineDefect/ActualAffineFamily/CoefficientTransport/PrimitiveAffineTower` で全元族から実合成、同じnative微分/defect、全realization/actual predicateへ。全候補商で任意Sを代用しない |
+| A：全核の基底座標・禁止候補・実復元・局所記号的関係 | C6 `EquationCoordinates/FullCorrectionCoordinates/ActualFamilyCoordinates/ActualFamilyInterfaces`、C9 `FiniteFullCoordinates/ActualFinitePlanning`。全元terminal核・全always/selected値・元名・禁止値零・同じ元実修復を保持。global↔generated local relationの両方向 |
+| B：観測fiber/核/annihilator/quotient dualと像 | C1 `FiberSufficiency`、C7 `LinearObservationDuality/ActualObservationPredicate`。同じq_SBと元実修復の平行移動から、factorization↔kernel inclusion↔span、full quotient dualとq_SBの像へ接続 |
+| B：G-128作用・点・原始評価・回数・全適応最適値 | C7 `AdditiveObservationAction/PrimitiveReplyTranslation/PointQuerySimulation/ActualObservationPredicate`。全点(j,a)の既知平行移動と原始点(j,0)、stabilizer、元repair predicate、同じ繰返しを含むtrace/cost、有限minimum/∞/全不能0を対応 |
+| C：一般非空情報fiber・判定と全数値出力十分性 | C1 `FiberSufficiency` の二つの同観測入力/独立Solvable/ValidOutput、C2 `PrimitiveQueries/QueryOptimum` の同じ全RHS。一つのhが異なるRHSを同時に解かないことをreplayに使用 |
+| C：線形既知L/s・全停止正答adaptive・minimum/∞/全不能0・達成 | C2 `QueryOptimum` と C6 `PrimitiveInputQueries/ActualFamilyCoordinates`。direction witnessを全実現へ戻し、同じprimitive評価/元fullcoords、決定と数値の全procedure optimum、再問い合わせも1回を保持 |
+| D：同じ元O/R_S不能評価・元候補支持・観測からの取得 | C8 `ResidualDualWitness/ActualDualWitness/DualValueAcquisition`、C9 `FiniteDualAcquisition`。同じ面代表元・元column名・非零障害・pullback ell q_S(b0+Bv) のknown contribution、restricted spanと取得の両方向 |
+| D：値取得前の有限symbolic生成・最小計画・visible取得・全求解・元実復元 | C9 `FiniteMinimumPlan/FinitePrimitiveProcedure/FiniteObservedValues/FiniteMatrixSolver/FiniteRepairPlanning/FiniteCoordinatePlanning/ActualFinitePlanning`。全有限入力/field/index/basisを列挙してargmin/sectionを生成、全出力・停止・正答・費用・元修復を接続 |
+| D：十分集合なし・識別不能実入力・更新後の追加観測 | C9 `FinitePlanningFailures/FinitePlanningBranches/ActualFinitePlanning/UpdatedPlanning`、C8 `KnownValueUpdates`。成功基準点と同観測失敗実入力、全不能0、保持/通知L/sを生成し同じsymbolic dataを再利用 |
+| E：同じF3 W1全入力・原始評価・元全(u,h,z,v)・全表・受領関係 | C10 `W1PhysicalInputs/W1NumericalEquation/W1ObservationCosts/W1GeneratedNumericalPlan/W1GeneratedDecisionPlan/W1ReceivedRelations`。全四S、全x/y、全known regime、全adaptive下限と有限達成、actual全復元。hを捨てない |
+| E：W1更新1/0・全split値・同じrx/ry回数・不能rx-only pair | C10 `W1UpdatedQueries/W1SubdivisionQueries/W1SubdivisionValues/W1RestrictedQueries/W1DualQueries`。任意既知rの全(u,z,v,alpha,beta)、元/分割の任意独立実修復・全値往復、両方向trace/cost、同じ(0,0)/(0,1)のactual不能 |
+| E：同じF2四辺K+数値2・原始参照AST0・同じ実両面 | C11上記5source。全物理入力/実現/評価、全native補正/元式/全値復元、C/D数値最適2、値非依存有限syntax生成/全physical参照最適0、same_faces |
+| 完了条件1–4 | 上の同じ族/式/primitive/actual predicate全接続、E全ケースの一般A–Dへの適用、十分集合なし/全不能、Research sourceとreport前提/proof-use/有限停止対応。最後に固定headの標準PR gateと別の累積四本gateで判定し、PR/Issueへ同期 |
+
+C1–C10 の受理結果は実装者の全体完了申告として採用しない。
+最終査読は固定 GOAL と**現在の累積 source / declaration / 各 raw 公理記録**を直接読む。
+現在55 source の747明示公開宣言すべてに個別公理出力を対応させた。
+C11 AST の65生成公開宣言も追加で全個別出力を保持する。
+初期 C3 の raw が local scratch に残っていなかった二 source と、後で API が追加された
+`FiberSufficiency/PrimitiveQueries/QueryOptimum` の三 source は、全 current exact-prefix 個別 audit で
+不足を補った。他は受理記録の exact current source-prefix/raw bytes を照合した。
+これは五つの必要な単一 file checks であり、Research全体または全55fileのelaboration loopではない。
+全 module の path/source hash・全明示宣言名・個別raw/output hash・対応source-prefixを最終packetに対応させ、
+欠落・中心未確認・head/hash不一致があれば completion不可とする。
+
+Research上の目標証明と本体への蒸留は区別する。今回の固定GOALが指定する成果先はResearchであり、
+`Formal/`への移植は実行していない。G-130とG-131の本体移植状態は引き続き `unported`。
+``/goal``用の専用実行機構はこの環境に公開されていないため、同じskillの実装・査読・完了・停止規則を
+直接実行している。この制限を未実行の専用機構として記録し、GOALの数学targetは変更しない。
+
+
+## C11 最終累積 gate 初回の品質指摘と修正
+
+固定 head `5a98d617e84f71350dce6251c7b41f18f2b8d3c4` の最終累積査読は、数学A/B・LeanBが
+`No major findings`、LeanAが非中心の no-unfold 指摘一件により `Minor issues`。
+全四本の結果を集め、[初回最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974043959)
+へ記録した。中心未確認・未放電・弱化は検出されなかったが、最終判定は `target-proof-checkpoint`。
+停止条件には該当していない。
+
+指摘対象の `W1NumericalEquation/QueryOptimum/W1SubdivisionQueries` の下流証明を
+既存 `affineRhs_apply` に接続し、`FiberSufficiency.solvable_iff_exists` を定義直後の
+存在特徴づけ API として追加して同じ可解性の証明に用いる。
+既存 statement、def/instance の値、対象入力、最適値、宣言の削除、import は変更しない。
+新規 API は `Solvable D rhs v ↔ ∃ h, D h = rhs v` の基本正規化のみで、数学的な仮定を加えない。
+現在の累積は55 source・747明示公開名とK+ AST生成65名で812個別名となる。
+旧 cycle の hash・判定はその固定版の履歴として保持し、current prefix/hash/rawは新しい最終packetで固定する。
+修正四 source と新規APIのfocused check・個別公理出力・scan、修正headの標準PR再監査・必要CIを通し、
+その後に別の新規四本で全A–E最終gateを再実行する。最終gateの指摘に直接対応を適用しない。
+
+変更四 source の actual/prefix focused checks はすべて exit0、warning/errorなし。
+
+| source | 個別名 | current source SHA256 | raw SHA256 |
+| --- | --- | --- | --- |
+| `FiberSufficiency.lean` | 29 | `3dbd8fe494245c8575ca97a2553fd28141120cf49ba707ae273315672a5f75cb` | `9e7ac62b15a1088a33b184f5ae541a8cbfd97a31c280f6ca0788d1a25f0fa5be` |
+| `QueryOptimum.lean` | 29 | `e113e114454ffabde5c151491ef81b5a2d2596ff84d0b5834bf272cf15c50ad9` | `635833d276afd2b2a2530fdcce6873006df6d4cb75dd5753103c4b630c6b0d32` |
+| `W1NumericalEquation.lean` | 29 | `9056d8268ccebcca66bba4b379198ff8c31c9c086747c39d66594e8f8bc61c21` | `d3a0fb07a6220c27fe799e5e210e322b4397a26fa09c7571b38e6dccc754ab55` |
+| `W1SubdivisionQueries.lean` | 28 | `e3270fbb87cefdc06f9e92df3e10b5c466257951e8946463446ea0ac9de96357` | `3a32a8fd82a34e09459b96a4ce02c035c7f39a0f1d9ebaaade378e61167821eb` |
+
+
+## C11 標準PR第二ラウンドの非中心指摘と直接対応
+
+固定head `066286de41b040bcb0bc7a133f1aad33aa840503` の標準PR第二ラウンドは、数学A/Bが
+`No major findings`、LeanA/Bがそれぞれ非中心一件で `Minor issues`。
+全四本を収集し、[第二ラウンド監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974251823)に
+中心0・非中心2として記録した。通常PRの品質指摘で、停止条件には該当していない。
+
+LeanAが名指しした `KPlusNativeEquation/KPlusNumericalQueries/KPlusReferencePrograms` の
+module docstringだけに Implementation notes と採用理由・退けた代案を補った。
+LeanBが名指しした `W1NumericalEquation.original_rhs` の proof 一行を既存 `rhsLinear_apply` へ接続した。
+宣言追加・削除、既存statement、def/instanceの本体・値、import方向、台帳statusは変更しない。
+この通常PRの非中心修正は共有protocolの直接対応で新規単一subagentに資格と実解消を確認させる。
+合格後、別の新規最終四本で全A–Eを再判定する。最終gateの指摘に直接対応は適用しない。
+
+四sourceのcurrent exact-prefix audit（`research/lean` cwd の
+`lake env lean .tmp/G131Cycle11/<Stem>Audit.lean`）を各一つずつ実行し、全exit0・warning/errorなし。
+Stemは KPlusNativeEquation/KPlusNumericalQueries/KPlusReferencePrograms/W1NumericalEquationFinalFix。
+175個別公開名に欠落なし・標準公理のみ。数学的な宣言・値は不変で、累積812個別名を保持する。
+
+| source | 個別名 | current source SHA256 | raw SHA256 |
+| --- | --- | --- | --- |
+| `KPlusNativeEquation.lean` | 28 | `4c039f4828f44b2e1ea7c3e46c15425a38c6a4e17c00792c7ebed27453cf65b2` | `4455de0a204fc5336d3559cbd668935d6467e7a2db0402a0cc8fcc14ecbda035` |
+| `KPlusNumericalQueries.lean` | 22 | `9b3fc762bf654a555a59f484e65f6bf261c0fa4731c9f3cb8091dc5601aa9f2f` | `5c51ce15beab029c1ba5ab016b4f3d3c90760f6f82f19164d441c1feed816ff1` |
+| `KPlusReferencePrograms.lean` | 96 | `ad20b1746a8911febee37bcbd9589d5c20157bb6df1c6dde2e5229093a951c14` | `87f27097397f1e2cb93c8da5417656a3cb058687f43dae660dd47aef6f1d5181` |
+| `W1NumericalEquation.lean` | 29 | `3e4a94803d6f69efcd5e761e083cb0d4eb4a66200d5dd5a9d9a7daf583c569bb` | `d3a0fb07a6220c27fe799e5e210e322b4397a26fa09c7571b38e6dccc754ab55` |
+
+## C11 最終累積 gate 第三回の行評価 API 指摘と修正
+
+固定head `3aa3f4904fcebeb195e5eae6dec40ef574852510` の最終累積第三回は、数学A/B・LeanAが
+`No major findings`、LeanBが非中心一件により `Minor issues`。
+全四本を収集した [第三回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974698277)に
+全A–E・完了条件・全前提・個別公理・反証と実行制限を記録した。中心未放電は検出されなかったが、
+全体は `target-proof-checkpoint`。packetの747明示＋65生成＝812個別名の表示は同期済み。
+
+名指しされた `W1NumericalEquation.original_differential` の二proof箇所だけを、
+既存 `differential_apply` の行評価 API へ接続した。
+元座標の `correctionValue` 評価は同じ六辺の原始補正を読む比較 API の内部であり、
+元微分・二面・全補正値の statement、定義値、引数、宣言数、import、台帳statusは変更しない。
+通常PRの対象限定非中心修正として、新規単一の確認で資格と実解消を検査する。
+その合格・root acceptance・必要CIの後、修正headの別packetを用いて全A–Eを新規四本で
+正式最終査読する。最終gateの判定を直接対応だけで更新しない。
+
+current source SHA256は `506237d8085225eb8e27d05a35a77286d6f4f6e0540c7200cbfed9752f23e204`。
+必要検証は同source actual checkと現在全文prefixの
+`lake env lean .tmp/G131Cycle11/W1NumericalEquationFinal4Audit.lean` の単一checksと全29個別公理。
+未実行や終了未回収を成功として記録しない。現在source/prefix/rawの対応と終了結果は
+固定headのPR監査と次のfinal packetで確定する。Research full buildは実行しない。
+
+### 行評価修正確認で記録された scalar API の整備
+
+head `79e9908ca5b736acb424a0411a28d941fcf8790c` の新規単一直接確認は、
+名指し行評価findingの解消と直接対応資格を確認した。
+[確認記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974755114)には、
+対象外で気づいた imported `correctionValue` のscalar評価API不足を非中心事項として区別して残した。
+これは通常PRの元finding解消やmerge可否を覆す中心事項ではない。
+
+最終正式gate前に、確認者が名指しした `correctionValue_e/b/c` の基本評価APIを
+G-131の `W1NumericalEquation` に追加し、同じ元微分比較の二proofをこのAPIへ接続した。
+G-130の受理済みsourceを変更せず、既存statement、def/instance値、元操作、全核、
+全出力、import方向、台帳statusを保持する。追加三補題は原始scalar構成の基本正規化であり、
+追加仮定なし。現在W1NumericalEquationは32個別名、全累積は55source/750明示＋65生成＝815名。
+
+source SHA256は `678907dc35d3acc87f568fc25b174395169efa29f543924d6fe16e9cffbe1f45`。
+同source actual checkはexit0、32宣言の標準公理summaryのみ。
+現在全文prefixの `lake env lean .tmp/G131Cycle11/W1NumericalEquationScalarAudit.lean` と
+全32個別公理、対象限定の新規資格確認、必要CIを固定headのPR監査へ対応させる。
+同headの別packetと新規正式最終四本で全A–Eを判定するまで、全体はcheckpointを維持する。
+
+### 同じ比較 proof の基本投影 API への接続
+
+head `40a9555e3ba64cbf562c3c450940ac88f3c424ce` の新規単一確認は scalar finding の解消と
+直接対応資格1–4を確認した。
+[確認記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974814699)の
+対象外非中心事項は、同じ二proofの `name/geometry` 展開指定だった。
+指定だけの除去では `(name e).2.2 = e` の投影が残ったため、確認者が名指しした
+基本投影 API `name_value` を追加し、二箇所をこの API と既存
+`differential_apply/correctionValue_e/b/c` へ接続した。既存signature、def/instance値、
+import、台帳statusを保持する。追加補題は原始name構成の基本投影であり、追加仮定なし。
+現在W1NumericalEquationは33個別名、全累積は55source/751明示＋65生成＝816個別名。
+
+current source SHA256は `61e4ecc24c5062440b0e91ffe4890edda73e8038d24570e85c29ea38084bc199`。
+同source actual checkはexit0、33宣言の標準公理summaryのみ。必要prefix検証は
+`lake env lean .tmp/G131Cycle11/W1NumericalEquationProjectionAudit.lean`。
+終了結果・33個別公理・対象限定新規確認・必要CI・root acceptanceをPRで固定してから、
+別packetと新規正式最終四本へ進む。完了判定をこの直接確認だけで更新しない。
+
+## C11 最終累積 gate 第四回の API と代表監査の修正
+
+head `f57c744454ed695a62e068b806141652041aa381` の全四本を収集した
+[第四回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5975060125)は、
+数学A/B・LeanAが `No major findings`、LeanBが非中心三件により `Minor issues`。
+全A–E・全前提・個別公理の中心未確認は空だが、正式完了判定はcheckpointを維持する。
+
+LB-1の `W1SubdivisionValues.restore_values` 三分岐を既存
+`correctionValue_e/b/c/name_value` へ接続し、LB-2の
+`W1NumericalEquation.solvable_iff` 二箇所を既存 `parameters_u/z/v` へ接続した。
+既存statement・全五分割値・全可解性・def/instance値・import・宣言数・台帳statusは不変。
+両sourceのactual checkと現在全文prefixの単一 `Final5Audit.lean` checksは各exit0、
+warning/errorなし、33名＋9名の個別公理は標準のみで前版rawとbyte同一。
+
+| source | current source SHA256 | current raw SHA256 |
+| --- | --- | --- |
+| `W1NumericalEquation.lean` | `a0e98868dbc579eaaf1179168ba475e598a982c1827ee45efff10c73776cc2c8` | `4223fb351585c1839c46526fbed367327f7c94a2751dc2666561903ae2ffb8fe` |
+| `W1SubdivisionValues.lean` | `c75c92579ec8144c859348a64f640dcb2acf10046f900c73035f205e85bd2323` | `f27a4822ccab92bfbb61ef3dc6352ea3360e408a006db1aeb43f0cedb73a522a` |
+
+LB-3の `PrimitiveQueries` 代表監査は、同じcurrent source全文prefixから全30qualified名を
+個別printした保存監査へ統一する。audit SHA256は
+`c8232c3742355e7787dbe0cab6a9d31070d5a96471cd940a16618b9d6a10f8ce`、raw SHA256は
+`164ffd7b7a8254c83cc919ecb3d3354ae71c43223965323b5d1d1509b529a411`。
+以前の個別manifestと公開rawにも全名は存在し、宣言の削除や公理監査の省略で解消していない。
+全55source/751明示＋AST65＝816個別名は不変。対象限定の新規資格確認・必要CI・root acceptance後、
+修正headの別packetから新規正式四本で全累積を再判定する。Research full buildは実行しない。
+
+## C11 最終累積 gate 第五回の C9 依存名補足
+
+固定 head `6a948d87122363e3ad47cc761e847f6cd072aefe` の
+[第五回統合監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5975310963)は、
+数学 A/B・Lean A が `No major findings`、Lean B が非中心一件の `Minor issues`。
+C9 selection の `proof_dag_predecessors` に記した `decision_optimum_eq` と
+`numerical_optimum_eq` は、実在する exact declaration
+`AAT.AG.RepairObservationDuality.decision_optimum` と
+`AAT.AG.RepairObservationDuality.numerical_optimum` をそれぞれ指す。
+C9 base `7e45cecd592f4831613ee0e851a61dab41bd0268` と現在版の
+`QueryOptimum.lean` はこの exact 名を持ち、C2 の受理証拠、C9 の実証明、
+現在の宣言・公理 mapping も同じ名を使う。旧 selection は記録として保存する。
+修正はこの対応補足だけであり、Lean source・全751明示名と65生成名・
+固定 target・仮定・proof-use は不変。全体は新しい四本の正式最終査読前の
+`target-proof-checkpoint` とし、完了判定を直接確認一件で更新しない。

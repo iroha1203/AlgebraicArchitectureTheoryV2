@@ -84,7 +84,7 @@ theorem valid_examples (p : Permissions) :
       ((valid_extend_iff p 0 0 (some ![1,0,0,0])).mp hb)
     have h0 := congrFun he 0
     rw [differential_apply] at h0
-    exact (one_ne_zero : (1 : ZMod 3) ≠ 0) (by simpa only [affineRhs,zero_add,rhsLinear_apply,
+    exact (one_ne_zero : (1 : ZMod 3) ≠ 0) (by simpa only [affineRhs_apply,zero_add,rhsLinear_apply,
       Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_two,Pi.zero_apply,add_zero] using h0)
 
 /-- Every valid full split tuple constructs an independent actual supported repair of the original split tower. -/
