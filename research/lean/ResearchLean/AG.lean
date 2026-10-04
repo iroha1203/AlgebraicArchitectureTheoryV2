@@ -1016,3 +1016,11 @@ import ResearchLean.AG.VisibleCycleReflection.IntegralVisibleReflection
 import ResearchLean.AG.VisibleCycleReflection.GraphPeriods
 import ResearchLean.AG.VisibleCycleReflection.ActualReflection
 import ResearchLean.AG.VisibleCycleReflection.ActualCounterinput
+
+-- G-132 cycle 4: actual affine state sheaf and gluing
+import ResearchLean.AG.VisibleCycleReflection.AffineTransition
+import ResearchLean.AG.VisibleCycleReflection.AffineFibers
+import ResearchLean.AG.VisibleCycleReflection.AffineStateSheaf
+import ResearchLean.AG.VisibleCycleReflection.ActualStateGluing
+import ResearchLean.AG.VisibleCycleReflection.ActualStateRepair
+import ResearchLean.AG.VisibleCycleReflection.AATStateSheaf
