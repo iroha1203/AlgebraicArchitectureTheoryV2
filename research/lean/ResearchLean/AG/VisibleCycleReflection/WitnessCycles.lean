@@ -10,6 +10,8 @@ The public cycle coefficient and support evaluations preserve the accepted
 owners' definitions. A positive once-through coefficient has plus the original
 primitive basis as its period, complementing the negative orientation already
 proved for the computed failure cycle.
+Recomputing accepted edge and support definitions inside witness proofs was
+rejected in favor of owner evaluation APIs and transport equalities.
 -/
 
 noncomputable section

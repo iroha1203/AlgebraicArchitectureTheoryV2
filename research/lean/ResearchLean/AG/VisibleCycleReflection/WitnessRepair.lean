@@ -11,6 +11,10 @@ sections through the existing inverse normalization. Its actual differential is
 used as the transition, and the original AAT state gluing theorem is applied to
 that explicit correction. These helpers are instantiated with the prescribed
 nonzero chart tables in W1 and W3.
+A graph-coordinate-only correction was rejected because the conclusion concerns
+original coefficient sections. Repeating the large gluing expression in every
+consumer was rejected for elaboration cost; its public Prop retains the full
+original restriction and trivialization formula.
 -/
 
 noncomputable section
@@ -100,6 +104,18 @@ def ActualCorrectedGluing (x : T.ActualLocalData h)
         ((K.aatStateSheaf P (T.actualTarget h) (T.actualTarget_nonempty h) x.transition).carrier.map
           (C.inclusion i).op s)) =
       K.actualChartCoordinates P (T.actualTarget h) (T.actualTarget_nonempty h) (x.localState-n) i
+
+/-- Any actual corrected gluing supplies an original global state and hence zero original obstruction. -/
+theorem actualCorrectedGluing_existing_zero (x : T.ActualLocalData h)
+    (n : letI : TopologicalSpace T.Point := T.actualTopology h
+      ((T.actualPresentation h).faceEmptyCechComplex
+        ((T.actualGeometry h).actualCechCover (T.actualPresentation h)
+          (T.actualTarget h) (T.actualTarget_nonempty h))).Cn 0)
+    (hg : T.ActualCorrectedGluing h x n) : x.existingDescentAdditiveClass = 0 := by
+  letI : TopologicalSpace T.Point := T.actualTopology h
+  obtain ⟨s,_,_⟩ := hg
+  exact ((T.actualGeometry h).existingDescent_zero_iff_aat_global_state
+    (T.actualPresentation h) (T.actualTarget h) (T.actualTarget_nonempty h) x).mpr ⟨s⟩
 
 /-- The explicit p-n sections glue uniquely via the same original AAT chart inclusions and trivializations. -/
 theorem chartDifferenceInput_gluing (b : T.Chart → (T.actualPresentation h).PresentationGroup) :

@@ -1653,7 +1653,7 @@ W1/W3の各gluingは指定されたh/nに特殊化する。型の具体展開に
 | 実アフィン状態層・局所自明化・free transitive係数作用・元p−nの一意gluing・三条件同値 | discharge-required | cycle4。状態層のsheaf conditionは構成から証明し、元係数層の作用と制限へ接続。W1/3は具体correctionを元AAT gluingへ適用 |
 | 不可視非橋辺の元single-edge input、once cycleの元非零period、p-only不変性 | discharge-required | cycle3の実counterinputとp-only invariance。cycle6はcomputed path/cycleへ接続。W2は指定34/input/gamma、W3は元入力のsingle-edge等式を証明 |
 | finite T0 validation・生成graph/visibility/bridge・bounded scan・same-table actual出力 | discharge-required | cycle5のvalidatorとactual decode、cycle6の有限List探索と全row復元、success B1–B3 iff・failure actual意味。Wのruntime/kernelsで適用 |
-| W1–W3の全指定入力と必要結論 | discharge-required | 本cycleの上表、全153明示宣言。元入力はsource/eval/q/R/geometry/targetから作り、desired conclusionをraw fieldへ移さない |
+| W1–W3の全指定入力と必要結論 | discharge-required | 本cycleの上表、全164明示宣言。元入力はsource/eval/q/R/geometry/targetから作り、desired conclusionをraw fieldへ移さない |
 | 結論相当のgluing・vanishing・inclusion-surjectivity・共通代表・全H1実現可能性 | conclusion-equivalent-risk | 新たな入力slotなし。各必要結論は前掲構成・定理・指定例から生成。一般B1は任意の実xi,pを量化 |
 
 ### Cycle 7 result（独立査読前のproposal）
@@ -1662,11 +1662,11 @@ W1/W3の各gluingは指定されたh/nに特殊化する。型の具体展開に
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: 指定W1–W3の原始表と実Alexandrov被覆を生成し全必要結論を同じA–Cへ接続
-  exit_criteria_status: [固定graph/primitive/target/transition保持, 全指定結論の元実入力接続, kernelとruntimeの同表C評価, focusedと全153明示宣言公理と機械scan]
+  exit_criteria_status: [固定graph/primitive/target/transition保持, 全指定結論の元実入力接続, kernelとruntimeの同表C評価, focusedと全164明示宣言公理と機械scan]
   split_reason: none
   completion_candidate: yes
   lean_artifacts: [FiniteIncidenceGeometry.lean, WitnessInputs.lean, WitnessRepair.lean, WitnessCycles.lean, WitnessOne.lean, WitnessTwo.lean, WitnessThree.lean]
-  evidence: [指定全例の元実比較と修復または非零障害, 全153明示宣言print axioms, finite runtime出力]
+  evidence: [指定全例の元実比較と修復または非零障害, 全164明示宣言print axioms, finite runtime出力]
   claim_mapping:
     theorem_names: [table_topology_eq_upper, table_geometry_valid, one_valid, two_valid, three_valid, WitnessOne.all_input_reflection, WitnessOne.actual_h1_nonzero, WitnessOne.no_common_label, WitnessOne.floor_restores_correction, WitnessOne.gluing, WitnessTwo.prescribed_period, WitnessTwo.existing_nonzero, WitnessTwo.checked_failure, WitnessThree.all_input_reflection, WitnessThree.diagnostic_cochain_zero, WitnessThree.gluing]
     source_labels: [W1, W2, W3, T0・A・B・Cの同じ実入力への適用]
@@ -1690,20 +1690,20 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [7新source focused, 153明示宣言print, namespace生成field公理監査, runtime-cycle7, import/package/registry/placeholder/Unicode/privacy/語彙scan]
+  validation_refs: [7新source focused, 164明示宣言print, namespace生成field公理監査, runtime-cycle7, import/package/registry/placeholder/Unicode/privacy/語彙scan]
   blocking_findings: []
   next_obligation: PR正式レビューと独立全GOALcompletion監査、CI、通常merge、Issue最終同期
 ```
 
 ### Cycle 7 検証
 
-対象7fileのfocused elaborationは成功した。追加で既受理G-125の
+対象7fileと名指しされたfloor公開API ownerの計8fileのfocused elaborationは成功した。追加で既受理G-125の
 `SpecifiedClassReflection.lean` だけをtargeted checkし、同じ `CommonLabelChartSupport` の
-実型をW1否定へ使用した。source/明示宣言list/全print実出力の順序・153件・重複なしを照合した。
+実型をW1否定へ使用した。source/明示宣言list/全print実出力の順序・164件・重複なしを照合した。
 自動生成field/constructorも各moduleのnamespace auditで検査する。
 公理は `propext`・`Classical.choice`・`Quot.sound` のみ。
-全153明示宣言print stdout+stderr SHA256:
-`a5271a0f5a97a3b396709ce94d818ae7191904cf6be91ad03ac9b956ae46a84b`。
+全164明示宣言print stdout+stderr SHA256:
+`bd7b5bb6bb1d2c4a520a1b6282926d96b064166476896a13f9848964f3c43608`。
 
 runtime stdout+stderr SHA256:
 `b30c750156950ba24f178f24bb0afb9b115a0c9cf87ea5985c2f8c505a3b9f8b`。
@@ -1725,7 +1725,7 @@ Formal移植はunported。CIのFormal全体buildとResearch証明・focused検�
 
 ### Cycle 7 明示宣言spine
 
-7新sourceの全153明示宣言を以下へ固定する。生成fieldもnamespace監査の対象である。
+7新sourceと既存floor定義ownerの名指しされた公開評価API、計164明示宣言を以下へ固定する。生成fieldもnamespace監査の対象である。
 
 ```text
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry
@@ -1740,9 +1740,13 @@ AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.vertexPoint_injective
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.edgePoint_injective
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.vertexPoint_ne_edgePoint
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.Below
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.incident_iff_endpoints
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.below_vertex_edge
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.not_below_edge_vertex
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.order
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.UpClosed
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.upClosedDecidable
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.singleton_not_upClosed
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.opens
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.mem_opens
 AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.upperTopology
@@ -1778,6 +1782,10 @@ AAT.AG.VisibleCycleReflection.WitnessInputs.targetThree
 AAT.AG.VisibleCycleReflection.WitnessInputs.one
 AAT.AG.VisibleCycleReflection.WitnessInputs.two
 AAT.AG.VisibleCycleReflection.WitnessInputs.three
+AAT.AG.VisibleCycleReflection.WitnessInputs.one_target_three
+AAT.AG.VisibleCycleReflection.WitnessInputs.incidence_instances
+AAT.AG.VisibleCycleReflection.WitnessInputs.below_instances
+AAT.AG.VisibleCycleReflection.WitnessInputs.upClosed_instances
 AAT.AG.VisibleCycleReflection.WitnessInputs.one_valid
 AAT.AG.VisibleCycleReflection.WitnessInputs.two_valid
 AAT.AG.VisibleCycleReflection.WitnessInputs.three_valid
@@ -1801,6 +1809,7 @@ AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_transition
 AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_correction
 AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_existing_zero
 AAT.AG.VisibleCycleReflection.FiniteInputTable.ActualCorrectedGluing
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualCorrectedGluing_existing_zero
 AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_gluing
 AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_eq_singleEdgeData
 AAT.AG.VisibleCycleReflection.Graph.closedWalkH1_value
@@ -1848,6 +1857,7 @@ AAT.AG.VisibleCycleReflection.WitnessTwo.state_zero
 AAT.AG.VisibleCycleReflection.WitnessTwo.transition_values
 AAT.AG.VisibleCycleReflection.WitnessTwo.diagnostic_zero
 AAT.AG.VisibleCycleReflection.WitnessTwo.existing_nonzero
+AAT.AG.VisibleCycleReflection.WitnessTwo.no_corrected_gluing
 AAT.AG.VisibleCycleReflection.WitnessTwo.reflection_fails
 AAT.AG.VisibleCycleReflection.WitnessTwo.edge34
 AAT.AG.VisibleCycleReflection.WitnessTwo.failure_edge34
@@ -1881,4 +1891,22 @@ AAT.AG.VisibleCycleReflection.WitnessThree.existing_zero
 AAT.AG.VisibleCycleReflection.WitnessThree.diagnostic_zero
 AAT.AG.VisibleCycleReflection.WitnessThree.gluing
 AAT.AG.VisibleCycleReflection.WitnessThree.comparison
+AAT.AG.ObstructionDiagnosticBridge.IntegralReflection.floorCorrection_apply
 ```
+
+### Cycle 7 初回reviewの非中心finding対応
+
+[初回4 lane統合](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5259#issuecomment-5981619046)は全lane Minor issues、中心findingなし。
+全findingを受領後、§1.4の正負instance、§2.4の公開評価API、§2.5の退けた代替案説明を修正した。
+`incidence_instances`・`below_instances`・`upClosed_instances` は同じW1幾何の正負ペアである。
+W2 `no_corrected_gluing` は同じ非零既存障害入力について任意nの貼り合わせを否定し、
+`actualCorrectedGluing_existing_zero` の公開APIと既受理元大域状態同値を使用する。
+W1/W3の正gluingと合わせ、新Propの両側を元入力で固定した。
+`one_target_three`、既存`rawGraphEdge_val`、`IntegralReflection.floorCorrection_apply` により
+消費側の別owner直接展開を解消した。既存floorの定義・定理のsignatureと本体は変更せず、
+そのowner moduleへ名指しされた評価補題だけを加えた。G-125再利用の受理済み論証は同じ型・前提・値である。
+各module notesに選択理由と退けた表現を記載した。
+新規11宣言はfindingが名指しした補助補題・公開API・正負例に限る。
+査読済みstatement、def/instanceの値、固定GOAL・設計・基準・台帳statusは変えない。
+rootは微調整と分類するが、直接対応資格は新規単一subagentが独立に確認する。
+累積cycles1–7は802明示宣言。正式PR gateと独立全GOALcompletionは完了前である。

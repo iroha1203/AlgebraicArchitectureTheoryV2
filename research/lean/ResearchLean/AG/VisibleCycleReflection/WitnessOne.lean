@@ -13,6 +13,9 @@ values. The all-input reflection statement is obtained from the finite scan,
 while its nonzero H1 witness is an actual closed walk on the same geometry.
 The fractional potential includes chart three; its floor is the explicit
 original correction, whose p-n sections glue on the original AAT site.
+A common-label representative proof was rejected because the prescribed last
+chart has no label-one representative; the full graph potential retains its
+nonzero value on that chart.
 -/
 
 noncomputable section
@@ -119,7 +122,7 @@ theorem floor_coordinates :
   funext i l
   rw [chartValues_coordinates]
   fin_cases i <;> by_cases hl : l = labelOne <;>
-    simp [IntegralReflection.floorCorrection,rationalPotential,hl] <;> norm_num
+    simp [IntegralReflection.floorCorrection_apply,rationalPotential,hl] <;> norm_num
 
 /-- The same original full-graph rational potential has every required integral transition difference. -/
 theorem rational_differences :
@@ -174,7 +177,9 @@ theorem no_common_label :
   change t ∈ ((one.actualGeometry one_valid).supportedNerve
     (one.actualTarget one_valid) (one.actualTarget_nonempty one_valid)).chartSupport (3 : Fin 4) at ht3
   rw [GeometricCover.supportedNerve_chartSupport,one.actualTarget_mem] at ht3
-  have ht0 : t = (0 : Fin 4) := by simpa [one,targetOne] using ht3
+  change t ∈ one.target (3 : Fin 4) at ht3
+  rw [one_target_three] at ht3
+  have ht0 : t = (0 : Fin 4) := Finset.mem_singleton.mp ht3
   subst t
   have he := one.actualLawDescend_read one_valid labelOne (0 : Fin 4)
   change lawDescend one.laws (one.actualReading one_valid) (one.actualAdequate one_valid)
@@ -193,7 +198,8 @@ theorem triangle_coefficient : Graph.walkChain one.rawGraph rawTriangle (one.raw
   simp only [rawTriangle,Graph.walkChain_cons,Graph.walkChain_nil,Pi.add_apply,Pi.zero_apply]
   rw [Graph.hopChain_of_lt _ _ (by decide),Graph.hopChain_of_lt _ _ (by decide),
     Graph.hopChain_of_not_lt _ _ (by decide)]
-  norm_num [Graph.edgeUnit_apply,edge01,FiniteInputTable.rawGraphEdge]
+  simp only [Graph.edgeUnit_apply,Subtype.ext_iff,FiniteInputTable.rawGraphEdge_val]
+  norm_num [edge01]
   decide
 
 /-- W1 has nonzero actual H1 despite lacking common-label representatives. -/

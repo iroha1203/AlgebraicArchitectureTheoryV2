@@ -10,6 +10,8 @@ Point codes are vertices followed by the listed edge points. The topology lists
 all upward closed subsets for the vertex-below-incident-edge order. Primitive
 relation, geometry, and target columns are supplied separately. The proofs of
 T0 use the generic incidence construction and finite primitive-table checks.
+Using target membership to generate geometric intersections was rejected: the
+fixed specification supplies these columns independently.
 -/
 
 namespace AAT.AG.VisibleCycleReflection.WitnessInputs
@@ -77,6 +79,23 @@ abbrev two : FiniteInputTable := geometryTwo.table relatedPrimitive targetTwo
   [(0,1),(0,2),(1,2),(3,4),(0,3),(0,4)]
 /-- W3 complete finite original forest input. -/
 abbrev three : FiniteInputTable := geometryThree.table forestPrimitive targetThree [(0,1),(1,2)]
+
+/-- Public evaluation of the specified last W1 target column. -/
+theorem one_target_three : one.target (3 : Fin 4) = {0} := rfl
+/-- The fixed W1 geometry supplies both an incident and a nonincident pair. -/
+theorem incidence_instances : geometryOne.Incident 0 0 ∧ ¬geometryOne.Incident 3 0 := by
+  rw [geometryOne.incident_iff_endpoints,geometryOne.incident_iff_endpoints]
+  decide
+/-- The same fixed vertex/edge supplies positive and negative order instances. -/
+theorem below_instances :
+    geometryOne.Below (geometryOne.vertexPoint 0) (geometryOne.edgePoint 0) ∧
+    ¬geometryOne.Below (geometryOne.edgePoint 0) (geometryOne.vertexPoint 0) :=
+  ⟨geometryOne.below_vertex_edge 0 0 incidence_instances.1,
+    geometryOne.not_below_edge_vertex 0 0⟩
+/-- A full W1 chart is upward closed; the same vertex alone is not. -/
+theorem upClosed_instances : geometryOne.UpClosed (geometryOne.chart 0) ∧
+    ¬geometryOne.UpClosed {geometryOne.vertexPoint 0} :=
+  ⟨geometryOne.chart_upClosed 0,geometryOne.singleton_not_upClosed 0 0 incidence_instances.1⟩
 
 /-- W1 finite table constructs every primitive, topological, geometric, and target T0 condition. -/
 theorem one_valid : one.Valid := by

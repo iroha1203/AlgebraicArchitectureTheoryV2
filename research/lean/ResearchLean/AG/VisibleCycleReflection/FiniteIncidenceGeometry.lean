@@ -12,6 +12,8 @@ relations put a vertex below an incident edge point. The finite open table lists
 all upward closed point sets. Charts are precisely the principal upper sets of
 vertices. The geometric proof is derived from these columns, separately from
 primitive Law and target data.
+A graph-only point model was rejected because it would omit the actual open
+table and intersections required by the fixed witnesses.
 -/
 
 namespace AAT.AG.VisibleCycleReflection
@@ -68,6 +70,19 @@ theorem vertexPoint_ne_edgePoint (i : D.Vertex) (e : D.EdgePoint) :
 def Below (x y : D.Point) : Prop :=
   x = y ∨ ∃ i e, x = D.vertexPoint i ∧ y = D.edgePoint e ∧ D.Incident i e
 
+/-- Public endpoint evaluation of incidence, without unfolding its owner downstream. -/
+theorem incident_iff_endpoints (i : D.Vertex) (e : D.EdgePoint) :
+    D.Incident i e ↔ i = (D.endpoints e).1 ∨ i = (D.endpoints e).2 := Iff.rfl
+/-- An incident vertex lies below the corresponding edge point. -/
+theorem below_vertex_edge (i : D.Vertex) (e : D.EdgePoint) (h : D.Incident i e) :
+    D.Below (D.vertexPoint i) (D.edgePoint e) := Or.inr ⟨i,e,rfl,rfl,h⟩
+/-- No edge point lies below a vertex point, giving the negative order instance. -/
+theorem not_below_edge_vertex (e : D.EdgePoint) (i : D.Vertex) :
+    ¬D.Below (D.edgePoint e) (D.vertexPoint i) := by
+  rintro (h | ⟨j,f,h,_,_⟩)
+  · exact D.vertexPoint_ne_edgePoint i e h.symm
+  · exact D.vertexPoint_ne_edgePoint j e h.symm
+
 /-- The vertex-below-edge relation is an actual partial order on geometric points. -/
 def order : PartialOrder D.Point where
   lt x y := D.Below x y ∧ ¬D.Below y x
@@ -92,6 +107,12 @@ def UpClosed (U : Finset D.Point) : Prop :=
 /-- Finite upward closure is a finite universal test on incidence and membership. -/
 instance upClosedDecidable (U : Finset D.Point) : Decidable (D.UpClosed U) :=
   inferInstanceAs (Decidable (∀ i e, D.Incident i e → D.vertexPoint i ∈ U → D.edgePoint e ∈ U))
+/-- A vertex singleton with an incident edge is not upward closed. -/
+theorem singleton_not_upClosed (i : D.Vertex) (e : D.EdgePoint) (h : D.Incident i e) :
+    ¬D.UpClosed {D.vertexPoint i} := by
+  intro hc
+  have he := hc i e h (Finset.mem_singleton.mpr rfl)
+  exact D.vertexPoint_ne_edgePoint i e (Finset.mem_singleton.mp he).symm
 /-- Enumerate all and only upward closed subsets of the finite geometric point set. -/
 def opens : Finset (Finset D.Point) := Finset.univ.powerset.filter D.UpClosed
 /-- Membership in the open table is exactly upward closure along incidence pairs. -/

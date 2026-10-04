@@ -1,4 +1,5 @@
 import ResearchLean.AG.VisibleCycleReflection.WitnessCycles
+import ResearchLean.AG.VisibleCycleReflection.WitnessRepair
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -10,6 +11,8 @@ The finite scan chooses label one and edge 34 before the other invisible edges.
 Its full serialized integer input is decoded into the original primitive actual
 Cech sections. The manually prescribed 0,3,4,0 cycle has the positive basis
 period; the computed cycle has the opposite orientation and nonzero period.
+Selecting an arbitrary failed edge after proving existence was rejected because
+C requires the deterministic bounded scan and its serialized original input.
 -/
 
 noncomputable section
@@ -63,6 +66,17 @@ theorem diagnostic_zero : input.diagnosticMismatch (two.actualAdequate two_valid
 /-- The original existing descent class is nonzero on the same decoded local input. -/
 theorem existing_nonzero : input.existingDescentAdditiveClass ≠ 0 :=
   SearchFailure.actual_existing_nonzero two failure two_valid
+/-- The same W2 input is a negative instance of corrected actual gluing for every proposed correction. -/
+theorem no_corrected_gluing :
+    letI : TopologicalSpace two.Point := two.actualTopology two_valid
+    ∀ n : ((two.actualPresentation two_valid).faceEmptyCechComplex
+      ((two.actualGeometry two_valid).actualCechCover (two.actualPresentation two_valid)
+        (two.actualTarget two_valid) (two.actualTarget_nonempty two_valid))).Cn 0,
+      ¬two.ActualCorrectedGluing two_valid input n := by
+  letI : TopologicalSpace two.Point := two.actualTopology two_valid
+  intro n hn
+  exact existing_nonzero (two.actualCorrectedGluing_existing_zero two_valid input n hn)
+
 /-- B1, B2 and B3 each fail for this same valid two-triangle input. -/
 theorem reflection_fails : ¬two.ActualReflects two_valid ∧
     ¬two.ActualHomologySurjective two_valid ∧ ¬two.ActualNonbridgeVisible two_valid := by
@@ -90,7 +104,12 @@ theorem gamma_coefficient : Graph.walkChain two.rawGraph rawGamma (two.rawGraphE
   rw [Graph.hopChain_of_lt _ _ (by decide),Graph.hopChain_of_lt _ _ (by decide),
     Graph.hopChain_of_not_lt _ _ (by decide)]
   have h30 : (3 : Fin 5) ≠ 0 := by decide
-  norm_num [Graph.edgeUnit_apply,edge34,FiniteInputTable.rawGraphEdge,h30]
+  simp only [Graph.edgeUnit_apply,Subtype.ext_iff,FiniteInputTable.rawGraphEdge_val]
+  norm_num [edge34,h30]
+  intro he
+  have hv := congrArg Subtype.val he
+  rw [two.rawGraphEdge_val] at hv
+  exact h30 (congrArg Prod.fst hv)
 /-- The manually prescribed walk is transported to the same actual geometric graph. -/
 def gamma :
     letI : TopologicalSpace two.Point := two.actualTopology two_valid

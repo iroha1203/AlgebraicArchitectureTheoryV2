@@ -11,6 +11,8 @@ Both actual intersections are bridges. The table's reflection test succeeds
 for all transitions and states, despite label one having only an isolated
 visible vertex. The original n=(0,0,u1) chart sections correct the actual
 single-edge 12 transition and glue through the same AAT state sheaf.
+Replacing the specified transition by zero was rejected because the forest
+example must retain a nonzero original mismatch despite no visible label-one edge.
 -/
 
 noncomputable section
