@@ -158,16 +158,16 @@ pub enum Why {
 
 /// 段で決まらなかった所。型と名前。
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Stage {
-    pub ty: String,
-    pub name: String,
+struct Stage {
+    ty: String,
+    name: String,
     /// 頭と受け継がれる型がすべて決まり、どの型も名前を定義しないために決まらなかった(段の「なければ」)。
-    pub absent: bool,
+    absent: bool,
 }
 
 impl Stage {
     /// 段の名前 `<型>.<名前>`。
-    pub fn full_name(&self) -> String {
+    fn full_name(&self) -> String {
         format!("{}.{}", self.ty, self.name)
     }
 }
@@ -176,16 +176,18 @@ impl Stage {
 pub struct Unknown {
     pub silence: Silence,
     pub why: Why,
-    pub stage: Option<Box<Stage>>,
+    stage: Option<Box<Stage>>,
     /// 曖昧な要素の定義した所。
-    pub defined: BTreeSet<String>,
-    /// 名前そのものの定義(`defines` か `resolves`)で決まらない答えか。頭、持ち主、段で決まらない答えは偽。
-    pub itself: bool,
+    defined: BTreeSet<String>,
+    /// 名前そのものの定義(`defines` か `resolves`)で決まらない答えか。
+    itself: bool,
+    /// 頭か持ち主の答えから決まらない答えか(その名前の局所は頭か持ち主で見る)。
+    from_head: bool,
 }
 
 impl Unknown {
     fn new(silence: Silence, why: Why) -> Unknown {
-        Unknown { silence, why, stage: None, defined: BTreeSet::new(), itself: false }
+        Unknown { silence, why, stage: None, defined: BTreeSet::new(), itself: false, from_head: false }
     }
 
     fn unresolved(why: Why) -> Unknown {
@@ -198,7 +200,7 @@ impl Unknown {
     }
 
     fn at(self, ty: &str, name: &str, absent: bool) -> Unknown {
-        Unknown { stage: Some(Box::new(Stage { ty: ty.to_string(), name: name.to_string(), absent })), itself: false, ..self }
+        Unknown { stage: Some(Box::new(Stage { ty: ty.to_string(), name: name.to_string(), absent })), itself: false, from_head: false, ..self }
     }
 
     /// 名前そのものの定義で決まらない答えにする。
@@ -209,6 +211,11 @@ impl Unknown {
     /// 頭、持ち主、型の答えを、その下の名前の答えにする。
     fn derived(self) -> Unknown {
         Unknown { itself: false, ..self }
+    }
+
+    /// 頭か持ち主で決まらない答えにする。
+    fn headed(self) -> Unknown {
+        Unknown { itself: false, from_head: true, ..self }
     }
 }
 
@@ -387,11 +394,6 @@ impl Structure {
         self.names.observed.contains(&(source.to_string(), scope.to_string()))
     }
 
-    /// 名前そのものの解決(`resolves`)。
-    pub fn resolution(&self, n: &str) -> Option<&Resolution> {
-        self.names.resolves.get(n)
-    }
-
     /// 名前が `defines` を持つか。
     fn declared(&self, n: &str) -> bool {
         self.names.elements.get(n).is_some_and(|e| e.declared)
@@ -413,7 +415,7 @@ impl Structure {
     }
 
     /// 送る操作と受け取る操作(チャネルとその項目)。
-    pub fn channel_operations(&self, n: &str) -> Option<&BTreeSet<String>> {
+    fn channel_operations(&self, n: &str) -> Option<&BTreeSet<String>> {
         self.names.channels.get(n)
     }
 
@@ -438,7 +440,7 @@ impl Structure {
                 },
                 Why::Question,
             )),
-            Form::Param { owner, name } => match self.element(owner).map_err(Unknown::derived)? {
+            Form::Param { owner, name } => match self.element(owner).map_err(Unknown::headed)? {
                 Answer::Element(op) if op.kind == "operation" => match op.params.get(name) {
                     Some(t) => Ok(Answer::Element(Found {
                         name: param_name(&op.name, name),
@@ -448,10 +450,10 @@ impl Structure {
                         params: BTreeMap::new(),
                         ..op
                     })),
-                    None => Err(Unknown::unresolved(Why::Other)),
+                    None => Err(Unknown::unresolved(Why::Other).headed()),
                 },
                 Answer::External(pkg) => Ok(Answer::External(pkg)),
-                _ => Err(Unknown::unresolved(Why::Other)),
+                _ => Err(Unknown::unresolved(Why::Other).headed()),
             },
             Form::Call { caller } => {
                 let owner = self.element(caller);
@@ -479,7 +481,7 @@ impl Structure {
                         },
                     }));
                 }
-                match owner.map_err(Unknown::derived)? {
+                match owner.map_err(Unknown::headed)? {
                     Answer::Element(f) => Ok(Answer::Element(call(&f))),
                     Answer::Bare(_) => Ok(Answer::Bare(n.to_string())),
                     other => Ok(other),
@@ -505,7 +507,7 @@ impl Structure {
     }
 
     /// 名前の頭か持ち主。引数と呼び出しは持ち主の操作、段の名前は規則 5 の頭である。
-    pub fn head_of(&self, n: &str) -> Option<String> {
+    fn head_of(&self, n: &str) -> Option<String> {
         match form(n) {
             Form::Param { owner, .. } | Form::Call { caller: owner } => Some(owner.to_string()),
             Form::Dotted => self.head(n).map(|(h, _)| h.to_string()),
@@ -562,12 +564,12 @@ impl Structure {
         match head {
             Some((h, rest)) => match answer.unwrap_or_else(|| self.element(h)) {
                 Ok(Answer::External(pkg)) => Ok(Answer::External(pkg)),
-                Ok(_) => Err(Unknown::unresolved(Why::Other)),
+                Ok(_) => Err(Unknown::unresolved(Why::Other).headed()),
                 // 頭が曖昧なら、頭の局所で見る(設計 §6)。
                 Err(u) if u.why == Why::Ambiguous => Err(Unknown::unresolved(Why::Other).at(h, rest, false)),
                 // 頭が型として名指されていれば頭の答えの読む所、そうでなければその名前を読む。
-                Err(u) if self.names.typed.contains(h) => Err(u.derived()),
-                Err(_) => Err(Unknown::unread(n)),
+                Err(u) if self.names.typed.contains(h) => Err(u.headed()),
+                Err(_) => Err(Unknown::unread(n).headed()),
             },
             // 型として名指された名前は、手がかりがあるので定義を読む。手がかりのない名前は名前だけの要素である。
             None if self.names.typed.contains(n) => Err(Unknown::unread(n).own()),
@@ -594,6 +596,8 @@ impl Structure {
     /// 名前そのものの `resolves` で決める(規則 7)。
     fn resolved(&self, r: &Resolution) -> Resolved {
         match r {
+            // 解析器が解決できなかった行き先(`?` で始まる)は、決まらない。
+            Resolution::Source(path) if is_question(path) => Err(Unknown::new(question(), Why::Question).own()),
             Resolution::Source(path) if self.observed(path, "structure") => Err(Unknown::unresolved(Why::Missing).own()),
             Resolution::Source(path) => Err(Unknown::new(
                 Silence { reason: Reason::Unread, read: Some(path.clone()), element: None, scope: Some("structure".to_string()) },
@@ -754,7 +758,7 @@ impl Structure {
             Some(h) => self.element(h),
             None => Ok(Answer::Bare(String::new())),
         };
-        let mut c = Column { head: head.map(str::to_string), ..Column::default() };
+        let mut c = Column::default();
         match answer {
             Ok(Answer::Element(t)) if t.kind == "type" => {
                 c.ty = Some(t.name.clone());
@@ -935,17 +939,15 @@ pub enum Start<'a> {
 #[derive(Clone, Debug, Default)]
 pub struct Walk {
     pub place: Vec<String>,
-    pub stages: Vec<String>,
+    stages: Vec<String>,
     /// 段ごとの型(`stages` と同じ並び)。
-    pub types: Vec<String>,
+    types: Vec<String>,
     pub stop: Option<Unknown>,
 }
 
 /// 列の読み方の答え。
 #[derive(Clone, Debug, Default)]
 pub struct Column {
-    /// 書いたとおりの頭(最初の名前の最後の `.` の前)。
-    pub head: Option<String>,
     /// 頭が型に決まれば、その型の名前。
     pub ty: Option<String>,
     pub walk: Walk,
@@ -972,7 +974,7 @@ pub struct Naming {
 }
 
 impl Naming {
-    pub fn extend(&mut self, other: Naming) {
+    fn extend(&mut self, other: Naming) {
         self.gone.extend(other.gone);
         self.gaps.extend(other.gaps);
     }
@@ -1120,6 +1122,21 @@ impl Structure {
         if let Some(ops) = self.channel_operations(n) {
             return Place::Operations(ops.clone());
         }
+        // 候補の中で定義した要素は、その `file` の局所(`file` がなければ変更前の構造で解いた定義した所)。
+        if let Some(e) = self.names.elements.get(n).filter(|e| e.declared && e.planned()) {
+            let sources = e.sources();
+            if e.undecided() {
+                return Place::Ambiguous(sources, Silence::new(Reason::Unresolved));
+            }
+            if !sources.is_empty() || std::ptr::eq(self, prior) {
+                return Place::Sources(sources);
+            }
+            return match prior.element(n) {
+                Ok(Answer::Element(g)) => prior.found_place(prior, &g),
+                Err(u) => prior.unknown_place(n, u),
+                Ok(_) => Place::Nowhere,
+            };
+        }
         let after = self.element(n);
         match &after {
             Ok(Answer::Element(f)) => return self.found_place(prior, f),
@@ -1178,8 +1195,7 @@ impl Structure {
             return Place::Via(stage.ty.clone());
         }
         // 名前そのものの定義でなく、頭か持ち主で決まらないなら、頭で見る。引数と呼び出しは持ち主の操作で見る(マニュアル第4章)。
-        if u.stage.is_none()
-            && !u.itself
+        if u.from_head
             && let Some(h) = self.head_of(n)
         {
             return Place::Via(h);
@@ -1193,12 +1209,22 @@ impl Structure {
 
     /// `reads`・`writes` の `via` と `object` の列を列の読み方で解いた場所のフィールドとその頭の、局所の元。
     /// 列が止まれば、止まった名前とその局所の元。名前は、決まらないときに返す名前である。
-    pub fn column_places(&self, names: &[String]) -> Vec<(String, Place)> {
+    pub fn column_places(&self, prior: &Structure, names: &[String]) -> Vec<(String, Place)> {
         let c = self.column(names);
         let mut out: Vec<(String, Place)> = c.ty.iter().chain(&c.walk.place).map(|n| (n.clone(), Place::Via(n.clone()))).collect();
         if let Some(u) = c.walk.stop {
-            let at = names.get(c.walk.place.len()).or(names.last()).cloned().unwrap_or_default();
-            let p = self.unknown_place(&at, u);
+            let k = c.walk.place.len();
+            let at = names.get(k).or(names.last()).cloned().unwrap_or_default();
+            let p = if k + 1 < names.len() {
+                // 止まった名前の後ろの名前は、型が決まらないので局所も決まらない。
+                Place::Unknown(u.silence)
+            } else if k == 0 && !matches!(self.element(&at), Ok(Answer::Element(e)) if e.kind != "field") {
+                // 最初の名前の答えが決まらずに止まれば、その名前の局所の元(変更前の構造で解いた定義した所を含む)。
+                // フィールドでない要素に決まって止まったなら、列は決まらない(下)。
+                self.place(prior, &at)
+            } else {
+                self.unknown_place(&at, u)
+            };
             out.push((at, p));
         }
         out

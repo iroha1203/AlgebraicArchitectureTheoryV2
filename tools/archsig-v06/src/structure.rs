@@ -9,7 +9,7 @@ use crate::expr::{self, BinOp, Expr};
 mod name;
 use name::Names;
 pub use name::{
-    Answer, Column, FieldList, Form, Found, Naming, Place, Resolution, Resolved, Stage, Start, Unknown, Walk, Why, after_operation, below, call_name,
+    Answer, Column, FieldList, Form, Found, Naming, Place, Resolution, Resolved, Start, Unknown, Walk, Why, after_operation, below, call_name,
     form, from_operation, is_local, is_question, owner, param_name, param_of, targets,
 };
 

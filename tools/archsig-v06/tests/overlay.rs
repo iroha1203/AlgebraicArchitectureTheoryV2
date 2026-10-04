@@ -30,7 +30,7 @@ fn resolves_in_a_plan_keeps_the_unchanged_definition() {
     let s = Structure::new(o.after);
     assert_eq!(s.kind("m.g").unwrap(), "operation", "g の定義が残る");
     assert_eq!(s.unfold("n.h").unwrap().len(), 2, "h から g を呼び、g の書き込みが残る");
-    assert!(s.resolution("m.g").is_some(), "resolves は名前の解決として加わる");
+    assert!(s.atoms.iter().any(|a| a.kind == "resolves" && a.subject == "m.g"), "resolves は名前の解決として加わる");
 }
 
 const ORDER: &str = r#"{"kind": "defines", "subject": "shop.order.model.Order", "value": "type", "at": "shop/order/model.py:7"}

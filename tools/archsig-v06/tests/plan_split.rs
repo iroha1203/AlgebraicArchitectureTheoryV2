@@ -485,3 +485,79 @@ fn an_element_the_plan_defines_twice_in_two_files_is_silent() {
     let r = result(&s, "m.T");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn a_column_is_placed_only_where_its_names_are_decided() {
+    let run = |name: &str, maps: &[(&str, &str)], plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
+        for (src, map) in maps {
+            repo.write(src, "# source\n");
+            repo.map(src, &format!("{{\"kind\": \"observed\", \"subject\": \"{src}\", \"scope\": \"structure\", \"at\": \"{src}@blob:aaaaaaa\"}}\n{map}"));
+        }
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        (repo.run(&["plan", "split", "p"]), repo)
+    };
+    // 列 [a.O.s, b.S.p] は a.O.s の段で止まる(定義を読んでいない)。後ろの b.S.p は型が決まらないので、書き込みの局所は決まらない。
+    let (s, _) = run(
+        "split-column-stopped-early",
+        &[
+            ("a/f.py", r#"{"kind": "defines", "subject": "a.f", "value": "operation", "params": {}, "at": "a/f.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "a.O", "value": "type", "at": "a/f.py:2@blob:aaaaaaa"}
+"#),
+            ("b/s.py", r#"{"kind": "defines", "subject": "b.S", "value": "type", "at": "b/s.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "b.S.p", "value": "field", "type": "int", "at": "b/s.py:2@blob:aaaaaaa"}
+"#),
+        ],
+        "{\"kind\": \"writes\", \"subject\": \"a.f\", \"via\": [\"a.O.s\"], \"object\": \"b.S.p\", \"value\": \"1\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "a.O.s");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    // 列の最初の名前 o.O.s で止まれば(頭 o.O の定義を読んでおらず、候補が o.O.s を消す)、その名前を変更前の構造で解いた定義した所で見る。
+    let (s, repo) = run(
+        "split-column-removed-first",
+        &[
+            ("o/model.py", r#"{"kind": "defines", "subject": "o.O.s", "value": "field", "type": "int", "at": "o/model.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "o.f", "value": "operation", "params": {"x": "o.O"}, "at": "o/model.py:2@blob:aaaaaaa"}
+"#),
+            ("p/svc.py", r#"{"kind": "defines", "subject": "p.g", "value": "operation", "params": {}, "at": "p/svc.py:1@blob:aaaaaaa"}
+"#),
+        ],
+        "{\"kind\": \"removes\", \"subject\": \"o.O.s\", \"at\": \"plan:p\"}\n{\"kind\": \"writes\", \"subject\": \"p.g\", \"object\": \"o.O.s\", \"value\": \"1\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "p");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
+    assert!(has(detail["check"]["shared"].as_array().unwrap(), "writes", "p.g", Some("o.O.s")), "{detail}");
+    // フィールドでない要素(操作 o.T.m)を書く列は決まらない。頭の局所に倒さない。
+    let (s, _) = run(
+        "split-column-not-a-field",
+        &[
+            ("o/model.py", "{\"kind\": \"defines\", \"subject\": \"o.T\", \"value\": \"type\", \"at\": \"o/model.py:1@blob:aaaaaaa\"}\n"),
+            ("p/ext.py", "{\"kind\": \"defines\", \"subject\": \"o.T.m\", \"value\": \"operation\", \"params\": {}, \"at\": \"p/ext.py:1@blob:aaaaaaa\"}\n"),
+            ("q/svc.py", "{\"kind\": \"defines\", \"subject\": \"q.g\", \"value\": \"operation\", \"params\": {}, \"at\": \"q/svc.py:1@blob:aaaaaaa\"}\n"),
+        ],
+        "{\"kind\": \"writes\", \"subject\": \"q.g\", \"object\": \"o.T.m\", \"value\": \"1\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "o.T.m");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn an_element_the_plan_defines_under_a_redefined_unread_type_is_in_the_local_of_its_file() {
+    // 変更前の o.S は引数の型として名指されるだけで、定義を読んでいない。候補が o.S を定義し直し、o.S.y を p/svc.py に定義する。
+    // 候補の中で定義した要素は、その `file` の局所に属する(設計 §6)。
+    let repo = Repo::new("split-planned-under-redefined");
+    repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
+    repo.write("o/model.py", "# source\n");
+    repo.map("o/model.py", r#"{"kind": "observed", "subject": "o/model.py", "scope": "structure", "at": "o/model.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "o.f", "value": "operation", "params": {"x": "o.S"}, "at": "o/model.py:1@blob:aaaaaaa"}
+"#);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        "{\"kind\": \"defines\", \"subject\": \"o.S\", \"value\": \"type\", \"file\": \"o/model.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"o.S.y\", \"value\": \"field\", \"type\": \"int\", \"file\": \"p/svc.py\", \"at\": \"plan:p\"}\n",
+    );
+    let s = repo.run(&["plan", "split", "p"]);
+    assert_eq!(result(&s, "p")["outcome"], "holds", "{s}");
+    assert!(has(&lines(&repo, ".archsig/plans/p/p/plan.jsonl"), "defines", "o.S.y", None), "{s}");
+}

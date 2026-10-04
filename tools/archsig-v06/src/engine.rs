@@ -10,7 +10,7 @@ use crate::expr::BinOp;
 use crate::geometry::Split;
 use crate::law::{LawSet, Rule};
 use crate::structure::{
-    Answer, Form, Overlay, Reason, Resolution, STEP_LIMIT, Silence, Start, State, StepKind, Structure, Value, Why, after_operation, below, form, is_local,
+    Answer, Form, Overlay, Reason, STEP_LIMIT, Silence, Start, State, StepKind, Structure, Value, Why, after_operation, below, form, is_local,
     is_question, owner, param_name, question_at,
 };
 
@@ -1048,14 +1048,12 @@ fn body(s: &Structure, op: &str) -> Result<Vec<String>, Silence> {
                 }
                 out.push(format!("params|{:?}", e.params));
             }
-            Err(u) if u.why == Why::Ambiguous => return Err(unchecked()),
-            _ => {
-                let r = s.resolution(&o);
-                if matches!(r, Some(Resolution::Undecided)) || matches!(r, Some(Resolution::Source(x)) if is_question(x)) {
-                    return Err(unchecked());
-                }
-                out.push(format!("resolves|{r:?}"));
-            }
+            // 定義のない操作は、その解決(要素(名前)の答え)を比べる。解決が決まらなければ(指す先の違う `resolves`、曖昧)、本体が違うとする。
+            Err(u) if matches!(u.why, Why::Ambiguous | Why::Undecided | Why::Question) => return Err(unchecked()),
+            Err(u) => out.push(format!("unknown|{:?}|{:?}|{:?}", u.why, u.silence.read, u.silence.element)),
+            Ok(Answer::External(pkg)) => out.push(format!("external|{pkg}")),
+            Ok(Answer::Bare(_)) => out.push("bare".to_string()),
+            Ok(Answer::Element(e)) => out.push(format!("kind|{}", e.kind)),
         }
         for (_, key, calls) in steps.drain(..).chain(rest.drain(..)) {
             out.push(key);

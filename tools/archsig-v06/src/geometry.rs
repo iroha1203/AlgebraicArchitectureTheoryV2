@@ -90,7 +90,7 @@ impl<'a> Geometry<'a> {
     /// 列の読み方で解いた場所のフィールドとその頭の局所。決まらなければ、決まらない名前とその沈黙。
     fn column_locals(&self, names: &[String]) -> Result<BTreeSet<String>, (String, Silence)> {
         let mut out = BTreeSet::new();
-        for (n, place) in self.after.column_places(names) {
+        for (n, place) in self.after.column_places(self.before, names) {
             out.extend(self.locals(place).map_err(|s| (n, s))?);
         }
         Ok(out)

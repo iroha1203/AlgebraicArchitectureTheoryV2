@@ -93,6 +93,18 @@ fn a_name_below_a_type_that_does_not_define_it_is_read_by_that_name() {
 }
 
 #[test]
+fn a_name_named_as_a_type_without_a_head_is_read_by_its_own_name() {
+    // m.T は引数の型として名指されるだけで、定義も resolves も頭もない(規則 8)。m.T を読めば決まる。
+    let next = advances(
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"t": "m.T"}, "at": "m.py:1"}"#,
+        "m.T",
+        (None, Some("m.T")),
+        r#"{"kind": "defines", "subject": "m.T", "value": "type", "at": "t.py:1"}"#,
+    );
+    assert!(matches!(next, Ok(Answer::Element(e)) if e.kind == "type"));
+}
+
+#[test]
 fn a_name_whose_head_is_unknown_is_read_by_its_own_name() {
     // 頭 m.mod の resolves が読んでいないソースを指す。m.mod は型として名指されていないので、m.mod.var を読む。
     // 読む所の名前を解析器が解決すれば(`resolves`)、その解決で決まるか、読むソースに進む。

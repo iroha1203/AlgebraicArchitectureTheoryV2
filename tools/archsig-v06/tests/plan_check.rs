@@ -4301,3 +4301,20 @@ fn a_removed_field_under_a_column_whose_head_is_unknown_is_missing() {
     run("column-unknown-head-field", r#"{"o": "m.O"}"#, "{\"kind\": \"removes\", \"subject\": \"m.C.x\", \"at\": \"plan:p\"}\n");
     run("column-bare-head-type", "{}", "{\"kind\": \"removes\", \"subject\": \"m.C\", \"at\": \"plan:p\"}\n");
 }
+
+#[test]
+fn a_callee_whose_answer_is_the_same_external_element_has_the_same_body() {
+    // lib.mod は外部を指す。m.f は lib.mod.x() の値を書く。候補が lib.mod.x そのものに同じ外部への resolves を足しても、
+    // 要素(名前)の答えはどちらも外部の要素 lib なので、本体は同じである(設計 §5.4「定義のない操作は、その解決を比べ」)。
+    let repo = Repo::new("callee-same-external");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{}{T_ATOMS}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "lib.mod", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
+"#, r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "lib.mod.x()", "at": "m.py:10@blob:aaaaaaa"}
+"#));
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"resolves\", \"subject\": \"lib.mod.x\", \"object\": \"external:lib\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
+}
