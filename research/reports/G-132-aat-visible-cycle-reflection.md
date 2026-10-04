@@ -54,7 +54,7 @@ Formal への移植は未実施。Research 全体buildとローカル Formal 全
 
 ## Cycle 1 の構成と宣言対応
 
-受理対象の宣言一覧は次の54宣言である。自動生成されたfield・constructorも各module末尾の
+受理対象の宣言一覧は次の57宣言である。自動生成されたfield・constructorも各module末尾の
 `#assert_standard_axioms_only` の検査対象に入る。実装途中のcycle足場は残していない。
 
 | ファイル | 固定targetへの対応 | 主要な構成・定理 |
@@ -95,21 +95,47 @@ result:
   proof_obligation_delta: T0・Aのsite、continuous support、完全実nerve、actual Cech coverを任意入力から生成
   exit_criteria_status:
     - 構成と全fieldの生成をLeanで確認
-    - focused elaborationと54宣言の公理監査を確認
+    - focused elaborationと57宣言の公理監査を確認
     - GOAL・設計・共通基準は変更なし
   split_reason: none
   completion_candidate: no
+  lean_artifacts: [AtomInput.lean, OpenSupport.lean, OpenSupportContinuity.lean, ActualCover.lean]
+  evidence: [Spine declaration list, 各moduleの標準公理監査, 全57宣言のprint axioms]
   claim_mapping:
+    theorem_names: [coverageFamily_admissible, supportFunctor_isContinuous, faceIsEmpty, actualCechCover]
+    conjuncts:
+      - point/generator Atom: architectureObjectとgenerator_relation_iff
+      - 実台とcoverage: contextSupport_productとcoverageFamily_admissible
+      - continuity: supportFunctor_isContinuous
+      - 完全実nerveと既存被覆: EdgeとFaceとactualCechCover
     source_labels: [T0, Aの実被覆構成]
     undischarged_assumptions: []
     acceptance_point: 選定した実被覆構成の到達点。A全体・B・C・Wは未完
     port_status: unported
+audits:
+  premise_delta:
+    discharged: [原始contextの台とproduct一致, coverageのadmissibility, 生成topologyのcontinuity, 完全face型の空性, actualCechCoverの全field]
+    remaining: [Aの係数と座標と類の接続, B, C, W1–W3]
+  certificate_provenance:
+    discharged: [siteはpointとgeneratorのcoverageから生成, continuousはpullback sieveの開被覆像から証明, coverは入力の実開集合と包含から生成]
+    unresolved: [選定範囲にはなし]
+  proof_use:
+    used: [原始RはAtomのrelation, chart被覆はcoverage, 非空性と連結性はcoverのinstance, tripleEmptyはfaceIsEmpty, target台はsupportedNerve]
+    unused: [R_qとadequacyはA後段の係数比較に割り当て、cycle 1では使用しない]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [4対象fileのfocused elaboration, 全57宣言のprint axioms, placeholderとUnicodeとprivacyとimport方向scan]
+  blocking_findings: []
   next_obligation: Aの整数ラベル座標、可視block同定と既存比較の成分計算
 ```
 
 検証環境はLean `v4.28.0`、mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。
 `GeneratorPresentation` と `FaceEmptyCechNormalization` の対象module buildは依存準備として成功。
-対象4ファイルのfocused check、54宣言の`#print axioms`、各moduleの標準公理監査を実行した。
+対象4ファイルのfocused check、57宣言の`#print axioms`、各moduleの標準公理監査を実行した。
 検出公理は`propext`、`Classical.choice`、`Quot.sound`のみ。
 Research全体build、ローカルFormal全体build、Formalへの移植は実施していない。
 PR査読とCIは別に確認し、結果をtracking Issueへ同期する。
@@ -133,9 +159,11 @@ AAT.AG.VisibleCycleReflection.OpenSupport.readablePointSet_mono
 AAT.AG.VisibleCycleReflection.OpenSupport.contextSupport_mono
 AAT.AG.VisibleCycleReflection.OpenSupport.contextPreorder
 AAT.AG.VisibleCycleReflection.OpenSupport.supportFunctor
+AAT.AG.VisibleCycleReflection.OpenSupport.supportFunctor_obj
 AAT.AG.VisibleCycleReflection.OpenSupport.contextSupport_openContext
 AAT.AG.VisibleCycleReflection.OpenSupport.readablePointSet_product
 AAT.AG.VisibleCycleReflection.OpenSupport.contextSupport_product
+AAT.AG.VisibleCycleReflection.OpenSupport.supportFunctor_obj_product
 AAT.AG.VisibleCycleReflection.OpenSupport.contextSupport_product_openContext
 AAT.AG.VisibleCycleReflection.OpenSupport.openContextMorphism
 AAT.AG.VisibleCycleReflection.OpenSupport.openContextMorphism_isRestriction
@@ -158,6 +186,7 @@ AAT.AG.VisibleCycleReflection.OpenSupport.supportFunctor_preservesPullback
 AAT.AG.VisibleCycleReflection.OpenSupport.mapped_pullback_mem_open_topology
 AAT.AG.VisibleCycleReflection.OpenSupport.supportFunctor_isContinuous
 AAT.AG.VisibleCycleReflection.OpenSupport.contextOpenSupport
+AAT.AG.VisibleCycleReflection.OpenSupport.contextOpenSupport_obj_openContext
 AAT.AG.VisibleCycleReflection.GeometricCover
 AAT.AG.VisibleCycleReflection.GeometricCover.Edge
 AAT.AG.VisibleCycleReflection.GeometricCover.Face
@@ -172,3 +201,14 @@ AAT.AG.VisibleCycleReflection.GeometricCover.supportedNerve_edgeSupport
 AAT.AG.VisibleCycleReflection.GeometricCover.coverage_admissible
 AAT.AG.VisibleCycleReflection.GeometricCover.actualCechCover
 ```
+
+### Cycle 1 の査読対応
+
+PR #5253 の初回固定head `0913eb1e9a91d9a10304cd29dadd4d457c81793b` を、
+数学2本・Lean2本で独立査読した。数学Aの非中心F1は、supportのobject mapについて
+公開正規化APIを使わず他moduleの定義をproof内で展開していた点である。
+名指しされた `supportFunctor_obj`、`supportFunctor_obj_product`、
+`contextOpenSupport_obj_openContext` を追加し、そのAPIを使用する証明へ切り替えた。
+既存宣言の型と構成dataは維持する。rootの非中心F2はresult/監査schemaの記録不足であり、
+上記のartifact・claim対応・auditsを追記した。proposalのstatusと選定範囲は変更しない。
+修正後の直接対応確認と最終受理は固定headのPR監査コメントに記録する。

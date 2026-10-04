@@ -61,9 +61,10 @@ def supportMapPullbackConeIsLimit {X Y Z : (site (X := Space) P).category} (f : 
         PullbackCone ((supportFunctor (X := Space) P).map f) ((supportFunctor (X := Space) P).map g)) :=
   PullbackCone.IsLimit.mk _
     (fun s => homOfLE (by
-      rw [show (supportFunctor (X := Space) P).obj ((contextPullbackCone P) f g).pt =
-          (supportFunctor (X := Space) P).obj X ⊓ (supportFunctor (X := Space) P).obj Y by
-        exact (contextSupport_product P) X.ctx Y.ctx]
+      change s.pt ≤ (supportFunctor (X := Space) P).obj
+        (Site.ContextCategoryObject.of (contextPreorder (X := Space) P)
+          (Site.productContext X.ctx Y.ctx))
+      rw [supportFunctor_obj_product P X.ctx Y.ctx]
       exact le_inf (leOfHom s.fst) (leOfHom s.snd)))
     (fun _ => Subsingleton.elim _ _)
     (fun _ => Subsingleton.elim _ _)
@@ -104,8 +105,7 @@ theorem mapped_pullback_mem_open_topology
     convert hcomp using 1
   refine ⟨(supportFunctor (X := Space) P).obj Q, (supportFunctor (X := Space) P).map q, ?_, ?_⟩
   · exact Sieve.le_generate _ _ (Presieve.map.of hq)
-  · change x ∈ (contextSupport P) (Site.productContext Y.ctx (F.patch i))
-    rw [(contextSupport_product P)]
+  · rw [supportFunctor_obj_product P Y.ctx (F.patch i)]
     exact ⟨hx, hi⟩
 
 /-- A: continuity follows from input-generated coverage and preservation of pullbacks. -/
@@ -138,6 +138,13 @@ def contextOpenSupport : ContextOpenSupport (site (X := Space) P) where
   space := TopCat.of Space
   support := (supportFunctor (X := Space) P)
   continuous := (supportFunctor_isContinuous P)
+
+/-- A: public normalization of the support package on an input open context. -/
+@[simp]
+theorem contextOpenSupport_obj_openContext (W : Opens Space) :
+    (contextOpenSupport (Space := Space) P).support.obj
+      (Site.ContextCategoryObject.of (contextPreorder (X := Space) P) (openContext P W)) = W :=
+  contextSupport_openContext P W
 
 end OpenSupport
 end AAT.AG.VisibleCycleReflection

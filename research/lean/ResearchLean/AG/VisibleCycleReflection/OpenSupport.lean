@@ -116,6 +116,13 @@ def supportFunctor : Site.ContextCategoryObject (contextPreorder (X := X) P) ⥤
   map_id _ := Subsingleton.elim _ _
   map_comp _ _ := Subsingleton.elim _ _
 
+/-- A: public normalization API for the object map of the constructed support functor. -/
+@[simp]
+theorem supportFunctor_obj (W : Site.ArchCtx (architectureObject X P)) :
+    (supportFunctor (X := X) P).obj
+      (Site.ContextCategoryObject.of (contextPreorder (X := X) P) W) =
+      contextSupport P W := rfl
+
 /-- A: the support of a constructed open context is exactly its input open. -/
 @[simp]
 theorem contextSupport_openContext (W : Opens X) :
@@ -157,6 +164,17 @@ theorem contextSupport_product
     x ∈ interior ((readablePointSet P) W) ∧ x ∈ interior ((readablePointSet P) V)
   rw [(readablePointSet_product P), interior_inter]
   rfl
+
+/-- A: the support functor maps product contexts to the intersection of their supports. -/
+@[simp]
+theorem supportFunctor_obj_product (W V : Site.ArchCtx (architectureObject X P)) :
+    (supportFunctor (X := X) P).obj
+      (Site.ContextCategoryObject.of (contextPreorder (X := X) P) (Site.productContext W V)) =
+    (supportFunctor (X := X) P).obj
+      (Site.ContextCategoryObject.of (contextPreorder (X := X) P) W) ⊓
+    (supportFunctor (X := X) P).obj
+      (Site.ContextCategoryObject.of (contextPreorder (X := X) P) V) :=
+  contextSupport_product P W V
 
 /-- A: products of constructed open contexts have the given open intersection. -/
 @[simp]

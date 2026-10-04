@@ -131,20 +131,16 @@ def actualCechCover [Fintype I] (target : I → Set q.Target)
   edgeLeftRestriction _ := homOfLE (OpenSupport.openContext_le P inf_le_left)
   edgeRightRestriction _ := homOfLE (OpenSupport.openContext_le P inf_le_right)
   chartSupportNonempty i := by
-    change Nonempty (OpenSupport.contextSupport P (OpenSupport.openContext P (K.patch i)))
-    rw [OpenSupport.contextSupport_openContext]
+    rw [OpenSupport.contextOpenSupport_obj_openContext]
     exact K.chartNonempty i |>.to_subtype
   chartSupportPreconnected i := by
-    change PreconnectedSpace (OpenSupport.contextSupport P (OpenSupport.openContext P (K.patch i)))
-    rw [OpenSupport.contextSupport_openContext]
+    rw [OpenSupport.contextOpenSupport_obj_openContext]
     exact Subtype.preconnectedSpace (K.chartPreconnected i)
   edgeSupportNonempty e := by
-    change Nonempty (OpenSupport.contextSupport P (OpenSupport.openContext P (K.overlap e)))
-    rw [OpenSupport.contextSupport_openContext]
+    rw [OpenSupport.contextOpenSupport_obj_openContext]
     exact e.property.2.to_subtype
   edgeSupportPreconnected e := by
-    change PreconnectedSpace (OpenSupport.contextSupport P (OpenSupport.openContext P (K.overlap e)))
-    rw [OpenSupport.contextSupport_openContext]
+    rw [OpenSupport.contextOpenSupport_obj_openContext]
     exact Subtype.preconnectedSpace (K.overlapPreconnected e.val.1 e.val.2 e.property.1 e.property.2)
 
 end GeometricCover
