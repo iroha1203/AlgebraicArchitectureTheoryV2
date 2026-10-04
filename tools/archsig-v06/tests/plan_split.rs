@@ -390,7 +390,7 @@ fn an_element_whose_place_is_unknown_before_the_change_is_silent() {
 
 #[test]
 fn a_channel_belongs_to_the_locals_of_the_operations_after_the_change() {
-    // 項目を送る m.op1 を消し、受け取る m.r の定義は読んでいない。変更後の列にその項目の送り受けがないので、項目はどの局所にも属さない。
+    // 項目を送る m.op1 を消す。変更後の列にその項目の送り受けがないので、項目はどの局所にも属さない。
     let repo = Repo::new("split-channel-after");
     repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
     repo.write("a/x.py", "# source\n");
@@ -407,4 +407,64 @@ fn a_channel_belongs_to_the_locals_of_the_operations_after_the_change() {
     let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
     let shared: Vec<Value> = detail["check"]["shared"].as_array().unwrap().clone();
     assert!(has(&shared, "corresponds", "channel:queue:svc:item", None), "{detail}");
+}
+
+#[test]
+fn an_element_whose_place_is_unknown_in_either_structure_is_silent() {
+    let run = |name: &str, map: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
+        repo.write("a/x.py", "# source\n");
+        repo.map("a/x.py", &format!("{{\"kind\": \"observed\", \"subject\": \"a/x.py\", \"scope\": \"structure\", \"at\": \"a/x.py@blob:aaaaaaa\"}}\n{map}"));
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        repo.run(&["plan", "split", "p"])
+    };
+    let silent = |s: &Value, subject: &str, read: &str| {
+        let r = result(s, subject);
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+        assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == read), "{s}");
+    };
+    // 消した b.S は、別のフィールドの型として名指されたまま。変更前の定義は読んでいない c/z.py にある。
+    let s = run(
+        "split-removed-still-typed",
+        r#"{"kind": "defines", "subject": "a.f", "value": "operation", "params": {}, "at": "a/x.py:1@blob:aaaaaaa"}
+{"kind": "calls", "subject": "a.f", "object": "b.S", "at": "a/x.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "b.S", "object": "c/z.py", "at": "a/x.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "a.O", "value": "type", "at": "a/x.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "a.O.s", "value": "field", "type": "b.S", "at": "a/x.py:4@blob:aaaaaaa"}
+"#,
+        "{\"kind\": \"removes\", \"subject\": \"b.S\", \"at\": \"plan:p\"}\n",
+    );
+    silent(&s, "b.S", "c/z.py");
+    // 頭 b.M(型として名指されていない)の定義を読んでいない。`<頭>.<名前>` は頭で見る(マニュアル第4章、第5章 問い7)。
+    let head = r#"{"kind": "defines", "subject": "a.f", "value": "operation", "params": {}, "at": "a/x.py:1@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "b.M", "object": "b/m.py", "at": "a/x.py:1@blob:aaaaaaa"}
+"#;
+    let s = run("split-head-unread-write", head, "{\"kind\": \"writes\", \"subject\": \"a.f\", \"object\": \"b.M.x\", \"value\": \"1\", \"at\": \"plan:p\"}\n");
+    silent(&s, "b.M.x", "b/m.py");
+    let s = run("split-head-unread-calls", head, "{\"kind\": \"calls\", \"subject\": \"a.f\", \"object\": \"b.M.run\", \"at\": \"plan:p\"}\n");
+    silent(&s, "b.M.run", "b/m.py");
+}
+
+#[test]
+fn an_element_the_plan_defines_ambiguously_is_placed_by_the_plan() {
+    // 候補を重ねた列で曖昧な m.T は、候補の定義した所で見る。定義した所が一つの局所なら、その局所。分かれれば決まらない(設計 §6)。
+    let run = |name: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
+        repo.write("b/t.py", "# source\n");
+        repo.map("b/t.py", r#"{"kind": "observed", "subject": "b/t.py", "scope": "structure", "at": "b/t.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "b/t.py:1@blob:aaaaaaa"}
+"#);
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        (repo.run(&["plan", "split", "p"]), repo)
+    };
+    let (s, repo) = run("split-plan-valueless", "{\"kind\": \"defines\", \"subject\": \"m.T\", \"file\": \"c/z.py\", \"at\": \"plan:p\"}\n");
+    assert_eq!(result(&s, "p")["outcome"], "holds", "{s}");
+    assert!(has(&lines(&repo, ".archsig/plans/p/c/plan.jsonl"), "defines", "m.T", None), "{s}");
+    let (s, _) = run(
+        "split-plan-two-kinds",
+        "{\"kind\": \"defines\", \"subject\": \"m.T\", \"value\": \"type\", \"file\": \"a/z.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"m.T\", \"value\": \"operation\", \"file\": \"c/z.py\", \"at\": \"plan:p\"}\n",
+    );
+    assert_eq!((result(&s, "m.T")["outcome"].as_str(), result(&s, "m.T")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }

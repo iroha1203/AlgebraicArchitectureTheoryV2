@@ -4256,3 +4256,21 @@ fn a_name_under_an_unsettled_type_is_silent_on_every_path_for_removes() {
         assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["outcome"] == "silent"), "{name}: {s}");
     }
 }
+
+#[test]
+fn a_removed_name_that_resolves_to_an_external_element_is_still_named() {
+    // lib.mod は外部を指す。m.f は lib.mod.x を呼ぶ。候補が lib.mod.x を消すと、変更後の lib.mod.x は頭から外部の要素に解ける。
+    // 外部の要素は、その名前を名指すので、m.f は消える要素を使う(設計 §3.6)。
+    let repo = Repo::new("removed-external-name");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "lib.mod", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "lib.mod.x", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "lib.mod.x", "at": "m.py:3@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"lib.mod.x\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.f" && r["kind"] == "missing"), "{s}");
+}

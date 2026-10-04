@@ -630,7 +630,13 @@ impl Tracer<'_> {
                 }
                 return;
             }
-            Ok(Answer::External(_)) => return,
+            // 外部の要素は、その名前を名指す。
+            Ok(Answer::External(_)) => {
+                if (self.gone)(n) {
+                    found.named.insert(n.to_string());
+                }
+                return;
+            }
             Err(u) => u,
         };
         if u.itself {

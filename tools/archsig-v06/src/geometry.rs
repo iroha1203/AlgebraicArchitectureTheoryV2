@@ -67,19 +67,29 @@ impl<'a> Geometry<'a> {
             self.busy.borrow_mut().remove(name);
             return r;
         }
-        let after = self.after.element(name);
-        match &after {
-            Ok(Answer::Element(f)) => return self.found(self.after, f),
+        match self.after.element(name) {
+            Ok(Answer::Element(f)) => return self.found(self.after, &f),
             // 外部の要素は、どの局所にも属さない。
             Ok(Answer::External(_)) => return Ok(BTreeSet::new()),
+            // 候補を重ねた列で曖昧なら、その定義した所で決める。
+            Err(u) if u.why == Why::Ambiguous => return self.undecided(self.after, name, u),
             _ => {}
         }
         // 候補を重ねた列で決まらなければ(定義のない名前だけの要素を含む。`removes` した要素はこれに当たる)、変更前の構造で解いた定義した所。
-        // どちらでも決まらなければ、その答えで決める。
-        match (after, self.before.element(name)) {
-            (_, Ok(Answer::Element(f))) => self.found(self.before, &f),
-            (Err(u), _) | (Ok(_), Err(u)) => self.undecided(u),
-            (Ok(_), Ok(_)) => Ok(BTreeSet::new()),
+        let before = match self.before.element(name) {
+            Ok(Answer::Element(f)) => return self.found(self.before, &f),
+            Ok(Answer::External(_)) => return Ok(BTreeSet::new()),
+            Ok(Answer::Bare(_)) => Ok(BTreeSet::new()),
+            Err(u) => self.undecided(self.before, name, u),
+        };
+        // 変更前の構造でも決まらなければ、二つの答えで決める。どちらかで局所が決まらなければ、決まらない。
+        let after = match self.after.element(name) {
+            Err(u) => self.undecided(self.after, name, u),
+            _ => Ok(BTreeSet::new()),
+        };
+        match (after, before) {
+            (Err(e), _) | (_, Err(e)) => Err(e),
+            (Ok(a), Ok(b)) => Ok(if a.is_empty() { b } else { a }),
         }
     }
 
@@ -101,15 +111,15 @@ impl<'a> Geometry<'a> {
             }
             return match self.before.element(&f.name) {
                 Ok(Answer::Element(g)) => self.found(self.before, &g),
-                Err(u) => self.undecided(u),
+                Err(u) => self.undecided(self.before, &f.name, u),
                 Ok(_) => Ok(BTreeSet::new()),
             };
         }
         Ok(f.defined.iter().filter_map(|p| local(self.reading, p)).collect())
     }
 
-    /// 要素(名前)が決まらないときの局所(設計 §6)。
-    fn undecided(&self, u: Unknown) -> Result<BTreeSet<String>, Silence> {
+    /// 要素(名前)が決まらないときの局所(設計 §6)。`s` は答え `u` を返した構造。
+    fn undecided(&self, s: &Structure, name: &str, u: Unknown) -> Result<BTreeSet<String>, Silence> {
         // 曖昧な要素は、定義した所がすべて一つの局所にあればその局所、なければ決まらない。
         if u.why == Why::Ambiguous {
             let locals: BTreeSet<String> = u.defined.iter().filter_map(|p| local(self.reading, p)).collect();
@@ -121,6 +131,13 @@ impl<'a> Geometry<'a> {
             && !(stage.absent && (u.silence.read.is_some() || matches!(u.why, Why::Missing | Why::Undecided)))
         {
             return self.element_locals(&stage.ty);
+        }
+        // 名前そのものの定義で決まらないのでなければ(頭か持ち主で決まらない)、頭で見る。引数と呼び出しは持ち主の操作で見る(マニュアル第4章)。
+        if u.stage.is_none()
+            && !u.itself
+            && let Some(h) = s.head_of(name)
+        {
+            return self.element_locals(&h);
         }
         // `unread` でソースを返すか、それ以外の `unresolved` なら、決まらない。読む所が名前だけの `unread` は、どの局所にも属さない。
         if u.silence.read.is_some() || u.silence.reason == Reason::Unresolved {
@@ -138,7 +155,7 @@ impl<'a> Geometry<'a> {
         }
         if let Some(u) = c.walk.stop {
             let at = names.get(c.walk.place.len()).or(names.last()).cloned().unwrap_or_default();
-            out.extend(self.undecided(u).map_err(|s| (at, s))?);
+            out.extend(self.undecided(self.after, &at, u).map_err(|s| (at.clone(), s))?);
         }
         Ok(out)
     }

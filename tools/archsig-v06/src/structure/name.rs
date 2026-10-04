@@ -221,10 +221,8 @@ struct Element {
     kinds: BTreeSet<String>,
     params: BTreeMap<String, String>,
     ty: Option<String>,
-    /// `defines` を書いた場所(`at`)。
-    defined: BTreeSet<String>,
-    /// 候補の中の `defines` の `file`。
-    file: Option<String>,
+    /// `defines` を書いた場所(`at`)と、候補の中の `defines` の `file`。
+    defined: BTreeSet<(String, Option<String>)>,
     /// `defines` を持つか。
     declared: bool,
 }
@@ -238,7 +236,7 @@ impl Element {
     fn sources(&self) -> BTreeSet<String> {
         self.defined
             .iter()
-            .filter_map(|at| match &self.file {
+            .filter_map(|(at, file)| match file {
                 Some(f) if at.starts_with("plan:") => Some(f.clone()),
                 _ if at.starts_with("plan:") => None,
                 _ => parse_location(at).map(|l| l.path),
@@ -247,7 +245,7 @@ impl Element {
     }
 
     fn planned(&self) -> bool {
-        self.defined.iter().any(|at| at.starts_with("plan:"))
+        self.defined.iter().any(|(at, _)| at.starts_with("plan:"))
     }
 }
 
@@ -280,7 +278,7 @@ impl Names {
                 "defines" => {
                     let e = s.elements.entry(a.subject.clone()).or_default();
                     e.kinds.insert(a.value.clone().unwrap_or_default());
-                    e.defined.insert(a.at.clone().unwrap_or_default());
+                    e.defined.insert((a.at.clone().unwrap_or_default(), a.file.clone()));
                     e.declared = true;
                     if let Some(p) = &a.params {
                         e.params.extend(p.clone());
@@ -289,9 +287,6 @@ impl Names {
                     if a.ty.is_some() {
                         e.ty = a.ty.clone();
                         s.typed.extend(a.ty.clone());
-                    }
-                    if a.file.is_some() {
-                        e.file = a.file.clone();
                     }
                 }
                 // チャネルとその項目は、`sends` と `receives` に現れた名前から要素になる。
@@ -398,7 +393,7 @@ impl Structure {
     }
 
     /// 名前が `defines` を持つか。
-    pub fn declared(&self, n: &str) -> bool {
+    fn declared(&self, n: &str) -> bool {
         self.names.elements.get(n).is_some_and(|e| e.declared)
     }
 
