@@ -5266,3 +5266,23 @@ fn a_mapped_place_whose_later_field_the_child_defines_again_is_not_compared() {
 "#);
     assert!(!s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "fails"), "{s}");
 }
+
+#[test]
+fn removing_a_name_the_parent_never_defined_does_not_drop_the_child_name() {
+    // m.P は v だけを定義し、t を定義しない。g は m.C.t に書く(定義のない名前で、意味を持つかもしれない)。候補は f の値を変え、m.P.t を消す。
+    // m.P.t は変更前に定義がないので、m.C.t は消えた要素を名指さない。書いた場所より先は、m.C.t で沈黙する。
+    let atoms = [ty("m.P", 3), field("m.P.v", 5, false), ty("m.C", 6), inherits("m.C", "m.P")].concat()
+        + r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.C", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:23@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:24@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:26@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.C.t", "value": "1", "at": "m.py:27@blob:aaaaaaa"}
+"#;
+    let s = one_file("removed-undefined-parent-name", &atoms, r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+{"kind": "removes", "subject": "m.P.t", "at": "plan:p"}
+"#);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.f" && !r["law"].is_null()).unwrap_or_else(|| panic!("{s}"));
+    assert_eq!(r["outcome"], "silent", "{s}");
+}

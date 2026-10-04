@@ -626,11 +626,12 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
 /// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。曖昧なフィールドも沈黙する。`names` は `s.mentioned()`。
 /// 沈黙はそのフィールドだけのもので、ほかのフィールドは返す。最初の沈黙を一緒に返す。
 /// 候補が `removes` した要素は、名指されていても沈黙しない。
-fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>, ty: &str) -> (Vec<String>, Option<Silence>) {
+/// `prior` は変更前の構造(消した要素が変更前に定義されていたかを見る)。
+fn fields_of(s: &Structure, prior: Option<&Structure>, names: &BTreeSet<String>, removes: &BTreeSet<String>, ty: &str) -> (Vec<String>, Option<Silence>) {
     let prefix = format!("{ty}.");
     let member = |n: &str| n.strip_prefix(&prefix).is_some_and(|rest| !rest.is_empty() && !rest.contains('.') && !rest.starts_with('$') && !rest.contains("->"));
     let removed = |n: &str| removes.iter().any(|x| n == x || n.starts_with(&format!("{x}.")) || n.starts_with(&format!("{x}->")));
-    // 受け継がれる型(どの段でも)の同じ名前のフィールドを候補が消していれば、子の型の名前も消えた要素を名指す(設計 §3.6 の変更前の受け継ぎ)。
+    // 受け継がれる型(どの段でも)が変更前に定義していた同じ名前のフィールドを候補が消していれば、子の型の名前も消えた要素を名指す(設計 §3.6 の変更前の受け継ぎ)。
     let mut ancestors = BTreeSet::new();
     let mut todo: Vec<String> = s.bases.get(ty).cloned().unwrap_or_default();
     while let Some(b) = todo.pop() {
@@ -638,7 +639,14 @@ fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>
             todo.extend(s.bases.get(&b).into_iter().flatten().cloned());
         }
     }
-    let removed_above = |n: &str| n.strip_prefix(&prefix).is_some_and(|f| ancestors.iter().any(|b| removed(&format!("{b}.{f}"))));
+    let removed_above = |n: &str| {
+        n.strip_prefix(&prefix).is_some_and(|f| {
+            ancestors.iter().any(|b| {
+                let field = format!("{b}.{f}");
+                removed(&field) && prior.is_some_and(|p| p.elements.contains_key(&field))
+            })
+        })
+    };
     let mut silence = names
         .range(prefix.clone()..)
         .take_while(|n| n.starts_with(&prefix))
@@ -757,7 +765,7 @@ impl Below<'_> {
     /// 受け継がれる型は、たどる型と同じに扱う。分からないフィールドと、決まらない受け継ぎの最初の沈黙を一緒に返す。
     fn members(&mut self, s: &Structure, ty: &str) -> (Vec<String>, Option<Silence>) {
         let names = s.mentioned();
-        let (mut out, mut silence) = fields_of(s, &names, &self.removes, ty);
+        let (mut out, mut silence) = fields_of(s, self.prior.map(|(p, _)| p), &names, &self.removes, ty);
         let mut inherited = BTreeSet::new();
         let mut seen = BTreeSet::new();
         let mut todo: Vec<String> = s.bases.get(ty).cloned().unwrap_or_default();
@@ -778,7 +786,7 @@ impl Below<'_> {
                     continue;
                 }
             }
-            let (fs, unknown) = fields_of(s, &names, &self.removes, &b);
+            let (fs, unknown) = fields_of(s, self.prior.map(|(p, _)| p), &names, &self.removes, &b);
             silence = silence.or(unknown);
             inherited.extend(fs.iter().map(|f| f[b.len() + 1..].to_string()));
             todo.extend(s.bases.get(&b).into_iter().flatten().cloned());
