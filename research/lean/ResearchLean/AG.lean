@@ -1024,3 +1024,8 @@ import ResearchLean.AG.VisibleCycleReflection.AffineStateSheaf
 import ResearchLean.AG.VisibleCycleReflection.ActualStateGluing
 import ResearchLean.AG.VisibleCycleReflection.ActualStateRepair
 import ResearchLean.AG.VisibleCycleReflection.AATStateSheaf
+import ResearchLean.AG.VisibleCycleReflection.FiniteInputTable
+import ResearchLean.AG.VisibleCycleReflection.FiniteTopologyTable
+import ResearchLean.AG.VisibleCycleReflection.PrimitiveTableValidation
+import ResearchLean.AG.VisibleCycleReflection.ActualTableDecode
+import ResearchLean.AG.VisibleCycleReflection.FiniteValidationWitness

@@ -976,3 +976,317 @@ ActualStateRepair 24、AATStateSheaf 22。明示114宣言のsource/list/実print
 placeholder/hidden/BiDi/privacy/語彙/diff scanはclean。固定GOAL・設計・共通基準とFormalは不変。
 Researchのfull/aggregate build、ローカルFormal full buildは不実行。
 正式4laneとPR固定headのCIは続いて確認する。全GOALのcompletion candidateはnoである。
+
+
+## Cycle 5 selection
+
+Cycle 4は[最終内容・acceptance監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5256#issuecomment-5979789150)
+で独立4本No major findings、CI8件SUCCESSを確認し、通常merge
+`f3d990011711583decb2f36ade570551ab264fde`と
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5250#issuecomment-5979801472)
+でB状態層・実一意gluing・零障害/修復/global非空の全方向を受理した。停止条件はない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-132-aat-visible-cycle-reflection
+cycle: 5
+goal_blob_sha: 4fb28b116ddd9f9d98cc03834d03a0a68b1ba49d
+base_oid: f3d990011711583decb2f36ade570551ab264fde
+tracking_issue: 5250
+report_path: research/reports/G-132-aat-visible-cycle-reflection.md
+selection:
+  proof_state_ref: cycle4受理監査comment5979789150/merge/Issuecomment5979801472
+  proof_dag_predecessors: [cycle1の実Atom/site/coverage/support, cycle2の係数と診断比較, cycle3の全入力反映, cycle4の状態層と修復]
+  milestone: Cの有限原始表のT0検証と同じ実入力への復号を計算手続きと正確性で閉じる
+  proof_obligations:
+    - finite Source/Law値/reading/原始R/target台とfinite幾何点/全開集合/実chartの表を実装
+    - 表上の全射/adequacy/原始ラベル保存/Rqを有限生成関係探索から判定しdecoded原始構造へ証明
+    - 有限開集合表のtopology法則とchartの開性/被覆/非空/二重連結/三重空を有限検査
+    - 有限open separation検査を実IsPreconnectedへ全方向対応させる
+    - 無効入力を区別し検査成功から全T0を持つ実P/q/K/target/Atom/site/実Cech coverを構成
+    - 全chart対の非空実交差と同じtarget交差を表から生成し既存実nerve/可視性と一致
+    - 任意実局所データのaccepted A/B/state APIsに同じdecoded入力を接続
+  exit_criteria:
+    - runtime validatorはfinite列挙/原始関係到達性の計算でありClassical.choiceやT0供給fieldに依存しない
+    - validator成功の正確性と必要性、decoded inputの全T0条件、全実交差と同じtarget交差の一致
+    - finite表から生成した同じ原始関係商/Atom/site/actualcoverと任意actual inputへのA/B適用
+    - 対象focusedと全新宣言print/scansと独立PR監査
+  selection_reason: Cの停止判定と失敗証拠が必要とするraw表からT0と実AAT入力への未接続を先に閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiniteInputTable.lean, FiniteTopologyTable.lean, PrimitiveTableValidation.lean, ActualTableDecode.lean]
+  risks: [入力妥当性fieldへの結論移動, noncomputable validation, 幾何台とtarget台の混同, 実連結性未接続, Rqをラベル同値relationで代替, 全非空交差の欠落, decoded入力のactual API未接続]
+  unchecked: [有限表の未実装義務, Cのreflection判定とfailure探索/閉路/同表実反例, W1–W3, 全GOALcompletion]
+```
+
+設計README §5の一般被覆表の入口を用い、全開集合の有限表から実位相を生成する。
+連結性は列挙した全開集合対に対するopen separation条件を実`IsPreconnected`へ
+一致させて検証する。WのAlexandrov incidence例は、この有限位相表への具体入力として
+後続で順序の上集合との一致も証明する。Cのreflection検索・失敗出力は、ここで構成した
+同じT0入力を用いる次の到達点として保持し、全Cの完了表示はしない。
+
+
+## Cycle 5 result proposal
+
+終了条件に必要な有限判定の正例・拒否例を`FiniteValidationWitness.lean`へ追加した。
+これは同じ到達点のnonvacuity/入力検査の証拠であり、元の終了条件を縮める途中分割ではない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    raw_table: finite Source/Law依存値/reading/Boolean原始R/独立targetとgeometryの実表
+    primitive_validation: finite generated relation graphの計算到達性と元EqvGen/Rqの双方向一致
+    geometry_validation: finite全open familyからactual topologyを生成しfinite separationとactual IsPreconnectedを双方向一致
+    decoded_actual_input: validateから同じ原始P/q/actualTopology/K/target/Atom site/actual Cech入力を生成
+    all_cells_and_visibility: rawGraph/全rawEdges/全generated labelsとactual graph/nerve/同一target可視性の一致
+    accepted_aat_connection: 任意actual ξ,pのA比較factorization/B全入力反映/B3と整数修復/実AAT一意gluing
+  exit_criteria_status:
+    - finite validator/validatedはcomputableな有限列挙と原始関係到達性、raw fieldにcertificateなし
+    - validate_true_iff/false_iff/validated_some_iff、topologyValid_iff_exists、geometryValid_iff_exists、adequate_iff/reflectionCondition_iff
+    - actualReading/actualPresentation/actualGeometry/actualTarget、actual_coverage_admissible、actual_input_factorization
+    - 全新5file focused/全155明示宣言print/scans成功、正式4laneとPR CIは次段階
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [FiniteInputTable.lean, FiniteTopologyTable.lean, PrimitiveTableValidation.lean, ActualTableDecode.lean, FiniteValidationWitness.lean]
+  evidence: [validate_true_iff, topologyValid_iff_exists, preconnected_iff, geometryValid_iff_exists, relationGraph_reachable_iff, reflectionCondition_iff, actualRawEdgeEquiv, actualGraphRawEdgeEquiv, rawLabels_complete_actual, rawLabels_sound_actual, vertexVisible_iff_actual, edgeVisible_iff_actual, actual_coverage_admissible, actual_input_factorization, actual_reflection_iff_nonbridge_visible, actual_diagnostic_zero_iff_global_state, actual_repair_and_gluing, onePointTable_validates, onePoint_reflects]
+  claim_mapping:
+    theorem_names: [validate_true_iff, actual_input_factorization, actual_reflection_iff_nonbridge_visible, actual_repair_and_gluing]
+    source_labels: [Cの有限表T0検査と実入力復号, T0, A, B]
+    conjuncts:
+      - 同じraw原始RをactualPresentationに保持しEqvGen到達性からRqを生成
+      - raw全open familyがexact actualTopology、finite open separationがexact actual preconnectedness
+      - 全actual交差セルとsource-generated labelのexact有限列挙、独立同一target台のexact可視性
+      - 同じactualCechCoverと任意ξ,pにaccepted A/Bと元AAT state sheaf/gluingを適用
+    undischarged_assumptions: []
+    acceptance_point: C全体ではなく選定した有限T0検証/復号到達点のproposal
+    port_status: unported
+
+audits:
+  premise_delta:
+    discharged: [finite全射/adequacy/ラベル保存/Rq, actual topology, chart開性/被覆/非空/連結/二重連結/三重空, target非空, exact raw/actual cellとsame-target support, actual site admissibility, 同じactual入力へのA/B/state API適用]
+    remaining: [Cのbridge/反映判定/有限探索/出力once-cycle/同表実反例, W1–W3, 全GOAL独立completion]
+  certificate_provenance:
+    discharged: [validatedのproofはraw有限decisionから生成, actualGeometry全fieldはrawfinite検査から生成, actual Rqは元Boolean relation graphのfinite reachabilityから生成]
+    unresolved: []
+  proof_use:
+    used: [Boolean relationからactual primitive relation, finite open closureからactual topology, finite separationからactual connectedness, geometry/target別表からexact nerveとsupport, Rq/adequacyをsame actual比較/反映/整数修復に適用]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [5対象focused成功, 155source/list/print入力/実print出力一致, standard3axiomsのみ, runtime bool評価とkernel decide witnesses, diff/placeholder/Unicode/privacy/語彙/import/package方向scan]
+  blocking_findings: []
+  next_obligation: Cの有限bridge判定/反映成功同値と失敗時のラベル/辺/once-cycle/同表実ξ,pを探索から出力
+```
+
+### Cycle 5 claim/premise/dependency spine
+
+rawのdataは有限index・Bool原始関係・全open family・chart点集合・独立target集合である。
+`edgeOrder`は表示列順だけで、全chart対を後続列挙して欠落を許さず、実非空交差filterと
+重複除去を適用する。Sourceで生成したラベルを列挙し、Lawタグと依存値の等号を保つ。
+
+`Valid`はT0だけを検査し、B1/B3・零障害・integer potential・global stateを検査項目へ
+混入しない。`validate`と`validated`は`noncomputable`ではなく、原始関係graphの到達性も
+Mathlibの有限長walk列挙から計算する。`validated_retains_input`は成功後のtable変更を禁止する。
+actualの意味復号に非計算的Mathlib構成を用いることと、runtime decisionの停止計算を区別する。
+
+Material premiseのraw table data/finite codesはambient-boundary。`Valid`を引数に取る
+actual APIはgeneric decoderだが、実入口`validated`はこのproofをfinite decisionから生成する。
+T0の全射・adequacy・Rq・実被覆全field・非空targetはdischarge-requiredで、各finite checkの
+双方向特徴づけとconstructorに対応する。B3/diagnostic零は方向の仮定であり、本cycleで
+bridge/反映decisionを構成したとは主張しない。後続CがこのB3を計算から放電する。
+
+原始Rは同ラベル等号relationへの置換をしない。`relationGraph_reachable_iff`がloopsを
+reflexivity、逆向きをsymmetryとして元`Relation.EqvGen`へ対応させる。
+`actualGeometry_graph`・`actualRawEdgeEquiv`・`actualGraphRawEdgeEquiv`は全実交差を保ち、
+`edgeVisible_iff_actual`は同じtargetが二台の交差に属することを保持する。
+実係数は元P.PresentationGroup、actualデータは元`ActualCechAffineLocalData`の全ξ,pである。
+
+依存は受理cycle1の実Atom/site/連続support/coverage、cycle2のfull比較、cycle3の反映/反例、
+cycle4の実状態層・修復をcurrent declaration/必要定義/同じ引数で使用する。
+新owner API `GeometricCover.graphEdgeEquiv_symm_val`は元ordered pairの公開評価だけを追加する。
+G-125/G-104の既受理経路・固定sourceとreview refはcycle2/3の依存記録から不変である。
+
+非空正例`onePointTable`はT0検査とactual ξ=p=0の存在、全入力反映をkernel確認する。
+open不足・空chart・空target・未全射reading・不十分adequacy・ラベル横断原始R・
+同ラベル未到達・二点分離の否定例を実表で与える。各raw Propには正/負のinstanceがある。
+`ActualReflects`/`ActualNonbridgeVisible`の非自明失敗はaccepted cycle3の任意不可視非橋辺の
+同actual反例に接続しており、有限の指定負例は未完W2で閉じる。
+このone-chart正例はW1–W3を代替せず、Cの反映検索の成功/失敗とも区別する。
+
+### Cycle 5 explicit declaration list
+
+```text
+AAT.AG.VisibleCycleReflection.FiniteInputTable
+AAT.AG.VisibleCycleReflection.FiniteInputTable.Source
+AAT.AG.VisibleCycleReflection.FiniteInputTable.Point
+AAT.AG.VisibleCycleReflection.FiniteInputTable.Chart
+AAT.AG.VisibleCycleReflection.FiniteInputTable.Generator
+AAT.AG.VisibleCycleReflection.FiniteInputTable.RawLabel
+AAT.AG.VisibleCycleReflection.FiniteInputTable.laws
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawLabel
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawLabel_apply
+AAT.AG.VisibleCycleReflection.FiniteInputTable.relationGraph
+AAT.AG.VisibleCycleReflection.FiniteInputTable.relationGraph_adj
+AAT.AG.VisibleCycleReflection.FiniteInputTable.relationGraphDecidable
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawGraph
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawGraph_adj
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawGraphDecidable
+AAT.AG.VisibleCycleReflection.FiniteInputTable.RawEdge
+AAT.AG.VisibleCycleReflection.FiniteInputTable.firstOccurrences
+AAT.AG.VisibleCycleReflection.FiniteInputTable.mem_firstOccurrences
+AAT.AG.VisibleCycleReflection.FiniteInputTable.firstOccurrences_nodup
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawGenerators
+AAT.AG.VisibleCycleReflection.FiniteInputTable.mem_rawGenerators
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawLabels
+AAT.AG.VisibleCycleReflection.FiniteInputTable.mem_rawLabels_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawEdgePairs
+AAT.AG.VisibleCycleReflection.FiniteInputTable.mem_rawEdgePairs
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawEdges
+AAT.AG.VisibleCycleReflection.FiniteInputTable.mem_rawEdges
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawEdges_nodup
+AAT.AG.VisibleCycleReflection.FiniteInputTable.VertexVisible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.EdgeVisible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableVertexVisible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableEdgeVisible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SurjectiveReading
+AAT.AG.VisibleCycleReflection.FiniteInputTable.AdequateReading
+AAT.AG.VisibleCycleReflection.FiniteInputTable.LabelPreserving
+AAT.AG.VisibleCycleReflection.FiniteInputTable.RelationReflecting
+AAT.AG.VisibleCycleReflection.FiniteInputTable.TopologyValid
+AAT.AG.VisibleCycleReflection.FiniteInputTable.Preconnected
+AAT.AG.VisibleCycleReflection.FiniteInputTable.GeometryValid
+AAT.AG.VisibleCycleReflection.FiniteInputTable.TargetValid
+AAT.AG.VisibleCycleReflection.FiniteInputTable.Valid
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableSurjectiveReading
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableAdequateReading
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableLabelPreserving
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableRelationReflecting
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableTopologyValid
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidablePreconnected
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableGeometryValid
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableTargetValid
+AAT.AG.VisibleCycleReflection.FiniteInputTable.decidableValid
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validate
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validate_true_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validate_false_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validated
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validated_none_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validated_retains_input
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validated_some_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.opens_sUnion
+AAT.AG.VisibleCycleReflection.FiniteInputTable.topology
+AAT.AG.VisibleCycleReflection.FiniteInputTable.topology_isOpen_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.topology_finset_isOpen_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.topologyValid_iff_exists
+AAT.AG.VisibleCycleReflection.FiniteInputTable.preconnected_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.patch
+AAT.AG.VisibleCycleReflection.FiniteInputTable.mem_patch
+AAT.AG.VisibleCycleReflection.FiniteInputTable.patch_coe
+AAT.AG.VisibleCycleReflection.FiniteInputTable.geometricCover
+AAT.AG.VisibleCycleReflection.FiniteInputTable.geometricCover_patch
+AAT.AG.VisibleCycleReflection.FiniteInputTable.geometricCover_edge_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.geometryValid_iff_exists
+AAT.AG.VisibleCycleReflection.FiniteInputTable.generatedLabelEquiv
+AAT.AG.VisibleCycleReflection.FiniteInputTable.generatedLabelEquiv_apply
+AAT.AG.VisibleCycleReflection.FiniteInputTable.generatedLabelEquiv_primitive
+AAT.AG.VisibleCycleReflection.FiniteInputTable.primitive_label_eq_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.reading
+AAT.AG.VisibleCycleReflection.FiniteInputTable.reading_read
+AAT.AG.VisibleCycleReflection.FiniteInputTable.adequate_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.presentation
+AAT.AG.VisibleCycleReflection.FiniteInputTable.presentation_relation
+AAT.AG.VisibleCycleReflection.FiniteInputTable.relationGraph_reachable_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.presentation_related_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.reflectionCondition_iff
+AAT.AG.VisibleCycleReflection.GeometricCover.graphEdgeEquiv_symm_val
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validSurjective
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validAdequate
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validLabelPreserving
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validRelationReflecting
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validTopology
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validGeometry
+AAT.AG.VisibleCycleReflection.FiniteInputTable.validTarget
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualReading
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualPresentation
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualTopology
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualGeometry
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualTarget
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualTarget_mem
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualTarget_coe
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualTarget_nonempty
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualAdequate
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualReflectionCondition
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualPresentation_relation
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualReading_read
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualTopology_isOpen_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualGeometry_patch_coe
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualGeometry_edge_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualGeometry_graph
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualRawEdgeEquiv
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualRawEdgeEquiv_val
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawLabels_complete_actual
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawLabels_sound_actual
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualLawDescend_read
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawSupport_iff_actual
+AAT.AG.VisibleCycleReflection.FiniteInputTable.vertexVisible_iff_actual
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualGraphRawEdgeEquiv
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualGraphRawEdgeEquiv_val
+AAT.AG.VisibleCycleReflection.FiniteInputTable.edgeVisible_iff_actual
+AAT.AG.VisibleCycleReflection.FiniteInputTable.ActualLocalData
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualNerve
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actual_input_factorization
+AAT.AG.VisibleCycleReflection.FiniteInputTable.ActualReflects
+AAT.AG.VisibleCycleReflection.FiniteInputTable.ActualNonbridgeVisible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actual_reflection_iff_nonbridge_visible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actual_coverage_admissible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actual_diagnostic_zero_iff_global_state
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actual_repair_and_gluing
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.onePointTable
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.onePointTable_validates
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.onePointTable_valid
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.missingOpens
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.missingOpens_rejected
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.emptyChart
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.emptyChart_rejected
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.emptyTarget
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.emptyTarget_rejected
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.missingPrimitiveRelation
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.missingPrimitiveRelation_rejected
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.missingReading
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.missingReading_not_surjective
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.inadequateReading
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.inadequateReading_not_adequate
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.crossLabelRelation
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.crossLabelRelation_not_preserving
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.missingPrimitiveRelation_not_reflecting
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.missingOpens_not_topology
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.emptyChart_not_geometry
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.emptyTarget_not_target
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.separatedPoints
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.separatedPoints_not_preconnected
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.onePoint_preconnected
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.vertex_support_pair
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.edge_support_pair
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.onePoint_nonbridge_visible
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.onePoint_reflects
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.ActualData
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.actualData_nonempty
+```
+
+5新file focused成功。namespace auditはFiniteInputTable 81、FiniteTopologyTable 15、
+PrimitiveTableValidation 12、ActualTableDecode 43、FiniteValidationWitness 30。
+明示155宣言のsource/list/print入力/実出力は一致し、標準3公理のみ（公理不要な宣言も含む）。
+実print SHA256 `cb95048711cd7fd7025263d6d2f6a34835d532df1b0a8eb21f4eeda4ab89fd35`。
+5moduleをmanifestとAG importへ登録する。root import方向gate（228module）とpackage方向、
+新moduleのimport source解決・登録一対一を確認した。Researchだけをscan rootにした同gateは
+依存Formal sourceをrootに含めないため未解決local importを報告し、この使用方法を合格根拠にはしない。
+Research全体/aggregate buildとローカルFormal全体buildは不実行。固定GOAL/設計/共通基準と
+Formalは不変、Formal移植はunported。独立PR監査と固定head CIはこれから確認する。
+
+Runtime評価は `[true,false,false,false,false,false,false,false,false]`（正例1、不正表8）。
+`validated.isSome`は正例true、Rq欠落表false。実generator/labelの有限列挙は各`[(0,0)]`、
+実edge列挙は空。この観測に加えてkernel `by decide`とgeneric sound/complete theoremを証拠とする。
