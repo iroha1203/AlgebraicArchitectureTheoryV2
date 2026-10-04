@@ -1,7 +1,7 @@
 # G-131-aat-repair-observation-duality — 修復・観測双対性と出力別の最適観測
 
 - `id`: `G-131-aat-repair-observation-duality`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#5133](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5133)
 - `source note`: [n1017 §3.5・§6](../../docs/note/n1017_aat_relative_boundary_repair_and_observation.md)

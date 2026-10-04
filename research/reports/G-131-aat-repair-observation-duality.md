@@ -1510,3 +1510,30 @@ C9 base `7e45cecd592f4831613ee0e851a61dab41bd0268` と現在版の
 修正はこの対応補足だけであり、Lean source・全751明示名と65生成名・
 固定 target・仮定・proof-use は不変。全体は新しい四本の正式最終査読前の
 `target-proof-checkpoint` とし、完了判定を直接確認一件で更新しない。
+
+## 完了：G-131 target-theorem-proved
+
+証明 head `7c933e710237c4d767038311b70c763a9b2af346` の
+[通常 PR gate](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5975365169)と
+[最終 packet](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5975367812)を固定し、
+新規の数学 A/B・Lean A/B 四本はすべて正確に `No major findings`。
+root は全15 gate・全17 material premise・13回帰 scenario・累積証拠を再照合し、
+[完了台帳](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5975557637)で
+固定 target A–E と完了条件1–4を `target-theorem-proved` と判定した。
+未完 obligation、中心 claim の unchecked、blocker は空であり、この判定がループの停止条件である。
+過去の checkpoint と不合格監査は各時点の記録として保存する。
+
+全55 source の751明示名と65生成名、計816個別宣言の公理は標準公理のみ。
+必要な focused check、placeholder・Unicode・privacy・import方向 scan と `git diff --check` は通過した。
+同証明 head の [Lean CI](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/37167601180)は
+Research integrity の実行 step が成功し、Formal の build・kernel・premise step は skip。
+[Tool CI](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/37167601191)は必要な五 job が成功した。
+Research 全体 build とローカル Formal build は実行していない。成果は Research で証明済み、Formal へは未移植。
+専用の `/goal` 実行機構は利用できず、target-theorem-loop の規約を直接適用した。
+
+[PR #5236](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236)は通常 merge され、
+merge commit は `98a3b75ed27a685dbbb30f21324a033f67f17012`。
+[Issue #5133 の完了記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5133#issuecomment-5975584967)に
+全七受入条件と証拠を同期し、ユーザーの明示許可に従って `completed` として close した。
+本節と GOAL status・一覧の更新は、証明完了によるループ停止後の状態同期である。
+固定 target、一次仕様、Lean statement・proof・依存は変更しない。
