@@ -694,7 +694,7 @@ GraphChains 36、GraphBridge 19、VisibleCycleCriterion 15、IntegralVisibleRefl
 GraphPeriods 9、ActualReflection 13、ActualCounterinput 18。生成内部宣言と別owner namespaceの
 基本APIの扱いが異なるため、この件数は明示spine宣言の単純和ではない。
 明示123新宣言（元namespaceの9基本APIを含む）のsource/report/list/実print出力は全件一致し、
-標準3公理のみ。実print出力SHA256 `9fdc27a4187594a636109b87ba3955f10b5e912d04ff47040c9b3293a0268175`。
+標準3公理のみ。実print出力SHA256 `462689d218b6dda326675379479e067c948defd11cf2fb1b81d822d750e84750`。
 全7新moduleをmanifestとAG importに登録し、aggregateはelaborateしない。
 placeholder/hidden/BiDi/privacy/語彙/diff/import方向scanはclean。
 Research import gateは228modulesを静的に走査して成功。
@@ -711,5 +711,5 @@ Research full/aggregateおよびローカルFormal full buildは不実行。
 F1はGraphBridge/GraphPeriodsで他moduleの`hopChain`を展開するAPI欠落である。
 名指しされた順序別公開API `hopChain_of_lt` / `hopChain_of_not_lt` だけをGraphChainsへ追加し、
 指摘された2consumerを置換した。既存statementとdef/instance値・import・statusは維持する。
-修正対象3fileと実入力topのfocused確認、全123明示宣言の公理監査を行う。
+修正対象3fileと実入力topのfocused確認は成功し、全123明示宣言の公理監査は標準3公理のみ。
 直接対応の資格・解消は新しい単一確認subagentが固定headで判定する。
