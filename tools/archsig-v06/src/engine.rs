@@ -1108,6 +1108,9 @@ fn call_names(v: &Value, out: &mut BTreeSet<String>) {
     }
 }
 
+/// 操作の本体:字句の列と、受け継ぎで解いた先の列(決まらなければその沈黙)。
+type Body = (Vec<String>, Result<Vec<String>, Silence>);
+
 /// 操作 `op` の本体。`op` とそこから呼ぶ操作の構造 Atom(定義と解決を除く)を、種類、呼び出しの名前、`object`、`via`、`value`、`when` の字句で並べたもの。
 /// 定義からは、引数の名前と型を並べる。
 /// 手順(書き込み、呼び出し、送信、戻り値)は手順の順のまま並べる(戻り値の後の手順のように、順に意味がある)。ほかの Atom は順によらない。
@@ -1116,7 +1119,7 @@ fn call_names(v: &Value, out: &mut BTreeSet<String>) {
 /// `inherits` を持つ型の読み書きのフィールドと式の中の道の段は、受け継ぎで解いた先も並べる。
 /// `?` が関わる Atom(`?` の値、`?` で始まる名前)、構文として読めない式、字句の数が上限を超えた式、決まらない解決、決まらない受け継ぎがあれば、
 /// 入力から本体が決まらないので、比べられない(None)。
-fn body(s: &Structure, op: &str) -> Option<(Vec<String>, Result<Vec<String>, Silence>)> {
+fn body(s: &Structure, op: &str) -> Option<Body> {
     let mut seen = BTreeSet::new();
     let mut todo = vec![op.to_string()];
     let mut out = Vec::new();
