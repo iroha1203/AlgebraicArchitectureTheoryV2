@@ -4318,3 +4318,95 @@ fn a_callee_whose_answer_is_the_same_external_element_has_the_same_body() {
     let s = repo.run(&["plan", "check", "p"]);
     assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
 }
+
+/// m.py だけを読む Law と、m.py の構造の Atom(`observed` は足す)と候補で、`plan check` を実行する。
+fn check_m(name: &str, map: &str, plan: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{map}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    repo.run(&["plan", "check", "p"])
+}
+
+#[test]
+fn a_callee_whose_resolves_points_to_a_question_mark_is_in_the_silence_of_removes() {
+    // m.f が呼ぶ m.g の `resolves` は、解析器が解決できなかった行き先(`?`)を指す。解決の決まらない呼び出し先なので、
+    // 消える要素を使うかが決まらず、`removes` の沈黙に入る(設計 §3.6)。
+    let s = check_m(
+        "removes-question-callee",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.g", "object": "?g", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.Old", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+"#,
+        "{\"kind\": \"removes\", \"subject\": \"m.Old\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "removes");
+    assert_eq!(r["outcome"], "silent", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
+fn a_column_with_a_bare_head_that_stops_in_the_middle_cannot_be_traced() {
+    // 列 [mod.v, lib.k] の頭 mod は名前だけの要素で、二つ目の lib.k の `resolves` は読んでいない c/x.py を指す。
+    // 列は止まった名前で決まらないので、m.f が消える要素を使うかも決まらない(設計 §3.6)。
+    let s = check_m(
+        "bare-column-stops",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["mod.v"], "object": "lib.k", "value": "1", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "lib.k", "object": "c/x.py", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.Old", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+"#,
+        "{\"kind\": \"removes\", \"subject\": \"m.Old\", \"at\": \"plan:p\"}\n",
+    );
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.f" && r["law"].is_null()).unwrap_or_else(|| panic!("{s}"));
+    assert_eq!(r["outcome"], "silent", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c/x.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
+fn an_operation_that_may_use_a_removed_element_does_not_hold_under_the_law() {
+    // m.f が読む名前は解析器が読めなかった(`?`)ので、消える要素を使うかが決まらない。読むだけで書き込みは比べると同じでも、
+    // その Law で成り立つとはせず沈黙する(設計 §3.6、§5.1)。
+    let s = check_m(
+        "law-untraced",
+        r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "1", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.f", "object": "?w", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.Old", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+"#,
+        "{\"kind\": \"removes\", \"subject\": \"m.Old\", \"at\": \"plan:p\"}\n",
+    );
+    let lawed = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.f" && r["law"] == "payment-follows-order").unwrap_or_else(|| panic!("{s}"));
+    assert_eq!(lawed["outcome"], "silent", "{s}");
+}
+
+#[test]
+fn a_meaning_under_a_redefined_unread_type_makes_the_law_silent() {
+    // 変更前の m.T は引数の型として名指されるだけで、候補が定義し直す。m.T.x は意味を持つが、段が変更前の沈黙で決まらないので、
+    // その場所は比べず、沈黙を持つ(設計 §5.4)。m.g は何も書かないが、成り立つとはしない。
+    let s = check_m(
+        "meaning-under-redefined",
+        r#"{"kind": "defines", "subject": "m.T.x", "value": "field", "type": "int", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.T.x", "meaning": "payment-info", "uses": ["m.py:9@blob:aaaaaaa"], "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:3@blob:aaaaaaa"}
+"#,
+        "{\"kind\": \"defines\", \"subject\": \"m.T\", \"value\": \"type\", \"file\": \"m.py\", \"at\": \"plan:p\"}\n",
+    );
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g").unwrap_or_else(|| panic!("{s}"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.T"), "{s}");
+}

@@ -601,7 +601,7 @@ fn meaning_known(prior: Option<(&Structure, &Mapping)>, s: &Structure, field: &s
     // 種類の決まらないフィールド(二か所の `defines` など)は、どの定義のソースで意味を読むかが決まらない。
     let f = match s.element(field) {
         Ok(Answer::Element(f)) => f,
-        _ => return s.kind(field).map(|_| ()),
+        Ok(Answer::External(_) | Answer::Bare) | Err(_) => return s.kind(field).map(|_| ()),
     };
     if f.planned {
         if let Some((before, mapping)) = prior {
@@ -756,6 +756,17 @@ fn commute(
         if matches!(&ka, Ok(k) if k != "operation") || matches!(&kb, Ok(k) if k != "operation") {
             continue;
         }
+        // 名指す要素をたどれなかった所を持つ操作は、消える要素を使うか(`missing`)が決まらないので、比べず、その沈黙で沈黙する(設計 §3.6、§5.1)。
+        if !overlay.removes.is_empty()
+            && let Some(gaps) = overlay.untraced.get(b)
+        {
+            let mut f = Finding::silent("change", Some(law), b, gaps[0].clone());
+            f.next = gaps.iter().filter(|s| s.read.is_some() || s.element.is_some()).cloned().collect();
+            f.at = defined_at(after, b).or_else(|| defined_at(before, a)).into_iter().collect();
+            f.theory = Some(THEORY_CHANGES.to_string());
+            out.push(f);
+            continue;
+        }
         // 片方だけが外部の組は、外部でない端の沈黙(読めば決まる所を持つ)を先に返す。
         let pair = match (ka, kb) {
             (Err(_), Err(t)) if external(before, a) => Err(t),
@@ -805,17 +816,24 @@ fn compare(
     // 書き込みの場所より先の場所のうち最後のフィールドが意味を持つもの。
     // 書き込みは、その場所の頭の部分(`via` のフィールドまでの場所)と、その場所からたどる場所の値も変える。
     // 書き込まれたフィールドとその行き先が意味を持つかが、読んだ範囲から決まらなければ、その場所は比べず、沈黙を最後まで持つ(設計 §5.4)。
-    let mut places: BTreeSet<Vec<String>> = after
-        .meanings
-        .iter()
-        .filter(|(f, _)| after.kind(f).is_ok_and(|k| k == "field") && has_meaning(after, f, meaning))
-        .map(|(f, _)| vec![f.clone()])
-        .collect();
     let prior = Some((before, mapping));
+    let mut below = Below { prior, ..Below::default() };
+    // 意味 Atom を持つ名前のうち、種類が決まらないもの(定義し直した読んでいない型の下の名前を含む)は、比べず、その沈黙を持つ。
+    // 書き込みに関わる場所の沈黙を先に持つ(下)。
+    let mut places: BTreeSet<Vec<String>> = BTreeSet::new();
+    let mut undecided = Vec::new();
+    for f in after.meanings.keys().filter(|f| has_meaning(after, f, meaning)) {
+        match after.kind(f) {
+            Ok(k) if k == "field" => {
+                places.insert(vec![f.clone()]);
+            }
+            Ok(_) => {}
+            Err(s) => undecided.push(s),
+        }
+    }
     // 意味 Atom があっても、意味を持つかを読んでいないフィールド(候補が定義したフィールドで、元を読んでいないものを含む)は、
     // 意味が決まらないので比べない。その値が二つの順番で食い違うのは書き込みがあるときで、その沈黙は下で持つ。
     places.retain(|q| meaning_known(prior, after, &q[0], meaning).is_ok());
-    let mut below = Below { prior, ..Below::default() };
     for br in &run1 {
         for w in &br.writes {
             for k in 1..=w.place.len() {
@@ -860,6 +878,9 @@ fn compare(
             }
             places.extend(below.places(after, &w.place, meaning));
         }
+    }
+    for s in undecided {
+        below.hold(Err(s));
     }
     let mut compared = Vec::new();
     let mut calls = false;
@@ -1049,10 +1070,12 @@ fn body(s: &Structure, op: &str) -> Result<Vec<String>, Silence> {
                 out.push(format!("params|{:?}", e.params));
             }
             // 定義のない操作は、その解決(要素(名前)の答え)を比べる。解決が決まらなければ(指す先の違う `resolves`、曖昧)、本体が違うとする。
-            Err(u) if matches!(u.why, Why::Ambiguous | Why::Undecided | Why::Question) => return Err(unchecked()),
-            Err(u) => out.push(format!("unknown|{:?}|{:?}|{:?}", u.why, u.silence.read, u.silence.element)),
+            Err(u) => match u.why {
+                Why::Ambiguous | Why::Undecided | Why::Question => return Err(unchecked()),
+                Why::Unread | Why::Missing | Why::Other => out.push(format!("unknown|{:?}|{:?}|{:?}", u.why, u.silence.read, u.silence.element)),
+            },
             Ok(Answer::External(pkg)) => out.push(format!("external|{pkg}")),
-            Ok(Answer::Bare(_)) => out.push("bare".to_string()),
+            Ok(Answer::Bare) => out.push("bare".to_string()),
             Ok(Answer::Element(e)) => out.push(format!("kind|{}", e.kind)),
         }
         for (_, key, calls) in steps.drain(..).chain(rest.drain(..)) {
@@ -1097,9 +1120,10 @@ fn atom_key(s: &Structure, o: &str, a: &Atom) -> Result<(String, Vec<String>), S
     if a.kind == "calls"
         && let Some(c) = &a.object
     {
+        // 操作に決まらない呼び出し先は、字句のままたどる。その解決は、たどった先の「op」の区切りで比べる。
         calls.push(match s.element(c) {
             Ok(Answer::Element(e)) if e.kind == "operation" => e.name,
-            _ => c.clone(),
+            Ok(Answer::Element(_) | Answer::External(_) | Answer::Bare) | Err(_) => c.clone(),
         });
     }
     calls.extend(called);
@@ -1267,11 +1291,12 @@ fn unobserved_after(before: &Structure, after: &Structure, overlay: &Overlay, af
     if overlay.removes.iter().any(|x| below(x, e)) {
         return None;
     }
+    // 変更前に定義した所の決まらない要素は、変更後にないと言うソースもない。
     let path = match before.element(e) {
         Ok(Answer::Element(f)) => f.defined.into_iter().next(),
-        _ => match before.element(owner(e)) {
+        Ok(Answer::External(_) | Answer::Bare) | Err(_) => match before.element(owner(e)) {
             Ok(Answer::Element(f)) => f.defined.into_iter().next(),
-            _ => None,
+            Ok(Answer::External(_) | Answer::Bare) | Err(_) => None,
         },
     }?;
     (after_sources.contains(&path) && !after.observed(&path, "structure"))
@@ -1307,9 +1332,14 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
             };
             for n in names.into_iter().filter(|n| !n.is_empty() && !decided.contains(*n)) {
                 let silence = match after.element(n) {
-                    Err(u) if u.silence.reason == Reason::Unread || u.why == Why::Undecided => Some(u.silence),
-                    Ok(Answer::Bare(_)) => after.kind(n).err(),
-                    _ => None,
+                    Err(u) => match u.why {
+                        Why::Unread | Why::Undecided => Some(u.silence),
+                        // 解析器が解決できなかった行き先(`?`)の呼び出し先も、解決が決まらない。`?` で始まる名前そのものは、たどれなかった所で沈黙する。
+                        Why::Question if !is_question(n) => Some(u.silence),
+                        Why::Question | Why::Missing | Why::Ambiguous | Why::Other => None,
+                    },
+                    Ok(Answer::Bare) => after.kind(n).err(),
+                    Ok(Answer::Element(_) | Answer::External(_)) => None,
                 };
                 if let Some(s) = silence {
                     unknown.entry(n.to_string()).or_insert(s);
@@ -1371,7 +1401,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
 fn missing(before: &Structure, after: &Structure, op: &str, uses: &BTreeSet<String>) -> Option<Finding> {
     let kind = match after.element(op) {
         Err(u) if u.why == Why::Ambiguous => Err(u.silence),
-        _ => before.kind(op),
+        Ok(Answer::Element(_) | Answer::External(_) | Answer::Bare) | Err(_) => before.kind(op),
     };
     let f = match kind {
         // 構造 Atom の `subject` は操作である(マニュアル第3章)。

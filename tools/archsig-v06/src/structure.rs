@@ -9,7 +9,7 @@ use crate::expr::{self, BinOp, Expr};
 mod name;
 use name::Names;
 pub use name::{
-    Answer, Column, FieldList, Form, Found, Naming, Place, Resolution, Resolved, Start, Unknown, Walk, Why, after_operation, below, call_name,
+    Answer, Column, FieldList, Form, Found, Naming, Place, Resolved, Start, Unknown, Walk, Why, after_operation, below, call_name,
     form, from_operation, is_local, is_question, owner, param_name, param_of, targets,
 };
 
@@ -181,7 +181,7 @@ impl Structure {
         match self.element(n) {
             Ok(Answer::Element(e)) if e.kind == "operation" => Ok(e.name),
             Ok(Answer::Element(_) | Answer::External(_)) => Err(Silence::new(Reason::Unresolved)),
-            Ok(Answer::Bare(_)) | Err(_) => Err(self.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unresolved))),
+            Ok(Answer::Bare) | Err(_) => Err(self.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unresolved))),
         }
     }
 
@@ -232,7 +232,9 @@ impl Structure {
                         Ok(Answer::Element(e)) if e.kind == "operation" => (e.name, None),
                         // 外部の要素は、観測した要素へ書き込まない呼び出しとして扱う。
                         Ok(Answer::External(pkg)) => (object.clone(), Some(pkg)),
-                        _ => return Err(self.operation(&object).err().unwrap_or_else(|| Silence::new(Reason::Unresolved))),
+                        Ok(Answer::Element(_) | Answer::Bare) | Err(_) => {
+                            return Err(self.operation(&object).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)));
+                        }
                     };
                     // 渡す値は呼び出しの時点で読む。呼び出し先では、呼び出しごとの記号で引数を指す(設計 §3.5)。
                     let index = out.len();
@@ -247,7 +249,7 @@ impl Structure {
                             // 受け取る引数が呼び出し先の引数でなければ、渡す値の行き先が決まらない。
                             let param = match self.element(param) {
                                 Ok(Answer::Element(p)) if p.kind == "param" && p.owner.as_deref() == Some(callee.as_str()) => p.name,
-                                _ => return Err(locate(question(), a)),
+                                Ok(Answer::Element(_) | Answer::External(_) | Answer::Bare) | Err(_) => return Err(locate(question(), a)),
                             };
                             let symbol = format!("{param}@{index}");
                             binds.push((symbol.clone(), self.resolve(op, env, e).map_err(|x| locate(x, a))?));
@@ -312,10 +314,10 @@ impl Structure {
                 if is_question(name) {
                     return Err(question());
                 }
-                if let Err(u) = self.element(name)
-                    && u.why == Why::Ambiguous
-                {
-                    return Err(u.silence);
+                // 曖昧な呼び出し先は決まらない。それ以外の決まらない呼び出し先は、呼び出しの項のまま置き、本体の比べで扱う(設計 §5.4)。
+                match self.element(name) {
+                    Err(u) if u.why == Why::Ambiguous => return Err(u.silence),
+                    Ok(Answer::Element(_) | Answer::External(_) | Answer::Bare) | Err(_) => {}
                 }
                 Value::Call(name.clone(), args.iter().map(r).collect::<Result<_, _>>()?)
             }
@@ -479,7 +481,7 @@ fn planned_source(plan: &[Atom], after: &Structure, a: &Atom) -> Option<String> 
     let holder = owner(&a.subject);
     plan.iter().find(|d| d.kind == "defines" && d.subject == holder && d.file.is_some()).and_then(|d| d.file.clone()).or_else(|| match after.element(holder) {
         Ok(Answer::Element(e)) => e.defined.into_iter().next(),
-        _ => None,
+        Ok(Answer::External(_) | Answer::Bare) | Err(_) => None,
     })
 }
 

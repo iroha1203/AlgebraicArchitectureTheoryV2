@@ -147,3 +147,18 @@ fn the_same_name_has_the_same_answer_on_every_path() {
     assert_eq!(path.place, column.walk.place);
     assert!(matches!(s.element("m.A.x"), Ok(Answer::Element(e)) if e.name == path.place[1]));
 }
+
+#[test]
+fn a_name_whose_resolves_points_to_a_question_mark_is_read_where_the_resolves_is_written() {
+    // 解析器が解決できなかった行き先(`?`)の答えは決まらない。読む所は、その `resolves` を書いた所である(マニュアル第5章 問い8)。
+    // `<T>.<f>` の段の「なければ」で、`<T>.<f>` そのものの `resolves` が `?` を指すときも同じである。
+    let s = Structure::new(atoms(
+        r#"{"kind": "resolves", "subject": "m.g", "object": "?g", "at": "m.py:3"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "t.py:1"}
+{"kind": "resolves", "subject": "m.T.x", "object": "?x", "at": "u.py:2"}"#,
+    ));
+    for (name, read) in [("m.g", "m.py"), ("m.T.x", "u.py")] {
+        let u = s.element(name).unwrap_err();
+        assert_eq!((&u.silence.reason, u.silence.read.as_deref()), (&Reason::Unresolved, Some(read)), "{name}: {u:?}");
+    }
+}
