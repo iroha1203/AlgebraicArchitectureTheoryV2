@@ -1,9 +1,9 @@
 # G-132-aat-visible-cycle-reflection — 可視閉路による修復障害の零性反映
 
 - `id`: `G-132-aat-visible-cycle-reflection`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未作成。draftの確認後、active化時に参照と適用版を確定する。
+- `tracking issue`: [#5250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5250)
 - `source note`: [n1016 §5.3・候補06](../../docs/note/n1016_rising_sea_v2_paper_plan.md)
 - `design`: [構成・証明方針](../designs/G-132-aat-visible-cycle-reflection/README.md)、[再利用対応表](../designs/G-132-aat-visible-cycle-reflection/reuse-map.md)、[実被覆と指定例](../designs/G-132-aat-visible-cycle-reflection/witnesses.md)
 
