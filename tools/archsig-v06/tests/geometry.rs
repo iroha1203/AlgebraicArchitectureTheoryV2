@@ -50,7 +50,7 @@ fn a_channel_belongs_to_the_locals_of_its_senders_and_receivers() {
     )
     .unwrap();
     let r = reading(ReadingForm::Dir { depth: 2 });
-    let g = Geometry::new(&r, &atoms, &atoms);
+    let g = Geometry::new(&r, &atoms, &atoms, &Default::default());
     let both: BTreeSet<String> = ["shop/order", "shop/payment"].iter().map(|s| s.to_string()).collect();
     assert_eq!(g.element_locals("channel:queue:order-placed:amount"), both);
     assert_eq!(g.element_locals("channel:queue:order-placed"), both);

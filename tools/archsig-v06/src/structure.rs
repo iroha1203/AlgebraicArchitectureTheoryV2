@@ -120,8 +120,13 @@ pub struct Structure {
     pub elements: BTreeMap<String, Element>,
     pub resolves: BTreeMap<String, Resolution>,
     pub meanings: BTreeMap<String, Vec<Atom>>,
+    /// 型ごとの、`inherits` で受け継ぐ型。
+    pub bases: BTreeMap<String, Vec<String>>,
     /// 読んだ範囲(ソース、範囲)。
     pub observed: BTreeSet<(String, String)>,
+    /// 候補が定義し直した型で、変更前に名指していて定義を読んでいなかったもの(外部を指していた型を除く)と、その変更前の沈黙。
+    /// 元のフィールドと受け継ぎが分からないので、受け継ぎを解くときに沈黙する(設計 §3.5、§5.4)。
+    pub partial: BTreeMap<String, Silence>,
     /// 操作ごとの手順の Atom(`atoms` の添字)。手順の順に並ぶ。
     bodies: BTreeMap<String, Vec<usize>>,
     /// `calls` の Atom(`atoms` の添字)ごとの、呼び出しの要素の名前。
@@ -150,6 +155,7 @@ impl Structure {
                     }
                 }
                 "writes" | "calls" | "sends" | "returns" => s.bodies.entry(a.subject.clone()).or_default().push(i),
+                "inherits" => s.bases.entry(a.subject.clone()).or_default().push(a.object.clone().unwrap_or_default()),
                 _ => {}
             }
             // チャネルとその項目は、`sends` と `receives` に現れた名前から要素になる。
@@ -336,7 +342,8 @@ impl Structure {
             let object = a.object.clone().unwrap_or_default();
             let kind = match a.kind.as_str() {
                 "writes" => {
-                    let place: Vec<String> = a.via.iter().flatten().cloned().chain(std::iter::once(object)).collect();
+                    let place: Vec<String> =
+                        a.via.iter().flatten().chain(std::iter::once(&object)).map(|f| self.access(f).map_err(|x| locate(x, a))).collect::<Result<_, _>>()?;
                     for f in &place {
                         self.expect(f, "field")?;
                     }
@@ -445,6 +452,128 @@ impl Structure {
         })
     }
 
+    /// 型 `ty` のフィールド `name` の要素(設計 §3.5)。`ty` が定義していなければ、`inherits` の型から探し、それを定義した型のフィールドを返す。
+    /// 受け継ぎは、どの言語でも同じに読めるときだけ計算し、ほかは沈黙する。
+    /// - `ty` の定義を読んでいなければ、受け継ぎが分からないので、`ty` の定義を読んでいない要素として沈黙する。
+    /// - `ty` が定義していれば、受け継がれる型のどれかも定義していると(定義し直し)、同じ所か別の所かは言語で決まるので `unresolved`。
+    /// - `ty` が定義していなければ、受け継がれる型をすべてたどり、定義した型が二つ以上か、たどった型の種類が決まらなければ沈黙する。
+    /// - どこにもなければ `<ty>.<name>` を返す。
+    pub fn member(&self, ty: &str, name: &str) -> Result<String, Silence> {
+        let own = format!("{ty}.{name}");
+        let defined = self.elements.contains_key(&own);
+        // `ty` の定義を読んでいなければ、受け継ぎ(`ty` のソースの `inherits`)が分からない。外部の型はリポジトリの型を受け継がない。
+        // `ty.name` に定義があって `ty` にないとき、`ty` は `resolves` があれば要素で、なければモジュールかもしれない(受け継ぎを持たない)。
+        // `ty.name` の `resolves` が外部を指せば、`ty.name` は外部の要素(モジュールの変数など)で、3.3 のとおり `ty.name` で問い合わせる。
+        // `ty` に `resolves` がなく、`ty.name` に定義か `resolves` があれば、`ty` はモジュールかもしれない(受け継ぎを持たない)。
+        if !self.elements.contains_key(ty) && !self.external(ty) && !self.external(&own) && (self.resolves.contains_key(ty) || (!defined && !self.resolves.contains_key(&own))) {
+            self.kind(ty)?;
+        }
+        // `ty` がモジュールかもしれず、`ty.name` の `resolves` がソースを指せば、3.3 のとおり `ty.name` で問い合わせる。
+        if !defined && !self.elements.contains_key(ty) && !self.resolves.contains_key(ty) && self.resolves.contains_key(&own) && !self.external(&own) {
+            self.kind(&own)?;
+        }
+        // 候補が定義し直した型で、変更前に定義を読んでいなかったものは、受け継ぎを持てば元のフィールドが分からない。
+        if !defined && self.bases.contains_key(ty) && let Some(e) = self.partial.get(ty) {
+            return Err(e.clone());
+        }
+        if !self.bases.contains_key(ty) {
+            return Ok(own);
+        }
+        let (found, blocked, internal) = self.inherited(ty, name);
+        if defined {
+            // 受け継がれる型のどれかも定義していれば定義し直し。読んでいない受け継がれる型は、その先で定義しているかもしれない。
+            // 外部の型はリポジトリの型を受け継がず、その名前で名指す計算は沈黙するので見ない。
+            if !found.is_empty() {
+                return Err(Silence::new(Reason::Unresolved));
+            }
+            return internal.map_or(Ok(own), Err);
+        }
+        // 型が曖昧なら、どの定義の受け継ぎかが決まらない。
+        if self.ambiguous(ty) {
+            return Err(Silence::new(Reason::Unresolved));
+        }
+        if let Some(s) = blocked {
+            return Err(s);
+        }
+        let mut found = found;
+        match found.len() {
+            0 => Ok(own),
+            1 => Ok(found.pop_first().unwrap_or(own)),
+            _ => Err(Silence::new(Reason::Unresolved)),
+        }
+    }
+
+    /// 型 `ty` の `inherits` の型をすべてたどり、`name` を定義した型のフィールドを集める(定義した型の先もたどる)。
+    /// たどった型の種類が決まらなければ(読んでいない、外部、曖昧、型でない)、最初のその沈黙と、外部の型を除いた最初のその沈黙を一緒に返す。
+    fn inherited(&self, ty: &str, name: &str) -> (BTreeSet<String>, Option<Silence>, Option<Silence>) {
+        let mut found = BTreeSet::new();
+        let mut blocked = None;
+        let mut internal = None;
+        let mut seen = BTreeSet::new();
+        let mut todo: Vec<String> = self.bases.get(ty).cloned().unwrap_or_default();
+        while let Some(b) = todo.pop() {
+            if !seen.insert(b.clone()) {
+                continue;
+            }
+            if let Some(e) = self.partial.get(&b) {
+                internal.get_or_insert(e.clone());
+                blocked.get_or_insert(e.clone());
+            }
+            match self.kind(&b) {
+                Ok("type") => {}
+                Ok(_) => {
+                    blocked.get_or_insert(Silence::new(Reason::Unresolved));
+                    internal.get_or_insert(Silence::new(Reason::Unresolved));
+                }
+                Err(e) => {
+                    if !self.external(&b) {
+                        internal.get_or_insert(e.clone());
+                    }
+                    blocked.get_or_insert(e);
+                }
+            }
+            let field = format!("{b}.{name}");
+            if self.elements.contains_key(&field) {
+                found.insert(field);
+            }
+            todo.extend(self.bases.get(&b).into_iter().flatten().cloned());
+        }
+        (found, blocked, internal)
+    }
+
+    /// 型と分かっている `ty`(引数やフィールドの型)のフィールド `name`。`ty` の定義を読んでいなければ、
+    /// `ty.name` に定義があっても 3.3 のとおりに沈黙する(モジュールとみなさない)。外部の型は `member` のとおり。
+    pub fn typed_member(&self, ty: &str, name: &str) -> Result<String, Silence> {
+        if !self.elements.contains_key(ty) && !self.external(ty) {
+            self.kind(ty)?;
+        }
+        self.member(ty, name)
+    }
+
+    /// `resolves` が外部だけを指し、定義のない要素。
+    fn external(&self, name: &str) -> bool {
+        !self.elements.contains_key(name) && matches!(self.resolves.get(name), Some(Resolution::External(_)))
+    }
+
+    /// 型 `ty` のフィールド `name` が、この構造では受け継ぎで見つからず(`field` は定義のない `<ty>.<name>`)、
+    /// 変更前の構造 `prior` では別の型のフィールドだったなら、その名前。候補がそのフィールドを消したかを、変更前の名前で確かめる(設計 §3.6)。
+    /// 変更前の構造で決まらなければ、その沈黙を返す。
+    fn inherited_before(&self, prior: &Structure, ty: &str, name: &str, field: &str) -> Result<Option<String>, Silence> {
+        if self.elements.contains_key(field) {
+            return Ok(None);
+        }
+        Ok(Some(prior.member(ty, name)?).filter(|x| x != field))
+    }
+
+    /// 読み書きの `object` と `via` に書いたフィールドの名前 `<型>.<フィールド>` の要素(設計 §3.5)。
+    /// 型がそのフィールドを定義していなければ、`inherits` の型から探す(`member`)。
+    pub fn access(&self, name: &str) -> Result<String, Silence> {
+        match name.rsplit_once('.') {
+            Some((ty, field)) => self.member(ty, field),
+            _ => Ok(name.to_string()),
+        }
+    }
+
     /// 型 `ty` から、フィールドの名前の列をたどった場所。`$p.f.g` は `[T.f, U.g]`。
     pub fn fields(&self, ty: &str, names: &[String]) -> Result<Vec<String>, Silence> {
         let mut place = Vec::new();
@@ -453,7 +582,7 @@ impl Structure {
             if self.ambiguous(&ty) {
                 return Err(Silence::new(Reason::Unresolved));
             }
-            let field = format!("{ty}.{n}");
+            let field = self.typed_member(&ty, n)?;
             self.expect(&field, "field")?;
             place.push(field.clone());
             if i + 1 < names.len() {
@@ -467,6 +596,8 @@ impl Structure {
 /// 候補を重ねた結果(設計 §3.6)。
 #[derive(Clone, Debug, Default)]
 pub struct Overlay {
+    /// 候補が定義し直した型で、変更前に定義を読んでいなかったものと、その沈黙(`Structure::partial`)。
+    pub partial: BTreeMap<String, Silence>,
     /// 変更後の Atom の列。
     pub after: Vec<Atom>,
     /// 変更前の要素から変更後の要素への対応。行き先が一つとは限らない。
@@ -503,6 +634,12 @@ pub enum Gap {
     QuestionType(String),
     /// 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったもの。変更前の構造で問い合わせる。
     Redefined(String),
+    /// 型(左)のフィールドの名前(右)を、`inherits` の型から探す途中で決まらなかった。
+    Member(String, String),
+    /// 型(左)のフィールドの名前(右)が、変更前の構造で受け継ぎから決まらなかった。変更前の構造で問い合わせる。
+    Before(String, String),
+    /// 式の中の道で、型(左、引数かフィールドの型)のフィールドの名前(右)が決まらなかった。型と分かっているので、`typed_member` で問い合わせる。
+    Path(String, String),
     /// 式を読めなかった。
     Unreadable,
     /// 式の字句の数が上限を超えた。ArchSig の側の限界なので、読み直しても決まらない。
@@ -511,6 +648,12 @@ pub enum Gap {
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
 pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
+    overlay_on(before, plan, &BTreeMap::new())
+}
+
+/// `overlay` の、元の候補を重ねた列の上で重ねるもの。`base_partial` は元の候補が定義し直した未読の型(`Structure::partial`)で、
+/// 変更前の構造にも変更後の構造にも持たせる。
+pub fn overlay_on(before: &[Atom], plan: &[Atom], base_partial: &BTreeMap<String, Silence>) -> Overlay {
     // 候補が構造 Atom を書いた要素は、元の Atom をすべて外す。`resolves` は置き換えを起こさない。
     let rewritten: BTreeSet<&str> = plan.iter().filter(|a| a.is_structure() && a.kind != "resolves").map(|a| a.subject.as_str()).collect();
     let replaced = |name: &str| rewritten.iter().any(|x| name == *x || name.starts_with(&format!("{x}->")));
@@ -520,9 +663,22 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     let mut after: Vec<Atom> = before.iter().filter(|a| !dropped(a)).cloned().collect();
     after.extend(plan.iter().filter(|a| a.is_structure()).cloned());
 
-    let old = Structure::new(before.to_vec());
-    let new = Structure::new(after.clone());
+    let mut old = Structure::new(before.to_vec());
+    old.partial = base_partial.clone();
+    let mut new = Structure::new(after.clone());
+    let old_names = old.mentioned();
+    // 候補が定義し直した型で、変更前に定義を読んでいなかったもの。元のフィールドと受け継ぎは分からない。
+    let partial: BTreeMap<String, Silence> = new
+        .atoms
+        .iter()
+        .filter(|a| a.kind == "defines" && a.at.as_deref().is_some_and(|at| at.starts_with("plan:")))
+        .filter(|a| new.redefines_unread_source(&old, &old_names, &a.subject))
+        .map(|a| (a.subject.clone(), old.kind(&a.subject).err().unwrap_or_else(|| Silence::new(Reason::Unread))))
+        .chain(base_partial.iter().map(|(k, v)| (k.clone(), v.clone())))
+        .collect();
+    new.partial = partial.clone();
     let mut out = relate(&old, &new, before, &after, plan);
+    out.partial = partial;
     // 4. 対応の行き先へ、元の要素の意味 Atom を移す。
     //    触れていない要素の自分自身への対応では、意味 Atom はもう残っている。
     //    書き直した操作の引数は、候補の `params` で置き換わる。なくなった引数の意味 Atom は、移した後に元から外す。
@@ -542,8 +698,7 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     // 書き直していない Atom は変更後にも残るので、道は変更後の構造(候補が書き直した型)でたどる。
     let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a)).collect();
     // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったもの(外部を指していた型を除く)は、その先をたどらない(§5.4 と同じ)。
-    let old_names = old.mentioned();
-    trace(&new, &kept, &|n: &str| replaced(n) || gone(n), &gone, &|t: &str| new.redefines_unread_source(&old, &old_names, t), &mut out);
+    trace(&new, &old, &kept, &|n: &str| replaced(n) || gone(n), &gone, &|t: &str| new.redefines_unread_source(&old, &old_names, t), &mut out);
     out
 }
 
@@ -557,7 +712,7 @@ pub fn observed_overlay(before: &[Atom], after: &[Atom], plan: &[Atom]) -> Overl
     let mut out = relate(&old, &new, before, after, plan);
     out.after = after.to_vec();
     let all: Vec<&Atom> = after.iter().collect();
-    trace(&new, &all, &|n: &str| gone(n), &gone, &|_| false, &mut out);
+    trace(&new, &old, &all, &|n: &str| gone(n), &gone, &|_| false, &mut out);
     let name = plan.iter().find(|a| a.kind == "plan").map(|a| a.subject.clone()).unwrap_or_default();
     out.planned = Some((name, plan.iter().filter(|a| a.is_structure()).count())).filter(|_| !plan.is_empty());
     // 候補の構造 Atom は、同じ Atom が出現の数だけ観測されている。観測の一つは、候補の Atom の一つにしか当てない。
@@ -669,7 +824,7 @@ fn relate(old: &Structure, new: &Structure, before: &[Atom], after: &[Atom], pla
 /// 名指すとは、引数の型、構造 Atom の `object` と `via`、`value`・`when` の式の中の `$p.f` と呼び出しで名を出すこと。
 /// 意味 Atom の `value` は式として読まない。名指す要素をたどれなかった所は `untraced` に積む。
 /// `skip` は数えない操作(書き直した操作や消える操作)。
-fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn Fn(&str) -> bool, stop: &dyn Fn(&str) -> bool, out: &mut Overlay) {
+fn trace(s: &Structure, prior: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn Fn(&str) -> bool, stop: &dyn Fn(&str) -> bool, out: &mut Overlay) {
     let body = |k: &str| matches!(k, "writes" | "reads" | "calls" | "sends" | "receives" | "returns" | "passes");
     let mut named: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     // 種類の決まらない要素(`value` のない `defines`)も、操作かもしれないので数える。`missing` の結論で沈黙する。
@@ -692,8 +847,9 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
         match fields.first().and_then(|f| f.rsplit_once('.')) {
             // `via` を通る書き込みの `via` と `object` は、最初のフィールドから型でたどった道のフィールドを名指す(設計 §3.6)。
             // 書き直していない書き込みは、変更後の型のフィールドを名指す。道の上の `?` の名前の先は、名指す要素が決まらない。
+            // 道の各段は 3.5 の受け継ぎで解く。
             Some((ty, _)) if a.kind == "writes" && fields.len() > 1 && !fields[0].starts_with('?') => {
-                s.named_path(Some(ty.to_string()), ty.to_string(), &field_names(&fields[..known]), stop, names, &mut gaps);
+                s.named_path(Some(ty.to_string()), ty.to_string(), &field_names(&fields[..known]), Some(prior), stop, names, &mut gaps);
                 if let Some(q) = fields.get(known) {
                     gaps.push(Gap::Name(q.to_string()));
                 }
@@ -703,8 +859,30 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
                 for o in fields {
                     if o.starts_with('?') {
                         gaps.push(Gap::Name(o.to_string()));
-                    } else {
-                        names.insert(o.clone());
+                        continue;
+                    }
+                    // 読み書きのフィールドは、受け継いだフィールドなら、それを定義した型のフィールドを名指す。
+                    match (matches!(a.kind.as_str(), "writes" | "reads"), o.rsplit_once('.')) {
+                        (true, Some((t, f))) => match s.member(t, f) {
+                            Ok(x) => {
+                                match s.inherited_before(prior, t, f, &x) {
+                                    Ok(y) => names.extend(y),
+                                    Err(_) => gaps.push(Gap::Before(t.to_string(), f.to_string())),
+                                }
+                                names.insert(x);
+                            }
+                            // 変更後に決まらなければ、定義を読んだ受け継ぎのない型の字句どおりの名前だけを数える(型ごと消えていれば `missing` が先に決まる)。
+                            // 受け継ぎを解けない型や、定義を読んでいない型(受け継ぎが分からない)の字句どおりの名前は、受け継がれる型のフィールドかもしれない。
+                            Err(_) => {
+                                gaps.push(Gap::Member(t.to_string(), f.to_string()));
+                                if !s.bases.contains_key(t) && (s.elements.contains_key(t) || prior.elements.contains_key(t)) {
+                                    names.insert(o.clone());
+                                }
+                            }
+                        },
+                        _ => {
+                            names.insert(o.clone());
+                        }
                     }
                 }
             }
@@ -713,7 +891,7 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
             match expr::parse(text) {
                 // 字句の数が上限を超えた式は、構文として読めるかを確かめていないので、消える要素を使うかを決めない。
                 Ok(Expr::TooLong(_)) => gaps.push(Gap::Limit),
-                Ok(e) => s.named(&op, &e, stop, names, &mut gaps),
+                Ok(e) => s.named(&op, &e, Some(prior), stop, names, &mut gaps),
                 Err(_) => gaps.push(Gap::Unreadable),
             }
         }
@@ -769,7 +947,7 @@ impl Structure {
             let op = a.subject.split("->").next().unwrap_or("");
             for text in [&a.value, &a.when].into_iter().flatten() {
                 if let Ok(e) = expr::parse(text) {
-                    self.named(op, &e, &|_| false, &mut out, &mut gaps);
+                    self.named(op, &e, None, &|_| false, &mut out, &mut gaps);
                 }
             }
         }
@@ -778,7 +956,8 @@ impl Structure {
 
     /// 型 `ty` から、フィールドの名前の列 `fields` でたどる道が名指す要素。たどれた所までのフィールドを `out` に入れ、
     /// たどれなかった所を `gaps` に積む。`owner` は、型が分からないときにその型を決める要素(引数なら操作)。
-    fn named_path(&self, mut ty: Option<String>, mut owner: String, fields: &[String], stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
+    #[allow(clippy::too_many_arguments)]
+    fn named_path(&self, mut ty: Option<String>, mut owner: String, fields: &[String], prior: Option<&Structure>, stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
         for f in fields {
             // 型が分からなければ、その型を決める要素: 引数なら操作、フィールドなら、定義がなければ持ち主の型。
             let Some(t) = ty else {
@@ -791,12 +970,29 @@ impl Structure {
                 break;
             }
             // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
+            // 受け継ぎを持てば、直下の名前も受け継がれる型のフィールドかもしれないので、数えない。
             if stop(&t) {
-                out.insert(format!("{t}.{f}"));
+                if !self.bases.contains_key(&t) {
+                    out.insert(format!("{t}.{f}"));
+                }
                 gaps.push(Gap::Redefined(t));
                 break;
             }
-            let field = format!("{t}.{f}");
+            // 受け継いだフィールドは、それを定義した型の名前を名指す(3.5)。探す途中で決まらなければ、その先は決まらない。
+            // 定義を読んだ受け継ぎのない型だけ、字句どおりの名前を数える。
+            let Ok(field) = self.typed_member(&t, f) else {
+                if !self.bases.contains_key(&t) && (self.elements.contains_key(&t) || prior.is_some_and(|p| p.elements.contains_key(&t))) {
+                    out.insert(format!("{t}.{f}"));
+                }
+                gaps.push(Gap::Path(t, f.clone()));
+                break;
+            };
+            if let Some(p) = prior {
+                match self.inherited_before(p, &t, f, &field) {
+                    Ok(y) => out.extend(y),
+                    Err(_) => gaps.push(Gap::Before(t.clone(), f.clone())),
+                }
+            }
             // 種類の決まらないフィールドの型は、決まらない。
             ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
             owner = if self.elements.contains_key(&field) { field.clone() } else { t };
@@ -806,11 +1002,11 @@ impl Structure {
 
     /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
     /// たどれなかった所は `gaps` に積む。その先で何を名指すかは決まらない。
-    fn named(&self, op: &str, e: &Expr, stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
+    fn named(&self, op: &str, e: &Expr, prior: Option<&Structure>, stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
         match e {
             Expr::Path(p, fields) => {
                 let ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
-                self.named_path(ty, op.to_string(), fields, stop, out, gaps);
+                self.named_path(ty, op.to_string(), fields, prior, stop, out, gaps);
             }
             Expr::Call(name, args) => {
                 if name.starts_with('?') {
@@ -819,21 +1015,21 @@ impl Structure {
                     out.insert(name.clone());
                 }
                 for a in args {
-                    self.named(op, a, stop, out, gaps);
+                    self.named(op, a, prior, stop, out, gaps);
                 }
             }
             Expr::Name(n) if n.starts_with('?') => gaps.push(Gap::Name(n.clone())),
             Expr::Unknown => gaps.push(Gap::Unreadable),
-            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, stop, out, gaps),
+            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, prior, stop, out, gaps),
             // 字句の数が上限を超えた式は、字句から拾った名前を数える。
             Expr::TooLong(items) => {
                 for x in items {
-                    self.named(op, x, stop, out, gaps);
+                    self.named(op, x, prior, stop, out, gaps);
                 }
             }
             Expr::Bin(_, a, b) => {
-                self.named(op, a, stop, out, gaps);
-                self.named(op, b, stop, out, gaps);
+                self.named(op, a, prior, stop, out, gaps);
+                self.named(op, b, prior, stop, out, gaps);
             }
             _ => {}
         }
@@ -848,6 +1044,9 @@ impl Structure {
             // `?` の型は、その型を書いた定義(フィールドか、引数を持つ操作)の場所を返す(マニュアル第5章 問い3)。
             Gap::Redefined(t) => self.untraced(&Gap::Name(t.clone()), a),
             Gap::QuestionType(owner) => locate(question(), self.atoms.iter().find(|d| d.kind == "defines" && d.subject == *owner).unwrap_or(a)),
+            // 受け継ぎをたどる途中の沈黙を返す。
+            Gap::Member(t, f) | Gap::Before(t, f) => self.member(t, f).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)),
+            Gap::Path(t, f) => self.typed_member(t, f).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)),
             // `?` の名前は、名前で探さず、その名前を持つ Atom の場所を返す(マニュアル第5章 問い8)。
             Gap::Name(n) if n.starts_with('?') => locate(question(), a),
             Gap::Name(n) => match self.kind(n) {

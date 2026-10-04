@@ -16,6 +16,7 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 | 種類 | 加わる欄 |
 | --- | --- |
 | `defines` | `value`(要素の種類)、`params`(操作の引数と型)、`type`(フィールドの型)、`file`(候補の中だけ) |
+| `inherits` | `object` |
 | `calls`、`reads` | `object`、`when` |
 | `imports` | `object` |
 | `resolves` | `object` |
@@ -40,6 +41,10 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
 
 - 操作と型は、その言語の完全修飾名で書く。Python ならモジュールのパスと名前(`shop.shipping.service.update_shipping`)、Java ならパッケージとクラスと名前である。
 - フィールドは `<型の名前>.<フィールドの名前>` と書く(`shop.order.model.Order.payment_ref`)。
+  受け継いだフィールドの `defines` と意味 Atom は、それを定義した型の名前だけで書く。
+  読み書きの `object` と `via` は、読み書きする値の型の名前で書く(`c.t = 1` なら、`c` の型 `m.C` の `m.C.t`)。
+  ArchSig は、型がそのフィールドを定義していなければ、`inherits` でたどった型のフィールドを使う。`$c.t` も同じである。
+  型が受け継いだフィールドと同じ名前のフィールドを定義し直していれば(受け継ぎのどの段でも)、二つが同じ所か別の所かは言語で決まるので、ArchSig はそのフィールドが関わる計算で沈黙する。受け継ぎの途中の型の定義を読んでいないとき、曖昧な型があるとき、型自身の定義を読んでいないときも、どのフィールドかが決まらないので沈黙する。型が定義していないフィールドは、受け継ぎの途中に外部の型があるときも沈黙する。
 - 引数は `<操作の名前>.$<引数の名前>` と書く(`shop.shipping.service.update_shipping.$new`)。
 - チャネルというのは、キューのトピック、HTTP のルート、イベントのように、プロセスやサービスをまたいで操作をつなぐ名前のこと。形は次の三つに決める。
   - `channel:http:<メソッド> <パスのテンプレート>`(`channel:http:POST /orders`)
@@ -57,10 +62,11 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
 
 ## 構造 Atom
 
-構造 Atom は、構文から決まる事実だ。エージェントが言語に合う解析器を選んで取り出す(第7章)。種類は次の十で、言語によらず同じである。
+構造 Atom は、構文から決まる事実だ。エージェントが言語に合う解析器を選んで取り出す(第7章)。種類は次の十一で、言語によらず同じである。
 
 - `defines`:要素を定義する。`value` は `operation`、`type`、`field` のどれか。`value` のない `defines` を持つ要素は、種類の違う `defines` を持つ要素と同じく、種類の決まらない要素として扱う。同じ種類の `defines` を二か所以上に持つ要素も、どちらの定義かが決まらないので同じに扱う。
   操作は `params` に引数の名前と型を持つ(`{"order": "shop.order.model.Order", "new": "shop.shipping.model.Address"}`)。フィールドは `type` に型を持つ。
+- `inherits`:型が別の型を受け継ぐ。`subject` は受け継ぐ型、`object` は受け継がれる型である。受け継ぐ型を定義した所で観測する。
 - `calls`:操作が別の操作を呼ぶ。
 - `reads`:操作がフィールドを読む。
 - `writes`:操作がフィールドに書く。`value` に書く値を持つ。

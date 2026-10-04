@@ -37,7 +37,7 @@ pub struct Atom {
 }
 
 pub const STRUCTURE_KINDS: &[&str] = &[
-    "defines", "calls", "reads", "writes", "passes", "sends", "receives", "returns", "imports", "resolves",
+    "defines", "inherits", "calls", "reads", "writes", "passes", "sends", "receives", "returns", "imports", "resolves",
 ];
 
 /// `at` を分けたもの。`パス:行@版`。

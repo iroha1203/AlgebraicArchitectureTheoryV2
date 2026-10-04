@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -9,7 +10,7 @@ use archsig::atom::{self, Atom};
 use archsig::engine;
 use archsig::geometry::Geometry;
 use archsig::result;
-use archsig::structure::{Structure, overlay};
+use archsig::structure::{Silence, Structure, overlay_on};
 
 #[derive(Parser)]
 #[command(name = "archsig", version, about = "コードから観測した Atom と Law の上で、アーキテクチャを計算する")]
@@ -100,9 +101,11 @@ fn run(cli: Cli) -> Result<Value, String> {
             if !laws.errors.is_empty() {
                 return Ok(json!({"law_errors": laws.errors}));
             }
-            let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
-            let o = overlay(&before, &store.plan(&plan)?);
-            let (b, a) = (Structure::new(before), Structure::new(o.after.clone()));
+            let (before, base_partial) = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
+            let o = overlay_on(&before, &store.plan(&plan)?, &base_partial);
+            let (mut b, mut a) = (Structure::new(before), Structure::new(o.after.clone()));
+            b.partial = base_partial;
+            a.partial = o.partial.clone();
             let sources = store.sources(&laws)?;
             let findings = engine::plan_check(&b, &a, &o, &laws, &sources, &sources);
             let not_computed = engine::not_computed(&laws);
@@ -117,10 +120,10 @@ fn run(cli: Cli) -> Result<Value, String> {
                 Some(r) => laws.readings.iter().find(|x| &x.name == r).ok_or_else(|| format!("読み {r} が宣言されていない"))?,
                 None => laws.readings.first().ok_or("読みが一つも宣言されていない")?,
             };
-            let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
+            let (before, base_partial) = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
             let atoms = store.plan(&plan)?;
-            let o = overlay(&before, &atoms);
-            let split = Geometry::new(reading, &[before, atoms.clone()].concat(), &o.after).split(&atoms);
+            let o = overlay_on(&before, &atoms, &base_partial);
+            let split = Geometry::new(reading, &[before, atoms.clone()].concat(), &o.after, &o.partial).split(&atoms);
             let (findings, split) = engine::plan_split(&plan, &o, split, &laws);
             if let Some(split) = split {
                 let base = atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.as_deref());
@@ -183,7 +186,8 @@ fn run(cli: Cli) -> Result<Value, String> {
 }
 
 /// 候補 `plan` の元が別の候補(`plan:<名前>`)なら、その候補を先に重ねた Atom の列を返す。
-fn with_base(store: &Store, map: Vec<Atom>, plan: &str, seen: &mut Vec<String>) -> Result<Vec<Atom>, String> {
+/// 元の候補を重ねた列と、元の候補が定義し直した未読の型(`Structure::partial`)。
+fn with_base(store: &Store, map: Vec<Atom>, plan: &str, seen: &mut Vec<String>) -> Result<(Vec<Atom>, BTreeMap<String, Silence>), String> {
     if seen.iter().any(|p| p == plan) {
         return Err(format!("候補の元がめぐっている: {}", seen.join(" -> ")));
     }
@@ -191,9 +195,10 @@ fn with_base(store: &Store, map: Vec<Atom>, plan: &str, seen: &mut Vec<String>) 
     let atoms = store.plan(plan)?;
     match atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.as_deref()).and_then(|b| b.strip_prefix("plan:")) {
         Some(base) => {
-            let under = with_base(store, map, base, seen)?;
-            Ok(overlay(&under, &store.plan(base)?).after)
+            let (under, partial) = with_base(store, map, base, seen)?;
+            let o = overlay_on(&under, &store.plan(base)?, &partial);
+            Ok((o.after, o.partial))
         }
-        None => Ok(map),
+        None => Ok((map, BTreeMap::new())),
     }
 }
