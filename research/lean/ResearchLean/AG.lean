@@ -1033,3 +1033,10 @@ import ResearchLean.AG.VisibleCycleReflection.FinitePathSearch
 import ResearchLean.AG.VisibleCycleReflection.FiniteReflectionSearch
 import ResearchLean.AG.VisibleCycleReflection.ActualSearchCounterinput
 import ResearchLean.AG.VisibleCycleReflection.FiniteSearchWitness
+import ResearchLean.AG.VisibleCycleReflection.FiniteIncidenceGeometry
+import ResearchLean.AG.VisibleCycleReflection.WitnessInputs
+import ResearchLean.AG.VisibleCycleReflection.WitnessRepair
+import ResearchLean.AG.VisibleCycleReflection.WitnessCycles
+import ResearchLean.AG.VisibleCycleReflection.WitnessOne
+import ResearchLean.AG.VisibleCycleReflection.WitnessTwo
+import ResearchLean.AG.VisibleCycleReflection.WitnessThree

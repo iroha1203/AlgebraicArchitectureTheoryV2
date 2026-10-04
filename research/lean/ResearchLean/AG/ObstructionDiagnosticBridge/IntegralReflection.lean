@@ -37,6 +37,10 @@ coordinatewise.  This is not exposed as an additive map.
 def floorCorrection (b : Vertex → Block → ℚ) : Vertex → Block → ℤ :=
   fun vertex block => ⌊b vertex block⌋
 
+/-- Public coordinate evaluation of the original floor correction. -/
+@[simp] theorem floorCorrection_apply (b : Vertex → Block → ℚ) (v : Vertex) (l : Block) :
+    floorCorrection b v l = ⌊b v l⌋ := rfl
+
 /--
 G-125(B2) arithmetic kernel: if every rational edge difference of `b` equals
 the cast of the integral edge value `z`, flooring `b` preserves that edge
