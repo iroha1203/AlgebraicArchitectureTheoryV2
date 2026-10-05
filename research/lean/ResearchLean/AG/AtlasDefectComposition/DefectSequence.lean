@@ -29,6 +29,15 @@ def second : LinearMap.ker (g.comp f) →ₗ[K] LinearMap.ker g :=
 /-- 後段で消える元の、前段の像による商類。 -/
 def cancellation : LinearMap.ker g →ₗ[K] V ⧸ LinearMap.range f :=
   (LinearMap.range f).mkQ.comp (LinearMap.ker g).subtype
+/-- 相殺写像は後段核の元を前段像の実商類へ送る。 -/
+@[simp] theorem cancellation_apply (x : LinearMap.ker g) :
+    cancellation f g x = (LinearMap.range f).mkQ x.val := rfl
+
+/-- 相殺類の零性は、同じ元が前段像に属することと同値である。 -/
+theorem cancellation_eq_zero_iff (x : LinearMap.ker g) :
+    cancellation f g x = 0 ↔ x.val ∈ LinearMap.range f := by
+  rw [cancellation_apply, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+
 /-- 前段の余核から合成の余核へ送る誘導写像。 -/
 def fourth : V ⧸ LinearMap.range f →ₗ[K] W ⧸ LinearMap.range (g.comp f) :=
   (LinearMap.range f).mapQ (LinearMap.range (g.comp f)) g (by
@@ -38,11 +47,13 @@ def fifth : W ⧸ LinearMap.range (g.comp f) →ₗ[K] W ⧸ LinearMap.range g :
   (LinearMap.range (g.comp f)).mapQ (LinearMap.range g) LinearMap.id (by
     rintro _ ⟨x, rfl⟩; exact ⟨f x, rfl⟩)
 
- theorem first_injective : Function.Injective (first f g) := by
+/-- 入力二射の核包含は単射であり、六項列の最初の零射との完全性を支える。 -/
+theorem first_injective : Function.Injective (first f g) := by
   intro x y h; apply Subtype.ext
   exact congrArg (fun z : LinearMap.ker (g.comp f) => z.val) h
 
- theorem exact_first_second : Function.Exact (first f g) (second f g) := by
+/-- 入力二射の核包含の像は、合成核上の前段写像の核と一致する。 -/
+theorem exact_first_second : Function.Exact (first f g) (second f g) := by
   intro x
   change (⟨f x.val, _⟩ : LinearMap.ker g) = 0 ↔ ∃ y, first f g y = x
   constructor
@@ -53,7 +64,8 @@ def fifth : W ⧸ LinearMap.range (g.comp f) →ₗ[K] W ⧸ LinearMap.range g :
     apply Subtype.ext
     exact y.property
 
- theorem exact_second_cancellation : Function.Exact (second f g) (cancellation f g) := by
+/-- 入力二射から生成した合成核の像は、相殺写像の核と一致する。 -/
+theorem exact_second_cancellation : Function.Exact (second f g) (cancellation f g) := by
   intro x
   change (LinearMap.range f).mkQ x.val = 0 ↔ ∃ y, second f g y = x
   rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
@@ -65,7 +77,8 @@ def fifth : W ⧸ LinearMap.range (g.comp f) →ₗ[K] W ⧸ LinearMap.range g :
   · rintro ⟨y, hy⟩
     exact ⟨y.val, congrArg Subtype.val hy⟩
 
- theorem exact_cancellation_fourth : Function.Exact (cancellation f g) (fourth f g) := by
+/-- 相殺像は前段余核から合成余核への誘導写像の核と一致する。 -/
+theorem exact_cancellation_fourth : Function.Exact (cancellation f g) (fourth f g) := by
   intro x
   obtain ⟨v, rfl⟩ := (LinearMap.range f).mkQ_surjective x
   change (LinearMap.range (g.comp f)).mkQ (g v) = 0 ↔
@@ -86,7 +99,8 @@ def fifth : W ⧸ LinearMap.range (g.comp f) →ₗ[K] W ⧸ LinearMap.range g :
     rw [map_neg, map_neg, hu, map_sub, y.property]
     simp
 
- theorem exact_fourth_fifth : Function.Exact (fourth f g) (fifth f g) := by
+/-- 二射から生成した余核間の誘導写像の像は、最後の商写像の核と一致する。 -/
+theorem exact_fourth_fifth : Function.Exact (fourth f g) (fifth f g) := by
   intro x
   obtain ⟨w, rfl⟩ := (LinearMap.range (g.comp f)).mkQ_surjective x
   change (LinearMap.range g).mkQ w = 0 ↔
@@ -105,7 +119,8 @@ def fifth : W ⧸ LinearMap.range (g.comp f) →ₗ[K] W ⧸ LinearMap.range g :
     change g (f u) = g v - w at hu
     rw [map_sub, hu]; abel
 
- theorem fifth_surjective : Function.Surjective (fifth f g) := by
+/-- 入力二射の合成像を後段像へ拡張する最後の商写像は全射である。 -/
+theorem fifth_surjective : Function.Surjective (fifth f g) := by
   intro x
   obtain ⟨w, rfl⟩ := (LinearMap.range g).mkQ_surjective x
   exact ⟨(LinearMap.range (g.comp f)).mkQ w, rfl⟩
@@ -142,7 +157,8 @@ theorem sixTerm_exact :
   ⟨first_injective f g, exact_first_second f g, exact_second_cancellation f g,
     exact_cancellation_fourth f g, exact_fourth_fifth f g, fifth_surjective f g⟩
 
- theorem cancellation_ker : LinearMap.ker (cancellation f g) =
+/-- 相殺写像の核は、後段核の内部で前段像を読む逆像部分空間である。 -/
+theorem cancellation_ker : LinearMap.ker (cancellation f g) =
     (LinearMap.range f).comap (LinearMap.ker g).subtype := by
   ext x; simp [cancellation, LinearMap.mem_ker]
 

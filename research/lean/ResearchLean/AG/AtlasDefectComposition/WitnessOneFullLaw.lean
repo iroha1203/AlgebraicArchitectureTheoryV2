@@ -137,9 +137,10 @@ theorem full_cancellation_rank :
   have heq : fullDirect = fullBackward.comp fullForward :=
     generatedComparisonH1Map_comp M₀₁ M₁₂ laws adequate₀ adequate₁ adequate₂
   rw [heq] at hh
-  change Module.finrank ℚ (LinearMap.ker fullForward) = 0 at hf
-  change Module.finrank ℚ (LinearMap.ker fullBackward) = 2 at hg
-  change Module.finrank ℚ (LinearMap.ker (fullBackward.comp fullForward)) = 0 at hh
+  simp only [blockDefect_eq_finrank_sub_range] at hf hg hh
+  have hf' := fullForward.finrank_range_add_finrank_ker
+  have hg' := fullBackward.finrank_range_add_finrank_ker
+  have hh' := (fullBackward.comp fullForward).finrank_range_add_finrank_ker
   omega
 
 end AAT.AG.AtlasDefectComposition.WitnessOne

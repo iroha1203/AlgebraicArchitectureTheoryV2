@@ -402,7 +402,7 @@ G-132の定理を今回の新規相殺成果として数えていない。これ
 
 ### Cycle 2 spine declaration list
 
-受理spineは以下の116の明示宣言。各module末尾の標準公理監査は、同moduleで生成される
+受理spineは以下の119の明示宣言。各module末尾の標準公理監査は、同moduleで生成される
 simp用補助宣言を含む全非internal宣言と、それらの依存を検査する。cycle scaffoldは残さない。
 
 `DefectSequence.lean`:
@@ -411,6 +411,8 @@ simp用補助宣言を含む全非internal宣言と、それらの依存を検�
 AAT.AG.AtlasDefectComposition.DefectSequence.first
 AAT.AG.AtlasDefectComposition.DefectSequence.second
 AAT.AG.AtlasDefectComposition.DefectSequence.cancellation
+AAT.AG.AtlasDefectComposition.DefectSequence.cancellation_apply
+AAT.AG.AtlasDefectComposition.DefectSequence.cancellation_eq_zero_iff
 AAT.AG.AtlasDefectComposition.DefectSequence.fourth
 AAT.AG.AtlasDefectComposition.DefectSequence.fifth
 AAT.AG.AtlasDefectComposition.DefectSequence.first_injective
@@ -442,6 +444,7 @@ AAT.AG.AtlasDefectComposition.fullBlock_d0
 
 ```text
 AAT.AG.AtlasDefectComposition.graphDifference
+AAT.AG.AtlasDefectComposition.graphDifference_apply
 AAT.AG.AtlasDefectComposition.fullBlockGraphCyclesEquiv
 AAT.AG.AtlasDefectComposition.fullBlockGraph_image
 AAT.AG.AtlasDefectComposition.fullBlockGraphH1Equiv
@@ -570,7 +573,6 @@ AAT.AG.AtlasDefectComposition.WitnessOne.h1_dimension₀
 AAT.AG.AtlasDefectComposition.WitnessOne.h1_dimension₁
 AAT.AG.AtlasDefectComposition.WitnessOne.h1_dimension₂
 ```
-
 ## Cycle 2 result（独立査読前のproposal）
 
 ```yaml
@@ -584,7 +586,7 @@ result:
     - 対象fileのfocused/targeted検証と全明示宣言の公理監査・共通scanを実施
   split_reason: none
   completion_candidate: no
-  lean_artifacts: [Cycle 2 spine declaration listの116宣言]
+  lean_artifacts: [Cycle 2 spine declaration listの119宣言]
   evidence: [DefectSequence/GeneratedDefect/WitnessOnePeriods/WitnessOneComparison/WitnessOneCancellation/WitnessOneFullLaw]
   claim_mapping:
     theorem_names: [上のspineと条項対応]
@@ -621,10 +623,20 @@ audits:
 その必要依存のcheckとして成功した。Research全体build・aggregate elaboration・local Formal
 全体buildは実行していない。対象module末尾監査は標準公理のみ。
 
-`.tmp/g133-cycle2-axioms.lean` は上の116明示宣言へ `#print axioms` を実行する。
+`.tmp/g133-cycle2-axioms.lean` は上の119明示宣言へ `#print axioms` を実行する。
 公理はpropext・Classical.choice・Quot.soundのみ。対象source/report/manifestのplaceholder、
 hidden/BiDi、privacy、語彙scanとFormal→Research import scan、git diff --checkはclean。
 恒久設計・GOAL本文・本体Formal・toolingの変更はない。Formal移植とArchSig実装は未実施。
 C–F、W1の錐と追加項、W2/W3、全GOAL最終監査は未完。
 
-Cycle 2公理ログSHA-256: `2d61caf7c17fb752ffb66f01c19c27006a4d5c99a0ee5200283743220b88675a`。116宣言のsource/scratch/log集合を突合し、欠落・余剰なし。
+Cycle 2公理ログSHA-256: `77514a8cd09bc8febf807385c181ac842ab558182f667e7b0643404d282dbafd`。119宣言のsource/scratch/log集合を突合し、欠落・余剰なし。
+
+
+### Cycle 2 初回査読への非中心修正
+
+固定head `56146528815154604b164ccb41431592d22d9922` の4 laneはMinor issues、中心findingなし。
+統合記録は [PR #5264初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5264#issuecomment-5999038869)。
+指摘された7補題のdocstring、graphDifference_apply、cancellation_apply/cancellation_eq_zero_iff、
+実欠損の公開次元公式・rank-nullityを使う証明へ修正した。statement・定義値・既存宣言・
+入力契約・台帳statusは変更しない。追加API3件を含む119宣言へ公理監査を更新した。
+直接対応の資格と解消はfresh単一agentの確認対象である。

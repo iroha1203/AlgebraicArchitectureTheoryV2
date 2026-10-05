@@ -107,8 +107,9 @@ theorem middle_nonzero (l : LawValueLabel laws) : middleClass l ≠ 0 := by
 theorem cancellation_nonzero (l : LawValueLabel laws) :
     DefectSequence.cancellation (forward l) (backward l) (middleKernel l) ≠ 0 := by
   intro hc
-  change Submodule.Quotient.mk (middleClass l) = 0 at hc
-  have hm := (Submodule.Quotient.mk_eq_zero _).mp hc
+  have hm := (DefectSequence.cancellation_eq_zero_iff
+    (forward l) (backward l) (middleKernel l)).mp hc
+  change middleClass l ∈ LinearMap.range (forward l) at hm
   obtain ⟨x, hx⟩ := hm
   have hp := congrArg (fun v => (h1Periods₁ l v).2) hx
   dsimp only at hp
@@ -123,9 +124,10 @@ theorem cancellation_rank (l : LawValueLabel laws) :
   have hg := congrArg Prod.fst (backward_defect l)
   have hh := congrArg Prod.fst (direct_defect l)
   rw [direct_eq_comp l] at hh
-  change Module.finrank ℚ (LinearMap.ker (forward l)) = 0 at hf
-  change Module.finrank ℚ (LinearMap.ker (backward l)) = 1 at hg
-  change Module.finrank ℚ (LinearMap.ker ((backward l).comp (forward l))) = 0 at hh
+  simp only [blockDefect_eq_finrank_sub_range] at hf hg hh
+  have hf' := (forward l).finrank_range_add_finrank_ker
+  have hg' := (backward l).finrank_range_add_finrank_ker
+  have hh' := ((backward l).comp (forward l)).finrank_range_add_finrank_ker
   omega
 
 /-- 前段実像をperiodで移すと、第一成分の像になる。 -/

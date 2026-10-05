@@ -33,7 +33,8 @@ theorem trianglePeriod_kernel :
     have hp : z 0 - z 1 + z 2 = 0 := hz
     refine ⟨![0, z 0, z 1], ?_⟩
     funext e
-    fin_cases e <;> simp [graphDifference, triangle]
+    rw [graphDifference_apply]
+    fin_cases e <;> simp
     linarith
   · rintro ⟨c, rfl⟩
     change (c 1 - c 0) - (c 2 - c 0) + (c 2 - c 1) = 0
@@ -49,9 +50,18 @@ theorem twoTrianglePeriods_kernel :
     have hp₁ : z 3 - z 4 + z 5 = 0 := congrArg Prod.snd hz
     refine ⟨![0, z 0, z 1, z 3, z 4], ?_⟩
     funext e
-    fin_cases e <;> simp [graphDifference, twoTriangles] <;> linarith
+    rw [graphDifference_apply]
+    fin_cases e <;> simp <;> linarith
   · rintro ⟨c, rfl⟩
-    apply Prod.ext <;> change _ = 0 <;> simp [twoTrianglePeriods, graphDifference, twoTriangles]
+    apply Prod.ext
+    · change graphDifference twoTriangles c 0 - graphDifference twoTriangles c 1 +
+        graphDifference twoTriangles c 2 = 0
+      rw [graphDifference_apply, graphDifference_apply, graphDifference_apply]
+      simp
+    · change graphDifference twoTriangles c 3 - graphDifference twoTriangles c 4 +
+        graphDifference twoTriangles c 5 = 0
+      rw [graphDifference_apply, graphDifference_apply, graphDifference_apply]
+      simp
 
 /-- 三角形periodは辺12のcochainにより任意の有理値を実現する。 -/
 theorem trianglePeriod_surjective : Function.Surjective trianglePeriod := by

@@ -59,8 +59,7 @@ theorem cancellation_mk_eq_zero_iff (z : LinearMap.ker C₁.d1)
     DefectSequence.cancellation f.h1Map g.h1Map
       ⟨(LinearMap.range C₁.boundaryToCycles).mkQ z, hz⟩ = 0 ↔
       ∃ a : LinearMap.ker C₀.d1, ∃ c : C₁.C0, z.val - f.f1 a.val = C₁.d0 c := by
-  change Submodule.Quotient.mk _ = 0 ↔ _
-  rw [Submodule.Quotient.mk_eq_zero]
+  rw [DefectSequence.cancellation_eq_zero_iff]
   exact h1_mk_mem_range_iff f z
 end Representatives
 
@@ -131,7 +130,15 @@ theorem generated_kernel_dimension :
     (blockDefect (M₀₁.generatedComparisonH1Map laws h₀ h₁)).1 +
       (blockDefect (M₁₂.generatedComparisonH1Map laws h₁ h₂)).1 := by
   rw [generatedComparisonH1Map_comp M₀₁ M₁₂ laws h₀ h₁ h₂]
-  exact DefectSequence.kernel_dimension _ _
+  simp only [blockDefect_eq_finrank_sub_range]
+  have hr := DefectSequence.kernel_dimension
+    (M₀₁.generatedComparisonH1Map laws h₀ h₁)
+    (M₁₂.generatedComparisonH1Map laws h₁ h₂)
+  have hf := (M₀₁.generatedComparisonH1Map laws h₀ h₁).finrank_range_add_finrank_ker
+  have hg := (M₁₂.generatedComparisonH1Map laws h₁ h₂).finrank_range_add_finrank_ker
+  have hh := ((M₁₂.generatedComparisonH1Map laws h₁ h₂).comp
+    (M₀₁.generatedComparisonH1Map laws h₀ h₁)).finrank_range_add_finrank_ker
+  omega
 
 /-- 同じLaw入力から生成した直接H¹比較の余核欠損公式。 -/
 theorem generated_cokernel_dimension :
@@ -142,7 +149,13 @@ theorem generated_cokernel_dimension :
     (blockDefect (M₀₁.generatedComparisonH1Map laws h₀ h₁)).2 +
       (blockDefect (M₁₂.generatedComparisonH1Map laws h₁ h₂)).2 := by
   rw [generatedComparisonH1Map_comp M₀₁ M₁₂ laws h₀ h₁ h₂]
-  exact DefectSequence.cokernel_dimension _ _
+  simp only [blockDefect_eq_finrank_sub_range]
+  have hr := DefectSequence.cokernel_dimension (M₀₁.generatedComparisonH1Map laws h₀ h₁) (M₁₂.generatedComparisonH1Map laws h₁ h₂)
+  have hf := Submodule.finrank_quotient_add_finrank (LinearMap.range (M₀₁.generatedComparisonH1Map laws h₀ h₁))
+  have hg := Submodule.finrank_quotient_add_finrank (LinearMap.range (M₁₂.generatedComparisonH1Map laws h₁ h₂))
+  have hh := Submodule.finrank_quotient_add_finrank
+    (LinearMap.range ((M₁₂.generatedComparisonH1Map laws h₁ h₂).comp (M₀₁.generatedComparisonH1Map laws h₀ h₁)))
+  omega
 /-- 同じLaw族の三比較の零欠損の2-out-of-3を全方向で示す。 -/
 theorem generated_zeroDefect_twoOfThree :
     let f := M₀₁.generatedComparisonH1Map laws h₀ h₁
@@ -198,7 +211,17 @@ theorem aSubnerve_kernel_dimension :
     (comparisonFactor_preimage_comp h₀₁ h₁₂ A))
     ((comparisonComp M₀₁ M₁₂).aSubnerveComparisonHom A),
     aSubnerveComparisonHom_h1Map_comp M₀₁ M₁₂ A]
-  exact DefectSequence.kernel_dimension _ _
+  simp only [blockDefect_eq_finrank_sub_range]
+  have hr := DefectSequence.kernel_dimension
+    (M₀₁.aSubnerveComparisonHom A).h1Map
+    (M₁₂.aSubnerveComparisonHom (comparisonFactor q₀ q₁ h₀₁ ⁻¹' A)).h1Map
+  have hf := (M₀₁.aSubnerveComparisonHom A).h1Map.finrank_range_add_finrank_ker
+  have hg := (M₁₂.aSubnerveComparisonHom
+    (comparisonFactor q₀ q₁ h₀₁ ⁻¹' A)).h1Map.finrank_range_add_finrank_ker
+  have hh := ((M₁₂.aSubnerveComparisonHom
+    (comparisonFactor q₀ q₁ h₀₁ ⁻¹' A)).h1Map.comp
+    (M₀₁.aSubnerveComparisonHom A).h1Map).finrank_range_add_finrank_ker
+  omega
 
 set_option maxHeartbeats 800000 in
 /-- canonical逆像の同定を伴う直接生成H¹の余核欠損公式。 -/
@@ -213,7 +236,13 @@ theorem aSubnerve_cokernel_dimension :
     (comparisonFactor_preimage_comp h₀₁ h₁₂ A))
     ((comparisonComp M₀₁ M₁₂).aSubnerveComparisonHom A),
     aSubnerveComparisonHom_h1Map_comp M₀₁ M₁₂ A]
-  exact DefectSequence.cokernel_dimension _ _
+  simp only [blockDefect_eq_finrank_sub_range]
+  have hr := DefectSequence.cokernel_dimension (M₀₁.aSubnerveComparisonHom A).h1Map (M₁₂.aSubnerveComparisonHom (comparisonFactor q₀ q₁ h₀₁ ⁻¹' A)).h1Map
+  have hf := Submodule.finrank_quotient_add_finrank (LinearMap.range (M₀₁.aSubnerveComparisonHom A).h1Map)
+  have hg := Submodule.finrank_quotient_add_finrank (LinearMap.range (M₁₂.aSubnerveComparisonHom (comparisonFactor q₀ q₁ h₀₁ ⁻¹' A)).h1Map)
+  have hh := Submodule.finrank_quotient_add_finrank
+    (LinearMap.range ((M₁₂.aSubnerveComparisonHom (comparisonFactor q₀ q₁ h₀₁ ⁻¹' A)).h1Map.comp (M₀₁.aSubnerveComparisonHom A).h1Map))
+  omega
 
 set_option maxHeartbeats 800000 in
 /-- 共通Aの三比較の零欠損の2-out-of-3。全q₁部分集合へ量化を広げない。 -/

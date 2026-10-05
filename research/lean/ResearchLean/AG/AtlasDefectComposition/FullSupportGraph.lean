@@ -23,6 +23,11 @@ def graphDifference (N : CoverNerve.{u}) :
   map_add' _ _ := by ext; simp; ring
   map_smul' _ _ := by ext; simp; ring
 
+/-- 名付き辺の微分は、その辺の右端値と左端値の差で評価される。 -/
+@[simp] theorem graphDifference_apply (N : CoverNerve.{u}) (c : N.Chart → ℚ)
+    (e : N.EdgeComponent) :
+    graphDifference N c e = c (N.edgeRight e) - c (N.edgeLeft e) := rfl
+
 /-- 空面を持つ全台blockの実cocycleは名付き辺cochainに一致する。 -/
 def fullBlockGraphCyclesEquiv :
     LinearMap.ker (D.lawValueBlockComplex laws ha label).d1 ≃ₗ[ℚ]
