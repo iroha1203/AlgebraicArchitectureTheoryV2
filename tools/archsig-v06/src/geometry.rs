@@ -7,7 +7,7 @@ use globset::{GlobBuilder, GlobSetBuilder};
 
 use crate::atom::Atom;
 use crate::law::{Reading, ReadingForm};
-use crate::structure::{Place, Silence, Structure, is_question, targets};
+use crate::structure::{Place, Reason, Silence, Structure, is_question, targets};
 
 /// 読み `reading` が、ソースのパス `path` を写す局所の名前。`groups` のどれにも当たらなければ None。
 pub fn local(reading: &Reading, path: &str) -> Option<String> {
@@ -56,9 +56,9 @@ impl<'a> Geometry<'a> {
     /// 要素が属する局所。決まらなければ、その沈黙。どの局所にも属さなければ空。
     /// 局所の元は名前の解決のモジュールが返す(設計 §6)。ここでは、それを読みの局所に写すだけである。
     pub fn element_locals(&self, name: &str) -> Result<BTreeSet<String>, Silence> {
-        // チャネルの送り受けがめぐっても、一度だけたどる。
+        // 局所の元をたどってめぐれば、決まらない(設計 §3.3「答えを求めている途中の問い合わせに再び至れば `unresolved`」)。
         if !self.busy.borrow_mut().insert(name.to_string()) {
-            return Ok(BTreeSet::new());
+            return Err(Silence::new(Reason::Unresolved));
         }
         let r = self.locals(self.after.place(self.before, name));
         self.busy.borrow_mut().remove(name);

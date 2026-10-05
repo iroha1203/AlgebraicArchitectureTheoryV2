@@ -876,3 +876,32 @@ fn a_call_under_an_ambiguous_caller_is_silent_where_its_source_was_not_read_afte
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m/a.py"), "{s}");
 }
+
+#[test]
+fn a_channel_is_silent_where_the_source_of_its_operations_was_not_read_after() {
+    // チャネルの定義した所は、送る操作と受け取る操作の定義した所すべてである(設計 §3.3)。変更後で m/a.py を読んでいなければ、
+    // チャネルがないとは言えず沈黙する(§5.1、§5.4 `changes keep`)。
+    let law = "sources \"m/**\"\n\nreading module = dir(depth: 1)\n\nmeaning ev on channel\n  \"x\"\n\nlaw keep-ev\n  \"y\"\n  about ev\n  changes keep\n";
+    let a = r#"{"kind": "observed", "subject": "m/a.py", "scope": "structure", "at": "m/a.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m/a.py", "scope": "meaning:ev", "at": "m/a.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.send", "value": "operation", "params": {}, "at": "m/a.py:1@blob:aaaaaaa"}
+{"kind": "sends", "subject": "m.send", "object": "channel:queue:placed", "at": "m/a.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "channel:queue:placed", "meaning": "ev", "at": "m/a.py:2@blob:aaaaaaa"}
+"#;
+    let b = r#"{"kind": "observed", "subject": "m/b.py", "scope": "structure", "at": "m/b.py@blob:bbbbbbb"}
+{"kind": "observed", "subject": "m/b.py", "scope": "meaning:ev", "at": "m/b.py@blob:bbbbbbb"}
+"#;
+    let before = Repo::new("channel-unread-before");
+    let after = Repo::new("channel-unread");
+    for repo in [&before, &after] {
+        repo.write(".archsig/law/m.law", law);
+        repo.write("m/a.py", "# source\n");
+        repo.write("m/b.py", "# source\n");
+        repo.map("m/b.py", b);
+    }
+    before.map("m/a.py", a);
+    let s = compare(&after, &before, None);
+    let r = result(&s, "channel:queue:placed");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m/a.py"), "{s}");
+}

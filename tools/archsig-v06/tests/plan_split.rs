@@ -740,3 +740,36 @@ fn a_member_of_a_redefined_nested_type_is_in_the_local_of_the_type() {
     assert!(!has(detail["check"]["shared"].as_array().unwrap(), "writes", "x.g", None), "{detail}");
     assert!(in_local(&repo, "x", "writes", "x.g"), "{s}");
 }
+
+#[test]
+fn a_column_whose_head_is_undecided_has_no_local() {
+    // 列の頭 c.C は名指す要素である(設計 §6)。c.C が二か所に定義されて曖昧か、`resolves` の指すソースを読んでいなければ、
+    // 頭の局所が決まらないので、書き込みの局所も決まらない。
+    let c = "{\"kind\": \"defines\", \"subject\": \"c.f\", \"value\": \"operation\", \"params\": {}, \"at\": \"c/m.py:1@blob:aaaaaaa\"}\n{\"kind\": \"defines\", \"subject\": \"c.C.x\", \"value\": \"field\", \"type\": \"int\", \"at\": \"c/m.py:2@blob:aaaaaaa\"}\n";
+    for (name, extra_c, d) in [
+        ("split-head-ambiguous", "{\"kind\": \"defines\", \"subject\": \"c.C\", \"value\": \"type\", \"at\": \"c/m.py:3@blob:aaaaaaa\"}\n", Some("{\"kind\": \"defines\", \"subject\": \"c.C\", \"value\": \"type\", \"at\": \"d/m.py:1@blob:aaaaaaa\"}\n")),
+        ("split-head-unread", "{\"kind\": \"resolves\", \"subject\": \"c.C\", \"object\": \"d/m.py\", \"at\": \"c/m.py:3@blob:aaaaaaa\"}\n", None),
+    ] {
+        let mut maps = vec![("c/m.py", format!("{c}{extra_c}"))];
+        if let Some(d) = d {
+            maps.push(("d/m.py", d.to_string()));
+        }
+        let maps: Vec<(&str, &str)> = maps.iter().map(|(s, m)| (*s, m.as_str())).collect();
+        let (s, _) = split_repo(name, &maps, "{\"kind\": \"writes\", \"subject\": \"c.f\", \"object\": \"c.C.x\", \"value\": \"1\", \"at\": \"plan:p\"}\n");
+        assert!(s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "silent"), "{name}: {s}");
+        assert!(!s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "holds"), "{name}: {s}");
+    }
+}
+
+#[test]
+fn an_element_the_plan_redefines_without_a_file_is_silent_where_its_original_is_undecided() {
+    // 変更前の c.V.Inner は、型 c.V がそれを定義しないので段の「なければ」で決まらない。候補は c.V.Inner を `file` なしに定義し直す。
+    // 元の定義した所が決まらないので、局所は決まらない(設計 §6)。頭の型 c.V の局所にしない。
+    let (s, _) = split_repo(
+        "split-redefined-stage-original",
+        &[("c/n.py", "{\"kind\": \"defines\", \"subject\": \"c.V\", \"value\": \"type\", \"at\": \"c/n.py:1@blob:aaaaaaa\"}\n{\"kind\": \"defines\", \"subject\": \"c.V.x\", \"value\": \"field\", \"type\": \"c.V.Inner\", \"at\": \"c/n.py:2@blob:aaaaaaa\"}\n")],
+        "{\"kind\": \"defines\", \"subject\": \"c.V.Inner\", \"value\": \"type\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "c.V.Inner");
+    assert_eq!(r["outcome"], "silent", "{s}");
+}

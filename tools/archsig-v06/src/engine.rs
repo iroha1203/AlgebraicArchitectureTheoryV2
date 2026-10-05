@@ -611,12 +611,11 @@ fn meaning_known(prior: Option<(&Structure, &Mapping)>, s: &Structure, field: &s
         }
         return Ok(());
     }
-    let Some(path) = f.defined.into_iter().next() else { return Ok(()) };
+    // 定義した所が二つ以上(曖昧な要素、チャネル)なら、そのすべてで意味を読んでいるときだけ決まる。
     let scope = format!("meaning:{meaning}");
-    if s.observed(&path, &scope) {
-        Ok(())
-    } else {
-        Err(Silence { reason: Reason::Unread, read: Some(path), element: None, scope: Some(scope) })
+    match f.defined.into_iter().find(|path| !s.observed(path, &scope)) {
+        None => Ok(()),
+        Some(path) => Err(Silence { reason: Reason::Unread, read: Some(path), element: None, scope: Some(scope) }),
     }
 }
 
@@ -818,7 +817,7 @@ fn compare(
     // 書き込まれたフィールドとその行き先が意味を持つかが、読んだ範囲から決まらなければ、その場所は比べず、沈黙を最後まで持つ(設計 §5.4)。
     let prior = Some((before, mapping));
     let mut below = Below { prior, ..Below::default() };
-    // 意味 Atom を持つ名前のうち、種類が決まらないもの(定義し直した読んでいない型の下の名前を含む)は、比べず、その沈黙を持つ。
+    // 意味 Atom を持つ型の下の名前のうち、段で種類が決まらないもの(定義し直した読んでいない型の下の名前を含む)は、比べず、その沈黙を持つ。
     // 書き込みに関わる場所の沈黙を先に持つ(下)。
     let mut places: BTreeSet<Vec<String>> = BTreeSet::new();
     let mut undecided = Vec::new();
@@ -828,7 +827,7 @@ fn compare(
                 places.insert(vec![f.clone()]);
             }
             Ok(_) => {}
-            Err(s) => undecided.push(s),
+            Err(_) => undecided.extend(after.stage_silence(f)),
         }
     }
     // 意味 Atom があっても、意味を持つかを読んでいないフィールド(候補が定義したフィールドで、元を読んでいないものを含む)は、

@@ -8,9 +8,10 @@ use crate::expr::{self, BinOp, Expr};
 
 mod name;
 use name::Names;
+use name::{call_name, from_operation, param_of};
 pub use name::{
-    Answer, Column, FieldList, Form, Found, Naming, Place, Resolved, Start, Unknown, Walk, Why, after_operation, below, call_name,
-    form, from_operation, is_local, is_question, owner, param_name, param_of, targets,
+    Answer, Column, FieldList, Form, Found, Naming, Place, Resolved, Start, Unknown, Walk, Why, after_operation, below, form, is_local,
+    is_question, owner, param_name, targets,
 };
 
 /// 呼び出しの展開の深さと、展開した手順の数の上限。超えたら `limit` で沈黙する。
@@ -342,9 +343,9 @@ pub struct Overlay {
     /// 候補が `removes` した要素。
     pub removes: BTreeSet<String>,
     /// 変更後の構造が持つ、定義し直した読んでいない要素と、その変更前の沈黙。元が候補の候補では、元の候補のものも含む。
-    pub redefined: BTreeMap<String, Unknown>,
+    redefined: BTreeMap<String, Unknown>,
     /// 変更後の構造が持つ、`removes` した要素の集合。元が候補の候補では、元の候補のものも含む。
-    pub gone: BTreeSet<String>,
+    gone: BTreeSet<String>,
     /// 書き直していない Atom が `removes` した要素を名指す操作と、名指す要素(`missing` の元)。
     /// Atom から決まる事実で、`missing` と結論するか沈黙するかはエンジンが決める(設計 §3.6)。
     pub missing: BTreeMap<String, BTreeSet<String>>,

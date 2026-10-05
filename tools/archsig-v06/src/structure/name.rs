@@ -521,13 +521,20 @@ impl Structure {
                     Answer::External(pkg) => Ok(Answer::External(pkg)),
                 }
             }
-            // チャネルと項目は、`sends` か `receives` に現れていればそれ。定義した所は、送る操作と受け取る操作のそれすべてで、
-            // `channel_operations` で引く。
+            // チャネルと項目は、`sends` か `receives` に現れていればそれ。定義した所は、送る操作と受け取る操作の定義した所すべてである。
             Form::Channel if self.names.channels.contains_key(n) => {
+                let mut defined = BTreeSet::new();
+                for op in self.names.channels.get(n).into_iter().flatten() {
+                    match self.element(op) {
+                        Ok(Answer::Element(o)) => defined.extend(o.defined),
+                        Err(u) if u.why == Why::Ambiguous => defined.extend(*u.defined),
+                        Ok(Answer::External(_) | Answer::Bare) | Err(_) => {}
+                    }
+                }
                 Ok(Answer::Element(Found {
                     name: n.to_string(),
                     kind: "channel".to_string(),
-                    defined: BTreeSet::new(),
+                    defined,
                     planned: false,
                     ty: None,
                     owner: None,
@@ -808,7 +815,7 @@ impl Structure {
         let mut c = Column::default();
         match answer {
             Ok(Answer::Element(t)) if t.kind == "type" => {
-                c.ty = Some(t.name.clone());
+                c.head = Some(t.name.clone());
                 c.walk = self.walk(Start::Type(&t.name), &fields);
             }
             // 頭が名前だけの要素なら、列は字句どおりの名前の列である。各名前の答えは要素(名前)のものである。
@@ -837,7 +844,9 @@ impl Structure {
                 c.walk.stop = Some(Unknown::unresolved(Why::Other));
             }
             // 頭が分からなければ、最初の名前の答え(要素(名前))で決める。フィールドに決まれば、その型から残りを道で解く。
+            // 頭は名指す要素なので、列の局所は頭の局所を含む(設計 §6)。
             Err(_head) => {
+                c.head = head.map(str::to_string);
                 let mut w = Walk { stages: vec![first.clone()], types: head.into_iter().map(str::to_string).collect(), ..Walk::default() };
                 match self.element(first) {
                     Ok(Answer::Element(e)) if e.kind == "field" => {
@@ -912,6 +921,17 @@ impl Structure {
             }
         }
         Ok(out)
+    }
+
+    /// 型の下の名前で、段(型, 名前)で決まらない答えなら、その沈黙(設計 §5.4 の比べる場所)。
+    pub fn stage_silence(&self, n: &str) -> Option<Silence> {
+        match self.element(n) {
+            Err(u) => match u.origin {
+                Origin::Stage(_) | Origin::Inner(_) => Some(u.silence),
+                Origin::Name | Origin::Head | Origin::Other => None,
+            },
+            Ok(Answer::Element(_) | Answer::External(_) | Answer::Bare) => None,
+        }
     }
 
     /// 種類の問い合わせ。名前だけの要素は種類が決まらないので、その名前を読む所とする。
@@ -1000,8 +1020,8 @@ pub struct Walk {
 /// 列の読み方の答え。
 #[derive(Clone, Debug, Default)]
 pub struct Column {
-    /// 頭が型に決まれば、その型の名前。
-    pub ty: Option<String>,
+    /// 名指す頭(設計 §6)。頭が型に決まるか、分からなければ、その名前。
+    head: Option<String>,
     pub walk: Walk,
     /// 頭が名前だけの要素で、場所が字句どおりの名前の列か。
     bare: bool,
@@ -1219,9 +1239,9 @@ impl Structure {
             return Place::Nowhere;
         }
         if f.planned && f.defined.is_empty() {
-            // 変更前の構造そのものが候補の中で定義した要素(元の候補で `file` なしに定義した要素)は、たどる先がない。
+            // 変更前の構造そのものが候補の中で定義した要素(元の候補で `file` なしに定義した要素)は、元の定義した所が決まらない。
             if std::ptr::eq(self, prior) {
-                return Place::Nowhere;
+                return Place::Unknown(Silence::new(Reason::Unresolved));
             }
             return self.original_place(prior, &f.name);
         }
@@ -1233,10 +1253,8 @@ impl Structure {
     fn original_place(&self, prior: &Structure, n: &str) -> Place {
         match prior.element(n) {
             Ok(Answer::Element(g)) => prior.found_place(prior, &g),
-            Err(u) => match prior.unknown_place(n, u.clone()) {
-                Place::Nowhere => Place::Unknown(u.silence),
-                p => p,
-            },
+            // 変更前に決まらない要素は、その答えの読む所で沈黙する。
+            Err(u) => Place::Unknown(u.silence),
             Ok(Answer::External(_) | Answer::Bare) => Place::Unknown(Silence::new(Reason::Unresolved)),
         }
     }
@@ -1273,7 +1291,7 @@ impl Structure {
     /// 列が止まれば、止まった名前とその局所の元。名前は、決まらないときに返す名前である。
     pub fn column_places(&self, prior: &Structure, names: &[String]) -> Vec<(String, Place)> {
         let c = self.column(names);
-        let mut out: Vec<(String, Place)> = c.ty.iter().chain(&c.walk.place).map(|n| (n.clone(), Place::Via(n.clone()))).collect();
+        let mut out: Vec<(String, Place)> = c.walk.place.iter().map(|n| (n.clone(), Place::Via(n.clone()))).collect();
         if let Some(u) = c.walk.stop {
             let k = c.walk.place.len();
             let at = names.get(k).or(names.last()).cloned().unwrap_or_default();
@@ -1291,6 +1309,8 @@ impl Structure {
                 out.push((at, Place::Unknown(u.silence)));
             }
         }
+        // 頭は列の名前から導いた名指す要素なので、列の名前の後に並べる(決まらない名前は、書いた名前を先に返す。設計 §6)。
+        out.extend(c.head.map(|h| (h.clone(), Place::Via(h))));
         out
     }
 }
