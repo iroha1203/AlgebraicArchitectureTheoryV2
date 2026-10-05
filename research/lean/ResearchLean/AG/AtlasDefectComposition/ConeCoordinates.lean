@@ -1,5 +1,5 @@
 import ResearchLean.AG.AtlasDefectComposition.ZeroExtension
-import Mathlib.Algebra.Homology.HomotopyCategory.MappingCone
+import Mathlib.Algebra.Homology.HomotopyCategory.Pretriangulated
 import Formal.Util.AssertStandardAxioms
 /-! # 標準錐の成分と符号
 
@@ -71,11 +71,44 @@ theorem coneCoordinateEquiv_d (m : ℤ) (p : G.X m × F.X (m+1)) :
     simpa only [ModuleCat.comp_apply, ModuleCat.hom_neg, LinearMap.neg_apply,
       coneCoordinateEquiv_symm_fst, map_neg] using h
 
+/-- 実錐の任意の元に対する隣接微分の公開成分式。 -/
+theorem coneCoordinateEquiv_d_apply (m : ℤ) (x : (mappingCone φ).X m) :
+    coneCoordinateEquiv φ (m+1) ((mappingCone φ).d m (m+1) x) =
+      (G.d m (m+1) (coneCoordinateEquiv φ m x).1 +
+        φ.f (m+1) (coneCoordinateEquiv φ m x).2,
+        -F.d (m+1) (m+1+1) (coneCoordinateEquiv φ m x).2) := by
+  simpa only [LinearEquiv.symm_apply_apply] using
+    coneCoordinateEquiv_d φ m (coneCoordinateEquiv φ m x)
+
+/-- 標準錐の可換正方形射は同じtarget/sourceの二成分で作用する。 -/
+theorem coneCoordinateEquiv_map {F' G' : CochainComplex (ModuleCat.{w} ℚ) ℤ}
+    (φ' : F' ⟶ G') (a : F ⟶ F') (b : G ⟶ G')
+    (comm : φ ≫ b = a ≫ φ') (m : ℤ) (x : (mappingCone φ).X m) :
+    coneCoordinateEquiv φ' m ((mappingCone.map φ φ' a b comm).f m x) =
+      (b.f m (coneCoordinateEquiv φ m x).1,
+        a.f (m+1) (coneCoordinateEquiv φ m x).2) := by
+  apply Prod.ext <;>
+    simp only [coneCoordinateEquiv_snd,coneCoordinateEquiv_fst,mappingCone.map,
+      mappingCone.desc_f _ _ _ _ m (m+1) rfl,
+      HomComplex.Cochain.zero_cochain_comp_v,HomComplex.Cochain.ofHom_v,
+      HomologicalComplex.comp_f,ModuleCat.hom_add,LinearMap.add_apply,
+      ModuleCat.comp_apply,map_add] <;>
+    simp only [Prod.fst_add,Prod.snd_add,coneCoordinateEquiv_snd,coneCoordinateEquiv_fst] <;>
+    simp only [← ModuleCat.comp_apply,Category.assoc,
+      mappingCone.inl_v_snd_v,mappingCone.inr_f_snd_v,
+      mappingCone.inl_v_fst_v,mappingCone.inr_f_fst_v,
+      Category.comp_id,comp_zero,ModuleCat.hom_zero,LinearMap.zero_apply,
+      zero_add,add_zero]
+
 /-- T0の実生成Homを零延長した標準写像錐。 -/
 def comparisonCone {C D : TwoPhase.ThreeCochainComplex.{0,w} ℚ}
     (f : TwoPhase.ThreeCochainComplex.Hom C D) : CochainComplex (ModuleCat.{w} ℚ) ℤ :=
   mappingCone (zeroExtensionMap f)
 
+/-- 実三項比較の錐を標準mappingConeへ読む公開等号。 -/
+@[simp] theorem comparisonCone_eq {C D : TwoPhase.ThreeCochainComplex.{0,w} ℚ}
+    (f : TwoPhase.ThreeCochainComplex.Hom C D) :
+    comparisonCone f = mappingCone (zeroExtensionMap f) := rfl
 /-- 有限次元のsource/target次数から標準錐の同じ次数の有限次元性を導く。 -/
 instance coneDegreeFiniteDimensional (m : ℤ)
     [FiniteDimensional ℚ (F.X (m+1))] [FiniteDimensional ℚ (G.X m)] :

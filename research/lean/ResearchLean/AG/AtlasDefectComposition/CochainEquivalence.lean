@@ -29,6 +29,9 @@ def cochainEquivZeroExtensionIso (e : ThreeCochainComplex.CochainEquiv C D) :
   inv := zeroExtensionMap e.symm.toHom
   hom_inv_id := by rw [← zeroExtensionMap_comp,cochainEquiv_hom_inv,zeroExtensionMap_id]
   inv_hom_id := by rw [← zeroExtensionMap_comp,cochainEquiv_inv_hom,zeroExtensionMap_id]
+/-- 零延長同型の順射は既存成分同値の実Homの零延長である。 -/
+@[simp] theorem cochainEquivZeroExtensionIso_hom (e : ThreeCochainComplex.CochainEquiv C D) :
+    (cochainEquivZeroExtensionIso e).hom = zeroExtensionMap e.toHom := rfl
 /-- 標準homologyの同型は既存G-107のh1Equivと全類で同じ写像を読む。 -/
 theorem cochainEquiv_h1_standard (e : ThreeCochainComplex.CochainEquiv C D) (x : C.H1) :
     oldH1Equiv D (e.h1Equiv x) =
