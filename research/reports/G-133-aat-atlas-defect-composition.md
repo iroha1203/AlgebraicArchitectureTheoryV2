@@ -640,3 +640,7 @@ Cycle 2公理ログSHA-256: `77514a8cd09bc8febf807385c181ac842ab558182f667e7b064
 実欠損の公開次元公式・rank-nullityを使う証明へ修正した。statement・定義値・既存宣言・
 入力契約・台帳statusは変更しない。追加API3件を含む119宣言へ公理監査を更新した。
 直接対応の資格と解消はfresh単一agentの確認対象である。
+
+初回の直接対応確認はF1/F3/F4の解消と資格内を確認したが、F2の同じperiod核証明の
+逆方向に残るchange評価（旧行40）を未解消とした。その一箇所もgraphDifference_apply
+経由へ直し、再度fresh単一agentの直接対応確認へ渡す。中心findingの追加はない。

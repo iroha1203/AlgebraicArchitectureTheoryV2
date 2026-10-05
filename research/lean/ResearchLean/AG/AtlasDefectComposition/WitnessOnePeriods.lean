@@ -37,8 +37,10 @@ theorem trianglePeriod_kernel :
     fin_cases e <;> simp
     linarith
   · rintro ⟨c, rfl⟩
-    change (c 1 - c 0) - (c 2 - c 0) + (c 2 - c 1) = 0
-    ring
+    change graphDifference triangle c 0 - graphDifference triangle c 1 +
+      graphDifference triangle c 2 = 0
+    rw [graphDifference_apply, graphDifference_apply, graphDifference_apply]
+    simp
 
 /-- 指定二三角形の微分像は二period核と一致する。 -/
 theorem twoTrianglePeriods_kernel :
