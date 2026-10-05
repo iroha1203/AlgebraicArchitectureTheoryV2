@@ -51,7 +51,7 @@ selection:
 
 ## 全targetのproof obligation
 
-M1のLean構成は以下に対応させる。Cycle 1/M1はPR #5263で独立査読・root受理・CI成功後にmerge済み。Cycle 2/M2は実相殺・欠損とW1の指定類について検証済み、独立査読前である。C・D・E・F、W1の錐、W2・W3は未証明。
+M1のLean構成は以下に対応させる。Cycle 1/M1はPR #5263で独立査読・root受理・CI成功後にmerge済み。Cycle 2/M2はPR #5264で独立査読・非中心指摘の直接対応・root受理・CI成功後にmerge済みである。C・D・E・F、W1の錐、W2・W3は未証明。
 全体の completion candidate ではない。Formal移植とArchSig実装対応は未実施。
 Research全体buildとローカルFormal全体buildは実行しない。
 
@@ -644,3 +644,676 @@ Cycle 2公理ログSHA-256: `77514a8cd09bc8febf807385c181ac842ab558182f667e7b064
 初回の直接対応確認はF1/F3/F4の解消と資格内を確認したが、F2の同じperiod核証明の
 逆方向に残るchange評価（旧行40）を未解消とした。その一箇所もgraphDifference_apply
 経由へ直し、再度fresh単一agentの直接対応確認へ渡す。中心findingの追加はない。
+
+
+## Cycle 2 受理記録
+
+[PR #5264最終受理監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5264#issuecomment-5999396250)が
+固定head `34b0a6eafba940c26922430bab79d9438ff73fa7` をapprove / proof-obligation-discharged（M2）と判定した。
+初回4laneは中心findingなし、非中心Minor issues。別fresh単一agentの直接対応確認でF1–F4を
+すべて実体解消・資格内と確認。merge `a51385022f5dbccfca96166abf435b89f274c0c6`、
+CI Lean37346099851・Tool37346099881・Workers da1dcb60-2001-460c-a42f-ee8ac5aa0b4b全pass。
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5261#issuecomment-5999424199)。
+GOALはactive、全completion candidateではない。
+
+## Cycle 3 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-133-aat-atlas-defect-composition
+cycle: 3
+goal_blob_sha: 8904a7d3bf428e0307499a40be4db1ba9091c51a
+base_oid: a51385022f5dbccfca96166abf435b89f274c0c6
+tracking_issue: 5261
+report_path: research/reports/G-133-aat-atlas-defect-composition.md
+selection:
+  proof_state_ref: 'M1/M2 accepted: PR #5263/#5264; Issue #5261同期'
+  proof_dag_predecessors: [M1の実Hom合成, M2の実H¹/W1 period, 固定mathlib mappingCone/homology API]
+  milestone: 'M3 / C・W1錐・W3: 標準錐と次数別寄与'
+  proof_obligations:
+    - 三項有理複体のℤ次数への零延長、全Hom、恒等/合成と既存H¹の自然同型
+    - 実生成Homの標準mappingConeとカード順序(y,x)の明示成分同定/微分
+    - 全整数mでの余核/錐H^m/次核の短完全列、端点、次数0/1と二欠損の接続
+    - 指定W3a/W3bの原始reading・Law・支持セルと比較、追加寄与と全指定次元
+    - 同じW1各ラベル/全Lawの錐次元と追加項零
+  exit_criteria:
+    - Cの全量化・全次数を既存H¹および標準mathlib錐へ接続
+    - W3a/W3bの実原始入力と全評価値をLeanで生成
+    - 同じW1の錐値と追加寄与零を実入力から証明
+    - focused/targeted、spine全axiom、placeholder/Unicode/privacy/import方向scan成功
+  selection_reason: Dの対象分解とFのtriangle/filtrationが依存する標準複体への接続を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ZeroExtension.lean, ConeCoordinates.lean, ConeExactSequence.lean, WitnessThreeInput.lean]
+  risks:
+    - 独自錐recordを標準mappingConeへの同型なしで閉じない
+    - source/target順序と負号、次数-1を保持
+    - H0余核/H2核の追加寄与を一般入力へ零と仮定しない
+    - W3の行列を入力fieldへ供給せず原始セル微分から評価
+  unchecked: [Cの未実装義務, D/E/F, W2, 全GOAL完了監査]
+```
+
+
+## Cycle 3 checkpoint proposal
+
+標準錐の一般構成、自然短完全列、既存H¹/端のH⁰/H²との同定、および
+W1全発生ラベルとW3の実block具体例を同じ原始入力から閉じた。32 Lean file・303明示宣言に
+またがる再利用可能な複体/錐APIが独立に成立したため、ここで分割する。
+元のM3終了条件は維持する。W1全Lawの錐・追加項とW3の唯一ラベルから全Lawへの
+対象同定は、Law別の全成分/標準錐分解を構成する次cycleの残義務とする。
+Cの証拠と各ラベルの数値は全GOAL完了判定を含まない。
+
+```yaml
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta:
+    - Cの零延長・全Hom・恒等/合成・既存H¹自然同型を構成
+    - 標準mappingConeへの両方向成分同定と全mの指定順序/符号を証明
+    - 標準長完全列から全mの実余核/錐homology/次核の自然短完全列と端同型を構成
+    - W3a/W3bの原始入力を生成し、実blockのJ、追加項、錐全四次数を評価
+    - W3bの実錐空間次元4,9,7,1と実微分rank4,5,1を証明
+    - W1全ラベルの実錐次数0/1と追加項零を証明
+    - 指定錐射影/包含の同型条件と追加項零性の必要十分条件を両方向で証明
+  exit_criteria_status:
+    - Cの全次数/標準mathlib錐/既存H¹との接続は閉じた
+    - W3の実block指定値は閉じた; 唯一ラベルと全Lawの対象同定は未完
+    - W1の全発生ラベルの実錐/追加項は閉じた; 全Lawの錐は未完
+    - 独立PR査読は次段階; 全GOAL最終査読は未実施
+  split_reason: 再利用可能な一般複体/錐APIと実block例が成立し、32fileの検査責務と次の全Law対象分解を一度の監査に混ぜず確認するため
+  completion_candidate: no
+  lean_artifacts: [以下Cycle 3 spine]
+  evidence: [全303明示宣言のLean証明と実入力構成]
+  claim_mapping:
+    theorem_names: [cone_short_exact, cone_homology_dimension, oldH1Equiv_natural, actualA_cone_homology_dimensions, actualB_cone_homology_dimensions, actual_extra_terms_zero]
+    source_labels: [C, W1の各ラベル錐, W3の実block]
+    conjuncts:
+      - C零延長/標準H1自然性: ZeroExtension・EndpointHomology・EndpointNaturality
+      - C全m成分/符号: ConeCoordinates
+      - C全m短完全列/自然性/次元/端: ConeHomologySequence・ConeExactSequence・ConeNaturality・ConeEndDegrees
+      - C条件付き同型/両方向/追加項零性: ShortExactFiveConditions・ConeConditional
+      - W3原始入力/指定原始微分rank: WitnessThreeInput・WitnessThreeRanks
+      - W3実比較/実錐/追加項: NamedComparison・NamedHomology・WitnessThreeNamed・WitnessThreeActual
+      - W1全発生ラベル実錐/追加項: WitnessOneEndpoints・WitnessOneCones
+    undischarged_assumptions: []
+    acceptance_point: 元の終了条件を縮めず、全Law対象同定を未完として残すcheckpoint
+    port_status: unported
+```
+
+### Cycle 3 premise と証明経路
+
+有限Source・任意有限supported nerve・有理係数・既存三項複体の微分平方零は
+T0に明示された入力幾何と生成元である。一般線形補助の可換正方形・exactnessは方向仮定であり、
+実入力への適用では generatedComparisonHom、全成分同型、標準長完全列で生成している。
+有限値型・Condition C・comparisonの単射/全射・face空性を一般Cへ追加しない。
+Fintype Sourceから実発生LawValueLabelの有限性を使い、任意のambient valueを列挙しない。
+
+既存G-107 ThreeCochainComplex.CochainEquivを用い、別の同値recordを設けない。
+ZeroExtensionは標準CochainComplex.of/ModuleCat short homologyへ接続する。
+ConeCoordinatesは標準mappingConeのprojection/injectionで両逆と微分を証明する。
+ConeHomologySequenceは標準distinguished triangleの長完全列を使い、exactnessをfieldで供給しない。
+ShortExactFiveは実kernel/range/quotientからinjection/projectionを構成する。
+全台とface空性はW1および指定全台W3の座標計算の方向仮定だけで、T0一般定理へ伝播しない。
+
+W3bの終端H²は指定三項複体の実商である。原始セルの面像を三つの自由面値で構成し、
+指定rank3とfine rank1を得た。錐微分rankは実homology次元加法式から得る。
+W1の次数0定数核は各chartの原始辺差分で証明し、実chart比較で定数を保つ。
+新述語extraTermsZeroは二つの実次元零性の積であり、W1で成立しW3aで不成立を証明する。
+
+### Cycle 3 spine
+
+以下303明示宣言を修正後受理候補とする。新規31fileと既存FullSupportPullbackの新規3宣言を
+列挙し、既存宣言は前cycleの受理依存として扱う。自動生成projection/simp定理は各module末尾の
+標準公理監査にも含まれる。scratch/開発用試行は受理spineへ含めない。
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/CochainEquivalence.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.cochainEquiv_hom_inv
+AAT.AG.AtlasDefectComposition.cochainEquiv_inv_hom
+AAT.AG.AtlasDefectComposition.cochainEquivZeroExtensionIso
+AAT.AG.AtlasDefectComposition.cochainEquiv_h1_standard
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ComparisonHomology.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.standardH1KernelEquiv
+AAT.AG.AtlasDefectComposition.standardH1CokernelEquiv
+AAT.AG.AtlasDefectComposition.standardH0_bijective_iff
+AAT.AG.AtlasDefectComposition.standardH2_bijective_iff
+AAT.AG.AtlasDefectComposition.standardH1_defect
+AAT.AG.AtlasDefectComposition.blockDefect_kernel_dimension
+AAT.AG.AtlasDefectComposition.blockDefect_cokernel_dimension
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ComplexIsoRanks.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.complexIso_d_rank
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeConditional.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.coneKernelProjection_bijective_iff
+AAT.AG.AtlasDefectComposition.coneCokernelInclusion_bijective_iff
+AAT.AG.AtlasDefectComposition.coneKernelProjectionEquiv
+AAT.AG.AtlasDefectComposition.coneCokernelInclusionEquiv
+AAT.AG.AtlasDefectComposition.coneKernelProjectionEquiv_apply
+AAT.AG.AtlasDefectComposition.coneCokernelInclusionEquiv_apply
+AAT.AG.AtlasDefectComposition.cokernel_zero_iff_surjective
+AAT.AG.AtlasDefectComposition.kernel_zero_iff_injective
+AAT.AG.AtlasDefectComposition.comparison_H0_cokernel_zero_iff
+AAT.AG.AtlasDefectComposition.comparison_H2_kernel_zero_iff
+AAT.AG.AtlasDefectComposition.comparisonConeH0KernelEquiv
+AAT.AG.AtlasDefectComposition.comparisonConeH1CokernelEquiv
+AAT.AG.AtlasDefectComposition.comparisonConeH0KernelEquiv_apply
+AAT.AG.AtlasDefectComposition.comparisonConeH1CokernelEquiv_apply
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeCoordinates.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.coneCoordinateEquiv
+AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_snd
+AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_fst
+AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_symm_snd
+AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_symm_fst
+AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_d
+AAT.AG.AtlasDefectComposition.comparisonCone
+AAT.AG.AtlasDefectComposition.coneDegreeFiniteDimensional
+AAT.AG.AtlasDefectComposition.comparisonCone_isZero
+AAT.AG.AtlasDefectComposition.comparisonConeMinusOneEquiv
+AAT.AG.AtlasDefectComposition.comparisonConeZeroEquiv
+AAT.AG.AtlasDefectComposition.comparisonConeOneEquiv
+AAT.AG.AtlasDefectComposition.comparisonConeTwoEquiv
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeDimensionCalculus.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.shortComplex_boundary_rank
+AAT.AG.AtlasDefectComposition.shortComplex_homology_dimension
+AAT.AG.AtlasDefectComposition.complex_homology_dimension
+AAT.AG.AtlasDefectComposition.complex_homology_isZero
+AAT.AG.AtlasDefectComposition.comparisonCone_homology_isZero
+AAT.AG.AtlasDefectComposition.comparisonCone_dimension_defect
+AAT.AG.AtlasDefectComposition.comparisonCone_dimension_minus_one
+AAT.AG.AtlasDefectComposition.comparisonCone_dimension_two
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeEndDegrees.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.comparisonConeHMinusOneEquiv
+AAT.AG.AtlasDefectComposition.comparisonConeHTwoEquiv
+AAT.AG.AtlasDefectComposition.comparisonCone_dimension_zero
+AAT.AG.AtlasDefectComposition.comparisonCone_dimension_one
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeEquivalence.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.coneIso_inverse_square
+AAT.AG.AtlasDefectComposition.coneMapIso
+AAT.AG.AtlasDefectComposition.coneHomologyEquiv
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeExactSequence.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.coneCokernelInclusion
+AAT.AG.AtlasDefectComposition.coneKernelProjection
+AAT.AG.AtlasDefectComposition.coneCokernelInclusion_mk
+AAT.AG.AtlasDefectComposition.coneKernelProjection_val
+AAT.AG.AtlasDefectComposition.coneCokernelInclusion_injective
+AAT.AG.AtlasDefectComposition.cone_short_function_exact
+AAT.AG.AtlasDefectComposition.coneKernelProjection_surjective
+AAT.AG.AtlasDefectComposition.coneShortComplex
+AAT.AG.AtlasDefectComposition.cone_short_exact
+AAT.AG.AtlasDefectComposition.moduleCatHomologyFiniteDimensional
+AAT.AG.AtlasDefectComposition.cochainHomologyFiniteDimensional
+AAT.AG.AtlasDefectComposition.cone_homology_dimension
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeHomologySequence.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.transportShortComplex
+AAT.AG.AtlasDefectComposition.transportShortComplexIso
+AAT.AG.AtlasDefectComposition.transportShortComplex_exact
+AAT.AG.AtlasDefectComposition.coneConnecting
+AAT.AG.AtlasDefectComposition.coneTargetSequence
+AAT.AG.AtlasDefectComposition.coneTargetSequence_f
+AAT.AG.AtlasDefectComposition.coneTargetSequence_g
+AAT.AG.AtlasDefectComposition.cone_target_exact
+AAT.AG.AtlasDefectComposition.coneMiddleSequence
+AAT.AG.AtlasDefectComposition.coneMiddleSequence_f
+AAT.AG.AtlasDefectComposition.coneMiddleSequence_g
+AAT.AG.AtlasDefectComposition.cone_middle_exact
+AAT.AG.AtlasDefectComposition.coneSourceSequence
+AAT.AG.AtlasDefectComposition.coneSourceSequence_f
+AAT.AG.AtlasDefectComposition.coneSourceSequence_g
+AAT.AG.AtlasDefectComposition.cone_source_exact
+AAT.AG.AtlasDefectComposition.homologyFactors_inv_natural
+AAT.AG.AtlasDefectComposition.homologyFactors_hom_natural
+AAT.AG.AtlasDefectComposition.coneConnecting_natural
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeNaturality.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.homology_square
+AAT.AG.AtlasDefectComposition.homologyCokernelMap
+AAT.AG.AtlasDefectComposition.homologyKernelMap
+AAT.AG.AtlasDefectComposition.homologyCokernelMap_mk
+AAT.AG.AtlasDefectComposition.homologyKernelMap_val
+AAT.AG.AtlasDefectComposition.coneCokernelInclusion_natural
+AAT.AG.AtlasDefectComposition.coneKernelProjection_natural
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/EndpointHomology.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.oldZeroShort
+AAT.AG.AtlasDefectComposition.oldTwoShort
+AAT.AG.AtlasDefectComposition.zeroExtensionZeroScIso
+AAT.AG.AtlasDefectComposition.zeroExtensionTwoScIso
+AAT.AG.AtlasDefectComposition.oldH0Iso
+AAT.AG.AtlasDefectComposition.oldH2Iso
+AAT.AG.AtlasDefectComposition.oldH0Equiv
+AAT.AG.AtlasDefectComposition.oldH2Equiv
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/EndpointNaturality.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.oldH0Map
+AAT.AG.AtlasDefectComposition.oldH2Map
+AAT.AG.AtlasDefectComposition.oldH0Map_val
+AAT.AG.AtlasDefectComposition.oldH2Map_mk
+AAT.AG.AtlasDefectComposition.oldZeroShortMap
+AAT.AG.AtlasDefectComposition.oldTwoShortMap
+AAT.AG.AtlasDefectComposition.zeroExtensionZeroScIso_natural
+AAT.AG.AtlasDefectComposition.zeroExtensionTwoScIso_natural
+AAT.AG.AtlasDefectComposition.oldZeroCycles_natural
+AAT.AG.AtlasDefectComposition.oldTwoOpcycles_natural
+AAT.AG.AtlasDefectComposition.oldH0Iso_natural
+AAT.AG.AtlasDefectComposition.oldH2Iso_natural
+AAT.AG.AtlasDefectComposition.oldH0Equiv_natural
+AAT.AG.AtlasDefectComposition.oldH2Equiv_natural
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportIncidence.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.fullBlock_d1
+AAT.AG.AtlasDefectComposition.faceDifference
+AAT.AG.AtlasDefectComposition.faceDifference_apply
+AAT.AG.AtlasDefectComposition.named_d1_d0
+AAT.AG.AtlasDefectComposition.namedComplex
+AAT.AG.AtlasDefectComposition.namedComplex_d0_apply
+AAT.AG.AtlasDefectComposition.namedComplex_d1_apply
+AAT.AG.AtlasDefectComposition.mem_ker_namedComplex_d0_iff
+AAT.AG.AtlasDefectComposition.fullBlockNamedEquivalence
+AAT.AG.AtlasDefectComposition.fullSupport_edge
+AAT.AG.AtlasDefectComposition.fullSupport_face
+AAT.AG.AtlasDefectComposition.fullBlockNamed_d0_rank
+AAT.AG.AtlasDefectComposition.fullBlockNamed_d1_rank
+AAT.AG.AtlasDefectComposition.fullBlockNamedHomologyEquiv
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportPullback.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.fullBlock_pullback0
+AAT.AG.AtlasDefectComposition.fullBlock_pullback2_some
+AAT.AG.AtlasDefectComposition.fullBlock_pullback2_none
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/HomologyConjugation.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.homologyConjugation_square
+AAT.AG.AtlasDefectComposition.homologyConjugation_defect
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/HomologyDimensions.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.finrank_range_codRestrict
+AAT.AG.AtlasDefectComposition.oldH1_dimension
+AAT.AG.AtlasDefectComposition.standardH0_dimension
+AAT.AG.AtlasDefectComposition.standardH1_dimension
+AAT.AG.AtlasDefectComposition.standardH2_dimension
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/LinearConjugation.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.LinearConjugation.range_map
+AAT.AG.AtlasDefectComposition.LinearConjugation.kernel_map
+AAT.AG.AtlasDefectComposition.LinearConjugation.kernelEquiv
+AAT.AG.AtlasDefectComposition.LinearConjugation.cokernelEquiv
+AAT.AG.AtlasDefectComposition.LinearConjugation.kernelEquiv_val
+AAT.AG.AtlasDefectComposition.LinearConjugation.cokernelEquiv_mk
+AAT.AG.AtlasDefectComposition.LinearConjugation.range_dimension
+AAT.AG.AtlasDefectComposition.LinearConjugation.bijective_iff
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/NamedComparison.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.namedComparisonHom
+AAT.AG.AtlasDefectComposition.namedComparisonHom_square
+AAT.AG.AtlasDefectComposition.namedComparisonHom_f0
+AAT.AG.AtlasDefectComposition.namedComparisonHom_f1_some
+AAT.AG.AtlasDefectComposition.namedComparisonHom_f1_none
+AAT.AG.AtlasDefectComposition.namedComparisonHom_f2_some
+AAT.AG.AtlasDefectComposition.namedComparisonHom_f2_none
+AAT.AG.AtlasDefectComposition.namedComparison_zeroExtension_square
+AAT.AG.AtlasDefectComposition.fullBlockNamedConeIso
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/NamedHomology.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.fullBlockNamedHomology_defect
+AAT.AG.AtlasDefectComposition.fullBlockNamedCone_homology_dimension
+AAT.AG.AtlasDefectComposition.fullBlockNamedCone_degree_dimension
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ShortExactFive.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.ShortExactFive.inclusion
+AAT.AG.AtlasDefectComposition.ShortExactFive.projection
+AAT.AG.AtlasDefectComposition.ShortExactFive.inclusion_mk
+AAT.AG.AtlasDefectComposition.ShortExactFive.projection_val
+AAT.AG.AtlasDefectComposition.ShortExactFive.inclusion_injective
+AAT.AG.AtlasDefectComposition.ShortExactFive.exact
+AAT.AG.AtlasDefectComposition.ShortExactFive.projection_surjective
+AAT.AG.AtlasDefectComposition.ShortExactFive.dimension
+AAT.AG.AtlasDefectComposition.ShortExactFive.middleEquivKernel
+AAT.AG.AtlasDefectComposition.ShortExactFive.cokernelEquivMiddle
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ShortExactFiveConditions.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.ShortExactFive.projection_bijective_iff
+AAT.AG.AtlasDefectComposition.ShortExactFive.inclusion_bijective_iff
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessOneCones.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessOne.actual₀₁
+AAT.AG.AtlasDefectComposition.WitnessOne.actual₁₂
+AAT.AG.AtlasDefectComposition.WitnessOne.actual₀₂
+AAT.AG.AtlasDefectComposition.WitnessOne.forward_standard_defect_named
+AAT.AG.AtlasDefectComposition.WitnessOne.backward_standard_defect_named
+AAT.AG.AtlasDefectComposition.WitnessOne.direct_standard_defect_named
+AAT.AG.AtlasDefectComposition.WitnessOne.actual_H0_defects
+AAT.AG.AtlasDefectComposition.WitnessOne.actual_H2_defects
+AAT.AG.AtlasDefectComposition.WitnessOne.extraTermsZero
+AAT.AG.AtlasDefectComposition.WitnessOne.extraTermsZero_of_defects
+AAT.AG.AtlasDefectComposition.WitnessOne.actual_extra_terms_zero
+AAT.AG.AtlasDefectComposition.WitnessOne.extraTermsZero_W3a_false
+AAT.AG.AtlasDefectComposition.WitnessOne.forward_cone_dimensions
+AAT.AG.AtlasDefectComposition.WitnessOne.backward_cone_dimensions
+AAT.AG.AtlasDefectComposition.WitnessOne.direct_cone_dimensions
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessOneEndpoints.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessOne.constants₀
+AAT.AG.AtlasDefectComposition.WitnessOne.constants₂
+AAT.AG.AtlasDefectComposition.WitnessOne.constants₁
+AAT.AG.AtlasDefectComposition.WitnessOne.named₀₁
+AAT.AG.AtlasDefectComposition.WitnessOne.named₁₂
+AAT.AG.AtlasDefectComposition.WitnessOne.named₀₂
+AAT.AG.AtlasDefectComposition.WitnessOne.constants_forward
+AAT.AG.AtlasDefectComposition.WitnessOne.constants_backward
+AAT.AG.AtlasDefectComposition.WitnessOne.constants_direct
+AAT.AG.AtlasDefectComposition.WitnessOne.named_H0_defects
+AAT.AG.AtlasDefectComposition.WitnessOne.H2_dimensions
+AAT.AG.AtlasDefectComposition.WitnessOne.named_H2_defects
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessThreeActual.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessThree.actualA
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB
+AAT.AG.AtlasDefectComposition.WitnessThree.actualA_coneIso
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_coneIso
+AAT.AG.AtlasDefectComposition.WitnessThree.actualA_defect_named
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_defect_named
+AAT.AG.AtlasDefectComposition.WitnessThree.actualA_H1_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_H1_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.actualA_H0_cokernel_dimension
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_H2_kernel_dimension
+AAT.AG.AtlasDefectComposition.WitnessThree.actualA_cone_homology_dimension
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_cone_homology_dimension
+AAT.AG.AtlasDefectComposition.WitnessThree.actualA_cone_homology_dimensions
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_cone_homology_dimensions
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_cone_degree_dimension
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_cone_dimensions
+AAT.AG.AtlasDefectComposition.WitnessThree.actualB_cone_differential_ranks
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessThreeConeA.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessThree.A₀_d0_zero
+AAT.AG.AtlasDefectComposition.WitnessThree.A₀_ranks
+AAT.AG.AtlasDefectComposition.WitnessThree.A₁_ranks
+AAT.AG.AtlasDefectComposition.WitnessThree.A_homology_dimensions
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA_oldH0_injective
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA_H0_injective
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA_H0_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA_H1_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA_H2_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA_oldH1_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA_cone_homology_dimensions
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessThreeConeB.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_standardH0_bijective
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_H0_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_H1_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_oldH1_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_H2_defect
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_cone_homology_dimensions
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessThreeConeRanks.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_cone_dimensions
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_cone_finite
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_cone_d_before_zero
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_cone_differential_ranks
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessThreeInput.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessThree.Source
+AAT.AG.AtlasDefectComposition.WitnessThree.q₀
+AAT.AG.AtlasDefectComposition.WitnessThree.q₁
+AAT.AG.AtlasDefectComposition.WitnessThree.coarser
+AAT.AG.AtlasDefectComposition.WitnessThree.not_coarser
+AAT.AG.AtlasDefectComposition.WitnessThree.laws
+AAT.AG.AtlasDefectComposition.WitnessThree.adequate₀
+AAT.AG.AtlasDefectComposition.WitnessThree.adequate₁
+AAT.AG.AtlasDefectComposition.WitnessThree.label
+AAT.AG.AtlasDefectComposition.WitnessThree.label_unique
+AAT.AG.AtlasDefectComposition.WitnessThree.isolated
+AAT.AG.AtlasDefectComposition.WitnessThree.A₀
+AAT.AG.AtlasDefectComposition.WitnessThree.A₁
+AAT.AG.AtlasDefectComposition.WitnessThree.MA
+AAT.AG.AtlasDefectComposition.WitnessThree.tetrahedron
+AAT.AG.AtlasDefectComposition.WitnessThree.filledTriangle
+AAT.AG.AtlasDefectComposition.WitnessThree.B₀
+AAT.AG.AtlasDefectComposition.WitnessThree.B₁
+AAT.AG.AtlasDefectComposition.WitnessThree.MB
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessThreeNamed.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessThree.eqA₀
+AAT.AG.AtlasDefectComposition.WitnessThree.eqA₁
+AAT.AG.AtlasDefectComposition.WitnessThree.eqB₀
+AAT.AG.AtlasDefectComposition.WitnessThree.eqB₁
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB
+AAT.AG.AtlasDefectComposition.WitnessThree.namedA_f0
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_f0
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_f1
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_f2
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_H0_constants
+AAT.AG.AtlasDefectComposition.WitnessThree.namedB_H0_bijective
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessThreeRanks.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessThree.tetrahedronConstants
+AAT.AG.AtlasDefectComposition.WitnessThree.triangleConstants
+AAT.AG.AtlasDefectComposition.WitnessThree.tetrahedronFaceImage
+AAT.AG.AtlasDefectComposition.WitnessThree.triangleFace_surjective
+AAT.AG.AtlasDefectComposition.WitnessThree.tetrahedron_d0_rank
+AAT.AG.AtlasDefectComposition.WitnessThree.tetrahedron_d1_rank
+AAT.AG.AtlasDefectComposition.WitnessThree.triangle_d0_rank
+AAT.AG.AtlasDefectComposition.WitnessThree.triangle_d1_rank
+AAT.AG.AtlasDefectComposition.WitnessThree.tetrahedron_homology_dimensions
+AAT.AG.AtlasDefectComposition.WitnessThree.triangle_homology_dimensions
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ZeroExtension.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.degreeObject
+AAT.AG.AtlasDefectComposition.degreeDifferential
+AAT.AG.AtlasDefectComposition.degreeDifferential_square
+AAT.AG.AtlasDefectComposition.zeroExtension
+AAT.AG.AtlasDefectComposition.degreeMap
+AAT.AG.AtlasDefectComposition.degreeMap_comm
+AAT.AG.AtlasDefectComposition.zeroExtensionMap
+AAT.AG.AtlasDefectComposition.zeroExtensionMap_comp
+AAT.AG.AtlasDefectComposition.oldShort
+AAT.AG.AtlasDefectComposition.zeroExtensionScIso
+AAT.AG.AtlasDefectComposition.oldH1Iso
+AAT.AG.AtlasDefectComposition.oldShortMap
+AAT.AG.AtlasDefectComposition.oldShortMapData
+AAT.AG.AtlasDefectComposition.oldShortMap_homology
+AAT.AG.AtlasDefectComposition.zeroExtensionScIso_natural
+AAT.AG.AtlasDefectComposition.oldH1Iso_natural
+AAT.AG.AtlasDefectComposition.degreeObjectFiniteDimensional
+AAT.AG.AtlasDefectComposition.zeroExtension_X
+AAT.AG.AtlasDefectComposition.degreeObject_isZero
+AAT.AG.AtlasDefectComposition.zeroExtension_d
+AAT.AG.AtlasDefectComposition.zeroExtensionMap_f
+AAT.AG.AtlasDefectComposition.zeroExtensionMap_id
+AAT.AG.AtlasDefectComposition.oldH1Equiv
+AAT.AG.AtlasDefectComposition.oldH1Equiv_natural
+AAT.AG.AtlasDefectComposition.zeroExtensionDegreeFiniteDimensional
+AAT.AG.AtlasDefectComposition.zeroExtension_homology_isZero
+AAT.AG.AtlasDefectComposition.homologyTransport_natural
+```
+
+### Cycle 3 初回headの検証と監査入力
+
+rootが実装段階ごとのfocused/targeted checkを行った。最終検証は
+`cd research/lean` から
+`lake build ResearchLean.AG.AtlasDefectComposition.WitnessOneCones ResearchLean.AG.AtlasDefectComposition.ConeNaturality`
+で対象新規29module、FullSupportPullback、および必要な依存を検査し成功（3829 jobs）。
+Research全体・aggregate・全file loop・local Formal全体buildは未実施。
+
+`.tmp/g133-cycle3-axioms.lean` の単一scratchから284宣言の `#print axioms` を実行した。
+source/spine/scratch/logの名前集合は欠落・余剰なし。propext・Classical.choice・Quot.soundのみ。
+公理ログSHA-256は `776c32dfd02f8993ab71bfd9fa2b7910ff594cd48e15ecdfc09e8ca5d9581fd2`。
+対象source/reportのplaceholder・hidden/BiDiはclean。privacy scanのヒットは既存の公開GitHub
+監査URLだけで、新規ローカルパスなし。語彙scanは旧Cycle2の既存一行のみ、新規行にヒットなし。
+FormalからResearchへのimportヒットなし。git diff --checkはclean。
+
+```yaml
+audits:
+  premise_delta:
+    discharged:
+      - 実生成Homの三成分可換性を生成元と既存cochain同値から構成
+      - 標準三角の長完全列から実核像のexactnessを構成
+      - W3の全支持/因子化/セルincidenceを原始有限表から生成
+      - W1の定数核同型と追加項零を原始差分/実chart比較から証明
+    remaining: []
+  certificate_provenance:
+    discharged: [標準mappingCone両逆, 標準homology自然性, 実生成block比較, 原始セルrank]
+    unresolved: []
+  proof_use:
+    used: [標準長完全列, 既存G107 cochain同値, 原始chart/edge/face, M2実H1欠損]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [上記targeted check, 284宣言公理ログ, 機械scan]
+  blocking_findings: [独立PR査読は未実施]
+  next_obligation: M3残の全Law対象同定/W1全Law錐をM4の実全成分/錐直和分解とともに構成
+```
+
+D/E/F・W2と全GOAL最終独立監査は未完。Formal移植・ArchSig実装は未実施。
+恒久設計とGOAL本文は変更していない。Cycle3の内容受理は固定PR headの独立査読へ渡す。
+
+
+### Cycle 3 初回監査と本筋修正
+
+[PR #5265初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5265#issuecomment-6001002538)は
+head `1460ce22a8a9b8f5d014c7fc0519e9e1c09dee9f` に対し数学A/B・LeanAがMinor issues、
+LeanBがMajor revisionsを返した。中心/非中心の区分に差があるF3を、rootは中心findingとして扱う。
+
+F1の公開微分評価・次数0核membership APIを追加し、指定rank・定数核・chart引き戻しの
+下流証明を公開APIへ移す。F2の禁止語を具体的な入力幾何へ置換する。
+F3のGOAL前提台帳228行・設計README105–106行を未完義務から落としていた記載を修正し、
+全次数の指定射の同型条件、その両方向、追加項零性との同値と既存H¹への条件付き同型を構成する。
+
+これらは元のM3終了条件に含まれる。元selection・GOAL・設計・result型を変更しない。
+全Lawの錐対象同定とW1全Lawの錐値は引き続き未完であり、結果はproof-checkpointである。
+修正後headはfresh4laneの正式再実行へ渡し、初回内容判定を再利用しない。
+
+
+### Cycle 3 修正後の条項対応
+
+`coneKernelProjection_bijective_iff` と `coneCokernelInclusion_bijective_iff` は、
+標準長完全列から構成した指定射そのものの全単射性を、全整数mでそれぞれ
+Hᵐ比較の全射性・Hᵐ⁺¹比較の単射性と同値にする。ShortExactFiveConditionsの
+三つのexactnessは標準錐の `cone_target_exact`、`cone_middle_exact`、`cone_source_exact`
+から供給し、AAT入力にexactnessを追加しない。
+
+`comparison_H0_cokernel_zero_iff` と `comparison_H2_kernel_zero_iff` は、
+実追加項の次元零性との必要十分条件を証明する。
+`comparisonConeH0KernelEquiv` と `comparisonConeH1CokernelEquiv` は、
+指定射影・包含を旧H¹の実核・余核へ移した条件付き線形同型である。
+各apply則で移送後の射を固定する。条件はこの同型に限る方向仮定であり、
+一般Cの構成には課さない。W1の実追加項零はWitnessOneConesで既に放電され、
+W3a/bが検出する非零追加項を同じ条件で排除しない。
+
+
+### Cycle 3 修正後の検証と監査入力
+
+rootの必要依存targeted checkは
+`lake build ResearchLean.AG.AtlasDefectComposition.WitnessOneCones ResearchLean.AG.AtlasDefectComposition.ConeNaturality ResearchLean.AG.AtlasDefectComposition.ConeConditional`
+で成功（3831 jobs）。単一scratchの303宣言公理監査も成功し、
+source/spine/scratch/logの名前集合は303で一致、欠落・余剰なし。
+依存公理はpropext・Classical.choice・Quot.soundのみ。
+ログSHA-256は `d689b30db0a331c7e5991759afbe1bf0a7e97675a85b5046f76bf77c66691ea6`。
+32 Lean fileとreportのplaceholder・hidden/BiDi・privacy scan、
+本体からResearchへのimport検査、git diff --checkはclean。
+Research全体・aggregate・全file loop build、Formal移植・ArchSig実装、
+全GOAL最終監査は未実施。F1/F2/F3の修正実体をfresh4lane正式再実行で監査する。
