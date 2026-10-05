@@ -281,5 +281,31 @@ theorem homologyTransport_natural
   rw [← Category.assoc,← ShortComplex.homologyMap_comp,eK.inv_hom_id,
     ShortComplex.homologyMap_id,Category.id_comp]
 
+/-- 零延長の次数0微分を元のd0で評価する。 -/
+@[simp] theorem zeroExtension_d0_apply (C : ThreeCochainComplex.{0,w} ℚ) (x : C.C0) :
+    (zeroExtension C).d 0 1 x = C.d0 x := by
+  exact congrArg (fun f => f x) (zeroExtension_d C 0)
+/-- 零延長の次数1微分を元のd1で評価する。 -/
+@[simp] theorem zeroExtension_d1_apply (C : ThreeCochainComplex.{0,w} ℚ) (x : C.C1) :
+    (zeroExtension C).d 1 2 x = C.d1 x := by
+  exact congrArg (fun f => f x) (zeroExtension_d C 1)
+/-- 元の二微分以外の隣接微分は零である。 -/
+theorem zeroExtension_d_zero (C : ThreeCochainComplex.{0,w} ℚ) (m : ℤ)
+    (h₀ : m≠0) (h₁ : m≠1) : (zeroExtension C).d m (m+1)=0 := by
+  rw [zeroExtension_d]
+  simp only [degreeDifferential,dif_neg h₀,dif_neg h₁]
+/-- 零延長Hom次数0は元の計算成分そのものである。 -/
+@[simp] theorem zeroExtensionMap_f0_apply {C D : ThreeCochainComplex.{0,w} ℚ}
+    (f : ThreeCochainComplex.Hom C D) (x : C.C0) :
+    (zeroExtensionMap f).f 0 x = f.f0 x := rfl
+/-- 零延長Hom次数1は元の計算成分そのものである。 -/
+@[simp] theorem zeroExtensionMap_f1_apply {C D : ThreeCochainComplex.{0,w} ℚ}
+    (f : ThreeCochainComplex.Hom C D) (x : C.C1) :
+    (zeroExtensionMap f).f 1 x = f.f1 x := rfl
+/-- 零延長Hom次数2は元の計算成分そのものである。 -/
+@[simp] theorem zeroExtensionMap_f2_apply {C D : ThreeCochainComplex.{0,w} ℚ}
+    (f : ThreeCochainComplex.Hom C D) (x : C.C2) :
+    (zeroExtensionMap f).f 2 x = f.f2 x := rfl
+
 end AAT.AG.AtlasDefectComposition
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition

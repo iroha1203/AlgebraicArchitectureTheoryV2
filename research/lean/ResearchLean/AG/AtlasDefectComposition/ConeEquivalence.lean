@@ -28,6 +28,9 @@ def coneMapIso : mappingCone φ ≅ mappingCone φ' where
   inv_hom_id := by
     rw [← mappingCone.map_comp]
     simpa only [Iso.inv_hom_id] using mappingCone.map_id φ'
+/-- 実錐同型の順射は標準可換正方形射そのものである。 -/
+@[simp] theorem coneMapIso_hom : (coneMapIso φ φ' eF eG comm).hom =
+    mappingCone.map φ φ' eF.hom eG.hom comm := rfl
 /-- 錐同型を全整数次数の標準homology線形同型へ移す。 -/
 def coneHomologyEquiv (m : ℤ) : (mappingCone φ).homology m ≃ₗ[ℚ]
     (mappingCone φ').homology m :=

@@ -47,6 +47,18 @@ def fifth : W ⧸ LinearMap.range (g.comp f) →ₗ[K] W ⧸ LinearMap.range g :
   (LinearMap.range (g.comp f)).mapQ (LinearMap.range g) LinearMap.id (by
     rintro _ ⟨x, rfl⟩; exact ⟨f x, rfl⟩)
 
+/-- 核包含は同じ原始元を保つ。 -/
+@[simp] theorem first_val (x : LinearMap.ker f) : (first f g x).val = x.val := rfl
+/-- 合成核射は前段の実写像を読む。 -/
+@[simp] theorem second_val (x : LinearMap.ker (g.comp f)) :
+    (second f g x).val = f x.val := rfl
+/-- 余核間の誘導射は後段写像の同じ実代表元を読む。 -/
+@[simp] theorem fourth_mk (x : V) : fourth f g ((LinearMap.range f).mkQ x) =
+    (LinearMap.range (g.comp f)).mkQ (g x) := rfl
+/-- 最後の余核射は同じ実代表元を読む。 -/
+@[simp] theorem fifth_mk (x : W) : fifth f g ((LinearMap.range (g.comp f)).mkQ x) =
+    (LinearMap.range g).mkQ x := rfl
+
 /-- 入力二射の核包含は単射であり、六項列の最初の零射との完全性を支える。 -/
 theorem first_injective : Function.Injective (first f g) := by
   intro x y h; apply Subtype.ext

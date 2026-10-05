@@ -1317,3 +1317,189 @@ source/spine/scratch/logの名前集合は303で一致、欠落・余剰なし�
 本体からResearchへのimport検査、git diff --checkはclean。
 Research全体・aggregate・全file loop build、Formal移植・ArchSig実装、
 全GOAL最終監査は未実施。F1/F2/F3の修正実体をfresh4lane正式再実行で監査する。
+
+
+## Cycle 3 受理と Cycle 4 selection
+
+PR #5265のhead `a78de2d9386d5f3877407f008988d17dea4a474e` に対する
+[正式再実行1とroot acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5265#issuecomment-6001311085)は
+fresh数学A/B・LeanA/BすべてNo major findings。proof-checkpointとして受理し、
+merge commit `a3f33aaaac842385f85c8494597e3bd5ccb802bc` でmainへ統合した。
+M3全Law接続は残り、GOALはactive、Issue #5261はopen。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-133-aat-atlas-defect-composition
+cycle: 4
+goal_blob_sha: 8904a7d3bf428e0307499a40be4db1ba9091c51a
+base_oid: a3f33aaaac842385f85c8494597e3bd5ccb802bc
+tracking_issue: 5261
+report_path: research/reports/G-133-aat-atlas-defect-composition.md
+selection:
+  proof_state_ref: Cycle3正式再実行1受理とIssue5261
+  proof_dag_predecessors: [M1生成合成, M2実H1相殺, M3標準錐checkpoint, G104Law同値, G107labelFiber自然性]
+  milestone: M4の実Law対象分解とM3全Law残の閉鎖
+  proof_obligations:
+    - 既存三次数block同値を全Law複体と有限直和へ接続し生成Hom全成分を同定
+    - 実Law比較の核/余核/標準錐/自然短完全列を同じラベル有限直和へ分解
+    - Bの六項列の全射とχおよび相殺rankを同じ分解で同定
+    - 同じ粗fiberと細逆像の実subset比較へ全次数/錐/旧H1を接続
+    - 指示Lawのselected true blockと空A零複体を構成し全Lawと区別
+    - W1全Lawの錐と追加項、W3唯一ラベルから全Lawへの対象同定を評価
+    - 同署名ラベルの重複度を保持
+  exit_criteria:
+    - Dの全対象と全指定射の可換同定がLeanで成立
+    - 実生成比較/実subset比較の元と全次数の対応を保持
+    - W1全Law錐/追加項とW3全Law指定値が同じ実入力から成立
+    - 指示Law/空A/重複度をLeanで確認
+    - 対象focused/targeted・全spineaxiom・scanを完了
+  selection_reason: CをAAT実Lawへ集約しBの相殺と同じ構造で結び、EとFへの対象分解を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [LawCochainDecomposition.lean, FiniteComplexFamily.lean, LawConeDecomposition.lean, LawDefectDecomposition.lean]
+  risks:
+    - 次元公式だけで対象/射同定を代替しない
+    - Law値型全体の有限性を追加しない
+    - 全Lawを指示Lawtrue blockへ取り違えない
+    - 署名重複ラベルを集合へ圧縮しない
+  unchecked: [Dの未実装義務, E/F/W2, 全GOAL最終監査]
+```
+
+
+### Cycle 4 構成と条項対応
+
+T0の有限Source・実セル比較・粗側adequacyを保持し、値型全体の有限性、
+ConditionC、H¹比較の単射/全射、面の空性を一般分解へ追加しない。
+細側adequacyは既存Aの因子化による値を使える。
+
+| 固定条項 | 実体と指定射の証拠 |
+| --- | --- |
+| D: 全Law三次数複体と実比較 | LawCochainDecompositionの三つのblock同値と生成Hom成分、LawStandardDecompositionのzeroExtensionIsoと自然性、LawDirectSumTargetsの圏論的直和同型と自然性 |
+| D: 実核・余核とJの二成分 | LawDefectDecompositionの実H¹/全次数kernel/cokernel同型とval/mk則、LawSubsetDefectDecompositionの同じ粗fiber・逆像からのJ和 |
+| D: 標準錐 | FiniteConeFamilyの符号付き全次数座標・微分・projection、LawConeDecompositionの実錐同型、LawSubsetConeDecompositionの同じ粗fiber・canonical逆像錐への圏論的直和同型 |
+| D: Cの短完全列の全指定射 | LawProjectionの実projection-square、LawShortExactDecompositionの核/余核元と標準包含/射影の全次数component則。Cの標準exactnessを同型で移す |
+| D: Bの六項列・χ・r | DefectConjugation/FiniteDefectConjugationの六対象同型・全五射component則・χ像同型、LawSixTermDecompositionとLawFiberSixTermDecompositionの実生成比較/実fiber比較とrank和 |
+| D: 同じ粗fiberと細逆像 | LawFiberDecompositionの全三次数比較square、labelValueFiber_eq_preimageを使うcanonical比較transport、LawFiberH1Familyの実H¹比較square。直接比較同定はAの独立生成合成定理を使う |
+| D: selected true blockと空A | IndicatorSelectedBlockの非空A指示Lawのselected block・実錐同型。EmptySubsetの実三次数零性・零延長・homology・空比較錐零性。指示Law全体をtrue blockへ同一視しない |
+| D/W1: 重複度 | 全分解はLawValueLabelの有限族/有限直和を使い、同台ラベルを消さない。既存WitnessOneFullLawの二発生ラベル・J倍化・χ rank2と今回の全Law錐値が同じ入力を使う |
+| M3残/W1・W3 | WitnessOneFullLawConesは全Law錐H⁰/H¹が(0,2),(2,0),(0,0)、全追加項零。WitnessThreeFullLawは唯一発生ラベルから実全Law比較へ移し、H⁰余核1/H²核1、全錐homology値、W3bの各次数4,9,7,1と微分rank4,5,1を保持 |
+
+FiniteComplexFamilyは実degreewise有限族をproductの普遍性から構成し、
+圏論的有限直和と全次数homologyに接続する。FiniteLinearFamilyは実核・像・商を
+成分へ移す。これらの一般線形代数部分だけではDの放電にならず、上表の
+既存G104/G107三次数・H¹同値、実generatedComparisonHom、labelFiberComparisonHom、
+aSubnerveComparisonHomへの接続を同じspineへ含める。
+
+短完全列の自然性はCのconeCokernelInclusion_naturalとconeKernelProjection_naturalを
+実blockProjectionへ適用する。標準錐の対象・射の同定であり、canonical分裂を選ばない。
+LawFiberSixTermDecompositionは原始入力の三段実fiberを使う。粗fiberと細fiberの
+canonical逆像同定はLawFiberDecompositionのcomparison squareで与え、
+LawSubsetDefectDecompositionはJの両成分についてそのtransportを明示する。
+
+### Cycle 4 受理候補spine
+
+変更対象32 Lean fileの全316宣言を対象とする。新規一般補題だけでなく、
+実Law接続・具体例・局所instanceと、既受理fileに追加した公開APIを含む。
+
+| File（AtlasDefectComposition内） | 全対象宣言（AAT.AG.AtlasDefectComposition以下） |
+| --- | --- |
+| CochainEquivalence.lean | `cochainEquiv_hom_inv`, `cochainEquiv_inv_hom`, `cochainEquivZeroExtensionIso`, `cochainEquivZeroExtensionIso_hom`, `cochainEquiv_h1_standard` |
+| ConeCoordinates.lean | `coneCoordinateEquiv`, `coneCoordinateEquiv_snd`, `coneCoordinateEquiv_fst`, `coneCoordinateEquiv_symm_snd`, `coneCoordinateEquiv_symm_fst`, `coneCoordinateEquiv_d`, `coneCoordinateEquiv_d_apply`, `coneCoordinateEquiv_map`, `comparisonCone`, `comparisonCone_eq`, `coneDegreeFiniteDimensional`, `comparisonCone_isZero`, `comparisonConeMinusOneEquiv`, `comparisonConeZeroEquiv`, `comparisonConeOneEquiv`, `comparisonConeTwoEquiv` |
+| ConeEquivalence.lean | `coneIso_inverse_square`, `coneMapIso`, `coneMapIso_hom`, `coneHomologyEquiv` |
+| DefectConjugation.lean | `DefectConjugation.comp_square`, `DefectConjugation.kernelFirst`, `DefectConjugation.kernelComposite`, `DefectConjugation.kernelLast`, `DefectConjugation.cokernelFirst`, `DefectConjugation.cokernelComposite`, `DefectConjugation.cokernelLast`, `DefectConjugation.first_natural`, `DefectConjugation.second_natural`, `DefectConjugation.cancellation_natural`, `DefectConjugation.fourth_natural`, `DefectConjugation.fifth_natural`, `DefectConjugation.cancellation_range`, `DefectConjugation.cancellationRangeEquiv` |
+| DefectSequence.lean | `DefectSequence.first`, `DefectSequence.second`, `DefectSequence.cancellation`, `DefectSequence.cancellation_apply`, `DefectSequence.cancellation_eq_zero_iff`, `DefectSequence.fourth`, `DefectSequence.fifth`, `DefectSequence.first_val`, `DefectSequence.second_val`, `DefectSequence.fourth_mk`, `DefectSequence.fifth_mk`, `DefectSequence.first_injective`, `DefectSequence.exact_first_second`, `DefectSequence.exact_second_cancellation`, `DefectSequence.exact_cancellation_fourth`, `DefectSequence.exact_fourth_fifth`, `DefectSequence.fifth_surjective`, `DefectSequence.exact_zero_first`, `DefectSequence.exact_fifth_zero`, `DefectSequence.sixTerm_exact`, `DefectSequence.cancellation_ker`, `DefectSequence.cancellationQuotientEquiv`, `DefectSequence.kernel_dimension`, `DefectSequence.cokernel_dimension` |
+| EmptySubset.lean | `emptySubsetChartIsEmpty`, `emptySubsetEdgeIsEmpty`, `emptySubsetFaceIsEmpty`, `emptySubsetC0Subsingleton`, `emptySubsetC1Subsingleton`, `emptySubsetC2Subsingleton`, `zeroExtension_isZero_X`, `emptySubset_isZero_X`, `emptySubset_isZero_homology`, `emptySubsetCone_isZero_X` |
+| FiniteComplexFamily.lean | `FiniteComplexFamily.complex`, `FiniteComplexFamily.degreeSubsingleton`, `FiniteComplexFamily.d_apply`, `FiniteComplexFamily.projection`, `FiniteComplexFamily.map`, `FiniteComplexFamily.map_apply`, `FiniteComplexFamily.map_projection`, `FiniteComplexFamily.map_id`, `FiniteComplexFamily.map_comp`, `FiniteComplexFamily.iso`, `FiniteComplexFamily.fan`, `FiniteComplexFamily.fanIsLimit`, `FiniteComplexFamily.productIso`, `FiniteComplexFamily.degreeFiniteDimensional`, `FiniteComplexFamily.directSumIso`, `FiniteComplexFamily.directSumIso_projection`, `FiniteComplexFamily.directSumIso_natural`, `FiniteComplexFamily.additivePreservesFamily`, `FiniteComplexFamily.homologyIso`, `FiniteComplexFamily.homologyIso_projection`, `FiniteComplexFamily.homologyEquiv`, `FiniteComplexFamily.homologyEquiv_component`, `FiniteComplexFamily.homologyEquiv_natural` |
+| FiniteConeFamily.lean | `FiniteConeFamily.productFamilyEquiv`, `FiniteConeFamily.degreeEquiv`, `FiniteConeFamily.degreeEquiv_component`, `FiniteConeFamily.degreeEquiv_d`, `FiniteConeFamily.iso`, `FiniteConeFamily.iso_apply`, `FiniteConeFamily.iso_projection` |
+| FiniteDefectConjugation.lean | `FiniteDefectConjugation.firstEquiv`, `FiniteDefectConjugation.secondEquiv`, `FiniteDefectConjugation.thirdEquiv`, `FiniteDefectConjugation.fourthEquiv`, `FiniteDefectConjugation.fifthEquiv`, `FiniteDefectConjugation.sixthEquiv`, `FiniteDefectConjugation.first_component`, `FiniteDefectConjugation.second_component`, `FiniteDefectConjugation.cancellation_component`, `FiniteDefectConjugation.fourth_component`, `FiniteDefectConjugation.fifth_component`, `FiniteDefectConjugation.cancellationRangeEquiv` |
+| FiniteDefectFamily.lean | `FiniteDefectFamily.kernelComposite`, `FiniteDefectFamily.cokernelComposite`, `FiniteDefectFamily.first_component`, `FiniteDefectFamily.second_component`, `FiniteDefectFamily.cancellation_component`, `FiniteDefectFamily.fourth_component`, `FiniteDefectFamily.fifth_component`, `FiniteDefectFamily.cancellation_square`, `FiniteDefectFamily.cancellationRangeEquiv` |
+| FiniteLinearFamily.lean | `FiniteLinearFamily.map`, `FiniteLinearFamily.map_apply`, `FiniteLinearFamily.kernelEquiv`, `FiniteLinearFamily.kernelEquiv_val`, `FiniteLinearFamily.range_eq`, `FiniteLinearFamily.rangeEquiv`, `FiniteLinearFamily.rangeEquiv_val`, `FiniteLinearFamily.cokernelEquiv`, `FiniteLinearFamily.cokernelEquiv_mk` |
+| IndicatorSelectedBlock.lean | `indicatorSelectedZeroExtensionIso`, `indicatorSelectedConeIso` |
+| LawCochainDecomposition.lean | `lawFamily0Equiv`, `lawFamily1Equiv`, `lawFamily2Equiv`, `lawFamilyCochainEquiv`, `lawFamily_natural0`, `lawFamily_natural1`, `lawFamily_natural2` |
+| LawConeDecomposition.lean | `lawConeFamilyIso`, `lawConeDirectSumIso`, `lawConeHomologyEquiv`, `lawConeFamilyIso_hom`, `lawConeHomologyEquiv_component_family`, `lawConeFiniteBiproducts` |
+| LawDefectDecomposition.lean | `lawH1Comparison_square`, `lawH1KernelFamilyEquiv`, `lawH1CokernelFamilyEquiv`, `lawH1KernelFamilyEquiv_val`, `lawH1CokernelFamilyEquiv_mk`, `lawH1Defect_sum`, `lawStandardKernelFamilyEquiv`, `lawStandardCokernelFamilyEquiv`, `lawStandardKernelFamilyEquiv_val`, `lawStandardCokernelFamilyEquiv_mk` |
+| LawDirectSumTargets.lean | `lawZeroExtensionDirectSumIso`, `lawZeroExtensionDirectSumIso_natural`, `lawH1KernelDirectSumEquiv`, `lawH1CokernelDirectSumEquiv`, `lawStandardKernelDirectSumEquiv`, `lawStandardCokernelDirectSumEquiv`, `lawDirectSumFiniteBiproducts` |
+| LawFiberDecomposition.lean | `lawBlockFiberZeroExtensionIso`, `lawBlockFiber_comparison_square`, `lawBlockFiberZeroExtensionIso_natural`, `lawBlockFiberConeIso`, `lawFiberComparison_canonical`, `subsetComparisonZeroExtension_square`, `lawBlockSelectedSubsetZeroExtensionIso`, `lawBlockSelectedSubsetZeroExtensionIso_natural`, `lawBlockSelectedSubsetConeIso`, `lawBlockCanonicalConeIso` |
+| LawFiberH1Family.lean | `lawFiberH1FamilyEquiv`, `lawFiberH1Comparison_square` |
+| LawFiberSixTermDecomposition.lean | `LawFiberSixTermDecomposition.kernelFirstFamilyEquiv`, `LawFiberSixTermDecomposition.kernelCompositeFamilyEquiv`, `LawFiberSixTermDecomposition.kernelLastFamilyEquiv`, `LawFiberSixTermDecomposition.cokernelFirstFamilyEquiv`, `LawFiberSixTermDecomposition.cokernelCompositeFamilyEquiv`, `LawFiberSixTermDecomposition.cokernelLastFamilyEquiv`, `LawFiberSixTermDecomposition.first_component`, `LawFiberSixTermDecomposition.second_component`, `LawFiberSixTermDecomposition.cancellation_component`, `LawFiberSixTermDecomposition.fourth_component`, `LawFiberSixTermDecomposition.fifth_component`, `LawFiberSixTermDecomposition.cancellationRangeFamilyEquiv`, `LawFiberSixTermDecomposition.cancellation_rank_sum` |
+| LawProjection.lean | `lawBlockZeroExtensionProjection`, `lawBlockZeroExtensionProjection_natural`, `lawStandardHomologyEquiv_component`, `lawConeBlockProjection`, `lawConeFamilyIso_projection`, `lawConeHomologyEquiv_component` |
+| LawShortExactDecomposition.lean | `lawStandardCokernelFamilyEquiv_component`, `lawStandardKernelFamilyEquiv_component`, `lawConeCokernelInclusion_component`, `lawConeKernelProjection_component` |
+| LawSixTermDecomposition.lean | `LawSixTermDecomposition.kernelFirstFamilyEquiv`, `LawSixTermDecomposition.kernelCompositeFamilyEquiv`, `LawSixTermDecomposition.kernelLastFamilyEquiv`, `LawSixTermDecomposition.cokernelFirstFamilyEquiv`, `LawSixTermDecomposition.cokernelCompositeFamilyEquiv`, `LawSixTermDecomposition.cokernelLastFamilyEquiv`, `LawSixTermDecomposition.first_component`, `LawSixTermDecomposition.second_component`, `LawSixTermDecomposition.cancellation_component`, `LawSixTermDecomposition.fourth_component`, `LawSixTermDecomposition.fifth_component`, `LawSixTermDecomposition.cancellationRangeFamilyEquiv`, `LawSixTermDecomposition.cancellation_rank_sum` |
+| LawStandardDecomposition.lean | `lawZeroExtensionIso`, `lawFamily_comparison_square`, `lawZeroExtensionIso_natural`, `lawStandardHomologyEquiv`, `lawStandardHomologyEquiv_natural`, `lawStandardHomologyEquiv_component_family` |
+| LawStandardDimensions.lean | `lawStandardDefect_sum` |
+| LawSubsetConeDecomposition.lean | `lawSubsetConeFamilyIso`, `lawSubsetConeDirectSumIso`, `lawSubsetConeHomologyEquiv`, `lawSubsetConeHomology_dimension`, `lawSubsetConeFiniteBiproducts` |
+| LawSubsetDefectDecomposition.lean | `lawFiberH1KernelFamilyEquiv`, `lawFiberH1CokernelFamilyEquiv`, `lawFiberH1KernelFamilyEquiv_val`, `lawFiberH1CokernelFamilyEquiv_mk`, `lawFiberH1Defect_sum`, `lawFiberDefect_canonical`, `lawH1Defect_subset_sum` |
+| LawUniqueBlock.lean | `lawUniqueBlockZeroExtensionIso`, `lawUniqueBlockZeroExtensionIso_natural`, `lawUniqueBlockConeIso`, `lawUniqueBlockStandardDefect`, `lawUniqueBlockConeHomology_dimension`, `lawUniqueBlockConeDegree_dimension`, `lawUniqueBlockCone_d_rank` |
+| ThreeComplexFamily.lean | `ThreeComplexFamily.complex`, `ThreeComplexFamily.d0_apply`, `ThreeComplexFamily.d1_apply`, `ThreeComplexFamily.map`, `ThreeComplexFamily.map0_apply`, `ThreeComplexFamily.map1_apply`, `ThreeComplexFamily.map2_apply`, `ThreeComplexFamily.degreeEquiv`, `ThreeComplexFamily.degreeEquiv0_apply`, `ThreeComplexFamily.degreeEquiv1_apply`, `ThreeComplexFamily.degreeEquiv2_apply`, `ThreeComplexFamily.degreeEquiv_d`, `ThreeComplexFamily.zeroExtensionIso`, `ThreeComplexFamily.zeroExtensionIso_apply`, `ThreeComplexFamily.degreeEquiv_natural`, `ThreeComplexFamily.zeroExtensionIso_natural` |
+| UniqueComplexFamily.lean | `UniqueComplexFamily.evaluationEquiv`, `UniqueComplexFamily.evaluationEquiv_apply`, `UniqueComplexFamily.iso`, `UniqueComplexFamily.iso_hom` |
+| WitnessOneFullLawCones.lean | `WitnessOne.fullActual₀₁`, `WitnessOne.fullActual₁₂`, `WitnessOne.fullActual₀₂`, `WitnessOne.full_forward_cone_dimensions`, `WitnessOne.full_backward_cone_dimensions`, `WitnessOne.full_direct_cone_dimensions`, `WitnessOne.full_endpoint_defects`, `WitnessOne.full_extra_terms_zero` |
+| WitnessThreeFullLaw.lean | `WitnessThree.labelsSubsingleton`, `WitnessThree.fullActualA`, `WitnessThree.fullActualB`, `WitnessThree.fullActualA_standard_defect`, `WitnessThree.fullActualB_standard_defect`, `WitnessThree.fullActualA_H1_defect`, `WitnessThree.fullActualB_H1_defect`, `WitnessThree.fullActualA_H0_cokernel_dimension`, `WitnessThree.fullActualB_H2_kernel_dimension`, `WitnessThree.fullActualA_cone_homology_dimension`, `WitnessThree.fullActualB_cone_homology_dimension`, `WitnessThree.fullActualA_cone_homology_dimensions`, `WitnessThree.fullActualB_cone_homology_dimensions`, `WitnessThree.fullActualB_cone_degree_dimension`, `WitnessThree.fullActualB_cone_dimensions`, `WitnessThree.fullActualB_cone_differential_ranks` |
+| ZeroExtension.lean | `degreeObject`, `degreeDifferential`, `degreeDifferential_square`, `zeroExtension`, `degreeMap`, `degreeMap_comm`, `zeroExtensionMap`, `zeroExtensionMap_comp`, `oldShort`, `zeroExtensionScIso`, `oldH1Iso`, `oldShortMap`, `oldShortMapData`, `oldShortMap_homology`, `zeroExtensionScIso_natural`, `oldH1Iso_natural`, `degreeObjectFiniteDimensional`, `zeroExtension_X`, `degreeObject_isZero`, `zeroExtension_d`, `zeroExtensionMap_f`, `zeroExtensionMap_id`, `oldH1Equiv`, `oldH1Equiv_natural`, `zeroExtensionDegreeFiniteDimensional`, `zeroExtension_homology_isZero`, `homologyTransport_natural`, `zeroExtension_d0_apply`, `zeroExtension_d1_apply`, `zeroExtension_d_zero`, `zeroExtensionMap_f0_apply`, `zeroExtensionMap_f1_apply`, `zeroExtensionMap_f2_apply` |
+
+
+### Cycle 4 検証とresult proposal
+
+rootの必要依存targeted checkは以下の明示targetで成功（3860 jobs）。
+
+```text
+lake build ResearchLean.AG.AtlasDefectComposition.LawDirectSumTargets ResearchLean.AG.AtlasDefectComposition.LawShortExactDecomposition ResearchLean.AG.AtlasDefectComposition.LawFiberSixTermDecomposition ResearchLean.AG.AtlasDefectComposition.WitnessOneFullLawCones ResearchLean.AG.AtlasDefectComposition.WitnessThreeFullLaw ResearchLean.AG.AtlasDefectComposition.EmptySubset ResearchLean.AG.AtlasDefectComposition.IndicatorSelectedBlock
+```
+
+単一scratchの全316宣言の公理監査も成功。sourceの各module公理検査の対象数、
+上のspine、scratch、ログの宣言数は316で一致し、名前の欠落・余剰はない。
+依存公理はpropext・Classical.choice・Quot.soundのみ。ログSHA-256は
+`8c1873602546dc1a35f8557cdd5555cb2ceb4f8bd0c5857a06f4d927a4652519`。
+placeholder・hidden/BiDi・新規行の語彙・本体からResearchへのimport・diff checkはclean。
+privacyパターンの7件は既存の公開GitHub監査URLのみで、ローカルパス/非公開値はない。
+保護本文・恒久設計・GOAL本文・Formal・toolingに変更はない。
+Research全体・aggregate・全file loop build、Formal移植、ArchSig実装、
+全GOAL独立完了監査は未実施。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - Dの実全Law複体/比較/全次数核余核/標準錐を有限直和へ同定
+    - C短完全列とB六項列の全指定射/相殺像を実ラベル比較へ同定
+    - 同じ粗fiberと細逆像の実部分集合比較を三次数/標準錐/旧H1へ接続
+    - 非空Aselected true blockと空A零複体を構成
+    - W1/W3実全Law対象と指定値を同じ原始入力から評価
+  exit_criteria_status:
+    - D全対象と全指定射: 上の条項対応と316宣言
+    - 実生成比較/実subset比較: LawFiberDecompositionとLawSubsetDefectDecomposition
+    - W1/W3全Law指定値: WitnessOneFullLawConesとWitnessThreeFullLaw
+    - 指示Law/空A/重複度: IndicatorSelectedBlock/EmptySubset/全LawValueLabel有限直和
+    - targeted/axiom/scan: 上記成功
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [上記32file316宣言spine]
+  evidence: [実Law比較可換同型, 同じ粗fiber逆像の錐直和同型, 指定射component則, W1/W3実全Law評価]
+  claim_mapping:
+    theorem_names: [lawSubsetConeDirectSumIso, lawH1Defect_subset_sum, LawFiberSixTermDecomposition.cancellation_rank_sum, lawConeCokernelInclusion_component, lawConeKernelProjection_component]
+    source_labels: [GOAL D, GOAL C全Law対象, 設計W1/W3全Law値]
+    conjuncts: [上記条項対応表]
+    undischarged_assumptions: []
+    acceptance_point: Dの元と射の可換同定を実入力へ接続しM3全Law残を閉じる
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [実Law三次数/H1同値からの標準複体自然性, finite product普遍性からの直和, 実projectionによる全次数短完全列自然性, 同じ原始W1/W3からの全Law評価]
+    remaining: []
+  certificate_provenance:
+    discharged: [G104block同値, G107fiber同値/逆像等号, 標準mappingCone, 実指示Lawtrue label, 原始セル表]
+    unresolved: []
+  proof_use:
+    used: [三次数block微分可換性, 全次数comparison square, 標準cone自然性, 実H1相殺, 全LawValueLabel添字]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [3860jobs targeted, 316宣言公理ログ, 上記scan]
+  blocking_findings: [独立PRレビューは未実施]
+  next_obligation: M5の台署名商/二普遍性/selected block加法性/台制限自然性とW2
+```
+
+このresultは独立PR監査へ渡すproposalである。E/F/W2・全GOAL最終監査は未完、
+GOALはactive、tracking Issueはopen。M3/M4の受理判断は固定headの監査コメントに置く。
