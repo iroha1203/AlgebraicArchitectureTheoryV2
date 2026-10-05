@@ -1563,8 +1563,9 @@ selection:
 
 ### Cycle 5 条項と実入力経路
 
-すべてのsubset（空集合を含む）を同じ粗targetから引き戻す。Sourceとセル型の
-universeは独立であり、Lawの値型全体にFintypeを要求しない。
+すべてのsubset（空集合を含む）を同じ粗targetから引き戻す。台署名・台制限関手では
+Sourceとセル型のuniverseを独立に量化する。実Law比較・錐復元とJ評価は既存Law APIの
+`TargetSupportedNerve.{u,u}` に接続し、Lawの値型全体にFintypeを要求しない。
 
 | 固定要求 | 今回の証拠と生成経路 |
 | --- | --- |
@@ -1578,10 +1579,10 @@ universeは独立であり、Lawの値型全体にFintypeを要求しない。
 | 零block削除と比較・錐の復元 | `SupportZeroBlock` はsigma=bottomから六セル空を証明する。`SelectedFamilyComplex` のactive同型、`FiniteFamilyZeroDeletion`、`FiniteFamilyReindex`、`SelectedFamilyReconstruction` は元のblock同型と添字並べ替えを使う。`SelectedFamilyComplex.reconstruction_square` と `SelectedFamilyComplex.canonical_square` が全比較射も保つ。任意の線形同型を族の射に加えない。 |
 | 多重度と自由加法的普遍性 | `SelectedFamilies.canonical_multiplicity` と `SelectedFamilies.multiplicity_classifies` は有限supportの全多重度を実現/分類する。`SelectedFamilies.additive_universal` は任意の可換加法モノイドBに値を持つ指定評価を単独block値の和として全一意に表す。`SelectedFamilies.freeMonoid_universal/freeEvaluation_multiplicity` でFinsuppの自由可換モノイドへ接続する。 |
 | 実Lawと指示Lawへの接続 | `lawSelected_square/lawMultiplicity_square` はDのラベルfiberと同じ細逆像族を使い、実全Law比較を多重度モデルへ同定する。`lawMultiplicityConeIso` は実全Law錐を同定する。`SupportSignature.nonbottomIndicatorConeIso` は非bottom代表の非空性から指示Lawtrue単独blockへ接続する。`SupportDefectValue.law_evaluation` は実全LawJへ適用する。 |
-| 全三段共通署名とpair射影 | `SupportStages.Cell` は任意有限段の全セルを段階/次数/セル名で区別する。`SupportStageProjections.pairProjection/pairProjection_sigma` と `ThreeStageSignatures.projection₀₁/projection₀₂/projection₁₂` は共通Aの各pair署名を復元する。`pairComparison_comp` は独立に生成した直接比較と合成を同定する。 |
+| 全三段共通署名とpair射影 | `SupportStages.Cell` は任意有限段の全セルを段階/次数/セル名で区別する。`SupportStages.pairProjection/pairProjection_sigma` と `ThreeStageSignatures.projection₀₁/projection₀₂/projection₁₂` は共通Aの各pair署名を復元する。`pairComparison_comp` は独立に生成した直接比較と合成を同定する。 |
 | Bの全指定射とχの自然性 | `SupportStages.sixTerm_natural/sixTerm_signature_natural` は実H¹の二正方形を `pairH1_square` から放電し、first/second/cancellation/fourth/fifthの全五射を同じ全段台制限と可換にする。終端の零射も一意である。 |
-| W2同じ原始入力 | `WitnessTwoInput` はFin3 Source、恒等reading/比較、Bool chartのsupport {0,1}/{2}、空edge/faceを構成する。`WitnessTwoGeometry` の原始membershipから同署名別subsetと真の閉包を証明する。`WitnessTwoTargets.signature_card/quotient_card` は4、`actualDefect_zero` は全Aで(0,0)、`different_signature_same_defect/no_defect_decoder` は名付きセルが診断値から復元不能な同じ二subsetを評価する。 |
-| W1二ラベルの重複度 | `WitnessOneSignatureMultiplicity.label_fiber/label_sigma` は既存W1の同じ原始Law降下からfiberを取り、`singleton_sigma_eq/singleton_nonbottom/shared_multiplicity` で共有非bottom署名の多重度2を評価する。`fullLawMultiplicityConeIso` はその実全Law錐へ接続する。 |
+| W2同じ原始入力 | `WitnessTwoInput` はFin3 Source、恒等reading/比較、Bool chartのsupport {0,1}/{2}、空edge/faceを構成する。`WitnessTwoGeometry` の原始membershipから同署名別subsetと真の閉包を証明する。`WitnessTwo.signature_card/quotient_card` は4、`actualDefect_zero` は全Aで(0,0)、`different_signature_same_defect/no_defect_decoder` は名付きセルが診断値から復元不能な同じ二subsetを評価する。 |
+| W1二ラベルの重複度 | `WitnessOne.label_fiber/label_sigma` は既存W1の同じ原始Law降下からfiberを取り、`singleton_sigma_eq/singleton_nonbottom/shared_multiplicity` で共有非bottom署名の多重度2を評価する。`fullLawMultiplicityConeIso` はその実全Law錐へ接続する。 |
 
 ### Cycle 5 premise・proof-use・依存DAG
 
