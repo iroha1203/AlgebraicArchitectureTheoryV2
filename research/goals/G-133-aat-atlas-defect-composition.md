@@ -1,9 +1,9 @@
 # G-133-aat-atlas-defect-composition — Atlasの欠損対象と解像度比較の合成
 
 - `id`: `G-133-aat-atlas-defect-composition`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未起票。active化時に一本のtracking Issueへ固定版と共通基準を記録する。
+- `tracking issue`: [#5261](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5261)
 - `source note`: [n1016 §4.1・候補07](../../docs/note/n1016_rising_sea_v2_paper_plan.md)、[n1006 §1.2(a)–(d)・(f)、R14](../../docs/note/n1006_aat_atlas_reinforcement_plan.md)
 - `design`: [構成・依存関係](../designs/G-133-aat-atlas-defect-composition/README.md)、[再利用対応表](../designs/G-133-aat-atlas-defect-composition/reuse-map.md)、[台署名の構成](../designs/G-133-aat-atlas-defect-composition/support-signatures.md)、[指定例](../designs/G-133-aat-atlas-defect-composition/witnesses.md)
 
