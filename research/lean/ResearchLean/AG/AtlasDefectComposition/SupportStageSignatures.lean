@@ -45,7 +45,7 @@ theorem mem_alpha (A : Set base.Target) (i : I) (c : StageCell q N i) :
   · rintro ⟨t,ht,a,ha,heq⟩;exact ⟨a,ha,heq.symm ▸ ht⟩
   · rintro ⟨a,ha,ht⟩;exact ⟨_,ht,a,ha,rfl⟩
 /-- 共通署名包含は各段の全実セル選択の包含を生成する。 -/
-def stageLE {A B : Set base.Target} (hAB : alpha q N h A ⊆ alpha q N h B) (i : I) :
+theorem stageLE {A B : Set base.Target} (hAB : alpha q N h A ⊆ alpha q N h B) (i : I) :
     SubsetRestriction.SelectedLE (N i) (comparisonFactor base (q i) (h i) ⁻¹' A)
       (comparisonFactor base (q i) (h i) ⁻¹' B) := by
   refine ⟨?_,?_,?_⟩

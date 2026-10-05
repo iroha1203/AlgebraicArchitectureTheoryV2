@@ -37,7 +37,7 @@ theorem reconstruction_square : comparison N E h F M ≫ (fineReconstructionIso 
   have hr := activeReconstruction_square N E h f M
   have hh := congrArg (fun z => (coarseActiveIso N E h F).hom ≫ z ≫ (fineActiveIso N E h G).inv) hr
   have hf := congrArg (fun z => z ≫ ef.hom ≫ (fineActiveIso N E h G).inv) (active_square N E h F M)
-  dsimp only [fineReconstructionIso,coarseReconstructionIso,Iso.trans_hom,Iso.symm_hom]
+  rw [fineReconstructionIso_hom,coarseReconstructionIso_hom]
   simpa only [Category.assoc,ec,ef,ug,hg] using hf.trans hh
 
 end AAT.AG.AtlasDefectComposition.SelectedFamilyComplex

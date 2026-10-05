@@ -17,6 +17,9 @@ variable (v : SignatureGeometry.Signature S → B) (hv : v ⊥ = 0)
 def valueSum (F : Family S) : B :=
   letI := Fintype.ofFinite F.Index
   ∑ i, v (SignatureGeometry.sigma S (F.subset i))
+/-- valueSum の公開全添字評価 API。元の有限添字の和を表示する。 -/
+theorem valueSum_eq_sum (F : Family S) : valueSum S v F =
+    letI := Fintype.ofFinite F.Index; ∑ i, v (SignatureGeometry.sigma S (F.subset i)) := rfl
 include hv in
 /-- bottom 値零により、全添字の和は非零添字の和と一致する。 -/
 theorem valueSum_active (F : Family S) : valueSum S v F =
@@ -70,6 +73,8 @@ def evaluationOfValues : AdditiveEvaluation S B where
   zero_single A hA := by
     classical
     simp [valueSum,single,hA,hv]
+/-- evaluationOfValues の公開評価 API。構成した署名値の和へ接続する。 -/
+theorem evaluationOfValues_eval (F : Family S) : (evaluationOfValues S v hv).eval F = valueSum S v F := rfl
 variable (I : AdditiveEvaluation S B)
 /-- 加法的評価を単独 selected block の指定代表で読む。 -/
 def signatureValue (s : SignatureGeometry.Signature S) : B :=

@@ -1,4 +1,5 @@
 import ResearchLean.AG.AtlasDefectComposition.WitnessTwoGeometry
+import ResearchLean.AG.AtlasDefectComposition.ZeroH1
 import ResearchLean.AG.AtlasDefectComposition.SignatureQuotient
 import Formal.Util.AssertStandardAxioms
 /-! # W2 の四つの署名と零欠損の非 decoder 性
@@ -59,8 +60,7 @@ instance subsetC1Subsingleton (A : Set Source) : Subsingleton (N.targetSubsetCom
   infer_instance
 /-- 実旧 H¹ 商も全 A で零である。 -/
 instance subsetH1Subsingleton (A : Set Source) : Subsingleton (N.targetSubsetComplex A).H1 := by
-  unfold ThreeCochainComplex.H1
-  infer_instance
+  exact h1_subsingleton_of_C1 (N.targetSubsetComplex A)
 /-- 実生成比較の H¹ 射は全 A で全単射である。 -/
 theorem actualH1_bijective (A : Set Source) : Function.Bijective (M.aSubnerveComparisonHom A).h1Map := by
   constructor

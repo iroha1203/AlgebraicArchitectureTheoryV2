@@ -66,7 +66,7 @@ def evaluation : AdditiveEvaluation (SupportSignature.family N E h) (ℕ × ℕ)
 theorem evaluation_actual (F : Family (SupportSignature.family N E h)) : (evaluation N E h M).eval F =
     letI := Fintype.ofFinite F.Index; ∑ i, actual N E h M (F.subset i) := by
   classical
-  simp only [evaluation,evaluationOfValues,valueSum,value_sigma]
+  simp only [evaluation,evaluationOfValues_eval,valueSum_eq_sum,value_sigma]
 variable [Fintype Source] (laws : FiniteLawFamily Source) (ha : laws.Adequate q) (hr : laws.Adequate r)
 /-- 実全 Law の J は署名値の加法的評価に一致する。 -/
 theorem law_evaluation : (evaluation N E h M).eval (lawSelectedFamily (h:=h) N E laws ha) =

@@ -35,8 +35,14 @@ def reindexIso : FiniteComplexFamily.complex F ≅ FiniteComplexFamily.complex (
 variable (G : K → CochainComplex (ModuleCat.{max u v} ℚ) ℤ) (b : ∀ j, F j ≅ G (e j))
 /-- 対応成分同型を逆添字の同じ型へ運ぶ指定同型。 -/
 def blockIso (k : K) : F (e.symm k) ≅ G k := b (e.symm k) ≪≫ eqToIso (congrArg G (e.apply_symm_apply k))
+/-- blockIso の公開順射 API。元の対応成分と指定等号 transport を表示する。 -/
+theorem blockIso_hom (k : K) : (blockIso F e G b k).hom =
+    (b (e.symm k)).hom ≫ eqToHom (congrArg G (e.apply_symm_apply k)) := rfl
 /-- 指定添字全単射と各実成分同型が生成する族複体同型。 -/
 def iso : FiniteComplexFamily.complex F ≅ FiniteComplexFamily.complex G :=
   reindexIso F e ≪≫ FiniteComplexFamily.iso _ _ (blockIso F e G b)
+/-- 族 iso の公開順射成分 API。元の逆添字の block 同型で評価する。 -/
+theorem iso_hom_apply (m : ℤ) (x : (FiniteComplexFamily.complex F).X m) (k : K) :
+    (iso F e G b).hom.f m x k = (blockIso F e G b k).hom.f m (x (e.symm k)) := rfl
 end AAT.AG.AtlasDefectComposition.FiniteFamilyReindex
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition.FiniteFamilyReindex

@@ -18,7 +18,7 @@ include h in
 /-- 逆添字の同じ型へ transport した成分同型も元の比較と可換する。 -/
 theorem block_square (k : K) : a (e.symm k) ≫ (blockIso F' e G' sf k).hom =
     (blockIso F e G sc k).hom ≫ b k := by
-  simp only [blockIso,Iso.trans_hom,eqToIso.hom]
+  rw [blockIso_hom,blockIso_hom]
   rw [← Category.assoc,h,Category.assoc,eqToHom_naturality b (e.apply_symm_apply k)]
   rw [Category.assoc]
 include h in
@@ -27,8 +27,8 @@ theorem square : FiniteComplexFamily.map F F' a ≫ (iso F' e G' sf).hom =
     (iso F e G sc).hom ≫ FiniteComplexFamily.map G G' b := by
   ext m x
   funext k
-  change (blockIso F' e G' sf k).hom.f m ((a (e.symm k)).f m (x (e.symm k))) =
-    (b k).f m ((blockIso F e G sc k).hom.f m (x (e.symm k)))
+  simp only [HomologicalComplex.comp_f,ModuleCat.comp_apply,FiniteComplexFamily.map_apply,
+    iso_hom_apply]
   exact congrArg (fun f => f.f m (x (e.symm k))) (block_square F F' G G' e a b sc sf h k)
 end AAT.AG.AtlasDefectComposition.FiniteFamilyReindex
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition.FiniteFamilyReindex

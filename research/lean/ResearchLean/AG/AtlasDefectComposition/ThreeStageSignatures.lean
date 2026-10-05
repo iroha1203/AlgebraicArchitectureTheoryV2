@@ -18,8 +18,9 @@ variable (N₀ : TargetSupportedNerve.{u,w} q₀) (N₁ : TargetSupportedNerve.{
 def nerves : ∀ i, TargetSupportedNerve.{u,w} (readings q₀ q₁ q₂ i) :=
   Fin.cases N₀ (Fin.cases N₁ (fun _ => N₂))
 variable (h₀₁ : q₀.CoarserThan q₁) (h₁₂ : q₁.CoarserThan q₂)
+include h₀₁ h₁₂ in
 /-- 同じ q₀ から全段階への canonical 因子を生成する順序。 -/
-def coarsers : ∀ i, q₀.CoarserThan (readings q₀ q₁ q₂ i) :=
+theorem coarsers : ∀ i, q₀.CoarserThan (readings q₀ q₁ q₂ i) :=
   Fin.cases (fun _ _ hh => hh) (Fin.cases h₀₁ (fun _ => Reading.coarserThan_trans h₀₁ h₁₂))
 /-- Ω012 は三段の全 chart・edge・face を元の段階・次数・名前で保持する。 -/
 abbrev Cell := SupportStages.Cell (readings q₀ q₁ q₂) (nerves q₀ q₁ q₂ N₀ N₁ N₂)

@@ -14,8 +14,9 @@ universe u
 variable {Source : Type u} {q r : Reading Source}
 variable (N : TargetSupportedNerve q) (E : TargetSupportedNerve r) (h : q.CoarserThan r)
 variable {A B : Set q.Target} (hab : SupportSignature.alpha N E h A ⊆ SupportSignature.alpha N E h B)
+include hab in
 /-- 全六種類の署名包含から粗側全三次数の実選択包含を導く。 -/
-def coarseLE : SubsetRestriction.SelectedLE N A B := by
+theorem coarseLE : SubsetRestriction.SelectedLE N A B := by
   refine ⟨?_,?_,?_⟩
   · intro c hc
     exact (SupportSignature.mem_alpha_coarseChart N E h B c).mp
@@ -26,8 +27,9 @@ def coarseLE : SubsetRestriction.SelectedLE N A B := by
   · intro c hc
     exact (SupportSignature.mem_alpha_coarseFace N E h B c).mp
       (hab ((SupportSignature.mem_alpha_coarseFace N E h A c).mpr hc))
+include hab in
 /-- 全六種類の署名包含から細側逆像の全三次数の実選択包含を導く。 -/
-def fineLE : SubsetRestriction.SelectedLE E
+theorem fineLE : SubsetRestriction.SelectedLE E
     (comparisonFactor q r h ⁻¹' A) (comparisonFactor q r h ⁻¹' B) := by
   refine ⟨?_,?_,?_⟩
   · intro c hc

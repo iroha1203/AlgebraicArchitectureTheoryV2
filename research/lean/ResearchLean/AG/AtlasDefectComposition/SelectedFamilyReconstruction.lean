@@ -46,6 +46,16 @@ def coarseReconstructionIso : coarse N E h F ≅ coarse N E h G :=
 def fineReconstructionIso : fine N E h F ≅ fine N E h G :=
   fineActiveIso N E h F ≪≫ FiniteFamilyReindex.iso _ f.equiv _ (fineBlockIso N E h f) ≪≫
     (fineActiveIso N E h G).symm
+/-- coarseReconstructionIso の公開順射 API。零成分削除・指定並べ替え・挿入を保持する。 -/
+theorem coarseReconstructionIso_hom : (coarseReconstructionIso N E h f).hom =
+    (coarseActiveIso N E h F).hom ≫
+    (FiniteFamilyReindex.iso _ f.equiv _ (coarseBlockIso N E h f)).hom ≫
+    (coarseActiveIso N E h G).inv := rfl
+/-- fineReconstructionIso の公開順射 API。同じ指定並べ替えを保持する。 -/
+theorem fineReconstructionIso_hom : (fineReconstructionIso N E h f).hom =
+    (fineActiveIso N E h F).hom ≫
+    (FiniteFamilyReindex.iso _ f.equiv _ (fineBlockIso N E h f)).hom ≫
+    (fineActiveIso N E h G).inv := rfl
 /-- 指定射は全実族比較錐の同型を生成する。 -/
 def coneReconstructionIso : mappingCone (comparison N E h F M) ≅ mappingCone (comparison N E h G M) :=
   coneActiveIso N E h F M ≪≫ FiniteFamilyReindex.iso _ f.equiv _ (coneBlockIso N E h f M) ≪≫
