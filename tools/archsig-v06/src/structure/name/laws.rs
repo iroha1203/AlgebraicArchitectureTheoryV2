@@ -243,6 +243,17 @@ fn check(seed: u64) -> Result<(), String> {
         {
             return fail("Law 4", format!("{n} は頭 {h} の直下の名前なのに、途中の段で止まった答え {u:?}"));
         }
+        // Law 11 読む所は読めば進む(AC6)。候補が消した名前は、読んでも決まらないので、読む所にならない。
+        for u in [w.after.element(n).err(), w.after.column(std::slice::from_ref(n)).walk.stop].into_iter().flatten() {
+            // 定義し直した読んでいない型の変更前の沈黙は、変更前の構造の読む所なので除く(読めば変更前の答えが進む)。
+            let prior_silence = w.after.names.redefined.values().any(|r| r.silence == u.silence);
+            if u.silence.reason == super::super::Reason::Unread
+                && !prior_silence
+                && let Some(x) = u.silence.element.as_deref().filter(|x| w.after.removed(x))
+            {
+                return fail("Law 11", format!("{n} の答えの読む所 {x} は、候補が消した名前である"));
+            }
+        }
         // Law 9 名指しの沈黙は答えの沈黙(§3.6)。名指す要素をたどれなかった所の沈黙は、変更後か変更前の答えの沈黙である。
         let naming = w.after.name_naming(&w.prior, &gone, n);
         let ok = allowed(&w, &BTreeSet::from([n.clone()]), &planned);

@@ -4433,3 +4433,40 @@ fn a_question_mark_name_is_read_where_each_atom_writes_it() {
         assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
     }
 }
+
+#[test]
+fn a_removed_name_is_not_returned_as_a_place_to_read() {
+    // 候補が消した名前は、変更後の構造では消えたので決まらない。読んでも決まらないので、読む所に返さない(AC6)。
+    // m.f は消える m.U.run を呼ぶので `missing` で、消えた名前を読めとは言わない。
+    let map = r#"{"kind": "defines", "subject": "m.U", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U.run", "value": "operation", "params": {}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "m.U", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.U.run", "at": "m.py:6@blob:aaaaaaa"}
+"#;
+    for (name, removed) in [("removed-type-not-read", "m.U"), ("removed-member-not-read", "m.U.run")] {
+        let s = check_m(name, map, &format!("{{\"kind\": \"removes\", \"subject\": \"{removed}\", \"at\": \"plan:p\"}}\n"));
+        assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.f" && r["kind"] == "missing"), "{name}: {s}");
+        assert!(!s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.U" || n["element"] == "m.U.run"), "{name}: {s}");
+    }
+}
+
+#[test]
+fn an_unrelated_removal_keeps_the_place_to_read_of_a_pass() {
+    // m.f は m.g の `params` にない引数に渡す。その読む所は呼び出しの場所である(設計 §3.5)。
+    // 関係のない要素を消す候補でも、比べの沈黙の読む所はそのまま返す(たどれなかった所の沈黙は、成り立つときだけに使う)。
+    let s = check_m(
+        "pass-with-unrelated-removes",
+        r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$a", "value": "1", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.Old", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+"#,
+        "{\"kind\": \"corresponds\", \"subject\": \"m.f\", \"object\": \"m.f\", \"at\": \"plan:p\"}\n{\"kind\": \"removes\", \"subject\": \"m.Old\", \"at\": \"plan:p\"}\n",
+    );
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.f" && r["law"] == "payment-follows-order").unwrap_or_else(|| panic!("{s}"));
+    assert_eq!(r["outcome"], "silent", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}

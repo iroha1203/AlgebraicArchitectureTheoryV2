@@ -755,17 +755,6 @@ fn commute(
         if matches!(&ka, Ok(k) if k != "operation") || matches!(&kb, Ok(k) if k != "operation") {
             continue;
         }
-        // 名指す要素をたどれなかった所を持つ操作は、消える要素を使うか(`missing`)が決まらないので、比べず、その沈黙で沈黙する(設計 §3.6、§5.1)。
-        if !overlay.removes.is_empty()
-            && let Some(gaps) = overlay.untraced.get(b)
-        {
-            let mut f = Finding::silent("change", Some(law), b, gaps[0].clone());
-            f.next = gaps.iter().filter(|s| s.read.is_some() || s.element.is_some()).cloned().collect();
-            f.at = defined_at(after, b).or_else(|| defined_at(before, a)).into_iter().collect();
-            f.theory = Some(THEORY_CHANGES.to_string());
-            out.push(f);
-            continue;
-        }
         // 片方だけが外部の組は、外部でない端の沈黙(読めば決まる所を持つ)を先に返す。
         let pair = match (ka, kb) {
             (Err(_), Err(t)) if external(before, a) => Err(t),
@@ -773,6 +762,14 @@ fn commute(
             _ => compare(before, &walked, after, mapping, a, b, meaning, fresh),
         };
         let mut f = match pair {
+            // 名指す要素をたどれなかった所を持つ操作は、消える要素を使うか(`missing`)が決まらないので、成り立つとは言えず、
+            // その沈黙で沈黙する(設計 §3.6、§5.1)。反例と、比べの沈黙は、そのまま返す。
+            Ok(f) if f.outcome == "holds" && !overlay.removes.is_empty() && overlay.untraced.contains_key(b) => {
+                let gaps = &overlay.untraced[b];
+                let mut f = Finding::silent("change", Some(law), b, gaps[0].clone());
+                f.next = gaps.iter().filter(|s| s.read.is_some() || s.element.is_some()).cloned().collect();
+                f
+            }
             Ok(f) => f,
             Err(s) => Finding::silent("change", Some(law), b, s),
         };
@@ -1071,7 +1068,7 @@ fn body(s: &Structure, op: &str) -> Result<Vec<String>, Silence> {
             // 定義のない操作は、その解決(要素(名前)の答え)を比べる。解決が決まらなければ(指す先の違う `resolves`、曖昧)、本体が違うとする。
             Err(u) => match u.why {
                 Why::Ambiguous | Why::Undecided | Why::Question => return Err(unchecked()),
-                Why::Unread | Why::Missing | Why::Other => out.push(format!("unknown|{:?}|{:?}|{:?}", u.why, u.silence.read, u.silence.element)),
+                Why::Unread | Why::Missing | Why::Removed | Why::Other => out.push(format!("unknown|{:?}|{:?}|{:?}", u.why, u.silence.read, u.silence.element)),
             },
             Ok(Answer::External(pkg)) => out.push(format!("external|{pkg}")),
             Ok(Answer::Bare) => out.push("bare".to_string()),
@@ -1335,7 +1332,8 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
                         Why::Unread | Why::Undecided => Some(u.silence),
                         // 解析器が解決できなかった行き先(`?`)の呼び出し先も、解決が決まらない。`?` で始まる名前そのものは、たどれなかった所で沈黙する。
                         Why::Question if !is_question(n) => Some(u.silence),
-                        Why::Question | Why::Missing | Why::Ambiguous | Why::Other => None,
+                        // 候補が消した名前は、読んでも決まらないので読む所にしない。消える要素を使うかは名指しで決まる。
+                        Why::Question | Why::Missing | Why::Ambiguous | Why::Removed | Why::Other => None,
                     },
                     Ok(Answer::Bare) => after.kind(n).err(),
                     Ok(Answer::Element(_) | Answer::External(_)) => None,

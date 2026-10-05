@@ -155,6 +155,8 @@ pub enum Why {
     Undecided,
     /// 定義はあるが決まらない(種類の違う `defines`、`value` のない `defines`、二か所の `defines`)。
     Ambiguous,
+    /// 候補が `removes` した要素かその下の名前で、この構造にない。消える要素は変更前の構造で見る(設計 §3.6、§6)。
+    Removed,
     /// それ以外(型でない要素を型として使う、外部の型のフィールドなど)。
     Other,
 }
@@ -306,6 +308,8 @@ pub(super) struct Names {
     redefined: BTreeMap<String, Unknown>,
     /// 候補が `removes` した要素。
     removes: BTreeSet<String>,
+    /// Atom の `subject` に現れる名前(`observed` を除く)。
+    subjects: BTreeSet<String>,
     /// チャネルと項目ごとの、送る操作と受け取る操作。
     channels: BTreeMap<String, BTreeSet<String>>,
     /// 答えを求めている途中の問い合わせ。問い合わせはめぐらない。
@@ -317,6 +321,9 @@ impl Names {
     pub(super) fn build(atoms: &[Atom], calls: &BTreeMap<usize, String>) -> Names {
         let mut s = Names::default();
         for a in atoms {
+            if a.kind != "observed" {
+                s.subjects.insert(a.subject.clone());
+            }
             match a.kind.as_str() {
                 "defines" => {
                     let e = s.elements.entry(a.subject.clone()).or_default();
@@ -467,6 +474,11 @@ impl Structure {
     }
 
     fn element_of(&self, n: &str) -> Resolved {
+        // 候補が消した名前は、変更後の構造では消えたので決まらない。読んでも決まらないので、読む所を返さない。
+        // 段の名前は、頭が型なら段で、そうでなければ `defines` の手前で見る(`dotted`)。
+        if form(n) != Form::Dotted && self.removed(n) {
+            return Err(Unknown::unresolved(Why::Removed).own());
+        }
         match form(n) {
             // `?` で始まる名前は決まらない。読む所は、その名前を書いた Atom の場所(マニュアル第5章 問い8)で、Atom を持つ使う側が付ける。
             Form::Question => Err(Unknown::new(question(), Why::Question)),
@@ -556,6 +568,11 @@ impl Structure {
         }
     }
 
+    /// 候補が `removes` した要素かその下の名前で、この構造に要素も Atom もないか。
+    fn removed(&self, n: &str) -> bool {
+        !self.names.elements.contains_key(n) && !self.names.subjects.contains(n) && self.names.removes.iter().any(|x| below(x, n))
+    }
+
     /// 頭。名前の前の段のうち、要素があるか(曖昧を含む)、`resolves` を持つか、型として名指された、いちばん長いもの。
     fn head<'n>(&self, n: &'n str) -> Option<(&'n str, &'n str)> {
         let mut end = n.len();
@@ -591,6 +608,10 @@ impl Structure {
                 }
             }
         }
+        // 候補が消した名前は消えたので決まらない。頭が分からなければ、頭の答えで決める(規則 8。頭が消えていれば、その答え)。
+        if self.removed(n) && !matches!(answer, Some(Err(_))) {
+            return Err(Unknown::unresolved(Why::Removed).own());
+        }
         // 6. `defines` を持つ名前。
         if let Some(e) = self.names.elements.get(n).filter(|e| e.declared) {
             return self.decide(n, e);
@@ -612,6 +633,8 @@ impl Structure {
                 // 頭が型として名指されていれば頭の答えの読む所、そうでなければその名前を読む。
                 Err(u) if self.names.typed.contains(h) => Err(u.headed()),
                 // 頭の答えの読む所は、型として名指されていない頭には使わない(モジュールの名前とファイルの対応は仮定しない)。
+                // 名前が候補の消した名前なら、読んでも決まらないので、消えた答えにする。
+                Err(_head) if self.removed(n) => Err(Unknown::unresolved(Why::Removed).headed()),
                 Err(_head) => Err(Unknown::unread(n).headed()),
             },
             // 型として名指された名前は、手がかりがあるので定義を読む。手がかりのない名前は名前だけの要素である。
@@ -685,6 +708,10 @@ impl Structure {
                 Some(r) => self.resolved(&name, r).map_err(|u| u.at_resolves(ty, f)),
                 None => Err(u.clone().at(ty, f, false)),
             };
+        }
+        // 候補が消した `<T>.<f>` は、変更後の構造では消えたので決まらない(段の「なければ」。名指しは段の名前で見る)。
+        if self.removed(&name) {
+            return Err(Unknown::unresolved(Why::Removed).at(ty, f, true));
         }
         match self.names.elements.get(&name).filter(|e| e.declared) {
             Some(e) => self.decide(&name, e).map_err(|u| u.at(ty, f, false)),
@@ -1267,6 +1294,10 @@ impl Structure {
         }
         if u.why == Why::Ambiguous {
             return Place::Ambiguous(*u.defined, u.silence);
+        }
+        // 候補が消した名前は、変更後の構造では何も言わない。局所は変更前の構造で見る(`place`)。
+        if u.why == Why::Removed {
+            return Place::Nowhere;
         }
         match &u.origin {
             // `<T>.<f>` が段で決まらないか、頭 `T` が曖昧で決まらないなら、`T` の局所。
