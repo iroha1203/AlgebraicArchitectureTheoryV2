@@ -1,13 +1,12 @@
 # G-133：生成比較・欠損対象・台署名の構成
 
-[GOAL T0・A–F・W](../../goals/G-133-aat-atlas-defect-composition.md)を実装ループで進めるための設計。
+[GOAL T0・A–F・W](../../goals/G-133-aat-atlas-defect-composition.md)の構成・証明方針と依存関係を定める。
 固定targetはカードとそこから指定した節にあり、宣言対応は[再利用対応表](reuse-map.md)、
 台の構成は[台署名](support-signatures.md)、原始入力と評価値は[指定例](witnesses.md)に置く。
 ここで計画する新しい接続・定理は証明義務である。
 
 参照するrepository版は `aa544f1755484cb05894f7fb54631be8dd7203a7`。
 Leanは `v4.28.0`、mathlibは `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。
-active化の際はGOAL・共通基準・既存宣言の参照版をtracking Issueに固定する。
 
 ## 1. 候補07全体との対応
 
@@ -139,45 +138,29 @@ cochain水準にも三つのblock同値、微分のintertwining、生成比較�
 
 ## 5. 到達点と依存関係
 
-到達点は同じG-133のproof obligation群である。実装ループの各cycleは、次の終了条件を
-満たす単位で選び、実際の宣言・結果・未完項目をreportとtracking Issueに記録する。
-内部ファイル名や補題の分割は設計候補であり、固定targetの変更を伴わず調整できる。
+以下の到達点は、G-133の固定targetを構成・証明義務ごとに分けたものである。
 
-| 到達点 | 依存 | 同じcycleで閉じる数学的内容・終了条件 |
+| 到達点 | 依存 | 数学的内容・終了条件 |
 | --- | --- | --- |
 | M1：実生成比較の合成 | 既存G-104/G-107 | Aの入力比較の合成、全次数・H¹の直接比較等式。W1の全原始データと二射を構成し、直接生成HomがLaw座標の標準同定下で恒等になることを確認 |
 | M2：実相殺と欠損 | M1 | Bの全射と完全性、次元公式、代表元の意味、W1の非零相殺とLaw全体の値。一般線形補題だけを終了点にしない |
 | M3：標準錐との接続 | M1 | 三項複体の零延長、既存H¹との自然同型、Cの全次数、W3a・W3bの追加寄与 |
 | M4：Law別の対象分解 | M2・M3 | Dの錐・核・余核・六項列・相殺の直和同定。指示Lawのselected blockと重複度を確認 |
 | M5：台による構造の分類 | M1（錐への適用にはM3・M4） | EのGalois接続、二つの普遍性、Law族の復元、台制限の関手、W2。診断値の一致だけで終了しない |
-| M6：有限多段と統合 | M2–M5 | Fの実triangle・filtration、共通署名上の自然性、全条項とWの証拠対応。ここで全targetの完了候補を作る |
+| M6：有限多段と統合 | M2–M5 | Fの実triangle・filtration、共通署名上の自然性、全条項と指定例Wを統合した構成・定理 |
 
-M1→M2とM1→M3は依存上別々に進められる。実行時にはrootが一つの到達点を選び、
-単一のGOALの下で必要な接続を閉じる。M3を省いてH¹の数値だけへ進む経路や、
-M5を後続GOALへ分離してG-133を完了にする経路は固定targetと一致しない。
+M1→M2とM1→M3は依存上別々に進められる。G-133の完了には、
+既存H¹と標準錐の接続M3、台の分類M5を含むM1–M6のすべてが必要である。
 
-## 6. 検証と独立レビューへの論点
+## 6. 実装上の自由度
 
-設計段階では、参照宣言の存在・型・仮定・使用先、式の向きと次数、指定例の有理行列計算、
-相対リンク、語彙、`git diff --check`、hidden/BiDi Unicodeを確認する。
-Lean宣言を追加する実装段階では、各到達点の非aggregate fileに対するfocused check、
-対象宣言の公理・placeholder・import方向検査と固定targetの照合を行う。
-Research全体buildの運用は[AAT guideline](../../../docs/aat/guideline.md#lean-build-運用hard-rule)に従う。
-
-独立レビューでは特に次の設計判断を確認する。
-
-- T0は既存のhereditary部分incidence射を全量化する。候補08の別の面退化を導入せず合成が閉じること。
-- Eの最粗商は名付きセルと比較を復元する商の圏で述べる。抽象的な複体の同型だけを保存する商とは対象・射が異なること。
-- 加法的普遍性はselected blockを扱い、Law全体の数値だけからblock評価を一意復元するという過大な主張をしないこと。
-- Fのfiltrationにはモデル変更を含める。錐の単純な部分空間列と誤認しないこと。
-
-これらの量化・要求はカードで特定済みである。変更が必要になった場合はGOALの改訂として扱う。
-mathlibと既存H¹商の同型をどの内部補題で構成するか、filtrationの具体的なAPI配置は
-実装時に選べる未確定事項であり、要求の削減理由にはしない。
+内部ファイル名、補題の分割、mathlibと既存H¹商の同型に使う内部補題、
+filtrationの具体的なAPI配置は、固定targetを満たす範囲で選べる。
+選択した実装では、T0の全量化とA–F・Wの構成・同定・自然性をすべて証明する。
 
 ## 7. 理論とArchSigの保証範囲
 
-G-133が証明するのは、T0の有限入力から作る有理複体・実比較・錐・台署名の関係である。
+G-133の証明対象は、T0の有限入力から作る有理複体・実比較・錐・台署名の関係である。
 既存 `computedASubnerveDefect_eq_aSubnerveDefect` はLean内の有限表計算と
 G-107の実H¹欠損を接続する。新しい三段表・相殺計算との接続は追加の構成義務になる。
 
@@ -185,8 +168,5 @@ ArchSigの結論は[Tool guideline](../../../docs/tool/guideline.md#責務範囲
 ArchMapとLawからの導出について保証する。
 現行 [saga.rs](../../../tools/archsig/src/saga.rs) の `derive_residual` は
 `profile.coefficient != "F2"` を検査する。G-133の係数はℚであり、
-係数・入力表・セル選択・比較式を揃える実装対応と検証を経て採用する。
-G-133のResearch証明、Formalへの蒸留、Rustの実装と検証はそれぞれ別の成果として記録する。
-
-現段階のdeliverableはdraftカードと本設計であり、Leanの新規証明statusや
-ArchSigの機能・schema・公開面のstatusを更新しない。
+係数・入力表・セル選択・比較式を揃える実装対応と検証が、
+ResearchまたはFormalの定理をRustの診断結果へ適用するための条件である。

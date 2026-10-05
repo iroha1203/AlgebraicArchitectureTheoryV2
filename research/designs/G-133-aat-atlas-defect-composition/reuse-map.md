@@ -1,14 +1,13 @@
 # G-133：既存宣言・接続補題・新規部分
 
 参照版は `aa544f1755484cb05894f7fb54631be8dd7203a7`。
-以下は現sourceの定義・statement・仮定を照合した再利用計画であり、新規接続の検証結果ではない。
+既存宣言の型・仮定と、新たに必要な接続・証明義務を以下に対応づける。
 G-104/G-107由来の宣言をG-132の成果として数えない。
 
 先行成果の受理記録は、[G-104 report](../../reports/G-104-aat-resolution-invariance.md)の
 Cycle 8–13・完了判定と [PR #3943](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3943)、
 [G-107 report](../../reports/G-107-aat-uniform-invariance-characterization.md)のCycle 1・3–6・8と
 [PR #3994の監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3994#issuecomment-5279154319)を参照する。
-実装時は今回使う宣言・適用引数をreportへ対応させる。
 
 ## 1. G-132以前のAtlasからの再利用
 
@@ -38,7 +37,7 @@ Cycle 8–13・完了判定と [PR #3943](https://github.com/iroha1203/Algebraic
 | [PresentationASubnerveDefect.lean](../../lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean)：`computedASubnerveDefect`、`computedASubnerveDefect_eq_aSubnerveDefect` | 有理rank計算を実際のH¹比較の欠損へ接続 | Wの検算と理論上の有限表。Rust実装への同値定理ではない |
 
 `generatedComparisonH1Map_bijective` 等のC0–C6を仮定する十分条件は、
-今回の一般合成・相殺・錐の構成の前提には使わない。W1は後段chart写像が全射でない。
+G-133の一般合成・相殺・錐の構成の前提には使わない。W1は後段chart写像が全射でない。
 
 ## 2. G-132からの再利用
 
@@ -53,7 +52,7 @@ Cycle 8–13・完了判定と [PR #3943](https://github.com/iroha1203/Algebraic
 | [GraphH1Comparison.lean](../../lean/ResearchLean/AG/VisibleCycleReflection/GraphH1Comparison.lean)：`visibleBlockH1Equiv`、`visibleBlockH1Equiv_mk` | 有限Source、adequacy、**face型の空性**の下でblock H¹を辺cochain／頂点差分へ同定 | W1のみに使用可能。面を持つW3bや一般T0へこの前提を持ち込まない |
 | 同ファイル：`actualCechDiagnosticH1Map_factorization` | `GeneratorPresentation`、実face-empty被覆、`ReflectionCondition` の下で、整数障害の加法H¹→有理診断を係数変更と可視制限に分解 | 関連成果の区別用。G-133の粗細間のℚ線形 `generatedComparisonH1Map` そのものではなく、A–Fの前提にも採用しない |
 
-G-132の橋・可視閉路・整数補正・実貼り合わせ・失敗入力の定理は、今回の六項列や
+G-132の橋・可視閉路・整数補正・実貼り合わせ・失敗入力の定理は、G-133の六項列や
 台署名の普遍性を証明するものではない。G-130/G-131の相対修復・観測最適性も
 同じ理由で本targetの必須predecessorに追加しない。
 
