@@ -21,6 +21,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
+- [G-133-aat-atlas-defect-composition](G-133-aat-atlas-defect-composition.md)
+  (生成比較の合成、欠損の相殺・写像錐・Law分解、台署名の商と普遍性、有限多段比較)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
