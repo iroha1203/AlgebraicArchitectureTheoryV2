@@ -11,6 +11,7 @@ GOALごとの構成・証明方針、依存関係、受入条件、既存宣言�
 
 | GOAL | 設計 | tracking Issue |
 | --- | --- | --- |
+| [G-133](../goals/G-133-aat-atlas-defect-composition.md) | [生成比較・欠損対象・依存関係](G-133-aat-atlas-defect-composition/README.md)、[再利用対応表](G-133-aat-atlas-defect-composition/reuse-map.md)、[台署名と普遍性](G-133-aat-atlas-defect-composition/support-signatures.md)、[指定例](G-133-aat-atlas-defect-composition/witnesses.md) | 未起票（draft） |
 | [G-132](../goals/G-132-aat-visible-cycle-reflection.md) | [可視閉路・実比較・有限判定](G-132-aat-visible-cycle-reflection/README.md)、[再利用対応表](G-132-aat-visible-cycle-reflection/reuse-map.md)、[実被覆と指定例](G-132-aat-visible-cycle-reflection/witnesses.md) | [#5250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5250) |
 | [G-130](../goals/G-130-aat-relative-repair-composition.md) | [相対修復・全範囲合成・分類と再利用](G-130-aat-relative-repair-composition/README.md) | [#5132](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5132) |
 | [G-131](../goals/G-131-aat-repair-observation-duality.md) | [実入力・観測・出力別最適値の対応](G-131-aat-repair-observation-duality/README.md) | [#5133](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5133) |
