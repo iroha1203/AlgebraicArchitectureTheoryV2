@@ -68,6 +68,22 @@ def namedComplex : ThreeCochainComplex.{0,u} ℚ where
   d0 := graphDifference D.nerve
   d1 := faceDifference D.nerve
   d1_comp_d0 := named_d1_d0 D
+/-- 名付き原始複体の次数0微分を各辺の端点差分で読む公開API。 -/
+@[simp] theorem namedComplex_d0_apply (c : D.nerve.Chart → ℚ)
+    (e : D.nerve.EdgeComponent) :
+    (namedComplex D).d0 c e = c (D.nerve.edgeRight e)-c (D.nerve.edgeLeft e) := rfl
+/-- 名付き原始複体の次数1微分を各面の三辺差分で読む公開API。 -/
+@[simp] theorem namedComplex_d1_apply (c : D.nerve.EdgeComponent → ℚ)
+    (f : D.nerve.FaceComponent) :
+    (namedComplex D).d1 c f =
+      c (D.nerve.faceEdge0 f)-c (D.nerve.faceEdge1 f)+c (D.nerve.faceEdge2 f) := rfl
+/-- 名付き次数0核のmembershipは全原始辺の端点差分零と同値である。 -/
+theorem mem_ker_namedComplex_d0_iff (c : D.nerve.Chart → ℚ) :
+    c ∈ LinearMap.ker (namedComplex D).d0 ↔
+      ∀ e, c (D.nerve.edgeRight e)-c (D.nerve.edgeLeft e)=0 := by
+  change (namedComplex D).d0 c = 0 ↔ _
+  rw [funext_iff]
+  rfl
 /-- 全台の実生成Law blockと名付き原始セル三項複体の全成分同型。 -/
 def fullBlockNamedEquivalence [Fintype Source] :
     ThreeCochainComplex.CochainEquiv (D.lawValueBlockComplex laws ha label) (namedComplex D) where

@@ -60,9 +60,8 @@ theorem fullBlock_pullback0
     apply CellCoordinate.block_cell_injective laws q hq _ _ label
     change M.chartMap vc.val.cell = _
     simp only [vc,fullBlockCoordinateEquiv_symm_cell]
-  change c (M.chartBlockCoordinateMap laws hq hr label vc) = _
-  rw [hc]
-  rfl
+  rw [fullBlockCochainEquiv_apply,M.generatedBlockPullback0_apply]
+  exact congrArg c hc
 
 /-- mapped面での実block引き戻しの名付きセル評価。 -/
 theorem fullBlock_pullback2_some

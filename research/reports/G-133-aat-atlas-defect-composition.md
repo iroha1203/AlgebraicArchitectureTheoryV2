@@ -696,7 +696,7 @@ selection:
 ## Cycle 3 checkpoint proposal
 
 標準錐の一般構成、自然短完全列、既存H¹/端のH⁰/H²との同定、および
-W1全発生ラベルとW3の実block具体例を同じ原始入力から閉じた。30 Lean file・284明示宣言に
+W1全発生ラベルとW3の実block具体例を同じ原始入力から閉じた。32 Lean file・303明示宣言に
 またがる再利用可能な複体/錐APIが独立に成立したため、ここで分割する。
 元のM3終了条件は維持する。W1全Lawの錐・追加項とW3の唯一ラベルから全Lawへの
 対象同定は、Law別の全成分/標準錐分解を構成する次cycleの残義務とする。
@@ -712,15 +712,16 @@ result:
     - W3a/W3bの原始入力を生成し、実blockのJ、追加項、錐全四次数を評価
     - W3bの実錐空間次元4,9,7,1と実微分rank4,5,1を証明
     - W1全ラベルの実錐次数0/1と追加項零を証明
+    - 指定錐射影/包含の同型条件と追加項零性の必要十分条件を両方向で証明
   exit_criteria_status:
     - Cの全次数/標準mathlib錐/既存H¹との接続は閉じた
     - W3の実block指定値は閉じた; 唯一ラベルと全Lawの対象同定は未完
     - W1の全発生ラベルの実錐/追加項は閉じた; 全Lawの錐は未完
     - 独立PR査読は次段階; 全GOAL最終査読は未実施
-  split_reason: 再利用可能な一般複体/錐APIと実block例が成立し、30fileの検査責務と次の全Law対象分解を一度の監査に混ぜず確認するため
+  split_reason: 再利用可能な一般複体/錐APIと実block例が成立し、32fileの検査責務と次の全Law対象分解を一度の監査に混ぜず確認するため
   completion_candidate: no
   lean_artifacts: [以下Cycle 3 spine]
-  evidence: [全284明示宣言のLean証明と実入力構成]
+  evidence: [全303明示宣言のLean証明と実入力構成]
   claim_mapping:
     theorem_names: [cone_short_exact, cone_homology_dimension, oldH1Equiv_natural, actualA_cone_homology_dimensions, actualB_cone_homology_dimensions, actual_extra_terms_zero]
     source_labels: [C, W1の各ラベル錐, W3の実block]
@@ -728,6 +729,7 @@ result:
       - C零延長/標準H1自然性: ZeroExtension・EndpointHomology・EndpointNaturality
       - C全m成分/符号: ConeCoordinates
       - C全m短完全列/自然性/次元/端: ConeHomologySequence・ConeExactSequence・ConeNaturality・ConeEndDegrees
+      - C条件付き同型/両方向/追加項零性: ShortExactFiveConditions・ConeConditional
       - W3原始入力/指定原始微分rank: WitnessThreeInput・WitnessThreeRanks
       - W3実比較/実錐/追加項: NamedComparison・NamedHomology・WitnessThreeNamed・WitnessThreeActual
       - W1全発生ラベル実錐/追加項: WitnessOneEndpoints・WitnessOneCones
@@ -739,7 +741,7 @@ result:
 ### Cycle 3 premise と証明経路
 
 有限Source・任意有限supported nerve・有理係数・既存三項複体の微分平方零は
-T0の境界と生成元である。一般線形補助の可換正方形・exactnessは方向仮定であり、
+T0に明示された入力幾何と生成元である。一般線形補助の可換正方形・exactnessは方向仮定であり、
 実入力への適用では generatedComparisonHom、全成分同型、標準長完全列で生成している。
 有限値型・Condition C・comparisonの単射/全射・face空性を一般Cへ追加しない。
 Fintype Sourceから実発生LawValueLabelの有限性を使い、任意のambient valueを列挙しない。
@@ -758,7 +760,7 @@ W1の次数0定数核は各chartの原始辺差分で証明し、実chart比較�
 
 ### Cycle 3 spine
 
-以下284明示宣言を受理候補とする。新規29fileと既存FullSupportPullbackの新規3宣言を
+以下303明示宣言を修正後受理候補とする。新規31fileと既存FullSupportPullbackの新規3宣言を
 列挙し、既存宣言は前cycleの受理依存として扱う。自動生成projection/simp定理は各module末尾の
 標準公理監査にも含まれる。scratch/開発用試行は受理spineへ含めない。
 
@@ -787,6 +789,25 @@ AAT.AG.AtlasDefectComposition.blockDefect_cokernel_dimension
 
 ```text
 AAT.AG.AtlasDefectComposition.complexIso_d_rank
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeConditional.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.coneKernelProjection_bijective_iff
+AAT.AG.AtlasDefectComposition.coneCokernelInclusion_bijective_iff
+AAT.AG.AtlasDefectComposition.coneKernelProjectionEquiv
+AAT.AG.AtlasDefectComposition.coneCokernelInclusionEquiv
+AAT.AG.AtlasDefectComposition.coneKernelProjectionEquiv_apply
+AAT.AG.AtlasDefectComposition.coneCokernelInclusionEquiv_apply
+AAT.AG.AtlasDefectComposition.cokernel_zero_iff_surjective
+AAT.AG.AtlasDefectComposition.kernel_zero_iff_injective
+AAT.AG.AtlasDefectComposition.comparison_H0_cokernel_zero_iff
+AAT.AG.AtlasDefectComposition.comparison_H2_kernel_zero_iff
+AAT.AG.AtlasDefectComposition.comparisonConeH0KernelEquiv
+AAT.AG.AtlasDefectComposition.comparisonConeH1CokernelEquiv
+AAT.AG.AtlasDefectComposition.comparisonConeH0KernelEquiv_apply
+AAT.AG.AtlasDefectComposition.comparisonConeH1CokernelEquiv_apply
 ```
 
 - `research/lean/ResearchLean/AG/AtlasDefectComposition/ConeCoordinates.lean`
@@ -930,6 +951,9 @@ AAT.AG.AtlasDefectComposition.faceDifference
 AAT.AG.AtlasDefectComposition.faceDifference_apply
 AAT.AG.AtlasDefectComposition.named_d1_d0
 AAT.AG.AtlasDefectComposition.namedComplex
+AAT.AG.AtlasDefectComposition.namedComplex_d0_apply
+AAT.AG.AtlasDefectComposition.namedComplex_d1_apply
+AAT.AG.AtlasDefectComposition.mem_ker_namedComplex_d0_iff
 AAT.AG.AtlasDefectComposition.fullBlockNamedEquivalence
 AAT.AG.AtlasDefectComposition.fullSupport_edge
 AAT.AG.AtlasDefectComposition.fullSupport_face
@@ -1011,6 +1035,13 @@ AAT.AG.AtlasDefectComposition.ShortExactFive.projection_surjective
 AAT.AG.AtlasDefectComposition.ShortExactFive.dimension
 AAT.AG.AtlasDefectComposition.ShortExactFive.middleEquivKernel
 AAT.AG.AtlasDefectComposition.ShortExactFive.cokernelEquivMiddle
+```
+
+- `research/lean/ResearchLean/AG/AtlasDefectComposition/ShortExactFiveConditions.lean`
+
+```text
+AAT.AG.AtlasDefectComposition.ShortExactFive.projection_bijective_iff
+AAT.AG.AtlasDefectComposition.ShortExactFive.inclusion_bijective_iff
 ```
 
 - `research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessOneCones.lean`
@@ -1196,7 +1227,7 @@ AAT.AG.AtlasDefectComposition.zeroExtension_homology_isZero
 AAT.AG.AtlasDefectComposition.homologyTransport_natural
 ```
 
-### Cycle 3 検証と監査入力
+### Cycle 3 初回headの検証と監査入力
 
 rootが実装段階ごとのfocused/targeted checkを行った。最終検証は
 `cd research/lean` から
@@ -1239,3 +1270,50 @@ audits:
 
 D/E/F・W2と全GOAL最終独立監査は未完。Formal移植・ArchSig実装は未実施。
 恒久設計とGOAL本文は変更していない。Cycle3の内容受理は固定PR headの独立査読へ渡す。
+
+
+### Cycle 3 初回監査と本筋修正
+
+[PR #5265初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5265#issuecomment-6001002538)は
+head `1460ce22a8a9b8f5d014c7fc0519e9e1c09dee9f` に対し数学A/B・LeanAがMinor issues、
+LeanBがMajor revisionsを返した。中心/非中心の区分に差があるF3を、rootは中心findingとして扱う。
+
+F1の公開微分評価・次数0核membership APIを追加し、指定rank・定数核・chart引き戻しの
+下流証明を公開APIへ移す。F2の禁止語を具体的な入力幾何へ置換する。
+F3のGOAL前提台帳228行・設計README105–106行を未完義務から落としていた記載を修正し、
+全次数の指定射の同型条件、その両方向、追加項零性との同値と既存H¹への条件付き同型を構成する。
+
+これらは元のM3終了条件に含まれる。元selection・GOAL・設計・result型を変更しない。
+全Lawの錐対象同定とW1全Lawの錐値は引き続き未完であり、結果はproof-checkpointである。
+修正後headはfresh4laneの正式再実行へ渡し、初回内容判定を再利用しない。
+
+
+### Cycle 3 修正後の条項対応
+
+`coneKernelProjection_bijective_iff` と `coneCokernelInclusion_bijective_iff` は、
+標準長完全列から構成した指定射そのものの全単射性を、全整数mでそれぞれ
+Hᵐ比較の全射性・Hᵐ⁺¹比較の単射性と同値にする。ShortExactFiveConditionsの
+三つのexactnessは標準錐の `cone_target_exact`、`cone_middle_exact`、`cone_source_exact`
+から供給し、AAT入力にexactnessを追加しない。
+
+`comparison_H0_cokernel_zero_iff` と `comparison_H2_kernel_zero_iff` は、
+実追加項の次元零性との必要十分条件を証明する。
+`comparisonConeH0KernelEquiv` と `comparisonConeH1CokernelEquiv` は、
+指定射影・包含を旧H¹の実核・余核へ移した条件付き線形同型である。
+各apply則で移送後の射を固定する。条件はこの同型に限る方向仮定であり、
+一般Cの構成には課さない。W1の実追加項零はWitnessOneConesで既に放電され、
+W3a/bが検出する非零追加項を同じ条件で排除しない。
+
+
+### Cycle 3 修正後の検証と監査入力
+
+rootの必要依存targeted checkは
+`lake build ResearchLean.AG.AtlasDefectComposition.WitnessOneCones ResearchLean.AG.AtlasDefectComposition.ConeNaturality ResearchLean.AG.AtlasDefectComposition.ConeConditional`
+で成功（3831 jobs）。単一scratchの303宣言公理監査も成功し、
+source/spine/scratch/logの名前集合は303で一致、欠落・余剰なし。
+依存公理はpropext・Classical.choice・Quot.soundのみ。
+ログSHA-256は `d689b30db0a331c7e5991759afbe1bf0a7e97675a85b5046f76bf77c66691ea6`。
+32 Lean fileとreportのplaceholder・hidden/BiDi・privacy scan、
+本体からResearchへのimport検査、git diff --checkはclean。
+Research全体・aggregate・全file loop build、Formal移植・ArchSig実装、
+全GOAL最終監査は未実施。F1/F2/F3の修正実体をfresh4lane正式再実行で監査する。

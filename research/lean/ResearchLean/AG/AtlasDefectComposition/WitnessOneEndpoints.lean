@@ -17,12 +17,16 @@ def constants₂ : LinearMap.ker (namedComplex N₂).d0 ≃ₗ[ℚ] ℚ := const
 /-- W1中間段の二三角形にも一つの共通定数核がある。 -/
 def constants₁ : LinearMap.ker (namedComplex N₁).d0 ≃ₗ[ℚ] ℚ where
   toFun x := x.val 0
-  invFun r := ⟨fun _ => r,by funext e; change r-r=0; exact sub_self r⟩
+  invFun r := ⟨fun _ => r,by
+    apply (mem_ker_namedComplex_d0_iff N₁ _).mpr
+    intro e
+    exact sub_self r⟩
   left_inv x := by
     apply Subtype.ext
     funext i
     have h (e : Fin 6) : x.val (twoTriangles.edgeRight e)-
-        x.val (twoTriangles.edgeLeft e)=0 := congrFun x.property e
+        x.val (twoTriangles.edgeLeft e)=0 :=
+      (mem_ker_namedComplex_d0_iff N₁ x.val).mp x.property e
     fin_cases i
     · rfl
     · exact (sub_eq_zero.mp (h 0)).symm

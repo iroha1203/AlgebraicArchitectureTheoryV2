@@ -15,14 +15,15 @@ open CanonicalResolution ResolutionInvariance TwoPhase
 def tetrahedronConstants : LinearMap.ker (namedComplex B₀).d0 ≃ₗ[ℚ] ℚ where
   toFun x := x.val 0
   invFun r := ⟨fun _ => r,by
-    funext e
-    change r-r=0
+    apply (mem_ker_namedComplex_d0_iff B₀ _).mpr
+    intro e
     exact sub_self r⟩
   left_inv x := by
     apply Subtype.ext
     funext i
     have h (e : Fin 6) : x.val (tetrahedron.edgeRight e) -
-        x.val (tetrahedron.edgeLeft e) = 0 := congrFun x.property e
+        x.val (tetrahedron.edgeLeft e) = 0 :=
+      (mem_ker_namedComplex_d0_iff B₀ x.val).mp x.property e
     fin_cases i
     · rfl
     · exact (sub_eq_zero.mp (h 0)).symm
@@ -35,14 +36,15 @@ def tetrahedronConstants : LinearMap.ker (namedComplex B₀).d0 ≃ₗ[ℚ] ℚ 
 def triangleConstants : LinearMap.ker (namedComplex B₁).d0 ≃ₗ[ℚ] ℚ where
   toFun x := x.val 0
   invFun r := ⟨fun _ => r,by
-    funext e
-    change r-r=0
+    apply (mem_ker_namedComplex_d0_iff B₁ _).mpr
+    intro e
     exact sub_self r⟩
   left_inv x := by
     apply Subtype.ext
     funext i
     have h (e : Fin 3) : x.val (filledTriangle.edgeRight e)-
-        x.val (filledTriangle.edgeLeft e)=0 := congrFun x.property e
+        x.val (filledTriangle.edgeLeft e)=0 :=
+      (mem_ker_namedComplex_d0_iff B₁ x.val).mp x.property e
     fin_cases i
     · rfl
     · exact (sub_eq_zero.mp (h 0)).symm
@@ -56,7 +58,7 @@ def tetrahedronFaceImage : LinearMap.range (namedComplex B₀).d1 ≃ₗ[ℚ] (F
   invFun a := ⟨![a 0,a 1,a 2,a 0-a 1+a 2],by
     refine ⟨![0,0,0,a 0,a 1,a 2],?_⟩
     funext f
-    fin_cases f <;> simp [namedComplex,faceDifference]⟩
+    fin_cases f <;> simp only [namedComplex_d1_apply] <;> simp⟩
   left_inv x := by
     apply Subtype.ext
     obtain ⟨z,hz⟩ := x.property
@@ -64,7 +66,7 @@ def tetrahedronFaceImage : LinearMap.range (namedComplex B₀).d1 ≃ₗ[ℚ] (F
     change ![x.val 0,x.val 1,x.val 2,x.val 0-x.val 1+x.val 2] = x.val
     rw [hv]
     funext f
-    fin_cases f <;> simp [namedComplex,faceDifference]
+    fin_cases f <;> simp only [namedComplex_d1_apply] <;> simp
     ring
   right_inv a := by funext i; fin_cases i <;> rfl
   map_add' _ _ := by ext i; fin_cases i <;> rfl
@@ -75,7 +77,8 @@ theorem triangleFace_surjective : Function.Surjective (namedComplex B₁).d1 := 
   refine ⟨![0,0,z 0],?_⟩
   funext f
   fin_cases f
-  simp [namedComplex,faceDifference]
+  simp only [namedComplex_d1_apply]
+  simp
 /-- 四面体の原始d⁰のrankは3。 -/
 theorem tetrahedron_d0_rank : Module.finrank ℚ (LinearMap.range (namedComplex B₀).d0) = 3 := by
   have h := (namedComplex B₀).d0.finrank_range_add_finrank_ker
