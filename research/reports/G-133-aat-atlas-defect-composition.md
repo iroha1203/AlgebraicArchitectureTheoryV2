@@ -1503,3 +1503,278 @@ audits:
 
 このresultは独立PR監査へ渡すproposalである。E/F/W2・全GOAL最終監査は未完、
 GOALはactive、tracking Issueはopen。M3/M4の受理判断は固定headの監査コメントに置く。
+
+
+## Cycle 4 内容受理と Cycle 5 selection
+
+PR #5266の修正head `5134712871383bb9f88d832a069757052c0a26d0` は
+[独立監査と有資格直接対応/root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5266#issuecomment-6002459758)で
+DとM3全Law残をproof-obligation-dischargedとして内容受理した。
+CI待機中のためmerge・Issue checkbox同期は未実施。固定PR headを保持し、
+別branchで次の選定を記録する。M4のmerge条件・全GOALの完了条件を緩めない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-133-aat-atlas-defect-composition
+cycle: 5
+goal_blob_sha: 8904a7d3bf428e0307499a40be4db1ba9091c51a
+base_oid: 5134712871383bb9f88d832a069757052c0a26d0
+tracking_issue: 5261
+report_path: research/reports/G-133-aat-atlas-defect-composition.md
+selection:
+  proof_state_ref: Cycle4固定headの内容受理監査（CI待機/merge未実施）
+  proof_dag_predecessors: [M1実生成合成, M2実相殺, M3標準錐, M4実Law直和接続]
+  milestone: M5の台署名による構造の分類と欠損の輸送
+  proof_obligations:
+    - 両側三次数の名付き全セル署名・Galois接続・閉包・join商/像/閉集合同型
+    - 全セル復元の有限join商圏の終対象と通常の商の逆向き普遍性
+    - 同署名によるセル/incidence/退化宣言/実比較/複体/錐同定
+    - selected block族の指定射/非交和と重複度による分類・加法的自由普遍性
+    - 実Lawからの比較/錐復元と指示Lawtrue単独blockへの一意評価
+    - 署名op上の両側複体/比較/錐/H1核余核関手
+    - 全三段セルの共通署名と各pair射影・B全射/χ自然性
+    - W2同じ原始入力の異署名同零欠損/真の閉包/同署名別subsetとW1重複度
+  exit_criteria:
+    - E全構成/全方向/対象と指定射をLeanで証明
+    - Dの実入力/直和へ接続し自由線形同型で指定射を拡張しない
+    - W2とW1署名/重複度を原始入力から評価
+    - 対象focused/必要依存targeted・全spineaxiom・scanを完了
+  selection_reason: 台の構造を同じ比較群へ戻してFの自然な多段towerを支える
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [SupportSignature.lean, SignatureUniversal.lean, SubsetRestriction.lean, SelectedBlockFamily.lean, WitnessTwo.lean]
+  risks:
+    - 粗側または次数1だけの署名へ縮めない
+    - 二普遍性の射方向を混同しない
+    - 固定閉集合のjoin/bottomを素朴なunion/emptyで代替しない
+    - 名付きセル復元と任意の線形同型を混同しない
+    - 同署名ラベルの重複度とselected単独評価の一意性を保持
+    - pair別に共通Aを選び直さない
+  unchecked: [E/W2未実装, F, 全GOAL最終独立監査, Cycle4CIとmerge]
+```
+
+### Cycle 4 の merge 証拠（cycle 5 の実装中に同期）
+
+- PR #5266、受理固定 head `5134712871383bb9f88d832a069757052c0a26d0`、merge `6dd8f2260591085f88bc949097e4f46a91ba54b7`、2026-10-05T21:23:10Z。
+- 内容受入: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5266#issuecomment-6002459758 。非中心 F1/F2 は fresh 直接確認で解消済み。
+- 全8必須 CI 成功。Lean run `37370346054`、Tool run `37370345912`。hosted runner 未取得で未実行取消しとなった jobs を同じ head で再実行して解消した。Research aggregate/full build は実行していない。
+- cycle 4 の結果は `proof-obligation-discharged`。M3 全Law例残と D 全条項を受理し、E/F/W2 と最終累積完了監査は未完である。
+- cycle 5 の固定 selection base は実装前に記録した `5134712871383bb9f88d832a069757052c0a26d0` を維持する。merge commit と同じ数学 tree であり、selection を実装後に改訂しない。GOAL active、tracking Issue open を維持する。
+
+
+### Cycle 5 条項と実入力経路
+
+すべてのsubset（空集合を含む）を同じ粗targetから引き戻す。台署名・台制限関手では
+Sourceとセル型のuniverseを独立に量化する。実Law比較・錐復元とJ評価は既存Law APIの
+`TargetSupportedNerve.{u,u}` に接続し、Lawの値型全体にFintypeを要求しない。
+
+| 固定要求 | 今回の証拠と生成経路 |
+| --- | --- |
+| E・六つの名付きセル | `SupportSignature.Cell/family` は粗細chart/edge/faceをSumの六tagで区別し、`mem_family_coarseChart` 等の六membershipと `alpha_eq_iff` は元のsubset選択と同じ逆像選択を同定する。 |
+| Galois/閉包/商/像/Fix | `SignatureGeometry.galois`、`closureOperator`、`quotientEquiv`、`closedOrderIso`、`SignatureGeometry.quotientOrderIso/quotientClosedOrderIso`。閉集合joinはclosure(union)、bottomはclosure(empty)。元の名付きセル包含を使う。 |
+| 指定商圏の終対象 | `SignatureGeometry.Presentation/PresentationHom` は有限join半束、全subsetからの全射、全セルdecoderと両正方形を保持する。`terminalHom` をdecoderの像へのcorestrictionから構成し、`signatureIsTerminal` が全対象・全指定射の一意性を示す。 |
+| 逆向きの普通の商普遍性 | `quotientFactor/quotient_universal` は署名核を消す任意のSupBotHomについて、署名から評価先への一意因子化を示す。decoderの終射と向きを混同しない。 |
+| incidence・退化・全比較の復元 | `SubsetRestriction` は同じ元のセルの包含と辺両端/面三辺を使う。`SupportRestriction.chart_square/edge_option_square/face_option_square` は元のOption宣言も保持し、`pullback0_square/1_square/2_square/comparison_square` を証明する。`SubsetEquivalence` と `SupportReconstruction` は同署名の両向き包含から実cochain、標準複体、実錐同型を作る。 |
+| 台の反対向き関手 | `SupportFunctor.coarseFunctor/fineFunctor/comparisonNat`、`SupportFunctor.coneFunctor/coneHomologyFunctor`、`SupportFunctor.h1KernelFunctor/h1CokernelFunctor`。canonical gamma代表を使い、制限の恒等/合成は元の座標で証明する。`SupportDefectValue.value_dimension` は旧H¹の実Jと標準H¹核余核の次元表を同定する。 |
+| selected族の指定射と対称モノイド圏 | `SelectedFamilies.Family/Hom` は有限subset族と非bottom添字の署名保存全単射だけを持つ。`SelectedFamilyOperations` の元の非交和/reindexから `SelectedFamilyMonoidal` のMonoidal/Braided/Symmetric instancesを構成し、`multiplicity_classifies` で同型類を分類する。 |
+| 零block削除と比較・錐の復元 | `SupportZeroBlock` はsigma=bottomから六セル空を証明する。`SelectedFamilyComplex` のactive同型、`FiniteFamilyZeroDeletion`、`FiniteFamilyReindex`、`SelectedFamilyReconstruction` は元のblock同型と添字並べ替えを使う。`SelectedFamilyComplex.reconstruction_square` と `SelectedFamilyComplex.canonical_square` が全比較射も保つ。任意の線形同型を族の射に加えない。 |
+| 多重度と自由加法的普遍性 | `SelectedFamilies.canonical_multiplicity` と `SelectedFamilies.multiplicity_classifies` は有限supportの全多重度を実現/分類する。`SelectedFamilies.additive_universal` は任意の可換加法モノイドBに値を持つ指定評価を単独block値の和として全一意に表す。`SelectedFamilies.freeMonoid_universal/freeEvaluation_multiplicity` でFinsuppの自由可換モノイドへ接続する。 |
+| 実Lawと指示Lawへの接続 | `lawSelected_square/lawMultiplicity_square` はDのラベルfiberと同じ細逆像族を使い、実全Law比較を多重度モデルへ同定する。`lawMultiplicityConeIso` は実全Law錐を同定する。`SupportSignature.nonbottomIndicatorConeIso` は非bottom代表の非空性から指示Lawtrue単独blockへ接続する。`SupportDefectValue.law_evaluation` は実全LawJへ適用する。 |
+| 全三段共通署名とpair射影 | `SupportStages.Cell` は任意有限段の全セルを段階/次数/セル名で区別する。`SupportStages.pairProjection/pairProjection_sigma` と `ThreeStageSignatures.projection₀₁/projection₀₂/projection₁₂` は共通Aの各pair署名を復元する。`pairComparison_comp` は独立に生成した直接比較と合成を同定する。 |
+| Bの全指定射とχの自然性 | `SupportStages.sixTerm_natural/sixTerm_signature_natural` は実H¹の二正方形を `pairH1_square` から放電し、first/second/cancellation/fourth/fifthの全五射を同じ全段台制限と可換にする。終端の零射も一意である。 |
+| W2同じ原始入力 | `WitnessTwoInput` はFin3 Source、恒等reading/比較、Bool chartのsupport {0,1}/{2}、空edge/faceを構成する。`WitnessTwoGeometry` の原始membershipから同署名別subsetと真の閉包を証明する。`WitnessTwo.signature_card/quotient_card` は4、`actualDefect_zero` は全Aで(0,0)、`different_signature_same_defect/no_defect_decoder` は名付きセルが診断値から復元不能な同じ二subsetを評価する。 |
+| W1二ラベルの重複度 | `WitnessOne.label_fiber/label_sigma` は既存W1の同じ原始Law降下からfiberを取り、`singleton_sigma_eq/singleton_nonbottom/shared_multiplicity` で共有非bottom署名の多重度2を評価する。`fullLawMultiplicityConeIso` はその実全Law錐へ接続する。 |
+
+### Cycle 5 premise・proof-use・依存DAG
+
+| premise / field | 役割 | 放電と使用先 |
+| --- | --- | --- |
+| reading/有限支持nerve/原始部分比較/粗adequacy | ambient-boundary | T0のまま保持。六tagのmembership・Option正方形・LawSelected正方形へ使用。W2は全fieldを原始表から構成。 |
+| Presentationの全射とdecoder square | 指定圏の対象の定義 | Eが量化する対象そのもの。実signaturePresentationではsigma_surjectiveと実alphaを使って構成し、terminalHomの値が像にあることと一意性へ使用。 |
+| 同署名/署名包含/SelectedLE | 一般transportのdirection-hypothesis、E適用はdischarge-required | 原始全セルalphaのmembershipからcoarseLE/fineLE/stageLEとOption正方形を導出する。同署名の指定同型と全関手/自然性で使用。 |
+| Family.Homのactive全単射と署名等号 | 設計§4の指定射の定義 | multiplicity_classifiesの両方向とcanonical代表で生成。元のセル固定block同型とfinite reindexへ使用。 |
+| AdditiveEvaluationの不変/非交和/零条件 | 設計§4の評価対象の定義 | 任意v(bottom)=0からevaluationOfValuesを生成。任意IからsignatureValueを単独selected blockで生成し、有限添字帰納法で全族の和と一意性を証明。 |
+| outside blockが零 / reindexの比較square | 一般補助のdirection-hypothesis、実適用はdischarge-required | SupportZeroBlockの六セル空から全次数Subsingletonを証明、各blockの実三次数comparison squareと原始添字の全単射から放電。削除/挿入/全比較/錐同型へ使用。 |
+| six-term helperのhf/hg | 一般補助のdirection-hypothesis、実適用はdischarge-required | SubsetComparisonNaturalityとSupportStages.pairH1_squareで実入力から放電。全五指定射とχの自然性へ使用。 |
+| 非bottom代表の非空性 | discharge-required | SupportSignature.representative_nonemptyにより証明し、M4指示Lawtrue blockへ適用。 |
+| 有限LawValueLabel | discharge-required | 既存Source有限からの発生ラベル有限性。全値型有限性を使わず実LawSelectedFamilyの添字と有限和/多重度へ使用。 |
+
+今回のDAGは原始支持セル→六tag選択→Galois/署名→実セル制限→全比較正方形→
+標準複体/錐/旧H¹核余核である。別枝は指定有限族→active添字→多重度→
+元のblock同型/並べ替え→実全Law比較と錐の復元、評価の自由性である。
+全段支持セル→共通署名→pair射影/実全段制限→実H¹正方形→Bの全五射/χ自然性を接続した。
+W2とW1多重度はこれらと同じ原始生成経路を使う。
+
+再利用はM1 #5263（実生成合成）、M2 #5264（実六項列と旧H¹欠損）、
+M3 #5265（標準零拡張/自然な旧H¹同型/実錐）、M4 #5266
+（実Lawの全次数fiber分解/同じ逆像族/指示Law/finite cone family）の受理版を使う。
+版と受理参照は前節の各固定headにあり、今回の使用箇所に関係するsource変更はない。
+mathlibはLean 4.28.0、commit `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。
+標準Category/Monoidal/Finsupp/finite product/ModuleCat kernel・cokernel/cone/homology APIを
+各適用条件と引数で使用する。既存結果の存在や名前のみを接続証拠にはしない。
+
+### Cycle 5 修正headの全spine proposal
+
+新規44ファイルの非internal宣言579をmodule provenanceから固定する。
+M1–M4の累積spineは各前節を維持する。生成structure fieldとinstance、補助定理も監査する。
+初回552一覧との差分は公開API・W2実Law接続27宣言の純増である。
+`SelectedFamilies.AdditiveEvaluation.mk.congr_simp` の自動生成名1件が変更され、
+当該sourceの定義・statement・構成は維持する。
+
+| ファイル | 全宣言（prefix AAT.AG.AtlasDefectComposition を省略） |
+| --- | --- |
+| FiniteFamilyReindex.lean | `FiniteFamilyReindex.blockIso`, `FiniteFamilyReindex.blockIso_hom`, `FiniteFamilyReindex.degreeEquiv`, `FiniteFamilyReindex.degreeEquiv_apply`, `FiniteFamilyReindex.degreeEquiv_d`, `FiniteFamilyReindex.iso`, `FiniteFamilyReindex.iso_hom_apply`, `FiniteFamilyReindex.reindexIso` |
+| FiniteFamilyReindexNaturality.lean | `FiniteFamilyReindex.block_square`, `FiniteFamilyReindex.square` |
+| FiniteFamilyZeroDeletion.lean | `FiniteFamilyZeroDeletion.degreeEquiv`, `FiniteFamilyZeroDeletion.degreeEquiv.congr_simp`, `FiniteFamilyZeroDeletion.degreeEquiv_d`, `FiniteFamilyZeroDeletion.extendDegree`, `FiniteFamilyZeroDeletion.extendDegree_apply`, `FiniteFamilyZeroDeletion.iso`, `FiniteFamilyZeroDeletion.iso_apply`, `FiniteFamilyZeroDeletion.restrictDegree`, `FiniteFamilyZeroDeletion.restrictDegree_apply` |
+| LawSignatureComparison.lean | `lawBlockSelectedSubsetZeroExtensionIso.congr_simp`, `lawMultiplicityCoarseIso`, `lawMultiplicityFineIso`, `lawMultiplicity_square`, `lawSelectedCoarseIso`, `lawSelectedFineIso`, `lawSelected_square` |
+| LawSignatureRestoration.lean | `lawMultiplicityConeHomologyEquiv`, `lawMultiplicityConeIso`, `lawSelectedComparisonConeIso`, `lawSelectedFamily` |
+| SelectedFamilies.lean | `SelectedFamilies.Active`, `SelectedFamilies.Family`, `SelectedFamilies.Family.Index`, `SelectedFamilies.Family.casesOn`, `SelectedFamilies.Family.ctorIdx`, `SelectedFamilies.Family.finite`, `SelectedFamilies.Family.mk`, `SelectedFamilies.Family.mk.inj`, `SelectedFamilies.Family.mk.injEq`, `SelectedFamilies.Family.mk.noConfusion`, `SelectedFamilies.Family.mk.sizeOf_spec`, `SelectedFamilies.Family.noConfusion`, `SelectedFamilies.Family.noConfusionType`, `SelectedFamilies.Family.rec`, `SelectedFamilies.Family.recOn`, `SelectedFamilies.Family.subset`, `SelectedFamilies.Fiber`, `SelectedFamilies.Hom`, `SelectedFamilies.Hom.casesOn`, `SelectedFamilies.Hom.ctorIdx`, `SelectedFamilies.Hom.equiv`, `SelectedFamilies.Hom.mk`, `SelectedFamilies.Hom.mk.inj`, `SelectedFamilies.Hom.mk.injEq`, `SelectedFamilies.Hom.mk.noConfusion`, `SelectedFamilies.Hom.mk.sizeOf_spec`, `SelectedFamilies.Hom.noConfusion`, `SelectedFamilies.Hom.noConfusionType`, `SelectedFamilies.Hom.rec`, `SelectedFamilies.Hom.recOn`, `SelectedFamilies.Hom.signature_eq`, `SelectedFamilies.NonzeroSignature`, `SelectedFamilies.activeSignature`, `SelectedFamilies.familyCategory`, `SelectedFamilies.fiberEquiv`, `SelectedFamilies.homComp`, `SelectedFamilies.homId`, `SelectedFamilies.homOfFiberCards`, `SelectedFamilies.homSymm`, `SelectedFamilies.hom_ext`, `SelectedFamilies.hom_ext_iff`, `SelectedFamilies.isoOfHom`, `SelectedFamilies.multiplicity`, `SelectedFamilies.multiplicity_apply`, `SelectedFamilies.multiplicity_classifies`, `SelectedFamilies.multiplicity_eq_of_hom` |
+| SelectedFamilyAdditive.lean | `SelectedFamilies.AdditiveEvaluation`, `SelectedFamilies.AdditiveEvaluation.casesOn`, `SelectedFamilies.AdditiveEvaluation.ctorIdx`, `SelectedFamilies.AdditiveEvaluation.empty`, `SelectedFamilies.AdditiveEvaluation.eval`, `SelectedFamilies.AdditiveEvaluation.invariant`, `SelectedFamilies.AdditiveEvaluation.mk`, `SelectedFamilies.AdditiveEvaluation.mk.inj`, `SelectedFamilies.AdditiveEvaluation.mk.injEq`, `SelectedFamilies.AdditiveEvaluation.mk.noConfusion`, `SelectedFamilies.AdditiveEvaluation.mk.sizeOf_spec`, `SelectedFamilies.AdditiveEvaluation.noConfusion`, `SelectedFamilies.AdditiveEvaluation.noConfusionType`, `SelectedFamilies.AdditiveEvaluation.rec`, `SelectedFamilies.AdditiveEvaluation.recOn`, `SelectedFamilies.AdditiveEvaluation.sum`, `SelectedFamilies.AdditiveEvaluation.zero_single`, `SelectedFamilies.eval_family`, `SelectedFamilies.eval_ofBlocks`, `SelectedFamilies.ofBlocks`, `SelectedFamilies.single_eval_eq` |
+| SelectedFamilyCanonical.lean | `SelectedFamilies.MultiplicityIndex`, `SelectedFamilies.canonicalActiveEquiv`, `SelectedFamilies.canonicalFamily`, `SelectedFamilies.canonicalFiberEquiv`, `SelectedFamilies.canonical_active_signature`, `SelectedFamilies.canonical_classifies`, `SelectedFamilies.canonical_multiplicity`, `SelectedFamilies.canonical_sigma`, `SelectedFamilies.multiplicityFiberEquiv`, `SelectedFamilies.multiplicityIndexEquiv`, `SelectedFamilies.multiplicityIndexFinite`, `SelectedFamilies.multiplicity_surjective` |
+| SelectedFamilyCanonicalComparison.lean | `SelectedFamilyComplex.canonicalCoarseIso`, `SelectedFamilyComplex.canonicalFineIso`, `SelectedFamilyComplex.canonicalHom`, `SelectedFamilyComplex.canonical_square` |
+| SelectedFamilyComparison.lean | `SelectedFamilyComplex.activeReconstruction_square`, `SelectedFamilyComplex.reconstruction_square` |
+| SelectedFamilyComplex.lean | `SelectedFamilyComplex.active_square`, `SelectedFamilyComplex.coarse`, `SelectedFamilyComplex.coarseActiveIso`, `SelectedFamilyComplex.coarseBlock`, `SelectedFamilyComplex.coarseZero`, `SelectedFamilyComplex.comparison`, `SelectedFamilyComplex.comparisonBlock`, `SelectedFamilyComplex.coneActiveIso`, `SelectedFamilyComplex.coneBlock`, `SelectedFamilyComplex.coneZero`, `SelectedFamilyComplex.fine`, `SelectedFamilyComplex.fineActiveIso`, `SelectedFamilyComplex.fineBlock`, `SelectedFamilyComplex.fineZero` |
+| SelectedFamilyFreeMonoid.lean | `SelectedFamilies.freeEvaluation`, `SelectedFamilies.freeEvaluation_multiplicity`, `SelectedFamilies.freeEvaluation_single`, `SelectedFamilies.freeEvaluation_unique`, `SelectedFamilies.freeMonoid_universal` |
+| SelectedFamilyMonoidal.lean | `SelectedFamilies.familyBraided`, `SelectedFamilies.familyMonoidal`, `SelectedFamilies.familySymmetric` |
+| SelectedFamilyMultiplicity.lean | `SelectedFamilies.emptyFiberIsEmpty`, `SelectedFamilies.fiberSumEquiv`, `SelectedFamilies.multiplicity.congr_simp`, `SelectedFamilies.multiplicity_empty`, `SelectedFamilies.multiplicity_sum` |
+| SelectedFamilyOperations.lean | `SelectedFamilies.activeSumEquiv`, `SelectedFamilies.associatorHom`, `SelectedFamilies.braidingHom`, `SelectedFamilies.empty`, `SelectedFamilies.emptyIndexIsEmpty`, `SelectedFamilies.leftUnitorHom`, `SelectedFamilies.reindexHom`, `SelectedFamilies.rightUnitorHom`, `SelectedFamilies.single`, `SelectedFamilies.singleHom`, `SelectedFamilies.sum`, `SelectedFamilies.tensorHom` |
+| SelectedFamilyReconstruction.lean | `SelectedFamilyComplex.blockAlphaEq`, `SelectedFamilyComplex.block_square`, `SelectedFamilyComplex.canonicalConeHomologyEquiv`, `SelectedFamilyComplex.canonicalConeIso`, `SelectedFamilyComplex.coarseBlockIso`, `SelectedFamilyComplex.coarseReconstructionIso`, `SelectedFamilyComplex.coarseReconstructionIso_hom`, `SelectedFamilyComplex.coneBlockIso`, `SelectedFamilyComplex.coneReconstructionIso`, `SelectedFamilyComplex.fineBlockIso`, `SelectedFamilyComplex.fineReconstructionIso`, `SelectedFamilyComplex.fineReconstructionIso_hom` |
+| SelectedFamilyUniversal.lean | `SelectedFamilies.additive_universal`, `SelectedFamilies.evaluationOfValues`, `SelectedFamilies.evaluationOfValues_eval`, `SelectedFamilies.signatureValue`, `SelectedFamilies.signatureValue_bot`, `SelectedFamilies.signatureValue_represents`, `SelectedFamilies.signatureValue_sigma`, `SelectedFamilies.signatureValue_unique`, `SelectedFamilies.valueSum`, `SelectedFamilies.valueSum_active`, `SelectedFamilies.valueSum_eq_sum`, `SelectedFamilies.valueSum_invariant`, `SelectedFamilies.valueSum_single`, `SelectedFamilies.valueSum_sum` |
+| SignatureGeometry.lean | `SignatureGeometry.ClosedSubset`, `SignatureGeometry.Signature`, `SignatureGeometry.alpha`, `SignatureGeometry.alpha_closure`, `SignatureGeometry.alpha_empty`, `SignatureGeometry.alpha_gamma_alpha`, `SignatureGeometry.alpha_gamma_signature`, `SignatureGeometry.alpha_mono`, `SignatureGeometry.alpha_union`, `SignatureGeometry.closedEquiv`, `SignatureGeometry.closedOrderBot`, `SignatureGeometry.closedOrderIso`, `SignatureGeometry.closedSemilatticeSup`, `SignatureGeometry.closed_bot_val`, `SignatureGeometry.closed_sup_val`, `SignatureGeometry.closure`, `SignatureGeometry.closureOperator`, `SignatureGeometry.closure_idempotent`, `SignatureGeometry.closure_mono`, `SignatureGeometry.galois`, `SignatureGeometry.gamma`, `SignatureGeometry.gamma_mono`, `SignatureGeometry.inclusionHom`, `SignatureGeometry.mem_alpha`, `SignatureGeometry.mem_gamma`, `SignatureGeometry.quotientEquiv`, `SignatureGeometry.sigma`, `SignatureGeometry.sigmaHom`, `SignatureGeometry.sigma_eq_iff`, `SignatureGeometry.sigma_gamma_signature`, `SignatureGeometry.sigma_surjective`, `SignatureGeometry.sigma_val`, `SignatureGeometry.signatureFinite`, `SignatureGeometry.signatureOrderBot`, `SignatureGeometry.signatureSemilatticeSup`, `SignatureGeometry.signatureSetoid`, `SignatureGeometry.signature_bot_val`, `SignatureGeometry.signature_sup_val`, `SignatureGeometry.subset_closure` |
+| SignatureQuotient.lean | `SignatureGeometry.SignatureQuotient`, `SignatureGeometry.closedOrderIso_sup`, `SignatureGeometry.quotientClosedOrderIso`, `SignatureGeometry.quotientEquiv_mk`, `SignatureGeometry.quotientFinite`, `SignatureGeometry.quotientOrderBot`, `SignatureGeometry.quotientOrderIso`, `SignatureGeometry.quotientPartialOrder`, `SignatureGeometry.quotientSemilatticeSup`, `SignatureGeometry.quotient_mk_empty`, `SignatureGeometry.quotient_mk_union`, `SignatureGeometry.signature_join_congr` |
+| SignatureUniversal.lean | `SignatureGeometry.Presentation`, `SignatureGeometry.Presentation.Carrier`, `SignatureGeometry.Presentation.bot`, `SignatureGeometry.Presentation.casesOn`, `SignatureGeometry.Presentation.ctorIdx`, `SignatureGeometry.Presentation.decode`, `SignatureGeometry.Presentation.decode_encode`, `SignatureGeometry.Presentation.encode`, `SignatureGeometry.Presentation.encode_surjective`, `SignatureGeometry.Presentation.finite`, `SignatureGeometry.Presentation.mk`, `SignatureGeometry.Presentation.mk.inj`, `SignatureGeometry.Presentation.mk.injEq`, `SignatureGeometry.Presentation.mk.noConfusion`, `SignatureGeometry.Presentation.mk.sizeOf_spec`, `SignatureGeometry.Presentation.noConfusion`, `SignatureGeometry.Presentation.noConfusionType`, `SignatureGeometry.Presentation.rec`, `SignatureGeometry.Presentation.recOn`, `SignatureGeometry.Presentation.sup`, `SignatureGeometry.PresentationHom`, `SignatureGeometry.PresentationHom.casesOn`, `SignatureGeometry.PresentationHom.ctorIdx`, `SignatureGeometry.PresentationHom.decode_comm`, `SignatureGeometry.PresentationHom.encode_comm`, `SignatureGeometry.PresentationHom.map`, `SignatureGeometry.PresentationHom.mk`, `SignatureGeometry.PresentationHom.mk.inj`, `SignatureGeometry.PresentationHom.mk.injEq`, `SignatureGeometry.PresentationHom.mk.noConfusion`, `SignatureGeometry.PresentationHom.mk.sizeOf_spec`, `SignatureGeometry.PresentationHom.noConfusion`, `SignatureGeometry.PresentationHom.noConfusionType`, `SignatureGeometry.PresentationHom.rec`, `SignatureGeometry.PresentationHom.recOn`, `SignatureGeometry.presentationCategory`, `SignatureGeometry.presentationHomComp`, `SignatureGeometry.presentationHomId`, `SignatureGeometry.presentationHom_ext`, `SignatureGeometry.presentationHom_ext_iff`, `SignatureGeometry.quotientFactor`, `SignatureGeometry.quotientFactor_comp`, `SignatureGeometry.quotientFactor_sigma`, `SignatureGeometry.quotientFactor_unique`, `SignatureGeometry.quotient_universal`, `SignatureGeometry.signatureIsTerminal`, `SignatureGeometry.signaturePresentation`, `SignatureGeometry.terminalHom`, `SignatureGeometry.terminalHom_unique`, `SignatureGeometry.terminalHom_val` |
+| SixTermNaturality.lean | `SixTermNaturality.cancellation_natural`, `SixTermNaturality.cokernelMap`, `SixTermNaturality.cokernelMap.congr_simp`, `SixTermNaturality.cokernelMap_mk`, `SixTermNaturality.comp_square`, `SixTermNaturality.fifth_natural`, `SixTermNaturality.first_natural`, `SixTermNaturality.fourth_natural`, `SixTermNaturality.kernelMap`, `SixTermNaturality.kernelMap_val`, `SixTermNaturality.second_natural` |
+| SubsetComparisonNaturality.lean | `SubsetComparisonNaturality.chart_square`, `SubsetComparisonNaturality.comparison_square`, `SubsetComparisonNaturality.edge_option_square`, `SubsetComparisonNaturality.face_option_square`, `SubsetComparisonNaturality.pullback0_square`, `SubsetComparisonNaturality.pullback1_square`, `SubsetComparisonNaturality.pullback2_square` |
+| SubsetEquivalence.lean | `SubsetRestriction.chartEquiv`, `SubsetRestriction.cochainEquiv`, `SubsetRestriction.cochainEquiv_symm_toHom`, `SubsetRestriction.cochainEquiv_toHom`, `SubsetRestriction.complexIso`, `SubsetRestriction.edgeEquiv`, `SubsetRestriction.equiv0`, `SubsetRestriction.equiv0_symm_toLinearMap`, `SubsetRestriction.equiv0_toLinearMap`, `SubsetRestriction.equiv1`, `SubsetRestriction.equiv1_symm_toLinearMap`, `SubsetRestriction.equiv1_toLinearMap`, `SubsetRestriction.equiv2`, `SubsetRestriction.equiv2_symm_toLinearMap`, `SubsetRestriction.equiv2_toLinearMap`, `SubsetRestriction.faceEquiv`, `SubsetRestriction.h1Equiv` |
+| SubsetRestriction.lean | `SubsetRestriction.SelectedLE`, `SubsetRestriction.chartInclusion`, `SubsetRestriction.chartInclusion.congr_simp`, `SubsetRestriction.chartInclusion_edgeLeft`, `SubsetRestriction.chartInclusion_edgeRight`, `SubsetRestriction.chartInclusion_val`, `SubsetRestriction.edgeInclusion`, `SubsetRestriction.edgeInclusion.congr_simp`, `SubsetRestriction.edgeInclusion_faceEdge0`, `SubsetRestriction.edgeInclusion_faceEdge1`, `SubsetRestriction.edgeInclusion_faceEdge2`, `SubsetRestriction.edgeInclusion_val`, `SubsetRestriction.faceInclusion`, `SubsetRestriction.faceInclusion.congr_simp`, `SubsetRestriction.faceInclusion_val`, `SubsetRestriction.hom`, `SubsetRestriction.hom_comp`, `SubsetRestriction.hom_f0`, `SubsetRestriction.hom_f1`, `SubsetRestriction.hom_f2`, `SubsetRestriction.hom_id`, `SubsetRestriction.restrict0`, `SubsetRestriction.restrict0.congr_simp`, `SubsetRestriction.restrict0_apply`, `SubsetRestriction.restrict1`, `SubsetRestriction.restrict1.congr_simp`, `SubsetRestriction.restrict1_apply`, `SubsetRestriction.restrict2`, `SubsetRestriction.restrict2.congr_simp`, `SubsetRestriction.restrict2_apply`, `SubsetRestriction.restrict_d0`, `SubsetRestriction.restrict_d1`, `SubsetRestriction.selectedLE_of_subset`, `SubsetRestriction.selectedLE_refl`, `SubsetRestriction.selectedLE_trans` |
+| SupportConeFunctor.lean | `SupportFunctor.coarseMap.congr_simp`, `SupportFunctor.cone`, `SupportFunctor.coneFunctor`, `SupportFunctor.coneHomologyFunctor`, `SupportFunctor.coneMap`, `SupportFunctor.coneMap_comp`, `SupportFunctor.coneMap_id`, `SupportFunctor.fineMap.congr_simp` |
+| SupportDefectFunctor.lean | `SupportFunctor.h1Cokernel`, `SupportFunctor.h1CokernelFunctor`, `SupportFunctor.h1CokernelMap`, `SupportFunctor.h1CokernelMap.congr_simp`, `SupportFunctor.h1CokernelMap_comp`, `SupportFunctor.h1CokernelMap_id`, `SupportFunctor.h1CokernelMap_mk`, `SupportFunctor.h1Kernel`, `SupportFunctor.h1KernelFunctor`, `SupportFunctor.h1KernelMap`, `SupportFunctor.h1KernelMap.congr_simp`, `SupportFunctor.h1KernelMap_comp`, `SupportFunctor.h1KernelMap_id`, `SupportFunctor.h1KernelMap_val` |
+| SupportDefectValue.lean | `SelectedFamilies.evaluationOfValues.congr_simp`, `SupportDefectValue.actual`, `SupportDefectValue.evaluation`, `SupportDefectValue.evaluation_actual`, `SupportDefectValue.law_evaluation`, `SupportDefectValue.same_alpha`, `SupportDefectValue.value`, `SupportDefectValue.value_bot`, `SupportDefectValue.value_dimension`, `SupportDefectValue.value_sigma`, `SupportReconstruction.coarseEquiv.congr_simp`, `SupportReconstruction.fineEquiv.congr_simp` |
+| SupportFunctor.lean | `SupportFunctor.alpha_le`, `SupportFunctor.alpha_representative`, `SupportFunctor.coarseComplex`, `SupportFunctor.coarseFunctor`, `SupportFunctor.coarseMap`, `SupportFunctor.coarseMap_comp`, `SupportFunctor.coarseMap_id`, `SupportFunctor.comparison`, `SupportFunctor.comparisonNat`, `SupportFunctor.comparison_natural`, `SupportFunctor.fineComplex`, `SupportFunctor.fineFunctor`, `SupportFunctor.fineMap`, `SupportFunctor.fineMap_comp`, `SupportFunctor.fineMap_id`, `SupportFunctor.representative`, `SupportFunctor.representative_mono` |
+| SupportNonbottomRealization.lean | `SupportSignature.nonbottomIndicatorConeIso`, `SupportSignature.nonbottom_nonempty`, `SupportSignature.representative_nonempty` |
+| SupportReconstruction.lean | `SupportReconstruction.closureConeIso`, `SupportReconstruction.coarseEquiv`, `SupportReconstruction.coarseIso`, `SupportReconstruction.comparison_square`, `SupportReconstruction.complex_square`, `SupportReconstruction.coneHomologyEquiv`, `SupportReconstruction.coneIso`, `SupportReconstruction.fineEquiv`, `SupportReconstruction.fineIso`, `SupportReconstruction.representativeConeIso`, `SupportReconstruction.representative_eq` |
+| SupportRestriction.lean | `SupportRestriction.chart_square`, `SupportRestriction.coarseLE`, `SupportRestriction.comparison_square`, `SupportRestriction.complex_square`, `SupportRestriction.edge_option_square`, `SupportRestriction.face_option_square`, `SupportRestriction.fineLE`, `SupportRestriction.pullback0_square`, `SupportRestriction.pullback1_square`, `SupportRestriction.pullback2_square`, `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.targetSubsetPullback1.congr_simp`, `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.targetSubsetPullback2.congr_simp` |
+| SupportSignature.lean | `SupportSignature.Cell`, `SupportSignature.Signature`, `SupportSignature.alpha`, `SupportSignature.alpha.congr_simp`, `SupportSignature.alpha_eq_iff`, `SupportSignature.coarseChart`, `SupportSignature.coarseEdge`, `SupportSignature.coarseFace`, `SupportSignature.family`, `SupportSignature.family.congr_simp`, `SupportSignature.fineChart`, `SupportSignature.fineEdge`, `SupportSignature.fineFace`, `SupportSignature.mem_alpha_coarseChart`, `SupportSignature.mem_alpha_coarseEdge`, `SupportSignature.mem_alpha_coarseFace`, `SupportSignature.mem_alpha_fineChart`, `SupportSignature.mem_alpha_fineEdge`, `SupportSignature.mem_alpha_fineFace`, `SupportSignature.mem_family_coarseChart`, `SupportSignature.mem_family_coarseEdge`, `SupportSignature.mem_family_coarseFace`, `SupportSignature.mem_family_fineChart`, `SupportSignature.mem_family_fineEdge`, `SupportSignature.mem_family_fineFace`, `SupportSignature.sigma`, `SupportSignature.sigma_eq_iff` |
+| SupportStageComparison.lean | `SupportStages.pairComparison`, `SupportStages.pairComparison_canonical`, `SupportStages.pairComparison_square`, `SupportStages.pairH1_square`, `SupportStages.pair_mapsTo`, `SupportStages.stageRestriction.congr_simp` |
+| SupportStageProjections.lean | `SupportStages.factor_pair`, `SupportStages.pairEncode`, `SupportStages.pairProjection`, `SupportStages.pairProjection_sigma`, `SupportStages.pair_alpha_mono`, `SupportStages.pair_preimage`, `SupportStages.pair_respects` |
+| SupportStageSignatures.lean | `SupportStages.Cell`, `SupportStages.Signature`, `SupportStages.StageCell`, `SupportStages.alpha`, `SupportStages.alpha.congr_simp`, `SupportStages.cellFinite`, `SupportStages.family`, `SupportStages.family.congr_simp`, `SupportStages.mem_alpha`, `SupportStages.sigma`, `SupportStages.stageComplex`, `SupportStages.stageLE`, `SupportStages.stageRestriction`, `SupportStages.support` |
+| SupportStageSixTerm.lean | `SupportStages.alpha_representative`, `SupportStages.pairComparison_comp`, `SupportStages.representative`, `SupportStages.representativeLE`, `SupportStages.sixTerm_natural`, `SupportStages.sixTerm_signature_natural` |
+| SupportZeroBlock.lean | `SupportZeroBlock.alpha_empty`, `SupportZeroBlock.coarseChartIsEmpty`, `SupportZeroBlock.coarseEdgeIsEmpty`, `SupportZeroBlock.coarseFaceIsEmpty`, `SupportZeroBlock.coarse_isZero_X`, `SupportZeroBlock.coarse_subsingleton_X`, `SupportZeroBlock.cone_isZero_X`, `SupportZeroBlock.cone_subsingleton_X`, `SupportZeroBlock.fineChartIsEmpty`, `SupportZeroBlock.fineEdgeIsEmpty`, `SupportZeroBlock.fineFaceIsEmpty`, `SupportZeroBlock.fine_isZero_X`, `SupportZeroBlock.fine_subsingleton_X` |
+| ThreeStageSignatures.lean | `ThreeStageSignatures.Cell`, `ThreeStageSignatures.Signature`, `ThreeStageSignatures.coarsers`, `ThreeStageSignatures.nerves`, `ThreeStageSignatures.projection₀₁`, `ThreeStageSignatures.projection₀₁_sigma`, `ThreeStageSignatures.projection₀₂`, `ThreeStageSignatures.projection₀₂_sigma`, `ThreeStageSignatures.projection₁₂`, `ThreeStageSignatures.projection₁₂_sigma`, `ThreeStageSignatures.readings`, `ThreeStageSignatures.sigma` |
+| WitnessOneSignatureMultiplicity.lean | `WitnessOne.fullLawMultiplicityConeIso`, `WitnessOne.label_fiber`, `WitnessOne.label_sigma`, `WitnessOne.selected`, `WitnessOne.sharedFiberEquiv`, `WitnessOne.sharedSignature`, `WitnessOne.shared_multiplicity`, `WitnessOne.singleton_alpha_eq`, `WitnessOne.singleton_nonbottom`, `WitnessOne.singleton_sigma_eq` |
+| WitnessTwoGeometry.lean | `WitnessTwo.alpha_eq_iff`, `WitnessTwo.closure_a`, `WitnessTwo.coarse_chart_select`, `WitnessTwo.coarse_false_mem`, `WitnessTwo.coarse_true_mem`, `WitnessTwo.fine_chart_select`, `WitnessTwo.mem_gamma_alpha`, `WitnessTwo.sigma_a_eq_b`, `WitnessTwo.sigma_a_ne_c`, `WitnessTwo.sigma_eq_iff` |
+| WitnessTwoInput.lean | `WitnessTwo.M`, `WitnessTwo.N`, `WitnessTwo.Source`, `WitnessTwo.adequate`, `WitnessTwo.alpha`, `WitnessTwo.coarser`, `WitnessTwo.factor_self`, `WitnessTwo.family`, `WitnessTwo.laws`, `WitnessTwo.nerve`, `WitnessTwo.q`, `WitnessTwo.sigma`, `WitnessTwo.support` |
+| WitnessTwoLawMultiplicity.lean | `WitnessTwo.activeA`, `WitnessTwo.activeB`, `WitnessTwo.active_a_b_signature`, `WitnessTwo.active_a_ne_b`, `WitnessTwo.fullLawMultiplicityConeIso`, `WitnessTwo.fullLawSelectedCoarseIso`, `WitnessTwo.fullLawSelected_square`, `WitnessTwo.label`, `WitnessTwo.labelEquivSource`, `WitnessTwo.label_card`, `WitnessTwo.label_fiber`, `WitnessTwo.label_sigma_iff`, `WitnessTwo.labels_a_ne_b`, `WitnessTwo.labels_exhaust`, `WitnessTwo.not_selectedLE_a_c`, `WitnessTwo.selected`, `WitnessTwo.sharedFiberEquiv`, `WitnessTwo.sharedSignature`, `WitnessTwo.shared_multiplicity`, `WitnessTwo.singleton_nonbottom` |
+| WitnessTwoTargets.lean | `WitnessTwo.actualDefect_zero`, `WitnessTwo.actualH1_bijective`, `WitnessTwo.chartSelection`, `WitnessTwo.chartSelection_bijective`, `WitnessTwo.closure_strict`, `WitnessTwo.different_signature_same_defect`, `WitnessTwo.no_defect_decoder`, `WitnessTwo.quotient_card`, `WitnessTwo.signatureEquiv`, `WitnessTwo.signature_card`, `WitnessTwo.subsetC1Subsingleton`, `WitnessTwo.subsetH1Subsingleton` |
+| ZeroH1.lean | `h1_subsingleton_of_C1` |
+
+### Cycle 5 初回headの検証とresult proposal
+
+rootの必要依存targeted checkは次の明示7対象で成功（3874 jobs）。
+
+```text
+lake build ResearchLean.AG.AtlasDefectComposition.LawSignatureComparison ResearchLean.AG.AtlasDefectComposition.SupportDefectValue ResearchLean.AG.AtlasDefectComposition.ThreeStageSignatures ResearchLean.AG.AtlasDefectComposition.SupportNonbottomRealization ResearchLean.AG.AtlasDefectComposition.WitnessTwoTargets ResearchLean.AG.AtlasDefectComposition.WitnessOneSignatureMultiplicity ResearchLean.AG.AtlasDefectComposition.SignatureQuotient
+```
+
+最終の不要simp引数削除後、WitnessOneSignatureMultiplicityの必要依存targeted checkも成功。
+全42ファイルにstandard axiom assertionがあり、単一scratchの全552宣言の
+`#print axioms`が成功した。上のspine、module metadata、scratch、ログの宣言集合は
+552で完全一致し、依存公理はpropext・Classical.choice・Quot.soundのみ。
+公理ログSHA-256は `4f54deccc5d29c629d59733c311c93417baef871199fd9df761fe53372fbcd0b`。
+placeholder（reportの検査項目名を除く）・hidden/BiDi・本体からResearchへのimport・
+新規行の語彙・diff checkはclean。privacyの9件は既存公開監査URLまたは既存スキル参照のみ。
+保護本文・恒久設計・GOAL本文・Formal・toolingに変更はない。
+Research全体・aggregate・全file loop build、Formal移植、ArchSig実装は未実施。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: [Eの全名付きセル署名と二普遍性, 指定対称モノイド族と全多重度分類と自由加法的普遍性, 実全Law比較と錐の復元, 共通全段署名とpair射影とB全五射自然性, W2全指定値とW1共有署名多重度2]
+  exit_criteria_status:
+    - E全構成/全方向/指定対象と射: 上の条項対応と552宣言
+    - Dの実入力/直和への接続: lawMultiplicity_squareとlawMultiplicityConeIso
+    - W2/W1原始評価: WitnessTwoTargetsとWitnessOneSignatureMultiplicity
+    - targeted/全宣言公理/scan: 上記成功
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [上記42file552宣言spine]
+  evidence: [六tag原始membership, 全セル復元終対象と逆向き商因子化, 実比較自然変換, 指定多重度canonical復元, 単独selected blockの自由評価, 実全段制限と六項列全射可換性, 原始W2全評価]
+  claim_mapping:
+    theorem_names: [signatureIsTerminal, quotient_universal, multiplicity_classifies, additive_universal, freeMonoid_universal, lawMultiplicity_square, lawMultiplicityConeIso, sixTerm_signature_natural, no_defect_decoder, shared_multiplicity]
+    source_labels: [GOAL E, 設計台署名§4, GOAL W2, W1の二ラベル重複度]
+    conjuncts: [上記条項対応表]
+    undischarged_assumptions: []
+    acceptance_point: 全セル選択と実比較を保持してEの分類/復元/自然性を閉じる
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [原始alphaからのSelectedLE, 原始Option正方形, 零署名の実全次数零, 多重度からの指定添字全単射, 実H1比較正方形, 非bottom代表非空, 原始W2全fieldと同時指定値]
+    remaining: []
+  certificate_provenance:
+    discharged: [元のセル名の六tag, Galoisからのcanonical閉集合代表, 元の非交和のcoherence, Finsupp各有限fiber, M4の実Lawラベルfiberと同じ細逆像]
+    unresolved: []
+  proof_use:
+    used: [全セルmembershipと全三次数制限, 元の部分比較, 旧H1自然同型, 実Law比較正方形, 非bottom添字と多重度, 任意加法的評価の単独blockと有限帰納法]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [3874jobs targeted, 552宣言公理ログ, 上記scan]
+  blocking_findings: [独立PRレビュー未実施]
+  next_obligation: Fの実錐合成triangleと有限tower/モデルfiltration/逐次商/台とLaw自然性、および全GOAL独立完了監査
+```
+
+このresultは独立PR監査へ渡すproposalである。Fと全GOAL最終監査は未完であり、
+GOAL active、tracking Issue openを維持する。
+
+
+### Cycle 5 初回監査と本筋修正
+
+初回 head `9c5ccb1a74f248b8ed838e91ceccf3c32d92c233` は
+[標準PR初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5267#issuecomment-6004451791)
+で `Needs changes / Major revisions`。数学A/LeanAは非中心指摘、数学B/LeanBは
+固定W2の実Law値a,bの別直和成分への具体的接続欠落を中心findingとした。
+rootは設計witnesses末尾の要求と一次sourceを照合し、初回headのM5結果を
+proof-checkpointとして記録する。一般EとW1重複度は当該W2適用を代替しない。
+固定target・選定終了条件を維持し、同じcycleの本筋修正で閉じる。
+
+- 中心F1: `WitnessTwoLawMultiplicity` で原始恒等Lawの全三ラベルと元Sourceの全単射、
+  ラベルfiber={t}、a≠b、全単独署名の非bottom性を証明する。元のa,bは別active添字であり、
+  同じ全セル署名を持つ。実ラベルfiberと二点の全単射から共有多重度2を評価し、
+  `fullLawSelected_square/fullLawMultiplicityConeIso` へ同じ実Law/adequacy/原始比較を渡す。
+- 非中心F2: module名をnamespaceにしたreport参照を実宣言名へ訂正。
+  非bottom実現は `SupportSignature.nonbottomIndicatorConeIso`。
+- 非中心F3: W2の原始false chartから `not_selectedLE_a_c` を証明し、
+  `selectedLE_refl` の成立例と不成立例を対にする。
+- 非中心F4: `coarseLE/fineLE/stageLE/coarsers` は同じ命題と証明のtheoremに変更。
+  元の使用premiseをincludeして量化を維持する。
+- 非中心F5: `evaluationOfValues_eval/valueSum_eq_sum`、
+  `blockIso_hom/iso_hom_apply`、`coarseReconstructionIso_hom/fineReconstructionIso_hom`、
+  `h1_subsingleton_of_C1` の基本APIを補い、下流5箇所を公開APIへ接続する。
+
+新規接続のmaterial premiseはW2原始Law/adequacyと原始支持のみであり、
+ラベル同値・fiber・非bottom・多重度・別添字・実比較squareはすべて放電する出力である。
+補助零H¹ APIのC1零性は一般direction-hypothesis、W2適用では原始edge空から生成する。
+本筋修正のため、直接対応ではなくfresh4本の正式再実行で検査する。
+
+### Cycle 5 修正headの検証とresult proposal
+
+rootは `research/lean` から以下の必要な7 targetを同じsourceで検証した。
+
+```text
+lake build ResearchLean.AG.AtlasDefectComposition.WitnessTwoLawMultiplicity ResearchLean.AG.AtlasDefectComposition.LawSignatureComparison ResearchLean.AG.AtlasDefectComposition.SupportDefectValue ResearchLean.AG.AtlasDefectComposition.ThreeStageSignatures ResearchLean.AG.AtlasDefectComposition.SupportNonbottomRealization ResearchLean.AG.AtlasDefectComposition.WitnessOneSignatureMultiplicity ResearchLean.AG.AtlasDefectComposition.SignatureQuotient
+```
+
+exit 0、3876 jobs。修正headの全44ファイル・579宣言を単一scratchの
+`#print axioms` で全件照合し、標準 `propext/Classical.choice/Quot.sound` のみ。
+公理ログ SHA-256: `0fe89b43641db23aa5130a92cde80c10c5df7303226711288b758be21aee369d`。
+placeholderはLean source 0件、reportの検査項目名2件のみ。hidden/BiDi 0、
+privacyは公開PR/Issue参照10件のみ、Formal→Research import 0、diff check clean、
+新規禁止語彙0。scan出力 SHA-256: `02481d7b2696935f1758dd6989f784a0c1267e7a18d4873bab168fbf1e22cecd`。
+
+元のCycle 5 selection・終了条件をすべて維持する。Eの全構成とW2の原始Law三成分、
+W1の多重度2まで同じ入力から接続した結果を `proof-obligation-discharged` として提案する。
+M5の未放電material premiseはない。正式再実行1のfresh4本レビューとroot acceptanceは未実施。
+completion candidate: no。次obligationはFと全GOALの独立完了監査である。
