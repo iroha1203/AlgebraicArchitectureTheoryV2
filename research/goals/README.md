@@ -15,14 +15,14 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
+- [G-133-aat-atlas-defect-composition](G-133-aat-atlas-defect-composition.md)
+  (生成比較の合成、欠損の相殺・写像錐・Law分解、台署名の商と普遍性、有限多段比較)
 - [G-132-aat-visible-cycle-reflection](G-132-aat-visible-cycle-reflection.md)
   (可視閉路による既存修復障害の零性反映、整数補正と実貼り合わせ、有限判定と失敗入力)
 - [G-sft-conway-01](G-sft-conway-01.md)
 
 ## draft（人間の確認待ち）
 
-- [G-133-aat-atlas-defect-composition](G-133-aat-atlas-defect-composition.md)
-  (生成比較の合成、欠損の相殺・写像錐・Law分解、台署名の商と普遍性、有限多段比較)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
