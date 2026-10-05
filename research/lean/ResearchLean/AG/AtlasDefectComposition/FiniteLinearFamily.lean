@@ -15,6 +15,7 @@ variable (f : ∀ j, A j →ₗ[ℚ] B j)
 /-- 各成分の実写像から作る族写像。 -/
 def map : ((j : J) → A j) →ₗ[ℚ] ((j : J) → B j) :=
   LinearMap.pi fun j => (f j).comp (LinearMap.proj j)
+/-- Dの族写像mapのAPI補題。同じ添字の実写像へ評価を正規化する。 -/
 @[simp] theorem map_apply (x : (j : J) → A j) (j : J) : map f x j = f j (x j) := rfl
 /-- 族写像の核を各実核の族へ同定する。 -/
 def kernelEquiv : LinearMap.ker (map f) ≃ₗ[ℚ] ((j : J) → LinearMap.ker (f j)) where
@@ -24,6 +25,7 @@ def kernelEquiv : LinearMap.ker (map f) ≃ₗ[ℚ] ((j : J) → LinearMap.ker (
   right_inv _ := rfl
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
+/-- Dの実核族同型kernelEquivのAPI補題。核の元の同じ成分値を保持する。 -/
 @[simp] theorem kernelEquiv_val (x : LinearMap.ker (map f)) (j : J) :
     (kernelEquiv f x j).val = x.val j := rfl
 /-- 像の族等号は、成分ごとの実前像を同時に選ぶことで成立する。 -/
@@ -53,6 +55,7 @@ def rangeEquiv : LinearMap.range (map f) ≃ₗ[ℚ] ((j : J) → LinearMap.rang
   right_inv _ := rfl
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
+/-- Dの実像族同型rangeEquivのAPI補題。像の元の同じ成分値を保持する。 -/
 @[simp] theorem rangeEquiv_val (x : LinearMap.range (map f)) (j : J) :
     (rangeEquiv f x j).val = x.val j := rfl
 variable [Fintype J]

@@ -11,6 +11,7 @@ open CategoryTheory CategoryTheory.Limits HomologicalComplex CochainComplex
 namespace AAT.AG.AtlasDefectComposition
 open CanonicalResolution ResolutionInvariance TwoPhase
 universe u
+/-- Dの実Law錐の圏論的直和を支える局所instance。既存の有限積から有限biproductを得る。 -/
 local instance lawConeFiniteBiproducts : HasFiniteBiproducts (CochainComplex (ModuleCat.{u} ℚ) ℤ) :=
   HasFiniteBiproducts.of_hasFiniteProducts
 variable {Source : Type u} [Fintype Source]

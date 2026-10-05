@@ -1474,7 +1474,7 @@ result:
   lean_artifacts: [上記32file316宣言spine]
   evidence: [実Law比較可換同型, 同じ粗fiber逆像の錐直和同型, 指定射component則, W1/W3実全Law評価]
   claim_mapping:
-    theorem_names: [lawSubsetConeDirectSumIso, lawH1Defect_subset_sum, LawFiberSixTermDecomposition.cancellation_rank_sum, coneCokernelInclusion_component, coneKernelProjection_component]
+    theorem_names: [lawSubsetConeDirectSumIso, lawH1Defect_subset_sum, LawFiberSixTermDecomposition.cancellation_rank_sum, lawConeCokernelInclusion_component, lawConeKernelProjection_component]
     source_labels: [GOAL D, GOAL C全Law対象, 設計W1/W3全Law値]
     conjuncts: [上記条項対応表]
     undischarged_assumptions: []

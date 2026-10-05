@@ -20,6 +20,7 @@ def evaluationEquiv (A : J → Type w) [∀ j, AddCommGroup (A j)] [∀ j, Modul
     exact h,by
     intro x
     exact ⟨fun i => (Subsingleton.elim j i) ▸ x,rfl⟩⟩
+/-- W3の唯一成分同定を支えるevaluationEquivのAPI補題。同じ添字での実評価へ正規化する。 -/
 @[simp] theorem evaluationEquiv_apply (A : J → Type w) [∀ j, AddCommGroup (A j)]
     [∀ j, Module ℚ (A j)] (j : J) (x : (i : J) → A i) :
     evaluationEquiv A j x = x j := rfl
