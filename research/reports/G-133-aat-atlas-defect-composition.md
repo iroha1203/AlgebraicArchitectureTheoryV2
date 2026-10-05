@@ -51,7 +51,7 @@ selection:
 
 ## 全targetのproof obligation
 
-M1のLean構成は以下に対応させる。独立査読による受理は未確定。B・C・D・E・F、W1の類・非零相殺と錐、W2・W3は未証明。
+M1のLean構成は以下に対応させる。Cycle 1/M1はPR #5263で独立査読・root受理・CI成功後にmerge済み。Cycle 2/M2は実相殺・欠損とW1の指定類について検証済み、独立査読前である。C・D・E・F、W1の錐、W2・W3は未証明。
 全体の completion candidate ではない。Formal移植とArchSig実装対応は未実施。
 Research全体buildとローカルFormal全体buildは実行しない。
 
@@ -297,3 +297,334 @@ audits:
 - Research全体build、ローカルFormal全体build、B–F・W1の非零相殺・W2・W3の検証は未実施。
 
 公理ログSHA-256: `7bcb4fc6470d3842d8b32173d4d7cc4fe70032dbede95927590a2319e1027caf`。
+
+## Cycle 1 受理記録
+
+PR #5263、固定head `5e6a391bdc0429ec8cc1f7f2228de1efa6756395`、merge
+`0eaff60bc58c5b47a06500fcf082161975944483`。数学2・Lean2の独立査読はすべて
+`No major findings`、rootの標準review-pr統合とacceptance-contractも合格。
+監査: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5263#issuecomment-5998154046
+CI全passとIssue同期: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5261#issuecomment-5998192267
+受理resultはM1の `proof-obligation-discharged`。全GOALの最終監査は未実施。
+
+## Cycle 2 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-133-aat-atlas-defect-composition
+cycle: 2
+goal_blob_sha: 8904a7d3bf428e0307499a40be4db1ba9091c51a
+base_oid: 0eaff60bc58c5b47a06500fcf082161975944483
+tracking_issue: 5261
+report_path: research/reports/G-133-aat-atlas-defect-composition.md
+selection:
+  proof_state_ref: 'Issue #5261 / accepted cycle 1 M1; report Cycle 1受理記録'
+  proof_dag_predecessors:
+    - 'M1 / PR #5263, fixed head 5e6a391bdc0429ec8cc1f7f2228de1efa6756395'
+    - 'G-107 DefectSemantics / PR #3994; reuse-map'
+    - 'G-132 face-empty graph H¹ API / PR #5259; reuse-map（参照候補、今回のproof-useなし）'
+  milestone: 'M2 / B・W1: 実H¹の相殺と欠損'
+  proof_obligations:
+    - 六項列の全線形射、標準完全性、相殺像の内部商同定
+    - 自然数による二欠損公式、恒等・合成・共通入力の2-out-of-3
+    - 実生成H¹と代表cocycleによる後段消滅・前段像の意味
+    - W1のperiod商同型、実生成二射の包含・射影作用
+    - W1の指定非零類、相殺rankと各ラベル・Law全体のH¹次元・欠損
+  exit_criteria:
+    - Bの構成・全完全性と二欠損公式を同じ実比較へ接続
+    - 同じW1原始入力からperiodと非零相殺証人を生成して指定値を証明
+    - Law全体の値と二ラベルの重複度を保持
+    - focused/targeted check・全対象宣言axiom・共通scan
+  selection_reason: 同じ三比較のM1結果から未完の相殺と欠損へ直接進む
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AtlasDefectComposition/DefectSequence.lean
+    - ResearchLean/AG/AtlasDefectComposition/GeneratedDefect.lean
+    - ResearchLean/AG/AtlasDefectComposition/WitnessOnePeriods.lean
+  risks:
+    - 一般線形代数だけでM2を終了しない
+    - 六項完全性やrankを入力certificateとして受け取らない
+    - 原始生成H¹を抽象行列例へ差し替えない
+    - 共通Aの量化と全q1部分集合の一様不変性を混同しない
+  unchecked:
+    - M2の全選定義務は実装・監査中
+    - C–F/W残部とGOAL全体の最終監査は未完
+```
+
+## Cycle 2 の宣言対応
+
+Bの一般六項完全列・二つの自然数欠損公式を、同じLaw族・共通Aのcanonical逆像族の
+実H¹比較へ接続した。subset等号transportは実H¹の二欠損を保存するので、欠損公式と
+2-out-of-3は移送前の直接生成Homのliteral `blockDefect` に対して述べる。
+G-107 `aSubnerveDefect` はこの同じH¹写像の `blockDefect` である。
+零射を含む六項列の両端も、零部分空間を零対象とする `Function.Exact` で確認した。
+
+| file | 条項／使用先 | 生成と証拠 |
+| --- | --- | --- |
+| DefectSequence | B | 包含・核への前段写像・χ・二商射を入力f,gから構成。全完全性、両端、相殺像の内部商、二次元公式 |
+| GeneratedDefect | B | 実H¹商の代表元判定、全Law・共通Aの実六項列と直接欠損公式、零欠損の恒等・合成・全方向2-out-of-3 |
+| FullSupportBlocks | W1/M2 | 実発生ラベルfiberと名付きセルの両逆、実block微分と端点差分 |
+| FullSupportGraph | W1/M2 | 指定空face型の全cycle座標、実degree-zero像の両方向同定、既存H¹の名付き辺商同型 |
+| FullSupportPullback | W1/M2 | 既存部分block座標射のsome/none両分岐を名付き辺へ移す |
+| WitnessOnePeriods | W1/M2 | 指定セル微分の像＝period核、period全射、既存実H¹商のperiod同型と次元1,2,1 |
+| WitnessOneComparison | W1/M2 | 原始射の実生成引き戻し→既存H¹→包含・射影・直接period保持 |
+| WitnessOneCancellation | W1/M2 | 実欠損(0,1),(1,0),(0,0)、指定辺34の実cocycle/class・後段消滅・χ非零・rank1、実余核＝ℚ²/(ℚ×0)と(0,1)類 |
+| LawH1Family | B/W1/M2 | G-104の既存直和同定と生成写像の自然性の全ラベル成分API |
+| WitnessOneFullLaw | W1/M2 | 二実ラベルの保持、全Law実H¹次元2,4,2、生成包含・射影、欠損(0,2),(2,0),(0,0)、χrank2 |
+
+### Material premise / provenance / proof-use
+
+| 行 | 分類 | 出所・放電・使用経路 |
+| --- | --- | --- |
+| K線形f,gと有限次元U,V,W | 一般補題の入力 | 各線形写像の核・像・literal商から射を生成。欠損公式で標準rank-nullityを使用。完全性は有限性を必要としない |
+| 実H¹二射・有限次元 | T0と既存構成から放電 | 原始M、Law・adequacy、subset逆像→既存生成Hom→既存h1Map。有限性はThreeCochainComplexの既存instance |
+| gf＝直接H¹ | 放電済み | M1のgeneratedComparisonH1Map_comp、aSubnerveComparisonHom_h1Map_comp。subset移送の欠損保存をcases equalityで確認 |
+| 六項完全性・χrank・内部商 | 放電済み | DefectSequenceの代表元証明と標準Function.Exact、quotKerEquivRange。certificate fieldとして受け取らない |
+| 相殺の代表元の意味 | 放電済み | h1Map_mk、商の零/等号・mkQ全射から実primitiveと粗cocycleの存在へ両方向。入力zは実ker d1 |
+| 全台 | 一般補助APIでは方向仮定、W1では放電済み | M1の全chart/K1 edge支持定理を渡す。一般Bへ追加しない |
+| face空型 | W1の固定入力 | Empty.faceから全edge cochainが実cycle。一般Bの量化を縮めない |
+| period核＝実微分像・period全射 | 放電済み | triangle/twoTrianglesの実incidenceから差分を生成。明示primitiveと辺12/34のcochainを構成して両方向と全射を証明 |
+| H¹空間と比較の行列表示 | 出力として放電 | 元のLaw block座標・実微分・実部分pullback・商を通したperiod同型と評価。行列を原始入力に加えない |
+| 指定辺34の非零χ | 放電済み | middleCycle→既存middleClass→middle_killed→middleKernel。χ零なら前段像に入り、第二periodが0＝1となる矛盾 |
+| 二発生ラベルと全Law値 | 放電済み | M1 label/source証人・labels_exhaust→labelEquivBool、既存G-104直和・生成比較自然性→全ラベルperiod族。各成分を保持 |
+| C–F、W1の錐・追加項、W2/W3 | 未完義務 | M3–M6に保持。今回のcompletion candidateはno |
+
+新しいcertificate構造やProp述語は追加していない。完全性・rank・primitive・H¹同型を
+入力fieldへ移さず、入力二射から構成する。一般補助APIのfull supportとface空性はW1だけに
+使う。相殺rank1/2は同じ実比較のkernel formulaへ実欠損を代入して導き、非零類は
+指定cochainから別途固定している。一般線形代数だけでM2を閉じていない。
+
+G-132のface-emptyな可視graph APIも再利用候補として読んだ。今回の全台W1では、M1の
+セル×発生ラベル同定をそのfiberへ制限し、G-104の既存block微分・実H¹商に直接接続する
+経路を採用した。G-132の整数修復・ReflectionConditionや実貼り合わせを仮定せず、
+G-132の定理を今回の新規相殺成果として数えていない。これはproof method/API選択であり、
+固定target・指定入力・終了条件を変更していない。
+
+### Cycle 2 spine declaration list
+
+受理spineは以下の116の明示宣言。各module末尾の標準公理監査は、同moduleで生成される
+simp用補助宣言を含む全非internal宣言と、それらの依存を検査する。cycle scaffoldは残さない。
+
+`DefectSequence.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.DefectSequence.first
+AAT.AG.AtlasDefectComposition.DefectSequence.second
+AAT.AG.AtlasDefectComposition.DefectSequence.cancellation
+AAT.AG.AtlasDefectComposition.DefectSequence.fourth
+AAT.AG.AtlasDefectComposition.DefectSequence.fifth
+AAT.AG.AtlasDefectComposition.DefectSequence.first_injective
+AAT.AG.AtlasDefectComposition.DefectSequence.exact_first_second
+AAT.AG.AtlasDefectComposition.DefectSequence.exact_second_cancellation
+AAT.AG.AtlasDefectComposition.DefectSequence.exact_cancellation_fourth
+AAT.AG.AtlasDefectComposition.DefectSequence.exact_fourth_fifth
+AAT.AG.AtlasDefectComposition.DefectSequence.fifth_surjective
+AAT.AG.AtlasDefectComposition.DefectSequence.exact_zero_first
+AAT.AG.AtlasDefectComposition.DefectSequence.exact_fifth_zero
+AAT.AG.AtlasDefectComposition.DefectSequence.sixTerm_exact
+AAT.AG.AtlasDefectComposition.DefectSequence.cancellation_ker
+AAT.AG.AtlasDefectComposition.DefectSequence.cancellationQuotientEquiv
+AAT.AG.AtlasDefectComposition.DefectSequence.kernel_dimension
+AAT.AG.AtlasDefectComposition.DefectSequence.cokernel_dimension
+```
+
+`FullSupportBlocks.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.fullBlockCoordinateEquiv
+AAT.AG.AtlasDefectComposition.fullBlockCoordinateEquiv_symm_cell
+AAT.AG.AtlasDefectComposition.fullBlockCochainEquiv
+AAT.AG.AtlasDefectComposition.fullBlockCochainEquiv_apply
+AAT.AG.AtlasDefectComposition.fullBlock_d0
+```
+
+`FullSupportGraph.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.graphDifference
+AAT.AG.AtlasDefectComposition.fullBlockGraphCyclesEquiv
+AAT.AG.AtlasDefectComposition.fullBlockGraph_image
+AAT.AG.AtlasDefectComposition.fullBlockGraphH1Equiv
+AAT.AG.AtlasDefectComposition.fullBlockGraphH1Equiv_mk
+```
+
+`FullSupportPullback.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.fullBlock_pullback1_some
+AAT.AG.AtlasDefectComposition.fullBlock_pullback1_none
+```
+
+`GeneratedDefect.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.h1Map_mk_eq_zero_iff
+AAT.AG.AtlasDefectComposition.h1_mk_mem_range_iff
+AAT.AG.AtlasDefectComposition.cancellation_mk_eq_zero_iff
+AAT.AG.AtlasDefectComposition.zeroDefect_comp
+AAT.AG.AtlasDefectComposition.zeroDefect_second
+AAT.AG.AtlasDefectComposition.zeroDefect_first
+AAT.AG.AtlasDefectComposition.zeroDefect_id
+AAT.AG.AtlasDefectComposition.generated_sixTerm_exact
+AAT.AG.AtlasDefectComposition.generated_kernel_dimension
+AAT.AG.AtlasDefectComposition.generated_cokernel_dimension
+AAT.AG.AtlasDefectComposition.generated_zeroDefect_twoOfThree
+AAT.AG.AtlasDefectComposition.transportHom_defect
+AAT.AG.AtlasDefectComposition.aSubnerve_sixTerm_exact
+AAT.AG.AtlasDefectComposition.aSubnerve_kernel_dimension
+AAT.AG.AtlasDefectComposition.aSubnerve_cokernel_dimension
+AAT.AG.AtlasDefectComposition.aSubnerve_zeroDefect_twoOfThree
+```
+
+`LawH1Family.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.lawH1FamilyEquiv
+AAT.AG.AtlasDefectComposition.lawH1FamilyMap_component
+```
+
+`WitnessOneCancellation.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessOne.forward
+AAT.AG.AtlasDefectComposition.WitnessOne.backward
+AAT.AG.AtlasDefectComposition.WitnessOne.direct
+AAT.AG.AtlasDefectComposition.WitnessOne.forward_injective
+AAT.AG.AtlasDefectComposition.WitnessOne.backward_surjective
+AAT.AG.AtlasDefectComposition.WitnessOne.direct_bijective
+AAT.AG.AtlasDefectComposition.WitnessOne.direct_eq_comp
+AAT.AG.AtlasDefectComposition.WitnessOne.forward_defect
+AAT.AG.AtlasDefectComposition.WitnessOne.backward_defect
+AAT.AG.AtlasDefectComposition.WitnessOne.direct_defect
+AAT.AG.AtlasDefectComposition.WitnessOne.middleCycle
+AAT.AG.AtlasDefectComposition.WitnessOne.middleClass
+AAT.AG.AtlasDefectComposition.WitnessOne.middle_periods
+AAT.AG.AtlasDefectComposition.WitnessOne.middle_killed
+AAT.AG.AtlasDefectComposition.WitnessOne.middleKernel
+AAT.AG.AtlasDefectComposition.WitnessOne.middle_nonzero
+AAT.AG.AtlasDefectComposition.WitnessOne.cancellation_nonzero
+AAT.AG.AtlasDefectComposition.WitnessOne.cancellation_rank
+AAT.AG.AtlasDefectComposition.WitnessOne.forward_range_period
+AAT.AG.AtlasDefectComposition.WitnessOne.forwardCokernelEquiv
+AAT.AG.AtlasDefectComposition.WitnessOne.cancellation_period_quotient
+AAT.AG.AtlasDefectComposition.WitnessOne.middle_cancellation_period
+```
+
+`WitnessOneComparison.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessOne.forward_standard1
+AAT.AG.AtlasDefectComposition.WitnessOne.backward_standard1
+AAT.AG.AtlasDefectComposition.WitnessOne.direct_block_standard1
+AAT.AG.AtlasDefectComposition.WitnessOne.forward_period
+AAT.AG.AtlasDefectComposition.WitnessOne.backward_period
+AAT.AG.AtlasDefectComposition.WitnessOne.direct_block_period
+```
+
+`WitnessOneFullLaw.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessOne.labelEquivBool
+AAT.AG.AtlasDefectComposition.WitnessOne.label_card
+AAT.AG.AtlasDefectComposition.WitnessOne.fullPeriod₀
+AAT.AG.AtlasDefectComposition.WitnessOne.fullPeriods₁
+AAT.AG.AtlasDefectComposition.WitnessOne.fullPeriod₂
+AAT.AG.AtlasDefectComposition.WitnessOne.fullForward
+AAT.AG.AtlasDefectComposition.WitnessOne.fullBackward
+AAT.AG.AtlasDefectComposition.WitnessOne.fullDirect
+AAT.AG.AtlasDefectComposition.WitnessOne.full_forward_periods
+AAT.AG.AtlasDefectComposition.WitnessOne.full_backward_periods
+AAT.AG.AtlasDefectComposition.WitnessOne.full_direct_period
+AAT.AG.AtlasDefectComposition.WitnessOne.full_h1_dimension₀
+AAT.AG.AtlasDefectComposition.WitnessOne.full_h1_dimension₁
+AAT.AG.AtlasDefectComposition.WitnessOne.full_h1_dimension₂
+AAT.AG.AtlasDefectComposition.WitnessOne.full_forward_injective
+AAT.AG.AtlasDefectComposition.WitnessOne.full_backward_surjective
+AAT.AG.AtlasDefectComposition.WitnessOne.full_direct_bijective
+AAT.AG.AtlasDefectComposition.WitnessOne.full_forward_defect
+AAT.AG.AtlasDefectComposition.WitnessOne.full_backward_defect
+AAT.AG.AtlasDefectComposition.WitnessOne.full_direct_defect
+AAT.AG.AtlasDefectComposition.WitnessOne.full_cancellation_rank
+```
+
+`WitnessOnePeriods.lean`:
+
+```text
+AAT.AG.AtlasDefectComposition.WitnessOne.trianglePeriod
+AAT.AG.AtlasDefectComposition.WitnessOne.twoTrianglePeriods
+AAT.AG.AtlasDefectComposition.WitnessOne.trianglePeriod_kernel
+AAT.AG.AtlasDefectComposition.WitnessOne.twoTrianglePeriods_kernel
+AAT.AG.AtlasDefectComposition.WitnessOne.trianglePeriod_surjective
+AAT.AG.AtlasDefectComposition.WitnessOne.twoTrianglePeriods_surjective
+AAT.AG.AtlasDefectComposition.WitnessOne.triangleQuotientPeriod
+AAT.AG.AtlasDefectComposition.WitnessOne.twoTriangleQuotientPeriods
+AAT.AG.AtlasDefectComposition.WitnessOne.triangleQuotientPeriod_mk
+AAT.AG.AtlasDefectComposition.WitnessOne.twoTriangleQuotientPeriods_mk
+AAT.AG.AtlasDefectComposition.WitnessOne.h1Period₀
+AAT.AG.AtlasDefectComposition.WitnessOne.h1Periods₁
+AAT.AG.AtlasDefectComposition.WitnessOne.h1Period₂
+AAT.AG.AtlasDefectComposition.WitnessOne.h1Period₀_mk
+AAT.AG.AtlasDefectComposition.WitnessOne.h1Periods₁_mk
+AAT.AG.AtlasDefectComposition.WitnessOne.h1Period₂_mk
+AAT.AG.AtlasDefectComposition.WitnessOne.h1_dimension₀
+AAT.AG.AtlasDefectComposition.WitnessOne.h1_dimension₁
+AAT.AG.AtlasDefectComposition.WitnessOne.h1_dimension₂
+```
+
+## Cycle 2 result（独立査読前のproposal）
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Bの全六項射・完全性・χ内部商・二公式・実代表元の意味・共通入力2-out-of-3とW1指定類/実欠損/全Law値を閉じた
+  exit_criteria_status:
+    - 一般線形構成を実生成H¹二射へ適用しM1の直接比較等号へ接続
+    - 同じW1の指定Source/Law/台/セル/二射からperiod同型と辺34の非零相殺証人を生成
+    - 各ラベルrank1と全Law rank2・指定H¹次元と欠損を確認
+    - 対象fileのfocused/targeted検証と全明示宣言の公理監査・共通scanを実施
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [Cycle 2 spine declaration listの116宣言]
+  evidence: [DefectSequence/GeneratedDefect/WitnessOnePeriods/WitnessOneComparison/WitnessOneCancellation/WitnessOneFullLaw]
+  claim_mapping:
+    theorem_names: [上のspineと条項対応]
+    source_labels: [B, W1/M2, T0]
+    conjuncts: [上のfile表とmaterial premise表]
+    undischarged_assumptions: [C–F/W1の錐と追加項/W2/W3は今回の到達点外で未完]
+    acceptance_point: M2の全終了条件を同じ原始入力と実生成比較で満たしたproposal
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [六項列/χ商/二公式/代表元/2-out-of-3/W1period・非零類・rank・欠損/全Law]
+    remaining: [M3–M6と全GOAL完了監査]
+  certificate_provenance:
+    discharged: [全写像と同型と指定類が入力二射・既存Law座標・実微分から生成]
+    unresolved: []
+  proof_use:
+    used: [固定入力/既存H¹商/部分射/全台/空face/二実ラベル/G-104分解/G-107欠損]
+    unused: [G-132graphAPIは読取参照候補のみ、material premiseとして追加していない]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [Cycle 2検証記録]
+  blocking_findings: [独立PR査読は未実施]
+  next_obligation: M3の標準零延長/既存H¹/全次数錐/W3とW1錐の追加項
+```
+
+### Cycle 2 検証記録
+
+新規10fileの各実装段階でfocused checkを行い、必要な依存だけrootがtargeted buildした。
+最終 `lake build ResearchLean.AG.AtlasDefectComposition.WitnessOneFullLaw` は対象新規10moduleと
+その必要依存のcheckとして成功した。Research全体build・aggregate elaboration・local Formal
+全体buildは実行していない。対象module末尾監査は標準公理のみ。
+
+`.tmp/g133-cycle2-axioms.lean` は上の116明示宣言へ `#print axioms` を実行する。
+公理はpropext・Classical.choice・Quot.soundのみ。対象source/report/manifestのplaceholder、
+hidden/BiDi、privacy、語彙scanとFormal→Research import scan、git diff --checkはclean。
+恒久設計・GOAL本文・本体Formal・toolingの変更はない。Formal移植とArchSig実装は未実施。
+C–F、W1の錐と追加項、W2/W3、全GOAL最終監査は未完。
+
+Cycle 2公理ログSHA-256: `2d61caf7c17fb752ffb66f01c19c27006a4d5c99a0ee5200283743220b88675a`。116宣言のsource/scratch/log集合を突合し、欠落・余剰なし。
