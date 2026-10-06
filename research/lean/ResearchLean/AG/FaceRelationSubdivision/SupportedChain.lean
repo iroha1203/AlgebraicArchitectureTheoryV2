@@ -29,6 +29,11 @@ def freeMap {I J : Type u} (f : I → (J →₀ ℚ)) : (I →₀ ℚ) →ₗ[�
 @[simp] theorem freeMap_single {I J : Type u} (f : I → (J →₀ ℚ)) (i : I) (a : ℚ) :
     freeMap f (Finsupp.single i a) = a • f i := by simp [freeMap]
 
+/-- 線形延長を原始像の有限和として評価する定義所有API。 -/
+theorem freeMap_apply {I J : Type u} (f : I → (J →₀ ℚ)) (x : I →₀ ℚ) :
+    freeMap f x = x.sum (fun i a => a • f i) :=
+  rfl
+
 /-- 自由chainの線形双対と同じセル上の関数の標準同定。 -/
 def freeDualEquiv (I : Type u) : (I → ℚ) ≃ₗ[ℚ] ((I →₀ ℚ) →ₗ[ℚ] ℚ) :=
   Finsupp.llift ℚ ℚ ℚ I
@@ -126,6 +131,14 @@ theorem chainD1_comp_chainD2 (N : TargetSupportedNerve q) (A : Set q.Target) :
 /-- 診断係数ℚでの部分セル基底像。 -/
 def rationalOptionCell {I : Type u} (a : Option I) : I →₀ ℚ :=
   a.elim 0 (fun i => Finsupp.single i 1)
+
+/-- 退化セルの原始有理像は零。 -/
+@[simp] theorem rationalOptionCell_none {I : Type u} :
+    rationalOptionCell (none : Option I) = 0 := rfl
+
+/-- 写るセルの原始有理像は係数1の基底。 -/
+@[simp] theorem rationalOptionCell_some {I : Type u} (i : I) :
+    rationalOptionCell (some i) = Finsupp.single i 1 := rfl
 
 /-- 部分セル基底像の双対評価は零延長pullbackの式と一致する。 -/
 @[simp] theorem rationalOptionCell_dual {I : Type u} (z : I → ℚ) (a : Option I) :
