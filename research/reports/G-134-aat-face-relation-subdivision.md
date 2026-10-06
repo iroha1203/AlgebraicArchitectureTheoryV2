@@ -45,8 +45,10 @@ selection:
 
 ## 全targetの現proof obligation
 
-P1–P2はPR #5274で受理・マージ済み。P3（全基本変形・逆縮約）、P4（有限合成・実診断・錐）、
-P5（E・W1–W3）は未証明。GOAL T0・A–E・Wと完了条件は変更しない。
+P1–P2はPR #5274で、P3の三角形追加と面付き辺分割はPR #5275で受理・マージ済み。
+P3のreading pullbackとセル名同型はCycle3の受理候補、原始逆patternとliftは未証明。
+P4（有限合成・一般有限和Law・錐/欠損）とP5（E・W1–W3）は未証明。
+GOAL T0・A–E・Wと完了条件は変更しない。
 
 ## Cycle 1：条項と構成の対応
 
@@ -845,3 +847,266 @@ result:
 独立査読とCIの結果・Cycle2受理判定は固定PR headへの監査コメントに記録する。
 GOALはactive、Issue5272はOPENであり、この状態を固定targetの証明判定に代用しない。
 P3の残り、P4–P5、全目標完了監査は未実施である。
+
+## Cycle 2 acceptance / Cycle 3 selection
+
+Cycle2はPR5275 final head `0c85defb6676e97fd6b153e14346d5c27b72cdde` を独立数学2/Lean2査読、
+非中心5項目の直接修正確認、root acceptance、必須CI成功の後に受理した。
+merge `d41fd4ef340d5839694e90142de3dc429372e5d6`。
+査読・受理コメント: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5275#issuecomment-6021665035 。
+Issue同期: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6021720866 。
+resultはproof-checkpointであり、元のP3全終了条件とその未完欄は維持する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-134-aat-face-relation-subdivision
+cycle: 3
+goal_blob_sha: 28cbf1944d708b059cd8c4fd22f07cd8d5e1476c
+base_oid: d41fd4ef340d5839694e90142de3dc429372e5d6
+tracking_issue: 5272
+report_path: research/reports/G-134-aat-face-relation-subdivision.md
+selection:
+  proof_state_ref: Cycle2 accepted proof-checkpoint / Issue comment6021720866
+  proof_dag_predecessors: [P1, P2, Cycle2.SubsetChainContraction, G133.zeroExtension]
+  milestone: GOAL T0/B/Dのreading pullbackと支持セル名同型を実生成比較の標準同値へ接続
+  proof_obligations:
+    - 原始セル名全単射・incidence・chart台逆像から比較を生成
+    - 全射因子を使用してchart非空性、K1辺/面台逆像、全Aで選択セル全単射を生成
+    - 同じ基底名のr/sと零h、両逆・chain式を原始表から生成
+    - 全Aの標準HomotopyEquivと同じ実subset比較の全次数一致・H1読み戻し
+    - 粗adequacyから細adequacy、同じLaw/valueの座標輸送と実Law比較の全次数同値
+  exit_criteria:
+    - 任意reading比較のpullback constructorと同readingの支持名前同型constructorがある
+    - 全Aと全Lawの三次数で逆を構成し、同じ実比較の標準同値/旧H1同型に接続する
+    - Source/LawValue有限性や非空A等の追加仮定なし、入力にchain式や診断同型を持たない
+    - focused checks、全明示宣言axiom audit、共通scan、独立PR review、acceptanceを通す
+  selection_reason: 逆縮約復元の表示同型にも必要な共通依存を閉じ、真のreading変更のW1へ進む
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FaceRelationSubdivision/CellPresentationEquiv.lean, FaceRelationSubdivision/ReadingPullback.lean]
+  risks: [支持選択の逆に因子全射性が必要, 値の等式だけでLaw座標や実射を代替しない]
+  unchecked: [P3逆pattern/lift, P4有限合成/一般Law/cone, P5 E/W, 全目標完了監査]
+```
+
+### Cycle 3 proof DAG / premise mapping
+
+| 固定条項 | 原始入力 → 構成・使用先 | 分類 |
+| --- | --- | --- |
+| T0/B §5：任意reading比較 | `readingPullback` は同じセル表、非空chart台を因子全射から構成。`readingPresentation` が同じ名前とincidenceを放電 | 本文由来reading・非空台、構成放電 |
+| B：セル名・台を保つ表示同型 | `CellRename.nerve/supported/presentation` が任意の名前全単射から端点・三辺・台・有限性を生成 | 本文由来名前全単射、他条件放電 |
+| B：全Aの選択セル | `edgeSupport_eq/faceSupport_eq` はK1。`selected_iff/selectedEquiv` は因子全射と逆像から両方向を生成 | 放電済み |
+| B：r/s/h、chain式と両逆 | `r0/1/2` は選択セルのFinsupp延長、逆は同じ逆セル名、h=0。`r*_eq_generated`、`r_comm*`、`inverse_comm`、`chainContraction` | 放電済み、収縮recordは出力 |
+| D：同じ実subset比較 | `rHom_eq_generated`、`cochainHomotopyEquiv_hom`、`homologyIso_hom`、`oldH1ComparisonIso_hom` | 全三次数・全標準次数・既存H1へ接続 |
+| T0：細adequacy | `fineAdequate` はG-133 `adequate_of_coarser` を使い粗adequacyから生成 | 粗adequacy本文由来、細は放電 |
+| D：実Law座標 | `coordinateEquiv` は同じセル/Law/valueを保持し、発生証明を降下と因子全射から生成。`lawCochain*_eq_generated` は独立生成座標式と照合 | 放電済み、Law値型有限性を追加しない |
+| D：各Law/valueラベル | `blockCoordinateEquiv` は同じ座標全単射を各ラベルへ制限。`blockCochainEquiv_toHom` と `blockZeroExtensionIso_hom` は同じ実生成Hom | 放電済み、別ラベルの重複度保持 |
+| D：新比較クラスのG-133接続 | `LawFiberBridge` は新比較の三次数自然性を既存対象同型へ接続し、実block/fiber Homと標準錐の同じ正方形を証明 | 放電済み、旧比較を入力にしない |
+| B/D：各LawのH0/H1/H2 | `law/block/fiberHomologyIso_hom` は同じ実生成Homの全整数次数同型。`law/blockH1Equiv_apply` と `fiberOldH1Iso_hom` は既存商の実射 | 放電済み |
+
+`CellPresentationEquiv` の入力fieldは、セル名全単射、原始端点・三辺、chart台逆像である。
+chain式・保存結論・診断同型は入力にない。`readingPresentation` と `CellRename.presentation`
+が正instance族を与え、`no_presentation_with_incompatible_chart` が指定dataの台不適合から
+certificate不存在を証明する。一般表示同型の各fieldは支持輸送・選択セル構成・
+原始比較のincidence・生成chain式に使用される。`inverse_comm` の可換式は一般bridgeの
+方向仮定であり、ここでは原始生成比較から放電する。
+
+Cycle3の実装targetsには、当初の二moduleに加え、同じ終了条件の名前constructorを所有する
+`CellRename`、新比較のG-133射接続を所有する `LawFiberBridge`、各Lawラベルの両逆を所有する
+`LawPresentation` を含める。milestoneと終了条件は変更しない。
+P3の原始逆縮約patternとlift選択、P4有限合成・一般有限和Law比較・cone/defect、
+P5 E/W、全目標完了監査は未完として継続する。
+
+### Cycle 3 explicit declaration spine
+
+130明示宣言をsourceから列挙し、全件axiom照会の対象とする。
+
+```text
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeSupport_eq
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceSupport_eq
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison_chart
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison_edge
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison_face
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.subsetMapsTo
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.selected_iff
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.selectedEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.selectedEquiv_val
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartSelected
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeSelected
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceSelected
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartSelected_val
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeSelected_val
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceSelected_val
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r0
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r0_single
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r0_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r1
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r1_single
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r1_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r2
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r2_single
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r2_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r_comm01
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r_comm12
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.inverse_comm
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.cochainHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rHom_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.homologyIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.homologyIso_hom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.oldH1ComparisonIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.oldH1ComparisonIso_hom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r0_symm_single
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_r0
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_s0
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r1_symm_single
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_r1
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_s1
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r2_symm_single
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_r2
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_s2
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_h0
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_h1
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.cochainHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.cochainHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.readingPullback
+AAT.AG.FaceRelationSubdivision.readingPullback_nerve
+AAT.AG.FaceRelationSubdivision.readingPullback_chartSupport
+AAT.AG.FaceRelationSubdivision.readingPresentation
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fineAdequate
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.coordinateEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.coordinateEquiv_cell
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.coordinateEquiv_law
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartCoordinateEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeCoordinateEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceCoordinateEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartCoordinateEquiv_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeCoordinateEquiv_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceCoordinateEquiv_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain0
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain0_apply
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain0_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain1
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain1_apply
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain1_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain2
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain2_apply
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain2_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochainEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochainEquiv_toHom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawZeroExtensionIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawZeroExtensionIso_hom
+AAT.AG.FaceRelationSubdivision.CellRename.nerve
+AAT.AG.FaceRelationSubdivision.CellRename.supported
+AAT.AG.FaceRelationSubdivision.CellRename.chartSupport
+AAT.AG.FaceRelationSubdivision.CellRename.edgeLeft
+AAT.AG.FaceRelationSubdivision.CellRename.edgeRight
+AAT.AG.FaceRelationSubdivision.CellRename.faceEdge0
+AAT.AG.FaceRelationSubdivision.CellRename.faceEdge1
+AAT.AG.FaceRelationSubdivision.CellRename.faceEdge2
+AAT.AG.FaceRelationSubdivision.CellRename.presentation
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.no_presentation_with_incompatible_chart
+AAT.AG.FaceRelationSubdivision.lawBlockFiber_comparison_square
+AAT.AG.FaceRelationSubdivision.lawBlockFiberZeroExtensionIso_natural
+AAT.AG.FaceRelationSubdivision.lawBlockFiberConeIso
+AAT.AG.FaceRelationSubdivision.lawFiberComparison_canonical
+AAT.AG.FaceRelationSubdivision.subsetComparisonZeroExtension_square
+AAT.AG.FaceRelationSubdivision.lawBlockSelectedSubsetZeroExtensionIso
+AAT.AG.FaceRelationSubdivision.lawBlockSelectedSubsetZeroExtensionIso_natural
+AAT.AG.FaceRelationSubdivision.lawBlockSelectedSubsetConeIso
+AAT.AG.FaceRelationSubdivision.lawBlockCanonicalConeIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.coordinateEquiv_label
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCoordinateEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartBlockEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartBlockEquiv_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain0
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain0_apply
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain0_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeBlockEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeBlockEquiv_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain1
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain1_apply
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain1_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceBlockEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceBlockEquiv_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain2
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain2_apply
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain2_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochainEquiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochainEquiv_toHom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockZeroExtensionIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockZeroExtensionIso_hom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawH1Equiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawH1Equiv_apply
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawHomologyIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockH1Equiv
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockH1Equiv_apply
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockHomologyIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberZeroExtensionIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberZeroExtensionIso_hom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberHomologyIso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberOldH1Iso
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberOldH1Iso_hom
+```
+
+新規source SHA-256:
+
+- `CellPresentationEquiv.lean`: `480e04916a2569a319e37a2831c4f32bf655567e3dd21975bc735d1ca2e26c91`
+- `ReadingPullback.lean`: `4758f84b4d9ca13b8ca22939a496760d92c1a8c7383a17fd40d1e2cdb7a58848`
+- `CellRename.lean`: `c1be3c0792cdbb9cf738fb1daf088c90cc2d9ec6ba642e5376f67119be03e384`
+- `LawFiberBridge.lean`: `fd7adac7c9aba8ce26f1fbc95301d99ee84c368538b5a2fc09c24c7dba4044e6`
+- `LawPresentation.lean`: `655feff1d39a16b7bf1e52e7e087600414f36853f3cfe9e713159bc03664875f`
+
+### Cycle 3 validation / result proposal
+
+5新規moduleをそれぞれ単一file checkで検証し、公式focused経路でも
+`LawPresentation.lean` と `CellRename.lean` を確認した。全module末尾の標準公理検査は成功。
+130明示宣言の全 `#print axioms` 照会はsource/spine/query/log間で欠落・余剰・重複がなく、
+propext/Classical.choice/Quot.soundだけである。axiom照会ログSHA-256:
+`732bda1c2e11fcf0305bafa57a0f6804a6de21ffa8f32e69f5686d2a8ec3b0f4`。
+placeholder、hidden/BiDi、privacy、本体→Research import、diff whitespaceのscanはclean。
+manifestは新規5行をmodule/sourceのTSVで登録し、Research全体buildとaggregate rootは実施していない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - 任意reading逆像変更と任意セル名取り直しを原始表から生成
+    - 全Aの支持セル全単射、r/sと零h、chain式、両逆を生成
+    - 全三次数の同じ実subset比較と標準HomotopyEquiv/全homology/旧H1商同型を照合
+    - 粗adequacyから細adequacy、Law座標の同じcell/law/value全単射、各ラベル全単射を生成
+    - 同じ実Law/block/fiber Homの全標準次数同型、実H1商の読み戻しを構成
+    - 新比較クラス用のblock/fiber/標準錐正方形とcanonical逆像への射接続を証明
+  exit_criteria_status:
+    - 数学的構成・接続の全条件達成、追加仮定なし
+    - focused/axiom/共通scan達成
+    - 独立PR review/acceptance/CIは固定PR headに対する監査で判定する
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts:
+    - FaceRelationSubdivision/{CellPresentationEquiv,ReadingPullback,CellRename,LawFiberBridge,LawPresentation}.lean
+  claim_mapping:
+    source_labels: [GOAL T0/B/D, elementary-moves §5, GOAL Bの支持セル表示同型]
+    undischarged_assumptions: []
+    acceptance_point: reading pullbackと支持セル名同型という選定した到達点、固定GOAL全体は未完
+    port_status: unported
+  audits:
+    structure_field_escape: none-found
+    route_integrity: pass
+    vacuity: none-found
+    one_way_as_equivalence: none-found
+    next_obligation: P3原始逆patternとlift、P4一般有限和Law/有限合成/cone/defect、P5 E/W
+```
+
+### Cycle 3 非中心指摘への対応
+
+[初回独立査読](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5276#issuecomment-6022191250) は数学2本が `No major findings`、Lean 2本が
+`Minor issues`。中心指摘は0、重複統合した非中心指摘は、Propの証明である
+`subsetMapsTo` と `fineAdequate` の2宣言を `theorem` とする1件であった。
+名前・型・引数・証明本体を保って変更した。`fineAdequate` では元のdefが証明本体から
+取り込んでいた `h` と `hc` を `include` で明示した。新しい仮定・宣言は追加していない。
+修正した2moduleと依存する `LawPresentation` / `CellRename` の単一file check、
+全130宣言の公理照会を再実施した。直接対応の資格と解消は固定修正headの新規独立確認で判定する。
