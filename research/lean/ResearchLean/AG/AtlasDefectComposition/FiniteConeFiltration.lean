@@ -40,6 +40,10 @@ instance embedding_mono (n : ℕ) (i : Fin (n+1)) : Mono (embedding C n i) :=
   modelDiagram_map_mono C _
 /-- terminal model の全有限段の実部分複体。 -/
 def filtration (n : ℕ) (i : Fin (n+1)) : Subobject (model C n) := Subobject.mk (embedding C n i)
+/-- 実filtrationの終段への射は指定underlying同型と実モデル埋め込みである。 -/
+theorem filtration_arrow (n : ℕ) (i : Fin (n+1)) :
+    (filtration C n i).arrow = (Subobject.underlyingIso (embedding C n i)).hom ≫ embedding C n i :=
+  (Subobject.underlyingIso_hom_comp_eq_mk (embedding C n i)).symm
 /-- 実部分複体は有限段順序に沿って包含する。 -/
 theorem filtration_monotone (n : ℕ) : Monotone (filtration C n) := by
   intro i j hij
@@ -81,6 +85,13 @@ def filtrationQuotientEquiv (n : ℕ) (i : Fin n) :
     (Subobject.underlyingIso (embedding C n i.castSucc)).symm
     (Subobject.underlyingIso (embedding C n i.succ)).symm
     (by simp [filtrationInclusion_eq])).symm).trans (successiveQuotientEquiv C i.val)
+/-- 実filtration商の指定同値の公開射の式。underlying同型と実モデル商を保持する。 -/
+theorem filtrationQuotientEquiv_hom (n : ℕ) (i : Fin n) :
+    (filtrationQuotientEquiv C n i).hom =
+      cokernel.map (filtrationInclusion C n i) (inclusion C i.val)
+        (Subobject.underlyingIso (embedding C n i.castSucc)).hom
+        (Subobject.underlyingIso (embedding C n i.succ)).hom
+        (by simp [filtrationInclusion_eq]) ≫ (successiveQuotientEquiv C i.val).hom := rfl
 /-- 有限 reading diagram を最後の段以後で一定にする指定 index functor。 -/
 def clamp (n : ℕ) : ℕ ⥤ Fin (n+1) :=
   (show Monotone (fun k : ℕ => (⟨min k n,by omega⟩ : Fin (n+1))) from

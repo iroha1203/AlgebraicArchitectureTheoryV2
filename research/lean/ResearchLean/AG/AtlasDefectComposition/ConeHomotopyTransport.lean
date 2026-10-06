@@ -38,5 +38,10 @@ def coneMapHomotopyEquiv (f : K ⟶ L) (g : K' ⟶ L')
       mappingCone.map_eq_mapOfHomotopy] using hc
   letI := hm
   exact homotopyEquivOfIsIsoMap (mappingCone.map f g a.hom b.hom comm)
+/-- 指定錐射を保持する homotopy 同値の公開射の式。 -/
+@[simp] theorem coneMapHomotopyEquiv_hom (f : K ⟶ L) (g : K' ⟶ L')
+    (a : HomotopyEquiv K K') (b : HomotopyEquiv L L')
+    (comm : f ≫ b.hom = a.hom ≫ g) :
+    (coneMapHomotopyEquiv f g a b comm).hom = mappingCone.map f g a.hom b.hom comm := rfl
 end AAT.AG.AtlasDefectComposition
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition

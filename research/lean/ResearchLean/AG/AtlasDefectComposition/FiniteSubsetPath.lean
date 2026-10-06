@@ -35,6 +35,15 @@ def subsetPathDiagram (A : Set (P.obj 0).reading.Target) :
       (comparisonComp (P.map f).2 (P.map g).2) A) = _
     rw [SupportStages.pairComparison_comp (pathReadings P) (pathNerves P) (pathCoarser P)
       i j k (P.map f).1 (P.map g).1 (P.map f).2 (P.map g).2 A,zeroExtensionMap_comp]
+/-- 全有限段の対象の公開式。元の名付きセルと canonical 逆像を保持する。 -/
+@[simp] theorem subsetPathDiagram_obj (A : Set (P.obj 0).reading.Target) (i : Fin (n+1)) :
+    (subsetPathDiagram P A).obj i = zeroExtension ((P.obj i).nerve.targetSubsetComplex
+      (comparisonFactor (P.obj 0).reading (P.obj i).reading (pathCoarser P i) ⁻¹' A)) := rfl
+/-- 全有限対射の公開式。元の独立生成部分集合比較を読む。 -/
+@[simp] theorem subsetPathDiagram_map (A : Set (P.obj 0).reading.Target)
+    {i j : Fin (n+1)} (f : i ⟶ j) :
+    (subsetPathDiagram P A).map f = zeroExtensionMap (SupportStages.pairComparison
+      (pathReadings P) (pathNerves P) (pathCoarser P) i j (P.map f).1 (P.map f).2 A) := rfl
 /-- 初段の逆像は同じ基底 subset そのものである。 -/
 theorem path_initial_preimage (A : Set (P.obj 0).reading.Target) :
     comparisonFactor (P.obj 0).reading (P.obj 0).reading (pathCoarser P 0) ⁻¹' A = A := by
@@ -56,5 +65,29 @@ def subsetPathRestriction {A B : Set (P.obj 0).reading.Target}
     have hh := congrArg zeroExtensionMap (SupportStages.pairComparison_square
       (pathReadings P) (pathNerves P) (pathCoarser P) i j (P.map f).1 (P.map f).2 hAB)
     simpa only [zeroExtensionMap_comp] using hh
+/-- 共通台の制限の各成分は同じ原始セル制限の零延長である。 -/
+@[simp] theorem subsetPathRestriction_app {A B : Set (P.obj 0).reading.Target}
+    (hAB : SupportStages.alpha (pathReadings P) (pathNerves P) (pathCoarser P) A ⊆
+      SupportStages.alpha (pathReadings P) (pathNerves P) (pathCoarser P) B) (i : Fin (n+1)) :
+    (subsetPathRestriction P hAB).app i = zeroExtensionMap
+      (SupportStages.stageRestriction (pathReadings P) (pathNerves P) (pathCoarser P) hAB i) := rfl
+/-- 同じ全段台の反射的制限は実図式の恒等射である。 -/
+theorem subsetPathRestriction_id (A : Set (P.obj 0).reading.Target) :
+    subsetPathRestriction P (Set.Subset.refl _) = 𝟙 (subsetPathDiagram P A) := by
+  apply NatTrans.ext
+  funext i
+  rw [subsetPathRestriction_app,SupportStages.stageRestriction_id]
+  exact zeroExtensionMap_id _
+/-- 全段台の推移的制限は元の実図式制限の合成である。 -/
+theorem subsetPathRestriction_comp {A B D : Set (P.obj 0).reading.Target}
+    (hAB : SupportStages.alpha (pathReadings P) (pathNerves P) (pathCoarser P) A ⊆
+      SupportStages.alpha (pathReadings P) (pathNerves P) (pathCoarser P) B)
+    (hBD : SupportStages.alpha (pathReadings P) (pathNerves P) (pathCoarser P) B ⊆
+      SupportStages.alpha (pathReadings P) (pathNerves P) (pathCoarser P) D) :
+    subsetPathRestriction P (hAB.trans hBD) = subsetPathRestriction P hBD ≫ subsetPathRestriction P hAB := by
+  apply NatTrans.ext
+  funext i
+  rw [subsetPathRestriction_app,SupportStages.stageRestriction_comp,zeroExtensionMap_comp]
+  rfl
 end AAT.AG.AtlasDefectComposition
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition

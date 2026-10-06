@@ -92,6 +92,11 @@ theorem shortExact : (shortComplex φ).ShortExact :=
 def cokernelIso : cokernel (inclusion φ) ≅ mappingCone φ :=
   (cokernelIsCokernel (inclusion φ)).coconePointUniqueUpToIso
     (shortExact φ).gIsCokernel
+/-- 実cokernel同型の射は元の指定 cylinder 商射を保持する。 -/
+@[simp] theorem cokernelIso_π_hom :
+    cokernel.π (inclusion φ) ≫ (cokernelIso φ).hom = quotient φ :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (cokernelIsCokernel (inclusion φ))
+    (shortExact φ).gIsCokernel WalkingParallelPair.one
 /-- 全次数の有限次元性は元のsourceとtargetから導く。 -/
 instance degreeFiniteDimensional (m : ℤ) [FiniteDimensional ℚ (K.X m)]
     [FiniteDimensional ℚ (K.X (m+1))] [FiniteDimensional ℚ (L.X m)] :

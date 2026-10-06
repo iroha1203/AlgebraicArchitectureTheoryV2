@@ -63,6 +63,8 @@ def modelNatTrans : modelDiagram C ⟶ modelDiagram D :=
   NatTrans.ofSequence (modelMap τ) (by
     intro i
     simpa only [modelDiagram,Functor.ofSequence_map_homOfLE_succ] using inclusion_natural τ i)
+/-- 実モデル列の自然変換の各成分は構成した同じモデル射である。 -/
+@[simp] theorem modelNatTrans_app (i : ℕ) : (modelNatTrans τ).app i = modelMap τ i := rfl
 /-- 同じ実可換正方形からの商射の自然性。 -/
 theorem quotient_natural (i : ℕ) :
     modelMap τ (i+1) ≫ MappingCylinder.quotient (modelArrow D i) =

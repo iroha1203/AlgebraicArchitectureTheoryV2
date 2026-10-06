@@ -41,6 +41,9 @@ theorem triangle_distinguished (i : ℕ) :
 /-- 反復累積錐は実隣接錐に homotopy 同値である。 -/
 def stepConeEquiv (i : ℕ) : HomotopyEquiv (mappingCone (step C i)) (mappingCone (adjacent C i)) :=
   (compositionTriangleConeEquiv _ _ _ (cumulative_comp C i)).symm
+/-- 指定反復錐同値の実射は標準合成錐の逆向き指定射である。 -/
+theorem stepConeEquiv_hom (i : ℕ) : (stepConeEquiv C i).hom =
+    (compositionTriangleConeEquiv _ _ _ (cumulative_comp C i)).inv := rfl
 /-- 初段の累積比較は恒等である。 -/
 @[simp] theorem cumulative_zero : cumulative C 0 = 𝟙 _ := by
   simpa only [cumulative,show homOfLE (Nat.zero_le 0) = 𝟙 (0 : ℕ) from Subsingleton.elim _ _]
@@ -96,6 +99,14 @@ def successiveQuotientEquiv (i : ℕ) :
   (HomotopyEquiv.ofIso (MappingCylinder.cokernelIso (modelArrow C i))).trans
     ((coneMapHomotopyEquiv (modelArrow C i) (step C i) (augmentation C i)
       (HomotopyEquiv.refl _) (by simp [modelArrow,HomotopyEquiv.refl])).trans (stepConeEquiv C i))
+/-- 実逐次商の指定同値の射は、実商と augmentation と標準合成錐射の合成である。 -/
+theorem successiveQuotientEquiv_hom (i : ℕ) :
+    (successiveQuotientEquiv C i).hom =
+      (MappingCylinder.cokernelIso (modelArrow C i)).hom ≫
+        mappingCone.map (modelArrow C i) (step C i) (augmentation C i).hom (𝟙 _)
+          (by simp [modelArrow]) ≫ (stepConeEquiv C i).hom := by
+  simp only [successiveQuotientEquiv,HomotopyEquiv.trans,HomotopyEquiv.ofIso,
+    coneMapHomotopyEquiv_hom,HomotopyEquiv.refl]
 /-- 実単射列としてのモデル tower。 -/
 def modelDiagram : ℕ ⥤ CochainComplex (ModuleCat.{w} ℚ) ℤ := Functor.ofSequence (inclusion C)
 end AAT.AG.AtlasDefectComposition.ConeTower

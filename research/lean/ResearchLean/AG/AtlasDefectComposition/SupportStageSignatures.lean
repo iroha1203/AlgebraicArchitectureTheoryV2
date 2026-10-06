@@ -60,5 +60,15 @@ def stageComplex (A : Set base.Target) (i : I) := (N i).targetSubsetComplex (com
 /-- 共通署名包含が全段の実 cochain 制限を生成する。 -/
 def stageRestriction {A B : Set base.Target} (hAB : alpha q N h A ⊆ alpha q N h B) (i : I) :=
   SubsetRestriction.hom (N i) (stageLE q N h hAB i)
+/-- 共通署名の反射的制限は各段の実恒等射である。 -/
+theorem stageRestriction_id (A : Set base.Target) (i : I) :
+    stageRestriction q N h (Set.Subset.refl (alpha q N h A)) i = cochainId (stageComplex q N h A i) :=
+  SubsetRestriction.hom_id (N i) _
+/-- 共通署名の推移的制限は各段の実制限の合成である。 -/
+theorem stageRestriction_comp {A B D : Set base.Target}
+    (hAB : alpha q N h A ⊆ alpha q N h B) (hBD : alpha q N h B ⊆ alpha q N h D) (i : I) :
+    stageRestriction q N h (hAB.trans hBD) i =
+      cochainComp (stageRestriction q N h hBD i) (stageRestriction q N h hAB i) :=
+  SubsetRestriction.hom_comp (N i) (stageLE q N h hAB i) (stageLE q N h hBD i)
 end AAT.AG.AtlasDefectComposition.SupportStages
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition.SupportStages

@@ -21,6 +21,14 @@ def compositionTriangle (h : direct = f ≫ g) : Triangle (CochainComplex (Modul
 theorem compositionTriangle_mor₁ (h : direct = f ≫ g) :
     (compositionTriangle f g direct h).mor₁ =
       mappingCone.map f direct (𝟙 K) g (by rw [h];simp) := rfl
+/-- F の第二射の公開 categorical 式。 -/
+theorem compositionTriangle_mor₂ (h : direct = f ≫ g) :
+    (compositionTriangle f g direct h).mor₂ =
+      mappingCone.map direct g f (𝟙 M) (by rw [h];simp) := rfl
+/-- F の第三射の公開 categorical 式。標準 shift 符号を保持する。 -/
+theorem compositionTriangle_mor₃ (h : direct = f ≫ g) :
+    (compositionTriangle f g direct h).mor₃ =
+      (mappingCone.triangle g).mor₃ ≫ (mappingCone.inr f)⟦1⟧' := rfl
 /-- 直接比較の合成等号に沿う標準 triangle との全三射の等号。 -/
 theorem compositionTriangle_eq (h : direct = f ≫ g) :
     compositionTriangle f g direct h = mappingConeCompTriangle f g := by

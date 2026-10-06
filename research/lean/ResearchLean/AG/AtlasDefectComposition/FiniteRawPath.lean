@@ -54,5 +54,13 @@ def lawPathDiagram : Fin (n+1) ⥤ CochainComplex (ModuleCat.{u} ℚ) ℤ where
       (pathAdequate P laws ha i) (pathAdequate P laws ha j) (pathAdequate P laws ha k),
       zeroExtensionMap_comp]
     rfl
+/-- 全Law図式の対象は同じ段の実独立生成複体である。 -/
+@[simp] theorem lawPathDiagram_obj (i : Fin (n+1)) :
+    (lawPathDiagram P laws ha).obj i =
+      zeroExtension ((P.obj i).nerve.lawGeneratedComplex laws (pathAdequate P laws ha i)) := rfl
+/-- 全Law図式の全対射は原始比較から独立に生成した射である。 -/
+@[simp] theorem lawPathDiagram_map {i j : Fin (n+1)} (f : i ⟶ j) :
+    (lawPathDiagram P laws ha).map f = zeroExtensionMap ((P.map f).2.generatedComparisonHom
+      laws (pathAdequate P laws ha i) (pathAdequate P laws ha j)) := rfl
 end AAT.AG.AtlasDefectComposition
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition
