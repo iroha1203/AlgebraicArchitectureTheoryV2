@@ -2030,3 +2030,208 @@ result:
 非中心findingとして挙げた。既存公開 `cochainComp_f0/f1/f2` の書き換えへ置換し、
 statement、def/instance本体・値、import、宣言集合、statusは保持した。
 修正scopeは当該proof内部とこの証拠記載/source hashのみ。独立直接対応で資格と解消を判定する。
+
+## Cycle 6 acceptance / Cycle 7 selection
+
+Cycle 6はPR [#5279](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5279)、
+固定head `6648ce7dc705d03e02efee16a4a4e77ec31fbb54`、merge
+`2150dab039f19f5a3445672aef2966f4eda78351` として受理。
+[初回独立4査読・有資格直接対応・root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5279#issuecomment-6024904512)、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6025005089)。
+選定resultはproof-obligation-discharged、全固定targetは未完、Research未移植。
+
+以下を実装前selectionとして固定する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-134-aat-face-relation-subdivision
+cycle: 7
+goal_blob_sha: 28cbf1944d708b059cd8c4fd22f07cd8d5e1476c
+base_oid: 2150dab039f19f5a3445672aef2966f4eda78351
+tracking_issue: 5272
+report_path: research/reports/G-134-aat-face-relation-subdivision.md
+selection:
+  proof_state_ref: Cycle6受理とIssue6025005089
+  proof_dag_predecessors: [Cycle2原始正操作r/s/h, Cycle6独立Law有限和/実射, G133零延長/旧H1/標準錐短完全列]
+  milestone: B/Dの両正操作の同じ実Law/block射の標準ホモトピー同値と全次数診断
+  proof_obligations:
+    - 原始rs/sr恒等式を独立Law有限和の同じ射へ移す
+    - 同じ実Law r/sと原始hの標準HomotopyEquivを構成
+    - 各labelの同じ実block有限和射も既存fiber収縮と接続して標準同値
+    - 全整数次数homology同型、同じ旧H1比較の同型と零blockDefect
+    - 同じ比較の標準錐をG133短完全列へ渡し全整数次数のhomology零性
+  exit_criteria:
+    - 任意T0入力と任意adequate Lawの両正操作について全上記結論
+    - 原始r/s/hの構成と同じ独立Law/block射の等号を放電
+    - 空台/空Law/loop/重複出現の追加除外なし、Value有限性追加なし
+    - 対象focused/全spineaxiom/共通scanと固定head独立PR査読
+  selection_reason: Dの独立射生成から保存結論までの未接続を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [LawFiniteIdentities, ElementaryLawHomotopy, ElementaryBlockHomotopy, HomotopyDiagnostics, ElementaryDiagnostics]
+  risks: [方向仮定の具体放電, 原始hの符号, 同じ射へのhomology/錐接続, no-unfold API]
+  unchecked: [上記新規構成と接続の実装/検証/独立査読]
+```
+
+元P3/P4全終了条件は維持。逆縮約のLaw最終輸送・持ち上げ選択、任意有限操作列、
+支持制限、全Law分解の新比較API、E/W1–W3、別の全target4本完了監査は後続義務。
+このselectionを全B/C/Dの完了へ読み替えない。completion candidateではない。
+
+
+### Cycle 7 claim mapping / premise discharge
+
+| 固定条項・選定結論 | 入力からの構成・同じ実射との接続 |
+| --- | --- |
+| B/Dの原始rs/sr式から実Law恒等式 | `SupportedBasisMap.lawDual_comp_eq_identity`、`lawDual_add_eq_identity`、`lawDual_add_add_eq_identity` が独立生成Law有限和へ移す。両操作の `law_cochain_rs`、`law_correction0/1/2` は受理済み原始基底計算を具体適用 |
+| B/Dの同じLaw二射と標準ホモトピー | 両 `lawHomotopyEquiv` のhom/invは同じ `lawR/lawS`、補正は同じ原始 `lawH0/lawH1`。三項補正式→`threeHomotopy`→mathlib `HomotopyEquiv`。合成から恒等へのfieldは補正の向きを反転 |
+| 各labelの同じ独立block二射 | 両 `blockR/blockS` は原始r/s有限和の独立座標化。`blockR_fiber/blockS_fiber` は全三成分正方形を原始subset収縮の同じrHom/sHomへ同定 |
+| 標準block同値の実射接続 | `transportHomotopyEquiv` は一般対象同型による移送。両 `blockHomotopyEquiv_hom/inv` が正方形から独立生成block射へ等号を証明し、対象同型存在だけで保存を推論しない |
+| 全整数次数のLaw/block同型と同じ逆射 | 両 `lawHomologyIso/blockHomologyIso` とhom/inv API。同じ実r/sの標準homology mapそのもの。次数0/1/2を含む |
+| 同じ既存H1比較と零欠損 | `homotopyOldH1Iso_hom/inv` に同じr/sを渡す。両 `lawOldH1Iso/blockOldH1Iso`、`lawH1/blockH1_bijective`、`lawH1/blockH1_blockDefect_zero`。旧商と実 `blockDefect` を変更しない |
+| 同じ実比較の全次数標準錐零性 | `cone_homology_isZero_of_bijective` はG133の実余核/錐/次核の短完全列を使用。両 `lawCone_isZero/blockCone_isZero/subsetCone_isZero` は構成した同じ射を渡す |
+| 全Aの実subset零欠損 | 両 `subsetH1_blockDefect_zero`。任意Aの原始収縮の同じrHomを渡し、空Aも含む |
+
+material premiseを独立に検査できるよう、一般bridgeと具体適用を区別する。
+
+| material premise | role | 放電・使用 |
+| --- | --- | --- |
+| T0のSource/Reading/N/ℚ、任意指定辺e、Law有限族とadequacy | ambient-boundary / GOAL入力 | 既存型・原始操作constructor・Law有限和座標生成。空Law、空辺/面台、loop、出現重複を除外しない。Value全体のFintypeを追加しない |
+| raw往復/補正式 | direction-hypothesis（汎用）/ discharge-required（両正操作） | `TriangleAddition` と `EdgeSubdivision` の受理済み `rs0/1/2`・`sr_h0/1/2` から具体放電。原始r/s/hの支持包含はCycle2 constructorから生成 |
+| 標準HomotopyEquiv Eと同じhom/invの等号 | direction-hypothesis（diagnostics/transport）/ discharge-required（具体操作） | 両 `lawHomotopyEquiv` はraw式から全fieldを生成。両block同値は原始fiber収縮と既存対象同型から生成し、独立射の三成分正方形でhom/invを同定 |
+| 既存block/fiber対象同型 | discharge-required / 受理predecessorで放電 | G107の同じ支持セル座標同値、G133 `lawBlockFiberZeroExtensionIso` の現在型・公開hom式を使用。今回の射自然性は別に放電 |
+| 全次数の実homology全単射 | direction-hypothesis（cone一般補題）/ discharge-required（具体操作） | 原始操作から構成したmathlib HomotopyEquivの `toHomologyIso` で全整数次数に放電。期待次元を入力しない |
+| H1のFiniteDimensional | discharge-required / 既存有限複体instanceで放電 | T0有限Source/有限セル→実cochain有限次元→既存H1商。零欠損のみに使用し、錐零性には不要 |
+| 結論相当fieldを入力へ移すrisk | conclusion-equivalent-risk | 操作入力はN/e/Law/adequacyだけ。r/s/h・往復・homotopy・同型・零性は出力constructor/定理。新規Prop/certificate/structure/instanceなし |
+
+新規定義は標準 `HomotopyEquiv`、`toHomologyIso`、既存H1商、実 `blockDefect`、
+G133標準mappingCone/実短完全列へ接続する。一般transportの方向仮定を、
+具体操作でも受け取るだけの形にはしていない。
+
+### Cycle 7 provenance / proof-use
+
+Cycle2の原始正操作r/s/h、全raw恒等式と全A収縮を現在sourceで照合。
+Cycle6 PR #5279の独立Law/block有限和、全三成分正方形、実微分等号を同じ引数で使用。
+G107のblock/fiber同値とG133の旧H1自然性、標準錐短完全列は前記受理ref・使用版を保持し、
+現在statementと適用条件を確認。mathlib版は前記固定版で、標準HomotopyEquivの
+trans/ofIso/toHomologyIso、標準mappingConeの型・符号を使用する。
+
+既存 `ComparisonLaws` にcochain恒等の次数別評価3件、`LawFiberDecomposition` に
+block/fiber標準同型のhom評価1件を追加。既存signature/proof/def-instance本体値/importは不変。
+Law有限和恒等式は既存公開comp/add/raw/微分APIを使い、標準block移送は公開hom式と
+三成分正方形を使う。diagnosticsの旧H1同型は自然性によって同じ実射へ着地する。
+錐の余核は全射性から零、次核は単射性から零、その実短完全列から錐homology零性を得る。
+
+### Cycle 7 accepted-spine proposal
+
+5新moduleの83明示宣言と既存API追加4件、全87件を今回のspineとする。
+compiler生成の補助宣言は明示spine件数から分ける。
+
+```text
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_comp_eq_identity
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_add_eq_identity
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_add_add_eq_identity
+AAT.AG.FaceRelationSubdivision.TriangleAddition.law_cochain_rs
+AAT.AG.FaceRelationSubdivision.TriangleAddition.law_correction0
+AAT.AG.FaceRelationSubdivision.TriangleAddition.law_correction1
+AAT.AG.FaceRelationSubdivision.TriangleAddition.law_correction2
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_cochain_rs
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_correction0
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_correction1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_correction2
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv_hom_eq
+AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv_inv_eq
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockR
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockS
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockR_fiber
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockS_fiber
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockR
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockS
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockR_fiber
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockS_fiber
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.homotopyOldH1Iso
+AAT.AG.FaceRelationSubdivision.homotopyOldH1Iso_hom
+AAT.AG.FaceRelationSubdivision.homotopyOldH1Iso_inv
+AAT.AG.FaceRelationSubdivision.homotopyH1_bijective
+AAT.AG.FaceRelationSubdivision.homotopyH1_blockDefect_zero
+AAT.AG.FaceRelationSubdivision.cone_homology_isZero_of_bijective
+AAT.AG.FaceRelationSubdivision.homotopyCone_isZero
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomologyIso
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomologyIso_inv
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawOldH1Iso
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawOldH1Iso_hom
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawOldH1Iso_inv
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH1_bijective
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH1_blockDefect_zero
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawCone_isZero
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomologyIso
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomologyIso_inv
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockOldH1Iso
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockOldH1Iso_hom
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockOldH1Iso_inv
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockH1_bijective
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockH1_blockDefect_zero
+AAT.AG.FaceRelationSubdivision.TriangleAddition.blockCone_isZero
+AAT.AG.FaceRelationSubdivision.TriangleAddition.subsetCone_isZero
+AAT.AG.FaceRelationSubdivision.TriangleAddition.subsetH1_blockDefect_zero
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomologyIso
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomologyIso_inv
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawOldH1Iso
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawOldH1Iso_hom
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawOldH1Iso_inv
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH1_bijective
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH1_blockDefect_zero
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawCone_isZero
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomologyIso
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomologyIso_inv
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockOldH1Iso
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockOldH1Iso_hom
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockOldH1Iso_inv
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockH1_bijective
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockH1_blockDefect_zero
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockCone_isZero
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.subsetCone_isZero
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.subsetH1_blockDefect_zero
+AAT.AG.AtlasDefectComposition.cochainId_f0
+AAT.AG.AtlasDefectComposition.cochainId_f1
+AAT.AG.AtlasDefectComposition.cochainId_f2
+AAT.AG.AtlasDefectComposition.lawBlockFiberZeroExtensionIso_hom
+```
+
+現在の対象source SHA-256:
+
+- `FaceRelationSubdivision/LawFiniteIdentities.lean`: `63cf78711ef720f4953330fda6b5eabc29ebeb9c2be10b1a29c184f5c38cd766`（今回の明示spine 3）
+- `FaceRelationSubdivision/ElementaryLawHomotopy.lean`: `751a7d625e1363a237e924cf46ee85a145b4b897a99ef53cc1d3ac4141497336`（今回の明示spine 14）
+- `FaceRelationSubdivision/ElementaryBlockHomotopy.lean`: `3aab89e26b0cbcc52ed18d018e00e63b644486ee4987338e0279ed501dfde249`（今回の明示spine 19）
+- `FaceRelationSubdivision/HomotopyDiagnostics.lean`: `0b9d65b5cfe76b2d6fd788c8e61bf749fa8d5cf56088c5b2f2d7a6f8f9bd017b`（今回の明示spine 7）
+- `FaceRelationSubdivision/ElementaryDiagnostics.lean`: `80f90e4ce6199d113448e4cc526447ba3c7f3f9ee3f19cd52f764416da41bb9e`（今回の明示spine 40）
+- `AtlasDefectComposition/ComparisonLaws.lean`: `45ffd13d6aaf63271211ac6274e50153150a118e1616ac3178cc9e6f14c55382`（今回の明示spine 3）
+- `AtlasDefectComposition/LawFiberDecomposition.lean`: `392dcb8479f19baa64b7be39e5d93418f0149ccf06985c86ed860e2ce1187622`（今回の明示spine 1）
+
+### Cycle 7 focused validation / result
+
+root の対象別検証は、新規5 module と2 owner API、および official focused selector `--focused ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean` を通過した。Research full build / aggregate elaboration は実行していない。87 個の明示 spine と axiom query / output の集合は一致し、全て `propext`、`Classical.choice`、`Quot.sound` のみである。ログ SHA-256 は `f1421618f1405121fc02e68f9c23d3d6be9226916c1aa1a8dd74f93100223af1`。manifest の TSV・module/source 一意性・source 存在、import/package 方向、placeholder、hidden/BiDi Unicode、privacy、`git diff --check` を確認した。CI と独立査読は固定 PR head に対して別途実施する。
+
+- proposed cycle result: `proof-obligation-discharged`
+- selection exit: discharge済み。同じ原始 r/s/h から生成した Law 比較と独立 block 比較を、全整数次数の実 homology map / inverse、既存 H¹ map、零 defect、標準 mapping cone の全次数零性へ接続した。
+- split: none
+- completion_candidate: no
+- next obligations: 逆操作の実 Law transport、Law lift choices、任意有限列と台 restriction の自然性、新比較に対する Law decomposition / diagnostic API、E および W1–W3、全固定目標の別4本完了監査。
+- fixed target 全体: 未完。Research 証明であり、Formal 移植と ArchSig 実装は本 cycle の判定外。GOAL と設計文書の固定 target は変更していない。

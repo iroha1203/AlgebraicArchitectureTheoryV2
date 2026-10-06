@@ -21,6 +21,11 @@ variable (l : LawValueLabel laws)
 def lawBlockFiberZeroExtensionIso : zeroExtension (N.lawValueBlockComplex laws ha l) ≅
     zeroExtension (N.targetSubsetComplex (labelValueFiber laws q ha l)) :=
   cochainEquivZeroExtensionIso (N.lawValueBlockTargetSubsetComplexEquiv laws ha l)
+/-- block/fiber標準同型の順方向は同じ三項同値の零延長。 -/
+@[simp] theorem lawBlockFiberZeroExtensionIso_hom :
+    (lawBlockFiberZeroExtensionIso N laws ha l).hom =
+      zeroExtensionMap (N.lawValueBlockTargetSubsetComplexEquiv laws ha l).toHom :=
+  cochainEquivZeroExtensionIso_hom _
 /-- 全三成分で、実block比較と実fiber比較が同じ可換図式に入る。 -/
 theorem lawBlockFiber_comparison_square :
     cochainComp (M.generatedBlockComparisonHom laws ha hr l)
