@@ -145,6 +145,21 @@ theorem selected_square_of_raw_square {I0 J0 : Type u}
   exact LinearMap.congr_fun h (selectedEmbed suppI A x)
 
 
+/-- 支持基底射は原始基底像で決まり、支持proofは追加のdataではない。 -/
+@[ext] theorem ext {M N : SupportedBasisMap suppI suppJ}
+    (h : ∀ i, M.basisImage i = N.basisImage i) : M = N := by
+  cases M
+  cases N
+  cases funext h
+  rfl
+
+/-- 全セルの実原始射の等号は同じ基底像の等号を反映する。 -/
+theorem ext_raw {M N : SupportedBasisMap suppI suppJ} (h : M.raw = N.raw) : M = N := by
+  apply ext
+  intro i
+  have hi := LinearMap.congr_fun h (Finsupp.single i 1)
+  simpa only [raw_single, one_smul] using hi
+
 /-- 全セルの原始射は指定された有限和を直接評価する。 -/
 theorem raw_apply (M : SupportedBasisMap suppI suppJ) (x : I →₀ ℚ) :
     M.raw x = x.sum (fun i a => a • M.basisImage i) := freeMap_apply _ _
@@ -323,6 +338,13 @@ def ofOption (f : I → Option J)
 /-- 零constructorの原始基底像。 -/
 @[simp] theorem zero_basis (suppI : I → Set T) (suppJ : J → Set T) (i : I) :
     (zero suppI suppJ).basisImage i = 0 := rfl
+
+/-- 零constructorの実全セル射は線形零射。 -/
+@[simp] theorem raw_zero (suppI : I → Set T) (suppJ : J → Set T) :
+    (zero suppI suppJ).raw = 0 := by
+  apply Finsupp.lhom_ext
+  intro i a
+  simp only [raw_single, zero_basis, smul_zero, LinearMap.zero_apply]
 
 /-- 和constructorの原始基底像。 -/
 @[simp] theorem add_basis (M N : SupportedBasisMap suppI suppJ) (i : I) :
