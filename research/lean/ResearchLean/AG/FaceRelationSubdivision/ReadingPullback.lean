@@ -59,8 +59,9 @@ variable {h : qc.CoarserThan qf} {Nc : TargetSupportedNerve qc} {Nf : TargetSupp
 variable (E : CellPresentationEquiv qc qf h Nc Nf)
 variable (laws : FiniteLawFamily Source) (hc : laws.Adequate qc)
 
+include h hc in
 /-- 操作列で必要な細adequacyを粗側から導出する。 -/
-def fineAdequate : laws.Adequate qf := adequate_of_coarser laws h hc
+theorem fineAdequate : laws.Adequate qf := adequate_of_coarser laws h hc
 
 /-- 原始セル・同じLaw/valueの座標両逆を発生証明から生成する共通constructor。 -/
 def coordinateEquiv {I J : Type u} (e : I ≃ J) (si : I → Set qf.Target)

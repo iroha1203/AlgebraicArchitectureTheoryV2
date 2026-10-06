@@ -69,7 +69,7 @@ def comparison : IncidenceSupportedComparison qc qf h Nc Nf where
 /-- 生成比較の面像。 -/
 @[simp] theorem comparison_face (f) : E.comparison.faceMap f = some (E.faceEquiv f) := rfl
 /-- 逆像部分集合のmaps-to証明を生成する。 -/
-def subsetMapsTo (A : Set qc.Target) :
+theorem subsetMapsTo (A : Set qc.Target) :
     ∀ t, t ∈ comparisonFactor qc qf h ⁻¹' A → comparisonFactor qc qf h t ∈ A := by
   intro t ht
   exact ht

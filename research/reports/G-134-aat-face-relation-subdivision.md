@@ -1054,8 +1054,8 @@ AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberOldH1Iso_hom
 
 新規source SHA-256:
 
-- `CellPresentationEquiv.lean`: `082e5aeadccfdd4297d07ea66787436bdf240f954e1f1b00d0375325fe1cae5c`
-- `ReadingPullback.lean`: `c39b3461b9218cd963dcfa58dddce97b620bdbf581ac084744f03aaf16ba31d5`
+- `CellPresentationEquiv.lean`: `480e04916a2569a319e37a2831c4f32bf655567e3dd21975bc735d1ca2e26c91`
+- `ReadingPullback.lean`: `4758f84b4d9ca13b8ca22939a496760d92c1a8c7383a17fd40d1e2cdb7a58848`
 - `CellRename.lean`: `c1be3c0792cdbb9cf738fb1daf088c90cc2d9ec6ba642e5376f67119be03e384`
 - `LawFiberBridge.lean`: `fd7adac7c9aba8ce26f1fbc95301d99ee84c368538b5a2fc09c24c7dba4044e6`
 - `LawPresentation.lean`: `655feff1d39a16b7bf1e52e7e087600414f36853f3cfe9e713159bc03664875f`
@@ -1100,3 +1100,13 @@ result:
     one_way_as_equivalence: none-found
     next_obligation: P3原始逆patternとlift、P4一般有限和Law/有限合成/cone/defect、P5 E/W
 ```
+
+### Cycle 3 非中心指摘への対応
+
+[初回独立査読](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5276#issuecomment-6022191250) は数学2本が `No major findings`、Lean 2本が
+`Minor issues`。中心指摘は0、重複統合した非中心指摘は、Propの証明である
+`subsetMapsTo` と `fineAdequate` の2宣言を `theorem` とする1件であった。
+名前・型・引数・証明本体を保って変更した。`fineAdequate` では元のdefが証明本体から
+取り込んでいた `h` と `hc` を `include` で明示した。新しい仮定・宣言は追加していない。
+修正した2moduleと依存する `LawPresentation` / `CellRename` の単一file check、
+全130宣言の公理照会を再実施した。直接対応の資格と解消は固定修正headの新規独立確認で判定する。
