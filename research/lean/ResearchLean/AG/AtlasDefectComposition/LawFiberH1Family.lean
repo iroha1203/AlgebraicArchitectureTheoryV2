@@ -19,6 +19,12 @@ def lawFiberH1FamilyEquiv : (N.lawGeneratedComplex laws ha).H1 ≃ₗ[ℚ]
     ((l : LawValueLabel laws) → (N.targetSubsetComplex (labelValueFiber laws q ha l)).H1) :=
   (lawH1FamilyEquiv N laws ha).trans (LinearEquiv.piCongrRight fun l =>
     (N.lawValueBlockTargetSubsetComplexEquiv laws ha l).h1Equiv)
+/-- 既存Law/fiber同定の各ラベルは同じblock/fiber商同値である。 -/
+@[simp] theorem lawFiberH1FamilyEquiv_apply
+    (x : (N.lawGeneratedComplex laws ha).H1) (l : LawValueLabel laws) :
+    lawFiberH1FamilyEquiv N laws ha x l =
+      (N.lawValueBlockTargetSubsetComplexEquiv laws ha l).h1Equiv
+        (lawH1FamilyEquiv N laws ha x l) := rfl
 /-- 全Law既存H¹の実比較は同じ粗fiber・細fiberの各独立生成実比較と可換である。 -/
 theorem lawFiberH1Comparison_square (x : (N.lawGeneratedComplex laws ha).H1) :
     lawFiberH1FamilyEquiv E laws hr (M.generatedComparisonH1Map laws ha hr x) =

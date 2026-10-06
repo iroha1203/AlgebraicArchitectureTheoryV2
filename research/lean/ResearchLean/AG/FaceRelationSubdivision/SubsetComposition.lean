@@ -169,6 +169,12 @@ theorem targetSubsetComparisonHom_h1Map_comp :
 def subsetTransportHom {C : ThreeCochainComplex.{0,w₀} ℚ} {D E : ThreeCochainComplex.{0,w₁} ℚ} (h : D = E)
     (f : ThreeCochainComplex.Hom C D) : ThreeCochainComplex.Hom C E := h ▸ f
 
+/-- 新比較と旧比較は同じ複体全体の等号移送を用いる。 -/
+theorem subsetTransportHom_eq_transportHom
+    {C : ThreeCochainComplex.{0,w₀} ℚ} {D E : ThreeCochainComplex.{0,w₁} ℚ} (h : D = E)
+    (f : ThreeCochainComplex.Hom C D) :
+    subsetTransportHom h f = AtlasDefectComposition.transportHom h f := rfl
+
 /-- 等号transportのrefl評価API。 -/
 @[simp] theorem transportHom_rfl {C : ThreeCochainComplex.{0,w₀} ℚ} {D : ThreeCochainComplex.{0,w₁} ℚ}
     (f : ThreeCochainComplex.Hom C D) : subsetTransportHom rfl f = f := rfl

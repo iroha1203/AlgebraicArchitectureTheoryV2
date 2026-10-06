@@ -17,6 +17,11 @@ def lawZeroExtensionIso : zeroExtension (N.lawGeneratedComplex laws ha) ≅
     FiniteComplexFamily.complex (fun l => zeroExtension (N.lawValueBlockComplex laws ha l)) :=
   cochainEquivZeroExtensionIso (lawFamilyCochainEquiv N laws ha) ≪≫
     ThreeComplexFamily.zeroExtensionIso (fun l => N.lawValueBlockComplex laws ha l)
+/-- 全Law零延長同型の同じ標準二段構成。 -/
+@[simp] theorem lawZeroExtensionIso_hom : (lawZeroExtensionIso N laws ha).hom =
+    (cochainEquivZeroExtensionIso (lawFamilyCochainEquiv N laws ha)).hom ≫
+      (ThreeComplexFamily.zeroExtensionIso (fun l => N.lawValueBlockComplex laws ha l)).hom := rfl
+
 variable {r : Reading Source} {h : q.CoarserThan r} {E : TargetSupportedNerve r}
 variable (M : TargetSupportedNerveMorphism q r h N E) (hr : laws.Adequate r)
 /-- 全三成分の比較正方形は既存の独立block生成式から成立する。 -/
@@ -79,6 +84,13 @@ theorem lawStandardHomologyEquiv_natural (m : ℤ)
           (fun l => zeroExtensionMap (M.generatedBlockComparisonHom laws ha hr l))) m
           ((homologyMapIso (lawZeroExtensionIso N laws ha) m).hom x) from hx]
   exact FiniteComplexFamily.homologyEquiv_natural _ _ _ m _ l
+/-- 全次数Law homology同定の同じ元評価。 -/
+@[simp] theorem lawStandardHomologyEquiv_apply (m : ℤ)
+    (x : (zeroExtension (N.lawGeneratedComplex laws ha)).homology m) :
+    lawStandardHomologyEquiv N laws ha m x =
+      FiniteComplexFamily.homologyEquiv _ m
+        ((homologyMapIso (lawZeroExtensionIso N laws ha) m).hom x) := rfl
+
 /-- 全次数homology族の成分は同じ実零延長同型からのprojectionである。 -/
 theorem lawStandardHomologyEquiv_component_family (m : ℤ)
     (x : (zeroExtension (N.lawGeneratedComplex laws ha)).homology m) (l : LawValueLabel laws) :

@@ -2466,3 +2466,222 @@ root の新規6 module と4 owner API変更を対象別 `lake env lean` で確�
 - selected obligation の undischarged material premise: なし。独立PR査読で検算する。
 - next_obligation: 任意有限操作列の原始直接有限和・正逆二homotopy、支持制限の自然性、新比較の一般Law/錐/欠損分解、E/W1–W3、別4本の全固定target監査。
 - 全固定target: 未完。Research証明はFormal未移植。固定GOAL/恒久設計/仮定/量化/指定例は不変。
+
+## Cycle 8 accepted / Cycle 9 selection
+
+Cycle8 は PR #5281、head `ad0f7e3f77acf22ecf9634f3fa43aa64abeba1d6`、merge `943fcc5db711f4fcdfcd35f722137331f2b6b209` で受理した。[新規独立4本・root受入れ・実CI範囲](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5281#issuecomment-6025963377)、[全133公理の再現可能証拠](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5281#issuecomment-6025864333)、[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6025981414)。全4本No major findings、findingなし。全8CI成功、Formal実build/kernel/premiseはSKIPPED。全目標未完。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-134-aat-face-relation-subdivision
+cycle: 9
+goal_blob_sha: 28cbf1944d708b059cd8c4fd22f07cd8d5e1476c
+base_oid: 943fcc5db711f4fcdfcd35f722137331f2b6b209
+tracking_issue: 5272
+report_path: research/reports/G-134-aat-face-relation-subdivision.md
+selection:
+  proof_state_ref: Cycle8受理と上記Issue同期
+  proof_dag_predecessors: [Cycle1新比較/独立Law/block/subset生成, Cycle2支持有限和/双対, Cycle6独立有限和Law/block/fiber, Cycle7実錐, Cycle8原始有限和合成]
+  milestone: C/Dの同じ支持有限和射を支持制限および全Law実分解の射へ接続
+  proof_obligations:
+    - 任意A包含Bの同じ選択セル包含と双対制限を生成し全SupportedBasisMapのr/s/hと可換
+    - 原始微分と同じ支持包含から既存subset制限Homを生成し全三成分の自然性を証明
+    - 新混在比較の全Law/全ラベル自然性を全三次数と既存H1/標準全次数で構成
+    - 新混在比較の同じLaw射の核/余核/実欠損と標準錐を全ラベル/原始fiberへ分解
+    - 独立有限和Law射とblock射にも同じ全ラベル接続を構成しsection/h/後続有限列で再利用可能にする
+    - 旧hereditary比較の同じ実生成射への受理済み特殊化を新しい接続に適用
+  exit_criteria:
+    - 全A包含B/全原始支持有限和のchain自然性と実双対制限自然性
+    - 任意qc先行qf/任意新比較/任意adequate Lawの全三成分および旧H1/全整数次数可換図式
+    - 同じ射の実核/余核同値と錐族/直和同型を構成し同台ラベル重複度を保持
+    - 独立原始有限和の具体適用で一般方向仮定を放電し全spine検証と独立PR査読
+  selection_reason: P4の未接続な支持制限/全Law分解を閉じ有限操作列と指定余核例へ同じ実射で接続する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [SupportRestriction, SubsetRestriction, LawComparisonDecomposition, LawComparisonDefect, LawComparisonCone, LawFiniteDecomposition]
+  risks: [双対合成の向き, 有限ラベルprojection一致, 旧H1自然性, 全次数実錐, 相同型の射一致]
+  unchecked: [選定した新規構成/接続/検証/独立査読]
+```
+
+元P4の全終了条件は保持。任意有限操作列、原始直接有限和と二homotopy、全操作での実診断への一体接続は後続義務。E/W1–W3と別4本の全固定target完了監査も残す。今回は独立再利用できる支持制限と実分解の一般接続を到達点として選定し、全P4や全targetの完了とは扱わない。
+
+### Cycle 9 claim mapping / premise / proof DAG
+
+| 固定条項・選定義務 | 構成・同じ実射の接続 | 出力 |
+| --- | --- | --- |
+| C: 全A包含B | `selectedInclude` は同じセルの基底包含、`selectedRestrict` はその双対。`selected_include_natural` と `dual_selected_restrict_natural` は任意の原始 `SupportedBasisMap` を量化 | 比較r・逆s・h0/h1にも同じ式を適用。空A、空台、loop、重複出現を除かない |
+| C/D: 同じsubset制限 | 原始d1/d2に上記自然性を適用し既存 `targetSubsetComplex` のd0/d1へ同定。`subsetRestrictHom` と `subsetFinite_restrict_square` | 全三成分・既存H1・標準零延長の可換式、恒等・合成 |
+| A/D: 異なるreadingの新比較の制限 | `restrict_pullback0/1/2` は両subsetの因子適合と同じ原始セル像から導出 | `subset_restrict_square/h1_square`。Option.noneの零像とOption.someの同じセル名を保持 |
+| D: 全Law/全ラベル | `LawMapDecomposition` の一般可換式を、新比較の独立生成Law/block式で放電 | `lawFamily_square`、`lawZeroExtension_square`、全整数次数 `lawStandardHomology_natural`、旧H1 `lawH1Family_natural` |
+| D: 同じ新比較の実核・余核 | 上記自然性を `LinearConjugation` と `FiniteLinearFamily` の実線形同値に渡す | H1および標準全次数の核・余核同値、元/商代表の評価、二欠損の和 |
+| D: 同じ新比較の標準錐 | 同じ全三成分射の標準正方形を `coneMapIso` に渡し `FiniteConeFamily.iso` へ接続 | `lawConeFamilyIso/DirectSumIso/HomologyEquiv`、全次数の実projection |
+| D: 同じ原始fiberの実診断 | 受理済みC1のblock/fiber次数1自然性→既存商、C3のcanonical逆像の全三成分等号→同じ錐 | `lawFiberH1Kernel/CokernelFamilyEquiv`、`lawH1Defect_subset_sum`、`lawSubsetConeFamily/DirectSumIso/HomologyEquiv` |
+| C/D: 独立有限和の全Law分解 | C6の原始非零項ごとの同じLaw名・値の生成式を使い `lawDual_block` を既存Law族座標へ同定 | `lawFiniteFamily_natural0/1/2`、全三成分/標準全次数/旧商、実核・余核/欠損、実錐族・直和・全次数 |
+| A/D: 旧hereditary APIの特殊化 | C1の埋め込みの全三成分等号を上記新クラスの自然性・欠損・錐へ適用 | `hereditary_lawFamily/ZeroExtension_square`、同じ旧実射の欠損和・原始fiber錐同型と全次数projection |
+
+一般bridgeの方向仮定と、原始比較/有限和への具体適用を分ける。`LawMapDecomposition` の三つの可換式は direction-hypothesis（一般補題の仮定）であり、新混在比較ではC1の独立生成 `generatedPullback*_block_component`、有限和ではC6の `lawDual_block` から放電する。核・余核・錐はその同じ実射を用いて構成する。任意の相同型や期待rankを入力にしていない。
+
+T0のSource/Reading/有限supported nerve/K1/ℚと任意Law/adequacy、新比較Aの原始incidence・支持適合、CのA包含Bは ambient-boundary（固定入力）。SupportBasisMapの基底像・非零項の支持包含は原始有限和の入力であり、基本操作への適用はC2/C4/C6/C8の受理済み生成構成から供給される。原始chain正方形は一般有限和bridgeの direction-hypothesis、具体r/sへの適用は受理済み原始端点/三辺符号和/section合成から discharge-required として放電する。細reading adequacyはC1の `adequate_of_coarser` を使用でき、Value全体の有限性を追加しない。
+
+`selectedInclude_embed` で零延長後の原始セル像を一致させ、その単射性で自然性を証明する。Lawの三次数の座標同定と既存商の元評価APIをownerに追加し、下流は公開APIから証明する。標準錐は対象同型だけでなく同じ射の可換式を入力としてG-133へ渡す。全ラベル族の添字は `LawValueLabel laws` のままであり、等しいfiber台によってラベルを同一視しない。空Law族も同じ有限族APIで量化する。
+
+使用する受理済み依存は、C1（原始新比較/独立Law/block/subset/H1、旧比較の全三成分特殊化）、C2（原始支持基底射/選択零延長/双対）、C3（同じblock/fiber/選択subset/錐の接続）、C6（独立Law有限和とblock有限和/実fiber/微分）、C8（同じ有限和Hom）、G-133（Law族/零延長、有限族kernel/cokernel/cone、実Homの標準homology/錐）である。受理commit・source版・review参照は上記各cycleと先行依存表に固定済み。現在の使用statement・必要定義・適用引数を確認し、今回のowner差分は評価/接続APIの追加18件だけで既存定義・statement・importは不変。
+
+新規の述語・certificate structure はない。有限biproductの局所instanceはmathlibの既存有限積から導出する。選択済みhomology同型、欠損零、診断rankをfieldに保持していない。
+
+### Cycle 9 spine / source evidence
+
+9新規moduleの明示宣言98件（局所instanceを含む）、7既存ownerのpublic API追加18件、合計116件をこのcycleのspineとする。compiler生成補助宣言は各module末尾の標準公理macroでも確認する。
+
+```text
+AAT.AG.FaceRelationSubdivision.selectedInclude
+AAT.AG.FaceRelationSubdivision.selectedInclude_single
+AAT.AG.FaceRelationSubdivision.selectedInclude_embed
+AAT.AG.FaceRelationSubdivision.selectedInclude_embed_apply
+AAT.AG.FaceRelationSubdivision.selectedInclude_refl
+AAT.AG.FaceRelationSubdivision.selectedInclude_comp
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_include_natural
+AAT.AG.FaceRelationSubdivision.selectedRestrict
+AAT.AG.FaceRelationSubdivision.selectedRestrict_eq_dual
+AAT.AG.FaceRelationSubdivision.selectedRestrict_apply
+AAT.AG.FaceRelationSubdivision.selectedRestrict_refl
+AAT.AG.FaceRelationSubdivision.selectedRestrict_comp
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.dual_selected_restrict_natural
+AAT.AG.FaceRelationSubdivision.subsetRestrict_comm0
+AAT.AG.FaceRelationSubdivision.subsetRestrict_comm1
+AAT.AG.FaceRelationSubdivision.subsetRestrictHom
+AAT.AG.FaceRelationSubdivision.subsetRestrictHom_f0
+AAT.AG.FaceRelationSubdivision.subsetRestrictHom_f1
+AAT.AG.FaceRelationSubdivision.subsetRestrictHom_f2
+AAT.AG.FaceRelationSubdivision.subsetRestrictHom_refl
+AAT.AG.FaceRelationSubdivision.subsetRestrictHom_comp
+AAT.AG.FaceRelationSubdivision.subsetFinite_restrict_square
+AAT.AG.FaceRelationSubdivision.subsetFinite_restrict_h1_square
+AAT.AG.FaceRelationSubdivision.subsetFinite_restrict_zeroExtension_square
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.restrict_pullback0
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.restrict_pullback1
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.restrict_pullback2
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.subset_restrict_square
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.subset_restrict_h1_square
+AAT.AG.FaceRelationSubdivision.LawMapDecomposition.family_square
+AAT.AG.FaceRelationSubdivision.LawMapDecomposition.zeroExtension_square
+AAT.AG.FaceRelationSubdivision.LawMapDecomposition.standard_homology_natural
+AAT.AG.FaceRelationSubdivision.LawMapDecomposition.h1_natural
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawFamily_natural0
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawFamily_natural1
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawFamily_natural2
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawFamily_square
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawZeroExtension_square
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawStandardHomology_natural
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawH1Family_natural
+AAT.AG.FaceRelationSubdivision.lawH1Comparison_square
+AAT.AG.FaceRelationSubdivision.lawH1KernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.lawH1CokernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.lawH1KernelFamilyEquiv_val
+AAT.AG.FaceRelationSubdivision.lawH1CokernelFamilyEquiv_mk
+AAT.AG.FaceRelationSubdivision.lawH1Defect_sum
+AAT.AG.FaceRelationSubdivision.lawStandardKernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.lawStandardCokernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.lawStandardKernelFamilyEquiv_val
+AAT.AG.FaceRelationSubdivision.lawStandardCokernelFamilyEquiv_mk
+AAT.AG.FaceRelationSubdivision.lawComparisonConeFiniteBiproducts
+AAT.AG.FaceRelationSubdivision.lawConeFamilyIso
+AAT.AG.FaceRelationSubdivision.lawConeDirectSumIso
+AAT.AG.FaceRelationSubdivision.lawConeHomologyEquiv
+AAT.AG.FaceRelationSubdivision.lawConeFamilyIso_hom
+AAT.AG.FaceRelationSubdivision.lawConeHomologyEquiv_component_family
+AAT.AG.FaceRelationSubdivision.lawFiniteDecompositionBiproducts
+AAT.AG.FaceRelationSubdivision.lawFamily0Equiv_eq_read
+AAT.AG.FaceRelationSubdivision.lawFamily1Equiv_eq_read
+AAT.AG.FaceRelationSubdivision.lawFamily2Equiv_eq_read
+AAT.AG.FaceRelationSubdivision.lawFiniteFamily_natural0
+AAT.AG.FaceRelationSubdivision.lawFiniteFamily_natural1
+AAT.AG.FaceRelationSubdivision.lawFiniteFamily_natural2
+AAT.AG.FaceRelationSubdivision.lawFiniteFamily_square
+AAT.AG.FaceRelationSubdivision.lawFiniteZeroExtension_square
+AAT.AG.FaceRelationSubdivision.lawFiniteStandardHomology_natural
+AAT.AG.FaceRelationSubdivision.lawFiniteH1Family_natural
+AAT.AG.FaceRelationSubdivision.lawFiniteH1Family_square
+AAT.AG.FaceRelationSubdivision.lawFiniteKernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.lawFiniteCokernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.lawFiniteKernelFamilyEquiv_val
+AAT.AG.FaceRelationSubdivision.lawFiniteCokernelFamilyEquiv_mk
+AAT.AG.FaceRelationSubdivision.lawFiniteDefect_sum
+AAT.AG.FaceRelationSubdivision.lawFiniteConeFamilyIso
+AAT.AG.FaceRelationSubdivision.lawFiniteConeDirectSumIso
+AAT.AG.FaceRelationSubdivision.lawFiniteConeHomologyEquiv
+AAT.AG.FaceRelationSubdivision.lawFiniteConeFamilyIso_hom
+AAT.AG.FaceRelationSubdivision.lawFiniteConeHomologyEquiv_component
+AAT.AG.FaceRelationSubdivision.lawComparisonFiberFiniteBiproducts
+AAT.AG.FaceRelationSubdivision.labelFiberH1_natural
+AAT.AG.FaceRelationSubdivision.lawFiberH1Comparison_square
+AAT.AG.FaceRelationSubdivision.lawFiberH1KernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.lawFiberH1CokernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.lawFiberH1KernelFamilyEquiv_val
+AAT.AG.FaceRelationSubdivision.lawFiberH1CokernelFamilyEquiv_mk
+AAT.AG.FaceRelationSubdivision.lawFiberH1Defect_sum
+AAT.AG.FaceRelationSubdivision.lawFiberDefect_canonical
+AAT.AG.FaceRelationSubdivision.lawH1Defect_subset_sum
+AAT.AG.FaceRelationSubdivision.lawSubsetConeFamilyIso
+AAT.AG.FaceRelationSubdivision.lawSubsetConeDirectSumIso
+AAT.AG.FaceRelationSubdivision.lawSubsetConeHomologyEquiv
+AAT.AG.FaceRelationSubdivision.lawSubsetConeHomology_dimension
+AAT.AG.FaceRelationSubdivision.hereditary_lawFamily_square
+AAT.AG.FaceRelationSubdivision.hereditary_lawZeroExtension_square
+AAT.AG.FaceRelationSubdivision.hereditary_lawH1Defect_subset_sum
+AAT.AG.FaceRelationSubdivision.hereditary_lawSubsetConeFamilyIso
+AAT.AG.FaceRelationSubdivision.hereditary_lawSubsetConeHomologyEquiv
+AAT.AG.FaceRelationSubdivision.hereditary_lawSubsetConeHomologyEquiv_component
+AAT.AG.AtlasDefectComposition.lawFamily0Equiv_apply
+AAT.AG.AtlasDefectComposition.lawFamilyCochainEquiv_f0
+AAT.AG.AtlasDefectComposition.lawFamily1Equiv_apply
+AAT.AG.AtlasDefectComposition.lawFamilyCochainEquiv_f1
+AAT.AG.AtlasDefectComposition.lawFamily2Equiv_apply
+AAT.AG.AtlasDefectComposition.lawFamilyCochainEquiv_f2
+AAT.AG.AtlasDefectComposition.lawFiberH1FamilyEquiv_apply
+AAT.AG.AtlasDefectComposition.lawH1FamilyEquiv_mk_component
+AAT.AG.AtlasDefectComposition.lawZeroExtensionIso_hom
+AAT.AG.AtlasDefectComposition.lawStandardHomologyEquiv_apply
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetComparisonHom_f0
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetComparisonHom_f1
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetComparisonHom_f2
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetChartMap_val
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMap_val
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetFaceMap_val
+AAT.AG.FaceRelationSubdivision.subsetTransportHom_eq_transportHom
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedBlockCyclesEquiv_component_val
+```
+
+今回の対象source SHA-256（path / 明示spine数 / hash）:
+
+```tsv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	13	03420a6b2aca2ebe4726022ce3279bd54e3c4de8b011b16d071ec3d2d8b6894b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	11	cea0f9be7eecd812242f05fac119dd07cfb894fb3a58844b36a1d9171665e18c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ComparisonRestriction.lean	5	3b3118ca8e37f4f926d750ae4566a65ba04723acb0e32cb2d6f1a1ea281fb3b0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	11	496ba43e5989e9bb309860976a432ed31df91e9c6c286237a6b92b6172434f63
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	10	ba062facc20c993767ee9ce423fbc0573ece5da57ee5c7c7993abc8e34cb8b72
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonCone.lean	6	8c4f924d6eaf1f0bd3631bf636d82a54960a111826418b9015b66a4a9a335169
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	22	3811136165dfd4da77e71c6f8ac815b0f286a04a0686d20e47e04d37fecfc364
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	14	99fbd72c77adf71ff6cec151ce0dda3c804f541459039c2280cdf41d86e25206
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditaryDiagnostics.lean	6	6b7ba65c935ba3d0a40eae00021b41b355cf8b5c5e609001157fc721d05947cf
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawCochainDecomposition.lean	6	70c7f50b14cbc8e85048c4fd94505832e2850868599651f9b24620da56901288
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawFiberH1Family.lean	1	2b5f35773a0b1abd9cf16e110e8b861cbdf673a959783471b924a23a106b1fbb
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawH1Family.lean	1	facb6338c772e54678886d33dbe0cebea9dfa76433a8a82fa2fc3028b5d0c3ff
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawStandardDecomposition.lean	2	17c9cdac3acb993d26030d23b70e4e0dae84733ecc500901e111062d492b4869
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	6	de4a474ce4cf0295bd62afe3e8668a07101a50ee6060c9783ea026d949ffd299
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	1	2cfd539bca7c8df7c2f787188e73a977b0f9e80f70b41155ad7dd86b15161844
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockCohomology.lean	1	7c2b3412e45f58ea66c9fb48ca781cb6b3cd168a51a18ac4b87825622d5d460b
+```
+
+### Cycle 9 focused validation / proposed result
+
+rootは新規9moduleと必要7owner APIを対象別 `lake env lean` で検証した。official focused selectorは `HereditaryDiagnostics.lean`、`ComparisonRestriction.lean` をそれぞれ実行し成功。前者はLaw分解・実核/余核・錐・独立有限和分解への接続、後者は支持包含/双対/実subset制限/混在比較を含む。Research full build、aggregate、全file elaborationは未実施。
+
+全116の明示source/spine/query/output集合が一致し、標準 `propext`、`Classical.choice`、`Quot.sound` のみ。公理log SHA-256 `2cc7bf13a18069afefa00043e82d65c7e5675e4df1f6fd0f548f8e5b0f3a2f85`。manifest TSV/一意性/source存在、静的import/package方向、placeholder/hidden/BiDi/privacy/新規文章の語彙、diffを検査して成功。固定commit公開面、CI、独立査読はPR固定headで判定する。
+
+- proposed_result_type: `proof-obligation-discharged`
+- exit_criteria_status: 選定した全支持制限・一般新比較の実分解・独立有限和の実分解・同じ旧射への特殊化を放電。
+- split_reason: none
+- completion_candidate: no
+- selected obligation の undischarged material premise: なし。独立PR査読で検算する。
+- next_obligation: 任意有限操作列の原始直接有限和、正逆二homotopy、reading変更を含む同じ実射の合成、E/W1–W3、別4本の全固定target完了監査。
+- 全固定target: 未完。Research証明はFormal未移植。固定GOAL/恒久設計/仮定/量化/指定例は不変。

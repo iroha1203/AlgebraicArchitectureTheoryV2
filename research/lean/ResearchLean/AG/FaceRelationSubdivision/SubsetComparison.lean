@@ -650,6 +650,43 @@ def targetSubsetComparisonHom
   comm0 := M.targetSubsetPullback_comm0 coarseSubset fineSubset hsubset
   comm1 := M.targetSubsetPullback_comm1 coarseSubset fineSubset hsubset
 
+/-- 原始subset比較Homの同じ次数0成分。 -/
+@[simp] theorem targetSubsetComparisonHom_f0
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (Ac : Set coarseReading.Target) (Af : Set fineReading.Target)
+    (hs : ∀ t, t ∈ Af → comparisonFactor coarseReading fineReading hcoarser t ∈ Ac) : (M.targetSubsetComparisonHom Ac Af hs).f0 =
+      M.targetSubsetPullback0 Ac Af hs := rfl
+/-- 原始subset比較Homの同じ次数1成分。 -/
+@[simp] theorem targetSubsetComparisonHom_f1
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (Ac : Set coarseReading.Target) (Af : Set fineReading.Target)
+    (hs : ∀ t, t ∈ Af → comparisonFactor coarseReading fineReading hcoarser t ∈ Ac) : (M.targetSubsetComparisonHom Ac Af hs).f1 =
+      M.targetSubsetPullback1 Ac Af hs := rfl
+/-- 原始subset比較Homの同じ次数2成分。 -/
+@[simp] theorem targetSubsetComparisonHom_f2
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (Ac : Set coarseReading.Target) (Af : Set fineReading.Target)
+    (hs : ∀ t, t ∈ Af → comparisonFactor coarseReading fineReading hcoarser t ∈ Ac) : (M.targetSubsetComparisonHom Ac Af hs).f2 =
+      M.targetSubsetPullback2 Ac Af hs := rfl
+/-- 原始subset chart輸送は同じセル名を持つ。 -/
+@[simp] theorem targetSubsetChartMap_val
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (Ac : Set coarseReading.Target) (Af : Set fineReading.Target)
+    (hs : ∀ t, t ∈ Af → comparisonFactor coarseReading fineReading hcoarser t ∈ Ac) (x : fine.ChartInTargetSubset Af) :
+    (M.targetSubsetChartMap Ac Af hs x).val = M.chartMap x.val := rfl
+/-- 原始subset辺輸送は指定した同じセル名を持つ。 -/
+@[simp] theorem targetSubsetEdgeMap_val
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (Ac : Set coarseReading.Target) (Af : Set fineReading.Target)
+    (hs : ∀ t, t ∈ Af → comparisonFactor coarseReading fineReading hcoarser t ∈ Ac) (x : fine.EdgeInTargetSubset Af) (e : coarse.nerve.EdgeComponent)
+    (he : M.edgeMap x.val = some e) : (M.targetSubsetEdgeMap Ac Af hs x e he).val = e := rfl
+/-- 原始subset面輸送は指定した同じセル名を持つ。 -/
+@[simp] theorem targetSubsetFaceMap_val
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (Ac : Set coarseReading.Target) (Af : Set fineReading.Target)
+    (hs : ∀ t, t ∈ Af → comparisonFactor coarseReading fineReading hcoarser t ∈ Ac) (x : fine.FaceInTargetSubset Af) (f : coarse.nerve.FaceComponent)
+    (hf : M.faceMap x.val = some f) : (M.targetSubsetFaceMap Ac Af hs x f hf).val = f := rfl
+
 /-- The canonical comparison Hom from the coarse A-subnerve to the fine
 preimage-A-subnerve. -/
 def aSubnerveComparisonHom

@@ -331,6 +331,13 @@ theorem lawGeneratedBoundaryRange_map_blocks [Fintype Source]
   rw [Submodule.map_comp, D.lawGeneratedBoundaryRange_map_aggregate,
     D.lawValueBlockBoundaryRange_map_cyclesEquiv]
 
+/-- 全Law cycle同定は同じラベルの元座標を読む。 -/
+@[simp] theorem lawGeneratedBlockCyclesEquiv_component_val [Fintype Source]
+    (D : TargetSupportedNerve q) (laws : FiniteLawFamily Source)
+    (ha : laws.Adequate q) (x : LinearMap.ker (D.lawGeneratedComplex laws ha).d1)
+    (l : LawValueLabel laws) (y : D.EdgeBlockCoordinate laws ha l) :
+    ((D.lawGeneratedBlockCyclesEquiv laws ha x) l).val y = x.val y.1 := rfl
+
 /--
 The actual G-102 `H^1` quotient of the law-generated complex is canonically the
 finite direct sum of the actual G-102 `H^1` quotients of its law-value blocks.
