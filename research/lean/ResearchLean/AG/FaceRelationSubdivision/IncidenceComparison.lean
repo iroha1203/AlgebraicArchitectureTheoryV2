@@ -339,6 +339,16 @@ def identity (q : Reading Source) (N : TargetSupportedNerve q) :
     rw [comparisonFactor_commutes]
     exact ht
 
+/-- 原始恒等chart表の評価。 -/
+@[simp] theorem identity_chartMap (q : Reading Source) (N : TargetSupportedNerve q) (v) :
+    (identity q N).chartMap v = v := rfl
+/-- 原始恒等edge表の評価。 -/
+@[simp] theorem identity_edgeMap (q : Reading Source) (N : TargetSupportedNerve q) (e) :
+    (identity q N).edgeMap e = some e := rfl
+/-- 原始恒等face表の評価。 -/
+@[simp] theorem identity_faceMap (q : Reading Source) (N : TargetSupportedNerve q) (f) :
+    (identity q N).faceMap f = some f := rfl
+
 /-- 左恒等は全計算成分で成立する。 -/
 theorem comp_identity_left
     (M : IncidenceSupportedComparison q₀ q₁ h₀₁ N₀ N₁) :

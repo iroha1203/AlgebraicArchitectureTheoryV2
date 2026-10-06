@@ -66,6 +66,16 @@ def chainContraction (A : Set q.Target) : SubsetChainContraction P.restored N A 
 def rHom (A : Set q.Target) := (P.chainContraction A).rHom
 /-- 同じsの実subset cochain比較。逆操作ではrとこの射を逆向きに使う。 -/
 def sHom (A : Set q.Target) := (P.chainContraction A).sHom
+/-- 原始逆patternの同じsection次数0双対射。 -/
+@[simp] theorem sHom_f0 (A : Set q.Target) :
+    (P.sHom A).f0 = dualCellMap (P.chainContraction A).s0 := rfl
+/-- 原始逆patternの同じsection次数1双対射。 -/
+@[simp] theorem sHom_f1 (A : Set q.Target) :
+    (P.sHom A).f1 = dualCellMap (P.chainContraction A).s1 := rfl
+/-- 原始逆patternの同じsection次数2双対射。 -/
+@[simp] theorem sHom_f2 (A : Set q.Target) :
+    (P.sHom A).f2 = dualCellMap (P.chainContraction A).s2 := rfl
+
 /-- 原始収縮・同じ実双対射の標準ホモトピー同値。 -/
 def cochainHomotopyEquiv (A : Set q.Target) := (P.chainContraction A).cochainHomotopyEquiv
 /-- 同値の順方向は同じ実rHomの標準零延長。 -/
@@ -90,6 +100,11 @@ theorem oldH1ComparisonIso_hom (A : Set q.Target) :
 def collapse : IncidenceSupportedComparison q q (Reading.coarserThan_refl q) P.restored N :=
   IncidenceSupportedComparison.comp (TriangleAddition.collapse P.restored P.restoredBase)
     P.presentation.symmSelf.comparison
+
+/-- 同じ原始逆patternのcollapse Option表の直接合成式。 -/
+@[simp] theorem collapse_eq : P.collapse =
+    IncidenceSupportedComparison.comp (TriangleAddition.collapse P.restored P.restoredBase)
+      P.presentation.symmSelf.comparison := rfl
 
 /-- 実収縮Homは、原始Option表から独立生成した新比較の同じ三次数射である。 -/
 theorem rHom_eq_generated (A : Set q.Target) : P.rHom A =
