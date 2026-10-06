@@ -49,7 +49,7 @@ selection:
     - 全未実装義務、A–F・Wの完了判定
 ```
 
-## 全targetのproof obligation
+## Cycle 2時点の全targetのproof obligation
 
 M1のLean構成は以下に対応させる。Cycle 1/M1はPR #5263で独立査読・root受理・CI成功後にmerge済み。Cycle 2/M2はPR #5264で独立査読・非中心指摘の直接対応・root受理・CI成功後にmerge済みである。C・D・E・F、W1の錐、W2・W3は未証明。
 全体の completion candidate ではない。Formal移植とArchSig実装対応は未実施。
@@ -1996,3 +1996,219 @@ metadataでは生成されないため、更新spineから除いた。source宣�
 集合照合した連結log SHA-256: `db0435d06101cbba514baa9e5b4f238091eec46c0742a63f338b00df101ddb05`。
 更新spine/追加宣言のscanと差分検査はclean。修正後の資格・解消判定は
 固定headのPR監査記録へ追記する。
+
+## Cycle 7 selection：有限多段の全指定射・Law分解・三段接続
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-133-aat-atlas-defect-composition
+cycle: 7
+goal_blob_sha: 8904a7d3bf428e0307499a40be4db1ba9091c51a
+base_oid: df6a7820b690ba3f366f25be95625f1c1323bf37
+tracking_issue: 5261
+report_path: research/reports/G-133-aat-atlas-defect-composition.md
+selection:
+  proof_state_ref: "Issue #5261 Cycle 6受理コメント6006712595、PR #5268最終監査6006687731、report Cycle6"
+  proof_dag_predecessors: [M1全原始比較合成, M2全実相殺, M3零延長と標準錐, M4全Law直和, M5全段台署名と制限, Cycle6実有限単射モデルと実逐次商]
+  milestone: "元Cycle6のM6全終了条件を維持し、Fの全三射自然性、有限対射同定、全Lawモデルと実商の直和、三段特殊化を閉じる"
+  proof_obligations: [clamp延長の元Fin全対射同定, compositionTriangle全三射の自然性, 指定homotopy同値のhomと実cokernelの自然性, 実Subobject包含と商の台制限, 共通署名反対圏の有限diagramとモデル, 同じq0発生ラベルfiberによる全Lawdiagram直和, 全モデル包含と射影と逐次商の直和整合, 原始三段pathと独立生成全比較の一致, A–FとW統合]
+  exit_criteria: [任意nをn0込みで元有限全対象全対射へ同定, 任意cochain可換squareでtriangle全三射と指定逐次商射が可換, 任意台包含と全段共通署名で実モデル包含と実商が自然, 全Law発生ラベルを重複のまま全段モデルと全逐次商へ直和同定, 三段T0入力とM1独立原始M02がF構成へ一致, 固定A–F/W全条項と全premiseを累積証拠へ対応, 別独立4本の完了監査で全completion条件確認]
+  selection_reason: "受理済み有限filtrationを実比較の全自然性・分解へ接続し、残るFのproof distanceを直接縮める"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiniteIndexTransport, ConeCompositionNaturality, ConeTowerQuotientNaturality, SubobjectFiltrationNaturality, FiniteSignatureDiagram, LawPathBiproduct, ModelBiproductNaturality, LawFiniteModelDecomposition, LawFiltrationQuotientDecomposition, ThreeStageFinitePath, ThreeStageConeIntegration]
+  risks: [直接射を合成で再定義しない, 最後のshift射を省略しない, 原比較Monoを受領しない, Lawラベルを同署名で潰さない, 実cokernelと実Subobjectを抽象値で代替しない, HEと自然性fieldを外部入力にしない]
+  unchecked: [全三射自然性, 全Lawモデル直和と実商対応, 有限全対射公開同定, 三段特殊化, 全GOAL独立完了監査]
+```
+
+Cycle 6は固定head `0fa7739ddb3d49a08bd1941f8cf8062084f81736`、merge `df6a7820b690ba3f366f25be95625f1c1323bf37` により受理した。初回4本の非中心事項は有資格な新規直接確認で全解消し、[root最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5268#issuecomment-6006687731)と[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5261#issuecomment-6006712595)を保持する。元M6終了条件と全GOAL completion gateは維持する。
+
+### Cycle 7 構成と全target対応
+
+有限原始pathの対象は元のreading・nerveそのもので、全対射は原始圏の
+chart/Option edge/Option face合成である。`finiteExtendIso_natural` は
+任意の `n` と全 `Fin (n+1)` 射で元diagramへの可換式を与え、零段も含む。
+
+`compositionTriangleMap` は独立な直接射を保持した任意のcochain正方形から
+三錐の射を作り、最後のshift射を含む三可換式を生成する。
+`compositionTriangleConeEquiv_inv_natural` は標準反復錐の指定射を追い、
+`successiveQuotientEquiv_hom_natural` は実cokernelからの指定同値のhomに接続する。
+`filtrationMap` は実Subobjectのunderlying同型で元モデル射を移した射である。
+実arrow・実ofLE包含・実cokernel map・指定商同値のhomの全可換式を証明した。
+これらから加法的関手と自然変換を作り、共通全セル署名の反対圏へ前合成する。
+
+Lawの同定は同じ最初のreadingの各発生ラベルfiberから行う。
+`lawPathBiproductIso` は全有限diagramの実同型であり、任意の全対射と可換する。
+加法的構成への標準biproduct保存を通して、モデル・累積錐・隣接錐・実モデル商・
+実Subobject underlying・実ofLE包含のcokernelへ全ラベルを保持した同型を作る。
+包含・augmentation・商射・指定商同値のhom・triangleの全三射は同じ同型の下で直和になる。
+同署名の異なるLawラベルを同一視する操作は用いない。
+
+`ThreeStagePath.path_direct` は元の全原始M02合成そのものである。
+`law_finite_triangle` は元の独立全Law生成三射への等号、
+`lawTowerTriangleIso` はその三錐へ全三射での同型を与える。
+subset版は `subset_direct` と `SupportStages.pairComparison_canonical` で
+元のaSubnerve生成射を各対の逆像へtransportし、`subsetInitialIso` で初段を
+元の同じAへ戻す。`subsetTowerTriangleIso` はその実三錐への同型である。
+W1の同じ非定数Law・二つの原始比較へ適用した実filtration商のhomologyは
+第一商0,2・第二商2,0・terminalモデル0,0である。
+これらは既存の実生成全Law錐の評価と指定homotopy同値から導く。
+
+以下は全固定要求と現在の累積証拠を対応させる。先行cycleの状態記述は
+当該cycle時点の記録であり、本節が現時点の証拠対応である。
+宣言名は `AAT.AG.AtlasDefectComposition` を共通接頭辞とする。
+
+| 固定要求 | 入力から結論までの実証拠と使用経路 |
+| --- | --- |
+| T0の同じSource、全原始セル・部分incidence、任意Lawと任意A | 既存 `TargetSupportedNerve` / `TargetSupportedNerveMorphism` を量化。`comparisonComp` は全fieldを生成。`adequate_of_coarser` で細adequacyを導出。`rawPath_obj/rawPath_adjacent` は全有限隣接入力を保持 |
+| Aの原始合成・全三次数・H¹、恒等・結合、因子・Law降下・逆像 | `ComparisonComposition/ComparisonLaws/GeneratedComposition/SubsetComposition` のM1全宣言。直接Homは原始合成へ既存生成手続きを適用し、全計算成分の等号からH¹商へ降ろす |
+| Bの六対象、全五射、両端、相殺range商、自然数寸法式 | `DefectSequence` と `GeneratedDefect` のM2全構成。実H¹射へM1の直接合成を適用し、代表cocycle・primitiveを `GeneratedDefect` で追う |
+| Bの共通A/Lawの恒等・合成・二つから一つの零欠損 | `GeneratedDefect` の実比較族への全方向。途中で別Lawを追加する量化は使わない |
+| Cの全整数次数・指定符号順序・既存H¹同型・標準錐 | `ZeroExtension/ComparisonHomology/ConeCoordinates`。零延長の全次数から旧H¹と標準homologyを自然同定 |
+| Cの任意mの実短完全列、−1/2端同型、0/1寸法、条件付き追加項消去の両向き | `ConeHomologySequence/ConeExactSequence/ConeNaturality/ConeEndDegrees/ConeConditional`。標準長完全列の実各射から短完全列を構成し、H⁰全射/H²単射の条件は追加項消去にだけ使う |
+| Dの同じ発生ラベルfiber、実比較・H¹・核余核・錐・短完全列 | `LawFiberDecomposition/LawStandardDecomposition/LawDefectDecomposition/LawConeDecomposition/LawSubsetConeDecomposition`。元の全ラベル同値と比較正方形を各実構成へ渡す |
+| Dの六項全射・χ・相殺rank・欠損和 | `LawSixTermDecomposition/LawFiberSixTermDecomposition/LawStandardDimensions`。全五射のcomponent等号、実range同値からrank和を得る |
+| Dの非空Aの指示Lawtrue block、空A零、補集合との区別 | `IndicatorSelectedBlock/EmptySubset` と `LawFiberDecomposition`。単独blockだけをAへ同定し、全Lawの別blockは保持 |
+| Eの六側次数タグ・元セル、α/γ・閉包・join・bottom・quotient/image/Fix同型 | `SupportSignature/SignatureGeometry/SignatureQuotient/SignatureUniversal` 系のM5宣言。元セル選択の全六成分から同じ署名を作り、subset quotientとimage/Fixを同定 |
+| Eのdecoder対象全射pと全セル復元d、終対象と通常商の一意因子化 | `SignatureUniversal` 系。実対象・射のbottom/join・二可換条件を保つ。診断値だけのdecoderに差し替えない |
+| EのLaw有限block族、active全単射射、零block削除、重複度、加法的普遍性 | `SelectedFamilies/FiniteFamilyReindex/FiniteFamilyZeroDeletion/LawSignatureComparison/LawSignatureRestoration/SelectedFamilyFreeMonoid/SelectedFamilyUniversal` 系。ラベルをactive添字に保持し、同署名でも多重和を保持 |
+| EのΣop複体・比較・錐・H¹核余核と三段のB全射自然性 | `SupportFunctor/SupportConeFunctor/SupportDefectFunctor/SupportStageComparison/SupportStageSixTerm`。実セル制限から各関手を構成、共通全段署名でχを含む五射が可換 |
+| Fの実三錐triangle・distinguished・式と符号・全三射自然性 | `ConeCompositionTriangle/ConeCompositionHomotopy/ConeCompositionNaturality`。元の直接射を保持して標準triangleをtransportし、任意可換squareで最後のshift射まで証明 |
+| Fの任意有限段n0込み・元の全対射・累積/隣接錐tower | `FiniteRawPath/FiniteSubsetPath/FiniteIndexTransport/CumulativeConeTower`。原始圏から独立生成した全pairへ有限延長の自然同型を適用 |
+| Fの零始点有限次数FDモデル・実Mono包含・実Subobject filtration・実逐次商HE | `MappingCylinderModel/BoundedConeModels/FiniteConeFiltration/FiniteModelApplication`。元の射のMonoを受け取らず、mapping cylinderのdegree retractionからMonoを導出し、実cokernelを隣接錐へHE同定 |
+| Fの台制限と全指定商射、共通署名反対圏 | `ConeTowerQuotientNaturality/SubobjectFiltrationNaturality/FiltrationNaturalFunctors/FiniteSignatureDiagram`。実arrow・包含・商射・指定HE homを同じ元の制限でtransport |
+| Fの全Lawモデル/実filter/実商の直和と全指定射、三段特殊化 | `LawPathBiproduct/LawFiniteModelDecomposition/LawFiltrationQuotientDecomposition/ThreeStageFinitePath/ThreeStageConeIntegration`。同じq0各fiber図式の実biproduct同型と加法的自然性を全三射へ適用 |
+| W1の真の三reading・非定数Law・実非零H¹/χ・primitive・0,1/1,0/0,0・全二ラベル | `WitnessOneInput/WitnessOneComparison/WitnessOnePeriods/WitnessOneCancellation/WitnessOneFullLaw/WitnessOneCones/WitnessOneFullLawCones/WitnessOneSignatureMultiplicity`。元セル表→既存生成比較→実類/実商→非零χ/rank1、全Lawrank2と次元2/4/2。`WitnessOneFiniteModels` は同じ原始入力へFを適用 |
+| W2の同じ全原始入力で異署名同零J・同署名異subset・真の閉包・四署名・実Law同署名二ラベル | `WitnessTwoInput/WitnessTwoGeometry/WitnessTwoTargets/WitnessTwoLawMultiplicity`。Fin3の指定台{0,1}/{2}、恒等全原始比較。実Lawラベルa/bの相違・同署名・多重度2を同時に評価 |
+| W3aのH¹零とH⁰余核、W3bのH¹零とH²核、全錐次数寄与 | `WitnessThreeInput/WitnessThreeNamed/WitnessThreeRanks/WitnessThreeActual/WitnessThreeConeA/WitnessThreeConeB/WitnessThreeConeRanks/WitnessThreeFullLaw`。隔離二chartへの実比較とtetrahedron→filled triangleの実全cell比較を生成し、追加寄与1と他次数0を計算 |
+
+### Cycle 7 material premiseとDAG
+
+| premise | 分類と状態 | 生成元・proof-use |
+| --- | --- | --- |
+| 有限Source・全射reading・有限支持nerve・原始部分incidence・q0 Law adequacy・全subset | T0由来 `ambient-boundary` / `justified-boundary` | RawResolutionと既存生成関数、全対diagramで使用。Wでは原始表とSource証人から全fieldを構成 |
+| 細Law adequacy、発生ラベルと有限次元性 | `discharge-required` / `discharged` | `adequate_of_coarser/pathAdequate`、Source有限性→実発生label、元のfinite cell座標→旧H¹/全整数次数FD→有限model |
+| 全原始M02・Hom/H¹合成、subset/Law transport | `discharge-required` / `discharged` | M1全field→生成全成分→商。finitePath全pairと `law_direct_comp` の入力へ使用 |
+| B全exactness・χ・代表primitive・range商・寸法 | `discharge-required` / `discharged` | M2の実linear quotient構成と実生成比較への同定。Law全射直和とW1非零類に使用 |
+| C全次数標準錐・H¹同定・SES・端同型 | `discharge-required` / `discharged` | M3零延長と標準長完全列、M4自然なLaw分解、Fの三錐とW3追加項に使用 |
+| H⁰全射・H²単射 | C追加項消去だけの `direction-hypothesis` / `justified-boundary` | `ConeConditional` のiff。一般T0に追加せず、W1では `full_extra_terms_zero`、W3では非零追加項を実証 |
+| 全Lawblock・同fiber複体/射・全直和と重複度 | `discharge-required` / `discharged` | M4実同型→M5activeラベル族→Cycle7全有限diagram同型と加法的biproduct保存→全指定射 |
+| 全cell署名・Galois/閉包/quotient・decoder二普遍性・Law加法評価 | `discharge-required` / `discharged` | M5実cell選択と有限join構成。decoderは全cell選択復元がEで許された対象条件であり、結論供給ではない |
+| 全triangle・HE・モデルMono・有限次数・実filter・実cokernel | `discharge-required` / `discharged` | 標準符号三角/標準指定反復錐HE→mapping cylinder実retraction→帰納モデル→実Mono→Subobject/ofLE/cokernel→隣接錐HE。ModelStageのequivalence fieldもstageの再帰で生成 |
+| 台restriction/同署名transport、Law全指定射自然性 | `discharge-required` / `discharged` | 元セル制限の実平方→任意diagram自然変換→モデル/実filter/実商の指定式→全三射/指定HE homの可換式 |
+| 三段とW1–W3の原始入力・指定非自明性・同時評価 | `discharge-required` / `discharged` | 各Witness入力moduleから実生成比較と既存商を追う。W1商モデルの0,2/2,0/0,0は元の同じ実錐評価を使用 |
+
+受理済みDAGの参照版とreview refsは各cycle節にある。
+G-104/G-107/G-132の再利用箇所は設計reuse-mapの指定に従い、現在の
+statement・必要定義・適用引数を照合する。Lean4.28.0、mathlib
+`8f9d9cff6bd728b17a24e163c9402775d9e6a365` の標準APIを使用する。
+今回のspineに未放電数学premiseを申告していない。全GOAL完了の認定は
+固定headの標準PR査読と別の独立4本完了査読の結果を待つ。
+Formal移植は `unported (Research-proved)`、ArchSigへの対応実装は別作業である。
+
+### Cycle 7宣言spine
+
+compiled module provenanceで新規18moduleと先行10moduleへの公開API追加を抽出した。
+追加spineは192宣言、全累積spineは152module/1721宣言である。
+先行宣言のstatementと構成値を変更せず、指定射・projectionのAPIを追加した。
+全宣言の公理監査はこの累積リスト全件を対象にする。
+
+| module | 追加public declaration |
+| --- | --- |
+| [ComparisonComposition](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ComparisonComposition.lean) | `AAT.AG.ResolutionInvariance.comparisonFactor.congr_simp`<br>`AAT.AG.ResolutionInvariance.lawDescend.congr_simp` |
+| [ConeCompositionEquivNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeCompositionEquivNaturality.lean) | `AAT.AG.AtlasDefectComposition.compositionConeEquiv_inv_natural`<br>`AAT.AG.AtlasDefectComposition.compositionTriangleConeEquiv_inv_natural` |
+| [ConeCompositionNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeCompositionNaturality.lean) | `AAT.AG.AtlasDefectComposition.compositionTriangleMap`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_first_natural`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_second_natural`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_third_natural`<br>`AAT.AG.AtlasDefectComposition.composition_direct_square` |
+| [ConeCompositionTriangle](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeCompositionTriangle.lean) | `AAT.AG.AtlasDefectComposition.compositionTriangle_mor₂`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_mor₃` |
+| [ConeHomotopyTransport](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeHomotopyTransport.lean) | `AAT.AG.AtlasDefectComposition.coneMapHomotopyEquiv_hom` |
+| [ConeTowerNaturalFunctors](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeTowerNaturalFunctors.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.adjacentConeFunctor`<br>`AAT.AG.AtlasDefectComposition.ConeTower.adjacentConeFunctor_additive`<br>`AAT.AG.AtlasDefectComposition.ConeTower.adjacentConeMap_add`<br>`AAT.AG.AtlasDefectComposition.ConeTower.adjacentConeMap_comp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.adjacentConeMap_id`<br>`AAT.AG.AtlasDefectComposition.ConeTower.augmentationNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.inclusionNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientEquivNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientFunctor`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientFunctor_additive`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientMap_add`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientMap_comp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientMap_id`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientProjectionNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangleFirstNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangleSecondNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangleThirdNatTrans` |
+| [ConeTowerQuotientNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeTowerQuotientNaturality.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.modelCone_augmentation_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientMap`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientMap_π`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotientMap_π_assoc`<br>`AAT.AG.AtlasDefectComposition.ConeTower.stepConeEquiv_hom_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.successiveQuotientEquiv_hom_natural`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.cokernelIso_natural` |
+| [ConeTowerTriangleNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeTowerTriangleNaturality.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.adjacentConeMap`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangleMap`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangle_first_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangle_second_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangle_third_natural` |
+| [CumulativeConeNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/CumulativeConeNaturality.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.modelNatTrans_app` |
+| [CumulativeConeTower](../../research/lean/ResearchLean/AG/AtlasDefectComposition/CumulativeConeTower.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.stepConeEquiv_hom`<br>`AAT.AG.AtlasDefectComposition.ConeTower.successiveQuotientEquiv_hom` |
+| [FiltrationNaturalFunctors](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiltrationNaturalFunctors.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.filtrationInclusionNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationMap_add`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationMap_comp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationMap_id`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientEquivNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientFunctor`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientFunctor_additive`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientMap_add`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientMap_comp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientMap_id`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientMap_π`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientMap_π_assoc`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientProjectionNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationStageFunctor`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationStageFunctor_additive` |
+| [FiniteComplexFamily](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteComplexFamily.lean) | `AAT.AG.AtlasDefectComposition.FiniteComplexFamily.iso_hom`<br>`AAT.AG.AtlasDefectComposition.FiniteComplexFamily.iso_natural`<br>`CategoryTheory.Limits.isBilimitOfPreserves.congr_simp` |
+| [FiniteConeFiltration](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteConeFiltration.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientEquiv_hom`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtration_arrow` |
+| [FiniteDiagramBiproduct](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteDiagramBiproduct.lean) | `AAT.AG.AtlasDefectComposition.FiniteComplexFamily.diagram`<br>`AAT.AG.AtlasDefectComposition.FiniteComplexFamily.diagramBiproductComponentIso`<br>`AAT.AG.AtlasDefectComposition.FiniteComplexFamily.diagramBiproductComponentIso_projection`<br>`AAT.AG.AtlasDefectComposition.FiniteComplexFamily.diagramBiproductIso`<br>`AAT.AG.AtlasDefectComposition.FiniteComplexFamily.diagram_map`<br>`AAT.AG.AtlasDefectComposition.FiniteComplexFamily.diagram_obj`<br>`AAT.AG.AtlasDefectComposition.FiniteComplexFamily.instHasBiproductFunctorCochainComplexModuleCatRatInt_researchLean`<br>`AAT.AG.AtlasDefectComposition.FiniteComplexFamily.instPreservesBiproductFunctorCochainComplexModuleCatRatIntObjEvaluation_researchLean` |
+| [FiniteIndexTransport](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteIndexTransport.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.extendFunctor`<br>`AAT.AG.AtlasDefectComposition.ConeTower.extendFunctor_additive`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteClampIso`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteExtendIso`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteExtendIso_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteIndex`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteModelFunctor` |
+| [FiniteRawPath](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteRawPath.lean) | `AAT.AG.AtlasDefectComposition.lawPathDiagram_map`<br>`AAT.AG.AtlasDefectComposition.lawPathDiagram_obj` |
+| [FiniteSignatureDiagram](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteSignatureDiagram.lean) | `AAT.AG.AtlasDefectComposition.PathSignature`<br>`AAT.AG.AtlasDefectComposition.signatureAdjacentConeFunctor`<br>`AAT.AG.AtlasDefectComposition.signatureAugmentation`<br>`AAT.AG.AtlasDefectComposition.signatureConeFunctor`<br>`AAT.AG.AtlasDefectComposition.signatureFiltrationInclusion`<br>`AAT.AG.AtlasDefectComposition.signatureFiltrationQuotientEquivalence`<br>`AAT.AG.AtlasDefectComposition.signatureFiltrationQuotientFunctor`<br>`AAT.AG.AtlasDefectComposition.signatureFiltrationStageFunctor`<br>`AAT.AG.AtlasDefectComposition.signatureInclusion`<br>`AAT.AG.AtlasDefectComposition.signatureModelFunctor`<br>`AAT.AG.AtlasDefectComposition.signaturePathDiagram`<br>`AAT.AG.AtlasDefectComposition.signatureQuotientEquivalence`<br>`AAT.AG.AtlasDefectComposition.signatureQuotientFunctor`<br>`AAT.AG.AtlasDefectComposition.subsetPathSameSignatureIso`<br>`AAT.AG.AtlasDefectComposition.subsetPathSignatureIso` |
+| [FiniteSubsetPath](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteSubsetPath.lean) | `AAT.AG.AtlasDefectComposition.subsetPathDiagram_map`<br>`AAT.AG.AtlasDefectComposition.subsetPathDiagram_obj`<br>`AAT.AG.AtlasDefectComposition.subsetPathRestriction_app`<br>`AAT.AG.AtlasDefectComposition.subsetPathRestriction_comp`<br>`AAT.AG.AtlasDefectComposition.subsetPathRestriction_id` |
+| [FiniteThreeStageTriangle](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteThreeStageTriangle.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.finiteDirect`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteFirst`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteInitialIso`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteLastIso`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteMiddleIso`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteSecond`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteTowerTriangleIso`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finiteTriangle`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finite_direct_comp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finite_direct_square`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finite_first_square`<br>`AAT.AG.AtlasDefectComposition.ConeTower.finite_second_square` |
+| [FullSupportBlocks](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportBlocks.lean) | `AAT.AG.AtlasDefectComposition.fullBlockCoordinateEquiv.congr_simp` |
+| [FullSupportGraph](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportGraph.lean) | `AAT.AG.AtlasDefectComposition.fullBlockCochainEquiv.congr_simp` |
+| [FullSupportPullback](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportPullback.lean) | `AAT.AG.AtlasDefectComposition.fullBlock_pullback1_none`<br>`AAT.AG.AtlasDefectComposition.fullBlock_pullback1_some` |
+| [LawFiltrationQuotientDecomposition](../../research/lean/ResearchLean/AG/AtlasDefectComposition/LawFiltrationQuotientDecomposition.lean) | `AAT.AG.AtlasDefectComposition.instHasBiproductLawValueLabelCochainComplexModuleCatRatIntCompFunctorFinHAddNatOfNatObjLawLabelPathDiagram_1`<br>`AAT.AG.AtlasDefectComposition.lawFiltrationQuotientSumIso`<br>`AAT.AG.AtlasDefectComposition.lawFiltrationStageSumIso`<br>`AAT.AG.AtlasDefectComposition.law_filtration_inclusion_sum`<br>`AAT.AG.AtlasDefectComposition.law_filtration_quotient_equivalence_sum`<br>`AAT.AG.AtlasDefectComposition.law_filtration_quotient_projection_sum` |
+| [LawFiniteModelDecomposition](../../research/lean/ResearchLean/AG/AtlasDefectComposition/LawFiniteModelDecomposition.lean) | `AAT.AG.AtlasDefectComposition.instHasBiproductLawValueLabelCochainComplexModuleCatRatIntCompFunctorFinHAddNatOfNatObjLawLabelPathDiagram`<br>`AAT.AG.AtlasDefectComposition.instHasBiproductLawValueLabelFunctorFinHAddNatOfNatCochainComplexModuleCatRatIntLawLabelPathDiagram_1`<br>`AAT.AG.AtlasDefectComposition.lawAdjacentConeSumIso`<br>`AAT.AG.AtlasDefectComposition.lawConeSumIso`<br>`AAT.AG.AtlasDefectComposition.lawConstructionSumIso`<br>`AAT.AG.AtlasDefectComposition.lawConstructionSumIso_natural`<br>`AAT.AG.AtlasDefectComposition.lawConstructionSumIso_projection`<br>`AAT.AG.AtlasDefectComposition.lawModelSumIso`<br>`AAT.AG.AtlasDefectComposition.lawPathProjection`<br>`AAT.AG.AtlasDefectComposition.lawQuotientSumIso`<br>`AAT.AG.AtlasDefectComposition.law_model_augmentation_sum`<br>`AAT.AG.AtlasDefectComposition.law_model_inclusion_sum`<br>`AAT.AG.AtlasDefectComposition.law_quotient_equivalence_sum`<br>`AAT.AG.AtlasDefectComposition.law_quotient_projection_sum`<br>`AAT.AG.AtlasDefectComposition.law_triangle_first_sum`<br>`AAT.AG.AtlasDefectComposition.law_triangle_second_sum`<br>`AAT.AG.AtlasDefectComposition.law_triangle_third_sum` |
+| [LawPathBiproduct](../../research/lean/ResearchLean/AG/AtlasDefectComposition/LawPathBiproduct.lean) | `AAT.AG.AtlasDefectComposition.instHasBiproductLawValueLabelFunctorFinHAddNatOfNatCochainComplexModuleCatRatIntLawLabelPathDiagram`<br>`AAT.AG.AtlasDefectComposition.lawLabelPathDiagram`<br>`AAT.AG.AtlasDefectComposition.lawPathBiproductIso`<br>`AAT.AG.AtlasDefectComposition.lawPathBiproductIso_natural`<br>`AAT.AG.AtlasDefectComposition.lawPathBlockIso`<br>`AAT.AG.AtlasDefectComposition.lawPathBlockIso_natural`<br>`AAT.AG.AtlasDefectComposition.lawPathFamilyIso`<br>`AAT.AG.AtlasDefectComposition.lawPathFamilyIso_natural`<br>`AAT.AG.AtlasDefectComposition.lawPathFamilyNatIso` |
+| [MappingCylinderModel](../../research/lean/ResearchLean/AG/AtlasDefectComposition/MappingCylinderModel.lean) | `AAT.AG.AtlasDefectComposition.MappingCylinder.cokernelIso_π_hom` |
+| [ModelBiproductNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ModelBiproductNaturality.lean) | `AAT.AG.AtlasDefectComposition.additiveSumIso`<br>`AAT.AG.AtlasDefectComposition.additiveSumIso.congr_simp`<br>`AAT.AG.AtlasDefectComposition.additiveSumIso_natural`<br>`AAT.AG.AtlasDefectComposition.additiveSumIso_projection` |
+| [ShortExactFiveConditions](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ShortExactFiveConditions.lean) | `AAT.AG.AtlasDefectComposition.ShortExactFive.projection.congr_simp` |
+| [SubobjectFiltrationNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/SubobjectFiltrationNaturality.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.embedding_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationInclusion_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationMap`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationMap_arrow`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientEquiv_hom_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientMap` |
+| [SubsetComposition](../../research/lean/ResearchLean/AG/AtlasDefectComposition/SubsetComposition.lean) | `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.targetSubsetPullback0.congr_simp` |
+| [SupportStageSignatures](../../research/lean/ResearchLean/AG/AtlasDefectComposition/SupportStageSignatures.lean) | `AAT.AG.AtlasDefectComposition.SupportStages.stageRestriction_comp`<br>`AAT.AG.AtlasDefectComposition.SupportStages.stageRestriction_id` |
+| [ThreeStageConeIntegration](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ThreeStageConeIntegration.lean) | `AAT.AG.AtlasDefectComposition.ThreeStagePath.lawTowerTriangleIso`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.law_direct_comp`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.law_finite_triangle`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.subsetInitialIso`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.subsetTowerTriangleIso` |
+| [ThreeStageFinitePath](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ThreeStageFinitePath.lean) | `AAT.AG.AtlasDefectComposition.ThreeStagePath.law_direct`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.path`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.path_direct`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.path_first`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.path_nerves`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.path_readings`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.path_second`<br>`AAT.AG.AtlasDefectComposition.ThreeStagePath.subset_direct` |
+| [WitnessOneFiniteModels](../../research/lean/ResearchLean/AG/AtlasDefectComposition/WitnessOneFiniteModels.lean) | `AAT.AG.AtlasDefectComposition.WitnessOne.finiteFiltration`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finiteFirstQuotientEquiv`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finitePath`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finiteQuotientLawSumIso`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finiteSecondQuotientEquiv`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finiteTerminalEquiv`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finiteTower`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finiteTriangleIso`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finite_adjacent_second`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finite_cumulative_direct`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finite_cumulative_first`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finite_first_quotient_dimensions`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finite_second_quotient_dimensions`<br>`AAT.AG.AtlasDefectComposition.WitnessOne.finite_terminal_dimensions` |
+| [ZeroExtension](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ZeroExtension.lean) | `CategoryTheory.ShortComplex.LeftHomologyMapData.mk.congr_simp` |
+
+### Cycle 7 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "有限全対射同定、全triangle三射と指定商同値homの自然性、実Subobject/実商の制限、全Law finite diagram/モデル/filter/商の直和、元原始三段とW1への接続を追加"
+  exit_criteria_status: [任意nとn0の元全対射を自然同定, 任意cochain正方形で全三射を証明, 台包含と共通署名で実filter/商が自然, 元q0全発生ラベルを全実構成へ保持, 原始M02の独立生成三段triangleへ全三射同型, A–F/Wと全premiseを前節へ対応, 独立完了査読はPRゲート合格後に別起動]
+  split_reason: none
+  completion_candidate: yes
+  lean_artifacts: [前節192追加spine, 受理済み1529宣言]
+  evidence: [全target対応表, material premise/DAG表, root focused buildと公理監査]
+  claim_mapping:
+    theorem_names: [compositionTriangleMap, ConeTower.finiteExtendIso_natural, ConeTower.filtrationQuotientEquiv_hom_natural, lawPathBiproductIso, lawConstructionSumIso_natural, ThreeStagePath.lawTowerTriangleIso, WitnessOne.finite_first_quotient_dimensions, WitnessOne.finite_second_quotient_dimensions]
+    source_labels: [T0, A, B, C, D, E, F, W1, W2, W3a, W3b]
+    conjuncts: [前節全target対応表]
+    undischarged_assumptions: []
+    acceptance_point: "固定全targetに対応する実構成の数学的義務を閉じたproposal。正式PRレビュー、root受理、別4本完了査読、CI、merge、Issue同期の認定を待つ"
+    port_status: unported
+  unchecked: [標準PR正式4本, root最終受理, 別独立4本完了監査, CIとmerge同期]
+audits:
+  premise_delta:
+    discharged: [前節全discharge-required行]
+    remaining: []
+  certificate_provenance:
+    discharged: [原始有限pathから全diagram, 原始同q0 Lawから全有限biproduct, mapping cylinder再帰から実モデルMonoと実逐次商HE, W1原始入力から実filter商の評価]
+    unresolved: []
+  proof_use:
+    used: [全target対応表とmaterial premise/DAG表]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [次節検証, 固定headの正式PR監査コメント]
+  blocking_findings: []
+  next_obligation: 標準PRゲートを実施し固定headの別独立4本完了監査へ進む
+```
+
+### Cycle 7検証
+
+rootの必要な非aggregate target `WitnessOneFiniteModels` buildは3894 jobsで成功した。
+その依存で三段接続・全指定射・Lawモデル/filtration/商分解を確認した。
+`WitnessTwoLawMultiplicity`、`WitnessThreeFullLaw`、`WitnessOneSignatureMultiplicity`
+の必要な回帰target buildも3881 jobsで成功した。
+Research全体・aggregate root・全source file loopの再elaborationは実行していない。
+
+152moduleのcompiled metadataから累積1721宣言を抽出した。追加192宣言は
+単一scratchの全件 `#print axioms` で確認し、無変更の1529先行宣言は
+Cycle6の受理済み全件記録を再利用した。先行Lean差分に削除・置換行は零件で、
+計算成分・statement・proof termを保持している。集合照合は欠落・余分・
+エラー・標準外公理零件、46宣言は公理非依存、残りは
+`propext` / `Classical.choice` / `Quot.sound` の範囲である。
+追加公理log SHA-256: `5bf01fcc1fae501c3c87fc3cc762f20ccab77ab61bd0a4eff036a2d858e49a71`。
+累積照合log SHA-256: `645fefbee5bd469f549df43a69e32c8af143ccbf67c98d1dfe2bad73afd2078e`。
+
+placeholder、hidden/BiDi、privacy、新規禁止語彙、FormalからResearchへの
+import scanと `git diff --check` は検出なし。変更はG-133のResearchLeanと本reportのみ。
+正式PR査読と別独立4本完了監査、CI、merge、Issue同期の証拠は
+この最終snapshotに対するPRコメントへ記録する。
+Formal移植とArchSig対応実装は実施していない。

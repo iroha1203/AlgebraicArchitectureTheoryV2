@@ -94,6 +94,18 @@ def iso (e : ∀ j, F j ≅ G j) : complex F ≅ complex G where
     rw [← map_comp]
     simpa only [Iso.inv_hom_id] using map_id G
 
+/-- 成分同型の実射は同じ成分の族射である。 -/
+@[simp] theorem iso_hom (e : ∀ j, F j ≅ G j) : (iso F G e).hom = map F G (fun j => (e j).hom) := rfl
+/-- 成分同型と両側の実射の正方形は全族でも可換する。 -/
+theorem iso_natural {F' G' : J → CochainComplex (ModuleCat.{max v w} ℚ) ℤ}
+    (e : ∀ j, F j ≅ F' j) (e' : ∀ j, G j ≅ G' j)
+    (φ : ∀ j, F j ⟶ G j) (ψ : ∀ j, F' j ⟶ G' j)
+    (h : ∀ j, φ j ≫ (e' j).hom = (e j).hom ≫ ψ j) :
+    map F G φ ≫ (iso G G' e').hom = (iso F F' e).hom ≫ map F' G' ψ := by
+  rw [iso_hom,iso_hom,← map_comp,← map_comp]
+  congr 1
+  funext j
+  exact h j
 /-- 実成分射影から作る標準product cone。 -/
 def fan : Fan F := Fan.mk (complex F) (projection F)
 /-- 実有限族複体は圏論的productの普遍性を満たす。 -/
