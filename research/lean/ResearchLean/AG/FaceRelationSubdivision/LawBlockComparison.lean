@@ -1,0 +1,826 @@
+import ResearchLean.AG.FaceRelationSubdivision.GeneratedComparison
+import ResearchLean.AG.ResolutionInvariance.LawValueBlockComparison
+import Formal.Util.AssertStandardAxioms
+
+/-!
+# 混在比較のLaw成分
+
+G-134 A・D。発生ラベルごとの座標と実比較を原始写像から生成する。
+
+## Implementation notes
+
+対象のLaw分解は既存APIを使う。射の成分は同一ラベルを保つ原始比較から作り、
+新しい退化条件を相殺に使用する。
+-/
+
+noncomputable section
+
+namespace AAT.AG.FaceRelationSubdivision
+
+open CanonicalResolution DirectSum TwoPhase ResolutionInvariance
+
+universe u
+
+variable {Source : Type u}
+
+namespace IncidenceSupportedComparison
+
+variable {coarseReading fineReading : Reading Source}
+variable {hcoarser : coarseReading.CoarserThan fineReading}
+variable {coarse : TargetSupportedNerve coarseReading}
+variable {fine : TargetSupportedNerve fineReading}
+
+/-- Canonical chart-coordinate transport preserves the common label. -/
+theorem chartCoordinateMap_lawValueLabel
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (coordinate : fine.ChartCoordinate laws hfine) :
+    (M.chartCoordinateMap laws hcoarse hfine coordinate).lawValueLabel laws
+        coarseReading hcoarse coarse.nerve.Chart coarse.chartSupport =
+      coordinate.lawValueLabel laws fineReading hfine fine.nerve.Chart
+        fine.chartSupport := by
+  apply LawValueLabel.ext
+  · rfl
+  · rfl
+
+/-- Canonical mapped-edge coordinate transport preserves the common label. -/
+theorem edgeCoordinateMap_lawValueLabel
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (coordinate : fine.EdgeCoordinate laws hfine)
+    (coarseEdge : coarse.nerve.EdgeComponent)
+    (hmap : M.edgeMap coordinate.cell = some coarseEdge) :
+    (M.edgeCoordinateMap laws hcoarse hfine coordinate coarseEdge hmap).lawValueLabel
+        laws coarseReading hcoarse coarse.nerve.EdgeComponent coarse.edgeSupport =
+      coordinate.lawValueLabel laws fineReading hfine fine.nerve.EdgeComponent
+        fine.edgeSupport := by
+  apply LawValueLabel.ext
+  · rfl
+  · rfl
+
+/-- Canonical mapped-face coordinate transport preserves the common label. -/
+theorem faceCoordinateMap_lawValueLabel
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (coordinate : fine.FaceCoordinate laws hfine)
+    (coarseFace : coarse.nerve.FaceComponent)
+    (hmap : M.faceMap coordinate.cell = some coarseFace) :
+    (M.faceCoordinateMap laws hcoarse hfine coordinate coarseFace hmap).lawValueLabel
+        laws coarseReading hcoarse coarse.nerve.FaceComponent coarse.faceSupport =
+      coordinate.lawValueLabel laws fineReading hfine fine.nerve.FaceComponent
+        fine.faceSupport := by
+  apply LawValueLabel.ext
+  · rfl
+  · rfl
+
+/-! ## Coordinate transport inside one exact block -/
+
+/-- Canonical chart-coordinate transport restricted to one common block. -/
+def chartBlockCoordinateMap
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.ChartBlockCoordinate laws hfine label) :
+    coarse.ChartBlockCoordinate laws hcoarse label :=
+  ⟨M.chartCoordinateMap laws hcoarse hfine coordinate.1,
+    (M.chartCoordinateMap_lawValueLabel laws hcoarse hfine coordinate.1).trans
+      coordinate.2⟩
+
+/-- Canonical mapped-edge transport restricted to one common block. -/
+def edgeBlockCoordinateMap
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.EdgeBlockCoordinate laws hfine label)
+    (coarseEdge : coarse.nerve.EdgeComponent)
+    (hmap : M.edgeMap coordinate.1.cell = some coarseEdge) :
+    coarse.EdgeBlockCoordinate laws hcoarse label :=
+  ⟨M.edgeCoordinateMap laws hcoarse hfine coordinate.1 coarseEdge hmap,
+    (M.edgeCoordinateMap_lawValueLabel laws hcoarse hfine coordinate.1
+      coarseEdge hmap).trans coordinate.2⟩
+
+/-- Canonical mapped-face transport restricted to one common block. -/
+def faceBlockCoordinateMap
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.FaceBlockCoordinate laws hfine label)
+    (coarseFace : coarse.nerve.FaceComponent)
+    (hmap : M.faceMap coordinate.1.cell = some coarseFace) :
+    coarse.FaceBlockCoordinate laws hcoarse label :=
+  ⟨M.faceCoordinateMap laws hcoarse hfine coordinate.1 coarseFace hmap,
+    (M.faceCoordinateMap_lawValueLabel laws hcoarse hfine coordinate.1
+      coarseFace hmap).trans coordinate.2⟩
+
+/-- Partial edge transport inside one common block. -/
+def edgeBlockCoordinateMapOption
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.EdgeBlockCoordinate laws hfine label) :
+    Option (coarse.EdgeBlockCoordinate laws hcoarse label) :=
+  match hmap : M.edgeMap coordinate.1.cell with
+  | none => none
+  | some coarseEdge =>
+      some (M.edgeBlockCoordinateMap laws hcoarse hfine label coordinate
+        coarseEdge hmap)
+
+/-- Partial face transport inside one common block. -/
+def faceBlockCoordinateMapOption
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.FaceBlockCoordinate laws hfine label) :
+    Option (coarse.FaceBlockCoordinate laws hcoarse label) :=
+  match hmap : M.faceMap coordinate.1.cell with
+  | none => none
+  | some coarseFace =>
+      some (M.faceBlockCoordinateMap laws hcoarse hfine label coordinate
+        coarseFace hmap)
+
+/-! The next four API lemmas expose the two `Option` branches without
+unfolding the dependent transport definitions. -/
+
+/-- A declared degenerate edge has no coordinate in the coarse block. -/
+@[simp]
+theorem edgeBlockCoordinateMapOption_eq_none
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.EdgeBlockCoordinate laws hfine label)
+    (hmap : M.edgeMap coordinate.1.cell = none) :
+    M.edgeBlockCoordinateMapOption laws hcoarse hfine label coordinate = none := by
+  unfold edgeBlockCoordinateMapOption
+  split <;> simp_all
+
+/-- A mapped edge has the canonical same-label coordinate in the coarse block. -/
+@[simp]
+theorem edgeBlockCoordinateMapOption_eq_some
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.EdgeBlockCoordinate laws hfine label)
+    (coarseEdge : coarse.nerve.EdgeComponent)
+    (hmap : M.edgeMap coordinate.1.cell = some coarseEdge) :
+    M.edgeBlockCoordinateMapOption laws hcoarse hfine label coordinate =
+      some (M.edgeBlockCoordinateMap laws hcoarse hfine label coordinate
+        coarseEdge hmap) := by
+  unfold edgeBlockCoordinateMapOption
+  split
+  · simp_all
+  · rename_i mappedEdge heq
+    have hmapped : mappedEdge = coarseEdge :=
+      Option.some.inj (heq.symm.trans hmap)
+    subst mappedEdge
+    rfl
+
+/-- A declared degenerate face has no coordinate in the coarse block. -/
+@[simp]
+theorem faceBlockCoordinateMapOption_eq_none
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.FaceBlockCoordinate laws hfine label)
+    (hmap : M.faceMap coordinate.1.cell = none) :
+    M.faceBlockCoordinateMapOption laws hcoarse hfine label coordinate = none := by
+  unfold faceBlockCoordinateMapOption
+  split <;> simp_all
+
+/-- A mapped face has the canonical same-label coordinate in the coarse block. -/
+@[simp]
+theorem faceBlockCoordinateMapOption_eq_some
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.FaceBlockCoordinate laws hfine label)
+    (coarseFace : coarse.nerve.FaceComponent)
+    (hmap : M.faceMap coordinate.1.cell = some coarseFace) :
+    M.faceBlockCoordinateMapOption laws hcoarse hfine label coordinate =
+      some (M.faceBlockCoordinateMap laws hcoarse hfine label coordinate
+        coarseFace hmap) := by
+  unfold faceBlockCoordinateMapOption
+  split
+  · simp_all
+  · rename_i mappedFace heq
+    have hmapped : mappedFace = coarseFace :=
+      Option.some.inj (heq.symm.trans hmap)
+    subst mappedFace
+    rfl
+
+/-- An exact block-face image exposes the corresponding whole-nerve face
+image.  This definition-owner elimination API derives the raw partial-map
+equality from the existing block equality and stores no lift certificate. -/
+theorem faceMap_eq_some_of_faceBlockCoordinateMapOption_eq_some
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (fineFace : fine.FaceBlockCoordinate laws hfine label)
+    (coarseFace : coarse.FaceBlockCoordinate laws hcoarse label)
+    (hmap : M.faceBlockCoordinateMapOption laws hcoarse hfine label fineFace =
+      some coarseFace) :
+    M.faceMap fineFace.1.cell = some coarseFace.1.cell := by
+  unfold faceBlockCoordinateMapOption at hmap
+  split at hmap
+  · contradiction
+  · rename_i mappedFace hwhole
+    have hcoordinate := Option.some.inj hmap
+    have hcell := congrArg
+      (fun coordinate : coarse.FaceBlockCoordinate laws hcoarse label =>
+        coordinate.1.cell)
+      hcoordinate
+    change mappedFace = coarseFace.1.cell at hcell
+    simpa [hcell] using hwhole
+
+/-! ## Incidence compatibility inside one block -/
+
+/-- Mapped-edge transport commutes with the left endpoint inside one block. -/
+theorem chartBlockCoordinateMap_edgeLeftBlockCoordinate
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.EdgeBlockCoordinate laws hfine label)
+    (coarseEdge : coarse.nerve.EdgeComponent)
+    (hmap : M.edgeMap coordinate.1.cell = some coarseEdge) :
+    M.chartBlockCoordinateMap laws hcoarse hfine label
+        (fine.edgeLeftBlockCoordinate laws hfine label coordinate) =
+      coarse.edgeLeftBlockCoordinate laws hcoarse label
+        (M.edgeBlockCoordinateMap laws hcoarse hfine label coordinate
+          coarseEdge hmap) := by
+  apply Subtype.ext
+  exact M.chartCoordinateMap_edgeLeftCoordinate laws hcoarse hfine coordinate.1
+    coarseEdge hmap
+
+/-- Mapped-edge transport commutes with the right endpoint inside one block. -/
+theorem chartBlockCoordinateMap_edgeRightBlockCoordinate
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.EdgeBlockCoordinate laws hfine label)
+    (coarseEdge : coarse.nerve.EdgeComponent)
+    (hmap : M.edgeMap coordinate.1.cell = some coarseEdge) :
+    M.chartBlockCoordinateMap laws hcoarse hfine label
+        (fine.edgeRightBlockCoordinate laws hfine label coordinate) =
+      coarse.edgeRightBlockCoordinate laws hcoarse label
+        (M.edgeBlockCoordinateMap laws hcoarse hfine label coordinate
+          coarseEdge hmap) := by
+  apply Subtype.ext
+  exact M.chartCoordinateMap_edgeRightCoordinate laws hcoarse hfine coordinate.1
+    coarseEdge hmap
+
+/-- A degenerate block edge transports both endpoints to the same coordinate. -/
+theorem chartBlockCoordinateMap_edgeLeft_eq_right_of_none
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.EdgeBlockCoordinate laws hfine label)
+    (hmap : M.edgeMap coordinate.1.cell = none) :
+    M.chartBlockCoordinateMap laws hcoarse hfine label
+        (fine.edgeLeftBlockCoordinate laws hfine label coordinate) =
+      M.chartBlockCoordinateMap laws hcoarse hfine label
+        (fine.edgeRightBlockCoordinate laws hfine label coordinate) := by
+  apply Subtype.ext
+  exact M.chartCoordinateMap_edgeLeft_eq_right_of_none laws hcoarse hfine
+    coordinate.1 hmap
+
+/-- Mapped-face transport commutes with boundary edge zero inside one block. -/
+theorem edgeBlockCoordinateMap_faceEdge0BlockCoordinate
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.FaceBlockCoordinate laws hfine label)
+    (coarseFace : coarse.nerve.FaceComponent)
+    (hmap : M.faceMap coordinate.1.cell = some coarseFace) :
+    M.edgeBlockCoordinateMap laws hcoarse hfine label
+        (fine.faceEdge0BlockCoordinate laws hfine label coordinate)
+        (coarse.nerve.faceEdge0 coarseFace)
+        (M.face_some_edge0 coordinate.1.cell coarseFace hmap) =
+      coarse.faceEdge0BlockCoordinate laws hcoarse label
+        (M.faceBlockCoordinateMap laws hcoarse hfine label coordinate
+          coarseFace hmap) := by
+  apply Subtype.ext
+  exact M.edgeCoordinateMap_faceEdge0Coordinate laws hcoarse hfine coordinate.1
+    coarseFace hmap
+
+/-- Mapped-face transport commutes with boundary edge one inside one block. -/
+theorem edgeBlockCoordinateMap_faceEdge1BlockCoordinate
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.FaceBlockCoordinate laws hfine label)
+    (coarseFace : coarse.nerve.FaceComponent)
+    (hmap : M.faceMap coordinate.1.cell = some coarseFace) :
+    M.edgeBlockCoordinateMap laws hcoarse hfine label
+        (fine.faceEdge1BlockCoordinate laws hfine label coordinate)
+        (coarse.nerve.faceEdge1 coarseFace)
+        (M.face_some_edge1 coordinate.1.cell coarseFace hmap) =
+      coarse.faceEdge1BlockCoordinate laws hcoarse label
+        (M.faceBlockCoordinateMap laws hcoarse hfine label coordinate
+          coarseFace hmap) := by
+  apply Subtype.ext
+  exact M.edgeCoordinateMap_faceEdge1Coordinate laws hcoarse hfine coordinate.1
+    coarseFace hmap
+
+/-- Mapped-face transport commutes with boundary edge two inside one block. -/
+theorem edgeBlockCoordinateMap_faceEdge2BlockCoordinate
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coordinate : fine.FaceBlockCoordinate laws hfine label)
+    (coarseFace : coarse.nerve.FaceComponent)
+    (hmap : M.faceMap coordinate.1.cell = some coarseFace) :
+    M.edgeBlockCoordinateMap laws hcoarse hfine label
+        (fine.faceEdge2BlockCoordinate laws hfine label coordinate)
+        (coarse.nerve.faceEdge2 coarseFace)
+        (M.face_some_edge2 coordinate.1.cell coarseFace hmap) =
+      coarse.faceEdge2BlockCoordinate laws hcoarse label
+        (M.faceBlockCoordinateMap laws hcoarse hfine label coordinate
+          coarseFace hmap) := by
+  apply Subtype.ext
+  exact M.edgeCoordinateMap_faceEdge2Coordinate laws hcoarse hfine coordinate.1
+    coarseFace hmap
+
+/-! ## Generated block pullbacks -/
+
+/-- Degree-zero pullback generated by same-label chart transport. -/
+def generatedBlockPullback0
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws) :
+    (coarse.ChartBlockCoordinate laws hcoarse label → ℚ) →ₗ[ℚ]
+      (fine.ChartBlockCoordinate laws hfine label → ℚ) where
+  toFun cochain coordinate :=
+    cochain (M.chartBlockCoordinateMap laws hcoarse hfine label coordinate)
+  map_add' left right := by funext coordinate; simp
+  map_smul' scalar cochain := by funext coordinate; simp
+
+/-- Degree-one same-label pullback, extended by zero on degenerate edges. -/
+def generatedBlockPullback1
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws) :
+    (coarse.EdgeBlockCoordinate laws hcoarse label → ℚ) →ₗ[ℚ]
+      (fine.EdgeBlockCoordinate laws hfine label → ℚ) where
+  toFun cochain coordinate :=
+    (M.edgeBlockCoordinateMapOption laws hcoarse hfine label coordinate).elim
+      0 cochain
+  map_add' left right := by
+    funext coordinate
+    generalize hoption :
+      M.edgeBlockCoordinateMapOption laws hcoarse hfine label coordinate = option
+    cases option <;> simp [hoption]
+  map_smul' scalar cochain := by
+    funext coordinate
+    generalize hoption :
+      M.edgeBlockCoordinateMapOption laws hcoarse hfine label coordinate = option
+    cases option <;> simp [hoption]
+
+/-- Degree-two same-label pullback, extended by zero on degenerate faces. -/
+def generatedBlockPullback2
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws) :
+    (coarse.FaceBlockCoordinate laws hcoarse label → ℚ) →ₗ[ℚ]
+      (fine.FaceBlockCoordinate laws hfine label → ℚ) where
+  toFun cochain coordinate :=
+    (M.faceBlockCoordinateMapOption laws hcoarse hfine label coordinate).elim
+      0 cochain
+  map_add' left right := by
+    funext coordinate
+    generalize hoption :
+      M.faceBlockCoordinateMapOption laws hcoarse hfine label coordinate = option
+    cases option <;> simp [hoption]
+  map_smul' scalar cochain := by
+    funext coordinate
+    generalize hoption :
+      M.faceBlockCoordinateMapOption laws hcoarse hfine label coordinate = option
+    cases option <;> simp [hoption]
+
+/-- Evaluation rule for the degree-zero block pullback. -/
+@[simp]
+theorem generatedBlockPullback0_apply
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (cochain : coarse.ChartBlockCoordinate laws hcoarse label → ℚ)
+    (coordinate : fine.ChartBlockCoordinate laws hfine label) :
+    M.generatedBlockPullback0 laws hcoarse hfine label cochain coordinate =
+      cochain (M.chartBlockCoordinateMap laws hcoarse hfine label coordinate) :=
+  rfl
+
+/-- Evaluation rule for the degree-one block pullback. -/
+@[simp]
+theorem generatedBlockPullback1_apply
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (cochain : coarse.EdgeBlockCoordinate laws hcoarse label → ℚ)
+    (coordinate : fine.EdgeBlockCoordinate laws hfine label) :
+    M.generatedBlockPullback1 laws hcoarse hfine label cochain coordinate =
+      (M.edgeBlockCoordinateMapOption laws hcoarse hfine label coordinate).elim
+        0 cochain :=
+  rfl
+
+/-- Evaluation rule for the degree-two block pullback. -/
+@[simp]
+theorem generatedBlockPullback2_apply
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (cochain : coarse.FaceBlockCoordinate laws hcoarse label → ℚ)
+    (coordinate : fine.FaceBlockCoordinate laws hfine label) :
+    M.generatedBlockPullback2 laws hcoarse hfine label cochain coordinate =
+      (M.faceBlockCoordinateMapOption laws hcoarse hfine label coordinate).elim
+        0 cochain :=
+  rfl
+
+/-! ## Block cochain-map laws -/
+
+/-- The generated block pullbacks commute with `d0`; the degenerate branch
+uses the fiber-endpoint equality from the input geometry. -/
+theorem generatedBlockPullback_comm0 [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (cochain : (coarse.lawValueBlockComplex laws hcoarse label).C0) :
+    M.generatedBlockPullback1 laws hcoarse hfine label
+        ((coarse.lawValueBlockComplex laws hcoarse label).d0 cochain) =
+      (fine.lawValueBlockComplex laws hfine label).d0
+        (M.generatedBlockPullback0 laws hcoarse hfine label cochain) := by
+  funext coordinate
+  cases hmap : M.edgeMap coordinate.1.cell with
+  | none =>
+      rw [M.generatedBlockPullback1_apply,
+        M.edgeBlockCoordinateMapOption_eq_none laws hcoarse hfine label
+          coordinate hmap]
+      change 0 =
+        cochain (M.chartBlockCoordinateMap laws hcoarse hfine label
+          (fine.edgeRightBlockCoordinate laws hfine label coordinate)) -
+        cochain (M.chartBlockCoordinateMap laws hcoarse hfine label
+          (fine.edgeLeftBlockCoordinate laws hfine label coordinate))
+      rw [M.chartBlockCoordinateMap_edgeLeft_eq_right_of_none laws hcoarse
+        hfine label coordinate hmap]
+      simp
+  | some coarseEdge =>
+      rw [M.generatedBlockPullback1_apply,
+        M.edgeBlockCoordinateMapOption_eq_some laws hcoarse hfine label
+          coordinate coarseEdge hmap]
+      change
+        cochain (coarse.edgeRightBlockCoordinate laws hcoarse label
+          (M.edgeBlockCoordinateMap laws hcoarse hfine label coordinate
+            coarseEdge hmap)) -
+          cochain (coarse.edgeLeftBlockCoordinate laws hcoarse label
+            (M.edgeBlockCoordinateMap laws hcoarse hfine label coordinate
+              coarseEdge hmap)) =
+        cochain (M.chartBlockCoordinateMap laws hcoarse hfine label
+          (fine.edgeRightBlockCoordinate laws hfine label coordinate)) -
+          cochain (M.chartBlockCoordinateMap laws hcoarse hfine label
+            (fine.edgeLeftBlockCoordinate laws hfine label coordinate))
+      rw [M.chartBlockCoordinateMap_edgeLeftBlockCoordinate laws hcoarse hfine
+          label coordinate coarseEdge hmap,
+        M.chartBlockCoordinateMap_edgeRightBlockCoordinate laws hcoarse hfine
+          label coordinate coarseEdge hmap]
+
+/-- 第0・第1辺が同じ粗辺に写るときの同一block座標。 -/
+theorem edgeBlockCoordinateMapOption_faceEdge01
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading)
+    (hf : laws.Adequate fineReading) (label : LawValueLabel laws)
+    (x : fine.FaceBlockCoordinate laws hf label)
+    (he : M.edgeMap (fine.nerve.faceEdge0 x.1.cell) =
+      M.edgeMap (fine.nerve.faceEdge1 x.1.cell)) :
+    M.edgeBlockCoordinateMapOption laws hc hf label (fine.faceEdge0BlockCoordinate laws hf label x) =
+      M.edgeBlockCoordinateMapOption laws hc hf label (fine.faceEdge1BlockCoordinate laws hf label x) := by
+  cases hm : M.edgeMap (fine.nerve.faceEdge0 x.1.cell) with
+  | none =>
+    rw [M.edgeBlockCoordinateMapOption_eq_none laws hc hf label _ hm,
+      M.edgeBlockCoordinateMapOption_eq_none laws hc hf label _ (he.symm.trans hm)]
+  | some e =>
+    rw [M.edgeBlockCoordinateMapOption_eq_some laws hc hf label _ e hm,
+      M.edgeBlockCoordinateMapOption_eq_some laws hc hf label _ e (he.symm.trans hm)]
+    congr 1
+
+/-- 第1・第2辺が同じ粗辺に写るときの同一block座標。 -/
+theorem edgeBlockCoordinateMapOption_faceEdge12
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading)
+    (hf : laws.Adequate fineReading) (label : LawValueLabel laws)
+    (x : fine.FaceBlockCoordinate laws hf label)
+    (he : M.edgeMap (fine.nerve.faceEdge1 x.1.cell) =
+      M.edgeMap (fine.nerve.faceEdge2 x.1.cell)) :
+    M.edgeBlockCoordinateMapOption laws hc hf label (fine.faceEdge1BlockCoordinate laws hf label x) =
+      M.edgeBlockCoordinateMapOption laws hc hf label (fine.faceEdge2BlockCoordinate laws hf label x) := by
+  cases hm : M.edgeMap (fine.nerve.faceEdge1 x.1.cell) with
+  | none =>
+    rw [M.edgeBlockCoordinateMapOption_eq_none laws hc hf label _ hm,
+      M.edgeBlockCoordinateMapOption_eq_none laws hc hf label _ (he.symm.trans hm)]
+  | some e =>
+    rw [M.edgeBlockCoordinateMapOption_eq_some laws hc hf label _ e hm,
+      M.edgeBlockCoordinateMapOption_eq_some laws hc hf label _ e (he.symm.trans hm)]
+    congr 1
+
+/-- The generated block pullbacks commute with `d1`; the degenerate branch
+uses all three hereditary face declarations. -/
+theorem generatedBlockPullback_comm1 [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (cochain : (coarse.lawValueBlockComplex laws hcoarse label).C1) :
+    M.generatedBlockPullback2 laws hcoarse hfine label
+        ((coarse.lawValueBlockComplex laws hcoarse label).d1 cochain) =
+      (fine.lawValueBlockComplex laws hfine label).d1
+        (M.generatedBlockPullback1 laws hcoarse hfine label cochain) := by
+  funext coordinate
+  cases hmap : M.faceMap coordinate.1.cell with
+  | none =>
+      rw [M.generatedBlockPullback2_apply,
+        M.faceBlockCoordinateMapOption_eq_none laws hcoarse hfine label coordinate hmap]
+      change 0 =
+        M.generatedBlockPullback1 laws hcoarse hfine label cochain
+            (fine.faceEdge0BlockCoordinate laws hfine label coordinate) -
+          M.generatedBlockPullback1 laws hcoarse hfine label cochain
+            (fine.faceEdge1BlockCoordinate laws hfine label coordinate) +
+          M.generatedBlockPullback1 laws hcoarse hfine label cochain
+            (fine.faceEdge2BlockCoordinate laws hfine label coordinate)
+      simp only [generatedBlockPullback1_apply]
+      rcases (optionCell_incidence_iff _ _ _).1
+          (M.face_none_incidence coordinate.1.cell hmap) with ⟨h0, h12⟩ | ⟨h2, h01⟩
+      · rw [M.edgeBlockCoordinateMapOption_eq_none laws hcoarse hfine label
+          (fine.faceEdge0BlockCoordinate laws hfine label coordinate) h0,
+          M.edgeBlockCoordinateMapOption_faceEdge12 laws hcoarse hfine label coordinate h12]
+        simp
+      · rw [M.edgeBlockCoordinateMapOption_eq_none laws hcoarse hfine label
+          (fine.faceEdge2BlockCoordinate laws hfine label coordinate) h2,
+          M.edgeBlockCoordinateMapOption_faceEdge01 laws hcoarse hfine label coordinate h01]
+        simp
+  | some coarseFace =>
+      have hedge0 := M.face_some_edge0 coordinate.1.cell coarseFace hmap
+      have hedge1 := M.face_some_edge1 coordinate.1.cell coarseFace hmap
+      have hedge2 := M.face_some_edge2 coordinate.1.cell coarseFace hmap
+      rw [M.generatedBlockPullback2_apply,
+        M.faceBlockCoordinateMapOption_eq_some laws hcoarse hfine label
+          coordinate coarseFace hmap]
+      change
+        cochain (coarse.faceEdge0BlockCoordinate laws hcoarse label
+            (M.faceBlockCoordinateMap laws hcoarse hfine label coordinate
+              coarseFace hmap)) -
+          cochain (coarse.faceEdge1BlockCoordinate laws hcoarse label
+            (M.faceBlockCoordinateMap laws hcoarse hfine label coordinate
+              coarseFace hmap)) +
+          cochain (coarse.faceEdge2BlockCoordinate laws hcoarse label
+            (M.faceBlockCoordinateMap laws hcoarse hfine label coordinate
+              coarseFace hmap)) =
+        M.generatedBlockPullback1 laws hcoarse hfine label cochain
+            (fine.faceEdge0BlockCoordinate laws hfine label coordinate) -
+          M.generatedBlockPullback1 laws hcoarse hfine label cochain
+            (fine.faceEdge1BlockCoordinate laws hfine label coordinate) +
+          M.generatedBlockPullback1 laws hcoarse hfine label cochain
+            (fine.faceEdge2BlockCoordinate laws hfine label coordinate)
+      have hvalue0 :
+          M.generatedBlockPullback1 laws hcoarse hfine label cochain
+              (fine.faceEdge0BlockCoordinate laws hfine label coordinate) =
+            cochain (M.edgeBlockCoordinateMap laws hcoarse hfine label
+              (fine.faceEdge0BlockCoordinate laws hfine label coordinate)
+              (coarse.nerve.faceEdge0 coarseFace) hedge0) := by
+        rw [M.generatedBlockPullback1_apply,
+          M.edgeBlockCoordinateMapOption_eq_some laws hcoarse hfine label
+            (fine.faceEdge0BlockCoordinate laws hfine label coordinate)
+            (coarse.nerve.faceEdge0 coarseFace) hedge0]
+        rfl
+      have hvalue1 :
+          M.generatedBlockPullback1 laws hcoarse hfine label cochain
+              (fine.faceEdge1BlockCoordinate laws hfine label coordinate) =
+            cochain (M.edgeBlockCoordinateMap laws hcoarse hfine label
+              (fine.faceEdge1BlockCoordinate laws hfine label coordinate)
+              (coarse.nerve.faceEdge1 coarseFace) hedge1) := by
+        rw [M.generatedBlockPullback1_apply,
+          M.edgeBlockCoordinateMapOption_eq_some laws hcoarse hfine label
+            (fine.faceEdge1BlockCoordinate laws hfine label coordinate)
+            (coarse.nerve.faceEdge1 coarseFace) hedge1]
+        rfl
+      have hvalue2 :
+          M.generatedBlockPullback1 laws hcoarse hfine label cochain
+              (fine.faceEdge2BlockCoordinate laws hfine label coordinate) =
+            cochain (M.edgeBlockCoordinateMap laws hcoarse hfine label
+              (fine.faceEdge2BlockCoordinate laws hfine label coordinate)
+              (coarse.nerve.faceEdge2 coarseFace) hedge2) := by
+        rw [M.generatedBlockPullback1_apply,
+          M.edgeBlockCoordinateMapOption_eq_some laws hcoarse hfine label
+            (fine.faceEdge2BlockCoordinate laws hfine label coordinate)
+            (coarse.nerve.faceEdge2 coarseFace) hedge2]
+        rfl
+      rw [hvalue0, hvalue1, hvalue2]
+      rw [M.edgeBlockCoordinateMap_faceEdge0BlockCoordinate laws hcoarse hfine
+          label coordinate coarseFace hmap,
+        M.edgeBlockCoordinateMap_faceEdge1BlockCoordinate laws hcoarse hfine
+          label coordinate coarseFace hmap,
+        M.edgeBlockCoordinateMap_faceEdge2BlockCoordinate laws hcoarse hfine
+          label coordinate coarseFace hmap]
+
+/-! ## The actual block Hom and its three global component formulas -/
+
+/-- The actual G-102 cochain Hom generated on one source-law-value block. -/
+def generatedBlockComparisonHom [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws) :
+    ThreeCochainComplex.Hom
+      (coarse.lawValueBlockComplex laws hcoarse label)
+      (fine.lawValueBlockComplex laws hfine label) where
+  f0 := M.generatedBlockPullback0 laws hcoarse hfine label
+  f1 := M.generatedBlockPullback1 laws hcoarse hfine label
+  f2 := M.generatedBlockPullback2 laws hcoarse hfine label
+  comm0 := M.generatedBlockPullback_comm0 laws hcoarse hfine label
+  comm1 := M.generatedBlockPullback_comm1 laws hcoarse hfine label
+
+/-- The actual G-102 `h1Map` induced by the generated block Hom. -/
+def generatedBlockComparisonH1Map [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws) :
+    (coarse.lawValueBlockComplex laws hcoarse label).H1 →ₗ[ℚ]
+      (fine.lawValueBlockComplex laws hfine label).H1 :=
+  (M.generatedBlockComparisonHom laws hcoarse hfine label).h1Map
+
+/-- Degree-zero component of the global pullback under the canonical block
+decomposition. -/
+theorem generatedPullback0_block_component [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (cochain : coarse.ChartCoordinate laws hcoarse → ℚ)
+    (label : LawValueLabel laws) :
+    (DirectSum.linearEquivFunOnFintype ℚ (LawValueLabel laws)
+      (fun current => fine.ChartBlockCoordinate laws hfine current → ℚ)
+      (fine.chartCochainBlockEquiv laws hfine
+        (M.generatedPullback0 laws hcoarse hfine cochain))) label =
+      M.generatedBlockPullback0 laws hcoarse hfine label
+        ((DirectSum.linearEquivFunOnFintype ℚ (LawValueLabel laws)
+          (fun current => coarse.ChartBlockCoordinate laws hcoarse current → ℚ)
+          (coarse.chartCochainBlockEquiv laws hcoarse cochain)) label) := by
+  funext coordinate
+  rfl
+
+/-- Degree-one component of the global pullback, including its zero branch. -/
+theorem generatedPullback1_block_component [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (cochain : coarse.EdgeCoordinate laws hcoarse → ℚ)
+    (label : LawValueLabel laws) :
+    (DirectSum.linearEquivFunOnFintype ℚ (LawValueLabel laws)
+      (fun current => fine.EdgeBlockCoordinate laws hfine current → ℚ)
+      (fine.edgeCochainBlockEquiv laws hfine
+        (M.generatedPullback1 laws hcoarse hfine cochain))) label =
+      M.generatedBlockPullback1 laws hcoarse hfine label
+        ((DirectSum.linearEquivFunOnFintype ℚ (LawValueLabel laws)
+          (fun current => coarse.EdgeBlockCoordinate laws hcoarse current → ℚ)
+          (coarse.edgeCochainBlockEquiv laws hcoarse cochain)) label) := by
+  funext coordinate
+  change
+    (M.edgeCoordinateMapOption laws hcoarse hfine coordinate.1).elim 0 cochain =
+      (M.edgeBlockCoordinateMapOption laws hcoarse hfine label coordinate).elim
+        0 (fun coarseCoordinate => cochain coarseCoordinate.1)
+  cases hmap : M.edgeMap coordinate.1.cell with
+  | none =>
+      rw [M.edgeCoordinateMapOption_eq_none laws hcoarse hfine coordinate.1 hmap,
+        M.edgeBlockCoordinateMapOption_eq_none laws hcoarse hfine label
+          coordinate hmap]
+      rfl
+  | some coarseEdge =>
+      rw [M.edgeCoordinateMapOption_eq_some laws hcoarse hfine coordinate.1
+          coarseEdge hmap,
+        M.edgeBlockCoordinateMapOption_eq_some laws hcoarse hfine label
+          coordinate coarseEdge hmap]
+      rfl
+
+/-- Degree-two component of the global pullback, including its zero branch. -/
+theorem generatedPullback2_block_component [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (cochain : coarse.FaceCoordinate laws hcoarse → ℚ)
+    (label : LawValueLabel laws) :
+    (DirectSum.linearEquivFunOnFintype ℚ (LawValueLabel laws)
+      (fun current => fine.FaceBlockCoordinate laws hfine current → ℚ)
+      (fine.faceCochainBlockEquiv laws hfine
+        (M.generatedPullback2 laws hcoarse hfine cochain))) label =
+      M.generatedBlockPullback2 laws hcoarse hfine label
+        ((DirectSum.linearEquivFunOnFintype ℚ (LawValueLabel laws)
+          (fun current => coarse.FaceBlockCoordinate laws hcoarse current → ℚ)
+          (coarse.faceCochainBlockEquiv laws hcoarse cochain)) label) := by
+  funext coordinate
+  change
+    (M.faceCoordinateMapOption laws hcoarse hfine coordinate.1).elim 0 cochain =
+      (M.faceBlockCoordinateMapOption laws hcoarse hfine label coordinate).elim
+        0 (fun coarseCoordinate => cochain coarseCoordinate.1)
+  cases hmap : M.faceMap coordinate.1.cell with
+  | none =>
+      rw [M.faceCoordinateMapOption_eq_none laws hcoarse hfine coordinate.1 hmap,
+        M.faceBlockCoordinateMapOption_eq_none laws hcoarse hfine label
+          coordinate hmap]
+      rfl
+  | some coarseFace =>
+      rw [M.faceCoordinateMapOption_eq_some laws hcoarse hfine coordinate.1
+          coarseFace hmap,
+        M.faceBlockCoordinateMapOption_eq_some laws hcoarse hfine label
+          coordinate coarseFace hmap]
+      rfl
+
+end IncidenceSupportedComparison
+
+end AAT.AG.FaceRelationSubdivision
+
+#assert_standard_axioms_only AAT.AG.FaceRelationSubdivision
