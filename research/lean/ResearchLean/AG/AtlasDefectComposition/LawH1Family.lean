@@ -20,6 +20,16 @@ def lawH1FamilyEquiv {q : Reading Source} (D : TargetSupportedNerve q)
     (DirectSum.linearEquivFunOnFintype ℚ (LawValueLabel laws)
       (fun l => (D.lawValueBlockComplex laws ha l).H1))
 
+/-- 既存H1族同定は同じcycle代表のラベル商類を読む。 -/
+@[simp] theorem lawH1FamilyEquiv_mk_component {q : Reading Source}
+    (N : TargetSupportedNerve q) (laws : FiniteLawFamily Source) (ha : laws.Adequate q)
+    (x : LinearMap.ker (N.lawGeneratedComplex laws ha).d1) (l : LawValueLabel laws) :
+    lawH1FamilyEquiv N laws ha
+        ((LinearMap.range (N.lawGeneratedComplex laws ha).boundaryToCycles).mkQ x) l =
+      (LinearMap.range (N.lawValueBlockComplex laws ha l).boundaryToCycles).mkQ
+        ((N.lawGeneratedBlockCyclesEquiv laws ha x) l) :=
+  N.lawGeneratedH1BlockEquiv_mk_component laws ha x l
+
 /-- 関数表示の各成分も、原始比較から生成した実block写像で作用する。 -/
 theorem lawH1FamilyMap_component {q r : Reading Source} {h : q.CoarserThan r}
     {D : TargetSupportedNerve q} {E : TargetSupportedNerve r}

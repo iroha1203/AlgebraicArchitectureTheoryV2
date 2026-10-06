@@ -51,6 +51,30 @@ def lawFamilyCochainEquiv : ThreeCochainComplex.CochainEquiv
       (N.lawGeneratedD1_block_intertwining laws ha x)
     simpa only [lawFamily1Equiv,lawFamily2Equiv,LinearEquiv.trans_apply,
       TargetSupportedNerve.lawValueBlockDirectSumD1_component] using h.symm
+/-- 全Law族次数0同定の同じラベル座標評価。 -/
+@[simp] theorem lawFamily0Equiv_apply (x : (N.lawGeneratedComplex laws ha).C0)
+    (l : LawValueLabel laws) (y : N.ChartBlockCoordinate laws ha l) :
+    lawFamily0Equiv N laws ha x l y = x y.1 := rfl
+/-- 全Law複体同値の同じ次数0族射。 -/
+@[simp] theorem lawFamilyCochainEquiv_f0 :
+    (lawFamilyCochainEquiv N laws ha).toHom.f0 =
+      (lawFamily0Equiv N laws ha).toLinearMap := rfl
+/-- 全Law族次数1同定の同じラベル座標評価。 -/
+@[simp] theorem lawFamily1Equiv_apply (x : (N.lawGeneratedComplex laws ha).C1)
+    (l : LawValueLabel laws) (y : N.EdgeBlockCoordinate laws ha l) :
+    lawFamily1Equiv N laws ha x l y = x y.1 := rfl
+/-- 全Law複体同値の同じ次数1族射。 -/
+@[simp] theorem lawFamilyCochainEquiv_f1 :
+    (lawFamilyCochainEquiv N laws ha).toHom.f1 =
+      (lawFamily1Equiv N laws ha).toLinearMap := rfl
+/-- 全Law族次数2同定の同じラベル座標評価。 -/
+@[simp] theorem lawFamily2Equiv_apply (x : (N.lawGeneratedComplex laws ha).C2)
+    (l : LawValueLabel laws) (y : N.FaceBlockCoordinate laws ha l) :
+    lawFamily2Equiv N laws ha x l y = x y.1 := rfl
+/-- 全Law複体同値の同じ次数2族射。 -/
+@[simp] theorem lawFamilyCochainEquiv_f2 :
+    (lawFamilyCochainEquiv N laws ha).toHom.f2 =
+      (lawFamily2Equiv N laws ha).toLinearMap := rfl
 variable {r : Reading Source} {h : q.CoarserThan r} {E : TargetSupportedNerve r}
 variable (M : TargetSupportedNerveMorphism q r h N E) (hr : laws.Adequate r)
 /-- 実生成比較の次数0は各ラベルの独立生成比較と同じである。 -/
