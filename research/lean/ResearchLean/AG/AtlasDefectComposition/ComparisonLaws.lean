@@ -76,6 +76,16 @@ def cochainId (C : TwoPhase.ThreeCochainComplex ℚ) : TwoPhase.ThreeCochainComp
   comm0 _ := rfl
   comm1 _ := rfl
 
+/-- 三項恒等射の次数0評価を公開する。 -/
+@[simp] theorem cochainId_f0 (C : TwoPhase.ThreeCochainComplex ℚ) (x : C.C0) :
+    (cochainId C).f0 x = x := rfl
+/-- 三項恒等射の次数1評価を公開する。 -/
+@[simp] theorem cochainId_f1 (C : TwoPhase.ThreeCochainComplex ℚ) (x : C.C1) :
+    (cochainId C).f1 x = x := rfl
+/-- 三項恒等射の次数2評価を公開する。 -/
+@[simp] theorem cochainId_f2 (C : TwoPhase.ThreeCochainComplex ℚ) (x : C.C2) :
+    (cochainId C).f2 x = x := rfl
+
 /-- 三項複体恒等Homは既存H¹商でも恒等に作用する。 -/
 theorem cochainId_h1Map (C : TwoPhase.ThreeCochainComplex ℚ) :
     (cochainId C).h1Map = LinearMap.id := by
