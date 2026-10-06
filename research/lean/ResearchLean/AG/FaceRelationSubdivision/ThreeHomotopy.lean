@@ -46,6 +46,26 @@ lemma homotopyComponent_zero (i j : ℤ) (h : ¬ (ComplexShape.up ℤ).Rel j i) 
     · simp [homotopyComponent, hi, hi2]
 
 
+/-- 公開補正成分の標準次数1から0への評価。 -/
+@[simp] theorem homotopyComponent_10 : homotopyComponent h0 h1 1 0 = ModuleCat.ofHom h0 := by
+  simp only [homotopyComponent, ↓reduceDIte]
+/-- 公開補正成分の標準次数2から1への評価。 -/
+@[simp] theorem homotopyComponent_21 : homotopyComponent h0 h1 2 1 = ModuleCat.ofHom h1 := by
+  simp only [homotopyComponent, Int.reduceEq, ↓reduceDIte]
+/-- 指定二成分以外の同じ標準補正は零。 -/
+theorem homotopyComponent_zero_of_ne (i j : ℤ)
+    (h10 : ¬ (i = 1 ∧ j = 0)) (h21 : ¬ (i = 2 ∧ j = 1)) :
+    homotopyComponent h0 h1 i j = 0 := by
+  by_cases hi1 : i = 1
+  · subst i
+    have hj : j ≠ 0 := fun h => h10 ⟨rfl, h⟩
+    simp only [homotopyComponent, ↓reduceDIte, dif_neg hj]
+  · by_cases hi2 : i = 2
+    · subst i
+      have hj : j ≠ 1 := fun h => h21 ⟨rfl, h⟩
+      simp only [homotopyComponent, Int.reduceEq, ↓reduceDIte, dif_neg hj]
+    · simp only [homotopyComponent, dif_neg hi1, dif_neg hi2]
+
 /-- 三つの具体的補正式から、同じ実Hom間の標準Homotopyを構成する。 -/
 def threeHomotopy
     (eq0 : ∀ x, f.f0 x = h0 (C.d0 x) + g.f0 x)

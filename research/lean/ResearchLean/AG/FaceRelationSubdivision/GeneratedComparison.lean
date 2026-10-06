@@ -617,6 +617,27 @@ def generatedComparisonHom [Fintype Source]
   comm0 := M.generatedPullback_comm0 laws hcoarse hfine
   comm1 := M.generatedPullback_comm1 laws hcoarse hfine
 
+/-- 原始混在比較実Homの次数0は同じ独立生成pullback。 -/
+@[simp] theorem generatedComparisonHom_f0 [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading)
+    (hf : laws.Adequate fineReading) :
+    (M.generatedComparisonHom laws hc hf).f0 = M.generatedPullback0 laws hc hf := rfl
+
+/-- 原始混在比較実Homの次数1は同じ独立生成pullback。 -/
+@[simp] theorem generatedComparisonHom_f1 [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading)
+    (hf : laws.Adequate fineReading) :
+    (M.generatedComparisonHom laws hc hf).f1 = M.generatedPullback1 laws hc hf := rfl
+
+/-- 原始混在比較実Homの次数2は同じ独立生成pullback。 -/
+@[simp] theorem generatedComparisonHom_f2 [Fintype Source]
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading)
+    (hf : laws.Adequate fineReading) :
+    (M.generatedComparisonHom laws hc hf).f2 = M.generatedPullback2 laws hc hf := rfl
+
 /-- The canonical map on `H^1` induced by the generated comparison cochain map. -/
 def generatedComparisonH1Map [Fintype Source]
     (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
