@@ -21,6 +21,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
+- [G-134-aat-face-relation-subdivision](G-134-aat-face-relation-subdivision.md)
+  (混在退化面の生成比較、台を保つ細分化・逆縮約、鎖ホモトピーと有限合成、実Law診断への同定)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
