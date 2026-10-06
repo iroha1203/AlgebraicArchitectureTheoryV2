@@ -118,6 +118,16 @@ def basisHom (A : Set q.Target) :=
       intro x
       exact (M.supportedChainMap_comm2 A A (selfSubsetMapsTo A) x).symm)
 
+/-- 原始基底Homの同じ次数0双対射。 -/
+@[simp] theorem basisHom_f0 (A : Set q.Target) :
+    (M.basisHom A).f0 = dualCellMap (M.basis0.selected A) := rfl
+/-- 原始基底Homの同じ次数1双対射。 -/
+@[simp] theorem basisHom_f1 (A : Set q.Target) :
+    (M.basisHom A).f1 = dualCellMap (M.basis1.selected A) := rfl
+/-- 原始基底Homの同じ次数2双対射。 -/
+@[simp] theorem basisHom_f2 (A : Set q.Target) :
+    (M.basisHom A).f2 = dualCellMap (M.basis2.selected A) := rfl
+
 /-- 原始有限和の双対Homは、独立生成した同じ実subset Homに全次数で一致する。 -/
 theorem basisHom_eq_generated (A : Set q.Target) :
     M.basisHom A = M.targetSubsetComparisonHom A A (selfSubsetMapsTo A) := by
