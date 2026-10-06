@@ -43,7 +43,7 @@ selection:
     - P1–P2の各構成は実装中
 ```
 
-## 全targetの現proof obligation
+## Cycle 3時点の全target proof obligation
 
 P1–P2はPR #5274で、P3の三角形追加と面付き辺分割はPR #5275で受理・マージ済み。
 P3のreading pullbackとセル名同型はPR #5276で受理・マージ済み。原始逆patternはCycle4の査読前、liftは未証明。
@@ -2747,7 +2747,7 @@ selection:
 
 T0の有限Source、Reading、有限supported nerve、K1、係数ℚ、任意有限Law族と初期adequacy、Cの任意A包含Bは ambient-boundary（固定入力）。reading coarserと原始表示の全単射/incidence/支持は許された原始幾何であり、補正式や相同型を保持しない。細reading adequacyは列のcoarser定理とC1の `adequate_of_coarser` で導く。一般 `RawChainEquivalence` の十式はdirection-hypothesisとして補題に現れるが、各原始操作・有限列の具体適用では上記生成定理からdischarge-requiredとして放電する。Law座標のcell選択はSource witnessと非零項の支持保存から導出し、生成射を後で座標同型へ同定する。
 
-chain式は実D0/D1射の構成へ、六補正式は実両ホモトピーへ、その同じr/sの標準相同型・旧H1・欠損・錐へ使用する。支持は選択セルの存在と全A/Bの自然性へ、Law adequacyは各原始Source項の同じLaw/value選択と全ラベル分解へ使用する。等しいfiber台でもラベルを同一視しない。一般有限列には空列・空台・loop・重複面出現を含む。`RawNonvacuity.rawEquivalence_not_zero_on_chart` は粗chartがある出力のr0/s0/k0全零が補正式と矛盾することを証明する。指定例の非自明性はE/W1–W3で別に評価する。
+chain式は実D0/D1射の構成へ、六補正式は実両ホモトピーへ、その同じr/sの標準相同型・旧H1・欠損・錐へ使用する。支持は選択セルの存在と全A/Bの自然性へ、Law adequacyは各原始Source項の同じLaw/value選択と全ラベル分解へ使用する。等しいfiber台でもラベルを同一視しない。一般有限列には空列・空台・loop・重複面出現を含む。`RawChainEquivalence.not_zero_chart_output` は粗chartがある出力のr0/s0/k0全零が補正式と矛盾することを証明する。指定例の非自明性はE/W1–W3で別に評価する。
 
 受理済みC1–C9とG-133のsource版・hash・review参照は上記に固定済み。今回は現在の使用statement・必要な定義・適用引数を確認して再利用する。既存owner差分は `SupportedBasis` の原始零/ext API、`GeneratedComparison` の全三成分API、`ThreeHomotopy` の成分APIの計9件だけで、既存定義・statement・instance・importは不変。下流はowner公開APIを使う。Source複体への共役を経由する初期補助案は作業用に保全し、今回のspine/manifest/証拠から除外した。実selected/Law有限和を独立生成する上記構成を使う。
 
@@ -3224,7 +3224,7 @@ research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawTargetConnection
 research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	12	665609462afee3c786aecdfb14ddb887cf9050ad05273cf665962f2f96b05fca
 research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	8	662fae6dbb16db9d8fdabfb78b84a2421b2e760d98cb1970bfd4ee21e6f63f1e
 research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawCorrections.lean	2	5b9cd5c8a7d702fdfec1125b23d3513d6d7b86c61bda29c7b4738df31d62ef12
-research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	19	ef2b7bdfd3cd4c0c3a3a63342bf9e56b1b78b3636ad1ab2d891505e57c27ef5e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	19	b5a02583de52c8ee41649483ea198f6d9fa3c2c1c1e0d95ca38dc05af23f69d1
 research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDifferential.lean	4	ae5e7f8eb70d9e623f6bc924ee5df3d03d119e50c9eba8c757ceb11f8c60d5fc
 research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	14	c50edfaf42bd5033888720684c14cf7a2a4bb2c46bff212c0639f0b2b076f5d4
 research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteFunctor.lean	6	f604494aa0dd72704685b45996d278f6a2dcd59045f587ac05a81ebe73a7d5c1

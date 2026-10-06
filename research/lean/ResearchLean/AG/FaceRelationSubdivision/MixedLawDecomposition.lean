@@ -15,6 +15,7 @@ open CategoryTheory CategoryTheory.Limits HomologicalComplex CochainComplex
 namespace AAT.AG.FaceRelationSubdivision
 open CanonicalResolution ResolutionInvariance TwoPhase AtlasDefectComposition
 universe u
+/-- 標準有限積から複体の有限双積を得て、実Law錐の有限直和APIへ局所適用する。 -/
 local instance mixedLawDecompositionBiproducts : HasFiniteBiproducts (CochainComplex (ModuleCat.{u} ℚ) ℤ) :=
   HasFiniteBiproducts.of_hasFiniteProducts
 variable {Source : Type u} [Fintype Source] {qc qf : Reading Source}
