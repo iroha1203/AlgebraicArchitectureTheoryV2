@@ -156,6 +156,13 @@ theorem oldH1ComparisonIso_hom : C.oldH1ComparisonIso.hom = ModuleCat.ofHom C.rH
   rw [oldH1Iso_natural]
   simp only [Category.assoc, Iso.hom_inv_id, Category.comp_id]
 
+/-- 旧選択頂点があるとき、指定r0=0のdataは往復式を満たす収縮certificateを持たない。 -/
+theorem no_contraction_with_zero_r0 (v : Nc.ChartInTargetSubset Ac) :
+    ¬ ∃ C : SubsetChainContraction Nc Nf Ac Af, C.r0 = 0 := by
+  rintro ⟨C, hC⟩
+  have h := congrArg (fun f : K0 Nc Ac →ₗ[ℚ] K0 Nc Ac => f (Finsupp.single v 1) v) C.rs0
+  simp [hC] at h
+
 end SubsetChainContraction
 end AAT.AG.FaceRelationSubdivision
 #assert_standard_axioms_only AAT.AG.FaceRelationSubdivision

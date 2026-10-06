@@ -497,12 +497,15 @@ threeHomotopyは点ごとの三項補正式からMathlib標準Homotopyを構成�
 非空性はCycle1のtriangle geometryと、任意の合法N/eへの二つのconstructorから継承する。
 chartの非空台を保持し、空A/空辺台/loop/反復辺を排除する追加仮定はない。
 全Source空の場合は辺eを指定できるinstanceがないという固定設計§5の量化を保つ。
-汎用方向recordは操作の許容predicateではなく構成出力なので、不成立の操作をこのrecordで
-却下する分類は行わない。primitive比較の不成立instanceはCycle1のIncidenceObstructionにある。
+非空虚性の不成立側は指定dataと性質を照合する。SupportedBasisMap.zeroは任意の台で成立する一方、
+SupportedBasisMap.no_single_image_to_empty_supportは全台から空台への指定非零基底像が
+台適合を満たせないと示す。SubsetChainContractionの成立側は二つの原始constructor、
+不成立側はno_contraction_with_zero_r0であり、旧選択頂点があるとき指定r0=0がrs0=idを
+満たせないことを基底で評価する。primitive比較の不成立instanceはCycle1のIncidenceObstructionにある。
 
 ### 今回の明示spine
 
-Cycle1受理spineに加え、以下の278明示宣言を今回のspineとして固定する。
+Cycle1受理spineに加え、以下の282明示宣言を今回のspineとして固定する。
 名前のprefixは `AAT.AG.FaceRelationSubdivision`。generated構造射影・recursorも各module末尾の
 標準公理検査の対象である。新しいcycle scaffoldは残していない。
 
@@ -548,6 +551,7 @@ SupportedBasisMap.add_basis
 SupportedBasisMap.neg_basis
 SupportedBasisMap.comp_basis
 SupportedBasisMap.selected_comp_eq_identity
+SupportedBasisMap.no_single_image_to_empty_support
 homotopyComponent
 homotopyComponent_zero
 threeHomotopy
@@ -598,6 +602,7 @@ SubsetChainContraction.homologyIso
 SubsetChainContraction.homologyIso_hom
 SubsetChainContraction.oldH1ComparisonIso
 SubsetChainContraction.oldH1ComparisonIso_hom
+SubsetChainContraction.no_contraction_with_zero_r0
 TriangleAddition.inclusion
 TriangleAddition.r0
 TriangleAddition.r1
@@ -662,6 +667,8 @@ EdgeSubdivision.faceSlot_one
 EdgeSubdivision.faceSlot_two
 EdgeSubdivision.Occurrence
 EdgeSubdivision.RetainedEdge
+EdgeSubdivision.occurrenceFintype
+EdgeSubdivision.retainedEdgeFintype
 EdgeSubdivision.Edge
 EdgeSubdivision.Face
 EdgeSubdivision.centerEdge
@@ -791,9 +798,12 @@ TriangleAddition.collapse_face_new
 
 対象9新規moduleと2既存API追加moduleを、それぞれ実装段階の単一file checkで検証した。
 必要なtargeted olean生成を行い、全Research build、aggregate root、全file loopは実施していない。
-各module末尾の標準公理検査は成功した。278宣言の全 `#print axioms` をまとめて照会し、
+各module末尾の標準公理検査は成功した。282宣言の全 `#print axioms` をまとめて照会し、
 source/spine/log集合に欠落・余剰はない。propext/Classical.choice/Quot.soundだけであり、
-sorryAxはない。axiom照会ログSHA-256: `ffb2e5a837ed5c1d833b8cd62ca84aac0d039d01000483a8a129429bf4999f01`。
+sorryAxはない。axiom照会ログSHA-256: `03874ce99a1fc14536e21d979b442015cf428a4e8b11c7cd5a6188e93068b9b3`。
+
+公式focused経路でもEdgeSubdivisionとEdgeContractionの単一file checkが成功した。
+新規9manifest行のmodule/source対応は全件正しい。
 
 ### Cycle 2 result proposal
 

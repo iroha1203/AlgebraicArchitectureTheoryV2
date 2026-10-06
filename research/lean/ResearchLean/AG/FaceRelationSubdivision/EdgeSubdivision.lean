@@ -40,7 +40,9 @@ abbrev Occurrence := {p : N.nerve.FaceComponent × Fin 3 // faceSlot N p.1 p.2 =
 /-- 分割対象以外の旧辺名。 -/
 abbrev RetainedEdge := {a : N.nerve.EdgeComponent // a ≠ e}
 
+/-- 有限な旧面とFin3位置の積のsubtypeとして、別名の全出現を有限に列挙する。 -/
 instance occurrenceFintype : Fintype (Occurrence N e) := by classical infer_instance
+/-- 有限な旧辺のsubtypeから、分割対象以外の保持辺の有限性を継承する。 -/
 instance retainedEdgeFintype : Fintype (RetainedEdge N e) := by classical infer_instance
 
 /-- 新辺名。false=c、true=b、各Occurrenceが別名の対角辺。 -/

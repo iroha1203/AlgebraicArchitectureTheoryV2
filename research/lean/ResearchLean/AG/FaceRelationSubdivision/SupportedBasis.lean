@@ -348,6 +348,14 @@ theorem selected_comp_eq_identity (M : SupportedBasisMap suppI suppJ)
       selected_eq_of_raw_eq _ _ (by rw [raw_comp, h, raw_identity]) A
     _ = LinearMap.id := selected_identity _ _
 
+/-- 非零基底像を全台から空台へ送る指定dataは、台適合certificateを持たない。 -/
+theorem no_single_image_to_empty_support :
+    ¬ ∃ M : SupportedBasisMap (fun (_ : Unit) => (Set.univ : Set Unit))
+      (fun (_ : Unit) => (∅ : Set Unit)), M.basisImage () = Finsupp.single () 1 := by
+  rintro ⟨M, hM⟩
+  have h : M.basisImage () () ≠ 0 := by rw [hM]; simp
+  exact M.support_compatible () () h (Set.mem_univ ())
+
 end SupportedBasisMap
 end AAT.AG.FaceRelationSubdivision
 

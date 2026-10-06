@@ -14,7 +14,7 @@ import Formal.Util.AssertStandardAxioms
 -/
 
 noncomputable section
-open CategoryTheory
+open CategoryTheory CategoryTheory.Limits
 namespace AAT.AG.FaceRelationSubdivision
 open TwoPhase AtlasDefectComposition
 universe u
@@ -60,27 +60,32 @@ def threeHomotopy
       prevD_eq _ (show (ComplexShape.up ℤ).Rel (i-1) i from by dsimp; omega)]
     by_cases hi0 : i = 0
     · subst i
-      change ModuleCat.ofHom f.f0 = ModuleCat.ofHom C.d0 ≫ ModuleCat.ofHom h0 + 0 + ModuleCat.ofHom g.f0
+      simp only [homotopyComponent, Int.reduceAdd, Int.reduceSub, Int.reduceEq, ↓reduceDIte, zero_comp, add_zero]
       apply ModuleCat.hom_ext
       apply LinearMap.ext
       intro x
-      simpa using eq0 x
+      simpa only [ModuleCat.hom_add, ModuleCat.hom_comp, LinearMap.add_apply,
+        LinearMap.comp_apply, ModuleCat.hom_ofHom, zeroExtensionMap_f0_apply,
+        zeroExtension_d0_apply] using eq0 x
     · by_cases hi1 : i = 1
       · subst i
-        change ModuleCat.ofHom f.f1 = ModuleCat.ofHom C.d1 ≫ ModuleCat.ofHom h1 +
-          ModuleCat.ofHom h0 ≫ ModuleCat.ofHom D.d0 + ModuleCat.ofHom g.f1
+        simp only [homotopyComponent, Int.reduceAdd, Int.reduceSub, Int.reduceEq, ↓reduceDIte]
         apply ModuleCat.hom_ext
         apply LinearMap.ext
         intro x
-        exact eq1 x
+        simpa only [ModuleCat.hom_add, ModuleCat.hom_comp, LinearMap.add_apply,
+          LinearMap.comp_apply, ModuleCat.hom_ofHom, zeroExtensionMap_f1_apply,
+          zeroExtension_d0_apply, zeroExtension_d1_apply] using eq1 x
       · by_cases hi2 : i = 2
         · subst i
-          change ModuleCat.ofHom f.f2 = 0 + ModuleCat.ofHom h1 ≫ ModuleCat.ofHom D.d1 + ModuleCat.ofHom g.f2
+          simp only [homotopyComponent, Int.reduceAdd, Int.reduceSub, Int.reduceEq, ↓reduceDIte, comp_zero, zero_add]
           apply ModuleCat.hom_ext
           apply LinearMap.ext
           intro x
-          simpa using eq2 x
-        · change (degreeMap f i) = _
+          simpa only [ModuleCat.hom_add, ModuleCat.hom_comp, LinearMap.add_apply,
+            LinearMap.comp_apply, ModuleCat.hom_ofHom, zeroExtensionMap_f2_apply,
+            zeroExtension_d1_apply] using eq2 x
+        · rw [zeroExtensionMap_f]
           exact (degreeObject_isZero C i hi0 hi1 hi2).eq_of_src _ _
 
 end AAT.AG.FaceRelationSubdivision
