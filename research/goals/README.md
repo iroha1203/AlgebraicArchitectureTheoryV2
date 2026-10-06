@@ -15,8 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-133-aat-atlas-defect-composition](G-133-aat-atlas-defect-composition.md)
-  (生成比較の合成、欠損の相殺・写像錐・Law分解、台署名の商と普遍性、有限多段比較)
 - [G-132-aat-visible-cycle-reflection](G-132-aat-visible-cycle-reflection.md)
   (可視閉路による既存修復障害の零性反映、整数補正と実貼り合わせ、有限判定と失敗入力)
 - [G-sft-conway-01](G-sft-conway-01.md)
@@ -30,6 +28,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-133-aat-atlas-defect-composition](G-133-aat-atlas-defect-composition.md)
+  (生成比較の合成、欠損の相殺・写像錐・Law分解、台署名の商と普遍性、有限多段比較)
 - [G-131-aat-repair-observation-duality](G-131-aat-repair-observation-duality.md)
   (同じ実修復方程式からの観測十分性、既知情報の下での判定・数値補正の最適問い合わせ数)
 - [G-130-aat-relative-repair-composition](G-130-aat-relative-repair-composition.md)
