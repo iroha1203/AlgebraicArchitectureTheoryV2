@@ -1978,7 +1978,7 @@ AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetComplex_d1
 - `FaceRelationSubdivision/LawFiniteDifferential.lean`: `ef782ee77a08d7387ba264aef53a3709d166a63be7f64e0750df09c08a499bb5`（今回の明示spine 4）
 - `FaceRelationSubdivision/LawFiniteHom.lean`: `ed90ab35e9bcd733dfdb263ade9b20bd525a5fd3bf79e449b8d099df7acb76eb`（今回の明示spine 14）
 - `FaceRelationSubdivision/LawFiniteBlock.lean`: `bf393a0e7c89b97f664f564db36ac57ac072138c5a2b26f30918c514e475c6d3`（今回の明示spine 15）
-- `FaceRelationSubdivision/LawFiniteBlockHom.lean`: `ade57215a19bd94a58a0a503b9b7591b880da05f496adfa86fa4a0f59a342f84`（今回の明示spine 14）
+- `FaceRelationSubdivision/LawFiniteBlockHom.lean`: `a5bddffaf54d2edcd523b40f3bbb7e23223b71ceb403c514e20f140192f2b9d8`（今回の明示spine 14）
 - `FaceRelationSubdivision/LawFiniteOption.lean`: `0a7e66486eb86d1e374bf803fce3370a5f974d36c8bcbe81a06488a73afaf769`（今回の明示spine 5）
 - `FaceRelationSubdivision/ElementaryLawMaps.lean`: `640d675209f88d2985c5f6d0979fd923513beddf0aa8a4a7e7554c817b4e5991`（今回の明示spine 42）
 - `FaceRelationSubdivision/ChainDualMap.lean`: `2b42720356c01f706273f4eb16fc47610df2c344b441b38e6d9a49d1010424bb`（今回の明示spine 2）
@@ -2022,3 +2022,11 @@ result:
     one_way_as_equivalence: none-found
     next_obligation: Law収縮全次数/逆縮約輸送/持ち上げ、有限列/制限/分解/cone/defect、E/W1-W3、別の全target完了監査
 ```
+
+
+### Cycle 6 非中心API指摘の修正
+
+初回固定headのLean Aは `lawFiniteBlock_square` の三箇所のcochain合成成分直接展開を
+非中心findingとして挙げた。既存公開 `cochainComp_f0/f1/f2` の書き換えへ置換し、
+statement、def/instance本体・値、import、宣言集合、statusは保持した。
+修正scopeは当該proof内部とこの証拠記載/source hashのみ。独立直接対応で資格と解消を判定する。

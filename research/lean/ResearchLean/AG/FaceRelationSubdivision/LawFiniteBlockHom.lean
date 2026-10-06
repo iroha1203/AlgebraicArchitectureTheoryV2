@@ -146,20 +146,17 @@ theorem lawFiniteBlock_square (l) :
   apply cochain_ext
   · apply LinearMap.ext
     intro z
-    change (lawBlockHom laws ha Nf l).f0 ((lawFiniteHom M0 M1 M2 h0 h1 laws ha).f0 z) =
-      (blockFiniteHom laws ha M0 M1 M2 h0 h1 l).f0 ((lawBlockHom laws ha Nc l).f0 z)
+    rw [cochainComp_f0, cochainComp_f0]
     rw [lawBlockHom_f0, lawBlockHom_f0, lawFiniteHom_f0, blockFiniteHom_f0]
     exact M0.lawDual_block laws ha l z
   · apply LinearMap.ext
     intro z
-    change (lawBlockHom laws ha Nf l).f1 ((lawFiniteHom M0 M1 M2 h0 h1 laws ha).f1 z) =
-      (blockFiniteHom laws ha M0 M1 M2 h0 h1 l).f1 ((lawBlockHom laws ha Nc l).f1 z)
+    rw [cochainComp_f1, cochainComp_f1]
     rw [lawBlockHom_f1, lawBlockHom_f1, lawFiniteHom_f1, blockFiniteHom_f1]
     exact M1.lawDual_block laws ha l z
   · apply LinearMap.ext
     intro z
-    change (lawBlockHom laws ha Nf l).f2 ((lawFiniteHom M0 M1 M2 h0 h1 laws ha).f2 z) =
-      (blockFiniteHom laws ha M0 M1 M2 h0 h1 l).f2 ((lawBlockHom laws ha Nc l).f2 z)
+    rw [cochainComp_f2, cochainComp_f2]
     rw [lawBlockHom_f2, lawBlockHom_f2, lawFiniteHom_f2, blockFiniteHom_f2]
     exact M2.lawDual_block laws ha l z
 
