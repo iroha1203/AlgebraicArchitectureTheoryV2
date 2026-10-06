@@ -12,6 +12,8 @@ G-134 T0・A・D。原始incidenceから有限自由ℚ加群と微分を作る�
 
 chainは支持セル名上のFinsuppであり、cochainとの同定はmathlibの自由加群の
 線形普遍性を使う。微分と比較は基底像から先に定め、双対の式を検証する。
+有限基底を番号付けして行列へ移す表現は、任意のセル名・支持部分集合ごとに
+番号付けとtransportを追加するため採らず、セル名を直接基底とするFinsuppを用いる。
 -/
 
 noncomputable section
@@ -88,7 +90,11 @@ theorem chainD1_dual (N : TargetSupportedNerve q) (A : Set q.Target)
   have h : (freeDualEquiv _ z).comp (chainD1 N A) = freeDualEquiv _ (N.targetSubsetD0 A z) := by
     apply Finsupp.lhom_ext
     intro e a
-    simp [LinearMap.comp_apply, TargetSupportedNerve.targetSubsetD0, mul_sub]
+    simp only [LinearMap.comp_apply, chainD1_single, map_smul, map_sub,
+      freeDualEquiv_single, one_mul, smul_eq_mul]
+    change a * (z (N.targetSubsetEdgeRight A e) - z (N.targetSubsetEdgeLeft A e)) =
+      a * (N.targetSubsetComplex A).d0 z e
+    rw [N.targetSubsetComplex_d0_apply]
   exact LinearMap.congr_fun h x
 
 /-- 原始chain微分の双対は既存subsetの実degree 1微分。 -/
@@ -98,7 +104,11 @@ theorem chainD2_dual (N : TargetSupportedNerve q) (A : Set q.Target)
   have h : (freeDualEquiv _ z).comp (chainD2 N A) = freeDualEquiv _ (N.targetSubsetD1 A z) := by
     apply Finsupp.lhom_ext
     intro f a
-    simp [LinearMap.comp_apply, TargetSupportedNerve.targetSubsetD1, mul_sub, mul_add]
+    simp only [LinearMap.comp_apply, chainD2_single, map_smul, map_sub, map_add,
+      freeDualEquiv_single, one_mul, smul_eq_mul]
+    change a * (z (N.targetSubsetFaceEdge0 A f) - z (N.targetSubsetFaceEdge1 A f) +
+      z (N.targetSubsetFaceEdge2 A f)) = a * (N.targetSubsetComplex A).d1 z f
+    rw [N.targetSubsetComplex_d1_apply]
   exact LinearMap.congr_fun h x
 
 /-- 原始支持chainの二微分は零に合成される。 -/

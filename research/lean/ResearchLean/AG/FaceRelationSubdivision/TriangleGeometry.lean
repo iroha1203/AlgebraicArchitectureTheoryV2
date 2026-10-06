@@ -10,6 +10,8 @@ G-134 B§2のセル名・台・incidenceを原始constructorで生成する。
 
 各次数の直和タグでfreshnessを保証する。旧面のincidenceと台を保持し、
 新しい面は辺の像の相殺によって退化する。写像や保存結論を入力に含めない。
+旧セル型の要素を流用する表現はfreshnessを別仮定にするため採らず、
+既存の名前を保持したまま衝突を型で排除できる直和タグを用いる。
 -/
 
 noncomputable section
@@ -97,7 +99,10 @@ def supported : TargetSupportedNerve q where
 @[simp] theorem edgeSupport_c :
     (supported N e).edgeSupport (.inr false) = N.chartSupport (N.nerve.edgeLeft e) := by
   ext t
-  simp [TargetSupportedNerve.edgeSupport, supported, nerve]
+  rw [(supported N e).mem_edgeSupport_iff]
+  change (t ∈ N.chartSupport (N.nerve.edgeLeft e) ∧
+    t ∈ N.chartSupport (N.nerve.edgeLeft e)) ↔ _
+  exact and_self_iff
 
 /-- 追加辺e2のK1台は元辺の台と一致する。 -/
 @[simp] theorem edgeSupport_e2 :
@@ -111,7 +116,12 @@ def supported : TargetSupportedNerve q where
 @[simp] theorem faceSupport_new :
     (supported N e).faceSupport (.inr PUnit.unit) = N.edgeSupport e := by
   ext t
-  simp [TargetSupportedNerve.faceSupport, TargetSupportedNerve.edgeSupport, supported, nerve]
+  rw [(supported N e).mem_faceSupport_iff]
+  change (t ∈ (supported N e).edgeSupport (.inr false) ∧
+    t ∈ (supported N e).edgeSupport (.inl e) ∧
+    t ∈ (supported N e).edgeSupport (.inr true)) ↔ _
+  rw [edgeSupport_c, edgeSupport_old, edgeSupport_e2, N.mem_edgeSupport_iff]
+  exact ⟨fun h => h.2.1, fun h => ⟨h.1, h, h⟩⟩
 
 /-- 旧面のK1台は保持される。 -/
 @[simp] theorem faceSupport_old (f : N.nerve.FaceComponent) :

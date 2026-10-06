@@ -840,7 +840,7 @@ theorem labelFiberComparison_naturality1 [Fintype Source]
         coarseEdge hmap]
 
 /-- Degree-two comparison is natural under the block/subnerve identification,
-including the hereditary degenerate-face branch. -/
+including mixed degeneration by primitive signed incidence cancellation. -/
 theorem labelFiberComparison_naturality2 [Fintype Source]
     (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
       coarse fine)

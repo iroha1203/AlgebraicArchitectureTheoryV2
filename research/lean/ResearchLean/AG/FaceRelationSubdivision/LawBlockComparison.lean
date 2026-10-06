@@ -597,7 +597,7 @@ theorem edgeBlockCoordinateMapOption_faceEdge12
     congr 1
 
 /-- The generated block pullbacks commute with `d1`; the degenerate branch
-uses all three hereditary face declarations. -/
+uses the primitive signed incidence relation and cancellation of equal block coordinates. -/
 theorem generatedBlockPullback_comm1 [Fintype Source]
     (M : IncidenceSupportedComparison coarseReading fineReading hcoarser
       coarse fine)
