@@ -28,6 +28,11 @@ def triangle (i : ℕ) := compositionTriangle (cumulative C i) (adjacent C i)
   (cumulative C (i+1)) (cumulative_comp C i)
 /-- 実累積錐の tower 射。 -/
 def step (i : ℕ) : cone C i ⟶ cone C (i+1) := (triangle C i).mor₁
+/-- F の累積 tower 射の公開式。triangle の内部を下流で展開しない。 -/
+theorem step_eq (i : ℕ) : step C i =
+    mappingCone.map (cumulative C i) (cumulative C (i+1)) (𝟙 (C.obj 0))
+      (adjacent C i) (by rw [cumulative_comp C i];simp) :=
+  compositionTriangle_mor₁ _ _ _ _
 /-- 各段の triangle は distinguished である。 -/
 theorem triangle_distinguished (i : ℕ) :
     (HomotopyCategory.quotient (ModuleCat.{w} ℚ) (ComplexShape.up ℤ)).mapTriangle.obj
@@ -68,6 +73,10 @@ def stage : (i : ℕ) → ModelStage C i
 def model (i : ℕ) := (stage C i).complex
 /-- 各モデルの指定射影は累積錐への homotopy 同値である。 -/
 def augmentation (i : ℕ) : HomotopyEquiv (model C i) (cone C i) := (stage C i).equivalence
+/-- F の指定モデルの初段は実零複体である。 -/
+@[simp] theorem model_zero : model C 0 = 0 := rfl
+/-- F の零始点から累積錐への指定射影の公開式。 -/
+@[simp] theorem augmentation_zero_hom : (augmentation C 0).hom = 0 := rfl
 /-- 原始 tower 射を実モデルに結ぶ指定 chain map。 -/
 def modelArrow (i : ℕ) : model C i ⟶ cone C (i+1) := (augmentation C i).hom ≫ step C i
 /-- 零から始まる実モデルの隣接包含。 -/

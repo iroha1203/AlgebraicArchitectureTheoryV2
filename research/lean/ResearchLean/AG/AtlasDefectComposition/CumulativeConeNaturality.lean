@@ -17,7 +17,8 @@ def coneMap (i : ℕ) : cone C i ⟶ cone D i :=
     (τ.naturality (homOfLE (Nat.zero_le i)))
 /-- 累積錐の実 tower 射は元の diagram の自然変換と可換する。 -/
 theorem step_natural (i : ℕ) : step C i ≫ coneMap τ (i+1) = coneMap τ i ≫ step D i := by
-  dsimp only [step,triangle,compositionTriangle,Triangle.mk_mor₁,coneMap]
+  rw [step_eq,step_eq]
+  dsimp only [coneMap]
   rw [← mappingCone.map_comp (cumulative C i) (cumulative C (i+1)) (cumulative D (i+1))
     (𝟙 (C.obj 0)) (adjacent C i) (by rw [cumulative_comp C i];simp)
     (τ.app 0) (τ.app (i+1)) (τ.naturality (homOfLE (Nat.zero_le (i+1))))]
@@ -33,12 +34,18 @@ structure ModelStageMap (i : ℕ) where
   square : hom ≫ (augmentation D i).hom = (augmentation C i).hom ≫ coneMap τ i
 /-- 元の自然変換の実モデルへの反復構成。証明 field は各段で生成する。 -/
 def stageMap : (i : ℕ) → ModelStageMap τ i
-  | 0 => ⟨0,by simp [augmentation,stage,initialEquiv]⟩
+  | 0 => ⟨0,by simp only [augmentation_zero_hom,zero_comp,comp_zero]⟩
   | i+1 =>
     ⟨MappingCylinder.map (modelArrow C i) (modelArrow D i) (stageMap i).hom (coneMap τ (i+1)),
       MappingCylinder.projection_natural _ _ _ _⟩
 /-- 各段モデル間の指定実射。 -/
 def modelMap (i : ℕ) : model C i ⟶ model D i := (stageMap τ i).hom
+/-- F のモデル射の零段正規化。指定零始点の実射である。 -/
+@[simp] theorem modelMap_zero : modelMap τ 0 = 0 := rfl
+/-- F のモデル射の後続段正規化。元の指定射からの cylinder map を保持する。 -/
+theorem modelMap_succ (i : ℕ) : modelMap τ (i+1) =
+    MappingCylinder.map (modelArrow C i) (modelArrow D i)
+      (modelMap τ i) (coneMap τ (i+1)) := rfl
 /-- 構成したモデル射は指定射影を保つ。 -/
 theorem augmentation_natural (i : ℕ) :
     modelMap τ i ≫ (augmentation D i).hom = (augmentation C i).hom ≫ coneMap τ i :=

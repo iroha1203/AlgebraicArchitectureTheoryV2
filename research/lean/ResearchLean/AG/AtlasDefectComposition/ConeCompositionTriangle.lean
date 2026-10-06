@@ -17,6 +17,10 @@ def compositionTriangle (h : direct = f ≫ g) : Triangle (CochainComplex (Modul
   Triangle.mk (mappingCone.map f direct (𝟙 K) g (by rw [h];simp))
     (mappingCone.map direct g f (𝟙 M) (by rw [h];simp))
     ((mappingCone.triangle g).mor₃ ≫ (mappingCone.inr f)⟦1⟧')
+/-- F の第一射の公開 categorical 式。独立直接比較の錐を保持する。 -/
+theorem compositionTriangle_mor₁ (h : direct = f ≫ g) :
+    (compositionTriangle f g direct h).mor₁ =
+      mappingCone.map f direct (𝟙 K) g (by rw [h];simp) := rfl
 /-- 直接比較の合成等号に沿う標準 triangle との全三射の等号。 -/
 theorem compositionTriangle_eq (h : direct = f ≫ g) :
     compositionTriangle f g direct h = mappingConeCompTriangle f g := by

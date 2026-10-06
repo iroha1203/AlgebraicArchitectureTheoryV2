@@ -28,11 +28,13 @@ theorem rawPath_adjacent (X : Fin (n+1) → RawResolution Source)
   ComposableArrows.mkOfObjOfMapSucc_map_succ X adj i i.isLt
 variable (P : Fin (n+1) ⥤ RawResolution Source)
 /-- 同じ最初の reading から各段への粗細順序は原始 path から得る。 -/
-def pathCoarser (i : Fin (n+1)) : (P.obj 0).reading.CoarserThan (P.obj i).reading :=
+theorem pathCoarser (i : Fin (n+1)) : (P.obj 0).reading.CoarserThan (P.obj i).reading :=
   (P.map (homOfLE (Fin.zero_le i))).1
 variable [Fintype Source] (laws : FiniteLawFamily Source) (ha : laws.Adequate (P.obj 0).reading)
+omit [Fintype Source] in
+include ha in
 /-- 全段の Law adequacy は最初の同じ Law 入力から導く。 -/
-def pathAdequate (i : Fin (n+1)) : laws.Adequate (P.obj i).reading :=
+theorem pathAdequate (i : Fin (n+1)) : laws.Adequate (P.obj i).reading :=
   adequate_of_coarser laws (pathCoarser P i) ha
 /-- 各対の全Law複体を独立に生成する diagram。 -/
 def lawPathDiagram : Fin (n+1) ⥤ CochainComplex (ModuleCat.{u} ℚ) ℤ where

@@ -37,11 +37,11 @@ theorem subsetTowerInput_isZero (A : Set (P.obj 0).reading.Target) (i : ℕ) (m 
 /-- 実原始subset入力の構成済みモデルは全次数で有限次元である。 -/
 theorem subsetModel_finiteDimensional (A : Set (P.obj 0).reading.Target) (i : Fin (n+1)) (m : ℤ) :
     FiniteDimensional ℚ ((ConeTower.model (subsetTowerInput P A) i.val).X m) :=
-  ConeTower.modelFiniteDimensional _ (subsetTowerInput_finiteDimensional P A) _ _
+  ConeTower.model_finite_dimensional _ (subsetTowerInput_finiteDimensional P A) _ _
 /-- 実原始subset入力の第 i 段モデルの有限次数範囲。 -/
 theorem subsetModel_isZero (A : Set (P.obj 0).reading.Target) (i : Fin (n+1)) (m : ℤ)
     (hm : m < -(i.val : ℤ) ∨ 2 < m) : IsZero ((ConeTower.model (subsetTowerInput P A) i.val).X m) :=
-  ConeTower.modelBounded _ (subsetTowerInput_isZero P A) _ _ hm
+  ConeTower.model_bounded _ (subsetTowerInput_isZero P A) _ _ hm
 /-- 全段の同じ署名包含に沿う実モデル tower の制限。 -/
 def subsetModelRestriction {A B : Set (P.obj 0).reading.Target}
     (hAB : SupportStages.alpha (pathReadings P) (pathNerves P) (pathCoarser P) A ⊆
@@ -67,10 +67,10 @@ theorem lawTowerInput_isZero (i : ℕ) (m : ℤ) (hm : m < 0 ∨ 2 < m) :
 /-- 全Law実モデルも各次数で有限次元である。 -/
 theorem lawModel_finiteDimensional (i : Fin (n+1)) (m : ℤ) :
     FiniteDimensional ℚ ((ConeTower.model (lawTowerInput P laws ha) i.val).X m) :=
-  ConeTower.modelFiniteDimensional _ (lawTowerInput_finiteDimensional P laws ha) _ _
+  ConeTower.model_finite_dimensional _ (lawTowerInput_finiteDimensional P laws ha) _ _
 /-- 全Law実モデルは同じ有限次数範囲を持つ。 -/
 theorem lawModel_isZero (i : Fin (n+1)) (m : ℤ) (hm : m < -(i.val : ℤ) ∨ 2 < m) :
     IsZero ((ConeTower.model (lawTowerInput P laws ha) i.val).X m) :=
-  ConeTower.modelBounded _ (lawTowerInput_isZero P laws ha) _ _ hm
+  ConeTower.model_bounded _ (lawTowerInput_isZero P laws ha) _ _ hm
 end AAT.AG.AtlasDefectComposition
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition

@@ -53,6 +53,18 @@ theorem modelBounded (hz : ∀ i m, m < 0 ∨ 2 < m → IsZero ((C.obj i).X m))
   | succ i ih =>
     exact MappingCylinder.degree_isZero (modelArrow C i) m
       (ih m (by omega)) (ih (m+1) (by omega)) (coneBounded C hz (i+1) m (by omega))
+/-- F の有限モデル検証に使う `coneFiniteDimensional` の公開 snake_case API。 -/
+alias cone_finite_dimensional := coneFiniteDimensional
+/-- F の有限モデル検証に使う `modelFiniteDimensional` の公開 snake_case API。 -/
+alias model_finite_dimensional := modelFiniteDimensional
+/-- F の有限モデル検証に使う `coneBounded` の公開 snake_case API。 -/
+alias cone_bounded := coneBounded
+/-- F の有限モデル検証に使う `modelBounded` の公開 snake_case API。 -/
+alias model_bounded := modelBounded
+attribute [deprecated cone_finite_dimensional (since := "2026-10-06")] coneFiniteDimensional
+attribute [deprecated model_finite_dimensional (since := "2026-10-06")] modelFiniteDimensional
+attribute [deprecated cone_bounded (since := "2026-10-06")] coneBounded
+attribute [deprecated model_bounded (since := "2026-10-06")] modelBounded
 end ConeTower
 end AAT.AG.AtlasDefectComposition
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition

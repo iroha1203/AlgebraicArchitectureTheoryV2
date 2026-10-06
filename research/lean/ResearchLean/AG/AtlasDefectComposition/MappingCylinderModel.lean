@@ -101,5 +101,8 @@ instance degreeFiniteDimensional (m : ℤ) [FiniteDimensional ℚ (K.X m)]
       ModuleCat.biprodIsoProd _ _).toLinearEquiv).toLinearMap
     ((HomologicalComplex.biprodXIso (mappingCone (𝟙 K)) L m ≪≫
       ModuleCat.biprodIsoProd _ _).toLinearEquiv).injective
+/-- F の実モデル短完全性の公開 snake_case API。 -/
+alias short_exact := shortExact
+attribute [deprecated short_exact (since := "2026-10-06")] shortExact
 end AAT.AG.AtlasDefectComposition.MappingCylinder
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition.MappingCylinder

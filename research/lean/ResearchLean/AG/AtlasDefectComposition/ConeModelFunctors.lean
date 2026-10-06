@@ -31,42 +31,34 @@ theorem coneMap_add (τ η : C ⟶ D) (i : ℕ) :
 theorem modelMap_id (C : ℕ ⥤ CochainComplex (ModuleCat.{w} ℚ) ℤ) (i : ℕ) :
     modelMap (𝟙 C) i = 𝟙 _ := by
   induction i with
-  | zero => exact (isZero_zero _).eq_of_src _ _
+  | zero =>
+    rw [modelMap_zero]
+    exact (isZero_zero _).eq_of_src _ _
   | succ i ih =>
-    change MappingCylinder.map (modelArrow C i) (modelArrow C i)
-      (modelMap (𝟙 C) i) (coneMap (𝟙 C) (i+1)) = 𝟙 _
+    rw [modelMap_succ]
     rw [ih,coneMap_id,MappingCylinder.map_id]
+    rfl
 /-- 実モデルの指定射は自然変換の合成を保つ。 -/
 theorem modelMap_comp (τ : C ⟶ D) (η : D ⟶ E) (i : ℕ) :
     modelMap (τ ≫ η) i = modelMap τ i ≫ modelMap η i := by
   induction i with
-  | zero => exact (isZero_zero _).eq_of_src _ _
+  | zero =>
+    rw [modelMap_zero]
+    exact (isZero_zero _).eq_of_src _ _
   | succ i ih =>
-    change MappingCylinder.map (modelArrow C i) (modelArrow E i)
-      (modelMap (τ ≫ η) i) (coneMap (τ ≫ η) (i+1)) = _
+    rw [modelMap_succ,modelMap_succ,modelMap_succ]
     rw [ih,coneMap_comp,MappingCylinder.map_comp _ (modelArrow D i)]
-    rfl
 /-- 実モデルの指定射は加法を保つ。 -/
 theorem modelMap_add (τ η : C ⟶ D) (i : ℕ) :
     modelMap (τ+η) i = modelMap τ i + modelMap η i := by
   induction i with
-  | zero => exact (isZero_zero _).eq_of_src _ _
+  | zero =>
+    rw [modelMap_zero]
+    exact (isZero_zero _).eq_of_src _ _
   | succ i ih =>
-    change MappingCylinder.map (modelArrow C i) (modelArrow D i)
-      (modelMap (τ+η) i) (coneMap (τ+η) (i+1)) =
-        MappingCylinder.map (modelArrow C i) (modelArrow D i) (modelMap τ i) (coneMap τ (i+1)) +
-        MappingCylinder.map (modelArrow C i) (modelArrow D i) (modelMap η i) (coneMap η (i+1))
+    rw [modelMap_succ,modelMap_succ,modelMap_succ]
     rw [ih,coneMap_add]
-    apply biprod.hom_ext
-    · simp [MappingCylinder.map]
-      rw [← Preadditive.comp_add]
-      apply congrArg (fun f => biprod.fst ≫ f)
-      apply HomologicalComplex.Hom.ext
-      funext m
-      rw [mappingCone.ext_from_iff (𝟙 (model C i)) (m+1) m rfl]
-      constructor <;> simp [mappingCone.map,
-        HomComplex.Cochain.ofHom_add,HomComplex.Cochain.add_v]
-    · simp [MappingCylinder.map]
+    exact MappingCylinder.map_add _ _ _ _ _ _
 /-- 指定段の実累積錐の関手。 -/
 def coneFunctor (i : ℕ) : (ℕ ⥤ CochainComplex (ModuleCat.{w} ℚ) ℤ) ⥤
     CochainComplex (ModuleCat.{w} ℚ) ℤ where

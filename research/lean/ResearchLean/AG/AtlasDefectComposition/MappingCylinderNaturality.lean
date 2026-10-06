@@ -41,5 +41,18 @@ theorem map_comp (h : K'' ⟶ L'') (a' : K' ⟶ K'') (b' : L' ⟶ L'') :
   dsimp [map]
   rw [mappingCone.map_comp (𝟙 K) (𝟙 K') (𝟙 K'') a a (by simp) a' a' (by simp)]
   apply biprod.hom_ext <;> simp [Category.assoc]
+/-- F のモデル射の公開加法則。同じ source/target の実正方形成分を保つ。 -/
+theorem map_add (a' : K ⟶ K') (b' : L ⟶ L') :
+    map f g (a+a') (b+b') = map f g a b + map f g a' b' := by
+  apply biprod.hom_ext
+  · simp [map]
+    rw [← Preadditive.comp_add]
+    apply congrArg (fun k => biprod.fst ≫ k)
+    apply HomologicalComplex.Hom.ext
+    funext m
+    rw [mappingCone.ext_from_iff (𝟙 K) (m+1) m rfl]
+    constructor <;> simp [mappingCone.map,
+      HomComplex.Cochain.ofHom_add,HomComplex.Cochain.add_v]
+  · simp [map]
 end AAT.AG.AtlasDefectComposition.MappingCylinder
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition.MappingCylinder
