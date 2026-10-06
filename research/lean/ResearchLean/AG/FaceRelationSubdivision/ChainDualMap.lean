@@ -68,6 +68,28 @@ theorem dualCellMap_add (f g : (I →₀ ℚ) →ₗ[ℚ] (J →₀ ℚ)) :
   change _ = freeDualEquiv I (dualCellMap f z + dualCellMap g z) x
   rw [map_add, LinearMap.add_apply, dualCellMap_dual, dualCellMap_dual]
 
+/-- 同じchain射の符号反転は実cochain射の符号反転。 -/
+theorem dualCellMap_neg (f : (I →₀ ℚ) →ₗ[ℚ] (J →₀ ℚ)) :
+    dualCellMap (-f) = -dualCellMap f := by
+  apply LinearMap.ext
+  intro z
+  apply (freeDualEquiv I).injective
+  apply LinearMap.ext
+  intro x
+  rw [dualCellMap_dual, LinearMap.neg_apply, map_neg]
+  change _ = freeDualEquiv I (-dualCellMap f z) x
+  rw [map_neg, LinearMap.neg_apply, dualCellMap_dual]
+
+/-- 零chain射の双対は零cochain射。 -/
+theorem dualCellMap_zero :
+    dualCellMap (0 : (I →₀ ℚ) →ₗ[ℚ] (J →₀ ℚ)) = 0 := by
+  apply LinearMap.ext
+  intro z
+  apply (freeDualEquiv I).injective
+  apply LinearMap.ext
+  intro x
+  simp only [dualCellMap_dual, LinearMap.zero_apply, map_zero]
+
 variable {Source : Type u} {qc qf : Reading Source}
 variable {Nc : TargetSupportedNerve qc} {Nf : TargetSupportedNerve qf}
 variable (Ac : Set qc.Target) (Af : Set qf.Target)
