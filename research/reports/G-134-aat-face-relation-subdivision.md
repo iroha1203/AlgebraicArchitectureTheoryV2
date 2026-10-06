@@ -1550,7 +1550,8 @@ mathlibのHomotopy.homologyMap_eqとSubmodule.Quotient.eqを固定mathlib版で�
 
 ### Cycle 5 受理spine候補
 
-新規4moduleの87明示宣言と、既存4moduleの新公開API25宣言の計112宣言を固定する。
+新規4moduleの87明示宣言と、既存4moduleの新公開API25宣言、査読で名指しされた
+所有moduleの公開API1宣言の計113宣言を固定する。
 その他の既存宣言は受理済みpredecessor。新規全sourceのassertは各module内の生成補助宣言も
 検査する（LiftVariationのmacroは19、明示spineは18）。scaffoldを受理spineへ混ぜない。
 
@@ -1667,11 +1668,12 @@ AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_s1
 AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_s2
 AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_h0
 AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_h1
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetComplex_d0
 ```
 
 現在の対象source SHA-256（既存sourceはAPI追加後の版）:
 
-- `LiftVariation.lean`: `792d75aed58d1162ab7e8fcf45ee45fdef613464d94d2401d692443106884bdf`（今回の明示spine 18）
+- `LiftVariation.lean`: `ba096624bb7a9b576a09d566262e757d623a15cd8d4359407fe6ce7a5625d733`（今回の明示spine 18）
 - `TriangleLift.lean`: `3ad9fab4b70814892709f567b6b5a412aac64a4d1a851592330b7fd8095f1288`（今回の明示spine 22）
 - `SubdivisionLift.lean`: `37154f4410e01fa6d4378474445f7aba462b5ab507b3e8533f4b90e52215d0e7`（今回の明示spine 22）
 - `CocycleNormalization.lean`: `07f3fb014244cbfb5ed00e37ceedc82ecc290bc1131de2a6315beebaacbc4e4b`（今回の明示spine 25）
@@ -1680,13 +1682,15 @@ AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_h1
 - `TriangleContraction.lean`: `8cb2eef0953e8942e74e43b19e7ebd65e030e884bf7bb016c52350e9c537ba6d`（今回の明示spine 8）
 - `EdgeContraction.lean`: `40f704cddc1c9bbf6c53264eb66f3ac097c0fae8b3033142bce864c3bff486d2`（今回の明示spine 8）
 
+- `ASubnerveReduction.lean`: `88d14f9220df4cf630983ee77bef92daa171ed562678e2519aaccf302d113037`（査読修正の明示spine 1）
+
 ### Cycle 5 validation / result proposal
 
 新規4moduleと公開APIを追加した既存4moduleを必要な単一file checkで確認した。
 公式focused経路でTriangleLift・SubdivisionLift・CocycleNormalizationを検査、
 最後の商接続/API整理後にLiftVariationとCocycleNormalizationを再確認した。
-112明示宣言すべてを#print axiomsし、source/spine/query/logの集合一致、重複・欠落・余剰なし、
-標準propext/Classical.choice/Quot.soundのみを確認。log SHA-256: `998af15f79f4e2da8f602594b91bd02c9c1b48d64ea937d4323656df10f66a62`。
+113明示宣言すべてを#print axiomsし、source/spine/query/logの集合一致、重複・欠落・余剰なし、
+標準propext/Classical.choice/Quot.soundのみを確認。log SHA-256: `d20e39906194e80adc87d2d1fc68509b8bf849b9faacf2bf688683f3421ce4d3`。
 placeholder、hidden/BiDi、privacy、manifest TSV/実在/一意性、diff whitespace scanはclean。
 新規module登録後のtracked import方向・公開artifact scanは固定commitでも検査する。
 Research全体build、aggregate root、全file loop、本体full buildは未実施。独立PR査読/CIは
@@ -1718,3 +1722,15 @@ result:
     one_way_as_equivalence: none-found
     next_obligation: P4一般有限和Law/有限合成/制限/cone/defect、P5 E/W1-W3、別の全target完了監査
 ```
+
+### Cycle 5 非中心findingへの直接対応
+
+初回固定head `07df221521f277de03ec69190263a3c1507489b2` の独立数学2本・Lean2本は
+中心0/統合非中心1。3laneはNo major findings、Lean BはMinor issues。
+[初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5278#issuecomment-6024205175)。
+`cocycle_readback_class` のtargetSubsetComplex.d0直接展開を、findingで名指しされた
+所有moduleの公開API `TargetSupportedNerve.targetSubsetComplex_d0` の適用へ置換した。
+既存宣言のsignature、def/instance本体・値、import、statusは変更しない。追加宣言は
+指名された補助API1件だけ。spine/件数/hashを同じ113宣言へ同期した。
+修正所有module・LiftVariation・下流CocycleNormalizationの単一checkと公式focused、
+全113axiom照会、共通scanを実施。資格とfinding解消は新規単一確認で独立判定する。

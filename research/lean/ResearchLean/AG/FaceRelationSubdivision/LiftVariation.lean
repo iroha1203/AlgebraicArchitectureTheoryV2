@@ -139,8 +139,7 @@ theorem cocycle_readback_class (z : LinearMap.ker (Nf.targetSubsetComplex Af).d1
   have h := C.cocycle_normalize z.1 z.2
   change (Nf.targetSubsetComplex Af).d0 (-dualCellMap C.h0 z.1) =
     C.rHom.f1 (C.sHom.f1 z.1) - z.1
-  change Nf.targetSubsetD0 Af (-dualCellMap C.h0 z.1) =
-    C.rHom.f1 (C.sHom.f1 z.1) - z.1
+  rw [Nf.targetSubsetComplex_d0 Af]
   rw [map_neg]
   funext a
   have hp := congrFun h a

@@ -240,6 +240,12 @@ def targetSubsetComplex (D : TargetSupportedNerve q)
   d1 := D.targetSubsetD1 A
   d1_comp_d0 := D.targetSubset_d1_comp_d0 A
 
+/-- The degree-zero differential of the actual subset complex is the supported
+incidence differential. Public definition-owner API for downstream proofs. -/
+theorem targetSubsetComplex_d0 (D : TargetSupportedNerve q)
+    (A : Set q.Target) :
+    (D.targetSubsetComplex A).d0 = D.targetSubsetD0 A := rfl
+
 /-- Evaluate the degree-zero differential of an actual constant-rational
 A-subnerve complex at one selected edge.  This public definition-owner API
 exposes only endpoint incidence, so downstream witnesses need not unfold
