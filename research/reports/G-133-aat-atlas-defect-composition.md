@@ -1778,3 +1778,191 @@ privacyは公開PR/Issue参照10件のみ、Formal→Research import 0、diff ch
 W1の多重度2まで同じ入力から接続した結果を `proof-obligation-discharged` として提案する。
 M5の未放電material premiseはない。正式再実行1のfresh4本レビューとroot acceptanceは未実施。
 completion candidate: no。次obligationはFと全GOALの独立完了監査である。
+
+## Cycle 5 受理と Cycle 6 selection
+
+M5は [標準正式再実行1](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5267#issuecomment-6004831782)
+と [有資格直接対応・root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5267#issuecomment-6004936940)
+を経て `proof-obligation-discharged` として受理した。初回W2実Law接続Majorは
+同じ原始Lawの三ラベル・a/b別成分・共有多重度2と実全Law比較/錐の構成で解消し、
+fresh4本正式再実行1が中心findingなしと確認した。非中心report4箇所は新規単独確認で解消した。
+最終head `4b0f87d4ad3b34e3ab938c9a19ceb712092e3999`、PR #5267、
+merge `7ac334319fe1a72b2a98fa0f4357493685477af3`、2026-10-05T23:00:28Z。
+全8 CI成功、44ファイル579宣言の標準公理監査成功。Issue M5同期は
+[merge記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5261#issuecomment-6004978178)にある。
+M1–M5受理済み、Fと全GOAL独立完了監査は未完である。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-133-aat-atlas-defect-composition
+cycle: 6
+goal_blob_sha: 8904a7d3bf428e0307499a40be4db1ba9091c51a
+base_oid: 7ac334319fe1a72b2a98fa0f4357493685477af3
+tracking_issue: 5261
+report_path: research/reports/G-133-aat-atlas-defect-composition.md
+selection:
+  proof_state_ref: Cycle5受理監査・merge・Issue同期と固定GOAL F/設計3.3
+  proof_dag_predecessors: [M1原始比較合成, M2実H1六項と相殺, M3零延長と標準錐, M4実Law有限直和, M5全段台署名と実制限]
+  milestone: M6の実錐合成triangleと有限多段tower・モデルfiltrationの統合
+  proof_obligations:
+    - Aの独立生成直接比較をmiddle objectとする標準distinguished triangle
+    - 全整数次数の三射成分・shift符号・標準homotopy
+    - 任意有限reading列と全隣接原始部分セル比較からの累積比較生成
+    - 同じ基底subset逆像族の全段複体と実比較の関手性
+    - 累積錐E0のcontractibilityと隣接錐を結ぶ有限tower
+    - 各累積錐へのchain homotopy同値を持つ有限次元・有界モデル
+    - 零から始まる次数別単射の有限filtrationと逐次cokernelの隣接錐へのchain homotopy同値
+    - 全段共通台制限とLaw全発生ラベル分解の自然性
+    - 三段特殊化・A–FとWの累積構成対応と全GOAL完了証拠
+  exit_criteria:
+    - F全量化と全構成を原始入力からLeanで生成し元の射の単射性を仮定しない
+    - 指定triangleの三射・符号・台制限・Law分解の対応を証明
+    - 任意有限段数n=0を含め実tower・モデル有限filtration・逐次商の同値を証明
+    - 三段特殊化と全段共通署名・Law有限直和の対応を証明
+    - 対象focused/必要依存targeted・全累積spine公理・scanと標準PR監査を完了
+    - 同じ固定headの全GOAL独立4本完了監査とroot再照合を完了
+  selection_reason: Fのみが数学条項の未完であり既受理A–E/Wを任意有限比較列の同じ構成へ接続する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ConeCompositionTriangle.lean, MappingCylinderModel.lean, FiniteComparisonChain.lean, CumulativeConeTower.lean, FiniteConeFiltration.lean, ConeFiltrationNaturality.lean]
+  risks:
+    - 元の累積錐射をそのまま部分複体と宣言しない
+    - cochain合成から直接比較を定義して原始比較生成義務を消さない
+    - distinguished triangleをH1核余核六項列と混同しない
+    - shift負号とtarget/source成分順序を保持する
+    - モデル変更の有限次元性と有界性を同じ構成から導く
+    - 単射性・手供給exactness/同値/自然性を追加入力にしない
+    - 同じ基底subsetと全発生Lawラベルを保持する
+  unchecked: [F未実装, 全GOAL完了監査未実施]
+```
+
+## Cycle 6：有限単射モデルの部分成果
+
+固定M6の終了条件を維持したまま、独立に再利用できる有限単射モデルを
+`proof-checkpoint` として提案する。F全体とG-133全体の完了は未判定である。
+
+原始reading/nerve/隣接セル射から `rawPath` を構成し、隣接射が入力そのものに
+一致することを証明した。`lawPathDiagram` と `subsetPathDiagram` は各対で
+元の生成手続きを適用し、原始圏の恒等・合成から関手則を導く。
+subsetは同じq₀から全段へ引き戻し、初段の逆像を元のsubsetへ戻す同型も構成した。
+
+`compositionTriangle` は独立直接比較をmiddleに保持する。第一射
+`(y,x) ↦ (vy,x)`、第二射 `(z,x) ↦ (z,ux)`、三射目のshiftを外した
+`−fst(v) ≫ inr(u)`を全整数次数で証明した。二射の合成については
+標準inlから `compositionTriangleNullHomotopy` を生成し、chain mapの零等号を入力にしない。
+標準distinguished性と反復錐・後段錐のchain homotopy同値へ接続した。
+
+モデルは `Cone(id K) ⊞ L`、包含は `k ↦ ((k,0),φk)`、射影は第二成分である。
+指定商射は標準錐への `((z,x),y) ↦ (y−φz,−x)` を持つ実chain mapである。
+次数別左逆・右逆と恒等分解から実短完全性を証明し、実cokernelを標準錐へ
+普遍性で同定した。射影のchain homotopy同値は恒等錐のcontractibilityから導いた。
+
+累積錐E₀を実零複体に置き換え、各段でこのモデルを反復する。
+各包含は全次数で単射であり、実cokernelは隣接錐とchain homotopy同値である。
+terminal modelへの合成埋め込みから実Subobjectの有限filtrationを構成し、
+初段⊥・終段⊤と単調性、その実隣接包含の実cokernelの同値まで証明した。
+段iのモデルは全次数で有限次元、次数−iから2の外で零対象である。
+有限段数n=0を含み、元の比較の単射性は仮定しない。
+
+原始diagramの実自然変換は累積錐射・モデル包含・指定射影・指定商射と
+可換する。各段モデルと累積錐は恒等・合成・加法を保つ関手になった。
+全段共通署名の包含から、同じ原始subset入力のモデルtower制限を生成した。
+全Law原始diagramにも同じ有限モデル構成を適用した。
+
+全三射の台制限・Law分解への自然性、全発生ラベルの直和によるモデルの
+同定、有限diagramの元の対射への公開同定、三段特殊化、全GOAL完了監査は
+未完であり、次cycleへ保持する。既受理A–E/Wの結果は変更していない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-133-aat-atlas-defect-composition
+cycle: 6
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta:
+    - 独立直接比較triangle・三射符号・標準null homotopy・distinguished性を構成
+    - 全有限原始pathと同じq0全subset/全Lawの独立生成diagramを構成
+    - E0 contractibilityから零始点の実単射モデルtowerを構成
+    - 実Subobject有限filtrationと実隣接cokernelの隣接錐へのhomotopy同値を構成
+    - 全次数有限次元性・有限次数範囲を原始三項複体から放電
+    - 実モデルの包含・射影・商射の自然性と加法的関手則を放電
+  exit_criteria_status:
+    - 任意有限段数とn0を含む実モデルfiltration構成は放電
+    - 全三射の台制限/Law分解自然性・全Lawラベルモデル分解・三段特殊化は未完
+    - 全GOAL独立4本完了監査とroot再照合は未実施
+  split_reason: 実原始diagramからの零始点有限単射モデルと実Subobject逐次商の同値が独立に再利用できる定理として完成したため。この部分成果を監査し、元のM6終了条件と残る統合義務を次cycleに保持する
+  completion_candidate: no
+  lean_artifacts: [下表15module/168public宣言]
+  evidence: [compositionTriangle_distinguished, MappingCylinder.cokernelIso, ConeTower.successiveQuotientEquiv, ConeTower.filtrationQuotientEquiv, ConeTower.modelBounded, subsetPathDiagram, lawPathDiagram]
+  claim_mapping:
+    theorem_names: [下表全public宣言]
+    source_labels: [GOAL F, 設計3.3/4/5 M6]
+    conjuncts: [実triangle符号/同値, 原始有限diagram, 実単射filtration/逐次商, 有限次元/次数範囲, 指定モデル射の自然性]
+    undischarged_assumptions: []
+    acceptance_point: 固定M6の部分成果。未完統合義務を保持したproof-checkpoint
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [入力原始比較の圏法則/生成関手則, 全次数単射性, 実短完全性/cokernel普遍性, projection homotopy同値, bounded finite-dimensional model]
+    remaining: []
+  certificate_provenance:
+    discharged: [原始pathとdiagramは原始セル比較から生成, splitting/homotopy/naturalityは実射から証明, ModelStage/ModelStageMap fieldは反復構成内で生成]
+    unresolved: []
+  proof_use:
+    used: [M1全原始合成/独立生成比較, M3標準錐/零延長, M5全段共通署名/実制限, mathlib標準triangle/contractibility, 実次数分裂/普遍性]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [次節検証・正式PR監査待ち]
+  blocking_findings: []
+  next_obligation: 元のM6終了条件を維持し全三射自然性・全Lawモデル分解・元の有限対射同定・三段特殊化・独立完了監査を続ける
+```
+
+### Cycle 6宣言spine
+
+Lean環境のmodule provenanceから抽出した15module/168public宣言を列挙する。
+生成されたstructure constructor/accessorも含む。全累積spineは134module/1518宣言である。
+
+| module | public declaration |
+| --- | --- |
+| [BoundedConeModels](../../research/lean/ResearchLean/AG/AtlasDefectComposition/BoundedConeModels.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.coneBounded`<br>`AAT.AG.AtlasDefectComposition.ConeTower.coneFiniteDimensional`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelBounded`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelFiniteDimensional`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.degree_isZero` |
+| [ConeCompositionHomotopy](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeCompositionHomotopy.lean) | `AAT.AG.AtlasDefectComposition.compositionTriangleNullHomotopy`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_third` |
+| [ConeCompositionTriangle](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeCompositionTriangle.lean) | `AAT.AG.AtlasDefectComposition.compositionTriangle`<br>`AAT.AG.AtlasDefectComposition.compositionTriangleConeEquiv`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_distinguished`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_eq`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_first`<br>`AAT.AG.AtlasDefectComposition.compositionTriangle_second` |
+| [ConeHomotopyTransport](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeHomotopyTransport.lean) | `AAT.AG.AtlasDefectComposition.coneMapHomotopyEquiv`<br>`AAT.AG.AtlasDefectComposition.homotopyEquivOfIsIsoMap` |
+| [ConeModelFunctors](../../research/lean/ResearchLean/AG/AtlasDefectComposition/ConeModelFunctors.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.coneFunctor`<br>`AAT.AG.AtlasDefectComposition.ConeTower.coneFunctor_additive`<br>`AAT.AG.AtlasDefectComposition.ConeTower.coneMap_add`<br>`AAT.AG.AtlasDefectComposition.ConeTower.coneMap_comp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.coneMap_id`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelFunctor`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelFunctor_additive`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelMap_add`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelMap_comp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelMap_id` |
+| [CumulativeConeNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/CumulativeConeNaturality.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.casesOn`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.ctorIdx`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.hom`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.mk`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.mk.inj`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.mk.injEq`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.mk.noConfusion`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.mk.sizeOf_spec`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.noConfusion`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.noConfusionType`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.rec`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.recOn`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStageMap.square`<br>`AAT.AG.AtlasDefectComposition.ConeTower.augmentation_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.coneMap`<br>`AAT.AG.AtlasDefectComposition.ConeTower.inclusion_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelArrow_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelMap`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelNatTrans`<br>`AAT.AG.AtlasDefectComposition.ConeTower.quotient_natural`<br>`AAT.AG.AtlasDefectComposition.ConeTower.stage.eq_def`<br>`AAT.AG.AtlasDefectComposition.ConeTower.stageMap`<br>`AAT.AG.AtlasDefectComposition.ConeTower.step_natural` |
+| [CumulativeConeTower](../../research/lean/ResearchLean/AG/AtlasDefectComposition/CumulativeConeTower.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.ModelStage`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.casesOn`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.complex`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.ctorIdx`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.equivalence`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.mk`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.mk.inj`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.mk.injEq`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.mk.noConfusion`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.mk.sizeOf_spec`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.noConfusion`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.noConfusionType`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.rec`<br>`AAT.AG.AtlasDefectComposition.ConeTower.ModelStage.recOn`<br>`AAT.AG.AtlasDefectComposition.ConeTower.adjacent`<br>`AAT.AG.AtlasDefectComposition.ConeTower.augmentation`<br>`AAT.AG.AtlasDefectComposition.ConeTower.augmentation_square`<br>`AAT.AG.AtlasDefectComposition.ConeTower.cone`<br>`AAT.AG.AtlasDefectComposition.ConeTower.cumulative`<br>`AAT.AG.AtlasDefectComposition.ConeTower.cumulative_comp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.cumulative_zero`<br>`AAT.AG.AtlasDefectComposition.ConeTower.inclusion`<br>`AAT.AG.AtlasDefectComposition.ConeTower.inclusion_degree_mono`<br>`AAT.AG.AtlasDefectComposition.ConeTower.inclusion_mono`<br>`AAT.AG.AtlasDefectComposition.ConeTower.initialEquiv`<br>`AAT.AG.AtlasDefectComposition.ConeTower.model`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelArrow`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelDiagram`<br>`AAT.AG.AtlasDefectComposition.ConeTower.stage`<br>`AAT.AG.AtlasDefectComposition.ConeTower.step`<br>`AAT.AG.AtlasDefectComposition.ConeTower.stepConeEquiv`<br>`AAT.AG.AtlasDefectComposition.ConeTower.successiveQuotientEquiv`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangle`<br>`AAT.AG.AtlasDefectComposition.ConeTower.triangle_distinguished`<br>`AAT.AG.AtlasDefectComposition.ConeTower.zeroContractible` |
+| [FiniteConeFiltration](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteConeFiltration.lean) | `AAT.AG.AtlasDefectComposition.ConeTower.clamp`<br>`AAT.AG.AtlasDefectComposition.ConeTower.embedding`<br>`AAT.AG.AtlasDefectComposition.ConeTower.embedding_mono`<br>`AAT.AG.AtlasDefectComposition.ConeTower.extend`<br>`AAT.AG.AtlasDefectComposition.ConeTower.extend_obj`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtration`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationInclusion`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationInclusion_eq`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtrationQuotientEquiv`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtration_last`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtration_monotone`<br>`AAT.AG.AtlasDefectComposition.ConeTower.filtration_zero`<br>`AAT.AG.AtlasDefectComposition.ConeTower.modelDiagram_map_mono` |
+| [FiniteModelApplication](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteModelApplication.lean) | `AAT.AG.AtlasDefectComposition.lawFiltrationQuotientEquiv`<br>`AAT.AG.AtlasDefectComposition.lawModelFiltration`<br>`AAT.AG.AtlasDefectComposition.lawModel_finiteDimensional`<br>`AAT.AG.AtlasDefectComposition.lawModel_isZero`<br>`AAT.AG.AtlasDefectComposition.lawTowerInput`<br>`AAT.AG.AtlasDefectComposition.lawTowerInput_finiteDimensional`<br>`AAT.AG.AtlasDefectComposition.lawTowerInput_isZero`<br>`AAT.AG.AtlasDefectComposition.subsetFiltrationQuotientEquiv`<br>`AAT.AG.AtlasDefectComposition.subsetModelEquiv`<br>`AAT.AG.AtlasDefectComposition.subsetModelFiltration`<br>`AAT.AG.AtlasDefectComposition.subsetModelRestriction`<br>`AAT.AG.AtlasDefectComposition.subsetModel_finiteDimensional`<br>`AAT.AG.AtlasDefectComposition.subsetModel_isZero`<br>`AAT.AG.AtlasDefectComposition.subsetTowerInput`<br>`AAT.AG.AtlasDefectComposition.subsetTowerInput_finiteDimensional`<br>`AAT.AG.AtlasDefectComposition.subsetTowerInput_isZero` |
+| [FiniteRawPath](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteRawPath.lean) | `AAT.AG.AtlasDefectComposition.lawPathDiagram`<br>`AAT.AG.AtlasDefectComposition.pathAdequate`<br>`AAT.AG.AtlasDefectComposition.pathCoarser`<br>`AAT.AG.AtlasDefectComposition.rawPath`<br>`AAT.AG.AtlasDefectComposition.rawPath_adjacent`<br>`AAT.AG.AtlasDefectComposition.rawPath_obj` |
+| [FiniteSubsetPath](../../research/lean/ResearchLean/AG/AtlasDefectComposition/FiniteSubsetPath.lean) | `AAT.AG.AtlasDefectComposition.pathNerves`<br>`AAT.AG.AtlasDefectComposition.pathReadings`<br>`AAT.AG.AtlasDefectComposition.path_initial_preimage`<br>`AAT.AG.AtlasDefectComposition.subsetPathDiagram`<br>`AAT.AG.AtlasDefectComposition.subsetPathInitialIso`<br>`AAT.AG.AtlasDefectComposition.subsetPathRestriction` |
+| [MappingCylinderModel](../../research/lean/ResearchLean/AG/AtlasDefectComposition/MappingCylinderModel.lean) | `AAT.AG.AtlasDefectComposition.MappingCylinder.cokernelIso`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.degreeFiniteDimensional`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.degreeRetraction`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.degreeSection`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.degreeSplitting`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.factorization`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.inclusion`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.inclusion_degreeRetraction`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.inclusion_degree_mono`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.inclusion_mono`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.inclusion_quotient`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.model`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.projection`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.projectionHomotopyEquiv`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.quotient`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.shortComplex`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.shortExact` |
+| [MappingCylinderNaturality](../../research/lean/ResearchLean/AG/AtlasDefectComposition/MappingCylinderNaturality.lean) | `AAT.AG.AtlasDefectComposition.MappingCylinder.inclusion_natural`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.map`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.map_comp`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.map_id`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.projection_natural`<br>`AAT.AG.AtlasDefectComposition.MappingCylinder.quotient_natural` |
+| [RawComparisonCategory](../../research/lean/ResearchLean/AG/AtlasDefectComposition/RawComparisonCategory.lean) | `AAT.AG.AtlasDefectComposition.RawResolution`<br>`AAT.AG.AtlasDefectComposition.RawResolution.Hom`<br>`AAT.AG.AtlasDefectComposition.RawResolution.casesOn`<br>`AAT.AG.AtlasDefectComposition.RawResolution.compose`<br>`AAT.AG.AtlasDefectComposition.RawResolution.ctorIdx`<br>`AAT.AG.AtlasDefectComposition.RawResolution.identity`<br>`AAT.AG.AtlasDefectComposition.RawResolution.mk`<br>`AAT.AG.AtlasDefectComposition.RawResolution.mk.inj`<br>`AAT.AG.AtlasDefectComposition.RawResolution.mk.injEq`<br>`AAT.AG.AtlasDefectComposition.RawResolution.mk.noConfusion`<br>`AAT.AG.AtlasDefectComposition.RawResolution.mk.sizeOf_spec`<br>`AAT.AG.AtlasDefectComposition.RawResolution.nerve`<br>`AAT.AG.AtlasDefectComposition.RawResolution.noConfusion`<br>`AAT.AG.AtlasDefectComposition.RawResolution.noConfusionType`<br>`AAT.AG.AtlasDefectComposition.RawResolution.reading`<br>`AAT.AG.AtlasDefectComposition.RawResolution.rec`<br>`AAT.AG.AtlasDefectComposition.RawResolution.recOn`<br>`AAT.AG.AtlasDefectComposition.rawResolutionCategory` |
+| [SubsetComparisonIdentity](../../research/lean/ResearchLean/AG/AtlasDefectComposition/SubsetComparisonIdentity.lean) | `AAT.AG.AtlasDefectComposition.comparisonFactor_self`<br>`AAT.AG.AtlasDefectComposition.identity_targetSubsetComparisonHom` |
+
+### Cycle 6検証
+
+rootが必要な単一非aggregate target
+`ResearchLean.AG.AtlasDefectComposition.FiniteModelApplication` をbuildし、
+3832 jobsで成功した。このtargetの依存として新規15moduleをelaborateした。
+Research全体・aggregate root・全file再elaborationは実行していない。
+
+既受理分を含む134moduleのcompiled metadataから累積1518宣言を抽出し、
+単一scratchで全件の `#print axioms` を照合した。1518/1518件、欠落・余分・
+エラー・標準外公理は零件。46宣言は公理非依存、残りは
+`propext` / `Classical.choice` / `Quot.sound` の範囲である。
+公理監査log SHA-256:
+`ef71bd73fbc28302bb26ed31e75306a489b9bf9ca61452e72b5f5dab846838e7`。
+
+新規Lean sourceのplaceholder、hidden/BiDi、privacy、語彙scanと
+Formal本線からResearchへのimport scanは検出なし。reportの既存操作名
+に含まれる英語 `axiom` はLean宣言ではない。変更は15ResearchLean moduleと
+本reportに限る。正式PRレビュー・root acceptance・CI・merge同期は
+固定headのPR監査コメントとtracking Issueに記録する。
+
+検証の限界: 全三射自然性・全Lawモデル直和・元の有限対射同定・三段特殊化・
+全GOAL完了監査は未実施。Formal移植とArchSig実装は本cycleの対象外である。
