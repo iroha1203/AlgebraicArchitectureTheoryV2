@@ -200,6 +200,85 @@ theorem collapse_not_hereditary :
   rw [he] at hm
   cases hm
 
+
+/-! ## 原始セル表の公開評価API -/
+/-- 原始constructorのedgeLeft_old評価。 -/
+@[simp] theorem edgeLeft_old (a : N.nerve.EdgeComponent) :
+    (supported N e).nerve.edgeLeft (.inl a) = .inl (N.nerve.edgeLeft a) := rfl
+
+/-- 原始constructorのedgeRight_old評価。 -/
+@[simp] theorem edgeRight_old (a : N.nerve.EdgeComponent) :
+    (supported N e).nerve.edgeRight (.inl a) = .inl (N.nerve.edgeRight a) := rfl
+
+/-- 原始constructorのedgeLeft_c評価。 -/
+@[simp] theorem edgeLeft_c  :
+    (supported N e).nerve.edgeLeft (.inr false) = .inl (N.nerve.edgeLeft e) := rfl
+
+/-- 原始constructorのedgeRight_c評価。 -/
+@[simp] theorem edgeRight_c  :
+    (supported N e).nerve.edgeRight (.inr false) = .inr PUnit.unit := rfl
+
+/-- 原始constructorのedgeLeft_e2評価。 -/
+@[simp] theorem edgeLeft_e2  :
+    (supported N e).nerve.edgeLeft (.inr true) = .inr PUnit.unit := rfl
+
+/-- 原始constructorのedgeRight_e2評価。 -/
+@[simp] theorem edgeRight_e2  :
+    (supported N e).nerve.edgeRight (.inr true) = .inl (N.nerve.edgeRight e) := rfl
+
+/-- 原始constructorのfaceEdge0_old評価。 -/
+@[simp] theorem faceEdge0_old (f : N.nerve.FaceComponent) :
+    (supported N e).nerve.faceEdge0 (.inl f) = .inl (N.nerve.faceEdge0 f) := rfl
+
+/-- 原始constructorのfaceEdge1_old評価。 -/
+@[simp] theorem faceEdge1_old (f : N.nerve.FaceComponent) :
+    (supported N e).nerve.faceEdge1 (.inl f) = .inl (N.nerve.faceEdge1 f) := rfl
+
+/-- 原始constructorのfaceEdge2_old評価。 -/
+@[simp] theorem faceEdge2_old (f : N.nerve.FaceComponent) :
+    (supported N e).nerve.faceEdge2 (.inl f) = .inl (N.nerve.faceEdge2 f) := rfl
+
+/-- 原始constructorのfaceEdge0_new評価。 -/
+@[simp] theorem faceEdge0_new  :
+    (supported N e).nerve.faceEdge0 (.inr PUnit.unit) = .inr false := rfl
+
+/-- 原始constructorのfaceEdge1_new評価。 -/
+@[simp] theorem faceEdge1_new  :
+    (supported N e).nerve.faceEdge1 (.inr PUnit.unit) = .inl e := rfl
+
+/-- 原始constructorのfaceEdge2_new評価。 -/
+@[simp] theorem faceEdge2_new  :
+    (supported N e).nerve.faceEdge2 (.inr PUnit.unit) = .inr true := rfl
+
+/-- 原始constructorのcollapse_chart_old評価。 -/
+@[simp] theorem collapse_chart_old (v : N.nerve.Chart) :
+    (collapse N e).chartMap (.inl v) = v := rfl
+
+/-- 原始constructorのcollapse_chart_new評価。 -/
+@[simp] theorem collapse_chart_new  :
+    (collapse N e).chartMap (.inr PUnit.unit) = N.nerve.edgeLeft e := rfl
+
+/-- 原始constructorのcollapse_edge_old評価。 -/
+@[simp] theorem collapse_edge_old (a : N.nerve.EdgeComponent) :
+    (collapse N e).edgeMap (.inl a) = some a := rfl
+
+/-- 原始constructorのcollapse_edge_c評価。 -/
+@[simp] theorem collapse_edge_c  :
+    (collapse N e).edgeMap (.inr false) = none := rfl
+
+/-- 原始constructorのcollapse_edge_e2評価。 -/
+@[simp] theorem collapse_edge_e2  :
+    (collapse N e).edgeMap (.inr true) = some e := rfl
+
+/-- 原始constructorのcollapse_face_old評価。 -/
+@[simp] theorem collapse_face_old (f : N.nerve.FaceComponent) :
+    (collapse N e).faceMap (.inl f) = some f := rfl
+
+/-- 原始constructorのcollapse_face_new評価。 -/
+@[simp] theorem collapse_face_new  :
+    (collapse N e).faceMap (.inr PUnit.unit) = none := rfl
+
+
 end TriangleAddition
 end AAT.AG.FaceRelationSubdivision
 #assert_standard_axioms_only AAT.AG.FaceRelationSubdivision
