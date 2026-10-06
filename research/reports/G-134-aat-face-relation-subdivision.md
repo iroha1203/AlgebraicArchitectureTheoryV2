@@ -1734,3 +1734,291 @@ result:
 指名された補助API1件だけ。spine/件数/hashを同じ113宣言へ同期した。
 修正所有module・LiftVariation・下流CocycleNormalizationの単一checkと公式focused、
 全113axiom照会、共通scanを実施。資格とfinding解消は新規単一確認で独立判定する。
+
+
+## Cycle 5 acceptance / Cycle 6 selection
+
+Cycle 5は[PR #5278](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5278)で受理。
+final head `a3ad908b46b9d872a5ce34127da7ae865e6f908c`、merge
+`57df5cad964a7416b5e2c8461e33f4f2cac6f205`。
+[初回独立4本・有資格直接確認・root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5278#issuecomment-6024205175)、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6024327920)。選定支持持ち上げ到達点はproof-obligation-discharged、全targetは
+未完のtarget-proof-checkpoint。全113宣言標準3公理、focused/scan成功、最終8CI成功。
+Research integrity実行、Formal build/cache/kernel/premiseはSKIPPED、Formal未移植。
+
+以下はCycle 6の実装前selection。元P3/P4の全終了条件を維持する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-134-aat-face-relation-subdivision
+cycle: 6
+goal_blob_sha: 28cbf1944d708b059cd8c4fd22f07cd8d5e1476c
+base_oid: 57df5cad964a7416b5e2c8461e33f4f2cac6f205
+tracking_issue: 5272
+report_path: research/reports/G-134-aat-face-relation-subdivision.md
+selection:
+  proof_state_ref: Cycle 5受入れとIssue同期
+  proof_dag_predecessors: [SupportedBasis, ChainDualMap, LawGeneratedComplex, ASubnerveReduction, GeneratedComparison]
+  milestone: D/P4の同じreading上の原始有限和Law座標生成と実fiber比較への同定
+  proof_obligations:
+    - 非零原始セル像ごとに同じLaw/valueのCellCoordinateを入力支持から構成
+    - 有限基底像と実双対有限和を独立生成しラベル重複を保持
+    - 各ラベルfiberの同じselected原始射と座標有限和の実可換式
+    - 原始微分のLaw座標化と既存lawGeneratedD0/D1の全射等号
+    - 原始chain-map三成分から同じ実Law Homとblock/fiber射を構成
+    - 正操作r/sの原始有限和へ適用し同じ旧生成rの全三成分と既存H1自然性へ接続
+  exit_criteria:
+    - 上記を任意adequate Law族で原始有限和から生成し閉じる
+    - Value型有限性・全台・非空辺面台・端点相異性を追加しない
+    - source/spine公理照会・focused/scanと固定head独立査読を通過
+  selection_reason: 有限和へ送るs/hを実Law診断に接続する未放電D生成経路を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [LawFiniteCoordinates, LawFiniteFiber, LawFiniteDifferential, LawFiniteHom, ElementaryLawMaps]
+  risks: [fiber共役を独立生成の代替にしない, 同じセルLaw値の保持, 実射の全三成分, 方向仮定の具体適用での放電]
+  unchecked: [Law収縮標準ホモトピー全次数, 有限列と支持制限, cone欠損, E/W1-W3, 全target完了監査]
+```
+
+### Cycle 6 構成・固定条項・実射の対応
+
+D/P4の独立生成を、同じreading上の任意支持有限和へ広げた。Law座標射をfiberの
+共役から定義せず、非零係数ごとに同じセル像・Law名・値の発生証明を支持包含から作る。
+そのsupport.attach上のFinsupp有限和を自由線形延長し、同じ射を実双対へ送る。
+発生target witnessはproofであり、重複基底を作らない。別Law名の同じ台・値を同一化しない。
+
+| 固定義務 | 宣言・構成 | 同じ実射への接続 |
+| --- | --- | --- |
+| 原始有限和のLaw座標生成 | `lawCoordinate/lawBasis/lawRaw/lawDual` | 同じセル/law/valueとラベルの公開API、原始係数による`lawDual_apply` |
+| 同じラベルfiberの比較 | `lawFiberRead_joint_injective` / `lawDual_fiber` | 全座標へ読み取り等号を反映。原始selected有限和の同じ実双対 |
+| 合成・加法・符号・恒等 | `lawDual_comp/add/neg/identity/eq_of_raw_eq/square` | 自分の原始finiteMapを先に生成し、同じ実cochainの全射等号 |
+| 同じ実微分 | `lawFiberRead_d0/d1` / `lawDual_rawD1/rawD2` | 同じK1支持・セル・Lawから既存lawGeneratedD0/D1そのものを全射等号で同定 |
+| 全三成分の実Law Hom | `lawFiniteHom` / `lawFiniteFiber_square` | 原始chain-map方向式→Law微分可換性、同じselected subsetFiniteHomへの全3成分正方形 |
+| 独立block有限和 | `lawBlockCoordinate/Basis/Raw/Dual` / `lawDual_block` | 原始非零係数を同じ発生label subtypeへ送り、全Law/blockの射等号 |
+| 実block Homと同じfiber | `blockFiniteHom` / `blockFiniteFiber_square` | 独立有限和3成分と既存block微分、同じfiber射との正方形 |
+| 全Law/block実比較 | `lawBlockHom` / `lawFiniteBlock_square` | 同じblock projectionの全3成分が座標制限、独立Law射と独立block射の可換式 |
+| 原始Option比較の特殊化 | `basisLaw0/1/2_eq_generated` / `basisLawHom_eq_generated` | 原始零/単一係数を評価して、同じ既存混在退化生成Homに全3成分一致 |
+| 三角形追加・面付き辺分割r/s/h | 両namespaceの`lawR/lawS/lawH0/lawH1` | 受理済み原始r/s/hから生成、raw chain方向式を具体適用で放電 |
+| 同じ正操作比較・逆写像 | 両`lawR_eq_generated` / `lawR_fiber/lawS_fiber` | 実rは既存同じcollapse生成Hom、実sは同じ支持収縮sectionと全3成分一致 |
+| 既存H1商・標準接続 | 全`*_h1_square`、両`lawR/S_h1_fiber/h1_standard` | 同じh1Mapで可換。G-133 oldH1Equiv_naturalを同じ実Law射へ適用 |
+
+一般有限和の原始I/Jは有限性を必要としないが、各像はFinsupp有限supportである。
+実Law複体のconstructorでSource有限性とNの有限セルをT0通りに使う。
+Law値型全体の有限性を仮定しない。全A選択、空A・空台、loop、重複出現は既受理の
+支持基底生成をそのまま用いる。各fiberは同じlabelValueFiberであり、同台の別labelは別入力。
+同じreading上の有限和生成がこの到達点であり、reading変更との任意有限列・Law収縮の
+標準Homotopyと全次数同型・制限・全Law分解/錐/欠損の最終接続は後続P4に残す。
+原始逆patternの表示輸送も受理済みであるが、逆縮約のLaw収縮最終endpointをここで完了としない。
+
+### Cycle 6 material premise / provenance / proof-use
+
+| material premise | 分類 | 出所・生成・使用 |
+| --- | --- | --- |
+| Source/reading、supported nerve・K1・ℚ | ambient-boundary | T0。lawDescend、原始r/s/h、支持セル・既存微分生成 |
+| 任意adequate Law族 | ambient-boundary | T0で量化。same Law/valueの生成証明とlabelValueFiberに使用 |
+| 汎用SupportedBasisMap有限像と台包含 | direction-hypothesis / 適用でdischarge-required | 非零係数→同じ支持target→出力CellCoordinate。具体r/s/hはPR5275の原始constructorが支持を生成 |
+| 原始chain方向式h0/h1 | direction-hypothesis / 適用でdischarge-required | Law微分可換式と実Hom全fieldへ使用。正操作ではr_comm/s_comm原始基底証明から放電 |
+| ラベル保存、微分一致、射一致、H1自然性 | discharge-required | 同じセル名/labelの座標等号、原始有限和、実双対と旧自然性からの出力 |
+| block/fiber対象同値 | discharge-required / 受理predecessorで放電 | G-107 ASubnerveReductionの同じセル/label同値。射の定義に代用せず、独立有限和の項ごとの一致と実正方形を別に証明 |
+
+方向仮定にH1同型・標準Homotopy・期待rankはない。汎用chain式を基本操作の入力fieldへ
+移していない。両正操作constructorのraw r/s証明を実適用し、Law Homの可換性を生成した。
+Lawブロックのhomotopy・全次数同型は今回の結論に追加していない。
+
+依存: Cycle1のIncidenceComparison/GeneratedComparison/LawBlockComparisonと、
+Cycle2 PR5275のSupportedBasis/RawSupportedChain/ChainDualMap/IncidenceBasis/
+TriangleContraction/EdgeContraction、Cycle5 PR5278の公開projection API。
+G-104 LawGeneratedComplex/LawValueBlockDecomposition、G-107 ASubnerveReduction、
+G-133 ZeroExtension.oldH1Equiv_natural・cochainComp_h1Mapは既記録受理版/参照で追跡する。
+現在の型・式・適用引数を確認した。今回の既存4sourceは公開API11宣言の追加だけであり、
+既存signature、proof、def/instance本体・値、import方向は不変。
+追加APIはdualのneg/zero、原始比較座標のcell3、block incidence underlying座標5、
+subset微分d1の同じ射である。下流は所有moduleの公開APIを使い、直接展開しない。
+
+### Cycle 6 受理spine候補
+
+新規9moduleの118明示宣言＋既存4module公開API11宣言＝129宣言を固定する。
+macroは生成補助宣言も検査するため、明示spine件数と区別する。
+
+```text
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate_cell
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate_law
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate_value
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate_label
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBasis
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawRaw
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawRaw_single
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_apply
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_apply_zero
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_apply_single
+AAT.AG.FaceRelationSubdivision.lawFiberRead
+AAT.AG.FaceRelationSubdivision.lawFiberRead_apply
+AAT.AG.FaceRelationSubdivision.lawFiberRead_joint_injective
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_single_attached
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.dual_selected_apply
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_fiber
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_eq_of_raw_eq
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_comp
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_identity
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_add
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_neg
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_square
+AAT.AG.FaceRelationSubdivision.lawFiberRead_d0
+AAT.AG.FaceRelationSubdivision.lawFiberRead_d1
+AAT.AG.FaceRelationSubdivision.lawDual_rawD1
+AAT.AG.FaceRelationSubdivision.lawDual_rawD2
+AAT.AG.FaceRelationSubdivision.subsetFiniteHom
+AAT.AG.FaceRelationSubdivision.subsetFiniteHom_f0
+AAT.AG.FaceRelationSubdivision.subsetFiniteHom_f1
+AAT.AG.FaceRelationSubdivision.subsetFiniteHom_f2
+AAT.AG.FaceRelationSubdivision.lawFiniteHom
+AAT.AG.FaceRelationSubdivision.lawFiniteHom_f0
+AAT.AG.FaceRelationSubdivision.lawFiniteHom_f1
+AAT.AG.FaceRelationSubdivision.lawFiniteHom_f2
+AAT.AG.FaceRelationSubdivision.lawFiberHom
+AAT.AG.FaceRelationSubdivision.lawFiberHom_f0
+AAT.AG.FaceRelationSubdivision.lawFiberHom_f1
+AAT.AG.FaceRelationSubdivision.lawFiberHom_f2
+AAT.AG.FaceRelationSubdivision.lawFiniteFiber_square
+AAT.AG.FaceRelationSubdivision.lawFiniteFiber_h1_square
+AAT.AG.FaceRelationSubdivision.lawBlockRead
+AAT.AG.FaceRelationSubdivision.lawBlockRead_apply
+AAT.AG.FaceRelationSubdivision.blockFiberEquiv
+AAT.AG.FaceRelationSubdivision.blockFiberEquiv_apply
+AAT.AG.FaceRelationSubdivision.blockFiberEquiv_read
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockCoordinate
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockCoordinate_cell
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockCoordinate_val
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockBasis
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockRaw
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockRaw_single
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual_apply
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_block
+AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual_fiber
+AAT.AG.FaceRelationSubdivision.blockFiber_d0
+AAT.AG.FaceRelationSubdivision.blockFiber_d1
+AAT.AG.FaceRelationSubdivision.lawBlockHom
+AAT.AG.FaceRelationSubdivision.lawBlockHom_f0
+AAT.AG.FaceRelationSubdivision.lawBlockHom_f1
+AAT.AG.FaceRelationSubdivision.lawBlockHom_f2
+AAT.AG.FaceRelationSubdivision.blockFiniteHom
+AAT.AG.FaceRelationSubdivision.blockFiniteHom_f0
+AAT.AG.FaceRelationSubdivision.blockFiniteHom_f1
+AAT.AG.FaceRelationSubdivision.blockFiniteHom_f2
+AAT.AG.FaceRelationSubdivision.blockFiniteFiber_square
+AAT.AG.FaceRelationSubdivision.blockFiniteFiber_h1_square
+AAT.AG.FaceRelationSubdivision.lawFiniteBlock_square
+AAT.AG.FaceRelationSubdivision.lawFiniteBlock_h1_square
+AAT.AG.FaceRelationSubdivision.coordinate_eq_of_cell_label
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisLaw0_eq_generated
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisLaw1_eq_generated
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisLaw2_eq_generated
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisLawHom_eq_generated
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH0
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH1
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_eq_generated
+AAT.AG.FaceRelationSubdivision.TriangleAddition.rSubsetFiniteHom_eq
+AAT.AG.FaceRelationSubdivision.TriangleAddition.sSubsetFiniteHom_eq
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_fiber
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_fiber
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_h1_fiber
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_h1_fiber
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_f0
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_f1
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_f2
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_f0
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_f1
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_f2
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH0_eq
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH1_eq
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_h1_standard
+AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_h1_standard
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH0
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_eq_generated
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rSubsetFiniteHom_eq
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.sSubsetFiniteHom_eq
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_fiber
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_fiber
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_h1_fiber
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_h1_fiber
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_f0
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_f1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_f2
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_f0
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_f1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_f2
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH0_eq
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH1_eq
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_h1_standard
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_h1_standard
+AAT.AG.FaceRelationSubdivision.dualCellMap_neg
+AAT.AG.FaceRelationSubdivision.dualCellMap_zero
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartCoordinateMap_cell
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMap_cell
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceCoordinateMap_cell
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.edgeLeftBlockCoordinate_val
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.edgeRightBlockCoordinate_val
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceEdge0BlockCoordinate_val
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceEdge1BlockCoordinate_val
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceEdge2BlockCoordinate_val
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetComplex_d1
+```
+
+現在の対象source SHA-256:
+
+- `FaceRelationSubdivision/LawFiniteCoordinates.lean`: `54ad7db4f1774625b3d981083aea9ff337dd4d1d20fa8e4293d9a57944a658b9`（今回の明示spine 12）
+- `FaceRelationSubdivision/LawFiniteFiber.lean`: `45661567bf172b93214b980358fba86f1c18ceeb8f8093b48d0653d40d671111`（今回の明示spine 6）
+- `FaceRelationSubdivision/LawFiniteFunctor.lean`: `0ace72e4544b22b87191a7920cafbf6215c7c010cd884357f6dc0d39efb80759`（今回の明示spine 6）
+- `FaceRelationSubdivision/LawFiniteDifferential.lean`: `ef782ee77a08d7387ba264aef53a3709d166a63be7f64e0750df09c08a499bb5`（今回の明示spine 4）
+- `FaceRelationSubdivision/LawFiniteHom.lean`: `ed90ab35e9bcd733dfdb263ade9b20bd525a5fd3bf79e449b8d099df7acb76eb`（今回の明示spine 14）
+- `FaceRelationSubdivision/LawFiniteBlock.lean`: `bf393a0e7c89b97f664f564db36ac57ac072138c5a2b26f30918c514e475c6d3`（今回の明示spine 15）
+- `FaceRelationSubdivision/LawFiniteBlockHom.lean`: `ade57215a19bd94a58a0a503b9b7591b880da05f496adfa86fa4a0f59a342f84`（今回の明示spine 14）
+- `FaceRelationSubdivision/LawFiniteOption.lean`: `0a7e66486eb86d1e374bf803fce3370a5f974d36c8bcbe81a06488a73afaf769`（今回の明示spine 5）
+- `FaceRelationSubdivision/ElementaryLawMaps.lean`: `640d675209f88d2985c5f6d0979fd923513beddf0aa8a4a7e7554c817b4e5991`（今回の明示spine 42）
+- `FaceRelationSubdivision/ChainDualMap.lean`: `2b42720356c01f706273f4eb16fc47610df2c344b441b38e6d9a49d1010424bb`（今回の明示spine 2）
+- `FaceRelationSubdivision/GeneratedComparison.lean`: `cb3eeaf04abe9d79b9f4ea6af2973bec1898058a24efb6826f8b35650bcd93b1`（今回の明示spine 3）
+- `ResolutionInvariance/LawValueBlockDecomposition.lean`: `01f3f11eeefdd9cef7c6cd489808955b48c7cfedb568c35095963652fc5c7708`（今回の明示spine 5）
+- `UniformInvariance/ASubnerveReduction.lean`: `4c47300a5c2c9979b3615e9c91fa338968c436265112825d2d20b6a48c685c18`（今回の明示spine 1）
+
+### Cycle 6 validation / result proposal
+
+対象単一file checksを各実装段階で実行し、最終ElementaryLawMaps・LawFiniteBlockHom・
+LawFiniteOptionを公式focused経路でも確認。全129宣言のsource/spine/query/log集合一致、
+重複・欠落・余剰なし、標準propext/Classical.choice/Quot.soundのみ。
+axiom log SHA-256 `58ef241598cbd9410260dce7d7613669a4a40a56c3bd0bdf0b7dfda6fa0fddcd`。
+placeholder、hidden/BiDi、privacy、manifest TSV/実在/一意性、diff whitespaceを確認。
+固定GOAL blobは不変。固定commitのimport方向・public scan、独立PR査読・CIはPR gateで確定する。
+Research full build/aggregate/全file loop、Formal full build、Formal移植、ArchSig実装は未実施。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - 同じCellCoordinateの原始有限和をfiber共役から独立生成
+    - 同じラベルのselected双対射と原始Law/block射の全成分等号
+    - 既存lawGeneratedD0/D1へ原始有限和微分を実射等号で同定
+    - 原始chain式から実Law/block Homを構成し同じfiber/H1正方形
+    - 両正操作r/s/hのLaw有限和と同じ既存collapse/H1自然性へ接続
+  exit_criteria_status:
+    - 選定した独立有限和生成・実射同定の数学的条件を達成
+    - 固定head独立PR review/acceptance/CIで最終判定
+  split_reason: none
+  completion_candidate: no
+  claim_mapping:
+    source_labels: [D原始有限和Law生成, B正操作r/s/hのLaw有限和, D同じ実比較と既存H1]
+    undischarged_assumptions: []
+    acceptance_point: 選定した同じreading上の独立Law有限和到達点、P3/P4全終了条件は維持
+    port_status: unported
+  audits:
+    structure_field_escape: none-found
+    route_integrity: pass
+    vacuity: none-found
+    one_way_as_equivalence: none-found
+    next_obligation: Law収縮全次数/逆縮約輸送/持ち上げ、有限列/制限/分解/cone/defect、E/W1-W3、別の全target完了監査
+```

@@ -628,6 +628,27 @@ def generatedComparisonH1Map [Fintype Source]
       (fine.lawGeneratedComplex laws hfine).H1 :=
   (M.generatedComparisonHom laws hcoarse hfine).h1Map
 
+/-- 原始chart比較座標の同じセル名。公開定義所有API。 -/
+@[simp] theorem chartCoordinateMap_cell
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading)
+    (hf : laws.Adequate fineReading) (x : fine.ChartCoordinate laws hf) :
+    (M.chartCoordinateMap laws hc hf x).cell = M.chartMap x.cell := rfl
+
+/-- 原始edge比較座標の同じセル名。公開定義所有API。 -/
+@[simp] theorem edgeCoordinateMap_cell
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading)
+    (hf : laws.Adequate fineReading) (x : fine.EdgeCoordinate laws hf) (j : coarse.nerve.EdgeComponent) (hmap : M.edgeMap x.cell = some j) :
+    (M.edgeCoordinateMap laws hc hf x j hmap).cell = j := rfl
+
+/-- 原始face比較座標の同じセル名。公開定義所有API。 -/
+@[simp] theorem faceCoordinateMap_cell
+    (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading)
+    (hf : laws.Adequate fineReading) (x : fine.FaceCoordinate laws hf) (j : coarse.nerve.FaceComponent) (hmap : M.faceMap x.cell = some j) :
+    (M.faceCoordinateMap laws hc hf x j hmap).cell = j := rfl
+
 end IncidenceSupportedComparison
 
 end AAT.AG.FaceRelationSubdivision

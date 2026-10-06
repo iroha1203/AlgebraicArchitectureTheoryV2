@@ -289,6 +289,41 @@ def faceEdge2BlockCoordinate (D : TargetSupportedNerve q)
 
 /-! ## The complex on one law-value block -/
 
+/-- 同じblock incidence座標の underlying K0座標。公開定義所有API。 -/
+@[simp] theorem edgeLeftBlockCoordinate_val (D : TargetSupportedNerve q)
+    (laws : FiniteLawFamily Source) (hadequate : laws.Adequate q)
+    (label : LawValueLabel laws) (x : D.EdgeBlockCoordinate laws hadequate label) :
+    (D.edgeLeftBlockCoordinate laws hadequate label x).1 =
+      D.edgeLeftCoordinate laws hadequate x.1 := rfl
+
+/-- 同じblock incidence座標の underlying K0座標。公開定義所有API。 -/
+@[simp] theorem edgeRightBlockCoordinate_val (D : TargetSupportedNerve q)
+    (laws : FiniteLawFamily Source) (hadequate : laws.Adequate q)
+    (label : LawValueLabel laws) (x : D.EdgeBlockCoordinate laws hadequate label) :
+    (D.edgeRightBlockCoordinate laws hadequate label x).1 =
+      D.edgeRightCoordinate laws hadequate x.1 := rfl
+
+/-- 同じblock incidence座標の underlying K0座標。公開定義所有API。 -/
+@[simp] theorem faceEdge0BlockCoordinate_val (D : TargetSupportedNerve q)
+    (laws : FiniteLawFamily Source) (hadequate : laws.Adequate q)
+    (label : LawValueLabel laws) (x : D.FaceBlockCoordinate laws hadequate label) :
+    (D.faceEdge0BlockCoordinate laws hadequate label x).1 =
+      D.faceEdge0Coordinate laws hadequate x.1 := rfl
+
+/-- 同じblock incidence座標の underlying K0座標。公開定義所有API。 -/
+@[simp] theorem faceEdge1BlockCoordinate_val (D : TargetSupportedNerve q)
+    (laws : FiniteLawFamily Source) (hadequate : laws.Adequate q)
+    (label : LawValueLabel laws) (x : D.FaceBlockCoordinate laws hadequate label) :
+    (D.faceEdge1BlockCoordinate laws hadequate label x).1 =
+      D.faceEdge1Coordinate laws hadequate x.1 := rfl
+
+/-- 同じblock incidence座標の underlying K0座標。公開定義所有API。 -/
+@[simp] theorem faceEdge2BlockCoordinate_val (D : TargetSupportedNerve q)
+    (laws : FiniteLawFamily Source) (hadequate : laws.Adequate q)
+    (label : LawValueLabel laws) (x : D.FaceBlockCoordinate laws hadequate label) :
+    (D.faceEdge2BlockCoordinate laws hadequate label x).1 =
+      D.faceEdge2Coordinate laws hadequate x.1 := rfl
+
 /-- Degree-zero differential restricted to one law-value block. -/
 def lawValueBlockD0 (D : TargetSupportedNerve q)
     (laws : FiniteLawFamily Source) (hadequate : laws.Adequate q)
