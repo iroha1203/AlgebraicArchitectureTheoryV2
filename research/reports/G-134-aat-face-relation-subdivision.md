@@ -46,7 +46,7 @@ selection:
 ## 全targetの現proof obligation
 
 P1–P2はPR #5274で、P3の三角形追加と面付き辺分割はPR #5275で受理・マージ済み。
-P3のreading pullbackとセル名同型はCycle3の受理候補、原始逆patternとliftは未証明。
+P3のreading pullbackとセル名同型はPR #5276で受理・マージ済み。原始逆patternはCycle4の査読前、liftは未証明。
 P4（有限合成・一般有限和Law・錐/欠損）とP5（E・W1–W3）は未証明。
 GOAL T0・A–E・Wと完了条件は変更しない。
 
@@ -1110,3 +1110,333 @@ result:
 取り込んでいた `h` と `hc` を `include` で明示した。新しい仮定・宣言は追加していない。
 修正した2moduleと依存する `LawPresentation` / `CellRename` の単一file check、
 全130宣言の公理照会を再実施した。直接対応の資格と解消は固定修正headの新規独立確認で判定する。
+
+
+## Cycle 3 acceptance / Cycle 4 selection
+
+Cycle3はPR [#5276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5276)、
+final head `d15101a6e85d62ea74d85db8328d5dc574e06034`、merge
+`48d46a1e57b740bba35c6e02ea9e174293fe8c39`で受理した。
+初回の非中心1項目を修正し、直接対応資格喪失を受けて新規4laneで正式再査読。
+全4本 `No major findings`、[最終受入れ](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5276#issuecomment-6022476554)。
+全130宣言公理監査・focused・scanと全8CI checks成功。Research全体buildは未実施、
+本体実build/kernel auditはResearchonly selectorでskipped。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-134-aat-face-relation-subdivision
+cycle: 4
+goal_blob_sha: 28cbf1944d708b059cd8c4fd22f07cd8d5e1476c
+base_oid: 48d46a1e57b740bba35c6e02ea9e174293fe8c39
+tracking_issue: 5272
+report_path: research/reports/G-134-aat-face-relation-subdivision.md
+selection:
+  proof_state_ref: Cycle3 accepted / fixed target B・elementary-moves §4
+  proof_dag_predecessors: [TriangleAddition, EdgeSubdivision, SubsetChainContraction, CellPresentationEquiv]
+  milestone: P3原始逆縮約の両局所patternから復元入力と元表示への同型・同じ支持収縮を生成
+  proof_obligations:
+    - 指定局所セルのfreshness・端点・三辺・chart台等号・全接続を原始条件で保持
+    - 三角形逆patternの保持セルと全incidence・K1台を構成
+    - 辺分割逆patternの保持セル・共通辺・中心面・全出現位置を構成
+    - 復元入力の正操作と元入力のセル/支持表示同型を原始条件から生成
+    - 同じr/s/hを表示同型で移し全Aのchain式・両逆・実subset Homと標準同値へ接続
+    - 正操作の出力で両patternが実現し、追加接続がある指定dataは拒否されることを証明
+  exit_criteria:
+    - 両patternの復元・両逆と原始incidence/台同型をLeanで閉じる
+    - 全Aの同じ基底収縮・全標準次数同型・実H1への接続
+    - 成立入力族と全接続条件不成立の実証、focused/全宣言axiom/共通scan
+  selection_reason: supplied旧入力/診断同型なしの原始逆patternがP3と任意有限列の未接続node
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - FaceRelationSubdivision/PrimitiveTriangleInverse.lean
+    - FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean
+    - FaceRelationSubdivision/{TriangleInverseContraction,SubdivisionInverseContraction}.lean
+  risks: [全接続の完全性, 重複位置を潰さない復元, 同じ射の表示transport, 逆操作の方向]
+  unchecked: [独立PR review・acceptance・CIは固定headで判定]
+```
+
+Cycle2で固定したP3全体の終了条件は保持する。本cycleで原始逆patternの幾何・支持収縮を
+扱い、持ち上げ選択と一般有限和Law座標の生成・有限合成・E/Wは未完義務として残す。
+
+### Cycle 4 claim / premise / route evidence
+
+| 固定条項と構成義務 | 原始入力と放電 | 同じ射への接続 |
+| --- | --- | --- |
+| B・elementary §4 三角形逆pattern | `TriangleInversePattern` は局所セル名・端点・三辺・台等号・全接続のみ。`restored` は保持セル部分型から構成し、頂点freshnessは基底辺と全接続から導く | `presentation` の全セル名全単射・5 incidence・chart台からK1辺面台の同型を生成 |
+| B・elementary §4 辺分割逆pattern | `SubdivisionInversePattern` は全対角名・三角面名・中心面とFin3位置・対角辺全出現iffを保持。出現型の有限性は対角名の単射と有限辺から導く | `occurrenceEquiv` が復元共通辺の全出現と原始指定出現の両逆。`presentation` は全名前・incidence・chart台を復元 |
+| B 全Aのr/s/h | 正操作の既受理基底r/s/hと、原始復元表示から`sameR0/1/2`を構成。`renameFine` が同じr/s/hを明示共役しchain式・rs・sr補正式を証明 | 両`chainContraction`の8計算成分は旧有限基底式と表示の合成。標準同値のhom/invは同じrHom/sHom |
+| A/D 新比較との接続 | 正操作の原始collapseと原始逆表示のOption表を`collapse`で直接合成する。実cochain射を逆算して原始表を定義しない | 両`rHom_eq_generated` が全3成分の実subset Hom等号。`homologyIso_hom_generated`・`oldH1ComparisonIso_hom_generated` は全標準次数・既存H1商の同じ実写像 |
+| B 逆操作の方向 | `inverseCochainHomotopyEquiv` は構成済み二射と二homotopyを交換する | `inverseHomologyIso_hom` と `inverseOldH1ComparisonIso_hom` は逆縮約方向の実sHom/h1Map。順方向も同じrHom |
+| 原始patternの成立・拒否 | `ofAddition`・`ofSubdivision` は任意旧入力/指定辺の正操作から全fieldを生成。追加の三角形操作で第三辺がfresh頂点へ接続する | `double_addition_rejects_first_pattern`・`addition_rejects_subdivision_pattern` は最初の指定局所名のpatternを拒否。別局所名のpatternまで否定しない |
+
+material premise: `Source/q/N` と有限supported nerveの原始幾何はambient-boundary。
+各patternのfreshness・端点・三辺・chart台・全接続は設計§4のdirection-hypothesisであり、
+成立族では`ofAddition/ofSubdivision`が原始正操作入力から放電する。旧入力、表示同型、
+収縮、H1同型、錐消滅をpattern fieldへ持ち込まない。汎用`renameFine`の収縮と表示可換性は
+direction-hypothesisだが、両適用点で既受理正操作と今回の表示constructorから放電する。
+出現型のFintypeを追加仮定にせず、`occurrenceFintype`が原始対角単射から生成する。
+名前の有限choiceは削除族の等号判定と全出現iffに使用し、H1診断から名前を選ばない。
+loopの両端点一致、同一面内の三重出現、空出現、空A、空辺台を除外する仮定はない。
+指定された非零H1のW1–W3計算はP5の未完義務として維持する。
+
+依存はCycle2受理版のTriangleGeometry/TriangleContraction/EdgeSubdivision/EdgeContraction、
+IncidenceBasis/SubsetContraction/SupportedBasis/ChainDualMap、Cycle1受理版のSubsetComposition、
+Cycle3受理版のCellPresentationEquivを使用する。各sourceはその受理版から変更しない。
+受理refは本reportの各cycle acceptance節。mathlibの`Finsupp.domLCongr`、
+`Equiv`/`LinearEquiv`両逆と等号transport、`HomotopyEquiv.symm/toHomologyIso`を固定版で用いる。
+新比較の原始Option表から既存実subset比較を生成するrouteと、原始r/s/hを双対化するrouteを
+独立に構成し、全3成分の等号で接続した。一般有限和Law座標とその全ラベル/錐接続はP4で扱う。
+
+### Cycle 4 accepted-spine proposal
+
+以下は新規sourceの明示宣言全件(構造の自動生成fieldを除く)で、helper・instanceも含む。
+原始fieldを含む各module末尾の標準公理検査も別に行う。
+
+| module | 明示宣言数 |
+| --- | ---: |
+| `PrimitiveCellDeletion` | 10 |
+| `PrimitiveTriangleInverse` | 26 |
+| `PrimitiveSubdivisionInverse` | 42 |
+| `PresentationInverse` | 23 |
+| `ContractionTransport` | 2 |
+| `TriangleInverseContraction` | 29 |
+| `SubdivisionReconstruction` | 14 |
+| `SubdivisionInverseInstances` | 6 |
+| `SubdivisionInverseContraction` | 29 |
+
+```text
+AAT.AG.FaceRelationSubdivision.deleteOneEquiv
+AAT.AG.FaceRelationSubdivision.deleteOneEquiv_old
+AAT.AG.FaceRelationSubdivision.deleteOneEquiv_new
+AAT.AG.FaceRelationSubdivision.deleteTwoEquiv
+AAT.AG.FaceRelationSubdivision.deleteTwoEquiv_old
+AAT.AG.FaceRelationSubdivision.deleteTwoEquiv_false
+AAT.AG.FaceRelationSubdivision.deleteTwoEquiv_true
+AAT.AG.FaceRelationSubdivision.deleteFamilyEquiv
+AAT.AG.FaceRelationSubdivision.deleteFamilyEquiv_old
+AAT.AG.FaceRelationSubdivision.deleteFamilyEquiv_new
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.OldChart
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.OldEdge
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.OldFace
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.retained_left
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.retained_right
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.retained_slot
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldLeft
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldRight
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldSlot
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restoredNerve
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restored
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restoredBase
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.vertex_ne_left
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.vertex_ne_right
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restored_chartSupport
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restored_edgeSupport
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restored_faceSupport
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation_old_edge
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation_connector
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation_second
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation_face
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.ofAddition
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.no_pattern_with_extra_edge
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.double_addition_rejects_first_pattern
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.occurrenceFintype
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.triangle_injective
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.position_slot
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.position_injective
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.removedEdge
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.removedEdge_injective
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.OldChart
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.RetainedEdge
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.OldFace
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.OldEdge
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_ne_connector
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_ne_second
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_left
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_right
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_ne_connector
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_ne_second
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldLeftVertex
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldRightVertex
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldLeft
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldRight
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_of_diagonal
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_eq_common_iff
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_of_no_diagonal
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_left
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_right
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restoredNerve
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restored
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.commonEdge
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restored_chartSupport
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restored_commonSupport
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restored_faceSlot
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.positionFace
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.toOccurrence
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.ofOccurrence
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.ofOccurrence_slot
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.ofOccurrence_toOccurrence
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.toOccurrence_ofOccurrence
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.occurrenceEquiv
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.occurrenceEquiv_apply
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.occurrenceEquiv_symm_apply
+AAT.AG.FaceRelationSubdivision.self_factor_eq_id
+AAT.AG.FaceRelationSubdivision.self_preimage
+AAT.AG.FaceRelationSubdivision.linearEquiv_square_cast
+AAT.AG.FaceRelationSubdivision.linearEquiv_cast_eq
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf_chart
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf_edge
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf_face
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR0
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR1
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR2
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR_comm01
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR_comm12
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameContraction
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR0_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR1_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR2_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR0_symmSelf
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR1_symmSelf
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR2_symmSelf
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameHom
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameHom_eq_generated
+AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.inverseDual_eq_symmSelf
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.renameFine
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.renameFine_rHom
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_r0
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_r1
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_r2
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_s0
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_s1
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_s2
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_h0
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_h1
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.rHom
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.sHom
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.cochainHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.cochainHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.cochainHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.homologyIso
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.homologyIso_hom
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldH1ComparisonIso
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldH1ComparisonIso_hom
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.collapse
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.rHom_eq_generated
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.homologyIso_hom_generated
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldH1ComparisonIso_hom_generated
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseCochainHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseCochainHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseCochainHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseHomologyIso
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseOldH1ComparisonIso
+AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseOldH1ComparisonIso_hom
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retainedEquiv
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retainedEquiv_symm_apply
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdgeEquiv
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredFaceEquiv
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_old
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_connector
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_second
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_diagonal
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredFace_old
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredFace_triangle
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recovered_centerEdge
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_left_val
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_right_val
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.presentation
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.centerEdge_eq_diagonal_iff
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.center_slot
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.center_not_connector_second
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.ofSubdivision
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.no_pattern_with_extra_edge
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.addition_rejects_subdivision_pattern
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_r0
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_r1
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_r2
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_s0
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_s1
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_s2
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_h0
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_h1
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.rHom
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.sHom
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.cochainHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.cochainHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.cochainHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.homologyIso
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.homologyIso_hom
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldH1ComparisonIso
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldH1ComparisonIso_hom
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.collapse
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.rHom_eq_generated
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.homologyIso_hom_generated
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldH1ComparisonIso_hom_generated
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseCochainHomotopyEquiv
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseCochainHomotopyEquiv_hom
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseCochainHomotopyEquiv_inv
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseHomologyIso
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseHomologyIso_hom
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseOldH1ComparisonIso
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseOldH1ComparisonIso_hom
+```
+
+新規source SHA-256:
+
+- `PrimitiveCellDeletion.lean`: `911d0747f09d1f227a411419799cc44843b8c38bbb8bb7724dc3ed1fa292000e`
+- `PrimitiveTriangleInverse.lean`: `dcef554930bab020f90de2f7f21b7a98338de174646118c82c3e697cc2241ab9`
+- `PrimitiveSubdivisionInverse.lean`: `2b293bf12dd89acb9851c40938a88ee3eb6bc7749e5d6af36316474bd11be00e`
+- `PresentationInverse.lean`: `3d0ed75e164caeec5bf9dc9509d303f5a5b9c909dc0a2142805dbdd475152b91`
+- `ContractionTransport.lean`: `0bd21d90342fea243ad73d7aaa3769444cd5bbc240f87ca534a6db8d59b9a7c5`
+- `TriangleInverseContraction.lean`: `4519507e161625df8aa6f6caad5f919ca5db7b63c76512c34d6ad03e70da6a3a`
+- `SubdivisionReconstruction.lean`: `409bf1595bde11d7e5e0213abd8ddc790e6369b39d21bbc1d781335452a34d5e`
+- `SubdivisionInverseInstances.lean`: `a49da06decf3641368f9203c6307f7d20f0a68176655098dac6a94bda4101287`
+- `SubdivisionInverseContraction.lean`: `a172a973b12acb7c1648f6461f5139be9dbc7f2ce3c998d4fb262da6120f668b`
+
+### Cycle 4 validation / result proposal
+
+新規9moduleをそれぞれ必要な単一file checkで検証し、公式focused経路で
+`TriangleInverseContraction.lean`・`SubdivisionInverseContraction.lean`・
+`SubdivisionInverseInstances.lean` を確認した。全9moduleの標準公理検査は成功。
+181明示宣言を全件 `#print axioms` し、source/spine/query/logの集合一致、欠落・余剰・重複なし、
+propext/Classical.choice/Quot.soundのみを確認した。axiom log SHA-256:
+`a2750622c7edd312a918a89388d713b11dfd06916ec0f675d98c50dd438bb877`。
+placeholder、hidden/BiDi、privacy、manifest TSV/実在/一意性、diff whitespace scanはclean。
+追加importは9つのResearchLean source内だけで、FormalからResearchへのimportは追加していない。
+Research全体build、aggregate root、全file loop、本体full buildは未実施。
+CIと独立査読は固定PR headに対するgateで判定する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - 両原始逆patternから旧入力・全セル表示同型と支持を構成
+    - 全面内出現の復元両逆と共通辺K1台を構成
+    - 全Aの同じr/s/hを移送しchain式・両逆・補正式を生成
+    - 順逆両方向の標準HomotopyEquiv/全homology/既存H1商の実写像を照合
+    - 原始Option表の直接生成比較と同じ実rHomを全3成分で照合
+    - 任意正操作の全接続pattern生成と追加第三辺による指定pattern拒否を証明
+  exit_criteria_status:
+    - 選定した到達点の全数学的条件と検証条件を達成
+    - 独立PR review/acceptance/CIは固定PR headで判定
+  split_reason: none
+  completion_candidate: no
+  claim_mapping:
+    source_labels: [GOAL B原始逆縮約, elementary-moves §4, A/Dの実subset比較接続]
+    undischarged_assumptions: []
+    acceptance_point: 選定した両原始逆patternの到達点、元のP3全終了条件と全GOALは未完
+    port_status: unported
+  audits:
+    structure_field_escape: none-found
+    route_integrity: pass
+    vacuity: none-found
+    one_way_as_equivalence: none-found
+    next_obligation: P3持ち上げ選択、P4一般有限和Law/有限合成/制限/cone/defect、P5 E/W1-W3
+```
