@@ -56,6 +56,18 @@ theorem dualCellMap_identity : dualCellMap (LinearMap.id : (I →₀ ℚ) →ₗ
   intro x
   simp only [dualCellMap_dual, LinearMap.id_apply]
 
+/-- 同じchain射の和を双対化すると実cochain射の和となる。 -/
+theorem dualCellMap_add (f g : (I →₀ ℚ) →ₗ[ℚ] (J →₀ ℚ)) :
+    dualCellMap (f + g) = dualCellMap f + dualCellMap g := by
+  apply LinearMap.ext
+  intro z
+  apply (freeDualEquiv I).injective
+  apply LinearMap.ext
+  intro x
+  rw [dualCellMap_dual, LinearMap.add_apply, map_add]
+  change _ = freeDualEquiv I (dualCellMap f z + dualCellMap g z) x
+  rw [map_add, LinearMap.add_apply, dualCellMap_dual, dualCellMap_dual]
+
 variable {Source : Type u} {qc qf : Reading Source}
 variable {Nc : TargetSupportedNerve qc} {Nf : TargetSupportedNerve qf}
 variable (Ac : Set qc.Target) (Af : Set qf.Target)
@@ -89,6 +101,26 @@ def dualSubsetHom
     rw [dualCellMap_dual, ← chainD2_dual, ← chainD2_dual, dualCellMap_dual]
     exact congrArg (freeDualEquiv _ z) (LinearMap.congr_fun h12 x)
 
+
+/-- 支持辺微分の実双対は既存subsetの同じd0射。 -/
+theorem dualCellMap_chainD1 (N : TargetSupportedNerve qc) (A : Set qc.Target) :
+    dualCellMap (chainD1 N A) = N.targetSubsetD0 A := by
+  apply LinearMap.ext
+  intro z
+  apply (freeDualEquiv _).injective
+  apply LinearMap.ext
+  intro x
+  rw [dualCellMap_dual, chainD1_dual]
+
+/-- 支持面微分の実双対は既存subsetの同じd1射。 -/
+theorem dualCellMap_chainD2 (N : TargetSupportedNerve qc) (A : Set qc.Target) :
+    dualCellMap (chainD2 N A) = N.targetSubsetD1 A := by
+  apply LinearMap.ext
+  intro z
+  apply (freeDualEquiv _).injective
+  apply LinearMap.ext
+  intro x
+  rw [dualCellMap_dual, chainD2_dual]
 
 variable (r0 : K0 Nf Af →ₗ[ℚ] K0 Nc Ac) (r1 : K1 Nf Af →ₗ[ℚ] K1 Nc Ac)
   (r2 : K2 Nf Af →ₗ[ℚ] K2 Nc Ac)

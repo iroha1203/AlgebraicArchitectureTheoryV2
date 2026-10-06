@@ -1450,3 +1450,287 @@ result:
 既存theorem/def/instanceのsignature・def/instance本体・値・import方向・statusは変更しない。
 追加補題の標準公理と全182宣言照会、修正source/下流endpointのfocused、共通scanを確認した。
 修正範囲と直接対応の資格・finding解消は、新規の単一確認担当が独立に判定する。
+
+
+## Cycle 4 acceptance / Cycle 5 selection
+
+Cycle 4は[PR #5277](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5277)で受理。
+final head `e25e9b82b6d3016e21423a9a5cc1663fd9c3e0e7`、merge
+`0a250d1d3aa39be9a8f535a21530a37457af626b`。
+[初回4本・資格を満たす新規直接確認・最終受入れ](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5277#issuecomment-6023355173)、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6023602728)。
+初回中心0/統合非中心1を公開API補題で修正し、直接確認が資格・解消を確認。
+selected resultはproof-obligation-discharged、全targetはtarget-proof-checkpoint。
+最終headの8CI checks成功。Research integrityを実行、Formal full build/kernel等は
+Research-only selectorによりSKIPPED。Research全体build/aggregate/全file loopは未実施。
+全182宣言は標準3公理のみ、Formal未移植。
+
+以下はCycle 5の実装前selection。Cycle 2の元P3全終了条件は維持する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-134-aat-face-relation-subdivision
+cycle: 5
+goal_blob_sha: 28cbf1944d708b059cd8c4fd22f07cd8d5e1476c
+base_oid: 0a250d1d3aa39be9a8f535a21530a37457af626b
+tracking_issue: 5272
+report_path: research/reports/G-134-aat-face-relation-subdivision.md
+selection:
+  proof_state_ref: Cycle 4受入れおよびIssue同期
+  proof_dag_predecessors: [TriangleContraction, EdgeContraction, SupportedBasis, SubsetContraction, ThreeHomotopy, ZeroExtension]
+  milestone: B/P3の指定三角面で結ばれる持ち上げ選択と同じH1読み戻し
+  proof_obligations:
+    - 原始t1の有限和と非零項の支持包含を両正操作について構成
+    - s'=s+∂t+t∂と補正hから全Aのchain式・rs・srを証明
+    - 指定旧辺と旧面の補正式を原始セル基底で評価
+    - 実双対s'とsの標準cochainホモトピー・全homology・既存H1写像の一致
+    - 三角形追加のcocycle道の等式とfresh頂点potential補正を全支持で証明
+    - 分割の任意指定出現対角道の等式と同じH1読み戻し
+  exit_criteria:
+    - 上記全義務を原始幾何から生成して閉じる
+    - 任意A、空支持、loop、重複出現を縮小しない
+    - 全宣言axiom照会とfocused/scan、固定head独立査読を通過
+  selection_reason: 受理済み両収縮からP3残義務の持ち上げ選択を直接閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [LiftVariation, TriangleLift, SubdivisionLift, CocycleNormalization]
+  risks: [tを保存結論fieldに移さない, 実sHomの射一致, 旧面符号の反映, 非選択connectorの零補正]
+  unchecked: [P4一般Law有限和, P4有限合成制限cone欠損, P5 E/W1-W3, 全target独立完了監査]
+```
+
+### Cycle 5 構成と固定条項の対応
+
+到達点はB/P3・基本変形§7の指定持ち上げである。原始入力はreading上の任意N・eと、
+分割では指定出現o。幾何を先に固定し、Aを後で任意に取る。Lawの有限和座標への一般拡張は
+P4の残義務であり、このcycleで全B/C/Dを完了とはしない。
+
+| 固定義務 | 構成・宣言 | 実写像への接続 |
+| --- | --- | --- |
+| s'=s+∂t+t∂と同じrの収縮 | `SubsetChainContraction.varyLift` | 同じr0/1/2、s0/1/2、h0/1の公開評価、chain/rs/sr全fieldを方向式から証明 |
+| 三角形追加のe→f、指定道c+e2 | `TriangleAddition.liftT` / `liftedS1_target_basis` | 原始有限和の台包含、全Aの`liftedContraction_s1/s2` |
+| 分割のe→-t_o、指定対角道d_o | `EdgeSubdivision.liftT` / `liftedS1_target_basis` | 任意o、原始有限和の台包含、全Aの`liftedContraction_s1/s2` |
+| 各旧面の符号補正 | 両namespaceの`liftedS2_basis` | 位置0−位置1+位置2を個別評価。同面の重複出現を同一化しない |
+| 補正面のr2像が零 | 両namespaceの`liftT_r2_zero` / `liftT_selected_r2_zero` | 原始collapse基底式から全Aへ零延長単射で制限 |
+| 実s'とsの標準ホモトピー | `liftHomotopy` / 両`liftedHomotopy` | 同じ実sHomを零延長し、補正の次数1→0を0、2→1をdual tにする |
+| 同じ全homology・既存H1読み戻し | `varyLift_homologyMap/h1Map` / 両`liftedContraction_homologyMap/h1Map` | G-133 oldH1Iso自然性で同じh1Mapそのものの等号を証明 |
+| 同じr比較の保持 | 両`liftedContraction_rHom` | 受理済み原始collapseからの実rHomと同じ。代替比較を導入しない |
+| cocycle道の評価 | 両`cocycle_path`と選択面constructor | 旧e選択から同じ台の実新面を選択し、既存targetSubsetComplex.d1を評価 |
+| fresh頂点potential | `TriangleAddition.freshPotential_old/new` | 原始h0の同じ双対、旧頂点0・fresh頂点z(c) |
+| 非選択connectorの零補正 | `no_fresh_of_no_connector` / `freshPotential_zero_of_no_connector` | 台等号からfresh座標も存在せず、同じpotential全体が零 |
+| 補正後c=0・e2=旧e | `normalized_connector/second` | `normalized_eq_readback`から同じ実r/sの座標評価へ接続 |
+| 代表の既存H1商での一致 | `cocycle_readback_class` / `normalized_readback_class` | 同じboundaryToCyclesのrangeに明示potentialの負を提示し、実mkQで等号 |
+
+一般bridgeは出力recordCとt、r2t=0を方向仮定にする。両基本操作ではCを受理済み原始
+constructorから生成し、tを原始セル表から生成、r2t=0を原始基底式から証明する。
+実sHomの変更を結論fieldに受け取らない。指定出現がない分割には代替道の指定自体がなく、
+既受理の通常sectionが全Aで存在する。代替道の定理は任意の指定oを量化する。
+loop、任意旧面、符号の異なる重複出現、空のA・辺台・面台を除外しない。
+空Sourceの辺指定操作のinstance不在はT0の意味通りで、全targetの空列はP4に残る。
+
+### Cycle 5 material premise / provenance / proof-use
+
+| premise | 分類 | 出所と使用・放電 |
+| --- | --- | --- |
+| Reading/N/e、K1、原始incidence | ambient-boundary | T0入力。支持t、原始微分、旧r/s/h生成へ使用 |
+| 分割で指定したo | ambient-boundary | 固定§7の指定出現。独立名の面・対角辺への像へ使用 |
+| 任意A | ambient-boundary | 原始像の支持制限・同じ実subset複体へ使用 |
+| bridge Cの収縮式 | direction-hypothesis / 適用でdischarge-required | PR #5275の両原始収縮constructor。現在版は公開projection APIだけ追加、旧statement/証明/def値は不変 |
+| 原始tと支持包含 | discharge-required | 両liftTで旧eと追加面のK1台等号から生成。tを手渡ししない |
+| r2t=0 | direction-hypothesis / 適用でdischarge-required | 両liftT_r2_zero→selected_r2_zeroで同じcollapseから放電 |
+| cocycle d1z=0 | direction-hypothesis | 比較する代表の定義通り。新面の道の等式とh0補正へ使用 |
+| Homotopy/全homology/H1一致 | discharge-required | dualCellMapのadd/comp/微分API→threeHomotopy→mathlib homologyMap_eq→oldH1Iso_natural |
+| potential補正の境界membership | discharge-required | 同じboundaryToCyclesへpotentialの負を明示し、Subtype/extと既存商mkQで証明 |
+
+依存の追跡はCycle 2受入れ[PR #5275](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5275#issuecomment-6021665035)、
+merge `d41fd4ef340d5839694e90142de3dc429372e5d6`のSupportedBasis/ThreeHomotopy/
+RawSupportedChain/ChainDualMap/SubsetContraction/TriangleContraction/EdgeContractionと、
+既記録G-133のZeroExtension.oldH1Iso_naturalまで。再利用する型・式・適用引数を確認した。
+既存4sourceの今回差分は公開評価API25宣言の追加だけで、既存宣言のsignature・証明・
+def/instance本体・値・import方向を変更しない。新旧全APIが現在source上で一致する。
+mathlibのHomotopy.homologyMap_eqとSubmodule.Quotient.eqを固定mathlib版で使用する。
+
+### Cycle 5 受理spine候補
+
+新規4moduleの87明示宣言と、既存4moduleの新公開API25宣言、査読で名指しされた
+所有moduleの公開API1宣言の計113宣言を固定する。
+その他の既存宣言は受理済みpredecessor。新規全sourceのassertは各module内の生成補助宣言も
+検査する（LiftVariationのmacroは19、明示spineは18）。scaffoldを受理spineへ混ぜない。
+
+```text
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_s0
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_s1
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_s2
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_h0
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_h1
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_r0
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_r1
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_r2
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_rHom
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_sHom_f0
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_sHom_f1
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_sHom_f2
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.liftHomotopy
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_homologyMap
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_h1Map
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cocycle_normalize
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cocycle_readback_class
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftT
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftT_basis
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1_raw
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2_raw
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1_basis
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2_basis_image
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1_selected
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2_selected
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1_target_basis
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2_basis
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftT_r2_zero
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftT_selected_r2_zero
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_eq
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_s1
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_s2
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_rHom
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedHomotopy
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_homologyMap
+AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_h1Map
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftT
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftT_basis
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1_raw
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2_raw
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1_basis
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2_basis_image
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1_selected
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2_selected
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1_target_basis
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2_basis
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftT_r2_zero
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftT_selected_r2_zero
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_eq
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_s1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_s2
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_rHom
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedHomotopy
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_homologyMap
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_h1Map
+AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedNewFace
+AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedNewFace_val
+AAT.AG.FaceRelationSubdivision.TriangleAddition.connectorOfFresh
+AAT.AG.FaceRelationSubdivision.TriangleAddition.connectorOfFresh_val
+AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential
+AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential_eq
+AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential_old
+AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential_new
+AAT.AG.FaceRelationSubdivision.TriangleAddition.no_fresh_of_no_connector
+AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential_zero_of_no_connector
+AAT.AG.FaceRelationSubdivision.TriangleAddition.cocycle_path
+AAT.AG.FaceRelationSubdivision.TriangleAddition.normalized_eq_readback
+AAT.AG.FaceRelationSubdivision.TriangleAddition.normalized_readback_class
+AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedOldEdge
+AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedOldEdge_val
+AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedSecond
+AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedSecond_val
+AAT.AG.FaceRelationSubdivision.TriangleAddition.rHom_connector
+AAT.AG.FaceRelationSubdivision.TriangleAddition.rHom_second
+AAT.AG.FaceRelationSubdivision.TriangleAddition.sHom_old
+AAT.AG.FaceRelationSubdivision.TriangleAddition.normalized_connector
+AAT.AG.FaceRelationSubdivision.TriangleAddition.normalized_second
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selectedTriangle
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selectedTriangle_val
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.cocycle_path
+AAT.AG.FaceRelationSubdivision.dualCellMap_add
+AAT.AG.FaceRelationSubdivision.dualCellMap_chainD1
+AAT.AG.FaceRelationSubdivision.dualCellMap_chainD2
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.rHom_f0
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.rHom_f1
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.rHom_f2
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.sHom_f0
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.sHom_f1
+AAT.AG.FaceRelationSubdivision.SubsetChainContraction.sHom_f2
+AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_r0
+AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_r1
+AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_r2
+AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_s0
+AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_s1
+AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_s2
+AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_h0
+AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_h1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_r0
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_r1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_r2
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_s0
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_s1
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_s2
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_h0
+AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_h1
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetComplex_d0
+```
+
+現在の対象source SHA-256（既存sourceはAPI追加後の版）:
+
+- `LiftVariation.lean`: `ba096624bb7a9b576a09d566262e757d623a15cd8d4359407fe6ce7a5625d733`（今回の明示spine 18）
+- `TriangleLift.lean`: `3ad9fab4b70814892709f567b6b5a412aac64a4d1a851592330b7fd8095f1288`（今回の明示spine 22）
+- `SubdivisionLift.lean`: `37154f4410e01fa6d4378474445f7aba462b5ab507b3e8533f4b90e52215d0e7`（今回の明示spine 22）
+- `CocycleNormalization.lean`: `07f3fb014244cbfb5ed00e37ceedc82ecc290bc1131de2a6315beebaacbc4e4b`（今回の明示spine 25）
+- `ChainDualMap.lean`: `e630b42e46ba8df6ec285d34f5d34d0ad40c154447ed971e91765c24faa41edf`（今回の明示spine 3）
+- `SubsetContraction.lean`: `f73e39ec95177c1a8cca4e5334fefb62d0f7fd11fea29b53d11f7ef265bf2b53`（今回の明示spine 6）
+- `TriangleContraction.lean`: `8cb2eef0953e8942e74e43b19e7ebd65e030e884bf7bb016c52350e9c537ba6d`（今回の明示spine 8）
+- `EdgeContraction.lean`: `40f704cddc1c9bbf6c53264eb66f3ac097c0fae8b3033142bce864c3bff486d2`（今回の明示spine 8）
+
+- `ASubnerveReduction.lean`: `88d14f9220df4cf630983ee77bef92daa171ed562678e2519aaccf302d113037`（査読修正の明示spine 1）
+
+### Cycle 5 validation / result proposal
+
+新規4moduleと公開APIを追加した既存4moduleを必要な単一file checkで確認した。
+公式focused経路でTriangleLift・SubdivisionLift・CocycleNormalizationを検査、
+最後の商接続/API整理後にLiftVariationとCocycleNormalizationを再確認した。
+113明示宣言すべてを#print axiomsし、source/spine/query/logの集合一致、重複・欠落・余剰なし、
+標準propext/Classical.choice/Quot.soundのみを確認。log SHA-256: `d20e39906194e80adc87d2d1fc68509b8bf849b9faacf2bf688683f3421ce4d3`。
+placeholder、hidden/BiDi、privacy、manifest TSV/実在/一意性、diff whitespace scanはclean。
+新規module登録後のtracked import方向・公開artifact scanは固定commitでも検査する。
+Research全体build、aggregate root、全file loop、本体full buildは未実施。独立PR査読/CIは
+固定headのgateで判定する。Research証拠はFormal未移植、ArchSig実装を変更していない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - 両原始tと支持を生成し指定旧辺/旧面の有限和補正を評価
+    - 全Aの新section・同じr・補正hから全chain/rs/sr式を生成
+    - 同じ実sHomの標準ホモトピーと全homology/既存H1写像等号
+    - 選択新面のcocycle道とfresh potential、非選択成分の零補正
+    - 補正後の実座標c=0/e2=旧e、同じ既存H1商での代表等号
+  exit_criteria_status:
+    - 選定した持ち上げ到達点の全数学的条件・検証を達成
+    - 独立PR review/acceptance/CIは固定PR headで判定
+  split_reason: none
+  completion_candidate: no
+  claim_mapping:
+    source_labels: [GOAL B持ち上げ選択, elementary-moves §7, D既存H1への同じ実subset射接続]
+    undischarged_assumptions: []
+    acceptance_point: 選定した支持持ち上げ変更の到達点、元P3の各Law拡張と全targetは未完
+    port_status: unported
+  audits:
+    structure_field_escape: none-found
+    route_integrity: pass
+    vacuity: none-found
+    one_way_as_equivalence: none-found
+    next_obligation: P4一般有限和Law/有限合成/制限/cone/defect、P5 E/W1-W3、別の全target完了監査
+```
+
+### Cycle 5 非中心findingへの直接対応
+
+初回固定head `07df221521f277de03ec69190263a3c1507489b2` の独立数学2本・Lean2本は
+中心0/統合非中心1。3laneはNo major findings、Lean BはMinor issues。
+[初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5278#issuecomment-6024205175)。
+`cocycle_readback_class` のtargetSubsetComplex.d0直接展開を、findingで名指しされた
+所有moduleの公開API `TargetSupportedNerve.targetSubsetComplex_d0` の適用へ置換した。
+既存宣言のsignature、def/instance本体・値、import、statusは変更しない。追加宣言は
+指名された補助API1件だけ。spine/件数/hashを同じ113宣言へ同期した。
+修正所有module・LiftVariation・下流CocycleNormalizationの単一checkと公式focused、
+全113axiom照会、共通scanを実施。資格とfinding解消は新規単一確認で独立判定する。

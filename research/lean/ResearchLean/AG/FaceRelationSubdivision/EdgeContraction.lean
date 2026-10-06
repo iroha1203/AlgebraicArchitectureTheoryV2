@@ -414,6 +414,38 @@ def chainContraction (A : Set q.Target) : SubsetChainContraction N (supported N 
   sr_h1 := selected_sr_h1 N e A
   sr_h2 := selected_sr_h2 N e A
 
+/-- 生成された収縮のr0は同じ原始支持射。 -/
+@[simp] theorem chainContraction_r0 (A : Set q.Target) :
+    (chainContraction N e A).r0 = (r0 N e).selected A := rfl
+
+/-- 生成された収縮のr1は同じ原始支持射。 -/
+@[simp] theorem chainContraction_r1 (A : Set q.Target) :
+    (chainContraction N e A).r1 = (r1 N e).selected A := rfl
+
+/-- 生成された収縮のr2は同じ原始支持射。 -/
+@[simp] theorem chainContraction_r2 (A : Set q.Target) :
+    (chainContraction N e A).r2 = (r2 N e).selected A := rfl
+
+/-- 生成された収縮のs0は同じ原始支持射。 -/
+@[simp] theorem chainContraction_s0 (A : Set q.Target) :
+    (chainContraction N e A).s0 = (s0 N e).selected A := rfl
+
+/-- 生成された収縮のs1は同じ原始支持射。 -/
+@[simp] theorem chainContraction_s1 (A : Set q.Target) :
+    (chainContraction N e A).s1 = (s1 N e).selected A := rfl
+
+/-- 生成された収縮のs2は同じ原始支持射。 -/
+@[simp] theorem chainContraction_s2 (A : Set q.Target) :
+    (chainContraction N e A).s2 = (s2 N e).selected A := rfl
+
+/-- 生成された収縮のh0は同じ原始支持射。 -/
+@[simp] theorem chainContraction_h0 (A : Set q.Target) :
+    (chainContraction N e A).h0 = (h0 N e).selected A := rfl
+
+/-- 生成された収縮のh1は同じ原始支持射。 -/
+@[simp] theorem chainContraction_h1 (A : Set q.Target) :
+    (chainContraction N e A).h1 = (h1 N e).selected A := rfl
+
 /-- 同じ原始r/s/hから得た全Aの標準cochainホモトピー同値。 -/
 def cochainHomotopyEquiv (A : Set q.Target) := (chainContraction N e A).cochainHomotopyEquiv
 

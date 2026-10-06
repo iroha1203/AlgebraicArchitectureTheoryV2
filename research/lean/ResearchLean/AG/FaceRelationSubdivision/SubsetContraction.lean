@@ -54,6 +54,24 @@ def rHom : ThreeCochainComplex.Hom (Nc.targetSubsetComplex Ac) (Nf.targetSubsetC
 def sHom : ThreeCochainComplex.Hom (Nf.targetSubsetComplex Af) (Nc.targetSubsetComplex Ac) :=
   dualSubsetHom Af Ac C.s0 C.s1 C.s2 C.s_comm01 C.s_comm12
 
+/-- 同じrの実cochain次数0は同じchain射の双対。 -/
+@[simp] theorem rHom_f0 : C.rHom.f0 = dualCellMap C.r0 := rfl
+
+/-- 同じrの実cochain次数1は同じchain射の双対。 -/
+@[simp] theorem rHom_f1 : C.rHom.f1 = dualCellMap C.r1 := rfl
+
+/-- 同じrの実cochain次数2は同じchain射の双対。 -/
+@[simp] theorem rHom_f2 : C.rHom.f2 = dualCellMap C.r2 := rfl
+
+/-- 同じsの実cochain次数0は同じchain射の双対。 -/
+@[simp] theorem sHom_f0 : C.sHom.f0 = dualCellMap C.s0 := rfl
+
+/-- 同じsの実cochain次数1は同じchain射の双対。 -/
+@[simp] theorem sHom_f1 : C.sHom.f1 = dualCellMap C.s1 := rfl
+
+/-- 同じsの実cochain次数2は同じchain射の双対。 -/
+@[simp] theorem sHom_f2 : C.sHom.f2 = dualCellMap C.s2 := rfl
+
 /-- 同じr/sの実cochain往復は旧複体上で恒等。 -/
 theorem cochain_rs : cochainComp C.rHom C.sHom = cochainId (Nc.targetSubsetComplex Ac) := by
   apply cochain_ext
