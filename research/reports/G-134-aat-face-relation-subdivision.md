@@ -1200,7 +1200,7 @@ Cycle3受理版のCellPresentationEquivを使用する。各sourceはその受�
 | `PresentationInverse` | 23 |
 | `ContractionTransport` | 2 |
 | `TriangleInverseContraction` | 29 |
-| `SubdivisionReconstruction` | 14 |
+| `SubdivisionReconstruction` | 15 |
 | `SubdivisionInverseInstances` | 6 |
 | `SubdivisionInverseContraction` | 29 |
 
@@ -1339,6 +1339,7 @@ AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseOldH1ComparisonIso
 AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseOldH1ComparisonIso_hom
 AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retainedEquiv
 AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retainedEquiv_symm_apply
+AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retainedEquiv_apply_of_val_eq
 AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdgeEquiv
 AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredFaceEquiv
 AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_old
@@ -1396,7 +1397,7 @@ AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseOldH1ComparisonI
 - `PresentationInverse.lean`: `3d0ed75e164caeec5bf9dc9509d303f5a5b9c909dc0a2142805dbdd475152b91`
 - `ContractionTransport.lean`: `0bd21d90342fea243ad73d7aaa3769444cd5bbc240f87ca534a6db8d59b9a7c5`
 - `TriangleInverseContraction.lean`: `4519507e161625df8aa6f6caad5f919ca5db7b63c76512c34d6ad03e70da6a3a`
-- `SubdivisionReconstruction.lean`: `409bf1595bde11d7e5e0213abd8ddc790e6369b39d21bbc1d781335452a34d5e`
+- `SubdivisionReconstruction.lean`: `83f8b2b45b34652e9ecea090be6de460f56ec8e6e51e512ca9ec1b1ef320f10f`
 - `SubdivisionInverseInstances.lean`: `a49da06decf3641368f9203c6307f7d20f0a68176655098dac6a94bda4101287`
 - `SubdivisionInverseContraction.lean`: `a172a973b12acb7c1648f6461f5139be9dbc7f2ce3c998d4fb262da6120f668b`
 
@@ -1405,9 +1406,9 @@ AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseOldH1ComparisonI
 新規9moduleをそれぞれ必要な単一file checkで検証し、公式focused経路で
 `TriangleInverseContraction.lean`・`SubdivisionInverseContraction.lean`・
 `SubdivisionInverseInstances.lean` を確認した。全9moduleの標準公理検査は成功。
-181明示宣言を全件 `#print axioms` し、source/spine/query/logの集合一致、欠落・余剰・重複なし、
+182明示宣言を全件 `#print axioms` し、source/spine/query/logの集合一致、欠落・余剰・重複なし、
 propext/Classical.choice/Quot.soundのみを確認した。axiom log SHA-256:
-`a2750622c7edd312a918a89388d713b11dfd06916ec0f675d98c50dd438bb877`。
+`deaf34f01b365d1ad15e3d1e654602c023425009933d589dd5f6c47a8d753b3a`。
 placeholder、hidden/BiDi、privacy、manifest TSV/実在/一意性、diff whitespace scanはclean。
 追加importは9つのResearchLean source内だけで、FormalからResearchへのimportは追加していない。
 Research全体build、aggregate root、全file loop、本体full buildは未実施。
@@ -1440,3 +1441,12 @@ result:
     one_way_as_equivalence: none-found
     next_obligation: P3持ち上げ選択、P4一般有限和Law/有限合成/制限/cone/defect、P5 E/W1-W3
 ```
+
+### Cycle 4 非中心findingへの修正
+
+[初回4査読](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5277#issuecomment-6023355173) は数学BがNo major findings、数学A/Lean A/Lean BがMinor issues。
+中心0、重複統合した非中心1件は、`recovered_centerEdge`内の保持辺全単射の定義展開。
+指名された公開補題`retainedEquiv_apply_of_val_eq`を追加し、当該証明から定義展開を除いた。
+既存theorem/def/instanceのsignature・def/instance本体・値・import方向・statusは変更しない。
+追加補題の標準公理と全182宣言照会、修正source/下流endpointのfocused、共通scanを確認した。
+修正範囲と直接対応の資格・finding解消は、新規の単一確認担当が独立に判定する。

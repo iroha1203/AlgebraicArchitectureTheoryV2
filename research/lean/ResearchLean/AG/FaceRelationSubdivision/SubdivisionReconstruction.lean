@@ -36,6 +36,14 @@ def retainedEquiv : EdgeSubdivision.RetainedEdge P.restored P.commonEdge ≃ P.R
 @[simp] theorem retainedEquiv_symm_apply (a : P.RetainedEdge) :
     (P.retainedEquiv.symm a).1 = .inl a := rfl
 
+/-- 保持辺の原始値が指定名なら、順方向の復元全単射もその名前を返す。 -/
+theorem retainedEquiv_apply_of_val_eq
+    (a : EdgeSubdivision.RetainedEdge P.restored P.commonEdge) (b : P.RetainedEdge)
+    (h : a.1 = .inl b) : P.retainedEquiv a = b := by
+  apply P.retainedEquiv.symm.injective
+  apply Subtype.ext
+  simpa only [Equiv.symm_apply_apply, P.retainedEquiv_symm_apply] using h
+
 /-- 正分割後の全辺名を、保持・二辺・各対角名へ戻す両逆。 -/
 def recoveredEdgeEquiv : (EdgeSubdivision.supported P.restored P.commonEdge).nerve.EdgeComponent ≃
     N.nerve.EdgeComponent :=
@@ -85,7 +93,7 @@ theorem recovered_centerEdge (F : P.OldFace) (i : Fin 3) :
     change (P.retainedEquiv ⟨EdgeSubdivision.faceSlot P.restored F i, hs⟩).1 = _
     have he : EdgeSubdivision.faceSlot P.restored F i = .inl a :=
       (P.restored_faceSlot F i).trans ha
-    simp only [retainedEquiv, he]
+    rw [P.retainedEquiv_apply_of_val_eq _ a he]
     exact hv
 
 /-- 保持辺の復元左端点は元の同じchart名。 -/
