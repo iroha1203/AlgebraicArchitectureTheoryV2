@@ -11,6 +11,10 @@ import Formal.Util.AssertStandardAxioms
 有限セルのcomma圏の極限を、mathlibの連結成分上の関数として計算する。
 極限の普遍性は任意のconeからの線形射を構成して証明する。
 係数のuniverseを揃えるためULift ℚを用い、そのdownは元の有理係数への同定である。
+compatible sectionsを部分加群として直接表示する案では、各セルの等式条件が
+局所成分式に残るため、ここではzigzag商を使ってそれらを成分上の関数へ降ろす。
+係数をType 0のℚのまま固定する案は、任意universeのセル圏への同じ極限APIを
+妨げるため採らず、ULiftによる同型な係数表示を使う。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber

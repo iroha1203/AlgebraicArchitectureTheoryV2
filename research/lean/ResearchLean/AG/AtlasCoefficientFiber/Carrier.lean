@@ -7,6 +7,9 @@ import ResearchLean.AG.AtlasCoefficientFiber.Incidence
 
 carrierの対象値を、Optionセル像と原始符号付き零和から定める。
 混在面を垂直面と区別し、既存subsetの支持輸送を再利用する。
+セルごとにcarrier対象を別の入力として受け取る案では、その出所をMから
+証明する義務がfieldへ移るため採らず、Option像から対象値を直接計算する。
+退化面を一律にchartへ送る案は混在面の粗辺carrierを失うため採らない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber
