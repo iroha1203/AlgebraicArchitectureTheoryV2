@@ -1,9 +1,9 @@
 # G-135-aat-atlas-coefficient-fiber — Atlas欠損の係数・fiber分解
 
 - `id`: `G-135-aat-atlas-coefficient-fiber`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
-- `tracking issue`: —
+- `tracking issue`: [#5290](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290)
 - `source note`: [n1016 §4.2・候補11](../../docs/note/n1016_rising_sea_v2_paper_plan.md)、[n1006 §1.2(e)・R8–R9](../../docs/note/n1006_aat_atlas_reinforcement_plan.md)
 - `design`: [原始入力と順像](../designs/G-135-aat-atlas-coefficient-fiber/README.md)、[完全列と保存条件](../designs/G-135-aat-atlas-coefficient-fiber/exact-sequence.md)、[指定例](../designs/G-135-aat-atlas-coefficient-fiber/witnesses.md)、[再利用対応表](../designs/G-135-aat-atlas-coefficient-fiber/reuse-map.md)
 
