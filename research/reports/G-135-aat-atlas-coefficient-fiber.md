@@ -6,18 +6,19 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 3）
+## 現proof state（Cycle 4）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293でcheckpoint受理済み。
-Cycle 3は同じPからcounit評価εと実u因子化、局所Φ・Γ・Λの構成・成分同定を進める。
+Cycle 3の同じPからのcounit評価εと実u因子化、局所Φ・Γ・Λの構成・成分同定はPR #5294で受理済み。
 ε のcochain条件と実u全三次数因子化、原始Φのchain/cochainと包含、Γの関係列、Φ・Γ・Λの実comma成分式は対象fileのLean検証を通過した。
 chart→edge・edge→faceの係数自然性と原始端点・辺位置への同定も通過した。
-mixed関係・三角形二経路の公開自然性APIとε次数別単射性も対象fileのLean検証を通過した。L以降と全Wは未達。
-独立査読前であり、全目標はtarget-proof-checkpoint。
+mixed関係・三角形二経路の公開自然性APIとε次数別単射性も対象fileのLean検証を通過した。
+Cycle 4の原始L・実ε像の両包含・実商双対同型・標準短完全列・H₀L/H⁰Q零性は対象fileのLean検証を通過した。初回独立4査読は中心finding 0、非中心の次数外API不足を修正し、正式再監査待ち。κ/R/τ、設計§5以降と全Wは未達。
+Cycle 4は原始退化セル生成L、同じ評価像と商双対、標準短完全列へ接続する。全目標はtarget-proof-checkpoint。
 
 以下のCycle 1 selectionから検証記録までは、最初の提案時点の履歴である。
-現在のdelta・未放電行は後続のCycle 3台帳へ対応させる。
+現在のdelta・未放電行は後続のCycle 4台帳へ対応させる。
 
 ## Cycle 1 selection
 
@@ -498,3 +499,159 @@ placeholder、新規公理、hidden/BiDi、privacy/local-path scanは対象変�
 GOAL・設計・Formalのdiffは空であり、元のmain作業ツリーもcleanであることを確認した。
 語彙scanで変更文の禁止語は検出ゼロ。`git diff --check`を最終文書へ実行した。
 全W・L以降の検証と最終completion監査は、対応する実装後の義務に残る。
+
+## Cycle 3 受理記録
+
+PR [#5294](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5294)、
+final head `dace21ebc3c8a845e0f66ac459103dd91b4e83b7`、
+merge `18c21239e8b757cbe7205eb44945a68611a4645f`、2026-10-07T20:19:59Z。
+[初回4 lane・数学全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5294#issuecomment-6045999657)、
+[Lean全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5294#issuecomment-6046002686)、
+[直接対応・root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5294#issuecomment-6046087706)、
+[merge記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5294#issuecomment-6046113302)、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6046110673)。
+全4 laneに中心findingなし、同じ非中心report現況ずれだけ。report2行の修正は
+新規単一reviewerが全解消・直接対応有資格と確認した。全8CI後にmerge。
+Formal実build/kernel/premiseはskip、Research full/aggregateは未実施。
+Cycle resultはproof-obligation-discharged、元のA・設計README§1–3の終了条件はすべて放電。
+全GOALはtarget-proof-checkpoint。Cycle 3 proposal・検証記録は提案時点の履歴として保持する。
+
+## Cycle 4 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 4
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 18c21239e8b757cbe7205eb44945a68611a4645f
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle 3受理とIssue5290同期6046110673
+  proof_dag_predecessors: [PR5294 実P/η/εと原始ΦΓΛ成分式, G-134 支持自由chainと双対, G-133 zeroExtension/端homology]
+  milestone: GOAL A・設計README§4の原始退化部分複体と商双対・同じ標準短完全列
+  proof_obligations: [Ev/Fv/FmからL生成, 原支持chainの部分複体と比較での零像, 実ε像とLのannihilator同定, 商chain双対と独立Pの同型, Q=L双対と標準短完全列, H0LとH0Q零性]
+  exit_criteria: [指定L0/L1/L2と原支持chain包含・微分可換・Mによる零像, 全三次数で実ε像が指定Lをannihilateする全cochainに一致, 独立Pと商chain双対の同じ評価写像による複体同型, 全整数次数の標準短完全列が同じεと制限射で成立, 原始d1L1=L0からH0L=0と標準H0Q=0]
+  selection_reason: κ/Rとτの一般混在完全列が依存する実Lと標準短完全列を先に生成し、次数別ε単射をH1へ接続できる経路を固定する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [DegenerateCells.lean, DegenerateSubcomplex.lean, EvaluationAnnihilator.lean, DualShortExact.lean]
+  risks: [LをΦ直和へ置換しない, Pを商dualから定義し直さない, annihilator逆方向と全整数次数を省略しない, exactnessやH0零性を入力fieldへ移さない]
+  unchecked: [L/商dual/標準短完全列/H0零性は未実装, κRτ以降と全W]
+```
+
+Cycle 4 selectionは実装前の記録である。固定GOAL・設計・共通基準を変更せず、
+同じ任意M・任意Aと細選択π⁻¹Aで全終了条件の放電を進める。
+
+## Cycle 4 implementation result（正式査読前）
+
+元の終了条件をすべて維持し、任意の原始Mと任意Aについて次の証拠を構成した。
+
+| 終了条件 | Lean証拠 |
+| --- | --- |
+| 指定Lと原支持chainの部分複体、Mの零像 | `degenerateL0/1/2`、`degenerateBoundary1/2`、`degenerateChainInclusion`、`degenerateChainInclusion_mono`、`degenerateChainInclusion_comparison_zero` |
+| 実ε像が指定Lのannihilator全体 | `restriction0/1/2_zero_iff`、`evaluation0/1/2_preimage_of_restriction_zero`、`evaluation0/1/2_range_eq_ker` |
+| 独立Pと同じ原支持chain商双対の複体同型 | `quotientChainProjection`、`quotientChain_d10/d21`、`evaluationQuotientDual0/1/2_mk`、`evaluationQuotientDualStandardIso` |
+| 全ℤ次数の同じεと制限による標準短完全列 | `evaluationRestriction_degreewise_shortExact`、`evaluationRestriction_shortExact` |
+| 原始境界の全射性から標準H₀L/H⁰Q零性 | `degenerateBoundary1_surjective`、`degenerateChain_H0_isZero`、`restrictionComplex_d0_injective`、`restrictionComplex_H0_isZero` |
+
+L₁は垂直辺だけでなく混在面の全境界を含む。次数1の逆像は原始L₁閉条件から
+Γの二端点一致を導き、その全incidenceで値を降ろし、既存の実Kan係数同型へ戻す。
+次数0では垂直辺閉条件から全Φ incidenceへ下降し、次数2ではΛの全持ち上げ値を使う。
+商双対同型の各次数は全chain代表元で同じεを評価し、二微分の可換式から
+標準複体同型を構成する。商射の包含零性と原MによるLの零像も標準chain射として成立する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原始Ev/Fv/Fmから指定L、原K′への標準包含とMによる零像、実ε像の両包含、同じK′/Lと独立Pの標準双対同型、Q=L双対と全ℤ次数の標準短完全列、標準H0L/H0Q零性を構成
+  exit_criteria_status: [五条件すべて入力生成Lean証拠あり・正式PR監査待ち]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [DegenerateCells.lean, DegenerateSubcomplex.lean, PrimitiveDescent.lean, DualRestriction.lean, EvaluationAnnihilator.lean, DegenerateChain.lean, DualShortExact.lean, QuotientDual.lean, QuotientChain.lean]
+  claim_mapping:
+    source_labels: [GOAL A, 設計README§4]
+    conjuncts: [上の終了条件対応表]
+    undischarged_assumptions: []
+    acceptance_point: 指定Lと独立Pを任意M・任意Aで同じ実評価と標準短完全列へ接続する五条件の放電
+    port_status: unported
+  target_state: target-proof-checkpoint
+audits:
+  premise_delta:
+    discharged: [原始退化分類からL生成と境界安定性, ΦΓの全incidence下降から実ε像の逆包含, 同じεのcochain条件から商双対同型, 体上のdualRestrict全射性, 原始L境界全射性から標準端homology零性]
+    remaining: [κとH1Lのcokernel同定, R=ker κ双対, τの代表元生成と標準連結射, B–Eと全W, 最終完了監査]
+  certificate_provenance:
+    discharged: [任意Mの原始Option像と既存支持chain微分だけから生成, generic quotientDualEquivOfRestrictionのhi/hz/hsは実ε単射・制限零性・入力生成逆像で各三次数放電, generic moduleShortExact補助の完全性と単射・全射性を実二射から各次数放電]
+    unresolved: []
+  proof_use:
+    used: [原始退化分類, 原支持chainのsquare-zero, 実counit評価と全三次数cochain条件, 原始ΦΓΛから実comma成分への同型, 原始境界全射性, mathlib dualRestrictとdualQuotEquivDualAnnihilator, G-133 zeroExtensionとoldH0Iso]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: 原始block分解からκ、H1L=cok κ、R、τを生成して一般混在完全列へ接続する
+```
+
+### Material premiseと受理spine
+
+- 本文由来: Source、qc/qf、h、Nc/Nf、原始 `IncidenceSupportedComparison M`、任意の台A。
+- 放電済み: Lの微分安定性・square-zero・Mの零像は原支持chainから生成。
+  実ε像の逆包含はΦ/Γ/Λ下降の上記三producer。商双対同型、短完全列とH₀/H⁰零性は上記終了条件表の宣言を使う。
+- generic補助の追加premiseは適用する実三次数ごとに放電した補助APIであり、固定目標の入力へ追加していない。
+- 受理spine候補は下の全175明示宣言。すべてResearch側であり、Formalへの移植は未実施。
+  GOAL全体の完了候補ではなく、正式PR査読でこの到達点の受理を判定する。
+
+- `DegenerateCells.lean`: `VerticalEdge`, `VerticalFace`, `MixedFace`, `DegenerateFace`, `degenerateFace_vertical`, `mixedFace_patterns`, `degenerateFaceEquiv`, `degenerateFaceEquiv_symm_val`, `verticalFace_edge_none`, `verticalFaceEdge`, `verticalFaceEdge_val`, `cellInclusion`, `cellInclusion_single`, `cellInclusion_injective`, `freeRange_le_iff`, `cellInclusion_range_mono`, `annihilates_freeRange_iff`, `verticalEdgeInclusion`, `verticalFaceInclusion`, `mixedFaceInclusion`, `degenerateFaceInclusion`, `verticalEdgeInclusion_single`, `verticalFaceInclusion_single`, `mixedFaceInclusion_single`, `degenerateFaceInclusion_single`, `verticalBoundary`, `verticalBoundary_single`, `verticalBoundary_inclusion`, `verticalEdgeInclusion_injective`, `verticalFaceInclusion_injective`, `mixedFaceInclusion_injective`, `degenerateFaceInclusion_injective`, `verticalFaceInclusion_range_le_degenerate`, `mixedFaceInclusion_range_le_degenerate`, `degenerateFaceInclusion_range_eq`
+- `DegenerateSubcomplex.lean`: `degenerateL0`, `degenerateL1`, `degenerateL2`, `mem_degenerateL0`, `mem_degenerateL1`, `mem_degenerateL2`, `degenerateL2_vertical_mixed`, `verticalEdge_range_le_L1`, `mixedBoundary_range_le_L1`, `degenerateL2_boundary_le`, `degenerateL1_boundary_eq`, `degenerateBoundary1`, `degenerateBoundary2`, `degenerateBoundary1_val`, `degenerateBoundary2_val`, `degenerateBoundary_square`, `degenerateBoundary1_surjective`, `verticalEdgeInclusion_map_zero`, `degenerateFaceInclusion_map_zero`, `degenerateL2_le_ker`, `degenerateL0_le_ker`, `degenerateL1_le_ker`
+- `PrimitiveDescent.lean`: `componentFunction`, `componentFunction_mk`, `phiEdgeVertical`, `phiEdgeVertical_val`, `phiFaceVertical`, `phiFaceVertical_val`, `verticalFace_vertex_values`, `phiCellValue`, `phiCellValue_chart`, `phiCellValue_edge`, `phiCellValue_face`, `phiCellValue_invariant`, `phiDescendedValues`, `phiDescendedValues_chart`, `gammaFace_edge_value`, `gammaCellValue`, `gammaCellValue_vertex`, `gammaCellValue_invariant`, `gammaDescendedValues`, `gammaDescendedValues_vertex`
+- `DualRestriction.lean`: `restrictionDifferential_square`, `restrictionComplex`, `restrictionComplex_d0_apply`, `restrictionComplex_d1_apply`, `restriction0`, `restriction1`, `restriction2`, `restriction0_apply`, `restriction1_apply`, `restriction2_apply`, `restriction0_surjective`, `restriction1_surjective`, `restriction2_surjective`, `restriction_comm0`, `restriction_comm1`, `restrictionHom`, `restrictionHom_f0`, `restrictionHom_f1`, `restrictionHom_f2`, `restrictionComplex_d0_injective`, `restrictionComplex_d0_ker`, `restrictionComplex_H0_isZero`
+- `EvaluationAnnihilator.lean`: `dualRestriction_eq_zero_iff`, `restriction0_zero_iff`, `restriction1_zero_iff`, `restriction2_zero_iff`, `restriction0_evaluation0`, `restriction1_evaluation1`, `restriction2_evaluation2`, `evaluation0_preimage_of_restriction_zero`, `gamma_closed_of_restriction_zero`, `evaluation1_preimage_of_restriction_zero`, `evaluation2_preimage_of_restriction_zero`, `evaluation0_range_eq_ker`, `evaluation1_range_eq_ker`, `evaluation2_range_eq_ker`
+- `DegenerateChain.lean`: `chainDegreeDifferential_out`, `degenerateDegreeObject`, `degenerateDegreeObject_out`, `degenerateDegreeDifferential`, `degenerateDegreeDifferential_square`, `degenerateChain`, `degenerateDegreeInclusion`, `degenerateDegreeInclusion_out`, `degenerateDegreeInclusion_comm`, `degenerateChainInclusion`, `degenerateChainInclusion_f`, `degenerateChainInclusion_comparison_zero`, `degenerateChainInclusion_mono`, `degenerateZeroShort`, `degenerateZeroScIso`, `degenerateZeroShort_exact`, `degenerateChain_H0_isZero`
+- `DualShortExact.lean`: `degreeMap_out`, `evaluation_restriction_standard_zero`, `evaluationRestrictionShortComplex`, `evaluationRestrictionShortComplex_f`, `evaluationRestrictionShortComplex_g`, `moduleShortExact_of_range_eq_ker`, `evaluationRestriction_degreewise_shortExact`, `evaluationRestriction_shortExact`
+- `QuotientDual.lean`: `quotientBoundary1`, `quotientBoundary2`, `quotientBoundary1_mk`, `quotientBoundary2_mk`, `quotientBoundary_square`, `quotientDualDifferential_square`, `quotientDualComplex`, `quotientDualComplex_d0_apply`, `quotientDualComplex_d1_apply`, `quotientDualEquivOfRestriction`, `quotientDualEquivOfRestriction_mk`, `evaluationQuotientDual0`, `evaluationQuotientDual1`, `evaluationQuotientDual2`, `evaluationQuotientDual0_mk`, `evaluationQuotientDual1_mk`, `evaluationQuotientDual2_mk`, `evaluationQuotientDual_comm0`, `evaluationQuotientDual_comm1`, `evaluationQuotientDualHom`, `evaluationQuotientDualHom_f0`, `evaluationQuotientDualHom_f1`, `evaluationQuotientDualHom_f2`, `evaluationQuotientDualHom_standard_isIso`, `evaluationQuotientDualStandardIso`, `evaluationQuotientDualStandardIso_hom`
+- `QuotientChain.lean`: `quotientDegreeObject`, `quotientDegreeDifferential`, `quotientDegreeDifferential_square`, `quotientChain`, `quotientChain_d10`, `quotientChain_d21`, `quotientDegreeProjection`, `quotientDegreeProjection_comm`, `quotientChainProjection`, `quotientChainProjection_f`, `degenerateChainInclusion_quotient_zero`
+
+### Cycle 4 validation
+
+各対象fileを個別に `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/<file>.lean` で確認した。
+9対象すべてerror/warning 0、全175明示宣言の `#print axioms` と各moduleのnamespace監査は標準三公理
+`propext` / `Classical.choice` / `Quot.sound` のみ。必要なimport cacheは対象単一fileの `lake env lean -o` で生成した。
+Research全体・aggregate root・全file loopのelaboration、`lake build`、Formal buildは未実施。
+
+| File | 明示axiom監査 | source SHA-256 | focused log SHA-256 |
+| --- | ---: | --- | --- |
+| `DegenerateCells.lean` | 35 | `c9cad1af21d5101deed727cc0f2d18184ae665cb10046e4cfd8af679c375c7f3` | `8e3082ad8b81b317e964e27a8d3766393283ad3c8ebf8ca7af9bdc45444daa10` |
+| `DegenerateSubcomplex.lean` | 22 | `273dd21044e3c5592cf3899110e304417da73dff65dc62409ac8fce5d3a7d77a` | `1f54cff87f9249cec8e1df08170c6c5de5f32edda0dd37f75e8f6540be5381a1` |
+| `PrimitiveDescent.lean` | 20 | `f21bf9484ab106ebfe726f9ca53d8e1073980d5b50de91f9ad57cc5ee2dfa831` | `e67b7a0820cdb9da6539b18ee802a7a7ac21f72d7a51ae4ebafe8c6c214654f3` |
+| `DualRestriction.lean` | 22 | `a8ff804a06a4eed304e9a5af50c04934ad7aefe815a9aa8a86b150b9efbd2b12` | `a7cfacee4e1b953ce20b878fe90717804696c776e24e8b6d7b9db47ccf57ded5` |
+| `EvaluationAnnihilator.lean` | 14 | `e240cdad380f4a7ecfd3c422183eab5b6197ad7443faf85ad7fec7cc1fea061b` | `f2a0690f6e56d68f45b4b00d9bd90b695bd13c6c80e681ec3dbb69ff82d91e28` |
+| `DegenerateChain.lean` | 17 | `72474e1b58b6db1aa8433c3eb6e762d64b64d0a210d55000dd00df6711b298c2` | `98f69b114dbd2c8fe05bb844fecfffce46719712b264e00811389b379f9b661c` |
+| `DualShortExact.lean` | 8 | `3df1d54b5218a2badc42bfca66050be08ed024b0b0d23c06997e61166caca64a` | `bb966c79f676b4155a2604b6344b9031eaa81c3a2b8477f369de903bd02fe14f` |
+| `QuotientDual.lean` | 26 | `cb16627ac7e803309250b0019d3f164af1b0a4520eb1168a87369643f0d1d7c9` | `9b61ca596fcc4ceb881377ec425cba845e0a17d44fff6238a852e3db3472969e` |
+| `QuotientChain.lean` | 11 | `6456d7ff9763088510514718cf7a63ad188aa1a21359aef84230de6e2728153d` | `677500ca4b32744c6e90e953f6e38aa6c595ecb1c4d7441c85fe1e42da5505ce` |
+
+### 実行継続時の差分保護
+
+元の専用worktreeの7未コミットfileは削除・reset・stashせず保護した。
+対象と一致する稼働プロセス、キュー、スレッド記録から別writerの所有者は特定できず、別実行の存在も確定しなかった。
+ユーザーの「このG-135証明スレッドのみ」という確認を受け、書込み先を新しい専用worktreeへ分離した。
+7fileはコピー前後のSHA-256一致を確認して引き継ぎ、以後の実装は新しいworktreeだけで行った。
+元のworktreeや稼働プロセスには変更・停止操作を行っていない。実行時の所有記録とコピーSHAはtask-local evidenceに残した。
+
+### 初回独立4査読とF1修正
+
+初回固定head `05d5b96150abfbca8594bafc432c025b1d98ccb7` への標準review-prから
+math-lean-reviewの新規数学A/B・Lean A/Bへ委譲した。
+[初回監査・4全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5295#issuecomment-6047386432)
+は数学2本No major findings、Lean2本Minor issues。中心finding 0、非中心F1は
+外部定義を直接展開する次数外ケースのAPI不足で、初回headはmergeしない。
+
+F1の6箇所を、基本計算API `chainDegreeDifferential_out`、`degreeMap_out`、
+`degenerateDegreeInclusion_out` と既存 `degreeObject_isZero` の使用へ置換した。
+追加3宣言も対象fileの明示公理監査へ収録した。旧172宣言のstatement、生成defの値、
+GOAL・設計・import方向を維持している。standard IsIsoとmono instanceの証明本体にも
+触れるため、直接対応の資格を推定せず、新規4laneの正式再監査（再実行1回目）で判定する。
+台帳status・全GOALのtarget-proof-checkpoint・completion_candidate:noは維持する。

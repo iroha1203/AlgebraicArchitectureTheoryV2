@@ -1057,3 +1057,12 @@ import ResearchLean.AG.AtlasCoefficientFiber.ConnectedFiber
 import ResearchLean.AG.AtlasCoefficientFiber.PhiComma
 import ResearchLean.AG.AtlasCoefficientFiber.LocalNaturality
 import ResearchLean.AG.AtlasCoefficientFiber.LocalEvaluation
+import ResearchLean.AG.AtlasCoefficientFiber.DegenerateCells
+import ResearchLean.AG.AtlasCoefficientFiber.DegenerateSubcomplex
+import ResearchLean.AG.AtlasCoefficientFiber.PrimitiveDescent
+import ResearchLean.AG.AtlasCoefficientFiber.DualRestriction
+import ResearchLean.AG.AtlasCoefficientFiber.EvaluationAnnihilator
+import ResearchLean.AG.AtlasCoefficientFiber.DegenerateChain
+import ResearchLean.AG.AtlasCoefficientFiber.DualShortExact
+import ResearchLean.AG.AtlasCoefficientFiber.QuotientDual
+import ResearchLean.AG.AtlasCoefficientFiber.QuotientChain
