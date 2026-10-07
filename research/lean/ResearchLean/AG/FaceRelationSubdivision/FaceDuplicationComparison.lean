@@ -58,6 +58,17 @@ def reverseSubsetHom (A : Set q.Target) :
 /-- 原始新sectionのfaceは旧面包含。 -/
 @[simp] theorem reverseComparison_face (f : N.nerve.FaceComponent) :
     (reverseComparison N F).faceMap f = some (.inl f) := rfl
+/-- 実subset比較の次数0は同じ頂点座標の恒等。 -/
+@[simp] theorem subsetHom_f0 (A : Set q.Target) (z : (N.targetSubsetComplex A).C0) :
+    (subsetHom N F A).f0 z = z := by
+  funext v
+  exact ((comparison N F).targetSubsetPullback0_apply A A (subset_compatible A) z v).trans (by rfl)
+/-- 実逆subset射の次数0も同じ頂点座標の恒等。 -/
+@[simp] theorem reverseSubsetHom_f0 (A : Set q.Target)
+    (z : ((supported N F).targetSubsetComplex A).C0) :
+    (reverseSubsetHom N F A).f0 z = z := by
+  funext v
+  exact ((reverseComparison N F).targetSubsetPullback0_apply A A (subset_compatible A) z v).trans (by rfl)
 /-- 実subset比較の次数1は同じ辺座標の恒等。 -/
 @[simp] theorem subsetHom_f1 (A : Set q.Target) (z : (N.targetSubsetComplex A).C1) :
     (subsetHom N F A).f1 z = z := by

@@ -4237,3 +4237,2885 @@ root の10新規moduleと6既存ownerの必要な個別targeted検証は成功�
 - blocking_findings: 独立PR gate前。
 - next_obligation: 参照基本変形§6の選択chain分解、H⁰同型/H²単射/非選択成分の対応、累積全固定targetの別4本完了監査。
 - GOAL active、Issue OPEN。全target完了とは判定していない。固定目標/恒久設計は不変。Formal移植/ArchSig実装は別であり、Research全体buildは未実施。
+
+## Cycle 14 — 面複製の原始chain分解と全目標完了候補
+
+### Cycle 13 receipt
+
+PR #5286 head `d9723aa7d1d25e5c305fe73035be2aa2d37a8536`、merge `0ebdcb672ba655f75622d0f9c7f16e6eb1827cc0`。独立4本初回・有資格直接対応確認を経て [最終受入れ](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5286#issuecomment-6029666115) は選定W2a–cの proof-obligation-discharged。212標準公理・16hash・2232manifest・scanと修正head全8CI通過。Formal build/kernel/premise skipped、Research全build未実施。Issue #5272 OPENへ同期済み。
+
+### Selection（実装前固定）
+
+- ledger_type: `target_cycle_result`; goal: G-134; cycle: 14; tracking_issue: 5272
+- goal_blob_sha: `28cbf1944d708b059cd8c4fd22f07cd8d5e1476c`
+- base_oid: `0ebdcb672ba655f75622d0f9c7f16e6eb1827cc0`
+- proof_state_ref: Cycle1–13とIssue #5272の受理記録。固定T0/A–D/W1–W3の既受理nodeを再利用し、E参照基本変形§6の残余を閉じる。
+- proof_dag_predecessors: C1–C10一般比較/有限合成、C11 FaceDuplication Geometry/Comparison/DegreeTwo/Homology/Law/SeparationとW3、C12 W1、C13 W2、G133 EndpointNaturality/CochainEquivalence/Law分解。各受理refと使用sourceは既存台帳に固定。
+- milestone: §6の同じ原始面複製について、選択chain基底 fresh−F による K′=K⊕Q[2]、r=第一射影、非選択K′=Kを構成し、その同じ実subset/Law/block比較のH⁰同型・H²単射を閉じ、C11の同じH¹/H²余核Qと接続する。全固定targetのcompletion candidateを準備する。
+- proof_obligations: 原始basis r/sと選択chain同定、明示split/inverseと微分、非選択全三成分同値、実H⁰ inverseと標準自然性、H²実射の左逆/単射、独立Law/blockのwhole-three fiber/family正方形による同じ標準endpoint、累積全target/全material premise/全direction/全declaration axiom対応。
+- exit_criteria: 選択split正逆とbasis/differential/projectionがactual原始r/sに一致する；非選択全chain/cochain成分が同じ比較で同型；同じ実subset・各ラベル・全Law H⁰射がbijective/H²射がinjective；既受理H¹とH²余核Qとの同じ射の対応を固定；全T0/A–E/W1–W3/完了条件1–4の累積対応、premise/DAG/hash/axiom/scanを固定し、別の全目標4本完了監査へ送れる。
+- selection_reason: 最後の指定構成式から次数別診断への残余接続を放電し、固定目標全体を独立判定可能にする。
+- expected_result_type: `proof-obligation-discharged`; completion_candidate予定: yes（全証拠を満たす場合だけ）。
+- lean_targets: FaceDuplicationChainSplit / FaceDuplicationEndpoints / FaceDuplicationAbsent / FaceDuplicationLawEndpoints と必要な既存owner公開API。
+- risks: 抽象次元で原始splitを代替しない、Law射を同型の共役から定義しない、hF非選択を忘れない、whole-three r/s equalityを落とさない、既受理部分を一覧だけで完了にしない。
+- unchecked: このcycleの構成・検証、PR独立gate、別の全目標4本完了監査。固定GOAL/設計は変更しない。Formal未移植、ArchSig別範囲。
+
+### Cycle 14 構成・同じ実射・前提
+
+| 固定参照§6・Eの残余 | 現在のLean構成と証明使用 |
+| --- | --- |
+| 原始支持chain r/s | `FaceDuplication.chainR2/chainS2` は原始新比較の `basis2.selected` から生成。基底APIはfold/旧包含を読む。`chain_dual_comparison/chain_dual_section` は全三成分で独立実subset射と同じ。次数0/1の同じ原始rは恒等、低次微分も同じ |
+| 選択K′=K⊕Q[2] | `extraChain` はfresh−oldF、`chainR2_extra/chainD2_extra` は像/境界零。`freshCoefficient` はfresh実係数、`freshCoefficient_extra=1`、旧包含の係数0。`chain_split_reconstruct` は全旧/fresh基底を実評価。`chainSplit` はfold×fresh係数と、旧包含+係数×extraの明示両逆 |
+| 同じr=第一射影・微分 | `chainSplit_fst/snd/symm`、`chainSplit_differential`。`chainD2_projection` は同じ原始comparisonのchain可換式を次数1恒等で読む。低次恒等と追加基底の零境界によりdegree2だけのQ直和。期待rankなし |
+| 非選択K′=K | `oldFace_foldFace_absent` はfresh選択が原始hF否定と矛盾することを示す。`chainS2_chainR2_absent/absentChainEquiv`、`subset_reverse_comp/reverse_subset_comp_absent` は同じ二射の全三成分、`absentCochainEquiv_toHom/absentZeroExtensionIso_hom` は同じ実生成射。`absent_homology_bijective` は全整数次数 |
+| 同じ実H⁰同型・H²単射 | ownerの `subsetHom_f0/reverseSubsetHom_f0/reverseSubsetHom_f2`。`subsetH0Equiv` は同じ実核二射の両逆。`reverse_oldH2_comp` は実終端商で同じsection左逆。`oldH2_injective`、`subsetStandardH0Equiv_apply/bijective/subsetStandardH2_injective` はG133端次数自然性で同じ標準零延長射へ接続 |
+| 独立実block・全Law | owner `lawBlockSelectedSubsetHomology_natural` は全三成分平方を全整数次数の点自然性へ移す。`block_endpoint_natural`、`blockStandardH0_bijective/Equiv_apply`、`blockStandardH2_injective`、`lawStandardH0Equiv_apply/bijective/lawStandardH2_injective` は同じ独立生成blockHom/lawHomへ適用。`blockAbsent_bijective` は非選択ラベル全整数次数 |
+| C11の余核Q・H¹・錐との接続 | 全endpointが同じ `subsetHom/blockHom/lawHom` を使う。C11 `subsetH1Equiv_toLinearMap/blockH1Equiv_toLinearMap/lawH1Equiv_toLinearMap`、`oldH2CokernelEquiv_mk/standardH2CokernelEquiv/blockStandardH2CokernelEquiv/coneH2Equiv/blockConeH2Equiv` の同じ射にH⁰同型/H²単射を加える。非選択全次数同型と選択余核Qを混ぜない |
+
+material premiseは、任意supported nerve・原始F・任意A・有限Source/Reading/有限発生Law/adequacy/ℚをT0/Eのambient-boundaryに保持する。hF（面の台∩Aが非空）は指定した選択方向のdirection-hypothesis、¬hFは非選択方向の条件。どちらも相同型・診断値を入力しない。W3で選択hFを必要とする箇所はC11 `face_selected` が放電済み。
+
+生成必要条件はdischarge-requiredとして全て放電した: 原始r/sの支持→`IncidenceBasis.selected_basis2_eq` とK1、chain可換→同じcomparisonと`chainR1_eq_id`、extra境界零→`chainD2_projection/chainR2_extra`、split正逆→原始全基底評価、非選択fresh不存在→hF否定と選択セルの支持witness、H⁰両逆/H²左逆→実f0/f2式と実核/商、block/family正方形→C9同じ独立原始生成射と今回owner自然性。これらの各式は最終同値/単射/標準自然性へ実使用する。unused material premiseなし。
+
+今回の4新規moduleと3owner差分は62明示宣言。ownerは公開評価/自然性API4件の追加のみで、既存def値/instance/import/statementを変えない。外国semantic定義展開なし。今回の自己定義、公開API、標準Finsupp/LinearMap/LinearEquiv/商の操作を使う。既受理C1/C2/C3/C9/C11とG133の現在statement/必要定義/適用引数を確認し、受理refは各cycle receipt/台帳を使用する。標準Lean4.28.0・mathlib固定版は変更しない。
+
+### 全固定targetの累積証拠対応
+
+次表は固定GOAL active版と設計4文書の全要求に対する現在の証拠経路である。旧cycleのresultやPR merge自体を数学証拠にせず、現在sourceの構成・statement・使用引数を対象とする。全宣言と現在source hashは下の累積spineへ固定する。
+
+| 固定条項・方向 | 現在の証拠群（全名前は累積spine） | 受理された依存node |
+| --- | --- | --- |
+| T0 幾何→K0/K1/K2と微分/双対 | `SupportedChain` のK0/K1/K2、chainD1/chainD2、chainD1_comp_chainD2、chainD1_dual/chainD2_dual；`RawSupportedChain` の支持有限和とselected_rawD1/2 | C2 |
+| T0 任意有限Law・全発生ラベル・細adequacy | `SourceLawCoordinates/SourceSupportedBasis/MixedLawFiniteCoordinates`、新比較のadequate_of_coarser、原始有限列のcoarser。Value型有限を要求しない | C1/C6/C10 |
+| T0 全A/空A/空台/空Source/空Law | `SupportedBasis` の選択と支持包含；`MixedSelectedBasis/OperationPathRestriction/RawHomotopyRestriction`。任意Source・chart/edge/face全セルの量化に非空追加なし。空SourceはchartSupport_nonemptyからchart不存在、nil恒等を許す。W1Subsetの空A零、W2C実空辺座標 | C2/C9/C10/C12/C13 |
+| A 原始混在退化条件→実chain/Law/subset三射 | `IncidenceComparison/IncidenceBasis/GeneratedComparison/LawBlockComparison/SubsetComparison`。primitive Option各像と符号付きZ自由群零をℚ chain可換/実D1へ導出 | C1/C2 |
+| A 恒等/Option.bind/全三成分/H¹合成 | `IncidenceComparison/GeneratedComposition/SubsetComposition`、generatedComparison id/comp、block/fiber/実H¹一致 | C1/C9 |
+| A 旧埋め込み/旧生成Hom・block・subset・H¹ | `HereditarySpecialization/HereditaryDiagnostics`。primitive ofHereditary、全三成分同一性とsame H¹/標準射/欠損/錐。単に対象同型ではない | C1/C9 |
+| A comm1失敗例の原始排除 | `IncidenceObstruction` は既存DegenerateFaceComm1Obstruction入力で符号付きセル像の非零を証明；W1の面あり退化比較は旧各辺none条件不成立を実評価 | C1/C12 |
+| B 三角形追加fresh/K1/端点/全旧面/全r/s/h | `TriangleGeometry/TriangleContraction/ElementaryLawMaps/ElementaryBlockHomotopy/ElementaryDiagnostics`。v′/c台S(v)、e2/f台S(e)、old恒等、h0(v′)=c/h1(e2)=f、全基底rs=1/sr補正 | C1/C2/C6/C7 |
+| B 面付き辺分割/各出現/三重loop/全符号 | `EdgeSubdivision/EdgeContraction`。Occurrence=(F,i)、中心番号保持、fresh対角/三角別名。s(e)=c+b、s(F)=center+Σσt、h1(d)=−t、h1(b)=0；全選択支持r/s/hとchain式 | C2/C6/C7 |
+| B 原始逆pattern全接続/復元/同じ逆比較 | `PrimitiveTriangleInverse/PrimitiveSubdivisionInverse/PrimitiveCellDeletion/CellPresentationEquiv/SubdivisionReconstruction`、`TriangleInverseContraction/SubdivisionInverseContraction/InverseLawContraction/InverseRawTargetConnection/InverseRawLawConnection` | C4/C8/C10 |
+| B reading逆像/表示変更 | `ReadingPullback/CellPresentationEquiv/CellRename/LawPresentation`、`PresentationRawConnection/PresentationRawTargetConnection/PresentationRawSymmetry`。reading比較因子の全射でchart台/全セル選択同値、零ホモトピーと実独立Law比較 | C3/C10 |
+| B 全次数同値/同じH⁰/H¹/H² | `ThreeHomotopy/SubsetContraction/ElementaryLawHomotopy/ElementaryBlockHomotopy/HomotopyDiagnostics/InverseLawContraction/MixedSubsetHomotopy/RawLawHomotopy/RawBlockHomotopy` の実二射・全整数標準同型 | C2/C7/C8/C10 |
+| B §7指定lift/境界補正/同じH¹/任意前後列 | `LiftVariation/TriangleLift/SubdivisionLift/CocycleNormalization/LawLiftVariation/ElementaryLawLift/LawCocycleNormalization/RawLiftContext`。指定f/−toと支持を使う実t、potentialでc零とe2旧値、actualHom等号/商類 | C5/C8/C10 |
+| C 任意原始有限列/直接有限和/逆/両補正 | `PrimitiveOperationPath/ElementaryRawEquivalence/PrimitiveOperationPath/PresentationRawConnection/RawChainEquivalence/RawMapComposition/RawCompositionLaws`。nil/snoc全長、r01r12/s12s01、h12+s12h01r12、k01+r01k12s01 | C10 |
+| C 空列/恒等/括り直し/全計算成分transport | `RawCompositionLaws/OperationSubsetFunctor/OperationPathFunctor`。全10原始成分、実subset/Law全三次数、A逆像等号transportとsame generated map | C10 |
+| C A⊆B 比較・逆・両ホモトピーの自然性 | `SupportRestriction/SubsetRestriction/ComparisonRestriction/MixedRestrictionHom/OperationPathRestriction/HomotopyComponentNaturality/RawHomotopyRestriction`。全標準整数成分と旧H¹、r/s/h/k同じ制限 | C9/C10 |
+| C 実全Law H¹同型/核余核00/同じ標準錐全次数零 | `OperationPathDiagnostics/RawBlockDiagnostics/RawLawHomotopy/RawBlockHomotopy`。actualgeneratedr/sの旧H1/標準全n同型、実blockDefect、同じmappingCone acyclic | C7/C8/C10 |
+| C G133合成錐API | `OperationPathFunctor` は実Law段階合成等号をcompositionTriangle/Distinguishedへ渡す | C10/G133 |
+| D Source→Reading→Law→CellCoordinate/K1→D0/D1→同じ比較 | `LawFiniteCoordinates/LawFiniteDifferential/LawFiniteHom/LawFiniteBlock/LawFiniteFiber/LawFiniteOption/LawFiniteIdentities/SourceLawCoordinates/MixedLawFiniteCoordinates/MixedLawFiniteHom`。r/s/hを原始有限和から独立Law座標へ生成 | C6/C10 |
+| D fiber全三成分・既存H¹・標準零延長/自然性 | `LawFiberBridge/LawFiniteOption/MixedLawBlockHom/RawLawHomotopy`。independent生成Hom等号/whole-three正方形、same h1Map/oldH1Equiv_natural、全整数homology自然性 | C3/C6/C7/C9/C10 |
+| D 新比較用Law分解/欠損/錐/旧特殊化 | `LawComparisonDecomposition/LawComparisonDefect/LawComparisonCone/LawComparisonFiberDiagnostics/HereditaryDiagnostics/MixedLawDecomposition/OperationPathLawBlocks`。same実核・余核族/欠損和、同じ錐ラベル族・直和と全nprojection | C9/C10 |
+| E 面複製原始入力/全A各LawH¹ | `FaceDuplicationGeometry/Comparison/Law`。old恒等/fresh→F、K1台、全A実H1二射inverse、全ラベル/全Law実h1Map同一 | C11 |
+| E 参照§6 選択split/非選択恒等/H⁰/H²単射 | 本Cycle14の `FaceDuplicationChainSplit/Endpoints/Absent/LawEndpoints`；同じr/s/独立Law射への全成分・全整数接続 | 本Cycle14 |
+| E 選択H²余核Q/同じconeH²Q/強変形との区別 | `FaceDuplicationDegreeTwo/Homology/Law/Separation`。fresh−F差の核=実f2像、surj、実d1像包含、old/standardH2余核Q、sameconeH2Q、fresh単独非零/実H2非surj/not_homotopy_equivalence | C11 |
+| W1 真のreading/nonconstant/非零loop同じ成分 | `WitnessOneInput` とConnectedFaceWitness。6Source粗Boolと細(0,1,2)、非定数Law、全台、v接続k-loop、actualreading逆像三角追加 | C11/C12 |
+| W1 面だけ除くpaired samecomparison | `WitnessOneComparison` minus primitiveとplus包含j、rminus=rplus j全三成分block/Law/subset、sameoldedgepointmap。二細辺同粗辺/C5条件不成立/旧hereditary不能 | C12 |
+| W1 面ありH¹identity/面なし増分余核Q・全LawQ² | `WitnessOnePeriods/PeriodMaps/Cokernel/Diagnostics/Subset`。実old/plusQ、minusQ²、oldk→(k,0)、actualk非零、e2単独minus余核1/plus非cocycle、ラベルを別々に保持。全subset/空Aも同じ射 | C12 |
+| W2a 指定各台/face中心/αβ選択/βcのみ/同じk類 | `WitnessTwoAInput/APeriods/ALoop`。chart=[univ,α,univ]、edge=[α,univ,α,univ]、faceα、α actualfullgeometry、β actuala/k C1と空face/具体potential、actualold/fine k period1・比較恒等・全fine生成セルでk以外零 | C13 |
+| W2b loop三出現/符号section/h1di=-ti/同じk | `WitnessTwoBInput/BPeriods/BLoop`。Occurrence≃Fin3と別名inj、F=(e,e,e)、sF=center+t0−t1+t2、actuald0=0/d1=e、samek period/非零/各fineセル評価 | C13 |
+| W2c singleton反対台/空旧辺/β恒等/H¹零 | `WitnessTwoCInput`。旧edge台空、c/freshのみα、b空、Occurrence空、同じh0=c、βsameidentity。全label actualC1 IsEmpty→old H1零、sameblockH1iso→fine零 | C13 |
+| W2 同じ全A/Law実生成経路/診断 | `WitnessTwoDiagnostics`。全A同じr/s/h式、whole-threeactual独立Law/block/fiber等号、samehomology map全n、H¹欠損00・samecone全n零；W2C全Law H¹零 | C13 |
+| W3 同じ連結原始非零H¹/面複製/非零H²余核 | `ConnectedFaceWitnessInput/WitnessThreeInput/Periods/DegreeTwo/Diagnostics`。実potential→actualkperiodQ、sameh1identity、oldH2零/fineQ、actualfresh単独余核1、二ラベルQ²。一般E適用hFを全台とnonemptyfiberから放電 | C11 |
+| 完了条件1–4 | 全上記条項は同じ現在sourceへ対応。Research領域、report宣言/前提出所/使用/固定例、全成分/旧特殊化/支持制限/有限合成を保持。W1のpaired射や連結成分、W入力/量化/仮定を変更せず、設計4文書は固定bytes | 全cycle累積・別完了監査対象 |
+
+### 全material premiseの累積分類・proof-use
+
+| 前提 | 役割・状態 | 出所→構成・保存則への使用 |
+| --- | --- | --- |
+| 有限Source/全射Reading/有限supported nerve/非空chart/K1/ℚ | ambient-boundary / justified-boundary（一般）；Wではdischarged | 既存型/原始W input→有限自由セル/D0D1/支持選択。指定Wは原始有限型、chartSupport非空、face番号の証明 |
+| 任意有限Law族/粗adequacy | ambient-boundary / justified-boundary；細adequacyとWadequacy discharged | Reading/Lawのdescend、adequate_of_coarserと各入力adequate→same発生値/CellCoordinate。Value型有限に置換しない |
+| AのOption/原始incidence/chart支持 | direction-hypothesis / justified-boundary；B/Wでdischarge-required / discharged | IncidenceSupportedComparison primitive全field、各操作geometry表→signedchain/実D1可換、混在退化零。comm1反例では条件失敗を証明 |
+| fresh・指定台・逆patternの全接続 | ambient-boundary（許容原始pattern）；出力discharged | Sum/Occurrence別名、K1、Primitive*Inverse全接続、restore/presentation→same正表と順逆actual比較 |
+| r/s/h/kとchain式・全次数同値 | discharge-required / discharged | 各基底表→全A支持map/三chain可換/六補正式→実subset/Law二射・標準Homotopy・allniso。finitepath帰納で生成、inputfieldにない |
+| 支持制限/reading輸送 | discharge-required / discharged | 原始support非零項とSource pullback→selected/maps-to、A包含B/inverseimage、全成分r/s/両Homotopyの自然性 |
+| 独立Law有限和/whole-threefiber/family正方形 | discharge-required / discharged | 非零原始Source項→sameLaw/value coordinate→actualD0/D1→samegeneratedr/s/h→実H¹・標準・欠損・錐。対象同型から射を定義しない |
+| G133旧API→新比較のsame射接続 | discharge-required / discharged | ofHereditary全成分一致、C9/C10newfiber/family/標準square→same h1Map/oldH1Equiv/実錐/合成三角 |
+| 任意有限列・空列・括り直し | ambient-boundary（原始有限列）；出力discharged | PrimitiveOperationPath nil/snoc、actualr/s/h/k再帰・全十成分associativity/transport→same独立生成実比較、diagnostics |
+| 指定lift的方向補正 | discharge-required / discharged | f/−toの支持保存、実際δtとtδ、c-potential→samecocycle/H¹readback、任意前後列context |
+| E選択hF / 非選択¬hF | direction-hypothesis / justified-boundary；W3hF discharged | 原始台選択witness/否定→freshセル/extra split又は排除、実H²Q/非選択allniso；W3face_selected原始全台 |
+| E端次数差kernel/surj・D1像包含・leftinverse | discharge-required / discharged | actualfresh/旧restrictionとcomm1/旧f1identity→同じ余核Q；sameprimitive r/s→split、H⁰/H²actual endpoint |
+| W非定数/連結/非零loop/三重出現/空台/paired実射/actualperiod・余核 | discharge-required / discharged | 各固定原始W input・actualpotential・actualk/fresh/e2単独cochainと原始評価→同時成立条件。別成分・任意行列・expectedrankに置換しない |
+| conclusion-equivalent-risk | 該当する未放電行なし | 相同型/vanishing/診断rank/chaincertificateを操作のinputに移さない。出力recordの全fieldは原始構成と使用に到達する |
+
+累積route/field/非空虚性は、上の原始構成→同じ実射→診断の経路で検査する。各cycleの現在使用箇所と受理ref/版を照合して追跡完了し、基盤ライブラリや受理済みpredecessor内部の履歴を再認定しない。非自明性は指定W1/W2a/b/W3のactualperiod1、fresh/e2余核1、samecomponentの原始辺接続で示す。空成分の零性と未測定を混ぜない。
+
+### Cycle 14 explicit spine
+
+```text
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldFace_foldFace_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainS2_chainR2_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentChainEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentChainEquiv_toLinearMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverse_subset_comp_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentCochainEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentCochainEquiv_toHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentZeroExtensionIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentZeroExtensionIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absent_homology_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainS2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR2_chainS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chain_dual_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chain_dual_section
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR0_eq_id
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR1_eq_id
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainD1_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainD2_projection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.extraChain
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.extraChainMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR2_extra
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainD2_extra
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.fresh_ne_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient_fresh
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient_extra
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient_chainS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chain_split_reconstruct
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit_fst
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit_snd
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit_symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit_differential
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseSubsetHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseSubsetHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subset_reverse_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverse_oldH0_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldH0_reverse_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetH0Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetH0Equiv_toLinearMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverse_oldH2_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldH2_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetStandardH0Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetStandardH0Equiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetStandardH0_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetStandardH2_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.block_endpoint_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH0_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH0Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH0Equiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH2_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH0Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH0Equiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH0_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH2_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockAbsent_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockSelectedSubsetHomology_natural
+```
+
+### Cycle 14 source hashes
+
+```text
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	10	a3821acb78acce25724a000030772892a1850f3ef6b7dabf4c079e55378a444a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	27	b65e6ff0a1140fe4b767cda94c44c4fda22630d2b42ac560701c9f28f4b4a74d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	2	b44a566f983f0057e7a14ecbec79c60c1db1db0263c24978819deb69c6a844b0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	1	2bd520b41ddb0ca3b566346ed67516ae7e22da529f18487a003d454f9e2e5471
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	11	5784d286becba2885c6f65e25a9d336f0a71df25357c44c0510bbd7cda570221
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	10	133b34fa5c1379034d8df7a7af07153d3ce838c927d26a918170dd092aff0eed
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	1	1cdbb380aaf4d3c3caa643c0e60ccd132951d335da950757d4434d6d8ad4fb57
+```
+
+### 全固定target cumulative spine（明示2518宣言）
+
+```text
+research/lean/ResearchLean/AG/AtlasDefectComposition/ComparisonLaws.lean	AAT.AG.AtlasDefectComposition.cochainId_f0
+research/lean/ResearchLean/AG/AtlasDefectComposition/ComparisonLaws.lean	AAT.AG.AtlasDefectComposition.cochainId_f1
+research/lean/ResearchLean/AG/AtlasDefectComposition/ComparisonLaws.lean	AAT.AG.AtlasDefectComposition.cochainId_f2
+research/lean/ResearchLean/AG/AtlasDefectComposition/EndpointNaturality.lean	AAT.AG.AtlasDefectComposition.range_oldH2Map
+research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportIncidence.lean	AAT.AG.AtlasDefectComposition.fullBlockNamedEquivalence_e1
+research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportIncidence.lean	AAT.AG.AtlasDefectComposition.fullBlockNamedHomologyEquiv_apply
+research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportIncidence.lean	AAT.AG.AtlasDefectComposition.fullBlockNamedHomologyEquiv_oldH2_mk
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawCochainDecomposition.lean	AAT.AG.AtlasDefectComposition.lawFamily0Equiv_apply
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawCochainDecomposition.lean	AAT.AG.AtlasDefectComposition.lawFamilyCochainEquiv_f0
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawCochainDecomposition.lean	AAT.AG.AtlasDefectComposition.lawFamily1Equiv_apply
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawCochainDecomposition.lean	AAT.AG.AtlasDefectComposition.lawFamilyCochainEquiv_f1
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawCochainDecomposition.lean	AAT.AG.AtlasDefectComposition.lawFamily2Equiv_apply
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawCochainDecomposition.lean	AAT.AG.AtlasDefectComposition.lawFamilyCochainEquiv_f2
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawFiberDecomposition.lean	AAT.AG.AtlasDefectComposition.lawBlockFiberZeroExtensionIso_hom
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawFiberH1Family.lean	AAT.AG.AtlasDefectComposition.lawFiberH1FamilyEquiv_apply
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawH1Family.lean	AAT.AG.AtlasDefectComposition.lawH1FamilyEquiv_mk_component
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawStandardDecomposition.lean	AAT.AG.AtlasDefectComposition.lawZeroExtensionIso_hom
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawStandardDecomposition.lean	AAT.AG.AtlasDefectComposition.lawStandardHomologyEquiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.chartBlockCoordinateMap_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.edgeBlockCoordinateMapOption_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.faceBlockCoordinateMapOption_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.generatedBlockPullback0_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.generatedBlockPullback1_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.generatedBlockPullback2_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.generatedBlockComparisonHom_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.generatedBlockComparisonH1Map_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.identity_generatedBlockComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	AAT.AG.FaceRelationSubdivision.identity_generatedBlockComparisonH1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeSupport_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceSupport_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.subsetMapsTo
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.selected_iff
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.selectedEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.selectedEquiv_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartSelected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeSelected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceSelected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartSelected_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeSelected_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceSelected_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r0_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r0_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r1_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r1_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r2_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.inverse_comm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.cochainHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.homologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.homologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.oldH1ComparisonIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.oldH1ComparisonIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r0_symm_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r1_symm_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.r2_symm_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chainContraction_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.cochainHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.cochainHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.supported
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.chartSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.edgeLeft
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.edgeRight
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.faceEdge0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.faceEdge1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.faceEdge2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellRename.presentation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.no_presentation_with_incompatible_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_dual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_add
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_neg
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualSubsetHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_chainD1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualCellMap_chainD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualSubsetHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualSubsetHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	AAT.AG.FaceRelationSubdivision.dualSubsetHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedNewFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedNewFace_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.connectorOfFresh
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.connectorOfFresh_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.no_fresh_of_no_connector
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.freshPotential_zero_of_no_connector
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.cocycle_path
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.normalized_eq_readback
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.normalized_readback_class
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedOldEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedOldEdge_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedSecond
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selectedSecond_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rHom_connector
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rHom_second
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.sHom_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.normalized_connector
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.normalized_second
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selectedTriangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selectedTriangle_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.cocycle_path
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ComparisonRestriction.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.restrict_pullback0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ComparisonRestriction.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.restrict_pullback1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ComparisonRestriction.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.restrict_pullback2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ComparisonRestriction.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.subset_restrict_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ComparisonRestriction.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.subset_restrict_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.q
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.laws
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.adequate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.law_nonconstant
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.label
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.labels_distinct
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.labelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.labelEquiv_symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.labelEquiv_label
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.label_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.supported
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.edgeLeft
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.edgeRight
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.faceEdge0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.faceEdge1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.faceEdge2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.chartSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.loop_attached
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.connecting_edges
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.every_vertex_connected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ContractionTransport.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.renameFine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ContractionTransport.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.renameFine_rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.centerSection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.slotSection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.r0_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.r1_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.r2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s0_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s1_target_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s1_retained_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.centerSection_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.slotSection_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.h0_old_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.h0_new_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.h1_old_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.h1_segment_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.h1_diagonal_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rs0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rs1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rs2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.r_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.r_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.slot_boundary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.s_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.h1_center
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.sr_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.sr_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.sr_h2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.sHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selected_rs0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selected_rs1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selected_rs2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selected_sr_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selected_sr_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.selected_sr_h2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.cochainHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chainContraction_sHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.homologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.homologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.oldH1ComparisonIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.oldH1ComparisonIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceSlot
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceSlot_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceSlot_one
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceSlot_two
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.Occurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.RetainedEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.occurrenceFintype
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.retainedEdgeFintype
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.Edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.Face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.centerEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.centerEdge_left
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.centerEdge_right
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.supported
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chartSupport_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chartSupport_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeSupport_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeSupport_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeSupport_b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeSupport_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeSupport_center
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceSupport_center
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceSupport_triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chartImage
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeImage
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceImage
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeImage_center
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.collapse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.diagonal_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.triangle_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.retired_edge_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeLeft_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeRight_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeLeft_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeRight_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeLeft_b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeRight_b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeLeft_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeRight_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceEdge0_center
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceEdge0_triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceEdge1_center
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceEdge1_triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceEdge2_center
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceEdge2_triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chartImage_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.chartImage_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeImage_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeImage_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeImage_b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.edgeImage_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceImage_center
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.faceImage_triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.centerEdge_of_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.centerEdge_of_ne
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv_hom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.transportHomotopyEquiv_inv_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockR_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockR_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockR_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockS_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockR_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH1_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockH1_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.blockCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.subsetCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.subsetH1_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH1_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockH1_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.subsetCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.subsetH1_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.law_cochain_rs
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.law_correction0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.law_correction1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.law_correction2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_cochain_rs
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_correction0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_correction1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_correction2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.sLawFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_eq_variation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_eq_finite
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_h1_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_homologyMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.sLawFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_eq_variation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_eq_finite
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_h1_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_homologyMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.sSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_h1_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_h1_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH0_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawH1_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawR_h1_standard
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.lawS_h1_standard
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.sSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_h1_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_h1_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH0_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawH1_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawR_h1_standard
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.lawS_h1_standard
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_targetR_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_targetS_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_lawR_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_lawS_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_lawH0_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_lawH1_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_targetR_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_targetS_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_lawR_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_lawS_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_lawH0_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_lawH1_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawEquivalence_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawEquivalence_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EndCokernel.lean	AAT.AG.FaceRelationSubdivision.endCokernelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EndCokernel.lean	AAT.AG.FaceRelationSubdivision.endCokernelEquiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldFace_foldFace_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainS2_chainR2_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentChainEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentChainEquiv_toLinearMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverse_subset_comp_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentCochainEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentCochainEquiv_toHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentZeroExtensionIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absentZeroExtensionIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.absent_homology_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainS2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR2_chainS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chain_dual_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chain_dual_section
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR0_eq_id
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR1_eq_id
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainD1_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainD2_projection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.extraChain
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.extraChainMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainR2_extra
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainD2_extra
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.fresh_ne_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient_fresh
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient_extra
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshCoefficient_chainS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chain_split_reconstruct
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit_fst
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit_snd
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit_symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chainSplit_differential
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseComparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison_eq_ofHereditary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subset_compatible
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseSubsetHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseComparison_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseComparison_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseComparison_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseSubsetHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseSubsetHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f2_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverse_h1Map_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.h1Map_reverse_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetH1Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetH1Equiv_toLinearMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_eq_hereditary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.foldFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldFace_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.foldFace_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.foldFace_oldFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f2_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseSubsetHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.selectedFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.selectedFace_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshFace_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.foldFace_fresh
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.difference
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshOnly_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshOnly_fresh
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_freshOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.differential_range_le
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_d1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subset_reverse_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverse_oldH0_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldH0_reverse_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetH0Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetH0Equiv_toLinearMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.reverse_oldH2_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldH2_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetStandardH0Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetStandardH0Equiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetStandardH0_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetStandardH2_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.fold
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.supported
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.chartSupport_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.edgeSupport_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.edgeLeft_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.edgeRight_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.faceSupport_fold
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.faceSupport_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.faceSupport_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.collapse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.sectionMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.fold_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.fold_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.faceEdge0_fold
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.faceEdge1_fold
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.faceEdge2_fold
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.collapse_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.collapse_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.collapse_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.section_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.section_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.section_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.degreeTwoQuotientEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.degreeTwoQuotientEquiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldH2CokernelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.oldH2CokernelEquiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.freshOnly_cokernel_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.standardH2CokernelOldEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.standardH2CokernelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.coneH2Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockHom_eq_hereditary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.block_subset_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockH1Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockH1Equiv_toLinearMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawH1Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawH1Equiv_toLinearMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockConeH2Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH2CokernelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockOldH2CokernelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawConeH2Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH2CokernelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.block_endpoint_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH0_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH0Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH0Equiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH2_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH0Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH0Equiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH0_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH2_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.blockAbsent_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationSeparation.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.standardH2_not_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationSeparation.lean	AAT.AG.FaceRelationSubdivision.FaceDuplication.not_homotopy_equivalence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FiniteHomComposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basis_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FiniteHomComposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basis_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FiniteHomComposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FiniteHomComposition.lean	AAT.AG.FaceRelationSubdivision.raw_square_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FiniteHomComposition.lean	AAT.AG.FaceRelationSubdivision.finiteComp_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FiniteHomComposition.lean	AAT.AG.FaceRelationSubdivision.finiteComp_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FiniteHomComposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteHom_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	AAT.AG.FaceRelationSubdivision.fullSelected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	AAT.AG.FaceRelationSubdivision.fullSelected_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	AAT.AG.FaceRelationSubdivision.fullSelectedCochain
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	AAT.AG.FaceRelationSubdivision.fullSelectedCochain_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	AAT.AG.FaceRelationSubdivision.fullSubsetNamedEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	AAT.AG.FaceRelationSubdivision.fullSubsetNamedEquiv_e0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	AAT.AG.FaceRelationSubdivision.fullSubsetNamedEquiv_e1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	AAT.AG.FaceRelationSubdivision.fullSubsetNamedEquiv_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubsetComparison.lean	AAT.AG.FaceRelationSubdivision.fullSubsetNamed_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartCoordinateMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceCoordinateMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMapOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMapOption_eq_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMapOption_eq_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceCoordinateMapOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceCoordinateMapOption_eq_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceCoordinateMapOption_eq_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartCoordinateMap_edgeLeftCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartCoordinateMap_edgeRightCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartCoordinateMap_edgeLeft_eq_right_of_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMap_faceEdge0Coordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMap_faceEdge1Coordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMap_faceEdge2Coordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback2_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMapOption_faceEdge01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMapOption_faceEdge12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback_comm0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback_comm1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedComparisonHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedComparisonHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedComparisonHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedComparisonH1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartCoordinateMap_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMap_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceCoordinateMap_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.chartCoordinateMap_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.edgeCoordinateMapOption_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.faceCoordinateMapOption_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.generatedPullback0_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.generatedPullback1_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.generatedPullback2_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.generatedComparisonHom_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.generatedComparisonH1Map_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.identity_generatedComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.identity_generatedComparisonH1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.generatedComparisonHomFromCoarse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_chartCoordinateMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_edgeCoordinateMapOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_faceCoordinateMapOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_generatedComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_generatedComparisonH1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.hereditary_lawFamily_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.hereditary_lawZeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.hereditary_lawH1Defect_subset_sum
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.hereditary_lawSubsetConeFamilyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.hereditary_lawSubsetConeHomologyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditaryDiagnostics.lean	AAT.AG.FaceRelationSubdivision.hereditary_lawSubsetConeHomologyEquiv_component
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditarySpecialization.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_generatedBlockComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditarySpecialization.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_generatedBlockComparisonH1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditarySpecialization.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_targetSubsetComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditarySpecialization.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_aSubnerveComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditarySpecialization.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_aSubnerveComparisonHom_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditarySpecialization.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_labelFiberComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditarySpecialization.lean	AAT.AG.FaceRelationSubdivision.ofHereditary_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyComponentNaturality.lean	AAT.AG.FaceRelationSubdivision.homotopyComponent_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyDiagnostics.lean	AAT.AG.FaceRelationSubdivision.homotopyOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyDiagnostics.lean	AAT.AG.FaceRelationSubdivision.homotopyOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyDiagnostics.lean	AAT.AG.FaceRelationSubdivision.homotopyOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyDiagnostics.lean	AAT.AG.FaceRelationSubdivision.homotopyH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyDiagnostics.lean	AAT.AG.FaceRelationSubdivision.homotopyH1_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyDiagnostics.lean	AAT.AG.FaceRelationSubdivision.cone_homology_isZero_of_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyDiagnostics.lean	AAT.AG.FaceRelationSubdivision.homotopyCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basis0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basis1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basis2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basis0_image
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basis1_image
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basis2_image
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.selfSubsetMapsTo
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.selected_basis0_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.selected_basis1_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.selected_basis2_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.optionCell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.optionCell_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.optionCell_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.optionCell_incidence_iff
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.optionCell_incidence_bind
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.ofHereditary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.ext
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeSupport_compatible
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceSupport_compatible
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.comp_chartMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.comp_edgeMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.comp_faceMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.identity_chartMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.identity_edgeMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.identity_faceMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.comp_identity_left
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.comp_identity_right
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.comp_assoc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.ofHereditary_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceFullSupportPullback.lean	AAT.AG.FaceRelationSubdivision.fullBlock_pullback1_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceFullSupportPullback.lean	AAT.AG.FaceRelationSubdivision.fullBlock_pullback1_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceFullSupportPullback.lean	AAT.AG.FaceRelationSubdivision.fullBlock_pullback0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceFullSupportPullback.lean	AAT.AG.FaceRelationSubdivision.fullBlock_pullback2_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceFullSupportPullback.lean	AAT.AG.FaceRelationSubdivision.fullBlock_pullback2_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	AAT.AG.FaceRelationSubdivision.namedOptionPullback
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	AAT.AG.FaceRelationSubdivision.namedOptionPullback_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	AAT.AG.FaceRelationSubdivision.incidenceNamedHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	AAT.AG.FaceRelationSubdivision.incidenceNamedHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	AAT.AG.FaceRelationSubdivision.incidenceNamedHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	AAT.AG.FaceRelationSubdivision.incidenceNamedHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	AAT.AG.FaceRelationSubdivision.incidenceNamedHom_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceObstruction.lean	AAT.AG.FaceRelationSubdivision.degenerateFace_primitive_incidence_fails
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceObstruction.lean	AAT.AG.FaceRelationSubdivision.no_incidenceComparison_with_obstruction_maps
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawR_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawS_eq_finite
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawR_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawS_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.rSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.sSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawR_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawHomotopyEquiv_hom_formula
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawHomotopyEquiv_inv_formula
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseLawHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseLawHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseLawHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawR_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawS_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawR_cone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.lawS_cone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawR_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawS_eq_finite
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawR_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawS_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.rSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.sSubsetFiniteHom_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawR_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawHomotopyEquiv_hom_formula
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawHomotopyEquiv_inv_formula
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseLawHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseLawHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseLawHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawR_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawS_blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawR_cone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.lawS_cone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawLawConnection.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.triangleInverse_lawR_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawLawConnection.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.triangleInverse_lawS_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawLawConnection.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.subdivisionInverse_lawR_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawLawConnection.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.subdivisionInverse_lawS_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.triangleInverse_targetR_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.triangleInverse_targetS_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.subdivisionInverse_targetR_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.subdivisionInverse_targetS_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartCoordinateMap_lawValueLabel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeCoordinateMap_lawValueLabel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceCoordinateMap_lawValueLabel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartBlockCoordinateMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceBlockCoordinateMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMapOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceBlockCoordinateMapOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMapOption_eq_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMapOption_eq_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceBlockCoordinateMapOption_eq_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceBlockCoordinateMapOption_eq_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceMap_eq_some_of_faceBlockCoordinateMapOption_eq_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartBlockCoordinateMap_edgeLeftBlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartBlockCoordinateMap_edgeRightBlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartBlockCoordinateMap_edgeLeft_eq_right_of_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMap_faceEdge0BlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMap_faceEdge1BlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMap_faceEdge2BlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockPullback0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockPullback1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockPullback2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockPullback0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockPullback1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockPullback2_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockPullback_comm0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMapOption_faceEdge01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMapOption_faceEdge12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockPullback_comm1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedBlockComparisonH1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback0_block_component
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback1_block_component
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.generatedPullback2_block_component
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartBlockCoordinateMap_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMap_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceBlockCoordinateMap_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawCocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.law_cocycle_normalize
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawCocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.law_cocycle_readback_class
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawCocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedLawS_readback_class
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawCocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_cocycle_normalize
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawCocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.law_cocycle_readback_class
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawCocycleNormalization.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedLawS_readback_class
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonCone.lean	AAT.AG.FaceRelationSubdivision.lawComparisonConeFiniteBiproducts
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonCone.lean	AAT.AG.FaceRelationSubdivision.lawConeFamilyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonCone.lean	AAT.AG.FaceRelationSubdivision.lawConeDirectSumIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonCone.lean	AAT.AG.FaceRelationSubdivision.lawConeHomologyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonCone.lean	AAT.AG.FaceRelationSubdivision.lawConeFamilyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonCone.lean	AAT.AG.FaceRelationSubdivision.lawConeHomologyEquiv_component_family
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.LawMapDecomposition.family_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.LawMapDecomposition.zeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.LawMapDecomposition.standard_homology_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.LawMapDecomposition.h1_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawFamily_natural0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawFamily_natural1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawFamily_natural2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawFamily_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawZeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawStandardHomology_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.lawH1Family_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawH1Comparison_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawH1KernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawH1CokernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawH1KernelFamilyEquiv_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawH1CokernelFamilyEquiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawH1Defect_sum
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawStandardKernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawStandardCokernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawStandardKernelFamilyEquiv_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	AAT.AG.FaceRelationSubdivision.lawStandardCokernelFamilyEquiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawComparisonFiberFiniteBiproducts
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.labelFiberH1_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawFiberH1Comparison_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawFiberH1KernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawFiberH1CokernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawFiberH1KernelFamilyEquiv_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawFiberH1CokernelFamilyEquiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawFiberH1Defect_sum
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawFiberDefect_canonical
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawH1Defect_subset_sum
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawSubsetConeFamilyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawSubsetConeDirectSumIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawSubsetConeHomologyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	AAT.AG.FaceRelationSubdivision.lawSubsetConeHomology_dimension
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockFiber_comparison_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockFiberZeroExtensionIso_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockFiberConeIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawFiberComparison_canonical
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.subsetComparisonZeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockSelectedSubsetZeroExtensionIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockSelectedSubsetZeroExtensionIso_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockSelectedSubsetHomology_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockSelectedSubsetConeIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	AAT.AG.FaceRelationSubdivision.lawBlockCanonicalConeIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.lawBlockRead
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.lawBlockRead_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.blockFiberEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.blockFiberEquiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.blockFiberEquiv_read
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockCoordinate_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockCoordinate_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockBasis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockRaw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockRaw_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual_apply_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual_apply_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_block
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.blockFiber_d0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.blockFiber_d1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.lawBlockHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.lawBlockHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.lawBlockHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.lawBlockHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.blockFiniteHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.blockFiniteHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.blockFiniteHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.blockFiniteHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.blockFiniteFiber_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.blockFiniteFiber_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.lawFiniteBlock_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	AAT.AG.FaceRelationSubdivision.lawFiniteBlock_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate_law
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate_value
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawCoordinate_label
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBasis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawRaw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawRaw_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_apply_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_apply_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteDecompositionBiproducts
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFamily0Equiv_eq_read
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFamily1Equiv_eq_read
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFamily2Equiv_eq_read
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteFamily_natural0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteFamily_natural1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteFamily_natural2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteFamily_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteZeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteStandardHomology_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteH1Family_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteH1Family_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteKernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteCokernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteKernelFamilyEquiv_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteCokernelFamilyEquiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteDefect_sum
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteConeFamilyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteConeDirectSumIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteConeHomologyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteConeFamilyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	AAT.AG.FaceRelationSubdivision.lawFiniteConeHomologyEquiv_component
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDifferential.lean	AAT.AG.FaceRelationSubdivision.lawFiberRead_d0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDifferential.lean	AAT.AG.FaceRelationSubdivision.lawFiberRead_d1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDifferential.lean	AAT.AG.FaceRelationSubdivision.lawDual_rawD1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDifferential.lean	AAT.AG.FaceRelationSubdivision.lawDual_rawD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFiber.lean	AAT.AG.FaceRelationSubdivision.lawFiberRead
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFiber.lean	AAT.AG.FaceRelationSubdivision.lawFiberRead_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFiber.lean	AAT.AG.FaceRelationSubdivision.lawFiberRead_joint_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFiber.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_single_attached
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFiber.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.dual_selected_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFiber.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_eq_of_raw_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_add
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_neg
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.subsetFiniteHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.subsetFiniteHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.subsetFiniteHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.subsetFiniteHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiniteHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiniteHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiniteHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiniteHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiberHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiberHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiberHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiberHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiniteFiber_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.lawFiniteFiber_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteIdentities.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_comp_eq_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteIdentities.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_add_eq_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteIdentities.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawDual_add_add_eq_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.coordinate_eq_of_cell_label
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisLaw0_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisLaw1_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisLaw2_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisLawHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisBlock0_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisBlock1_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisBlock2_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisBlockHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLift_raw_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLift_raw_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHom_correction1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHom_correction2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHom_homologyMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	AAT.AG.FaceRelationSubdivision.lawLiftHom_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.coordinateEquiv_label
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCoordinateEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartBlockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartBlockEquiv_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain0_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeBlockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeBlockEquiv_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain1_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceBlockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceBlockEquiv_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain2_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochain2_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochainEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockCochainEquiv_toHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockZeroExtensionIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockZeroExtensionIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawH1Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawH1Equiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockH1Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockH1Equiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.blockHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberZeroExtensionIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberZeroExtensionIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fiberOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_sHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_sHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_sHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.liftHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_homologyMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.varyLift_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cocycle_normalize
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cocycle_readback_class
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	AAT.AG.FaceRelationSubdivision.subdivisionFinePeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	AAT.AG.FaceRelationSubdivision.retainedBlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	AAT.AG.FaceRelationSubdivision.retainedBlockCoordinate_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	AAT.AG.FaceRelationSubdivision.subdivisionFinePeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.labelFiber_source_preimage
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockCoordinate_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockCoordinate_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockBasis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockRaw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockDual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockRaw_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockDual_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_block
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBlockDual_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	AAT.AG.FaceRelationSubdivision.mixedBlockFiniteHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	AAT.AG.FaceRelationSubdivision.mixedBlockFiniteHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	AAT.AG.FaceRelationSubdivision.mixedBlockFiniteHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	AAT.AG.FaceRelationSubdivision.mixedBlockFiniteHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	AAT.AG.FaceRelationSubdivision.mixedBlockFiniteFiber_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteBlock_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	AAT.AG.FaceRelationSubdivision.mixedBlockFiniteFiber_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteBlock_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawCorrections.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLaw_correction_two
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawCorrections.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLaw_correction_three
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawDecompositionBiproducts
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteFamily_natural0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteFamily_natural1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteFamily_natural2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteFamily_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteZeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteStandardHomology_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteH1Family_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteH1Family_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteKernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteCokernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteKernelFamilyEquiv_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteCokernelFamilyEquiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteDefect_sum
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteConeFamilyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteConeDirectSumIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteConeHomologyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteConeFamilyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteConeHomologyEquiv_component
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDifferential.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.toSource_mixedLawCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDifferential.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.toSource_mixedLawDual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDifferential.lean	AAT.AG.FaceRelationSubdivision.mixedLaw_sourceD1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDifferential.lean	AAT.AG.FaceRelationSubdivision.mixedLaw_sourceD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawCoordinate_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawCoordinate_law
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawCoordinate_value
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawCoordinate_label
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawBasis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawRaw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawRaw_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawCoordinate_source
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_source
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_apply_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_apply_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_eq_of_raw_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_add
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_neg
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedLawDual_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.mixedLawFiniteHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawR_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawR_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawR_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawS_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawS_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawS_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawR_symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawS_symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetR_restrict_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetR_restrict_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetS_restrict_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetS_restrict_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.target_h0_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.target_h1_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.target_k0_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.target_k1_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedCell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedCell_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedBasis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedEmbed_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedEmbed_comm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedEmbed_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedDual_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected_eq_of_raw_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected_add
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.toSource_mixedSelected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedFunctor.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetCorrections.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedDual_correction_two
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetCorrections.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelectedDual_correction_three
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.mixedSubsetFiniteHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetRHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetSHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetRHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetRHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetRHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetSHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetSHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetSHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetRHom_symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetSHom_symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.target_correction0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.target_correction1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.target_correction2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetFineHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetFineHomotopy_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetTransport.lean	AAT.AG.FaceRelationSubdivision.subsetSourceTransportHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetTransport.lean	AAT.AG.FaceRelationSubdivision.subsetSourceTransportHom_rfl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetTransport.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetRHom_transport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetTransport.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetSHom_transport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSupportRestriction.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected_include_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSupportRestriction.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.mixedSelected_dual_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.rawEquivalence_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.append
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.append_nil
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.append_snoc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.nil_append
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.append_assoc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.rawEquivalence_append
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetSH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetSDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetSCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawSH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawSDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawSCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.targetSubset_nil
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.targetSubset_append
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawR_append
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawS_append
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawR_append_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawS_append_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawR_append_zeroExtension
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawCompositionTriangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawCompositionTriangle_distinguished
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawR_nil
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawS_nil
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.blockR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.blockS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.blockHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.blockHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.blockHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawR_block_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawR_block_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawRKernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawRCokernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawRDefect_sum
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawRConeFamilyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawRConeHomologyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.blockCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetR_eq_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetS_eq_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawR_eq_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.lawS_eq_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.targetSubset_mono
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetR_restrict_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetR_restrict_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetR_restrict_zeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetS_restrict_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetS_restrict_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetS_restrict_zeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationSubsetFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetR_nil
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationSubsetFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetS_nil
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationSubsetFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetR_append
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationSubsetFunctor.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.subsetS_append
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.singleton_selected_iff
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSelected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSelected_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSelectedCochain
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.commonPoint_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.commonPoint_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSubsetNamedEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSubsetNamedEquiv_e1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSubsetNamedEquiv_symm_e1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.self_factor_eq_id
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.self_preimage
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.linearEquiv_square_cast
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.linearEquiv_cast_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR0_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR1_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR2_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR0_symmSelf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR1_symmSelf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameR2_symmSelf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sameHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.inverseDual_eq_symmSelf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.comparison_comp_symmSelf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.symmSelf_comparison_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawZeroExtensionIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.presentationLawSection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.presentationLawSection_eq_finite
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.presentationLawSection_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.presentationLawSection_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.presentationLawSection_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	AAT.AG.FaceRelationSubdivision.presentationLawSection_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_lawR_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_lawR_zeroExtension
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_lawRS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_lawS_zeroExtension
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.source_support_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceForward
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceBackward
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceForward_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceBackward_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceS0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceS1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR0_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR1_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceS0_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceS1_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceS2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceForward_backward
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceBackward_forward
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.raw_inverse_comm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceRS0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceSR0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceRS1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceSR1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceRS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceSR2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceS_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceS_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_k0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_k1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawSymmetry.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_symmSelf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR0_eq_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR1_eq_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.sourceR2_eq_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_targetR_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawTargetConnection.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.rawEquivalence_targetS_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteOneEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteOneEquiv_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteOneEquiv_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteTwoEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteTwoEquiv_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteTwoEquiv_false
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteTwoEquiv_true
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteFamilyEquiv_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	AAT.AG.FaceRelationSubdivision.deleteFamilyEquiv_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.rawEquivalence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.rawEquivalence_triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.rawEquivalence_subdivision
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.rawEquivalence_triangleInverse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.rawEquivalence_subdivisionInverse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.rawEquivalence_presentation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.coarser
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.reading
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.rawEquivalence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.rawEquivalence_nil
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.rawEquivalence_snoc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.coarser
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.adequate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.targetSubset
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.targetSubset_eq_preimage
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.source_subset_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.subdivision
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.triangleInverse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.subdivisionInverse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperation.presentation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.nil
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.snoc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.occurrenceFintype
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.triangle_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.position_slot
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.position_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.removedEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.removedEdge_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.OldChart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.RetainedEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.OldFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.OldEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_ne_connector
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_ne_second
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_left
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_right
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_ne_connector
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_ne_second
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldLeftVertex
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldRightVertex
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldLeft
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldRight
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_of_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_eq_common_iff
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_of_no_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_left
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldSlot_right
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restoredNerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restored
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.commonEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restored_chartSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restored_commonSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.restored_faceSlot
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.positionFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.toOccurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.ofOccurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.ofOccurrence_slot
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.ofOccurrence_toOccurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.toOccurrence_ofOccurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.occurrenceEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.occurrenceEquiv_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.occurrenceEquiv_symm_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.OldChart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.OldEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.OldFace
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.retained_left
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.retained_right
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.retained_slot
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldLeft
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldRight
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldSlot
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restoredNerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restored
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restoredBase
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.vertex_ne_left
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.vertex_ne_right
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restored_chartSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restored_edgeSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.restored_faceSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation_old_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation_connector
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation_second
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.presentation_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.ofAddition
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.no_pattern_with_extra_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.double_addition_rejects_first_pattern
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockHomologyIso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockOldH1Iso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockOldH1Iso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockOldH1Iso_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockSH1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockSDefect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockSCone_isZero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockR
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockS
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockR_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockR_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockR_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockS_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockS_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockS_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockR_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockS_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.blockHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.composedH0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.composedH1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.composedH0_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.composedH1_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.composed_sr_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.composed_sr_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.composed_sr_h2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_k0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_k1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.ext
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_k0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_k1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_k0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.symm_k1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawCompositionLaws.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_assoc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawCompositionLaws.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.refl_trans
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawCompositionLaws.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.trans_refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawHomotopyRestriction.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetFineHomotopy_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawHomotopyRestriction.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetCoarseHomotopy_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawHomotopyRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.fineHomotopy_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawHomotopyRestriction.lean	AAT.AG.FaceRelationSubdivision.PrimitiveOperationPath.coarseHomotopy_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.law_correction0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.law_correction1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.law_correction2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawFineHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLawHomotopy.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLiftContext.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawLiftContextHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLiftContext.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawLiftContext_homologyMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLiftContext.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rawLiftContext_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLiftContext.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawLiftContextHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLiftContext.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawLiftContext_homologyMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLiftContext.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.rawLiftContext_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetRHom_trans
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetSHom_trans
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetRHom_refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.targetSHom_refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawR_trans
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawS_trans
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawR_refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.lawS_refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawNonvacuity.lean	AAT.AG.FaceRelationSubdivision.RawChainEquivalence.not_zero_chart_output
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.rightBasis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.leftBasis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.face0Basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.face1Basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.face2Basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.rawD1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.rawD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.rawD1_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.rawD2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.rawD1_comp_rawD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.selected_rawD1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.selected_rawD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.readingPullback
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.readingPullback_nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.readingPullback_chartSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.readingPresentation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.fineAdequate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.coordinateEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.coordinateEquiv_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.coordinateEquiv_law
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartCoordinateEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeCoordinateEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceCoordinateEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.chartCoordinateEquiv_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.edgeCoordinateEquiv_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.faceCoordinateEquiv_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain0_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain1_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain2_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochain2_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochainEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawCochainEquiv_toHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawZeroExtensionIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	AAT.AG.FaceRelationSubdivision.CellPresentationEquiv.lawZeroExtensionIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceReading
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceReading_read
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceAdequate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.lawDescend_sourceReading
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceCoordinateEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceCoordinateEquiv_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceCoordinateEquiv_law
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceCoordinateEquiv_value
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceCoordinateRead
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	AAT.AG.FaceRelationSubdivision.sourceCoordinateRead_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.sourceSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.mem_sourceSupport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.toSource
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.toSource_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.toSource_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.toSource_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.sourceD1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.sourceD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.sourceD1_eq_toSource
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.sourceD2_eq_toSource
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.sourceD1_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.TargetSupportedNerve.sourceD2_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	AAT.AG.FaceRelationSubdivision.readingPullback_source_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.chainContraction_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.sHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.sHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.sHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.sHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.cochainHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.cochainHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.cochainHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.homologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.homologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldH1ComparisonIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldH1ComparisonIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.collapse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.collapse_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.rHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.homologyIso_hom_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.oldH1ComparisonIso_hom_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseCochainHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseCochainHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseCochainHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseOldH1ComparisonIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.inverseOldH1ComparisonIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseInstances.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.centerEdge_eq_diagonal_iff
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseInstances.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.center_slot
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseInstances.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.center_not_connector_second
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseInstances.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.ofSubdivision
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseInstances.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.no_pattern_with_extra_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseInstances.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.addition_rejects_subdivision_pattern
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftT
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftT_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2_basis_image
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS1_target_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedS2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftT_r2_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftT_selected_r2_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_homologyMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.liftedContraction_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retainedEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retainedEquiv_symm_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retainedEquiv_apply_of_val_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdgeEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredFaceEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_connector
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_second
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredEdge_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredFace_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recoveredFace_triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.recovered_centerEdge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_left_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.retained_right_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	AAT.AG.FaceRelationSubdivision.SubdivisionInversePattern.presentation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetChartMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetFaceMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMapOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetFaceMapOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMapOption_eq_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMapOption_eq_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetFaceMapOption_eq_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetFaceMapOption_eq_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetChartMap_edgeLeft
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetChartMap_edgeRight
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetChartMap_edgeLeft_eq_right_of_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMap_faceEdge0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMap_faceEdge1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMap_faceEdge2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetPullback0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetPullback1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetPullback2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetPullback0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetPullback1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetPullback2_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetPullback_comm0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMapOption_faceEdge01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMapOption_faceEdge12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetPullback_comm1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetComparisonHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetComparisonHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetComparisonHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetChartMap_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetEdgeMap_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.targetSubsetFaceMap_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.aSubnerveComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.labelFiberComparisonHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.labelFiberEquivBlock_chartMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.labelFiberEquivBlock_edgeMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.labelFiberEquivBlock_faceMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.labelFiberComparison_naturality0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.labelFiberComparison_naturality1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.labelFiberComparison_naturality2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.labelFiberComparison_naturality
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.subsetMapsTo_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetChartMap_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetEdgeMapOption_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetFaceMapOption_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetPullback0_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetPullback1_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetPullback2_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetComparisonHom_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetComparisonHom_h1Map_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.subsetTransportHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.subsetTransportHom_eq_transportHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.transportHom_rfl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.targetSubsetComparisonHom_transport
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.aSubnerveComparisonHom_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	AAT.AG.FaceRelationSubdivision.aSubnerveComparisonHom_h1Map_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.sHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.rHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.rHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.rHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.sHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.sHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.sHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cochain_rs
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cochain_correction0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cochain_correction1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cochain_correction2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cochainHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cochainHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.cochainHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.homologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.homologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.oldH1ComparisonIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.oldH1ComparisonIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	AAT.AG.FaceRelationSubdivision.SubsetChainContraction.no_contraction_with_zero_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetRestrict_comm0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetRestrict_comm1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetRestrictHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetRestrictHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetRestrictHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetRestrictHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetRestrictHom_refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetRestrictHom_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetFinite_restrict_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetFinite_restrict_h1_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	AAT.AG.FaceRelationSubdivision.subsetFinite_restrict_zeroExtension_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedInclude
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedInclude_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedInclude_embed
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedInclude_embed_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedInclude_refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedInclude_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_include_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedRestrict
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedRestrict_eq_dual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedRestrict_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedRestrict_refl
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.selectedRestrict_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.dual_selected_restrict_natural
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.Selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.selectedEmbed
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.selectedEmbed_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.selectedEmbed_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.subtypeDomain_single_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.basis_support_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selectedEmbed_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selectedEmbed_comm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selectedEmbed_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_eq_of_raw_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_square_of_raw_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.ext
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.ext_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw_point_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_comp
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.ofSingle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.add
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.neg
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw_add
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw_neg
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_add
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_neg
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_identity_correction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.ofOption
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.ofSingle_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.ofOption_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.zero_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.raw_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.add_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.neg_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.comp_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.selected_comp_eq_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.no_single_image_to_empty_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.freeMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.freeMap_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.freeMap_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.freeDualEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.freeDualEquiv_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.freeDual_separates
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.K0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.K1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.K2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainD1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainD1_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainD2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainD1_dual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainD2_dual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainD1_comp_chainD2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.rationalOptionCell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.rationalOptionCell_none
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.rationalOptionCell_some
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.rationalOptionCell_dual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainDegreeObject
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainDegreeDifferential
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.chainDegreeDifferential_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.supportedChain
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap0_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap0_dual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap1_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap1_dual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap2_dual
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap_comm1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainMap_comm2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainDegreeMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainDegreeMap_comm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.supportedChainHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ThreeHomotopy.lean	AAT.AG.FaceRelationSubdivision.homotopyComponent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ThreeHomotopy.lean	AAT.AG.FaceRelationSubdivision.homotopyComponent_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ThreeHomotopy.lean	AAT.AG.FaceRelationSubdivision.homotopyComponent_10
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ThreeHomotopy.lean	AAT.AG.FaceRelationSubdivision.homotopyComponent_21
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ThreeHomotopy.lean	AAT.AG.FaceRelationSubdivision.homotopyComponent_zero_of_ne
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ThreeHomotopy.lean	AAT.AG.FaceRelationSubdivision.threeHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.inclusion
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r0_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r1_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s0_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s1_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h0_old_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h0_new_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h1_old_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h1_c_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h1_e2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r0_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r1_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s0_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s1_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s2_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h0_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h0_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h1_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h1_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.h1_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rs0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rs1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rs2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.r_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s_comm01
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.s_comm12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.sr_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.sr_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.sr_h2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.sHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selected_rs0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selected_rs1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selected_rs2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selected_sr_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selected_sr_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.selected_sr_h2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.cochainHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.rHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chainContraction_sHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.homologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.homologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.oldH1ComparisonIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.oldH1ComparisonIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.supported
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chartSupport_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.chartSupport_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeSupport_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeSupport_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeSupport_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.faceSupport_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.faceSupport_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.self_factor
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_mixed_degenerate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_not_hereditary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeLeft_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeRight_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeLeft_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeRight_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeLeft_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.edgeRight_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.faceEdge0_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.faceEdge1_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.faceEdge2_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.faceEdge0_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.faceEdge1_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.faceEdge2_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_chart_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_chart_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_edge_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_edge_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_edge_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_face_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.collapse_face_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_r0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_r1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_r2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_s0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_h0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.chainContraction_h1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.sHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.sHom_f0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.sHom_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.sHom_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.cochainHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.cochainHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.cochainHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.homologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.homologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldH1ComparisonIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldH1ComparisonIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.collapse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.collapse_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.rHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.homologyIso_hom_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.oldH1ComparisonIso_hom_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseCochainHomotopyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseCochainHomotopyEquiv_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseCochainHomotopyEquiv_inv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseHomologyIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseHomologyIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseOldH1ComparisonIso
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	AAT.AG.FaceRelationSubdivision.TriangleInversePattern.inverseOldH1ComparisonIso_hom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftT
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftT_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2_raw
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2_basis_image
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS1_target_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedS2_basis
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftT_r2_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftT_selected_r2_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_s1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_s2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_rHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedHomotopy
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_homologyMap
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	AAT.AG.FaceRelationSubdivision.TriangleAddition.liftedContraction_h1Map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.periodInjection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.periodInjection_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.extraProjection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.extraProjection_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.periodInjection_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.extraProjection_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.extraProjection_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.injectionCokernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.injectionCokernel_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockCokernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockCokernel_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_extra_cokernel_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_block_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_block_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_block_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_kernel_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_cokernel_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_kernel_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.inclusion
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.j
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rMinus
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.primitive_composition
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_chart_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_chart_new
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_edge_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_edge_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_edge_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rMinus_chart
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.rMinus_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.distinct_lifts_same_image
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.edge_lift_uniqueness_fails
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.not_hereditary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.blockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.block_composition
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusLawHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusLawHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.law_composition
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusNamedHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusNamedHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_named_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_named_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.labelPairEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusLawCokernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusLaw_kernel_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusLaw_cokernel_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusLaw_kernel_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_block_defect
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_block_defect
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_law_defect
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_law_defect
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldLawPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusLawPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusLawPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_law_period_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_law_period_injection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.Source
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.qc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.qf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.laws
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.coarseAdequate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.fineAdequate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.coarser
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.not_reverse
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.factor_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.law_nonconstant
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.label
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.labels_distinct
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.labelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.labelEquiv_symm
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.labelEquiv_label
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.N
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.pulled
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusNerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.paired_table
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.edge_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.face_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_edge_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_face_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_edge_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_face_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.d0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_d0_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_d0_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_d0_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_d1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_d0_eq
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_d0_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_d0_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_d0_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.loop_attached
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.every_vertex_connected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusNamed_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusNamed_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusNamed_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusNamed_old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusNamed_c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusNamed_e2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_named_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_named_injection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_block_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_block_injection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldBlockLoop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockLoop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockLoop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockExtra
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldBlockLoop_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockLoop_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockLoop_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockExtra_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_maps_loop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_maps_loop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.old_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_cycle_iff
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_cycle_relation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldLoopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusLoopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusSection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod_loop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod_loop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod_section
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldH1Period_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusH1Period_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusH1Period_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.e2_plus_d1_one
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.e2_not_plus_cycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.fineSubset
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.fineSubset_nonempty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.subset_compatible
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusSubsetHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.j_subset_compatible
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.subset_composition
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldSubsetEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusSubsetEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_subset_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_subset_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.oldSubsetPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plusSubsetPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_subset_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_subset_injection
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetCokernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_subset_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_subset_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.fineSubset_empty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.emptySubsetEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.plus_empty_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	AAT.AG.FaceRelationSubdivision.WitnessOne.minus_empty_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.d1_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.named_oldH2_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedFreshOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference_freshOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineNamedH2Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineNamedH2Equiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.named_fresh_class_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.block_standardH2_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockStandardH2Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockStandardH2Equiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockFreshOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockFreshClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockFreshClass_difference
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockFreshClass_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.block_h2Map_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockFresh_cokernel_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.block_h1_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockLoopClass_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.mapped_blockLoopClass_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.mapped_blockLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.face_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockH2CokernelEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockConeH2Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.lawH2CokernelFamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.lawConeH2FamilyEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.labelPairEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.lawH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLawH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.law_h1_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.lawH1PairEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLawH1PairEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.law_standardH2_subsingleton
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLawStandardH2PairEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.law_h2Map_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.lawH2CokernelPairEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.lawConeH2PairEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.N
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.edge_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.face_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fine_chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fine_edge_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fine_face_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.blockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.d0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.d1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fine_d0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fine_d1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedHom
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.named_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.named_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.named_f2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.cycle_relation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fine_cycle_relation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod_loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod_loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedH1Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineNamedH1Equiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.namedH1Equiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fineNamedH1Equiv_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.named_h1_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.loop_class_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessThree.fine_loop_class_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.support_nonempty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.N
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.chart_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.edge_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.face_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alpha_common
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fine_alpha_common
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.occurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.occurrence_unique
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fresh_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.c_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.b_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.diagonal_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.triangle_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.center_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_old_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_new_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_pair_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.section_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.homotopy_vertex
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.homotopy_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.loop_attached
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alpha_loop_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subset_loop_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.blockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldK_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldK_retained
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldBlockPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineBlockPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.block_period_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.comparison_maps_loop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.old_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fine_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.incidenceEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaA
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_edge_cases
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_face_empty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod_loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.N
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fine_chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.slot_target
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.occurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.occurrenceEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.occurrence_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.diagonal_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.triangle_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.old_boundary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.section_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.homotopy_vertex
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.homotopy_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.d0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.d1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loop_attached
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineBlockPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.comparison_maps_loop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.old_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fine_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.cycle_relation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod_loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.namedH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.namedH1Period_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loop_class_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.blockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldK_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldK_retained
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldBlockPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.block_period_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.N
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.chart_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.edge_empty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.fresh_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.c_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.b_empty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.occurrenceIsEmpty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.retainedIsEmpty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.alpha_pair_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.beta_pair_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.b_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.homotopy_vertex
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.beta_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.contraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.law_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.edgeBlockIsEmpty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.old_h1_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.fine_h1_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.Case
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.contraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.rs_all
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.sr_h_all
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.subset_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.subset_homology_map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_fiber_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_fiber_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.lawEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_equiv_maps
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.blockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_equiv_maps
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_h1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_defect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_cone_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_defect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_cone_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.subset_defect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.subset_cone_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.empty_old_law_h1_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.empty_fine_law_h1_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.Case.face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.Case.repeated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.Case.emptySupport
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockCohomology.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedBlockCyclesEquiv_component_val
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.edgeLeftBlockCoordinate_val
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.edgeRightBlockCoordinate_val
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceEdge0BlockCoordinate_val
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceEdge1BlockCoordinate_val
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceEdge2BlockCoordinate_val
+research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean	AAT.AG.TwoPhase.ThreeCochainComplex.Hom.h1Map_eq_of_f1_eq
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetEdgeLeft_val
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetEdgeRight_val
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetComplex_d0
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetComplex_d1
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.mem_labelValueFiber
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockSubsetEquivOfEq
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.labelFiberEdgeOfEq
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.labelFiberEdgeOfEq_cell
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockSubsetEquivOfEq_e1
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockSubsetEquivOfEq_symm_e1
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.labelFiberEdgeOfEq_surjective
+```
+
+### 全固定target current source hashes（160 source）
+
+```text
+research/lean/ResearchLean/AG/AtlasDefectComposition/ComparisonLaws.lean	3	45ffd13d6aaf63271211ac6274e50153150a118e1616ac3178cc9e6f14c55382
+research/lean/ResearchLean/AG/AtlasDefectComposition/EndpointNaturality.lean	1	04e56cbecdd1fc4a7c0056533c58e590750e0eb81a2f0c6371cdebde8f446b80
+research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportIncidence.lean	3	7707340dfe3a4bc13e9b7cd8dd8217bc332b163aab847f5f984404db298bd66c
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawCochainDecomposition.lean	6	70c7f50b14cbc8e85048c4fd94505832e2850868599651f9b24620da56901288
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawFiberDecomposition.lean	1	392dcb8479f19baa64b7be39e5d93418f0149ccf06985c86ed860e2ce1187622
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawFiberH1Family.lean	1	2b5f35773a0b1abd9cf16e110e8b861cbdf673a959783471b924a23a106b1fbb
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawH1Family.lean	1	facb6338c772e54678886d33dbe0cebea9dfa76433a8a82fa2fc3028b5d0c3ff
+research/lean/ResearchLean/AG/AtlasDefectComposition/LawStandardDecomposition.lean	2	17c9cdac3acb993d26030d23b70e4e0dae84733ecc500901e111062d492b4869
+research/lean/ResearchLean/AG/FaceRelationSubdivision/BlockComposition.lean	10	4790aa8d234764eb6c96e6208142cd107e02735e5e4fd1335114d5eacf635443
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellPresentationEquiv.lean	49	480e04916a2569a319e37a2831c4f32bf655567e3dd21975bc735d1ca2e26c91
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CellRename.lean	10	c1be3c0792cdbb9cf738fb1daf088c90cc2d9ec6ba642e5376f67119be03e384
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ChainDualMap.lean	14	2b42720356c01f706273f4eb16fc47610df2c344b441b38e6d9a49d1010424bb
+research/lean/ResearchLean/AG/FaceRelationSubdivision/CocycleNormalization.lean	25	07f3fb014244cbfb5ed00e37ceedc82ecc290bc1131de2a6315beebaacbc4e4b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ComparisonRestriction.lean	5	3b3118ca8e37f4f926d750ae4566a65ba04723acb0e32cb2d6f1a1ea281fb3b0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	21	7af9d1f10c10ec6ad4860db4b5887f2e09d17ae4c2ba5349dd2ebf56ba574e09
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ContractionTransport.lean	2	0bd21d90342fea243ad73d7aaa3769444cd5bbc240f87ca534a6db8d59b9a7c5
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeContraction.lean	61	40f704cddc1c9bbf6c53264eb66f3ac097c0fae8b3033142bce864c3bff486d2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EdgeSubdivision.lean	56	6fb9ac9e38a61ba65090eb76c137d352fc4d7dabcc9697bf30747905f72ea5ff
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	22	af2bb70efefd566accc64494610c658ce915b636f7c945f28f1a5768f66a0dbe
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryDiagnostics.lean	40	80f90e4ce6199d113448e4cc526447ba3c7f3f9ee3f19cd52f764416da41bb9e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawHomotopy.lean	14	751a7d625e1363a237e924cf46ee85a145b4b897a99ef53cc1d3ac4141497336
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawLift.lean	30	a5e3cadef3c0023e87fb3fb39db18d89ed0c3aef385b0c6663c5dcb6c083ab86
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryLawMaps.lean	42	640d675209f88d2985c5f6d0979fd923513beddf0aa8a4a7e7554c817b4e5991
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawConnection.lean	12	39fa26d25e02a22e8c5c8c5cc6b738351c7301c6e2881d3fa8c2d83668096c5c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryRawEquivalence.lean	18	5747dbb8cbb572d7628e60f024d0f7fefd85f74d9e7bd67649888874d2002e91
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EndCokernel.lean	2	5dcabaa498b3c8048722b25aff0e027dfd7ad8b478e82ca7bdb1da9d1312c07e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationAbsent.lean	10	a3821acb78acce25724a000030772892a1850f3ef6b7dabf4c079e55378a444a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationChainSplit.lean	27	b65e6ff0a1140fe4b767cda94c44c4fda22630d2b42ac560701c9f28f4b4a74d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	22	b44a566f983f0057e7a14ecbec79c60c1db1db0263c24978819deb69c6a844b0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	24	2bd520b41ddb0ca3b566346ed67516ae7e22da529f18487a003d454f9e2e5471
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationEndpoints.lean	11	5784d286becba2885c6f65e25a9d336f0a71df25357c44c0510bbd7cda570221
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	23	1454e63d524b133b552f96c6c657fe15a640485521fbd2eda2788c37ec83e03a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	8	0991938d64d0727c5369289f01509bdbb6c82d78bbb9ded596c295bf34218136
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	13	76bb6e3b298be460026300707dbfde24f7afb90bf14a8b12dff49166842795a2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean	10	133b34fa5c1379034d8df7a7af07153d3ce838c927d26a918170dd092aff0eed
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationSeparation.lean	2	e985be31349170f1fdb593d18620ee110227e8bab4903f1c298321f8655d8b9d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FiniteHomComposition.lean	7	e7a7abe24cb7bd5195ed5f5f93b79fee38bed6b1c5280d197af9b4a59ab352fa
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	8	fca59459f4bd2929503d6d7d81d5f458911d6c926c4d64a324151f96b3780d9a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubsetComparison.lean	1	893423de007db0a677b7f933408bab4041ee9f45011f7042f1c79de8d98e15b0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComparison.lean	33	66237b19c29dd64f367f898d97f822a01f798f976915077a921ed15b3a6a4af4
+research/lean/ResearchLean/AG/FaceRelationSubdivision/GeneratedComposition.lean	16	6a3726b8a8c0d55b1a4f2d218da1e904679ff4aa79a13aa37fc0a49888ba0fa7
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditaryDiagnostics.lean	6	6b7ba65c935ba3d0a40eae00021b41b355cf8b5c5e609001157fc721d05947cf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HereditarySpecialization.lean	7	ce7457bad05b6392b0513ff4398407405a439babc5d354fb46ef74e783613ef0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyComponentNaturality.lean	1	87efc41e099a0eba497c47c91ee0ed23679cfb66c734c09510b43c4c4e359e05
+research/lean/ResearchLean/AG/FaceRelationSubdivision/HomotopyDiagnostics.lean	7	0b9d65b5cfe76b2d6fd788c8e61bf749fa8d5cf56088c5b2f2d7a6f8f9bd017b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceBasis.lean	15	5cbf03334bfa2026c428cf024724c0b8e56796e67a2ea4d6450def32f7272f9f
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean	22	e3ef579ea59b2202a5a7b840ff5f81565ed65548835671ec71b57081e74bd545
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceFullSupportPullback.lean	5	93e3f546f9c6a736864d3907dade7b7f4f03e312c1aa2c3b55d18830713b8c02
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	7	56698b687013379306b13fb3bcf912d081a76ec3d4a6a71e1b644687e65f602a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceObstruction.lean	2	0929f9651de9cc9693cc570fc28fa86b29b8c23821adcb9e02f9b61092bde673
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseLawContraction.lean	56	449ff757503ce90e53fb48db24efeebda4b87a4a08fdd8b0576d253074212fdc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawLawConnection.lean	4	0d33da2998c91d0c122d43083bd3c6812bec71856feba752dfc10e13e82023b8
+research/lean/ResearchLean/AG/FaceRelationSubdivision/InverseRawTargetConnection.lean	4	844279197b72e78eaf46c529ec000d6938f013754a83054fb0962423290d6cfa
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	37	3693e88db3869c443cd490f69e9bdf7c7ce5c24ed153b16e9d5247d717131a91
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawCocycleNormalization.lean	6	ffe6ac6a941f62b8f0879cc3ef272af267675bfa53e3f0780d3593174f81224a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonCone.lean	6	8c4f924d6eaf1f0bd3631bf636d82a54960a111826418b9015b66a4a9a335169
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDecomposition.lean	11	496ba43e5989e9bb309860976a432ed31df91e9c6c286237a6b92b6172434f63
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonDefect.lean	10	ba062facc20c993767ee9ce423fbc0573ece5da57ee5c7c7993abc8e34cb8b72
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean	14	99fbd72c77adf71ff6cec151ce0dda3c804f541459039c2280cdf41d86e25206
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiberBridge.lean	10	1cdbb380aaf4d3c3caa643c0e60ccd132951d335da950757d4434d6d8ad4fb57
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	17	fd852fa18d331b3f4aacde3ce56b719762d9769d5885e2e6dcc4696de3b88157
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlockHom.lean	14	a5bddffaf54d2edcd523b40f3bbb7e23223b71ceb403c514e20f140192f2b9d8
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteCoordinates.lean	12	54ad7db4f1774625b3d981083aea9ff337dd4d1d20fa8e4293d9a57944a658b9
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDecomposition.lean	22	3811136165dfd4da77e71c6f8ac815b0f286a04a0686d20e47e04d37fecfc364
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteDifferential.lean	4	ef782ee77a08d7387ba264aef53a3709d166a63be7f64e0750df09c08a499bb5
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFiber.lean	6	45661567bf172b93214b980358fba86f1c18ceeb8f8093b48d0653d40d671111
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteFunctor.lean	6	0ace72e4544b22b87191a7920cafbf6215c7c010cd884357f6dc0d39efb80759
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteHom.lean	14	ed90ab35e9bcd733dfdb263ade9b20bd525a5fd3bf79e449b8d099df7acb76eb
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteIdentities.lean	3	63cf78711ef720f4953330fda6b5eabc29ebeb9c2be10b1a29c184f5c38cd766
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	9	711215eced311b42103c33a5b57f91f30d6b5975fba3c6fa9a909c720ee394da
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawLiftVariation.lean	11	0e97cf067fb14c95d21a28c79f4c316a05d8ff44d5dede0e34dfc3c29ae8b9ec
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawPresentation.lean	35	655feff1d39a16b7bf1e52e7e087600414f36853f3cfe9e713159bc03664875f
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LiftVariation.lean	18	ba096624bb7a9b576a09d566262e757d623a15cd8d4359407fe6ce7a5625d733
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	4	5d0440235c839af842a12496b67b95793cb12990c08a32b8d7821b2b41642453
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlock.lean	12	665609462afee3c786aecdfb14ddb887cf9050ad05273cf665962f2f96b05fca
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawBlockHom.lean	8	662fae6dbb16db9d8fdabfb78b84a2421b2e760d98cb1970bfd4ee21e6f63f1e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawCorrections.lean	2	5b9cd5c8a7d702fdfec1125b23d3513d6d7b86c61bda29c7b4738df31d62ef12
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDecomposition.lean	19	b5a02583de52c8ee41649483ea198f6d9fa3c2c1c1e0d95ca38dc05af23f69d1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawDifferential.lean	4	ae5e7f8eb70d9e623f6bc924ee5df3d03d119e50c9eba8c757ceb11f8c60d5fc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteCoordinates.lean	14	c50edfaf42bd5033888720684c14cf7a2a4bb2c46bff212c0639f0b2b076f5d4
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteFunctor.lean	6	f604494aa0dd72704685b45996d278f6a2dcd59045f587ac05a81ebe73a7d5c1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedLawFiniteHom.lean	14	5f789cce7efaf209b9e866ff7adab869d88d2e3cca40491a15e3e9e2bb35da4a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedRestrictionHom.lean	8	946a9e47f5fd024c040f36f73fa9d7d8f5f858038f33526ed69f4a99c10d45c0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedBasis.lean	9	e4c9d9f1d20dace3da466c9eb62acb2d8b09fde8fd009ed87c2b6db246eb1640
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSelectedFunctor.lean	6	4de224e774b81a5d9b1a2dd834a6f405a2163bd305b0710b67260cb67b86fdf8
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetCorrections.lean	2	46111359ecce61c489897ae07f3712e3c7dcc0410fee20eb220ff952ee210d23
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHom.lean	11	eab3ad4d469067762177ea70a0713a32c5d8172ffa0aadffb3f80d46700bbd86
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetHomotopy.lean	8	f868edc4cd4e73ba051493596c8e145512a30628cd60b626984bb44026b2c841
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSubsetTransport.lean	4	fd15a967efedcca47e7b22db071febeac10117fe4090ba706628dcc44f30530b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/MixedSupportRestriction.lean	2	480ba069bbc9633b9076b72af1f2a7416da9adf754e2cf7fcadfc582785586de
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathComposition.lean	8	cd08eb7ed31e3caf166c0fe6fd07387a1ee0cc7627aeb7b31220be0a277b769c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathDiagnostics.lean	24	fe9371efd3e537a3bb1fdf8ef93c73d4e468c4542f06fec8b4ff845a25b88ca0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean	11	723882aa0699cdabd932327b68e9a52423b50504b74faf4a0358fc89ecf4ad9c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathLawBlocks.lean	14	0a493b537ed49b1278de4a38d72af374fe7df66ed26816d992d763127ccb876d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathMaps.lean	14	0139acadd5f82518f9b9fcfe48ae3c025169b5d265dea655c2da6cf866dfbb39
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathRestriction.lean	7	8c3baedbe41fd26baf3d7ce8eae7a41935a6fecaedae264ee60e392b0e769b14
+research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationSubsetFunctor.lean	4	d48dddeb8d1d18ee742ff1c413d13d099416246e7d24c39305cdbb9d1d724e40
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	9	169cf446c66f7cf7f641ace5b3f6cc893ae18571c1269add8c52f84192d5f746
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationInverse.lean	23	3d0ed75e164caeec5bf9dc9509d303f5a5b9c909dc0a2142805dbdd475152b91
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationLawInverse.lean	9	27376f5a0fda646c2a20be27e3df9806eb8c35639bf3664078cb97b517760bb8
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawConnection.lean	4	d4fc5976cd578b0792c7b5b1d70c5e196ff031e280e174cd2774a2f9401cf011
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawEquivalence.lean	41	30eba6c2bea72c54abf52462df1790b017440b782241c6a80fb44a743c2f4477
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawSymmetry.lean	1	019b6622eb48c7bf84e9830b7c8f1ef6f5783dd9070291b91f8eb14d01449a69
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PresentationRawTargetConnection.lean	5	eb9258fc14103e3f566e476559a41d18fc649530d522f5615c8ef1a625e7f80a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveCellDeletion.lean	10	911d0747f09d1f227a411419799cc44843b8c38bbb8bb7724dc3ed1fa292000e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveOperationPath.lean	25	99f34dc8a6a372084dc465ae746f7f54dbe28bf5632450b784e3c89d8e54f1d9
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveSubdivisionInverse.lean	42	2b293bf12dd89acb9851c40938a88ee3eb6bc7749e5d6af36316474bd11be00e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PrimitiveTriangleInverse.lean	26	dcef554930bab020f90de2f7f21b7a98338de174646118c82c3e697cc2241ab9
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockDiagnostics.lean	12	e788a2881d29b20035bc1d48e3ae33bbf21fc537384902f0ce2de66eca3526a1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawBlockHomotopy.lean	13	52dcaa91a9d81e334e1e14f71f1f5f00248d64596846a8ff737f8f8cb7371bbf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawChainEquivalence.lean	42	e44c4432445bf93c71a0e4d54261c45f3f8f953650622fecf1533c1af0d7c17d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawCompositionLaws.lean	3	6390d348c14a68244eae816e69fb2f67feade26c1679bc6d7e1fbaa72ae2d9f8
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawHomotopyRestriction.lean	4	503b8808d40295ad4f7555457d3eb3fdcac9e2db4b56fc80aa0a786098b42f7f
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLawHomotopy.lean	7	08e84a3830040afebc11dc06c174dd8aa907cc38549dbca495377a9b51103292
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawLiftContext.lean	6	ff12624e0fc4debe0d4e4a388841bce5e1dd8b0d9edef32bc77294c308480c6d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawMapComposition.lean	8	2a4c0d924206948f6b2bad7c1d867caa44fd4e19c9aa5e652629505121b2df7d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawNonvacuity.lean	1	486e62c0c29c93137f21485b458f14e80b0987948b694a8d6dc9b6b2f88aa7d6
+research/lean/ResearchLean/AG/FaceRelationSubdivision/RawSupportedChain.lean	12	082b09a788477a3e4d22e835c1ac8b87da696f5a5b8785ad92b72f1dac60e117
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ReadingPullback.lean	27	4758f84b4d9ca13b8ca22939a496760d92c1a8c7383a17fd40d1e2cdb7a58848
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceLawCoordinates.lean	10	c99cf1da847c88064b234dc749cc4bb50623b480a26079c80d9852c26e92a0d8
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SourceSupportedBasis.lean	13	1d6820638f83e77733d3bf395f5bd4c34df2ba960934eb4f952795b4b2921c7e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseContraction.lean	33	b85754735ec912d50de5ab8d81668c72007550d40b6303f7b4af7755bffd72bf
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionInverseInstances.lean	6	a49da06decf3641368f9203c6307f7d20f0a68176655098dac6a94bda4101287
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionLift.lean	22	37154f4410e01fa6d4378474445f7aba462b5ab507b3e8533f4b90e52215d0e7
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubdivisionReconstruction.lean	15	83f8b2b45b34652e9ecea090be6de460f56ec8e6e51e512ca9ec1b1ef320f10f
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComparison.lean	41	de4a474ce4cf0295bd62afe3e8668a07101a50ee6060c9783ea026d949ffd299
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetComposition.lean	15	2cfd539bca7c8df7c2f787188e73a977b0f9e80f70b41155ad7dd86b15161844
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetContraction.lean	21	f73e39ec95177c1a8cca4e5334fefb62d0f7fd11fea29b53d11f7ef265bf2b53
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SubsetRestriction.lean	11	cea0f9be7eecd812242f05fac119dd07cfb894fb3a58844b36a1d9171665e18c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportRestriction.lean	13	03420a6b2aca2ebe4726022ce3279bd54e3c4de8b011b16d071ec3d2d8b6894b
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedBasis.lean	45	c4292cd8333df247895da7f5f345f8c8ff49f517d7c7c34ac3406729864039de
+research/lean/ResearchLean/AG/FaceRelationSubdivision/SupportedChain.lean	38	9b89c91f607903ce61243c2c1798e983e5fa9dd47c4b19b7f93894fb3147f721
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ThreeHomotopy.lean	6	e8a5bb38077c7f06fc682cb2fb72cb08f50b4da4db1b37a86ef54e45bc2b0eed
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleContraction.lean	66	8cb2eef0953e8942e74e43b19e7ebd65e030e884bf7bb016c52350e9c537ba6d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleGeometry.lean	32	e67f01773a2a68e566a4db6bbd0404953fda1caa56687eeb716f977fea46124e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleInverseContraction.lean	33	8f1a6dbc99fdf110686d7504e1b91066f8aac850528444b48455800cdcd8790d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/TriangleLift.lean	22	3ad9fab4b70814892709f567b6b5a412aac64a4d1a851592330b7fd8095f1288
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	18	cadd62936450ebc8aa182459de5d9ac19f588a6669dc8b87089ed7d43439d732
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	29	17458d7bc4805cfddad36c281a2112233eb173f030eef7d6e4e5f157122ff1fb
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	14	fc3153e09a68e103c304aeda3a277eecc8bce26ffb3ea269d7179eaf23bb354f
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	42	53452d383799618adfd17ebf948ac09634efd3d578fd9bcd824f835835a72ba1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	26	5ca30a309100032a885b5301ad7c16f5afbb34af8905845056f724d877d09b42
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	28	e4323bc4049f566de85b7fd7e6ff2793dc25ca0c30f676c9190508f95ee7e687
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	24	3685db6fe7a65bf0b583a127ff8416e347007cdb5c1ff5a411777f78d51b4c78
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	20	3bb7acd9aeee29c1e4ca38308a18f9b9264bd2398491604d56309e0862edf782
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	26	7110da57ca54de0a526d5278f085bee34cd728d85d163174d219366871e399a0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	19	9d3124d4e0afd5fc5cabf0a82fbac1078b5573453394860f48a1882c24e0af4d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	21	72e8e663a519d590a469bdfc9b48e3e26cfa4689e0ec5f8bb0ffee34fcad1f9a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	27	8b1d425b755d3066d5514e923e607f78a208ea22455d6eae8ecf72d736246dcc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	30	28426027c31dd15049d5c884fa6508e5dbbd3014f6beb461d98ea129657378f3
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	19	0b90a1e7d41c4bc842f28c504222f391ae7d785fecbb71fbb6f0f5d26b147516
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	21	4b6bdc381508fafdd8e62c4b5fd8a508226685619b372c8a6630295a9464e1b7
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	13	ab177628c77402f63de842948f1222f2305e159a325e179cbff06d412502c504
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	18	854ebe20fc64f280b9654b619fa7dace80a6a903c6c9dc4e7fcffb11300eab04
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	21	0473a7fd7e3185df850f6575cc185bcb2038f62262a27248cee1cebb51976011
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	30	2746a8b1dc394d13f3f4ac45f8eb3237edafb14e62a19a8369f4ab5c526982d0
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockCohomology.lean	1	7c2b3412e45f58ea66c9fb48ca781cb6b3cd168a51a18ac4b87825622d5d460b
+research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean	5	01f3f11eeefdd9cef7c6cd489808955b48c7cfedb568c35095963652fc5c7708
+research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean	1	6aaf6dbe8cd564153ca4d7cddbc55d60beb1e4d97ae1d78abfe5b2d4ca42b9f2
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	11	893c599f804a17a7c55dd1447706884ed42b612129473d6c7e41767b9802012d
+```
+
+### Cycle 14 focused validation / result proposal
+
+rootの4新規sourceと3ownerの必要な個別targeted検査はexit0、全宣言のnamespace標準公理監査が成功し、最新sourceに対応するoleanを生成した。最新公式focusedは `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLawEndpoints.lean` exit0（対象namespace10宣言）。新規62件のsource/spine/query/output集合一致、明示 `lake env lean ../../.tmp/g134/c14/axioms.lean` exit0、全件標準propext/Classical.choice/Quot.sound以内、log SHA256 `7b7c6aed6f9785d56c6643d6542337ae95e09500a3774ea21e07e80c3c3f673a`。
+7source hash一致、新規4/全2236manifestunique/source存在、import方向、placeholder/Unicode/privacy/語彙/diff scan全てpass。Research全build/aggregate/全fileelaboration未実施。各先行受理nodeのaxiom検証と現在差分を累積spineへ対応した。さらに現在の必要leaf oleanだけをimportして、全2518明示公理照会を実行する。結果・output hash・独立再検証は固定head PRコメントの最終packet/監査へ記録する。sourceを再elaborateする全file loopは実行しない。
+
+- proposed_result_type: `proof-obligation-discharged`
+- proof_obligation_delta / exit_criteria_status: 指定§6の同じ原始支持chain split、実第一射影、extra零境界、非選択全成分/全n同値、same実subset/各label/全Law H⁰同型とH²単射を閉じ、C11同じH¹/余核Q/錐Qに接続。累積全T0/A–E/W1–W3/完了条件と全material premise/全directionを現在sourceへ固定。
+- split_reason: none
+- completion_candidate: yes（数学構成完了の候補。標準PR gate後の別4本GOAL完了監査とroot全gatesで初めて最終判定する）
+- undischarged material premise: none（独立gateで検算）。
+- blocking_findings: PR独立gate前。中心claimをCI/定理名/受理statusだけで判定しない。
+- next_obligation: 同じ固定headの標準PR review、累積axiom再照会、final packet、別の全GOAL数学2/Lean2査読、root全完了gate、CI、merge/Issue同期。
+- GOAL active / Issue OPEN。全targetの最終完了verdictはまだ出さない。固定GOAL/設計の本文と仮定・量化は不変。Research証明の候補であり、Formal移植とArchSig実装は別範囲。
