@@ -7119,3 +7119,45 @@ rootの4新規sourceと3ownerの必要な個別targeted検査はexit0、全宣�
 - blocking_findings: PR独立gate前。中心claimをCI/定理名/受理statusだけで判定しない。
 - next_obligation: 同じ固定headの標準PR review、累積axiom再照会、final packet、別の全GOAL数学2/Lean2査読、root全完了gate、CI、merge/Issue同期。
 - GOAL active / Issue OPEN。全targetの最終完了verdictはまだ出さない。固定GOAL/設計の本文と仮定・量化は不変。Research証明の候補であり、Formal移植とArchSig実装は別範囲。
+
+## 全固定targetの完了認定とGOAL同期
+
+2026-10-07、固定target T0・A–E・W1–W3、参照する4設計の全条項、
+完了条件1–4をResearchで証明した。正式判定は
+`target-theorem-proved / No major findings`。全15gate・独立4laneがpassであり、
+残るGOAL証明義務、未放電前提、中心unchecked、blockerは空である。
+前節までのcycle proposal・部分判定は各時点の記録であり、この節が現在の全体判定を参照する。
+
+- 証明PR：[本体 #5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287)。
+  判定head `0134623422114ae39f989d591cb167c6176aae3e`、
+  merge `6a54e336131eaaea2c61ac20f7f1b5b4f502c96a`。
+- [標準PR gate](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030043920)と、
+  別の全目標監査用[固定packet](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030047502)。
+- 独立全目標査読全文：[数学A](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030246650)、
+  [数学B](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030246897)、
+  [LeanA](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030247101)、
+  [LeanB](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030247337)。
+- [root統合・正式完了台帳](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030258596)。
+  固定条項、実宣言、全material premiseの出所とproof-use、全方向、
+  actual生成経路、certificate/structure field、依存版、13回帰の照合を記録した。
+- [tracking Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6030275613)。
+  受け入れ要件を全完了へ同期し、IssueはOPENを維持した。
+
+累積明示2518宣言/160sourceと公理query/outputの集合は一致し、root照会exit0。
+22宣言は公理非依存、残りは `propext`・`Classical.choice`・`Quot.sound` のみ。
+累積ログSHA256は `cb67fbf0116ed6906cb36ed550d0c9feffd5666d522c3e5b87bcc7384350b91a`。
+実行head `1a8d6df06a9e7984f301d4a43c2c949a8ba12a90` と判定headの全160source byte一致を
+root/独立査読が確認して再使用した。現在headで再実行したとは表示しない。
+C14新62宣言照会、必要な新規4/owner3 targeted、公式単一focused、
+全目標4laneの指定単一focusedと必要な明示公理照会は成功した。
+2236manifest、spine/hash/report、import方向、placeholder、hidden/BiDi Unicode、
+privacy、diff checkは整合した。各コマンド・終了コード・実出力hashは上記packetと査読全文にある。
+
+判定headのCI8checksはSUCCESS。Research graph/static/runtime/fixture/artifact検査は実success。
+Formal setup/build/kernel/premiseはskipped。Research全build・aggregate・全fileelaborationは
+規定に従って未実施である。Research証明のrigorは `proved`、Formalへの状態は
+`unported (Research-proved)`。ArchSig実装は別対象である。
+
+今回の完了同期はGOALのstatusをcompletedへ変更し、索引の同じ項目をcompletedへ移動する。
+GOAL研究目的以降の本文SHA256 `ddef14010c87d552451eb5360f18d52df767143f3367cbeb539bc8624077677e`
+および4設計・160source・宣言・manifestは不変である。恒久設計への作業メタ追記はない。
