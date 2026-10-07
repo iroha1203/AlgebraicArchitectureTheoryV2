@@ -13,11 +13,11 @@ Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293でcheckpoint�
 Cycle 3は同じPからcounit評価εと実u因子化、局所Φ・Γ・Λの構成・成分同定を進める。
 ε のcochain条件と実u全三次数因子化、原始Φのchain/cochainと包含、Γの関係列、Φ・Γ・Λの実comma成分式は対象fileのLean検証を通過した。
 chart→edge・edge→faceの係数自然性と原始端点・辺位置への同定も通過した。
-mixed関係・三角形二経路の公開自然性API、ε次数別単射性、L以降と全Wは実装・検証中または未達。
+mixed関係・三角形二経路の公開自然性APIとε次数別単射性も対象fileのLean検証を通過した。L以降と全Wは未達。
 独立査読前であり、全目標はtarget-proof-checkpoint。
 
 以下のCycle 1 selectionから検証記録までは、最初の提案時点の履歴である。
-現在のdelta・未放電行は後続のCycle 2台帳へ対応させる。
+現在のdelta・未放電行は後続のCycle 3台帳へ対応させる。
 
 ## Cycle 1 selection
 
