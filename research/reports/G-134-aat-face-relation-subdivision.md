@@ -4265,8 +4265,8 @@ PR #5286 head `d9723aa7d1d25e5c305fe73035be2aa2d37a8536`、merge `0ebdcb672ba655
 | 固定参照§6・Eの残余 | 現在のLean構成と証明使用 |
 | --- | --- |
 | 原始支持chain r/s | `FaceDuplication.chainR2/chainS2` は原始新比較の `basis2.selected` から生成。基底APIはfold/旧包含を読む。`chain_dual_comparison/chain_dual_section` は全三成分で独立実subset射と同じ。次数0/1の同じ原始rは恒等、低次微分も同じ |
-| 選択K′=K⊕Q[2] | `extraChain` はfresh−oldF、`chainR2_extra/chainD2_extra` は像/境界零。`freshCoefficient` はfresh実係数、`freshCoefficient_extra=1`、旧包含の係数0。`chain_split_reconstruct` は全旧/fresh基底を実評価。`chainSplit` はfold×fresh係数と、旧包含+係数×extraの明示両逆 |
-| 同じr=第一射影・微分 | `chainSplit_fst/snd/symm`、`chainSplit_differential`。`chainD2_projection` は同じ原始comparisonのchain可換式を次数1恒等で読む。低次恒等と追加基底の零境界によりdegree2だけのQ直和。期待rankなし |
+| 選択K′=K⊕Q[2] | `extraChain` はfresh−oldF、`chainR2_extra/chainD2_extra` は像/微分零。`freshCoefficient` はfresh実係数、`freshCoefficient_extra=1`、旧包含の係数0。`chain_split_reconstruct` は全旧/fresh基底を実評価。`chainSplit` はfold×fresh係数と、旧包含+係数×extraの明示両逆 |
+| 同じr=第一射影・微分 | `chainSplit_fst/snd/symm`、`chainSplit_differential`。`chainD2_projection` は同じ原始comparisonのchain可換式を次数1恒等で読む。低次恒等と追加基底の微分零によりdegree2だけのQ直和。期待rankなし |
 | 非選択K′=K | `oldFace_foldFace_absent` はfresh選択が原始hF否定と矛盾することを示す。`chainS2_chainR2_absent/absentChainEquiv`、`subset_reverse_comp/reverse_subset_comp_absent` は同じ二射の全三成分、`absentCochainEquiv_toHom/absentZeroExtensionIso_hom` は同じ実生成射。`absent_homology_bijective` は全整数次数 |
 | 同じ実H⁰同型・H²単射 | ownerの `subsetHom_f0/reverseSubsetHom_f0/reverseSubsetHom_f2`。`subsetH0Equiv` は同じ実核二射の両逆。`reverse_oldH2_comp` は実終端商で同じsection左逆。`oldH2_injective`、`subsetStandardH0Equiv_apply/bijective/subsetStandardH2_injective` はG133端次数自然性で同じ標準零延長射へ接続 |
 | 独立実block・全Law | owner `lawBlockSelectedSubsetHomology_natural` は全三成分平方を全整数次数の点自然性へ移す。`block_endpoint_natural`、`blockStandardH0_bijective/Equiv_apply`、`blockStandardH2_injective`、`lawStandardH0Equiv_apply/bijective/lawStandardH2_injective` は同じ独立生成blockHom/lawHomへ適用。`blockAbsent_bijective` は非選択ラベル全整数次数 |
@@ -4274,7 +4274,7 @@ PR #5286 head `d9723aa7d1d25e5c305fe73035be2aa2d37a8536`、merge `0ebdcb672ba655
 
 material premiseは、任意supported nerve・原始F・任意A・有限Source/Reading/有限発生Law/adequacy/ℚをT0/Eのambient-boundaryに保持する。hF（面の台∩Aが非空）は指定した選択方向のdirection-hypothesis、¬hFは非選択方向の条件。どちらも相同型・診断値を入力しない。W3で選択hFを必要とする箇所はC11 `face_selected` が放電済み。
 
-生成必要条件はdischarge-requiredとして全て放電した: 原始r/sの支持→`IncidenceBasis.selected_basis2_eq` とK1、chain可換→同じcomparisonと`chainR1_eq_id`、extra境界零→`chainD2_projection/chainR2_extra`、split正逆→原始全基底評価、非選択fresh不存在→hF否定と選択セルの支持witness、H⁰両逆/H²左逆→実f0/f2式と実核/商、block/family正方形→C9同じ独立原始生成射と今回owner自然性。これらの各式は最終同値/単射/標準自然性へ実使用する。unused material premiseなし。
+生成必要条件はdischarge-requiredとして全て放電した: 原始r/sの支持→`IncidenceBasis.selected_basis2_eq` とK1、chain可換→同じcomparisonと`chainR1_eq_id`、extraの微分零→`chainD2_projection/chainR2_extra`、split正逆→原始全基底評価、非選択fresh不存在→hF否定と選択セルの支持witness、H⁰両逆/H²左逆→実f0/f2式と実核/商、block/family正方形→C9同じ独立原始生成射と今回owner自然性。これらの各式は最終同値/単射/標準自然性へ実使用する。unused material premiseなし。
 
 今回の4新規moduleと3owner差分は62明示宣言。ownerは公開評価/自然性API4件の追加のみで、既存def値/instance/import/statementを変えない。外国semantic定義展開なし。今回の自己定義、公開API、標準Finsupp/LinearMap/LinearEquiv/商の操作を使う。既受理C1/C2/C3/C9/C11とG133の現在statement/必要定義/適用引数を確認し、受理refは各cycle receipt/台帳を使用する。標準Lean4.28.0・mathlib固定版は変更しない。
 
@@ -4296,7 +4296,7 @@ material premiseは、任意supported nerve・原始F・任意A・有限Source/R
 | B 原始逆pattern全接続/復元/同じ逆比較 | `PrimitiveTriangleInverse/PrimitiveSubdivisionInverse/PrimitiveCellDeletion/CellPresentationEquiv/SubdivisionReconstruction`、`TriangleInverseContraction/SubdivisionInverseContraction/InverseLawContraction/InverseRawTargetConnection/InverseRawLawConnection` | C4/C8/C10 |
 | B reading逆像/表示変更 | `ReadingPullback/CellPresentationEquiv/CellRename/LawPresentation`、`PresentationRawConnection/PresentationRawTargetConnection/PresentationRawSymmetry`。reading比較因子の全射でchart台/全セル選択同値、零ホモトピーと実独立Law比較 | C3/C10 |
 | B 全次数同値/同じH⁰/H¹/H² | `ThreeHomotopy/SubsetContraction/ElementaryLawHomotopy/ElementaryBlockHomotopy/HomotopyDiagnostics/InverseLawContraction/MixedSubsetHomotopy/RawLawHomotopy/RawBlockHomotopy` の実二射・全整数標準同型 | C2/C7/C8/C10 |
-| B §7指定lift/境界補正/同じH¹/任意前後列 | `LiftVariation/TriangleLift/SubdivisionLift/CocycleNormalization/LawLiftVariation/ElementaryLawLift/LawCocycleNormalization/RawLiftContext`。指定f/−toと支持を使う実t、potentialでc零とe2旧値、actualHom等号/商類 | C5/C8/C10 |
+| B §7指定lift/coboundary補正/同じH¹/任意前後列 | `LiftVariation/TriangleLift/SubdivisionLift/CocycleNormalization/LawLiftVariation/ElementaryLawLift/LawCocycleNormalization/RawLiftContext`。指定f/−toと支持を使う実t、potentialでc零とe2旧値、actualHom等号/商類 | C5/C8/C10 |
 | C 任意原始有限列/直接有限和/逆/両補正 | `PrimitiveOperationPath/ElementaryRawEquivalence/PrimitiveOperationPath/PresentationRawConnection/RawChainEquivalence/RawMapComposition/RawCompositionLaws`。nil/snoc全長、r01r12/s12s01、h12+s12h01r12、k01+r01k12s01 | C10 |
 | C 空列/恒等/括り直し/全計算成分transport | `RawCompositionLaws/OperationSubsetFunctor/OperationPathFunctor`。全10原始成分、実subset/Law全三次数、A逆像等号transportとsame generated map | C10 |
 | C A⊆B 比較・逆・両ホモトピーの自然性 | `SupportRestriction/SubsetRestriction/ComparisonRestriction/MixedRestrictionHom/OperationPathRestriction/HomotopyComponentNaturality/RawHomotopyRestriction`。全標準整数成分と旧H¹、r/s/h/k同じ制限 | C9/C10 |
@@ -4308,7 +4308,7 @@ material premiseは、任意supported nerve・原始F・任意A・有限Source/R
 | E 面複製原始入力/全A各LawH¹ | `FaceDuplicationGeometry/Comparison/Law`。old恒等/fresh→F、K1台、全A実H1二射inverse、全ラベル/全Law実h1Map同一 | C11 |
 | E 参照§6 選択split/非選択恒等/H⁰/H²単射 | 本Cycle14の `FaceDuplicationChainSplit/Endpoints/Absent/LawEndpoints`；同じr/s/独立Law射への全成分・全整数接続 | 本Cycle14 |
 | E 選択H²余核Q/同じconeH²Q/強変形との区別 | `FaceDuplicationDegreeTwo/Homology/Law/Separation`。fresh−F差の核=実f2像、surj、実d1像包含、old/standardH2余核Q、sameconeH2Q、fresh単独非零/実H2非surj/not_homotopy_equivalence | C11 |
-| W1 真のreading/nonconstant/非零loop同じ成分 | `WitnessOneInput` とConnectedFaceWitness。6Source粗Boolと細(0,1,2)、非定数Law、全台、v接続k-loop、actualreading逆像三角追加 | C11/C12 |
+| W1 真のreading/nonconstant/非零loop同じ成分 | `WitnessOneInput`。Source=Bool×Bool、粗reading=Prod.fst、細reading=id、非定数第一射影Law、全台、v接続k-loop、actualreading逆像三角追加 | C11/C12 |
 | W1 面だけ除くpaired samecomparison | `WitnessOneComparison` minus primitiveとplus包含j、rminus=rplus j全三成分block/Law/subset、sameoldedgepointmap。二細辺同粗辺/C5条件不成立/旧hereditary不能 | C12 |
 | W1 面ありH¹identity/面なし増分余核Q・全LawQ² | `WitnessOnePeriods/PeriodMaps/Cokernel/Diagnostics/Subset`。実old/plusQ、minusQ²、oldk→(k,0)、actualk非零、e2単独minus余核1/plus非cocycle、ラベルを別々に保持。全subset/空Aも同じ射 | C12 |
 | W2a 指定各台/face中心/αβ選択/βcのみ/同じk類 | `WitnessTwoAInput/APeriods/ALoop`。chart=[univ,α,univ]、edge=[α,univ,α,univ]、faceα、α actualfullgeometry、β actuala/k C1と空face/具体potential、actualold/fine k period1・比較恒等・全fine生成セルでk以外零 | C13 |
@@ -7112,7 +7112,7 @@ rootの4新規sourceと3ownerの必要な個別targeted検査はexit0、全宣�
 7source hash一致、新規4/全2236manifestunique/source存在、import方向、placeholder/Unicode/privacy/語彙/diff scan全てpass。Research全build/aggregate/全fileelaboration未実施。各先行受理nodeのaxiom検証と現在差分を累積spineへ対応した。さらに現在の必要leaf oleanだけをimportして、全2518明示公理照会を実行する。結果・output hash・独立再検証は固定head PRコメントの最終packet/監査へ記録する。sourceを再elaborateする全file loopは実行しない。
 
 - proposed_result_type: `proof-obligation-discharged`
-- proof_obligation_delta / exit_criteria_status: 指定§6の同じ原始支持chain split、実第一射影、extra零境界、非選択全成分/全n同値、same実subset/各label/全Law H⁰同型とH²単射を閉じ、C11同じH¹/余核Q/錐Qに接続。累積全T0/A–E/W1–W3/完了条件と全material premise/全directionを現在sourceへ固定。
+- proof_obligation_delta / exit_criteria_status: 指定§6の同じ原始支持chain split、実第一射影、extraの微分零、非選択全成分/全n同値、same実subset/各label/全Law H⁰同型とH²単射を閉じ、C11同じH¹/余核Q/錐Qに接続。累積全T0/A–E/W1–W3/完了条件と全material premise/全directionを現在sourceへ固定。
 - split_reason: none
 - completion_candidate: yes（数学構成完了の候補。標準PR gate後の別4本GOAL完了監査とroot全gatesで初めて最終判定する）
 - undischarged material premise: none（独立gateで検算）。
