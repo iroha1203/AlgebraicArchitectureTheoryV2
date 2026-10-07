@@ -1040,3 +1040,7 @@ import ResearchLean.AG.VisibleCycleReflection.WitnessCycles
 import ResearchLean.AG.VisibleCycleReflection.WitnessOne
 import ResearchLean.AG.VisibleCycleReflection.WitnessTwo
 import ResearchLean.AG.VisibleCycleReflection.WitnessThree
+
+import ResearchLean.AG.AtlasCoefficientFiber.Incidence
+import ResearchLean.AG.AtlasCoefficientFiber.ConstantLimit
+import ResearchLean.AG.AtlasCoefficientFiber.Carrier

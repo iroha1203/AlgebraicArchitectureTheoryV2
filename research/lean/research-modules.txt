@@ -2236,3 +2236,6 @@ ResearchLean.AG.FaceRelationSubdivision.WitnessTwoBLoop	ResearchLean/AG/FaceRela
 ResearchLean.AG.FaceRelationSubdivision.WitnessTwoBPeriods	ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean
 ResearchLean.AG.FaceRelationSubdivision.WitnessTwoCInput	ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean
 ResearchLean.AG.FaceRelationSubdivision.WitnessTwoDiagnostics	ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean
+ResearchLean.AG.AtlasCoefficientFiber.Incidence	ResearchLean/AG/AtlasCoefficientFiber/Incidence.lean
+ResearchLean.AG.AtlasCoefficientFiber.ConstantLimit	ResearchLean/AG/AtlasCoefficientFiber/ConstantLimit.lean
+ResearchLean.AG.AtlasCoefficientFiber.Carrier	ResearchLean/AG/AtlasCoefficientFiber/Carrier.lean
