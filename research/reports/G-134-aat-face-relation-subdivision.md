@@ -3281,3 +3281,309 @@ rootは必要な新規44moduleと既存3ownerを対象別 `lake env lean` で検
 - route_integrity: pass。target_fitting/vacuity/one_way_as_equivalence/goal_or_report_reinterpretation: none-found。
 - next_obligation: Eの二次関係反復、W1–W3の固定原始例と失敗例の全評価、別4本の全固定target完了監査。
 - 全固定target: 未完。Research証明はFormal未移植、ArchSig実装変更なし。固定GOAL/恒久設計/仮定/量化/指定例は不変。
+
+
+### Cycle 10 受理・同期
+
+PR #5283、固定head `85516e645faa507dfc97c0dd607e209da7071c22`、merge `196125e049ba96b908bd01ca1352d8579666ab7a`。
+[最終root監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5283#issuecomment-6027498363)と[新規直接確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5283#issuecomment-6027595301)、[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6027683257)。初回独立数学2・Lean2はMinor issues、中心findingなし。全3非中心findingを有資格な直接対応で解消し当該gate合格同等、Cycle10 proof-obligation-discharged。全454公理/47hash、root対象別とofficial3focused、各lane単一focused成功。最終head Actions `37548040279` / `37548040450` の実7jobとexternal Cloudflare成功。Formal実build/kernel/premise stepはSKIPPED。全Research build/aggregate/全file elaboration未実施。GOAL active/Issue OPEN、E/W1–W3と別の全固定target完了監査が残る。
+
+### Cycle 11 selection — 面複製の一般実比較とW3
+
+- ledger_type: target_cycle_result
+- goal: G-134-aat-face-relation-subdivision
+- cycle: 11
+- goal_blob_sha: `28cbf1944d708b059cd8c4fd22f07cd8d5e1476c`
+- base_oid: `196125e049ba96b908bd01ca1352d8579666ab7a`
+- tracking_issue: 5272
+- proof_state_ref: Cycle10受理・Issue同期および固定GOAL E/W3
+- proof_dag_predecessors: C1新比較/旧埋め込み、C9全Law/fiber核余核/錐、G133 EndpointNaturality/ConeEndDegrees/NamedComparison
+- milestone: 任意有限supported nerveの原始面Fから一枚の別名面を生成し、同じ全支持/各Law実比較のH¹保存と、Fが選択された場合の実H²余核および同じ標準錐H²をℚに同定する。指定W3の同時成立をこの一般構成へ接続する。
+- proof_obligations: 原始face複製とK1台、旧セル恒等/fresh→F比較と旧埋め込みの同じ三成分射；全A/H¹と任意adequate Law各label/全Law保存；差fresh−Fの全射・核と実f2像の一致・実H²余核ℚ・同じ錐H²ℚ；W3 SourceBool/identityReading/identityLaw/3頂点4辺loop/同じ一面表からperiodと複製単独類・H¹ℚ恒等/H²0→ℚ・各labelと全Law2成分。
+- exit_criteria: 上記一般量化と指定W3全同時条件に実宣言対応あり；同じ独立実生成微分/比較との全三成分接続あり；期待rank/相同型/非零余核を入力fieldに置かない；対象全宣言公理・focused・scanと独立PR gate完了。
+- selection_reason: EはBの強い全次数同値との差を担い、W3は一般Eと同じ非零H¹例で検算する依存した到達点である。
+- expected_result_type: proof-obligation-discharged
+- lean_targets: FaceDuplicationGeometry、FaceDuplicationComparison、FaceDuplicationHomology、FaceDuplicationLaw、WitnessThree系
+- risks: H¹の同じ次数1だけを全Hom等号と誤表示しない；H²商のkernel/rangeを抽象入力にせず原始表で放電；Law二ラベルを合併しない；標準錐は同じ実比較；W3固定period・単独cochainを全三成分実生成に接続。
+- unchecked: 構成実装前。完成宣言/検証/独立査読で解消する。completion_candidateはno。
+
+### Cycle 11 証拠対応と前提放電
+
+この到達点は固定EとW3を扱い、W1/W2a–cおよび別の累積完了監査は次義務に残す。
+一般Eは任意のsupported nerve・原始面F・全target部分集合Aを先に取り、Law側は有限Source上の任意adequate FiniteLawFamilyを後から取る。値型全体の有限性を追加しない。
+
+| 固定条項 | 同じ入力・実射への証拠 |
+| --- | --- |
+| E原始追加 | `FaceDuplication.nerve/supported/fold/collapse/sectionMap`：元のchart/edge、Face=旧Face⊕PUnit、fresh→F、K1台は元のFの台。原始端点・面番号・台の全fieldを構成 |
+| E全AのH¹ | `subsetHom/reverseSubsetHom` はC1の新比較から独立生成。`subsetHom_f1/reverseSubsetHom_f1`、二つのH¹合成恒等、`subsetH1Equiv_toLinearMap`。`subsetHom_eq_hereditary` は全三成分で旧射と同じ |
+| E各Law/全Law | `blockHom/lawHom` は同じ原始comparisonと実CellCoordinate/既存D0,D1から独立生成。`block_subset_square` は全三次数、`blockH1Equiv_toLinearMap/lawH1Equiv_toLinearMap` は実H¹比較と同一 |
+| E選択面の実余核 | `difference`=fresh−F、`difference_surjective/difference_kernel` はfresh単独と旧面制限から核=実f2像を証明。`differential_range_le` は実comm1とf1恒等から導出。`oldH2CokernelEquiv_mk` は実二重商の代表値を同じ差として評価 |
+| E標準H²/同じ錐 | `standardH2CokernelOldEquiv` は同じHomのoldH2自然性。`standardH2CokernelEquiv/coneH2Equiv` はともにℚ。実blockも全三成分のcone同型からℚ。全ラベル選択時は`LawValueLabel laws → ℚ`、同じ台のラベルも別成分 |
+| E全次数同値との差 | `freshOnly_cokernel_nonzero`、`standardH2_not_surjective`、`not_homotopy_equivalence`：同じ生成比較を正方向に持つ鎖ホモトピー同値を排除。選択面があるというEの条件を使用 |
+| W3原始表/連結/非定数 | `ConnectedFaceWitness.q/laws/adequate/law_nonconstant/labels_distinct/labelEquiv`。3頂点Fin3、4辺Fin4、F=(0,1,2)、k=3のloop。`loop_attached/every_vertex_connected` で全頂点はvと辺e,aで連結。`WitnessThree.N/fine/comparison` は全chart台と一般Eから構成 |
+| W3独立実微分と同じ射 | `blockEquiv/fineBlockEquiv` と原始endpointからD0を評価、D1はe−a+bが旧一面/細二面で同じ。`named_square` は新比較の独立実blockHomを旧埋め込みAPI経由で同じnamedHomへ接続。named写像をLaw写像の定義にはしない |
+| W3同じ非零H¹ | `loopPeriod/fineLoopPeriod` の核は実boundaryToCycles像（具体potential![0,z(e),z(a)]）。`namedH1Equiv/fineNamedH1Equiv` は実H¹商→ℚ。`block_h1_identity/law_h1_identity`、`blockLoopClass_nonzero/mapped_blockLoopClass` は同じk単独1を保存 |
+| W3 H²とfresh単独 | 旧実D1全射、旧標準H²零。細差の核=実D1像から`fineNamedH2Equiv/fineBlockStandardH2Equiv`→ℚ。`fineBlockStandardH2Equiv_mk/blockFreshClass_difference` は独立実degree2 classをfresh差1へ送り、`blockFresh_cokernel_nonzero` は同じ実H²比較の余核非零 |
+| W3二ラベルを保持 | `labelPairEquiv` は元ラベルfalse/trueをℚ²へ個別評価。全Law H¹/細H¹は同じperiodでℚ²、旧標準H²零、細標準H²ℚ²、同じH²余核と錐H²ℚ²。各labelは一般Eの`face_selected`へ実適用 |
+
+material premise：一般有限Source/全射reading/有限nerve/非空chart台/ℚ/adequate LawはT0入力。原始FはEの入力。
+H²一般部分のhF（台∩Aが非空）はEが指定するdirection-hypothesisで、W3では全台と`labelValueFiber_nonempty`から`face_selected`が放電する。
+二重商一般補題`endCokernelEquiv`のrangeD1≤rangef2は補題の方向仮定で、E適用では`differential_range_le`が同じ実comm1とf1恒等から放電する。
+W3のfinite instance、surjectivity、adequacy、二ラベル、原始incidence、K1、全台、非定数Law、periodの核/全射、非零類、旧D1全射、細D1像は原始表から構成・証明した。
+同型、期待rank、chain-map certificate、H²余核、相同型は入力fieldにない。
+
+proof-use：chart台/K1→支持セル・選択面→元/fresh次数2座標。実比較comm1→二重商。差の核/全射→旧H²余核→同じ標準H²→同じ標準coneH²。独立Law三成分平方→旧H¹/標準H²自然性→各ラベル診断。具体potentialとk単独1→同じ連結入力の非零H¹、fresh単独1→実H²余核非零。元ラベルの同値→全Law二成分。
+
+### Cycle 11 依存とAPI差分
+
+C1/C9の受理済み新比較・旧埋め込み・全Law/fiber/錐接続は上のCycle1/Cycle9受入れ参照と同じ現在sourceに適用する。
+G-133の`EndpointNaturality.oldH2Equiv_natural`、`ConeEndDegrees.comparisonConeHTwoEquiv`、`NamedComparison.namedComparisonHom_square`、`FullSupportIncidence.fullBlockNamedEquivalence/fullBlockNamedHomologyEquiv` はPR [#5265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5265)で受理済み。
+[同PR正式再査読・受入れ](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5265#issuecomment-6001311085)。同PR head `a78de2d9386d5f3877407f008988d17dea4a474e`、merge `a3f33aaaac842385f85c8494597e3bd5ccb802bc`、Endpoint/ConeEndDegrees source commit `1460ce22a8a9b8f5d014c7fc0519e9e1c09dee9f`、FullSupport source commit `a78de2d9386d5f3877407f008988d17dea4a474e`。現在statement、必要な定義、適用引数を確認。
+今回は既存ownerへ4個の公開APIのみ追加：`ThreeCochainComplex.Hom.h1Map_eq_of_f1_eq`、`range_oldH2Map`、`fullBlockNamedHomologyEquiv_apply`、`fullBlockNamedHomologyEquiv_oldH2_mk`。既存定義値/statement/証明は不変。
+これはno-unfold規律のowner APIで、下流が旧H¹/二重商/標準H²の内部定義を展開して接続する方法を採らない。
+標準toolchain/mathlibは固定版のまま。sourceの差分は次のhash表へ固定する。
+
+### Cycle 11 明示spine
+
+新規12moduleと既存3owner APIの明示201宣言を受理候補として固定する。cycle scaffoldはspineへ混在させていない。
+
+```text
+AAT.AG.AtlasDefectComposition.range_oldH2Map
+AAT.AG.AtlasDefectComposition.fullBlockNamedHomologyEquiv_apply
+AAT.AG.AtlasDefectComposition.fullBlockNamedHomologyEquiv_oldH2_mk
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.q
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.laws
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.adequate
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.law_nonconstant
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.label
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.labels_distinct
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.labelEquiv
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.labelEquiv_symm
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.labelEquiv_label
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.nerve
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.supported
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.edgeLeft
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.edgeRight
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.faceEdge0
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.faceEdge1
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.faceEdge2
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.chartSupport
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.loop_attached
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.connecting_edges
+AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.every_vertex_connected
+AAT.AG.FaceRelationSubdivision.endCokernelEquiv
+AAT.AG.FaceRelationSubdivision.endCokernelEquiv_mk
+AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison
+AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseComparison
+AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison_eq_ofHereditary
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subset_compatible
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom
+AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseSubsetHom
+AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison_chart
+AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison_edge
+AAT.AG.FaceRelationSubdivision.FaceDuplication.comparison_face
+AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseComparison_chart
+AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseComparison_edge
+AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseComparison_face
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f1
+AAT.AG.FaceRelationSubdivision.FaceDuplication.reverseSubsetHom_f1
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f2_eq
+AAT.AG.FaceRelationSubdivision.FaceDuplication.reverse_h1Map_comp
+AAT.AG.FaceRelationSubdivision.FaceDuplication.h1Map_reverse_comp
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetH1Equiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetH1Equiv_toLinearMap
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_eq_hereditary
+AAT.AG.FaceRelationSubdivision.FaceDuplication.oldFace
+AAT.AG.FaceRelationSubdivision.FaceDuplication.foldFace
+AAT.AG.FaceRelationSubdivision.FaceDuplication.oldFace_val
+AAT.AG.FaceRelationSubdivision.FaceDuplication.foldFace_val
+AAT.AG.FaceRelationSubdivision.FaceDuplication.foldFace_oldFace
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f2
+AAT.AG.FaceRelationSubdivision.FaceDuplication.subsetHom_f2_old
+AAT.AG.FaceRelationSubdivision.FaceDuplication.selectedFace
+AAT.AG.FaceRelationSubdivision.FaceDuplication.freshFace
+AAT.AG.FaceRelationSubdivision.FaceDuplication.selectedFace_val
+AAT.AG.FaceRelationSubdivision.FaceDuplication.freshFace_val
+AAT.AG.FaceRelationSubdivision.FaceDuplication.foldFace_fresh
+AAT.AG.FaceRelationSubdivision.FaceDuplication.difference
+AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_apply
+AAT.AG.FaceRelationSubdivision.FaceDuplication.freshOnly
+AAT.AG.FaceRelationSubdivision.FaceDuplication.freshOnly_old
+AAT.AG.FaceRelationSubdivision.FaceDuplication.freshOnly_fresh
+AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_freshOnly
+AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_surjective
+AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_f2
+AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_kernel
+AAT.AG.FaceRelationSubdivision.FaceDuplication.differential_range_le
+AAT.AG.FaceRelationSubdivision.FaceDuplication.difference_d1
+AAT.AG.FaceRelationSubdivision.FaceDuplication.fold
+AAT.AG.FaceRelationSubdivision.FaceDuplication.nerve
+AAT.AG.FaceRelationSubdivision.FaceDuplication.supported
+AAT.AG.FaceRelationSubdivision.FaceDuplication.chartSupport_eq
+AAT.AG.FaceRelationSubdivision.FaceDuplication.edgeSupport_eq
+AAT.AG.FaceRelationSubdivision.FaceDuplication.edgeLeft_eq
+AAT.AG.FaceRelationSubdivision.FaceDuplication.edgeRight_eq
+AAT.AG.FaceRelationSubdivision.FaceDuplication.faceSupport_fold
+AAT.AG.FaceRelationSubdivision.FaceDuplication.faceSupport_old
+AAT.AG.FaceRelationSubdivision.FaceDuplication.faceSupport_new
+AAT.AG.FaceRelationSubdivision.FaceDuplication.collapse
+AAT.AG.FaceRelationSubdivision.FaceDuplication.sectionMap
+AAT.AG.FaceRelationSubdivision.FaceDuplication.fold_old
+AAT.AG.FaceRelationSubdivision.FaceDuplication.fold_new
+AAT.AG.FaceRelationSubdivision.FaceDuplication.faceEdge0_fold
+AAT.AG.FaceRelationSubdivision.FaceDuplication.faceEdge1_fold
+AAT.AG.FaceRelationSubdivision.FaceDuplication.faceEdge2_fold
+AAT.AG.FaceRelationSubdivision.FaceDuplication.collapse_chart
+AAT.AG.FaceRelationSubdivision.FaceDuplication.collapse_edge
+AAT.AG.FaceRelationSubdivision.FaceDuplication.collapse_face
+AAT.AG.FaceRelationSubdivision.FaceDuplication.section_chart
+AAT.AG.FaceRelationSubdivision.FaceDuplication.section_edge
+AAT.AG.FaceRelationSubdivision.FaceDuplication.section_face
+AAT.AG.FaceRelationSubdivision.FaceDuplication.degreeTwoQuotientEquiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.degreeTwoQuotientEquiv_mk
+AAT.AG.FaceRelationSubdivision.FaceDuplication.oldH2CokernelEquiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.oldH2CokernelEquiv_mk
+AAT.AG.FaceRelationSubdivision.FaceDuplication.freshOnly_cokernel_nonzero
+AAT.AG.FaceRelationSubdivision.FaceDuplication.standardH2CokernelOldEquiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.standardH2CokernelEquiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.coneH2Equiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.lawHom
+AAT.AG.FaceRelationSubdivision.FaceDuplication.blockHom
+AAT.AG.FaceRelationSubdivision.FaceDuplication.blockHom_eq_hereditary
+AAT.AG.FaceRelationSubdivision.FaceDuplication.block_subset_square
+AAT.AG.FaceRelationSubdivision.FaceDuplication.blockH1Equiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.blockH1Equiv_toLinearMap
+AAT.AG.FaceRelationSubdivision.FaceDuplication.lawH1Equiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.lawH1Equiv_toLinearMap
+AAT.AG.FaceRelationSubdivision.FaceDuplication.blockConeH2Equiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.blockStandardH2CokernelEquiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.blockOldH2CokernelEquiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.lawConeH2Equiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.lawStandardH2CokernelEquiv
+AAT.AG.FaceRelationSubdivision.FaceDuplication.standardH2_not_surjective
+AAT.AG.FaceRelationSubdivision.FaceDuplication.not_homotopy_equivalence
+AAT.AG.FaceRelationSubdivision.WitnessThree.d1_surjective
+AAT.AG.FaceRelationSubdivision.WitnessThree.named_oldH2_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference_apply
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedFreshOnly
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference_freshOnly
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference_surjective
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedDifference_kernel
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineNamedH2Equiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineNamedH2Equiv_mk
+AAT.AG.FaceRelationSubdivision.WitnessThree.named_fresh_class_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessThree.block_standardH2_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockStandardH2Equiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockStandardH2Equiv_mk
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockFreshOnly
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockFreshClass
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockFreshClass_difference
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockFreshClass_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessThree.block_h2Map_zero
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockFresh_cokernel_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockH1Period
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockH1Period
+AAT.AG.FaceRelationSubdivision.WitnessThree.block_h1_identity
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockLoopClass
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockLoopClass_period
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockLoopClass_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessThree.mapped_blockLoopClass_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockLoopClass
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockLoopClass_period
+AAT.AG.FaceRelationSubdivision.WitnessThree.mapped_blockLoopClass
+AAT.AG.FaceRelationSubdivision.WitnessThree.face_selected
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockH2CokernelEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockConeH2Equiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.lawH2CokernelFamilyEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.lawConeH2FamilyEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.labelPairEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.lawH1Period
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLawH1Period
+AAT.AG.FaceRelationSubdivision.WitnessThree.law_h1_identity
+AAT.AG.FaceRelationSubdivision.WitnessThree.lawH1PairEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLawH1PairEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.law_standardH2_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLawStandardH2PairEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.law_h2Map_zero
+AAT.AG.FaceRelationSubdivision.WitnessThree.lawH2CokernelPairEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.lawConeH2PairEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.N
+AAT.AG.FaceRelationSubdivision.WitnessThree.fine
+AAT.AG.FaceRelationSubdivision.WitnessThree.comparison
+AAT.AG.FaceRelationSubdivision.WitnessThree.chart_full
+AAT.AG.FaceRelationSubdivision.WitnessThree.edge_full
+AAT.AG.FaceRelationSubdivision.WitnessThree.face_full
+AAT.AG.FaceRelationSubdivision.WitnessThree.fine_chart_full
+AAT.AG.FaceRelationSubdivision.WitnessThree.fine_edge_full
+AAT.AG.FaceRelationSubdivision.WitnessThree.fine_face_full
+AAT.AG.FaceRelationSubdivision.WitnessThree.blockEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineBlockEquiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.d0_apply
+AAT.AG.FaceRelationSubdivision.WitnessThree.d1_apply
+AAT.AG.FaceRelationSubdivision.WitnessThree.fine_d0_apply
+AAT.AG.FaceRelationSubdivision.WitnessThree.fine_d1_apply
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedHom
+AAT.AG.FaceRelationSubdivision.WitnessThree.named_square
+AAT.AG.FaceRelationSubdivision.WitnessThree.named_f1
+AAT.AG.FaceRelationSubdivision.WitnessThree.named_f2
+AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod
+AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod_apply
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod_apply
+AAT.AG.FaceRelationSubdivision.WitnessThree.cycle_relation
+AAT.AG.FaceRelationSubdivision.WitnessThree.fine_cycle_relation
+AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod_kernel
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod_kernel
+AAT.AG.FaceRelationSubdivision.WitnessThree.loopOnly
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopOnly
+AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod_loopOnly
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod_loopOnly
+AAT.AG.FaceRelationSubdivision.WitnessThree.loopPeriod_surjective
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineLoopPeriod_surjective
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedH1Equiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineNamedH1Equiv
+AAT.AG.FaceRelationSubdivision.WitnessThree.namedH1Equiv_mk
+AAT.AG.FaceRelationSubdivision.WitnessThree.fineNamedH1Equiv_mk
+AAT.AG.FaceRelationSubdivision.WitnessThree.named_h1_identity
+AAT.AG.FaceRelationSubdivision.WitnessThree.loop_class_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessThree.fine_loop_class_nonzero
+AAT.AG.TwoPhase.ThreeCochainComplex.Hom.h1Map_eq_of_f1_eq
+```
+
+### Cycle 11 source hashes
+
+```text
+research/lean/ResearchLean/AG/AtlasDefectComposition/EndpointNaturality.lean	1	04e56cbecdd1fc4a7c0056533c58e590750e0eb81a2f0c6371cdebde8f446b80
+research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportIncidence.lean	2	46843cd005d929fb8deb0d2a8aa577a9e064b434e4e627f2049411b1dbf9c2e7
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	20	e2ea6ec3a2235e2dc6c1ce4f63beb720c8e369e218bb79518ee6acc00abf9da5
+research/lean/ResearchLean/AG/FaceRelationSubdivision/EndCokernel.lean	2	5dcabaa498b3c8048722b25aff0e027dfd7ad8b478e82ca7bdb1da9d1312c07e
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationComparison.lean	20	11e130ad640b54f9686cc9add08ab1dbd6cc8e5d7ed05c76a246a5912d680229
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationDegreeTwo.lean	23	f0e59af509e3568d8836bad2235f0192b76634ac95a157001e515111d433b935
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationGeometry.lean	23	1454e63d524b133b552f96c6c657fe15a640485521fbd2eda2788c37ec83e03a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationHomology.lean	8	0991938d64d0727c5369289f01509bdbb6c82d78bbb9ded596c295bf34218136
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationLaw.lean	13	76bb6e3b298be460026300707dbfde24f7afb90bf14a8b12dff49166842795a2
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FaceDuplicationSeparation.lean	2	e985be31349170f1fdb593d18620ee110227e8bab4903f1c298321f8655d8b9d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDegreeTwo.lean	20	3bb7acd9aeee29c1e4ca38308a18f9b9264bd2398491604d56309e0862edf782
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeDiagnostics.lean	26	7110da57ca54de0a526d5278f085bee34cd728d85d163174d219366871e399a0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreeInput.lean	19	9d3124d4e0afd5fc5cabf0a82fbac1078b5573453394860f48a1882c24e0af4d
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessThreePeriods.lean	21	72e8e663a519d590a469bdfc9b48e3e26cfa4689e0ec5f8bb0ffee34fcad1f9a
+research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean	1	6aaf6dbe8cd564153ca4d7cddbc55d60beb1e4d97ae1d78abfe5b2d4ca42b9f2
+```
+
+### Cycle 11 validation / result proposal
+
+rootの対象別focused elaborationは新規12moduleと既存3owner APIで成功。最終official単一selectorは `WitnessThreeDiagnostics.lean`（26宣言）、`FaceDuplicationLaw.lean`（13）、`FaceDuplicationSeparation.lean`（2）を各別に成功。追加連結/非定数APIを持つ`ConnectedFaceWitnessInput.lean`も最終20宣言のfocused成功。
+全201のsource/spine/明示#print query/出力集合一致、標準propext/Classical.choice/Quot.soundのみ。公理log SHA-256 `2b792b93220f381e2facba69ce7fc0a2cca1ac5b8921d75295544e61fac20731`。
+15source hash、research-modules.txtの12新規登録/TSV一意性/全2211行source存在、import存在/方向、placeholder/hidden/BiDi/privacy、diffを機械確認。全Research build/aggregate/全file elaborationは未実施。CI・固定head独立査読はPRコメントで判定する。
+
+- proposed_result_type: `proof-obligation-discharged`
+- proof_obligation_delta / exit_criteria_status: 一般Eの全A/任意Law H¹保存、選択面H²実余核/同じ標準錐ℚ、全次数同値との差、同じ原始W3の全指定同時成立を宣言と入力生成で放電。
+- split_reason: none
+- completion_candidate: no
+- selected obligation の undischarged material premise: なし（独立PR gateで検算）。
+- certificate_provenance: 原始face追加→全field→独立実比較。二重商/difference/period/標準相同型は出力。
+- structure_field_escape: none-found。route_integrity: pass。target_fitting/vacuity/one_way_as_equivalence/goal_or_report_reinterpretation: none-found。
+- blocking_findings: PR独立査読前。
+- next_obligation: W1 paired witness全評価、W2a–cの固定退化入力全評価、別4本の累積全固定target完了監査。
+- 全固定target: 未完。GOAL active、Issue OPEN。Research成果はFormal未移植。ArchSig実装変更なし。固定GOAL/恒久設計/仮定/量化/指定例は不変。

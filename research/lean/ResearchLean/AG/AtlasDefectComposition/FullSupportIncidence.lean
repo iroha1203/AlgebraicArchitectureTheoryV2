@@ -1,5 +1,6 @@
 import ResearchLean.AG.AtlasDefectComposition.FullSupportGraph
 import ResearchLean.AG.AtlasDefectComposition.CochainEquivalence
+import ResearchLean.AG.AtlasDefectComposition.EndpointNaturality
 import ResearchLean.AG.AtlasDefectComposition.LinearConjugation
 import Formal.Util.AssertStandardAxioms
 /-! # 全台blockの面incidence同定
@@ -126,6 +127,22 @@ def fullBlockNamedHomologyEquiv [Fintype Source] (m : ℤ) :
       (zeroExtension (namedComplex D)).homology m :=
   (HomologicalComplex.homologyMapIso
     (cochainEquivZeroExtensionIso (fullBlockNamedEquivalence D laws ha hs₀ hs₁ hs₂ label)) m).toLinearEquiv
+/-- 全三成分同型の標準homology同定は同じ実Homの零延長を読む。 -/
+@[simp] theorem fullBlockNamedHomologyEquiv_apply [Fintype Source] (m : ℤ)
+    (x : (zeroExtension (D.lawValueBlockComplex laws ha label)).homology m) :
+    fullBlockNamedHomologyEquiv D laws ha hs₀ hs₁ hs₂ label m x =
+      HomologicalComplex.homologyMap (zeroExtensionMap
+        (fullBlockNamedEquivalence D laws ha hs₀ hs₁ hs₂ label).toHom) m x := rfl
+/-- 実block次数2cochainの標準類を名付き同定へ移すと同じ次数2座標を読む。 -/
+theorem fullBlockNamedHomologyEquiv_oldH2_mk [Fintype Source]
+    (z : (D.lawValueBlockComplex laws ha label).C2) :
+    fullBlockNamedHomologyEquiv D laws ha hs₀ hs₁ hs₂ label 2
+      (oldH2Equiv (D.lawValueBlockComplex laws ha label)
+        ((LinearMap.range (D.lawValueBlockComplex laws ha label).d1).mkQ z)) =
+    oldH2Equiv (namedComplex D) ((LinearMap.range (namedComplex D).d1).mkQ
+      ((fullBlockNamedEquivalence D laws ha hs₀ hs₁ hs₂ label).e2 z)) := by
+  rw [fullBlockNamedHomologyEquiv_apply, ← oldH2Equiv_natural, oldH2Map_mk]
+  rfl
 
 end AAT.AG.AtlasDefectComposition
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition

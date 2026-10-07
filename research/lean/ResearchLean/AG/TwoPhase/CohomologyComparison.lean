@@ -135,6 +135,17 @@ theorem range_h1Map (f : Hom source target) :
   unfold h1Map Submodule.mapQ
   rw [Submodule.range_liftQ, LinearMap.range_comp]
 
+/-- 同じ二複体間のHomは、次数1成分が等しければ同じH¹比較を誘導する。 -/
+theorem h1Map_eq_of_f1_eq (f g : Hom source target) (h : f.f1 = g.f1) :
+    f.h1Map = g.h1Map := by
+  apply LinearMap.ext
+  intro x
+  obtain ⟨z, rfl⟩ := (LinearMap.range source.boundaryToCycles).mkQ_surjective x
+  rw [h1Map_mk, h1Map_mk]
+  congr 1
+  apply Subtype.ext
+  simp only [cyclesMap_apply, h]
+
 end Hom
 
 end ThreeCochainComplex
