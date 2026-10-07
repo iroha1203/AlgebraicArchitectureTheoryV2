@@ -99,7 +99,7 @@ def contraction (A : Set Bool) := EdgeSubdivision.chainContraction N () A
 theorem law_comparison : EdgeSubdivision.lawR N () laws adequate=
     comparison.generatedComparisonHom laws adequate adequate := EdgeSubdivision.lawR_eq_generated N () laws adequate
 /-- 空旧辺台から各ラベルの実辺座標は存在しない。 -/
-def edgeBlockIsEmpty (l : LawValueLabel laws) : IsEmpty (N.EdgeBlockCoordinate laws adequate l) :=
+theorem edgeBlockIsEmpty (l : LawValueLabel laws) : IsEmpty (N.EdgeBlockCoordinate laws adequate l) :=
   ⟨fun x => by obtain ⟨t,ht,_⟩ := x.val.generated; rw [edge_empty] at ht; exact ht⟩
 /-- 同じ原始旧 H¹ は各ラベルで零。 -/
 theorem old_h1_zero (l : LawValueLabel laws) : Subsingleton (N.lawValueBlockComplex laws adequate l).H1 := by

@@ -3966,7 +3966,7 @@ selection:
 | W2a 実 H¹ の alpha/beta 商と k period | `WitnessTwoAPeriods.alphaEquiv/incidenceEquiv` の全三成分同定から C11 の実名付き商の period を輸送。beta は `beta_edge_cases/beta_face_empty` の実 a,k だけで、`betaLoopPeriod_kernel` の potential(v=0,u=z(a)) と `betaLoopOnly` から商=Q。全台入力への変更はない。 |
 | W2a 元ラベルの旧細 k period と同じ実恒等 | `WitnessTwoALoop.blockEquiv/oldBlockPeriod/oldBlockPeriod_mk/fineBlockPeriod/fineBlockPeriod_mk`。粗・細とも実 cocycle 代表の k 座標を読み、`block_period_identity` は独立実 blockR の同じ H¹ map の恒等。`oldLoopCycle_apply/fineLoopCycle_apply/comparison_maps_loop/old_loop_nonzero/fine_loop_nonzero` は同じ粗・細 k 単独1代表とその非零商類を保つ。 |
 | W2b 一頂点、二loop、三重面、各位置は別名 | `WitnessTwoBInput.nerve/N/slot_target/occurrence/occurrenceEquiv/occurrence_injective/diagonal_injective/triangle_injective`。Occurrence は Face×Fin3 の位置を持ち、集合へ潰さない。`old_boundary` が符号1−1+1から e を得る。 |
-| W2b 指定 sF=center+t0−t1+t2、h1di=-ti | `section_face/h0_new/h1_diagonal` の同じ一般 s/h の評価。Case.repeated の `rs_all/sr_h_all` は全 A の支持 chain 式をそのまま適用する。 |
+| W2b 指定 sF=center+t0−t1+t2、h1di=-ti | `WitnessTwoB.section_face/homotopy_vertex/homotopy_diagonal` の同じ一般 s/h の評価。Case.repeated の `rs_all/sr_h_all` は全 A の支持 chain 式をそのまま適用する。 |
 | W2b 実旧細 H¹=Q、同じ k period 恒等 | `WitnessTwoBPeriods.cycle_relation` は原始 d1 の e 値が零、`loopPeriod_kernel` は零 potential へ戻す。k 単独 cochain による全射から `namedH1Period`。`blockEquiv` は独立 block の全三成分同定。`WitnessTwoBLoop.fineBlockPeriod_mk/fineLoopCycle_apply` は保持 k の実値と全細代表を評価、`comparison_maps_loop` と旧細非零性は同じ実 blockR に対するもの。 |
 | W2c 非交差台、空辺台、空面と出現、alpha対/beta恒等 | `WitnessTwoCInput.nerve/N/edge_empty/fresh_support/c_support/b_empty/occurrenceIsEmpty/retainedIsEmpty` は同じ一般分割が空辺台にも定義できる構成。`alpha_pair_selected/beta_pair_absent/b_absent/homotopy_vertex/beta_identity` と Case.emptySupport の同じ全A収縮が両成分を閉じる。 |
 | W2c 同じ実旧細 H¹零、全Lawも零 | `edgeBlockIsEmpty/old_h1_zero` は旧実C1零から。`fine_h1_zero` は同じ独立実 blockR を hom とする標準同型の逆から。`empty_old_law_h1_zero/empty_fine_law_h1_zero` は全元ラベルの実H¹族へ渡す。 |
@@ -4218,7 +4218,7 @@ research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	19
 research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	21	4b6bdc381508fafdd8e62c4b5fd8a508226685619b372c8a6630295a9464e1b7
 research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	13	ab177628c77402f63de842948f1222f2305e159a325e179cbff06d412502c504
 research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	18	854ebe20fc64f280b9654b619fa7dace80a6a903c6c9dc4e7fcffb11300eab04
-research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	21	e5796d96c2ba03f3a422e5bd9bce78feeb58b9c9ff4fd56d667978a6ddf166a0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	21	0473a7fd7e3185df850f6575cc185bcb2038f62262a27248cee1cebb51976011
 research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	30	2746a8b1dc394d13f3f4ac45f8eb3237edafb14e62a19a8369f4ab5c526982d0
 research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	9	893c599f804a17a7c55dd1447706884ed42b612129473d6c7e41767b9802012d
 ```
