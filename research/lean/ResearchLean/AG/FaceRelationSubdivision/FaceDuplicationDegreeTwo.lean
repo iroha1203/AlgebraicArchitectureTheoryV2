@@ -49,6 +49,14 @@ def foldFace (f : (supported N F).FaceInTargetSubset A) : N.FaceInTargetSubset A
     (subsetHom N F A).f2 z (oldFace N F A f) = z f := by
   rw [subsetHom_f2, foldFace_oldFace]
 
+/-- 実section双対の次数2は同じ旧面包含を読む。 -/
+@[simp] theorem reverseSubsetHom_f2 (z : ((supported N F).targetSubsetComplex A).C2)
+    (f : N.FaceInTargetSubset A) :
+    (reverseSubsetHom N F A).f2 z f = z (oldFace N F A f) := by
+  exact ((reverseComparison N F).targetSubsetPullback2_apply A A (subset_compatible A) z f).trans (by
+    rw [(reverseComparison N F).targetSubsetFaceMapOption_eq_some A A (subset_compatible A) f (.inl f.val)
+      (reverseComparison_face N F f.val)]
+    rfl)
 variable (hF : ∃ t, t ∈ N.faceSupport F ∧ t ∈ A)
 /-- 原始Fの支持がAに交わる場合の旧選択面。 -/
 def selectedFace : N.FaceInTargetSubset A := ⟨F, hF⟩

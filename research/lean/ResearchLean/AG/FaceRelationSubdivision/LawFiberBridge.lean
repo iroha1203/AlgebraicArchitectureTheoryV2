@@ -87,6 +87,19 @@ theorem lawBlockSelectedSubsetZeroExtensionIso_natural (A : Set q.Target) (B : S
   change zeroExtensionMap (M.labelFiberComparisonHom laws ha hr l) ≫ _ = _ at ht
   simpa only [Category.assoc] using
     congrArg (fun f => (lawBlockFiberZeroExtensionIso N laws ha l).hom ≫ f) ht
+/-- 選択fiberの同じ標準homology射の点ごとの自然性。 -/
+theorem lawBlockSelectedSubsetHomology_natural (A : Set q.Target) (B : Set r.Target)
+    (hA : labelValueFiber laws q ha l = A) (hB : labelValueFiber laws r hr l = B)
+    (hs : ∀ t, t ∈ B → comparisonFactor q r h t ∈ A) (n : ℤ)
+    (x : (zeroExtension (N.lawValueBlockComplex laws ha l)).homology n) :
+    (homologyMapIso (lawBlockSelectedSubsetZeroExtensionIso E laws hr l B hB) n).hom
+        (homologyMap (zeroExtensionMap (M.generatedBlockComparisonHom laws ha hr l)) n x) =
+      homologyMap (zeroExtensionMap (M.targetSubsetComparisonHom A B hs)) n
+        ((homologyMapIso (lawBlockSelectedSubsetZeroExtensionIso N laws ha l A hA) n).hom x) := by
+  have h := congrArg (fun g => homologyMap g n)
+    (lawBlockSelectedSubsetZeroExtensionIso_natural N E laws ha M hr l A B hA hB hs)
+  simp only [homologyMap_comp, ← homologyMapIso_hom] at h
+  exact congrArg (fun g => g x) h
 /-- 指定した両fiber比較と実block比較の標準錐は元と微分を保つ同型を持つ。 -/
 def lawBlockSelectedSubsetConeIso (A : Set q.Target) (B : Set r.Target)
     (hA : labelValueFiber laws q ha l = A) (hB : labelValueFiber laws r hr l = B)
