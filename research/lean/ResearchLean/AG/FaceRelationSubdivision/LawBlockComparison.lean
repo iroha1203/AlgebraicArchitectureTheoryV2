@@ -819,6 +819,22 @@ theorem generatedPullback2_block_component [Fintype Source]
           coordinate coarseFace hmap]
       rfl
 
+/-! ## 実生成 block 射の公開成分 API -/
+/-- chart block 生成写像は原始 chart 名を保持する。 -/
+@[simp] theorem chartBlockCoordinateMap_cell (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading) (hf : laws.Adequate fineReading)
+    (l : LawValueLabel laws) (x : fine.ChartBlockCoordinate laws hf l) :
+    (M.chartBlockCoordinateMap laws hc hf l x).val.cell = M.chartMap x.val.cell := rfl
+/-- edge block 生成写像は指定された原始辺名を保持する。 -/
+@[simp] theorem edgeBlockCoordinateMap_cell (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading) (hf : laws.Adequate fineReading)
+    (l : LawValueLabel laws) (x : fine.EdgeBlockCoordinate laws hf l) (e) (he : M.edgeMap x.val.cell = some e) :
+    (M.edgeBlockCoordinateMap laws hc hf l x e he).val.cell = e := rfl
+/-- face block 生成写像は指定された原始面名を保持する。 -/
+@[simp] theorem faceBlockCoordinateMap_cell (M : IncidenceSupportedComparison coarseReading fineReading hcoarser coarse fine)
+    (laws : FiniteLawFamily Source) (hc : laws.Adequate coarseReading) (hf : laws.Adequate fineReading)
+    (l : LawValueLabel laws) (x : fine.FaceBlockCoordinate laws hf l) (f) (he : M.faceMap x.val.cell = some f) :
+    (M.faceBlockCoordinateMap laws hc hf l x f he).val.cell = f := rfl
 end IncidenceSupportedComparison
 
 end AAT.AG.FaceRelationSubdivision

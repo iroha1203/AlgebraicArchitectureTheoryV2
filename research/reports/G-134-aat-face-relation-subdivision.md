@@ -3587,3 +3587,327 @@ rootの対象別focused elaborationは新規12moduleと既存3owner APIで成功
 - blocking_findings: PR独立査読前。
 - next_obligation: W1 paired witness全評価、W2a–cの固定退化入力全評価、別4本の累積全固定target完了監査。
 - 全固定target: 未完。GOAL active、Issue OPEN。Research成果はFormal未移植。ArchSig実装変更なし。固定GOAL/恒久設計/仮定/量化/指定例は不変。
+
+
+### Cycle 11 merged receipt
+
+PR #5284 final head `c6138111c0cb60fe566cbdcda77a4702791422ae` は merge `c36d19589ccc9a75cbfc03cf5af354e1989dd417`（2026-10-07T00:34:47Z）で main に反映済み。
+数学2本・Lean2本の独立査読は全て `No major findings`。正式コメントは 6028135595 / 6028130150 / 6028148636 / 6028124788。
+[root 最終受入れ](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5284#issuecomment-6028150343) は `Mergeable / No major findings / proof-obligation-discharged`。
+[Issue 同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6028207465) で E/W3 の受理と W1/W2/別完了監査の残存を記録した。
+exact-head CI 8チェック成功。Lean 37551599979 / Tool 37551599978。Formal 実 build/kernel/premise-diff は SKIPPED、Research 全体 build・aggregate・全file elaboration は未実施。
+
+## Cycle 12 selection: W1 の全 paired witness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-134-aat-face-relation-subdivision
+cycle: 12
+goal_blob_sha: 28cbf1944d708b059cd8c4fd22f07cd8d5e1476c
+base_oid: c36d19589ccc9a75cbfc03cf5af354e1989dd417
+tracking_issue: 5272
+report_path: research/reports/G-134-aat-face-relation-subdivision.md
+selection:
+  proof_state_ref: C11 merged receipt / Issue 6028207465
+  proof_dag_predecessors: [C1 incidence generation, C2 triangle contraction, C3 reading presentation, C9 Law decomposition, C10 finite composition, G133 full support incidence]
+  milestone: 固定 W1 の原始 paired 入力・全 period 同定・同じ subset/block/Law 比較と実欠損を閉じる
+  proof_obligations:
+    - Source Bool×Bool の非対称 reading 順序と同じ非定数 Law の二ラベル
+    - reading 逆像＋三角形追加の Kplus と面だけを除いた Kminus、原始 rminus=rplus j と実 uminus=jstar uplus
+    - 同一連結成分の非零 loop、二辺の同じ粗像による C5 失敗、旧 hereditary field 不成立
+    - 原始端点・面から生成した period 商、plus の x→x と minus の x→(x,0)
+    - 同じ実比較の各ラベル核余核・全 Law 余核 Q²・blockDefect (0,0)/(0,2)
+    - 全非空 A⊆Bool の同じ subset 比較と空 A の零複体恒等
+  exit_criteria:
+    - 全指定 W1 条項を入力からの宣言・具体類・同じ実射に対応させる
+    - 外部 rank/同型/保存証明 field を置かず、全 selected material premise を放電する
+    - source/spine/axiom query/output の全宣言一致と focused/必要 targeted/共通 scan を完了する
+  selection_reason: 最終完了への未接続指定例 W1 を全要求同時に消化する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [WitnessOneInput, WitnessOneComparison, IncidenceNamedComparison, WitnessOnePeriods, WitnessOneDiagnostics, WitnessOneSubset]
+  risks: [混在比較を旧 hereditary API で置換しない, named 座標は実生成後の出力として全三成分 square を証明する, 面削除以外の paired 入力を変えない, 全 subset と二 Law ラベルを保持する]
+  unchecked: [W1 の実装と全指定接続, 固定 head 独立 PR gate]
+```
+
+この cycle は W1 の全要求を終了条件とし、W2a–c は次の数学的到達点とする。全 target 完了候補ではない。
+
+
+### Cycle 12 claim mapping / premise / generation DAG
+
+固定 W1 は `WitnessOneInput` → `WitnessOneComparison` → `WitnessOnePeriods` → `WitnessOnePeriodMaps` → `WitnessOneCokernel` → `WitnessOneDiagnostics` と、`FullSupportSubset` / `FullSupportSubsetComparison` → `WitnessOneSubset` で同じ入力から実現する。
+
+| 固定 W1 の要求 | 入力からの実証拠 |
+| --- | --- |
+| Source Bool×Bool、qc=fst、qf=id、真の順序、実因子fst | `Source/qc/qf`, `coarser`, `not_reverse`, `factor_apply`。reading 自体が全射証明を含む constructor。 |
+| 同じ非定数 Law と二発生ラベル | `laws`, `coarseAdequate/fineAdequate`, `law_nonconstant`, `label`, `labels_distinct`, `labelEquiv`。値型有限を一般仮定にしない。 |
+| 粗 v,w / e1,k / 面なし、細三角形追加、面だけ除去 | `N/pulled/plus/minusNerve/minus`, `paired_table`。`plus` は C3 reading 逆像 → C1 triangle 原始 constructor の指定合成。 |
+| chart 全台と K1 の辺・面台 | `chart_full`, `plus_chart_full`, `minus_chart_full` とそれぞれの `edge_full/face_full`。 |
+| 非零 loop と変更部分の同一連結成分 | `loop_attached`, `every_vertex_connected` と `old_loop_nonzero/plus_loop_nonzero/minus_loop_nonzero`。 |
+| 原始比較、包含、同じ三次数合成 | `inclusion/j/rPlus/rMinus`, `primitive_composition`, `block_composition/law_composition/subset_composition`。原始 r 表から各実射を独立生成。 |
+| C5 失敗、旧 hereditary 条件不成立 | `distinct_lifts_same_image`, `edge_lift_uniqueness_fails`, `not_hereditary`。同じ e1/e2 と同じ f の辺像による反証。 |
+| 新比較クラスと G133 全台名付き表の接続 | `IncidenceFullSupportPullback.fullBlock_pullback0/1_some/1_none/2_some/2_none`, `incidenceNamedHom`, `incidenceNamedHom_square`, `plus_named_square/minus_named_square`。全三成分同時の実正方形。 |
+| 粗・plus の k period、minus の k と c−e1+e2 | `oldPeriod/plusPeriod/minusPeriod`, `plus_cycle_iff`, 三つの `*_kernel` と `*_surjective`、`oldH1Period/plusH1Period/minusH1Period`。核からの逆構成は v=0,w=z(e1),v'=z(c)。 |
+| 同じ実 H¹ 比較 x→x / x→(x,0) | `plus_named_identity/minus_named_injection`, `plus_block_identity/minus_block_injection`, `plus_law_period_identity/minus_law_period_injection`。matrix は出力評価であり入力でない。 |
+| 同じ loop 単独1を同じ loop 単独1へ送り非零 | `oldBlockLoop/plusBlockLoop/minusBlockLoop`, `*_period`, `plus_maps_loop/minus_maps_loop`, `*_loop_nonzero`。 |
+| e2 単独1は minus の追加実余核類、plus では面微分1 | `minusSection`, `e2_plus_d1_one/e2_not_plus_cycle`, `minusBlockExtra`, `minusBlockCokernel_mk`, `minus_extra_cokernel_nonzero`。 |
+| 一ラベル実核/余核 (0,0)/(0,Q) | `plus_block_injective/surjective`, `minus_block_injective`, `plus_kernel_subsingleton/plus_cokernel_subsingleton/minus_kernel_subsingleton`, `minusBlockCokernel`。 |
+| 二ラベル全 Law 実余核Q²、実欠損 (0,0)/(0,2) | `minusLawCokernel`, `labelPairEquiv`, 全 Law 核・余核零定理、`plus_block_defect/minus_block_defect/plus_law_defect/minus_law_defect`。C9 の同じ独立実比較分解を適用。 |
+| すべての非空 A の実 subset と空 A の零比較 | `fineSubset_nonempty`, `oldSubsetEquiv/plusSubsetEquiv/minusSubsetEquiv`, `plus_subset_square/minus_subset_square`, 三つの `*SubsetPeriod`, `plus_subset_identity/minus_subset_injection/minusSubsetCokernel`, `plus_subset_bijective/minus_subset_injective`, `emptySubsetEquiv/plus_empty_identity/minus_empty_identity`。 |
+
+material premise の役割と使用:
+
+- W1 の有限 Source/全射/セル有限性/非空 chart/K1/符号は原始入力 constructor と `chart_full` 群から放電し、実 Law・subset 微分の生成に使用する。
+- adequacy、真の reading 細分、二発生ラベル、連結性は具体評価と原始道から放電する。rank・相同型・期待余核を field/argument に置かない。
+- 一般 `IncidenceFullSupportPullback` / `incidenceNamedHom_square` の M、全台、adequacy は direction-hypothesis。W1 では rPlus/rMinus、各全台、具体 adequacy を渡して discharge-required の適用を閉じる。
+- 一般 `fullSubsetNamedEquiv/fullSubsetNamed_square` の全台と A/B 非空は direction-hypothesis。W1 の全非空 A 分岐では全台定理・因子全射の `fineSubset_nonempty` から放電し、空 A 分岐を別の実零複体同型で閉じる。
+- period 商同型・named 三項同型・実 kernel/cokernel 同型・二ラベル同型は入力ではなく出力。旧 `CochainEquiv.h1Equiv_naturality_apply` を同じ実射の全三成分正方形から適用する。
+- structure-field escape: 新規 certificate input はない。既存 Hom/CochainEquiv の comm/両逆 field は原始表、potential、kernel/surjectivity の証明から生成する。primitive incidence M に実診断結論の field はない。
+- no-unfold: 新しい semantic constructor の基本 API を同じ owner に置く。既存 `LawBlockComparison` に chart/edge/face block coordinate のセル評価 API を3本だけ追加して利用する。既存定義・statement・proof は変更しない。
+
+再利用依存は report の既受理 C1/C3/C9 と G133 #5265 に接続する。G133 の `FullSupportBlocks/FullSupportIncidence/CochainEquivalence/LinearConjugation` は現在の source・仮定・適用引数を実読した。C9 の実全 Law 族分解は現在の `LawComparisonDefect` の同じ rPlus/rMinus に適用する。標準 Lean/mathlib 版は固定版のまま。
+
+### Cycle 12 accepted-spine proposal
+
+全205の明示宣言（新規11moduleの202宣言＋既存ownerの3 API）を以下に固定する。全12sourceのhashと明示 query/output の集合を機械照合した。
+
+```text
+AAT.AG.FaceRelationSubdivision.fullSelected
+AAT.AG.FaceRelationSubdivision.fullSelected_val
+AAT.AG.FaceRelationSubdivision.fullSelectedCochain
+AAT.AG.FaceRelationSubdivision.fullSelectedCochain_apply
+AAT.AG.FaceRelationSubdivision.fullSubsetNamedEquiv
+AAT.AG.FaceRelationSubdivision.fullSubsetNamedEquiv_e0
+AAT.AG.FaceRelationSubdivision.fullSubsetNamedEquiv_e1
+AAT.AG.FaceRelationSubdivision.fullSubsetNamedEquiv_e2
+AAT.AG.FaceRelationSubdivision.fullSubsetNamed_square
+AAT.AG.FaceRelationSubdivision.fullBlock_pullback1_some
+AAT.AG.FaceRelationSubdivision.fullBlock_pullback1_none
+AAT.AG.FaceRelationSubdivision.fullBlock_pullback0
+AAT.AG.FaceRelationSubdivision.fullBlock_pullback2_some
+AAT.AG.FaceRelationSubdivision.fullBlock_pullback2_none
+AAT.AG.FaceRelationSubdivision.namedOptionPullback
+AAT.AG.FaceRelationSubdivision.namedOptionPullback_apply
+AAT.AG.FaceRelationSubdivision.incidenceNamedHom
+AAT.AG.FaceRelationSubdivision.incidenceNamedHom_f0
+AAT.AG.FaceRelationSubdivision.incidenceNamedHom_f1
+AAT.AG.FaceRelationSubdivision.incidenceNamedHom_f2
+AAT.AG.FaceRelationSubdivision.incidenceNamedHom_square
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.chartBlockCoordinateMap_cell
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.edgeBlockCoordinateMap_cell
+AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.faceBlockCoordinateMap_cell
+AAT.AG.FaceRelationSubdivision.WitnessOne.periodInjection
+AAT.AG.FaceRelationSubdivision.WitnessOne.periodInjection_apply
+AAT.AG.FaceRelationSubdivision.WitnessOne.extraProjection
+AAT.AG.FaceRelationSubdivision.WitnessOne.extraProjection_apply
+AAT.AG.FaceRelationSubdivision.WitnessOne.periodInjection_injective
+AAT.AG.FaceRelationSubdivision.WitnessOne.extraProjection_kernel
+AAT.AG.FaceRelationSubdivision.WitnessOne.extraProjection_surjective
+AAT.AG.FaceRelationSubdivision.WitnessOne.injectionCokernel
+AAT.AG.FaceRelationSubdivision.WitnessOne.injectionCokernel_mk
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockCokernel
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockCokernel_mk
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_extra_cokernel_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_block_injective
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_block_surjective
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_block_injective
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_kernel_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_cokernel_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_kernel_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessOne.inclusion
+AAT.AG.FaceRelationSubdivision.WitnessOne.j
+AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus
+AAT.AG.FaceRelationSubdivision.WitnessOne.rMinus
+AAT.AG.FaceRelationSubdivision.WitnessOne.primitive_composition
+AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_chart_old
+AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_chart_new
+AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_edge_old
+AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_edge_c
+AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_edge_e2
+AAT.AG.FaceRelationSubdivision.WitnessOne.rPlus_face
+AAT.AG.FaceRelationSubdivision.WitnessOne.rMinus_chart
+AAT.AG.FaceRelationSubdivision.WitnessOne.rMinus_edge
+AAT.AG.FaceRelationSubdivision.WitnessOne.distinct_lifts_same_image
+AAT.AG.FaceRelationSubdivision.WitnessOne.edge_lift_uniqueness_fails
+AAT.AG.FaceRelationSubdivision.WitnessOne.not_hereditary
+AAT.AG.FaceRelationSubdivision.WitnessOne.blockEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockHom
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockHom
+AAT.AG.FaceRelationSubdivision.WitnessOne.block_composition
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusLawHom
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusLawHom
+AAT.AG.FaceRelationSubdivision.WitnessOne.law_composition
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusNamedHom
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusNamedHom
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_named_square
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_named_square
+AAT.AG.FaceRelationSubdivision.WitnessOne.labelPairEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusLawCokernel
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusLaw_kernel_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusLaw_cokernel_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusLaw_kernel_subsingleton
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_block_defect
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_block_defect
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_law_defect
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_law_defect
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldLawPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusLawPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusLawPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_law_period_identity
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_law_period_injection
+AAT.AG.FaceRelationSubdivision.WitnessOne.Source
+AAT.AG.FaceRelationSubdivision.WitnessOne.qc
+AAT.AG.FaceRelationSubdivision.WitnessOne.qf
+AAT.AG.FaceRelationSubdivision.WitnessOne.laws
+AAT.AG.FaceRelationSubdivision.WitnessOne.coarseAdequate
+AAT.AG.FaceRelationSubdivision.WitnessOne.fineAdequate
+AAT.AG.FaceRelationSubdivision.WitnessOne.coarser
+AAT.AG.FaceRelationSubdivision.WitnessOne.not_reverse
+AAT.AG.FaceRelationSubdivision.WitnessOne.factor_apply
+AAT.AG.FaceRelationSubdivision.WitnessOne.law_nonconstant
+AAT.AG.FaceRelationSubdivision.WitnessOne.label
+AAT.AG.FaceRelationSubdivision.WitnessOne.labels_distinct
+AAT.AG.FaceRelationSubdivision.WitnessOne.labelEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.labelEquiv_symm
+AAT.AG.FaceRelationSubdivision.WitnessOne.labelEquiv_label
+AAT.AG.FaceRelationSubdivision.WitnessOne.nerve
+AAT.AG.FaceRelationSubdivision.WitnessOne.N
+AAT.AG.FaceRelationSubdivision.WitnessOne.pulled
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusNerve
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus
+AAT.AG.FaceRelationSubdivision.WitnessOne.paired_table
+AAT.AG.FaceRelationSubdivision.WitnessOne.chart_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_chart_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_chart_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.edge_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.face_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_edge_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_face_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_edge_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_face_full
+AAT.AG.FaceRelationSubdivision.WitnessOne.d0_apply
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_d0_old
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_d0_c
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_d0_e2
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_d1_apply
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_d0_eq
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_d0_old
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_d0_c
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_d0_e2
+AAT.AG.FaceRelationSubdivision.WitnessOne.loop_attached
+AAT.AG.FaceRelationSubdivision.WitnessOne.every_vertex_connected
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusNamed_old
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusNamed_c
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusNamed_e2
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusNamed_old
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusNamed_c
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusNamed_e2
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_named_identity
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_named_injection
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldBlockPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_block_identity
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_block_injection
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldBlockLoop
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockLoop
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockLoop
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockExtra
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldBlockLoop_period
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusBlockLoop_period
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockLoop_period
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusBlockExtra_period
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_maps_loop
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_maps_loop
+AAT.AG.FaceRelationSubdivision.WitnessOne.old_loop_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_loop_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_loop_nonzero
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod_apply
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod_apply
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod_apply
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_cycle_iff
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_cycle_relation
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod_kernel
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod_kernel
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod_kernel
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldLoopOnly
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusLoopOnly
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusSection
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod_loop
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod_loop
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod_section
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldPeriod_surjective
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusPeriod_surjective
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusPeriod_surjective
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldH1Period
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusH1Period
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusH1Period
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldH1Period_mk
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusH1Period_mk
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusH1Period_mk
+AAT.AG.FaceRelationSubdivision.WitnessOne.e2_plus_d1_one
+AAT.AG.FaceRelationSubdivision.WitnessOne.e2_not_plus_cycle
+AAT.AG.FaceRelationSubdivision.WitnessOne.fineSubset
+AAT.AG.FaceRelationSubdivision.WitnessOne.fineSubset_nonempty
+AAT.AG.FaceRelationSubdivision.WitnessOne.subset_compatible
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusSubsetHom
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetHom
+AAT.AG.FaceRelationSubdivision.WitnessOne.j_subset_compatible
+AAT.AG.FaceRelationSubdivision.WitnessOne.subset_composition
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldSubsetEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusSubsetEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_subset_square
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_subset_square
+AAT.AG.FaceRelationSubdivision.WitnessOne.oldSubsetPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.plusSubsetPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetPeriod
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_subset_identity
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_subset_injection
+AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetCokernel
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_subset_bijective
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_subset_injective
+AAT.AG.FaceRelationSubdivision.WitnessOne.fineSubset_empty
+AAT.AG.FaceRelationSubdivision.WitnessOne.emptySubsetEquiv
+AAT.AG.FaceRelationSubdivision.WitnessOne.plus_empty_identity
+AAT.AG.FaceRelationSubdivision.WitnessOne.minus_empty_identity
+```
+
+### Cycle 12 source hashes
+
+```text
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubset.lean	8	fca59459f4bd2929503d6d7d81d5f458911d6c926c4d64a324151f96b3780d9a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/FullSupportSubsetComparison.lean	1	893423de007db0a677b7f933408bab4041ee9f45011f7042f1c79de8d98e15b0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceFullSupportPullback.lean	5	93e3f546f9c6a736864d3907dade7b7f4f03e312c1aa2c3b55d18830713b8c02
+research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceNamedComparison.lean	7	56698b687013379306b13fb3bcf912d081a76ec3d4a6a71e1b644687e65f602a
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawBlockComparison.lean	3	3693e88db3869c443cd490f69e9bdf7c7ce5c24ed153b16e9d5247d717131a91
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneCokernel.lean	18	cadd62936450ebc8aa182459de5d9ac19f588a6669dc8b87089ed7d43439d732
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneComparison.lean	29	17458d7bc4805cfddad36c281a2112233eb173f030eef7d6e4e5f157122ff1fb
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneDiagnostics.lean	14	fc3153e09a68e103c304aeda3a277eecc8bce26ffb3ea269d7179eaf23bb354f
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneInput.lean	42	53452d383799618adfd17ebf948ac09634efd3d578fd9bcd824f835835a72ba1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriodMaps.lean	26	5ca30a309100032a885b5301ad7c16f5afbb34af8905845056f724d877d09b42
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOnePeriods.lean	28	e4323bc4049f566de85b7fd7e6ff2793dc25ca0c30f676c9190508f95ee7e687
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessOneSubset.lean	24	3685db6fe7a65bf0b583a127ff8416e347007cdb5c1ff5a411777f78d51b4c78
+```
+
+### Cycle 12 validation / result proposal
+
+root の必要な個別 targeted check は新規11moduleと既存 owner の3 APIで成功。最終 official focused selector は `WitnessOneDiagnostics.lean`（14宣言）と `WitnessOneSubset.lean`（24宣言）で各別に成功。全205の source/spine/明示 #print query/output の集合が一致し、標準 `propext` / `Classical.choice` / `Quot.sound` のみ。
+公理 log SHA-256 `5840b3bb46781f02211e184af9fbc06ad6e63c7dfabc3ea6218e2be21be6dcac`。12source hash、manifest の11新規登録・全2222行の一意性/存在、import存在/方向、placeholder/hidden/BiDi/privacy、diffを確認。Research 全体 build・aggregate・全file elaboration は未実施。CI・固定head独立査読は PR コメントで判定する。
+
+- proposed_result_type: `proof-obligation-discharged`
+- proof_obligation_delta / exit_criteria_status: 固定 W1 の原始 paired 入力、同じ全三成分比較・合成、period の核からの逆構成、非零 loop/追加実余核、全非空 subset/空 subset、二ラベル全 Law 余核・実欠損を入力から閉じた。
+- split_reason: none
+- completion_candidate: no
+- selected obligation の undischarged material premise: なし（独立 PR gate で検算）。
+- certificate_provenance: 原始 reading/chart/edge/face/support → 独立実 subset/block/Law 生成 → 全三成分 named square → 同じ実 H¹ と余核。potential/単独 cochain と商同型は出力。
+- proof_use: K1 と adequacy を生成で、原始 incidence を Hom.comm で、非空 A と因子全射を選択で、具体 potential と二単独 cochain を quotient 同定で、全三成分 square を実 H¹ 自然性で、ラベル全単射を二成分 Law 余核で使用。
+- structure_field_escape: none-found。route_integrity: pass。target_fitting/vacuity/one_way_as_equivalence/goal_or_report_reinterpretation: none-found。
+- blocking_findings: 独立 PR 査読前。
+- next_obligation: W2a–c の全固定入力・同じ収縮式・実診断への適用、別4本の累積全固定target完了監査。
+- 全固定 target は未完。GOAL active、Issue OPEN。Research成果は Formal 未移植。固定 GOAL/恒久設計/仮定/量化/指定例は不変。
