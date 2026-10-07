@@ -136,6 +136,41 @@ theorem face_of_mixed_right (f : Nf.FaceInTargetSubset Af) (hf : M.faceMap f.1 =
   rename_i e' he
   exact Option.some.inj (he.symm.trans h0)
 
+/-- 原始mapped辺と名前付き粗辺carrierの同値。局所Γの分類API。 -/
+theorem edge_eq_edge_iff (e : Nf.EdgeInTargetSubset Af) (a : Nc.EdgeInTargetSubset Ac) :
+    edge M Ac Af hs e = .edge a ↔ M.edgeMap e.1 = some a.1 := by
+  constructor
+  · intro he
+    cases hm : M.edgeMap e.1 with
+    | none => rw [edge_of_none M Ac Af hs e hm] at he; cases he
+    | some b =>
+      rw [edge_of_some M Ac Af hs e b hm] at he
+      exact congrArg some (congrArg Subtype.val (Inc.edge.inj he))
+  · intro hm
+    exact (edge_of_some M Ac Af hs e a.1 hm).trans (congrArg Inc.edge (Subtype.ext rfl))
+
+/-- 原始mapped面と名前付き粗面carrierの同値。局所Λの分類API。 -/
+theorem face_eq_face_iff (f : Nf.FaceInTargetSubset Af) (F : Nc.FaceInTargetSubset Ac) :
+    face M Ac Af hs f = .face F ↔ M.faceMap f.1 = some F.1 := by
+  constructor
+  · intro he
+    cases hm : M.faceMap f.1 with
+    | some b =>
+      rw [face_of_some M Ac Af hs f b hm] at he
+      exact congrArg some (congrArg Subtype.val (Inc.face.inj he))
+    | none =>
+      rcases degenerate_face_cases M f.1 hm with hv | hl | hr
+      · rw [face_of_vertical M Ac Af hs f hm hv.1 hv.2.1] at he
+        cases he
+      · rcases hl with ⟨e, h0, h1, _⟩
+        rw [face_of_mixed_left M Ac Af hs f hm h0 e h1] at he
+        cases he
+      · rcases hr with ⟨e, h0, _, _⟩
+        rw [face_of_mixed_right M Ac Af hs f hm e h0] at he
+        cases he
+  · intro hm
+    exact (face_of_some M Ac Af hs f F.1 hm).trans (congrArg Inc.face (Subtype.ext rfl))
+
 /-- 支持chartの像の原始セル名。 -/
 @[simp] theorem chart_val (c : Nf.ChartInTargetSubset Af) :
     (chart M Ac Af hs c).1 = M.chartMap c.1 := rfl
@@ -173,4 +208,6 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.face_of_mixed_right
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.chart_val
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.endpointHom
+#print axioms AAT.AG.AtlasCoefficientFiber.Carrier.edge_eq_edge_iff
+#print axioms AAT.AG.AtlasCoefficientFiber.Carrier.face_eq_face_iff
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

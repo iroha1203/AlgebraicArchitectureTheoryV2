@@ -61,6 +61,23 @@ theorem coefficient_chart_transport (z : CoefficientC0 N A G)
   cases he
   simp
 
+/-- 辺等号の輸送は依存した辺cochainの値の輸送に一致する。 -/
+theorem coefficient_edge_transport (z : CoefficientC1 N A G)
+    {e f : N.EdgeInTargetSubset A} (he : e = f) :
+    G.map (eqToHom (congrArg Inc.edge he)) (z e) = z f := by
+  cases he
+  simp
+
+/-- chart名の等号輸送を含む端点係数の評価。出現位置sはそのまま保つ。 -/
+theorem coefficient_endpoint_chart_eval (z : CoefficientC0 N A G)
+    (e : N.EdgeInTargetSubset A) (s : Bool) (c : N.ChartInTargetSubset A)
+    (hc : c = edgeEndpoint N A e s) :
+    G.map (IncHom.chartEdge c e s hc) (z c) =
+      G.map (IncHom.chartEdge (edgeEndpoint N A e s) e s rfl)
+        (z (edgeEndpoint N A e s)) := by
+  cases hc
+  rfl
+
 /-- 二経路を原始頂点位置へ正規化したincidence等号。 -/
 theorem endpoint_edge_normal (f : N.FaceInTargetSubset A) (i : Fin 3) (s : Bool) :
     IncHom.chartEdge (edgeEndpoint N A (faceEdge N A f i) s) (faceEdge N A f i) s rfl ≫
@@ -191,4 +208,6 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d1_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex_d0_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex_d1_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficient_endpoint_chart_eval
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficient_edge_transport
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

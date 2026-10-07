@@ -88,6 +88,35 @@ instance incCategory (N : TargetSupportedNerve q) (A : Set q.Target) : Category 
   comp_id f := by cases f <;> rfl
   assoc := incComp_assoc
 
+/-- 同じ名前付きセルのendomorphismは恒等のみ。出現間の非恒等射とは区別する。 -/
+theorem inc_endomorphism_eq_id {N : TargetSupportedNerve q} {A : Set q.Target} (x : Inc N A) (f : x ⟶ x) : f = 𝟙 x := by
+  cases x <;> cases f <;> rfl
+
+/-- 面から出る射は恒等のみなので、行先も同じ面である。局所Λ計算のAPI。 -/
+theorem incHom_target_of_face {N : TargetSupportedNerve q} {A : Set q.Target}
+    (F : N.FaceInTargetSubset A) {x : Inc N A} (f : Inc.face F ⟶ x) : x = .face F := by
+  cases f
+  rfl
+
+/-- 面を始域とする同じ行先への射は一意。Λのcomma所属証明を比較するAPI。 -/
+theorem incHom_from_face_eq {N : TargetSupportedNerve q} {A : Set q.Target}
+    (F : N.FaceInTargetSubset A) {x : Inc N A} (f g : Inc.face F ⟶ x) : f = g := by
+  cases f
+  cases g
+  rfl
+
+/-- 辺から辺への射は同じ名前付き辺の恒等のみ。局所Γ分類のAPI。 -/
+theorem incHom_edge_edge_target {N : TargetSupportedNerve q} {A : Set q.Target}
+    (e a : N.EdgeInTargetSubset A) (f : Inc.edge e ⟶ Inc.edge a) : a = e := by
+  cases f
+  rfl
+
+/-- chartからchartへの射は同じ名前付きchartの恒等のみ。局所Φ分類のAPI。 -/
+theorem incHom_chart_chart_target {N : TargetSupportedNerve q} {A : Set q.Target}
+    (c a : N.ChartInTargetSubset A) (f : Inc.chart c ⟶ Inc.chart a) : a = c := by
+  cases f
+  rfl
+
 /-- incidence生成射への値と、三角形の二経路の関係。関手構成のAPI。 -/
 structure IncidenceFunctorData (N : TargetSupportedNerve q) (A : Set q.Target)
     (D : Type u) [Category D] where
@@ -118,6 +147,18 @@ def vertexHom (T : IncidenceFunctorData N A D) (f : N.FaceInTargetSubset A) :
   | 0 => T.endpointHom (faceEdge N A f 0) false ≫ T.edgeHom f 0
   | 1 => T.endpointHom (faceEdge N A f 0) true ≫ T.edgeHom f 0
   | 2 => T.endpointHom (faceEdge N A f 1) true ≫ T.edgeHom f 1
+
+/-- 頂点0の関手値は第一辺の左端点経路。生成dataの定義所有者API。 -/
+@[simp] theorem vertexHom_zero (T : IncidenceFunctorData N A D) (f : N.FaceInTargetSubset A) :
+    T.vertexHom f 0 = T.endpointHom (faceEdge N A f 0) false ≫ T.edgeHom f 0 := rfl
+
+/-- 頂点1の関手値は第一辺の右端点経路。生成dataの定義所有者API。 -/
+@[simp] theorem vertexHom_one (T : IncidenceFunctorData N A D) (f : N.FaceInTargetSubset A) :
+    T.vertexHom f 1 = T.endpointHom (faceEdge N A f 0) true ≫ T.edgeHom f 0 := rfl
+
+/-- 頂点2の関手値は第二辺の右端点経路。生成dataの定義所有者API。 -/
+@[simp] theorem vertexHom_two (T : IncidenceFunctorData N A D) (f : N.FaceInTargetSubset A) :
+    T.vertexHom f 2 = T.endpointHom (faceEdge N A f 1) true ≫ T.edgeHom f 1 := rfl
 
 /-- 任意の端点出現からの合成は、三角形関係により同じ頂点の値になる。 -/
 theorem endpoint_edge (T : IncidenceFunctorData N A D) (f : N.FaceInTargetSubset A)
@@ -238,6 +279,37 @@ theorem edgeFace_ne_of_position_ne {N : TargetSupportedNerve q} {A : Set q.Targe
   cases h
   exact hij rfl
 
+/-- chart→face射の位置コードから原始頂点所属を読むAPI。 -/
+theorem incHom_chartFace_source_of_code {N : TargetSupportedNerve q} {A : Set q.Target}
+    (c : N.ChartInTargetSubset A) (f : N.FaceInTargetSubset A) (i : Fin 3)
+    (g : Inc.chart c ⟶ Inc.face f) (hg : incHomCode g = .inr (.inr (.inr i))) :
+    c = faceVertex N A f i := by
+  cases g with
+  | chartFace _ _ j hj =>
+    have hji := Sum.inr.inj (Sum.inr.inj (Sum.inr.inj hg))
+    subst j
+    exact hj
+
+/-- chart→edge射の左右コードから原始端点所属を読むAPI。 -/
+theorem incHom_chartEdge_source_of_code {N : TargetSupportedNerve q} {A : Set q.Target}
+    (c : N.ChartInTargetSubset A) (e : N.EdgeInTargetSubset A) (s : Bool)
+    (g : Inc.chart c ⟶ Inc.edge e) (hg : incHomCode g = .inr (.inl s)) :
+    c = edgeEndpoint N A e s := by
+  cases g with
+  | chartEdge _ _ t ht =>
+    have hts := Sum.inl.inj (Sum.inr.inj hg)
+    subst t
+    exact ht
+
+/-- 原始端点面の合成を、同じ頂点出現の圏射へ正規化する公開API。 -/
+theorem chartEdge_edgeFace_comp {N : TargetSupportedNerve q} {A : Set q.Target}
+    (c : N.ChartInTargetSubset A) (f : N.FaceInTargetSubset A) (i : Fin 3) (s : Bool)
+    (hc : c = edgeEndpoint N A (faceEdge N A f i) s) :
+    @CategoryStruct.comp (Inc N A) inferInstance (.chart c) (.edge (faceEdge N A f i)) (.face f)
+      (IncHom.chartEdge c (faceEdge N A f i) s hc)
+      (IncHom.edgeFace (faceEdge N A f i) f i rfl) =
+      IncHom.chartFace c f (endpointPosition i s) (hc.trans (edgeEndpoint_faceEdge N A f i s)) := rfl
+
 end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.edgeEndpoint
 #print axioms AAT.AG.AtlasCoefficientFiber.faceEdge
@@ -266,4 +338,15 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.face_vertex_two_relation
 #print axioms AAT.AG.AtlasCoefficientFiber.chartEdge_left_ne_right
 #print axioms AAT.AG.AtlasCoefficientFiber.edgeFace_ne_of_position_ne
+#print axioms AAT.AG.AtlasCoefficientFiber.inc_endomorphism_eq_id
+#print axioms AAT.AG.AtlasCoefficientFiber.incHom_target_of_face
+#print axioms AAT.AG.AtlasCoefficientFiber.incHom_from_face_eq
+#print axioms AAT.AG.AtlasCoefficientFiber.incHom_edge_edge_target
+#print axioms AAT.AG.AtlasCoefficientFiber.IncidenceFunctorData.vertexHom_zero
+#print axioms AAT.AG.AtlasCoefficientFiber.IncidenceFunctorData.vertexHom_one
+#print axioms AAT.AG.AtlasCoefficientFiber.IncidenceFunctorData.vertexHom_two
+#print axioms AAT.AG.AtlasCoefficientFiber.incHom_chartFace_source_of_code
+#print axioms AAT.AG.AtlasCoefficientFiber.incHom_chartEdge_source_of_code
+#print axioms AAT.AG.AtlasCoefficientFiber.incHom_chart_chart_target
+#print axioms AAT.AG.AtlasCoefficientFiber.chartEdge_edgeFace_comp
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber
