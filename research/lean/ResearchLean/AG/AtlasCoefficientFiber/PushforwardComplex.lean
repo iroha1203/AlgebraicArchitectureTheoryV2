@@ -118,6 +118,26 @@ theorem coefficientComplex_d0 [∀ σ : Inc N A, FiniteDimensional ℚ (G.obj σ
 theorem coefficientComplex_d1 [∀ σ : Inc N A, FiniteDimensional ℚ (G.obj σ)] :
     (coefficientComplex N A G).d1 = coefficientD1 N A G := rfl
 
+/-- 係数複体の第一微分のセル評価。下流は端点差の定義を展開せず使う。 -/
+theorem coefficientComplex_d0_apply [∀ σ : Inc N A, FiniteDimensional ℚ (G.obj σ)]
+    (z : (coefficientComplex N A G).C0) (e : N.EdgeInTargetSubset A) :
+    (coefficientComplex N A G).d0 z e =
+      G.map (IncHom.chartEdge (N.targetSubsetEdgeRight A e) e true rfl)
+        (z (N.targetSubsetEdgeRight A e)) -
+      G.map (IncHom.chartEdge (N.targetSubsetEdgeLeft A e) e false rfl)
+        (z (N.targetSubsetEdgeLeft A e)) := rfl
+
+/-- 係数複体の第二微分のセル評価。下流は三辺和の定義を展開せず使う。 -/
+theorem coefficientComplex_d1_apply [∀ σ : Inc N A, FiniteDimensional ℚ (G.obj σ)]
+    (z : (coefficientComplex N A G).C1) (f : N.FaceInTargetSubset A) :
+    (coefficientComplex N A G).d1 z f =
+      G.map (IncHom.edgeFace (N.targetSubsetFaceEdge0 A f) f 0 rfl)
+        (z (N.targetSubsetFaceEdge0 A f)) -
+      G.map (IncHom.edgeFace (N.targetSubsetFaceEdge1 A f) f 1 rfl)
+        (z (N.targetSubsetFaceEdge1 A f)) +
+      G.map (IncHom.edgeFace (N.targetSubsetFaceEdge2 A f) f 2 rfl)
+        (z (N.targetSubsetFaceEdge2 A f)) := rfl
+
 variable {qc qf : Reading Source} {h : qc.CoarserThan qf}
 variable {Nc : TargetSupportedNerve qc} {Nf : TargetSupportedNerve qf}
 
@@ -125,6 +145,33 @@ variable {Nc : TargetSupportedNerve qc} {Nf : TargetSupportedNerve qf}
 def pushforwardComplex (M : IncidenceSupportedComparison qc qf h Nc Nf)
     (A : Set qc.Target) : ThreeCochainComplex ℚ :=
   coefficientComplex Nc A (pushforwardCoefficients M A)
+
+/-- 実順像複体Pの第一微分を同じ係数射の端点差として評価する公開API。 -/
+theorem pushforwardComplex_d0_apply (M : IncidenceSupportedComparison qc qf h Nc Nf)
+    (A : Set qc.Target) (z : (pushforwardComplex M A).C0) (e : Nc.EdgeInTargetSubset A) :
+    (pushforwardComplex M A).d0 z e =
+      (pushforwardCoefficients M A).map
+        (IncHom.chartEdge (Nc.targetSubsetEdgeRight A e) e true rfl)
+        (z (Nc.targetSubsetEdgeRight A e)) -
+      (pushforwardCoefficients M A).map
+        (IncHom.chartEdge (Nc.targetSubsetEdgeLeft A e) e false rfl)
+        (z (Nc.targetSubsetEdgeLeft A e)) :=
+  coefficientComplex_d0_apply Nc A (pushforwardCoefficients M A) z e
+
+/-- 実順像複体Pの第二微分を同じ係数射の三辺和として評価する公開API。 -/
+theorem pushforwardComplex_d1_apply (M : IncidenceSupportedComparison qc qf h Nc Nf)
+    (A : Set qc.Target) (z : (pushforwardComplex M A).C1) (f : Nc.FaceInTargetSubset A) :
+    (pushforwardComplex M A).d1 z f =
+      (pushforwardCoefficients M A).map
+        (IncHom.edgeFace (Nc.targetSubsetFaceEdge0 A f) f 0 rfl)
+        (z (Nc.targetSubsetFaceEdge0 A f)) -
+      (pushforwardCoefficients M A).map
+        (IncHom.edgeFace (Nc.targetSubsetFaceEdge1 A f) f 1 rfl)
+        (z (Nc.targetSubsetFaceEdge1 A f)) +
+      (pushforwardCoefficients M A).map
+        (IncHom.edgeFace (Nc.targetSubsetFaceEdge2 A f) f 2 rfl)
+        (z (Nc.targetSubsetFaceEdge2 A f)) :=
+  coefficientComplex_d1_apply Nc A (pushforwardCoefficients M A) z f
 
 end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.CoefficientC0
@@ -140,4 +187,8 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d0
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d1
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d0_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d1_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex_d0_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex_d1_apply
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

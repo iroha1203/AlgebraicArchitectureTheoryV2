@@ -212,7 +212,7 @@ selection:
 | `PushforwardCoefficient` | `structuredArrowFinite`, `commaConnectedComponentsFinite`, `coefficientPushforwardFiniteDimensional` | fine対象とcoarse各Homの有限性→実comma/成分の有限性→極限同型の単射から有限次元性 |
 | 同上 | `pushforwardCoefficients`, `pushforwardCounit`, `pushforwardIsRightKanExtension`, `pushforwardCoefficientFiniteDimensional` | 実carrierのpointwise右Kanと標準普遍性、実各セル係数の有限次元性 |
 | `PushforwardComplex` | `CoefficientC0/1/2`, `coefficientD0`, `coefficientD1`, `coefficient_chart_transport`, `endpoint_edge_normal`, `coefficient_endpoint_edge_eval`, `coefficient_d1_comp_d0` | 粗セル上の係数直積と端点差/三辺和。原始三角形とfunctor則からd1d0=0 |
-| 同上 | `coefficientComplex`, `coefficientComplex_d0`, `coefficientComplex_d1`, `pushforwardComplex` | 一般係数APIを実右Kanへ適用してPを独立生成。Lや商dualを定義入力にしない |
+| 同上 | `coefficientComplex`, `coefficientComplex_d0`, `coefficientComplex_d1`, `coefficientComplex_d0_apply`, `coefficientComplex_d1_apply`, `pushforwardComplex`, `pushforwardComplex_d0_apply`, `pushforwardComplex_d1_apply` | 一般係数APIを実右Kanへ適用してPを独立生成。Lや商dualを定義入力にしない |
 | `PushforwardUnit` | `coefficientConstant`, `coefficientConstant_eval`, `coefficientConstant_naturality` | comma全成分上の定数関数を極限同型の逆で作り、前合成評価から自然性を証明 |
 | 同上 | `unit0/1/2`, `unit0_apply`, `unit1_apply`, `unit2_apply`, `unit_comm0`, `unit_comm1`, `unitHom` | ηの全三次数を生成し両微分との可換性を証明。実uから逆算していない |
 
@@ -286,18 +286,22 @@ GOAL・恒久設計は不変、Formal移植は未着手、Research→Formalの�
 ## Cycle 2 検証記録
 
 対象5fileの `check_research_modules.sh --focused` はすべてexit 0、error/warning 0。
-変更対象77明示宣言と81全module宣言の依存は標準3公理の部分集合。
+変更対象81明示宣言と85全module宣言の依存は標準3公理の部分集合。
 
 | file | focused target | print / 全宣言監査 | stdout+stderr SHA-256 |
 | --- | --- | --- | --- |
 | `Carrier.lean` | `ResearchLean/AG/AtlasCoefficientFiber/Carrier.lean` | 13 / 14 standard axioms only | `de109e9074d902cf60f592a35cd236d85dd3cdfb37341f3d7ffebc1078a39c4b` |
 | `CarrierFunctor.lean` | `ResearchLean/AG/AtlasCoefficientFiber/CarrierFunctor.lean` | 32 / 35 standard axioms only | `67652a757e2538ecf968b211d40504fc0c326eb849bc8ce00560ce7709a8dd68` |
 | `PushforwardCoefficient.lean` | `ResearchLean/AG/AtlasCoefficientFiber/PushforwardCoefficient.lean` | 7 / 7 standard axioms only | `bd1d0856f250f6c9662f3c3644615090008f3b7ab43f8a7537f0bb37762e719c` |
-| `PushforwardComplex.lean` | `ResearchLean/AG/AtlasCoefficientFiber/PushforwardComplex.lean` | 13 / 13 standard axioms only | `2cc3b49673b60b9ec3093eb59d2699caae10b3da39350bf8f99781d463758d04` |
+| `PushforwardComplex.lean` | `ResearchLean/AG/AtlasCoefficientFiber/PushforwardComplex.lean` | 17 / 17 standard axioms only | `a6cc72b1fa05ba149f85b0932f2e8ee0b2925f14970b4a3a9ca1da221faae440` |
 | `PushforwardUnit.lean` | `ResearchLean/AG/AtlasCoefficientFiber/PushforwardUnit.lean` | 12 / 12 standard axioms only | `5de166de31d26c3f6489c3cc85d6adc7f21da7c7966091f2e78d1dd82d09d000` |
 
 必要なimport cacheを作る単一targetの `lake env lean -o ... <file>` も専用worktreeで実行した。
-sourceには64新規明示宣言それぞれのprintと各file末尾の全宣言監査を置いた。
+sourceには68新規明示宣言それぞれのprintと各file末尾の全宣言監査を置いた。
 placeholder、hidden/BiDi、privacy、4新規moduleの登録と全print対応、Formal→Research import方向、
 `git diff --check`を確認した。GOAL/設計を変更せず、元mainの作業ツリーはcleanのまま。
 Research full/aggregate/全file loop、Formal full build/移植、独立査読、CIはこの提案時点では未実施。
+
+非中心の微分評価API指摘への対応として、定義所有者に一般/実Pの4評価補題を追加し、
+unit_comm0/1のproof内部を既存unit*_applyと評価APIによる証明へ変更した。
+上表のP/ηの検証件数とhashは、この対応後の対象2file再検証を反映する。
