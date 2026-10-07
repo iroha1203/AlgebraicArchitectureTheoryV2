@@ -143,20 +143,20 @@ theorem face_of_mixed_right (f : Nf.FaceInTargetSubset Af) (hf : M.faceMap f.1 =
 /-- 原始端点のcarrier incidence射。mapped辺では左右の出現を保つ。 -/
 def endpointHom (e : Nf.EdgeInTargetSubset Af) (s : Bool) :
     Inc.chart (chart M Ac Af hs (edgeEndpoint Nf Af e s)) ⟶ edge M Ac Af hs e := by
-  cases he : M.edgeMap e.1 with
+  exact match he : M.edgeMap e.1 with
   | none =>
-    rw [edge_of_none M Ac Af hs e he]
-    apply eqToHom
-    apply congrArg Inc.chart
-    cases s
-    · rfl
-    · exact (M.targetSubsetChartMap_edgeLeft_eq_right_of_none Ac Af hs e he).symm
+    eqToHom (by
+      apply congrArg Inc.chart
+      cases s
+      · rfl
+      · exact (M.targetSubsetChartMap_edgeLeft_eq_right_of_none Ac Af hs e he).symm) ≫
+      eqToHom (edge_of_none M Ac Af hs e he).symm
   | some a =>
-    rw [edge_of_some M Ac Af hs e a he]
-    apply IncHom.chartEdge _ _ s
-    cases s
-    · exact M.targetSubsetChartMap_edgeLeft Ac Af hs e a he
-    · exact M.targetSubsetChartMap_edgeRight Ac Af hs e a he
+    IncHom.chartEdge _ _ s (by
+      cases s
+      · exact M.targetSubsetChartMap_edgeLeft Ac Af hs e a he
+      · exact M.targetSubsetChartMap_edgeRight Ac Af hs e a he) ≫
+      eqToHom (edge_of_some M Ac Af hs e a he).symm
 
 end Carrier
 end AAT.AG.AtlasCoefficientFiber
