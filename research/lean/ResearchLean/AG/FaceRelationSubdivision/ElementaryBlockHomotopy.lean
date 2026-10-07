@@ -120,6 +120,16 @@ def blockR := blockFiniteHom laws ha (r0 N e) (r1 N e) (r2 N e)
 def blockS := blockFiniteHom laws ha (s0 N e) (s1 N e) (s2 N e)
   (s_comm01 N e) (s_comm12 N e) l
 
+/-- 同じ独立有限和 block r は原始 collapse から生成した比較 Hom。 -/
+theorem blockR_eq_generated : blockR N e laws ha l=
+    (collapse N e).generatedBlockComparisonHom laws ha ha l :=
+  (collapse N e).basisBlockHom_eq_generated laws ha l (r_comm01 N e) (r_comm12 N e)
+
+/-- 同じ独立 block r の次数1は原始有限基底像の双対。 -/
+@[simp] theorem blockR_f1 : (blockR N e laws ha l).f1=(r1 N e).lawBlockDual laws ha l := rfl
+/-- 同じ独立 block s の次数1も原始有限基底像の双対。 -/
+@[simp] theorem blockS_f1 : (blockS N e laws ha l).f1=(s1 N e).lawBlockDual laws ha l := rfl
+
 /-- 同じblock比較は全三成分で原始fiber収縮へ接続する。 -/
 theorem blockR_fiber :
     cochainComp (blockR N e laws ha l) ((supported N e).lawValueBlockTargetSubsetComplexEquiv laws ha l).toHom =

@@ -84,6 +84,32 @@ theorem lawBlockDual_apply (l) (z) (x) :
   intro j hj
   exact freeDualEquiv_single _ _ _
 
+/-- 零の原始基底像は同じ独立 block 双対でも零。 -/
+theorem lawBlockDual_apply_zero (l) (z) (x) (h : M.basisImage x.1.cell=0) :
+    M.lawBlockDual laws ha l z x=0 := by
+  rw [lawBlockDual_apply]
+  apply Finset.sum_eq_zero
+  intro j hj
+  simp only [h,Finsupp.zero_apply,zero_mul]
+/-- 単一原始基底像は同じ生成 block 座標を評価する。 -/
+theorem lawBlockDual_apply_single (l) (z) (x) (j : J)
+    (h : M.basisImage x.1.cell=Finsupp.single j 1) :
+    M.lawBlockDual laws ha l z x=
+      z (M.lawBlockCoordinate laws ha l x j (by rw [h]; simp)) := by
+  classical
+  rw [lawBlockDual_apply]
+  let j' : {j // j∈(M.basisImage x.1.cell).support} :=
+    ⟨j,Finsupp.mem_support_iff.mpr (by rw [h]; simp)⟩
+  rw [Finset.sum_eq_single j']
+  · simp only [j',h,Finsupp.single_eq_same,one_mul]
+  · intro k hk hkj
+    have hne : k.1≠j := by
+      intro he
+      exact hkj (Subtype.ext he)
+    simp [h,hne]
+  · intro hn
+    exact False.elim (hn (Finset.mem_attach _ j'))
+
 /-- 全Law座標生成と同じ原始block座標生成は射そのものが可換。 -/
 theorem lawDual_block (l) (z) :
     lawBlockRead laws ha si l (M.lawDual laws ha z) =

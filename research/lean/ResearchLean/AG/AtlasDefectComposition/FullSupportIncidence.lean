@@ -93,6 +93,13 @@ def fullBlockNamedEquivalence [Fintype Source] :
   e2 := fullBlockCochainEquiv laws q ha D.faceSupport hs₂ label
   comm0 x := funext (fullBlock_d0 D laws ha hs₀ hs₁ label x)
   comm1 x := funext (fullBlock_d1 D laws ha hs₁ hs₂ label x)
+/-- 全三成分同定の次数1は同じ原始名の生成 block 座標を評価する。 -/
+@[simp] theorem fullBlockNamedEquivalence_e1 [Fintype Source]
+    (z : D.EdgeBlockCoordinate laws ha label → ℚ) (e : D.nerve.EdgeComponent) :
+    (fullBlockNamedEquivalence D laws ha hs₀ hs₁ hs₂ label).e1 z e=
+      z ((fullBlockCoordinateEquiv laws q ha D.edgeSupport hs₁ label).symm e) :=
+  fullBlockCochainEquiv_apply _ _ _ _ _ _ _ _
+
 /-- 全chart台からK1の辺台も全targetになることを導く。 -/
 theorem fullSupport_edge (hs : ∀ c, D.chartSupport c = Set.univ) :
     ∀ e, D.edgeSupport e = Set.univ := by

@@ -48,6 +48,13 @@ def labelEquiv : LawValueLabel laws ≃ Bool where
 @[simp] theorem labelEquiv_symm (a : Bool) : labelEquiv.symm a = label a := rfl
 /-- 同じSource発生ラベルをBool値へ戻す。 -/
 @[simp] theorem labelEquiv_label (a : Bool) : labelEquiv (label a) = a := rfl
+/-- 同じ非定数 Law の発生ラベル fiber は元の一点である。 -/
+@[simp] theorem label_fiber (a : Bool) : labelValueFiber laws q adequate (label a)={a} := by
+  ext t
+  rw [mem_labelValueFiber]
+  have hd := lawDescend_commutes laws q adequate () t
+  exact Iff.of_eq (congrArg (fun x : Bool => x=a) hd)
+
 /-- 3頂点v,w,u、辺e,a,b,k、面F=(e,a,b)の原始表。 -/
 abbrev nerve : CoverNerve where
   Chart := Fin 3
