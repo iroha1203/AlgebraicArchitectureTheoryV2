@@ -1,7 +1,7 @@
 # G-134-aat-face-relation-subdivision — 面の関係を用いた診断保存細分化
 
 - `id`: `G-134-aat-face-relation-subdivision`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#5272](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272)
 - `source note`: [n1016 §4.5・候補08](../../docs/note/n1016_rising_sea_v2_paper_plan.md)

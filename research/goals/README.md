@@ -15,8 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-134-aat-face-relation-subdivision](G-134-aat-face-relation-subdivision.md)
-  (混在退化面の生成比較、台を保つ細分化・逆縮約、鎖ホモトピーと有限合成、実Law診断への同定)
 - [G-132-aat-visible-cycle-reflection](G-132-aat-visible-cycle-reflection.md)
   (可視閉路による既存修復障害の零性反映、整数補正と実貼り合わせ、有限判定と失敗入力)
 - [G-sft-conway-01](G-sft-conway-01.md)
@@ -30,6 +28,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-134-aat-face-relation-subdivision](G-134-aat-face-relation-subdivision.md)
+  (混在退化面の生成比較、台を保つ細分化・逆縮約、鎖ホモトピーと有限合成、実Law診断への同定)
 - [G-133-aat-atlas-defect-composition](G-133-aat-atlas-defect-composition.md)
   (生成比較の合成、欠損の相殺・写像錐・Law分解、台署名の商と普遍性、有限多段比較)
 - [G-131-aat-repair-observation-duality](G-131-aat-repair-observation-duality.md)
