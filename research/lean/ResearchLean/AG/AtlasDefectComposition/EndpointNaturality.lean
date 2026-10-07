@@ -26,6 +26,11 @@ def oldH2Map : (C.C2 ⧸ LinearMap.range C.d1) →ₗ[ℚ] (D.C2 ⧸ LinearMap.r
 /-- 次数2商射は元のHomの次数2成分で代表元を写す。 -/
 @[simp] theorem oldH2Map_mk (x : C.C2) :
     oldH2Map f ((LinearMap.range C.d1).mkQ x) = (LinearMap.range D.d1).mkQ (f.f2 x) := rfl
+/-- 実H²商射の像は、次数2成分の像を終端商へ送った部分加群。 -/
+theorem range_oldH2Map :
+    LinearMap.range (oldH2Map f) = (LinearMap.range f.f2).map (LinearMap.range D.d1).mkQ := by
+  unfold oldH2Map Submodule.mapQ
+  rw [Submodule.range_liftQ, LinearMap.range_comp]
 /-- 元のHomを次数0端短複体へ移す。 -/
 def oldZeroShortMap : oldZeroShort C ⟶ oldZeroShort D where
   τ₁ := 0
