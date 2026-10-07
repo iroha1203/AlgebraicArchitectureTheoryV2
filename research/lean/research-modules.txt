@@ -2239,3 +2239,7 @@ ResearchLean.AG.FaceRelationSubdivision.WitnessTwoDiagnostics	ResearchLean/AG/Fa
 ResearchLean.AG.AtlasCoefficientFiber.Incidence	ResearchLean/AG/AtlasCoefficientFiber/Incidence.lean
 ResearchLean.AG.AtlasCoefficientFiber.ConstantLimit	ResearchLean/AG/AtlasCoefficientFiber/ConstantLimit.lean
 ResearchLean.AG.AtlasCoefficientFiber.Carrier	ResearchLean/AG/AtlasCoefficientFiber/Carrier.lean
+ResearchLean.AG.AtlasCoefficientFiber.CarrierFunctor	ResearchLean/AG/AtlasCoefficientFiber/CarrierFunctor.lean
+ResearchLean.AG.AtlasCoefficientFiber.PushforwardCoefficient	ResearchLean/AG/AtlasCoefficientFiber/PushforwardCoefficient.lean
+ResearchLean.AG.AtlasCoefficientFiber.PushforwardComplex	ResearchLean/AG/AtlasCoefficientFiber/PushforwardComplex.lean
+ResearchLean.AG.AtlasCoefficientFiber.PushforwardUnit	ResearchLean/AG/AtlasCoefficientFiber/PushforwardUnit.lean
