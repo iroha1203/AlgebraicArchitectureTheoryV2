@@ -99,6 +99,68 @@ theorem basisLawHom_eq_generated [Fintype Source]
   · exact M.basisLaw1_eq_generated laws ha
   · exact M.basisLaw2_eq_generated laws ha
 
+/-- 原始頂点基底像の独立 block 双対は同じ生成 pullback0。 -/
+theorem basisBlock0_eq_generated (l : LawValueLabel laws) :
+    M.basis0.lawBlockDual laws ha l=M.generatedBlockPullback0 laws ha ha l := by
+  apply LinearMap.ext
+  intro z
+  funext x
+  rw [M.basis0.lawBlockDual_apply_single laws ha l z x (M.chartMap x.val.cell) (M.basis0_image x.val.cell),
+    M.generatedBlockPullback0_apply]
+  apply congrArg z
+  apply CellCoordinate.block_cell_injective laws q ha _ _ l
+  exact (M.basis0.lawBlockCoordinate_cell laws ha l x _ _).trans
+    (M.chartBlockCoordinateMap_cell laws ha ha l x).symm
+/-- 原始辺の零/単一基底像の独立 block 双対は同じ生成 pullback1。 -/
+theorem basisBlock1_eq_generated (l : LawValueLabel laws) :
+    M.basis1.lawBlockDual laws ha l=M.generatedBlockPullback1 laws ha ha l := by
+  apply LinearMap.ext
+  intro z
+  funext x
+  rw [M.generatedBlockPullback1_apply]
+  cases hm : M.edgeMap x.val.cell with
+  | none =>
+    rw [M.edgeBlockCoordinateMapOption_eq_none laws ha ha l x hm,Option.elim_none]
+    exact M.basis1.lawBlockDual_apply_zero laws ha l z x
+      (by rw [M.basis1_image,hm,rationalOptionCell_none])
+  | some j =>
+    rw [M.edgeBlockCoordinateMapOption_eq_some laws ha ha l x j hm,Option.elim_some,
+      M.basis1.lawBlockDual_apply_single laws ha l z x j
+        (by rw [M.basis1_image,hm,rationalOptionCell_some])]
+    apply congrArg z
+    apply CellCoordinate.block_cell_injective laws q ha _ _ l
+    exact (M.basis1.lawBlockCoordinate_cell laws ha l x _ _).trans
+      (M.edgeBlockCoordinateMap_cell laws ha ha l x j hm).symm
+/-- 原始面の零/単一基底像の独立 block 双対は同じ生成 pullback2。 -/
+theorem basisBlock2_eq_generated (l : LawValueLabel laws) :
+    M.basis2.lawBlockDual laws ha l=M.generatedBlockPullback2 laws ha ha l := by
+  apply LinearMap.ext
+  intro z
+  funext x
+  rw [M.generatedBlockPullback2_apply]
+  cases hm : M.faceMap x.val.cell with
+  | none =>
+    rw [M.faceBlockCoordinateMapOption_eq_none laws ha ha l x hm,Option.elim_none]
+    exact M.basis2.lawBlockDual_apply_zero laws ha l z x
+      (by rw [M.basis2_image,hm,rationalOptionCell_none])
+  | some j =>
+    rw [M.faceBlockCoordinateMapOption_eq_some laws ha ha l x j hm,Option.elim_some,
+      M.basis2.lawBlockDual_apply_single laws ha l z x j
+        (by rw [M.basis2_image,hm,rationalOptionCell_some])]
+    apply congrArg z
+    apply CellCoordinate.block_cell_injective laws q ha _ _ l
+    exact (M.basis2.lawBlockCoordinate_cell laws ha l x _ _).trans
+      (M.faceBlockCoordinateMap_cell laws ha ha l x j hm).symm
+/-- 独立 block 有限和 Hom は原始 Option 比較の生成 Hom と全三成分で一致する。 -/
+theorem basisBlockHom_eq_generated [Fintype Source] (l : LawValueLabel laws)
+    (h0 : (TargetSupportedNerve.rawD1 Nc).raw.comp M.basis1.raw=M.basis0.raw.comp (TargetSupportedNerve.rawD1 Nf).raw)
+    (h1 : (TargetSupportedNerve.rawD2 Nc).raw.comp M.basis2.raw=M.basis1.raw.comp (TargetSupportedNerve.rawD2 Nf).raw) :
+    blockFiniteHom laws ha M.basis0 M.basis1 M.basis2 h0 h1 l=M.generatedBlockComparisonHom laws ha ha l := by
+  apply cochain_ext
+  · exact M.basisBlock0_eq_generated laws ha l
+  · exact M.basisBlock1_eq_generated laws ha l
+  · exact M.basisBlock2_eq_generated laws ha l
+
 end IncidenceSupportedComparison
 end AAT.AG.FaceRelationSubdivision
 #assert_standard_axioms_only AAT.AG.FaceRelationSubdivision

@@ -72,6 +72,13 @@ def targetSubsetEdgeRight (D : TargetSupportedNerve q) (A : Set q.Target)
   refine ⟨D.nerve.edgeRight edge.1, target, ?_, htarget.2⟩
   exact (D.mem_edgeSupport_iff edge.1 target).1 htarget.1 |>.2
 
+/-- 選択された左端点は原始 incidence の同じ chart 名を持つ。 -/
+@[simp] theorem targetSubsetEdgeLeft_val (D : TargetSupportedNerve q) (A : Set q.Target)
+    (e : D.EdgeInTargetSubset A) : (D.targetSubsetEdgeLeft A e).val=D.nerve.edgeLeft e.val := rfl
+/-- 選択された右端点も原始 incidence の同じ chart 名を持つ。 -/
+@[simp] theorem targetSubsetEdgeRight_val (D : TargetSupportedNerve q) (A : Set q.Target)
+    (e : D.EdgeInTargetSubset A) : (D.targetSubsetEdgeRight A e).val=D.nerve.edgeRight e.val := rfl
+
 /-- Boundary edge zero of an A-supported face remains A-supported. -/
 def targetSubsetFaceEdge0 (D : TargetSupportedNerve q) (A : Set q.Target)
     (face : D.FaceInTargetSubset A) : D.EdgeInTargetSubset A := by
@@ -288,6 +295,11 @@ def labelValueFiber (laws : FiniteLawFamily Source) (q : Reading Source)
     (hadequate : laws.Adequate q) (label : LawValueLabel laws) :
     Set q.Target :=
   {target | lawDescend laws q hadequate label.law target = label.value}
+
+/-- 発生ラベルの fiber membership は同じ descended Law 値の等号である。 -/
+@[simp] theorem mem_labelValueFiber (laws : FiniteLawFamily Source) (q : Reading Source)
+    (ha : laws.Adequate q) (l : LawValueLabel laws) (t : q.Target) :
+    t∈labelValueFiber laws q ha l ↔ lawDescend laws q ha l.law t=l.value := Iff.rfl
 
 /-- Every source-generated label has a nonempty target fiber under an adequate
 reading.  The witness is the image of a source that generated the label. -/
@@ -628,6 +640,56 @@ def lawValueBlockTargetSubsetComplexEquiv [Fintype Source]
   e2 := D.labelFiberFaceCochainEquiv laws hadequate label
   comm0 := D.labelFiberCochainEquiv_comm0 laws hadequate label
   comm1 := D.labelFiberCochainEquiv_comm1 laws hadequate label
+
+
+/-- 同じラベル fiber の集合等式に沿う全三成分同定。 -/
+def lawValueBlockSubsetEquivOfEq [Fintype Source]
+    (D : TargetSupportedNerve q) (laws : FiniteLawFamily Source)
+    (ha : laws.Adequate q) (l : LawValueLabel laws) (A : Set q.Target)
+    (h : labelValueFiber laws q ha l=A) :
+    ThreeCochainComplex.CochainEquiv (D.lawValueBlockComplex laws ha l)
+      (D.targetSubsetComplex A) := h ▸ D.lawValueBlockTargetSubsetComplexEquiv laws ha l
+/-- 集合等式で移した選択辺の同じ元ラベル座標。 -/
+def labelFiberEdgeOfEq (D : TargetSupportedNerve q) (laws : FiniteLawFamily Source)
+    (ha : laws.Adequate q) (l : LawValueLabel laws) (A : Set q.Target)
+    (h : labelValueFiber laws q ha l=A) (e : D.EdgeInTargetSubset A) :
+    D.EdgeBlockCoordinate laws ha l :=
+  D.labelFiberEdgeEquivBlock laws ha l ⟨e.val,by rw [h]; exact e.property⟩
+/-- 集合輸送も元の辺セル名を保つ。 -/
+@[simp] theorem labelFiberEdgeOfEq_cell (D : TargetSupportedNerve q)
+    (laws : FiniteLawFamily Source) (ha : laws.Adequate q) (l : LawValueLabel laws)
+    (A : Set q.Target) (h : labelValueFiber laws q ha l=A) (e : D.EdgeInTargetSubset A) :
+    (D.labelFiberEdgeOfEq laws ha l A h e).val.cell=e.val := rfl
+/-- 集合輸送した全三成分同定の次数1は同じ座標で評価する。 -/
+@[simp] theorem lawValueBlockSubsetEquivOfEq_e1 [Fintype Source]
+    (D : TargetSupportedNerve q) (laws : FiniteLawFamily Source)
+    (ha : laws.Adequate q) (l : LawValueLabel laws) (A : Set q.Target)
+    (h : labelValueFiber laws q ha l=A) (z : (D.lawValueBlockComplex laws ha l).C1)
+    (e : D.EdgeInTargetSubset A) :
+    (D.lawValueBlockSubsetEquivOfEq laws ha l A h).e1 z e=
+      z (D.labelFiberEdgeOfEq laws ha l A h e) := by
+  subst A
+  rfl
+
+
+/-- 集合輸送した同定の逆も同じ選択辺値を読む。 -/
+@[simp] theorem lawValueBlockSubsetEquivOfEq_symm_e1 [Fintype Source]
+    (D : TargetSupportedNerve q) (laws : FiniteLawFamily Source)
+    (ha : laws.Adequate q) (l : LawValueLabel laws) (A : Set q.Target)
+    (h : labelValueFiber laws q ha l=A) (z : (D.targetSubsetComplex A).C1)
+    (e : D.EdgeInTargetSubset A) :
+    (D.lawValueBlockSubsetEquivOfEq laws ha l A h).e1.symm z
+      (D.labelFiberEdgeOfEq laws ha l A h e)=z e := by
+  have he := congrFun ((D.lawValueBlockSubsetEquivOfEq laws ha l A h).e1.apply_symm_apply z) e
+  rw [D.lawValueBlockSubsetEquivOfEq_e1] at he
+  exact he
+/-- 同じ集合輸送した辺から全実 block 座標が生成される。 -/
+theorem labelFiberEdgeOfEq_surjective (D : TargetSupportedNerve q)
+    (laws : FiniteLawFamily Source) (ha : laws.Adequate q) (l : LawValueLabel laws)
+    (A : Set q.Target) (h : labelValueFiber laws q ha l=A) :
+    Function.Surjective (D.labelFiberEdgeOfEq laws ha l A h) := by
+  subst A
+  exact (D.labelFiberEdgeEquivBlock laws ha l).surjective
 
 end TargetSupportedNerve
 

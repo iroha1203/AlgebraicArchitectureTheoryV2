@@ -3911,3 +3911,329 @@ root の必要な個別 targeted check は新規11moduleと既存 owner の3 API
 - blocking_findings: 独立 PR 査読前。
 - next_obligation: W2a–c の全固定入力・同じ収縮式・実診断への適用、別4本の累積全固定target完了監査。
 - 全固定 target は未完。GOAL active、Issue OPEN。Research成果は Formal 未移植。固定 GOAL/恒久設計/仮定/量化/指定例は不変。
+
+
+### Cycle 12 merged receipt
+
+PR #5285 final head `5801746195722125d01ed3cb083375c0a2270a13` は merge `5b6f8dd3f8ea9ea1c6fd43ff6e580c38de8daf8a`（2026-10-07T01:18:47Z）で main に反映済み。
+独立4本は全て `No major findings`（6028691742 / 6028713339 / 6028733942 / 6028792280）。
+[root受入れ](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5285#issuecomment-6028794716) は `Mergeable / No major findings / proof-obligation-discharged`。
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5272#issuecomment-6028811858) に W1全義務の受理と残るW2/参照残余/別完了監査を記録した。
+exact-head CI全8checks成功。Research integrity/static・runtime direction実success、Formal実build/kernel/premiseはskipped。Research全体build/aggregate/全fileelaboration未実施。
+
+## Cycle 13 selection: W2a–c の全指定分割と同じ実診断
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-134-aat-face-relation-subdivision
+cycle: 13
+goal_blob_sha: 28cbf1944d708b059cd8c4fd22f07cd8d5e1476c
+base_oid: 5b6f8dd3f8ea9ea1c6fd43ff6e580c38de8daf8a
+tracking_issue: 5272
+report_path: research/reports/G-134-aat-face-relation-subdivision.md
+selection:
+  proof_state_ref: C12 merged receipt / Issue 6028811858
+  proof_dag_predecessors: [C2 all-support subdivision contraction, C6 independent finite Law maps, C7 same-map standard diagnostics, C9 Law-fiber bridge, C11 connected face primitive input, G133 cochain equivalence]
+  milestone: 固定 W2a–c の原始台と全出現から同じ収縮・独立実 Law 比較・各指定 H1 評価を閉じる
+  proof_obligations:
+    - Bool恒等readingと同じidentity Law、原始セル/台からK1/ラベル座標を生成する
+    - W2aの一方だけ残るc成分、全セル成分、sF=center+t と h0fresh=c/h1diagonal=-t を同じ原始分割へ評価する
+    - W2bの三重出現をFin3位置の別名へ同定し、符号1-1+1とsF=center+t0-t1+t2、各h1di=-tiを評価する
+    - W2a/W2bの両ラベルの実H1をk periodでQへ同定し、同じ実比較の恒等と非零loop類保存を証明する
+    - W2cの空旧辺台、fresh/cのalpha台と空b、alpha頂点辺対とbeta恒等の同じ収縮、同じ実比較とH1零を証明する
+    - 三例とも全Aの同じr/s/hと支持式、独立Law/block全三成分fiber、同じ既存H1/標準相同型/欠損/錐へ一般B/Dの式を適用する
+  exit_criteria:
+    - 固定W2a–c全条項と同時成立条件を原始入力/明示セル像/同じ実射の宣言へ対応させる
+    - rank/同型/収縮/診断保存をinput fieldへ移さずselected material premiseを放電する
+    - 全新宣言axiom/source/spine/output照合、対象focused/必要targetedと共通scanを完了する
+  selection_reason: 受理済み一般B/Dを最後の固定退化入力へ適用し指定例coverageを閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [WitnessTwoAInput, WitnessTwoAPeriods, WitnessTwoBInput, WitnessTwoBPeriods, WitnessTwoCInput, WitnessTwoDiagnostics]
+  risks: [各出現を集合として潰さない, beta空面/空辺を全台仮定で置換しない, named同型だけで実射の接続を代用しない, same kperiodと元Lawラベルを保持する]
+  unchecked: [W2a–c全構成と実評価, 固定head独立PR gate]
+```
+
+この到達点はW2a–c全義務を終了条件とする。参照基本変形§6の分解/H⁰/H²対応の残余接続と、別4本の全固定target完了監査は後続義務として保持する。全target完了候補ではない。
+
+### Cycle 13 input-generated evidence mapping
+
+| 固定 W2 条項 | 原始入力からの構成と同じ実射の証拠 |
+| --- | --- |
+| Bool恒等reading、一つの非定数identity Law、二元発生ラベル | `ConnectedFaceWitness.q/laws/adequate/law_nonconstant/label/labels_distinct/labelEquiv` (C11受理)。新 `label_fiber` は降下のSource上の評価から各 fiber={a} を導出する。 |
+| W2a 原始 v,w,u/e,a,b,k/F と片台 w | `WitnessTwoAInput.support/N/chart_support/edge_support/face_support`。K1 から e,b,F の alpha 台と a,k の全台を得る。期待 rank/比較/収縮は入力にない。 |
+| W2a 出現一つ、細 d/t/center/b'/fresh/c | `occurrence/occurrence_unique/diagonal/triangle` は F の slot0 のみを保持。`fresh_full/c_full/b_support/diagonal_support/triangle_support/center_support/beta_old_absent/beta_new_absent/beta_pair_selected` は新支持の公開式から得る。alpha の全選択は `alpha_common/fine_alpha_common`。 |
+| W2a 指定 section/補正、同一連結非零loop | `section_face/homotopy_vertex/homotopy_diagonal/loop_attached` は一般同じ s/h の評価。`WitnessTwoDiagnostics.rs_all/sr_h_all` の Case.face は片側支持/空Aでも同じ chain 式。 |
+| W2a 実 H¹ の alpha/beta 商と k period | `WitnessTwoAPeriods.alphaEquiv/incidenceEquiv` の全三成分同定から C11 の実名付き商の period を輸送。beta は `beta_edge_cases/beta_face_empty` の実 a,k だけで、`betaLoopPeriod_kernel` の potential(v=0,u=z(a)) と `betaLoopOnly` から商=Q。全台入力への変更はない。 |
+| W2a 元ラベルの旧細 k period と同じ実恒等 | `WitnessTwoALoop.blockEquiv/oldBlockPeriod/oldBlockPeriod_mk/fineBlockPeriod/fineBlockPeriod_mk`。粗・細とも実 cocycle 代表の k 座標を読み、`block_period_identity` は独立実 blockR の同じ H¹ map の恒等。`oldLoopCycle_apply/fineLoopCycle_apply/comparison_maps_loop/old_loop_nonzero/fine_loop_nonzero` は同じ粗・細 k 単独1代表とその非零商類を保つ。 |
+| W2b 一頂点、二loop、三重面、各位置は別名 | `WitnessTwoBInput.nerve/N/slot_target/occurrence/occurrenceEquiv/occurrence_injective/diagonal_injective/triangle_injective`。Occurrence は Face×Fin3 の位置を持ち、集合へ潰さない。`old_boundary` が符号1−1+1から e を得る。 |
+| W2b 指定 sF=center+t0−t1+t2、h1di=-ti | `section_face/h0_new/h1_diagonal` の同じ一般 s/h の評価。Case.repeated の `rs_all/sr_h_all` は全 A の支持 chain 式をそのまま適用する。 |
+| W2b 実旧細 H¹=Q、同じ k period 恒等 | `WitnessTwoBPeriods.cycle_relation` は原始 d1 の e 値が零、`loopPeriod_kernel` は零 potential へ戻す。k 単独 cochain による全射から `namedH1Period`。`blockEquiv` は独立 block の全三成分同定。`WitnessTwoBLoop.fineBlockPeriod_mk/fineLoopCycle_apply` は保持 k の実値と全細代表を評価、`comparison_maps_loop` と旧細非零性は同じ実 blockR に対するもの。 |
+| W2c 非交差台、空辺台、空面と出現、alpha対/beta恒等 | `WitnessTwoCInput.nerve/N/edge_empty/fresh_support/c_support/b_empty/occurrenceIsEmpty/retainedIsEmpty` は同じ一般分割が空辺台にも定義できる構成。`alpha_pair_selected/beta_pair_absent/b_absent/homotopy_vertex/beta_identity` と Case.emptySupport の同じ全A収縮が両成分を閉じる。 |
+| W2c 同じ実旧細 H¹零、全Lawも零 | `edgeBlockIsEmpty/old_h1_zero` は旧実C1零から。`fine_h1_zero` は同じ独立実 blockR を hom とする標準同型の逆から。`empty_old_law_h1_zero/empty_fine_law_h1_zero` は全元ラベルの実H¹族へ渡す。 |
+| 三例の同じ実subset/block/Law生成経路、全三成分fiber | `WitnessTwoDiagnostics.subset_comparison/law_comparison/block_comparison/law_fiber_square/block_fiber_square` は Case の原始 N/edge を一般 B/D の現在の statement へ渡した全三成分等号。独立生成射を period 行列から定義していない。 |
+| 全A、元ラベル保持、標準全次数・実欠損・錐 | `subset_homology_map/lawEquiv/law_equiv_maps/blockEquiv/block_equiv_maps/law_h1_bijective/law_defect_zero/law_cone_zero/block_defect_zero/block_cone_zero/subset_defect_zero/subset_cone_zero`。同じ実 r と有限和 s が順逆で、全整数 n と空 A を含む。 |
+
+### Cycle 13 premise / provenance / dependency audit
+
+- `ambient-boundary`: 一般橋渡しでは有限Source、全射reading、supported nerve/K1、Q、adequacy、任意Aと元発生ラベル。W2でのこれらは指定Bool/原始表/identity Lawから構成し、adequacyは原始評価から証明済み。
+- `direction-hypothesis`: `commonPoint_edge/face/pointSubsetNamedEquiv` の共通支持点と `subdivisionFinePeriod_mk` の旧 period の実 k 評価。指定適用では W2a `alpha_common`、W2b `chart_full`、`oldBlockPeriod_mk`、`oldK_retained` が全部放電する。beta と空辺台へ共通支持点仮定を流用しない。
+- `discharge-required`: 新支持、出現位置、三成分比較・comm0/comm1、全A収縮、旧細の実商同定/非零代表/同じ写像評価。上表の入力由来構成と C2/C6/C7/C9/C11/G133受理済み定理への同強度適用により放電する。独立PR gateでこれを検算する。
+- `conclusion-equivalent-risk`: rank、同型、H¹消滅、欠損零、錐零を input/field として受け取っていない。CochainEquiv/Hom/HomotopyEquiv は出力で、各 field は原始セル像か受理済み生成定理に依存する。
+- `proof_use`: K1はセル選択/空辺台に、出現slotは s2とh1の符号に、identity Law/adequacyは元ラベル座標生成に、原始微分は商の核と単独 cocycleに、全三成分 square は同じ実H¹/標準射/欠損/錐への接続に使用する。選択有限基底→実Law有限和のAPIは `lawBlockDual_apply_zero/single`、原始Optionとの全三成分接続は `basisBlockHom_eq_generated/blockR_eq_generated`。
+- `structure_field_escape: none-found`; `route_integrity: pass`; `vacuity/target-fitting/one-way-as-equivalence: none-found`。Case は指定入力を列挙するだけで結論やrankをfieldへ持たない。
+- 再利用は C2 (5275), C6 (5279), C7 (5280), C9 (5282), C11 (5284), C12 (5285) の受理版と G133 (5265/5268) を使用する。各受理commit/監査refは既存各cycle欄と C12 receipt に固定済み。今の statement、必要な定義、適用引数を読むことで追跡を完了し、使用に関係する今回の owner API 追加は本 cycle の公理・査読対象へ含める。
+- toolchain Lean4.28.0 / mathlib8f9d9cff6bd728b17a24e163c9402775d9e6a365。Qの標準線形代数・商/関数再index APIは版と適用条件を確認する。
+- foreign semantic definition の展開を証明経路に用いず、公開APIを owner に追加した。集合等式に沿う whole-three 同定と実代表評価は `lawValueBlockSubsetEquivOfEq/labelFiberEdgeOfEq` のAPIで、集合輸送の proof irrelevance は結論の代替ではない。
+
+### Cycle 13 public spine
+
+```text
+research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportIncidence.lean	AAT.AG.AtlasDefectComposition.fullBlockNamedEquivalence_e1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	AAT.AG.FaceRelationSubdivision.ConnectedFaceWitness.label_fiber
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockR_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockR_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	AAT.AG.FaceRelationSubdivision.EdgeSubdivision.blockS_f1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual_apply_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	AAT.AG.FaceRelationSubdivision.SupportedBasisMap.lawBlockDual_apply_single
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisBlock0_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisBlock1_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisBlock2_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	AAT.AG.FaceRelationSubdivision.IncidenceSupportedComparison.basisBlockHom_eq_generated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	AAT.AG.FaceRelationSubdivision.subdivisionFinePeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	AAT.AG.FaceRelationSubdivision.retainedBlockCoordinate
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	AAT.AG.FaceRelationSubdivision.retainedBlockCoordinate_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	AAT.AG.FaceRelationSubdivision.subdivisionFinePeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.singleton_selected_iff
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSelected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSelected_val
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSelectedCochain
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.commonPoint_edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.commonPoint_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSubsetNamedEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSubsetNamedEquiv_e1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	AAT.AG.FaceRelationSubdivision.pointSubsetNamedEquiv_symm_e1
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.support_nonempty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.N
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.chart_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.edge_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.face_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alpha_common
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fine_alpha_common
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.occurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.occurrence_unique
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fresh_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.c_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.b_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.diagonal_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.triangle_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.center_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_old_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_new_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_pair_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.section_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.homotopy_vertex
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.homotopy_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.loop_attached
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alpha_loop_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subset_loop_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.blockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldK_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldK_retained
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldBlockPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineBlockPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.subsetLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.oldLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.block_period_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.comparison_maps_loop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fineLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.old_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.fine_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.incidenceEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.alphaPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaA
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_edge_cases
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_face_empty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod_loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaLoopPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.betaPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoA.beta_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.N
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fine_chart_full
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.slot_target
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.occurrence
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.occurrenceEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.occurrence_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.triangle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.diagonal_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.triangle_injective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.old_boundary
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.section_face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.homotopy_vertex
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.homotopy_diagonal
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.d0_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.d1_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loop_attached
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineBlockPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineLoopCycle
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineLoopCycle_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineLoopClass
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.comparison_maps_loop
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineLoopClass_period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.old_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fine_loop_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod_apply
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.cycle_relation
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod_kernel
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod_loopOnly
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loopPeriod_surjective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.namedH1Period
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.namedH1Period_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.loop_class_nonzero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.blockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldK
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldK_cell
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldK_retained
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.oldBlockPeriod_mk
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.fineBlockPeriod
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoB.block_period_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.nerve
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.N
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.chart_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.edge_empty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.fresh_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.c_support
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.b_empty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.occurrenceIsEmpty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.retainedIsEmpty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.alpha_pair_selected
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.beta_pair_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.b_absent
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.homotopy_vertex
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.beta_identity
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.contraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.law_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.edgeBlockIsEmpty
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.old_h1_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	AAT.AG.FaceRelationSubdivision.WitnessTwoC.fine_h1_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.Case
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.old
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.edge
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.fine
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.contraction
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.rs_all
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.sr_h_all
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.subset_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.subset_homology_map
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_comparison
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_fiber_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_fiber_square
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.lawEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_equiv_maps
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.blockEquiv
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_equiv_maps
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_h1_bijective
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_defect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.law_cone_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_defect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.block_cone_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.subset_defect_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.subset_cone_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.empty_old_law_h1_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.empty_fine_law_h1_zero
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.Case.face
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.Case.repeated
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	AAT.AG.FaceRelationSubdivision.WitnessTwo.Case.emptySupport
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetEdgeLeft_val
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.targetSubsetEdgeRight_val
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.mem_labelValueFiber
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockSubsetEquivOfEq
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.labelFiberEdgeOfEq
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.labelFiberEdgeOfEq_cell
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockSubsetEquivOfEq_e1
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockSubsetEquivOfEq_symm_e1
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	AAT.AG.ResolutionInvariance.TargetSupportedNerve.labelFiberEdgeOfEq_surjective
+```
+
+### Cycle 13 source hashes
+
+```text
+research/lean/ResearchLean/AG/AtlasDefectComposition/FullSupportIncidence.lean	1	7707340dfe3a4bc13e9b7cd8dd8217bc332b163aab847f5f984404db298bd66c
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ConnectedFaceWitnessInput.lean	1	7af9d1f10c10ec6ad4860db4b5887f2e09d17ae4c2ba5349dd2ebf56ba574e09
+research/lean/ResearchLean/AG/FaceRelationSubdivision/ElementaryBlockHomotopy.lean	3	af2bb70efefd566accc64494610c658ce915b636f7c945f28f1a5768f66a0dbe
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteBlock.lean	2	fd852fa18d331b3f4aacde3ce56b719762d9769d5885e2e6dcc4696de3b88157
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LawFiniteOption.lean	4	711215eced311b42103c33a5b57f91f30d6b5975fba3c6fa9a909c720ee394da
+research/lean/ResearchLean/AG/FaceRelationSubdivision/LoopSubdivisionPeriod.lean	4	5d0440235c839af842a12496b67b95793cb12990c08a32b8d7821b2b41642453
+research/lean/ResearchLean/AG/FaceRelationSubdivision/PointSubsetNamed.lean	9	169cf446c66f7cf7f641ace5b3f6cc893ae18571c1269add8c52f84192d5f746
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAInput.lean	27	8b1d425b755d3066d5514e923e607f78a208ea22455d6eae8ecf72d736246dcc
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoALoop.lean	30	28426027c31dd15049d5c884fa6508e5dbbd3014f6beb461d98ea129657378f3
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoAPeriods.lean	19	0b90a1e7d41c4bc842f28c504222f391ae7d785fecbb71fbb6f0f5d26b147516
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBInput.lean	21	4b6bdc381508fafdd8e62c4b5fd8a508226685619b372c8a6630295a9464e1b7
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBLoop.lean	13	ab177628c77402f63de842948f1222f2305e159a325e179cbff06d412502c504
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoBPeriods.lean	18	854ebe20fc64f280b9654b619fa7dace80a6a903c6c9dc4e7fcffb11300eab04
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoCInput.lean	21	e5796d96c2ba03f3a422e5bd9bce78feeb58b9c9ff4fd56d667978a6ddf166a0
+research/lean/ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean	30	2746a8b1dc394d13f3f4ac45f8eb3237edafb14e62a19a8369f4ab5c526982d0
+research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean	9	893c599f804a17a7c55dd1447706884ed42b612129473d6c7e41767b9802012d
+```
+
+### Cycle 13 validation / result proposal
+
+root の10新規moduleと6既存ownerの必要な個別targeted検証は成功。最新 `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/FaceRelationSubdivision/WitnessTwoDiagnostics.lean` はexit0、対象namespace45宣言の標準公理監査も成功。
+全212追加宣言のsource/spine/明示query/output集合が一致し、独立 `lake env lean ../../.tmp/g134/c13/axioms.lean` はexit0。全件 `propext/Classical.choice/Quot.sound` の範囲（依存なしも含む）、log SHA256 `65cb7de03b25bad20baa123e79da3f909b67552f6c163fb513e0c47b98387134`。
+全16source hash、manifest新規10/全2232行unique・source存在、変更import存在・本体からResearchへのimportなし、placeholder/hidden/BiDi/privacy/語彙/diff scanに問題なし。Research全体build/aggregate/全fileelaboration未実施。CIと独立PR gateは固定headのPRコメントで判定する。
+
+- proposed_result_type: `proof-obligation-discharged`
+- proof_obligation_delta / exit_criteria_status: 固定W2a–cの全指定原始台・出現/細入力、同じ全A収縮、独立実Law/block/実subset三成分生成、W2a/bの実旧細k period/同じ恒等/単独非零類、W2cの実H¹零と空辺台構成、同じ標準全次数/欠損/錐を閉じた。
+- split_reason: none
+- completion_candidate: no
+- undischarged material premise in selected milestone: none（固定head独立PR gateで検算）。
+- blocking_findings: 独立PR gate前。
+- next_obligation: 参照基本変形§6の選択chain分解、H⁰同型/H²単射/非選択成分の対応、累積全固定targetの別4本完了監査。
+- GOAL active、Issue OPEN。全target完了とは判定していない。固定目標/恒久設計は不変。Formal移植/ArchSig実装は別であり、Research全体buildは未実施。
