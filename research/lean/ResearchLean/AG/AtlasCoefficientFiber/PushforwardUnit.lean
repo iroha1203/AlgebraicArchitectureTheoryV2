@@ -105,6 +105,15 @@ def unitHom : ThreeCochainComplex.Hom (Nc.targetSubsetComplex A) (pushforwardCom
   comm0 := unit_comm0 M A
   comm1 := unit_comm1 M A
 
+/-- η Homの同じ次数0成分を返す定義所有者API。 -/
+@[simp] theorem unitHom_f0 : (unitHom M A).f0 = unit0 M A := rfl
+
+/-- η Homの同じ次数1成分を返す定義所有者API。 -/
+@[simp] theorem unitHom_f1 : (unitHom M A).f1 = unit1 M A := rfl
+
+/-- η Homの同じ次数2成分を返す定義所有者API。 -/
+@[simp] theorem unitHom_f2 : (unitHom M A).f2 = unit2 M A := rfl
+
 end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientConstant
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientConstant_eval
@@ -118,4 +127,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.unit_comm0
 #print axioms AAT.AG.AtlasCoefficientFiber.unit_comm1
 #print axioms AAT.AG.AtlasCoefficientFiber.unitHom
+#print axioms AAT.AG.AtlasCoefficientFiber.unitHom_f0
+#print axioms AAT.AG.AtlasCoefficientFiber.unitHom_f1
+#print axioms AAT.AG.AtlasCoefficientFiber.unitHom_f2
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

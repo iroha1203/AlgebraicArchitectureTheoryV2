@@ -1048,3 +1048,12 @@ import ResearchLean.AG.AtlasCoefficientFiber.CarrierFunctor
 import ResearchLean.AG.AtlasCoefficientFiber.PushforwardCoefficient
 import ResearchLean.AG.AtlasCoefficientFiber.PushforwardComplex
 import ResearchLean.AG.AtlasCoefficientFiber.PushforwardUnit
+import ResearchLean.AG.AtlasCoefficientFiber.CoefficientEvaluation
+import ResearchLean.AG.AtlasCoefficientFiber.PushforwardEvaluation
+import ResearchLean.AG.AtlasCoefficientFiber.LocalFiber
+import ResearchLean.AG.AtlasCoefficientFiber.FiberComma
+import ResearchLean.AG.AtlasCoefficientFiber.GammaComma
+import ResearchLean.AG.AtlasCoefficientFiber.ConnectedFiber
+import ResearchLean.AG.AtlasCoefficientFiber.PhiComma
+import ResearchLean.AG.AtlasCoefficientFiber.LocalNaturality
+import ResearchLean.AG.AtlasCoefficientFiber.LocalEvaluation

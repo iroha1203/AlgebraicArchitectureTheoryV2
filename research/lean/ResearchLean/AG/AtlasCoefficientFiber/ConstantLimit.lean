@@ -28,6 +28,10 @@ abbrev RationalObject : ModuleCat.{u} ℚ := ModuleCat.of ℚ (ULift.{u} ℚ)
 def constantRational (J : Type u) [Category.{v} J] : J ⥤ ModuleCat.{u} ℚ :=
   (Functor.const J).obj RationalObject
 
+/-- 定数係数のincidence射は恒等線形射。下流の自然性証明の公開API。 -/
+@[simp] theorem constantRational_map {J : Type u} [Category.{v} J] {i j : J}
+    (f : i ⟶ j) : (constantRational J).map f = 𝟙 RationalObject := rfl
+
 /-- incidence射に沿い一定な評価はzigzag全体でも一定である。 -/
 theorem invariant_of_zigzag {J : Type u} [Category.{v} J] {X : Type u}
     (z : J → X) (hz : ∀ {i j : J}, (i ⟶ j) → z i = z j)
@@ -143,6 +147,15 @@ theorem coefficientCellIso_eval {J K : Type u} [Category.{u} J] [Category.{u} K]
       limit.π (StructuredArrow.proj k φ ⋙ constantRational J) j x :=
   constantRationalLimitIso_eval (StructuredArrow k φ) x j
 
+/-- counitの細セル評価は恒等comma対象の成分での評価に一致する。 -/
+theorem coefficientCounit_eval {J K : Type u} [Category.{u} J] [Category.{u} K]
+    (φ : J ⥤ K) (j : J) (x : (coefficientPushforward φ).obj (φ.obj j)) :
+    (coefficientCounit φ).app j x =
+      (coefficientCellIso φ (φ.obj j)).hom x
+        (ConnectedComponents.mk (StructuredArrow.mk (𝟙 (φ.obj j)))) := by
+  rw [coefficientCellIso_eval]
+  rfl
+
 /-- 順像のincidence射はcomma対象の前合成による関数の制限である。 -/
 theorem coefficientPushforward_map_eval {J K : Type u} [Category.{u} J] [Category.{u} K]
     (φ : J ⥤ K) {k l : K} (f : k ⟶ l) (x : (coefficientPushforward φ).obj k)
@@ -158,6 +171,17 @@ theorem coefficientPushforward_map_eval {J K : Type u} [Category.{u} J] [Categor
         ((StructuredArrow.map f).obj j) := by
     simp [coefficientPushforward, Functor.pointwiseRightKanExtension_map]
   exact congrArg (fun m : (coefficientPushforward φ).obj k ⟶ RationalObject => m x) h
+
+/-- 任意のcomma成分で読む右Kan incidence射。対象代表元への依存をquotientで消す。 -/
+theorem coefficientPushforward_map_component_eval {J K : Type u} [Category.{u} J] [Category.{u} K]
+    (φ : J ⥤ K) {k l : K} (f : k ⟶ l) (x : (coefficientPushforward φ).obj k)
+    (c : CategoryTheory.ConnectedComponents (StructuredArrow l φ)) :
+    (coefficientCellIso φ l).hom ((coefficientPushforward φ).map f x) c =
+    (coefficientCellIso φ k).hom x ((StructuredArrow.map f).mapConnectedComponents c) := by
+  induction c using Quotient.inductionOn with
+  | h j =>
+    rw [Functor.mapConnectedComponents_mk]
+    exact coefficientPushforward_map_eval φ f x j
 
 end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.RationalObject
@@ -176,4 +200,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientCellIso
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientCellIso_eval
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientPushforward_map_eval
+#print axioms AAT.AG.AtlasCoefficientFiber.constantRational_map
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficientCounit_eval
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficientPushforward_map_component_eval
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

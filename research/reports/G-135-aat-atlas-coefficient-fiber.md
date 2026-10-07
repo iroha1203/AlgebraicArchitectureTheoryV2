@@ -6,12 +6,15 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 2）
+## 現proof state（Cycle 3）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
-Cycle 2では原始Mから面射と三関係を放電し、実carrierに沿う右Kan・有限次元係数・
-セル微分によるP・成分上の定数写像ηを構成した。Cycle 2の独立査読は未実施である。
-Φ・Γ・Λへの成分同定、εと実u、L以降と全Wは未達。全目標はtarget-proof-checkpoint。
+Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293でcheckpoint受理済み。
+Cycle 3は同じPからcounit評価εと実u因子化、局所Φ・Γ・Λの構成・成分同定を進める。
+ε のcochain条件と実u全三次数因子化、原始Φのchain/cochainと包含、Γの関係列、Φ・Γ・Λの実comma成分式は対象fileのLean検証を通過した。
+chart→edge・edge→faceの係数自然性と原始端点・辺位置への同定も通過した。
+mixed関係・三角形二経路の公開自然性API、ε次数別単射性、L以降と全Wは実装・検証中または未達。
+独立査読前であり、全目標はtarget-proof-checkpoint。
 
 以下のCycle 1 selectionから検証記録までは、最初の提案時点の履歴である。
 現在のdelta・未放電行は後続のCycle 2台帳へ対応させる。
@@ -305,3 +308,193 @@ Research full/aggregate/全file loop、Formal full build/移植、独立査読�
 非中心の微分評価API指摘への対応として、定義所有者に一般/実Pの4評価補題を追加し、
 unit_comm0/1のproof内部を既存unit*_applyと評価APIによる証明へ変更した。
 上表のP/ηの検証件数とhashは、この対応後の対象2file再検証を反映する。
+
+## Cycle 2 受理記録
+
+PR #5293の固定head `f9dc1ceaf5d9ddfc3cc3f7d4be43c3617797284a` を、
+初回独立4 lane・非中心API指摘の有資格な直接対応・root acceptance・全8 CI後に
+merge `fa6f518d794bd8c1f7b0a09e84bb75aae9774225` で受理した。
+[初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5293#issuecomment-6042523123)、
+[直接対応・acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5293#issuecomment-6042646654)、
+[全CI・merge記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5293#issuecomment-6042743719)、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6042755786)。
+受理はproof-checkpoint。元の終了条件は未達のまま保持。Formal実build/kernel/premiseはskip。
+Cycle 2のproposal/検証記録は提案時点の履歴であり、受理状態はこの節に対応する。
+
+## Cycle 3 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 3
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: fa6f518d794bd8c1f7b0a09e84bb75aae9774225
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle 2受理記録とIssue同期
+  proof_dag_predecessors: [PR5292 Incidence/ConstantLimit/Carrier, PR5293 実carrier/右Kan/P/η, G-134 SubsetComparison/SupportedChain]
+  milestone: GOAL A・設計README§1–3の原始Mから順像係数と実比較の因子化
+  proof_obligations: [局所fiberと関係グラフの生成, comma成分の全単射とincidence自然性, counitから実εを生成, 退化辺/面での零性とcochain条件, 全三次数の実u因子化]
+  exit_criteria: [MだけからInc関手を生成, Φ・Γ・Λへの対応を全射・単射・incidence自然性まで証明, Pの微分とd1d0を構成, η・εをcochain Homとして構成, εηと既存uの全三次数等号]
+  selection_reason: 受理済みの実Pから評価射を生成し、固定比較の因子化と局所セル成分へ直接接続する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [CoefficientEvaluation.lean, PushforwardEvaluation.lean, LocalFiber.lean]
+  risks: [評価をuから逆算しない, mixed面の二mapped辺の適合をfieldへ移さない, ΦとLaw値fiberを混同しない, comma全単射とincidence自然性を省略しない]
+  unchecked: [局所fiberと実評価, A残部のL/商dual, B–E/W]
+```
+
+
+## Cycle 3 固定条項と証拠対応
+
+Cycle 3 selectionは実装前の記録である。下記は査読へ渡す実装の対応であり、
+独立査読前のproposalとして扱う。GOAL Aの設計§4、B–E・Wは次の義務に残る。
+
+| 固定条項 | 同じ入力・対象・写像へのLean接続 |
+| --- | --- |
+| A・README§1のΦ | `PhiChart/Edge/Face`は原始Option条件で選択。`phiBoundary1/2`、`phiComplex`、`phiEmbed0/1/2`、`phiEmbed_comm1/2`、包含単射により原支持chainの部分chainへ接続 |
+| A・README§1のΓ | `GammaVertex/Edge`、`gammaSource/Target`、`GammaGraph`とQuiver、有限Hom、`gammaGraphArrow`は元のmapped辺・mixed面名を保持。`gammaBoundary_single`は同じ二端点の符号列 |
+| A・README§1–2のΛ | `LambdaFace`、`lambdaCommaEquiv`、`faceComma_obj_eq_of_hom`、`lambdaComponentsEquiv`が原始面持ち上げと面commaの対象・成分を同定 |
+| A・README§2のΦ成分式 | `phiComma_reachable`と`phiComma_common_target`を原始三退化パターンから生成し、`phiComponentsEquiv`と`phiCoefficientEquiv`へ接続 |
+| A・README§2のΓ成分式 | `gammaComma_reachable`と`gammaComma_common_target`を同じ原始Mから生成し、`gammaComponentsEquiv`と`gammaCoefficientEquiv`へ接続 |
+| A・README§2のincidence | `endpointComponents_vertex`、`faceEdgeComponents_lift`が原始細端点・面辺出現を返す。`coefficient_endpoint_naturality`、`coefficient_faceEdge_naturality`が同じ標準Kan写像を関数制限へ同定。`gamma_endpoint_relation`と`endpoint_faceEdge_components`がmixed関係と三角形の二経路を保持 |
+| A・README§3のε | `coefficientEvaluationAt`は同じKan counitから生成。`evaluation_comm0/1`はmapped・垂直・mixed全パターンを放電し、`evaluationHom`へ接続 |
+| A・README§3のη・ε・実u | `evaluation_unitHom`と`aSubnerveComparisonHom_factorization`は全三次数の同じcochain Homの等号。`unit0_phi`、`unit1_gamma`、`unit2_lambda`は局所成分上の定数式 |
+| A・README§3の評価式と単射 | `evaluation0_phi`、`evaluation1_gamma`、`evaluation2_lambda`は同じ原始成分での評価。全Φ・Γ成分のchart/mapped辺代表元とΛ全持ち上げから`evaluation0/1/2_injective`を導く |
+
+### Material premise・provenance・proof-use
+
+| 行 | 分類 | 出所・実際の使用・放電 |
+| --- | --- | --- |
+| reading順序、有限N、K1、台輸送、原始M | ambient-boundary | T0の既存型。局所セル選択、全射分類、端点・面輸送、各有限性へ使用。全構成は任意A、細選択はπ⁻¹A |
+| raw Option退化零和 | ambient-boundary | `degenerate_face_cases`の三分類を通じ、Φ・Γ carrier、Φ到達・common target、ε退化面零性へ使用 |
+| 一般constant carrier包含の所属等号 | direction-hypothesis、実適用ではdischarge-required | `phiCellObj_carrier`、`gammaCellObj_carrier`、`lambdaFace_carrier`が原始所属から生成 |
+| 一般component同値の到達・共通原像zigzag | direction-hypothesis、実適用ではdischarge-required | `ConnectedFiber`は一般API。実Φ・Γではそれぞれの`*_reachable`と`*_common_target`が任意comma対象・任意共通原像を尽くす |
+| counit自然性に渡すfull carrier射等号 | direction-hypothesis、実適用ではdischarge-required | `CarrierFunctor`のmapped端点・mapped面・mixed左右面producerを`evaluation_comm0/1`で使用。対象写像だけの等号に置き換えない |
+| 成分代表元の存在 | discharge-required | `phiComponent_chart_representative`と`gammaComponent_vertex_representative`は原始頂点incidenceから生成。ε単射性で使用 |
+| 原始Φ・Γ・Λとcommaの同型・自然性 | discharge-required | 上の全単射・評価・incidence定理が出力として証明。入力fieldやexpected rank certificateへ移していない |
+| L/商双対、κ/R/τ、標準完全列・filtration、C–Eと全W | discharge-required | 次の義務として未達。今回の二射・局所成分式から接続する |
+
+同値の逆向きに使うchoiceは、原始Mから証明した到達全称命題の証人を選ぶ。
+Pは既存の独立生成済み右Kanであり、εη=uという結論から選んでいない。
+Φはセル逆像、Law値fiberはAの選択添字として区別し、mapped粗loopはΦ辺へ入れない。
+Γのloop・平行面・二mapped辺の重複出現を保持する。
+
+### 依存DAGと受理spine宣言リスト
+
+- PR5292のIncidence/ConstantLimitとPR5293の実carrier/右Kan/P/η → counit評価 → 実ε → 実u全三次数因子化。
+- 原始M → Φ部分chain・Γ多重グラフ・Λ → 原始包含 → 到達/common target → 実comma成分全単射 → 同じKanのstalk式。
+- stalk式と原始incidence射 → endpoint/faceEdge成分写像 → Kan自然性、mixed関係・三角形関係 → η/ε局所評価 → ε次数別単射。
+- G-134の`SubsetComparison`・`SupportedChain`の支持輸送と原始chainを再利用し、G-133の`GeneratedComposition`のcochain合成・extensionalityへ同じ二射を接続。
+
+旧6ファイルで追加した定義所有者APIと新9ファイルの明示宣言を以下に固定する。
+以下259宣言を今回の受理spine・その支持APIとする。名前空間は
+`AAT.AG.AtlasCoefficientFiber`（CarrierのAPIは同名内部namespace）。
+cycle scaffoldは成果sourceに含めず、未使用の試作とdiagnostic scratchは検証用作業領域だけに置いた。
+
+| ファイル | 今回追加した明示宣言 |
+| --- | --- |
+| `Carrier.lean` | `Carrier.edge_eq_edge_iff`, `Carrier.face_eq_face_iff` |
+| `CarrierFunctor.lean` | `Carrier.preimageFunctor_obj_chart`, `Carrier.preimageFunctor_obj_edge`, `Carrier.preimageFunctor_obj_face`, `Carrier.preimageFunctor_map_chartEdge`, `Carrier.preimageFunctor_map_edgeFace`, `Carrier.preimageFunctor_obj_edge_of_some`, `Carrier.preimageFunctor_obj_edge_of_none`, `Carrier.preimageFunctor_obj_face_of_some`, `Carrier.preimageFunctor_endpoint_of_some`, `Carrier.preimageFunctor_endpoint_of_none`, `Carrier.preimageFunctor_face_edgeMap_of_some`, `Carrier.preimageFunctor_face_edge_of_some`, `Carrier.preimageFunctor_face_edgeHom_of_some`, `Carrier.edgeHom_code_of_mixed_left`, `Carrier.edgeHom_code_of_mixed_right`, `Carrier.preimageFunctor_face_edgeHom_of_mixed_left`, `Carrier.preimageFunctor_face_edgeHom_of_mixed_right`, `incHomCode_comp_eqToHom`, `Carrier.preimageFunctor_map_edgeFace_code_of_some`, `Carrier.preimageFunctor_map_chartFace`, `Carrier.preimageFunctor_map_chartFace_code`, `Carrier.preimageFunctor_map_chartFace_code_of_some`, `Carrier.preimageFunctor_face_vertex_of_some`, `Carrier.preimageFunctor_face_vertexHom_of_some`, `Carrier.preimageFunctor_edge_endpoint_of_some`, `Carrier.preimageFunctor_map_chartEdge_code_of_some`, `Carrier.preimageFunctor_map_edgeFace_code_of_mixed_left`, `Carrier.preimageFunctor_map_edgeFace_code_of_mixed_right`, `Carrier.preimageFunctor_map_chartFace_code_of_mixed_left`, `Carrier.preimageFunctor_map_chartFace_code_of_mixed_right` |
+| `ConstantLimit.lean` | `constantRational_map`, `coefficientCounit_eval`, `coefficientPushforward_map_component_eval` |
+| `Incidence.lean` | `inc_endomorphism_eq_id`, `incHom_target_of_face`, `incHom_from_face_eq`, `incHom_edge_edge_target`, `IncidenceFunctorData.vertexHom_zero`, `IncidenceFunctorData.vertexHom_one`, `IncidenceFunctorData.vertexHom_two`, `incHom_chartFace_source_of_code`, `incHom_chartEdge_source_of_code`, `incHom_chart_chart_target`, `chartEdge_edgeFace_comp` |
+| `PushforwardComplex.lean` | `coefficient_endpoint_chart_eval`, `coefficient_edge_transport` |
+| `PushforwardUnit.lean` | `unitHom_f0`, `unitHom_f1`, `unitHom_f2` |
+| `CoefficientEvaluation.lean` | `coefficientEvaluation`, `coefficientEvaluation_apply`, `coefficientEvaluation_naturality`, `coefficientEvaluation_constant`, `coefficientEvaluationAt`, `coefficientEvaluationAt_naturality`, `coefficientEvaluationAt_constant`, `coefficientEvaluationAt_cellIso` |
+| `ConnectedFiber.lean` | `componentEquivOfCommonTargets`, `componentEquivOfCommonTargets_apply`, `componentEquivOfCommonTargets_symm_mk` |
+| `FiberComma.lean` | `constantCarrier_transport`, `constantCarrierCommaFunctor`, `phiCommaFunctor`, `gammaCommaFunctor`, `lambdaCommaObj`, `lambdaCommaObj_injective`, `lambdaCommaObj_surjective`, `lambdaCommaEquiv`, `faceComma_obj_eq_of_hom`, `lambdaComponentToFace`, `lambdaComponentsEquiv`, `lambdaCoefficientEquiv`, `lambdaCoefficientEquiv_apply`, `constantCarrierCommaFullyFaithful`, `gammaCommaFunctor_obj_right`, `gammaCommaFunctor_obj_hom`, `gammaCommaFullyFaithful`, `constantCarrierCommaBackwardArrow`, `constantCarrierCommaBackwardArrow_right`, `constantCarrierComma_common_target`, `phiCommaFullyFaithful`, `phiCommaFunctor_obj_right`, `phiCommaFunctor_obj_hom`, `lambdaCommaObj_right`, `lambdaCommaObj_hom`, `lambdaComponentsEquiv_symm_apply` |
+| `GammaComma.lean` | `gammaCellObj_surjective_of_carrier`, `gammaComma_arrow_of_same_cell`, `gammaComma_reachable_of_strict`, `gammaComma_reachable_of_mapped_face`, `gammaComma_reachable_of_edge_carrier`, `gammaComma_reachable`, `mapConnectedComponents_surjective_of_reachable`, `gammaComma_components_surjective`, `gammaComma_common_target_of_strict`, `gammaComma_source_of_mapped_face`, `gammaComma_common_target_of_mapped_face`, `gammaComma_common_target_of_edge_carrier`, `gammaComma_common_target`, `gammaComponentsEquiv`, `gammaCoefficientEquiv`, `gammaCoefficientEquiv_apply`, `gammaComponentsEquiv_apply` |
+| `LocalEvaluation.lean` | `evaluation0_phi`, `evaluation1_gamma`, `evaluation2_lambda`, `unit0_phi`, `unit1_gamma`, `unit2_lambda`, `evaluation0_injective`, `evaluation1_injective`, `evaluation2_injective` |
+| `LocalFiber.lean` | `PhiChart`, `PhiEdge`, `PhiFace`, `GammaVertex`, `GammaEdge`, `LambdaFace`, `phiEndpoint`, `phiEndpoint_val`, `phiFace_edge_chart`, `phiFace_edge_none`, `phiFaceEdge`, `phiFaceEdge_val`, `gammaSource`, `gammaTarget`, `gammaBoundary`, `gammaBoundary_single`, `phiD0`, `phiD1`, `phiD0_apply`, `phiD1_apply`, `phiD1_comp_phiD0`, `phiComplex`, `phiCellObj`, `PhiInc`, `phiCellObj_carrier`, `gammaCellObj`, `GammaInc`, `gammaCellObj_carrier`, `lambdaFace_carrier`, `phiBoundary1`, `phiBoundary2`, `phiBoundary1_single`, `phiBoundary2_single`, `phiBoundary1_dual`, `phiBoundary2_dual`, `phiBoundary1_comp_phiBoundary2`, `phiEmbed0`, `phiEmbed1`, `phiEmbed2`, `phiEmbed_comm1`, `phiEmbed_comm2`, `phiEmbed0_injective`, `phiEmbed1_injective`, `phiEmbed2_injective`, `gammaCellObj_inl`, `gammaCellObj_inr`, `gammaCellObj_injective`, `phiCellObj_chart`, `phiCellObj_edge`, `phiCellObj_face`, `phiCellObj_injective`, `phiIncFinite`, `gammaIncFinite`, `lambdaFaceFinite`, `gammaSource_val`, `gammaTarget_val_of_left`, `gammaTarget_val_of_right`, `GammaGraph`, `gammaGraphQuiver`, `gammaGraphFinite`, `gammaGraphHomFinite`, `gammaGraphArrow`, `gammaGraphArrow_val` |
+| `LocalNaturality.lean` | `endpointComponents`, `faceEdgeComponents`, `coefficient_endpoint_naturality`, `coefficient_faceEdge_naturality`, `gammaEndpointChart`, `gammaEndpointChart_val`, `gammaEndpointCommaArrow`, `endpointComponents_vertex`, `lambdaEdgeVertex`, `lambdaEdgeVertex_val`, `lambdaEdgeCommaArrow`, `faceEdgeComponents_lift`, `gammaSourceIncidence`, `gammaTargetIncidence`, `gamma_relation_component`, `gammaComponent_vertex_representative`, `gamma_endpoint_relation`, `endpointComponentsAt`, `faceVertexComponents`, `endpoint_faceEdge_components`, `phiEndpointIncidence`, `phiFaceChart`, `phiFaceChartIncidence`, `phiComponent_chart_representative` |
+| `PhiComma.lean` | `phiCellObj_surjective_of_carrier`, `phiMappedEndpoint`, `phiMappedEndpoint_val`, `phiMappedVertex`, `phiMappedVertex_val`, `phiMixedLeftCollapsed`, `phiMixedRightCollapsed`, `phiComma_common_target_of_strict`, `phiMixedLeftCollapsed_val`, `phiMixedRightCollapsed_val`, `phiComma_reachable_of_mapped_edge`, `phiComma_reachable_of_mapped_face`, `phiComma_arrow_of_same_cell`, `phiComma_reachable_of_strict`, `phiComma_reachable_of_mixed_left`, `phiComma_reachable_of_mixed_right`, `phiComma_reachable_of_chart_carrier`, `phiComma_reachable`, `phiComma_source_of_mapped_edge`, `phiComma_source_of_mapped_face`, `phiComma_common_target_of_mapped_edge`, `phiComma_common_target_of_mapped_face`, `phiMixedLeftAnchor`, `phiComma_arrow_to_mixed_left_anchor`, `phiMixedRightAnchor`, `phiComma_arrow_to_mixed_right_anchor`, `phiComma_common_target_of_mixed_left`, `phiComma_common_target_of_mixed_right`, `phiComma_common_target_of_chart_carrier`, `phiComma_common_target`, `phiComponentsEquiv`, `phiComponentsEquiv_apply`, `phiCoefficientEquiv`, `phiCoefficientEquiv_apply` |
+| `PushforwardEvaluation.lean` | `evaluation0`, `evaluation1`, `evaluation2`, `evaluation0_apply`, `evaluation1_of_none`, `evaluation1_of_some`, `evaluation2_of_none`, `evaluation2_of_some`, `evaluation0_unit`, `evaluation1_unit`, `evaluation2_unit`, `evaluation_endpoint_of_some`, `evaluation_endpoint_of_none`, `evaluation_comm0`, `evaluation_face_edge_of_some`, `evaluation_face_edge_of_mixed_left`, `evaluation_face_edge_of_mixed_right`, `evaluation_comm1`, `evaluationHom`, `evaluationHom_f0`, `evaluationHom_f1`, `evaluationHom_f2`, `evaluation_unitHom`, `aSubnerveComparisonHom_factorization` |
+
+## Cycle 3 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - 実Kan counitからεを生成し、退化全パターンでcochain条件を放電した
+    - 既存uとεηを全三次数・同じcochain Homとして同定した
+    - 原始Φ部分chain、Γ有限有向多重グラフ、Λを構成し実comma成分全単射へ接続した
+    - 実Kan incidenceを指定細端点・辺成分での制限へ同定しmixedと三角形の関係を保持した
+    - 全成分の原始代表元からεの次数別単射性を証明した
+  exit_criteria_status:
+    - MからのInc関手、Pの微分とd1d0、ηはPR5293の同じ宣言を再利用
+    - ΦΓΛの実comma成分全単射と全incidence自然性は本cycleのproducer・同値・自然性定理へ対応
+    - ηεは同じcochain Hom、εη=uはaSubnerveComparisonHom_factorizationへ対応
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [本reportの15ファイル・259追加宣言]
+  evidence: [固定条項表、spine宣言表、対象fileの検証記録]
+  claim_mapping:
+    theorem_names: [本reportのspine宣言表]
+    source_labels: [GOAL A, 設計README§1–3]
+    conjuncts: [原始局所fiber, 実comma成分式, incidence自然性, 実εと同じ二射・u因子化]
+    undischarged_assumptions: [A設計§4のLと商双対, B–E, 全W]
+    acceptance_point: 選定到達点の全終了条件をLean構成へ対応した独立査読前のproposal
+    port_status: unported
+
+audits:
+  premise_delta:
+    discharged: [原始局所fiber所属, 原始comma到達と共通原像連結性, 成分全単射とincidence自然性, 実εとu等号, 次数別評価単射]
+    remaining: [Lと商双対, κRτと標準完全列・filtration, 保存条件・錐, Law台制限・G134, 有限判定・全W]
+  certificate_provenance:
+    discharged: [Kan counit由来のε, 原始M由来のΦΓΛ, 原始全称producer由来のcomponent同値]
+    unresolved: []
+  proof_use:
+    used: [原始Mと台輸送, Option退化零和, 原始端点・面出現, 標準Kan極限とcounit, G133 cochain合成, G134 chainと三角形]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [下記focused checkと全宣言公理監査・機械scan]
+  blocking_findings: [標準PR独立査読とroot acceptanceとCIが未実施]
+  next_obligation: 原始退化セルL、実Pとの商双対同型と標準短完全列
+```
+
+全体は`target-proof-checkpoint`。A設計§4、B–E、Wと最終4 lane完了監査が残る。
+今回の到達点の受理後も、同じ固定targetへのループを続ける。
+GOAL・恒久設計・Formalは変更していない。Researchの形式化であり、Formal移植は未実施。
+
+## Cycle 3 検証記録
+
+変更した非aggregateの15ファイルについて、それぞれ
+`bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/<file>`
+を実行した。全件exit 0、error/warning 0。376明示宣言の`#print axioms`と、
+各current module合計459宣言の標準公理監査を確認した。全依存は
+`propext`、`Classical.choice`、`Quot.sound`の部分集合である。
+
+| ファイル | 明示print / module監査 | 出力SHA-256 | source SHA-256 |
+| --- | --- | --- | --- |
+| `Carrier.lean` | 15 / 16 | `fd215c4cf298c6c78b4ab98c49f31e81f04f93db65ac15f9b5da0d8cad0e1d1c` | `d4bec60fcf7376f75ed7f63566ff4c01c3dad0ae2ef72e34d810c4804b2ae481` |
+| `CarrierFunctor.lean` | 62 / 65 | `ba012131180c9d5f5dc809381af7ec8fc669330d0f85ca912c75973163f75df7` | `63cdb0ad4d179b63b7d76a9106fed478b20f719b64632fc58324ea787b0c376b` |
+| `ConstantLimit.lean` | 19 / 19 | `4359f830e8bb207e2ac5ce02f1602c2404c7494a87458e8f9c0dbade405914c1` | `06fe20ab5798c210b8d7f2a7d0c359618aa1cdaec99ca6b167078fb686cb087e` |
+| `Incidence.lean` | 38 / 116 | `234b89ccd13f66e56e6ffd9485254785669b9cc57b0932814723ded31199a28d` | `53ff46f6f4c4c5a9ad41d9ca49b0a8fc490f0ff99b5566cea6e477344b8fd6e5` |
+| `PushforwardComplex.lean` | 19 / 19 | `669087bddd6656a5179162de2ec35a84936ecd2d0411a9f223fd4201d557d668` | `dba4006e68c979c9f65c04dadda104609d1e0004f4527c5d069639ec6ebbbc3d` |
+| `PushforwardUnit.lean` | 15 / 15 | `e66d354433da41deb6822610c59b086d8204e379fb0820c72052d76a7fc8ba49` | `0a22341ed23f620e81fd05c517f6176d4910bb7e64a379cabd87f7694c12c53d` |
+| `CoefficientEvaluation.lean` | 8 / 8 | `00e4c37ed8cb94a73825bdf2502bd0cc9b7c39e8cb4ef6d23b10dc24db5da9fb` | `3579e2791e008c13092ff21610e8f9bf323067d2714615d297278535a0bb25d9` |
+| `ConnectedFiber.lean` | 3 / 3 | `7ae96ef9e041de5a9685c1f846766ca2d4306ffffe9d36d2bcd60dfc21c5166b` | `2fa188dd2b01bc10c04b054f8efbe57d518ef973e6eb60239943f5fc1e201d20` |
+| `FiberComma.lean` | 26 / 26 | `54b2664ea36d80e8efc5289200b2641e25fd8d9e2faa989a3be59b5d89227a35` | `1c9fc78ae72becc29e68194651d4ab79d7a3935ca7b8b5b45688a18a3b5b9c28` |
+| `GammaComma.lean` | 17 / 17 | `2a1a690e7060927a77c38b0ed5ff4df5fa7ed2ad58fd83d6fbff98940ba78e8c` | `e10ca3baaf4768f6fbdf042321459b6fb4d9fa24e3d9e25afc61032004ca8a13` |
+| `LocalEvaluation.lean` | 9 / 9 | `c314007e7bffa2cc33a282ca93f622c34018d67e6aac01b7da98bdb942a007ca` | `26899aceb3add4f510a70bfd60031ab6df2f7920e3fe76e71b7bfeb6a7b470c7` |
+| `LocalFiber.lean` | 63 / 63 | `e22ccd1c01e73f68df16017f9b364313c8d8e435142f4ffb081c8b023282ff45` | `8e1e6a00eb6a37ab0466e1a74b170e00a218e49c6eec32acea8128359fbaac21` |
+| `LocalNaturality.lean` | 24 / 24 | `fe13ec9e5aed62ba708633a21c3100664ff27c3e731afe8971ed19783f0ff82b` | `1015b5e418fd49a243ef430b1ec87ec114a9e01df209e43befe1fc46f2dfd6b2` |
+| `PhiComma.lean` | 34 / 34 | `6fd5825d9b044ce362d44ba9e62388d4bf41158cc944f173a086432693ebf8a4` | `22b3c53a81297a69a1c542d150ec82a911dff011a9e66151827a881c46208b6a` |
+| `PushforwardEvaluation.lean` | 24 / 25 | `7b1d97c87be6a67a3d4410a2a930c6bf32552dcb3da6340d76449e646b3526f8` | `4089439605bc1dc43f121a8e1a6bc920dadc97679cf47e27b59faa08106e8ed6` |
+
+必要なローカルimport cacheだけを同じ単一fileの`lake env lean -o <cache> <file>`で作成した。
+Research full build、aggregate root、全Research file loopは実行していない。
+Formal本体buildはローカル未実施であり、今回のPRではFormalに差分がない。
+PRのCI実施範囲は完走後に監査コメント・Issue同期へ記録する。
+
+placeholder、新規公理、hidden/BiDi、privacy/local-path scanは対象変更fileで検出ゼロ。
+本体からResearchへのimport方向scanは検出ゼロ。
+GOAL・設計・Formalのdiffは空であり、元のmain作業ツリーもcleanであることを確認した。
+語彙scanで変更文の禁止語は検出ゼロ。`git diff --check`を最終文書へ実行した。
+全W・L以降の検証と最終completion監査は、対応する実装後の義務に残る。
