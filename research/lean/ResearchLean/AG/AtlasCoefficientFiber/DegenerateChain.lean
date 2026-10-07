@@ -17,6 +17,12 @@ variable {Source : Type u} {qc qf : Reading Source} {h : qc.CoarserThan qf}
 variable {Nc : TargetSupportedNerve.{u, u} qc} {Nf : TargetSupportedNerve.{u, u} qf}
 variable (M : IncidenceSupportedComparison qc qf h Nc Nf) (A : Set qc.Target)
 
+/-- G-134支持chainの次数外微分を読む再利用API。原定義の計算補題。 -/
+theorem chainDegreeDifferential_out {q : Reading Source}
+    (N : TargetSupportedNerve.{u, u} q) (S : Set q.Target) (n : ℤ)
+    (h0 : n ≠ 0) (h1 : n ≠ 1) : chainDegreeDifferential N S n = 0 := by
+  simp [chainDegreeDifferential, h0, h1]
+
 /-- 指定Lの三部分空間と次数外の零加群。 -/
 def degenerateDegreeObject (n : ℤ) : ModuleCat.{u} ℚ :=
   if n = 0 then ModuleCat.of ℚ (degenerateL0 M A)
@@ -61,6 +67,11 @@ def degenerateDegreeInclusion (n : ℤ) :
   else if h2 : n = 2 then by subst n; exact ModuleCat.ofHom (degenerateL2 M A).subtype
   else 0
 
+/-- 指定Lの次数外の包含は零射。下流は包含のif本体を展開しない。 -/
+theorem degenerateDegreeInclusion_out (n : ℤ) (h0 : n ≠ 0) (h1 : n ≠ 1) (h2 : n ≠ 2) :
+    degenerateDegreeInclusion M A n = 0 := by
+  simp [degenerateDegreeInclusion, h0, h1, h2]
+
 /-- 部分空間の実制限式から原支持chainへの包含可換式を放電する。 -/
 theorem degenerateDegreeInclusion_comm (n : ℤ) :
     degenerateDegreeInclusion M A (n + 1) ≫ chainDegreeDifferential Nf _ n =
@@ -77,7 +88,8 @@ theorem degenerateDegreeInclusion_comm (n : ℤ) :
         ModuleCat.ofHom (degenerateBoundary2 M A) ≫ ModuleCat.ofHom (degenerateL1 M A).subtype
       apply ModuleCat.hom_ext
       exact LinearMap.ext fun x => (degenerateBoundary2_val M A x).symm
-    · simp [chainDegreeDifferential, degenerateDegreeDifferential, h0, h1]
+    · rw [chainDegreeDifferential_out Nf _ n h0 h1]
+      simp [degenerateDegreeDifferential, h0, h1]
 
 /-- 元の同じK′への標準chain包含。 -/
 def degenerateChainInclusion : degenerateChain M A ⟶
@@ -109,7 +121,8 @@ theorem degenerateChainInclusion_comparison_zero :
       · subst n
         apply ModuleCat.hom_ext
         exact LinearMap.ext fun x => degenerateL2_le_ker M A x.2
-      · simp [degenerateDegreeInclusion, h0, h1, h2]
+      · rw [degenerateDegreeInclusion_out M A n h0 h1 h2]
+        simp
 
 /-- 各実部分空間の包含は標準chain圏でもmonoである。 -/
 instance degenerateChainInclusion_mono : Mono (degenerateChainInclusion M A) := by
@@ -123,7 +136,7 @@ instance degenerateChainInclusion_mono : Mono (degenerateChainInclusion M A) := 
     · subst n; exact (degenerateL1 M A).injective_subtype
     · by_cases h2 : n = 2
       · subst n; exact (degenerateL2 M A).injective_subtype
-      · simp only [degenerateDegreeInclusion, dif_neg h0, dif_neg h1, dif_neg h2]
+      · rw [degenerateDegreeInclusion_out M A n h0 h1 h2]
         change Function.Injective (0 : degenerateDegreeObject M A n →ₗ[ℚ] chainDegreeObject Nf _ n)
         haveI : Subsingleton (degenerateDegreeObject M A n) := by
           rw [degenerateDegreeObject_out M A n h0 h1 h2]
@@ -157,12 +170,14 @@ theorem degenerateChain_H0_isZero :
     (ShortComplex.homologyMapIso (degenerateZeroScIso M A))
 
 end AAT.AG.AtlasCoefficientFiber
+#print axioms AAT.AG.AtlasCoefficientFiber.chainDegreeDifferential_out
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeObject
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeObject_out
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeDifferential
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeDifferential_square
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateChain
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeInclusion
+#print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeInclusion_out
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeInclusion_comm
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateChainInclusion
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateChainInclusion_f

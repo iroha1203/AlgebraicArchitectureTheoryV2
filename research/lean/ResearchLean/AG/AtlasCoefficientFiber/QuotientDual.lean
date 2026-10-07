@@ -193,11 +193,8 @@ instance evaluationQuotientDualHom_standard_isIso :
       · by_cases h2 : n = 2
         · subst n
           exact (ConcreteCategory.isIso_iff_bijective _).mpr (evaluationQuotientDual2 M A).bijective
-        · have hout (C : TwoPhase.ThreeCochainComplex.{0,u} ℚ) : IsZero (degreeObject C n) := by
-            have he : degreeObject C n = ModuleCat.of ℚ PUnit.{u+1} := by
-              simp [degreeObject, h0, h1, h2]
-            rw [he]
-            exact ModuleCat.isZero_of_subsingleton _
+        · have hout (C : TwoPhase.ThreeCochainComplex.{0,u} ℚ) : IsZero (degreeObject C n) :=
+            degreeObject_isZero C n h0 h1 h2
           have he : degreeMap (evaluationQuotientDualHom M A) n =
               (IsZero.iso (hout (pushforwardComplex M A)) (hout (quotientDualComplex M A))).hom :=
             (hout (pushforwardComplex M A)).eq_of_src _ _

@@ -72,7 +72,8 @@ theorem quotientDegreeProjection_comm (n : ℤ) :
     · subst n
       apply ModuleCat.hom_ext
       exact LinearMap.ext (quotientBoundary2_mk M A)
-    · simp [chainDegreeDifferential, quotientDegreeDifferential, h0, h1]
+    · rw [chainDegreeDifferential_out Nf _ n h0 h1]
+      simp [quotientDegreeDifferential, h0, h1]
 
 /-- 元の同じK′から標準商chainへの実商射。 -/
 def quotientChainProjection : supportedChain Nf (comparisonFactor qc qf h ⁻¹' A) ⟶
@@ -108,7 +109,8 @@ theorem degenerateChainInclusion_quotient_zero :
         apply LinearMap.ext
         intro x
         exact (Submodule.Quotient.mk_eq_zero (degenerateL2 M A)).mpr x.2
-      · simp [degenerateDegreeInclusion, h0, h1, h2]
+      · rw [degenerateDegreeInclusion_out M A n h0 h1 h2]
+        simp
 
 end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.quotientDegreeObject
