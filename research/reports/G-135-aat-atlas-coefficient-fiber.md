@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 8）
+## 現proof state（Cycle 9）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -18,11 +18,12 @@ Cycle 4の原始L・実ε像の両包含・実商双対同型・標準短完全�
 Cycle 5の原始block分解からκ・実H₁L・R・標準H¹Qの同定とforest特殊化はPR #5296で受理済み。
 Cycle 6の実τ・五項列・全R補正代表・原始消滅同値・pure消滅・W3の非零τはPR #5297で受理済み。
 Cycle 7の原carrier filtration・実graded/SES/native spectral δ・exact couple・E₁/E₂と独立d₂＝同じτはPR #5298で受理済み。
-現在はCの実核・余核と旧診断への接続をCycle 8に選定する。局所係数/pure C3′/G107同例、
+Cycle 8の実核・余核SES、旧診断加法式、保存必要十分とG133相殺零はPR #5299で受理済み。
+現在はCの局所係数からの保存、pure C3′と同じG107例への接続をCycle 9に選定する。
 三錐、D・E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
-現在のdelta・未放電行は末尾のCycle 8台帳で追跡する。
+現在のdelta・未放電行は末尾のCycle 9台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -1396,3 +1397,161 @@ Research全体/aggregate/全file loop、local lake build、Formal移植、別fin
 
 再現metadata `.tmp/g135/cycle8-validation.json`（SHA-256 `bb77b9b50b15d64d17ece946f88f501030fc58279efe55b8ab5744b024e797f5`）。
 共通scan metadata `.tmp/g135/cycle8-scans.json`（SHA-256 `4f8eeb0d05566ccc61f36dd8bad40298fda52a981ab52d5c8e561cb5ec6f2143`）。
+
+## Cycle 8受理とマージ
+
+PR [#5299](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5299)の
+修正後固定head `4bdc59ea609b94fd087acad580666223c073a502`で、正式rerun1の新規数学2本・Lean2本が
+すべてNo major findings、中心/非中心finding 0となった。F1/F2の全解消をsourceから確認した。
+[最終標準監査・root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5299#issuecomment-6052624414)は
+六選定終了条件をapprove / proof-obligation-dischargedと判定した。
+merge `290bb573ddef08da2c77fdf10cd9532bfe3a70f8`、2026-10-08T04:59:03Z、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6052643608)。
+同head CI8件SUCCESS、Lean run37727496373 / Tool run37727496432。
+Formal setup/cache/build/kernel/premise実stepsはSKIPPED。全49宣言は標準公理のみ。
+上記Cycle 8 proposalの「修正後正式監査待ち」は当時の履歴であり、本受理節で全六条件を放電済みへ進める。
+全GOALのremaining_goalと別final fresh4は未完、Formalはunported。
+
+## Cycle 9 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 9
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 290bb573ddef08da2c77fdf10cd9532bfe3a70f8
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: PR5299最終監査6052624414・Issue同期6052643608・現source
+  proof_dag_predecessors: [C3実Phi/Gamma/Lambdaと原η, C6pure κ/τ零, C8保存必要十分, G107同じC3非必要性表と旧比較保存]
+  milestone: GOAL C・exact-sequence§4の局所十分条件とpure全A C3primeを同じG107反例へ接続
+  proof_obligations: [局所単一成分から実係数定数写像の同型生成, 原η次数別同型と実a同型, 全Phi H1零から局所零診断, pure Rの全Phi同定と保存両方向, 全A C3prime, 同じG107原始表の新旧条件の同時計算]
+  exit_criteria:
+    - 各選択粗chartの実Phi連結成分・粗辺の実Gamma連結成分・粗面の実Lambda持ち上げが各一つなら、原ηの全三次数線形同型を入力から生成し元保存と実unitHomを同定する
+    - 同じ局所条件から原標準H1ηのbijectiveを導き、任意M/Aの実射aへ接続する
+    - 同じ局所条件と全実Phi H1零から原blockDefect零を導く。高次fiber零性を仮定しない
+    - pure原入力からκstar/τ零と元保存R≃全Phi H1積を生成し、τ単射と全Phi H1零を必要十分にする
+    - pure J零 iff a bijectiveかつ全Phi H1零を両方向で証明し、全Aへ量化したC3primeと非空Aへの必要性を明記する
+    - 同じG107 presentation/toGeometryの全Aで実Phi H1零・原比較保存・新C3primeを生成し、既存旧C3失敗と同じ非零H1証拠を同時に示す
+  selection_reason: C8の保存一般式から入力幾何による十分条件とpure必要十分の未接続部分を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [AtlasCoefficientFiber/LocalCoefficientSingle.lean, AtlasCoefficientFiber/LocalPreservation.lean, AtlasCoefficientFiber/PurePreservation.lean, AtlasCoefficientFiber/G107FiberComparison.lean]
+  risks: [連結とH1零の混同, 空選択/空coarsechart域, mappedloopを宣言上の垂直辺へ入れる誤り, 供給η同型, 異なるG107入力への置換, 高次fiber零仮定の追加]
+  unchecked: [六終了条件は実装前・未確認]
+```
+
+Cycle 9の六条件を実装前に固定した。局所条件は一般十分条件の方向仮定であり、
+G107適用では同じ原始表から生成する。G107受理refはPR3994固定head
+`84050e9592635418198a41cbc23f2051f023b861`、最終標準四本・全GOAL監査issuecomment-5279154319、
+merge `4c80532dded00ab2b5b0a7e066b7bd355ac1ede6`。
+現在のConditionC3NonnecessityWitness.leanはそのheadからbyte変更なし。
+既存全A旧比較保存と旧C3失敗のstatement/入力を実読して再利用し、内部の全受理履歴は再認定しない。
+局所/pure結果は三錐・D/E/W全評価の代替にしない。全GOALはtarget-proof-checkpoint、Formalはunported。
+
+### Cycle 9固定要求と実宣言の対応
+
+| 終了条件 | 同じ入力からの構成・射 | 検証状況 |
+| --- | --- | --- |
+| 1 実ηの三次数同型 | LocalCoefficientSingleの原Phi/Gamma/Lambda定数評価、constantCoefficient_bijectiveの標準piUnique同定、localUnitEquivの原unit0/1/2と全Hom等号 | 入力生成証拠あり・正式監査待ち |
+| 2 原標準H1η同型 | unitH1_bijective_of_local。生成cochain同型の実旧H1とoldH1Equiv_naturalの標準射をLinearConjugation.bijective_iffで接続 | 対象focused成功 |
+| 3 局所零診断 | connectingTau_injective_of_phiH1_zeroとlocal_zeroDefect。実κstar核の部分空間・各Phi H1零からτ単射を導く | 対象focused成功 |
+| 4 pure R・τ必要十分 | pure_kappaStar_zero、pure_fiberR_eq_top、標準ofTopによるpureFiberREquivと順逆元保存、pure_connectingTau_injective_iff | 入力生成証拠あり・正式監査待ち |
+| 5 pure全A保存とC3prime | pure_zeroDefect_iff/finrank_iff、pure_allA_zeroDefect_iff、pure_C3prime_of_allA_zeroDefect。空Aを含む全A同値と非空A必要性を分ける | 入力生成証拠あり・正式監査待ち |
+| 6 同じG107新旧条件 | G107DeclaredFiber.Mは既存presentation.toGeometryそのもの。edgeMap_someから全PhiEdge空、全Phi H1零。既受理実比較全単射を任意Setへ輸送して旧J零/原a同型/C3primeを生成し、同じ旧C3失敗と両側非零H1へ接続 | 入力生成証拠あり・正式監査待ち |
+
+局所十分条件の連結成分一つとH1零は別々の方向仮定であり、局所連結性からH1消滅を推論しない。
+全次数同型の構成は実右Kan成分式を使用し、係数同型やexactnessを供給recordへ移さない。
+高次Phi H2零は仮定しない。pure原条件は同じMixedFaceの空性であり、κ・τ零は
+PureComparisonの原始微分producerから得る。hereditary適用では原face_none_edgeから空性を生成する。
+全Phi積零の逆方向は標準surjective_eval、R同型はofTop、局所H1は標準同型自然性へ接続する。
+新しい保存/消滅Propや結論certificateを入力へ導入しない。
+
+G107で再利用する現statementはaSubnerveComparisonHom_h1Map_bijective、
+not_conditionC3AtTargetSubset、targetZero_both_h1_pos。前者のFinset量化を
+有限Fin2上の任意Setへcoe_toFinsetで輸送し、同じ原射をHereditarySpecializationへ接続する。
+新退化辺空性は原edgeMap=someから計算し、mapped粗loopを旧CoordinateFiberEdgeと区別する。
+非零実H1は同じtargetZeroの原period cocycleとその同じ比較像である。
+新Phi H1零を元のfine/coarse H1零へ言い換えない。
+LocalFiberの新所有API phiComplex_C1_subsingletonだけを追加し、原定義・全既存宣言は保持する。
+
+依存DAG: 原M/A → 受理済右Kan成分/定数係数 → 局所ηの三次数同型 → 原標準a同型 →
+C8保存必要十分。別枝は原mixed面空 → κ/τ零 → R全Phi同型 → pure iff/C3prime。
+G107原表 → same hereditary M / edgeMap some → 原PhiEdge空 / Phi H1零、
+同じ既受理全A比較 → 原J零 → a同型 → pure全A同値 → 新旧条件と非零H1の同時成立。
+G133 LinearConjugation/oldH1自然性はPR5269受理版、C3右KanはPR5294、
+C6pure producerはPR5297、C8保存はPR5299、G134 hereditary所有APIはPR5274以後の受理現版を使用する。
+全て使用するstatement・現在の定義・適用引数を確認する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原局所成分からη全次数同型と保存を生成し、pure R同定/保存両方向/全A C3primeと同じG107原表の新旧条件を接続
+  exit_criteria_status: [1原η三次数同型あり, 2原標準a同型あり, 3高次零仮定なしの局所零診断あり, 4pure R順逆元保存とτ単射iffあり, 5pure保存両方向と全A/非空A C3primeあり, 6同じG107全A実Phi零/比較保存/新条件と旧失敗/非零H1あり]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [LocalCoefficientSingle, LocalPreservation, PurePreservation, G107FiberComparison, LocalFiberの所有API追加]
+  evidence: [上表・全宣言spine・5対象focusedと標準公理監査]
+  claim_mapping:
+    theorem_names: [localUnitEquiv, unitH1_bijective_of_local, local_zeroDefect, pureFiberREquiv, pure_zeroDefect_iff, pure_allA_zeroDefect_iff, pure_C3prime_of_allA_zeroDefect, G107DeclaredFiber.newC3prime_and_oldC3_failure]
+    source_labels: [GOAL C, exact-sequence§4局所十分条件, pure C3prime, G107同じ例]
+    conjuncts: [実η三次数同型と元保存, 同じ原a/旧J, pure実κstar核とτ, 全A両方向, 同じG107入力と旧C3失敗]
+    undischarged_assumptions: []
+    acceptance_point: 六固定終了条件を同cycleで閉じ、固定headの標準PR独立監査へ渡す
+    port_status: unported
+  whole_goal_status: target-proof-checkpoint
+  remaining_goal: [C三錐/標準composition triangle/全整数次数と符号/順像粗係数特殊化, B/E全A有限τ消滅判定, D全Law/台自然性/G134接続, E原始有理行列計算法, W全指定例全評価/全A/二label/空台, 別finalfresh4]
+audits:
+  premise_delta:
+    discharged: [実係数定数写像のpiUnique同定, η次数別両逆と実H1, pure R/τ同定と保存両方向, G107同じ原表のPhi零と旧比較保存]
+    remaining: [選定にはなし・全GOALのremaining_goal]
+  certificate_provenance:
+    discharged: [原rightKan/stalk/η, 原mixed面空からκ/τ零, 同じG107presentationと既受理比較/非零H1]
+    unresolved: []
+  proof_use:
+    used: [局所Phi/Gamma/Lambda条件, 原unit微分可換性, 全Phi H1零, 原pure κ/τ producer, 元保存ofTop, 既存G107全A実比較, 同じ旧C3failure]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [5単一focused成功, 全100明示print/source/log同順序, 共通scan clean, 静的import方向228modules成功]
+  blocking_findings: [新規四本の標準PR独立査読は未実施]
+  next_obligation: C三錐と実composition triangle・fiber錐から原Qへの擬同型・全整数次数/符号
+```
+
+### Cycle 9単一file検証・全宣言spine
+
+5対象非aggregate fileはfocused成功、警告/エラー0、全100 source宣言の明示printと実logを照合した。
+新規37宣言、既存63宣言、自動生成追加0。LocalFiberは所有API1件追加と全printのsource順整列だけで、
+既存定義・statement・proofを変更しない。全宣言は標準三公理のみ。
+G107既受理証拠の再利用に必要な8単一dependency cache（ConditionCAllA、ExecutableRationalRank、
+FiniteComparisonPresentation、PresentationASubnerveDefect、ConditionCAllAChecker、ConditionCAllABridge、
+UniformPresentationDecider、ConditionC3NonnecessityWitness）は個別に生成し、全namespace標準公理監査成功。
+依存cache完成後に依存moduleを検証する。Research全体/aggregate/全file loop、local lake build、
+Formal移植、別final fresh4は未実施。
+
+<!-- cycle9-generated-evidence -->
+
+| file | source宣言（source/print/log同順序） |
+| --- | --- |
+| `LocalFiber.lean` | `PhiChart`, `PhiEdge`, `PhiFace`, `GammaVertex`, `GammaEdge`, `LambdaFace`, `phiEndpoint`, `phiEndpoint_val`, `phiFace_edge_chart`, `phiFace_edge_none`, `phiFaceEdge`, `phiFaceEdge_val`, `gammaSource`, `gammaTarget`, `gammaBoundary`, `gammaBoundary_single`, `phiD0`, `phiD1`, `phiD0_apply`, `phiD1_apply`, `phiD1_comp_phiD0`, `phiComplex`, `phiComplex_C1_subsingleton`, `phiCellObj`, `phiCellObj_chart`, `phiCellObj_edge`, `phiCellObj_face`, `phiCellObj_injective`, `PhiInc`, `phiCellObj_carrier`, `gammaCellObj`, `gammaCellObj_inl`, `gammaCellObj_inr`, `gammaCellObj_injective`, `GammaInc`, `gammaCellObj_carrier`, `lambdaFace_carrier`, `phiBoundary1`, `phiBoundary2`, `phiBoundary1_single`, `phiBoundary2_single`, `phiBoundary1_dual`, `phiBoundary2_dual`, `phiBoundary1_comp_phiBoundary2`, `phiEmbed0`, `phiEmbed1`, `phiEmbed2`, `phiEmbed_comm1`, `phiEmbed_comm2`, `phiEmbed0_injective`, `phiEmbed1_injective`, `phiEmbed2_injective`, `phiIncFinite`, `gammaIncFinite`, `lambdaFaceFinite`, `gammaSource_val`, `gammaTarget_val_of_left`, `gammaTarget_val_of_right`, `GammaGraph`, `gammaGraphQuiver`, `gammaGraphFinite`, `gammaGraphHomFinite`, `gammaGraphArrow`, `gammaGraphArrow_val` |
+| `LocalCoefficientSingle.lean` | `constantCoefficient_bijective`, `phiCoefficientConstant_apply`, `gammaCoefficientConstant_apply`, `lambdaCoefficientConstant_apply`, `chartCoefficientConstant_bijective`, `edgeCoefficientConstant_bijective`, `faceCoefficientConstant_bijective` |
+| `LocalPreservation.lean` | `localUnitEquiv`, `localUnitEquiv_e0_apply`, `localUnitEquiv_e1_apply`, `localUnitEquiv_e2_apply`, `localUnitEquiv_toHom`, `unitH1_bijective_of_local`, `connectingTau_injective_of_phiH1_zero`, `local_zeroDefect` |
+| `PurePreservation.lean` | `phiH1_subsingleton_of_edges_isEmpty`, `allPhiH1_subsingleton_iff`, `pure_kappaStar_zero`, `pure_fiberR_eq_top`, `pureFiberREquiv`, `pureFiberREquiv_apply`, `pureFiberREquiv_symm_val`, `pure_connectingTau_injective_iff`, `pure_zeroDefect_iff`, `pure_zeroDefect_finrank_iff`, `pure_allA_zeroDefect_iff`, `pure_C3prime_of_allA_zeroDefect` |
+| `G107FiberComparison.lean` | `M`, `edgeMap_some`, `phiEdge_isEmpty`, `phiH1_zero`, `comparisonH1_bijective`, `zeroDefect`, `unitH1_bijective`, `C3prime_allA`, `newC3prime_and_oldC3_failure` |
+
+G107FiberComparisonのnamespaceは`AAT.AG.AtlasCoefficientFiber.G107DeclaredFiber`、他は`AAT.AG.AtlasCoefficientFiber`。
+
+| file / source数 | source SHA-256 | focused output SHA-256 |
+| --- | --- | --- |
+| `LocalFiber.lean` / 64 | `27e300655e253d0b95a87f3fd985008c89c36988b533bc23e7ded6116888c348` | `43173ed3b24422ff93b721c99f89da177d62d66f97543d879f338f24213ea1a8` |
+| `LocalCoefficientSingle.lean` / 7 | `6520da925b2d8b2cf009869213b02c9fc780ec2557cd4573b62144f730e92505` | `f1dd13232f5a404bee0b13041c006d99c2575256f3927b35258842fd7aa8c165` |
+| `LocalPreservation.lean` / 8 | `29c5ab27b2e133dd2d1415612a229c3505c685542726a98ec25c8adc399f1061` | `5eacbd8741313dbe870600753fb118a4d1d4f61e33deb649d2eb5bfb96d6d8eb` |
+| `PurePreservation.lean` / 12 | `c40d5e80e53d9475487a7372dc53744002b4120b4a21415fd1590e98314e19f1` | `fdf80315b9074ff9220f8f2f7b1129a5b9eb744bdc57db90db24aa6f09bbe15b` |
+| `G107FiberComparison.lean` / 9 | `eeeca027e945e309f791128f7d97e5562d030cbff355afb5e4eedb6282ae0d96` | `0030229ae4bd992c4974457f68eb48180f77a8a6f75731d9d15ec70350341f7f` |
+
+validation `.tmp/g135/cycle9-validation.json` SHA-256 `ed2a3ea8162414c1cf7cf2235bde3a3f0631918332775653073f395a33ef751f`。
+scan `.tmp/g135/cycle9-scans.json` SHA-256 `0bb6e1eb5203841259dc4176ee61b4db8851a9dd9b10f13f6edc65d549ebf0f1`。

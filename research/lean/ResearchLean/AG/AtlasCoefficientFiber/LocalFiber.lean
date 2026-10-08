@@ -182,6 +182,12 @@ def phiComplex (c : Nc.ChartInTargetSubset A) : ThreeCochainComplex ℚ where
   d1 := phiD1 M A c
   d1_comp_d0 := phiD1_comp_phiD0 M A c
 
+/-- 宣言上の退化辺が空なら、原Φの次数1空間は零である。 -/
+theorem phiComplex_C1_subsingleton (c : Nc.ChartInTargetSubset A)
+    [IsEmpty (PhiEdge M A c)] : Subsingleton (phiComplex M A c).C1 := by
+  change Subsingleton (PhiEdge M A c → ℚ)
+  infer_instance
+
 /-- Φの原始三種類を細incidence圏へ戻す対象写像。 -/
 def phiCellObj (c : Nc.ChartInTargetSubset A) :
     PhiChart M A c ⊕ (PhiEdge M A c ⊕ PhiFace M A c) →
@@ -463,10 +469,18 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.phiD1_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.phiD1_comp_phiD0
 #print axioms AAT.AG.AtlasCoefficientFiber.phiComplex
+#print axioms AAT.AG.AtlasCoefficientFiber.phiComplex_C1_subsingleton
 #print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj
+#print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_chart
+#print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_edge
+#print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_face
+#print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_injective
 #print axioms AAT.AG.AtlasCoefficientFiber.PhiInc
 #print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_carrier
 #print axioms AAT.AG.AtlasCoefficientFiber.gammaCellObj
+#print axioms AAT.AG.AtlasCoefficientFiber.gammaCellObj_inl
+#print axioms AAT.AG.AtlasCoefficientFiber.gammaCellObj_inr
+#print axioms AAT.AG.AtlasCoefficientFiber.gammaCellObj_injective
 #print axioms AAT.AG.AtlasCoefficientFiber.GammaInc
 #print axioms AAT.AG.AtlasCoefficientFiber.gammaCellObj_carrier
 #print axioms AAT.AG.AtlasCoefficientFiber.lambdaFace_carrier
@@ -485,13 +499,6 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.phiEmbed0_injective
 #print axioms AAT.AG.AtlasCoefficientFiber.phiEmbed1_injective
 #print axioms AAT.AG.AtlasCoefficientFiber.phiEmbed2_injective
-#print axioms AAT.AG.AtlasCoefficientFiber.gammaCellObj_inl
-#print axioms AAT.AG.AtlasCoefficientFiber.gammaCellObj_inr
-#print axioms AAT.AG.AtlasCoefficientFiber.gammaCellObj_injective
-#print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_chart
-#print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_edge
-#print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_face
-#print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_injective
 #print axioms AAT.AG.AtlasCoefficientFiber.phiIncFinite
 #print axioms AAT.AG.AtlasCoefficientFiber.gammaIncFinite
 #print axioms AAT.AG.AtlasCoefficientFiber.lambdaFaceFinite
