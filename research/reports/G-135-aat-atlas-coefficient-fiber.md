@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 10）
+## 現proof state（Cycle 11）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -20,11 +20,12 @@ Cycle 6の実τ・五項列・全R補正代表・原始消滅同値・pure消滅
 Cycle 7の原carrier filtration・実graded/SES/native spectral δ・exact couple・E₁/E₂と独立d₂＝同じτはPR #5298で受理済み。
 Cycle 8の実核・余核SES、旧診断加法式、保存必要十分とG133相殺零はPR #5299で受理済み。
 Cycle 9の局所十分条件・pure保存両方向/全A C3′・同じG107新旧条件はPR #5300で受理済み。
-現在はCの原三錐・原Qへの擬同型・全次数と符号の対応をCycle 10に選定する。
-三錐、D・E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
+Cycle 10の原三錐・原Qへの擬同型・全次数と符号の対応はPR #5301で受理済み。
+Cycle 11の実Law接続は六固定終了条件の構成・単一file検証を通過し、正式PR査読を待つ。
+Dの台自然性/G134、E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
-現在のdelta・未放電行は末尾のCycle 10台帳で追跡する。
+現在のdelta・未放電行は末尾のCycle 11台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -1718,3 +1719,188 @@ Research全体/aggregate/全file loop、local lake build、Formal実build/移植
 
 validation `.tmp/g135/cycle10-validation.json` SHA-256 `ae6a0c2df873e9885e8cfbf54d7d6b346ec3ee16679b8638f3ec2affe45d3b69`。
 scan `.tmp/g135/cycle10-scans.json` SHA-256 `ee96281a17c4aa2d2c7c7493fde047e84433ef9f6637bb49b1d221f5e304a370`。
+
+
+## Cycle 10受理とマージ
+
+PR [#5301](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5301)、固定head `cc62fac23e82e41728dd8188967c73bde36b1516`。
+新規数学2本・Lean2本はすべてNo major findings、中心/非中心0、正式reruns0。
+[標準監査/root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5301#issuecomment-6053510508)、
+[数学全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5301#issuecomment-6053491418)、
+[Lean全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5301#issuecomment-6053494390)。
+六選定終了条件はapprove / proof-obligation-discharged。原三射/独立uの実triangle、全ℤ三射/微分/符号/錐SES、
+同じ原Qへの評価QI、原δ/R/τと原制限による元保存、補助P粗係数の原ε比較を閉じた。
+merge `8443383e5f2c39ad76fc117ce147eaf055fb12f8`、2026-10-08T06:05:54Z。固定head全8CI SUCCESS、Lean37734604000/Tool37734604006。
+Formal build/kernel/premise実stepsはSKIPPED。root7単一focused/独立4指定focused PASS、全124宣言（新80/旧44/生成0）標準三公理のみ、警告/エラー0。
+前節のvalidation/scan hashと全順序をreview後再照合し一致。GOAL/design/Formal不変。
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6053529998)。
+全GOALはtarget-proof-checkpoint、Formal未移植、全未完D/E/W/B-E全A有限判定と別finalを保持する。
+
+## Cycle 11 selection（実装前固定）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 11
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 8443383e5f2c39ad76fc117ce147eaf055fb12f8
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Issue5290 Cycle10受理・report原三錐と全次数対応
+  proof_dag_predecessors: [原MからのP/η/ε/u, 原L/Q/κ/R/τ, 三錐と実完全列, G134混在Law分解, G133有限族標準数学]
+  milestone: GOAL Dの全有限発生ラベルの原P・二射・Q/R/τ・三錐/完全列を同じ実Law比較へ接続
+  proof_obligations: [細adequacy生成, Law値fiberとcanonical逆像の全三次数同定, 原P/二射の有限族, 実Law全Hom因子化, 同じQ/R/κ/τの族と実完全列, 三錐と全次数写像の直和自然性, 同じ旧H1とblockDefectの係数/fiber和]
+  exit_criteria:
+    - 粗adequacyだけから細adequacyを生成し、原Law全三成分を同じ発生ラベルの粗Aと細π逆像へ両方向同定。Law値型全体有限を要求せず空族も保持。
+    - 各原Pの有限族としてLaw順像と原η/εを生成し、独立generatedComparisonHomを全三次数/全Homで因子化。全整数次数の同じ零延長射と元評価にも接続。
+    - 原Qと原κ/Rを全発生ラベルで集め、同じ実ε/制限の全次数SESとδを成分ごとに同定。H0Q零、H1Qと同じR族、原τ、五項列の全隣接完全性を実Lawの同じhomologyへ移す。
+    - Law原二射と独立直接射の実三錐を原ラベル三錐の有限直和へ元/符号/全次数同定し、実合成triangleの三射とQへの評価・δ・R/τを同じ成分写像へ接続。
+    - 同じ旧Law H1比較の核/余核を原係数/kerτへ接続し、実包含/余核射/代表値と完全性を保つ。原blockDefectを同じ各原aとkerτの寄与和へ戻し、同じ台のラベル重複を圧縮しない。
+    - 上記全構成・全方向の宣言/元評価/標準API/依存版と全公理ログを固定し、空ラベル・空台も排除しない。台包含自然性/G134/E/W全評価は後続固定義務として残す。
+  selection_reason: 受理済み任意Aの分解を元の実Law対象と同じ写像へ戻し、DのLaw接続gapを閉じる。台包含とG134操作は別の自然性/保存群であり今回の終了条件へ混ぜない。
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [AtlasCoefficientFiber/LawCoefficientInput.lean, AtlasCoefficientFiber/LawCoefficientComparison.lean, AtlasCoefficientFiber/LawFiberSequence.lean, AtlasCoefficientFiber/LawCoefficientCones.lean, AtlasCoefficientFiber/LawDefectDiagnostics.lean]
+  risks: [ラベル重複圧縮, 粗adequacy以外を新仮定へ移動, 任意中間P, 元canonical逆像輸送欠落, 同次元同型だけ, δ/triangle符号, 元の旧H1商と標準homology混同, 既存hereditary Law版へM変換]
+  unchecked: [実Law接続群は未実装。全GOAL残件と別finalは未完。]
+```
+
+## Cycle 11 result proposal
+
+全発生ラベルλを同じLawValueLabelのまま保持し、粗Aλとcanonical逆像π⁻¹Aλを使う。
+入力はT0の原M・二readingと有限Law族・粗adequacyだけであり、細adequacyは
+lawFineAdequateで生成する。Law値型全体のFintype、台の非空性、Nonemptyラベル、
+hereditary比較、原比較の同型、期待rank、供給SES/δ/QIは要求しない。
+
+| 固定終了条件 | 同じ実入力・射への宣言対応 | 結果 |
+| --- | --- | --- |
+| 1 粗adequacyから細を生成、原Law三成分と粗台/細逆像の両方向同定 | LawCoefficientInputのlawFineAdequate、lawFineFiber_eq_preimage、lawCoarseCanonicalEquiv/lawFineCanonicalEquiv。実block同値→元台等号→三項同値を合成しtoHomの全体等号を保持 | 構成あり・正式監査待ち |
+| 2 原P族と別生成η/ε、独立generatedComparisonHomの全Hom因子化 | lawPushforwardComplex、lawUnitHom/lawEvaluationHomとf0/f1/f2、lawGeneratedComparison_factorization。lawCoarse/Pushforward/FineStandardIsoと三Standard_squareで全ℤの同じ射へ移す | 構成あり・正式監査待ち |
+| 3 同じLaw Q/κ/R/τと実SES・全次数δ・五項列 | lawRestrictionComplexは各原Q族、lawKappa/Starは各原κ/κ*、lawRはliteral核。lawEvaluationRestriction_shortExactは原ラベルSESから実Law射を保って生成。lawConnecting_delta_component全ℤ、Q-H1-R同型/順逆成分値、lawConnectingTau_component、H0零、Law五項列の三完全性とεH1単射 | 構成あり・正式監査待ち |
+| 4 原Law三錐の有限直和・全三射/符号・Q評価/δ/Rτ | lawCoefficient/Fiber/TotalConeFamilyIsoと各component/DirectSumIsoは同じ実原三射から生成。lawCoefficientCompositionTriangleのdistinguished/first/second/thirdと各componentで全ℤの三原ラベル射へ接続。lawFiberConeDescの(y,x)制限y、原SESからQI、family_square/HomologyEquiv_family/H1REquiv_family、connecting_component、KernelProjection_tauとH0零 | 構成あり・正式監査待ち |
+| 5 同じ旧Law H1比較の核/余核SES・全代表・同じblockDefect和 | lawDirectH1は独立generatedComparisonHomのH1、lawDirectH1_oldで同じ旧generatedComparisonH1Mapへ戻す。lawOldKernelUnitEquivと値、lawOldCokernelStandardEquivと全mk、同じ旧Law余核包含/fiber射の全代表値・単射・完全性・全射。lawCoefficientBlockDefect_sumは同じ原a核とa余核+kerτを全ラベルで加算 | 構成あり・正式監査待ち |
+| 6 全方向・全spine・標準API/版・空族も保持 | 全source/print/logの順序を固定。全Label量化の同型・射は空族も定義され、同じ台の別labelも残る。台包含/G134/E/Wの全評価と別finalは後続義務 | 構成あり・正式監査待ち |
+
+LawHomologyCoordinatesは上記群の共通接続fileとして追加した。到達点と六終了条件は
+選定時から不変であり、数学的到達点の分割はない。LawCoefficientConesの実family複体同型は
+全微分を保持するので、元の各錐の負号を含む微分を別のrecordへ置き換えていない。
+同じtriangle第三射は実shiftFunctorObjXIsoを通して(-x,0)となり、原各ラベルの第三射と可換。
+Q評価はmappingCone.descShortComplexそのもの。QuasiIsoと全homology両方向同型は
+原Law SESから生成し、その同じ評価の全元・包含・逆元・原R/τを接続する。
+
+旧Law H1余核列はG133の同じ第四/第五射を同じLaw a/εへ適用する。
+Tの定義は独立生成uのhomology射のまま保ち、因子化定理の等号で商を移す。
+後段余核は原L制限の核/像とquotKerEquivRangeでkerτへ同定し、次元だけの同型を選ばない。
+旧H1への戻しはoldH1Equiv_naturalとLinearConjugationの核/実商同型を使う。
+全代表式と原Law制限の値を保ち、原blockDefectの加法式は同じ混在Law ownerの
+lawH1Defect_subset_sumと各原a/τの受理証拠を使用する。
+
+### Cycle 11 material premise・provenance・proof-use
+
+| material premise | 分類・原始provenanceと使用経路 | 状態 |
+| --- | --- | --- |
+| T0原M・reading因子・原台/端点/退化面・ℚ | ambient-boundary。各原P/Q/κ/R/τを同じM/Aλから生成し、元比較全三成分へ接続 | 同じ入力を保持 |
+| 有限Law族と粗adequacy | ambient-boundary。発生ラベルと粗fiberを生成、reading因子から細adequacyと細fiber逆像等号を生成 | 細adequacyは放電済み |
+| LawFamilyの三項同値と元混在block square | discharge-required。G134受理ownerから同じ原粗/細Law対象をラベル族へ移し、独立generatedComparisonHomを同じ原u族へ同定 | 元statement・引数・使用を確認 |
+| 各原評価/制限SES・H0Q零性・原Q-R同型/τ | discharge-required。C4–6の同じ原M/Aλ証拠を使用。全ラベルSESの族から実Law SESを生成し、native δ自然性で同じ各原δへ戻す | Law側に新供給仮定なし |
+| Law R/H1Q・τ | discharge-required。lawRは各原κ*族のliteral核、kernelEquivで同じ各原R族へ両方向移送。τは同じ実Law SESδを同じH1Q-R同型で読む | 全R元・全ラベル成分式あり |
+| Law三錐/QI/triangle・各成分同型 | discharge-required。全体独立uと別生成η/εの全Hom因子化、実標準coneMapIso/FiniteConeFamily.iso/FiniteComplexFamily.directSumIso、同じ原SESのdescから生成 | 同じ全射・微分・符号を保持 |
+| 核/余核・旧Law比較・blockDefect和 | discharge-required。原εH1単射/五項完全性→Law核/商→G133第四第五射→元旧H1商同型。原実ラベル欠損を原aとkerτに分解 | 同じ全代表・完全性とラベル重複を保持 |
+| generic family/comm/ShortExactの引数 | direction-hypothesis。汎用補助でのみ保持し、Law適用では各原shortExact・元射正方形・粗/細座標の実同型をproducerから供給 | Law出力に未放電行なし |
+
+依存DAG: 原M/粗adequacy→粗Aλ/細adequacy/π⁻¹Aλ→原P/Q/κ/R/τ族。
+原Law block同値/原混在block比較square→実Law全三次数座標→別η/εと独立u全Hom因子化。
+各原ε/制限SES→族SES→実Law SES→native δ自然性→同じ原Q/R/τ成分と五項列。
+実全Hom正方形→三実Law錐の族/有限直和同型→triangle三射とshift負号→同じQ desc/QI/R/τ。
+原εH1単射/完全性→Law実核商→同じG133第四第五射→旧Law実比較核/余核SESと全代表。
+元混在Law欠損族→各同じ原a/kerτ→原blockDefect全label和。
+
+G133の汎用有限族・線形同定・標準錐/合成triangleはPR5269
+（standard6007458427/whole6007700344）受理版の現在statementと同じ引数を使う。
+G134の混在Law分解/全Hom block squareはPR5282、head
+`062134827d0b41b7bb5a73db97a17bddebbc2ef7`、merge
+`7f169e370dfc0f28229bae2b81b69b7a4ab538ac`、
+[標準受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5282#issuecomment-6026457541)。
+その受理版以後の対象owner関係差分は未使用のLawFiberBridge公開補題追加だけであり、
+使用するlawBlockFiber_comparison_square/lawFiberComparison_canonicalと
+lawH1Defect_subset_sumのstatement/proofは不変。
+原P/因子化C3 PR5294、原SES/Q零C4 PR5295、原R/δ/τC6 PR5297、
+原核商/診断C8 PR5299、三錐とQ desc/δ対応C10 PR5301の受理refは各受理節を使う。
+Lean4.28.0/mathlib8f9d9cff6bd728b17a24e163c9402775d9e6a365の
+ShortComplex.isoMk/shortExact_iff_of_iso、native δ_naturality、mappingCone.descShortComplex/QI、
+asIso/homologyMapIso、LinearEquiv/quotKerEquivRangeを適用条件とともに確認した。
+全new定義にはraw入力→生成のproducerがあり、期待rankや準備済み結果certificateを受けない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 実Law三項から同じ原P/二射/Q/κ/R/τ/三錐/五項列を全発生ラベルと全ℤで接続し、同じ旧LawH1実核余核列と原blockDefect係数/fiber和を構成
+  exit_criteria_status: [1粗adequacyから細生成/全三成分両方向, 2原P族/別ηε/独立u全Hom因子化/全ℤ, 3原QκR族/実SES/nativeδ成分/Rτ/全五項完全性, 4実三錐有限直和/全三射と符号/Qdesc/δRτ自然性, 5旧LawH1核余核SES/全代表/原aとkerτ寄与和, 6全spine/版/公理/空族も保持]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [LawCoefficientInput, LawCoefficientComparison, LawFiberSequence, LawHomologyCoordinates, LawCoefficientCones, LawDefectDiagnostics]
+  evidence: [六固定条件対応表, 全宣言spineと単一focusedログ, 静的方向と共通scan]
+  claim_mapping:
+    theorem_names: [lawFineAdequate, lawGeneratedComparison_factorization, lawEvaluationRestriction_shortExact, lawConnectingTau_component, lawFiveTerm_exact_at_fiber, lawCoefficientCompositionTriangle_third_component, lawFiberConeDesc_family_square, lawFiberConeH1REquiv_family, lawOldCoefficientCokernel_shortExact, lawCoefficientBlockDefect_sum]
+    source_labels: [GOAL D有限Law, 設計exact-sequenceの同じLaw二射/全構成, reuse-mapの混在Law owner接続義務]
+    conjuncts: [粗adequacy生成と元Law同定, 原Pと別生成二射/独立u, 原κliteralR/原Qδτ, 全ℤ原三錐と三射/符号, 旧実H1/代表/診断両成分, 重複ラベル保持と空族]
+    undischarged_assumptions: []
+    acceptance_point: 固定headの標準PR独立四本とroot acceptanceで六選定条件を判定
+    port_status: unported
+  whole_goal_status: target-proof-checkpoint
+  remaining_goal: [B/E全A有限τ消滅判定, D全A包含自然性/G134操作保存接続, E原始有理行列計算法, W全指定例全評価/全A/二label/空台, 別finalfresh4]
+audits:
+  premise_delta:
+    discharged: [細adequacy/元Law同定, 同じ原P二射/独立u因子化, 原QκliteralR/実LawSESδτ, 三錐/全三射/Qdesc, 旧H1核余核と元保存/全label寄与]
+    remaining: [選定にはなし・全GOALのremaining_goal]
+  certificate_provenance:
+    discharged: [原M/AλPと原ηεu, 原各L/QκRτ, 実Law全三次数生成射, nativeLaw短完全列/δ, 実標準三錐/有限直和/Qdesc, 同じ旧LawH1実商]
+    unresolved: []
+  proof_use:
+    used: [粗Lawadequacyとreading因子, 原混在block square/canonicalfiber等号, 原P/二射全Hom, 原各SES/QR/δ/τ, 同じLawδ自然性, 標準三錐/Qdesc/shift負号, 原五項列とG133第四第五射, 旧H1自然性/原blockDefect実分解]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [6単一file focusedと全source/print/logの順序, 公理監査, 共通scanと静的方向]
+  blocking_findings: [新規四本の標準PR独立査読は未実施]
+  next_obligation: Dの原全A包含自然性/PηεκRτとG134保存操作の同じ比較への接続
+```
+
+### Cycle 11単一file検証・全宣言spine
+
+6対象非aggregate fileはfocused成功、警告/エラー0。
+全192宣言はsource/明示print/実log同順序、新規192/既存0/自動生成追加0。
+各module末尾の全namespace auditも同じ件数で標準三公理のみ。
+必要な単一cacheは完了を確認してから依存対象を検証した。
+Research全体/aggregate/全file loop、local lake build、Formal実build/移植、別finalfresh4は未実施。
+6moduleはmanifestとAGの直接静的importに各1件登録し、aggregateはelaborateしない。
+静的Research import directionは228modulesの走査で成功。GOAL/design/Formalは不変。
+
+<!-- cycle11-generated-evidence -->
+
+| file | source宣言（source/print/log同順序） |
+| --- | --- |
+| `LawCoefficientInput.lean` | `coefficientCochainEquivTrans`, `coefficientCochainEquivTrans_toHom`, `coefficientCochainEquivOfEq`, `coefficientCochainEquivOfEq_comp`, `coefficientFamilyCochainEquiv`, `coefficientFamilyCochainEquiv_toHom`, `lawSelectedCochainEquiv`, `lawFineAdequate`, `lawFineFiber_eq_preimage`, `lawFineBlockCanonicalEquiv`, `lawFineCanonicalEquiv`, `lawCoarseCanonicalEquiv`, `coefficientCochain_comp_assoc`, `coefficientFamily_map_comp`, `coefficientFamilyEquiv_natural`, `lawFineBlockCanonicalEquiv_toHom`, `lawCoarseCanonicalEquiv_toHom`, `lawFineCanonicalEquiv_toHom` |
+| `LawCoefficientComparison.lean` | `lawBlockCanonical_square`, `lawGeneratedCanonical_square`, `lawPushforwardComplex`, `lawUnitHom`, `lawEvaluationHom`, `lawUnitHom_f0`, `lawUnitHom_f1`, `lawUnitHom_f2`, `lawEvaluationCanonical_square`, `lawGeneratedComparison_factorization`, `lawStandardComparison_factorization`, `lawUnitHom_eq`, `lawEvaluationHom_eq`, `lawEvaluationHom_f0`, `lawEvaluationHom_f1`, `lawEvaluationHom_f2`, `lawPushforwardStandardIso`, `lawCoarseStandardIso`, `lawFineStandardIso`, `lawFineStandardIso_hom`, `lawUnitStandard_square`, `lawEvaluationStandard_square`, `lawGeneratedStandard_square` |
+| `LawFiberSequence.lean` | `coefficientShortComplexFamily`, `coefficientShortComplexFamily_shortExact`, `lawRestrictionComplex`, `lawRestrictionHom`, `lawRestrictionHom_eq`, `lawEvaluation_restriction_zero0`, `lawEvaluation_restriction_zero1`, `lawEvaluation_restriction_zero2`, `lawEvaluation_restriction_standard_zero`, `lawEvaluationRestrictionShortComplex`, `lawRestrictionStandardIso`, `lawRestrictionStandard_square`, `lawEvaluationRestrictionFamilyIso`, `lawEvaluationRestriction_shortExact`, `coefficientShortComplexFamily_projection`, `lawEvaluationRestrictionProjection`, `lawEvaluationRestrictionProjection_τ1`, `lawEvaluationRestrictionProjection_τ3`, `lawPushforwardHomologyEquiv`, `lawRestrictionHomologyEquiv`, `lawPushforwardHomologyEquiv_component`, `lawRestrictionHomologyEquiv_component`, `lawConnecting_delta_component`, `lawKappa`, `lawKappaStar`, `lawR`, `lawRFamilyEquiv`, `lawRFamilyEquiv_val`, `lawRestrictionHomologyREquiv`, `lawRestrictionHomologyREquiv_component`, `lawConnectingTau`, `lawConnectingTau_apply`, `lawConnectingTau_component`, `lawRestriction_H0_isZero`, `lawEvaluationH1`, `lawFiberRestrictionH1`, `lawEvaluationH2`, `lawEvaluationH1_injective`, `lawFiveTerm_exact_at_fineH1`, `lawFiveTerm_exact_at_fiber`, `lawFiveTerm_exact_at_pushforwardH2`, `lawKappa_apply`, `lawKappaStar_apply`, `lawRFamilyEquiv_symm_val`, `lawEvaluationH1_eq_standard`, `lawEvaluationH1_apply`, `lawFiberRestrictionH1_apply`, `lawEvaluationH2_eq_standard` |
+| `LawHomologyCoordinates.lean` | `coefficientFamilyHomologyEquiv`, `coefficientFamilyHomologyEquiv_component`, `coefficientFamilyHomologyEquiv_natural`, `lawCoarseHomologyEquiv`, `lawFineHomologyEquiv`, `lawPushforwardHomologyEquiv_eq`, `lawRestrictionHomologyEquiv_eq`, `lawUnit_homology_component`, `lawEvaluation_homology_component`, `lawGenerated_homology_component`, `lawRestriction_homology_component`, `lawOldCoarseH1Equiv`, `lawOldFineH1Equiv`, `lawUnitH1`, `lawDirectH1`, `lawDirectH1_factor`, `lawDirectH1_old`, `lawFiberRestrictionH1_component` |
+| `LawCoefficientCones.lean` | `lawCoefficientFiniteBiproducts`, `coefficientFamilyConeIso`, `coefficientFamilyConeIso_component`, `lawCoefficientCone`, `lawFiberCone`, `lawTotalCone`, `lawCoefficientConeFamilyIso`, `lawFiberConeFamilyIso`, `lawTotalConeFamilyIso`, `lawCoefficientCompositionTriangle`, `lawCoefficientCompositionTriangle_distinguished`, `lawCoefficientCompositionTriangle_first`, `lawCoefficientCompositionTriangle_second`, `lawCoefficientCompositionTriangle_third`, `lawFiberConeDesc`, `lawFiberConeDesc_eq`, `lawFiberConeDesc_inr_apply`, `lawFiberConeDesc_inl_apply`, `lawFiberConeDesc_symm_apply`, `lawFiberConeDesc_apply`, `lawFiberCone_inr_desc`, `lawFiberConeDesc_quasiIso`, `lawFiberConeDesc_homology_isIso`, `lawFiberConeHomologyEquiv`, `lawFiberConeHomologyEquiv_apply`, `lawFiberCone_connecting`, `lawFiberConeH1REquiv`, `lawFiberConeH1REquiv_apply`, `lawFiberConeH1REquiv_tau`, `lawCoefficientConeFamilyIso_component`, `lawFiberConeFamilyIso_component`, `lawTotalConeFamilyIso_component`, `lawCoefficientConeDirectSumIso`, `lawFiberConeDirectSumIso`, `lawTotalConeDirectSumIso`, `lawCoefficientCompositionTriangle_first_component`, `lawCoefficientCompositionTriangle_second_component`, `lawCoefficientCompositionTriangle_third_component`, `lawFiberConeDesc_family_square`, `lawFiberConeFamilyHomologyEquiv`, `lawFiberConeHomologyEquiv_family`, `lawFiberConeH1REquiv_family`, `lawFiberCone_connecting_component`, `lawFiberConeKernelProjection_tau`, `lawFiberCone_H0_isZero`, `lawFiberConeHomologyEquiv_symm_evaluation`, `lawFiberConeHomologyEquiv_inr`, `lawFiberConeH1REquiv_inr` |
+| `LawDefectDiagnostics.lean` | `lawDirectH1_kernel`, `lawDirectKernelUnitEquiv`, `lawDirectKernelUnitEquiv_val`, `lawFiberRestriction_kernel`, `lawFiberRestriction_range`, `lawEvaluationCokernelTauKernelEquiv`, `lawEvaluationCokernelTauKernelEquiv_mk_val`, `lawEvaluationH1_kernel`, `lawCoefficientCancellation_zero`, `lawCompositeDirectCokernelEquiv`, `lawCompositeDirectCokernelEquiv_mk`, `lawCompositeDirectCokernelEquiv_symm_mk`, `lawCoefficientCokernelInclusion`, `lawCoefficientCokernelInclusion_apply`, `lawCoefficientCokernelInclusion_mk`, `lawTotalCokernelFiberProjection`, `lawTotalCokernelFiberProjection_apply`, `lawTotalCokernelFiberProjection_mk_val`, `lawCoefficientFourth_injective`, `lawCoefficientCokernelInclusion_injective`, `lawTotalCokernelFiberProjection_surjective`, `lawCoefficientCokernel_exact`, `lawCoefficientCokernel_shortExact`, `lawOldKernelUnitEquiv`, `lawOldKernelUnitEquiv_val`, `lawOldCokernelStandardEquiv`, `lawOldCokernelStandardEquiv_mk`, `lawOldCoefficientCokernelInclusion`, `lawOldTotalCokernelFiberProjection`, `lawOldCoefficientCokernelInclusion_mk`, `lawOldTotalCokernelFiberProjection_mk_val`, `lawOldCoefficientCokernelInclusion_injective`, `lawOldTotalCokernelFiberProjection_surjective`, `lawOldCoefficientCokernel_exact`, `lawOldCoefficientCokernel_shortExact`, `coefficient_cokernel_sum`, `lawCoefficientBlockDefect_sum` |
+
+全namespaceは`AAT.AG.AtlasCoefficientFiber`。
+
+| file / source数 | source SHA-256 | focused output SHA-256 |
+| --- | --- | --- |
+| `LawCoefficientInput.lean` / 18 | `399b4b7f9f64559d039fb432a0ec1a10e309c7e8f14396c6c677b0cd62314752` | `734c9e12082ed3c4bfe4adcb025245bfbc746782dfb524cf1b06a20dfb5bb51a` |
+| `LawCoefficientComparison.lean` / 23 | `d922dd7259c753d0c84b8eab8007fc75089b857fa73bc32b97d0a042bd131b99` | `ba733fb722b7f060f1734b269f2e8bffec71c110664ef29cecb041a682d7d2f2` |
+| `LawFiberSequence.lean` / 48 | `44c10c81684293c46fc03f51e67020b974dcbc78d7925c77122ec206c16716bf` | `72ad54ac082be9f99ddfb3f1b21432d670a8715f8116977dab9540f0ba7b2188` |
+| `LawHomologyCoordinates.lean` / 18 | `6052b12559e0f2fe036036ff60349e451e9fbb948da10582236aee718e3ae68c` | `7c170786ef69a2d4d62d381e7e80845974dbab112a8d9befee19da3a841c69c1` |
+| `LawCoefficientCones.lean` / 48 | `6d1fe486a122491a23964b1229b9828c93bb0919076edd653942870b7638ccf4` | `01be77bca106150c28f22d4b7b3c6868fc444a60f9f204c2be57b1f69ef43014` |
+| `LawDefectDiagnostics.lean` / 37 | `2269b369f00de215a3208021c05df0c77a476225e8fd6233e331759ae946e8d0` | `e9a415ff4117a5b7b6a6161f50d72d727612c6a740f3095530b0587830891db6` |
+
+validation `.tmp/g135/cycle11-validation.json` SHA-256 `ab84685aef105ae507e7a2608d04e04b32f8dc7a76d751db4e7b048ce3685838`。
+scan `.tmp/g135/cycle11-scans.json` SHA-256 `0e87f70bc69cdb8ec23c9f412825f19fd735431e57bf62109f085904fc2a7268`。

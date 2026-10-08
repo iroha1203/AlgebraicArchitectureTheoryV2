@@ -1121,3 +1121,9 @@ import ResearchLean.AG.AtlasCoefficientFiber.CoefficientCones
 import ResearchLean.AG.AtlasCoefficientFiber.FiberCone
 import ResearchLean.AG.AtlasCoefficientFiber.ConeSequences
 import ResearchLean.AG.AtlasCoefficientFiber.PushforwardCoarseSpecialization
+import ResearchLean.AG.AtlasCoefficientFiber.LawCoefficientInput
+import ResearchLean.AG.AtlasCoefficientFiber.LawCoefficientComparison
+import ResearchLean.AG.AtlasCoefficientFiber.LawFiberSequence
+import ResearchLean.AG.AtlasCoefficientFiber.LawCoefficientCones
+import ResearchLean.AG.AtlasCoefficientFiber.LawHomologyCoordinates
+import ResearchLean.AG.AtlasCoefficientFiber.LawDefectDiagnostics
