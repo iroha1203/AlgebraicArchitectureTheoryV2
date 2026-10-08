@@ -1154,8 +1154,8 @@ filtration、graded、完全性、P/fiber座標、E₂、d₂は入力fieldに�
 全体の有限計算アルゴリズムはEの未完obligationとして残し、この選択構成を代替にしない。
 新しいProp述語・certificate構造の導入はなく、Mono/QuasiIso/IsIsoは既存述語の生成instanceである。
 
-19対象fileのfocused checkは警告・エラーなし、全318 source宣言のprint/auditは標準公理のみ。
-新規宣言は249、既存69も同じfileで再監査した。各fileのsource順と#print・log・下記一覧を照合する。
+19対象fileのfocused checkは警告・エラーなし、全319 source宣言のprint/auditは標準公理のみ。
+新規宣言は250、既存69も同じfileで再監査した。各fileのsource順と#print・log・下記一覧を照合する。
 Research aggregateはimport登録の静的確認だけでelaborateしていない。
 本体`lake build`、Research全体build、Formal移植、final fresh4全GOAL監査は未実施。
 
@@ -1168,7 +1168,7 @@ Research aggregateはimport登録の静的確認だけでelaborateしていな�
 | `CarrierChain.lean` | `carrierBoundary1`, `carrierBoundary2`, `carrierBoundary1_apply`, `carrierBoundary2_val`, `carrierBoundary_square`, `carrierDegreeObject`, `carrierDegreeObject_out`, `carrierDegreeDifferential`, `carrierDegreeDifferential_square`, `carrierChain`, `carrierDegreeInclusion`, `carrierDegreeInclusion_out`, `carrierDegreeInclusion_comm`, `carrierChainInclusion`, `carrierChainInclusion_f`, `carrierChainInclusion_mono` |
 | `FilteredComplexes.lean` | `verticalRestriction1`, `verticalRestriction2`, `verticalRestriction1_apply`, `verticalRestriction2_apply`, `verticalRestriction1_kernel_iff`, `verticalRestriction2_kernel_iff`, `secondFiltration_kernel_iff`, `verticalRestriction_comm1`, `firstFiltrationDifferential`, `firstFiltrationDifferential_val`, `firstFiltrationComplex`, `secondFiltrationComplex`, `zeroFiltrationComplex`, `firstFiltrationInclusion`, `secondFiltration_le_first`, `secondFiltrationInclusion`, `secondFiltrationInclusion_f0`, `secondFiltrationInclusion_f1`, `zeroFiltrationInclusion`, `firstFiltrationInclusion_f0`, `firstFiltrationInclusion_f1`, `firstFiltrationInclusion_f2`, `secondFiltrationInclusion_f2_val` |
 | `GradedShortExact.lean` | `firstGradedComplex`, `verticalRestriction_comm0`, `firstGradedProjection`, `firstGradedProjection_f0`, `firstGradedProjection_f1`, `firstGradedProjection_f2`, `verticalRestriction1_surjective`, `verticalRestriction2_surjective`, `firstGraded_standard_zero`, `firstGradedShortComplex`, `firstGraded_degreewise_shortExact`, `firstGraded_shortExact`, `firstGradedCokernelIso` |
-| `SecondGradedComplex.lean` | `horizontalRestriction1`, `mixedRestriction2`, `horizontalRestriction1_apply`, `mixedRestriction2_apply`, `mixedRestriction_comm1`, `secondGradedComplex`, `secondGradedProjection`, `horizontalCochainLift`, `horizontalCochainLift_spec`, `horizontalRestriction1_surjective`, `horizontalRestriction1_injective`, `mixedCochainLift`, `mixedCochainLift_spec`, `mixedRestriction2_surjective`, `mixedRestriction2_second`, `mixedRestriction2_kernel`, `secondFiltrationInclusion_f2_injective`, `secondGradedProjection_f0`, `secondGradedProjection_f1`, `secondGradedProjection_f2`, `secondGraded_standard_zero`, `secondGradedShortComplex`, `secondGraded_degreewise_shortExact`, `secondGraded_shortExact`, `secondGradedCokernelIso` |
+| `SecondGradedComplex.lean` | `horizontalRestriction1`, `mixedRestriction2`, `horizontalRestriction1_apply`, `mixedRestriction2_apply`, `mixedRestriction_comm1`, `secondGradedComplex`, `secondGradedProjection`, `horizontalCochainLift`, `horizontalCochainLift_dual`, `horizontalCochainLift_spec`, `horizontalRestriction1_surjective`, `horizontalRestriction1_injective`, `mixedCochainLift`, `mixedCochainLift_spec`, `mixedRestriction2_surjective`, `mixedRestriction2_second`, `mixedRestriction2_kernel`, `secondFiltrationInclusion_f2_injective`, `secondGradedProjection_f0`, `secondGradedProjection_f1`, `secondGradedProjection_f2`, `secondGraded_standard_zero`, `secondGradedShortComplex`, `secondGraded_degreewise_shortExact`, `secondGraded_shortExact`, `secondGradedCokernelIso` |
 | `ThreeShortExactConnecting.lean` | `threeShortExact_connecting_representative`, `threeShortExact_connecting_representative_zero` |
 | `FilteredSpectralObject.lean` | `zeroExtensionMap_mono_of_injective`, `firstFiltrationInclusion_standard_mono`, `secondFiltrationInclusion_standard_mono`, `zeroFiltrationInclusion_standard_mono`, `filteredCarrierFunctor`, `filteredCarrierFunctor_obj_zero`, `filteredCarrierFunctor_obj_one`, `filteredCarrierFunctor_obj_two`, `filteredCarrierFunctor_obj_three`, `filteredCarrierFunctor_map01`, `filteredCarrierFunctor_map12`, `filteredCarrierFunctor_map23`, `carrierSpectralObject`, `carrierSpectralObject_triangle_distinguished`, `firstGradedConeDesc`, `firstGradedConeDesc_quasiIso`, `secondGradedConeDesc`, `secondGradedConeDesc_quasiIso`, `firstGradedCone_connecting`, `secondGradedCone_connecting` |
 | `LowExactCouple.lean` | `firstCoupleI`, `firstCoupleJ`, `firstCoupleK`, `secondCoupleI`, `secondCoupleJ`, `secondCoupleK`, `firstCouple_exact_ij`, `firstCouple_exact_jk`, `firstCouple_exact_ki`, `secondCouple_exact_ij`, `secondCouple_exact_jk`, `secondCouple_exact_ki`, `firstPageDifferential`, `secondPageRowDifferential`, `firstPageDifferential_square`, `firstCoupleK_apply`, `secondCoupleJ_apply`, `secondCoupleI_apply`, `secondCoupleK_apply`, `firstPageDifferential_apply`, `DerivedFiberPage`, `DerivedHorizontalPage`, `derivedLift_exists`, `derivedLift`, `derivedLift_spec`, `derivedClass`, `derivedClass_eq_of_lift`, `derivedSecondDifferential`, `derivedSecondDifferential_apply` |
@@ -1190,13 +1190,13 @@ Research aggregateはimport登録の静的確認だけでelaborateしていな�
 | `CarrierChain.lean` / 16 | `63a081a33a2bfe2dfe07f6d9e0e9d76d8d782e4625316a20b668580d16afa18b` | `5c511de25f6fe7b4cf5fd40edc5606e5428b92fcd27d74a4c8bcec1341ad6f95` |
 | `FilteredComplexes.lean` / 23 | `a652af61635e72fdc07477e8c503d4ab68860bfa29f7159c40fa33562e098ab1` | `7c0fd3ca6ae6d2f927cbe7ad5f09e6ffb0c829c8a91f9073385b0a8b7a0d66be` |
 | `GradedShortExact.lean` / 13 | `885a46faabae0846ea5b98ff5339436d062e66b146fbd31e083955cfb73bc57f` | `1e4b9bd385276b2a2dc7c25518a0a0102830a67d54435d95093da806e23b8c9b` |
-| `SecondGradedComplex.lean` / 25 | `82641d7b4de0655651bc303a9a9acc2acbf03640c664694f63ae67982d384f97` | `ef27c7a470a4ad116280d05246b68cb8f312c9272c24245f788d542891d1e2d4` |
+| `SecondGradedComplex.lean` / 26 | `59aea37b2ff35539c81df801a52ed37d3ad8afe4e6c1616453c89b0b2cb022eb` | `4161df0595de566d7db01c4b355fb3b8896b463359dd36e2bc3c8d481a0ce206` |
 | `ThreeShortExactConnecting.lean` / 2 | `8a0038a83ebaa05ccde96361d64ccf1fc824b9b9acf322e0e1f666fa0197ecbe` | `d9dbcc5016dcaea4ae1f1c7e27d7387222ffadbade4de3ebf79be40e76187d9f` |
 | `FilteredSpectralObject.lean` / 20 | `ac1df59d824d9807b0dc565529d1d4c8032388c8dd5f2076e2095d4ea5b2feba` | `1d511bf589198d38d27926fab71e9b89d999636b56f7d727a80950812538bf83` |
 | `LowExactCouple.lean` / 29 | `cc63b4ddd98b9eff268daed9eb4c8e5c4c5ef1d7657904705d14e8d9c9c29292` | `bc3a9d7ecab6a0a9840ecccb6bf3cf2d82823241055cb018cec2cc74c6e24bb1` |
 | `FirstPageFiber.lean` / 13 | `e27b4400ed2350013214164cce305190a01a9d1e45c517a6b4a191c7ca1bfc72` | `6524193bfc0c2a8e4c807cfebee9fe1a5add30ee588d13b9cd613875156f1b07` |
 | `FirstPageRow.lean` / 30 | `d0b0e5ff3d462deb70e094d3c6ec9fb872646ad1f06cc3d88e04da4b069dfce8` | `a4571daacbb266762a647df2671827dc1b4cd0790c83ffd355d6041fbdef6ece` |
-| `DerivedPageCoordinates.lean` / 7 | `4715bce52d1721b20dd195579f4badc5e1a6ed148072c94d6aa830c6329f8bfb` | `0194d80aaec99b13762442fb52924b0d96d79ab776c850bdedf317e8cce69ae4` |
+| `DerivedPageCoordinates.lean` / 7 | `eea1afc5b0d96c1190494524834a9aa92418916d8b4a41256e353c66b69122ed` | `0194d80aaec99b13762442fb52924b0d96d79ab776c850bdedf317e8cce69ae4` |
 | `ThirdGradedComplex.lean` / 9 | `8ac84f61eef8e7508771c6190c63abcf3038bf7757a3a9bf8264c42f475ad863` | `57561b0714f5d677f2e7b32f67b54a9337409e09d478b15a888b146d6cc23c44` |
 | `ZeroFiltrationCone.lean` / 9 | `361a1e1ce64ab54b9c16574ce31670e46dfe0d31cd21684e37798e480383a2a2` | `c3a4ba0723bf07d52a6e049a32498f4096871b6a9690a4f3949ab2fdb0b5f08d` |
 | `NativeSpectralConnecting.lean` / 7 | `ff328793d7c421f554b9f59522fa5f943b648ec770a106ee19b9c16dee764003` | `ba15858e6d29fd91a23faf5506225c4a6e57b466a3833ae47fc0d4a0a2e86ae1` |
@@ -1205,5 +1205,21 @@ Research aggregateはimport登録の静的確認だけでelaborateしていな�
 | `HomologyRepresentatives.lean` / 11 | `cee43137f7be42212ff7a02f9f0ff48a0541d5ea0a3f5ebb2c9a306dcae5c614` | `175aa9e4212147a2674886a7d10268ba52d65b29b3a22a094b38ff21bac6cd88` |
 | `EndpointHomology.lean` / 10 | `1deb845209adcd269ea6e2a0113af970a747b20af890a6f1107eb2eb5e916e4b` | `386b43aeeb78b2a855af9fccfba2f538023c3a6bb547ebd6889ac0afbedbb9ef` |
 
-再現metadata `.tmp/g135/cycle7-validation.json`（SHA-256 `4b8d534ad4f5a12ea2db45a7c878f8e5819aa413dfb117a856c19ccfcced45d7`）。
+再現metadata `.tmp/g135/cycle7-validation.json`（SHA-256 `a033386e36fdf71d9ef91a0be914cbf6d6baa22641eb66239a472e0706c01c36`）。
+
+### Cycle 7 初回査読とF1対応
+
+初回固定head `93498c53f43e697d227ef0a92211eaaed04b62b7`、標準review-prの
+math-lean-review新規四本は数学A/BがNo major findings、LeanA/BがMinor issues。
+中心findingは0、二票の非中心指摘は同じF1として統合した。
+初回統合監査はPR5298のissuecomment-6051692210。
+
+F1はcorrectedEdgeCochain_subが別ownerの二定義をchangeで展開する品質問題。
+名指しされたhorizontalCochainLift_dualをSecondGradedComplexへ追加し明示printへ登録、
+下流はこれと既存correctedEdgeFunctional_applyおよびLinearMap.extを用いる。
+既存statement、def/instanceの値、import方向、台帳statusは変更していない。
+変更二fileのfocusedを再実行し、全319宣言（新250）とsource/print/log順を更新した。
+追加補題を含む公理監査は標準公理のみ。単一独立直接対応の資格・解消確認へ渡す。
+formal_rerunsは0、内容の受理判定は修正後の監査コメントで行う。
+全GOALは引き続きcompletion_candidate:no、C–E/Wと別final fresh4が残る。
 共通scan metadata `.tmp/g135/cycle7-scans.json`（SHA-256 `46fee9a224c38f933162785156440cb6031c70dce0b700fdbeb5b6212d3465e9`）。

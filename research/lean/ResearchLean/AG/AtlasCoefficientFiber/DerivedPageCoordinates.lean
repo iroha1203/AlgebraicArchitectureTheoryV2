@@ -59,10 +59,11 @@ theorem correctedEdgeCochain_sub (z : Module.Dual ℚ (VerticalEdge M A →₀ �
       (horizontalCochainLift M A β).1 := by
   apply (freeDualEquiv _).injective
   rw [map_sub, correctedEdgeCochain_dual, correctedEdgeCochain_dual]
-  change (z.comp (verticalEdgeProjection M A) + β.comp (horizontalEdgeProjection M A)) -
-    (z.comp (verticalEdgeProjection M A) + (0 : Module.Dual ℚ (HorizontalEdge M A →₀ ℚ)).comp
-      (horizontalEdgeProjection M A)) = freeDualEquiv _ ((freeDualEquiv _).symm _)
-  rw [LinearMap.zero_comp, add_zero, LinearEquiv.apply_symm_apply, add_sub_cancel_left]
+  rw [horizontalCochainLift_dual]
+  apply LinearMap.ext
+  intro x
+  rw [LinearMap.sub_apply, correctedEdgeFunctional_apply, correctedEdgeFunctional_apply,
+    LinearMap.zero_apply, LinearMap.comp_apply, add_zero, add_sub_cancel_left]
 
 /-- 原補正F²類は同じF¹ k値を持ち上げる。差は実F¹微分像。 -/
 theorem correctedDerivedLift (z : VerticalCocycles M A)

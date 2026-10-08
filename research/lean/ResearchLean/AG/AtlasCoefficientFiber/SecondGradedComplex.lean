@@ -82,6 +82,12 @@ def horizontalCochainLift (β : Module.Dual ℚ (HorizontalEdge M A →₀ ℚ))
       horizontalEdgeProjection_vertical, map_zero]
     rfl⟩
 
+/-- 水平延長の自由双対値は同じ原辺射影との合成。 -/
+@[simp] theorem horizontalCochainLift_dual (β : Module.Dual ℚ (HorizontalEdge M A →₀ ℚ)) :
+    freeDualEquiv _ (horizontalCochainLift M A β).1 =
+      β.comp (horizontalEdgeProjection M A) :=
+  LinearEquiv.apply_symm_apply _ _
+
 /-- 水平延長は同じ原水平制限を戻す。 -/
 @[simp] theorem horizontalCochainLift_spec (β : Module.Dual ℚ (HorizontalEdge M A →₀ ℚ)) :
     horizontalRestriction1 M A (horizontalCochainLift M A β) = β := by
@@ -263,6 +269,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.secondGradedComplex
 #print axioms AAT.AG.AtlasCoefficientFiber.secondGradedProjection
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalCochainLift
+#print axioms AAT.AG.AtlasCoefficientFiber.horizontalCochainLift_dual
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalCochainLift_spec
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalRestriction1_surjective
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalRestriction1_injective
