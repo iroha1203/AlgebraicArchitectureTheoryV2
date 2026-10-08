@@ -1173,3 +1173,7 @@ import ResearchLean.AG.AtlasCoefficientFiber.ConstrainedRank
 import ResearchLean.AG.AtlasCoefficientFiber.PrimitiveRankCriterion
 import ResearchLean.AG.AtlasCoefficientFiber.PrimitiveMatrices
 import ResearchLean.AG.AtlasCoefficientFiber.FiniteTauDecision
+import ResearchLean.AG.AtlasCoefficientFiber.RationalGramProjection
+import ResearchLean.AG.AtlasCoefficientFiber.RationalImageProjection
+import ResearchLean.AG.AtlasCoefficientFiber.RationalKernelCoordinates
+import ResearchLean.AG.AtlasCoefficientFiber.RationalQuotientCoordinates

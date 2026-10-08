@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 16）
+## 現proof state（Cycle 17）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -26,11 +26,11 @@ Cycle 12の全A包含の原P・二射・κ/R/τ・三錐自然性はPR #5303で�
 Cycle 13の原Law全ラベルと任意部分台の同じ全射・κ/R/τ・三錐図式はPR #5304で受理・merge済み。中心0、非中心F1は有資格新規単一確認で解消した。
 Cycle 14のG134原始正操作と部分セル有限合成はPR #5305で受理・merge済み。同じ原a同型・τ核零を接続し、非中心の出所誤記は独立直接確認で解消した。
 Cycle 15の面複製はPR #5306で受理・merge済み。原P/η/ε・全A/任意LawのH¹保存と選択面の非零H²余核を同時に接続し、非中心LA-1は有資格新規限定確認で解消した。
-Cycle 16は一般混在の原τ消滅を原始有理blockのrank判定と全A/発生label有限検査へ接続する。六終了条件の実装・root検証を通過、正式PR四票とroot受理を待つ。
-Bの全Aτ消滅・発生label有限検査はCycle 16六終了条件で構成・root検証済み、正式受理待ち。Eの同じa/R/τ/Jの行列表示と全A/label保存判定、全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
+Cycle 16の原τ消滅・全A/発生label有限検査はPR #5307で受理・merge済み。正式再査読の中心0、非中心F3は一文限定修正と新規直接確認四資格全PASSで解消した。
+Cycle 17は有理表から像・核・商の座標を生成し、両方向同定と代表元式を証明する。Eの同じa/R/τ/Jの行列表示と全A/label保存判定、全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
-現在のdelta・未放電行は末尾のCycle 16台帳で追跡する。
+現在のdelta・未放電行は末尾のCycle 17台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -2904,3 +2904,134 @@ F2解消、F1のDecision三docstringの内容不足を未解消とし、四資�
 今回metadataを実namespaceへ訂正し、74全宣言の実公理監査・順序・件数・source/log hashを再照合した。
 数学statement/signature/proof/def/instance値/import/宣言集合/進捗statusは不変。
 正式再実行1/2待ち、全GOAL checkpoint/未完E・W・別final、Formal unportedを保持する。
+
+## Cycle 16最終受理と同期
+
+PR [#5307](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307)は最終head `89e656e7e4b537b0c287e43c1ae8b704aba190e2`、merge `f874b0315d721e2c18bf70a1463c7ca89bdad18a`。
+[正式数学二票](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062882896)と[Lean二票](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062887049)の中心findingは0。
+F3のreport現状態一文は[有資格独立直接確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6063052523)で四資格全PASS、数学source/status不変で解消。
+最初の直接確認は資格1FAILとなり、規則どおり正式再実行1を行った。[13項目root最終受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6063082167)と[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6063139939)へ対応する。
+全74宣言・新69・生成0、標準三公理のみ。root五単一focusedと四票各指定単一focusedはexit0/warning/error0。validation SHA `28ebc888407605d200a22cc8782a5cd570b40265f6be6fffabf54fc3bdc65890`、scan SHA `34b2f2a123c135d006d115cdb0491a2a5e43badccaf1734626b802912a78e55a`。
+最終head全8CI成功、Lean37798629764/Tool37798629838実head・実steps一致、Research整合性検査成功、Formal実build等SKIPPED。Researchfull/aggregate/全fileloop/build、Formal移植なし。
+六終了条件はproof-obligation-discharged、全GOALはtarget-proof-checkpoint、Formal unported、Issue OPEN。E残部/W/別finalへ継続する。
+
+## Cycle 17 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 17
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: f874b0315d721e2c18bf70a1463c7ca89bdad18a
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle16受理/Issue6063139939・E同じa/R/τ/J全表示は未完
+  proof_dag_predecessors: [G107有理Gram rankと両方向correctness, C16原セルsingle/積行列と原τ判定, C4原L/ε像と元商同定]
+  milestone: Eの入力有理行列から実像・核・余核商の座標を生成し、両方向同定・代表元式・計算次元を証明する
+  proof_obligations: [有理adjugate逆と原Gram選択API, 計算rankから最大独立列全族の生成, 平均Gram射影の実像/対称/冪等, 元核への補射影の両包含, 元余核商との両逆/代表元, 空/矩形/重複列での同計算経路]
+  exit_criteria:
+    - 有限ℚ表だけからadjugate逆と最大Gram-good全族を実行可能に構成し、原G107計算rankと元列選択の存在/同像を証明。owner API追加は既存値/statement不変
+    - 平均Gram射影のrangeが元行列rangeに等しく、元像全元を固定し、対称/冪等/元transpose核とのkernel等号を証明
+    - Iからtranspose像射影を引いた計算kernel射影が元kerの同じ全元を表し、両包含・固定元・冪等と次元を証明
+    - 元行列rangeによる商を生成座標へ両方向線形同型にし、全元のquotient代表式・逆公式と計算rankによる余核次元を証明
+    - 空行/列/零rankと矩形projection/inclusion/重複列を同producerで評価、全宣言focused/print/audit/scan/出所を固定
+  selection_reason: 原P/Qやhomology基底を入力へ移さず同じa/R/τ/Jの有限表示へ進むための生成線形代数を一つの再利用可能な到達点として閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [UniformInvariance/ExecutableRationalRank所有API, AtlasCoefficientFiber/RationalGramProjection, AtlasCoefficientFiber/RationalImageProjection, AtlasCoefficientFiber/RationalKernelCoordinates, AtlasCoefficientFiber/RationalQuotientCoordinates]
+  risks: [非計算Matrix inverseをkernelに使う, 期待rank/基底の入力供給, 空rankの非空条件追加, 平均の分母零, 元商を自分の像商へ交換, foreign定義unfold, 原P/Qを一般中間複体へ交換]
+  unchecked: [上記五終了条件は実装/検証/受理待ち, 原P/Q/H1座標と同じa/R/τ/J全表示/全A保存は後続, W全評価/別finalは後続]
+```
+
+このcycleの一般有限有理表は方向仮定であり、原M適用では各entryの原始生成と原P/Q/κ/R/τ・旧商への接続が別の放電義務として残る。一般射影だけで全E完了としない。元Pは独立右Kan構成を保ち、原ε・restrictionを通じて座標を同定する。恒久設計とGOALは変更しない。
+
+## Cycle 17 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原有理表の計算rankから最大Gram全族を生成し、その平均が原像・transpose核を両方向に表す。補射影で原核を生成し、原range商の両逆と代表元式・計算rankの元blockDefect一致を接続
+  exit_criteria_status:
+    - adjugateInverseは実行可能有理式、標準Matrix逆と全入力で一致。maximalGramSelectionsは計算rankから非空を導き各族の原range等号を証明。既存G107値/statement/proofは不変
+    - imageProjectionは原range全元を固定しrange等号/対称/冪等/原transpose核等号を証明
+    - kernelProjectionは原Ax=0への全元作用/両包含/固定元/冪等/対称と原核次元への計算rankを証明
+    - quotientCoordinateEquivは原matrix range商と生成像の両方向同型、元商全代表式/逆の元class/両逆/余核次元、generatedCoordinateRanks_eq_blockDefectを証明
+    - 空行/列/両方・矩形projection/inclusion・重複列の同producer行列/診断対をdecide +kernelで評価。五単一targetの全source/生成/print/log/auditを固定
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [G107所有API四補題, RationalGramProjection, RationalImageProjection, RationalKernelCoordinates, RationalQuotientCoordinates]
+  evidence: [元有理表, G107計算rankのsound/complete, 同じ元列span/range, 元transpose式, 標準quotKerEquivRange, 下記全91宣言と五単一実log]
+  claim_mapping:
+    theorem_names: [下記全宣言表]
+    source_labels: [GOAL E, 設計README§6]
+    conjuncts: [入力生成像/核/商座標, 両方向/代表元式, 計算rankと元defect, 空/矩形/重複の実評価]
+    undischarged_assumptions: [原MからP/Q/homology座標生成と全同写像transport, 全a/R/τ/J表示/全A保存, W全経路/別final]
+    acceptance_point: Cycle17五終了条件の実装・root検証proposal。正式PR四票/root受理/CIは後続
+    port_status: unported
+
+audits:
+  premise_delta:
+    discharged: [最大Gram族存在/原range等号/分母非零/像核商両逆は表から生成]
+    remaining: [原M適用時の有限原始表と同じP/Q/H1/R/τ表示・全A/label保存/W/別final]
+  certificate_provenance:
+    discharged: [期待rankや基底なしの全有限Gram探索, 原rangeと原kerの同値, 原quotientの全代表]
+    unresolved: [原P/Q/κ/R/τと旧homologyの全成分輸送は後続]
+  proof_use:
+    used: [原列選択, determinant逆, rank両方向, 同じ原range, 原transpose, 有限族card, 原quotKerEquivRange]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [下記source/log/validation SHA, 五単一focused/cache target, 全91print/audit, 共通scan]
+  blocking_findings: [正式PR四票/root受理/CIは未実施]
+  next_obligation: 原L・ε/restrictionと同じP/Qのdegree/homology座標、原a/R/τ/J全行列表示・全A/label保存、W全原始表同経路評価
+```
+
+## Cycle 17固定要求・前提と依存
+
+一般入力は任意有限行/列を持つℚ行列だけで、有限性/列挙はE原有限表の方向仮定である。DecidableEqはidentity/determinantの有限添字にのみ用いる。原M適用時には原セル/原incidence/signからの生成が別途放電される。結論相当のrank/核基底/像包含/零性/射影lawをfieldやinstanceに供給しない。
+`adjugateInverse`はdet⁻¹•adjugateを計算し、非計算的な標準Matrix inverseはcorrectness側だけで使う。`maximalGramSelections`は計算rankサイズの全族とBoolを読む。原rangeへの包含と証明済み同次元から各族が元像を張り、非空族の平均は元像を固定する。対称性と元PA=Aのtransposeから原transpose核へ両方向接続する。空rankの空族を排除しない。
+`kernelProjection`の原方程式と原range商の同型は元全代表を量化し、inverseは元classを返す。quotient transportは標準非計算同型だが、代表式の計算matrixは実行可能である。`generatedCoordinateRanks_eq_blockDefect`は同じ原matrix mapのliteral核/余核の寸法対に一致する。
+原Pを任意中間複体へ交換していない。P/Qのdegreeとhomology座標、元ε/restriction/η/u・原κ/R/τ・旧商の全成分一致と基底変更の自然な同型、全A/label保存判定、W全同経路評価は後続義務である。generic射影だけを全E達成と数えない。
+
+G107の受理PR3994/ref5279154319/head `84050e9592635418198a41cbc23f2051f023b861`とCycle17 baseの原sourceはSHA `79835a78a693cfbb758708780e54704d27caae9f443d4a53a01d810490b87f09`。今回は選択列entry/Gram式/transpose評価/range包含の所有API四補題と全printだけを追加し、既存の値/statement/proof/importの全非コメントtokenは不変と検算した。下流はこれらの所有APIを使い、既存列選択の定義を展開しない。出所は `.tmp/g135/cycle17-owner-provenance.json` に固定する。
+固定Lean4.28.0/mathlib8f9d9cffのMatrix nonsingular inverse/transpose/mulVec/range/quotKerEquivRange/finite dimensionを使用し、適用条件を実sourceで確認した。標準基盤の内部全履歴を再認定しない。
+
+## Cycle 17宣言・公理・実log
+
+<!-- cycle17-generated-evidence -->
+
+sourceの全宣言順を各print/実log/報告へ対応させる。全91＝source89＋生成2、新64＝新source62＋新生成2。生成補助はGram moduleの`adjugateInverse.congr_simp`と、Quotient moduleの実評価で生成された`kernelProjection.congr_simp`であり、個別printとmoduleauditへ含める。全公理集合は標準propext/Classical.choice/Quot.soundの部分集合だけ。
+
+| file | 全source/生成宣言（source順、生成は末尾） | source SHA256 | 実log SHA256 |
+| --- | --- | --- | --- |
+| `ExecutableRationalRank.lean` | `selectedColumns`, `columnGram`, `selectedColumns_apply`, `columnGram_eq_transpose_mul`, `selectedColumns_transpose_mulVec`, `selectedColumns_range_le`, `columnGram_det_ne_zero_iff`, `selectionIndependent`, `selectionIndependent_eq_true_iff`, `hasNonzeroGramMinor`, `hasNonzeroGramMinor_eq_true_iff_exists`, `selectedColumns_rank_le`, `selectedColumns_rank_eq`, `rank_eq_of_selectedColumns_basis`, `hasNonzeroGramMinor_eq_true_iff`, `rationalMatrixRank`, `rationalMatrixRank_eq_rank`, `rationalMatrixRank_eq_finrank_range`, `rationalMatrixDefect`, `rationalMatrixDefect_eq_blockDefect`, `rank_pos_of_entry_ne_zero`, `Examples.projectionMatrix`, `Examples.inclusionMatrix`, `Examples.duplicateColumnMatrix`, `Examples.projectionMatrix_rank`, `Examples.inclusionMatrix_rank`, `Examples.duplicateColumnMatrix_rank`, `Examples.identityMatrix_rank`, `Examples.zeroMatrix_rank`, `Examples.projectionMatrix_defect`, `Examples.inclusionMatrix_defect` | `63c45770d6b0a428213a5002ab7d01c6c6a67579344a5ff1d126ce195d26e8c7` | `892640157f3abc49bc93c885d2c2f7b61bce68507800afc7d0e29932c8b1aec3` |
+| `RationalGramProjection.lean` | `adjugateInverse`, `adjugateInverse_eq_inverse`, `adjugateInverse_mul`, `mul_adjugateInverse`, `adjugateInverse_transpose`, `maximalGramSelections`, `mem_maximalGramSelections_iff`, `maximalGramSelections_nonempty`, `maximalGramSelections_range`, `gramProjection`, `gramProjection_mulVec`, `gramProjection_mul_selectedColumns`, `gramProjection_fixes_range`, `gramProjection_transpose`, `adjugateInverse.congr_simp` | `24f1fd38fdf5b48ed11eff88ea00a5786e357f460fa9780f034d4d44419c8533` | `a5c3d101277ec6f97b8427b918d85031e8263de2a2ed6d94012fb7753c460081` |
+| `RationalImageProjection.lean` | `imageProjection`, `maximalGramSelections_card_ne_zero`, `imageProjection_mulVec`, `imageProjection_fixes_range`, `imageProjection_mulVec_mem_range`, `imageProjection_range`, `imageProjection_transpose`, `imageProjection_mul_self`, `imageProjection_mul`, `imageProjection_mulVec_eq_zero_iff`, `imageProjection_ker` | `11046b918cbe907493e98e2b461437c137a342ac9185ca0ef7fe7303248d2484` | `3dfd6fbab6a8736ccfb116bfb751d9546dd3dcbdbf784f917da7a08dedd0396c` |
+| `RationalKernelCoordinates.lean` | `kernelProjection`, `kernelProjection_mulVec`, `mul_kernelProjection`, `kernelProjection_mulVec_mem_ker`, `kernelProjection_fixes_ker`, `kernelProjection_range`, `kernelProjection_mulVec_eq_zero_iff`, `kernelProjection_ker`, `kernelProjection_mul_self`, `kernelProjection_transpose`, `kernelProjection_rank` | `4f8e64eb70087ebb129b5b059b05a9265bfb2333fb62a16d010ca22421ab316e` | `a929aad43e778187768f0371dd45be55c2b570651cffbf2052e157ad0876e198` |
+| `RationalQuotientCoordinates.lean` | `quotientCoordinateEquiv`, `quotientCoordinateEquiv_mk`, `quotientCoordinateEquiv_symm_apply`, `quotientCoordinateEquiv_left_inverse`, `quotientCoordinateEquiv_right_inverse`, `quotientCoordinateEquiv_rank`, `generatedCoordinateRanks_eq_blockDefect`, `Examples.projection`, `Examples.inclusion`, `Examples.repeatedColumns`, `Examples.projection_kernel`, `Examples.projection_quotient`, `Examples.inclusion_image`, `Examples.inclusion_quotient`, `Examples.repeatedColumns_image`, `Examples.repeatedColumns_kernel`, `Examples.emptyRows_kernel`, `Examples.emptyColumns_quotient`, `Examples.empty_image`, `Examples.projection_coordinate_ranks`, `Examples.inclusion_coordinate_ranks`, `Examples.repeatedColumns_coordinate_ranks`, `kernelProjection.congr_simp` | `2f9e9a8ffea765a5315e1064d9bc12ff87853ddd2cecaef77866716e6487f53b` | `83f57808c891bc8c463b3df3abe7382ad061a66aa242b8e6cace6bc8480965cf` |
+
+validation `.tmp/g135/cycle17-validation.json` SHA `77aeff86cb1ba8e096ec025c3675db104e1828aa1d48d8b89bb6ba995716f70a`。全宣言の公理集合・source/print/log同順、各moduleaudit、source/log SHAを収録した。
+
+| 単一対象 | 実行・結果 |
+| --- | --- |
+| `ExecutableRationalRank.lean` | `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/UniformInvariance/ExecutableRationalRank.lean`、cwd `.`、exit0/warning/error0、print/moduleaudit 31 |
+| `RationalGramProjection.lean` | `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/AtlasCoefficientFiber/RationalGramProjection.olean ResearchLean/AG/AtlasCoefficientFiber/RationalGramProjection.lean`、cwd `research/lean`、exit0/warning/error0、print/moduleaudit 15 |
+| `RationalImageProjection.lean` | `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/AtlasCoefficientFiber/RationalImageProjection.olean ResearchLean/AG/AtlasCoefficientFiber/RationalImageProjection.lean`、cwd `research/lean`、exit0/warning/error0、print/moduleaudit 11 |
+| `RationalKernelCoordinates.lean` | `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/AtlasCoefficientFiber/RationalKernelCoordinates.olean ResearchLean/AG/AtlasCoefficientFiber/RationalKernelCoordinates.lean`、cwd `research/lean`、exit0/warning/error0、print/moduleaudit 11 |
+| `RationalQuotientCoordinates.lean` | `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/RationalQuotientCoordinates.lean`、cwd `.`、exit0/warning/error0、print/moduleaudit 23 |
+
+rootの三target cache出力は必要な依存file一つずつの`lake env lean -o`だけであり、build/aggregate/全fileloopではない。namespace実inventoryの単一非aggregate複写scaffoldはignored `.tmp` に置き、生成二宣言のcoverageにだけ使用した。恒久sourceには足場を残さない。Formal移植/実build、Researchfull/aggregate/全fileloop、E残部/W全評価/別finalは未実施。
+
+共通scan `.tmp/g135/cycle17-scans.json` SHA `a3c72f886aa1b9ddc708e355ab7cb44615ab4f1b1471b15e49902531f63724ad`。変更八fileのhidden/BiDi、Lean placeholder、privacy/local path、追加語彙、逆importの新ヒット0。diffcheck成功、固定GOAL/design/Formal不変、manifest/直接AG import四新module各1。静的root import方向228modulesとpackage方向は成功。
+
+## Cycle 17初回四票F1への直接対応
+
+初回head `0aa0e80536c049d6f9fc9c96c77be778a11c1d95` の新規独立四票は数学A/BがNo major findings、LeanA/BがMinor issues。中心0、非中心F1二箇所を一括採用した。全文はPR5309の数学6063884651・Lean6063889026、root初回監査は[6063916705](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5309#issuecomment-6063916705)。各票はsource/全91宣言/実log/出所/同head CI実stepsを独立検算した。
+
+F1（LA-1/LB-F1）: Gram membershipの既存selectionIndependent直接展開と、元blockDefectのrfl還元。修正は名指し二証明の内部に限る。Gramは既存selectionIndependent_eq_true_iffとcolumnGram_det_ne_zero_iff、dimension対は既存blockDefect_eq_finrank_sub_rangeと標準rank-nullity/quotient dimensionを使用する。全theorem signature・def/instanceの値・宣言集合・import・ledger statusは維持し、新宣言なし。実log/対応source SHAだけ更新する。
+
+初回raw四票と五targetの旧validation/scan、変更二targetの旧実logはignored記録へ不変保存した。有資格性・実体解消は新規単一finding限定確認に委ね、一条件でも不成立/判定不能なら正式四票再実行へ戻す。現formal reruns0/2、修正の受理は未判定。全GOALはcheckpoint、E残部/W/別finalとFormal未移植を維持する。
