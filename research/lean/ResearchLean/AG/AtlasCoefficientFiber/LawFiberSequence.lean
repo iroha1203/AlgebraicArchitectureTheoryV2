@@ -164,6 +164,21 @@ def coefficientShortComplexFamily_projection {J : Type u}
   comm₁₂ := (FiniteComplexFamily.map_projection _ _ (fun j => (S j).f) j).symm
   comm₂₃ := (FiniteComplexFamily.map_projection _ _ (fun j => (S j).g) j).symm
 
+/-- 原short complex族の第1射影は同じ元複体族の射影。 -/
+theorem coefficientShortComplexFamily_projection_τ1 {J : Type u}
+    (S : J → ShortComplex (CochainComplex (ModuleCat.{u} ℚ) ℤ)) (j : J) :
+    (coefficientShortComplexFamily_projection S j).τ₁ = FiniteComplexFamily.projection _ j := rfl
+
+/-- 原short complex族の第2射影は同じ元複体族の射影。 -/
+theorem coefficientShortComplexFamily_projection_τ2 {J : Type u}
+    (S : J → ShortComplex (CochainComplex (ModuleCat.{u} ℚ) ℤ)) (j : J) :
+    (coefficientShortComplexFamily_projection S j).τ₂ = FiniteComplexFamily.projection _ j := rfl
+
+/-- 原short complex族の第3射影は同じ元複体族の射影。 -/
+theorem coefficientShortComplexFamily_projection_τ3 {J : Type u}
+    (S : J → ShortComplex (CochainComplex (ModuleCat.{u} ℚ) ℤ)) (j : J) :
+    (coefficientShortComplexFamily_projection S j).τ₃ = FiniteComplexFamily.projection _ j := rfl
+
 /-- 実Law SESから同じ原ラベルSESへの全三射projection。 -/
 def lawEvaluationRestrictionProjection (l : LawValueLabel laws) :
     lawEvaluationRestrictionShortComplex M laws ha ⟶
@@ -171,10 +186,22 @@ def lawEvaluationRestrictionProjection (l : LawValueLabel laws) :
   (lawEvaluationRestrictionFamilyIso M laws ha).hom ≫
     coefficientShortComplexFamily_projection _ l
 
+/-- 元Law SES射影の実族同型による生成式。 -/
+theorem lawEvaluationRestrictionProjection_eq (l : LawValueLabel laws) :
+    lawEvaluationRestrictionProjection M laws ha l =
+      (lawEvaluationRestrictionFamilyIso M laws ha).hom ≫
+        coefficientShortComplexFamily_projection _ l := rfl
+
 /-- 実Law SESの左projectionは同じ原P族座標である。 -/
 theorem lawEvaluationRestrictionProjection_τ1 (l : LawValueLabel laws) :
     (lawEvaluationRestrictionProjection M laws ha l).τ₁ =
       (lawPushforwardStandardIso M laws ha).hom ≫ FiniteComplexFamily.projection _ l := rfl
+
+/-- 実Law SESの中projectionは同じ元細Law可逆座標である。 -/
+theorem lawEvaluationRestrictionProjection_τ2 (l : LawValueLabel laws) :
+    (lawEvaluationRestrictionProjection M laws ha l).τ₂ =
+      (lawFineStandardIso (Nf := Nf) (h := h) laws ha).hom ≫
+        FiniteComplexFamily.projection _ l := rfl
 
 /-- 実Law SESの右projectionは同じ原Q族座標である。 -/
 theorem lawEvaluationRestrictionProjection_τ3 (l : LawValueLabel laws) :
@@ -416,8 +443,13 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.lawEvaluationRestrictionFamilyIso
 #print axioms AAT.AG.AtlasCoefficientFiber.lawEvaluationRestriction_shortExact
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientShortComplexFamily_projection
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficientShortComplexFamily_projection_τ1
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficientShortComplexFamily_projection_τ2
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficientShortComplexFamily_projection_τ3
 #print axioms AAT.AG.AtlasCoefficientFiber.lawEvaluationRestrictionProjection
+#print axioms AAT.AG.AtlasCoefficientFiber.lawEvaluationRestrictionProjection_eq
 #print axioms AAT.AG.AtlasCoefficientFiber.lawEvaluationRestrictionProjection_τ1
+#print axioms AAT.AG.AtlasCoefficientFiber.lawEvaluationRestrictionProjection_τ2
 #print axioms AAT.AG.AtlasCoefficientFiber.lawEvaluationRestrictionProjection_τ3
 #print axioms AAT.AG.AtlasCoefficientFiber.lawPushforwardHomologyEquiv
 #print axioms AAT.AG.AtlasCoefficientFiber.lawRestrictionHomologyEquiv
