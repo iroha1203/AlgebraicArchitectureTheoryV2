@@ -27,7 +27,7 @@ Cycle 13の原Law全ラベルと任意部分台の同じ全射・κ/R/τ・三�
 Cycle 14のG134原始正操作と部分セル有限合成はPR #5305で受理・merge済み。同じ原a同型・τ核零を接続し、非中心の出所誤記は独立直接確認で解消した。
 Cycle 15の面複製はPR #5306で受理・merge済み。原P/η/ε・全A/任意LawのH¹保存と選択面の非零H²余核を同時に接続し、非中心LA-1は有資格新規限定確認で解消した。
 Cycle 16は一般混在の原τ消滅を原始有理blockのrank判定と全A/発生label有限検査へ接続する。六終了条件の実装・root検証を通過、正式PR四票とroot受理を待つ。
-B/Eの全A有限判定、Eの同じa/R/τ/J行列表示・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
+Bの全Aτ消滅・発生label有限検査はCycle 16六終了条件で構成・root検証済み、正式受理待ち。Eの同じa/R/τ/Jの行列表示と全A/label保存判定、全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
 現在のdelta・未放電行は末尾のCycle 16台帳で追跡する。
