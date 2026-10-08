@@ -2001,7 +2001,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs: [下記24単一file focused/全明示print/標準公理、共通scanと静的方向228module]
-  blocking_findings: [独立PR数学二本/Lean二本とroot acceptanceは未実施。CIはPR作成後]
+  blocking_findings: [初回四本の非中心F1は名指しAPIとproofで対応済み。新規単一直接対応資格/解消確認とroot acceptanceは後続]
   next_obligation: Dの同じLaw全発生ラベル台射とG134保存操作/有限合成を原P/fiber/τへ接続し、B/E有限判定とW全指定例へ進む
 ```
 
@@ -2035,15 +2035,40 @@ C1–11の主定義・既存theorem signatureを変更せず、所有fileへ公�
 ## Cycle 12検証と未実施項目
 
 24対象を実装段階ごとに単一非aggregate fileのfocused checkで検証し、全てwarning/error0。
-全494source宣言と18生成宣言（合計512）の明示#print、実出力、各module auditが一致する。
+全495source宣言と18生成宣言（合計513）の明示#print、実出力、各module auditが一致する。
 source宣言の相対順はprint/logの相対順と一致し、生成宣言の位置も下記spineに固定する。
-新source313、新生成15、既存ownerの生成3を含む。全宣言は標準三公理
+新source314、新生成15、既存ownerの生成3を含む。全宣言は標準三公理
 `propext`・`Classical.choice`・`Quot.sound`の部分集合のみ。空選択セルの矛盾は公理依存なし。
 18新moduleはmanifestとAG直接静的importに各1件登録し、aggregateをelaborateしない。
 静的Research import directionは228modulesで成功。必要な単一cacheのみを生成し、全体buildはしない。
 共通diff/hidden・BiDi/placeholder/privacy/語彙/逆import scanと登録照合は下記記録へ固定する。
 GOAL/design/Formalは不変。Research full/aggregate/全file loop、local lake build、
 Formal実build/移植、別最終完了4査読は未実施。全GOALはtarget-proof-checkpoint。
+
+## Cycle 12 初回PR査読とF1対応
+
+初回固定head `2809851c60ccf638be6da28c6d0615b349726888` のPR5303を
+standard review-prからmath-lean-reviewへ委譲し、新規独立4本を一括実行した。
+数学A・LeanAはNo major findings、数学B・LeanBはMinor issues。中心finding0、
+両Bの非中心重複指摘をF1として統合した。初回headは未解消のためmergeしない。
+[数学2票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5303#issuecomment-6056559053)、
+[Lean2票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5303#issuecomment-6056562971)、
+[初回標準・root監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5303#issuecomment-6056566420)。
+
+F1は別ownerの`supportAllPhiHomology`一般値を下流で展開する点と、既存
+`cyclesMap_apply`・`supportPhiHom_f1`・`supportQHom_f1`を未使用の点である。
+名指しの公開API `supportAllPhiHomology_apply` を所有fileに追加し、
+SupportPhiEmbedding・SupportFiberの下流proofをそのAPI経由へ変更した。
+SupportPhiHomology・SupportFiberの閉cochain代表は既存cyclesMap/f1 APIを使用する。
+既存statement、def/instanceの値、import、宣言、GOAL/designと台帳statusは維持する。
+追加APIと変更三fileを単一focusedで再確認し、下記spineへ同順序で同期した。
+正式再実行0/2。新規単一subagentの直接対応資格と解消判定は固定修正headで行う。
+
+初回headの24focused/512printは当該監査コメントのhashで固定し、以下は修正後の
+24focused/513printへ更新する。変更三file以外のsourceとlogは同一であり、全file loopは行わない。
+初回CIは全8SUCCESS（Lean37752939388/Tool37752939737）。Research実steps成功、
+Formal setup/cache/build/kernel/premise実steps SKIPPED。修正headのCIは別途確認する。
+全GOALはtarget-proof-checkpoint、completion_candidate:no、Formalはunported。
 
 <!-- cycle12-generated-evidence -->
 
@@ -2066,7 +2091,7 @@ Formal実build/移植、別最終完了4査読は未実施。全GOALはtarget-pr
 | `SupportPhiRestriction.lean` | `supportPhi0`, `supportPhi0_apply`, `supportPhi0_dual`, `supportPhi1`, `supportPhi1_apply`, `supportPhi1_dual`, `supportPhi2`, `supportPhi2_apply`, `supportPhi2_dual`, `supportPhi_comm0`, `supportPhi_comm1`, `supportPhiHom`, `supportPhiHom_f0`, `supportPhiHom_f1`, `supportPhiHom_f2`, `supportAllPhiH1`, `supportAllPhiH1_apply`, `supportPhiH1_mk`, `supportPhiHom_refl`, `supportPhiHom_comp`, `supportAllPhiH1_refl`, `supportAllPhiH1_comp` |
 | `SupportFiberChains.lean` | `supportHorizontalEdgeInclude`, `supportHorizontalEdgeInclude_val`, `supportHorizontalEdgeChainInclude`, `supportHorizontalEdgeChainInclude_single`, `supportVerticalEdgeProjection`, `supportHorizontalEdgeProjection`, `supportVerticalEdgeBoundary`, `supportMixedVerticalBoundary`, `supportMixedHorizontalBoundary`, `supportMixedCyclesInclude`, `supportMixedCyclesInclude_val`, `supportVerticalCyclesInclude`, `supportVerticalCyclesInclude_val`, `supportMixedCycleToVertical` |
 | `SupportVerticalHomology.lean` | `supportVerticalBoundary`, `supportVerticalBoundaryToCycles`, `supportVerticalHomology`, `supportVerticalHomology_mk`, `supportRawKappa` |
-| `SupportPhiHomology.lean` | `supportPhiCycles`, `supportPhiCycles_val`, `supportPhiBoundaryToCycles`, `supportPhiHomology`, `supportPhiHomology_mk`, `supportPhiHomologyDual`, `supportAllPhiHomology`, `supportAllPhiHomology_mk`, `supportKappa` |
+| `SupportPhiHomology.lean` | `supportPhiCycles`, `supportPhiCycles_val`, `supportPhiBoundaryToCycles`, `supportPhiHomology`, `supportPhiHomology_mk`, `supportPhiHomologyDual`, `supportAllPhiHomology`, `supportAllPhiHomology_apply`, `supportAllPhiHomology_mk`, `supportKappa` |
 | `SupportPhiEmbedding.lean` | `supportPhiVerticalEmbed`, `supportPhiVerticalEmbed_single`, `supportPhiVerticalEmbed_coordinates`, `supportPhiVerticalCycles`, `supportPhiVerticalCycles_val`, `supportPhiVerticalHomology_mk`, `supportPhiVerticalEmbed_include`, `supportPhiVerticalCycles_include`, `supportAllPhiHomology_single` |
 | `SupportFiber.lean` | `supportAllPhiHomologyDual`, `supportKappaStar`, `supportFiberR`, `supportFiberR_val`, `supportPhiVerticalDual`, `supportVerticalCycleInclusion`, `supportQRawR`, `supportFiberR_eq_supportRRestriction`, `supportFiberR_tau`, `supportFiberR_refl`, `supportFiberR_comp`, `supportFiberR_fiveTerm` |
 | `SupportQuotient.lean` | `supportQuotient0`, `supportQuotient0_mk`, `supportQuotient1`, `supportQuotient1_mk`, `supportQuotient2`, `supportQuotient2_mk`, `supportQuotient_boundary1`, `supportQuotient_boundary2`, `supportEvaluationQuotientDual0`, `supportEvaluationQuotientDual1`, `supportEvaluationQuotientDual2` |
@@ -2074,9 +2099,7 @@ Formal実build/移植、別最終完了4査読は未実施。全GOALはtarget-pr
 | `SupportStandardChains.lean` | `supportFineDegreeInclude`, `supportFineDegreeInclude_comm`, `supportFineChainInclude`, `supportFineChainInclude_f`, `supportDegenerateDegreeInclude`, `supportDegenerateDegreeInclude_comm`, `supportDegenerateChainInclude`, `supportDegenerateChainInclude_f`, `supportDegenerateChainInclusion`, `supportDegenerateChainInclude_refl`, `supportDegenerateChainInclude_comp`, `supportFineDegreeInclude.congr_simp`, `supportDegenerateDegreeInclude.congr_simp` |
 | `SupportEmpty.lean` | `supportSelected_empty`, `supportPushforward0_empty`, `supportPushforward1_empty`, `supportPushforward2_empty`, `supportFiberR_empty_subsingleton`, `supportFiberR_empty` |
 
-全namespaceは`AAT.AG.AtlasCoefficientFiber`（`CarrierFunctor`の局所名は`Carrier`を含む）。
-
-| file / source+生成数 | source SHA-256 | focused output SHA-256 |
+| file / source+生成件数 | source SHA-256 | output SHA-256 |
 | --- | --- | --- |
 | `CarrierFunctor.lean` / 65+3 | `8d95fcf2401342e053c937479b6d6501eafc78223f141e8ceb6d0475a8156ff4` | `49c6e34af5c63a95f75846a7d41af370b4738ce552f65e89e586d493d23dea69` |
 | `PushforwardCoefficient.lean` / 8+0 | `5b5eef702a4ee569a9fbc4d59f7e1720987aa19b72bb0a0f013473c1387053a9` | `3d36788e7009d4843a428b9d7ce9cee585636e363fbd56f07fae622e72468da8` |
@@ -2095,13 +2118,13 @@ Formal実build/移植、別最終完了4査読は未実施。全GOALはtarget-pr
 | `SupportPhiRestriction.lean` / 22+0 | `cde020ba4b6d14845b757e5edeeb5877c5ac936a83ef0205cc5f054a3da3f819` | `22d62540c96f795614668e59c442d503728f10721ffff391eae436c412b1e0f9` |
 | `SupportFiberChains.lean` / 14+0 | `7f874a115e2ac29a505b6b85c3b354bb2dac9fe3e5875f04d4eaf7bfc469bd3e` | `c2532a34df73d70e2dc72c9ffa3ed8bcd10d70b41d034b0612c56dec2c028a52` |
 | `SupportVerticalHomology.lean` / 5+0 | `dba8c7ebad20d478a1c72e487dfee3696c1a3dc152a12dc92c12e0061f9250d6` | `1f9d99671d8614e4b8a19c719edf692b6ddcc8168826176c0adb055536262db3` |
-| `SupportPhiHomology.lean` / 9+0 | `86ea5cc71faf1a16fe30de646d35c4e741a5b667d028abddd93f799cad59144d` | `9e10cbc16001dd3c8e5e795973dd3722dcb1f22fb46cf5b718ca523077eca361` |
-| `SupportPhiEmbedding.lean` / 9+0 | `34437a3783253a609ab3a6e2a343d56a421ff0d5fa2ad5c8b27027562d11fc4f` | `f6baf2fb5047578dabd1a77c3f1fb3a1f37fe91322ff8b9bbfee4a3c36ff32f8` |
-| `SupportFiber.lean` / 12+0 | `4a0999f31273574bc9ee6ab4825266ea1593617d8d439e21d24f380325f767f1` | `bca0099ab692f47b53e86e136185ad8e9ee65ab0fced176cd18de3c44ab66305` |
+| `SupportPhiHomology.lean` / 10+0 | `925c9d40532ab85cdf06392cd35a32d0cb4ccd21910504da2d8390f7a8402e57` | `40da1902df25eabbee8e3eb753c46321852818d9d6810c069069f3a2dc9c47a0` |
+| `SupportPhiEmbedding.lean` / 9+0 | `7a9780088c3f84cfc5f5648b6ca11af911dd24f59dbfc66f79ed6990f7be4d8c` | `f6baf2fb5047578dabd1a77c3f1fb3a1f37fe91322ff8b9bbfee4a3c36ff32f8` |
+| `SupportFiber.lean` / 12+0 | `a78d9a4757bbbee0d934325a4f50e11029ac17b51b90e83aa8c27c412e0ffa8f` | `bca0099ab692f47b53e86e136185ad8e9ee65ab0fced176cd18de3c44ab66305` |
 | `SupportQuotient.lean` / 11+0 | `4d4a3c64b0ef61df2475243d9fa36c666599ed9f6f0323e1d73acfd8558133de` | `f72724dd55001ffae9587b15b5e6937eb8f6afcc3d73173fc409987b146db512` |
 | `SupportCones.lean` / 23+0 | `3f68f121e86eb3148542a81835c77787abb0c22dad022509e59642ee5be79a33` | `3817ad1bce7c83755535f76ed9b68f58255e88f5cf637532dd89532c97192d5b` |
 | `SupportStandardChains.lean` / 11+2 | `814be9ce33abbf089d13fcd70db338c41adb04a5f6590358a0d107b44f1155ca` | `ed7fae64a3c9ff2ab670787b1c02d6cb108c4705dfbde3a2550cec391ae33f9b` |
 | `SupportEmpty.lean` / 6+0 | `4c36a926bde0c7bb45685a36b5a8eaba203808bd45946d030bab5224f0889ef3` | `de0cb5a3b80ad0661b9379b8fc8820ae1d575a6759545db440e779bf655ef563` |
 
-validation `.tmp/g135/cycle12-validation.json` SHA-256 `75fb1e1b03d7963637ff42b66dc1a8d6565a9b5f416876086dfa1d9ae75472f5`。
-scan `.tmp/g135/cycle12-scans.json` SHA-256 `e9d6e265048d47208501b0a210a9bd70171c056110f5e776c80caa0bcee13301`。
+validation `.tmp/g135/cycle12-validation.json` SHA-256 `2b08d9f379a6b3cbe1d130ef9857ad41714bb966f88a5b3522aa694517cba072`。
+scan `.tmp/g135/cycle12-scans.json` SHA-256 `57c4dd22771cff527a2750ce837e8ec5b6daed74b2952875c02762a7cadf8801`。

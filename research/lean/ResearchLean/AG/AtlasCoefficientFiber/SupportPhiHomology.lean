@@ -62,6 +62,7 @@ theorem supportPhiHomologyDual
     induction x using Submodule.Quotient.induction_on with
     | _ x =>
       rw [supportPhiH1_mk, supportPhiHomology_mk, phiHomologyDualEquiv_mk, phiHomologyDualEquiv_mk]
+      rw [TwoPhase.ThreeCochainComplex.Hom.cyclesMap_apply, supportPhiHom_f1]
       change freeDualEquiv _ (supportPhi1 M hab c z.1) x.1 =
         freeDualEquiv _ z.1 (supportPhiChain1 M hab c x.1)
       exact supportPhi1_dual M hab c z.1 x.1
@@ -72,6 +73,12 @@ def supportAllPhiHomology :
       ((c : Nc.ChartInTargetSubset B) → PhiHomology M B c) :=
   (verticalHomologyPhiEquiv M B).toLinearMap.comp
     ((supportVerticalHomology M hab).comp (verticalHomologyPhiEquiv M A).symm.toLinearMap)
+
+/-- 全原Φ一次homology包含の一般値は同じ原垂直H₁包含の両方向座標。 -/
+theorem supportAllPhiHomology_apply
+    (x : (c : Nc.ChartInTargetSubset A) → PhiHomology M A c) :
+    supportAllPhiHomology M hab x = verticalHomologyPhiEquiv M B
+      (supportVerticalHomology M hab ((verticalHomologyPhiEquiv M A).symm x)) := rfl
 
 /-- 全原Φ一次homology包含は元の垂直閉路の全代表を含める。 -/
 theorem supportAllPhiHomology_mk (x : verticalCycles M A) :
@@ -96,6 +103,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.supportPhiHomology_mk
 #print axioms AAT.AG.AtlasCoefficientFiber.supportPhiHomologyDual
 #print axioms AAT.AG.AtlasCoefficientFiber.supportAllPhiHomology
+#print axioms AAT.AG.AtlasCoefficientFiber.supportAllPhiHomology_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.supportAllPhiHomology_mk
 #print axioms AAT.AG.AtlasCoefficientFiber.supportKappa
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

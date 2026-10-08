@@ -65,10 +65,7 @@ theorem supportPhiVerticalDual
       phiCohomologyVerticalDualEquiv M B z (supportVerticalHomology M hab x) := by
   rw [phiCohomologyVerticalDualEquiv_apply, phiCohomologyVerticalDualEquiv_apply,
     supportAllPhiHomologyDual]
-  change allPhiHomologyDualEquiv M B z (verticalHomologyPhiEquiv M B
-    (supportVerticalHomology M hab ((verticalHomologyPhiEquiv M A).symm
-      (verticalHomologyPhiEquiv M A x)))) = _
-  rw [LinearEquiv.symm_apply_apply]
+  rw [supportAllPhiHomology_apply, LinearEquiv.symm_apply_apply]
 
 /-- 原垂直閉路のL内代表は同じ台包含と可換。 -/
 theorem supportVerticalCycleInclusion (x : verticalCycles M A) :
@@ -95,6 +92,7 @@ theorem supportQRawR
       rw [← oldH1Equiv_natural, hm,
         restrictionStandardHomologyRawREquiv_mk, supportVerticalHomology_mk,
         restrictionStandardHomologyRawREquiv_mk]
+      rw [TwoPhase.ThreeCochainComplex.Hom.cyclesMap_apply, supportQHom_f1]
       change supportQ1 M hab z.1 (verticalCycleInclusion M A x).1 =
         z.1 (verticalCycleInclusion M B (supportVerticalCyclesInclude M hab x)).1
       rw [supportQ1_apply, supportVerticalCycleInclusion]

@@ -121,8 +121,7 @@ theorem supportAllPhiHomology_single (x : PhiHomology M A c) :
       Pi.single (supportCellInclude Nc.chartSupport hab c) (supportPhiHomology M hab c x) := by
   induction x using Submodule.Quotient.induction_on with
   | _ x =>
-    change verticalHomologyPhiEquiv M B (supportVerticalHomology M hab
-      ((verticalHomologyPhiEquiv M A).symm (Pi.single c (Submodule.Quotient.mk x)))) = _
+    rw [supportAllPhiHomology_apply]
     rw [supportPhiVerticalHomology_mk, supportVerticalHomology_mk,
       supportPhiVerticalCycles_include, supportPhiHomology_mk]
     have hh := congrArg (verticalHomologyPhiEquiv M B)
