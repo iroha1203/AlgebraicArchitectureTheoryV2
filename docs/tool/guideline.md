@@ -5,8 +5,6 @@
 ## 位置づけ
 
 - ArchSig の製品像は [ArchSig v0.6.0 製品コンセプト](archsig_v0_6_0_concept.md) にある。
-- ArchSig が何を入力に何を計算し何を返すかは [ArchSig v0.6.0 マニュアル](archsig_manual/README.md) にある。
-  実装、スキーマ、コマンド、製品として配る SKILL の振る舞いは、マニュアルを正とする。
 - このガイドラインは作り方の規律だけを書く。コマンド、欄、計算の決まりはマニュアルに書く。
 - ArchView と FieldSig は ArchSig の結果を読む側にあり、ArchSig の結論を作らない。
 
