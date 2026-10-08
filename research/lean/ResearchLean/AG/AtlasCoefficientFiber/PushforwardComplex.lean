@@ -78,6 +78,15 @@ theorem coefficient_endpoint_chart_eval (z : CoefficientC0 N A G)
   cases hc
   rfl
 
+/-- 同じ面の辺名等号で輸送した係数評価は、指定三辺位置の標準評価に一致する。 -/
+theorem coefficient_face_edge_eval (z : CoefficientC1 N A G)
+    (f : N.FaceInTargetSubset A) (i : Fin 3) (e : N.EdgeInTargetSubset A)
+    (he : e = faceEdge N A f i) :
+    G.map (IncHom.edgeFace e f i he) (z e) =
+      G.map (IncHom.edgeFace (faceEdge N A f i) f i rfl) (z (faceEdge N A f i)) := by
+  cases he
+  rfl
+
 /-- 二経路を原始頂点位置へ正規化したincidence等号。 -/
 theorem endpoint_edge_normal (f : N.FaceInTargetSubset A) (i : Fin 3) (s : Bool) :
     IncHom.chartEdge (edgeEndpoint N A (faceEdge N A f i) s) (faceEdge N A f i) s rfl ≫
@@ -197,17 +206,18 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientD0
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientD1
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficient_chart_transport
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficient_edge_transport
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficient_endpoint_chart_eval
+#print axioms AAT.AG.AtlasCoefficientFiber.coefficient_face_edge_eval
 #print axioms AAT.AG.AtlasCoefficientFiber.endpoint_edge_normal
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficient_endpoint_edge_eval
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficient_d1_comp_d0
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d0
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d1
-#print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d0_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientComplex_d1_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex_d0_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardComplex_d1_apply
-#print axioms AAT.AG.AtlasCoefficientFiber.coefficient_endpoint_chart_eval
-#print axioms AAT.AG.AtlasCoefficientFiber.coefficient_edge_transport
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

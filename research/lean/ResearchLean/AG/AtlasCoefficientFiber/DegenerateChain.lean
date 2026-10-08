@@ -42,6 +42,11 @@ def degenerateDegreeDifferential (n : ℤ) :
   else if h1 : n = 1 then by subst n; exact ModuleCat.ofHom (degenerateBoundary2 M A)
   else 0
 
+/-- 原Lの次数外微分は明示零射。 -/
+theorem degenerateDegreeDifferential_out (n : ℤ) (h0 : n ≠ 0) (h1 : n ≠ 1) :
+    degenerateDegreeDifferential M A n = 0 := by
+  simp [degenerateDegreeDifferential, h0, h1]
+
 /-- 原支持chainのsquare-zeroから指定Lの全次数条件を放電する。 -/
 theorem degenerateDegreeDifferential_square (n : ℤ) :
     degenerateDegreeDifferential M A (n + 1) ≫ degenerateDegreeDifferential M A n = 0 := by
@@ -174,6 +179,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeObject
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeObject_out
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeDifferential
+#print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeDifferential_out
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeDifferential_square
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateChain
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateDegreeInclusion

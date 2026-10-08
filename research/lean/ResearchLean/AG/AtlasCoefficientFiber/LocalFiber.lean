@@ -182,6 +182,14 @@ def phiComplex (c : Nc.ChartInTargetSubset A) : ThreeCochainComplex ℚ where
   d1 := phiD1 M A c
   d1_comp_d0 := phiD1_comp_phiD0 M A c
 
+/-- 原Φ複体の第一微分を同じ端点差へ返す所有者API。 -/
+@[simp] theorem phiComplex_d0 (c : Nc.ChartInTargetSubset A) :
+    (phiComplex M A c).d0 = phiD0 M A c := rfl
+
+/-- 原Φ複体の第二微分を同じ三辺和へ返す所有者API。 -/
+@[simp] theorem phiComplex_d1 (c : Nc.ChartInTargetSubset A) :
+    (phiComplex M A c).d1 = phiD1 M A c := rfl
+
 /-- 宣言上の退化辺が空なら、原Φの次数1空間は零である。 -/
 theorem phiComplex_C1_subsingleton (c : Nc.ChartInTargetSubset A)
     [IsEmpty (PhiEdge M A c)] : Subsingleton (phiComplex M A c).C1 := by
@@ -469,6 +477,8 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.phiD1_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.phiD1_comp_phiD0
 #print axioms AAT.AG.AtlasCoefficientFiber.phiComplex
+#print axioms AAT.AG.AtlasCoefficientFiber.phiComplex_d0
+#print axioms AAT.AG.AtlasCoefficientFiber.phiComplex_d1
 #print axioms AAT.AG.AtlasCoefficientFiber.phiComplex_C1_subsingleton
 #print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj
 #print axioms AAT.AG.AtlasCoefficientFiber.phiCellObj_chart

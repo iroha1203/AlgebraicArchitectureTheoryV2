@@ -55,6 +55,17 @@ def pushforwardCoefficients (M : IncidenceSupportedComparison qc qf h Nc Nf)
     (A : Set qc.Target) : Inc Nc A ⥤ ModuleCat.{u} ℚ :=
   coefficientPushforward (Carrier.preimageFunctor M A)
 
+/-- 実Mの右Kan係数射は、全comma成分で原incidenceの前合成値になる。 -/
+theorem pushforwardCoefficients_map_component_eval
+    (M : IncidenceSupportedComparison qc qf h Nc Nf) (A : Set qc.Target)
+    {σ τ : Inc Nc A} (f : σ ⟶ τ) (z : (pushforwardCoefficients M A).obj σ)
+    (c : CategoryTheory.ConnectedComponents (StructuredArrow τ (Carrier.preimageFunctor M A))) :
+    (coefficientCellIso (Carrier.preimageFunctor M A) τ).hom
+      ((pushforwardCoefficients M A).map f z) c =
+    (coefficientCellIso (Carrier.preimageFunctor M A) σ).hom z
+      ((StructuredArrow.map f).mapConnectedComponents c) :=
+  coefficientPushforward_map_component_eval (Carrier.preimageFunctor M A) f z c
+
 /-- 実順像のcounit。 -/
 def pushforwardCounit (M : IncidenceSupportedComparison qc qf h Nc Nf)
     (A : Set qc.Target) :
@@ -81,6 +92,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.commaConnectedComponentsFinite
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientPushforwardFiniteDimensional
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardCoefficients
+#print axioms AAT.AG.AtlasCoefficientFiber.pushforwardCoefficients_map_component_eval
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardCounit
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardIsRightKanExtension
 #print axioms AAT.AG.AtlasCoefficientFiber.pushforwardCoefficientFiniteDimensional
