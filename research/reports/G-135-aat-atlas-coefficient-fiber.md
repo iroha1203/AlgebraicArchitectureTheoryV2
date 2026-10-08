@@ -2001,7 +2001,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs: [下記24単一file focused/全明示print/標準公理、共通scanと静的方向228module]
-  blocking_findings: [初回四本の非中心F1は名指しAPIとproofで対応済み。新規単一直接対応資格/解消確認とroot acceptanceは後続]
+  blocking_findings: [初回四本の非中心F1は名指しAPIとproofで対応済み。指摘対象外report変更により直接対応資格喪失。D1を復元し新規正式四本再実行1/2とroot acceptanceは後続]
   next_obligation: Dの同じLaw全発生ラベル台射とG134保存操作/有限合成を原P/fiber/τへ接続し、B/E有限判定とW全指定例へ進む
 ```
 
@@ -2062,7 +2062,11 @@ SupportPhiEmbedding・SupportFiberの下流proofをそのAPI経由へ変更し�
 SupportPhiHomology・SupportFiberの閉cochain代表は既存cyclesMap/f1 APIを使用する。
 既存statement、def/instanceの値、import、宣言、GOAL/designと台帳statusは維持する。
 追加APIと変更三fileを単一focusedで再確認し、下記spineへ同順序で同期した。
-正式再実行0/2。新規単一subagentの直接対応資格と解消判定は固定修正headで行う。
+新規単一subagentは修正head `8668453458ec68afe97e218efe0f6fd452e06320` のF1全箇所解消を確認した。
+reportの指摘対象外namespace説明削除・表header変更D1（非中心）が直接対応の範囲条件を満たさず、
+このheadの直接対応資格は喪失した。D1二箇所を初回値へ戻し、固定修正headへ新規4本の
+正式再実行1/2を行う。中心findingは出ていないが、単一確認を承認としない。
+[直接対応確認全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5303#issuecomment-6056798254)。
 
 初回headの24focused/512printは当該監査コメントのhashで固定し、以下は修正後の
 24focused/513printへ更新する。変更三file以外のsourceとlogは同一であり、全file loopは行わない。
@@ -2099,7 +2103,9 @@ Formal setup/cache/build/kernel/premise実steps SKIPPED。修正headのCIは別�
 | `SupportStandardChains.lean` | `supportFineDegreeInclude`, `supportFineDegreeInclude_comm`, `supportFineChainInclude`, `supportFineChainInclude_f`, `supportDegenerateDegreeInclude`, `supportDegenerateDegreeInclude_comm`, `supportDegenerateChainInclude`, `supportDegenerateChainInclude_f`, `supportDegenerateChainInclusion`, `supportDegenerateChainInclude_refl`, `supportDegenerateChainInclude_comp`, `supportFineDegreeInclude.congr_simp`, `supportDegenerateDegreeInclude.congr_simp` |
 | `SupportEmpty.lean` | `supportSelected_empty`, `supportPushforward0_empty`, `supportPushforward1_empty`, `supportPushforward2_empty`, `supportFiberR_empty_subsingleton`, `supportFiberR_empty` |
 
-| file / source+生成件数 | source SHA-256 | output SHA-256 |
+全namespaceは`AAT.AG.AtlasCoefficientFiber`（`CarrierFunctor`の局所名は`Carrier`を含む）。
+
+| file / source+生成数 | source SHA-256 | focused output SHA-256 |
 | --- | --- | --- |
 | `CarrierFunctor.lean` / 65+3 | `8d95fcf2401342e053c937479b6d6501eafc78223f141e8ceb6d0475a8156ff4` | `49c6e34af5c63a95f75846a7d41af370b4738ce552f65e89e586d493d23dea69` |
 | `PushforwardCoefficient.lean` / 8+0 | `5b5eef702a4ee569a9fbc4d59f7e1720987aa19b72bb0a0f013473c1387053a9` | `3d36788e7009d4843a428b9d7ce9cee585636e363fbd56f07fae622e72468da8` |
@@ -2127,4 +2133,4 @@ Formal setup/cache/build/kernel/premise実steps SKIPPED。修正headのCIは別�
 | `SupportEmpty.lean` / 6+0 | `4c36a926bde0c7bb45685a36b5a8eaba203808bd45946d030bab5224f0889ef3` | `de0cb5a3b80ad0661b9379b8fc8820ae1d575a6759545db440e779bf655ef563` |
 
 validation `.tmp/g135/cycle12-validation.json` SHA-256 `2b08d9f379a6b3cbe1d130ef9857ad41714bb966f88a5b3522aa694517cba072`。
-scan `.tmp/g135/cycle12-scans.json` SHA-256 `57c4dd22771cff527a2750ce837e8ec5b6daed74b2952875c02762a7cadf8801`。
+scan `.tmp/g135/cycle12-scans.json` SHA-256 `a0dff367f258958dafff7f7edb76099ee7f43a2d4db279e27dff4ccc4097e718`。
