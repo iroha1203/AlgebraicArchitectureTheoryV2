@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 13）
+## 現proof state（Cycle 14）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -23,11 +23,12 @@ Cycle 9の局所十分条件・pure保存両方向/全A C3′・同じG107新旧
 Cycle 10の原三錐・原Qへの擬同型・全次数と符号の対応はPR #5301で受理済み。
 Cycle 11の実Law接続・原κ/R/τ/三錐・旧商/寄与和はPR #5302で受理済み。
 Cycle 12の全A包含の原P・二射・κ/R/τ・三錐自然性はPR #5303で受理済み。正式再実行1の非中心指摘は有資格な新規単一確認で解消し、mergeとIssue同期を完了した。
-Cycle 13は原Lawの全発生ラベルと任意部分台の同じ全射・κ/R/τ・三錐図式を構成する。六終了条件の実装・14focused検証と初回独立四票は完了。中心0、非中心F1への直接対応は新規単一確認待ち。
-DのG134、E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
+Cycle 13の原Law全ラベルと任意部分台の同じ全射・κ/R/τ・三錐図式はPR #5304で受理・merge済み。中心0、非中心F1は有資格新規単一確認で解消した。
+Cycle 14はG134原始正操作と部分セル有限合成の同じ実比較へ原a同型・τ核零を接続した。六固定終了条件のroot検証は通過し、正式PR受理は未完。
+Dの面複製、B/Eの全A有限判定・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
-現在のdelta・未放電行は末尾のCycle 13台帳で追跡する。
+現在のdelta・未放電行は末尾のCycle 14台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -2390,3 +2391,159 @@ Research full/aggregate/全fileloop/local lake build、Formal実build/移植、�
 共通scan SHA `0481836fbf74bdf05c94fc20d3fb396e6454ebbf4aed40e1e96a3a7e7058e5d3`。
 新Unicode/placeholder/privacy/語彙/逆import0、diff check成功、GOAL/design/Formal不変、
 13新直接登録（既存G133 ownerを含む）・14対象のmanifest/AG登録各1、静的方向228modulePASS。
+
+
+## Cycle 13受理・merge同期
+
+PR [#5304](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304)、最終head
+`657e562eaa154e94155681e07d3c218e6998375b`、merge
+`231c985d6bad1fc80f90c3ef0cbd1d036c19840a`、2026-10-08T11:28:51Z。
+[最終標準/root受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304#issuecomment-6058853944)、
+[有資格新規単一確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304#issuecomment-6058851678)、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6058877001)。
+六固定終了条件はapprove / proof-obligation-discharged。初回四票中心0、非中心F1一件。
+名指し公開補題と二proof内部だけの直接対応を新規単一確認が資格内/実体解消と判定、新finding0。
+正式再実行0/2。283件（259source+24生成）全print/log/module audit/report順/hash一致、標準三公理のみ。
+validation SHA0da19bebeddfc91868fe516b9dbf9feab3846f8f6aaf35664f5f8baec25105bc、
+scan SHA0481836fbf74bdf05c94fc20d3fb396e6454ebbf4aed40e1e96a3a7e7058e5d3。
+直接確認原記録SHAa3e21b257cffa3b072213fab39918d37ca64815cd002073e9fb53c59a795e85e、
+機械記録SHA70da589b21360c752138649bfd517211de8b11a7bea872e1705a03f9eaa468fc。
+最終samehead8checksSUCCESS、Lean37769465507/Tool37769465474。
+Research実stepsSUCCESS、Formal実build/kernel/premiseSKIPPED。全GOAL checkpoint、Formal unported。
+
+## Cycle 14 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 14
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 231c985d6bad1fc80f90c3ef0cbd1d036c19840a
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle13受理/Issue6058877001・GOAL DのG134保存操作未完行
+  proof_dag_predecessors: [G134原始正操作r/s/h/k生成と有限列同値 PR5282, G134独立部分セル比較/全台生成, C8原a同型とτ単射の保存必要十分, C11-13実Law/全ラベル台族/三錐]
+  milestone: G134三角形追加/面付き辺分割/reading pullbackの部分セル有限合成を同じ原比較に接続し原a同型とτ核零を導く
+  proof_obligations: [原始部分セル表のSource支持有限和表示, 許容正操作列から実Option比較の生成, 既存r全三次数と独立subset/Law生成Homの一致, 同じG134逆有限和/二補正から原比較の全次数同型と錐零, 同じ旧J零から原a可逆座標と実τ核零, 全A/任意粗adequate Law/発生labelの量化と恒等合成/空台の保持]
+  exit_criteria:
+    - 任意reading/原MのSource支持基底を原chart/Option辺面から生成し恒等・部分合成・同じ実subset/Law全三成分と一致させる
+    - 三角形追加/面付き辺分割/表示同型と指定reading pullbackの原始正操作有限列からMを生成する。結論同型やraw同値を操作入力にせずG134同じ原始列へ接続する
+    - 全Aで同じ独立aSubnerveComparisonHomと元r実subset Homを全三次数/全値で同定し、同じ原逆有限和と二補正を標準HomotopyEquivの順逆に保持する
+    - 全Aの旧H1商同型・全整数次数homology同型・原totalCone全次数零を同じG134定理から導き、同じaの順写像を持つ両方向線形同型と実τ核零を導く
+    - 任意粗adequate Lawと全発生labelで同じgeneratedComparisonHom/原Law標準錐/旧blockDefectへ接続し、原Law a可逆性/τ核零と全台部分族の値を保持する
+    - T0入力/粗adequacy/原始セル表以外の同型/vanish/rank入力を追加せず、空A/空Law/重複incidenceとlabelを保持し全宣言公理/placeholder/Unicode/privacy/import方向と証拠対応を監査する
+  selection_reason: 未放電Dの保存適用を同じ原P/η/ε/κRτへ戻し、任意有限正操作列の入力生成を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [PrimitiveSourceBasis, PrimitiveSourceComparison, PositiveOperation, PositiveOperationPath, PositivePreservation, PositiveCoefficientPreservation]
+  risks: [逆有限和をP入力へ混入, supplied preservation certificate, 読み変更を同じreadingだけへ縮小, 全射一致をH1だけへ縮小, inverse/補正の出所欠落, J零からτ零またはface複製全錐零と誤推論]
+  unchecked: [上記六終了条件の実装/検証/正式PR受理は未完, D面複製・B/E/W・別finalは後続]
+```
+
+
+## Cycle 14 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原始正操作有限列から生成した同じ部分比較の順HomをG134原rと全三成分で同定し、全A/任意Lawの両逆と全錐零を導き、同じ原aの両逆とliteral R上のτ単射へ接続
+  exit_criteria_status:
+    - 原Source支持基底をchart/Option辺面から構成し、恒等列と任意部分合成、独立subset/Law全三成分へ接続
+    - triangle/subdivision/presentationと指定reading pullbackのpositive nil/snoc列が元Option比較を生成。同じG134列のr表との一致を有限帰納で導出
+    - subsetR_eq_generatedで独立原aSubnerve全Homと一致。元r/sと二補正から同じ標準HomotopyEquivの順逆を保持
+    - subset旧H1同型/全整数次数homology同型/totalCone零。unitEquivの実原a順写像と両逆、τ単射/核零
+    - lawR_eq_generatedで同じ独立generatedComparisonHom。全Law旧H1/全次数/錐零/旧J零、原Law a両逆とτ核零。任意ラベル台族で元a/τ全値と同じnative族SESτの可逆座標を保持
+    - 6 focused warning/error0。90source+44生成134件を同順序print/log/module audit/reportへ照合、標準三公理のみ。空列/空台/空Law/重複incidenceとlabelを保持
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [PrimitiveSourceBasis, PrimitiveSourceComparison, PositiveOperation, PositiveOperationPath, PositivePreservation, PositiveCoefficientPreservation]
+  evidence: [元セル表からのSupportedBasisMap, 原始positive nil/snoc, 元G134 r/s/h/k, 同じ独立subset/Law全Hom, 元C8保存必要十分, 元C13族SESτ成分]
+  claim_mapping:
+    theorem_names: [PositiveOperationPath.subsetR_eq_generated, PositiveOperationPath.lawR_eq_generated, PositiveOperationPath.subsetHomotopyEquiv_hom, PositiveOperationPath.subsetHomotopyEquiv_inv, PositiveOperationPath.lawHomotopyEquiv_hom, PositiveOperationPath.lawHomotopyEquiv_inv, PositiveOperationPath.unitEquiv_apply, PositiveOperationPath.lawUnitEquiv_apply, PositiveOperationPath.tauKernel_eq_bot, PositiveOperationPath.lawTauKernel_eq_bot, PositiveOperationPath.supportTau_native]
+    source_labels: [GOAL DのG134正保存操作/部分有限合成, GOAL Cの同じa同型とτ核零への適用]
+    conjuncts: [全三次数原比較一致, 全A/任意粗adequate Law/全発生label, 旧H1両逆/全整数次数同型と標準錐零, 元a両逆とliteral Rのτ核零, 任意ラベル部分台族のnative SESτ接続]
+    undischarged_assumptions: [D面複製・B/E入力生成有限判定・W全同経路評価・別最終四票は後続]
+    acceptance_point: 六固定終了条件の同じ対象/射/逆/全方向がroot検証済み。受理は固定headの標準四票とroot監査へ渡す
+    port_status: unported
+  audits:
+    premise_delta:
+      discharged: [原始positive入力から同じG134 raw r/s/h/k生成, r表と独立Option比較全Homの一致, 原比較H1全単射/全錐零, 元a可逆/τ単射]
+      remaining: [D面複製・B/E有限producer・W全経路評価・別final]
+    certificate_provenance:
+      discharged: [Source基底は元Mセル表, positive comparisonは元identity/comp, 原G134生成raw同値はPR5282受理版producer, 原a同型はC8元J零導出, 任意台族τはC13同じ原SES]
+      unresolved: [正式PR査読は未実施]
+    proof_use:
+      used: [各原始セル表のSource支持/Optionbind, 原G134 r表とsnoc合成, 元r/sと両補正, coarse Law adequacyによる元細adequacy, 全label元a値/原SESτ成分]
+      unused: []
+    structure_field_escape: none-found
+    route_integrity: pass
+    target_fitting: none-found
+    vacuity: none-found
+    one_way_as_equivalence: none-found
+    goal_or_report_reinterpretation: none-found
+    validation_refs: [6単一focused/134明示print/log/module audit, 共通scanと固定入力照合は下記]
+    blocking_findings: [正式PR四票/root受理/CIは未実施]
+    next_obligation: D面複製の同じP/ε/ηとH1保存/非零H2余核の接続
+```
+
+## Cycle 14固定要求・前提と同じ写像の対応
+
+| 固定要求 | 同じ対象・射と構成経路 |
+| --- | --- |
+| D正保存操作のT0部分セル入力 | `PositiveOperation.triangle/subdivision/presentation` は元セル名・端点・面・台だけを取る。`reading` は元指定readingPresentation、`reading_toPrimitive`で同じG134 reading操作に一致。`PositiveOperationPath.comparison`は元恒等・Option部分合成から生成 |
+| 任意reading/全Aの順比較 | `PrimitiveSource.basis0/1/2`は原Mのchart/Option表とSource台から直接生成。`_image/_self/_comp`と各`primitive_r0/1/2`で元G134列のr表を証明。`subsetR_eq_generated`は全ThreeCochainHomの三成分を同定 |
+| 任意Lawの順比較 | `basis0/1/2_law`は同じ元混在Law pullbackと全座標で一致。`lawR_eq_generated`が元独立generatedComparisonHomに戻す。label値型の有限性を加えず、元発生label生成を用いる |
+| 元G134両逆・全次数保存 | `subset/lawHomotopyEquiv`は同じ生成raw r/s/h/kを保持。`_hom/_inv`は原独立比較と元有限和逆射。`subset/lawHomologyIso_hom/_inv`は全整数次数、`subset/lawOldH1Iso_hom/_inv`は元旧商、`subset/lawCone_isZero`は同じ原標準錐 |
+| 同じ原aの可逆性 | `unitEquiv`はC8の実旧J零から原η H1へ導出、`_apply`と二逆式は同じ原aの全値。`lawUnitEquiv`は元粗Law/原P可逆族座標、`_apply`は元lawUnitH1、二逆式は同じ元粗Lawと原Law P |
+| literal Rと原τ | `tau_injective/tauKernel_eq_bot`はC8原J零の同値のτ側。`lawTau_injective`は元lawRFamilyEquivと原lawConnectingTau_componentの全値で導出。核零は同じliteral R/原lawR内 |
+| 任意部分台族 | `supportUnitEquiv`は同じ元aの全ラベル値の両方向座標。`supportTau`は同じ原τのPi射。`supportTau_native`でC13元SES族nativeτの可逆homology座標と全値一致、`supportFamilyTau_injective`で同じnativeτの単射を得る |
+
+| material premise | 分類 | 出所と実使用・放電 |
+| --- | --- | --- |
+| 任意reading/元M/原始セル・台とℚ | ambient-boundary | 元chart/OptionとcomparisonFactor_commutesをSource支持基底・三成分接続に使用 |
+| positive triangle/subdivision/presentation | direction-hypothesis | D指定適用入力。presentationは名前/incidence/支持の同型表で、homologyや保存情報をfieldへ渡さない。元読みpullbackは既存readingPresentationで生成 |
+| 任意Source有限性・粗Law adequacy | ambient-boundary | 元有限発生labelとLaw可逆座標。細adequacyは元adequate_of_coarserから導出 |
+| 内部一般接続のraw r0/r1/r2等号 | direction-hypothesis → discharge-required | `rawR_eq_generated/rawLawR_eq_generated`の一般補題だけで保持。最終positive path適用では三つのprimitive_rを原始セルと有限帰納から生成し全放電 |
+| raw同値・s/h/k・保存証拠 | discharge-required | `toPrimitive`が元PR5282 producerを同じ各段へ適用。final操作入力に証拠を受け取らず、元有限和逆射・二補正をそのまま使用 |
+| 同じ旧J零/元a可逆/τ単射 | discharge-required | raw同値から元独立比較H1全単射→旧J零→C8原a両逆/τ単射。Lawは同じラベル原a値とliteral R値で接続 |
+| 結論相当のsupplied iso/vanish/rank | conclusion-equivalent-risk | 新入力fieldなし。P/ε/ηは受理済み元M生成系、全a/R/τを同じ値へ接続 |
+
+依存はG134 PR5282 head `062134827d0b41b7bb5a73db97a17bddebbc2ef7`、merge
+`7f169e370dfc0f28229bae2b81b69b7a4ab538ac`、標準監査6026457541、
+数学6026431875/6026440797・Lean6026433623/6026435577。
+C8 PR5299 head `4bdc59ea609b94fd087acad580666223c073a502`、merge
+`290bb573ddef08da2c77fdf10cd9532bfe3a70f8`、最終受理6052624414。
+C11-13の受理・sameheadは各上記受理節へ対応する。
+現sourceの生成引数・対象・全Hom・両補正・C8元J0同値・C13元SESτ成分を確認した。
+追跡完了predecessor内部全履歴の再認定は行わない。
+
+<!-- cycle14-generated-evidence -->
+
+全90source宣言と44生成宣言の合計134件が新delta。source相対順・全print/log/module auditを一致させた。spine外のscaffold宣言はない。
+
+| file | 宣言（source/print/log/report相対順、生成宣言を含む） |
+| --- | --- |
+| `PrimitiveSourceBasis.lean` | `PrimitiveSource.basis0`, `PrimitiveSource.basis1`, `PrimitiveSource.basis2`, `PrimitiveSource.basis0_image`, `PrimitiveSource.basis1_image`, `PrimitiveSource.basis2_image`, `PrimitiveSource.basis0_self`, `PrimitiveSource.basis1_self`, `PrimitiveSource.basis2_self`, `PrimitiveSource.basis0_comp`, `PrimitiveSource.basis1_comp`, `PrimitiveSource.basis2_comp` |
+| `PrimitiveSourceComparison.lean` | `PrimitiveSource.sourceSubset_eq`, `PrimitiveSource.basis0_selected`, `PrimitiveSource.basis1_selected`, `PrimitiveSource.basis2_selected`, `PrimitiveSource.rawR_eq_generated`, `PrimitiveSource.basis0_law`, `PrimitiveSource.basis1_law`, `PrimitiveSource.basis2_law`, `PrimitiveSource.rawLawR_eq_generated` |
+| `PositiveOperation.lean` | `PositiveOperation`, `PositiveOperation.toPrimitive`, `PositiveOperation.coarser`, `PositiveOperation.comparison`, `PositiveOperation.reading`, `PositiveOperation.reading_toPrimitive`, `PositiveOperation.primitive_r0`, `PositiveOperation.primitive_r1`, `PositiveOperation.primitive_r2`, `PositiveOperation.casesOn`, `PositiveOperation.ctorElim`, `PositiveOperation.ctorElimType`, `PositiveOperation.ctorIdx`, `PositiveOperation.noConfusion`, `PositiveOperation.noConfusionType`, `PositiveOperation.presentation`, `PositiveOperation.presentation.elim`, `PositiveOperation.presentation.inj`, `PositiveOperation.presentation.injEq`, `PositiveOperation.presentation.noConfusion`, `PositiveOperation.presentation.sizeOf_spec`, `PositiveOperation.rec`, `PositiveOperation.recOn`, `PositiveOperation.subdivision`, `PositiveOperation.subdivision.elim`, `PositiveOperation.subdivision.noConfusion`, `PositiveOperation.subdivision.sizeOf_spec`, `PositiveOperation.triangle`, `PositiveOperation.triangle.elim`, `PositiveOperation.triangle.noConfusion`, `PositiveOperation.triangle.sizeOf_spec` |
+| `PositiveOperationPath.lean` | `PositiveOperationPath`, `PositiveOperationPath.toPrimitive`, `PositiveOperationPath.toPrimitive_nil`, `PositiveOperationPath.toPrimitive_snoc`, `PositiveOperationPath.coarser`, `PositiveOperationPath.comparison`, `PositiveOperationPath.comparison_nil`, `PositiveOperationPath.comparison_snoc`, `PositiveOperationPath.single`, `PositiveOperationPath.single_comparison`, `PositiveOperationPath.primitive_r0`, `PositiveOperationPath.primitive_r1`, `PositiveOperationPath.primitive_r2`, `PositiveOperationPath.subsetR_eq_generated`, `PositiveOperationPath.lawR_eq_generated`, `PositiveOperationPath.below`, `PositiveOperationPath.brecOn`, `PositiveOperationPath.brecOn.eq`, `PositiveOperationPath.brecOn.go`, `PositiveOperationPath.casesOn`, `PositiveOperationPath.ctorElim`, `PositiveOperationPath.ctorElimType`, `PositiveOperationPath.ctorIdx`, `PositiveOperationPath.nil`, `PositiveOperationPath.nil.elim`, `PositiveOperationPath.nil.noConfusion`, `PositiveOperationPath.nil.sizeOf_spec`, `PositiveOperationPath.noConfusion`, `PositiveOperationPath.noConfusionType`, `PositiveOperationPath.rec`, `PositiveOperationPath.recOn`, `PositiveOperationPath.snoc`, `PositiveOperationPath.snoc.elim`, `PositiveOperationPath.snoc.inj`, `PositiveOperationPath.snoc.injEq`, `PositiveOperationPath.snoc.noConfusion`, `PositiveOperationPath.snoc.sizeOf_spec` |
+| `PositivePreservation.lean` | `PositiveOperationPath.subsetHomotopyEquiv`, `PositiveOperationPath.subsetHomotopyEquiv_hom`, `PositiveOperationPath.subsetHomotopyEquiv_inv`, `PositiveOperationPath.subsetHomologyIso`, `PositiveOperationPath.subsetHomologyIso_hom`, `PositiveOperationPath.subsetHomologyIso_inv`, `PositiveOperationPath.subsetOldH1Iso`, `PositiveOperationPath.subsetOldH1Iso_hom`, `PositiveOperationPath.subsetOldH1Iso_inv`, `PositiveOperationPath.subsetH1_bijective`, `PositiveOperationPath.subsetDefect_zero`, `PositiveOperationPath.subsetCone_isZero`, `PositiveOperationPath.lawHomotopyEquiv`, `PositiveOperationPath.lawHomotopyEquiv_hom`, `PositiveOperationPath.lawHomotopyEquiv_inv`, `PositiveOperationPath.lawHomologyIso`, `PositiveOperationPath.lawHomologyIso_hom`, `PositiveOperationPath.lawHomologyIso_inv`, `PositiveOperationPath.lawOldH1Iso`, `PositiveOperationPath.lawOldH1Iso_hom`, `PositiveOperationPath.lawOldH1Iso_inv`, `PositiveOperationPath.lawH1_bijective`, `PositiveOperationPath.lawDefect_zero`, `PositiveOperationPath.lawCone_isZero` |
+| `PositiveCoefficientPreservation.lean` | `PositiveOperationPath.unitEquiv`, `PositiveOperationPath.unitEquiv_apply`, `PositiveOperationPath.unitEquiv_symm_apply`, `PositiveOperationPath.unitEquiv_apply_symm`, `PositiveOperationPath.tau_injective`, `PositiveOperationPath.tauKernel_eq_bot`, `PositiveOperationPath.totalCone_isZero`, `PositiveOperationPath.lawUnitEquiv`, `PositiveOperationPath.lawUnitEquiv_apply`, `PositiveOperationPath.lawUnitEquiv_symm_apply`, `PositiveOperationPath.lawUnitEquiv_apply_symm`, `PositiveOperationPath.lawTau_injective`, `PositiveOperationPath.lawTauKernel_eq_bot`, `PositiveOperationPath.lawTotalCone_isZero`, `PositiveOperationPath.supportUnitEquiv`, `PositiveOperationPath.supportUnitEquiv_apply`, `PositiveOperationPath.supportTau`, `PositiveOperationPath.supportTau_apply`, `PositiveOperationPath.supportTau_injective`, `PositiveOperationPath.supportTau_native`, `PositiveOperationPath.supportFamilyTau_injective` |
+
+6単一focusedはwarning/error0、全公理集合はpropext/Classical.choice/Quot.soundの部分集合。
+validation SHA `d45ff87772c8e8a66cca8a3d1d9e793ced7d0a385f78efaad3d6e773b50776a1`。
+
+| file / source+生成件数 | source SHA256 | 実focused log SHA256 |
+| --- | --- | --- |
+| `PrimitiveSourceBasis.lean` / 12+0 | `83b3ac55fc42de40f27ad69549037d71e046ef2431a1a2ca9d16339102e67d68` | `af936684759a1c3f508ea15510ffbb52ec8b33ba06f7548d7abacc14da4e936e` |
+| `PrimitiveSourceComparison.lean` / 9+0 | `cef0311fa25fe9fc5c796abdb7ad8c858b303ce862705582459f418621140ba2` | `606c93b5c96403cb8a21dd8e819a5f4d9381f6d2df0c93df1dbed435332d04a6` |
+| `PositiveOperation.lean` / 9+22 | `4b484f43de0565ea875247d096546e40c818e49cb57d23272d1be029cf5562ab` | `fa5f74df546468835354ff051b47cfd6eb67853ccbc28f8496d599a609063bb5` |
+| `PositiveOperationPath.lean` / 15+22 | `13329fb68579ed44d017926065565b7c7f2323be6bb951835da2b102ba275f6e` | `21d98317f639c43fc0acc6f3b588aad32b963cd10f4979679149f22e717866a4` |
+| `PositivePreservation.lean` / 24+0 | `02c8c0a3cdb3378c26aea8cfa8157d08d09012275e2c81ddcaf19d20ce4eb5ab` | `6b5c59c7dea72ecacc9149b97e2f49097d9afe41f0f1b1a3bd5d45bc29b0bd31` |
+| `PositiveCoefficientPreservation.lean` / 21+0 | `1dbeb937bfdba21d227381a0c8a7e94a6aa4379720f62e53a49f25eff795a3eb` | `97c81c0422737cea6358f6593618a0a88002fad129a773b9ca0fdb43120fbdc3` |
+
+Research full/aggregate/全fileloop/local lake build、Formal実build/移植、全GOAL別finalは未実施。
+
+共通scan SHA `cfd7b203ef8b911e8bf92cb13edb27b5ef81ef072941c6446ebdd29886867d15`。
+新Unicode/placeholder/privacy/語彙/逆import0、diff check成功、GOAL/design/Formal不変、
+6新直接登録・6対象のmanifest/AG登録各1、静的Research依存方向PASS。
