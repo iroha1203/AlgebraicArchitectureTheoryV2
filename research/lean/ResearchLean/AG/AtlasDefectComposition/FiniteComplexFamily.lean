@@ -52,6 +52,9 @@ def projection (j : J) : complex F ⟶ F j where
     subst n
     ext x
     exact (d_apply F m x j).symm
+/-- 元族射影の全整数次数・全元の値は同じラベル評価である。 -/
+@[simp] theorem projection_apply (j : J) (m : ℤ) (x : (complex F).X m) :
+    (projection F j).f m x = x j := rfl
 /-- 有限族の実射を成分ごとに作用させる。 -/
 def map (φ : ∀ j, F j ⟶ G j) : complex F ⟶ complex G where
   f m := ModuleCat.ofHom (LinearMap.pi fun j => (φ j).f m |>.hom.comp (LinearMap.proj j))
@@ -203,4 +206,30 @@ theorem homologyEquiv_natural (φ : ∀ j, F j ⟶ G j) (m : ℤ)
   simpa only [homologyMap_comp,ModuleCat.comp_apply] using h
 end FiniteComplexFamily
 end AAT.AG.AtlasDefectComposition
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.complex
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.degreeSubsingleton
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.d_apply
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.projection
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.projection_apply
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.map
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.map_apply
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.map_projection
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.map_id
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.map_comp
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.iso
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.iso_hom
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.iso_natural
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.fan
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.fanIsLimit
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.productIso
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.degreeFiniteDimensional
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.directSumIso
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.directSumIso_projection
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.directSumIso_natural
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.additivePreservesFamily
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.homologyIso
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.homologyIso_projection
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.homologyEquiv
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.homologyEquiv_component
+#print axioms AAT.AG.AtlasDefectComposition.FiniteComplexFamily.homologyEquiv_natural
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition
