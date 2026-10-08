@@ -88,6 +88,11 @@ def M : IncidenceSupportedComparison qc qf coarser Nc Nf where
     simp
   chartSupport_compatible _ _ _ := Set.mem_univ _
 
+/-- Owner W3 table API identifies the original unique none-face name.
+It is derived from the specified Option table, without an expected rank. -/
+theorem faceMap_none_iff (f : Fin 3) : M.faceMap f = none ↔ f = 2 := by
+  fin_cases f <;> simp [M]
+
 /-- 指定paired入力はmだけを除き、全頂点・辺・二面を保つ。 -/
 abbrev pairedNerve : CoverNerve where
   Chart := Fin 3
@@ -134,6 +139,7 @@ end AAT.AG.AtlasCoefficientFiber.WitnessThree
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.Nc
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.Nf
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.M
+#print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.faceMap_none_iff
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.pairedNerve
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.pairedNf
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.pairedM

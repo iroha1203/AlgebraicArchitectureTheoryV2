@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 17）
+## 現proof state（Cycle 18）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -27,10 +27,10 @@ Cycle 13の原Law全ラベルと任意部分台の同じ全射・κ/R/τ・三�
 Cycle 14のG134原始正操作と部分セル有限合成はPR #5305で受理・merge済み。同じ原a同型・τ核零を接続し、非中心の出所誤記は独立直接確認で解消した。
 Cycle 15の面複製はPR #5306で受理・merge済み。原P/η/ε・全A/任意LawのH¹保存と選択面の非零H²余核を同時に接続し、非中心LA-1は有資格新規限定確認で解消した。
 Cycle 16の原τ消滅・全A/発生label有限検査はPR #5307で受理・merge済み。正式再査読の中心0、非中心F3は一文限定修正と新規直接確認四資格全PASSで解消した。
-Cycle 17は有理表から像・核・商の座標を生成し、両方向同定と代表元式を証明する。Eの同じa/R/τ/Jの行列表示と全A/label保存判定、全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
+Cycle 17の有理表からの像・核・商座標、両方向同定と代表元式はPR #5309で受理・merge済み。中心0、非中心F1二proofは新規限定確認四資格全PASSで解消した。Cycle 18は原始L行列から同じ原P/Q全三次数の座標・微分・二射を接続し、五終了条件のroot実装検証済み・正式独立PR監査待ち。Eの同じa/R/τ/Jの行列表示と全A/label保存判定、全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
-現在のdelta・未放電行は末尾のCycle 17台帳で追跡する。
+現在のdelta・未放電行は末尾のCycle 18台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -3035,3 +3035,180 @@ rootの三target cache出力は必要な依存file一つずつの`lake env lean 
 F1（LA-1/LB-F1）: Gram membershipの既存selectionIndependent直接展開と、元blockDefectのrfl還元。修正は名指し二証明の内部に限る。Gramは既存selectionIndependent_eq_true_iffとcolumnGram_det_ne_zero_iff、dimension対は既存blockDefect_eq_finrank_sub_rangeと標準rank-nullity/quotient dimensionを使用する。全theorem signature・def/instanceの値・宣言集合・import・ledger statusは維持し、新宣言なし。実log/対応source SHAだけ更新する。
 
 初回raw四票と五targetの旧validation/scan、変更二targetの旧実logはignored記録へ不変保存した。有資格性・実体解消は新規単一finding限定確認に委ね、一条件でも不成立/判定不能なら正式四票再実行へ戻す。現formal reruns0/2、修正の受理は未判定。全GOALはcheckpoint、E残部/W/別finalとFormal未移植を維持する。
+
+## Cycle 17最終受理と同期
+
+PR [#5309](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5309) はhead `76fe2000fb1815202d748d6599b6614aadf6a429`、実merge `767ec4d86ecea481a8e68b04a8af78fca5d96f9d`、時刻 `2026-10-08T16:14:33Z`でMERGEDを確認。[最終root受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5309#issuecomment-6064145730) はNo major findings（五終了条件）・proof-obligation-discharged。[新規F1限定確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5309#issuecomment-6064114234) は四資格全PASS、対象外新finding0。正式reruns0/2。[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6064170174) を完了し、Issue5290 OPENを維持する。
+全91のsource/生成/print/log/auditと標準公理は固定証拠へ一致。修正head全7CI SUCCESS、Lean37806006816/Tool37806006501の全stepを実読し、Research/Tool実検査成功、Formal実build/axiom/premise SKIPPEDを区別する。Researchfull/aggregate/全fileloop、Formal蒸留、全E/W/別final未実施。全GOALcheckpoint・停止条件なし。最新main `767ec4d86ecea481a8e68b04a8af78fca5d96f9d` の専用C18 branchへ進む。
+
+## Cycle 18 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 18
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 767ec4d86ecea481a8e68b04a8af78fca5d96f9d
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: C17受理/Issue6064170174・原Mから同じP/Q座標の生成gap
+  proof_dag_predecessors: [C4原Lと実ε像/原Q制限SES, C3原Pと全三次数u因子化, C16原セルsingle基底の行列表示API, C17有理像/核/商射影と両方向correctness]
+  milestone: 原始L行列から同じ独立Pと実Qの全三次数座標を生成し、両逆・原微分・unit/評価/制限の全代表表示と計算dimensionを証明する（Eのnative degree接続）
+  proof_obligations: [原L0/1/2列と同range, 原fine差分/符号行列, 像/transpose核射影と原restrictionのkernel同定, 実εによる原P全degree同型, 原restrictionによる原Q全degree同型, 二微分とη/ε/u/restriction全三次数の表示, 原degree次元と計算rank, W3degree2原列から同producerへの非零実接続]
+  exit_criteria:
+    - 原L0は垂直端点差、L1は垂直singleと混在全signed boundary、L2はnone face singleから生成。原列entryと全元表示、元Lとのrange等号を三次数とも証明
+    - 同じ原行列のq=imageProjectionとp=kernelProjection(transpose)が原restriction kernel/実ε像を表し、原セル有限性から生成。期待rank/原P/Q certificateなし
+    - 原P/Q全三次数から生成射影像へのLinearEquivと全元両逆・原代表式/逆式・計算rank次元を証明。原PはKan構成、原QはdualLのまま
+    - 原fine differential entries/全元と同じp-next*dFine*pおよびq-next*dFine*qを原P/Q二微分へ同定。原η/ε/u/restrictionを全三次数で同じ表へ接続し、必要吸収/squarezeroは原構成から放電
+    - 指定W3の原none face列と原degree2表示を同有理producerへ同定しkernelで実評価。empty/zero/repeated incidenceを一般構成から排除せず、全宣言focused/axiom/scan/出所を固定
+  selection_reason: 一般有理表の条件を原M適用で放電し、任意中間P/供給homology基底へ逃がさずE同じa/R/τ/J表示への距離を直接縮める
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [AtlasCoefficientFiber/PrimitiveDegreeMatrices, AtlasCoefficientFiber/ProjectionTransport, AtlasCoefficientFiber/NativeDegreeCoordinates, AtlasCoefficientFiber/NativeDegreeDifferentials, AtlasCoefficientFiber/DegreeCoordinateWitnesses]
+  risks: [元Pの射影複体への再定義, 原Q自己像への縮小, ker/像/商の片方向包装, 原Set入力の非計算表示と表algorithmの混同, finite列挙へ期待basis/rankを混入, foreign定義直接unfold, unused ambientのH1次元への混入, G107pure presentationでmixed入力を交換]
+  unchecked: [上記五終了条件は実装/受理待ち, 原homology座標と同じa/R/κ/τ/J全表示/基底変更自然同型/全A保存は後続, W全評価/別finalは後続]
+```
+
+C18で一般線形transportのsame-kernel/injective/surjective条件を方向仮定として扱う場合も、原M適用ではC4原始構成から放電しcaller fieldに残さない。セルの列挙/DecidableEqは原始有限表に相対的で、semantic homology基底/期待dimensionは入力にしない。任意Setのnative表示が非計算的なことと、有限有理表を読む計算producerを区別する。Wの実表は同じproducerを評価し、原M表示への一致を証明する。GOAL/恒久設計は変更しない。
+
+## Cycle 18 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原Lの全列/全元/rangeから元restriction kernelを放電し、実Kan評価/dualL制限で全三次数P/Q同型と両逆/代表式/計算次元を構成。原fine微分表を同じ射影で輸送し、元P/Q微分・η/ε/u/制限全次数の表表示、吸収則/squarezeroを証明。指定W3none面から同producerをkernel評価し、元P2/Q2次元2/1を得た
+  exit_criteria_status:
+    - 1: primitiveL0Matrix_entry・primitiveL1Matrix_entry_inl/inr・primitiveL2Matrix_entry、三Matrix_mulVecと三Matrix_range
+    - 2: 三restriction_eq_zero_iff_primitive/ker_eq_primitive、三evaluation_range_eq_primitive/三nativePProjection_range。原C4 injective/surjectiveも使用
+    - 3: 六nativeP/QCoordinateEquiv、各apply/symm_apply/left_inverse/right_inverse、六Projection_rank
+    - 4: primitiveD0/1Matrix_entry/mulVec、四nativeP/QDifferential_represents/all_representatives、P absorption二式とP/Q squarezero、三primitiveComparisonMatrix_transport/unit/mulVec、三nativeEvaluation/Restriction_represents
+    - 5: W3faceMap_none_iffとselectedFace_valから原Finite列挙を生成、primitiveL2Matrix_eq_degreeL2Table、同producer image/annihilator/ranksをdecide+kernel、元nativeP/QProjection等号と元degree2 finrank2/1。七focused/全244公理監査・scan記録あり
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ProjectionTransport, PrimitiveDegreeMatrices, NativeDegreeCoordinates, NativeDegreeDifferentials, DegreeCoordinateWitnesses, WitnessThreeInput所有API1件, WitnessThreeNonzero所有API1件]
+  evidence: [原構成APIと下記全宣言spine・七focused公理出力・W3kernel producer評価]
+  claim_mapping:
+    theorem_names: [restriction0_ker_eq_primitive, restriction1_ker_eq_primitive, restriction2_ker_eq_primitive, nativeP0CoordinateEquiv, nativeP1CoordinateEquiv, nativeP2CoordinateEquiv, nativeQ0CoordinateEquiv, nativeQ1CoordinateEquiv, nativeQ2CoordinateEquiv, nativeP0Differential_represents, nativeP1Differential_represents, nativeQ0Differential_represents, nativeQ1Differential_represents, primitiveL2Matrix_eq_degreeL2Table, degreeL2Table_projection_ranks]
+    source_labels: [G135 E元P/Q degree座標生成/原始差分/二射表示, W3原none面の同producer接続]
+    conjuncts: [下記五条件の主証拠表と全宣言spine]
+    undischarged_assumptions: [選択したC18五条件に未放電semantic premiseなし・正式独立PR監査待ち, E homology座標/同じa/R/kappa/tau/J全表示/基底変更/全A-label保存未完, W全評価/別最終監査未完]
+    acceptance_point: 原始列から元native構成への全次数・両方向接続と全元可換式、W3同producer実評価を同じcycleで閉じたproposal。正式PR受理は別監査で判定する
+    port_status: unported
+audits:
+  premise_delta:
+    ambient-boundary: [原Source/readings/coarser/Nc/Nf/M/K1/Option分類/A、原有限セルの列挙と等号判定、係数Q]
+    direction-hypothesis: [汎用embedding transportのinjective/same-image、restriction transportのsurjective/same-kernel、range_matrix_of_representsの全元表示。原M適用ではすべて下記生成定理で放電]
+    discharged: [C3 evaluation0/1/2_injective、C4 evaluation0/1/2_range_eq_kerとrestriction0/1/2_surjective、原生成列rangeと三restriction_ker_eq_primitive、元evaluation/restriction_comm0/1、元C3 fullHom因子化と原P/Q square]
+    remaining: [E/Wの後続固定目標だけ未完]
+  certificate_provenance:
+    discharged: [L0=chainD1(vertical single), L1=vertical+chainD2(all mixed), L2=all none inclusion、K(Ltranspose)/P(L)はC17 sameproducer、W3Finite列挙は元Option表の唯一none名から生成]
+    unresolved: []
+  proof_use:
+    used: [元primitive range→元restriction核→C4評価像→六同型→両逆/次元、C3/C4 cochain式→四微分表/全代表/吸収/square、C3fullHom因子化→元u/eta同じ表、W3原列等号→同producer実行→元degree2 dimension]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [下記七focused/source/全244print/module audit/loghashとvalidation metadata, 共通scan新0・固定入力不変・静的登録/方向check・所有API出所照合]
+  blocking_findings: [正式PR監査未実施]
+  next_obligation: 同じ原P/Qと粗/細native homologyの計算座標を生成し、元a/R/kappa/tau/Jの全代表行列表示・basis変更・全A-label保存と全W実評価を閉じる
+```
+
+以上はrootの実装proposalで、独立受理ではない。GOAL全体は`target-proof-checkpoint`。
+原Pは`pushforwardComplex`の独立Kan構成、Qは`restrictionComplex`の指定dualLのまま。
+原homology・同じa/R/κ/τ/Jの全行列と全A/label保存・全W・別最終4本は後続であり、W3degree2計算だけでW全体の完了にしない。
+
+| 固定終了条件 | 生成と全方向の主証拠 | 読み取り |
+| --- | --- | --- |
+| 1 原L全列/全元/同range | `primitiveL0/1/2Generator_range`、四entry・三mulVec・三range | L1はkerBへの制限を置かず、混在面の三つの符号付き辺出現を保持 |
+| 2 原restriction核/実ε像 | `restriction0/1/2_ker_eq_primitive`、`evaluation0/1/2_range_eq_primitive`、`nativeP0/1/2Projection_range` | C4の逆像生成・全射性から同条件を放電。P/Qのbasis/rankを入力にしない |
+| 3 元P/Q全degree両逆/代表/次元 | 六`nativeP/QCoordinateEquiv`とapply/symm_apply/left_inverse/right_inverse、六`Projection_rank` | 任意原元・全生成座標を同じε/制限で往復。finite/equalityは原セルだけ |
+| 4 原微分/二射の全元表示 | `primitiveD0/1Matrix`、四`nativeP/QDifferential`、全代表・P absorption・P/Q square、三`primitiveComparisonMatrix_unit/mulVec/transport`、全evaluation/restriction | p-next*dFine*pとq-next*dFine*qを元P/Qへ輸送。ε表は同じセル座標の恒等、制限表は同じq。η/uは元Option表 |
+| 5 W3同producer/公理検査 | `primitiveL2Matrix_eq_degreeL2Table`、image/annihilator/projection_ranks、nativeP/Q同producer等号、`pushforward_degree2_finrank`/`restriction_degree2_finrank` | 原Fin3のf0/f1/mと原none面一列を保持。kernelがrank2/1を算出し元P2/Q2へ接続 |
+
+## Cycle 18 provenance と検証
+
+C18固定baseはC17 merge `767ec4d86ecea481a8e68b04a8af78fca5d96f9d`。
+GOAL blob `cd5f3e684b7f390558796797874a1f16b52a6b18` と適用基準commit `05d1c6c5cbdbb299d8d7120376135917b44f6fa1` は維持する。
+C3 PR #5294 / C4 PR #5295 / C16 PR #5307 / C17 PR #5309の受理構成を利用し、元Mの値を変更しない。
+W3入力側の差分は新規所有API `faceMap_none_iff` と `selectedFace_val`、各公理printだけ。
+C6の指定表・nonzero/paired反証の既存値/statement/proofは不変。C17有理producer値も不変。
+
+汎用transportの同像/同核/injective/surjectiveは方向仮定であり、それを保持するだけではG135の放電と呼ばない。
+原適用は生成列のrangeとC3/C4を通して全条件を証明した。型のFinite/Fintype/DecidableEqは原始セル列挙から読み、原P/Q/homologyの期待basis/次元を含まない。
+任意Setのnative座標同型は非計算的な標準線形輸送である。同じ原始表からの有理射影producerとW3列挙・表のkernel実行は別に記録する。
+空/零列、loop、平行辺、重複incidence、全mixed/nonefaceを一般構成から除外していない。
+
+七つのsingle-file focused checkを実行し、全244宣言（source239＋生成5）の明示公理printとmodule auditが一致した。
+新規はsource197＋生成5＝202宣言、既存42宣言も二所有API変更の回帰として同時監査した。
+全出力は`propext`/`Classical.choice`/`Quot.sound`だけで、warning零。生成五宣言は実environment inventoryから抽出した。
+Research full/aggregate build・全file loop・Formal buildは未実施。依存の単一targetedキャッシュはQuotientCoordinates、ProjectionTransport、PrimitiveDegreeMatrices、NativeDegreeCoordinates、WitnessThreeInput、WitnessThreeNonzeroに限定した。
+集約ファイルの変更は五直接importの静的登録だけで、elaborationはしていない。
+
+<!-- cycle18-generated-evidence -->
+
+| file | 明示公理printを実行した全宣言spine（file namespace相対名、生成を含む） |
+| --- | --- |
+| `ProjectionTransport.lean` | `embeddingCoordinateEquiv`, `embeddingCoordinateEquiv_apply`, `embeddingCoordinateEquiv_symm_apply`, `embeddingCoordinateEquiv_rank`, `restrictionCoordinateEquiv`, `restrictionCoordinateEquiv_apply`, `restrictionCoordinateEquiv_symm_apply`, `restriction_imageProjection`, `restrictionCoordinateEquiv_rank` |
+| `PrimitiveDegreeMatrices.lean` | `chainCoordinates`, `chainCoordinates_apply`, `chainCoordinates_symm_apply`, `pairChainCoordinates`, `pairChainCoordinates_apply`, `range_matrix_of_represents`, `freeChainMatrix`, `freeChainMatrix_entry`, `freeChainMatrix_mulVec`, `freeChainMatrix_range`, `freePairChainMatrix`, `freePairChainMatrix_entry`, `freePairChainMatrix_mulVec`, `freePairChainMatrix_range`, `freeDualEquiv_finite_sum`, `freeChainMatrix_transpose_mulVec`, `freeChainMatrix_transpose_eq_zero_iff`, `freePairChainMatrix_transpose_mulVec`, `freePairChainMatrix_transpose_eq_zero_iff`, `primitiveL0Generator`, `primitiveL0Generator_apply`, `primitiveL0Generator_range`, `primitiveL1Generator`, `primitiveL1Generator_apply`, `primitiveL1Generator_range`, `primitiveL2Generator`, `primitiveL2Generator_apply`, `primitiveL2Generator_range`, `primitiveL0Matrix`, `primitiveL1Matrix`, `primitiveL2Matrix`, `primitiveL0Matrix_entry`, `primitiveL1Matrix_entry_inl`, `primitiveL1Matrix_entry_inr`, `primitiveL2Matrix_entry`, `primitiveL0Matrix_mulVec`, `primitiveL1Matrix_mulVec`, `primitiveL2Matrix_mulVec`, `primitiveL0Matrix_range`, `primitiveL1Matrix_range`, `primitiveL2Matrix_range`, `restriction0_eq_zero_iff_primitive`, `restriction0_ker_eq_primitive`, `restriction1_eq_zero_iff_primitive`, `restriction1_ker_eq_primitive`, `restriction2_eq_zero_iff_primitive`, `restriction2_ker_eq_primitive`, `freeChainMatrix.congr_simp`, `freePairChainMatrix.congr_simp`, `primitiveL0Matrix.congr_simp`, `primitiveL1Matrix.congr_simp`, `primitiveL2Matrix.congr_simp` |
+| `NativeDegreeCoordinates.lean` | `nativeP0Projection`, `nativeP0Projection_eq`, `nativeQ0Projection`, `nativeQ0Projection_eq`, `evaluation0_range_eq_primitive`, `nativeP0Projection_range`, `nativeP0CoordinateEquiv`, `nativeP0CoordinateEquiv_apply`, `nativeP0CoordinateEquiv_symm_apply`, `nativeP0CoordinateEquiv_left_inverse`, `nativeP0CoordinateEquiv_right_inverse`, `nativeP0Projection_rank`, `nativeP0Projection_evaluation`, `nativeQ0CoordinateEquiv`, `nativeQ0CoordinateEquiv_apply`, `nativeQ0CoordinateEquiv_symm_apply`, `nativeQ0CoordinateEquiv_left_inverse`, `nativeQ0CoordinateEquiv_right_inverse`, `nativeQ0Projection_rank`, `restriction0_nativeQProjection`, `nativeP0Projection_preimage`, `nativeQ0Projection_coordinate`, `nativeP1Projection`, `nativeP1Projection_eq`, `nativeQ1Projection`, `nativeQ1Projection_eq`, `evaluation1_range_eq_primitive`, `nativeP1Projection_range`, `nativeP1CoordinateEquiv`, `nativeP1CoordinateEquiv_apply`, `nativeP1CoordinateEquiv_symm_apply`, `nativeP1CoordinateEquiv_left_inverse`, `nativeP1CoordinateEquiv_right_inverse`, `nativeP1Projection_rank`, `nativeP1Projection_evaluation`, `nativeQ1CoordinateEquiv`, `nativeQ1CoordinateEquiv_apply`, `nativeQ1CoordinateEquiv_symm_apply`, `nativeQ1CoordinateEquiv_left_inverse`, `nativeQ1CoordinateEquiv_right_inverse`, `nativeQ1Projection_rank`, `restriction1_nativeQProjection`, `nativeP1Projection_preimage`, `nativeQ1Projection_coordinate`, `nativeP2Projection`, `nativeP2Projection_eq`, `nativeQ2Projection`, `nativeQ2Projection_eq`, `evaluation2_range_eq_primitive`, `nativeP2Projection_range`, `nativeP2CoordinateEquiv`, `nativeP2CoordinateEquiv_apply`, `nativeP2CoordinateEquiv_symm_apply`, `nativeP2CoordinateEquiv_left_inverse`, `nativeP2CoordinateEquiv_right_inverse`, `nativeP2Projection_rank`, `nativeP2Projection_evaluation`, `nativeQ2CoordinateEquiv`, `nativeQ2CoordinateEquiv_apply`, `nativeQ2CoordinateEquiv_symm_apply`, `nativeQ2CoordinateEquiv_left_inverse`, `nativeQ2CoordinateEquiv_right_inverse`, `nativeQ2Projection_rank`, `restriction2_nativeQProjection`, `nativeP2Projection_preimage`, `nativeQ2Projection_coordinate` |
+| `NativeDegreeDifferentials.lean` | `cochainMatrix`, `cochainMatrix_entry`, `cochainMatrix_mulVec`, `primitiveD0Matrix`, `primitiveD0Matrix_entry`, `primitiveD0Matrix_mulVec`, `primitiveD1Matrix`, `primitiveD1Matrix_entry`, `primitiveD1Matrix_mulVec`, `primitiveD1Matrix_mul_D0`, `nativeP0Differential`, `nativeP0Differential_mulVec`, `nativeP0Differential_represents`, `nativeP0Differential_all_representatives`, `nativeP0Differential_absorption`, `nativeQ0Differential`, `nativeQ0Differential_mulVec`, `nativeQ0Differential_represents`, `nativeQ0Differential_all_representatives`, `nativeP1Differential`, `nativeP1Differential_mulVec`, `nativeP1Differential_represents`, `nativeP1Differential_all_representatives`, `nativeP1Differential_absorption`, `nativeQ1Differential`, `nativeQ1Differential_mulVec`, `nativeQ1Differential_represents`, `nativeQ1Differential_all_representatives`, `nativeP1Differential_mul_P0`, `nativeQ1Differential_mul_Q0`, `originalComparison_f0`, `primitiveComparison0Matrix`, `primitiveComparison0Matrix_mulVec`, `primitiveComparison0Matrix_entry`, `primitiveComparison0Matrix_transport`, `primitiveComparison0Matrix_unit`, `nativeEvaluation0_represents`, `nativeRestriction0_represents`, `originalComparison_f1`, `primitiveComparison1Matrix`, `primitiveComparison1Matrix_mulVec`, `primitiveComparison1Matrix_entry`, `primitiveComparison1Matrix_transport`, `primitiveComparison1Matrix_unit`, `nativeEvaluation1_represents`, `nativeRestriction1_represents`, `originalComparison_f2`, `primitiveComparison2Matrix`, `primitiveComparison2Matrix_mulVec`, `primitiveComparison2Matrix_entry`, `primitiveComparison2Matrix_transport`, `primitiveComparison2Matrix_unit`, `nativeEvaluation2_represents`, `nativeRestriction2_represents` |
+| `DegreeCoordinateWitnesses.lean` | `degreeFaceEquiv`, `degreeFaceEquiv_val`, `degreeNoneFace_name`, `degreeNoneFaceEquiv`, `degreeNoneFaceEquiv_val`, `degreeFaceFintype`, `degreeNoneFaceFintype`, `degreeFaceDecidableEq`, `degreeNoneFaceDecidableEq`, `degreeL2Table`, `degreeL2Table_entry`, `primitiveL2Matrix_eq_degreeL2Table`, `degreeL2Table_image`, `degreeL2Table_annihilator`, `degreeL2Table_projection_ranks`, `nativeP2Projection_eq_degreeProducer`, `nativeQ2Projection_eq_degreeProducer`, `pushforward_degree2_finrank`, `restriction_degree2_finrank` |
+| `WitnessThreeInput.lean` | `coarseNerve`, `fineNerve`, `Nc`, `Nf`, `M`, `faceMap_none_iff`, `pairedNerve`, `pairedNf`, `pairedM` |
+| `WitnessThreeNonzero.lean` | `selectedEdge`, `selectedFace`, `selectedFace_val`, `k`, `a0`, `a1`, `b`, `c`, `f0`, `f1`, `m`, `a0_ne_a1`, `mixedFace_eq_m`, `verticalFaceIsEmpty`, `m_edge0`, `m_edge1`, `m_edge2`, `f0_edge0`, `f0_edge1`, `f0_edge2`, `f1_edge0`, `f1_edge1`, `f1_edge2`, `B_m`, `D_m`, `H_f0`, `H_f1`, `B_m_eq_H_difference`, `mixedChain_single`, `B_kernel_zero`, `pairedMixedIsEmpty`, `primitiveTransgressionVanishing_paired_true`, `primitiveTransgressionVanishing_empty_true`, `primitiveTransgressionVanishing_false`, `connectingTau_ne_zero` |
+
+| file / declarations | source SHA-256 | focused output SHA-256 |
+| --- | --- | --- |
+| `ProjectionTransport.lean` / 9 | `1f0635db1dac80413f70e3161f6153f6953cbf92df4497a0a7e9a2e8ea256806` | `f177b34e4d9dc2e9b7a6e3bfdb19f833c33d07deb1d77f28d767123d6ce7c454` |
+| `PrimitiveDegreeMatrices.lean` / 52 | `9715101a77f58d1d01aab7f3e31b6b454c338046289b1529f28d62a0e065e1f6` | `6829fdd55f14d5af8e59da3c3fe0f2c1857669ab41dcbef8be86c490a57386da` |
+| `NativeDegreeCoordinates.lean` / 66 | `965d7624f99a1d10ac078012a22ba8f543c147a2d162d7fe1850c02934155a20` | `7105a153c4b4fe3e221360937d10d7670cc4643a5956ae8a2afed8706a59a2e4` |
+| `NativeDegreeDifferentials.lean` / 54 | `38bddba83f8c7da6c45c7f38bd97a234464fada87d6bcd45107bad74d036047b` | `009cf55a964bbbf9dc393245e387bdd4088c5c1fe8c42a86da1e7ec6050f6f8c` |
+| `DegreeCoordinateWitnesses.lean` / 19 | `30917e6809d431060286a3ad763b4229a1b26d7708c6b96e200abecc3afe2420` | `7a485577afea208eede10e85e67addc19719666187076de4577e637623241455` |
+| `WitnessThreeInput.lean` / 9 | `181bbbe7dd194e86dbced634842385e11041387dd5eb08d91832589396dafbd8` | `dd8ed0d985dec535c4dce65f89246063fe794d6b481a1869ac21ec2adb88f35d` |
+| `WitnessThreeNonzero.lean` / 35 | `1c469a03faf21b7037b98bb902ea17ab1af6ec17a84bf8afb02409caf97a89af` | `df4299e40bc799c9d8e4082ffabb2bee379e2fe74f3296ce39fae2a117d4fac7` |
+
+| cwd / command | 結果 |
+| --- | --- |
+| `research/lean` / `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/ProjectionTransport.lean` | exit0、warning0、全9明示print/module audit一致 |
+| `research/lean` / `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/PrimitiveDegreeMatrices.lean` | exit0、warning0、全52明示print/module audit一致 |
+| `research/lean` / `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/NativeDegreeCoordinates.lean` | exit0、warning0、全66明示print/module audit一致 |
+| `research/lean` / `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/NativeDegreeDifferentials.lean` | exit0、warning0、全54明示print/module audit一致 |
+| `research/lean` / `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/DegreeCoordinateWitnesses.lean` | exit0、warning0、全19明示print/module audit一致 |
+| `research/lean` / `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessThreeInput.lean` | exit0、warning0、全9明示print/module audit一致 |
+| `research/lean` / `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessThreeNonzero.lean` | exit0、warning0、全35明示print/module audit一致 |
+
+C18 source/print/log/module-auditの全順序照合、個別公理出力とsource/log hash metadata SHA-256: `3c44451f28f3d2d8ebd498f1b7433620d4299e4daf9f976f453ffcf910c834f7`。
+
+PR候補検証時の共通scan metadata SHA-256: `09fafc63c43eb197202f3b2acc02ff9ff52f70ecdd71a49aa3cde885d867e261`。
+新規hidden/BiDi・placeholder・privacy・禁止語・逆import零、`git diff --check`成功。
+privacy既存文言と公開repositoryリンクだけを行単位で除外し、新規local pathは零。
+`check_research_package_direction.sh`静的check成功、`check_research_import_direction.sh`は本体228modules scan成功（Research集約elaborationではない）。
+二つのW3所有API単位とprintを取り除くと、両ファイルは固定baseの全既存source bytesと一致する。出所照合metadata SHA-256: `00d9aafcd81ef775b4e11162710fb880b8a6f7e4fe698e0a249e6105a45f3fe7`。
+同じGOAL/design、Formal、他worktreeの作業は変更していない。C18のCI/正式査読/merge/Issue結果は次の正式監査で記録する。
+
+## Cycle 18 push拒否・承認待ち
+
+実装コミットは `fdfe07b1ddc1d3606d0de97af516588fea203dea`、専用branchは `codex/5290-g135-cycle18`。
+自動承認レビューが `git push -u origin codex/5290-g135-cycle18` を拒否した。
+理由は未検証の外部originへpotentially private sourceを送る明示許可不足（sensitive egress）である。
+originのhostとrepository pathを読取照合し、[送信先リポジトリ](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/)へ対応することを確認した。
+拒否後のpush再試行・別送信経路でのsource送信は実行していない。
+
+sourceと全244公理出力・五終了条件のroot検証はローカルに固定済み。
+C18のremote branch push、PR作成、正式review-pr/math-lean-review新規四票、CI、mergeは未実施。
+全GOALはtarget-proof-checkpoint、Formal unportedで、数学的な完了・反証・停滞は主張しない。
+続行には上記GitHubリポジトリへの専用branch pushの明示承認が必要。
+IssueはOPENを維持する。承認待ちにより先のPRゲートへ進めず、ループの未完E/W/別final義務を保持する。
+
+承認待ち実行状態は[tracking Issueの同期コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6065112177)へ記録した。sourceコードは投稿していない。
+承認待ち記録追加後の共通scan metadata SHA-256: `cdd1655a95140799f68df18e0db4eca44c715cc73cf004758060605b606be190`。
+
+## Cycle 18 push承認・再開
+
+上の承認待ちは履歴であり、ユーザーの明示指示「pushを許可する」で解消した。
+同じ専用branchへの `git push -u origin codex/5290-g135-cycle18` はexit0で成功し、送信先は上記公開repositoryと一致した。
+数学sourceと検証結果は変更していない。PRゲートの新規独立四査読から再開する。
+Eのホモロジー座標・全診断写像、Wの全例接続、別の最終四査読は未完であり、全GOALはtarget-proof-checkpoint、Formal unportedのままである。
