@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 15）
+## 現proof state（Cycle 16）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -25,11 +25,12 @@ Cycle 11の実Law接続・原κ/R/τ/三錐・旧商/寄与和はPR #5302で受�
 Cycle 12の全A包含の原P・二射・κ/R/τ・三錐自然性はPR #5303で受理済み。正式再実行1の非中心指摘は有資格な新規単一確認で解消し、mergeとIssue同期を完了した。
 Cycle 13の原Law全ラベルと任意部分台の同じ全射・κ/R/τ・三錐図式はPR #5304で受理・merge済み。中心0、非中心F1は有資格新規単一確認で解消した。
 Cycle 14のG134原始正操作と部分セル有限合成はPR #5305で受理・merge済み。同じ原a同型・τ核零を接続し、非中心の出所誤記は独立直接確認で解消した。
-Cycle 15は面複製を同じ原P/η/εへ接続し、H¹保存と選択面の非零H²余核を同時に扱う。六終了条件の実装とroot検証は通過、固定headの独立PR受理は未実施。
-Dの面複製、B/Eの全A有限判定・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
+Cycle 15の面複製はPR #5306で受理・merge済み。原P/η/ε・全A/任意LawのH¹保存と選択面の非零H²余核を同時に接続し、非中心LA-1は有資格新規限定確認で解消した。
+Cycle 16は一般混在の原τ消滅を原始有理blockのrank判定と全A/発生label有限検査へ接続する。六終了条件の実装・root検証を通過、正式PR四票とroot受理を待つ。
+Bの全Aτ消滅・発生label有限検査はCycle 16六終了条件で構成・root検証済み、正式受理待ち。Eの同じa/R/τ/Jの行列表示と全A/label保存判定、全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
-現在のdelta・未放電行は末尾のCycle 15台帳で追跡する。
+現在のdelta・未放電行は末尾のCycle 16台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -2730,3 +2731,176 @@ signature/def値/instance値/proof/宣言集合/import方向/台帳statusは初�
 他4source/実log不変、全109source/print/log/module/report相対順一致と標準三公理のみを再照合。
 初回validation SHAd9427c8c17c99269e4a2ff28a4cd1afe71c8823b32bc4cb9c25e2eca3e0778f2は原票と共に不変保存。
 新規単一独立確認と最終受理は未実施、正式再実行0/2。
+
+
+## Cycle 15最終受理
+
+[PR5306](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5306)、head
+`180477fd314e416689beed56f3609edfc91403fd`、merge
+`2d4fd059bf1995e6b6e52fcdb39393c612d3884f`、2026-10-08T13:41:06Z。
+[標準/root最終受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5306#issuecomment-6060895737)、
+[新規独立直接確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5306#issuecomment-6061145863)。
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6061191910)。
+六終了条件approve / proof-obligation-discharged。初回中心0、非中心LA-1はdocstring限定修正で解消、
+四資格PASS、新規finding0、正式reruns0/2。全109source/print/log/module/report順とhash一致、標準三公理のみ。
+直接確認raw SHA97efc99539c9507b943066d88f9415859f764e72c428a3601860d062004d2cf6、
+機械記録SHA2222c8d544441c6e9ed714478735b474363c766622aba66e411edbe4a1894c29。
+最終samehead8checksSUCCESS、Lean37784776666/Tool37784776366実ResearchstepsSUCCESS、Formal実build/kernel/premiseSKIPPED。
+全GOAL checkpoint、Formal unported。
+
+## Cycle 16 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 16
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 2d4fd059bf1995e6b6e52fcdb39393c612d3884f
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: C15最終受理・B一般τ零原始条件はC6受理済み、有限判定が未完
+  proof_dag_predecessors: [C5原B/D/VとmixedCycles, C6原τ零とBy=Hx像包含の両方向, C11原Lawτとlabel族, G107受理rationalMatrixRank]
+  milestone: 一般混在の同じ原τ消滅を原始B/D/H/Vブロック行列の実行可能rank判定へ両方向接続し全A/発生labelの有限検査を生成する
+  proof_obligations: [制約核の像のrank加法, 原verticalRelationsとBy=Hx像の包含, 原セル自由基底からのブロック行列, 有理Gram rank evaluatorとの一致, 全A有限性と全label判定, 空/loop/平行辺/重複面の保持]
+  exit_criteria:
+    - 一般有限線形写像の制約核像とブロックrangeのrank加法を証明し、supplied核基底や期待rankを使わない
+    - 原B/D/H/VからF(y,x)=By-Hx、WB(v,t)=(Vv+Dt,Bt)、Giant(v,t,y,x)=(Vv+Dt+Dy,Bt,F(y,x))を生成し、元τ零iff rankGiant=rankWB+rankFを両方向証明する
+    - 元の名前付き有限セル自由基底で原B/D/H/Vと各ブロック行列を表示し、同じ線形写像の全元表示とsemantic rank一致を証明する
+    - 有理入力だけを読むrationalMatrixRankからBool判定を構成し、同じ元τ零/原像包含との必要十分を証明する
+    - Source有限とreading全射から全Aの有限列挙を導き、全A消滅および元Law全発生label消滅の有限Bool検査と必要十分にする。Value型有限性は要求しない
+    - 空A/空セル/空Lawとloop/平行辺/重複incidence/labelを保持し、対象全宣言のfocused/print/audit/共通scanと出所使用を検査する
+  selection_reason: Bに残る一般混在の有限判定を実行可能原始rank経路へ閉じ、E全写像producerの有限線形代数に再利用する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ConstrainedRank, PrimitiveRankCriterion, PrimitiveMatrices, FiniteTauDecision]
+  risks: [kernel基底を入力に移す, Pを中間複体へ交換, 原τとrank条件の接続欠落, Classical決定だけで実行可能と表示, 全Aやlabel重複の省略]
+  unchecked: [六終了条件実装/検証/正式受理, E原a/R/τ/J全行列表示とW全評価と別finalは後続]
+```
+
+
+## Cycle 16 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原B/D/H/Vの全セル列と制約核像を保つrank加法から同じ原τ零の有理Bool必要十分を構成。全Aおよび全発生label有限検査を元Lawτへ接続
+  exit_criteria_status:
+    - 制約核の元g像と積射rangeのrank加法、および二独立制約の和射の同じ像の和をrank-nullityから証明
+    - 同じ原By-Hx、Vv+Dt/Bt、Giant二制約と原像包含を全代表で接続し、同じ原τ零iff rankGiant=rankWB+rankFを両方向証明
+    - 原B/D/H/Vを同じ名前付きsingle基底で表示。三blockの全元表示と同じ元射range次元を証明。原P/η/ε/R/τを選び直さない
+    - 純有理四表から各block行列を生成するconstructorとnative表示を全entryで同定。G107 Gram rankからのBoolは元τ零と原像包含の必要十分
+    - Source有限とreading全射からtarget有限性、全Finsetと全Setの同値を生成。全A検査および元Law発生label検査を元Law SES τ零へ両方向接続
+    - 五単一focused warning/error0、74全source/print/log/audit/report順・hash一致、標準三公理のみ。空入力のtrue・障害有理表のfalseをkernel実評価。空/loop/平行辺/重複面とlabelを一般経路で保持
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [TransgressionVanishing所有API, ConstrainedRank, PrimitiveRankCriterion, PrimitiveMatrices, FiniteTauDecision]
+  evidence: [原B/D/H/V single列, 同じ元By=Hx像包含とτ双対, 原名付き積基底, G107有理Gram rank, 元Law label族/SES τ成分, 全target有限性]
+  claim_mapping:
+    theorem_names: [ConstrainedRank.range_prod_finrank, ConstrainedRank.constrainedCoprod_range, primitiveVanishing_iff_image_le, connectingTau_zero_iff_block_rank, primitiveConstraintMatrix_represents, primitiveBaseMatrix_represents, primitiveGiantMatrix_represents, rationalGiantMatrix_eq_primitive, primitiveTauZeroDecision_eq_true_iff, allATauZeroDecision_eq_true_iff, lawTauZeroDecision_eq_true_iff]
+    source_labels: [GOAL B一般混在τ零の有限行列包含と全A有限検査, GOAL D同じ実Law τへの適用, GOAL E有限有理線形代数のτ消滅判定部分]
+    conjuncts: [同じ原τと原始条件の両方向, 元B/D/H/Vと実block表示全元・全entry, 純有理判定kernel, 全A/全発生label有限検査, 元Lawτ全成分]
+    undischarged_assumptions: [E同じa/R/τ/J全行列表示と全A/label保存判定、W全指定表同経路評価、全GOAL別finalは後続]
+    acceptance_point: 六固定終了条件の構成とroot検証を完了。正式四票/root受理/CIは未実施
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [制約核像rank加法, 元原始包含とrank等式, 原セル基底と同じblock表示, 有理rankから元τ零判定, 全A有限化, 同じ実Lawτと全label判定]
+    remaining: [E全写像表示/保存判定・W全評価・別final]
+  certificate_provenance:
+    discharged: [原自由セルsingle基底/元B/D/H/V列, 原C6τ零両方向, 有理表からblock生成, G107受理rank producer, Source→reading有限性, 元Law発生labelとτ座標]
+    unresolved: [正式PR受理未実施]
+  proof_use:
+    used: [原B/D/H/VとBy=Hx, 元mixedCyclesとV/D実関係代表, 制約二座標とrank-nullity, 元セルsingle基底, 元Source有限/reading全射, Law原SES τ成分とliteralR族同値]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [五単一focused/74全print/log/audit, 下記source/log SHA・共通scan]
+  blocking_findings: [正式四票/root受理/CIは未実施]
+  next_obligation: Eの同じ原a/R/τ/Jの全有理行列表示と保存判定を構成し、W1–W5全原始表を同経路で評価する
+```
+
+## Cycle 16固定要求・同じ写像と前提
+
+| 固定要求 | 実構成と同じ射の対応 |
+| --- | --- |
+| 一般制約核像rank | `restrictedKernelEquiv`は元g/f共通核とgのker f制限核の同じ元による両逆。`range_prod_finrank`は三rank-nullityと実核同型から導出。`constrainedCoprod_range`は元制約核の実代表と和の両包含 |
+| 原τ零と原始rank | `primitiveConstraint/BaseOutput/BaseConstraint/LiftOutput`は元B/D/H/Vの実射合成・和。`mem_primitiveBaseImage`は同じ元mixedCycles kerBのVv+Dt。`primitiveVanishing_iff_image_le`は元By=Hx代表に両方向適用。`connectingTau_zero_iff_block_rank`はC6同じ元τ零同値と上記rank加法、部分空間包含・同次元等号を使用 |
+| 原始セルから行列 | `primitiveB/D/H/VMatrix_entry`は同じ原セルsingle列。三blockの行列は原セル積基底だけを使用、`*_represents`で任意元の元射値、`*_rank`で実range次元。元P・Rは既存のままで、任意複体/自由なhomology基底を入力にしない |
+| 四有理表と同じ表示 | `rationalConstraint/Base/GiantMatrix`は元B/D/H/V表の列/符号/零を保つpure constructor。`*_eq_primitive`は同じ原射の全entry一致。`rationalPrimitiveTauDecision`は原四有理表だけを読み、G107 Gram rank kernelを適用。native `primitiveTauZeroDecision`で表を元Mから生成 |
+| 全A | `readingTarget_finite`はSource有限とq.surjectiveを実使用。全Finset検査と全Setの同値を元任意台の有限化から導出し、`allATauZeroDecision_eq_true_iff`へ接続。空Aを除かない |
+| 全元Law | `lawTauZeroDecision`は既存LawValueLabel型をそのまま走査。`lawConnectingTau_zero_iff_labels`は元Law R族の両逆とsingle代表、元SES τ成分を実使用し、元Lawτ零と全原labelτ零を両方向同定。同じ台を持つ別Law labelを商にしない |
+
+| material premise | 分類 | 出所・実使用と放電 |
+| --- | --- | --- |
+| T0 M・支持・セル有限・ℚ | ambient-boundary | 固定T0。元セルclassとB/D/H/Vから原始block・基底を生成。pure/forest/保存/期待rankは一般入力に要求しない |
+| 一般補題の有限次元X/Z | direction-hypothesis → discharge-required | generic rank-nullityの必要条件。元有限セルfree chain/積から自動生成 |
+| Fintype/DecidableEqのセルindex | discharge-required | T0の元有限セル部分型からofFinite。名前付きsingleと積基底以外のhomology/核基底を受け取らない |
+| generic有理B/D/H/V表 | direction-hypothesis → discharge-required | 任意有限有理表kernelの入力。最終元M適用は同じ元primitiveMatrixから生成し、全entry/native射/rankへ証明で接続 |
+| Source有限・reading全射 | ambient-boundary | T0。実target有限性と全A検査に使う。Value型全体の有限性なし |
+| Law/粗adequacy/発生label | ambient-boundary | T0。原labelValueFiberと原SES/τ/R族を使用。既存発生label有限性を再利用、ラベルごとの消滅を新fieldへ移さない |
+| 像包含/期待rank/τ零/certificate | conclusion-equivalent-risk | 最終入力fieldとして追加せず、原表・generic rank correctnessとC6同値から出力する |
+
+任意Set/抽象セル型を含むnative入力の有限列挙・表示は非計算的。実行kernelは有限有理B/D/H/V表のみを読み、semantic rank/核/像/消滅のoracleを読まない。
+その二つを全entry・全元・元τの必要十分で接続した。Eの全a/R/τ/J行列表示やWの同経路全評価をこのτ零判定だけで代替しない。
+空有理表trueと障害有理表falseは`decide +kernel`で実評価し、非標準のnative計算公理を使用しない。これはkernel発火検査で、W1–W5の証拠は後続。
+
+G107 `ExecutableRationalRank`は[PR3994全GOAL受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3994#issuecomment-5279154319)、head84050e9592635418198a41cbc23f2051f023b861、merge4c80532dded00ab2b5b0a7e066b7bd355ac1ede6に対応。
+現sourceはその受理headおよび固定reuse版53b6a67からbyte不変。実使用はrationalMatrixRankとrank/実range一致の公開API、現statement・適用条件を確認済み。
+出所照合SHA788f47b44bda6c5d477d5c2006d415eb48a99fd9ac0177dd604c677769101352。C5/C6/C11受理は前述固定headへ対応する。
+
+<!-- cycle16-generated-evidence -->
+
+全74source宣言、新delta69件（既存TransgressionVanishingへの所有API1と新四module）、生成宣言0件。source/全print/log/module audit/reportの相対順を一致させ、spine外scaffoldはない。
+
+| file | 宣言（source/print/log/report相対順） |
+| --- | --- |
+| `TransgressionVanishing.lean` | `PrimitiveTransgressionVanishing`, `primitiveTransgressionVanishing_iff`, `horizontalChainConnecting_zero_iff_primitive`, `connectingTau_zero_iff_chain`, `connectingTau_zero_iff_primitive`, `connectingTau_allA_zero_iff_primitive` |
+| `ConstrainedRank.lean` | `ConstrainedRank.restrictedKernelEquiv`, `ConstrainedRank.range_prod_finrank`, `ConstrainedRank.constrainedCoprod_range`, `ConstrainedRank.range_prodMap_finrank` |
+| `PrimitiveRankCriterion.lean` | `primitiveConstraint`, `primitiveConstraint_apply`, `primitiveBaseOutput`, `primitiveBaseOutput_apply`, `primitiveBaseConstraint`, `primitiveBaseConstraint_apply`, `primitiveLiftOutput`, `primitiveLiftOutput_apply`, `primitiveBaseBlock`, `primitiveBaseBlock_apply`, `primitiveGiantBlock`, `primitiveGiantBlock_apply`, `primitiveGiantBlock_apply_all`, `mem_primitiveBaseImage`, `primitiveVanishing_iff_image_le`, `connectingTau_zero_iff_block_rank` |
+| `PrimitiveMatrices.lean` | `matrix_represents_map`, `matrix_rank_eq_range`, `primitiveBMatrix`, `primitiveBMatrix_entry`, `primitiveDMatrix`, `primitiveDMatrix_entry`, `primitiveHMatrix`, `primitiveHMatrix_entry`, `primitiveVMatrix`, `primitiveVMatrix_entry`, `primitiveConstraintMatrix`, `primitiveBaseMatrix`, `primitiveGiantMatrix`, `primitiveConstraintMatrix_entry`, `primitiveBaseMatrix_entry`, `primitiveGiantMatrix_entry`, `primitiveConstraintMatrix_represents`, `primitiveBaseMatrix_represents`, `primitiveGiantMatrix_represents`, `primitiveConstraintMatrix_rank`, `primitiveBaseMatrix_rank`, `primitiveGiantMatrix_rank` |
+| `FiniteTauDecision.lean` | `rationalBlockTauDecision`, `rationalBlockTauDecision_eq_true_iff`, `rationalConstraintMatrix`, `rationalBaseMatrix`, `rationalGiantMatrix`, `rationalPrimitiveTauDecision`, `rationalPrimitiveTauDecision_eq_true_iff`, `finiteFamilyDecision`, `finiteFamilyDecision_eq_true_iff`, `rationalPrimitiveTauDecision_empty`, `rationalPrimitiveTauDecision_failure`, `finiteFamilyDecision_empty`, `rationalConstraintMatrix_eq_primitive`, `rationalBaseMatrix_eq_primitive`, `rationalGiantMatrix_eq_primitive`, `primitiveTauZeroDecision`, `primitiveTauZeroDecision_eq_true_iff`, `primitiveTauZeroDecision_eq_true_iff_primitive`, `readingTarget_finite`, `allFinsets_iff_allSets`, `allATauZeroDecision`, `allATauZeroDecision_eq_true_iff`, `lawTauZeroDecision`, `lawTauZeroDecision_eq_true_iff_labels`, `lawConnectingTau_zero_iff_labels`, `lawTauZeroDecision_eq_true_iff` |
+
+五単一focusedはexit0/warning/error0、全公理はpropext/Classical.choice/Quot.soundの部分集合。validation SHA `28ebc888407605d200a22cc8782a5cd570b40265f6be6fffabf54fc3bdc65890`。
+
+| file / source+生成件数 | source SHA256 | 実focused log SHA256 |
+| --- | --- | --- |
+| `TransgressionVanishing.lean` / 6+0 | `e0c1de1dcd6d1ff15aa0406d08ec90dc946a09becaa0629f9f2c95cc5d7d5515` | `b5db000d8233d708a7ee04e395a29fc0e4823fe12f5709751276768d5fb0905b` |
+| `ConstrainedRank.lean` / 4+0 | `539ad5e865b01829b9b7022b175a01431a402024069385d06c94938555bc5a70` | `96f45ba4fbae114fafd2817cce0628c7a915a91ca3bb7ff0595ba1d4b7f8a86f` |
+| `PrimitiveRankCriterion.lean` / 16+0 | `2cb607759e052980eb6d74d552d62384c91af959443d57a2cf9e70f3ba727b4a` | `19509cb4d08ea0351ccfc5914785c2cbce47e469d1ae7fa5e266bac73daccd7c` |
+| `PrimitiveMatrices.lean` / 22+0 | `01b190db58b95cc3a10f7f05df6c759ac354ae94c4ff535b49679f02e4a9da15` | `50d34b8ac6c748b924fa908050d0e139243846d0e19f8875a2ec0b5d75e9c3da` |
+| `FiniteTauDecision.lean` / 26+0 | `d2022189715eb87149c34b27860b5216544d10df8accef3452721cabcaee39da` | `470cf1c99129fdea42b6e1ffb3e007678fbab98b5f2a4af57b66521e5d8d911b` |
+
+Research full/aggregate/全fileloop/local lake build、Formal実build/移植、全GOAL別finalは未実施。
+
+共通scan SHA `34b2f2a123c135d006d115cdb0491a2a5e43badccaf1734626b802912a78e55a`。
+新Unicode/placeholder/privacy/語彙/逆import0、diff check成功、GOAL/design/Formal不変。
+四新module登録・直接AG import各1、既存TransgressionVanishing登録不変、静的Research依存方向228modules PASS。
+
+
+## Cycle 16初回査読への文書修正
+
+[初回標準/root監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062198222)、
+[数学二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062158151)、
+[Lean二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062159018)。
+四票Minor issues、中心0。非中心F1は新規19theoremのdocstring欠落、F2は新四moduleの設計理由と代替案理由の記述不足。
+名指し19docstringと四moduleのImplementation notesだけを追加。全74宣言・signature・proof・def/instance値・import・進捗statusは不変。
+初回→修正の非comment token一致、四修正moduleの再focusedは全exit0/warning/error0、標準三公理のみ。
+source/print/log/audit/report74件とhashを再照合し、初回原票/log/metadataは不変保存。
+有資格な新規独立直接確認とsamehead CI/root最終受理は後続。正式reruns0/2、completion_candidate:no。
+
+
+## Cycle 16直接確認後の説明補完
+
+[限定直接確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062464922)は
+F2解消、F1のDecision三docstringの内容不足を未解消とし、四資格1FAIL/2・3・4PASS。
+共有review protocolに従い正式四票の再実行へ戻す。原票raw SHA91341f90c8e218a7f1978d8a6796c01cfc48258517eac2acb92b29cf6c99bfa4、
+機械記録SHAfcc9c9b05ccee1c948833e7b5e82185c7e319bb121236bf9a918976c43b3cf8c。
+名指し三docstringへ定義所有APIの役割・設計§3/GOAL B/D対応・generic有限添字と元セル/台族/label列挙の出所を記した。
+追加観測D1はConstrainedRankの保存metadata namespaceの初回からの誤記で、実source/log/auditは正常。
+今回metadataを実namespaceへ訂正し、74全宣言の実公理監査・順序・件数・source/log hashを再照合した。
+数学statement/signature/proof/def/instance値/import/宣言集合/進捗statusは不変。
+正式再実行1/2待ち、全GOAL checkpoint/未完E・W・別final、Formal unportedを保持する。

@@ -20,6 +20,15 @@ def PrimitiveTransgressionVanishing : Prop :=
       ∃ (v : VerticalFace M A →₀ ℚ) (t : mixedCycles M A),
         verticalBoundary M A v + mixedVerticalBoundary M A t.1 = mixedVerticalBoundary M A y
 
+/-- 原始消滅条件の所有API：元B/H等式と元V/D代表を保つ。 -/
+theorem primitiveTransgressionVanishing_iff :
+    PrimitiveTransgressionVanishing M A ↔
+      ∀ (x : HorizontalFace M A →₀ ℚ) (y : MixedFace M A →₀ ℚ),
+        mixedHorizontalBoundary M A y = horizontalFaceBoundary M A x →
+          ∃ (v : VerticalFace M A →₀ ℚ) (t : mixedCycles M A),
+            verticalBoundary M A v + mixedVerticalBoundary M A t.1 =
+              mixedVerticalBoundary M A y := Iff.rfl
+
 /-- 同じ原鎖連結写像の零性を、原始像包含と両方向に同定する。 -/
 theorem horizontalChainConnecting_zero_iff_primitive :
     horizontalChainConnecting M A = 0 ↔ PrimitiveTransgressionVanishing M A := by
@@ -76,6 +85,7 @@ theorem connectingTau_allA_zero_iff_primitive :
 end AAT.AG.AtlasCoefficientFiber
 
 #print axioms AAT.AG.AtlasCoefficientFiber.PrimitiveTransgressionVanishing
+#print axioms AAT.AG.AtlasCoefficientFiber.primitiveTransgressionVanishing_iff
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalChainConnecting_zero_iff_primitive
 #print axioms AAT.AG.AtlasCoefficientFiber.connectingTau_zero_iff_chain
 #print axioms AAT.AG.AtlasCoefficientFiber.connectingTau_zero_iff_primitive
