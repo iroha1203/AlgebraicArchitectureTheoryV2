@@ -16,7 +16,7 @@ description: AATリポジトリのコード品質を節目で点検し、人間�
   対象を特定できなければ点検範囲を人間に確認する。
 - [AGENTS.md](../../../AGENTS.md)、[Workflow guideline](../../../docs/workflow/guideline.md)、
   触る領域の guideline を読む。Tooling では[Tool guideline](../../../docs/tool/guideline.md)を読む。
-- ArchSig の期待動作は[マニュアル](../../../docs/tool/archsig_manual/README.md)と対象章から読む。
+- ArchSig の期待動作はマニュアルと対象章から読む。
   このループでは既存マニュアルを参照し、そこに定められた振る舞いを保存する。
   マニュアルの執筆・改訂はループに含めない。コードや既存テストは現状の証拠として使い、
   期待動作を実装の現状に合わせて変更しない。マニュアルの曖昧さ・矛盾は人間へ戻す。

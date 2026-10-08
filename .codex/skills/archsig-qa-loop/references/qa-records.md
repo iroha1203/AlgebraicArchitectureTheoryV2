@@ -9,7 +9,7 @@
 ```text
 対象: ArchSig <version> / 候補 <full commit SHA>
 リリース範囲・対象外: <合意と参照>
-マニュアル: docs/tool/archsig_manual @ <参照commit>
+マニュアル: <マニュアルのパス> @ <参照commit>
 tracking Issue / ローカル記録: <URLまたは保存先>
 操作制限: <今回許可された実行と書込み>
 Mac: <macOS版・build / CPU / Rosetta等の実行方式>
