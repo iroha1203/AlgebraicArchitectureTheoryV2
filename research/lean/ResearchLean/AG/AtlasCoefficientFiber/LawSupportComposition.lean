@@ -80,7 +80,7 @@ theorem lawSupportFamilyMorphism_comp :
     lawSupportFamilyMorphism M laws ha hb ≫
       coefficientShortComplexFamily_map (fun l => supportEvaluationRestrictionMorphism M (hab l)) =
     lawSupportFamilyMorphism M laws ha (fun l => (hab l).trans (hb l)) := by
-  dsimp only [lawSupportFamilyMorphism]
+  rw [lawSupportFamilyMorphism_eq, lawSupportFamilyMorphism_eq]
   rw [Category.assoc, coefficientShortComplexFamily_map_comp]
   congr 2
   funext l
@@ -128,7 +128,7 @@ theorem lawSupportFamilyR_comp :
 theorem lawSupportFamilyMorphism_refl :
     lawSupportFamilyMorphism M laws ha (fun l => Set.Subset.refl (labelValueFiber laws qc ha l)) =
       (lawEvaluationRestrictionFamilyIso M laws ha).hom := by
-  dsimp only [lawSupportFamilyMorphism]
+  rw [lawSupportFamilyMorphism_eq]
   simp only [supportEvaluationRestrictionMorphism_refl, coefficientShortComplexFamily_map_id,
     Category.comp_id]
 /-- 原ラベル台でのP族射は元Law P座標同型。 -/

@@ -23,7 +23,7 @@ Cycle 9の局所十分条件・pure保存両方向/全A C3′・同じG107新旧
 Cycle 10の原三錐・原Qへの擬同型・全次数と符号の対応はPR #5301で受理済み。
 Cycle 11の実Law接続・原κ/R/τ/三錐・旧商/寄与和はPR #5302で受理済み。
 Cycle 12の全A包含の原P・二射・κ/R/τ・三錐自然性はPR #5303で受理済み。正式再実行1の非中心指摘は有資格な新規単一確認で解消し、mergeとIssue同期を完了した。
-Cycle 13は原Lawの全発生ラベルと任意部分台の同じ全射・κ/R/τ・三錐図式を構成する。六終了条件の実装・14focused検証は通過し、独立PR受理は未完。
+Cycle 13は原Lawの全発生ラベルと任意部分台の同じ全射・κ/R/τ・三錐図式を構成する。六終了条件の実装・14focused検証と初回独立四票は完了。中心0、非中心F1への直接対応は新規単一確認待ち。
 DのG134、E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
@@ -2262,7 +2262,7 @@ RをQ由来の新しい型へ置き換えず、元のκ*の核を保持してい
 | 元Law P/細/Q族同型、実SES、κ/R/τ/三錐 | C11 PR5302 head7f20e6aaaae8c51298b32d955ca16a6b0076b84a、受理6054697310、mergea993ccd6791f64cbbb8bdd6c4c6b591c3ea11dad。現statement・M/l/台引数を照合 | 本cycleのowner追加は基本射影APIのみ |
 | primitive全台P/二射/κ/直接R/δ/錐・合成 | C12 PR5303 head70633bfc653fe823fbdbbbcec8b1d6fc12a5bb5b、受理6057242603、merge9abbeb4ad0578e7aca653a11353707c268db2179。現statement・元台包含引数を照合 | 受理版から今回の使用箇所は不変 |
 | 元有限複体族・実射影・元錐二座標 | G133 PR5269 head74cb93564070661509ac0c2f842596e63d0957fa、標準受理6007458427・全体6007700344。現API・型/universeを照合 | 同族射影の値APIだけをownerへ追加 |
-| 新SES/全族図式/κκstar/R一致/native δ/τ/錐対応 | discharge-required。上記同じ入力とpredecessorから本cycleで構成する | formal PR監査前 |
+| 新SES/全族図式/κκstar/R一致/native δ/τ/錐対応 | discharge-required。上記同じ入力とpredecessorから本cycleで構成する | 初回四票中心0、非中心F1の単一確認待ち |
 | 全族canonical逆座標・単一成分 | 線形同型の両逆と原Pi.singleの値を使う | 供給certificateや期待rankなし |
 | mathlib4.28.0/8f9d9cff6bd728b17a24e163c9402775d9e6a365 | 全Hom・ShortComplex・native δ・mappingCone・shift・homology・Piの標準API/適用型 | 版と使用条件を確認、library全体の再認定は対象外 |
 
@@ -2283,17 +2283,17 @@ result:
     - lawSupport_deltaと族delta_componentが原nativeδを全ℤで保ち、元τ/五項列/ηε独立u全射が可換
     - 原三Law mappingConeと実支持射が全ℤ二座標/三triangle/shift負号/Qdesc/標準connectingで可換
     - 全族射・refl/comp・空台/空Law・Pi.single同ラベル回復/異ラベル零が同じ原生成対象と重複ラベルを保つ
-    - 原始入力からの構成と公開API使用を照合し、14focused/282全宣言#print/std audit・依存版/使用経路を記録した。独立PR受理は次gate
+    - 原始入力からの構成と公開API使用を照合し、14focused/283全宣言#print/std audit・依存版/使用経路を記録した。初回四票中心0、非中心F1の単一確認は未受理
   split_reason: none
   completion_candidate: no
   lean_artifacts: [LawSupportProjection, LawSupportFiber, LawSupportConnecting, LawSupportCones, LawSupportFamilies, LawSupportComposition, LawSupportFamilyHomology, LawSupportFamilyKappa, LawSupportEmpty, LawSupportLabels, LawSupportConeFamilies, LawSupportConeFamilyHomology]
-  evidence: [上記同じ原Mの生成経路と下記282宣言spine・focused実log]
+  evidence: [上記同じ原Mの生成経路と下記283宣言spine・focused実log]
   claim_mapping:
     theorem_names: [lawSupportDirect, lawSupportR_viaQ, lawSupport_tau, lawSupportConeTriangle, lawSupportFamily_tau_native, supportFamilyTau_component, lawSupportFamilyKappaStar, lawSupportFamilyMorphism_comp, lawSupportConeFamilyTriangle_third, lawSupportFiberConeFamilyConnecting]
     source_labels: [GOAL D, designREADME§5, T0全量化]
     conjuncts: [原Lawから任意部分台全射, κ/κstar/literalR全値, 原SES/τ/五項列全射, 原三錐/triangle/shift/Q評価/connecting, 全族/恒等合成/空入力/重複保存]
     undischarged_assumptions: []
-    acceptance_point: 六固定終了条件の実装証拠を標準PRと独立数学2/Lean2へ渡すproposal
+    acceptance_point: 初回独立数学2/Lean2の中心0、非中心F1対応を有資格単一確認へ渡すproposal
     port_status: unported
 audits:
   premise_delta:
@@ -2311,18 +2311,40 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [14focused warning/error0, 全282明示print/module audit/log標準公理のみ, 下記実source/log hash対応]
-  blocking_findings: [独立PR正式査読は未実施]
+  validation_refs: [14focused warning/error0, 全283明示print/module audit/log標準公理のみ, 下記実source/log hash対応]
+  blocking_findings: [初回四票の非中心F1は実装修正済み、独立単一確認未受理]
   next_obligation: C13標準PRgate後にDのG134指定操作と有限合成/面複製を選定する
 ```
 
 上記は実装rootのproposalであり、独立reviewの代替ではない。
 現GOAL全体はtarget-proof-checkpoint、Formalはunported。
 
+## Cycle 13 初回四票とF1直接対応
+
+PR [#5304](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304)、初回head
+`2a2847f3d499727e9ebf966c1f03fe277bdb2109`。
+[数学A](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304#issuecomment-6058595180)は
+Minor issues、[数学B](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304#issuecomment-6058597663)・
+[LeanA](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304#issuecomment-6058600719)・
+[LeanB](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304#issuecomment-6058603350)はNo major findings。
+[初回標準監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304#issuecomment-6058617394)で
+中心0、統合非中心F1一件を固定した。正式再実行は0/2。
+初回実282件（258source+24生成）のvalidation SHAは
+`dc43e7aa696b38432e7a5defbbc340a276ae0ae883dbf92fda1ce3a768d08014`、
+scan SHAは`c534a8d1b925d115f320ded750f9df88aa5f61cb5152da860f47d10c73b33c30`。
+初回exactheadの8checksはSUCCESS、Lean37766622423/Tool37766622403。
+Research実stepsは成功、Formal実build/kernel/premiseはSKIPPED。
+
+F1はLawSupportCompositionの合成・恒等proofにあるowner定義の直接展開。
+名指しされた `lawSupportFamilyMorphism_eq` をownerへ追加し、二つのproofを公開等号APIで書き換えた。
+既存statement・def/instance本体値・宣言・import方向・台帳statusは変更していない。
+追加補題を明示#printと下記spineへ収載し、変更二fileのfocusedがwarning/error0で通過した。
+初回全findingへの対応と変更範囲・資格は新規単一確認へ渡す。未確認を受理へ読み替えない。
+
 <!-- cycle13-generated-evidence -->
 
-全258source宣言と24生成宣言の合計282件を同順序で明示#print・実log・module auditへ照合した。
-新source185件（12新file179件と既存owner公開API6件）と新生成24件で209件のdelta。
+全259source宣言と24生成宣言の合計283件を同順序で明示#print・実log・module auditへ照合した。
+新source186件（12新file180件と既存owner公開API6件）と新生成24件で210件のdelta。
 生成congr_simpには本moduleで生成された既存import関数の名前も含み、所属moduleと実出力を確認した。
 spine外のcycle scaffold宣言はない。
 
@@ -2334,7 +2356,7 @@ spine外のcycle scaffold宣言はない。
 | `LawSupportFiber.lean` | `lawSupportMixedInsert`, `lawSupportMixedInsert_apply`, `lawSupportPhiHomologyInsert`, `lawSupportPhiHomologyInsert_apply`, `lawSupportKappa`, `lawSupportPhiH1`, `lawSupportPhiH1_apply`, `lawSupportKappaStar`, `lawSupportR`, `lawSupportR_apply`, `lawSupportR_val`, `lawSupportR_viaQ` |
 | `LawSupportConnecting.lean` | `lawSupport_delta`, `lawSupport_tau`, `lawSupportEvaluationH1`, `lawSupportFiberRestrictionH1`, `lawSupportEvaluationH2` |
 | `LawSupportCones.lean` | `lawSupportCoefficientCone`, `lawSupportCoefficientCone_apply`, `lawSupportFiberCone`, `lawSupportFiberCone_apply`, `lawSupportTotalCone`, `lawSupportTotalCone_apply`, `lawSupportConeTriangle_first`, `lawSupportConeTriangle_second`, `lawSupportConeShift_apply`, `lawSupportConeTriangle_third`, `lawSupportConeTriangle`, `lawSupportFiberConeDesc`, `lawSupportFiberConeHomologyEquiv`, `lawSupportFiberConeHomologyEquiv_symm`, `lawSupportFiberConeConnecting` |
-| `LawSupportFamilies.lean` | `coefficientShortComplexFamily_map`, `coefficientShortComplexFamily_map_projection`, `lawSupportFamilyMorphism`, `lawSupportFamilyP`, `lawSupportFamilyFine`, `lawSupportFamilyQ`, `lawSupportFamilyCoarse`, `lawSupportFamilyMorphism_projection`, `lawSupportFamilyP_eq`, `lawSupportFamilyFine_eq`, `lawSupportFamilyQ_eq`, `lawSupportFamilyCoarse_eq`, `lawSupportFamilyP_projection`, `lawSupportFamilyFine_projection`, `lawSupportFamilyQ_projection`, `lawSupportFamilyCoarse_projection`, `lawSupportFamilyP_apply`, `lawSupportFamilyFine_apply`, `lawSupportFamilyQ_apply`, `lawSupportFamilyCoarse_apply`, `lawSupportFamilyUnit`, `lawSupportFamilyEvaluation`, `lawSupportFamilyRestriction`, `lawSupportFamilyDirect`, `lawSupportFamily_shortExact`, `lawSupportFamily_delta`, `lawSupportFamilyR`, `lawSupportFamilyR_apply`, `lawSupportFamilyCoarse.congr_simp`, `lawSupportFamilyFine.congr_simp`, `lawSupportFamilyP.congr_simp`, `lawSupportFamilyQ.congr_simp` |
+| `LawSupportFamilies.lean` | `coefficientShortComplexFamily_map`, `coefficientShortComplexFamily_map_projection`, `lawSupportFamilyMorphism`, `lawSupportFamilyMorphism_eq`, `lawSupportFamilyP`, `lawSupportFamilyFine`, `lawSupportFamilyQ`, `lawSupportFamilyCoarse`, `lawSupportFamilyMorphism_projection`, `lawSupportFamilyP_eq`, `lawSupportFamilyFine_eq`, `lawSupportFamilyQ_eq`, `lawSupportFamilyCoarse_eq`, `lawSupportFamilyP_projection`, `lawSupportFamilyFine_projection`, `lawSupportFamilyQ_projection`, `lawSupportFamilyCoarse_projection`, `lawSupportFamilyP_apply`, `lawSupportFamilyFine_apply`, `lawSupportFamilyQ_apply`, `lawSupportFamilyCoarse_apply`, `lawSupportFamilyUnit`, `lawSupportFamilyEvaluation`, `lawSupportFamilyRestriction`, `lawSupportFamilyDirect`, `lawSupportFamily_shortExact`, `lawSupportFamily_delta`, `lawSupportFamilyR`, `lawSupportFamilyR_apply`, `lawSupportFamilyCoarse.congr_simp`, `lawSupportFamilyFine.congr_simp`, `lawSupportFamilyP.congr_simp`, `lawSupportFamilyQ.congr_simp` |
 | `LawSupportComposition.lean` | `coefficientShortComplexFamily_map_id`, `coefficientShortComplexFamily_map_comp`, `supportEvaluationRestrictionMorphism_refl`, `supportEvaluationRestrictionMorphism_comp`, `lawSupportFamilyMorphism_comp`, `lawSupportFamilyP_comp`, `lawSupportFamilyFine_comp`, `lawSupportFamilyQ_comp`, `lawSupportFamilyCoarse_comp`, `lawSupportFamilyR_comp`, `lawSupportFamilyMorphism_refl`, `lawSupportFamilyP_refl`, `lawSupportFamilyFine_refl`, `lawSupportFamilyQ_refl`, `lawSupportFamilyCoarse_refl`, `lawSupportFamilyR_refl`, `supportEvaluationRestrictionMorphism.congr_simp` |
 | `LawSupportFamilyHomology.lean` | `coefficientShortComplexFamily_delta_component`, `lawSupportFamilyPHomology`, `lawSupportFamilyPHomology_apply`, `lawSupportFamilyFineHomology`, `lawSupportFamilyFineHomology_apply`, `lawSupportFamilyQHomology`, `lawSupportFamilyQHomology_apply`, `lawSupportFamilyCoarseHomology`, `lawSupportFamilyCoarseHomology_apply`, `supportFamilyQREquiv`, `supportFamilyQREquiv_apply`, `supportFamilyQREquiv_symm_component`, `lawSupportFamilyR_viaQ`, `supportFamilyTau`, `supportFamilyTau_apply`, `supportFamilyTau_component`, `lawSupportFamily_tau_native`, `lawSupportFamily_tau`, `lawSupportFamilyEvaluationH1`, `lawSupportFamilyFiberRestrictionH1`, `lawSupportFamilyEvaluationH2` |
 | `LawSupportFamilyKappa.lean` | `lawSupportFamilyMixed`, `lawSupportFamilyMixed_apply`, `lawSupportFamilyPhiHomology`, `lawSupportFamilyPhiHomology_apply`, `supportFamilyKappa`, `supportFamilyKappa_apply`, `lawSupportFamilyKappa`, `lawSupportFamilyPhiH1`, `lawSupportFamilyPhiH1_apply`, `lawSupportFamilyKappaStar`, `lawSupportFamilyR_val`, `lawSupportFamilyMixed.congr_simp`, `lawSupportFamilyPhiH1.congr_simp`, `lawSupportFamilyPhiHomology.congr_simp`, `supportAllPhiH1.congr_simp`, `supportAllPhiHomology.congr_simp`, `supportMixedCyclesInclude.congr_simp` |
@@ -2344,7 +2366,7 @@ spine外のcycle scaffold宣言はない。
 | `LawSupportConeFamilyHomology.lean` | `lawSupportConeFamilyTriangle_third`, `lawSupportFiberConeFamilyHomology`, `lawSupportFiberConeFamilyHomology_apply`, `lawSupportFiberConeFamilyDesc_homology`, `lawSupportFiberConeFamilyQ`, `lawSupportFiberConeFamilyR`, `lawSupportFiberConeFamilyConnecting`, `lawSupportEmptyCoefficientCone`, `lawSupportEmptyFiberCone`, `lawSupportEmptyTotalCone` |
 
 14単一focusedはwarning/error0。公理依存はpropext/Classical.choice/Quot.soundの部分集合だけ。
-validation SHA `dc43e7aa696b38432e7a5defbbc340a276ae0ae883dbf92fda1ce3a768d08014`。
+validation SHA `0da19bebeddfc91868fe516b9dbf9feab3846f8f6aaf35664f5f8baec25105bc`。
 
 | file / source+生成件数 | source SHA256 | 実focused log SHA256 |
 | --- | --- | --- |
@@ -2354,8 +2376,8 @@ validation SHA `dc43e7aa696b38432e7a5defbbc340a276ae0ae883dbf92fda1ce3a768d08014
 | `LawSupportFiber.lean` / 12+0 | `fb0236d7a06c213972fbd74051d95fbb128ac59dc5387e2d6869d99f16128e94` | `49c5722ffdbf416d30146c14bf741c22d3b3c900cc42790c7886e345fba55a94` |
 | `LawSupportConnecting.lean` / 5+0 | `6c8e120bf4ee25669370b5b9206baadaa897cf51d592a7595719f2d17006d57b` | `c51be5d689f09e1b74cd20903247aef8dc121de1a938ec51d474623f3a8479dd` |
 | `LawSupportCones.lean` / 15+0 | `3fa7d2c23a5bf8693b94cb2efa62ae85ff43a3327970ebf7f60bc06e2474fb81` | `c451df661da3f779e8a8d5c4ffe7ca7df70290000bcf249abb89192b4a49f0a8` |
-| `LawSupportFamilies.lean` / 28+4 | `33b75a5451ecd38a35c2f998a24c0517e54d529b2a09b33d0f7c85a9914055e7` | `ffcaadb9d2075b66ccd4b582025f970605ff23a30244c50927b3f00fbca69678` |
-| `LawSupportComposition.lean` / 16+1 | `93be964cc64d198fa1b46f4805c2af7964a767ee6229785b78a015269f7fec60` | `b72b2a571f3f6611d63a2cb2ed5092a593b9a82eab7dd25a2656731f760e3901` |
+| `LawSupportFamilies.lean` / 29+4 | `a1136265bf0516bfb25187b04978450d7acc32658791b19c5cc09db3dd6a8ce1` | `5be78f02f77079a1137aee224ccfefb33fa741c3dcbc3f531105c96b1a733ad1` |
+| `LawSupportComposition.lean` / 16+1 | `7b37ee967962ee401ffc267d499cd751226aa622b9b0080b0b5f1ea84fd30285` | `b72b2a571f3f6611d63a2cb2ed5092a593b9a82eab7dd25a2656731f760e3901` |
 | `LawSupportFamilyHomology.lean` / 21+0 | `9d3fcced03b0453365ceb917cfa35779cbda98e69327758d6081253cef86621d` | `d64e6d342b27a50de5167704d79ee1267f59c6ebf644ac5b2d50fbcf5b171808` |
 | `LawSupportFamilyKappa.lean` / 11+6 | `4b2a68ef8948d1d9f712fb4851c6530b965496b1adf3bf9bf034473e1d3c79f5` | `56e583e7d71188d387b45da856a56a50678e7bc78f8f8b37b7a716b8dd7b48cb` |
 | `LawSupportEmpty.lean` / 9+0 | `49fd353870f46280065e282c99acfc25759c5432d2284cda175581616c63a5c7` | `1c106d3118fd0346e1513b0c1d3ee89d98469203c7d019705d7c4f3fb42bbeb0` |
@@ -2365,6 +2387,6 @@ validation SHA `dc43e7aa696b38432e7a5defbbc340a276ae0ae883dbf92fda1ce3a768d08014
 
 Research full/aggregate/全fileloop/local lake build、Formal実build/移植、全GOAL別finalは未実施。
 
-共通scan SHA `c534a8d1b925d115f320ded750f9df88aa5f61cb5152da860f47d10c73b33c30`。
+共通scan SHA `0481836fbf74bdf05c94fc20d3fb396e6454ebbf4aed40e1e96a3a7e7058e5d3`。
 新Unicode/placeholder/privacy/語彙/逆import0、diff check成功、GOAL/design/Formal不変、
 13新直接登録（既存G133 ownerを含む）・14対象のmanifest/AG登録各1、静的方向228modulePASS。

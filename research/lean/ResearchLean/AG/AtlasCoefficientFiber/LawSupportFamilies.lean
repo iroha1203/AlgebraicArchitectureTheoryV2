@@ -65,6 +65,12 @@ def lawSupportFamilyMorphism : lawEvaluationRestrictionShortComplex M laws ha �
   (lawEvaluationRestrictionFamilyIso M laws ha).hom ≫
     coefficientShortComplexFamily_map (fun l => supportEvaluationRestrictionMorphism M (hA l))
 
+/-- 原Law全族SES射の同じ元canonical同型とprimitive制限による生成式。 -/
+theorem lawSupportFamilyMorphism_eq :
+    lawSupportFamilyMorphism M laws ha hA =
+      (lawEvaluationRestrictionFamilyIso M laws ha).hom ≫
+        coefficientShortComplexFamily_map (fun l => supportEvaluationRestrictionMorphism M (hA l)) := rfl
+
 /-- 元Pのラベル別部分台族への全次数射。 -/
 def lawSupportFamilyP := (lawSupportFamilyMorphism M laws ha hA).τ₁
 /-- 元細cochainのラベル別部分台族への全次数射。 -/
@@ -220,6 +226,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientShortComplexFamily_map
 #print axioms AAT.AG.AtlasCoefficientFiber.coefficientShortComplexFamily_map_projection
 #print axioms AAT.AG.AtlasCoefficientFiber.lawSupportFamilyMorphism
+#print axioms AAT.AG.AtlasCoefficientFiber.lawSupportFamilyMorphism_eq
 #print axioms AAT.AG.AtlasCoefficientFiber.lawSupportFamilyP
 #print axioms AAT.AG.AtlasCoefficientFiber.lawSupportFamilyFine
 #print axioms AAT.AG.AtlasCoefficientFiber.lawSupportFamilyQ
