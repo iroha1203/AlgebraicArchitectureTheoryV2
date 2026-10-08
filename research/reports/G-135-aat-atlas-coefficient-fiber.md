@@ -22,7 +22,7 @@ Cycle 8の実核・余核SES、旧診断加法式、保存必要十分とG133相
 Cycle 9の局所十分条件・pure保存両方向/全A C3′・同じG107新旧条件はPR #5300で受理済み。
 Cycle 10の原三錐・原Qへの擬同型・全次数と符号の対応はPR #5301で受理済み。
 Cycle 11の実Law接続・原κ/R/τ/三錐・旧商/寄与和はPR #5302で受理済み。
-Cycle 12は全A包含の原P・二射・κ/R/τ自然性を原primitive support/comma生成から構成し、六固定終了条件のresult proposalを記録した。独立PR査読は未実施。
+Cycle 12は全A包含の原P・二射・κ/R/τ自然性を原primitive support/comma生成から構成し、六固定終了条件のresult proposalを記録した。初回独立4査読と正式再実行1を実施し、非中心指摘の対応確認・root受理監査を待つ。
 DのLaw全ラベル台自然性/G134、E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
@@ -2074,6 +2074,27 @@ reportの指摘対象外namespace説明削除・表header変更D1（非中心）
 Formal setup/cache/build/kernel/premise実steps SKIPPED。修正headのCIは別途確認する。
 全GOALはtarget-proof-checkpoint、completion_candidate:no、Formalはunported。
 
+## Cycle 12 正式再実行1とF2・F3対応
+
+固定head `362401c8efc7539a4e87c6c4a7eb19c242440f12` の新規独立数学2・Lean2を
+一括取得した。数学AはMinor issues（中心0・非中心2）、数学B・LeanBは
+Minor issues（各0・1）、LeanAはNo major findings（0・0）。正式再実行は1/2。
+[数学二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5303#issuecomment-6057047692)、
+[Lean二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5303#issuecomment-6057061818)、
+[標準/root監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5303#issuecomment-6057062271)。
+
+重複を統合した非中心F2は、冒頭の現在状態が初回正式査読を未実施とする点である。
+初回・再実行1の実施と指摘対応確認待ちを区別する文言へ同期した。
+非中心F3はSupportPhiEmbeddingのsupportPhiVerticalCycles_val proofで、
+別ownerのphiVerticalCyclesEquiv値をchangeで読む点である。
+既存公開phiVerticalCyclesEquiv_valを明示rwしてから同fileの局所表示を合わせた。
+修正は一つの既存proof内部と指摘された現況・その証拠記録だけであり、
+宣言追加・削除、既存statement、def/instance値、import、台帳statusの変更はない。
+変更一fileのfocusedはwarning/error0・全9宣言標準公理のみ。
+他23sourceと実logは同一、513件spineと対応を維持する。
+新規単一subagentの直接対応確認を受け、資格と全指摘解消を別途判定する。
+全GOALはtarget-proof-checkpoint、completion_candidate:no、Formalはunportedを維持する。
+
 <!-- cycle12-generated-evidence -->
 
 | file | 宣言（source/print/log/report相対順、生成宣言を含む） |
@@ -2125,12 +2146,12 @@ Formal setup/cache/build/kernel/premise実steps SKIPPED。修正headのCIは別�
 | `SupportFiberChains.lean` / 14+0 | `7f874a115e2ac29a505b6b85c3b354bb2dac9fe3e5875f04d4eaf7bfc469bd3e` | `c2532a34df73d70e2dc72c9ffa3ed8bcd10d70b41d034b0612c56dec2c028a52` |
 | `SupportVerticalHomology.lean` / 5+0 | `dba8c7ebad20d478a1c72e487dfee3696c1a3dc152a12dc92c12e0061f9250d6` | `1f9d99671d8614e4b8a19c719edf692b6ddcc8168826176c0adb055536262db3` |
 | `SupportPhiHomology.lean` / 10+0 | `925c9d40532ab85cdf06392cd35a32d0cb4ccd21910504da2d8390f7a8402e57` | `40da1902df25eabbee8e3eb753c46321852818d9d6810c069069f3a2dc9c47a0` |
-| `SupportPhiEmbedding.lean` / 9+0 | `7a9780088c3f84cfc5f5648b6ca11af911dd24f59dbfc66f79ed6990f7be4d8c` | `f6baf2fb5047578dabd1a77c3f1fb3a1f37fe91322ff8b9bbfee4a3c36ff32f8` |
+| `SupportPhiEmbedding.lean` / 9+0 | `70a36346b1c558a1e37ce0232d666886ef84fb56f387a9c98a024490019a1148` | `f6baf2fb5047578dabd1a77c3f1fb3a1f37fe91322ff8b9bbfee4a3c36ff32f8` |
 | `SupportFiber.lean` / 12+0 | `a78d9a4757bbbee0d934325a4f50e11029ac17b51b90e83aa8c27c412e0ffa8f` | `bca0099ab692f47b53e86e136185ad8e9ee65ab0fced176cd18de3c44ab66305` |
 | `SupportQuotient.lean` / 11+0 | `4d4a3c64b0ef61df2475243d9fa36c666599ed9f6f0323e1d73acfd8558133de` | `f72724dd55001ffae9587b15b5e6937eb8f6afcc3d73173fc409987b146db512` |
 | `SupportCones.lean` / 23+0 | `3f68f121e86eb3148542a81835c77787abb0c22dad022509e59642ee5be79a33` | `3817ad1bce7c83755535f76ed9b68f58255e88f5cf637532dd89532c97192d5b` |
 | `SupportStandardChains.lean` / 11+2 | `814be9ce33abbf089d13fcd70db338c41adb04a5f6590358a0d107b44f1155ca` | `ed7fae64a3c9ff2ab670787b1c02d6cb108c4705dfbde3a2550cec391ae33f9b` |
 | `SupportEmpty.lean` / 6+0 | `4c36a926bde0c7bb45685a36b5a8eaba203808bd45946d030bab5224f0889ef3` | `de0cb5a3b80ad0661b9379b8fc8820ae1d575a6759545db440e779bf655ef563` |
 
-validation `.tmp/g135/cycle12-validation.json` SHA-256 `2b08d9f379a6b3cbe1d130ef9857ad41714bb966f88a5b3522aa694517cba072`。
-scan `.tmp/g135/cycle12-scans.json` SHA-256 `a0dff367f258958dafff7f7edb76099ee7f43a2d4db279e27dff4ccc4097e718`。
+validation `.tmp/g135/cycle12-validation.json` SHA-256 `a817f1b53076d8695678e598a53595ac733402361cf75def2a23e36f7578234e`。
+scan `.tmp/g135/cycle12-scans.json` SHA-256 `0bc92f804a44a42de4361da2a63c7a7ea8bd754c37dbb540537d198ba11b00f6`。

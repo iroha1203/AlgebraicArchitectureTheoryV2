@@ -64,6 +64,7 @@ def supportPhiVerticalCycles (A : Set qc.Target) (c : Nc.ChartInTargetSubset A) 
   funext d
   have hh := congrFun ((phiVerticalCyclesEquiv M A).apply_symm_apply (Pi.single c x)) d
   have hv := congrArg Subtype.val hh
+  rw [phiVerticalCyclesEquiv_val] at hv
   change phiChainEquiv1 M A (supportPhiVerticalCycles M A c x).1 d = (((Pi.single c x : (d : Nc.ChartInTargetSubset A) → phiCycles M A d) d)).1 at hv
   refine hv.trans ?_
   by_cases hd : d = c
