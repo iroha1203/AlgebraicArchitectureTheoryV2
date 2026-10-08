@@ -136,7 +136,8 @@ theorem lawRestrictionStandard_square : zeroExtensionMap (lawRestrictionHom M la
     (lawRestrictionStandardIso M laws ha).hom = (lawFineStandardIso (Nf := Nf) (h := h) laws ha).hom ≫
       FiniteComplexFamily.map _ _ (fun l => zeroExtensionMap (restrictionHom M (labelValueFiber laws qc ha l))) := by
   rw [lawRestrictionHom_eq, zeroExtensionMap_comp]
-  dsimp only [lawRestrictionStandardIso, lawFineStandardIso, Iso.trans_hom]
+  rw [lawFineStandardIso_hom]
+  dsimp only [lawRestrictionStandardIso]
   rw [Category.assoc, ThreeComplexFamily.zeroExtensionIso_natural,
     cochainEquivZeroExtensionIso_hom, Category.assoc]
 

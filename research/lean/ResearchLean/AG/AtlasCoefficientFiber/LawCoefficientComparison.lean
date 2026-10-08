@@ -173,6 +173,13 @@ def lawFineStandardIso : zeroExtension (Nf.lawGeneratedComplex laws (lawFineAdeq
   cochainEquivZeroExtensionIso (lawFineCanonicalEquiv (Nf := Nf) (h := h) laws ha) ≪≫
     ThreeComplexFamily.zeroExtensionIso _
 
+/-- 細Law標準同型の射は、可逆座標と同じ原複体族への同型の合成。 -/
+theorem lawFineStandardIso_hom :
+    (lawFineStandardIso (Nf := Nf) (h := h) laws ha).hom =
+      (cochainEquivZeroExtensionIso
+        (lawFineCanonicalEquiv (Nf := Nf) (h := h) laws ha)).hom ≫
+        (ThreeComplexFamily.zeroExtensionIso _).hom := rfl
+
 /-- 元のLaw unitは全整数次数で同じ原η族の射と可換。 -/
 theorem lawUnitStandard_square : zeroExtensionMap (lawUnitHom M laws ha) ≫
     (lawPushforwardStandardIso M laws ha).hom = (lawCoarseStandardIso (Nc := Nc) laws ha).hom ≫
@@ -226,6 +233,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.lawPushforwardStandardIso
 #print axioms AAT.AG.AtlasCoefficientFiber.lawCoarseStandardIso
 #print axioms AAT.AG.AtlasCoefficientFiber.lawFineStandardIso
+#print axioms AAT.AG.AtlasCoefficientFiber.lawFineStandardIso_hom
 #print axioms AAT.AG.AtlasCoefficientFiber.lawUnitStandard_square
 #print axioms AAT.AG.AtlasCoefficientFiber.lawEvaluationStandard_square
 #print axioms AAT.AG.AtlasCoefficientFiber.lawGeneratedStandard_square
