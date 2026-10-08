@@ -77,8 +77,9 @@ predicate. Its finite premises come from the input matrix indices. -/
 theorem mem_maximalGramSelections_iff (A : Matrix m n ℚ)
     (s : Fin (rationalMatrixRank A) → n) :
     s ∈ maximalGramSelections A ↔ (columnGram A s).det ≠ 0 := by
-  simp only [maximalGramSelections, Finset.mem_filter, Finset.mem_univ, true_and,
-    selectionIndependent, decide_eq_true_eq]
+  simp only [maximalGramSelections, Finset.mem_filter, Finset.mem_univ, true_and]
+  exact (selectionIndependent_eq_true_iff A s).trans
+    (columnGram_det_ne_zero_iff A s).symm
 
 /-- E maximal-family existence is generated from accepted rank correctness;
 rank zero has the empty family, so no nonempty input premise is introduced. -/

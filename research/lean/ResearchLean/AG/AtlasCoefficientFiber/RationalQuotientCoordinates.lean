@@ -88,8 +88,13 @@ theorem generatedCoordinateRanks_eq_blockDefect [DecidableEq n]
     (rationalMatrixRank (kernelProjection A),
       rationalMatrixRank (kernelProjection Aᵀ)) =
         AAT.AG.ResolutionInvariance.blockDefect A.mulVecLin := by
-  rw [kernelProjection_rank, quotientCoordinateEquiv_rank]
-  rfl
+  rw [kernelProjection_rank, quotientCoordinateEquiv_rank,
+    AAT.AG.ResolutionInvariance.blockDefect_eq_finrank_sub_range]
+  apply Prod.ext
+  · have h := LinearMap.finrank_range_add_finrank_ker A.mulVecLin
+    omega
+  · have h := Submodule.finrank_quotient_add_finrank (LinearMap.range A.mulVecLin)
+    omega
 
 namespace Examples
 
