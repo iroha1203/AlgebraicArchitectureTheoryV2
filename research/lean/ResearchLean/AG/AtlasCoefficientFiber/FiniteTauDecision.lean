@@ -28,7 +28,9 @@ def rationalBlockTauDecision {I J K L S T : Type u}
     (giant : Matrix I J ℚ) (base : Matrix K L ℚ) (constraint : Matrix S T ℚ) : Bool :=
   decide (rationalMatrixRank giant = rationalMatrixRank base + rationalMatrixRank constraint)
 
-/-- 有限有理表のGram rank判定は、同じ三行列の意味的rank加法と必要十分。 -/
+/-- 設計§3のτ消滅判定を支える定義所有API。入力の有限添字は三有理表の
+列挙データであり、Gram rank kernelのBoolを同じ行列の意味的rank加法へ接続する。
+元Mへの適用では名前付き有限セルの表から、この一般APIの入力を生成する。 -/
 theorem rationalBlockTauDecision_eq_true_iff {I J K L S T : Type u}
     [Fintype I] [Fintype J] [Fintype K] [Fintype L] [Fintype S] [Fintype T]
     (giant : Matrix I J ℚ) (base : Matrix K L ℚ) (constraint : Matrix S T ℚ) :
@@ -68,7 +70,9 @@ def rationalPrimitiveTauDecision {E K F G S : Type u}
   rationalBlockTauDecision (rationalGiantMatrix B D H V) (rationalBaseMatrix B D V)
     (rationalConstraintMatrix B H)
 
-/-- 原始四有理表からの判定は、そこから生成した二制約blockのrank加法と必要十分。 -/
+/-- 設計§3の原始四表判定の定義所有API。有限添字は入力表の行・列の列挙に由来する。
+四表から生成した二制約blockと同じrank加法へBoolを接続し、下流の元τ同値を支える。
+元セルの表示との同定は後続の全entry APIで証明し、ここでは供給rankを要求しない。 -/
 theorem rationalPrimitiveTauDecision_eq_true_iff {E K F G S : Type u}
     [Fintype E] [Fintype K] [Fintype F] [Fintype G] [Fintype S]
     (B : Matrix E F ℚ) (D : Matrix K F ℚ) (H : Matrix E S ℚ) (V : Matrix K G ℚ) :
@@ -81,7 +85,9 @@ theorem rationalPrimitiveTauDecision_eq_true_iff {E K F G S : Type u}
 def finiteFamilyDecision {J : Type u} [Fintype J] (check : J → Bool) : Bool :=
   decide (∀ j, check j = true)
 
-/-- 有限添字族の判定は、空族と重複する台の添字も含む全成分のtrueと必要十分。 -/
+/-- GOAL B/Dの全A・発生label検査を支える定義所有API。有限添字は一般入力で、
+元適用では有限targetの全Finset、または有限Law×Sourceから生成した発生labelに由来する。
+Boolから元の全称条件へ戻すAPIとして、空族と同台labelの重複も保持する。 -/
 theorem finiteFamilyDecision_eq_true_iff {J : Type u} [Fintype J] (check : J → Bool) :
     finiteFamilyDecision check = true ↔ ∀ j, check j = true := by
   simp only [finiteFamilyDecision, decide_eq_true_eq]
