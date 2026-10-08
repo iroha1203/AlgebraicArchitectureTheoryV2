@@ -1164,3 +1164,8 @@ import ResearchLean.AG.AtlasCoefficientFiber.PositiveOperation
 import ResearchLean.AG.AtlasCoefficientFiber.PositiveOperationPath
 import ResearchLean.AG.AtlasCoefficientFiber.PositivePreservation
 import ResearchLean.AG.AtlasCoefficientFiber.PositiveCoefficientPreservation
+import ResearchLean.AG.AtlasCoefficientFiber.MappedEvaluation
+import ResearchLean.AG.AtlasCoefficientFiber.FaceCloneComparison
+import ResearchLean.AG.AtlasCoefficientFiber.FaceCloneCoefficient
+import ResearchLean.AG.AtlasCoefficientFiber.FaceCloneHomology
+import ResearchLean.AG.AtlasCoefficientFiber.FaceCloneLaw
