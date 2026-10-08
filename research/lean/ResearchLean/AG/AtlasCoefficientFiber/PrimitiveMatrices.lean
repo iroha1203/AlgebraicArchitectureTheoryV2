@@ -6,6 +6,13 @@ import Mathlib.LinearAlgebra.Basis.Prod
 # G-135 B：原始セル自由基底での同じ制約とblock行列
 
 基底は名前付きセルのsingle基底とその積だけ。homology基底や期待rankは使わない。
+
+## Implementation notes
+
+原セル名を保持するsingle基底と積基底を使い、toMatrixで元射を全元に表示する。
+行・列のSumの括弧は元射の積構造を反映し、二制約と重複するセル名を保持する。
+homologyや核の基底を供給する方法は、原始入力からの表示に追加の選択を要するため採らない。
+一部の列だけの評価では全元表示とrankの接続を保証しないため、標準toMatrixの両APIを使う。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber
@@ -38,6 +45,7 @@ def primitiveBMatrix [Fintype (MixedFace M A)] : Matrix (HorizontalEdge M A) (Mi
   exact LinearMap.toMatrix Finsupp.basisSingleOne Finsupp.basisSingleOne
     (mixedHorizontalBoundary M A)
 
+/-- B表示の所有API。有限な元混在面の各列を原Bのsingle評価へ正規化する。 -/
 @[simp] theorem primitiveBMatrix_entry [Fintype (MixedFace M A)] (e : HorizontalEdge M A) (f : MixedFace M A) :
     primitiveBMatrix M A e f = mixedHorizontalBoundary M A (Finsupp.single f 1) e := by
   classical
@@ -50,6 +58,7 @@ def primitiveDMatrix [Fintype (MixedFace M A)] : Matrix (VerticalEdge M A) (Mixe
   exact LinearMap.toMatrix Finsupp.basisSingleOne Finsupp.basisSingleOne
     (mixedVerticalBoundary M A)
 
+/-- D表示の所有API。有限な元混在面の各列を原Dのsingle評価へ正規化する。 -/
 @[simp] theorem primitiveDMatrix_entry [Fintype (MixedFace M A)] (e : VerticalEdge M A) (f : MixedFace M A) :
     primitiveDMatrix M A e f = mixedVerticalBoundary M A (Finsupp.single f 1) e := by
   classical
@@ -62,6 +71,7 @@ def primitiveHMatrix [Fintype (HorizontalFace M A)] : Matrix (HorizontalEdge M A
   exact LinearMap.toMatrix Finsupp.basisSingleOne Finsupp.basisSingleOne
     (horizontalFaceBoundary M A)
 
+/-- H表示の所有API。有限な元水平面の各列を原Hのsingle評価へ正規化する。 -/
 @[simp] theorem primitiveHMatrix_entry [Fintype (HorizontalFace M A)] (e : HorizontalEdge M A) (f : HorizontalFace M A) :
     primitiveHMatrix M A e f = horizontalFaceBoundary M A (Finsupp.single f 1) e := by
   classical
@@ -74,6 +84,7 @@ def primitiveVMatrix [Fintype (VerticalFace M A)] : Matrix (VerticalEdge M A) (V
   exact LinearMap.toMatrix Finsupp.basisSingleOne Finsupp.basisSingleOne
     (verticalBoundary M A)
 
+/-- V表示の所有API。有限な元垂直面の各列を原Vのsingle評価へ正規化する。 -/
 @[simp] theorem primitiveVMatrix_entry [Fintype (VerticalFace M A)] (e : VerticalEdge M A) (f : VerticalFace M A) :
     primitiveVMatrix M A e f = verticalBoundary M A (Finsupp.single f 1) e := by
   classical
@@ -137,6 +148,7 @@ theorem primitiveGiantMatrix_entry [Fintype (VerticalFace M A)] [Fintype (MixedF
   classical
   rw [primitiveGiantMatrix, LinearMap.toMatrix_apply]
 
+/-- 元有限セルの積基底により、任意の鎖に対する制約行列の作用が同じ元制約射を表示する。 -/
 theorem primitiveConstraintMatrix_represents [Fintype (MixedFace M A)] [Fintype (HorizontalFace M A)] (x : (MixedFace M A →₀ ℚ) ×
     (HorizontalFace M A →₀ ℚ)) :
     (primitiveConstraintMatrix M A).mulVec
@@ -145,6 +157,7 @@ theorem primitiveConstraintMatrix_represents [Fintype (MixedFace M A)] [Fintype 
   classical
   exact matrix_represents_map (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne) Finsupp.basisSingleOne (primitiveConstraint M A) x
 
+/-- 元有限セルの積基底により、任意の鎖に対するWB行列の作用が同じ元WBを表示する。 -/
 theorem primitiveBaseMatrix_represents [Fintype (VerticalFace M A)] [Fintype (MixedFace M A)] (x : (VerticalFace M A →₀ ℚ) ×
     (MixedFace M A →₀ ℚ)) :
     (primitiveBaseMatrix M A).mulVec
@@ -154,6 +167,7 @@ theorem primitiveBaseMatrix_represents [Fintype (VerticalFace M A)] [Fintype (Mi
   classical
   exact matrix_represents_map (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne) (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne) (primitiveBaseBlock M A) x
 
+/-- 元有限セルの積基底により、任意の鎖に対するGiant行列の作用が同じ二制約付き元射を表示する。 -/
 theorem primitiveGiantMatrix_represents [Fintype (VerticalFace M A)] [Fintype (MixedFace M A)] [Fintype (HorizontalFace M A)] (x : ((VerticalFace M A →₀ ℚ) ×
     (MixedFace M A →₀ ℚ)) × ((MixedFace M A →₀ ℚ) × (HorizontalFace M A →₀ ℚ))) :
     (primitiveGiantMatrix M A).mulVec
@@ -164,16 +178,19 @@ theorem primitiveGiantMatrix_represents [Fintype (VerticalFace M A)] [Fintype (M
   classical
   exact matrix_represents_map ((Finsupp.basisSingleOne.prod Finsupp.basisSingleOne).prod (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne)) (Finsupp.basisSingleOne.prod (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne)) (primitiveGiantBlock M A) x
 
+/-- 元有限セルの積基底での制約行列rankは、同じ元制約射の像の次元と一致する。 -/
 theorem primitiveConstraintMatrix_rank [Fintype (MixedFace M A)] [Fintype (HorizontalFace M A)] : (primitiveConstraintMatrix M A).rank =
     finrank ℚ (LinearMap.range (primitiveConstraint M A)) := by
   classical
   exact matrix_rank_eq_range (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne) Finsupp.basisSingleOne (primitiveConstraint M A)
 
+/-- 元有限セルの積基底でのWB行列rankは、同じ元WBの像の次元と一致する。 -/
 theorem primitiveBaseMatrix_rank [Fintype (VerticalFace M A)] [Fintype (MixedFace M A)] : (primitiveBaseMatrix M A).rank =
     finrank ℚ (LinearMap.range (primitiveBaseBlock M A)) := by
   classical
   exact matrix_rank_eq_range (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne) (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne) (primitiveBaseBlock M A)
 
+/-- 元有限セルの積基底でのGiant行列rankは、同じ元Giantの像の次元と一致する。 -/
 theorem primitiveGiantMatrix_rank [Fintype (VerticalFace M A)] [Fintype (MixedFace M A)] [Fintype (HorizontalFace M A)] : (primitiveGiantMatrix M A).rank =
     finrank ℚ (LinearMap.range (primitiveGiantBlock M A)) := by
   classical

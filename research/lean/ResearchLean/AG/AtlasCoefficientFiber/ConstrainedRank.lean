@@ -6,6 +6,13 @@ import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
 有限制約を積射に保持し、rank-nullityから制約核の像を計る。
 核の基底、期待rank、像包含を入力として受け取らない。
+
+## Implementation notes
+
+制約核への制限の核と積射の核を、同じ元を保つ同型で接続する。
+これにより三つのrank-nullityから制約核像の次元が求まる。
+核基底を別に選ぶ方法は、元の制約との接続に選択データを増やすため採らない。
+二つの制約は積の別座標に保持し、和による相殺を許さない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber

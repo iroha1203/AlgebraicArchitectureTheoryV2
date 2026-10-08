@@ -8,6 +8,14 @@ import Mathlib.Data.Set.Finite.Basic
 実行kernelは有限行列とBoolだけを読む。任意Setを含む数学入力からの
 セル列挙は非計算的表示であり、期待rank・核基底・消滅を入力にしない。
 全Law検査は元の発生label型を保ち、Value型全体の有限性を要求しない。
+
+## Implementation notes
+
+四つの有理表から符号・零・二制約を生成し、受理済みGram rank kernelで等式を判定する。
+semantic rankや供給核基底を実行入力にする方法は、原始表からの判定にならないため採らない。
+抽象Setを含む元入力のセル列挙は非計算的表示に置き、有理kernelとは全entry等号で接続する。
+全Aは有限targetの全Finsetと全Setの同値で扱い、選択した支持集合だけの検査は採らない。
+Lawは元の発生labelを保持し、同じ台を持つlabelの商による重複除去を行わない。
 -/
 namespace AAT.AG.AtlasCoefficientFiber
 open CanonicalResolution ResolutionInvariance FaceRelationSubdivision Module
@@ -20,6 +28,7 @@ def rationalBlockTauDecision {I J K L S T : Type u}
     (giant : Matrix I J ℚ) (base : Matrix K L ℚ) (constraint : Matrix S T ℚ) : Bool :=
   decide (rationalMatrixRank giant = rationalMatrixRank base + rationalMatrixRank constraint)
 
+/-- 有限有理表のGram rank判定は、同じ三行列の意味的rank加法と必要十分。 -/
 theorem rationalBlockTauDecision_eq_true_iff {I J K L S T : Type u}
     [Fintype I] [Fintype J] [Fintype K] [Fintype L] [Fintype S] [Fintype T]
     (giant : Matrix I J ℚ) (base : Matrix K L ℚ) (constraint : Matrix S T ℚ) :
@@ -59,6 +68,7 @@ def rationalPrimitiveTauDecision {E K F G S : Type u}
   rationalBlockTauDecision (rationalGiantMatrix B D H V) (rationalBaseMatrix B D V)
     (rationalConstraintMatrix B H)
 
+/-- 原始四有理表からの判定は、そこから生成した二制約blockのrank加法と必要十分。 -/
 theorem rationalPrimitiveTauDecision_eq_true_iff {E K F G S : Type u}
     [Fintype E] [Fintype K] [Fintype F] [Fintype G] [Fintype S]
     (B : Matrix E F ℚ) (D : Matrix K F ℚ) (H : Matrix E S ℚ) (V : Matrix K G ℚ) :
@@ -71,6 +81,7 @@ theorem rationalPrimitiveTauDecision_eq_true_iff {E K F G S : Type u}
 def finiteFamilyDecision {J : Type u} [Fintype J] (check : J → Bool) : Bool :=
   decide (∀ j, check j = true)
 
+/-- 有限添字族の判定は、空族と重複する台の添字も含む全成分のtrueと必要十分。 -/
 theorem finiteFamilyDecision_eq_true_iff {J : Type u} [Fintype J] (check : J → Bool) :
     finiteFamilyDecision check = true ↔ ∀ j, check j = true := by
   simp only [finiteFamilyDecision, decide_eq_true_eq]

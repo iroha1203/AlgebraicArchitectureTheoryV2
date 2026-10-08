@@ -2864,18 +2864,30 @@ G107 `ExecutableRationalRank`は[PR3994全GOAL受理](https://github.com/iroha12
 | `PrimitiveMatrices.lean` | `matrix_represents_map`, `matrix_rank_eq_range`, `primitiveBMatrix`, `primitiveBMatrix_entry`, `primitiveDMatrix`, `primitiveDMatrix_entry`, `primitiveHMatrix`, `primitiveHMatrix_entry`, `primitiveVMatrix`, `primitiveVMatrix_entry`, `primitiveConstraintMatrix`, `primitiveBaseMatrix`, `primitiveGiantMatrix`, `primitiveConstraintMatrix_entry`, `primitiveBaseMatrix_entry`, `primitiveGiantMatrix_entry`, `primitiveConstraintMatrix_represents`, `primitiveBaseMatrix_represents`, `primitiveGiantMatrix_represents`, `primitiveConstraintMatrix_rank`, `primitiveBaseMatrix_rank`, `primitiveGiantMatrix_rank` |
 | `FiniteTauDecision.lean` | `rationalBlockTauDecision`, `rationalBlockTauDecision_eq_true_iff`, `rationalConstraintMatrix`, `rationalBaseMatrix`, `rationalGiantMatrix`, `rationalPrimitiveTauDecision`, `rationalPrimitiveTauDecision_eq_true_iff`, `finiteFamilyDecision`, `finiteFamilyDecision_eq_true_iff`, `rationalPrimitiveTauDecision_empty`, `rationalPrimitiveTauDecision_failure`, `finiteFamilyDecision_empty`, `rationalConstraintMatrix_eq_primitive`, `rationalBaseMatrix_eq_primitive`, `rationalGiantMatrix_eq_primitive`, `primitiveTauZeroDecision`, `primitiveTauZeroDecision_eq_true_iff`, `primitiveTauZeroDecision_eq_true_iff_primitive`, `readingTarget_finite`, `allFinsets_iff_allSets`, `allATauZeroDecision`, `allATauZeroDecision_eq_true_iff`, `lawTauZeroDecision`, `lawTauZeroDecision_eq_true_iff_labels`, `lawConnectingTau_zero_iff_labels`, `lawTauZeroDecision_eq_true_iff` |
 
-五単一focusedはexit0/warning/error0、全公理はpropext/Classical.choice/Quot.soundの部分集合。validation SHA `0e44fcb562d44e573440a1b84e799398770ae7c177173082474837bc1f5bc658`。
+五単一focusedはexit0/warning/error0、全公理はpropext/Classical.choice/Quot.soundの部分集合。validation SHA `4897b99315ad149d56868e55ac70508ea938856abe3820c4d25886f413d25a6d`。
 
 | file / source+生成件数 | source SHA256 | 実focused log SHA256 |
 | --- | --- | --- |
 | `TransgressionVanishing.lean` / 6+0 | `e0c1de1dcd6d1ff15aa0406d08ec90dc946a09becaa0629f9f2c95cc5d7d5515` | `b5db000d8233d708a7ee04e395a29fc0e4823fe12f5709751276768d5fb0905b` |
-| `ConstrainedRank.lean` / 4+0 | `0f7848e41ccb07b31b6066282fcfbf5f1fb3c7dc09fcc3cf646d176253d7018c` | `96f45ba4fbae114fafd2817cce0628c7a915a91ca3bb7ff0595ba1d4b7f8a86f` |
-| `PrimitiveRankCriterion.lean` / 16+0 | `25de5b4ed64babfabff74db256a80b78a4e38238bc52c5fa619103e46ea0164b` | `19509cb4d08ea0351ccfc5914785c2cbce47e469d1ae7fa5e266bac73daccd7c` |
-| `PrimitiveMatrices.lean` / 22+0 | `68a6964d1b5c8cc79aa3aa93da8ec0df4a4cba590db91b2e151a0214edbc5781` | `50d34b8ac6c748b924fa908050d0e139243846d0e19f8875a2ec0b5d75e9c3da` |
-| `FiniteTauDecision.lean` / 26+0 | `71ecfed6dd98ee4d16bde3d2467b1113cb657da727665baa63827f0ec75a9fc5` | `470cf1c99129fdea42b6e1ffb3e007678fbab98b5f2a4af57b66521e5d8d911b` |
+| `ConstrainedRank.lean` / 4+0 | `539ad5e865b01829b9b7022b175a01431a402024069385d06c94938555bc5a70` | `96f45ba4fbae114fafd2817cce0628c7a915a91ca3bb7ff0595ba1d4b7f8a86f` |
+| `PrimitiveRankCriterion.lean` / 16+0 | `2cb607759e052980eb6d74d552d62384c91af959443d57a2cf9e70f3ba727b4a` | `19509cb4d08ea0351ccfc5914785c2cbce47e469d1ae7fa5e266bac73daccd7c` |
+| `PrimitiveMatrices.lean` / 22+0 | `01b190db58b95cc3a10f7f05df6c759ac354ae94c4ff535b49679f02e4a9da15` | `50d34b8ac6c748b924fa908050d0e139243846d0e19f8875a2ec0b5d75e9c3da` |
+| `FiniteTauDecision.lean` / 26+0 | `27c8e1b3f2df6436e63c0de9260aa167e2d9063dc23182c3e3d4110faa0365f5` | `470cf1c99129fdea42b6e1ffb3e007678fbab98b5f2a4af57b66521e5d8d911b` |
 
 Research full/aggregate/全fileloop/local lake build、Formal実build/移植、全GOAL別finalは未実施。
 
-共通scan SHA `4973fc6aa3b4278baccb92cfef7425484b1b9d901aa91ae6a39860b8b6ed4951`。
+共通scan SHA `0331c74e8340990248718516f601086335dd2f3456afa6fbf5a4348a1b7c2c37`。
 新Unicode/placeholder/privacy/語彙/逆import0、diff check成功、GOAL/design/Formal不変。
 四新module登録・直接AG import各1、既存TransgressionVanishing登録不変、静的Research依存方向228modules PASS。
+
+
+## Cycle 16初回査読への文書修正
+
+[初回標準/root監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062198222)、
+[数学二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062158151)、
+[Lean二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5307#issuecomment-6062159018)。
+四票Minor issues、中心0。非中心F1は新規19theoremのdocstring欠落、F2は新四moduleの設計理由と代替案理由の記述不足。
+名指し19docstringと四moduleのImplementation notesだけを追加。全74宣言・signature・proof・def/instance値・import・進捗statusは不変。
+初回→修正の非comment token一致、四修正moduleの再focusedは全exit0/warning/error0、標準三公理のみ。
+source/print/log/audit/report74件とhashを再照合し、初回原票/log/metadataは不変保存。
+有資格な新規独立直接確認とsamehead CI/root最終受理は後続。正式reruns0/2、completion_candidate:no。

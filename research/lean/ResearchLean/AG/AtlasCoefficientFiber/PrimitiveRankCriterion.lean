@@ -4,6 +4,13 @@ import ResearchLean.AG.AtlasCoefficientFiber.ConstrainedRank
 # G-135 B：元τ消滅と原始block rankの必要十分
 
 同じB/D/H/Vから制約と出力を生成する。κの核を失うfiber直和へ置き換えない。
+
+## Implementation notes
+
+WBは関係像の出力とそのBt制約を、Giantは追加Dy出力と二つの独立制約を保持する。
+積射のrank-nullityで元の像包含をrank加法へ移すため、この形を採る。
+核基底を供給して包含を調べる方法は原始入力以外の選択を増やし、
+BtとBy-Hxを一つの和にする方法は相殺によって別の制約になるため採らない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber
@@ -16,6 +23,7 @@ variable (M : IncidenceSupportedComparison qc qf h Nc Nf) (A : Set qc.Target)
 /-- 原By-Hxを保持する制約射。 -/
 def primitiveConstraint := (mixedHorizontalBoundary M A).coprod (-horizontalFaceBoundary M A)
 
+/-- 制約射の所有API。積元への適用を原By-Hxへ正規化する。 -/
 @[simp] theorem primitiveConstraint_apply (y : MixedFace M A →₀ ℚ)
     (x : HorizontalFace M A →₀ ℚ) :
     primitiveConstraint M A (y, x) =
@@ -25,6 +33,7 @@ def primitiveConstraint := (mixedHorizontalBoundary M A).coprod (-horizontalFace
 /-- 原Vv+Dtを生成する出力射。 -/
 def primitiveBaseOutput := (verticalBoundary M A).coprod (mixedVerticalBoundary M A)
 
+/-- 関係出力射の所有API。積元への適用を原Vv+Dtへ正規化する。 -/
 @[simp] theorem primitiveBaseOutput_apply (v : VerticalFace M A →₀ ℚ)
     (t : MixedFace M A →₀ ℚ) : primitiveBaseOutput M A (v, t) =
       verticalBoundary M A v + mixedVerticalBoundary M A t := rfl
@@ -33,6 +42,7 @@ def primitiveBaseOutput := (verticalBoundary M A).coprod (mixedVerticalBoundary 
 def primitiveBaseConstraint := (mixedHorizontalBoundary M A).comp
   (LinearMap.snd ℚ (VerticalFace M A →₀ ℚ) (MixedFace M A →₀ ℚ))
 
+/-- 関係制約射の所有API。積元への適用を原Btへ正規化する。 -/
 @[simp] theorem primitiveBaseConstraint_apply (v : VerticalFace M A →₀ ℚ)
     (t : MixedFace M A →₀ ℚ) : primitiveBaseConstraint M A (v, t) =
       mixedHorizontalBoundary M A t := rfl
@@ -41,6 +51,7 @@ def primitiveBaseConstraint := (mixedHorizontalBoundary M A).comp
 def primitiveLiftOutput := (mixedVerticalBoundary M A).comp
   (LinearMap.fst ℚ (MixedFace M A →₀ ℚ) (HorizontalFace M A →₀ ℚ))
 
+/-- 追加出力射の所有API。積元への適用を原Dyへ正規化する。 -/
 @[simp] theorem primitiveLiftOutput_apply (y : MixedFace M A →₀ ℚ)
     (x : HorizontalFace M A →₀ ℚ) : primitiveLiftOutput M A (y, x) =
       mixedVerticalBoundary M A y := rfl
@@ -48,6 +59,7 @@ def primitiveLiftOutput := (mixedVerticalBoundary M A).comp
 /-- 元WB(v,t)=(Vv+Dt,Bt)。 -/
 def primitiveBaseBlock := (primitiveBaseOutput M A).prod (primitiveBaseConstraint M A)
 
+/-- WBの所有API。積元への適用を元出力とBtの二座標へ正規化する。 -/
 @[simp] theorem primitiveBaseBlock_apply (v : VerticalFace M A →₀ ℚ)
     (t : MixedFace M A →₀ ℚ) : primitiveBaseBlock M A (v, t) =
       (verticalBoundary M A v + mixedVerticalBoundary M A t,
@@ -58,6 +70,7 @@ def primitiveGiantBlock :=
   ((primitiveBaseOutput M A).coprod (primitiveLiftOutput M A)).prod
     ((primitiveBaseConstraint M A).prodMap (primitiveConstraint M A))
 
+/-- Giantの所有API。積元への適用を元出力と独立二制約の三座標へ正規化する。 -/
 @[simp] theorem primitiveGiantBlock_apply (v : VerticalFace M A →₀ ℚ)
     (t y : MixedFace M A →₀ ℚ) (x : HorizontalFace M A →₀ ℚ) :
     primitiveGiantBlock M A ((v, t), (y, x)) =
