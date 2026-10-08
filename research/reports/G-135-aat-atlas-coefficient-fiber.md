@@ -2423,7 +2423,7 @@ tracking_issue: 5290
 report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
 selection:
   proof_state_ref: Cycle13受理/Issue6058877001・GOAL DのG134保存操作未完行
-  proof_dag_predecessors: [G134原始正操作r/s/h/k生成と有限列同値 PR5282, G134独立部分セル比較/全台生成, C8原a同型とτ単射の保存必要十分, C11-13実Law/全ラベル台族/三錐]
+  proof_dag_predecessors: [G134原始正操作r/s/h/k生成と有限列同値 PR5283, G134独立部分セル比較/全台生成, C8原a同型とτ単射の保存必要十分, C11-13実Law/全ラベル台族/三錐]
   milestone: G134三角形追加/面付き辺分割/reading pullbackの部分セル有限合成を同じ原比較に接続し原a同型とτ核零を導く
   proof_obligations: [原始部分セル表のSource支持有限和表示, 許容正操作列から実Option比較の生成, 既存r全三次数と独立subset/Law生成Homの一致, 同じG134逆有限和/二補正から原比較の全次数同型と錐零, 同じ旧J零から原a可逆座標と実τ核零, 全A/任意粗adequate Law/発生labelの量化と恒等合成/空台の保持]
   exit_criteria:
@@ -2470,7 +2470,7 @@ result:
       discharged: [原始positive入力から同じG134 raw r/s/h/k生成, r表と独立Option比較全Homの一致, 原比較H1全単射/全錐零, 元a可逆/τ単射]
       remaining: [D面複製・B/E有限producer・W全経路評価・別final]
     certificate_provenance:
-      discharged: [Source基底は元Mセル表, positive comparisonは元identity/comp, 原G134生成raw同値はPR5282受理版producer, 原a同型はC8元J零導出, 任意台族τはC13同じ原SES]
+      discharged: [Source基底は元Mセル表, positive comparisonは元identity/comp, 原G134生成raw同値はPR5283受理版producer, 原a同型はC8元J零導出, 任意台族τはC13同じ原SES]
       unresolved: [正式PR査読は未実施]
     proof_use:
       used: [各原始セル表のSource支持/Optionbind, 原G134 r表とsnoc合成, 元r/sと両補正, coarse Law adequacyによる元細adequacy, 全label元a値/原SESτ成分]
@@ -2504,13 +2504,13 @@ result:
 | positive triangle/subdivision/presentation | direction-hypothesis | D指定適用入力。presentationは名前/incidence/支持の同型表で、homologyや保存情報をfieldへ渡さない。元読みpullbackは既存readingPresentationで生成 |
 | 任意Source有限性・粗Law adequacy | ambient-boundary | 元有限発生labelとLaw可逆座標。細adequacyは元adequate_of_coarserから導出 |
 | 内部一般接続のraw r0/r1/r2等号 | direction-hypothesis → discharge-required | `rawR_eq_generated/rawLawR_eq_generated`の一般補題だけで保持。最終positive path適用では三つのprimitive_rを原始セルと有限帰納から生成し全放電 |
-| raw同値・s/h/k・保存証拠 | discharge-required | `toPrimitive`が元PR5282 producerを同じ各段へ適用。final操作入力に証拠を受け取らず、元有限和逆射・二補正をそのまま使用 |
+| raw同値・s/h/k・保存証拠 | discharge-required | `toPrimitive`が元PR5283 producerを同じ各段へ適用。final操作入力に証拠を受け取らず、元有限和逆射・二補正をそのまま使用 |
 | 同じ旧J零/元a可逆/τ単射 | discharge-required | raw同値から元独立比較H1全単射→旧J零→C8原a両逆/τ単射。Lawは同じラベル原a値とliteral R値で接続 |
 | 結論相当のsupplied iso/vanish/rank | conclusion-equivalent-risk | 新入力fieldなし。P/ε/ηは受理済み元M生成系、全a/R/τを同じ値へ接続 |
 
-依存はG134 PR5282 head `062134827d0b41b7bb5a73db97a17bddebbc2ef7`、merge
-`7f169e370dfc0f28229bae2b81b69b7a4ab538ac`、標準監査6026457541、
-数学6026431875/6026440797・Lean6026433623/6026435577。
+依存はG134 PR5283 final head `85516e645faa507dfc97c0dd607e209da7071c22`、merge
+`196125e049ba96b908bd01ca1352d8579666ab7a`。初回標準監査6027498363は修正要求、
+その非中心全finding解消と資格内の単一確認は6027595301。両記録を合わせて受理資格を追跡した。
 C8 PR5299 head `4bdc59ea609b94fd087acad580666223c073a502`、merge
 `290bb573ddef08da2c77fdf10cd9532bfe3a70f8`、最終受理6052624414。
 C11-13の受理・sameheadは各上記受理節へ対応する。
@@ -2547,3 +2547,13 @@ Research full/aggregate/全fileloop/local lake build、Formal実build/移植、�
 共通scan SHA `cfd7b203ef8b911e8bf92cb13edb27b5ef81ef072941c6446ebdd29886867d15`。
 新Unicode/placeholder/privacy/語彙/逆import0、diff check成功、GOAL/design/Formal不変、
 6新直接登録・6対象のmanifest/AG登録各1、静的Research依存方向PASS。
+
+## Cycle 14 初回査読F1への直接対応
+
+[初回標準/root監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5305#issuecomment-6059740260)の
+数学A/BはNo major findings、LeanA/Bは同じ非中心F1（原始有限列producerのPR誤記）、中心finding0。
+F1が名指ししたCycle14の受理元だけをPR5283へ訂正した。以前の混在Law分解のPR5282参照は保持する。
+現在使用する原始producer9sourceはfinal head85516e64からbyte不変。
+受理メタ記録SHA128e38fda852590523c2c18c369390f910476b08e70fa2c5c0d01e157d73c4ef、
+source照合記録SHA6438bec42df9fabc8e77c7e073f7b6b3b73b5843e2b72adaaf254faedc43550e。
+Lean全source・全宣言・公理・検証log・台帳statusは初回headのまま。単一新規独立確認と最終受理は未実施。
