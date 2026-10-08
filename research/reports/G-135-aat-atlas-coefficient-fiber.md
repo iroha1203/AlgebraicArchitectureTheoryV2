@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 4）
+## 現proof state（Cycle 5）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293でcheckpoint受理済み。
@@ -14,11 +14,11 @@ Cycle 3の同じPからのcounit評価εと実u因子化、局所Φ・Γ・Λの
 ε のcochain条件と実u全三次数因子化、原始Φのchain/cochainと包含、Γの関係列、Φ・Γ・Λの実comma成分式は対象fileのLean検証を通過した。
 chart→edge・edge→faceの係数自然性と原始端点・辺位置への同定も通過した。
 mixed関係・三角形二経路の公開自然性APIとε次数別単射性も対象fileのLean検証を通過した。
-Cycle 4の原始L・実ε像の両包含・実商双対同型・標準短完全列・H₀L/H⁰Q零性は対象fileのLean検証を通過した。初回独立4査読は中心finding 0、非中心の次数外API不足を修正し、正式再監査待ち。κ/R/τ、設計§5以降と全Wは未達。
-Cycle 4は原始退化セル生成L、同じ評価像と商双対、標準短完全列へ接続する。全目標はtarget-proof-checkpoint。
+Cycle 4の原始L・実ε像の両包含・実商双対同型・標準短完全列・H₀L/H⁰Q零性はPR #5295で受理済み。独立4査読の非中心API指摘に対応して正式再監査し、宣言一覧漏れはreport限定補正と新規直接確認で解消した。
+Cycle 5は原始block分解からκと実H₁L・R・標準H¹Qの同定、および同じΓのforest特殊化へ接続する。終了条件の証拠を実装し独立PR査読へ提出する段階で、受理判定は固定headの監査コメントに置く。τ・filtration・五項列、C–E・全W・最終完了監査は未完。全目標はtarget-proof-checkpoint。
 
 以下のCycle 1 selectionから検証記録までは、最初の提案時点の履歴である。
-現在のdelta・未放電行は後続のCycle 4台帳へ対応させる。
+現在のdelta・未放電行は後続のCycle 5台帳へ対応させる。
 
 ## Cycle 1 selection
 
@@ -655,3 +655,180 @@ F1の6箇所を、基本計算API `chainDegreeDifferential_out`、`degreeMap_out
 GOAL・設計・import方向を維持している。standard IsIsoとmono instanceの証明本体にも
 触れるため、直接対応の資格を推定せず、新規4laneの正式再監査（再実行1回目）で判定する。
 台帳status・全GOALのtarget-proof-checkpoint・completion_candidate:noは維持する。
+
+
+## Cycle 4受理とmain同期
+
+最終head `927f6be84e525e853df340d1ad7c45f5c9f47358`、
+[最終監査・全4全文・新規直接確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5295#issuecomment-6047664301)。
+全4再監査は中心0・非中心の45宣言一覧漏れのみで、report8行だけを補正し、
+直接対応資格4条件と全解消を独立確認した。最終内容Mergeable、元の五条件を
+`proof-obligation-discharged`として受理した。宣言は175件、全source/print/log/spine一覧は一致する。
+[PR5295](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5295)は
+`e4918e2da20f6492cc5486fd645e04118864cf68` で2026-10-07T22:04:25Zにiroha1203がmerge。
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6047777814)へ
+証拠・未完義務・次cycleを記録した。最終head CI全8SUCCESS
+([Lean](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/37693053932)、
+[Tool](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/37693053929))。
+Research integrity各gate実施success、Formal setup/cache/build/kernel/premiseはskipped。
+Research full/aggregate/全file loop/lake build、Formal移植・実buildは未実施。
+元のCycle4 selection/resultの記述は各提案時の履歴として保持する。
+
+## Cycle 5 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 5
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: e4918e2da20f6492cc5486fd645e04118864cf68
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle4受理とIssue5290同期6047777814
+  proof_dag_predecessors: [PR5295指定Lと標準短完全列/H0零性, PR5294原始ΦΓΛと実局所同定, G134同じ支持chain, G133標準homology]
+  milestone: GOAL B・完全列設計§1の原始fiber適合κと実H1L/R/標準H1Q同定およびforest特殊化
+  proof_obligations: [原支持chainのEv/EhとFv/Fm/Fh block分解, Bの同じ原始Γ有向incidenceへの同定, aV/aD+bB/bH零式, 垂直homologyと全Φの有限直和同定, κ:y↦Dy類の構成, 原始垂直包含によるH1Lの商とcokκ同定, 有限双対/標準homologyによるH1Qとkerκ双対同定, 原始multigraph forestからkerB零とR全fiber直和同定]
+  exit_criteria: [同じ元Kの全blockとΓ/Phi微分が原始基底上で同定され三零式を導出, 全垂直fiber homologyの両方向同型と同じDyからκを生成, 元の指定Lの標準H1がker a/(imV+DkerB)とcokκへ同じ垂直包含で両方向同定, R=kerκ双対を全ΦH1直和の部分空間として生成し標準H1Qへ両方向同定, loop/平行辺を保持した原始forest条件からkerB=0とRの全fiberH1同型を導出]
+  selection_reason: 一般混在五項列とτが要求するfiber始域を指定Lから生成して固定し、全fiberを無条件に使う誤経路を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [RawBlocks.lean, FiberChains.lean, FiberHomology.lean, ChainHomologyDual.lean, Kappa.lean, DegenerateHomology.lean, RestrictionHomology.lean, GammaForest.lean]
+  risks: [任意中間複体で実Lを置換しない, 垂直だけのL1へ弱めない, Rを期待次元/供給fieldから作らない, 双対同定と標準H1を独立に接続する, Γのloop/平行辺をforest判定で消さない, pure/forestを一般Mの追加仮定にしない]
+  unchecked: [全選定obligationは実装前, τと完全列/filtration以降, C–Eと全W, 最終完了監査]
+```
+
+このselectionを実装前に固定する。五終了条件に必要な構成・両方向・接続を同じcycleで進め、
+fileや補題一つの完成だけでcycleを閉じない。固定GOAL/設計/共通基準は変更しない。
+
+## Cycle 5 spineと固定要求の対応
+
+namespaceは `AAT.AG.AtlasCoefficientFiber`。新規11module・198宣言をこのcycleのspine候補として固定する。足場宣言は残していない。全宣言名を次に列挙し、source末尾の明示 `#print axioms` と一対一で対応させる。
+
+| file | 全宣言 |
+| --- | --- |
+| `RawBlocks.lean` | `cellProjection`, `cellProjection_apply`, `cellInclusion_apply`, `cellInclusion_apply_notmem`, `cellProjection_cellInclusion`, `cellProjection_complementInclusion`, `cell_recombination`, `cellRecombination`, `cellDecomposition`, `cellDecomposition_fst`, `cellDecomposition_snd`, `HorizontalEdge`, `HorizontalFace`, `edgeBlockEquiv`, `verticalEdgeProjection`, `horizontalEdgeProjection`, `horizontalEdgeInclusion`, `horizontalFaceInclusion`, `verticalEdgeBoundary`, `verticalEdgeBoundary_apply`, `verticalEdgeBoundary_single`, `horizontalEdgeBoundary`, `mixedVerticalBoundary`, `mixedHorizontalBoundary`, `mixedHorizontalBoundary_apply`, `horizontalFaceBoundary`, `verticalEdgeProjection_inclusion`, `verticalEdgeProjection_horizontal`, `horizontalEdgeProjection_inclusion`, `horizontalEdgeProjection_vertical`, `edgeBlock_recombination`, `mixedBoundary_recombination`, `verticalEdgeBoundary_comp_verticalBoundary`, `mixedBoundary_square`, `horizontalFace_edge_mapped`, `horizontalFace_vertical_zero`, `horizontalFaceBoundary_inclusion`, `horizontalEdgeBoundary_comp_horizontalFaceBoundary`, `horizontalEdgeProjection_single`, `horizontalEdgeProjection_vertical_single`, `degenerateFaceSplitEquiv`, `faceBlockEquiv`, `faceBlockEquiv_vertical`, `faceBlockEquiv_mixed`, `faceBlockEquiv_horizontal` |
+| `FiberChains.lean` | `phiChartPartition`, `phiEdgePartition`, `phiFacePartition`, `phiChartPartition_symm_val`, `phiEdgePartition_symm_val`, `phiFacePartition_symm_val`, `phiEdgePartition_symm_apply`, `phiFacePartition_symm_apply`, `phiChainEquiv0`, `phiChainEquiv1`, `phiChainEquiv2`, `phiChainEquiv0_apply`, `phiChainEquiv1_apply`, `phiChainEquiv2_apply`, `phiChainEquiv0_single`, `phiChainEquiv1_single`, `phiChainEquiv2_single`, `phiChainEquiv0_single_other`, `phiChainEquiv1_single_other`, `phiChainEquiv2_single_other`, `phiChainEquiv0_single_same`, `phiChainEquiv1_single_same`, `phiChainEquiv2_single_same`, `phiChainEquiv_comm1`, `phiChainEquiv_comm2` |
+| `FiberHomology.lean` | `phiCycles`, `phiBoundaryToCycles`, `PhiHomology`, `phiVerticalCyclesEquiv`, `phiVerticalCyclesEquiv_val`, `phiVerticalCyclesEquiv_range`, `verticalHomologyPhiEquiv`, `verticalHomologyPhiEquiv_mk`, `kappa`, `kappa_apply`, `kappa_apply_component`, `kappa_range`, `allPhiHomologyAddCommGroup`, `allPhiHomologyModule`, `KappaCokernel`, `kappaCokernelCoordinateEquiv`, `kappaCokernelCoordinateEquiv_mk`, `kappaCokernelHomologyEquiv`, `kappaCokernelStandardEquiv` |
+| `ChainHomologyDual.lean` | `chainBoundaryToCycles`, `ChainFirstHomology`, `chainDualComplex`, `cocycleHomologyEvaluation`, `cocycleHomologyEvaluation_mk`, `cocycleHomologyEvaluation_surjective`, `cocycleHomologyEvaluation_ker`, `chainHomologyDualEquiv`, `chainHomologyDualEquiv_mk` |
+| `Kappa.lean` | `verticalCycles`, `verticalBoundaryToCycles`, `verticalBoundaryToCycles_val`, `VerticalHomology`, `mixedCycles`, `mixedCycle_vertical_closed`, `mixedCycleToVertical`, `mixedCycleToVertical_val`, `rawKappa`, `rawKappa_apply`, `rawKappa_eq_zero_iff`, `verticalRelations`, `mem_verticalRelations`, `rawKappa_range`, `rawKappaCokernelEquiv`, `rawKappaCokernelEquiv_mk` |
+| `DegenerateHomology.lean` | `degenerateCycles`, `degenerateBoundaryToCycles`, `degenerateBoundaryToCycles_val`, `DegenerateHomology`, `verticalCycleInclusion`, `verticalCycleInclusion_val`, `verticalCycleHomologyMap`, `verticalCycleHomologyMap_apply`, `degenerateCycle_vertical_representative`, `verticalCycleHomologyMap_surjective`, `verticalCycleHomologyMap_ker`, `verticalRelationsHomologyEquiv`, `verticalRelationsHomologyEquiv_mk`, `rawKappaCokernelHomologyEquiv`, `degenerateOneShort`, `degenerateOneScIso`, `degenerateHomologyStandardEquiv`, `rawKappaCokernelStandardEquiv` |
+| `FiberCohomology.lean` | `phiDualCochainEquiv`, `phiHomologyDualEquiv`, `allPhiHomologyDualEquiv`, `phiCohomologyVerticalDualEquiv`, `kappaStar`, `kappaStar_apply`, `kappaStar_raw`, `R`, `fiberR_eq_ker`, `kernelEquivOfEquiv`, `fiberRRawEquiv`, `fiberRRawEquiv_val` |
+| `RestrictionHomology.lean` | `RawR`, `rawKappaAnnihilatorEquiv`, `rawKappaCokernelDualEquiv`, `rawKappaCokernelDualEquiv_apply`, `restrictionHomologyDualEquiv`, `restrictionStandardHomologyRawREquiv`, `restrictionStandardHomologyREquiv` |
+| `GammaChains.lean` | `horizontalEdge_has_image`, `horizontalCarrier`, `horizontalCarrier_map`, `horizontalCarrier_eq`, `gammaVertexPartition`, `mixedNegativeEdge`, `mixedCarrier`, `mixedCarrier_patterns`, `gammaEdgePartition`, `gammaVertexPartition_symm_val`, `gammaEdgePartition_symm_val`, `gammaHorizontalVertex`, `gammaHorizontalVertex_val`, `mixedGraphSource`, `mixedGraphTarget`, `mixedGraphSource_val`, `mixedGraphTarget_val_left`, `mixedGraphTarget_val_right`, `mixedHorizontalBoundary_single`, `mixedHorizontalBoundary_eq_incidence`, `gammaVertexPartition_symm_apply`, `gammaVertexPartition_mixed_source`, `gammaVertexPartition_mixed_target` |
+| `NamedForest.lean` | `namedUndirectedGraph`, `namedUndirectedGraph_inc`, `NamedForest`, `namedForest_graph_iff`, `namedIncidence`, `namedIncidence_single`, `namedIncidence_leaf_value`, `namedIncidence_eq_zero_iff`, `namedIncidence_injective`, `namedForest_no_loop`, `namedForest_no_parallel`, `namedForest_of_isEmpty`, `namedForest_of_subsingleton` |
+| `GammaForest.lean` | `gammaUndirectedGraph`, `GammaForest`, `mixedHorizontalBoundary_ker_eq_bot`, `mixedCycle_eq_zero`, `rawKappa_eq_zero_of_forest`, `kappa_eq_zero_of_forest`, `kappaStar_eq_zero_of_forest`, `fiberR_eq_top_of_forest`, `forestFiberREquiv`, `forestFiberREquiv_apply`, `forestRestrictionHomologyEquiv` |
+
+
+| 元の終了条件・固定条項 | 同じ入力からの証拠・方向 |
+| --- | --- |
+| 1 / B・完全列設計§1の全原block・三零式 | `cellDecomposition`・`edgeBlockEquiv`・`faceBlockEquiv` は元基底をEv/EhおよびFv/Fm/Fhへ両方向分類。各射影の同じ原係数式、`mixedBoundary_recombination` と `horizontalFaceBoundary_inclusion` から原∂₂の全blockを読む。`verticalEdgeBoundary_comp_verticalBoundary`・`mixedBoundary_square`・`horizontalEdgeBoundary_comp_horizontalFaceBoundary` は元∂²=0からaV=0、aD+bB=0、bH=0を導く |
+| 1 / 同じ原Γ incidence B | `gammaVertexPartition`・`gammaEdgePartition` は元Eh/Fmと全Γ頂点/辺の非交和との両方向分類。`gammaVertexPartition_mixed_source/target` は同じ原Γ両端点へ可換、`mixedHorizontalBoundary_single/eq_incidence` は同じ原混在面の二パターンからB=target−sourceを示す。元面名・同じ辺の重複出現・loop・平行辺を保持 |
+| 2 / 全垂直homology・κ | `phiChainEquiv0/1/2` は全原Φ基底への両方向同型、`phiChainEquiv_comm1/comm2` は元a/Vへ可換。`phiVerticalCyclesEquiv_range` は実V像の両包含、`verticalHomologyPhiEquiv` は全Φ H₁有限直和への両方向商同型。`mixedCycle_vertical_closed` は原aD+bB=0からDy閉路性を導出、`rawKappa`・`kappa` と代表APIは同じDyの類 |
+| 3 / 指定Lの標準H₁と二商 | `verticalCycleHomologyMap` は指定Lへの元垂直包含。`degenerateCycle_vertical_representative`・`verticalCycleHomologyMap_surjective/ker` が全閉路代表と両方向核計算を与える。`verticalRelationsHomologyEquiv`・`rawKappaCokernelHomologyEquiv/StandardEquiv` はker a/(im V+D ker B)と原κ余核を実Lへ両方向同定。`kappa_range`・`kappaCokernelCoordinateEquiv`・`kappaCokernelHomologyEquiv/StandardEquiv` は同じ全Φ表示のκ余核へ両方向接続 |
+| 4 / R=ker κ*、標準H¹Q≅R | `chainHomologyDualEquiv` は実微分のhomology双対を閉代表評価から生成。`phiHomologyDualEquiv`・`allPhiHomologyDualEquiv` は既存の各Φ cochain H¹との実双対同型。`kappaStar`・`R` は同じ全Φ H¹内の部分空間で、`kappaStar_raw`・`fiberRRawEquiv` により原垂直表示へ両方向接続。`restrictionStandardHomologyREquiv` は指定Qの標準H¹を同じRへ両方向移す |
+| 5 / 原Γの無向多重forest特殊化 | `namedUndirectedGraph` は元辺名を保つmathlib Graph。`NamedForest` は全非空有限辺部分集合のleaf特徴付け、`namedForest_graph_iff` は同じnative Incへ接続。`namedIncidence_leaf_value/eq_zero_iff` からker B=0、κ=κ*=0、R=⊤を導く。`forestFiberREquiv`・`forestRestrictionHomologyEquiv` は同じR/標準H¹Qを全Φ H¹有限直和へ両方向同定。空辺・一非loop辺で条件が成立し、loop・異名平行辺で不成立となることも原端点から導く |
+
+有限直和は有限な `Nc.ChartInTargetSubset A` を添字とするPiで表示する。
+有限性は元nerveの有限chartと支持部分型から得る。`sigmaFinsuppLEquivPiFinsupp`、
+`Submodule.quotientPi`、`LinearMap.lsum` の同じ有限添字の同型を使い、
+全fiberを保持した両方向の写像と代表式を示す。
+
+### Cycle 5前提・生成・proof-use
+
+| 前提 | 分類・出所 | 使用・放電 |
+| --- | --- | --- |
+| ℚ、任意の両側nerve・reading順序・任意M/A、Af=π⁻¹A | 本文由来 / ambient-boundary / 固定T0 | 元のchainD1/D2・Ev/Fv/Fmと実支持輸送へ使用。全A・空Aを保持し、一般構成へforest/pureを追加しない |
+| 符号付き原∂²=0とM退化面パターン | 放電済み / discharge-required | G134の `chainD1_comp_chainD2` と受理済み `degenerate_face_cases` から三零式・混在二パターン・mapped面零垂直成分を導く |
+| Generic chain dualityの二微分と平方零、有限次元性 | 一般APIの direction-hypothesis、実適用で放電済み | 実a/V、各原Φの二微分、指定Lの二微分と各producerを渡す。有限名前付き自由module、その部分空間・商、双対から有限次元instanceを得る。全Φのnative Pi加法群/moduleを二つの局所instanceで先に解決し、余核の型推論へ渡す。追加仮定はない。cochain評価の核・全射性を証明して同型を出力 |
+| κのDy閉路性、関係商と実Lの同型、κ*核同型、標準H¹Q同型 | 放電済み / discharge-required | 原aD+bB=0、元L₂のFv/Fm分解と水平射影、quotient/double dual APIから構成。結論field・同型引数・供給rankは使用しない |
+| 無向多重forest | 本文由来 / direction-hypothesis / B forest特殊化のみ | 原端点に対する全部分有限辺集合のleaf条件を実非零chainのsupportへ適用し、係数零性を導く。κ零性を入力にしない。W3等での具体forest生成は後続W義務 |
+| Generic annihilator / kernel transportの可逆座標 | 放電済み / discharge-required | `verticalHomologyPhiEquiv`・`phiHomologyDualEquiv`・同じcokerκの標準quotient同型がproducer。全fieldは原係数値、線形性、両逆と原微分可換性を証明から生成 |
+
+新たな同型・exactness・rankの入力slotはない。一般forest定理の方向仮定は
+指定例Wの放電を代替せず、W3・W5を未完として保持する。
+
+### Cycle 5依存DAGと追跡
+
+- `RawBlocks` → PR5295の元 `DegenerateCells/Subcomplex` と元G134支持chain。原None/Someセルの全基底分解へ使用。
+- `Kappa` → `RawBlocks` → 原Dy閉路・垂直商・第二同型定理。
+- `ChainHomologyDual` → PR5295 `DualRestriction` / std3と固定mathlibの `Subspace.dualRestrict_surjective`、`range_dualMap_eq_dualAnnihilator_ker`、quotient。
+- `DegenerateHomology` → `Kappa` ＋ PR5295元 `DegenerateChain` ＋ `ChainHomologyDual` → 同じ実L閉路・Fv/Fm・標準H₁。
+- `FiberChains` → `RawBlocks` ＋ PR5294元 `LocalFiber.lean` のPhiChart/PhiEdge/PhiFace・phiBoundary1/2 → 全Φ基底・原a/V。
+- `FiberHomology` → `FiberChains/Kappa/ChainHomologyDual/DegenerateHomology` → 全Φ一次homologyと同じκおよびcokerκ標準同定。
+- `FiberCohomology` → `FiberHomology` ＋ 既存 `CochainEquiv.h1Equiv` → 実Φ cochain H¹・同じκ*・R。
+- `RestrictionHomology` → `DegenerateHomology/ChainHomologyDual/FiberCohomology` → 同じ実標準H¹Q≅R。
+- `GammaChains` → `RawBlocks` ＋ PR5294元 `LocalFiber.lean` のGammaVertex/GammaEdge・gammaSource/Target → 同じ原Γ分類・両端点・B。
+- `NamedForest/GammaForest` → 原名付き多重Graph/leaf証明 ＋ `GammaChains/RestrictionHomology` → forest特殊化。
+
+受理predecessorの版・review資格はCycle3/4の上記監査URLに固定され、今回使用箇所に
+関係する定義・statement・適用引数を現sourceで読む。内部査読履歴全体の再認定をしない。
+G133/G134の版は冒頭の固定参照を維持し、使用する元支持chain、標準zeroExtension、
+oldH1Equiv、moduleCatHomologyIsoと各公開producer/APIを現在のstatementで適用する。
+mathlib/Leanの固定版はCycle1の記録を維持する。Graphは使用版にBasicのみがあり、
+native forest述語APIがないため有限部分グラフのleaf特徴付けを採用し、そのIncへ同定する。
+
+## Cycle 5 result・audit提案
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原基底blockと全Φ/Γ分類から三零式・実κを生成し、指定Lの標準H1と関係商/cokerκ、指定Q標準H1と実全Φ上Rを両方向同定。原ΓforestからkerB零とR全Φ特殊化を導出
+  exit_criteria_status: [1全原blockと同じΓ/Phi微分および三零式あり, 2全垂直homology両方向と同じDyのκあり, 3同じ垂直包含による指定L標準H1と両商同定あり, 4全ΦcochainH1内R生成と指定Q標準H1両方向同定あり, 5原名付きforestからkerB零と全ΦR同型あり]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [RawBlocks.lean, FiberChains.lean, FiberHomology.lean, ChainHomologyDual.lean, Kappa.lean, DegenerateHomology.lean, FiberCohomology.lean, RestrictionHomology.lean, GammaChains.lean, NamedForest.lean, GammaForest.lean]
+  evidence: 上記全198宣言・五条件対応・単一file検証・公理監査
+  claim_mapping:
+    theorem_names: 上記全198宣言spine
+    source_labels: [GOAL B, exact-sequence §1, T0]
+    conjuncts: 上記五終了条件対応表
+    undischarged_assumptions: []
+    acceptance_point: 元の五終了条件を構成・両方向・標準APIへ接続した候補。固定headの独立査読とroot再統合により受理を判断
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [原Ev/Eh/Fv/Fm/Fh分類と平方零三式, 原B=全Γincidence, 実Dy閉路とκ, 全Φchain/cochain双対, 指定L標準H1=cokerκ, 指定Q標準H1=R, forest原incidence単射]
+    remaining: [Bのτと五項列/filtration/消滅同値/pure, C–E, W1–W5, 最終独立完了査読]
+  certificate_provenance:
+    discharged: [全分類の両逆と原係数式, 実垂直包含のsurj/ker, quotient/dualの元評価, 同じ原Γ leaf support証明]
+    unresolved: []
+  proof_use:
+    used: [元支持微分と実L, 退化三パターン, 全fiber分類, 原Γの全辺/面名と両端点, 標準homology/quotient/dual, forest方向仮定]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: 次の単一file検証表と機械scan
+  blocking_findings: []
+  next_obligation: Bの同じ標準短完全列連結射τと五項列の全写像/隣接完全性、代表βB=-zDとτ=βH、carrier filtrationとd2への実接続
+```
+
+元selectionの八targetに、必要な全Φ cochain接続の `FiberCohomology`、同じ原Γの
+`GammaChains`、汎用多重forest証明 `NamedForest` を加えた。数学的到達点・元五終了条件は維持する。
+τ・filtration・保存条件・Law自然性・有限行列判定と全固定例は完了根拠へ数えず、
+全GOALの独立4本完了監査はこれらの放電後に別途実施する。Issue5290はopenを維持する。
+
+### Cycle 5単一file検証と公理監査
+
+各コマンドはリポジトリrootで `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/<file>.lean` として単独実行した。現sourceの11 focused checkはすべてexit 0、error/warning 0。各moduleの明示 `#print axioms` と `#assert_standard_axioms_only` は全198宣言を監査し、依存は `propext` / `Classical.choice` / `Quot.sound` の部分集合のみ。
+
+| file / 件数 | source SHA-256 | focused stdout+stderr SHA-256 |
+| --- | --- | --- |
+| `RawBlocks.lean` / 45 | `99e4f1cea07b288a6713c7e5757cb373ed27d52666184c47bb0e325861e536db` | `391fff62fbef07925930d224a27bf2c061017fa69ea16670b4a21b07f106e84a` |
+| `FiberChains.lean` / 25 | `04b412ea259af7c33f406a3ac2803e5b822633407ef60144e4faf8a37ef03774` | `9fc63cba818fc15fb4a12f07624a36cb9036f8587c82fba6d59d5c32ae83c0f0` |
+| `FiberHomology.lean` / 19 | `7002890ed28d4ad6996c7cd2851e8399f901cb5ff0ebe692a7e7cbbe0f355aed` | `0ff2f76f6914255b7c5364b18b33382a8e09ff7fd7c4fe15eb5664ad1fb4679b` |
+| `ChainHomologyDual.lean` / 9 | `d1eadbbb132bd199cff5b8b92aaadc719971a39f7ae8679187c8b38c8d7997d2` | `7b9de290ed87a7d12a235c192d796ba39681e47a56c0484933d0e0d18325da63` |
+| `Kappa.lean` / 16 | `d82d43acacfb6bb5f30298e71603464adae075119fb311ac762ae85279a4193b` | `f838e43b47f4eeed00aa1f4c2e744434462a7de7709a2e153f155c5ddbcfea43` |
+| `DegenerateHomology.lean` / 18 | `168c24bd3178e41860364a158453b8996331e9077624ed10f013da9a3624a7fb` | `7575017ede35ab01587f38c8ffb42b7bee7e84e461b413bf4cc29616dff3011f` |
+| `FiberCohomology.lean` / 12 | `cf85c289ff0cb0ead245ccd2fd8e9860fec4a489f17e75b85a9da885ace99c67` | `e103ae0f0e32db35781f428d459976c5b645d1b2066e1ff26f2647496269efa9` |
+| `RestrictionHomology.lean` / 7 | `edde3fdc56eec794ebf36f976622a315f4926a2627f2a930170f29cf39690fe8` | `68935ab0c4261167d0286adfa15c3fce60f0601c90f45678fc7ac5b37651db80` |
+| `GammaChains.lean` / 23 | `5943afba7cddb60d1614f29413ba5bcf9b9dcba7d6381f4d2d4e0e0fcab3719f` | `593f26fe23686a13399a33e0c71f544c15c3b7c092f04c987623a0ff561afa71` |
+| `NamedForest.lean` / 13 | `2116f69b5a631b72e637e143c5e60543747cb384638208513a640b781b17688e` | `6a840d61566d38c4325e4b9eb60a7c1938f8b16464784afef95a755db94eec44` |
+| `GammaForest.lean` / 11 | `c783cd60bb052d487adaee010650109b8df5d89d31fb1c0b81458316d8f09948` | `8d369064a0e3b28c5f25c2a64b175fc921407fc128a785f929022a145c8fea83` |
+
+検証metadataは `.tmp/g135/cycle5-validation.json`（SHA-256 `546cd269c1921cc6ed0fdfc41abb7405a449f8893ec8ba6dbdf64606e4008574`）。上記全宣言のsource/print/log/report一覧を一致させた。必要な単一import cacheも同じfileの `lake env lean -o <cache> <file>` で生成した。Research full/aggregate/全file loopのelaborationとlake buildは未実施。Formalへの移植・実buildは未実施で、成果はunported (Research-proved)。最終全GOAL完了査読は未実施。
+
+共通scanは `.tmp/g135/cycle5-scans.json`（SHA-256 `1ba881cc99290b9e9d31c64e27002514adb608fc74ec8c8c05a02e9bf020a892`）へ固定した。変更14fileを列挙し、placeholder/new axiom、hidden/BiDi、privacy/local-path、追加語彙、`git diff --check`、Formal逆importを確認してclean。全198名のreport一覧もsource/print/logと一致。GOAL・設計・Formal・保護数学本文は変更していない。
