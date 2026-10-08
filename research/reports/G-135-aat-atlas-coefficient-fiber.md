@@ -1030,3 +1030,196 @@ Research integrityの実stepsはSUCCESS。修正後headのCIと新規4本査読�
 
 再現metadata `.tmp/g135/cycle6-validation.json`（SHA-256 `4ca4946b6efc7db2812563e4589a57ded68f96d4113d24476f75ece8cfa9ce18`）。
 共通scan metadata `.tmp/g135/cycle6-scans.json`（SHA-256 `b29fe6f4fa87bb76edbe0a3bf328d87340dedc1f407d9d81234e73402206304e`）。
+
+
+## Cycle 6 受理・merge同期
+
+正式再実行1の新規独立数学A/B・LeanA/Bは全4本 `No major findings`、
+中心/非中心0。rootが固定head `160a3087d20d2e9cf22de758359acb5df7ec2ecd` の
+実体へacceptance-contractと全regression scenarioを再統合し、
+六終了条件を `proof-obligation-discharged` と受理した。
+初回Major revisionsの3findingは同じ原始W3正負表・owner公開API・説明で解消。
+正式再実行1/2、直接対応確認ではない。
+
+最終監査: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5297#issuecomment-6050868943
+PR5297 merge commit `19b1d5a1d6d725fb2b11495e1f095dfc7f502e62`、2026-10-08T02:23:08Z。
+Issue同期: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6050883644
+固定headのCI全8 SUCCESS（Lean37716401113、Tool37716401125）。
+Research integrity実steps SUCCESS、Formal setup/build/kernel/premise実steps SKIPPED。
+19対象focused・317宣言監査は前節のhash固定証拠と4本の独立照合で一致。
+Research full/aggregate/全file loop/lake build、Formal実build/移植は未実施。
+全GOALは `target-proof-checkpoint / completion_candidate:no`、Issue OPEN、
+Formalは `unported (Research-proved)`。六条件の受理を全目標完了にしない。
+
+## Cycle 7 selection（実装前固定）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 7
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 19b1d5a1d6d725fb2b11495e1f095dfc7f502e62
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: PR5297最終監査・Issue6050883644・report Cycle6受理
+  proof_dag_predecessors: [C6実短完全列δと原補正代表, C5原a/V/B/D/HとΦ/Γ同型, C4原商双対/ε短完全列, 固定mathlib spectralObjectMappingCone/precomp/descShortComplex]
+  milestone: GOAL B・exact-sequence§2の実carrier filtrationから低次数exact coupleと指定E1/E2およびd2=同じτ
+  proof_obligations: [原carrier次元部分複体と双対filtration, 各graded原商と標準短完全列, native spectral objectとδの対応, exact couple全射と完全性, E1のP行とκstar, derived E2と独立d2, 同じτへの符号込み同定]
+  exit_criteria:
+    - 原carrier次元≤0/1/2の鎖部分複体を原carrier関手の次元と一致させ、双対減少F0/F1/F2/F3を構成
+    - 各隣接filtrationの原商graded複体と次数別短完全列、同じ原微分を同定
+    - filtration包含を標準CochainComplexへの関手としnative spectralObjectMappingConeへprecomp、商への実擬同型とδを同定
+    - 実graded標準homology/ShortExactδから低次数exact coupleの全射とexactnessを構成
+    - E1 q=0行と各d1を実Kan Pの全三次数/微分へ同定
+    - E1(0,1)=全ΦH1、E1(1,1)=cok Bstar=dual ker B、同じd1=κstarを原代表と標準δで証明
+    - derived coupleからE2(0,1)=R・E2(2,0)=H2Pとd2を独立生成し、同じτへ全代表・符号込み同定
+  selection_reason: 標準連結射を原carrier filtrationのtransgressionへ接続し、Bの未接続構成義務を直接閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [CarrierFiltration.lean, FilteredComplexes.lean, GradedShortExact.lean, FilteredSpectralObject.lean, LowExactCouple.lean, FirstPage.lean, DerivedTransgression.lean]
+  risks: [carrier≤0のK0をL0へ置換しない, 任意suppliedfiltrationで原始構成を代替しない, native objectの存在だけでd1/d2接続を完了にしない, R/τをE2/d2として定義して構成義務を消さない, 符号と全代表を追う]
+  unchecked: [全選定obligation実装前, C–Eと全W, final fresh4全目標監査]
+```
+
+carrier≤0の0次は元K′₀全体、1次は垂直辺像、2次は垂直面像である。
+carrier≤1は元K′₀/元K′₁/全none面像、carrier≤2は元K′である。
+L₀=垂直辺微分像は別対象として維持する。d₂はnative δとexactnessからの
+持ち上げ商類として独立生成し、原補正代表で既存τへ同定する。
+全終了条件が満たされるまで同じcycle内で実装と対象focused検証を反復する。
+
+## Cycle 7 result proposal：原carrier filtrationのtransgression
+
+原carrier関手の対象次元から生成した鎖部分複体とその双対減少filtrationを使う。
+隣接商はすべて実包含の標準cokernelと同型であり、実短完全列から標準homologyの
+exact coupleを作る。E₂とd₂はR・τから独立に構成し、原補正代表で同じτへ移す。
+
+| 固定終了条件 | Lean証拠と原入力からの放電 | 状態 |
+| --- | --- | --- |
+| 1 原carrier次元と鎖部分複体／双対F⁰–F³ | `carrierDimension`、全辺・面の次元分類、`carrierChain1/2_*_eq_span`、`carrierChainInclusion`、`carrierBoundary_square`。`verticalRestriction1/2_kernel_iff`、`secondFiltration_kernel_iff`、`carrierChart/Edge/Face_*annihilator_iff`で非零・零次数の実annihilatorを照合 | 入力生成Lean証拠あり |
+| 2 全隣接gradedと原微分／短完全列 | `first/second/thirdGraded_degreewise_shortExact`、`first/second/thirdGraded_shortExact`、各`GradedCokernelIso`。微分は原a/V、B双対、原F²への同じ制限 | 入力生成Lean証拠あり |
+| 3 native spectral object・実商擬同型・δ | `filteredCarrierFunctor`と全三包含API、`carrierSpectralObject`、全triangle distinguished、各`GradedConeDesc_quasiIso`。`carrierSpectralObject_delta`、`*_delta_inr`、`first/secondNativeConnecting_shortExact`でnative δと同じSES δを全次数で接続。零始点inrのhomology同型は`zeroFiltration_inr_quasiIso`と`carrierSpectralObject_inr_homology_isIso` | 入力生成Lean証拠あり |
+| 4 実exact couple全射と完全性 | `first/secondCoupleI/J/K`は同じ包含・射影の標準homology射と実SES δ。`first/secondCouple_exact_ij/jk/ki`で全隣接完全性。`firstPageDifferential_square`は実j/k完全性から生成 | 入力生成Lean証拠あり |
+| 5 E₁ q=0行の実Kan P | `firstRowCoordinates0/1/2`の両方向同型、`firstRow_firstDifferential`と`firstRow_secondDifferential`。各逆像は原εの像＝annihilatorから生成し、δは標準`δ_eq`で計算 | 入力生成Lean証拠あり |
+| 6 全Φ H¹／cok B*／κ* | `firstGradedHomologyFiberEquiv`、`secondGradedHomologyDualEquiv`、両代表API、`firstPageDifferential_kappaStar`。κ*をd₁の定義に使わず、原zDを標準δと実jで読む | 入力生成Lean証拠あり |
+| 7 独立E₂／d₂とτ | `DerivedFiberPage`、`DerivedHorizontalPage`、`derivedLift_exists`、`derivedClass_eq_of_lift`、`derivedSecondDifferential`。`derivedFiberREquiv`、`derivedHorizontalH2Equiv`で指定R/H²Pへ移し、`derivedSecondDifferential_tau`が全R・全Aで正符号の同じ商類を返す | 入力生成Lean証拠あり |
+
+受理を求めるspineは、上表の構成、標準cokernel／擬同型、全隣接完全性、E₁/E₂座標、
+`firstPageDifferential_kappaStar`、`derivedSecondDifferential_tau`である。
+carrierの基底span照合、owner公開API、零延長代表射、各`_apply/_val`はその依存APIであり、
+それ自体を別のtarget達成として数えない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原carrier filtrationから実graded/SES/native spectral δ/exact coupleを生成し、全E1行座標と実d1、独立E2/d2=τを同じ原入力・全Aで接続
+  exit_criteria_status: [1原carrier鎖と全双対次数あり, 2全三隣接商と次数別SESあり, 3native objectと実商擬同型およびδ対応あり, 4全i/j/kと隣接完全性あり, 5全P行と二微分あり, 6全fiber座標とκstar微分あり, 7独立E2/d2と全代表のτ同定あり]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [CarrierFiltration, CarrierChain, FilteredComplexes, FiltrationAnnihilators, GradedShortExact, SecondGradedComplex, ThirdGradedComplex, FilteredSpectralObject, ZeroFiltrationCone, NativeSpectralConnecting, LowExactCouple, ThreeShortExactConnecting, FirstPageFiber, FirstPageRow, FirstPageVanishing, DerivedPageCoordinates]
+  evidence: [上表と全宣言一覧・focused出力hash]
+  claim_mapping:
+    theorem_names: [firstPageDifferential_kappaStar, firstRow_firstDifferential, firstRow_secondDifferential, derivedSecondDifferential_tau]
+    source_labels: [GOAL B, exact-sequence§2]
+    conjuncts: [原carrier filtration, 全graded/SES, native δ接続, 指定E1/E2とd1/d2]
+    undischarged_assumptions: []
+    acceptance_point: 七終了条件の入力生成証拠を同じcycleで全て固定し正式PR監査へ渡す
+    port_status: unported
+  whole_goal_status: target-proof-checkpoint
+  remaining_goal: [C診断保存と同じ三錐, D全Law/台自然性とG134保存接続, E原始有理行列の有限判定, W全指定表・診断・比較・二label/空台, final fresh4全GOAL監査]
+audits:
+  premise_delta:
+    discharged: [carrier部分複体と原微分square, 原annihilator全次数, 各graded全射/核/商, 全SES完全性とnative δ対応, 全P/fiber座標逆像, d1とκstar一致, derived lift存在と曖昧さのk像, d2全代表とτ一致]
+    remaining: [選定cycleにはなし・全GOALのC/D/E/Wは上記remaining_goal]
+  certificate_provenance:
+    discharged: [原carrier関手と原a/V/B/D/H, 実εの像producer, 元filtration包含, mathlib標準SES/δ/cone]
+    unresolved: []
+  proof_use:
+    used: [原incidenceとcarrier分類, 原微分制限, 既受理ε像/κ/τ代表API, native短完全性・δ_eq・quasiIso]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: [正式PR独立査読は未実施]
+  next_obligation: Cの実H1η/ε/Tと核・余核短完全列、診断加法式・保存条件
+```
+
+material premiseの本文由来はT0の有限支持原始比較Mと任意A、ℚ係数である。
+filtration、graded、完全性、P/fiber座標、E₂、d₂は入力fieldに移さず生成する。
+汎用`threeShortExact_connecting_representative*`の短完全性・lift等式は方向仮定であり、
+全適用箇所で同じ原filtrationとcounitから生成した証拠を渡す。
+`derivedSecondDifferential`の持ち上げ選択は存在producerと同じk像による商独立性を伴う。
+全体の有限計算アルゴリズムはEの未完obligationとして残し、この選択構成を代替にしない。
+新しいProp述語・certificate構造の導入はなく、Mono/QuasiIso/IsIsoは既存述語の生成instanceである。
+
+19対象fileのfocused checkは警告・エラーなし、全319 source宣言のprint/auditは標準公理のみ。
+新規宣言は250、既存69も同じfileで再監査した。各fileのsource順と#print・log・下記一覧を照合する。
+Research aggregateはimport登録の静的確認だけでelaborateしていない。
+本体`lake build`、Research全体build、Formal移植、final fresh4全GOAL監査は未実施。
+
+<!-- cycle7-generated-evidence -->
+
+| file | 全宣言（source/print/logの同順序） |
+| --- | --- |
+| `RawBlocks.lean` | `cellProjection`, `cellProjection_apply`, `cellInclusion_apply`, `cellInclusion_apply_notmem`, `cellProjection_cellInclusion`, `cellProjection_complementInclusion`, `cell_recombination`, `cellRecombination`, `cellDecomposition`, `cellDecomposition_fst`, `cellDecomposition_snd`, `HorizontalEdge`, `HorizontalFace`, `edgeBlockEquiv`, `verticalEdgeProjection`, `horizontalEdgeProjection`, `horizontalEdgeInclusion`, `horizontalEdgeInclusion_single`, `horizontalFaceInclusion`, `verticalEdgeBoundary`, `verticalEdgeBoundary_apply`, `verticalEdgeBoundary_single`, `horizontalEdgeBoundary`, `mixedVerticalBoundary`, `mixedHorizontalBoundary`, `mixedHorizontalBoundary_apply`, `horizontalFaceBoundary`, `mixedVerticalBoundary_apply`, `horizontalFaceBoundary_apply`, `horizontalFaceInclusion_single`, `verticalEdgeProjection_inclusion`, `verticalEdgeProjection_horizontal`, `horizontalEdgeProjection_inclusion`, `horizontalEdgeProjection_vertical`, `verticalEdgeProjection_single`, `verticalEdgeProjection_horizontal_single`, `edgeBlock_recombination`, `mixedBoundary_recombination`, `verticalEdgeBoundary_comp_verticalBoundary`, `mixedBoundary_square`, `horizontalFace_edge_mapped`, `horizontalFace_vertical_zero`, `horizontalFaceBoundary_inclusion`, `horizontalEdgeBoundary_comp_horizontalFaceBoundary`, `horizontalEdgeProjection_single`, `horizontalEdgeProjection_vertical_single`, `degenerateFaceSplitEquiv`, `faceBlockEquiv`, `faceBlockEquiv_vertical`, `faceBlockEquiv_mixed`, `faceBlockEquiv_horizontal`, `mixedFaceProjection`, `mixedFaceProjection_apply`, `mixedFaceProjection_inclusion`, `mixedFaceProjection_vertical`, `verticalFaceProjection`, `verticalFaceProjection_apply`, `verticalFaceProjection_inclusion`, `verticalFaceProjection_mixed`, `degenerateFace_recombination` |
+| `CarrierFiltration.lean` | `incDimension`, `carrierDimension`, `carrierDimension_chart`, `carrierDimension_edge_zero_iff`, `carrierDimension_edge_le_one`, `carrierDimension_face_zero_iff`, `carrierDimension_face_le_one_iff`, `carrierDimension_le_two`, `carrierChain0`, `carrierChain1`, `carrierChain2`, `carrierChain2_boundary_le`, `carrierChain1_boundary_le`, `carrierChain1_mono`, `carrierChain2_mono`, `freeRange_eq_span`, `carrierEdgeBasis`, `carrierFaceBasis`, `carrierChain1_zero_eq_span`, `carrierChain2_zero_eq_span`, `carrierChain2_one_eq_span`, `freeChain_eq_span`, `carrierChain1_one_eq_span`, `carrierChain2_two_eq_span` |
+| `CarrierChain.lean` | `carrierBoundary1`, `carrierBoundary2`, `carrierBoundary1_apply`, `carrierBoundary2_val`, `carrierBoundary_square`, `carrierDegreeObject`, `carrierDegreeObject_out`, `carrierDegreeDifferential`, `carrierDegreeDifferential_square`, `carrierChain`, `carrierDegreeInclusion`, `carrierDegreeInclusion_out`, `carrierDegreeInclusion_comm`, `carrierChainInclusion`, `carrierChainInclusion_f`, `carrierChainInclusion_mono` |
+| `FilteredComplexes.lean` | `verticalRestriction1`, `verticalRestriction2`, `verticalRestriction1_apply`, `verticalRestriction2_apply`, `verticalRestriction1_kernel_iff`, `verticalRestriction2_kernel_iff`, `secondFiltration_kernel_iff`, `verticalRestriction_comm1`, `firstFiltrationDifferential`, `firstFiltrationDifferential_val`, `firstFiltrationComplex`, `secondFiltrationComplex`, `zeroFiltrationComplex`, `firstFiltrationInclusion`, `secondFiltration_le_first`, `secondFiltrationInclusion`, `secondFiltrationInclusion_f0`, `secondFiltrationInclusion_f1`, `zeroFiltrationInclusion`, `firstFiltrationInclusion_f0`, `firstFiltrationInclusion_f1`, `firstFiltrationInclusion_f2`, `secondFiltrationInclusion_f2_val` |
+| `GradedShortExact.lean` | `firstGradedComplex`, `verticalRestriction_comm0`, `firstGradedProjection`, `firstGradedProjection_f0`, `firstGradedProjection_f1`, `firstGradedProjection_f2`, `verticalRestriction1_surjective`, `verticalRestriction2_surjective`, `firstGraded_standard_zero`, `firstGradedShortComplex`, `firstGraded_degreewise_shortExact`, `firstGraded_shortExact`, `firstGradedCokernelIso` |
+| `SecondGradedComplex.lean` | `horizontalRestriction1`, `mixedRestriction2`, `horizontalRestriction1_apply`, `mixedRestriction2_apply`, `mixedRestriction_comm1`, `secondGradedComplex`, `secondGradedProjection`, `horizontalCochainLift`, `horizontalCochainLift_dual`, `horizontalCochainLift_spec`, `horizontalRestriction1_surjective`, `horizontalRestriction1_injective`, `mixedCochainLift`, `mixedCochainLift_spec`, `mixedRestriction2_surjective`, `mixedRestriction2_second`, `mixedRestriction2_kernel`, `secondFiltrationInclusion_f2_injective`, `secondGradedProjection_f0`, `secondGradedProjection_f1`, `secondGradedProjection_f2`, `secondGraded_standard_zero`, `secondGradedShortComplex`, `secondGraded_degreewise_shortExact`, `secondGraded_shortExact`, `secondGradedCokernelIso` |
+| `ThreeShortExactConnecting.lean` | `threeShortExact_connecting_representative`, `threeShortExact_connecting_representative_zero` |
+| `FilteredSpectralObject.lean` | `zeroExtensionMap_mono_of_injective`, `firstFiltrationInclusion_standard_mono`, `secondFiltrationInclusion_standard_mono`, `zeroFiltrationInclusion_standard_mono`, `filteredCarrierFunctor`, `filteredCarrierFunctor_obj_zero`, `filteredCarrierFunctor_obj_one`, `filteredCarrierFunctor_obj_two`, `filteredCarrierFunctor_obj_three`, `filteredCarrierFunctor_map01`, `filteredCarrierFunctor_map12`, `filteredCarrierFunctor_map23`, `carrierSpectralObject`, `carrierSpectralObject_triangle_distinguished`, `firstGradedConeDesc`, `firstGradedConeDesc_quasiIso`, `secondGradedConeDesc`, `secondGradedConeDesc_quasiIso`, `firstGradedCone_connecting`, `secondGradedCone_connecting` |
+| `LowExactCouple.lean` | `firstCoupleI`, `firstCoupleJ`, `firstCoupleK`, `secondCoupleI`, `secondCoupleJ`, `secondCoupleK`, `firstCouple_exact_ij`, `firstCouple_exact_jk`, `firstCouple_exact_ki`, `secondCouple_exact_ij`, `secondCouple_exact_jk`, `secondCouple_exact_ki`, `firstPageDifferential`, `secondPageRowDifferential`, `firstPageDifferential_square`, `firstCoupleK_apply`, `secondCoupleJ_apply`, `secondCoupleI_apply`, `secondCoupleK_apply`, `firstPageDifferential_apply`, `DerivedFiberPage`, `DerivedHorizontalPage`, `derivedLift_exists`, `derivedLift`, `derivedLift_spec`, `derivedClass`, `derivedClass_eq_of_lift`, `derivedSecondDifferential`, `derivedSecondDifferential_apply` |
+| `FirstPageFiber.lean` | `firstGradedHomologyFiberEquiv`, `firstGradedHomologyFiberEquiv_mk`, `secondGradedHomologyDualEquiv`, `secondGradedHomologyDualEquiv_mk`, `verticalRestriction1_corrected`, `firstFiberLiftDifferential`, `firstFiberLiftDifferential_val`, `firstCoupleK_representative`, `mixedRestriction2_firstFiberLift`, `firstPageDifferential_representative`, `firstPageDifferential_kappaStar`, `derivedFiberREquiv`, `derivedFiberREquiv_val` |
+| `FirstPageRow.lean` | `firstRowZeroMap`, `firstRowZeroMap_val`, `firstRowZeroMap_injective`, `firstRowZeroMap_surjective`, `firstRowZeroEquiv`, `firstFiltrationEvaluation1`, `firstFiltrationEvaluation1_val`, `secondFiltrationEvaluation2`, `secondFiltrationEvaluation2_val`, `firstFiltrationEvaluation1_d1`, `firstRowOneMap`, `firstRowOneMap_val`, `firstRowOneMap_injective`, `firstRowOneMap_surjective`, `firstRowOneEquiv`, `secondFiltrationEvaluation2_injective`, `secondFiltrationEvaluation2_surjective`, `secondFiltrationEvaluation2Equiv`, `secondGraded_boundaryToCycles_range_zero`, `firstRowCoordinates0`, `firstRowCoordinates1`, `firstRowCoordinates2`, `firstRowCoordinates0_apply`, `firstRowZeroLiftDifferential`, `firstRowZeroLift_spec`, `firstRowZero_connecting`, `firstRowCoordinates1_apply`, `firstRowCoordinates2_apply`, `firstRow_secondDifferential`, `firstRow_firstDifferential` |
+| `DerivedPageCoordinates.lean` | `derivedHorizontal_range_coordinates`, `derivedHorizontalH2Equiv`, `derivedHorizontalH2Equiv_mk`, `correctedEdgeCochain_sub`, `correctedDerivedLift`, `derivedFiberREquiv_corrected`, `derivedSecondDifferential_tau` |
+| `ThirdGradedComplex.lean` | `thirdGradedComplex`, `thirdGradedProjection`, `thirdGraded_standard_zero`, `thirdGradedShortComplex`, `thirdGraded_degreewise_shortExact`, `thirdGraded_shortExact`, `thirdGradedCokernelIso`, `thirdGradedConeDesc`, `thirdGradedConeDesc_quasiIso` |
+| `ZeroFiltrationCone.lean` | `zeroFiltrationDegree_isZero`, `zeroFiltration_isZero`, `zeroFiltrationMap_eq_zero`, `zeroFiltrationConeShortComplex`, `zeroFiltrationConeShortExact`, `zeroFiltrationConeDesc`, `zeroFiltrationConeDesc_quasiIso`, `zeroFiltration_inr_desc`, `zeroFiltration_inr_quasiIso` |
+| `NativeSpectralConnecting.lean` | `carrierSpectralObject_delta`, `carrierSpectralObject_delta_inr`, `carrierSpectralObject_homology_connecting`, `carrierSpectralObject_omega`, `carrierSpectralObject_inr_homology_isIso`, `firstNativeConnecting_shortExact`, `secondNativeConnecting_shortExact` |
+| `FirstPageVanishing.lean` | `homology_isZero_of_degree`, `zeroExtension_homology_isZero_out`, `secondGraded_homology_zero_isZero`, `thirdGraded_homology_isZero`, `graded_homology_isZero_negative` |
+| `FiltrationAnnihilators.lean` | `cochain_zero_iff_annihilate_all`, `carrierChart_annihilator_iff`, `carrierEdge_one_annihilator_iff`, `carrierEdge_two_annihilator_iff`, `carrierFace_two_annihilator_iff` |
+| `HomologyRepresentatives.lean` | `shortComplex_liftCycles_class`, `zeroExtension_liftCycles_H1`, `zeroExtension_liftCycles_H2`, `zeroExtension_liftCycles_H0`, `elementArrow`, `elementArrow_one`, `elementArrow_comp`, `elementArrow_zero`, `zeroExtension_liftCycles_H1_apply`, `zeroExtension_liftCycles_H2_apply`, `zeroExtension_liftCycles_H0_apply` |
+| `EndpointHomology.lean` | `oldZeroShort`, `oldTwoShort`, `zeroExtensionZeroScIso`, `zeroExtensionTwoScIso`, `oldH0Iso`, `oldH0Iso_hom_comp`, `oldH2Iso`, `oldH2Iso_hom_comp`, `oldH0Equiv`, `oldH2Equiv` |
+
+| file / declarations | source SHA-256 | focused output SHA-256 |
+| --- | --- | --- |
+| `RawBlocks.lean` / 60 | `c87584a49ddd341aa965b4f16d53ca8499487e2f4023f18ef4484c6218e73b07` | `2a9d9d1ce5605b678a2ad021ccfd159e72ef0148b17d240261a7e7f9bd8b53ea` |
+| `CarrierFiltration.lean` / 24 | `a33d48fa4a0330baeb1f5b8f8c3f88e6cd6feccc487a3283c949789f85d7475f` | `a2555b006a0d1aa378c8fcdfe4ec7cbdaf7cce00f333d86a18356e089838b4e5` |
+| `CarrierChain.lean` / 16 | `63a081a33a2bfe2dfe07f6d9e0e9d76d8d782e4625316a20b668580d16afa18b` | `5c511de25f6fe7b4cf5fd40edc5606e5428b92fcd27d74a4c8bcec1341ad6f95` |
+| `FilteredComplexes.lean` / 23 | `a652af61635e72fdc07477e8c503d4ab68860bfa29f7159c40fa33562e098ab1` | `7c0fd3ca6ae6d2f927cbe7ad5f09e6ffb0c829c8a91f9073385b0a8b7a0d66be` |
+| `GradedShortExact.lean` / 13 | `885a46faabae0846ea5b98ff5339436d062e66b146fbd31e083955cfb73bc57f` | `1e4b9bd385276b2a2dc7c25518a0a0102830a67d54435d95093da806e23b8c9b` |
+| `SecondGradedComplex.lean` / 26 | `59aea37b2ff35539c81df801a52ed37d3ad8afe4e6c1616453c89b0b2cb022eb` | `4161df0595de566d7db01c4b355fb3b8896b463359dd36e2bc3c8d481a0ce206` |
+| `ThreeShortExactConnecting.lean` / 2 | `8a0038a83ebaa05ccde96361d64ccf1fc824b9b9acf322e0e1f666fa0197ecbe` | `d9dbcc5016dcaea4ae1f1c7e27d7387222ffadbade4de3ebf79be40e76187d9f` |
+| `FilteredSpectralObject.lean` / 20 | `ac1df59d824d9807b0dc565529d1d4c8032388c8dd5f2076e2095d4ea5b2feba` | `1d511bf589198d38d27926fab71e9b89d999636b56f7d727a80950812538bf83` |
+| `LowExactCouple.lean` / 29 | `cc63b4ddd98b9eff268daed9eb4c8e5c4c5ef1d7657904705d14e8d9c9c29292` | `bc3a9d7ecab6a0a9840ecccb6bf3cf2d82823241055cb018cec2cc74c6e24bb1` |
+| `FirstPageFiber.lean` / 13 | `e27b4400ed2350013214164cce305190a01a9d1e45c517a6b4a191c7ca1bfc72` | `6524193bfc0c2a8e4c807cfebee9fe1a5add30ee588d13b9cd613875156f1b07` |
+| `FirstPageRow.lean` / 30 | `d0b0e5ff3d462deb70e094d3c6ec9fb872646ad1f06cc3d88e04da4b069dfce8` | `a4571daacbb266762a647df2671827dc1b4cd0790c83ffd355d6041fbdef6ece` |
+| `DerivedPageCoordinates.lean` / 7 | `eea1afc5b0d96c1190494524834a9aa92418916d8b4a41256e353c66b69122ed` | `0194d80aaec99b13762442fb52924b0d96d79ab776c850bdedf317e8cce69ae4` |
+| `ThirdGradedComplex.lean` / 9 | `8ac84f61eef8e7508771c6190c63abcf3038bf7757a3a9bf8264c42f475ad863` | `57561b0714f5d677f2e7b32f67b54a9337409e09d478b15a888b146d6cc23c44` |
+| `ZeroFiltrationCone.lean` / 9 | `361a1e1ce64ab54b9c16574ce31670e46dfe0d31cd21684e37798e480383a2a2` | `c3a4ba0723bf07d52a6e049a32498f4096871b6a9690a4f3949ab2fdb0b5f08d` |
+| `NativeSpectralConnecting.lean` / 7 | `ff328793d7c421f554b9f59522fa5f943b648ec770a106ee19b9c16dee764003` | `ba15858e6d29fd91a23faf5506225c4a6e57b466a3833ae47fc0d4a0a2e86ae1` |
+| `FirstPageVanishing.lean` / 5 | `8adc6a52edc0f0556708a7f5c5835571243fa36fc5c3bc9ec9d216c183359f5a` | `69fc9758e3ed442883bc406bebe745e7fc96055a9b1e969692effafb19ba18f5` |
+| `FiltrationAnnihilators.lean` / 5 | `3abf7f5d3d0da9281da84bb5e41daec7fb1bf54de9f5163df44b011f6137e727` | `5d895a6f4e6e8c8fd04df78766647fafa6e428baffa3e0bce92e043b8e0d58b3` |
+| `HomologyRepresentatives.lean` / 11 | `cee43137f7be42212ff7a02f9f0ff48a0541d5ea0a3f5ebb2c9a306dcae5c614` | `175aa9e4212147a2674886a7d10268ba52d65b29b3a22a094b38ff21bac6cd88` |
+| `EndpointHomology.lean` / 10 | `1deb845209adcd269ea6e2a0113af970a747b20af890a6f1107eb2eb5e916e4b` | `386b43aeeb78b2a855af9fccfba2f538023c3a6bb547ebd6889ac0afbedbb9ef` |
+
+再現metadata `.tmp/g135/cycle7-validation.json`（SHA-256 `a033386e36fdf71d9ef91a0be914cbf6d6baa22641eb66239a472e0706c01c36`）。
+
+### Cycle 7 初回査読とF1対応
+
+初回固定head `93498c53f43e697d227ef0a92211eaaed04b62b7`、標準review-prの
+math-lean-review新規四本は数学A/BがNo major findings、LeanA/BがMinor issues。
+中心findingは0、二票の非中心指摘は同じF1として統合した。
+初回統合監査はPR5298のissuecomment-6051692210。
+
+F1はcorrectedEdgeCochain_subが別ownerの二定義をchangeで展開する品質問題。
+名指しされたhorizontalCochainLift_dualをSecondGradedComplexへ追加し明示printへ登録、
+下流はこれと既存correctedEdgeFunctional_applyおよびLinearMap.extを用いる。
+既存statement、def/instanceの値、import方向、台帳statusは変更していない。
+変更二fileのfocusedを再実行し、全319宣言（新250）とsource/print/log順を更新した。
+追加補題を含む公理監査は標準公理のみ。単一独立直接対応の資格・解消確認へ渡す。
+formal_rerunsは0、内容の受理判定は修正後の監査コメントで行う。
+全GOALは引き続きcompletion_candidate:no、C–E/Wと別final fresh4が残る。
+共通scan metadata `.tmp/g135/cycle7-scans.json`（SHA-256 `46fee9a224c38f933162785156440cb6031c70dce0b700fdbeb5b6212d3465e9`）。
