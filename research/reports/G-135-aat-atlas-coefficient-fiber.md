@@ -832,3 +832,201 @@ audits:
 検証metadataは `.tmp/g135/cycle5-validation.json`（SHA-256 `546cd269c1921cc6ed0fdfc41abb7405a449f8893ec8ba6dbdf64606e4008574`）。上記全宣言のsource/print/log/report一覧を一致させた。必要な単一import cacheも同じfileの `lake env lean -o <cache> <file>` で生成した。Research full/aggregate/全file loopのelaborationとlake buildは未実施。Formalへの移植・実buildは未実施で、成果はunported (Research-proved)。最終全GOAL完了査読は未実施。
 
 共通scanは `.tmp/g135/cycle5-scans.json`（SHA-256 `1ba881cc99290b9e9d31c64e27002514adb608fc74ec8c8c05a02e9bf020a892`）へ固定した。変更14fileを列挙し、placeholder/new axiom、hidden/BiDi、privacy/local-path、追加語彙、`git diff --check`、Formal逆importを確認してclean。全198名のreport一覧もsource/print/logと一致。GOAL・設計・Formal・保護数学本文は変更していない。
+
+## Cycle 5受理とmain同期
+
+最終head `61659d7586accb379f03883d3722c5d6a622fad2`、
+[最終監査・初回4本全文・新規直接確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5296#issuecomment-6049620284)。
+初回4本は中心0・非中心の公開API/定理名/依存参照の指摘だけで、全指摘限定修正と
+新規直接確認が解消・資格を独立確認した。最終内容Mergeable、元五条件を
+`proof-obligation-discharged`として受理。全198名のsource/print/log/spineと順序が一致する。
+[PR5296](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5296)は
+`482d0ad4282224abb1de1f43921c2568b952df8b` で2026-10-08T00:40:07Zにmerge。
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6049762466)へ
+放電・未完・次cycleを記録した。最終head CI全8SUCCESS
+([Lean](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/37708310496)、
+[Tool](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/37708310329))。
+Research各実gate成功、Formal setup/cache/build/kernel/premiseはskipped。
+Research full/aggregate/全file loop/lake build、Formal実build/移植は未実施。
+元selection/resultは提案時の履歴として保持する。
+
+## Cycle 6 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 6
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 482d0ad4282224abb1de1f43921c2568b952df8b
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle5受理とIssue5290同期6049762466
+  proof_dag_predecessors: [PR5295の同じ標準短完全列とH0Q零性, PR5296の原block/κ/実H1Q=R, G133の標準homologyと端商同型, 固定mathlibのShortExactδ評価と全隣接完全性]
+  milestone: GOAL B・完全列設計§2–3の実短完全列連結射と五項列を原block代表/chain連結射/原始消滅条件へ両方向接続
+  proof_obligations: [同じε/制限から標準δとR上のτを構成, H0Q零性からH1ε単射と五項列の全写像/全隣接完全性, 原閉zとR条件からβB=-zDのβを生成, 原持ち上げの微分がmapped面でβHとなり標準δ評価と一致, β選択/zのcoboundary/可逆基底変更の独立性, 同じK/LのH2とkerHbarおよびBy=Hxからchain連結射[-Dy]の構成とτ双対同定, τ零と全By=Hxに対するDy関係像包含の同値および全A版, 旧hereditary入力からmixed空性を導きκとτ零性]
+  exit_criteria: [任意M/Aの指定R上τが同じ標準短完全列δの輸送で構成される, 五項列の各指定射と全隣接三項完全性/H1ε単射が実生成定理, Rの全代表からβの存在を導出しτのβH式が標準δの評価式へ同定, β選択/z変更/基底変更で同じhomology類を返す, 原商H2と同じBy=Hxのchain連結射を両方向接続しτ双対から原始像包含との必要十分条件と全A版を得る, pure旧hereditaryの実入力からmixed零性とκ/τ零を導く]
+  selection_reason: 全体診断に必要な一般混在τとその消滅を同じ原始行列から計算する再利用可能な数学的到達点。実carrier filtration/E1/E2/d2はこの標準δと代表式を利用する次の構成群であり未完のまま保持
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiveTermSequence.lean, CochainRepresentatives.lean, HomologyRepresentatives.lean, TransgressionRepresentatives.lean, ConnectingEvaluation.lean, QuotientHorizontalHomology.lean, QuotientHomologyDual.lean, ChainConnecting.lean, TauDuality.lean, TransgressionVanishing.lean, PureComparison.lean]
+  risks: [任意の中間複体や期待rankで代替しない, βの存在/完全性/同型を供給premiseへ移さない, L1のmixed全微分を維持, chain連結射の負符号と標準δの正符号を実評価で一致, forestだけからτ零を推論しない, filtration/d2未接続をtransgression全要求完了と数えない, 有限線形代数algorithmと全Wは後続義務]
+  unchecked: [全選定obligationは実装前, 実carrier filtration/E1/E2/d2, C–Eと全W, 最終新規独立4本完了監査]
+```
+
+実装前にこの到達点と六終了条件を固定する。全終了条件に必要な構成・逆方向・
+原始入力・標準写像の接続を同じcycleで進める。固定GOAL/設計/共通基準は維持する。
+
+
+## Cycle 6 到達点と受理候補
+
+同じ原始Mと任意の支持Aに対し、実ε・実L双対制限の標準短完全列から
+`connectingTau` と五項列を構成した。Rの全類から原V閉代表zとβB=-zDを生成し、
+原補正微分のP₂原像を標準δの `δ_eq` へ照合した。
+商の二次閉路は同じliteral K′₂/L₂と原微分の核から水平ker Hbarへ両方向同定する。
+原By=Hxの持ち上げをK′で微分して-I_vDyとなる式と、そのH₁L類を構成した。
+同じ実H²Pの双対評価を通してτと鎖連結写像を同定し、τ零性を原始D像包含の
+必要十分条件、および全A版に戻した。旧hereditary条件からmixed空性とκ/τ零を導く。
+
+これは六つのCycle6終了条件についての受理候補である。初回独立PR査読は下記の指摘を返し、修正後の正式再査読を待つ。
+固定GOAL全体は `target-proof-checkpoint`、`completion_candidate: no` のままである。
+carrier filtration/E₁/E₂/d₂、Cの保存条件と錐、Dの自然性・G134操作、Eの生成有限計算、
+全Wの同じ原始表による評価、最終新規4本完了監査は未完である。
+
+| 六終了条件 | 入力からの構成と検証宣言 |
+| --- | --- |
+| 1 実R上の標準δ | `connectingTau`、`connectingTau_restrictionStandardHomologyREquiv`。PR5295の実短完全列とPR5296のR同型を同じM/Aで適用 |
+| 2 全五項射・全隣接完全性・H¹ε単射 | `evaluationH1_injective`、`fiveTerm_exact_at_fineH1`、`fiveTerm_exact_at_fiber`、`fiveTerm_exact_at_pushforwardH2`。元H⁰Q零性と固定mathlibの標準homology sequenceを輸送 |
+| 3 全Rの原補正生成・標準δ公式 | `fiberClass_has_correction`、`horizontalCorrection_exists`、`correctedEdgeCochain_d1_degenerate`、`evaluationRestriction_connecting_representative`、`connectingTau_correctedFiberClass`、`connectingTau_horizontal_evaluation`。Pは独立生成済みの実Kan順像で、ε原像全射性から代表を生成 |
+| 4 代表・基底への独立性 | `correctedPushforwardCochain_independent_correction`、`correctedPushforwardCochain_coboundary`、`connectingTau_basis_independent`。任意有限基底の行列評価を同じ標準homologyへ戻す |
+| 5 原商二次閉路・実鎖連結・双対・両方向消滅 | `quotientSecondCyclesEquiv`、`quotientStandardH2HorizontalEquiv`、`supportedBoundary_horizontalLift`、`quotient_horizontalLift`、`quotientChainConnecting_apply`、`pushforwardStandardH2HorizontalDualEquiv`、`connectingTau_chain_duality`、`connectingTau_zero_iff_primitive`、`connectingTau_allA_zero_iff_primitive` |
+| 6 旧hereditaryからpure | `hereditary_mixedFace_isEmpty`、`hereditary_kappa_zero`、`hereditary_connectingTau_zero`。原Hのface_none_edge1と同じMixedFaceの負辺some条件から空性を生成 |
+
+### Cycle 6 proof DAG と material premise
+
+受理済みPR5295の実ε/Q短完全列・H⁰Q零性 → PR5296の原a,V,B,D,H/κと標準H¹Q≃R
+→ FiveTermSequence。原V閉代表のhomology評価とdualMap像定理 → CochainRepresentatives。
+G133の元三項homology同型と固定mathlibのcycle射公開API → HomologyRepresentatives。
+同じ原L₂のannihilationとε原像全射性 → TransgressionRepresentativesのP₂代表と標準δ公式。
+元K′/Lの係数射影核 → QuotientHorizontalHomologyの二次閉路同型・標準商H₂同型。
+原By=Hx → ChainConnectingの実K′持ち上げ微分とH₁L類。
+同じ実ε双対 → QuotientHomologyDualのH²P評価同型。
+原R関係商双対と両代表の評価 → TauDuality → TransgressionVanishing → PureComparison。
+DegenerateHomologyとRestrictionHomologyへの三つの追加公開補題は、この同じ代表の評価を保存する。
+既存定義・statement・instanceの値を変更しない。
+
+| material premise | 分類と使用・放電 |
+| --- | --- |
+| 原M、Nc/Nf、reading比較、任意A、指定有限ℚ支持cell | 本文由来のambient-boundary。PR5289設計のまま全構成へ渡す |
+| 原V閉z、βB=-zD | 代表補題のdirection-hypothesis。全Rへの適用では `fiberClass_has_correction` が原dual像から放電し、補正微分とδ代表で実使用 |
+| By=Hx | 鎖代表と像包含のdirection-hypothesis。全水平商閉路では `mem_horizontalFaceCycles_iff` が存在を生成。差のker B所属とL内代表に実使用 |
+| exactness、H⁰Q零性、H¹ε単射、R同定 | discharge-required。受理済み実構成と標準homology APIから放電。新しい入力fieldに移動しない |
+| τ消滅 | `connectingTau_zero_iff_primitive` の結論。原始像包含と両方向同値として証明し、pure適用ではmixed空性から放電 |
+| 旧hereditary H | pure方向の本文由来入力。H.face_none_edge1を実使用して同じ原mixed空性を生成 |
+| 任意有限基底 | 座標独立性のdirection-hypothesis。基底によるτ行列の評価を標準類に復元する式。有限algorithmの生成義務はEに保持 |
+
+対象はResearch側の証拠であり、Formal移植は `unported (Research-proved)`。
+固定GOAL・design・保護数学本文・Formalを編集していない。
+
+### Cycle 6 宣言spine・focused証拠
+
+以下の対象source全宣言と生成補助を順序付きで固定する。新規source205宣言とLean生成補助 `horizontalLiftCycle.congr_simp` 1宣言を含む。
+原blockと既存ownerの全宣言も検証するので、監査対象は合計317宣言（source316と生成補助1）である。
+全19fileの対象単一focused check、各全宣言の明示printとmodule公理監査を照合する。
+Research full/aggregate/全file loop/lake build、Formal実build/移植は未実施。
+
+### Cycle 6 ledger（PR前の固定候補）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 6
+base_oid: 482d0ad4282224abb1de1f43921c2568b952df8b
+tracking_issue: 5290
+completion_candidate: no
+root_candidate_result: proof-obligation-discharged
+whole_goal_status: target-proof-checkpoint
+formal_status: unported (Research-proved)
+proof_delta: [実短完全列δと五項列の全写像・隣接完全性, 全Rから原zとβの生成, 同じε原像による標準δ代表式, 原商H2と水平閉路の双方向同型, 原鎖持ち上げ微分とH1L連結類, τの同じ鎖連結写像との双対同定, 原始像包含との必要十分条件と全A版, 旧hereditaryからpure κとτ零]
+representative_independence: [水平補正の選択, 原垂直coboundary変更, 任意有限基底による行列表示からの復元]
+validation: 19対象fileの単一focused check成功、317明示print/公理監査、標準3公理のみ、共通scan clean
+review_gate: 初回standard review-pr -> math-lean-reviewはMajor revisions、全指摘修正後のfresh4正式再実行1待ち
+unchecked_cycle_center: []
+uncompleted: [実carrier filtrationとE1/E2/d2, Cの核余核と次元と保存と三錐, Dの全Lawと自然性とG134適用, Eの原始生成有限有理線形代数algorithm, 全Wの固定表評価, final fresh4全目標完了監査]
+next_milestone: 実carrier filtrationと低次数exact couple/E1/E2/d2=τの構成
+```
+
+六終了条件のroot照合を受理候補として固定した。独立内容査読・acceptance再統合・
+CI・merge同期は後続ゲートとして追跡する。source版と受理済みPR5295/5296の
+宣言statement・適用M/A、固定G133とmathlibの使用APIを確認した。
+対象groupの追加11file登録・aggregate配線は静的登録のみで、aggregate elaborationは行わない。
+
+### Cycle 6 初回PR査読と修正
+
+PR5297の初回固定head `79f1d0ac713b4c875028bc390c879c8aaccf144c` に対し、
+standard review-prからmath-lean-reviewへ委譲し、新規数学A/B・LeanA/Bの4本を実行した。
+数学A/B・LeanAはMinor issues、LeanBはMajor revisions。
+統合はMajor revisionsであり、このheadをmergeしない。
+初回監査: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5297#issuecomment-6050704746
+原始消滅述語の否定例不足をLeanBが中心findingと分類したため、親の裁量で非中心へ変更しない。
+正式再実行は初回後の1回目で、直接対応による合格を作らない。
+
+| finding | 修正証拠と現在の位置づけ |
+| --- | --- |
+| F1 新規Propの否定instance不足（LeanB:中心、他3本:非中心） | 指定W3のSource/reading/非定数Law/全台/原セル像とmだけを除くpaired表を生成。`primitiveTransgressionVanishing_false` が同じ原B・D・Hから否定を証明し、`primitiveTransgressionVanishing_paired_true` が指定paired全支持で肯定する。原式 `B_m_eq_H_difference`、`D_m`、`B_kernel_zero` と垂直面空性を実使用。実標準τの非零性は `WitnessThree.connectingTau_ne_zero` へ接続。W3の全診断評価は未完 |
+| F2 非自明defのImplementation notes不足 | HomologyRepresentatives、TransgressionRepresentatives、ConnectingEvaluation、ChainConnecting、QuotientHomologyDual、TauDualityに採用した定義形と退けた代替案の理由を記載 |
+| F3 別owner同型の定義展開 | 元G133 ownerに `oldH1Iso_hom_comp` と `oldH2Iso_hom_comp` を追加し、HomologyRepresentativesの既存statementを維持したまま公開API経由へ変更。元ownerを単一focused登録・明示print監査。RawBlocksにも原B/D/Hの具体基底評価に必要な6公開APIを追加 |
+
+固定GOAL、設計と共通基準の変更はない。新規Propの値、既存def/instanceの値、
+既存theoremのstatementは維持する。W3の否定例を他の弱いセル表で代替していない。
+初回固定headのCIは全8checks SUCCESS。Formal build/kernelの実stepsはSKIPPED、
+Research integrityの実stepsはSUCCESS。修正後headのCIと新規4本査読は別途確認する。
+
+
+<!-- cycle6-generated-evidence -->
+
+| file | 全宣言（source/生成補助/print/logの同順序） |
+| --- | --- |
+| `FiveTermSequence.lean` | `evaluationH1`, `fiberRestrictionH1`, `connectingTau`, `evaluationH2`, `connectingTau_apply`, `fiberRestrictionH1_apply`, `evaluationH1_apply`, `evaluationH2_apply`, `connectingTau_restrictionStandardHomologyREquiv`, `evaluationH1_injective`, `fiveTerm_exact_at_fineH1`, `fiveTerm_exact_at_fiber`, `fiveTerm_exact_at_pushforwardH2`, `fiberRestrictionH1_evaluationH1`, `connectingTau_fiberRestrictionH1`, `evaluationH2_connectingTau` |
+| `CochainRepresentatives.lean` | `VerticalCocycles`, `verticalCocycleClass`, `verticalCocycleClass_mk`, `verticalCocycleClass_kappa`, `verticalCocycleClass_rawR_iff`, `horizontalCorrection_exists`, `verticalCocycleClass_rawR_of_correction`, `correctedFiberClass`, `correctedFiberClass_raw`, `verticalCocycleClass_surjective`, `fiberClass_has_correction`, `correctedEdgeFunctional`, `correctedEdgeFunctional_apply`, `correctedEdgeFunctional_vertical`, `correctedEdgeFunctional_horizontal`, `correctedEdgeCochain`, `correctedEdgeCochain_dual`, `correctedEdgeCochain_d1_eval`, `correctedEdgeCochain_d1_vertical`, `correctedEdgeCochain_d1_mixed`, `correctedEdgeCochain_d1_horizontal`, `correctedEdgeCochain_d1_degenerate` |
+| `HomologyRepresentatives.lean` | `shortComplex_liftCycles_class`, `zeroExtension_liftCycles_H1`, `zeroExtension_liftCycles_H2`, `elementArrow`, `elementArrow_one`, `elementArrow_comp`, `elementArrow_zero`, `zeroExtension_liftCycles_H1_apply`, `zeroExtension_liftCycles_H2_apply` |
+| `TransgressionRepresentatives.lean` | `correctedEdgeCochain_d1_restriction_zero`, `correctedRestrictionCycle`, `correctedRestrictionCycle_val`, `correctedPushforwardCochain_exists`, `correctedPushforwardCochain`, `correctedPushforwardCochain_spec`, `evaluationRestriction_connecting_representative`, `correctedRestrictionCycle_fiberClass`, `connectingTau_correctedFiberClass`, `correctedFiberClass_independent_correction`, `correctedPushforwardCochain_independent_correction`, `verticalCocycleClass_coboundary`, `correctedFiberClass_coboundary`, `correctedPushforwardCochain_coboundary`, `connectingTau_basis_independent` |
+| `ConnectingEvaluation.lean` | `correctedCocycle_annihilates_relations`, `correctedRelationsFunctional`, `correctedRelationsFunctional_mk`, `correctedRelationsFunctional_horizontalLiftClass`, `correctedRelationsFunctional_horizontalChainConnecting` |
+| `QuotientHorizontalHomology.lean` | `horizontalFaceProjection`, `horizontalFaceProjection_apply`, `horizontalFaceProjection_inclusion`, `horizontalFaceProjection_degenerate`, `face_recombination`, `horizontalFaceProjection_surjective`, `horizontalFaceProjection_ker`, `quotientFaceEquiv`, `quotientFaceEquiv_mk`, `quotientFaceEquiv_symm_apply`, `HorizontalEdgeQuotient`, `horizontalQuotientBoundary`, `horizontalQuotientBoundary_apply`, `HorizontalFaceCycles`, `mem_horizontalFaceCycles_iff`, `horizontalEdgeQuotientProjection`, `horizontalEdgeQuotientProjection_apply`, `horizontalEdgeQuotientProjection_surjective`, `horizontalEdgeQuotientProjection_ker`, `quotientEdgeEquiv`, `quotientEdgeEquiv_mk`, `horizontalEdgeQuotientProjection_degenerate`, `horizontalEdgeQuotientProjection_boundary_degenerate`, `horizontalEdgeQuotientProjection_boundary_horizontal`, `quotientBoundary2_horizontal`, `QuotientSecondCycles`, `quotientSecondCyclesEquiv`, `quotientSecondCyclesEquiv_val`, `quotientSecondCyclesEquiv_symm_val`, `quotientSecondShort`, `quotientSecondScIso`, `quotientSecondStandardEquiv`, `quotientStandardH2HorizontalEquiv` |
+| `QuotientHomologyDual.lean` | `pushforwardSecondCycleEvaluation`, `pushforwardSecondCycleEvaluation_apply`, `pushforwardSecondCycleEvaluation_surjective`, `pushforwardSecondCycleEvaluation_ker`, `pushforwardSecondHomologyDualEquiv`, `pushforwardSecondHomologyDualEquiv_mk`, `pushforwardStandardH2HorizontalDualEquiv`, `pushforwardStandardH2HorizontalDualEquiv_mk` |
+| `ChainConnecting.lean` | `horizontalLift_vertical_closed`, `horizontalLiftCycle`, `horizontalLiftCycle_val`, `horizontalLiftClass`, `horizontalLiftClass_mk`, `horizontalLiftClass_independent`, `horizontalLiftClass_eq_zero_iff`, `horizontalCycleLift`, `horizontalCycleLift_spec`, `horizontalChainConnecting`, `horizontalChainConnecting_apply`, `horizontalChainConnecting_eq_zero_iff`, `supportedBoundary_horizontalLift`, `quotient_horizontalLift`, `quotientChainConnecting`, `quotientChainConnecting_apply`, `horizontalLiftCycle.congr_simp` |
+| `TauDuality.lean` | `fiberRelationsDualEquiv`, `fiberRelationsDualEquiv_mk`, `fiberRelationsDualEquiv_corrected`, `connectingTau_horizontal_evaluation`, `connectingTau_chain_duality` |
+| `TransgressionVanishing.lean` | `PrimitiveTransgressionVanishing`, `horizontalChainConnecting_zero_iff_primitive`, `connectingTau_zero_iff_chain`, `connectingTau_zero_iff_primitive`, `connectingTau_allA_zero_iff_primitive` |
+| `PureComparison.lean` | `hereditary_mixedFace_isEmpty`, `kappa_zero_of_mixed_isEmpty`, `primitiveVanishing_of_mixed_isEmpty`, `connectingTau_zero_of_mixed_isEmpty`, `hereditary_kappa_zero`, `hereditary_connectingTau_zero` |
+| `DegenerateHomology.lean` | `degenerateCycles`, `degenerateBoundaryToCycles`, `degenerateBoundaryToCycles_val`, `DegenerateHomology`, `verticalCycleInclusion`, `verticalCycleInclusion_val`, `verticalCycleHomologyMap`, `verticalCycleHomologyMap_apply`, `degenerateCycle_vertical_representative`, `verticalCycleHomologyMap_surjective`, `verticalCycleHomologyMap_ker`, `verticalRelationsHomologyEquiv`, `verticalRelationsHomologyEquiv_mk`, `rawKappaCokernelHomologyEquiv`, `rawKappaCokernelHomologyEquiv_mk`, `degenerateOneShort`, `degenerateOneScIso`, `degenerateHomologyStandardEquiv`, `rawKappaCokernelStandardEquiv` |
+| `RestrictionHomology.lean` | `RawR`, `rawKappaAnnihilatorEquiv`, `rawKappaCokernelDualEquiv`, `rawKappaCokernelDualEquiv_apply`, `restrictionHomologyDualEquiv`, `restrictionStandardHomologyRawREquiv`, `restrictionStandardHomologyREquiv`, `restrictionStandardHomologyRawREquiv_mk`, `restrictionStandardHomologyREquiv_raw` |
+| `RawBlocks.lean` | `cellProjection`, `cellProjection_apply`, `cellInclusion_apply`, `cellInclusion_apply_notmem`, `cellProjection_cellInclusion`, `cellProjection_complementInclusion`, `cell_recombination`, `cellRecombination`, `cellDecomposition`, `cellDecomposition_fst`, `cellDecomposition_snd`, `HorizontalEdge`, `HorizontalFace`, `edgeBlockEquiv`, `verticalEdgeProjection`, `horizontalEdgeProjection`, `horizontalEdgeInclusion`, `horizontalEdgeInclusion_single`, `horizontalFaceInclusion`, `verticalEdgeBoundary`, `verticalEdgeBoundary_apply`, `verticalEdgeBoundary_single`, `horizontalEdgeBoundary`, `mixedVerticalBoundary`, `mixedHorizontalBoundary`, `mixedHorizontalBoundary_apply`, `horizontalFaceBoundary`, `mixedVerticalBoundary_apply`, `horizontalFaceBoundary_apply`, `horizontalFaceInclusion_single`, `verticalEdgeProjection_inclusion`, `verticalEdgeProjection_horizontal`, `horizontalEdgeProjection_inclusion`, `horizontalEdgeProjection_vertical`, `verticalEdgeProjection_single`, `verticalEdgeProjection_horizontal_single`, `edgeBlock_recombination`, `mixedBoundary_recombination`, `verticalEdgeBoundary_comp_verticalBoundary`, `mixedBoundary_square`, `horizontalFace_edge_mapped`, `horizontalFace_vertical_zero`, `horizontalFaceBoundary_inclusion`, `horizontalEdgeBoundary_comp_horizontalFaceBoundary`, `horizontalEdgeProjection_single`, `horizontalEdgeProjection_vertical_single`, `degenerateFaceSplitEquiv`, `faceBlockEquiv`, `faceBlockEquiv_vertical`, `faceBlockEquiv_mixed`, `faceBlockEquiv_horizontal` |
+| `ZeroExtension.lean` | `degreeObject`, `degreeDifferential`, `degreeDifferential_square`, `zeroExtension`, `degreeMap`, `degreeMap_comm`, `zeroExtensionMap`, `zeroExtensionMap_comp`, `oldShort`, `zeroExtensionScIso`, `oldH1Iso`, `oldH1Iso_hom_comp`, `oldShortMap`, `oldShortMapData`, `oldShortMap_homology`, `zeroExtensionScIso_natural`, `oldH1Iso_natural`, `degreeObjectFiniteDimensional`, `zeroExtension_X`, `degreeObject_isZero`, `zeroExtension_d`, `zeroExtensionMap_f`, `zeroExtensionMap_id`, `oldH1Equiv`, `oldH1Equiv_natural`, `zeroExtensionDegreeFiniteDimensional`, `zeroExtension_homology_isZero`, `homologyTransport_natural`, `zeroExtension_d0_apply`, `zeroExtension_d1_apply`, `zeroExtension_d_zero`, `zeroExtensionMap_f0_apply`, `zeroExtensionMap_f1_apply`, `zeroExtensionMap_f2_apply` |
+| `EndpointHomology.lean` | `oldZeroShort`, `oldTwoShort`, `zeroExtensionZeroScIso`, `zeroExtensionTwoScIso`, `oldH0Iso`, `oldH2Iso`, `oldH2Iso_hom_comp`, `oldH0Equiv`, `oldH2Equiv` |
+| `WitnessCommon.lean` | `Source`, `qc`, `qf`, `coarser`, `not_coarser`, `factor`, `laws`, `adequate_coarse`, `adequate_fine`, `law_nonconstant`, `label`, `labels_ne` |
+| `WitnessThreeInput.lean` | `coarseNerve`, `fineNerve`, `Nc`, `Nf`, `M`, `pairedNerve`, `pairedNf`, `pairedM` |
+| `WitnessThreeNonzero.lean` | `selectedEdge`, `selectedFace`, `k`, `a0`, `a1`, `b`, `c`, `f0`, `f1`, `m`, `a0_ne_a1`, `mixedFace_eq_m`, `verticalFaceIsEmpty`, `m_edge0`, `m_edge1`, `m_edge2`, `f0_edge0`, `f0_edge1`, `f0_edge2`, `f1_edge0`, `f1_edge1`, `f1_edge2`, `B_m`, `D_m`, `H_f0`, `H_f1`, `B_m_eq_H_difference`, `mixedChain_single`, `B_kernel_zero`, `pairedMixedIsEmpty`, `primitiveTransgressionVanishing_paired_true`, `primitiveTransgressionVanishing_empty_true`, `primitiveTransgressionVanishing_false`, `connectingTau_ne_zero` |
+
+| file / declarations | source SHA-256 | focused output SHA-256 |
+| --- | --- | --- |
+| `FiveTermSequence.lean` / 16 | `c9fb934891dfd966ac23711e566cda115987220862e904c63cc5f9ed002687e3` | `e760ecfbdeadee97f842fa7ecd30c86c6eaa3144dfa49cdea5d989adadc9505c` |
+| `CochainRepresentatives.lean` / 22 | `95807117bdb00bfc921f677118a6770a6abd0c38831f1b11ff934d46c4885025` | `446b6d4f660001f331bb8696710fa439cfc04de5718ea3c173d8d4f121d7b6bc` |
+| `HomologyRepresentatives.lean` / 9 | `39921558a14922e4a8780463780fd05cf4c7c05cd23b8c52b783e3175e50dfd0` | `9f4679736dc328632f559ac35cde32e2c63b1a109fd85ab07e509cc86f01c95e` |
+| `TransgressionRepresentatives.lean` / 15 | `264aa0a0632fe0a27991b1e9c6483670b29c1782e684e925428def8383c9d139` | `1ea5b24f2199e731082ab92fcb7823616eb89f536c067519b08954bae5d3e579` |
+| `ConnectingEvaluation.lean` / 5 | `77614b92a1a032da401f04b2a0171c3548f2171fe896f226baefb0bff1d02e4d` | `6e43550df0550ffdf0fa1e09a7690cadb6b96d6f6071b4231a8e43d6c3a2e3e7` |
+| `QuotientHorizontalHomology.lean` / 33 | `76cbf24ec3af1a7254b495228133ea3cb7ec42168cbd1e4cae12f0d05cb76ab3` | `de196a0fb09d878b457b8e3803462134507898c892cf891e37ba9879405e45e8` |
+| `QuotientHomologyDual.lean` / 8 | `672f9c0149a5b34425b2fcbc803266cc984830e2b343840a91074d0ed3768ab2` | `95ed445aedf859af512ee495e61bb6bdcb2aeb0485ae2d46919c276a40512f9b` |
+| `ChainConnecting.lean` / 17 | `565a5f23fad6c762af8cf912c62e132b9c76afede11bc1dd479c5a4aab8fe9dc` | `06b8e070ec0fd7a1ee6370d44c868b1ed74727011c88680e17e6e6ba1fcb7c65` |
+| `TauDuality.lean` / 5 | `2dc630fc5d2af9bdd7f94f940d3e3c4ccf87f5147aa611711e36e26c7a93468a` | `2248e13f9319d063aabfbc43bc98482188414b77ff6cc37ac18a2647cd0a8030` |
+| `TransgressionVanishing.lean` / 5 | `8247eb4a43cd04daa088bf10efd09e6fc5e54870db8496f550f4c56d48f2e82e` | `04e92ce8390e6aef090e3ada17da818deeec64dfa2ba993156c6906e231749d7` |
+| `PureComparison.lean` / 6 | `ed95e9286b51c7ce15fb05e0fe19f83ac574e321ee1a01ec4216c951fc767d01` | `9f5a432519268f9b1e4495e6616e7f3e734322e3a3d2b7be98ec1e4e08934dd0` |
+| `DegenerateHomology.lean` / 19 | `ee27d7247068a6e80c3c46401b7f964d87ccdcf2a4be092b7c26c5308c9e2ee8` | `f495dbef516debbd346ede151f4b889ff335c7363679c0b11fad8ede6e7e0065` |
+| `RestrictionHomology.lean` / 9 | `44317eec491e425838829730a8c8c1474b8f855c8a97f58f82d8d0ac3ed1f5d0` | `766ace1b65d703f27bd676e99755294e97a44a6a57685dbd3026690e26e9b3c5` |
+| `RawBlocks.lean` / 51 | `51204e6ae76527a20e03709955b9fb19d01dc0bd51b373c6f85ef1b3729142ef` | `d5ec83c6d5b3cf16278dcac086596ae1ed341fa19ec1a6bc4c71ec6fb4995796` |
+| `ZeroExtension.lean` / 34 | `1c69bab689742a84e991b30c52aa43719481db15d9ffeeac206ee9a2980b4605` | `c10fe1d4b86109cd1106cb112708261ce4373cf6f5e36535cbfd61cb87978ee6` |
+| `EndpointHomology.lean` / 9 | `6a1306afe9fb0bfcb0d8b7e93669c3d2300eeaea5450481923466631a90fcdcb` | `e0a68d4b02d8bc76e84f362912a8c5d0c76ef230c7c2390e891c540d0e88211b` |
+| `WitnessCommon.lean` / 12 | `f4f46b1ae32e0462e6ed1785f88df7a31ad6ed18607169c6738b3c652bfdd56b` | `94bbfc88964cc5d4bf9e32e6593b6da91f65bc6cffaf6d6c474089d317e1a902` |
+| `WitnessThreeInput.lean` / 8 | `93fb9be39be291d20af30aeabcbe090f46534d5913677a01286cf29841aebd0e` | `fc12b93d966d83959fd66264db95a6fa75d9f28687d445d2b759ec645a7969bc` |
+| `WitnessThreeNonzero.lean` / 34 | `c3ae12fc3ce2076c1af064c11248f11babae23698021ee21109aeafaa838bc17` | `61fdf23fcef7bd6f511756e1ccd8343d05db922426d14ec27468ede738e92f27` |
+
+再現metadata `.tmp/g135/cycle6-validation.json`（SHA-256 `4ca4946b6efc7db2812563e4589a57ded68f96d4113d24476f75ece8cfa9ce18`）。
+共通scan metadata `.tmp/g135/cycle6-scans.json`（SHA-256 `b29fe6f4fa87bb76edbe0a3bf328d87340dedc1f407d9d81234e73402206304e`）。

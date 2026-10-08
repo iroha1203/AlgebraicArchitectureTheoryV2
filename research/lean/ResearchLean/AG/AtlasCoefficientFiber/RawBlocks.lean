@@ -125,6 +125,11 @@ def horizontalEdgeProjection : K1 Nf (comparisonFactor qc qf h ⁻¹' A) →ₗ[
 def horizontalEdgeInclusion : (HorizontalEdge M A →₀ ℚ) →ₗ[ℚ]
     K1 Nf (comparisonFactor qc qf h ⁻¹' A) := cellInclusion _
 
+/-- 水平辺包含は同じ原始自由基底を返す所有API。 -/
+@[simp] theorem horizontalEdgeInclusion_single (e : HorizontalEdge M A) (r : ℚ) :
+    horizontalEdgeInclusion M A (Finsupp.single e r) = Finsupp.single e.1 r :=
+  cellInclusion_single _ _ _
+
 /-- 水平面の元K′₂への包含。 -/
 def horizontalFaceInclusion : (HorizontalFace M A →₀ ℚ) →ₗ[ℚ]
     K2 Nf (comparisonFactor qc qf h ⁻¹' A) := cellInclusion _
@@ -167,6 +172,21 @@ theorem mixedHorizontalBoundary_apply (x : MixedFace M A →₀ ℚ) :
 def horizontalFaceBoundary : (HorizontalFace M A →₀ ℚ) →ₗ[ℚ] (HorizontalEdge M A →₀ ℚ) :=
   (horizontalEdgeProjection M A).comp ((chainD2 Nf _).comp (horizontalFaceInclusion M A))
 
+/-- 原微分の垂直射影としてDを評価する所有公開API。 -/
+theorem mixedVerticalBoundary_apply (y : MixedFace M A →₀ ℚ) :
+    mixedVerticalBoundary M A y =
+      verticalEdgeProjection M A (chainD2 Nf _ (mixedFaceInclusion M A y)) := rfl
+
+/-- 原微分の水平射影としてHを評価する所有公開API。 -/
+theorem horizontalFaceBoundary_apply (x : HorizontalFace M A →₀ ℚ) :
+    horizontalFaceBoundary M A x =
+      horizontalEdgeProjection M A (chainD2 Nf _ (horizontalFaceInclusion M A x)) := rfl
+
+/-- 水平面包含は原始面名の同じ自由基底を返す。 -/
+@[simp] theorem horizontalFaceInclusion_single (f : HorizontalFace M A) (r : ℚ) :
+    horizontalFaceInclusion M A (Finsupp.single f r) = Finsupp.single f.1 r :=
+  cellInclusion_single _ _ _
+
 /-- 垂直包含を垂直座標へ戻す所有API。 -/
 @[simp] theorem verticalEdgeProjection_inclusion (x : VerticalEdge M A →₀ ℚ) :
     verticalEdgeProjection M A (verticalEdgeInclusion M A x) = x :=
@@ -187,6 +207,18 @@ def horizontalFaceBoundary : (HorizontalFace M A →₀ ℚ) →ₗ[ℚ] (Horizo
     horizontalEdgeProjection M A (verticalEdgeInclusion M A x) = 0 := by
   ext i
   exact cellInclusion_apply_notmem _ x i.1 i.2
+
+/-- 垂直射影は元垂直辺の同じ基底係数を返す。 -/
+@[simp] theorem verticalEdgeProjection_single (e : VerticalEdge M A) (r : ℚ) :
+    verticalEdgeProjection M A (Finsupp.single e.1 r) = Finsupp.single e r := by
+  simpa only [verticalEdgeInclusion_single] using
+    verticalEdgeProjection_inclusion M A (Finsupp.single e r)
+
+/-- 元水平辺の基底は垂直射影で零になる。 -/
+@[simp] theorem verticalEdgeProjection_horizontal_single (e : HorizontalEdge M A) (r : ℚ) :
+    verticalEdgeProjection M A (Finsupp.single e.1 r) = 0 := by
+  simpa only [horizontalEdgeInclusion_single] using
+    verticalEdgeProjection_horizontal M A (Finsupp.single e r)
 
 /-- 原K′₁の二blockの和は、同じchainそのもの。 -/
 theorem edgeBlock_recombination (x : K1 Nf (comparisonFactor qc qf h ⁻¹' A)) :
@@ -341,6 +373,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeProjection
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalEdgeProjection
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalEdgeInclusion
+#print axioms AAT.AG.AtlasCoefficientFiber.horizontalEdgeInclusion_single
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalFaceInclusion
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeBoundary
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeBoundary_apply
@@ -350,10 +383,15 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.mixedHorizontalBoundary
 #print axioms AAT.AG.AtlasCoefficientFiber.mixedHorizontalBoundary_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalFaceBoundary
+#print axioms AAT.AG.AtlasCoefficientFiber.mixedVerticalBoundary_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.horizontalFaceBoundary_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.horizontalFaceInclusion_single
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeProjection_inclusion
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeProjection_horizontal
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalEdgeProjection_inclusion
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalEdgeProjection_vertical
+#print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeProjection_single
+#print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeProjection_horizontal_single
 #print axioms AAT.AG.AtlasCoefficientFiber.edgeBlock_recombination
 #print axioms AAT.AG.AtlasCoefficientFiber.mixedBoundary_recombination
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeBoundary_comp_verticalBoundary
@@ -369,5 +407,4 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_vertical
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_mixed
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_horizontal
-
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

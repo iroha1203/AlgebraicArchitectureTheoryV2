@@ -67,6 +67,30 @@ def restrictionStandardHomologyREquiv :
     (zeroExtension (restrictionComplex M A)).homology (1 : ℤ) ≃ₗ[ℚ] R M A :=
   (restrictionStandardHomologyRawREquiv M A).trans (fiberRRawEquiv M A).symm
 
+/-- 標準H¹Qから原Rへの同定は同じ原垂直閉路で評価する。 -/
+@[simp] theorem restrictionStandardHomologyRawREquiv_mk
+    (z : LinearMap.ker (restrictionComplex M A).d1) (x : verticalCycles M A) :
+    (restrictionStandardHomologyRawREquiv M A
+      (oldH1Equiv (restrictionComplex M A) (Submodule.Quotient.mk z))).1
+      (Submodule.Quotient.mk x) = z.1 (verticalCycleInclusion M A x).1 := by
+  simp only [restrictionStandardHomologyRawREquiv, LinearEquiv.trans_apply,
+    LinearEquiv.symm_apply_apply]
+  rw [rawKappaCokernelDualEquiv_apply]
+  change restrictionHomologyDualEquiv M A (Submodule.Quotient.mk z)
+    (rawKappaCokernelHomologyEquiv M A
+      (Submodule.Quotient.mk (Submodule.Quotient.mk x))) = _
+  rw [rawKappaCokernelHomologyEquiv_mk]
+  exact chainHomologyDualEquiv_mk _ _ _ z (verticalCycleInclusion M A x)
+
+/-- 指定全Φ座標を原垂直座標へ戻すと同じ実R同型である。 -/
+@[simp] theorem restrictionStandardHomologyREquiv_raw
+    (z : (zeroExtension (restrictionComplex M A)).homology (1 : ℤ)) :
+    fiberRRawEquiv M A (restrictionStandardHomologyREquiv M A z) =
+      restrictionStandardHomologyRawREquiv M A z := by
+  change fiberRRawEquiv M A ((fiberRRawEquiv M A).symm
+    (restrictionStandardHomologyRawREquiv M A z)) = _
+  exact (fiberRRawEquiv M A).apply_symm_apply _
+
 end AAT.AG.AtlasCoefficientFiber
 
 #print axioms AAT.AG.AtlasCoefficientFiber.RawR
@@ -76,4 +100,6 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.restrictionHomologyDualEquiv
 #print axioms AAT.AG.AtlasCoefficientFiber.restrictionStandardHomologyRawREquiv
 #print axioms AAT.AG.AtlasCoefficientFiber.restrictionStandardHomologyREquiv
+#print axioms AAT.AG.AtlasCoefficientFiber.restrictionStandardHomologyRawREquiv_mk
+#print axioms AAT.AG.AtlasCoefficientFiber.restrictionStandardHomologyREquiv_raw
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber
