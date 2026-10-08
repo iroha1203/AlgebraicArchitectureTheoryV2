@@ -46,6 +46,18 @@ def coneConnecting (m : ℤ) : (mappingCone φ).homology m ⟶ F.homology (m+1) 
     (mappingCone.triangleh φ) m (m+1) rfl ≫
   (HomotopyCategory.homologyFunctorFactors (ModuleCat.{w} ℚ) (ComplexShape.up ℤ) (m+1)).hom.app F
 
+/-- 原short exact列の錐連結射は標準商評価の後に同じ列のδを作用させる。 -/
+theorem coneConnecting_shortExact (S : ShortComplex (CochainComplex (ModuleCat.{w} ℚ) ℤ))
+    (hS : S.ShortExact) (m : ℤ) :
+    coneConnecting S.f m = HomologicalComplex.homologyMap
+      (mappingCone.descShortComplex S) m ≫ hS.δ m (m+1) rfl := by
+  dsimp only [coneConnecting]
+  rw [mappingCone.homologySequenceδ_triangleh hS m (m+1) rfl]
+  simp only [Category.assoc, Iso.inv_hom_id_app_assoc, Iso.inv_hom_id_app]
+  exact congrArg (fun t : S.X₃.homology m ⟶ S.X₁.homology (m+1) =>
+    HomologicalComplex.homologyMap (mappingCone.descShortComplex S) m ≫ t)
+      (Category.comp_id (hS.δ m (m+1) rfl))
+
 /-- 標準錐長完全列のsource/target/cone三項を実homologyで読む。 -/
 def coneTargetSequence (m : ℤ) : ShortComplex (ModuleCat.{w} ℚ) :=
   transportShortComplex
@@ -207,4 +219,24 @@ theorem coneConnecting_natural {F' G' : CochainComplex (ModuleCat.{w} ℚ) ℤ}
       (homologyFactors_hom_natural a (m+1))
 
 end AAT.AG.AtlasDefectComposition
+#print axioms AAT.AG.AtlasDefectComposition.transportShortComplex
+#print axioms AAT.AG.AtlasDefectComposition.transportShortComplexIso
+#print axioms AAT.AG.AtlasDefectComposition.transportShortComplex_exact
+#print axioms AAT.AG.AtlasDefectComposition.coneConnecting
+#print axioms AAT.AG.AtlasDefectComposition.coneConnecting_shortExact
+#print axioms AAT.AG.AtlasDefectComposition.coneTargetSequence
+#print axioms AAT.AG.AtlasDefectComposition.coneTargetSequence_f
+#print axioms AAT.AG.AtlasDefectComposition.coneTargetSequence_g
+#print axioms AAT.AG.AtlasDefectComposition.cone_target_exact
+#print axioms AAT.AG.AtlasDefectComposition.coneMiddleSequence
+#print axioms AAT.AG.AtlasDefectComposition.coneMiddleSequence_f
+#print axioms AAT.AG.AtlasDefectComposition.coneMiddleSequence_g
+#print axioms AAT.AG.AtlasDefectComposition.cone_middle_exact
+#print axioms AAT.AG.AtlasDefectComposition.coneSourceSequence
+#print axioms AAT.AG.AtlasDefectComposition.coneSourceSequence_f
+#print axioms AAT.AG.AtlasDefectComposition.coneSourceSequence_g
+#print axioms AAT.AG.AtlasDefectComposition.cone_source_exact
+#print axioms AAT.AG.AtlasDefectComposition.homologyFactors_inv_natural
+#print axioms AAT.AG.AtlasDefectComposition.homologyFactors_hom_natural
+#print axioms AAT.AG.AtlasDefectComposition.coneConnecting_natural
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition

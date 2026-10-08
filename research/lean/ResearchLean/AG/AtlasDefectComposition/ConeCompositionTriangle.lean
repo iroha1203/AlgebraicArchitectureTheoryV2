@@ -53,10 +53,51 @@ theorem compositionTriangle_second (h : direct = f ≫ g) (m : ℤ)
     coneCoordinateEquiv g m ((compositionTriangle f g direct h).mor₂.f m x) =
       ((coneCoordinateEquiv direct m x).1,f.f (m+1) (coneCoordinateEquiv direct m x).2) := by
   exact coneCoordinateEquiv_map direct g f (𝟙 M) (by rw [h];simp) m x
+/-- 第三射をshiftの標準次数同型で読むと、原sourceの負値を前段錐へ含める。 -/
+theorem compositionTriangle_third (h : direct = f ≫ g) (m : ℤ)
+    (x : (mappingCone g).X m) :
+    coneCoordinateEquiv f (m+1)
+      (((mappingCone f).shiftFunctorObjXIso 1 m (m+1) rfl).hom
+        ((compositionTriangle f g direct h).mor₃.f m x)) =
+      (-(coneCoordinateEquiv g m x).2, 0) := by
+  have hx : x = (mappingCone.inr g).f m (coneCoordinateEquiv g m x).1 +
+      (mappingCone.inl g).v (m+1) m (by simp) (coneCoordinateEquiv g m x).2 := by
+    rw [← coneCoordinateEquiv_symm_eq, LinearEquiv.symm_apply_apply]
+  have hd : (mappingCone.triangle g).mor₃.f m x =
+      -(coneCoordinateEquiv g m x).2 := by
+    have h₀ (y : M.X m) : (mappingCone.triangle g).mor₃.f m
+        ((mappingCone.inr g).f m y) = 0 := by
+      have hz := congrArg (fun t : (M.X m ⟶ (L⟦1⟧).X m) => t y)
+        (mappingCone.inr_f_triangle_mor₃_f g m)
+      simpa only [ModuleCat.comp_apply, ModuleCat.hom_zero, LinearMap.zero_apply] using hz
+    have h₁ (y : L.X (m+1)) : (mappingCone.triangle g).mor₃.f m
+        ((mappingCone.inl g).v (m+1) m (by simp) y) = -y := by
+      have hz := congrArg (fun t : (L.X (m+1) ⟶ (L⟦1⟧).X m) => t y)
+        (mappingCone.inl_v_triangle_mor₃_f g (m+1) m (by simp))
+      simpa only [ModuleCat.comp_apply, shiftFunctorObjXIso,
+        HomologicalComplex.XIsoOfEq_rfl, Iso.refl_inv, ModuleCat.hom_neg,
+        LinearMap.neg_apply, ModuleCat.id_apply] using hz
+    conv_lhs => rw [hx]
+    rw [map_add, h₀, h₁, zero_add]
+  change coneCoordinateEquiv f (m+1)
+    ((mappingCone.inr f).f (m+1) ((mappingCone.triangle g).mor₃.f m x)) = _
+  rw [hd, map_neg, map_neg, coneCoordinateEquiv_inr]
+  exact Prod.ext rfl (neg_zero)
+
 /-- 反復錐は後段錐と chain homotopy 同値であり、middle は独立直接射である。 -/
 def compositionTriangleConeEquiv (h : direct = f ≫ g) :
     HomotopyEquiv (mappingCone g) (mappingCone (compositionTriangle f g direct h).mor₁) := by
   subst direct
   exact mappingConeCompHomotopyEquiv f g
 end AAT.AG.AtlasDefectComposition
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle_mor₁
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle_mor₂
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle_mor₃
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle_eq
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle_distinguished
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle_first
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle_second
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangle_third
+#print axioms AAT.AG.AtlasDefectComposition.compositionTriangleConeEquiv
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition
