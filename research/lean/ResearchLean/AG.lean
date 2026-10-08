@@ -1169,3 +1169,7 @@ import ResearchLean.AG.AtlasCoefficientFiber.FaceCloneComparison
 import ResearchLean.AG.AtlasCoefficientFiber.FaceCloneCoefficient
 import ResearchLean.AG.AtlasCoefficientFiber.FaceCloneHomology
 import ResearchLean.AG.AtlasCoefficientFiber.FaceCloneLaw
+import ResearchLean.AG.AtlasCoefficientFiber.ConstrainedRank
+import ResearchLean.AG.AtlasCoefficientFiber.PrimitiveRankCriterion
+import ResearchLean.AG.AtlasCoefficientFiber.PrimitiveMatrices
+import ResearchLean.AG.AtlasCoefficientFiber.FiniteTauDecision
