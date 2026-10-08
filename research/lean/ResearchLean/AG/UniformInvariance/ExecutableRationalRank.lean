@@ -77,6 +77,38 @@ def columnGram [Fintype m] (A : Matrix m n ℚ) {k : ℕ}
     (selection : Fin k → n) : Matrix (Fin k) (Fin k) ℚ :=
   (selectedColumns A selection)ᵀ * selectedColumns A selection
 
+/-- Definition-owner entry API for E finite-coordinate producers: selected
+columns retain the original named column entries. No rank premise is used. -/
+theorem selectedColumns_apply (A : Matrix m n ℚ) {k : ℕ}
+    (selection : Fin k → n) (i : m) (j : Fin k) :
+    selectedColumns A selection i j = A i (selection j) := rfl
+
+/-- Definition-owner Gram API for E projection producers. The finite row
+instance is needed only for the original rational matrix multiplication. -/
+theorem columnGram_eq_transpose_mul [Fintype m]
+    (A : Matrix m n ℚ) {k : ℕ} (selection : Fin k → n) :
+    columnGram A selection =
+      (selectedColumns A selection)ᵀ * selectedColumns A selection := rfl
+
+/-- Definition-owner evaluation API: transpose multiplication on a selected
+column reads the same original transpose component. This keeps E clients from
+unfolding the accepted column-selection construction. -/
+theorem selectedColumns_transpose_mulVec [Fintype m]
+    (A : Matrix m n ℚ) {k : ℕ} (selection : Fin k → n)
+    (x : m → ℚ) (j : Fin k) :
+    ((selectedColumns A selection)ᵀ *ᵥ x) j = (Aᵀ *ᵥ x) (selection j) := rfl
+
+/-- Definition-owner range API for E finite-coordinate producers. Selecting
+columns of the original table cannot enlarge its literal linear-map range;
+finite indices supply the standard finite column-span representation. -/
+theorem selectedColumns_range_le [Fintype m] [Fintype n]
+    (A : Matrix m n ℚ) {k : ℕ} (selection : Fin k → n) :
+    LinearMap.range (selectedColumns A selection).mulVecLin ≤
+      LinearMap.range A.mulVecLin := by
+  rw [Matrix.range_mulVecLin, Matrix.range_mulVecLin, Submodule.span_le]
+  rintro _ ⟨j, rfl⟩
+  exact Submodule.subset_span ⟨selection j, rfl⟩
+
 /-- A selected rational column family has nonzero Gram determinant exactly
 when the selected columns are linearly independent. -/
 theorem columnGram_det_ne_zero_iff [Fintype m]
@@ -429,5 +461,38 @@ end ExecutableRationalLinearAlgebra
 
 end AAT.AG.ResolutionInvariance
 
-#assert_standard_axioms_only
-  AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra
+
+
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.selectedColumns
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.columnGram
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.selectedColumns_apply
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.columnGram_eq_transpose_mul
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.selectedColumns_transpose_mulVec
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.selectedColumns_range_le
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.columnGram_det_ne_zero_iff
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.selectionIndependent
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.selectionIndependent_eq_true_iff
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.hasNonzeroGramMinor
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.hasNonzeroGramMinor_eq_true_iff_exists
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.selectedColumns_rank_le
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.selectedColumns_rank_eq
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.rank_eq_of_selectedColumns_basis
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.hasNonzeroGramMinor_eq_true_iff
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.rationalMatrixRank
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.rationalMatrixRank_eq_rank
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.rationalMatrixRank_eq_finrank_range
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.rationalMatrixDefect
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.rationalMatrixDefect_eq_blockDefect
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.rank_pos_of_entry_ne_zero
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.projectionMatrix
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.inclusionMatrix
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.duplicateColumnMatrix
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.projectionMatrix_rank
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.inclusionMatrix_rank
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.duplicateColumnMatrix_rank
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.identityMatrix_rank
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.zeroMatrix_rank
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.projectionMatrix_defect
+#print axioms AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra.Examples.inclusionMatrix_defect
+
+#assert_standard_axioms_only AAT.AG.ResolutionInvariance.ExecutableRationalLinearAlgebra
