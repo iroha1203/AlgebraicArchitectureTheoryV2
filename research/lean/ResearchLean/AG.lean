@@ -1114,3 +1114,10 @@ import ResearchLean.AG.AtlasCoefficientFiber.LocalCoefficientSingle
 import ResearchLean.AG.AtlasCoefficientFiber.LocalPreservation
 import ResearchLean.AG.AtlasCoefficientFiber.PurePreservation
 import ResearchLean.AG.AtlasCoefficientFiber.G107FiberComparison
+import ResearchLean.AG.AtlasDefectComposition.ConeCoordinates
+import ResearchLean.AG.AtlasDefectComposition.ConeHomologySequence
+import ResearchLean.AG.AtlasDefectComposition.ConeCompositionTriangle
+import ResearchLean.AG.AtlasCoefficientFiber.CoefficientCones
+import ResearchLean.AG.AtlasCoefficientFiber.FiberCone
+import ResearchLean.AG.AtlasCoefficientFiber.ConeSequences
+import ResearchLean.AG.AtlasCoefficientFiber.PushforwardCoarseSpecialization

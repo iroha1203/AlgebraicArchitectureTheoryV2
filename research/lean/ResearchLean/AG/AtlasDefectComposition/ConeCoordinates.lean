@@ -35,6 +35,25 @@ def coneCoordinateEquiv (m : ℤ) :
   map_add' x y := by ext <;> simp
   map_smul' r x := by ext <;> simp
 
+/-- 標準錐座標の逆写像は、実target包含とshifted source包含の和である。 -/
+theorem coneCoordinateEquiv_symm_eq (m : ℤ) (p : G.X m × F.X (m+1)) :
+    (coneCoordinateEquiv φ m).symm p = (mappingCone.inr φ).f m p.1 +
+      (mappingCone.inl φ).v (m+1) m (by simp) p.2 := rfl
+
+/-- 実target包含は全次数でtarget/source座標の第一成分に入る。 -/
+@[simp] theorem coneCoordinateEquiv_inr (m : ℤ) (y : G.X m) :
+    coneCoordinateEquiv φ m ((mappingCone.inr φ).f m y) = (y,0) := by
+  apply (coneCoordinateEquiv φ m).symm.injective
+  rw [LinearEquiv.symm_apply_apply, coneCoordinateEquiv_symm_eq]
+  simp only [map_zero, add_zero]
+
+/-- 実shifted source包含は全次数でtarget/source座標の第二成分に入る。 -/
+@[simp] theorem coneCoordinateEquiv_inl (m : ℤ) (x : F.X (m+1)) :
+    coneCoordinateEquiv φ m ((mappingCone.inl φ).v (m+1) m (by simp) x) = (0,x) := by
+  apply (coneCoordinateEquiv φ m).symm.injective
+  rw [LinearEquiv.symm_apply_apply, coneCoordinateEquiv_symm_eq]
+  simp only [map_zero, zero_add]
+
 /-- Cのtarget成分は標準錐のsecond projectionで読む。 -/
 @[simp] theorem coneCoordinateEquiv_snd (m : ℤ) (z : (mappingCone φ).X m) :
     (coneCoordinateEquiv φ m z).1 = (mappingCone.snd φ).v m m (by simp) z := rfl
@@ -159,4 +178,23 @@ def comparisonConeTwoEquiv {C D : TwoPhase.ThreeCochainComplex.{0,w} ℚ}
     (LinearEquiv.prodUnique (R := ℚ))
 
 end AAT.AG.AtlasDefectComposition
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_symm_eq
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_inr
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_inl
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_snd
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_fst
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_symm_snd
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_symm_fst
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_d
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_d_apply
+#print axioms AAT.AG.AtlasDefectComposition.coneCoordinateEquiv_map
+#print axioms AAT.AG.AtlasDefectComposition.comparisonCone
+#print axioms AAT.AG.AtlasDefectComposition.comparisonCone_eq
+#print axioms AAT.AG.AtlasDefectComposition.coneDegreeFiniteDimensional
+#print axioms AAT.AG.AtlasDefectComposition.comparisonCone_isZero
+#print axioms AAT.AG.AtlasDefectComposition.comparisonConeMinusOneEquiv
+#print axioms AAT.AG.AtlasDefectComposition.comparisonConeZeroEquiv
+#print axioms AAT.AG.AtlasDefectComposition.comparisonConeOneEquiv
+#print axioms AAT.AG.AtlasDefectComposition.comparisonConeTwoEquiv
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition

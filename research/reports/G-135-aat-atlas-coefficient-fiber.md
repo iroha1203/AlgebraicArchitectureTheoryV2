@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 9）
+## 現proof state（Cycle 10）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -19,11 +19,12 @@ Cycle 5の原始block分解からκ・実H₁L・R・標準H¹Qの同定とfores
 Cycle 6の実τ・五項列・全R補正代表・原始消滅同値・pure消滅・W3の非零τはPR #5297で受理済み。
 Cycle 7の原carrier filtration・実graded/SES/native spectral δ・exact couple・E₁/E₂と独立d₂＝同じτはPR #5298で受理済み。
 Cycle 8の実核・余核SES、旧診断加法式、保存必要十分とG133相殺零はPR #5299で受理済み。
-現在はCの局所係数からの保存、pure C3′と同じG107例への接続をCycle 9に選定する。
+Cycle 9の局所十分条件・pure保存両方向/全A C3′・同じG107新旧条件はPR #5300で受理済み。
+現在はCの原三錐・原Qへの擬同型・全次数と符号の対応をCycle 10に選定する。
 三錐、D・E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
-現在のdelta・未放電行は末尾のCycle 9台帳で追跡する。
+現在のdelta・未放電行は末尾のCycle 10台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -1555,3 +1556,165 @@ G107FiberComparisonのnamespaceは`AAT.AG.AtlasCoefficientFiber.G107DeclaredFibe
 
 validation `.tmp/g135/cycle9-validation.json` SHA-256 `ed2a3ea8162414c1cf7cf2235bde3a3f0631918332775653073f395a33ef751f`。
 scan `.tmp/g135/cycle9-scans.json` SHA-256 `0bb6e1eb5203841259dc4176ee61b4db8851a9dd9b10f13f6edc65d549ebf0f1`。
+
+## Cycle 9受理とマージ
+
+PR [#5300](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5300)、固定head
+`70909cc76c24e689fe03efe4340afc2bbf164969`で、新規数学2本・Lean2本は全てNo major findings、
+中心/非中心finding 0。正式reruns0。
+[標準監査・root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5300#issuecomment-6053115567)は
+全六条件をapprove / proof-obligation-dischargedと判定した。
+[数学二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5300#issuecomment-6053099904)、
+[Lean二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5300#issuecomment-6053101828)。
+merge `2d9dc331d43b52cb36824836747dfeb89e2c9baa`、2026-10-08T05:36:12Z、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6053130472)。
+同head CI8 SUCCESS、Lean37731874793/Tool37731874797。Formal実build/kernel/premise stepsはSKIPPED。
+全100宣言は標準三公理のみ。Cycle 9 proposalの監査待ち表示は当時の履歴であり、
+本受理節で六条件を放電済みへ進める。全GOAL remainingと別finalは未完、Formalはunported。
+
+## Cycle 10 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 10
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 2d9dc331d43b52cb36824836747dfeb89e2c9baa
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: PR5300最終監査6053115567・Issue同期6053130472・現source
+  proof_dag_predecessors: [C3原η/ε/独立u全Hom因子化, C4原Qとε/制限SES, C6原標準δとτ, C8実診断/G133相殺零, G133標準錐/合成triangle/全次数SES]
+  milestone: GOAL C・exact-sequence§4–5の原三錐から原Qと同じτへの全次数/符号対応
+  proof_obligations: [同じ原η/ε/uの三標準錐, 独立uを中間に持つ実composition triangleと全三射, 原ε錐から原Qへの実制限擬同型, 全整数次数の錐完全列と原SESδ, 次数1で同じR/τと包含/射影を同定, 順像Pを粗係数に選ぶ恒等unit特殊化]
+  exit_criteria:
+    - 原η/原ε/独立uの三標準錐を生成し、原全Hom因子化から実composition triangleを構成して全三対象/三射・全次数の第一第二成分式・第三射のshift負号・標準homotopy圏のdistinguishedを示す
+    - 同じ三錐の全整数次数で原微分のtarget/source成分と負符号、次数外零性と有限次元性を保持する
+    - 同じ原ε錐から原QへdescShortComplexを原SESから生成し、全次数で実値(y,x)を原L制限yへ送ることと包含合成を示し、全次数擬同型と元保存homology両方向同型を導く
+    - 同じ錐連結射を原SESδへ全整数次数で同定し、包含/制限可換と次数1の同じR/τ・核への射影を符号付きで接続する。原H0Q零性も同じ擬同型へ移す
+    - 原三射の全整数次数でcone_short_exactの実包含/核射影/完全性/単射全射/次元加法式を接続し、H0余核/H1核/H2核などを零と仮定せず残す
+    - 原Pを粗係数に選ぶ恒等unitと原εの全Hom因子化を示し、その同じH1比較の核零/余核kerτ同型と全商代表の原制限値を得る
+  selection_reason: Cの残る標準錐接続を原Q/τまで閉じ、後続Dの全Law錐/SES図式が再利用できる全次数APIを固定する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [AtlasCoefficientFiber/CoefficientCones.lean, AtlasCoefficientFiber/FiberCone.lean, AtlasCoefficientFiber/ConeSequences.lean, AtlasCoefficientFiber/PushforwardCoarseSpecialization.lean, AtlasDefectComposition/ConeCoordinates.lean所有API, AtlasDefectComposition/ConeHomologySequence.lean所有API, AtlasDefectComposition/ConeCompositionTriangle.lean所有API]
+  risks: [独立uを合成から再定義しない, 任意Qへの置換, 低次数だけへの縮小, shift/δ負号の混同, H1保存から全錐零を誤推論, 供給擬同型/有限性, P粗係数特殊化をT0原粗Cの読み替えにしない]
+  unchecked: [六終了条件は実装前・未確認]
+```
+
+六条件を実装前に固定した。原三項複体はG133 zeroExtensionで移し、原Qは既存restrictionComplexを使う。
+標準descShortComplexの擬同型性は原evaluationRestriction_shortExactから生成する。
+一般の任意M/A/ℚと全整数次数を保持し、局所/pure/forest仮定を加えない。
+Pを粗係数に選ぶ補助特殊化は元のT0 C_Aと別に記し、原ηを恒等へ変更しない。
+G133のχ零と同じW3τ非零の対応はC8受理証拠を保持する。全D/E/W評価と別finalは未完。
+
+## Cycle 10 result proposal
+
+| 固定終了条件 | 同じ入力・射の実証拠 | 結果 |
+| --- | --- | --- |
+| 1 原三錐・実合成triangle・全三射とshift符号 | CoefficientConesの原η/ε/独立uとstandardComparison_factorization、coefficientCompositionTriangle、obj₁/₂/₃、distinguished、first/second/third。G133所有compositionTriangle_thirdは実shift次数同型で(-x,0)を計算 | 全構成あり・正式監査待ち |
+| 2 全次数微分・次数外零・有限次元 | coefficientCone_d/fiberCone_d/totalCone_dは全ℤの(dy+fx,-dx)。各isZeroは-1/0/1/2以外だけ。各finiteDimensionalは原有限cellから生成 | 7対象focused成功 |
+| 3 同じ原Qへの制限評価擬同型・全次数両方向同型 | fiberConeDescは原evaluationRestrictionShortComplexのdescShortComplex。inr/inl_apply、symm_apply/applyで(y,x)→原制限y、inr_desc。quasiIsoは原SES短完全性から、homology_isIso/Equivと順/逆評価は全ℤ | 全構成あり・正式監査待ち |
+| 4 原SESδ/包含と原R/τ・射影・H⁰ | 所有coneConnecting_shortExactは標準homotopyδとSESδの同定を標準homologyへ移す。fiberCone_connecting全ℤ、HomologyEquiv_inr、H1REquiv/inr/tau、KernelProjection_tau、同じQ零性を移すfiberCone_H0_isZero | 全構成あり・正式監査待ち |
+| 5 原三射の全次数実短完全列・寄与保持 | threeCones_shortExact、各CokernelInclusion_mk/KernelProjection_val/injective/surjective/function_exact、全ℤhomology_dimensionとH0/H1_dimension。実target包含・標準連結射の同じ値を保つ | 全構成あり・正式監査待ち |
+| 6 補助P粗係数・恒等unitと同じε・核零/余核kerτ | pushforwardCoarseUnit/Comparisonと全Hom等号/factorization、全次数unit_standard、H1_kernel、CokernelEquiv/mk_val。元T0 C/ηを変更しない | 全構成あり・正式監査待ち |
+
+量化は任意の原M/A、細選択π⁻¹A、ℚ、全整数次数。局所/pure/forest、H⁰余核零、
+H²核零、比較の同型やQの供給、擬同型の追加仮定はない。三錐は原三射の標準零延長錐であり、
+中間錐は独立uのもの。原QはrestrictionComplex、原τは既存標準SESδと原R座標の合成を保持する。
+標準錐の微分と第三射には負号を含め、SESδ同定は同じmathlib符号のまま全次数で証明した。
+
+全homology両方向同型は同じ実descの標準asIsoで生成し、QuasiIso/IsIsoを入力として受けない。
+原H⁰Q零性だけはC4の入力生成証拠を使い、その同じQへ擬同型で戻してfiber錐H⁰零を得る。
+他の錐の低次数寄与を消去せず、全次数のliteral kernel/quotientと実射を保持する。
+補助P粗係数は原ηの変更ではなく、同じPの恒等unitを新しい始域に選んだ特殊化として記す。
+その核零はC6の原εH¹単射、余核同型はC8の原制限から生成済みの同型を実使用する。
+
+所有APIはG133 ConeCoordinatesのsymm_eq/inr/inl、ConeHomologySequenceのshortExact対応、
+ConeCompositionTriangleのthirdを追加した。既存statement/def/proofは不変、明示printを全source順で追加。
+元三錐に適用するG133 comparisonCone/coordinate/d/finite/degree-out、compositionTriangleの全三射、
+coneShortComplex/cokernel/kernel/exact/dimensionの現statementと同じ引数を読む。
+受理資格はG133 PR5269（standard6007458427/whole6007700344）、
+原因子化C3 PR5294（6046087706）、原SES/Q零C4 PR5295（6047664301）、
+原R/C6δ・εH¹単射PR5297（6050868943）、原余核kerτ C8 PR5299（6052624414）。
+使用する固定版からの関係差分を確認し、今回の新所有APIは本cycleで監査する。
+標準Lean4.28.0/mathlib8f9d9cff6bd728b17a24e163c9402775d9e6a365のdescShortComplex/QI/δ、
+asIso/homologyMap/shiftの条件を原SESと有限cellから満たす。供給exactness/結果certificateなし。
+
+依存DAG: 原M/A→原η/ε/u→全Hom因子化/zeroExtension→三実錐/合成triangle/全次数SES。
+原L/原Q/ε/制限→原短完全列→標準desc→全次数QI/実homology同型→原Q H⁰零/原R→同じτ。
+原P/恒等unit/原ε→補助全Hom因子化→原εH¹単射/原五項完全性→補助核零/余核kerτ。
+χ零と同じW3τ非零はC8の受理済witnessThree_cancellation_zero_and_tau_ne_zeroを保持する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原三錐の実composition triangle/全三射とshift負号、原Qへの同じ実評価QI/全homology両方向、全次数原δと原τ対応、三実錐SES/低次数寄与、P粗係数補助特殊化を接続
+  exit_criteria_status: [1原三対象/全三射/符号/distinguishedあり, 2全ℤ微分/次数外零/有限性あり, 3原Qへの実評価/QI/両逆あり, 4全ℤδ/包含と原R/τ/射影/H0同定あり, 5全ℤ実SES/全元と低次数加法式あり, 6補助恒等unit/原ε/核零/商全代表kerτ同型あり]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [CoefficientCones, FiberCone, ConeSequences, PushforwardCoarseSpecialization, G133三所有API追加]
+  evidence: [上表・全宣言spine・7対象focusedと標準公理監査]
+  claim_mapping:
+    theorem_names: [coefficientCompositionTriangle_distinguished, coefficientCompositionTriangle_third, fiberConeDesc_quasiIso, fiberConeHomologyEquiv, fiberConeH1REquiv_tau, threeCones_shortExact, pushforwardCoarseCokernelEquiv]
+    source_labels: [GOAL C三錐, exact-sequence§5全次数と符号, exact-sequence§4順像粗係数特殊化]
+    conjuncts: [独立u中間錐と原二射, 全ℤの標準錐微分/三射, 原Q評価/原SESδ/原Rとτ, literal核商と元保存, 恒等unitの補助比較]
+    undischarged_assumptions: []
+    acceptance_point: 六固定終了条件を同cycleで閉じ、固定headの標準PR独立監査へ渡す
+    port_status: unported
+  whole_goal_status: target-proof-checkpoint
+  remaining_goal: [B/E全A有限τ消滅判定, D全Law/台自然性/G134接続, E原始有理行列計算法, W全指定例全評価/全A/二label/空台, 別finalfresh4]
+audits:
+  premise_delta:
+    discharged: [原全Hom因子化/三錐, 原SESから同じ実desc/QI/δ, 原有限cellから全次数有限性, 原εH1単射/制限から補助核商]
+    remaining: [選定にはなし・全GOALのremaining_goal]
+  certificate_provenance:
+    discharged: [同じ原η/ε/独立u, 原restrictionComplex/evaluationRestrictionShortComplex, 標準mappingCone/desc/asIso, 同じ原R/τ]
+    unresolved: []
+  proof_use:
+    used: [原三成分因子化, 元短完全列, 標準錐座標/shift負号, 原H0Q零性, 同じR座標/標準τ, 原εH1単射/五項列, 原P恒等unit]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [7単一focused成功, 全124明示print/source/log同順序, 共通scanと静的方向]
+  blocking_findings: [新規四本の標準PR独立査読は未実施]
+  next_obligation: Dの原全A制限自然性とLaw生成複体/全射への接続
+```
+
+### Cycle 10単一file検証・全宣言spine
+
+7対象非aggregate fileはfocused成功、警告/エラー0。
+全124 source/明示print/実log同順序、新規80/既存44/自動生成追加0、標準三公理のみ。
+所有三fileは全既存declも明示#printで照会した。必要な単一cacheは完了を確認してから依存対象を検証。
+Research全体/aggregate/全file loop、local lake build、Formal実build/移植、別finalfresh4は未実施。
+7moduleはmanifestとAGの直接静的importに各1件登録し、aggregateはelaborateしない。
+
+<!-- cycle10-generated-evidence -->
+
+| file | source宣言（source/print/log同順序） |
+| --- | --- |
+| `ConeCoordinates.lean` | `coneCoordinateEquiv`, `coneCoordinateEquiv_symm_eq`, `coneCoordinateEquiv_inr`, `coneCoordinateEquiv_inl`, `coneCoordinateEquiv_snd`, `coneCoordinateEquiv_fst`, `coneCoordinateEquiv_symm_snd`, `coneCoordinateEquiv_symm_fst`, `coneCoordinateEquiv_d`, `coneCoordinateEquiv_d_apply`, `coneCoordinateEquiv_map`, `comparisonCone`, `comparisonCone_eq`, `coneDegreeFiniteDimensional`, `comparisonCone_isZero`, `comparisonConeMinusOneEquiv`, `comparisonConeZeroEquiv`, `comparisonConeOneEquiv`, `comparisonConeTwoEquiv` |
+| `ConeHomologySequence.lean` | `transportShortComplex`, `transportShortComplexIso`, `transportShortComplex_exact`, `coneConnecting`, `coneConnecting_shortExact`, `coneTargetSequence`, `coneTargetSequence_f`, `coneTargetSequence_g`, `cone_target_exact`, `coneMiddleSequence`, `coneMiddleSequence_f`, `coneMiddleSequence_g`, `cone_middle_exact`, `coneSourceSequence`, `coneSourceSequence_f`, `coneSourceSequence_g`, `cone_source_exact`, `homologyFactors_inv_natural`, `homologyFactors_hom_natural`, `coneConnecting_natural` |
+| `ConeCompositionTriangle.lean` | `compositionTriangle`, `compositionTriangle_mor₁`, `compositionTriangle_mor₂`, `compositionTriangle_mor₃`, `compositionTriangle_eq`, `compositionTriangle_distinguished`, `compositionTriangle_first`, `compositionTriangle_second`, `compositionTriangle_third`, `compositionTriangleConeEquiv` |
+| `CoefficientCones.lean` | `coefficientCone`, `fiberCone`, `totalCone`, `standardComparison_factorization`, `coefficientCompositionTriangle`, `coefficientCompositionTriangle_obj₁`, `coefficientCompositionTriangle_obj₂`, `coefficientCompositionTriangle_obj₃`, `coefficientCompositionTriangle_distinguished`, `coefficientCompositionTriangle_first`, `coefficientCompositionTriangle_second`, `coefficientCompositionTriangle_third`, `coefficientCone_d`, `fiberCone_d`, `totalCone_d`, `coefficientCone_isZero`, `fiberCone_isZero`, `totalCone_isZero`, `coefficientCone_finiteDimensional`, `fiberCone_finiteDimensional`, `totalCone_finiteDimensional` |
+| `FiberCone.lean` | `fiberConeDesc`, `fiberConeDesc_eq`, `fiberConeDesc_inr_apply`, `fiberConeDesc_inl_apply`, `fiberConeDesc_symm_apply`, `fiberConeDesc_apply`, `fiberCone_inr_desc`, `fiberConeDesc_quasiIso`, `fiberConeDesc_homology_isIso`, `fiberConeHomologyEquiv`, `fiberConeHomologyEquiv_apply`, `fiberConeHomologyEquiv_symm_evaluation`, `fiberConeHomologyEquiv_inr`, `fiberCone_connecting`, `fiberConeH1REquiv`, `fiberConeH1REquiv_apply`, `fiberConeH1REquiv_inr`, `fiberConeH1REquiv_tau`, `fiberConeKernelProjection_tau`, `fiberCone_H0_isZero` |
+| `ConeSequences.lean` | `threeCones_shortExact`, `coefficientConeCokernelInclusion_mk`, `coefficientConeKernelProjection_val`, `coefficientConeCokernelInclusion_injective`, `coefficientConeKernelProjection_surjective`, `coefficientCone_function_exact`, `coefficientCone_homology_dimension`, `coefficientCone_H0_dimension`, `coefficientCone_H1_dimension`, `totalConeCokernelInclusion_mk`, `totalConeKernelProjection_val`, `totalConeCokernelInclusion_injective`, `totalConeKernelProjection_surjective`, `totalCone_function_exact`, `totalCone_homology_dimension`, `totalCone_H0_dimension`, `totalCone_H1_dimension`, `fiberConeCokernelInclusion_mk`, `fiberConeKernelProjection_val`, `fiberConeCokernelInclusion_injective`, `fiberConeKernelProjection_surjective`, `fiberCone_function_exact`, `fiberCone_homology_dimension`, `fiberCone_H0_dimension`, `fiberCone_H1_dimension` |
+| `PushforwardCoarseSpecialization.lean` | `pushforwardCoarseUnit`, `pushforwardCoarseComparison`, `pushforwardCoarseUnit_eq`, `pushforwardCoarseComparison_eq`, `pushforwardCoarse_factorization`, `pushforwardCoarseUnit_standard`, `pushforwardCoarseH1_kernel`, `pushforwardCoarseCokernelEquiv`, `pushforwardCoarseCokernelEquiv_mk_val` |
+
+所有3fileのnamespaceは`AAT.AG.AtlasDefectComposition`、新4fileは`AAT.AG.AtlasCoefficientFiber`。
+
+| file / source数 | source SHA-256 | focused output SHA-256 |
+| --- | --- | --- |
+| `ConeCoordinates.lean` / 19 | `8368d89ad31f8a78702e796d2f6f85315667b426da2ad06402d0c1f49daf2719` | `ca6e113c33e14a4ef10a52b3a468ae5af8d9ada15d531c5606315e9d20b589a8` |
+| `ConeHomologySequence.lean` / 20 | `d97e72261487e405b65b27cfad2696d20617a80f416517d6212d08a0b1ce9776` | `eaadde2e1da469200c0618a31c67ca13be3b83d9bbb145907e26ddbf77969cd1` |
+| `ConeCompositionTriangle.lean` / 10 | `64d1356a43d165ced198f509d85f1dd11716110f5c2a5c51c42d49115c15e651` | `d447ab2bd29763b60402611ae7ffa622baadbab99223731346498c7a9222eb2a` |
+| `CoefficientCones.lean` / 21 | `2d8688138a80832675a9ee71e4cd6e41d56d96331d19b407b7470e2eb35c5f05` | `4429860c14d2f23dd563d395c957f7eb8880dcd51b8c2b635aac6db836b4bbcf` |
+| `FiberCone.lean` / 20 | `1fa0f559589085b427114887a431c1a285c7fc72ba0be19a2b0a15ff90e0eb82` | `71544c1420b215604a57e32c9de79c094d61043d8b5fff7cc1cac6f1bb9b5c01` |
+| `ConeSequences.lean` / 25 | `28b6b74c831faca3f5be94d79fade13316513d2e833c1f9d41950921ac6da654` | `930015ba247cd63b369b805b442c7e96a612f1b02893163bad68d83907451d04` |
+| `PushforwardCoarseSpecialization.lean` / 9 | `57d1cebf9e4b6eede3f734d89a73b8e6f2f1555632a312ce5bdbe8a6afc083a4` | `c8b845077175096cec17105fdc5a31ea671bdfdfff56a2aaeef658837a8417bd` |
+
+validation `.tmp/g135/cycle10-validation.json` SHA-256 `ae6a0c2df873e9885e8cfbf54d7d6b346ec3ee16679b8638f3ec2affe45d3b69`。
+scan `.tmp/g135/cycle10-scans.json` SHA-256 `ee96281a17c4aa2d2c7c7493fde047e84433ef9f6637bb49b1d221f5e304a370`。
