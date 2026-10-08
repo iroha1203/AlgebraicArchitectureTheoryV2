@@ -31,6 +31,14 @@ def oldH0Iso (C : ThreeCochainComplex.{0,w} ℚ) :
   (oldZeroShort C).moduleCatCyclesIso.symm ≪≫
     (oldZeroShort C).asIsoHomologyπ (by rfl) ≪≫
     (ShortComplex.homologyMapIso (zeroExtensionZeroScIso C)).symm
+
+/-- 元H⁰の同型と短複体比較を合成した所有公開API。 -/
+theorem oldH0Iso_hom_comp (C : ThreeCochainComplex.{0,w} ℚ) :
+    (oldH0Iso C).hom ≫ (ShortComplex.homologyMapIso (zeroExtensionZeroScIso C)).hom =
+      (oldZeroShort C).moduleCatCyclesIso.inv ≫
+        ((oldZeroShort C).asIsoHomologyπ (by rfl)).hom := by
+  simp only [oldH0Iso, Iso.trans_hom, Iso.symm_hom, Category.assoc,
+    Iso.inv_hom_id, Category.comp_id]
 /-- 元の終端商から標準H²への両方向同型。 -/
 def oldH2Iso (C : ThreeCochainComplex.{0,w} ℚ) :
     ModuleCat.of ℚ (C.C2 ⧸ LinearMap.range C.d1) ≅ (zeroExtension C).homology (2 : ℤ) :=
@@ -56,6 +64,7 @@ end AAT.AG.AtlasDefectComposition
 #print axioms AAT.AG.AtlasDefectComposition.zeroExtensionZeroScIso
 #print axioms AAT.AG.AtlasDefectComposition.zeroExtensionTwoScIso
 #print axioms AAT.AG.AtlasDefectComposition.oldH0Iso
+#print axioms AAT.AG.AtlasDefectComposition.oldH0Iso_hom_comp
 #print axioms AAT.AG.AtlasDefectComposition.oldH2Iso
 #print axioms AAT.AG.AtlasDefectComposition.oldH2Iso_hom_comp
 #print axioms AAT.AG.AtlasDefectComposition.oldH0Equiv

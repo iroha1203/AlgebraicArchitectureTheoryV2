@@ -352,6 +352,70 @@ def faceBlockEquiv : K2 Nf (comparisonFactor qc qf h ⁻¹' A) ≃ₗ[ℚ]
 @[simp] theorem faceBlockEquiv_horizontal (x : K2 Nf (comparisonFactor qc qf h ⁻¹' A))
     (f : HorizontalFace M A) : (faceBlockEquiv M A x).2 f = x f.1 := rfl
 
+/-- 原三面分解の混在係数への線形射影。 -/
+def mixedFaceProjection : K2 Nf (comparisonFactor qc qf h ⁻¹' A) →ₗ[ℚ] (MixedFace M A →₀ ℚ) :=
+  (LinearMap.snd ℚ (VerticalFace M A →₀ ℚ) (MixedFace M A →₀ ℚ)).comp
+    ((LinearMap.fst ℚ _ _).comp (faceBlockEquiv M A).toLinearMap)
+
+/-- 混在射影は原面の同じ係数を読む。 -/
+@[simp] theorem mixedFaceProjection_apply (x : K2 Nf (comparisonFactor qc qf h ⁻¹' A))
+    (f : MixedFace M A) : mixedFaceProjection M A x f = x f.1 :=
+  faceBlockEquiv_mixed M A x f
+
+/-- 混在射影は同じ混在面包含の左逆。 -/
+@[simp] theorem mixedFaceProjection_inclusion (x : MixedFace M A →₀ ℚ) :
+    mixedFaceProjection M A (mixedFaceInclusion M A x) = x := by
+  ext f
+  rw [mixedFaceProjection_apply]
+  exact cellInclusion_apply _ x f
+
+/-- 混在射影は原垂直面包含を零に送る。 -/
+@[simp] theorem mixedFaceProjection_vertical (x : VerticalFace M A →₀ ℚ) :
+    mixedFaceProjection M A (verticalFaceInclusion M A x) = 0 := by
+  ext f
+  rw [mixedFaceProjection_apply]
+  apply cellInclusion_apply_notmem
+  intro hf
+  obtain ⟨e, he⟩ := f.2.2
+  cases hf.2.2.1.symm.trans he
+
+/-- 元垂直面の原係数射影。 -/
+def verticalFaceProjection : K2 Nf (comparisonFactor qc qf h ⁻¹' A) →ₗ[ℚ] (VerticalFace M A →₀ ℚ) :=
+  (LinearMap.fst ℚ (VerticalFace M A →₀ ℚ) (MixedFace M A →₀ ℚ)).comp
+    ((LinearMap.fst ℚ _ _).comp (faceBlockEquiv M A).toLinearMap)
+
+/-- 垂直面射影は原面の同じ係数を読む。 -/
+@[simp] theorem verticalFaceProjection_apply (x : K2 Nf (comparisonFactor qc qf h ⁻¹' A))
+    (f : VerticalFace M A) : verticalFaceProjection M A x f = x f.1 :=
+  faceBlockEquiv_vertical M A x f
+
+/-- 垂直面射影は同じ垂直面包含の左逆。 -/
+@[simp] theorem verticalFaceProjection_inclusion (x : VerticalFace M A →₀ ℚ) :
+    verticalFaceProjection M A (verticalFaceInclusion M A x) = x := by
+  ext f
+  rw [verticalFaceProjection_apply]
+  exact cellInclusion_apply _ x f
+
+/-- 垂直面射影は原混在面包含を零に送る。 -/
+@[simp] theorem verticalFaceProjection_mixed (x : MixedFace M A →₀ ℚ) :
+    verticalFaceProjection M A (mixedFaceInclusion M A x) = 0 := by
+  ext f
+  rw [verticalFaceProjection_apply]
+  apply cellInclusion_apply_notmem
+  rintro ⟨_, e, he⟩
+  cases f.2.2.2.1.symm.trans he
+
+/-- 原none面chainは原垂直成分と原混在成分の和として戻る。 -/
+theorem degenerateFace_recombination (x : degenerateL2 M A) :
+    verticalFaceInclusion M A (verticalFaceProjection M A x.1) +
+      mixedFaceInclusion M A (mixedFaceProjection M A x.1) = x.1 := by
+  have hh := (degenerateL2_vertical_mixed M A).le x.2
+  obtain ⟨v, ⟨v, rfl⟩, m, ⟨m, rfl⟩, hvm⟩ := Submodule.mem_sup.mp hh
+  rw [← hvm]
+  simp only [map_add, verticalFaceProjection_inclusion, verticalFaceProjection_mixed,
+    mixedFaceProjection_vertical, mixedFaceProjection_inclusion, add_zero, zero_add]
+
+
 attribute [deprecated cell_recombination (since := "2026-10-08")] cellRecombination
 
 end AAT.AG.AtlasCoefficientFiber
@@ -407,4 +471,13 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_vertical
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_mixed
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_horizontal
+#print axioms AAT.AG.AtlasCoefficientFiber.mixedFaceProjection
+#print axioms AAT.AG.AtlasCoefficientFiber.mixedFaceProjection_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.mixedFaceProjection_inclusion
+#print axioms AAT.AG.AtlasCoefficientFiber.mixedFaceProjection_vertical
+#print axioms AAT.AG.AtlasCoefficientFiber.verticalFaceProjection
+#print axioms AAT.AG.AtlasCoefficientFiber.verticalFaceProjection_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.verticalFaceProjection_inclusion
+#print axioms AAT.AG.AtlasCoefficientFiber.verticalFaceProjection_mixed
+#print axioms AAT.AG.AtlasCoefficientFiber.degenerateFace_recombination
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

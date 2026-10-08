@@ -79,6 +79,26 @@ theorem zeroExtension_liftCycles_H2 {B : ModuleCat.{u} ℚ}
     Iso.inv_hom_id, Category.comp_id]
   rfl
 
+/-- 元のd⁰閉代表射が標準H⁰へ送る同じ核元。 -/
+theorem zeroExtension_liftCycles_H0 {B : ModuleCat.{u} ℚ}
+    (x : B ⟶ (zeroExtension C).X (0 : ℤ))
+    (hx : x ≫ (zeroExtension C).d 0 1 = 0) :
+    (zeroExtension C).liftCycles x 1 (by simp) hx ≫ (zeroExtension C).homologyπ 0 =
+      (oldZeroShort C).moduleCatLeftHomologyData.liftK x hx ≫ (oldH0Iso C).hom := by
+  rw [← cancel_mono (ShortComplex.homologyMapIso (zeroExtensionZeroScIso C)).hom]
+  simp only [Category.assoc, oldH0Iso_hom_comp]
+  change ((zeroExtension C).sc (0 : ℤ)).liftCycles x (by
+    change x ≫ (zeroExtension C).d 0 ((ComplexShape.up ℤ).next 0) = 0
+    rw [(ComplexShape.up ℤ).next_eq' (show (ComplexShape.up ℤ).Rel 0 1 from rfl)]
+    exact hx) ≫ ((zeroExtension C).sc (0 : ℤ)).homologyπ ≫
+      ShortComplex.homologyMap (zeroExtensionZeroScIso C).hom = _
+  rw [ShortComplex.homologyπ_naturality, ← Category.assoc,
+    ShortComplex.liftCycles_comp_cyclesMap]
+  change (oldZeroShort C).liftCycles x hx ≫ (oldZeroShort C).homologyπ = _
+  rw [← Category.assoc]
+  congr 1
+  rw [← cancel_mono (oldZeroShort C).iCycles]
+  simp
 
 /-- 元を指定する射は、同じ有理単位加群のスカラー倍として生成する。 -/
 def elementArrow {X : ModuleCat.{u} ℚ} (x : X) : ModuleCat.of ℚ (ULift.{u} ℚ) ⟶ X :=
@@ -122,15 +142,25 @@ theorem zeroExtension_liftCycles_H2_apply {B : ModuleCat.{u} ℚ}
       oldH2Equiv C (Submodule.Quotient.mk (x v)) := by
   exact congrArg (fun f => f v) (zeroExtension_liftCycles_H2 C x hx)
 
+/-- 標準次数0の代表射評価は元の閉chart核値。 -/
+theorem zeroExtension_liftCycles_H0_apply {B : ModuleCat.{u} ℚ}
+    (x : B ⟶ (zeroExtension C).X (0 : ℤ))
+    (hx : x ≫ (zeroExtension C).d 0 1 = 0) (v : B) :
+    (zeroExtension C).homologyπ 0 ((zeroExtension C).liftCycles x 1 (by simp) hx v) =
+      oldH0Equiv C (⟨x v, by exact congrArg (fun f => f v) hx⟩ : LinearMap.ker C.d0) := by
+  exact congrArg (fun f => f v) (zeroExtension_liftCycles_H0 C x hx)
+
 end AAT.AG.AtlasCoefficientFiber
 
 #print axioms AAT.AG.AtlasCoefficientFiber.shortComplex_liftCycles_class
 #print axioms AAT.AG.AtlasCoefficientFiber.zeroExtension_liftCycles_H1
 #print axioms AAT.AG.AtlasCoefficientFiber.zeroExtension_liftCycles_H2
+#print axioms AAT.AG.AtlasCoefficientFiber.zeroExtension_liftCycles_H0
 #print axioms AAT.AG.AtlasCoefficientFiber.elementArrow
 #print axioms AAT.AG.AtlasCoefficientFiber.elementArrow_one
 #print axioms AAT.AG.AtlasCoefficientFiber.elementArrow_comp
 #print axioms AAT.AG.AtlasCoefficientFiber.elementArrow_zero
 #print axioms AAT.AG.AtlasCoefficientFiber.zeroExtension_liftCycles_H1_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.zeroExtension_liftCycles_H2_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.zeroExtension_liftCycles_H0_apply
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber
