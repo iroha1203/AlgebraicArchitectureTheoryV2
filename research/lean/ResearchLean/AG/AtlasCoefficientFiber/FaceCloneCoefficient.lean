@@ -56,7 +56,7 @@ def coefficientStandardIso : zeroExtension (pushforwardComplex (FaceDuplication.
 @[simp] theorem coefficientStandardIso_hom : (coefficientStandardIso N F A).hom =
     zeroExtensionMap (evaluationHom (FaceDuplication.comparison N F) A) ≫
       (fineStandardIso N F A).hom := rfl
-/-- 元ηはこの実ε座標で元G-134比較となる全射正方形。 -/
+/-- 元ηはこの実ε座標で元G-134比較となる全次数の可換正方形。 -/
 theorem unit_standard_square :
     zeroExtensionMap (unitHom (FaceDuplication.comparison N F) A) ≫
       (coefficientStandardIso N F A).hom = zeroExtensionMap (FaceDuplication.subsetHom N F A) := by

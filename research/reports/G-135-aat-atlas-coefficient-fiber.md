@@ -2701,18 +2701,32 @@ C4/C8/C10/C11-13受理は上記各受理節の固定headへ対応する。
 | `FaceCloneLaw.lean` | `selectedFamilyEquiv`, `selectedFamilyEquiv_apply`, `FaceClone.lawEvaluationIso`, `FaceClone.lawEvaluationIso_hom`, `FaceClone.lawEvaluationIso_apply`, `FaceClone.lawUnitEquiv`, `FaceClone.lawUnitEquiv_apply`, `FaceClone.lawUnitEquiv_symm_apply`, `FaceClone.lawUnitEquiv_apply_symm`, `FaceClone.lawH1_bijective`, `FaceClone.lawDefect_zero`, `FaceClone.lawR_zero`, `FaceClone.lawTau_zero`, `FaceClone.lawFiberCone_zero`, `FaceClone.lawCoefficientConeIso`, `FaceClone.lawCoefficientConeIso_hom`, `FaceClone.lawCoefficientConeIso_first`, `FaceClone.lawTotalFamilyHomologyEquiv`, `FaceClone.SelectedLabel`, `FaceClone.lawTotalH2Equiv`, `FaceClone.lawTotalH2Equiv_apply`, `FaceClone.lawCoefficientH2Equiv`, `FaceClone.lawH2CokernelEquiv`, `FaceClone.lawCoefficientH2CokernelEquiv` |
 
 5単一focused warning/error0、全公理集合はpropext/Classical.choice/Quot.soundの部分集合。
-validation SHA `d9427c8c17c99269e4a2ff28a4cd1afe71c8823b32bc4cb9c25e2eca3e0778f2`。
+validation SHA `4a6fcbd3874ecd50ad75459f45d86368ce9a000dccc61d6fddd378bf59668929`。
 
 | file / source+生成件数 | source SHA256 | 実focused log SHA256 |
 | --- | --- | --- |
 | `MappedEvaluation.lean` / 24+0 | `5cf4664d5b34544d033f85b8cc95ef675043de72717f7d524aed2b170f195e7b` | `cd049a8565e14071f327c2f8cf0ca294bb2c87954cc46132d08753d166000af0` |
 | `FaceCloneComparison.lean` / 16+0 | `d5403b62bf9dda7cb6a70014f7d3a1b82b5e61920cbcf1a3059c98fc2e7aadde` | `1a0b3a32aa3cfc881cd320eefe67d1429215e52eaaf80f4e1b75e69a92fd7acc` |
-| `FaceCloneCoefficient.lean` / 25+0 | `b6e00a2196852e7f6c461513fb7d60ee2a1e8a4b693bd9ecab0db8c97603ca31` | `a8dd36640311d0a77e48cada67c3e107d314ecfc84d40e0729509e18931d7e8c` |
+| `FaceCloneCoefficient.lean` / 25+0 | `740c9f8b775c74a6231dbf72123b546566832c6a468be6c6dd6f2e9ba8095abe` | `a8dd36640311d0a77e48cada67c3e107d314ecfc84d40e0729509e18931d7e8c` |
 | `FaceCloneHomology.lean` / 20+0 | `005a470d54a7565d189caefe286e9cd9105c309e883848fc5cf4773f57405df5` | `ab03a4819a3abc224b72ad8a5a9b4482c028bff2439084f40a6f1b682833882f` |
 | `FaceCloneLaw.lean` / 24+0 | `6d1dfd8d0f8e6be7e5d788c2666a816792582f03d737f90e51e1b3300889bc10` | `6ce8d0ea54971bda48e3b196c145f18b0ea12467132526d073de34a5cfc2cbfc` |
 
 Research full/aggregate/全fileloop/local lake build、Formal実build/移植、全GOAL別finalは未実施。
 
-共通scan SHA `5def4df0a346a42f478da5e564d32da2fb85cffc5c916c3d1c630173b5603f51`。
+共通scan SHA `cc79392a0b85c2ede3380bf1d1113c02cd9de91dc2578765ca0455461084bef8`。
 新Unicode/placeholder/privacy/語彙/逆import0、diff check成功、GOAL/design/Formal不変、
 5新直接登録・対象manifest/AG登録各1、静的Research依存方向228modules PASS。
+
+## Cycle 15初回査読LA-1への直接対応
+
+[初回標準/root監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5306#issuecomment-6060895737)、
+[数学二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5306#issuecomment-6060858637)、
+[Lean二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5306#issuecomment-6060865590)。
+数学A/B・LeanBはNo major findings、LeanAはMinor issues。中心0、非中心LA-1は
+FaceCloneCoefficient:59の「全射正方形」を「全次数の可換正方形」へ訂正する要求。
+名指しdocstringだけを修正し、同sourceのSHAと再検証証拠を同期した。
+signature/def値/instance値/proof/宣言集合/import方向/台帳statusは初回headのまま、追加宣言0。
+変更fileの25単一focusedはwarning/error0、全25公理出力/実logは初回とbyte同一。
+他4source/実log不変、全109source/print/log/module/report相対順一致と標準三公理のみを再照合。
+初回validation SHAd9427c8c17c99269e4a2ff28a4cd1afe71c8823b32bc4cb9c25e2eca3e0778f2は原票と共に不変保存。
+新規単一独立確認と最終受理は未実施、正式再実行0/2。
