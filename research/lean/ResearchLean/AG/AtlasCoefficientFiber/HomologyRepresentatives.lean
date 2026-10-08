@@ -5,6 +5,12 @@ import Mathlib.Algebra.Module.ULift
 # G-135 B：標準homologyの実代表
 
 零延長の標準cycle射と、元三項複体の商類を照合する。
+
+## Implementation notes
+
+代表の入力射には任意universeの有理単位加群のULiftを用い、mathlibのcycle射へ
+そのまま渡す。元を別の標準homologyと定義する案は、既存商類との照合を失うため
+採用しない。同型の合成は定義所有者の公開APIで計算する。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber
@@ -30,8 +36,7 @@ theorem zeroExtension_liftCycles_H1 {B : ModuleCat.{u} ℚ}
       (oldShort C).moduleCatLeftHomologyData.liftK x hx ≫
         (oldShort C).moduleCatLeftHomologyData.π ≫ (oldH1Iso C).hom := by
   rw [← cancel_mono (ShortComplex.homologyMapIso (zeroExtensionScIso C)).hom]
-  simp only [oldH1Iso, Iso.trans_hom, Iso.symm_hom, Category.assoc,
-    Iso.inv_hom_id, Category.comp_id]
+  simp only [Category.assoc, oldH1Iso_hom_comp]
   change ((zeroExtension C).sc (1 : ℤ)).liftCycles x (by
       change x ≫ (zeroExtension C).d 1 ((ComplexShape.up ℤ).next 1) = 0
       rw [(ComplexShape.up ℤ).next_eq' (show (ComplexShape.up ℤ).Rel 1 2 from rfl)]
@@ -52,8 +57,7 @@ theorem zeroExtension_liftCycles_H2 {B : ModuleCat.{u} ℚ}
     (zeroExtension C).liftCycles x 3 (by simp) hx ≫ (zeroExtension C).homologyπ 2 =
       x ≫ ModuleCat.ofHom (LinearMap.range C.d1).mkQ ≫ (oldH2Iso C).hom := by
   rw [← cancel_mono (ShortComplex.homologyMapIso (zeroExtensionTwoScIso C)).hom]
-  simp only [oldH2Iso, Iso.trans_hom, Iso.symm_hom, Category.assoc,
-    Iso.inv_hom_id, Category.comp_id]
+  simp only [Category.assoc, oldH2Iso_hom_comp]
   change ((zeroExtension C).sc (2 : ℤ)).liftCycles x (by
     change x ≫ (zeroExtension C).d 2 ((ComplexShape.up ℤ).next 2) = 0
     rw [(ComplexShape.up ℤ).next_eq' (show (ComplexShape.up ℤ).Rel 2 3 from rfl)]

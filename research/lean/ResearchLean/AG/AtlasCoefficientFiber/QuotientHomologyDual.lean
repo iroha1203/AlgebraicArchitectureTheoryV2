@@ -5,6 +5,12 @@ import Mathlib.LinearAlgebra.Dual.Lemmas
 # G-135 B：原商二次閉路と実P二次homologyの双対
 
 同じε双対と原商微分の核を用いる。
+
+## Implementation notes
+
+実εとliteral K′/Lの双対同型を使い、P₂の代表を実商閉路に評価する。
+次にその核が原Pのd¹像であることから商同型を生成する。期待するH²のrankを
+入力する案は、代表の全射性と核の逆包含を放電しないため採用しない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber

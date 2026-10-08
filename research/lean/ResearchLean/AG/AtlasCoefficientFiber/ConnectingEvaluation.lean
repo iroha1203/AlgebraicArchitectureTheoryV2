@@ -5,6 +5,11 @@ import ResearchLean.AG.AtlasCoefficientFiber.CochainRepresentatives
 # G-135 B：原連結代表の双対評価
 
 原関係をannihilateする垂直閉cochainを商へ降ろし、[-Dy]との評価をβHへ照合する。
+
+## Implementation notes
+
+閉cochainを元の垂直関係商へliftQで降ろし、原始VとD(ker B)を消す証明を渡す。
+商の双対を別の供給係数として受け取る案は、原始評価zとの対応を失うため採用しない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber

@@ -1088,3 +1088,6 @@ import ResearchLean.AG.AtlasCoefficientFiber.QuotientHomologyDual
 import ResearchLean.AG.AtlasCoefficientFiber.TauDuality
 import ResearchLean.AG.AtlasCoefficientFiber.TransgressionVanishing
 import ResearchLean.AG.AtlasCoefficientFiber.PureComparison
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessCommon
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessThreeInput
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessThreeNonzero

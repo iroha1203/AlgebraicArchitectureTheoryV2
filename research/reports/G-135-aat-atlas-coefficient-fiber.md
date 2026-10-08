@@ -887,7 +887,7 @@ selection:
 同じ実H²Pの双対評価を通してτと鎖連結写像を同定し、τ零性を原始D像包含の
 必要十分条件、および全A版に戻した。旧hereditary条件からmixed空性とκ/τ零を導く。
 
-これは六つのCycle6終了条件についての受理候補であり、PRレビューは未実施。
+これは六つのCycle6終了条件についての受理候補である。初回独立PR査読は下記の指摘を返し、修正後の正式再査読を待つ。
 固定GOAL全体は `target-proof-checkpoint`、`completion_candidate: no` のままである。
 carrier filtration/E₁/E₂/d₂、Cの保存条件と錐、Dの自然性・G134操作、Eの生成有限計算、
 全Wの同じ原始表による評価、最終新規4本完了監査は未完である。
@@ -929,9 +929,9 @@ DegenerateHomologyとRestrictionHomologyへの三つの追加公開補題は、�
 
 ### Cycle 6 宣言spine・focused証拠
 
-以下の対象source全宣言と生成補助を順序付きで固定する。新規source140宣言、Lean生成補助 `horizontalLiftCycle.congr_simp` 1宣言と既存ownerへの3補題を含む。
-追加補題を含むowner二fileの全28宣言も検証するので、監査対象は合計169宣言である。
-全13fileの対象単一focused check、各全宣言の明示printとmodule公理監査を照合する。
+以下の対象source全宣言と生成補助を順序付きで固定する。新規source205宣言とLean生成補助 `horizontalLiftCycle.congr_simp` 1宣言を含む。
+原blockと既存ownerの全宣言も検証するので、監査対象は合計317宣言（source316と生成補助1）である。
+全19fileの対象単一focused check、各全宣言の明示printとmodule公理監査を照合する。
 Research full/aggregate/全file loop/lake build、Formal実build/移植は未実施。
 
 ### Cycle 6 ledger（PR前の固定候補）
@@ -948,8 +948,8 @@ whole_goal_status: target-proof-checkpoint
 formal_status: unported (Research-proved)
 proof_delta: [実短完全列δと五項列の全写像・隣接完全性, 全Rから原zとβの生成, 同じε原像による標準δ代表式, 原商H2と水平閉路の双方向同型, 原鎖持ち上げ微分とH1L連結類, τの同じ鎖連結写像との双対同定, 原始像包含との必要十分条件と全A版, 旧hereditaryからpure κとτ零]
 representative_independence: [水平補正の選択, 原垂直coboundary変更, 任意有限基底による行列表示からの復元]
-validation: 13対象fileの単一focused check成功、169明示print/公理監査、標準3公理のみ、共通scan clean
-review_gate: pending standard review-pr -> fresh math A/B and Lean A/B
+validation: 19対象fileの単一focused check成功、317明示print/公理監査、標準3公理のみ、共通scan clean
+review_gate: 初回standard review-pr -> math-lean-reviewはMajor revisions、全指摘修正後のfresh4正式再実行1待ち
 unchecked_cycle_center: []
 uncompleted: [実carrier filtrationとE1/E2/d2, Cの核余核と次元と保存と三錐, Dの全Lawと自然性とG134適用, Eの原始生成有限有理線形代数algorithm, 全Wの固定表評価, final fresh4全目標完了監査]
 next_milestone: 実carrier filtrationと低次数exact couple/E1/E2/d2=τの構成
@@ -959,6 +959,28 @@ next_milestone: 実carrier filtrationと低次数exact couple/E1/E2/d2=τの構�
 CI・merge同期は後続ゲートとして追跡する。source版と受理済みPR5295/5296の
 宣言statement・適用M/A、固定G133とmathlibの使用APIを確認した。
 対象groupの追加11file登録・aggregate配線は静的登録のみで、aggregate elaborationは行わない。
+
+### Cycle 6 初回PR査読と修正
+
+PR5297の初回固定head `79f1d0ac713b4c875028bc390c879c8aaccf144c` に対し、
+standard review-prからmath-lean-reviewへ委譲し、新規数学A/B・LeanA/Bの4本を実行した。
+数学A/B・LeanAはMinor issues、LeanBはMajor revisions。
+統合はMajor revisionsであり、このheadをmergeしない。
+初回監査: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5297#issuecomment-6050704746
+原始消滅述語の否定例不足をLeanBが中心findingと分類したため、親の裁量で非中心へ変更しない。
+正式再実行は初回後の1回目で、直接対応による合格を作らない。
+
+| finding | 修正証拠と現在の位置づけ |
+| --- | --- |
+| F1 新規Propの否定instance不足（LeanB:中心、他3本:非中心） | 指定W3のSource/reading/非定数Law/全台/原セル像とmだけを除くpaired表を生成。`primitiveTransgressionVanishing_false` が同じ原B・D・Hから否定を証明し、`primitiveTransgressionVanishing_paired_true` が指定paired全支持で肯定する。原式 `B_m_eq_H_difference`、`D_m`、`B_kernel_zero` と垂直面空性を実使用。実標準τの非零性は `WitnessThree.connectingTau_ne_zero` へ接続。W3の全診断評価は未完 |
+| F2 非自明defのImplementation notes不足 | HomologyRepresentatives、TransgressionRepresentatives、ConnectingEvaluation、ChainConnecting、QuotientHomologyDual、TauDualityに採用した定義形と退けた代替案の理由を記載 |
+| F3 別owner同型の定義展開 | 元G133 ownerに `oldH1Iso_hom_comp` と `oldH2Iso_hom_comp` を追加し、HomologyRepresentativesの既存statementを維持したまま公開API経由へ変更。元ownerを単一focused登録・明示print監査。RawBlocksにも原B/D/Hの具体基底評価に必要な6公開APIを追加 |
+
+固定GOAL、設計と共通基準の変更はない。新規Propの値、既存def/instanceの値、
+既存theoremのstatementは維持する。W3の否定例を他の弱いセル表で代替していない。
+初回固定headのCIは全8checks SUCCESS。Formal build/kernelの実stepsはSKIPPED、
+Research integrityの実stepsはSUCCESS。修正後headのCIと新規4本査読は別途確認する。
+
 
 <!-- cycle6-generated-evidence -->
 
@@ -977,22 +999,34 @@ CI・merge同期は後続ゲートとして追跡する。source版と受理済�
 | `PureComparison.lean` | `hereditary_mixedFace_isEmpty`, `kappa_zero_of_mixed_isEmpty`, `primitiveVanishing_of_mixed_isEmpty`, `connectingTau_zero_of_mixed_isEmpty`, `hereditary_kappa_zero`, `hereditary_connectingTau_zero` |
 | `DegenerateHomology.lean` | `degenerateCycles`, `degenerateBoundaryToCycles`, `degenerateBoundaryToCycles_val`, `DegenerateHomology`, `verticalCycleInclusion`, `verticalCycleInclusion_val`, `verticalCycleHomologyMap`, `verticalCycleHomologyMap_apply`, `degenerateCycle_vertical_representative`, `verticalCycleHomologyMap_surjective`, `verticalCycleHomologyMap_ker`, `verticalRelationsHomologyEquiv`, `verticalRelationsHomologyEquiv_mk`, `rawKappaCokernelHomologyEquiv`, `rawKappaCokernelHomologyEquiv_mk`, `degenerateOneShort`, `degenerateOneScIso`, `degenerateHomologyStandardEquiv`, `rawKappaCokernelStandardEquiv` |
 | `RestrictionHomology.lean` | `RawR`, `rawKappaAnnihilatorEquiv`, `rawKappaCokernelDualEquiv`, `rawKappaCokernelDualEquiv_apply`, `restrictionHomologyDualEquiv`, `restrictionStandardHomologyRawREquiv`, `restrictionStandardHomologyREquiv`, `restrictionStandardHomologyRawREquiv_mk`, `restrictionStandardHomologyREquiv_raw` |
+| `RawBlocks.lean` | `cellProjection`, `cellProjection_apply`, `cellInclusion_apply`, `cellInclusion_apply_notmem`, `cellProjection_cellInclusion`, `cellProjection_complementInclusion`, `cell_recombination`, `cellRecombination`, `cellDecomposition`, `cellDecomposition_fst`, `cellDecomposition_snd`, `HorizontalEdge`, `HorizontalFace`, `edgeBlockEquiv`, `verticalEdgeProjection`, `horizontalEdgeProjection`, `horizontalEdgeInclusion`, `horizontalEdgeInclusion_single`, `horizontalFaceInclusion`, `verticalEdgeBoundary`, `verticalEdgeBoundary_apply`, `verticalEdgeBoundary_single`, `horizontalEdgeBoundary`, `mixedVerticalBoundary`, `mixedHorizontalBoundary`, `mixedHorizontalBoundary_apply`, `horizontalFaceBoundary`, `mixedVerticalBoundary_apply`, `horizontalFaceBoundary_apply`, `horizontalFaceInclusion_single`, `verticalEdgeProjection_inclusion`, `verticalEdgeProjection_horizontal`, `horizontalEdgeProjection_inclusion`, `horizontalEdgeProjection_vertical`, `verticalEdgeProjection_single`, `verticalEdgeProjection_horizontal_single`, `edgeBlock_recombination`, `mixedBoundary_recombination`, `verticalEdgeBoundary_comp_verticalBoundary`, `mixedBoundary_square`, `horizontalFace_edge_mapped`, `horizontalFace_vertical_zero`, `horizontalFaceBoundary_inclusion`, `horizontalEdgeBoundary_comp_horizontalFaceBoundary`, `horizontalEdgeProjection_single`, `horizontalEdgeProjection_vertical_single`, `degenerateFaceSplitEquiv`, `faceBlockEquiv`, `faceBlockEquiv_vertical`, `faceBlockEquiv_mixed`, `faceBlockEquiv_horizontal` |
+| `ZeroExtension.lean` | `degreeObject`, `degreeDifferential`, `degreeDifferential_square`, `zeroExtension`, `degreeMap`, `degreeMap_comm`, `zeroExtensionMap`, `zeroExtensionMap_comp`, `oldShort`, `zeroExtensionScIso`, `oldH1Iso`, `oldH1Iso_hom_comp`, `oldShortMap`, `oldShortMapData`, `oldShortMap_homology`, `zeroExtensionScIso_natural`, `oldH1Iso_natural`, `degreeObjectFiniteDimensional`, `zeroExtension_X`, `degreeObject_isZero`, `zeroExtension_d`, `zeroExtensionMap_f`, `zeroExtensionMap_id`, `oldH1Equiv`, `oldH1Equiv_natural`, `zeroExtensionDegreeFiniteDimensional`, `zeroExtension_homology_isZero`, `homologyTransport_natural`, `zeroExtension_d0_apply`, `zeroExtension_d1_apply`, `zeroExtension_d_zero`, `zeroExtensionMap_f0_apply`, `zeroExtensionMap_f1_apply`, `zeroExtensionMap_f2_apply` |
+| `EndpointHomology.lean` | `oldZeroShort`, `oldTwoShort`, `zeroExtensionZeroScIso`, `zeroExtensionTwoScIso`, `oldH0Iso`, `oldH2Iso`, `oldH2Iso_hom_comp`, `oldH0Equiv`, `oldH2Equiv` |
+| `WitnessCommon.lean` | `Source`, `qc`, `qf`, `coarser`, `not_coarser`, `factor`, `laws`, `adequate_coarse`, `adequate_fine`, `law_nonconstant`, `label`, `labels_ne` |
+| `WitnessThreeInput.lean` | `coarseNerve`, `fineNerve`, `Nc`, `Nf`, `M`, `pairedNerve`, `pairedNf`, `pairedM` |
+| `WitnessThreeNonzero.lean` | `selectedEdge`, `selectedFace`, `k`, `a0`, `a1`, `b`, `c`, `f0`, `f1`, `m`, `a0_ne_a1`, `mixedFace_eq_m`, `verticalFaceIsEmpty`, `m_edge0`, `m_edge1`, `m_edge2`, `f0_edge0`, `f0_edge1`, `f0_edge2`, `f1_edge0`, `f1_edge1`, `f1_edge2`, `B_m`, `D_m`, `H_f0`, `H_f1`, `B_m_eq_H_difference`, `mixedChain_single`, `B_kernel_zero`, `pairedMixedIsEmpty`, `primitiveTransgressionVanishing_paired_true`, `primitiveTransgressionVanishing_empty_true`, `primitiveTransgressionVanishing_false`, `connectingTau_ne_zero` |
 
 | file / declarations | source SHA-256 | focused output SHA-256 |
 | --- | --- | --- |
 | `FiveTermSequence.lean` / 16 | `c9fb934891dfd966ac23711e566cda115987220862e904c63cc5f9ed002687e3` | `e760ecfbdeadee97f842fa7ecd30c86c6eaa3144dfa49cdea5d989adadc9505c` |
 | `CochainRepresentatives.lean` / 22 | `95807117bdb00bfc921f677118a6770a6abd0c38831f1b11ff934d46c4885025` | `446b6d4f660001f331bb8696710fa439cfc04de5718ea3c173d8d4f121d7b6bc` |
-| `HomologyRepresentatives.lean` / 9 | `4d8cf1410a18fd0f6a7346056635b1601fbaf578a7eb2fad98d998685d62e167` | `9f4679736dc328632f559ac35cde32e2c63b1a109fd85ab07e509cc86f01c95e` |
-| `TransgressionRepresentatives.lean` / 15 | `e1b0da1417184fd6371175277d1e660166107722988978627a5ac1058eff417f` | `1ea5b24f2199e731082ab92fcb7823616eb89f536c067519b08954bae5d3e579` |
-| `ConnectingEvaluation.lean` / 5 | `d2d012bc29a0a3380d624f0f295a5834014b129ffadd6819acb6a67c032a5473` | `6e43550df0550ffdf0fa1e09a7690cadb6b96d6f6071b4231a8e43d6c3a2e3e7` |
+| `HomologyRepresentatives.lean` / 9 | `39921558a14922e4a8780463780fd05cf4c7c05cd23b8c52b783e3175e50dfd0` | `9f4679736dc328632f559ac35cde32e2c63b1a109fd85ab07e509cc86f01c95e` |
+| `TransgressionRepresentatives.lean` / 15 | `264aa0a0632fe0a27991b1e9c6483670b29c1782e684e925428def8383c9d139` | `1ea5b24f2199e731082ab92fcb7823616eb89f536c067519b08954bae5d3e579` |
+| `ConnectingEvaluation.lean` / 5 | `77614b92a1a032da401f04b2a0171c3548f2171fe896f226baefb0bff1d02e4d` | `6e43550df0550ffdf0fa1e09a7690cadb6b96d6f6071b4231a8e43d6c3a2e3e7` |
 | `QuotientHorizontalHomology.lean` / 33 | `76cbf24ec3af1a7254b495228133ea3cb7ec42168cbd1e4cae12f0d05cb76ab3` | `de196a0fb09d878b457b8e3803462134507898c892cf891e37ba9879405e45e8` |
-| `QuotientHomologyDual.lean` / 8 | `f0fa0ff7ef789e44eb40e97784a06ad4a2cf0d0973693c14168f3057da41d5f3` | `95ed445aedf859af512ee495e61bb6bdcb2aeb0485ae2d46919c276a40512f9b` |
-| `ChainConnecting.lean` / 17 | `0253abf345c2ef7549d97c991fa75638f6e8f07a49749d82a24bd28738139c3f` | `06b8e070ec0fd7a1ee6370d44c868b1ed74727011c88680e17e6e6ba1fcb7c65` |
-| `TauDuality.lean` / 5 | `9d07392d552eee95385665c809bbc9bcae2a7b097ce1193a9091e59637975217` | `2248e13f9319d063aabfbc43bc98482188414b77ff6cc37ac18a2647cd0a8030` |
+| `QuotientHomologyDual.lean` / 8 | `672f9c0149a5b34425b2fcbc803266cc984830e2b343840a91074d0ed3768ab2` | `95ed445aedf859af512ee495e61bb6bdcb2aeb0485ae2d46919c276a40512f9b` |
+| `ChainConnecting.lean` / 17 | `565a5f23fad6c762af8cf912c62e132b9c76afede11bc1dd479c5a4aab8fe9dc` | `06b8e070ec0fd7a1ee6370d44c868b1ed74727011c88680e17e6e6ba1fcb7c65` |
+| `TauDuality.lean` / 5 | `2dc630fc5d2af9bdd7f94f940d3e3c4ccf87f5147aa611711e36e26c7a93468a` | `2248e13f9319d063aabfbc43bc98482188414b77ff6cc37ac18a2647cd0a8030` |
 | `TransgressionVanishing.lean` / 5 | `8247eb4a43cd04daa088bf10efd09e6fc5e54870db8496f550f4c56d48f2e82e` | `04e92ce8390e6aef090e3ada17da818deeec64dfa2ba993156c6906e231749d7` |
 | `PureComparison.lean` / 6 | `ed95e9286b51c7ce15fb05e0fe19f83ac574e321ee1a01ec4216c951fc767d01` | `9f5a432519268f9b1e4495e6616e7f3e734322e3a3d2b7be98ec1e4e08934dd0` |
 | `DegenerateHomology.lean` / 19 | `ee27d7247068a6e80c3c46401b7f964d87ccdcf2a4be092b7c26c5308c9e2ee8` | `f495dbef516debbd346ede151f4b889ff335c7363679c0b11fad8ede6e7e0065` |
 | `RestrictionHomology.lean` / 9 | `44317eec491e425838829730a8c8c1474b8f855c8a97f58f82d8d0ac3ed1f5d0` | `766ace1b65d703f27bd676e99755294e97a44a6a57685dbd3026690e26e9b3c5` |
+| `RawBlocks.lean` / 51 | `51204e6ae76527a20e03709955b9fb19d01dc0bd51b373c6f85ef1b3729142ef` | `d5ec83c6d5b3cf16278dcac086596ae1ed341fa19ec1a6bc4c71ec6fb4995796` |
+| `ZeroExtension.lean` / 34 | `1c69bab689742a84e991b30c52aa43719481db15d9ffeeac206ee9a2980b4605` | `c10fe1d4b86109cd1106cb112708261ce4373cf6f5e36535cbfd61cb87978ee6` |
+| `EndpointHomology.lean` / 9 | `6a1306afe9fb0bfcb0d8b7e93669c3d2300eeaea5450481923466631a90fcdcb` | `e0a68d4b02d8bc76e84f362912a8c5d0c76ef230c7c2390e891c540d0e88211b` |
+| `WitnessCommon.lean` / 12 | `f4f46b1ae32e0462e6ed1785f88df7a31ad6ed18607169c6738b3c652bfdd56b` | `94bbfc88964cc5d4bf9e32e6593b6da91f65bc6cffaf6d6c474089d317e1a902` |
+| `WitnessThreeInput.lean` / 8 | `93fb9be39be291d20af30aeabcbe090f46534d5913677a01286cf29841aebd0e` | `fc12b93d966d83959fd66264db95a6fa75d9f28687d445d2b759ec645a7969bc` |
+| `WitnessThreeNonzero.lean` / 34 | `c3ae12fc3ce2076c1af064c11248f11babae23698021ee21109aeafaa838bc17` | `61fdf23fcef7bd6f511756e1ccd8343d05db922426d14ec27468ede738e92f27` |
 
-再現metadata `.tmp/g135/cycle6-validation.json`（SHA-256 `b6137bc312e445c62348549a9b7091af5e0d9772988adf7357461a875c456ffa`）。
-共通scan metadata `.tmp/g135/cycle6-scans.json`（SHA-256 `c28d6b270933a5182f9951688ad6dacf5d1ab9257688a7464930a60258d7bda5`）。
+再現metadata `.tmp/g135/cycle6-validation.json`（SHA-256 `4ca4946b6efc7db2812563e4589a57ded68f96d4113d24476f75ece8cfa9ce18`）。
+共通scan metadata `.tmp/g135/cycle6-scans.json`（SHA-256 `b29fe6f4fa87bb76edbe0a3bf328d87340dedc1f407d9d81234e73402206304e`）。

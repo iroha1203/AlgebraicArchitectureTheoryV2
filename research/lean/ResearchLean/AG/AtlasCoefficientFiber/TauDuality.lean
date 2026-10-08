@@ -6,6 +6,12 @@ import ResearchLean.AG.AtlasCoefficientFiber.QuotientHomologyDual
 # G-135 B：同じ原商の連結写像とτの双対同定
 
 同じε代表の評価とBy=Hxの実補正から、標準δを鎖連結写像へ照合する。
+
+## Implementation notes
+
+Rと原垂直関係商の双対は既存のκ余核同型と双対写像の合成で接続する。
+τの値を先にβHとして定義する案は、標準短完全列のδとの一致を失うため採用しない。
+全Rの原補正生成を使い、標準δの代表評価から同じ鎖連結写像の双対性を証明する。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber

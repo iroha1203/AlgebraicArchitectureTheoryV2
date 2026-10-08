@@ -6,6 +6,12 @@ import ResearchLean.AG.AtlasCoefficientFiber.DegenerateHomology
 # G-135 B：原商鎖複体の連結代表
 
 水平閉路の原式By=Hxから、同じ原Dによる[-Dy]を構成する。
+
+## Implementation notes
+
+水平閉性が生成したBy=Hxの解をClassical.chooseで選ぶ。解そのものの線形性は
+要求せず、D(ker B)による商類の独立性から連結写像の線形性を導く。
+線形sectionを入力として供給する案は、原始入力だけからの構成を変えるため採用しない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber

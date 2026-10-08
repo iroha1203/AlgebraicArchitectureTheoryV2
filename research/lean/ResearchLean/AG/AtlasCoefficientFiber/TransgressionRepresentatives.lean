@@ -7,6 +7,12 @@ import Mathlib.LinearAlgebra.Matrix.ToLin
 # G-135 B：実短完全列の連結射と原補正代表
 
 標準δの代表射公式へ原ε・制限・補正cochainを渡す。
+
+## Implementation notes
+
+実εの原像は既存の全射証明からClassical.chooseで選び、specで同じ補正微分へ戻す。
+新しいP₂を補正微分の像と定義する案は、固定された実順像Pとの照合を失うため採用しない。
+補正の変更は商類の独立性定理で扱い、代表の選択をτの追加入力にしない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasCoefficientFiber

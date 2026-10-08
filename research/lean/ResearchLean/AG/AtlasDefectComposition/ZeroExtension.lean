@@ -116,6 +116,13 @@ def oldH1Iso (C : ThreeCochainComplex.{0,w} ℚ) :
   (oldShort C).moduleCatHomologyIso.symm ≪≫
     (ShortComplex.homologyMapIso (zeroExtensionScIso C)).symm
 
+/-- 元H¹の同型と短複体比較を合成した値を返す所有公開API。 -/
+theorem oldH1Iso_hom_comp (C : ThreeCochainComplex.{0,w} ℚ) :
+    (oldH1Iso C).hom ≫ (ShortComplex.homologyMapIso (zeroExtensionScIso C)).hom =
+      (oldShort C).moduleCatHomologyIso.inv := by
+  simp only [oldH1Iso, Iso.trans_hom, Iso.symm_hom, Category.assoc,
+    Iso.inv_hom_id, Category.comp_id]
+
 /-- 元のHom三成分から二微分の短複体射を生成する。 -/
 def oldShortMap (f : ThreeCochainComplex.Hom C D) : oldShort C ⟶ oldShort D where
   τ₁ := ModuleCat.ofHom f.f0
@@ -308,4 +315,39 @@ theorem zeroExtension_d_zero (C : ThreeCochainComplex.{0,w} ℚ) (m : ℤ)
     (zeroExtensionMap f).f 2 x = f.f2 x := rfl
 
 end AAT.AG.AtlasDefectComposition
+
+#print axioms AAT.AG.AtlasDefectComposition.degreeObject
+#print axioms AAT.AG.AtlasDefectComposition.degreeDifferential
+#print axioms AAT.AG.AtlasDefectComposition.degreeDifferential_square
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtension
+#print axioms AAT.AG.AtlasDefectComposition.degreeMap
+#print axioms AAT.AG.AtlasDefectComposition.degreeMap_comm
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionMap
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionMap_comp
+#print axioms AAT.AG.AtlasDefectComposition.oldShort
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionScIso
+#print axioms AAT.AG.AtlasDefectComposition.oldH1Iso
+#print axioms AAT.AG.AtlasDefectComposition.oldH1Iso_hom_comp
+#print axioms AAT.AG.AtlasDefectComposition.oldShortMap
+#print axioms AAT.AG.AtlasDefectComposition.oldShortMapData
+#print axioms AAT.AG.AtlasDefectComposition.oldShortMap_homology
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionScIso_natural
+#print axioms AAT.AG.AtlasDefectComposition.oldH1Iso_natural
+#print axioms AAT.AG.AtlasDefectComposition.degreeObjectFiniteDimensional
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtension_X
+#print axioms AAT.AG.AtlasDefectComposition.degreeObject_isZero
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtension_d
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionMap_f
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionMap_id
+#print axioms AAT.AG.AtlasDefectComposition.oldH1Equiv
+#print axioms AAT.AG.AtlasDefectComposition.oldH1Equiv_natural
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionDegreeFiniteDimensional
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtension_homology_isZero
+#print axioms AAT.AG.AtlasDefectComposition.homologyTransport_natural
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtension_d0_apply
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtension_d1_apply
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtension_d_zero
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionMap_f0_apply
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionMap_f1_apply
+#print axioms AAT.AG.AtlasDefectComposition.zeroExtensionMap_f2_apply
 #assert_standard_axioms_only AAT.AG.AtlasDefectComposition
