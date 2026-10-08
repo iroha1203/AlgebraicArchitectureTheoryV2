@@ -898,7 +898,7 @@ carrier filtration/E₁/E₂/d₂、Cの保存条件と錐、Dの自然性・G13
 | 2 全五項射・全隣接完全性・H¹ε単射 | `evaluationH1_injective`、`fiveTerm_exact_at_fineH1`、`fiveTerm_exact_at_fiber`、`fiveTerm_exact_at_pushforwardH2`。元H⁰Q零性と固定mathlibの標準homology sequenceを輸送 |
 | 3 全Rの原補正生成・標準δ公式 | `fiberClass_has_correction`、`horizontalCorrection_exists`、`correctedEdgeCochain_d1_degenerate`、`evaluationRestriction_connecting_representative`、`connectingTau_correctedFiberClass`、`connectingTau_horizontal_evaluation`。Pは独立生成済みの実Kan順像で、ε原像全射性から代表を生成 |
 | 4 代表・基底への独立性 | `correctedPushforwardCochain_independent_correction`、`correctedPushforwardCochain_coboundary`、`connectingTau_basis_independent`。任意有限基底の行列評価を同じ標準homologyへ戻す |
-| 5 原商二次閉路・実鎖連結・双対・両方向消滅 | `quotientSecondCyclesEquiv`、`supportedBoundary_horizontalLift`、`quotient_horizontalLift`、`quotientChainConnecting_apply`、`pushforwardStandardH2HorizontalDualEquiv`、`connectingTau_chain_duality`、`connectingTau_zero_iff_primitive`、`connectingTau_allA_zero_iff_primitive` |
+| 5 原商二次閉路・実鎖連結・双対・両方向消滅 | `quotientSecondCyclesEquiv`、`quotientStandardH2HorizontalEquiv`、`supportedBoundary_horizontalLift`、`quotient_horizontalLift`、`quotientChainConnecting_apply`、`pushforwardStandardH2HorizontalDualEquiv`、`connectingTau_chain_duality`、`connectingTau_zero_iff_primitive`、`connectingTau_allA_zero_iff_primitive` |
 | 6 旧hereditaryからpure | `hereditary_mixedFace_isEmpty`、`hereditary_kappa_zero`、`hereditary_connectingTau_zero`。原Hのface_none_edge1と同じMixedFaceの負辺some条件から空性を生成 |
 
 ### Cycle 6 proof DAG と material premise
@@ -907,7 +907,7 @@ carrier filtration/E₁/E₂/d₂、Cの保存条件と錐、Dの自然性・G13
 → FiveTermSequence。原V閉代表のhomology評価とdualMap像定理 → CochainRepresentatives。
 G133の元三項homology同型と固定mathlibのcycle射公開API → HomologyRepresentatives。
 同じ原L₂のannihilationとε原像全射性 → TransgressionRepresentativesのP₂代表と標準δ公式。
-元K′/Lの係数射影核 → QuotientHorizontalHomologyの二次閉路同型。
+元K′/Lの係数射影核 → QuotientHorizontalHomologyの二次閉路同型・標準商H₂同型。
 原By=Hx → ChainConnectingの実K′持ち上げ微分とH₁L類。
 同じ実ε双対 → QuotientHomologyDualのH²P評価同型。
 原R関係商双対と両代表の評価 → TauDuality → TransgressionVanishing → PureComparison。
@@ -929,8 +929,8 @@ DegenerateHomologyとRestrictionHomologyへの三つの追加公開補題は、�
 
 ### Cycle 6 宣言spine・focused証拠
 
-以下の対象source全宣言と生成補助を順序付きで固定する。新規source136宣言、Lean生成補助 `horizontalLiftCycle.congr_simp` 1宣言と既存ownerへの3補題を含む。
-追加補題を含むowner二fileの全28宣言も検証するので、監査対象は合計165宣言である。
+以下の対象source全宣言と生成補助を順序付きで固定する。新規source140宣言、Lean生成補助 `horizontalLiftCycle.congr_simp` 1宣言と既存ownerへの3補題を含む。
+追加補題を含むowner二fileの全28宣言も検証するので、監査対象は合計169宣言である。
 全13fileの対象単一focused check、各全宣言の明示printとmodule公理監査を照合する。
 Research full/aggregate/全file loop/lake build、Formal実build/移植は未実施。
 
@@ -948,7 +948,7 @@ whole_goal_status: target-proof-checkpoint
 formal_status: unported (Research-proved)
 proof_delta: [実短完全列δと五項列の全写像・隣接完全性, 全Rから原zとβの生成, 同じε原像による標準δ代表式, 原商H2と水平閉路の双方向同型, 原鎖持ち上げ微分とH1L連結類, τの同じ鎖連結写像との双対同定, 原始像包含との必要十分条件と全A版, 旧hereditaryからpure κとτ零]
 representative_independence: [水平補正の選択, 原垂直coboundary変更, 任意有限基底による行列表示からの復元]
-validation: 13対象fileの単一focused check成功、165明示print/公理監査、標準3公理のみ、共通scan clean
+validation: 13対象fileの単一focused check成功、169明示print/公理監査、標準3公理のみ、共通scan clean
 review_gate: pending standard review-pr -> fresh math A/B and Lean A/B
 unchecked_cycle_center: []
 uncompleted: [実carrier filtrationとE1/E2/d2, Cの核余核と次元と保存と三錐, Dの全Lawと自然性とG134適用, Eの原始生成有限有理線形代数algorithm, 全Wの固定表評価, final fresh4全目標完了監査]
@@ -969,7 +969,7 @@ CI・merge同期は後続ゲートとして追跡する。source版と受理済�
 | `HomologyRepresentatives.lean` | `shortComplex_liftCycles_class`, `zeroExtension_liftCycles_H1`, `zeroExtension_liftCycles_H2`, `elementArrow`, `elementArrow_one`, `elementArrow_comp`, `elementArrow_zero`, `zeroExtension_liftCycles_H1_apply`, `zeroExtension_liftCycles_H2_apply` |
 | `TransgressionRepresentatives.lean` | `correctedEdgeCochain_d1_restriction_zero`, `correctedRestrictionCycle`, `correctedRestrictionCycle_val`, `correctedPushforwardCochain_exists`, `correctedPushforwardCochain`, `correctedPushforwardCochain_spec`, `evaluationRestriction_connecting_representative`, `correctedRestrictionCycle_fiberClass`, `connectingTau_correctedFiberClass`, `correctedFiberClass_independent_correction`, `correctedPushforwardCochain_independent_correction`, `verticalCocycleClass_coboundary`, `correctedFiberClass_coboundary`, `correctedPushforwardCochain_coboundary`, `connectingTau_basis_independent` |
 | `ConnectingEvaluation.lean` | `correctedCocycle_annihilates_relations`, `correctedRelationsFunctional`, `correctedRelationsFunctional_mk`, `correctedRelationsFunctional_horizontalLiftClass`, `correctedRelationsFunctional_horizontalChainConnecting` |
-| `QuotientHorizontalHomology.lean` | `horizontalFaceProjection`, `horizontalFaceProjection_apply`, `horizontalFaceProjection_inclusion`, `horizontalFaceProjection_degenerate`, `face_recombination`, `horizontalFaceProjection_surjective`, `horizontalFaceProjection_ker`, `quotientFaceEquiv`, `quotientFaceEquiv_mk`, `quotientFaceEquiv_symm_apply`, `HorizontalEdgeQuotient`, `horizontalQuotientBoundary`, `horizontalQuotientBoundary_apply`, `HorizontalFaceCycles`, `mem_horizontalFaceCycles_iff`, `horizontalEdgeQuotientProjection`, `horizontalEdgeQuotientProjection_apply`, `horizontalEdgeQuotientProjection_surjective`, `horizontalEdgeQuotientProjection_ker`, `quotientEdgeEquiv`, `quotientEdgeEquiv_mk`, `horizontalEdgeQuotientProjection_degenerate`, `horizontalEdgeQuotientProjection_boundary_degenerate`, `horizontalEdgeQuotientProjection_boundary_horizontal`, `quotientBoundary2_horizontal`, `QuotientSecondCycles`, `quotientSecondCyclesEquiv`, `quotientSecondCyclesEquiv_val`, `quotientSecondCyclesEquiv_symm_val` |
+| `QuotientHorizontalHomology.lean` | `horizontalFaceProjection`, `horizontalFaceProjection_apply`, `horizontalFaceProjection_inclusion`, `horizontalFaceProjection_degenerate`, `face_recombination`, `horizontalFaceProjection_surjective`, `horizontalFaceProjection_ker`, `quotientFaceEquiv`, `quotientFaceEquiv_mk`, `quotientFaceEquiv_symm_apply`, `HorizontalEdgeQuotient`, `horizontalQuotientBoundary`, `horizontalQuotientBoundary_apply`, `HorizontalFaceCycles`, `mem_horizontalFaceCycles_iff`, `horizontalEdgeQuotientProjection`, `horizontalEdgeQuotientProjection_apply`, `horizontalEdgeQuotientProjection_surjective`, `horizontalEdgeQuotientProjection_ker`, `quotientEdgeEquiv`, `quotientEdgeEquiv_mk`, `horizontalEdgeQuotientProjection_degenerate`, `horizontalEdgeQuotientProjection_boundary_degenerate`, `horizontalEdgeQuotientProjection_boundary_horizontal`, `quotientBoundary2_horizontal`, `QuotientSecondCycles`, `quotientSecondCyclesEquiv`, `quotientSecondCyclesEquiv_val`, `quotientSecondCyclesEquiv_symm_val`, `quotientSecondShort`, `quotientSecondScIso`, `quotientSecondStandardEquiv`, `quotientStandardH2HorizontalEquiv` |
 | `QuotientHomologyDual.lean` | `pushforwardSecondCycleEvaluation`, `pushforwardSecondCycleEvaluation_apply`, `pushforwardSecondCycleEvaluation_surjective`, `pushforwardSecondCycleEvaluation_ker`, `pushforwardSecondHomologyDualEquiv`, `pushforwardSecondHomologyDualEquiv_mk`, `pushforwardStandardH2HorizontalDualEquiv`, `pushforwardStandardH2HorizontalDualEquiv_mk` |
 | `ChainConnecting.lean` | `horizontalLift_vertical_closed`, `horizontalLiftCycle`, `horizontalLiftCycle_val`, `horizontalLiftClass`, `horizontalLiftClass_mk`, `horizontalLiftClass_independent`, `horizontalLiftClass_eq_zero_iff`, `horizontalCycleLift`, `horizontalCycleLift_spec`, `horizontalChainConnecting`, `horizontalChainConnecting_apply`, `horizontalChainConnecting_eq_zero_iff`, `supportedBoundary_horizontalLift`, `quotient_horizontalLift`, `quotientChainConnecting`, `quotientChainConnecting_apply`, `horizontalLiftCycle.congr_simp` |
 | `TauDuality.lean` | `fiberRelationsDualEquiv`, `fiberRelationsDualEquiv_mk`, `fiberRelationsDualEquiv_corrected`, `connectingTau_horizontal_evaluation`, `connectingTau_chain_duality` |
@@ -985,7 +985,7 @@ CI・merge同期は後続ゲートとして追跡する。source版と受理済�
 | `HomologyRepresentatives.lean` / 9 | `4d8cf1410a18fd0f6a7346056635b1601fbaf578a7eb2fad98d998685d62e167` | `9f4679736dc328632f559ac35cde32e2c63b1a109fd85ab07e509cc86f01c95e` |
 | `TransgressionRepresentatives.lean` / 15 | `e1b0da1417184fd6371175277d1e660166107722988978627a5ac1058eff417f` | `1ea5b24f2199e731082ab92fcb7823616eb89f536c067519b08954bae5d3e579` |
 | `ConnectingEvaluation.lean` / 5 | `d2d012bc29a0a3380d624f0f295a5834014b129ffadd6819acb6a67c032a5473` | `6e43550df0550ffdf0fa1e09a7690cadb6b96d6f6071b4231a8e43d6c3a2e3e7` |
-| `QuotientHorizontalHomology.lean` / 29 | `453a28a6a4b5c9add7ccd277bacb77ae5d48e2e7f11ed6174a276adcfc86e450` | `f0c5d4ef2d22e617a30c9ce0834bbca21e1aa9ae3db66dbf25126b5524fe0af8` |
+| `QuotientHorizontalHomology.lean` / 33 | `76cbf24ec3af1a7254b495228133ea3cb7ec42168cbd1e4cae12f0d05cb76ab3` | `de196a0fb09d878b457b8e3803462134507898c892cf891e37ba9879405e45e8` |
 | `QuotientHomologyDual.lean` / 8 | `f0fa0ff7ef789e44eb40e97784a06ad4a2cf0d0973693c14168f3057da41d5f3` | `95ed445aedf859af512ee495e61bb6bdcb2aeb0485ae2d46919c276a40512f9b` |
 | `ChainConnecting.lean` / 17 | `0253abf345c2ef7549d97c991fa75638f6e8f07a49749d82a24bd28738139c3f` | `06b8e070ec0fd7a1ee6370d44c868b1ed74727011c88680e17e6e6ba1fcb7c65` |
 | `TauDuality.lean` / 5 | `9d07392d552eee95385665c809bbc9bcae2a7b097ce1193a9091e59637975217` | `2248e13f9319d063aabfbc43bc98482188414b77ff6cc37ac18a2647cd0a8030` |
@@ -994,5 +994,5 @@ CI・merge同期は後続ゲートとして追跡する。source版と受理済�
 | `DegenerateHomology.lean` / 19 | `ee27d7247068a6e80c3c46401b7f964d87ccdcf2a4be092b7c26c5308c9e2ee8` | `f495dbef516debbd346ede151f4b889ff335c7363679c0b11fad8ede6e7e0065` |
 | `RestrictionHomology.lean` / 9 | `44317eec491e425838829730a8c8c1474b8f855c8a97f58f82d8d0ac3ed1f5d0` | `766ace1b65d703f27bd676e99755294e97a44a6a57685dbd3026690e26e9b3c5` |
 
-再現metadata `.tmp/g135/cycle6-validation.json`（SHA-256 `ce789958980a2f586228ee838efb173d14b7e170b7ccb4db5c63eb4a5a9579fd`）。
+再現metadata `.tmp/g135/cycle6-validation.json`（SHA-256 `b6137bc312e445c62348549a9b7091af5e0d9772988adf7357461a875c456ffa`）。
 共通scan metadata `.tmp/g135/cycle6-scans.json`（SHA-256 `c28d6b270933a5182f9951688ad6dacf5d1ab9257688a7464930a60258d7bda5`）。

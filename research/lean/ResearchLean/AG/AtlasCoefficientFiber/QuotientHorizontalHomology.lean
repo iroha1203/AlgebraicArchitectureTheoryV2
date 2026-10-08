@@ -1,5 +1,6 @@
 import ResearchLean.AG.AtlasCoefficientFiber.RawBlocks
 import ResearchLean.AG.AtlasCoefficientFiber.QuotientDual
+import ResearchLean.AG.AtlasCoefficientFiber.QuotientChain
 import Mathlib.LinearAlgebra.Isomorphisms
 
 /-!
@@ -223,6 +224,29 @@ def quotientSecondCyclesEquiv : QuotientSecondCycles M A ≃ₗ[ℚ] HorizontalF
   rw [LinearEquiv.apply_symm_apply]
   exact congrArg Subtype.val ((quotientSecondCyclesEquiv M A).apply_symm_apply x)
 
+/-- 元標準商chainの次数2短複体と同じ微分核を置く。 -/
+def quotientSecondShort : ShortComplex (ModuleCat.{u} ℚ) :=
+  ShortComplex.moduleCatMk
+    (0 : PUnit.{u+1} →ₗ[ℚ] (K2 Nf (comparisonFactor qc qf h ⁻¹' A) ⧸ degenerateL2 M A))
+    (quotientBoundary2 M A) (by simp)
+
+/-- 標準商chainの次数2短複体を同じ零始域・原微分へ同定する。 -/
+def quotientSecondScIso : (quotientChain M A).sc (2 : ℤ) ≅ quotientSecondShort M A :=
+  (quotientChain M A).isoSc' (i := 3) (j := 2) (k := 1) (by simp) (by simp) ≪≫
+    eqToIso (by rfl)
+
+/-- 原商二次閉路は、同じ標準商chainのH₂に両方向同型。 -/
+def quotientSecondStandardEquiv : QuotientSecondCycles M A ≃ₗ[ℚ]
+    (quotientChain M A).homology (2 : ℤ) :=
+  ((quotientSecondShort M A).moduleCatCyclesIso.symm ≪≫
+    (quotientSecondShort M A).asIsoHomologyπ (by rfl) ≪≫
+    (ShortComplex.homologyMapIso (quotientSecondScIso M A)).symm).toLinearEquiv
+
+/-- 元の標準商chain H₂そのものを同じker Hbarへ両方向同定する。 -/
+def quotientStandardH2HorizontalEquiv :
+    (quotientChain M A).homology (2 : ℤ) ≃ₗ[ℚ] HorizontalFaceCycles M A :=
+  (quotientSecondStandardEquiv M A).symm.trans (quotientSecondCyclesEquiv M A)
+
 end AAT.AG.AtlasCoefficientFiber
 
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalFaceProjection
@@ -254,4 +278,8 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.quotientSecondCyclesEquiv
 #print axioms AAT.AG.AtlasCoefficientFiber.quotientSecondCyclesEquiv_val
 #print axioms AAT.AG.AtlasCoefficientFiber.quotientSecondCyclesEquiv_symm_val
+#print axioms AAT.AG.AtlasCoefficientFiber.quotientSecondShort
+#print axioms AAT.AG.AtlasCoefficientFiber.quotientSecondScIso
+#print axioms AAT.AG.AtlasCoefficientFiber.quotientSecondStandardEquiv
+#print axioms AAT.AG.AtlasCoefficientFiber.quotientStandardH2HorizontalEquiv
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber
