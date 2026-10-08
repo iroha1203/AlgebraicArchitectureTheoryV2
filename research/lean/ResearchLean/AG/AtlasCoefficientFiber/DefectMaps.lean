@@ -80,17 +80,13 @@ section SameSubmodule
 variable {V : Type u} [AddCommGroup V] [Module ℚ V]
 
 /-- 同じ部分空間の等号は元を保つ両方向線形同型を与える。 -/
-def sameSubmoduleEquiv (p q : Submodule ℚ V) (hpq : p = q) : p ≃ₗ[ℚ] q where
-  toFun x := ⟨x.1, hpq ▸ x.2⟩
-  invFun x := ⟨x.1, hpq.symm ▸ x.2⟩
-  left_inv _ := rfl
-  right_inv _ := rfl
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
+def sameSubmoduleEquiv (p q : Submodule ℚ V) (hpq : p = q) : p ≃ₗ[ℚ] q :=
+  LinearEquiv.ofEq p q hpq
 
 /-- 部分空間同型は同じ原始元を読む。 -/
 @[simp] theorem sameSubmoduleEquiv_val (p q : Submodule ℚ V) (hpq : p = q) (x : p) :
-    (sameSubmoduleEquiv p q hpq x).1 = x.1 := rfl
+    (sameSubmoduleEquiv p q hpq x).1 = x.1 :=
+  LinearEquiv.coe_ofEq_apply hpq x
 end SameSubmodule
 
 /-- 指定kerT≃keraは同じcoarseH¹の元を保つ。 -/

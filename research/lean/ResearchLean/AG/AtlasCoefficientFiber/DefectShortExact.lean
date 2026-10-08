@@ -125,22 +125,19 @@ theorem totalCokernelFiberProjection_surjective : Function.Surjective (totalCoke
 theorem coefficientCokernel_exact : Function.Exact (coefficientCokernelInclusion M A)
     (totalCokernelFiberProjection M A) := by
   intro x
-  change evaluationCokernelTauKernelEquiv M A
-    (DefectSequence.fifth _ _ ((compositeDirectCokernelEquiv M A).symm x)) = 0 ↔ _
+  rw [totalCokernelFiberProjection_apply]
   rw [← (evaluationCokernelTauKernelEquiv M A).map_zero,
     (evaluationCokernelTauKernelEquiv M A).injective.eq_iff]
   rw [DefectSequence.exact_fourth_fifth]
   constructor
   · rintro ⟨y, hy⟩
     refine ⟨y, ?_⟩
-    change compositeDirectCokernelEquiv M A (DefectSequence.fourth _ _ y) = x
+    rw [coefficientCokernelInclusion_apply]
     rw [hy, LinearEquiv.apply_symm_apply]
   · rintro ⟨y, hy⟩
     refine ⟨y, ?_⟩
     apply (compositeDirectCokernelEquiv M A).injective
-    change compositeDirectCokernelEquiv M A (DefectSequence.fourth _ _ y) =
-      compositeDirectCokernelEquiv M A ((compositeDirectCokernelEquiv M A).symm x)
-    rw [LinearEquiv.apply_symm_apply]
+    rw [LinearEquiv.apply_symm_apply, ← coefficientCokernelInclusion_apply]
     exact hy
 
 /-- 指定余核SESの両端と全中間完全性。 -/

@@ -1283,12 +1283,12 @@ G-133の同じ二射の第四・第五射を因子化等号で独立Tの余核�
 
 | 固定終了条件 | 実Lean証拠・同じ射と前提放電 | 状態 |
 | --- | --- | --- |
-| 1 実a/Tと全H¹因子化・旧商接続 | `unitH1`、独立`directH1`、所有評価/標準等式、`directH1_factor`。原u全Hom因子化とzeroExtensionMap_comp/homologyMap_compを使用。`directH1_old`は同じ旧H¹商の自然性 | 入力生成証拠あり・正式監査前 |
-| 2 元保存kerT≃kera | `directH1_kernel`は実ε単射性による同じcoarseH¹内の部分空間等号。`directKernelUnitEquiv`とvalは同じ元を両方向で保つ | 入力生成証拠あり・正式監査前 |
-| 3 実cokε≃kerτ | `fiberRestriction_kernel/range`は原五項列の全隣接完全性。`evaluationCokernelTauKernelEquiv`はquotKerEquivRangeと核像等号輸送。全mk_valは同じ原制限 | 入力生成証拠あり・正式監査前 |
-| 4 実余核SESの全写像 | `compositeDirectCokernelEquiv`は独立T因子化の等号、同じ代表の順逆mk。`coefficientCokernelInclusion`/`totalCokernelFiberProjection`は同じG133第四/第五射と原制限同型。全代表、単射/完全性/全射を`coefficientCokernel_shortExact`へ集約 | 入力生成証拠あり・正式監査前 |
-| 5 旧診断二成分と自然数二加法式 | `directH1_defect`は標準H¹と既存商の同じblockDefect。`coefficient_kernel_dimension`、`coefficient_cokernel_dimension`、`coefficient_cokernel_kappa_dimension`は同じ核/商同型、G133次元式とτ/κ*のrank-nullity、全Φ有限Pi和から得る。整数表示も同じ第一加法式から導出 | 入力生成証拠あり・正式監査前 |
-| 6 保存必要十分と同じG133特殊化 | `evaluationH1_surjective_iff`は実五項完全性の両方向。`directH1_bijective_iff`と`coefficient_zeroDefect_iff`は同じ独立T/J。零Jから原aの線形同型とkerτ零を生成。`evaluationH1_kernel`、`coefficientCancellation_zero`、二`coefficientSixTerm_*_dimension`が同じ二射の始域零と六項式特殊化。`witnessThree_cancellation_zero_and_tau_ne_zero`は同じ原W3でχ零/τ非零を併記 | 入力生成証拠あり・正式監査前 |
+| 1 実a/Tと全H¹因子化・旧商接続 | `unitH1`、独立`directH1`、所有評価/標準等式、`directH1_factor`。原u全Hom因子化とzeroExtensionMap_comp/homologyMap_compを使用。`directH1_old`は同じ旧H¹商の自然性 | 入力生成証拠あり・修正後正式監査待ち |
+| 2 元保存kerT≃kera | `directH1_kernel`は実ε単射性による同じcoarseH¹内の部分空間等号。`directKernelUnitEquiv`とvalは同じ元を両方向で保つ | 入力生成証拠あり・修正後正式監査待ち |
+| 3 実cokε≃kerτ | `fiberRestriction_kernel/range`は原五項列の全隣接完全性。`evaluationCokernelTauKernelEquiv`はquotKerEquivRangeと核像等号輸送。全mk_valは同じ原制限 | 入力生成証拠あり・修正後正式監査待ち |
+| 4 実余核SESの全写像 | `compositeDirectCokernelEquiv`は独立T因子化の等号、同じ代表の順逆mk。`coefficientCokernelInclusion`/`totalCokernelFiberProjection`は同じG133第四/第五射と原制限同型。全代表、単射/完全性/全射を`coefficientCokernel_shortExact`へ集約 | 入力生成証拠あり・修正後正式監査待ち |
+| 5 旧診断二成分と自然数二加法式 | `directH1_defect`は標準H¹と既存商の同じblockDefect。`coefficient_kernel_dimension`、`coefficient_cokernel_dimension`、`coefficient_cokernel_kappa_dimension`は同じ核/商同型、G133次元式とτ/κ*のrank-nullity、全Φ有限Pi和から得る。整数表示も同じ第一加法式から導出 | 入力生成証拠あり・修正後正式監査待ち |
+| 6 保存必要十分と同じG133特殊化 | `evaluationH1_surjective_iff`は実五項完全性の両方向。`directH1_bijective_iff`と`coefficient_zeroDefect_iff`は同じ独立T/J。零Jから原aの線形同型とkerτ零を生成。`evaluationH1_kernel`、`coefficientCancellation_zero`、二`coefficientSixTerm_*_dimension`が同じ二射の始域零と六項式特殊化。`witnessThree_cancellation_zero_and_tau_ne_zero`は同じ原W3でχ零/τ非零を併記 | 入力生成証拠あり・修正後正式監査待ち |
 
 受理spineは実a/T、核同型、後段余核同型、実余核SES、旧診断加法式、保存必要十分、
 原零診断からa同型/kerτ零を生成するproducer、同じ二射の相殺零とW3非零τとの区別である。
@@ -1352,9 +1352,24 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  blocking_findings: [正式PR独立査読は未実施]
+  blocking_findings: [初回非中心F1/F2修正後の新規四本正式再査読は未実施]
   next_obligation: C局所係数からη同型/診断保存・pureC3prime全Aと同じG107旧C3非必要性例
 ```
+
+### Cycle 8初回独立査読・全finding修正
+
+PR #5299初回固定headは`0b7f329b0bedeb4a9eb6a0c712e378ea7f88d86f`、
+標準review-prから新規数学2本・Lean2本へ委譲し、監査はissuecomment-6052163572へ固定した。
+数学AはNo major findings、数学BはMinor issues非中心1、LeanA/BはMinor issues非中心各2、中心findingは四票とも0。
+重複を除く全findingはF1/F2の二件で、実装フェーズへまとめて戻した。
+F1の`sameSubmoduleEquiv`は公開signatureと原始元の順逆保存を維持し、固定mathlibの
+`LinearEquiv.ofEq`と`coe_ofEq_apply`を構成/計算へ直接使用する。同じcompiler生成congr_simpも監査する。
+F2の主`coefficientCokernel_exact`は二つの既存所有apply APIを使う証明へ改め、定義の本体展開を除いた。
+F1はdef本体変更を含むため、共有review-protocolに従い直接対応資格なしと判定した。
+数学statement/量化/一次仕様の変更はないが、修正後headで新規四本の正式再実行1を行う。
+全六終了条件の内容合格とroot acceptanceはその再査読後に判定し、初回Needs changesから合格を合成しない。
+初回同headのCI8件成功、Lean run37726365506/Tool run37726365443。
+Formal setup/cache/build/kernel/premise実stepsはSKIPPED。修正後CIは別に確認する。
 
 ### Cycle 8単一file検証・全宣言spine
 
@@ -1375,9 +1390,9 @@ Research全体/aggregate/全file loop、local lake build、Formal移植、別fin
 
 | file / source+generated | source SHA-256 | focused output SHA-256 |
 | --- | --- | --- |
-| `DefectMaps.lean` / 17+1 | `a00f3e643fa9296a4f488653cb835ba61f5788ed3179ee67f7f6358d2cec5cfb` | `e23f084fcf822117a034eb8e9e8863e86785e7bb1db48f90fac5ab104cc58e63` |
-| `DefectShortExact.lean` / 16+0 | `14f3592a8851008fdb78c4d897cf6fb488cce4d5110345ddeaa86bb0bf1b7a63` | `9055dd06c0de7bf0f4953325560d2350d7016a72606fdd662df92a319125c02c` |
+| `DefectMaps.lean` / 17+1 | `0d45260ccf0bc021c223c1a5c8b5fa09288bfd728684fab5af13513b3d3d4449` | `e23f084fcf822117a034eb8e9e8863e86785e7bb1db48f90fac5ab104cc58e63` |
+| `DefectShortExact.lean` / 16+0 | `91d48bcd53b9979e35f93f5bee351d0ac48ac6c6432bbf8e435ac770e987d4c8` | `9055dd06c0de7bf0f4953325560d2350d7016a72606fdd662df92a319125c02c` |
 | `DefectDiagnostics.lean` / 15+0 | `bd3d93c50341909af0ad968c8dec37ae7a591bfeaf1500e9a2a583ac67977504` | `badc829969856728f8e34d12e18c02765211ee79249d6bb05d0d5c4297516caa` |
 
-再現metadata `.tmp/g135/cycle8-validation.json`（SHA-256 `2b35dc34ba7ec447ad262f3472b9f41b09bddbd29049c2f97eecb00ad8c0801f`）。
+再現metadata `.tmp/g135/cycle8-validation.json`（SHA-256 `bb77b9b50b15d64d17ece946f88f501030fc58279efe55b8ab5744b024e797f5`）。
 共通scan metadata `.tmp/g135/cycle8-scans.json`（SHA-256 `4f8eeb0d05566ccc61f36dd8bad40298fda52a981ab52d5c8e561cb5ec6f2143`）。
