@@ -1107,3 +1107,6 @@ import ResearchLean.AG.AtlasCoefficientFiber.ZeroFiltrationCone
 import ResearchLean.AG.AtlasCoefficientFiber.NativeSpectralConnecting
 import ResearchLean.AG.AtlasCoefficientFiber.FirstPageVanishing
 import ResearchLean.AG.AtlasCoefficientFiber.FiltrationAnnihilators
+import ResearchLean.AG.AtlasCoefficientFiber.DefectMaps
+import ResearchLean.AG.AtlasCoefficientFiber.DefectShortExact
+import ResearchLean.AG.AtlasCoefficientFiber.DefectDiagnostics

@@ -6,19 +6,23 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 5）
+## 現proof state（Cycle 8）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
-Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293でcheckpoint受理済み。
+Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
 Cycle 3の同じPからのcounit評価εと実u因子化、局所Φ・Γ・Λの構成・成分同定はPR #5294で受理済み。
 ε のcochain条件と実u全三次数因子化、原始Φのchain/cochainと包含、Γの関係列、Φ・Γ・Λの実comma成分式は対象fileのLean検証を通過した。
 chart→edge・edge→faceの係数自然性と原始端点・辺位置への同定も通過した。
 mixed関係・三角形二経路の公開自然性APIとε次数別単射性も対象fileのLean検証を通過した。
 Cycle 4の原始L・実ε像の両包含・実商双対同型・標準短完全列・H₀L/H⁰Q零性はPR #5295で受理済み。独立4査読の非中心API指摘に対応して正式再監査し、宣言一覧漏れはreport限定補正と新規直接確認で解消した。
-Cycle 5は原始block分解からκと実H₁L・R・標準H¹Qの同定、および同じΓのforest特殊化へ接続する。終了条件の証拠を実装し独立PR査読へ提出する段階で、受理判定は固定headの監査コメントに置く。τ・filtration・五項列、C–E・全W・最終完了監査は未完。全目標はtarget-proof-checkpoint。
+Cycle 5の原始block分解からκ・実H₁L・R・標準H¹Qの同定とforest特殊化はPR #5296で受理済み。
+Cycle 6の実τ・五項列・全R補正代表・原始消滅同値・pure消滅・W3の非零τはPR #5297で受理済み。
+Cycle 7の原carrier filtration・実graded/SES/native spectral δ・exact couple・E₁/E₂と独立d₂＝同じτはPR #5298で受理済み。
+現在はCの実核・余核と旧診断への接続をCycle 8に選定する。局所係数/pure C3′/G107同例、
+三錐、D・E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
-以下のCycle 1 selectionから検証記録までは、最初の提案時点の履歴である。
-現在のdelta・未放電行は後続のCycle 5台帳へ対応させる。
+以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
+現在のdelta・未放電行は末尾のCycle 8台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -1223,3 +1227,157 @@ F1はcorrectedEdgeCochain_subが別ownerの二定義をchangeで展開する品�
 formal_rerunsは0、内容の受理判定は修正後の監査コメントで行う。
 全GOALは引き続きcompletion_candidate:no、C–E/Wと別final fresh4が残る。
 共通scan metadata `.tmp/g135/cycle7-scans.json`（SHA-256 `46fee9a224c38f933162785156440cb6031c70dce0b700fdbeb5b6212d3465e9`）。
+
+## Cycle 7受理・main同期
+
+PR #5298の受理headは`30286d188076c362855ae8fb24953931b47e957b`、
+mergeは`95b8bdd65d9192044d386f2068aecba09d7f7c65`（2026-10-08T03:50:32Z）。
+初回監査issuecomment-6051692210、最終内容監査とroot acceptanceはissuecomment-6051786877。
+新規四本の中心finding0、同一非中心F1は名指しowner APIとproof修正を新規単一直接対応で解消、
+資格あり・新findingなし。正式rerunsは0。七終了条件をproof-obligation-dischargedとして受理した。
+
+受理head CI全8件成功、Lean run37724096592・Tool run37724096561。
+Research integrity必要実steps成功、Formal setup/cache/build/kernel/premise実stepsはSKIPPED。
+19対象単一focused、319宣言（新250）source/print/log/report順一致・標準公理のみ。
+Issue #5290同期はissuecomment-6051800185、OPENのまま。
+専用worktreeのみorigin/mainの実mergeから次branchへ進めた。保護した別worktreeを変更していない。
+GOAL/design/Formalは不変。全GOALはtarget-proof-checkpoint / completion_candidate:no。
+
+## Cycle 8 selection（実装前固定）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 8
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 95b8bdd65d9192044d386f2068aecba09d7f7c65
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle7受理・Issue5290 issuecomment-6051800185・原五項列
+  proof_dag_predecessors: [C3実η/ε/u因子化, C5原κ/R, C6実五項列とτ, C7原filtration同定, G133六項列/旧標準H1同型/欠損API]
+  milestone: Cの同じ実比較の核・余核短完全列から旧blockDefectの加法式と保存条件を得て、G133相殺零を同じ二射へ特殊化する
+  proof_obligations: [原標準H1η/Tと同じεによる因子化, kerTとkeraの元保存同型, cokεとkerτの原制限による同型, 旧G133第四/第五射を実cokTへ輸送するSES, 旧診断二成分とτ/κstarの加法式, 同じ実比較の保存必要十分とχ零]
+  exit_criteria:
+    - 1原η/独立uからa/Tを生成し標準H1の射等式T=H1εcompaと旧H1比較の可換式を証明
+    - 2同じ原coarseH1の元を保つ両方向kerT≃keraと公開評価式を構成
+    - 3cokH1ε≃kerτを同じfiberRestrictionH1の核像完全性から生成し全商代表の値を証明
+    - 4coka→cokT→kerτの全実写像と両代表式・単射/完全性/全射を構成しG133第四/第五射に接続
+    - 5同じ既存aSubnerveComparisonHom.h1MapのblockDefect第一成分と設計§4の二自然数加法式を証明し全PhiH1有限和に戻す
+    - 6同じ旧診断J=0 iff aBijective and τInjectiveを両方向で証明し同じG133χの始域零/写像零と六項加法式特殊化を示す
+  selection_reason: Bの入力生成五項列を固定Cの実診断へ直接接続し、後続局所条件・G134保存・W診断の共通producerを作る
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [DefectMaps, DefectShortExact, DefectDiagnostics]
+  risks: [標準H1と旧商の同じ射, cokTへの等号輸送と全代表, τとχの異なる始域, 全Aと全混在M, 未計算rankをEアルゴリズムと混同しない]
+  unchecked: [上記六条件の構成/検証/正式独立PR監査, 全GOALの局所条件/pureC3prime/G107/三錐/D/E/W/別finalfresh4]
+```
+
+局所係数・pure C3′とG107同例、三錐は別の依存群として後続に保持する。
+今回の到達点をC全体または全G-135の完了とは扱わない。終了条件を満たすまで同cycleで実装・検証を反復する。
+
+## Cycle 8 result proposal：同じ実診断の係数・fiber分解
+
+原ηと独立uの標準H¹からa/Tを生成し、実εのH¹単射性と原五項列を接続した。
+G-133の同じ二射の第四・第五射を因子化等号で独立Tの余核へ移し、
+原fiber制限によるcokH¹ε≃kerτを合成する。χの始域はkerH¹εであり、Rとは異なる。
+
+| 固定終了条件 | 実Lean証拠・同じ射と前提放電 | 状態 |
+| --- | --- | --- |
+| 1 実a/Tと全H¹因子化・旧商接続 | `unitH1`、独立`directH1`、所有評価/標準等式、`directH1_factor`。原u全Hom因子化とzeroExtensionMap_comp/homologyMap_compを使用。`directH1_old`は同じ旧H¹商の自然性 | 入力生成証拠あり・正式監査前 |
+| 2 元保存kerT≃kera | `directH1_kernel`は実ε単射性による同じcoarseH¹内の部分空間等号。`directKernelUnitEquiv`とvalは同じ元を両方向で保つ | 入力生成証拠あり・正式監査前 |
+| 3 実cokε≃kerτ | `fiberRestriction_kernel/range`は原五項列の全隣接完全性。`evaluationCokernelTauKernelEquiv`はquotKerEquivRangeと核像等号輸送。全mk_valは同じ原制限 | 入力生成証拠あり・正式監査前 |
+| 4 実余核SESの全写像 | `compositeDirectCokernelEquiv`は独立T因子化の等号、同じ代表の順逆mk。`coefficientCokernelInclusion`/`totalCokernelFiberProjection`は同じG133第四/第五射と原制限同型。全代表、単射/完全性/全射を`coefficientCokernel_shortExact`へ集約 | 入力生成証拠あり・正式監査前 |
+| 5 旧診断二成分と自然数二加法式 | `directH1_defect`は標準H¹と既存商の同じblockDefect。`coefficient_kernel_dimension`、`coefficient_cokernel_dimension`、`coefficient_cokernel_kappa_dimension`は同じ核/商同型、G133次元式とτ/κ*のrank-nullity、全Φ有限Pi和から得る。整数表示も同じ第一加法式から導出 | 入力生成証拠あり・正式監査前 |
+| 6 保存必要十分と同じG133特殊化 | `evaluationH1_surjective_iff`は実五項完全性の両方向。`directH1_bijective_iff`と`coefficient_zeroDefect_iff`は同じ独立T/J。零Jから原aの線形同型とkerτ零を生成。`evaluationH1_kernel`、`coefficientCancellation_zero`、二`coefficientSixTerm_*_dimension`が同じ二射の始域零と六項式特殊化。`witnessThree_cancellation_zero_and_tau_ne_zero`は同じ原W3でχ零/τ非零を併記 | 入力生成証拠あり・正式監査前 |
+
+受理spineは実a/T、核同型、後段余核同型、実余核SES、旧診断加法式、保存必要十分、
+原零診断からa同型/kerτ零を生成するproducer、同じ二射の相殺零とW3非零τとの区別である。
+所有計算APIと部分空間等号輸送はその依存APIであり、別targetとして数えない。
+
+### Cycle 8前提・provenance・proof-useと依存
+
+- 本文由来の入力は任意原T0のM・任意A・ℚ。原支持nerveの有限fieldから三項・標準homology・部分空間/商・全Φの有限次元性を得る。新しい連結性/forest/pure/単射/全射/τ消滅仮定を一般入力へ追加しない。
+- 実η/ε/u因子化は受理済C3の`aSubnerveComparisonHom_factorization`を同じM/Aへ適用。標準H¹を定義するとき独立uを使い、結論T因子化からTを定義しない。
+- εの単射と二つの核像完全性は受理済C6の実SES・五項列から生成されたproducer。核等号、cokε≃kerτ、保存両方向へ実使用し、結論をcertificate fieldへ保持しない。
+- G133六項列・第四/第五射・次元式は任意二線形射の一般定理。今回の適用では同じ原a/H¹ε、原ε単射性から生成したχ零、実T因子化等号を渡す。χの始域零も入力ではなく出力である。
+- `sameSubmoduleEquiv`の等号は一般APIでは方向前提、具体適用では原五項完全性または原ε単射性で放電する。標準商と同じ元の輸送を両方向で保つ。
+- 零Jを仮定する`unitH1EquivOfZeroDefect`と`tauKernel_eq_bot_of_zeroDefect`は保存定理の方向特殊化。一般必要十分式ではJ/τ/aの条件を隠れた入力として受け取らない。
+- W3の既受理同じ入力`WitnessThree.M`と`connectingTau_ne_zero`を使用し、新しいMや供給τ非零に置換しない。全W3診断・Law・錐をこの一条項で完了表示しない。
+
+依存DAGは原M/A → 受理済P/η/ε/u/原五項列 → 実a/g/Tと核像 → 原商同型/第四第五射 →
+余核SES → 同じ旧blockDefectと保存必要十分。τとκ*のrankは同じ原定義に対するrank-nullity。
+Eの入力生成有理行列アルゴリズムは未完義務として保持し、この次元式を代替にしない。
+
+G133再利用の受理refはPR5269固定head`74cb93564070661509ac0c2f842596e63d0957fa`の
+標準監査issuecomment-6007458427・全GOAL認定issuecomment-6007700344、merge`2e0f452c97af56ea4fe2db1f9ca134630d872c58`。
+`DefectSequence`、`ComparisonHomology`、`ConeExactSequence`は設計参照版からbyte変更なし。
+`ZeroExtension`は受理済C6の所有公開API/明示print追加があるが、今回使用する原zeroExtensionMap_comp、
+oldH1Equiv/naturality、有限性producerのstatementとbodyは不変。追加箇所も現sourceで確認し、C6監査6050868943へ対応させる。
+C3実因子化はPR5294監査6046087706、C5原κ/RはPR5296監査6049620284、
+C6実五項列とW3はPR5297監査6050868943の現使用版を同じM/Aで追う。
+固定mathlib8f9d9cff6bd728b17a24e163c9402775d9e6a365/Lean4.28.0の
+quotKerEquivRange・quotEquivOfEq・homologyMap_comp・finrankとFinitePiの適用条件を照合する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 同じ原η/ε/独立uの標準H1と旧商を接続し、実核/余核SES・診断加法式・保存必要十分・G133χ零を全M/Aで生成
+  exit_criteria_status: [1実a/T因子化と旧商可換あり, 2元保存核同型あり, 3原制限cokε同型あり, 4全実余核SESあり, 5同じ旧Jの二加法式あり, 6両方向保存条件と同じ六項特殊化あり]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [DefectMaps, DefectShortExact, DefectDiagnostics]
+  evidence: [上表・全宣言一覧・source/focused出力hash]
+  claim_mapping:
+    theorem_names: [coefficientCokernel_shortExact, coefficient_kernel_dimension, coefficient_cokernel_dimension, coefficient_cokernel_kappa_dimension, coefficient_zeroDefect_iff, witnessThree_cancellation_zero_and_tau_ne_zero]
+    source_labels: [GOAL C, exact-sequence§4の診断一般式, exact-sequence§5のG133相殺零]
+    conjuncts: [同じ実核/余核, 全原制限とG133第四/第五射, 旧blockDefect, 全保存方向, 同じχとτの区別]
+    undischarged_assumptions: []
+    acceptance_point: 六固定終了条件の証拠を同cycleで固定し標準PR独立監査へ渡す
+    port_status: unported
+  whole_goal_status: target-proof-checkpoint
+  remaining_goal: [C局所係数/pureC3prime/G107同例と三錐, B/E全Aの有限消滅判定, D全Law/台自然性/G134接続, E原始有理行列計算法, W全指定例の全評価と二label/空台, 別finalfresh4]
+audits:
+  premise_delta:
+    discharged: [実H1因子化, 原核同型/商同型, 実余核SES完全性と両端, 同じ旧J, 全Phi有限和, 保存両方向, 原相殺零]
+    remaining: [選定cycleにはなし・全GOALのremaining_goal]
+  certificate_provenance:
+    discharged: [原P/η/ε/独立u, 原五項列, G133同じ二射の六項列, 原W3の非零τ]
+    unresolved: []
+  proof_use:
+    used: [原因子化, 実ε単射/五項完全性, 旧H1自然性/欠損, 同じ商と全代表, 実rank-nullity]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: [正式PR独立査読は未実施]
+  next_obligation: C局所係数からη同型/診断保存・pureC3prime全Aと同じG107旧C3非必要性例
+```
+
+### Cycle 8単一file検証・全宣言spine
+
+3対象非aggregate fileのfocusedは警告・エラーなし、48 source宣言と自動生成1件（計49）の
+明示print/log順とmodule監査を照合した。DefectMapsのsameSubmoduleEquiv.congr_simpは
+compiler生成宣言として明示printへ加え、source手書き宣言と分ける。すべて標準公理のみ。
+必要依存WitnessThreeNonzeroの単一target cacheで34既受理宣言の標準公理監査も成功。
+DefectMaps→DefectShortExactのcache完成後に依存側を検証した。
+Research全体/aggregate/全file loop、local lake build、Formal移植、別finalfresh4は未実施。
+
+<!-- cycle8-generated-evidence -->
+
+| file | source宣言（source/print/log同順序）と生成宣言 |
+| --- | --- |
+| `DefectMaps.lean` | `unitH1`, `directH1`, `unitH1_apply`, `directH1_apply`, `unitH1_eq_standard`, `directH1_eq_standard`, `directH1_factor`, `directH1_old`, `directH1_kernel`, `sameSubmoduleEquiv`, `sameSubmoduleEquiv_val`, `directKernelUnitEquiv`, `directKernelUnitEquiv_val`, `fiberRestriction_kernel`, `fiberRestriction_range`, `evaluationCokernelTauKernelEquiv`, `evaluationCokernelTauKernelEquiv_mk_val`; 生成：`sameSubmoduleEquiv.congr_simp` |
+| `DefectShortExact.lean` | `evaluationH1_kernel`, `coefficientCancellation_zero`, `compositeDirectCokernelEquiv`, `compositeDirectCokernelEquiv_mk`, `compositeDirectCokernelEquiv_symm_mk`, `coefficientCokernelInclusion`, `coefficientCokernelInclusion_apply`, `coefficientCokernelInclusion_mk`, `totalCokernelFiberProjection`, `totalCokernelFiberProjection_apply`, `totalCokernelFiberProjection_mk_val`, `coefficientFourth_injective`, `coefficientCokernelInclusion_injective`, `totalCokernelFiberProjection_surjective`, `coefficientCokernel_exact`, `coefficientCokernel_shortExact` |
+| `DefectDiagnostics.lean` | `directH1_defect`, `coefficient_kernel_dimension`, `coefficientSixTerm_kernel_dimension`, `coefficientSixTerm_cokernel_dimension`, `coefficient_cokernel_dimension`, `allPhiH1_finrank_sum`, `coefficient_cokernel_kappa_dimension`, `coefficient_cokernel_dimension_int`, `evaluationH1_surjective_iff`, `directH1_bijective_iff`, `coefficient_zeroDefect_iff`, `unitH1EquivOfZeroDefect`, `unitH1EquivOfZeroDefect_apply`, `tauKernel_eq_bot_of_zeroDefect`, `witnessThree_cancellation_zero_and_tau_ne_zero` |
+
+| file / source+generated | source SHA-256 | focused output SHA-256 |
+| --- | --- | --- |
+| `DefectMaps.lean` / 17+1 | `a00f3e643fa9296a4f488653cb835ba61f5788ed3179ee67f7f6358d2cec5cfb` | `e23f084fcf822117a034eb8e9e8863e86785e7bb1db48f90fac5ab104cc58e63` |
+| `DefectShortExact.lean` / 16+0 | `14f3592a8851008fdb78c4d897cf6fb488cce4d5110345ddeaa86bb0bf1b7a63` | `9055dd06c0de7bf0f4953325560d2350d7016a72606fdd662df92a319125c02c` |
+| `DefectDiagnostics.lean` / 15+0 | `bd3d93c50341909af0ad968c8dec37ae7a591bfeaf1500e9a2a583ac67977504` | `badc829969856728f8e34d12e18c02765211ee79249d6bb05d0d5c4297516caa` |
+
+再現metadata `.tmp/g135/cycle8-validation.json`（SHA-256 `2b35dc34ba7ec447ad262f3472b9f41b09bddbd29049c2f97eecb00ad8c0801f`）。
+共通scan metadata `.tmp/g135/cycle8-scans.json`（SHA-256 `4f8eeb0d05566ccc61f36dd8bad40298fda52a981ab52d5c8e561cb5ec6f2143`）。
