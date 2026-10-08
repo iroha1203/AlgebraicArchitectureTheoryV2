@@ -198,21 +198,19 @@ theorem phiChainEquiv_comm1 (x : VerticalEdge M A →₀ ℚ) (c : Nc.ChartInTar
     let ce := Carrier.chart M A _ (fun _ ht => ht) (Nf.targetSubsetEdgeLeft _ e.1)
     by_cases hc : ce = c
     · let ee : PhiEdge M A c := ⟨e.1, e.2, hc⟩
-      change phiChainEquiv0 M A (chainD1 Nf _ (verticalEdgeInclusion M A (Finsupp.single e r))) c = _
-      rw [verticalEdgeInclusion_single, chainD1_single]
+      rw [verticalEdgeBoundary_single]
       have he : e = (⟨ee.1, ee.2.1⟩ : VerticalEdge M A) := rfl
       rw [he, phiChainEquiv1_single_same, phiBoundary1_single]
       simp only [map_smul, map_sub, Pi.smul_apply, Pi.sub_apply]
-      rw [show Nf.targetSubsetEdgeRight _ e.1 = (phiEndpoint M A ee true).1 from rfl,
-        show Nf.targetSubsetEdgeLeft _ e.1 = (phiEndpoint M A ee false).1 from rfl,
+      rw [show Nf.targetSubsetEdgeRight _ e.1 = (phiEndpoint M A ee true).1 from (phiEndpoint_val M A ee true).symm,
+        show Nf.targetSubsetEdgeLeft _ e.1 = (phiEndpoint M A ee false).1 from (phiEndpoint_val M A ee false).symm,
         phiChainEquiv0_single_same, phiChainEquiv0_single_same]
     · have hr : Carrier.chart M A _ (fun _ ht => ht) (Nf.targetSubsetEdgeRight _ e.1) ≠ c := by
         have he : Carrier.chart M A _ (fun _ ht => ht) (Nf.targetSubsetEdgeLeft _ e.1) =
             Carrier.chart M A _ (fun _ ht => ht) (Nf.targetSubsetEdgeRight _ e.1) :=
           M.targetSubsetChartMap_edgeLeft_eq_right_of_none A _ _ e.1 e.2
         exact fun hh => hc (he.trans hh)
-      change phiChainEquiv0 M A (chainD1 Nf _ (verticalEdgeInclusion M A (Finsupp.single e r))) c = _
-      rw [verticalEdgeInclusion_single, chainD1_single,
+      rw [verticalEdgeBoundary_single,
         phiChainEquiv1_single_other M A e r c hc, map_zero]
       simp only [map_smul, map_sub, Pi.smul_apply, Pi.sub_apply]
       rw [phiChainEquiv0_single_other M A (Nf.targetSubsetEdgeRight (comparisonFactor qc qf h ⁻¹' A) e.1) 1 c hr,
@@ -237,7 +235,9 @@ theorem phiChainEquiv_comm2 (x : VerticalFace M A →₀ ℚ) (c : Nc.ChartInTar
       rw [hf, phiChainEquiv2_single_same, phiBoundary2_single, verticalBoundary_single]
       simp only [map_smul, map_add, map_sub, Pi.smul_apply, Pi.add_apply, Pi.sub_apply]
       have he (i : Fin 3) : verticalFaceEdge M A f i =
-          (⟨(phiFaceEdge M A fc i).1, (phiFaceEdge M A fc i).2.1⟩ : VerticalEdge M A) := rfl
+          (⟨(phiFaceEdge M A fc i).1, (phiFaceEdge M A fc i).2.1⟩ : VerticalEdge M A) := by
+        apply Subtype.ext
+        rw [verticalFaceEdge_val, phiFaceEdge_val]
       rw [he 0, he 1, he 2, phiChainEquiv1_single_same,
         phiChainEquiv1_single_same, phiChainEquiv1_single_same]
     · rw [phiChainEquiv2_single_other M A f r c hc, map_zero, verticalBoundary_single]

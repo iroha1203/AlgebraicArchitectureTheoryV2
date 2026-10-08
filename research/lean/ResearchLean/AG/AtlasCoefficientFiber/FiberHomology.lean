@@ -90,7 +90,8 @@ theorem phiVerticalCyclesEquiv_range :
     refine ⟨verticalBoundaryToCycles M A t, ⟨t, rfl⟩, ?_⟩
     funext c
     apply Subtype.ext
-    change phiChainEquiv1 M A (verticalBoundary M A t) c = (y c).1
+    change (phiVerticalCyclesEquiv M A (verticalBoundaryToCycles M A t) c).1 = (y c).1
+    rw [phiVerticalCyclesEquiv_val, verticalBoundaryToCycles_val]
     rw [phiChainEquiv_comm2]
     have ht : phiChainEquiv2 M A t = x := (phiChainEquiv2 M A).apply_symm_apply x
     rw [ht]

@@ -69,7 +69,7 @@ theorem degenerateCycle_vertical_representative (z : degenerateCycles M A) :
   obtain ⟨v, m, hm⟩ := (mem_degenerateL1 M A z.1.1).mp z.1.2
   have hv : verticalEdgeBoundary M A v = 0 := by
     have hz := congrArg Subtype.val z.2
-    change chainD1 Nf _ z.1.1 = 0 at hz
+    rw [degenerateBoundary1_val] at hz
     rw [← hm, map_add] at hz
     have hs := LinearMap.congr_fun (chainD1_comp_chainD2 Nf _) (mixedFaceInclusion M A m)
     change chainD1 Nf _ (chainD2 Nf _ (mixedFaceInclusion M A m)) = 0 at hs
@@ -110,7 +110,8 @@ theorem verticalCycleHomologyMap_ker :
     obtain ⟨t, ⟨v, hv⟩, s, ⟨m, hm⟩, he⟩ := Submodule.mem_sup.mp hmem
     have he' : verticalFaceInclusion M A v + mixedFaceInclusion M A m = f.1 := by
       simpa only [← hv, ← hm] using he
-    change chainD2 Nf _ f.1 = verticalEdgeInclusion M A z.1 at hfv
+    change (degenerateBoundaryToCycles M A f).1.1 = (verticalCycleInclusion M A z).1.1 at hfv
+    rw [degenerateBoundaryToCycles_val, verticalCycleInclusion_val] at hfv
     rw [← he', map_add, ← LinearMap.comp_apply (chainD2 Nf _) (verticalFaceInclusion M A),
       ← verticalBoundary_inclusion, LinearMap.comp_apply] at hfv
     have hb : mixedHorizontalBoundary M A m = 0 := by
@@ -129,8 +130,7 @@ theorem verticalCycleHomologyMap_ker :
     refine ⟨⟨_, hfmem⟩, ?_⟩
     apply Subtype.ext
     apply Subtype.ext
-    change chainD2 Nf _ (verticalFaceInclusion M A v + mixedFaceInclusion M A y.1) =
-      verticalEdgeInclusion M A z.1
+    rw [degenerateBoundaryToCycles_val, verticalCycleInclusion_val]
     rw [map_add, ← LinearMap.comp_apply (chainD2 Nf _) (verticalFaceInclusion M A),
       ← verticalBoundary_inclusion, LinearMap.comp_apply]
     have hm := mixedBoundary_recombination M A y.1

@@ -702,11 +702,11 @@ fileや補題一つの完成だけでcycleを閉じない。固定GOAL/設計/�
 
 ## Cycle 5 spineと固定要求の対応
 
-namespaceは `AAT.AG.AtlasCoefficientFiber`。新規11module・194宣言をこのcycleのspine候補として固定する。足場宣言は残していない。全宣言名を次に列挙し、source末尾の明示 `#print axioms` と一対一で対応させる。
+namespaceは `AAT.AG.AtlasCoefficientFiber`。新規11module・198宣言をこのcycleのspine候補として固定する。足場宣言は残していない。全宣言名を次に列挙し、source末尾の明示 `#print axioms` と一対一で対応させる。
 
 | file | 全宣言 |
 | --- | --- |
-| `RawBlocks.lean` | `cellProjection`, `cellProjection_apply`, `cellInclusion_apply`, `cellInclusion_apply_notmem`, `cellProjection_cellInclusion`, `cellProjection_complementInclusion`, `cellRecombination`, `cellDecomposition`, `cellDecomposition_fst`, `cellDecomposition_snd`, `HorizontalEdge`, `HorizontalFace`, `edgeBlockEquiv`, `verticalEdgeProjection`, `horizontalEdgeProjection`, `horizontalEdgeInclusion`, `horizontalFaceInclusion`, `verticalEdgeBoundary`, `horizontalEdgeBoundary`, `mixedVerticalBoundary`, `mixedHorizontalBoundary`, `horizontalFaceBoundary`, `verticalEdgeProjection_inclusion`, `verticalEdgeProjection_horizontal`, `horizontalEdgeProjection_inclusion`, `horizontalEdgeProjection_vertical`, `edgeBlock_recombination`, `mixedBoundary_recombination`, `verticalEdgeBoundary_comp_verticalBoundary`, `mixedBoundary_square`, `horizontalFace_edge_mapped`, `horizontalFace_vertical_zero`, `horizontalFaceBoundary_inclusion`, `horizontalEdgeBoundary_comp_horizontalFaceBoundary`, `horizontalEdgeProjection_single`, `horizontalEdgeProjection_vertical_single`, `degenerateFaceSplitEquiv`, `faceBlockEquiv`, `faceBlockEquiv_vertical`, `faceBlockEquiv_mixed`, `faceBlockEquiv_horizontal` |
+| `RawBlocks.lean` | `cellProjection`, `cellProjection_apply`, `cellInclusion_apply`, `cellInclusion_apply_notmem`, `cellProjection_cellInclusion`, `cellProjection_complementInclusion`, `cell_recombination`, `cellRecombination`, `cellDecomposition`, `cellDecomposition_fst`, `cellDecomposition_snd`, `HorizontalEdge`, `HorizontalFace`, `edgeBlockEquiv`, `verticalEdgeProjection`, `horizontalEdgeProjection`, `horizontalEdgeInclusion`, `horizontalFaceInclusion`, `verticalEdgeBoundary`, `verticalEdgeBoundary_apply`, `verticalEdgeBoundary_single`, `horizontalEdgeBoundary`, `mixedVerticalBoundary`, `mixedHorizontalBoundary`, `mixedHorizontalBoundary_apply`, `horizontalFaceBoundary`, `verticalEdgeProjection_inclusion`, `verticalEdgeProjection_horizontal`, `horizontalEdgeProjection_inclusion`, `horizontalEdgeProjection_vertical`, `edgeBlock_recombination`, `mixedBoundary_recombination`, `verticalEdgeBoundary_comp_verticalBoundary`, `mixedBoundary_square`, `horizontalFace_edge_mapped`, `horizontalFace_vertical_zero`, `horizontalFaceBoundary_inclusion`, `horizontalEdgeBoundary_comp_horizontalFaceBoundary`, `horizontalEdgeProjection_single`, `horizontalEdgeProjection_vertical_single`, `degenerateFaceSplitEquiv`, `faceBlockEquiv`, `faceBlockEquiv_vertical`, `faceBlockEquiv_mixed`, `faceBlockEquiv_horizontal` |
 | `FiberChains.lean` | `phiChartPartition`, `phiEdgePartition`, `phiFacePartition`, `phiChartPartition_symm_val`, `phiEdgePartition_symm_val`, `phiFacePartition_symm_val`, `phiEdgePartition_symm_apply`, `phiFacePartition_symm_apply`, `phiChainEquiv0`, `phiChainEquiv1`, `phiChainEquiv2`, `phiChainEquiv0_apply`, `phiChainEquiv1_apply`, `phiChainEquiv2_apply`, `phiChainEquiv0_single`, `phiChainEquiv1_single`, `phiChainEquiv2_single`, `phiChainEquiv0_single_other`, `phiChainEquiv1_single_other`, `phiChainEquiv2_single_other`, `phiChainEquiv0_single_same`, `phiChainEquiv1_single_same`, `phiChainEquiv2_single_same`, `phiChainEquiv_comm1`, `phiChainEquiv_comm2` |
 | `FiberHomology.lean` | `phiCycles`, `phiBoundaryToCycles`, `PhiHomology`, `phiVerticalCyclesEquiv`, `phiVerticalCyclesEquiv_val`, `phiVerticalCyclesEquiv_range`, `verticalHomologyPhiEquiv`, `verticalHomologyPhiEquiv_mk`, `kappa`, `kappa_apply`, `kappa_apply_component`, `kappa_range`, `allPhiHomologyAddCommGroup`, `allPhiHomologyModule`, `KappaCokernel`, `kappaCokernelCoordinateEquiv`, `kappaCokernelCoordinateEquiv_mk`, `kappaCokernelHomologyEquiv`, `kappaCokernelStandardEquiv` |
 | `ChainHomologyDual.lean` | `chainBoundaryToCycles`, `ChainFirstHomology`, `chainDualComplex`, `cocycleHomologyEvaluation`, `cocycleHomologyEvaluation_mk`, `cocycleHomologyEvaluation_surjective`, `cocycleHomologyEvaluation_ker`, `chainHomologyDualEquiv`, `chainHomologyDualEquiv_mk` |
@@ -753,11 +753,11 @@ namespaceは `AAT.AG.AtlasCoefficientFiber`。新規11module・194宣言をこ�
 - `Kappa` → `RawBlocks` → 原Dy閉路・垂直商・第二同型定理。
 - `ChainHomologyDual` → PR5295 `DualRestriction` / std3と固定mathlibの `Subspace.dualRestrict_surjective`、`range_dualMap_eq_dualAnnihilator_ker`、quotient。
 - `DegenerateHomology` → `Kappa` ＋ PR5295元 `DegenerateChain` ＋ `ChainHomologyDual` → 同じ実L閉路・Fv/Fm・標準H₁。
-- `FiberChains` → `RawBlocks` ＋ PR5294元 `PrimitiveFibers/PhiChain` → 全Φ基底・原a/V。
+- `FiberChains` → `RawBlocks` ＋ PR5294元 `LocalFiber.lean` のPhiChart/PhiEdge/PhiFace・phiBoundary1/2 → 全Φ基底・原a/V。
 - `FiberHomology` → `FiberChains/Kappa/ChainHomologyDual/DegenerateHomology` → 全Φ一次homologyと同じκおよびcokerκ標準同定。
 - `FiberCohomology` → `FiberHomology` ＋ 既存 `CochainEquiv.h1Equiv` → 実Φ cochain H¹・同じκ*・R。
 - `RestrictionHomology` → `DegenerateHomology/ChainHomologyDual/FiberCohomology` → 同じ実標準H¹Q≅R。
-- `GammaChains` → `RawBlocks` ＋ PR5294元 `PrimitiveGamma` → 同じ原Γ分類・両端点・B。
+- `GammaChains` → `RawBlocks` ＋ PR5294元 `LocalFiber.lean` のGammaVertex/GammaEdge・gammaSource/Target → 同じ原Γ分類・両端点・B。
 - `NamedForest/GammaForest` → 原名付き多重Graph/leaf証明 ＋ `GammaChains/RestrictionHomology` → forest特殊化。
 
 受理predecessorの版・review資格はCycle3/4の上記監査URLに固定され、今回使用箇所に
@@ -777,9 +777,9 @@ result:
   split_reason: none
   completion_candidate: no
   lean_artifacts: [RawBlocks.lean, FiberChains.lean, FiberHomology.lean, ChainHomologyDual.lean, Kappa.lean, DegenerateHomology.lean, FiberCohomology.lean, RestrictionHomology.lean, GammaChains.lean, NamedForest.lean, GammaForest.lean]
-  evidence: 上記全194宣言・五条件対応・単一file検証・公理監査
+  evidence: 上記全198宣言・五条件対応・単一file検証・公理監査
   claim_mapping:
-    theorem_names: 上記全194宣言spine
+    theorem_names: 上記全198宣言spine
     source_labels: [GOAL B, exact-sequence §1, T0]
     conjuncts: 上記五終了条件対応表
     undischarged_assumptions: []
@@ -813,22 +813,22 @@ audits:
 
 ### Cycle 5単一file検証と公理監査
 
-各コマンドはリポジトリrootで `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/<file>.lean` として単独実行した。現sourceの11 focused checkはすべてexit 0、error/warning 0。各moduleの明示 `#print axioms` と `#assert_standard_axioms_only` は全194宣言を監査し、依存は `propext` / `Classical.choice` / `Quot.sound` の部分集合のみ。
+各コマンドはリポジトリrootで `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/<file>.lean` として単独実行した。現sourceの11 focused checkはすべてexit 0、error/warning 0。各moduleの明示 `#print axioms` と `#assert_standard_axioms_only` は全198宣言を監査し、依存は `propext` / `Classical.choice` / `Quot.sound` の部分集合のみ。
 
 | file / 件数 | source SHA-256 | focused stdout+stderr SHA-256 |
 | --- | --- | --- |
-| `RawBlocks.lean` / 41 | `7ff73918b6cfdd072776f5194d14f1a5c2ec9a51878a1e9918eed1fb52b70ae2` | `b399238da8dffbe159344cc23c89be6edac324ccf1c45c562c6b8aa3fbb7b12a` |
-| `FiberChains.lean` / 25 | `6f1fc772e5df14baa90c70232111cd456f06dc51ac142b2191857841ec9c47d5` | `9fc63cba818fc15fb4a12f07624a36cb9036f8587c82fba6d59d5c32ae83c0f0` |
-| `FiberHomology.lean` / 19 | `5a5058b6d19abc09003b34de90ab535d736351d73ebbe22fa59653609a302bd6` | `0ff2f76f6914255b7c5364b18b33382a8e09ff7fd7c4fe15eb5664ad1fb4679b` |
+| `RawBlocks.lean` / 45 | `99e4f1cea07b288a6713c7e5757cb373ed27d52666184c47bb0e325861e536db` | `391fff62fbef07925930d224a27bf2c061017fa69ea16670b4a21b07f106e84a` |
+| `FiberChains.lean` / 25 | `04b412ea259af7c33f406a3ac2803e5b822633407ef60144e4faf8a37ef03774` | `9fc63cba818fc15fb4a12f07624a36cb9036f8587c82fba6d59d5c32ae83c0f0` |
+| `FiberHomology.lean` / 19 | `7002890ed28d4ad6996c7cd2851e8399f901cb5ff0ebe692a7e7cbbe0f355aed` | `0ff2f76f6914255b7c5364b18b33382a8e09ff7fd7c4fe15eb5664ad1fb4679b` |
 | `ChainHomologyDual.lean` / 9 | `d1eadbbb132bd199cff5b8b92aaadc719971a39f7ae8679187c8b38c8d7997d2` | `7b9de290ed87a7d12a235c192d796ba39681e47a56c0484933d0e0d18325da63` |
 | `Kappa.lean` / 16 | `d82d43acacfb6bb5f30298e71603464adae075119fb311ac762ae85279a4193b` | `f838e43b47f4eeed00aa1f4c2e744434462a7de7709a2e153f155c5ddbcfea43` |
-| `DegenerateHomology.lean` / 18 | `c02365356074d29d3dcaa75e83cc8f4932fc806005c7657756a0d103cbde25b0` | `7575017ede35ab01587f38c8ffb42b7bee7e84e461b413bf4cc29616dff3011f` |
+| `DegenerateHomology.lean` / 18 | `168c24bd3178e41860364a158453b8996331e9077624ed10f013da9a3624a7fb` | `7575017ede35ab01587f38c8ffb42b7bee7e84e461b413bf4cc29616dff3011f` |
 | `FiberCohomology.lean` / 12 | `cf85c289ff0cb0ead245ccd2fd8e9860fec4a489f17e75b85a9da885ace99c67` | `e103ae0f0e32db35781f428d459976c5b645d1b2066e1ff26f2647496269efa9` |
 | `RestrictionHomology.lean` / 7 | `edde3fdc56eec794ebf36f976622a315f4926a2627f2a930170f29cf39690fe8` | `68935ab0c4261167d0286adfa15c3fce60f0601c90f45678fc7ac5b37651db80` |
-| `GammaChains.lean` / 23 | `8d0b1c5fc7e0ff461a3a3535f79e6a11278707a4a158c42f9160c3c2308d88d8` | `593f26fe23686a13399a33e0c71f544c15c3b7c092f04c987623a0ff561afa71` |
+| `GammaChains.lean` / 23 | `5943afba7cddb60d1614f29413ba5bcf9b9dcba7d6381f4d2d4e0e0fcab3719f` | `593f26fe23686a13399a33e0c71f544c15c3b7c092f04c987623a0ff561afa71` |
 | `NamedForest.lean` / 13 | `2116f69b5a631b72e637e143c5e60543747cb384638208513a640b781b17688e` | `6a840d61566d38c4325e4b9eb60a7c1938f8b16464784afef95a755db94eec44` |
 | `GammaForest.lean` / 11 | `c783cd60bb052d487adaee010650109b8df5d89d31fb1c0b81458316d8f09948` | `8d369064a0e3b28c5f25c2a64b175fc921407fc128a785f929022a145c8fea83` |
 
-検証metadataは `.tmp/g135/cycle5-validation.json`（SHA-256 `2cb1265910ab1394d084a2a48f41f6716e78062bdc6cf2caec152650dc538e69`）。上記全宣言のsource/print/log/report一覧を一致させた。必要な単一import cacheも同じfileの `lake env lean -o <cache> <file>` で生成した。Research full/aggregate/全file loopのelaborationとlake buildは未実施。Formalへの移植・実buildは未実施で、成果はunported (Research-proved)。最終全GOAL完了査読は未実施。
+検証metadataは `.tmp/g135/cycle5-validation.json`（SHA-256 `546cd269c1921cc6ed0fdfc41abb7405a449f8893ec8ba6dbdf64606e4008574`）。上記全宣言のsource/print/log/report一覧を一致させた。必要な単一import cacheも同じfileの `lake env lean -o <cache> <file>` で生成した。Research full/aggregate/全file loopのelaborationとlake buildは未実施。Formalへの移植・実buildは未実施で、成果はunported (Research-proved)。最終全GOAL完了査読は未実施。
 
-共通scanは `.tmp/g135/cycle5-scans.json`（SHA-256 `99a8edbd6d920522b6c4c193a16f1d1ad6edc6e1a5794dd89b22ce64c0a71065`）へ固定した。変更14fileを列挙し、placeholder/new axiom、hidden/BiDi、privacy/local-path、追加語彙、`git diff --check`、Formal逆importを確認してclean。全194名のreport一覧もsource/print/logと一致。GOAL・設計・Formal・保護数学本文は変更していない。
+共通scanは `.tmp/g135/cycle5-scans.json`（SHA-256 `1ba881cc99290b9e9d31c64e27002514adb608fc74ec8c8c05a02e9bf020a892`）へ固定した。変更14fileを列挙し、placeholder/new axiom、hidden/BiDi、privacy/local-path、追加語彙、`git diff --check`、Formal逆importを確認してclean。全198名のreport一覧もsource/print/logと一致。GOAL・設計・Formal・保護数学本文は変更していない。

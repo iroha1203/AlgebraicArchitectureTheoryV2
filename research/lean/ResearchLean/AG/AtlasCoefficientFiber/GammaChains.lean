@@ -149,8 +149,7 @@ theorem mixedGraphTarget_val_right (f : MixedFace M A) (E : Nc.nerve.EdgeCompone
 @[simp] theorem mixedHorizontalBoundary_single (f : MixedFace M A) (r : ℚ) :
     mixedHorizontalBoundary M A (Finsupp.single f r) = r •
       (Finsupp.single (mixedGraphTarget M A f) 1 - Finsupp.single (mixedGraphSource M A f) 1) := by
-  change horizontalEdgeProjection M A
-    (chainD2 Nf _ (mixedFaceInclusion M A (Finsupp.single f r))) = _
+  rw [mixedHorizontalBoundary_apply]
   rw [mixedFaceInclusion_single, chainD2_single]
   simp only [map_smul, map_sub, map_add]
   obtain ⟨E, he, hp⟩ := mixedFace_patterns M A f

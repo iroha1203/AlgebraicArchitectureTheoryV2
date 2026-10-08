@@ -52,7 +52,7 @@ theorem cellInclusion_apply_notmem {I : Type u} (p : I → Prop)
   exact cellInclusion_apply_notmem (fun i => ¬ p i) x i.1 (not_not.mpr i.2)
 
 /-- none側とその補集合の係数から元のchainを復元する。 -/
-theorem cellRecombination {I : Type u} (p : I → Prop) (x : I →₀ ℚ) :
+theorem cell_recombination {I : Type u} (p : I → Prop) (x : I →₀ ℚ) :
     cellInclusion p (cellProjection p x) +
       cellInclusion (fun i => ¬ p i) (cellProjection (fun i => ¬ p i) x) = x := by
   classical
@@ -66,6 +66,12 @@ theorem cellRecombination {I : Type u} (p : I → Prop) (x : I →₀ ℚ) :
     have hn := cellInclusion_apply (fun i => ¬ p i)
       (cellProjection (fun i => ¬ p i) x) ⟨i, hi⟩
     simp only [Finsupp.add_apply, cellProjection_apply, hp, hn, zero_add]
+
+/-- 以前の公開名を同じstatementの互換aliasとして保持する。 -/
+theorem cellRecombination {I : Type u} (p : I → Prop) (x : I →₀ ℚ) :
+    cellInclusion p (cellProjection p x) +
+      cellInclusion (fun i => ¬ p i) (cellProjection (fun i => ¬ p i) x) = x :=
+  cell_recombination p x
 
 /-- 相補的な原始セル分類は元自由chainの両方向分解を与える。 -/
 def cellDecomposition {I : Type u} (p : I → Prop) :
@@ -128,6 +134,17 @@ def verticalEdgeBoundary : (VerticalEdge M A →₀ ℚ) →ₗ[ℚ]
     K0 Nf (comparisonFactor qc qf h ⁻¹' A) :=
   (chainD1 Nf _).comp (verticalEdgeInclusion M A)
 
+/-- 原支持微分を通すaの値を返す所有API。 -/
+theorem verticalEdgeBoundary_apply (x : VerticalEdge M A →₀ ℚ) :
+    verticalEdgeBoundary M A x = chainD1 Nf _ (verticalEdgeInclusion M A x) := rfl
+
+/-- aの各列は同じ原細辺の右端点と左端点の差。 -/
+@[simp] theorem verticalEdgeBoundary_single (e : VerticalEdge M A) (r : ℚ) :
+    verticalEdgeBoundary M A (Finsupp.single e r) = r •
+      (Finsupp.single (Nf.targetSubsetEdgeRight _ e.1) 1 -
+        Finsupp.single (Nf.targetSubsetEdgeLeft _ e.1) 1) := by
+  rw [verticalEdgeBoundary_apply, verticalEdgeInclusion_single, chainD1_single]
+
 /-- 指定bは原第一微分の水平辺への制限。 -/
 def horizontalEdgeBoundary : (HorizontalEdge M A →₀ ℚ) →ₗ[ℚ]
     K0 Nf (comparisonFactor qc qf h ⁻¹' A) :=
@@ -140,6 +157,11 @@ def mixedVerticalBoundary : (MixedFace M A →₀ ℚ) →ₗ[ℚ] (VerticalEdge
 /-- 指定Bは混在面の元微分の水平成分。後で同じΓ incidenceへ同定する。 -/
 def mixedHorizontalBoundary : (MixedFace M A →₀ ℚ) →ₗ[ℚ] (HorizontalEdge M A →₀ ℚ) :=
   (horizontalEdgeProjection M A).comp ((chainD2 Nf _).comp (mixedFaceInclusion M A))
+
+/-- 原支持微分と水平射影を通すBの値を返す所有API。 -/
+theorem mixedHorizontalBoundary_apply (x : MixedFace M A →₀ ℚ) :
+    mixedHorizontalBoundary M A x =
+      horizontalEdgeProjection M A (chainD2 Nf _ (mixedFaceInclusion M A x)) := rfl
 
 /-- 指定Hはmapped面の元微分の水平成分。 -/
 def horizontalFaceBoundary : (HorizontalFace M A →₀ ℚ) →ₗ[ℚ] (HorizontalEdge M A →₀ ℚ) :=
@@ -298,6 +320,8 @@ def faceBlockEquiv : K2 Nf (comparisonFactor qc qf h ⁻¹' A) ≃ₗ[ℚ]
 @[simp] theorem faceBlockEquiv_horizontal (x : K2 Nf (comparisonFactor qc qf h ⁻¹' A))
     (f : HorizontalFace M A) : (faceBlockEquiv M A x).2 f = x f.1 := rfl
 
+attribute [deprecated cell_recombination (since := "2026-10-08")] cellRecombination
+
 end AAT.AG.AtlasCoefficientFiber
 
 #print axioms AAT.AG.AtlasCoefficientFiber.cellProjection
@@ -306,6 +330,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.cellInclusion_apply_notmem
 #print axioms AAT.AG.AtlasCoefficientFiber.cellProjection_cellInclusion
 #print axioms AAT.AG.AtlasCoefficientFiber.cellProjection_complementInclusion
+#print axioms AAT.AG.AtlasCoefficientFiber.cell_recombination
 #print axioms AAT.AG.AtlasCoefficientFiber.cellRecombination
 #print axioms AAT.AG.AtlasCoefficientFiber.cellDecomposition
 #print axioms AAT.AG.AtlasCoefficientFiber.cellDecomposition_fst
@@ -318,9 +343,12 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalEdgeInclusion
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalFaceInclusion
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeBoundary
+#print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeBoundary_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeBoundary_single
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalEdgeBoundary
 #print axioms AAT.AG.AtlasCoefficientFiber.mixedVerticalBoundary
 #print axioms AAT.AG.AtlasCoefficientFiber.mixedHorizontalBoundary
+#print axioms AAT.AG.AtlasCoefficientFiber.mixedHorizontalBoundary_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.horizontalFaceBoundary
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeProjection_inclusion
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalEdgeProjection_horizontal
@@ -341,4 +369,5 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_vertical
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_mixed
 #print axioms AAT.AG.AtlasCoefficientFiber.faceBlockEquiv_horizontal
+
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber
