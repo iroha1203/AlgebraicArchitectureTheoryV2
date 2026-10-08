@@ -154,6 +154,14 @@ def rawKappaCokernelHomologyEquiv :
     (VerticalHomology M A ⧸ LinearMap.range (rawKappa M A)) ≃ₗ[ℚ] DegenerateHomology M A :=
   (rawKappaCokernelEquiv M A).trans (verticalRelationsHomologyEquiv M A)
 
+/-- κ余核からL一次homologyへの同定は同じ垂直閉路代表を保存する。 -/
+@[simp] theorem rawKappaCokernelHomologyEquiv_mk (z : verticalCycles M A) :
+    rawKappaCokernelHomologyEquiv M A
+      (Submodule.Quotient.mk (Submodule.Quotient.mk z)) = verticalCycleHomologyMap M A z := by
+  change verticalRelationsHomologyEquiv M A (rawKappaCokernelEquiv M A
+    (Submodule.Quotient.mk (Submodule.Quotient.mk z))) = _
+  rw [rawKappaCokernelEquiv_mk, verticalRelationsHomologyEquiv_mk]
+
 /-- 実Lの次数1短複体。 -/
 def degenerateOneShort : ShortComplex (ModuleCat.{u} ℚ) :=
   ShortComplex.moduleCatMk (degenerateBoundary2 M A) (degenerateBoundary1 M A)
@@ -192,6 +200,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalRelationsHomologyEquiv
 #print axioms AAT.AG.AtlasCoefficientFiber.verticalRelationsHomologyEquiv_mk
 #print axioms AAT.AG.AtlasCoefficientFiber.rawKappaCokernelHomologyEquiv
+#print axioms AAT.AG.AtlasCoefficientFiber.rawKappaCokernelHomologyEquiv_mk
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateOneShort
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateOneScIso
 #print axioms AAT.AG.AtlasCoefficientFiber.degenerateHomologyStandardEquiv
