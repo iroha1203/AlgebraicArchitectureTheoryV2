@@ -793,12 +793,57 @@ theorem preimageFunctor_map_chartFace_code_of_mixed_right (Ac : Set qc.Target)
   rw [preimageFunctor_map_chartFace_code]
   simp only [faceVertexHomPosition, hf, h0]
 
+/-- 退化辺の任意の端点射は恒等位置へ写る。台包含自然性の所有API。 -/
+theorem preimageFunctor_map_chartEdge_code_of_none (Ac : Set qc.Target)
+    (c : Nf.ChartInTargetSubset (comparisonFactor qc qf h ⁻¹' Ac))
+    (e : Nf.EdgeInTargetSubset (comparisonFactor qc qf h ⁻¹' Ac))
+    (he : M.edgeMap e.1 = none) (s : Bool)
+    (hc : c = edgeEndpoint Nf (comparisonFactor qc qf h ⁻¹' Ac) e s) :
+    incHomCode ((preimageFunctor M Ac).map (IncHom.chartEdge c e s hc)) = .inl () := by
+  rw [preimageFunctor_map_chartEdge, incHomCode_eqToHom_comp]
+  exact endpointHom_code_none M Ac _ _ e s he
+
+/-- 垂直面の任意の辺面射は同じ恒等位置へ写る。 -/
+theorem preimageFunctor_map_edgeFace_code_of_vertical (Ac : Set qc.Target)
+    (e : Nf.EdgeInTargetSubset (comparisonFactor qc qf h ⁻¹' Ac))
+    (f : Nf.FaceInTargetSubset (comparisonFactor qc qf h ⁻¹' Ac))
+    (hf : M.faceMap f.1 = none)
+    (h0 : M.edgeMap (Nf.nerve.faceEdge0 f.1) = none)
+    (h1 : M.edgeMap (Nf.nerve.faceEdge1 f.1) = none) (i : Fin 3)
+    (he : e = faceEdge Nf (comparisonFactor qc qf h ⁻¹' Ac) f i) :
+    incHomCode ((preimageFunctor M Ac).map (IncHom.edgeFace e f i he)) = .inl () := by
+  rw [preimageFunctor_map_edgeFace, incHomCode_eqToHom_comp]
+  unfold edgeHom
+  split
+  · rename_i F hF
+    cases hf.symm.trans hF
+  · split
+    · rename_i a ha
+      cases h0.symm.trans ha
+    · split
+      · rename_i a ha
+        cases h1.symm.trans ha
+      · exact verticalFaceEdgeHom_code M Ac _ _ f _ _ _ _ i
+
+/-- 垂直面の任意の頂点射も同じ恒等位置へ写る。 -/
+theorem preimageFunctor_map_chartFace_code_of_vertical (Ac : Set qc.Target)
+    (c : Nf.ChartInTargetSubset (comparisonFactor qc qf h ⁻¹' Ac))
+    (f : Nf.FaceInTargetSubset (comparisonFactor qc qf h ⁻¹' Ac))
+    (hf : M.faceMap f.1 = none)
+    (h0 : M.edgeMap (Nf.nerve.faceEdge0 f.1) = none)
+    (h1 : M.edgeMap (Nf.nerve.faceEdge1 f.1) = none) (i : Fin 3)
+    (hc : c = faceVertex Nf (comparisonFactor qc qf h ⁻¹' Ac) f i) :
+    incHomCode ((preimageFunctor M Ac).map (IncHom.chartFace c f i hc)) = .inl () := by
+  rw [preimageFunctor_map_chartFace_code]
+  simp only [faceVertexHomPosition, hf, h0, h1]
+
 end Carrier
 end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.incidencePositionComp
 #print axioms AAT.AG.AtlasCoefficientFiber.incHomCode_comp
 #print axioms AAT.AG.AtlasCoefficientFiber.incHomCode_eqToHom
 #print axioms AAT.AG.AtlasCoefficientFiber.incHomCode_eqToHom_comp
+#print axioms AAT.AG.AtlasCoefficientFiber.incHomCode_comp_eqToHom
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.endpointHom_of_some
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.endpointHom_of_none
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.edge_of_face_some
@@ -844,7 +889,6 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.edgeHom_code_of_mixed_right
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_face_edgeHom_of_mixed_left
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_face_edgeHom_of_mixed_right
-#print axioms AAT.AG.AtlasCoefficientFiber.incHomCode_comp_eqToHom
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_edgeFace_code_of_some
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_chartFace
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_chartFace_code
@@ -857,4 +901,10 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_edgeFace_code_of_mixed_right
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_chartFace_code_of_mixed_left
 #print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_chartFace_code_of_mixed_right
+#print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_chartEdge_code_of_none
+#print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_edgeFace_code_of_vertical
+#print axioms AAT.AG.AtlasCoefficientFiber.Carrier.preimageFunctor_map_chartFace_code_of_vertical
+#print axioms AAT.AG.AtlasCoefficientFiber.Carrier.edge.congr_simp
+#print axioms AAT.AG.AtlasCoefficientFiber.Carrier.mixedLeftFaceEdgeHom.congr_simp
+#print axioms AAT.AG.AtlasCoefficientFiber.Carrier.mixedRightFaceEdgeHom.congr_simp
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber

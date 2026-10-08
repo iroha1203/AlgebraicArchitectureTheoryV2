@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 11）
+## 現proof state（Cycle 12）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -21,11 +21,12 @@ Cycle 7の原carrier filtration・実graded/SES/native spectral δ・exact coupl
 Cycle 8の実核・余核SES、旧診断加法式、保存必要十分とG133相殺零はPR #5299で受理済み。
 Cycle 9の局所十分条件・pure保存両方向/全A C3′・同じG107新旧条件はPR #5300で受理済み。
 Cycle 10の原三錐・原Qへの擬同型・全次数と符号の対応はPR #5301で受理済み。
-Cycle 11の実Law接続は六固定終了条件の構成・単一file検証を通過し、正式PR査読を待つ。
-Dの台自然性/G134、E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
+Cycle 11の実Law接続・原κ/R/τ/三錐・旧商/寄与和はPR #5302で受理済み。
+Cycle 12は全A包含の原P・二射・κ/R/τ自然性を原primitive support/comma生成から構成し、六固定終了条件のresult proposalを記録した。独立PR査読は未実施。
+DのLaw全ラベル台自然性/G134、E・全W評価と別最終完了監査は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
 以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。
-現在のdelta・未放電行は末尾のCycle 11台帳で追跡する。
+現在のdelta・未放電行は末尾のCycle 12台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -1904,3 +1905,203 @@ Research全体/aggregate/全file loop、local lake build、Formal実build/移植
 
 validation `.tmp/g135/cycle11-validation.json` SHA-256 `ab84685aef105ae507e7a2608d04e04b32f8dc7a76d751db4e7b048ce3685838`。
 scan `.tmp/g135/cycle11-scans.json` SHA-256 `0e87f70bc69cdb8ec23c9f412825f19fd735431e57bf62109f085904fc2a7268`。
+
+
+## Cycle 11受理・merge同期
+
+PR [#5302](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5302)、head
+`7f20e6aaaae8c51298b32d955ca16a6b0076b84a`、merge
+`a993ccd6791f64cbbb8bdd6c4c6b591c3ea11dad`、2026-10-08T07:16:38Z。
+[標準監査/root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5302#issuecomment-6054697310)、
+[数学二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5302#issuecomment-6054486053)、
+[Lean二票全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5302#issuecomment-6054489763)、
+[独立直接確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5302#issuecomment-6054674802)、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6054722709)。
+六固定終了条件はapprove / proof-obligation-discharged。初回新規数学2・Lean2は中心0、
+非中心F1一件。名指しlawFineStandardIso_hom追加と下流proof内部・証拠文言の変更を、
+新規独立単一確認が資格内/実体解消と確認し、新findingなし。正式reruns0。
+全192source/print/log/report同順、生成追加0、標準三公理のみ、warning/error0。
+root6単一focused/F1後2変更file/独立4指定focused/direct指定Fiberfocused成功。
+validation SHA `ab84685aef105ae507e7a2608d04e04b32f8dc7a76d751db4e7b048ce3685838`、
+scan SHA `0e87f70bc69cdb8ec23c9f412825f19fd735431e57bf62109f085904fc2a7268`。
+6登録と共通scan/静的方向228modulePASS、GOAL/design/Formal不変。
+修正head全8checkSUCCESS、Lean37741728268/Tool37741728254実run成功。
+Formal setup/cache/build/kernel/premise実stepsSKIPPED、Research全体/aggregate/fullfileloopは未実施。
+全GOALはcheckpoint、Formal unported、D全A自然性/G134・B/E有限判定・E原始算法・W・別finalは未完。
+
+## Cycle 12 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 12
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: a993ccd6791f64cbbb8bdd6c4c6b591c3ea11dad
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle11受理/Issue6054722709とDの全A制限未完行
+  proof_dag_predecessors: [原incidence/carrier/右Kan C1–3, 原L商双対/SES C4, 原κQR C5, 原nativeδτ C6, 原三錐 C10, 実Law全射接続 C11, G134同じ支持包含と実u制限]
+  milestone: GOAL Dの全A包含に対する原順像・二射・fiber適合・原連結射を同じprimitive support生成から自然にする
+  proof_obligations: [出現を保つincidence包含とcarrier全正方形, 実comma包含/成分前合成の順像制限, 原nativechain/退化L包含と原商双対比較, 同じPの全三次数制限とηε/u正方形, 原Φ/混在閉路の包含とκ/κstar/literalR制限, 原Q-RとnativeSESδ/τ自然性, 同じ三錐/triangle制限と全次数/代表式]
+  exit_criteria:
+    - 全A包含Bの三次数セル包含・全incidence出現・carrier全射正方形から実comma関手と係数制限を生成し、全成分前合成値・係数incidence自然性を証明する
+    - 元のnative細chain包含は原L各次数を保存し原商双対を含め同じP制限に接続する。原P全三微分/ηε/独立uの全Hom正方形を証明し、空Aと包含恒等/合成を保持する
+    - 原Φ chainと原mixedCycles包含はB/D/Vを保存し、同じκの全代表で可換。双対κstarとliteralRの原fiber制限を構成し、原Q-H1-R同型がこの同じ制限と可換である
+    - 同じQの三次数制限と原ε/制限SES射から全ℤnativeδ自然性を導き、次数1の同じ原τと五項列各実射を同じR制限で可換にする
+    - 同じ原ηεuの三標準錐の制限を原正方形から生成し、全ℤの二座標/三triangle射/shift負号/Qdescと連結射の対応を保持する
+    - 新しい供給自然性や同型仮定を入力へ移さず、全構成の元値/恒等/合成/両方向・標準API・全宣言/公理/依存を同じ原始Mと任意A包含で監査する
+  selection_reason: Law各ラベルへの接続後に残る全台の同じ新対象/新写像の自然性を閉じ、G134保存操作と全A有限判定へ実射を渡す
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [SupportCells, SupportCarrier, SupportCoefficients, SupportDegenerate, SupportPushforward, SupportFiber, SupportConnecting, SupportCones]
+  risks: [全出現と対象輸送欠落, 係数stalk制限を根拠なく同型と扱うこと, 商から新Pを再定義, literalRを自由な座標制限へ交換, τを任意輸送で定義, 恒等/合成や全整数次数の片方向化]
+  unchecked: [六終了条件の構成とfocused検証は未実装, 正式PR四本は到達点実装後, 全GOAL別final未実施]
+```
+
+## Cycle 12 result proposal
+
+六固定終了条件を次の同じ原始入力経路で閉じた。全GOALの完了候補ではない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 同じMと任意A包含Bから原incidence/comma/右Kan P制限を生成し、原L/商双対・原Phi/混在閉路・実kappa/literalR・原SES/nativeδτ・三錐/triangleを同じ全代表で自然にした
+  exit_criteria_status:
+    - 条件1/closed：supportIncFunctorの全出現・supportCarrierIsoの全Inc射からStructuredArrow.map₂を生成し、supportCoefficientRestrict_component/eval/naturalが実CC前合成を証明
+    - 条件2/closed：supportL0/1/2IncludeとsupportDegenerateChainIncludeは同じnative細chain包含。supportQuotient0/1/2と両微分・supportEvaluationQuotientDual0/1/2で原P双対を照合。supportPushforwardHomとηε/独立u正方形・恒等/合成・supportEmptyが全Aを保持
+    - 条件3/closed：supportPhiChain_boundary1/2とsupportMixedVertical/HorizontalBoundary・supportVerticalBoundaryでB/D/Vの代表を包含。supportRawKappa/supportKappa・supportKappaStarからsupportFiberRをliteral核内に生成。supportQRawRとsupportFiberR_eq_supportRRestrictionが原Q-H1-R座標に接続
+    - 条件4/closed：supportEvaluationRestrictionMorphismとsupportConnecting_deltaは全整数次数の同じnativeSES。supportFiberR_tau・supportEvaluationH1/H2・supportFiberR_fiveTermが原五項列の全実射を保持
+    - 条件5/closed：supportCoefficient/Fiber/TotalConeは原三正方形のmappingCone.map。全次数の二座標・supportConeTriangle全三射・shift負号・supportFiberConeDesc/Q同型/Connectingを保持
+    - 条件6/closed：供給自然性・選択済み同型を新入力とせず、原M/任意支持包含から全値・主制限の恒等/合成・元可逆座標・全宣言と標準APIを照合。全GOALの後続構成は別未完行に保持
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [SupportCells/Carrier/Coefficients, SupportDegenerate/StandardChains/Quotient, SupportPushforward/QRestriction/Connecting, SupportPhiCells/Restriction/Homology/Embedding, SupportFiberChains/VerticalHomology/Fiber, SupportCones/Empty]
+  evidence: [下記source/print/log/report同順序spineと各単一file focused、公理監査]
+  claim_mapping:
+    theorem_names: [supportCoefficientRestrict_natural, supportEvaluationQuotientDual1, supportKappa, supportKappaStar, supportFiberR_eq_supportRRestriction, supportConnecting_delta, supportFiberR_tau, supportConeTriangle, supportFiberConeConnecting]
+    source_labels: [GOAL D全台の原対象/実射自然性、A/B/C同じ原始構成への接続]
+    conjuncts: [六終了条件と上記対応。Law全発生ラベルの台射とG134保存操作・有限合成は後続義務]
+    undischarged_assumptions: []
+    acceptance_point: 原始Mと支持包含から同じ新対象と写像を構成し、全代表と原標準連結射に接続した到達点。正式PR監査の受理前proposal
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [台incidenceとcarrier全射正方形、実comma係数前合成、Lと実商微分の保存、原Phi閉路/実V像の保存、kappaとその双対の可換性、literalR閉性、実Q-R座標の自然性、原標準SESδ/τ自然性、原三錐全射自然性]
+    remaining: [D Law全発生ラベル台射・G134指定操作/reading pullback/部分セル比較有限合成・面複製、B/E全A有限τ判定、E原始有理行列生成と既存blockDefect一致、W全指定表と同時評価、全GOAL別finalfresh4]
+  certificate_provenance:
+    discharged: [StructuredArrow.map₂入力は原carrier等号から、coefficient制限は元Kan/CC同型と前合成から、L包含は原細自由chainから、原商はliteral Kprime/L、Phi閉路商は原両微分から、Rは実kappaStar核、SESは元ε/原L制限、錐射は同じ原二射と独立u正方形から]
+    unresolved: []
+  proof_use:
+    used: [Mのrawセル像/none分類/出現位置と支持証拠、支持包含hab、元Phiの両微分、原B/D/Vとそのsquare-zero、既存ε次数単射・実H1商・元SES短完全性・原Q/R両方向同定、G133の同じ錐二座標と標準δ自然性]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [下記24単一file focused/全明示print/標準公理、共通scanと静的方向228module]
+  blocking_findings: [独立PR数学二本/Lean二本とroot acceptanceは未実施。CIはPR作成後]
+  next_obligation: Dの同じLaw全発生ラベル台射とG134保存操作/有限合成を原P/fiber/τへ接続し、B/E有限判定とW全指定例へ進む
+```
+
+## Cycle 12の生成・使用経路
+
+`supportCellInclude`は元の選択セル名と支持証拠を保持する。左右端点、三辺、三頂点、
+`IncHom`の全出現を保持し、原carrierの等号から実`StructuredArrow.map₂`を作る。
+係数制限は元の右Kan/極限/CC値の両方向同型を使う前合成であり、追加セルにより
+成分が合流する場合も同型とは仮定しない。原P・η・εの定義と独立uを交換しない。
+
+原細chain包含はL₀の垂直端点像、L₁の垂直辺と混在面全微分、L₂の全退化面を保つ。
+全整数次数の原L→元細chainの包含図式と、literal K′/Lの両微分・同じP双対を照合した。
+Φの元細セル包含は原none条件と粗chart像を保つ。B/D/Vを全基底で保存し、
+原混在閉路Dyと原V像の同じ商からraw κと全Φ κの可換性を証明した。
+全Φ dualの自然性は原単一fiber類への実評価と同じ閉chain/cochain代表で照合する。
+これにより直接Φ H¹制限がliteral κ*核Rを保ち、原Q-H¹-R座標制限と一致する。
+
+原SESの射からmathlibのnative δ自然性を全ℤ・全元で導き、次数1を同じR座標のτへ戻す。
+三錐は元η・ε・独立uの正方形から生成した実mappingCone.mapである。
+全二座標、原triangle三射、第三射の標準shift負号、原fiber錐→Q評価と全連結射を保持する。
+主制限の恒等・合成則は元cochain Homと同じ商・mappingConeの関手性で確認した。
+空Aの三次数P制限とliteral Rを元選択支持証拠から明示検証した。
+
+`M`の原始incidence/支持整合、有限な元nerve、`hab : A ⊆ B`は許された入力。
+新たなexactness、natural transformation、H¹同型、期待rank、有限Sourceの仮定は受け取らない。
+閉路・実微分像・quotient membershipの証拠は同じ原写像の可換式で生成して使用した。
+C1–11の主定義・既存theorem signatureを変更せず、所有fileへ公開計算APIを追加した。
+既存Carrierの3生成補助宣言も明示printへ追加し、既存ownerのprint順をsource順へ揃えた。
+既存受理spineは各当時のcommitを読む。現在のowner再検証spineは下表へ固定する。
+
+## Cycle 12検証と未実施項目
+
+24対象を実装段階ごとに単一非aggregate fileのfocused checkで検証し、全てwarning/error0。
+全494source宣言と18生成宣言（合計512）の明示#print、実出力、各module auditが一致する。
+source宣言の相対順はprint/logの相対順と一致し、生成宣言の位置も下記spineに固定する。
+新source313、新生成15、既存ownerの生成3を含む。全宣言は標準三公理
+`propext`・`Classical.choice`・`Quot.sound`の部分集合のみ。空選択セルの矛盾は公理依存なし。
+18新moduleはmanifestとAG直接静的importに各1件登録し、aggregateをelaborateしない。
+静的Research import directionは228modulesで成功。必要な単一cacheのみを生成し、全体buildはしない。
+共通diff/hidden・BiDi/placeholder/privacy/語彙/逆import scanと登録照合は下記記録へ固定する。
+GOAL/design/Formalは不変。Research full/aggregate/全file loop、local lake build、
+Formal実build/移植、別最終完了4査読は未実施。全GOALはtarget-proof-checkpoint。
+
+<!-- cycle12-generated-evidence -->
+
+| file | 宣言（source/print/log/report相対順、生成宣言を含む） |
+| --- | --- |
+| `CarrierFunctor.lean` | `incidencePositionComp`, `incHomCode_comp`, `incHomCode_eqToHom`, `incHomCode_eqToHom_comp`, `incHomCode_comp_eqToHom`, `Carrier.endpointHom_of_some`, `Carrier.endpointHom_of_none`, `Carrier.edge_of_face_some`, `Carrier.mappedFaceEdgeHom`, `Carrier.endpointHom_code_some`, `Carrier.endpointHom_code_none`, `Carrier.mappedFaceEdgeHom_code`, `Carrier.endpoint_face_some_code`, `Carrier.face_none_edge0_some`, `Carrier.face_none_edge0_none`, `Carrier.vertical_edge_eq_face`, `Carrier.verticalFaceEdgeHom`, `Carrier.mixedLeftFaceEdgeHom`, `Carrier.mixedRightFaceEdgeHom`, `Carrier.verticalFaceEdgeHom_code`, `Carrier.mixedLeftFaceEdgeHom_code`, `Carrier.mixedRightFaceEdgeHom_code`, `Carrier.edgeHom`, `Carrier.faceVertexHomPosition`, `Carrier.endpoint_edgeHom_code`, `Carrier.incidenceData`, `Carrier.functor`, `Carrier.functor_obj_chart`, `Carrier.functor_obj_edge`, `Carrier.functor_obj_face`, `Carrier.functor_map_chartEdge`, `Carrier.functor_map_edgeFace`, `Carrier.preimageFunctor`, `Carrier.preimageFunctor_obj_chart`, `Carrier.preimageFunctor_obj_edge`, `Carrier.preimageFunctor_obj_face`, `Carrier.preimageFunctor_map_chartEdge`, `Carrier.preimageFunctor_map_edgeFace`, `Carrier.preimageFunctor_obj_edge_of_some`, `Carrier.preimageFunctor_obj_edge_of_none`, `Carrier.preimageFunctor_obj_face_of_some`, `Carrier.preimageFunctor_endpoint_of_some`, `Carrier.preimageFunctor_endpoint_of_none`, `Carrier.preimageFunctor_face_edgeMap_of_some`, `Carrier.preimageFunctor_face_edge_of_some`, `Carrier.preimageFunctor_face_edgeHom_of_some`, `Carrier.edgeHom_code_of_mixed_left`, `Carrier.edgeHom_code_of_mixed_right`, `Carrier.preimageFunctor_face_edgeHom_of_mixed_left`, `Carrier.preimageFunctor_face_edgeHom_of_mixed_right`, `Carrier.preimageFunctor_map_edgeFace_code_of_some`, `Carrier.preimageFunctor_map_chartFace`, `Carrier.preimageFunctor_map_chartFace_code`, `Carrier.preimageFunctor_map_chartFace_code_of_some`, `Carrier.preimageFunctor_face_vertex_of_some`, `Carrier.preimageFunctor_face_vertexHom_of_some`, `Carrier.preimageFunctor_edge_endpoint_of_some`, `Carrier.preimageFunctor_map_chartEdge_code_of_some`, `Carrier.preimageFunctor_map_edgeFace_code_of_mixed_left`, `Carrier.preimageFunctor_map_edgeFace_code_of_mixed_right`, `Carrier.preimageFunctor_map_chartFace_code_of_mixed_left`, `Carrier.preimageFunctor_map_chartFace_code_of_mixed_right`, `Carrier.preimageFunctor_map_chartEdge_code_of_none`, `Carrier.preimageFunctor_map_edgeFace_code_of_vertical`, `Carrier.preimageFunctor_map_chartFace_code_of_vertical`, `Carrier.edge.congr_simp`, `Carrier.mixedLeftFaceEdgeHom.congr_simp`, `Carrier.mixedRightFaceEdgeHom.congr_simp` |
+| `PushforwardCoefficient.lean` | `structuredArrowFinite`, `commaConnectedComponentsFinite`, `coefficientPushforwardFiniteDimensional`, `pushforwardCoefficients`, `pushforwardCoefficients_map_component_eval`, `pushforwardCounit`, `pushforwardIsRightKanExtension`, `pushforwardCoefficientFiniteDimensional` |
+| `PushforwardComplex.lean` | `CoefficientC0`, `CoefficientC1`, `CoefficientC2`, `coefficientD0`, `coefficientD1`, `coefficient_chart_transport`, `coefficient_edge_transport`, `coefficient_endpoint_chart_eval`, `coefficient_face_edge_eval`, `endpoint_edge_normal`, `coefficient_endpoint_edge_eval`, `coefficient_d1_comp_d0`, `coefficientComplex`, `coefficientComplex_d0`, `coefficientComplex_d1`, `coefficientComplex_d0_apply`, `coefficientComplex_d1_apply`, `pushforwardComplex`, `pushforwardComplex_d0_apply`, `pushforwardComplex_d1_apply` |
+| `LocalFiber.lean` | `PhiChart`, `PhiEdge`, `PhiFace`, `GammaVertex`, `GammaEdge`, `LambdaFace`, `phiEndpoint`, `phiEndpoint_val`, `phiFace_edge_chart`, `phiFace_edge_none`, `phiFaceEdge`, `phiFaceEdge_val`, `gammaSource`, `gammaTarget`, `gammaBoundary`, `gammaBoundary_single`, `phiD0`, `phiD1`, `phiD0_apply`, `phiD1_apply`, `phiD1_comp_phiD0`, `phiComplex`, `phiComplex_d0`, `phiComplex_d1`, `phiComplex_C1_subsingleton`, `phiCellObj`, `phiCellObj_chart`, `phiCellObj_edge`, `phiCellObj_face`, `phiCellObj_injective`, `PhiInc`, `phiCellObj_carrier`, `gammaCellObj`, `gammaCellObj_inl`, `gammaCellObj_inr`, `gammaCellObj_injective`, `GammaInc`, `gammaCellObj_carrier`, `lambdaFace_carrier`, `phiBoundary1`, `phiBoundary2`, `phiBoundary1_single`, `phiBoundary2_single`, `phiBoundary1_dual`, `phiBoundary2_dual`, `phiBoundary1_comp_phiBoundary2`, `phiEmbed0`, `phiEmbed1`, `phiEmbed2`, `phiEmbed_comm1`, `phiEmbed_comm2`, `phiEmbed0_injective`, `phiEmbed1_injective`, `phiEmbed2_injective`, `phiIncFinite`, `gammaIncFinite`, `lambdaFaceFinite`, `gammaSource_val`, `gammaTarget_val_of_left`, `gammaTarget_val_of_right`, `GammaGraph`, `gammaGraphQuiver`, `gammaGraphFinite`, `gammaGraphHomFinite`, `gammaGraphArrow`, `gammaGraphArrow_val` |
+| `DegenerateChain.lean` | `chainDegreeDifferential_out`, `degenerateDegreeObject`, `degenerateDegreeObject_out`, `degenerateDegreeDifferential`, `degenerateDegreeDifferential_out`, `degenerateDegreeDifferential_square`, `degenerateChain`, `degenerateDegreeInclusion`, `degenerateDegreeInclusion_out`, `degenerateDegreeInclusion_comm`, `degenerateChainInclusion`, `degenerateChainInclusion_f`, `degenerateChainInclusion_comparison_zero`, `degenerateChainInclusion_mono`, `degenerateZeroShort`, `degenerateZeroScIso`, `degenerateZeroShort_exact`, `degenerateChain_H0_isZero` |
+| `FiberCohomology.lean` | `phiDualCochainEquiv`, `phiHomologyDualEquiv`, `phiHomologyDualEquiv_mk`, `allPhiHomologyDualEquiv`, `allPhiHomologyDualEquiv_apply`, `allPhiHomologyDualEquiv_single`, `phiCohomologyVerticalDualEquiv`, `phiCohomologyVerticalDualEquiv_apply`, `kappaStar`, `kappaStar_apply`, `kappaStar_raw`, `R`, `fiberR_eq_ker`, `kernelEquivOfEquiv`, `fiberRRawEquiv`, `fiberRRawEquiv_val` |
+| `SupportCells.lean` | `supportCellInclude`, `supportCellInclude_val`, `supportCellInclude_refl`, `supportCellInclude_comp`, `supportSelectedRestrict_apply`, `supportCellInclude_endpoint`, `supportCellInclude_faceEdge`, `supportCellInclude_faceVertex`, `supportIncObj`, `supportIncMap`, `supportIncMap_code`, `supportIncFunctor`, `supportIncFunctor_obj`, `supportIncFunctor_obj_chart`, `supportIncFunctor_obj_edge`, `supportIncFunctor_obj_face`, `supportIncFunctor_map_chartEdge`, `supportIncFunctor_map_edgeFace`, `supportIncFunctor_map_chartFace`, `supportIncFunctor_map_code`, `supportIncFunctor_refl`, `supportIncFunctor_comp`, `supportChainInclude_single`, `supportChainInclude_boundary1`, `supportChainInclude_boundary2` |
+| `SupportCarrier.lean` | `supportPreimageInclude`, `supportPreimageInclude_apply`, `supportCarrier_chart`, `supportCarrier_edge`, `supportCarrier_face`, `supportCarrier_obj`, `supportCarrierEndpointPosition`, `supportCarrierFaceEdgePosition`, `supportCarrierFaceVertexPosition`, `supportCarrierEndpointPosition_eq`, `supportCarrierFaceEdgePosition_eq`, `supportCarrierFaceVertexPosition_eq`, `supportCarrier_map_code`, `supportCarrierIso`, `supportCarrierIso_hom_app`, `supportCommaFunctor`, `supportCommaFunctor_obj_right`, `supportCommaFunctor_obj_hom` |
+| `SupportCoefficients.lean` | `componentFunctionRestrict`, `componentFunctionRestrict_apply`, `componentFunctionRestrict_refl`, `componentFunctionRestrict_comp`, `supportCoefficientRestrict`, `supportCoefficientRestrict_component`, `supportCoefficientRestrict_eval`, `supportCommaFunctor_precomp`, `supportCoefficientRestrict_natural`, `supportCoefficientsRestriction`, `supportCoefficientsRestriction_app` |
+| `SupportDegenerate.lean` | `supportVerticalEdgeInclude`, `supportVerticalFaceInclude`, `supportMixedFaceInclude`, `supportDegenerateFaceInclude`, `supportVerticalEdgeInclude_val`, `supportVerticalFaceInclude_val`, `supportMixedFaceInclude_val`, `supportDegenerateFaceInclude_val`, `supportVerticalEdgeChainInclude`, `supportVerticalEdgeChainInclude_single`, `supportVerticalEdgeChainInclude_inclusion`, `supportVerticalFaceChainInclude`, `supportVerticalFaceChainInclude_single`, `supportVerticalFaceChainInclude_inclusion`, `supportMixedFaceChainInclude`, `supportMixedFaceChainInclude_single`, `supportMixedFaceChainInclude_inclusion`, `supportDegenerateFaceChainInclude`, `supportDegenerateFaceChainInclude_single`, `supportDegenerateFaceChainInclude_inclusion`, `supportDegenerateL0_mem`, `supportDegenerateL1_mem`, `supportDegenerateL2_mem`, `supportL0Include`, `supportL1Include`, `supportL2Include`, `supportL0Include.congr_simp`, `supportL0Include_val`, `supportL1Include.congr_simp`, `supportL1Include_val`, `supportL2Include.congr_simp`, `supportL2Include_val`, `supportLInclude_boundary1`, `supportLInclude_boundary2`, `supportL0Include_refl`, `supportL0Include_comp`, `supportL1Include_refl`, `supportL1Include_comp`, `supportL2Include_refl`, `supportL2Include_comp` |
+| `SupportPushforward.lean` | `supportPushforward0`, `supportPushforward1`, `supportPushforward2`, `supportPushforward0_apply`, `supportPushforward1_apply`, `supportPushforward2_apply`, `supportCoefficientRestrict_endpoint`, `supportCoefficientRestrict_faceEdge`, `supportPushforward_comm0`, `supportPushforward_comm1`, `supportPushforwardHom`, `supportPushforwardHom_f0`, `supportPushforwardHom_f1`, `supportPushforwardHom_f2`, `supportCoefficientRestrict_constant`, `supportUnit0`, `supportUnit1`, `supportUnit2`, `supportUnitHom`, `supportCommaFunctor_transport`, `supportCoefficientEvaluationAt`, `supportEvaluation0`, `supportEvaluation1`, `supportEvaluation2`, `supportEvaluationHom`, `supportPushforward0_refl`, `supportPushforward0_comp`, `supportPushforward1_refl`, `supportPushforward1_comp`, `supportPushforward2_refl`, `supportPushforward2_comp`, `supportPushforwardHom_refl`, `supportPushforwardHom_comp`, `supportDirectHom`, `supportPushforward2.congr_simp`, `supportIncFunctor.congr_simp`, `supportPushforward1.congr_simp`, `supportCellInclude.congr_simp`, `supportPushforward0.congr_simp`, `supportPushforwardHom.congr_simp` |
+| `SupportQRestriction.lean` | `supportQ0`, `supportQ0_apply`, `supportQ1`, `supportQ1_apply`, `supportQ2`, `supportQ2_apply`, `supportQ_comm0`, `supportQ_comm1`, `supportQHom`, `supportQHom_f0`, `supportRestriction0`, `supportQ0_refl`, `supportQ0_comp`, `supportQHom_f1`, `supportRestriction1`, `supportQ1_refl`, `supportQ1_comp`, `supportQHom_f2`, `supportRestriction2`, `supportQ2_refl`, `supportQ2_comp`, `supportRestrictionHom`, `supportQHom_refl`, `supportQHom_comp`, `supportQ0.congr_simp`, `supportQ1.congr_simp`, `supportQ2.congr_simp`, `supportQHom.congr_simp` |
+| `SupportConnecting.lean` | `supportEvaluationRestrictionMorphism`, `supportEvaluationRestrictionMorphism_τ1`, `supportEvaluationRestrictionMorphism_τ2`, `supportEvaluationRestrictionMorphism_τ3`, `supportConnecting_delta`, `supportRRestriction`, `supportRRestriction_apply`, `supportRRestriction_viaQ`, `supportRRestriction_refl`, `supportRRestriction_comp`, `supportConnecting_tau`, `supportEvaluationH1`, `supportFiberRestrictionH1`, `supportEvaluationH2` |
+| `SupportPhiCells.lean` | `supportPhiChartInclude`, `supportPhiEdgeInclude`, `supportPhiFaceInclude`, `supportPhiChartInclude_val`, `supportPhiEdgeInclude_val`, `supportPhiFaceInclude_val`, `supportPhiChartInclude_endpoint`, `supportPhiEdgeInclude_faceEdge`, `supportPhiChain0`, `supportPhiChain0_single`, `supportPhiChain1`, `supportPhiChain1_single`, `supportPhiChain2`, `supportPhiChain2_single`, `supportPhiChain_boundary1`, `supportPhiChain_boundary2` |
+| `SupportPhiRestriction.lean` | `supportPhi0`, `supportPhi0_apply`, `supportPhi0_dual`, `supportPhi1`, `supportPhi1_apply`, `supportPhi1_dual`, `supportPhi2`, `supportPhi2_apply`, `supportPhi2_dual`, `supportPhi_comm0`, `supportPhi_comm1`, `supportPhiHom`, `supportPhiHom_f0`, `supportPhiHom_f1`, `supportPhiHom_f2`, `supportAllPhiH1`, `supportAllPhiH1_apply`, `supportPhiH1_mk`, `supportPhiHom_refl`, `supportPhiHom_comp`, `supportAllPhiH1_refl`, `supportAllPhiH1_comp` |
+| `SupportFiberChains.lean` | `supportHorizontalEdgeInclude`, `supportHorizontalEdgeInclude_val`, `supportHorizontalEdgeChainInclude`, `supportHorizontalEdgeChainInclude_single`, `supportVerticalEdgeProjection`, `supportHorizontalEdgeProjection`, `supportVerticalEdgeBoundary`, `supportMixedVerticalBoundary`, `supportMixedHorizontalBoundary`, `supportMixedCyclesInclude`, `supportMixedCyclesInclude_val`, `supportVerticalCyclesInclude`, `supportVerticalCyclesInclude_val`, `supportMixedCycleToVertical` |
+| `SupportVerticalHomology.lean` | `supportVerticalBoundary`, `supportVerticalBoundaryToCycles`, `supportVerticalHomology`, `supportVerticalHomology_mk`, `supportRawKappa` |
+| `SupportPhiHomology.lean` | `supportPhiCycles`, `supportPhiCycles_val`, `supportPhiBoundaryToCycles`, `supportPhiHomology`, `supportPhiHomology_mk`, `supportPhiHomologyDual`, `supportAllPhiHomology`, `supportAllPhiHomology_mk`, `supportKappa` |
+| `SupportPhiEmbedding.lean` | `supportPhiVerticalEmbed`, `supportPhiVerticalEmbed_single`, `supportPhiVerticalEmbed_coordinates`, `supportPhiVerticalCycles`, `supportPhiVerticalCycles_val`, `supportPhiVerticalHomology_mk`, `supportPhiVerticalEmbed_include`, `supportPhiVerticalCycles_include`, `supportAllPhiHomology_single` |
+| `SupportFiber.lean` | `supportAllPhiHomologyDual`, `supportKappaStar`, `supportFiberR`, `supportFiberR_val`, `supportPhiVerticalDual`, `supportVerticalCycleInclusion`, `supportQRawR`, `supportFiberR_eq_supportRRestriction`, `supportFiberR_tau`, `supportFiberR_refl`, `supportFiberR_comp`, `supportFiberR_fiveTerm` |
+| `SupportQuotient.lean` | `supportQuotient0`, `supportQuotient0_mk`, `supportQuotient1`, `supportQuotient1_mk`, `supportQuotient2`, `supportQuotient2_mk`, `supportQuotient_boundary1`, `supportQuotient_boundary2`, `supportEvaluationQuotientDual0`, `supportEvaluationQuotientDual1`, `supportEvaluationQuotientDual2` |
+| `SupportCones.lean` | `supportStandardUnit`, `supportStandardEvaluation`, `supportStandardDirect`, `supportCoefficientCone`, `supportCoefficientCone_apply`, `supportFiberCone`, `supportFiberCone_apply`, `supportTotalCone`, `supportTotalCone_apply`, `supportConeTriangle_first`, `supportConeTriangle_second`, `supportConeShift_apply`, `supportConeTriangle_third`, `supportConeTriangle`, `supportFiberConeDesc`, `supportFiberConeHomologyEquiv`, `supportFiberConeConnecting`, `supportCoefficientCone_refl`, `supportCoefficientCone_comp`, `supportFiberCone_refl`, `supportFiberCone_comp`, `supportTotalCone_refl`, `supportTotalCone_comp` |
+| `SupportStandardChains.lean` | `supportFineDegreeInclude`, `supportFineDegreeInclude_comm`, `supportFineChainInclude`, `supportFineChainInclude_f`, `supportDegenerateDegreeInclude`, `supportDegenerateDegreeInclude_comm`, `supportDegenerateChainInclude`, `supportDegenerateChainInclude_f`, `supportDegenerateChainInclusion`, `supportDegenerateChainInclude_refl`, `supportDegenerateChainInclude_comp`, `supportFineDegreeInclude.congr_simp`, `supportDegenerateDegreeInclude.congr_simp` |
+| `SupportEmpty.lean` | `supportSelected_empty`, `supportPushforward0_empty`, `supportPushforward1_empty`, `supportPushforward2_empty`, `supportFiberR_empty_subsingleton`, `supportFiberR_empty` |
+
+全namespaceは`AAT.AG.AtlasCoefficientFiber`（`CarrierFunctor`の局所名は`Carrier`を含む）。
+
+| file / source+生成数 | source SHA-256 | focused output SHA-256 |
+| --- | --- | --- |
+| `CarrierFunctor.lean` / 65+3 | `8d95fcf2401342e053c937479b6d6501eafc78223f141e8ceb6d0475a8156ff4` | `49c6e34af5c63a95f75846a7d41af370b4738ce552f65e89e586d493d23dea69` |
+| `PushforwardCoefficient.lean` / 8+0 | `5b5eef702a4ee569a9fbc4d59f7e1720987aa19b72bb0a0f013473c1387053a9` | `3d36788e7009d4843a428b9d7ce9cee585636e363fbd56f07fae622e72468da8` |
+| `PushforwardComplex.lean` / 20+0 | `d9a640dec22caae23efc7518a600e587fa0b643523376ea63848f40648865332` | `c8407ab60f606c777c9407eac7fc9d1ba5e2d8f9f36d38e903ff8b3815a6a110` |
+| `LocalFiber.lean` / 66+0 | `cfc7d3a3d44a78879840daae8cf5a846510813156598c1006e9686c1b68013a4` | `67b85bf4638f505fcab9f73bd1c3fcf8aa8ff7a3edce81e754e45c2cda8828a4` |
+| `DegenerateChain.lean` / 18+0 | `e0c0ff0004e9203f8dbb434cff0f2e762482acff99d190241d2349e8d63245f9` | `89b06cbbb9ff8b838b3121beca0709cb8fccf49ee62d9027c1638c33ecd25320` |
+| `FiberCohomology.lean` / 16+0 | `74aa1f4930cbd01151d5c1792d76c43324208de1c0a795924312885b97fb6951` | `080cb930d8e705f1c6263ff4614329c15c4673313a2f13190a2fb2c572df3405` |
+| `SupportCells.lean` / 25+0 | `14184eda8128449cf883983404a727db95069286e71cfe530f2023ff6fac8ae0` | `186e43b78fbd899653a55901b1a1cede78c9cc26d8ca5131a1d59d1ba1f2c298` |
+| `SupportCarrier.lean` / 18+0 | `144d9928d05eecb0d518fac91d9d7066aaf0f0ff90b0371e67534a0767e85aff` | `44e998ea42ef19cad95598695e0adc7f2fd0b7ca7229f26df0ccf4dba85b92a4` |
+| `SupportCoefficients.lean` / 11+0 | `6378cd9e90347b20759660d53a37f3ee48083d17838870393a87348f05de25eb` | `a302cc2916ddacabab0dc0f6bcd065fff80dbc2d232b0404f1b2beba79204dc3` |
+| `SupportDegenerate.lean` / 37+3 | `69757c0b2ab7bad9f0bb95b8b85bbab25cf7fdb947973f76e28a8c3afbe447da` | `001cc0b7b381e36bed31a019231c8cd14d6d90a7a324e05bb1323a76a33d5704` |
+| `SupportPushforward.lean` / 34+6 | `3be355a7717ac230fff849b5fbec0601bf8d795b45c7dba91f25bfb1e9c36169` | `273d9d752e94b5eebc891a872cf8f623a3d206d33febbcc874ee4a43fd56880f` |
+| `SupportQRestriction.lean` / 24+4 | `d41fb4b8c49689ecfef03dc2b07843d9b15b5d1186134fe9581febaedeba0e0c` | `4f860f2f44c7deef872e018a137d5c8df1ab7b76b5a47fc96e8117235d1da53c` |
+| `SupportConnecting.lean` / 14+0 | `19acec6ac58e312956881f59e32cf9713b7ed7f01a2440ea2835ed24f09264ee` | `c67d5874614af3ec82cb469876d884076a211fb725d7de937e3735f7b4565baf` |
+| `SupportPhiCells.lean` / 16+0 | `68d02c534ea9b189a2f3be6a58ac8afab22bb23496f47ce48aabbfe18a99846a` | `7b0b3d06974859fbd0b3d4fe5a255cac923f8af9d4ee2e43455d8f45e6fba977` |
+| `SupportPhiRestriction.lean` / 22+0 | `cde020ba4b6d14845b757e5edeeb5877c5ac936a83ef0205cc5f054a3da3f819` | `22d62540c96f795614668e59c442d503728f10721ffff391eae436c412b1e0f9` |
+| `SupportFiberChains.lean` / 14+0 | `7f874a115e2ac29a505b6b85c3b354bb2dac9fe3e5875f04d4eaf7bfc469bd3e` | `c2532a34df73d70e2dc72c9ffa3ed8bcd10d70b41d034b0612c56dec2c028a52` |
+| `SupportVerticalHomology.lean` / 5+0 | `dba8c7ebad20d478a1c72e487dfee3696c1a3dc152a12dc92c12e0061f9250d6` | `1f9d99671d8614e4b8a19c719edf692b6ddcc8168826176c0adb055536262db3` |
+| `SupportPhiHomology.lean` / 9+0 | `86ea5cc71faf1a16fe30de646d35c4e741a5b667d028abddd93f799cad59144d` | `9e10cbc16001dd3c8e5e795973dd3722dcb1f22fb46cf5b718ca523077eca361` |
+| `SupportPhiEmbedding.lean` / 9+0 | `34437a3783253a609ab3a6e2a343d56a421ff0d5fa2ad5c8b27027562d11fc4f` | `f6baf2fb5047578dabd1a77c3f1fb3a1f37fe91322ff8b9bbfee4a3c36ff32f8` |
+| `SupportFiber.lean` / 12+0 | `4a0999f31273574bc9ee6ab4825266ea1593617d8d439e21d24f380325f767f1` | `bca0099ab692f47b53e86e136185ad8e9ee65ab0fced176cd18de3c44ab66305` |
+| `SupportQuotient.lean` / 11+0 | `4d4a3c64b0ef61df2475243d9fa36c666599ed9f6f0323e1d73acfd8558133de` | `f72724dd55001ffae9587b15b5e6937eb8f6afcc3d73173fc409987b146db512` |
+| `SupportCones.lean` / 23+0 | `3f68f121e86eb3148542a81835c77787abb0c22dad022509e59642ee5be79a33` | `3817ad1bce7c83755535f76ed9b68f58255e88f5cf637532dd89532c97192d5b` |
+| `SupportStandardChains.lean` / 11+2 | `814be9ce33abbf089d13fcd70db338c41adb04a5f6590358a0d107b44f1155ca` | `ed7fae64a3c9ff2ab670787b1c02d6cb108c4705dfbde3a2550cec391ae33f9b` |
+| `SupportEmpty.lean` / 6+0 | `4c36a926bde0c7bb45685a36b5a8eaba203808bd45946d030bab5224f0889ef3` | `de0cb5a3b80ad0661b9379b8fc8820ae1d575a6759545db440e779bf655ef563` |
+
+validation `.tmp/g135/cycle12-validation.json` SHA-256 `75fb1e1b03d7963637ff42b66dc1a8d6565a9b5f416876086dfa1d9ae75472f5`。
+scan `.tmp/g135/cycle12-scans.json` SHA-256 `e9d6e265048d47208501b0a210a9bd70171c056110f5e776c80caa0bcee13301`。

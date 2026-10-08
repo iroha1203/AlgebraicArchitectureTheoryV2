@@ -13,6 +13,7 @@ Rは独立に生成したκの双対の核とし、全Φ空間そのものを一
 混在関係を失うため採用しない。
 -/
 noncomputable section
+open scoped Classical
 namespace AAT.AG.AtlasCoefficientFiber
 open CategoryTheory CanonicalResolution ResolutionInvariance FaceRelationSubdivision TwoPhase
 universe u
@@ -44,6 +45,12 @@ def phiHomologyDualEquiv (c : Nc.ChartInTargetSubset A) :
     (chainHomologyDualEquiv (phiBoundary1 M A c) (phiBoundary2 M A c)
       (phiBoundary1_comp_phiBoundary2 M A c))
 
+/-- 原Φの双対同定は同じ閉cochainと閉chainの代表を評価する。 -/
+@[simp] theorem phiHomologyDualEquiv_mk (c : Nc.ChartInTargetSubset A)
+    (z : LinearMap.ker (phiComplex M A c).d1) (x : phiCycles M A c) :
+    phiHomologyDualEquiv M A c (Submodule.Quotient.mk z) (Submodule.Quotient.mk x) =
+      freeDualEquiv _ z.1 x.1 := rfl
+
 /-- 全ΦのH¹の有限直和を、同じ全Φ chain H₁の双対へ移す。 -/
 def allPhiHomologyDualEquiv :
     ((c : Nc.ChartInTargetSubset A) → (phiComplex M A c).H1) ≃ₗ[ℚ]
@@ -53,11 +60,41 @@ def allPhiHomologyDualEquiv :
   exact (LinearEquiv.piCongrRight (phiHomologyDualEquiv M A)).trans
     (LinearMap.lsum ℚ _ ℚ)
 
+/-- 全Φ双対の値は同じ有限添字上の成分評価の和。 -/
+theorem allPhiHomologyDualEquiv_apply
+    (z : (c : Nc.ChartInTargetSubset A) → (phiComplex M A c).H1)
+    (x : (c : Nc.ChartInTargetSubset A) → PhiHomology M A c) :
+    letI := Fintype.ofFinite (Nc.ChartInTargetSubset A)
+    allPhiHomologyDualEquiv M A z x =
+      ∑ c : Nc.ChartInTargetSubset A, phiHomologyDualEquiv M A c (z c) (x c) := by
+  classical
+  letI := Fintype.ofFinite (Nc.ChartInTargetSubset A)
+  simp only [allPhiHomologyDualEquiv, LinearEquiv.trans_apply,
+    LinearEquiv.piCongrRight_apply, LinearMap.lsum_apply,
+    LinearMap.sum_apply, LinearMap.comp_apply, LinearMap.proj_apply]
+
+/-- 全Φ双対は元の一つのfiber類でその成分だけを評価する。 -/
+theorem allPhiHomologyDualEquiv_single
+    (z : (c : Nc.ChartInTargetSubset A) → (phiComplex M A c).H1)
+    (c : Nc.ChartInTargetSubset A) (x : PhiHomology M A c) :
+    allPhiHomologyDualEquiv M A z (Pi.single c x) = phiHomologyDualEquiv M A c (z c) x := by
+  classical
+  letI := Fintype.ofFinite (Nc.ChartInTargetSubset A)
+  simp only [allPhiHomologyDualEquiv, LinearEquiv.trans_apply]
+  exact LinearMap.lsum_piSingle ℚ _ ℚ _ c x
+
 /-- 同じ全ΦのH¹と原垂直H₁双対の両方向同型。 -/
 def phiCohomologyVerticalDualEquiv :
     ((c : Nc.ChartInTargetSubset A) → (phiComplex M A c).H1) ≃ₗ[ℚ]
       Module.Dual ℚ (VerticalHomology M A) :=
   (allPhiHomologyDualEquiv M A).trans (verticalHomologyPhiEquiv M A).dualMap
+
+/-- 原垂直双対座標は同じ全Φ H₁座標で評価する。 -/
+theorem phiCohomologyVerticalDualEquiv_apply
+    (z : (c : Nc.ChartInTargetSubset A) → (phiComplex M A c).H1)
+    (x : VerticalHomology M A) :
+    phiCohomologyVerticalDualEquiv M A z x =
+      allPhiHomologyDualEquiv M A z (verticalHomologyPhiEquiv M A x) := rfl
 
 /-- 設計のκ*。実κの双対を同じΦ cochain H¹表示へ移す。 -/
 def kappaStar : ((c : Nc.ChartInTargetSubset A) → (phiComplex M A c).H1) →ₗ[ℚ]
@@ -109,8 +146,12 @@ end AAT.AG.AtlasCoefficientFiber
 
 #print axioms AAT.AG.AtlasCoefficientFiber.phiDualCochainEquiv
 #print axioms AAT.AG.AtlasCoefficientFiber.phiHomologyDualEquiv
+#print axioms AAT.AG.AtlasCoefficientFiber.phiHomologyDualEquiv_mk
 #print axioms AAT.AG.AtlasCoefficientFiber.allPhiHomologyDualEquiv
+#print axioms AAT.AG.AtlasCoefficientFiber.allPhiHomologyDualEquiv_apply
+#print axioms AAT.AG.AtlasCoefficientFiber.allPhiHomologyDualEquiv_single
 #print axioms AAT.AG.AtlasCoefficientFiber.phiCohomologyVerticalDualEquiv
+#print axioms AAT.AG.AtlasCoefficientFiber.phiCohomologyVerticalDualEquiv_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.kappaStar
 #print axioms AAT.AG.AtlasCoefficientFiber.kappaStar_apply
 #print axioms AAT.AG.AtlasCoefficientFiber.kappaStar_raw
