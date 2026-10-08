@@ -8,6 +8,8 @@ DSL の記法と計算機能は、以下で定義する提案である。
 - 本文: 入力、DSL、意味論、計算過程、具体例、AAT の成果への拡張。
 - [エンジン自身のモデルと Law](engine_laws.md): Atom、configuration、操作、満たすべき方程式。
 - [設計判断と未決事項](decisions.md): 選択理由、代替案、実装前に確定する事項。
+- [三操作の局所・大域計算](local_global_example.md): 同じ原始入力から係数・微分・障害類・貼り合わせを構成する例。
+- [L05の具体的評価](compiler_preservation_example.md): 原始変換規則からIRを生成し、保存成立と反例を導出する例。
 
 ## 1. 計算の単位
 
@@ -271,6 +273,8 @@ law path_preservation required:
 query coordinate_compatibility:
   solve forall e in translations:
     coordinate(target(e)) - coordinate(source(e)) = shift(e)
+reading coordinate_descent:
+  coordinate_compatibility の局所解と同次係数を operation_support 上で比較
 ```
 
 核は端点の join から `(a,b,c)` を求め、合成式 `x+2` と直接式 `x+3` を作る。
@@ -294,9 +298,10 @@ D = [  -1   1   0  ]     b = [1]
 `shift(c,3)` だけが欠けている入力では、c の存在と端点は残るため、
 三角形と c に関する方程式を保持したまま、その値の追加観測を要求する。
 
-ここで導出したのは、経路の保存と座標の線形整合性である。
-同じ行列を Čech 障害や SAGA 修復として読む際には、係数・制限・意味状態との対応を
-別途構成する。この例の行列だけで、その対応を済ませたことにしない。
+この線形計算から[局所・大域計算の具体例](local_global_example.md)へ進む。
+上の局所化と係数の読みを一般規則として展開し、同じ Atom から cover、係数、制限、
+Čech 微分、具体的障害類を作り、元の D との比較と大域座標への貼り合わせを構成する。
+SAGA の意味状態との対応は、それらに加えて別途構成する対象である。
 
 ## 7. AAT の主要成果へ接続する構造
 
