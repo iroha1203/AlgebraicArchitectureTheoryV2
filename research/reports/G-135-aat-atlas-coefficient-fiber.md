@@ -6,7 +6,7 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 21）
+## 現proof state（Cycle 22）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -27,9 +27,9 @@ Cycle 13の原Law全ラベルと任意部分台の同じ全射・κ/R/τ・三�
 Cycle 14のG134原始正操作と部分セル有限合成はPR #5305で受理・merge済み。同じ原a同型・τ核零を接続し、非中心の出所誤記は独立直接確認で解消した。
 Cycle 15の面複製はPR #5306で受理・merge済み。原P/η/ε・全A/任意LawのH¹保存と選択面の非零H²余核を同時に接続し、非中心LA-1は有資格新規限定確認で解消した。
 Cycle 16の原τ消滅・全A/発生label有限検査はPR #5307で受理・merge済み。正式再査読の中心0、非中心F3は一文限定修正と新規直接確認四資格全PASSで解消した。
-Cycle 17の有理表からの商座標と両逆はPR #5309で受理・merge済み。Cycle18の原P/Q全三次数座標・微分・二射はPR #5310、Cycle19の原a/T/R/τ/J全元表示はPR #5312、Cycle20の原κ・成分手順・全A/label保存判定はPR #5313で受理・merge済み。Cycle21はW1a・W1bの全指定評価を実装検証済み、正式独立PR監査待ち。W2–W5と別全目標最終四査読は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
+Cycle 17の有理表からの商座標と両逆はPR #5309で受理・merge済み。Cycle18の原P/Q全三次数座標・微分・二射はPR #5310、Cycle19の原a/T/R/τ/J全元表示はPR #5312、Cycle20の原κ・成分手順・全A/label保存判定はPR #5313で受理・merge済み。Cycle21のW1a・W1b全指定評価はPR #5314で受理・merge済み。Cycle22はW2の全指定評価を実装し、正式独立PR監査待ち。W3–W5と別全目標最終四査読は未完。全目標はtarget-proof-checkpoint、Formalは未移植。
 
-以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。現在のdelta・未放電行は末尾のCycle21台帳で追跡する。
+以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。現在のdelta・未放電行は末尾のCycle22台帳で追跡する。
 
 ## Cycle 1 selection
 
@@ -3614,3 +3614,158 @@ audits:
 | `WitnessOneGeneration.lean` | `a_evaluation_equiv`, `a_evaluation_equiv_toHom`, `a_P_named_equiv`, `a_epsilon_square`, `a_eta_square`, `b_evaluation_equiv`, `b_evaluation_equiv_toHom`, `b_P_named_equiv`, `b_epsilon_square`, `b_eta_square` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessOneGeneration.lean`、exit0/warning0、10、source `f7732a3b36f0bce962240d7ad9f39f532f8d0eb005baf7a588abcc97a9947aaf`、stdout `4817f2cf96edf3373dea1c47ac28933bd7a1202c72b2558a78f94ea83813f7c5` |
 
 validation SHA `3fdd0226267fcafc50f1151b86458ef59ae21fcd69e8f98db5992091c883ac37`。必要な単一dependency cacheはrootのみ生成し、追加前のdependencyを用いたcheckの使用APIは同source内の既存bodyが不変であることを確認。Research full/全module/aggregate/fileloop/lake full build、Formal build/移植、W2-W5の全指定評価、別全目標最終査読は未実施。
+
+## Cycle21 受理後同期
+
+固定head `fecb994402b579b6a0fe15190ef10b4752a7c44b`、[PR5314](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5314)、実merge `ff9f9c008ea3d942776e14503ac575098206395c`。五条件 `proof-obligation-discharged`、新規独立数学2/Lean2すべてNo major findings、中心0/非中心0、reruns0/2。[全13root受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5314#issuecomment-6072664284)、[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6072677769)。全167source/generated0、九focused exit0/warning0/std3。七CI成功、Formal六step skipped。全GOALcheckpoint、W2–5/別wholefinal/Formal移植未完。
+
+## Cycle22 selection（実装前固定）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 22
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: ff9f9c008ea3d942776e14503ac575098206395c
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Issue5290 Cycle21同期6072677769 / PR5314 root6072664284
+  proof_dag_predecessors: [C3原Kan, C5原fiber, C8欠損式, C9局所η同型, C10pure条件, C13実Law, C20原producer, C21全台商座標]
+  milestone: W2指定pure circleの全要求を同原始入力から同時に評価する
+  proof_obligations:
+    - 同Source/fst-id/非定数Law二発生label/全台K1、粗c-h/細c-h-k/face無し、h mapped/k noneの原入力と全三次数生成
+    - 原Phiのk円・Gamma h一点、原Kanの全係数とη次数別同型、独立P/η/ε/u全三成分の対応
+    - 原kappa/原tau零、literal R全商とQの両逆、Phi Betti和/κrank/Rdim/τrank、同ηH1欠損00と同u x→(x,0)/J01
+    - 原k単独1のfiber類と同実余核類、h非零保存、pure C3prime違反、全A空Aおよび実二Lawの核余核/R/τの和
+    - 全新spineのfocused/個別公理/source/log/report/受理dependency/登録/scan/方向、固定GOALとdesign保持
+  exit_criteria:
+    - 指定原始表と同reading/Law/全台の構成、原微分と全三次数比較squareが証明済み
+    - 原Kan係数の局所単一成分条件から原ηの全次数両逆、独立Pと元ε/u/ηの対応が証明済み
+    - 同原R/Q座標・κτ・全rank・η欠損・実T全元式・Jが入力から証明済み
+    - 指定原代表/非零h/pure非保存/全A空A/全Law二成分の全要求が証明済み
+    - 全宣言個別print/log/runtime/公理と検証・出所・登録・記録が一致
+  selection_reason: 一般spineとW1は受理済み。pure classでη同型とfiber非保存を独立評価し全Wへの直接deltaを作る
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [WitnessTwoInput, WitnessTwoComparison, WitnessTwoCoefficients, WitnessTwoFiber, WitnessTwoLaw]
+  risks: [Pを粗複体から選ばない, 原Phi圏のloop端点二射を保持, Rを全Phiへ移すのは原mixed空証明の後のみ, 二Lawを台で商化しない, 空Aを全Aから除かない]
+  unchecked: [W2の全選定条件は未実装、同cycle内で全放電する]
+```
+
+分割理由なし。補題一file完成のみではcycleを閉じない。W3–W5と別全目標最終四査読は引き続き未完。GOAL/design/Formalは変更しない。
+
+## Cycle22 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 指定W2の原始h/k Option表から原Kan η同型とpure R/k代表・同実T余核・全A/二Lawの全指定値を同時に接続
+  exit_criteria_status:
+    - 1: 同四点Source/fst-id/非定数fst Law/二発生labelを保持。Nc c-h/Nf c-h-k/Fin0 faces/全台K1/Mのh some・k none、元subsetとprimitive d0/d1零、独立u全三次数squareを原表から構成
+    - 2: 元PhiIncのk両端点射を保つ全対象zigzag、元Gamma h一点と粗面なしから単一成分条件を生成。原Kan unitηの全三次数両逆、独立Pと粗namedのcochain同値・η/ε/u全Hom squareを証明
+    - 3: 原mixed空からκ/κ*/標準τ零、literal kerκ*のR全両逆と元H¹Q両逆を構成。Phi Betti和1/κ*rank0/Rdim1/τrank0、元ηH¹欠損00、全元T x→(x,0)・実余核k period/J01を同原商で評価
+    - 4: k単独1の同cochain→原Phi非零類と実余核非零類、実五項制限によるR類非零、原h類の保存と粗細非零、pure C3prime違反・非保存、空A/全A nativeJ/R/Phi和を証明。二発生Lawを保持した同実全Law T/余核/R/κ/τ/η/代表/和を評価
+    - 5: 全新source/生成補助/print/実stdout/標準公理/runtime/reportを照合。必要root単一cache、直接登録、現受理source出所、全scan/方向/固定入力保持を確認
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [WitnessTwoInput, WitnessTwoComparison, WitnessTwoCoefficients, WitnessTwoFiber, WitnessTwoGeneration, WitnessTwoLaw]
+  evidence: [下記全spineと同source/log hashes、元Kan成分→同η両逆→P全三次数→元商T/R/Q→同代表→同実Law/原producer]
+  claim_mapping:
+    theorem_names: [phi_zigzag, gamma_components, etaEquiv, eta_epsilon_square, pNamedEquiv, eta_square, epsilon_square, rCoordinates, qCoordinates, kappa_zero, tau_zero, subset_map, defect, allA_primitive_J, k_cochain_fiber, k_cokernel_nonzero, kFiberClass_nonzero, h_preserved, C3prime_failure, law_defect, law_R_dimension, law_unit_defect, lawK_cokernel_nonzero]
+    source_labels: [W共通Source/readings/Law/全台/全A/空A、W2 pure fiber円、同原三次数と数値表、同実Law二成分の和]
+    conjuncts: [上記五固定終了条件、原η欠損/Phi和/κ*rank/R/τrank/J/指定h-k代表と非零性/実全Law]
+    undischarged_assumptions: [選択五条件のsemantic premiseなし・正式PR独立監査待ち、全W3 paired/W4同G134/W5と別全目標最終四査読は未完]
+    acceptance_point: W2の全指定要求を原表から同じ原P/R/τ/u/Law比較で評価したroot提案
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [指定全台/有限セル/Option/端点、mixed空、元Phi-Gamma-Lambda単一成分、原η全次数両逆、元商全座標/原代表/同実欠損/二Law和]
+    remaining: [正式PR独立監査、全W3–W5、別whole-goal final]
+  certificate_provenance:
+    discharged: [原始表/K1→原incidenceとright Kan、局所元商条件→η三両逆、原κ→literal R、標準SES→原τ/制限、原T商period→J、二発生label→実Law族]
+    unresolved: []
+  proof_use:
+    used: [端点/Fin0→微分と成分、mapped/none→Gamma/Phiとκ/τ、原mixed空→R全Phi同定、原η逆と原u因子化→独立P全次数square、元H1両逆→実余核/指定非零k-h、原制限完全性とη可逆→同k実R非零、原label族→実Law二和]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [下記六single focused/全個別標準公理/source-log照合、直接登録/scan/方向と受理source現版]
+  blocking_findings: []
+  next_obligation: 指定W3面ありとmだけ除くpairedの全要求、その後W4同G134/W5混在適合と別全目標最終四査読
+```
+
+rootの五条件受理提案。全GOALはtarget-proof-checkpointであり、全目標の完了判定ではない。固定GOAL・四design・Formal・保護本文を変更しない。
+
+### 原始入力から同じ写像への対応
+
+| 固定条件 | 同じ入力・構成・実写像 |
+| --- | --- |
+| 1 原表/chain | WitnessCommonのqc/qf/coarser/非constant fst Law/adequacy/二発生labelを再利用。粗Fin1 chart/h loop、細Fin1 chart/h0-k1 loop、粗細faceFin0、h some0/k none。元d0は同端点差、d1は原面なし、primitiveD0/D1全entryも零。Mの原commと全三次数subset_squareから原r0/r1/r2へ接続 |
+| 2 元係数/P/二射 | 原PhiIncのinduced incidence圏の全対象へ原chart-edge射のzigzagを生成。k loopのfalse/true二射を減らさない。元Gammaはh一本/faceなし、元Lambdaは粗faceなし。localUnitEquivを実条件に適用し原right Kan η全三次数両逆・微分可換を生成。Pを粗複体へ定義し直さず、η逆で全三次数pNamedEquivを構成し元η/ε/uのf0/f1/f2等号を証明 |
+| 3 同原R/Q/T/τ | 原mixed空から原κ・κ*・標準SESのτ零。Rはliteral kerκ*のままpureFiberREquivで全Phi族へ、元Phi商からk値へ両逆。元H¹Qの同原R同型を合成してqCoordinates。元cycles/boundary商座標→全T x→(x,0)→同実range quotient k period両逆→J01。η欠損は独立元unitH1の両逆から00 |
+| 4 同原代表/二Law | fineCycle ![0,1]は元k単独1 cocycle、同cochainの原Phi制限はphiKCycle。元Phi類/R類/実余核類のperiod1非零、さらに同細H¹を実五項制限射で送るkFiberClassがη可逆・元完全性・同実余核非零により非零。h単独1は原Tで保ち粗細とも非零。空Aの実H¹/R/Phi添字を零にし全A nativeJ分類を証明。実Lawは両発生labelを台で商化せず元block全三square/H¹自然性/kernel-coker族/R族/標準δ成分から同値と和を生成 |
+| 5 検証/記録 | 六module各単一focused、全sourceと生成補助の個別print/標準公理/runtime/source-log/report照合、manifest/aggregate各一回直接登録、静的方向検査、保護入力差分0。必要単一dependencycacheはrootのみ生成。正式受理は固定headの独立PR監査に置く |
+
+| W2任意非空A/一label | dim ker a | dim coker a | Σ b1 Phi | rank κ* | dim R | rank τ | 同J |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 指定pure円 | 0 | 0 | 1 | 0 | 1 | 0 | (0,1) |
+| 空A | 0 | 0 | 0 | 0 | 0 | 0 | (0,0) |
+| 同実全Law二発生成分の和 | 0 | 0 | 2 | 0 | 2 | 0 | (0,2) |
+
+指定Source/readings/原Option/全台K1/ℚ/全Aはambient。一般zeroDifferentialやlocalUnitEquivの零微分・単一成分、pureFiberREquivのMixed空は方向仮定で、指定適用では端点/原射zigzag/Fin0/Optionから放電。Nonempty Aは設計数値表の方向条件、空Aを別証明して全Aを保持。P・η・ε・u・R・τ・実Law比較は元生成経路を再利用し、期待rank/保存情報をfieldへ渡さない。非計算的商transport/有限Pi/逆選択は証明済み元全射・両逆に限る。原Jの有限producerは元行列からの同じ実blockDefectを返す。
+
+### 使用predecessorの現source版と適用
+
+元型・必要定義・適用M/A/Law引数・proof-useを読み、受理版と現sourceのbytesを照合した。受理済み内部全履歴を再認定しない。
+
+| source | 現使用API | 受理PR/監査・source版 | 現source SHA256 |
+| --- | --- | --- | --- |
+| `AtlasCoefficientFiber/WitnessCommon.lean` | `qc`, `qf`, `laws`, `adequate_coarse`, `adequate_fine`, `law_nonconstant`, `labels_ne` | [PR5297](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5297#issuecomment-6050868943) / `160a3087d20d2e9cf22de758359acb5df7ec2ecd`、現bytes一致 | `f4f46b1ae32e0462e6ed1785f88df7a31ad6ed18607169c6738b3c652bfdd56b` |
+| `AtlasCoefficientFiber/NativeDegreeDifferentials.lean` | `primitiveD0Matrix_entry`, `primitiveD1Matrix_entry` | [PR5310](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5310#issuecomment-6070579525) / `6c6ddd845b5834721c8ea6c79a78dde3fed6164d`、現bytes一致 | `38bddba83f8c7da6c45c7f38bd97a234464fada87d6bcd45107bad74d036047b` |
+| `AtlasCoefficientFiber/FinitePreservationDecision.lean` | `primitiveDiagnostic_eq_blockDefect`, `primitiveLawDiagnostic_eq_blockDefect` | [PR5313](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5313#issuecomment-6072107116) / `fc95be6c3a948aa993a0e6af15f6c44546ce90b3`、現bytes一致 | `64815b21177bdef5df81a15df88a6aa783632667047e6ee7483b1b64d6e18ef8` |
+| `AtlasCoefficientFiber/LawFiberSequence.lean` | `lawRFamilyEquiv`, `lawR`, `lawConnectingTau` | [PR5304](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5304#issuecomment-6058853944) / `2a2847f3d499727e9ebf966c1f03fe277bdb2109`、現bytes一致 | `2a838970a53412557e5ca9bc90e9296fd5547297076392a2bcd2bd37b5b6ec55` |
+| `FaceRelationSubdivision/FullSupportSubsetComparison.lean` | `fullSelected`, `fullSubsetNamedEquiv`, `fullSubsetNamed_square` | [PR5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030258596) / `0134623422114ae39f989d591cb167c6176aae3e`、現bytes一致 | `893423de007db0a677b7f933408bab4041ee9f45011f7042f1c79de8d98e15b0` |
+| `FaceRelationSubdivision/LawComparisonFiberDiagnostics.lean` | `lawH1Defect_subset_sum` | [PR5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030258596) / `0134623422114ae39f989d591cb167c6176aae3e`、現bytes一致 | `99fbd72c77adf71ff6cec151ce0dda3c804f541459039c2280cdf41d86e25206` |
+| `AtlasDefectComposition/FullSupportIncidence.lean` | `fullBlockNamedEquivalence`, `fullSupport_edge`, `fullSupport_face` | [PR5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030258596) / `0134623422114ae39f989d591cb167c6176aae3e`、現bytes一致 | `7707340dfe3a4bc13e9b7cd8dd8217bc332b163aab847f5f984404db298bd66c` |
+| `FaceRelationSubdivision/IncidenceNamedComparison.lean` | `incidenceNamedHom_square` | [PR5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030258596) / `0134623422114ae39f989d591cb167c6176aae3e`、現bytes一致 | `56698b687013379306b13fb3bcf912d081a76ec3d4a6a71e1b644687e65f602a` |
+| `FaceRelationSubdivision/LawComparisonDecomposition.lean` | `lawH1Family_natural` | [PR5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030258596) / `0134623422114ae39f989d591cb167c6176aae3e`、現bytes一致 | `496ba43e5989e9bb309860976a432ed31df91e9c6c286237a6b92b6172434f63` |
+| `FaceRelationSubdivision/LawComparisonDefect.lean` | `lawH1KernelFamilyEquiv`, `lawH1CokernelFamilyEquiv` | [PR5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030258596) / `0134623422114ae39f989d591cb167c6176aae3e`、現bytes一致 | `ba062facc20c993767ee9ce423fbc0573ece5da57ee5c7c7993abc8e34cb8b72` |
+| `AtlasDefectComposition/LinearConjugation.lean` | `kernelEquiv`, `cokernelEquiv` | [PR5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287#issuecomment-6030258596) / `0134623422114ae39f989d591cb167c6176aae3e`、現bytes一致 | `2fb0f6f319a8dcdf8848f4dfd7672371a930b41aa96919888df2b4a273b40fbb` |
+| `AtlasCoefficientFiber/LocalFiber.lean` | `PhiChart`, `PhiEdge`, `phiD0_apply`, `GammaVertex`, `GammaInc`, `LambdaFace` | [PR5303](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5303#issuecomment-6057242603) / `70633bfc653fe823fbdbbbcec8b1d6fc12a5bb5b`、現bytes一致 | `cfc7d3a3d44a78879840daae8cf5a846510813156598c1006e9686c1b68013a4` |
+| `AtlasCoefficientFiber/LocalPreservation.lean` | `localUnitEquiv`, `unitH1_bijective_of_local` | [PR5300](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5300#issuecomment-6053115567) / `70909cc76c24e689fe03efe4340afc2bbf164969`、現bytes一致 | `29c5ab27b2e133dd2d1415612a229c3505c685542726a98ec25c8adc399f1061` |
+| `AtlasCoefficientFiber/DefectMaps.lean` | `directH1_factor`, `directH1_old` | [PR5313](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5313#issuecomment-6072107116) / `fc95be6c3a948aa993a0e6af15f6c44546ce90b3`、現bytes一致 | `0d45260ccf0bc021c223c1a5c8b5fa09288bfd728684fab5af13513b3d3d4449` |
+| `AtlasCoefficientFiber/FiveTermSequence.lean` | `fiberRestrictionH1`, `fiveTerm_exact_at_fineH1` | [PR5297](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5297#issuecomment-6050868943) / `160a3087d20d2e9cf22de758359acb5df7ec2ecd`、現bytes一致 | `c9fb934891dfd966ac23711e566cda115987220862e904c63cc5f9ed002687e3` |
+| `AtlasCoefficientFiber/PurePreservation.lean` | `pureFiberREquiv`, `pure_kappaStar_zero` | [PR5300](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5300#issuecomment-6053115567) / `70909cc76c24e689fe03efe4340afc2bbf164969`、現bytes一致 | `c40d5e80e53d9475487a7372dc53744002b4120b4a21415fd1590e98314e19f1` |
+| `AtlasCoefficientFiber/PureComparison.lean` | `kappa_zero_of_mixed_isEmpty`, `connectingTau_zero_of_mixed_isEmpty` | [PR5297](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5297#issuecomment-6050868943) / `160a3087d20d2e9cf22de758359acb5df7ec2ecd`、現bytes一致 | `ed95e9286b51c7ce15fb05e0fe19f83ac574e321ee1a01ec4216c951fc767d01` |
+| `AtlasCoefficientFiber/RestrictionHomology.lean` | `restrictionStandardHomologyREquiv` | [PR5297](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5297#issuecomment-6050868943) / `160a3087d20d2e9cf22de758359acb5df7ec2ecd`、現bytes一致 | `44317eec491e425838829730a8c8c1474b8f855c8a97f58f82d8d0ac3ed1f5d0` |
+| `AtlasCoefficientFiber/LawHomologyCoordinates.lean` | `lawCoarseHomologyEquiv`, `lawUnit_homology_component`, `lawUnitH1` | [PR5302](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5302#issuecomment-6054697310) / `7f20e6aaaae8c51298b32d955ca16a6b0076b84a`、現bytes一致 | `6052b12559e0f2fe036036ff60349e451e9fbb948da10582236aee718e3ae68c` |
+| `AtlasCoefficientFiber/WitnessOneInput.lean` | `loopNerve` | [PR5314](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5314#issuecomment-6072664284) / `fecb994402b579b6a0fe15190ef10b4752a7c44b`、現bytes一致 | `1470764f7aba1a7571873ed9671d29736d9fa16ab9213de4e200d37d15490518` |
+| `AtlasCoefficientFiber/WitnessFullSupport.lean` | `zeroDifferentialH1Equiv`, `fine_nonempty`, `labels_card` | [PR5314](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5314#issuecomment-6072664284) / `fecb994402b579b6a0fe15190ef10b4752a7c44b`、現bytes一致 | `95b4dca558735ab40bc172f8ff648884296f3c7bcf086d4d44a1560bcb107b1d` |
+| `AtlasCoefficientFiber/WitnessOneEvaluation.lean` | `coarse_d0_zero` | [PR5314](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5314#issuecomment-6072664284) / `fecb994402b579b6a0fe15190ef10b4752a7c44b`、現bytes一致 | `5a888a070d71dd71b6dd5e5dc7230d9fad2876caf2afb101b06c5d455d8e1206` |
+| `AtlasCoefficientFiber/WitnessOneDiagnostics.lean` | `empty_H1_subsingleton` | [PR5314](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5314#issuecomment-6072664284) / `fecb994402b579b6a0fe15190ef10b4752a7c44b`、現bytes一致 | `e6b420c45d48034cfc49cb7da90b6d7f61d7b8e4ea564838f3422153eb430a65` |
+| `AtlasCoefficientFiber/WitnessOneCoefficients.lean` | `componentsEquivOfHomEq` | [PR5314](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5314#issuecomment-6072664284) / `fecb994402b579b6a0fe15190ef10b4752a7c44b`、現bytes一致 | `36d4e207e595c51c9a06c39ce9c73c14be80b7079bfdf995cc7a048306a6e4ea` |
+
+出所照合SHA `337e2f787094b4af370b3e085a2acae03abfee38083b0109e09d851357105738`。C9 LocalFiberの今回使用APIは不変、C12追加を含む現在版をC12受理版で照合した。C6の同じ五項制限/標準τ/Q-R、C8の元directH1は現owner版で追う。標準Lean4.28/mathlib8f9d9cffの原商first iso、piCongr/関数Unique、旧/native H¹自然性、finrank/finite sumの方向とinstanceを確認。全期待数値は指定原始表の帰結である。
+
+<!-- cycle22-generated-evidence -->
+
+### Cycle22 全宣言spineと実検証
+
+全131=source130、generated1。六single focused全exit0/warning0。全source/明示print/実stdout/moduleauditの件数と順序、全個別公理を照合。各集合はpropext/Classical.choice/Quot.soundの部分集合。
+
+| file | 全受理候補spine（全項） | 実focused/count/source SHA/stdout SHA |
+| --- | --- | --- |
+| `WitnessTwoInput.lean` | `Nc`, `Nf`, `M`, `mixed_empty` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessTwoInput.lean`、exit0/warning0、4、source `ccb5ede9bc9bce722b6057b550d1e3de5bdb2fbd9ee867deb060445f6e41a76c`、stdout `8648bd462cd62d661bb13ebf7ba583d018a1a0633dbe6d18389aaaacdec161f9` |
+| `WitnessTwoComparison.lean` | `coarse_d0_zero`, `coarse_d1_zero`, `fine_d0_zero`, `fine_d1_zero`, `coarseNamedCoordinates`, `fineNamedCoordinates`, `named_map`, `coarseCoordinates`, `fineCoordinates`, `subset_square`, `subset_map`, `coordinateMap`, `coordinateMap_injective`, `kPeriod`, `kPeriod_kernel`, `kPeriod_surjective`, `coordinateCokernelEquiv`, `coordinateCokernelEquiv_mk`, `cokernelEquiv`, `cokernelEquiv_mk`, `comparison_injective`, `defect`, `primitive_J`, `empty_defect`, `allA_primitive_J`, `coarse_subset_d0_zero`, `coarse_subset_d1_zero`, `coarse_primitive_D0_zero`, `coarse_primitive_D1_zero`, `fine_subset_d0_zero`, `fine_subset_d1_zero`, `fine_primitive_D0_zero`, `fine_primitive_D1_zero` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessTwoComparison.lean`、exit0/warning0、33、source `a35a7394b6e529070001a0850536bdea096e93d68f32f0e8adb5cf237f8a2988`、stdout `ff47616b3fd745c86dd459af2470e2eef50865daeef6e167c405a6968438bc6b` |
+| `WitnessTwoCoefficients.lean` | `phiChartEquiv`, `phiChart_subsingleton`, `phi_zigzag`, `phi_components`, `gammaVertexEquiv`, `gammaObjectEquiv`, `gamma_components`, `lambda_components`, `etaEquiv`, `etaEquiv_toHom`, `unit_bijective`, `unit_defect`, `eta_epsilon_square` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessTwoCoefficients.lean`、exit0/warning0、13、source `3d87ab5f8e442265a5736ec2ecb85e8b8ec37d289bdb8c0eef09ef2413c4489c`、stdout `6b93f998298a0b42eda0beca5571286403ced508538bde64a2edc2db318c3dab` |
+| `WitnessTwoFiber.lean` | `phiEdgeEquiv`, `phi_d0_zero`, `phi_d1_zero`, `phiCoordinates`, `phi_dimension`, `coarseChartEquiv`, `phi_dimension_sum`, `kappa_zero`, `kappaStar_zero`, `kappaStar_rank`, `rFamilyEquiv`, `rCoordinates`, `r_dimension`, `tau_zero`, `tau_rank`, `phiKCycle`, `phiKClass`, `phiK_period`, `phiK_nonzero`, `rK`, `rK_period`, `rK_nonzero`, `coarseCycle`, `fineCycle`, `coarseClass`, `fineClass`, `coarseClass_coordinates`, `fineClass_coordinates`, `h_preserved`, `coarse_h_nonzero`, `fine_h_nonzero`, `k_cokernel_period`, `k_cokernel_nonzero`, `C3prime_failure`, `nonpreservation`, `k_cochain_fiber`, `empty_R_subsingleton`, `empty_R_dimension`, `allA_R_dimension`, `qCoordinates`, `q_dimension`, `allA_phi_dimension_sum`, `kFiberClass`, `kFiberClass_nonzero` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessTwoFiber.lean`、exit0/warning0、44、source `24df232ed7d5cf39861d419797a9558165543e12b6d7f5e402ac6361e1360458`、stdout `3978675b5d32934a9735fd660ae2bfb7383a2af5a1fb127e4a45fbbefea2b530` |
+| `WitnessTwoGeneration.lean` | `pNamedEquiv`, `eta_square`, `epsilon_square` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessTwoGeneration.lean`、exit0/warning0、3、source `2917a4b4ef8b7c508634fe22314e07c8899b526241d59ae82a8a1879de1ef934`、stdout `9a01567d4d28e3cda529f3edaf4260dd8ab24bac3bed807e6ea74844a0aac1b4` |
+| `WitnessTwoLaw.lean` | `coarseBlockCoordinates`, `fineBlockCoordinates`, `block_map`, `lawCokernelEquiv`, `law_defect`, `primitive_law_J`, `law_kernel_dimension`, `law_cokernel_dimension`, `lawRCoordinates`, `law_R_dimension`, `law_kappaStar_zero`, `law_kappaStar_rank`, `law_tau_zero`, `law_tau_rank`, `coarseLawCoordinates`, `fineLawCoordinates`, `law_map`, `coarseLawH`, `fineLawH`, `fineLawK`, `law_h_preserved`, `coarse_law_h_nonzero`, `fine_law_h_nonzero`, `lawRK`, `lawRK_period`, `law_unit_bijective`, `law_unit_defect`, `lawCokernelEquiv_mk`, `lawK_cokernel_period`, `lawK_cokernel_nonzero`, `lawRK_nonzero`, `law_kappa_zero`, `law_phi_dimension_sum`, `rCoordinates.congr_simp` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/WitnessTwoLaw.lean`、exit0/warning0、34、source `1bf8a87e1305d75a6a18864a4acda3a52b3a60b25c67ed895f362094aa143a13`、stdout `fca136b597d5b343a65d5b3c96cbe014f606a9dfb68d6a10154ebda3067d88b3` |
+
+生成補助`rCoordinates.congr_simp`はLaw moduleの実auditが捕捉する一宣言であり、個別printも追加して全件を保持した。validation SHA `0e4b9e1bc8e498a7d3d33b5d3e89487b6f3edcc28b4cfa72f3afc7a830ef4091`。必要root単一dependency cacheのみ生成し、同APIの後追加/コメント更新は既存使用body不変、最終六focusedは現source版を検証した。Research full/全module/aggregate/fileloop/lake full build、Formal build/移植、W3–W5全指定評価、別全目標最終四査読は未実施。
+
+静的import方向228moduleとpackage方向はPASS。diff check、placeholder/hidden-BiDi/privacy/追加禁止語/逆importの新hit0、固定GOAL/design/Formal/保護領域の差分0、六manifest/aggregate各一回登録。scan SHA `62883e06ed27b4ba24392192671bdb98bfa8314471df08db76bc41116ae02b7b`。正式独立PR四査読・CI・受理・merge・Issue同期はこの提案の後に記録する。

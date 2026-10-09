@@ -1202,3 +1202,9 @@ import ResearchLean.AG.AtlasCoefficientFiber.WitnessOneDiagnostics
 import ResearchLean.AG.AtlasCoefficientFiber.WitnessOneLaw
 import ResearchLean.AG.AtlasCoefficientFiber.WitnessOneRepresentatives
 import ResearchLean.AG.AtlasCoefficientFiber.WitnessOneGeneration
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessTwoInput
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessTwoComparison
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessTwoCoefficients
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessTwoFiber
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessTwoGeneration
+import ResearchLean.AG.AtlasCoefficientFiber.WitnessTwoLaw
