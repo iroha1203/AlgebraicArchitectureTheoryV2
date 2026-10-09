@@ -108,7 +108,8 @@ Text は等値とタグとしての保存だけに用いる。パスからモジ
 Term はコードから観測した操作の有限な数式を保持する。body は [Law DSL](law.md) の
 `lit,var,if,tuple,get,ctor,match,let,call` を使い、call は純粋演算と L の `pure` 関数だけ。
 自由変数は params だけ。field lookup、snapshot 列挙、query、導出型 constructor、再帰関数の
-呼出し、ネットワーク、外部 code、結果参照は含められない。
+呼出し、ネットワーク、外部 code、結果参照は含められない。closureは導出演算であり、
+原始Termからの直接・間接呼出しをtypeエラーとして拒否する。
 観測した原始演算を組み合わせる純粋関数が L に必要なら先に語彙として宣言する。
 Term 自体の値は既知でも、その関数の等値を決定できるかは別の問いである。
 

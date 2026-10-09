@@ -140,12 +140,12 @@ Tuple/List/Set/Optionの構造は入力と同じ。Setのserialization順はcano
 | Operation | `{name:OperationName,source:Architecture,target:Architecture,atom_map:MapCandidate,action:StateMap,word:Value[]}`。OperationNameは後述。wordは原始操作Refの順序列 |
 | Core | `{objects:Architecture[],generators:Operation[],relations:[[Operation,Operation]],extent:"free"|"presented"}` |
 | Equation | `{lhs:Term,rhs:Term,role:"required"|"definition"}` |
-| EquationFamily | `{kind:"terms",signature:TermSignature,instances:[{key:Value,equation:Equation}]}` または `{kind:"affine",map:AffineMap,rhs:Vector,role:"required"|"definition"}` |
+| EquationFamily | `{kind:"terms",signature:TermSignature,index_type:Type,instances:[{key:Value,equation:Equation}]}` または `{kind:"affine",map:AffineMap,rhs:Vector,role:"required"|"definition"}`。index_typeはequationsに渡したSet(T)のTで、空でも保持 |
 | Proposition | `{predicate:String,operands:Ref[],quantifiers:Quantifier[]}`。predicateは下記の公開core命題名または固定構成条件名 |
-| SolutionSet | `{definition:SetExpression,representation:SolutionRepresentation}` |
+| SolutionSet | `{state_type:Type,domain:StateDomain,definition:SetExpression,representation:SolutionRepresentation}` |
 | LawValues | `{family:EquationFamily}`。key付き残差関数全体を表す |
 | Presentation | `{equations:EquationFamily}`。有限式・型・生成演算は参照先から復元 |
-| Reading | `{kind:"finite"|"state",domain:Ref,map:Ref,fibers:[{image:TypedValue,preimage:TypedValue}],codomain?:Ref}` |
+| Reading | `{kind:"finite",domain:Ref,codomain:Ref,map:StateMap,fibers:[{image:TypedValue,preimage:TypedValue}]}` / `{kind:"state",domain:StateSystem,codomain:StateSystem,map:Ref,fibers:[]}`。finiteの両域はSet node、stateのmapはFn(Context,StateMap) |
 | ContextFamily | `{configuration:Configuration,dependency:[[FactPointer,FactPointer]],equations:EquationFamily}` |
 | ContextMap | `{source:Context,target:Context,images:TypedValue[]}`。sourceのcarrier_labels順のContextPoint像 |
 | Context | `{base?:Context,carrier_labels:TypedValue[],projection:[{from:Value,to:FactPointer}],support:AtomSet,axes:QName[],observables:EquationFamily}` |
@@ -178,6 +178,21 @@ SetExpressionは `{kind:"equations",equations:EquationFamily}`、
 `{kind:"glue",cover:Cover,states:StateSystem}`、
 `{kind:"finite",elements:TypedValue}` の閉じたunion。elementsは型Set(T)の値。
 
+StateDomainは `{kind:"type",type:Type}` / `{kind:"module",module:Ref}` /
+`{kind:"finite",elements:Ref}`。elementsはSet(T)のnode、state_typeはそれぞれType、Vector<K>、T。
+solution_image/glueの定義もこのdomainと一致することを再検査する。representationがemptyでも省略しない。
+StateMapの始終domainはtermのpack/返り型、affineの両Module、finiteのsource/target、
+composeの両外端から一意に復元する。StateMap.kind=finiteのsource/targetはSet(T)/Set(U)のTypedValue、
+pairsの各要素はTuple(T,U)のTypedValueで、各source元がちょうど一度現れ、像はtargetに属する。
+検索はSetの要素同一性で行い、pairsはsource値のcanonical順に直列化する。
+Vector/Classのkey照合にはlaw§9の剰余類の等値を用い、constructorや代表座標の一致で代用しない。
+
+finite Readingのfibers.imageはU、preimageはSet(T)のTypedValue。
+通常readingのUは入力Fnの返り型、sufficient_quotientのUはSet(T)である。
+後者のcodomainはSet(Set(T))、pairsはTuple(T,Set(T))、各fiberのimage/preimageは同じ同値類。
+LawValuesの評価nodeは導出のargumentsに残し、商の元のencodingへ流用しない。
+mapと両域を先に出力し、Readingから既出nodeを参照する。空の商は型付きの空集合と空の表を保持する。
+
 ContextFamilyの候補は `core/context_set : ContextFamily→Set(Context)` で取得し、
 Set(Context)の別nodeとして出力する。順序はserializationにだけ使う。
 Contextはfamily自体を参照せず、baseとsupportの情報を保持する。
@@ -203,6 +218,8 @@ LawはEvidenceの値・literalを構成できない。
 | completion_pair | `{fields:FactPointer[],first:Value[],second:Value[],first_result:Ref,second_result:Ref}` |
 
 evidenceの算術はkernelで再検査する。row-rank等のスカラーだけを不成立証拠にしない。
+LawValuesの形の不一致はevaluationでinstanceをUnit、lhs/rhsを両LawValuesのTypedValue参照とし、
+参照先のsignature/key/moduleの差を再検査する。架空の状態代入やresidualは付けない。
 反証のsupportには元の操作名・入力・結果・sourceへの位置を含める。
 全称命題の一つの確定反例は他instanceの欠測があっても有効。
 存在命題の否定は全域を尽くした証拠が必要。補完対は観測された反例と別のkindで返す。
@@ -311,7 +328,7 @@ OperationNameは `{kind:"generator",subject:TypedValue}` /
 `{kind:"identity",object:Ref}` / `{kind:"word",generators:Ref[]}`。
 generatorsは実際のOperation node参照の順序列。Operation.wordは生成元の原始subject RefのTypedValue列で、
 恒等では空。生成元自身のOperation nodeをwordから参照しない。wordの順序をSetへ変換しない。
-Reading.fibersのpreimageはSet(T)のTypedValue。state readingではfibersは空、
+Readingの有限表とfiberの型は§4に従う。state readingではfibersは空、
 domain/codomainはStateSystem、mapはContext→StateMapのFn nodeを指す。
 ObservationPlanの候補番号はdistinguishに渡したListの0始まり位置。
 minimal_subsetsは昇順index列を辞書順に並べたもの。requirements.locationsは
@@ -326,7 +343,7 @@ IssueDetailsは次のcode別recordである。共通欄から復元できるも�
 | invalid_construction | `{operator:QName,condition:Ref,expected?:Type,actual?:Type}` |
 | budget_exhausted | `{resource:"time_ms"|"memory_mib",limit:DecimalNat,observed:DecimalNat}` |
 | cancelled | `{signal:"SIGINT"|"SIGTERM"}` |
-| type | `{expected:Type,actual:Type}` |
+| type | `{expected:Type,actual:Type,effect?:{allowed:"pure",found:"derive"}}`。純粋性違反ではeffect必須で、値型が同じでもよい |
 | unsupported_version | `{found_format:String,found_semantics?:String}` |
 | io | `{operation:"read"|"create"|"write"|"flush"|"rename",path:String}` |
 | internal | `{operation:String}` |

@@ -88,7 +88,9 @@ pure/derive/query を頂点、call/query を辺とする共通依存グラフは
 `subjects(S,s)` は snapshot s に登録された sort S の subject 全部を Set(Ref(S)) として返す。
 `field(P,r)` は r の snapshot 内の P を読み、欠ければ同一性を持つ Hole を作る。
 `slot(P,r)` は値を読む前のFactRefを返す。owner(S,f)はFactRefの所有subjectがsort Sならsome Ref、違えばnoneを返す。
-list/set形式は明示した要素型の式を格納する。projectの公開fieldは計算カタログ§12に列挙する。
+list/set形式は明示した要素型の式を格納する。set式はcore/setと同じ要素同一性で重複を除去する。
+入力値・litのSet encodingの重複拒否は、評価によって値が一致するset式には適用しない。
+projectの公開fieldは計算カタログ§12に列挙する。
 projectは要求型を明示し、対象の構造fieldの実際の型を検査する。不一致はinvalid_construction。
 `subjects` により操作の存在を列挙し、field のある行だけの join に置き換えない。
 `query` は同梱 query の数学的な値を参照する。query を含む循環も上記共通グラフで拒否する。
@@ -114,8 +116,12 @@ T ::= PrimitiveType | "Snapshot" | ["Fn", [T*], T]
 ```
 
 K は "Q" / "Z" / ["Fp",p]。計算カタログの Module等の略記は同じKを共有する型族であり、wireでは常に ["Module",K] 等と記す。
-上の名前は予約語。Set は決定可能な等値を持つ原始型、Snapshot、有限 Tuple/data と
-参照 identity を持つ導出型に限る。Fn/Term の外延的等値を Set の重複検査に使わない。
+上の名前は予約語。Setの要素同一性は、原始値・Snapshot・FactRef・ContextPointでは構造等値、
+Vector/Classでは§9の親構造と数学的な元の同一性、ほかの適格な導出型では§9の構造identity、
+Tuple/List/Option/dataでは成分ごとの同一性、
+Setではこの同一性による外延等値とする。これを型構成に沿って再帰的に検査する。
+Fn/Term/LawValuesと、それらを含む複合型はSetの要素型にできない。
+この要素同一性は外延的な作用等値やcore/equalの公開型制約とは別である。
 List は型を満たすすべての値を保持できる。
 
 暗黙の数値変換はない。Q と Z、異なる Fp、Ref の異なる sort は異なる型。
@@ -134,9 +140,13 @@ sealed な型である。ctor/lit はこれらを作れない。指定演算が�
 
 ## 4. 純粋関数と導出
 
-pure は原始値の全域関数。params/result は原始型だけに限定し、Fn引数・Fn返り値を禁止する。純粋演算、他の pure、型に適合する fold だけを呼べる。局所fnは利用できるが、その自由変数とbodyも純粋部分の型・効果で検査する。
+pure は原始値の全域関数。完全な適型引数に対し、資源制限のない参照意味論で必ず適型値を返す。
+欠測と実行予算による中断はこの全域性とは別である。
+params/result は原始型だけに限定し、Fn引数・Fn返り値を禁止する。純粋演算、他の pure、型に適合する fold だけを呼べる。局所fnは利用できるが、その自由変数とbodyも純粋部分の型・効果で検査する。
 derive は原始値・snapshot・導出型を扱い、全カタログを使える。
 pure の中から field/snapshots/subjects/query/derive を参照することは型検査違反。原始Term内も同じ効果制限。slot/owner/project/state_apply/point_value/residualもpure内で禁止する。
+closureはderive/query専用であり、pureと原始Term内ではtypeエラーとする。
+この検査は未使用の宣言、ifの両枝、foldの全枝、局所fn、呼出し先の推移的依存に適用する。
 関数値は外部 callback でなく、この閉じた Expr 文法の lambda だけである。
 
 call は署名の引数型と arity に一致する必要がある。組込みの型変数は引数の一致から一意に
@@ -224,3 +234,9 @@ Fn/Termは束縛変数を位置へ変えたα正規形とcaptureのidentityを�
 原始Refは(snapshot,subject)、FactRefは原始位置、操作生成元の名前は原始Refを含む。
 node番号、provenance、表示基底、便宜的な証人、cacheはidentityに含めない。
 identityのhashは索引だけに使い、衝突時は構造を比較する。
+
+構造の元であるVector/Classのidentityは、構成する式ではなく親構造と数学的な元で定める。
+Vectorは同じModule内で代表の差が生成関係に属するとき同一、Classは同じCohomology内で
+cocycle代表の差が境界であるとき同一とする。Q/Z/Fpの既定算法で検査する。
+zero(M)とvector_sub(v,v)、整数商での代表0と2（関係2=0）はそれぞれ同じ元である。
+constructor、表示基底、代表の座標列はこの同一性を変えない。親が同型でもidentityが異なる場合は別の元である。

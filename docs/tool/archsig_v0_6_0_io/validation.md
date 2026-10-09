@@ -106,3 +106,38 @@ git diff --check
 8. 全resultの型・参照・導出DAGを再読し、原始根と各条件へ到達できること。
 
 これらは本仕様で決めた振る舞いの検査であり、実装時に新しいI/Oを選ぶための保留事項ではない。
+
+## 6. 商・全域性・端点の短い適合例
+
+次は後続実装が同じ意味を読むための反例表である。CLIで実行済みという意味ではない。
+
+| 最小の入力/構成 | 期待結果 |
+| --- | --- |
+| 空のD:Set(Z)のsufficient_quotient | codomainは空のSet(Set(Z))、map/pairs/fibersも空。評価Fnを呼ばずestablished |
+| D={0,1,2}、LawValuesが順にx、x+1、x | 商は{{0,2},{1}}。商元はSet(Z)、mapはStateMap、fibersのimage/preimageは同じ同値類 |
+| 上の評価値を同じ式で別に構成、またはDの表示順を反転 | 同じpartitionと有限作用。式のidentityや代表元番号で商を変えない |
+| LawValuesのsignature/key/残差Moduleが不一致 | 異なる評価値として別の類。形の差をevaluation証拠に保持 |
+| 商に必要な一つのLawValues比較が非対応/欠測 | Readingを確定せずundetermined。unsupported_algorithm/missing_observationを保持 |
+| pure(Unit)→Set(Z)のclosure({1},{},n↦{})、またはその間接呼出し/到達不能枝 | 静的typeエラー、invalid・exit65。effect={allowed:pure,found:derive} |
+| queryのclosure({1},{},n↦{}) | check成功、runはundetermined/invalid_construction、partial・exit2 |
+| pureのset式{x,x} / 入力Set値["1","1"] | 前者は{x}へ重複除去。後者は不正なSet encoding |
+| A.configuration=Cだがcandidate.source=C'≠C。candidate自体は正しいhom | Operationを作らずinvalid_construction。作用が正しくても端点条件を省略しない |
+| Aの状態域はQ全体、action.source={0,1}⊂Q | 同じ値型でもcarrier不一致でinvalid_construction |
+| state_thenの中間Bool carrierが{false}と{false,true} | invalid_construction。後続のOperation/coreへ渡す値を作らない |
+| 端点は一致するがcandidateの保存未確認 | Operationとして保持。law_hom/coreへの昇格時には保存成立が必要 |
+| 空のQ解集合にFn(Z,Proposition)でsolution_forall | 空虚な成立の前に型照合しinvalid_construction |
+| 空のQ解集合にFn(Q,Proposition)を適用 | bodyを呼ばずforall成立/exists反証。body用の架空のQ値を選ばない |
+| 同じF2加群のzero(M)とvector_sub(v,v)、Z/2加群の代表0と2 | 同じ元として有限mapのkey/carrierを照合。親Moduleが異なる元は区別 |
+| Context.axesをproject | Set(Text)。値は完全修飾axis名。Set(Z)要求はinvalid_construction |
+| Conditionへ独自dependencies欄を追加 | 未知欄として結果schema検査で拒否。依存はNode.arguments/Proposition.operands/Issue.dependencies |
+
+上の商の有限mapで、一行のpairのencodingは次である。これは生成結果の一部であり、第三入力ではない。
+
+```json
+{"type":["Tuple","Z",["Set","Z"]],"value":["0",["0","2"]]}
+```
+
+verify_examples.pyでは、有限同値類の全分割、空域、型付き商写像のJSON往復、
+表示順反転後の同じ作用、pure禁止呼出しの直接/間接/到達不能枝、有限carrier不一致、
+異なる表示の同じ加群元と空域量化を追加検算する。
+固定例についての独立した集合計算・構文走査であり、新CLIや一般型検査器を実装・実行したものではない。

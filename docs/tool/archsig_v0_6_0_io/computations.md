@@ -44,12 +44,16 @@ FactRef は `(snapshot,subject,predicate?)` の原始位置を持つ予約型で
 | member | T×Set(T)→Bool | 所属 |
 | forall, exists | Set(T)×Fn(T,Bool)→Bool | 有限量化。空でそれぞれtrue/false |
 | sum | List(K)→K | 空は0。結合順を整数/有理数の近似へ落とさない |
-| closure | Set(T)×Set(T)×Fn(T,Set(T))→Set(T) | 第1引数seed、第2引数固定有限universe。seed⊆universe、successor⊆universeを検査し最小不動点。外へ出ればinvalid_construction |
 
 Set の列挙順を List に変換する演算はない。意味ある順序が必要なら原始 List を使う。
 組込みに side effect はなく、Text は equal と保持にだけ使う。
+equalの適格性も複合型の成分へ再帰的に適用し、List(Term)などの比較を静的に拒否する。
 Ring を指す literal は `['lit','Ring','Q']` 等（実ファイルでは二重引用符）。
 mod の返り型は第2引数の Ring literal から静的に決まる。変数 Ring への mod は禁止。
+
+`core/closure : Set(T)×Set(T)×Fn(T,Set(T))→Set(T)` はderive/query専用の構成演算。
+第1引数seed、第2引数固定有限universeとし、seed⊆universe、到達した各元のsuccessor⊆universeを
+検査して最小不動点を返す。違反はinvalid_construction。pure/原始Termには属さない。
 
 ## 3. 項、方程式、解
 
@@ -68,7 +72,7 @@ mod の返り型は第2引数の Ring literal から静的に決まる。変数 
 | solve | EquationFamily→SolutionSet | 全instanceの共通Term引数を同時に満たす代入集合。引数signature一致が必要 |
 | inhabited | SolutionSet→Proposition | 解の存在 |
 | solution_image | SolutionSet×StateMap→SolutionSet | 解集合の像。状態域が一致すること |
-| solution_forall, solution_exists | SolutionSet×Fn(T,Proposition)→Proposition | 解集合上の量化。算法がなければunsupported |
+| solution_forall, solution_exists | SolutionSet×Fn(T,Proposition)→Proposition | Tが解集合のstate_typeと一致することを構成時に検査。不一致は空集合でもinvalid_construction。解だけを引数にして量化し、算法がなければunsupported |
 | affine | Module×Module×Fn(Vector,Vector)→AffineMap | 展開した式がR線形＋定数であることを係数として検査 |
 | linear_part, offset | AffineMap→ModuleMap / Vector | 線形部分と定数 |
 | affine_equations | AffineMap×Vector×Text→EquationFamily | f(x)=bを一つのmodule値方程式として保持。第3引数はrequired/definition。商moduleでは座標ごとの等式に分解しない |
@@ -98,7 +102,7 @@ SolutionSet は有限集合、アフィン部分空間/剰余加群の剰余類�
 | hom_condition | MapCandidate→Proposition | 全域一意、family・relation・identification保存を同時検査 |
 | verify_hom | MapCandidate→ConfigurationHom | 上の条件の成立時だけ生成 |
 | law_hom | Operation×ModuleMap→LawHom | candidateをverify_homし、値作用fと残差写像hで E_target(f(x))=h(E_source(x)) を全状態で検査 |
-| operation | Ref(S)×Architecture×Architecture×MapCandidate×StateMap→Operation | 第1引数が名前、候補Atom作用と値への作用を別に保持。確認条件も保持 |
+| operation | Ref(S)×Architecture×Architecture×MapCandidate×StateMap→Operation | 第1引数が名前。候補のsource/targetが両Architectureのconfigurationとidentity一致し、StateMapの始終carrierが各状態域と一致することを必須検査。候補保存の成否は別に保持 |
 | operation_hom | Operation→ConfigurationHom | 候補Atom作用を検査。操作名を消さない |
 | compose_hom | ConfigurationHom×ConfigurationHom→ConfigurationHom | g∘f。中間configuration一致 |
 | identity_hom | Configuration→ConfigurationHom | 恒等写像 |
@@ -213,15 +217,18 @@ Repair は具体的状態とその全解集合、使用した作用、元の式�
 
 | 名前 | 署名 | 意味と条件 |
 | --- | --- | --- |
-| reading | Set(T)×Fn(T,U)→Reading | 明示した有限域と読み。そのfiberを生成 |
+| reading | Set(T)×Fn(T,U)→Reading | 有限域Dと読みfから像C=f(D)、全域有限StateMap D→C、全fiberを生成 |
 | sufficient | Reading×Fn(T,V)→Proposition | 同じreading値を持つ任意の二対象で、指定Law評価値Vが等しいか。Bool成否だけへの圧縮をしない |
-| sufficient_quotient | Set(T)×Fn(T,V)→Reading | Law評価タプルが同じという同値関係の標準商 |
+| sufficient_quotient | Set(T)×Fn(T,V)→Reading | D上の評価同値類BをSet(T)として作り、C:Set(Set(T))と全域有限StateMap q:D→Cを生成 |
 | compare_diagnostics | CochainMap×Class×Class→DiagnosticComparison | H1写像、kernel、cokernel、指定類の像の一致を別々に計算 |
 | preserves_diagnostics | DiagnosticComparison→Proposition | H1写像が同型かつ指定類が対応する |
 | distinguish | Reading×Fn(T,V)×List(Fn(T,U))→ObservationPlan | 下記の有限識別計算 |
 | needed | T→ObservationPlan | 未決の依存Holeと、必要とするquery/式/source位置。数学的最小性は要求しない |
 
-Reading は何の有限域かを値に保持する。reading/sufficient/sufficient_quotient/distinguish の Uはcore/equalに適格な型、Vはそれらまたは§12のLawValuesとする。修復存在を評価値に使う場合は core/decide(inhabited(...)) を使う。Law十分性だけから係数やcoverの比較を作ったと
+Reading は何の有限域かを値に保持する。T/UはSet適格型、VはSet適格型または§12のLawValuesとする。
+有限表のkey・像・fiber・Vの比較にはSetの要素同一性を使い、LawValuesだけは§12の評価等値を使う。
+sufficient/distinguishはkind=finiteのReadingだけを受け取り、Fnの引数型をそのdomainの要素型と照合する。
+修復存在を評価値に使う場合は core/decide(inhabited(...)) を使う。Law十分性だけから係数やcoverの比較を作ったと
 扱わない。compare_diagnostics は比較写像そのものを引数として導出し、単にrankが等しいことを
 同型の根拠にしない。異なるcoverには実際のrefinement/chart対応と誘導cochain mapが必要。
 
@@ -232,10 +239,21 @@ distinguishの第3引数は観測関数のListである。順番は観測候補�
 Holeで候補評価ができなければ未決とし、そのfieldの観測要求へ戻す。
 G-128/G-131 型の修復述語をVに使うには原始操作から構成した修復存在を評価する。
 
+finite Readingはdomain D、codomain C=f(D)、map.source=D、map.target=Cを保持する。
+fibersのpreimageはDの非空・互いに素な完全分割で、各imageはCに一度だけ現れる。
+sufficient_quotientでは `B_x={y∈D | V(y)=V(x)}`、`q(x)=B_x` と一意に決める。
+そのfiber行はimage=B_x、preimage=B_xであり、双方の型はSet(T)。評価値Vを商の元にしない。
+空DではC:Set(Set(T))も空、mapの表とfibersも空で、評価Fnを呼ばない。
+必要な評価・比較が欠測/非対応ならReadingを確定せず、その理由を返す。
+商のmapは検査した有限表を持つStateMapとしてReadingより先に導出する。生成Fnや代表元選択は要らない。
+projectでdomain/codomain/mapを取得し、state_applyで商の元を次の計算へ渡せる。
+再利用はD、評価Fn、各比較を現在の二入力から再検査する。集合・有限表の表示順を意味に含めない。
+
 ## 9. 由来、条件、証拠
 
 演算の正しい値を得るための条件は、
-`{id, proposition, status, evidence, dependencies}` として結果に持つ。
+`{id, proposition, status, evidence, reasons}` として結果に持つ。
+依存はPropositionのoperandsとNode.arguments、未決理由の依存はIssue.dependenciesに保持する。
 条件statusは `established/refuted/undetermined`。Lawはstatusを読む演算を持たない。
 条件の反証、実装していない算法、観測不足を一つのfalseへ潰さない。
 
@@ -275,7 +293,31 @@ freeのRing引数はliteralに限り、coordの返り型はVector<K>のKから�
 生成元の添字型は構成時に保持する。vector/basis/linear/coordの関数域・添字が
 その型と一致するかは構成条件で検査する。異なる添字型の値を文字列へ変換して一致させない。
 
-law_homのArchitectureのEquationFamilyは、各側で共通の状態signatureを持ち、残差を
+状態域は値の型とcarrierを対で保持する。terms方程式の型はTermSignatureのparametersのpack、
+carrierはその型の全値。affine方程式の型はVector<K>、carrierはmap.sourceの加群の元全体である。
+これは解集合へ制限する前の状態域であり、required違反の状態も含む。
+term_mapの始域はparamsのpackの全値、終域は返り型の全値。affine_mapは両端Moduleの全元、
+finite_mapは指定したSet(T)/Set(U)を両端carrierとする。合成は最初の始域と最後の終域を保持する。
+carrier一致は同じ値型を必須とし、型全体は型の一致、Moduleは意味identity、
+有限集合はSetの要素同一性による外延等値で検査する。有限集合と型全体/Moduleの比較は、
+後者が有限ならその全元を列挙して照合する。無限なら不一致、必要な列挙算法が非対応なら
+unsupported_algorithm、欠測ならmissing_observation。型の違いや確定した不一致はinvalid_construction。
+同次元・同型というだけでは一致せず、対応を明示的なStateMapとして構成する。
+
+operation(name,A,B,candidate,action)はcandidateの端点をA/B.configurationと、
+actionの始終carrierをA/B.equationsの状態域とそれぞれ照合してからOperationを作る。
+hom_conditionの成否が未確認でも端点の合う候補操作は作れるが、端点の不一致を保留したOperationは作らない。
+state_thenも同じcarrier一致規則を中間に適用し、合成したOperationは合成後の両端でこの条件を満たす。
+
+SolutionSetは空の場合もstate_typeとdomainを保持する。solveでは元の方程式の状態域、
+solution_imageではStateMapの終域、glueではbaseの状態域、SetExpression.kind=finiteでは指定Setのcarrierを用いる。
+solution_forall/existsのFnはちょうど一引数、引数型はstate_type、返り型はPropositionとする。
+前者の型が違えばinvalid_construction、arity/返り型の静的違反は入力typeエラー。
+Fnはcarrierを型引数に持たないため、domainへの所属を確かめた解だけを渡し、body内の写像・座標の
+所属条件は各解への適用時に検査する。空解集合でも型・arity・返り型の照合を先に行い、
+それを通ればbodyを評価せずforall=true/exists=falseを返す。
+
+law_homは上記Operationの端点条件を保持する。ArchitectureのEquationFamilyは、各側で共通の状態signatureを持ち、残差を
 instance添字の自由加群へ並べる（module値方程式ならその残差module）。operationのactionはsource状態からtarget状態へのStateMap、
 hはsource残差加群からtarget残差加群へのModuleMapである。原始FactRef写像だけから
 状態の作用を補わない。非アフィン作用の等値に算法がなければunsupportedを保持する。
@@ -294,14 +336,14 @@ configのfamilyにはこのうち実在するsubject/Atomだけを入れ、未�
 
 ## 12. 状態作用と公開射影
 
-StateMapは状態の作用を統一して保持する。次の三つだけから作る。
+StateMapはterm/affine/finiteの三種類の作用と、その合成を保持する。
 
 | 名前 | 署名 | 意味 |
 | --- | --- | --- |
 | term_map | Term(A…,B)→StateMap | 原始型のpack(A…)からBへの作用。0引数はUnit、1引数はA、2以上はTuple |
 | affine_map | AffineMap<K>→StateMap | 指定source/target Module上のアフィン作用 |
 | finite_map | Set(T)×Set(U)×Fn(T,U)→StateMap | 全域・像の所属を全列挙で検査した有限作用 |
-| state_then | StateMap×StateMap→StateMap | 型とcarrier/moduleの中間identityを検査したg∘f |
+| state_then | StateMap×StateMap→StateMap | §11の中間carrier一致を検査したg∘f。両外端の状態域を保持 |
 | state_equal | StateMap×StateMap→Proposition | 全状態での作用等値。対応済み算法以外は未対応 |
 
 Exprの追加形式は `["state_apply", ResultType, MapExpr, InputExpr]`。
@@ -318,7 +360,7 @@ Exprに明示した要求型と照合する。数学的な構造の射影であ�
 - Architecture: configuration, equations。Configuration: family, relation, identification。
 - Operation: source, target, atom_map, action。MapCandidate: source, target, pairs。
   ConfigurationHom: candidate。LawHom: operation, underlying, residual_map。Span: left, right。
-- Context: carrier（Set(ContextPoint)）, support, axes（Set）, observables。ContextMap: source, target。
+- Context: carrier（Set(ContextPoint)）, support, axes（Set(Text)）, observables。axesの各値はpredicateの完全修飾axis名。ContextMap: source, target。
   Overlap: pullback（Context）, left_projection, right_projection（ContextMap）。
   Cover: base, patches（Set）, equations。
 - ModuleMap: source, target。AffineMap: linear, offset。Vector: module。
@@ -326,7 +368,11 @@ Exprに明示した要求型と照合する。数学的な構造の射影であ�
   Cohomology: module, cycles, boundaries。Class: cohomology。
 - CoefficientSystem/StateSystem: contexts。Descent: cover, coefficients, states, complex, obstruction。
   DiagnosticComparison: cochain_map, cohomology_map, kernel, cokernel, class_matches。
-  Repair: solutions, descent, comparison（Option Reading）。Reading: domain。
+  Repair: solutions, descent, comparison（Option Reading）。Reading: domain, codomain, map。
+
+Readingのdomain/codomainはfiniteならSet(T)/Set(U)、stateならStateSystem。
+mapはfiniteならStateMap、stateならFn(Context,StateMap)である。要求型との不一致はinvalid_construction。
+semantic_repairはkind=stateのReadingを要求し、finite readingを状態比較として用いない。
 
 Moduleの表示基底、Vectorの代表座標、Classの代表元、Repairの便宜的なwitness、
 Descentのlocal_sections、Propositionの判定状態は射影できない。
@@ -376,6 +422,8 @@ contextへの制限は、そのcontextにsupportが収まる座標・成分を�
 termによる残余化は、formal paramsに依存しないfield等を先に値/captureとして計算する。
 残ったbodyは原始Termの純粋部分に属さなければinvalid_construction。
 formal Ref変数に応じてfieldを読む処理を、純粋Termの中へ隠さない。
+deriveでclosureを計算し終えた原始Set値はcaptureできる。formal引数に依存するclosureが
+bodyに残る場合はinvalid_constructionであり、純粋Termへ昇格しない。
 
 TermSignatureの唯一のliteral encodingは `{parameters:[P,...],result:K}`。
 Pは原始型、KはQ/Z/Fp。Termのparams順と同じで、空のEquationFamilyにも状態域を与える。
@@ -389,11 +437,13 @@ Symbolic座標νはinstance指示基底、residual εは上記の値とし、ν�
 
 Law評価関数そのものを比較するため、
 `core/law_values : EquationFamily→LawValues` を追加する。
-LawValuesはsignatureとkey付き残差関数族（affineならmodule値残差関数）を保持するsealed型。
-identityでなく、同じkeyとsignatureにおける全状態での残差一致を比較する。
-sufficient/sufficient_quotient/distinguishのVには通常のequal適格型に加えLawValuesを許し、
-その比較はterm_equal/線形写像等値の必須算法で行う。一般非線形で比較できなければ
-unsupported_algorithm。既知の不一致は具体的keyとstateを証拠に返す。
+LawValuesは型付きの残差関数族を保持するsealed型。termsではkind、TermSignature、index_type、
+instance keyの集合を、affineではkind、始域Moduleと残差Moduleの意味identityを比較の形とする。
+形が違えば異なる評価値とし、形の差を証拠にする。roleや関数を構成した式のidentityは比較に含めない。
+形が同じ場合に全状態での残差一致をterm_equal/線形写像等値の必須算法で検査する。
+sufficient/sufficient_quotient/distinguishのVにはSet適格型に加えLawValuesを許す。
+一般非線形で比較できなければunsupported_algorithm、欠測ならmissing_observation。
+残差の不一致は具体的keyとstateを証拠に返す。形の不一致に架空のstate反例を要求しない。
 LawValuesの比較をBool成否だけの一致へ置換しない。LawValuesはSetの要素型にはしない。
 
 ## 13. 構成則の評価と特殊な引数
@@ -419,7 +469,8 @@ StateSystem内部と出力ではStateMapへ統一する。状態の全域carrier
 invalid_construction。conditionの必要な比較を決定できなければ、その理由を返す。
 
 coreの操作はconfiguration上の射と状態上の作用を共に持つ。coreに渡す各Operationの
-候補Atom作用はverify_homで成立していること、始終域が指定object集合に属することを検査する。
+候補Atom作用はverify_homで成立していること、始終域が指定object集合に属すること、
+§11のconfiguration・状態域の端点条件を満たすことを検査する。
 未確認候補はOperationとして比較できるが、coreの生成射へ昇格させない。
 自由coreのobjectは指定された対象族、morphismは型の合う全有限語であり、恒等・合成に閉じる。
 新しいconfigurationや候補対象を作るLawのderiveは、同じ原始familyから作ったArchitectureを

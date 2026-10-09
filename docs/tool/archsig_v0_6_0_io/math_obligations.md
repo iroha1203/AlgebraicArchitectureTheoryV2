@@ -43,10 +43,10 @@
 | G-134 の診断保存細分化 | [IncidenceComparison.lean](../../../research/lean/ResearchLean/AG/FaceRelationSubdivision/IncidenceComparison.lean): `IncidenceSupportedComparison`、[OperationPathFunctor.lean](../../../research/lean/ResearchLean/AG/FaceRelationSubdivision/OperationPathFunctor.lean): `lawR_append`, `lawS_append` | セル名、平行辺、loop、面内の重複、部分セル比較と退化の符号付き和。原始操作列から比較と homotopy を作る |
 | G-135 の係数・fiber と有限判定 | [NativeDiagnosticMatrices.lean](../../../research/lean/ResearchLean/AG/AtlasCoefficientFiber/NativeDiagnosticMatrices.lean): `nativeTMatrix_represents`, `nativeTauMatrix_connectingTau`、[FinitePreservationDecision.lean](../../../research/lean/ResearchLean/AG/AtlasCoefficientFiber/FinitePreservationDecision.lean): `primitiveDiagnostic_eq_blockDefect`, `allAPreservationDecision_eq_true_iff`, `lawPreservationDecision_eq_true_iff` | 同じ原始部分セル比較と台から順像・fiber 適合・transgression を生成する。有理行列と rank は出力。一般の混在面では fiber 項は適合部分 `R_A` であり、全 fiber の `H¹` の直和へ無条件に置き換えない |
 
-G-133 と G-134 の report には全 target の完了認定がある。
-この基準版の G-135 report は Cycle 25 の全要求に対する completion candidate であり、
-全目標の最終監査は未実施と記されている。上表は存在する個別宣言への対応であって、
-G-135 全体の完了認定ではない。
+G-133 と G-134 の report には全 target の完了認定がある。G-135 も、[最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5318#issuecomment-6078269788)と[完了記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6078348119)により、
+Research の固定 T0・A–E・W 全体を `target-theorem-proved` と認定され、基準版 `ed16acc02` にマージ済みである。
+Formal への移植は `unported (Research-proved)`。Research 全体 build と Formal local build・移植は未実施であり、
+Research での証明完了と区別する。CI の Formal build 等6 step も `SKIPPED` と記録されている。
 
 ## 3. 有限提示から使える保証
 

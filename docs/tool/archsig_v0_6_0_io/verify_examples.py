@@ -274,3 +274,69 @@ assert source_coeff(source)==candidate_coeff(source,False)==(1,3)
 assert candidate_coeff(source,True)==(1,1)
 assert -1+3==2 and -1+1==0
 print('OK: self-model grammar/binding/types/vocabulary/ADT values; fold signatures; generated add/subtract IR evaluation')
+
+# 標準商の固定例。評価はQ→Qのアフィン残差の正規形で独立に比較する。
+domain = [0, 1, 2]
+evaluations = {0: (Q(1), Q(0)), 1: (Q(1), Q(1)), 2: (Q(1), Q(0))}
+classes = {frozenset(y for y in domain if evaluations[x] == evaluations[y]) for x in domain}
+assert classes == {frozenset({0, 2}), frozenset({1})}
+assert all(b for b in classes) and set().union(*classes) == set(domain)
+assert all(b == c or b.isdisjoint(c) for b in classes for c in classes)
+qmap = {x: next(b for b in classes if x in b) for x in domain}
+assert all({x for x in domain if qmap[x] == b} == set(b) for b in classes)
+reversed_classes = {frozenset(y for y in reversed(domain) if evaluations[x] == evaluations[y])
+                    for x in reversed(domain)}
+assert classes == reversed_classes
+assert {frozenset() for x in []} == set()  # 空域の商は{空集合}にならない。
+
+def typed_zset(xs):
+    return {'type': ['Set', 'Z'], 'value': sorted(str(x) for x in xs)}
+
+wire_map = {'kind': 'finite', 'source': typed_zset(domain),
+            'target': {'type': ['Set', ['Set', 'Z']],
+                       'value': sorted(typed_zset(b)['value'] for b in classes)},
+            'pairs': [{'type': ['Tuple', 'Z', ['Set', 'Z']],
+                       'value': [str(x), typed_zset(qmap[x])['value']]} for x in domain]}
+decoded = json.loads(canonical(wire_map))
+assert decoded == wire_map
+assert decoded['target']['type'] == ['Set', ['Set', 'Z']]
+assert all(p['type'] == ['Tuple', 'Z', ['Set', 'Z']] for p in decoded['pairs'])
+assert {int(p['value'][0]): frozenset(map(int, p['value'][1]))
+        for p in decoded['pairs']} == qmap
+fibers = [{'image': typed_zset(b), 'preimage': typed_zset(b)} for b in classes]
+assert all(row['image'] == row['preimage'] for row in fibers)
+
+# 全域性の反例に現れるcallだけの構文走査。評価器ではなく、全枝を見ることを検算する。
+bad_closure = ['call', 'core/closure', ['set', 'Z', ['lit', 'Z', '1']],
+               ['set', 'Z'], ['fn', [['n', 'Z']], ['set', 'Z']]]
+pure_bodies = {'test/bad': bad_closure, 'test/wrapper': ['call', 'test/bad'],
+               'test/dead': ['if', ['lit', 'Bool', False], bad_closure, ['set', 'Z']]}
+def call_names(tree):
+    if not isinstance(tree, list):
+        return set()
+    direct = {tree[1]} if len(tree) > 1 and tree[0] == 'call' else set()
+    return direct | set().union(*(call_names(x) for x in tree))
+def call_closure(name):
+    direct = call_names(pure_bodies[name])
+    return direct | set().union(*(call_closure(x) for x in direct if x in pure_bodies))
+assert all('core/closure' in call_closure(name) for name in pure_bodies)
+assert set([1, 1]) == {1}  # set式と入力Set encodingの拒否規則を区別する。
+
+# 保存の成否と端点の一致は独立。各値の型が同じでもcarrierは異なる。
+assert {'source': 'C2', 'target': 'D', 'preserves': True}['source'] != 'C1'
+assert {False} != {False, True}
+assert {'0', '1'} != {'0', '1', '2'}  # 有限sourceはQ全体でもない。
+assert ('Fn', ('Z',), 'Proposition') != ('Fn', ('Q',), 'Proposition')
+# 生成関係で割った元の等値。constructorラベルや整数の代表はkeyを変えない。
+f2_zero_by_sub = (1-1) % 2
+assert f2_zero_by_sub == 0
+zmod2_representatives = [0, 2, -2]
+assert {x % 2 for x in zmod2_representatives} == {0}
+finite_f2_table = {0: False, 1: True}
+assert finite_f2_table[f2_zero_by_sub] is False
+assert {x % 2 for x in [2, 1]} == set(finite_f2_table)
+def must_not_call(_):
+    raise AssertionError('empty-domain body evaluated')
+assert all(must_not_call(x) for x in []) is True
+assert any(must_not_call(x) for x in []) is False
+print('OK: quotient partition/types/wire/order/empty; pure call closure; carrier/value equality; empty quantification')
