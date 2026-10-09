@@ -1,0 +1,6 @@
+{
+  "format": "archsig.law/1",
+  "semantics": "archsig/0.6.0",
+  "entry": "affine",
+  "modules": [{"id": "affine","imports": [],"roles": ["current"],"declarations": [{"kind": "sort","name": "Operation"},{"kind": "predicate","name": "body","domain": "affine/Operation","payload": ["Term",["Q"],"Q"],"atom_kind": "operation","axis": "state","meaning": "実装に記述された一入力一出力の有理数操作。"},{"kind": "query","name": "commute","result": "Proposition","body": ["call","core/all",["snapshots","affine/current"],["fn",[["s","Snapshot"]],["call","core/all",["call","core/product",["subjects","affine/Operation",["var","s"]],["subjects","affine/Operation",["var","s"]]],["fn",[["pair",["Tuple",["Ref","affine/Operation"],["Ref","affine/Operation"]]]],["call","core/term_equal",["call","core/then",["field","affine/body",["get",0,["var","pair"]]],["field","affine/body",["get",1,["var","pair"]]]],["call","core/then",["field","affine/body",["get",1,["var","pair"]]],["field","affine/body",["get",0,["var","pair"]]]]]]]]]}]}]
+}
