@@ -1,0 +1,35 @@
+lawdsl 1;
+module Coordinates version 1;
+use finite_q version 1;
+use finite_graph version 1;
+
+entity Quantity = atom("quantity", kind="entity", axis="coordinate");
+entity Translation = atom("translation", kind="entity", axis="coordinate");
+field source : Translation -> Ref<Quantity> = atom("source", kind="relation", axis="coordinate");
+field target : Translation -> Ref<Quantity> = atom("target", kind="relation", axis="coordinate");
+field shift : Translation -> Q = atom("shift", kind="value", axis="coordinate");
+
+derive vertices = members(Quantity);
+derive edges = members(Translation);
+derive triangles = select (first, second, direct) from edges * edges * edges
+  where target(first) == source(second)
+    and source(first) == source(direct)
+    and target(second) == target(direct);
+
+law path_preservation:
+  forall (first, second, direct) in triangles, x in Q:
+    x + shift(first) + shift(second) == x + shift(direct);
+
+system coordinate_system:
+  unknown z : vertices -> Q;
+  forall e in edges:
+    z[target(e)] - z[source(e)] == shift(e);
+
+derive graph = incidence(vertices, edges, source, target);
+derive cover = edge_cover(graph);
+derive coefficient = locally_constant(graph, Q);
+derive states = affine_states(coordinate_system, graph);
+
+query paths = check(path_preservation);
+query coordinates = solve(coordinate_system);
+query descent = descend(cover, coefficient, states);

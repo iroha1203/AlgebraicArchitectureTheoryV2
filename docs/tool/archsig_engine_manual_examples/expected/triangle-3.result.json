@@ -1,0 +1,265 @@
+{
+  "schema": "archsig.engine.result/v1",
+  "engine": {"interface": "1", "semantics": "atom-law/v1"},
+  "inputs": {
+    "archmap": {
+      "file": "triangle-3.archmap.json",
+      "sha256": "bf96fddc3fc2d8e88cd745e2628aeeae283192189dca3b16aa53a718312b1996",
+      "document": "triangle-3",
+      "revision": "1"
+    },
+    "law": {
+      "file": "coordinates.law",
+      "sha256": "832d554054bcb5707cec8da825b4895e64450fa5c1b5031c68718f813822f569",
+      "module": "Coordinates",
+      "version": 1
+    }
+  },
+  "requestedQueries": ["paths", "coordinates", "descent"],
+  "runStatus": "complete",
+  "results": [
+    {
+      "name": "paths",
+      "analysis": "check",
+      "status": "refuted",
+      "scope": {"family": "input", "scalarDomain": "Q"},
+      "data": {
+        "instanceCount": 1,
+        "instances": [
+          {
+            "bindings": {"first": "a", "second": "b", "direct": "c"},
+            "variables": ["x"],
+            "left": {"constant": "2", "coefficients": {"x": "1"}},
+            "right": {"constant": "3", "coefficients": {"x": "1"}},
+            "difference": {"constant": "-1", "coefficients": {"x": "0"}},
+            "counterexample": {"valuation": {"x": "0"}, "left": "2", "right": "3"},
+            "exposed": {},
+            "missingDependence": null,
+            "lawResidual": 1
+          }
+        ]
+      },
+      "evidence": {
+        "atomIds": [
+          "p.exists",
+          "q.exists",
+          "r.exists",
+          "a.exists",
+          "a.source",
+          "a.target",
+          "a.shift",
+          "b.exists",
+          "b.source",
+          "b.target",
+          "b.shift",
+          "c.exists",
+          "c.source",
+          "c.target",
+          "c.shift"
+        ],
+        "lawDecls": [
+          "Quantity",
+          "Translation",
+          "source",
+          "target",
+          "shift",
+          "vertices",
+          "edges",
+          "triangles",
+          "path_preservation",
+          "paths"
+        ],
+        "builtinRules": ["finite_q/1:affine_normalize", "finite_graph/1:incidence_join"]
+      },
+      "conditions": [{"name": "well_typed", "status": "established"}, {"name": "operands_available", "status": "established"}],
+      "issues": []
+    },
+    {
+      "name": "coordinates",
+      "analysis": "solve",
+      "status": "refuted",
+      "scope": {"family": "input", "scalarDomain": "Q"},
+      "data": {
+        "variables": ["p", "q", "r"],
+        "equations": ["a", "b", "c"],
+        "matrix": [["-1", "1", "0"], ["0", "-1", "1"], ["-1", "0", "1"]],
+        "rhs": ["1", "1", "3"],
+        "rank": 2,
+        "solution": null,
+        "inconsistency": {"leftNull": ["1", "1", "-1"], "productMatrix": ["0", "0", "0"], "productRhs": "-1"}
+      },
+      "evidence": {
+        "atomIds": [
+          "p.exists",
+          "q.exists",
+          "r.exists",
+          "a.exists",
+          "a.source",
+          "a.target",
+          "a.shift",
+          "b.exists",
+          "b.source",
+          "b.target",
+          "b.shift",
+          "c.exists",
+          "c.source",
+          "c.target",
+          "c.shift"
+        ],
+        "lawDecls": [
+          "Quantity",
+          "Translation",
+          "source",
+          "target",
+          "shift",
+          "vertices",
+          "edges",
+          "coordinate_system",
+          "coordinates"
+        ],
+        "builtinRules": ["finite_q/1:equation_matrix", "finite_q/1:gaussian_elimination", "finite_q/1:substitution"]
+      },
+      "conditions": [{"name": "well_typed", "status": "established"}, {"name": "rhs_available", "status": "established"}],
+      "issues": []
+    },
+    {
+      "name": "descent",
+      "analysis": "descend",
+      "status": "refuted",
+      "scope": {"family": "input", "scalarDomain": "Q"},
+      "data": {
+        "contextCount": 18,
+        "cover": [
+          {"id": "Ua", "vertices": ["p", "q"], "edges": ["a"]},
+          {"id": "Ub", "vertices": ["q", "r"], "edges": ["b"]},
+          {"id": "Uc", "vertices": ["p", "r"], "edges": ["c"]}
+        ],
+        "overlaps": [
+          {"patches": ["Ua", "Ub"], "vertices": ["q"], "edges": []},
+          {"patches": ["Ua", "Uc"], "vertices": ["p"], "edges": []},
+          {"patches": ["Ub", "Uc"], "vertices": ["r"], "edges": []}
+        ],
+        "tripleIntersections": [{"patches": ["Ua", "Ub", "Uc"], "vertices": [], "edges": []}],
+        "coefficient": {
+          "ring": "Q",
+          "patchDimensions": [1, 1, 1],
+          "overlapDimensions": [1, 1, 1],
+          "tripleDimensions": [0],
+          "patchBases": [[["p", "q"]], [["q", "r"]], [["p", "r"]]],
+          "overlapBases": [[["q"]], [["p"]], [["r"]]],
+          "tripleBases": [[]],
+          "restrictions": [
+            {"from": ["Ua"], "to": ["Ua", "Ub"], "matrix": [["1"]]},
+            {"from": ["Ub"], "to": ["Ua", "Ub"], "matrix": [["1"]]},
+            {"from": ["Ua"], "to": ["Ua", "Uc"], "matrix": [["1"]]},
+            {"from": ["Uc"], "to": ["Ua", "Uc"], "matrix": [["1"]]},
+            {"from": ["Ub"], "to": ["Ub", "Uc"], "matrix": [["1"]]},
+            {"from": ["Uc"], "to": ["Ub", "Uc"], "matrix": [["1"]]},
+            {"from": ["Ua", "Ub"], "to": ["Ua", "Ub", "Uc"], "matrix": []},
+            {"from": ["Ua", "Uc"], "to": ["Ua", "Ub", "Uc"], "matrix": []},
+            {"from": ["Ub", "Uc"], "to": ["Ua", "Ub", "Uc"], "matrix": []}
+          ]
+        },
+        "cochain": {
+          "convention": "increasing",
+          "c0Basis": [
+            {"patches": ["Ua"], "component": 0},
+            {"patches": ["Ub"], "component": 0},
+            {"patches": ["Uc"], "component": 0}
+          ],
+          "c1Basis": [
+            {"patches": ["Ua", "Ub"], "component": 0},
+            {"patches": ["Ua", "Uc"], "component": 0},
+            {"patches": ["Ub", "Uc"], "component": 0}
+          ],
+          "c2Basis": [],
+          "d0": [["-1", "1", "0"], ["-1", "0", "1"], ["0", "-1", "1"]],
+          "d1": [],
+          "rankD0": 2
+        },
+        "cohomology": {
+          "theory": "Cech",
+          "degree": 1,
+          "dimension": 1,
+          "classMap": [["-1", "1", "-1"]],
+          "classCoordinates": ["-1"],
+          "classIsZero": false
+        },
+        "localSections": [
+          {"patch": "Ua", "values": {"p": "0", "q": "1"}},
+          {"patch": "Ub", "values": {"q": "0", "r": "1"}},
+          {"patch": "Uc", "values": {"p": "0", "r": "3"}}
+        ],
+        "cocycle": ["-1", "0", "2"],
+        "correction": null,
+        "globalSection": null,
+        "comparison": {
+          "variables": ["p", "q", "r"],
+          "equations": ["a", "b", "c"],
+          "equationMatrix": [["-1", "1", "0"], ["0", "-1", "1"], ["-1", "0", "1"]],
+          "equationRhs": ["1", "1", "3"],
+          "toCochain": [["-1", "0", "0"], ["0", "0", "0"], ["0", "-1", "1"]],
+          "onVertexValues": [["-1", "0", "0"], ["0", "-1", "0"], ["-1", "0", "0"]],
+          "equationClassMap": [["1", "1", "-1"]],
+          "inducedIsomorphism": true
+        }
+      },
+      "evidence": {
+        "atomIds": [
+          "p.exists",
+          "q.exists",
+          "r.exists",
+          "a.exists",
+          "a.source",
+          "a.target",
+          "a.shift",
+          "b.exists",
+          "b.source",
+          "b.target",
+          "b.shift",
+          "c.exists",
+          "c.source",
+          "c.target",
+          "c.shift"
+        ],
+        "lawDecls": [
+          "Quantity",
+          "Translation",
+          "source",
+          "target",
+          "shift",
+          "vertices",
+          "edges",
+          "coordinate_system",
+          "graph",
+          "cover",
+          "coefficient",
+          "states",
+          "descent"
+        ],
+        "builtinRules": [
+          "finite_graph/1:endpoint_closed_contexts",
+          "finite_graph/1:edge_cover",
+          "finite_graph/1:locally_constant",
+          "finite_graph/1:affine_states",
+          "finite_graph/1:cech_difference",
+          "finite_q/1:gaussian_elimination",
+          "finite_graph/1:glue",
+          "finite_q/1:substitution"
+        ]
+      },
+      "conditions": [
+        {"name": "support_coverage", "status": "established"},
+        {"name": "restrictions_compose", "status": "established"},
+        {"name": "d1_d0_zero", "status": "established"},
+        {"name": "state_gluing", "status": "established"},
+        {"name": "comparison_isomorphism", "status": "established"},
+        {"name": "local_sections", "status": "established"},
+        {"name": "cocycle_closed", "status": "established"}
+      ],
+      "issues": []
+    }
+  ],
+  "issues": [],
+  "reuse": {"source": null, "status": "not_requested"}
+}

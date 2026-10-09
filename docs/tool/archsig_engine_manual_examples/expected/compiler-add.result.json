@@ -1,0 +1,82 @@
+{
+  "schema": "archsig.engine.result/v1",
+  "engine": {"interface": "1", "semantics": "atom-law/v1"},
+  "inputs": {
+    "archmap": {
+      "file": "compiler-add.archmap.json",
+      "sha256": "2496452bcf14b2605730803b2686afb745fe42b6952bcbc6422d64552c1c60b6",
+      "document": "compiler-add",
+      "revision": "1"
+    },
+    "law": {
+      "file": "compiler.law",
+      "sha256": "b112e5bcafeb616efa3f5501968d1f35a7947e8c35cf87d4091312eea9fa629b",
+      "module": "CompilerPreservation",
+      "version": 1
+    }
+  },
+  "requestedQueries": ["preservation"],
+  "runStatus": "complete",
+  "results": [
+    {
+      "name": "preservation",
+      "analysis": "check",
+      "status": "established",
+      "scope": {"family": "input", "scalarDomain": "Q"},
+      "data": {
+        "instanceCount": 1,
+        "instances": [
+          {
+            "bindings": {"c": "cmp", "s": "s"},
+            "variables": ["x"],
+            "left": {"constant": "3", "coefficients": {"x": "1"}},
+            "right": {"constant": "3", "coefficients": {"x": "1"}},
+            "difference": {"constant": "0", "coefficients": {"x": "0"}},
+            "counterexample": null,
+            "exposed": {
+              "ir": {
+                "tag": "equal",
+                "args": [
+                  {"tag": "plus", "args": [{"tag": "load", "ref": "x"}, {"tag": "const", "value": "3"}]},
+                  {"tag": "const", "value": "0"}
+                ]
+              }
+            },
+            "missingDependence": null,
+            "lawResidual": 0
+          }
+        ]
+      },
+      "evidence": {
+        "atomIds": ["x.exists", "s.exists", "cmp.exists", "s.body", "cmp.rewrite", "cmp.scalar_operator"],
+        "lawDecls": [
+          "Variable",
+          "SourceLaw",
+          "Compiler",
+          "body",
+          "rewrite",
+          "scalar_operator",
+          "ir",
+          "compiler_preservation",
+          "preservation"
+        ],
+        "builtinRules": [
+          "affine_tree/1:typed_match",
+          "affine_tree/1:strict_subtree_compile",
+          "affine_tree/1:source_residual",
+          "affine_tree/1:ir_residual",
+          "finite_q/1:affine_normalize",
+          "finite_q/1:substitution"
+        ]
+      },
+      "conditions": [
+        {"name": "well_typed", "status": "established"},
+        {"name": "strict_subtree_recursion", "status": "established"},
+        {"name": "operator_available", "status": "established"}
+      ],
+      "issues": []
+    }
+  ],
+  "issues": [],
+  "reuse": {"source": null, "status": "not_requested"}
+}

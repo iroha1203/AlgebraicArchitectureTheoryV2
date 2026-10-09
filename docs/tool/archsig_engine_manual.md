@@ -1,561 +1,861 @@
 # ArchSig エンジンマニュアル
 
-ArchSig は、型付きの原始事実である Atom と、読み・規則・問いを定める Law DSL の
-二入力から、対象、操作、局所構造、方程式、診断とその根拠を計算する。
-利用者は「何を保ちたいか」を Law に、対象について分かっている事実を Atom に記述し、
-成立条件、反例、解、次に必要な観測を得る。その結果を、比較や変更の次の計算へ渡せる。
+ArchSig は、対象の原始事実を記録した **ArchMap** と、読み方・規則・問いを記述した
+**Law** を受け取り、成立判定、反例、解、局所と大域の関係を、計算の根拠とともに返す。
+たとえば三つの操作を入力すると、経路の食い違い、同時に満たせない座標条件、
+局所解を統合できない理由を、同じ事実から計算できる。
 
-本書は、このエンジンに要求する**外部仕様の案**を、利用者と製品の SKILL の視点で記す。
-[製品コンセプト](archsig_v0_6_0_concept.md)を基準とし、
-[Atom・Law エンジン設計](archsig_atom_law_engine/README.md)の計算を、入力と期待結果の
-対応として具体化する。「返す」「検査する」は将来の実装の受け入れ条件を表す。
-実装済み CLI の操作説明は [ArchSig README](../../tools/archsig/README.md)にある。
-既存の schema や撤去済みの実装から、本書の入力形式・コマンドを推測しない。
+本書は、先に利用者への約束を定め、詳細設計と実装の受け入れ基準にするためのマニュアルである。
+本文のファイル形式・DSL・CLI は、採用を提案する具体的な外部仕様であり、
+[確認する外部仕様](#9-確認する外部仕様)に選択肢を分けて記す。
+「返す」「保証する」は、この仕様に適合する製品の動作を表す。
+本書のコマンドは既存リリースへの操作案内ではない。現在の操作案内は
+[ArchSig README](../../tools/archsig/README.md)を参照する。
 
-二入力から導出すること、言語に依存しないこと、根拠を保持することは設計の基準である。
-未決の外部動作は [第12章](#12-提案と要相談の外部仕様)に集め、本文から対応番号を示す。
-例の DSL、型名、欄名は意味を説明するための暫定表記であり、実行可能な構文や公開 API の
-確定を意味しない。例の期待値は算術で検算できるが、処理系の実装・一般的健全性の証明とは
-区別する。
-
-## 1. 利用の一周
-
-1. **問いを選ぶ。** Law に、対象を読む語彙、保つ方程式、適用条件、量化域、計算したい問いを
-   記述する。例えば「合成経路と直接経路が同じ操作を表すか」を問う。
-2. **原始事実を渡す。** 実装から観測した操作・値・参照関係を、観測した版と source ref とともに
-   Atom にする。設計案を扱う場合は、提案であることが分かる別の snapshot にする。
-3. **回答と適用範囲を読む。** エンジンは必要な構造を生成し、問いごとの判定、計算対象、
-   根拠、未確認の条件を返す。人には説明を、SKILL には同じ結果の型付き構造を渡す。
-4. **回答に応じて進める。** 成立なら得た対象・射・解を次の問いに使う。反例なら原始事実と
-   Law までたどって変更候補を検討する。情報不足なら指定された事実を追加観測する。
-5. **変更後に確かめる。** 実装を再観測し、新しい入力から計算する。候補上の成立と、
-   変更後の実装から得た入力上の成立を対応づける。
-
-利用の入口は AI Agent SKILL である。観測者はソースの使用文脈を読み、エンジンは
-提示された事実と Law からの導出を担う。観測する構造は実装コードに記述された操作、
-データ、依存、呼出しとその使用であり、テストコードは観測対象から除く。
-実行時の I/O の成否・遅延、レース、性能は動的な確認で扱う。
-
-### 計算する問い
-
-| 利用者の問い | 返す対象と根拠 | 計算に必要なもの |
-| --- | --- | --- |
-| この Law は成り立つか | 残差、成立の導出、または具体的な反例 | 方程式、量化域、原始 operand |
-| 条件を同時に満たす値はあるか | 解と代入確認、または解なしの証拠 | 対応済みの有限・線形な方程式族 |
-| 局所の結果を統合できるか | cover、重なり、局所解、障害類、補正と大域解 | 局所化・係数・制限・状態の規則とその適用条件 |
-| この変更は構造や Law を保つか | 候補写像、保存条件の検査、成立済みの射または反例 | 前後の原始事実、対応を生成する規則 |
-| 読みを変えても同じ診断になるか | Law 評価の対応と、障害類の比較を別々に返す | reading、実際の比較写像、被覆・係数の条件 |
-| 次に何を観測すればよいか | 不足する原始値、答えを分ける候補・補完と識別観測 | 現在の事実、問い、候補族・観測の読み |
-
-初期の計算領域は、有限関係とその正の有限閉包、有限域の全列挙、有理アフィン式、
-有理線形方程式である。上表の問いがこの領域を越えるときは、必要な演算と適用条件を
-示す。[第11章](#11-aat-の主要成果への接続)は拡張で保持すべき振る舞いを定める。
-公開する最初の機能範囲は要相談事項 **Q1** である。
-
-## 2. 二つの入力を作る
-
-意味を持つ入力は、以下の二つである。
-
-| 入力 | 利用者が記述する内容 | 例 |
-| --- | --- | --- |
-| `A: AtomDocument` | 型付きの原始事実の有限提示。ArchMap の役割を担う | 操作の存在、始域・終域、式の定数、参照、使用上の役割 |
-| `L: LawModule` | 語彙、構成規則、方程式、適用・評価条件、reading、問い。LawPolicy の表現 | 端点が接続する操作を合成し、直接経路と比較する規則 |
-
-呼出し時には L が宣言した問いを選ぶ。対象を選ぶ意味上の条件、係数や局所化の規則も
-L に置く。計算予算や表示順の指定は実行上の指定であり、答えの真偽を変える値にはしない。
-
-### 2.1 Atom に書くもの
-
-Atom の五成分は `(kind, axis, subject, predicate, payload)` である。
-例では語彙で固定できる成分を省略し、`shift(a,1)` のように書く。
-payload は正確な値、列挙値、対象参照、有限の組、宣言された演算からなる型付き項を表す。
-有理数は正確に扱い、近似値が小さいことを零判定に使わない。
-
-存在する操作、その端点、その式に必要な値は別々の事実である。値が未観測でも、
-操作の存在まで消えない。有限表を用いる場合も、提示された各行と、未提示の入力域を区別する。
-
-source ref、観測時のソースの版、観測方法は事実の由来を説明する情報として保持する。
-パス、拡張子、言語名、framework 名を変えただけなら、数学的な計算値は変わらない。
-計算に必要な意味は、これらの説明文から推測せず、型付きの原始事実にする。
-実装由来の入力に必要な参照項目と、純粋な仕様模型の由来の表現は **Q2** に残す。
-
-### 2.2 Law に書くもの
-
-Law は、対象に依存しない規則を記述し、Atom の値を量化変数として束縛する。
-
-| 宣言の役割 | 定めること |
+| 知りたいこと | 本書の入口 |
 | --- | --- |
-| 語彙・型 | predicate の引数型、値の意味、単一値として読む欄 |
-| 構成 | 関係の join、参照閉包、対象、操作と合成 |
-| 局所性 | 方程式・操作の support から context、cover、重なりを作る規則 |
-| 係数 | 係数環、生成元と関係、制限写像の構成 |
-| 方程式 | 左辺・右辺、適用条件、量化域、要求や比較としての役割 |
-| reading・query | 射影や比較の読み、充足・解・比較・識別についての問い |
+| 何を書くか | [ArchMap の書式](#2-archmap-を書く)、[Law の構文](#3-law-を書く) |
+| どう実行するか | [CLI](#4-cli) |
+| どのファイルが返るか | [result.json の書式](#5-resultjson-を読む) |
+| 何を分析できるか | [分析別の使い方](#6-分析別の使い方) |
+| 結果をどう継ぐか | [再利用と入力変更](#7-結果を次の計算へ渡す) |
 
-Law の数学定数や仕様上の閾値と、今回の対象について観測した値を区別する。
-例えば「全操作の始域と終域を読む」は Law、「操作 a の始域は p」は Atom である。
-今回の対象 ID、ソースパス、観測件数、完成した分割を Law の定数へ埋め込まない。
+## 1. 最初の一回：三つの操作を調べる
 
-import した module とパラメータも L の意味内容に含め、版を固定する。
-パラメータは型、数学定数、宣言された規則である。外部 callback、任意コード、
-ネットワーク取得に答えを委ねず、組込み演算の意味はエンジンの仕様版で固定する。
+p、q、r の三つの座標と、次の平行移動を扱う。
 
-### 2.3 入力と導出結果の区別
-
-完成した cover、Čech 行列、rank、障害値、大域修復、比較同型、成立判定はエンジンの
-出力である。利用者が書くのは、それらを構成する原始事実と一般規則である。
-`adequate=true`、`repairable=true`、正解の行列などで計算の前提を補わない。
-原始係数表と障害行列の区別は、表という形式でなく、その値が何を表すかで決まる。
-
-型は原始事実と導出結果を分け、成立条件付きの対象・射はエンジンの検査で生成する。
-計算結果を Atom family に観測済み事実として追加する経路は設けない。
-結論を原始事実らしく言い換えた入力の意味的な検出は、型検査だけでは保証できない。
-語彙と観測内容の妥当性は観測者が確かめ、エンジンの保証はその A と L からの導出に置く。
-
-設計候補は、同じ原始語彙で記述した別の snapshot として A に含められる。
-実装を観測した snapshot と提案した snapshot の由来を保持し、保存写像や修復成立の
-判定はエンジンに求める。核による候補探索の範囲は **Q7** で扱う。
-
-## 3. 回答と適用条件を読む
-
-判定は、指定した問いと量化域について読む。一回の実行全体を単一の成功・失敗にせず、
-問い、必要条件、途中で得た対象を区別する。以下の名前は結果の意味を示す暫定型名である。
-
-| 回答 | 利用者が得る意味 | 必要な根拠 |
+| 操作 | 始点 → 終点 | 加える値 |
 | --- | --- | --- |
-| `Established`（成立・構成済み） | 指定した命題が成立する、または要求した対象を構成した | 全称命題の決定手続き、解の代入、構成の導出など |
-| `Refuted`（反証） | 指定した命題が成り立たない | 全称命題への反例、存在命題への解なしの証拠など |
-| `Undetermined`（未決） | 指定した問いをまだ決定していない | 情報不足、未対応の演算、適用条件の未確認、計算中断のいずれかと場所 |
-| `InvalidInput`（不正入力） | 入力が語彙・型・参照等の提示規則を満たさない | 違反箇所、満たすべき規則、矛盾する値や参照 |
+| a | p → q | 1 |
+| b | q → r | 1 |
+| c | p → r | 3 |
 
-「値が存在するか」という問いに解 z を返す場合と、「すべての x で方程式が成立するか」
-という問いに反例 x を返す場合では、証人の役割が異なる。
-有理線形問題では、原始入力から `Dz=b` を生成して、解 z または
-`λD=0, λb≠0` となる不成立証拠 λ を返し、元の式に代入して検査する。
+Law には「合成経路と直接経路が同じ値を返す」と「各操作の前後の座標差が加算値に等しい」を
+記述する。cover、行列、期待する判定は入力に書かない。
 
-### 3.1 適用条件は結論と別に確認する
+完全な入力は [triangle-3.archmap.json](archsig_engine_manual_examples/triangle-3.archmap.json) と
+[coordinates.law](archsig_engine_manual_examples/coordinates.law) の二つである。
+[例のディレクトリ](archsig_engine_manual_examples/README.md)をカレントディレクトリにして実行する。
+以下の CLI 表記は SKILL からの呼出しにも、そのまま使う。
 
-条件付きの Law や数学的結果には、適用先と条件ごとの検査結果を付ける。
-条件の成立、条件の反証、条件の未決を区別し、未決を偽へ変換しない。
+~~~sh
+archsig engine run \
+  --archmap triangle-3.archmap.json \
+  --law coordinates.law \
+  --out out/triangle-3
+~~~
 
-- 条件を満たす instance では、指定した結論を評価する。
-- 条件が偽と分かった instance は、その Law の適用対象外として理由を示す。
-  含意そのものの論理上の成立と、結論部分を確かめたことを区別する。
-- 条件の成否が分からなければ、適用可否を未決とし、必要な観測や計算を示す。
+三つの問いが計算され、out/triangle-3/result.json ができる。
+[完全な期待出力](archsig_engine_manual_examples/expected/triangle-3.result.json)の要点は次のとおり。
 
-同様に、定理 `C ⇒ Q` が利用できても、C が未確認なら、その対象についての Q は
-未決である。条件付きの含意を示すことと、Q の成立を返すことを分ける。
-利用者が条件に「証明済み」と書くことで、この検査を省略することはできない。
-
-提示された有限域が空なら、全称命題は論理上成立する。そのときは評価件数0を返す。
-対象が存在することも必要なら、L に独立した存在条件を置いて評価する。
-対象の存在が記録されていて operand だけが欠ける場合は、空の量化域とは扱わない。
-適用件数・対象外件数の表示方法は **Q4** で具体化する。
-
-### 3.2 量化域と部分知識
-
-結果には「何について、どこまで確かめたか」を付ける。
-有限提示を対象とする全列挙と、有理アフィン式の全有理数代入についての記号計算を
-区別する。有限に書ける式が、有限個の値しか扱えないという意味にはならない。
-一方、有限の操作語を調べたことから、生成される core 全体の性質へは進めない。
-
-未観測値を含む対象は、既知の事実と型を保つ補完の集合 `Comp(A)` で読む。
-補完は要求 Law を満たすものだけに絞らない。
-すべての許容補完で Q が成立すると確認できれば成立、すべてで Q が偽と確認できれば反証を
-返せる。補完によって答えが違えば未決となり、違いを示す二つの補完や不足値を返す。
-一つの仮の補完に反例があるだけでは、観測対象への反証にならない。
-
-この確認には補完が存在することも必要である。矛盾した提示による空の補完集合から
-成立を作らない。全補完を扱う算法が対応していなければ、理由を付けて未決とする。
-全実装を観測したというフラグも、未観測対象に関する証明の代わりにはしない。
-
-## 4. 根拠をたどる
-
-各結果には、少なくとも次の情報を対応づける。これは情報の要求であり、ファイル形式や
-公開フィールドの確定ではない（**Q5**）。
-
-| 情報 | 利用者が確認できること |
-| --- | --- |
-| 対象と問い | A の snapshot、L と import の版、問い、reading、量化域 |
-| 値と型 | 対象、写像、残差、解、反例、障害類等の区別 |
-| 使用した事実 | 原始 Atom、操作、operand、対応する source ref と観測版 |
-| 導出 | 用いた Law、組込み演算の仕様版、途中の対象と依存関係 |
-| 条件 | 導出済み・反証・未決の各適用条件と証拠 |
-| 計算範囲 | 対応した演算領域、評価した instance、未決の箇所と理由 |
-
-導出の依存関係は A の原始事実、L の規則、意味が固定された組込み演算までたどれる。
-残差なら左右の元の式へ、反例なら代入値と両辺の評価へ、解なら元の各方程式へ到達できる。
-provenance だけを変える場合は、その参照も更新する。
-
-例えば、三操作の反例なら「操作 a と b の合成の値が2、c の値が3」という説明から、
-合成規則、三つの shift、各操作の端点、その観測ソースへ進める。
-仕様模型では、根拠は模型の原始事実へ到達する。実ソースを観測していない模型に
-実装由来の source ref を作り足さない。
-
-## 5. 利用例：三操作の経路と局所・大域
-
-三つの数量表現 p、q、r の間にある加算操作を調べる。
-問いは、経路の保存と、各操作に合う座標を全体に置けるかの二つである。
-以下は説明用の仕様模型であり、局所・大域の詳しい導出は
-[三操作の計算](archsig_atom_law_engine/local_global_example.md)にある。
-
-### 5.1 利用者が渡す入力
-
-A の共通部分を次とする。各欄が一つの原始事実である。
-
-```text
-subject(p)                 subject(q)                 subject(r)
-translation_operation(a)  translation_operation(b)  translation_operation(c)
-source(a,p)                source(b,q)                source(c,p)
-target(a,q)                target(b,r)                target(c,r)
-shift(a,1)                 shift(b,1)
-```
-
-これに `shift(c,3)` を加えた入力、`shift(c,2)` を加えた候補、その値を未観測とした入力を
-比較する。成立・不成立のラベル、三角形、patch、行列、解は A に書かない。
-
-L は三ケース共通であり、次の一般規則を持つ。下記は実行用ファイルではなく、
-各宣言の意味を示す暫定 DSL である。
-
-```text
-vocabulary subject(v), translation_operation(e)
-vocabulary source(e,v), target(e,v), shift(e,k:Q)
-derive vertices = atoms(subject)
-derive edges = atoms(translation_operation)
-interpret term(e) = (x:Q) -> x + required(shift(e))
-derive triangles = composable_pairs_with_direct_edge(edges, source, target)
-
-context W = endpoint_closed_subgraph(vertices, edges)
-coverage coordinate_cover(W) = each_edge_with_endpoints(W)
-                              plus_isolated_vertices(W)
-coefficient M(W) = kernel(vertex_values_to_edge_differences(W,Q))
-state S(W) = solutions(z[target(e)] - z[source(e)] = shift(e) for e in W)
-restriction = restrict_vertex_values
-
-law path_preservation:
-  forall (first,second,direct) in triangles:
-    compose(term(second),term(first)) = term(direct)
-query path_compatibility = evaluate(path_preservation)
-query coordinate_compatibility = solve S(whole)
-reading coordinate_descent = local_solutions_and_differences(S,M,coordinate_cover)
-```
-
-`required` は必須の原始値を読み、不足を伝播する。`triangles` は端点の join から、
-`W` は辺を含むとその端点も含む部分構造として生成する。
-coverage は各辺と端点を持つ patch に、孤立頂点があればその一頂点 patch を加える。
-M は辺の両端で等しい頂点関数、S は各辺の差が原始 shift に等しい頂点関数を表す。
-これらの定義には、今回の ID や shift 値を埋め込まない。
-
-### 5.2 まず経路と座標を計算する
-
-エンジンは端点から `(a,b,c)` を見つけ、合成 `x+2` と直接経路 `x+γ` を作る。
-ここで γ は c の shift を説明する記号であり、利用者が渡す障害値ではない。
-残差の向きを「合成 − 直接」とすると `2−γ` になる。
-
-頂点順を `(p,q,r)`、操作順を `(a,b,c)` とする表示では、座標の問いから次を生成する。
-
-```text
-         p   q   r
-D = [  -1   1   0  ]       b = (1,1,γ)
-    [   0  -1   1  ]
-    [  -1   0   1  ]
-
-λ = (1,1,-1)              λD = 0,  λb = 2−γ
-```
-
-| A の違い | 経路保存の回答 | 座標の回答と次の作業 |
-| --- | --- | --- |
-| `shift(c,3)` | 反証。例えば x=0 で合成2、直接3、残差−1 | 解なし。`λD=0, λb=−1` を返す。どの操作や要求を変えるかを検討する |
-| `shift(c,2)` | 成立。残差が全 x∈Q で0 | 解あり。例えば `z=(0,1,2)` を生成し、全三式に代入確認する |
-| `shift(c)` 未観測 | 未決。c と三操作の比較を残す | 数値右辺が足りない。`shift(c)` と、それを必要とする操作・問いを返す |
-
-第二行は候補入力についての成立である。c を変えることが要求に適うかは利用者が判断し、
-実装後の成立は再観測して確認する。どの shift を変えるべきかは、上の反例だけでは決まらない。
-
-### 5.3 局所の答えを全体へつなぐ
-
-原始端点と L の規則から、次の cover と重なりを生成する。
-
-| patch・重なり | 含む頂点と辺 | 係数 M |
-| --- | --- | --- |
-| `U_a` | p,q と a | Q |
-| `U_b` | q,r と b | Q |
-| `U_c` | p,r と c | Q |
-| `U_a∩U_b`, `U_a∩U_c`, `U_b∩U_c` | それぞれ q、p、r | 各 Q |
-| 三重交差 | 空 | 0 |
-
-M と制限は incidence から作る。patch の係数は定数頂点関数であり、端点への制限は
-その値を読む恒等写像になる。頂点と辺の両方を覆うため、この cover は各辺の座標方程式に
-必要な支持を満たす。三操作全体を使う経路保存は全体で評価する。
-経路の三角形を見つけたことから、三重交差や二次元セルを追加しない。
-
-patch 順 `(a,b,c)`、重なり順 `(ab,ac,bc)` の increasing-index Čech 表示では、
-制限から次の複体を生成する。
-
-```text
-C⁰ = Q³, C¹ = Q³, C² = 0
-
-d⁰ = B = [ -1  1  0 ]
-         [ -1  0  1 ]      d¹ : Q³ -> 0
-         [  0 -1  1 ]
-```
-
-`d¹d⁰=0` を確かめ、`rank B=2` から **dim Čech H¹=1** を得る。
-これはこの cover と係数による空間の次元である。
-各辺の source 値を0とする局所解の重なり上の差は `c_local=(-1,0,γ−1)` となる。
-対象の障害は、その具体的な類 `[c_local]` である。
-`μ=(-1,1,-1)`、`μB=0`、`ker μ=im B` から、類の座標を `μc_local=2−γ` として読める。
-
-| 入力 | dim Čech H¹ | 具体的障害類 | 貼り合わせの回答 |
+| results の name | status | 主な data | 読み方 |
 | --- | --- | --- | --- |
-| γ=3 | 1 | 非零、座標−1 | 局所解はそれぞれ存在するが、整合する補正はない |
-| γ=2 | 1 | 零、座標0 | `t=(0,−1,0)` が `Bt=c_local` を満たす。局所解を `s_i−t_i` に補正し、`z=(0,1,2)` を得る |
-| γ 未観測 | 1 | 数値として未決 | 幾何・係数・B は構成できる。局所解の数値と障害類の零性には γ が必要 |
+| paths | refuted | difference.constant = "-1"、反例 x = 0 | 合成は 2、直接は 3 になる |
+| coordinates | refuted | leftNull = ["1","1","-1"]、productRhs = "-1" | 三つの座標差を同時に満たす解がない |
+| descent | refuted | dimension = 1、classCoordinates = ["-1"] | 今回の局所解は大域座標へ統合できない |
 
-局所値が重なりで一致すれば、各頂点に一意の値を割り当てられる。全辺も覆われているため、
-その値は各辺の方程式を満たす。M の補正作用と、この M・S の層条件を確かめた上で、
-零類から大域座標を構成する。得た z は `Dz=b` へ再代入する。
-元の方程式の解集合は、γ=2 なら `{(h,h+1,h+2) | h∈Q}` である。
-一つの代表解の表示と、解の一意性を混同しない。
+CLI の終了コードは 0 である。問いへの回答が反証でも、計算は完了している。
+CI で Law の成立を要求する場合は、終了コードに加え、対象 query の status を読む。
 
-D は頂点値から辺差への写像、B は patch 定数から重なりへの写像であり、別の写像である。
-導出した比較 `T(u,v,w)=(-u,0,w−v)` と `R(z_p,z_q,z_r)=(-z_p,-z_q,-z_p)` は
-`TD=BR` と `μT=λ` を満たす。これにより `coker D` とこの Čech H¹ の同型を得て、
-経路残差、解なしの証拠、障害類の値の対応を説明できる。T 自体を同型とは扱わない。
+c の加算値を 2 に変えた完全な入力
+[triangle-2.archmap.json](archsig_engine_manual_examples/triangle-2.archmap.json)で、
+**同じ Law** を使う。
 
-γ が未観測なら、補完 γ=2 と γ=3 が異なる答えを与える。
-式 `2−γ` は依存の説明として返せるが、零多項式でないことを理由に観測対象を反証しない。
-追加観測では、この違いを決める原始値を確認すればよい。
+~~~sh
+archsig engine run \
+  --archmap triangle-2.archmap.json \
+  --law coordinates.law \
+  --out out/triangle-2
+~~~
 
-この利用例の大域解は、定義した座標状態である。一般の意味的修復へ接続するときは、
-独立に構成する意味側との対応と貼り合わせ条件を加える（[第11章](#11-aat-の主要成果への接続)）。
-また、この有限 cover の Čech H¹ を sheaf cohomology と同定するには、別途比較条件が要る。
+[出力](archsig_engine_manual_examples/expected/triangle-2.result.json)では三つとも established となり、
+大域座標 p = 0、q = 1、r = 2 が返る。一方、障害を置く空間の次元 dimension は 1 のままである。
+「障害空間があること」と「今回の障害類が零であること」を別の欄で読む。
 
-## 6. 利用例：エンジン自身のコンパイル保存
+例の JSON は、入力と出力の全体を省略せず保存している。expected/ のファイルは受け入れ時の
+照合用であり、エンジンへ渡す入力には含めない。基底や反例の選択が異なる実装の比較方法は
+[受け入れ基準](#8-受け入れ時に確かめること)に定める。
 
-エンジン自身も、式・型・参照・変換規則を原始 Atom にした対象として扱える。
-問いは「候補コンパイラが、参照評価の残差と零判定を保つか」である。
-[コンパイル保存の例](archsig_atom_law_engine/compiler_preservation_example.md)に、
-入力 Atom の全展開と独立した参照意味論がある。
+## 2. ArchMap を書く
 
-### 6.1 利用者が渡す二入力
+### 2.1 ファイル全体
 
-| 入力 | この例で記述する事実・規則 |
+ArchMap は UTF-8 の JSON ファイルである。JSON の重複キーを認めない。
+次は、対象 p の存在だけを記録する完全な最小ファイルである。
+三操作の分析には、第1章でリンクした全操作・値を含むファイルを使う。
+
+~~~json
+{
+  "schema": "archmap.atom/v1",
+  "document": "one-quantity",
+  "revision": "1",
+  "origin": {"kind": "model", "description": "座標 p を持つ仕様模型。"},
+  "sources": [],
+  "atoms": [
+    {
+      "id": "p.exists",
+      "kind": "entity",
+      "axis": "coordinate",
+      "subject": "p",
+      "predicate": "quantity",
+      "payload": null,
+      "sourceRefs": []
+    }
+  ]
+}
+~~~
+
+| 欄 | 必須の値と意味 |
 | --- | --- |
-| `F_eng` | Q 型の変数 x、`((x+1)+2)=0` を表す有限 AST の node・child・literal・参照、候補コンパイラの有限パターン・テンプレート・演算子 |
-| `L_eng` | constructor の解釈、型と参照の検査、パターン照合と置換、真部分木への翻訳、source と IR の独立した評価、両評価の保存要求 |
+| schema | 文字列 archmap.atom/v1。版を推測して読み替えない |
+| document、revision | 空でない文字列。利用者が管理する文書名と版。内容の同一性は出力の SHA-256 でも照合する |
+| origin.kind | observation：実装からの観測、model：仕様模型、proposal：変更候補 |
+| origin.description | 由来を説明する文字列。計算に使う事実の代用にはしない |
+| sources | ソース参照の配列。model と proposal では空でもよい |
+| atoms | 原始事実の有限配列。空配列も表現できる |
 
-ここで内側の source Law は、分析対象の式として `F_eng` に記述する原始データである。
-その真偽を入力するものではない。外側の `L_eng` が規則と問いであり、二入力の分担を保つ。
+この版では、上表および各オブジェクトの定義にない欄は unknown_field とする。
+注記を加えるために、計算済みの cover、matrix、result、proof などの欄を増設しない。
 
-入力する変換は、次の形のパターンとテンプレートである。これは固定された有限構文を
-説明する略記で、外部プラグインや実行コードを呼ぶ API ではない。
+### 2.2 Atom の五成分と ID
 
-```text
-pattern:   Add(Add(t, Lit(u)), Lit(v))
-template:  Plus(Translate(t), Const(ScalarBinary(op,u,v)))
-```
+一つの Atom は、(kind, axis, subject, predicate, payload) という一つの原始事実を表す。
+id はその事実を参照する文書内で一意な文字列、sourceRefs は由来への参照である。
 
-候補間で変えるのは、テンプレート内の原始事実 `scalar_operator(fv,add)` と
-`scalar_operator(fv,sub)` の一点である。生成済み IR、期待残差、保存成立のフラグは渡さない。
-規則が一致しない構文には、Var→Load、Lit→Const、Add→Plus の構造再帰を用いる。
-L_eng は対象の ID や定数1・2を埋め込まず、提示された compiler と source Law の組を量化する。
-
-参照評価は source AST の構造再帰で定め、候補変換が生成した IR を参照評価の定義に
-使わない。source の `Eq` と IR の `Equal` は、それぞれ左右差とその零判定の組を返す。
-比較するのは、提示された組についての**全代入 x∈Q** である。
-
-### 6.2 期待する回答
-
-| 原始演算子 | エンジンが生成する IR の式 | 比較残差 `δ = IR − source` | 保存要求の回答 |
-| --- | --- | --- | --- |
-| add | `Equal(Plus(Load(x),Const(3)),Const(0))` | `(x+3)−(x+3)=0` | 成立。アフィン係数がすべて0で、全代入の残差と零判定が一致 |
-| sub | `Equal(Plus(Load(x),Const(−1)),Const(0))` | `(x−1)−(x+3)=−4` | 反証。例えば x=1 で参照評価 `(4,false)`、IR 評価 `(0,true)` |
-| 演算子が未観測 | 数値定数を確定できない | 未決 | compiler と rule の存在を保ち、必要な演算子を返す。add/sub の補完で答えが分かれる |
-
-この比較を自己 Law の判定座標 ε で読むと、add は0、sub は1となる。
-比較残差 δ、source 方程式の残差、自己 Law の判定座標は、それぞれの型と由来を保持する。
-
-反例は、hole の束縛 `t↦x, u↦1, v↦2`、原始演算子、生成した定数、元の二つの式への
-代入までたどれる。source 方程式それ自体が全 x で真である、という回答ではない。
-保存成立が意味するのは、source が真になる代入でも偽になる代入でも、両評価が一致すること
-である。
-
-アフィン係数の比較は、有限個のサンプルだけを試す方法とは異なり、この組の全有理数代入を
-扱える。任意の source AST やすべての最適化についての保存は、それぞれの構造帰納法や
-保存証明を要する。仕様模型の自己評価を、評価器そのものの正しさの根拠として循環利用しない。
-独立した参照評価、原始式への再代入、実装の再観測を、それぞれの確認として記録する。
-
-## 7. 欠落・不正・非対応の入力
-
-利用者が取る次の行動を分けられるよう、判定理由も分ける。
-
-| 状況 | 期待する扱い | 利用者が確かめるもの |
-| --- | --- | --- |
-| 操作は存在するが shift が未観測 | 依存する数値評価は未決。操作・必要な方程式は保持 | どの原始値を追加観測するか |
-| 適用条件の operand が不足 | 適用可否を未決とする | 条件を判定するための事実 |
-| 端点参照の先が未宣言、型が不一致 | 不正入力として箇所と理由を示す | 参照先、語彙、型 |
-| 単一値の同じ欄に相反する値 | 不正入力。先勝ち・後勝ちで答えを作らない | 両方の事実とその由来 |
-| AST の循環、hole の型違反、規則の重複一致 | 第6章の有限構文の提示規則に反する入力 | 循環参照、引数型、曖昧な規則 |
-| 認識された型付きの問いに対応する算法がない | 未決として未対応の演算・条件を示す | 別の対応済み reading で何が計算できるか |
-| 処理系が構文や語彙の版を解釈できない | 入力を解釈できない箇所を報告し、その部分から判定を作らない | 構文・module・処理系の対応版（**Q3**） |
-| 予算に達する、探索が中断する | 未決として未完了箇所を示す | 得られた証拠、再開・再実行に必要な計算 |
-| 部分的な探索ですでに反例を得た | 同じ入力と範囲で検査済みの反例は返せる。未観測を含む場合は第3.2節の補完条件も確認 | その反例の適用域。探索全体の完了とは区別 |
-
-欠落した operand を持つ対象を join から黙って除き、残りだけの成立を元の問いの成立として
-返さない。空集合、零、偽としての既知の値と、未観測の値を出力でも区別する。
-未対応や予算中断によって証拠が得られないことは、命題の不成立や解なしの証拠にはならない。
-
-対応済みの有限列挙・有理線形問題では、予算を制限せず入力が揃えば評価は停止し、
-成立または反証を決定することを要求する。常に未決を返す実装は、この要求を満たさない。
-一つの入力に複数の問いがある場合の不正入力の影響範囲、同一事実の重複、未知の追加欄は
-**Q3** に残す。CLI の終了コードやエラーの物理形式は、意味上の分類と分けて設計する。
-
-## 8. 計算結果を次の計算に使う
-
-同じ評価の中では、型付きの導出結果を直接次の問いへ渡す。
-第5章なら、構成した係数と制限から微分へ、局所解から障害類へ、零類の補正から大域座標へと
-進む。説明文を LLM が読み直して値や条件を補う方法を、計算の接続には使わない。
-
-別の実行から保存結果を持ち込む場合は、**再利用候補**として扱う。現在の A と L に対して、
-導出の根、規則、依存、適用条件を再導出または再検査する。
-その結果を原始事実や外部の保存証明として採用しない。
-digest や `verified: true` だけで判定を復元せず、再検査できなければ通常の導出へ戻る。
-通常の導出も完了できなければ、その問いは理由付きの未決となる。
-
-例えば γ=3 の障害計算を保存して γ=2 の入力へ持ち込んだ場合、係数の構成は再検査して
-使えても、古い非零判定を引き継がない。現在の原始 shift から局所差と類を計算し直す。
-外部から解を一つ与えただけで、二入力から導けなかった結論を追加する利用法は持たない。
-
-再利用の可否も根拠付きで読み、保存形式や表示用 ID の継続性は **Q5** で定める。
-ArchView の表示と FieldSig への受渡しは、この型付き結果を読む方法として接続する。
-
-## 9. 入力を変更したときの保証
-
-保証の単位は A、L、組込み演算の意味仕様、問いとその量化域である。
-次の「同じ結果」は、同じ判断・対象・解集合を表すことを意味する。
-表示順、基底、選ばれた特解や反例の個体まで同じであるという意味ではない。
-別表現の場合は対応を保持し、返した証人が同じ解集合・反例関係に属することを確認できる。
-
-| 変更 | 保証すること・再確認すること |
+| 欄 | 使い方 |
 | --- | --- |
-| 同じ入力で実行順・スレッド数・予算を変える | ともに完了した計算の意味は一致。中断の場所まで同じとは限らない |
-| 原始値と関係を保って参照 ID を全単射で付け替える | 対象と判定がその同型に沿って対応。Law に対象固有 ID を埋め込まないことが前提 |
-| 並び順、source ref、言語名だけを変える | 数学的な値は同じ。根拠の参照は変更後の入力へ対応づける |
-| 原始値を変更・追加・削除する | 依存する対象・方程式・判定を現在の入力で再計算または再検査 |
-| Law、import、係数、cover 生成規則を変える | 別の reading の解析として扱う。前後の対応が必要なら比較を計算 |
-| 旧計算に依存しない語彙・Atom・Law を追加する | 旧語彙へ戻すと旧問いの結果と対応する。旧量化域や局所性を広げる追加はこの条件を満たさない |
-| 組込みの意味仕様を変える | その意味に依存する導出を再検査。旧版の成立を新版へ自動移行しない |
+| kind | entity、relation、value、term のいずれか |
+| axis | Law の語彙宣言と一致する文字列。例：coordinate、syntax |
+| subject | 事実が述べる対象の ID。例：a |
+| predicate | 事実の種類。例：translation、source、shift |
+| payload | 下表の型付き値。存在の entity だけは null |
+| sourceRefs | sources にある id の配列 |
 
-依存には、既に得た値だけでなく、集合を生成する query、join、量化域の規則も含まれる。
-例えば新しい操作が全操作を量化する問いに加わるなら、以前の証拠がその操作を使って
-いなくても再評価が要る。観測を増やせば一般に成立が維持される、という単調性は保証しない。
-
-ソースの版が変われば、旧結果は旧版の観測に関する結果として残る。現状の結論には、
-変更後のソースとの対応の確認・再観測が必要である。計算核は渡された source ref の先を
-解釈して自動同期する責務を持たず、その確認は SKILL が担う。
-
-変更の比較では、実際の Atom map による family・relation・identification の保存と、
-選択した Law の保存を別々に検査する。同じ始域・終域を持つだけの候補を成立済みの射へ
-昇格させない。削除を含む変更は、保持する部分 C を介した `A ← C → B` や snapshot 間の
-比較で扱う。合成経路を比較する場合も、名前付き操作とその作用を保持する。
-
-## 10. 保証を受け取るための条件
-
-エンジンは、提示された A と L から正しく導かれた結論を、その根拠と適用域とともに返す。
-入力の妥当性検査、実装からの観測の正しさ、計算の正しさは、それぞれ確認対象が違う。
-
-| 確認対象 | 根拠となるもの |
+| payload | 表す値 |
 | --- | --- |
-| A が語彙と型に従う | 原始欄、型、参照、提示規則の検査 |
-| A が実装を表す | SKILL による使用文脈と source ref の確認、変更後の再観測 |
-| 計算が A と L の意味を保つ | 独立した参照意味論、算法ごとの健全性、導出・証人の検査 |
-| 数学的結果をこの対象へ適用できる | 生成した対象・写像と、個別の定理の仮定の確認 |
+| {"ref":"p"} | 対象 p への参照 |
+| {"q":"-3/2"} | 正確な有理数 |
+| {"enum":"add"} | 宣言された列挙値 |
+| {"term":{...}} | Law が指定する項文法の有限木。波括弧内の実例はコンパイル保存の入力にある |
 
-エンジンに要求する保存性は、[自己 Law L01–L13](archsig_atom_law_engine/engine_laws.md)に
-式で記述されている。同じ入力の決定性、型保存、コンパイル保存、制限と評価の可換性、
-操作の合成、部分知識、対応済み算法の完全性、局所・大域、reading 比較、再利用を含む。
-これらは実装に課す要求であり、有限な自己適用例の成功だけで全要求が証明されたとはしない。
+有理数は、0、1、-1 のような整数、または既約分数の文字列で書く。
+分母は正、分母1は整数表記、先頭の + と不要な0は使わない。小数や浮動小数点の許容誤差で
+等号を判断しない。JSON の数値は、行番号や次元などの整数に用いる。
 
-要求 Law の残差は、対象を評価して得た `ε` を使う。Law の式を表す記号 `ν` 自身を、
-その生成 ideal によって零にしたことを対象の充足と読み替えない。
-同様に、解集合・障害空間・特定の障害類を分け、どの対象についての値かを保持する。
+entity の subject と predicate が対象の所属を宣言する。異なる型への所属は、
+Law が許すときに限る。ref と項中の参照は宣言された対象へ解決され、Law の型と照合される。
+同じ端点を持つ二つの操作も、それぞれの ID と事実を持つ。端点が同じという理由で統合しない。
 
-## 11. AAT の主要成果への接続
+本書の field は単一値である。同じ subject と field に複数の Atom を与えると、
+同値の重複も含め duplicate_field となる。複数の由来は一つの Atom の sourceRefs に記録する。
+異なる値の併記を候補集合や矛盾からの成立として解釈しない。
 
-有限提示からの結果を次の計算へ接続するため、対象、実際の射、名前付き操作、係数、
-incidence の各出現を保持する。同じ端点の別操作、平行辺、loop、面の中での辺の重複を
-単純な所属関係へ潰さない。異なる係数や非可換な構造には、対応する演算を加える。
+### 2.3 未観測の値
 
-拡張で要求する利用者向けの振る舞いは次のとおりである。各行は実装済み機能の一覧ではなく、
-その結論を返すための構成と条件を示す。導出できない条件は、未決として理由を返す。
+操作 c が存在し、端点が分かる一方で加算値が未観測なら、c.exists、c.source、
+c.target を残し、**c の shift Atom だけを記載しない**。
+[triangle-missing.archmap.json](archsig_engine_manual_examples/triangle-missing.archmap.json)が完全な例である。
 
-| 接続する計算 | 結果として得たいもの | 結論の前に確認すること |
+null、0、空文字を未知値の代わりに入力しない。存在を宣言した操作は、値が不足しても
+計算対象から消えない。Law の join や適用条件の評価に必要な値が欠けた場合も、
+その候補を「条件が偽だった」として除外しない。
+
+entity の Atom 族は、この入力で提示した有限の対象族を定める。未記載の entity を勝手に生成しない。
+これは実装全体の観測完了を意味しない。対象を追加観測すると量化域も変わりうる。
+
+### 2.4 ソースへ戻れる観測を作る
+
+origin.kind が observation の場合、各 Atom に少なくとも一つの sourceRefs を付ける。
+sources の一要素は次の形である。
+
+~~~json
+{
+  "id": "src-a",
+  "revision": "source-revision-17",
+  "path": "src/translation.txt",
+  "startLine": 12,
+  "endLine": 15
+}
+~~~
+
+revision は観測元の版を識別する空でない文字列、path はソース内の相対パス、
+行番号は1以上、両端を含む。エンジンは参照の形式と解決を検査する。
+SKILL はその版の実装を読み、Atom と使用文脈の対応を確認する。
+エンジンはソース本文を取りに行って Atom を補完しない。
+
+観測するのは実装コードの操作、データ、依存、呼出しとその使用である。
+テストコードは観測から除外する。実行時のレース、I/O の成否・遅延、性能は別の確認で扱う。
+純粋な模型や変更案はそれぞれ model、proposal と宣言し、観測入力へ自動変換しない。
+ファイル名や説明の言語・framework 名は、原始値の意味を決めない。
+
+## 3. Law を書く
+
+### 3.1 宣言と構文
+
+Law は UTF-8 のテキストファイルである。完全な例は
+[coordinates.law](archsig_engine_manual_examples/coordinates.law)と
+[compiler.law](archsig_engine_manual_examples/compiler.law)にある。
+ヘッダー、使用する演算の版、語彙、構成、要求、query の順に書く。
+
+~~~text
+lawdsl 1;
+module Coordinates version 1;
+use finite_q version 1;
+use finite_graph version 1;
+~~~
+
+この版では、識別子は英字または _ で始まり、英数字と _ が続く。大文字・小文字を区別する。
+文字列リテラルは JSON と同じ二重引用符とエスケープ、コメントは // から行末までである。
+空白と改行は区切りとして扱い、宣言は ; で終える。query の expose ブロックは } で終える。
+宣言名は module 内で一意、参照先は前に宣言する。型名と組込み演算名は使用する module が定める。
+
+| 構文 | 意味 |
+| --- | --- |
+| entity T = atom("predicate", kind="entity", axis="axis"); | Atom から T の対象族を読む |
+| field f : T -> U = atom("predicate", kind="kind", axis="axis"); | T の各対象の原始 field を U 型で読む |
+| derive name = expression; | 先行する事実・導出値から型付きの値を計算する |
+| derive name(x : T) = expression; | T の各対象について導出する |
+| law name: forall ...: lhs == rhs; | 宣言された域の全要素で要求する等式 |
+| system name: unknown z : domain -> Q; forall ...: lhs == rhs; | 有理数の未知量について同時に解く方程式族 |
+| query name = check(law); | 要求の成立・反例を返す |
+| query name = solve(system); | 解集合または解なしの証拠を返す |
+| query name = descend(cover, coefficient, states); | 局所状態の障害と統合結果を返す |
+| query name = check(law) { expose expression as label; } | 判定に用いた導出値も data.instances[].exposed に返す |
+
+表の T、U、name、expression と ... は構文の説明用の位置であり、そのまま入力する文字ではない。
+式には、宣言参照、field の適用 f(x)、配列・写像の参照 z[x]、有理数の加減算、
+等号、where 内の and、以下の組込み演算を使う。本書の具体例は省略記号を含まない。
+
+引数と forall の束縛はコンマで複数並べられる。後の束縛域と式は、先に束縛した変数を
+参照できる。select の組は forall の `(first, second, direct)` のような組で受け取る。
+expose 内では、対象 Law の有限対象の束縛を instance ごとに使える。compiler.law の
+c と s がこれに当たる。無限の代入域の変数 x や eta に依存する expose は対応外とする。
+
+`Ref<T>` は対象参照、`Enum<a, b>` は列挙型、Q は有理数である。
+members(T) は入力で提示された T の有限集合を返す。
+select (x, y) from X * Y where ... は有限直積から条件に合う組を導出する。
+forall e in edges は有限対象ごとの要求、forall x in Q は全有理数についての要求である。
+Q 上の全称等号はアフィン正規化で判定する。有限サンプルで代用しない。
+空の instance 族についての check は not_applicable を返し、適用件数0を明示する。
+
+語彙に合わない Atom は入力に保持するが、その Law の計算値へ暗黙に取り込まない。
+一致した field の payload が異なる型なら type_error である。
+演算を使用するには、対応する use 宣言が必要である。module 名と版は参照意味を固定する。
+この版の use は下記の組込み module の指定であり、ネットワーク取得、環境変数の読出し、
+任意コードの呼出しではない。
+
+### 3.2 この版で使える演算
+
+| module | 入力から構成するもの |
+| --- | --- |
+| finite_q/1 | 正確な有理数、アフィン式、係数比較、有限有理線形系、kernel・image・quotient、代入検査 |
+| finite_graph/1 | incidence、端点を含む context、辺 support の cover、重なり、局所定数係数、座標状態、Čech 複体、貼り合わせ |
+| affine_tree/1 | 下記の source/IR 項、有限木の照合・置換・構造再帰、アフィン残差 |
+
+coordinates.law の組込み演算は次の意味を持つ。
+
+| 呼出し | 返す型付きの値 |
+| --- | --- |
+| incidence(vertices, edges, source, target) | 頂点と名前付き有向辺。loop と平行辺の個体を保持する |
+| edge_cover(graph) | 各辺とその端点からなる patch、および辺に属さない頂点の singleton patch |
+| locally_constant(graph, Q) | context 内の各辺の両端で値が等しい、頂点上の Q 値の空間。制限は頂点値の制限 |
+| affine_states(system, graph) | 各 context に含まれる辺の座標方程式を満たす状態集合。制限は座標の制限 |
+| descend(cover, coefficient, states) | 重なり、局所解、その差、具体的障害類、零類の補正、統合した状態 |
+
+edge_cover は同じ頂点集合を持つ平行辺の patch も区別する。context は、選んだ辺の
+端点を必ず含む部分グラフであり、重なりは頂点と辺の共通部分である。
+一枚の大域 patch や最小個数の cover を、暗黙の最適化として選ばない。
+係数・状態は graph と system の対応を型検査する。本書の descend はこの
+有理アフィン座標の組に適用する。一般の層や係数環をこの呼出しへ自動で読み替えない。
+
+### 3.3 コンパイラを入力で表す項
+
+コンパイル保存の入力も通常の ArchMap である。`SourceLawTerm<Variable>` 型の body と
+RewriteRule 型の rewrite を、原始の有限木として記録する。
+[compiler-add.archmap.json](archsig_engine_manual_examples/compiler-add.archmap.json)に全体を示す。
+
+| 項の位置 | 使用する tag と欄 |
+| --- | --- |
+| source の式 | var と ref、lit と有理数の value、add と二要素の args |
+| source の Law | eq と二つの source 式からなる args |
+| rewrite | holes、pattern、template。holes は穴の名前から SourceExpr または Q への写像 |
+| pattern | add、hole と name、lit-hole と name。式と定数をそれぞれ束縛する |
+| template | plus と二つの args、translate と hole、const と value |
+| template の scalar | tag = scalar、operator = selected、二つの Q の hole からなる args |
+| 生成される IR | load と ref、const と有理数の value、plus と二つの args、equal と二つの式の args |
+
+scalar_operator field の `Enum<add, sub>` が、selected の演算を指定する。
+入力に生成済み IR や「保存する」という判定は含めない。
+
+compile_affine(body, rewrite, scalar_operator) は、source の式で pattern を照合する。
+一致したら template を生成し、translate の穴を再帰的に変換する。
+穴は元の式の真の部分木に限り、生成した IR へ規則を再適用しない。
+一致しなければ var → load、lit → const、add → plus を構造再帰で変換し、
+最外の eq は equal に変換する。照合失敗はこの既定変換を使う条件であり、コンパイル失敗ではない。
+
+この版の RewriteRule は第6.4節の二重加算 pattern と上表の型に対応する。
+型が正しくても他の書換え体系や再帰方式を要求したときは unsupported を返す。
+未束縛の穴や異なる型の差し込みは不正入力である。
+
+residual_source と residual_ir は、eq / equal の左辺から右辺を引いた有理アフィン式を返す。
+valuations(body(s)) は、その source 式に現れる全変数への全有理数代入である。
+両残差の一致を独立な source と IR の原始意味で検査する。
+ここでは有限木を一つの term payload にまとめる。ノード・参照を個別 Atom にする表現の
+併設は、[Q1](#9-確認する外部仕様)の選択事項である。
+
+### 3.4 二入力の境界
+
+対象の存在、値、端点、式、使用上の役割は ArchMap に書く。Law は、その語彙と、
+対象に依存しない構成・適用・評価規則を記述する。
+Law の数学定数と仕様上の要求は使えるが、今回の入力固有 ID や完成した対象分割、
+観測値を埋め込んで結果を決めない。
+
+完成済み cover、微分行列、rank、障害値、正解フラグ、修復済み状態、
+比較同型を入力で補わせない。エンジンは本書の入力形式で認めない結果欄を拒否する。
+ただし、原始値に見せかけた結論や、不正確な観測の意味を任意に見破れるとはしない。
+語彙とソースへの対応は SKILL と利用者が確認する。
+
+## 4. CLI
+
+~~~text
+archsig engine run --archmap FILE --law FILE --out DIRECTORY
+                  [--query NAME]... [--timeout-ms INTEGER]
+                  [--reuse RESULT_JSON]
+~~~
+
+| 引数 | 動作 |
+| --- | --- |
+| --archmap FILE | 必須。ArchMap を一つ読む |
+| --law FILE | 必須。Law を一つ読む |
+| --out DIRECTORY | 必須。result.json の出力先。存在しないディレクトリは作り、空でないディレクトリは上書きせず失敗する |
+| --query NAME | 任意、繰返し可。Law の query 名を指定する。省略時は宣言された全 query。同名の重複指定は一回として扱う |
+| --timeout-ms INTEGER | 任意、正の整数。計算時間の上限。省略時は時間上限を置かない |
+| --reuse RESULT_JSON | 任意。以前の結果を再検査して利用する候補。意味上の第三入力にはしない |
+
+引数・パスはシェルの規則に従って引用する。対象集合、係数、局所性、閾値など、
+答えに影響する選択は Law に書く。環境や CLI オプションで暗黙に変えない。
+未知の query 名、未知のオプション、必須引数の欠落は使用誤りである。
+
+正常に結果ファイルを書いた場合、stdout はそのパスを一行出力する。
+進捗とファイル操作などの診断は stderr に書く。機械処理では stdout の説明文を解析せず、
+result.json を読む。最終ファイルは書込み完了後に一括して確定し、途中の JSON を残さない。
+
+| 終了コード | 意味 |
+| --- | --- |
+| 0 | 全ての選択 query に回答した。established、refuted、not_applicable を含む |
+| 2 | 使用誤り、または不正入力。使用誤りでは結果ファイルを作らない |
+| 3 | 一部または全ての query が undetermined。計算済み部分を含む result.json を作る |
+| 4 | 読書き、出力先、または内部実行の障害で、結果ファイルを確定できなかった |
+
+入力を読み取れたが内容が不正な場合、出力先を確保できれば runStatus = invalid_input と
+issues を持つ result.json を書き、results は空にする。
+出力先に書けない場合は終了コード4となり、理由を stderr に返す。
+タイムアウト時は完了した導出と各 query の到達点を残し、未決の理由を interrupted とする。
+
+たとえば paths だけを調べるには次を使う。
+
+~~~sh
+archsig engine run \
+  --archmap triangle-3.archmap.json --law coordinates.law \
+  --query paths --out out/paths-only
+~~~
+
+この出力の results は、第1章の期待出力の paths 要素だけを持ち、
+requestedQueries は ["paths"] となる。幾何や他の問いの判定を、未実行なのに付け加えない。
+
+## 5. result.json を読む
+
+### 5.1 共通の形式
+
+完全な出力ファイルは [expected 一覧](archsig_engine_manual_examples/README.md)にある。
+全出力で共通の欄は次のとおり。
+
+| 欄 | 型・意味 |
+| --- | --- |
+| schema | archsig.engine.result/v1 |
+| engine | interface と semantics。出力形式の版と組込みの参照意味の版 |
+| inputs.archmap | file、sha256、document、revision |
+| inputs.law | file、sha256、module、version |
+| requestedQueries | 指定した query 名の配列。省略時は Law の宣言順 |
+| runStatus | complete、partial、invalid_input |
+| results | query ごとの結果の配列 |
+| issues | 入力全体に関する診断の配列 |
+| reuse | source は候補のパスまたは null、status は下記の再利用状態 |
+
+file は渡された入力パス、sha256 はそのファイルのバイト列の SHA-256 である。
+不正入力で文書情報を読めない場合、対応する入力レコードは file と sha256 を残し、
+document / revision または module / version を null にする。
+利用者は inputs の文書版と内容を照合して、どの入力の回答かを確認できる。
+
+reuse.status は、指定なしの not_requested、依存・推論を再検査して採用した revalidated、
+候補から採用せず再計算した recomputed のいずれかである。
+再利用候補を読めない、形式が古い、内容が不正な場合も recomputed とし、
+issues に reuse_ignored と理由を残す。入力と Law が妥当なら通常の計算を続ける。
+
+### 5.2 query ごとの結果
+
+| 欄 | 型・意味 |
+| --- | --- |
+| name | Law 内の query 名 |
+| analysis | check、solve、descend |
+| status | 下表の判定 |
+| scope | family = input、scalarDomain = Q。本書の有限提示・有理数の範囲 |
+| data | 分析別の型付きの値。未計算の値は null と理由を組み合わせる |
+| evidence | atomIds、lawDecls、builtinRules。導出の入力と規則への参照 |
+| conditions | 適用条件の name と status の配列 |
+| issues | この query の不足・不正でない未対応・中断などの診断 |
+
+| status | 利用者が受け取る主張 |
+| --- | --- |
+| established | check：全 instance の等号が成立。solve：解集合を構成。descend：局所状態から大域状態を構成 |
+| refuted | check：具体的反例がある。solve：解なしの証拠がある。descend：本書の状態問題の統合を妨げる非零の障害類がある |
+| undetermined | 情報不足、対応外の計算、適用条件未成立、または中断によって、問われた主張を確定していない |
+| not_applicable | check の適用対象が空。data.instanceCount = 0 と empty_domain の理由を返す |
+
+status は query の問いに対する判定である。conditions[].status は established、refuted、
+undetermined のいずれかで、前提を個別に表す。前提の refuted を、問いそのものの refuted と
+取り違えない。適用条件が満たされない計算は undetermined と condition_failed を返す。
+
+issues の各要素は code と message を持ち、分かる場合は subject、predicate、
+atomIds、location を付ける。JSON の location は pointer、Law の location は
+line と column により示す。行・列は1から数える。
+null は有理数の0や空集合を意味しない。空配列は、計算して要素がないと分かったときに使う。
+
+### 5.3 計算の根拠を読む
+
+evidence.atomIds は inputs.archmap の Atom へ、lawDecls は inputs.law の宣言へ解決する。
+builtinRules は finite_q/1:gaussian_elimination のように版と規則を示す。
+必要な根を全て含め、無関係な根を含まない最小集合であることまでは要求しない。
+
+判定ラベルに加え、data に独立して照合できる構成を返す。
+check は正規形と反例への代入値、solve は列・行の対象名付き行列と解または左零化ベクトル、
+descend は patch、重なり、係数の制限、微分、cocycle、類への写像、補正を返す。
+たとえば行 a は a.source、a.target、a.shift と Law の coordinate_system までたどれる。
+出力内の配列順序は付属の基底・対象名に対応し、数値だけの行列にはしない。
+
+sourceRefs から原始事実の観測箇所に戻れる。入力ファイルと Law、固定された演算の意味、
+出力の証人を合わせて計算を検査できる。
+SHA-256 の一致や evidence に名前があることだけを、推論の正しさの代わりにはしない。
+
+### 5.4 欠落・不正・非対応の違い
+
+| 状態 | 例 | 返すもの |
 | --- | --- | --- |
-| Law algebra・lawful locus | 原始方程式からの residual、ideal、零点条件 | 係数と制限、対象の residual と零点条件の対応 |
-| Atlas・解像度比較 | 粗細 reading の比較と障害類の対応 | Law 評価の十分性と、被覆・係数・微分の比較を別々に確認。診断同型は実際の写像で検査 |
-| SAGA・意味的修復 | 意味側の具体的な修復状態と方程式側の対応 | 両側を原始生成元から独立構成し、presentation exactness、state correspondence、torsor 作用、層条件、貼り合わせを確認 |
-| 輸送・基底変換・合成 | 変更の順序・経路による対応の比較 | 始域・終域、恒等・合成、制限との可換性、比較図式 |
-| 正規化・再構成 | 情報をまとめた対象と元への対応 | 評価の保存・反映、忘却した情報、再構成の存在・一意性 |
-| protocol holonomy・lifting | 経路や作用から構成する障害と lift | 原始作用・関係、群や groupoid の演算。可換群の rank だけに置き換えない |
-| 最小観測・相対修復 | 候補を識別する観測、固定部分を保つ修復と合成 | 元の操作保存式からの候補生成、候補族全体での十分性、共有値と固定部分の保存 |
-| 診断欠損の合成・係数・fiber 分解 | 比較写像、核・余核・錐、順像や fiber の計算 | 原始 incidence と係数写像、鎖写像、符号、完全列の条件 |
+| 値の情報不足 | 存在する c の shift がない | undetermined、missing_fact、必要な subject / predicate。独立に計算できる幾何は残す |
+| 構文・形式の不正 | 壊れた JSON、重複キー、未定義欄 | invalid_input、syntax_error / duplicate_key / unknown_field、位置 |
+| 型・参照の不正 | Q に文字列タグ、存在しない端点、同じ field の二重記録 | invalid_input、type_error / unresolved_reference / duplicate_field |
+| 版が非対応 | 認識できるが非対応の schema、lawdsl、use の版 | invalid_input、unsupported_version。異なる版として推測実行しない |
+| 算法が非対応 | 型の意味は分かるが非線形の全称等号などを要求 | 該当 query は undetermined、unsupported、必要な演算。独立の query は続行 |
+| 適用条件が不成立 | 対象の異なる状態と係数を比較しようとするなど | 型で検出できるものは invalid_input。それ以外は undetermined、condition_failed |
+| 計算を中断 | timeout に達した | undetermined、interrupted、既に構成できた部分 |
 
-例えば、Law 評価が保存されたという結果だけから Atlas の診断同型を返さない。
-SAGA では、第5章の行列比較だけを意味側と方程式側の独立構成の代わりにせず、
-実際の意味状態と局所補正・貼り合わせの対応を構成する。
-有限模型で得た座標解を未観測の実装全体や一般の意味的修復の保証へ拡大しない。
+入力全体の構文・語彙による型検査は、選択 query の実行前に行う。
+不正な入力から都合のよい query だけを実行しない。
+一方、値の欠落は不正入力ではない。未選択の query にしか要らない値の欠落によって、
+選択した query を情報不足にしない。
 
-数学的な構成と適用条件は、[第II部](../aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md)、
-[第IV部](../aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)、
-[第X部](../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)と、
-[設計判断の拡張資料](archsig_atom_law_engine/decisions.md#2-拡張を成立させるための判断)へ
-たどれる。有限の実行可能な読みと数学上の一般定理の対応は、各拡張で示す。
+情報不足がある主張を成立・反証とするには、宣言された型と既存事実に適合する補完が存在し、
+その全てについて同じ主張が成り立つ必要がある。
+本書の例では、次に必要な field と、答えを分ける補完を示せる。
+任意の入力について最小の追加観測集合を求める機能は、[Q6](#9-確認する外部仕様)で扱う。
 
-## 12. 提案と要相談の外部仕様
+## 6. 分析別の使い方
 
-以下はまだ一つに決めていない外部仕様である。「提案」は比較・議論の出発点であり、
-確定した既定動作や実装順を意味しない。二入力・導出・条件の保持という基準は、
-どの選択でも維持する。
+以下の例は全て、完全な ArchMap、完全な Law、CLI、期待出力を一組として示す。
+数式の導出や適用条件の背景は[補足](#補足数学的な意味と拡張)へ分けている。
 
-| 番号 | 利用者が判断する論点 | 提案と代替案・判断材料 |
+### 6.1 経路の Law は成り立つか
+
+**入力。** [triangle-3.archmap.json](archsig_engine_manual_examples/triangle-3.archmap.json) と
+[coordinates.law](archsig_engine_manual_examples/coordinates.law)。
+paths は端点から (a,b,c) を導出し、全 x ∈ Q で (x+1)+1 = x+3 を要求する。
+
+~~~sh
+archsig engine run \
+  --archmap triangle-3.archmap.json --law coordinates.law \
+  --out out/path-example
+~~~
+
+**出力。** [triangle-3.result.json](archsig_engine_manual_examples/expected/triangle-3.result.json)の
+results[name=paths] が該当する。data の形は次のとおり。
+
+| 欄 | 例と意味 |
+| --- | --- |
+| instanceCount、instances | 1 と、その instance の配列 |
+| bindings | first=a、second=b、direct=c。対象を選んだ組 |
+| variables | ["x"]。全称量化する有理変数 |
+| left、right | constant と coefficients からなるアフィン式。ここでは x+2 と x+3 |
+| difference | 左辺−右辺の正規形。constant="-1"、x の係数は "0" |
+| counterexample | valuation、left、right。x=0 を代入して 2 ≠ 3 を確認 |
+| exposed | expose で指定した導出値の辞書。この例は空 |
+| missingDependence | 不足値へのアフィン依存、または null |
+| lawResidual | その instance の全有理数代入で等号が成立なら0、反例があれば1、未決なら null |
+
+**解釈。** status は refuted。ID a、b、c を人が比較対象として Law に埋め込んだ結果ではない。
+端点をつなぐ規則から得た組について、入力値が等号を破る。
+他の言語のソースから同じ値と関係を観測しても、同じ判定になる。
+
+### 6.2 全ての条件を満たす座標を求める
+
+**入力。** [triangle-2.archmap.json](archsig_engine_manual_examples/triangle-2.archmap.json) と、
+同じ [coordinates.law](archsig_engine_manual_examples/coordinates.law)。
+
+~~~sh
+archsig engine run \
+  --archmap triangle-2.archmap.json --law coordinates.law \
+  --out out/coordinate-example
+~~~
+
+**出力。** [triangle-2.result.json](archsig_engine_manual_examples/expected/triangle-2.result.json)の
+results[name=coordinates]。data の matrix と rhs は、入力から次のように生成される。
+
+~~~text
+variables = [p, q, r]       equations = [a, b, c]
+
+matrix = [ -1  1  0 ]       rhs = [ 1 ]
+         [  0 -1  1 ]             [ 1 ]
+         [ -1  0  1 ]             [ 2 ]
+
+rank = 2
+solution.particular = [0, 1, 2]
+solution.kernelBasis = [[1, 1, 1]]
+inconsistency = null
+~~~
+
+**解釈。** 全解は (h,h+1,h+2)、h ∈ Q。特解の提示だけでなく、自由度を含む解集合を返す。
+特解と kernelBasis は元の matrix へ代入して確認される。
+matrix の行順は equations、列順は variables に対応する。
+
+三操作の加算値が 3 の入力では、同じ CLI の --archmap を
+[triangle-3.archmap.json](archsig_engine_manual_examples/triangle-3.archmap.json)にし、
+別の --out を指定する。[その完全な出力](archsig_engine_manual_examples/expected/triangle-3.result.json)は
+solution = null、inconsistency.leftNull = [1,1,-1] を持つ。
+このベクトルと matrix の積は零、rhs との積は -1 となるので、解がない。
+
+### 6.3 局所解を大域状態へ統合できるか
+
+**入力。** 第6.1節と同じ
+[triangle-3.archmap.json](archsig_engine_manual_examples/triangle-3.archmap.json)、
+[coordinates.law](archsig_engine_manual_examples/coordinates.law)。
+
+~~~sh
+archsig engine run \
+  --archmap triangle-3.archmap.json --law coordinates.law \
+  --out out/descent-example
+~~~
+
+**出力。** [triangle-3.result.json](archsig_engine_manual_examples/expected/triangle-3.result.json)の
+results[name=descent]。cover は次の三つの patch になる。
+
+| patch | 頂点・操作 | localSections の値 |
 | --- | --- | --- |
-| Q1 | 最初に一周できる問いをどこまで必須にするか | 第5章の三ケースと第6章の保存例を、入力から根拠まで完結する利用単位にする提案。比較・候補探索も同時に必須にするかは、具体例を加えて判断する |
-| Q2 | 実装観測と仕様模型をどう識別し、どの由来情報を必須にするか | 同じ核に由来の区分を保持し、実装観測にはソース版と位置を要求する。参照項目の具体化と、由来が不足する入力を利用者が模型として明示し直す経路を用意するかは要相談。由来を自動で付け替えない |
-| Q3 | 不正・非対応入力をどの範囲で止めるか | 解釈できない共通語彙は依存する問いを止め、独立して検査済みの結果を分けて返す提案。入力全体を拒否する方式とも比較する。同一事実の重複、未知の追加欄・構文版の扱いもここで定める |
-| Q4 | 部分結果・適用対象外をどう見せるか | 問いごとに判定と件数を示し、構成済み対象と未決条件を同じ結果からたどれる形を提案。未決を実行全体の失敗に集約するかとは区別する。終了コードや短い表示の詳細は、この読まれ方に従って設計する |
-| Q5 | 保存した結果を次のセッションでどの形で渡すか | 型付き導出と入力参照を再利用候補として保存する提案。必要な証拠の最小形式、表示用 ID の継続性、ArchView/FieldSig への出力範囲を具体例で決める。再検査の要件は第8章に従う |
-| Q6 | 複数の cover や witness があるとき、何を返すか | L が選ぶ生成規則と使用した cover を示し、最低一つの検査済み witness を返す提案。最小 cover、最短反例、全解の表示等を標準で求めるかは別途判断する。数学的な解集合の意味と表示上の代表選択は区別する |
-| Q7 | 候補生成・追加観測の支援をどこまで求めるか | まず提案 snapshot の評価、不足値、識別対を返す提案。核が候補を生成する範囲と、最小修復・最小観測を要求する有限候補族や費用の定義は、利用者の問いに合わせて定める |
+| Ua | p、q、a | p=0、q=1 |
+| Ub | q、r、b | q=0、r=1 |
+| Uc | p、r、c | p=0、r=3 |
 
-DSL の区切り文字、AST の物理表現、具体的 CLI/API、エラーの欄名、キャッシュ配置、
-内部の型や算法は詳細設計で決める。利用者に見える意味や適用範囲を変更する選択は、
-上表と利用例へ反映してから受け入れ条件にする。一般 pullback の具体的支援範囲、
-有理数以外の係数、記号的 core の等値決定、自己 Law の証明方法等は
-[設計上の未決事項](archsig_atom_law_engine/decisions.md#3-未決事項)に対応する。
+Ua∩Ub は q、Ua∩Uc は p、Ub∩Uc は r、三重交差は空である。
+coefficient.restrictions は、これらの重なりへの定数値の恒等写像を返す。
+空の三重交差の空間は0次元である。
 
-## 13. 受け入れテストへ移すときの確認表
+| data の欄 | 返すもの |
+| --- | --- |
+| contextCount、cover、overlaps、tripleIntersections | 生成した context 数と、patch・二重・三重の重なりの対象名 |
+| coefficient | ring、patchDimensions・overlapDimensions・tripleDimensions、各基底、制限行列 |
+| cochain | 符号規約、c0Basis・c1Basis・c2Basis、d0・d1、rankD0 |
+| cohomology | theory、degree、dimension、classMap、classCoordinates、classIsZero |
+| localSections、cocycle | 局所状態と、後の patch の値から前の patch の値を引いた重なり上の差 |
+| correction、globalSection | 補正と統合状態。非零類または情報不足なら null |
+| comparison | 座標方程式側の行列・rhs と、Čech 側への比較写像・誘導同型の検査結果 |
 
-この表は本書の要求をテストへ移すための対応表であり、テスト実行済みという記録ではない。
-具体構文が決まったら、原始 Atom と Law を fixture にし、コマンドから型付き結果までを確認する。
-期待値は入力の成立フラグや手書き行列に置かず、出力との照合に用いる。
+この例の値は、cocycle = [-1,0,2]、classCoordinates = [-1]、classIsZero = false。
+cochain.convention は increasing で、patch の順に `i<j` の差を取り、`i<j<k` に進む。
+d0 は3行3列、d1 は0行3列で [] と表示する。列数は c1Basis から分かる。
+cohomology.dimension = 1 だけから refuted にしているわけではない。
 
-| 確認する振る舞い | 入力・操作 | 出力で確かめること |
+conditions の state_gluing は「重なりで一致する状態を一意に貼り合わせられる」という
+状態族の性質である。今回の局所状態が既に一致しているという判定ではない。
+local_sections は、出力に使う各局所状態を具体的に構成・検査できたかを示す。
+今回の統合の成否は、query の status、具体的障害類、globalSection で読む。
+
+coefficient の patchBases、overlapBases、tripleBases は、それぞれ cover、overlaps、
+tripleIntersections と同じ順で並ぶ。各基底ベクトルは、ある連結成分の頂点集合を記し、
+その成分で1、他で0となる値を表す。cochain の基底は patches と0から数える component で
+この基底を参照する。restrictions の from / to は patch の組、matrix はこの基底での
+制限写像である。零次元への写像も記録する。三つより多い patch でも、二重・三重の組を
+同じ配列形式で返す。classMap は cocycle を H¹ の座標へ送る行列であり、
+`ker d1` 上で境界を零に送り、指定した商を表すことを検査する。
+
+加算値2の
+[完全な入力](archsig_engine_manual_examples/triangle-2.archmap.json)と同じ Law では次を実行する。
+
+~~~sh
+archsig engine run \
+  --archmap triangle-2.archmap.json --law coordinates.law \
+  --out out/gluing-example
+~~~
+
+[出力](archsig_engine_manual_examples/expected/triangle-2.result.json)は、
+cocycle = [-1,0,1]、classCoordinates = [0]、correction = [0,-1,0] を返す。
+d0 × correction = cocycle を確認し、各局所状態から correction を引くと重なりで一致する。
+globalSection = {p:0,q:1,r:2} を元の三方程式にも代入して established を返す。
+
+#### 値をまだ観測していない場合
+
+**入力。** c の shift だけを欠く
+[triangle-missing.archmap.json](archsig_engine_manual_examples/triangle-missing.archmap.json) と
+[coordinates.law](archsig_engine_manual_examples/coordinates.law)。
+
+~~~sh
+archsig engine run \
+  --archmap triangle-missing.archmap.json --law coordinates.law \
+  --out out/missing-example
+~~~
+
+**出力。** [triangle-missing.result.json](archsig_engine_manual_examples/expected/triangle-missing.result.json)。
+終了コード3、runStatus = partial。三つの query は undetermined で、
+issues が subject=c、predicate=shift を指す。
+cover、係数、d0、rankD0=2、dimension=1 は既に計算されている。
+classCoordinates、classIsZero、Uc の局所状態は null である。
+
+**解釈。** paths の missingDependence は「2 − shift(c)」を表す。
+shift=2 と shift=3 は同じ型に適合する補完で、答えが変わる。
+したがって不足値を観測する必要がある。記号式が残ったことを非零の数値として反証せず、
+c 自体を削除して別の問題を解くこともしない。
+
+### 6.4 エンジン自身のコンパイル保存を調べる
+
+**入力。** [compiler-add.archmap.json](archsig_engine_manual_examples/compiler-add.archmap.json) と
+[compiler.law](archsig_engine_manual_examples/compiler.law)。
+ArchMap は source の式 ((x+1)+2)=0 と、二重加算をまとめるコンパイル規則を持つ。
+Law は生成した IR の残差が source の残差と、全 x ∈ Q で一致することを要求する。
+
+~~~sh
+archsig engine run \
+  --archmap compiler-add.archmap.json --law compiler.law \
+  --out out/compiler-add
+~~~
+
+**出力。** [compiler-add.result.json](archsig_engine_manual_examples/expected/compiler-add.result.json)。
+exposed.ir はエンジンが生成した Equal(Plus(Load(x),Const(3)),Const(0)) に相当する型付き木である。
+left と right はともに x+3、difference は0、status は established となる。
+
+scalar_operator だけを sub にした
+[compiler-sub.archmap.json](archsig_engine_manual_examples/compiler-sub.archmap.json)を、同じ Law へ渡す。
+
+~~~sh
+archsig engine run \
+  --archmap compiler-sub.archmap.json --law compiler.law \
+  --out out/compiler-sub
+~~~
+
+[出力](archsig_engine_manual_examples/expected/compiler-sub.result.json)は、定数を -1 とした IR を生成し、
+left = x−1、right = x+3、difference = -4、status = refuted を返す。
+counterexample の x=1 では IR の残差が0、source の残差が4である。
+leftZero=true、rightZero=false により、等号の真偽も変わったことを確認できる。
+
+演算子の field だけを欠く
+[compiler-missing.archmap.json](archsig_engine_manual_examples/compiler-missing.archmap.json)も計算できる。
+
+~~~sh
+archsig engine run \
+  --archmap compiler-missing.archmap.json --law compiler.law \
+  --out out/compiler-missing
+~~~
+
+[出力](archsig_engine_manual_examples/expected/compiler-missing.result.json)は undetermined と
+missing_fact(cmp, scalar_operator) を返す。source 残差 x+3 は残る。
+IR と差は null であり、演算子を勝手に add に補わない。
+
+この分析も check の出力形式を使う。left は IR 残差、right は source 残差である。
+共通の data.instances[].lawResidual は、保存要求について全代入で成立なら0、反例があれば1、
+情報不足なら null を返す。これは difference=-4 のようなアフィン差や、source の残差と別の量である。
+
+利用者はエンジンの型・式・参照・原始操作をこのように Atom と Law で扱える。
+この例の established は、提示した一つの AST と規則についての全有理数代入の保証である。
+任意の AST、全コンパイラ、または実装済み処理系全体の正しさへ拡大しない。
+
+## 7. 結果を次の計算へ渡す
+
+### 7.1 同じ計算の中で接続する
+
+Law の derive は型付きの導出値を次の式へ渡す。coordinates.law では、
+incidence の出力が cover と coefficient の入力となり、
+coordinate_system と graph から作った states が descend に渡る。
+descend の中でも、局所解、cocycle、類、補正、大域状態の順に、必要な条件を確かめて進む。
+
+利用者や LLM が中間結果を説明文から読み直し、別の Atom へ転記する必要はない。
+演算の型が合わない接続は拒否し、情報不足の値を使う段階は未決として残す。
+
+### 7.2 保存した結果から続きを計算する
+
+先に座標系を調べ、その後で局所と大域を調べる場合は次のようにする。
+
+~~~sh
+archsig engine run \
+  --archmap triangle-2.archmap.json --law coordinates.law \
+  --query coordinates --out out/first
+
+archsig engine run \
+  --archmap triangle-2.archmap.json --law coordinates.law \
+  --query descent --reuse out/first/result.json --out out/next
+~~~
+
+二回目も意味上の入力は ArchMap と Law である。
+保存した行列・解・由来は導出候補として読み、現在の原始事実と規則から再検査する。
+採用できる型付き構成は次の計算へ使い、必要なら再計算する。
+二回目の descent は、再利用指定なしで同じ query を計算した結果と同じ意味を持つ。
+
+判定ラベルだけの取り込み、署名や digest だけによる採用、
+結果を「新しく観測した Atom」に変換する経路は設けない。
+reuse.status により採用・再計算を区別できるが、実行時間の短縮は保証しない。
+
+### 7.3 入力を変更する
+
+~~~sh
+archsig engine run \
+  --archmap triangle-3.archmap.json --law coordinates.law \
+  --reuse out/triangle-2/result.json --out out/changed
+~~~
+
+ここでは新しい shift に依存する解と判定を再検査する。
+出力は triangle-3 の反証に変わり、古い established を保持しない。
+入力の変更だけで、無関係な全導出を破棄する必要はないが、再利用の範囲と算法は実装に任せる。
+
+| 変更 | 外から見た保証 |
+| --- | --- |
+| 配列の並び、値と関係を保つ ID の一斉変更 | ID 対応に沿って同じ判定・対象・解集合になる。表示順、基底、特解の選択は変わりうる |
+| sourceRefs、ソースパス、由来の説明だけの変更 | 数学的な値は同じ。根拠が示すソース参照と入力 hash は更新される |
+| 欠けていた原始値の追加 | 既に全ての許された補完に対して確定した主張は保たれる。未決の主張は成立または反証へ進みうる |
+| 既存値の置換、対象・操作の追加や削除 | 方程式、適用域、cover、判定が変わりうる。前の成立を引き継がない |
+| 問いに依存しない語彙と事実の追加 | 旧計算への依存が増えなければ、旧 query の意味は保たれる |
+| Law、係数、局所性、演算の版の変更 | 新しい二入力として再検査する。値が同じだけでは同じ保証と扱わない |
+| timeout や再利用の指定の変更 | 完了した回答の意味は同じ。どこまで完了するかと未決理由は変わりうる |
+
+原始値の追加の保証は、対象族・Law を固定し、矛盾しない補完をする場合に限る。
+新しい entity の追加で量化域を広げる場合には適用しない。
+出力の hash が変わることと、数学的な意味が変わることを別に扱う。
+
+実装を変更したら、対応するソースを再観測して observation の ArchMap を更新する。
+proposal 上の成立だけで、変更後のコードも成立したとはしない。
+
+## 8. 受け入れ時に確かめること
+
+[完全な六組の例](archsig_engine_manual_examples/README.md)は、このマニュアルの
+外部動作を固定する受け入れ資料である。
+各入力と Law からエンジン自身が出力を生成し、以下を確かめる。
+
+1. 三操作の値が3なら反証、2なら成立、欠落なら情報不足となる。同じ Law を使う。
+2. 三ケースとも操作 c とその端点が残り、同じ cover、係数、H¹ の次元1を構成する。
+   特定の類はそれぞれ非零、零、未決となる。
+3. コンパイル規則の add、sub、欠落から、それぞれ保存、具体的反例、情報不足を返す。
+   IR は入力に含めず生成する。
+4. 各根拠が原始 Atom と Law に解決する。行列・解・反例・補正を再代入できる。
+5. 不正入力、非対応、空の適用域、中断を区別し、零や成功へ変換しない。
+6. ID・順序・sourceRefs の変更、入力値の更新、再利用あり・なしが第7章の保証に従う。
+
+期待 JSON の hash は添付した入力ファイルそのものに対応する。
+表記だけを変えた入力で試すときは、hash の一致を要求せず、その入力への参照を検査する。
+例の一つの特解・反例・基底と完全に同じ文字列を返すことは要求しない。
+代わりに次の条件で意味を照合する。
+
+| 値 | 一致を確かめる方法 |
+| --- | --- |
+| 判定と範囲 | 同じ query、対象族、量化域について同じ status |
+| 行列と対象 | 行・列の対象名の対応を取り、原始方程式と同じ線形写像を表す |
+| 解集合 | 特解を代入し、kernelBasis が kernel 全体を張ることを確認 |
+| 反例 | 指定された代入で等号が破れることを確認 |
+| 障害類 | 基底・局所解の変更に伴う写像と境界の差を確認し、同じ類を表す |
+| 零類と統合状態 | d0 × correction = cocycle、重なりでの一致、元の全方程式への代入を確認 |
+
+常に undetermined を返す実装は適合しない。
+対応する有限列挙・有理アフィン・有理線形の範囲では、適用条件と情報が揃い、時間上限を置かなければ、
+参照意味に従って停止し、成立または反証を返す。空の適用域は規定どおり not_applicable とする。
+
+## 9. 確認する外部仕様
+
+二入力から本物の計算をすること、言語に依存しない核、根拠の保持、有限結果の適用範囲は、
+[コンセプト](archsig_v0_6_0_concept.md)と[エンジン設計](archsig_atom_law_engine/README.md)に従う。
+以下はその下で、本書が具体案を提示する外部仕様の選択である。
+利用者と合意する対象をここにまとめ、詳細設計の都合で既決にしない。
+
+| 番号 | 本書が提案する動作 | 比較して決めること |
 | --- | --- | --- |
-| 経路・座標の反証 | 第5章の γ=3 | 残差−1、具体的反例、解なしの証拠と原始事実への導出 |
-| 零類と大域座標 | 同じ L、γ=2 | dim H¹=1、零類、補正、貼り合わせた z の元の式への代入 |
-| 情報不足を保持 | shift(c) だけを除く | c と対象方程式が残る。B・dim H¹ は構成済み、零性は未決、追加観測先は shift(c) |
-| コンパイル保存 | 第6章の add/sub | IR を原始規則から生成。全代入の係数比較、sub の反例 x=1 と両評価 |
-| 自己モデルの欠落 | scalar_operator だけを除く | rule を落とさず未決。add/sub の補完の違いを示す |
-| 不正と未決の分離 | 型違反、相反する単一値、未対応演算、中断 | 提示規則違反と、未決の各理由が読み分けられる |
-| 適用条件と空域 | 条件が偽・未決、有限域が空、存在のみ既知で値が不足 | 対象外・適用未決・件数0の成立・不足の保持を区別 |
-| 入力への答えの混入 | 導出済みの cover・判定・行列を原始欄へ渡す | 型と提示規則で流入を防ぐ。原始値に偽装した内容の意味的検出とは区別 |
-| 同じ意味の別表現 | ID、順序、source ref、言語名を変更 | 対応する判断・対象・解集合と、変更後の根拠参照 |
-| 再利用と変更 | γ=3 の保存結果を γ=2 に渡す、新しい操作を追加する | 古い判定を採用しない。集合の生成と量化域への依存も再確認 |
-| 数学的条件の不足 | 未確認の比較・層条件を持つ問い | 条件を示して該当結論を未決にし、完成フラグの供給で解消しない |
+| Q1 入力の書き方 | ArchMap は型付き JSON、Law は本書の宣言的テキスト。有限 AST は term payload にまとめる | Law の同義 JSON 表現や、ノードごとの Atom 表現も公開するか |
+| Q2 最初に使える分析 | Q 上の Law 判定・線形解・局所大域計算・有限 AST のコンパイル保存を、この六例で固定する | 追加の係数や reading 比較を最初の利用範囲に含めるか。含めるなら同じ完全な入出力例を先に作る |
+| Q3 CLI と判定 | engine run、一つの result.json、反証でも完了なら終了0、未決は3、空の check は not_applicable | CI 向けの「成立を必須にする」オプションの併設、反証と未決の終了コードを別にしたいか |
+| Q4 観測の由来 | observation は版・相対パス・行範囲を必須にし、model / proposal は明示して区別する | 行以外の安定した位置 ID も初期から認めるか |
+| Q5 出力と再利用 | 型付き JSON と導出根・証人を公開し、再利用候補は再検査する。基底・特解・反例の個体選択は固定しない | 他ツールとの長期交換形式、独立検査器、同じ表示順まで必要とするか |
+| Q6 局所性と次の観測 | 辺 support の cover を返す。不足 field を明示し、本書の例で答えを分ける補完を説明する | 別 cover の選択、候補自動生成、追加観測の最小性を独立の query として公開するか |
 
-第5章・第6章の表示した計算は、それぞれ設計資料の
-[局所・大域の独立検算](archsig_atom_law_engine/local_global_example.md#9-行列と三ケースの独立検算)と
-[コンパイル比較の独立検算](archsig_atom_law_engine/compiler_preservation_example.md#6-比較残差の独立検算)で
-追試できる。これらの算術確認と、実装の受け入れテスト、エンジンの一般的な保存証明を分けて
-検証結果を報告する。
+この表は、本文の具体案を読んで選べるようにするためのものである。
+利用者が選ぶ必要のない、内部データ構造、最適化手順、キャッシュ配置、並列化などは
+実装側で決める。選択後は、該当する本文・完全な例・受け入れ基準を同時に更新する。
+
+## 補足：数学的な意味と拡張
+
+### A. 三操作の保証範囲
+
+[設計の局所・大域例](archsig_atom_law_engine/local_global_example.md)と対応する。
+頂点の部分集合 V と、その端点が V に入る辺の部分集合 E からなる context は18個ある。
+辺 support は coordinate_system の各方程式を覆う。
+三操作の経路等号は大域の paths query で検査する。
+三角形の形をしているだけで2-cell や非空の三重交差を追加しない。
+
+係数 M(W) は W 内の辺の両端で等しい頂点値、状態 S(W) は辺の座標差を満たす頂点値である。
+各非空 patch の M は Q、重なりも Q、空の三重交差では0である。
+局所差を係数の切断として扱えることと、状態の制限・貼り合わせを確認して descend を適用する。
+
+加算値を γ とすると、局所差は c = (-1,0,γ−1)。
+d0 = B、類への写像 μ、方程式 D の左零化写像 λ は次のとおり。
+
+~~~text
+B = [ -1  1  0 ]     μ = [-1, 1, -1]     λ = [1, 1, -1]
+    [ -1  0  1 ]
+    [  0 -1  1 ]
+
+μ B = 0       λ D = 0
+μ c = λ (1,1,γ) = 2−γ
+dim Čech H¹ = 3 − rank B = 1
+~~~
+
+comparison は実際の行列 T、R を返し、TD = BR と μT = λ を検査する。
+それにより coker D とこの Čech H¹ の間の誘導写像が同型になる。
+T 自体の同型性を主張しているわけではない。
+
+得た H¹ は、この cover と係数の有限 Čech 計算である。
+一般の sheaf cohomology への同一視には、比較や acyclic cover 等の条件が別途必要となる。
+大域座標の存在も、この S(W) と元の方程式についての保証である。
+未観測のコード、一般の意味的修復、運用時の成功を保証しない。
+
+### B. 自己 Law と独立な参照意味
+
+[コンパイル保存例](archsig_atom_law_engine/compiler_preservation_example.md)は、
+[エンジン自身の Law](archsig_atom_law_engine/engine_laws.md)の L05 に対応する。
+source の構造再帰による意味と IR の原始意味を、最適化エンジンの答えとは独立に定める。
+入力の原始演算子の違いから IR を生成して比較し、
+compile_is_sound のような成功フラグを Atom として再投入しない。
+
+同じ方針で、二入力と決定性、導出の由来、型保存、制限との可換性、合成保存、
+不足情報の健全性、局所大域、reading 比較、再利用を自己 Law として扱う。
+一つの有限例の確認、対応する演算全体の証明、実装の検証は、それぞれ適用範囲を明記する。
+
+### C. AAT の他の分析への接続
+
+本書の CLI で公開する分析は第6章の範囲である。
+拡張では、対象・名前付き操作・作用・参照・局所制限・導出を保持し、
+次の分析も同じ二入力から構成する。
+以下は拡張が満たすべき出力の要件であり、既に使える query 名ではない。
+
+| 拡張する分析 | 返す対象と、判定に必要なもの |
+| --- | --- |
+| 変更・輸送・合成 | 原始対応から生成した写像、操作や作用の保存、経路ごとの比較。未確認候補と成立済みの射を区別 |
+| Atlas・reading 比較 | Law 値の保存と診断の保存を別に検査。実際の係数・cochain 写像、kernel・cokernel、誘導写像 |
+| SAGA・意味的修復 | 意味側と方程式側を独立に構成。係数比較、局所状態の対応、層・貼り合わせ条件、元の修復方程式を満たす具体的状態 |
+| 正規化・基底変換・局所再構成 | 対象だけでなく操作・作用と制限を保持。存在・一意性や普遍性を、対応する有限算法または明示した証明で確認 |
+| holonomy・lifting・面の細分 | 名前付き辺、平行辺、loop、面内の重複、向き、面・高次セルと原始作用。単純グラフへ情報を落とさない |
+| 追加観測・修復候補の比較 | 同じ原始操作から候補と query を生成。区別不能な対、識別する観測、最小性を述べる有限候補族 |
+
+詳細な数学の対応と拡張条件は
+[設計判断](archsig_atom_law_engine/decisions.md)、
+[AAT 本文](../aat/algebraic_geometric_theory/README.md)を参照する。
+完成した比較同型や修復判定を入力して機能を増やす方法は採らない。

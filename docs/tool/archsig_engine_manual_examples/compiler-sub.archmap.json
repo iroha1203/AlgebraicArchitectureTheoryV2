@@ -1,0 +1,103 @@
+{
+  "schema": "archmap.atom/v1",
+  "document": "compiler-sub",
+  "revision": "1",
+  "origin": {"kind": "model", "description": "一つの source AST と一つのコンパイル規則。"},
+  "sources": [],
+  "atoms": [
+    {
+      "id": "x.exists",
+      "kind": "entity",
+      "axis": "syntax",
+      "subject": "x",
+      "predicate": "variable",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "s.exists",
+      "kind": "entity",
+      "axis": "syntax",
+      "subject": "s",
+      "predicate": "source_law",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "cmp.exists",
+      "kind": "entity",
+      "axis": "syntax",
+      "subject": "cmp",
+      "predicate": "compiler",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "s.body",
+      "kind": "term",
+      "axis": "syntax",
+      "subject": "s",
+      "predicate": "body",
+      "payload": {
+        "term": {
+          "tag": "eq",
+          "args": [
+            {
+              "tag": "add",
+              "args": [
+                {"tag": "add", "args": [{"tag": "var", "ref": "x"}, {"tag": "lit", "value": "1"}]},
+                {"tag": "lit", "value": "2"}
+              ]
+            },
+            {"tag": "lit", "value": "0"}
+          ]
+        }
+      },
+      "sourceRefs": []
+    },
+    {
+      "id": "cmp.rewrite",
+      "kind": "term",
+      "axis": "syntax",
+      "subject": "cmp",
+      "predicate": "rewrite",
+      "payload": {
+        "term": {
+          "tag": "rewrite",
+          "holes": {"t": "SourceExpr", "u": "Q", "v": "Q"},
+          "pattern": {
+            "tag": "add",
+            "args": [
+              {"tag": "add", "args": [{"tag": "hole", "name": "t"}, {"tag": "lit-hole", "name": "u"}]},
+              {"tag": "lit-hole", "name": "v"}
+            ]
+          },
+          "template": {
+            "tag": "plus",
+            "args": [
+              {"tag": "translate", "hole": "t"},
+              {
+                "tag": "const",
+                "value": {
+                  "tag": "scalar",
+                  "operator": "selected",
+                  "args": [{"tag": "hole", "name": "u"}, {"tag": "hole", "name": "v"}]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "sourceRefs": []
+    },
+    {
+      "id": "cmp.scalar_operator",
+      "kind": "value",
+      "axis": "syntax",
+      "subject": "cmp",
+      "predicate": "scalar_operator",
+      "payload": {"enum": "sub"},
+      "sourceRefs": []
+    }
+  ]
+}

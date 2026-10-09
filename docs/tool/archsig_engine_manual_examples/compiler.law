@@ -1,0 +1,21 @@
+lawdsl 1;
+module CompilerPreservation version 1;
+use finite_q version 1;
+use affine_tree version 1;
+
+entity Variable = atom("variable", kind="entity", axis="syntax");
+entity SourceLaw = atom("source_law", kind="entity", axis="syntax");
+entity Compiler = atom("compiler", kind="entity", axis="syntax");
+field body : SourceLaw -> SourceLawTerm<Variable> = atom("body", kind="term", axis="syntax");
+field rewrite : Compiler -> RewriteRule = atom("rewrite", kind="term", axis="syntax");
+field scalar_operator : Compiler -> Enum<add, sub> = atom("scalar_operator", kind="value", axis="syntax");
+
+derive ir(c : Compiler, s : SourceLaw) = compile_affine(body(s), rewrite(c), scalar_operator(c));
+
+law compiler_preservation:
+  forall c in members(Compiler), s in members(SourceLaw), eta in valuations(body(s)):
+    residual_ir(ir(c, s), eta) == residual_source(body(s), eta);
+
+query preservation = check(compiler_preservation) {
+  expose ir(c, s) as ir;
+}

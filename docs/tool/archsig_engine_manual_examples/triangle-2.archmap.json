@@ -1,0 +1,144 @@
+{
+  "schema": "archmap.atom/v1",
+  "document": "triangle-2",
+  "revision": "1",
+  "origin": {"kind": "proposal", "description": "三つの座標と三つの平行移動。"},
+  "sources": [],
+  "atoms": [
+    {
+      "id": "p.exists",
+      "kind": "entity",
+      "axis": "coordinate",
+      "subject": "p",
+      "predicate": "quantity",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "q.exists",
+      "kind": "entity",
+      "axis": "coordinate",
+      "subject": "q",
+      "predicate": "quantity",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "r.exists",
+      "kind": "entity",
+      "axis": "coordinate",
+      "subject": "r",
+      "predicate": "quantity",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "a.exists",
+      "kind": "entity",
+      "axis": "coordinate",
+      "subject": "a",
+      "predicate": "translation",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "a.source",
+      "kind": "relation",
+      "axis": "coordinate",
+      "subject": "a",
+      "predicate": "source",
+      "payload": {"ref": "p"},
+      "sourceRefs": []
+    },
+    {
+      "id": "a.target",
+      "kind": "relation",
+      "axis": "coordinate",
+      "subject": "a",
+      "predicate": "target",
+      "payload": {"ref": "q"},
+      "sourceRefs": []
+    },
+    {
+      "id": "a.shift",
+      "kind": "value",
+      "axis": "coordinate",
+      "subject": "a",
+      "predicate": "shift",
+      "payload": {"q": "1"},
+      "sourceRefs": []
+    },
+    {
+      "id": "b.exists",
+      "kind": "entity",
+      "axis": "coordinate",
+      "subject": "b",
+      "predicate": "translation",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "b.source",
+      "kind": "relation",
+      "axis": "coordinate",
+      "subject": "b",
+      "predicate": "source",
+      "payload": {"ref": "q"},
+      "sourceRefs": []
+    },
+    {
+      "id": "b.target",
+      "kind": "relation",
+      "axis": "coordinate",
+      "subject": "b",
+      "predicate": "target",
+      "payload": {"ref": "r"},
+      "sourceRefs": []
+    },
+    {
+      "id": "b.shift",
+      "kind": "value",
+      "axis": "coordinate",
+      "subject": "b",
+      "predicate": "shift",
+      "payload": {"q": "1"},
+      "sourceRefs": []
+    },
+    {
+      "id": "c.exists",
+      "kind": "entity",
+      "axis": "coordinate",
+      "subject": "c",
+      "predicate": "translation",
+      "payload": null,
+      "sourceRefs": []
+    },
+    {
+      "id": "c.source",
+      "kind": "relation",
+      "axis": "coordinate",
+      "subject": "c",
+      "predicate": "source",
+      "payload": {"ref": "p"},
+      "sourceRefs": []
+    },
+    {
+      "id": "c.target",
+      "kind": "relation",
+      "axis": "coordinate",
+      "subject": "c",
+      "predicate": "target",
+      "payload": {"ref": "r"},
+      "sourceRefs": []
+    },
+    {
+      "id": "c.shift",
+      "kind": "value",
+      "axis": "coordinate",
+      "subject": "c",
+      "predicate": "shift",
+      "payload": {"q": "2"},
+      "sourceRefs": []
+    }
+  ]
+}
