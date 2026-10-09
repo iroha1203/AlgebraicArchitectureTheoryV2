@@ -32,8 +32,8 @@ def lambdaEquiv (A : Set Bool) (F : N.FaceInTargetSubset A) : LambdaFace compari
   left_inv f := by
     apply Subtype.ext; apply Subtype.ext
     rcases h : f.1.1 with G | u
-    · cases G; simp [h, fullSelected]
-    · cases u; simp [h, fullSelected]
+    · cases G; simp [h, fullSelected_val]
+    · cases u; simp [h, fullSelected_val]
   right_inv b := by cases b <;> rfl
 /-- 原右Kan面係数の二座標は同じΛ全liftから生成する。 -/
 def faceCoefficientEquiv (A : Set Bool) (F : N.FaceInTargetSubset A) :

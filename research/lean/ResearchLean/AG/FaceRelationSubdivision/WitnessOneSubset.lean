@@ -58,6 +58,18 @@ def oldSubsetPeriod (A : Set Bool) (hA : A.Nonempty) := (oldSubsetEquiv A hA).h1
 def plusSubsetPeriod (A : Set Bool) (hA : A.Nonempty) := (plusSubsetEquiv A hA).h1Equiv.trans plusH1Period
 /-- minus 全非空 A の実 H¹ を二 period へ移す。 -/
 def minusSubsetPeriod (A : Set Bool) (hA : A.Nonempty) := (minusSubsetEquiv A hA).h1Equiv.trans minusH1Period
+/-- 元粗代表を同じ subset 同型の逆で移すと、元の period を読む。 -/
+@[simp] theorem oldSubsetPeriod_mk (A : Set Bool) (hA : A.Nonempty) (z) :
+    oldSubsetPeriod A hA ((oldSubsetEquiv A hA).h1Equiv.symm
+      ((LinearMap.range (namedComplex N).boundaryToCycles).mkQ z)) = oldPeriod z := by
+  dsimp only [oldSubsetPeriod, LinearEquiv.trans_apply]
+  rw [LinearEquiv.apply_symm_apply, oldH1Period_mk]
+/-- 元 minus 代表を同じ subset 同型の逆で移すと、元の二 period を読む。 -/
+@[simp] theorem minusSubsetPeriod_mk (A : Set Bool) (hA : A.Nonempty) (z) :
+    minusSubsetPeriod A hA ((minusSubsetEquiv A hA).h1Equiv.symm
+      ((LinearMap.range (namedComplex minus).boundaryToCycles).mkQ z)) = minusPeriod z := by
+  dsimp only [minusSubsetPeriod, LinearEquiv.trans_apply]
+  rw [LinearEquiv.apply_symm_apply, minusH1Period_mk]
 /-- 全非空 A の同じ実 plus 射は x→x。 -/
 theorem plus_subset_identity (A : Set Bool) (hA : A.Nonempty) (x : (N.targetSubsetComplex A).H1) :
     plusSubsetPeriod A hA ((plusSubsetHom A).h1Map x)=oldSubsetPeriod A hA x := by
@@ -123,4 +135,6 @@ theorem minus_empty_identity : minusSubsetHom ∅=(emptySubsetEquiv minus).toHom
   letI : Subsingleton (minus.targetSubsetComplex (fineSubset ∅)).C2 := emptySubsetC2Subsingleton minus
   apply cochain_ext <;> apply LinearMap.ext <;> intro x <;> exact Subsingleton.elim _ _
 end AAT.AG.FaceRelationSubdivision.WitnessOne
+#print axioms AAT.AG.FaceRelationSubdivision.WitnessOne.oldSubsetPeriod_mk
+#print axioms AAT.AG.FaceRelationSubdivision.WitnessOne.minusSubsetPeriod_mk
 #assert_standard_axioms_only AAT.AG.FaceRelationSubdivision.WitnessOne

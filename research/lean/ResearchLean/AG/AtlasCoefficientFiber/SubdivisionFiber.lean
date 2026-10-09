@@ -21,9 +21,11 @@ theorem vertical_name (c : N.ChartInTargetSubset A)
   have hm := v.2.1
   change EdgeSubdivision.edgeImage N e v.1.1 = none at hm
   rcases h : v.1.1 with a | (b | o)
-  · simp [h, EdgeSubdivision.edgeImage] at hm
-  · cases b <;> simp [h, EdgeSubdivision.edgeImage] at hm ⊢
-  · simp [h, EdgeSubdivision.edgeImage] at hm
+  · simp only [h, EdgeSubdivision.edgeImage_old, Option.some_ne_none] at hm
+  · cases b with
+    | false => rfl
+    | true => simp only [h, EdgeSubdivision.edgeImage_b, Option.some_ne_none] at hm
+  · simp only [h, EdgeSubdivision.edgeImage_diagonal, Option.some_ne_none] at hm
 
 /-- 原Option表から全AのΦ辺単一性を導く。 -/
 theorem edge_subsingleton (c : N.ChartInTargetSubset A) :

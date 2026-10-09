@@ -150,8 +150,7 @@ theorem minus_extra_period (A : Set Bool) (hA : A.Nonempty) :
       (minusExtraClass A hA)) = (0,1)
   dsimp only [minusExtraClass]
   rw [LinearEquiv.symm_apply_apply]
-  dsimp only [FaceRelationSubdivision.WitnessOne.minusSubsetPeriod, LinearEquiv.trans_apply]
-  rw [LinearEquiv.apply_symm_apply, FaceRelationSubdivision.WitnessOne.minusH1Period_mk,
+  rw [FaceRelationSubdivision.WitnessOne.minusSubsetPeriod_mk,
     FaceRelationSubdivision.WitnessOne.minusPeriod_section]
 /-- 元fine追加代表を同じ原ε両逆で実P商へ移す。 -/
 def minusPExtraClass (A : Set Bool) (hA : A.Nonempty) :=
@@ -177,10 +176,8 @@ def oldLoopClass (A : Set Bool) (hA : A.Nonempty) :=
 /-- 同じ原k類のperiodは1。 -/
 theorem old_loop_period (A : Set Bool) (hA : A.Nonempty) :
     coarseCoordinates A hA (oldLoopClass A hA) = 1 := by
-  dsimp only [coarseCoordinates, oldLoopClass, LinearEquiv.trans_apply,
-    FaceRelationSubdivision.WitnessOne.oldSubsetPeriod]
-  rw [LinearEquiv.symm_apply_apply, LinearEquiv.apply_symm_apply,
-    FaceRelationSubdivision.WitnessOne.oldH1Period_mk,
+  dsimp only [coarseCoordinates, oldLoopClass, LinearEquiv.trans_apply]
+  rw [LinearEquiv.symm_apply_apply, FaceRelationSubdivision.WitnessOne.oldSubsetPeriod_mk,
     FaceRelationSubdivision.WitnessOne.oldPeriod_loop]
 /-- 原ηが保存する同じk類は原Pでも非零。 -/
 theorem minus_mapped_loop_nonzero (A : Set Bool) (hA : A.Nonempty) :

@@ -69,10 +69,11 @@ theorem face_empty (c : N.ChartInTargetSubset A) :
     rcases h : f.1.1 with F | o
     · have hm := f.2.1
       change EdgeSubdivision.faceImage N e f.1.1 = none at hm
-      simp [h, EdgeSubdivision.faceImage] at hm
+      simp only [h, EdgeSubdivision.faceImage_center, Option.some_ne_none] at hm
     · have hm := f.2.2.2.1
-      change EdgeSubdivision.edgeImage N e ((EdgeSubdivision.nerve N e).faceEdge1 f.1.1) = none at hm
-      simp [h, EdgeSubdivision.nerve, EdgeSubdivision.edgeImage] at hm
+      change EdgeSubdivision.edgeImage N e ((EdgeSubdivision.supported N e).nerve.faceEdge1 f.1.1) = none at hm
+      simp only [h, EdgeSubdivision.faceEdge1_triangle, EdgeSubdivision.edgeImage_diagonal,
+        Option.some_ne_none] at hm
 
 /-- 全原Φ対象のzigzag。元面を省略する条件は入力しない。 -/
 theorem zigzag (c : N.ChartInTargetSubset A) (x : PhiInc (EdgeSubdivision.collapse N e) A c) :
@@ -113,10 +114,11 @@ def lambdaEquiv (F : N.FaceInTargetSubset A) :
     have hm := f.2
     change EdgeSubdivision.faceImage N e f.1.1 = some F.1 at hm
     rcases h : f.1.1 with G | o
-    · have he : G = F.1 := by simpa only [h, EdgeSubdivision.faceImage, Option.some.injEq] using hm
+    · have he : G = F.1 := by simpa only [h, EdgeSubdivision.faceImage_center, Option.some.injEq] using hm
       change Sum.inl F.1 = Sum.inl G
       rw [he]
-    · simp [h, EdgeSubdivision.faceImage] at hm
+    · rw [h, EdgeSubdivision.faceImage_triangle] at hm
+      cases hm
   right_inv i := Subsingleton.elim _ _
 
 /-- 同じ原Λの非空・単一性を両逆から得る。 -/
