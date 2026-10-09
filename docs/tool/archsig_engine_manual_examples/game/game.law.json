@@ -1,0 +1,117 @@
+{
+  "schema": "lawdsl.finite-action/v1",
+  "module": "PortableGameOperations",
+  "version": 1,
+  "use": [
+    {
+      "module": "finite_terms",
+      "version": 1
+    },
+    {
+      "module": "finite_action",
+      "version": 1
+    }
+  ],
+  "vocabulary": {
+    "declarations": {
+      "kind": "entity",
+      "axis": "program",
+      "predicate": "declaration"
+    },
+    "definitions": {
+      "kind": "term",
+      "axis": "program",
+      "predicate": "definition"
+    },
+    "usages": {
+      "kind": "entity",
+      "axis": "usage",
+      "predicate": "exposure"
+    },
+    "slot": {
+      "kind": "value",
+      "axis": "usage",
+      "predicate": "slot"
+    },
+    "target": {
+      "kind": "relation",
+      "axis": "usage",
+      "predicate": "target"
+    },
+    "label": {
+      "kind": "value",
+      "axis": "usage",
+      "predicate": "label"
+    }
+  },
+  "bindings": {
+    "G": {
+      "slot": "state-domain",
+      "cardinality": "one"
+    },
+    "U": {
+      "slot": "input-domain",
+      "cardinality": "one"
+    },
+    "P": {
+      "slot": "turn",
+      "cardinality": "one"
+    },
+    "V": {
+      "slot": "state-reading",
+      "cardinality": "one"
+    },
+    "E": {
+      "slot": "recording",
+      "cardinality": "many"
+    }
+  },
+  "laws": {
+    "portable_recording": {
+      "operator": "factors_action",
+      "action": "operations",
+      "quantification": "all_finite_states_and_inputs"
+    }
+  },
+  "queries": [
+    {
+      "name": "operations",
+      "operator": "finite_action_quotient",
+      "states": {
+        "invoke": "G"
+      },
+      "inputs": {
+        "invoke": "U"
+      },
+      "step": "P",
+      "reading": "V",
+      "evaluation": {
+        "invoke": "V",
+        "arguments": [
+          {
+            "invoke": "P",
+            "arguments": [
+              {
+                "variable": "state"
+              },
+              {
+                "variable": "input"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "recordings",
+      "operator": "compare_encodings",
+      "law": "portable_recording",
+      "encoders": "E"
+    },
+    {
+      "name": "order",
+      "operator": "compare_compositions",
+      "action": "operations"
+    }
+  ]
+}

@@ -1,0 +1,3936 @@
+{
+  "schema": "archmap.atom/v1",
+  "document": "game-operations",
+  "revision": "1",
+  "origin": {
+    "kind": "model",
+    "description": "有限ゲームのコード、ホストへの登録、記録候補の原始式。"
+  },
+  "sources": [
+    {
+      "id": "s000",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 6,
+      "endLine": 6
+    },
+    {
+      "id": "s001",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 7,
+      "endLine": 7
+    },
+    {
+      "id": "s002",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 8,
+      "endLine": 8
+    },
+    {
+      "id": "s003",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 9,
+      "endLine": 9
+    },
+    {
+      "id": "s004",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 10,
+      "endLine": 10
+    },
+    {
+      "id": "s005",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 11,
+      "endLine": 11
+    },
+    {
+      "id": "s006",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 12,
+      "endLine": 12
+    },
+    {
+      "id": "s007",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 13,
+      "endLine": 13
+    },
+    {
+      "id": "s008",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 14,
+      "endLine": 14
+    },
+    {
+      "id": "s009",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 15,
+      "endLine": 15
+    },
+    {
+      "id": "s010",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 19,
+      "endLine": 23
+    },
+    {
+      "id": "s011",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 27,
+      "endLine": 30
+    },
+    {
+      "id": "s012",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 34,
+      "endLine": 37
+    },
+    {
+      "id": "s013",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 40,
+      "endLine": 41
+    },
+    {
+      "id": "s014",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 44,
+      "endLine": 45
+    },
+    {
+      "id": "s015",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 48,
+      "endLine": 55
+    },
+    {
+      "id": "s016",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 58,
+      "endLine": 69
+    },
+    {
+      "id": "s017",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 72,
+      "endLine": 73
+    },
+    {
+      "id": "s018",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 76,
+      "endLine": 77
+    },
+    {
+      "id": "s019",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 83,
+      "endLine": 87
+    },
+    {
+      "id": "s020",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 90,
+      "endLine": 92
+    },
+    {
+      "id": "s021",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 96,
+      "endLine": 97
+    },
+    {
+      "id": "s022",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 100,
+      "endLine": 101
+    },
+    {
+      "id": "s023",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 104,
+      "endLine": 107
+    },
+    {
+      "id": "s024",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 110,
+      "endLine": 114
+    },
+    {
+      "id": "s025",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 117,
+      "endLine": 118
+    },
+    {
+      "id": "s026",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 121,
+      "endLine": 122
+    },
+    {
+      "id": "s027",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 125,
+      "endLine": 126
+    },
+    {
+      "id": "s028",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 129,
+      "endLine": 130
+    },
+    {
+      "id": "s029",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 133,
+      "endLine": 134
+    },
+    {
+      "id": "s030",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 139,
+      "endLine": 144
+    },
+    {
+      "id": "s031",
+      "revision": "game-example/1",
+      "path": "game.py",
+      "startLine": 145,
+      "endLine": 149
+    }
+  ],
+  "atoms": [
+    {
+      "id": "a000",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d000",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s000"
+      ]
+    },
+    {
+      "id": "a001",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d000",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "finite_set",
+            [
+              "tuple",
+              [
+                "literal",
+                0
+              ],
+              [
+                "literal",
+                0
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                1
+              ],
+              [
+                "literal",
+                0
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                2
+              ],
+              [
+                "literal",
+                0
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                0
+              ],
+              [
+                "literal",
+                1
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                2
+              ],
+              [
+                "literal",
+                1
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                0
+              ],
+              [
+                "literal",
+                2
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                1
+              ],
+              [
+                "literal",
+                2
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                2
+              ],
+              [
+                "literal",
+                2
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s000"
+      ]
+    },
+    {
+      "id": "a002",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d001",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s001"
+      ]
+    },
+    {
+      "id": "a003",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d001",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "tuple",
+            [
+              "literal",
+              2
+            ],
+            [
+              "literal",
+              2
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s001"
+      ]
+    },
+    {
+      "id": "a004",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d002",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s002"
+      ]
+    },
+    {
+      "id": "a005",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d002",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "tuple",
+            [
+              "literal",
+              "up"
+            ],
+            [
+              "literal",
+              "right"
+            ],
+            [
+              "literal",
+              "down"
+            ],
+            [
+              "literal",
+              "left"
+            ],
+            [
+              "literal",
+              "hit"
+            ],
+            [
+              "literal",
+              "wait"
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s002"
+      ]
+    },
+    {
+      "id": "a006",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d003",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s003"
+      ]
+    },
+    {
+      "id": "a007",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d003",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "finite_map",
+            [
+              [
+                [
+                  "literal",
+                  "up"
+                ],
+                [
+                  "tuple",
+                  [
+                    "literal",
+                    0
+                  ],
+                  [
+                    "negate",
+                    [
+                      "literal",
+                      1
+                    ]
+                  ]
+                ]
+              ],
+              [
+                [
+                  "literal",
+                  "right"
+                ],
+                [
+                  "tuple",
+                  [
+                    "literal",
+                    1
+                  ],
+                  [
+                    "literal",
+                    0
+                  ]
+                ]
+              ],
+              [
+                [
+                  "literal",
+                  "down"
+                ],
+                [
+                  "tuple",
+                  [
+                    "literal",
+                    0
+                  ],
+                  [
+                    "literal",
+                    1
+                  ]
+                ]
+              ],
+              [
+                [
+                  "literal",
+                  "left"
+                ],
+                [
+                  "tuple",
+                  [
+                    "negate",
+                    [
+                      "literal",
+                      1
+                    ]
+                  ],
+                  [
+                    "literal",
+                    0
+                  ]
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s003"
+      ]
+    },
+    {
+      "id": "a008",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d004",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s004"
+      ]
+    },
+    {
+      "id": "a009",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d004",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "tuple",
+            [
+              "tuple",
+              [
+                "literal",
+                1
+              ],
+              [
+                "literal",
+                0
+              ],
+              [
+                "literal",
+                0
+              ],
+              [
+                "literal",
+                1
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                0
+              ],
+              [
+                "negate",
+                [
+                  "literal",
+                  1
+                ]
+              ],
+              [
+                "literal",
+                1
+              ],
+              [
+                "literal",
+                0
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "negate",
+                [
+                  "literal",
+                  1
+                ]
+              ],
+              [
+                "literal",
+                0
+              ],
+              [
+                "literal",
+                0
+              ],
+              [
+                "negate",
+                [
+                  "literal",
+                  1
+                ]
+              ]
+            ],
+            [
+              "tuple",
+              [
+                "literal",
+                0
+              ],
+              [
+                "literal",
+                1
+              ],
+              [
+                "negate",
+                [
+                  "literal",
+                  1
+                ]
+              ],
+              [
+                "literal",
+                0
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s004"
+      ]
+    },
+    {
+      "id": "a010",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d005",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s005"
+      ]
+    },
+    {
+      "id": "a011",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d005",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "tuple",
+            [
+              "literal",
+              0
+            ],
+            [
+              "literal",
+              1
+            ],
+            [
+              "literal",
+              2
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s005"
+      ]
+    },
+    {
+      "id": "a012",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d006",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s006"
+      ]
+    },
+    {
+      "id": "a013",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d006",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "tuple",
+            [
+              "literal",
+              0
+            ],
+            [
+              "literal",
+              1
+            ],
+            [
+              "literal",
+              2
+            ],
+            [
+              "literal",
+              3
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s006"
+      ]
+    },
+    {
+      "id": "a014",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d007",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s007"
+      ]
+    },
+    {
+      "id": "a015",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d007",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "tuple",
+            [
+              "literal",
+              0
+            ],
+            [
+              "literal",
+              1
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s007"
+      ]
+    },
+    {
+      "id": "a016",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d008",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s008"
+      ]
+    },
+    {
+      "id": "a017",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d008",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "tuple",
+            [
+              "literal",
+              0
+            ],
+            [
+              "literal",
+              1
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s008"
+      ]
+    },
+    {
+      "id": "a018",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d009",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s009"
+      ]
+    },
+    {
+      "id": "a019",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d009",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "constant",
+          "value": [
+            "tuple",
+            [
+              "literal",
+              0
+            ],
+            [
+              "literal",
+              1
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s009"
+      ]
+    },
+    {
+      "id": "a020",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d010",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s010"
+      ]
+    },
+    {
+      "id": "a021",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d010",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "record",
+          "fields": [
+            {
+              "name": "x",
+              "type": "Int"
+            },
+            {
+              "name": "y",
+              "type": "Int"
+            },
+            {
+              "name": "health",
+              "type": "Int"
+            },
+            {
+              "name": "monster_health",
+              "type": "Int"
+            }
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s010"
+      ]
+    },
+    {
+      "id": "a022",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d011",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s011"
+      ]
+    },
+    {
+      "id": "a023",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d011",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "record",
+          "fields": [
+            {
+              "name": "quarter_turn",
+              "type": "Int"
+            },
+            {
+              "name": "palette",
+              "type": "Int"
+            },
+            {
+              "name": "animation_frame",
+              "type": "Int"
+            }
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s011"
+      ]
+    },
+    {
+      "id": "a024",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d012",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s012"
+      ]
+    },
+    {
+      "id": "a025",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d012",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "record",
+          "fields": [
+            {
+              "name": "kind",
+              "type": "String"
+            },
+            {
+              "name": "dx",
+              "type": "Int",
+              "default": [
+                "literal",
+                0
+              ]
+            },
+            {
+              "name": "dy",
+              "type": "Int",
+              "default": [
+                "literal",
+                0
+              ]
+            }
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s012"
+      ]
+    },
+    {
+      "id": "a026",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d013",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s013"
+      ]
+    },
+    {
+      "id": "a027",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d013",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "s",
+              "type": {
+                "ref": "d010"
+              }
+            }
+          ],
+          "resultType": "Bool",
+          "body": [
+            "all",
+            [
+              "member",
+              [
+                "tuple",
+                [
+                  "field",
+                  [
+                    "local",
+                    "s"
+                  ],
+                  "x"
+                ],
+                [
+                  "field",
+                  [
+                    "local",
+                    "s"
+                  ],
+                  "y"
+                ]
+              ],
+              [
+                "global",
+                {
+                  "ref": "d000"
+                }
+              ]
+            ],
+            [
+              "member",
+              [
+                "field",
+                [
+                  "local",
+                  "s"
+                ],
+                "health"
+              ],
+              [
+                "global",
+                {
+                  "ref": "d005"
+                }
+              ]
+            ],
+            [
+              "member",
+              [
+                "field",
+                [
+                  "local",
+                  "s"
+                ],
+                "monster_health"
+              ],
+              [
+                "global",
+                {
+                  "ref": "d005"
+                }
+              ]
+            ],
+            [
+              "any",
+              [
+                "greater",
+                [
+                  "field",
+                  [
+                    "local",
+                    "s"
+                  ],
+                  "health"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ],
+              [
+                "greater",
+                [
+                  "field",
+                  [
+                    "local",
+                    "s"
+                  ],
+                  "monster_health"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ]
+            ],
+            [
+              "any",
+              [
+                "equal",
+                [
+                  "field",
+                  [
+                    "local",
+                    "s"
+                  ],
+                  "monster_health"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ],
+              [
+                "different",
+                [
+                  "tuple",
+                  [
+                    "field",
+                    [
+                      "local",
+                      "s"
+                    ],
+                    "x"
+                  ],
+                  [
+                    "field",
+                    [
+                      "local",
+                      "s"
+                    ],
+                    "y"
+                  ]
+                ],
+                [
+                  "global",
+                  {
+                    "ref": "d001"
+                  }
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s013"
+      ]
+    },
+    {
+      "id": "a028",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d014",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s014"
+      ]
+    },
+    {
+      "id": "a029",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d014",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "s",
+              "type": {
+                "ref": "d010"
+              }
+            }
+          ],
+          "resultType": "Bool",
+          "body": [
+            "equal",
+            [
+              "add",
+              [
+                "builtin",
+                "abs",
+                [
+                  [
+                    "subtract",
+                    [
+                      "field",
+                      [
+                        "local",
+                        "s"
+                      ],
+                      "x"
+                    ],
+                    [
+                      "lookup",
+                      [
+                        "global",
+                        {
+                          "ref": "d001"
+                        }
+                      ],
+                      [
+                        "literal",
+                        0
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "builtin",
+                "abs",
+                [
+                  [
+                    "subtract",
+                    [
+                      "field",
+                      [
+                        "local",
+                        "s"
+                      ],
+                      "y"
+                    ],
+                    [
+                      "lookup",
+                      [
+                        "global",
+                        {
+                          "ref": "d001"
+                        }
+                      ],
+                      [
+                        "literal",
+                        1
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "literal",
+              1
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s014"
+      ]
+    },
+    {
+      "id": "a030",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d015",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s015"
+      ]
+    },
+    {
+      "id": "a031",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d015",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "String"
+            },
+            {
+              "name": "view",
+              "type": {
+                "ref": "d011"
+              }
+            }
+          ],
+          "resultType": {
+            "ref": "d012"
+          },
+          "body": [
+            "if",
+            [
+              "equal",
+              [
+                "local",
+                "key"
+              ],
+              [
+                "literal",
+                "hit"
+              ]
+            ],
+            [
+              "apply",
+              {
+                "ref": "d012"
+              },
+              [
+                [
+                  "literal",
+                  "attack"
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "equal",
+                [
+                  "local",
+                  "key"
+                ],
+                [
+                  "literal",
+                  "wait"
+                ]
+              ],
+              [
+                "apply",
+                {
+                  "ref": "d012"
+                },
+                [
+                  [
+                    "literal",
+                    "wait"
+                  ]
+                ]
+              ],
+              [
+                "let",
+                "local_tuple_53",
+                [
+                  "lookup",
+                  [
+                    "global",
+                    {
+                      "ref": "d003"
+                    }
+                  ],
+                  [
+                    "local",
+                    "key"
+                  ]
+                ],
+                [
+                  "let",
+                  "x",
+                  [
+                    "lookup",
+                    [
+                      "local",
+                      "local_tuple_53"
+                    ],
+                    [
+                      "literal",
+                      0
+                    ]
+                  ],
+                  [
+                    "let",
+                    "y",
+                    [
+                      "lookup",
+                      [
+                        "local",
+                        "local_tuple_53"
+                      ],
+                      [
+                        "literal",
+                        1
+                      ]
+                    ],
+                    [
+                      "let",
+                      "local_tuple_54",
+                      [
+                        "lookup",
+                        [
+                          "global",
+                          {
+                            "ref": "d004"
+                          }
+                        ],
+                        [
+                          "field",
+                          [
+                            "local",
+                            "view"
+                          ],
+                          "quarter_turn"
+                        ]
+                      ],
+                      [
+                        "let",
+                        "a",
+                        [
+                          "lookup",
+                          [
+                            "local",
+                            "local_tuple_54"
+                          ],
+                          [
+                            "literal",
+                            0
+                          ]
+                        ],
+                        [
+                          "let",
+                          "b",
+                          [
+                            "lookup",
+                            [
+                              "local",
+                              "local_tuple_54"
+                            ],
+                            [
+                              "literal",
+                              1
+                            ]
+                          ],
+                          [
+                            "let",
+                            "c",
+                            [
+                              "lookup",
+                              [
+                                "local",
+                                "local_tuple_54"
+                              ],
+                              [
+                                "literal",
+                                2
+                              ]
+                            ],
+                            [
+                              "let",
+                              "d",
+                              [
+                                "lookup",
+                                [
+                                  "local",
+                                  "local_tuple_54"
+                                ],
+                                [
+                                  "literal",
+                                  3
+                                ]
+                              ],
+                              [
+                                "apply",
+                                {
+                                  "ref": "d012"
+                                },
+                                [
+                                  [
+                                    "literal",
+                                    "move"
+                                  ],
+                                  [
+                                    "add",
+                                    [
+                                      "multiply",
+                                      [
+                                        "local",
+                                        "a"
+                                      ],
+                                      [
+                                        "local",
+                                        "x"
+                                      ]
+                                    ],
+                                    [
+                                      "multiply",
+                                      [
+                                        "local",
+                                        "b"
+                                      ],
+                                      [
+                                        "local",
+                                        "y"
+                                      ]
+                                    ]
+                                  ],
+                                  [
+                                    "add",
+                                    [
+                                      "multiply",
+                                      [
+                                        "local",
+                                        "c"
+                                      ],
+                                      [
+                                        "local",
+                                        "x"
+                                      ]
+                                    ],
+                                    [
+                                      "multiply",
+                                      [
+                                        "local",
+                                        "d"
+                                      ],
+                                      [
+                                        "local",
+                                        "y"
+                                      ]
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s015"
+      ]
+    },
+    {
+      "id": "a032",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d016",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s016"
+      ]
+    },
+    {
+      "id": "a033",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d016",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "s",
+              "type": {
+                "ref": "d010"
+              }
+            },
+            {
+              "name": "command",
+              "type": {
+                "ref": "d012"
+              }
+            },
+            {
+              "name": "damage_bonus",
+              "type": "Int"
+            }
+          ],
+          "resultType": {
+            "ref": "d010"
+          },
+          "body": [
+            "if",
+            [
+              "any",
+              [
+                "equal",
+                [
+                  "field",
+                  [
+                    "local",
+                    "s"
+                  ],
+                  "health"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ],
+              [
+                "equal",
+                [
+                  "field",
+                  [
+                    "local",
+                    "s"
+                  ],
+                  "monster_health"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ]
+            ],
+            [
+              "local",
+              "s"
+            ],
+            [
+              "if",
+              [
+                "equal",
+                [
+                  "field",
+                  [
+                    "local",
+                    "command"
+                  ],
+                  "kind"
+                ],
+                [
+                  "literal",
+                  "move"
+                ]
+              ],
+              [
+                "let",
+                "destination",
+                [
+                  "tuple",
+                  [
+                    "add",
+                    [
+                      "field",
+                      [
+                        "local",
+                        "s"
+                      ],
+                      "x"
+                    ],
+                    [
+                      "field",
+                      [
+                        "local",
+                        "command"
+                      ],
+                      "dx"
+                    ]
+                  ],
+                  [
+                    "add",
+                    [
+                      "field",
+                      [
+                        "local",
+                        "s"
+                      ],
+                      "y"
+                    ],
+                    [
+                      "field",
+                      [
+                        "local",
+                        "command"
+                      ],
+                      "dy"
+                    ]
+                  ]
+                ],
+                [
+                  "if",
+                  [
+                    "all",
+                    [
+                      "member",
+                      [
+                        "local",
+                        "destination"
+                      ],
+                      [
+                        "global",
+                        {
+                          "ref": "d000"
+                        }
+                      ]
+                    ],
+                    [
+                      "different",
+                      [
+                        "local",
+                        "destination"
+                      ],
+                      [
+                        "global",
+                        {
+                          "ref": "d001"
+                        }
+                      ]
+                    ]
+                  ],
+                  [
+                    "let",
+                    "s",
+                    [
+                      "record_copy",
+                      [
+                        "local",
+                        "s"
+                      ],
+                      {
+                        "x": [
+                          "lookup",
+                          [
+                            "local",
+                            "destination"
+                          ],
+                          [
+                            "literal",
+                            0
+                          ]
+                        ],
+                        "y": [
+                          "lookup",
+                          [
+                            "local",
+                            "destination"
+                          ],
+                          [
+                            "literal",
+                            1
+                          ]
+                        ]
+                      }
+                    ],
+                    [
+                      "if",
+                      [
+                        "all",
+                        [
+                          "equal",
+                          [
+                            "field",
+                            [
+                              "local",
+                              "command"
+                            ],
+                            "kind"
+                          ],
+                          [
+                            "literal",
+                            "attack"
+                          ]
+                        ],
+                        [
+                          "apply",
+                          {
+                            "ref": "d014"
+                          },
+                          [
+                            [
+                              "local",
+                              "s"
+                            ]
+                          ]
+                        ]
+                      ],
+                      [
+                        "let",
+                        "s",
+                        [
+                          "record_copy",
+                          [
+                            "local",
+                            "s"
+                          ],
+                          {
+                            "monster_health": [
+                              "builtin",
+                              "max",
+                              [
+                                [
+                                  "literal",
+                                  0
+                                ],
+                                [
+                                  "subtract",
+                                  [
+                                    "field",
+                                    [
+                                      "local",
+                                      "s"
+                                    ],
+                                    "monster_health"
+                                  ],
+                                  [
+                                    "add",
+                                    [
+                                      "literal",
+                                      1
+                                    ],
+                                    [
+                                      "local",
+                                      "damage_bonus"
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "if",
+                          [
+                            "all",
+                            [
+                              "greater",
+                              [
+                                "field",
+                                [
+                                  "local",
+                                  "s"
+                                ],
+                                "monster_health"
+                              ],
+                              [
+                                "literal",
+                                0
+                              ]
+                            ],
+                            [
+                              "apply",
+                              {
+                                "ref": "d014"
+                              },
+                              [
+                                [
+                                  "local",
+                                  "s"
+                                ]
+                              ]
+                            ]
+                          ],
+                          [
+                            "let",
+                            "s",
+                            [
+                              "record_copy",
+                              [
+                                "local",
+                                "s"
+                              ],
+                              {
+                                "health": [
+                                  "builtin",
+                                  "max",
+                                  [
+                                    [
+                                      "literal",
+                                      0
+                                    ],
+                                    [
+                                      "subtract",
+                                      [
+                                        "field",
+                                        [
+                                          "local",
+                                          "s"
+                                        ],
+                                        "health"
+                                      ],
+                                      [
+                                        "literal",
+                                        1
+                                      ]
+                                    ]
+                                  ]
+                                ]
+                              }
+                            ],
+                            [
+                              "local",
+                              "s"
+                            ]
+                          ],
+                          [
+                            "local",
+                            "s"
+                          ]
+                        ]
+                      ],
+                      [
+                        "if",
+                        [
+                          "all",
+                          [
+                            "greater",
+                            [
+                              "field",
+                              [
+                                "local",
+                                "s"
+                              ],
+                              "monster_health"
+                            ],
+                            [
+                              "literal",
+                              0
+                            ]
+                          ],
+                          [
+                            "apply",
+                            {
+                              "ref": "d014"
+                            },
+                            [
+                              [
+                                "local",
+                                "s"
+                              ]
+                            ]
+                          ]
+                        ],
+                        [
+                          "let",
+                          "s",
+                          [
+                            "record_copy",
+                            [
+                              "local",
+                              "s"
+                            ],
+                            {
+                              "health": [
+                                "builtin",
+                                "max",
+                                [
+                                  [
+                                    "literal",
+                                    0
+                                  ],
+                                  [
+                                    "subtract",
+                                    [
+                                      "field",
+                                      [
+                                        "local",
+                                        "s"
+                                      ],
+                                      "health"
+                                    ],
+                                    [
+                                      "literal",
+                                      1
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            }
+                          ],
+                          [
+                            "local",
+                            "s"
+                          ]
+                        ],
+                        [
+                          "local",
+                          "s"
+                        ]
+                      ]
+                    ]
+                  ],
+                  [
+                    "if",
+                    [
+                      "all",
+                      [
+                        "equal",
+                        [
+                          "field",
+                          [
+                            "local",
+                            "command"
+                          ],
+                          "kind"
+                        ],
+                        [
+                          "literal",
+                          "attack"
+                        ]
+                      ],
+                      [
+                        "apply",
+                        {
+                          "ref": "d014"
+                        },
+                        [
+                          [
+                            "local",
+                            "s"
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "let",
+                      "s",
+                      [
+                        "record_copy",
+                        [
+                          "local",
+                          "s"
+                        ],
+                        {
+                          "monster_health": [
+                            "builtin",
+                            "max",
+                            [
+                              [
+                                "literal",
+                                0
+                              ],
+                              [
+                                "subtract",
+                                [
+                                  "field",
+                                  [
+                                    "local",
+                                    "s"
+                                  ],
+                                  "monster_health"
+                                ],
+                                [
+                                  "add",
+                                  [
+                                    "literal",
+                                    1
+                                  ],
+                                  [
+                                    "local",
+                                    "damage_bonus"
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        }
+                      ],
+                      [
+                        "if",
+                        [
+                          "all",
+                          [
+                            "greater",
+                            [
+                              "field",
+                              [
+                                "local",
+                                "s"
+                              ],
+                              "monster_health"
+                            ],
+                            [
+                              "literal",
+                              0
+                            ]
+                          ],
+                          [
+                            "apply",
+                            {
+                              "ref": "d014"
+                            },
+                            [
+                              [
+                                "local",
+                                "s"
+                              ]
+                            ]
+                          ]
+                        ],
+                        [
+                          "let",
+                          "s",
+                          [
+                            "record_copy",
+                            [
+                              "local",
+                              "s"
+                            ],
+                            {
+                              "health": [
+                                "builtin",
+                                "max",
+                                [
+                                  [
+                                    "literal",
+                                    0
+                                  ],
+                                  [
+                                    "subtract",
+                                    [
+                                      "field",
+                                      [
+                                        "local",
+                                        "s"
+                                      ],
+                                      "health"
+                                    ],
+                                    [
+                                      "literal",
+                                      1
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            }
+                          ],
+                          [
+                            "local",
+                            "s"
+                          ]
+                        ],
+                        [
+                          "local",
+                          "s"
+                        ]
+                      ]
+                    ],
+                    [
+                      "if",
+                      [
+                        "all",
+                        [
+                          "greater",
+                          [
+                            "field",
+                            [
+                              "local",
+                              "s"
+                            ],
+                            "monster_health"
+                          ],
+                          [
+                            "literal",
+                            0
+                          ]
+                        ],
+                        [
+                          "apply",
+                          {
+                            "ref": "d014"
+                          },
+                          [
+                            [
+                              "local",
+                              "s"
+                            ]
+                          ]
+                        ]
+                      ],
+                      [
+                        "let",
+                        "s",
+                        [
+                          "record_copy",
+                          [
+                            "local",
+                            "s"
+                          ],
+                          {
+                            "health": [
+                              "builtin",
+                              "max",
+                              [
+                                [
+                                  "literal",
+                                  0
+                                ],
+                                [
+                                  "subtract",
+                                  [
+                                    "field",
+                                    [
+                                      "local",
+                                      "s"
+                                    ],
+                                    "health"
+                                  ],
+                                  [
+                                    "literal",
+                                    1
+                                  ]
+                                ]
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "local",
+                          "s"
+                        ]
+                      ],
+                      [
+                        "local",
+                        "s"
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "if",
+                [
+                  "all",
+                  [
+                    "equal",
+                    [
+                      "field",
+                      [
+                        "local",
+                        "command"
+                      ],
+                      "kind"
+                    ],
+                    [
+                      "literal",
+                      "attack"
+                    ]
+                  ],
+                  [
+                    "apply",
+                    {
+                      "ref": "d014"
+                    },
+                    [
+                      [
+                        "local",
+                        "s"
+                      ]
+                    ]
+                  ]
+                ],
+                [
+                  "let",
+                  "s",
+                  [
+                    "record_copy",
+                    [
+                      "local",
+                      "s"
+                    ],
+                    {
+                      "monster_health": [
+                        "builtin",
+                        "max",
+                        [
+                          [
+                            "literal",
+                            0
+                          ],
+                          [
+                            "subtract",
+                            [
+                              "field",
+                              [
+                                "local",
+                                "s"
+                              ],
+                              "monster_health"
+                            ],
+                            [
+                              "add",
+                              [
+                                "literal",
+                                1
+                              ],
+                              [
+                                "local",
+                                "damage_bonus"
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    "if",
+                    [
+                      "all",
+                      [
+                        "greater",
+                        [
+                          "field",
+                          [
+                            "local",
+                            "s"
+                          ],
+                          "monster_health"
+                        ],
+                        [
+                          "literal",
+                          0
+                        ]
+                      ],
+                      [
+                        "apply",
+                        {
+                          "ref": "d014"
+                        },
+                        [
+                          [
+                            "local",
+                            "s"
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "let",
+                      "s",
+                      [
+                        "record_copy",
+                        [
+                          "local",
+                          "s"
+                        ],
+                        {
+                          "health": [
+                            "builtin",
+                            "max",
+                            [
+                              [
+                                "literal",
+                                0
+                              ],
+                              [
+                                "subtract",
+                                [
+                                  "field",
+                                  [
+                                    "local",
+                                    "s"
+                                  ],
+                                  "health"
+                                ],
+                                [
+                                  "literal",
+                                  1
+                                ]
+                              ]
+                            ]
+                          ]
+                        }
+                      ],
+                      [
+                        "local",
+                        "s"
+                      ]
+                    ],
+                    [
+                      "local",
+                      "s"
+                    ]
+                  ]
+                ],
+                [
+                  "if",
+                  [
+                    "all",
+                    [
+                      "greater",
+                      [
+                        "field",
+                        [
+                          "local",
+                          "s"
+                        ],
+                        "monster_health"
+                      ],
+                      [
+                        "literal",
+                        0
+                      ]
+                    ],
+                    [
+                      "apply",
+                      {
+                        "ref": "d014"
+                      },
+                      [
+                        [
+                          "local",
+                          "s"
+                        ]
+                      ]
+                    ]
+                  ],
+                  [
+                    "let",
+                    "s",
+                    [
+                      "record_copy",
+                      [
+                        "local",
+                        "s"
+                      ],
+                      {
+                        "health": [
+                          "builtin",
+                          "max",
+                          [
+                            [
+                              "literal",
+                              0
+                            ],
+                            [
+                              "subtract",
+                              [
+                                "field",
+                                [
+                                  "local",
+                                  "s"
+                                ],
+                                "health"
+                              ],
+                              [
+                                "literal",
+                                1
+                              ]
+                            ]
+                          ]
+                        ]
+                      }
+                    ],
+                    [
+                      "local",
+                      "s"
+                    ]
+                  ],
+                  [
+                    "local",
+                    "s"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s016"
+      ]
+    },
+    {
+      "id": "a034",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d017",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s017"
+      ]
+    },
+    {
+      "id": "a035",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d017",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "s",
+              "type": {
+                "ref": "d010"
+              }
+            },
+            {
+              "name": "key",
+              "type": "String"
+            },
+            {
+              "name": "view",
+              "type": {
+                "ref": "d011"
+              }
+            },
+            {
+              "name": "damage_bonus",
+              "type": "Int"
+            }
+          ],
+          "resultType": {
+            "ref": "d010"
+          },
+          "body": [
+            "apply",
+            {
+              "ref": "d016"
+            },
+            [
+              [
+                "local",
+                "s"
+              ],
+              [
+                "apply",
+                {
+                  "ref": "d015"
+                },
+                [
+                  [
+                    "local",
+                    "key"
+                  ],
+                  [
+                    "local",
+                    "view"
+                  ]
+                ]
+              ],
+              [
+                "local",
+                "damage_bonus"
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s017"
+      ]
+    },
+    {
+      "id": "a036",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d018",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s018"
+      ]
+    },
+    {
+      "id": "a037",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d018",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "s",
+              "type": {
+                "ref": "d010"
+              }
+            },
+            {
+              "name": "view",
+              "type": {
+                "ref": "d011"
+              }
+            }
+          ],
+          "resultType": "Tuple",
+          "body": [
+            "tuple",
+            [
+              "field",
+              [
+                "local",
+                "s"
+              ],
+              "x"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "s"
+              ],
+              "y"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "s"
+              ],
+              "health"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "s"
+              ],
+              "monster_health"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "view"
+              ],
+              "quarter_turn"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "view"
+              ],
+              "palette"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "view"
+              ],
+              "animation_frame"
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s018"
+      ]
+    },
+    {
+      "id": "a038",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d019",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s019"
+      ]
+    },
+    {
+      "id": "a039",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d019",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "record",
+          "fields": [
+            {
+              "name": "kind",
+              "type": "String"
+            },
+            {
+              "name": "dx",
+              "type": "Int"
+            },
+            {
+              "name": "dy",
+              "type": "Int"
+            },
+            {
+              "name": "damage_bonus",
+              "type": "Int"
+            }
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s019"
+      ]
+    },
+    {
+      "id": "a040",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d020",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s020"
+      ]
+    },
+    {
+      "id": "a041",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d020",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "String"
+            },
+            {
+              "name": "view",
+              "type": {
+                "ref": "d011"
+              }
+            },
+            {
+              "name": "damage_bonus",
+              "type": "Int"
+            }
+          ],
+          "resultType": {
+            "ref": "d019"
+          },
+          "body": [
+            "let",
+            "command",
+            [
+              "apply",
+              {
+                "ref": "d015"
+              },
+              [
+                [
+                  "local",
+                  "key"
+                ],
+                [
+                  "local",
+                  "view"
+                ]
+              ]
+            ],
+            [
+              "apply",
+              {
+                "ref": "d019"
+              },
+              [
+                [
+                  "field",
+                  [
+                    "local",
+                    "command"
+                  ],
+                  "kind"
+                ],
+                [
+                  "field",
+                  [
+                    "local",
+                    "command"
+                  ],
+                  "dx"
+                ],
+                [
+                  "field",
+                  [
+                    "local",
+                    "command"
+                  ],
+                  "dy"
+                ],
+                [
+                  "if",
+                  [
+                    "equal",
+                    [
+                      "field",
+                      [
+                        "local",
+                        "command"
+                      ],
+                      "kind"
+                    ],
+                    [
+                      "literal",
+                      "attack"
+                    ]
+                  ],
+                  [
+                    "local",
+                    "damage_bonus"
+                  ],
+                  [
+                    "literal",
+                    0
+                  ]
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s020"
+      ]
+    },
+    {
+      "id": "a042",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d021",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s021"
+      ]
+    },
+    {
+      "id": "a043",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d021",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "String"
+            },
+            {
+              "name": "view",
+              "type": {
+                "ref": "d011"
+              }
+            },
+            {
+              "name": "damage_bonus",
+              "type": "Int"
+            }
+          ],
+          "resultType": "String",
+          "body": [
+            "local",
+            "key"
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s021"
+      ]
+    },
+    {
+      "id": "a044",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d022",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s022"
+      ]
+    },
+    {
+      "id": "a045",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d022",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "String"
+            },
+            {
+              "name": "view",
+              "type": {
+                "ref": "d011"
+              }
+            },
+            {
+              "name": "damage_bonus",
+              "type": "Int"
+            }
+          ],
+          "resultType": {
+            "ref": "d012"
+          },
+          "body": [
+            "apply",
+            {
+              "ref": "d015"
+            },
+            [
+              [
+                "local",
+                "key"
+              ],
+              [
+                "local",
+                "view"
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s022"
+      ]
+    },
+    {
+      "id": "a046",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d023",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s023"
+      ]
+    },
+    {
+      "id": "a047",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d023",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [],
+          "resultType": "Tuple",
+          "body": [
+            "collect",
+            [
+              [
+                "p",
+                [
+                  "global",
+                  {
+                    "ref": "d000"
+                  }
+                ]
+              ],
+              [
+                "h",
+                [
+                  "global",
+                  {
+                    "ref": "d005"
+                  }
+                ]
+              ],
+              [
+                "m",
+                [
+                  "global",
+                  {
+                    "ref": "d005"
+                  }
+                ]
+              ]
+            ],
+            [
+              "all",
+              [
+                "apply",
+                {
+                  "ref": "d013"
+                },
+                [
+                  [
+                    "apply",
+                    {
+                      "ref": "d010"
+                    },
+                    [
+                      [
+                        "lookup",
+                        [
+                          "local",
+                          "p"
+                        ],
+                        [
+                          "literal",
+                          0
+                        ]
+                      ],
+                      [
+                        "lookup",
+                        [
+                          "local",
+                          "p"
+                        ],
+                        [
+                          "literal",
+                          1
+                        ]
+                      ],
+                      [
+                        "local",
+                        "h"
+                      ],
+                      [
+                        "local",
+                        "m"
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "apply",
+              {
+                "ref": "d010"
+              },
+              [
+                [
+                  "lookup",
+                  [
+                    "local",
+                    "p"
+                  ],
+                  [
+                    "literal",
+                    0
+                  ]
+                ],
+                [
+                  "lookup",
+                  [
+                    "local",
+                    "p"
+                  ],
+                  [
+                    "literal",
+                    1
+                  ]
+                ],
+                [
+                  "local",
+                  "h"
+                ],
+                [
+                  "local",
+                  "m"
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s023"
+      ]
+    },
+    {
+      "id": "a048",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d024",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s024"
+      ]
+    },
+    {
+      "id": "a049",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d024",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [],
+          "resultType": "Tuple",
+          "body": [
+            "collect",
+            [
+              [
+                "key",
+                [
+                  "global",
+                  {
+                    "ref": "d002"
+                  }
+                ]
+              ],
+              [
+                "angle",
+                [
+                  "global",
+                  {
+                    "ref": "d006"
+                  }
+                ]
+              ],
+              [
+                "palette",
+                [
+                  "global",
+                  {
+                    "ref": "d007"
+                  }
+                ]
+              ],
+              [
+                "frame",
+                [
+                  "global",
+                  {
+                    "ref": "d008"
+                  }
+                ]
+              ],
+              [
+                "bonus",
+                [
+                  "global",
+                  {
+                    "ref": "d009"
+                  }
+                ]
+              ]
+            ],
+            [
+              "all"
+            ],
+            [
+              "tuple",
+              [
+                "local",
+                "key"
+              ],
+              [
+                "apply",
+                {
+                  "ref": "d011"
+                },
+                [
+                  [
+                    "local",
+                    "angle"
+                  ],
+                  [
+                    "local",
+                    "palette"
+                  ],
+                  [
+                    "local",
+                    "frame"
+                  ]
+                ]
+              ],
+              [
+                "local",
+                "bonus"
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s024"
+      ]
+    },
+    {
+      "id": "a050",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d025",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s025"
+      ]
+    },
+    {
+      "id": "a051",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d025",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "s",
+              "type": {
+                "ref": "d010"
+              }
+            },
+            {
+              "name": "scenario",
+              "type": "Tuple"
+            }
+          ],
+          "resultType": {
+            "ref": "d010"
+          },
+          "body": [
+            "apply",
+            {
+              "ref": "d017"
+            },
+            [
+              [
+                "local",
+                "s"
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  1
+                ]
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  2
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s025"
+      ]
+    },
+    {
+      "id": "a052",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d026",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s026"
+      ]
+    },
+    {
+      "id": "a053",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d026",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "s",
+              "type": {
+                "ref": "d010"
+              }
+            }
+          ],
+          "resultType": "Tuple",
+          "body": [
+            "tuple",
+            [
+              "field",
+              [
+                "local",
+                "s"
+              ],
+              "x"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "s"
+              ],
+              "y"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "s"
+              ],
+              "health"
+            ],
+            [
+              "field",
+              [
+                "local",
+                "s"
+              ],
+              "monster_health"
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s026"
+      ]
+    },
+    {
+      "id": "a054",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d027",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s027"
+      ]
+    },
+    {
+      "id": "a055",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d027",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "scenario",
+              "type": "Tuple"
+            }
+          ],
+          "resultType": "String",
+          "body": [
+            "apply",
+            {
+              "ref": "d021"
+            },
+            [
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  1
+                ]
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  2
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s027"
+      ]
+    },
+    {
+      "id": "a056",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d028",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s028"
+      ]
+    },
+    {
+      "id": "a057",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d028",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "scenario",
+              "type": "Tuple"
+            }
+          ],
+          "resultType": {
+            "ref": "d012"
+          },
+          "body": [
+            "apply",
+            {
+              "ref": "d022"
+            },
+            [
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  1
+                ]
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  2
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s028"
+      ]
+    },
+    {
+      "id": "a058",
+      "kind": "entity",
+      "axis": "program",
+      "subject": "d029",
+      "predicate": "declaration",
+      "payload": null,
+      "sourceRefs": [
+        "s029"
+      ]
+    },
+    {
+      "id": "a059",
+      "kind": "term",
+      "axis": "program",
+      "subject": "d029",
+      "predicate": "definition",
+      "payload": {
+        "term": {
+          "form": "function",
+          "parameters": [
+            {
+              "name": "scenario",
+              "type": "Tuple"
+            }
+          ],
+          "resultType": {
+            "ref": "d019"
+          },
+          "body": [
+            "apply",
+            {
+              "ref": "d020"
+            },
+            [
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  0
+                ]
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  1
+                ]
+              ],
+              [
+                "lookup",
+                [
+                  "local",
+                  "scenario"
+                ],
+                [
+                  "literal",
+                  2
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "sourceRefs": [
+        "s029"
+      ]
+    },
+    {
+      "id": "a060",
+      "kind": "entity",
+      "axis": "usage",
+      "subject": "u060",
+      "predicate": "exposure",
+      "payload": null,
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a061",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u060",
+      "predicate": "slot",
+      "payload": {
+        "enum": "state-domain"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a062",
+      "kind": "relation",
+      "axis": "usage",
+      "subject": "u060",
+      "predicate": "target",
+      "payload": {
+        "ref": "d023"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a063",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u060",
+      "predicate": "label",
+      "payload": {
+        "enum": "state-domain"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a064",
+      "kind": "entity",
+      "axis": "usage",
+      "subject": "u064",
+      "predicate": "exposure",
+      "payload": null,
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a065",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u064",
+      "predicate": "slot",
+      "payload": {
+        "enum": "input-domain"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a066",
+      "kind": "relation",
+      "axis": "usage",
+      "subject": "u064",
+      "predicate": "target",
+      "payload": {
+        "ref": "d024"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a067",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u064",
+      "predicate": "label",
+      "payload": {
+        "enum": "input-domain"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a068",
+      "kind": "entity",
+      "axis": "usage",
+      "subject": "u068",
+      "predicate": "exposure",
+      "payload": null,
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a069",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u068",
+      "predicate": "slot",
+      "payload": {
+        "enum": "turn"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a070",
+      "kind": "relation",
+      "axis": "usage",
+      "subject": "u068",
+      "predicate": "target",
+      "payload": {
+        "ref": "d025"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a071",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u068",
+      "predicate": "label",
+      "payload": {
+        "enum": "turn"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a072",
+      "kind": "entity",
+      "axis": "usage",
+      "subject": "u072",
+      "predicate": "exposure",
+      "payload": null,
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a073",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u072",
+      "predicate": "slot",
+      "payload": {
+        "enum": "state-reading"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a074",
+      "kind": "relation",
+      "axis": "usage",
+      "subject": "u072",
+      "predicate": "target",
+      "payload": {
+        "ref": "d026"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a075",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u072",
+      "predicate": "label",
+      "payload": {
+        "enum": "state-reading"
+      },
+      "sourceRefs": [
+        "s030"
+      ]
+    },
+    {
+      "id": "a076",
+      "kind": "entity",
+      "axis": "usage",
+      "subject": "u076",
+      "predicate": "exposure",
+      "payload": null,
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a077",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u076",
+      "predicate": "slot",
+      "payload": {
+        "enum": "recording"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a078",
+      "kind": "relation",
+      "axis": "usage",
+      "subject": "u076",
+      "predicate": "target",
+      "payload": {
+        "ref": "d027"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a079",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u076",
+      "predicate": "label",
+      "payload": {
+        "enum": "keys"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a080",
+      "kind": "entity",
+      "axis": "usage",
+      "subject": "u080",
+      "predicate": "exposure",
+      "payload": null,
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a081",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u080",
+      "predicate": "slot",
+      "payload": {
+        "enum": "recording"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a082",
+      "kind": "relation",
+      "axis": "usage",
+      "subject": "u080",
+      "predicate": "target",
+      "payload": {
+        "ref": "d028"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a083",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u080",
+      "predicate": "label",
+      "payload": {
+        "enum": "commands"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a084",
+      "kind": "entity",
+      "axis": "usage",
+      "subject": "u084",
+      "predicate": "exposure",
+      "payload": null,
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a085",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u084",
+      "predicate": "slot",
+      "payload": {
+        "enum": "recording"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a086",
+      "kind": "relation",
+      "axis": "usage",
+      "subject": "u084",
+      "predicate": "target",
+      "payload": {
+        "ref": "d029"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    },
+    {
+      "id": "a087",
+      "kind": "value",
+      "axis": "usage",
+      "subject": "u084",
+      "predicate": "label",
+      "payload": {
+        "enum": "events"
+      },
+      "sourceRefs": [
+        "s031"
+      ]
+    }
+  ]
+}

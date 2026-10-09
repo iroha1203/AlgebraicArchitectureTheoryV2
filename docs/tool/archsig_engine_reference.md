@@ -2,6 +2,27 @@
 
 [操作手順](archsig_engine_manual.md) · [完全なファイル例](archsig_engine_manual_examples/README.md)
 
+## CLI
+
+~~~sh
+archsig engine run --archmap FILE --law FILE --out DIRECTORY
+~~~
+
+意味上の入力は ArchMap と Law の二つであり、
+ソースパス、環境変数、保存済み判定から不足値を補わない。
+
+| 引数 | 動作 |
+| --- | --- |
+| --archmap FILE、--law FILE | 必須の二入力 |
+| --out DIRECTORY | 新規または空の出力先 |
+| --query NAME | 任意、繰返し可。省略時は Law の全 query |
+| --timeout-ms INTEGER | 任意の正の整数。省略時は時間上限なし |
+| --reuse RESULT_JSON | 以前の導出を再検査する候補 |
+
+result.json を書き、stdout にそのパスを一行返す。進捗・実行診断は stderr に出る。
+終了コードは、回答完了0、不正入力・使用誤り2、未決3、読書き・内部実行の障害4とする。
+反証でも計算が完了すれば0なので、成立を要求するときは対象の status も読む。
+
 ## ArchMap
 
 UTF-8 の JSON を使う。文書内の重複キー、未定義の欄、解決できない参照は不正入力となる。
@@ -34,7 +55,7 @@ payload は次のいずれか一つのタグを持つ。
 
 | 書き方 | 意味 |
 | --- | --- |
-| {"ref":"subtotal"} | entity として宣言された対象への参照 |
+| {"ref":"d025"} | entity として宣言された対象への参照 |
 | {"q":"-3/2"} | 正確な有理数 |
 | {"enum":"add"} | 宣言された列挙値 |
 | {"term":{...}} | 型付きの有限木。全体例は [compiler-add](archsig_engine_manual_examples/compiler-add.archmap.json) |
@@ -49,7 +70,75 @@ field は単一値である。同じ subject と field の二重記録は、値�
 
 ## Law DSL
 
-完全な記述は [料金計算](archsig_engine_manual_examples/checkout.law)、
+### 有限作用を扱う Law
+
+[ゲームの完全な Law](archsig_engine_manual_examples/game/game.law.json)は、
+宣言木を JSON で表す lawdsl.finite-action/v1 を使う。
+
+| 欄 | 内容 |
+| --- | --- |
+| module、version | Law の名前と版 |
+| use | finite_terms/1、finite_action/1 の意味を固定する |
+| vocabulary | kind・axis・predicate による原始宣言、本体、使用関係の selector |
+| bindings | 使用関係の slot を条件に target を束縛する。one は一意、many は全対象 |
+| laws | 導出した作用について記録候補に課す条件 |
+| queries | 列挙項、評価、構成、候補比較、操作の合成の問い |
+
+入力の具体的な宣言 ID は bindings に書かない。
+slot は宣言された用途の値であり、登録・使用関係から観測する。
+one の不足・曖昧さを診断し、本体の欠落を理由に宣言や many の候補を除外しない。
+
+#### 原始項
+
+payload.term は form を持ち、次の構造を記す。
+
+| form | 内容 |
+| --- | --- |
+| constant | value に定数の式 |
+| record | fields に name・type・必要なら default |
+| function | parameters に name・type、resultType、body |
+
+型は Int、String、Bool、Tuple、または宣言への参照である。
+参照は {"ref":"ID"}、レコード内部の field 名と局所変数はそれぞれのスコープで読む。
+関数の本体は、次の有限な項からなる。具体的な配列の全形は
+[ArchMap](archsig_engine_manual_examples/game/game.archmap.json)を参照する。
+
+| 項 | 意味 |
+| --- | --- |
+| literal、local、global | 原始の値、局所変数、参照した定数 |
+| tuple、finite_set、finite_map、lookup | 有限な積・集合・写像とその値の取得 |
+| field、record_copy | レコードの値の取得と、指定した field だけを置換した値 |
+| if、let、all、any | 条件分岐、束縛、論理演算 |
+| add、subtract、multiply、negate | 正確な整数演算 |
+| equal、different、greater、member | 比較と所属 |
+| apply | 参照した関数の適用、またはレコードの構成 |
+| builtin | abs、max |
+| collect | 各有限域から順に束縛し、条件を満たす値を列挙する |
+
+外部コードやネットワークを呼ぶ項は持たない。この有限作用の例では循環呼出しを扱わない。
+表示名やソース位置は関数の解釈に使わず、原始の参照・引数・式を使う。
+
+#### 評価と要求
+
+queries の評価式は variable、invoke と arguments からなる。
+finite_action/1 は、宣言した状態更新を state と input に適用し、宣言した読取りを適用する式を扱う。
+ゲーム例は、P の結果を V で読むことを宣言する。
+各状態における評価がすべて等しい入力をまとめ、標準解像度を構成する。
+
+| operator | 返すもの・適用条件 |
+| --- | --- |
+| finite_action_quotient | 空でない有限域と評価から同値類を構成する。読取りの単射性、状態域の閉性、代表によらないことを検査して、状態 × 操作類 → 状態の全作用表を返す |
+| compare_encodings | 指定した Law を各候補へ適用し、十分性、同値類との完全一致、識別対を返す |
+| compare_compositions | 構成した作用の合成順序を全状態で比較し、反例を返す |
+
+laws の factors_action は、all_finite_states_and_inputs の量化の下で、
+「同じ記録値の入力二つが、すべての状態に対して同じ作用を持つ」と要求する。
+保存成立と最粗の分割との一致を分けて返す。
+各 query の action は先行する型付きの導出を参照し、観測 Atom に戻して使わない。
+
+### アフィン式と局所・大域の Law
+
+完全な記述は
 [座標と局所・大域](archsig_engine_manual_examples/coordinates.law)、
 [コンパイル保存](archsig_engine_manual_examples/compiler.law)を参照する。
 
@@ -110,14 +199,33 @@ sha256 は入力ファイルのバイト列の hash である。文書情報を�
 file と hash を残し、読めなかった名前・版を null にする。
 
 各 result は name、analysis、status、scope、data、evidence、conditions、issues を持つ。
-scope は入力の有限対象族と Q の量化域を示す。evidence の atomIds・lawDecls・builtinRules は、
-入力と版付き規則まで解決できる。conditions は前提ごとの成立・反証・未決を示す。
+scope は、その query が扱う対象と値域を示す。family の input は、入力から定まる対象族を指す。
+
+| 計算 | scope の欄 | 範囲 |
+| --- | --- | --- |
+| アフィン式・線形系・局所大域・コンパイル保存 | family: input、scalarDomain: Q | 対象は入力の有限な宣言族。式の変数・線形系・係数は有理数域 Q で扱う |
+| 有限作用の分類・記録候補・合成順序 | family: input、domain: finite、action、stateCount、inputCount | action が指す導出の全状態・全入力。件数は stateCount と inputCount に返る |
+| 有限作用の対象域が未確定 | family: input、domain: unresolved | 対象域を確定できていない。件数の欠落を0件と読まない |
+
+ゲーム例の三つの query は、action: operations、stateCount: 58、inputCount: 192 を持つ。
+原始項の Int 演算は正確な整数演算であり、量化する対象は生成された58状態と192入力である。
+
+evidence の atomIds・lawDecls・builtinRules は、入力と版付き規則まで解決できる。
+conditions は前提ごとの成立・反証・未決を示す。
 
 | analysis | data の主な内容 |
 | --- | --- |
+| finite_action_quotient | bindings、states、inputs、classes、action、適用条件、有限列の保証 |
+| compare_encodings | candidates と個別の status・fiberCount・realizesCanonicalResolution・counterexample・classEncodings |
+| compare_compositions | pairs と順序交換の可否・反例 |
 | check | instanceCount、instances。各 instance に bindings、variables、left、right、difference、counterexample、exposed、missingDependence、lawResidual |
 | solve | variables、equations、matrix、rhs、rank、solution または inconsistency |
 | descend | cover・重なり・係数・cochain・cohomology・局所状態・cocycle・correction・globalSection・comparison |
+
+compare_encodings の query の established は分類計算の完了を表す。候補を採用するときは、
+その候補自身の status を読む。十分でも不要な区別があれば realizesCanonicalResolution は false となる。
+JSON の Law に対する lawDecls は JSON pointer とする。作用表とその元になる全状態・入力を返し、
+表の要素 ID から原始の束縛と根拠へ戻れる。
 
 check の式は constant と coefficients からなる。difference は左辺−右辺。
 lawResidual は instance 全体の成立なら0、反例があれば1、未決なら null で、数値の差とは別である。

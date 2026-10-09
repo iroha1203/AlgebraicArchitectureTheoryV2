@@ -1,27 +1,26 @@
 # ArchSig の入出力例
 
 ArchMap と Law の二つを入力に使い、expected/ の JSON と結果を照合できる。
-以下のコマンドは、このディレクトリをカレントディレクトリにして実行する。
+以下の製品 CLI の呼出形式は、このディレクトリをカレントディレクトリとして使う。
 expected/ は入力に含めない。再実行するときは、新しい出力先を指定する。
 
-## 料金計算
+## ゲーム操作と記録形式
 
-[変更前のコード](checkout-before/checkout.py)と[変更後のコード](checkout-after/checkout.py)は、
-quote_total の加算値400→300だけが異なる。入力は origin.kind = observation で、
-全 Atom に実装コードの版・位置への参照が付いている。
+同じルールでプレイ・観戦・リプレイを動かすため、入力機器や視点から独立した操作仕様を求める。
+Law を先に固定し、原始の一手の作用から同値類と作用表を構成する。
+記録候補の式を入力し、その十分性を別に判定する。
 
-| ケース | 完全な ArchMap | 完全な Law | 完全な result.json |
-| --- | --- | --- | --- |
-| 変更前 | [checkout-before](checkout-before.archmap.json) | [CheckoutTotals](checkout.law) | [反証：2300 ≠ 2400](expected/checkout-before.result.json) |
-| 変更後 | [checkout-after](checkout-after.archmap.json) | [CheckoutTotals](checkout.law) | [成立：両経路とも2300](expected/checkout-after.result.json) |
+| 完全な ArchMap | 完全な Law | 完全な result.json |
+| --- | --- | --- |
+| [ゲームの原始項・使用関係](game/game.archmap.json) | [有限作用と記録の Law](game/game.law.json) | [7類・作用表・候補の判定と反例](game/expected/result.json) |
 
 ~~~sh
-archsig engine run --archmap checkout-before.archmap.json --law checkout.law --out out/checkout-before
-archsig engine run --archmap checkout-after.archmap.json --law checkout.law --out out/checkout-after
+archsig engine run --archmap game/game.archmap.json --law game/game.law.json --out out/game
 ~~~
 
-subtotal=2000 は出力例の反例への代入である。Law は全ての有理数代入で二経路を比較する。
-[コードから Atom・Law・出力を読む手順](../archsig_engine_manual.md#1-コードから観測する)を参照する。
+[ソースコード](game/game.py)、[役割束縛と補助計算](game/README.md)、
+[標準解像度・因子化の検証資料](game/verification.md)がある。
+二入力だけの再計算と、同じ Law のまま参照 ID を改名する検査を実行できる。
 
 ## 三操作の座標と局所・大域
 

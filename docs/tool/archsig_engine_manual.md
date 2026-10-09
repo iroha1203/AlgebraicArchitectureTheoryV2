@@ -1,248 +1,168 @@
 # ArchSig エンジンマニュアル
 
-注文確認画面では梱包料と送料を順に加算し、見積画面では一括で加算している。
-同じ注文なら、二つの金額は一致してほしい。次のコードで、この要求が守られているかを調べる。
+同じゲームを、別の入力機器で遊び、好きな視点で観戦し、後からリプレイしたい。
+入力機器やカメラから独立した操作仕様を何にすればよいか。何を記録し、何を落とせるかを調べる。
 
-## 1. コードから観測する
+例は、一部屋で敵一体と戦うターン制ゲームである。移動・攻撃・待機があり、
+攻撃は乱数結果により1または2ダメージになる。敵が生き残って隣接していれば反撃する。
+カメラを回せるため、同じキーでも盤面上の移動方向は変わる。
 
-[checkout.py](archsig_engine_manual_examples/checkout-before/checkout.py)の全体は次のとおり。
+## 1. 保つ振る舞いを Law にする
+
+**同じ初期状態に同じ意味の操作列を与えたとき、位置と双方の体力の推移を保つ。**
+画面の色、アニメーション、操作キーそのものは一致を要求しない。
+
+記録候補には、次の条件を課す。
+
+> 二つの入力を同じ記録にまとめるなら、どのゲーム状態でも同じ次状態を返すこと。
+
+この条件が先に決まる。十分な記録や操作の分類は、コードを観測した後に計算する。
+「キーだけ」「解釈済みコマンドだけ」「コマンドと乱数結果」という三候補を比較する。
+
+[完全な Law](archsig_engine_manual_examples/game/game.law.json)は、状態・入力の有限域、
+一手の処理、状態の読取り、記録候補を役割から束縛し、全状態でこの条件を調べる。
+Law に状態数・入力数、ゲームの関数 ID、正解の分類を書き込まない。
+
+## 2. 必要な操作と使用関係を観測する
+
+[ゲームのコード全体](archsig_engine_manual_examples/game/game.py)で、一手の処理は次の形になっている。
 
 ~~~python
-"""注文確認画面と見積画面の金額計算。金額の単位は円。"""
-
-
-def with_packaging(subtotal_yen: int) -> int:
-    return subtotal_yen + 100
-
-
-def with_delivery(packed_yen: int) -> int:
-    return packed_yen + 200
-
-
-def checkout_total(subtotal_yen: int) -> int:
-    return with_delivery(with_packaging(subtotal_yen))
-
-
-def quote_total(subtotal_yen: int) -> int:
-    return subtotal_yen + 400
-
-
-def order_totals(subtotal_yen: int) -> dict[str, int]:
-    return {
-        "checkout": checkout_total(subtotal_yen),
-        "quote": quote_total(subtotal_yen),
-    }
+def play_step(s: Game, key: str, view: View, damage_bonus: int) -> Game:
+    return advance(s, decode(key, view), damage_bonus)
 ~~~
 
-知りたいのは、order_totals が返す checkout と quote が、同じ商品代金に対して一致するかである。
-ArchSig に渡すのは、SKILL がコードの使用文脈から観測した **ArchMap** と、
-利用者が求める等式を記述した **Law** の二つである。
+decode はキーとカメラの向きから盤面上の操作を求める。
+advance は移動、攻撃、反撃を計算し、次の位置と体力を返す。
+乱数は damage_bonus ∈ {0,1} という明示した入力として扱う。
 
-### 観測する Atom
+SKILL はコードの本体と登録先・呼出し方を読み、ArchMap に原始事実を記録する。
 
-SKILL は関数の本体と呼出しを読み、次の原始事実を記録する。
-
-| コードと使用文脈 | ArchMap に記録する事実 |
+| 観測するもの | この例で読む箇所 |
 | --- | --- |
-| order_totals の22・23行で同じ subtotal_yen を二経路へ渡す | 入力金額の役割 subtotal |
-| with_packaging の戻り値を13行で with_delivery に渡す | 梱包後金額の役割 packed、packaging の終点と delivery の始点 |
-| order_totals が二つの計算結果を金額として返す | 合計金額の役割 total、delivery と quote の終点 |
-| with_packaging の定義と5行の加算 | 操作 packaging、subtotal → packed、increment = 100 |
-| with_delivery の定義と9行の加算 | 操作 delivery、packed → total、increment = 200 |
-| quote_total の定義と17行の加算 | 操作 quote、subtotal → total、increment = 400 |
+| 状態の型・値域・条件 | Game、盤面、体力の値域、admissible、state_cases |
+| 入力の型・値域 | キー、視点、色、アニメーション段階、乱数結果、input_cases |
+| 状態更新の式 | decode、advance、play_step、play_scenario |
+| 比較する値 | game_value が返す位置と双方の体力 |
+| 役割と実際の対象の対応 | MODEL_PORTS、RECORDERS の登録 |
+| 記録候補の式 | record_raw、record_logical、record_resolved |
 
-total は比較する金額の役割であり、二つの値が等しいという観測事実ではない。
-関数の名前だけで役割を決めず、13行の接続と22・23行の使われ方を根拠にする。
-
-たとえば、見積経路の加算値を表す Atom は次の形になる。
+たとえば「一手の処理」という役割は、登録に対応する使用事実から束縛する。
 
 ~~~json
 {
-  "id": "quote.increment",
-  "kind": "value",
-  "axis": "price",
-  "subject": "quote",
-  "predicate": "increment",
-  "payload": {"q": "400"},
-  "sourceRefs": ["quote-code"]
+  "id": "a070",
+  "kind": "relation",
+  "axis": "usage",
+  "subject": "u068",
+  "predicate": "target",
+  "payload": {"ref": "d025"},
+  "sourceRefs": ["s030"]
 }
 ~~~
 
-[完全な ArchMap](archsig_engine_manual_examples/checkout-before.archmap.json)には、
-三つの金額の役割、三操作の存在・始点・終点・加算値と、ソースの版・行範囲が入っている。
-「不一致」「正しい合計」などの判定や、完成した行列は書かない。
+同じ使用箇所 u068 の slot は turn で、d025 はその処理の原始項を指す。
+ID や関数名に意味を推測して付けず、登録先の用途と参照を観測する。
 
-### 要求を Law にする
+[完全な ArchMap](archsig_engine_manual_examples/game/game.archmap.json)には、型・定数・式と、
+役割の登録、ソースの版・位置が入る。「共通コア」「必要な記録」「保存成立」は入れない。
+具体的な記録候補は入力してよいが、その十分性は計算する。
 
-利用者が求めるのは「二段階で加算した合計と、一括で加算した合計が同じ」である。
-これはコードから観測する値とは別の要求なので Law に書く。
-100、200、400 は ArchMap から読み、Law には埋め込まない。
+## 3. 実行して操作の分類と記録候補を読む
 
-[checkout.law](archsig_engine_manual_examples/checkout.law)の全体は次のとおり。
-
-~~~text
-lawdsl 1;
-module CheckoutTotals version 1;
-use finite_q version 1;
-use finite_graph version 1;
-
-entity AmountRole = atom("amount_role", kind="entity", axis="price");
-entity FeeStep = atom("fee_step", kind="entity", axis="price");
-field source : FeeStep -> Ref<AmountRole> = atom("source", kind="relation", axis="price");
-field target : FeeStep -> Ref<AmountRole> = atom("target", kind="relation", axis="price");
-field increment : FeeStep -> Q = atom("increment", kind="value", axis="price");
-
-derive steps = members(FeeStep);
-derive routes = select (first, second, direct) from steps * steps * steps
-  where target(first) == source(second)
-    and source(first) == source(direct)
-    and target(second) == target(direct);
-
-law same_total:
-  forall (first, second, direct) in routes, subtotal in Q:
-    subtotal + increment(first) + increment(second) == subtotal + increment(direct);
-
-query totals = check(same_total);
-~~~
-
-routes は始点・終点がつながる三操作を選び、same_total は各組の二経路を比較する。
-この入力では packaging、delivery、quote の組が選ばれる。
-端数処理のない整数の加算を有理数上の式として比較するため、有限個の金額を試すだけでなく、
-全ての有理数代入について等式を判定できる。その成立は整数の金額にも適用できる。
-
-## 2. 実行して、結果からコードへ戻る
-
-[例のディレクトリ](archsig_engine_manual_examples/README.md)で次を実行する。
+例の [game ディレクトリ](archsig_engine_manual_examples/game/README.md)で二入力を指定する。
 
 ~~~sh
 archsig engine run \
-  --archmap checkout-before.archmap.json \
-  --law checkout.law \
-  --out out/checkout-before
+  --archmap game.archmap.json --law game.law.json \
+  --out out/game
 ~~~
 
-out/checkout-before/result.json に結果が返る。
-[完全な出力例](archsig_engine_manual_examples/expected/checkout-before.result.json)の totals は次を含む。
+ファイルから結果を再計算する補助コマンドは
+[例の検算手順](archsig_engine_manual_examples/game/README.md#再計算)にある。
 
-| 出力の欄 | 値 | 読み方 |
+[完全な result.json](archsig_engine_manual_examples/game/expected/result.json)には、
+状態、入力、操作の同値類、作用表、記録候補の判定と根拠が返る。
+
+この有限モデルでは、58状態と192入力を全比較し、入力の作用が次の7種類にまとまる。
+
+| 同じ意味の操作 | 元の入力の数 |
+| --- | ---: |
+| 盤面上の上・右・下・左への移動 | 各32 |
+| 攻撃、乱数結果0 | 16 |
+| 攻撃、乱数結果1 | 16 |
+| 待機 | 32 |
+
+operations.data.action は、58状態 × 7操作の406行を持つ。
+同じ類のどの入力を代表にしても、同じ次状態になることを確認している。
+
+recordings の established は分類計算の完了を示す。
+候補ごとの成立・反証は recordings.data.candidates の status で読む。
+
+| 候補 | status | 分かること |
 | --- | --- | --- |
-| status | refuted | 要求を破る金額がある |
-| data.instances[0].bindings | packaging、delivery、quote | 比較した二段階経路と直接経路 |
-| left / right | subtotal + 300 / subtotal + 400 | 原始値から計算した二つの式 |
-| difference.constant | "-100" | 購入時の金額が見積額より100円少ない |
-| counterexample | subtotal = 2000、left = 2300、right = 2400 | 要求を破る具体的な代入 |
-| evidence | Atom・Law・組込み規則への参照 | 判定を計算した根拠 |
+| keys：キーだけ | refuted | カメラによる操作の違いを失う |
+| commands：盤面上のコマンドだけ | refuted | 攻撃に使った乱数結果を失う |
+| events：コマンドと攻撃時の乱数結果 | established | 作用を保ち、計算した7類と過不足なく一致する |
 
-2000円は反例の一つであり、返る反例の選択は固定されない。
-全ての金額で両式の差が −100 なので、任意の整数金額でも食い違いを確認できる。
+keys の反例では、位置 (0,0) で同じ down キーを押しても、
+カメラの向きによって (0,1) に進む場合と、盤外へ進もうとして動かない場合がある。
 
-見積経路の根拠を読むには、次の順にたどる。
+commands の反例では、位置 (1,2)、自分の体力1、敵の体力2で同じ攻撃をしても、
+乱数結果0では反撃で倒され、乱数結果1では敵を倒す。
+どちらも counterexample の状態・入力・次状態から再評価できる。
 
-1. bindings の direct = quote と evidence.atomIds の quote.increment を読む。
-2. ArchMap の quote.increment は値400と sourceRefs = ["quote-code"] を持つ。
-3. sources の quote-code は、版 checkout-before の checkout-before/checkout.py、16〜17行を指す。
-4. [17行の加算](archsig_engine_manual_examples/checkout-before/checkout.py#L17)を、
-   [13行の二段階呼出し](archsig_engine_manual_examples/checkout-before/checkout.py#L13)と照らし合わせる。
+evidence の Atom ID を ArchMap で引けば、原始項と sourceRefs へ戻れる。
+Law の JSON pointer と組込み規則の版も残るため、何を要求し、どの情報で計算したかを追える。
 
-CLI にソースコードは渡していない。どのコードがどの事実に対応するかは観測側で確かめ、
-エンジンは ArchMap と Law から式・反例・参照を返す。
+## 4. 操作仕様と記録形式を決める
 
-## 3. 一箇所を直して再観測する
+この結果なら、入力機器と視点の処理は、計算した操作クラスへの変換を担当できる。
+観戦・リプレイは、そのクラスを作用表に従ってゲーム状態へ順に作用させればよい。
+これは操作の意味を保つ境界であり、実装の最適なモジュール分割を選んだ結果ではない。
 
-この Law は不一致を示すが、どの料金を変更すべきかまでは決めない。
-梱包料100円と送料200円を維持する方針で、quote_total の17行を次のように直す。
+events では、移動は盤面上の方向、攻撃は乱数結果、待機はその種類を記録する。
+色・アニメーション段階・元のキー・元の視点は、その記録から外せる。
+初期状態を復元する情報、固定したルールへの参照、イベントの順序は保持する。
 
-~~~python
-    return subtotal_yen + 300
-~~~
+たとえば位置 (0,2)、双方の体力2から「右へ移動、乱数結果1で攻撃」と進めると、
+状態は (0,2,2,2) → (1,2,1,2) → (1,2,1,0) になる。
+同じ二操作を逆順にすると敵を倒せない。order の結果には、順序交換できない組と反例が返る。
 
-[変更後のコード全体](archsig_engine_manual_examples/checkout-after/checkout.py)を SKILL が再観測し、
-[変更後の ArchMap](archsig_engine_manual_examples/checkout-after.archmap.json)を作る。
-原始事実の変更は quote.increment の400から300への置換だけであり、ソースの版・参照先も更新する。
+一手の作用の一致と状態域の閉性が揃うため、この有限モデル内では、
+同じ初期状態から同じ操作クラス列を使う任意の有限なプレイを再現できる。
+乱数 seed だけで再現したい場合は、生成器の状態・算法・消費操作を追加観測して比較する。
 
-~~~sh
-archsig engine run \
-  --archmap checkout-after.archmap.json \
-  --law checkout.law \
-  --out out/checkout-after
-~~~
+## 5. 不足する情報と、変更後の再計算
 
-[完全な出力例](archsig_engine_manual_examples/expected/checkout-after.result.json)では、
-totals.status = established、difference.constant = "0"、counterexample = null となる。
-二経路はともに subtotal + 300 で、全ての整数金額について同じ値になる。
-order_totals(2000) なら、checkout と quote はどちらも2300である。
+記録候補の本体が未観測なら、その候補を残して undetermined と不足箇所を返す。
+独立して計算できる操作の分類や、他の候補の反例は利用できる。
+欠落を0や空集合へ置き換えず、不正な参照は invalid_input、非対応の項は unsupported と区別する。
 
-この保証は、観測した加算処理と選んだ Law に対するものになる。
-値引き、税、丸め処理などを加えたら、その処理も観測して Law の適用範囲を確かめ直す。
-
-## 4. 入力・CLI・出力を使う
-
-入力の詳しい欄と型は [書式リファレンス](archsig_engine_reference.md)にある。
-完全なファイルから始める場合は、[入出力例の一覧](archsig_engine_manual_examples/README.md)を使う。
-
-| 入力 | 書くこと |
-| --- | --- |
-| ArchMap（JSON） | 操作・値・参照などの原始事実。観測ならソースの版と位置も付ける |
-| Law（.law） | 語彙、構成規則、要求、量化域、query |
-
-値が未観測なら、その field の Atom を省略し、対象・操作の存在は残す。
-0や空文字で補わない。cover・行列・障害類・正解フラグは計算結果なので入力に含めない。
-
-| CLI 引数 | 動作 |
-| --- | --- |
-| --archmap FILE、--law FILE | 必須の二入力 |
-| --out DIRECTORY | 必須の出力先。新規または空のディレクトリを指定する |
-| --query NAME | 任意、繰返し可。省略すると Law の全 query を計算する |
-| --timeout-ms INTEGER | 任意、正の整数。省略すると時間上限を置かない |
-| --reuse RESULT_JSON | 以前の導出を再検査して利用する候補 |
-
-計算結果は result.json に書かれ、stdout にそのパスが一行返る。進捗・実行診断は stderr に出る。
-終了コードは、全 query に回答できれば0、不正入力・使用誤りは2、情報不足などの未決は3、
-読書き・内部実行の障害は4である。**反証でも計算が完了すれば0**なので、
-Law の成立を要求する処理では query の status も読む。
-
-| query の status | 意味 |
-| --- | --- |
-| established | 等式が成立する、解が得られる、または局所状態を統合できる |
-| refuted | 反例、解なしの証拠、または統合を妨げる具体的障害がある |
-| undetermined | 情報不足・非対応・適用条件未成立・中断で、問いの答えが確定していない |
-| not_applicable | check の対象が空。適用件数0と理由を返す |
-
-result.json の inputs で入力の版と hash、results で問いごとの data と evidence、
-conditions で適用条件、issues で不足値などの理由を読む。null は欄と判定に合わせて読む。
-成立時の counterexample = null は反例がないこと、情報不足時の difference = null は差が未確定であることを示す。
-
-同じ Law の derive は、前の計算で得た型付きの値を次の計算へ渡せる。
-保存結果を使うときも二入力を指定する。
+計算結果の操作クラスと作用表は、次の記録候補・操作の合成の比較へ渡せる。
+保存した結果を使う場合も、現在の二入力を指定し、導出の根拠を再検査する。
 
 ~~~sh
 archsig engine run \
-  --archmap checkout-after.archmap.json --law checkout.law \
-  --reuse out/checkout-before/result.json --out out/rechecked
+  --archmap game.archmap.json --law game.law.json \
+  --reuse out/game/result.json --out out/rechecked
 ~~~
 
-以前の反証は、変更後の入力に照らして再検査される。再利用を指定しない計算と同じ意味の回答になる。
-結果を新しい観測 Atom に転記したり、hash の一致だけで正しいと扱ったりしない。
+参照関係を保つ ID 改名では数学的な回答は変わらない。
+原始の攻撃式や Law を変えたら、操作の分類と候補の十分性を再計算する。
+保証の範囲は入力に記した有限モデルであり、未観測のコード、通信遅延、レース、性能へは広げない。
 
-## 5. 利用できる分析
+## 6. ほかの計算へ進む
 
-| 分析 | 返るもの | 完全な入力・CLI・出力 |
-| --- | --- | --- |
-| Law の成立確認：check | 等式の正規形、成立判定、具体的な反例 | [料金計算の前後](archsig_engine_manual_examples/README.md#料金計算) |
-| 同時に満たす値の計算：solve | 特解と kernel の基底、または解なしの証拠 | [三操作の座標](archsig_engine_manual_examples/README.md#三操作の座標と局所大域) |
-| 局所状態の統合：descend | cover、重なり、局所解、具体的障害類、補正と大域状態 | [三操作の局所・大域](archsig_engine_manual_examples/README.md#三操作の座標と局所大域) |
-| エンジン自身のコンパイル保存：check | 原始 AST と規則から生成した IR、残差の比較、反例 | [コンパイル保存](archsig_engine_manual_examples/README.md#コンパイル保存) |
+[書式リファレンス](archsig_engine_reference.md)には、CLI、判定、適用条件、根拠と再利用の扱いがある。
+[入出力例の一覧](archsig_engine_manual_examples/README.md)から、次の計算にも進める。
 
-三操作の例では、H¹ の次元は1のまま、特定の障害類が非零・零・未決に分かれる。
-障害空間の次元だけで統合の成否を判断せず、具体的な類と補正・大域状態を読む。
-コンパイル保存の成立は、提示した AST と規則についての全代入の保証である。
+| 問い | 返るもの |
+| --- | --- |
+| [三操作の経路と座標](archsig_engine_manual_examples/README.md#三操作の座標と局所大域) | 経路の保存、連立条件の解、解なしの証人 |
+| [局所状態の統合](archsig_atom_law_engine/local_global_example.md) | 被覆・重なり・具体的な障害類、補正と大域状態 |
+| [エンジン自身のコンパイル保存](archsig_engine_manual_examples/README.md#コンパイル保存) | Atom と Law で表した原始規則から IR を作り、残差の保存と反例を返す |
 
-計算の範囲は有限関係・有理アフィン式・有理線形系である。
-対応する範囲で適用条件と情報が揃い、時間上限を置かなければ、計算は完了する。
-参照関係を保つ ID 変更や表示順・ソース参照だけの変更では数学的な回答は変わらず、
-値・対象族・Law を変えたら再検査する。
-未観測の実装や、実行時の性能・I/O の成否まで、この結果から保証することはできない。
-
-数学的な適用条件は [局所・大域計算](archsig_atom_law_engine/local_global_example.md)、
-[コンパイル保存](archsig_atom_law_engine/compiler_preservation_example.md)を参照する。
-他の AAT 分析への接続は [設計判断](archsig_atom_law_engine/decisions.md#2-拡張を成立させるための判断)にある。
+三操作の例は、H¹ の次元が1でも、特定の障害類は零・非零・情報不足に分かれる。
+次元だけで統合の成否を決めない。ゲームの操作分類から障害類や意味的修復の保存を結論せず、
+必要な係数・被覆・比較・状態の貼り合わせ条件を構成してから、その計算へ進む。
