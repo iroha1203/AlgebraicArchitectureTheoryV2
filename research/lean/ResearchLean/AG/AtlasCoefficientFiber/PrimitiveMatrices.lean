@@ -196,6 +196,37 @@ theorem primitiveGiantMatrix_rank [Fintype (VerticalFace M A)] [Fintype (MixedFa
   classical
   exact matrix_rank_eq_range ((Finsupp.basisSingleOne.prod Finsupp.basisSingleOne).prod (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne)) (Finsupp.basisSingleOne.prod (Finsupp.basisSingleOne.prod Finsupp.basisSingleOne)) (primitiveGiantBlock M A)
 
+
+/-- E whole-vector API for original B. Raw finite cell coordinates retain
+all names and incidence occurrences, without a supplied homology basis. -/
+theorem primitiveBMatrix_mulVec [Fintype (MixedFace M A)]
+    (x : MixedFace M A →₀ ℚ) :
+    (primitiveBMatrix M A).mulVec (x : MixedFace M A → ℚ) =
+      (mixedHorizontalBoundary M A x : HorizontalEdge M A → ℚ) := by
+  classical
+  exact matrix_represents_map Finsupp.basisSingleOne Finsupp.basisSingleOne
+    (mixedHorizontalBoundary M A) x
+
+/-- E whole-vector API for original D. Raw finite cell coordinates retain
+all names and incidence occurrences, without a supplied homology basis. -/
+theorem primitiveDMatrix_mulVec [Fintype (MixedFace M A)]
+    (x : MixedFace M A →₀ ℚ) :
+    (primitiveDMatrix M A).mulVec (x : MixedFace M A → ℚ) =
+      (mixedVerticalBoundary M A x : VerticalEdge M A → ℚ) := by
+  classical
+  exact matrix_represents_map Finsupp.basisSingleOne Finsupp.basisSingleOne
+    (mixedVerticalBoundary M A) x
+
+/-- E whole-vector API for original V. Raw finite cell coordinates retain
+all names and incidence occurrences, without a supplied homology basis. -/
+theorem primitiveVMatrix_mulVec [Fintype (VerticalFace M A)]
+    (x : VerticalFace M A →₀ ℚ) :
+    (primitiveVMatrix M A).mulVec (x : VerticalFace M A → ℚ) =
+      (verticalBoundary M A x : VerticalEdge M A → ℚ) := by
+  classical
+  exact matrix_represents_map Finsupp.basisSingleOne Finsupp.basisSingleOne
+    (verticalBoundary M A) x
+
 end AAT.AG.AtlasCoefficientFiber
 
 #print axioms AAT.AG.AtlasCoefficientFiber.matrix_represents_map
@@ -220,4 +251,7 @@ end AAT.AG.AtlasCoefficientFiber
 #print axioms AAT.AG.AtlasCoefficientFiber.primitiveConstraintMatrix_rank
 #print axioms AAT.AG.AtlasCoefficientFiber.primitiveBaseMatrix_rank
 #print axioms AAT.AG.AtlasCoefficientFiber.primitiveGiantMatrix_rank
+#print axioms AAT.AG.AtlasCoefficientFiber.primitiveBMatrix_mulVec
+#print axioms AAT.AG.AtlasCoefficientFiber.primitiveDMatrix_mulVec
+#print axioms AAT.AG.AtlasCoefficientFiber.primitiveVMatrix_mulVec
 #assert_standard_axioms_only AAT.AG.AtlasCoefficientFiber
