@@ -7,6 +7,7 @@ AAT の数学的主張は定義せず、各toolが supplied artifact から何�
 ## 製品コンセプト
 
 - [ArchSig v0.6.0 製品コンセプト](archsig_v0_6_0_concept.md): AI Agent SKILLを通してAATの構造を解析する、AIネイティブなアーキテクチャ計算基盤の製品像と設計原則。
+- [ArchSig エンジンマニュアル](archsig_engine_manual.md): Atom と Law DSL の二入力から得る回答・根拠・再利用を、利用例とともに定める新エンジンの外部仕様案。
 
 ## Product map
 
