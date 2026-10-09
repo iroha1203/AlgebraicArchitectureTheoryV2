@@ -1,0 +1,180 @@
+{
+  "schema": "archmap.atom/v1",
+  "document": "checkout",
+  "revision": "before",
+  "origin": {"kind": "observation", "description": "checkout.py の order_totals が返す二つの金額の計算経路を観測。"},
+  "sources": [
+    {
+      "id": "packaging-code",
+      "revision": "checkout-before",
+      "path": "checkout-before/checkout.py",
+      "startLine": 4,
+      "endLine": 5
+    },
+    {
+      "id": "delivery-code",
+      "revision": "checkout-before",
+      "path": "checkout-before/checkout.py",
+      "startLine": 8,
+      "endLine": 9
+    },
+    {
+      "id": "checkout-code",
+      "revision": "checkout-before",
+      "path": "checkout-before/checkout.py",
+      "startLine": 12,
+      "endLine": 13
+    },
+    {
+      "id": "quote-code",
+      "revision": "checkout-before",
+      "path": "checkout-before/checkout.py",
+      "startLine": 16,
+      "endLine": 17
+    },
+    {
+      "id": "display-code",
+      "revision": "checkout-before",
+      "path": "checkout-before/checkout.py",
+      "startLine": 20,
+      "endLine": 24
+    }
+  ],
+  "atoms": [
+    {
+      "id": "subtotal.exists",
+      "kind": "entity",
+      "axis": "price",
+      "subject": "subtotal",
+      "predicate": "amount_role",
+      "payload": null,
+      "sourceRefs": ["display-code", "packaging-code", "quote-code"]
+    },
+    {
+      "id": "packed.exists",
+      "kind": "entity",
+      "axis": "price",
+      "subject": "packed",
+      "predicate": "amount_role",
+      "payload": null,
+      "sourceRefs": ["packaging-code", "delivery-code", "checkout-code"]
+    },
+    {
+      "id": "total.exists",
+      "kind": "entity",
+      "axis": "price",
+      "subject": "total",
+      "predicate": "amount_role",
+      "payload": null,
+      "sourceRefs": ["checkout-code", "quote-code", "display-code"]
+    },
+    {
+      "id": "packaging.exists",
+      "kind": "entity",
+      "axis": "price",
+      "subject": "packaging",
+      "predicate": "fee_step",
+      "payload": null,
+      "sourceRefs": ["packaging-code", "checkout-code"]
+    },
+    {
+      "id": "packaging.source",
+      "kind": "relation",
+      "axis": "price",
+      "subject": "packaging",
+      "predicate": "source",
+      "payload": {"ref": "subtotal"},
+      "sourceRefs": ["packaging-code", "checkout-code"]
+    },
+    {
+      "id": "packaging.target",
+      "kind": "relation",
+      "axis": "price",
+      "subject": "packaging",
+      "predicate": "target",
+      "payload": {"ref": "packed"},
+      "sourceRefs": ["packaging-code", "checkout-code"]
+    },
+    {
+      "id": "packaging.increment",
+      "kind": "value",
+      "axis": "price",
+      "subject": "packaging",
+      "predicate": "increment",
+      "payload": {"q": "100"},
+      "sourceRefs": ["packaging-code"]
+    },
+    {
+      "id": "delivery.exists",
+      "kind": "entity",
+      "axis": "price",
+      "subject": "delivery",
+      "predicate": "fee_step",
+      "payload": null,
+      "sourceRefs": ["delivery-code", "checkout-code", "display-code"]
+    },
+    {
+      "id": "delivery.source",
+      "kind": "relation",
+      "axis": "price",
+      "subject": "delivery",
+      "predicate": "source",
+      "payload": {"ref": "packed"},
+      "sourceRefs": ["delivery-code", "checkout-code", "display-code"]
+    },
+    {
+      "id": "delivery.target",
+      "kind": "relation",
+      "axis": "price",
+      "subject": "delivery",
+      "predicate": "target",
+      "payload": {"ref": "total"},
+      "sourceRefs": ["delivery-code", "checkout-code", "display-code"]
+    },
+    {
+      "id": "delivery.increment",
+      "kind": "value",
+      "axis": "price",
+      "subject": "delivery",
+      "predicate": "increment",
+      "payload": {"q": "200"},
+      "sourceRefs": ["delivery-code"]
+    },
+    {
+      "id": "quote.exists",
+      "kind": "entity",
+      "axis": "price",
+      "subject": "quote",
+      "predicate": "fee_step",
+      "payload": null,
+      "sourceRefs": ["quote-code", "display-code"]
+    },
+    {
+      "id": "quote.source",
+      "kind": "relation",
+      "axis": "price",
+      "subject": "quote",
+      "predicate": "source",
+      "payload": {"ref": "subtotal"},
+      "sourceRefs": ["quote-code", "display-code"]
+    },
+    {
+      "id": "quote.target",
+      "kind": "relation",
+      "axis": "price",
+      "subject": "quote",
+      "predicate": "target",
+      "payload": {"ref": "total"},
+      "sourceRefs": ["quote-code", "display-code"]
+    },
+    {
+      "id": "quote.increment",
+      "kind": "value",
+      "axis": "price",
+      "subject": "quote",
+      "predicate": "increment",
+      "payload": {"q": "400"},
+      "sourceRefs": ["quote-code"]
+    }
+  ]
+}

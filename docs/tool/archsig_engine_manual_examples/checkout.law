@@ -1,0 +1,22 @@
+lawdsl 1;
+module CheckoutTotals version 1;
+use finite_q version 1;
+use finite_graph version 1;
+
+entity AmountRole = atom("amount_role", kind="entity", axis="price");
+entity FeeStep = atom("fee_step", kind="entity", axis="price");
+field source : FeeStep -> Ref<AmountRole> = atom("source", kind="relation", axis="price");
+field target : FeeStep -> Ref<AmountRole> = atom("target", kind="relation", axis="price");
+field increment : FeeStep -> Q = atom("increment", kind="value", axis="price");
+
+derive steps = members(FeeStep);
+derive routes = select (first, second, direct) from steps * steps * steps
+  where target(first) == source(second)
+    and source(first) == source(direct)
+    and target(second) == target(direct);
+
+law same_total:
+  forall (first, second, direct) in routes, subtotal in Q:
+    subtotal + increment(first) + increment(second) == subtotal + increment(direct);
+
+query totals = check(same_total);
