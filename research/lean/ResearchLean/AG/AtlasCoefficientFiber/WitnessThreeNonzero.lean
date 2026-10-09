@@ -25,6 +25,9 @@ def selectedFace (f : Fin 3) : Nf.FaceInTargetSubset
     (comparisonFactor qc qf coarser ⁻¹' (Set.univ : Set Bool)) :=
   ⟨f, (false,false), ⟨⟨Set.mem_univ _, Set.mem_univ _⟩,
     ⟨Set.mem_univ _, Set.mem_univ _⟩, ⟨Set.mem_univ _, Set.mem_univ _⟩⟩, Set.mem_univ _⟩
+/-- Owner selected W3 edge retains exactly its original raw name. -/
+theorem selectedEdge_val (e : Fin 6) : (selectedEdge e).1 = e := rfl
+
 /-- Owner selected-face API retains the same original Fin cell name.
 This supports input-derived enumeration without unfolding selected supports. -/
 theorem selectedFace_val (f : Fin 3) : (selectedFace f).1 = f := rfl
@@ -195,6 +198,7 @@ theorem connectingTau_ne_zero : connectingTau M Set.univ ≠ 0 := by
 end AAT.AG.AtlasCoefficientFiber.WitnessThree
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.selectedEdge
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.selectedFace
+#print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.selectedEdge_val
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.selectedFace_val
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.k
 #print axioms AAT.AG.AtlasCoefficientFiber.WitnessThree.a0

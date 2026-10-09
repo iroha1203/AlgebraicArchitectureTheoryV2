@@ -3212,3 +3212,138 @@ IssueはOPENを維持する。承認待ちにより先のPRゲートへ進めず
 同じ専用branchへの `git push -u origin codex/5290-g135-cycle18` はexit0で成功し、送信先は上記公開repositoryと一致した。
 数学sourceと検証結果は変更していない。PRゲートの新規独立四査読から再開する。
 Eのホモロジー座標・全診断写像、Wの全例接続、別の最終四査読は未完であり、全GOALはtarget-proof-checkpoint、Formal unportedのままである。
+
+## Cycle 18 正式受理・同期
+
+[PR5310](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5310) はhead `6c6ddd845b5834721c8ea6c79a78dde3fed6164d`、実merge `0a58ef47534acb3d02e2e5296bcf92b5e63154d5`、`2026-10-08T22:48:05Z` でMERGEDを確認した。
+[標準PR root監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5310#issuecomment-6070579525) の判定はNo major findings、五終了条件をproof-obligation-dischargedとして受理。新規数学A/B・LeanA/BすべてNo major findings、中心0/非中心0、reruns0/2。[数学全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5310#issuecomment-6070563400)、[Lean全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5310#issuecomment-6070563833)、[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6070590427)。全244標準公理・七rootfocused・四独立singlefocused・新規scan零は固定実証拠に一致。全7CI成功、Researchintegrity実steps成功、Formal実build/kernel/premise6skipを区別する。
+全目標checkpoint・Formal unported、未完E/W/別finalを保持。停止条件なし。最新main `0a58ef47534acb3d02e2e5296bcf92b5e63154d5` の専用C19 branchへ進む。
+
+## Cycle 19 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 19
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 0a58ef47534acb3d02e2e5296bcf92b5e63154d5
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: C18受理/Issue6070590427・元native homologyと同診断写像表示gap
+  proof_dag_predecessors: [C18原P/Q全degree座標/原微分と二射全成分, C17同有理射影/商producer, C5元QH1とliteralR同型, C6元delta代表符号, C8元blockDefect診断]
+  milestone: 原degree射影と原微分から原P/Qおよび粗細H1/H2の計算座標を生成し、同じa/T/R/tau/Jの全代表行列表示と計算dimension/defectを接続する（Eのnative homology接続）
+  proof_obligations: [原degree射影像に限るharmonic射影, 元cycles/boundaries商との全同型, H1/H2全両逆と原代表/逆代表, 原unit/directH1全写像表示, 元literalRの計算座標, 原delta符号と全R上tau表示, 実blockDefectの計算rank公式, W3同producerの非零homology/tau接続]
+  exit_criteria:
+    - 原degree pと二微分からH1/H2射影をentriesだけで生成し、原cycles/boundariesの全商へ両方向に同定。unused ambient complementを除く
+    - 元P/Qと粗細targetSubsetComplexのH1/H2座標・全元両逆・全原代表/逆式・計算rank次元。元P/Qを任意中間complexから再定義しない
+    - 原unitと独立uの同じH1射a/Tを生成表へ全元で同定し、必要原compatible/projector条件を原構成から放電。基底/表示変更は原写像へ戻す同型として証明
+    - 元QH1からC5literalRへの同型を使いR座標を生成し、同じ原fine微分と原delta代表式から全Rのtau行列/符号を同定。Rを全Phiへ交換しない
+    - 原a/Tのkernel/cokernel診断をactual source/target projection rankとmap rankから計算し既存blockDefectへ同定、W3同producerに原homologyと非零tauを接続、全spine focused/axiom/scan/provenance固定
+  selection_reason: 原P/Q degree接続を原商homologyと実診断へ進め、一般有理行列だけの条件包装をE完成に読み替えずproof distanceを縮める
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [RationalHarmonicCoordinates, HomologyCoordinateTransport, NativeHomologyCoordinates, NativeDiagnosticMatrices, HomologyCoordinateWitnesses]
+  risks: [ambient核をnativehomologyと誤る, 原商の自己像置換, suppliedsemanticbasis/rank, 条件をinstanceへ逃がす, tau符号逆, literalRをPhi全体に交換, foreign定義unfold, 非計算native同型とentriesproducerの混同]
+  unchecked: [上記五終了条件は実装/受理待ち, kappa原始表示と全A/発生label保存有限判定は後続, W全要求/別finalは後続]
+```
+
+汎用projector条件・native座標条件は一般補題のdirection-hypothesisとして明示し、原M適用ではC18同じ生成表と原微分の証明から放電する。入力はrawセル列挙/原始有理表に限り、semantic homology基底・期待dimensionは渡さない。全A/labelと全Wの残義務は保持する。
+
+## Cycle 19 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原degree射影と原微分からH1/H2計算射影を生成し、原cycles/boundaries商との両逆・原代表/逆代表・計算次元を構成。原Kan P/dualL Qと粗細targetSubsetComplexへ適用し、同じunitH1/directH1/literal R/connectingTauの全元行列式、rankと実blockDefectを接続。W3原表の同producerから原H2P次元1と非零tau行列を得た
+  exit_criteria_status:
+    - 1: harmonicProjection_closed/closed_eq_zero_iff/idempotent、cycleHarmonicMap_ker/range、homologyCoordinateEquivと両逆/inverse_cycle、secondHomologyProjectionと原商equiv/両逆/inverse_representative
+    - 2: 原nativeP/QとcellularのH1/H2四種類のProjection/CoordinateEquiv、全mk/left_inverse/right_inverse/rank、原cyclesとH2元への全逆代表、standardHomology接続。六degree射影のsymmetric/idempotentと四原微分のabsorption/同range/squarezeroから原適用条件を放電
+    - 3: nativeAMatrix_represents/unitH1、nativeTMatrix_represents/directH1は全原H1元を量化。nativeA/TMatrix_imageMap、homologyImageMap_changeとkernel/cokerEquivで同じ原射を基底表示変更へ輸送
+    - 4: nativeRCoordinateEquivはC5 restrictionStandardHomologyREquivを介したliteral Rとの両逆。restriction1_nativeQ1Embedding、nativeTauMatrix_connectingTauは全R元を原Qcycleに戻し原fine微分とC6 actual delta符号から同じtauへ接続。nativeRProjection_rankとnativeTauMatrix_rankも同射
+    - 5: nativeA/TMatrix_blockDefectはsource/target射影rankから実写像rankを引く対。W3primitiveL1Matrix/homologyL1Table、原P1微分と原P2 incoming rangeの全等号、同producer image/secondHomology射影のkernel評価からoriginalP2Homology_finrank/originalP2StandardHomology_finrankで次元1。originalTauMatrix_ne_zeroは同生成tau行列とC6原非零tauを接続。十focused/全301公理監査/scan
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [RationalHarmonicCoordinates, HomologyCoordinateTransport, SecondHomologyCoordinateTransport, NativeHomologyCoordinates, CellularHomologyCoordinates, HomologyCoordinateRank, NativeDiagnosticMatrices, HomologyCoordinateWitnesses, WitnessThreeInput所有API1件, WitnessThreeNonzero所有API1件]
+  evidence: [原始射影/微分からの生成式, 下記全宣言spine, 十focused公理出力, W3同producer kernel評価]
+  claim_mapping:
+    theorem_names: [homologyCoordinateEquiv, secondHomologyCoordinateEquiv, nativeP1HomologyCoordinateEquiv, nativeQ1HomologyCoordinateEquiv, nativeP2HomologyCoordinateEquiv, nativeQ2HomologyCoordinateEquiv, cellularH1CoordinateEquiv, cellularH2CoordinateEquiv, nativeAMatrix_unitH1, nativeTMatrix_directH1, nativeTauMatrix_connectingTau, nativeA/TMatrix_blockDefect, nativeRProjection_rank, originalTauMatrix_ne_zero]
+    source_labels: [G135 E原homology計算座標/同a-T-R-tau-J表示, W3同原producer H2Pとtau接続]
+    conjuncts: [下記五終了条件対応表と全宣言spine]
+    undischarged_assumptions: [今回選択五条件に未放電semantic premiseなし・正式PR独立監査待ち, E原kappa表示/全A-label有限保存と全Wおよび別whole finalは未完]
+    acceptance_point: 元cycles/boundariesの商との全方向接続、原a/T/tau全元式と実blockDefect、選択W3同producer接続を同cycleで閉じたroot proposal。独立受理は別監査
+    port_status: unported
+audits:
+  premise_delta:
+    ambient-boundary: [原Source/readings/coarser/Nc/Nf/M/K1/Option分類/A, 原有限セル列挙/等号判定, 係数Q]
+    direction-hypothesis: [汎用射影のsymmetric/idempotent/incoming吸収/outgoing吸収/squarezeroと原微分全元式/原degree像一致, 汎用rank輸送の全元表示/source射影吸収]
+    discharged: [原C18全degree座標両逆と射影性/微分全元式/同range/squarezero, 原cellular微分全元式と原squarezero, 原cycle商の第一同型定理と原kernel/range等号, C5 literal R両逆, C4原P2逆像とC6delta代表符号, C8実blockDefect次元式]
+    remaining: [後続E/W/whole finalの固定義務]
+  certificate_provenance:
+    discharged: [H1=p-image(d1 transpose)-image(d0), H2=p-image(d1), 原P/Qとcoarse/fine degree射影と原微分を使用, a=HP1*F1*HC1/T=HF1*F1*HC1/tau=HP2*dFine1*HQ1, W3原Option表からcell列挙とL1全mixed列/P2incomingを生成]
+    unresolved: []
+  proof_use:
+    used: [原closed/boundaryfree→原商kernel/range→両逆と逆代表→原H1全元a/T式, 原Qcycle逆代表→原restrictionとfine微分→C4P2逆像→C6delta符号→全R tau式, 全元表示→rank輸送→原blockDefect, W3原列range等号→同image/secondHomology射影→kernel rank評価→原H2P dimension]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [下記十focused/source/log/fullprint/moduleauditとhash, 共通scan新0/固定入力不変/静的登録/所有API旧bytes照合]
+  blocking_findings: [正式PR独立監査待ち]
+  next_obligation: 原kappaとvertical fiber homologyの計算表示、全A/有限発生labelの保存Boolと実blockDefectの一致、W1-W5全指定要求の同A-E経路評価、別whole final fresh4
+```
+
+以上は実装proposalで、全GOALは`target-proof-checkpoint`。原Pは独立Kan構成、原Qは指定dualLのまま。原cycles・原boundariesのquotientを使い、補助ambient座標の未使用補空間をhomologyに含めない。
+W3の今回の値は原H²Pの次元1と同じ生成τ行列の非零性である。τrank1/同型の数値評価、原Jの全値、全A/実Law/錐、paired版の全要求を今回の達成と呼ばない。E/W全体と別最終四票は後続義務のまま。
+
+| 固定終了条件 | 原入力からの主証拠と全方向 | 照合点 |
+| --- | --- | --- |
+| 1 H1/H2計算射影と原商 | `harmonicProjection_closed_eq_zero_iff`、`cycleHarmonicMap_ker/range`、`homologyCoordinateEquiv`、`secondHomologyCoordinateEquiv`と全両逆/逆代表 | quotientは原cycles/range原d0および原C2/range原d1。方向仮定を具体的原適用に残さない |
+| 2 元P/Q・粗細homology | native四H1/H2 CoordinateEquiv/standardEquiv、cellular二CoordinateEquiv/standardEquiv、全mk/両逆/逆代表/rank | 原Kan評価とQ制限から得たdegree表示を使用。期待homology基底・次元を入力にしない |
+| 3 実a/Tと表示変更 | `nativeAMatrix_unitH1`、`nativeTMatrix_directH1`、三imageMap、`homologyImageMap_change`、kernel/cokerEquiv | 全原H1類に対する等式。同じ原射を別表示へ輸送し、異なる基底のmatrix entry一致を主張しない |
+| 4 literal Rと全R tau | `nativeRCoordinateEquiv`、`nativeRProjection_rank`、`nativeTauMatrix_connectingTau`、`nativeTauMatrix_rank` | C5 QH1↔Rの両逆を保持。原Qcycle、原fine d1、原P2逆像とC6符号から全R元の式を証明 |
+| 5 実defectとW3 | `nativeA/TMatrix_blockDefect`、原W3全列/全range等号、生成secondHomology射影rank1、原H2P finrank1、`originalTauMatrix_ne_zero` | rank(p/q)-rank(B)の対が実blockDefect。同producerのkernel評価と原非零τを使用。W3全要求は後続 |
+
+## Cycle 19 provenance と検証
+
+固定baseはC18 merge `0a58ef47534acb3d02e2e5296bcf92b5e63154d5`、GOAL blob `cd5f3e684b7f390558796797874a1f16b52a6b18`、適用基準commit `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`。GOAL/恒久設計/Formalは不変。
+C3 PR #5294、C4 #5295、C5 #5296、C6 #5297、C8 #5299、C17 #5309、C18 #5310の受理済み宣言を現source/適用引数まで確認して使用する。既存LinearConjugationと標準first-isomorphism/quotient APIも現statementを確認して輸送に使う。受理済み内部履歴の再帰再認定はしない。
+W3owner差分は`edgeMap_none_iff`/`selectedEdge_val`と各printだけ。これらの追加を除去するとbaseの原入力/nonzero source bytesと一致する。C6実例値とstatementを変更しない。
+
+汎用射影/輸送の方向仮定は原微分・原degree像・原squarezero・全元表示から放電する。一般補題の条件を保持するだけでは原G135達成としない。原finite/equality/列挙はsemantic homology基底や期待dimensionを含まない。任意Setへの非計算的原商同型と、有理原表からの計算射影producerを区別する。W3の列・射影・rankは後者の同producerをkernelで評価する。
+空/零列、loop、平行辺、重複incidence、全mixed/nonefaceを一般構成から除外しない。Rを全Phiに置換せず、forest/pure/τ零を追加仮定にしない。
+
+rootは十single-file focused checkを実行し、全301宣言（source288＋生成13）、新257（source244＋生成13）、旧44の明示公理出力をsource順/module auditと全件照合した。標準`propext`/`Classical.choice`/`Quot.sound`のみ、warning0。生成13宣言は実environment inventoryから固定した。各commandは下表のfileに対する`./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/<file>`、cwdは`research/lean`、exit0。
+必要な単一targeted依存キャッシュだけを作成し、Research full/aggregate/全file loopとFormal build/蒸留は未実施。八新moduleのmanifest/aggregate直接importは静的登録のみで、aggregateをelaborateしていない。
+
+<!-- cycle19-generated-evidence -->
+
+| file | 明示公理printを実行した全宣言spine（file namespace相対名、生成を含む） |
+| --- | --- |
+| `RationalHarmonicCoordinates.lean` | `mul_imageProjection_of_mul_eq`, `mul_imageProjection_of_mul_zero`, `harmonicProjection`, `harmonicProjection_mulVec`, `imageProjection_zero`, `harmonic_outgoing_absorption`, `harmonicProjection_degree`, `harmonic_corrections_mul_zero`, `harmonicProjection_cycle`, `harmonicProjection_boundary_free`, `harmonicProjection_closed`, `harmonicProjection_closed_eq_zero_iff`, `harmonicProjection_mul_self`, `harmonicProjection_transpose`, `imageProjection_eq_of_range_eq`, `kernelProjection_eq_complement` |
+| `HomologyCoordinateTransport.lean` | `degreeProjection_fixes_range`, `cycleHarmonicMap`, `cycleHarmonicMap_apply`, `degreeEmbedding_fixed`, `cycleHarmonicMap_ker`, `cycleHarmonicMap_range`, `homologyCoordinateEquiv`, `homologyCoordinateEquiv_mk`, `homologyCoordinateEquiv_left_inverse`, `homologyCoordinateEquiv_right_inverse`, `homologyCoordinateEquiv_symm_representative`, `homologyCoordinateEquiv_rank`, `homologyCoordinateEquiv_inverse_cycle` |
+| `SecondHomologyCoordinateTransport.lean` | `secondHomologyProjection`, `secondHomologyProjection_sub`, `secondHomologyProjection_eq`, `secondHomologyProjection_degree`, `secondHomologyProjection_mul_self`, `secondHomologyProjection_transpose`, `secondHarmonicMap`, `secondHarmonicMap_apply`, `secondHarmonicMap_ker`, `secondHarmonicMap_range`, `secondHomologyCoordinateEquiv`, `secondHomologyCoordinateEquiv_mk`, `secondHomologyCoordinateEquiv_left_inverse`, `secondHomologyCoordinateEquiv_right_inverse`, `secondHomologyCoordinateEquiv_symm_representative`, `secondHomologyCoordinateEquiv_rank`, `secondHomologyCoordinateEquiv_inverse_representative` |
+| `NativeHomologyCoordinates.lean` | `range_subtype_coordinateEquiv`, `nativeP0Projection_symmetric`, `nativeP0Projection_idempotent`, `nativeQ0Projection_symmetric`, `nativeQ0Projection_idempotent`, `nativeP1Projection_symmetric`, `nativeP1Projection_idempotent`, `nativeQ1Projection_symmetric`, `nativeQ1Projection_idempotent`, `nativeQ1Embedding`, `nativeQ1Embedding_apply`, `nativeQ1Embedding_injective`, `nativeQ1Embedding_range`, `nativeP2Projection_symmetric`, `nativeP2Projection_idempotent`, `nativeQ2Projection_symmetric`, `nativeQ2Projection_idempotent`, `nativeQ2Embedding`, `nativeQ2Embedding_apply`, `nativeQ2Embedding_injective`, `nativeQ2Embedding_range`, `nativeP0Differential_left_projection`, `nativeP0Differential_right_projection`, `nativeQ0Differential_left_projection`, `nativeQ0Differential_right_projection`, `nativeP0Differential_range`, `nativeQ0Differential_range`, `nativeP1Differential_left_projection`, `nativeP1Differential_right_projection`, `nativeQ1Differential_left_projection`, `nativeQ1Differential_right_projection`, `nativeP1Differential_cycle_iff`, `nativeQ1Differential_cycle_iff`, `nativeP1Differential_range`, `nativeQ1Differential_range`, `nativeP1HomologyProjection`, `nativeP1HomologyProjection_eq`, `nativeP1HomologyCoordinateEquiv`, `nativeP1HomologyCoordinateEquiv_mk`, `nativeP1HomologyCoordinateEquiv_left_inverse`, `nativeP1HomologyCoordinateEquiv_right_inverse`, `nativeP1HomologyCoordinateEquiv_symm_representative`, `nativeP1HomologyProjection_rank`, `nativeP1HomologyProjection_mul_self`, `nativeP1HomologyCoordinateEquiv_inverse_cycle`, `nativeP1StandardHomologyCoordinateEquiv`, `nativeP1StandardHomologyCoordinateEquiv_apply`, `nativeP1StandardHomologyCoordinateEquiv_mk`, `nativeQ1HomologyProjection`, `nativeQ1HomologyProjection_eq`, `nativeQ1HomologyCoordinateEquiv`, `nativeQ1HomologyCoordinateEquiv_mk`, `nativeQ1HomologyCoordinateEquiv_left_inverse`, `nativeQ1HomologyCoordinateEquiv_right_inverse`, `nativeQ1HomologyCoordinateEquiv_symm_representative`, `nativeQ1HomologyProjection_rank`, `nativeQ1HomologyProjection_mul_self`, `nativeQ1HomologyCoordinateEquiv_inverse_cycle`, `nativeQ1StandardHomologyCoordinateEquiv`, `nativeQ1StandardHomologyCoordinateEquiv_apply`, `nativeQ1StandardHomologyCoordinateEquiv_mk`, `nativeP2HomologyProjection`, `nativeP2HomologyProjection_eq`, `nativeP2HomologyCoordinateEquiv`, `nativeP2HomologyCoordinateEquiv_mk`, `nativeP2HomologyCoordinateEquiv_left_inverse`, `nativeP2HomologyCoordinateEquiv_right_inverse`, `nativeP2HomologyCoordinateEquiv_symm_representative`, `nativeP2HomologyProjection_rank`, `nativeP2StandardHomologyCoordinateEquiv`, `nativeP2StandardHomologyCoordinateEquiv_mk`, `nativeP2HomologyProjection_mul_self`, `nativeP2StandardHomologyCoordinateEquiv_apply`, `nativeP2HomologyCoordinateEquiv_inverse_representative`, `nativeQ2HomologyProjection`, `nativeQ2HomologyProjection_eq`, `nativeQ2HomologyCoordinateEquiv`, `nativeQ2HomologyCoordinateEquiv_mk`, `nativeQ2HomologyCoordinateEquiv_left_inverse`, `nativeQ2HomologyCoordinateEquiv_right_inverse`, `nativeQ2HomologyCoordinateEquiv_symm_representative`, `nativeQ2HomologyProjection_rank`, `nativeQ2StandardHomologyCoordinateEquiv`, `nativeQ2StandardHomologyCoordinateEquiv_mk`, `nativeQ2HomologyProjection_mul_self`, `nativeQ2StandardHomologyCoordinateEquiv_apply`, `nativeQ2HomologyCoordinateEquiv_inverse_representative`, `nativeP0Differential.congr_simp`, `nativeP1Differential.congr_simp`, `nativeQ0Differential.congr_simp`, `nativeQ1Differential.congr_simp`, `nativeP0Projection.congr_simp`, `nativeP1Projection.congr_simp`, `nativeP2Projection.congr_simp`, `nativeQ2HomologyProjection.congr_simp`, `nativeP2HomologyProjection.congr_simp` |
+| `CellularHomologyCoordinates.lean` | `primitiveD0Matrix_range`, `cellularH1Projection`, `cellularH1Projection_eq`, `cellularH1CoordinateEquiv`, `cellularH1CoordinateEquiv_mk`, `cellularH1CoordinateEquiv_left_inverse`, `cellularH1CoordinateEquiv_right_inverse`, `cellularH1Projection_rank`, `cellularH1StandardCoordinateEquiv`, `cellularH1StandardCoordinateEquiv_mk`, `cellularH1Projection_mul_self`, `cellularH1CoordinateEquiv_inverse_cycle`, `cellularH1StandardCoordinateEquiv_apply`, `primitiveD1Matrix_range`, `cellularH2Projection`, `cellularH2Projection_eq`, `cellularH2CoordinateEquiv`, `cellularH2CoordinateEquiv_mk`, `cellularH2CoordinateEquiv_left_inverse`, `cellularH2CoordinateEquiv_right_inverse`, `cellularH2Projection_rank`, `cellularH2StandardCoordinateEquiv`, `cellularH2StandardCoordinateEquiv_mk`, `cellularH2Projection_mul_self`, `cellularH2CoordinateEquiv_inverse_representative`, `cellularH2StandardCoordinateEquiv_apply`, `cellularH2Projection.congr_simp`, `primitiveD1Matrix.congr_simp`, `primitiveD0Matrix.congr_simp`, `cellularH1Projection.congr_simp` |
+| `HomologyCoordinateRank.lean` | `coordinateMatrix_range`, `coordinateMatrix_rank`, `coordinateProjection_dimensions`, `coordinateMatrix_blockDefect`, `homologyImageMap`, `homologyImageMap_apply`, `homologyImageMap_matrix`, `homologyImageMap_natural`, `homologyImageMap_kernelEquiv`, `homologyImageMap_cokernelEquiv`, `homologyImageMap_change`, `rationalMatrixRank_transpose` |
+| `NativeDiagnosticMatrices.lean` | `nativeAMatrix`, `nativeAMatrix_eq`, `nativeTMatrix`, `nativeTMatrix_eq`, `nativeRCoordinateEquiv`, `nativeRCoordinateEquiv_apply`, `nativeRCoordinateEquiv_restriction`, `nativeTauMatrix`, `nativeTauMatrix_eq`, `nativeAMatrix_right_projection`, `nativeAMatrix_left_projection`, `nativeTMatrix_right_projection`, `nativeTMatrix_left_projection`, `nativeTauMatrix_right_projection`, `nativeTauMatrix_left_projection`, `nativeAMatrix_represents`, `nativeTMatrix_represents`, `nativeAMatrix_unitH1`, `nativeTMatrix_directH1`, `restriction1_nativeQ1Embedding`, `nativeTauMatrix_connectingTau`, `nativeAMatrix_rank`, `nativeTMatrix_rank`, `nativeTauMatrix_rank`, `nativeAMatrix_blockDefect`, `nativeTMatrix_blockDefect`, `nativeAMatrix_imageMap`, `nativeTMatrix_imageMap`, `nativeTauMatrix_imageMap`, `nativeRProjection_rank` |
+| `HomologyCoordinateWitnesses.lean` | `homologySelectedChart`, `homologySelectedChart_val`, `homologyChartEquiv`, `homologyEdgeEquiv`, `homologyVertical_name`, `homologyVerticalEquiv`, `homologyMixedEquiv`, `homologyChartFintype`, `homologyEdgeFintype`, `homologyFaceFintype`, `homologyVerticalFintype`, `homologyMixedFintype`, `homologyNoneFaceFintype`, `homologyChartDecidableEq`, `homologyEdgeDecidableEq`, `homologyFaceDecidableEq`, `originalR_coordinate_inverses`, `originalTauMatrix_ne_zero`, `homologyL1Table`, `homologyL1Table_inl`, `homologyL1Table_inr`, `primitiveL1Matrix_eq_homologyTable`, `homologyL1Table_image`, `homologyP1Projection`, `homologyQ1Projection`, `homologyD1Table`, `homologyD1Table_entry`, `primitiveD1Matrix_eq_homologyTable`, `homologyP2Projection`, `homologyQ2Projection`, `homologyP1DifferentialTable`, `homologyP1DifferentialTable_entry`, `nativeP1Differential_eq_homologyTable`, `homologyP2IncomingColumn`, `homologyP2IncomingColumn_entry`, `homologyP2IncomingColumn_range`, `homologyP2IncomingColumn_image`, `homologyP2HomologyProjection`, `homologyP2HomologyProjection_rank_one`, `originalP2Homology_finrank`, `originalP2StandardHomology_finrank` |
+| `WitnessThreeInput.lean` | `coarseNerve`, `fineNerve`, `Nc`, `Nf`, `M`, `edgeMap_none_iff`, `faceMap_none_iff`, `pairedNerve`, `pairedNf`, `pairedM` |
+| `WitnessThreeNonzero.lean` | `selectedEdge`, `selectedFace`, `selectedEdge_val`, `selectedFace_val`, `k`, `a0`, `a1`, `b`, `c`, `f0`, `f1`, `m`, `a0_ne_a1`, `mixedFace_eq_m`, `verticalFaceIsEmpty`, `m_edge0`, `m_edge1`, `m_edge2`, `f0_edge0`, `f0_edge1`, `f0_edge2`, `f1_edge0`, `f1_edge1`, `f1_edge2`, `B_m`, `D_m`, `H_f0`, `H_f1`, `B_m_eq_H_difference`, `mixedChain_single`, `B_kernel_zero`, `pairedMixedIsEmpty`, `primitiveTransgressionVanishing_paired_true`, `primitiveTransgressionVanishing_empty_true`, `primitiveTransgressionVanishing_false`, `connectingTau_ne_zero` |
+
+| file | source SHA-256 | focused stdout SHA-256 | print/module audit |
+| --- | --- | --- | --- |
+| RationalHarmonicCoordinates.lean | `e6184794bcbc89b3a5c9726233e99ca735ac6a826ae71bdbb804f7033b1addcb` | `012fd2396a1f75f704f953555295bbfb2ae174d812b49e2ea7ddb78c6a60ec9b` | 16/16 |
+| HomologyCoordinateTransport.lean | `f87b97c94694af53821971d4eb8f2b6920ff304f87cefc77b6b34a989fe1f57b` | `91745e43486944a41b525c3c1de0f2603ae0a529edcdd34be9e224fd9b699c20` | 13/13 |
+| SecondHomologyCoordinateTransport.lean | `092afa58fafd6821f22c3f38f99ce1f818937db1f449515370b45ba01e672683` | `7a103b55db9202a5f795832606512a02a802d869623e5f13b90f010e1a8991af` | 17/17 |
+| NativeHomologyCoordinates.lean | `c650ee0aec9f640f44620815ffca88be963043d3c7a5cc5cbfc1ceb312ba86d5` | `2e63bd2229f1bac93cde9cacb771f6de7b9da49144baac1e5faeab9592f8cd53` | 96/96 |
+| CellularHomologyCoordinates.lean | `4e639d785e9fc77369dcca7b398e367256c75bbe6e073dc111c7f77b7053a6ed` | `9b8700ced8934c0fce750cef03b6972c23b1bd4d1d805ac3028289017b46489e` | 30/30 |
+| HomologyCoordinateRank.lean | `fd3f40e8ff80f244852b78d15054bf9d37a52f79506a9fef898387dc09a0fcb6` | `f16428779ab9419eaa8e0f4dc868e8ec3ea0d53fb778dc6ba04261d9e7f21066` | 12/12 |
+| NativeDiagnosticMatrices.lean | `bc8157bc5ffe2d35c339fe0ecc10e3a1126ccadd539257284783436c44f7b46a` | `cf1efec0c3b27002c45a28dbea333022db25398b661c3db8fe1da8b509904696` | 30/30 |
+| HomologyCoordinateWitnesses.lean | `6d899f606c5aa6c6465913fe3a9a6352a0345fd2f61a76bb7390da1ed09b9824` | `ad099e62a85ae47f830f194a9c4897ea0c04d4c6e2e37570816d224cb0cfdf82` | 41/41 |
+| WitnessThreeInput.lean | `68f89f83e088f3d4e2f55bb7e08fe6be339e8751ade0ffdc2d4f3147282b34c8` | `72946d5c12df272ab7f7ea0e71067e88f2c5ce6dd255c4d5bc0c9caad1f58b85` | 10/10 |
+| WitnessThreeNonzero.lean | `23139f001353ef0512506cf97709d8829b4b8fc6b3733a6622bde5e8c72114fb` | `a66c4df23ab72ab36ed0f44c58013244616e30d870e15b5225e1a4f8960cc144` | 36/36 |
+
+validation metadata SHA-256 `7ebe14e96e0bdd079ef052a7506bb6471e4ab1949e53476aa09000852e15470a`。所有API旧bytes保存証拠 SHA-256 `5b85a5e32f175a6f67719ffb38009929006d96388b7de37d3bfa8cb10d0f6e3a`。共通scan/source-log照合・静的登録・固定入力不変をPR前に最終確認する。独立PR査読/受理監査/CI/merge/Issue同期はこのproposalの後に行い、全GOAL完了へ読み替えない。
