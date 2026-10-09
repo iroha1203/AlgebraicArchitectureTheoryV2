@@ -3347,3 +3347,123 @@ rootは十single-file focused checkを実行し、全301宣言（source288＋生
 | WitnessThreeNonzero.lean | `23139f001353ef0512506cf97709d8829b4b8fc6b3733a6622bde5e8c72114fb` | `a66c4df23ab72ab36ed0f44c58013244616e30d870e15b5225e1a4f8960cc144` | 36/36 |
 
 validation metadata SHA-256 `7ebe14e96e0bdd079ef052a7506bb6471e4ab1949e53476aa09000852e15470a`。所有API旧bytes保存証拠 SHA-256 `5b85a5e32f175a6f67719ffb38009929006d96388b7de37d3bfa8cb10d0f6e3a`。共通scan/source-log照合・静的登録・固定入力不変をPR前に最終確認する。独立PR査読/受理監査/CI/merge/Issue同期はこのproposalの後に行い、全GOAL完了へ読み替えない。
+
+
+## Cycle19 accepted / 同期
+
+[PR5312](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5312)はhead `a90fee53a0ee64caea90acb1073d43b776521cd3`、merge `8822a0d9bbc42ab91711c7e3839aa58be0239fa0`、`2026-10-09T00:08:53Z`で実MERGED。[13項目root受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5312#issuecomment-6071529511)はNo major findings / proof-obligation-discharged。[数学A](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5312#issuecomment-6071505138)、[数学B](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5312#issuecomment-6071507446)、[LeanA](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5312#issuecomment-6071509546)、[LeanB](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5312#issuecomment-6071511508)全て新規独立No major findings、中心0/非中心0、reruns0/2。[同一票scan資格追補](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5312#issuecomment-6071513555)も新finding0、元bytes不変・追加elaboration0。[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6071546610)でOPEN保持。全301標準公理・十root/四独立single focused・scan/静的方向PASS、全7CI成功、Formal実検証六skipを区別。全GOALcheckpoint、停止条件なし。
+
+## Cycle20 selection — 原fiber適合と全保存判定の有限計算
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-135-aat-atlas-coefficient-fiber
+cycle: 20
+goal_blob_sha: cd5f3e684b7f390558796797874a1f16b52a6b18
+base_oid: 8822a0d9bbc42ab91711c7e3839aa58be0239fa0
+tracking_issue: 5290
+report_path: research/reports/G-135-aat-atlas-coefficient-fiber.md
+selection:
+  proof_state_ref: Cycle19 accepted / Issue6071546610 / 原native a-T-R-tau全元表示
+  proof_dag_predecessors: [C1 incidence圏とcomma成分, C5原κ-Φ-R, C8実defect, C11原Law block和, C16有限全A-label検査, C17有理producer, C19原商座標と実診断]
+  milestone: E 原fiber適合の表示・連結成分手順・全Aと発生label保存判定を同じ原A-D写像へ戻す
+  proof_obligations:
+    - 原a/B/D/V全元有理表示から原verticalCycles/VerticalHomology/mixedCyclesの全座標を構成
+    - 原kerB上のDyから生成κ行列が同じrawκおよび全Φのκを全元で表示し原dimension/rankへ戻る
+    - 有限incidence圏の実射存在からbounded到達判定を生成し原Zigzag/ConnectedComponentsへ両方向同定、元commaと順像係数成分へ適用
+    - 原粗細d0/d1とF1からJと保存Boolを生成し同じ原blockDefect零と必要十分
+    - 全Set A・全有限発生labelの保存Boolと実Law blockDefectを双方向接続、Value全体有限性・同台重複除去なし
+  exit_criteria:
+    - 原a/B/D/Vの全vector同定、原vertical/混在商座標の両逆と原κ全元表示・rank
+    - 成分のbounded有限判定と元incidence/comma連結関係・成分への両方向同定
+    - 同じprimitive粗細表によるJ/Boolが原直接比較blockDefectと一致、a同型かつtau単射条件へ接続
+    - 全A有限走査と元全Set保存、全発生label走査と既存実Law欠損零が必要十分
+    - 全追加spine focused、公理・scan・登録・proof-use/出所固定、空台/空Law/重複保持
+  selection_reason: 残Eの原κと成分/全保存判定を閉じ、指定W全評価を同じ計算経路に置けるようにする
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [PrimitiveMatrices所有API, FiberCompatibilityCoordinates, FiniteComponents, FinitePreservationDecision]
+  risks: [原cycles商を補助複体へ交換しない, 原κの全Φ同値方向, computationと非計算的index表示の区別, incidence射の重複保持, semantic rank/保存仮定を入力しない]
+  unchecked: []
+```
+
+実装前の選定。五終了条件が揃うまで同cycle内で実装・検証を反復する。W全体と別最終四査読は次義務でありcompletion_candidateはまだno。
+
+
+## Cycle20 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原a/B/D/V全vector表示から元verticalCycles/VerticalHomology/mixedCyclesの同座標と両逆を構成し、実κ全元・全Phi・computed rankへ接続。原incidenceとcarrier commaの有限射存在からbounded path検査/成分数を生成し、元Zigzag/ConnectedComponents/同Kan係数とincidence作用へ同定。原粗細微分/F1からJを生成し、全A/有限発生label保存Boolを同じ旧blockDefectと実Lawへ双方向接続
+  exit_criteria_status:
+    - 1: primitiveB/D/VMatrix_mulVec、primitiveVerticalEdgeMatrix_entry/mulVec、chainKernelEmbedding_range/chainKernelCoordinateEquiv、verticalCycle/mixedCycleCoordinateEquiv、primitiveVMatrix_cycle_range/kernel_absorption、verticalHomologyCoordinateEquivと原mk/両逆/全逆代表、同Phi座標。nativeKappaMatrix_rawKappa/kappa/imageMapは全原mixedCycles/全生成座標、raw_rank/rankは実κ像の次元
+    - 2: categoryComponentGraph_reachable_iffは元Zigzagと両方向、finiteZagDecidableは原有限Homのcardから生成。categoryComponentDecisionは長さcard未満の全finite walksを走査し元component等号と必要十分、成分同値/元代表/成分数。元incidence/commaの有限列挙・有限射・同Bool、同Kan cell座標/全incidence作用へ接続
+    - 3: rationalProjectionDefect/rationalPreservationDecisionは実homology射影と実map rankのみを読む。primitiveDiagnostic_eq_blockDefectはC19原T全表示と同homology/rankへ接続。primitivePreservationDecisionの原欠損零同値と元a同型かつtau単射条件
+    - 4: readingTarget_finite/allFinsets_iff_allSetsからallAPreservationDecisionの全原Set同値。lawPreservationDecisionは全原発生labelを走査、lawBlockDefect_zero_iff_labelsは同旧Law比較の非負block和の零性と全label零の双方向、primitiveLawDiagnosticは全対を同旧Law欠損へ同定
+    - 5: 四single focused/全101宣言とgenerated congr_simp1件の個別公理/全登録/scan/元owner bytes保存/現predecessor適用を固定。empty kernel成功と実余核failureを同Boolでkernel評価、空Set/空Law/同台重複を一般式から除外しない
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [PrimitiveMatrices所有API3件, FiberCompatibilityCoordinates, FiniteComponents, FinitePreservationDecision]
+  evidence: [下記五条件と全宣言spine, 四focused全公理出力, bounded path kernel, finite rational ranks/Bool]
+  claim_mapping:
+    theorem_names: [chainKernelEmbedding_range, verticalHomologyCoordinateEquiv, nativeKappaMatrix_kappa, nativeKappaMatrix_rank, categoryComponentDecision_eq_true_iff_components, coefficientComponentCoordinateEquiv_map, primitiveDiagnostic_eq_blockDefect, allAPreservationDecision_eq_true_iff, lawPreservationDecision_eq_true_iff, primitiveLawDiagnostic_eq_blockDefect]
+    source_labels: [G135 E原fiber適合/成分有限計算/同J/全A-label保存判定, A原Kan係数表示, C原保存条件, D実Law比較]
+    conjuncts: [下記全宣言spineと五条件表]
+    undischarged_assumptions: [選択五条件のsemantic premiseなし・正式PR独立監査待ち, 全W1-W5の指定値/同Source-Law台/代表/錐対応と別whole-finalは未完]
+    acceptance_point: 原有限入力だけから生成した表示と検査を同じ原商/実κ/原incidence成分/同a-T-tau-Law比較へ双方向で戻した提案
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [原a/B/D/V全vector, 元kernel/range/V原cycle像, 原vertical商全同値/両逆, rawκから同Phiκ表示, 原finiteHom→bounded component procedure, 同nativeT/J→旧defect, 全Set/全発生labelと元Law和]
+    remaining: [正式PR監査, 全指定Wと別最終四査読]
+  certificate_provenance:
+    discharged: [原named cell single基底, 原ker a/ker Bと実V/D, C5原vertical-Phi同値, 原incidence/commaの有限射, C19原homology表示と実rank, C16全target/発生label有限列挙]
+    unresolved: []
+  proof_use:
+    used: [全vector→原kernel/range, Vの実cycle閉性→原商座標, 元mixedCycle→Dy→原vertical類→全Phiκ, fullsource absorption→実κrank, actualZag→全boundedpath→原成分/同Kan, 原T全表示→実J, 非負発生block和→Law保存]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [下記四single focused/source-log hashes/101標準公理, scans/owner記録]
+  blocking_findings: []
+  next_obligation: W1-W5の全指定要求を原始Source/readings/実Law二発生labelから同A-E経路で評価、その後別whole-goal fresh4
+```
+
+上記 `audits` は同じcycleの提案であり、正式受理は固定headの標準PR監査に置く。GOAL全体はtarget-proof-checkpointを保持し、Eの残計算接続だけでW全体完了としない。
+
+### 五終了条件の証拠対応と前提
+
+| 条件 | 元入力・構成・実接続 |
+| --- | --- |
+| 1 原fiber適合 | 元verticalEdgeBoundary a、mixedHorizontalBoundary B、mixedVerticalBoundary D、verticalBoundary V。全named原セル係数→元ker a/ker B→ker a/im Vのliteral原商。C5元verticalHomologyPhiEquivを合成し全Phiのκに同じHΦ·D·K_Bを同定。両逆/全原逆代表/全原mixedCycle/全生成座標を保持。V閉性は原aV零のverticalBoundaryToCycles、Dy閉性は原aD+bB零のmixedCycleToVerticalから放電 |
+| 2 原成分計算 | 原有限射のcard正性からZagをdecideし、長さcard J未満の全walkを列挙する。graphはπ0計算だけで、元圏やKan extensionをgraph/posetへ置換しない。元Zigzagの両方向・元ConnectedComponentsの両逆と代表・count、元carrier commaの全Hom/objects finiteを入力から生成。同Kan cellと全元incidence射作用はC3原component-value isoへ接続 |
+| 3 同J/保存 | C19元粗細H1射影・独立direct Tの全元式/rank/source absorptionから生成二rank差を同じ旧M.aSubnerveComparisonHom.h1MapのblockDefectへ同定。BoolはこのNat対を読むだけで、保存/期待rankを入力しない。同BoolをC8元a同型∧実τ単射へ接続 |
+| 4 全A/発生label | 有限Sourceと全射readingからtarget finite、全Finsetと全Setの同値。発生label finiteは元laws×Source経路でValue全体finiteなし。同台labelを商にせず各summandを保持。G-134受理原Law比較block和とNat非負和の零性から原全label保存と実Law保存を双方証明、対の計算値も一致 |
+| 5 検証・出所 | 全新/既存owner宣言とgenerated宣言をsource/print/実stdout/moduleauditへ全照合。原empty/zero/loop/parallel/repeated incidenceの制約追加なし。有限kernelの空行列true/余核falseをkernel評価。全W指定値の代替例とはしない |
+
+material premise分類：T0原Source/readings/coarser/Nc/Nf/M/K1/Option/incidence/任意A/ℚと有限namedセル列挙はambient input。一般 `chainKernelEmbedding_range/chainKernelCoordinateEquiv` の全vector matrix representationはdirection-hypothesisで、nativea/Bではprimitive全元所有APIにより放電。一般category kernelのfinite objects・等号・decidable actualZagは方向条件で、nativeでは原セル/射finiteと有限Hom-card判定から生成する。既存secondHomology条件は原a-kernel対称/冪等、原V-range、原Vのa閉性から全放電。原κ/R/tau/保存同型/期待次元を新引数・instance・structure fieldに保持しない。
+
+計算の区別：rationalProjectionDefect/Bool、image/kernel/商射影、bounded finite-walk検査とfinite-family走査は有限表の計算。任意Setを含む元Mからのセル/射列挙と元商同値・逆代表は非計算的transport。nativeZagをClassical.emで検査する方式を採らず、明示 `finiteZagDecidable` を原finite Hom列挙から作る。期待homology基底・semantic rank・成分関係のoracleを入力にしない。
+
+出所：C3 PR5294/受理6046087706の原Incidence finite、ConstantLimitのcoefficientCellIsoと原incidence作用表示、C12 PR5303/最終受理6057242603のPushforwardCoefficient現source（元有限comma/Kan係数はC3、pushforwardCoefficients_map_component_evalはC12追加）、C5 PR5296/受理6049620284のKappa/FiberHomology、C8 PR5299/受理6052624414のDefectMaps/DefectDiagnostics、C16 PR5307/受理6063082167のPrimitiveMatrices/FiniteTauDecision、C19 PR5312/受理6071529511の元商/全原a-T-R-tau-J表示を使用する。Lawの原block和はG-134 PR5287 head0134623422114ae39f989d591cb167c6176aae3e/全体受理6030258596のFaceRelationSubdivision.LawComparisonFiberDiagnostics `lawH1Defect_subset_sum` に同じ現M/laws/粗細adequacyを適用する（C11 PR5302でも同原和を接続済み）。現使用十sourceの受理head・受理PR/監査・宣言・source SHAを照合し、十source全体が各記載受理版とbytes一致する。出所照合記録SHA `b07723e8a5b53a2daa2db16f6a56f52a4687f111e6bb86a8a38998446e207070`。追跡完了predecessor内部全履歴を再認定しない。
+
+原PrimitiveMatricesは三所有APIとprintだけを追加し、これらを除くとbase bytesに一致（owner保存SHA `b5f53ab47718e676107a397a13a006d8cd6ce20fb147c6971c73426fc9cdf0f9`）。Lean4.28.0 / mathlib8f9d9cffの元quotient・有限graph path・rank・Nat有限和APIの実適用条件を用いる。
+
+<!-- cycle20-generated-evidence -->
+
+### Cycle20 全宣言spineと実検証
+
+source100＋生成1＝全101、新source78＋生成1＝新79、旧owner22。全公理はpropext/Classical.choice/Quot.soundの部分集合で、sorryAx/custom/ofReduceBoolなし。四single focusedはすべてexit0/warning0。sourceと明示printの順序・実stdout・moduleaudit・全個別公理集合を全件照合。
+
+| file | 全宣言（全項を受理spine/既存owner保持の監査対象にする） | 実focused / count / source SHA / stdout SHA |
+| --- | --- | --- |
+| `PrimitiveMatrices.lean` | `matrix_represents_map`, `matrix_rank_eq_range`, `primitiveBMatrix`, `primitiveBMatrix_entry`, `primitiveDMatrix`, `primitiveDMatrix_entry`, `primitiveHMatrix`, `primitiveHMatrix_entry`, `primitiveVMatrix`, `primitiveVMatrix_entry`, `primitiveConstraintMatrix`, `primitiveBaseMatrix`, `primitiveGiantMatrix`, `primitiveConstraintMatrix_entry`, `primitiveBaseMatrix_entry`, `primitiveGiantMatrix_entry`, `primitiveConstraintMatrix_represents`, `primitiveBaseMatrix_represents`, `primitiveGiantMatrix_represents`, `primitiveConstraintMatrix_rank`, `primitiveBaseMatrix_rank`, `primitiveGiantMatrix_rank`, `primitiveBMatrix_mulVec`, `primitiveDMatrix_mulVec`, `primitiveVMatrix_mulVec` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/PrimitiveMatrices.lean`、exit0/warning0、25、source `e25acff4b48526c10109d291b3c93b9e8771f857e6a94222dda0ce064cb0442f`、stdout `0632635448f3cf5c381ee76801742bc58f80eb05230bfa38974cf9b91a7e6041` |
+| `FiberCompatibilityCoordinates.lean` | `chainKernelEmbedding`, `chainKernelEmbedding_apply`, `chainKernelEmbedding_injective`, `chainKernelEmbedding_range`, `chainKernelCoordinateEquiv`, `chainKernelCoordinateEquiv_apply`, `primitiveVerticalEdgeMatrix`, `primitiveVerticalEdgeMatrix_entry`, `primitiveVerticalEdgeMatrix_mulVec`, `verticalCycleCoordinateEquiv`, `verticalCycleCoordinateEquiv_apply`, `mixedCycleCoordinateEquiv`, `mixedCycleCoordinateEquiv_apply`, `primitiveVMatrix_cycle_range`, `primitiveVMatrix_kernel_absorption`, `verticalHomologyProjection`, `verticalHomologyProjection_eq`, `verticalHomologyCoordinateEquiv`, `verticalHomologyCoordinateEquiv_mk`, `phiHomologyCoordinateEquiv`, `nativeKappaMatrix`, `nativeKappaMatrix_eq`, `nativeKappaMatrix_rawKappa`, `nativeKappaMatrix_kappa`, `nativeKappaMatrix_right_projection`, `nativeKappaMatrix_raw_rank`, `nativeKappaMatrix_rank`, `verticalHomologyCoordinateEquiv_left_inverse`, `verticalHomologyCoordinateEquiv_right_inverse`, `verticalHomologyCoordinateEquiv_inverse_representative`, `verticalHomologyProjection_mul_self`, `verticalHomologyProjection_rank`, `phiHomologyProjection_rank`, `nativeKappaMatrix_left_projection`, `nativeKappaMatrix_imageMap`, `chainKernelEmbedding.congr_simp` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/FiberCompatibilityCoordinates.lean`、exit0/warning0、36、source `ebdd08c9b3223e96f52b5b6a051d30f1b220b806cb2be65709b9c8f998dabe47`、stdout `eaab3f68c4cafc6bbaf06c7b9a954d46c62148c1656afb60a7f1b233776c2dce` |
+| `FiniteComponents.lean` | `categoryComponentGraph`, `categoryComponentGraph_adj`, `categoryComponentGraph_reachable_iff`, `finiteZagDecidable`, `categoryComponentGraph_decidableAdj`, `categoryComponentDecision`, `categoryComponentDecision_eq_true_iff`, `categoryComponentDecision_eq_true_iff_components`, `categoryComponentEquiv`, `categoryComponentEquiv_mk`, `categoryComponentCount`, `categoryComponentCount_eq`, `incidenceComponentDecision`, `incidenceComponentDecision_eq_true_iff`, `originalCommaHomFinite`, `commaComponentDecision`, `commaComponentDecision_eq_true_iff`, `coefficientComponentCoordinateEquiv`, `coefficientComponentCoordinateEquiv_apply`, `coefficientComponentCoordinateEquiv_map`, `commaComponentCount`, `commaComponentCount_eq` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/FiniteComponents.lean`、exit0/warning0、22、source `9fb360ef24faa328bcd7e45447a5e73a732b5c9e7555a3166dbfb1ea49e410ce`、stdout `fc1abdf73b60f846c873f61c0e957e2741dd08d2292da77d0736473af3f6821e` |
+| `FinitePreservationDecision.lean` | `rationalProjectionDefect`, `rationalPreservationDecision`, `rationalPreservationDecision_eq_true_iff`, `rationalPreservationDecision_empty`, `rationalPreservationDecision_failure`, `primitiveDiagnostic`, `primitiveDiagnostic_eq_blockDefect`, `primitivePreservationDecision`, `primitivePreservationDecision_eq_true_iff`, `primitivePreservationDecision_eq_true_iff_coefficient`, `allAPreservationDecision`, `allAPreservationDecision_eq_true_iff`, `lawPreservationDecision`, `lawPreservationDecision_eq_true_iff_labels`, `lawBlockDefect_zero_iff_labels`, `lawPreservationDecision_eq_true_iff`, `primitiveLawDiagnostic`, `primitiveLawDiagnostic_eq_blockDefect` | `./check_research_modules.sh --focused ResearchLean/AG/AtlasCoefficientFiber/FinitePreservationDecision.lean`、exit0/warning0、18、source `64815b21177bdef5df81a15df88a6aa783632667047e6ee7483b1b64d6e18ef8`、stdout `918a63e7085dfd4cf82b28da46e27b3338a27d937799daa48b76f1e8f88943ae` |
+
+validation SHA `a875e816aec850f3675fafeee742cde7c1ccbf5903d45f0f3857a25319e5e2a5`。`chainKernelEmbedding.congr_simp` は同環境runtime inventoryから抽出し明示printを加えた生成宣言1件である。三新moduleのmanifest/aggregate直接登録を静的に各一回確認し、aggregateをelaborateしない。Researchfull/aggregate/全fileloop/local lakebuild、Formal移植/実build、全W/別whole-finalは未実施。固定GOAL/design/Formal/保護数学本文に変更なし。
