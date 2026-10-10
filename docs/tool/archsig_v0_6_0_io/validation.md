@@ -126,7 +126,7 @@ reading Pair {
   law required total(s: State): s.x + s.y = 1;
   change setpair(s: State, a: Z, b: Z) = s with { x = a, y = b };
   view first(s: State): Z = s.x;
-  view echo(v: Z): Z = v;
+  law optional zero(v: Z): v = 0;
 }
 ```
 
@@ -143,25 +143,51 @@ x=evaluate(Pair.first,on=$r.object,s=@pair/s)
 最小の UTF-8 byte 長を持つ解の key は `[["0","1"]]` と `[["1","0"]]` であり、
 同じ長さでは byte 辞書順で先の `[["0","1"]]` を選ぶ。
 したがって `r` は `x=0,y=1` の候補を元の Law へ再代入して確認し、後続の `x` は整数0を返す。
-`r` の claim は、この選択と再検査を含む修復の構成条件である。
+`r` の claim は、最小 key に属する割当ての一意性と再検査を含む修復の構成条件である。
 算法が `(1,0)` を先に発見しても、あるいは異なる基底・Smith normal form の特解を得ても、
 選ぶ候補と後続の評価は変わらない。前述の `rebalance` の `d=-1` は解が一意なので同じ選択となる。
 
 最小 key の選択または再検査の途中で予算が尽きた場合は、確認済みの解存在 Proposition を保持し、
 `Repair` と `object` を返さず、`r` は undetermined、run は interrupted とする。
 
-同じ二入力の `solve` 結果から、表示用の特解を直接読むこともできる。
+同じ解集合を表示する特解 `(0,1)` と `(1,0)` は、計算用の証人である。
+次の射影は、[意味上の射影](results.md#2-回答条件導出)の表にない `representation` の
+段階で `usage`、exit 64 となり、Law の評価へ進まない。
 
 ```text
 s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)
-v=evaluate(Pair.echo,v=$s.solutions.representation.particular.coordinates[0])
+v=check(Pair.zero,v=$s.solutions.representation.particular.coordinates[0])
 ```
 
-元の `(a,b)` 座標で `(0,1)` と `(1,0)` のどちらを特解に用いても同じ解集合を表す。
-この `v` は指定した表示の第1座標を読むため、その表示ではそれぞれ0と1を返す。
-`v` とそれに依存する後続結果は、選択した表示への依存を Scope に保持する。
-この射影を行わず SolutionSet 自体を商の問いへ渡す場合は、特解の座標を意味入力へ取り出さない。
-表示に沿って計算した値を、標準選択済みの `$r.object` の値と取り違えない。
+特解を Vector 全体として取り出す迂回も同じ理由で拒否する。結果 JSON には両方のような
+正しい表示を保持できるが、その選び方で後続の命題を `0=0` または `1=0` へ変更しない。
+SolutionSet 自体を `quotient` へ渡す接続と、意味上選択済みの `$r.object` を読む接続は有効である。
+
+### 識別子によらない選択と一意性
+
+次の Law 片で、唯一の root の `first` は owned State `a`、`second` は `b` を指し、
+両方の `x=0` を観測した場合を考える。
+
+```text
+reading Rename {
+  entity System { first: State; second: State; }
+  entity State(owner: System) { x: Z; }
+  law required total(r: System): r.first.x + r.second.x = 1;
+  law optional pinned(r: System): r.first.x + r.second.x = 1 and r.first.x = 0;
+  change setx(s: State, v: Z) = s with { x = v };
+  view firstx(r: System): Z = r.first.x;
+}
+```
+
+`repair(Rename.total,using=Rename.setx,on=@rename/root,r=@rename/root)` の最小 key は
+`[["0"],["1"]]`。`a.x=0,b.x=1` と `a.x=1,b.x=0` の二つの割当てが同じ key を持つ。
+核は最小性と二つの異なる割当てを確認し、一意選択を含む構成条件を反証する。
+全解集合と成立済みの存在命題は保持し、Repair/object は返さない。
+二つの subject ID と全参照を入れ替えても、同じ一意性の反証になる。
+
+同じ問いの Law を `Rename.pinned` にすると、`first.x=0,second.x=1` の割当てが一意に決まる。
+修復後に `firstx` を評価すると0となり、ID の改名後も0である。
+この差は作者が明記した要求から生じ、ID の順序や solver の発見順から生じない。
 
 ## 3. 三辺の修復と局所・大域
 

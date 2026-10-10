@@ -52,12 +52,11 @@ Node = {id:String,type:Type,state:"value"|"blocked",value?:Payload,
         conditions:Ref[],evidence:Ref[],judgment?:Judgment,scope:Scope,reasons:Issue[]}
 Judgment = {status:Decision,evidence:Ref[],reasons:Issue[]}
 Rule = {kind:"subject"|"atom"|"law",location:Location}
-     | {kind:"construction",name:Construction}
+     | {kind:"construction",name:Construction,path?:(String|Nat)[]}
 Partial = {entries:{path:(String|Nat)[],value?:Ref,reasons:Issue[]}[]}
 Scope = {readings:QName[],snapshots:Id[],modes:("observed"|"proposed"|"specification")[],
          domain:"finite_model"|"all_assignments"|"candidate_space"|"all_completions",
-         quantifiers:Quantifier[],assumptions:Ref[],
-         representation_dependencies:{source:Ref,path:(String|Nat)[]}[]}
+         quantifiers:Quantifier[],assumptions:Ref[]}
 Quantifier = {kind:"forall"|"exists",name:String,type:Type,domain?:Ref}
 FactPointer = {snapshot:Id,subject:Id,field?:QName,atom?:Id}
 Location = {input:"law"|"archmap",pointer?:String,span?:[Nat,Nat]}
@@ -130,9 +129,12 @@ evaluateがBool=falseを返す場合も値の評価はestablishedである。
 build/map/compose/localize/repairのclaimは選択した構成条件、solveは修復の存在、
 quotientのlaw指定時は評価族の保存、compareは選択した比較の成立を表す。
 repairの構成条件は、許された候補域内の[標準選択](computations.md#修復候補の標準選択)の完了と、
-選択候補の元Lawへの再検査を含む。全解集合の非空性は別のinhabited命題として保持する。
+最小keyに属する元parameter割当ての一意性、選択候補の元Lawへの再検査を含む。
+全解集合の非空性は別のinhabited命題として保持する。
 修復の存在を確認できても標準選択が未完了なら、その存在命題を成立済みの中間nodeとして残し、
 repairのclaimは未決、Repair/objectは未生成とする。解集合が空なら構成条件を反証する。
+最小keyに異なる割当てが二つあれば、最小性の証拠と二つのAssignmentから構成条件を反証し、
+condition_failedを返す。inhabitedの成立と全解集合は保持し、Repair/objectは生成しない。
 diagnoseのclaimはfiniteのdegree=1では大域解の存在、affineのdegree=1では対象障害類の零性とする。
 finiteのdegree=0はmatching familyと大域制限の全体を返す値の問いで、claimを持たない。
 affineのdegree≠1はspaceの計算を問いとし、class/claimを作らず、spaceが得られればestablished。
@@ -162,6 +164,9 @@ Path/Vector/ModuleMapは必ずこのarray型を使い、型名だけのStringを
 表の短い型名はこの型の略記。PathのQNameは始域・終域のentity型。
 VectorのRefはModule、ModuleMapの二つのRefは始域・終域のModule。
 同じ座標や同型な型でも、このidentityを黙って同一視しない。
+ownerのidentityは標準構成が指定する意味対象の同一性であり、表示nodeの番号の一致ではない。
+同じ生成対象を共有した場合と重複して表示した場合は、元の根・宣言・束縛・構成を照合して
+同じownerとして型検査する。別の生成対象を、群の同型やpayloadの一致だけで統合しない。
 Pに属する型のpayloadは[原始encoding](inputs.md)に従う。
 Pに属さないList/Tuple/Setのpayloadは、成分ごとにそのTypeの既出nodeを指すRefのarrayとする。
 Pに属さないOptionのpayloadは`{"none":true}`または`{"some":Ref}`で、someの参照先は要素Typeと一致する。
@@ -186,42 +191,71 @@ Scopeは実際の根・量化域・仮定を全件保持する。全補完を含
 候補parameter等の量化もquantifiersに残す。仮定の追加はLawの式から生成したPropositionだけとし、
 同じnodeのconditionsに検査結果を残す。
 
-representation_dependenciesは、CLIのHandleで結果専用recordの内部表示を選んだ依存を保持する。
-`$id.output`による出力全体の参照は依存を新設しない。Lawの結果型Tの原始値、List/Tuple、
-Option、data等の構造射影も依存を新設しない。Pathのrecord欄については次の表を適用する。
-結果専用recordの内部欄を選ぶ場合は、次の閉じた表の欄だけを、標準規則で固定された意味の欄とする。
+### 公開する意味上の射影
 
-| record | 新たな表示依存を作らない欄 |
+`$id.output`は出力全体を、その型の数学的な結果として参照する。
+結果専用recordからの射影は、semanticsで固定した次の閉じた表だけを許可する。
+表の型は射影先nodeのTypeであり、依存するModule、CandidateSpace、subjectのidentityを保持する。
+variantや引数から型が静的に確定しないときは、構成した値の型を照合してから束縛する。
+
+| 元の型 | 許可する欄またはpathと、結果の型 |
 | --- | --- |
-| Architecture | root |
-| Repair | parameters、object |
-| Operation | source、target、name、word |
-| Path | source、target、generators |
+| Architecture | root: 元の根entity参照型 |
+| Evaluation | value: 評価式の結果型、environment: Architecture |
+| Repair | domain: CandidateSpace、solutions: SolutionSet、parameters: Assignment、object: Architecture |
+| Assignment | domain: CandidateSpace |
+| CandidateSpace | base: Architecture、parameters: Domain、states: StateSpace、action: StateMap |
+| SolutionSet | domain: CandidateSpace |
+| EquationSpace | base: Architecture、parameters: Domain |
+| EquationSolutionSet | domain: EquationSpace |
+| LocalSystem | base: Architecture、cover: Cover、topology: Topology |
+| Diagnostic | system: LocalSystem。affine_cechではspace: Cohomology、class: Class。finite_matchingではmatching: Domain、global: SolutionSetまたはEquationSolutionSet、restriction: StateMap |
+| Cohomology | module: Module |
+| Class | cohomology: Cohomology、coordinates: 当該cohomology.module上のVector |
+| Vector | module: そのVectorのownerであるModule |
+| Module | ring: Ring、free_rank: Z、torsion: List<Z> |
+| ModuleMap | source: Module、target: Module |
+| StateMap | source: Domain、target: Domain |
+| Quotient | domain: CandidateSpaceまたはSolutionSet、classes: Domain、projection: StateMap、descent: StateMap |
+| Operation | source: Architecture、target: Architecture、candidate: MapCandidate、configuration_map: ConfigurationMap、action: AtomMap、word[index]: その位置の原始arrow/correspondence参照型 |
+| Path | source/target: 各端点の参照型、generators[index]: その位置の原始arrow/correspondence参照型 |
+| MapCandidate | subject: 元arrow/correspondence参照型、source: Architecture、target: Architecture、action: AtomMap |
+| ConfigurationMap | candidate: MapCandidate |
+| ObjectAlgebra | base: ObjectComponent |
+| ObjectComponent | object: Architecture、subject: 元entity参照型 |
+| ObjectAlgebraMap | source: ObjectAlgebra、target: ObjectAlgebra、configuration_map: ConfigurationMap |
+| Comparison | diagnosticsの場合だけcohomology_map: ModuleMap、kernel/cokernel: Module、class_transport: Proposition、finite_map: StateMap |
 
-これ以外の結果専用record欄の射影は、値が偶然同じでも保守的に表示依存とする。
-例えばRepair.parametersを選ぶだけなら依存を新設しないが、そのVector.coordinatesをさらに読むと
-その段階で依存する。新たな依存を作らない射影も、入力が既に持つ表示依存を消さない。
-核が抽象的な値を計算するために内部表示を使うこと自体は、CLIによる射影依存を作らない。
+free_rankはJSONのNatを同じ非負整数の原始Z encodingへ、torsionは正の整数文字列の列を
+原始List<Z> encodingへ変換する。これらは意味上の整数不変量を読む固定の射影規則であり、
+他のmetadataのStringやNatへ暗黙の型変換を広げない。
+word/generatorsは順序に意味を持つ列である。この二pathはindexまでを一つの射影とし、
+異種の参照を含む列全体をList型へ変換しない。取り出した参照の型と始終点は元の宣言に従う。
 
-各Handleについて、出力から最終値までの射影列が表示依存を新設する欄を一つでも通る場合、
-既出の型付き出力nodeをsourceとし、そこから選択したfield/indexの全列をpathとする依存を一件追加する。
-sourceは元のrecordを指し、出力field名そのものはpathへ含めない。
-途中の匿名recordは独立した型にせず、例えばSolutionSetをsourceとする
-`["representation","particular","coordinates",0]`のようにpath内へ保持する。
-Handleの射影列が非空なら、新しい表示依存の有無によらず、型付けできる最終値について
-新しいprojection nodeを作り、そのargumentsへ元の型付き出力nodeを残す。
-そのscopeには新たな依存があれば追加し、元recordおよび選択した値の既存の依存を保持する。
-bindingと後続の計算はこのprojection nodeを参照し、元recordや既存の子nodeのscopeを書き換えない。
-元の射影列はRequestのSelector.pathに保持し、核はその選択とprojection nodeの型・値を照合する。
-この導出はConstructionのprojectionであり、式のtuple成分を表すExpressionのprojectとは区別する。
-空の射影列では出力nodeをそのまま使い、依存を追加しない。
+Lawの結果型Tでは、List/Tupleの[index]、dataの現在のconstructor引数の[index]、
+Optionのsomeを許可し、その後の成分にも型に従って同じ規則を適用する。
+Refのencoding内のsnapshot/subject文字列、Termの構文表示等は構造射影の対象に含めない。
+Set/Mapと意味上の集合表はindexで選べない。Assignment.entriesもsubjectを添字とする集合表であり、
+entries[index]から元parameter値を取り出す経路を設けない。
 
-全nodeは、実際に参照する入力・条件・証拠・値のnodeが持つ表示依存を合併して保持する。
-Answerも解決したHandleの束縛とoutputs/claim/evidence等からその依存を引き継ぐ。
-したがって射影値をLawへ束縛した後のcheckや、その値を用いたrepair/objectにも依存が残る。
-依存は同じsourceのnode IDと同じpathの組で重複を除き、sourceのnodes内の順、
-続いてpathのcanonical JSONのUTF-8 byte辞書順に並べる。依存がなければ空配列とする。
-sourceも導出DAGの既出nodeを指す辺であり、後から生成した親recordへの逆向きの辺を既存nodeへ追加しない。
+各段階をこの表またはTの構造射影で型付けできることを要求し、表外の中間欄を経由しない。
+結果が匿名recordのまま終わるpathも許可しない。SolutionSet.representation、
+Class.representative、Diagnostic.local_sections、Vector.coordinates、Moduleの生成元・関係、
+ModuleMap.columns、証拠の内部欄は表示・検査用としてJSONに保持し、CLIによる射影はusageとする。
+Class.coordinatesは商加群の元を表すVector全体であり、その座標列を原始値へ取り出す規則を含まない。
+Čech複体のordered/increasing表示の選択に関わるcomplex、cycles、boundaries等も表に含めない。
+核はこれらの表示や証拠から、公開された数学的な値と条件が正しく導かれることを検査する。
+
+最終値が既出Refなら、そのnodeをそのまま後続の束縛へ使う。Module等のownerを複製せず、
+既存nodeのargumentsやScopeを書き換えない。元の出力からの選択はRequest.Selector.pathに保持する。
+inlineの原始値・Tの成分、上記の整数encoding変換では、その型と値を持つprojection nodeを生成し、
+argumentsを元の型付き出力node一つ、rule.pathをその出力からの全射影列とする。
+rule.pathには出力field名を含めない。Scopeと原始支持は元の出力から引き継ぐ。
+constructionのrule.pathはname=projectionの場合だけ非空の列を必須とし、他の構成では省略する。
+核はSelector.path、公開規則、実際の値と型を照合し、projection nodeではrule.pathから抽出を再検査する。
+この規則は、式のtuple成分を表すExpressionのprojectと区別する。
+新しいnodeのargumentsは既出の元出力だけを指し、value内のRefも既出nodeに限る。
+既出childから後の親recordへの逆向きの辺を追加しない。
 
 Constructionは次の閉じた列挙とする。各規則の意味は[核の構成](computations.md)に従う。
 `binding, projection, expression, evaluation, law_instance, configuration,
@@ -231,7 +265,7 @@ circuit_map, invariant, invariant_map, signature_axis, signature_map, value_map,
 declaration_transport, object_algebra_map, operation, composition,
 comparison, domain, state_space, state_map, candidate_space, solution_set, equation_space, equation_solutions, path, context, context_map,
 cover, topology, local_system, equation_presentation, ring, polynomial, finite_function, ring_map, ideal, module, module_map, vector, action,
-complex, cochain_map, cohomology, class, diagnostic, repair, quotient, observation_plan,
+complex, cochain_map, cohomology, class, diagnostic, assignment, repair, quotient, observation_plan,
 proposition, evidence`。作者が呼ぶ関数名として公開しない。
 
 ## 3. 対象・式・写像
@@ -289,13 +323,20 @@ guard=falseのLawはapplicability=not_applicableとし、全称要求へ違反�
 
 Predicateは`law_holds, constructible, equal, word_equal, action_equal, relation_equal,
 configuration_preserved, object_algebra_preserved, cover_adequate, restrictions_compatible,
-sheaf_condition, action_laws, inhabited, class_zero, diagnostics_preserved, sufficient, divides,
+sheaf_condition, action_laws, inhabited, minimal_assignment, unique_minimum, class_zero, diagnostics_preserved, sufficient, divides,
 required_iff, applicability_iff, equation_holds_iff, residual_zero_iff, profile_compatible, circuit_sound,
 circuit_matches, implies, circuit_accepts, invariant_transport,
 signature_transport, naturality, inverse_maps, declaration_transport`。
 law_holdsのoperandsはLawInstance、equal系は比較順の二値、inhabitedはSolutionSet、
 inhabitedはEquationSolutionSetも受け取る。class_zeroはClass、diagnostics_preservedはComparison、
 sufficientはQuotient、dividesは順にZの除数と被除数。
+minimal_assignmentのoperandsは順にSolutionSet、同じCandidateSpace上のAssignmentとし、
+その割当てが解であり、より小さい標準keyの解が存在しないことを表す。
+unique_minimumのoperandsはSolutionSet一つとし、標準keyを最小にする元parameter割当てが
+ちょうど一つ存在することを表す。空解集合と複数の最小割当てでは偽である。
+repairの構成条件はunique_minimumを条件に持ち、選択したAssignmentのminimal_assignmentと、
+元の更新・Lawへの再代入を証拠に保持する。複数最小の反証では、二つのminimal_assignmentの
+成立と、二つのAssignmentの不等を確認する。
 その他は検査する構成のargumentsと同じ順のoperandsを使い、constructibleの第1operandだけは
 Construction名を持つText nodeとする。これらは結果上の命題表示でありLawの呼出しAPIではない。
 
@@ -506,7 +547,8 @@ Idealの零性やideal membershipを、εの零性へ読み替えない。
 | Cohomology | `{complex:Complex,degree:Nat,cycles:Module,boundaries:Module,module:Module,inclusion:ModuleMap,projection:ModuleMap}` |
 | Class | `{cohomology:Cohomology,representative:Vector,coordinates:Vector}` |
 | Diagnostic | `{kind:"finite_matching",side:Side,system:LocalSystem,degree:Nat,matching:Domain,global:Ref,restriction:StateMap,fibers:{matching:Ref,preimage:Ref}[],conditions:Proposition[]}` / `{kind:"affine_cech",side:Side,system:LocalSystem,degree:Nat,complex:Complex,space:Cohomology,class?:Class,local_sections:Vector[],conditions:Proposition[]}` |
-| Repair | `{domain:CandidateSpace,solutions:SolutionSet,parameters:Ref,steps:{subject:Ref,change:QName,parameters:Ref[]}[],object:Architecture,rechecks:Proposition[],local_lift?:StateMap}` |
+| Assignment | `{domain:CandidateSpace,entries:{subject:Ref,parameters:Ref[]}[]}` |
+| Repair | `{domain:CandidateSpace,solutions:SolutionSet,parameters:Assignment,steps:{subject:Ref,change:QName,parameters:Ref[]}[],object:Architecture,rechecks:Proposition[],local_lift?:StateMap}` |
 | Quotient | `{domain:Ref,view:QName,bindings:Binding[],classes:Domain,projection:StateMap,representation:QuotientRepresentation,law?:QName,evaluations:Evaluation[],descent?:StateMap}` |
 | Comparison | `{kind:"value"\|"word"\|"action"\|"relation",left:Ref,right:Ref}` / `{kind:"diagnostics",left:Diagnostic,right:Diagnostic,along:Operation,cochain_map?:CochainMap,cohomology_map?:ModuleMap,kernel?:Module,cokernel?:Module,class_transport?:Proposition,finite_map?:StateMap,conditions:Proposition[]}` |
 | ObservationPlan | `{request:String,requirements:{field:FactPointer,dependents:Ref[],locations:Location[]}[],blockers:Issue[]}` |
@@ -534,11 +576,22 @@ stage=allowedはLawを課す前の作用で、parameter_kernelを省略し、eff
 存在・群作用・自由推移性の条件を別々に確認する。
 同じ値型を持つという理由だけで係数や群作用を生成しない。
 
-Repair.parametersは標準選択で決めた候補代入、stepsは元changeのparameterへ復元した代入を持つ。
-表示依存がなければ、選択した代入とobjectは表示基底や証拠の選び方によって変わらない。
-表示依存がある場合も、同じ表示と束縛の下で標準選択により固定し、objectのscopeへその依存を残す。
-核は再代入に加えて標準選択の最小性をrepair構成条件として検査する。
+Assignmentは元changeのparameter割当てを表す結果専用型で、Lawの原始型へ追加しない。
+entriesはdomain.instancesの各subjectを一度ずつ含む意味上の集合表であり、順序は意味を持たない。
+各parametersはchangeの第2以降のparameterを宣言順に持ち、各Refの型はその宣言を束縛した型と一致する。
+domain.kind=identityではentries=[]とし、Unit parameterの唯一の割当てを表す。
+核は有限値やアフィン表示の代入を元parameterへ戻し、当該候補域に属するAssignmentとして検査する。
+同じCandidateSpaceとは、同じ基準Architectureのroot・reading・overrides、changeまたはidentity、
+解決済みの束縛、change instance族、guardと元parameter域を持つ生成候補域を指す。
+この同一性は元の入力と標準構成で検査し、node番号・表示基底・共有の有無には依存しない。
+単に同型な別の候補域を同一視しない。
+
+Repair.parametersは標準選択で一意に決まったAssignmentを指す。
+stepsは同じsubjectごとに同じ元parameter値を持ち、changeはdomain.changeと一致する。
+選択した割当てとobjectは表示基底や証拠の選び方によって変わらない。
+核は再代入に加えて標準選択の最小性・一意性をrepair構成条件として検査する。
 より小さい候補の適格性が未決なら、それを飛ばして既知の候補を確定しない。
+同じ最小keyを持つ他の候補の適格性が未決な場合も、一意性を確定しない。
 選択未完了時は既知の全解表示や存在証拠を保持し、暫定候補をRepair/objectへ昇格しない。
 SolutionRepresentation.particularは解集合の表示用特解であり、Repair.parametersの標準選択とは区別する。
 
@@ -579,6 +632,9 @@ divisibilityは各対角行の係数が対応するtransformed_rhs成分を割�
 零行では0がその成分を割る条件、すなわち成分=0を使う。rhsを扱わない場合はdivisibility=[]。
 completion_pairは未知slotの型を保つ補完対、separating_pairは宣言済み候補域の二候補であり、
 観測された反例と区別する。反証には元の名前・入力値・結果・source位置を保持する。
+修復の一意性反証ではcounterexample.left/rightを異なる二つのAssignmentへ向け、
+同じ候補域と各値型を保つ。両割当てのminimal_assignmentの成立証拠もunique_minimumの
+反証とrepairの構成条件に保持し、同じkeyの二候補を見つけただけで最小性を成立させない。
 
 | IssueCode | 必須のdetailsと意味 |
 | --- | --- |

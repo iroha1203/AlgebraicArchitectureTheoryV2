@@ -42,20 +42,22 @@ Degree   ::= Index
 ```
 
 QName、Id、Nameは[入力](inputs.md)と[Law](law.md)の定義に従う。
+ただし固定引数名と公開された射影名の位置では、then、law、some等の当該固定語を受理する。
+Lawの予約語と重なることを理由に、これらの位置の固定語を拒否しない。
 字句の間のASCII空白を無視する。文字列literal、任意式、配列literal、入れ子の問いを受け付けない。
 EnumとDegreeは次節で指定した位置だけに置ける。DegreeはJSONのNatの上限以内とする。
 各引数名は一回だけ指定する。指定の順序に意味を持たせない。
 
 `@snapshot/subject`は現在のArchMapの原始subjectを指す。
 `$id.field`は同じrunの問いidの`outputs[field]`を指す。
-その後の`.field`は[結果schema](results.md)に列挙したrecord欄、`[index]`はList/Tupleの
-0始まりの成分を指す。Set、Map、意味上の集合表はindexで選べない。
-原始dataはLawで宣言したconstructorの引数を`[index]`で選ぶ。別constructorの位置を選べない。
+その後の射影は[公開する意味上の射影](results.md#公開する意味上の射影)の閉じた表と、
+Lawの結果型Tの構造射影に限る。List/Tupleの`[index]`は0始まりの成分を指す。
+Set、Map、意味上の集合表はindexで選べない。原始dataはLawで宣言したconstructorの引数を
+`[index]`で選ぶ。別constructorの位置を選べない。
 生のnode ID、過去の出力path、JSON PointerをHandleとして受け付けない。
-結果専用recordの内部欄を選ぶ射影は、[結果の表示依存](results.md#2-回答条件導出)として記録する。
-`$id.field`で出力全体を渡すこと、Lawの結果型Tの構造射影、同表の固定された意味の欄の射影は、
-表示依存を新たに作らず、既存の依存を引き継ぐ。表示依存のある値も後続の問いへ渡せる。
-一度選んだrecordを同じrunの下流だけ別の表示へ差し替えず、その型・owner・射影値を保つ。
+表外の欄はresult.jsonに表示・検査用として保持し、CLIからの射影は`usage`とする。
+途中の欄にも同じ規則を適用し、表示用特解をVector全体として取り出す経路も許可しない。
+解集合、類、写像等は型付き結果全体として渡し、その数学的な意味とownerを保つ。
 
 `needed`だけは`$id`を受け取り、その問い全体の未決理由を読む。
 その他の問いでは出力fieldまで指定する。後方参照を許し、依存循環は`cycle`。
@@ -63,12 +65,16 @@ EnumとDegreeは次節で指定した位置だけに置ける。DegreeはJSONの
 Issue.requestにそのIDを入れ、Law/ArchMapのlocationを付けない。
 requestsには解決した依存グラフを保持し、意味計算前に停止してnodes/answersを空にする。
 同じ優先度の問いは`--ask`の順で評価する。出力answersは指定順にする。
-存在しない問いID・schemaにないfield・宣言、静的に判明する範囲外index、引数不足、
+存在しない問いID・公開されていない射影・宣言、静的に判明する範囲外index、引数不足、
 静的な型不一致は`usage`。
-schema上は有効な任意fieldが反証・未決のため生成されない場合は`dependency_blocked`と
+公開された任意fieldが反証・未決のため生成されない場合は`dependency_blocked`と
 元の理由を保持する。例えば反証されたmapの`$m.operation`を使う合成は、mapの反例を
 残したまま未決となる。値を計算して初めて分かるindex・constructor・Optionの不適合は
 projectionの`condition_failed`と、それに依存する問いの`dependency_blocked`を返す。
+公開fieldが選択したvariantや省略規則では定義されない場合もprojectionの`condition_failed`とする。
+例えば観測環境のEvaluation.environmentや、Lawを指定しないQuotient.descentの省略がこれに当たる。
+異種のword/generatorsから選んだ参照等の型・ownerを静的に決められない場合は、要求される型を
+制約として保持し、射影後に検査する。その不適合もprojectionの`condition_failed`として扱う。
 
 宣言のparameterを束縛する引数は`bind.parameter=Handle`。
 固定引数名と衝突しないparameterは`parameter=Handle`と略記できる。
@@ -141,7 +147,7 @@ Architecture間の構造保存済みOperationへ自動で昇格しない。
 
 | kind | 二つのHandle | 判定する命題 |
 | --- | --- | --- |
-| value | 同じ原始型Pまたは同じModule上のVector | 値の等値。商では剰余類の等値 |
+| value | 同じ原始型P、同じModule上のVector、または同じCandidateSpace上のAssignment | 値の等値。商では剰余類、Assignmentではsubjectごとの元change parameterの等値 |
 | word | 二つのOperationまたは二つのPath | 恒等除去と結合の平坦化後の名前付き語の一致 |
 | action | 同じ始終域を持つ同型のOperationまたはPath | OperationはU全域の総写像の等値、Pathは宣言から生成した同じ全域作用の等値 |
 | relation | 同じreadingの同じ始終域を持つ同型のOperationまたはPath | Lawのrelationが生成する同効果関係に属するか |
@@ -155,6 +161,11 @@ diagnosticsは同じdegree・side・係数環を要求する。異なるdegree/s
 有限診断はmatching familyと大域状態の実写像の全単射性と対応を検査する。
 異なるkindの診断間に比較算法がなければunsupported_algorithmを返す。
 比較の構成条件が未確認なら、値の見かけの一致で保存を成立させない。
+Assignmentの比較は表示行の順によらずsubjectを対応させ、各元parameterの宣言型の等値を検査する。
+CandidateSpaceの同一性は[Assignmentの規則](results.md#5-線形表示診断修復商)に従い、node番号や
+計算の共有によらず、基準Architecture・change・束縛と候補域の生成条件で検査する。
+異なるCandidateSpaceのAssignmentは`usage`。同じ候補域に属しても、Term等の値の等値を決める
+算法がなければ`unsupported_algorithm`とし、構文表示の違いだけで不等としない。
 
 `localize`でlawを指定した場合、BはそのLawのparameterを部分的に束縛できる。
 省略時はBを置かず、同じreadingのrequired Lawを上記の全称規則で適用する。
@@ -177,7 +188,10 @@ changeの第一parameterと型・ownerの合う全entityをon内で列挙し、�
 domainは許された全候補、solutionsはLawを満たす部分集合である。
 探索を打ち切った部分列挙を全解集合・空集合・不存在証明として返さない。
 repairは[修復候補の標準選択](computations.md#修復候補の標準選択)によって候補を一つに定め、
-選択の最小性と、元のLaw・許された変更への再代入を検査する。
+最小keyに属する元parameter割当ての一意性と、元のLaw・許された変更への再代入を検査する。
+最小keyの異なる割当てが複数あれば、存在命題と全解集合を保持し、最小性の証拠と二割当てから
+repairの構成条件を反証して`condition_failed`を返す。この場合もrepair/objectは生成せず、
+解が存在しないという結論にはしない。原parameter割当ては結果専用Assignmentとして保持する。
 存在を確認しても選択や再検査が未完了なら、存在命題は中間結果に残し、repairの構成条件は未決とする。
 この場合はrepair/objectを返さず、それらへ依存する問いに元の中断・未決理由を伝える。
 
@@ -307,17 +321,14 @@ digest一致は候補の検索だけに用い、成立証拠の代わりにし�
 以前と同じ計算計画を使うことは要求せず、現在の式・原始根・束縛・条件に対する導出を検査する。
 共通の計算結果を再利用・共有しても、Lawの各出現と現在のAtomの支持・由来を保持する。
 Repairを再利用する場合も、現在の候補域・束縛・基準Architectureのoverridesを照合し、
-標準選択の最小性と再代入を再検査する。
-表示依存のある導出では、元recordの抽象的な同値だけで再利用を確定しない。
-現在のrecordに対する射影値、その型・owner、記録した依存の対応を照合し、後続の推論を再検査する。
+標準選択の最小性・一意性と再代入を再検査する。
+公開された射影は、その規則、現在の意味対象、型・ownerと射影値を照合し、後続の推論を再検査する。
 現在の入力から導けない結論を旧結果から増やさない。変わったsourceへ古い由来を貼り直さない。
-表示依存のない問いの数学的な値と条件は、同じ完全入力・解決済みの問いに対して計画によらず決定的とする。
-表示依存のある問いは、記録した表示とそれを読む束縛の下で正確な値・条件を返す。
-その依存は後続のcheck、repair、生成したobjectにも引き継ぎ、異なる表示を読む実行との値の一致は要求しない。
+数学的な値と条件は、同じ完全入力・解決済みの問いに対して計画によらず決定的とする。
+解集合・類・写像は、基底や特解等の表示を変えた場合も、元の意味対象に沿う同じ値を表す。
 時間・メモリ・node番号・表示基底・同じ命題の証明証人の選択は意味的一致の対象から除く。
-後続の問いが読むRepairの元parameter値とobjectは、同じ表示依存と束縛の下で標準選択により固定する。
-表示依存がなければ入力と問いだけで同じ修復を定める。
-同じ表示と束縛を保った予算の増加は検査済みの主張の真偽を反転させず、未決の範囲と理由だけを更新する。
+後続の問いが読むRepairのAssignmentとobjectは、入力と問いから標準選択により固定する。
+同じ入力と問いを保った予算の増加は検査済みの主張の真偽を反転させず、未決の範囲と理由だけを更新する。
 
 内部計画の自由とその検査は[意味を保つ計算計画](computations.md#10-意味を保つ計算計画)に従う。
 同じ予算でどこまで完了するかは計画や再利用の有無で変わり得るが、確定した値と条件をそのscopeの下で保つ。

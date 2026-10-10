@@ -139,6 +139,7 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
   読めることにはしない。view を展開した依存 slot、項の左右・出現は由来として保持するが、
   依存の記録は読取り権限ではない。合計を公開しても各加数を公開せず、Tuple の成分射影は許す。
 - `change` の第1引数は owned entity または根 entity、残りは参照を含まない値型。
+  Path と、参照を含む data/container も残りの引数型には含めない。
   結果は第1引数と同じ entity の `with` 更新である。owner・参照・Map・subject roster は変更しない。
   更新式は更新前の同一環境で同時評価する。指定根内の各対象 instance へ独立に適用する。
   guard は許す parameter/状態の条件であり、欠測値を探索変数にしない。
