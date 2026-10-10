@@ -13,7 +13,7 @@ ArchSig は、Law が定める語彙・読み・構成規則を ArchMap の原�
 | [計算カタログ](computations.md) | 公開演算の署名・意味・成立条件・決定範囲 |
 | [実行と出力](execution.md) | CLI、出力値、導出、外部状態、再利用 |
 | [決定理由](decisions.md) | 採用案、退けた案、コンセプトとの対応 |
-| [検証](validation.md) | 短い完全入力、期待結果、反証的な点検、実行した検算 |
+| [検証](validation.md) | 短い完全入力、期待結果、反証的な点検、実装時の適合確認 |
 | [数学への接続](math_obligations.md) | 既存結果と製品側の証明義務 |
 
 根拠は [製品コンセプト](../archsig_v0_6_0_concept.md)、
