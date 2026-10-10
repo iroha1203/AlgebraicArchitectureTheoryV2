@@ -7,9 +7,14 @@ DSL の記法と計算機能は、以下で定義する提案である。
 
 - 本文: 入力、DSL、意味論、計算過程、具体例、AAT の成果への拡張。
 - [エンジン自身のモデルと Law](engine_laws.md): Atom、configuration、操作、満たすべき方程式。
-- [設計判断と未決事項](decisions.md): 選択理由、代替案、実装前に確定する事項。
+- [設計判断と根拠](decisions.md): 選択理由、代替案。
 - [三操作の局所・大域計算](local_global_example.md): 同じ原始入力から係数・微分・障害類・貼り合わせを構成する例。
 - [L05の具体的評価](compiler_preservation_example.md): 原始変換規則からIRを生成し、保存成立と反例を導出する例。
+
+具体的な入力形式・DSL・CLI・型付き結果は [v0.6.0 I/O仕様](../archsig_v0_6_0_io/README.md)に従う。
+本節以降のDSL例と呼出しの説明は構成を示す設計記法である。
+v0.6.0では語彙・law・view・local・changeを宣言し、問いはCLIで選ぶ。
+以下の構成関数やqueryの配線を作者向けの入力形式としては用いない。
 
 ## 1. 計算の単位
 
@@ -128,8 +133,7 @@ query   ::= evaluate(equation) | solve(equation_family)
           | compare(reading, reading) | distinguish(reading, equation)
 ```
 
-これは抽象構文の設計であり、具体的な区切り文字などは [未決事項](decisions.md#3-未決事項)
-で扱う。有限な関係の閉包と、無限に続きうる操作語の生成は別の型・評価方式にする。
+これは抽象構文の設計であり、具体構文は [Law DSL仕様](../archsig_v0_6_0_io/law.md)に従う。有限な関係の閉包と、無限に続きうる操作語の生成は別の型・評価方式にする。
 
 ### 3.2 Law に書く値
 
