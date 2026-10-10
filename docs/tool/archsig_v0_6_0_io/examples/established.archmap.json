@@ -1,8 +1,0 @@
-{
-  "format": "archsig.archmap/1",
-  "semantics": "archsig/0.6.0",
-  "vocabularies": [{"module": "affine","digest": "sha256:044477ce1547e20f069d0fe453a1be54abffa39f645cec08362c953e2b3e81e9"}],
-  "sources": [{"id": "code","uri": "urn:archsig:example:affine","revision": "example-2","digest": "sha256:b117096dd1721cf1f3f23fee6a023a3389843994ba732610d0221592b010840e"}],
-  "origins": [{"id": "obs","mode": "observed","method": "実装の式を有理数の原始Termとして読む。","locations": [{"source": "code","path": "operations.txt"}]}],
-  "snapshots": [{"id": "sample","role": "affine/current","origin": "obs","subjects": [{"id": "f","sort": "affine/Operation","origin": "obs"},{"id": "g","sort": "affine/Operation","origin": "obs"}],"atoms": [{"id": "f-body","subject": "f","predicate": "affine/body","value": {"params": ["x"],"body": ["call","core/add",["var","x"],["lit","Q",["1","1"]]]},"origin": "obs"},{"id": "g-body","subject": "g","predicate": "affine/body","value": {"params": ["x"],"body": ["call","core/add",["var","x"],["lit","Q",["2","1"]]]},"origin": "obs"}]}]
-}

@@ -1,28 +1,27 @@
-# 二入力、原始値、参照
+# ArchMap、語彙、原始値
 
-## 1. 共通のファイル規則
+ArchMap は、先に選んだ Law の語彙で観測した原始 Atom と由来を持つ。
+Law は [宣言言語](law.md) のテキスト、ArchMap と結果は JSON である。
+原始入力は対象の値・参照・式・候補対応までとし、計算済みの cover、行列、判定、保存証拠を
+受け取る型を設けない。核は言語固有の source parser を持たない。
 
-入力・出力は UTF-8 の JSON。BOM、重複 object key、不正 UTF-8、非有限数、
-unpaired surrogate を拒否する。未知の欄を拒否する。欄の省略を許す箇所は本仕様で
-`?` と記す。`?` は文法の記号であってファイルの key の一部ではない。
-`null` は省略・欠測・零のいずれにも使わない。空 array/object は明示した型で解釈する。
+## 1. ファイルと版
 
-ID は `[A-Za-z][A-Za-z0-9_.-]*`、長さは1以上。ID の比較は case-sensitive。
-完全修飾名は `module/name`。module ID と module 内の宣言名はそれぞれ一意。
-自然文だけに任意の Unicode を許し、文字列の正規化・case folding を行わない。
-JSON の object key 順は意味を持たず、array 順は特記がない限り意味を持つ。
-同じ値の Set 要素や同じ ID の重複定義を拒否し、先勝ち・後勝ちを行わない。
+JSON は UTF-8、BOM なし。重複 key、未知 field、不正 UTF-8、非有限 number、
+unpaired surrogate を拒否する。`null` は使わない。省略可能 field を本仕様の表記では `?` と書く。
+空配列は宣言型で読み、欠測と区別する。object key 順は意味を持たない。
+文字列を正規化したり case folding したりしない。
 
-版は format と semantics を分ける。
-`archsig.archmap/1`、`archsig.law/1`、`archsig.result/1` が wire format、
-`archsig/0.6.0` が型・組込み演算・判断規則の意味である。
-両入力は同一 semantics を指定する。未知版は `unsupported_version`。
-同じ semantics の下で演算の意味を変えない。新しい意味を追加する版は別の semantics とする。
+format は ArchMap=`archsig.archmap/1`、Law=`archsig.law/1`、結果=`archsig.result/1`。
+型・評価・核の構成規則の意味の版は `archsig/0.6.0`。両入力の semantics を一致させる。
+未知版は `unsupported_version`、対応版の未知 field や宣言は不正入力。
+同じ semantics の意味を実装版によって変更しない。変更には別の semantics を用いる。
 
-## 2. ArchMap の全体
+Id は `[A-Za-z][A-Za-z0-9_.-]*`。QName は Law の完全名であり `.` 区切り。
+Digest は `sha256:` と小文字16進64桁。Nat は metadata 用の JSON number で
+0..9007199254740991 の整数。数学的な整数の表現とは異なる。
 
-以下は欄と型の表記であり、`T[]` は T の有限 array、`Id` は上記 ID、`Digest` は
-`sha256:` に続く小文字16進64桁である。
+## 2. ArchMap の schema
 
 ```text
 ArchMap = {
@@ -30,136 +29,143 @@ ArchMap = {
   vocabularies: VocabularyBinding[], sources: Source[], origins: Origin[],
   snapshots: Snapshot[]
 }
-VocabularyBinding = {module: Id, digest: Digest}
+VocabularyBinding = {reading: Name, digest: Digest}
 Source = {id: Id, uri: String, revision: String, digest: Digest}
 Origin = {id: Id, mode: "observed"|"proposed"|"specification",
           method: String, locations: Location[], note?: String}
-Location = {source: Id, path: String, span?: [Nat, Nat]}
-Snapshot = {id: Id, role: QName, origin: Id, subjects: Subject[], atoms: Atom[]}
-Subject = {id: Id, sort: QName, origin: Id}
-Atom = {id: Id, subject: Id, predicate: QName, value: Value, origin: Id}
+Location = {source: Id, path: String, span?: [Nat,Nat]}
+Snapshot = {id: Id, origin: Id, subjects: Subject[], atoms: Atom[]}
+Subject = {id: Id, type: QName, origin: Id}
+Atom = {id: Id, subject: Id, field: QName, value: Value, origin: Id}
 ```
 
-`Nat` の JSON number は 0..9007199254740991 の整数。これは位置・添字・件数用であり、
-数学的な数値の encoding とは別である。全 ID は同じ種類の表内で一意。
-subject ID と atom ID は snapshot 内で一意。snapshot の array 順は意味を持たない。
-subject/atom/origin/source/vocabulary の表も ID による集合であり、順序は意味を持たない。
+各表は ID を key とする有限集合。vocabularies は reading を key とし、重複を拒否する。
+subject/atom ID は snapshot 内で一意。Subject.type は entity/arrow/correspondence の宣言。
+Subject は、その型の個体の存在という原始事実である。ID を Law の値として公開せず、
+文字列分解・件数の水増し・未登録 subject の補完を行わない。
 
-`VocabularyBinding` は L に含まれる module の `sort`・`data`・`predicate`・`pure` 宣言の
-canonical JSON array（宣言名順）の SHA-256。import 先の参照型を含め、実際に使用する
-全 module の binding を必須とする。Law の query を変えても同じ語彙なら再観測を要求しない。
-binding 不一致は `vocabulary_mismatch` であり、型の偶然の一致で読み替えない。
+Atom.field はその subject の型に宣言した field の完全名。
+同じ subject/field の二重記録は同値でも `duplicate_fact`。
+五成分 `(kind, axis, element, attribute, value)` は、kind=宣言種別
+`entity|arrow|correspondence`、axis=subject の型完全名、element=subject 参照、
+attribute=field 完全名、value=型付き原始値として生成する。
+subject の存在にも origin を持つ構成要素を生成し、明示した field Atom と区別する。
+kind/axis を ArchMap に重ねて指定しない。
 
-snapshot の `role` は Law の `roles` に宣言した完全修飾名。`current`、`candidate` などは
-利用する Law の語彙であり、核が特別な意味を付けない。同一 role の複数 snapshot を許す。
-`mode` は計算の根の区分であり、snapshot とその subjects/atoms の origin は同じ mode とする。
-role は計算による選択に使えるが、mode は結果の由来に使い、要件の真偽を決めない。
+多項関係は Tuple、複数の参照は Set/List、名前付き操作は arrow の別 subject で表す。
+同じ端点でも名前を消さず、List の順序・重複を保持する。有限の操作列・式の反復出現を
+Set に変換しない。量は構造関係に先取りして同一視せず、保存を Law で検査する。
 
-subject の列挙は、その sort の対象の存在という原始事実である。ID は参照 handle であり、
-文字列分解・順序比較・数への変換を Law に公開しない。同じ sort の同じ綴りの ID も
-異なる snapshot では異なる subject。跨る参照は明示する。
-subject を生成した観測箇所を `origin` に記録する。宣言された有限 family の外にある
-未登録 subject を核が想像して追加しない。
+snapshot とその subjects/atoms の origin.mode は一致させる。
+同じ型・同じ ID でも別 snapshot の subject は別物。参照は必ず snapshot を含む。
+候補設計や候補対応は proposed、合成した仕様例は specification とする。
+これらの成立を observed の実装についての成立へ付け替えない。
 
-Atom の五成分は、predicate 宣言 P を用い
-`(P.atom_kind, P.axis, subject, P.name, value)` と一意に復元する。
-kind/axis の二重記入は許さない。subject の sort は P.domain と一致しなければならない。
-同じ subject/predicate に値を二つ記録することは、同じ値であっても `duplicate_fact`。
-多項関係は payload の Tuple、複数関係は Set/List、名前付き操作・セルは独立した subject と
-その field によって表す。平行辺、反復する incidence、操作名を Set 化して失わない。
-面の各出現は位置・向き・整数係数を保持し、微分では出現ごとの符号付き和を取る。
+## 3. 型と値
 
-## 3. 原始型と値の唯一の encoding
-
-型の JSON 表現は次の通り。
+型の wire 表現を Type と呼ぶ。
 
 ```text
-P ::= "Unit" | "Bool" | "Z" | "Q" | "Text"
-    | ["Fp", DecimalPrime]
-    | ["Ref", QName] | ["Tuple", P, ...] | ["List", P] | ["Set", P]
-    | ["Option", P] | QName
-    | ["Term", [P, ...], P]
+Type = "Unit" | "Bool" | "Z" | "Q" | "Text"
+     | ["Fp", DecimalPrime] | ["Ref", QName] | ["Data", QName]
+     | ["Tuple", Type, Type, ...] | ["List", Type] | ["Set", Type]
+     | ["Option", Type] | ["Map", Type, Type] | ["Term", [Type,...], Type]
 ```
 
-QName は Law の有限 `data` 宣言（有限木の帰納型）を指す。Ref は `sort` を指す。
-`data` の再帰は自己参照の直接出現または List/Option/Tuple を通る正の出現だけ。相互再帰は禁止。関数域・Set 要素・Term 内を通る
-再帰を禁止する。全値は有限木であり、Ref 以外の循環表現はない。
+語彙 manifest の依存参照だけは `["Owned", QName, parameterName]` を用いる。
+実際の値の型は、その parameter の参照を束縛した Ref と所属条件を持つ。
+DecimalPrime は正の10進整数文字列で、核が素数性を確認する。
+原始 Value は次の一つの encoding に従う。
 
-| 型 | JSON 値 | 検査 |
+| 型 | JSON の Value | 意味・検査 |
 | --- | --- | --- |
 | Unit | `[]` | 唯一の値 |
-| Bool | `true` / `false` | 文字列は拒否 |
-| Z | `"-12"` | `0` または `-?[1-9][0-9]*`。`-0`を拒否 |
-| Q | `["-2","3"]` | 分母は正、最大公約数1、零は `["0","1"]` |
-| Fp | `"4"` | 宣言 p は素数、0 ≤ 値 < p |
-| Text | `"..."` | 観測した原始文字列。provenance とは別 |
-| Ref(S) | `["snapshot","subject"]` | subject が存在し sort=S |
-| Tuple(P…) | `[v,…]` | 成分数と型が一致。空 Tuple=Unit |
-| List(P) | `[v,…]` | 順序・重複を保持 |
-| Set(P) | `[v,…]` | 順序を無視、重複拒否 |
-| Option(P) | `{"none":true}` / `{"some":v}` | 明示的な不在 / 存在 |
-| data D | `{"tag":"Constructor","args":[v,…]}` | constructor の引数型と一致 |
-| Term(P…,Q) | `{"params":["x",…],"body":Expr}` | 後述の原始純粋部分言語 |
+| Bool | `true` / `false` | 真偽の原始値 |
+| Z | `"-12"` | `0|-?[1-9][0-9]*`。`-0` を拒否 |
+| Q | `["-2","3"]` | 分母正、互いに素。零は `["0","1"]` |
+| Fp(p) | `"4"` | 0 ≤ 値 < p |
+| Text | `"..."` | 原始文字列。等値以外の言語固有解析をしない |
+| Ref(E) | `["snapshot","subject"]` | 参照先の存在・宣言型・依存 owner を検査 |
+| Tuple | `[v1,v2,...]` | 成分数と型を一致させる |
+| List / Set | `[v1,v2,...]` | List は順序・重複を保持。Set は重複拒否、順序は意味なし |
+| Option | `{"none":true}` / `{"some":v}` | 観測した不在 / 存在 |
+| data D | `{"tag":"Ctor","args":[v,...]}` | tag は D 内の短い constructor 名。引数型と順序を検査 |
+| Map<E,F> | `[[key,value],...]` | 両値は参照。key は一意で source の登録族を全て覆う。値は target 族に属する |
+| Term | `{"params":["x",...],"body":"x + 1"}` | field の Term 型と同じ parameter 個数・順序。body は Law の式 fragment |
 
-配列の型は前後の型から決定し、値の外見から推論しない。
-Fp の p は文字列整数。素数判定に計算予算が足りなければ中断とし、合成数なら不正入力。
-Text は等値とタグとしての保存だけに用いる。パスからモジュールを抽出する演算や正規表現は
-核に設けない。意味の違いは観測者が別の原始事実として記録する。
+例: `Map<State[from],State[to]>` の値は
+`[[["v","p"],["v","r"]],[["v","q"],["v","s"]]]`。
+型は field 宣言から決まり、pair ごとの型 wrapper は置かない。
+空の Map もその定義域が空なら全域であり、domain/codomain の型を捨てない。
+全域性は型検査、端点・構造・Law の保存は候補に対する核の検査である。
 
-Term はコードから観測した操作の有限な数式を保持する。body は [Law DSL](law.md) の
-`lit,var,if,tuple,get,ctor,match,let,call` を使い、call は純粋演算と L の `pure` 関数だけ。
-自由変数は params だけ。field lookup、snapshot 列挙、query、導出型 constructor、再帰関数の
-呼出し、ネットワーク、外部 code、結果参照は含められない。closureは導出演算であり、
-原始Termからの直接・間接呼出しをtypeエラーとして拒否する。
-観測した原始演算を組み合わせる純粋関数が L に必要なら先に語彙として宣言する。
-Term 自体の値は既知でも、その関数の等値を決定できるかは別の問いである。
+Term body は閉じた純粋式で、自由変数は params のみ。field、観測族、Path、with、
+結果参照を含めない。呼出しは原始値の演算・data constructor のみで、reading の view を
+名前で参照しない。型の分かる有限なコード上の作用を観測するために用い、外部 code を実行しない。
+型・原始式を記録することと、その関数の外延等値が決定可能なことを区別する。
 
-## 4. 欠測と不在
+## 4. 語彙 binding
 
-subject が存在し、型の合う predicate の Atom がないとき、その field は未知である。
-Hole の ID は `(snapshot, subject, predicate)`。型は宣言 payload。
-同じ field を何度読んでも同じ Hole。異なる field は異なる Hole として保持する。値が等しい補完も異なる補完も許す。
-ArchMap に `null`、`unknown`、架空の数値を入れる必要はない。
+`archsig check --law L --out DIR` が出力する vocabulary manifest を観測側が使用する。
+ArchMap に現れる subject 型と、field 型から推移的に参照する宣言を持つ reading ごとに
+binding を必須とする。過剰な binding もその reading の manifest と照合する。
+一致しなければ `vocabulary_mismatch`。型が偶然似ていることでは読み替えない。
 
-空 Set/List は「この有限モデルで記録する関係が空」、Option none は「不在を観測した」。
-未記録の Set field は空集合と違う。predicate はすべて単一値であり、欠測が許容される。
-`required` な Law の operand であっても入力全体を不正にせず、その評価を未決にする。
-未知 field の型が空型になる `data` 宣言は拒否し、空の補完集合から全称成立を作らない。
-すべての data は少なくとも一つの有限 ground value を持つことを型検査する。
+manifest は次の JSON。全ての欄を必須とする。reading の全原始宣言を含める。
 
-入力の矛盾は、型違い、dangling ref、重複単一値等の提示違反である。
-異なる predicate の値が Law を破ることは、有効な入力についての反証である。
-Law を満たすように値を補完してから Law を検査することはない。
-補完では既知値・登録 subject・origin を固定し、欠測 field だけをその型の値で満たす。
-subject の集合まで拡張する「全実装について」の量化は、この有限 snapshot の量化と別であり、
-v0.6.0 の query scope に宣言できない。コード全体への対応は観測側の責務である。
+```text
+Vocabulary = {semantics:"archsig/0.6.0", reading:Name, declarations:Declaration[]}
+Declaration = {kind:"entity"|"arrow"|"correspondence", name:QName,
+               parameters:Field[], fields:Field[], alignments:Alignment[]}
+            | {kind:"data", name:QName, constructors:Constructor[]}
+Field = {name:Name, type:Type}
+Alignment = {source:QName, target:QName}
+Constructor = {name:Name, arguments:Type[]}
+```
 
-## 5. 由来とソース
+entity の括弧内は parameters、body は fields。全名を展開し、依存型の parameterName は
+その宣言の括弧内の名を使う。暗黙の同名 align は manifest に追加せず、明記分だけを保持する。
+declarations は完全名、alignments は source,target の順で整列する。
+parameters、fields、constructors、constructor arguments の順は元の宣言順。
+use、view、law、local、change、relation は manifest に入れない。
+原始 Term が view を参照しないため、Law の条件や読取りの変更は原始語彙 binding を変えない。
 
-`Source` は観測に使った source tree/content の識別子。uriとrevisionは非空文字列。uri・revision・digest の文字列から
-Law の結果を変えない。uri の解決や source の正しさの検証は CLI が自動で行わない。
-`digest` は観測側が指定する内容 digest であり、kernel certificate として使わない。
-Location.path は source root 相対の `/` 区切り。空、絶対path、`.`、`..` segment を拒否する。
-span は UTF-8 byte の半開区間 `[start,end)`、start ≤ end。省略はファイル全体。
-存在確認、byte 範囲と実 source の一致は観測側が扱う。
+この manifest の canonical JSON の SHA-256 が binding の digest である。
+canonical JSON は key を Unicode scalar 順、空白なし、非 ASCII を UTF-8 で出力する。
+引用符・backslash を escape し、U+0000..001F は小文字4桁の `\u00xx`、その他は escape しない。
+`/` は escape しない。metadata number は先頭零のない10進整数。文字列の正規化はしない。
+全入力の bytes digest、モデル digest、再利用は [実行仕様](execution.md)に従う。
 
-observed の Origin.locations は1件以上で、実装コードの使用箇所を指す。
-テストコードや runtime trace はこの観測に含めない。この意味上の適格性を
-ファイル名の heuristics で核が認定することはない。
-proposed/specification は locations が空でもよいが、その場合 note は非空必須。
-method は観測・提案の作り方を説明する非空文字列。結果の prose を読んで数値へ戻さない。
+## 5. 未観測、不在、矛盾
 
-provenance を変更すると artifact digest と出力の由来は変わる。原始値と参照を固定した
-場合、数学的な結果は変わらない。古い source revision を新しい版の結果と呼ばない。
+subject が存在して field の Atom がない場合、その slot は未知。
+identity は `(snapshot,subject,field)`、型は field 宣言。owner・Map も省略すれば未知であり、
+構造の構成や関係の列挙がそれに依存する場合は、その理由を保持する。
+空の Set/List、Option none、零は既知の値。未記録をそれらに置換しない。
 
-## 6. Law document と再利用
+補完は既知値・登録 subject・型・参照・由来を固定し、欠測 field だけを型の値で埋める。
+Law の成立を補完の条件に使わない。既知の Map の全域性・owner 条件などを満たす補完が
+一つもない入力は `inconsistent_observation`。既知の不正型・dangling ref はそれぞれ
+`type` / `reference`。補完の存在検査を完了できなければ検査を中断し、計算成功へ進まない。
+ref と Map の制約は有限 subject 族、その他の原始型は有限 ground value を持つため、
+原始提示の整合性は有限の構造検査で決定する。
 
-Law document の詳細は [Law DSL](law.md)。全 module を一つのファイルに同梱する。
-ネットワーク import、探索パス、暗黙 stdlib、外部 package lock はない。
-module は digest と alias を用いて同梱 module を参照する。共有 module をコピーして再利用し、
-変更は新 digest になる。展開済み L の内容を結果に保存する。
+Law が破れることは有効な入力への反証である。
+型が正しい対応表でも端点保存は失敗し得る。これは原始値を捨てる入力エラーにしない。
+未知の評価と確定の規則は [Law §6](law.md#6-未観測の意味)に従う。
 
-結果・中間行列・候補証明・cover は ArchMap の形式へ読み込まない。
-候補設計は原始語彙の snapshot として追加できる。候補対応の表は、実装に記述された対応、
-または提案された対応という原始関係として記録できるが、保存成立の判定は入力に持たない。
-これは同じ二入力で再計算する対象であり、前回の結論の輸入ではない。
+## 6. 由来
+
+Source は観測に使った source tree/content の識別。uri/revision は非空文字列で、
+digest は観測側が指定する内容 digest。核はネットワークから uri を解決しない。
+Location.path は source root 相対の `/` 区切りで、空・絶対 path・`.` / `..` segment を拒否する。
+span は UTF-8 byte の半開区間 `[start,end)`、start≤end。省略時はファイル全体。
+実 source の存在・範囲・観測の正しさは観測側の責務である。
+
+observed の locations は1件以上で、実装コードの使用箇所を指す。
+テストコードや runtime trace は観測の対象に含めない。核がファイル名から適格性を認定することはない。
+proposed/specification の locations は空でもよいが、そのとき note は非空必須。
+method は作り方を説明する非空文字列。由来の prose を計算の数値へ戻さない。
+
+原始値・参照を固定して provenance だけを変えた場合、数学的結果は変わらず、artifact digest と
+出力の由来は変わる。古い source revision を現在の実装についての結論へ付け替えない。

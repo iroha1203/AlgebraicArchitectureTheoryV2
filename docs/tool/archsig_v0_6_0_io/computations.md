@@ -1,499 +1,301 @@
-# 公開計算と決定範囲
+# 核の標準構成と計算範囲
 
-## 1. カタログの読み方
+本書は、[reading の宣言](law.md)と[原始 Atom](inputs.md)から核が生成する対象、
+局所構造、診断、修復、比較を定める。問合せの署名と結果の形式は
+[実行仕様](execution.md)に従う。以下の行列、環、係数、cover、証拠は核の生成物である。
 
-Expr の call はこの表の `core/名前` と利用者定義だけを呼ぶ。
-署名の `T,U,V` は任意の適合型、`K` は Q/Z/Fp、`S` は有限な添字集合、
-`Fn(T,U)` は一引数関数、複数引数は `Fn([T,U],V)` と記す。
-下記の `Set(T)` 等は Law の JSON 型 ` ["Set",T] ` の略記である。
-Ring は `"Q"`、`"Z"`、`["Fp",p]` を値として持つ予約型。
-FactRef は `(snapshot,subject,predicate?)` の原始位置を持つ予約型であり、literal はない。
-原始の存在と、欠測を含む field slot を同じ support に保持する。
-これら二型も [Law の型](law.md#3-型)に含む。
+## 1. 対象、作用、Law instance
 
-各構成は内容だけでなく、親構造の identity、添字、入力・規則への導出を保持する。
-関数の引数が不足した場合は §10 の決定範囲と Law の欠測規則を適用する。
-下の構成条件の違反は `invalid_construction`、その条件を命題として問う演算は `refuted`。
-前者の場合も具体的な失敗条件と証拠を返す。
+`build` は選択した root と、その owner による所属・参照から configuration を作る。
+family の各要素は原始 Atom へ戻れ、構造関係、同一視、型付きの値欄を区別する。
+同じ値を持つことを理由に、別の原始要素や名前付き arrow を同一視しない。
 
-## 2. 純粋な値と有限計算
+`map` は correspondence の各 Map を原始要素とフィールド位置へ延長する。
+全域性、型、参照、owner、arrow の端点、関係、同一視の保存を確認したものを
+configuration map とする。値・Law・操作・局所構造の保存は、それぞれ追加の検査である。
+object algebra の保存には、対応する全構造の写像と可換性を生成する。
 
-以下だけを pure と原始 Term 内で呼べる。除算は Option を返し、例外を作らない。
+`compose` は端点が一致する実写像を合成する。名前付きの操作列と作用を別に保持し、
+`relation` の同効果は、その両側の実作用の一致を確認してから使う。
+operation-closed core の射は恒等と型の合う有限操作語で表す。
+有限の語の集合を調べた結果は、その集合を量化域として保持する。
 
-| 名前 | 署名 | 意味 |
+Law は宣言名、role、束縛、原式、左右の項、型、出現 identity を持つ。
+未指定の entity binder は、選択した対象と固定された外部参照に適合する有限族へ展開する。
+存在が記録された instance は、値欄が欠けていても残す。
+各 instance の operand は原始フィールド位置と式中の出現まで追跡する。
+代数的簡約で同じ式になっても、この identity と読取りの支持は変えない。
+
+`evaluate` は型付きの値を、`check` は原式の成立と反例を返す。
+整数等式なら左右の値と差、積型なら成分ごとの値と差を保持する。
+一般の条件は条件種別と型付きの評価を保持する。
+`required` の全 instance が成立したことが、その族についての lawful 判定である。
+空の有限族では成立と評価件数 0 を返す。
+
+## 2. 方程式の記号表示と評価
+
+`EquationPresentation` は、選択した対象の全支持上で共有変数を持つ方程式表示である。
+同一 scalar 型の多項式等式族では、型に従う係数環 K と、原始位置・候補位置を共有する
+記号集合 X から一つの環を生成する。整数式の K は Z であり、有限標数へ変更しない。
+
+```math
+R=K[X],\qquad \nu_q=\operatorname{lhs}_q-\operatorname{rhs}_q,\qquad
+I_{\mathrm{required}}=(\nu_q\mid q\text{ is required}).
+```
+
+等式を積型の scalar 成分へ展開し、同じ位置を読む全出現で同じ記号を使う。
+多項式の required ideal に入れるのは、選択域で guard が恒真と確認された出現である。
+恒偽の guard は not_applicable とし、状態に依存する guard はその適用条件を保持する。
+その条件を表す構成がない無限域では、当該条件の数値的 realization を非対応とする。
+対象 A の代入による環準同型 evA を作り、`εq=evA(νq)` と
+原式成立 `iff εq=0` を確認する。εq の R 内での表示は定数多項式である。
+原式、記号対応、role、成分化、正規化前後の対応を保持する。
+型の異なる等式族は型付きの表示と明示された型変換を保持し、単一環への同一視を補わない。
+R と I_required は同時方程式の表示であり、ideal 内で νq が零になることを
+対象の成立判定に用いない。例えば `x=0` と `x=1` は同じ R に `(x,x−1)` を生成する。
+
+全 operand の値域が有限の場合は、全出現で共有する有限代入集合 D を列挙し、
+`R=Z^D` に `νq(a)=1[guardq(a) and lhsq(a)≠rhsq(a)]` を生成する。
+guard 省略時は true とし、対象代入での評価が εq である。
+この場合も左右の型付きの値と原式を保持する。R/I_required の残る座標は、
+全 required を同時に満たす代入に対応する。
+
+この global 表示を AAT の equation system に接続するときは、全支持を持つ単一 context と
+恒等制限を使う。局所の読取りを表す状態系と、その係数は §3–6 で独立に生成する。
+この表示用の context を局所診断の cover へ追加しない。
+未観測 operand に依存する ε は未評価のまま保持し、total residual を要する接続は
+必要な値が揃った評価に限る。
+
+局所では、読める値座標 X_W と、そこで原式を評価できる出現 Q(W) を生成する。
+その状態から残差 tuple への評価写像を res_W とする。
+V→W の読取り制限では、状態の実射影 ρ_X と残差座標の射影 ρ_Q を作り、
+`res_V ∘ ρ_X = ρ_Q ∘ res_W` を検査する。対象の ε はこの写像の対象状態での値である。
+保持した出現の全 operand が読めることを確認し、
+不可視で落ちた行を成立件数へ数えない。
+支持による多項式表示では変数包含 `K[X_V]→K[X_W]` を作り、その包含によって
+ν_V が ν_W の保持した行に一致することを確認する。
+局所式はこの包含の像から取り出し、隠れた変数へ零を代入する環準同型を仮定しない。
+一般の有限／アフィン read では、実際の有限像／整数格子像上で同じ因子分解を検査する。
+
+数値的な realization を構成する算法がない条件にも、原式・型・支持・通常の条件評価は残す。
+非対応はその realization を求めた計算に記録する。方程式表示の環、修復係数、
+状態集合、Čech 複体は別の型を持つ。
+
+## 3. 読取りの圏と cover
+
+`localize` は指定 Law 族と許す change を固定する。Law 省略時は reading の全 required、
+change の選択と binder の指定は実行仕様に従う。Law の外部 binder は固定参照として保持する。
+各 `local` を選択対象へ束縛し、公開参照、読める値座標、その出現を持つ context を生成する。
+ref を公開しただけでは、その値欄を公開したことにならない。
+view の依存支持と公開値座標を分け、積の成分は射影できるが、合計を読めても各項を
+公開したことにはしない。Law 原式が公開値の関数として因子分解するかを、有限域では
+fiber 上の一定性、アフィン域では整数核・像の計算で検査する。
+
+同じ基底への読取りを、参照 identity と値座標を保つ写像として保持する。
+標準の包含 context では重なりは公開情報の交差である。
+一般の対応を介した比較では、実写像から有限 pullback と二つの射影を作る。
+恒等、合成、因子分解、状態・値の制限との可換性を検査する。
+同じ端点を持つ別の写像は、実作用を比較するまで別の射である。
+
+reading に `local` 宣言がある場合、その全 instance を cover 候補とし、重なりと反復制限を生成する。
+核は、必要な原始支持、Law 座標、選択した witness、値の軸、共有値・相互作用の読取りを
+覆うかを検査する。不足があれば座標と宣言を示して `visibility_insufficient` を返す。
+不足を埋めるために context の読取りを増やしたり、基底自身を patch に追加したりしない。
+別の Law の大きな支持を理由に、選択族の cover を変更しない。
+
+`local` 宣言がない場合は支持による reading とする。核は各 Law 出現の全支持 context と、
+どの Law にも現れない候補変数の singleton を生成する。
+変数と Law 出現を持つ依存閉包付きの有限 context とし、出現を持つ context は全 operand を持ち、
+cover は変数と出現の両方を覆う。状態は当該 context の条件を満たす代入、制限は射影である。
+一致する局所代入を変数ごとにまとめ、各出現を含む patch で条件成立を確認することが、
+この状態系の一意な貼り合わせの構成になる。
+
+実行する有限 context の圏、cover 候補、適格性、生成 topology を別の結果として保持する。
+topology を求める場合は、恒等、引戻し、合成による有限の閉包を計算する。
+選択した cover の検査を、未検査の全 topology 上の sheaf 条件へ拡大しない。
+
+## 4. 候補状態と許す変更
+
+`solve` と `repair` の候補域は同一である。指定された `change` の entity binder を、
+`on` の対象内で型に適合する各 entity へ独立に束縛する。値 parameter の域は宣言型に従う。
+核は同じ原始位置への更新、固定する位置、作用の合成、必要な共有 parameter を保持する。
+Law の外部参照と、更新対象外の値は固定する。
+候補は観測対象から作用によって生成し、未観測の値を候補 parameter に変換しない。
+
+候補 parameter 域が有限の場合は、指定された同時更新の全代入と、その像を全列挙する。
+操作名と parameter を保持し、同じ状態に達したことを別に記録する。
+局所の作用・状態は宣言された read で射影する。
+修復の可否は、指定 Law を満たす候補状態が存在するかで決定する。
+有限に生成された操作表について閉包を求める場合は、有限不動点まで計算する。
+
+整数アフィンでは更新式を正規化して、有限 parameter t の作用 `x=x0+A t` と
+選択 Law の条件 `Lx=c` を生成する。x0 は更新式の parameter 零での基準候補であり、
+恒等からの平行移動では観測値に等しい。生成行列の行・列は原始位置、
+Law 出現、change の束縛と parameter 成分へ対応する。係数を既知の正確な整数へ評価できることを
+確認してから、次の系を作る。change の parameter に線形等式の guard がある場合は、
+先にその整数 fiber を求め、非空なら特解と整数核によって自由 parameter へ再表示する。
+x0 と A をこの再表示へ合成し、元の parameter への復元写像を保持する。
+
+```math
+B=LA,\qquad d=c-Lx_0,\qquad T=\{t\in\mathbb Z^m\mid Bt=d\}.
+```
+
+Smith normal form で解 t0、整数核の生成元、または整除・零行の矛盾を得る。
+一般のアフィン作用や指定された有限操作列も、固定部分と自由 parameter について正規化できる
+場合は同じ有限系へ展開する。任意長の操作語の到達可能性を、一回の更新と同一視しない。
+
+`solve` は候補域と全解の有限表示を返す。`repair` はその表示から具体的 parameter と候補対象を
+生成し、更新式、型、固定部分、原式の Law を再評価して返す。
+不成立の場合は元の式に対応する有限反例または整数整除の証拠を返す。
+
+## 5. 意味状態、係数、局所変更の持上げ
+
+T が非空なら parameter fiber は `ker B` の自由推移作用を持つ。
+実際の修復後状態 `x0+A(T)` の係数は、核が別に計算する次の像である。
+
+```math
+K_{\mathrm{state}}=A(\ker B)
+=\operatorname{im}A\cap\ker L
+\cong\ker B/\ker A.
+```
+
+これは候補 parameter の差が作用する係数である。元の change の反復・合成を
+この加法作用と対応させる場合は、元の更新式から恒等・合成・逆の式も検査する。
+作用の核を同効果関係として商にする。指定された `relation` を使う場合も、
+作用の等値と、その関係で必要な安定化群を尽くすかを検査する。
+非可逆な変更から群を作って、許す変更を増やすことはしない。
+有限作用では可逆性・可換性・安定化群を全列挙する。可換群による有効作用を構成できる
+場合に加法係数へ進み、他の場合も有限の作用と修復判定を保持する。
+
+局所の意味状態は、まず許可変更による候補域を read へ射影し、その後に局所で可視な
+Law だけを課して作る。全体の Law 解集合を先に射影して局所解とすることはしない。
+アフィン read の線形部を P_W とし、定数部を局所の基準状態 x0_W に含める。
+局所式の因子分解を `L_W x=c_W` とすると、核が次を生成する。
+
+```math
+A_W=P_WA,\qquad B_W=L_WA_W,\qquad d_W=c_W-L_Wx_{0,W},
+\qquad S_{\mathrm{sem}}(W)=x_{0,W}+A_W\{t\mid B_Wt=d_W\}.
+```
+
+局所係数は `A_W(ker B_W)` であり、局所で消える作用 `ker A_W` を商にする。
+制限の像と作用の可換性を確認する。整数の場合は格子像を保持し、隠れた変数を含む式を
+削除して可視変数の全域へ広げない。例えば `x−2y=0` の x 射影は `2Z` である。
+
+局所変更の族が一つの許された変更から来るかは、その read 射影の積を P として、
+有限の逆像または整数系 `P A t=Δ` を解く。これを直接の持上げ判定とする。
+`rebalance(s,d)=(-d,d)` に対する Stock/Held の要求 `(-2,0)` は、
+`−d=−2` と `d=0` の矛盾として反証される。
+共有参照だけの overlap による一致は、この持上げ判定を代替しない。
+
+値域の追加条件は候補域の一部として保持する。parameter の線形等式は §4 の再表示、
+状態の線形等式は L の行へ取り込む。
+非負制約などで fiber を切った場合、元の kernel の作用で閉じるかを確認する。
+完全な非空 fiber または確認済みの一剰余類にだけ torsor を構成する。
+型付きの状態集合、parameter fiber、有効係数を別の型で返す。
+
+## 6. 局所診断と Čech 計算
+
+`diagnose` は `side=equation` を既定とし、`side=semantic` では許可変更からの意味状態系を使う。
+結果に side を保持し、両側の状態・係数・類を同一視しない。
+有限状態では、各 patch の解、重なりで一致する族、大域候補からの制限写像、その fiber を
+全列挙する。局所解なし、一致しない局所族、一致するが大域へ持ち上がらない族を区別する。
+
+アフィンの局所方程式では、context W ごとに完全な fiber `D_W z=b_W` と
+`M(W)=ker D_W` を生成する。これは方程式側の状態・係数である。
+意味側には §5 の許可作用からの状態・有効係数を使い、両側を比較する写像を別に作る。
+using を省略した意味側は Unit parameter と固定対象だけを持つ。
+方程式側の全 fiber を、変更を許された意味側の修復候補へ追加しない。
+制限が fiber を保つこと、D と b の制限の可換性、係数作用の自由性・推移性、
+局所非空性を確認する。空の局所 fiber には atlas を生成しない。
+
+核は、大域状態から matching family への制限写像を作り、その全単射性を検査する。
+有限状態は列挙、アフィン状態は整数 kernel・image・fiber の計算で存在と一意性を決定する。
+選択 cover 上の貼り合わせ条件と、生成 topology 全体の sheaf 条件は検査範囲を区別する。
+局所方程式の解から意味上の actual repair へ進む場合にも、この検査と両側の状態対応を要する。
+
+加法係数とその制限を得たら、順序付きの patch tuple と pullback から Čech cochain 群と
+交代符号付き微分を生成する。次数 n の診断には n+2 個の patch の重なりまで生成する。
+重複添字、平行射、面への複数の出現を保持し、構成した連続する微分の合成が零であることを検査する。
+正規化した increasing-index 表示を使う場合は、その比較写像と適用条件も生成する。
+
+`H^n=ker d^n / im d^(n−1)` は自由部と torsion を持つ有限表示として返す。
+局所解 si を得た場合には制限差 `cij=sj|ij−si|ij` を計算し、cocycle 条件を確認して
+対象の `[c]∈H¹` を作る。局所解の変更は coboundary になることを確認する。
+H¹ という群、対象の類、その零性を別々に保持する。
+局所非空性や値評価が未確定なら、計算済みの群を残しても対象の類は確定しない。
+この局所解から生成する対象類は次数 1 である。他の次数では計算した群を返し、
+対象に結び付く構成のない類を追加しない。
+
+`[c]=0` なら補正を解いて matching family を生成する。
+確認済みの貼り合わせ条件と状態対応を使って大域修復を生成し、元の Law に再代入する。
+直接の持上げ判定と Čech 類の零性は、それらの比較条件を確認した場合にだけ同値とする。
+cover-relative Čech 計算を sheaf cohomology へ同定する場合も、その接続条件を別に確認する。
+
+## 7. 三辺の標準診断
+
+[検証仕様](validation.md)の整数三辺では、各 Point の coordinate を読む `Edge` local と、
+各 Point を独立に平行移動する change を用いる。Shift の端点と shift 値から核が生成する系は
+次である。初期 coordinate はすべて零とする。
+
+```math
+D=\begin{pmatrix}-1&1&0\\0&-1&1\\-1&0&1\end{pmatrix},\qquad
+b=(1,1,\gamma).
+```
+
+三つの edge patch の係数は各々 Z、対ごとの overlap の係数も Z、
+三重交差には coordinate が残らず、その係数は零である。
+increasing-index 表示への比較を経て、核が次の微分と局所差を生成する。
+
+```math
+d^0=\begin{pmatrix}-1&1&0\\-1&0&1\\0&-1&1\end{pmatrix},\qquad
+d^1:\mathbb Z^3\to0,\qquad c=(-1,0,\gamma-1).
+```
+
+商の同定 `H¹≅Z` は `(-1,1,-1)` によって生成され、対象の類は `2−γ` へ写る。
+γ=3 なら非零類 −1 と大域解なし、γ=2 なら零類と候補 `(0,1,2)` を返す。
+γ 未観測なら D、係数、微分、H¹ は計算できるが、b、局所解、対象の類は未確定となる。
+
+## 8. 評価の十分性と診断の比較
+
+`quotient` は選択した型付き view 評価の一致関係による商と実射影を生成する。
+候補域と解集合を区別し、問合せで選択された域を固定する。
+Law 評価は instance と値型を持つ族として扱い、成立 Bool だけの一致へ圧縮しない。
+
+有限域では射影 q の各 fiber で対象評価族が一定かを検査し、降下写像または反例対を返す。
+整数アフィンの全候補域では `q(x)=Qx+a` と評価 `Ex+b` に対する
+`ker_Z Q⊆ker_Z E` を検査し、im Q 上へ降下写像を構成する。
+アフィン部分域ではその parameter 表示上で同じ検査を行う。
+商の終域は実際の像を用い、周囲の整数格子への延長を仮定しない。
+
+診断比較では、指定された構造写像から context、cover、係数、状態の対応を生成する。
+係数写像と制限の可換性、cochain map と微分の可換性を検査し、H^n 上の実写像、
+kernel、cokernel を計算する。双方に対象類がある場合はその移送の一致も検査する。
+Law 評価の十分性、係数の同型性、診断群の同型性、対象類の保存は別の結果である。
+比較不能な構造や可視性の不足は、対応する写像を未生成として保持する。
+
+## 9. v0.6.0 の必須決定範囲
+
+| 入力から生成された問い | 核の必須手続き | 完了時に保持するもの |
 | --- | --- | --- |
-| add, sub, mul, neg | K×K→K、negはK→K | 正確な環演算 |
-| divide | K×K→Option(K) | Q/Fp は非零除算、Z は整除するときだけ some |
-| rational | Z→Q | 分母1 |
-| mod | Z×Ring→K | Ring が Fp のときだけ。ほかは静的型エラー |
-| equal | T×T→Bool | 原始値・Snapshot・FactRef・ContextPointの構造等値。Ref は identity、Set は外延、Term/Fn/他の導出型は不可 |
-| not, and, or | Bool→Bool、Bool×Bool→Bool | and/or は左から短絡。欠測時は双方で決まる真理値を返してよい |
-| less | K×K→Bool | Z/Q の順序。Fp には使えない |
-| some, none | T→Option(T)、Unit→Option(T) | none の型が決まらなければ Option literal を用いる |
-| is_some, unwrap | Option(T)→Bool、Option(T)×T→T | unwrap は none のとき明示した第2引数 |
-| list, set | List(T)→List(T)、List(T)→Set(T) | list は恒等、set は重複除去 |
-| append | List(T)×List(T)→List(T) | 連結 |
-| length | List(T)→Z | 要素数 |
-| at | List(T)×Z→Option(T) | 0始まり。負や範囲外はnone |
-| map | Set(T)×Fn(T,U)→Set(U) | 像。UにSet適格性が必要 |
-| map_list | List(T)×Fn(T,U)→List(U) | 順序保存 |
-| filter | Set(T)×Fn(T,Bool)→Set(T) | 真の要素。未知guardを落とさない |
-| product | Set(T)×Set(U)→Set(Tuple(T,U)) | 直積 |
-| union, intersect, difference | Set(T)×Set(T)→Set(T) | 集合演算 |
-| unique | Set(T)→Option(T) | 要素がちょうど一つならsome、それ以外none。表示順で選ばない |
-| member | T×Set(T)→Bool | 所属 |
-| forall, exists | Set(T)×Fn(T,Bool)→Bool | 有限量化。空でそれぞれtrue/false |
-| sum | List(K)→K | 空は0。結合順を整数/有理数の近似へ落とさない |
-
-Set の列挙順を List に変換する演算はない。意味ある順序が必要なら原始 List を使う。
-組込みに side effect はなく、Text は equal と保持にだけ使う。
-equalの適格性も複合型の成分へ再帰的に適用し、List(Term)などの比較を静的に拒否する。
-Ring を指す literal は `['lit','Ring','Q']` 等（実ファイルでは二重引用符）。
-mod の返り型は第2引数の Ring literal から静的に決まる。変数 Ring への mod は禁止。
-
-`core/closure : Set(T)×Set(T)×Fn(T,Set(T))→Set(T)` はderive/query専用の構成演算。
-第1引数seed、第2引数固定有限universeとし、seed⊆universe、到達した各元のsuccessor⊆universeを
-検査して最小不動点を返す。違反はinvalid_construction。pure/原始Termには属さない。
-
-## 3. 項、方程式、解
-
-| 名前 | 署名 | 意味と条件 |
-| --- | --- | --- |
-| term | Fn([P…],P)→Term(P…,P) | 原始型上の純粋な式へ残余化。捕捉したfieldは値またはHoleとして明示し、導出を保持 |
-| term_apply | Term(P…,P)×P…→P | 位置引数の代入。arityはTerm型に従う |
-| then | Term(A,B)×Term(B,C)→Term(A,C) | `then(f,g)(x)=g(f(x))` |
-| term_equal | Term(A…,B)×Term(A…,B)→Proposition | 全引数における作用の等値。有限全列挙か正規化で決定 |
-| all, any | Set(T)×Fn(T,Proposition)→Proposition | 有限命題族の全称/存在。forall/existsと同じ欠測規則 |
-| decide | Proposition→Bool | 確定した命題の真偽。未決なら理由を伝播しBoolを作らない |
-| proposition | Bool→Proposition | 計算されたBoolの命題 |
-| equation | Term(A…,K)×Term(A…,K)×Text→Equation | Text literal は `required`/`definition` の二値。両辺の型・変数位置を一致させる |
-| equations | TermSignature×Set(T)×Fn(T,Equation)→EquationFamily | 明示signature上のinstance key=T。全式がsignature一致、空集合でも状態域を保持。欠測instanceもキーを保持 |
-| holds | EquationFamily→Proposition | 全instanceの全Term引数で等式が成立 |
-| solve | EquationFamily→SolutionSet | 全instanceの共通Term引数を同時に満たす代入集合。引数signature一致が必要 |
-| inhabited | SolutionSet→Proposition | 解の存在 |
-| solution_image | SolutionSet×StateMap→SolutionSet | 解集合の像。状態域が一致すること |
-| solution_forall, solution_exists | SolutionSet×Fn(T,Proposition)→Proposition | Tが解集合のstate_typeと一致することを構成時に検査。不一致は空集合でもinvalid_construction。解だけを引数にして量化し、算法がなければunsupported |
-| affine | Module×Module×Fn(Vector,Vector)→AffineMap | 展開した式がR線形＋定数であることを係数として検査 |
-| linear_part, offset | AffineMap→ModuleMap / Vector | 線形部分と定数 |
-| affine_equations | AffineMap×Vector×Text→EquationFamily | f(x)=bを一つのmodule値方程式として保持。第3引数はrequired/definition。商moduleでは座標ごとの等式に分解しない |
-
-Term の入力順は関数の params の順。関数合成による順序は保持する。
-入力の数式が多項式であっても型としては受理できる。無制限の多項式可解性を約束せず、
-§10 の算法に含まれない問いは `unsupported_algorithm`。
-
-SolutionSet は有限集合、アフィン部分空間/剰余加群の剰余類、空集合、または記号的な
-方程式による集合として返す。`solve` の集合提示自体は正しく構成でき、
-`inhabited` が未対応になる場合もある。Q/Fp 線形と Z 線形では空性まで必ず決定する。
-特解・基底は出力表示だけ。後続の計算は解集合を消費する。
-
-## 4. Configuration、対象、操作、core
-
-| 名前 | 署名 | 意味と条件 |
-| --- | --- | --- |
-| facts | Snapshot→AtomSet | subject存在と記録済みAtomだけ |
-| subject_fact | Ref(S)→FactRef | subject存在の原始位置 |
-| snapshot_of | Ref(S)→Snapshot | Refに含まれるsnapshotのidentity |
-| support | T→AtomSet | 式の原始依存先。全分岐の構文依存と参照閉包を保持。最小性は主張しない |
-| fact_set | Set(Ref(S))→AtomSet | 各subject存在と記録されたfields、そのRef先存在の閉包 |
-| config | AtomSet×Set(Tuple(FactRef,FactRef))×Set(Tuple(FactRef,FactRef))→Configuration | 第2引数を有向関係、第3引数の反射対称推移閉包をidentification。端点がfamily内 |
-| fact_refs | AtomSet→Set(FactRef) | 原始位置を列挙 |
-| object | Configuration×EquationFamily→Architecture | configurationとLaw instance。違反する対象も保持 |
-| candidate_map | Configuration×Configuration×Set(Tuple(FactRef,FactRef))→MapCandidate | 明示した有限関係を候補として保持 |
-| hom_condition | MapCandidate→Proposition | 全域一意、family・relation・identification保存を同時検査 |
-| verify_hom | MapCandidate→ConfigurationHom | 上の条件の成立時だけ生成 |
-| law_hom | Operation×ModuleMap→LawHom | candidateをverify_homし、値作用fと残差写像hで E_target(f(x))=h(E_source(x)) を全状態で検査 |
-| operation | Ref(S)×Architecture×Architecture×MapCandidate×StateMap→Operation | 第1引数が名前。候補のsource/targetが両Architectureのconfigurationとidentity一致し、StateMapの始終carrierが各状態域と一致することを必須検査。候補保存の成否は別に保持 |
-| operation_hom | Operation→ConfigurationHom | 候補Atom作用を検査。操作名を消さない |
-| compose_hom | ConfigurationHom×ConfigurationHom→ConfigurationHom | g∘f。中間configuration一致 |
-| identity_hom | Configuration→ConfigurationHom | 恒等写像 |
-| span | ConfigurationHom×ConfigurationHom→Span | 同一始域を持つ二本。削除を含む対応の共通部分 |
-| core | Set(Architecture)×Set(Operation)→Core | 指定対象・操作から自由圏の恒等と合成語を有限提示。全語の有限列挙を要求しない |
-| word | Core×List(Operation)→Operation | 型の合う順序語。空語は始域不定なので `identity_operation` を用いる |
-| identity_operation | Core×Architecture→Operation | 指定対象上の空語 |
-| action_equal | Operation×Operation→Proposition | Atom作用とStateMap作用の等値。名前の等値と別 |
-| word_equal | Operation×Operation→Proposition | 同じ名前付き語の構文等値。恒等を除く結合正規形で比較 |
-| quotient_core | Core×Set(Tuple(Operation,Operation))→Core | Lawが生成した経路関係で商。両辺の端点・作用保存を別に検査 |
-| quotient_equal | Core×Operation×Operation→Proposition | 有限合同閉包で尽くせる場合に決定。他は未対応 |
-
-configuration の family は A の原始位置を持つまま固定する。関係や識別の閉包、導出対象は
-原始 Atom に追加しない。operation の値作用がその Atom対応を意味として実現していることは
-LawHom 等で明示的に問う。名前と端点だけを示した入力から任意の作用を補わない。
-
-削除は、残す family が参照・選択した構造に閉じていることを config で検査し、
-そこから前後への全写像を作る。部分写像を暗黙に全写像とみなさない。
-
-## 5. 局所構造と被覆
-
-| 名前 | 署名 | 意味と条件 |
-| --- | --- | --- |
-| contexts | Configuration×Set(Tuple(FactRef,FactRef))×EquationFamily→ContextFamily | 第2引数の依存へ閉じたsupport部分集合全部を生成。各方程式の自由変数・原始依存をobservableとして制限。axisは依存predicateのaxisの集合 |
-| context_set | ContextFamily→Set(Context) | 全有限contextの集合。表示順を意味へ入れない |
-| base_context | ContextFamily→Context | 全support |
-| local_context | ContextFamily×AtomSet→Context | 指定seedの依存閉包。該当部分集合を返す |
-| context_members | Context→AtomSet | support |
-| cover | Context×Set(Context)×EquationFamily→Cover | 各patchがbaseへ包含し、support union=base、各要求equationの全supportが少なくとも一patchにあることを検査 |
-| generated_cover | ContextFamily×Set(AtomSet)×EquationFamily→Cover | seed閉包の族に、まだ収容されない各equationのsupport閉包と未被覆singleton閉包を追加。等しいpatchのみ重複除去。大きいpatchで小さいpatchを削除しない |
-| context_map | Context×Context×Fn(ContextPoint,ContextPoint)→ContextMap | carrier上の全写像、baseへの可換性、observable制限を検査 |
-| overlap | Context×Context→Overlap | 共通baseへの包含のpullback。空supportを保持 |
-| chart | Context×Set(T)×Fn(T,FactRef)→Context | baseへの有限chart。全像がbase内。supportは像、carrier=T、structureはbaseから引戻す |
-| pullback | Context×Context→Overlap | 同じbaseへのchart mapのfiber product。carrierは同像の順序対。包含時だけ集合交差と同型 |
-| cover_charts | Context×Set(Context)×EquationFamily→Cover | 有限chart族の像がbaseを覆い、各equationの全operandを保つliftが少なくとも一chartに存在するか有限列挙 |
-
-contexts は有限だが指数的になり得る。遅延生成は許すが、途中の列挙を全体と呼ばない。
-cover の対象 equation family は明示する。経路の三角形を発見したことは、三重重なりや
-2-cell を生成する規則ではない。セル・面の関係は原始操作の語と Law の関係式から作る。
-
-上記の包含context上では union cover と依存閉包が生成する topology を使う。
-一般chartについては生成coverから恒等・pullback・合成に閉じる生成 topology を使う。
-あるcoverが生成されたことと、係数/状態の層条件・acyclicity は別の条件である。
-
-## 6. 加群、係数、複体
-
-| 名前 | 署名 | 意味と条件 |
-| --- | --- | --- |
-| free | Ring×Set(T)→Module | 添字T上の自由加群 R^T。RingはQ/Z/Fpのliteral。返り型のKをこのliteralから静的に決める |
-| vector | Module×Fn(T,K)→Vector | free module の添字ごとの値。商/部分加群には下記写像を経由 |
-| basis | Module×T→Vector | free module の指定添字の単位ベクトル |
-| zero | Module→Vector | 零元 |
-| vector_add, vector_sub | Vector×Vector→Vector | 同一module内 |
-| scale | K×Vector→Vector | 係数環一致 |
-| coord | Vector×T→K | free moduleでの指定添字係数 |
-| linear | Module×Module×Fn(T,Vector)→ModuleMap | 第1引数freeの各生成元の像から線形延長。外部行列入力はない |
-| image, kernel, cokernel | ModuleMap→Module | 実際の部分/商加群と構造写像を保持 |
-| quotient | Module×ModuleMap→Module | mapの終域が第1引数。imで割る |
-| inclusion, projection | Module→ModuleMap | kernel/imageの包含、cokernel/quotientの射影。該当型以外はinvalid_construction |
-| induce | Module×Module×ModuleMap→ModuleMap | 提示の生成元に対するmapから関係保存を検査し部分/商上へ誘導 |
-| map_apply | ModuleMap×Vector→Vector | 域一致 |
-| map_compose | ModuleMap×ModuleMap→ModuleMap | g∘f |
-| map_equal, is_iso | ModuleMap×ModuleMap→Proposition、ModuleMap→Proposition | 生成元上等値、核と余核が零 |
-| complex | List(Module)×List(ModuleMap)→Complex | degrees 0..n、隣接d、d²=0を検査。map数=n |
-| cohomology | Complex×Z→Cohomology | degree kのker d / im d。通常の有限complexは端で零微分。k<0またはk>last_diagnosable_degreeは不正構成 |
-| class | Cohomology×Vector→Class | 指定degreeのcocycle条件を検査 |
-| class_zero | Class→Proposition | 境界としての補正または非零証拠を計算 |
-| cochain_map | Complex×Complex×List(ModuleMap)→CochainMap | 同degreeの写像、dとの可換性を検査 |
-| cohomology_map | CochainMap×Z→ModuleMap | 商上の実写像 |
-| coefficients | ContextFamily×Fn(Context,Module)×Fn(ContextMap,ModuleMap)→CoefficientSystem | 制限は包含/指定chart射だけで評価。ContextMap U→Vに対し制限はM(V)→M(U)。恒等・合成を全有限contextで検査 |
-| cech | Cover×CoefficientSystem×Z→Complex | degree 0..n+1まで構成しdegree≤nの診断に必要なdを持つ。n≥0 |
-
-cech は包含の monomorphic cover に **increasing-index** 規約を用い、
-`(dc)_(i0…ik+1)=Σ_j (-1)^j res(c_(i0…îj…ik+1))`。
-空overlapの係数も実際に計算し、勝手に零としない。
-一般chart coverには ordered tuple（重複添字あり）と反復fiber product を用いる。
-結果に規約を記録する。順序は表示のためのcanonical参照順、並替え時の符号を保持する。
-有限Čech群を sheaf cohomology と呼ぶには別の比較定理の条件が要る。
-
-Z では Smith normal form を使い、自由rankだけでなくtorsion invariant factorも返す。
-有限体では p を保持する。有限の式による presentation は次の演算で保持する。
-`core/presentation : EquationFamily→Presentation` は、式の型・演算signature・変数・
-生成元・関係式をそのまま有限提示にする。一般の非線形Q式も保持できる。自由操作語と経路関係はCoreが保持する。
-これは零点や商の判定結果ではない。非対応の商・可解性計算は式を失わず未決を返す。
-
-係数変更は比較写像と適用条件を持つ別計算として保持する。有理係数の零性を
-整数係数へ戻す場合は、係数比較と零性反映の条件を確かめる。
-
-## 7. 局所状態、貼り合わせ、修復
-
-| 名前 | 署名 | 意味と条件 |
-| --- | --- | --- |
-| states | ContextFamily×Fn(Context,SolutionSet)×Fn(ContextMap,AffineMap)→StateSystem | 制限が解を解へ写すこと、恒等・合成を検査。有限解族は写像を有限表から生成する `finite_states` を使う |
-| finite_states | ContextFamily×Fn(Context,Set(T))×Fn([ContextMap,T],T)→StateSystem | 有限状態の制限を全列挙で検査 |
-| sheaf_condition | Cover×StateSystem→Proposition | 重なりで一致する局所族への大域制限が全単射。有限列挙またはアフィン解空間の核・余核で決定 |
-| descent | Cover×CoefficientSystem×StateSystem×Fn(Context,ModuleMap)→Descent | 下の条件を検査し局所差・cocycle・商類を構成 |
-| obstruction | Descent→Class | 対象の具体的な局所差の類 |
-| glue | Cover×StateSystem→SolutionSet | 相性条件付き局所解集合から大域解集合を構成。制限による対応も保持 |
-| repair | Descent→Repair | 障害類が零なら補正して貼り合わせ、元の全方程式へ再代入。非零なら存在命題の反証を伴うinvalid_construction |
-| state_compare | StateSystem×StateSystem×Fn(Context,StateMap)→Reading | 局所の意味側と方程式側の原始生成規則から作る対応。制限と可換、全域・一意性・可逆性を個別に検査 |
-| semantic_repair | Repair×Reading→Repair | Readingが独立に作られた意味状態との同型で、局所/大域対応を保存するとき実際の意味状態へ運ぶ |
-
-v0.6.0 の descent は加法的な有限表示係数とアフィン状態のtorsorを扱う。
-第4引数は係数から状態のambient moduleへのembedding。単射、像が同次解全体、
-制限との自然性を検査する。各patchの局所非空性、差が係数内にあること、加法作用の自由性・推移性、
-制限との可換性、当該coverの層条件を検査する。明示したembeddingと状態ambient moduleの加法から作用を作る。これらの構成が足りない場合は sealed Descent を作らない。
-
-局所解 s_i を内部で一つ構成し、c_ij=s_j|-s_i|、d c=0、変更 s_i+t_i による差 d t を計算する。
-類の選択独立性を保持し、c=d b を解けたとき s_i-b_i を貼り合わせる。
-Repair は具体的状態とその全解集合、使用した作用、元の式への代入、snapshot modeを持つ。
-方程式側だけで作った Repair.kind は `equation`、意味側との比較を検査したものは `semantic`。
-実コードを変更したことはこの値の意味に含めない。
-貼り合わせの一意性は固定した整合局所族についてのものであり、大域修復の全解集合が
-一元であることとは別である。
-
-## 8. Reading、診断保存、追加観測
-
-| 名前 | 署名 | 意味と条件 |
-| --- | --- | --- |
-| reading | Set(T)×Fn(T,U)→Reading | 有限域Dと読みfから像C=f(D)、全域有限StateMap D→C、全fiberを生成 |
-| sufficient | Reading×Fn(T,V)→Proposition | 同じreading値を持つ任意の二対象で、指定Law評価値Vが等しいか。Bool成否だけへの圧縮をしない |
-| sufficient_quotient | Set(T)×Fn(T,V)→Reading | D上の評価同値類BをSet(T)として作り、C:Set(Set(T))と全域有限StateMap q:D→Cを生成 |
-| compare_diagnostics | CochainMap×Class×Class→DiagnosticComparison | H1写像、kernel、cokernel、指定類の像の一致を別々に計算 |
-| preserves_diagnostics | DiagnosticComparison→Proposition | H1写像が同型かつ指定類が対応する |
-| distinguish | Reading×Fn(T,V)×List(Fn(T,U))→ObservationPlan | 下記の有限識別計算 |
-| needed | T→ObservationPlan | 未決の依存Holeと、必要とするquery/式/source位置。数学的最小性は要求しない |
-
-Reading は何の有限域かを値に保持する。T/UはSet適格型、VはSet適格型または§12のLawValuesとする。
-有限表のkey・像・fiber・Vの比較にはSetの要素同一性を使い、LawValuesだけは§12の評価等値を使う。
-sufficient/distinguishはkind=finiteのReadingだけを受け取り、Fnの引数型をそのdomainの要素型と照合する。
-修復存在を評価値に使う場合は core/decide(inhabited(...)) を使う。Law十分性だけから係数やcoverの比較を作ったと
-扱わない。compare_diagnostics は比較写像そのものを引数として導出し、単にrankが等しいことを
-同型の根拠にしない。異なるcoverには実際のrefinement/chart対応と誘導cochain mapが必要。
-H¹写像の同型性と、比較写像の錐全体の非輪状性は別の条件である。
-
-distinguishの第3引数は観測関数のListである。順番は観測候補の意味ある優先順であり、全候補を保持する。
-各候補の評価は原始fieldから行い、現在同じreadingを持つがLaw評価が違う対を生成する。
-その各対を分離する観測候補の集合を求め、包含極小な観測候補部分集合を全列挙する。
-同数の候補を一つだけ最良としない。最小性の範囲はこの有限候補Listに限る。
-Holeで候補評価ができなければ未決とし、そのfieldの観測要求へ戻す。
-修復存在をVに使うときは、原始操作から構成した修復の存在を評価する。
-
-finite Readingはdomain D、codomain C=f(D)、map.source=D、map.target=Cを保持する。
-fibersのpreimageはDの非空・互いに素な完全分割で、各imageはCに一度だけ現れる。
-sufficient_quotientでは `B_x={y∈D | V(y)=V(x)}`、`q(x)=B_x` と一意に決める。
-そのfiber行はimage=B_x、preimage=B_xであり、双方の型はSet(T)。評価値Vを商の元にしない。
-空DではC:Set(Set(T))も空、mapの表とfibersも空で、評価Fnを呼ばない。
-必要な評価・比較が欠測/非対応ならReadingを確定せず、その理由を返す。
-商のmapは検査した有限表を持つStateMapとしてReadingより先に導出する。生成Fnや代表元選択は要らない。
-projectでdomain/codomain/mapを取得し、state_applyで商の元を次の計算へ渡せる。
-再利用はD、評価Fn、各比較を現在の二入力から再検査する。集合・有限表の表示順を意味に含めない。
-
-## 9. 由来、条件、証拠
-
-演算の正しい値を得るための条件は、
-`{id, proposition, status, evidence, reasons}` として結果に持つ。
-依存はPropositionのoperandsとNode.arguments、未決理由の依存はIssue.dependenciesに保持する。
-条件statusは `established/refuted/undetermined`。Lawはstatusを読む演算を持たない。
-条件の反証、実装していない算法、観測不足を一つのfalseへ潰さない。
-
-出力の生成元・行列・微分・証人は、原始fieldとLaw式から再構成可能でなければならない。
-Lawのliteralに観測件数・特定ID・対象固有の分割を埋めた場合は、意味上の入力規則違反である。
-型検査はRef literal・sealed値・外部実行を機械的に拒否する。
-巧妙な言い換えを含む意味的な不正を自動認識したとは主張しない。
-
-## 10. v0.6.0 の決定表
-
-| 問いの形 | 必須の決定手続き | 完了時の証拠 |
-| --- | --- | --- |
-| 完全な有限集合・有限型全代入・有限木fold・有限閉包 | 全列挙、構造再帰、有限不動点 | instance と値/反例 |
-| Qの全代入に関するアフィン等値 | 係数正規化 | 零係数、または零/単位代入による反例 |
-| Q/Fpの有限線形系 | 正確な消去 | 解集合、または左零化子λでλD=0, λb≠0 |
-| Zの有限線形系・有限表示加群 | Smith normal form | unimodular変換、整除条件、解または整除違反 |
-| 上記係数のkernel/image/quotient/cohomology | 同じ正確な線形計算 | 実際の写像、自由部とtorsion |
-| 有限のconfiguration/cover/chart/reading | 関係と写像の有限検査 | 保存条件、fiber、反例対 |
-| 有限またはアフィンの状態/作用/貼り合わせ | 全列挙または線形計算 | 制限写像、kernel/cokernel、補正と再代入 |
-| 有限carrierで尽くした経路商 | 合同閉包 | 同値導出または異なる同値類 |
-| 自由圏の任意語の構文等値 | 恒等除去と平坦化 | 正規形 |
-| 任意の関係を持つ無限coreの商等値 | v0.6.0では未対応 | 原始presentationとrequested propositionを返す |
-| 非線形Q/Z方程式の一般可解性、任意の全ASTの保存 | v0.6.0では未対応 | 式と不足するdecision methodを返す |
-
-演算は意味を持つ入力なら記号提示を返せる。`unsupported` は型の破壊や黙った近似を意味しない。
-上表の必須算法は無制限の数学的計算では停止・正確性を要求する。実行予算の消尽は
-`interrupted`。巨大だが有限の計算を「決定不能」と呼ばない。
-任意のprogramの意味等値や任意の無限提示に停止を保証するAPIは設けない。
-
-入力の定理証明やcompleted certificateを受け取って上表を越える結論を許可する機能はない。
-新算法や一般定理を組み込むときは、semantics版の固定規則として導出条件とともに追加する。
-
-## 11. 形状を持つ計算の共通規則
-
-カタログの Module/Vector/ModuleMap 等は同じ係数型Kで添字付けする。
-freeのRing引数はliteralに限り、coordの返り型はVector<K>のKから決まる。
-生成元の添字型は構成時に保持する。vector/basis/linear/coordの関数域・添字が
-その型と一致するかは構成条件で検査する。異なる添字型の値を文字列へ変換して一致させない。
-
-状態域は値の型とcarrierを対で保持する。terms方程式の型はTermSignatureのparametersのpack、
-carrierはその型の全値。affine方程式の型はVector<K>、carrierはmap.sourceの加群の元全体である。
-これは解集合へ制限する前の状態域であり、required違反の状態も含む。
-term_mapの始域はparamsのpackの全値、終域は返り型の全値。affine_mapは両端Moduleの全元、
-finite_mapは指定したSet(T)/Set(U)を両端carrierとする。合成は最初の始域と最後の終域を保持する。
-carrier一致は同じ値型を必須とし、型全体は型の一致、Moduleは意味identity、
-有限集合はSetの要素同一性による外延等値で検査する。有限集合と型全体/Moduleの比較は、
-後者が有限ならその全元を列挙して照合する。無限なら不一致、必要な列挙算法が非対応なら
-unsupported_algorithm、欠測ならmissing_observation。型の違いや確定した不一致はinvalid_construction。
-同次元・同型というだけでは一致せず、対応を明示的なStateMapとして構成する。
-
-operation(name,A,B,candidate,action)はcandidateの端点をA/B.configurationと、
-actionの始終carrierをA/B.equationsの状態域とそれぞれ照合してからOperationを作る。
-hom_conditionの成否が未確認でも端点の合う候補操作は作れるが、端点の不一致を保留したOperationは作らない。
-state_thenも同じcarrier一致規則を中間に適用し、合成したOperationは合成後の両端でこの条件を満たす。
-
-SolutionSetは空の場合もstate_typeとdomainを保持する。solveでは元の方程式の状態域、
-solution_imageではStateMapの終域、glueではbaseの状態域、SetExpression.kind=finiteでは指定Setのcarrierを用いる。
-solution_forall/existsのFnはちょうど一引数、引数型はstate_type、返り型はPropositionとする。
-前者の型が違えばinvalid_construction、arity/返り型の静的違反は入力typeエラー。
-Fnはcarrierを型引数に持たないため、domainへの所属を確かめた解だけを渡し、body内の写像・座標の
-所属条件は各解への適用時に検査する。空解集合でも型・arity・返り型の照合を先に行い、
-それを通ればbodyを評価せずforall=true/exists=falseを返す。
-
-law_homは上記Operationの端点条件を保持する。ArchitectureのEquationFamilyは、各側で共通の状態signatureを持ち、残差を
-instance添字の自由加群へ並べる（module値方程式ならその残差module）。operationのactionはsource状態からtarget状態へのStateMap、
-hはsource残差加群からtarget残差加群へのModuleMapである。原始FactRef写像だけから
-状態の作用を補わない。非アフィン作用の等値に算法がなければunsupportedを保持する。
-
-coefficients/statesの第1引数ContextFamilyはbaseと依存閉包規則を持ち、fnは純粋な
-局所構成則として任意の有限Context/ContextMapを引数に評価される。包含族については
-全context・全包含・全合成を検査する。chartを用いるcechは要求次数n+2までの反復pullback、
-面写像、必要な合成を有限diagramとして生成し、そこで値・制限・可換性を追加検査する。
-結果に検査diagramを保持し、未生成の全site上の層条件を成立と呼ばない。
-ContextMapはcarrier上の写像を持つため、同じ端点の平行射も区別する。
-
-AtomSetは原始位置の集合であり、supportには要求された未観測slotも現れる。
-configのfamilyにはこのうち実在するsubject/Atomだけを入れ、未観測slotはrequirementsに
-保持する。関係の端点が未観測slotならその関係構成はmissing_observation。
-不足を架空の原始Atomとして追加しない。
-
-## 12. 状態作用と公開射影
-
-### 12.1 StateMap と状態への適用
-
-StateMapはterm/affine/finiteの三種類の作用と、その合成を保持する。
-
-| 名前 | 署名 | 意味 |
-| --- | --- | --- |
-| term_map | Term(A…,B)→StateMap | 原始型のpack(A…)からBへの作用。0引数はUnit、1引数はA、2以上はTuple |
-| affine_map | AffineMap<K>→StateMap | 指定source/target Module上のアフィン作用 |
-| finite_map | Set(T)×Set(U)×Fn(T,U)→StateMap | 全域・像の所属を全列挙で検査した有限作用 |
-| state_then | StateMap×StateMap→StateMap | §11の中間carrier一致を検査したg∘f。両外端の状態域を保持 |
-| state_equal | StateMap×StateMap→Proposition | 全状態での作用等値。対応済み算法以外は未対応 |
-
-状態への適用式は `["state_apply", ResultType, MapExpr, InputExpr]`。
-実際の始域型・入力所属と終域型を検査してから適用する。
-EquationFamilyは `{kind:"terms",instances:...}` または
-`{kind:"affine",map:AffineMap,rhs:Vector,role:"required"|"definition"}`。両者とも共通状態域と残差を持つ。
-solveは前者のTerm共通引数のpackまたは後者のModuleの元を未知数として解く。
-通常のequationsはterms、affine_equationsはaffineを構成し、入力に依存する次元を静的な
-原始Tuple型に押し込めない。
-
-### 12.2 構造の公開field
-
-projectできるfieldを次に限定する。各値の実際の型はresultの型付き構造に保存し、
-Exprに明示した要求型と照合する。数学的な構造の射影であり、表示・statusの読出しではない。
-
-- Architecture: configuration, equations。Configuration: family, relation, identification。
-- Operation: source, target, atom_map, action。MapCandidate: source, target, pairs。
-  ConfigurationHom: candidate。LawHom: operation, underlying, residual_map。Span: left, right。
-- Context: carrier（Set(ContextPoint)）, support, axes（Set(Text)）, observables。axesの各値はpredicateの完全修飾axis名。ContextMap: source, target。
-  Overlap: pullback（Context）, left_projection, right_projection（ContextMap）。
-  Cover: base, patches（Set）, equations。
-- ModuleMap: source, target。AffineMap: linear, offset。Vector: module。
-  Complex: modules/differentials（degree順List）。CochainMap: source, target, components（degree順List）。
-  Cohomology: module, cycles, boundaries。Class: cohomology。
-- CoefficientSystem/StateSystem: contexts。Descent: cover, coefficients, states, complex, obstruction。
-  DiagnosticComparison: cochain_map, cohomology_map, kernel, cokernel, class_matches。
-  Repair: solutions, descent, comparison（Option Reading）。Reading: domain, codomain, map。
-
-Readingのdomain/codomainはfiniteならSet(T)/Set(U)、stateならStateSystem。
-mapはfiniteならStateMap、stateならFn(Context,StateMap)である。要求型との不一致はinvalid_construction。
-semantic_repairはkind=stateのReadingを要求し、finite readingを状態比較として用いない。
-
-Moduleの表示基底、Vectorの代表座標、Classの代表元、Repairの便宜的なwitness、
-Descentのlocal_sections、Propositionの判定状態は射影できない。
-ContextMapのcarrier作用は `core/context_apply : ContextMap×ContextPoint→ContextPoint`。始域への所属を検査する。
-係数/状態の値を取り出す演算は
-`core/coefficient_at(CoefficientSystem,Context)→Module`、
-`core/restriction_at(CoefficientSystem,ContextMap)→ModuleMap`、
-`core/states_at(StateSystem,Context)→SolutionSet`、
-`core/state_restriction_at(StateSystem,ContextMap)→StateMap`。
-有限状態もSolutionSetのfinite表示へ統一し、これらの演算は記録した構成則を指定contextで評価する。
-
-### 12.3 加群の誘導写像と因子分解
-
-induce(M,N,f)のfは、MとNを提示する自由加群間の写像。出力は
-M→Nであり、Mの各関係の像がNの関係部分加群に属することを検査する。
-部分加群からの誘導ではMの包含を先に合成し、その像がNに含まれることを検査する。
-その際の必要な自由提示は `core/presenting_free : Module<K>→Module<K>`、
-`core/presenting_map : Module<K>→ModuleMap<K>` で取得する。後者は自由提示からの標準全射。
-表示生成元を名指す入力は許さず、原始生成元上の写像から因子分解する。
-因子分解に使う `core/factor : ModuleMap×ModuleMap→ModuleMap` は、第1引数pが全射、
-第2引数fが同じsourceを持ちker p⊆ker fであることを検査し、一意なhでh p=fを返す。
-
-### 12.4 診断比較の次数
-
-compare_diagnosticsはsource_class/target_classがdegree1で、cochain_mapの両端の
-複体とそれぞれ一致し、双方のlast_diagnosable_degree≥1であることを検査する。
-次数nで打ち切ったcechのn+1次を、零微分で埋めて診断することはない。
-
-### 12.5 Context の点と制限写像
-
-Contextの公開carrierは常にSet(ContextPoint)。
-`core/context_points : Context→Set(ContextPoint)` と
-`core/point_fact : ContextPoint→FactRef`（baseへの像）を持つ。
-chartの元のT、包含contextのFactRef、pullbackの左右のContextPoint対はpointのlabelとして
-保持し、`["point_value",Type,PointExpr]` で要求型を検査して読める。
-反復pullbackでも公開point型は変わらないため、単相のFn(Context,Module<K>)で
-全chartの係数を作れる。ContextMapの平行射はpoint上の作用で区別する。
-
-`core/lift : ModuleMap<K>×ModuleMap<K>→ModuleMap<K>` は、第1引数iが単射、
-第2引数fが同じtarget、im f⊆im iを検査し、一意なhでi h=fを返す。
-kernel係数の制限は、ambient制限と元のkernel包含を合成してから、先のkernel包含へliftする。
-表示基底の読出しをこの構成の入力に要求しない。
-
-### 12.6 方程式の局所support
-
-free moduleの生成元には、入力添字値の原始supportを保持する。affine_equationsの
-残差moduleが自由なら、各原始生成元に対する成分式を核が構成し、局所化のequation indexにする。
-各成分のsupportは、非零係数の変数座標のsupport、係数式と右辺成分の原始operand、
-その参照閉包。未知の係数も候補支持として保持し、零とみなして除去しない。
-全域のfree moduleを構成しただけで全座標を各成分のsupportへ加えない。
-contextへの制限は、そのcontextにsupportが収まる座標・成分を保ち、値の射影を作る。
-商の残差moduleでは表示行ごとに分解せず全module値方程式を一つのinstanceとして扱う。
-
-### 12.7 Term の残余化
-
-termによる残余化は、formal paramsに依存しないfield等を先に値/captureとして計算する。
-残ったbodyは原始Termの純粋部分に属さなければinvalid_construction。
-formal Ref変数に応じてfieldを読む処理を、純粋Termの中へ隠さない。
-deriveでclosureを計算し終えた原始Set値はcaptureできる。formal引数に依存するclosureが
-bodyに残る場合はinvalid_constructionであり、純粋Termへ昇格しない。
-
-### 12.8 方程式のsignatureと残差
-
-TermSignatureの唯一のliteral encodingは `{parameters:[P,...],result:K}`。
-Pは原始型、KはQ/Z/Fp。Termのparams順と同じで、空のEquationFamilyにも状態域を与える。
-0引数のstateはUnit、1引数はその型、2以上はTupleとする。このpack規則を
-term_map、state_apply、solve、全ての方程式評価で共用する。
-`["residual",K,FamilyExpr,StateExpr]` は指定stateの左辺−右辺を、
-termsならinstanceを添字とする自由Module<K>、affineならmapのtarget Module<K>の
-Vectorとして返す。Kとstate域を実際のfamilyと照合する。
-EquationFamilyの公開fieldは `residual_space`（Module<K>）。
-Symbolic座標νはinstance指示基底、residual εは上記の値とし、νを自身で割ってε=0とはしない。
-
-### 12.9 LawValues の比較
-
-`core/law_values : EquationFamily→LawValues` はLaw評価関数の比較に用いる値を構成する。
-LawValuesは型付きの残差関数族を保持するsealed型。termsではkind、TermSignature、index_type、
-instance keyの集合を、affineではkind、始域Moduleと残差Moduleの意味identityを比較の形とする。
-形が違えば異なる評価値とし、形の差を証拠にする。roleや関数を構成した式のidentityは比較に含めない。
-形が同じ場合に全状態での残差一致をterm_equal/線形写像等値の必須算法で検査する。
-sufficient/sufficient_quotient/distinguishのVにはSet適格型に加えLawValuesを許す。
-一般非線形で比較できなければunsupported_algorithm、欠測ならmissing_observation。
-残差の不一致は具体的keyとstateを証拠に返す。形の不一致に架空のstate反例を要求しない。
-LawValuesの比較をBool成否だけの一致へ置換しない。LawValuesはSetの要素型にはしない。
-
-## 13. 構成則の評価と特殊な引数
-
-通常のcallは引数を評価してから実行する。and/orは短絡、all/any/forall/existsは
-有限instanceごとの確定結果を集約し、一つの確定した反例/証人で結論できる。
-`support` と `needed` は値がblockedでも導出式と原始依存を受け取り、その依存を読む。
-neededの完全な依存探索自体が予算で止まった場合はObservationPlanを確定値として返さず、
-部分的なrequirementsをblocked nodeのpartialに保持する。
-観測を増やしても解決しない理由はObservationPlan.blockersに保持する。
-必要な観測が空という値と、依存探索をしていない状態を区別する。
-
-affineのQ/Z認識は、formal Vector座標のadd/sub、既知scalarによるmul/scale、
-既知ModuleMapの適用、vector/basis/zero、既知有限indexのmap/sumを展開して正規化する。
-入力に依存する分岐は、両枝が同じ正規形なら消去し、そうでなければ未対応とする。
-未知の観測係数を定数として確定しない。検査できた非アフィン性は構成条件の反証、
-認識できない式はunsupported_algorithm。Fpの有限域では全値でアフィン条件を検査できる。
-term_equalのQ上アフィン認識も同じscalar部分を用いる。等値/線形計算の完了保証は
-この正規化で得る部分、有限全列挙、Zの有限線形系に対して課す。
-
-statesのAffineMap制限はaffine_mapへ、finite_statesの全域表はfinite_mapへ変換し、
-StateSystem内部と出力ではStateMapへ統一する。状態の全域carrierに合わない制限は
-invalid_construction。conditionの必要な比較を決定できなければ、その理由を返す。
-
-coreの操作はconfiguration上の射と状態上の作用を共に持つ。coreに渡す各Operationの
-候補Atom作用はverify_homで成立していること、始終域が指定object集合に属すること、
-§11のconfiguration・状態域の端点条件を満たすことを検査する。
-未確認候補はOperationとして比較できるが、coreの生成射へ昇格させない。
-自由coreのobjectは指定された対象族、morphismは型の合う全有限語であり、恒等・合成に閉じる。
-新しいconfigurationや候補対象を作るLawのderiveは、同じ原始familyから作ったArchitectureを
-その対象族へ加える。objectの列挙と全操作語の列挙は同じではない。
+| 有限関係、有限型、有限木、有限閉包 | 全列挙、構造再帰、有限不動点 | 対象、値、導出、反例 |
+| Z/Q 上のアフィン式の全代入等値 | 正確な係数正規化 | 同一正規形、または零・単位代入の反例 |
+| 有限の整数線形系、格子像、有限表示可換群 | Smith normal form | unimodular 変換、解、整数核・像、整除違反 |
+| Q/Fp 上の有限線形系 | 正確な消去 | 解、核・像、左零化子による反証 |
+| 上記係数の複体、商、コホモロジー、比較 | 同じ正確な加群計算 | 実写像、自由部、torsion、対象類 |
+| 有限の作用、局所状態、貼り合わせ、十分性 | 全列挙と fiber 比較 | 実作用、候補、反例対、持上げ |
+| 完全な整数アフィン fiber の作用、制限、貼り合わせ | 正規化、整数核・像・fiber | 条件の成立または反証、実修復 |
+| 有限 carrier の操作合同 | 合同閉包と作用検査 | 同値導出、異なる類、反例 |
+| 自由な操作語の構文等値 | 恒等除去、平坦化 | 操作名と順序を持つ正規形 |
+
+これらの数学的手続きは、計算資源を制限しなければ停止して正確な結果を返す。
+有限 context 上の構成条件・自然性・貼り合わせ・比較条件の検査もこの責務に含む。
+実行予算の消尽は `interrupted` とし、有限だが大きい計算を非対応へ変更しない。
+
+一般の非線形整数可解性、無限提示の操作合同、一般アフィン作用の任意長到達可能性、
+任意の無限構文族の意味保存については、対応する算法を備えない問いを
+`unsupported_algorithm` とし、型、原式、量化域、必要な判定を保持する。
+有限全列挙で尽くせる追加条件は列挙する。整数不等式など、上表で定めない無限域の条件は、
+アフィン等式の torsor に置換しない。
+
+宣言の解釈、equation realization、局所状態、作用、写像とその正確性は核の責務である。
+上表の構成や一般数学の適用条件を、利用者からの証明・判定フラグで補う入力経路は設けない。

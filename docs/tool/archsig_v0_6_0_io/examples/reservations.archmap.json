@@ -1,0 +1,52 @@
+{
+  "format": "archsig.archmap/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{"reading": "Reservations", "digest": "sha256:ede3c701fddea98a6ebf3d31406a0d684dc01256e3ee14a0fb151250b5f05ea1"}],
+  "sources": [],
+  "origins": [{
+    "id": "model",
+    "mode": "specification",
+    "method": "二つのシステムの状態・操作・移行候補を有限な原始事実で提示する。",
+    "locations": [],
+    "note": "状態の数量と候補対応の仕様例。成立・残差・修復は入力しない。"
+  }],
+  "snapshots": [{
+    "id": "v",
+    "origin": "model",
+    "subjects": [
+      {"id": "A", "type": "Reservations.System", "origin": "model"},
+      {"id": "B", "type": "Reservations.System", "origin": "model"},
+      {"id": "p", "type": "Reservations.State", "origin": "model"},
+      {"id": "q", "type": "Reservations.State", "origin": "model"},
+      {"id": "r", "type": "Reservations.State", "origin": "model"},
+      {"id": "s", "type": "Reservations.State", "origin": "model"},
+      {"id": "e", "type": "Reservations.Reserve", "origin": "model"},
+      {"id": "f", "type": "Reservations.Reserve", "origin": "model"},
+      {"id": "m", "type": "Reservations.Migration", "origin": "model"}
+    ],
+    "atoms": [
+      {"id": "p-owner", "subject": "p", "field": "Reservations.State.owner", "value": ["v", "A"], "origin": "model"},
+      {"id": "p-free", "subject": "p", "field": "Reservations.State.free", "value": "2", "origin": "model"},
+      {"id": "p-held", "subject": "p", "field": "Reservations.State.held", "value": "0", "origin": "model"},
+      {"id": "q-owner", "subject": "q", "field": "Reservations.State.owner", "value": ["v", "A"], "origin": "model"},
+      {"id": "q-free", "subject": "q", "field": "Reservations.State.free", "value": "1", "origin": "model"},
+      {"id": "q-held", "subject": "q", "field": "Reservations.State.held", "value": "1", "origin": "model"},
+      {"id": "r-owner", "subject": "r", "field": "Reservations.State.owner", "value": ["v", "B"], "origin": "model"},
+      {"id": "r-free", "subject": "r", "field": "Reservations.State.free", "value": "4", "origin": "model"},
+      {"id": "r-held", "subject": "r", "field": "Reservations.State.held", "value": "0", "origin": "model"},
+      {"id": "s-owner", "subject": "s", "field": "Reservations.State.owner", "value": ["v", "B"], "origin": "model"},
+      {"id": "s-free", "subject": "s", "field": "Reservations.State.free", "value": "3", "origin": "model"},
+      {"id": "s-held", "subject": "s", "field": "Reservations.State.held", "value": "1", "origin": "model"},
+      {"id": "e-owner", "subject": "e", "field": "Reservations.Reserve.owner", "value": ["v", "A"], "origin": "model"},
+      {"id": "e-from", "subject": "e", "field": "Reservations.Reserve.from", "value": ["v", "p"], "origin": "model"},
+      {"id": "e-to", "subject": "e", "field": "Reservations.Reserve.to", "value": ["v", "q"], "origin": "model"},
+      {"id": "f-owner", "subject": "f", "field": "Reservations.Reserve.owner", "value": ["v", "B"], "origin": "model"},
+      {"id": "f-from", "subject": "f", "field": "Reservations.Reserve.from", "value": ["v", "r"], "origin": "model"},
+      {"id": "f-to", "subject": "f", "field": "Reservations.Reserve.to", "value": ["v", "s"], "origin": "model"},
+      {"id": "m-from", "subject": "m", "field": "Reservations.Migration.from", "value": ["v", "A"], "origin": "model"},
+      {"id": "m-to", "subject": "m", "field": "Reservations.Migration.to", "value": ["v", "B"], "origin": "model"},
+      {"id": "m-states", "subject": "m", "field": "Reservations.Migration.states", "value": [[["v", "p"], ["v", "r"]], [["v", "q"], ["v", "s"]]], "origin": "model"},
+      {"id": "m-reserves", "subject": "m", "field": "Reservations.Migration.reserves", "value": [[["v", "e"], ["v", "f"]]], "origin": "model"}
+    ]
+  }]
+}

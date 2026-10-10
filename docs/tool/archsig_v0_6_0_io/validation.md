@@ -1,110 +1,160 @@
 # 入出力例と適合条件
 
-以下のJSON例と表は、入力に対する期待結果と実装の適合条件を示す。
+以下の Law、ArchMap、変種表を、[宣言](law.md)、[核の構成](computations.md)、
+[実行](execution.md)に対する規範例とする。いずれも仕様の有限モデルであり、
+原始値・候補と、核が導出する値・成立判定を分けて示す。
 
-## 1. 一つの Law、三つの入力
+## 1. 状態の保存と移行の保存
 
-[Law](examples/law.json) は、一つのsnapshot内の名前付き有理数操作の全順序対について、
-二つの合成の作用が等しいかを問う。原始語彙はOperationの存在とbodyだけである。
-式の入力順は `then(f,g)=g∘f`。
+[Reservations の Law](examples/reservations.law) は状態・予約操作・移行候補の語彙、
+数量の読取り、保存要求、局所読取り、許す変更を宣言する。
+[ArchMap](examples/reservations.archmap.json) の全原始値は次のとおり。
 
-| 入力 | 原始の式 | 期待結果 |
-| --- | --- | --- |
-| [反証](examples/refuted.archmap.json) | f(x)=x+1、g(x)=2x | `affine/commute: refuted`。x=0でg(f(x))=2、f(g(x))=1。exit1 |
-| [成立](examples/established.archmap.json) | f(x)=x+1、g(x)=x+2 | 4順序対すべての全Q代入で成立。`established`、exit0 |
-| [欠測](examples/missing.archmap.json) | fの式だけ記録、gの存在は保持 | `undetermined/missing_observation`。missingは(sample,g,affine/body)。exit2 |
-
-三入力の語彙bindingとLawは同じ。欠測例のgをx+2で補完すると成立、2xで補完すると反証になる。
-補完対を観測の反例と呼ばない。端点の一致や同じsupportだけから二操作を同一視しない。
-
-呼出し：
+| 種別 | 原始値 |
+| --- | --- |
+| System | A, B |
+| State | p:A=(2,0), q:A=(1,1), r:B=(4,0), s:B=(3,1)。組は(free,held) |
+| Reserve | e:A, p→q ／ f:B, r→s |
+| Migration | m:A→B、states={p↦r,q↦s}、reserves={e↦f} |
 
 ```sh
-archsig run --archmap examples/refuted.archmap.json --law examples/law.json --out result-refuted
+archsig run --law examples/reservations.law --archmap examples/reservations.archmap.json \
+  --ask 'value=evaluate(Reservations.holdings,s=@v/p)' \
+  --ask 'operation=check(Reservations.conserved,e=@v/e)' \
+  --ask 'structure=map(Reservations.Migration,on=@v/m)' \
+  --ask 'migration=check(Reservations.retained,m=@v/m)' --out result-reservations
 ```
 
-出力の `Answer` はquery、Proposition参照、status、証拠参照、scopeを持つ。
-反証の `Evidence.kind=counterexample` には、型Qの値0の代入、二つの順序を持つ操作経路、
-型Qの2と1、二つのbody Atomへの原始位置を保存する。
-方程式の全Q量化はscope.domain=all_assignments、quantifiersにQ変数のforallとして残る。
-欠測回答は同じ位置をmissingに持ち、provisionalな式を確定valueに置かない。
+`value` は型付き数量対 `(2,0)`、`operation` は残差0を伴う成立、`migration` は反証を返す。
+`structure` は候補の全域性と構造保存を確認し、configuration mapを返す。
+m の候補対応は端点を保存するが、pでは `(4,0)≠(2,0)`、qでは `(3,1)≠(1,1)` となる。
+各 instance の残差は `(2,0)`。反例は束縛した状態、両方の値、原式、使用した Atom を持つ。
+f の `conserved` も成立する。二つの操作の保存と、m による数量対の保存は別に判定する。
+この呼出し全体は反証を含むため exit1 とする。
 
-基本例の4ファイルはすべて [入力](inputs.md) と [Law DSL](law.md) のJSON形式を用いる。
-入力の観測sourceは本文の二行の式を表す小さな実装例である。
+同じ Law に対し、次の変種を用いる。変更欄以外の原始値と参照は固定する。
 
-## 2. 自己モデルの小さな構成
-
-[自己Law](examples/self.law.json) と [自己Atom](examples/self.archmap.json) も同じ書式を使う。
-SourceのVar/Lit/Add、IRのLoad/Const/Plus/Minusをdataで定義し、foldで変換と二つの評価を記述する。
-原始入力はsource treeと候補の演算選択だけ。完成IR、行列、保存判定は入れない。
-
-sourceはx+(1+2)。AddをPlusへ写す候補はx+3、Minusへ写す候補はx−(1−2)=x+1となる。
-期待結果は、前者の全Q代入での保存と、後者の反証（x=−1でsource=2、IR=0）である。
-snapshotのmodeは `specification`。結果はこの仕様モデルについての判定として保持する。
-
-## 3. 入力・評価の適合例
-
-| 試み | 期待する判定と保持する情報 | 根拠 |
+| 変種 | 変更する原始値 | 期待結果 |
 | --- | --- | --- |
-| 欠測gをjoinで落とす | query未決、gを保持 | subjectから列挙しfield lookupを別に行う |
-| 同じHole hの再読 | h−h=0は成立できる | slotのidentityを共有 |
-| 2−hを非零多項式として反証 | h=2/3の補完で判断が異なるため未決 | 観測Holeと全称変数の区別 |
-| none・[]・欠測の同一視 | Option不在、空の有限集合、Holeを分離 | 原始値のencodingと型 |
-| 同じFactRefに二つの値 | invalid_input/duplicate_fact | 単一値predicate |
-| 未約分有理数2/2 | invalid_input/type | Qの正規形 |
-| 識別子を変えて違う結論を出す | 同型に沿う同じ判断 | ID文字列をLawから解析できない |
-| 2z=1をQで解いてZの解とする | Qでは1/2、Zでは整除違反 | 係数環の型引数とSNF |
-| 面の[e,e]をSetへ変換 | 係数2を保持 | Listの反復と符号付き和 |
-| chart X={0,1}→{*} の二つの投影を潰す | p₁*≠p₂*、差は(0,1,−1,0) | ContextMapがcarrier作用を持つ |
-| Lawの十分性から診断同型を付与 | 別の実cochain比較が必要 | sufficientとpreserves_diagnosticsを分離 |
-| Čechを次数nで打ち切りH^(n+1)を読む | invalid_construction | last_diagnosable_degree |
-| 旧resultのverifiedラベルを採用 | 現在の根から再検査/再計算 | 再利用は第三入力にならない |
-| 未観測の候補を全部探索したとする | 量化域をfinite_modelに固定 | 有限候補族と任意の変更を区別 |
-| 自己Lawの成功を原始Atomに戻す | sealed値・結果参照の入力を拒否 | 導出根の非循環性 |
+| 成立 | r=(2,0), s=(1,1) | retainedは有限な二状態について成立、両残差 `(0,0)` |
+| 欠測 | 成立版から `r-free` Atomだけを除く | 未決。missingは `(v,r,Reservations.State.free)` |
+| 対応の未観測 | 成立版から `m-states` Atomを除く | mを保持し、同じslotの不足を返す |
+| 全域性違反 | 成立版のstatesからqの行だけを除く | 提示したMapが始域全体を覆わないため不正入力 |
+| 端点不保存 | states={p↦s,q↦r}、reserves={e↦f} | mapの構造保存が反証され、configuration mapを構成しない |
 
-三操作の局所例については、原始端点(p,q),(q,r),(p,r)から
-`D=[[-1,1,0],[0,-1,1],[-1,0,1]]` を生成する。λ=(1,1,−1)はλD=0を満たす。
-b=(1,1,3)ではλb=−1、b=(1,1,2)ではz=(0,1,2)を元の式へ代入できる。
-行列Dは原始端点から導出される出力である。
-構成の詳細は [三操作の局所・大域計算](../archsig_atom_law_engine/local_global_example.md)を参照する。
+欠測版の `r.free` を2で補完すれば成立し、4で補完すれば反証になる。
+この補完対は追加観測が必要な理由であり、観測した対象の反例としては出力しない。
+反証版から `r-free` だけを除いた場合は、qの既知反例が残るので反証を保持する。
 
-## 4. CLI の適合条件
+## 2. 局所読取りと許す修復
 
-同じpublic CLIによる計算は、上の入力と表の期待結果に加えて次を満たす。
+Reservations の Stock と Held は同じ状態参照を共有し、それぞれ一つの値を読む。
+Transfer は操作の二端点の数量対を読む。核は宣言から読取りの射影、必要な Law 座標、
+局所可視性を求める。全値が観測済みでも、選択した局所読取りで読めるとは限らない。
 
-1. 入力のarray/object順だけを変更して、意味値が対応すること。
-2. renameした原始IDの全単射を出力の対象・操作・反例へ運べること。
-3. Z/Fpの線形問題、アフィン方程式の局所support、kernelへのlift、商からのfactorを接続できること。
-4. 一般chartの二つの制限が別のcochain項になり、d²=0を検査すること。
-5. 解なし、零類、修復値、意味側比較を別の型・条件として出力すること。
-6. 不正入力・未対応算法・観測不足・予算中断・signal・I/O失敗の終了コードと結果を確認すること。
-7. 改竄した再利用候補を破棄し、元の二入力からの結果が変わらないこと。
-8. 全resultの型・参照・導出DAGを再読し、原始根と各条件へ到達できること。
+`rebalance(s,d)` の作用は `(-d,d)`。核は宣言を代入してこの作用と合成則を生成する。
+修復では元の観測を保持し、Bの各状態へ許す変更を適用した候補を求める。
 
-## 5. 商・全域性・端点の適合例
-
-| 最小の入力/構成 | 期待結果 |
+| 原始値または宣言の変種 | 期待する構成・判定 |
 | --- | --- |
-| 空のD:Set(Z)のsufficient_quotient | codomainは空のSet(Set(Z))、map/pairs/fibersも空。評価Fnを呼ばずestablished |
-| D={0,1,2}、LawValuesが順にx、x+1、x | 商は{{0,2},{1}}。商元はSet(Z)、mapはStateMap、fibersのimage/preimageは同じ同値類 |
-| 上の評価値を同じ式で別に構成、またはDの表示順を反転 | 同じpartitionと有限作用。式のidentityや代表元番号で商を変えない |
-| LawValuesのsignature/key/残差Moduleが不一致 | 異なる評価値として別の類。形の差をevaluation証拠に保持 |
-| 商に必要な一つのLawValues比較が非対応/欠測 | Readingを確定せずundetermined。unsupported_algorithm/missing_observationを保持 |
-| pure(Unit)→Set(Z)のclosure({1},{},n↦{})、またはその間接呼出し/到達不能枝 | 静的typeエラー、invalid・exit65。effect={allowed:pure,found:derive} |
-| queryのclosure({1},{},n↦{}) | check成功、runはundetermined/invalid_construction、partial・exit2 |
-| pureのset式{x,x} / 入力Set値["1","1"] | 前者は{x}へ重複除去。後者は不正なSet encoding |
-| A.configuration=Cだがcandidate.source=C'≠C。candidate自体は正しいhom | Operationを作らずinvalid_construction。作用が正しくても端点条件を省略しない |
-| Aの状態域はQ全体、action.source={0,1}⊂Q | 同じ値型でもcarrier不一致でinvalid_construction |
-| state_thenの中間Bool carrierが{false}と{false,true} | invalid_construction。後続のOperation/coreへ渡す値を作らない |
-| 端点は一致するがcandidateの保存未確認 | Operationとして保持。law_hom/coreへの昇格時には保存成立が必要 |
-| 空のQ解集合にFn(Z,Proposition)でsolution_forall | 空虚な成立の前に型照合しinvalid_construction |
-| 空のQ解集合にFn(Q,Proposition)を適用 | bodyを呼ばずforall成立/exists反証。body用の架空のQ値を選ばない |
-| 同じF2加群のzero(M)とvector_sub(v,v)、Z/2加群の代表0と2 | 同じ元として有限mapのkey/carrierを照合。親Moduleが異なる元は区別 |
-| Context.axesをproject | Set(Text)。値は完全修飾axis名。Set(Z)要求はinvalid_construction |
-| Conditionへ独自dependencies欄を追加 | 未知欄として結果schema検査で拒否。依存はNode.arguments/Proposition.operands/Issue.dependencies |
+| 基本例のr=(4,0), s=(3,1) | 必要な変更は各状態で `(-2,0)`。合計が変わるためrebalanceによる修復なし |
+| r=(1,1), s=(0,2) | 各状態でd=−1を導出し、候補r=(2,0), s=(1,1)を元のretainedへ代入して成立確認 |
+| Transfer宣言を除く | StockとHeldではconservedが要求する二端点の数量の可視性が不足。勝手にTransferを追加しない |
+| dをZ、作用を `(−2d,2d)` とする別readingで、必要変更 `(−1,1)` を問う | 整数では修復なし。有理数のd=1/2を整数修復として返さない |
 
-上の商の有限mapで、一行のpairのencodingは次である。これは生成結果の一部であり、第三入力ではない。
+StockとHeldの個別の変更が求まっても、一つのrebalanceから来るためには
+`Δfree+Δheld=0` が必要である。局所状態の貼り合わせと許す作用の条件は、
+[核の構成](computations.md)に従って別々に確認する。
 
-```json
-{"type":["Tuple","Z",["Set","Z"]],"value":["0",["0","2"]]}
+## 3. 三辺の修復と局所・大域
+
+次のreadingに、所属する三点p,q,rの観測座標0と、
+名前付きの辺a:p→q、b:q→r、c:p→r、shift値1,1,γを与える。
+座標は観測済みであり、未知の観測値を解変数に置き換えない。
+
+```text
+reading Coordinates {
+  entity System;
+  entity Point(owner: System) { coordinate: Z; }
+  arrow Shift(owner: System, from: Point[owner], to: Point[owner]) { shift: Z; }
+  law required aligned(e: Shift):
+    e.to.coordinate - e.from.coordinate = e.shift;
+  local Edge(e: Shift) reads e.shift, e.from.coordinate, e.to.coordinate;
+  change move(p: Point, d: Z) = p with { coordinate = p.coordinate + d };
+}
 ```
+
+修復の問いはalignedの全instanceと、同じSystem配下の全Pointへのmoveを選ぶ。
+核は各点の変更量を独立に持つ候補から `Dz=b` を生成する。
+列をp,q,r、行をa,b,cとする表示では
+`D=[[-1,1,0],[0,-1,1],[-1,0,1]]`、`b=(1,1,γ)` となる。
+行列、局所解、係数、微分、障害類はすべて生成結果である。
+
+| γ | 期待する修復結果 |
+| --- | --- |
+| 3 | λ=(1,1,−1)、λD=0、λb=−1という不成立証拠 |
+| 2 | 候補座標z=(0,1,2)。Dz=bと元のalignedへ再代入して成立確認 |
+| 未観測 | cの存在と端点を保持し、shiftの追加観測を要求。補完2と3で答えが異なる |
+
+Edgeの読取りから生成した局所解の差と制限を用い、整数係数のČech H¹はZ、
+対象の類は表示 `1+1−γ` となる。γ=2でもH¹そのものは零にならず、対象の類が零になる。
+欠測時にはshiftに依存しない構造までを保持し、当該対象の障害値は未決とする。
+局所解の貼り合わせ、係数の制限、許す変更との対応は核が確認する。
+
+## 4. エンジンの有限仕様モデル
+
+[Engine の Law](examples/engine.law) はExprのLit/Var/Add、IRのConst/Load/Plus/Minusを
+有限木dataで定義する。`translate`、`evalSource`、`evalIR` はそれぞれ構造再帰のviewであり、
+各constructorで行う計算をすべて宣言している。
+[ArchMap](examples/engine.archmap.json) は原始source treeと候補演算のenumだけを持つ。
+
+sourceは `x+(1+2)`。二つのCompiler subjectは同じsourceを持ち、operatorだけが異なる。
+生成IRはそれぞれ `Plus(Load,Plus(Const(1),Const(2)))` と
+`Minus(Load,Minus(Const(1),Const(2)))`。次の表はそれを評価した式と保存判定を示す。
+
+| 原始operator | 生成IRの評価（全x） | `preserves` の期待結果 |
+| --- | --- | --- |
+| AddOp | x+3 | 全Z代入について成立 |
+| SubtractOp | x−(1−2)=x+1 | x=−1でsource=2、IR=0という反例 |
+| 未観測 | 未確定 | Compilerを残しoperator不足を返す。上の二補完で答えが異なる |
+
+```sh
+archsig run --law examples/engine.law --archmap examples/engine.archmap.json \
+  --ask 'add=check(Engine.preserves,c=@engine/add)' \
+  --ask 'subtract=check(Engine.preserves,c=@engine/subtract)' --out result-engine
+```
+
+生成IR、正規化した係数、比較値、保存判定には、sourceとoperatorのAtom、各view、
+固定演算までの導出根を付ける。参照評価はsourceの構造再帰だけで定義し、候補変換に依存しない。
+生成IRは導出値として保持する。原始Atomのfamilyへ追加しない。
+結果のscopeは提示されたCompilerとsourceについての仕様モデルで、内側のxは全Z代入である。
+各演算の一般的な保存と、実装全体の正しさは、この有限例の成功からは導かない。
+
+## 5. 入力・評価・空域の適合条件
+
+| 試み | 期待する判定と保持する情報 |
+| --- | --- |
+| 存在するsubjectを必須field不足で除く | subjectとLaw instanceを保持し、不足を伝播する |
+| 同じslot hを二度読む | h−h=0は成立可能。2−hは補完2と3で答えが異なり未決 |
+| none、空List/Set、未観測を同じ値にする | 明示的不在、観測した空の族、Holeを区別する |
+| 同じsubject/fieldへ二つのAtomを置く | 同じ値でも不正入力。相反する値から空の補完集合を作らない |
+| 型の異なるMapの参照、重複key、未登録参照 | 提示規則で拒否し、保存Lawの反証とは分ける |
+| 値を保って原始ID・入力順・source refを変える | 同型に沿う判断・対象・解集合。出力の由来は対応する参照へ変わる |
+| 空の観測済み有限族を全称／存在量化 | 全称成立／存在反証、評価件数0、有限域scopeを保持する |
+| 空の族のbodyに型不整合がある | 空虚な成立の前に型検査で拒否する |
+| Compiler族が空 | preservesの全称は件数0の成立。実在する候補の保存を確認したとは出力しない |
+| 結果参照や導出専用型を原始値に書く | 入力の型・参照規則で拒否する |
+| 成功ラベルを普通の原始値へ偽装する | 語彙・観測の点検対象。核による意味的な偽装検出を保証しない |
+| 未観測候補まで探索済みとする | 記録した有限候補と宣言した変更族のscopeを保持する |
+| Law評価が等しい二つのreadingを比較する | 診断保存は実際の局所・係数・複体の比較から別に検査する |
+
+## 6. CLI と結果の適合条件
+
+上の例をpublic CLIで計算する実装は、[型付き結果](results.md)に従い、
+原式、型、束縛、値、成立判定、証拠、scope、原始入力への参照を再読できる形で出力する。
+未観測、局所可視性不足、未対応算法、予算中断を理由ごとに保持する。
+空虚な成立と通常の成立を、評価件数と量化域から区別できることを確かめる。
+
+再利用候補を改変しても、現在の二入力から得る結論は変わらない。
+結果の型・参照・導出DAGを検査し、Atom、Law宣言、固定演算まで到達することを確認する。
+終了コード、signal、I/O失敗、依存する問いへの未決の伝播も実行仕様に従う。

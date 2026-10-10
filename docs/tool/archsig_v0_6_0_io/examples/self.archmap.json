@@ -1,8 +1,0 @@
-{
-  "format": "archsig.archmap/1",
-  "semantics": "archsig/0.6.0",
-  "vocabularies": [{"module": "self","digest": "sha256:e31a3ac77a4596bbe70ad7c68c8f9ae5a1bb02bdee50d6db9746366b4873f766"}],
-  "sources": [],
-  "origins": [{"id": "model","mode": "specification","method": "有限構文と候補演算の仕様提示。","locations": [],"note": "AddをPlusへ写す候補とMinusへ写す候補を同じsourceで比較する。"}],
-  "snapshots": [{"id": "engine","role": "self/spec","origin": "model","subjects": [{"id": "add","sort": "self/Rewrite","origin": "model"},{"id": "subtract","sort": "self/Rewrite","origin": "model"}],"atoms": [{"id": "add-source","subject": "add","predicate": "self/source","value": {"tag": "Add","args": [{"tag": "Var","args": []},{"tag": "Add","args": [{"tag": "Lit","args": [["1","1"]]},{"tag": "Lit","args": [["2","1"]]}]}]},"origin": "model"},{"id": "add-operator","subject": "add","predicate": "self/operator","value": {"tag": "Add","args": []},"origin": "model"},{"id": "subtract-source","subject": "subtract","predicate": "self/source","value": {"tag": "Add","args": [{"tag": "Var","args": []},{"tag": "Add","args": [{"tag": "Lit","args": [["1","1"]]},{"tag": "Lit","args": [["2","1"]]}]}]},"origin": "model"},{"id": "subtract-operator","subject": "subtract","predicate": "self/operator","value": {"tag": "Subtract","args": []},"origin": "model"}]}]
-}

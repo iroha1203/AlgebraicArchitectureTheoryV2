@@ -1,0 +1,31 @@
+law "archsig.law/1" semantics "archsig/0.6.0";
+
+reading Engine {
+  data Expr = Lit(Z) | Var | Add(Expr, Expr);
+  data IR = Const(Z) | Load | Plus(IR, IR) | Minus(IR, IR);
+  data Operator = AddOp | SubtractOp;
+  entity Compiler { source: Expr; operator: Operator; }
+
+  view evalSource(e: Expr, x: Z): Z = match e {
+    Lit(n) => n;
+    Var => x;
+    Add(a, b) => evalSource(a, x) + evalSource(b, x);
+  };
+  view translate(e: Expr, op: Operator): IR = match e {
+    Lit(n) => Const(n);
+    Var => Load;
+    Add(a, b) => match op {
+      AddOp => Plus(translate(a, op), translate(b, op));
+      SubtractOp => Minus(translate(a, op), translate(b, op));
+    };
+  };
+  view evalIR(e: IR, x: Z): Z = match e {
+    Const(n) => n;
+    Load => x;
+    Plus(a, b) => evalIR(a, x) + evalIR(b, x);
+    Minus(a, b) => evalIR(a, x) - evalIR(b, x);
+  };
+  law required preserves(c: Compiler):
+    forall x: Z . evalIR(translate(c.source, c.operator), x) = evalSource(c.source, x);
+  local Comparison(c: Compiler) reads c.source, c.operator;
+}
