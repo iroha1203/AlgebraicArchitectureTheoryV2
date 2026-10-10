@@ -188,6 +188,9 @@ Z では Smith normal form を使い、自由rankだけでなくtorsion invarian
 生成元・関係式をそのまま有限提示にする。一般の非線形Q式も保持できる。自由操作語と経路関係はCoreが保持する。
 これは零点や商の判定結果ではない。非対応の商・可解性計算は式を失わず未決を返す。
 
+係数変更は比較写像と適用条件を持つ別計算として保持する。有理係数の零性を
+整数係数へ戻す場合は、係数比較と零性反映の条件を確かめる。
+
 ## 7. 局所状態、貼り合わせ、修復
 
 | 名前 | 署名 | 意味と条件 |
@@ -212,6 +215,8 @@ v0.6.0 の descent は加法的な有限表示係数とアフィン状態のtors
 Repair は具体的状態とその全解集合、使用した作用、元の式への代入、snapshot modeを持つ。
 方程式側だけで作った Repair.kind は `equation`、意味側との比較を検査したものは `semantic`。
 実コードを変更したことはこの値の意味に含めない。
+貼り合わせの一意性は固定した整合局所族についてのものであり、大域修復の全解集合が
+一元であることとは別である。
 
 ## 8. Reading、診断保存、追加観測
 
@@ -231,13 +236,14 @@ sufficient/distinguishはkind=finiteのReadingだけを受け取り、Fnの引�
 修復存在を評価値に使う場合は core/decide(inhabited(...)) を使う。Law十分性だけから係数やcoverの比較を作ったと
 扱わない。compare_diagnostics は比較写像そのものを引数として導出し、単にrankが等しいことを
 同型の根拠にしない。異なるcoverには実際のrefinement/chart対応と誘導cochain mapが必要。
+H¹写像の同型性と、比較写像の錐全体の非輪状性は別の条件である。
 
 distinguishの第3引数は観測関数のListである。順番は観測候補の意味ある優先順であり、全候補を保持する。
 各候補の評価は原始fieldから行い、現在同じreadingを持つがLaw評価が違う対を生成する。
 その各対を分離する観測候補の集合を求め、包含極小な観測候補部分集合を全列挙する。
 同数の候補を一つだけ最良としない。最小性の範囲はこの有限候補Listに限る。
 Holeで候補評価ができなければ未決とし、そのfieldの観測要求へ戻す。
-G-128/G-131 型の修復述語をVに使うには原始操作から構成した修復存在を評価する。
+修復存在をVに使うときは、原始操作から構成した修復の存在を評価する。
 
 finite Readingはdomain D、codomain C=f(D)、map.source=D、map.target=Cを保持する。
 fibersのpreimageはDの非空・互いに素な完全分割で、各imageはCに一度だけ現れる。
@@ -336,6 +342,8 @@ configのfamilyにはこのうち実在するsubject/Atomだけを入れ、未�
 
 ## 12. 状態作用と公開射影
 
+### 12.1 StateMap と状態への適用
+
 StateMapはterm/affine/finiteの三種類の作用と、その合成を保持する。
 
 | 名前 | 署名 | 意味 |
@@ -346,13 +354,15 @@ StateMapはterm/affine/finiteの三種類の作用と、その合成を保持す
 | state_then | StateMap×StateMap→StateMap | §11の中間carrier一致を検査したg∘f。両外端の状態域を保持 |
 | state_equal | StateMap×StateMap→Proposition | 全状態での作用等値。対応済み算法以外は未対応 |
 
-Exprの追加形式は `["state_apply", ResultType, MapExpr, InputExpr]`。
+状態への適用式は `["state_apply", ResultType, MapExpr, InputExpr]`。
 実際の始域型・入力所属と終域型を検査してから適用する。
 EquationFamilyは `{kind:"terms",instances:...}` または
 `{kind:"affine",map:AffineMap,rhs:Vector,role:"required"|"definition"}`。両者とも共通状態域と残差を持つ。
 solveは前者のTerm共通引数のpackまたは後者のModuleの元を未知数として解く。
 通常のequationsはterms、affine_equationsはaffineを構成し、入力に依存する次元を静的な
 原始Tuple型に押し込めない。
+
+### 12.2 構造の公開field
 
 projectできるfieldを次に限定する。各値の実際の型はresultの型付き構造に保存し、
 Exprに明示した要求型と照合する。数学的な構造の射影であり、表示・statusの読出しではない。
@@ -384,6 +394,8 @@ ContextMapのcarrier作用は `core/context_apply : ContextMap×ContextPoint→C
 `core/state_restriction_at(StateSystem,ContextMap)→StateMap`。
 有限状態もSolutionSetのfinite表示へ統一し、これらの演算は記録した構成則を指定contextで評価する。
 
+### 12.3 加群の誘導写像と因子分解
+
 induce(M,N,f)のfは、MとNを提示する自由加群間の写像。出力は
 M→Nであり、Mの各関係の像がNの関係部分加群に属することを検査する。
 部分加群からの誘導ではMの包含を先に合成し、その像がNに含まれることを検査する。
@@ -393,9 +405,13 @@ M→Nであり、Mの各関係の像がNの関係部分加群に属すること�
 因子分解に使う `core/factor : ModuleMap×ModuleMap→ModuleMap` は、第1引数pが全射、
 第2引数fが同じsourceを持ちker p⊆ker fであることを検査し、一意なhでh p=fを返す。
 
+### 12.4 診断比較の次数
+
 compare_diagnosticsはsource_class/target_classがdegree1で、cochain_mapの両端の
 複体とそれぞれ一致し、双方のlast_diagnosable_degree≥1であることを検査する。
 次数nで打ち切ったcechのn+1次を、零微分で埋めて診断することはない。
+
+### 12.5 Context の点と制限写像
 
 Contextの公開carrierは常にSet(ContextPoint)。
 `core/context_points : Context→Set(ContextPoint)` と
@@ -410,6 +426,8 @@ chartの元のT、包含contextのFactRef、pullbackの左右のContextPoint対�
 kernel係数の制限は、ambient制限と元のkernel包含を合成してから、先のkernel包含へliftする。
 表示基底の読出しをこの構成の入力に要求しない。
 
+### 12.6 方程式の局所support
+
 free moduleの生成元には、入力添字値の原始supportを保持する。affine_equationsの
 残差moduleが自由なら、各原始生成元に対する成分式を核が構成し、局所化のequation indexにする。
 各成分のsupportは、非零係数の変数座標のsupport、係数式と右辺成分の原始operand、
@@ -417,13 +435,16 @@ free moduleの生成元には、入力添字値の原始supportを保持する�
 全域のfree moduleを構成しただけで全座標を各成分のsupportへ加えない。
 contextへの制限は、そのcontextにsupportが収まる座標・成分を保ち、値の射影を作る。
 商の残差moduleでは表示行ごとに分解せず全module値方程式を一つのinstanceとして扱う。
-こうして一本辺の座標式を各patchで読み、三操作同時の経路式とは別のcoverを生成できる。
+
+### 12.7 Term の残余化
 
 termによる残余化は、formal paramsに依存しないfield等を先に値/captureとして計算する。
 残ったbodyは原始Termの純粋部分に属さなければinvalid_construction。
 formal Ref変数に応じてfieldを読む処理を、純粋Termの中へ隠さない。
 deriveでclosureを計算し終えた原始Set値はcaptureできる。formal引数に依存するclosureが
 bodyに残る場合はinvalid_constructionであり、純粋Termへ昇格しない。
+
+### 12.8 方程式のsignatureと残差
 
 TermSignatureの唯一のliteral encodingは `{parameters:[P,...],result:K}`。
 Pは原始型、KはQ/Z/Fp。Termのparams順と同じで、空のEquationFamilyにも状態域を与える。
@@ -432,11 +453,12 @@ term_map、state_apply、solve、全ての方程式評価で共用する。
 `["residual",K,FamilyExpr,StateExpr]` は指定stateの左辺−右辺を、
 termsならinstanceを添字とする自由Module<K>、affineならmapのtarget Module<K>の
 Vectorとして返す。Kとstate域を実際のfamilyと照合する。
-projectできるEquationFamilyの追加fieldは `residual_space`（Module<K>）。
+EquationFamilyの公開fieldは `residual_space`（Module<K>）。
 Symbolic座標νはinstance指示基底、residual εは上記の値とし、νを自身で割ってε=0とはしない。
 
-Law評価関数そのものを比較するため、
-`core/law_values : EquationFamily→LawValues` を追加する。
+### 12.9 LawValues の比較
+
+`core/law_values : EquationFamily→LawValues` はLaw評価関数の比較に用いる値を構成する。
 LawValuesは型付きの残差関数族を保持するsealed型。termsではkind、TermSignature、index_type、
 instance keyの集合を、affineではkind、始域Moduleと残差Moduleの意味identityを比較の形とする。
 形が違えば異なる評価値とし、形の差を証拠にする。roleや関数を構成した式のidentityは比較に含めない。

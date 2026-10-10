@@ -67,6 +67,7 @@ kind/axis の二重記入は許さない。subject の sort は P.domain と一�
 同じ subject/predicate に値を二つ記録することは、同じ値であっても `duplicate_fact`。
 多項関係は payload の Tuple、複数関係は Set/List、名前付き操作・セルは独立した subject と
 その field によって表す。平行辺、反復する incidence、操作名を Set 化して失わない。
+面の各出現は位置・向き・整数係数を保持し、微分では出現ごとの符号付き和を取る。
 
 ## 3. 原始型と値の唯一の encoding
 
@@ -156,7 +157,7 @@ provenance を変更すると artifact digest と出力の由来は変わる。�
 Law document の詳細は [Law DSL](law.md)。全 module を一つのファイルに同梱する。
 ネットワーク import、探索パス、暗黙 stdlib、外部 package lock はない。
 module は digest と alias を用いて同梱 module を参照する。共有 module をコピーして再利用し、
-変更は新 digest になる。実装時に展開済み L の内容を結果に保存する。
+変更は新 digest になる。展開済み L の内容を結果に保存する。
 
 結果・中間行列・候補証明・cover は ArchMap の形式へ読み込まない。
 候補設計は原始語彙の snapshot として追加できる。候補対応の表は、実装に記述された対応、

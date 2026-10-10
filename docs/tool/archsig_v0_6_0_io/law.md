@@ -2,8 +2,8 @@
 
 ## 1. Document と module
 
-唯一の具体構文は JSON の宣言と prefix array 式である。別のテキスト DSL、例ごとの
-専用 YAML、外部スクリプトを併設しない。位置はファイル名と JSON Pointer で指定する。
+Law は JSON の宣言と prefix array 式で記述する。使用できる宣言と式は以下の文法に限る。
+位置はファイル名と JSON Pointer で指定する。
 
 ```text
 Law = {format:"archsig.law/1", semantics:"archsig/0.6.0",
@@ -180,6 +180,7 @@ Q/Z/Fp の全代入に関する式は Term / AffineMap / EquationFamily の記�
 量化変数、解として求める未知数、未観測 Hole は別の名前空間である。
 Hole は solve の自由変数に取り込まない。補完を選んで成功することと、現在の入力からの
 確定を分ける。出力には依存 Hole と、どの命題/構成がそれを必要としたかを残す。
+可解性が全補完で一定であることと、返す具体的な補正値が全補完で妥当であることは、別に検査する。
 
 必須の最小評価規則は次の通り。
 
@@ -222,8 +223,8 @@ data で `Var/Lit/Add` 等の有限構文木を宣言し、predicate に source 
 この経路には compiler 専用の入力書式・外部評価 callback を追加しない。
 
 L01–L13 は [自己 Law](../archsig_atom_law_engine/engine_laws.md) が定める製品要求。
-各有限 instance の検査は通常の query、全入力に関する評価器の健全性は
-[数学への接続](math_obligations.md)で扱う。自己評価した成功ラベルを
+各有限 instance の検査は通常の query として表す。有限 instance の成立と、
+全入力に関する評価器の健全性の証明は区別する。自己評価した成功ラベルを
 ArchMap に戻して核の正しさを仮定する経路を設けない。
 
 ## 9. 構成した対象の identity

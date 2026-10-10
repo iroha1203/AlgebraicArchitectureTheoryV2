@@ -201,7 +201,7 @@ Contextはfamily自体を参照せず、baseとsupportの情報を保持する�
 
 ## 5. 証拠と反例
 
-証拠もNode。下記の予約型 `Evidence` を結果専用に追加する。
+証拠は結果専用の予約型 `Evidence` のNodeとして表す。
 LawはEvidenceの値・literalを構成できない。
 `value={kind:EvidenceKind,data:EvidenceData}`。
 
@@ -271,7 +271,7 @@ canonical JSONは、object keyをUnicode scalar順、空白なし、非ASCIIをU
 
 `--reuse` は以前の出力directoryを一つだけ受け取る。現在のA/Lを必須とする。
 旧resultのformat/semantics/型/導出DAGを検査し、現在の原始根とLaw式へ照合して各推論を再検査する。
-一致するdigestは索引の候補選択にだけ使う。再検査を実装しない初期処理系は全て再計算してよい。
+一致するdigestは索引の候補選択にだけ使う。再検査を実装しない処理系は全て再計算してよい。
 不正な再利用候補はreuse.rejectedへ記録し、通常評価を続ける。
 
 現在の入力で導出できない結論が旧resultから増えることはない。

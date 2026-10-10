@@ -84,11 +84,9 @@ G-135 の研究結果を基礎エンジンの依存にはしない。
 incidence の重複を失わない表現と係数写像を用意し、順像・fiber・完全列を後で構成できる
 接続点を確保する。順像係数や期待 rank を入力で補う方法は採らない。
 
-## 3. I/O の決定先
+## 3. I/O 仕様
 
-具体構文、語彙module、Context・coverage、演算領域、記号的core、候補、追加観測、
-自己Law、再利用、外部artifactは [v0.6.0 I/O仕様](../archsig_v0_6_0_io/README.md)で決定した。
-各選択と代替案は [I/Oの決定理由](../archsig_v0_6_0_io/decisions.md)を参照する。
+入力形式、DSL、計算、CLI、結果は [v0.6.0 I/O仕様](../archsig_v0_6_0_io/README.md)に従う。
 
 ## 4. 設計を具体化するための確認例
 
