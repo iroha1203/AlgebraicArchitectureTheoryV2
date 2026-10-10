@@ -105,15 +105,14 @@ relation query の真偽は `a∈F and b∈F and R(a,b)`、identification も同
 F 外の R/E はこの reading の照合に用いない。順序は AtomUniverse の順に固定する。
 各 Law 出現の scalar realization の成分について、原式、guard、operand の読取りから、
 pattern に一致する構成が当該 residual の零性を反証することを検査する。
-pattern で固定された原始値を原式へ代入し、当該成分の ε が非零であることを表す
-型付きの when 式を生成する。parameter ごとに when=true となる
+pattern で固定された原始値を原式へ代入し、適用条件の成立と当該成分の ε 非零性の
+連言を表す when 式を生成する。parameter ごとに when=true となる
 case の exact match の有限選言を detector とし、該当 case がなければ拒否 detector とする。
 scalar parameter がなければ when は確定した Bool 値である。
 pattern の一致と when から当該成分の反証への含意を原式について全称検査する。
 等号全体の反証だけを理由に、零である成分の detector を受理させない。
 未観測や非対応の評価を反証 case にしない。pattern、when、component、元の反証評価を保持し、
-最小 circuit や、
-選択した有限対象族の外で全ての反証を検出する完全性を主張しない。
+最小 circuit や選択した有限対象族の外で全ての反証を検出する完全性を主張しない。
 
 AAT の任意 ArchitectureObject 上での読取りには、この query pattern による固定延長を使う。
 選択 Obj と同じ pattern を持つ対象では、その Obj の適用条件、view 値、Law と residual の読みを
