@@ -16,9 +16,15 @@ Nは`[1-9][0-9]*`の整数。省略した予算に論理的上限を設けない
 短縮flag、stdin、暗黙のファイル探索、環境変数による意味の変更を設けない。
 
 `check`はLawの構文・版・参照・型・再帰と、指定されたArchMapの語彙・値・参照を検査する。
-Lawの宣言一覧と原始語彙manifestを返す。問いの計算は始めない。欠測fieldは有効入力である。
+Lawの宣言一覧、原始語彙manifest、元の宣言に対応する名前・型・既定規則の解決結果を返す。
+省略したguard、同名fieldの対応、local宣言の有無による構成方式を、
+[型付き結果](results.md)の規則名と元のLocationから確認できる。
+問いの計算は始めず、実際の対象・context・cover・候補域は生成しない。欠測fieldは有効入力である。
 `run`は同じ検査の後、問いの参照を解決し、依存順に必要な構成と計算を行う。
 選択の外側を含む入力全体を静的検査する。
+Law全体の静的検査が完了した場合だけ、宣言と語彙の全件を出力する。
+Lawの検査途中で不正・非対応・中断となった場合は、部分的な宣言一覧を返さず、入力と理由を残す。
+Lawの検査完了後にArchMapの検査が失敗しても、確認済みの宣言と語彙は保持する。
 
 ## 2. 問いの構文と参照
 
@@ -46,6 +52,10 @@ EnumとDegreeは次節で指定した位置だけに置ける。DegreeはJSONの
 0始まりの成分を指す。Set、Map、意味上の集合表はindexで選べない。
 原始dataはLawで宣言したconstructorの引数を`[index]`で選ぶ。別constructorの位置を選べない。
 生のnode ID、過去の出力path、JSON PointerをHandleとして受け付けない。
+結果専用recordの内部欄を選ぶ射影は、[結果の表示依存](results.md#2-回答条件導出)として記録する。
+`$id.field`で出力全体を渡すこと、Lawの結果型Tの構造射影、同表の固定された意味の欄の射影は、
+表示依存を新たに作らず、既存の依存を引き継ぐ。表示依存のある値も後続の問いへ渡せる。
+一度選んだrecordを同じrunの下流だけ別の表示へ差し替えず、その型・owner・射影値を保つ。
 
 `needed`だけは`$id`を受け取り、その問い全体の未決理由を読む。
 その他の問いでは出力fieldまで指定する。後方参照を許し、依存循環は`cycle`。
@@ -69,6 +79,10 @@ Handleの型を宣言のparameter型へ照合し、依存型のownerも検査す
 原始値、式、対応表、cover、係数環、候補域、仮定をCLIから追加しない。
 問いを変えるためにLawへ解析手順を追加する必要はない。
 選択した問いと解決済みの束縛を結果に保存する。計算の意味は現在のArchMapとLawから決まる。
+結果では明示した選択と省略時の選択を区別する。mapのkind、diagnoseのdegree/sideの既定値も
+解決して保持し、環境・Law族・変更の省略規則は結果の固定規則名で示す。
+未束縛parameterは宣言型の全域で量化するという意味を保持し、計画によって値を選んで埋めない。
+実際のLaw instance族、候補域、自由位置と固定位置は、それぞれの生成結果へ記録する。
 
 ## 3. 固定の12の問い
 
@@ -89,7 +103,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `localize(Handle,law=QName?,using=QName?,B)` | Architectureを局所化する。lawは選択Law、usingはchange。`system:LocalSystem`、`proposition:Proposition` |
 | `diagnose(Handle,degree=Degree?,side=equation\|semantic?)` | LocalSystemのdegree（既定1）、side（既定equation）を診断する。`diagnostic:Diagnostic`。計算できた場合`space:Cohomology`、`class:Class`、`proposition:Proposition`をそれぞれ保持する |
 | `solve(Law,using=Change,on=Handle,B)` | 許された変更でLawを満たす全候補を求める。`domain:CandidateSpace`、`solutions:SolutionSet`、`proposition:Proposition` |
-| `repair(Law,using=Change,on=Handle,B)` | solveと同じ候補域で候補を選び元のLawへ再代入する。`domain:CandidateSpace`、`solutions:SolutionSet`、`proposition:Proposition`、成立時`repair:Repair`、`object:Architecture` |
+| `repair(Law,using=Change,on=Handle,B)` | solveと同じ候補域から標準選択の候補を構成し元のLawへ再代入する。`domain:CandidateSpace`、`solutions:SolutionSet`、構成条件の`proposition:Proposition`、成立時`repair:Repair`、`object:Architecture` |
 | `quotient(View,on=Handle,law=QName?,B)` | onはCandidateSpaceまたはSolutionSet。view評価が同じ候補を同一視する。`quotient:Quotient`。law指定時`proposition:Proposition` |
 | `needed($Id)` | 問いの依存先にある未観測位置と、それ以外の未決理由を返す。`plan:ObservationPlan` |
 
@@ -162,8 +176,10 @@ changeの第一parameterと型・ownerの合う全entityをon内で列挙し、�
 構成条件の不成立。未知の観測値は候補parameterへ変えない。
 domainは許された全候補、solutionsはLawを満たす部分集合である。
 探索を打ち切った部分列挙を全解集合・空集合・不存在証明として返さない。
-repairの候補選択は有限域ではcanonical順の先頭、アフィン域では計算した特解を用いる。
-選択は意味的一致の対象から除くが、元のLawと許された変更への再検査を必須とする。
+repairは[修復候補の標準選択](computations.md#修復候補の標準選択)によって候補を一つに定め、
+選択の最小性と、元のLaw・許された変更への再代入を検査する。
+存在を確認しても選択や再検査が未完了なら、存在命題は中間結果に残し、repairの構成条件は未決とする。
+この場合はrepair/objectを返さず、それらへ依存する問いに元の中断・未決理由を伝える。
 
 `quotient`の定義域はonで指した集合そのもの。CandidateSpaceとSolutionSetを取り違えない。
 Bはviewの全parameterを束縛し、各候補で更新された同じsubjectの値を読む。
@@ -213,6 +229,8 @@ NEW_DIRECTORY/
 
 読めなかった入力コピーは省略し、inputsにstate=unreadを残す。
 result.jsonは[型付き結果](results.md)に従う。人向け表示はconsumerがこの結果から生成する。
+宣言の解決説明と導出は、この結果を読むための出力であり、新しいLawや実行計画の入力形式にしない。
+元の宣言は同梱したLawのbyte列とLocationで保持し、説明用の展開によって語彙manifestを変更しない。
 stdoutは完了時に一行だけ出力する。
 
 ```text
@@ -262,6 +280,7 @@ receipt出力に伴うSIGPIPEもこのI/O失敗として捕捉し、確定済み
 
 時間はCLI開始から評価終了までの単調時計によるwall time、memoryはprocessのpeak RSS byte。
 time-msとmemory-mibは入力読込・検査・評価を含むsoft limitで、finalizeを含めない。
+計画の生成、再利用候補の検索と再検査もこの予算へ含める。
 式評価と有限反復一回の前後で検査する。一つの原始演算中とOSの計測間隔内の超過を許す。
 消尽確認後は新しい導出を始めず、検査済みの結果だけをfinalizeする。
 未着手の問いにも停止理由を付け、暫定値を確定値として出さない。
@@ -278,12 +297,27 @@ canonical JSONは[入力仕様](inputs.md#4-語彙-binding)に従う。
 bytes_digestは読んだbyte列、model_digest(A)は集合表を正規化したArchMapのcanonical JSONのSHA-256。
 model_digest(L)は[Lawの字句列正規化](law.md#1-ファイル名前再利用)に従う。
 語彙digestとLaw全体のdigestを取り違えない。
+同じ意味へ解決される表記でもmodel_digest(L)は異なり得る。digestを意味同値の判定に用いない。
+計画、予算、内部表現をこれらの入力digestへ含めない。
 
 `--reuse`は以前の出力directory一つを受け取り、現在のA/Lを常に必要とする。
 候補の版・型・DAGを検査し、現在の原始根・Law式・問いの束縛へ照合して各推論を再検査する。
 digest一致は候補の検索だけに用い、成立証拠の代わりにしない。
 再検査を実装しない場合は全て再計算してよい。不正候補はreuse.rejectedへ記録し通常評価を続ける。
+以前と同じ計算計画を使うことは要求せず、現在の式・原始根・束縛・条件に対する導出を検査する。
+共通の計算結果を再利用・共有しても、Lawの各出現と現在のAtomの支持・由来を保持する。
+Repairを再利用する場合も、現在の候補域・束縛・基準Architectureのoverridesを照合し、
+標準選択の最小性と再代入を再検査する。
+表示依存のある導出では、元recordの抽象的な同値だけで再利用を確定しない。
+現在のrecordに対する射影値、その型・owner、記録した依存の対応を照合し、後続の推論を再検査する。
 現在の入力から導けない結論を旧結果から増やさない。変わったsourceへ古い由来を貼り直さない。
-同じ完全入力・解決済みの問いの数学的な値と条件は決定的とする。
-時間・メモリ・node番号・表示基底・証人選択は意味的一致の対象から除く。
-予算の増加は検査済みの主張の真偽を反転させず、未決の範囲と理由だけを更新する。
+表示依存のない問いの数学的な値と条件は、同じ完全入力・解決済みの問いに対して計画によらず決定的とする。
+表示依存のある問いは、記録した表示とそれを読む束縛の下で正確な値・条件を返す。
+その依存は後続のcheck、repair、生成したobjectにも引き継ぎ、異なる表示を読む実行との値の一致は要求しない。
+時間・メモリ・node番号・表示基底・同じ命題の証明証人の選択は意味的一致の対象から除く。
+後続の問いが読むRepairの元parameter値とobjectは、同じ表示依存と束縛の下で標準選択により固定する。
+表示依存がなければ入力と問いだけで同じ修復を定める。
+同じ表示と束縛を保った予算の増加は検査済みの主張の真偽を反転させず、未決の範囲と理由だけを更新する。
+
+内部計画の自由とその検査は[意味を保つ計算計画](computations.md#10-意味を保つ計算計画)に従う。
+同じ予算でどこまで完了するかは計画や再利用の有無で変わり得るが、確定した値と条件をそのscopeの下で保つ。

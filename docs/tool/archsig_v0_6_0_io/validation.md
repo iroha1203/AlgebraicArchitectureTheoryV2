@@ -46,6 +46,55 @@ f の `conserved` も成立する。二つの操作の保存と、m による数
 この補完対は追加観測が必要な理由であり、観測した対象の反例としては出力しない。
 反証版から `r-free` だけを除いた場合は、qの既知反例が残るので反証を保持する。
 
+### 宣言の記述と意味の確認
+
+Reservations の `conserved` は、次の短い条件宣言である。
+
+```text
+law required conserved(e: Reserve):
+  e.to.free + e.to.held = e.from.free + e.from.held;
+```
+
+同じ reading 内のこの宣言を次へ置き換えると、型の完全名と標準の guard を明示できる。
+
+```text
+law required conserved(e: Reservations.Reserve) when true:
+  e.to.free + e.to.held = e.from.free + e.from.held;
+```
+
+二つの記述は、同じ宣言名・role・parameter と、body の各出現を対応させられる。
+短名を同じ完全名へ解決し、省略 guard を `true` と読むため、同じ ArchMap と問いに対して
+適用範囲、型付きの両辺の評価、成立・反証・未決は一致する。欠測に対する意味も同じである。
+body の inline や出現の統合は行わず、parameter `e` とその CLI 束縛を保つ。
+原始宣言は同じなので語彙 manifest と binding digest も一致する。
+元の byte 列、source span、Law の token 列による model_digest は別であり、
+出力 node ID の一致を要求しない。各結果はそれぞれの入力位置へ戻れることを要求する。
+
+```sh
+archsig check --law examples/reservations.law --out result-reservations-check
+```
+
+この `check` では、[宣言の解決と標準の意味](law.md#宣言の解決と標準の意味)に従って、
+完全名、明記した型・role、guard の扱いと、宣言した local を使う選択を確認できる。
+出力は[型付き結果](results.md)に従う。原始値を評価した残差や局所状態は `run` の結果で確認する。
+元の短い宣言に対する `declarations` の確認箇所は次のとおり。
+
+| 項目 | 要求する解決結果 |
+| --- | --- |
+| conserved の parameter / role | `{"name":"e","type":["Ref","Reservations.Reserve"]}` / `required` |
+| conserved の resolution | `Reserve` の元位置と完全名、body の元位置と Bool 型、`guard_true` と元宣言の位置 |
+| Reservations の supplied | `local_declared`。Stock・Held・Transfer の実 context はこの段階で生成しない |
+| 明示形の conserved | guard は型付きの明記式 `true`。`guard_true` を重ねて補わない |
+
+Law を上の明示形へ置き換えた場合も、§1 の同じ ArchMap・問いと変種表で評価・適用の一致を確かめる。
+さらに `operation=check(Reservations.conserved,e=@v/e)` に次の原始値の変種を用い、
+記述の明示化が反証や欠測の扱いも変えないことを確認する。他の原始値と参照は固定する。
+
+| 変種 | 両方の Law 記述に要求する結果 |
+| --- | --- |
+| `q-free` の値を `"2"` へ変更 | 左辺3、右辺2、残差1を伴う反証 |
+| 基本例から `q-free` Atom だけを除く | 未決。missing は `(v,q,Reservations.State.free)` |
+
 ## 2. 局所読取りと許す修復
 
 Reservations の Stock と Held は同じ状態参照を共有し、それぞれ一つの値を読む。
@@ -65,6 +114,54 @@ Transfer は操作の二端点の数量対を読む。核は宣言から読取�
 StockとHeldの個別の変更が求まっても、一つのrebalanceから来るためには
 `Δfree+Δheld=0` が必要である。局所状態の貼り合わせと許す作用の条件は、
 [核の構成](computations.md)に従って別々に確認する。
+
+### 複数の修復候補からの標準選択
+
+次の Law 片に対し、snapshot `pair` の唯一の subject `s: Pair.State` に
+原始値 `x=0, y=0` を与える。State はこの例の root である。
+
+```text
+reading Pair {
+  entity State { x: Z; y: Z; }
+  law required total(s: State): s.x + s.y = 1;
+  change setpair(s: State, a: Z, b: Z) = s with { x = a, y = b };
+  view first(s: State): Z = s.x;
+  view echo(v: Z): Z = v;
+}
+```
+
+この二入力に次の問いを指定する。
+
+```text
+r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)
+x=evaluate(Pair.first,on=$r.object,s=@pair/s)
+```
+
+解の parameter は全整数対 `(a,b)` のうち `a+b=1` を満たすもの。
+[標準の候補選択](execution.md#3-固定の12の問い)に用いる key は、この一 subject では
+元の change の値 parameter を宣言順 `(a,b)` で原始 Z encoding へ戻した二重 array の canonical JSON となる。
+最小の UTF-8 byte 長を持つ解の key は `[["0","1"]]` と `[["1","0"]]` であり、
+同じ長さでは byte 辞書順で先の `[["0","1"]]` を選ぶ。
+したがって `r` は `x=0,y=1` の候補を元の Law へ再代入して確認し、後続の `x` は整数0を返す。
+`r` の claim は、この選択と再検査を含む修復の構成条件である。
+算法が `(1,0)` を先に発見しても、あるいは異なる基底・Smith normal form の特解を得ても、
+選ぶ候補と後続の評価は変わらない。前述の `rebalance` の `d=-1` は解が一意なので同じ選択となる。
+
+最小 key の選択または再検査の途中で予算が尽きた場合は、確認済みの解存在 Proposition を保持し、
+`Repair` と `object` を返さず、`r` は undetermined、run は interrupted とする。
+
+同じ二入力の `solve` 結果から、表示用の特解を直接読むこともできる。
+
+```text
+s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)
+v=evaluate(Pair.echo,v=$s.solutions.representation.particular.coordinates[0])
+```
+
+元の `(a,b)` 座標で `(0,1)` と `(1,0)` のどちらを特解に用いても同じ解集合を表す。
+この `v` は指定した表示の第1座標を読むため、その表示ではそれぞれ0と1を返す。
+`v` とそれに依存する後続結果は、選択した表示への依存を Scope に保持する。
+この射影を行わず SolutionSet 自体を商の問いへ渡す場合は、特解の座標を意味入力へ取り出さない。
+表示に沿って計算した値を、標準選択済みの `$r.object` の値と取り違えない。
 
 ## 3. 三辺の修復と局所・大域
 
@@ -110,6 +207,11 @@ Edgeの読取りから生成した局所解の差と制限を用い、整数係�
 有限木dataで定義する。`translate`、`evalSource`、`evalIR` はそれぞれ構造再帰のviewであり、
 各constructorで行う計算をすべて宣言している。
 [ArchMap](examples/engine.archmap.json) は原始source treeと候補演算のenumだけを持つ。
+
+この三つの view は data と整数の parameter を取る helper であり、呼出し先の式として使う。
+簡単な条件を直接書く Reservations と同じ言語で、ここでは変換と参照評価の意味を詳細に定義する。
+有限木の評価、全整数代入の比較、反例の生成は核が行う。
+作者が宣言する再帰式と、核が選ぶ計算手順を区別する。
 
 sourceは `x+(1+2)`。二つのCompiler subjectは同じsourceを持ち、operatorだけが異なる。
 生成IRはそれぞれ `Plus(Load,Plus(Const(1),Const(2)))` と

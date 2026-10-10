@@ -5,6 +5,13 @@ Law ファイルは、観測する語彙と読みを `reading` にまとめる�
 問いは [CLI](execution.md) で選ぶ。宣言から対象・写像・方程式・局所状態を生成し、
 その意味・型・構造と数学の適用条件を検査する責務は ArchSig にある。
 
+作者は語彙、値の読み方、要求、公開する局所情報、許す変更を宣言する。
+短い条件も構造再帰を使う意味定義も、この同じ言語の型付き宣言として扱う。
+核は宣言と ArchMap から cover、行列、複体などの標準の構成を生成する。
+エンジンは問いに必要な依存関係と算法から実行計画を作り、solver の適用と実行順を決める。
+構成の意味は [核の構成](computations.md)、実行計画と結果の確認は
+[実行仕様](execution.md)と[型付き結果](results.md)に従う。
+
 ## 1. ファイル、名前、再利用
 
 ```text
@@ -54,6 +61,25 @@ keyword も name、string は escape を解いた値、integer は元の10進文
 `{semantics:"archsig/0.6.0",tokens:[...]}` の canonical JSON の SHA-256 を model_digest(L) とする。
 canonical JSON は入力仕様 §4 に従う。alias・束縛名・宣言順の書換えは行わない。
 
+### 宣言の解決と標準の意味
+
+`check` は、元の宣言の位置を保持して名前・型・束縛を解決する。
+parameter と field の型、view の戻り型、law の role は作者が明記する。
+これらや局所の読取り権限を、観測値、宣言名の意味、選択した問いから推測しない。
+省略を許す位置には、次の標準の意味を適用する。
+
+| 記述 | 解決する意味 |
+| --- | --- |
+| 宣言の短名・alias | §1 の scope と名前解決に従う完全名 |
+| `when` の省略 | Bool の `true`。body とその出現は保つ |
+| reading に `local` 宣言がない | [支持による reading](computations.md#3-読取りの圏と-cover) |
+
+これらの規則と核の標準構成は、header の `semantics "archsig/0.6.0"` によって固定する。
+宣言の解決は、原始値や実行時の構成結果を補う処理とは区別する。
+`check` で確認できる解決結果と標準の選択は [型付き結果](results.md)に従い、
+実際の対象・局所構造・保存条件は ArchMap と問いを与えた `run` で構成する。
+簡潔な記述と標準を明示した記述の対応は [適合例](validation.md#宣言の記述と意味の確認)で示す。
+
 ## 2. 宣言の文法
 
 以下の EBNF で `[]` は省略、`{}` は反復、引用符は literal token。
@@ -101,6 +127,10 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
   align は field の意味の対応であり、値が一致するという判定を入力しない。
 - `view` は型付きの純粋な読取り。整数・積・有限和・集合・有限木・項等を返せる。
   戻り値を Bool や残差に限定しない。
+  対象へ適用される view は [object algebra の規則](computations.md#1-対象作用law-instance)で
+  signature の軸となるため、その追加は読みの追加となり得る。
+  helper への分割や `let` の展開は、原式の出現や宣言の対応を変え得る。
+  値の一致だけから signature や診断全体の保存を結論しない。
 - `law` の guard と body は Bool。guard=true の instance に body を要求する。
   guard=false は `not_applicable` として instance を残す。guard 不明を除外しない。
   `required` を対象の Lawful 判定へ用い、`optional` も個別に検査できる。

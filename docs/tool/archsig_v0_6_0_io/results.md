@@ -23,13 +23,22 @@ InputIdentity = {kind:"archmap"|"law",state:"read"|"unread",
                  bytes_digest?:Digest,model_digest?:Digest,path?:String}
 DeclarationInfo = {name:QName,kind:DeclarationKind,parameters:Parameter[],
                    fields:Parameter[],returns?:Type,role?:Role,
-                   location:Location,dependencies:QName[]}
+                   location:Location,dependencies:QName[],
+                   resolution:{references:{location:Location,name:QName}[],
+                     expressions:{kind:"guard"|"body"|"read"|"relation_left"|"relation_right",
+                                  location:Location,type:Type}[],supplied:DeclarationRule[]}}
+DeclarationRule = {rule:"guard_true",location:Location}
+                | {rule:"same_name_alignment",location:Location,pairs:[QName,QName][]}
+                | {rule:"local_declared"|"local_support",location:Location}
 DeclarationKind = "reading"|"entity"|"arrow"|"correspondence"|"data"|
                   "view"|"law"|"local"|"change"|"relation"
 Parameter = {name:String,type:Type}
 Role = "required"|"optional"|"derived"
 Request = {id:String,text:String,kind:QuestionKind,head:Selector,
-           arguments:{name:String,value:Selector}[],dependencies:String[]}
+           arguments:{name:String,value:Selector,origin:"explicit"|"defaulted"}[],
+           defaults:RequestDefault[],dependencies:String[]}
+RequestDefault = {rule:"observed_environment"|"required_laws"|"identity_change"|"no_law_check"}
+               | {rule:"universal_parameters",declaration:QName,parameters:String[]}
 Selector = {kind:"declaration",name:QName}
          | {kind:"subject",snapshot:Id,subject:Id}
          | {kind:"answer",id:String,path:(String|Nat)[]}
@@ -47,7 +56,8 @@ Rule = {kind:"subject"|"atom"|"law",location:Location}
 Partial = {entries:{path:(String|Nat)[],value?:Ref,reasons:Issue[]}[]}
 Scope = {readings:QName[],snapshots:Id[],modes:("observed"|"proposed"|"specification")[],
          domain:"finite_model"|"all_assignments"|"candidate_space"|"all_completions",
-         quantifiers:Quantifier[],assumptions:Ref[]}
+         quantifiers:Quantifier[],assumptions:Ref[],
+         representation_dependencies:{source:Ref,path:(String|Nat)[]}[]}
 Quantifier = {kind:"forall"|"exists",name:String,type:Type,domain?:Ref}
 FactPointer = {snapshot:Id,subject:Id,field?:QName,atom?:Id}
 Location = {input:"law"|"archmap",pointer?:String,span?:[Nat,Nat]}
@@ -58,17 +68,57 @@ Issue = {code:IssueCode,message:String,location?:Location,request?:String,
 Vocabularyは[入力の語彙manifest](inputs.md#4-語彙-binding)をそのまま使う。
 QuestionKindとFieldは[固定12問](execution.md#3-固定の12の問い)のkindと出力fieldに限定する。
 `outputs`は固定field名をkeyとするobjectであり、任意のkeyを追加しない。
-Request.argumentsは`bind.`へ展開した名前順。pathのStringはrecord欄、Natは位置を表す。
+Request.argumentsは`bind.`へ展開した名前順。短形で明記した束縛もorigin=explicitとする。
+mapのkind=configuration、diagnoseのdegree=1とside=equationは、省略時も引数へ入れ、
+origin=defaultedとする。明記した同じ値はexplicitとし、textには元の要求全体を保持する。
+pathのStringはrecord欄、Natは位置を表す。
 CLIのEnumは問いごとの列挙に限定し、一般のString値として評価しない。
+defaultsはCLIのSelectorで表さない省略の意味を、次の閉じた規則で保持する。
+
+| rule | 記録する場合と意味 |
+| --- | --- |
+| observed_environment | evaluate/checkでonを省略。現在の原始観測環境を読む |
+| required_laws | localizeでlawを省略。同じreadingの全required Lawを全parameterの適用域で読む |
+| identity_change | localizeでusingを省略。Unit parameterと現在値だけの候補を使う |
+| no_law_check | quotientでlawを省略。viewによる商を作り、Law評価の十分性は問わない |
+| universal_parameters | check/solve/repair、law指定のlocalize/quotientでLaw parameterを未束縛にした。declarationはそのLawの完全名、parametersは未束縛parameter名を宣言順に並べ、その型・依存族で全称化する |
+
+同じruleを重複させず、universal_parametersはparametersが非空のときだけ記録する。
+defaultsはruleの辞書順。required_lawsの実際のLaw instanceと量化域は生成したLocalSystem/Scopeへ残す。
+これらの既定は要求idとtextに結び付き、CLIへ新しい値や引数名を追加する規則ではない。
 declarationsとvocabulariesは完全名順。parametersとfieldsは宣言順を保持する。
 宣言metadataのTypeは下記のLawの結果型Tに限る。依存参照Ownedは宣言metadataだけで保持する。
 dataのconstructorは完全名のDeclarationInfo（kind=data、parametersに引数型）にも列挙する。
 名前のないconstructor引数名は`arg0`からの位置名とする。
-check成功時はrequests/answers/nodesが空。checkでAを省略した場合、inputsにAの欄を作らない。
+Law全体の静的検査が完了した場合だけdeclarations/vocabulariesを全件返す。
+Lawの不正・非対応・検査中断時は両表を空にし、検査前の部分宣言を混ぜない。
+Lawの検査完了後のArchMapの不正・非対応・中断では、両表を保持する。
+checkでは成功・失敗ともrequests/answers/nodesが空。checkでAを省略した場合、inputsにAの欄を作らない。
 inputs.pathは出力directoryからの固定相対pathで、読めた入力だけに付ける。
+
+resolution.referencesは、宣言の署名・式・alignで使った型、宣言、field、constructorの名前を、
+元の出現位置と解決先の完全名で保持する。readingの項目ではuseの参照先を保持し、内側の宣言は
+各DeclarationInfoで扱う。束縛変数・組込み型・固定演算はこの名前対応へ加えない。
+短名やaliasによる参照は元の名前の出現全体、field射影はfield名のtokenをlocationとする。
+expressionsは明記されたguard、view/law/changeのbody、localの各read、relationの左右を、
+元の位置と解決した型で保持する。元の式をinputs/law.lawから読み、宣言署名と名前対応で解釈できる。
+再帰viewの有限展開や一般の式のinlineを要求せず、同じ値になる出現も残す。
+references/expressionsはspan開始順、suppliedはrule順に並べる。必要な項目がない配列は空とする。
+
+DeclarationRuleはsemanticsに属する閉じた規則である。guard_trueはlaw/local/change/relationの
+guard省略時にだけ生成し、trueを補う。same_name_alignmentはcorrespondenceに対して、
+同じ型間の同名field対応をpairsへ完全名のsource,target順で並べる。明記したalignは含めない。
+local_declared/local_supportはreadingごとにどちらか一つを持ち、local宣言があれば前者、
+なければ後者とする。意味は[読取りの圏とcover](computations.md#3-読取りの圏と-cover)に従う。
+実際の対象に束縛したcontextやcoverを静的なresolutionへ追加しない。
+これらは解決結果の説明であり、Vocabularyの明記された宣言・alignmentsを変更しない。
+解決説明を別のLawへ書き出して再入力したときの同じbindingを保証する形式でもない。
 
 LawのLocationは元byte列の半開区間spanを必須とする。ArchMapはJSON Pointerを必須とし、
 構文エラーでPointerが決まらない場合だけpointer=""とspanを使う。
+DeclarationRule.locationは、その規則を適用した元の宣言全体のspanとする。
+省略されたguardや生成した対応に架空の入力位置を与えず、補完の出所を規則名で区別する。
+constructorのDeclarationInfo.locationは元のconstructor宣言部分、readingはそのreading全体を指す。
 FactPointerのfieldなしはsubject存在、fieldあり・atomなしは未観測slot。
 由来を表すsupportから、inputsのArchMapを通してorigin/sourceへ戻れる。
 
@@ -77,8 +127,12 @@ FactPointerのfieldなしはsubject存在、fieldあり・atomなしは未観測
 各選択問いにちょうど一件のAnswerを返す。値を返す問いは必要な出力が構成できればestablished。
 命題を問う問いはclaimをPropositionへ向け、そのjudgmentとAnswer.statusを一致させる。
 evaluateがBool=falseを返す場合も値の評価はestablishedである。
-build/map/compose/localizeのclaimは選択した構成条件、solve/repairは修復の存在、
+build/map/compose/localize/repairのclaimは選択した構成条件、solveは修復の存在、
 quotientのlaw指定時は評価族の保存、compareは選択した比較の成立を表す。
+repairの構成条件は、許された候補域内の[標準選択](computations.md#修復候補の標準選択)の完了と、
+選択候補の元Lawへの再検査を含む。全解集合の非空性は別のinhabited命題として保持する。
+修復の存在を確認できても標準選択が未完了なら、その存在命題を成立済みの中間nodeとして残し、
+repairのclaimは未決、Repair/objectは未生成とする。解集合が空なら構成条件を反証する。
 diagnoseのclaimはfiniteのdegree=1では大域解の存在、affineのdegree=1では対象障害類の零性とする。
 finiteのdegree=0はmatching familyと大域制限の全体を返す値の問いで、claimを持たない。
 affineのdegree≠1はspaceの計算を問いとし、class/claimを作らず、spaceが得られればestablished。
@@ -121,6 +175,9 @@ valueにはblocked nodeを含めない。ただし構成条件・式・未決理
 
 全Refを導出DAGの辺とし、nodesは既出nodeだけを参照する順に並べる。
 idは`n0`から連続する10進番号。同じ実行内で一意であり、番号に数学的意味を付けない。
+このDAGは結果を正当化する依存関係を示す。物理的な計算計画や実行traceを表すものではなく、
+node数・並び・共有から実行順やキャッシュ動作を推測する保証を置かない。
+Construction、条件、証拠から、生成した構造と適用条件・正確な計算を確認できるようにする。
 argumentsは構成の入力、conditionsは入力から構成を許すProposition、evidenceは結果専用の証拠。
 成立未確認の条件を必要とする値をstate=valueとして封じ込めない。
 全leafは現在のAの原始位置、Lの式、または本仕様の固定構成規則へ達する。
@@ -128,6 +185,43 @@ CLIのselectorはこれらを選ぶためだけに使い、新しい原始leaf�
 Scopeは実際の根・量化域・仮定を全件保持する。全補完を含む場合domain=all_completionsとし、
 候補parameter等の量化もquantifiersに残す。仮定の追加はLawの式から生成したPropositionだけとし、
 同じnodeのconditionsに検査結果を残す。
+
+representation_dependenciesは、CLIのHandleで結果専用recordの内部表示を選んだ依存を保持する。
+`$id.output`による出力全体の参照は依存を新設しない。Lawの結果型Tの原始値、List/Tuple、
+Option、data等の構造射影も依存を新設しない。Pathのrecord欄については次の表を適用する。
+結果専用recordの内部欄を選ぶ場合は、次の閉じた表の欄だけを、標準規則で固定された意味の欄とする。
+
+| record | 新たな表示依存を作らない欄 |
+| --- | --- |
+| Architecture | root |
+| Repair | parameters、object |
+| Operation | source、target、name、word |
+| Path | source、target、generators |
+
+これ以外の結果専用record欄の射影は、値が偶然同じでも保守的に表示依存とする。
+例えばRepair.parametersを選ぶだけなら依存を新設しないが、そのVector.coordinatesをさらに読むと
+その段階で依存する。新たな依存を作らない射影も、入力が既に持つ表示依存を消さない。
+核が抽象的な値を計算するために内部表示を使うこと自体は、CLIによる射影依存を作らない。
+
+各Handleについて、出力から最終値までの射影列が表示依存を新設する欄を一つでも通る場合、
+既出の型付き出力nodeをsourceとし、そこから選択したfield/indexの全列をpathとする依存を一件追加する。
+sourceは元のrecordを指し、出力field名そのものはpathへ含めない。
+途中の匿名recordは独立した型にせず、例えばSolutionSetをsourceとする
+`["representation","particular","coordinates",0]`のようにpath内へ保持する。
+Handleの射影列が非空なら、新しい表示依存の有無によらず、型付けできる最終値について
+新しいprojection nodeを作り、そのargumentsへ元の型付き出力nodeを残す。
+そのscopeには新たな依存があれば追加し、元recordおよび選択した値の既存の依存を保持する。
+bindingと後続の計算はこのprojection nodeを参照し、元recordや既存の子nodeのscopeを書き換えない。
+元の射影列はRequestのSelector.pathに保持し、核はその選択とprojection nodeの型・値を照合する。
+この導出はConstructionのprojectionであり、式のtuple成分を表すExpressionのprojectとは区別する。
+空の射影列では出力nodeをそのまま使い、依存を追加しない。
+
+全nodeは、実際に参照する入力・条件・証拠・値のnodeが持つ表示依存を合併して保持する。
+Answerも解決したHandleの束縛とoutputs/claim/evidence等からその依存を引き継ぐ。
+したがって射影値をLawへ束縛した後のcheckや、その値を用いたrepair/objectにも依存が残る。
+依存は同じsourceのnode IDと同じpathの組で重複を除き、sourceのnodes内の順、
+続いてpathのcanonical JSONのUTF-8 byte辞書順に並べる。依存がなければ空配列とする。
+sourceも導出DAGの既出nodeを指す辺であり、後から生成した親recordへの逆向きの辺を既存nodeへ追加しない。
 
 Constructionは次の閉じた列挙とする。各規則の意味は[核の構成](computations.md)に従う。
 `binding, projection, expression, evaluation, law_instance, configuration,
@@ -439,6 +533,14 @@ stabilizerはker A、effectiveは実状態像A(ker(LA))。quotientはker(LA)か�
 stage=allowedはLawを課す前の作用で、parameter_kernelを省略し、effectiveはim Aとする。
 存在・群作用・自由推移性の条件を別々に確認する。
 同じ値型を持つという理由だけで係数や群作用を生成しない。
+
+Repair.parametersは標準選択で決めた候補代入、stepsは元changeのparameterへ復元した代入を持つ。
+表示依存がなければ、選択した代入とobjectは表示基底や証拠の選び方によって変わらない。
+表示依存がある場合も、同じ表示と束縛の下で標準選択により固定し、objectのscopeへその依存を残す。
+核は再代入に加えて標準選択の最小性をrepair構成条件として検査する。
+より小さい候補の適格性が未決なら、それを飛ばして既知の候補を確定しない。
+選択未完了時は既知の全解表示や存在証拠を保持し、暫定候補をRepair/objectへ昇格しない。
+SolutionRepresentation.particularは解集合の表示用特解であり、Repair.parametersの標準選択とは区別する。
 
 QuotientRepresentationは`{kind:"finite",fibers:{image:Ref,preimage:Domain}[]}`または
 `{kind:"affine",image:Module,kernel:Module,map:ModuleMap,offset:Vector}`。
