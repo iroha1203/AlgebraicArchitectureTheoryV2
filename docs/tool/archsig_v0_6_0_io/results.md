@@ -495,6 +495,8 @@ completion_pairは未知slotの型を保つ補完対、separating_pairは宣言�
 | internal | `{operation:String}` |
 
 構成条件が未決なら、その条件のmissing/visibility/unsupported/dependency理由を伝播する。
+cycleがCLIの問いの依存による場合だけ、locationを省略し、循環に属する問いごとにrequestを必須とする。
+その依存辺はrequestsのdependenciesで表す。Law内の循環は従来どおりLawのlocationを持つ。
 数学の適用条件を作り検査する責務を外部の追加定理要求へ置き換えない。
 不正入力は意味計算前に拒否する。提示は正しいがLawが偽である場合は入力エラーにしない。
 型構成前でexpected/actualを表せない不正表記はsyntaxを使う。

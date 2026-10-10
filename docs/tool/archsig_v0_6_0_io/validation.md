@@ -145,6 +145,7 @@ archsig run --law examples/engine.law --archmap examples/engine.archmap.json \
 | Termを直接または複合型経由でSet要素型に置く | 型検査で拒否。項の有限族はListとして保持できる |
 | viewが`Option<Path<State,State>>`を返す | `some(path(e))`をOptionの型とPathへの参照で出力し、原始Atomへ混ぜない |
 | 修復結果を次のsolve/repairのonへ渡す | 前のArchitectureのoverridesを変更前状態として使い、原始観測と導出元を保持する |
+| `a=needed($b)`と`b=needed($a)`を同じrunへ指定する | exit64。各問いIDを指すcycleを返し、無関係なLaw/ArchMap位置へ帰属させない。依存グラフを保持し、意味計算は開始しない |
 | ObjectAlgebraの二対象が同じquery patternを持ち、適用条件や値が異なる | 固定全域延長の条件を反証し、condition_failedと構成済みの対象を保持する |
 | ZとFpの方程式を一つのreadingに置く | 型別の共有環を保持し、AAT接続用Observableはその有限積。係数を暗黙に変換しない |
 | 値を保って原始ID・入力順・source refを変える | 同型に沿う判断・対象・解集合。出力の由来は対応する参照へ変わる |

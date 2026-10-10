@@ -49,6 +49,9 @@ EnumとDegreeは次節で指定した位置だけに置ける。DegreeはJSONの
 
 `needed`だけは`$id`を受け取り、その問い全体の未決理由を読む。
 その他の問いでは出力fieldまで指定する。後方参照を許し、依存循環は`cycle`。
+問いの依存循環はCLI要求の不正としてexit64を返す。循環に属する各問いについて、
+Issue.requestにそのIDを入れ、Law/ArchMapのlocationを付けない。
+requestsには解決した依存グラフを保持し、意味計算前に停止してnodes/answersを空にする。
 同じ優先度の問いは`--ask`の順で評価する。出力answersは指定順にする。
 存在しない問いID・schemaにないfield・宣言、静的に判明する範囲外index、引数不足、
 静的な型不一致は`usage`。
@@ -232,7 +235,7 @@ RunStatusとexit codeは、下記のfinalize開始時の確定までに得た状
 | --- | --- | --- |
 | 捕捉したSIGINT / SIGTERM | interrupted | 130 / 143 |
 | io / internal | error | 74 / 70 |
-| usage | invalid | 64 |
+| usageまたは問いの依存循環 | invalid | 64 |
 | 不正入力 | invalid | 65 |
 | 未対応format/semantics | unsupported | 69 |
 | 予算消尽 | interrupted | 75 |
