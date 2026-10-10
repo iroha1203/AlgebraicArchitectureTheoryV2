@@ -98,6 +98,8 @@ DecimalPrime は正の10進整数文字列で、核が素数性を確認する�
 型は field 宣言から決まり、pair ごとの型 wrapper は置かない。
 空の Map もその定義域が空なら全域であり、domain/codomain の型を捨てない。
 全域性は型検査、端点・構造・Law の保存は候補に対する核の検査である。
+Set の要素型は Law の型規則に従い、Term を直接・間接に含まない。
+重複は型に沿う構造的等値で検査する。List 内の項の外延等値を入力検査へ移さない。
 
 Term body は閉じた純粋式で、自由変数は params のみ。field、観測族、Path、with、
 結果参照を含めない。呼出しは原始値の演算・data constructor のみで、reading の view を

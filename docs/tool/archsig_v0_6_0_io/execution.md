@@ -50,8 +50,12 @@ EnumとDegreeは次節で指定した位置だけに置ける。DegreeはJSONの
 `needed`だけは`$id`を受け取り、その問い全体の未決理由を読む。
 その他の問いでは出力fieldまで指定する。後方参照を許し、依存循環は`cycle`。
 同じ優先度の問いは`--ask`の順で評価する。出力answersは指定順にする。
-存在しない問いID・field・宣言、範囲外index、引数不足、静的な型不一致は`usage`。
-有効な参照の計算が未決なら`dependency_blocked`と元の理由を保持する。
+存在しない問いID・schemaにないfield・宣言、静的に判明する範囲外index、引数不足、
+静的な型不一致は`usage`。
+schema上は有効な任意fieldが反証・未決のため生成されない場合は`dependency_blocked`と
+元の理由を保持する。例えば反証されたmapの`$m.operation`を使う合成は、mapの反例を
+残したまま未決となる。値を計算して初めて分かるindex・constructor・Optionの不適合は
+projectionの`condition_failed`と、それに依存する問いの`dependency_blocked`を返す。
 
 宣言のparameterを束縛する引数は`bind.parameter=Handle`。
 固定引数名と衝突しないparameterは`parameter=Handle`と略記できる。
@@ -67,16 +71,17 @@ Handleの型を宣言のparameter型へ照合し、依存型のownerも検査す
 
 表の`B`は宣言parameterへの上記束縛の有限族。`?`は省略可能であり実際の構文には書かない。
 出力fieldの型・内容は[型付き結果](results.md)に従う。
-build/solve/repairの`on=@root`はownerを持たないentityの原始参照を要求する。
-同じrootの型を持つ結果Handleも受け付ける。
+buildの`on=@root`はownerを持たないentityの原始参照を要求する。
+同じrootの型を持つ結果Handleも受け付ける。solve/repairはそのroot参照に加えてArchitectureも受け付け、
+そのrootとoverridesを次の候補計算の基準とする。
 
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
-| `build(Reading,on=Handle)` | rootとreadingから対象を生成する。`object:Architecture` |
-| `evaluate(View,on=Handle?,B)` | viewの全parameterを束縛して評価する。onは結果のArchitectureを読む環境。`value:P`、`evaluation:Evaluation`。Pはviewの返り型 |
+| `build(Reading,on=Handle)` | rootとreadingから対象と有限表示のobject algebraを生成する。`proposition:Proposition`、構成できた`object:Architecture`、成立時`algebra:ObjectAlgebra` |
+| `evaluate(View,on=Handle?,B)` | viewの全parameterを束縛して評価する。onは結果のArchitectureを読む環境。`value:T`、`evaluation:Evaluation`。TはPathやそのcontainerを含むLawの返り型 |
 | `check(Law,on=Handle?,B)` | Lawの選択instance族について、未束縛parameterと内部量化を保って成立を問う。onは結果のArchitectureを読む環境。`proposition:Proposition`、`evaluation:Evaluation` |
-| `map(Correspondence,on=Handle,kind=configuration\|object_algebra?)` | onはこのcorrespondenceの原始instance。kindの既定はconfiguration。`candidate:MapCandidate`、`operation:Operation`、`proposition:Proposition`、成立時`map:ConfigurationMap\|ObjectAlgebraMap` |
-| `compose(Handle,then=Handle)` | 二つのOperationまたは二つのPathを指定順に合成する。`operation:Operation\|Path`、`proposition:Proposition`、Operationの構造保存の確認時`map:ConfigurationMap` |
+| `map(Correspondence,on=Handle,kind=configuration\|object_algebra?)` | onはこのcorrespondenceの原始instance。kindの既定はconfiguration。`candidate:MapCandidate`、`proposition:Proposition`、configuration保存確認時だけ`operation:Operation`、選択kindの成立時`map:ConfigurationMap\|ObjectAlgebraMap` |
+| `compose(Handle,then=Handle)` | 二つの成立済みOperationまたは二つのPathを指定順に合成する。`proposition:Proposition`、端点確認後`operation:Operation\|Path`、Operationの場合は`map:ConfigurationMap` |
 | `compare(Handle,to=Handle,kind=value\|word\|action\|relation\|diagnostics,along=Handle?)` | 下記の比較を行う。`comparison:Comparison`、`proposition:Proposition` |
 | `localize(Handle,law=QName?,using=QName?,B)` | Architectureを局所化する。lawは選択Law、usingはchange。`system:LocalSystem`、`proposition:Proposition` |
 | `diagnose(Handle,degree=Degree?,side=equation\|semantic?)` | LocalSystemのdegree（既定1）、side（既定equation）を診断する。`diagnostic:Diagnostic`。計算できた場合`space:Cohomology`、`class:Class`、`proposition:Proposition`をそれぞれ保持する |
@@ -97,10 +102,20 @@ checkに対象選択がない場合は現在のArchMap全体、localize/solve/re
 未観測fieldの補完をBで与えることはできない。
 `build/map/compose/compare/diagnose/needed`にはBを指定しない。
 
-`map`は候補の実作用と名前を保持し、family・関係・同一視の保存を検査する。
-object_algebraを選んだ場合はLaw・操作・不変量の対応と自然性も検査する。
+`build`はrootと各owned entityを対象族、保存確認済みの内部arrowを生成元とし、型の合う全有限語を
+操作とするObjectAlgebraを返す。Law・方程式・circuit・不変量・signatureは標準規則で生成する。
+claimはObjectAlgebraの構成条件を表す。algebraが未決・不成立でも、既に構成したobjectと
+各型付き中間結果を保持し、claimが未決ならundetermined、反証されたならrefutedを返す。
+`map`は全入力の存在事実と既知Atomからなる共通U上の総写像と名前を保持し、
+family・関係・同一視の保存を検査する。object_algebraを選んだ場合は実際の対象族の対応、
+Law・方程式・circuit・操作・不変量・signatureの対応と全域自然性も検査する。
+local/change/relationは宣言の核生成式の運搬を検査し、局所診断や候補探索の実行を追加しない。
+Operationは確認済みConfigurationMapを必須とする成立済み型であり、保存を反証した候補から生成しない。
+kind=object_algebraの追加条件が反証されても、configuration保存を確認済みならそのOperationを保持できる。
 端点の型不一致は入力/参照の提示違反、型の合う候補が保存条件を破ることは命題の反証である。
-`compose(f,then=g)`はg∘f。中間対象のidentityとreadingが一致することを検査する。
+`compose(f,then=g)`はg∘f。Operationの場合は確認済み写像を合成し、中間対象のidentityとreadingの
+一致を検査する。作用はU上の総写像の合成であり、合成後にfamily外の像を置き直さない。
+空語の作用はU全体の恒等とする。MapCandidateをOperationとして渡すことはできない。
 OperationとPathを混在させない。Pathは原始arrow/correspondenceの名前付き列を保持し、
 Architecture間の構造保存済みOperationへ自動で昇格しない。
 作用が同じでも生成元名・経路を消さない。
@@ -111,13 +126,13 @@ Architecture間の構造保存済みOperationへ自動で昇格しない。
 | --- | --- | --- |
 | value | 同じ原始型Pまたは同じModule上のVector | 値の等値。商では剰余類の等値 |
 | word | 二つのOperationまたは二つのPath | 恒等除去と結合の平坦化後の名前付き語の一致 |
-| action | 同じ始終域を持つ同型のOperationまたはPath | 実際の原始対応と値作用の等値 |
+| action | 同じ始終域を持つ同型のOperationまたはPath | OperationはU全域の総写像の等値、Pathは宣言から生成した同じ全域作用の等値 |
 | relation | 同じreadingの同じ始終域を持つ同型のOperationまたはPath | Lawのrelationが生成する同効果関係に属するか |
 | diagnostics | Diagnostic | alongの実Operationから生成した比較写像が同型かつ対象類を運ぶか |
 
 `along`はdiagnosticsの場合だけ必須。他のkindでは指定できない。
-diagnosticsは同じdegree・side・係数環を要求する。異なるdegree/sideはusage、
-readingに係数変更が宣言されていても実写像を構成する算法がなければunsupported_algorithm。
+diagnosticsは同じdegree・side・係数環を要求する。異なるdegree/side/係数環はusage。
+同じ型でも実写像を構成する算法がなければunsupported_algorithm。
 アフィンのdegree=1では診断群の同型性に加えて、双方の対象classの運搬を検査する。
 その必要なclassが未生成なら未決。degree≠1のアフィン診断は群の同型性だけを問う。
 有限診断はmatching familyと大域状態の実写像の全単射性と対応を検査する。
@@ -129,12 +144,15 @@ readingに係数変更が宣言されていても実写像を構成する算法�
 局所viewはreading内で束縛可能な全instanceを使う。usingの省略は変更を使わない状態の局所化。
 Lawの外側への参照は固定したまま保持する。局所可視性を増やすpatchを核が追加しない。
 方程式の全fiberと許された変更による状態を別の系として生成し、diagnoseのsideで選ぶ。
-usingなしの意味状態は現在値の単一候補。方程式側の解を許された修復へ自動で読み替えない。
+方程式側の自由位置はusingで選んだchangeの`with`が更新するfieldの全成分だけとし、
+それ以外の位置は観測環境に固定する。usingなしは自由位置が空の固定観測系で、意味状態も現在値の単一候補。
+固定位置が未観測なら同じ未知slotとして保持する。方程式側の解を許された修復へ自動で読み替えない。
 localizeは読取りの有限圏と、宣言したcoverから恒等・引戻し・合成で生成するtopologyの閉包を作る。
 選択cover上と生成topology全体のsheaf検査を別の命題として返し、未検査範囲を成立に含めない。
 予算内に閉包を生成できなければ部分の圏・coverを保持して未決を返す。
 
-`solve/repair`のonは変更するroot、BはLawの束縛と残る全称instance族を指定する。
+`solve/repair`のonは変更するrootまたは既に導出したArchitecture、BはLawの束縛と残る全称instance族を指定する。
+Architectureを指定した場合はそのoverrides適用後の値を変更前状態とし、以前の導出元も保持する。
 changeの第一parameterと型・ownerの合う全entityをon内で列挙し、残るparameterの型の積を
 各instanceの候補parameter域とする。残るparameterはLawのchange規則に従う参照を含まない値型である。
 候補は同時更新を行い、on外の値と全原始観測を固定する。同じslotへの異なる同時更新は
@@ -181,6 +199,7 @@ outは存在しないpath、親は既存directoryを要求する。
 renameで最終directoryを作る。競合してoutが作られた場合も上書きしない。
 捕捉した中断・不正入力・非対応版・反証も、出力を作れる場合は同じ形式で残す。
 書込み失敗時は元の出力先を変更せず、一時directoryのpathをstderrに示す。
+finalizeの状態確定と、その後の配送障害は次節に従う。
 
 ```text
 NEW_DIRECTORY/
@@ -207,7 +226,7 @@ stderrは進捗と障害の自然文だけとし、プログラムはreceiptま�
 
 ## 6. 状態・終了コード・予算
 
-RunStatusとexit codeは上から最初に当たる行で決まる。
+RunStatusとexit codeは、下記のfinalize開始時の確定までに得た状態に対し、上から最初に当たる行で決まる。
 
 | 条件 | status | exit |
 | --- | --- | --- |
@@ -222,10 +241,21 @@ RunStatusとexit codeは上から最初に当たる行で決まる。
 | 全問いが確定し反証なし、またはcheck成功 | complete | 0 |
 
 io/internal併発時はio、複数signalは最初に捕捉したsignalを使う。
+finalize開始時にSIGINT/SIGTERMをblockし、受信済み・pendingのsignalを一度だけ判断へ含めて
+status/exit_codeを確定する。両方がpendingで受信順を取得できない場合はSIGINTを先とする。
+以後は両signalをblockしたままresultを書き、公開し、receiptをwrite/flushしてプロセスを終了する。
+確定後の新しいsignalはこの機械状態に反映せず、result、receipt、正常なプロセス終了codeは同じ確定値を使う。
+公開前のwrite/flush/rename失敗だけは配送失敗への退避とし、最終resultを公開せず、
+作成可能ならresult欄のないerror/74 receiptを出して74で終了する。
+公開済みresultの後でreceiptのwrite/flushが失敗した場合は、確定済みresultと終了codeを変更せず、
+stderrへ可能な範囲で通知する。receiptを再出力せず、欠落または不完全なreceiptは配送未完了として扱う。
+receipt出力に伴うSIGPIPEもこのI/O失敗として捕捉し、確定済み終了codeをsignal既定動作で変更しない。
 全問いが算法非対応でもpartialである。確定反例は有効な結果であり、他の問いが未決でも保持する。
 不正入力・未対応版では数学計算を始めずnodes/answersを空にする。
 問いの選択を解決できた場合だけrequestsを埋める。
-捕捉できないSIGKILL・停電では、最終directoryやreceiptの欠落を未完了と読む。
+捕捉できないSIGKILL・停電で最終directoryが存在しなければ出力未確定とする。
+最終directoryと有効なresultが存在すれば計算結果は確定済みであり、receiptの欠落だけを配送未完了と読む。
+この場合はプロセスの正常終了を確認したことにはせず、確定済みのstatus/exit_codeを事後に変更しない。
 
 時間はCLI開始から評価終了までの単調時計によるwall time、memoryはprocessのpeak RSS byte。
 time-msとmemory-mibは入力読込・検査・評価を含むsoft limitで、finalizeを含めない。

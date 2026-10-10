@@ -6,19 +6,69 @@
 
 ## 1. 対象、作用、Law instance
 
-`build` は選択した root と、その owner による所属・参照から configuration を作る。
-family の各要素は原始 Atom へ戻れ、構造関係、同一視、型付きの値欄を区別する。
-同じ値を持つことを理由に、別の原始要素や名前付き arrow を同一視しない。
+`build` の configuration `(F,R,E)` は次の固定規則で作る。
+Fには選択root、そのrootをownerとするentity/arrowの存在事実、その全既知field Atomを入れる。
+さらにfield値を型に沿って走査し、参照先の存在事実を加える。外部参照先のfieldは取り込まない。
+Rは存在事実からそのfield Atomへの対と、field Atomから値に含まれる参照先存在事実への対。
+owner/from/toも同じ規則に従い、推移閉包を加えない。
+Eは原始identityの対角関係。同じ参照先は同じ存在事実を使い、別の原始位置を値の一致で同一視しない。
+List等の位置・順序・重複は原始値に保持する。未知owner/参照で所属が確定しない場合は、
+条件付きの構成と必要slotを残し、対象を確定値として構成しない。
+Configuration.requirementsはFのsubjectに宣言された全fieldのslotであり、既知・未知の両方を含む。
+
+共通の Atom carrier U は、全入力 snapshot の subject 存在事実と全既知 field Atom の有限族とする。
+同じ subject ID でも snapshot が異なれば別の元であり、構成のための新しい原始 Atom を加えない。
+写像の表、恒等、合成、作用の等値はこの同じ U 上で扱う。
 
 `map` は correspondence の各 Map を原始要素とフィールド位置へ延長する。
-全域性、型、参照、owner、arrow の端点、関係、同一視の保存を確認したものを
-configuration map とする。値・Law・操作・局所構造の保存は、それぞれ追加の検査である。
-object algebra の保存には、対応する全構造の写像と可換性を生成する。
+root は from→to、owned subject は対応表、field は同名規則または align で移す。
+対象外の外部参照は固定する。既知 field の像には実在する target field Atom を要求する。
+参照を含む値は、参照 leaf をこの subject 写像で移して target の参照構造と照合する。
+List の順序・重複、Tuple の位置、Option/data の参照に至る構造を保ち、量 leaf の一致は要求しない。
+source root の全 configuration の F 上をこの表で写し、F 外の U の元はすべて target root の
+存在 Atom へ送る。この全域表について family・関係・同一視を、対応表について型・参照・
+owner・arrow の端点を検査し、確認済みのものだけを configuration map とする。
+値・Law・操作・局所構造の保存は、それぞれ追加の検査である。
 
-`compose` は端点が一致する実写像を合成する。名前付きの操作列と作用を別に保持し、
-`relation` の同効果は、その両側の実作用の一致を確認してから使う。
-operation-closed core の射は恒等と型の合う有限操作語で表す。
-有限の語の集合を調べた結果は、その集合を量化域として保持する。
+object algebra の有限対象族 Obj は、この root の全 configuration を base とし、さらに
+各 owned entity p の部分 configuration を一つずつ持つ。部分 F は p の存在事実、p の全既知
+field Atom、その値が参照する subject の存在事実である。R/E は上と同じ規則で生成する。
+参照先の field は取り込まず、p の未観測 field は必要 slot として保持する。
+同じ configuration が生成されても対象の subject identity を潰さない。
+owned arrow は対象を増やさず、名前付き生成操作の候補となる。
+
+内部 arrow e の候補作用は、from の存在事実を to へ、from の field を to の同名 field へ写す。
+参照 leaf は from を指すものだけを to へ移し、それ以外は固定する。
+参照構造と target field の実在を検査し、source 部分 F 外では恒等として U 上へ全域化する。
+この総写像の configuration 保存を確認したものが、二つの部分対象間の生成操作である。
+未確認の arrow は候補のまま残す。候補を黙って除外して完成した object algebra とせず、
+必要な保存検査が未決なら構成も未決、反証されたならその構成を反証する。
+`change` は §4 の候補状態への作用であり、この内部 arrow の操作族へ加えない。
+
+Op(A,B) は A から B への型の合う生成操作の有限語である。空語は U 全体の真の恒等写像、
+非空語の実作用は生成操作の総写像の合成とする。`compose` も端点の一致する実写像を合成し、
+合成後に対応表から全域化し直さない。名前付きの語と実作用を別に保持する。
+自己対応表が source F 上で恒等でも、F 外を root へ送る correspondence は、空語の全域恒等と
+同作用とは限らない。`relation` は両辺の全域作用の一致を確認してから使い、
+その成立だけで自由語を同一視しない。有限の語を調べた結果は、その有限族を量化域に保持する。
+
+correspondence による object algebra の対象写像は base→base、p→対応表の像 μ(p) とする。
+各対象成分には、source root の全 F から作った同じ U 上の対応総写像を使う。
+生成操作 e の像は arrow の対応表で指定された生成操作であり、端点もこの対象写像で移す。
+各生成操作について二通りの合成を U の全元で比較し、configuration 写像の自然性を確認する。
+この対応を語へ順に延長することで、全有限語の操作写像と恒等・合成の保存を構成する。
+source F 外では対応写像の像が target root であり、target の内部操作はその root を固定する。
+source F 内の衝突や共有参照に起因する不一致は、この全域自然性の検査に残る。
+
+宣言の対応は、同名、同じ宣言 kind、移送後の型付き署名の一致によってだけ決める。
+entity/arrow は correspondence の型対応、field は同名規則または align、parameter は位置によって移し、
+束縛名の違いを除く。参照を含まない値型は同じ型を要求する。
+この規則を Law/view/local/change/relation に使い、別名や似た式から対応を推測しない。
+外部の helper 宣言は、その式が参照する対応先の宣言として保持する。
+対応名または署名が揃わなければ `condition_failed` とし、この固定規則で構成できないことを返す。
+一般の object algebra の射が存在しないという結論にはしない。
+対応が決まった後の保存違反は反証、必要な等値を決める算法がない場合は `unsupported_algorithm`
+であり、未観測値への依存とも区別する。
 
 Law は宣言名、role、束縛、原式、左右の項、型、出現 identity を持つ。
 未指定の entity binder は、選択した対象と固定された外部参照に適合する有限族へ展開する。
@@ -31,6 +81,85 @@ Law は宣言名、role、束縛、原式、左右の項、型、出現 identity
 一般の条件は条件種別と型付きの評価を保持する。
 `required` の全 instance が成立したことが、その族についての lawful 判定である。
 空の有限族では成立と評価件数 0 を返す。
+
+object algebra の Law/view の読取りは、その固定された Obj 上で次のように生成する。
+base の適用域は root とその owned entity/arrow、部分対象 p の適用域は p とする。
+参照先の存在事実を F に含めただけでは、その subject をこの適用域へ追加しない。
+この域の参照に適用された宣言の instance を取り、当該 root の対象を量化する binder は
+この域へ制限する。宣言が明示する外部参照は固定し、scalar parameter の全域は記号的に保持する。
+域内の instance は必要 field が未観測でも残す。域に適用されない instance と、
+存在する instance の評価が欠測に依存することを区別する。
+root/owned の参照へ適用されない helper は独立の観測軸に追加せず、呼出し先の式として保持する。
+
+各 view instance を関数不変量と signature の軸にする。全宣言 view の該当軸を selected とし、
+値型 T、参照束縛、残る scalar parameter、各対象での評価を保持する。
+軸が対象に適用されない場合を Option<T> の none、適用される場合を some(value) として区別し、
+未観測値を none で埋めない。残る parameter を持つ軸は、その全域にわたる添字族である。
+各 Law instance は role と適用条件を持つ述語不変量とし、適用されるときの原式成立を読む。
+数値的な equation reading は §2 の同じ原式・共有記号・評価から生成する。
+適用外の出現は要求違反を生まず、未評価の出現を成立済みの residual に置き換えない。
+
+有限 circuit の候補は、各対象の U 上の atom membership と、全順序対についての
+relation/identification query にその真偽を付けた完全な有限 pattern とする。
+relation query の真偽は `a∈F and b∈F and R(a,b)`、identification も同様に E を読む。
+F 外の R/E はこの reading の照合に用いない。順序は AtomUniverse の順に固定する。
+各 Law 出現の scalar realization の成分について、原式、guard、operand の読取りから、
+pattern に一致する構成が当該 residual の零性を反証することを検査する。
+pattern で固定された原始値を原式へ代入し、当該成分の ε が非零であることを表す
+型付きの when 式を生成する。parameter ごとに when=true となる
+case の exact match の有限選言を detector とし、該当 case がなければ拒否 detector とする。
+scalar parameter がなければ when は確定した Bool 値である。
+pattern の一致と when から当該成分の反証への含意を原式について全称検査する。
+等号全体の反証だけを理由に、零である成分の detector を受理させない。
+未観測や非対応の評価を反証 case にしない。pattern、when、component、元の反証評価を保持し、
+最小 circuit や、
+選択した有限対象族の外で全ての反証を検出する完全性を主張しない。
+
+AAT の任意 ArchitectureObject 上での読取りには、この query pattern による固定延長を使う。
+選択 Obj と同じ pattern を持つ対象では、その Obj の適用条件、view 値、Law と residual の読みを
+使う。複数の Obj が同じ pattern を持つ場合は、残る全 parameter 上でこれらの読みが一致することを
+確認する。不一致は、この ArchSig の固定延長の構成条件を満たさない `condition_failed` とする。
+入力不正や欠測として扱わず、任意の一行を選ばない。
+選択 Obj のどの pattern にも一致しない対象では view を none、Law の適用条件を false、
+適用条件付き述語を true、residual を零とする。Law の role は対象によらず保持する。
+この延長は追加の StructureMaps/SelectedQuantities を読まない。
+一致した行の必要値が未観測なら none や零で埋めず、必要な全域読取りの構成を未決として保持する。
+値・一致・residual の全域性を確認してから AAT の全域関数へ接続する。
+受理 circuit は必ず選択 pattern に一致し、その class の共通の読みを when が反証する。
+したがってこの延長は任意 ArchitectureObject について circuit の健全性を保つ。
+
+§2 の scalar realization を一つの AAT equation reading に入れるときは、型別に共有する
+realization 環 R_i の有限 block 積を Observable とする。空族は空積の一元環とする。
+各 R_i の原式、共有変数、ideal は保持し、Law 出現ごとの別々の積へ置き換えない。
+添字は `(Law instance, scalar parameter の代入, component)` とする。
+単一 global context の base root 存在 Atom に、その成分の ν と residual を対応する R_i の
+factor へ置き、他の factor と、他の U の元では零とする。異なる環の同一視は行わず、
+この座標配置を factor から積への単位的環準同型とは扱わない。制限は恒等である。
+residual は、適用される対象では §2 の ε、適用外では零とする。原式の差の評価 ε 自体は
+上書きしない。detector の when も適用条件と当該成分の ε 非零性の連言から作る。
+detector は添字ごとに when を評価して reject/exact/any の有限 code を生成し、
+when を既存 detector 型の追加構文にはしない。
+これにより各添字の EquationHolds は当該 residual の零性と同値になり、適用される原式の等号は
+全成分の成立に対応する。対応成分は移送後の型の同じ component path で対応させ、
+その residual の零性の同値も検査する。
+
+object algebra の保存は、対象・操作の対応に加え、対応 Law の required status、適用条件と
+成立の同値、circuit の運搬、関数・述語不変量、signature の軸と selected status を検査する。
+circuit は source の対象と受理 case を target の対応対象の case へ写し、
+matching、when の含意、detector の受理を確認する。
+関数不変量と signature は値型間の順逆写像を生成し、
+型の全域で互いに逆であること、および各対象の評価との可換性を検査する。
+参照値の写像は宣言の対応表と固定外部参照から、複合値の写像は型の構造から生成する。
+この値写像は Atom の F 外を root へ送る全域化とは別であり、型の同値を構成できなければ
+その適用条件を満たさない。有限域は全列挙、整数アフィン域は正確な正規化で検査し、
+scalar parameter の全域について必要な等値を有限の評価例で代用しない。
+
+local/change/relation の対応は、それぞれ reads の値と制限、候補域と実更新、
+両辺の名前付き語と作用へ延長し、型付きの対応と可換性を検査する。
+local の公開値を依存 field 全体へ広げず、change を内部 Op に加えず、
+relation を確認前の等式として使わない。これらの生成規則と数学の条件は §3–9 に従う。
+完全な ObjectAlgebraMap は、以上で選択された全構造の対応を確認した場合だけ生成する。
+必要な構成が未決・非対応でも、既に確認した base の ConfigurationMap と Operation は保持する。
 
 ## 2. 方程式の記号表示と評価
 
@@ -111,7 +240,7 @@ cover は変数と出現の両方を覆う。状態は当該 context の条件�
 この状態系の一意な貼り合わせの構成になる。
 
 実行する有限 context の圏、cover 候補、適格性、生成 topology を別の結果として保持する。
-topology を求める場合は、恒等、引戻し、合成による有限の閉包を計算する。
+`localize` は常に、恒等、引戻し、合成による有限の閉包を計算して topology を生成する。
 選択した cover の検査を、未検査の全 topology 上の sheaf 条件へ拡大しない。
 
 ## 4. 候補状態と許す変更
@@ -200,10 +329,22 @@ A_W=P_WA,\qquad B_W=L_WA_W,\qquad d_W=c_W-L_Wx_{0,W},
 有限状態では、各 patch の解、重なりで一致する族、大域候補からの制限写像、その fiber を
 全列挙する。局所解なし、一致しない局所族、一致するが大域へ持ち上がらない族を区別する。
 
-アフィンの局所方程式では、context W ごとに完全な fiber `D_W z=b_W` と
+方程式側の自由位置は、using で選択した change の各 instance の `with` 左辺にある
+更新 field だけとする。Tuple 等の複合 field を更新する場合は、その field の全成分を含める。
+自由状態の型は更新 field の宣言型である。アフィン表示では固定長Tupleをscalar成分へ分解する。
+Listやdataではfield全体をその型の変数とし、観測した長さ・constructor形に候補域を固定しない。
+他の全位置、外部参照、更新対象外の値は固定する。自由位置は更新先の宣言から決め、
+未観測を理由に追加しない。更新前の未知の観測値は元の slot として残し、
+固定部分の評価に必要なら、その依存による未決を保持する。
+§2 の記号環は原式の全支持を保持する。fiber の生成では固定部分を評価してから、
+局所で読める自由状態の全域に可視 Law を課す。この量化域を記号環の変数全体と同一視しない。
+
+アフィンの局所方程式では、この自由状態上で context W ごとの完全な fiber `D_W z=b_W` と
 `M(W)=ker D_W` を生成する。これは方程式側の状態・係数である。
 意味側には §5 の許可作用からの状態・有効係数を使い、両側を比較する写像を別に作る。
-using を省略した意味側は Unit parameter と固定対象だけを持つ。
+意味側は同じ自由状態の中で、許された作用の実際の像を保持する。
+using 省略時は自由位置を空とし、方程式側は固定観測の条件を読む零次元系、
+意味側は Unit parameter と固定対象だけを持つ。
 方程式側の全 fiber を、変更を許された意味側の修復候補へ追加しない。
 制限が fiber を保つこと、D と b の制限の可換性、係数作用の自由性・推移性、
 局所非空性を確認する。空の局所 fiber には atlas を生成しない。
@@ -234,8 +375,9 @@ cover-relative Čech 計算を sheaf cohomology へ同定する場合も、そ�
 ## 7. 三辺の標準診断
 
 [検証仕様](validation.md)の整数三辺では、各 Point の coordinate を読む `Edge` local と、
-各 Point を独立に平行移動する change を用いる。Shift の端点と shift 値から核が生成する系は
-次である。初期 coordinate はすべて零とする。
+各 Point を独立に平行移動する change を `using=move` で選択する。
+自由位置は三つの coordinate、Shift の端点と shift は固定値である。
+初期 coordinate をすべて零とすると、核が生成する系は次となる。
 
 ```math
 D=\begin{pmatrix}-1&1&0\\0&-1&1\\-1&0&1\end{pmatrix},\qquad
@@ -252,6 +394,7 @@ d^1:\mathbb Z^3\to0,\qquad c=(-1,0,\gamma-1).
 ```
 
 商の同定 `H¹≅Z` は `(-1,1,-1)` によって生成され、対象の類は `2−γ` へ写る。
+この計算には `using=move` が必要であり、using 省略時の零次元系とは区別する。
 γ=3 なら非零類 −1 と大域解なし、γ=2 なら零類と候補 `(0,1,2)` を返す。
 γ 未観測なら D、係数、微分、H¹ は計算できるが、b、局所解、対象の類は未確定となる。
 

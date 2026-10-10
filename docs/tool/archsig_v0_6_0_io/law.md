@@ -140,6 +140,9 @@ QName は entity/arrow/correspondence または data を指す。前3種は参�
 Map の定義域・値域は参照型に限定し、既知の値はその観測族上の全域単一値関数。
 Term の引数・戻り型は参照を含まない値型、body は §4 の純粋部分言語。
 Path は核が原始の arrow/correspondence から構成する型で、原始 field・data・Term 内には置かない。
+Set の要素型は構造的等値を有限手順で判定できる型に限定する。Term、Path、およびそれらを
+data の引数・container を通して含む型を Set の要素にしない。この適格性は型検査で決定する。
+項や経路の有限族は List に保持し、外延等値を問う場合は評価・比較の問いとして扱う。
 結果専用の Object、ConfigurationHom、Module、Evidence 等を原始型に使えない。
 
 型の等値は alias 展開後の名と構造で判定する。Z/Q/Fp 間の暗黙変換はない。

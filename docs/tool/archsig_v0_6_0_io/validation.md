@@ -40,7 +40,7 @@ f の `conserved` も成立する。二つの操作の保存と、m による数
 | 欠測 | 成立版から `r-free` Atomだけを除く | 未決。missingは `(v,r,Reservations.State.free)` |
 | 対応の未観測 | 成立版から `m-states` Atomを除く | mを保持し、同じslotの不足を返す |
 | 全域性違反 | 成立版のstatesからqの行だけを除く | 提示したMapが始域全体を覆わないため不正入力 |
-| 端点不保存 | states={p↦s,q↦r}、reserves={e↦f} | mapの構造保存が反証され、configuration mapを構成しない |
+| 端点不保存 | states={p↦s,q↦r}、reserves={e↦f} | mapの構造保存が反証され、candidateと反例を保持。configuration map・Operationを構成しない |
 
 欠測版の `r.free` を2で補完すれば成立し、4で補完すれば反証になる。
 この補完対は追加観測が必要な理由であり、観測した対象の反例としては出力しない。
@@ -85,6 +85,9 @@ reading Coordinates {
 ```
 
 修復の問いはalignedの全instanceと、同じSystem配下の全Pointへのmoveを選ぶ。
+局所診断も `localize($a.object,law=Coordinates.aligned,using=Coordinates.move)` とする。
+`$a.object` は対象Systemのbuild結果。方程式側の自由座標はmoveの更新位置coordinateだけで、
+shiftは固定値である。using省略時の固定観測系と、この変更族の診断を区別する。
 核は各点の変更量を独立に持つ候補から `Dz=b` を生成する。
 列をp,q,r、行をa,b,cとする表示では
 `D=[[-1,1,0],[0,-1,1],[-1,0,1]]`、`b=(1,1,γ)` となる。
@@ -139,6 +142,11 @@ archsig run --law examples/engine.law --archmap examples/engine.archmap.json \
 | none、空List/Set、未観測を同じ値にする | 明示的不在、観測した空の族、Holeを区別する |
 | 同じsubject/fieldへ二つのAtomを置く | 同じ値でも不正入力。相反する値から空の補完集合を作らない |
 | 型の異なるMapの参照、重複key、未登録参照 | 提示規則で拒否し、保存Lawの反証とは分ける |
+| Termを直接または複合型経由でSet要素型に置く | 型検査で拒否。項の有限族はListとして保持できる |
+| viewが`Option<Path<State,State>>`を返す | `some(path(e))`をOptionの型とPathへの参照で出力し、原始Atomへ混ぜない |
+| 修復結果を次のsolve/repairのonへ渡す | 前のArchitectureのoverridesを変更前状態として使い、原始観測と導出元を保持する |
+| ObjectAlgebraの二対象が同じquery patternを持ち、適用条件や値が異なる | 固定全域延長の条件を反証し、condition_failedと構成済みの対象を保持する |
+| ZとFpの方程式を一つのreadingに置く | 型別の共有環を保持し、AAT接続用Observableはその有限積。係数を暗黙に変換しない |
 | 値を保って原始ID・入力順・source refを変える | 同型に沿う判断・対象・解集合。出力の由来は対応する参照へ変わる |
 | 空の観測済み有限族を全称／存在量化 | 全称成立／存在反証、評価件数0、有限域scopeを保持する |
 | 空の族のbodyに型不整合がある | 空虚な成立の前に型検査で拒否する |
