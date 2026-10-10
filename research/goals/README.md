@@ -15,6 +15,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
+- [G-136-aat-atlas-gluing-width](G-136-aat-atlas-gluing-width.md)
+  (診断欠損の二領域貼り合わせ、真のセル交差の完全列、全有限観測幅の分離族)
 - [G-135-aat-atlas-coefficient-fiber](G-135-aat-atlas-coefficient-fiber.md)
   (原始セルからの順像係数、fiber適合とtransgression、実Atlas欠損と診断保存)
 - [G-132-aat-visible-cycle-reflection](G-132-aat-visible-cycle-reflection.md)
@@ -23,8 +25,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
-- [G-136-aat-atlas-gluing-width](G-136-aat-atlas-gluing-width.md)
-  (診断欠損の二領域貼り合わせ、真のセル交差の完全列、全有限観測幅の分離族)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
