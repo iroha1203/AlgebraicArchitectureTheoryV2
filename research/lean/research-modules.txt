@@ -2443,3 +2443,9 @@ ResearchLean.AG.AtlasGluingWidth.CellSelection	ResearchLean/AG/AtlasGluingWidth/
 ResearchLean.AG.AtlasGluingWidth.CellwiseShortExact	ResearchLean/AG/AtlasGluingWidth/CellwiseShortExact.lean
 ResearchLean.AG.AtlasGluingWidth.RegionShortExact	ResearchLean/AG/AtlasGluingWidth/RegionShortExact.lean
 ResearchLean.AG.AtlasGluingWidth.SelectionComparison	ResearchLean/AG/AtlasGluingWidth/SelectionComparison.lean
+ResearchLean.AG.AtlasGluingWidth.StandardShortExact	ResearchLean/AG/AtlasGluingWidth/StandardShortExact.lean
+ResearchLean.AG.AtlasGluingWidth.PairComplex	ResearchLean/AG/AtlasGluingWidth/PairComplex.lean
+ResearchLean.AG.AtlasGluingWidth.ConeShortExact	ResearchLean/AG/AtlasGluingWidth/ConeShortExact.lean
+ResearchLean.AG.AtlasGluingWidth.ConnectingRepresentatives	ResearchLean/AG/AtlasGluingWidth/ConnectingRepresentatives.lean
+ResearchLean.AG.AtlasGluingWidth.ConeBiprod	ResearchLean/AG/AtlasGluingWidth/ConeBiprod.lean
+ResearchLean.AG.AtlasGluingWidth.MayerVietoris	ResearchLean/AG/AtlasGluingWidth/MayerVietoris.lean
