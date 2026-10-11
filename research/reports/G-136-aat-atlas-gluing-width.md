@@ -11,8 +11,9 @@ T0・A–E は固定 target を維持する。初回 selection は実装前の�
 A は PR #5328、merge `bb80b4068979dd1ecca354d8cebe9cad66f54e16` で部分受理済み。
 B は PR #5329、merge `a06669caf8b6983068a32f7ab81b5d390bb42b22`、
 C は PR #5330、merge `0626e53e5ff4dd8e80756d0bf9be133e84c10feb` で部分受理済み。
-現在は D の実Lawと係数/fiber接続をCycle 4受理候補として構成・検証する。
-E の任意k指定族・全Law幅・MV発火と全GOAL最終判定は未実施。
+D は PR #5332、merge `48482786950efee29b4e7f6fb3b128f0412e891f` で受理済み。
+現在は E の任意k指定族・全幅H¹観測・全低幅Law/定数/indicatorと真の交差をCycle 5候補として検証する。
+Eの同じMV標準delta・Q/P/Zとhidden生成元、G135係数/fiber生成元照合、全GOAL最終判定は未実施。
 G-135 の Research 達成済み結果を再利用する。Formal は `unported (Research-proved)`。
 
 ## Cycle 1 selection
@@ -603,3 +604,312 @@ statement・def本体・proof・import・instance・宣言集合は変更して�
 この記録は修正内容だけであり、内容受理・mergeを表さない。
 
 修正後LawGluing単一focusedはexit0、56宣言、標準公理のみ。log SHA256 `6db3f0280085ecf721c9d60acd5df3375c6f2484f8d099f9c70636d2d0733870`。
+
+## Cycle 4 正式受理
+
+D全体は[最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5332#issuecomment-6109044624)
+で有資格のdoc修正直接確認とroot再統合を経て受理した。exact head
+`fd5cacd693397f3e35db5f2d29f43a443e7c6d64` の全7 CI成功後、PR #5332を
+merge commit `48482786950efee29b4e7f6fb3b128f0412e891f` としてmergeした。
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5321#issuecomment-6109056955)。
+A–D受理済み、Eと累積最終completionは未完。Formal unported (Research-proved)。
+
+## Cycle 5 selection（実装前固定）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-136-aat-atlas-gluing-width
+cycle: 5
+goal_blob_sha: dbc5b584987a1f3e1987125b7ccde2e361a89533
+base_oid: 48482786950efee29b4e7f6fb3b128f0412e891f
+tracking_issue: 5321
+report_path: research/reports/G-136-aat-atlas-gluing-width.md
+selection:
+  proof_state_ref: Issue5321comment6109056955とCycle4正式受理
+  proof_dag_predecessors: [A/PR5328, B/PR5329, C/PR5330, D/PR5332, 固定G133/G134/G135再利用]
+  milestone: E任意kの指定cycle/path原始対の低幅H1一致・一様零欠損分離・同じLawとMV/係数非零生成元
+  proof_obligations: [指定原始表とK1・reading全field, 一般閉路periodと累積積分, 全真部分集合forest/pathのd0全射, 同じ全X実H1比較とJ, 全低幅明示同型と可換性および判定不能, 全発生label幅の任意Law族と定数/indicator両クラス, 同じI二点と空領域交差・Q/P/Z・delta符号とhidden実商, G135同じUの係数/fiber生成元と局所A/B条件, k0空観測と幅0Law]
+  exit_criteria: [固定witnesses§1–4全評価を任意kでLean証明, 実比較・実商・両方向/代表元の条項対応, 期待rank/Jを原始fieldへ入れない, 全新規/累積宣言の公理監査とfocused/scan, 正式PR内容監査と累積最終completionは別gate]
+  selection_reason: 未完E全群を同じ指定有限入力から閉じて全GOALのproof distanceを零へ縮める
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [AtlasGluingWidth/WidthInput.lean, WidthIntegration.lean, WidthHomology.lean, WidthLaw.lean, WidthMayerVietoris.lean]
+  risks: [一般nのwrap積分とn2K1, selectededge零延長補正の不変性, 旧H1商と標準H1/deltaの実同定, indicator補集合と全発生ラベル, sameMV/G135類照合]
+  unchecked: [E構成/全証明/代表元/公理・独立内容監査/累積completion未実施]
+```
+
+## Cycle 5 到達点と途中分割
+
+元のselection・終了条件は上に保持する。独立に再利用できる到達点として、
+任意nの閉路積分から指定全幅対の全X診断・全低幅観測と実Law分離までが完成した。
+この一般族の証明と、同じ族を標準MV連結射・G135係数SESへ輸送する代表元監査は、
+原始graph/periodと標準homology/snake/fiberという異なる依存領域へ広がる。
+既に6source・132明示宣言を持つ全幅構成を固定し、後者の全射・商・符号・代表元接続を
+次cycleで独立に監査可能なまとまりとして進める。未完Eを完了と呼ぶために終了条件を縮めない。
+
+| 固定条項・指定評価 | 実宣言（namespace `AAT.AG.AtlasGluingWidth.Width`） | 状況 |
+| --- | --- | --- |
+| E/witnesses§1 共通C/Source/reading、π=fst、粗一点、細v/w・a/b、plus=a0削除、原始全field | `Concept`, `Source`, `coarseReading`, `fineReading`, `coarser`, `factor`, `Edge`, `left`, `right`, `coarse`, `fine`, `hereditary`, `comparison` | 構成 |
+| K1 singleton辺台と全選択式 | `edge_support`, `chart_selected`, `edge_selected`, `factor_region` | 原始台/端点から生成 |
+| 一般nの一周period、境界零、period核=微分像、指定a0 period1 | `period_difference`, `sum_range_concept`, `cumulative_succ`, `cumulative_full`, `difference_potential`, `period_ker`, `period_generator`, `period_surjective` | 任意n、wrapを含む一般証明 |
+| 全真部分集合forestとplus全領域の実H¹零 | `extendEdges_selected`, `selected_d0_surjective`, `proper_d0_surjective`, `plus_d0_surjective`, `proper_H1_zero`, `plus_H1_zero` | 全辺値の原始関数を構成 |
+| minus全領域の実商H¹≃ℚと同じa0生成元 | `fullCyclesEquiv`, `full_boundary`, `full_image`, `periodQuotientEquiv`, `fullH1Equiv`, `fullH1Equiv_mk`, `fullGenerator`, `fullGenerator_value`, `fullGenerator_ne_zero` | 同じ実境界商、全代表式 |
+| 同じ原始全X比較/J評価、全k低幅明示同型/square/J | `actualMap`, `coarse_H1_zero`, `proper_actual_H1_zero`, `plus_actual_H1_zero`, `full_actual_H1_equiv`, `plus_defect`, `proper_defect`, `full_defect`, `size`, `size_positive`, `low_proper`, `width_fine_equiv`, `width_observation` | 全幅一般証明 |
+| 観測同値で一様零欠損の異なる二入力、判定不能 | `LowEquivalent`, `width_lowEquivalent`, `width_uniform_separation`, `no_width_classifier` | 全入力上の判定の指定二入力への制限が既に矛盾 |
+| 全発生label幅の同じ任意粗adequate Law、実H¹同型と比較/J | `fineAdequate`, `lawMap`, `coarse_law_H1_zero`, `fine_law_H1_zero`, `width_law_H1_zero`, `width_law_equiv`, `width_law_square`, `width_law_defect` | G133実fiber族同型/G134同じ比較へ接続 |
+| 同じ定数LawでplusJ0/minusJ(0,1) | `constantLaw`, `constantAdequate`, `constantLabel`, `constantLabelsUnique`, `constantFiber`, `constant_plus_defect`, `constant_minus_defect` | G134実Law欠損和、唯一発生label |
+| indicator両値クラスと補集合・空/全の幅超過 | `indicator`, `indicatorAdequate`, `indicatorFiber`, `indicatorTrueLabel`, `indicatorFalseLabel`, `indicatorFalseFiber`, `indicator_width`, `indicator_endpoint_fiber`, `indicator_endpoint_not_width` | 片クラスだけを幅に数えない |
+| k0はn2の空領域観測、幅0Law族は空 | `size_zero`, `width_zero_region`, `empty_degrees_zero`, `width_zero_laws_empty` | n2四角形の同じ一般構成 |
+| 同じminusのI二点・辺なし、領域交差は空 | `intersection_chart`, `intersection_edges_empty`, `intersectionChartEquiv`, `intersection_card`, `intersection_H1_zero`, `region_inter_empty`, `region_inter_charts_empty`, `intersectionH0Equiv` | 順序false=w−1/true=w0、原始セルから生成 |
+| E/witnesses§4 Qc0/Qfℚ/P/Z0・H0差制限・標準delta符号・同じhidden/G135生成元 | 未実装 | 次cycleで元selectionの残義務を継続 |
+
+本cycleの一般補題が受け取るperiod零、欠けたa辺、真部分集合、fiber真部分集合は方向仮定。
+それぞれ補正cochain、missing jまたはplus削除a0、card幅k<n、全発生labelの幅条件から
+`selected_d0_surjective`・`proper_d0_surjective`・`plus_d0_surjective`・`low_proper`・
+`width_law_H1_zero` 内で放電する。原始構造fieldへ期待rank・診断・H¹零・同型を含めない。
+`no_width_classifier` の観測不変性と正解性は反証対象の判定の条件であり、証人構成の入力ではない。
+
+```yaml
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: E任意kの指定原始対・閉路積分・全X実H1/J・全低幅同型/squareとLaw幅/検出・真交差幾何を構成
+  exit_criteria_status: [原始族/一般積分/実商/全観測/同じLawは上の実宣言, MV標準deltaとQ/P/Z・hidden/G135同じ類は未完]
+  split_reason: 独立再利用可能な全幅分類定理群132明示宣言を固定し、別依存領域の標準MV/係数生成元接続を次cycleで監査可能にする
+  completion_candidate: no
+  lean_artifacts: [WidthInput.lean, WidthIntegration.lean, WidthHomology.lean, WidthObservation.lean, WidthLaw.lean, WidthIntersection.lean]
+  claim_mapping:
+    source_labels: [GOAL E, witnesses§1–3, witnesses§4真交差幾何]
+    undischarged_assumptions: [E残条項の未実装義務]
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [指定原始全field, period積分と全forest/path, 全幅比較・実欠損, 全低幅同型, 全発生Law幅・定数/indicator, 真交差二点]
+    remaining: [E標準MV/Q/P/Z/hiddenとG135同じ生成元・局所条件, 累積completion]
+  certificate_provenance:
+    discharged: [同じ元辺台/端点/微分から累積和と商同型, 同じ生成Law/fiber族とG134診断和]
+    unresolved: []
+  proof_use:
+    used: [readingからπ, K1から選択, periodから原始関数, 非選択a座標から補正, 幅とncardから真部分集合, Law値fiber逆像から同じ全Law商]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: [正式PR独立査読前]
+  next_obligation: 同じ指定族のH0差制限/Q/P/Z・標準delta lift/glue・hidden/G135生成元照合を継続
+```
+
+## Cycle 5 spine declaration list（全132明示宣言）
+
+新規6sourceの全明示宣言をspineとする。生成補助宣言は全公理照会に別途含める。
+
+### WidthHomology.lean
+
+```text
+AAT.AG.AtlasGluingWidth.Width.selected
+AAT.AG.AtlasGluingWidth.Width.generatorAt
+AAT.AG.AtlasGluingWidth.Width.period_generatorAt
+AAT.AG.AtlasGluingWidth.Width.extendEdges
+AAT.AG.AtlasGluingWidth.Width.extendEdges_selected
+AAT.AG.AtlasGluingWidth.Width.selected_d0_surjective
+AAT.AG.AtlasGluingWidth.Width.proper_d0_surjective
+AAT.AG.AtlasGluingWidth.Width.plus_d0_surjective
+AAT.AG.AtlasGluingWidth.Width.proper_H1_zero
+AAT.AG.AtlasGluingWidth.Width.plus_H1_zero
+AAT.AG.AtlasGluingWidth.Width.fullEdge
+AAT.AG.AtlasGluingWidth.Width.fullChart
+AAT.AG.AtlasGluingWidth.Width.fullCyclesEquiv
+AAT.AG.AtlasGluingWidth.Width.full_boundary
+AAT.AG.AtlasGluingWidth.Width.full_image
+AAT.AG.AtlasGluingWidth.Width.periodQuotientEquiv
+AAT.AG.AtlasGluingWidth.Width.fullH1Equiv
+AAT.AG.AtlasGluingWidth.Width.fullH1Equiv_mk
+AAT.AG.AtlasGluingWidth.Width.fullGenerator
+AAT.AG.AtlasGluingWidth.Width.fullGenerator_value
+AAT.AG.AtlasGluingWidth.Width.fullGenerator_ne_zero
+```
+
+### WidthInput.lean
+
+```text
+AAT.AG.AtlasGluingWidth.Width.Concept
+AAT.AG.AtlasGluingWidth.Width.Source
+AAT.AG.AtlasGluingWidth.Width.coarseReading
+AAT.AG.AtlasGluingWidth.Width.fineReading
+AAT.AG.AtlasGluingWidth.Width.coarser
+AAT.AG.AtlasGluingWidth.Width.factor
+AAT.AG.AtlasGluingWidth.Width.Edge
+AAT.AG.AtlasGluingWidth.Width.Chart
+AAT.AG.AtlasGluingWidth.Width.left
+AAT.AG.AtlasGluingWidth.Width.right
+AAT.AG.AtlasGluingWidth.Width.coarseNerve
+AAT.AG.AtlasGluingWidth.Width.fineNerve
+AAT.AG.AtlasGluingWidth.Width.support
+AAT.AG.AtlasGluingWidth.Width.coarse
+AAT.AG.AtlasGluingWidth.Width.fine
+AAT.AG.AtlasGluingWidth.Width.hereditary
+AAT.AG.AtlasGluingWidth.Width.comparison
+AAT.AG.AtlasGluingWidth.Width.region
+AAT.AG.AtlasGluingWidth.Width.factor_region
+AAT.AG.AtlasGluingWidth.Width.chart_selected
+AAT.AG.AtlasGluingWidth.Width.edge_support
+AAT.AG.AtlasGluingWidth.Width.edge_selected
+```
+
+### WidthIntegration.lean
+
+```text
+AAT.AG.AtlasGluingWidth.Width.Cochain
+AAT.AG.AtlasGluingWidth.Width.difference
+AAT.AG.AtlasGluingWidth.Width.period
+AAT.AG.AtlasGluingWidth.Width.period_difference
+AAT.AG.AtlasGluingWidth.Width.sum_range_concept
+AAT.AG.AtlasGluingWidth.Width.cumulative
+AAT.AG.AtlasGluingWidth.Width.cumulative_succ
+AAT.AG.AtlasGluingWidth.Width.cumulative_full
+AAT.AG.AtlasGluingWidth.Width.potential
+AAT.AG.AtlasGluingWidth.Width.successor_val
+AAT.AG.AtlasGluingWidth.Width.difference_potential
+AAT.AG.AtlasGluingWidth.Width.generator
+AAT.AG.AtlasGluingWidth.Width.period_generator
+AAT.AG.AtlasGluingWidth.Width.period_surjective
+AAT.AG.AtlasGluingWidth.Width.period_ker
+AAT.AG.AtlasGluingWidth.Width.difference_zero_constant
+```
+
+### WidthIntersection.lean
+
+```text
+AAT.AG.AtlasGluingWidth.Width.regionA
+AAT.AG.AtlasGluingWidth.Width.regionB
+AAT.AG.AtlasGluingWidth.Width.intersection
+AAT.AG.AtlasGluingWidth.Width.one_ne_zero
+AAT.AG.AtlasGluingWidth.Width.neg_one_ne_zero
+AAT.AG.AtlasGluingWidth.Width.intersection_chart
+AAT.AG.AtlasGluingWidth.Width.intersection_edges_empty
+AAT.AG.AtlasGluingWidth.Width.intersection_faces_empty
+AAT.AG.AtlasGluingWidth.Width.intersectionPoint
+AAT.AG.AtlasGluingWidth.Width.intersectionChartEquiv
+AAT.AG.AtlasGluingWidth.Width.intersection_card
+AAT.AG.AtlasGluingWidth.Width.intersection_H1_zero
+AAT.AG.AtlasGluingWidth.Width.region_inter_empty
+AAT.AG.AtlasGluingWidth.Width.region_inter_charts_empty
+AAT.AG.AtlasGluingWidth.Width.intersectionH0Equiv
+AAT.AG.AtlasGluingWidth.Width.empty_degrees_zero
+```
+
+### WidthLaw.lean
+
+```text
+AAT.AG.AtlasGluingWidth.Width.fineAdequate
+AAT.AG.AtlasGluingWidth.Width.lawMap
+AAT.AG.AtlasGluingWidth.Width.coarse_law_H1_zero
+AAT.AG.AtlasGluingWidth.Width.fine_law_H1_zero
+AAT.AG.AtlasGluingWidth.Width.plus_law_H1_zero
+AAT.AG.AtlasGluingWidth.Width.plus_law_defect
+AAT.AG.AtlasGluingWidth.Width.width_law_H1_zero
+AAT.AG.AtlasGluingWidth.Width.width_law_equiv
+AAT.AG.AtlasGluingWidth.Width.width_law_square
+AAT.AG.AtlasGluingWidth.Width.width_law_defect
+AAT.AG.AtlasGluingWidth.Width.constantLaw
+AAT.AG.AtlasGluingWidth.Width.constantAdequate
+AAT.AG.AtlasGluingWidth.Width.constantLabel
+AAT.AG.AtlasGluingWidth.Width.constantLabelsUnique
+AAT.AG.AtlasGluingWidth.Width.constantFiber
+AAT.AG.AtlasGluingWidth.Width.constant_plus_defect
+AAT.AG.AtlasGluingWidth.Width.constant_minus_defect
+AAT.AG.AtlasGluingWidth.Width.indicator
+AAT.AG.AtlasGluingWidth.Width.indicatorAdequate
+AAT.AG.AtlasGluingWidth.Width.indicatorFiber
+AAT.AG.AtlasGluingWidth.Width.indicatorFalseLabel
+AAT.AG.AtlasGluingWidth.Width.indicatorTrueLabel
+AAT.AG.AtlasGluingWidth.Width.indicatorFalseLabel_value
+AAT.AG.AtlasGluingWidth.Width.indicatorFalseFiber
+AAT.AG.AtlasGluingWidth.Width.size_positive
+AAT.AG.AtlasGluingWidth.Width.indicator_width
+AAT.AG.AtlasGluingWidth.Width.indicator_endpoint_fiber
+AAT.AG.AtlasGluingWidth.Width.indicator_endpoint_not_width
+AAT.AG.AtlasGluingWidth.Width.width_zero_laws_empty
+```
+
+### WidthObservation.lean
+
+```text
+AAT.AG.AtlasGluingWidth.Width.coarseH1
+AAT.AG.AtlasGluingWidth.Width.fineH1
+AAT.AG.AtlasGluingWidth.Width.actualMap
+AAT.AG.AtlasGluingWidth.Width.coarse_H1_zero
+AAT.AG.AtlasGluingWidth.Width.proper_actual_H1_zero
+AAT.AG.AtlasGluingWidth.Width.plus_actual_H1_zero
+AAT.AG.AtlasGluingWidth.Width.full_actual_H1_equiv
+AAT.AG.AtlasGluingWidth.Width.defect_zero_domain
+AAT.AG.AtlasGluingWidth.Width.plus_defect
+AAT.AG.AtlasGluingWidth.Width.proper_defect
+AAT.AG.AtlasGluingWidth.Width.full_defect
+AAT.AG.AtlasGluingWidth.Width.low_coarse_equiv
+AAT.AG.AtlasGluingWidth.Width.low_fine_equiv
+AAT.AG.AtlasGluingWidth.Width.low_square
+AAT.AG.AtlasGluingWidth.Width.low_defect
+AAT.AG.AtlasGluingWidth.Width.size
+AAT.AG.AtlasGluingWidth.Width.size_neZero
+AAT.AG.AtlasGluingWidth.Width.size_two
+AAT.AG.AtlasGluingWidth.Width.size_gt
+AAT.AG.AtlasGluingWidth.Width.low_proper
+AAT.AG.AtlasGluingWidth.Width.width_fine_equiv
+AAT.AG.AtlasGluingWidth.Width.width_observation
+AAT.AG.AtlasGluingWidth.Width.width_uniform_separation
+AAT.AG.AtlasGluingWidth.Width.LowEquivalent
+AAT.AG.AtlasGluingWidth.Width.width_lowEquivalent
+AAT.AG.AtlasGluingWidth.Width.no_width_classifier
+AAT.AG.AtlasGluingWidth.Width.size_zero
+AAT.AG.AtlasGluingWidth.Width.width_zero_region
+```
+
+## Cycle 5 検証と再利用
+
+新規6sourceの個別focused elaborationは全てexit0。最終公式単一
+`bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasGluingWidth/WidthIntersection.lean`
+はexit0、16実宣言・標準公理のみ、log SHA256
+`29b5bf348d100f902e82d43b6051b3c4f9f1715a4d3e43d9cc610a9f7ca8ea27`。
+
+同じ現環境の全679実宣言（累積606明示・73生成、新規132明示・133実宣言）を列挙し、
+全件の明示公理照会と照合した。既存677宣言は最終Law版からの全件照会、追加した
+`intersection_card`・`empty_degrees_zero`は追加後の現環境で別の単一非aggregate監査fileから
+明示照会した。既存677宣言のstatement/def/proofは追加時に変更していない。
+全679 uniqueの現環境名との照合は欠落0・余剰0、新規132明示の欠落0、
+全てpropext/Classical.choice/Quot.sound以内。新規生成1は`Width.period.congr_simp`。
+全677照会log SHA256 `137c19f764be06df1b2757041e8ca83616f0f7d42dd50774887b2860853a1c69`、
+追加2と現環境全名log SHA256 `3782532173919eb3570b75dc7238b53511a4124b90c6966434c3ad54ac206668`。
+
+| source | SHA256 | 明示宣言数 |
+| --- | --- | --- |
+| `WidthHomology.lean` | `58419a42c3aa76a764d07e25ee90f2119d33c3ba1f4974b82ec11d8d4082b113` | 21 |
+| `WidthInput.lean` | `56cd164d1e4a7f841c96c15a49d2ce8254161fbedc6ef6afda65391e9042609b` | 22 |
+| `WidthIntegration.lean` | `4a5f8341ab0abfdfa74c5f7cf452b31fda18d2241f7a979f7df3f2d2fc9bcc91` | 16 |
+| `WidthIntersection.lean` | `9fcd4b3ca89a5bbbb884fea8206bdeec667f1b7344bd35ff3ce738c266df99de` | 16 |
+| `WidthLaw.lean` | `deedad0af17afccb413444d08961286e0d3b54a37169ce2a5f518d1382a17cc8` | 29 |
+| `WidthObservation.lean` | `cf652acae22db6c70dfee05ca17c0c646639b44df8ab22febafd0018f7f00e78` | 28 |
+
+再利用は固定ed16acc…と使用する6sourceがbyte同一。G135の
+[受理監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5318#issuecomment-6078269788)
+から`PhiInterval.h1_subsingleton_of_d0_surjective`を実d0全射へ適用、
+G133 [受理PR5269](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5269) の
+`LawFiberH1Family.lawFiberH1FamilyEquiv`を全発生labelの同じ実商へ適用、
+G134 [受理PR5287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5287) の
+`LawComparisonFiberDiagnostics.lawH1Defect_subset_sum`を指定定数Lawの唯一fiberへ適用する。
+G107 [受理PR3994監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3994#issuecomment-5279154319)
+の`IndicatorLawFamily`のeval/adequacy/descent/trueLabelを現在の型と引数で読み、
+false発生label/補集合fiber/全幅条件を新規に証明した。`ASubnerveReduction`と
+`TwoPhase.CohomologyComparison`の同じtargetSubsetComplex・labelValueFiber・境界商を使う。
+既存A–D sourceは受理版から不変。Lean4.28/mathlib8f9d9cff…のZModと有限和・商同型APIへ依存する。
+
+共通placeholder/hidden/BiDi/privacy/whitespace scanはclean。本体からResearchへのimport hit0、
+通常import方向gateはexit0（本体228moduleの静的確認）。Researchだけを仮想rootとした
+追加試行は外側のFormal importを解決できないため検証として採用しない。
+固定GOAL/designは変更していない。Formal移植、Research全体build/aggregate/全file elaboration、
+全GOAL最終completionは未実施。今回の独立4 lane内容査読・CI・受理はPR固定headで行い、
+この記録はその自己代替ではない。残るE接続を次cycleで継続し、Issueをcloseしない。
+
+`difference_zero_constant` は同じ全閉路のH⁰計算に使う独立一般補題として証明した。
+Eの残るMV H⁰差制限の輸送は、この補題の存在だけで完了とはしない。
