@@ -579,7 +579,7 @@ LawGluing congr_simp 3宣言も全照会へ含める。log SHA256
 | --- | --- | --- |
 | `FiniteGluing.lean` | `dae447da3fc8ee8aef8dbe8fb2d60efe0389126b861584d8e4018f33cc382887` | 23 |
 | `CoefficientBridge.lean` | `5449d78aabe584ed3cc3306590eb58422e02b53871f94bf539476cb9f3dc0231` | 16 |
-| `LawGluing.lean` | `f3a792d7439ba465cc8f317332f5313104085177f48f762fca4fd299e7f1785d` | 50 |
+| `LawGluing.lean` | `53efc5eea14bdb7bed1551d870f650962b7340be2ac504556297cb35baf3d741` | 50 |
 | `LawDefect.lean` | `da07f9a5310b872d570c7f9b8761ce010cd3319ae8fe0bd158433664a4edde53` | 29 |
 
 placeholder・hidden/BiDi・privacy・語彙・diff whitespaceはclean。reportの方針説明中の検査語は文脈で除外。
@@ -588,3 +588,18 @@ Research import方向gateはexit0（228本体moduleを静的走査）。固定GO
 型・必要定義・適用引数・今回のproof-useを実読した。Lean4.28/mathlib8f9d9cff…を使用。
 Research全体build・aggregate・全file elaboration・Formal移植は実行していない。
 正式4 lane査読・内容受理・CI・mergeはこの記録では未実施であり、PR監査とIssueへ同期する。
+
+## Cycle 4 初回独立査読後のdocstring修正
+
+固定head `11d1d172a81a76c15abcfd11a4e0b33e230f39bc` の初回査読は、
+数学A・LeanBが `Minor issues`、数学B・LeanAが `No major findings`。
+中心0、非中心1の重複指摘を全lane受領後に一括して修正した。
+[標準PR内容監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5332#issuecomment-6108944832)
+に従い、`LawGluing.cone_les` の説明を覆い条件なしの各label地域合併錐族へ限定し、
+全Law標準錐のLESはhcを持つ `actualCone_les` に対応することを記載した。
+statement・def本体・proof・import・instance・宣言集合は変更していない。
+上のLawGluing source SHAはdoc修正後に同期した。公理logは同じ全宣言・証明の検証であり、
+修正前後で数学部分が不変なことを直接対応確認へ渡す。
+この記録は修正内容だけであり、内容受理・mergeを表さない。
+
+修正後LawGluing単一focusedはexit0、56宣言、標準公理のみ。log SHA256 `6db3f0280085ecf721c9d60acd5df3375c6f2484f8d099f9c70636d2d0733870`。

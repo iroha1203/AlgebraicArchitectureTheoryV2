@@ -285,7 +285,8 @@ def lawConeHomologyEquiv (A B : Set qc.Target) (hc : ∀ l, labelValueFiber laws
   (homologyMapIso (lawConeFamilyIso M laws ha A B hc) m).toLinearEquiv.trans
     (FiniteComplexFamily.homologyEquiv _ m)
 omit [Fintype Source] in
-/-- 同じ全Lawを合併項とする有限label錐Mayer–Vietoris列は全整数次数で完全。 -/
+/-- 全発生labelの二領域合併錐族のMayer–Vietoris列は全整数次数で完全。
+全Law標準錐への被覆下の同定とLESはactualCone_lesが担う。 -/
 theorem cone_les (A B : Set qc.Target) (m : ℤ) :
     Function.Exact (homologyMap (coneRow M laws ha A B).f m) (homologyMap (coneRow M laws ha A B).g m) ∧
     Function.Exact (homologyMap (coneRow M laws ha A B).g m)
