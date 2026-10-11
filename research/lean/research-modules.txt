@@ -2458,3 +2458,9 @@ ResearchLean.AG.AtlasGluingWidth.FiniteGluing	ResearchLean/AG/AtlasGluingWidth/F
 ResearchLean.AG.AtlasGluingWidth.CoefficientBridge	ResearchLean/AG/AtlasGluingWidth/CoefficientBridge.lean
 ResearchLean.AG.AtlasGluingWidth.LawGluing	ResearchLean/AG/AtlasGluingWidth/LawGluing.lean
 ResearchLean.AG.AtlasGluingWidth.LawDefect	ResearchLean/AG/AtlasGluingWidth/LawDefect.lean
+ResearchLean.AG.AtlasGluingWidth.WidthInput	ResearchLean/AG/AtlasGluingWidth/WidthInput.lean
+ResearchLean.AG.AtlasGluingWidth.WidthIntegration	ResearchLean/AG/AtlasGluingWidth/WidthIntegration.lean
+ResearchLean.AG.AtlasGluingWidth.WidthHomology	ResearchLean/AG/AtlasGluingWidth/WidthHomology.lean
+ResearchLean.AG.AtlasGluingWidth.WidthObservation	ResearchLean/AG/AtlasGluingWidth/WidthObservation.lean
+ResearchLean.AG.AtlasGluingWidth.WidthLaw	ResearchLean/AG/AtlasGluingWidth/WidthLaw.lean
+ResearchLean.AG.AtlasGluingWidth.WidthIntersection	ResearchLean/AG/AtlasGluingWidth/WidthIntersection.lean
