@@ -72,20 +72,9 @@ pub fn model_digest(tokens: &[lexer::Token]) -> String {
     sha256_digest(model_canonical(tokens).as_bytes())
 }
 
+/// Law を検査する。深い入れ子でも呼出し側のスタックを使い切らないよう、再帰は stacker を通す。
 #[allow(clippy::result_large_err)]
-/// 深い入れ子の入力に備え、大きなスタックの thread で検査する。
 pub fn check_law(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
-    let owned = bytes.to_vec();
-    std::thread::Builder::new()
-        .stack_size(256 * 1024 * 1024)
-        .spawn(move || check_law_here(&owned))
-        .expect("検査 thread を起動できる")
-        .join()
-        .expect("検査 thread は panic しない")
-}
-
-#[allow(clippy::result_large_err)]
-fn check_law_here(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
     let bytes_digest = sha256_digest(bytes);
     let fail = |issue: Issue, model_digest: Option<String>| LawFailure {
         issue,

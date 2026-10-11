@@ -448,28 +448,20 @@ fn alignment_moves_references_and_positions_quantities() {
     assert_eq!(err(&wrong_ref).code, Code::Type);
 }
 
-/// correspondence が覆う owned 型は、その reading から参照できる reading の中で決まる。
+/// correspondence は、同梱した Law で所属先が根の entity・arrow を全て覆う(構成対象は root の全 owned 型)。
 #[test]
-fn correspondence_cover_is_relative_to_its_reading() {
-    let src = format!(
+fn correspondence_covers_every_owned_type_of_its_roots() {
+    let outside = format!(
         "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}\n\
          reading B {{ use A as P; entity Extra(owner: P.S) {{ w: Z; }} }}"
     );
-    ok(&src);
+    assert_eq!(err(&outside).code, Code::Syntax);
+    let covered = format!(
+        "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}"
+    );
+    ok(&covered);
     let inside = format!(
         "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} entity Extra(owner: S); correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}"
     );
     assert_eq!(err(&inside).code, Code::Syntax);
-    // view や law だけが別の reading を参照しても、覆う型は変わらない。
-    let viewed = format!(
-        "{HEADER}reading C {{ entity S; }} reading B {{ use C as c; entity X(owner: c.S) {{ v: Z; }} }}\n\
-         reading A {{ use C as c; correspondence M(from: c.S, to: c.S) {{ }} view v(x: B.X): Z = x.v; law required l(s: c.S): count(B.X[s]) = 0; }}"
-    );
-    ok(&viewed);
-    // 原始宣言の型が B を参照すると、B の X も覆う。
-    let held = format!(
-        "{HEADER}reading C {{ entity S; }} reading B {{ use C as c; entity X(owner: c.S) {{ v: Z; }} }}\n\
-         reading A {{ use C as c; entity Holder {{ r: B.X; }} correspondence M(from: c.S, to: c.S) {{ }} }}"
-    );
-    assert_eq!(err(&held).code, Code::Syntax);
 }

@@ -790,29 +790,13 @@ impl Checker {
         Ok(())
     }
 
-    /// reading と、それが use・完全名で参照する reading(推移的)。
-    fn reading_closure(&self, ri: usize) -> HashSet<usize> {
-        let mut seen = HashSet::from([ri]);
-        let mut stack = vec![ri];
-        while let Some(r) = stack.pop() {
-            for (a, b, _) in &self.reading_edges {
-                if *a == r && seen.insert(*b) {
-                    stack.push(*b);
-                }
-            }
-        }
-        seen
-    }
-
-    /// correspondence の reading から見える、所属先が root の entity・arrow。
-    fn owned_types(&mut self, root: &str, ri: usize) -> BTreeSet<String> {
-        let visible = self.reading_closure(ri);
+    /// 構成対象に含まれる owned 型。同梱した Law のうち、所属先が root の entity・arrow。
+    fn owned_types(&mut self, root: &str) -> BTreeSet<String> {
         let names: Vec<String> = self.decl_index.keys().cloned().collect();
         names
             .into_iter()
             .filter(|n| {
-                visible.contains(&self.decl_index[n].0)
-                    && matches!(self.decl_kind(n), Some("entity" | "arrow"))
+                matches!(self.decl_kind(n), Some("entity" | "arrow"))
                     && self.owner_root(n).as_deref() == Some(root)
             })
             .collect()
@@ -858,9 +842,6 @@ impl Checker {
                 },
                 _ => return syntax(m.span, "correspondence の field は Map<E[from], F[to]>"),
             };
-            if self.decl_kind(&e) != self.decl_kind(&f) {
-                return syntax(m.span, "対応表は entity どうし・arrow どうしを対応させる");
-            }
             if self.owner_root(&e).as_deref() != Some(&source)
                 || self.owner_root(&f).as_deref() != Some(&target)
             {
@@ -872,7 +853,7 @@ impl Checker {
             maps.push((m.name.clone(), e, f));
         }
         let covered: BTreeSet<String> = domain.keys().cloned().collect();
-        if covered != self.owned_types(&source, ri) || codomain != self.owned_types(&target, ri) {
+        if covered != self.owned_types(&source) || codomain != self.owned_types(&target) {
             return syntax(
                 d.name.span,
                 "correspondence は from・to の根に所属する全ての entity・arrow を一度ずつ覆う",
@@ -911,9 +892,6 @@ impl Checker {
             let (fp, fm) = fs.record_fields().expect("record");
             let source_fields: Vec<&Param> = ep.iter().chain(em).collect();
             let target_fields: Vec<&Param> = fp.iter().chain(fm).collect();
-            if source_fields.len() != target_fields.len() {
-                return syntax(d.name.span, format!("`{e}` と `{f}` の field 数が異なる"));
-            }
             let mut alpha: BTreeMap<String, String> = BTreeMap::new();
             for sfield in &source_fields {
                 let s = full(e, &[&sfield.name]);
