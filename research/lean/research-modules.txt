@@ -2464,3 +2464,11 @@ ResearchLean.AG.AtlasGluingWidth.WidthHomology	ResearchLean/AG/AtlasGluingWidth/
 ResearchLean.AG.AtlasGluingWidth.WidthObservation	ResearchLean/AG/AtlasGluingWidth/WidthObservation.lean
 ResearchLean.AG.AtlasGluingWidth.WidthLaw	ResearchLean/AG/AtlasGluingWidth/WidthLaw.lean
 ResearchLean.AG.AtlasGluingWidth.WidthIntersection	ResearchLean/AG/AtlasGluingWidth/WidthIntersection.lean
+ResearchLean.AG.AtlasGluingWidth.WidthLocalH0	ResearchLean/AG/AtlasGluingWidth/WidthLocalH0.lean
+ResearchLean.AG.AtlasGluingWidth.WidthMayerVietoris	ResearchLean/AG/AtlasGluingWidth/WidthMayerVietoris.lean
+ResearchLean.AG.AtlasGluingWidth.WidthConnecting	ResearchLean/AG/AtlasGluingWidth/WidthConnecting.lean
+ResearchLean.AG.AtlasGluingWidth.WidthHidden	ResearchLean/AG/AtlasGluingWidth/WidthHidden.lean
+ResearchLean.AG.AtlasGluingWidth.WidthPhi	ResearchLean/AG/AtlasGluingWidth/WidthPhi.lean
+ResearchLean.AG.AtlasGluingWidth.WidthCoefficient	ResearchLean/AG/AtlasGluingWidth/WidthCoefficient.lean
+ResearchLean.AG.AtlasGluingWidth.WidthH0Regression	ResearchLean/AG/AtlasGluingWidth/WidthH0Regression.lean
+ResearchLean.AG.AtlasGluingWidth.WidthConeRegression	ResearchLean/AG/AtlasGluingWidth/WidthConeRegression.lean

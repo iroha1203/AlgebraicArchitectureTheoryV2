@@ -12,8 +12,9 @@ A は PR #5328、merge `bb80b4068979dd1ecca354d8cebe9cad66f54e16` で部分受�
 B は PR #5329、merge `a06669caf8b6983068a32f7ab81b5d390bb42b22`、
 C は PR #5330、merge `0626e53e5ff4dd8e80756d0bf9be133e84c10feb` で部分受理済み。
 D は PR #5332、merge `48482786950efee29b4e7f6fb3b128f0412e891f` で受理済み。
-現在は E の任意k指定族・全幅H¹観測・全低幅Law/定数/indicatorと真の交差をCycle 5候補として検証する。
-Eの同じMV標準delta・Q/P/Zとhidden生成元、G135係数/fiber生成元照合、全GOAL最終判定は未実施。
+Eの全幅群は PR #5333、merge `282f056b988b6b9a76239c0a402346e18dc18aa5` で部分受理済み。
+Cycle 6では残る同じMV標準delta・Q/P/Z・hidden/G135生成元と指定回帰例の実装が通り、
+全固定targetの完了候補を監査する。標準PR査読と別の全GOAL最終4本査読は未実施。
 G-135 の Research 達成済み結果を再利用する。Formal は `unported (Research-proved)`。
 
 ## Cycle 1 selection
@@ -1013,3 +1014,411 @@ exit0・warningなし。公式focused log SHA256 `29b5bf348d100f902e82d43b6051b3
 本体からResearch import0、GOAL/design/先行A–D/指定predecessor不変。
 正式r2の独立査読と同head CIはこの記録の後に確認する。Formal移植・実build、
 Research全体build/aggregate/全file elaborationは未実施。
+
+## Cycle 5 受理点
+
+[PR #5333](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5333) の最終head
+`1be64c28554f2914b7dd7e4c681d9164638a3211`、merge commit
+`282f056b988b6b9a76239c0a402346e18dc18aa5` を固定する。
+[正式r2/root acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5333#issuecomment-6109828693)
+は新規独立数学2・Lean2が全てNo major findings、中心/非中心0、全142明示実読、
+全689公理照会一致/標準公理のみ、全13scenario再統合。同head全7CI成功。
+[Issue受理記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5321#issuecomment-6109841105)
+のcycle resultはproof-checkpointであり、元E全selectionと残義務を保持する。
+
+## Cycle 6 selection（実装前）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-136-aat-atlas-gluing-width
+cycle: 6
+goal_blob_sha: dbc5b584987a1f3e1987125b7ccde2e361a89533
+base_oid: 282f056b988b6b9a76239c0a402346e18dc18aa5
+tracking_issue: 5321
+report_path: research/reports/G-136-aat-atlas-gluing-width.md
+selection:
+  proof_state_ref: PR5333#6109828693・Issue5321#6109841105・Cycle5残義務
+  proof_dag_predecessors: [受理T0/A-D, WidthInput/Integration/Homology/Observation/Law/Intersection, G133標準endpoint/代表元, G135同じ原fiber制限・係数完全列]
+  milestone: 同じ全幅指定minus族のMV発火とhidden・係数fiber生成元を接続してGOAL Eを閉じる
+  proof_obligations:
+    - 任意n>=2の実fine A/B/U H0核と粗A/B/I H0を元chart値から構成し、標準homologyへ輸送する
+    - 同じ粗H0差制限(x,y)->x-yと細二点差制限(x,y)->(x-y,x-y)を全元で同定する
+    - literal Qc零・Qfと有理数の全代表同型・q零、Pc/Pf零・Zbot、同じ局所JA/JB零を導出する
+    - 指定真交差z=(0,1)の実liftと微分glueを生成し、標準deltaの符号込み像を同じa0実H1類へ同定する
+    - 同じCのoldHiddenRow/cokerq包含の指定生成元を同じ旧H1商へ照合し非零を示す
+    - 同じG135 X=A/B/UのactualPhiComplex・原順像係数・R/kerTauを構成し、同じa0類とMVhidden生成元を実射で照合する
+    - 原始path/cycleから成分連結・順像係数有理数・H1/H2零・Tau零を生成し、局所unitbij/Tauinjを放電する
+    - 設計witnesses§5のn2 H0次元相違とH1零、原始一点対二点の実標準coneH0非零回帰例を構成する
+  exit_criteria:
+    - 上の全一般nと指定size kについて同じ原始入力・実射・実商・全代表式・全方向がLeanで閉じる
+    - Q/P/Zと標準delta lift/glue/符号、同じhidden/kerTau/a0の照合と局所条件が入力から放電される
+    - 強化誤推論の指定原始回帰例を同じ実微分・標準coneへ接続する
+    - 対象focused・対象全宣言公理・共通scanを通し、条項/前提/依存/spineを同期する
+  selection_reason: Cycle5が閉じた全幅群を、受理A-Dの同じ射へ具体適用して最後の生成元輸送gapを閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [WidthLocalH0, WidthMayerVietoris, WidthConnecting, WidthCoefficient, WidthRegression]
+  risks: [真交差と集合交差の混同, 標準H0と旧核の輸送, delta符号, 同次元だけの類同定, Rを全PhiH1へ無条件置換, H1零からconnected/錐消滅を推論]
+  unchecked: [選定群のLean実装・検証・正式PR査読, 累積全GOAL最終判定]
+```
+
+固定GOAL/design/common版636ea3d…、reuse版ed16acc…、Lean4.28/mathlib8f9d9cff…は継続する。
+元Cycle5の全E終了条件を変更しない。内部API/ファイル分割は設計選択であり、
+到達点を閉じるまで同じcycleで実装を反復する。累積全criteria照合前にcompletion candidateを出さない。
+
+## Cycle 6 到達点と固定目標の対応
+
+Cycle 5受理済みの任意k指定族を変えず、残るwitnesses§4を同じ原始比較の
+真交差・標準MV連結射・旧H¹商・G-135原fiber制限へ接続した候補である。
+namespaceは `AAT.AG.AtlasGluingWidth.Width`。一般n≥2を先に証明し、
+`size_ge_two` により全kのn=max(2,k+1)へ適用する。有限検算を一般証明へ替えていない。
+
+| 固定要求 | 実宣言・構成 | 出所と使用 |
+| --- | --- | --- |
+| 細A/B/Uと粗A/B/Iの実H⁰ | `a_zero_constant`, `b_w_constant`, `b_zero_constant`, `full_zero_constant`, `constantKernelEquiv`, `aH0Equiv`, `bH0Equiv`, `fullH0Equiv`, `coarseH0Equiv`, `coarseIntersectionH0Equiv` | 原a₀・b₋₁とBの自然数代表path、全閉路の零微分値を追う。両逆を元chartで証明し、H¹消滅を連結性へ使わない。 |
+| 同じ二つの標準H⁰差制限 | `pairKernelEquiv`, `fine/coarsePairStandardH0Equiv`, `fine_standard_H0_difference`, `coarse_standard_H0_difference` | 受理G-133 oldH0自然性で実homologyMapを輸送。粗はx-y、細は両点x-yという全元等式。 |
+| literal Q/P/q/Z | `diagonal_range`, `endpoint_difference_surjective`, `fineQEquiv`, `fine_Q_mk`, `coarse_Q_zero`, `fine_P_zero`, `coarse_P_zero`, `width_q_zero`, `width_Z_zero`, `primitiveQEquiv`, `primitive_P_zero`, `primitive_q_zero`, `primitive_Z_zero` | 実差制限像の商・H¹核から生成する。PrimitiveGluingの元行へ全短複体等号で戻す。qはQc=0から零、Zは粗交差H¹=0から⊥。 |
+| 同じ局所J零 | `regionA_proper`, `regionB_proper`, `local_defects_zero` | C5の任意真部分集合の同じ実H¹比較へ適用。局所零を引数へ渡す前に放電する。 |
+| 指定zの標準δの符号 | `intersectionValues`, `intersectionLift`, `intersection_lift`, `a_lift_d0`, `b_generator_zero`, `intersection_lift_derivative`, `standard_connecting_generator`, `standard_connecting_period_one` | z(false)=w₋₁値、z(true)=w₀値。Aはw₀のみz(true)、他はz(false)、Bは0。微分・glueは(z(true)-z(false))a₀。受理の実持上げ/微分/glue APIと標準δへ同定。 |
+| 同じCのhidden包含 | `primitive_fine_row_eq`, `primitive_delta_same`, `primitive_delta_period`, `gluingOldClass`, `gluingHiddenClass`, `primitiveQClass`, `hidden_inclusion_same`, `gluing_hidden_nonzero` | 原因子をfstへ正規化した全短複体同型のδ自然性。Cのliteral cokerqのmkが実oldHiddenRow.fで同じ旧H¹商代表へ送られる。coarseU実像は0、period1の同じ類は非零。 |
+| 原G-135の実Φ、連結成分、順像係数 | `phiChartEquiv`, `phiEdgeEquiv`, `phi_endpoint_same`, `phiActualEquiv`, `phi_components_subsingleton`, `width_chart_coefficient_bijective`, `full/a/bChartCoefficientEquiv`, `fullPhiH1Equiv`, `a/b_phi_H1_zero` | 追加所属を忘却/付加した同じセルと両端点の全cochain同型。零微分の成分指示関数から原categoryConnectedComponents一意性を証明し、原rightKan係数APIへ適用。 |
+| 原R、τ、係数SESと同じ生成元 | `pushforward_H1_zero`, `pushforward_H2_zero`, `width_gamma_forest`, `width_R_top`, `width_tau_zero`, `width_fiber_restriction_bijective`, `widthFiberKernelEquiv`, `coefficient_hidden_same`, `gluing_kernel_tau_same`, `gluing_kernel_tau_value`, `gluing_kernel_tau_generator`, `fullFiberREquiv`, `local_A_R_zero`, `local_B_R_zero`, `local_coefficient_preservation` | 空粗辺/面と空混在面から原五項列の両方向完全性・forestを放電。Dの同じoldCoefficientRow.gがCの同じ実hidden類に原fiberRestrictionH1を適用する値を証明。kerτを任意に定義せず、独立原τのliteral核へ制限する。 |
+| 任意kの同時発火 | `size_ge_two`, `all_width_gluing_fires` | 全kで同じhidden非零、kerτ値1、真交差二点・集合交差空を同時に結論。C5の全低幅観測・実Law・非一様性の同じ入力。 |
+| 設計§5 H⁰回帰 | `plus_a_back_value`, `plusAH0Equiv`, `h0_width_regression`, `h0_width_regression_two` | 同じplusAの孤立点はw₀、w₋₁とv₀はb₋₁で連結。元の核への両逆からminus1・plus2次元、H¹両零。 |
+| 設計§5 標準錐回帰 | `cone_h0_regression`, `cone_h0_regression_nonzero` | G133受理W3aの同じSource Bool、粗Fin1/細Fin2、全台・空辺面・定数Lawの実generatedBlockComparisonHom actualAと標準錐。実H¹欠損(0,0)、実錐H⁰次元1・非零を再利用し、一次零欠損から錐acyclicへの強化を反証する。 |
+
+`fullFiberREquiv` は原Γ forestを証明した後にだけRを全Φ H¹へ移す。
+生成元の照合は `gluing_kernel_tau_same` の既存実商と独立fiber射の等式であり、
+同次元の線形空間を恣意的に合わせる工程ではない。`phiActualEquiv` は全三次数と
+両微分を比較する。`primitive_fine_row_eq` は全短複体等号であり、objectだけの等号ではない。
+
+## Cycle 6 material premise・proof DAG
+
+| material premise | 役割・状態 | 生成元 / proof-use |
+| --- | --- | --- |
+| 一般T0の有限Source/reading/K1/部分incidence | 本文由来一般入力、Eで放電 | C5 WidthInputの同じ全field構成 → 全選択・微分・比較 |
+| n≥2 / NeZero n | 一般補題の方向仮定、全kで放電 | `size_neZero`, `size_ge_two` → 二交差点区別・B非空・周期wrap |
+| H⁰値一定/成分一意性 | 構成・放電義務 | 実辺値帰納と全閉路difference_zero_constant → H⁰両逆・原Φ成分・係数constant全単射 |
+| 局所J零 | 一般Cの方向仮定、指定例で放電 | `local_defects_zero` → `oldHiddenRow.f`, `local_coefficient_preservation` |
+| SES完全性・δ代表式 | 構成・放電義務 | 受理A–Cの同じ実図式 + 今回具体lift/d/glue → same standard δ/hidden |
+| Qc/Pc/Pf/Z消滅、Qf同型 | 構成・放電義務 | 差制限全元式・実像核・空交差辺 → q/P/Z/hidden非零 |
+| 原順像H¹/H²消滅・Γ forest | 構成・放電義務 | 原空粗辺面と空MixedFace → 原五項列の実fiber全単射・τ零・Rtop |
+| 同じhidden/fiber類とkerτ | 構成・放電義務 | `hidden_inclusion_same`, `coefficient_hidden_same`, `gluing_kernel_tau_same` → 同じperiod値1/非零 |
+| 指定Law粗adequacy/全幅一致/k0 | C5で構成・放電済み | 同じfst/indicator/constant、全発生ラベル支持・実generatedHomと両値クラス → 幅限界 |
+
+DAGはC5原始族→raw period/H¹→局所H⁰→真交差差制限/Q→実δlift/glue→
+PrimitiveGluing全行輸送→同じ旧H¹商/hidden→原G135fiberRestrictionH1/literalkerτ。
+並行して同じ原始族→実Φ全cochain同型/H⁰成分→rightKan係数、空面forest→R/τ。
+これらは受理T0/A–Dの一般理論へ具体適用する。結論を保持する新certificate fieldはない。
+
+## Cycle 6 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: C5全E指定族の残る真交差H0/Q/P/Z・標準delta・hidden・原G135係数fiber生成元と回帰例を接続
+  exit_criteria_status: [一般n>=2と全size k, 全三次数輸送と全元H0差制限, 実lift/d/glueとdelta符号, literal実商からhidden/kerTauへの同じ生成元, 原係数/成分/forest放電, 指定両回帰例, focused/全宣言公理/共通scan]
+  split_reason: none
+  completion_candidate: yes
+  lean_artifacts: [WidthLocalH0, WidthMayerVietoris, WidthConnecting, WidthHidden, WidthPhi, WidthCoefficient, WidthH0Regression, WidthConeRegression]
+  evidence: [fine_standard_H0_difference, primitive_q_zero, primitive_Z_zero, standard_connecting_generator, hidden_inclusion_same, gluing_kernel_tau_same, gluing_kernel_tau_generator, all_width_gluing_fires, h0_width_regression_two, cone_h0_regression_nonzero]
+  claim_mapping:
+    theorem_names: [all_width_gluing_fires, width_observation, width_uniform_separation, no_width_classifier, width_law_defect, constant_minus_defect]
+    source_labels: [固定GOAL T0/A-E, witnesses§1-5, exact-sequence§1-5]
+    conjuncts: [受理A真セルSES, 受理B標準錐LES/代表, 受理C実Q/P/snake/欠損, 受理D実Law/同じ係数核商, C5全k/Law/交差とC6同じ生成元接続]
+    undischarged_assumptions: []
+    acceptance_point: 実装候補は全固定終了条件へ対応し、標準PR監査と別の全GOAL最終4本査読を待つ
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged: [局所H0/成分, Qc/P/Z, 指定delta/hidden, 原係数/forest/kerTau, H0/錐回帰]
+    remaining: []
+  certificate_provenance:
+    discharged: [原始セルからの両逆と実微分, 原標準delta, 原五項列の同じfiber制限]
+    unresolved: []
+  proof_use:
+    used: [原端点値, n>=2/size k, 真交差二証拠, 局所J零, 原五項列完全性, 空混在面]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [後続検証記録と固定headのPR監査]
+  blocking_findings: []
+  next_obligation: 標準review-prと別の最終GOAL数学2・Lean2査読、root全gate再判定、同headCI、受理後merge/Issue同期
+```
+
+全GOAL最終判定はまだ行っていない。候補を `target-theorem-proved` と認定するのは、
+固定headの標準PR監査・root acceptance・別の独立最終4本全gate・CI後である。
+G136/G135 Formal移植は未実施（unported (Research-proved)）。本体実buildとResearch全体build、
+aggregate/全file elaborationは未実施。ArchSig PRDの保留作業は実行しない。
+
+## Cycle 6 spine declaration list
+
+全161明示宣言を含む（自動生成宣言は公理監査の全実環境リストにも含める）。
+名前は全て `AAT.AG.AtlasGluingWidth.Width` 以下。
+
+### WidthCoefficient.lean（23明示）
+
+```text
+AAT.AG.AtlasGluingWidth.Width.pushforward_H1_zero
+AAT.AG.AtlasGluingWidth.Width.pushforward_H2_zero
+AAT.AG.AtlasGluingWidth.Width.pushforward_standard_H1_zero
+AAT.AG.AtlasGluingWidth.Width.pushforward_standard_H2_zero
+AAT.AG.AtlasGluingWidth.Width.width_gamma_forest
+AAT.AG.AtlasGluingWidth.Width.width_R_top
+AAT.AG.AtlasGluingWidth.Width.width_tau_zero
+AAT.AG.AtlasGluingWidth.Width.width_fiber_restriction_bijective
+AAT.AG.AtlasGluingWidth.Width.widthFiberKernelMap
+AAT.AG.AtlasGluingWidth.Width.widthFiberKernelEquiv
+AAT.AG.AtlasGluingWidth.Width.widthFiberKernelEquiv_val
+AAT.AG.AtlasGluingWidth.Width.gluingFineH1Equiv
+AAT.AG.AtlasGluingWidth.Width.gluingKernelTauEquiv
+AAT.AG.AtlasGluingWidth.Width.gluingKernelTauClass
+AAT.AG.AtlasGluingWidth.Width.gluing_kernel_tau_same
+AAT.AG.AtlasGluingWidth.Width.gluing_kernel_tau_value
+AAT.AG.AtlasGluingWidth.Width.gluing_kernel_tau_generator
+AAT.AG.AtlasGluingWidth.Width.local_coefficient_preservation
+AAT.AG.AtlasGluingWidth.Width.fullFiberREquiv
+AAT.AG.AtlasGluingWidth.Width.local_A_R_zero
+AAT.AG.AtlasGluingWidth.Width.local_B_R_zero
+AAT.AG.AtlasGluingWidth.Width.size_ge_two
+AAT.AG.AtlasGluingWidth.Width.all_width_gluing_fires
+```
+
+### WidthConeRegression.lean（2明示）
+
+```text
+AAT.AG.AtlasGluingWidth.Width.cone_h0_regression
+AAT.AG.AtlasGluingWidth.Width.cone_h0_regression_nonzero
+```
+
+### WidthConnecting.lean（23明示）
+
+```text
+AAT.AG.AtlasGluingWidth.Width.intersectionValues
+AAT.AG.AtlasGluingWidth.Width.intersection_values_closed
+AAT.AG.AtlasGluingWidth.Width.aLift
+AAT.AG.AtlasGluingWidth.Width.intersectionLift
+AAT.AG.AtlasGluingWidth.Width.intersection_lift
+AAT.AG.AtlasGluingWidth.Width.unionGenerator
+AAT.AG.AtlasGluingWidth.Width.a_lift_d0
+AAT.AG.AtlasGluingWidth.Width.b_generator_zero
+AAT.AG.AtlasGluingWidth.Width.intersection_lift_derivative
+AAT.AG.AtlasGluingWidth.Width.union_generator_closed
+AAT.AG.AtlasGluingWidth.Width.intersectionClass
+AAT.AG.AtlasGluingWidth.Width.unionGeneratorClass
+AAT.AG.AtlasGluingWidth.Width.standard_connecting_generator
+AAT.AG.AtlasGluingWidth.Width.union_full_eq
+AAT.AG.AtlasGluingWidth.Width.selectionCyclesEquiv
+AAT.AG.AtlasGluingWidth.Width.selectionCyclesEquiv_val
+AAT.AG.AtlasGluingWidth.Width.selectionH1Equiv
+AAT.AG.AtlasGluingWidth.Width.selectionH1Equiv_mk
+AAT.AG.AtlasGluingWidth.Width.unionPeriodEquiv
+AAT.AG.AtlasGluingWidth.Width.union_generator_value
+AAT.AG.AtlasGluingWidth.Width.intersection_Q_value
+AAT.AG.AtlasGluingWidth.Width.standard_connecting_period_one
+AAT.AG.AtlasGluingWidth.Width.standard_connecting_nonzero
+```
+
+### WidthH0Regression.lean（7明示）
+
+```text
+AAT.AG.AtlasGluingWidth.Width.plusARoot
+AAT.AG.AtlasGluingWidth.Width.plusAIsolated
+AAT.AG.AtlasGluingWidth.Width.plusABackEdge
+AAT.AG.AtlasGluingWidth.Width.plus_a_back_value
+AAT.AG.AtlasGluingWidth.Width.plusAH0Equiv
+AAT.AG.AtlasGluingWidth.Width.h0_width_regression
+AAT.AG.AtlasGluingWidth.Width.h0_width_regression_two
+```
+
+### WidthHidden.lean（22明示）
+
+```text
+AAT.AG.AtlasGluingWidth.Width.primitiveFineRow
+AAT.AG.AtlasGluingWidth.Width.primitive_fine_row_eq
+AAT.AG.AtlasGluingWidth.Width.primitiveFineRowIso
+AAT.AG.AtlasGluingWidth.Width.primitiveUnionH1Equiv
+AAT.AG.AtlasGluingWidth.Width.primitiveIntersectionH0Equiv
+AAT.AG.AtlasGluingWidth.Width.primitiveIntersectionClass
+AAT.AG.AtlasGluingWidth.Width.primitiveDelta
+AAT.AG.AtlasGluingWidth.Width.primitive_delta_same
+AAT.AG.AtlasGluingWidth.Width.primitive_delta_period
+AAT.AG.AtlasGluingWidth.Width.region_union_full
+AAT.AG.AtlasGluingWidth.Width.gluingOldClass
+AAT.AG.AtlasGluingWidth.Width.gluingHiddenClass
+AAT.AG.AtlasGluingWidth.Width.primitiveQClass
+AAT.AG.AtlasGluingWidth.Width.hidden_inclusion_same
+AAT.AG.AtlasGluingWidth.Width.coefficient_hidden_same
+AAT.AG.AtlasGluingWidth.Width.gluing_old_nonzero
+AAT.AG.AtlasGluingWidth.Width.union_actual_range_zero
+AAT.AG.AtlasGluingWidth.Width.gluing_hidden_nonzero
+AAT.AG.AtlasGluingWidth.Width.primitiveQEquiv
+AAT.AG.AtlasGluingWidth.Width.primitive_P_zero
+AAT.AG.AtlasGluingWidth.Width.primitive_q_zero
+AAT.AG.AtlasGluingWidth.Width.primitive_Z_zero
+```
+
+### WidthLocalH0.lean（29明示）
+
+```text
+AAT.AG.AtlasGluingWidth.Width.localChart
+AAT.AG.AtlasGluingWidth.Width.localEdge
+AAT.AG.AtlasGluingWidth.Width.local_zero_edge
+AAT.AG.AtlasGluingWidth.Width.aRoot
+AAT.AG.AtlasGluingWidth.Width.aEdge
+AAT.AG.AtlasGluingWidth.Width.aBackEdge
+AAT.AG.AtlasGluingWidth.Width.a_zero_constant
+AAT.AG.AtlasGluingWidth.Width.b_w_selected
+AAT.AG.AtlasGluingWidth.Width.bW
+AAT.AG.AtlasGluingWidth.Width.bV
+AAT.AG.AtlasGluingWidth.Width.bAEdge
+AAT.AG.AtlasGluingWidth.Width.bBEdge
+AAT.AG.AtlasGluingWidth.Width.b_a_value
+AAT.AG.AtlasGluingWidth.Width.b_b_value
+AAT.AG.AtlasGluingWidth.Width.positive_cast_ne_zero
+AAT.AG.AtlasGluingWidth.Width.b_w_constant
+AAT.AG.AtlasGluingWidth.Width.b_zero_constant
+AAT.AG.AtlasGluingWidth.Width.constantKernelEquiv
+AAT.AG.AtlasGluingWidth.Width.constantKernelEquiv_apply
+AAT.AG.AtlasGluingWidth.Width.constantKernelEquiv_symm_apply
+AAT.AG.AtlasGluingWidth.Width.aH0Equiv
+AAT.AG.AtlasGluingWidth.Width.bH0Equiv
+AAT.AG.AtlasGluingWidth.Width.full_zero_constant
+AAT.AG.AtlasGluingWidth.Width.fullH0Equiv
+AAT.AG.AtlasGluingWidth.Width.coarseRoot
+AAT.AG.AtlasGluingWidth.Width.coarseH0Equiv
+AAT.AG.AtlasGluingWidth.Width.regionB_nonempty
+AAT.AG.AtlasGluingWidth.Width.coarseIntersectionRoot
+AAT.AG.AtlasGluingWidth.Width.coarseIntersectionH0Equiv
+```
+
+### WidthMayerVietoris.lean（34明示）
+
+```text
+AAT.AG.AtlasGluingWidth.Width.pairKernelEquiv
+AAT.AG.AtlasGluingWidth.Width.finePairH0Equiv
+AAT.AG.AtlasGluingWidth.Width.coarsePairH0Equiv
+AAT.AG.AtlasGluingWidth.Width.fine_H0_difference
+AAT.AG.AtlasGluingWidth.Width.coarse_H0_difference
+AAT.AG.AtlasGluingWidth.Width.finePairStandardH0Equiv
+AAT.AG.AtlasGluingWidth.Width.coarsePairStandardH0Equiv
+AAT.AG.AtlasGluingWidth.Width.fineIntersectionStandardH0Equiv
+AAT.AG.AtlasGluingWidth.Width.coarseIntersectionStandardH0Equiv
+AAT.AG.AtlasGluingWidth.Width.widthFineRow
+AAT.AG.AtlasGluingWidth.Width.widthCoarseRow
+AAT.AG.AtlasGluingWidth.Width.fine_standard_H0_difference
+AAT.AG.AtlasGluingWidth.Width.coarse_standard_H0_difference
+AAT.AG.AtlasGluingWidth.Width.diagonalDifference
+AAT.AG.AtlasGluingWidth.Width.endpointDifference
+AAT.AG.AtlasGluingWidth.Width.diagonal_range
+AAT.AG.AtlasGluingWidth.Width.endpoint_difference_surjective
+AAT.AG.AtlasGluingWidth.Width.diagonalCokernelEquiv
+AAT.AG.AtlasGluingWidth.Width.fineQEquiv
+AAT.AG.AtlasGluingWidth.Width.fine_Q_mk
+AAT.AG.AtlasGluingWidth.Width.coarse_standard_H0_surjective
+AAT.AG.AtlasGluingWidth.Width.coarse_Q_zero
+AAT.AG.AtlasGluingWidth.Width.width_selection_compatible
+AAT.AG.AtlasGluingWidth.Width.widthRowComparison
+AAT.AG.AtlasGluingWidth.Width.regionA_proper
+AAT.AG.AtlasGluingWidth.Width.regionB_proper
+AAT.AG.AtlasGluingWidth.Width.local_defects_zero
+AAT.AG.AtlasGluingWidth.Width.fine_pair_standard_H1_zero
+AAT.AG.AtlasGluingWidth.Width.coarse_pair_standard_H1_zero
+AAT.AG.AtlasGluingWidth.Width.fine_P_zero
+AAT.AG.AtlasGluingWidth.Width.coarse_P_zero
+AAT.AG.AtlasGluingWidth.Width.coarse_intersection_standard_H1_zero
+AAT.AG.AtlasGluingWidth.Width.width_Z_zero
+AAT.AG.AtlasGluingWidth.Width.width_q_zero
+```
+
+### WidthPhi.lean（21明示）
+
+```text
+AAT.AG.AtlasGluingWidth.Width.actualSelected
+AAT.AG.AtlasGluingWidth.Width.phiChartEquiv
+AAT.AG.AtlasGluingWidth.Width.phiEdgeEquiv
+AAT.AG.AtlasGluingWidth.Width.width_phi_faces_empty
+AAT.AG.AtlasGluingWidth.Width.phi_endpoint_same
+AAT.AG.AtlasGluingWidth.Width.phiActualEquiv
+AAT.AG.AtlasGluingWidth.Width.actual_chart_nonempty
+AAT.AG.AtlasGluingWidth.Width.actual_zero_constant
+AAT.AG.AtlasGluingWidth.Width.phi_endpoint_component
+AAT.AG.AtlasGluingWidth.Width.phi_components_subsingleton
+AAT.AG.AtlasGluingWidth.Width.phi_components_nonempty
+AAT.AG.AtlasGluingWidth.Width.width_chart_coefficient_bijective
+AAT.AG.AtlasGluingWidth.Width.a_actual_zero_constant
+AAT.AG.AtlasGluingWidth.Width.b_actual_zero_constant
+AAT.AG.AtlasGluingWidth.Width.full_actual_zero_constant
+AAT.AG.AtlasGluingWidth.Width.fullChartCoefficientEquiv
+AAT.AG.AtlasGluingWidth.Width.aChartCoefficientEquiv
+AAT.AG.AtlasGluingWidth.Width.bChartCoefficientEquiv
+AAT.AG.AtlasGluingWidth.Width.fullPhiH1Equiv
+AAT.AG.AtlasGluingWidth.Width.a_phi_H1_zero
+AAT.AG.AtlasGluingWidth.Width.b_phi_H1_zero
+```
+
+## Cycle 6 再利用sourceの版と適用
+
+G133/G135の受理参照は既出PR5269#6007700344 / PR5318#6078269788。
+現在sourceは指定reuse版ed16acc02229fdfe3846303de341d600878f03dcとbyte一致。
+今回使う実型と適用引数は上の条項・premise表で固定した。
+GammaForestの必要closure65sourceは既存受理cacheとbyte照合し、欠けた3cacheだけを専用worktreeへコピーした。
+他worktreeへ書き込んでいない。新8sourceは専用cacheに個別elaborateした。
+
+| source | SHA256 |
+| --- | --- |
+| `GammaForest.lean` | `c783cd60bb052d487adaee010650109b8df5d89d31fb1c0b81458316d8f09948` |
+| `LocalCoefficientSingle.lean` | `6520da925b2d8b2cf009869213b02c9fc780ec2557cd4573b62144f730e92505` |
+| `LocalNaturality.lean` | `1015b5e418fd49a243ef430b1ec87ec114a9e01df209e43befe1fc46f2dfd6b2` |
+| `FiveTermSequence.lean` | `c9fb934891dfd966ac23711e566cda115987220862e904c63cc5f9ed002687e3` |
+| `HomologyRepresentatives.lean` | `cee43137f7be42212ff7a02f9f0ff48a0541d5ea0a3f5ebb2c9a306dcae5c614` |
+| `RestrictionHomology.lean` | `44317eec491e425838829730a8c8c1474b8f855c8a97f58f82d8d0ac3ed1f5d0` |
+| `PushforwardComplex.lean` | `d9a640dec22caae23efc7518a600e587fa0b643523376ea63848f40648865332` |
+| `WitnessThreeActual.lean` | `dedd79f16cc6426bd4b71853d525db27709b8aa892f8fbe22335d330d9205b40` |
+| `WitnessThreeInput.lean` | `dd228a5fde0acf813a0126527382494aaef9d2d5feda6a3166b1784e776dd347` |
+| `WitnessThreeNamed.lean` | `b27892a58d955e6e9af818fc6a6097d2d52f4847a58044d8287591142217b6c6` |
+| `WitnessThreeConeRanks.lean` | `d852ba0613fc279d4ebb500fd0da42a0aafdc8b4e3e8f524ec4f33a2ce759079` |
+
+## Cycle 6 検証記録（PR前の固定実体）
+
+全33sourceの累積777明示と80生成、857実宣言を現環境で列挙し、
+全857の明示 `#print axioms` を一つの非aggregate監査fileで照会した。
+現環境857名・実出力857名・全明示777名・新161名の突合は欠落0/余剰0。
+依存はpropext/Classical.choice/Quot.soundのみ。全件log SHA256
+`d78bd01dcedb239d04cd503004e8bbd8e5a1fa8cccd31def96f94ee56215b947`。
+
+新8sourceは各必要targeted `lake env lean -o <専用cache> <対象file>` でexit0、
+warningなし。cacheは専用worktree内だけ。公式単一focusedコマンド
+`bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasGluingWidth/WidthConeRegression.lean`
+はexit0、log SHA256 `a7814e1d667a9d03e18881c22603bf43a70c54ac9734658d484e6e6cf91e70dd`。
+
+| source | 明示宣言数 | SHA256 |
+| --- | --- | --- |
+| `WidthCoefficient.lean` | 23 | `f71511816877738c44dbd7286f9843f555138c0cd1ed4ec6d416617790cead45` |
+| `WidthConeRegression.lean` | 2 | `1484ee823501f815b9849d97e9d9d4c79a45f1f70ec6fdb6a2d4a8eaa46df1cc` |
+| `WidthConnecting.lean` | 23 | `7ee60088339f187c224afbd102e4197928b5779e854706d11a77376970eb6a25` |
+| `WidthH0Regression.lean` | 7 | `447b112bea031286c6fc130da94ebec35115caa67a2d8b34bad61a531437d832` |
+| `WidthHidden.lean` | 22 | `d251057024bc317b3df996dac4407f86f7ca3aeba8bc90dc591abaf162a5f085` |
+| `WidthLocalH0.lean` | 29 | `904665a89efa0a30e60a673a4c7055bef9860a2771239d547d995d04c301868b` |
+| `WidthMayerVietoris.lean` | 34 | `c41418c52c4aa4a339e5fb7b96c11f69ed9fb8c1547cd1e37662b380b70a05ef` |
+| `WidthPhi.lean` | 21 | `175296d55b498c19511faa3f9dd7b11d47bf11e8ab5f7a638d56400d3164d1df` |
+
+| targeted source | exit | 実出力SHA256 |
+| --- | --- | --- |
+| `WidthLocalH0.lean` | 0 | `0fc80c5b5c386e8ba76e224a1a596218ffb51c0f7925b0366b375d669cedc242` |
+| `WidthMayerVietoris.lean` | 0 | `e7cb7eb3ceb2b94010b0faca824d05e49f2e719fec010b5ae0936a434065d098` |
+| `WidthConnecting.lean` | 0 | `7dcee6bbb803fee28cd331917e3680fa6fc44dc0563d9124955acd79c341d718` |
+| `WidthHidden.lean` | 0 | `38bee3a0782065a653f6e78c471e07c1bea0c3ebc5ee61872240b55ce2d6be40` |
+| `WidthPhi.lean` | 0 | `0ddfd2acc6b6d1272b19a030db47f0d06659d3e5645f8b6c457130407caa779d` |
+| `WidthCoefficient.lean` | 0 | `38bee3a0782065a653f6e78c471e07c1bea0c3ebc5ee61872240b55ce2d6be40` |
+| `WidthH0Regression.lean` | 0 | `1c3b70e7fb5005908438be919a3efff06e299979347860e2ca5c5ab690d06ffb` |
+| `WidthConeRegression.lean` | 0 | `e3a97f6df94b0b3e2bfcc58a2470bdf91e67d7c4f7baa9ffdb67513cbcce0a12` |
+
+placeholder/hidden/BiDi/privacy/追加語彙/whitespace scan clean。reportの既存
+axiom方針記載2hitは宣言やplaceholderではない。静的方向gate228module pass、
+本体→Research import0、固定GOAL/design5fileと受理A–D/C5の25sourcebyte不変。
+共通skill/品質/workflow参照も固定636ea3d版と同一。正式新4lanePR監査と
+別の全GOAL最終新4lane監査・固定headCIはこの記録後に行う。
