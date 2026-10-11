@@ -2454,3 +2454,7 @@ ResearchLean.AG.AtlasGluingWidth.LinearSnake	ResearchLean/AG/AtlasGluingWidth/Li
 ResearchLean.AG.AtlasGluingWidth.PairHomology	ResearchLean/AG/AtlasGluingWidth/PairHomology.lean
 ResearchLean.AG.AtlasGluingWidth.GluingDefect	ResearchLean/AG/AtlasGluingWidth/GluingDefect.lean
 ResearchLean.AG.AtlasGluingWidth.PrimitiveGluing	ResearchLean/AG/AtlasGluingWidth/PrimitiveGluing.lean
+ResearchLean.AG.AtlasGluingWidth.FiniteGluing	ResearchLean/AG/AtlasGluingWidth/FiniteGluing.lean
+ResearchLean.AG.AtlasGluingWidth.CoefficientBridge	ResearchLean/AG/AtlasGluingWidth/CoefficientBridge.lean
+ResearchLean.AG.AtlasGluingWidth.LawGluing	ResearchLean/AG/AtlasGluingWidth/LawGluing.lean
+ResearchLean.AG.AtlasGluingWidth.LawDefect	ResearchLean/AG/AtlasGluingWidth/LawDefect.lean
