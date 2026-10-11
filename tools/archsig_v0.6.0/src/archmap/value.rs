@@ -297,10 +297,8 @@ impl Reader<'_, '_> {
                     return Err(syntax(ptr, "Option は {\"none\":true} か {\"some\":v}"));
                 };
                 match entries.as_slice() {
-                    [(k, _, v)] if k == "none" && v.value == JValue::Bool(true) => {
-                        Value::Option(None)
-                    }
-                    [(k, _, v)] if k == "some" => Value::Option(Some(Box::new(self.read(
+                    [(k, v)] if k == "none" && v.value == JValue::Bool(true) => Value::Option(None),
+                    [(k, v)] if k == "some" => Value::Option(Some(Box::new(self.read(
                         v,
                         t,
                         &pointer_push(ptr, "some"),
@@ -312,12 +310,7 @@ impl Reader<'_, '_> {
                 let JValue::Obj(entries) = &node.value else {
                     return Err(syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}"));
                 };
-                let get = |k: &str| {
-                    entries
-                        .iter()
-                        .find(|(key, _, _)| key == k)
-                        .map(|(_, _, v)| v)
-                };
+                let get = |k: &str| entries.iter().find(|(key, _)| key == k).map(|(_, v)| v);
                 if entries.len() != 2 {
                     return Err(syntax(ptr, "data の値は tag と args の二つの欄だけを持つ"));
                 }
@@ -386,12 +379,7 @@ impl Reader<'_, '_> {
                 let JValue::Obj(entries) = &node.value else {
                     return Err(syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}"));
                 };
-                let get = |k: &str| {
-                    entries
-                        .iter()
-                        .find(|(key, _, _)| key == k)
-                        .map(|(_, _, v)| v)
-                };
+                let get = |k: &str| entries.iter().find(|(key, _)| key == k).map(|(_, v)| v);
                 if entries.len() != 2 {
                     return Err(syntax(ptr, "Term は params と body の二つの欄だけを持つ"));
                 }
@@ -488,7 +476,11 @@ pub(crate) fn check_snapshots(raw: &[RawSnapshot<'_>], law: &CheckedLaw) -> ARes
                 pointer: s.pointer.clone(),
             });
         }
-        let index: HashMap<String, usize> = subjects.iter().enumerate().map(|(i, s)| (s.id.clone(), i)).collect();
+        let index: HashMap<String, usize> = subjects
+            .iter()
+            .enumerate()
+            .map(|(i, s)| (s.id.clone(), i))
+            .collect();
         for a in &snap.atoms {
             let Some(&si) = index.get(&a.subject) else {
                 return Err(issue(

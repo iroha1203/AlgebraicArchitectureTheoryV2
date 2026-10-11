@@ -1,5 +1,5 @@
-//! 位置付きの JSON 読込み(入力仕様 §1)。UTF-8・BOM・重複 key・unpaired surrogate を検査し、
-//! 各値の byte 区間を保持する。
+//! JSON 読込み(入力仕様 §1)。UTF-8・BOM・重複 key・unpaired surrogate を検査し、
+//! 構文エラーは byte 区間、それ以外は JSON Pointer で位置を返す。
 
 use crate::issue::{Code, Issue, Location};
 
@@ -13,14 +13,13 @@ pub enum JValue {
     Num(String),
     Str(String),
     Arr(Vec<JNode>),
-    /// key、key の区間、値。元の順。
-    Obj(Vec<(String, Span, JNode)>),
+    /// key と値。元の順。
+    Obj(Vec<(String, JNode)>),
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct JNode {
     pub value: JValue,
-    pub span: Span,
 }
 
 impl Drop for JNode {
@@ -36,9 +35,7 @@ impl Drop for JNode {
 fn take(v: &mut JValue, stack: &mut Vec<JNode>) {
     match v {
         JValue::Arr(items) => stack.append(items),
-        JValue::Obj(entries) => {
-            stack.extend(std::mem::take(entries).into_iter().map(|(_, _, n)| n))
-        }
+        JValue::Obj(entries) => stack.extend(std::mem::take(entries).into_iter().map(|(_, n)| n)),
         _ => {}
     }
 }
@@ -111,14 +108,13 @@ impl P<'_> {
     }
 
     fn value_inner(&mut self, pointer: &str) -> Result<JNode, Box<Issue>> {
-        let start = self.i;
         let Some(&c) = self.s.get(self.i) else {
             return Err(syntax(self.here(), "JSON 値が必要"));
         };
         let value = match c {
             b'{' => {
                 self.i += 1;
-                let mut entries: Vec<(String, Span, JNode)> = Vec::new();
+                let mut entries: Vec<(String, JNode)> = Vec::new();
                 let mut keys = std::collections::HashSet::new();
                 self.ws();
                 if self.s.get(self.i) == Some(&b'}') {
@@ -129,9 +125,7 @@ impl P<'_> {
                         if self.s.get(self.i) != Some(&b'"') {
                             return Err(syntax(self.here(), "object の key は文字列"));
                         }
-                        let key_start = self.i;
                         let key = self.string()?;
-                        let key_span = (key_start, self.i);
                         let child = pointer_push(pointer, &key);
                         if !keys.insert(key.clone()) {
                             return Err(Box::new(Issue {
@@ -139,7 +133,7 @@ impl P<'_> {
                                 message: format!("key `{key}` が重複している"),
                                 location: Location::ArchMap {
                                     pointer: child,
-                                    span: Some(key_span),
+                                    span: None,
                                 },
                                 details: crate::issue::Details::Empty,
                             }));
@@ -151,7 +145,7 @@ impl P<'_> {
                         self.i += 1;
                         self.ws();
                         let v = self.value(&child)?;
-                        entries.push((key, key_span, v));
+                        entries.push((key, v));
                         self.ws();
                         match self.s.get(self.i) {
                             Some(b',') => self.i += 1,
@@ -205,10 +199,7 @@ impl P<'_> {
             b'-' | b'0'..=b'9' => JValue::Num(self.number()?),
             _ => return Err(syntax(self.here(), "JSON 値が必要")),
         };
-        Ok(JNode {
-            value,
-            span: (start, self.i),
-        })
+        Ok(JNode { value })
     }
 
     fn number(&mut self) -> Result<String, Box<Issue>> {

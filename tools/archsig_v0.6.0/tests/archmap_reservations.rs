@@ -35,11 +35,11 @@ fn with_value(atom: &str, value: &str) -> String {
 #[test]
 fn normative_archmaps_pass_with_their_law() {
     let c = map_ok(RESERVATIONS, RESERVATIONS_MAP);
-    assert!(c.missing_slots().is_empty());
+    assert!(missing_slots(&c).is_empty());
     assert_eq!(c.vocabularies.len(), 1);
     // retained は偽だが、静的検査は成立・反証を問わない。
     let e = map_ok(ENGINE, ENGINE_MAP);
-    assert!(e.missing_slots().is_empty());
+    assert!(missing_slots(&e).is_empty());
 }
 
 #[test]
@@ -54,15 +54,14 @@ fn unknown_owners_references_and_maps_have_completions() {
         "m-reserves",
     ] {
         let c = map_ok(RESERVATIONS, &without(atom));
-        let missing = c.missing_slots();
+        let missing = missing_slots(&c);
         assert_eq!(missing.len(), 1, "{atom}");
         assert_eq!(missing[0].0, "v");
     }
     let c = map_ok(RESERVATIONS, &without("r-free"));
-    assert_eq!(c.missing_slots()[0].1, "r");
-    assert_eq!(c.missing_slots()[0].2, "Reservations.State.free");
-    let r = c.subject("v", "r").unwrap();
-    assert_eq!(r.field("free").unwrap().slot, Slot::Missing);
+    assert_eq!(missing_slots(&c)[0].1, "r");
+    assert_eq!(missing_slots(&c)[0].2, "Reservations.State.free");
+    assert_eq!(field(&c, "v", "r", "free").slot, Slot::Missing);
 }
 
 #[test]
@@ -96,20 +95,27 @@ fn presentations_without_completion_are_inconsistent() {
 
 #[test]
 fn known_invalid_references_and_partial_maps_are_rejected() {
+    // 既知値だけで破れる全域性・所属は、補完が一つもない入力として拒否する。
     // 全域性違反: q の行がない。
     let partial = with_value("m-states", r#"[[["v", "p"], ["v", "r"]]]"#);
     let issue = map_err(RESERVATIONS, &partial);
-    assert_eq!(issue.code, Code::Reference);
+    assert_eq!(issue.code, Code::InconsistentObservation);
     assert!(pointer(&issue).ends_with("/value"), "{issue:?}");
     // 値が終域の族に属さない。
     let outside = with_value(
         "m-states",
         r#"[[["v", "p"], ["v", "r"]], [["v", "q"], ["v", "p"]]]"#,
     );
-    assert_eq!(map_err(RESERVATIONS, &outside).code, Code::Reference);
+    assert_eq!(
+        map_err(RESERVATIONS, &outside).code,
+        Code::InconsistentObservation
+    );
     // 所属の合わない端点。
     let foreign = with_value("e-to", r#"["v", "r"]"#);
-    assert_eq!(map_err(RESERVATIONS, &foreign).code, Code::Reference);
+    assert_eq!(
+        map_err(RESERVATIONS, &foreign).code,
+        Code::InconsistentObservation
+    );
     // 宣言型の違う参照、存在しない参照。
     assert_eq!(
         map_err(RESERVATIONS, &with_value("e-to", r#"["v", "A"]"#)).code,

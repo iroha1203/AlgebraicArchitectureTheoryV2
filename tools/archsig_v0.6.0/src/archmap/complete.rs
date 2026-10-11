@@ -1,7 +1,7 @@
 //! 依存参照・Map の全域性と、欠測 slot の補完の存在(入力仕様 §5)。
 //!
 //! 欠測した参照 slot を、型の合う登録 subject から選ぶ有限の変数とする。既知値だけで
-//! 破れる条件は不正な参照、どの補完でも満たせない条件は `inconsistent_observation` とする。
+//! 破れる条件も、どの補完でも満たせない条件も `inconsistent_observation` とする。
 //! Law の成立は補完の条件に使わない。
 
 use super::*;
@@ -63,6 +63,7 @@ struct Model<'a> {
     vars: Vec<(usize, usize, Vec<usize>)>,
     var_index: HashMap<(usize, usize), usize>,
     data_inhabited: HashMap<String, bool>,
+    law: &'a CheckedLaw,
 }
 
 fn and3(a: Option<bool>, b: Option<bool>) -> Option<bool> {
@@ -207,6 +208,76 @@ impl<'a> Model<'a> {
         }
     }
 
+    /// 欠測 slot の変数のうち、族の所属を決めるもの。
+    fn family_vars(&self, holder: usize, family: &Family, out: &mut Vec<usize>) {
+        if let Family::Owned { param, .. } = family {
+            if let Some(RefSrc::Var(v)) = self.slot_ref(holder, *param) {
+                out.push(v);
+            }
+            for &x in self.candidates(family) {
+                self.owner_var(x, out);
+            }
+        }
+    }
+
+    fn owner_var(&self, x: usize, out: &mut Vec<usize>) {
+        if let Some(f) = self.owner_field[x]
+            && let Some(RefSrc::Var(v)) = self.slot_ref(x, f)
+        {
+            out.push(v);
+        }
+    }
+
+    fn type_vars(&self, holder: usize, ty: &Type, out: &mut Vec<usize>) {
+        match ty {
+            Type::Ref(_) | Type::Owned(..) => {
+                if let Some(f) = self.family_of(holder, ty) {
+                    self.family_vars(holder, &f, out);
+                }
+            }
+            Type::Map(a, b) => {
+                self.type_vars(holder, a, out);
+                self.type_vars(holder, b, out);
+            }
+            Type::Tuple(items) => items.iter().for_each(|t| self.type_vars(holder, t, out)),
+            _ => {}
+        }
+    }
+
+    /// 条件の真偽が依存する変数。
+    fn vars_of(&self, c: &Cons) -> Vec<usize> {
+        let mut out = Vec::new();
+        match c {
+            Cons::Member {
+                holder,
+                family,
+                target,
+                ..
+            } => {
+                match target {
+                    // 既知の参照先では、その所属だけが効く。
+                    RefSrc::Known(t) => {
+                        if let Family::Owned { param, .. } = family
+                            && let Some(RefSrc::Var(v)) = self.slot_ref(*holder, *param)
+                        {
+                            out.push(v);
+                        }
+                        self.owner_var(*t, &mut out);
+                    }
+                    RefSrc::Var(v) => {
+                        out.push(*v);
+                        self.family_vars(*holder, family, &mut out);
+                    }
+                }
+            }
+            Cons::Cover { holder, family, .. } => self.family_vars(*holder, family, &mut out),
+            Cons::Inhabit { holder, ty, .. } => self.type_vars(*holder, ty, &mut out),
+        }
+        out.sort_unstable();
+        out.dedup();
+        out
+    }
+
     fn eval(&self, c: &Cons, assign: &[Option<usize>]) -> Option<bool> {
         match c {
             Cons::Member {
@@ -286,6 +357,19 @@ fn collect_known_inner(
         (Type::Option(t), Value::Option(Some(v))) => {
             collect_known(m, holder, t, v, &format!("{pointer}/some"), out)
         }
+        (Type::Data(d), Value::Data { constructor, args }) => {
+            let Signature::Data { constructors } = &m.law.declarations[d].signature else {
+                unreachable!("data 型は Law の宣言")
+            };
+            let tag = &constructor[d.len() + 1..];
+            let c = constructors
+                .iter()
+                .find(|c| c.name == tag)
+                .expect("検査済みの constructor");
+            for (i, (t, v)) in c.args.iter().zip(args).enumerate() {
+                collect_known(m, holder, t, v, &format!("{pointer}/args/{i}"), out);
+            }
+        }
         (Type::Map(a, b), Value::Map(pairs)) => {
             let keys = pairs
                 .iter()
@@ -344,6 +428,7 @@ pub(crate) fn check_completion(snapshots: &[Snapshot], law: &CheckedLaw) -> ARes
         vars: Vec::new(),
         var_index: HashMap::new(),
         data_inhabited,
+        law,
     };
     for g in 0..m.subjects.len() {
         for (f, field) in m.subjects[g].fields.iter().enumerate() {
@@ -392,59 +477,99 @@ pub(crate) fn check_completion(snapshots: &[Snapshot], law: &CheckedLaw) -> ARes
             }
         }
     }
-    let empty = vec![None; m.vars.len()];
-    for c in &cons {
-        if m.eval(c, &empty) == Some(false) {
-            return Err(match c {
-                Cons::Member { .. } => issue(
-                    Code::Reference,
-                    c.pointer(),
-                    "参照先が依存型の所属先に属さない",
-                ),
-                Cons::Cover { .. } => issue(
-                    Code::Reference,
-                    c.pointer(),
-                    "Map の key が始域の族をちょうど覆わない",
-                ),
-                Cons::Inhabit { .. } => issue(
-                    Code::InconsistentObservation,
-                    c.pointer(),
-                    "欠測 field に置ける型の値がない",
-                ),
-            });
-        }
-    }
-    let open: Vec<&Cons> = cons
-        .iter()
-        .filter(|c| m.eval(c, &empty).is_none())
-        .collect();
-    if open.is_empty() {
+    if feasible(&m, &cons) {
         return Ok(());
     }
-    let mut assign = empty;
-    if search(&m, &open, &mut assign, 0) {
-        Ok(())
-    } else {
-        Err(issue(
-            Code::InconsistentObservation,
-            open[0].pointer(),
-            "既知の値・参照・所属を保つ補完が一つもない",
-        ))
+    // 入力順に条件を足していき、初めて補完が無くなる条件を位置とする。
+    let (mut lo, mut hi) = (0, cons.len());
+    while hi - lo > 1 {
+        let mid = (lo + hi) / 2;
+        if feasible(&m, &cons[..mid]) {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
     }
+    Err(issue(
+        Code::InconsistentObservation,
+        cons[hi - 1].pointer(),
+        "既知の値・参照・所属を保つ補完が一つもない",
+    ))
 }
 
-/// 欠測した参照 slot へ候補を順に置き、全条件を満たす補完を探す。
-fn search(m: &Model<'_>, cons: &[&Cons], assign: &mut Vec<Option<usize>>, v: usize) -> bool {
+/// 条件と、その真偽が依存する変数の組。
+type Group<'a> = Vec<(&'a Cons, Vec<usize>)>;
+
+/// 条件のすべてを満たす補完があるか。欠測 slot を共有する条件の組ごとに、
+/// その組の変数だけで探す。
+fn feasible(m: &Model<'_>, cons: &[Cons]) -> bool {
+    let empty = vec![None; m.vars.len()];
+    let mut open: Vec<(&Cons, Vec<usize>)> = Vec::new();
+    for c in cons {
+        match m.eval(c, &empty) {
+            Some(false) => return false,
+            Some(true) => {}
+            None => open.push((c, m.vars_of(c))),
+        }
+    }
+    let mut parent: Vec<usize> = (0..m.vars.len()).collect();
+    fn find(parent: &mut [usize], mut v: usize) -> usize {
+        while parent[v] != v {
+            parent[v] = parent[parent[v]];
+            v = parent[v];
+        }
+        v
+    }
+    for (_, vs) in &open {
+        for w in vs.iter().skip(1) {
+            let (a, b) = (find(&mut parent, vs[0]), find(&mut parent, *w));
+            parent[a] = b;
+        }
+    }
+    let mut groups: Vec<(usize, Group<'_>)> = Vec::new();
+    for (c, vs) in open {
+        let root = find(&mut parent, vs[0]);
+        match groups.iter_mut().find(|(r, _)| *r == root) {
+            Some((_, g)) => g.push((c, vs)),
+            None => groups.push((root, vec![(c, vs)])),
+        }
+    }
+    let mut assign = empty;
+    groups
+        .iter()
+        .all(|(_, group)| search(m, group, &mut assign))
+}
+
+/// 組の変数へ候補を置き、組の全条件を満たす補完を探す。未定の変数が最も少ない条件の変数から
+/// 置く。全条件が真に決まれば、残りの変数はどの候補でもよい。
+fn search(m: &Model<'_>, cons: &[(&Cons, Vec<usize>)], assign: &mut Vec<Option<usize>>) -> bool {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
-        if cons.iter().any(|c| m.eval(c, assign) == Some(false)) {
-            return false;
+        let mut next: Option<(usize, usize)> = None;
+        for (c, vs) in cons {
+            match m.eval(c, assign) {
+                Some(false) => return false,
+                Some(true) => {}
+                None => {
+                    let free: Vec<usize> = vs
+                        .iter()
+                        .copied()
+                        .filter(|&v| assign[v].is_none())
+                        .collect();
+                    debug_assert!(!free.is_empty(), "未定の条件は未定の変数を持つ");
+                    if let Some(&v) = free.first()
+                        && next.is_none_or(|(n, _)| free.len() < n)
+                    {
+                        next = Some((free.len(), v));
+                    }
+                }
+            }
         }
-        if v == m.vars.len() {
-            return cons.iter().all(|c| m.eval(c, assign) == Some(true));
-        }
+        let Some((_, v)) = next else {
+            return true;
+        };
         for &x in &m.vars[v].2 {
             assign[v] = Some(x);
-            if search(m, cons, assign, v + 1) {
+            if search(m, cons, assign) {
                 return true;
             }
         }
@@ -474,6 +599,8 @@ fn data_inhabitation(
             }
             Type::Data(d) => ok.get(d).copied().unwrap_or(false),
             Type::Tuple(items) => items.iter().all(|t| inh(t, ok, by_type)),
+            // 始域が空なら空の Map がある。
+            Type::Map(a, b) => !inh(a, ok, by_type) || inh(b, ok, by_type),
             _ => true,
         }
     }

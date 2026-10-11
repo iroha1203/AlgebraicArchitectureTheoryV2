@@ -76,8 +76,7 @@ fn item(field: &str, value: &str) -> String {
 
 fn accepts(field: &str, value: &str) -> Value {
     let c = map_ok(LAW, &item(field, value));
-    let i = c.subject("v", "i").unwrap();
-    match &i.field(field).unwrap().slot {
+    match &common::field(&c, "v", "i", field).slot {
         Slot::Known { value, .. } => clone_value(value),
         Slot::Missing => panic!("{field} は既知"),
     }
@@ -106,8 +105,7 @@ fn missing_zero_empty_and_none_are_kept_apart() {
     assert_eq!(accepts("l", "[]"), Value::List(vec![]));
     assert_eq!(accepts("s", "[]"), Value::Set(vec![]));
     let c = map_ok(LAW, &item("n", r#""0""#));
-    let missing: Vec<_> = c
-        .missing_slots()
+    let missing: Vec<_> = missing_slots(&c)
         .into_iter()
         .filter(|m| m.1 == "i")
         .map(|m| m.2.to_owned())
@@ -115,8 +113,7 @@ fn missing_zero_empty_and_none_are_kept_apart() {
     assert!(missing.contains(&"V.Item.m".to_owned()));
     assert!(missing.contains(&"V.Item.o".to_owned()));
     assert!(!missing.contains(&"V.Item.n".to_owned()));
-    let (_, _, _, ty) = c
-        .missing_slots()
+    let (_, _, _, ty) = missing_slots(&c)
         .into_iter()
         .find(|m| m.1 == "i" && m.2 == "V.Item.m")
         .unwrap();
@@ -203,7 +200,7 @@ fn references_carry_their_snapshot_and_declared_type() {
     let issue = map_err(LAW, &other_owner);
     assert_eq!(
         (issue.code, pointer(&issue)),
-        (Code::Reference, "/snapshots/0/atoms/2/value")
+        (Code::InconsistentObservation, "/snapshots/0/atoms/2/value")
     );
 }
 
@@ -249,6 +246,96 @@ fn completions_exist_for_unknown_owners_and_references() {
     );
     let issue = map_err(LAW, &split);
     assert_eq!(issue.code, Code::InconsistentObservation, "{issue:?}");
+    // 位置は、subject の順と field の宣言順に条件を足して初めて補完が無くなる値。
+    // i は owner に S を補えば満たせ、補完できないのは k.mate。
+    let mut subjects = vec![
+        ("S", "Sys"),
+        ("T", "Sys"),
+        ("i", "Item"),
+        ("j", "Item"),
+        ("k", "Item"),
+        ("l", "Item"),
+    ];
+    let atoms = [
+        ("j", "owner", r#"["v","S"]"#),
+        ("l", "owner", r#"["v","T"]"#),
+        ("i", "peer", r#"["v","j"]"#),
+        ("k", "peer", r#"["v","j"]"#),
+        ("k", "mate", r#"["v","l"]"#),
+    ];
+    let issue = map_err(LAW, &doc(&subjects, &atoms));
+    assert_eq!(
+        (issue.code, pointer(&issue)),
+        (Code::InconsistentObservation, "/snapshots/0/atoms/4/value")
+    );
+    // 全 field が欠測の Item が多くても、探索は補完の有無と位置を決める。
+    let names: Vec<String> = (0..40).map(|n| format!("x{n}")).collect();
+    subjects.extend(names.iter().map(|n| (n.as_str(), "Item")));
+    let issue = map_err(LAW, &doc(&subjects, &atoms));
+    assert_eq!(pointer(&issue), "/snapshots/0/atoms/4/value");
+    map_ok(LAW, &doc(&subjects, &atoms[..4]));
+}
+
+const DATA_LAW: &str = r#"law "archsig.law/1" semantics "archsig/0.6.0";
+reading W {
+  entity Sys;
+  entity Tgt;
+  data D = C(Map<Sys, Sys>);
+  data E = K(Map<Sys, Tgt>);
+  entity Item { d: D; e: E; }
+}
+"#;
+
+/// DATA_LAW の ArchMap。subject `(id, 型の短名)`、Item の Atom `(subject, field, 値)`。
+fn data_doc(subjects: &[(&str, &str)], atoms: &[(&str, &str, &str)]) -> String {
+    let subjects: Vec<String> = subjects
+        .iter()
+        .map(|(id, ty)| format!(r#"{{"id":"{id}","type":"W.{ty}","origin":"o"}}"#))
+        .collect();
+    let atoms: Vec<String> = atoms
+        .iter()
+        .enumerate()
+        .map(|(i, (s, f, v))| {
+            format!(
+                r#"{{"id":"a{i}","subject":"{s}","field":"W.Item.{f}","value":{v},"origin":"o"}}"#
+            )
+        })
+        .collect();
+    format!(
+        r#"{{"format":"archsig.archmap/1","semantics":"archsig/0.6.0",
+"vocabularies":[{{"reading":"W","digest":"{}"}}],"sources":[],
+"origins":[{{"id":"o","mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例"}}],
+"snapshots":[{{"id":"v","origin":"o","subjects":[{}],"atoms":[{}]}}]}}"#,
+        ok(DATA_LAW).vocabularies[0].digest,
+        subjects.join(","),
+        atoms.join(",")
+    )
+}
+
+#[test]
+fn maps_inside_data_values_are_total_and_completable() {
+    let full = r#"{"tag":"C","args":[[[["v","S"],["v","S"]],[["v","T"],["v","S"]]]]}"#;
+    let partial = r#"{"tag":"C","args":[[[["v","S"],["v","S"]]]]}"#;
+    let systems = [("S", "Sys"), ("T", "Sys"), ("X", "Tgt"), ("i", "Item")];
+    map_ok(DATA_LAW, &data_doc(&systems, &[("i", "d", full)]));
+    // data の引数の Map も、key が始域の族をちょうど覆う。
+    let issue = map_err(DATA_LAW, &data_doc(&systems, &[("i", "d", partial)]));
+    assert_eq!(
+        (issue.code, pointer(&issue)),
+        (
+            Code::InconsistentObservation,
+            "/snapshots/0/atoms/0/value/args/0"
+        )
+    );
+    // Tgt が一つもなく Sys があると、欠測した e に置ける E の値がない。
+    let no_target = [("S", "Sys"), ("T", "Sys"), ("i", "Item")];
+    let issue = map_err(DATA_LAW, &data_doc(&no_target, &[("i", "d", full)]));
+    assert_eq!(
+        (issue.code, pointer(&issue)),
+        (Code::InconsistentObservation, "/snapshots/0/subjects/2")
+    );
+    // Sys もなければ、空の Map で E の値を作れる。
+    map_ok(DATA_LAW, &data_doc(&[("i", "Item")], &[]));
 }
 
 #[test]
@@ -304,6 +391,9 @@ fn origins_and_locations_are_checked() {
         .replace(r#""sources":[]"#, &format!(r#""sources":[{{"id":"src","uri":"file:///repo","revision":"r1","digest":"sha256:{}"}}]"#, "a".repeat(64)))
         .replace(r#""mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例""#, r#""mode":"observed","method":"読んだ","locations":[{"source":"src","path":"src/a.rs","span":[3,9]}]"#);
     map_ok(LAW, &observed);
+    for exact in ["[3.0,9]", "[300e-2,9e0]", "[0,9007199254740991]"] {
+        map_ok(LAW, &observed.replacen("[3,9]", exact, 1));
+    }
     for (from, to, code) in [
         (r#""path":"src/a.rs""#, r#""path":"../a.rs""#, Code::Syntax),
         (r#""path":"src/a.rs""#, r#""path":"/a.rs""#, Code::Syntax),
@@ -312,6 +402,17 @@ fn origins_and_locations_are_checked() {
         (
             r#""span":[3,9]"#,
             r#""span":[3,9007199254740992]"#,
+            Code::Syntax,
+        ),
+        // 綴りの値を丸めずに読み、整数でない数を拒否する。
+        (
+            r#""span":[3,9]"#,
+            r#""span":[4503599627370496.5,4503599627370497]"#,
+            Code::Syntax,
+        ),
+        (
+            r#""span":[3,9]"#,
+            r#""span":[0.99999999999999999,1]"#,
             Code::Syntax,
         ),
         (

@@ -8,7 +8,7 @@ use crate::prime::is_prime;
 use crate::types::Type;
 use num_bigint::BigUint;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub type CResult<T> = Result<T, Box<Issue>>;
 
@@ -44,7 +44,7 @@ pub struct TypeCtx<'a> {
 
 pub struct Checker {
     pub parser: Parser,
-    pub ast: Arc<Vec<Reading>>,
+    pub ast: Rc<Vec<Reading>>,
     pub reading_index: HashMap<String, usize>,
     pub aliases: Vec<HashMap<String, String>>,
     pub shorts: Vec<HashSet<String>>,
@@ -100,7 +100,7 @@ impl Checker {
     pub fn new(parser: Parser, readings: Vec<Reading>) -> Checker {
         Checker {
             parser,
-            ast: Arc::new(readings),
+            ast: Rc::new(readings),
             reading_index: HashMap::new(),
             aliases: Vec::new(),
             shorts: Vec::new(),

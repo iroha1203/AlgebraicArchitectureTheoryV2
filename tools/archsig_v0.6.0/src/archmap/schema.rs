@@ -43,7 +43,7 @@ fn syntax(pointer: &str, message: impl Into<String>) -> Box<Issue> {
 /// 決まった欄だけを持つ object。
 struct Obj<'a> {
     pointer: String,
-    entries: &'a [(String, crate::json::Span, JNode)],
+    entries: &'a [(String, JNode)],
 }
 
 impl<'a> Obj<'a> {
@@ -56,7 +56,7 @@ impl<'a> Obj<'a> {
         let JValue::Obj(entries) = &node.value else {
             return Err(not_null(node, pointer).unwrap_or_else(|| syntax(pointer, "object が必要")));
         };
-        for (k, _, v) in entries {
+        for (k, v) in entries {
             let child = pointer_push(pointer, k);
             if !required.contains(&k.as_str()) && !optional.contains(&k.as_str()) {
                 return Err(syntax(&child, format!("未知の欄 `{k}`")));
@@ -66,7 +66,7 @@ impl<'a> Obj<'a> {
             }
         }
         for r in required {
-            if !entries.iter().any(|(k, _, _)| k == r) {
+            if !entries.iter().any(|(k, _)| k == r) {
                 return Err(syntax(pointer, format!("欄 `{r}` が必要")));
             }
         }
@@ -79,8 +79,8 @@ impl<'a> Obj<'a> {
     fn get(&self, key: &str) -> Option<(&'a JNode, String)> {
         self.entries
             .iter()
-            .find(|(k, _, _)| k == key)
-            .map(|(k, _, v)| (v, pointer_push(&self.pointer, k)))
+            .find(|(k, _)| k == key)
+            .map(|(k, v)| (v, pointer_push(&self.pointer, k)))
     }
 
     fn req(&self, key: &str) -> (&'a JNode, String) {
@@ -150,11 +150,40 @@ fn as_nat(node: &JNode, pointer: &str) -> AResult<u64> {
     let JValue::Num(text) = &node.value else {
         return Err(not_null(node, pointer).unwrap_or_else(|| syntax(pointer, "Nat が必要")));
     };
-    const MAX: f64 = 9_007_199_254_740_991.0;
-    match text.parse::<f64>() {
-        Ok(v) if v.fract() == 0.0 && (0.0..=MAX).contains(&v) => Ok(v as u64),
-        _ => Err(syntax(pointer, "Nat は 0..9007199254740991 の整数")),
+    nat_value(text).ok_or_else(|| syntax(pointer, "Nat は 0..9007199254740991 の整数"))
+}
+
+/// JSON number の綴りが表す数を丸めずに読み、0..2^53−1 の整数なら返す。
+fn nat_value(text: &str) -> Option<u64> {
+    const MAX: u64 = 9_007_199_254_740_991;
+    let (negative, rest) = match text.strip_prefix('-') {
+        Some(r) => (true, r),
+        None => (false, text),
+    };
+    let (mantissa, exp) = match rest.find(['e', 'E']) {
+        Some(i) => (&rest[..i], &rest[i + 1..]),
+        None => (rest, "0"),
+    };
+    let (int, frac) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+    let digits = format!("{int}{frac}");
+    let digits = digits.trim_start_matches('0');
+    if digits.is_empty() {
+        return Some(0);
     }
+    if negative {
+        return None;
+    }
+    let trimmed = digits.trim_end_matches('0');
+    // 値は trimmed × 10^shift。
+    let exp: i64 = exp.parse().ok().filter(|e: &i64| e.abs() < 1_000)?;
+    let shift = exp - frac.len() as i64 + (digits.len() - trimmed.len()) as i64;
+    if shift < 0 || trimmed.len() as i64 + shift > 16 {
+        return None;
+    }
+    let value: u64 = format!("{trimmed}{}", "0".repeat(shift as usize))
+        .parse()
+        .ok()?;
+    (value <= MAX).then_some(value)
 }
 
 /// 版を先に確かめてから schema を読む。未知版の欄を未知欄として先に拒否しない。
@@ -162,12 +191,7 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
     let JValue::Obj(entries) = &root.value else {
         return Err(syntax("", "ArchMap は object"));
     };
-    let field = |k: &str| {
-        entries
-            .iter()
-            .find(|(key, _, _)| key == k)
-            .map(|(_, _, v)| v)
-    };
+    let field = |k: &str| entries.iter().find(|(key, _)| key == k).map(|(_, v)| v);
     let format = match field("format").map(|v| &v.value) {
         Some(JValue::Str(s)) => s.clone(),
         _ => return Err(syntax("/format", "format の文字列が必要")),

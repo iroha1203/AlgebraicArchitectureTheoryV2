@@ -90,14 +90,6 @@ pub struct Subject {
     pub pointer: String,
 }
 
-impl Subject {
-    pub fn field(&self, name: &str) -> Option<&Field> {
-        self.fields
-            .iter()
-            .find(|f| f.name.rsplit('.').next() == Some(name))
-    }
-}
-
 #[derive(Debug, PartialEq)]
 pub struct Snapshot {
     pub id: String,
@@ -116,38 +108,11 @@ pub struct CheckedArchMap {
     pub snapshots: Vec<Snapshot>,
 }
 
-impl CheckedArchMap {
-    /// 欠測 slot の identity `(snapshot, subject, field)` と型。
-    pub fn missing_slots(&self) -> Vec<(&str, &str, &str, &Type)> {
-        let mut out = Vec::new();
-        for s in &self.snapshots {
-            for sub in &s.subjects {
-                for f in &sub.fields {
-                    if f.slot == Slot::Missing {
-                        out.push((s.id.as_str(), sub.id.as_str(), f.name.as_str(), &f.ty));
-                    }
-                }
-            }
-        }
-        out
-    }
-
-    pub fn subject(&self, snapshot: &str, id: &str) -> Option<&Subject> {
-        self.snapshots
-            .iter()
-            .find(|s| s.id == snapshot)?
-            .subjects
-            .iter()
-            .find(|s| s.id == id)
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ArchMapFailure {
     pub issue: Issue,
     pub bytes_digest: String,
 }
-
 
 pub(crate) fn issue(code: Code, pointer: &str, message: impl Into<String>) -> Box<Issue> {
     Box::new(Issue {
