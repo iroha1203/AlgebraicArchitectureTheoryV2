@@ -170,11 +170,6 @@ impl Parser {
         }
     }
 
-    fn is_ident(&self) -> bool {
-        self.peek()
-            .is_some_and(|t| t.kind == TokenKind::Name && !is_reserved(&t.text))
-    }
-
     fn ident(&mut self) -> PResult<Ident> {
         match self.peek() {
             Some(t) if t.kind == TokenKind::Name && !is_reserved(&t.text) => {
@@ -799,80 +794,123 @@ impl Parser {
         self.binary(0, flags)
     }
 
+    /// 量化の `.` は字句の上では射影の `.` と区別できない。最上位の `.` を全て候補にし、
+    /// 域(型)と本体がどちらも読め、本体が最も遠くまで読める候補を残す。選ぶのは核の型検査。
     fn quantifier(&mut self, kind: QuantKind, start: usize, flags: Flags) -> PResult<ExprId> {
         let var = self.ident()?;
-        let limit = self.limit;
-        let split = if self.eat_kw("in") {
-            let glued = self.parse_expr(flags)?;
-            if self.eat_sym(".") {
-                let body = self.parse_expr(flags)?;
-                QuantSplit::Fixed {
-                    domain: QuantDomain::In(glued),
-                    body,
-                }
-            } else {
-                QuantSplit::InGlued { glued }
-            }
+        let typed = if self.eat_kw("in") {
+            false
         } else {
             self.expect_sym(":")?;
-            if self.is_ident() {
-                let name = self.qname()?;
-                if self.is_sym("[") {
-                    self.pos += 1;
-                    let index = self.ident()?;
-                    self.expect_sym("]")?;
-                    let span = (name.span().0, self.prev_end());
-                    self.expect_sym(".")?;
-                    let body = self.parse_expr(flags)?;
-                    QuantSplit::Fixed {
-                        domain: QuantDomain::Type(TypeAst::Named {
-                            name,
-                            index: Some(index),
-                            span,
-                        }),
-                        body,
+            true
+        };
+        let from = self.pos;
+        let limit = self.limit;
+        let mut depth = 0isize;
+        let mut dots = Vec::new();
+        for i in from..limit {
+            let t = &self.toks[i];
+            if t.kind != TokenKind::Sym {
+                continue;
+            }
+            match t.text.as_str() {
+                "(" | "[" | "{" => depth += 1,
+                ")" | "]" | "}" => {
+                    depth -= 1;
+                    if depth < 0 {
+                        break;
                     }
-                } else if self.eat_sym(".") {
-                    let span = name.span();
-                    let body = self.parse_expr(flags)?;
-                    QuantSplit::Fixed {
-                        domain: QuantDomain::Type(TypeAst::Named {
-                            name,
-                            index: None,
-                            span,
-                        }),
-                        body,
-                    }
-                } else if name.parts.len() > 1 {
-                    // 本体は名前列の途中から始まる。最短の型名から読んだ本体で終わりを決める。
-                    let (_, end) = self.parse_expr_at(name.parts[1].tok, limit, flags)?;
-                    self.pos = end;
-                    QuantSplit::TypedChain { parts: name.parts }
-                } else {
-                    return self.err("量化の型の後に `.` が必要");
                 }
+                ";" | "," if depth == 0 => break,
+                "." if depth == 0 => dots.push(i),
+                _ => {}
+            }
+        }
+        let mut candidates = Vec::new();
+        let mut end = None;
+        let mut first_error = None;
+        for c in dots {
+            let domain = if typed {
+                self.parse_type_at(from, c).map(QuantDomain::Type)
             } else {
-                let ty = self.ty()?;
-                self.expect_sym(".")?;
-                let body = self.parse_expr(flags)?;
-                QuantSplit::Fixed {
-                    domain: QuantDomain::Type(ty),
-                    body,
+                self.parse_expr_at(from, c, Flags::default())
+                    .and_then(|(d, e)| {
+                        if e == c {
+                            Ok(QuantDomain::In(d))
+                        } else {
+                            Err(self.err_at(e, "量化の域の終わりが必要"))
+                        }
+                    })
+            };
+            let domain = match domain {
+                Ok(d) => d,
+                Err(e) => {
+                    first_error.get_or_insert(e);
+                    continue;
+                }
+            };
+            match self.parse_expr_at(c + 1, limit, flags) {
+                Ok((body, e)) => {
+                    end = end.max(Some(e));
+                    candidates.push((domain, body, e));
+                }
+                Err(e) => {
+                    first_error.get_or_insert(e);
                 }
             }
+        }
+        // 本体が最も遠くまで読める候補だけを残す。手前で終わる本体は、続く字句を読めなかった。
+        let mut candidates: Vec<(QuantDomain, ExprId)> = candidates
+            .into_iter()
+            .filter(|c| Some(c.2) == end)
+            .map(|(d, b, _)| (d, b))
+            .collect();
+        let Some(end) = end else {
+            return Err(first_error.unwrap_or_else(|| {
+                Box::new(Issue::law(
+                    Code::Syntax,
+                    self.here(),
+                    "量化の域と本体を区切る `.` が必要",
+                ))
+            }));
         };
-        let end = self.pos;
+        self.pos = end;
+        let split = if candidates.len() == 1 {
+            let (domain, body) = candidates.pop().expect("一つの候補");
+            QuantSplit::Fixed { domain, body }
+        } else {
+            QuantSplit::Candidates(candidates)
+        };
         Ok(self.push(
-            ExprKind::Quant {
-                kind,
-                var,
-                split,
-                flags,
-                limit,
-                end,
-            },
+            ExprKind::Quant { kind, var, split },
             (start, self.prev_end()),
         ))
+    }
+
+    fn err_at(&self, tok: usize, message: &str) -> Box<Issue> {
+        let span = if tok < self.toks.len() {
+            self.toks[tok].span
+        } else {
+            (self.src_len, self.src_len)
+        };
+        Box::new(Issue::law(Code::Syntax, span, message))
+    }
+
+    /// 字句位置 `start` から `limit` の手前までをちょうど一つの型として読む。
+    fn parse_type_at(&mut self, start: usize, limit: usize) -> PResult<TypeAst> {
+        let (saved_pos, saved_limit) = (self.pos, self.limit);
+        self.pos = start;
+        self.limit = limit;
+        let result = self.ty().and_then(|t| {
+            if self.pos == limit {
+                Ok(t)
+            } else {
+                self.err("量化の型の終わりが必要")
+            }
+        });
+        self.pos = saved_pos;
+        self.limit = saved_limit;
+        result
     }
 
     fn binop(&self, flags: Flags) -> Option<(BinOp, u8)> {

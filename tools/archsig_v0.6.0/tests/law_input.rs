@@ -165,3 +165,26 @@ fn quantifier_separator_is_chosen_by_the_domain_type() {
     ));
     assert_eq!(issue.code, Code::Type);
 }
+
+/// 区切りの `.` の前後が観測族・if・let・数値射影でも、型の正しい量化を受理する。
+#[test]
+fn quantifier_bodies_and_domains_of_any_shape_are_accepted() {
+    let c = ok(&reading(
+        "entity S { xs: Set<Z>; ys: Set<Z>; b: Bool; } entity A(owner: S) { x: Z; } entity W { roots: Set<S>; }
+         law optional a(): exists s: S . A[s] = set<A>{};
+         law optional b(w: W): forall s in w.roots . A[s] = A[s];
+         law optional c(s: S): forall a in A[s] . A[s] = A[s];
+         law optional d(p: (Z, Z)): forall t: S . p.0 = 1;
+         law required e(s: S): forall x in if s.b then s.xs else s.ys . x = 1;
+         law required f(s: S): forall x in let ys = s.xs in ys . x = 1;
+         law optional g(): exists s: R.S . R.A[s] = set<A>{};
+         law optional h(s: S): forall x in s.xs . forall y in s.ys . (x, y).0 = x;",
+    ));
+    let e = c.infos.iter().find(|i| i.name == "R.e").unwrap();
+    assert_eq!(e.expressions[0].ty, archsig::types::Type::Bool);
+    // 域が List/Set になる区切りがない量化は拒否する。
+    let issue = err(&reading(
+        "entity S { n: Z; } law required l(s: S): forall x in s.n . x = 1;",
+    ));
+    assert_eq!(issue.code, Code::Type);
+}

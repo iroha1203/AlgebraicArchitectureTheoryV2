@@ -171,12 +171,27 @@ fn name_collisions_are_rejected() {
         &format!("{ITEM} law required l(i: Item): forall i: Z . i = i;"),
         Code::DuplicateId,
     );
-    rejects("entity R;", Code::DuplicateId);
     rejects("view count(): Z = 0;", Code::Syntax);
     rejects("view v(sum: Z): Z = sum;", Code::Syntax);
     rejects("entity then;", Code::Syntax);
     let two = format!("{HEADER}reading A {{ use B as X; entity X; }} reading B {{ entity S; }}");
     assert_eq!(err(&two).code, Code::DuplicateId);
+}
+
+/// 仕様が別の scope とする名前は重なってよい。`.` 列は候補の最長一致で解決する。
+#[test]
+fn names_in_different_scopes_may_coincide() {
+    let c = ok(&format!(
+        "{HEADER}reading R {{ entity R {{ x: Z; }} data D = sum | path(Z); view v(r: R): Z = r.x; view w(r: R.R): D = sum; \
+         view m(n: Z): Z = match n {{ _ => 0; }}; view k(d: D): Z = match d {{ sum => 0; path(z) => z; }}; }}\n\
+         reading count {{ use R as target; view u(r: target.R): Z = R.v(r); }}"
+    ));
+    assert!(c.infos.iter().any(|i| i.name == "R.R"));
+    assert!(c.infos.iter().any(|i| i.name == "count.u"));
+    // arrow の owner・from・to は body に置いてもよい。
+    ok(&reading(
+        "entity S; entity A(owner: S); arrow M(owner: S) { from: A[owner]; to: A[owner]; }",
+    ));
 }
 
 #[test]
@@ -369,4 +384,18 @@ fn malformed_syntax_is_rejected() {
     rejects("view v(): Text = \"\\ud800\";", Code::Syntax);
     rejects("view v(): Z = unknown;", Code::Reference);
     rejects("entity E { in: Z; }", Code::Syntax);
+}
+
+/// correspondence が覆う owned 型は、その reading から参照できる reading の中で決まる。
+#[test]
+fn correspondence_cover_is_relative_to_its_reading() {
+    let src = format!(
+        "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}\n\
+         reading B {{ use A as P; entity Extra(owner: P.S) {{ w: Z; }} }}"
+    );
+    ok(&src);
+    let inside = format!(
+        "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} entity Extra(owner: S); correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}"
+    );
+    assert_eq!(err(&inside).code, Code::Syntax);
 }

@@ -153,13 +153,11 @@ pub struct Flags {
 /// 量化の域と本体の区切り(§4 の `.`)の読み。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum QuantSplit {
-    /// 区切りが一意に決まった。
+    /// 区切りが決まった。
     Fixed { domain: QuantDomain, body: ExprId },
-    /// `forall x in X` の X が区切りの `.` を後置の射影として取り込んだ。
-    /// 核が X の左端の後置列のうち、域が List/Set になる位置を区切りとする。
-    InGlued { glued: ExprId },
-    /// `forall x: A.B.c ...` の名前列。`parts` の先頭から何個を型名とするかを核が決める。
-    TypedChain { parts: Vec<Ident> },
+    /// 最上位の `.` のうち、域(型)と本体がどちらも読める区切りの候補。
+    /// 核が、域が List/Set になる(型名になる)ただ一つの候補を選ぶ。
+    Candidates(Vec<(QuantDomain, ExprId)>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -188,9 +186,6 @@ pub enum ExprKind {
         kind: QuantKind,
         var: Ident,
         split: QuantSplit,
-        flags: Flags,
-        limit: usize,
-        end: usize,
     },
     Binary {
         op: BinOp,

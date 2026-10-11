@@ -2,9 +2,7 @@
 
 use super::ast::{ExprId, Role, Span};
 use crate::canonical::Json;
-use crate::issue::Location;
 use crate::types::Type;
-use std::collections::BTreeMap;
 
 /// 型付きの field・parameter。`span` は名前の出現。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -133,18 +131,6 @@ pub enum ExpressionKind {
     RelationRight,
 }
 
-impl ExpressionKind {
-    fn wire(self) -> &'static str {
-        match self {
-            ExpressionKind::Guard => "guard",
-            ExpressionKind::Body => "body",
-            ExpressionKind::Read => "read",
-            ExpressionKind::RelationLeft => "relation_left",
-            ExpressionKind::RelationRight => "relation_right",
-        }
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ResolvedExpression {
     pub kind: ExpressionKind,
@@ -169,41 +155,6 @@ pub enum SuppliedRule {
     },
 }
 
-impl SuppliedRule {
-    fn rule(&self) -> &'static str {
-        match self {
-            SuppliedRule::GuardTrue { .. } => "guard_true",
-            SuppliedRule::SameNameAlignment { .. } => "same_name_alignment",
-            SuppliedRule::LocalDeclared { .. } => "local_declared",
-            SuppliedRule::LocalSupport { .. } => "local_support",
-        }
-    }
-
-    fn wire(&self) -> Json {
-        let (span, pairs) = match self {
-            SuppliedRule::GuardTrue { span }
-            | SuppliedRule::LocalDeclared { span }
-            | SuppliedRule::LocalSupport { span } => (*span, None),
-            SuppliedRule::SameNameAlignment { span, pairs } => (*span, Some(pairs)),
-        };
-        let mut m = BTreeMap::new();
-        m.insert("rule".to_owned(), Json::str(self.rule()));
-        m.insert("location".to_owned(), Location::Law { span }.wire());
-        if let Some(pairs) = pairs {
-            m.insert(
-                "pairs".to_owned(),
-                Json::Arr(
-                    pairs
-                        .iter()
-                        .map(|(a, b)| Json::Arr(vec![Json::str(a.clone()), Json::str(b.clone())]))
-                        .collect(),
-                ),
-            );
-        }
-        Json::Obj(m)
-    }
-}
-
 /// 結果仕様 §1 の DeclarationInfo。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DeclarationInfo {
@@ -218,77 +169,6 @@ pub struct DeclarationInfo {
     pub references: Vec<(Span, String)>,
     pub expressions: Vec<ResolvedExpression>,
     pub supplied: Vec<SuppliedRule>,
-}
-
-fn params_wire(ps: &[(String, Type)]) -> Json {
-    Json::Arr(
-        ps.iter()
-            .map(|(n, t)| Json::obj([("name", Json::str(n.clone())), ("type", t.wire())]))
-            .collect(),
-    )
-}
-
-impl DeclarationInfo {
-    pub fn wire(&self) -> Json {
-        let mut m = BTreeMap::new();
-        m.insert("name".to_owned(), Json::str(self.name.clone()));
-        m.insert("kind".to_owned(), Json::str(self.kind));
-        m.insert("parameters".to_owned(), params_wire(&self.parameters));
-        m.insert("fields".to_owned(), params_wire(&self.fields));
-        if let Some(t) = &self.returns {
-            m.insert("returns".to_owned(), t.wire());
-        }
-        if let Some(r) = self.role {
-            m.insert(
-                "role".to_owned(),
-                Json::str(match r {
-                    Role::Required => "required",
-                    Role::Optional => "optional",
-                }),
-            );
-        }
-        m.insert(
-            "location".to_owned(),
-            Location::Law { span: self.span }.wire(),
-        );
-        m.insert(
-            "dependencies".to_owned(),
-            Json::Arr(self.dependencies.iter().cloned().map(Json::Str).collect()),
-        );
-        let references = self
-            .references
-            .iter()
-            .map(|(s, n)| {
-                Json::obj([
-                    ("location", Location::Law { span: *s }.wire()),
-                    ("name", Json::str(n.clone())),
-                ])
-            })
-            .collect();
-        let expressions = self
-            .expressions
-            .iter()
-            .map(|e| {
-                Json::obj([
-                    ("kind", Json::str(e.kind.wire())),
-                    ("location", Location::Law { span: e.span }.wire()),
-                    ("type", e.ty.wire()),
-                ])
-            })
-            .collect();
-        m.insert(
-            "resolution".to_owned(),
-            Json::obj([
-                ("references", Json::Arr(references)),
-                ("expressions", Json::Arr(expressions)),
-                (
-                    "supplied",
-                    Json::Arr(self.supplied.iter().map(SuppliedRule::wire).collect()),
-                ),
-            ]),
-        );
-        Json::Obj(m)
-    }
 }
 
 /// 入力仕様 §4 の語彙 manifest と、その canonical JSON の digest。

@@ -75,11 +75,6 @@ enum Callee {
     Value(Type),
 }
 
-enum Split {
-    Node(ExprId),
-    Prefix(Vec<Ident>),
-}
-
 struct Checkpoint {
     refs: usize,
     view_edges: usize,
@@ -325,11 +320,8 @@ impl Checker {
                 kind: _,
                 var,
                 split,
-                flags,
-                limit,
-                end,
             } => {
-                self.check_quant(&var, &split, flags, limit, end, span, env, ctx)?;
+                self.check_quant(id, &var, &split, span, env, ctx)?;
                 Ok(Type::Bool)
             }
             ExprKind::Dotted(parts) => self.check_dotted(&parts, expected, env, ctx),
@@ -548,14 +540,14 @@ impl Checker {
         }
         let whole = (head.span.0, parts[parts.len() - 1].span.1);
         if parts.len() == 1 {
+            if let Some((data, index)) = self.short_ctor(&head.name, expected) {
+                return self.ctor_value(&data, index, head.span, &[], env, ctx);
+            }
             if BUILTIN_OPS.contains(&head.name.as_str()) {
                 return syntax(
                     head.span,
                     format!("組込み演算 `{}` は適用して使う", head.name),
                 );
-            }
-            if let Some((data, index)) = self.short_ctor(&head.name, expected) {
-                return self.ctor_value(&data, index, head.span, &[], env, ctx);
             }
         }
         match self.resolve_prefix(ctx.reading, parts) {
@@ -668,11 +660,11 @@ impl Checker {
                     Lookup::Missing => {}
                 }
                 if parts.len() == 1 {
-                    if let Some(b) = BUILTIN_OPS.iter().find(|b| **b == head.name) {
-                        return Ok((Callee::Builtin(b), span));
-                    }
                     if let Some((data, index)) = self.short_ctor(&head.name, expected) {
                         return Ok((Callee::Ctor(data, index), span));
+                    }
+                    if let Some(b) = BUILTIN_OPS.iter().find(|b| **b == head.name) {
+                        return Ok((Callee::Builtin(b), span));
                     }
                 }
                 match self.resolve_prefix(ctx.reading, &parts) {
@@ -981,17 +973,15 @@ impl Checker {
         ctx: &Ctx,
     ) -> CResult<Type> {
         let st = self.check(scrutinee, None, env, ctx)?;
-        let Type::Data(data) = &st else {
-            return type_error(
-                self.span(scrutinee),
-                &Type::Data(String::new()),
-                &st,
-                "match は data 型の値に使う",
-            );
+        // data 型の値は constructor で場合分けする。その他の型の値は `_` と束縛だけで受ける。
+        let constructors = match &st {
+            Type::Data(data) => match self.sigs.get(data) {
+                Some(Signature::Data { constructors }) => constructors.len(),
+                _ => unreachable!("data 型の署名"),
+            },
+            _ => 0,
         };
-        let Some(Signature::Data { constructors }) = self.sigs.get(data).cloned() else {
-            unreachable!()
-        };
+        let is_data = matches!(st, Type::Data(_));
         let rec_scrutinee = match &self.parser.exprs[self.strip_groups(scrutinee)].kind {
             ExprKind::Dotted(parts) if parts.len() == 1 => {
                 match (env.lookup(&parts[0].name), &ctx.rec) {
@@ -1013,7 +1003,7 @@ impl Checker {
             let mark = env.vars.len();
             match self.check_pattern(&arm.pattern, &st, env, ctx, rec_scrutinee, true)? {
                 None => {
-                    if covered.len() == constructors.len() {
+                    if is_data && covered.len() == constructors {
                         return syntax(arm.pattern.span(), "到達できない分岐");
                     }
                     catch_all = true;
@@ -1039,7 +1029,7 @@ impl Checker {
             }
             env.vars.truncate(mark);
         }
-        if !catch_all && covered.len() != constructors.len() {
+        if !catch_all && (!is_data || covered.len() != constructors) {
             return syntax(
                 span,
                 "match は全 constructor を一度ずつ覆うか、末尾に `_` を置く",
@@ -1154,97 +1144,62 @@ impl Checker {
     // ---- 量化 ----
 
     #[allow(clippy::too_many_arguments)]
+    /// 量化の域と本体の区切りを決めて検査し、決めた区切りを原式の量化ノードへ書き戻す。
     fn check_quant(
         &mut self,
+        id: ExprId,
         var: &Ident,
         split: &QuantSplit,
-        flags: Flags,
-        limit: usize,
-        end: usize,
         span: Span,
         env: &mut Env,
         ctx: &Ctx,
     ) -> CResult<()> {
-        let (elem, body) = match split {
-            QuantSplit::Fixed {
-                domain: QuantDomain::In(d),
-                body,
-            } => (self.quant_domain(*d, env, ctx)?, *body),
-            QuantSplit::Fixed {
-                domain: QuantDomain::Type(t),
-                body,
-            } => (self.resolve_type_in(t, env, ctx)?, *body),
-            QuantSplit::InGlued { glued } => {
-                let cands = self.spine_splits(*glued);
-                if cands.is_empty() {
-                    return syntax(span, "量化の域と本体を区切る `.` が必要");
-                }
+        let (domain, body) = match split {
+            QuantSplit::Fixed { domain, body } => (domain.clone(), *body),
+            QuantSplit::Candidates(cands) => {
                 let mut valid = Vec::new();
-                for (cand, sep) in &cands {
-                    let node = self.split_node(cand);
+                for (domain, body) in cands {
                     let cp = self.checkpoint(env);
-                    let ok = matches!(self.check(node, None, env, ctx), Ok(t) if collection_elem(&t).is_some());
+                    let ok = match domain {
+                        QuantDomain::In(d) => {
+                            matches!(self.check(*d, None, env, ctx), Ok(t) if collection_elem(&t).is_some())
+                        }
+                        QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx).is_ok(),
+                    };
                     self.rollback(cp, env);
                     if ok {
-                        valid.push((node, *sep));
+                        valid.push((domain.clone(), *body));
                     }
                 }
                 match valid.len() {
-                    1 => {}
+                    1 => valid.pop().expect("一つの候補"),
                     0 => {
-                        let node = self.split_node(&cands[0].0);
-                        self.quant_domain(node, env, ctx)?;
-                        return syntax(span, "量化の域が List か Set にならない");
+                        // 最初の候補の域の誤りを返す。
+                        match &cands[0].0 {
+                            QuantDomain::In(d) => {
+                                self.quant_domain(*d, env, ctx)?;
+                            }
+                            QuantDomain::Type(t) => {
+                                self.resolve_type_in(t, env, ctx)?;
+                            }
+                        }
+                        return syntax(span, "量化の域と本体の区切りが決まらない");
                     }
                     _ => return syntax(span, "量化の域と本体の区切りが一意に決まらない"),
                 }
-                let (node, sep) = valid[0];
-                let elem = self.quant_domain(node, env, ctx)?;
-                (elem, self.reparse_body(sep + 1, limit, flags, end, span)?)
             }
-            QuantSplit::TypedChain { parts } => {
-                let mut valid = Vec::new();
-                for j in 1..parts.len() {
-                    if let Some((Target::Decl(n), k)) =
-                        self.resolve_prefix_silent(ctx.reading, &parts[..j])
-                        && k == j
-                        && matches!(
-                            self.decl_kind(&n),
-                            Some("entity" | "arrow" | "correspondence" | "data")
-                        )
-                    {
-                        valid.push(j);
-                    }
-                }
-                let j = match valid.as_slice() {
-                    [j] => *j,
-                    [] => {
-                        let q = QName {
-                            parts: parts.clone(),
-                        };
-                        return reference(
-                            q.span(),
-                            format!("量化の型 `{}` を解決できない", q.text()),
-                        );
-                    }
-                    _ => return syntax(span, "量化の型と本体の区切りが一意に決まらない"),
-                };
-                let q = QName {
-                    parts: parts[..j].to_vec(),
-                };
-                let ty = TypeAst::Named {
-                    span: q.span(),
-                    name: q,
-                    index: None,
-                };
-                let t = self.resolve_type_in(&ty, env, ctx)?;
-                (t, self.reparse_body(parts[j].tok, limit, flags, end, span)?)
-            }
+        };
+        let elem = match &domain {
+            QuantDomain::In(d) => self.quant_domain(*d, env, ctx)?,
+            QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx)?,
         };
         let mark = env.vars.len();
         self.bind(env, var, elem, Origin::Other)?;
         self.check_bool(body, env, ctx)?;
         env.vars.truncate(mark);
+        if let ExprKind::Quant { split, .. } = &mut self.parser.exprs[id].kind {
+            *split = QuantSplit::Fixed { domain, body };
+        }
         Ok(())
     }
 
@@ -1258,65 +1213,6 @@ impl Checker {
                 &t,
                 "量化の域は List か Set",
             ),
-        }
-    }
-
-    fn reparse_body(
-        &mut self,
-        start: usize,
-        limit: usize,
-        flags: Flags,
-        end: usize,
-        span: Span,
-    ) -> CResult<ExprId> {
-        let (body, body_end) = self.parser.parse_expr_at(start, limit, flags)?;
-        if body_end != end {
-            return syntax(span, "量化の本体の終わりが決まらない");
-        }
-        Ok(body)
-    }
-
-    /// `forall x in X` の X の左端の後置列にある `.` を、内側から順に区切りの候補とする。
-    fn spine_splits(&self, glued: ExprId) -> Vec<(Split, usize)> {
-        let mut out = Vec::new();
-        let mut node = glued;
-        loop {
-            match &self.parser.exprs[node].kind {
-                ExprKind::Binary { lhs, .. } => node = *lhs,
-                ExprKind::Call { callee, .. } => node = *callee,
-                ExprKind::With { base, .. } => node = *base,
-                ExprKind::Field { base, name } => {
-                    out.push((Split::Node(*base), name.tok - 1));
-                    node = *base;
-                }
-                ExprKind::Index { base, dot_tok, .. } => {
-                    out.push((Split::Node(*base), *dot_tok));
-                    node = *base;
-                }
-                ExprKind::Dotted(parts) => {
-                    for k in 1..parts.len() {
-                        out.push((Split::Prefix(parts[..k].to_vec()), parts[k].tok - 1));
-                    }
-                    break;
-                }
-                _ => break,
-            }
-        }
-        out.reverse();
-        out
-    }
-
-    fn split_node(&mut self, s: &Split) -> ExprId {
-        match s {
-            Split::Node(n) => *n,
-            Split::Prefix(parts) => {
-                let span = (parts[0].span.0, parts[parts.len() - 1].span.1);
-                self.parser.exprs.push(Expr {
-                    kind: ExprKind::Dotted(parts.clone()),
-                    span,
-                });
-                self.parser.exprs.len() - 1
-            }
         }
     }
 }

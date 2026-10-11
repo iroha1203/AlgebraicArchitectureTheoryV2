@@ -135,11 +135,10 @@ impl Checker {
 
     // ---- 名前の表 ----
 
-    /// reading・alias・宣言・constructor・field の名前を集め、重複と衝突を拒否する。
+    /// reading・alias・宣言・constructor・field の名前を集め、同じ scope での重複を拒否する。
     pub fn collect_names(&mut self) -> CResult<()> {
         let ast = self.ast.clone();
         for (ri, r) in ast.iter().enumerate() {
-            check_decl_name(&r.name)?;
             if self.reading_index.insert(r.name.name.clone(), ri).is_some() {
                 return duplicate(
                     r.name.span,
@@ -152,13 +151,6 @@ impl Checker {
             let mut shorts = HashSet::new();
             let mut aliases = HashMap::new();
             for u in &r.uses {
-                check_decl_name(&u.alias)?;
-                if self.reading_index.contains_key(&u.alias.name) {
-                    return duplicate(
-                        u.alias.span,
-                        format!("別名 `{}` が reading 名と重なる", u.alias.name),
-                    );
-                }
                 if !scope.insert(u.alias.name.clone()) {
                     return duplicate(
                         u.alias.span,
@@ -179,12 +171,6 @@ impl Checker {
             }
             for (di, d) in r.decls.iter().enumerate() {
                 check_decl_name(&d.name)?;
-                if self.reading_index.contains_key(&d.name.name) {
-                    return duplicate(
-                        d.name.span,
-                        format!("宣言名 `{}` が reading 名と重なる", d.name.name),
-                    );
-                }
                 if !scope.insert(d.name.name.clone()) {
                     return duplicate(
                         d.name.span,
@@ -198,7 +184,6 @@ impl Checker {
                     DeclKind::Data { constructors } => {
                         let mut seen = HashSet::new();
                         for (ci, c) in constructors.iter().enumerate() {
-                            check_decl_name(&c.name)?;
                             if !seen.insert(c.name.name.clone()) {
                                 return duplicate(
                                     c.name.span,
@@ -248,42 +233,42 @@ impl Checker {
         Ok(())
     }
 
-    /// `.` 列の先頭を alias・短名・reading 名で展開する。
-    fn expand(&self, reading: usize, parts: &[Ident]) -> Option<String> {
+    /// `.` 列の先頭を、別名・自分の宣言の短名・reading 名の順に展開した候補。
+    fn expand(&self, reading: usize, parts: &[Ident]) -> Vec<String> {
         let head = &parts[0].name;
         let rest: Vec<&str> = parts[1..].iter().map(|p| p.name.as_str()).collect();
+        let mut out = Vec::new();
         if let Some(target) = self.aliases[reading].get(head) {
-            return Some(full(target, &rest));
+            out.push(full(target, &rest));
         }
         if self.shorts[reading].contains(head) {
             let mut all = vec![head.as_str()];
-            all.extend(rest);
-            return Some(full(self.reading_name(reading), &all));
+            all.extend(rest.iter().copied());
+            out.push(full(self.reading_name(reading), &all));
         }
         if self.reading_index.contains_key(head) {
-            return Some(full(head, &rest));
+            out.push(full(head, &rest));
         }
-        None
+        out
     }
 
     /// alias 展開後の宣言完全名を最長一致で解決する。返す数は宣言名に使った名前の数。
     pub fn resolve_prefix(&mut self, reading: usize, parts: &[Ident]) -> Option<(Target, usize)> {
         for k in (1..=parts.len()).rev() {
-            let Some(name) = self.expand(reading, &parts[..k]) else {
-                continue;
-            };
-            let target = if self.decl_index.contains_key(&name) {
-                Target::Decl(name.clone())
-            } else if let Some((data, index)) = self.ctor_index.get(&name) {
-                Target::Ctor {
-                    data: data.clone(),
-                    index: *index,
-                }
-            } else {
-                continue;
-            };
-            self.note_reading_edge(reading, &name, (parts[0].span.0, parts[k - 1].span.1));
-            return Some((target, k));
+            for name in self.expand(reading, &parts[..k]) {
+                let target = if self.decl_index.contains_key(&name) {
+                    Target::Decl(name.clone())
+                } else if let Some((data, index)) = self.ctor_index.get(&name) {
+                    Target::Ctor {
+                        data: data.clone(),
+                        index: *index,
+                    }
+                } else {
+                    continue;
+                };
+                self.note_reading_edge(reading, &name, (parts[0].span.0, parts[k - 1].span.1));
+                return Some((target, k));
+            }
         }
         None
     }
@@ -310,7 +295,10 @@ impl Checker {
                 .iter()
                 .chain(members)
                 .find(|f| f.name.name == "owner"),
-            DeclKind::Arrow { params, .. } => params.iter().find(|f| f.name.name == "owner"),
+            DeclKind::Arrow { params, members } => params
+                .iter()
+                .chain(members)
+                .find(|f| f.name.name == "owner"),
             _ => None,
         }
     }
@@ -500,7 +488,7 @@ impl Checker {
     }
 
     pub fn has_term_or_path(&self, t: &Type) -> bool {
-        t.clone().any(&mut |t| match t {
+        t.any(&mut |t| match t {
             Type::Term(..) | Type::Path(..) => true,
             Type::Data(d) => self.data_props.get(d).is_some_and(|p| p.term_or_path),
             _ => false,
@@ -509,7 +497,7 @@ impl Checker {
 
     /// 参照・Map・Path を、data の定義を通して含むか。
     pub fn has_reference(&self, t: &Type) -> bool {
-        t.clone().any(&mut |t| match t {
+        t.any(&mut |t| match t {
             Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
             Type::Data(d) => self.data_props.get(d).is_some_and(|p| p.reference),
             _ => false,
@@ -691,9 +679,9 @@ impl Checker {
         params: Vec<Param>,
         members: Vec<Param>,
     ) -> CResult<Signature> {
-        let get = |n: &str| params.iter().find(|p| p.name == n).cloned();
+        let get = |n: &str| params.iter().chain(&members).find(|p| p.name == n).cloned();
         let (Some(owner), Some(from), Some(to)) = (get("owner"), get("from"), get("to")) else {
-            return syntax(d.name.span, "arrow は括弧内に owner・from・to を持つ");
+            return syntax(d.name.span, "arrow は owner・from・to の field を持つ");
         };
         let root = match &owner.ty {
             Type::Ref(r) if self.is_root_entity(r) => r.clone(),
@@ -808,12 +796,29 @@ impl Checker {
         Ok(())
     }
 
-    fn owned_types(&mut self, root: &str) -> BTreeSet<String> {
+    /// reading と、それが use・完全名で参照する reading(推移的)。
+    fn reading_closure(&self, ri: usize) -> HashSet<usize> {
+        let mut seen = HashSet::from([ri]);
+        let mut stack = vec![ri];
+        while let Some(r) = stack.pop() {
+            for (a, b, _) in &self.reading_edges {
+                if *a == r && seen.insert(*b) {
+                    stack.push(*b);
+                }
+            }
+        }
+        seen
+    }
+
+    /// correspondence の reading から見える、所属先が root の entity・arrow。
+    fn owned_types(&mut self, root: &str, ri: usize) -> BTreeSet<String> {
+        let visible = self.reading_closure(ri);
         let names: Vec<String> = self.decl_index.keys().cloned().collect();
         names
             .into_iter()
             .filter(|n| {
-                matches!(self.decl_kind(n), Some("entity" | "arrow"))
+                visible.contains(&self.decl_index[n].0)
+                    && matches!(self.decl_kind(n), Some("entity" | "arrow"))
                     && self.owner_root(n).as_deref() == Some(root)
             })
             .collect()
@@ -873,7 +878,7 @@ impl Checker {
             maps.push((m.name.clone(), e, f));
         }
         let covered: BTreeSet<String> = domain.keys().cloned().collect();
-        if covered != self.owned_types(&source) || codomain != self.owned_types(&target) {
+        if covered != self.owned_types(&source, ri) || codomain != self.owned_types(&target, ri) {
             return syntax(
                 d.name.span,
                 "correspondence は from・to の根に所属する全ての entity・arrow を一度ずつ覆う",
@@ -990,7 +995,7 @@ impl Checker {
     }
 }
 
-/// 宣言・constructor・alias・reading の名前の規則。
+/// 宣言名の規則。組込み演算名は宣言名に使えない。
 pub fn check_decl_name(id: &Ident) -> CResult<()> {
     if BUILTIN_OPS.contains(&id.name.as_str()) {
         return syntax(

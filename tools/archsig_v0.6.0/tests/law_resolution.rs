@@ -311,3 +311,150 @@ fn declarations_are_listed_by_full_name_with_expression_types() {
         Type::Owned("Reservations.State".into(), "owner".into())
     );
 }
+
+/// 宣言の原式から辿れる式。呼出し先の名前(view・constructor・固定演算の名前)は値ではないので除く。
+fn reachable(c: &CheckedLaw) -> Vec<(archsig::law::ast::ExprId, bool)> {
+    use archsig::law::ast::{ExprKind, QuantDomain, QuantSplit};
+    use archsig::law::model::Signature;
+    let mut roots = Vec::new();
+    for d in c.declarations.values() {
+        match &d.signature {
+            Signature::View { body, .. } => roots.push(*body),
+            Signature::Law { guard, body, .. } | Signature::Change { guard, body, .. } => {
+                roots.extend(guard.iter().copied());
+                roots.push(*body);
+            }
+            Signature::Local { guard, reads, .. } => {
+                roots.extend(guard.iter().copied());
+                roots.extend(reads.iter().copied());
+            }
+            Signature::Relation {
+                guard, left, right, ..
+            } => {
+                roots.extend(guard.iter().copied());
+                roots.extend([*left, *right]);
+            }
+            _ => {}
+        }
+    }
+    let mut out = Vec::new();
+    let mut stack: Vec<(usize, bool)> = roots.into_iter().map(|r| (r, true)).collect();
+    while let Some((id, value)) = stack.pop() {
+        out.push((id, value));
+        let mut push = |e: usize| stack.push((e, true));
+        match &c.exprs[id].kind {
+            ExprKind::Let { value, body, .. } => [*value, *body].into_iter().for_each(&mut push),
+            ExprKind::If {
+                cond,
+                then_branch,
+                else_branch,
+            } => [*cond, *then_branch, *else_branch]
+                .into_iter()
+                .for_each(&mut push),
+            ExprKind::Match { scrutinee, arms } => {
+                push(*scrutinee);
+                arms.iter().for_each(|a| push(a.body));
+            }
+            ExprKind::Quant { split, .. } => match split {
+                QuantSplit::Fixed { domain, body } => {
+                    if let QuantDomain::In(d) = domain {
+                        push(*d);
+                    }
+                    push(*body);
+                }
+                other => panic!("区切りが確定していない量化: {other:?}"),
+            },
+            ExprKind::Binary { lhs, rhs, .. } => [*lhs, *rhs].into_iter().for_each(&mut push),
+            ExprKind::Unary { operand, .. }
+            | ExprKind::Group(operand)
+            | ExprKind::Some(operand) => push(*operand),
+            ExprKind::Field { base, .. } | ExprKind::Index { base, .. } => push(*base),
+            ExprKind::Call { callee, args } => {
+                let mut name = *callee;
+                while let ExprKind::Group(inner) = c.exprs[name].kind {
+                    name = inner;
+                }
+                let is_name = matches!(c.exprs[name].kind, ExprKind::ThenOp)
+                    || matches!(c.exprs[name].kind, ExprKind::Dotted(_))
+                        && c.expr_type(name).is_none();
+                if !is_name {
+                    push(*callee);
+                }
+                args.iter().copied().for_each(&mut push);
+            }
+            ExprKind::With { base, updates } => {
+                push(*base);
+                updates.iter().for_each(|(_, e)| push(*e));
+            }
+            ExprKind::Tuple(items)
+            | ExprKind::ListLit { items, .. }
+            | ExprKind::SetLit { items, .. } => items.iter().copied().for_each(&mut push),
+            ExprKind::SetComp {
+                elem,
+                domain,
+                filter,
+                ..
+            } => {
+                push(*elem);
+                push(*domain);
+                filter.iter().copied().for_each(&mut push);
+            }
+            ExprKind::Fn { body, .. } => push(*body),
+            ExprKind::Family { owner, .. } => push(*owner),
+            _ => {}
+        }
+    }
+    out
+}
+
+#[test]
+fn resolved_expressions_are_kept_in_memory_with_their_types() {
+    let quants = reading(
+        "entity S; entity A(owner: S) { x: Z; kids: Set<A>; pair: (Set<Z>, Z); }
+         law required b(p: A): forall k in p.kids . k.x = p.x;
+         law required c(p: A): exists n in p.pair.0 . n = p.pair.1;
+         law required e(p: A): forall t: A . t.x = t.x;
+         law required f(p: A): forall t: R.S . forall u: A[t] . u.x = u.x;
+         view g(p: A): Set<Z> = set{ k.x | k in p.kids where forall j in k.kids . j.x > 0 };",
+    );
+    for src in [RESERVATIONS, ENGINE, quants.as_str()] {
+        let c = ok(src);
+        for (id, _) in reachable(&c) {
+            assert!(
+                c.expr_type(id).is_some(),
+                "型のない式 `{}`",
+                span_text(src, c.exprs[id].span)
+            );
+        }
+    }
+    // retained の量化は、域 State[m.from] と本体 holdings(m.states(s)) = holdings(s) に分かれる。
+    let c = ok(RESERVATIONS);
+    let archsig::law::model::Signature::Law { body, .. } =
+        &c.declarations["Reservations.retained"].signature
+    else {
+        panic!()
+    };
+    let archsig::law::ast::ExprKind::Quant {
+        split:
+            archsig::law::ast::QuantSplit::Fixed {
+                domain,
+                body: inner,
+            },
+        ..
+    } = &c.exprs[*body].kind
+    else {
+        panic!("量化")
+    };
+    let archsig::law::ast::QuantDomain::In(d) = domain else {
+        panic!("域は式")
+    };
+    assert_eq!(span_text(RESERVATIONS, c.exprs[*d].span), "State[m.from]");
+    assert_eq!(
+        span_text(RESERVATIONS, c.exprs[*inner].span),
+        "holdings(m.states(s)) = holdings(s)"
+    );
+    assert_eq!(
+        c.expr_type(*d),
+        Some(&Type::Set(Box::new(Type::Ref("Reservations.State".into()))))
+    );
+}
