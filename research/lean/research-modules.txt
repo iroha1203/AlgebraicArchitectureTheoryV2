@@ -2449,3 +2449,8 @@ ResearchLean.AG.AtlasGluingWidth.ConeShortExact	ResearchLean/AG/AtlasGluingWidth
 ResearchLean.AG.AtlasGluingWidth.ConnectingRepresentatives	ResearchLean/AG/AtlasGluingWidth/ConnectingRepresentatives.lean
 ResearchLean.AG.AtlasGluingWidth.ConeBiprod	ResearchLean/AG/AtlasGluingWidth/ConeBiprod.lean
 ResearchLean.AG.AtlasGluingWidth.MayerVietoris	ResearchLean/AG/AtlasGluingWidth/MayerVietoris.lean
+ResearchLean.AG.AtlasGluingWidth.QuotientKernelRow	ResearchLean/AG/AtlasGluingWidth/QuotientKernelRow.lean
+ResearchLean.AG.AtlasGluingWidth.LinearSnake	ResearchLean/AG/AtlasGluingWidth/LinearSnake.lean
+ResearchLean.AG.AtlasGluingWidth.PairHomology	ResearchLean/AG/AtlasGluingWidth/PairHomology.lean
+ResearchLean.AG.AtlasGluingWidth.GluingDefect	ResearchLean/AG/AtlasGluingWidth/GluingDefect.lean
+ResearchLean.AG.AtlasGluingWidth.PrimitiveGluing	ResearchLean/AG/AtlasGluingWidth/PrimitiveGluing.lean
