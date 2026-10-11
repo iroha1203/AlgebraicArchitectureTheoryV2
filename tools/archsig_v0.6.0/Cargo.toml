@@ -1,0 +1,12 @@
+[package]
+name = "archsig"
+version = "0.6.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+num-bigint = "0.4"
+num-integer = "0.1"
+num-traits = "0.2"
+sha2 = "0.10"
+stacker = "0.1"
