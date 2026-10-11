@@ -1,0 +1,27 @@
+{
+  "format": "archsig.archmap/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{"reading": "Engine", "digest": "sha256:e7e9c16c66de4d4d6d7143af7c9f88a6ef29f0d7510e4bc844b37eb406a8da27"}],
+  "sources": [],
+  "origins": [{
+    "id": "model",
+    "mode": "specification",
+    "method": "原始構文木とAddへ割り当てる候補演算を提示する。",
+    "locations": [],
+    "note": "生成IRと参照評価の保存を調べる有限仕様モデル。"
+  }],
+  "snapshots": [{
+    "id": "engine",
+    "origin": "model",
+    "subjects": [
+      {"id": "add", "type": "Engine.Compiler", "origin": "model"},
+      {"id": "subtract", "type": "Engine.Compiler", "origin": "model"}
+    ],
+    "atoms": [
+      {"id": "add-source", "subject": "add", "field": "Engine.Compiler.source", "value": {"tag": "Add", "args": [{"tag": "Var", "args": []}, {"tag": "Add", "args": [{"tag": "Lit", "args": ["1"]}, {"tag": "Lit", "args": ["2"]}]}]}, "origin": "model"},
+      {"id": "add-operator", "subject": "add", "field": "Engine.Compiler.operator", "value": {"tag": "AddOp", "args": []}, "origin": "model"},
+      {"id": "subtract-source", "subject": "subtract", "field": "Engine.Compiler.source", "value": {"tag": "Add", "args": [{"tag": "Var", "args": []}, {"tag": "Add", "args": [{"tag": "Lit", "args": ["1"]}, {"tag": "Lit", "args": ["2"]}]}]}, "origin": "model"},
+      {"id": "subtract-operator", "subject": "subtract", "field": "Engine.Compiler.operator", "value": {"tag": "SubtractOp", "args": []}, "origin": "model"}
+    ]
+  }]
+}
