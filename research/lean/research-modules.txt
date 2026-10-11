@@ -2439,3 +2439,7 @@ ResearchLean.AG.AtlasCoefficientFiber.WitnessFiveDiagnostics	ResearchLean/AG/Atl
 ResearchLean.AG.AtlasCoefficientFiber.WitnessFiveLaw	ResearchLean/AG/AtlasCoefficientFiber/WitnessFiveLaw.lean
 ResearchLean.AG.AtlasCoefficientFiber.WitnessFiveRankTable	ResearchLean/AG/AtlasCoefficientFiber/WitnessFiveRankTable.lean
 ResearchLean.AG.AtlasCoefficientFiber.WitnessFiveChain	ResearchLean/AG/AtlasCoefficientFiber/WitnessFiveChain.lean
+ResearchLean.AG.AtlasGluingWidth.CellSelection	ResearchLean/AG/AtlasGluingWidth/CellSelection.lean
+ResearchLean.AG.AtlasGluingWidth.CellwiseShortExact	ResearchLean/AG/AtlasGluingWidth/CellwiseShortExact.lean
+ResearchLean.AG.AtlasGluingWidth.RegionShortExact	ResearchLean/AG/AtlasGluingWidth/RegionShortExact.lean
+ResearchLean.AG.AtlasGluingWidth.SelectionComparison	ResearchLean/AG/AtlasGluingWidth/SelectionComparison.lean
