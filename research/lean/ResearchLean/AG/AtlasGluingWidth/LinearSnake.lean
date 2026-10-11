@@ -96,6 +96,16 @@ def conjugate (f : A ⟶ B) (eA : A ≅ A') (eB : B ≅ B') := eA.inv ≫ f ≫ 
 @[simp] theorem conjugate_apply (f : A ⟶ B) (eA : A ≅ A') (eB : B ≅ B') (x : A') :
   conjugate f eA eB x = eB.hom (f (eA.inv x)) := rfl
 
+/-- 始域の恒等同型に沿う輸送は、終域の同型との合成に等しい。 -/
+@[simp] theorem conjugate_refl_left (f : A ⟶ B) (eB : B ≅ B') :
+    conjugate f (Iso.refl A) eB = f ≫ eB.hom := by
+  simp only [conjugate, Iso.refl_inv, Category.id_comp]
+
+/-- 終域の恒等同型に沿う輸送は、始域の逆同型との合成に等しい。 -/
+@[simp] theorem conjugate_refl_right (f : A ⟶ B) (eA : A ≅ A') :
+    conjugate f eA (Iso.refl B) = eA.inv ≫ f := by
+  simp only [conjugate, Iso.refl_hom, Category.comp_id]
+
 /-- 線形同型に沿う実射の輸送と、標準exactnessの保持API。 -/
 theorem conjugate_exact (f : A ⟶ B) (g : B ⟶ C) (hfg : Function.Exact f g)
     (eA : A ≅ A') (eB : B ≅ B') (eC : C ≅ C') :

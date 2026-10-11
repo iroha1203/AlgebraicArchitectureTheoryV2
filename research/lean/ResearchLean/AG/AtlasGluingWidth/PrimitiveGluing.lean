@@ -47,12 +47,12 @@ theorem selectionHomCongr_natural {Sc' : CellSelection Nc} {Sf' : CellSelection 
   exact oldH1Equiv_natural hs.hom x
 
 /-- 原始粗領域和と真のセル和の全セル等号。 -/
-def coarseUnionEq (A B : Set qc.Target) :
+theorem coarseUnionEq (A B : Set qc.Target) :
     (CellSelection.region Nc A).union (CellSelection.region Nc B) = CellSelection.region Nc (A ∪ B) :=
   (CellSelection.region_union Nc A B).symm
 
 /-- 元の因子の逆像和と細セル和の全セル等号。 -/
-def fineUnionEq (A B : Set qc.Target) :
+theorem fineUnionEq (A B : Set qc.Target) :
     (CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' A)).union
       (CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' B)) =
       CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' (A ∪ B)) := by
@@ -205,8 +205,8 @@ theorem exact1 (A B : Set qc.Target) : Function.Exact (first M A B) (second M A 
     (GluingDefect.exact₁ _ _ (StandardRow.cellRow_shortExact _ _)
       (StandardRow.cellRow_shortExact _ _) (comparison M A B))
     (Iso.refl _) ((phantomEquiv M A B).symm.toModuleIso) (Iso.refl _)
-  simpa only [LinearSnake.conjugate, Iso.refl_hom, Iso.refl_inv,
-    Category.id_comp, Category.comp_id] using he
+  simpa only [LinearSnake.conjugate_refl_left, LinearSnake.conjugate_refl_right,
+    Iso.refl_hom, Iso.refl_inv, Category.id_comp, Category.comp_id] using he
 /-- 原始入力だけから同じ通常U snake列の第二位置完全性を導く。 -/
 theorem exact2 (A B : Set qc.Target) : Function.Exact (second M A B) (connecting M A B) := by
   have he := LinearSnake.conjugate_exact
@@ -217,8 +217,8 @@ theorem exact2 (A B : Set qc.Target) : Function.Exact (second M A B) (connecting
     (GluingDefect.exact₂ _ _ (StandardRow.cellRow_shortExact _ _)
       (StandardRow.cellRow_shortExact _ _) (comparison M A B))
     ((phantomEquiv M A B).symm.toModuleIso) (Iso.refl _) (Iso.refl _)
-  simpa only [LinearSnake.conjugate, Iso.refl_hom, Iso.refl_inv,
-    Category.id_comp, Category.comp_id] using he
+  simpa only [LinearSnake.conjugate_refl_left, LinearSnake.conjugate_refl_right,
+    Iso.refl_hom, Iso.refl_inv, Category.id_comp, Category.comp_id] using he
 /-- 原始入力だけから同じ通常U snake列の第三位置完全性を導く。 -/
 theorem exact3 (A B : Set qc.Target) : Function.Exact (connecting M A B) (fourth M A B) := by
   have he := LinearSnake.conjugate_exact
@@ -229,8 +229,8 @@ theorem exact3 (A B : Set qc.Target) : Function.Exact (connecting M A B) (fourth
     (GluingDefect.exact₃ _ _ (StandardRow.cellRow_shortExact _ _)
       (StandardRow.cellRow_shortExact _ _) (comparison M A B))
     (Iso.refl _) (Iso.refl _) ((hiddenEquiv M A B).symm.toModuleIso)
-  simpa only [LinearSnake.conjugate, Iso.refl_hom, Iso.refl_inv,
-    Category.id_comp, Category.comp_id] using he
+  simpa only [LinearSnake.conjugate_refl_left, LinearSnake.conjugate_refl_right,
+    Iso.refl_hom, Iso.refl_inv, Category.id_comp, Category.comp_id] using he
 /-- 原始入力だけから同じ通常U snake列の第四位置完全性を導く。 -/
 theorem exact4 (A B : Set qc.Target) : Function.Exact (fourth M A B) (fifth M A B) := by
   have he := LinearSnake.conjugate_exact
@@ -241,8 +241,8 @@ theorem exact4 (A B : Set qc.Target) : Function.Exact (fourth M A B) (fifth M A 
     (GluingDefect.exact₄ _ _ (StandardRow.cellRow_shortExact _ _)
       (StandardRow.cellRow_shortExact _ _) (comparison M A B))
     (Iso.refl _) ((hiddenEquiv M A B).symm.toModuleIso) (Iso.refl _)
-  simpa only [LinearSnake.conjugate, Iso.refl_hom, Iso.refl_inv,
-    Category.id_comp, Category.comp_id] using he
+  simpa only [LinearSnake.conjugate_refl_left, LinearSnake.conjugate_refl_right,
+    Iso.refl_hom, Iso.refl_inv, Category.id_comp, Category.comp_id] using he
 /-- 原始Q/P短完全列から第一snake射の単射性を導く。 -/
 theorem first_injective (A B : Set qc.Target) : Function.Injective (first M A B) :=
   (phantomEquiv M A B).symm.injective.comp (GluingDefect.first_injective _ _

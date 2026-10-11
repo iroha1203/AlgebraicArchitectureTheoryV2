@@ -386,3 +386,24 @@ placeholder、hidden/BiDi、privacy、語彙、import方向、staged diff whites
 使用G133三sourceは固定参照版ed16acc…からdiff空。固定GOAL blobもdbc5b584…で不変。
 Research全体build・aggregate・全file elaboration・Formal移植は実行していない。
 正式4 lane査読、内容受理、CI、mergeはこのhead確定前の記録時点では未実施であり、PR監査へ同期する。
+
+## Cycle 3 初回独立査読後の修正
+
+初回固定head `51afa7c1f657cba8a03778e219f3c64f451d4824` の数学A/B・Lean A/Bは
+いずれも `Minor issues`、中心0・非中心2。同じ2件を一括し、全lane受領後に修正した。
+監査は [PR5330初回内容監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5330#issuecomment-6108314277)。
+`PrimitiveGluing.coarseUnionEq/fineUnionEq` は同じ等号statementと証明を
+`theorem` として公開する。`LinearSnake.conjugate_refl_left/right` は査読が名指した
+恒等同型の正規化APIであり、`PrimitiveGluing.exact1–4` はこれを使って輸送を正規化する。
+元の実射・完全性のstatement・入力・import・instanceを保持した。
+この修正記録は内容受理を表さず、修正後確認を固定PR headへ同期する。
+
+修正前の検証記録は上の初回headに対応する。修正後の個別
+`LinearSnake` checkはexit0、71宣言、標準公理のみ、log SHA256
+`807439841eb1f493f1e42fc17f5e676b72399aecc0d30d6c2acca313664392d0`。
+`PrimitiveGluing` とその公式単一focusedはexit0、56宣言、標準公理のみ。
+公式focused logの内容は初回と同じで、SHA256も
+`0bf6ad62fb1a4a9da9395cc022c5b8920ddd47226fc275718f6ef09fb63d85fb`。
+修正後累積全415実宣言（356 source明示、59生成）を同じ単一監査fileで全件照会し、
+exit0、415unique、標準3公理以内。新規180明示宣言の完全修飾名照合に欠落なし。
+log SHA256 `12e8cf465c21c93afd759311a7942aa6203d34b6c6157e2bfdb3d1cc908b6bc3`。placeholder/Unicode/privacy/import方向/diffcheckもclean。
