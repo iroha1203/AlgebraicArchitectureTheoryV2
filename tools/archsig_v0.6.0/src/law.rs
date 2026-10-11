@@ -152,7 +152,7 @@ pub enum ExprKind {
     Tuple(Vec<Expr>),
     Select(Box<Expr>, String, Span),
     Apply(Box<Expr>, Vec<Expr>),
-    Family(String, Box<Expr>),
+    Family(String, Span, Box<Expr>),
     Unary(String, Box<Expr>),
     Binary(String, Box<Expr>, Box<Expr>),
     Let(String, Box<Expr>, Box<Expr>),
@@ -211,7 +211,13 @@ impl Parser {
     fn current(&self) -> &str {
         self.tokens
             .get(self.pos)
-            .map(|t| t.text.as_str())
+            .map(|t| {
+                if t.kind == "string" {
+                    "\0string"
+                } else {
+                    t.text.as_str()
+                }
+            })
             .unwrap_or("")
     }
     fn span(&self) -> Span {
@@ -453,6 +459,12 @@ impl Parser {
             if self.eat("{") {
                 while self.current() != "}" {
                     if self.eat("align") {
+                        if kind != "correspondence" {
+                            return Err(syntax(
+                                "align は correspondence のみ",
+                                self.tokens[self.pos - 1].span,
+                            ));
+                        }
                         let (a, sa) = self.qname()?;
                         self.expect("=")?;
                         let (b, sb) = self.qname()?;
@@ -595,22 +607,12 @@ impl Parser {
             let k = self.current().to_owned();
             self.pos += 1;
             let n = self.name()?.0;
-            let (t, a) = if self.eat(":") {
-                let t = self.ty()?;
-                (
-                    Some(t),
-                    Expr {
-                        kind: ExprKind::Unit,
-                        span: [start, start],
-                        ty: None,
-                    },
-                )
+            if self.eat(":") {
+                return self.split_typed_quantifier(start, n, k);
             } else {
                 self.expect("in")?;
                 return self.split_bound(start, n, Some(k), None, ".");
-            };
-            self.expect(".")?;
-            ExprKind::Quantify(k, n, t, Box::new(a), Box::new(self.expr(0)?))
+            }
         } else if ["not", "-"].contains(&self.current()) {
             let op = self.current().to_owned();
             self.pos += 1;
@@ -624,6 +626,65 @@ impl Parser {
         };
         Ok(Expr {
             kind,
+            span: [start, self.last()],
+            ty: None,
+        })
+    }
+    fn split_typed_quantifier(&mut self, start: usize, n: String, k: String) -> Checked<Expr> {
+        let domain_start = self.pos;
+        let mut depth = 0isize;
+        let mut candidates = Vec::new();
+        let mut end = None;
+        for i in domain_start..self.tokens.len() {
+            let token = &self.tokens[i];
+            if depth == 0 && token.kind != "string" && token.text == "." {
+                let mut lhs = Parser {
+                    tokens: self.tokens[domain_start..i].to_vec(),
+                    pos: 0,
+                    end: token.span[0],
+                };
+                if let Ok(t) = lhs.ty() {
+                    if lhs.pos == lhs.tokens.len() {
+                        let mut rhs = self.clone();
+                        rhs.pos = i + 1;
+                        if let Ok(b) = rhs.expr(0) {
+                            candidates.push(Expr {
+                                kind: ExprKind::Quantify(
+                                    k.clone(),
+                                    n.clone(),
+                                    Some(t),
+                                    Box::new(Expr {
+                                        kind: ExprKind::Unit,
+                                        span: [start, start],
+                                        ty: None,
+                                    }),
+                                    Box::new(b),
+                                ),
+                                span: [start, rhs.last()],
+                                ty: None,
+                            });
+                            end = Some(rhs.pos);
+                        }
+                    }
+                }
+            }
+            if token.kind != "string" {
+                match token.text.as_str() {
+                    "(" | "[" | "<" => depth += 1,
+                    ")" | "]" | ">" => {
+                        depth -= 1;
+                        if depth < 0 {
+                            break;
+                        }
+                    }
+                    ";" | "}" | "=" if depth == 0 => break,
+                    _ => {}
+                }
+            }
+        }
+        self.pos = end.ok_or_else(|| syntax("型付き量化の区切りを要求", self.span()))?;
+        Ok(Expr {
+            kind: ExprKind::Alternatives(candidates),
             span: [start, self.last()],
             ty: None,
         })
@@ -642,7 +703,7 @@ impl Parser {
         let mut end = None;
         for i in domain_start..self.tokens.len() {
             let token = &self.tokens[i];
-            if depth == 0 && token.text == separator {
+            if depth == 0 && token.kind != "string" && token.text == separator {
                 let mut lhs = Parser {
                     tokens: self.tokens[domain_start..i].to_vec(),
                     pos: 0,
@@ -673,6 +734,9 @@ impl Parser {
                         }
                     }
                 }
+            }
+            if token.kind == "string" {
+                continue;
             }
             match token.text.as_str() {
                 "(" | "[" | "{" => depth += 1,
@@ -729,11 +793,11 @@ impl Parser {
         } else if self.eat("list") || self.eat("set") {
             let k = text;
             if k == "set" && self.eat("{") {
-                let value = self.expr(5)?;
+                let value = self.expr(0)?;
                 self.expect("|")?;
                 let n = self.name()?.0;
                 self.expect("in")?;
-                let domain = self.expr(5)?;
+                let domain = self.expr(0)?;
                 let guard = if self.eat("where") {
                     Some(Box::new(self.expr(0)?))
                 } else {
@@ -822,7 +886,7 @@ impl Parser {
                 let a = self.expr(0)?;
                 self.expect("]")?;
                 e = Expr {
-                    kind: ExprKind::Family(n, Box::new(a)),
+                    kind: ExprKind::Family(n, e.span, Box::new(a)),
                     span: [start, self.last()],
                     ty: None,
                 };
@@ -1225,6 +1289,23 @@ fn substitute(t: &Type, p: &str, by: &str) -> Type {
         _ => t.clone(),
     }
 }
+fn instantiate(t: &Type, bindings: &BTreeMap<String, String>) -> Type {
+    match t {
+        Type::Owned(n, x) => Type::Owned(
+            n.clone(),
+            bindings.get(x).cloned().unwrap_or_else(|| x.clone()),
+        ),
+        Type::Tuple(a) => Type::Tuple(a.iter().map(|t| instantiate(t, bindings)).collect()),
+        Type::List(a) => Type::List(Box::new(instantiate(a, bindings))),
+        Type::Set(a) => Type::Set(Box::new(instantiate(a, bindings))),
+        Type::Option(a) => Type::Option(Box::new(instantiate(a, bindings))),
+        Type::Map(a, b) => Type::Map(
+            Box::new(instantiate(a, bindings)),
+            Box::new(instantiate(b, bindings)),
+        ),
+        _ => t.clone(),
+    }
+}
 fn numeric(t: &Type) -> bool {
     match t {
         Type::Z | Type::Q | Type::Fp(_) => true,
@@ -1243,12 +1324,13 @@ struct Checker<'a> {
     env: BTreeMap<String, Binding>,
     declaration: &'a Declaration,
     pure: bool,
+    captures: BTreeSet<String>,
     change: bool,
     calls: BTreeSet<String>,
 }
 impl Checker<'_> {
     fn bind(&mut self, n: &str, ty: Type, subterm: bool, span: Span) -> Checked<()> {
-        if reserved(n) || self.env.contains_key(n) {
+        if reserved(n) || self.env.contains_key(n) || self.captures.contains(n) {
             return Err(syntax("束縛の重複または捕獲", span));
         }
         self.env.insert(n.into(), Binding { ty, subterm });
@@ -1262,9 +1344,15 @@ impl Checker<'_> {
             .collect();
         let ty = self.r.ty(t, &env)?;
         admissible(&ty, self.r.s, t.span)?;
+        if self.pure && has_ref(&ty, self.r.s) {
+            return Err(syntax("Term に参照型の域を含められない", t.span));
+        }
         Ok(ty)
     }
     fn ctor_name(&mut self, n: &str, span: Span, expected: Option<&Type>) -> Checked<String> {
+        if self.captures.contains(n.split('.').next().unwrap()) {
+            return Err(syntax("Term は外側の束縛を捕獲できない", span));
+        }
         if !n.contains('.') {
             if let Some(Type::Data(d)) = expected {
                 if self.r.s.declarations[d]
@@ -1285,6 +1373,9 @@ impl Checker<'_> {
             return Ok(None);
         };
         let first = n.split('.').next().unwrap();
+        if self.captures.contains(first) {
+            return Err(syntax("Term は外側の束縛を捕獲できない", e.span));
+        }
         if self.env.contains_key(first) {
             return Ok(None);
         }
@@ -1403,12 +1494,18 @@ impl Checker<'_> {
                     ty
                 }
             }
-            ExprKind::Family(n, a) => {
+            ExprKind::Family(n, name_span, a) => {
                 if self.pure {
                     return Err(syntax("Term に観測族を含められない", span));
                 }
-                let full = self.r.reference(n, [span[0], span[0] + n.len()])?;
-                let d = &self.r.s.declarations[&full];
+                let full = self.r.reference(n, *name_span)?;
+                let d = self
+                    .r
+                    .s
+                    .declarations
+                    .get(&full)
+                    .filter(|d| matches!(d.kind.as_str(), "entity" | "arrow"))
+                    .ok_or_else(|| syntax("owner を持つ原始族を要求", *name_span))?;
                 let owner = d
                     .parameters
                     .iter()
@@ -1570,13 +1667,24 @@ impl Checker<'_> {
                                     })
                                     .collect::<Vec<_>>();
                                 for (i, a) in args.iter_mut().enumerate() {
-                                    let mut t = d.parameters[i].ty.clone().unwrap();
-                                    for (j, prior) in arg_names[..i].iter().enumerate() {
-                                        t = substitute(&t, &d.parameters[j].name, prior);
-                                    }
+                                    let bindings = d.parameters[..i]
+                                        .iter()
+                                        .zip(&arg_names[..i])
+                                        .map(|(p, n)| (p.name.clone(), n.clone()))
+                                        .collect();
+                                    let t = instantiate(
+                                        d.parameters[i].ty.as_ref().unwrap(),
+                                        &bindings,
+                                    );
                                     self.expression(a, Some(&t))?;
                                 }
-                                d.ty.clone().unwrap()
+                                let bindings = d
+                                    .parameters
+                                    .iter()
+                                    .zip(&arg_names)
+                                    .map(|(p, n)| (p.name.clone(), n.clone()))
+                                    .collect();
+                                instantiate(d.ty.as_ref().unwrap(), &bindings)
                             }
                         }
                     }
@@ -1591,6 +1699,9 @@ impl Checker<'_> {
                             *b
                         }
                         Type::Term(a, b) => {
+                            if self.pure {
+                                return Err(syntax("Term body は Term を呼べない", span));
+                            }
                             if args.len() != a.len() {
                                 return Err(syntax("Term の arity", span));
                             }
@@ -1675,10 +1786,15 @@ impl Checker<'_> {
             ExprKind::Fn(fields, body) => {
                 let old_env = self.env.clone();
                 let was_pure = self.pure;
+                let old_captures = self.captures.clone();
                 let mut env = BTreeMap::new();
                 let mut types = Vec::new();
                 for f in fields {
-                    if old_env.contains_key(&f.name) || env.contains_key(&f.name) {
+                    if reserved(&f.name)
+                        || old_env.contains_key(&f.name)
+                        || old_captures.contains(&f.name)
+                        || env.contains_key(&f.name)
+                    {
                         return Err(syntax("fn parameter の捕獲または重複", f.span));
                     }
                     let t = self.r.ty(&f.raw, &BTreeMap::new())?;
@@ -1696,6 +1812,7 @@ impl Checker<'_> {
                         },
                     );
                 }
+                self.captures.extend(old_env.keys().cloned());
                 self.env = env;
                 self.pure = true;
                 let want = if let Some(Type::Term(_, b)) = expected {
@@ -1709,6 +1826,7 @@ impl Checker<'_> {
                 }
                 self.env = old_env;
                 self.pure = was_pure;
+                self.captures = old_captures;
                 Type::Term(types, Box::new(t))
             }
             ExprKind::With(base, updates) => {
@@ -1761,6 +1879,7 @@ impl Checker<'_> {
                 };
                 let d = self.r.s.declarations[data].clone();
                 let mut seen = BTreeSet::new();
+                let mut covered = BTreeSet::new();
                 let mut wildcard = false;
                 let mut result = expected.cloned();
                 let is_root = expr_name(scrutinee).is_some_and(|n| {
@@ -1777,7 +1896,10 @@ impl Checker<'_> {
                         return Err(syntax("到達不能な分岐", p.span));
                     }
                     if p.name == "_" {
-                        if !p.args.is_empty() || i + 1 != arm_count {
+                        if !p.args.is_empty()
+                            || i + 1 != arm_count
+                            || covered.len() == d.constructors.len()
+                        {
                             return Err(syntax("_ は末尾のみ", p.span));
                         }
                         wildcard = true;
@@ -1794,16 +1916,21 @@ impl Checker<'_> {
                         if owner.name != *data || !seen.insert(c.name.clone()) {
                             return Err(syntax("重複または異なる constructor", p.span));
                         }
+                        let constructor = c.name.clone();
                         let types = c.types.clone();
+                        let mut irrefutable = true;
                         if p.args.len() != types.len() {
                             return Err(syntax("pattern の arity", p.span));
                         }
                         for (arg, ty) in p.args.iter().zip(types) {
-                            self.pattern_bind(
+                            irrefutable &= self.pattern_bind(
                                 arg,
                                 &ty,
                                 is_root && matches!(&ty,Type::Data(n)if n==data),
                             )?;
+                        }
+                        if irrefutable {
+                            covered.insert(constructor);
                         }
                     }
                     let ty = self.expression(body, result.as_ref())?;
@@ -1812,7 +1939,7 @@ impl Checker<'_> {
                     }
                     self.env = env;
                 }
-                if !wildcard && seen.len() != d.constructors.len() {
+                if !wildcard && covered.len() != d.constructors.len() {
                     return Err(syntax("match が全 constructor を覆わない", span));
                 }
                 result.ok_or_else(|| syntax("空 match", span))?
@@ -1824,12 +1951,26 @@ impl Checker<'_> {
         e.ty = Some(ty.clone());
         Ok(ty)
     }
-    fn pattern_bind(&mut self, p: &Pattern, ty: &Type, subterm: bool) -> Checked<()> {
+    fn pattern_bind(&mut self, p: &Pattern, ty: &Type, subterm: bool) -> Checked<bool> {
         if p.name == "_" {
-            return Ok(());
+            if !p.args.is_empty() {
+                return Err(syntax("wildcard に引数は置けない", p.span));
+            }
+            return Ok(true);
         }
-        if p.args.is_empty() && !p.name.contains('.') {
-            return self.bind(&p.name, ty.clone(), subterm, p.span);
+        let short_constructor = match ty {
+            Type::Data(n) => self.r.s.declarations[n]
+                .constructors
+                .iter()
+                .any(|c| c.name == p.name),
+            _ => false,
+        };
+        if p.args.is_empty() && !p.name.contains('.') && !short_constructor {
+            self.bind(&p.name, ty.clone(), subterm, p.span)?;
+            return Ok(true);
+        }
+        if !p.name.contains('.') && self.env.contains_key(&p.name) {
+            return Err(syntax("constructor 短名と束縛名の衝突", p.span));
         }
         let full = self.ctor_name(&p.name, p.span, Some(ty))?;
         let (d, c) = self
@@ -1838,14 +1979,15 @@ impl Checker<'_> {
             .ctor(&full)
             .ok_or_else(|| syntax("constructor pattern", p.span))?;
         ensure(&Type::Data(d.name.clone()), ty, p.span)?;
+        let mut irrefutable = d.constructors.len() == 1;
         let a = c.types.clone();
         if a.len() != p.args.len() {
             return Err(syntax("pattern arity", p.span));
         }
         for (p, t) in p.args.iter().zip(a) {
-            self.pattern_bind(p, &t, false)?;
+            irrefutable &= self.pattern_bind(p, &t, false)?;
         }
-        Ok(())
+        Ok(irrefutable)
     }
     fn path_call(&mut self, n: &str, a: &mut [Expr], span: Span) -> Checked<Type> {
         let arity = if n == "then" { 2 } else { 1 };
@@ -1877,7 +2019,10 @@ impl Checker<'_> {
                         .and_then(Type::ref_name)
                         .map(str::to_owned)
                 };
-                Ok(Type::Path(get("from").unwrap(), get("to").unwrap()))
+                Ok(Type::Path(
+                    get("from").ok_or_else(|| syntax("arrow の from を要求", span))?,
+                    get("to").ok_or_else(|| syntax("arrow の to を要求", span))?,
+                ))
             }
             "then" => {
                 let Type::Path(x, y) = t else {
@@ -2060,10 +2205,13 @@ fn validate_structure(d: &mut Declaration, s: &Symbols) -> Checked<()> {
                     .rsplit_once('.')
                     .ok_or_else(|| syntax("field 完全名を要求", span))?;
                 let base = s.resolve(&d.reading, base, span)?;
-                if !s.declarations[&base]
+                let declaration = s.declarations.get(&base).ok_or_else(|| {
+                    Issue::law("reference", "align は原始宣言の field を要求", span)
+                })?;
+                if !declaration
                     .parameters
                     .iter()
-                    .chain(&s.declarations[&base].fields)
+                    .chain(&declaration.fields)
                     .any(|f| f.name == field)
                 {
                     return Err(Issue::law("reference", "align の未知 field", span));
@@ -2097,6 +2245,9 @@ fn validate_structure(d: &mut Declaration, s: &Symbols) -> Checked<()> {
                     t.clone()
                 } else if a == b {
                     let t = format!("{b}.{}", f.name);
+                    if !targets.insert(t.clone()) {
+                        return Err(syntax("暗黙 align の target 重複", d.span));
+                    }
                     pairs.push(json!([source, t]));
                     t
                 } else {
@@ -2321,10 +2472,15 @@ pub fn check(bytes: &[u8]) -> Checked<Program> {
             )
         })
         .collect::<BTreeMap<_, _>>();
-    let mut call_graph = BTreeMap::new();
     for r in &mut p.readings {
         for d in &mut r.declarations {
             validate_structure(d, &s)?;
+        }
+    }
+    let s = symbols(&p);
+    let mut call_graph = BTreeMap::new();
+    for r in &mut p.readings {
+        for d in &mut r.declarations {
             let mut c = Checker {
                 r: Resolver {
                     s: &s,
@@ -2334,6 +2490,7 @@ pub fn check(bytes: &[u8]) -> Checked<Program> {
                 env: BTreeMap::new(),
                 declaration: &s.declarations[&d.name],
                 pure: false,
+                captures: BTreeSet::new(),
                 change: false,
                 calls: BTreeSet::new(),
             };
@@ -2446,7 +2603,7 @@ pub fn check(bytes: &[u8]) -> Checked<Program> {
             } else if d.kind == "data" {
                 primitives.push(json!({"kind":"data","name":d.name,"constructors":d.constructors.iter().map(|c|json!({"name":c.name,"arguments":c.types.iter().map(Type::wire).collect::<Vec<_>>()})).collect::<Vec<_>>() }));
                 for c in &d.constructors {
-                    p.declarations.push(json!({"name":format!("{}.{}",d.name,c.name),"kind":"data","parameters":c.types.iter().enumerate().map(|(i,t)|json!({"name":format!("arg{i}"),"type":t.wire()})).collect::<Vec<_>>(),"fields":[],"location":location(c.span),"dependencies":[],"resolution":{"references":d.references.iter().filter(|(s,_)|s[0]>=c.span[0]&&s[1]<=c.span[1]).map(|(s,n)|json!({"location":location(*s),"name":n})).collect::<Vec<_>>(),"expressions":[],"supplied":[]}}));
+                    p.declarations.push(json!({"name":format!("{}.{}",d.name,c.name),"kind":"data","parameters":c.types.iter().enumerate().map(|(i,t)|json!({"name":format!("arg{i}"),"type":t.wire()})).collect::<Vec<_>>(),"fields":[],"location":location(c.span),"dependencies":d.references.iter().filter(|(s,_)|s[0]>=c.span[0]&&s[1]<=c.span[1]).map(|(_,n)|n).collect::<BTreeSet<_>>(),"resolution":{"references":d.references.iter().filter(|(s,_)|s[0]>=c.span[0]&&s[1]<=c.span[1]).map(|(s,n)|json!({"location":location(*s),"name":n})).collect::<Vec<_>>(),"expressions":[],"supplied":[]}}));
                 }
             }
         }

@@ -25,6 +25,10 @@ fn canonical_control_characters_and_unicode() {
         canonical::bytes(&v),
         b"{\"a\":true,\"\xc3\xa9\":\"e\xcc\x81\\u000a\\u0009\\u0000\\\"\\\\/\"}"
     );
+    assert_eq!(
+        canonical::model_digest(&v),
+        "sha256:544f8744b459443134036c2e7c36ebe388a861d00ecb59a9ef960c623c5760ac"
+    );
 }
 #[test]
 fn source_locations_are_real() {
