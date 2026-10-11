@@ -218,10 +218,6 @@ impl Parser {
         self.exprs.len() - 1
     }
 
-    pub fn expr(&self, id: ExprId) -> &Expr {
-        &self.exprs[id]
-    }
-
     // ---- 文書 ----
 
     pub fn header(&mut self) -> PResult<Header> {
@@ -821,7 +817,7 @@ impl Parser {
                         break;
                     }
                 }
-                ";" | "," if depth == 0 => break,
+                ";" if depth == 0 => break,
                 "." if depth == 0 => dots.push(i),
                 _ => {}
             }

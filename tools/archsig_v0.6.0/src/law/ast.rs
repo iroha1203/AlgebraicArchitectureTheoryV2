@@ -43,7 +43,7 @@ pub enum Builtin {
     Text,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug, Eq)]
 pub enum TypeAst {
     Builtin(Builtin, Span),
     Fp {
@@ -116,7 +116,7 @@ pub enum QuantKind {
     Exists,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug, Eq)]
 pub enum Pattern {
     Wild(Span),
     /// 引数のない名前。期待 data 型の constructor か、新しい束縛。
@@ -421,5 +421,109 @@ impl Drop for Pattern {
                 stack.append(args);
             }
         }
+    }
+}
+
+const RED_ZONE: usize = 64 * 1024;
+const STACK_STEP: usize = 1024 * 1024;
+
+/// 深い入れ子でも呼出し側のスタックを使い切らないよう、複製と比較は stacker を通す。
+impl Clone for TypeAst {
+    fn clone(&self) -> TypeAst {
+        stacker::maybe_grow(RED_ZONE, STACK_STEP, || match self {
+            TypeAst::Builtin(b, s) => TypeAst::Builtin(*b, *s),
+            TypeAst::Fp { modulus, span } => TypeAst::Fp {
+                modulus: modulus.clone(),
+                span: *span,
+            },
+            TypeAst::Named { name, index, span } => TypeAst::Named {
+                name: name.clone(),
+                index: index.clone(),
+                span: *span,
+            },
+            TypeAst::Tuple(items, s) => TypeAst::Tuple(items.clone(), *s),
+            TypeAst::List(t, s) => TypeAst::List(Box::new((**t).clone()), *s),
+            TypeAst::Set(t, s) => TypeAst::Set(Box::new((**t).clone()), *s),
+            TypeAst::Option(t, s) => TypeAst::Option(Box::new((**t).clone()), *s),
+            TypeAst::Map(a, b, s) => {
+                TypeAst::Map(Box::new((**a).clone()), Box::new((**b).clone()), *s)
+            }
+            TypeAst::Term(args, r, s) => TypeAst::Term(args.clone(), Box::new((**r).clone()), *s),
+            TypeAst::Path(a, b, s) => TypeAst::Path(a.clone(), b.clone(), *s),
+        })
+    }
+}
+
+impl PartialEq for TypeAst {
+    fn eq(&self, other: &TypeAst) -> bool {
+        stacker::maybe_grow(RED_ZONE, STACK_STEP, || match (self, other) {
+            (TypeAst::Builtin(a, s), TypeAst::Builtin(b, t)) => a == b && s == t,
+            (
+                TypeAst::Fp {
+                    modulus: a,
+                    span: s,
+                },
+                TypeAst::Fp {
+                    modulus: b,
+                    span: t,
+                },
+            ) => a == b && s == t,
+            (
+                TypeAst::Named {
+                    name: a,
+                    index: i,
+                    span: s,
+                },
+                TypeAst::Named {
+                    name: b,
+                    index: j,
+                    span: t,
+                },
+            ) => a == b && i == j && s == t,
+            (TypeAst::Tuple(a, s), TypeAst::Tuple(b, t)) => a == b && s == t,
+            (TypeAst::List(a, s), TypeAst::List(b, t))
+            | (TypeAst::Set(a, s), TypeAst::Set(b, t))
+            | (TypeAst::Option(a, s), TypeAst::Option(b, t)) => **a == **b && s == t,
+            (TypeAst::Map(a, b, s), TypeAst::Map(c, d, t)) => **a == **c && **b == **d && s == t,
+            (TypeAst::Term(a, r, s), TypeAst::Term(b, q, t)) => a == b && **r == **q && s == t,
+            (TypeAst::Path(a, b, s), TypeAst::Path(c, d, t)) => a == c && b == d && s == t,
+            _ => false,
+        })
+    }
+}
+
+impl Clone for Pattern {
+    fn clone(&self) -> Pattern {
+        stacker::maybe_grow(RED_ZONE, STACK_STEP, || match self {
+            Pattern::Wild(s) => Pattern::Wild(*s),
+            Pattern::Name(i) => Pattern::Name(i.clone()),
+            Pattern::Ctor { name, args, span } => Pattern::Ctor {
+                name: name.clone(),
+                args: args.clone(),
+                span: *span,
+            },
+        })
+    }
+}
+
+impl PartialEq for Pattern {
+    fn eq(&self, other: &Pattern) -> bool {
+        stacker::maybe_grow(RED_ZONE, STACK_STEP, || match (self, other) {
+            (Pattern::Wild(a), Pattern::Wild(b)) => a == b,
+            (Pattern::Name(a), Pattern::Name(b)) => a == b,
+            (
+                Pattern::Ctor {
+                    name: a,
+                    args: x,
+                    span: s,
+                },
+                Pattern::Ctor {
+                    name: b,
+                    args: y,
+                    span: t,
+                },
+            ) => a == b && x == y && s == t,
+            _ => false,
+        })
     }
 }

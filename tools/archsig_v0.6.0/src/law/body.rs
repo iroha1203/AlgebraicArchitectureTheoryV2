@@ -199,6 +199,9 @@ impl Checker {
                 guard,
                 body,
             } => {
+                if params.is_empty() {
+                    return syntax(d.name.span, "change は第1引数に entity の参照を持つ");
+                }
                 let params = self.params(ri, params, true)?;
                 let mut env = self.env_for(&params)?;
                 if let Some(g) = guard {

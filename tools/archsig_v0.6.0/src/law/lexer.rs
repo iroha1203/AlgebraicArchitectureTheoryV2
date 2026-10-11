@@ -34,6 +34,11 @@ const SYMBOLS1: &str = ";{}()[]<>,:.=|+-*_";
 
 /// UTF-8・BOM を確かめてから字句に分ける。
 pub fn lex(bytes: &[u8]) -> Result<Vec<Token>, Box<Issue>> {
+    lex_up_to(bytes, usize::MAX)
+}
+
+/// 先頭から `max` 個までの字句。header の版を、残りの字句より先に読むために使う。
+pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
     if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
         return Err(Box::new(Issue::law(Code::Syntax, (0, 3), "BOM は使えない")));
     }
@@ -45,7 +50,7 @@ pub fn lex(bytes: &[u8]) -> Result<Vec<Token>, Box<Issue>> {
     let src = text.as_bytes();
     let mut tokens = Vec::new();
     let mut i = 0;
-    while i < src.len() {
+    while i < src.len() && tokens.len() < max {
         let c = src[i];
         if matches!(c, b' ' | b'\t' | b'\r' | b'\n') {
             i += 1;

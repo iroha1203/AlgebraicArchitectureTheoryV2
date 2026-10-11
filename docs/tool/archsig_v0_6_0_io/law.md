@@ -54,8 +54,6 @@ and with true false unit list set where none some fn` と組込み型名であ�
 自分自身を use する reading も循環とする。
 宣言順は意味を持たず、field/constructor の引数順は意味を持つ。
 
-`check` は、UTF-8 と字句、header の format・semantics、宣言の文法、名前・型・参照の順に検査する。
-header の版が未対応なら、宣言の文法を読む前に `unsupported_version` とする。
 Law 内の循環(reading の参照、data の相互再帰、view の相互呼出し、構造再帰でない自己呼出し)は
 `cycle` とする。
 
@@ -132,8 +130,8 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
   同じ型間では同名 field の位置を対応させる。異なる型間では `align` で source と target の
   field の対応をすべて明記する。所属・参照は対応表に沿って、量は位置だけを対応させる。
   align は field の意味の対応であり、値が一致するという判定を入力しない。
-  覆う owned 型は、correspondence の reading と、それが use・完全名で参照する reading にある
-  所属先が R/S の entity・arrow とし、entity どうし・arrow どうしを対応させる。
+  覆う owned 型は、correspondence の reading と、そこから use と原始宣言の型の完全名で推移的に
+  参照する reading にある、所属先が R/S の entity・arrow とし、entity どうし・arrow どうしを対応させる。
   同じ型の間で明記した align は、その field の同名の対応に代わる。
   対応する二つの型の field は数が等しく一対一に対応する。
   field の型は、R を S へ、対応表の始域の型を終域の型へ、依存型の添字を対応先の field 名へ
@@ -240,6 +238,8 @@ change の guard と body は、宣言の最上位にある最後の `=` で区�
 束縛変数でない一つの名前は、期待 data 型の constructor 名ならその constructor と読む。
 pattern の名前は、照合する data 型の constructor 名ならその constructor、それ以外は新しい束縛とする。
 data 型でない値の match は `_` と束縛の分岐で受ける。
+constructor が一つの data への入れ子の pattern は、その引数の pattern が全て値を残さず受けるとき、
+外側の constructor の分岐を覆う。
 全分岐を型検査し、if の両枝・match の各枝の結果型を一致させる。
 
 field lookup は宣言済みの field だけ。tuple は数値射影だけ。適用は view、Map、Term、constructor、
@@ -247,6 +247,7 @@ field lookup は宣言済みの field だけ。tuple は数値射影だけ。適
 ドット列は、先頭が束縛変数ならその field 射影として読む。それ以外は alias 展開後の
 宣言完全名を最長一致で解決し、残りを射影として読む。予約語 `then` はこの合成演算の
 適用位置だけで Primary となる。組込み演算名は宣言・束縛名として再定義できない。
+reading・別名・constructor・field の名には組込み演算名を使える。
 
 | 演算 | 型と意味 |
 | --- | --- |

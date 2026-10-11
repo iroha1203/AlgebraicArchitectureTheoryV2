@@ -53,7 +53,7 @@ reading Base {
     items: Map<Item[from], Item[to]>;
     moves: Map<Move[from], Move[to]>;
   }
-  view q(i: Item): Q = i.price + rat(1, 2) * rat(-3, 4);
+  view q(i: Item): Q = i.price + rat(1, 2) * -rat(3, 4);
   view f(i: Item): Fp(7) = i.residue * 3 + 6 - i.residue;
   view apply(i: Item, x: Z): Z = i.code(x, 1);
   view square(): Term<(Z) -> Z> = fn(y: Z) => y * y + 1;
@@ -195,6 +195,39 @@ fn names_in_different_scopes_may_coincide() {
 }
 
 #[test]
+fn change_needs_an_entity_as_its_first_parameter() {
+    rejects(
+        "entity S; entity A(owner: S) { x: Z; } change c() = a with { x = 1 };",
+        Code::Syntax,
+    );
+    rejects(
+        "entity S; entity A(owner: S) { x: Z; } change c() when true = a with { x = 1 };",
+        Code::Syntax,
+    );
+    rejects(
+        "entity S; entity A(owner: S) { x: Z; } change c(n: Z) = n with { x = 1 };",
+        Code::Syntax,
+    );
+}
+
+#[test]
+fn nested_patterns_over_single_constructors_cover_their_branch() {
+    ok(&reading(
+        "data U = U0; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; };",
+    ));
+    ok(&reading(
+        "data U = U0(Z, Z); data W = W0(U) | W1; view f(w: W): Z = match w { W0(U0(a, b)) => a; W1 => 0; };",
+    ));
+    rejects(
+        "data U = U0 | U1; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; };",
+        Code::Syntax,
+    );
+    ok(&reading(
+        "data U = U0 | U1; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; _ => 0; };",
+    ));
+}
+
+#[test]
 fn cycles_are_rejected() {
     let mutual = format!(
         "{HEADER}reading A {{ use B as Y; entity S; }} reading B {{ use A as X; entity T; }}"
@@ -222,6 +255,10 @@ fn type_mismatches_are_rejected() {
     rejects("view v(): Z = true;", Code::Type);
     rejects(&format!("{ITEM} view v(i: Item): Z = i.tag;"), Code::Type);
     rejects("view v(): Q = rat(1, 2) + 1 < 2;", Code::Type);
+    rejects("view v(): Q = rat(-3, 4);", Code::Syntax);
+    rejects("view v(): Q = rat((3), 4);", Code::Syntax);
+    rejects("view v(x: Z): Q = rat(x, 4);", Code::Syntax);
+    rejects("view v(): Q = rat(3, 0);", Code::Syntax);
     rejects("view v(x: Fp(5)): Bool = x < x;", Code::Type);
     rejects(
         &format!("{ITEM} view v(t: Tree): Z = match t {{ Leaf => 0; Node(a, b) => true; }};"),
@@ -398,4 +435,16 @@ fn correspondence_cover_is_relative_to_its_reading() {
         "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} entity Extra(owner: S); correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}"
     );
     assert_eq!(err(&inside).code, Code::Syntax);
+    // view や law だけが別の reading を参照しても、覆う型は変わらない。
+    let viewed = format!(
+        "{HEADER}reading C {{ entity S; }} reading B {{ use C as c; entity X(owner: c.S) {{ v: Z; }} }}\n\
+         reading A {{ use C as c; correspondence M(from: c.S, to: c.S) {{ }} view v(x: B.X): Z = x.v; law required l(s: c.S): count(B.X[s]) = 0; }}"
+    );
+    ok(&viewed);
+    // 原始宣言の型が B を参照すると、B の X も覆う。
+    let held = format!(
+        "{HEADER}reading C {{ entity S; }} reading B {{ use C as c; entity X(owner: c.S) {{ v: Z; }} }}\n\
+         reading A {{ use C as c; entity Holder {{ r: B.X; }} correspondence M(from: c.S, to: c.S) {{ }} }}"
+    );
+    assert_eq!(err(&held).code, Code::Syntax);
 }

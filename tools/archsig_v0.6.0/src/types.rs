@@ -4,7 +4,7 @@ use crate::canonical::Json;
 
 /// Law の型。`Owned` は依存参照 `E[p]` で、宣言 metadata だけで保持する。
 /// 式の型では `erase` で `Ref` へ落とす。
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Eq)]
 pub enum Type {
     Unit,
     Bool,
@@ -137,5 +137,54 @@ fn take_children(t: &mut Type, stack: &mut Vec<Type>) {
             stack.push(std::mem::replace(&mut **r, Type::Unit));
         }
         _ => {}
+    }
+}
+
+/// 深い入れ子の型でも呼出し側のスタックを使い切らないよう、複製と比較は stacker を通す。
+impl Clone for Type {
+    fn clone(&self) -> Type {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Type::Unit => Type::Unit,
+            Type::Bool => Type::Bool,
+            Type::Z => Type::Z,
+            Type::Q => Type::Q,
+            Type::Text => Type::Text,
+            Type::Fp(p) => Type::Fp(p.clone()),
+            Type::Ref(n) => Type::Ref(n.clone()),
+            Type::Owned(n, p) => Type::Owned(n.clone(), p.clone()),
+            Type::Data(n) => Type::Data(n.clone()),
+            Type::Tuple(items) => Type::Tuple(items.clone()),
+            Type::List(t) => Type::List(Box::new((**t).clone())),
+            Type::Set(t) => Type::Set(Box::new((**t).clone())),
+            Type::Option(t) => Type::Option(Box::new((**t).clone())),
+            Type::Map(a, b) => Type::Map(Box::new((**a).clone()), Box::new((**b).clone())),
+            Type::Term(args, r) => Type::Term(args.clone(), Box::new((**r).clone())),
+            Type::Path(a, b) => Type::Path(a.clone(), b.clone()),
+        })
+    }
+}
+
+impl PartialEq for Type {
+    fn eq(&self, other: &Type) -> bool {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
+            (Type::Unit, Type::Unit)
+            | (Type::Bool, Type::Bool)
+            | (Type::Z, Type::Z)
+            | (Type::Q, Type::Q)
+            | (Type::Text, Type::Text) => true,
+            (Type::Fp(a), Type::Fp(b))
+            | (Type::Ref(a), Type::Ref(b))
+            | (Type::Data(a), Type::Data(b)) => a == b,
+            (Type::Owned(a, p), Type::Owned(b, q)) | (Type::Path(a, p), Type::Path(b, q)) => {
+                a == b && p == q
+            }
+            (Type::Tuple(a), Type::Tuple(b)) => a == b,
+            (Type::List(a), Type::List(b))
+            | (Type::Set(a), Type::Set(b))
+            | (Type::Option(a), Type::Option(b)) => **a == **b,
+            (Type::Map(a, b), Type::Map(c, d)) => **a == **c && **b == **d,
+            (Type::Term(a, r), Type::Term(b, q)) => a == b && **r == **q,
+            _ => false,
+        })
     }
 }

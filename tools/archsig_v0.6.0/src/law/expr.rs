@@ -176,6 +176,10 @@ impl Checker {
 
     /// 文脈の型がないと読めない式(整数 literal、短い constructor 名)。
     fn needs_context(&mut self, id: ExprId, env: &Env) -> bool {
+        stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.needs_context_inner(id, env))
+    }
+
+    fn needs_context_inner(&mut self, id: ExprId, env: &Env) -> bool {
         match self.parser.exprs[id].kind.clone() {
             ExprKind::Int(_) => true,
             ExprKind::Unary {
@@ -812,22 +816,9 @@ impl Checker {
         match b {
             "rat" => {
                 self.arity(span, args, 2, "rat")?;
-                let n = self.strip_groups(args[0]);
-                let n_ok = match &self.parser.exprs[n].kind {
-                    ExprKind::Int(_) => true,
-                    ExprKind::Unary {
-                        op: UnOp::Neg,
-                        operand,
-                    } => {
-                        matches!(
-                            self.parser.exprs[self.strip_groups(*operand)].kind,
-                            ExprKind::Int(_)
-                        )
-                    }
-                    _ => false,
-                };
-                let d = self.strip_groups(args[1]);
-                let d_ok = matches!(&self.parser.exprs[d].kind, ExprKind::Int(t) if t != "0");
+                // 引数は整数 literal そのもの。負の有理数は単項 `-` を rat の外に置く。
+                let n_ok = matches!(&self.parser.exprs[args[0]].kind, ExprKind::Int(_));
+                let d_ok = matches!(&self.parser.exprs[args[1]].kind, ExprKind::Int(t) if t != "0");
                 if !n_ok || !d_ok {
                     return syntax(span, "rat の引数は整数 literal で、分母は正");
                 }
@@ -1103,14 +1094,21 @@ impl Checker {
                 let Some(Signature::Data { constructors }) = self.sigs.get(&data).cloned() else {
                     unreachable!()
                 };
+                // 引数の pattern が全て、その型の値を残さず受けるなら、この分岐は constructor を覆う。
+                // constructor が一つだけの data への pattern は、その引数が全て覆えば値を残さない。
                 let mut irrefutable = true;
                 for (a, t) in args.iter().zip(&constructors[index].args) {
-                    if self
-                        .check_pattern(a, t, env, ctx, child_rec, false)?
-                        .is_some()
-                    {
-                        irrefutable = false;
-                    }
+                    let covers = match self.check_pattern(a, t, env, ctx, child_rec, false)? {
+                        None => true,
+                        Some((_, inner)) => {
+                            inner
+                                && matches!(t, Type::Data(d) if matches!(
+                                    self.sigs.get(d),
+                                    Some(Signature::Data { constructors }) if constructors.len() == 1
+                                ))
+                        }
+                    };
+                    irrefutable &= covers;
                 }
                 Ok(Some((index, irrefutable)))
             }

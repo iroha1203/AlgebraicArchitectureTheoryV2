@@ -5,10 +5,8 @@ use std::collections::BTreeMap;
 
 /// 結果と manifest に使う JSON 値。object の key は `BTreeMap` が UTF-8 byte 順に保つ。
 /// UTF-8 の byte 順は Unicode scalar 順と一致する。
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug, Eq)]
 pub enum Json {
-    Bool(bool),
-    Nat(u64),
     Str(String),
     Arr(Vec<Json>),
     Obj(BTreeMap<String, Json>),
@@ -37,8 +35,6 @@ impl Json {
 
     fn write(&self, out: &mut String) {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
-            Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
-            Json::Nat(n) => out.push_str(&n.to_string()),
             Json::Str(s) => write_string(s, out),
             Json::Arr(items) => {
                 out.push('[');
@@ -107,5 +103,26 @@ fn take_children(j: &mut Json, stack: &mut Vec<Json>) {
         Json::Arr(items) => stack.append(items),
         Json::Obj(entries) => stack.extend(std::mem::take(entries).into_values()),
         _ => {}
+    }
+}
+
+impl Clone for Json {
+    fn clone(&self) -> Json {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Json::Str(s) => Json::Str(s.clone()),
+            Json::Arr(items) => Json::Arr(items.clone()),
+            Json::Obj(entries) => Json::Obj(entries.clone()),
+        })
+    }
+}
+
+impl PartialEq for Json {
+    fn eq(&self, other: &Json) -> bool {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
+            (Json::Str(a), Json::Str(b)) => a == b,
+            (Json::Arr(a), Json::Arr(b)) => a == b,
+            (Json::Obj(a), Json::Obj(b)) => a == b,
+            _ => false,
+        })
     }
 }

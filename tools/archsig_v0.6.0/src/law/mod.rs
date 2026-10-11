@@ -50,12 +50,6 @@ pub struct LawFailure {
     pub model_digest: Option<String>,
 }
 
-impl LawFailure {
-    pub fn is_unsupported(&self) -> bool {
-        self.issue.code == Code::UnsupportedVersion
-    }
-}
-
 /// 字句列の正規化(Law 仕様 §1)。`{semantics, tokens}` の canonical JSON。
 pub fn model_canonical(tokens: &[lexer::Token]) -> String {
     let toks = tokens
@@ -98,10 +92,11 @@ fn check_law_here(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
         bytes_digest: bytes_digest.clone(),
         model_digest,
     };
-    // 検査順: UTF-8・字句、header の版、宣言の文法、名前・型・参照。
-    let tokens = lexer::lex(bytes).map_err(|i| fail(*i, None))?;
-    let mut parser = parser::Parser::new(tokens, bytes.len());
-    let header = parser.header().map_err(|i| fail(*i, None))?;
+    // 検査順: UTF-8、header の版、残りの字句と宣言の文法、名前・型・参照。
+    let head = lexer::lex_up_to(bytes, 5).map_err(|i| fail(*i, None))?;
+    let header = parser::Parser::new(head, bytes.len())
+        .header()
+        .map_err(|i| fail(*i, None))?;
     if header.format != FORMAT || header.semantics != SEMANTICS {
         let issue = Issue {
             code: Code::UnsupportedVersion,
@@ -114,7 +109,12 @@ fn check_law_here(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
         };
         return Err(fail(issue, None));
     }
-    let digest = model_digest(&parser.toks);
+    let tokens = lexer::lex(bytes).map_err(|i| fail(*i, None))?;
+    let digest = model_digest(&tokens);
+    let mut parser = parser::Parser::new(tokens, bytes.len());
+    parser
+        .header()
+        .map_err(|i| fail(*i, Some(digest.clone())))?;
     let readings = parser
         .readings()
         .map_err(|i| fail(*i, Some(digest.clone())))?;

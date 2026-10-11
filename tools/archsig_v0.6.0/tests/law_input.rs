@@ -35,9 +35,8 @@ fn encoding_errors_come_first() {
 
 #[test]
 fn unknown_versions_are_unsupported_before_the_grammar_is_read() {
-    let future = "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading X { future Thing with new syntax; }\n";
+    let future = "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading X { future @Thing <- 007 \"\\ud800\"; }\n";
     let f = failure(future.as_bytes());
-    assert!(f.is_unsupported());
     assert_eq!(f.issue.code, Code::UnsupportedVersion);
     assert_eq!(
         f.issue.details,
@@ -105,7 +104,27 @@ fn deeply_nested_valid_input_is_checked_without_crashing() {
     let patterns = reading(&format!(
         "data T = Leaf | Node(T); view p(t: T): Z = match t {{ {pattern} => 1; _ => 0; }};"
     ));
-    for src in [parens, negs, implies, field, lists, patterns] {
+    // 文脈の型を探す読み、data の再帰の検査、correspondence の型の運搬も深さに耐える。
+    let m = 400_000;
+    let compared = reading(&format!(
+        "law optional l(x: Z): {}1{} = x;",
+        "(".repeat(m),
+        ")".repeat(m)
+    ));
+    let negated = reading(&format!("law optional l(x: Z): {}1 = x;", "- ".repeat(m)));
+    let tree = reading(&format!(
+        "data T = L | N({}T{});",
+        "List<".repeat(m),
+        ">".repeat(m)
+    ));
+    let moved = reading(&format!(
+        "entity S; entity A(owner: S) {{ f: {}Z{}; }} correspondence M(from: S, to: S) {{ xs: Map<A[from], A[to]>; }}",
+        "List<".repeat(m),
+        ">".repeat(m)
+    ));
+    for src in [
+        parens, negs, implies, field, lists, patterns, compared, negated, tree, moved,
+    ] {
         std::thread::Builder::new()
             .stack_size(2 * 1024 * 1024)
             .spawn(move || {
@@ -178,7 +197,13 @@ fn quantifier_bodies_and_domains_of_any_shape_are_accepted() {
          law required e(s: S): forall x in if s.b then s.xs else s.ys . x = 1;
          law required f(s: S): forall x in let ys = s.xs in ys . x = 1;
          law optional g(): exists s: R.S . R.A[s] = set<A>{};
-         law optional h(s: S): forall x in s.xs . forall y in s.ys . (x, y).0 = x;",
+         law optional h(s: S): forall x in s.xs . forall y in s.ys . (x, y).0 = x;
+         arrow M(owner: S, from: A[owner], to: A[owner]);
+         law optional i(): forall p: Path<A, A> . p = p;
+         law optional j(): exists m: Map<A, A> . true;
+         law optional k(): forall p: Option<Path<A, A>> . true;
+         law optional l(): forall m in list<Map<A, A>>[] . (m, 1).1 = 1;
+         view n(xs: List<Z>): (Bool, Z) = (forall x in xs . x > 0, 1);",
     ));
     let e = c.infos.iter().find(|i| i.name == "R.e").unwrap();
     assert_eq!(e.expressions[0].ty, archsig::types::Type::Bool);

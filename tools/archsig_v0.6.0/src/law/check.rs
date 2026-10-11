@@ -52,7 +52,6 @@ pub struct Checker {
     pub ctor_index: HashMap<String, (String, usize)>,
     pub sigs: HashMap<String, Signature>,
     pub data_props: HashMap<String, DataProps>,
-    owner_cache: HashMap<String, Option<String>>,
     /// 現在の宣言で記録している名前の参照。
     pub refs: Vec<(Span, String)>,
     pub expr_types: Vec<Option<Type>>,
@@ -109,7 +108,6 @@ impl Checker {
             ctor_index: HashMap::new(),
             sigs: HashMap::new(),
             data_props: HashMap::new(),
-            owner_cache: HashMap::new(),
             refs: Vec::new(),
             expr_types: Vec::new(),
             view_edges: Vec::new(),
@@ -311,12 +309,10 @@ impl Checker {
 
     /// entity/arrow の所属先の根 entity。owner の型が根 entity の名前でなければ None。
     pub fn owner_root(&mut self, name: &str) -> Option<String> {
-        if let Some(hit) = self.owner_cache.get(name) {
-            return hit.clone();
-        }
         let (ri, _) = *self.decl_index.get(name)?;
         let field = self.decl_ast(name).and_then(Self::owner_field_ast).cloned();
-        let root = match field.as_ref().map(|f| &f.ty) {
+
+        match field.as_ref().map(|f| &f.ty) {
             Some(TypeAst::Named {
                 name: q,
                 index: None,
@@ -328,9 +324,7 @@ impl Checker {
                 _ => None,
             },
             _ => None,
-        };
-        self.owner_cache.insert(name.to_owned(), root.clone());
-        root
+        }
     }
 
     pub fn resolve_prefix_silent(
@@ -1017,6 +1011,12 @@ pub fn check_binding_name(id: &Ident) -> CResult<()> {
 }
 
 fn positive_self(t: &Type, me: &str, positive: bool) -> bool {
+    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        positive_self_inner(t, me, positive)
+    })
+}
+
+fn positive_self_inner(t: &Type, me: &str, positive: bool) -> bool {
     match t {
         Type::Data(d) if d == me => positive,
         Type::Tuple(items) => items.iter().all(|t| positive_self(t, me, positive)),
@@ -1031,6 +1031,12 @@ fn positive_self(t: &Type, me: &str, positive: bool) -> bool {
 }
 
 fn type_inhabited(t: &Type, inhabited: &HashSet<String>) -> bool {
+    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        type_inhabited_inner(t, inhabited)
+    })
+}
+
+fn type_inhabited_inner(t: &Type, inhabited: &HashSet<String>) -> bool {
     match t {
         Type::Data(d) => inhabited.contains(d),
         Type::Tuple(items) => items.iter().all(|t| type_inhabited(t, inhabited)),
@@ -1039,6 +1045,16 @@ fn type_inhabited(t: &Type, inhabited: &HashSet<String>) -> bool {
 }
 
 fn transport(t: &Type, mu: &BTreeMap<String, String>, alpha: &BTreeMap<String, String>) -> Type {
+    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        transport_inner(t, mu, alpha)
+    })
+}
+
+fn transport_inner(
+    t: &Type,
+    mu: &BTreeMap<String, String>,
+    alpha: &BTreeMap<String, String>,
+) -> Type {
     let map = |n: &String| mu.get(n).cloned().unwrap_or_else(|| n.clone());
     match t {
         Type::Ref(n) => Type::Ref(map(n)),
