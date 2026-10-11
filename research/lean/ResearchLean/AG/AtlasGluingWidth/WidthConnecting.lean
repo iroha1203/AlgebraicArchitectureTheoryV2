@@ -63,12 +63,13 @@ theorem a_lift_d0 (hn : 2 ≤ n) (z : Bool → ℚ) (e : (selected n false (regi
   cases b
   · have hi : i = 0 := he
     subst i
-    simp [CellSelection.complex_d0_apply, aLift, CellSelection.left, CellSelection.right,
-      left, right, endpointDifference, generatorAt_apply]
+    simp [CellSelection.complex_d0_apply, aLift, CellSelection.left_val,
+      CellSelection.right_val, left_apply, right_apply, endpointDifference, generatorAt_apply]
   · have hi : i = -1 := add_eq_zero_iff_eq_neg.mp he
     subst i
-    simp [CellSelection.complex_d0_apply, aLift, CellSelection.left, CellSelection.right,
-      left, right, endpointDifference, generatorAt_apply, neg_one_ne_zero n hn]
+    simp [CellSelection.complex_d0_apply, aLift, CellSelection.left_val,
+      CellSelection.right_val, left_apply, right_apply, endpointDifference,
+      generatorAt_apply, neg_one_ne_zero n hn]
 /-- Bにa₀は選択されず、指定貼り合わせcochainはBで零。 -/
 theorem b_generator_zero (z : Bool → ℚ) (e : (selected n false (regionB n)).Edge) :
     endpointDifference z * generatorAt n 0 e.1.1 = 0 := by
@@ -203,8 +204,7 @@ theorem intersection_Q_value (hn : 2 ≤ n) (z : Bool → ℚ) :
       (intersectionClass n hn z)) = endpointDifference z := by
   rw [fine_Q_mk]
   congr 1
-  simp only [fineIntersectionStandardH0Equiv, intersectionClass, LinearEquiv.trans_apply,
-    LinearEquiv.symm_apply_apply]
+  rw [intersectionClass, fineIntersectionStandardH0Equiv_oldH0Equiv]
   exact (intersectionH0Equiv n hn).apply_symm_apply z
 /-- 指定(0,1)の標準δ像は同じperiod1を持つ。 -/
 theorem standard_connecting_period_one (hn : 2 ≤ n) :

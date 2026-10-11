@@ -14,7 +14,8 @@ C は PR #5330、merge `0626e53e5ff4dd8e80756d0bf9be133e84c10feb` で部分受�
 D は PR #5332、merge `48482786950efee29b4e7f6fb3b128f0412e891f` で受理済み。
 Eの全幅群は PR #5333、merge `282f056b988b6b9a76239c0a402346e18dc18aa5` で部分受理済み。
 Cycle 6では残る同じMV標準delta・Q/P/Z・hidden/G135生成元と指定回帰例の実装が通り、
-全固定targetの完了候補を監査する。標準PR査読と別の全GOAL最終4本査読は未実施。
+全固定targetの完了候補を監査する。初回PR前には標準PR査読と別の全GOAL最終4本査読は未実施だった。
+初回内容査読の非中心API修正とその検証は後述し、最終判定は固定headのPR監査コメントへ置く。
 G-135 の Research 達成済み結果を再利用する。Formal は `unported (Research-proved)`。
 
 ## Cycle 1 selection
@@ -1156,7 +1157,7 @@ aggregate/全file elaborationは未実施。ArchSig PRDの保留作業は実行�
 
 ## Cycle 6 spine declaration list
 
-全161明示宣言を含む（自動生成宣言は公理監査の全実環境リストにも含める）。
+8新sourceの全163明示宣言を含む（自動生成宣言は公理監査の全実環境リストにも含める）。
 名前は全て `AAT.AG.AtlasGluingWidth.Width` 以下。
 
 ### WidthCoefficient.lean（23明示）
@@ -1234,7 +1235,7 @@ AAT.AG.AtlasGluingWidth.Width.h0_width_regression
 AAT.AG.AtlasGluingWidth.Width.h0_width_regression_two
 ```
 
-### WidthHidden.lean（22明示）
+### WidthHidden.lean（23明示）
 
 ```text
 AAT.AG.AtlasGluingWidth.Width.primitiveFineRow
@@ -1248,6 +1249,7 @@ AAT.AG.AtlasGluingWidth.Width.primitive_delta_same
 AAT.AG.AtlasGluingWidth.Width.primitive_delta_period
 AAT.AG.AtlasGluingWidth.Width.region_union_full
 AAT.AG.AtlasGluingWidth.Width.gluingOldClass
+AAT.AG.AtlasGluingWidth.Width.gluingOldClass_fineUnionEquiv
 AAT.AG.AtlasGluingWidth.Width.gluingHiddenClass
 AAT.AG.AtlasGluingWidth.Width.primitiveQClass
 AAT.AG.AtlasGluingWidth.Width.hidden_inclusion_same
@@ -1295,7 +1297,7 @@ AAT.AG.AtlasGluingWidth.Width.coarseIntersectionRoot
 AAT.AG.AtlasGluingWidth.Width.coarseIntersectionH0Equiv
 ```
 
-### WidthMayerVietoris.lean（34明示）
+### WidthMayerVietoris.lean（35明示）
 
 ```text
 AAT.AG.AtlasGluingWidth.Width.pairKernelEquiv
@@ -1306,6 +1308,7 @@ AAT.AG.AtlasGluingWidth.Width.coarse_H0_difference
 AAT.AG.AtlasGluingWidth.Width.finePairStandardH0Equiv
 AAT.AG.AtlasGluingWidth.Width.coarsePairStandardH0Equiv
 AAT.AG.AtlasGluingWidth.Width.fineIntersectionStandardH0Equiv
+AAT.AG.AtlasGluingWidth.Width.fineIntersectionStandardH0Equiv_oldH0Equiv
 AAT.AG.AtlasGluingWidth.Width.coarseIntersectionStandardH0Equiv
 AAT.AG.AtlasGluingWidth.Width.widthFineRow
 AAT.AG.AtlasGluingWidth.Width.widthCoarseRow
@@ -1382,7 +1385,7 @@ GammaForestの必要closure65sourceは既存受理cacheとbyte照合し、欠け
 | `WitnessThreeNamed.lean` | `b27892a58d955e6e9af818fc6a6097d2d52f4847a58044d8287591142217b6c6` |
 | `WitnessThreeConeRanks.lean` | `d852ba0613fc279d4ebb500fd0da42a0aafdc8b4e3e8f524ec4f33a2ce759079` |
 
-## Cycle 6 検証記録（PR前の固定実体）
+## Cycle 6 初回検証記録（head018c7b6eの固定実体）
 
 全33sourceの累積777明示と80生成、857実宣言を現環境で列挙し、
 全857の明示 `#print axioms` を一つの非aggregate監査fileで照会した。
@@ -1422,3 +1425,64 @@ axiom方針記載2hitは宣言やplaceholderではない。静的方向gate228mo
 本体→Research import0、固定GOAL/design5fileと受理A–D/C5の25sourcebyte不変。
 共通skill/品質/workflow参照も固定636ea3d版と同一。正式新4lanePR監査と
 別の全GOAL最終新4lane監査・固定headCIはこの記録後に行う。
+
+
+## Cycle 6 非中心API修正の範囲
+
+[初回正式4本査読](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5336#issuecomment-6110615009)
+はhead018c7b6ec053fdec01e2aaff97e9cf8ebc7f4592に対し、中心finding0、
+no-unfold API不足を一括指摘した。修正は名指しされた公開評価補題7本と
+指摘consumerのproof内部、およびこのspine/hash/検証記録の同期に限る。
+既存signature、def/instance値、宣言、import方向、固定target、result proposalのstatusは変えない。
+
+| 追加公開API | 所有moduleと下流使用 |
+| --- | --- |
+| `CellSelection.left_val`, `CellSelection.right_val` | CellSelection、選択辺の元chart値。WidthLocalH0/WidthConnecting/WidthH0Regressionの端点評価 |
+| `StandardRow.cellRow_g` | StandardShortExact、元差制限の標準零延長。WidthMayerVietorisの粗細H⁰自然性 |
+| `Width.left_apply`, `Width.right_apply` | WidthInput、元辺のBool分岐。指定path/lift/H⁰回帰の端点評価 |
+| `Width.fineIntersectionStandardH0Equiv_oldH0Equiv` | WidthMayerVietoris、全元oldH⁰輸送の評価。WidthConnecting.intersection_Q_value |
+| `Width.gluingOldClass_fineUnionEquiv` | WidthHidden、全元同じ旧H¹類の和同型評価。WidthCoefficient.gluing_kernel_tau_value |
+
+受理済み25source中22sourceはbyte不変。残るCellSelection/StandardShortExact/WidthInputは
+上の5補題を追記しただけで、受理済み全定義・定理のstatementと定義値は保持する。
+8新sourceの明示163＋既存ownerへの5補題＝今回明示168、生成6を含むdelta174。
+累積33sourceは明示784＋生成79＝863実宣言。最終公理名/実出力/全spineはこの修正後実体へ同期する。
+
+上の初回PR前検証節・source表はその初回固定実体の履歴である。
+最新修正後検証・source/output hashは後続表が正であり、初回値を現在headの証拠へ流用しない。
+別の全GOAL最終4本査読は内容判定合格後の工程である。
+
+## Cycle 6 API修正後の検証記録
+
+全33sourceの明示784＋生成79＝863実宣言について、同じ実環境名・全公理出力名・
+全source明示名を突合し、欠落0/余剰0。依存は標準propext/Classical.choice/Quot.soundのみ。
+全件公理log SHA256 `1050dc4856afd78c267bda24f585c48f7c6cd9300315ef1ede5f54f0d1b5b532`。
+初回からの差は名指し7補題の追加と、証明内部のAPI使用により不要になった
+Lean自動生成 `Width.intersectionValues.congr_simp` 1名の減少であり、source明示宣言の削除は0。
+
+必要な所有側3moduleと新8moduleを依存順に個別targeted検証し、全11exit0・warningなし。
+公式単一focused WidthConeRegressionもexit0、出力SHA256
+`a7814e1d667a9d03e18881c22603bf43a70c54ac9734658d484e6e6cf91e70dd`。
+全Research/aggregate/all-file elaborationを実行していない。
+
+| source | 明示数 | source SHA256 | targeted出力 SHA256 |
+| --- | --- | --- | --- |
+| `CellSelection.lean` | 29 | `38a93430abe7bd66532199a1dd25cbe14ea00ef5ee45e4d7d1035aaeb6ba7ca8` | `f8405c1dd971e6d615fd2f4822003ef9a8b8683648addd28c9f06d480ecf6b03` |
+| `StandardShortExact.lean` | 11 | `3b6d792137e60e6d65374c5d6a1c261ac0f5a2b2391bc5d468c0f77fec140ce4` | `8dcc6038ad966f35dddf2496d4b8b9048766a29221ab4cc7256226442a7d2e7f` |
+| `WidthInput.lean` | 24 | `561d43056f54f01006fb8d558959e45eb1dfbb3b0346d9eaae41bc9b0d387a6f` | `7dcee6bbb803fee28cd331917e3680fa6fc44dc0563d9124955acd79c341d718` |
+| `WidthLocalH0.lean` | 29 | `ef8b1cf88e7d17b6c399f81caaa43e542a63ed26ada6622c9d0b211ad78766dd` | `0fc80c5b5c386e8ba76e224a1a596218ffb51c0f7925b0366b375d669cedc242` |
+| `WidthMayerVietoris.lean` | 35 | `4af152d93d6e427d181354df61e1c4ab3ad9b9c6cc30bda7a8b72deeff5d3110` | `37f67ca954d0c2f0cb573456aa61404ea6a81ea7e07cad42e109875a9e52ace7` |
+| `WidthConnecting.lean` | 23 | `27453874b3b78b5f48f3aec201a6f123a5d34f93b192fec68023032bf9776f3f` | `38bee3a0782065a653f6e78c471e07c1bea0c3ebc5ee61872240b55ce2d6be40` |
+| `WidthHidden.lean` | 23 | `bf8548d1796fa05329880904022c3183563ac6b1aa18dcb5997f241d50eb6fa9` | `7dcee6bbb803fee28cd331917e3680fa6fc44dc0563d9124955acd79c341d718` |
+| `WidthPhi.lean` | 21 | `175296d55b498c19511faa3f9dd7b11d47bf11e8ab5f7a638d56400d3164d1df` | `0ddfd2acc6b6d1272b19a030db47f0d06659d3e5645f8b6c457130407caa779d` |
+| `WidthCoefficient.lean` | 23 | `d4c5bd0b26c56cd7c5d00590a56caef73081f8a24ba9e6fb5056a1cb339a053e` | `38bee3a0782065a653f6e78c471e07c1bea0c3ebc5ee61872240b55ce2d6be40` |
+| `WidthH0Regression.lean` | 7 | `bc699a9cb7cf77c81d17043896fb37a41286e8f651c8682e3006868b3cc6fe8d` | `1c3b70e7fb5005908438be919a3efff06e299979347860e2ca5c5ab690d06ffb` |
+| `WidthConeRegression.lean` | 2 | `1484ee823501f815b9849d97e9d9d4c79a45f1f70ec6fdb6a2d4a8eaa46df1cc` | `e3a97f6df94b0b3e2bfcc58a2470bdf91e67d7c4f7baa9ffdb67513cbcce0a12` |
+
+修正対象placeholder/Unicode/privacy/語彙/whitespace scan clean。本体→Research import0、
+静的import direction228module pass、package direction pass。reportの歴史的axiom説明語は
+宣言placeholderではない。固定GOAL/design/common版とreuse sourceは不変。
+
+この記録は修正後の実検証であり、直接対応の独立資格確認と別の全GOAL最終gateは
+後続の固定head PR監査コメントで判定する。result proposal/candidateのstatusは変更していない。
+Formal移植/実build、Research全体build、ArchSig保留レビュー、他worktree書込は未実施。

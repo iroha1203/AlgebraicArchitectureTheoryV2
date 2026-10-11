@@ -64,6 +64,11 @@ theorem region_union_full : regionA n ∪ regionB n = Set.univ := Set.union_comp
 def gluingOldClass (hn : 2 ≤ n) (z : Bool → ℚ) : fineH1 n false (regionA n ∪ regionB n) :=
   (PrimitiveGluing.fineUnionEquiv (h := coarser n) (Nf := fine n false) (regionA n) (regionB n)).symm
     (primitiveDelta n hn z)
+/-- 同じ通常Uの旧実類は元の和同型で同じ標準δ類へ戻る。 -/
+theorem gluingOldClass_fineUnionEquiv (hn : 2 ≤ n) (z : Bool → ℚ) :
+    PrimitiveGluing.fineUnionEquiv (h := coarser n) (Nf := fine n false)
+      (regionA n) (regionB n) (gluingOldClass n hn z) = primitiveDelta n hn z :=
+  LinearEquiv.apply_symm_apply _ _
 /-- 同じ通常Uの実oldhidden商へ指定δ classを入れる。 -/
 def gluingHiddenClass (hn : 2 ≤ n) (z : Bool → ℚ) :=
   (LinearMap.range (actualMap n false (regionA n ∪ regionB n))).mkQ (gluingOldClass n hn z)

@@ -114,8 +114,8 @@ theorem gluing_kernel_tau_value (hn : 2 ≤ n) (z : Bool → ℚ) :
   rw [gluing_kernel_tau_same]
   dsimp only [gluingKernelTauEquiv, LinearEquiv.trans_apply]
   erw [LinearEquiv.symm_apply_apply, LinearEquiv.symm_apply_apply]
-  dsimp only [gluingFineH1Equiv, gluingOldClass, LinearEquiv.trans_apply]
-  rw [LinearEquiv.apply_symm_apply]
+  dsimp only [gluingFineH1Equiv, LinearEquiv.trans_apply]
+  rw [gluingOldClass_fineUnionEquiv]
   exact primitive_delta_period n hn z
 /-- 指定MV hidden生成元は同じkerτの非零生成元。 -/
 theorem gluing_kernel_tau_generator (hn : 2 ≤ n) :

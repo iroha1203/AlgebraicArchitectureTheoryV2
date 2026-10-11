@@ -94,6 +94,10 @@ def cellRow {q : Reading Source} {D : TargetSupportedNerve q} (S T : CellSelecti
   row (S.unionInclusion T) (S.intersectionDifference T)
     (S.union_intersection_exact0 T) (S.union_intersection_exact1 T) (S.union_intersection_exact2 T)
 
+/-- 元セル行の第二射は同じ差制限の標準零延長。 -/
+theorem cellRow_g {q : Reading Source} {D : TargetSupportedNerve q} (S T : CellSelection D) :
+    (cellRow S T).g = zeroExtensionMap (S.intersectionDifference T) := rfl
+
 /-- 原始セル構成から生成された標準零延長のSES。 -/
 theorem cellRow_shortExact {q : Reading Source} {D : TargetSupportedNerve q}
     (S T : CellSelection D) : (cellRow S T).ShortExact :=

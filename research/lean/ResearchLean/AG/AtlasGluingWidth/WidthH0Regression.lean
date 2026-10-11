@@ -31,7 +31,14 @@ theorem plus_a_back_value (z : LinearMap.ker (selected n true (regionA n)).compl
   have h := congrFun z.2 (plusABackEdge n)
   rw [CellSelection.complex_d0_apply] at h
   have h' := (sub_eq_zero.mp h).symm
-  simpa [CellSelection.right, plusABackEdge, plusARoot, right] using h'
+  have he : (selected n true (regionA n)).right (plusABackEdge n) = plusARoot n := by
+    apply Subtype.ext
+    rw [CellSelection.right_val]
+    change right n (-1,true) = (0,false)
+    rw [right_apply]
+    simp
+  rw [he] at h'
+  exact h'
 /-- 指定plus Aの実H⁰核は非孤立成分値と孤立w₀値で二成分に同定する。 -/
 def plusAH0Equiv (hn : 2 ≤ n) : LinearMap.ker (selected n true (regionA n)).complex.d0 ≃ₗ[ℚ] (ℚ × ℚ) where
   toFun z := (z.1 (plusARoot n), z.1 (plusAIsolated n))
@@ -64,7 +71,15 @@ def plusAH0Equiv (hn : 2 ≤ n) : LinearMap.ker (selected n true (regionA n)).co
       · have hi' : i = -1 := add_eq_zero_iff_eq_neg.mp hi
         subst i
         have hb := plus_a_back_value n z
-        simpa [plusABackEdge, CellSelection.left, left, neg_one_ne_zero n hn] using hb.symm
+        have he : (selected n true (regionA n)).left (plusABackEdge n) =
+            ⟨(-1,true), hp⟩ := by
+          apply Subtype.ext
+          rw [CellSelection.left_val]
+          change left n (-1,true) = (-1,true)
+          rw [left_apply]
+          rfl
+        rw [he] at hb
+        simpa [neg_one_ne_zero n hn] using hb.symm
   right_inv z := by simp [plusARoot, plusAIsolated]
   map_add' _ _ := rfl
   map_smul' _ _ := rfl

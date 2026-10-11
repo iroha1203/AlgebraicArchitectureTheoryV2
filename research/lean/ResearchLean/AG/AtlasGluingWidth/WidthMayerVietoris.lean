@@ -63,6 +63,13 @@ def coarsePairStandardH0Equiv (hn : 2 ≤ n) :=
 /-- 同じ細標準真交差H⁰は順序付き二chart評価へ移す。 -/
 def fineIntersectionStandardH0Equiv (hn : 2 ≤ n) :=
   (oldH0Equiv (intersection n).complex).symm.trans (intersectionH0Equiv n hn)
+/-- 元の交差H⁰核の全元で標準輸送後の評価を正規化する。 -/
+theorem fineIntersectionStandardH0Equiv_oldH0Equiv (hn : 2 ≤ n)
+    (x : LinearMap.ker (intersection n).complex.d0) :
+    fineIntersectionStandardH0Equiv n hn (oldH0Equiv (intersection n).complex x) =
+      intersectionH0Equiv n hn x := by
+  simp only [fineIntersectionStandardH0Equiv, LinearEquiv.trans_apply,
+    LinearEquiv.symm_apply_apply]
 /-- 同じ粗標準真交差H⁰は唯一chart評価へ移す。 -/
 def coarseIntersectionStandardH0Equiv (hn : 2 ≤ n) :=
   (oldH0Equiv ((CellSelection.region (coarse n) (regionA n)).inter
@@ -78,8 +85,9 @@ theorem fine_standard_H0_difference (hn : 2 ≤ n) (x : (widthFineRow n).X₂.ho
     fineIntersectionStandardH0Equiv n hn (homologyMap (widthFineRow n).g 0 x) =
       fun _ => (finePairStandardH0Equiv n hn x).1 - (finePairStandardH0Equiv n hn x).2 := by
   obtain ⟨z,rfl⟩ := (oldH0Equiv _).surjective x
-  dsimp only [widthFineRow, StandardRow.cellRow, StandardRow.row]
-  rw [← oldH0Equiv_natural]
+  rw [show (widthFineRow n).g = _ from StandardRow.cellRow_g _ _]
+  erw [← oldH0Equiv_natural (CellSelection.intersectionDifference
+    (selected n false (regionA n)) (selected n false (regionB n))) z]
   simp only [fineIntersectionStandardH0Equiv, intersection, finePairStandardH0Equiv, LinearEquiv.trans_apply, LinearEquiv.symm_apply_apply]
   change intersectionH0Equiv n hn (oldH0Map _ z) =
     fun _ => (finePairH0Equiv n hn z).1 - (finePairH0Equiv n hn z).2
@@ -90,8 +98,10 @@ theorem coarse_standard_H0_difference (hn : 2 ≤ n) (x : (widthCoarseRow n).X�
     coarseIntersectionStandardH0Equiv n hn (homologyMap (widthCoarseRow n).g 0 x) =
       (coarsePairStandardH0Equiv n hn x).1 - (coarsePairStandardH0Equiv n hn x).2 := by
   obtain ⟨z,rfl⟩ := (oldH0Equiv _).surjective x
-  dsimp only [widthCoarseRow, StandardRow.cellRow, StandardRow.row]
-  rw [← oldH0Equiv_natural]
+  rw [show (widthCoarseRow n).g = _ from StandardRow.cellRow_g _ _]
+  erw [← oldH0Equiv_natural (CellSelection.intersectionDifference
+    (CellSelection.region (coarse n) (regionA n))
+    (CellSelection.region (coarse n) (regionB n))) z]
   simp only [coarseIntersectionStandardH0Equiv, coarsePairStandardH0Equiv, LinearEquiv.trans_apply, LinearEquiv.symm_apply_apply]
   change coarseIntersectionH0Equiv n hn (oldH0Map _ z) =
     (coarsePairH0Equiv n hn z).1 - (coarsePairH0Equiv n hn z).2

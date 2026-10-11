@@ -140,6 +140,14 @@ def left (S : CellSelection D) (c : S.Edge) : S.Chart :=
 def right (S : CellSelection D) (c : S.Edge) : S.Chart :=
   ⟨D.nerve.edgeRight c.1, S.edge_right c.1 c.2⟩
 
+/-- 選択辺の左端の元chart値は元nerveの左incidence。 -/
+@[simp] theorem left_val (S : CellSelection D) (c : S.Edge) :
+    (S.left c).val = D.nerve.edgeLeft c.val := rfl
+
+/-- 選択辺の右端の元chart値は元nerveの右incidence。 -/
+@[simp] theorem right_val (S : CellSelection D) (c : S.Edge) :
+    (S.right c).val = D.nerve.edgeRight c.val := rfl
+
 /-- 選択されたセルの元 incidence。 -/
 def face0 (S : CellSelection D) (c : S.Face) : S.Edge :=
   ⟨D.nerve.faceEdge0 c.1, S.face_edge0 c.1 c.2⟩

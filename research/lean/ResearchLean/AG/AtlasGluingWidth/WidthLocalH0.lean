@@ -56,8 +56,21 @@ theorem a_zero_constant (z : LinearMap.ker (selected n false (regionA n)).comple
       exact ha
     · have hi' : i = -1 := add_eq_zero_iff_eq_neg.mp hi
       subst i
-      simpa [aBackEdge, aRoot, localEdge, localChart, CellSelection.right,
-        CellSelection.left, right, left] using hb.symm
+      have hl : (selected n false (regionA n)).left (aBackEdge n) =
+          ⟨(-1,true), hp⟩ := by
+        apply Subtype.ext
+        rw [CellSelection.left_val]
+        change left n (-1,true) = (-1,true)
+        rw [left_apply]
+        rfl
+      have hr : (selected n false (regionA n)).right (aBackEdge n) = aRoot n := by
+        apply Subtype.ext
+        rw [CellSelection.right_val]
+        change right n (-1,true) = (0,false)
+        rw [right_apply]
+        simp
+      rw [hl, hr] at hb
+      exact hb.symm
 omit [NeZero n] in
 /-- n≥2なら全wᵢがBに選ばれる。 -/
 theorem b_w_selected (hn : 2 ≤ n) (i : Concept n) :
