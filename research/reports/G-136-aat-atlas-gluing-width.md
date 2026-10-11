@@ -9,9 +9,10 @@ GOAL blob: `dbc5b584987a1f3e1987125b7ccde2e361a89533`。
 
 T0・A–E は固定 target を維持する。初回 selection は実装前の開始報告で固定した。
 A は PR #5328、merge `bb80b4068979dd1ecca354d8cebe9cad66f54e16` で部分受理済み。
-現在は B の標準零延長・錐 SES と全整数次数 LES を到達点とする。
-B の錐 SES/LES は Cycle 2 の受理候補として構成中。
-C の Q/P と snake、D の実 Law と係数/fiber 接続、E の任意 k の族は未実装。
+B は PR #5329、merge `a06669caf8b6983068a32f7ab81b5d390bb42b22`、
+C は PR #5330、merge `0626e53e5ff4dd8e80756d0bf9be133e84c10feb` で部分受理済み。
+現在は D の実Lawと係数/fiber接続をCycle 4受理候補として構成・検証する。
+E の任意k指定族・全Law幅・MV発火と全GOAL最終判定は未実施。
 G-135 の Research 達成済み結果を再利用する。Formal は `unported (Research-proved)`。
 
 ## Cycle 1 selection
@@ -425,3 +426,165 @@ statement・証明・比較射・仮定を保持する。宣言の削除・追�
 改名後の累積415実宣言を全件明示公理照会し、exit0、415unique、標準3公理以内、
 180新規明示宣言の欠落なし。log SHA256 `9190e4c853a0c0fa921fdf728103028dee71f0cf01390a5ccf83dfdfc312b590`。
 placeholder/Unicode/privacy/import方向/diffcheckはclean、固定仕様は不変。
+
+## Cycle 3 正式受理
+
+PR [#5330](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5330)、
+head `0e0595402924c9a162e8dc2af546c55629b3d7ab`、
+merge `0626e53e5ff4dd8e80756d0bf9be133e84c10feb`。
+新規独立4 laneの正式再実行2はすべて `No major findings`、中心・非中心0。
+[内容監査とroot全13回帰受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5330#issuecomment-6108600454)
+がC全体を `proof-obligation-discharged` と判定し、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5321#issuecomment-6108614793)
+に記録した。CI全7成功（38135557771/38135557765/Workers）。
+全GOAL完了ではなく、D/Eは残る。
+
+## Cycle 4 selection：同じ実Lawと係数・fiber分解
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-136-aat-atlas-gluing-width
+cycle: 4
+goal_blob_sha: dbc5b584987a1f3e1987125b7ccde2e361a89533
+base_oid: 0626e53e5ff4dd8e80756d0bf9be133e84c10feb
+tracking_issue: 5321
+report_path: research/reports/G-136-aat-atlas-gluing-width.md
+selection:
+  proof_state_ref: PR5330最終受理・Issue5321同期・Cycle3全C実宣言
+  proof_dag_predecessors: [受理済みA/B/C, G133有限族と実核商, G134実Law比較, G135係数余核SES]
+  milestone: D全体の有限ラベル和と同じ通常Xの係数・fiber分解への接続
+  proof_obligations:
+    - 各label原始A/BセルSES・錐SES・Cを有限族へ集め、同じ標準delta・Q/Pを保持
+    - 任意粗adequateLawから細adequacy、A/Bと各発生fiberの交差領域を生成
+    - 各fiberを覆うとunion=fiber、実generatedLaw比較の全chain同定
+    - 同じ実LawH1・核余核・全整数次数錐・有限直和・代表元とJ和へ接続
+    - 任意通常Xの旧H1核商をG135同じdirectH1・unit核・係数余核SESへ接続
+    - CのU実hiddenと係数SESの同じ中間商・全代表元・両方向零iffを照合
+  exit_criteria:
+    - D全条項・射と商・全整数次数・空index・同じ支持のlabel重複をLean構成
+    - 全宣言focusedと公理照会・共通scan・条項前提対応・正式独立PR査読
+  selection_reason: Cの実欠損をG134/G135同じ実診断へ接続し固定targetへの未接続nodeを消す
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiniteGluing.lean, LawGluing.lean, CoefficientBridge.lean, LawDefect.lean]
+  risks: [同次元置換, 細adequacy追加入力, label重複消去, 旧H1と標準H1混同, 真Iへの通常fiber分解の誤適用, suppliedSES, delta符号, 下流API不足]
+  unchecked: [D構成と接続の実装・検証・独立査読]
+```
+
+G135は受理PR5318 head `3f4524e2f01dfb924c063478bd3161c8a3683db2`、
+merge/再利用参照 `ed16acc02229fdfe3846303de341d600878f03dc`。
+[全目標受理記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6078348119)
+と[独立最終査読](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5318#issuecomment-6077753512)、
+[root完了判定](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5318#issuecomment-6078269788)
+を再利用資格として固定した。使用する現在の型・必要定義・適用引数は実読し、当該sourceの参照版との差分は空。
+`DefectMaps.lean` SHA256 `0d45260ccf0bc021c223c1a5c8b5fa09288bfd728684fab5af13513b3d3d4449`、
+`DefectShortExact.lean` `91d48bcd53b9979e35f93f5bee351d0ac48ac6c6432bbf8e435ac770e987d4c8`、
+`DefectDiagnostics.lean` `bd3d93c50341909af0ad968c8dec37ae7a591bfeaf1500e9a2a583ac67977504`。
+G135と今回のFormalはunported (Research-proved)。E任意k指定族と全GOALcompletionは今回の到達点に含めない。
+
+## Dの条項別対応と受理候補spine
+
+以下の新規namespaceは `AAT.AG.AtlasGluingWidth` の下にある。
+Dの一般Law入力は同じ `laws` と粗adequacy `ha`。細adequacyを追加入力にしない。
+
+| 固定要求 | 実宣言と射の対応 | 出所と使用先 |
+| --- | --- | --- |
+| 各発生labelでA–C | `LawGluing.labelA/labelB`, `coarseLabelRow/fineLabelRow`, `labelComparison`, `label_qp_shortExact` | 元fiberとA/Bの集合交差を使い、受理済みPrimitiveGluingと原始セルSESを適用。真Iは選択セル交差のまま。 |
+| 全labelの同じcochain SESと図式 | `FiniteGluing.row_shortExact/rowMap`, `LawGluing.coarseRow_shortExact/fineRow_shortExact/comparison` | 成分の単射・完全性・全射を原始Aから生成。一般hRは方向仮定だがLaw適用では全件放電。 |
+| 標準δ・実Q/Pと自然性 | `FiniteGluing.qEquiv/pEquiv`, `inclusion_component/projection_component/connecting_component`, `q_component/p_component` | 同じH⁰差制限のrange quotientとH¹差制限kernel。δは標準SESのδ_naturalityから成分化し符号を保持。 |
+| 粗adequacyから細adequacy | `LawGluing.fine_adequate` | G133 `adequate_of_coarser` に同じh/haを渡す。以後全Law射の細入力をここから取得。 |
+| fiber全体への合併・全chain同定 | `LawGluing.fiber_union/fine_fiber_union`, `coarseBlockIso/fineBlockIso/block_natural`, `coarseLawIso/fineLawIso/law_natural` | 覆いhcはDの方向条件。G134の混在Mに対する全三次数block同定と `lawZeroExtension_square` を使い、同じgeneratedComparisonHomを保つ。 |
+| 同じ実LawのH¹と核余核 | `LawGluing.coarseH1Equiv/fineH1Equiv/h1_natural`, `phantomEquiv/hiddenEquiv`, `phantomFamilyEquiv/hiddenFamilyEquiv` とval/mk | G133 oldH1Equivから標準H¹へ移し、実Law比較の核・商から同じ各labelの核・商へ戻す。 |
+| 同じLaw診断の有限和・重複度 | `LawGluing.defect_subset_sum/defect_gluing_sum` | G134 `lawH1Defect_subset_sum` の同じfiberJに戻す。添字は全LawValueLabelのまま、同じ台の異なるlabelを圧縮しない。 |
+| 同じ実Law錐の全整数次数と実局所直和 | `LawGluing.lawConeIso/lawConeFamilyIso/lawConeDirectSumIso/lawConeHomologyEquiv`, `coneRow_shortExact`, `actualConeRowIso/actualConeRow_shortExact/actualCone_les` | 成分はBの実 `coneBiprodRow`。全Law標準錐が合併項。G133 `cone_short_exact` は同じgeneratedLaw零延長射に適用でき、隣接次数を保持する。 |
+| 錐の標準δ・持ち上げ・微分・貼り合わせ | `LawGluing.actualCone_connecting_natural/actualCone_lift` | 同じ短複体同型のδ_naturalityとCohomologyRepresentativesの生成持ち上げを使い、実Law錐cocycle classと標準δの等号まで得る。 |
+| 実Lawの全snakeと代表式 | `LawDefect.first/second/connecting/fourth/fifth`, `exact1–4`, `first_injective/fifth_surjective`, `first_val/second_val/fourth_mk/fifth_mk/connecting_representative/connecting_lift` | Cの同じQ/P二行SESと全snakeを、実Lawの核商同型に沿って輸送。H¹持ち上げは同じ粗Law class。 |
+| labelごとの局所J零下のLaw欠損 | `LawDefect.local_bijective/localPhantomEquiv`, `localHiddenRow_shortExact/oldHiddenRow_shortExact`, `oldHiddenRow_f_mk/oldHiddenRow_g_mk`, `defect_dimension/defect_zero_iff` | 各labelのhA/hBはCと同じ方向条件。有限族比較の全単射を成分から導出し、実Lawのliteral hiddenを中間項とする。交差比較同型を追加しない。 |
+| 任意通常XのG135同じ核商 | `CoefficientBridge.phantomEquiv/hiddenEquiv/phantomUnitEquiv` とval/mk/symm_mk | G135 `directH1_old/directKernelUnitEquiv` の同じu/Tへ接続。任意XなのでA/B/Uを含む。真Iには適用しない。 |
+| 同じ実hiddenの係数・fiber SES | `CoefficientBridge.coefficientRow_shortExact/oldCoefficientRow_shortExact`, `oldCoefficientRow_f_mk/oldCoefficientRow_g_mk_val` | G135の実evaluationH1/fiberRestrictionH1を保つ。原係数余核とkerτの実射を旧H¹実余核に輸送する。 |
+| 二方向分解の同じ中間商と判定 | `CoefficientBridge.union_hidden_same/union_zero_iff` | CのUの実hiddenとG135係数SESの中間項はliteral等号。q/Z条件とunit/τ条件は同じJ零を介する両方向同値。両SESの端点相互同型は主張しない。 |
+
+### D material premise・provenance・proof-use
+
+| 前提・中間構成 | 分類 | 放電・実使用 |
+| --- | --- | --- |
+| T0 Source有限、qc/qf/h、Nc/Nf、混在M、ℚ | ambient-boundary | 原始入力。A/B/Cの領域生成・全Hom・有限セルH¹をそのまま使う。 |
+| lawsと粗adequacy ha | ambient-boundary | Dの任意入力。ha/hはfine_adequateと同じ発生fiberの逆像・block比較に使用。 |
+| 細adequacy、fiber選択、全三次数block同定 | discharge-required | fine_adequate、labelA/B、fiber_union/fine_fiber_union、block_naturalから生成。 |
+| hc：各fiberがA∪Bに含まれる | direction-hypothesis | 固定Dで全Lawへ戻す場合の覆い条件。fiber_unionから全chain/H¹/錐同型に使用。未覆いの場合も各label原始行は構成できる。 |
+| labelごとのhA/hB：同じ実局所J零 | direction-hypothesis | C特殊化の方向条件。PrimitiveGluing.local_bijective→FiniteGluing.homology_bijective→LawDefect.local_bijective→実核同型・hidden/Z SES・両方向零iff。 |
+| 成分SES・有限族SES・Q/P SES・snake・錐SES | discharge-required | A/B/C受理生成定理→FiniteGluing.row_shortExact→LawGluing各行→LawDefect全列。完全性fieldを一般Law入力へ追加しない。 |
+| 全LawH¹と核商・有限直和 | discharge-required | 全chain law_natural→oldH1Equiv_natural→h1_natural→LinearConjugation→FiniteLinearFamily。全商代表元のval/mkを保持。 |
+| 局所逆比較・coker p≃Z・有限次元 | discharge-required | C受理定理と各labelの局所J零、有限セルのzeroExtension homology、有限族homologyEquivから生成。追加vanishing・exactness・intersection bijectivityはない。 |
+| 通常XのdirectH1・係数SES・実H¹商 | discharge-required / reviewed predecessor | G135受理済み同じM/Xのsource型と適用引数を実読。directH1_old→核商輸送、実余核包含・射の代表元へ接続。 |
+
+新規structure/axiom/instanceの結論fieldはない。有限族の元は全発生labelの関数であり、
+空indexの場合も同じ関数空間・商・短完全列を扱う。同じ台の複数labelは別成分として残る。
+任意A/Bは原始幾何の後で量化する。部分像・K1・原始incidence・符号を減らす選択は行わない。
+本cycleのspineは新規4sourceの全明示宣言で、cycle scaffoldはPR外の検証script/logだけである。
+全修飾名とsource版を検証記録・PR監査で固定する。
+
+## Cycle 4 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Dの各label原始行と有限族・同じ実generatedLaw全chain/H1/錐/核商/診断和・通常Xの同じG135係数分解を接続
+  exit_criteria_status: [上表のD全条項と代表元・両方向, 全整数次数, 空indexとlabel重複を保持, focusedと公理照会・scanは下の検証記録, 正式独立査読はPR固定headで実施]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [FiniteGluing.lean, CoefficientBridge.lean, LawGluing.lean, LawDefect.lean]
+  evidence: [D条項別対応表の全実宣言]
+  claim_mapping:
+    theorem_names: [D条項別対応表とPR監査の全修飾名リスト]
+    source_labels: [GOAL D, exact-sequence設計§5, 再利用G133/G134/G135]
+    conjuncts: [上のD条項別対応表]
+    undischarged_assumptions: []
+    acceptance_point: 同じ実比較の全chainとH1・核商・標準錐の射を保持
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [細adequacy, 各label原始SESと有限族SES, 標準delta/Q/P/snake, 実Law全chain同定と核商, 実錐LES, 同じ通常Xの係数SES輸送]
+    remaining: [E任意k指定原始対と全指定評価]
+  certificate_provenance:
+    discharged: [原始A/B/C生成定理と同じ有限族, G134実Law同定, G135実directH1と係数SES]
+    unresolved: []
+  proof_use:
+    used: [h/haから細adequacyとfiber逆像, hcから元全Lawblock, 原始SESから有限族とQ/P・snake, 局所J零から同じ比較逆とZ, directH1_oldと実係数射から同じ核商]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [下記focused・全宣言公理照会・共通scan]
+  blocking_findings: [標準PR独立査読前]
+  next_obligation: D正式受理後にE任意k指定族と同じLaw幅・MV発火を構成
+```
+
+## Cycle 4 検証記録
+
+新規4sourceの個別focused checkは全てexit0、各module時点の公理監査は
+FiniteGluing 23、CoefficientBridge 16、LawGluing 56、LawDefect 33で標準公理のみ。
+新規source明示宣言118（23/16/50/29）は全件をspineとする。
+公式単一 `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasGluingWidth/LawDefect.lean`
+はexit0、33宣言、log SHA256 `78b82966acc070b5101a2b3e5aec7d019642a9e600449b44e9ab940f53a36f16`。
+同じ単一非aggregate監査fileから累積全546実宣言（474 source明示、72生成）へ明示
+`#print axioms` を全件実行し、exit0、546 unique、標準propext/Classical.choice/Quot.sound以内。
+新規118明示宣言の照合に欠落なし。新規実宣言は131で、module末尾時点以後に下流で生成された
+LawGluing congr_simp 3宣言も全照会へ含める。log SHA256
+`aecf0f345e0a380ea8cb89d5f7b45b632865d20850389767f4a89504d22b3b87`。
+
+| source | SHA256 | 明示宣言数 |
+| --- | --- | --- |
+| `FiniteGluing.lean` | `dae447da3fc8ee8aef8dbe8fb2d60efe0389126b861584d8e4018f33cc382887` | 23 |
+| `CoefficientBridge.lean` | `5449d78aabe584ed3cc3306590eb58422e02b53871f94bf539476cb9f3dc0231` | 16 |
+| `LawGluing.lean` | `f3a792d7439ba465cc8f317332f5313104085177f48f762fca4fd299e7f1785d` | 50 |
+| `LawDefect.lean` | `da07f9a5310b872d570c7f9b8761ce010cd3319ae8fe0bd158433664a4edde53` | 29 |
+
+placeholder・hidden/BiDi・privacy・語彙・diff whitespaceはclean。reportの方針説明中の検査語は文脈で除外。
+Research import方向gateはexit0（228本体moduleを静的走査）。固定GOAL/designとの差分は空。
+今回使用したG133/G134/G135の17 source版は固定再利用参照ed16acc…とbyte同一で、
+型・必要定義・適用引数・今回のproof-useを実読した。Lean4.28/mathlib8f9d9cff…を使用。
+Research全体build・aggregate・全file elaboration・Formal移植は実行していない。
+正式4 lane査読・内容受理・CI・mergeはこの記録では未実施であり、PR監査とIssueへ同期する。
