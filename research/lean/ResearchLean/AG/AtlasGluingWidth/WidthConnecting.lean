@@ -64,11 +64,11 @@ theorem a_lift_d0 (hn : 2 ≤ n) (z : Bool → ℚ) (e : (selected n false (regi
   · have hi : i = 0 := he
     subst i
     simp [CellSelection.complex_d0_apply, aLift, CellSelection.left_val,
-      CellSelection.right_val, left_apply, right_apply, endpointDifference, generatorAt_apply]
+      CellSelection.right_val, left_apply, right_apply, endpointDifference_apply, generatorAt_apply]
   · have hi : i = -1 := add_eq_zero_iff_eq_neg.mp he
     subst i
     simp [CellSelection.complex_d0_apply, aLift, CellSelection.left_val,
-      CellSelection.right_val, left_apply, right_apply, endpointDifference,
+      CellSelection.right_val, left_apply, right_apply, endpointDifference_apply,
       generatorAt_apply, neg_one_ne_zero n hn]
 /-- Bにa₀は選択されず、指定貼り合わせcochainはBで零。 -/
 theorem b_generator_zero (z : Bool → ℚ) (e : (selected n false (regionB n)).Edge) :
@@ -116,34 +116,12 @@ theorem standard_connecting_generator (hn : 2 ≤ n) (z : Bool → ℚ) :
     (StandardRow.cellRow_shortExact _ _) 0 (intersectionValues n hn z) hz
     (intersectionLift n z) (intersection_lift n hn z)
     (unionGenerator n z) (intersection_lift_derivative n hn z) hwc
-  have h0 := AtlasCoefficientFiber.zeroExtension_liftCycles_H0_apply (intersection n).complex
-    (CohomologyRepresentatives.scalarPoint (intersectionValues n hn z))
-    (CohomologyRepresentatives.scalarPoint_d _ 0 _ hz) (ULift.up (1 : ℚ))
-  have h1 := AtlasCoefficientFiber.zeroExtension_liftCycles_H1_apply
-    ((selected n false (regionA n)).union (selected n false (regionB n))).complex
-    (CohomologyRepresentatives.scalarPoint (unionGenerator n z))
-    (CohomologyRepresentatives.scalarPoint_d _ 1 _ hwc) (ULift.up (1 : ℚ))
   have h0' : CohomologyRepresentatives.cycleClass (widthFineRow n).X₃ 0
-      (intersectionValues n hn z) hz = intersectionClass n hn z := by
-    change (zeroExtension (intersection n).complex).homologyπ 0
-      ((zeroExtension (intersection n).complex).liftCycles
-        (CohomologyRepresentatives.scalarPoint (V := ModuleCat.of ℚ (intersection n).complex.C0) (intersectionValues n hn z)) 1 (by simp)
-        (CohomologyRepresentatives.scalarPoint_d _ 0 _ hz) (ULift.up (1 : ℚ))) = _
-    convert h0 using 1
-    apply congrArg (oldH0Equiv (intersection n).complex)
-    apply Subtype.ext
-    exact (one_smul ℚ _).symm
+      (intersectionValues n hn z) hz = intersectionClass n hn z :=
+    CohomologyRepresentatives.cycleClass_zeroExtension_H0 _ _ _
   have h1' : CohomologyRepresentatives.cycleClass (widthFineRow n).X₁ 1
-      (unionGenerator n z) hwc = unionGeneratorClass n z := by
-    change (zeroExtension ((selected n false (regionA n)).union (selected n false (regionB n))).complex).homologyπ 1
-      ((zeroExtension ((selected n false (regionA n)).union (selected n false (regionB n))).complex).liftCycles
-        (CohomologyRepresentatives.scalarPoint (V := ModuleCat.of ℚ ((selected n false (regionA n)).union (selected n false (regionB n))).complex.C1) (unionGenerator n z)) 2 (by simp)
-        (CohomologyRepresentatives.scalarPoint_d _ 1 _ hwc) (ULift.up (1 : ℚ))) = _
-    convert h1 using 1
-    apply congrArg (oldH1Equiv _)
-    apply congrArg Submodule.Quotient.mk
-    apply Subtype.ext
-    exact (one_smul ℚ _).symm
+      (unionGenerator n z) hwc = unionGeneratorClass n z :=
+    CohomologyRepresentatives.cycleClass_zeroExtension_H1 _ _ _
   rw [h0'] at hc
   exact hc.trans h1'
 
@@ -212,7 +190,7 @@ theorem standard_connecting_period_one (hn : 2 ≤ n) :
       (StandardRow.cellRow_shortExact _ _) 0
       (intersectionClass n hn (fun b => if b then 1 else 0))) = 1 := by
   rw [standard_connecting_generator, union_generator_value]
-  simp [endpointDifference]
+  simp [endpointDifference_apply]
 /-- 同じ指定交差classの標準δ像は非零。 -/
 theorem standard_connecting_nonzero (hn : 2 ≤ n) :
     StandardLES.connecting (widthFineRow n) (StandardRow.cellRow_shortExact _ _) 0

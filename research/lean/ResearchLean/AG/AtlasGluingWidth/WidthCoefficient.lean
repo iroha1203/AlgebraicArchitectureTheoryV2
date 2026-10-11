@@ -123,7 +123,7 @@ theorem gluing_kernel_tau_generator (hn : 2 ≤ n) :
       gluingKernelTauClass n hn (fun b => if b then 1 else 0) ≠ 0 := by
   have hv : gluingKernelTauEquiv n (gluingKernelTauClass n hn (fun b => if b then 1 else 0)) = 1 := by
     rw [gluing_kernel_tau_value]
-    simp [endpointDifference]
+    simp [endpointDifference_apply]
   refine ⟨hv, ?_⟩
   intro hz
   rw [hz, (gluingKernelTauEquiv n).map_zero] at hv

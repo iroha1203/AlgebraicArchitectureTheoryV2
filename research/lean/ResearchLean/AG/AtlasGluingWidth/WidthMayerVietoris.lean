@@ -117,6 +117,9 @@ def endpointDifference : (Bool → ℚ) →ₗ[ℚ] ℚ where
   toFun z := z true - z false
   map_add' _ _ := by dsimp; ring
   map_smul' _ _ := by dsimp; ring
+/-- 順序付き真交差の全cochainで値差を評価する。 -/
+@[simp] theorem endpointDifference_apply (z : Bool → ℚ) :
+    endpointDifference z = z true - z false := rfl
 /-- 指定差制限の実像は順序付き値差の核に両方向で一致する。 -/
 theorem diagonal_range : LinearMap.range diagonalDifference = LinearMap.ker endpointDifference := by
   ext z

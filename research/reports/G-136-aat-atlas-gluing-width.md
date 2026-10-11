@@ -1486,3 +1486,35 @@ Lean自動生成 `Width.intersectionValues.congr_simp` 1名の減少であり、
 この記録は修正後の実検証であり、直接対応の独立資格確認と別の全GOAL最終gateは
 後続の固定head PR監査コメントで判定する。result proposal/candidateのstatusは変更していない。
 Formal移植/実build、Research全体build、ArchSig保留レビュー、他worktree書込は未実施。
+
+## Cycle 6 r1非中心API修正
+
+[正式r1の4本査読](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5336#issuecomment-6111210700)はhead b910cc5c1ecc8808fcf8b350b0a03935f1a64859の固定差分を監査した。中心finding0、非中心API指摘LB1–LB3が残った。次の4公開補題と該当consumer証明だけを修正した。result proposal・completion candidateのstatus、固定target、全既存statementと定義値は保持する。
+
+|追加API|実型と使用先|
+|---|---|
+|`Width.endpointDifference_apply`|全zの値差 z(true)−z(false)。WidthConnecting/WidthHidden/WidthCoefficientの生成元評価|
+|`CohomologyRepresentatives.cycleClass_zeroExtension_H0`|任意ThreeCochainComplexの同じ閉次数0cochain標準class＝oldH0Equiv。standard_connecting_generator|
+|`CohomologyRepresentatives.cycleClass_zeroExtension_H1`|同じ閉次数1cochain商の標準class＝oldH1Equiv。standard_connecting_generator|
+|`PrimitiveGluing.fineRow_eq_cellRow`|任意A/Bの同じ生成因子逆像による全cellRow同定。primitive_fine_row_eq|
+
+前二次数の同定は所有側で、受理G135のzeroExtension_liftCycles_H0/H1_applyを同じscalarPointへ適用して証明する。新importはResearchのG135代表式moduleであり、本体→Researchへの方向変更はない。指定例のinput/cochain/δ/period/hidden/独立fiberRestriction/kerτの値は保持する。
+
+受理25source中20byte不変、残る5ownerに計8補助APIを追記した。新8source明示164＋owner8＝C6 delta172明示。累積33source明示788、生成79、現環境全867実宣言。直近r1から明示名追加4、source削除0、環境名削除0。
+
+全実環境名と実#print axioms出力、全source明示名の突合は欠落0/余剰0/重複0。依存は標準propext/Classical.choice/Quot.soundのみ。全公理出力SHA256 `2342489ecbf132309ef1b9cbf651f04d554cf637697842d4039a4a5c5306a8f8`。新4名も全件出力に含む。
+
+修正した必要6moduleを個別targeted検証し、全exit0・warningなし。残る7moduleは前回の必要targeted実行時からsource byte/hash不変で、その既実行記録を区別して保持する。全13module検証を今回一括再実行したとの主張はしない。公式単一focused WidthConeRegression exit0、出力SHA256 `a7814e1d667a9d03e18881c22603bf43a70c54ac9734658d484e6e6cf91e70dd`。
+
+|今回修正module|source SHA256|targeted出力 SHA256|
+|---|---|---|
+|`WidthMayerVietoris.lean`|`4f42c625f8a36dfa099d5c12c8cfdb6a6fa1cfb6d03137b075c4b785995a0338`|`3f85bf0b15edd9d1219f88bd8408bb5a6db223051c5b832fd08d97aea0e3ff5f`|
+|`WidthConnecting.lean`|`e0481324137d3be71e792433d5615a60f660cf208621daed9d3a77427cb2d993`|`38bee3a0782065a653f6e78c471e07c1bea0c3ebc5ee61872240b55ce2d6be40`|
+|`WidthHidden.lean`|`f900426d19c20af823d58968aa28f14ba4530424de59482532299fe6b5761856`|`7dcee6bbb803fee28cd331917e3680fa6fc44dc0563d9124955acd79c341d718`|
+|`WidthCoefficient.lean`|`7f281f86afedf790f1cce2299e414d55da5d463a662a94e1ad4e85b7119e13c6`|`38bee3a0782065a653f6e78c471e07c1bea0c3ebc5ee61872240b55ce2d6be40`|
+|`ConnectingRepresentatives.lean`|`58dd7b97d5c6aea1e44d7a35b386edd1610b9feca3b597f2415e59e743236d93`|`2e41ae4fdf3d762d06b817af5247e7fa4217d6f15350ba16eb784ba95cef5b47`|
+|`PrimitiveGluing.lean`|`e05d7bb812c44bf5a7db102bcfe78bc9981af9797a2a3935616a7b1751aabddb`|`9e29018f681b580b782d65056334ea2d0b250d638d9db4da06dc493a5c788e70`|
+
+修正差分のplaceholder/hidden/BiDi/privacy/追加語彙/whitespace scan clean、本体→Research0、静的import228moduleとpackage direction pass。固定GOAL/design5file、common版、reuse17source hash不変。今回4補題のspineは上表に固定し、既存受理spineのstatementとproof-useは保持した。初回・第1修正後検証表はそれぞれ当時のheadの履歴であり、現在の公理/source/outputは本節を使う。
+
+直接対応の資格・解消判定と別の全GOAL最終4本査読は後続の同head PRコメントで独立に行う。Formal移植/実build、Research full/aggregate/all-file elaboration、ArchSig保留作業と他worktree書込は未実施。

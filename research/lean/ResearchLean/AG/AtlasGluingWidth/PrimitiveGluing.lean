@@ -80,6 +80,11 @@ def coarseRow (A B : Set qc.Target) :=
 def fineRow (A B : Set qc.Target) :=
   StandardRow.cellRow (CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' A))
     (CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' B))
+/-- 細領域行は同じ生成因子の逆像で選んだ元cellRowである。 -/
+theorem fineRow_eq_cellRow (A B : Set qc.Target) :
+    fineRow (h := h) (Nf := Nf) A B =
+      StandardRow.cellRow (CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' A))
+        (CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' B)) := rfl
 /-- 元のMから生成する同じ粗細二行比較。 -/
 def comparison (A B : Set qc.Target) : coarseRow (Nc := Nc) A B ⟶ fineRow (h := h) (Nf := Nf) A B :=
   StandardRow.cellRowMap M (SelectionCompatible.region M A) (SelectionCompatible.region M B)

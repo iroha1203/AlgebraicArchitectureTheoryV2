@@ -21,8 +21,8 @@ abbrev primitiveFineRow := PrimitiveGluing.fineRow (h := coarser n) (Nf := fine 
   (regionA n) (regionB n)
 /-- 元の生成因子を指定射影へ正規化すると全短複体が同じになる。 -/
 theorem primitive_fine_row_eq : primitiveFineRow n = widthFineRow n := by
-  unfold primitiveFineRow PrimitiveGluing.fineRow
-  rw [factor]
+  unfold primitiveFineRow
+  rw [PrimitiveGluing.fineRow_eq_cellRow, factor]
   rfl
 /-- 同じ全短複体等号から生成する短複体同型。 -/
 def primitiveFineRowIso : primitiveFineRow n ≅ widthFineRow n := eqToIso (primitive_fine_row_eq n)
@@ -109,7 +109,7 @@ theorem gluing_old_nonzero (hn : 2 ≤ n) :
       (Nf := fine n false) (regionA n) (regionB n)).symm (primitiveDelta n hn _)) = _ at he
   rw [LinearEquiv.apply_symm_apply, map_zero] at he
   rw [he, map_zero, map_zero] at h
-  norm_num [endpointDifference] at h
+  norm_num [endpointDifference_apply] at h
 /-- 同じ粗U H¹が零なので原比較の実像は零。 -/
 theorem union_actual_range_zero : LinearMap.range (actualMap n false (regionA n ∪ regionB n)) = ⊥ := by
   letI := coarse_H1_zero n (regionA n ∪ regionB n)
