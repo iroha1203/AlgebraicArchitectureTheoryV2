@@ -174,10 +174,10 @@ fn nat_value(text: &str) -> Option<u64> {
         return None;
     }
     let trimmed = digits.trim_end_matches('0');
-    // 値は trimmed × 10^shift。
-    let exp: i64 = exp.parse().ok().filter(|e: &i64| e.abs() < 1_000)?;
-    let shift = exp - frac.len() as i64 + (digits.len() - trimmed.len()) as i64;
-    if shift < 0 || trimmed.len() as i64 + shift > 16 {
+    // 値は trimmed × 10^shift。i64 に収まらない指数では、値は整数でないか上限を超える。
+    let exp: i64 = exp.parse().ok()?;
+    let shift = i128::from(exp) - frac.len() as i128 + (digits.len() - trimmed.len()) as i128;
+    if shift < 0 || trimmed.len() as i128 + shift > 16 {
         return None;
     }
     let value: u64 = format!("{trimmed}{}", "0".repeat(shift as usize))

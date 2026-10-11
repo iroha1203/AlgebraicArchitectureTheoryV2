@@ -402,15 +402,10 @@ impl Reader<'_, '_> {
                     let ok = name.starts_with(|c: char| c.is_ascii_alphabetic())
                         && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
                         && !crate::law::parser::is_reserved(&name);
-                    let at = pointer_push(&pptr, &i.to_string());
-                    if !ok || crate::law::BUILTIN_OPS.contains(&name.as_str()) {
-                        return Err(syntax(&at, format!("`{name}` は parameter 名に使えない")));
-                    }
-                    if ps.contains(&name) {
-                        return Err(issue(
-                            Code::DuplicateId,
-                            &at,
-                            format!("parameter `{name}` が重複している"),
+                    if !ok {
+                        return Err(syntax(
+                            &pointer_push(&pptr, &i.to_string()),
+                            format!("`{name}` は parameter 名に使えない"),
                         ));
                     }
                     ps.push(name);

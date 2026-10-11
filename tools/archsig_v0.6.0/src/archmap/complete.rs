@@ -540,8 +540,8 @@ fn feasible(m: &Model<'_>, cons: &[Cons]) -> bool {
         .all(|(_, group)| search(m, group, &mut assign))
 }
 
-/// 組の変数へ候補を置き、組の全条件を満たす補完を探す。未定の変数が最も少ない条件の変数から
-/// 置く。全条件が真に決まれば、残りの変数はどの候補でもよい。
+/// 組の変数へ候補を置き、組の全条件を満たす補完を探す。未定の変数が最も少ない条件の変数から、
+/// 条件を多く満たす候補を先に置く。全条件が真に決まれば、残りの変数はどの候補でもよい。
 fn search(m: &Model<'_>, cons: &[(&Cons, Vec<usize>)], assign: &mut Vec<Option<usize>>) -> bool {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         let mut next: Option<(usize, usize)> = None;
@@ -567,7 +567,28 @@ fn search(m: &Model<'_>, cons: &[(&Cons, Vec<usize>)], assign: &mut Vec<Option<u
         let Some((_, v)) = next else {
             return true;
         };
+        // 破る条件のない候補を、真に決まる条件の多い順に置く。
+        let mut order: Vec<(usize, usize)> = Vec::new();
         for &x in &m.vars[v].2 {
+            assign[v] = Some(x);
+            let mut decided = 0;
+            let mut broken = false;
+            for (c, _) in cons.iter().filter(|(_, vs)| vs.binary_search(&v).is_ok()) {
+                match m.eval(c, assign) {
+                    Some(true) => decided += 1,
+                    Some(false) => {
+                        broken = true;
+                        break;
+                    }
+                    None => {}
+                }
+            }
+            if !broken {
+                order.push((decided, x));
+            }
+        }
+        order.sort_by_key(|&(decided, _)| std::cmp::Reverse(decided));
+        for (_, x) in order {
             assign[v] = Some(x);
             if search(m, cons, assign) {
                 return true;

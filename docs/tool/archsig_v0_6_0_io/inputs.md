@@ -23,8 +23,11 @@ Digest は `sha256:` と小文字16進64桁。Nat は metadata 用の JSON numbe
 丸めずに判定する。
 
 未知・欠けた欄、`null`、JSON の型の違い、値の encoding の誤り、Set の重複は `syntax`、
-Map の key の重複は `duplicate_key` とする。未定義の origin・source、snapshot と異なる origin.mode は
-`reference` とする。
+Map の key の重複は `duplicate_key` とする。ただし format が文字列で semantics が欠ける場合は、
+対応しない版として `unsupported_version` とする。未定義の origin・source、snapshot と異なる
+origin.mode、entity・arrow・correspondence の宣言でない subject の type、subject の型にない
+Atom の field は `reference` とする。各表の ID、vocabularies の reading、Term の params の重複は
+`duplicate_id` とする。
 
 ## 2. ArchMap の schema
 

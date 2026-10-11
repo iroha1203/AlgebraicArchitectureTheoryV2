@@ -178,6 +178,8 @@ fn containers_trees_and_terms_follow_their_types() {
     rejects("f", r#"{"params":["x"],"body":"v(x)"}"#, Code::Reference);
     rejects("f", r#"{"params":["x"],"body":"x +"}"#, Code::Syntax);
     rejects("f", r#"{"params":["in"],"body":"1"}"#, Code::Syntax);
+    // 組込み演算名は、Law の束縛名と同じ規則で拒否する。
+    rejects("f", r#"{"params":["count"],"body":"1"}"#, Code::Syntax);
 }
 
 #[test]
@@ -391,7 +393,13 @@ fn origins_and_locations_are_checked() {
         .replace(r#""sources":[]"#, &format!(r#""sources":[{{"id":"src","uri":"file:///repo","revision":"r1","digest":"sha256:{}"}}]"#, "a".repeat(64)))
         .replace(r#""mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例""#, r#""mode":"observed","method":"読んだ","locations":[{"source":"src","path":"src/a.rs","span":[3,9]}]"#);
     map_ok(LAW, &observed);
-    for exact in ["[3.0,9]", "[300e-2,9e0]", "[0,9007199254740991]"] {
+    let long = format!("[0,1{}e-1000]", "0".repeat(1000));
+    for exact in [
+        "[3.0,9]",
+        "[300e-2,9e0]",
+        "[0,9007199254740991]",
+        long.as_str(),
+    ] {
         map_ok(LAW, &observed.replacen("[3,9]", exact, 1));
     }
     for (from, to, code) in [
@@ -429,4 +437,46 @@ fn origins_and_locations_are_checked() {
         .replace(r#""origins":["#, r#""origins":[{"id":"p","mode":"proposed","method":"案","locations":[],"note":"候補"},"#)
         .replacen(r#"{"id":"i","type":"V.Item","origin":"o"}"#, r#"{"id":"i","type":"V.Item","origin":"p"}"#, 1);
     assert_eq!(map_err(LAW, &mixed).code, Code::Reference);
+}
+
+const PICK_LAW: &str = r#"law "archsig.law/1" semantics "archsig/0.6.0";
+reading P {
+  entity Sys;
+  entity St(owner: Sys);
+  entity H(owner: Sys) { pick: St[owner]; }
+}
+"#;
+
+/// Sys・H を n 個ずつ、owner の欠測した St を st 個置く。各 H は自分の Sys の St を要する。
+fn pick_doc(n: usize, st: usize) -> String {
+    let mut subjects = Vec::new();
+    let mut atoms = Vec::new();
+    for i in 0..n {
+        subjects.push(format!(r#"{{"id":"S{i}","type":"P.Sys","origin":"o"}}"#));
+        subjects.push(format!(r#"{{"id":"h{i}","type":"P.H","origin":"o"}}"#));
+        atoms.push(format!(
+            r#"{{"id":"a{i}","subject":"h{i}","field":"P.H.owner","value":["v","S{i}"],"origin":"o"}}"#
+        ));
+    }
+    for i in 0..st {
+        subjects.push(format!(r#"{{"id":"t{i}","type":"P.St","origin":"o"}}"#));
+    }
+    format!(
+        r#"{{"format":"archsig.archmap/1","semantics":"archsig/0.6.0",
+"vocabularies":[{{"reading":"P","digest":"{}"}}],"sources":[],
+"origins":[{{"id":"o","mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例"}}],
+"snapshots":[{{"id":"v","origin":"o","subjects":[{}],"atoms":[{}]}}]}}"#,
+        ok(PICK_LAW).vocabularies[0].digest,
+        subjects.join(","),
+        atoms.join(",")
+    )
+}
+
+#[test]
+fn completions_that_need_distinct_owners_are_found() {
+    // 30 個の St の owner をそれぞれ別の Sys に補えば、各 H の pick を置ける。
+    map_ok(PICK_LAW, &pick_doc(30, 30));
+    // St が一つ足りなければ補完はない。
+    let issue = map_err(PICK_LAW, &pick_doc(4, 3));
+    assert_eq!(issue.code, Code::InconsistentObservation);
 }

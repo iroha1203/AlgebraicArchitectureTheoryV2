@@ -13,7 +13,6 @@ use crate::canonical::{Json, sha256_digest};
 use crate::issue::{Code, Details, Issue, Location};
 use crate::types::Type;
 use ast::{Expr, ExprId};
-pub use check::BUILTIN_OPS;
 use check::Checker;
 use model::{Declaration, DeclarationInfo, Vocabulary};
 use std::collections::BTreeMap;
