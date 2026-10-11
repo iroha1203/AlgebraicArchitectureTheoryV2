@@ -89,6 +89,9 @@ fn existing_outputs_are_never_overwritten() {
     );
     assert_eq!(r.code, 64);
     assert!(!dir.join("missing-parent").exists());
+    let r = run(&dir, &["check", "--law", "l.law", "--out", ""]);
+    assert_eq!(r.code, 64);
+    assert!(!has(&r.receipt, "result"));
 }
 
 #[test]
@@ -330,8 +333,14 @@ fn slow_law(dir: &Path) {
 
 #[test]
 fn real_signals_interrupt_the_check() {
-    for (sig, code, name) in [("-INT", 130, "SIGINT"), ("-TERM", 143, "SIGTERM")] {
-        let dir = workdir(&format!("real{sig}"));
+    // 二つ受けた場合は、最初に受けた signal を使う。
+    for (sigs, code, name) in [
+        (&["-INT"][..], 130, "SIGINT"),
+        (&["-TERM"][..], 143, "SIGTERM"),
+        (&["-TERM", "-INT"][..], 143, "SIGTERM"),
+        (&["-INT", "-TERM"][..], 130, "SIGINT"),
+    ] {
+        let dir = workdir(&format!("real{}", sigs.join("")));
         slow_law(&dir);
         let child = bin()
             .current_dir(&dir)
@@ -340,18 +349,23 @@ fn real_signals_interrupt_the_check() {
             .stderr(Stdio::piped())
             .spawn()
             .unwrap();
-        std::thread::sleep(Duration::from_millis(300));
-        let status = std::process::Command::new("kill")
-            .arg(sig)
-            .arg(child.id().to_string())
-            .status()
-            .unwrap();
-        assert!(status.success());
+        // handler の登録を待ってから送る。
+        std::thread::sleep(Duration::from_millis(1000));
+        for sig in sigs {
+            std::thread::sleep(Duration::from_millis(200));
+            let status = std::process::Command::new("kill")
+                .arg(sig)
+                .arg(child.id().to_string())
+                .status()
+                .unwrap();
+            assert!(status.success());
+        }
         let out = child.wait_with_output().unwrap();
         assert_eq!(
             out.status.code(),
             Some(code),
-            "{}",
+            "{sigs:?}: {:?} {}",
+            out.status,
             String::from_utf8_lossy(&out.stderr)
         );
         let receipt =

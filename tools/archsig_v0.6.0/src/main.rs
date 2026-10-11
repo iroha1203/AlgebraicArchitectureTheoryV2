@@ -6,6 +6,8 @@ use archsig::run::{
 };
 use std::io::Write;
 use std::path::Path;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::time::Instant;
 
 /// 実ファイルの操作。
@@ -46,23 +48,38 @@ impl Io for FileIo {
     }
 }
 
-/// SIGINT・SIGTERM の捕捉。handler が受けた signal は finalize の開始時に一度だけ読む。
-/// 受信順は分からないので、両方を受けていれば SIGINT を先とする。以後の signal は handler が
-/// 受けるだけで、状態へ反映しない。
+/// SIGINT・SIGTERM の捕捉。監視の thread が受けた順に最初の signal を残し、handler は受信の
+/// 有無を flag に立てる。finalize の開始時に一度だけ読んで確定し、以後の signal は handler が
+/// 受けるだけで状態へ反映しない。受信順の分からない pending の signal は SIGINT を先とする。
 struct ProcessSignals {
-    signals: signal_hook::iterator::Signals,
+    first: Arc<AtomicI32>,
+    int: Arc<AtomicBool>,
+    term: Arc<AtomicBool>,
     frozen: Option<Option<Signal>>,
 }
 
 impl ProcessSignals {
     fn new() -> ProcessSignals {
-        let signals = signal_hook::iterator::Signals::new([
-            signal_hook::consts::SIGINT,
-            signal_hook::consts::SIGTERM,
-        ])
-        .expect("SIGINT・SIGTERM の handler を登録できる");
+        use signal_hook::consts::{SIGINT, SIGTERM};
+        let int = Arc::new(AtomicBool::new(false));
+        let term = Arc::new(AtomicBool::new(false));
+        signal_hook::flag::register(SIGINT, Arc::clone(&int))
+            .expect("SIGINT の handler を登録できる");
+        signal_hook::flag::register(SIGTERM, Arc::clone(&term))
+            .expect("SIGTERM の handler を登録できる");
+        let first = Arc::new(AtomicI32::new(0));
+        let mut signals = signal_hook::iterator::Signals::new([SIGINT, SIGTERM])
+            .expect("SIGINT・SIGTERM の handler を登録できる");
+        let seen = Arc::clone(&first);
+        std::thread::spawn(move || {
+            for s in signals.forever() {
+                let _ = seen.compare_exchange(0, s, Ordering::SeqCst, Ordering::SeqCst);
+            }
+        });
         ProcessSignals {
-            signals,
+            first,
+            int,
+            term,
             frozen: None,
         }
     }
@@ -70,16 +87,16 @@ impl ProcessSignals {
 
 impl Signals for ProcessSignals {
     fn freeze(&mut self) -> Option<Signal> {
+        use signal_hook::consts::{SIGINT, SIGTERM};
         if let Some(decided) = self.frozen {
             return decided;
         }
-        let pending: Vec<i32> = self.signals.pending().collect();
-        let decided = if pending.contains(&signal_hook::consts::SIGINT) {
-            Some(Signal::Int)
-        } else if pending.contains(&signal_hook::consts::SIGTERM) {
-            Some(Signal::Term)
-        } else {
-            None
+        let decided = match self.first.load(Ordering::SeqCst) {
+            SIGINT => Some(Signal::Int),
+            SIGTERM => Some(Signal::Term),
+            _ if self.int.load(Ordering::SeqCst) => Some(Signal::Int),
+            _ if self.term.load(Ordering::SeqCst) => Some(Signal::Term),
+            _ => None,
         };
         self.frozen = Some(decided);
         decided

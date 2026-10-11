@@ -177,6 +177,9 @@ impl Outcome {
 
 /// 出力先は存在しない path で、親は既存の directory。
 fn out_ok(io: &mut dyn Io, out: &Path) -> Result<(), String> {
+    if out.as_os_str().is_empty() {
+        return Err("出力先が空".to_owned());
+    }
     if io.exists(out) {
         return Err("出力先が既に存在する".to_owned());
     }
