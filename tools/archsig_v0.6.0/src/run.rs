@@ -63,13 +63,6 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
             return Err(usage(&text(&args[1]), "version は引数を取らない", None));
         }
         Some("check") => {}
-        Some("run") => {
-            return Err(usage(
-                "run",
-                "この版は check と version だけを提供する",
-                None,
-            ));
-        }
         Some(other) => return Err(usage(other, "コマンドは check か version", None)),
         None => return Err(usage("", "コマンドが必要", None)),
     }
@@ -172,6 +165,17 @@ fn is_dir(path: &Path) -> bool {
 fn out_ok(out: &Path) -> Result<(), String> {
     if out.as_os_str().is_empty() {
         return Err("出力先が空".to_owned());
+    }
+    // `d/.` などは新しい名前を持たない。Path は末尾の `.` を正規化するので、綴りで見る。
+    let last = out
+        .as_os_str()
+        .to_string_lossy()
+        .trim_end_matches('/')
+        .rsplit('/')
+        .next()
+        .map(str::to_owned);
+    if matches!(last.as_deref(), Some("." | "..")) {
+        return Err("出力先は新しい名前で終わる".to_owned());
     }
     if exists(out) {
         return Err("出力先が既に存在する".to_owned());

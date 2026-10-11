@@ -92,6 +92,34 @@ fn existing_outputs_are_never_overwritten() {
     let r = run(&dir, &["check", "--law", "l.law", "--out", ""]);
     assert_eq!(r.code, 64);
     assert!(!has(&r.receipt, "result"));
+    for out in ["d2/.", "d3/..", "."] {
+        let r = run(&dir, &["check", "--law", "l.law", "--out", out]);
+        assert_eq!(r.code, 64, "{out}");
+        assert!(!has(&r.receipt, "result"), "{out}");
+    }
+    assert!(!dir.join("d2").exists());
+    // 検査中に別の処理が出力先を作っても、実際の rename は置き換えない。
+    slow_law(&dir);
+    let child = bin()
+        .current_dir(&dir)
+        .args(["check", "--law", "slow.law", "--out", "raced"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    std::thread::sleep(Duration::from_millis(1000));
+    std::fs::create_dir(dir.join("raced")).unwrap();
+    std::fs::write(dir.join("raced/theirs.txt"), "theirs").unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert_eq!(out.status.code(), Some(74));
+    let receipt = archsig::json::parse(&out.stdout).unwrap();
+    assert_eq!(s(get(&receipt, "status")), "error");
+    assert!(!has(&receipt, "result"));
+    assert_eq!(
+        std::fs::read_dir(dir.join("raced")).unwrap().count(),
+        1,
+        "相手の出力先だけが残る"
+    );
 }
 
 #[test]
@@ -323,7 +351,7 @@ fn slow_law(dir: &Path) {
 }
 
 #[test]
-fn real_signals_interrupt_the_check() {
+fn real_signals_decide_the_status_at_finalize() {
     // 二つ受けた場合は、最初に受けた signal を使う。
     for (sigs, code, name) in [
         (&["-INT"][..], 130, "SIGINT"),

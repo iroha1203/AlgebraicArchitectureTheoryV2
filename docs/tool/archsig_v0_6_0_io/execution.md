@@ -235,9 +235,11 @@ HTTP、ZIP、source uriやLaw参照からの追加読込みを行わない。
 
 outは存在しないpath、親は既存directoryを要求する。満たさない場合は`usage`とし、出力を作らない。
 `check`で`--out`がちょうど一つ値とともに指定されたCLIの不正は、`usage`のissueを持つresult.jsonを残す。
-このとき未知flagは値を取らないものとして読む。
+このとき既知flagは次の語を値として取り、未知flagは値を取らないものとして読む。
 CLIの不正では入力を読まず、inputsを空にする。
 入力が読めない、または通常ファイルでない場合は`io`(operation=read)とし、検査を始めない。
+`check`は捕捉したsignalで検査を途中で止めず、finalizeの開始時に状態へ含める。
+内部障害では入力コピーとinputsを残さない。
 同じ親に一時directoryを作り、入力コピーと結果を書きflushした後、既存pathを置換しない
 renameで最終directoryを作る。競合してoutが作られた場合も上書きしない。
 捕捉した中断・不正入力・非対応版・反証も、出力を作れる場合は同じ形式で残す。
