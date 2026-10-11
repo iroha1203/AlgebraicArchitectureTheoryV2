@@ -6,4 +6,6 @@ pub mod issue;
 pub mod json;
 pub mod law;
 pub mod prime;
+pub mod result;
+pub mod run;
 pub mod types;

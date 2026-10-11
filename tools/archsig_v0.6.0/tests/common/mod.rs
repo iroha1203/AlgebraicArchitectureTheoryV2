@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+pub mod cli;
+
 use archsig::archmap::{CheckedArchMap, Field, Slot};
 use archsig::issue::Issue;
 use archsig::law::{CheckedLaw, check_law};
