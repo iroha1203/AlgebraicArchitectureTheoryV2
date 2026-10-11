@@ -129,10 +129,18 @@ instance chain を支える4 source の全宣言。登録は同じ4 source の m
 固定カード・設計・保護領域・既存の G-133〜135 source は変更していない。
 正式 review evidence と root acceptance 判定、CI、merge、次 obligation は PR/Issue に同期する。
 
-Cycle 1 の個別 source focused check は全4 file が exit 0。
+Cycle 1 初回 head `6fef3d8fc82fc638d6f269b5c368fcbda92e9bd8` の個別 source focused check は全4 file が exit 0。
 公式検査 `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasGluingWidth/SelectionComparison.lean`
 は exit 0、対象 module の45宣言は標準公理のみ。
 同じ依存 source の全116実宣言を単一非 aggregate の監査 file から明示照会し、全て標準公理のみ。
 照会 log SHA256 は `70eff3576f63c2bed934cb0026f64bcb3ee97b706112275746e102449325cf97`、
 公式 focused log は `2088aed2a2001f68e603b8c16bfc7d10c507163f04f9e8048bef14fdd550d9a8`。
 placeholder、hidden/BiDi、privacy、語彙、import 方向、diff whitespace は該当違反なし。
+
+修正後の Lean source head `d8227fbd3b5f36d97b9e04ffab7f4284c7fd20cf` でも個別 focused check は全4 file が exit 0。
+同じ公式 focused command は exit 0、対象 module の49宣言は標準公理のみ。
+同じ依存 source の全128実宣言を単一非 aggregate の監査 file から明示照会し、
+全て標準公理のみ。照会 log SHA256 は
+`707f3e01b62eb8938c46f8222775cf21bf9bc5dc7383f9361309208e329e76a6`、
+公式 focused log は `16e1f30736ad29ff441a74b1ab7488a7f8a02ff56e7393c51826eba097ee994a`。
+この追記は検証対象版の記録修正であり、Lean source と受理候補 status は変更していない。
