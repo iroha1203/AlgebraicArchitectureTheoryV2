@@ -34,10 +34,12 @@ def glue (x : ({c // a c} → ℚ) × ({c // b c} → ℚ)) :
     {c // a c ∨ b c} → ℚ := fun c =>
   if ha : a c.1 then x.1 ⟨c.1, ha⟩ else x.2 ⟨c.1, c.2.resolve_left ha⟩
 
+/-- 任意述語の次数別制限対を元セル評価の対へ正規化する API。 -/
 @[simp] theorem inclusion_apply (x : {c // a c ∨ b c} → ℚ) :
     inclusion a b x =
       (fun c => x ⟨c.1, Or.inl c.2⟩, fun c => x ⟨c.1, Or.inr c.2⟩) := rfl
 
+/-- 任意述語の次数別差制限を二つの元セル評価の差へ正規化する API。 -/
 @[simp] theorem difference_apply (x : ({c // a c} → ℚ) × ({c // b c} → ℚ))
     (c : {c // a c ∧ b c}) :
     difference a b x c = x.1 ⟨c.1, c.2.1⟩ - x.2 ⟨c.1, c.2.2⟩ := rfl

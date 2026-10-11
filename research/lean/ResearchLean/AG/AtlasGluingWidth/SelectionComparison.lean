@@ -156,12 +156,11 @@ def pull2 : (Sc.Face → ℚ) →ₗ[ℚ] (Sf.Face → ℚ) where
 /-- 原始端点条件から d0 の可換性を導く。 -/
 theorem pull_comm0 (x : Sc.Chart → ℚ) : hs.pull1 (Sc.d0 x) = Sf.d0 (hs.pull0 x) := by
   funext e
+  rw [hs.pull1_apply, Sf.d0_apply, hs.pull0_apply, hs.pull0_apply]
   cases hm : M.edgeMap e.1 with
   | none =>
     have hc : hs.chartMap (Sf.left e) = hs.chartMap (Sf.right e) :=
       Subtype.ext (M.edge_none_fiber e.1 hm)
-    change (hs.edgeMap e).elim 0 (Sc.d0 x) =
-      x (hs.chartMap (Sf.right e)) - x (hs.chartMap (Sf.left e))
     rw [hs.edgeMap_none e hm, hc]
     simp
   | some c =>
@@ -170,10 +169,8 @@ theorem pull_comm0 (x : Sc.Chart → ℚ) : hs.pull1 (Sc.d0 x) = Sf.d0 (hs.pull0
       Subtype.ext (M.edge_some_left e.1 c hm)
     have hr : hs.chartMap (Sf.right e) = Sc.right ce :=
       Subtype.ext (M.edge_some_right e.1 c hm)
-    change (hs.edgeMap e).elim 0 (Sc.d0 x) =
-      x (hs.chartMap (Sf.right e)) - x (hs.chartMap (Sf.left e))
     rw [hs.edgeMap_some e c hm, hl, hr]
-    rfl
+    exact Sc.d0_apply x ce
 
 /-- 退化面の原始符号付き零和を選択 edge 値へ移す。 -/
 theorem degenerate_face_sum (f : Sf.Face) (hm : M.faceMap f.1 = none)
@@ -194,10 +191,9 @@ theorem degenerate_face_sum (f : Sf.Face) (hm : M.faceMap f.1 = none)
 /-- 原始面 incidence と退化零和から d1 の可換性を導く。 -/
 theorem pull_comm1 (x : Sc.Edge → ℚ) : hs.pull2 (Sc.d1 x) = Sf.d1 (hs.pull1 x) := by
   funext f
+  rw [hs.pull2_apply, Sf.d1_apply]
   cases hm : M.faceMap f.1 with
   | none =>
-    change (hs.faceMap f).elim 0 (Sc.d1 x) =
-      hs.pull1 x (Sf.face0 f) - hs.pull1 x (Sf.face1 f) + hs.pull1 x (Sf.face2 f)
     rw [hs.faceMap_none f hm, hs.degenerate_face_sum f hm x]
     rfl
   | some c =>
@@ -211,10 +207,8 @@ theorem pull_comm1 (x : Sc.Edge → ℚ) : hs.pull2 (Sc.d1 x) = Sf.d1 (hs.pull1 
     have h2 : hs.edgeMap (Sf.face2 f) = some (Sc.face2 cf) := by
       rw [hs.edgeMap_some (Sf.face2 f) _ (M.face_some_edge2 f.1 c hm)]
       rfl
-    change (hs.faceMap f).elim 0 (Sc.d1 x) =
-      hs.pull1 x (Sf.face0 f) - hs.pull1 x (Sf.face1 f) + hs.pull1 x (Sf.face2 f)
     rw [hs.faceMap_some f c hm, hs.pull1_apply, hs.pull1_apply, hs.pull1_apply, h0, h1, h2]
-    rfl
+    exact Sc.d1_apply x cf
 
 /-- 選択された原始比較の cochain 射。可換性は原始入力からの出力。 -/
 def hom : ThreeCochainComplex.Hom Sc.complex Sf.complex where
@@ -242,6 +236,11 @@ theorem union_square0 :
       (CellSelection.unionInclusion Sf Tf).f0.comp ((hs.union M ht).hom.f0) := by
   apply LinearMap.ext
   intro x
+  simp only [hom_f0, CellSelection.unionInclusion_f0]
+  simp only [LinearMap.comp_apply, LinearMap.prodMap_apply]
+  erw [Cellwise.inclusion_apply Sc.chart Tc.chart x]
+  erw [LinearMap.comp_apply]
+  erw [Cellwise.inclusion_apply Sf.chart Tf.chart ((hs.union M ht).pull0 x)]
   apply Prod.ext
   · funext c
     rfl
@@ -256,7 +255,9 @@ theorem inter_square0 :
   apply LinearMap.ext
   intro x
   funext c
-  rfl
+  simp only [hom_f0, CellSelection.intersectionDifference_f0]
+  simp only [LinearMap.comp_apply]
+  erw [Cellwise.difference_apply Sf.chart Tf.chart ((hs.pull0.prodMap ht.pull0) x) c]
 
 /-- 次数1 の制限対は原始比較と可換。 -/
 theorem union_square1 :
@@ -264,18 +265,21 @@ theorem union_square1 :
       (CellSelection.unionInclusion Sf Tf).f1.comp ((hs.union M ht).hom.f1) := by
   apply LinearMap.ext
   intro x
+  simp only [hom_f1, CellSelection.unionInclusion_f1]
+  simp only [LinearMap.comp_apply, LinearMap.prodMap_apply]
+  erw [Cellwise.inclusion_apply Sc.edge Tc.edge x]
+  erw [LinearMap.comp_apply]
+  erw [Cellwise.inclusion_apply Sf.edge Tf.edge ((hs.union M ht).pull1 x)]
   apply Prod.ext
   · funext c
-    change ((hs.edgeMap c).elim 0
-      (fun e => x ⟨e.1, Or.inl e.2⟩)) =
-      (((hs.union M ht).edgeMap ⟨c.1, Or.inl c.2⟩).elim 0 x)
+    dsimp only
+    erw [hs.pull1_apply, (hs.union M ht).pull1_apply]
     cases hm : M.edgeMap c.1 with
     | none => rw [hs.edgeMap_none c hm, (hs.union M ht).edgeMap_none _ hm]; rfl
     | some e => rw [hs.edgeMap_some c e hm, (hs.union M ht).edgeMap_some _ e hm]; rfl
   · funext c
-    change ((ht.edgeMap c).elim 0
-      (fun e => x ⟨e.1, Or.inr e.2⟩)) =
-      (((hs.union M ht).edgeMap ⟨c.1, Or.inr c.2⟩).elim 0 x)
+    dsimp only
+    erw [ht.pull1_apply, (hs.union M ht).pull1_apply]
     cases hm : M.edgeMap c.1 with
     | none => rw [ht.edgeMap_none c hm, (hs.union M ht).edgeMap_none _ hm]; rfl
     | some e => rw [ht.edgeMap_some c e hm, (hs.union M ht).edgeMap_some _ e hm]; rfl
@@ -288,17 +292,21 @@ theorem inter_square1 :
   apply LinearMap.ext
   intro x
   funext c
-  change (((hs.inter M ht).edgeMap c).elim 0
-    (fun e => x.1 ⟨e.1, e.2.1⟩ - x.2 ⟨e.1, e.2.2⟩)) =
-      (hs.edgeMap ⟨c.1, c.2.1⟩).elim 0 x.1 -
-        (ht.edgeMap ⟨c.1, c.2.2⟩).elim 0 x.2
+  simp only [hom_f1, CellSelection.intersectionDifference_f1]
+  simp only [LinearMap.comp_apply]
+  erw [Cellwise.difference_apply Sf.edge Tf.edge ((hs.pull1.prodMap ht.pull1) x) c]
+  erw [(hs.inter M ht).pull1_apply]
+  erw [LinearMap.prodMap_apply]
+  dsimp only
+  erw [hs.pull1_apply, ht.pull1_apply]
   cases hm : M.edgeMap c.1 with
   | none =>
     rw [(hs.inter M ht).edgeMap_none c hm, hs.edgeMap_none _ hm, ht.edgeMap_none _ hm]
     simp
   | some e =>
     rw [(hs.inter M ht).edgeMap_some c e hm, hs.edgeMap_some _ e hm, ht.edgeMap_some _ e hm]
-    rfl
+    simp only [Option.elim_some]
+    erw [Cellwise.difference_apply]
 
 /-- 次数2 の制限対は原始比較と可換。 -/
 theorem union_square2 :
@@ -306,18 +314,21 @@ theorem union_square2 :
       (CellSelection.unionInclusion Sf Tf).f2.comp ((hs.union M ht).hom.f2) := by
   apply LinearMap.ext
   intro x
+  simp only [hom_f2, CellSelection.unionInclusion_f2]
+  simp only [LinearMap.comp_apply, LinearMap.prodMap_apply]
+  erw [Cellwise.inclusion_apply Sc.face Tc.face x]
+  erw [LinearMap.comp_apply]
+  erw [Cellwise.inclusion_apply Sf.face Tf.face ((hs.union M ht).pull2 x)]
   apply Prod.ext
   · funext c
-    change ((hs.faceMap c).elim 0
-      (fun e => x ⟨e.1, Or.inl e.2⟩)) =
-      (((hs.union M ht).faceMap ⟨c.1, Or.inl c.2⟩).elim 0 x)
+    dsimp only
+    erw [hs.pull2_apply, (hs.union M ht).pull2_apply]
     cases hm : M.faceMap c.1 with
     | none => rw [hs.faceMap_none c hm, (hs.union M ht).faceMap_none _ hm]; rfl
     | some e => rw [hs.faceMap_some c e hm, (hs.union M ht).faceMap_some _ e hm]; rfl
   · funext c
-    change ((ht.faceMap c).elim 0
-      (fun e => x ⟨e.1, Or.inr e.2⟩)) =
-      (((hs.union M ht).faceMap ⟨c.1, Or.inr c.2⟩).elim 0 x)
+    dsimp only
+    erw [ht.pull2_apply, (hs.union M ht).pull2_apply]
     cases hm : M.faceMap c.1 with
     | none => rw [ht.faceMap_none c hm, (hs.union M ht).faceMap_none _ hm]; rfl
     | some e => rw [ht.faceMap_some c e hm, (hs.union M ht).faceMap_some _ e hm]; rfl
@@ -330,17 +341,21 @@ theorem inter_square2 :
   apply LinearMap.ext
   intro x
   funext c
-  change (((hs.inter M ht).faceMap c).elim 0
-    (fun e => x.1 ⟨e.1, e.2.1⟩ - x.2 ⟨e.1, e.2.2⟩)) =
-      (hs.faceMap ⟨c.1, c.2.1⟩).elim 0 x.1 -
-        (ht.faceMap ⟨c.1, c.2.2⟩).elim 0 x.2
+  simp only [hom_f2, CellSelection.intersectionDifference_f2]
+  simp only [LinearMap.comp_apply]
+  erw [Cellwise.difference_apply Sf.face Tf.face ((hs.pull2.prodMap ht.pull2) x) c]
+  erw [(hs.inter M ht).pull2_apply]
+  erw [LinearMap.prodMap_apply]
+  dsimp only
+  erw [hs.pull2_apply, ht.pull2_apply]
   cases hm : M.faceMap c.1 with
   | none =>
     rw [(hs.inter M ht).faceMap_none c hm, hs.faceMap_none _ hm, ht.faceMap_none _ hm]
     simp
   | some e =>
     rw [(hs.inter M ht).faceMap_some c e hm, hs.faceMap_some _ e hm, ht.faceMap_some _ e hm]
-    rfl
+    simp only [Option.elim_some]
+    erw [Cellwise.difference_apply]
 
 /-- 通常領域の比較は G-134 の同じ原始比較 Hom。 -/
 theorem region_hom_eq (A : Set qc.Target) :

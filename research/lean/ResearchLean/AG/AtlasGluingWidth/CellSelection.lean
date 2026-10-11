@@ -164,6 +164,14 @@ def d1 (S : CellSelection D) : (S.Edge → ℚ) →ₗ[ℚ] (S.Face → ℚ) whe
   map_add' x y := by ext f; simp; ring
   map_smul' a x := by ext f; simp; ring
 
+/-- 原始 d0 を右端値−左端値へ正規化する評価 API。 -/
+@[simp] theorem d0_apply (S : CellSelection D) (x : S.Chart → ℚ) (e : S.Edge) :
+    S.d0 x e = x (S.right e) - x (S.left e) := rfl
+
+/-- 原始 d1 を三 incidence の符号付き和へ正規化する評価 API。 -/
+@[simp] theorem d1_apply (S : CellSelection D) (x : S.Edge → ℚ) (f : S.Face) :
+    S.d1 x f = x (S.face0 f) - x (S.face1 f) + x (S.face2 f) := rfl
+
 /-- 原始面端点等式から微分の合成が零。 -/
 theorem d1_d0 (S : CellSelection D) (x : S.Chart → ℚ) : S.d1 (S.d0 x) = 0 := by
   funext f

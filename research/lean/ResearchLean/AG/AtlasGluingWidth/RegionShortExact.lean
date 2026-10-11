@@ -49,21 +49,62 @@ def intersectionDifference : ThreeCochainComplex.Hom
   f2 := Cellwise.difference S.face T.face
   comm0 x := by
     funext e
-    change (x.1 (S.right ⟨e.1, e.2.1⟩) - x.1 (S.left ⟨e.1, e.2.1⟩)) -
-      (x.2 (T.right ⟨e.1, e.2.2⟩) - x.2 (T.left ⟨e.1, e.2.2⟩)) =
-      (x.1 (S.right ⟨e.1, e.2.1⟩) - x.2 (T.right ⟨e.1, e.2.2⟩)) -
-      (x.1 (S.left ⟨e.1, e.2.1⟩) - x.2 (T.left ⟨e.1, e.2.2⟩))
+    change Cellwise.difference S.edge T.edge (S.complex.d0 x.1, T.complex.d0 x.2) e =
+      (S.inter T).complex.d0 (Cellwise.difference S.chart T.chart x) e
+    simp only [Cellwise.difference_apply, complex_d0_apply]
+    have hrS : (⟨((S.inter T).right e).1, ((S.inter T).right e).2.1⟩ : S.Chart) =
+        S.right ⟨e.1, e.2.1⟩ := rfl
+    have hrT : (⟨((S.inter T).right e).1, ((S.inter T).right e).2.2⟩ : T.Chart) =
+        T.right ⟨e.1, e.2.2⟩ := rfl
+    have hlS : (⟨((S.inter T).left e).1, ((S.inter T).left e).2.1⟩ : S.Chart) =
+        S.left ⟨e.1, e.2.1⟩ := rfl
+    have hlT : (⟨((S.inter T).left e).1, ((S.inter T).left e).2.2⟩ : T.Chart) =
+        T.left ⟨e.1, e.2.2⟩ := rfl
+    rw [hrS, hrT, hlS, hlT]
     ring
   comm1 x := by
     funext f
-    change (x.1 (S.face0 ⟨f.1, f.2.1⟩) - x.1 (S.face1 ⟨f.1, f.2.1⟩) +
-      x.1 (S.face2 ⟨f.1, f.2.1⟩)) -
-      (x.2 (T.face0 ⟨f.1, f.2.2⟩) - x.2 (T.face1 ⟨f.1, f.2.2⟩) +
-      x.2 (T.face2 ⟨f.1, f.2.2⟩)) =
-      (x.1 (S.face0 ⟨f.1, f.2.1⟩) - x.2 (T.face0 ⟨f.1, f.2.2⟩)) -
-      (x.1 (S.face1 ⟨f.1, f.2.1⟩) - x.2 (T.face1 ⟨f.1, f.2.2⟩)) +
-      (x.1 (S.face2 ⟨f.1, f.2.1⟩) - x.2 (T.face2 ⟨f.1, f.2.2⟩))
+    change Cellwise.difference S.face T.face (S.complex.d1 x.1, T.complex.d1 x.2) f =
+      (S.inter T).complex.d1 (Cellwise.difference S.edge T.edge x) f
+    simp only [Cellwise.difference_apply, complex_d1_apply]
+    have h0S : (⟨((S.inter T).face0 f).1, ((S.inter T).face0 f).2.1⟩ : S.Edge) =
+        S.face0 ⟨f.1, f.2.1⟩ := rfl
+    have h0T : (⟨((S.inter T).face0 f).1, ((S.inter T).face0 f).2.2⟩ : T.Edge) =
+        T.face0 ⟨f.1, f.2.2⟩ := rfl
+    have h1S : (⟨((S.inter T).face1 f).1, ((S.inter T).face1 f).2.1⟩ : S.Edge) =
+        S.face1 ⟨f.1, f.2.1⟩ := rfl
+    have h1T : (⟨((S.inter T).face1 f).1, ((S.inter T).face1 f).2.2⟩ : T.Edge) =
+        T.face1 ⟨f.1, f.2.2⟩ := rfl
+    have h2S : (⟨((S.inter T).face2 f).1, ((S.inter T).face2 f).2.1⟩ : S.Edge) =
+        S.face2 ⟨f.1, f.2.1⟩ := rfl
+    have h2T : (⟨((S.inter T).face2 f).1, ((S.inter T).face2 f).2.2⟩ : T.Edge) =
+        T.face2 ⟨f.1, f.2.2⟩ := rfl
+    rw [h0S, h0T, h1S, h1T, h2S, h2T]
     ring
+
+/-- unionInclusion の次数0 成分を次数別元セル射へ正規化する API。 -/
+@[simp] theorem unionInclusion_f0 : (unionInclusion S T).f0 =
+    Cellwise.inclusion S.chart T.chart := rfl
+
+/-- intersectionDifference の次数0 成分を次数別元セル射へ正規化する API。 -/
+@[simp] theorem intersectionDifference_f0 : (intersectionDifference S T).f0 =
+    Cellwise.difference S.chart T.chart := rfl
+
+/-- unionInclusion の次数1 成分を次数別元セル射へ正規化する API。 -/
+@[simp] theorem unionInclusion_f1 : (unionInclusion S T).f1 =
+    Cellwise.inclusion S.edge T.edge := rfl
+
+/-- intersectionDifference の次数1 成分を次数別元セル射へ正規化する API。 -/
+@[simp] theorem intersectionDifference_f1 : (intersectionDifference S T).f1 =
+    Cellwise.difference S.edge T.edge := rfl
+
+/-- unionInclusion の次数2 成分を次数別元セル射へ正規化する API。 -/
+@[simp] theorem unionInclusion_f2 : (unionInclusion S T).f2 =
+    Cellwise.inclusion S.face T.face := rfl
+
+/-- intersectionDifference の次数2 成分を次数別元セル射へ正規化する API。 -/
+@[simp] theorem intersectionDifference_f2 : (intersectionDifference S T).f2 =
+    Cellwise.difference S.face T.face := rfl
 
 /-- 真のセル交差複体は原始領域の二つの所属を持つセルで作る。 -/
 def intersectionComplex (D : TargetSupportedNerve q) (A B : Set q.Target) :
