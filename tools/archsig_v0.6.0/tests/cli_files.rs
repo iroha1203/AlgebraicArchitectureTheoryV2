@@ -108,8 +108,8 @@ fn existing_outputs_are_never_overwritten() {
         .spawn()
         .unwrap();
     std::thread::sleep(Duration::from_millis(1000));
+    // 空の directory は置き換えられる rename もあるので、空のまま作る。
     std::fs::create_dir(dir.join("raced")).unwrap();
-    std::fs::write(dir.join("raced/theirs.txt"), "theirs").unwrap();
     let out = child.wait_with_output().unwrap();
     assert_eq!(out.status.code(), Some(74));
     let receipt = archsig::json::parse(&out.stdout).unwrap();
@@ -117,8 +117,8 @@ fn existing_outputs_are_never_overwritten() {
     assert!(!has(&receipt, "result"));
     assert_eq!(
         std::fs::read_dir(dir.join("raced")).unwrap().count(),
-        1,
-        "相手の出力先だけが残る"
+        0,
+        "相手の空の出力先が置き換えられずに残る"
     );
 }
 
