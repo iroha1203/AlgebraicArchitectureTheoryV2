@@ -23,10 +23,10 @@ fn only_issue(res: &archsig::json::JNode) -> (String, String, String) {
     }
     let loc = get(i, "location");
     let input = s(get(loc, "input")).to_owned();
-    let at = if has(loc, "pointer") {
-        s(get(loc, "pointer")).to_owned()
-    } else {
-        num(&arr(get(loc, "span"))[0]).to_string()
+    // pointer が決まらない構文エラーは、span の開始を位置とする。
+    let at = match has(loc, "pointer").then(|| s(get(loc, "pointer"))) {
+        Some(p) if !p.is_empty() => p.to_owned(),
+        _ => num(&arr(get(loc, "span"))[0]).to_string(),
     };
     (code, input, at)
 }
@@ -120,14 +120,31 @@ fn archmap_rejections_keep_the_law_tables() {
         assert!(!arr(get(&res, "declarations")).is_empty(), "{name}");
         assert_eq!(arr(get(&res, "vocabularies")).len(), 1, "{name}");
     }
+    // 構文エラーの位置は byte 区間の開始。
+    let surrogate = MAP.replacen("二つのシステム", "\\udc00", 1);
+    let (res, _) = check_map("surrogate-at", surrogate.as_bytes());
+    let at = surrogate.find("\\udc00").unwrap().to_string();
+    assert_eq!(
+        only_issue(&res),
+        ("syntax".to_owned(), "archmap".to_owned(), at)
+    );
     let mut bom = vec![0xEF, 0xBB, 0xBF];
     bom.extend_from_slice(MAP.as_bytes());
-    let (res, _) = check_map("bom", &bom);
-    assert_eq!(only_issue(&res).0, "syntax");
+    let (res, r) = check_map("bom", &bom);
+    assert_eq!(r.code, 65);
+    assert_eq!(
+        only_issue(&res),
+        ("syntax".to_owned(), "archmap".to_owned(), "0".to_owned())
+    );
     let mut bad = MAP.as_bytes().to_vec();
-    bad[MAP.find("二つ").unwrap()] = 0xFF;
-    let (res, _) = check_map("utf8", &bad);
-    assert_eq!(only_issue(&res).0, "syntax");
+    let at = MAP.find("二つ").unwrap();
+    bad[at] = 0xFF;
+    let (res, r) = check_map("utf8", &bad);
+    assert_eq!(r.code, 65);
+    assert_eq!(
+        only_issue(&res),
+        ("syntax".to_owned(), "archmap".to_owned(), at.to_string())
+    );
     assert!(!arr(get(&res, "declarations")).is_empty());
 }
 
@@ -191,6 +208,10 @@ fn law_rejections_empty_the_tables() {
         let (c, i, at) = only_issue(&res);
         assert_eq!((c.as_str(), i.as_str()), (code, input), "{name}");
         assert!(at.parse::<usize>().is_ok(), "Law の位置は span");
+        if name == "law-surrogate" {
+            let text = String::from_utf8(law.clone()).unwrap();
+            assert_eq!(at, text.find("\\ud800").unwrap().to_string());
+        }
         assert!(arr(get(&res, "declarations")).is_empty(), "{name}");
         assert!(arr(get(&res, "vocabularies")).is_empty(), "{name}");
         // 読めた入力は同梱する。
