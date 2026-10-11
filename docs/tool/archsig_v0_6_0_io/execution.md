@@ -234,7 +234,8 @@ HTTP、ZIP、source uriやLaw参照からの追加読込みを行わない。
 再利用directoryは通常のdirectoryと下記固定pathの通常ファイルだけを読み、リンク先の追加探索をしない。
 
 outは存在しないpath、親は既存directoryを要求する。満たさない場合は`usage`とし、出力を作らない。
-`--out`がちょうど一つ値とともに指定されたCLIの不正は、`usage`のissueを持つresult.jsonを残す。
+`check`で`--out`がちょうど一つ値とともに指定されたCLIの不正は、`usage`のissueを持つresult.jsonを残す。
+このとき未知flagは値を取らないものとして読む。
 CLIの不正では入力を読まず、inputsを空にする。
 入力が読めない、または通常ファイルでない場合は`io`(operation=read)とし、検査を始めない。
 同じ親に一時directoryを作り、入力コピーと結果を書きflushした後、既存pathを置換しない

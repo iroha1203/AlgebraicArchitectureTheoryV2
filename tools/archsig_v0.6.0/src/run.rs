@@ -11,13 +11,8 @@ use std::time::Instant;
 pub const VERSION_LINE: &str =
     r#"{"product":"archsig","version":"0.6.0","semantics":["archsig/0.6.0"]}"#;
 
-/// ファイル操作。テストで失敗を差し込めるように分ける。
+/// 出力のファイル操作。テストで失敗を差し込めるように分ける。
 pub trait Io {
-    /// 入力を読む。symlink は開始時に解決し、通常ファイルだけを読む。
-    fn read_input(&mut self, path: &Path) -> std::io::Result<Vec<u8>>;
-    /// path が(symlink 自体も含めて)存在するか。
-    fn exists(&mut self, path: &Path) -> bool;
-    fn is_dir(&mut self, path: &Path) -> bool;
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()>;
     fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()>;
     /// 書いたファイルまたは directory を永続化する。
@@ -45,42 +40,18 @@ pub enum Command {
     Version,
 }
 
-/// CLI の不正。`out` が読めた場合は出力先として使う。
+/// CLI の不正。check の `--out` がちょうど一つ読めた場合は出力先として使う。
 #[derive(Debug, PartialEq, Eq)]
 pub struct UsageError {
-    pub command: &'static str,
     pub argument: String,
     pub message: String,
     pub out: Option<PathBuf>,
 }
 
-/// flag と値の組を順に読み、`--out` がちょうど一つあればその値を出力先とする。
-fn single_out(args: &[OsString]) -> Option<PathBuf> {
-    let mut found = None;
-    let mut count = 0;
-    let mut i = 1;
-    while i < args.len() {
-        let is_flag = args[i].to_str().is_some_and(|a| a.starts_with("--"));
-        if args[i] == "--out" {
-            count += 1;
-            found = args.get(i + 1).map(PathBuf::from);
-        }
-        i += if is_flag { 2 } else { 1 };
-    }
-    if count == 1 { found } else { None }
-}
-
 /// 全コマンドと全 flag(実行仕様 §1)のうち、この版が提供する check と version を読む。
 /// 引数は OS の文字列で受け取る。flag は文字列として照合し、path の値は UTF-8 に限らない。
 pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
-    let command = if args.first().is_some_and(|a| a == "run") {
-        "run"
-    } else {
-        "check"
-    };
-    let confirmed = single_out(args);
     let usage = |argument: &str, message: &str, out: Option<PathBuf>| UsageError {
-        command,
         argument: argument.to_owned(),
         message: message.to_owned(),
         out,
@@ -96,7 +67,7 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
             return Err(usage(
                 "run",
                 "この版は check と version だけを提供する",
-                confirmed,
+                None,
             ));
         }
         Some(other) => return Err(usage(other, "コマンドは check か version", None)),
@@ -105,10 +76,14 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
     let mut law = None;
     let mut archmap = None;
     let mut out: Option<PathBuf> = None;
+    let mut outs = 0;
     let mut first_error: Option<(String, String)> = None;
     let mut i = 1;
     while i < args.len() {
         let flag = text(&args[i]);
+        if flag == "--out" {
+            outs += 1;
+        }
         let slot = match flag.as_str() {
             "--law" => Some(&mut law),
             "--archmap" => Some(&mut archmap),
@@ -134,6 +109,7 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         }
         i += 2;
     }
+    let confirmed = if outs == 1 { out.clone() } else { None };
     if let Some((argument, message)) = first_error {
         return Err(usage(&argument, &message, confirmed));
     }
@@ -175,19 +151,36 @@ impl Outcome {
     }
 }
 
+/// 入力を読む。symlink は開始時に解決し、通常ファイルだけを読む。
+fn read_input(path: &Path) -> std::io::Result<Vec<u8>> {
+    if !std::fs::metadata(path)?.is_file() {
+        return Err(std::io::Error::other("通常ファイルではない"));
+    }
+    std::fs::read(path)
+}
+
+/// path が(symlink 自体も含めて)存在するか。
+fn exists(path: &Path) -> bool {
+    std::fs::symlink_metadata(path).is_ok()
+}
+
+fn is_dir(path: &Path) -> bool {
+    std::fs::metadata(path).is_ok_and(|m| m.is_dir())
+}
+
 /// 出力先は存在しない path で、親は既存の directory。
-fn out_ok(io: &mut dyn Io, out: &Path) -> Result<(), String> {
+fn out_ok(out: &Path) -> Result<(), String> {
     if out.as_os_str().is_empty() {
         return Err("出力先が空".to_owned());
     }
-    if io.exists(out) {
+    if exists(out) {
         return Err("出力先が既に存在する".to_owned());
     }
     let parent = match out.parent() {
         Some(p) if !p.as_os_str().is_empty() => p.to_path_buf(),
         _ => PathBuf::from("."),
     };
-    if !io.is_dir(&parent) {
+    if !is_dir(&parent) {
         return Err("出力先の親 directory がない".to_owned());
     }
     Ok(())
@@ -218,7 +211,7 @@ pub fn usage_outcome(
             stderr,
         };
     };
-    if let Err(m) = out_ok(io, &out) {
+    if let Err(m) = out_ok(&out) {
         stderr.push(format!("archsig: {}: {m}", out.display()));
         let signal = signals.freeze();
         let status = if signal.is_some() {
@@ -234,7 +227,6 @@ pub fn usage_outcome(
         };
     }
     let result = CheckResult {
-        command: err.command,
         status: Status::Invalid,
         exit_code: 64,
         inputs: Vec::new(),
@@ -259,7 +251,7 @@ pub fn internal_outcome(
         message: "検査の途中で内部障害が起きた".to_owned(),
     };
     let stderr = vec!["archsig: 検査の途中で内部障害が起きた".to_owned()];
-    if io.exists(&args.out) {
+    if exists(&args.out) {
         let signal = signals.freeze();
         let status = if signal.is_some() {
             Status::Interrupted
@@ -274,7 +266,6 @@ pub fn internal_outcome(
         };
     }
     let result = CheckResult {
-        command: "check",
         status: Status::Error,
         exit_code: 70,
         inputs: Vec::new(),
@@ -295,7 +286,7 @@ pub fn run_check(
     started: Instant,
 ) -> Outcome {
     let mut stderr = Vec::new();
-    if let Err(m) = out_ok(io, &args.out) {
+    if let Err(m) = out_ok(&args.out) {
         let issue = ResultIssue::Usage {
             argument: "--out".to_owned(),
             message: m.clone(),
@@ -316,8 +307,8 @@ pub fn run_check(
     }
     // 開始時に両入力を読み切る。
     let mut issues = Vec::new();
-    let law_bytes = read(io, &args.law, &mut issues);
-    let map_bytes = args.archmap.as_ref().map(|p| read(io, p, &mut issues));
+    let law_bytes = read(&args.law, &mut issues);
+    let map_bytes = args.archmap.as_ref().map(|p| read(p, &mut issues));
     let mut law_id = InputIdentity {
         kind: "law",
         read: law_bytes.is_some(),
@@ -376,7 +367,6 @@ pub fn run_check(
     let mut inputs = vec![law_id];
     inputs.extend(map_id);
     let result = CheckResult {
-        command: "check",
         status,
         exit_code: 0,
         inputs,
@@ -398,8 +388,8 @@ pub fn run_check(
     )
 }
 
-fn read(io: &mut dyn Io, path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {
-    match io.read_input(path) {
+fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {
+    match read_input(path) {
         Ok(b) => Some(b),
         Err(e) => {
             issues.push(ResultIssue::Io {

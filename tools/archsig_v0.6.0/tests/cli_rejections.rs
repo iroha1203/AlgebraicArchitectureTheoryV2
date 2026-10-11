@@ -232,7 +232,7 @@ fn cli_misuse_is_usage() {
             assert!(arr(get(&res, "inputs")).is_empty());
         }
     }
-    // 提供しない run も、--out が一つなら usage の結果を残す。
+    // 提供しない run は、出力を作らない usage とする。
     let r = run(
         &dir,
         &[
@@ -245,8 +245,15 @@ fn cli_misuse_is_usage() {
             "o7",
         ],
     );
-    let res = consistent(&dir, &r, "invalid", 64);
-    assert_eq!(s(get(&res, "command")), "run");
+    assert_eq!(r.code, 64);
+    assert!(!has(&r.receipt, "result"));
+    assert!(!dir.join("o7").exists());
+    // 未知の flag の後の --out も出力先として読む。
+    let r = run(
+        &dir,
+        &["check", "--law", "l.law", "--bogus", "--out", "o10"],
+    );
+    consistent(&dir, &r, "invalid", 64);
     // --out が二つあれば出力先を決めず、出力を作らない。
     let r = run(
         &dir,

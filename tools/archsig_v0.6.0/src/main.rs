@@ -14,22 +14,6 @@ use std::time::Instant;
 struct FileIo;
 
 impl Io for FileIo {
-    fn read_input(&mut self, path: &Path) -> std::io::Result<Vec<u8>> {
-        // metadata は symlink を辿る。開始時に解決した先の通常ファイルだけを読む。
-        if !std::fs::metadata(path)?.is_file() {
-            return Err(std::io::Error::other("通常ファイルではない"));
-        }
-        std::fs::read(path)
-    }
-
-    fn exists(&mut self, path: &Path) -> bool {
-        std::fs::symlink_metadata(path).is_ok()
-    }
-
-    fn is_dir(&mut self, path: &Path) -> bool {
-        std::fs::metadata(path).is_ok_and(|m| m.is_dir())
-    }
-
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
         std::fs::create_dir(path)
     }

@@ -156,15 +156,6 @@ struct FaultyIo {
 }
 
 impl Io for FaultyIo {
-    fn read_input(&mut self, path: &Path) -> std::io::Result<Vec<u8>> {
-        std::fs::read(path)
-    }
-    fn exists(&mut self, path: &Path) -> bool {
-        std::fs::symlink_metadata(path).is_ok()
-    }
-    fn is_dir(&mut self, path: &Path) -> bool {
-        path.is_dir()
-    }
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
         if self.fail == "create" {
             return Err(self.error.into());
