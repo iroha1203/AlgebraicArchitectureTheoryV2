@@ -1,0 +1,23 @@
+law "archsig.law/1" semantics "archsig/0.6.0";
+
+reading Reservations {
+  entity System;
+  entity State(owner: System) { free: Z; held: Z; }
+  arrow Reserve(owner: System, from: State[owner], to: State[owner]);
+  correspondence Migration(from: System, to: System) {
+    states: Map<State[from], State[to]>;
+    reserves: Map<Reserve[from], Reserve[to]>;
+  }
+
+  view holdings(s: State): (Z, Z) = (s.free, s.held);
+  law required conserved(e: Reserve):
+    e.to.free + e.to.held = e.from.free + e.from.held;
+  law required retained(m: Migration):
+    forall s in State[m.from] . holdings(m.states(s)) = holdings(s);
+
+  local Stock(s: State) reads s.free;
+  local Held(s: State) reads s.held;
+  local Transfer(e: Reserve) reads holdings(e.from), holdings(e.to);
+  change rebalance(s: State, d: Z) =
+    s with { free = s.free - d, held = s.held + d };
+}

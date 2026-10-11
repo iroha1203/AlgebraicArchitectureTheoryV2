@@ -86,6 +86,8 @@ defaultsはCLIのSelectorで表さない省略の意味を、次の閉じた規�
 defaultsはruleの辞書順。required_lawsの実際のLaw instanceと量化域は生成したLocalSystem/Scopeへ残す。
 これらの既定は要求idとtextに結び付き、CLIへ新しい値や引数名を追加する規則ではない。
 declarationsとvocabulariesは完全名順。parametersとfieldsは宣言順を保持する。
+DeclarationInfo.dependenciesは、その宣言で直接参照した宣言・field・constructorの完全名を
+重複なく辞書順で保持する。自己構造再帰の参照も残し、推移的依存はこの表からたどる。
 宣言metadataのTypeは下記のLawの結果型Tに限る。依存参照Ownedは宣言metadataだけで保持する。
 dataのconstructorは完全名のDeclarationInfo（kind=data、parametersに引数型）にも列挙する。
 名前のないconstructor引数名は`arg0`からの位置名とする。
