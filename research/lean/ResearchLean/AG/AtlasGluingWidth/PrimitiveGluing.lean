@@ -47,12 +47,12 @@ theorem selectionHomCongr_natural {Sc' : CellSelection Nc} {Sf' : CellSelection 
   exact oldH1Equiv_natural hs.hom x
 
 /-- 原始粗領域和と真のセル和の全セル等号。 -/
-theorem coarseUnionEq (A B : Set qc.Target) :
+theorem coarse_union_eq (A B : Set qc.Target) :
     (CellSelection.region Nc A).union (CellSelection.region Nc B) = CellSelection.region Nc (A ∪ B) :=
   (CellSelection.region_union Nc A B).symm
 
 /-- 元の因子の逆像和と細セル和の全セル等号。 -/
-theorem fineUnionEq (A B : Set qc.Target) :
+theorem fine_union_eq (A B : Set qc.Target) :
     (CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' A)).union
       (CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' B)) =
       CellSelection.region Nf (comparisonFactor qc qf h ⁻¹' (A ∪ B)) := by
@@ -60,10 +60,10 @@ theorem fineUnionEq (A B : Set qc.Target) :
 
 /-- 通常粗Uの同じ旧H¹商からセル和標準H¹への同型。 -/
 def coarseUnionEquiv (A B : Set qc.Target) :=
-  selectionOldEquiv _ _ (coarseUnionEq (Nc := Nc) A B)
+  selectionOldEquiv _ _ (coarse_union_eq (Nc := Nc) A B)
 /-- 通常細Uの同じ旧H¹商からセル和標準H¹への同型。 -/
 def fineUnionEquiv (A B : Set qc.Target) :=
-  selectionOldEquiv _ _ (fineUnionEq (h := h) (Nf := Nf) A B)
+  selectionOldEquiv _ _ (fine_union_eq (h := h) (Nf := Nf) A B)
 
 /-- 通常UのG-134同じH¹射と原始二行図式の合併H¹比較が可換。 -/
 theorem regionUnion_natural (A B : Set qc.Target) (x : (Nc.targetSubsetComplex (A ∪ B)).H1) :
@@ -72,7 +72,7 @@ theorem regionUnion_natural (A B : Set qc.Target) (x : (Nc.targetSubsetComplex (
         (SelectionCompatible.region M B)).τ₁ (1:ℤ) (coarseUnionEquiv (Nc := Nc) A B x) := by
   rw [← AtlasMayerVietoris.regionUnionHom_eq M A B]
   exact selectionHomCongr_natural M ((SelectionCompatible.region M A).union M (SelectionCompatible.region M B))
-    (coarseUnionEq (Nc := Nc) A B) (fineUnionEq (h := h) (Nf := Nf) A B) x
+    (coarse_union_eq (Nc := Nc) A B) (fine_union_eq (h := h) (Nf := Nf) A B) x
 /-- 任意A/Bの粗原始cochain短完全列の同じ標準短複体。 -/
 def coarseRow (A B : Set qc.Target) :=
   StandardRow.cellRow (CellSelection.region Nc A) (CellSelection.region Nc B)

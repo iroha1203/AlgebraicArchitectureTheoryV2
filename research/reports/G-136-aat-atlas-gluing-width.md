@@ -407,3 +407,21 @@ Research全体build・aggregate・全file elaboration・Formal移植は実行し
 修正後累積全415実宣言（356 source明示、59生成）を同じ単一監査fileで全件照会し、
 exit0、415unique、標準3公理以内。新規180明示宣言の完全修飾名照合に欠落なし。
 log SHA256 `12e8cf465c21c93afd759311a7942aa6203d34b6c6157e2bfdb3d1cc908b6bc3`。placeholder/Unicode/privacy/import方向/diffcheckもclean。
+
+## Cycle 3 正式再査読1後の命名修正
+
+固定head `797725fb2effd85eb4c7a92958c7fc5c0903b1d1` の正式再査読1は、
+数学A/B・Lean Aが `No major findings`、Lean Bが `Minor issues`。
+中心0・非中心1であり、新規公開等号theoremのsnake_case命名が残った。
+[再査読1統合監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5330#issuecomment-6108458477)
+に従い、上の履歴で旧名として記録した2宣言を
+`PrimitiveGluing.coarse_union_eq/fine_union_eq` とし、全使用箇所を同期した。
+statement・証明・比較射・仮定を保持する。宣言の削除・追加を伴うため直接対応
+確認には回さず、固定headに対する新規4 laneの正式再査読2へ進む。
+この記録は修正内容であり、受理を表さない。
+
+改名後の個別PrimitiveGluingと公式単一focusedはexit0、56宣言、標準公理のみ。
+公式focused SHA256 `0bf6ad62fb1a4a9da9395cc022c5b8920ddd47226fc275718f6ef09fb63d85fb`。
+改名後の累積415実宣言を全件明示公理照会し、exit0、415unique、標準3公理以内、
+180新規明示宣言の欠落なし。log SHA256 `9190e4c853a0c0fa921fdf728103028dee71f0cf01390a5ccf83dfdfc312b590`。
+placeholder/Unicode/privacy/import方向/diffcheckはclean、固定仕様は不変。
