@@ -271,7 +271,11 @@ impl Checker {
             return syntax(span, "change の body は第1引数の `with` 更新");
         };
         let first = &params[0];
-        let is_first = matches!(&self.parser.exprs[base].kind, ExprKind::Dotted(p) if p.len() == 1 && p[0].name == first.name);
+        let mut target = base;
+        while let ExprKind::Group(inner) = self.parser.exprs[target].kind {
+            target = inner;
+        }
+        let is_first = matches!(&self.parser.exprs[target].kind, ExprKind::Dotted(p) if p.len() == 1 && p[0].name == first.name);
         if !is_first {
             return syntax(
                 self.parser.exprs[base].span,

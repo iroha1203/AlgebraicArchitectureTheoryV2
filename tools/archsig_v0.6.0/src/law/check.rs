@@ -943,8 +943,10 @@ impl Checker {
                     .iter()
                     .find(|p| &p.name == tname)
                     .expect("解決済み field");
+                // 所属・参照は対応表に沿って運び、量の field は位置だけを対応させる。
+                let refs = self.has_reference(&sfield.ty) || self.has_reference(&tfield.ty);
                 let moved = transport(&sfield.ty, &mu, &alpha);
-                if moved != tfield.ty {
+                if refs && moved != tfield.ty {
                     return type_error(
                         tfield.span,
                         &moved,

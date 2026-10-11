@@ -134,8 +134,8 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
   参照する reading にある、所属先が R/S の entity・arrow とし、entity どうし・arrow どうしを対応させる。
   同じ型の間で明記した align は、その field の同名の対応に代わる。
   対応する二つの型の field は数が等しく一対一に対応する。
-  field の型は、R を S へ、対応表の始域の型を終域の型へ、依存型の添字を対応先の field 名へ
-  移したときに一致させる。
+  参照を含む field の型は、R を S へ、対応表の始域の型を終域の型へ、依存型の添字を対応先の
+  field 名へ移したときに一致させる。量の field は位置だけを対応させ、型の一致を求めない。
 - `view` は型付きの純粋な読取り。整数・積・有限和・集合・有限木・項等を返せる。
   戻り値を Bool や残差に限定しない。
   対象へ適用される view は [object algebra の規則](computations.md#1-対象作用law-instance)で
@@ -151,7 +151,8 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
   依存の記録は読取り権限ではない。合計を公開しても各加数を公開せず、Tuple の成分射影は許す。
 - `change` の第1引数は owned entity または根 entity、残りは参照を含まない値型。
   Path と、参照を含む data/container も残りの引数型には含めない。
-  結果は第1引数と同じ entity の `with` 更新である。owner・参照・Map・subject roster は変更しない。
+  結果は第1引数と同じ entity の `with` 更新である。body は第1引数(括弧で囲んでもよい)への
+  最上位の `with` 更新とする。owner・参照・Map・subject roster は変更しない。
   更新式は更新前の同一環境で同時評価する。指定根内の各対象 instance へ独立に適用する。
   guard は許す parameter/状態の条件であり、欠測値を探索変数にしない。
 - `relation` の両辺は同じ始終型の Path。名前付き操作列の同効果を要求する。
@@ -229,17 +230,20 @@ Nat は tuple の0始まり射影だけに使用する。`.` に続く数値と�
 change の guard と body は、宣言の最上位にある最後の `=` で区切る。
 量化の `.` は、最上位の `.` のうち前を域(型)、後を本体として読め、本体が最も遠くまで読めるものから、
 `in` の右辺が List/Set の型を持つ位置、または `:` の右辺が型になる位置を選ぶ。
-区切りの位置が一つに決まらない量化は拒否する。
+そのような位置が複数あるときは、名前の最長一致と同じく、域(型)が最も長い位置を選ぶ。
 
 束縛は lexical。parameter、let、pattern、量化、comprehension の同一 scope 内の名は一意。
 内側の shadowing は禁止。let の右辺に自分を参照できない。match は constructor を全て一度ずつ
 覆うか末尾に `_` を置き、重複・到達不能分岐を拒否する。constructor は完全名、`Data.Ctor`、
 期待 data 型から一意な短名の順で解決する。変数名と衝突する短名は修飾する。
 束縛変数でない一つの名前は、期待 data 型の constructor 名ならその constructor と読む。
+二項演算の両辺、if の両枝、match の各枝では、文脈の型を要しない側(整数 literal や短い
+constructor 名だけでない側)の型を、文脈の型を要する側の期待型とする。両方が要するときは左から読む。
 pattern の名前は、照合する data 型の constructor 名ならその constructor、それ以外は新しい束縛とする。
 data 型でない値の match は `_` と束縛の分岐で受ける。
 constructor が一つの data への入れ子の pattern は、その引数の pattern が全て値を残さず受けるとき、
-外側の constructor の分岐を覆う。
+外側の constructor の分岐を覆う。末尾の `_` を到達不能とするのは、全 constructor の分岐の引数が
+`_` か束縛だけの場合とする。
 全分岐を型検査し、if の両枝・match の各枝の結果型を一致させる。
 
 field lookup は宣言済みの field だけ。tuple は数値射影だけ。適用は view、Map、Term、constructor、

@@ -196,6 +196,9 @@ fn names_in_different_scopes_may_coincide() {
 
 #[test]
 fn change_needs_an_entity_as_its_first_parameter() {
+    ok(&reading(
+        "entity S; entity A(owner: S) { x: Z; } change c(a: A) = (a) with { x = 1 };",
+    ));
     rejects(
         "entity S; entity A(owner: S) { x: Z; } change c() = a with { x = 1 };",
         Code::Syntax,
@@ -225,6 +228,14 @@ fn nested_patterns_over_single_constructors_cover_their_branch() {
     ok(&reading(
         "data U = U0 | U1; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; _ => 0; };",
     ));
+    // 入れ子の pattern で覆っていても、末尾の `_` は受ける。
+    ok(&reading(
+        "data U = U0; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; _ => 0; };",
+    ));
+    rejects(
+        "data W = W0(Z); view f(w: W): Z = match w { W0(n) => n; _ => 0; };",
+        Code::Syntax,
+    );
 }
 
 #[test]
@@ -421,6 +432,20 @@ fn malformed_syntax_is_rejected() {
     rejects("view v(): Text = \"\\ud800\";", Code::Syntax);
     rejects("view v(): Z = unknown;", Code::Reference);
     rejects("entity E { in: Z; }", Code::Syntax);
+}
+
+/// 量の field は位置だけを対応させ、参照を含む field は対応表に沿って型を運ぶ。
+#[test]
+fn alignment_moves_references_and_positions_quantities() {
+    ok(&format!(
+        "{HEADER}reading P {{ entity S1; entity E(owner: S1) {{ v: Z; }} entity S2; entity G(owner: S2) {{ w: Q; }}
+         correspondence M(from: S1, to: S2) {{ es: Map<E[from], G[to]>; align E.owner = G.owner; align E.v = G.w; }} }}"
+    ));
+    let wrong_ref = format!(
+        "{HEADER}reading P {{ entity S1; entity E(owner: S1) {{ v: Z; }} entity S2; entity G(owner: S2) {{ w: S1; }}
+         correspondence M(from: S1, to: S2) {{ es: Map<E[from], G[to]>; align E.owner = G.owner; align E.v = G.w; }} }}"
+    );
+    assert_eq!(err(&wrong_ref).code, Code::Type);
 }
 
 /// correspondence が覆う owned 型は、その reading から参照できる reading の中で決まる。

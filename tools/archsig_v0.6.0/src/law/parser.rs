@@ -829,14 +829,13 @@ impl Parser {
             let domain = if typed {
                 self.parse_type_at(from, c).map(QuantDomain::Type)
             } else {
-                self.parse_expr_at(from, c, Flags::default())
-                    .and_then(|(d, e)| {
-                        if e == c {
-                            Ok(QuantDomain::In(d))
-                        } else {
-                            Err(self.err_at(e, "量化の域の終わりが必要"))
-                        }
-                    })
+                self.parse_expr_at(from, c, flags).and_then(|(d, e)| {
+                    if e == c {
+                        Ok(QuantDomain::In(d))
+                    } else {
+                        Err(self.err_at(e, "量化の域の終わりが必要"))
+                    }
+                })
             };
             let domain = match domain {
                 Ok(d) => d,

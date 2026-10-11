@@ -207,6 +207,24 @@ fn quantifier_bodies_and_domains_of_any_shape_are_accepted() {
     ));
     let e = c.infos.iter().find(|i| i.name == "R.e").unwrap();
     assert_eq!(e.expressions[0].ty, archsig::types::Type::Bool);
+    // let の右辺の量化は let の区切りの `in` を越えない。
+    ok(&reading(
+        "entity S; entity A(owner: S) { flag: Bool; x: Z; } view q(n: Z): Bool = n > 0;
+         view v(s: A, xs: List<Z>): Bool = let b = forall x in xs . q(x) in b and s.flag;
+         law required l(s: A, xs: List<A>): let b = forall t in xs . t.flag in b and s.flag;
+         view w(s: A, xs: List<Z>, c: Bool): Bool = let b = if c then true else forall x in xs . q(x) in b and s.flag;",
+    ));
+    // 型名が二通りに読めるときは最も長い名前を選ぶ。
+    let order = format!(
+        "{HEADER}reading Order {{ entity Order; entity Line(owner: Order) {{ q: Z; }} law required l(): forall x: Order.Line . x.q >= 0; }}"
+    );
+    ok(&order);
+    let nested = format!(
+        "{HEADER}reading A {{ data B = Leaf | Node(B); }} reading R {{ data A = Only; law required k(): forall x: A.B . x = x; }}"
+    );
+    let c = ok(&nested);
+    let k = c.infos.iter().find(|i| i.name == "R.k").unwrap();
+    assert!(k.dependencies.contains(&"A.B".to_owned()));
     // 域が List/Set になる区切りがない量化は拒否する。
     let issue = err(&reading(
         "entity S { n: Z; } law required l(s: S): forall x in s.n . x = 1;",

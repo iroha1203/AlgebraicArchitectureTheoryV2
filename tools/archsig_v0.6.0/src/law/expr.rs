@@ -68,6 +68,13 @@ pub struct Ctx {
     pub term: bool,
 }
 
+/// constructor pattern の位置と、分岐がその constructor の値を残さず受けるか。
+struct PatternCover {
+    index: usize,
+    covers: bool,
+    plain: bool,
+}
+
 enum Callee {
     View(String),
     Ctor(String, usize),
@@ -984,6 +991,7 @@ impl Checker {
         };
         let mut seen = std::collections::HashSet::new();
         let mut covered = std::collections::HashSet::new();
+        let mut plainly_covered = std::collections::HashSet::new();
         let mut catch_all = false;
         let mut result: Option<Type> = expected.map(Type::erase);
         let mut pending = Vec::new();
@@ -994,17 +1002,24 @@ impl Checker {
             let mark = env.vars.len();
             match self.check_pattern(&arm.pattern, &st, env, ctx, rec_scrutinee, true)? {
                 None => {
-                    if is_data && covered.len() == constructors {
+                    if is_data && plainly_covered.len() == constructors {
                         return syntax(arm.pattern.span(), "到達できない分岐");
                     }
                     catch_all = true;
                 }
-                Some((index, irrefutable)) => {
+                Some(PatternCover {
+                    index,
+                    covers,
+                    plain,
+                }) => {
                     if !seen.insert(index) {
                         return syntax(arm.pattern.span(), "同じ constructor の分岐が重複している");
                     }
-                    if irrefutable {
+                    if covers {
                         covered.insert(index);
+                    }
+                    if plain {
+                        plainly_covered.insert(index);
                     }
                 }
             }
@@ -1045,13 +1060,17 @@ impl Checker {
         ctx: &Ctx,
         rec_scrutinee: bool,
         top: bool,
-    ) -> CResult<Option<(usize, bool)>> {
+    ) -> CResult<Option<PatternCover>> {
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || match p {
             Pattern::Wild(_) => Ok(None),
             Pattern::Name(id) => {
                 if let Some((data, index)) = self.short_ctor(&id.name, Some(ty)) {
                     self.pattern_ctor(&data, index, id.span, &[], env, ctx)?;
-                    return Ok(Some((index, true)));
+                    return Ok(Some(PatternCover {
+                        index,
+                        covers: true,
+                        plain: true,
+                    }));
                 }
                 let origin = if rec_scrutinee && !top {
                     Origin::RecChild
@@ -1096,21 +1115,28 @@ impl Checker {
                 };
                 // 引数の pattern が全て、その型の値を残さず受けるなら、この分岐は constructor を覆う。
                 // constructor が一つだけの data への pattern は、その引数が全て覆えば値を残さない。
-                let mut irrefutable = true;
+                // plain は引数が全て `_` か束縛であること。到達不能な `_` は plain な分岐だけから判定する。
+                let mut covers = true;
+                let mut plain = true;
                 for (a, t) in args.iter().zip(&constructors[index].args) {
-                    let covers = match self.check_pattern(a, t, env, ctx, child_rec, false)? {
+                    let arg_covers = match self.check_pattern(a, t, env, ctx, child_rec, false)? {
                         None => true,
-                        Some((_, inner)) => {
-                            inner
+                        Some(inner) => {
+                            plain = false;
+                            inner.covers
                                 && matches!(t, Type::Data(d) if matches!(
                                     self.sigs.get(d),
                                     Some(Signature::Data { constructors }) if constructors.len() == 1
                                 ))
                         }
                     };
-                    irrefutable &= covers;
+                    covers &= arg_covers;
                 }
-                Ok(Some((index, irrefutable)))
+                Ok(Some(PatternCover {
+                    index,
+                    covers,
+                    plain,
+                }))
             }
         })
     }
@@ -1169,8 +1195,8 @@ impl Checker {
                         valid.push((domain.clone(), *body));
                     }
                 }
+                // 候補は `.` の位置の順。複数の域が読めるときは、名前の最長一致と同じく最も長い域を選ぶ。
                 match valid.len() {
-                    1 => valid.pop().expect("一つの候補"),
                     0 => {
                         // 最初の候補の域の誤りを返す。
                         match &cands[0].0 {
@@ -1183,7 +1209,7 @@ impl Checker {
                         }
                         return syntax(span, "量化の域と本体の区切りが決まらない");
                     }
-                    _ => return syntax(span, "量化の域と本体の区切りが一意に決まらない"),
+                    _ => valid.pop().expect("一つ以上の候補"),
                 }
             }
         };
