@@ -109,7 +109,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `localize(Handle,law=QName?,using=QName?,B)` | Architectureを局所化する。lawは選択Law、usingはchange。`system:LocalSystem`、`proposition:Proposition` |
 | `diagnose(Handle,degree=Degree?,side=equation\|semantic?)` | LocalSystemのdegree（既定1）、side（既定equation）を診断する。`diagnostic:Diagnostic`。計算できた場合`space:Cohomology`、`class:Class`、`proposition:Proposition`をそれぞれ保持する |
 | `solve(Law,using=Change,on=Handle,B)` | 許された変更でLawを満たす全候補を求める。`domain:CandidateSpace`、`solutions:SolutionSet`、`proposition:Proposition` |
-| `repair(Law,using=Change,on=Handle,B)` | solveと同じ候補域から標準選択の候補を構成し元のLawへ再代入する。`domain:CandidateSpace`、`solutions:SolutionSet`、構成条件の`proposition:Proposition`、成立時`repair:Repair`、`object:Architecture` |
+| `repair(Law,using=Change,on=Handle,B)` | solveと同じ全解中の元Assignmentが一意な場合だけ修復対象を構成し元のLawへ再代入する。`domain:CandidateSpace`、`solutions:SolutionSet`、存在の`existence:Proposition`、構成条件の`proposition:Proposition`、構成成立時だけ`repair:Repair`、`object:Architecture` |
 | `quotient(View,on=Handle,law=QName?,B)` | onはCandidateSpaceまたはSolutionSet。view評価が同じ候補を同一視する。`quotient:Quotient`。law指定時`proposition:Proposition` |
 | `needed($Id)` | 問いの依存先にある未観測位置と、それ以外の未決理由を返す。`plan:ObservationPlan` |
 
@@ -187,13 +187,19 @@ changeの第一parameterと型・ownerの合う全entityをon内で列挙し、�
 構成条件の不成立。未知の観測値は候補parameterへ変えない。
 domainは許された全候補、solutionsはLawを満たす部分集合である。
 探索を打ち切った部分列挙を全解集合・空集合・不存在証明として返さない。
-repairは[修復候補の標準選択](computations.md#修復候補の標準選択)によって候補を一つに定め、
-最小keyに属する元parameter割当ての一意性と、元のLaw・許された変更への再代入を検査する。
-最小keyの異なる割当てが複数あれば、存在命題と全解集合を保持し、最小性の証拠と二割当てから
-repairの構成条件を反証して`condition_failed`を返す。この場合もrepair/objectは生成せず、
-解が存在しないという結論にはしない。原parameter割当ては結果専用Assignmentとして保持する。
-存在を確認しても選択や再検査が未完了なら、存在命題は中間結果に残し、repairの構成条件は未決とする。
-この場合はrepair/objectを返さず、それらへ依存する問いに元の中断・未決理由を伝える。
+repairは[修復の一意性](computations.md#修復の一意性)に従い、全解中の元Assignmentが
+ちょうど一つで、その値と更新後の対象が確定した場合だけ、元のLaw・許された変更への再代入を経て
+repair/objectを生成する。異なる元parameter割当てを同じ更新後状態や同型によって同一視しない。
+`existence`は同じSolutionSetのinhabited命題であり、solveのpropositionと同じ意味を持つ。
+異なる二つの解Assignmentがあれば、その所属と不等により一意性を反証し、
+repairの構成条件をrefuted、理由を`condition_failed`とする。全解集合とestablishedのexistenceを
+保持し、repair/objectは生成しない。解が空の場合はexistenceもrefutedとなる。
+修復単独の確定した非一意・不存在はcomplete/exit1だが、両者はexistenceと証拠で区別する。
+一つへ絞る条件は、Lawの要求またはchangeのparameter/guardに明示する。
+存在を確認しても一意性・具体値・再検査が未完了なら、確認済みのexistenceを保持し、
+repairの構成条件はundeterminedとする。この場合もrepair/objectを返さない。
+生成されないobjectを使う後続evaluateはundetermined、`dependency_blocked`と元の理由を保持する。
+非一意repairとそのevaluateを同じrunに指定した場合、runはpartial/exit2となる。
 
 `quotient`の定義域はonで指した集合そのもの。CandidateSpaceとSolutionSetを取り違えない。
 Bはviewの全parameterを束縛し、各候補で更新された同じsubjectの値を読む。
@@ -321,13 +327,20 @@ digest一致は候補の検索だけに用い、成立証拠の代わりにし�
 以前と同じ計算計画を使うことは要求せず、現在の式・原始根・束縛・条件に対する導出を検査する。
 共通の計算結果を再利用・共有しても、Lawの各出現と現在のAtomの支持・由来を保持する。
 Repairを再利用する場合も、現在の候補域・束縛・基準Architectureのoverridesを照合し、
-標準選択の最小性・一意性と再代入を再検査する。
+全解中の元Assignmentの一意性、具体値の確定、所属と再代入を再検査する。
+一解の所属だけ、更新後状態の一意性だけ、表示用特解だけではRepairを再利用しない。
+一意性の反証を再利用する場合も、具体的な二解の所属・不等、または補完表・同次核による
+[証拠](results.md#6-証拠と理由)を現在の全解に対して再検査し、存在判定と混同しない。
+completion_fibersのrequestは現在の解決済みの問いへ対応付け、ID一致だけで採用せず、
+根・Law・束縛・overridesと各補完の候補族・全解を再検査する。
+現在のLawで解を絞った場合は、その条件で全解と一意性を計算し直す。
 公開された射影は、その規則、現在の意味対象、型・ownerと射影値を照合し、後続の推論を再検査する。
 現在の入力から導けない結論を旧結果から増やさない。変わったsourceへ古い由来を貼り直さない。
 数学的な値と条件は、同じ完全入力・解決済みの問いに対して計画によらず決定的とする。
 解集合・類・写像は、基底や特解等の表示を変えた場合も、元の意味対象に沿う同じ値を表す。
 時間・メモリ・node番号・表示基底・同じ命題の証明証人の選択は意味的一致の対象から除く。
-後続の問いが読むRepairのAssignmentとobjectは、入力と問いから標準選択により固定する。
+後続の問いが読むRepairのAssignmentとobjectは、入力と問いで定まる全解の一意性に基づく。
+JSONの正規化・列挙順・表示用特解の選択を、解の選好や一意性の根拠にしない。
 同じ入力と問いを保った予算の増加は検査済みの主張の真偽を反転させず、未決の範囲と理由だけを更新する。
 
 内部計画の自由とその検査は[意味を保つ計算計画](computations.md#10-意味を保つ計算計画)に従う。

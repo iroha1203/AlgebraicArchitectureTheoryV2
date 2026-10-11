@@ -128,13 +128,16 @@ FactPointerのfieldなしはsubject存在、fieldあり・atomなしは未観測
 evaluateがBool=falseを返す場合も値の評価はestablishedである。
 build/map/compose/localize/repairのclaimは選択した構成条件、solveは修復の存在、
 quotientのlaw指定時は評価族の保存、compareは選択した比較の成立を表す。
-repairの構成条件は、許された候補域内の[標準選択](computations.md#修復候補の標準選択)の完了と、
-最小keyに属する元parameter割当ての一意性、選択候補の元Lawへの再検査を含む。
-全解集合の非空性は別のinhabited命題として保持する。
-修復の存在を確認できても標準選択が未完了なら、その存在命題を成立済みの中間nodeとして残し、
-repairのclaimは未決、Repair/objectは未生成とする。解集合が空なら構成条件を反証する。
-最小keyに異なる割当てが二つあれば、最小性の証拠と二つのAssignmentから構成条件を反証し、
-condition_failedを返す。inhabitedの成立と全解集合は保持し、Repair/objectは生成しない。
+repairの構成条件は、許された候補域の全解における[元Assignmentの一意性](computations.md#修復の一意性)、
+その割当てと更新後の具体値の確定、元の更新・Lawへの再検査を含む。
+全解集合の非空性は別のinhabited命題として、repairのoutputs.existenceに保持する。
+この命題はsolveのclaimと同じ意味を持ち、repairの構成条件を表すoutputs.propositionとは区別する。
+存在が成立しても一意性・具体値・再検査が未完了なら、existenceを残しrepairのclaimは未決、
+Repair/objectは未生成とする。全補完で一意でも値が補完に依存する場合もこれに含む。
+解が空ならinhabitedとunique_solutionを反証し、repairの構成条件もrefutedとする。
+異なる二つの解Assignmentがあればunique_solutionと構成条件をrefuted、理由をcondition_failedとする。
+この場合はinhabitedの成立と全解集合を保持し、Repair/objectを生成しない。
+どちらの反証も修復構成の不成立だが、非一意を修復不存在と読み替えない。
 diagnoseのclaimはfiniteのdegree=1では大域解の存在、affineのdegree=1では対象障害類の零性とする。
 finiteのdegree=0はmatching familyと大域制限の全体を返す値の問いで、claimを持たない。
 affineのdegree≠1はspaceの計算を問いとし、class/claimを作らず、spaceが得られればestablished。
@@ -177,6 +180,8 @@ Proposition以外のNodeにjudgmentを置かない。Propositionのvalueは命�
 未知でも式を構成できるPropositionはstate=valueを持てる。
 state=blockedはvalueを持たず、reasonsが一件以上。partialは位置・分岐を失わない表示専用である。
 valueにはblocked nodeを含めない。ただし構成条件・式・未決理由の参照は保持できる。
+第6節のcompletion_fibers.data.solutionsだけは、証明対象を識別するためにblockedな
+SolutionSetを参照できる。そのvalue・partialの消費や公開射影は許さず、他の欄へこの例外を広げない。
 
 全Refを導出DAGの辺とし、nodesは既出nodeだけを参照する順に並べる。
 idは`n0`から連続する10進番号。同じ実行内で一意であり、番号に数学的意味を付けない。
@@ -323,20 +328,23 @@ guard=falseのLawはapplicability=not_applicableとし、全称要求へ違反�
 
 Predicateは`law_holds, constructible, equal, word_equal, action_equal, relation_equal,
 configuration_preserved, object_algebra_preserved, cover_adequate, restrictions_compatible,
-sheaf_condition, action_laws, inhabited, minimal_assignment, unique_minimum, class_zero, diagnostics_preserved, sufficient, divides,
+sheaf_condition, action_laws, inhabited, solution_member, unique_solution, class_zero, diagnostics_preserved, sufficient, divides,
 required_iff, applicability_iff, equation_holds_iff, residual_zero_iff, profile_compatible, circuit_sound,
 circuit_matches, implies, circuit_accepts, invariant_transport,
 signature_transport, naturality, inverse_maps, declaration_transport`。
 law_holdsのoperandsはLawInstance、equal系は比較順の二値、inhabitedはSolutionSet、
 inhabitedはEquationSolutionSetも受け取る。class_zeroはClass、diagnostics_preservedはComparison、
 sufficientはQuotient、dividesは順にZの除数と被除数。
-minimal_assignmentのoperandsは順にSolutionSet、同じCandidateSpace上のAssignmentとし、
-その割当てが解であり、より小さい標準keyの解が存在しないことを表す。
-unique_minimumのoperandsはSolutionSet一つとし、標準keyを最小にする元parameter割当てが
-ちょうど一つ存在することを表す。空解集合と複数の最小割当てでは偽である。
-repairの構成条件はunique_minimumを条件に持ち、選択したAssignmentのminimal_assignmentと、
-元の更新・Lawへの再代入を証拠に保持する。複数最小の反証では、二つのminimal_assignmentの
-成立と、二つのAssignmentの不等を確認する。
+solution_memberのoperandsは順にSolutionSet、同じCandidateSpace上のAssignmentとし、
+その元割当てが候補域のguardと解集合の全要求を満たすことを表す。
+unique_solutionのoperandsはSolutionSet一つで、元Assignmentの等値に関して解が
+ちょうど一つ存在することを表す。空集合と、異なる二解がある集合では偽である。
+EquationSolutionSetの状態解や同効果による商を、この一意性の対象にしない。
+repairの構成条件はunique_solutionを条件に持ち、唯一のAssignmentのsolution_memberと、
+元の更新・Lawへの再代入を証拠に保持する。具体的な二解で非一意を反証する場合は、
+二つのsolution_memberの成立と、同じCandidateSpace上の二つのAssignmentの不等を確認する。
+補完ごとに解が変わる場合の一意性判断は §6 の補完表または同次核の証拠で検査し、
+補完全体に共通する具体Assignmentを要求しない。
 その他は検査する構成のargumentsと同じ順のoperandsを使い、constructibleの第1operandだけは
 Construction名を持つText nodeとする。これらは結果上の命題表示でありLawの呼出しAPIではない。
 
@@ -506,6 +514,10 @@ SolutionRepresentationは`{kind:"empty",certificate:Ref}`、`{kind:"finite",valu
 `{kind:"affine",particular:Vector,directions:Module,embedding:ModuleMap}`、
 `{kind:"symbolic"}`の閉じたunion。記号表示は空集合を意味しない。
 有限解の値はparameter tuple、アフィン解はparticular+embedding(directions)。
+SolutionSetの表示は元changeのparameter座標上に戻し、domain.instancesと元のPositionへの対応を保つ。
+guardの消去等で再parameter化した場合も、particularとembeddingには元parameterへの復元写像を合成する。
+表示が元の全解を尽くすことを検査し、directionsの表示次元だけで一意性を判定しない。
+EquationSolutionSetの表示はEquationSpace.variablesの状態座標であり、Assignmentの座標と混同しない。
 作用後の状態が同じでも異なるparameterを潰さず、実状態への商はActionで保持する。
 
 Positionは`{kind:"observation",field:FactPointer,component:Nat[]}`または
@@ -586,14 +598,18 @@ domain.kind=identityではentries=[]とし、Unit parameterの唯一の割当て
 この同一性は元の入力と標準構成で検査し、node番号・表示基底・共有の有無には依存しない。
 単に同型な別の候補域を同一視しない。
 
-Repair.parametersは標準選択で一意に決まったAssignmentを指す。
+Assignmentの等値は同じsubjectの各元parameterについて宣言型の等値を取る。
+同じ値行を異なるsubjectへ割り当てたもの、または同じ状態を生む異なる元parameterは区別する。
+元parameterへの復元が同じ割当てを重複表示した場合は一つと数える。
+
+Repair.parametersはsolutionsの唯一のAssignmentを指す。
 stepsは同じsubjectごとに同じ元parameter値を持ち、changeはdomain.changeと一致する。
-選択した割当てとobjectは表示基底や証拠の選び方によって変わらない。
-核は再代入に加えて標準選択の最小性・一意性をrepair構成条件として検査する。
-より小さい候補の適格性が未決なら、それを飛ばして既知の候補を確定しない。
-同じ最小keyを持つ他の候補の適格性が未決な場合も、一意性を確定しない。
-選択未完了時は既知の全解表示や存在証拠を保持し、暫定候補をRepair/objectへ昇格しない。
-SolutionRepresentation.particularは解集合の表示用特解であり、Repair.parametersの標準選択とは区別する。
+この割当てとobjectは表示基底や証拠の選び方によって変わらない。
+核は全解の一意性、確定した具体値、解所属と再代入をrepair構成条件として検査する。
+他の候補の適格性が未決なら、それを飛ばして既知の一解を唯一としない。
+全補完で一意性が成立しても唯一の割当てや更新後の値が異なれば、具体的なRepair/objectは未生成とする。
+未完了時は構成済みの全解表示や存在証拠を保持し、暫定候補をRepair/objectへ昇格しない。
+SolutionRepresentation.particularは解集合の表示用特解であり、一意性を示すものではない。
 
 QuotientRepresentationは`{kind:"finite",fibers:{image:Ref,preimage:Domain}[]}`または
 `{kind:"affine",image:Module,kernel:Module,map:ModuleMap,offset:Vector}`。
@@ -619,6 +635,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | normalization | `{before:Ref,after:Ref,steps:Expression[]}` |
 | gluing | `{local:Ref[],correction:Ref,global:Ref,rechecks:Proposition[]}` |
 | completion_pair | `{fields:FactPointer[],first:Ref[],second:Ref[],first_result:Ref,second_result:Ref}` |
+| completion_fibers | `{request:String,solutions:SolutionSet,fields:FactPointer[],cases:{values:Ref[],assignments:{subject:Ref,parameters:Ref[]}[][]}[]}` |
 | separating_pair | `{domain:Ref,first:Ref,second:Ref,view_values:[Ref,Ref],law_values:[Ref,Ref]}` |
 
 証拠の算術、全域性、再代入を核で再検査する。rank等のスカラーだけで反証を確定しない。
@@ -632,9 +649,50 @@ divisibilityは各対角行の係数が対応するtransformed_rhs成分を割�
 零行では0がその成分を割る条件、すなわち成分=0を使う。rhsを扱わない場合はdivisibility=[]。
 completion_pairは未知slotの型を保つ補完対、separating_pairは宣言済み候補域の二候補であり、
 観測された反例と区別する。反証には元の名前・入力値・結果・source位置を保持する。
-修復の一意性反証ではcounterexample.left/rightを異なる二つのAssignmentへ向け、
-同じ候補域と各値型を保つ。両割当てのminimal_assignmentの成立証拠もunique_minimumの
-反証とrepairの構成条件に保持し、同じkeyの二候補を見つけただけで最小性を成立させない。
+具体的な二解による非一意性反証ではcounterexample.left/rightを異なる二つのAssignmentへ向け、
+同じ候補域と各値型を保つ。両割当てのsolution_memberの成立証拠と、元parameterの等値に
+対する不等の証拠をunique_solutionの反証とrepairの構成条件に保持する。
+存在証人一つでは一意性を成立させない。全補完での一意性判断には次の証拠も使う。
+
+- completion_fibersは有限な補完と候補の全検査を表す。requestは現在のrequests中の
+  solveまたはrepairのIDで、solutionsはその問いの全解を表すSolutionSet nodeである。
+  核は元の根・reading・Law・change・束縛・基準overridesとの対応を検査する。
+  solutionsがblockedでも証明対象の識別だけに参照でき、未生成の値を読み取らない。
+  問いのHandleと束縛が実際に解決済みであることを必要とする。前問の未生成objectや
+  未解決の射影・束縛を、requestのIDから補完内で復活させない。
+  fieldsは依存する未観測slotをFactPointerのcanonical順で一度ずつ含み、
+  各valuesは同じ順の原始型の具体値Refである。casesは型・原始参照条件と整合する
+  全補完のfieldsへの射影を重複なく尽くす。入力の補完集合とcasesは非空でなければならない。
+  核は各caseで同じ解決済みの問い・原始根・Law束縛・基準overridesから候補族を再生成する。
+  各assignmentsは、そのcaseで生成したinstance族の全subjectを一度ずつ含む表の族であり、
+  各行のparametersは元changeの宣言順・束縛後の型に従う。identityでは内側の表は空。
+  各表はguardと全要求を満たす元割当てで、割当ての等値による重複を含めず、全解を尽くす。
+  未観測ownerによってinstance族が変わる場合、subjectの集合はcase間で異なってよい。
+  核が各caseの候補域を全検査し、表の完全性と、fields外の未知slotが結果に影響しないことを確認する。
+  全caseでassignmentsが非空ならinhabitedは成立、全caseで空なら反証。
+  全caseでassignmentsが一元ならunique_solutionは成立、全caseで件数が一以外なら反証。
+  各命題の真偽が補完で異なればその命題は未決とする。
+  これらは補完内の証拠値であり、観測値や通常のArchitecture・CandidateSpace・Assignment・
+  SolutionSetの確定値へ昇格しない。証拠内部の表を公開射影へ出さない。
+  Repair/objectには全補完で同じ元割当てと更新値の確定を別に要する。
+- アフィンの証拠では、全補完ωで元の全解が
+  `ρ_ω({t | Bt=d(ω)})`、`ρ_ω(t)=p0(ω)+Pt` と一致し、BとPが固定された正確な
+  整数ModuleMapであることを原式の正規化から検査する。
+  既知のVector vについて、linear_solutionでBv=0を検査し、
+  counterexample.left/rightを同じ元parameter Module上のPvと零Vectorに向けてPv≠0を示せば、
+  各fiberは空か複数となりunique_solutionを反証できる。この場合の反例の二辺はVectorである。
+  inhabitedは別に判定し、存在が未決のまま「複数解が存在する」とは結論しない。
+  一意性の成立には、smithでker Bを尽くす生成元を確認し、全生成元kiについて
+  linear_solution等でPki=0を検査し、全補完でのinhabited成立も要求する。
+  これらの行列・Vector・正規化の導出をevidenceとargumentsで保持する。
+  具体的なd(ω)やAssignmentが未知でも、同次核の証拠の値は全て既知でなければならない。
+  d(ω)が独立な未知整数hのアフィン式d0+Dhなら、同じSmith変換後のd0とDの全列について、
+  各対角成分の整除と零行条件を検査すれば全hでの可解性を確認できる。
+  各具体列へのsmith証拠と、原式からこの式へのnormalizationを保持する。
+  未確定な右辺をsmith.transformed_rhsへ入れず、B/Pが補完で変わる場合にこの規則を使わない。
+
+補完に依存する証人を具体値として捏造しない。具体的な全検査または対応する正確な記号計算で
+判断を確認できなければ、元のmissing/unsupported/budget理由を保持する。
 
 | IssueCode | 必須のdetailsと意味 |
 | --- | --- |

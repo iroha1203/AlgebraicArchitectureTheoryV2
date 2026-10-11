@@ -115,7 +115,7 @@ StockとHeldの個別の変更が求まっても、一つのrebalanceから来�
 `Δfree+Δheld=0` が必要である。局所状態の貼り合わせと許す作用の条件は、
 [核の構成](computations.md)に従って別々に確認する。
 
-### 複数の修復候補からの標準選択
+### 修復の存在と一意性
 
 次の Law 片に対し、snapshot `pair` の唯一の subject `s: Pair.State` に
 原始値 `x=0, y=0` を与える。State はこの例の root である。
@@ -124,6 +124,7 @@ StockとHeldの個別の変更が求まっても、一つのrebalanceから来�
 reading Pair {
   entity State { x: Z; y: Z; }
   law required total(s: State): s.x + s.y = 1;
+  law optional pinned(s: State): s.x + s.y = 1 and s.x = 0;
   change setpair(s: State, a: Z, b: Z) = s with { x = a, y = b };
   view first(s: State): Z = s.x;
   law optional zero(v: Z): v = 0;
@@ -137,33 +138,41 @@ r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)
 x=evaluate(Pair.first,on=$r.object,s=@pair/s)
 ```
 
-解の parameter は全整数対 `(a,b)` のうち `a+b=1` を満たすもの。
-[標準の候補選択](execution.md#3-固定の12の問い)に用いる key は、この一 subject では
-元の change の値 parameter を宣言順 `(a,b)` で原始 Z encoding へ戻した二重 array の canonical JSON となる。
-最小の UTF-8 byte 長を持つ解の key は `[["0","1"]]` と `[["1","0"]]` であり、
-同じ長さでは byte 辞書順で先の `[["0","1"]]` を選ぶ。
-したがって `r` は `x=0,y=1` の候補を元の Law へ再代入して確認し、後続の `x` は整数0を返す。
-`r` の claim は、最小 key に属する割当ての一意性と再検査を含む修復の構成条件である。
-算法が `(1,0)` を先に発見しても、あるいは異なる基底・Smith normal form の特解を得ても、
-選ぶ候補と後続の評価は変わらない。前述の `rebalance` の `d=-1` は解が一意なので同じ選択となる。
+元 parameter の全解は `(a,b)=(t,1−t)`（t∈Z）であり、`(0,1)` と `(1,0)` は異なる
+二つの Assignment となる。核はそれぞれの解所属と不等を確認する。
+`r.existence` は established、`unique_solution` と修復の構成条件は refuted、
+理由は `condition_failed` とし、SolutionSet を保持して Repair/object は返さない。
+`r` だけなら complete/exit1。上の後続 `x` は object が未生成のため
+undetermined/`dependency_blocked` となり、二問の run は partial/exit2 となる。
+算法が最初に得た特解や整数の符号化を、修復後の値として採用しない。
 
-最小 key の選択または再検査の途中で予算が尽きた場合は、確認済みの解存在 Proposition を保持し、
-`Repair` と `object` を返さず、`r` は undetermined、run は interrupted とする。
+一つへ絞る要求を明記した `Pair.pinned` を指定すると、元 Assignment は `a=0,b=1` の一つとなる。
 
-同じ解集合を表示する特解 `(0,1)` と `(1,0)` は、計算用の証人である。
+```text
+u=repair(Pair.pinned,using=Pair.setpair,on=@pair/s,s=@pair/s)
+y=evaluate(Pair.first,on=$u.object,s=@pair/s)
+```
+
+核は全解の一意性と元の更新・Law への再代入を確認し、`u.object` は `x=0,y=1`、
+後続 `y` の値は整数0となる。この二問の run は complete/exit0。
+前述の `rebalance` の `d=-1` も各対象への元 Assignment が一意なので修復を返す。
+一意性または再検査の途中で予算が尽きた場合は、確認済みの存在命題を保持し、
+Repair/object を返さず、修復の構成条件は undetermined、run は interrupted/exit75 とする。
+
+同じ解集合を表示する特解 `(0,1)` と `(1,0)` は計算用の証人である。
 次の射影は、[意味上の射影](results.md#2-回答条件導出)の表にない `representation` の
-段階で `usage`、exit 64 となり、Law の評価へ進まない。
+段階で `usage`、exit64 となり、Law の評価へ進まない。
 
 ```text
 s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)
 v=check(Pair.zero,v=$s.solutions.representation.particular.coordinates[0])
 ```
 
-特解を Vector 全体として取り出す迂回も同じ理由で拒否する。結果 JSON には両方のような
-正しい表示を保持できるが、その選び方で後続の命題を `0=0` または `1=0` へ変更しない。
-SolutionSet 自体を `quotient` へ渡す接続と、意味上選択済みの `$r.object` を読む接続は有効である。
+特解を Vector 全体として取り出す迂回も同じ理由で拒否する。結果 JSON に保持する正しい表示の
+選び方で、後続の命題を `0=0` または `1=0` へ変更しない。
+SolutionSet 自体を `quotient` へ渡す接続と、一意修復の `$u.object` を読む接続は有効である。
 
-### 識別子によらない選択と一意性
+### 識別子と一意性
 
 次の Law 片で、唯一の root の `first` は owned State `a`、`second` は `b` を指し、
 両方の `x=0` を観測した場合を考える。
@@ -179,11 +188,10 @@ reading Rename {
 }
 ```
 
-`repair(Rename.total,using=Rename.setx,on=@rename/root,r=@rename/root)` の最小 key は
-`[["0"],["1"]]`。`a.x=0,b.x=1` と `a.x=1,b.x=0` の二つの割当てが同じ key を持つ。
-核は最小性と二つの異なる割当てを確認し、一意選択を含む構成条件を反証する。
-全解集合と成立済みの存在命題は保持し、Repair/object は返さない。
-二つの subject ID と全参照を入れ替えても、同じ一意性の反証になる。
+`repair(Rename.total,using=Rename.setx,on=@rename/root,r=@rename/root)` の全解は
+`a↦t,b↦1−t`（t∈Z）。`a↦0,b↦1` と `a↦1,b↦0` は異なる二つの元 Assignment である。
+核は両者の所属と不等から一意性と構成条件を反証し、全解と成立済みの存在命題を保持する。
+Repair/object は返さない。二つの subject ID と全参照を入れ替え、問いの参照も輸送した場合も同じ判断となる。
 
 同じ問いの Law を `Rename.pinned` にすると、`first.x=0,second.x=1` の割当てが一意に決まる。
 修復後に `firstx` を評価すると0となり、ID の改名後も0である。
@@ -219,8 +227,12 @@ shiftは固定値である。using省略時の固定観測系と、この変更�
 | γ | 期待する修復結果 |
 | --- | --- |
 | 3 | λ=(1,1,−1)、λD=0、λb=−1という不成立証拠 |
-| 2 | 候補座標z=(0,1,2)。Dz=bと元のalignedへ再代入して成立確認 |
+| 2 | 全解z=(k,k+1,k+2), k∈Z。存在成立、一意性反証。SolutionSetを保持しRepair/objectなし |
 | 未観測 | cの存在と端点を保持し、shiftの追加観測を要求。補完2と3で答えが異なる |
+
+γ=2では `(0,1,2)` と `(1,2,3)` の変更量が異なる二つの元 Assignment となり、両方が元のalignedを満たす。
+`(0,1,2)` は表示用特解・存在証人として保持できるが、一意な修復対象へ昇格しない。
+`ker D=Z·(1,1,1)` の平行移動自由度は残り、後続evaluateに渡すobjectは生成しない。
 
 Edgeの読取りから生成した局所解の差と制限を用い、整数係数のČech H¹はZ、
 対象の類は表示 `1+1−γ` となる。γ=2でもH¹そのものは零にならず、対象の類が零になる。
@@ -272,7 +284,20 @@ archsig run --law examples/engine.law --archmap examples/engine.archmap.json \
 | 型の異なるMapの参照、重複key、未登録参照 | 提示規則で拒否し、保存Lawの反証とは分ける |
 | Termを直接または複合型経由でSet要素型に置く | 型検査で拒否。項の有限族はListとして保持できる |
 | viewが`Option<Path<State,State>>`を返す | `some(path(e))`をOptionの型とPathへの参照で出力し、原始Atomへ混ぜない |
-| 修復結果を次のsolve/repairのonへ渡す | 前のArchitectureのoverridesを変更前状態として使い、原始観測と導出元を保持する |
+| 一意性と再検査を確認した修復結果を次のsolve/repairのonへ渡す | 前のArchitectureのoverridesを変更前状態として使い、原始観測と導出元を保持する |
+| 存在する一subjectで `change reset(s:State,tag:Bool)=s with{x=0}`、選択Lawは `s.x=0` | false/trueの異なる二Assignmentが同じ状態を生む。存在成立、一意性反証、Repair/objectなし |
+| 上のchangeのguardに `tag=false` を明記 | 適格Assignmentは一つ。元Lawへの再検査後にRepair/objectを返す |
+| owned entityの族が空で選択Lawはその空族への全称 | 空積のAssignmentはentries=[]の一つ。存在・一意性成立、変更なしのobjectを返す |
+| 同じ空族でも選択したrootのLawはfalse | 候補は一つ、解集合は空。存在・一意性を反証、Repair/objectなし |
+| 一subjectで値parameterを持たないchange | entriesは一行でparameters=[]。唯一の候補が解かを別に検査 |
+| Law instanceが空で、change対象subjectが1件以上あり、そのBool parameterの両値をguardが許す | 全候補がLawを満たす。parameterの二値を消さず、一意とはしない |
+| 更新しない未知整数hに対し、`change setx(s:State,v:Z)=s with{x=v}`、選択Lawは `s.x=s.h` | 全補完で存在・一意性は成立するがv=hは未確定。Repair/objectなし、構成条件はundetermined、missingにh |
+| 未観測h:Z、更新 `(x,y)=(a,b)`、選択Lawは `x+y=h` | 存在成立、unique_solution反証。同次核 `(1,−1)` の非零復元像を証拠とし、共通の具体Assignmentを作らない。Repair/objectなし |
+| 未観測h:Bool、更新 `(x,y)=(a,b)` のa,bもBool、選択Lawは `x=h` | 補完falseでは(false,false)/(false,true)、trueでは(true,false)/(true,true)。completion_fibersで両補完の全解を検査し、存在成立・一意性反証 |
+| SystemはA/B、s0.owner=A、s1.owner未観測、両Stateのx=0。root Lawはtrue、A上で `change reset(s:State,tag:Bool)=s with{x=0}` | owner=Aでは2subjectの4解、Bでは1subjectの2解。completion_fibersでcaseごとのinstance族を検査し、存在成立・一意性反証。未確定のCandidateSpaceやRepair/objectを生成しない |
+| 上の例でs0が存在せず、resetのtagもない | owner=Aではs1の空parameter行を持つ一解、Bでは空表の一解。存在・一意性は全補完で成立するが元Assignmentは共通でなく、Repair/objectなし |
+| 前問の未生成objectをonに要求したrepair | completion_fibersのrequest参照でobjectを復活させず、dependency_blockedと元理由を保持 |
+| 内部parameterの異なる二表示が同じ元Assignmentへ復元される | 表示の重複を別解と数えず、元Assignment上で一意性を検査 |
 | `a=needed($b)`と`b=needed($a)`を同じrunへ指定する | exit64。各問いIDを指すcycleを返し、無関係なLaw/ArchMap位置へ帰属させない。依存グラフを保持し、意味計算は開始しない |
 | ObjectAlgebraの二対象が同じquery patternを持ち、適用条件や値が異なる | 固定全域延長の条件を反証し、condition_failedと構成済みの対象を保持する |
 | ZとFpの方程式を一つのreadingに置く | 型別の共有環を保持し、AAT接続用Observableはその有限積。係数を暗黙に変換しない |
@@ -294,4 +319,6 @@ archsig run --law examples/engine.law --archmap examples/engine.archmap.json \
 
 再利用候補を改変しても、現在の二入力から得る結論は変わらない。
 結果の型・参照・導出DAGを検査し、Atom、Law宣言、固定演算まで到達することを確認する。
+Pair.totalの一解だけを持つ再利用候補からRepair/objectを採用しない。全解の一意性を再検査し、
+複数解の存在と非一意性を保持する。Pair.pinnedへLawを変更した場合も現在の要求で再検査する。
 終了コード、signal、I/O失敗、依存する問いへの未決の伝播も実行仕様に従う。
