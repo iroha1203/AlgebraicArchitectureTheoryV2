@@ -6,6 +6,11 @@ import Formal.Util.AssertStandardAxioms
 
 A={0}, B=補集合を同じminus入力へ適用する。n≥2で交差chartは順序付き
 w₋₁,w₀の二点となり、辺は空。領域集合の交差が選ぶ空nerveと区別する。
+
+## Implementation notes
+
+真交差の元chartを順序付きBoolに移して二点H⁰を評価する。
+領域集合の交差を使う代替は空nerveとなり、指定の交差chartと貼り合わせ類を失うため採らない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasGluingWidth.Width

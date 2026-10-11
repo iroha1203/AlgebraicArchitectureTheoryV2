@@ -700,7 +700,7 @@ audits:
   next_obligation: 同じ指定族のH0差制限/Q/P/Z・標準delta lift/glue・hidden/G135生成元照合を継続
 ```
 
-## Cycle 5 spine declaration list（全132明示宣言）
+## Cycle 5 spine declaration list（初回132・査読後追加3、現135明示宣言）
 
 新規6sourceの全明示宣言をspineとする。生成補助宣言は全公理照会に別途含める。
 
@@ -864,9 +864,12 @@ AAT.AG.AtlasGluingWidth.Width.width_lowEquivalent
 AAT.AG.AtlasGluingWidth.Width.no_width_classifier
 AAT.AG.AtlasGluingWidth.Width.size_zero
 AAT.AG.AtlasGluingWidth.Width.width_zero_region
+AAT.AG.AtlasGluingWidth.Width.difference_apply
+AAT.AG.AtlasGluingWidth.Width.period_apply
+AAT.AG.AtlasGluingWidth.Width.generatorAt_apply
 ```
 
-## Cycle 5 検証と再利用
+## Cycle 5 検証と再利用（初回headの記録）
 
 新規6sourceの個別focused elaborationは全てexit0。最終公式単一
 `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasGluingWidth/WidthIntersection.lean`
@@ -913,3 +916,48 @@ false発生label/補集合fiber/全幅条件を新規に証明した。`ASubnerv
 
 `difference_zero_constant` は同じ全閉路のH⁰計算に使う独立一般補題として証明した。
 Eの残るMV H⁰差制限の輸送は、この補題の存在だけで完了とはしない。
+
+## Cycle 5 初回査読と一括修正
+
+PR #5333初回head `2ca4cd0420525858f4df263772705c1d5932ff96` の
+[標準review-prから数学2・Lean2への独立監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5333#issuecomment-6109458785)
+は全4本Minor issues、中心finding0、非中心4件（重複統合）。全135明示の現在spineは
+上の初回132に名指し公開評価API3を加えた。
+
+- 自明でない定義のImplementation notesと退けた代替案の理由を6sourceへ補完。
+- `period_apply`・`difference_apply`・`generatorAt_apply`を定義側へ追加し、
+  下流積分証明を既存`CellSelection.complex_d0_apply`と公開API経由へ変更。
+- `fineAdequate`・`indicatorAdequate`を明示Prop型のtheoremへ変更し、不要なNeZero仮定を除いた。
+  粗adequacyからの実放電経路とindicator evaluationは保持する。
+- `LowEquivalent`のこの指定二入力では全4組が低幅同値となるためnegative instanceが
+  存在しない理由を記載。一様零欠損の相違の証明は保持する。
+
+全findingは一括対応した。Prop def/abbrevからtheoremへの宣言種別・透明性の変更について
+直接対応資格を確定できないため、共有手順に従って新規4本の正式r1で確認する。
+元selection/終了条件、proposed_result_type=proof-checkpoint、completion_candidate=noは不変。
+
+修正後source:
+
+| source | SHA256 | 明示宣言数 |
+| --- | --- | --- |
+| `WidthHomology.lean` | `f86de3020d3f95d41d08e760397bb4b79b3905a2a21a98adab429d885b28a073` | 22 |
+| `WidthInput.lean` | `f25bfcb73be8dbae975da12c5881c34a9190a2c34b659ec4f48102201f27c7ed` | 22 |
+| `WidthIntegration.lean` | `2f1c45e7fe855ab00a56a76d3bb4cac3ea7f5ba79b0482d01e7323b8d2716da4` | 18 |
+| `WidthIntersection.lean` | `5809036f00abdde7d5ab7b5eafd2beb1c48ff53efd073a60b29c256c20964105` | 16 |
+| `WidthLaw.lean` | `e490f0c816ec7558bc0b364eb38d01f2e11e7ae945340a1d25f83134001fbad6` | 29 |
+| `WidthObservation.lean` | `4d96297494d19e12673bed95a034b67328ba8b8b74d3e6794b57e935cf4c2761` | 28 |
+
+修正後の対象 `WidthIntegration`・`WidthHomology`・`WidthObservation`・`WidthLaw`・
+`WidthIntersection` の個別focusedは全てexit0、最終出力にwarningなし。
+公式単一focused `WidthIntersection.lean` はexit0・16実宣言標準公理のみ、
+log SHA256 `29b5bf348d100f902e82d43b6051b3c4f9f1715a4d3e43d9cc610a9f7ca8ea27`。
+
+現環境全682 unique（累積609明示・73生成、新規135明示・136実宣言）の
+全件明示公理照会を同じ環境全名へ照合し、欠落0・余剰0・新135明示欠落0。
+全依存はpropext/Classical.choice/Quot.sound以内。全件log SHA256
+`f311eb1aa84e481f07d6baf490a3ca6af4ab7f974dee9f262bd84942ac2d8974`。
+
+修正前CIは全7成功。Lean workflow run38141926112の実stepを確認し、Research
+integrityでは方向・分離・fixture・public artifactが実行された。Formal build・
+Formal axiom auditのstepはSKIPPEDであり、CI job名を実buildの証拠へ読み替えない。
+修正後固定headのCIは別に確認する。Formal移植とResearch全体buildは未実施。

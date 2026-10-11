@@ -6,6 +6,11 @@ import Formal.Util.AssertStandardAxioms
 
 全辺値を一周の和で測る。period零の原始関数は指定累積和で構成する。
 有限個の長さの検算によらない。
+
+## Implementation notes
+
+ZMod.valの自然数代表による累積和を選び、一巡のwrapをperiod零で閉じる。
+一般forestの根選択を導入する代替は、指定閉路に不要な選択dataと証明を増やすため採らない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasGluingWidth.Width
@@ -19,11 +24,18 @@ def difference : (Chart n → ℚ) →ₗ[ℚ] Cochain n where
   toFun x e := x (right n e) - x (left n e)
   map_add' x y := by ext e; simp; ring
   map_smul' a x := by ext e; simp; ring
+omit [NeZero n] in
+/-- 公開微分評価API。 -/
+@[simp] theorem difference_apply (x : Chart n → ℚ) (e : Concept n × Bool) :
+    difference n x e = x (right n e) - x (left n e) := rfl
 /-- 指定periodはaとbの一周和。 -/
 def period : Cochain n →ₗ[ℚ] ℚ where
   toFun z := ∑ i : Concept n, (z (i, false) + z (i, true))
   map_add' x y := by simp only [Pi.add_apply]; simp [Finset.sum_add_distrib]; ring
   map_smul' a x := by simp [Finset.mul_sum, mul_add]
+/-- 公開period評価API。 -/
+theorem period_apply (z : Cochain n) :
+    period n z = ∑ i : Concept n, (z (i, false) + z (i, true)) := rfl
 /-- 添字の巡回置換により全境界のperiodは零。 -/
 theorem period_difference (x : Chart n → ℚ) : period n (difference n x) = 0 := by
   have hs : (∑ i : Concept n, x (i + 1, false)) = ∑ i : Concept n, x (i, false) :=

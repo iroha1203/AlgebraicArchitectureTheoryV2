@@ -6,6 +6,11 @@ import Formal.Util.AssertStandardAxioms
 
 固定設計のZMod n上の交互閉路とa₀だけを除いたpathを構成する。
 台・incidence・readingから選択式を導く。期待rankや診断を入力に含めない。
+
+## Implementation notes
+
+辺削除を一つの含意subtypeで表し、同じ元辺名を両入力で保持する。
+minus/plusごとの別の辺型を選ぶ代替は、同じperiod座標と代表元の輸送を重複させるため採らない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasGluingWidth.Width

@@ -6,14 +6,21 @@ import Formal.Util.AssertStandardAxioms
 
 幅は全発生ラベルの概念fiberのcardinalityで測る。空Lawも含め、全Law商を
 既存の実fiber族同定へ戻す。指定定数Lawは同じSource上の一ラベルである。
+
+## Implementation notes
+
+全発生labelを既存の実Law商とfiber族同型で読む。同じ台を持つlabelを
+まとめる代替は、その多重度を消すため採らない。indicatorのfalse値も同じSourceから生成する。
 -/
 noncomputable section
 namespace AAT.AG.AtlasGluingWidth.Width
 open CanonicalResolution ResolutionInvariance AtlasDefectComposition FaceRelationSubdivision
 variable (n : ℕ) [NeZero n]
 
+omit [NeZero n] in
 /-- 粗adequacyから同じSource上の細adequacyを生成する。 -/
-def fineAdequate (laws : FiniteLawFamily (Source n)) (ha : laws.Adequate (coarseReading n)) :=
+theorem fineAdequate (laws : FiniteLawFamily (Source n)) (ha : laws.Adequate (coarseReading n)) :
+    laws.Adequate (fineReading n) :=
   adequate_of_coarser laws (coarser n) ha
 /-- 同じ全Law実H¹比較。 -/
 abbrev lawMap (cut : Bool) (laws : FiniteLawFamily (Source n))
@@ -129,8 +136,10 @@ theorem constant_minus_defect :
 
 /-- 同じ指定indicator Lawを既存生成APIから作る。 -/
 abbrev indicator (X : Set (Concept n)) := indicatorLawFamily (coarseReading n) X
+omit [NeZero n] in
 /-- 指定indicatorの粗adequacyはfstによる評価の因子化。 -/
-abbrev indicatorAdequate (X : Set (Concept n)) := indicatorLawFamily_adequate (coarseReading n) X
+theorem indicatorAdequate (X : Set (Concept n)) :
+    (indicator n X).Adequate (coarseReading n) := indicatorLawFamily_adequate (coarseReading n) X
 omit [NeZero n] in
 /-- 全発生indicator値クラスはtrueでX、falseで補集合。 -/
 theorem indicatorFiber (X : Set (Concept n)) (l : LawValueLabel (indicator n X)) :

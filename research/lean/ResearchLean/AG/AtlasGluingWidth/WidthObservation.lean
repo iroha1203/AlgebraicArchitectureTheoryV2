@@ -5,6 +5,11 @@ import Formal.Util.AssertStandardAxioms
 
 元のG-134部分集合比較の商を使う。低幅の表示同一視は零空間の明示同型と
 その可換性で行い、原始セル名や期待欠損を観測の入力にしない。
+
+## Implementation notes
+
+表示の違いを実H¹の線形同型と同じ比較射の可換性で消す。
+セル名や数値Jだけを観測とする代替は、固定された観測contractを変えるため採らない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasGluingWidth.Width
@@ -132,7 +137,10 @@ theorem width_uniform_separation (k : ℕ) :
   rw [full_defect] at hx
   exact Nat.one_ne_zero (congrArg Prod.snd hx)
 
-/-- 観測同値は全低幅の実H¹同型・比較可換性・J等号そのもの。 -/
+/-- 観測同値は全低幅の実H¹同型・比較可換性・J等号そのもの。
+この指定二入力への制限では、全低幅H¹が零となり全4組のcutが同値となる。
+したがって不成立instanceは存在しない。一様欠損の相違は
+`width_uniform_separation`で別に証明する。 -/
 def LowEquivalent (k : ℕ) (a b : Bool) : Prop :=
   ∀ (X : Set (Concept (size k))), X.ncard ≤ k →
     ∃ (ec : coarseH1 (size k) X ≃ₗ[ℚ] coarseH1 (size k) X)

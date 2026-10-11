@@ -6,6 +6,13 @@ import Formal.Util.AssertStandardAxioms
 
 選択辺値を閉路全体へ零延長し、選択されないa辺だけでperiodを補正する。
 一般閉路の累積積分を元chartへ制限することで実d⁰の原像を構成する。
+
+## Implementation notes
+
+選択辺を同じ全閉路へ零延長し、非選択a辺でperiodを補正して原始関数を制限する。
+成分ごとに根を選ぶ代替は、任意領域の成分列挙を必要とするため採らない。
+H¹同型は実境界商とperiodの核を両方向で同定する。次元だけの同型は指定生成元を
+保持しないため採らない。
 -/
 noncomputable section
 namespace AAT.AG.AtlasGluingWidth.Width
@@ -17,10 +24,16 @@ abbrev selected (cut : Bool) (X : Set (Concept n)) :=
   CellSelection.region (fine n cut) (region n X)
 /-- 指定任意a辺の単位cochain。 -/
 def generatorAt (j : Concept n) : Cochain n := fun e => if e = (j, false) then 1 else 0
+omit [NeZero n] in
+/-- 指定単位辺値の公開評価API。 -/
+@[simp] theorem generatorAt_apply (j : Concept n) (e : Concept n × Bool) :
+    generatorAt n j e = (if e = (j, false) then 1 else 0) := rfl
 /-- 各a辺のperiodは同じ1。 -/
 theorem period_generatorAt (j : Concept n) : period n (generatorAt n j) = 1 := by
   classical
-  simp [period, generatorAt]
+  rw [period_apply]
+  simp only [generatorAt_apply]
+  simp
 /-- 選択辺値の同じ元辺への零延長。 -/
 def extendEdges (cut : Bool) (X : Set (Concept n))
     (z : (selected n cut X).Edge → ℚ) : Cochain n := by
@@ -52,12 +65,11 @@ theorem selected_d0_surjective (cut : Bool) (X : Set (Concept n)) (j : Concept n
   refine ⟨x, ?_⟩
   funext e
   have hd := congrFun (difference_potential n corrected hp) e.1.1
-  change potential n corrected (right n e.1.1) -
-    potential n corrected (left n e.1.1) = z e
-  change potential n corrected (right n e.1.1) -
-    potential n corrected (left n e.1.1) = corrected e.1.1 at hd
-  rw [hd]
-  simp [corrected, generatorAt, hj e, ext, extendEdges_selected]
+  rw [CellSelection.complex_d0_apply]
+  rw [difference_apply] at hd
+  rw [show x ((selected n cut X).right e) - x ((selected n cut X).left e) =
+    potential n corrected (right n e.1.1) - potential n corrected (left n e.1.1) from rfl, hd]
+  simp [corrected, generatorAt_apply, hj e, ext, extendEdges_selected]
 /-- 真部分集合は欠けた概念のa辺を選ばない。 -/
 theorem proper_d0_surjective (cut : Bool) (X : Set (Concept n)) (hX : X ≠ Set.univ) :
     Function.Surjective (selected n cut X).complex.d0 := by
