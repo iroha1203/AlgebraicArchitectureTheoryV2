@@ -255,20 +255,6 @@ pub fn internal_outcome(
         message: "検査の途中で内部障害が起きた".to_owned(),
     };
     let stderr = vec!["archsig: 検査の途中で内部障害が起きた".to_owned()];
-    if exists(&args.out) {
-        let signal = signals.freeze();
-        let status = if signal.is_some() {
-            Status::Interrupted
-        } else {
-            Status::Error
-        };
-        return Outcome {
-            status,
-            exit_code: exit_code(status, signal, &[issue]),
-            result: None,
-            stderr,
-        };
-    }
     let result = CheckResult {
         status: Status::Error,
         exit_code: 70,
