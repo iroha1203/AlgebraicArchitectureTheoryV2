@@ -49,8 +49,13 @@ and with true false unit list set where none some fn` と組込み型名であ�
 `Reading.Entity.field`、constructor は `Reading.Data.Constructor`。
 同じ scope の名は重複不可。reading 内では自分の宣言を短名で参照できる。
 `use Other as O;` は同梱 reading の別名。直接の完全名参照も許す。
+`.` 列の先頭の名前は、別名、自分の宣言の短名、reading 名の順に展開した候補から最長一致で解決する。
 参照する reading 間の有向グラフは非循環で、ファイル外の探索や download はしない。
+自分自身を use する reading も循環とする。
 宣言順は意味を持たず、field/constructor の引数順は意味を持つ。
+
+Law 内の循環(reading の参照、data の相互再帰、view の相互呼出し、構造再帰でない自己呼出し)は
+`cycle` とする。
 
 reading を再利用するときは、その依存 reading とともに同梱する。
 ファイル全体の版は同一。語彙の binding と digest は [入力仕様](inputs.md) に従う。
@@ -125,6 +130,9 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
   同じ型間では同名 field の位置を対応させる。異なる型間では `align` で source と target の
   field の対応をすべて明記する。所属・参照は対応表に沿って、量は位置だけを対応させる。
   align は field の意味の対応であり、値が一致するという判定を入力しない。
+  同じ型の間で明記した align は、その field の同名の対応に代わる。
+  参照を含む field の型は、R を S へ、対応表の始域の型を終域の型へ、依存型の添字を対応先の
+  field 名へ移したときに一致させる。量の field は位置だけを対応させ、型の一致を求めない。
 - `view` は型付きの純粋な読取り。整数・積・有限和・集合・有限木・項等を返せる。
   戻り値を Bool や残差に限定しない。
   対象へ適用される view は [object algebra の規則](computations.md#1-対象作用law-instance)で
@@ -140,7 +148,8 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
   依存の記録は読取り権限ではない。合計を公開しても各加数を公開せず、Tuple の成分射影は許す。
 - `change` の第1引数は owned entity または根 entity、残りは参照を含まない値型。
   Path と、参照を含む data/container も残りの引数型には含めない。
-  結果は第1引数と同じ entity の `with` 更新である。owner・参照・Map・subject roster は変更しない。
+  結果は第1引数と同じ entity の `with` 更新である。body の結果の位置(括弧の中、if の両枝、
+  let の本体)は、第1引数への `with` 更新とする。owner・参照・Map・subject roster は変更しない。
   更新式は更新前の同一環境で同時評価する。指定根内の各対象 instance へ独立に適用する。
   guard は許す parameter/状態の条件であり、欠測値を探索変数にしない。
 - `relation` の両辺は同じ始終型の Path。名前付き操作列の同効果を要求する。
@@ -162,6 +171,7 @@ Type = "Unit" | "Bool" | "Z" | "Q" | "Text" | "Fp" "(" DecimalPrime ")"
 QName は entity/arrow/correspondence または data を指す。前3種は参照型。
 `State[owner]` は同じ snapshot の owner に属する State への参照型。
 `State[a]` を式の有限族として使う場合は、a と同じ snapshot の登録 subject のうち owner=a のもの。
+この式の型は `Set<State>` である。
 未束縛の参照型 parameter の量化域は全入力 snapshot の当該型の登録 subject。
 依存型の parameter は左から束縛し、その owner の族を使う。
 型名だけで未知の subject を生成しない。view/field の名から owner を推測しない。
@@ -213,10 +223,26 @@ Integer は `0|[1-9][0-9]*`、負号は単項演算。整数 literal は期待�
 Nat は tuple の0始まり射影だけに使用する。`.` に続く数値と完全名の構文を区別する。
 式に ArchMap の subject ID・snapshot ID・結果参照を書く構文はない。
 
+文法の区切りは次のように読む。let の右辺の最上位にある `in` は二項演算でなく let の区切りとする。
+change の guard と body は、宣言の最上位の `=` を後ろから順に試し、guard と body がどちらも読める
+位置で区切る。
+量化の `.` は、最上位の `.` のうち前を域(型)、後を本体として読め、本体が最も遠くまで読めるものから、
+`in` の右辺が List/Set の型を持つ位置、または `:` の右辺が型になる位置を選ぶ。
+そのような位置が複数あるときは、名前の最長一致と同じく、域(型)が最も長い位置を選ぶ。
+
 束縛は lexical。parameter、let、pattern、量化、comprehension の同一 scope 内の名は一意。
 内側の shadowing は禁止。let の右辺に自分を参照できない。match は constructor を全て一度ずつ
 覆うか末尾に `_` を置き、重複・到達不能分岐を拒否する。constructor は完全名、`Data.Ctor`、
 期待 data 型から一意な短名の順で解決する。変数名と衝突する短名は修飾する。
+束縛変数でない一つの名前は、期待 data 型の constructor 名ならその constructor と読む。
+二項演算の両辺、if の両枝、match の各枝では、文脈の型を要しない側(整数 literal や短い
+constructor 名だけでない側)の型を、文脈の型を要する側の期待型とする。両方が要するときは左から読む。
+pattern の名前は、照合する data 型の constructor 名ならその constructor、それ以外は新しい束縛とする。
+同じ名前の束縛変数があるとき、constructor は pattern でも修飾して書く。
+data 型でない値の match は `_` と束縛の分岐で受ける。
+constructor が一つの data への入れ子の pattern は、その引数の pattern が全て値を残さず受けるとき、
+外側の constructor の分岐を覆う。末尾の `_` を到達不能とするのは、全 constructor の分岐の引数が
+`_` か束縛だけの場合とする。
 全分岐を型検査し、if の両枝・match の各枝の結果型を一致させる。
 
 field lookup は宣言済みの field だけ。tuple は数値射影だけ。適用は view、Map、Term、constructor、
@@ -224,6 +250,7 @@ field lookup は宣言済みの field だけ。tuple は数値射影だけ。適
 ドット列は、先頭が束縛変数ならその field 射影として読む。それ以外は alias 展開後の
 宣言完全名を最長一致で解決し、残りを射影として読む。予約語 `then` はこの合成演算の
 適用位置だけで Primary となる。組込み演算名は宣言・束縛名として再定義できない。
+reading・別名・constructor・field の名には組込み演算名を使える。
 
 | 演算 | 型と意味 |
 | --- | --- |

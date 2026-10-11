@@ -309,6 +309,7 @@ time-msとmemory-mibは入力読込・検査・評価を含むsoft limitで、fi
 
 検査順はUTF-8・構文、format/semantics、対応版のschema、宣言・型・参照の順。
 未知版の新しい欄を、先に未知欄エラーにしない。
+LawではUTF-8を確かめた後にheaderのformat/semanticsを読み、残りの字句と宣言の文法はその後に検査する。
 同じsemanticsの下で判断規則を変更しない。
 
 canonical JSONは[入力仕様](inputs.md#4-語彙-binding)に従う。

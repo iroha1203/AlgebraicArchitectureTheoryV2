@@ -103,6 +103,8 @@ expressionsは明記されたguard、view/law/changeのbody、localの各read、
 元の位置と解決した型で保持する。元の式をinputs/law.lawから読み、宣言署名と名前対応で解釈できる。
 再帰viewの有限展開や一般の式のinlineを要求せず、同じ値になる出現も残す。
 references/expressionsはspan開始順、suppliedはrule順に並べる。必要な項目がない配列は空とする。
+dependenciesはresolution.referencesの解決先の完全名を重複なく辞書順に並べる。
+dataの項目はconstructor引数の型の参照を持ち、各constructorの項目はそのうち自分の宣言部分にある参照を持つ。
 
 DeclarationRuleはsemanticsに属する閉じた規則である。guard_trueはlaw/local/change/relationの
 guard省略時にだけ生成し、trueを補う。same_name_alignmentはcorrespondenceに対して、
