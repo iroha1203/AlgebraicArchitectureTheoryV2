@@ -452,8 +452,7 @@ impl Parser {
         }
     }
 
-    /// change の guard と body は、宣言の最上位にある最後の `=` で区切る。
-    /// body は `with` 更新であり、その `=` は波括弧の内側にある。
+    /// change の guard と body は、宣言の最上位の `=` を後ろから試し、両方が読める位置で区切る。
     fn change_tail(&mut self) -> PResult<(Option<ExprId>, ExprId)> {
         if !self.eat_kw("when") {
             self.expect_sym("=")?;
@@ -461,8 +460,9 @@ impl Parser {
             self.expect_sym(";")?;
             return Ok((None, body));
         }
+        let start = self.pos;
         let mut depth = 0isize;
-        let mut last_eq = None;
+        let mut eqs = Vec::new();
         let mut end = None;
         for i in self.pos..self.limit {
             let t = &self.toks[i];
@@ -477,7 +477,7 @@ impl Parser {
                         break;
                     }
                 }
-                "=" if depth == 0 => last_eq = Some(i),
+                "=" if depth == 0 => eqs.push(i),
                 ";" if depth == 0 => {
                     end = Some(i);
                     break;
@@ -485,14 +485,38 @@ impl Parser {
                 _ => {}
             }
         }
-        let (Some(eq), Some(end)) = (last_eq, end) else {
+        let Some(end) = end else {
             return self.err("change の guard の後に `=` と body が必要");
         };
-        let guard = self.parse_until(eq, |p| p.parse_expr(Flags::default()))?;
-        self.pos = eq + 1;
-        let body = self.parse_until(end, |p| p.parse_expr(Flags::default()))?;
-        self.pos = end + 1;
-        Ok((Some(guard), body))
+        // 最上位の `=` を後ろから順に試し、guard と body がどちらも読める位置で区切る。
+        let mut first_error = None;
+        for &eq in eqs.iter().rev() {
+            self.pos = start;
+            let parsed = self
+                .parse_until(eq, |p| p.parse_expr(Flags::default()))
+                .and_then(|guard| {
+                    self.pos = eq + 1;
+                    self.parse_until(end, |p| p.parse_expr(Flags::default()))
+                        .map(|body| (guard, body))
+                });
+            match parsed {
+                Ok((guard, body)) => {
+                    self.pos = end + 1;
+                    return Ok((Some(guard), body));
+                }
+                Err(e) => {
+                    first_error.get_or_insert(e);
+                }
+            }
+        }
+        self.pos = start;
+        Err(first_error.unwrap_or_else(|| {
+            Box::new(Issue::law(
+                Code::Syntax,
+                self.here(),
+                "change の guard の後に `=` と body が必要",
+            ))
+        }))
     }
 
     /// `limit` までの字句をちょうど読み切る。

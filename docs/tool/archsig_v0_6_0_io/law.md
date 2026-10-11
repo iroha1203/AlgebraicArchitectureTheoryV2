@@ -148,8 +148,8 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
   依存の記録は読取り権限ではない。合計を公開しても各加数を公開せず、Tuple の成分射影は許す。
 - `change` の第1引数は owned entity または根 entity、残りは参照を含まない値型。
   Path と、参照を含む data/container も残りの引数型には含めない。
-  結果は第1引数と同じ entity の `with` 更新である。body は第1引数(括弧で囲んでもよい)への
-  最上位の `with` 更新とする。owner・参照・Map・subject roster は変更しない。
+  結果は第1引数と同じ entity の `with` 更新である。body の結果の位置(括弧の中、if の両枝、
+  let の本体)は、第1引数への `with` 更新とする。owner・参照・Map・subject roster は変更しない。
   更新式は更新前の同一環境で同時評価する。指定根内の各対象 instance へ独立に適用する。
   guard は許す parameter/状態の条件であり、欠測値を探索変数にしない。
 - `relation` の両辺は同じ始終型の Path。名前付き操作列の同効果を要求する。
@@ -224,7 +224,8 @@ Nat は tuple の0始まり射影だけに使用する。`.` に続く数値と�
 式に ArchMap の subject ID・snapshot ID・結果参照を書く構文はない。
 
 文法の区切りは次のように読む。let の右辺の最上位にある `in` は二項演算でなく let の区切りとする。
-change の guard と body は、宣言の最上位にある最後の `=` で区切る。
+change の guard と body は、宣言の最上位の `=` を後ろから順に試し、guard と body がどちらも読める
+位置で区切る。
 量化の `.` は、最上位の `.` のうち前を域(型)、後を本体として読め、本体が最も遠くまで読めるものから、
 `in` の右辺が List/Set の型を持つ位置、または `:` の右辺が型になる位置を選ぶ。
 そのような位置が複数あるときは、名前の最長一致と同じく、域(型)が最も長い位置を選ぶ。
@@ -237,6 +238,7 @@ change の guard と body は、宣言の最上位にある最後の `=` で区�
 二項演算の両辺、if の両枝、match の各枝では、文脈の型を要しない側(整数 literal や短い
 constructor 名だけでない側)の型を、文脈の型を要する側の期待型とする。両方が要するときは左から読む。
 pattern の名前は、照合する data 型の constructor 名ならその constructor、それ以外は新しい束縛とする。
+同じ名前の束縛変数があるとき、constructor は pattern でも修飾して書く。
 data 型でない値の match は `_` と束縛の分岐で受ける。
 constructor が一つの data への入れ子の pattern は、その引数の pattern が全て値を残さず受けるとき、
 外側の constructor の分岐を覆う。末尾の `_` を到達不能とするのは、全 constructor の分岐の引数が

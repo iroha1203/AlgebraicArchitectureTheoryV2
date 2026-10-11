@@ -194,11 +194,37 @@ fn names_in_different_scopes_may_coincide() {
     ));
 }
 
+/// 変数名と衝突する constructor の短名は、pattern でも修飾して書く。
+#[test]
+fn constructor_short_names_colliding_with_variables_are_qualified() {
+    rejects(
+        "data D = D0 | D1; view v(D0: Z, d: D): Z = match d { D0 => D0; _ => 1; };",
+        Code::Syntax,
+    );
+    rejects(
+        "data D = D0(Z) | D1; view v(D0: Z, d: D): Z = match d { D0(n) => n; _ => 1; };",
+        Code::Syntax,
+    );
+    ok(&reading(
+        "data D = D0 | D1; view v(D0: Z, d: D): Z = match d { D.D0 => D0; _ => 1; };",
+    ));
+}
+
 #[test]
 fn change_needs_an_entity_as_its_first_parameter() {
     ok(&reading(
         "entity S; entity A(owner: S) { x: Z; } change c(a: A) = (a) with { x = 1 };",
     ));
+    ok(&reading(
+        "entity S; entity A(owner: S) { x: Z; }
+         change c(a: A, d: Z) = if d > 0 then a with { x = d } else a with { x = 0 };
+         change e(a: A, d: Z) when d != 0 = let n = d + 1 in a with { x = n };
+         change f(a: A, d: Z) when d > 0 = if d = 1 then a with { x = 1 } else (a with { x = 2 });",
+    ));
+    rejects(
+        "entity S; entity A(owner: S) { x: Z; } change c(a: A, d: Z) = if d > 0 then a with { x = 1 } else a;",
+        Code::Syntax,
+    );
     rejects(
         "entity S; entity A(owner: S) { x: Z; } change c() = a with { x = 1 };",
         Code::Syntax,

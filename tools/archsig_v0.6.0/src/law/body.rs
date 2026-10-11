@@ -266,9 +266,56 @@ impl Checker {
         env: &mut Env,
         ctx: &Ctx,
     ) -> CResult<Type> {
+        let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+            self.check_change_result(body, params, env, ctx)
+        })?;
+        if self.expr_types.len() < self.parser.exprs.len() {
+            self.expr_types.resize(self.parser.exprs.len(), None);
+        }
+        self.expr_types[body] = Some(t.clone());
+        Ok(t)
+    }
+
+    /// change の body の結果の位置(括弧、if の両枝、let の本体)は、第1引数への `with` 更新。
+    fn check_change_result(
+        &mut self,
+        body: ExprId,
+        params: &[Param],
+        env: &mut Env,
+        ctx: &Ctx,
+    ) -> CResult<Type> {
         let span = self.parser.exprs[body].span;
+        let kind = self.parser.exprs[body].kind.clone();
+        let result = match kind {
+            ExprKind::Group(inner) => Some(self.check_change_body(inner, params, env, ctx)?),
+            ExprKind::If {
+                cond,
+                then_branch,
+                else_branch,
+            } => {
+                self.check(cond, Some(&Type::Bool), env, ctx)?;
+                self.check_change_body(then_branch, params, env, ctx)?;
+                Some(self.check_change_body(else_branch, params, env, ctx)?)
+            }
+            ExprKind::Let {
+                name,
+                value,
+                body: inner,
+            } => {
+                let t = self.check(value, None, env, ctx)?;
+                let mark = env.vars.len();
+                self.bind(env, &name, t, Origin::Other)?;
+                let r = self.check_change_body(inner, params, env, ctx)?;
+                env.vars.truncate(mark);
+                Some(r)
+            }
+            _ => None,
+        };
+        if let Some(t) = result {
+            return Ok(t);
+        }
         let ExprKind::With { base, updates } = self.parser.exprs[body].kind.clone() else {
-            return syntax(span, "change の body は第1引数の `with` 更新");
+            return syntax(span, "change の body の結果は第1引数の `with` 更新");
         };
         let first = &params[0];
         let mut target = base;

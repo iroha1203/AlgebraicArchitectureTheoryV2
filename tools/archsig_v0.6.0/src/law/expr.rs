@@ -1065,6 +1065,15 @@ impl Checker {
             Pattern::Wild(_) => Ok(None),
             Pattern::Name(id) => {
                 if let Some((data, index)) = self.short_ctor(&id.name, Some(ty)) {
+                    if !matches!(env.lookup(&id.name), Lookup::Missing) {
+                        return syntax(
+                            id.span,
+                            format!(
+                                "変数名と衝突する constructor の短名 `{}` は修飾する",
+                                id.name
+                            ),
+                        );
+                    }
                     self.pattern_ctor(&data, index, id.span, &[], env, ctx)?;
                     return Ok(Some(PatternCover {
                         index,
@@ -1082,7 +1091,18 @@ impl Checker {
             }
             Pattern::Ctor { name, args, .. } => {
                 let resolved = if name.parts.len() == 1 {
-                    self.short_ctor(&name.parts[0].name, Some(ty))
+                    let hit = self.short_ctor(&name.parts[0].name, Some(ty));
+                    if hit.is_some() && !matches!(env.lookup(&name.parts[0].name), Lookup::Missing)
+                    {
+                        return syntax(
+                            name.span(),
+                            format!(
+                                "変数名と衝突する constructor の短名 `{}` は修飾する",
+                                name.parts[0].name
+                            ),
+                        );
+                    }
+                    hit
                 } else {
                     None
                 };

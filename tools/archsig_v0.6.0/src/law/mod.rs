@@ -12,7 +12,7 @@ pub mod parser;
 use crate::canonical::{Json, sha256_digest};
 use crate::issue::{Code, Details, Issue, Location};
 use crate::types::Type;
-use ast::{Expr, ExprId, Header, Reading};
+use ast::{Expr, ExprId};
 use check::Checker;
 use model::{Declaration, DeclarationInfo, Vocabulary};
 use std::collections::BTreeMap;
@@ -25,8 +25,6 @@ pub const SEMANTICS: &str = "archsig/0.6.0";
 pub struct CheckedLaw {
     pub bytes_digest: String,
     pub model_digest: String,
-    pub header: Header,
-    pub readings: Vec<Reading>,
     /// 完全名から宣言へ。
     pub declarations: BTreeMap<String, Declaration>,
     /// 原式の arena と、各出現の解決した型。
@@ -137,8 +135,6 @@ pub fn check_law(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
     Ok(CheckedLaw {
         bytes_digest,
         model_digest: digest,
-        header,
-        readings: checker.ast.as_ref().clone(),
         declarations,
         exprs: std::mem::take(&mut checker.parser.exprs),
         expr_types,
