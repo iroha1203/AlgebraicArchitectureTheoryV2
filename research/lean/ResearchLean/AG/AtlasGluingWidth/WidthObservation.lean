@@ -148,7 +148,7 @@ def LowEquivalent (k : ℕ) (a b : Bool) : Prop :=
       (∀ x, ef (actualMap (size k) a X x) = actualMap (size k) b X (ec x)) ∧
       blockDefect (actualMap (size k) a X) = blockDefect (actualMap (size k) b X)
 /-- 指定対は固定観測定義で同値。 -/
-theorem width_lowEquivalent (k : ℕ) : LowEquivalent k true false := by
+theorem width_low_equivalent (k : ℕ) : LowEquivalent k true false := by
   intro X hX
   exact ⟨low_coarse_equiv (size k) X, width_fine_equiv k X hX, width_observation k X hX⟩
 /-- この二入力への制限で既に、同値観測を通る一様零欠損判定は不可能。 -/
@@ -156,7 +156,7 @@ theorem no_width_classifier (k : ℕ) (decides : Bool → Prop)
     (invariant : ∀ a b, LowEquivalent k a b → (decides a ↔ decides b))
     (correct : ∀ cut, decides cut ↔
       ∀ X, blockDefect (actualMap (size k) cut X) = (0, 0)) : False := by
-  have he := invariant true false (width_lowEquivalent k)
+  have he := invariant true false (width_low_equivalent k)
   have hs := width_uniform_separation k
   exact hs.2 ((correct false).mp (he.mp ((correct true).mpr hs.1)))
 /-- k=0の指定概念数は四角形を与える2。 -/
@@ -164,6 +164,9 @@ theorem size_zero : size 0 = 2 := rfl
 /-- k=0で観測される全領域は空領域だけ。 -/
 theorem width_zero_region (X : Set (Concept (size 0))) (hX : X.ncard ≤ 0) : X = ∅ :=
   (Set.ncard_eq_zero (Set.toFinite X)).mp (Nat.eq_zero_of_le_zero hX)
+
+/-- 品質§4.2の移行用旧名。新規利用は `width_low_equivalent` を使う。 -/
+@[deprecated width_low_equivalent (since := "2026-10-11")] alias width_lowEquivalent := width_low_equivalent
 
 end AAT.AG.AtlasGluingWidth.Width
 #assert_standard_axioms_only AAT.AG.AtlasGluingWidth.Width

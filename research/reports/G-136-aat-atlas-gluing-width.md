@@ -700,7 +700,7 @@ audits:
   next_obligation: 同じ指定族のH0差制限/Q/P/Z・標準delta lift/glue・hidden/G135生成元照合を継続
 ```
 
-## Cycle 5 spine declaration list（初回132・査読後追加3、現135明示宣言）
+## Cycle 5 spine declaration list（初回132・評価API追加3・移行先7、現142明示宣言）
 
 新規6sourceの全明示宣言をspineとする。生成補助宣言は全公理照会に別途含める。
 
@@ -709,6 +709,7 @@ audits:
 ```text
 AAT.AG.AtlasGluingWidth.Width.selected
 AAT.AG.AtlasGluingWidth.Width.generatorAt
+AAT.AG.AtlasGluingWidth.Width.generatorAt_apply
 AAT.AG.AtlasGluingWidth.Width.period_generatorAt
 AAT.AG.AtlasGluingWidth.Width.extendEdges
 AAT.AG.AtlasGluingWidth.Width.extendEdges_selected
@@ -762,7 +763,9 @@ AAT.AG.AtlasGluingWidth.Width.edge_selected
 ```text
 AAT.AG.AtlasGluingWidth.Width.Cochain
 AAT.AG.AtlasGluingWidth.Width.difference
+AAT.AG.AtlasGluingWidth.Width.difference_apply
 AAT.AG.AtlasGluingWidth.Width.period
+AAT.AG.AtlasGluingWidth.Width.period_apply
 AAT.AG.AtlasGluingWidth.Width.period_difference
 AAT.AG.AtlasGluingWidth.Width.sum_range_concept
 AAT.AG.AtlasGluingWidth.Width.cumulative
@@ -802,7 +805,7 @@ AAT.AG.AtlasGluingWidth.Width.empty_degrees_zero
 ### WidthLaw.lean
 
 ```text
-AAT.AG.AtlasGluingWidth.Width.fineAdequate
+AAT.AG.AtlasGluingWidth.Width.fine_adequate
 AAT.AG.AtlasGluingWidth.Width.lawMap
 AAT.AG.AtlasGluingWidth.Width.coarse_law_H1_zero
 AAT.AG.AtlasGluingWidth.Width.fine_law_H1_zero
@@ -813,24 +816,30 @@ AAT.AG.AtlasGluingWidth.Width.width_law_equiv
 AAT.AG.AtlasGluingWidth.Width.width_law_square
 AAT.AG.AtlasGluingWidth.Width.width_law_defect
 AAT.AG.AtlasGluingWidth.Width.constantLaw
-AAT.AG.AtlasGluingWidth.Width.constantAdequate
+AAT.AG.AtlasGluingWidth.Width.constant_adequate
 AAT.AG.AtlasGluingWidth.Width.constantLabel
 AAT.AG.AtlasGluingWidth.Width.constantLabelsUnique
-AAT.AG.AtlasGluingWidth.Width.constantFiber
+AAT.AG.AtlasGluingWidth.Width.constant_fiber
 AAT.AG.AtlasGluingWidth.Width.constant_plus_defect
 AAT.AG.AtlasGluingWidth.Width.constant_minus_defect
 AAT.AG.AtlasGluingWidth.Width.indicator
-AAT.AG.AtlasGluingWidth.Width.indicatorAdequate
-AAT.AG.AtlasGluingWidth.Width.indicatorFiber
+AAT.AG.AtlasGluingWidth.Width.indicator_adequate
+AAT.AG.AtlasGluingWidth.Width.indicator_fiber
 AAT.AG.AtlasGluingWidth.Width.indicatorFalseLabel
 AAT.AG.AtlasGluingWidth.Width.indicatorTrueLabel
 AAT.AG.AtlasGluingWidth.Width.indicatorFalseLabel_value
-AAT.AG.AtlasGluingWidth.Width.indicatorFalseFiber
+AAT.AG.AtlasGluingWidth.Width.indicator_false_fiber
 AAT.AG.AtlasGluingWidth.Width.size_positive
 AAT.AG.AtlasGluingWidth.Width.indicator_width
 AAT.AG.AtlasGluingWidth.Width.indicator_endpoint_fiber
 AAT.AG.AtlasGluingWidth.Width.indicator_endpoint_not_width
 AAT.AG.AtlasGluingWidth.Width.width_zero_laws_empty
+AAT.AG.AtlasGluingWidth.Width.fineAdequate
+AAT.AG.AtlasGluingWidth.Width.constantAdequate
+AAT.AG.AtlasGluingWidth.Width.constantFiber
+AAT.AG.AtlasGluingWidth.Width.indicatorAdequate
+AAT.AG.AtlasGluingWidth.Width.indicatorFiber
+AAT.AG.AtlasGluingWidth.Width.indicatorFalseFiber
 ```
 
 ### WidthObservation.lean
@@ -860,13 +869,11 @@ AAT.AG.AtlasGluingWidth.Width.width_fine_equiv
 AAT.AG.AtlasGluingWidth.Width.width_observation
 AAT.AG.AtlasGluingWidth.Width.width_uniform_separation
 AAT.AG.AtlasGluingWidth.Width.LowEquivalent
-AAT.AG.AtlasGluingWidth.Width.width_lowEquivalent
+AAT.AG.AtlasGluingWidth.Width.width_low_equivalent
 AAT.AG.AtlasGluingWidth.Width.no_width_classifier
 AAT.AG.AtlasGluingWidth.Width.size_zero
 AAT.AG.AtlasGluingWidth.Width.width_zero_region
-AAT.AG.AtlasGluingWidth.Width.difference_apply
-AAT.AG.AtlasGluingWidth.Width.period_apply
-AAT.AG.AtlasGluingWidth.Width.generatorAt_apply
+AAT.AG.AtlasGluingWidth.Width.width_lowEquivalent
 ```
 
 ## Cycle 5 検証と再利用（初回headの記録）
@@ -921,7 +928,7 @@ Eの残るMV H⁰差制限の輸送は、この補題の存在だけで完了と
 
 PR #5333初回head `2ca4cd0420525858f4df263772705c1d5932ff96` の
 [標準review-prから数学2・Lean2への独立監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5333#issuecomment-6109458785)
-は全4本Minor issues、中心finding0、非中心4件（重複統合）。全135明示の現在spineは
+は全4本Minor issues、中心finding0、非中心4件（重複統合）。初回修正後の135明示spineは
 上の初回132に名指し公開評価API3を加えた。
 
 - 自明でない定義のImplementation notesと退けた代替案の理由を6sourceへ補完。
@@ -936,7 +943,7 @@ PR #5333初回head `2ca4cd0420525858f4df263772705c1d5932ff96` の
 直接対応資格を確定できないため、共有手順に従って新規4本の正式r1で確認する。
 元selection/終了条件、proposed_result_type=proof-checkpoint、completion_candidate=noは不変。
 
-修正後source:
+初回修正後source（正式r1対象）:
 
 | source | SHA256 | 明示宣言数 |
 | --- | --- | --- |
@@ -961,3 +968,48 @@ log SHA256 `29b5bf348d100f902e82d43b6051b3c4f9f1715a4d3e43d9cc610a9f7ca8ea27`。
 integrityでは方向・分離・fixture・public artifactが実行された。Formal build・
 Formal axiom auditのstepはSKIPPEDであり、CI job名を実buildの証拠へ読み替えない。
 修正後固定headのCIは別に確認する。Formal移植とResearch全体buildは未実施。
+
+## Cycle 5 正式r1査読と一括命名修正
+
+固定head `b698ff81ebfe4b68ff7d9b10b389ffe2679a7e0b` の
+[正式r1統合](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5333#issuecomment-6109674660)
+は全4本Minor issues、中心0。非中心は独立定理7件のsnake_case命名と、公開API3件の
+spine所属ファイル表示。現在spineを実sourceのファイル別全名から再生成した。
+品質§4.2に従って次の旧名をdeprecated alias（2026-10-11）で保持し、使用先を現名へ同期する。
+固定GOALに旧名参照はなく、カードと設計の固定内容は変更しない。
+
+| 旧名（deprecated alias） | 現名 |
+| --- | --- |
+| `fineAdequate` | `fine_adequate` |
+| `constantAdequate` | `constant_adequate` |
+| `constantFiber` | `constant_fiber` |
+| `indicatorAdequate` | `indicator_adequate` |
+| `indicatorFiber` | `indicator_fiber` |
+| `indicatorFalseFiber` | `indicator_false_fiber` |
+| `width_lowEquivalent` | `width_low_equivalent` |
+
+現在spineは142明示（査読済み135を保持し、移行先の現名7を加えた）である。
+statementの内容・強度、入力・比較・幅・結論は不変。関連defの証明参照名も変わるため
+直接対応資格を確定できず、正式r2を新規数学2・Lean2で行う。
+元selection/終了条件、proof-checkpoint、completion_candidate=no、残るE接続を保持する。
+
+命名修正後source（142明示）:
+
+| source | SHA256 | 明示宣言数（alias含む） |
+| --- | --- | --- |
+| `WidthHomology.lean` | `f86de3020d3f95d41d08e760397bb4b79b3905a2a21a98adab429d885b28a073` | 22 |
+| `WidthInput.lean` | `f25bfcb73be8dbae975da12c5881c34a9190a2c34b659ec4f48102201f27c7ed` | 22 |
+| `WidthIntegration.lean` | `2f1c45e7fe855ab00a56a76d3bb4cac3ea7f5ba79b0482d01e7323b8d2716da4` | 18 |
+| `WidthIntersection.lean` | `5809036f00abdde7d5ab7b5eafd2beb1c48ff53efd073a60b29c256c20964105` | 16 |
+| `WidthLaw.lean` | `bdc17d333d2f680af3f873820ab560ac2d9dd7082789a674a946122c0e4744f9` | 35 |
+| `WidthObservation.lean` | `dce11a8a08b6901580f1865fa66965c724f0e9e86323646d317ce4bc53815b2f` | 29 |
+
+命名修正後の個別 WidthObservation / WidthLaw / WidthIntersection と公式単一focusedは
+exit0・warningなし。公式focused log SHA256 `29b5bf348d100f902e82d43b6051b3c4f9f1715a4d3e43d9cc610a9f7ca8ea27`。
+現環境の全689 unique（累積616明示・73生成、新規142明示・143実宣言）を
+全件明示公理照会し、現環境名・全明示名と突合した。欠落0・余剰0・新142欠落0、
+全依存は標準3公理以内。全件log SHA256 `de4e521f627d193dab94968ecdf4549fc6ee913b822d2b33d300f2662d0ed893`。
+共通placeholder/hidden/BiDi/privacy/whitespace scan clean、静的方向gate228module pass、
+本体からResearch import0、GOAL/design/先行A–D/指定predecessor不変。
+正式r2の独立査読と同head CIはこの記録の後に確認する。Formal移植・実build、
+Research全体build/aggregate/全file elaborationは未実施。
