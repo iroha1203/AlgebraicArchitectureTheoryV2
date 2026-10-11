@@ -6,7 +6,11 @@ import Mathlib.Algebra.Category.ModuleCat.Biproducts
 import Formal.Util.AssertStandardAxioms
 /-! # 同じ二領域比較の標準錐と二つの錐の直和
 
-Implementation notes: 標準錐の実制限射を作り、全整数次数の座標交換で全単射を示す。
+GOAL B／設計 exact-sequence §2 の実 D_A⊕D_B を、同じ二つの錐制限とともに同定する。
+追加の同型仮定はなく、split_isIso が全次数の実座標全単射から生成する。
+Implementation notes: 標準 biprod.lift と mathlib の prodProdProdComm を採用し、両 projection を保持する。
+次数別の次元等号だけから同型を選ぶ案は、複体射と元の projection を保持しないため退けた。
+独自の座標交換同型を再実装する案も既存標準 API と一致するため採用しない。
 -/
 noncomputable section
 open CategoryTheory Limits HomologicalComplex CochainComplex
@@ -34,13 +38,8 @@ def split : comparisonCone (StandardRow.pairHom f g) ⟶ comparisonCone f ⊞ co
 /-- fine/sourceの二領域座標を、元の領域ごとの積へ並べ替える。 -/
 def shuffle (V W X Y : Type u) [AddCommGroup V] [Module ℚ V] [AddCommGroup W] [Module ℚ W]
     [AddCommGroup X] [Module ℚ X] [AddCommGroup Y] [Module ℚ Y] :
-    ((V × W) × (X × Y)) ≃ₗ[ℚ] ((V × X) × (W × Y)) where
-  toFun z := ((z.1.1,z.2.1),(z.1.2,z.2.2))
-  invFun z := ((z.1.1,z.2.1),(z.1.2,z.2.2))
-  left_inv _ := rfl
-  right_inv _ := rfl
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
+    ((V × W) × (X × Y)) ≃ₗ[ℚ] ((V × X) × (W × Y)) :=
+  LinearEquiv.prodProdProdComm ℚ V W X Y
 
 /-- 二領域比較の標準錐の各整数次数を二つの標準錐の積座標へ同定する。 -/
 def degreeEquiv (m : ℤ) : (comparisonCone (StandardRow.pairHom f g)).X m ≃ₗ[ℚ]
@@ -132,7 +131,8 @@ instance split_isIso : IsIso (split f g) := by
     rw [h]
     exact ((degreeEquiv f g m).trans (biprodDegreeEquiv f g m).symm).bijective
   exact HomologicalComplex.Hom.isIso_of_components _
-/-- 二領域比較の標準錐と、同じ二領域の標準錐直和との全複体同型。 -/
+/-- GOAL B／設計 exact-sequence §2: 同じ二領域比較の標準錐と実標準直和の全複体同型。
+同型性は split_isIso が生成し、外部 certificate を仮定しない。 -/
 def iso : comparisonCone (StandardRow.pairHom f g) ≅ comparisonCone f ⊞ comparisonCone g :=
   asIso (split f g)
 /-- 全複体同型からの第一projectionは同じ標準錐制限。 -/

@@ -254,3 +254,21 @@ Aの128宣言とこの83宣言を含む累積全211実宣言を、単一非aggre
 固定G133参照版ed16acc…から使用3 sourceへの差分は空。
 Research全体build・aggregate・全file elaboration・Formal移植は実行していない。
 正式4 lane査読、内容受理、CI、mergeはこの段階では未実施であり、PR監査へ同期する。
+
+## Cycle 2 初回査読と修正スナップショット
+
+初回固定 head `9f008cdce07c2f6042d5f1710db4ae1ae80913ec` の通常4 lane独立査読は、
+数学A/B・Lean A/Bすべて `Minor issues`、中心findingなし。合格・受理はまだ出していない。
+非中心findingを統合し、錐SES主要証明を公開 `inc_coordinate/diff_coordinate` へ変更し、
+座標交換 `shuffle` を固定mathlibの `LinearEquiv.prodProdProdComm` の使用へ置換した。
+新規6 sourceの説明に固定GOAL B／設計§2との対応、一般方向仮定の出所と原始適用時の
+放電元、実装選択と退けた代替案・理由を記録した。
+定義本体の変更を含むため、共有review protocolの直接対応資格を満たさない。
+修正後固定headに対して新しい数学2本・Lean2本による正式再実行1へ進む。
+
+修正した `ConeShortExact`・`ConeBiprod` と下流 `MayerVietoris` の個別focusedはexit0。
+公式単一MayerVietoris focusedもexit0（26宣言）、全211実宣言の明示公理照会もexit0。
+両logは前記SHA256とそれぞれ一致し、宣言数と標準公理のみの結果は維持した。
+placeholder、hidden/BiDi、privacy、語彙、import方向、diff whitespaceはclean。
+上の「正式4 lane査読未実施」は初回head時点の履歴であり、この修正headの受理状態を表さない。
+C–E・Formal移植・Research全体buildはこのcycleの達成に含めない。

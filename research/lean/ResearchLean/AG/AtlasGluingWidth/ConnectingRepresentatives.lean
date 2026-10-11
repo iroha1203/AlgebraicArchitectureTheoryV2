@@ -6,7 +6,12 @@ import Mathlib.Algebra.Module.ULift
 import Formal.Util.AssertStandardAxioms
 /-! # 標準連結射のcocycle持ち上げ・微分・貼り合わせ公式
 
-Implementation notes: 任意SESの持ち上げをdegreewise完全性から作り、mathlib δ_eqに同じ元を渡す。
+GOAL B／設計 exact-sequence §2 の持ち上げ・微分・貼り合わせ代表式と独立性を与える。
+一般 SES は方向仮定であり、原始錐への適用では coneBiprodRow_shortExact が生成する。
+代表式の cocycle／持ち上げ条件は lift_cocycle が任意入力 cocycle から生成する。
+Implementation notes: ULift ℚ からの係数射で任意 ModuleCat 宇宙の元を表し、mathlib δ_eq に
+同じ元を渡す。宇宙0の ℚ を直接定義域にする案は任意宇宙の対象へ一様に適用できず退けた。
+選択した持ち上げから独自 δ を定義する案は、標準 δ との同定・符号・独立性を再証明するため退けた。
 -/
 noncomputable section
 open CategoryTheory HomologicalComplex
@@ -106,7 +111,9 @@ theorem lift_cocycle (m : ℤ) (z : S.X₃.X m) (hz : S.X₃.d m (m+1) z = 0) :
   rw [hd] at hc
   simpa only [map_zero] using hc.symm
 
-/-- 持ち上げの微分を貼り合わせたclassは符号込みで標準δの像に一致する。 -/
+/-- GOAL B／設計 exact-sequence §2: 持ち上げの微分を貼り合わせた class は標準 δ の像。
+一般 SES は方向仮定。hz/hp/hw/hwc は lift_cocycle が生成し、原始 SES は
+coneBiprodRow_shortExact により生成する。同じ元を δ_eq へ渡して符号を保持する。 -/
 theorem connecting_cycleClass (m : ℤ) (z : S.X₃.X m) (hz : S.X₃.d m (m+1) z = 0)
     (p : S.X₂.X m) (hp : S.g.f m p = z) (w : S.X₁.X (m+1))
     (hw : S.f.f (m+1) w = S.X₂.d m (m+1) p)

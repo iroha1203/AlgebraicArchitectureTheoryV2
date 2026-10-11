@@ -6,7 +6,11 @@ import Mathlib.Algebra.Homology.HomologicalComplexAbelian
 import Formal.Util.AssertStandardAxioms
 /-! # 原始三項短完全列の標準零延長
 
-Implementation notes: 次数0/1/2の実射を保ち、次数外の零対象から全整数次数のSESを生成する。
+GOAL B／設計 exact-sequence §2 の原始 cochain SES を標準零延長へ移す。
+三次数の exact/injective/surjective は一般補題の方向仮定であり、cellRow_shortExact では
+A の unionInclusion と intersectionDifference の生成定理がすべて放電する。
+Implementation notes: G-133 の既存零延長を採用し、同じ全 Hom と全整数次数を保持する。
+独自の有限次数複体を再定義する案は、標準複体との同定と支え外の議論を重複させるため退けた。
 -/
 noncomputable section
 open CategoryTheory HomologicalComplex
@@ -53,7 +57,8 @@ variable (hi2 : Function.Injective f.f2) (hs0 : Function.Surjective g.f0)
 variable (hs1 : Function.Surjective g.f1) (hs2 : Function.Surjective g.f2)
 
 include hi0 hi1 hi2 hs0 hs1 hs2 in
-/-- 三次数の単射・完全性・全射を全整数次数の標準SESへ移す。 -/
+/-- GOAL B／設計 exact-sequence §2: 三次数の単射・完全性・全射から標準 SES を生成する。
+一般射の方向仮定は、cellRow_shortExact で A のセルごとの生成定理により放電する。 -/
 theorem row_shortExact : (row f g he0 he1 he2).ShortExact := by
   apply shortExact_of_degreewise_shortExact
   intro m

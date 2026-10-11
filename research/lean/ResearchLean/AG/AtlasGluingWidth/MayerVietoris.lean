@@ -7,7 +7,13 @@ import Mathlib.Algebra.Homology.HomologySequenceLemmas
 import Formal.Util.AssertStandardAxioms
 /-! # 原始図式からの全整数次数Mayer–Vietoris列
 
-Implementation notes: SESと比較は原始Mと選択から生成し、標準homologyと標準δをそのまま使う。
+GOAL B／設計 exact-sequence §2 の全整数次数 LES、標準 δ、同じ G-133 核余核列を接続する。
+一般選択の hs/ht は所属輸送条件であり、任意領域 A/B の経路では SelectionCompatible.region が生成する。
+SES は A の三次数構成から cellRow_shortExact、coneRow_shortExact、coneBiprodRow_shortExact の順に生成し、
+region_cone_shortExact の入口に追加完全性引数を置かない。
+Implementation notes: 標準 homology と標準 δ を使い、端点恒等の短複体同型で中間項を実直和へ輸送する。
+独自 δ を選択定義する案は自然性・符号の再同定を要するため退けた。合併の比較は全 CellSelection 等号に
+沿って輸送する。H¹ 成分だけを同定する案は、同じ全 Hom を要求する固定仕様を満たさないため退けた。
 -/
 noncomputable section
 open CategoryTheory Limits HomologicalComplex CochainComplex
@@ -104,7 +110,9 @@ theorem coneBiprod_les (m : ℤ) :
       (homologyMap (coneBiprodRow M hs ht).f (m+1)) :=
   ⟨StandardLES.exact_middle _ (coneBiprodRow_shortExact M hs ht) m,
     StandardLES.exact_before _ _ m, StandardLES.exact_after _ _ m⟩
-/-- 原始領域A/Bの標準錐Mayer–Vietoris SESを、追加の完全性引数なく生成する。 -/
+/-- GOAL B／設計 exact-sequence §2: 任意原始領域 A/B の実標準錐 Mayer–Vietoris SES。
+所属輸送は region、両 SES は cellRow_shortExact、錐 SES は coneRow_shortExact、
+実直和への輸送は coneBiprodRowIso が生成し、入口に追加完全性仮定を置かない。 -/
 theorem region_cone_shortExact (A B : Set qc.Target) :
     (coneBiprodRow M (SelectionCompatible.region M A) (SelectionCompatible.region M B)).ShortExact :=
   coneBiprodRow_shortExact M _ _

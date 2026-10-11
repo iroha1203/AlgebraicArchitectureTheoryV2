@@ -2,7 +2,10 @@ import ResearchLean.AG.AtlasGluingWidth.StandardShortExact
 import Formal.Util.AssertStandardAxioms
 /-! # 二領域積の標準零延長の座標
 
-Implementation notes: 三項の積と次数外の零対象を同じ標準複体の積座標へ移す。
+GOAL B／設計 exact-sequence §2 の二領域積の実 projection と全整数次数の座標を与える。
+追加の exactness 仮定はなく、入力は二つの三項複体と同じ比較 Hom である。
+Implementation notes: 元の pairComplex の projection を標準零延長し、支え外では零対象を使う。
+有限添字族への置換案は、この二項構成に不要な依存添字輸送を加えるため退けた。
 -/
 noncomputable section
 open CategoryTheory HomologicalComplex

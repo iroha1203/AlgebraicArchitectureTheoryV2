@@ -5,7 +5,12 @@ import Mathlib.Algebra.Homology.HomologySequence
 import Formal.Util.AssertStandardAxioms
 /-! # 標準mappingConeの二行図式からの短完全列
 
-Implementation notes: fineの次数mとcoarseの次数m+1の完全性を標準錐座標で組み合わせる。
+GOAL B／設計 exact-sequence §2 の同じ二行図式から標準錐 SES を生成する。
+一般補題の hR/hS は方向仮定であり、AtlasMayerVietoris.coneRow_shortExact が
+粗細それぞれの StandardRow.cellRow_shortExact で放電する。
+Implementation notes: mathlib の実 mappingCone.map と公開座標 API を採用し、fine の m と
+coarse の m+1 の完全性を組み合わせる。錐 SES 自体を新たな入力 certificate とする案は、
+原始セルからの生成義務を満たさないため退けた。独自錐を定義する案も標準錐・符号との同定を重複させる。
 -/
 noncomputable section
 open CategoryTheory HomologicalComplex
@@ -40,10 +45,10 @@ theorem inc_diff : inc R S v ≫ diff R S v = 0 := by
   apply LinearMap.ext
   intro x
   apply (coneCoordinateEquiv v.τ₃ m).injective
-  simp only [inc, diff, ModuleCat.comp_apply, HomologicalComplex.comp_f,
+  simp only [ModuleCat.comp_apply, HomologicalComplex.comp_f,
     HomologicalComplex.zero_f,
     ModuleCat.hom_zero, LinearMap.zero_apply, map_zero]
-  rw [coneCoordinateEquiv_map, coneCoordinateEquiv_map]
+  rw [diff_coordinate, inc_coordinate]
   apply Prod.ext
   · have hz := congrArg (fun f : S.X₁ ⟶ S.X₃ => f.f m) S.zero
     have := congrArg (fun f => f (coneCoordinateEquiv v.τ₁ m x).1) hz
@@ -60,7 +65,8 @@ def row : ShortComplex (CochainComplex (ModuleCat.{u} ℚ) ℤ) :=
 
 variable (hR : R.ShortExact) (hS : S.ShortExact)
 include hR hS in
-/-- fineのmとcoarseのm+1のSESから全整数次数の標準錐SESを導く。 -/
+/-- GOAL B／設計 exact-sequence §2: fine の m と coarse の m+1 の SES から標準錐 SES を導く。
+一般二行の hR/hS は方向仮定。原始適用では cellRow_shortExact が両方を生成する。 -/
 theorem row_shortExact : (row R S v).ShortExact := by
   apply shortExact_of_degreewise_shortExact
   intro m
@@ -78,7 +84,7 @@ theorem row_shortExact : (row R S v).ShortExact := by
     intro x y hxy
     apply (coneCoordinateEquiv v.τ₁ m).injective
     have hxy' := congrArg (coneCoordinateEquiv v.τ₂ m) hxy
-    simp only [inc, coneCoordinateEquiv_map] at hxy'
+    simp only [inc_coordinate] at hxy'
     exact Prod.ext (is (congrArg Prod.fst hxy')) (ir (congrArg Prod.snd hxy'))
   have hp : Function.Surjective ((diff R S v).f m) := by
     intro z
@@ -86,19 +92,19 @@ theorem row_shortExact : (row R S v).ShortExact := by
     obtain ⟨x,hx⟩ := sr (coneCoordinateEquiv v.τ₃ m z).2
     refine ⟨(coneCoordinateEquiv v.τ₂ m).symm (y,x), ?_⟩
     apply (coneCoordinateEquiv v.τ₃ m).injective
-    simp only [diff, coneCoordinateEquiv_map, LinearEquiv.apply_symm_apply]
+    simp only [diff_coordinate, LinearEquiv.apply_symm_apply]
     exact Prod.ext hy hx
   have he : Function.Exact ((inc R S v).f m) ((diff R S v).f m) := by
     intro z
     constructor
     · intro hz
       have hz' := congrArg (coneCoordinateEquiv v.τ₃ m) hz
-      simp only [diff, coneCoordinateEquiv_map, map_zero] at hz'
+      simp only [diff_coordinate, map_zero] at hz'
       obtain ⟨y,hy⟩ := (es (coneCoordinateEquiv v.τ₂ m z).1).mp (congrArg Prod.fst hz')
       obtain ⟨x,hx⟩ := (er (coneCoordinateEquiv v.τ₂ m z).2).mp (congrArg Prod.snd hz')
       refine ⟨(coneCoordinateEquiv v.τ₁ m).symm (y,x), ?_⟩
       apply (coneCoordinateEquiv v.τ₂ m).injective
-      simp only [inc, coneCoordinateEquiv_map, LinearEquiv.apply_symm_apply]
+      simp only [inc_coordinate, LinearEquiv.apply_symm_apply]
       exact Prod.ext hy hx
     · rintro ⟨x,rfl⟩
       have hz := congrArg (fun f => f.f m x) (inc_diff R S v)
