@@ -272,3 +272,156 @@ Research全体build・aggregate・全file elaboration・Formal移植は実行し
 placeholder、hidden/BiDi、privacy、語彙、import方向、diff whitespaceはclean。
 上の「正式4 lane査読未実施」は初回head時点の履歴であり、この修正headの受理状態を表さない。
 C–E・Formal移植・Research全体buildはこのcycleの達成に含めない。
+
+## Cycle 2 正式受理と Cycle 3 selection
+
+B は [PR #5329 の正式再査読とroot acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5329#issuecomment-6107924638)
+で `proof-obligation-discharged / approve`。最終head `46251ad81d54548a80f7d5240dcf910f1cc23bcb`、
+merge `a06669caf8b6983068a32f7ab81b5d390bb42b22`、CI全7pass。
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5321#issuecomment-6107930962)。
+全GOALはtarget-proof-checkpoint。C–E、Formal移植、Research全体buildは未実施。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-136-aat-atlas-gluing-width
+cycle: 3
+goal_blob_sha: dbc5b584987a1f3e1987125b7ccde2e361a89533
+base_oid: a06669caf8b6983068a32f7ab81b5d390bb42b22
+tracking_issue: 5321
+report_path: research/reports/G-136-aat-atlas-gluing-width.md
+selection:
+  proof_state_ref: PR5329 B受理とIssue同期6107930962
+  proof_dag_predecessors: [Aの原始SESと六square, Bの標準LESとδ自然性, G133 ShortExactFive/oldH1Equiv, mathlib標準snake]
+  milestone: GOAL Cの同じ実比較の一次欠損をQ/Pと交差Zから正確に同定
+  proof_obligations: [実Q/P短完全列, 同じH0/H1比較によるq/pと可換図式, 実核余核snake全列と代表式, 局所J零からp単射とcoker p≃Z, 実phantom同型とhidden短完全列, 次元式と零欠損iff, 通常Uの旧H1商と同じ核余核への接続]
+  exit_criteria: [任意原始MとA/Bから一般Q/Pとsnakeの全前提を放電, 各射の代表式と標準snakeδ同定, 局所J零以外の交差比較同型を追加しない, 実phantom/hiddenとZの射を保つ, 次元式と両方向iff, 対象focusedと全新規実宣言公理監査]
+  selection_reason: Dの実Law有限和とEの非零MV生成元が使う欠損分解を先に閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [AtlasGluingWidth/QuotientKernelRow.lean, AtlasGluingWidth/LinearSnake.lean, AtlasGluingWidth/PairHomology.lean, AtlasGluingWidth/GluingDefect.lean, AtlasGluingWidth/PrimitiveGluing.lean]
+  risks: [標準snakeの成分を実LinearMap.ker/range quotientへ輸送, δ代表式の符号, localH1同型からp単射とZへの同定, 通常Uの同じ旧H1商と核余核transport]
+  unchecked: [Cの登録実装と正式査読, D/Eの全構成]
+```
+
+## C の条項別対応と受理候補宣言
+
+| 固定要求 | 実構成・宣言 | 前提の出所・使用先 |
+| --- | --- | --- |
+| 実二領域H⁰/H¹と差制限 | `PairHomology.homologyIso_fst/snd`, `homologyMap_pair`; `PrimitiveGluing.difference`, `difference_natural`, `difference_comparison`, `qProductEquiv`, `pProductEquiv` | 同じ原始射影を保つ全次数積同型。Qの商代表元とPの元の積成分を固定。粗細squareは原始Mの同じ図式。 |
+| 実Q/P SES | `QuotientKernelRow.Q/P`, `inclusion`, `projection`, `row_shortExact`, `inclusion_mk`, `projection_val` | QはH⁰差制限像のliteral quotient、PはH¹差制限のliteral kernel。Aから生成したSESとBの三位置LES完全性をG133 ShortExactFiveへ渡す。 |
+| 同じq/pと二行SES図式 | `QuotientKernelRow.q/p`, `q_mk`, `p_val`, `inclusion_natural`, `projection_natural`, `rowMap` | qは同じ交差H⁰比較の商射、pは同じ二領域H¹比較の核制限。H⁰比較を零や任意射に置換せず、元のcomm23とδ自然性を使用。 |
+| 標準snakeの実核・余核 | `LinearSnake.snake`, `K1/K2/K3`, `C1/C2/C3`, `first/second/connecting/fourth/fifth`, `exact1/2/3/4` | 元の二行SESから標準SnakeInputを生成。標準kernel/cokernelを普遍性による包含・商を保つ同型でliteral kernel/range quotientへ移す。 |
+| 標準δの代表式・存在・独立性 | `LinearSnake.connecting_representative`, `connecting_lift`, `connecting_choice_independent`; `GluingDefect.connecting_representative`, `connecting_lift` | 標準δ_eqへ同じ持ち上げ・貼り合わせを渡す。任意ker p元の持ち上げは元のepiとexactから生成し、符号は標準δそのもの。任意二選択は同じδの値へ一致。 |
+| 通常Uの同じT/Ph/Hdと全snake列 | `PrimitiveGluing.regionUnion_natural`, `phantomEquiv`, `hiddenEquiv`, `first/second/connecting/fourth/fifth`, `first_injective`, `exact1/2/3/4`, `fifth_surjective`, 各 `*_val/*_mk` と `connecting_lift` | Aの全セル和等号とBのregionUnionHom_eqに沿う全H¹射の同定。G133 oldH1Equiv_naturalから元のH¹商の実核・実余核へ戻し、全位置完全性と代表式を輸送。 |
+| 局所J零の放電 | `PairHomology.oldH1_bijective_iff`, `homologyMap_pair_bijective`; `PrimitiveGluing.cell_local_bijective`, `local_bijective` | 同じA/BのblockDefect=0から元のH¹射全単射を導き、その積同型で実二領域標準比較を全単射にする。交差比較同型は追加しない。 |
+| p単射、実coker pとZ | `QuotientKernelRow.p_injective`, `Z`, `zMap`, `p_z_exact`, `zMap_surjective`, `cokerPZEquiv`, `cokerPZEquiv_mk` | 同じ局所比較の逆と粗差制限で射を構成。Zは元の粗差制限像と元の交差H¹比較核の交差。像・核・全射を元のsquareで証明する。 |
+| 実phantom同型と実hidden/Z SES | `GluingDefect.phantomEquiv`, `hiddenZRow_shortExact`; `PrimitiveGluing.localPhantomEquiv`, `oldHiddenRow_shortExact`, `oldHiddenRow_f_mk/g_mk` | ker p=0から標準snakeの前後を使う。通常Uの既存literal余核を中間項にするSES。包含は細δ、射は細制限・同じ局所逆比較・粗差制限の代表式。 |
+| 同じJの次元式と両方向零条件 | `GluingDefect.shortExact_dimension`, `defect_dimension`, `defect_zero_iff`; `PrimitiveGluing.defect_standard`, `defect_dimension`, `defect_zero_iff` | G133実核商次元式と上の実同型/SESから導出。有限次元性は元の有限三項複体の標準homologyから生成し、新しいrank入力を置かない。 |
+
+受理spineはこの対応表で名指しした構成・定理と、それを支える新規5sourceの全公開宣言。
+cycle scaffold・新しい結論certificate・expected-rank fieldは追加していない。
+`ShortExact`・自然な二行比較・局所H¹比較の全単射性は一般補題ではdirection-hypothesisである。
+`PrimitiveGluing` の原始適用では `StandardRow.cellRow_shortExact`、同じ `cellRowMap`、
+同じA/Bの局所J零からすべて生成し、完全性や交差比較同型を引数として追加していない。
+局所J零そのものはGOAL C特殊化のdirection-hypothesisであり、Eの指定例で放電する義務は残る。
+
+依存の使用版は固定mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`、Lean 4.28.0。
+標準snake・kernel/cokernel普遍性・additive homologyFunctor/mapBiprod・線形exactの
+同型輸送APIは型と適用条件を実読した。受理済みA/BはPR5328/5329の同じ不変source、
+G133はPR5269の `ShortExactFive`、`ZeroExtension.oldH1Equiv_natural`、`LinearConjugation`、
+G134はPR5287の同じ `SubsetComparison`、既存欠損意味論は `blockDefect_eq_zero_iff_bijective`。
+現在の実宣言と適用引数を照合し、受理記録は再利用資格、現在のsourceは適用の証拠とする。
+DのLaw有限和とG135係数・fiber分解、Eの任意k指定原始族は引き続き未達。
+
+## Cycle 3 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 実Q/Pと同じq/p二行SES、全snake列と代表式、原始局所J零からp単射とcoker p≃Z、通常Uの同じ実phantom/hidden、J次元式と両方向零条件を構成
+  exit_criteria_status: [任意原始MとA/BによるSESとsquareの放電, 全snake位置と元の核商, 標準δの代表式と存在と選択独立性, 元の局所J零から同じ局所比較同型, 元のZと実余核の同定, 通常Uの同じ全H1射とliteral核商, 次元式と両方向iff]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [QuotientKernelRow.lean, LinearSnake.lean, PairHomology.lean, GluingDefect.lean, PrimitiveGluing.lean]
+  evidence: [C条項別対応表の実宣言]
+  claim_mapping:
+    theorem_names: [PrimitiveGluing.exact1/2/3/4, PrimitiveGluing.connecting_representative, PrimitiveGluing.localPhantomEquiv, PrimitiveGluing.oldHiddenRow_shortExact, PrimitiveGluing.defect_dimension, PrimitiveGluing.defect_zero_iff]
+    source_labels: [GOAL C, 設計exact-sequence §3–4]
+    conjuncts: [実Q/Pと自然な図式, 実snake全列と代表式, 局所J零下の実核余核分解, 同じJ次元式と零iff]
+    undischarged_assumptions: []
+    acceptance_point: 原始Mと任意A/Bの同じ比較から生成し、通常Uの既存H1商と核余核に接続
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [原始cochain SESから実Q/P SES, 元のH0/H1squareとδ自然性からq/p, 標準snakeの全kernel/cokernel資格, 元の局所J零から同じL全単射, 同じ差制限によるcoker p≃Z, 元の通常U核商への同定]
+    remaining: [Dの実Law和とG135接続, Eの全k原始族と特殊化前提放電]
+  certificate_provenance:
+    discharged: [AのcellRow_shortExact, 同じ原始cellRowMap, Q/Prow_shortExact, 標準SnakeInputの生成と普遍核商同型]
+    unresolved: []
+  proof_use:
+    used: [標準LES三位置, 元の比較squareとδ自然性, 標準δ_eqと元のepi/exact, 実積射影と局所H1比較の全単射性, 元の差制限像と交差比較核, 全セル等号と同じ全Homの旧H1自然性]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [新規5sourceの個別focusedとmodule公理監査, 公式単一PrimitiveGluing focused, 累積全実宣言の明示公理照会, 共通scan]
+  blocking_findings: [標準PR独立査読前]
+  next_obligation: C正式受理後にDの同じ実Law比較とG135の同じ核余核へ接続
+```
+
+## Cycle 3 検証記録
+
+新規5sourceの個別focused checkはすべてexit0。module公理監査は
+QuotientKernelRow 29、LinearSnake 69、PairHomology 16、GluingDefect 32、PrimitiveGluing 56、
+計202新規実宣言（うち178 source明示宣言）で標準公理のみ。
+公式単一 `bash research/lean/check_research_modules.sh --focused ResearchLean/AG/AtlasGluingWidth/PrimitiveGluing.lean`
+はexit0、56宣言、log SHA256 `0bf6ad62fb1a4a9da9395cc022c5b8920ddd47226fc275718f6ef09fb63d85fb`。
+累積A/B/C全413実宣言（354 source明示、59生成）を単一非aggregate監査fileから明示
+`#print axioms` で全件照会し、exit0、413unique、標準propext/Classical.choice/Quot.sound以内。
+新規178明示宣言の完全修飾名も全件照合、欠落なし。log SHA256
+`ce5963490b7d8d51e5f2a2f002659050d93c43d6e22cec6f8e6512a3ab595cd7`。
+placeholder、hidden/BiDi、privacy、語彙、import方向、staged diff whitespaceはclean。
+使用G133三sourceは固定参照版ed16acc…からdiff空。固定GOAL blobもdbc5b584…で不変。
+Research全体build・aggregate・全file elaboration・Formal移植は実行していない。
+正式4 lane査読、内容受理、CI、mergeはこのhead確定前の記録時点では未実施であり、PR監査へ同期する。
+
+## Cycle 3 初回独立査読後の修正
+
+初回固定head `51afa7c1f657cba8a03778e219f3c64f451d4824` の数学A/B・Lean A/Bは
+いずれも `Minor issues`、中心0・非中心2。同じ2件を一括し、全lane受領後に修正した。
+監査は [PR5330初回内容監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5330#issuecomment-6108314277)。
+`PrimitiveGluing.coarseUnionEq/fineUnionEq` は同じ等号statementと証明を
+`theorem` として公開する。`LinearSnake.conjugate_refl_left/right` は査読が名指した
+恒等同型の正規化APIであり、`PrimitiveGluing.exact1–4` はこれを使って輸送を正規化する。
+元の実射・完全性のstatement・入力・import・instanceを保持した。
+この修正記録は内容受理を表さず、修正後確認を固定PR headへ同期する。
+
+修正前の検証記録は上の初回headに対応する。修正後の個別
+`LinearSnake` checkはexit0、71宣言、標準公理のみ、log SHA256
+`807439841eb1f493f1e42fc17f5e676b72399aecc0d30d6c2acca313664392d0`。
+`PrimitiveGluing` とその公式単一focusedはexit0、56宣言、標準公理のみ。
+公式focused logの内容は初回と同じで、SHA256も
+`0bf6ad62fb1a4a9da9395cc022c5b8920ddd47226fc275718f6ef09fb63d85fb`。
+修正後累積全415実宣言（356 source明示、59生成）を同じ単一監査fileで全件照会し、
+exit0、415unique、標準3公理以内。新規180明示宣言の完全修飾名照合に欠落なし。
+log SHA256 `12e8cf465c21c93afd759311a7942aa6203d34b6c6157e2bfdb3d1cc908b6bc3`。placeholder/Unicode/privacy/import方向/diffcheckもclean。
+
+## Cycle 3 正式再査読1後の命名修正
+
+固定head `797725fb2effd85eb4c7a92958c7fc5c0903b1d1` の正式再査読1は、
+数学A/B・Lean Aが `No major findings`、Lean Bが `Minor issues`。
+中心0・非中心1であり、新規公開等号theoremのsnake_case命名が残った。
+[再査読1統合監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5330#issuecomment-6108458477)
+に従い、上の履歴で旧名として記録した2宣言を
+`PrimitiveGluing.coarse_union_eq/fine_union_eq` とし、全使用箇所を同期した。
+statement・証明・比較射・仮定を保持する。宣言の削除・追加を伴うため直接対応
+確認には回さず、固定headに対する新規4 laneの正式再査読2へ進む。
+この記録は修正内容であり、受理を表さない。
+
+改名後の個別PrimitiveGluingと公式単一focusedはexit0、56宣言、標準公理のみ。
+公式focused SHA256 `0bf6ad62fb1a4a9da9395cc022c5b8920ddd47226fc275718f6ef09fb63d85fb`。
+改名後の累積415実宣言を全件明示公理照会し、exit0、415unique、標準3公理以内、
+180新規明示宣言の欠落なし。log SHA256 `9190e4c853a0c0fa921fdf728103028dee71f0cf01390a5ccf83dfdfc312b590`。
+placeholder/Unicode/privacy/import方向/diffcheckはclean、固定仕様は不変。
