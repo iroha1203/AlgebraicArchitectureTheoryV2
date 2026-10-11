@@ -129,9 +129,24 @@ fn unreadable_inputs_are_io_errors() {
     );
     let r = run(&dir, &["check", "--law", "nothing.law", "--out", "o2"]);
     consistent(&dir, &r, "error", 74);
+    // UTF-8 でない path も path として扱い、読めなければ io とする。
+    use std::os::unix::ffi::OsStrExt;
+    let bad = std::ffi::OsStr::from_bytes(b"\xff.law");
+    let out = bin()
+        .current_dir(&dir)
+        .arg("check")
+        .arg("--law")
+        .arg(bad)
+        .args(["--out", "o3"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(74));
+    let receipt = archsig::json::parse(&out.stdout).unwrap();
+    assert_eq!(s(get(&receipt, "status")), "error");
+    assert!(dir.join("o3/result.json").exists());
 }
 
-/// 指定した操作の n 回目で失敗するファイル操作。それ以外は実ファイルへ書く。
+/// 指定した操作で失敗するファイル操作。それ以外は実ファイルへ書く。
 struct FaultyIo {
     fail: &'static str,
     error: std::io::ErrorKind,
@@ -179,20 +194,15 @@ impl Io for FaultyIo {
     }
 }
 
-/// 捕捉した signal を差し込む。freeze の後に届いた signal は状態へ反映しない。
+/// finalize の開始までに捕捉した signal を差し込み、確定の回数を数える。
 struct FakeSignals {
     before: Option<Signal>,
-    after_freeze: Option<Signal>,
-    frozen: bool,
+    freezes: usize,
 }
 
 impl Signals for FakeSignals {
-    fn received(&mut self) -> Option<Signal> {
-        self.before
-    }
     fn freeze(&mut self) -> Option<Signal> {
-        self.frozen = true;
-        let _late = self.after_freeze;
+        self.freezes += 1;
         self.before
     }
 }
@@ -216,8 +226,7 @@ fn failures_before_publication_leave_the_output_untouched() {
         };
         let mut signals = FakeSignals {
             before: None,
-            after_freeze: None,
-            frozen: false,
+            freezes: 0,
         };
         let out = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
         assert_eq!((out.status, out.exit_code), (Status::Error, 74), "{fail}");
@@ -240,8 +249,7 @@ fn failures_before_publication_leave_the_output_untouched() {
     };
     let mut signals = FakeSignals {
         before: None,
-        after_freeze: None,
-        frozen: false,
+        freezes: 0,
     };
     let out = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
     assert_eq!((out.status, out.exit_code), (Status::Error, 74));
@@ -290,15 +298,10 @@ fn signals_decide_the_status_once_at_finalize() {
             fail: "",
             error: std::io::ErrorKind::Other,
         };
-        // 確定後に届く signal は状態を変えない。
-        let mut signals = FakeSignals {
-            before,
-            after_freeze: Some(Signal::Term),
-            frozen: false,
-        };
+        let mut signals = FakeSignals { before, freezes: 0 };
         let out = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
         assert_eq!(out.exit_code, code);
-        assert!(signals.frozen);
+        assert_eq!(signals.freezes, 1);
         let res = archsig::json::parse(&std::fs::read(dir.join("o/result.json")).unwrap()).unwrap();
         assert_eq!(num(get(&res, "exit_code")), u64::from(code));
         if code != 0 {
@@ -384,4 +387,27 @@ fn receipt_delivery_failure_keeps_the_published_result() {
     let res = archsig::json::parse(&std::fs::read(dir.join("o/result.json")).unwrap()).unwrap();
     assert_eq!(s(get(&res, "status")), "complete");
     assert_eq!(num(get(&res, "exit_code")), 0);
+    // stderr にも書けなくても、確定した終了コードを変えない。
+    let mut child = bin()
+        .current_dir(&dir)
+        .args(["check", "--law", "slow.law", "--out", "o2"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    drop(child.stdout.take());
+    drop(child.stderr.take());
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+    assert!(dir.join("o2/result.json").exists());
+    // 出力先が既にあって usage になる場合も同じ。
+    let mut child = bin()
+        .current_dir(&dir)
+        .args(["check", "--law", "slow.law", "--out", "o2"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    drop(child.stdout.take());
+    drop(child.stderr.take());
+    assert_eq!(child.wait().unwrap().code(), Some(64));
 }

@@ -232,6 +232,29 @@ fn cli_misuse_is_usage() {
             assert!(arr(get(&res, "inputs")).is_empty());
         }
     }
+    // 提供しない run も、--out が一つなら usage の結果を残す。
+    let r = run(
+        &dir,
+        &[
+            "run",
+            "--law",
+            "l.law",
+            "--ask",
+            "x=check(R.l)",
+            "--out",
+            "o7",
+        ],
+    );
+    let res = consistent(&dir, &r, "invalid", 64);
+    assert_eq!(s(get(&res, "command")), "run");
+    // --out が二つあれば出力先を決めず、出力を作らない。
+    let r = run(
+        &dir,
+        &["check", "--law", "l.law", "--out", "o8", "--out", "o9"],
+    );
+    assert_eq!(r.code, 64);
+    assert!(!has(&r.receipt, "result"));
+    assert!(!dir.join("o8").exists() && !dir.join("o9").exists());
     // 出力先を読めた CLI の不正は、usage の issue を result.json に残す。
     let r = run(
         &dir,

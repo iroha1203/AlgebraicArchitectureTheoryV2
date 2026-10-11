@@ -85,7 +85,8 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(num(get(&r.receipt, "exit_code")), code as u64);
     let res = result_json(dir, r);
     assert_eq!(s(get(&res, "format")), "archsig.result/1");
-    assert_eq!(s(get(&res, "command")), "check");
+    // run は CLI の不正としてだけ結果を残す。
+    assert!(matches!(s(get(&res, "command")), "check" | "run"));
     assert_eq!(s(get(&res, "status")), status);
     assert_eq!(num(get(&res, "exit_code")), code as u64);
     for k in ["requests", "answers", "nodes"] {

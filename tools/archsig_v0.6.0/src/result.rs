@@ -324,6 +324,8 @@ impl InputIdentity {
 /// result.json の内容。
 #[derive(Debug)]
 pub struct CheckResult {
+    /// `check`、または提供しない `run` の CLI の不正。
+    pub command: &'static str,
     pub status: Status,
     pub exit_code: u8,
     pub inputs: Vec<InputIdentity>,
@@ -385,7 +387,7 @@ impl CheckResult {
                     ),
                 ]),
             ),
-            ("command", Json::str("check")),
+            ("command", Json::str(self.command)),
             ("status", Json::str(self.status.wire())),
             ("exit_code", Json::Nat(u64::from(self.exit_code))),
             (

@@ -4,6 +4,7 @@ use crate::archmap::check_archmap;
 use crate::canonical::{Json, sha256_digest};
 use crate::law::check_law;
 use crate::result::*;
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
@@ -27,8 +28,6 @@ pub trait Io {
 
 /// 実行の中で捕捉した signal。finalize の開始時に一度だけ確定する。
 pub trait Signals {
-    /// これまでに捕捉した最初の signal。
-    fn received(&mut self) -> Option<Signal>;
     /// 以後の signal を状態へ反映しないようにし、受信済み・pending の signal を確定する。
     fn freeze(&mut self) -> Option<Signal>;
 }
@@ -49,27 +48,55 @@ pub enum Command {
 /// CLI の不正。`out` が読めた場合は出力先として使う。
 #[derive(Debug, PartialEq, Eq)]
 pub struct UsageError {
+    pub command: &'static str,
     pub argument: String,
     pub message: String,
     pub out: Option<PathBuf>,
 }
 
+/// flag と値の組を順に読み、`--out` がちょうど一つあればその値を出力先とする。
+fn single_out(args: &[OsString]) -> Option<PathBuf> {
+    let mut found = None;
+    let mut count = 0;
+    let mut i = 1;
+    while i < args.len() {
+        let is_flag = args[i].to_str().is_some_and(|a| a.starts_with("--"));
+        if args[i] == "--out" {
+            count += 1;
+            found = args.get(i + 1).map(PathBuf::from);
+        }
+        i += if is_flag { 2 } else { 1 };
+    }
+    if count == 1 { found } else { None }
+}
+
 /// 全コマンドと全 flag(実行仕様 §1)のうち、この版が提供する check と version を読む。
-pub fn parse_args(args: &[String]) -> Result<Command, UsageError> {
+/// 引数は OS の文字列で受け取る。flag は文字列として照合し、path の値は UTF-8 に限らない。
+pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
+    let command = if args.first().is_some_and(|a| a == "run") {
+        "run"
+    } else {
+        "check"
+    };
+    let confirmed = single_out(args);
     let usage = |argument: &str, message: &str, out: Option<PathBuf>| UsageError {
+        command,
         argument: argument.to_owned(),
         message: message.to_owned(),
         out,
     };
-    match args.first().map(String::as_str) {
+    let text = |a: &OsString| a.to_string_lossy().into_owned();
+    match args.first().map(|a| a.to_str().unwrap_or("\u{FFFD}")) {
         Some("version") if args.len() == 1 => return Ok(Command::Version),
-        Some("version") => return Err(usage(&args[1], "version は引数を取らない", None)),
+        Some("version") => {
+            return Err(usage(&text(&args[1]), "version は引数を取らない", None));
+        }
         Some("check") => {}
         Some("run") => {
             return Err(usage(
                 "run",
                 "この版は check と version だけを提供する",
-                None,
+                confirmed,
             ));
         }
         Some(other) => return Err(usage(other, "コマンドは check か version", None)),
@@ -81,8 +108,8 @@ pub fn parse_args(args: &[String]) -> Result<Command, UsageError> {
     let mut first_error: Option<(String, String)> = None;
     let mut i = 1;
     while i < args.len() {
-        let flag = args[i].as_str();
-        let slot = match flag {
+        let flag = text(&args[i]);
+        let slot = match flag.as_str() {
             "--law" => Some(&mut law),
             "--archmap" => Some(&mut archmap),
             "--out" => Some(&mut out),
@@ -90,28 +117,28 @@ pub fn parse_args(args: &[String]) -> Result<Command, UsageError> {
         };
         let Some(slot) = slot else {
             first_error.get_or_insert((
-                flag.to_owned(),
+                flag.clone(),
                 "check の flag は --law・--archmap・--out".to_owned(),
             ));
             i += 1;
             continue;
         };
         let Some(value) = args.get(i + 1) else {
-            first_error.get_or_insert((flag.to_owned(), "flag に値が必要".to_owned()));
+            first_error.get_or_insert((flag.clone(), "flag に値が必要".to_owned()));
             break;
         };
         if slot.is_some() {
-            first_error.get_or_insert((flag.to_owned(), "flag が重複している".to_owned()));
+            first_error.get_or_insert((flag.clone(), "flag が重複している".to_owned()));
         } else {
             *slot = Some(PathBuf::from(value));
         }
         i += 2;
     }
     if let Some((argument, message)) = first_error {
-        return Err(usage(&argument, &message, out));
+        return Err(usage(&argument, &message, confirmed));
     }
     let Some(law) = law else {
-        return Err(usage("--law", "--law が必要", out));
+        return Err(usage("--law", "--law が必要", confirmed));
     };
     let Some(out) = out else {
         return Err(usage("--out", "--out が必要", None));
@@ -204,6 +231,7 @@ pub fn usage_outcome(
         };
     }
     let result = CheckResult {
+        command: err.command,
         status: Status::Invalid,
         exit_code: 64,
         inputs: Vec::new(),
@@ -243,6 +271,7 @@ pub fn internal_outcome(
         };
     }
     let result = CheckResult {
+        command: "check",
         status: Status::Error,
         exit_code: 70,
         inputs: Vec::new(),
@@ -305,7 +334,7 @@ pub fn run_check(
     let mut status = Status::Complete;
     if !issues.is_empty() {
         status = Status::Error;
-    } else if signals.received().is_none() {
+    } else {
         let law_bytes = law_bytes.as_ref().expect("読めた Law");
         match check_law(law_bytes) {
             Err(f) => {
@@ -321,7 +350,7 @@ pub fn run_check(
                 law_id.model_digest = Some(law.model_digest.clone());
                 declarations = law.infos.clone();
                 vocabularies = law.vocabularies.clone();
-                if let (Some(Some(bytes)), false) = (&map_bytes, signals.received().is_some()) {
+                if let Some(Some(bytes)) = &map_bytes {
                     match check_archmap(bytes, &law) {
                         Err(f) => {
                             status = if f.issue.code == crate::issue::Code::UnsupportedVersion {
@@ -344,6 +373,7 @@ pub fn run_check(
     let mut inputs = vec![law_id];
     inputs.extend(map_id);
     let result = CheckResult {
+        command: "check",
         status,
         exit_code: 0,
         inputs,

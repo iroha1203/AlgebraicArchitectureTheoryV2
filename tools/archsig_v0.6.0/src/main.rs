@@ -46,12 +46,12 @@ impl Io for FileIo {
     }
 }
 
-/// SIGINT・SIGTERM の捕捉。確定点ごとに受信済みの signal を読み、最初のものを残す。
-/// 同じ確定点で両方を読んだ場合は受信順が分からないので SIGINT を先とする。
+/// SIGINT・SIGTERM の捕捉。handler が受けた signal は finalize の開始時に一度だけ読む。
+/// 受信順は分からないので、両方を受けていれば SIGINT を先とする。以後の signal は handler が
+/// 受けるだけで、状態へ反映しない。
 struct ProcessSignals {
     signals: signal_hook::iterator::Signals,
-    first: Option<Signal>,
-    frozen: bool,
+    frozen: Option<Option<Signal>>,
 }
 
 impl ProcessSignals {
@@ -63,76 +63,51 @@ impl ProcessSignals {
         .expect("SIGINT・SIGTERM の handler を登録できる");
         ProcessSignals {
             signals,
-            first: None,
-            frozen: false,
-        }
-    }
-
-    fn poll(&mut self) {
-        if self.frozen {
-            return;
-        }
-        let mut pending: Vec<i32> = self.signals.pending().collect();
-        pending.sort_by_key(|s| {
-            if *s == signal_hook::consts::SIGINT {
-                0
-            } else {
-                1
-            }
-        });
-        for s in pending {
-            let signal = if s == signal_hook::consts::SIGINT {
-                Signal::Int
-            } else {
-                Signal::Term
-            };
-            self.first.get_or_insert(signal);
+            frozen: None,
         }
     }
 }
 
 impl Signals for ProcessSignals {
-    fn received(&mut self) -> Option<Signal> {
-        self.poll();
-        self.first
-    }
-
     fn freeze(&mut self) -> Option<Signal> {
-        self.poll();
-        self.frozen = true;
-        self.first
+        if let Some(decided) = self.frozen {
+            return decided;
+        }
+        let pending: Vec<i32> = self.signals.pending().collect();
+        let decided = if pending.contains(&signal_hook::consts::SIGINT) {
+            Some(Signal::Int)
+        } else if pending.contains(&signal_hook::consts::SIGTERM) {
+            Some(Signal::Term)
+        } else {
+            None
+        };
+        self.frozen = Some(decided);
+        decided
     }
+}
+
+/// stderr へ可能な範囲で書く。書けなくても確定した終了コードを変えない。
+fn note(message: &str) {
+    let _ = writeln!(std::io::stderr(), "{message}");
 }
 
 fn main() {
     let started = Instant::now();
-    let args: Vec<String> = std::env::args().skip(1).collect();
+    let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
     let mut signals = ProcessSignals::new();
-    // 深い入れ子の入力に備え、大きなスタックの thread で実行する。
-    let outcome = std::thread::Builder::new()
-        .stack_size(256 * 1024 * 1024)
-        .spawn(move || execute(&args, &mut signals, started))
-        .expect("実行 thread を起動できる")
-        .join();
-    let (outcome, version) = match outcome {
-        Ok(o) => o,
-        Err(_) => {
-            eprintln!("archsig: 内部障害で終了した");
-            std::process::exit(70);
-        }
-    };
+    let (outcome, version) = execute(&args, &mut signals, started);
     let mut stdout = std::io::stdout().lock();
     let line = match &outcome {
         Some(o) => o.receipt(),
         None => version.to_owned(),
     };
     if let Err(e) = writeln!(stdout, "{line}").and_then(|_| stdout.flush()) {
-        eprintln!("archsig: stdout へ書けなかった: {e}");
+        note(&format!("archsig: stdout へ書けなかった: {e}"));
     }
     let code = match outcome {
         Some(o) => {
             for m in &o.stderr {
-                eprintln!("{m}");
+                note(m);
             }
             o.exit_code
         }
@@ -142,7 +117,7 @@ fn main() {
 }
 
 fn execute(
-    args: &[String],
+    args: &[std::ffi::OsString],
     signals: &mut ProcessSignals,
     started: Instant,
 ) -> (Option<Outcome>, &'static str) {
