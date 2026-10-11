@@ -218,6 +218,15 @@ impl Parser {
         self.exprs.len() - 1
     }
 
+    /// 字句列を読み切ったことを確かめる。
+    pub fn expect_end(&self) -> PResult<()> {
+        if self.peek().is_some() {
+            self.err("式の後に余分な字句がある")
+        } else {
+            Ok(())
+        }
+    }
+
     // ---- 文書 ----
 
     pub fn header(&mut self) -> PResult<Header> {

@@ -10,7 +10,9 @@ fn failure(bytes: &[u8]) -> archsig::law::LawFailure {
 }
 
 fn span_of(issue: &archsig::issue::Issue) -> (usize, usize) {
-    let Location::Law { span } = issue.location;
+    let Location::Law { span } = issue.location else {
+        panic!("Law の位置")
+    };
     span
 }
 

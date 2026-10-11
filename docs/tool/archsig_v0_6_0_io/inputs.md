@@ -19,7 +19,15 @@ format は ArchMap=`archsig.archmap/1`、Law=`archsig.law/1`、結果=`archsig.r
 
 Id は `[A-Za-z][A-Za-z0-9_.-]*`。QName は Law の完全名であり `.` 区切り。
 Digest は `sha256:` と小文字16進64桁。Nat は metadata 用の JSON number で
-0..9007199254740991 の整数。数学的な整数の表現とは異なる。
+0..9007199254740991 の整数。数学的な整数の表現とは異なる。整数かどうかは綴りが表す値を
+丸めずに判定する。
+
+未知・欠けた欄、`null`、JSON の型の違い、値の encoding の誤り、Set の重複は `syntax`、
+Map の key の重複は `duplicate_key` とする。ただし format が文字列で semantics が欠ける場合は、
+対応しない版として `unsupported_version` とする。未定義の origin・source、snapshot と異なる
+origin.mode、entity・arrow・correspondence の宣言でない subject の type、subject の型にない
+Atom の field は `reference` とする。各表の ID、vocabularies の reading、Term の params の重複は
+`duplicate_id` とする。
 
 ## 2. ArchMap の schema
 
@@ -105,6 +113,7 @@ Term body は閉じた純粋式で、自由変数は params のみ。field、観
 結果参照を含めない。呼出しは原始値の演算・data constructor のみで、reading の view を
 名前で参照しない。型の分かる有限なコード上の作用を観測するために用い、外部 code を実行しない。
 型・原始式を記録することと、その関数の外延等値が決定可能なことを区別する。
+params は Law の束縛名の規則に従う名前で、body の名前は field を宣言した reading で解決する。
 
 ## 4. 語彙 binding
 
@@ -149,6 +158,8 @@ identity は `(snapshot,subject,field)`、型は field 宣言。owner・Map も�
 Law の成立を補完の条件に使わない。既知の Map の全域性・owner 条件などを満たす補完が
 一つもない入力は `inconsistent_observation`。既知の不正型・dangling ref はそれぞれ
 `type` / `reference`。補完の存在検査を完了できなければ検査を中断し、計算成功へ進まない。
+`inconsistent_observation` の位置は、subject の順と field の宣言順に条件を足していき、
+初めて補完が無くなる条件を持つ値または subject の pointer とする。
 ref と Map の制約は有限 subject 族、その他の原始型は有限 ground value を持つため、
 原始提示の整合性は有限の構造検査で決定する。
 

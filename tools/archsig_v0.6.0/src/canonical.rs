@@ -7,6 +7,8 @@ use std::collections::BTreeMap;
 /// UTF-8 の byte 順は Unicode scalar 順と一致する。
 #[derive(Debug, Eq)]
 pub enum Json {
+    Bool(bool),
+    Nat(u64),
     Str(String),
     Arr(Vec<Json>),
     Obj(BTreeMap<String, Json>),
@@ -35,6 +37,8 @@ impl Json {
 
     fn write(&self, out: &mut String) {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
+            Json::Nat(n) => out.push_str(&n.to_string()),
             Json::Str(s) => write_string(s, out),
             Json::Arr(items) => {
                 out.push('[');
@@ -109,6 +113,8 @@ fn take_children(j: &mut Json, stack: &mut Vec<Json>) {
 impl Clone for Json {
     fn clone(&self) -> Json {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Json::Bool(b) => Json::Bool(*b),
+            Json::Nat(n) => Json::Nat(*n),
             Json::Str(s) => Json::Str(s.clone()),
             Json::Arr(items) => Json::Arr(items.clone()),
             Json::Obj(entries) => Json::Obj(entries.clone()),
@@ -119,6 +125,8 @@ impl Clone for Json {
 impl PartialEq for Json {
     fn eq(&self, other: &Json) -> bool {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
+            (Json::Bool(a), Json::Bool(b)) => a == b,
+            (Json::Nat(a), Json::Nat(b)) => a == b,
             (Json::Str(a), Json::Str(b)) => a == b,
             (Json::Arr(a), Json::Arr(b)) => a == b,
             (Json::Obj(a), Json::Obj(b)) => a == b,

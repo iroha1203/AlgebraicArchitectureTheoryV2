@@ -118,6 +118,28 @@ impl Checker {
         }
     }
 
+    /// 同じ名前・署名の表で、別の字句列(観測 Term の本体)を検査する検査器。
+    pub fn fragment(&self, parser: Parser) -> Checker {
+        Checker {
+            parser,
+            ast: self.ast.clone(),
+            reading_index: self.reading_index.clone(),
+            aliases: self.aliases.clone(),
+            shorts: self.shorts.clone(),
+            decl_index: self.decl_index.clone(),
+            ctor_index: self.ctor_index.clone(),
+            sigs: self.sigs.clone(),
+            data_props: self.data_props.clone(),
+            refs: Vec::new(),
+            expr_types: Vec::new(),
+            view_edges: Vec::new(),
+            reading_edges: Vec::new(),
+            current_reading: 0,
+            decl_refs: HashMap::new(),
+            decl_exprs: HashMap::new(),
+        }
+    }
+
     pub fn reading_name(&self, r: usize) -> &str {
         &self.ast[r].name.name
     }
@@ -1083,4 +1105,12 @@ pub fn find_cycle(edges: &BTreeMap<String, BTreeSet<String>>) -> Option<String> 
         }
     }
     None
+}
+
+impl std::fmt::Debug for Checker {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Checker")
+            .field("declarations", &self.decl_index.len())
+            .finish()
+    }
 }
