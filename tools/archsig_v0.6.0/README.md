@@ -11,6 +11,11 @@
 - ArchMap の静的検査: 版・schema・ID・由来・語彙 binding・原始値の型と encoding・参照・
   依存型の所属・Map の全域性・欠測 slot の補完の存在。既知値と欠測 slot を持つ内部表現と
   `model_digest`(`archsig::archmap::check_archmap`)。
+- CLI の `archsig check` と `archsig version`。入力のコピー、`result.json`、stdout の receipt を
+  [実行仕様](../../docs/tool/archsig_v0_6_0_io/execution.md) §§5–7 に従って出す。
+
+提供するコマンドは `check` と `version` だけであり、v0.6.0 全体の適合版ではない。
+`run` は CLI の不正(`usage`)として拒否する。
 
 ## テスト
 
@@ -20,3 +25,26 @@ cargo test --manifest-path tools/archsig_v0.6.0/Cargo.toml
 
 `tests/fixtures/` の規範例は [適合例](../../docs/tool/archsig_v0_6_0_io/validation.md) の
 `examples/` と同じ byte 列である。テストは docs を読み込まない。
+
+## 利用手順
+
+```bash
+cargo build --manifest-path tools/archsig_v0.6.0/Cargo.toml
+```
+
+以下の `archsig` は、作られた `tools/archsig_v0.6.0/target/debug/archsig` を指す。
+
+Law 単独で検査し、語彙 manifest と digest を得る。
+
+```bash
+archsig check --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --out result-law
+```
+
+ArchMap を指定すると、Law の語彙との binding と原始値・参照・由来・補完の整合性を検査する。
+
+```bash
+archsig check --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --archmap tools/archsig_v0.6.0/tests/fixtures/reservations.archmap.json --out result-both
+```
+
+`--out` は存在しない path を指定する。結果は `result-law/result.json` などに書かれ、
+stdout には一行の receipt が出る。`archsig version` は版を一行で出す。
