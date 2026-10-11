@@ -13,6 +13,7 @@ use crate::canonical::{Json, sha256_digest};
 use crate::issue::{Code, Details, Issue, Location};
 use crate::types::Type;
 use ast::{Expr, ExprId};
+pub use check::BUILTIN_OPS;
 use check::Checker;
 use model::{Declaration, DeclarationInfo, Vocabulary};
 use std::collections::BTreeMap;
@@ -32,11 +33,63 @@ pub struct CheckedLaw {
     pub expr_types: Vec<Option<Type>>,
     pub infos: Vec<DeclarationInfo>,
     pub vocabularies: Vec<Vocabulary>,
+    /// 名前・署名の表。観測 Term の本体を同じ規則で検査するために保持する。
+    context: Checker,
+}
+
+/// 検査した観測 Term の本体。
+#[derive(Debug)]
+pub struct TermBody {
+    pub exprs: Vec<Expr>,
+    pub root: ExprId,
+    pub types: Vec<Option<Type>>,
 }
 
 impl CheckedLaw {
     pub fn expr_type(&self, id: ExprId) -> Option<&Type> {
         self.expr_types.get(id).and_then(Option::as_ref)
+    }
+
+    /// 観測した Term の本体を、Law の Term と同じ純粋部分言語として検査する(入力仕様 §3)。
+    /// 位置は本体の文字列の中の byte 区間。
+    pub fn check_term_body(
+        &self,
+        reading: &str,
+        params: &[(String, Type)],
+        ret: &Type,
+        body: &str,
+    ) -> Result<TermBody, Box<Issue>> {
+        let tokens = lexer::lex(body.as_bytes())?;
+        let mut parser = parser::Parser::new(tokens, body.len());
+        let root = parser.parse_expr(ast::Flags::default())?;
+        parser.expect_end()?;
+        let mut checker = self.context.fragment(parser);
+        let reading = *checker.reading_index.get(reading).expect("Law の reading");
+        checker.current_reading = reading;
+        let mut env = expr::Env::default();
+        for (name, ty) in params {
+            let id = ast::Ident {
+                name: name.clone(),
+                span: (0, 0),
+                tok: 0,
+            };
+            checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other)?;
+        }
+        let ctx = expr::Ctx {
+            reading,
+            decl: String::new(),
+            is_view: false,
+            rec: None,
+            term: true,
+        };
+        checker.check(root, Some(ret), &mut env, &ctx)?;
+        let mut types = std::mem::take(&mut checker.expr_types);
+        types.resize(checker.parser.exprs.len(), None);
+        Ok(TermBody {
+            exprs: std::mem::take(&mut checker.parser.exprs),
+            root,
+            types,
+        })
     }
 }
 
@@ -140,5 +193,6 @@ pub fn check_law(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
         expr_types,
         infos,
         vocabularies,
+        context: checker,
     })
 }

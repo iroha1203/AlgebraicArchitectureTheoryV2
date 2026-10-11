@@ -21,6 +21,10 @@ Id は `[A-Za-z][A-Za-z0-9_.-]*`。QName は Law の完全名であり `.` 区�
 Digest は `sha256:` と小文字16進64桁。Nat は metadata 用の JSON number で
 0..9007199254740991 の整数。数学的な整数の表現とは異なる。
 
+未知・欠けた欄、`null`、JSON の型の違い、値の encoding の誤り、Set の重複は `syntax`、
+Map の key の重複は `duplicate_key` とする。未定義の origin・source、snapshot と異なる origin.mode は
+`reference` とする。
+
 ## 2. ArchMap の schema
 
 ```text
@@ -105,6 +109,7 @@ Term body は閉じた純粋式で、自由変数は params のみ。field、観
 結果参照を含めない。呼出しは原始値の演算・data constructor のみで、reading の view を
 名前で参照しない。型の分かる有限なコード上の作用を観測するために用い、外部 code を実行しない。
 型・原始式を記録することと、その関数の外延等値が決定可能なことを区別する。
+params は Law の束縛名の規則に従う名前で、body の名前は field を宣言した reading で解決する。
 
 ## 4. 語彙 binding
 
@@ -148,7 +153,9 @@ identity は `(snapshot,subject,field)`、型は field 宣言。owner・Map も�
 補完は既知値・登録 subject・型・参照・由来を固定し、欠測 field だけを型の値で埋める。
 Law の成立を補完の条件に使わない。既知の Map の全域性・owner 条件などを満たす補完が
 一つもない入力は `inconsistent_observation`。既知の不正型・dangling ref はそれぞれ
-`type` / `reference`。補完の存在検査を完了できなければ検査を中断し、計算成功へ進まない。
+`type` / `reference`。既知値だけで依存型の所属先が合わない参照と、key が始域の族をちょうど
+覆わない Map も `reference` とする。補完の存在検査を完了できなければ検査を中断し、計算成功へ進まない。
+`inconsistent_observation` の位置は、補完できない条件を持つ値または subject の pointer とする。
 ref と Map の制約は有限 subject 族、その他の原始型は有限 ground value を持つため、
 原始提示の整合性は有限の構造検査で決定する。
 

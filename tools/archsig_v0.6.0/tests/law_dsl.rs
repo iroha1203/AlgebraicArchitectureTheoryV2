@@ -144,7 +144,9 @@ fn rejects(body: &str, code: Code) {
     let src = reading(body);
     let issue = err(&src);
     assert_eq!(issue.code, code, "{body}\n=> {:?}", issue);
-    let archsig::issue::Location::Law { span } = issue.location;
+    let archsig::issue::Location::Law { span } = issue.location else {
+        panic!("Law の位置")
+    };
     assert!(span.1 <= src.len() && span.0 <= span.1, "{span:?}");
 }
 

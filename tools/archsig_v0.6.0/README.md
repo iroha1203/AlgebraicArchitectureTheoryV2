@@ -8,6 +8,9 @@
 - Law の静的検査: 構文・版・名前・型・依存型・構造再帰・純粋性。
 - 型付きの宣言と原式、出現位置、参照の解決、既定規則(`archsig::law::check_law`)。
 - 語彙 manifest と digest、Law の `bytes_digest`・`model_digest`。
+- ArchMap の静的検査: 版・schema・ID・由来・語彙 binding・原始値の型と encoding・参照・
+  依存型の所属・Map の全域性・欠測 slot の補完の存在。既知値と欠測 slot を持つ内部表現と
+  `model_digest`(`archsig::archmap::check_archmap`)。
 
 ## テスト
 

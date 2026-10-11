@@ -5,17 +5,27 @@ use crate::types::Type;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Code {
     Syntax,
+    DuplicateKey,
     DuplicateId,
+    DuplicateFact,
     Type,
     Reference,
     Cycle,
+    VocabularyMismatch,
+    InconsistentObservation,
     UnsupportedVersion,
 }
 
-/// 入力位置。Law は元の byte 列の半開区間。
+/// 入力位置。Law は元の byte 列の半開区間、ArchMap は JSON Pointer と、構文エラー時の区間。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Location {
-    Law { span: (usize, usize) },
+    Law {
+        span: (usize, usize),
+    },
+    ArchMap {
+        pointer: String,
+        span: Option<(usize, usize)>,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

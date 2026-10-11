@@ -8,7 +8,7 @@ use crate::prime::is_prime;
 use crate::types::Type;
 use num_bigint::BigUint;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub type CResult<T> = Result<T, Box<Issue>>;
 
@@ -44,7 +44,7 @@ pub struct TypeCtx<'a> {
 
 pub struct Checker {
     pub parser: Parser,
-    pub ast: Rc<Vec<Reading>>,
+    pub ast: Arc<Vec<Reading>>,
     pub reading_index: HashMap<String, usize>,
     pub aliases: Vec<HashMap<String, String>>,
     pub shorts: Vec<HashSet<String>>,
@@ -100,7 +100,7 @@ impl Checker {
     pub fn new(parser: Parser, readings: Vec<Reading>) -> Checker {
         Checker {
             parser,
-            ast: Rc::new(readings),
+            ast: Arc::new(readings),
             reading_index: HashMap::new(),
             aliases: Vec::new(),
             shorts: Vec::new(),
@@ -108,6 +108,28 @@ impl Checker {
             ctor_index: HashMap::new(),
             sigs: HashMap::new(),
             data_props: HashMap::new(),
+            refs: Vec::new(),
+            expr_types: Vec::new(),
+            view_edges: Vec::new(),
+            reading_edges: Vec::new(),
+            current_reading: 0,
+            decl_refs: HashMap::new(),
+            decl_exprs: HashMap::new(),
+        }
+    }
+
+    /// 同じ名前・署名の表で、別の字句列(観測 Term の本体)を検査する検査器。
+    pub fn fragment(&self, parser: Parser) -> Checker {
+        Checker {
+            parser,
+            ast: self.ast.clone(),
+            reading_index: self.reading_index.clone(),
+            aliases: self.aliases.clone(),
+            shorts: self.shorts.clone(),
+            decl_index: self.decl_index.clone(),
+            ctor_index: self.ctor_index.clone(),
+            sigs: self.sigs.clone(),
+            data_props: self.data_props.clone(),
             refs: Vec::new(),
             expr_types: Vec::new(),
             view_edges: Vec::new(),
@@ -1083,4 +1105,12 @@ pub fn find_cycle(edges: &BTreeMap<String, BTreeSet<String>>) -> Option<String> 
         }
     }
     None
+}
+
+impl std::fmt::Debug for Checker {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Checker")
+            .field("declarations", &self.decl_index.len())
+            .finish()
+    }
 }
