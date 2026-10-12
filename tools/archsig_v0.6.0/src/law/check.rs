@@ -763,7 +763,7 @@ impl Checker {
                             "data の自己参照は直接または Tuple・List・Option を通る",
                         );
                     }
-                    t.clone().any(&mut |t| {
+                    t.any(&mut |t| {
                         if let Type::Data(other) = t
                             && other != name
                         {

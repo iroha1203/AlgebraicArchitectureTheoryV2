@@ -393,7 +393,7 @@ fn collect_known_inner(
 }
 
 fn has_reference(ty: &Type) -> bool {
-    ty.clone().any(&mut |t| {
+    ty.any(&mut |t| {
         matches!(
             t,
             Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Data(_)
