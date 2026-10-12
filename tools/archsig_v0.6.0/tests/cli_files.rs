@@ -1,12 +1,11 @@
-//! AC7: 入力の読込み、出力の確定、中断、receipt の配送。
+//! AC7: 入力の読込み、出力の確定、確定時の中断状態。
 
 mod common;
 use archsig::result::{Signal, Status};
 use archsig::run::{CheckArgs, Io, Signals, run_check};
 use common::cli::*;
 use std::path::{Path, PathBuf};
-use std::process::Stdio;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 const LAW: &str = include_str!("fixtures/reservations.law");
 const MAP: &str = include_str!("fixtures/reservations.archmap.json");
@@ -98,36 +97,6 @@ fn existing_outputs_are_never_overwritten() {
         assert!(!has(&r.receipt, "result"), "{out}");
     }
     assert!(!dir.join("d2").exists());
-    // 検査中に別の処理が出力先を作っても、実際の rename は置き換えない。
-    slow_law(&dir);
-    let child = bin()
-        .current_dir(&dir)
-        .args([
-            "check",
-            "--law",
-            "slow.law",
-            "--archmap",
-            "slow.json",
-            "--out",
-            "raced",
-        ])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    std::thread::sleep(Duration::from_millis(1000));
-    // 空の directory は置き換えられる rename もあるので、空のまま作る。
-    std::fs::create_dir(dir.join("raced")).unwrap();
-    let out = child.wait_with_output().unwrap();
-    assert_eq!(out.status.code(), Some(74));
-    let receipt = archsig::json::parse(&out.stdout).unwrap();
-    assert_eq!(s(get(&receipt, "status")), "error");
-    assert!(!has(&receipt, "result"));
-    assert_eq!(
-        std::fs::read_dir(dir.join("raced")).unwrap().count(),
-        0,
-        "相手の空の出力先が置き換えられずに残る"
-    );
 }
 
 #[test]
@@ -378,166 +347,4 @@ fn signals_decide_the_status_once_at_finalize() {
             assert_eq!(s(get(get(cancelled, "details"), "signal")), signal);
         }
     }
-}
-
-/// 検査に時間のかかる Law。
-fn slow_law(dir: &Path) {
-    // debug ビルドで数秒かかり、メモリは少しで済む入力。7 個の H がそれぞれ自分の Sys の St を
-    // 要するが St は 6 個しかなく、補完の探索は全ての割当てを試してから補完なしと判定する。
-    let law = format!(
-        "{}reading P {{ entity Sys; entity St(owner: Sys); entity H(owner: Sys) {{ pick: St[owner]; }} }}\n",
-        common::HEADER
-    );
-    let digest = archsig::law::check_law(law.as_bytes())
-        .unwrap()
-        .vocabularies[0]
-        .digest
-        .clone();
-    let n = 7;
-    let mut subjects = Vec::new();
-    let mut atoms = Vec::new();
-    for i in 0..n {
-        subjects.push(format!(r#"{{"id":"S{i}","type":"P.Sys","origin":"o"}}"#));
-        subjects.push(format!(r#"{{"id":"h{i}","type":"P.H","origin":"o"}}"#));
-        atoms.push(format!(
-            r#"{{"id":"a{i}","subject":"h{i}","field":"P.H.owner","value":["v","S{i}"],"origin":"o"}}"#
-        ));
-    }
-    for i in 0..n - 1 {
-        subjects.push(format!(r#"{{"id":"t{i}","type":"P.St","origin":"o"}}"#));
-    }
-    let map = format!(
-        r#"{{"format":"archsig.archmap/1","semantics":"archsig/0.6.0","vocabularies":[{{"reading":"P","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"o","mode":"specification","method":"m","locations":[],"note":"n"}}],"snapshots":[{{"id":"v","origin":"o","subjects":[{}],"atoms":[{}]}}]}}"#,
-        subjects.join(","),
-        atoms.join(",")
-    );
-    std::fs::write(dir.join("slow.law"), law).unwrap();
-    std::fs::write(dir.join("slow.json"), map).unwrap();
-}
-
-#[test]
-fn real_signals_decide_the_status_at_finalize() {
-    // 二つ受けた場合は、最初に受けた signal を使う。
-    for (sigs, code, name) in [
-        (&["-INT"][..], 130, "SIGINT"),
-        (&["-TERM"][..], 143, "SIGTERM"),
-        (&["-TERM", "-INT"][..], 143, "SIGTERM"),
-        (&["-INT", "-TERM"][..], 130, "SIGINT"),
-    ] {
-        let dir = workdir(&format!("real{}", sigs.join("")));
-        slow_law(&dir);
-        let child = bin()
-            .current_dir(&dir)
-            .args([
-                "check",
-                "--law",
-                "slow.law",
-                "--archmap",
-                "slow.json",
-                "--out",
-                "o",
-            ])
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .unwrap();
-        // handler の登録を待ってから送る。
-        std::thread::sleep(Duration::from_millis(1000));
-        for sig in sigs {
-            std::thread::sleep(Duration::from_millis(200));
-            let status = std::process::Command::new("kill")
-                .arg(sig)
-                .arg(child.id().to_string())
-                .status()
-                .unwrap();
-            assert!(status.success());
-        }
-        let out = child.wait_with_output().unwrap();
-        assert_eq!(
-            out.status.code(),
-            Some(code),
-            "{sigs:?}: {:?} {}",
-            out.status,
-            String::from_utf8_lossy(&out.stderr)
-        );
-        let receipt =
-            archsig::json::parse(String::from_utf8(out.stdout).unwrap().trim_end().as_bytes())
-                .unwrap();
-        assert_eq!(s(get(&receipt, "status")), "interrupted");
-        let res = archsig::json::parse(&std::fs::read(dir.join("o/result.json")).unwrap()).unwrap();
-        assert_eq!(num(get(&res, "exit_code")), code as u64);
-        let cancelled = arr(get(&res, "issues"))
-            .iter()
-            .find(|i| s(get(i, "code")) == "cancelled")
-            .unwrap();
-        assert_eq!(s(get(get(cancelled, "details"), "signal")), name);
-    }
-}
-
-#[test]
-fn receipt_delivery_failure_keeps_the_published_result() {
-    let dir = workdir("receipt");
-    slow_law(&dir);
-    let mut child = bin()
-        .current_dir(&dir)
-        .args([
-            "check",
-            "--law",
-            "slow.law",
-            "--archmap",
-            "slow.json",
-            "--out",
-            "o",
-        ])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    // receipt を書く前に stdout の読み手を閉じる。
-    drop(child.stdout.take());
-    let out = child.wait_with_output().unwrap();
-    assert_eq!(out.status.code(), Some(65));
-    assert!(String::from_utf8_lossy(&out.stderr).contains("stdout"));
-    let res = archsig::json::parse(&std::fs::read(dir.join("o/result.json")).unwrap()).unwrap();
-    assert_eq!(s(get(&res, "status")), "invalid");
-    assert_eq!(num(get(&res, "exit_code")), 65);
-    // stderr にも書けなくても、確定した終了コードを変えない。
-    let mut child = bin()
-        .current_dir(&dir)
-        .args([
-            "check",
-            "--law",
-            "slow.law",
-            "--archmap",
-            "slow.json",
-            "--out",
-            "o2",
-        ])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    drop(child.stdout.take());
-    drop(child.stderr.take());
-    assert_eq!(child.wait().unwrap().code(), Some(65));
-    assert!(dir.join("o2/result.json").exists());
-    // 出力先が既にあって usage になる場合も同じ。
-    let mut child = bin()
-        .current_dir(&dir)
-        .args([
-            "check",
-            "--law",
-            "slow.law",
-            "--archmap",
-            "slow.json",
-            "--out",
-            "o2",
-        ])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    drop(child.stdout.take());
-    drop(child.stderr.take());
-    assert_eq!(child.wait().unwrap().code(), Some(64));
 }

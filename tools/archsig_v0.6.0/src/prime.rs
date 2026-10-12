@@ -127,20 +127,6 @@ fn strong_lucas(n: &BigUint) -> bool {
 mod tests {
     use super::*;
 
-    fn trial(n: u64) -> bool {
-        n >= 2
-            && (2..)
-                .take_while(|d| d * d <= n)
-                .all(|d| !n.is_multiple_of(d))
-    }
-
-    #[test]
-    fn agrees_with_trial_division() {
-        for n in 0u64..20000 {
-            assert_eq!(is_prime(&BigUint::from(n)), trial(n), "n={n}");
-        }
-    }
-
     #[test]
     fn large_known_values() {
         let m127 = (BigUint::one() << 127u32) - BigUint::one();

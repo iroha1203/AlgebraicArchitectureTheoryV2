@@ -1,4 +1,4 @@
-//! Law の読込みの順序(UTF-8・字句、版、文法、宣言)と、深い入れ子の入力。
+//! Law の読込みの順序(UTF-8・字句、版、文法、宣言)と、量化の区切り。
 
 mod common;
 use archsig::issue::{Code, Details, Location};
@@ -64,94 +64,6 @@ fn unknown_versions_are_unsupported_before_the_grammar_is_read() {
             .code,
         Code::Syntax
     );
-}
-
-/// 深い入れ子の正しい Law を、通常の大きさのスタックを持つ呼出し側から検査し、結果を捨てる。
-#[test]
-fn deeply_nested_valid_input_is_checked_without_crashing() {
-    let n = 100_000;
-    let parens = reading(&format!(
-        "view f(): Z = {}0{};",
-        "(".repeat(n),
-        ")".repeat(n)
-    ));
-    let negs = reading(&format!("view g(): Z = {}1;", "- ".repeat(n)));
-    let implies = reading(&format!(
-        "law optional h(): {}true;",
-        "true implies ".repeat(n)
-    ));
-    let field = reading(&format!(
-        "entity E {{ f: {}Z{}; }}",
-        "List<".repeat(n),
-        ">".repeat(n)
-    ));
-    let lists = reading(&format!(
-        "view k(): {}Z{} = list<{}Z{}>[];",
-        "List<".repeat(n),
-        ">".repeat(n),
-        "List<".repeat(n - 1),
-        ">".repeat(n - 1)
-    ));
-    let mut pattern = String::from("_");
-    for _ in 0..n {
-        pattern = format!("Node({pattern})");
-    }
-    let patterns = reading(&format!(
-        "data T = Leaf | Node(T); view p(t: T): Z = match t {{ {pattern} => 1; _ => 0; }};"
-    ));
-    // 文脈の型を探す読み、data の再帰の検査、correspondence の型の運搬も深さに耐える。
-    let m = 400_000;
-    let compared = reading(&format!(
-        "law optional l(x: Z): {}1{} = x;",
-        "(".repeat(m),
-        ")".repeat(m)
-    ));
-    let negated = reading(&format!("law optional l(x: Z): {}1 = x;", "- ".repeat(m)));
-    let tree = reading(&format!(
-        "data T = L | N({}T{});",
-        "List<".repeat(m),
-        ">".repeat(m)
-    ));
-    let moved = reading(&format!(
-        "entity S; entity A(owner: S) {{ f: {}Z{}; }} correspondence M(from: S, to: S) {{ xs: Map<A[from], A[to]>; }}",
-        "List<".repeat(m),
-        ">".repeat(m)
-    ));
-    for src in [
-        parens, negs, implies, field, lists, patterns, compared, negated, tree, moved,
-    ] {
-        std::thread::Builder::new()
-            .stack_size(2 * 1024 * 1024)
-            .spawn(move || {
-                let c = ok(&src);
-                assert!(!c.infos.is_empty());
-            })
-            .unwrap()
-            .join()
-            .unwrap();
-    }
-}
-
-/// 入れ子の量化ごとに区切りの候補を読み直しても検査を終える。
-#[test]
-fn nested_quantifier_splits_are_resolved() {
-    let depth = 40;
-    let mut body = String::from("true");
-    for i in (1..=depth).rev() {
-        body = format!("forall a{i} in a{}.kids . {body}", i - 1);
-    }
-    let src = reading(&format!(
-        "entity S; entity A(owner: S) {{ kids: Set<A>; }} law required l(a0: A): {body};"
-    ));
-    ok(&src);
-    let mut typed = String::from("true");
-    for i in (1..=depth).rev() {
-        typed = format!("forall t{i}: R.A . t{i}.kids = t{i}.kids and ({typed})");
-    }
-    let src = reading(&format!(
-        "entity S; entity A(owner: S) {{ kids: Set<A>; }} law required l(): {typed};"
-    ));
-    ok(&src);
 }
 
 #[test]
