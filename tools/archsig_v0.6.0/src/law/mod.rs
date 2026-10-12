@@ -6,6 +6,7 @@ mod body;
 mod check;
 mod expr;
 pub mod lexer;
+mod metadata;
 pub mod model;
 pub mod parser;
 

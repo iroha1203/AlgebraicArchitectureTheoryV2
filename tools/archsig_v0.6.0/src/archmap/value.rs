@@ -484,7 +484,7 @@ pub(crate) fn check_snapshots(raw: &[RawSnapshot<'_>], law: &CheckedLaw) -> ARes
                     format!("subject `{}` がない", a.subject),
                 ));
             };
-            let subject_ty = subjects[si].ty.clone();
+            let subject_ty = &subjects[si].ty;
             let Some(fi) = subjects[si].fields.iter().position(|f| f.name == a.field) else {
                 return Err(issue(
                     Code::Reference,
@@ -505,11 +505,11 @@ pub(crate) fn check_snapshots(raw: &[RawSnapshot<'_>], law: &CheckedLaw) -> ARes
             let reader = Reader {
                 law,
                 roster: &roster,
-                reading: &law.declarations[&subject_ty].reading,
+                reading: &law.declarations[subject_ty].reading,
             };
             let vptr = format!("{}/value", a.pointer);
-            let ty = subjects[si].fields[fi].ty.clone();
-            let value = reader.read(a.value, &ty, &vptr)?;
+            let ty = &subjects[si].fields[fi].ty;
+            let value = reader.read(a.value, ty, &vptr)?;
             subjects[si].fields[fi].slot = Slot::Known {
                 atom: a.id.clone(),
                 origin: a.origin.clone(),
