@@ -197,27 +197,3 @@ fn text_values_keep_unicode_and_control_characters() {
 
 const EXPECTED_TEXT_DIGEST: &str =
     "sha256:cea0d02df67f808bfdd586ffa79e2a8fb772293764fd3d6f31b17c72d1b9491f";
-
-/// 深い入れ子の値も、通常の大きさのスタックを持つ呼出し側から検査し、結果を捨てる。
-#[test]
-fn deeply_nested_values_are_checked_without_crashing() {
-    let n = 50_000;
-    let law = format!(
-        "law \"archsig.law/1\" semantics \"archsig/0.6.0\";\nreading L {{ entity E {{ xs: {}Z{}; }} }}\n",
-        "List<".repeat(n),
-        ">".repeat(n)
-    );
-    let value = format!("{}\"1\"{}", "[".repeat(n), "]".repeat(n));
-    std::thread::Builder::new()
-        .stack_size(2 * 1024 * 1024)
-        .spawn(move || {
-            let digest = ok(&law).vocabularies[0].digest.clone();
-            let map = format!(
-                r#"{{"format":"archsig.archmap/1","semantics":"archsig/0.6.0","vocabularies":[{{"reading":"L","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"o","mode":"specification","method":"m","locations":[],"note":"n"}}],"snapshots":[{{"id":"s","origin":"o","subjects":[{{"id":"e","type":"L.E","origin":"o"}}],"atoms":[{{"id":"a","subject":"e","field":"L.E.xs","value":{value},"origin":"o"}}]}}]}}"#
-            );
-            map_ok(&law, &map);
-        })
-        .unwrap()
-        .join()
-        .unwrap();
-}

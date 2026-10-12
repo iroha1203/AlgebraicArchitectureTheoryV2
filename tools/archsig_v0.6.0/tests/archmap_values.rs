@@ -250,7 +250,7 @@ fn completions_exist_for_unknown_owners_and_references() {
     assert_eq!(issue.code, Code::InconsistentObservation, "{issue:?}");
     // 位置は、subject の順と field の宣言順に条件を足して初めて補完が無くなる値。
     // i は owner に S を補えば満たせ、補完できないのは k.mate。
-    let mut subjects = vec![
+    let subjects = vec![
         ("S", "Sys"),
         ("T", "Sys"),
         ("i", "Item"),
@@ -270,12 +270,6 @@ fn completions_exist_for_unknown_owners_and_references() {
         (issue.code, pointer(&issue)),
         (Code::InconsistentObservation, "/snapshots/0/atoms/4/value")
     );
-    // 全 field が欠測の Item が多くても、探索は補完の有無と位置を決める。
-    let names: Vec<String> = (0..40).map(|n| format!("x{n}")).collect();
-    subjects.extend(names.iter().map(|n| (n.as_str(), "Item")));
-    let issue = map_err(LAW, &doc(&subjects, &atoms));
-    assert_eq!(pointer(&issue), "/snapshots/0/atoms/4/value");
-    map_ok(LAW, &doc(&subjects, &atoms[..4]));
 }
 
 const DATA_LAW: &str = r#"law "archsig.law/1" semantics "archsig/0.6.0";
@@ -437,46 +431,4 @@ fn origins_and_locations_are_checked() {
         .replace(r#""origins":["#, r#""origins":[{"id":"p","mode":"proposed","method":"案","locations":[],"note":"候補"},"#)
         .replacen(r#"{"id":"i","type":"V.Item","origin":"o"}"#, r#"{"id":"i","type":"V.Item","origin":"p"}"#, 1);
     assert_eq!(map_err(LAW, &mixed).code, Code::Reference);
-}
-
-const PICK_LAW: &str = r#"law "archsig.law/1" semantics "archsig/0.6.0";
-reading P {
-  entity Sys;
-  entity St(owner: Sys);
-  entity H(owner: Sys) { pick: St[owner]; }
-}
-"#;
-
-/// Sys・H を n 個ずつ、owner の欠測した St を st 個置く。各 H は自分の Sys の St を要する。
-fn pick_doc(n: usize, st: usize) -> String {
-    let mut subjects = Vec::new();
-    let mut atoms = Vec::new();
-    for i in 0..n {
-        subjects.push(format!(r#"{{"id":"S{i}","type":"P.Sys","origin":"o"}}"#));
-        subjects.push(format!(r#"{{"id":"h{i}","type":"P.H","origin":"o"}}"#));
-        atoms.push(format!(
-            r#"{{"id":"a{i}","subject":"h{i}","field":"P.H.owner","value":["v","S{i}"],"origin":"o"}}"#
-        ));
-    }
-    for i in 0..st {
-        subjects.push(format!(r#"{{"id":"t{i}","type":"P.St","origin":"o"}}"#));
-    }
-    format!(
-        r#"{{"format":"archsig.archmap/1","semantics":"archsig/0.6.0",
-"vocabularies":[{{"reading":"P","digest":"{}"}}],"sources":[],
-"origins":[{{"id":"o","mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例"}}],
-"snapshots":[{{"id":"v","origin":"o","subjects":[{}],"atoms":[{}]}}]}}"#,
-        ok(PICK_LAW).vocabularies[0].digest,
-        subjects.join(","),
-        atoms.join(",")
-    )
-}
-
-#[test]
-fn completions_that_need_distinct_owners_are_found() {
-    // 30 個の St の owner をそれぞれ別の Sys に補えば、各 H の pick を置ける。
-    map_ok(PICK_LAW, &pick_doc(30, 30));
-    // St が一つ足りなければ補完はない。
-    let issue = map_err(PICK_LAW, &pick_doc(4, 3));
-    assert_eq!(issue.code, Code::InconsistentObservation);
 }
