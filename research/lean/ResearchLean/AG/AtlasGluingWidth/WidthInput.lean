@@ -53,6 +53,14 @@ def left (e : Concept n × Bool) : Chart n :=
 /-- 指定有向辺の右端。 -/
 def right (e : Concept n × Bool) : Chart n :=
   if e.2 then (e.1 + 1, false) else (e.1, true)
+omit [NeZero n] in
+/-- 指定辺の左端を元のBool分岐で評価する公開規則。 -/
+@[simp] theorem left_apply (e : Concept n × Bool) :
+    left n e = if e.2 then (e.1, true) else (e.1, false) := rfl
+omit [NeZero n] in
+/-- 指定辺の右端を元のBool分岐で評価する公開規則。 -/
+@[simp] theorem right_apply (e : Concept n × Bool) :
+    right n e = if e.2 then (e.1 + 1, false) else (e.1, true) := rfl
 /-- 粗nerveは一点、辺・面なし。 -/
 abbrev coarseNerve : CoverNerve where
   Chart := Unit

@@ -1,4 +1,5 @@
 import ResearchLean.AG.AtlasDefectComposition.ZeroExtension
+import ResearchLean.AG.AtlasCoefficientFiber.HomologyRepresentatives
 import Mathlib.Algebra.Homology.HomologySequence
 import Mathlib.Algebra.Homology.HomologicalComplexAbelian
 import Mathlib.Algebra.Module.ULift
@@ -53,6 +54,35 @@ theorem scalarPoint_d (m : ℤ) (x : F.X m) (hx : F.d m (m+1) x = 0) :
 /-- 同じcocycleの標準homology classを取る。 -/
 def cycleClass (m : ℤ) (x : F.X m) (hx : F.d m (m+1) x = 0) : F.homology m :=
   (F.liftCycles (scalarPoint x) (m+1) (by simp) (scalarPoint_d F m x hx) ≫ F.homologyπ m) (ULift.up (1 : ℚ))
+
+/-- 零拡張次数0の標準classは同じ閉cochainの元H⁰同型の値である。 -/
+theorem cycleClass_zeroExtension_H0 (C : TwoPhase.ThreeCochainComplex.{0,u} ℚ)
+    (z : C.C0) (hz : C.d0 z = 0) :
+    cycleClass (AtlasDefectComposition.zeroExtension C) 0 z hz =
+      AtlasDefectComposition.oldH0Equiv C ⟨z,hz⟩ := by
+  have h := AtlasCoefficientFiber.zeroExtension_liftCycles_H0_apply C
+    (scalarPoint (V := ModuleCat.of ℚ C.C0) z)
+    (scalarPoint_d (AtlasDefectComposition.zeroExtension C) 0 z hz) (ULift.up (1 : ℚ))
+  dsimp only [cycleClass, ModuleCat.comp_apply]
+  convert h using 1
+  apply congrArg (AtlasDefectComposition.oldH0Equiv C)
+  apply Subtype.ext
+  exact (one_smul ℚ z).symm
+
+/-- 零拡張次数1の標準classは同じ閉cochain商の元H¹同型の値である。 -/
+theorem cycleClass_zeroExtension_H1 (C : TwoPhase.ThreeCochainComplex.{0,u} ℚ)
+    (z : C.C1) (hz : C.d1 z = 0) :
+    cycleClass (AtlasDefectComposition.zeroExtension C) 1 z hz =
+      AtlasDefectComposition.oldH1Equiv C (Submodule.Quotient.mk ⟨z,hz⟩) := by
+  have h := AtlasCoefficientFiber.zeroExtension_liftCycles_H1_apply C
+    (scalarPoint (V := ModuleCat.of ℚ C.C1) z)
+    (scalarPoint_d (AtlasDefectComposition.zeroExtension C) 1 z hz) (ULift.up (1 : ℚ))
+  dsimp only [cycleClass, ModuleCat.comp_apply]
+  convert h using 1
+  apply congrArg (AtlasDefectComposition.oldH1Equiv C)
+  apply congrArg Submodule.Quotient.mk
+  apply Subtype.ext
+  exact (one_smul ℚ z).symm
 
 /-- cyclesの元を表す係数射の持ち上げは、同じcyclesの元である。 -/
 theorem liftCycle_point (m : ℤ) (c : F.cycles m)
