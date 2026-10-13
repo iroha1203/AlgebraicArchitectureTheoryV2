@@ -791,3 +791,86 @@ fn short_primitive_ambiguity_stays_reference_after_full_name_priority() {
         Type::Ref("Counter.State".into())
     );
 }
+
+#[test]
+fn reading_alias_precedes_same_named_reading_full_names() {
+    let src = format!(
+        "{HEADER}reading A {{ view f(): Z = 1; }} reading B {{ view f(): Z = 2; }} reading R {{ use B as A; view g(): Z = A.f(); }}"
+    );
+    let c = ok(EMPTY_DEFINITION, &src);
+    let g = info(&c, "R.g");
+    assert_eq!(g.dependencies, ["B.f"]);
+    assert_eq!(g.references.len(), 1);
+    assert_eq!(g.references[0].1, "B.f");
+    assert_eq!(span_text(&src, g.references[0].0), "A.f");
+    assert_eq!(span_text(&src, g.expressions[0].span), "A.f()");
+    let r = info(&c, "R");
+    assert_eq!(r.dependencies, ["B"]);
+    assert_eq!(r.references.len(), 1);
+    assert_eq!(r.references[0].1, "B");
+    assert_eq!(span_text(&src, r.references[0].0), "B");
+    // 定数の原式は独立した宣言に保持し、呼出しの解決先だけを選ぶ。
+    assert_eq!(span_text(&src, info(&c, "A.f").expressions[0].span), "1");
+    assert_eq!(span_text(&src, info(&c, "B.f").expressions[0].span), "2");
+}
+
+#[test]
+fn missing_alias_member_does_not_fall_back_to_raw_reading() {
+    let src = format!(
+        "{HEADER}reading A {{ view f(): Z = 1; }} reading B {{ view other(): Z = 2; }} reading R {{ use B as A; view g(): Z = A.f(); }}"
+    );
+    let issue = err(EMPTY_DEFINITION, &src);
+    assert_eq!(issue.code, archsig::issue::Code::Reference);
+    let archsig::issue::Location::Law { span } = issue.location else {
+        panic!()
+    };
+    assert_eq!(span_text(&src, span), "A.f");
+}
+
+#[test]
+fn reading_alias_shadows_primitive_namespace_after_variable_projection() {
+    let src = format!(
+        "{HEADER}reading B {{ view f(): Z = 2; }} reading R {{ {QUALIFIED_COUNTER_IMPORT} use B as Counter; view g(s: State): Z = Counter.f() + s.count; view projected(Counter: State): Z = Counter.count; }}"
+    );
+    let c = ok(QUALIFIED_PRIMITIVES, &src);
+    let g = info(&c, "R.g");
+    assert_eq!(g.parameters[0].1, Type::Ref("Counter.State".into()));
+    let alias = g.references.iter().find(|(_, name)| name == "B.f").unwrap();
+    assert_eq!(span_text(&src, alias.0), "Counter.f");
+    assert_eq!(info(&c, "R").dependencies, ["B"]);
+    let projected = info(&c, "R.projected");
+    assert_eq!(projected.parameters[0].0, "Counter");
+    assert_eq!(projected.parameters[0].1, Type::Ref("Counter.State".into()));
+    let field = projected
+        .references
+        .iter()
+        .find(|(_, name)| name == "Counter.State.count")
+        .unwrap();
+    assert_eq!(span_text(&src, field.0), "count");
+    assert!(!projected.dependencies.contains(&"B.count".to_owned()));
+
+    // 短名の原始型には直接importが要る。reading aliasはその代わりにならない。
+    let missing_import = src.replace(QUALIFIED_COUNTER_IMPORT, "");
+    assert_eq!(
+        err(QUALIFIED_PRIMITIVES, &missing_import).code,
+        archsig::issue::Code::Reference
+    );
+    // namespaceと同じaliasも展開後の名前だけを解決し、原始完全名へ戻らない。
+    for (body, original) in [
+        ("view bad(s: Counter.State): Z = s.count;", "Counter.State"),
+        (
+            "view bad(): Z = Counter.Counter.State;",
+            "Counter.Counter.State",
+        ),
+    ] {
+        let src = format!(
+            "{HEADER}reading B {{ }} reading R {{ {QUALIFIED_COUNTER_IMPORT} use B as Counter; {body} }}"
+        );
+        let issue = err(QUALIFIED_PRIMITIVES, &src);
+        assert_eq!(issue.code, archsig::issue::Code::Reference);
+        let archsig::issue::Location::Law { span } = issue.location else {
+            panic!()
+        };
+        assert_eq!(span_text(&src, span), original);
+    }
+}
