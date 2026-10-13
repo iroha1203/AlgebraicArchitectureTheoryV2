@@ -163,8 +163,12 @@ pub(super) fn read(
         string(node, input, &pointer_push("", key))
     };
     let format = header("format")?;
-    let semantics = header("semantics")?;
-    if format != FORMAT || semantics != SEMANTICS {
+    let semantics = entries
+        .iter()
+        .find(|(k, _)| k == "semantics")
+        .map(|(_, n)| string(n, input, "/semantics"))
+        .transpose()?;
+    if format != FORMAT || semantics.as_deref() != Some(SEMANTICS) {
         let mut e = error(
             Code::UnsupportedVersion,
             input,
@@ -177,7 +181,7 @@ pub(super) fn read(
         );
         e.details = Details::Version {
             found_format: format,
-            found_semantics: Some(semantics),
+            found_semantics: semantics,
         };
         return Err(e);
     }
@@ -196,19 +200,16 @@ pub(super) fn read(
     let mut seen = BTreeSet::new();
     for (i, n) in nodes.iter().enumerate() {
         let vp = pointer_push(&p, &i.to_string());
-        let o = Obj::new(
-            n,
-            input,
-            &vp,
-            &[
-                "semantics",
-                "namespace",
-                "version",
-                "dependencies",
-                "declarations",
-            ],
-        )?;
-        let semantics = o.string("semantics")?;
+        // 語彙の意味の版を、対応版の schema 検査より先に読む。
+        let JValue::Obj(entries) = &n.value else {
+            return Err(error(Code::Syntax, input, &vp, "object が必要"));
+        };
+        let semantics_node = &entries
+            .iter()
+            .find(|(k, _)| k == "semantics")
+            .ok_or_else(|| error(Code::Syntax, input, &vp, "欄 `semantics` が必要"))?
+            .1;
+        let semantics = string(semantics_node, input, &pointer_push(&vp, "semantics"))?;
         if semantics != SEMANTICS {
             let mut e = error(
                 Code::UnsupportedVersion,
@@ -222,6 +223,18 @@ pub(super) fn read(
             };
             return Err(e);
         }
+        let o = Obj::new(
+            n,
+            input,
+            &vp,
+            &[
+                "semantics",
+                "namespace",
+                "version",
+                "dependencies",
+                "declarations",
+            ],
+        )?;
         let namespace = o.name("namespace")?;
         unique(
             &mut seen,

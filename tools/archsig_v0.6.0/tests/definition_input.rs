@@ -417,3 +417,128 @@ fn vocabulary_wrapper_order_normalizes_model_digest() {
         reversed.vocabularies["Counter"].digest
     );
 }
+
+#[test]
+fn fully_qualified_definition_name_is_not_shadowed_by_local_constructor() {
+    let s = document(&format!(
+        r#"{},{{"kind":"data","name":"N.N","meaning":"data","constructors":[{{"name":"A","arguments":[],"meaning":"case"}}]}},{}"#,
+        entity("A", "", ""),
+        entity("State", "", &field("value", r#"["Ref","N.A"]"#))
+    ));
+    let d = check(&s);
+    assert_eq!(
+        d.declarations["N.State"]
+            .signature
+            .field("value")
+            .unwrap()
+            .ty,
+        archsig::types::Type::Ref("N.A".into())
+    );
+    fail(
+        &s.replace(r#"["Ref","N.A"]"#, r#"["Ref","N.Absent"]"#),
+        Code::Reference,
+        "/vocabularies/0/declarations/2/fields/0/type/1",
+    );
+}
+fn correspondence_with_target_extra(complete: bool) -> String {
+    let owner_a = field("owner", r#"["Ref","N.RA"]"#);
+    let owner_b = field("owner", r#"["Ref","N.RB"]"#);
+    let a = field("a", r#""Z""#);
+    let extra = field("extra", r#""Z""#);
+    let source_fields = if complete { format!("{a},{extra}") } else { a };
+    let extra_alignment = if complete {
+        r#",{"source":"N.E.extra","target":"N.F.extra","meaning":"extra position"}"#
+    } else {
+        ""
+    };
+    let map = format!(
+        r#"{{"kind":"correspondence","name":"N.M","meaning":"map","parameters":[{},{}],"fields":[{}],"alignments":[{{"source":"N.E.owner","target":"N.F.owner","meaning":"owner"}},{{"source":"N.E.a","target":"N.F.b","meaning":"coordinate"}}{extra_alignment}]}}"#,
+        field("from", r#"["Ref","N.RA"]"#),
+        field("to", r#"["Ref","N.RB"]"#),
+        field(
+            "states",
+            r#"["Map",["Owned","N.E","from"],["Owned","N.F","to"]]"#
+        )
+    );
+    document(&format!(
+        "{},{},{},{},{map}",
+        entity("RA", "", ""),
+        entity("RB", "", ""),
+        entity("E", &owner_a, &source_fields),
+        entity(
+            "F",
+            &owner_b,
+            &format!("{},{}", field("b", r#""Z""#), extra)
+        )
+    ))
+}
+#[test]
+fn correspondence_requires_all_target_field_positions() {
+    fail(
+        &correspondence_with_target_extra(false),
+        Code::Syntax,
+        "/vocabularies/0/declarations/4/name",
+    );
+    let complete = check(&correspondence_with_target_extra(true));
+    let PrimitiveSignature::Correspondence { alignments, .. } =
+        &complete.declarations["N.M"].signature
+    else {
+        panic!()
+    };
+    assert_eq!(alignments.len(), 3);
+}
+#[test]
+fn missing_semantics_with_string_format_is_unsupported() {
+    use archsig::issue::Details;
+    for format in [definition::FORMAT, "archsig.atom-definition/99"] {
+        let s = format!(r#"{{"format":"{format}","future":true}}"#);
+        let e = definition::check_definitions(&[("definition0", s.as_bytes())]).unwrap_err();
+        assert_eq!(e.issue.code, Code::UnsupportedVersion);
+        assert_eq!(
+            e.issue.details,
+            Details::Version {
+                found_format: format.into(),
+                found_semantics: None
+            }
+        );
+    }
+    fail(r#"{"format":1,"future":true}"#, Code::Syntax, "/format");
+    fail(
+        r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","future":true,"vocabularies":[]}"#,
+        Code::Syntax,
+        "/future",
+    );
+}
+#[test]
+fn root_and_vocabulary_unknown_versions_precede_schema_unknown_fields() {
+    use archsig::issue::Details;
+    fail(
+        r#"{"format":"archsig.atom-definition/1","semantics":"archsig/future","future":true}"#,
+        Code::UnsupportedVersion,
+        "/semantics",
+    );
+    let s = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/future","future":true}]}"#;
+    let e = definition::check_definitions(&[("definition0", s.as_bytes())]).unwrap_err();
+    assert_eq!(e.issue.code, Code::UnsupportedVersion);
+    assert_eq!(
+        e.issue.details,
+        Details::Version {
+            found_format: definition::FORMAT.into(),
+            found_semantics: Some("archsig/future".into())
+        }
+    );
+    assert_eq!(
+        e.issue.location,
+        Location::Definition {
+            input: "definition0".into(),
+            pointer: "/vocabularies/0/semantics".into(),
+            span: None
+        }
+    );
+    let supported = LIBRARY.replacen(
+        r#""namespace": "Counter""#,
+        r#""future": true, "namespace": "Counter""#,
+        1,
+    );
+    fail(&supported, Code::Syntax, "/vocabularies/0/future");
+}

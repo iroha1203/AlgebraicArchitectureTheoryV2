@@ -50,7 +50,7 @@ pub(super) fn check(defs: &mut CheckedDefinitions) -> Result<(), Box<Issue>> {
     let (mut checker, handles) = adapter(defs);
     let result = checker
         .collect_names()
-        .and_then(|()| checker.check_primitives());
+        .and_then(|()| check_exact_primitives(&mut checker));
     if let Err(mut issue) = result {
         if let Location::Law { span } = &issue.location {
             issue.location = handles.get(span.0).cloned().unwrap_or_else(|| {
@@ -385,8 +385,16 @@ impl Handles {
 pub(crate) fn context(defs: &CheckedDefinitions) -> Checker {
     let (mut checker, _) = adapter(defs);
     checker.collect_names().expect("原始定義の名前は検査済み");
-    checker.check_primitives().expect("原始型は検査済み");
+    check_exact_primitives(&mut checker).expect("原始型は検査済み");
     checker
+}
+/// 定義の QName は完全名だけを持つ。Law の短名展開をこの段階で適用しない。
+fn check_exact_primitives(checker: &mut Checker) -> Result<(), Box<Issue>> {
+    let shorts = std::mem::take(&mut checker.shorts);
+    checker.shorts = vec![Default::default(); shorts.len()];
+    let result = checker.check_primitives();
+    checker.shorts = shorts;
+    result
 }
 fn adapter(defs: &CheckedDefinitions) -> (Checker, Vec<Location>) {
     let mut h = Handles {
