@@ -283,7 +283,8 @@ impl Checker {
             return out;
         }
         if let Some(target) = self.aliases[reading].get(head) {
-            out.push(full(target, &rest));
+            // alias が先頭の意味を固定する。展開先が未解決でも元の reading 名へ戻さない。
+            return vec![full(target, &rest)];
         }
         if self.shorts[reading].contains(head) {
             let mut all = vec![head.as_str()];
@@ -357,13 +358,15 @@ impl Checker {
         self.primitive_visible(reading, name, false)
     }
 
-    /// 最長 prefix を先に選ぶ。実在する完全名は短名へ再展開せず一意に読む。
-    /// alias/import の相対候補しかない場合は、同じ長さの全候補で曖昧性を検査する。
+    /// alias の頭部を先に展開し、その scope 内で最長 prefix を選ぶ。
+    /// alias がなければ実在する完全名を短名へ再展開せず、それ以外の相対候補の曖昧性を検査する。
     pub fn resolve_prefix(
         &mut self,
         reading: usize,
         parts: &[Ident],
     ) -> CResult<Option<(Target, usize)>> {
+        let aliased =
+            self.term_namespace.is_none() && self.aliases[reading].contains_key(&parts[0].name);
         for k in (1..=parts.len()).rev() {
             let span = (parts[0].span.0, parts[k - 1].span.1);
             let written = parts[..k]
@@ -371,7 +374,7 @@ impl Checker {
                 .map(|p| p.name.as_str())
                 .collect::<Vec<_>>()
                 .join(".");
-            if let Some(target) = self.target(&written) {
+            if !aliased && let Some(target) = self.target(&written) {
                 if !self.target_visible(reading, &target) {
                     return reference(span, format!("完全名 `{written}` をこの scope で使えない"));
                 }
