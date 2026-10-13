@@ -30,7 +30,7 @@ pub struct RawSnapshot<'a> {
 }
 
 pub struct RawDocument<'a> {
-    pub vocabularies: Vec<(String, String)>,
+    pub vocabularies: Vec<Binding>,
     pub sources: Vec<(Source, String)>,
     pub origins: Vec<(Origin, String)>,
     pub snapshots: Vec<RawSnapshot<'a>>,
@@ -206,7 +206,12 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
             code: Code::UnsupportedVersion,
             message: "未対応の format または semantics".into(),
             location: Location::ArchMap {
-                pointer: "/format".into(),
+                pointer: if format != FORMAT {
+                    "/format"
+                } else {
+                    "/semantics"
+                }
+                .into(),
                 span: None,
             },
             details: Details::Version {
@@ -231,25 +236,41 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
 
     let (items, ptr) = top.array("vocabularies")?;
     let mut vocabularies = Vec::new();
-    let mut readings = HashSet::new();
+    let mut namespaces = HashSet::new();
     for (i, v) in items.iter().enumerate() {
-        let o = Obj::new(v, &format!("{ptr}/{i}"), &["reading", "digest"], &[])?;
-        let reading = o.string("reading")?;
-        if !is_name(&reading) {
-            return Err(syntax(&format!("{ptr}/{i}/reading"), "reading は名前"));
+        let pointer = format!("{ptr}/{i}");
+        let o = Obj::new(v, &pointer, &["namespace", "version", "digest"], &[])?;
+        let namespace = o.string("namespace")?;
+        if !is_name(&namespace) || crate::law::parser::is_reserved(&namespace) {
+            return Err(syntax(&format!("{pointer}/namespace"), "namespace は名前"));
+        }
+        let version = o.string("version")?;
+        if version.is_empty() {
+            return Err(syntax(
+                &format!("{pointer}/version"),
+                "version は非空文字列",
+            ));
         }
         let digest = o.string("digest")?;
         if !is_digest(&digest) {
-            return Err(syntax(&format!("{ptr}/{i}/digest"), "Digest の形式でない"));
+            return Err(syntax(&format!("{pointer}/digest"), "Digest の形式でない"));
         }
-        if !readings.insert(reading.clone()) {
+        if !namespaces.insert(namespace.clone()) {
             return Err(issue(
                 Code::DuplicateId,
-                &format!("{ptr}/{i}/reading"),
-                format!("reading `{reading}` の binding が重複している"),
+                &format!("{pointer}/namespace"),
+                format!("namespace `{namespace}` の binding が重複している"),
             ));
         }
-        vocabularies.push((reading, digest));
+        vocabularies.push(Binding {
+            namespace,
+            version,
+            digest,
+            location: Location::ArchMap {
+                pointer,
+                span: None,
+            },
+        });
     }
 
     let (items, ptr) = top.array("sources")?;

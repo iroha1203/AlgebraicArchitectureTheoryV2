@@ -1,6 +1,7 @@
 # ArchSig v0.6.0
 
-[v0.6.0 I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md)に従い、Law と ArchMap の二入力を検査する。
+[v0.6.0 I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md)に従い、独立Atom定義と、
+その共通語彙を参照するLaw・ArchMapを検査する。
 旧版 `tools/archsig` とは独立したクレートである。
 
 ## 現在の範囲
@@ -9,7 +10,7 @@
   依存 DAG・binding・原始型を検査し、meaning・入力位置・語彙 manifest と digest を保持する。
 - Law の静的検査: 構文・版・名前・型・依存型・構造再帰・純粋性。
 - 型付きの宣言と原式、出現位置、参照の解決、既定規則(`archsig::law::check_law`)。
-- 語彙 manifest と digest、Law の `bytes_digest`・`model_digest`。
+- Atom定義の語彙 manifest と digest、各定義ファイルとLawの `bytes_digest`・`model_digest`。
 - ArchMap の静的検査: 版・schema・ID・由来・語彙 binding・原始値の型と encoding・参照・
   依存型の所属・Map の全域性・欠測 slot の補完の存在。既知値と欠測 slot を持つ内部表現と
   `model_digest`(`archsig::archmap::check_archmap`)。
@@ -22,31 +23,37 @@
 ## テスト
 
 ```bash
-cargo test --manifest-path tools/archsig_v0.6.0/Cargo.toml
+cargo test --offline --manifest-path tools/archsig_v0.6.0/Cargo.toml -j 1 --test TARGET NAME -- --exact --test-threads=1
 ```
 
 `tests/fixtures/` の規範例は [適合例](../../docs/tool/archsig_v0_6_0_io/validation.md) の
 `examples/` と同じ byte 列である。テストは docs を読み込まない。
+小さい試験名を個別に指定し、同時には一件だけ実行する。
 
 ## 利用手順
 
 ```bash
-cargo build --manifest-path tools/archsig_v0.6.0/Cargo.toml
+cargo build --offline --manifest-path tools/archsig_v0.6.0/Cargo.toml -j 1
 ```
 
 以下の `archsig` は、作られた `tools/archsig_v0.6.0/target/debug/archsig` を指す。
 
-Law 単独で検査し、語彙 manifest と digest を得る。
+共通定義とLawを検査し、語彙manifest、型付き宣言と元の位置を得る。
 
 ```bash
-archsig check --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --out result-law
+archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --out result-law
 ```
 
-ArchMap を指定すると、Law の語彙との binding と原始値・参照・由来・補完の整合性を検査する。
+ArchMapを指定すると、同じ定義へのbindingと原始値・参照・由来・補完の整合性を検査する。
 
 ```bash
-archsig check --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --archmap tools/archsig_v0.6.0/tests/fixtures/reservations.archmap.json --out result-both
+archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --archmap tools/archsig_v0.6.0/tests/fixtures/reservations.archmap.json --out result-both
 ```
 
 `--out` は存在しない path を指定する。結果は `result-law/result.json` などに書かれ、
 stdout には一行の receipt が出る。`archsig version` は版を一行で出す。
+
+定義ファイルを複数指定する場合は `--atom-definition` を指定順に繰り返す。
+読込みは明示したファイルだけで完結し、未使用の語彙・依存・importも検査して保持する。
+結果は `archsig.result/2`。定義コピーは `inputs/definitions/0.json` 等に保存し、
+入力ID `definition0` 等とJSON Pointerで元の定義位置を追える。

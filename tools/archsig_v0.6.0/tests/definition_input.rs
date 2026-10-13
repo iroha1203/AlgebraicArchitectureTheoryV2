@@ -542,3 +542,91 @@ fn root_and_vocabulary_unknown_versions_precede_schema_unknown_fields() {
     );
     fail(&supported, Code::Syntax, "/vocabularies/0/future");
 }
+
+#[test]
+fn native_data_properties_follow_transitive_constructor_types() {
+    let defs = document(&format!(
+        r#"{},
+{{"kind":"data","name":"N.RefValue","meaning":"reference value","constructors":[{{"name":"Box","arguments":[["Ref","N.Root"]],"meaning":"reference"}}]}},
+{{"kind":"data","name":"N.Wrapper","meaning":"wrapper","constructors":[{{"name":"Wrap","arguments":[["Data","N.RefValue"]],"meaning":"wrapped reference"}}]}},
+{{"kind":"data","name":"N.TermValue","meaning":"term value","constructors":[{{"name":"Body","arguments":[["Term",["Z"],"Z"]],"meaning":"body"}}]}},
+{{"kind":"data","name":"N.TermWrapper","meaning":"term wrapper","constructors":[{{"name":"Wrap","arguments":[["Data","N.TermValue"]],"meaning":"wrapped term"}}]}}"#,
+        entity("Root", "", "")
+    ));
+    let d = check(&defs);
+    let properties = d.data_properties();
+    assert_eq!(properties.len(), 4);
+    for name in ["N.RefValue", "N.Wrapper"] {
+        assert!(properties[name].reference);
+        assert!(!properties[name].term_or_path);
+    }
+    for name in ["N.TermValue", "N.TermWrapper"] {
+        assert!(!properties[name].reference);
+        assert!(properties[name].term_or_path);
+    }
+    let at = Location::Definition {
+        input: "definition7".into(),
+        pointer: "/probe".into(),
+        span: None,
+    };
+    let set =
+        archsig::types::Type::Set(Box::new(archsig::types::Type::Data("N.TermWrapper".into())));
+    assert_eq!(
+        d.check_primitive_type(&set, &at, &[]).unwrap_err().location,
+        at
+    );
+    let term = archsig::types::Type::Term(
+        vec![archsig::types::Type::Data("N.Wrapper".into())],
+        Box::new(archsig::types::Type::Z),
+    );
+    assert_eq!(
+        d.check_primitive_type(&term, &at, &[]).unwrap_err().code,
+        Code::Syntax
+    );
+}
+#[test]
+fn native_type_validation_keeps_nested_owned_parameter_position() {
+    use archsig::{issue::Details, types::Type};
+    let d = check(&document(&format!(
+        "{},{}",
+        entity("Root", "", ""),
+        entity("Node", &field("owner", r#"["Ref","N.Root"]"#), "")
+    )));
+    assert!(d.is_root_entity("N.Root"));
+    assert_eq!(d.owner_root("N.Node"), Some("N.Root"));
+    let at = Location::Definition {
+        input: "definition7".into(),
+        pointer: "/probe".into(),
+        span: None,
+    };
+    let ty = Type::Tuple(vec![
+        Type::Z,
+        Type::List(Box::new(Type::Owned("N.Node".into(), "root".into()))),
+    ]);
+    let bad_root = Type::Z;
+    let e = d
+        .check_primitive_type(&ty, &at, &[("root", &bad_root)])
+        .unwrap_err();
+    assert_eq!(e.code, Code::Type);
+    assert_eq!(
+        e.location,
+        Location::Definition {
+            input: "definition7".into(),
+            pointer: "/probe/2/1/2".into(),
+            span: None
+        }
+    );
+    assert_eq!(
+        e.details,
+        Details::Type {
+            expected: Type::Ref("N.Root".into()),
+            actual: Type::Z
+        }
+    );
+    let root = Type::Ref("N.Root".into());
+    d.check_primitive_type(&ty, &at, &[("root", &root)])
+        .unwrap();
+    let missing = d.check_primitive_type(&ty, &at, &[]).unwrap_err();
+    assert_eq!(missing.code, Code::Reference);
+    assert_eq!(missing.location, e.location);
+}

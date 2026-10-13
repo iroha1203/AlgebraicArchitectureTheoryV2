@@ -1,10 +1,7 @@
-law "archsig.law/1" semantics "archsig/0.6.0";
+law "archsig.law/2" semantics "archsig/0.6.0";
 
 reading Engine {
-  data Expr = Lit(Z) | Var | Add(Expr, Expr);
-  data IR = Const(Z) | Load | Plus(IR, IR) | Minus(IR, IR);
-  data Operator = AddOp | SubtractOp;
-  entity Compiler { source: Expr; operator: Operator; }
+  use vocabulary Engine version "1" digest "sha256:5c45e2e06c365a98e8d85aa0046ef16d0da903644cecc7f3e3a4dadb87a84d4c";
 
   view evalSource(e: Expr, x: Z): Z = match e {
     Lit(n) => n;

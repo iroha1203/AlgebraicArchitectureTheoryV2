@@ -4,6 +4,7 @@ mod common;
 use archsig::law::CheckedLaw;
 use archsig::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
 use archsig::types::Type;
+use common::law_definitions::*;
 use common::*;
 
 const SHORT: &str = "  law required conserved(e: Reserve):\n    e.to.free + e.to.held = e.from.free + e.from.held;\n";
@@ -20,9 +21,12 @@ fn info<'a>(c: &'a CheckedLaw, name: &str) -> &'a DeclarationInfo {
 fn short_and_explicit_forms_resolve_to_the_same_meaning() {
     assert!(RESERVATIONS.contains(SHORT));
     let explicit_src = RESERVATIONS.replace(SHORT, EXPLICIT);
-    let short = ok(RESERVATIONS);
-    let explicit = ok(&explicit_src);
-    assert_eq!(short.vocabularies, explicit.vocabularies);
+    let short = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
+    let explicit = ok(RESERVATIONS_DEFINITION, &explicit_src);
+    assert_eq!(
+        short.definitions.vocabularies,
+        explicit.definitions.vocabularies
+    );
     assert_ne!(short.model_digest, explicit.model_digest);
     assert_ne!(short.bytes_digest, explicit.bytes_digest);
 
@@ -87,7 +91,7 @@ fn short_and_explicit_forms_resolve_to_the_same_meaning() {
 
 #[test]
 fn reading_records_declared_or_support_locals() {
-    let c = ok(RESERVATIONS);
+    let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
     let r = info(&c, "Reservations");
     assert_eq!(
         r.supplied,
@@ -97,8 +101,11 @@ fn reading_records_declared_or_support_locals() {
         span_text(RESERVATIONS, r.span),
         RESERVATIONS[RESERVATIONS.find("reading").unwrap()..].trim_end()
     );
-    let without = reading("entity S; entity A(owner: S) { x: Z; } law required l(a: A): a.x = 0;");
-    let c = ok(&without);
+    let without = reading(
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+law required l(a: A): a.x = 0;"#,
+    );
+    let c = ok(DEF_08, &without);
     let r = info(&c, "R");
     assert_eq!(
         r.supplied,
@@ -108,12 +115,12 @@ fn reading_records_declared_or_support_locals() {
 
 #[test]
 fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
-    let c = ok(RESERVATIONS);
-    let m = info(&c, "Reservations.Migration");
-    let SuppliedRule::SameNameAlignment { pairs, span } = &m.supplied[0] else {
+    use archsig::definition::PrimitiveSignature;
+    let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
+    let m = &c.definitions.declarations["Reservations.Migration"];
+    let PrimitiveSignature::Correspondence { implicit, .. } = &m.signature else {
         panic!()
     };
-    assert_eq!(*span, m.span);
     let expected: Vec<(String, String)> = [
         "Reserve.from",
         "Reserve.owner",
@@ -125,85 +132,155 @@ fn implicit_alignment_is_recorded_apart_from_explicit_alignment() {
     .iter()
     .map(|f| (format!("Reservations.{f}"), format!("Reservations.{f}")))
     .collect();
-    assert_eq!(*pairs, expected);
-    // 暗黙の同名対応は語彙 manifest の alignments に入らない。
+    assert_eq!(*implicit, expected);
+    assert_eq!(
+        m.location,
+        archsig::issue::Location::Definition {
+            input: "definition0".into(),
+            pointer: "/vocabularies/0/declarations/0".into(),
+            span: None
+        }
+    );
     assert!(
-        c.vocabularies[0]
+        c.definitions.vocabularies["Reservations"]
             .manifest
             .canonical()
             .contains(r#""alignments":[]"#)
     );
-
-    // 同じ型の間で明記した align は manifest に入り、その field は同名対応から外れる。
-    let swapped = ok(&reading(
-        "entity S; entity A(owner: S) { x: Z; y: Z; }
-         correspondence Swap(from: S, to: S) {
-           items: Map<A[from], A[to]>;
-           align A.x = A.y;
-           align R.A.y = R.A.x;
-         }",
-    ));
-    let sw = info(&swapped, "R.Swap");
-    let SuppliedRule::SameNameAlignment { pairs, .. } = &sw.supplied[0] else {
+    let swapped = definitions_ok(&[DEF_35]);
+    let sw = &swapped.declarations["R.Swap"];
+    let PrimitiveSignature::Correspondence {
+        implicit,
+        alignments,
+        ..
+    } = &sw.signature
+    else {
         panic!()
     };
     assert_eq!(
-        *pairs,
+        *implicit,
         vec![("R.A.owner".to_owned(), "R.A.owner".to_owned())]
     );
-    let manifest = swapped.vocabularies[0].manifest.canonical();
-    assert!(manifest.contains(
-        r#""alignments":[{"source":"R.A.x","target":"R.A.y"},{"source":"R.A.y","target":"R.A.x"}]"#
-    ));
+    assert_eq!(
+        alignments
+            .iter()
+            .map(|a| (a.source.as_str(), a.target.as_str()))
+            .collect::<Vec<_>>(),
+        [("R.A.x", "R.A.y"), ("R.A.y", "R.A.x")]
+    );
+    for a in alignments {
+        assert!(matches!(
+            a.location,
+            archsig::issue::Location::Definition { .. }
+        ));
+    }
 }
 
 #[test]
 fn constructors_have_their_own_metadata() {
-    let c = ok(ENGINE);
-    let lit = info(&c, "Engine.Expr.Lit");
-    assert_eq!(lit.kind, "data");
-    assert_eq!(lit.parameters, vec![("arg0".to_owned(), Type::Z)]);
-    assert_eq!(span_text(ENGINE, lit.span), "Lit(Z)");
-    let add = info(&c, "Engine.Expr.Add");
-    let expr = Type::Data("Engine.Expr".into());
+    use archsig::definition::PrimitiveSignature;
+    let c = ok(ENGINE_DEFINITION, ENGINE);
+    let data = &c.definitions.declarations["Engine.Expr"];
+    let PrimitiveSignature::Data { constructors } = &data.signature else {
+        panic!()
+    };
+    let lit = &constructors[0];
+    assert_eq!(lit.name, "Lit");
+    assert_eq!(lit.arguments, vec![Type::Z]);
     assert_eq!(
-        add.parameters,
-        vec![("arg0".to_owned(), expr.clone()), ("arg1".to_owned(), expr)]
+        lit.location,
+        archsig::issue::Location::Definition {
+            input: "definition0".into(),
+            pointer: "/vocabularies/0/declarations/1/constructors/0".into(),
+            span: None
+        }
     );
-    assert_eq!(add.dependencies, ["Engine.Expr"]);
-    assert!(info(&c, "Engine.Expr.Var").parameters.is_empty());
-    let data = info(&c, "Engine.Expr");
+    assert_eq!(constructors[1].name, "Var");
+    assert!(constructors[1].arguments.is_empty());
     assert_eq!(
-        span_text(ENGINE, data.span),
-        "data Expr = Lit(Z) | Var | Add(Expr, Expr);"
+        constructors[2].arguments,
+        vec![
+            Type::Data("Engine.Expr".into()),
+            Type::Data("Engine.Expr".into())
+        ]
     );
-    // pattern と式の constructor は、元の名前の出現を指す。
+    assert_eq!(data.dependencies, ["Engine.Expr"]);
+    assert_eq!(
+        data.location,
+        archsig::issue::Location::Definition {
+            input: "definition0".into(),
+            pointer: "/vocabularies/0/declarations/1".into(),
+            span: None
+        }
+    );
+    use archsig::canonical::Json;
+    let rows = archsig::result::primitive_declarations_wire(data);
+    let obj = |j: &Json| {
+        if let Json::Obj(_) = j {
+        } else {
+            panic!()
+        }
+    };
+    rows.iter().for_each(obj);
+    let Json::Obj(lit_wire) = &rows[1] else {
+        panic!()
+    };
+    assert_eq!(lit_wire["name"], Json::str("Engine.Expr.Lit"));
+    assert_eq!(lit_wire["kind"], Json::str("data"));
+    assert_eq!(
+        lit_wire["parameters"],
+        Json::Arr(vec![Json::obj([
+            ("name", Json::str("arg0")),
+            ("type", Type::Z.wire())
+        ])])
+    );
+    assert_eq!(
+        lit_wire["location"],
+        archsig::result::location_wire(&lit.location)
+    );
+    assert_eq!(lit_wire["vocabularies"], Json::Arr(vec![]));
+    let Json::Obj(add_wire) = &rows[3] else {
+        panic!()
+    };
+    assert_eq!(
+        add_wire["parameters"],
+        Json::Arr(vec![
+            Json::obj([
+                ("name", Json::str("arg0")),
+                ("type", Type::Data("Engine.Expr".into()).wire())
+            ]),
+            Json::obj([
+                ("name", Json::str("arg1")),
+                ("type", Type::Data("Engine.Expr".into()).wire())
+            ])
+        ])
+    );
+    assert_eq!(
+        add_wire["dependencies"],
+        Json::Arr(vec![Json::str("Engine.Expr")])
+    );
     let translate = info(&c, "Engine.translate");
-    let plus = translate
-        .references
-        .iter()
-        .find(|(_, n)| n == "Engine.IR.Plus")
-        .unwrap();
-    assert_eq!(span_text(ENGINE, plus.0), "Plus");
-    let lit_pattern = translate
-        .references
-        .iter()
-        .find(|(_, n)| n == "Engine.Expr.Lit")
-        .unwrap();
-    assert_eq!(span_text(ENGINE, lit_pattern.0), "Lit");
+    for (name, text) in [("Engine.IR.Plus", "Plus"), ("Engine.Expr.Lit", "Lit")] {
+        let r = translate
+            .references
+            .iter()
+            .find(|(_, n)| n == name)
+            .unwrap();
+        assert_eq!(span_text(ENGINE, r.0), text);
+    }
 }
 
 #[test]
 fn references_through_parentheses_point_at_the_name() {
     let src = reading(
-        "data D = C(Z);
-         view f(x: Z): Z = x;
+        r#"use vocabulary R version "1" digest "sha256:fc16a746d9bbf546e29b15de1761fc4bdb4547c1a3a764f41cbad994f79967c8";
+view f(x: Z): Z = x;
          view g(): Z = ((f))( 1 ) + ( /* */ f)(2);
          view h(): D = (D.C)(1);
-         view k(): D = ( R.D.C )(2);",
+         view k(): D = ( R.D.C )(2);"#,
     );
     let src = src.replace("/* */", "");
-    let c = ok(&src);
+    let c = ok(DEF_36, &src);
     let g = info(&c, "R.g");
     assert_eq!(g.references.len(), 2);
     for (span, name) in &g.references {
@@ -272,24 +349,32 @@ fn assert_locations(src: &str, c: &CheckedLaw) {
 
 #[test]
 fn every_location_points_into_the_bundled_input() {
-    for src in [RESERVATIONS, ENGINE, &RESERVATIONS.replace(SHORT, EXPLICIT)] {
-        let c = ok(src);
+    for (def, src) in [
+        (RESERVATIONS_DEFINITION, RESERVATIONS),
+        (ENGINE_DEFINITION, ENGINE),
+        (
+            RESERVATIONS_DEFINITION,
+            RESERVATIONS.replace(SHORT, EXPLICIT).as_str(),
+        ),
+    ] {
+        let c = ok(def, src);
         assert_locations(src, &c);
     }
     let unicode = reading(
-        "view t(): Text = \"日本語の文字列\"; view u(): Z = count(list<Text>[\"é\", t()]);",
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view t(): Text = "日本語の文字列"; view u(): Z = count(list<Text>["é", t()]);"#,
     );
-    assert_locations(&unicode, &ok(&unicode));
+    assert_locations(&unicode, &ok(DEF_04, &unicode));
 }
 
 #[test]
 fn declarations_are_listed_by_full_name_with_expression_types() {
-    let c = ok(RESERVATIONS);
+    let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
     let names: Vec<_> = c.infos.iter().map(|i| i.name.as_str()).collect();
     let mut sorted = names.clone();
     sorted.sort();
     assert_eq!(names, sorted);
-    assert_eq!(names.len(), 12);
+    assert_eq!(names.len(), 8);
     let transfer = info(&c, "Reservations.Transfer");
     let pair = Type::Tuple(vec![Type::Z, Type::Z]);
     assert_eq!(
@@ -305,9 +390,9 @@ fn declarations_are_listed_by_full_name_with_expression_types() {
         rebalance.expressions[0].ty,
         Type::Ref("Reservations.State".into())
     );
-    let reserve = info(&c, "Reservations.Reserve");
+    let reserve = &c.definitions.declarations["Reservations.Reserve"];
     assert_eq!(
-        reserve.parameters[1].1,
+        reserve.signature.field("from").unwrap().ty,
         Type::Owned("Reservations.State".into(), "owner".into())
     );
 }
@@ -410,15 +495,19 @@ fn reachable(c: &CheckedLaw) -> Vec<(archsig::law::ast::ExprId, bool)> {
 #[test]
 fn resolved_expressions_are_kept_in_memory_with_their_types() {
     let quants = reading(
-        "entity S; entity A(owner: S) { x: Z; kids: Set<A>; pair: (Set<Z>, Z); }
-         law required b(p: A): forall k in p.kids . k.x = p.x;
+        r#"use vocabulary R version "1" digest "sha256:73fd11199856d7666429e6aaebf6f4ff127f0b686b02d02ef79222cd411f67c0";
+law required b(p: A): forall k in p.kids . k.x = p.x;
          law required c(p: A): exists n in p.pair.0 . n = p.pair.1;
          law required e(p: A): forall t: A . t.x = t.x;
          law required f(p: A): forall t: R.S . forall u: A[t] . u.x = u.x;
-         view g(p: A): Set<Z> = set{ k.x | k in p.kids where forall j in k.kids . j.x > 0 };",
+         view g(p: A): Set<Z> = set{ k.x | k in p.kids where forall j in k.kids . j.x > 0 };"#,
     );
-    for src in [RESERVATIONS, ENGINE, quants.as_str()] {
-        let c = ok(src);
+    for (def, src) in [
+        (RESERVATIONS_DEFINITION, RESERVATIONS),
+        (ENGINE_DEFINITION, ENGINE),
+        (DEF_31, quants.as_str()),
+    ] {
+        let c = ok(def, src);
         for (id, _) in reachable(&c) {
             assert!(
                 c.expr_type(id).is_some(),
@@ -428,7 +517,7 @@ fn resolved_expressions_are_kept_in_memory_with_their_types() {
         }
     }
     // retained の量化は、域 State[m.from] と本体 holdings(m.states(s)) = holdings(s) に分かれる。
-    let c = ok(RESERVATIONS);
+    let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
     let archsig::law::model::Signature::Law { body, .. } =
         &c.declarations["Reservations.retained"].signature
     else {
@@ -457,4 +546,173 @@ fn resolved_expressions_are_kept_in_memory_with_their_types() {
         c.expr_type(*d),
         Some(&Type::Set(Box::new(Type::Ref("Reservations.State".into()))))
     );
+}
+
+const SCOPE_DEFINITION: &str = include_str!("fixtures/law-scope.atoms.json");
+const IMPORT_A: &str = r#"use vocabulary A version "1" digest "sha256:da3d613a3c0971fa5e60be83a68f5ce8a26864e768b8e789ec4c742cb282415f";"#;
+const IMPORT_B: &str = r#"use vocabulary B version "1" digest "sha256:848963f024e20d44d51d63c159cecdd22c8d8eee87047480b83b97b0345870c9";"#;
+
+#[test]
+fn counter_readings_share_one_primitive_type_and_keep_direct_imports() {
+    let c = ok(COUNTER_DEFINITION, COUNTER);
+    assert_eq!(c.definitions.declarations.len(), 1);
+    assert!(!c.declarations.contains_key("Counter.State"));
+    for n in [
+        "CountCheck.amount",
+        "CountCheck.nonnegative",
+        "CountAudit.bounded",
+    ] {
+        assert_eq!(
+            info(&c, n).parameters[0].1,
+            Type::Ref("Counter.State".into())
+        );
+    }
+    for n in ["CountCheck", "CountAudit"] {
+        let r = info(&c, n);
+        assert_eq!(r.vocabularies.len(), 1);
+        assert_eq!(r.vocabularies[0].namespace, "Counter");
+        let archsig::issue::Location::Law { span } = r.vocabularies[0].location else {
+            panic!()
+        };
+        assert!(span_text(COUNTER, span).starts_with("use vocabulary Counter"));
+    }
+    assert!(
+        c.infos
+            .iter()
+            .filter(|i| i.kind != "reading")
+            .all(|i| i.vocabularies.is_empty())
+    );
+}
+
+#[test]
+fn direct_import_is_required_for_full_names_but_not_signature_dependencies() {
+    let indirect = reading(&format!("{IMPORT_A} view v(h: Holder): Z = h.other.x;"));
+    let c = ok(SCOPE_DEFINITION, &indirect);
+    assert!(
+        info(&c, "R.v")
+            .references
+            .iter()
+            .any(|(_, n)| n == "B.State.x")
+    );
+    for body in [
+        "view v(s: B.State): Z = s.x;",
+        "view v(): B.D = B.D.C(1);",
+        "view v(): Term<(Z) -> B.D> = fn(n: Z) => B.D.C(n);",
+    ] {
+        let src = reading(&format!("{IMPORT_A} {body}"));
+        assert_eq!(
+            err(SCOPE_DEFINITION, &src).code,
+            archsig::issue::Code::Reference
+        );
+        let src = reading(&format!("{IMPORT_A} {IMPORT_B} {body}"));
+        ok(SCOPE_DEFINITION, &src);
+    }
+}
+
+#[test]
+fn ambiguous_short_names_require_full_names_and_imports_are_sorted() {
+    let src = reading(&format!("{IMPORT_B} {IMPORT_A} view v(s: State): Z = s.x;"));
+    assert_eq!(
+        err(SCOPE_DEFINITION, &src).code,
+        archsig::issue::Code::Reference
+    );
+    let src = src.replace("s: State", "s: A.State");
+    let c = ok(SCOPE_DEFINITION, &src);
+    assert_eq!(
+        info(&c, "R")
+            .vocabularies
+            .iter()
+            .map(|v| v.namespace.as_str())
+            .collect::<Vec<_>>(),
+        ["A", "B"]
+    );
+    assert_eq!(info(&c, "R.v").parameters[0].1, Type::Ref("A.State".into()));
+    let duplicate = reading(&format!("{IMPORT_A} {IMPORT_A}"));
+    assert_eq!(
+        err(SCOPE_DEFINITION, &duplicate).code,
+        archsig::issue::Code::DuplicateId
+    );
+}
+
+#[test]
+fn namespace_reading_name_is_allowed_but_full_declaration_collision_is_rejected() {
+    let valid = format!("{HEADER}reading A {{ {IMPORT_A} view amount(s: State): Z = s.x; }}");
+    ok(SCOPE_DEFINITION, &valid);
+    let collision = format!("{HEADER}reading A {{ {IMPORT_A} view State(): Z = 1; }}");
+    assert_eq!(
+        err(SCOPE_DEFINITION, &collision).code,
+        archsig::issue::Code::DuplicateId
+    );
+}
+
+#[test]
+fn unused_imports_are_checked_and_retained() {
+    let src = reading(&format!("{IMPORT_A} {IMPORT_B}"));
+    let c = ok(SCOPE_DEFINITION, &src);
+    assert_eq!(info(&c, "R").vocabularies.len(), 2);
+    for (from, to, code) in [
+        (
+            "vocabulary A",
+            "vocabulary Missing",
+            archsig::issue::Code::Reference,
+        ),
+        (
+            "version \"1\"",
+            "version \"2\"",
+            archsig::issue::Code::VocabularyMismatch,
+        ),
+        (
+            "sha256:da3d613a3c0971fa5e60be83a68f5ce8a26864e768b8e789ec4c742cb282415f",
+            "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            archsig::issue::Code::VocabularyMismatch,
+        ),
+    ] {
+        let bad = src.replacen(from, to, 1);
+        assert_ne!(bad, src);
+        let issue = err(SCOPE_DEFINITION, &bad);
+        assert_eq!(issue.code, code);
+        let archsig::issue::Location::Law { span } = issue.location else {
+            panic!()
+        };
+        assert!(span_text(&bad, span).contains("use vocabulary"));
+    }
+}
+
+const BEFORE_AFTER: &str = r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  law required nonnegative(s: State): s.free >= 0;
+}
+reading After {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  law required nonnegative(t: State): t.free >= 5;
+}
+"#;
+
+#[test]
+fn before_after_variants_are_valid_without_cross_reading_preservation() {
+    let variants = [
+        BEFORE_AFTER.to_owned(),
+        BEFORE_AFTER.replace("nonnegative(t:", "bounded(t:"),
+        BEFORE_AFTER.replace("nonnegative(t: State)", "nonnegative(t: State, limit: Z)"),
+        BEFORE_AFTER.replace("law required nonnegative(t:", "law optional nonnegative(t:"),
+    ];
+    for src in variants {
+        let c = ok(RESERVATIONS_DEFINITION, &src);
+        let before = info(&c, "Before.nonnegative");
+        let after = c
+            .infos
+            .iter()
+            .find(|i| i.name == "After.nonnegative" || i.name == "After.bounded")
+            .unwrap();
+        assert_eq!(before.parameters[0].1, after.parameters[0].1);
+        assert_eq!(
+            before.parameters[0].1,
+            Type::Ref("Reservations.State".into())
+        );
+        assert_eq!(span_text(&src, before.expressions[0].span), "s.free >= 0");
+        assert_eq!(span_text(&src, after.expressions[0].span), "t.free >= 5");
+        assert_eq!(c.definitions.declarations.len(), 4);
+        assert_ne!(before.span, after.span);
+    }
 }

@@ -1,0 +1,125 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "declarations": [
+        {
+          "alignments": [],
+          "fields": [],
+          "kind": "entity",
+          "meaning": "test entity",
+          "name": "A.S",
+          "parameters": []
+        },
+        {
+          "alignments": [],
+          "fields": [
+            {
+              "meaning": "test field",
+              "name": "v",
+              "type": "Z"
+            }
+          ],
+          "kind": "entity",
+          "meaning": "test entity",
+          "name": "A.St",
+          "parameters": [
+            {
+              "meaning": "test field",
+              "name": "owner",
+              "type": [
+                "Ref",
+                "A.S"
+              ]
+            }
+          ]
+        },
+        {
+          "alignments": [],
+          "fields": [
+            {
+              "meaning": "test field",
+              "name": "sts",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "A.St",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "A.St",
+                  "to"
+                ]
+              ]
+            }
+          ],
+          "kind": "correspondence",
+          "meaning": "test correspondence",
+          "name": "A.M",
+          "parameters": [
+            {
+              "meaning": "test field",
+              "name": "from",
+              "type": [
+                "Ref",
+                "A.S"
+              ]
+            },
+            {
+              "meaning": "test field",
+              "name": "to",
+              "type": [
+                "Ref",
+                "A.S"
+              ]
+            }
+          ]
+        }
+      ],
+      "dependencies": [],
+      "namespace": "A",
+      "semantics": "archsig/0.6.0",
+      "version": "1"
+    },
+    {
+      "namespace": "B",
+      "semantics": "archsig/0.6.0",
+      "version": "1",
+      "dependencies": [
+        {
+          "namespace": "A",
+          "version": "1",
+          "digest": "sha256:55161a35167ee22219a1d40a37f45f34a860bcbd6e4f72fab9d8ce6c19b55680"
+        }
+      ],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "B.Extra",
+          "meaning": "test entity",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "A.S"
+              ],
+              "meaning": "test field"
+            }
+          ],
+          "fields": [
+            {
+              "name": "w",
+              "type": "Z",
+              "meaning": "test field"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

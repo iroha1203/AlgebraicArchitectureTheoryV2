@@ -70,8 +70,7 @@ pub(super) fn finalize(
     signals: &mut dyn Signals,
     out: &Path,
     mut result: CheckResult,
-    law: Option<&[u8]>,
-    archmap: Option<&[u8]>,
+    copies: &[(&str, &[u8])],
     started: Instant,
     mut stderr: Vec<String>,
 ) -> Outcome {
@@ -92,12 +91,23 @@ pub(super) fn finalize(
         step("create", &tmp, io.create_dir(&tmp))?;
         let inputs = tmp.join("inputs");
         step("create", &inputs, io.create_dir(&inputs))?;
-        for (name, bytes) in [("law.law", law), ("archmap.json", archmap)] {
-            if let Some(bytes) = bytes {
-                let p = inputs.join(name);
-                step("write", &p, io.write(&p, bytes))?;
-                step("flush", &p, io.flush(&p))?;
-            }
+        let definitions = inputs.join("definitions");
+        if copies
+            .iter()
+            .any(|(p, _)| p.starts_with("inputs/definitions/"))
+        {
+            step("create", &definitions, io.create_dir(&definitions))?;
+        }
+        for (name, bytes) in copies {
+            let p = tmp.join(name);
+            step("write", &p, io.write(&p, bytes))?;
+            step("flush", &p, io.flush(&p))?;
+        }
+        if copies
+            .iter()
+            .any(|(p, _)| p.starts_with("inputs/definitions/"))
+        {
+            step("flush", &definitions, io.flush(&definitions))?;
         }
         let p = tmp.join("result.json");
         step(

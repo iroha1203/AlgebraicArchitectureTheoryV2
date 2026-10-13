@@ -125,3 +125,10 @@ pub struct CheckedDefinitions {
     pub vocabularies: BTreeMap<String, Vocabulary>,
     pub inputs: Vec<DefinitionIdentity>,
 }
+
+/// data の引数から推移的に計算した原始型の性質。
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct DataProperties {
+    pub term_or_path: bool,
+    pub reference: bool,
+}

@@ -5,21 +5,194 @@ use archsig::archmap::{Slot, Value};
 use archsig::issue::Code;
 use common::*;
 
-const LAW: &str = r#"law "archsig.law/1" semantics "archsig/0.6.0";
-reading V {
-  entity Sys;
-  data Tree = Leaf | Node(Tree, Tree, Z);
-  entity Item(owner: Sys) {
-    n: Z; q: Q; r: Fp(7); t: Text; b: Bool; u: Unit;
-    l: List<Z>; s: Set<Z>; o: Option<Z>; pair: (Z, Text);
-    tree: Tree; f: Term<(Z) -> Z>; peer: Item[owner]; mate: Item[owner]; any: Item; m: Z;
-  }
-  view v(i: Item): Z = i.n;
-}
-"#;
+const DEFINITION: &str = r#"{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "V",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "V.Sys",
+          "meaning": "V.Sys の対象",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "data",
+          "name": "V.Tree",
+          "meaning": "V.Tree の有限木",
+          "constructors": [
+            {
+              "name": "Leaf",
+              "arguments": [],
+              "meaning": "Leaf の引数を順に保持"
+            },
+            {
+              "name": "Node",
+              "arguments": [
+                [
+                  "Data",
+                  "V.Tree"
+                ],
+                [
+                  "Data",
+                  "V.Tree"
+                ],
+                "Z"
+              ],
+              "meaning": "Node の引数を順に保持"
+            }
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "V.Item",
+          "meaning": "V.Item の対象",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "V.Sys"
+              ],
+              "meaning": "owner の値"
+            }
+          ],
+          "fields": [
+            {
+              "name": "n",
+              "type": "Z",
+              "meaning": "n の値"
+            },
+            {
+              "name": "q",
+              "type": "Q",
+              "meaning": "q の値"
+            },
+            {
+              "name": "r",
+              "type": [
+                "Fp",
+                "7"
+              ],
+              "meaning": "r の値"
+            },
+            {
+              "name": "t",
+              "type": "Text",
+              "meaning": "t の値"
+            },
+            {
+              "name": "b",
+              "type": "Bool",
+              "meaning": "b の値"
+            },
+            {
+              "name": "u",
+              "type": "Unit",
+              "meaning": "u の値"
+            },
+            {
+              "name": "l",
+              "type": [
+                "List",
+                "Z"
+              ],
+              "meaning": "l の値"
+            },
+            {
+              "name": "s",
+              "type": [
+                "Set",
+                "Z"
+              ],
+              "meaning": "s の値"
+            },
+            {
+              "name": "o",
+              "type": [
+                "Option",
+                "Z"
+              ],
+              "meaning": "o の値"
+            },
+            {
+              "name": "pair",
+              "type": [
+                "Tuple",
+                "Z",
+                "Text"
+              ],
+              "meaning": "pair の値"
+            },
+            {
+              "name": "tree",
+              "type": [
+                "Data",
+                "V.Tree"
+              ],
+              "meaning": "tree の値"
+            },
+            {
+              "name": "f",
+              "type": [
+                "Term",
+                [
+                  "Z"
+                ],
+                "Z"
+              ],
+              "meaning": "f の値"
+            },
+            {
+              "name": "peer",
+              "type": [
+                "Owned",
+                "V.Item",
+                "owner"
+              ],
+              "meaning": "peer の値"
+            },
+            {
+              "name": "mate",
+              "type": [
+                "Owned",
+                "V.Item",
+                "owner"
+              ],
+              "meaning": "mate の値"
+            },
+            {
+              "name": "any",
+              "type": [
+                "Ref",
+                "V.Item"
+              ],
+              "meaning": "any の値"
+            },
+            {
+              "name": "m",
+              "type": "Z",
+              "meaning": "m の値"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}"#;
 
 fn digest() -> String {
-    ok(LAW).vocabularies[0].digest.clone()
+    definitions_ok(&[DEFINITION]).vocabularies["V"]
+        .digest
+        .clone()
 }
 
 /// subject `(id, 型の短名)` と Atom `(subject, field の短名, 値の JSON)` から ArchMap を作る。
@@ -43,8 +216,8 @@ fn doc(subjects: &[(&str, &str)], atoms: &[(&str, &str, &str)]) -> String {
         })
         .collect();
     format!(
-        r#"{{"format":"archsig.archmap/1","semantics":"archsig/0.6.0",
-"vocabularies":[{{"reading":"V","digest":"{}"}}],"sources":[],
+        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
+"vocabularies":[{{"namespace":"V","version":"1","digest":"{}"}}],"sources":[],
 "origins":[{{"id":"o","mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例"}}],
 "snapshots":[{{"id":"v","origin":"o","subjects":[{}],"atoms":[{}]}}]}}"#,
         digest(),
@@ -75,7 +248,7 @@ fn item(field: &str, value: &str) -> String {
 }
 
 fn accepts(field: &str, value: &str) -> Value {
-    let c = map_ok(LAW, &item(field, value));
+    let c = map_ok(DEFINITION, &item(field, value));
     match &common::field(&c, "v", "i", field).slot {
         Slot::Known { value, .. } => clone_value(value),
         Slot::Missing => panic!("{field} は既知"),
@@ -93,7 +266,7 @@ fn clone_value(v: &Value) -> Value {
 }
 
 fn rejects(field: &str, value: &str, code: Code) -> String {
-    let issue = map_err(LAW, &item(field, value));
+    let issue = map_err(DEFINITION, &item(field, value));
     assert_eq!(issue.code, code, "{field}={value} => {issue:?}");
     pointer(&issue).to_owned()
 }
@@ -104,7 +277,7 @@ fn missing_zero_empty_and_none_are_kept_apart() {
     assert_eq!(accepts("o", r#"{"none":true}"#), Value::Option(None));
     assert_eq!(accepts("l", "[]"), Value::List(vec![]));
     assert_eq!(accepts("s", "[]"), Value::Set(vec![]));
-    let c = map_ok(LAW, &item("n", r#""0""#));
+    let c = map_ok(DEFINITION, &item("n", r#""0""#));
     let missing: Vec<_> = missing_slots(&c)
         .into_iter()
         .filter(|m| m.1 == "i")
@@ -130,8 +303,8 @@ fn numbers_are_exact_and_canonical() {
     for bad in [r#""-0""#, r#""01""#, r#""+1""#, r#""1.0""#, "1", r#"" 1""#] {
         rejects("n", bad, Code::Syntax);
     }
-    map_ok(LAW, &item("q", r#"["-2","3"]"#));
-    map_ok(LAW, &item("q", r#"["0","1"]"#));
+    map_ok(DEFINITION, &item("q", r#"["-2","3"]"#));
+    map_ok(DEFINITION, &item("q", r#"["0","1"]"#));
     for bad in [
         r#"["2","4"]"#,
         r#"["1","-2"]"#,
@@ -141,7 +314,7 @@ fn numbers_are_exact_and_canonical() {
     ] {
         rejects("q", bad, Code::Syntax);
     }
-    map_ok(LAW, &item("r", r#""6""#));
+    map_ok(DEFINITION, &item("r", r#""6""#));
     for bad in [r#""7""#, r#""-1""#, r#""08""#] {
         rejects("r", bad, Code::Syntax);
     }
@@ -149,9 +322,9 @@ fn numbers_are_exact_and_canonical() {
 
 #[test]
 fn containers_trees_and_terms_follow_their_types() {
-    map_ok(LAW, &item("pair", r#"["1","é\u0001"]"#));
+    map_ok(DEFINITION, &item("pair", r#"["1","é\u0001"]"#));
     rejects("pair", r#"["1"]"#, Code::Syntax);
-    map_ok(LAW, &item("l", r#"["1","1","2"]"#));
+    map_ok(DEFINITION, &item("l", r#"["1","1","2"]"#));
     assert_eq!(
         rejects("s", r#"["1","2","1"]"#, Code::Syntax),
         "/snapshots/0/atoms/2/value/2"
@@ -160,13 +333,16 @@ fn containers_trees_and_terms_follow_their_types() {
     rejects("u", r#"["x"]"#, Code::Syntax);
     rejects("b", r#""true""#, Code::Syntax);
     let tree = r#"{"tag":"Node","args":[{"tag":"Leaf","args":[]},{"tag":"Node","args":[{"tag":"Leaf","args":[]},{"tag":"Leaf","args":[]},"2"]},"1"]}"#;
-    map_ok(LAW, &item("tree", tree));
+    map_ok(DEFINITION, &item("tree", tree));
     rejects("tree", r#"{"tag":"Twig","args":[]}"#, Code::Syntax);
     rejects("tree", r#"{"tag":"Node","args":[]}"#, Code::Syntax);
     rejects("tree", r#"{"tag":"V.Tree.Leaf","args":[]}"#, Code::Syntax);
-    map_ok(LAW, &item("f", r#"{"params":["x"],"body":"x * x + 1"}"#));
     map_ok(
-        LAW,
+        DEFINITION,
+        &item("f", r#"{"params":["x"],"body":"x * x + 1"}"#),
+    );
+    map_ok(
+        DEFINITION,
         &item(
             "f",
             r#"{"params":["x"],"body":"match Tree.Node(Leaf, Leaf, x) { Leaf => 0; Node(a, b, k) => k; }"}"#,
@@ -184,12 +360,12 @@ fn containers_trees_and_terms_follow_their_types() {
 
 #[test]
 fn references_carry_their_snapshot_and_declared_type() {
-    map_ok(LAW, &item("any", r#"["v","j"]"#));
+    map_ok(DEFINITION, &item("any", r#"["v","j"]"#));
     rejects("any", r#"["w","j"]"#, Code::Reference);
     rejects("any", r#"["v","k"]"#, Code::Reference);
     rejects("any", r#"["v","S"]"#, Code::Type);
     rejects("any", r#""j""#, Code::Syntax);
-    map_ok(LAW, &item("peer", r#"["v","j"]"#));
+    map_ok(DEFINITION, &item("peer", r#"["v","j"]"#));
     // 依存参照は所属先が一致する subject だけを指す。
     let other_owner = doc(
         &[("S", "Sys"), ("T", "Sys"), ("i", "Item"), ("j", "Item")],
@@ -199,7 +375,7 @@ fn references_carry_their_snapshot_and_declared_type() {
             ("i", "peer", r#"["v","j"]"#),
         ],
     );
-    let issue = map_err(LAW, &other_owner);
+    let issue = map_err(DEFINITION, &other_owner);
     assert_eq!(
         (issue.code, pointer(&issue)),
         (Code::InconsistentObservation, "/snapshots/0/atoms/2/value")
@@ -210,7 +386,7 @@ fn references_carry_their_snapshot_and_declared_type() {
 fn completions_exist_for_unknown_owners_and_references() {
     // j の owner が未知でも、S を補えば i.peer の所属条件を満たせる。
     map_ok(
-        LAW,
+        DEFINITION,
         &doc(
             &BASE,
             &[
@@ -221,7 +397,7 @@ fn completions_exist_for_unknown_owners_and_references() {
     );
     // i.peer が未知でも、所属の合う Item がある。
     map_ok(
-        LAW,
+        DEFINITION,
         &doc(
             &BASE,
             &[
@@ -246,7 +422,7 @@ fn completions_exist_for_unknown_owners_and_references() {
             ("i", "mate", r#"["v","k"]"#),
         ],
     );
-    let issue = map_err(LAW, &split);
+    let issue = map_err(DEFINITION, &split);
     assert_eq!(issue.code, Code::InconsistentObservation, "{issue:?}");
     // 位置は、subject の順と field の宣言順に条件を足して初めて補完が無くなる値。
     // i は owner に S を補えば満たせ、補完できないのは k.mate。
@@ -265,24 +441,118 @@ fn completions_exist_for_unknown_owners_and_references() {
         ("k", "peer", r#"["v","j"]"#),
         ("k", "mate", r#"["v","l"]"#),
     ];
-    let issue = map_err(LAW, &doc(&subjects, &atoms));
+    let issue = map_err(DEFINITION, &doc(&subjects, &atoms));
     assert_eq!(
         (issue.code, pointer(&issue)),
         (Code::InconsistentObservation, "/snapshots/0/atoms/4/value")
     );
 }
 
-const DATA_LAW: &str = r#"law "archsig.law/1" semantics "archsig/0.6.0";
-reading W {
-  entity Sys;
-  entity Tgt;
-  data D = C(Map<Sys, Sys>);
-  data E = K(Map<Sys, Tgt>);
-  entity Item { d: D; e: E; }
-}
-"#;
+const DATA_DEFINITION: &str = r#"{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "W",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "W.Sys",
+          "meaning": "W.Sys の対象",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "W.Tgt",
+          "meaning": "W.Tgt の対象",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "data",
+          "name": "W.D",
+          "meaning": "W.D の有限木",
+          "constructors": [
+            {
+              "name": "C",
+              "arguments": [
+                [
+                  "Map",
+                  [
+                    "Ref",
+                    "W.Sys"
+                  ],
+                  [
+                    "Ref",
+                    "W.Sys"
+                  ]
+                ]
+              ],
+              "meaning": "C の引数を順に保持"
+            }
+          ]
+        },
+        {
+          "kind": "data",
+          "name": "W.E",
+          "meaning": "W.E の有限木",
+          "constructors": [
+            {
+              "name": "K",
+              "arguments": [
+                [
+                  "Map",
+                  [
+                    "Ref",
+                    "W.Sys"
+                  ],
+                  [
+                    "Ref",
+                    "W.Tgt"
+                  ]
+                ]
+              ],
+              "meaning": "K の引数を順に保持"
+            }
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "W.Item",
+          "meaning": "W.Item の対象",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "d",
+              "type": [
+                "Data",
+                "W.D"
+              ],
+              "meaning": "d の値"
+            },
+            {
+              "name": "e",
+              "type": [
+                "Data",
+                "W.E"
+              ],
+              "meaning": "e の値"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}"#;
 
-/// DATA_LAW の ArchMap。subject `(id, 型の短名)`、Item の Atom `(subject, field, 値)`。
+/// DATA_DEFINITION の ArchMap。subject `(id, 型の短名)`、Item の Atom `(subject, field, 値)`。
 fn data_doc(subjects: &[(&str, &str)], atoms: &[(&str, &str, &str)]) -> String {
     let subjects: Vec<String> = subjects
         .iter()
@@ -298,11 +568,11 @@ fn data_doc(subjects: &[(&str, &str)], atoms: &[(&str, &str, &str)]) -> String {
         })
         .collect();
     format!(
-        r#"{{"format":"archsig.archmap/1","semantics":"archsig/0.6.0",
-"vocabularies":[{{"reading":"W","digest":"{}"}}],"sources":[],
+        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
+"vocabularies":[{{"namespace":"W","version":"1","digest":"{}"}}],"sources":[],
 "origins":[{{"id":"o","mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例"}}],
 "snapshots":[{{"id":"v","origin":"o","subjects":[{}],"atoms":[{}]}}]}}"#,
-        ok(DATA_LAW).vocabularies[0].digest,
+        definitions_ok(&[DATA_DEFINITION]).vocabularies["W"].digest,
         subjects.join(","),
         atoms.join(",")
     )
@@ -313,9 +583,9 @@ fn maps_inside_data_values_are_total_and_completable() {
     let full = r#"{"tag":"C","args":[[[["v","S"],["v","S"]],[["v","T"],["v","S"]]]]}"#;
     let partial = r#"{"tag":"C","args":[[[["v","S"],["v","S"]]]]}"#;
     let systems = [("S", "Sys"), ("T", "Sys"), ("X", "Tgt"), ("i", "Item")];
-    map_ok(DATA_LAW, &data_doc(&systems, &[("i", "d", full)]));
+    map_ok(DATA_DEFINITION, &data_doc(&systems, &[("i", "d", full)]));
     // data の引数の Map も、key が始域の族をちょうど覆う。
-    let issue = map_err(DATA_LAW, &data_doc(&systems, &[("i", "d", partial)]));
+    let issue = map_err(DATA_DEFINITION, &data_doc(&systems, &[("i", "d", partial)]));
     assert_eq!(
         (issue.code, pointer(&issue)),
         (
@@ -325,13 +595,13 @@ fn maps_inside_data_values_are_total_and_completable() {
     );
     // Tgt が一つもなく Sys があると、欠測した e に置ける E の値がない。
     let no_target = [("S", "Sys"), ("T", "Sys"), ("i", "Item")];
-    let issue = map_err(DATA_LAW, &data_doc(&no_target, &[("i", "d", full)]));
+    let issue = map_err(DATA_DEFINITION, &data_doc(&no_target, &[("i", "d", full)]));
     assert_eq!(
         (issue.code, pointer(&issue)),
         (Code::InconsistentObservation, "/snapshots/0/subjects/2")
     );
     // Sys もなければ、空の Map で E の値を作れる。
-    map_ok(DATA_LAW, &data_doc(&[("i", "Item")], &[]));
+    map_ok(DATA_DEFINITION, &data_doc(&[("i", "Item")], &[]));
 }
 
 #[test]
@@ -344,7 +614,7 @@ fn duplicate_facts_are_rejected_even_with_equal_values() {
             ("i", "n", r#""1""#),
         ],
     );
-    let issue = map_err(LAW, &twice);
+    let issue = map_err(DEFINITION, &twice);
     assert_eq!(
         (issue.code, pointer(&issue)),
         (Code::DuplicateFact, "/snapshots/0/atoms/2")
@@ -379,14 +649,14 @@ fn origins_and_locations_are_checked() {
     ];
     for (from, to, code) in variants {
         assert!(base.contains(from), "{from}");
-        let issue = map_err(LAW, &base.replacen(from, to, 1));
+        let issue = map_err(DEFINITION, &base.replacen(from, to, 1));
         assert_eq!(issue.code, code, "{to} => {issue:?}");
     }
     // observed の由来は実在する source の位置を一つ以上持つ。
     let observed = base
         .replace(r#""sources":[]"#, &format!(r#""sources":[{{"id":"src","uri":"file:///repo","revision":"r1","digest":"sha256:{}"}}]"#, "a".repeat(64)))
         .replace(r#""mode":"specification","method":"手で書いた例","locations":[],"note":"検査の例""#, r#""mode":"observed","method":"読んだ","locations":[{"source":"src","path":"src/a.rs","span":[3,9]}]"#);
-    map_ok(LAW, &observed);
+    map_ok(DEFINITION, &observed);
     let long = format!("[0,1{}e-1000]", "0".repeat(1000));
     for exact in [
         "[3.0,9]",
@@ -394,7 +664,7 @@ fn origins_and_locations_are_checked() {
         "[0,9007199254740991]",
         long.as_str(),
     ] {
-        map_ok(LAW, &observed.replacen("[3,9]", exact, 1));
+        map_ok(DEFINITION, &observed.replacen("[3,9]", exact, 1));
     }
     for (from, to, code) in [
         (r#""path":"src/a.rs""#, r#""path":"../a.rs""#, Code::Syntax),
@@ -423,12 +693,12 @@ fn origins_and_locations_are_checked() {
             Code::Reference,
         ),
     ] {
-        let issue = map_err(LAW, &observed.replacen(from, to, 1));
+        let issue = map_err(DEFINITION, &observed.replacen(from, to, 1));
         assert_eq!(issue.code, code, "{to} => {issue:?}");
     }
     // snapshot と subject の由来の mode は一致する。
     let mixed = base
         .replace(r#""origins":["#, r#""origins":[{"id":"p","mode":"proposed","method":"案","locations":[],"note":"候補"},"#)
         .replacen(r#"{"id":"i","type":"V.Item","origin":"o"}"#, r#"{"id":"i","type":"V.Item","origin":"p"}"#, 1);
-    assert_eq!(map_err(LAW, &mixed).code, Code::Reference);
+    assert_eq!(map_err(DEFINITION, &mixed).code, Code::Reference);
 }

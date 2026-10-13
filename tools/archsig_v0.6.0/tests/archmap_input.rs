@@ -7,8 +7,8 @@ use archsig::issue::{Code, Details, Location};
 use common::*;
 
 fn failure(map: &[u8]) -> archsig::issue::Issue {
-    let law = ok(RESERVATIONS);
-    check_archmap(map, &law).expect_err("落ちるはず").issue
+    let checked = definitions_ok(&[RESERVATIONS_DEFINITION]);
+    check_archmap(map, &checked).expect_err("落ちるはず").issue
 }
 
 #[test]
@@ -65,8 +65,8 @@ fn json_errors_are_rejected_with_their_position() {
 fn unknown_versions_come_before_unknown_fields() {
     let future = RESERVATIONS_MAP
         .replace(
-            r#""format": "archsig.archmap/1""#,
             r#""format": "archsig.archmap/2""#,
+            r#""format": "archsig.archmap/3""#,
         )
         .replacen(
             r#""sources": [],"#,
@@ -74,11 +74,11 @@ fn unknown_versions_come_before_unknown_fields() {
             1,
         );
     let i = failure(future.as_bytes());
-    assert_eq!(i.code, Code::UnsupportedVersion);
+    assert_eq!((i.code, pointer(&i)), (Code::UnsupportedVersion, "/format"));
     assert_eq!(
         i.details,
         Details::Version {
-            found_format: "archsig.archmap/2".into(),
+            found_format: "archsig.archmap/3".into(),
             found_semantics: Some("archsig/0.6.0".into())
         }
     );
@@ -87,16 +87,33 @@ fn unknown_versions_come_before_unknown_fields() {
         r#""semantics": "archsig/9""#,
         1,
     );
-    assert_eq!(failure(semantics.as_bytes()).code, Code::UnsupportedVersion);
+    let i = failure(semantics.as_bytes());
+    assert_eq!(
+        (i.code, pointer(&i)),
+        (Code::UnsupportedVersion, "/semantics")
+    );
+    let missing = RESERVATIONS_MAP.replacen(r#""semantics": "archsig/0.6.0","#, "", 1);
+    let i = failure(missing.as_bytes());
+    assert_eq!(
+        (i.code, pointer(&i)),
+        (Code::UnsupportedVersion, "/semantics")
+    );
+    assert_eq!(
+        i.details,
+        Details::Version {
+            found_format: "archsig.archmap/2".into(),
+            found_semantics: None
+        }
+    );
 }
 
 fn model(map: &str) -> String {
-    map_ok(RESERVATIONS, map).model_digest
+    map_ok(RESERVATIONS_DEFINITION, map).model_digest
 }
 
 #[test]
 fn set_tables_do_not_change_the_model_digest() {
-    let base = map_ok(RESERVATIONS, RESERVATIONS_MAP);
+    let base = map_ok(RESERVATIONS_DEFINITION, RESERVATIONS_MAP);
     assert_eq!(
         base.bytes_digest,
         sha256_digest(RESERVATIONS_MAP.as_bytes())
@@ -131,7 +148,7 @@ fn set_tables_do_not_change_the_model_digest() {
     reorder(&atoms, &mut lines);
     let reordered = lines.join("\n").replace("\"model\"}", "\"model\" }");
     assert_ne!(reordered, RESERVATIONS_MAP);
-    let other = map_ok(RESERVATIONS, &reordered);
+    let other = map_ok(RESERVATIONS_DEFINITION, &reordered);
     assert_ne!(other.bytes_digest, base.bytes_digest);
     assert_eq!(other.model_digest, base.model_digest);
     // Set の値の順も model_digest を変えない。Map の行の順も同じ。
@@ -145,14 +162,55 @@ fn set_tables_do_not_change_the_model_digest() {
     assert_ne!(model(&note), base.model_digest);
 }
 
-const LISTS: &str = r#"law "archsig.law/1" semantics "archsig/0.6.0";
-reading L { entity E { xs: List<Z>; ys: Set<Z>; t: Text; } }
-"#;
+const LISTS: &str = r#"{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "L",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "L.E",
+          "meaning": "L.E の対象",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "xs",
+              "type": [
+                "List",
+                "Z"
+              ],
+              "meaning": "xs の値"
+            },
+            {
+              "name": "ys",
+              "type": [
+                "Set",
+                "Z"
+              ],
+              "meaning": "ys の値"
+            },
+            {
+              "name": "t",
+              "type": "Text",
+              "meaning": "t の値"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}"#;
 
 fn list_doc(xs: &str, ys: &str, t: &str) -> String {
-    let digest = ok(LISTS).vocabularies[0].digest.clone();
+    let digest = definitions_ok(&[LISTS]).vocabularies["L"].digest.clone();
     format!(
-        r#"{{"format":"archsig.archmap/1","semantics":"archsig/0.6.0","vocabularies":[{{"reading":"L","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"o","mode":"specification","method":"m","locations":[],"note":"n"}}],"snapshots":[{{"id":"s","origin":"o","subjects":[{{"id":"e","type":"L.E","origin":"o"}}],"atoms":[{{"id":"a","subject":"e","field":"L.E.xs","value":{xs},"origin":"o"}},{{"id":"b","subject":"e","field":"L.E.ys","value":{ys},"origin":"o"}},{{"id":"c","subject":"e","field":"L.E.t","value":{t},"origin":"o"}}]}}]}}"#
+        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"L","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"o","mode":"specification","method":"m","locations":[],"note":"n"}}],"snapshots":[{{"id":"s","origin":"o","subjects":[{{"id":"e","type":"L.E","origin":"o"}}],"atoms":[{{"id":"a","subject":"e","field":"L.E.xs","value":{xs},"origin":"o"}},{{"id":"b","subject":"e","field":"L.E.ys","value":{ys},"origin":"o"}},{{"id":"c","subject":"e","field":"L.E.t","value":{t},"origin":"o"}}]}}]}}"#
     )
 }
 
@@ -196,4 +254,4 @@ fn text_values_keep_unicode_and_control_characters() {
 }
 
 const EXPECTED_TEXT_DIGEST: &str =
-    "sha256:cea0d02df67f808bfdd586ffa79e2a8fb772293764fd3d6f31b17c72d1b9491f";
+    "sha256:89d32b3bda7260d0e65f42d603ff427cd61201ed409ecd1e561a08f6ece25293";

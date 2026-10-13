@@ -1,0 +1,87 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "A",
+      "version": "1",
+      "dependencies": [
+        {
+          "namespace": "B",
+          "version": "1",
+          "digest": "sha256:848963f024e20d44d51d63c159cecdd22c8d8eee87047480b83b97b0345870c9"
+        }
+      ],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "A.Holder",
+          "meaning": "test entity",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "other",
+              "type": [
+                "Ref",
+                "B.State"
+              ],
+              "meaning": "test field"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "A.State",
+          "meaning": "test entity",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "x",
+              "type": "Z",
+              "meaning": "test field"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    },
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "B",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "data",
+          "name": "B.D",
+          "meaning": "test data",
+          "constructors": [
+            {
+              "name": "C",
+              "arguments": [
+                "Z"
+              ],
+              "meaning": "test constructor"
+            }
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "B.State",
+          "meaning": "test entity",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "x",
+              "type": "Z",
+              "meaning": "test field"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

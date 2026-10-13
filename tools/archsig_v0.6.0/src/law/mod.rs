@@ -1,5 +1,5 @@
 //! Law ファイルの静的検査。構文・版・名前・型・再帰・純粋性を検査し、
-//! 型付き宣言、原式と出現位置、参照、語彙 manifest を返す。
+//! 共通定義を参照する型付き宣言、原式と出現位置、名前参照を返す。
 
 pub mod ast;
 mod body;
@@ -11,14 +11,15 @@ pub mod model;
 pub mod parser;
 
 use crate::canonical::{Json, sha256_digest};
+use crate::definition::CheckedDefinitions;
 use crate::issue::{Code, Details, Issue, Location};
 use crate::types::Type;
 use ast::{Expr, ExprId};
 use check::Checker;
-use model::{Declaration, DeclarationInfo, Vocabulary};
+use model::{Declaration, DeclarationInfo};
 use std::collections::BTreeMap;
 
-pub const FORMAT: &str = "archsig.law/1";
+pub const FORMAT: &str = "archsig.law/2";
 pub const SEMANTICS: &str = "archsig/0.6.0";
 
 /// 検査を通った Law。
@@ -32,9 +33,7 @@ pub struct CheckedLaw {
     pub exprs: Vec<Expr>,
     pub expr_types: Vec<Option<Type>>,
     pub infos: Vec<DeclarationInfo>,
-    pub vocabularies: Vec<Vocabulary>,
-    /// 名前・署名の表。観測 Term の本体を同じ規則で検査するために保持する。
-    context: Checker,
+    pub definitions: CheckedDefinitions,
 }
 
 /// 検査した観測 Term の本体。
@@ -49,48 +48,54 @@ impl CheckedLaw {
     pub fn expr_type(&self, id: ExprId) -> Option<&Type> {
         self.expr_types.get(id).and_then(Option::as_ref)
     }
+}
 
-    /// 観測した Term の本体を、Law の Term と同じ純粋部分言語として検査する(入力仕様 §3)。
-    /// 位置は本体の文字列の中の byte 区間。
-    pub fn check_term_body(
-        &self,
-        reading: &str,
-        params: &[(String, Type)],
-        ret: &Type,
-        body: &str,
-    ) -> Result<TermBody, Box<Issue>> {
-        let tokens = lexer::lex(body.as_bytes())?;
-        let mut parser = parser::Parser::new(tokens, body.len());
-        let root = parser.parse_expr(ast::Flags::default())?;
-        parser.expect_end()?;
-        let mut checker = self.context.fragment(parser);
-        let reading = *checker.reading_index.get(reading).expect("Law の reading");
-        checker.current_reading = reading;
-        let mut env = expr::Env::default();
-        for (name, ty) in params {
-            let id = ast::Ident {
-                name: name.clone(),
-                span: (0, 0),
-                tok: 0,
-            };
-            checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other)?;
-        }
-        let ctx = expr::Ctx {
-            reading,
-            decl: String::new(),
-            is_view: false,
-            rec: None,
-            term: true,
-        };
-        checker.check(root, Some(ret), &mut env, &ctx)?;
-        let mut types = std::mem::take(&mut checker.expr_types);
-        types.resize(checker.parser.exprs.len(), None);
-        Ok(TermBody {
-            exprs: std::mem::take(&mut checker.parser.exprs),
-            root,
-            types,
-        })
+/// 定義元と依存 namespace の scope で、観測した Term の純粋な本体を検査する。
+/// 位置は本体文字列中の byte span。ArchMap reader が該当 JSON Pointer へ接続する。
+pub fn check_definition_term_body(
+    definitions: &CheckedDefinitions,
+    namespace: &str,
+    params: &[(String, Type)],
+    ret: &Type,
+    body: &str,
+) -> Result<TermBody, Box<Issue>> {
+    if !definitions.vocabularies.contains_key(namespace) {
+        return Err(Box::new(Issue::law(
+            Code::Reference,
+            (0, body.len()),
+            format!("namespace `{namespace}` が登録されていない"),
+        )));
     }
+    let tokens = lexer::lex(body.as_bytes())?;
+    let mut parser = parser::Parser::new(tokens, body.len());
+    let root = parser.parse_expr(ast::Flags::default())?;
+    parser.expect_end()?;
+    let mut checker = Checker::with_definitions(parser, Vec::new(), definitions);
+    checker.term_namespace = Some(namespace.to_owned());
+    let mut env = expr::Env::default();
+    for (name, ty) in params {
+        let id = ast::Ident {
+            name: name.clone(),
+            span: (0, 0),
+            tok: 0,
+        };
+        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other)?;
+    }
+    let ctx = expr::Ctx {
+        reading: 0,
+        decl: String::new(),
+        is_view: false,
+        rec: None,
+        term: true,
+    };
+    checker.check(root, Some(ret), &mut env, &ctx)?;
+    let mut types = std::mem::take(&mut checker.expr_types);
+    types.resize(checker.parser.exprs.len(), None);
+    Ok(TermBody {
+        exprs: std::mem::take(&mut checker.parser.exprs),
+        root,
+        types,
+    })
 }
 
 /// 検査の失敗。読めた byte 列の digest と、字句列が得られた場合の model_digest を持つ。
@@ -125,7 +130,7 @@ pub fn model_digest(tokens: &[lexer::Token]) -> String {
 
 /// Law を検査する。深い入れ子でも呼出し側のスタックを使い切らないよう、再帰は stacker を通す。
 #[allow(clippy::result_large_err)]
-pub fn check_law(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
+pub fn check_law(bytes: &[u8], definitions: &CheckedDefinitions) -> Result<CheckedLaw, LawFailure> {
     let bytes_digest = sha256_digest(bytes);
     let fail = |issue: Issue, model_digest: Option<String>| LawFailure {
         issue,
@@ -158,15 +163,13 @@ pub fn check_law(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
     let readings = parser
         .readings()
         .map_err(|i| fail(*i, Some(digest.clone())))?;
-    let mut checker = Checker::new(parser, readings);
+    let mut checker = Checker::with_definitions(parser, readings, definitions);
     let result = (|| {
         checker.collect_names()?;
-        checker.check_primitives()?;
         checker.check_bodies()
     })();
     result.map_err(|i| fail(*i, Some(digest.clone())))?;
     let infos = checker.declaration_infos();
-    let vocabularies = checker.vocabularies();
     let mut declarations = BTreeMap::new();
     for r in checker.ast.iter() {
         for d in &r.decls {
@@ -192,7 +195,6 @@ pub fn check_law(bytes: &[u8]) -> Result<CheckedLaw, LawFailure> {
         exprs: std::mem::take(&mut checker.parser.exprs),
         expr_types,
         infos,
-        vocabularies,
-        context: checker,
+        definitions: definitions.clone(),
     })
 }

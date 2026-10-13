@@ -6,11 +6,15 @@ use archsig::law::{lexer, model_canonical};
 use common::*;
 
 fn digests(src: &str) -> (String, String, Vec<String>) {
-    let c = ok(src);
+    let c = ok(RESERVATIONS_DEFINITION, src);
     (
         c.bytes_digest,
         c.model_digest,
-        c.vocabularies.iter().map(|v| v.digest.clone()).collect(),
+        c.definitions
+            .vocabularies
+            .values()
+            .map(|v| v.digest.clone())
+            .collect(),
     )
 }
 
@@ -50,41 +54,63 @@ fn conditions_change_the_model_digest_but_not_the_vocabulary() {
         assert_ne!(d.1, base.1, "model_digest は変わる");
         assert_eq!(d.2, base.2, "原始宣言を保つ変更で語彙 digest は変わらない");
     }
-    let primitive = digests(
-        &RESERVATIONS.replace("{ free: Z; held: Z; }", "{ free: Z; held: Z; note: Text; }"),
-    );
-    assert_ne!(primitive.2, base.2, "原始宣言の変更は語彙 digest を変える");
 }
 
 /// 文字列は escape を解いた値を保ち、NFC/NFD を同一視しない。制御文字は \u00xx。
-const UNICODE_LAW: &str = "law \"archsig.law/1\" semantics \"archsig/0.6.0\";\nreading U { view t(): List<Text> = list<Text>[\"\u{e9}\", \"e\u{301}\", \"\\u0001\\n\\\"\\\\/\\u007f\", \"\\ud83d\\ude00\", \"\\/\"]; }\n";
+const UNICODE_LAW: &str = "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading U { view t(): List<Text> = list<Text>[\"\u{e9}\", \"e\u{301}\", \"\\u0001\\n\\\"\\\\/\\u007f\", \"\\ud83d\\ude00\", \"\\/\"]; }\n";
 
-const UNICODE_CANONICAL: &str = "{\"semantics\":\"archsig/0.6.0\",\"tokens\":[{\"kind\":\"name\",\"text\":\"law\"},{\"kind\":\"string\",\"text\":\"archsig.law/1\"},{\"kind\":\"name\",\"text\":\"semantics\"},{\"kind\":\"string\",\"text\":\"archsig/0.6.0\"},{\"kind\":\"symbol\",\"text\":\";\"},{\"kind\":\"name\",\"text\":\"reading\"},{\"kind\":\"name\",\"text\":\"U\"},{\"kind\":\"symbol\",\"text\":\"{\"},{\"kind\":\"name\",\"text\":\"view\"},{\"kind\":\"name\",\"text\":\"t\"},{\"kind\":\"symbol\",\"text\":\"(\"},{\"kind\":\"symbol\",\"text\":\")\"},{\"kind\":\"symbol\",\"text\":\":\"},{\"kind\":\"name\",\"text\":\"List\"},{\"kind\":\"symbol\",\"text\":\"<\"},{\"kind\":\"name\",\"text\":\"Text\"},{\"kind\":\"symbol\",\"text\":\">\"},{\"kind\":\"symbol\",\"text\":\"=\"},{\"kind\":\"name\",\"text\":\"list\"},{\"kind\":\"symbol\",\"text\":\"<\"},{\"kind\":\"name\",\"text\":\"Text\"},{\"kind\":\"symbol\",\"text\":\">\"},{\"kind\":\"symbol\",\"text\":\"[\"},{\"kind\":\"string\",\"text\":\"\u{e9}\"},{\"kind\":\"symbol\",\"text\":\",\"},{\"kind\":\"string\",\"text\":\"e\u{301}\"},{\"kind\":\"symbol\",\"text\":\",\"},{\"kind\":\"string\",\"text\":\"\\u0001\\u000a\\\"\\\\/\u{7f}\"},{\"kind\":\"symbol\",\"text\":\",\"},{\"kind\":\"string\",\"text\":\"\u{1f600}\"},{\"kind\":\"symbol\",\"text\":\",\"},{\"kind\":\"string\",\"text\":\"/\"},{\"kind\":\"symbol\",\"text\":\"]\"},{\"kind\":\"symbol\",\"text\":\";\"},{\"kind\":\"symbol\",\"text\":\"}\"}]}";
+const UNICODE_CANONICAL: &str = "{\"semantics\":\"archsig/0.6.0\",\"tokens\":[{\"kind\":\"name\",\"text\":\"law\"},{\"kind\":\"string\",\"text\":\"archsig.law/2\"},{\"kind\":\"name\",\"text\":\"semantics\"},{\"kind\":\"string\",\"text\":\"archsig/0.6.0\"},{\"kind\":\"symbol\",\"text\":\";\"},{\"kind\":\"name\",\"text\":\"reading\"},{\"kind\":\"name\",\"text\":\"U\"},{\"kind\":\"symbol\",\"text\":\"{\"},{\"kind\":\"name\",\"text\":\"view\"},{\"kind\":\"name\",\"text\":\"t\"},{\"kind\":\"symbol\",\"text\":\"(\"},{\"kind\":\"symbol\",\"text\":\")\"},{\"kind\":\"symbol\",\"text\":\":\"},{\"kind\":\"name\",\"text\":\"List\"},{\"kind\":\"symbol\",\"text\":\"<\"},{\"kind\":\"name\",\"text\":\"Text\"},{\"kind\":\"symbol\",\"text\":\">\"},{\"kind\":\"symbol\",\"text\":\"=\"},{\"kind\":\"name\",\"text\":\"list\"},{\"kind\":\"symbol\",\"text\":\"<\"},{\"kind\":\"name\",\"text\":\"Text\"},{\"kind\":\"symbol\",\"text\":\">\"},{\"kind\":\"symbol\",\"text\":\"[\"},{\"kind\":\"string\",\"text\":\"\u{e9}\"},{\"kind\":\"symbol\",\"text\":\",\"},{\"kind\":\"string\",\"text\":\"e\u{301}\"},{\"kind\":\"symbol\",\"text\":\",\"},{\"kind\":\"string\",\"text\":\"\\u0001\\u000a\\\"\\\\/\u{7f}\"},{\"kind\":\"symbol\",\"text\":\",\"},{\"kind\":\"string\",\"text\":\"\u{1f600}\"},{\"kind\":\"symbol\",\"text\":\",\"},{\"kind\":\"string\",\"text\":\"/\"},{\"kind\":\"symbol\",\"text\":\"]\"},{\"kind\":\"symbol\",\"text\":\";\"},{\"kind\":\"symbol\",\"text\":\"}\"}]}";
 
 #[test]
 fn canonical_bytes_and_digest_are_fixed_for_unicode_and_control_characters() {
     let tokens = lexer::lex(UNICODE_LAW.as_bytes()).unwrap();
     assert_eq!(model_canonical(&tokens), UNICODE_CANONICAL);
-    let c = ok(UNICODE_LAW);
+    let c = ok(EMPTY_DEFINITION, UNICODE_LAW);
     assert_eq!(
         c.model_digest,
-        "sha256:87db23edd3ff6175d8caa449944fe79ec8c3077bb93b176be844b484c7e4027c"
+        "sha256:f40552dcb0667d9f65aea50feca9ffc109077fe491405146fcc827124b5d1cfd"
     );
     let nfc = UNICODE_LAW.replace("e\u{301}", "\u{e9}");
     assert_eq!(
-        ok(&nfc).model_digest,
-        "sha256:acd70eb520d5c457fb43751f0cd09a5b676558c01de639690fff1ecbd2a6b94d"
+        ok(EMPTY_DEFINITION, &nfc).model_digest,
+        "sha256:6c68acdc082ea6f21074f7d7734e61a8106a5eb337526230100710d9b8a2272c"
     );
 }
 
-/// 入力仕様 §4 から組み立てた Reservations の manifest。use・view・law・local・change は入らない。
-const RESERVATIONS_MANIFEST: &str = "{\"declarations\":[{\"alignments\":[],\"fields\":[{\"name\":\"states\",\"type\":[\"Map\",[\"Owned\",\"Reservations.State\",\"from\"],[\"Owned\",\"Reservations.State\",\"to\"]]},{\"name\":\"reserves\",\"type\":[\"Map\",[\"Owned\",\"Reservations.Reserve\",\"from\"],[\"Owned\",\"Reservations.Reserve\",\"to\"]]}],\"kind\":\"correspondence\",\"name\":\"Reservations.Migration\",\"parameters\":[{\"name\":\"from\",\"type\":[\"Ref\",\"Reservations.System\"]},{\"name\":\"to\",\"type\":[\"Ref\",\"Reservations.System\"]}]},{\"alignments\":[],\"fields\":[],\"kind\":\"arrow\",\"name\":\"Reservations.Reserve\",\"parameters\":[{\"name\":\"owner\",\"type\":[\"Ref\",\"Reservations.System\"]},{\"name\":\"from\",\"type\":[\"Owned\",\"Reservations.State\",\"owner\"]},{\"name\":\"to\",\"type\":[\"Owned\",\"Reservations.State\",\"owner\"]}]},{\"alignments\":[],\"fields\":[{\"name\":\"free\",\"type\":\"Z\"},{\"name\":\"held\",\"type\":\"Z\"}],\"kind\":\"entity\",\"name\":\"Reservations.State\",\"parameters\":[{\"name\":\"owner\",\"type\":[\"Ref\",\"Reservations.System\"]}]},{\"alignments\":[],\"fields\":[],\"kind\":\"entity\",\"name\":\"Reservations.System\",\"parameters\":[]}],\"reading\":\"Reservations\",\"semantics\":\"archsig/0.6.0\"}";
-
+/// 原始 manifest は独立定義の meaning・version・dependency を含む。
 #[test]
 fn manifest_has_every_field_in_canonical_form() {
-    let c = ok(RESERVATIONS);
-    let v = &c.vocabularies[0];
-    assert_eq!(v.reading, "Reservations");
-    assert_eq!(v.manifest.canonical(), RESERVATIONS_MANIFEST);
-    assert_eq!(v.digest, sha256_digest(RESERVATIONS_MANIFEST.as_bytes()));
+    let c = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
+    let v = &c.definitions.vocabularies["Reservations"];
+    assert_eq!(v.namespace, "Reservations");
+    let text = v.manifest.canonical();
+    assert_eq!(text, include_str!("fixtures/reservations.manifest.json"));
+    assert_eq!(
+        v.digest,
+        "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff"
+    );
+    assert_eq!(v.digest, sha256_digest(text.as_bytes()));
+}
+
+#[test]
+fn definition_meaning_and_version_change_vocabulary_identity_and_reject_old_imports() {
+    use archsig::issue::Code;
+    let base = definitions_ok(&[COUNTER_DEFINITION]);
+    let changed =
+        COUNTER_DEFINITION.replace("実装中の一つのカウンタ状態。", "変更したカウンタ状態。");
+    assert_ne!(changed, COUNTER_DEFINITION);
+    let c = definitions_ok(&[&changed]);
+    assert_ne!(
+        c.vocabularies["Counter"].digest,
+        base.vocabularies["Counter"].digest
+    );
+    assert_eq!(err(&changed, COUNTER).code, Code::VocabularyMismatch);
+    let version = COUNTER_DEFINITION.replace("\"version\": \"1\"", "\"version\": \"2\"");
+    assert_ne!(version, COUNTER_DEFINITION);
+    let c = definitions_ok(&[&version]);
+    assert_ne!(
+        c.vocabularies["Counter"].digest,
+        base.vocabularies["Counter"].digest
+    );
+    assert_eq!(err(&version, COUNTER).code, Code::VocabularyMismatch);
 }

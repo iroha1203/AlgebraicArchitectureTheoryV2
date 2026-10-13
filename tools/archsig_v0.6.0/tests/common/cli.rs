@@ -81,10 +81,11 @@ pub fn result_json(dir: &Path, r: &Run) -> JNode {
 /// receipt・result.json・実際の終了コードがそろい、check の requests/answers/nodes は空。
 pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(r.code, code, "{}", r.stderr);
+    assert_eq!(s(get(&r.receipt, "format")), "archsig.receipt/1");
     assert_eq!(s(get(&r.receipt, "status")), status);
     assert_eq!(num(get(&r.receipt, "exit_code")), code as u64);
     let res = result_json(dir, r);
-    assert_eq!(s(get(&res, "format")), "archsig.result/1");
+    assert_eq!(s(get(&res, "format")), "archsig.result/2");
     assert_eq!(s(get(&res, "command")), "check");
     assert_eq!(s(get(&res, "status")), status);
     assert_eq!(num(get(&res, "exit_code")), code as u64);

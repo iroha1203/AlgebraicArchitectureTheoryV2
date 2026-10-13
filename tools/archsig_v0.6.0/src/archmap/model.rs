@@ -1,6 +1,7 @@
 //! 検査済み ArchMap のデータ型。原始値・欠測・参照・由来を保持する。
 
 use super::value::Value;
+use crate::definition::model::Binding;
 use crate::issue::Issue;
 use crate::types::Type;
 use std::collections::BTreeMap;
@@ -90,7 +91,7 @@ pub struct Snapshot {
 pub struct CheckedArchMap {
     pub bytes_digest: String,
     pub model_digest: String,
-    pub vocabularies: BTreeMap<String, String>,
+    pub vocabularies: BTreeMap<String, Binding>,
     pub sources: Vec<Source>,
     pub origins: Vec<Origin>,
     pub snapshots: Vec<Snapshot>,

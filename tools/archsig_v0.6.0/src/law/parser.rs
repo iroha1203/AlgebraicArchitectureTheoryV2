@@ -7,61 +7,7 @@ use super::lexer::{Token, TokenKind};
 use crate::issue::{Code, Issue};
 use std::collections::HashMap;
 
-/// 予約語と組込み型名。識別子として使えない。
-pub const RESERVED: &[&str] = &[
-    "law",
-    "semantics",
-    "reading",
-    "use",
-    "as",
-    "entity",
-    "arrow",
-    "correspondence",
-    "align",
-    "data",
-    "view",
-    "required",
-    "optional",
-    "local",
-    "reads",
-    "change",
-    "relation",
-    "when",
-    "let",
-    "in",
-    "if",
-    "then",
-    "else",
-    "match",
-    "forall",
-    "exists",
-    "not",
-    "implies",
-    "or",
-    "and",
-    "with",
-    "true",
-    "false",
-    "unit",
-    "list",
-    "set",
-    "where",
-    "none",
-    "some",
-    "fn",
-    "Unit",
-    "Bool",
-    "Z",
-    "Q",
-    "Text",
-    "Fp",
-    "List",
-    "Set",
-    "Option",
-    "Map",
-    "Term",
-    "Path",
-];
+pub use crate::names::RESERVED;
 
 pub fn is_reserved(name: &str) -> bool {
     RESERVED.contains(&name)
@@ -259,14 +205,31 @@ impl Parser {
         let name = self.ident()?;
         self.expect_sym("{")?;
         let mut uses = Vec::new();
+        let mut vocabularies = Vec::new();
         let mut decls = Vec::new();
         while !self.is_sym("}") {
             if self.eat_kw("use") {
-                let reading = self.ident()?;
-                self.expect_kw("as")?;
-                let alias = self.ident()?;
-                self.expect_sym(";")?;
-                uses.push(Use { reading, alias });
+                let use_start = self.toks[self.pos - 1].span.0;
+                if self.eat_kw("vocabulary") {
+                    let namespace = self.ident()?;
+                    self.expect_kw("version")?;
+                    let version = self.string()?;
+                    self.expect_kw("digest")?;
+                    let digest = self.string()?;
+                    self.expect_sym(";")?;
+                    vocabularies.push(VocabularyUse {
+                        namespace,
+                        version,
+                        digest,
+                        span: (use_start, self.prev_end()),
+                    });
+                } else {
+                    let reading = self.ident()?;
+                    self.expect_kw("as")?;
+                    let alias = self.ident()?;
+                    self.expect_sym(";")?;
+                    uses.push(Use { reading, alias });
+                }
             } else {
                 decls.push(self.decl()?);
             }
@@ -275,6 +238,7 @@ impl Parser {
         Ok(Reading {
             name,
             uses,
+            vocabularies,
             decls,
             span: (start, self.prev_end()),
         })
@@ -291,64 +255,8 @@ impl Parser {
             String::new()
         };
         let (name, kind) = match keyword.as_str() {
-            "entity" => {
-                self.pos += 1;
-                let name = self.ident()?;
-                let params = if self.is_sym("(") {
-                    self.fields()?
-                } else {
-                    Vec::new()
-                };
-                let members = self.members_or_semicolon()?;
-                (name, DeclKind::Entity { params, members })
-            }
-            "arrow" => {
-                self.pos += 1;
-                let name = self.ident()?;
-                let params = self.fields()?;
-                let members = self.members_or_semicolon()?;
-                (name, DeclKind::Arrow { params, members })
-            }
-            "correspondence" => {
-                self.pos += 1;
-                let name = self.ident()?;
-                let params = self.fields()?;
-                self.expect_sym("{")?;
-                let mut members = Vec::new();
-                let mut alignments = Vec::new();
-                while !self.is_sym("}") {
-                    if self.eat_kw("align") {
-                        let source = self.qname()?;
-                        self.expect_sym("=")?;
-                        let target = self.qname()?;
-                        self.expect_sym(";")?;
-                        alignments.push(Alignment { source, target });
-                    } else if alignments.is_empty() {
-                        members.push(self.member()?);
-                    } else {
-                        return self.err("align の後に field は置けない");
-                    }
-                }
-                self.expect_sym("}")?;
-                (
-                    name,
-                    DeclKind::Correspondence {
-                        params,
-                        members,
-                        alignments,
-                    },
-                )
-            }
-            "data" => {
-                self.pos += 1;
-                let name = self.ident()?;
-                self.expect_sym("=")?;
-                let mut constructors = vec![self.constructor()?];
-                while self.eat_sym("|") {
-                    constructors.push(self.constructor()?);
-                }
-                self.expect_sym(";")?;
-                (name, DeclKind::Data { constructors })
+            "entity" | "arrow" | "correspondence" | "data" => {
+                return self.err("原始宣言は Atom 定義ファイルに置く");
             }
             "view" => {
                 self.pos += 1;
@@ -566,45 +474,6 @@ impl Parser {
         self.expect_sym(")")?;
         Ok(fields)
     }
-
-    fn member(&mut self) -> PResult<Field> {
-        let name = self.ident()?;
-        self.expect_sym(":")?;
-        let ty = self.ty()?;
-        self.expect_sym(";")?;
-        Ok(Field { name, ty })
-    }
-
-    fn members_or_semicolon(&mut self) -> PResult<Vec<Field>> {
-        if self.eat_sym(";") {
-            return Ok(Vec::new());
-        }
-        self.expect_sym("{")?;
-        let mut members = Vec::new();
-        while !self.is_sym("}") {
-            members.push(self.member()?);
-        }
-        self.expect_sym("}")?;
-        Ok(members)
-    }
-
-    fn constructor(&mut self) -> PResult<Constructor> {
-        let name = self.ident()?;
-        let mut args = Vec::new();
-        if self.eat_sym("(") {
-            loop {
-                args.push(self.ty()?);
-                if !self.eat_sym(",") {
-                    break;
-                }
-            }
-            self.expect_sym(")")?;
-        }
-        let span = (name.span.0, self.prev_end());
-        Ok(Constructor { name, args, span })
-    }
-
-    // ---- 型 ----
 
     pub fn ty(&mut self) -> PResult<TypeAst> {
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.ty_inner())

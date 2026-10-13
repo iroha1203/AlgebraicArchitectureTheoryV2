@@ -23,6 +23,7 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         None => return Err(usage("", "コマンドが必要", None)),
     }
     let mut law = None;
+    let mut atom_definitions = Vec::new();
     let mut archmap = None;
     let mut out: Option<PathBuf> = None;
     let mut outs = 0;
@@ -30,6 +31,15 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
     let mut i = 1;
     while i < args.len() {
         let flag = text(&args[i]);
+        if flag == "--atom-definition" {
+            let Some(value) = args.get(i + 1) else {
+                first_error.get_or_insert((flag.clone(), "flag に値が必要".to_owned()));
+                break;
+            };
+            atom_definitions.push(PathBuf::from(value));
+            i += 2;
+            continue;
+        }
         if flag == "--out" {
             outs += 1;
         }
@@ -42,7 +52,7 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         let Some(slot) = slot else {
             first_error.get_or_insert((
                 flag.clone(),
-                "check の flag は --law・--archmap・--out".to_owned(),
+                "check の flag は --atom-definition・--law・--archmap・--out".to_owned(),
             ));
             i += 1;
             continue;
@@ -62,11 +72,23 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
     if let Some((argument, message)) = first_error {
         return Err(usage(&argument, &message, confirmed));
     }
+    if atom_definitions.is_empty() {
+        return Err(usage(
+            "--atom-definition",
+            "--atom-definition が一つ以上必要",
+            confirmed,
+        ));
+    }
     let Some(law) = law else {
         return Err(usage("--law", "--law が必要", confirmed));
     };
     let Some(out) = out else {
         return Err(usage("--out", "--out が必要", None));
     };
-    Ok(Command::Check(CheckArgs { law, archmap, out }))
+    Ok(Command::Check(CheckArgs {
+        atom_definitions,
+        law,
+        archmap,
+        out,
+    }))
 }
