@@ -9,21 +9,21 @@ Pは同文書のTypeの別名であり、宣言metadataではOwnedを許し、�
 
 ```text
 Result = {
-  format:"archsig.result/1", semantics:"archsig/0.6.0",
+  format:"archsig.result/2", semantics:"archsig/0.6.0",
   producer:{version:String,build:String}, command:"check"|"run",
   status:RunStatus, exit_code:Nat, inputs:InputIdentity[],
-  declarations:DeclarationInfo[], vocabularies:{manifest:Vocabulary,digest:Digest}[],
+  declarations:DeclarationInfo[], vocabularies:{manifest:Vocabulary,digest:Digest,location:Location}[],
   requests:Request[], answers:Answer[], nodes:Node[], issues:Issue[],
   reuse:{requested:Bool,accepted_nodes:Nat,recomputed_nodes:Nat,rejected:Issue[]},
   usage:{elapsed_ms:DecimalNat,peak_bytes:DecimalNat},
   limits:{time_ms?:DecimalNat,memory_mib?:DecimalNat}
 }
 RunStatus = "complete"|"partial"|"invalid"|"unsupported"|"interrupted"|"error"
-InputIdentity = {kind:"archmap"|"law",state:"read"|"unread",
+InputIdentity = {id:Id,kind:"atom_definition"|"archmap"|"law",state:"read"|"unread",
                  bytes_digest?:Digest,model_digest?:Digest,path?:String}
 DeclarationInfo = {name:QName,kind:DeclarationKind,parameters:Parameter[],
                    fields:Parameter[],returns?:Type,role?:Role,
-                   location:Location,dependencies:QName[],
+                   location:Location,dependencies:QName[],vocabularies:VocabularyBinding[],
                    resolution:{references:{location:Location,name:QName}[],
                      expressions:{kind:"guard"|"body"|"read"|"relation_left"|"relation_right",
                                   location:Location,type:Type}[],supplied:DeclarationRule[]}}
@@ -51,7 +51,7 @@ Node = {id:String,type:Type,state:"value"|"blocked",value?:Payload,
         partial?:Partial,rule:Rule,arguments:Ref[],support:FactPointer[],
         conditions:Ref[],evidence:Ref[],judgment?:Judgment,scope:Scope,reasons:Issue[]}
 Judgment = {status:Decision,evidence:Ref[],reasons:Issue[]}
-Rule = {kind:"subject"|"atom"|"law",location:Location}
+Rule = {kind:"definition"|"subject"|"atom"|"law",location:Location}
      | {kind:"construction",name:Construction,path?:(String|Nat)[]}
 Partial = {entries:{path:(String|Nat)[],value?:Ref,reasons:Issue[]}[]}
 Scope = {readings:QName[],snapshots:Id[],modes:("observed"|"proposed"|"specification")[],
@@ -59,12 +59,12 @@ Scope = {readings:QName[],snapshots:Id[],modes:("observed"|"proposed"|"specifica
          quantifiers:Quantifier[],assumptions:Ref[]}
 Quantifier = {kind:"forall"|"exists",name:String,type:Type,domain?:Ref}
 FactPointer = {snapshot:Id,subject:Id,field?:QName,atom?:Id}
-Location = {input:"law"|"archmap",pointer?:String,span?:[Nat,Nat]}
+Location = {input:Id,pointer?:String,span?:[Nat,Nat]}
 Issue = {code:IssueCode,message:String,location?:Location,request?:String,
          dependencies:Ref[],missing:FactPointer[],details:IssueDetails}
 ```
 
-Vocabularyは[入力の語彙manifest](inputs.md#4-語彙-binding)をそのまま使う。
+Vocabulary と VocabularyBinding は [Atom 定義](definitions.md#1-ファイルと識別)の schema を使う。
 QuestionKindとFieldは[固定12問](execution.md#3-固定の12の問い)のkindと出力fieldに限定する。
 `outputs`は固定field名をkeyとするobjectであり、任意のkeyを追加しない。
 Request.argumentsは`bind.`へ展開した名前順。短形で明記した束縛もorigin=explicitとする。
@@ -82,32 +82,49 @@ defaultsはCLIのSelectorで表さない省略の意味を、次の閉じた規�
 | no_law_check | quotientでlawを省略。viewによる商を作り、Law評価の十分性は問わない |
 | universal_parameters | check/solve/repair、law指定のlocalize/quotientでLaw parameterを未束縛にした。declarationはそのLawの完全名、parametersは未束縛parameter名を宣言順に並べ、その型・依存族で全称化する |
 
+map の to_reading 省略時は reading と同じ選択を arguments に origin=defaulted で保持する。
 同じruleを重複させず、universal_parametersはparametersが非空のときだけ記録する。
 defaultsはruleの辞書順。required_lawsの実際のLaw instanceと量化域は生成したLocalSystem/Scopeへ残す。
 これらの既定は要求idとtextに結び付き、CLIへ新しい値や引数名を追加する規則ではない。
-declarationsとvocabulariesは完全名順。parametersとfieldsは宣言順を保持する。
+declarations は完全名順、vocabularies は manifest.namespace 順。parametersとfieldsは宣言順を保持する。
 宣言metadataのTypeは下記のLawの結果型Tに限る。依存参照Ownedは宣言metadataだけで保持する。
 dataのconstructorは完全名のDeclarationInfo（kind=data、parametersに引数型）にも列挙する。
 名前のないconstructor引数名は`arg0`からの位置名とする。
-Law全体の静的検査が完了した場合だけdeclarations/vocabulariesを全件返す。
-Lawの不正・非対応・検査中断時は両表を空にし、検査前の部分宣言を混ぜない。
-Lawの検査完了後のArchMapの不正・非対応・中断では、両表を保持する。
+全 Atom 定義と Law 全体の静的検査が完了した場合だけdeclarations/vocabulariesを全件返す。
+Atom 定義または Law の不正・非対応・検査中断時は両表を空にし、検査前の部分宣言を混ぜない。
+全 Atom 定義と Law の検査完了後の ArchMapの不正・非対応・中断では、両表を保持する。
 checkでは成功・失敗ともrequests/answers/nodesが空。checkでAを省略した場合、inputsにAの欄を作らない。
-inputs.pathは出力directoryからの固定相対pathで、読めた入力だけに付ける。
+inputs.path は出力 directory からの固定相対 path で、読めた入力だけに付ける。
+InputIdentity.id は Law=`law`、ArchMap=`archmap`、定義ファイルは CLI の指定順に
+`definition0`、`definition1`、…とする。定義コピーの path は `inputs/definitions/0.json` 等。
+inputs は id の辞書順、Location.input はその id を参照する。元の絶対 path を識別に使わない。
+vocabularies.location は定義内の該当 Vocabulary の JSON Pointer を指す。
+reading の DeclarationInfo.vocabularies は直接 import した binding を namespace 順に保持し、
+他の宣言では空配列とする。reading 名と namespace は独立して識別する。
+未使用の語彙・dependency・宣言も vocabularies/declarations に保持し、未使用の理由で issues を生成しない。
+原始宣言の DeclarationInfo は定義の名前・型・依存と実入力位置を保持し、
+meaning は manifest から読み戻す。原始宣言を Law の宣言位置へ付け替えない。
+
+型付きの解決済み IR は、原始定義表（意味・binding・依存・入力位置）、Law 表（原式・型・
+束縛・名前参照・各出現）、ArchMap 表（事実・欠測 slot・由来）を別々に保持する。
+同じ定義を複数 reading が参照しても原始型の identity は共有する。後続計算はこれらの表を
+直接使う。result.json は検査結果の表示であり、IR 再入力用の別ファイルは設けない。
 
 resolution.referencesは、宣言の署名・式・alignで使った型、宣言、field、constructorの名前を、
-元の出現位置と解決先の完全名で保持する。readingの項目ではuseの参照先を保持し、内側の宣言は
+元の出現位置と解決先の完全名で保持する。readingの項目では同梱 reading に対する use の参照先を保持し、内側の宣言は
 各DeclarationInfoで扱う。束縛変数・組込み型・固定演算はこの名前対応へ加えない。
-短名やaliasによる参照は元の名前の出現全体、field射影はfield名のtokenをlocationとする。
+Law の短名や alias は元の名前の出現全体、field 射影は field 名の token を location とする。
+Atom 定義の型・alignment 参照は、元の QName 文字列の JSON Pointer を location とする。
 expressionsは明記されたguard、view/law/changeのbody、localの各read、relationの左右を、
 元の位置と解決した型で保持する。元の式をinputs/law.lawから読み、宣言署名と名前対応で解釈できる。
 再帰viewの有限展開や一般の式のinlineを要求せず、同じ値になる出現も残す。
-references/expressionsはspan開始順、suppliedはrule順に並べる。必要な項目がない配列は空とする。
+Law の references/expressions は span 開始順、Atom 定義の references は JSON Pointer の辞書順、
+supplied は rule 順に並べる。必要な項目がない配列は空とする。
 dependenciesはresolution.referencesの解決先の完全名を重複なく辞書順に並べる。
 dataの項目はconstructor引数の型の参照を持ち、各constructorの項目はそのうち自分の宣言部分にある参照を持つ。
 
 DeclarationRuleはsemanticsに属する閉じた規則である。guard_trueはlaw/local/change/relationの
-guard省略時にだけ生成し、trueを補う。same_name_alignmentはcorrespondenceに対して、
+guard省略時にだけ生成し、trueを補う。same_name_alignmentは Atom 定義の correspondence に対して、
 同じ型間の同名field対応をpairsへ完全名のsource,target順で並べる。明記したalignは含めない。
 local_declared/local_supportはreadingごとにどちらか一つを持ち、local宣言があれば前者、
 なければ後者とする。意味は[読取りの圏とcover](computations.md#3-読取りの圏と-cover)に従う。
@@ -115,11 +132,12 @@ local_declared/local_supportはreadingごとにどちらか一つを持ち、loc
 これらは解決結果の説明であり、Vocabularyの明記された宣言・alignmentsを変更しない。
 解決説明を別のLawへ書き出して再入力したときの同じbindingを保証する形式でもない。
 
-LawのLocationは元byte列の半開区間spanを必須とする。ArchMapはJSON Pointerを必須とし、
+Law の Location は元 byte 列の半開区間 span を必須とする。Atom 定義と ArchMap は JSON Pointer を必須とし、
 構文エラーでPointerが決まらない場合だけpointer=""とspanを使う。
-DeclarationRule.locationは、その規則を適用した元の宣言全体のspanとする。
+DeclarationRule.location は、その規則を適用した元の宣言を指す。
+Law は宣言全体の span、Atom 定義は該当宣言 object の JSON Pointer とする。
 省略されたguardや生成した対応に架空の入力位置を与えず、補完の出所を規則名で区別する。
-constructorのDeclarationInfo.locationは元のconstructor宣言部分、readingはそのreading全体を指す。
+constructorのDeclarationInfo.locationは定義の該当 constructor object、readingはそのreading全体を指す。
 FactPointerのfieldなしはsubject存在、fieldあり・atomなしは未観測slot。
 由来を表すsupportから、inputsのArchMapを通してorigin/sourceへ戻れる。
 
@@ -192,7 +210,7 @@ node数・並び・共有から実行順やキャッシュ動作を推測する�
 Construction、条件、証拠から、生成した構造と適用条件・正確な計算を確認できるようにする。
 argumentsは構成の入力、conditionsは入力から構成を許すProposition、evidenceは結果専用の証拠。
 成立未確認の条件を必要とする値をstate=valueとして封じ込めない。
-全leafは現在のAの原始位置、Lの式、または本仕様の固定構成規則へ達する。
+全leafは現在の Atom 定義の宣言、Aの原始位置、Lの式、または本仕様の固定構成規則へ達する。
 CLIのselectorはこれらを選ぶためだけに使い、新しい原始leafにしない。
 Scopeは実際の根・量化域・仮定を全件保持する。全補完を含む場合domain=all_completionsとし、
 候補parameter等の量化もquantifiersに残す。仮定の追加はLawの式から生成したPropositionだけとし、
@@ -375,6 +393,8 @@ Construction名を持つText nodeとする。これらは結果上の命題表�
 `{kind:"relation"|"identification",left:FactPointer,right:FactPointer,present:Bool}`。
 `DeclarationPair={source:QName,target:QName,parameters:[String,String][],fields:[QName,QName][]}`。
 parametersは宣言順の引数名対応、fieldsは実際のalign/同名対応とし、型はdeclarationsから得る。
+source/target は [宣言対応の規則](computations.md#1-対象作用law-instance)で選んだ完全名を保持する。
+reading の prefix が違っても短名・kind・移送後の署名で対応を照合し、Law の保存証拠は別に保持する。
 
 ObjectAlgebra.objectsはbaseと各owned entityの部分対象を一つずつ含む。baseはその表のbase成分。
 generatorsは全内部arrowについて保存確認済みのOperationを一つずつ含み、両端はobjectsに属する。
@@ -714,7 +734,7 @@ completion_pairは未知slotの型を保つ補完対、separating_pairは宣言�
 
 構成条件が未決なら、その条件のmissing/visibility/unsupported/dependency理由を伝播する。
 cycleがCLIの問いの依存による場合だけ、locationを省略し、循環に属する問いごとにrequestを必須とする。
-その依存辺はrequestsのdependenciesで表す。Law内の循環は従来どおりLawのlocationを持つ。
+その依存辺はrequestsのdependenciesで表す。Atom 定義と Law の循環は該当入力の location を持つ。
 数学の適用条件を作り検査する責務を外部の追加定理要求へ置き換えない。
 不正入力は意味計算前に拒否する。提示は正しいがLawが偽である場合は入力エラーにしない。
 型構成前でexpected/actualを表せない不正表記はsyntaxを使う。

@@ -1,11 +1,11 @@
 # Law の宣言言語
 
-Law ファイルは、観測する語彙と読みを `reading` にまとめる。個々の `law` は、
+Law ファイルは、Atom 定義への参照と読みを `reading` にまとめる。個々の `law` は、
 適用先・役割・原式を持つ条件である。`view` は型付きの値を読む。
 問いは [CLI](execution.md) で選ぶ。宣言から対象・写像・方程式・局所状態を生成し、
 その意味・型・構造と数学の適用条件を検査する責務は ArchSig にある。
 
-作者は語彙、値の読み方、要求、公開する局所情報、許す変更を宣言する。
+作者は定義された語彙を参照し、値の読み方、要求、公開する局所情報、許す変更を宣言する。
 短い条件も構造再帰を使う意味定義も、この同じ言語の型付き宣言として扱う。
 核は宣言と ArchMap から cover、行列、複体などの標準の構成を生成する。
 エンジンは問いに必要な依存関係と算法から実行計画を作り、solver の適用と実行順を決める。
@@ -15,15 +15,9 @@ Law ファイルは、観測する語彙と読みを `reading` にまとめる�
 ## 1. ファイル、名前、再利用
 
 ```text
-law "archsig.law/1" semantics "archsig/0.6.0";
+law "archsig.law/2" semantics "archsig/0.6.0";
 reading Reservations {
-  entity System;
-  entity State(owner: System) { free: Z; held: Z; }
-  arrow Reserve(owner: System, from: State[owner], to: State[owner]);
-  correspondence Migration(from: System, to: System) {
-    states: Map<State[from], State[to]>;
-    reserves: Map<Reserve[from], Reserve[to]>;
-  }
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
   view holdings(s: State): (Z, Z) = (s.free, s.held);
   law required conserved(e: Reserve):
     e.to.free + e.to.held = e.from.free + e.from.held;
@@ -40,25 +34,31 @@ reading Reservations {
 ファイルは UTF-8、BOM なし。識別子は `[A-Za-z][A-Za-z0-9_]*`、case-sensitive。
 空白と `//` から改行までのコメントは token 間で無視する。文字列は JSON の string 文法で、
 不正 UTF-8・unpaired surrogate を拒否し、Unicode 正規化をしない。
-予約語は `law semantics reading use as entity arrow correspondence align data view required
+予約語は `law semantics reading use vocabulary version digest as entity arrow correspondence align data view required
 optional local reads change relation when let in if then else match forall exists not implies or
 and with true false unit list set where none some fn` と組込み型名である。
 予約語は宣言名・束縛名に使えない。`owner from to` は field 名として使える。
 
-一つのファイルに一つ以上の reading を置く。完全名は `Reading.Declaration`、field は
-`Reading.Entity.field`、constructor は `Reading.Data.Constructor`。
-同じ scope の名は重複不可。reading 内では自分の宣言を短名で参照できる。
-`use Other as O;` は同梱 reading の別名。直接の完全名参照も許す。
-`.` 列の先頭の名前は、別名、自分の宣言の短名、reading 名の順に展開した候補から最長一致で解決する。
-参照する reading 間の有向グラフは非循環で、ファイル外の探索や download はしない。
-自分自身を use する reading も循環とする。
-宣言順は意味を持たず、field/constructor の引数順は意味を持つ。
+一つのファイルに一つ以上の reading を置く。Law 宣言の完全名は `Reading.Declaration`。
+原始型・field・constructor の完全名は [Atom 定義](definitions.md)が所有する。
+reading 内では自分の宣言を短名で参照できる。`use Other as O;` は同梱 reading の別名。
+`use vocabulary N version "V" digest "D";` は登録済みの Atom 定義を参照し、
+その namespace の原始宣言を短名でも使えるようにする。同じ namespace の import は reading 内で一回だけ。
+未使用の import・宣言も受理する。import の版・digest と、全宣言の型・参照は検査する。
+署名・式で直接名指す原始 namespace は、各使用元 reading で直接 import する。
+依存のある型の署名を解決するためだけの namespace は定義の依存表から解決する。
 
-Law 内の循環(reading の参照、data の相互再帰、view の相互呼出し、構造再帰でない自己呼出し)は
-`cycle` とする。
+`.` 列は、束縛変数の射影を先に読み、それ以外は reading alias、自分の宣言、import した
+原始宣言、完全名の候補から最長一致で解決する。複数の解決先がある短名は reference とし、
+完全名で明記する。reading と namespace は同じ名前でもよいが、全宣言の完全名は一意とする。
+その衝突は duplicate_id。同じ語彙を使う reading が複数あっても原始型を複製しない。
 
-reading を再利用するときは、その依存 reading とともに同梱する。
-ファイル全体の版は同一。語彙の binding と digest は [入力仕様](inputs.md) に従う。
+reading 間の依存グラフは非循環。同梱 reading の参照が循環する場合、view の相互呼出し、
+構造再帰でない自己呼出しは cycle。原始型の依存と data の再帰は Atom 定義の検査で扱う。
+再利用する reading は依存 reading とともに Law ファイルへ同梱し、参照する定義ファイルは
+CLI へ明示指定する。ファイル外の探索や download はしない。
+宣言順は意味を持たず、parameter と constructor の引数順は意味を持つ。
+ファイル全体の版は同一。語彙の binding と digest は [Atom 定義](definitions.md#3-依存参照digest)に従う。
 
 ファイル全体の正規化は、空白・コメントを除いた字句列を元の順に保持する。
 各 token を `{kind:"name"|"string"|"integer"|"symbol",text:String}` とする。
@@ -90,19 +90,14 @@ parameter と field の型、view の戻り型、law の role は作者が明記
 以下の EBNF で `[]` は省略、`{}` は反復、引用符は literal token。
 `Name` は識別子、`QName` は `Name { "." Name }`、`Expr` は §4。
 `Fields` は `Name ":" Type { "," Name ":" Type }`、空も許す。
-`Members` は `{ Name ":" Type ";" }`。
+原始 entity/arrow/correspondence/data は Atom 定義で記述する。
 
 ```text
 Document = "law" String "semantics" String ";" Reading { Reading } ;
-Reading = "reading" Name "{" { Use | Declaration } "}" ;
+Reading = "reading" Name "{" { Use | VocabularyUse | Declaration } "}" ;
 Use = "use" Name "as" Name ";" ;
-Declaration = Entity | Arrow | Correspondence | Data | View | Law | Local | Change | Relation ;
-Entity = "entity" Name [ "(" Fields ")" ] ( ";" | "{" Members "}" ) ;
-Arrow = "arrow" Name "(" Fields ")" ( ";" | "{" Members "}" ) ;
-Correspondence = "correspondence" Name "(" Fields ")" "{" Members { Alignment } "}" ;
-Alignment = "align" QName "=" QName ";" ;
-Data = "data" Name "=" Constructor { "|" Constructor } ";" ;
-Constructor = Name [ "(" Type { "," Type } ")" ] ;
+VocabularyUse = "use" "vocabulary" Name "version" String "digest" String ";" ;
+Declaration = View | Law | Local | Change | Relation ;
 View = "view" Name "(" Fields ")" ":" Type "=" Expr ";" ;
 Law = "law" ( "required" | "optional" ) Name "(" Fields ")"
       [ "when" Expr ] ":" Expr ";" ;
@@ -114,25 +109,8 @@ Relation = "relation" Name "(" Fields ")" [ "when" Expr ] ":" Expr "=" Expr ";" 
 relation の body は、最上位の `=` が一つの二項式として構文解析する。その左右を上の二つの
 Expr とし、左右それぞれの型を Path に限定する。通常の等号と別の優先度を与えない。
 
-`entity` / `arrow` / `correspondence` の括弧内も body も原始 field 宣言で、両者の名は一意。
-括弧内は後続 field の依存型から参照できる。body field の型から別の body field を参照しない。
-単なる表示位置ではなく、この依存順を語彙に保持する。
+原始宣言の型・所属・対応は [Atom 定義](definitions.md#2-原始宣言の意味と型)に従う。
 
-- `entity` の `owner` は省略可能な唯一の所属 field。型は owner を持たない entity とする。
-  owner なし entity の各 instance が対象の根となる。所有の多段化は導入しない。
-  所属以外の共有・依存は通常の参照 field で書く。
-- `arrow` は `owner: R, from: E[owner], to: E[owner]` を必須とする。
-  R は根 entity、E は R に属する entity。追加 field を許す。
-  from→to がこの名前付き内部遷移の作用である。追加の値・式は Law で読める。
-- `correspondence` は `from: R, to: S` を必須とし、R/S は根 entity。
-  body の field は `Map<E[from], F[to]>`。対応する各 owned entity/arrow の組を一度ずつ宣言する。
-  source/target 側の構成対象に含まれる各 owned 型を覆うことを要求する。
-  同じ型間では同名 field の位置を対応させる。異なる型間では `align` で source と target の
-  field の対応をすべて明記する。所属・参照は対応表に沿って、量は位置だけを対応させる。
-  align は field の意味の対応であり、値が一致するという判定を入力しない。
-  同じ型の間で明記した align は、その field の同名の対応に代わる。
-  参照を含む field の型は、R を S へ、対応表の始域の型を終域の型へ、依存型の添字を対応先の
-  field 名へ移したときに一致させる。量の field は位置だけを対応させ、型の一致を求めない。
 - `view` は型付きの純粋な読取り。整数・積・有限和・集合・有限木・項等を返せる。
   戻り値を Bool や残差に限定しない。
   対象へ適用される view は [object algebra の規則](computations.md#1-対象作用law-instance)で

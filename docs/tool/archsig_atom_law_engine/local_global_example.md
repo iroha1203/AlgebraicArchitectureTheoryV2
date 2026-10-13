@@ -4,8 +4,9 @@
 局所解の貼り合わせとして構成する。同じ LawModule を固定し、第三の shift が
 3、2、未観測である三ケースを追う。以下はこの有限例の数学的構成と検算方法である。
 
-## 1. 二入力と計算の読み
+## 1. 入力と計算の読み
 
+Atom 定義 D は頂点・操作・端点参照・shift 値の語彙、型、意味を持つ。
 入力 A の全データを次とする。`α,β,γ` は記述をまとめる変数であり、数値は Atom に置く。
 
 ```text
@@ -22,13 +23,13 @@ shift(a,α)                   shift(b,β)                   shift(c,γ)
 | 成立 | `shift(a,1), shift(b,1), shift(c,2)` |
 | 不足値 | `shift(a,1), shift(b,1)`。c の存在と端点は残る |
 
-L は、本文で省略していた局所化・係数の読みを、次の一般規則として展開する。
+L の条件と、核による局所化・係数の構成、CLI の問いを次の内部設計記法で示す。
 三ケースともこの L を用いる。具体的な対象名、patch 一覧、行列、障害値は L に書かない。
-ここでの DSL は設計記法であり、`vertex_functions` 等の構成の意味は次節以降で定める。
+derive/context/coefficient/state/restriction は核の構成、law は作者の条件、query は CLI の選択である。
+`vertex_functions` 等の構成の意味は次節以降で定める。
 
 ```text
-vocabulary subject(v), translation_operation(e)
-vocabulary source(e,v), target(e,v), shift(e,k:Q)
+// Atom 定義 D の subject / translation_operation / source / target / shift を参照する。
 derive vertices = atoms(subject)
 derive edges = atoms(translation_operation)
 derive endpoints(e) = required(source(e), target(e))
@@ -299,7 +300,7 @@ TD=BR,\qquad \mu T=\lambda
 
 これは[AAT 第IV部 §5](../../aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)
 の torsor-normalized mismatch と、[第X部 §2](../../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
-の cover-relative Čech complex を、この二入力から具体化した例である。
+の cover-relative Čech complex を、この Atom 定義・Law・ArchMapから具体化した例である。
 得られる大域状態は、この例で定義した座標 z である。
 
 SAGA の意味側・方程式側を独立に生成する presentation、primary state correspondence、

@@ -1,7 +1,7 @@
 # ArchMap、語彙、原始値
 
-ArchMap は、先に選んだ Law の語彙で観測した原始 Atom と由来を持つ。
-Law は [宣言言語](law.md) のテキスト、ArchMap と結果は JSON である。
+ArchMap は、[Atom 定義](definitions.md)の語彙で観測した原始事実と由来を持つ。
+Law は [宣言言語](law.md) のテキスト、Atom 定義・ArchMap・結果は JSON である。
 原始入力は対象の値・参照・式・候補対応までとし、計算済みの cover、行列、判定、保存証拠を
 受け取る型を設けない。核は言語固有の source parser を持たない。
 
@@ -12,12 +12,12 @@ unpaired surrogate を拒否する。`null` は使わない。省略可能 field
 空配列は宣言型で読み、欠測と区別する。object key 順は意味を持たない。
 文字列を正規化したり case folding したりしない。
 
-format は ArchMap=`archsig.archmap/1`、Law=`archsig.law/1`、結果=`archsig.result/1`。
-型・評価・核の構成規則の意味の版は `archsig/0.6.0`。両入力の semantics を一致させる。
+format は Atom 定義=`archsig.atom-definition/1`、ArchMap=`archsig.archmap/2`、Law=`archsig.law/2`、結果=`archsig.result/2`。
+schema の版は各 format、共通の原始型・評価・核の構成規則の意味の版は `archsig/0.6.0`。全入力の semantics を一致させる。
 未知版は `unsupported_version`、対応版の未知 field や宣言は不正入力。
 同じ semantics の意味を実装版によって変更しない。変更には別の semantics を用いる。
 
-Id は `[A-Za-z][A-Za-z0-9_.-]*`。QName は Law の完全名であり `.` 区切り。
+Id は `[A-Za-z][A-Za-z0-9_.-]*`。QName は Atom 定義または Law の完全名であり `.` 区切り。
 Digest は `sha256:` と小文字16進64桁。Nat は metadata 用の JSON number で
 0..9007199254740991 の整数。数学的な整数の表現とは異なる。整数かどうかは綴りが表す値を
 丸めずに判定する。
@@ -26,18 +26,18 @@ Digest は `sha256:` と小文字16進64桁。Nat は metadata 用の JSON numbe
 Map の key の重複は `duplicate_key` とする。ただし format が文字列で semantics が欠ける場合は、
 対応しない版として `unsupported_version` とする。未定義の origin・source、snapshot と異なる
 origin.mode、entity・arrow・correspondence の宣言でない subject の type、subject の型にない
-Atom の field は `reference` とする。各表の ID、vocabularies の reading、Term の params の重複は
+Atom の field は `reference` とする。各表の ID、vocabularies の namespace、Term の params の重複は
 `duplicate_id` とする。
 
 ## 2. ArchMap の schema
 
 ```text
 ArchMap = {
-  format: "archsig.archmap/1", semantics: "archsig/0.6.0",
+  format: "archsig.archmap/2", semantics: "archsig/0.6.0",
   vocabularies: VocabularyBinding[], sources: Source[], origins: Origin[],
   snapshots: Snapshot[]
 }
-VocabularyBinding = {reading: Name, digest: Digest}
+VocabularyBinding = {namespace: Name, version: String, digest: Digest}
 Source = {id: Id, uri: String, revision: String, digest: Digest}
 Origin = {id: Id, mode: "observed"|"proposed"|"specification",
           method: String, locations: Location[], note?: String}
@@ -47,7 +47,7 @@ Subject = {id: Id, type: QName, origin: Id}
 Atom = {id: Id, subject: Id, field: QName, value: Value, origin: Id}
 ```
 
-各表は ID を key とする有限集合。vocabularies は reading を key とし、重複を拒否する。
+各表は ID を key とする有限集合。vocabularies は namespace を key とし、重複を拒否する。
 subject/atom ID は snapshot 内で一意。Subject.type は entity/arrow/correspondence の宣言。
 Subject は、その型の個体の存在という原始事実である。ID を Law の値として公開せず、
 文字列分解・件数の水増し・未登録 subject の補完を行わない。
@@ -106,42 +106,31 @@ DecimalPrime は正の10進整数文字列で、核が素数性を確認する�
 型は field 宣言から決まり、pair ごとの型 wrapper は置かない。
 空の Map もその定義域が空なら全域であり、domain/codomain の型を捨てない。
 全域性は型検査、端点・構造・Law の保存は候補に対する核の検査である。
-Set の要素型は Law の型規則に従い、Term を直接・間接に含まない。
+Set の要素型は共通の型規則に従い、Term を直接・間接に含まない。
 重複は型に沿う構造的等値で検査する。List 内の項の外延等値を入力検査へ移さない。
 
 Term body は閉じた純粋式で、自由変数は params のみ。field、観測族、Path、with、
 結果参照を含めない。呼出しは原始値の演算・data constructor のみで、reading の view を
 名前で参照しない。型の分かる有限なコード上の作用を観測するために用い、外部 code を実行しない。
 型・原始式を記録することと、その関数の外延等値が決定可能なことを区別する。
-params は Law の束縛名の規則に従う名前で、body の名前は field を宣言した reading で解決する。
+params は Law の束縛名の規則に従う名前で、body の原始名は field を定義した namespace とその依存 namespace で解決する。
+短名は定義元 namespace 内だけで使い、外部名は完全名で明記する。
 
 ## 4. 語彙 binding
 
-`archsig check --law L --out DIR` が出力する vocabulary manifest を観測側が使用する。
-ArchMap に現れる subject 型と、field 型から推移的に参照する宣言を持つ reading ごとに
-binding を必須とする。過剰な binding もその reading の manifest と照合する。
-一致しなければ `vocabulary_mismatch`。型が偶然似ていることでは読み替えない。
+Law と ArchMap は、同じ Atom 定義を namespace・version・digest で参照する。
+ArchMap に現れる subject 型と、field 型から推移的に参照する宣言を持つ namespace ごとに
+binding を必須とする。必要な binding がなければ vocabularies の位置に vocabulary_mismatch を返す。
+version は非空文字列、値の比較は [Atom 定義](definitions.md#1-ファイルと識別)に従う。過剰な binding も登録済み定義と照合する。
+未登録 namespace は reference、版・digest の不一致は vocabulary_mismatch。
+形が似た型や別の版を自動で読み替えない。ArchMap だけが使う語彙も CLI で明示指定できる。
+未使用語彙の binding も受理し、宣言された参照として登録先・版・digest を照合する。
+定義された全型の subject、全 field の Atom、Law の全宣言への観測事実を揃えることは要求しない。
 
-manifest は次の JSON。全ての欄を必須とする。reading の全原始宣言を含める。
+manifest、定義の依存と語彙 digest は [Atom 定義](definitions.md#3-依存参照digest)に従う。
+`archsig check --atom-definition D --law L --out DIR` が返す manifest と digest を観測側が使用する。
+定義内の意味を保持し、Law の view・条件を manifest に混ぜない。
 
-```text
-Vocabulary = {semantics:"archsig/0.6.0", reading:Name, declarations:Declaration[]}
-Declaration = {kind:"entity"|"arrow"|"correspondence", name:QName,
-               parameters:Field[], fields:Field[], alignments:Alignment[]}
-            | {kind:"data", name:QName, constructors:Constructor[]}
-Field = {name:Name, type:Type}
-Alignment = {source:QName, target:QName}
-Constructor = {name:Name, arguments:Type[]}
-```
-
-entity の括弧内は parameters、body は fields。全名を展開し、依存型の parameterName は
-その宣言の括弧内の名を使う。暗黙の同名 align は manifest に追加せず、明記分だけを保持する。
-declarations は完全名、alignments は source,target の順で整列する。
-parameters、fields、constructors、constructor arguments の順は元の宣言順。
-use、view、law、local、change、relation は manifest に入れない。
-原始 Term が view を参照しないため、Law の条件や読取りの変更は原始語彙 binding を変えない。
-
-この manifest の canonical JSON の SHA-256 が binding の digest である。
 canonical JSON は key を Unicode scalar 順、空白なし、非 ASCII を UTF-8 で出力する。
 引用符・backslash を escape し、U+0000..001F は小文字4桁の `\u00xx`、その他は escape しない。
 `/` は escape しない。metadata number は先頭零のない10進整数。文字列の正規化はしない。
@@ -173,7 +162,7 @@ Source は観測に使った source tree/content の識別。uri/revision は非
 digest は観測側が指定する内容 digest。核はネットワークから uri を解決しない。
 Location.path は source root 相対の `/` 区切りで、空・絶対 path・`.` / `..` segment を拒否する。
 span は UTF-8 byte の半開区間 `[start,end)`、start≤end。省略時はファイル全体。
-観測者（agent / SKILL）は、Law の語彙と読み、選択した抽出規則に従い、計算に必要な
+観測者（agent / SKILL）は、Atom 定義の意味と Law の読み、選択した抽出規則に従い、計算に必要な
 実装コードの原始事実を由来付きで記録する。必要情報の確保、実 source の存在・範囲、
 観測の正しさ、source と ArchMap の忠実な対応は観測者の責務である。
 核は入力モデルの型・参照・整合性と、生成する構造の数学的適用条件を検査する。

@@ -1,13 +1,7 @@
-law "archsig.law/1" semantics "archsig/0.6.0";
+law "archsig.law/2" semantics "archsig/0.6.0";
 
 reading Reservations {
-  entity System;
-  entity State(owner: System) { free: Z; held: Z; }
-  arrow Reserve(owner: System, from: State[owner], to: State[owner]);
-  correspondence Migration(from: System, to: System) {
-    states: Map<State[from], State[to]>;
-    reserves: Map<Reserve[from], Reserve[to]>;
-  }
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
 
   view holdings(s: State): (Z, Z) = (s.free, s.held);
   law required conserved(e: Reserve):

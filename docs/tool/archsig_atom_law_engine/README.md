@@ -13,32 +13,36 @@ DSL の記法と計算機能は、以下で定義する提案である。
 
 具体的な入力形式・DSL・CLI・型付き結果は [v0.6.0 I/O仕様](../archsig_v0_6_0_io/README.md)に従う。
 本節以降のDSL例と呼出しの説明は構成を示す設計記法である。
-v0.6.0では語彙・law・view・local・changeを宣言し、問いはCLIで選ぶ。
+v0.6.0 では独立した Atom 定義の語彙を参照して law・view・local・change を宣言し、問いはCLIで選ぶ。
 以下の構成関数やqueryの配線を作者向けの入力形式としては用いない。
 
 ## 1. 計算の単位
 
-意味を持つ外部入力を二つに固定する。
+意味上の外部入力は独立した Atom 定義、Law、ArchMap の三種類とする。
 
 ```text
+D : AtomDefinition               共通語彙・型・意味と依存参照
 A : AtomDocument                 型付きの原始事実の有限提示
-L : LawModule                    語彙、構成規則、方程式、読み、問い
+L : LawModule                    定義参照、関係・制約、読み、許す変更
 
-(A, L)
+(D, A, L)
   → 型検査された Atom family と Law の式
   → configuration / architecture object / operation family
   → context / equation / coverage / overlap / coefficient
   → 診断・対応・反例・修復候補・追加観測の要求
 ```
 
-LawModule は LawPolicy の表現である。係数、局所化規則、比較の読みもその中に置き、
-別の MeasurementProfile や RepairPlan を意味上の第三入力にしない。
-呼出し時の問いは L が宣言した問いを選ぶ。対象を限定する条件も L の式に含める。
+LawModule は LawPolicy の表現である。条件・局所の公開値・比較の読みをその中に置き、
+係数・局所構造・比較写像は核が生成する。
+MeasurementProfile や RepairPlan の別ファイルを入力に追加しない。
+Law は意味上の設計の出発点として必要な区別を決める。語彙と型の所有者は D であり、
+D を L から生成される従属 artifact としない。複数 L は同じ D を共有できる。
+呼出し時の問いは CLI で宣言・対象・結果を選ぶ。
 計算予算や表示順は実行上の指定であり、判定の真偽を変更しない。
 
 計算核が知るものは、型、項、有限提示、方程式、射とその合成である。
 プログラミング言語、フレームワーク、AST、型検査器、静的解析器、リポジトリ配置は
-核の依存に置かない。手で記述した同じ Atom と Law でも同じ計算になる。
+核の依存に置かない。手で記述した同じ Atom 定義・Atom と Law でも同じ計算になる。
 製品の SKILL が実装コードの使用文脈を観測し、source ref を付けて A を作る。
 観測の役割は [Tooling guideline](../guideline.md) に従う。
 
@@ -83,12 +87,12 @@ payload ::= exact_scalar | enum_value | subject_ref
 
 ### 2.3 入力できる事実と導出するもの
 
-| 入力する原始事実 | Law の規則 | 核が導出するもの |
+| 入力する原始事実 | Law の宣言 | 核が導出するもの |
 | --- | --- | --- |
-| 操作の端点と式 | 合成、保存すべき方程式 | 可換性、残差、反例 |
-| 参照・所属・使用の関係 | support の閉包規則 | Context、局所化、重なり |
-| 対象・値・操作の有限提示 | 生成元・関係・係数の構成規則 | 係数表示、制限写像、複体 |
-| 変更前後の原始事実 | 対応の生成・保存条件 | 候補写像、成立済みの射、合成 |
+| 操作の端点と式 | 保存すべき条件・操作列の関係 | 合成、可換性、残差、反例 |
+| 参照・所属・使用の関係 | 局所で公開する読取り | 支持の閉包、Context、局所化、重なり |
+| 対象・値・操作の有限提示 | 条件・関係・許す変更 | 生成元、係数表示、制限写像、複体 |
+| 変更前後の原始事実 | 対応が保つべき条件 | 候補写像、成立済みの射、合成 |
 | 区別できる原始値 | 観測の読みと Law 評価 | 十分性、識別対、追加観測の要求 |
 
 完成した cover、Čech 行列、障害値、rank、acyclic・adequate・repairable 等の判定、
@@ -98,25 +102,26 @@ payload ::= exact_scalar | enum_value | subject_ref
 
 型検査は導出済み型から原始事実型への流入を防ぐ。原始事実の虚偽や、巧妙な言い換えの
 意味的検出は型検査だけで保証できない。語彙の選択と観測内容の確認は SKILL の責務に置き、
-エンジンによる保証を「提示した A と L からの導出」に固定する。
+エンジンによる保証を「提示した D・A・L からの導出」に固定する。
 
 ## 3. Law DSL
 
 ### 3.1 宣言と型
 
-DSL は読みの宣言と、そこから計算する方程式を同じ module 内で記述する。
-各宣言には独立した型を与える。
+Atom 定義は原始語彙・型・意味を持つ。Law DSL はその語彙を参照し、読みと条件を記述する。
+以下の構成は核の内部設計であり、利用者に計算計画を記述させる構文ではない。
+Atom 定義、Law 宣言、核の内部構成、CLI の問いを次の表で区別し、それぞれに型を与える。
 
-| 宣言 | 内容 | 評価結果 |
+| 定義・処理 | 所有者と内容 | 評価結果 |
 | --- | --- | --- |
-| `vocabulary` | 原始 predicate と値型 | Atom の型付け |
-| `derive` | join、射影、有限集合、正の有限閉包 | 関係・生成元と由来 |
-| `object` / `operation` | configuration と項による変換規則 | 対象・候補 configuration map |
-| `context` / `coverage` | support、軸、observable と必要な支持 | context と cover の候補 |
-| `coefficient` | 係数環、生成元・関係、制限の生成規則 | 有限表示された係数と写像 |
-| `law` | typed equation、量化域、役割 | equation index と residual |
-| `reading` | 射影・比較・診断の読み | 導出対象間の対応 |
-| `query` | 方程式の充足、解、比較、観測要求 | 型付きの回答 |
+| Atom 定義 | 定義作者: 原始 predicate・型・意味 | Atom の型付け |
+| `derive` | 核: join、射影、有限集合、正の有限閉包 | 関係・生成元と由来 |
+| `object` / `operation` | 核: configuration と項による変換規則 | 対象・候補 configuration map |
+| `context` / `coverage` | 核: support、軸、observable と必要な支持 | context と cover の候補 |
+| `coefficient` | 核: 係数環、生成元・関係、制限の生成規則 | 有限表示された係数と写像 |
+| `law` | Law 作者: typed equation、量化域、役割 | equation index と residual |
+| `reading` | Law 作者: 公開値・条件・許す変更の読み | 導出対象間の対応 |
+| `query` | CLI: 方程式の充足、解、比較、観測要求 | 型付きの回答 |
 
 型は原始データ、生成対象、写像、条件の検査結果を区別する。
 `VerifiedMap`、`Cocycle`、`ExactSequence` のような成立条件付きの型は、
@@ -133,11 +138,11 @@ query   ::= evaluate(equation) | solve(equation_family)
           | compare(reading, reading) | distinguish(reading, equation)
 ```
 
-これは抽象構文の設計であり、具体構文は [Law DSL仕様](../archsig_v0_6_0_io/law.md)に従う。有限な関係の閉包と、無限に続きうる操作語の生成は別の型・評価方式にする。
+これは核の型・構成と問いの抽象表現であり、作者向け Law の宣言文法は [Law DSL仕様](../archsig_v0_6_0_io/law.md)に従う。有限な関係の閉包と、無限に続きうる操作語の生成は別の型・評価方式にする。
 
 ### 3.2 Law に書く値
 
-Law に書く定数は、係数環の定数、仕様上の閾値、語彙の列挙値など、事前に選択する規則の値である。
+Law に書く定数は、係数環の定数、仕様上の閾値、定義済みの列挙値など、事前に選択する規則の値である。
 今回観測した件数、特定 subject の ID、ソースパス、対象固有の表や分割は書かない。
 「subject ごと」「操作の始域と終域ごと」のような量化から、対象固有の値を A から束縛する。
 規則を観測値に合わせて変えた場合は別の L の解析であり、元の解析を上書きしない。
@@ -145,7 +150,7 @@ Law に書く定数は、係数環の定数、仕様上の閾値、語彙の列�
 Law は module の import とパラメータ化を認める。import を含む意味内容を L に固定する。
 パラメータは型・数学定数・宣言された規則に限り、対象を見て答えを返す callback や
 任意プログラム、ネットワーク取得、計算済み結果の読込みは持たない。
-組込み演算の意味はエンジンの仕様版に固定し、実行ごとの拡張コードを第三入力にしない。
+組込み演算の意味はエンジンの仕様版に固定し、実行ごとの拡張コードを追加入力にしない。
 
 ### 3.3 評価と不完全な情報
 
@@ -238,11 +243,11 @@ ResultNode = (type, value, support, rule_ref, dependencies, conditions, scope)
 条件ごとに「導出済み」「反証」「未決」と、その証拠を保持する。
 
 同一評価中では、この型付きノードを直接次の算法へ渡す。別の評価から持ち込む結果は
-便宜的な再利用候補であり、現在の A と L に対して根から再導出または各推論を再検査する。
+便宜的な再利用候補であり、現在の D・A・L に対して根から再導出または各推論を再検査する。
 digest や `verified: true` だけを信用しない。再検査できなければ通常の導出を行う。
 外部の証明や解を与えることで、本来の入力から出なかった結論を得る経路は作らない。
 
-Atom・Law・組込み意味の版が変われば、依存が変わるノードの結果を更新する。
+Atom 定義・Atom・Law・組込み意味の版が変われば、依存が変わるノードの結果を更新する。
 説明文、図、ArchView 表示、FieldSig への受渡しはこの構造を読む。
 LLM による説明文の再解釈を計算間の接続に使わない。
 
@@ -261,11 +266,12 @@ translation(a, p, q, 1)    translation(b, q, r, 1)    translation(c, p, r, 3)
 存在する操作の集合は `translation_operation` から作る。
 その端点と式 `x ↦ x + k` に必要な値は別々に読み、不足しても操作自身を集合から除かない。
 入力に「三角形」「不整合」「障害」「局所 context」「修復可能性」はない。
-L は対象名に依存しない次の宣言を持つ。
+D は操作、端点参照、shift の語彙・型・意味を持つ。
+L の要求、核の構成、CLI の問いを、対象名に依存しない次の内部設計記法で示す。
+derive/context/coefficient は核の構成、law は作者の条件、query は CLI の選択を表す。
 
 ```text
-vocabulary translation_operation(op)
-vocabulary source(op, quantity), target(op, quantity), shift(op, value: Q)
+// Atom 定義 D の translation_operation / source / target / shift を参照する。
 derive translations = atoms(translation_operation)
 derive composable_pairs = join translations on first.target = second.source
 derive triangles = join composable_pairs with direct edge on both endpoints
@@ -337,7 +343,7 @@ SAGA の意味状態との対応は、それらに加えて別途構成する対
 
 | 根拠 | この設計で具体化する内容 |
 | --- | --- |
-| [製品コンセプト](../archsig_v0_6_0_concept.md) §§2–4・7 | 二入力、導出の連鎖、候補と射の区別、DSL、言語独立、数学との対応 |
+| [製品コンセプト](../archsig_v0_6_0_concept.md) §§2–4・7 | 定義・法・観測、導出の連鎖、候補と射の区別、DSL、言語独立、数学との対応 |
 | [AAT 第I部](../../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md) 定義1.1、§§4–7、定義10.2・10.4A、定理10.5、原則10.6 | Atom、configuration、equation residual、実際の configuration map、生成 core |
 | [AAT 第II部](../../aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md) §§3–7 | Context、pullback overlap、coverage requirements、generated topology と adequacy |
 | [AAT 第III部](../../aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md) | Law algebra、ideal、lawful locus の接続条件 |

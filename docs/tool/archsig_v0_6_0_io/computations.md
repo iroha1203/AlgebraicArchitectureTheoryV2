@@ -4,11 +4,17 @@
 Law が宣言する意味とこの標準構成を固定してから、核が計算計画を選ぶ。
 標準構成の変更を、実装内部の最適化として同じ意味の版へ含めない。
 
-本書は、[reading の宣言](law.md)と[原始 Atom](inputs.md)から核が生成する対象、
+本書は、[Atom 定義](definitions.md)、[reading の宣言](law.md)と[原始 Atom](inputs.md)から核が生成する対象、
 局所構造、診断、修復、比較を定める。問合せの署名と結果の形式は
 [実行仕様](execution.md)に従う。以下の行列、環、係数、cover、証拠は核の生成物である。
 
 ## 1. 対象、作用、Law instance
+
+各 reading の原始語彙は、直接 import した定義とその依存の推移閉包である。
+root とその owned 型はこの語彙内で選び、未使用の別定義を登録しただけで構成を増やさない。
+Law/view/local/change/relation の選択は reading が持つ。共通語彙を参照する別の reading の
+条件や読取りを自動で混ぜない。root 型がこの語彙内になければ問いの usage。
+map の始域・終域には CLI で選んだ reading/to_reading を使う。
 
 `build` の configuration `(F,R,E)` は次の固定規則で作る。
 Fには選択root、そのrootをownerとするentity/arrowの存在事実、その全既知field Atomを入れる。
@@ -64,10 +70,23 @@ correspondence による object algebra の対象写像は base→base、p→対
 source F 外では対応写像の像が target root であり、target の内部操作はその root を固定する。
 source F 内の衝突や共有参照に起因する不一致は、この全域自然性の検査に残る。
 
-宣言の対応は、同名、同じ宣言 kind、移送後の型付き署名の一致によってだけ決める。
-entity/arrow は correspondence の型対応、field は同名規則または align、parameter は位置によって移し、
-束縛名の違いを除く。参照を含まない値型は同じ型を要求する。
-この規則を Law/view/local/change/relation に使い、別名や似た式から対応を推測しない。
+原始型と Law 宣言は、次の別々の規則で対応させる。
+
+- 原始 entity/arrow は correspondence の型対応、field は同名規則または align に従う。
+  両 reading が同じ定義を参照する型は、共通の namespace・version・digest に根を持つ同じ型である。
+  その型 identity の共有と、個体・field 値の運搬は別であり、後者は実際の correspondence から構成する。
+  別 namespace の似た短名や同じ形の型を、共通定義として読み替えない。
+- Law/view/local/change/relation の候補対応は、CLI の reading/to_reading で選んだ各 scope 内の
+  `(宣言 kind, 宣言の短名)` を key とする。短名は完全名 `Reading.Name` の Name であり、
+  reading の prefix だけを除く。例えば Before.nonnegative と After.nonnegative が候補となる。
+  別の reading や alias から同名候補を探したり、異なる短名を式の類似で対応させたりしない。
+- 候補の parameter は位置によって対応させ、束縛名の違いを除く。parameter の個数と、
+  correspondence による原始型・owner の移送後の引数型、view の戻り型を照合する。
+  参照を含まない値型は同じ型を要求する。署名が適合した候補だけを宣言の対応として保持する。
+
+共通定義や同名の宣言から、Law の role・guard・body、公開値、許す変更、関係の保存を結論しない。
+それらの条件は元の各宣言から生成し、型付き評価と実写像の可換性を別に検査する。
+同じ名前・型でも異なる条件の保存は失敗し得る。
 外部の helper 宣言は、その式が参照する対応先の宣言として保持する。
 対応名または署名が揃わなければ `condition_failed` とし、この固定規則で構成できないことを返す。
 一般の object algebra の射が存在しないという結論にはしない。
@@ -310,7 +329,7 @@ Repair/object は生成しない。解集合が空なら存在と一意性の両
 subject が空、または各 subject の値 parameter が空でも、割当ては空積の一元である。
 それが解かどうかは guard と Law を別に検査する。
 
-同じ二入力・解決済みの束縛・基準 Architecture について、計画を変えても一意性と
+同じ Atom 定義・Law・ArchMap・解決済みの束縛・基準 Architecture について、計画を変えても一意性と
 唯一の割当ては変わらない。原始参照 ID の全単射は、問いの参照束縛も輸送すると
 解 Assignment の全単射を誘導する。一意な割当てと生成 Architecture はその改名に沿って運ばれる。
 

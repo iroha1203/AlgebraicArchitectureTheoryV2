@@ -1,13 +1,108 @@
 # 入出力例と適合条件
 
-以下の Law、ArchMap、変種表を、[宣言](law.md)、[核の構成](computations.md)、
+以下の Atom 定義、Law、ArchMap、変種表を、[宣言](law.md)、[核の構成](computations.md)、
 [実行](execution.md)に対する規範例とする。いずれも仕様の有限モデルであり、
 原始値・候補と、核が導出する値・成立判定を分けて示す。
 
+## 最小の一周
+
+[Counter の Atom 定義](examples/counter.atoms.json)は `Counter.State` と属性 `count:Z`
+（保持する件数）を定義する。[Law](examples/counter.law) の CountCheck と CountAudit は
+同じ namespace=Counter、version=1、digest=`sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11` を参照する。
+CountCheck は非負、CountAudit は10以下という条件を持つ。原始型は一つのままである。
+[ArchMap](examples/counter.archmap.json) は同じ binding と、`@v/s` の存在、count=2 を記録する。
+
+このディレクトリを cwd として、まず定義と Law を検査し、次に観測を検査する。
+
+```sh
+archsig check --atom-definition examples/counter.atoms.json \
+  --law examples/counter.law --out result-counter-definition
+archsig check --atom-definition examples/counter.atoms.json \
+  --law examples/counter.law --archmap examples/counter.archmap.json --out result-counter-check
+archsig run --atom-definition examples/counter.atoms.json \
+  --law examples/counter.law --archmap examples/counter.archmap.json \
+  --ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
+  --ask 'ok=check(CountCheck.nonnegative,s=@v/s)' \
+  --ask 'audit=check(CountAudit.bounded,s=@v/s)' --out result-counter-run
+```
+
+check の結果は complete/0、requests/answers/nodes は空。
+inputs は definition0（inputs/definitions/0.json）と law、ArchMap 指定時は archmap も持つ。
+vocabularies は Counter 一件の manifest・上記 digest・定義への location を持つ。
+declarations の `Counter.State` の位置は definition0 の `/vocabularies/0/declarations/0`、
+`CountCheck.nonnegative` は law の元 span、parameter の型は `["Ref","Counter.State"]`。
+reading の定義参照は DeclarationInfo.vocabularies に保持する。
+
+run は n の値を型 Z・payload `"2"`、ok と audit を established として返し、complete/0。
+元の定義・Law・観測位置に導出を持つ。count を `"12"` に変えれば ok は成立、audit は反証となる。
+このとき定義と binding は同じで、run は complete/1。count Atom を除けば subject は残り、
+n・ok・audit は missing_observation、missing は `(v,s,Counter.State.count)`、run は partial/2。
+共通定義を使っても、観測値を変更すれば観測結果とその評価は変わる。
+
+| 小さい不正例 | code / status / exit |
+| --- | --- |
+| 定義を指定せず check | usage / invalid / 64 |
+| Counter の定義を二ファイルから重複登録 | duplicate_id / invalid / 65 |
+| import または binding の digest だけを変更 | vocabulary_mismatch / invalid / 65 |
+| 未登録 namespace の import または dependency | reference / invalid / 65 |
+| 定義の dependency が自己参照 | cycle / invalid / 65 |
+| 定義の meaning を空にする | syntax / invalid / 65 |
+| 定義の未知 format/semantics | unsupported_version / unsupported / 69 |
+
+### 未使用情報と検査の段階
+
+[共通ライブラリの定義例](examples/counter-library.atoms.json) は同じ Counter 定義に
+未使用の Extras.Note と、Extras が列挙する未使用 dependency Counter を加えた包装である。
+Extras の宣言は Counter の型を使わないが、dependency は登録済み Counter の正しい binding を指す。
+Counter の manifest・版・digest は変えず、定義ファイル全体の model_digest は変わる。
+Law と ArchMap は基本例のまま使う。
+
+```sh
+archsig check --atom-definition examples/counter-library.atoms.json \
+  --law examples/counter.law --archmap examples/counter.archmap.json --out result-counter-library
+```
+
+この check は complete/0、manifest は Counter と Extras の二件。
+Extras.Note を観測していなくても受理し、その宣言と未使用 dependency を結果に保持する。
+基本例と同じ run の三問は amount=2、両条件成立のままで、Extras の値を要求しない。
+未使用 import や過剰な ArchMap binding を追加する場合も、登録先の版・digest を正しく明記すれば受理する。
+
+| 変種 | 期待結果 |
+| --- | --- |
+| Extras.Note が未使用、Extras が Law から未参照、dependency Counter も型・alignment から未使用 | 入力検査成功。未使用情報を結果に保持 |
+| Extras の dependency binding の digest だけを変更 | vocabulary_mismatch / invalid / 65。未使用でも明示された版付き参照は照合する |
+| Extras の dependency を未登録 namespace へ変更 | reference / invalid / 65。明示した参照先が欠けている |
+| 定義の未知欄 meanng に意味を記録 | syntax / invalid / 65。未使用だからという理由で typo を黙認しない |
+| Counter の count Atom を除く | 静的検査成功、値を必要とする run の三問は missing_observation |
+
+### reading 間の宣言対応
+
+次の二つの reading は同じ Reservations 定義を参照する。Law ファイルの宣言片であり、
+基本例と同じ header を付けて使用する。
+
+```text
+reading Before {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  law required nonnegative(s: State): s.free >= 0;
+}
+reading After {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  law required nonnegative(t: State): t.free >= 5;
+}
+```
+
+`map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)` では
+短名 nonnegative・kind law・parameter 位置と型から、Before.nonnegative と After.nonnegative が対応候補となる。
+束縛名 s/t の違いは除く。実際の p↦r では2>=0は成立、4>=5は偽なので、Law 保存は反証される。
+共通の State 型と同名の条件は、条件の保存証拠にならない。
+After の短名だけを bounded に変えると、この固定規則では対応が揃わず condition_failed。
+同名のまま parameter を増やす変種も署名不適合の condition_failed とする。
+いずれも Law 自体は有効な入力であり、構成の保存失敗を入力不正にしない。
+
 ## 1. 状態の保存と移行の保存
 
-[Reservations の Law](examples/reservations.law) は状態・予約操作・移行候補の語彙、
-数量の読取り、保存要求、局所読取り、許す変更を宣言する。
+[Atom 定義](examples/reservations.atoms.json) は状態・予約操作・移行候補の語彙、型、意味を持つ。
+[Law](examples/reservations.law) はそれを参照し、数量の読取り、保存要求、局所読取り、許す変更を宣言する。
 [ArchMap](examples/reservations.archmap.json) の全原始値は次のとおり。
 
 | 種別 | 原始値 |
@@ -18,10 +113,11 @@
 | Migration | m:A→B、states={p↦r,q↦s}、reserves={e↦f} |
 
 ```sh
-archsig run --law examples/reservations.law --archmap examples/reservations.archmap.json \
+archsig run --atom-definition examples/reservations.atoms.json \
+  --law examples/reservations.law --archmap examples/reservations.archmap.json \
   --ask 'value=evaluate(Reservations.holdings,s=@v/p)' \
   --ask 'operation=check(Reservations.conserved,e=@v/e)' \
-  --ask 'structure=map(Reservations.Migration,on=@v/m)' \
+  --ask 'structure=map(Reservations.Migration,on=@v/m,reading=Reservations)' \
   --ask 'migration=check(Reservations.retained,m=@v/m)' --out result-reservations
 ```
 
@@ -71,7 +167,8 @@ body の inline や出現の統合は行わず、parameter `e` とその CLI 束
 出力 node ID の一致を要求しない。各結果はそれぞれの入力位置へ戻れることを要求する。
 
 ```sh
-archsig check --law examples/reservations.law --out result-reservations-check
+archsig check --atom-definition examples/reservations.atoms.json \
+  --law examples/reservations.law --out result-reservations-check
 ```
 
 この `check` では、[宣言の解決と標準の意味](law.md#宣言の解決と標準の意味)に従って、
@@ -117,12 +214,13 @@ StockとHeldの個別の変更が求まっても、一つのrebalanceから来�
 
 ### 修復の存在と一意性
 
+Atom 定義 Pair は root entity `Pair.State` に `x:Z`（第1座標）、`y:Z`（第2座標）を持つ。
+以下の Law 片では対応する `use vocabulary` を省略する。実ファイルにはその定義の版・digest を明記する。
 次の Law 片に対し、snapshot `pair` の唯一の subject `s: Pair.State` に
 原始値 `x=0, y=0` を与える。State はこの例の root である。
 
 ```text
 reading Pair {
-  entity State { x: Z; y: Z; }
   law required total(s: State): s.x + s.y = 1;
   law optional pinned(s: State): s.x + s.y = 1 and s.x = 0;
   change setpair(s: State, a: Z, b: Z) = s with { x = a, y = b };
@@ -131,7 +229,7 @@ reading Pair {
 }
 ```
 
-この二入力に次の問いを指定する。
+この Atom 定義・Law・ArchMapに次の問いを指定する。
 
 ```text
 r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)
@@ -174,13 +272,14 @@ SolutionSet 自体を `quotient` へ渡す接続と、一意修復の `$u.object
 
 ### 識別子と一意性
 
+Atom 定義 Rename は root entity `System` の `first:Ref(State)`（第1状態）、
+`second:Ref(State)`（第2状態）と、entity `State` の parameter `owner:Ref(System)`（所属）、
+field `x:Z`（座標）を持つ。Law 片の定義参照は省略する。
 次の Law 片で、唯一の root の `first` は owned State `a`、`second` は `b` を指し、
 両方の `x=0` を観測した場合を考える。
 
 ```text
 reading Rename {
-  entity System { first: State; second: State; }
-  entity State(owner: System) { x: Z; }
   law required total(r: System): r.first.x + r.second.x = 1;
   law optional pinned(r: System): r.first.x + r.second.x = 1 and r.first.x = 0;
   change setx(s: State, v: Z) = s with { x = v };
@@ -199,15 +298,15 @@ Repair/object は返さない。二つの subject ID と全参照を入れ替え
 
 ## 3. 三辺の修復と局所・大域
 
-次のreadingに、所属する三点p,q,rの観測座標0と、
+Atom 定義 Coordinates は root `System`、entity `Point`（parameter owner:Ref(System)、
+field coordinate:Z）、arrow `Shift`（parameters owner:Ref(System)、from/to:Owned(Point,owner)、
+field shift:Z）を持つ。意味は所属する点の座標と、二端点間の指定変位である。
+Law 片の定義参照は省略する。次のreadingに、所属する三点p,q,rの観測座標0と、
 名前付きの辺a:p→q、b:q→r、c:p→r、shift値1,1,γを与える。
 座標は観測済みであり、未知の観測値を解変数に置き換えない。
 
 ```text
 reading Coordinates {
-  entity System;
-  entity Point(owner: System) { coordinate: Z; }
-  arrow Shift(owner: System, from: Point[owner], to: Point[owner]) { shift: Z; }
   law required aligned(e: Shift):
     e.to.coordinate - e.from.coordinate = e.shift;
   local Edge(e: Shift) reads e.shift, e.from.coordinate, e.to.coordinate;
@@ -241,8 +340,8 @@ Edgeの読取りから生成した局所解の差と制限を用い、整数係�
 
 ## 4. エンジンの有限仕様モデル
 
-[Engine の Law](examples/engine.law) はExprのLit/Var/Add、IRのConst/Load/Plus/Minusを
-有限木dataで定義する。`translate`、`evalSource`、`evalIR` はそれぞれ構造再帰のviewであり、
+[Engine の Atom 定義](examples/engine.atoms.json) はExprのLit/Var/Add、IRのConst/Load/Plus/Minusを
+有限木dataで定義する。[Law](examples/engine.law) はその語彙を参照する。`translate`、`evalSource`、`evalIR` はそれぞれ構造再帰のviewであり、
 各constructorで行う計算をすべて宣言している。
 [ArchMap](examples/engine.archmap.json) は原始source treeと候補演算のenumだけを持つ。
 
@@ -262,7 +361,8 @@ sourceは `x+(1+2)`。二つのCompiler subjectは同じsourceを持ち、operat
 | 未観測 | 未確定 | Compilerを残しoperator不足を返す。上の二補完で答えが異なる |
 
 ```sh
-archsig run --law examples/engine.law --archmap examples/engine.archmap.json \
+archsig run --atom-definition examples/engine.atoms.json \
+  --law examples/engine.law --archmap examples/engine.archmap.json \
   --ask 'add=check(Engine.preserves,c=@engine/add)' \
   --ask 'subtract=check(Engine.preserves,c=@engine/subtract)' --out result-engine
 ```
@@ -317,7 +417,7 @@ archsig run --law examples/engine.law --archmap examples/engine.archmap.json \
 未観測、局所可視性不足、未対応算法、予算中断を理由ごとに保持する。
 空虚な成立と通常の成立を、評価件数と量化域から区別できることを確かめる。
 
-再利用候補を改変しても、現在の二入力から得る結論は変わらない。
+再利用候補を改変しても、現在の Atom 定義・Law・ArchMapから得る結論は変わらない。
 結果の型・参照・導出DAGを検査し、Atom、Law宣言、固定演算まで到達することを確認する。
 Pair.totalの一解だけを持つ再利用候補からRepair/objectを採用しない。全解の一意性を再検査し、
 複数解の存在と非一意性を保持する。Pair.pinnedへLawを変更した場合も現在の要求で再検査する。
