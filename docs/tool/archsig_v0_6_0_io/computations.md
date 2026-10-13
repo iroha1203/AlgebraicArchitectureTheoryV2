@@ -4,11 +4,17 @@
 Law が宣言する意味とこの標準構成を固定してから、核が計算計画を選ぶ。
 標準構成の変更を、実装内部の最適化として同じ意味の版へ含めない。
 
-本書は、[reading の宣言](law.md)と[原始 Atom](inputs.md)から核が生成する対象、
+本書は、[Atom 定義](definitions.md)、[reading の宣言](law.md)と[原始 Atom](inputs.md)から核が生成する対象、
 局所構造、診断、修復、比較を定める。問合せの署名と結果の形式は
 [実行仕様](execution.md)に従う。以下の行列、環、係数、cover、証拠は核の生成物である。
 
 ## 1. 対象、作用、Law instance
+
+各 reading の原始語彙は、直接 import した定義とその依存の推移閉包である。
+root とその owned 型はこの語彙内で選び、未使用の別定義を登録しただけで構成を増やさない。
+Law/view/local/change/relation の選択は reading が持つ。共通語彙を参照する別の reading の
+条件や読取りを自動で混ぜない。root 型がこの語彙内になければ問いの usage。
+map の始域・終域には CLI で選んだ reading/to_reading を使う。
 
 `build` の configuration `(F,R,E)` は次の固定規則で作る。
 Fには選択root、そのrootをownerとするentity/arrowの存在事実、その全既知field Atomを入れる。
@@ -310,7 +316,7 @@ Repair/object は生成しない。解集合が空なら存在と一意性の両
 subject が空、または各 subject の値 parameter が空でも、割当ては空積の一元である。
 それが解かどうかは guard と Law を別に検査する。
 
-同じ二入力・解決済みの束縛・基準 Architecture について、計画を変えても一意性と
+同じ Atom 定義・Law・ArchMap・解決済みの束縛・基準 Architecture について、計画を変えても一意性と
 唯一の割当ては変わらない。原始参照 ID の全単射は、問いの参照束縛も輸送すると
 解 Assignment の全単射を誘導する。一意な割当てと生成 Architecture はその改名に沿って運ばれる。
 

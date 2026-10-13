@@ -3,28 +3,30 @@
 ## 1. コマンド
 
 ```text
-archsig check --law L [--archmap A] --out NEW_DIRECTORY
-archsig run --law L --archmap A --ask 'ID=QUESTION' [--ask 'ID=QUESTION' ...]
+archsig check --atom-definition D [--atom-definition D ...] --law L [--archmap A] --out NEW_DIRECTORY
+archsig run --atom-definition D [--atom-definition D ...] --law L --archmap A --ask 'ID=QUESTION' [--ask 'ID=QUESTION' ...]
             --out NEW_DIRECTORY [--reuse OLD_DIRECTORY]
             [--time-ms N] [--memory-mib N]
 archsig version
 ```
 
-これが全コマンドと全flagである。`--ask`だけを反復でき、同じIDは拒否する。
+これが全コマンドと全flagである。`--atom-definition`と`--ask`を反復でき、問い ID の重複を拒否する。
 単数flagの重複、未知flag、位置引数、必須flagの欠落は`usage`。
 Nは`[1-9][0-9]*`の整数。省略した予算に論理的上限を設けない。
 短縮flag、stdin、暗黙のファイル探索、環境変数による意味の変更を設けない。
 
-`check`はLawの構文・版・参照・型・再帰と、指定されたArchMapの語彙・値・参照を検査する。
-Lawの宣言一覧、原始語彙manifest、元の宣言に対応する名前・型・既定規則の解決結果を返す。
+`check`は Atom 定義の構文・版・名前・型・依存、Law の構文・版・参照・型・再帰と、
+指定された ArchMap の binding・値・参照をこの順に検査する。
+定義と Law の宣言一覧、原始語彙 manifest、元の宣言に対応する名前・型・既定規則の解決結果を返す。
+`--atom-definition`は一件以上必須。ファイル間の依存は [Atom 定義](definitions.md#3-依存参照digest)に従う。
 省略したguard、同名fieldの対応、local宣言の有無による構成方式を、
 [型付き結果](results.md)の規則名と元のLocationから確認できる。
 問いの計算は始めず、実際の対象・context・cover・候補域は生成しない。欠測fieldは有効入力である。
 `run`は同じ検査の後、問いの参照を解決し、依存順に必要な構成と計算を行う。
 選択の外側を含む入力全体を静的検査する。
-Law全体の静的検査が完了した場合だけ、宣言と語彙の全件を出力する。
-Lawの検査途中で不正・非対応・中断となった場合は、部分的な宣言一覧を返さず、入力と理由を残す。
-Lawの検査完了後にArchMapの検査が失敗しても、確認済みの宣言と語彙は保持する。
+全 Atom 定義と Law 全体の静的検査が完了した場合だけ、宣言と語彙の全件を出力する。
+Atom 定義または Law の検査途中で不正・非対応・中断となった場合は、部分的な宣言一覧を返さず、入力と理由を残す。
+Atom 定義と Law の検査完了後にArchMapの検査が失敗しても、確認済みの宣言と語彙は保持する。
 
 ## 2. 問いの構文と参照
 
@@ -84,7 +86,7 @@ Handleの型を宣言のparameter型へ照合し、依存型のownerも検査す
 問いは既存の宣言・対象・結果と固定の選択肢を指す。
 原始値、式、対応表、cover、係数環、候補域、仮定をCLIから追加しない。
 問いを変えるためにLawへ解析手順を追加する必要はない。
-選択した問いと解決済みの束縛を結果に保存する。計算の意味は現在のArchMapとLawから決まる。
+選択した問いと解決済みの束縛を結果に保存する。計算の意味は現在の Atom 定義・ArchMap・Law から決まる。
 結果では明示した選択と省略時の選択を区別する。mapのkind、diagnoseのdegree/sideの既定値も
 解決して保持し、環境・Law族・変更の省略規則は結果の固定規則名で示す。
 未束縛parameterは宣言型の全域で量化するという意味を保持し、計画によって値を選んで埋めない。
@@ -103,7 +105,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `build(Reading,on=Handle)` | rootとreadingから対象と有限表示のobject algebraを生成する。`proposition:Proposition`、構成できた`object:Architecture`、成立時`algebra:ObjectAlgebra` |
 | `evaluate(View,on=Handle?,B)` | viewの全parameterを束縛して評価する。onは結果のArchitectureを読む環境。`value:T`、`evaluation:Evaluation`。TはPathやそのcontainerを含むLawの返り型 |
 | `check(Law,on=Handle?,B)` | Lawの選択instance族について、未束縛parameterと内部量化を保って成立を問う。onは結果のArchitectureを読む環境。`proposition:Proposition`、`evaluation:Evaluation` |
-| `map(Correspondence,on=Handle,kind=configuration\|object_algebra?)` | onはこのcorrespondenceの原始instance。kindの既定はconfiguration。`candidate:MapCandidate`、`proposition:Proposition`、configuration保存確認時だけ`operation:Operation`、選択kindの成立時`map:ConfigurationMap\|ObjectAlgebraMap` |
+| `map(Correspondence,on=Handle,reading=Reading,to_reading=Reading?,kind=configuration\|object_algebra?)` | onはこのcorrespondenceの原始instance。readingは始域の読み、to_readingは終域の読み（既定はreadingと同じ）。kindの既定はconfiguration。`candidate:MapCandidate`、`proposition:Proposition`、configuration保存確認時だけ`operation:Operation`、選択kindの成立時`map:ConfigurationMap\|ObjectAlgebraMap` |
 | `compose(Handle,then=Handle)` | 二つの成立済みOperationまたは二つのPathを指定順に合成する。`proposition:Proposition`、端点確認後`operation:Operation\|Path`、Operationの場合は`map:ConfigurationMap` |
 | `compare(Handle,to=Handle,kind=value\|word\|action\|relation\|diagnostics,along=Handle?)` | 下記の比較を行う。`comparison:Comparison`、`proposition:Proposition` |
 | `localize(Handle,law=QName?,using=QName?,B)` | Architectureを局所化する。lawは選択Law、usingはchange。`system:LocalSystem`、`proposition:Proposition` |
@@ -129,6 +131,10 @@ checkに対象選択がない場合は現在のArchMap全体、localize/solve/re
 操作とするObjectAlgebraを返す。Law・方程式・circuit・不変量・signatureは標準規則で生成する。
 claimはObjectAlgebraの構成条件を表す。algebraが未決・不成立でも、既に構成したobjectと
 各型付き中間結果を保持し、claimが未決ならundetermined、反証されたならrefutedを返す。
+`map` の reading/to_reading は Law ファイルの reading を完全名で選ぶ。
+それぞれの読みが correspondence の始域・終域の原始型を参照できることを要求する。
+宣言の namespace や同じ語彙を使う他の reading から読みを推測しない。
+省略した to_reading も解決済み arguments に origin=defaulted で保持する。
 `map`は全入力の存在事実と既知Atomからなる共通U上の総写像と名前を保持し、
 family・関係・同一視の保存を検査する。object_algebraを選んだ場合は実際の対象族の対応、
 Law・方程式・circuit・操作・不変量・signatureの対応と全域自然性も検査する。
@@ -214,7 +220,7 @@ law指定時はBのうちLawが宣言する同名parameterを同じ型で共有�
 ## 4. 例
 
 ```text
-archsig run --law reservations.law --archmap reservations.archmap.json \
+archsig run --atom-definition reservations.atoms.json --law reservations.law --archmap reservations.archmap.json \
   --ask 'a=build(Reservations,on=@v/B)' \
   --ask 'v=evaluate(Reservations.holdings,s=@v/p)' \
   --ask 'c=check(Reservations.retained,m=@v/m)' \
@@ -223,14 +229,14 @@ archsig run --law reservations.law --archmap reservations.archmap.json \
   --ask 'n=needed($r)' --out result
 ```
 
-次の問いは同じA/Lを再入力し、必要な`--ask`と依存する問いを指定して実行する。
+次の問いは同じ定義・A・Lを再入力し、必要な`--ask`と依存する問いを指定して実行する。
 `--reuse`を付けた場合も同じ再検査を行う。結果だけを意味入力として受け取るコマンドはない。
 
 ## 5. ファイル操作と出力
 
 入力はローカルの通常ファイル。pathは呼出しcwd基準とする。
 symlinkを読込み開始時に解決し、開始時に読み切ったbyte列だけを計算と同梱に使う。
-HTTP、ZIP、source uriやLaw参照からの追加読込みを行わない。
+HTTP、ZIP、source uriや定義・Law参照からの追加読込みを行わない。
 再利用directoryは通常のdirectoryと下記固定pathの通常ファイルだけを読み、リンク先の追加探索をしない。
 
 outは存在しないpath、親は既存directoryを要求する。満たさない場合は`usage`とし、出力を作らない。
@@ -248,6 +254,8 @@ finalizeの状態確定と、その後の配送障害は次節に従う。
 
 ```text
 NEW_DIRECTORY/
+  inputs/definitions/0.json  第1の定義ファイルの開始時byte列
+  inputs/definitions/1.json  第2以降が指定された場合（同様に連番）
   inputs/law.law          開始時のLawのbyte列
   inputs/archmap.json     指定され読めた場合のArchMapのbyte列
   result.json            唯一の機械向け結果
@@ -256,7 +264,7 @@ NEW_DIRECTORY/
 読めなかった入力コピーは省略し、inputsにstate=unreadを残す。
 result.jsonは[型付き結果](results.md)に従う。人向け表示はconsumerがこの結果から生成する。
 宣言の解決説明と導出は、この結果を読むための出力であり、新しいLawや実行計画の入力形式にしない。
-元の宣言は同梱したLawのbyte列とLocationで保持し、説明用の展開によって語彙manifestを変更しない。
+元の宣言は同梱した Atom 定義と Law の byte 列と Location で保持し、説明用の展開によって語彙manifestを変更しない。
 stdoutは完了時に一行だけ出力する。
 
 ```text
@@ -315,6 +323,7 @@ time-msとmemory-mibは入力読込・検査・評価を含むsoft limitで、fi
 
 検査順はUTF-8・構文、format/semantics、対応版のschema、宣言・型・参照の順。
 未知版の新しい欄を、先に未知欄エラーにしない。
+Atom 定義は ArchMap と同じ JSON 検査順とする。
 LawではUTF-8を確かめた後にheaderのformat/semanticsを読み、残りの字句と宣言の文法はその後に検査する。
 同じsemanticsの下で判断規則を変更しない。
 
@@ -323,12 +332,13 @@ canonical JSONは[入力仕様](inputs.md#4-語彙-binding)に従う。
 他のarray順、原始ID、Text、provenanceは保持する。
 bytes_digestは読んだbyte列、model_digest(A)は集合表を正規化したArchMapのcanonical JSONのSHA-256。
 model_digest(L)は[Lawの字句列正規化](law.md#1-ファイル名前再利用)に従う。
-語彙digestとLaw全体のdigestを取り違えない。
+定義ファイルの model_digest は [Atom 定義](definitions.md#3-依存参照digest)に従う。
+語彙 digest・定義ファイル digest・Law 全体の digest を区別する。
 同じ意味へ解決される表記でもmodel_digest(L)は異なり得る。digestを意味同値の判定に用いない。
 計画、予算、内部表現をこれらの入力digestへ含めない。
 
-`--reuse`は以前の出力directory一つを受け取り、現在のA/Lを常に必要とする。
-候補の版・型・DAGを検査し、現在の原始根・Law式・問いの束縛へ照合して各推論を再検査する。
+`--reuse`は以前の出力directory一つを受け取り、現在の定義・A・Lを常に必要とする。
+候補の版・型・DAGを検査し、現在の定義・原始根・Law式・問いの束縛へ照合して各推論を再検査する。
 digest一致は候補の検索だけに用い、成立証拠の代わりにしない。
 再検査を実装しない場合は全て再計算してよい。不正候補はreuse.rejectedへ記録し通常評価を続ける。
 以前と同じ計算計画を使うことは要求せず、現在の式・原始根・束縛・条件に対する導出を検査する。

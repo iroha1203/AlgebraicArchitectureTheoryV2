@@ -7,7 +7,7 @@
 ## 1. エンジンを表す Atom
 
 エンジンの仕様モデルを表す family を `F_eng` とする。
-一つの Atom が一つの事実を表すよう、例えば次を宣言する。
+D_eng が定義する語彙・型・意味で、一つの Atom が一つの事実を表すよう次を記録する。
 
 ```text
 sort(AtomFamily)                 sort(LawAST)                  sort(TypedIR)
@@ -40,12 +40,12 @@ A_eng = (C_eng, structure_maps, selected_quantities)
 
 分析対象の入力 family `F`、エンジン仕様の `F_eng`、計算結果の `DerivedModel` は別の型である。
 `DerivedModel` を F の新しい観測事実へ戻す変換は持たない。
-エンジンを対象として分析する場合も、`(F_eng, L_eng)` という通常の二入力を使う。
+エンジンを対象として分析する場合も、`(D_eng, F_eng, L_eng)` という通常の入力を使う。
 
 ## 2. Context と操作
 
 各 requirement の自由変数、参照式、二つの比較経路の support から context を生成する。
-例えばコンパイル保存の context は、共有入力 A・L と、`compile → run` および
+例えばコンパイル保存の context は、共有入力 D・A・L と、`compile → run` および
 `evalRef` の両経路を含む。再利用の context は、根の入力、導出規則、再検査を含む。
 
 ```text
@@ -67,9 +67,9 @@ family・relation・identification を保存することが要る。
 
 以下の記号を使う。
 
-- `A : AtomDocument`、`L : LawModule`、`q : Query(L)`。
-- `E_b(A,L,q)` は予算 b での計算。`E∞` は制限を置かない数学的評価手続き。
-- `⟦q⟧_L(A)` は、型付き項の解釈・方程式の充足・解集合から独立に定める参照意味論。
+- `D : AtomDefinition`、`A : AtomDocument`、`L : LawModule`、`q : Query(L)`。
+- `E_b(D,A,L,q)` は予算 b での計算。`E∞` は制限を置かない数学的評価手続き。
+- `⟦q⟧_{D,L}(A)` は、型付き項の解釈・方程式の充足・解集合から独立に定める参照意味論。
   最適化エンジンの返り値でこれを定義しない。
 - `claims(r)` は結果が証拠とともに主張する命題の集合。
 - `r ≈ r'` は同じ量化域で同じ判断・対象・解集合を表すこと。
@@ -80,13 +80,13 @@ family・relation・identification を保存することが要る。
 各 Law の量化は型付けされた適用域に限る。`q` を指定しても、意味を持つ自由パラメータは
 L 内で宣言・束縛する。
 
-### L01 二入力と決定性
+### L01 定義・法・観測の入力と決定性
 
 対応済みの決定可能な問いについて、完了した二つの計算は同じ意味を返す。
 
 ```text
-complete(E_b(A,L,q)) ∧ complete(E_c(A,L,q))
-  ⇒ E_b(A,L,q) ≈ E_c(A,L,q)
+complete(E_b(D,A,L,q)) ∧ complete(E_c(D,A,L,q))
+  ⇒ E_b(D,A,L,q) ≈ E_c(D,A,L,q)
 ```
 
 実行順、スレッド数、保存済み中間結果を変えても、採用される主張の真偽は変わらない。
@@ -95,11 +95,11 @@ complete(E_b(A,L,q)) ∧ complete(E_c(A,L,q))
 ### L02 導出の由来と非生成
 
 ```text
-family(construct(A,L)) = family(A)
-leaves(d) ⊆ AtomRefs(A) ∪ RuleRefs(L) ∪ FixedBuiltinRules
+family(construct(D,A,L)) = family(A)
+leaves(d) ⊆ DefinitionRefs(D) ∪ AtomRefs(A) ∪ RuleRefs(L) ∪ FixedBuiltinRules
 ```
 
-全導出 d の根をこの三種類まで追う。組込み規則はエンジンの意味仕様の一部であり、
+全導出 d の根をこの四種類まで追う。組込み規則はエンジンの意味仕様の一部であり、
 実行ごとの入力にはしない。証拠付きと称する外部結論を新しい根として採用しない。
 
 ### L03 識別子と provenance に対する自然性
@@ -107,7 +107,7 @@ leaves(d) ⊆ AtomRefs(A) ∪ RuleRefs(L) ∪ FixedBuiltinRules
 原始値と関係を保存する参照 ID の全単射 `ρ` について、
 
 ```text
-E∞(ρA, L, ρq) ≈ ρ(E∞(A,L,q))
+E∞(D, ρA, L, ρq) ≈ ρ(E∞(D,A,L,q))
 ```
 
 とする。`ρq` は、問いの対象・引数にある A への参照束縛も `ρ` で輸送した問いである。
@@ -131,7 +131,7 @@ source ref、言語名、framework 名だけが変わる場合、計算上の値
 参照評価とコンパイル後の評価がともに完了する対応済み部分で、
 
 ```text
-run(A, compile(L), q) ≈ evalRef(A,L,q)
+run(D,A, compile(D,L), q) ≈ evalRef(D,A,L,q)
 ```
 
 を要求する。join の最適化、式の共通化、行列の基底変更にも同じ等式を課す。
@@ -174,16 +174,16 @@ underlying(g ∘ f) = underlying(g) ∘ underlying(f)
 有限提示そのものを対象にする問いでは、
 
 ```text
-Established(q) ∈ claims(E_b(A,L,q))  ⇒  ⟦q⟧_L(A)
-Refuted(w) ∈ claims(E_b(A,L,q))      ⇒  checkCounterexample(A,L,q,w) = true
+Established(q) ∈ claims(E_b(D,A,L,q))  ⇒  ⟦q⟧_{D,L}(A)
+Refuted(w) ∈ claims(E_b(D,A,L,q))      ⇒  checkCounterexample(D,A,L,q,w) = true
 ```
 
 とする。未観測値を含む対象については、A の既知の事実と型を保つ補完の集合
-`Comp(A)` を意味論として使う。L の要求 Law を最初から成立させる補完に限定しない。
+`Comp_D(A)` を意味論として使う。L の要求 Law を最初から成立させる補完に限定しない。
 
 ```text
-Established(q) ⇒ ∀ M ∈ Comp(A), ⟦q⟧_L(M)
-Refuted(q)    ⇒ ∀ M ∈ Comp(A), ¬⟦q⟧_L(M)
+Established(q) ⇒ ∀ M ∈ Comp_D(A), ⟦q⟧_{D,L}(M)
+Refuted(q)    ⇒ ∀ M ∈ Comp_D(A), ¬⟦q⟧_{D,L}(M)
 ```
 
 補完によって答えが変わる場合は、その識別対または不足値を返す。
@@ -247,7 +247,7 @@ d の依存先・式・条件を現在の入力へ照合し、推論を再検査
 忘却写像 p に対し、旧問い q は次を満たす。
 
 ```text
-p(E∞(A',L',q)) ≈ E∞(pA',pL',q)
+p(E∞(D',A',L',q)) ≈ E∞(pD',pA',pL',q)
 ```
 
 新しい Law が旧問いの局所性や係数を変える場合は、この前提を満たさない。
@@ -289,7 +289,7 @@ L01–L13 の全量化した要求を満たすには、個々の演算の意味�
 
 | 確認対象 | 独立に確かめる方法 |
 | --- | --- |
-| 二入力と由来 | 導出の葉を生の Atom、Law、固定規則まで再走査する |
+| 入力と由来 | 導出の葉をAtom 定義、生の Atom、Law、固定規則まで再走査する |
 | 型・コンパイル保存 | 独立した参照意味論との照合、演算別の保存証明 |
 | 線形問題 | 原始データからの行列再構成、解・不成立証拠の再代入 |
 | 局所・大域 | 制限・微分の式と、構成した gluing の一致を検査する |
