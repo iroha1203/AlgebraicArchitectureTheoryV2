@@ -321,3 +321,17 @@ impl P<'_> {
         u32::from_str_radix(std::str::from_utf8(digits).ok()?, 16).ok()
     }
 }
+
+/// 同じ JSON 構文検査を、明示した定義入力の識別へ接続する。
+pub fn parse_definition(bytes: &[u8], input: &str) -> Result<JNode, Box<Issue>> {
+    parse(bytes).map_err(|mut issue| {
+        if let Location::ArchMap { pointer, span } = &issue.location {
+            issue.location = Location::Definition {
+                input: input.to_owned(),
+                pointer: pointer.clone(),
+                span: *span,
+            };
+        }
+        issue
+    })
+}

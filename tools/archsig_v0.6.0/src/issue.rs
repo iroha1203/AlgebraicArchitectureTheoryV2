@@ -19,6 +19,11 @@ pub enum Code {
 /// 入力位置。Law は元の byte 列の半開区間、ArchMap は JSON Pointer と、構文エラー時の区間。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Location {
+    Definition {
+        input: String,
+        pointer: String,
+        span: Option<(usize, usize)>,
+    },
     Law {
         span: (usize, usize),
     },

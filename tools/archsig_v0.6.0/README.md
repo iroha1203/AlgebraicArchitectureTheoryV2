@@ -5,6 +5,8 @@
 
 ## 現在の範囲
 
+- 独立 Atom 定義の API (`archsig::definition::check_definitions`): JSON schema・namespace・
+  依存 DAG・binding・原始型を検査し、meaning・入力位置・語彙 manifest と digest を保持する。
 - Law の静的検査: 構文・版・名前・型・依存型・構造再帰・純粋性。
 - 型付きの宣言と原式、出現位置、参照の解決、既定規則(`archsig::law::check_law`)。
 - 語彙 manifest と digest、Law の `bytes_digest`・`model_digest`。
