@@ -67,7 +67,7 @@ family・relation・identification を保存することが要る。
 
 以下の記号を使う。
 
-- `D : AtomDefinition`、`A : AtomDocument`、`L : LawModule`、`q : Query(L)`。
+- `D : AtomDefinition`、`A : AtomDocument`、`L : LawModule`、`q : Query(D,L)`。q は CLI で選ぶ宣言・対象・結果を指す実行要求。
 - `E_b(D,A,L,q)` は予算 b での計算。`E∞` は制限を置かない数学的評価手続き。
 - `⟦q⟧_{D,L}(A)` は、型付き項の解釈・方程式の充足・解集合から独立に定める参照意味論。
   最適化エンジンの返り値でこれを定義しない。

@@ -23,9 +23,10 @@ shift(a,α)                   shift(b,β)                   shift(c,γ)
 | 成立 | `shift(a,1), shift(b,1), shift(c,2)` |
 | 不足値 | `shift(a,1), shift(b,1)`。c の存在と端点は残る |
 
-L は、本文で省略していた局所化・係数の読みを、次の一般規則として展開する。
+L の条件と、核による局所化・係数の構成、CLI の問いを次の内部設計記法で示す。
 三ケースともこの L を用いる。具体的な対象名、patch 一覧、行列、障害値は L に書かない。
-ここでの DSL は設計記法であり、`vertex_functions` 等の構成の意味は次節以降で定める。
+derive/context/coefficient/state/restriction は核の構成、law は作者の条件、query は CLI の選択である。
+`vertex_functions` 等の構成の意味は次節以降で定める。
 
 ```text
 // Atom 定義 D の subject / translation_operation / source / target / shift を参照する。

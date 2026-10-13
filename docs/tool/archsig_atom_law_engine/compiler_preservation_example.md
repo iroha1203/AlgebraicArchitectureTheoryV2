@@ -106,7 +106,9 @@ scalar_operator(fv, add)
 `scalar_operator` によって組込み加算や参照意味論を書き換えることはできない。
 `F_eng` にあるのは、この固定された文法で表せる候補変換のデータである。
 
-`L_eng` は、同じ constructor を扱うすべての提示対象に次の規則を適用する。
+`L_eng` は、同じ constructor を扱うすべての提示対象に保存要求を適用する。
+以下は核の構成・参照評価、Law の条件、CLI の問いをまとめた内部設計記法である。
+derive/operation は核の計算、law は作者の要求、query は CLI の選択を表す。
 下記の `c`、`s`、`t`、`u`、`v`、`η` は量化変数であり、§2 の ID や定数値を含まない。
 
 ```text

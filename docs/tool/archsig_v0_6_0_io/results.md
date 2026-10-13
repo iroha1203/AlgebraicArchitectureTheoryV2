@@ -101,6 +101,7 @@ inputs は id の辞書順、Location.input はその id を参照する。元�
 vocabularies.location は定義内の該当 Vocabulary の JSON Pointer を指す。
 reading の DeclarationInfo.vocabularies は直接 import した binding を namespace 順に保持し、
 他の宣言では空配列とする。reading 名と namespace は独立して識別する。
+未使用の語彙・dependency・宣言も vocabularies/declarations に保持し、未使用の理由で issues を生成しない。
 原始宣言の DeclarationInfo は定義の名前・型・依存と実入力位置を保持し、
 meaning は manifest から読み戻す。原始宣言を Law の宣言位置へ付け替えない。
 
@@ -209,7 +210,7 @@ node数・並び・共有から実行順やキャッシュ動作を推測する�
 Construction、条件、証拠から、生成した構造と適用条件・正確な計算を確認できるようにする。
 argumentsは構成の入力、conditionsは入力から構成を許すProposition、evidenceは結果専用の証拠。
 成立未確認の条件を必要とする値をstate=valueとして封じ込めない。
-全leafは現在のAの原始位置、Lの式、または本仕様の固定構成規則へ達する。
+全leafは現在の Atom 定義の宣言、Aの原始位置、Lの式、または本仕様の固定構成規則へ達する。
 CLIのselectorはこれらを選ぶためだけに使い、新しい原始leafにしない。
 Scopeは実際の根・量化域・仮定を全件保持する。全補完を含む場合domain=all_completionsとし、
 候補parameter等の量化もquantifiersに残す。仮定の追加はLawの式から生成したPropositionだけとし、
@@ -392,6 +393,8 @@ Construction名を持つText nodeとする。これらは結果上の命題表�
 `{kind:"relation"|"identification",left:FactPointer,right:FactPointer,present:Bool}`。
 `DeclarationPair={source:QName,target:QName,parameters:[String,String][],fields:[QName,QName][]}`。
 parametersは宣言順の引数名対応、fieldsは実際のalign/同名対応とし、型はdeclarationsから得る。
+source/target は [宣言対応の規則](computations.md#1-対象作用law-instance)で選んだ完全名を保持する。
+reading の prefix が違っても短名・kind・移送後の署名で対応を照合し、Law の保存証拠は別に保持する。
 
 ObjectAlgebra.objectsはbaseと各owned entityの部分対象を一つずつ含む。baseはその表のbase成分。
 generatorsは全内部arrowについて保存確認済みのOperationを一つずつ含み、両端はobjectsに属する。

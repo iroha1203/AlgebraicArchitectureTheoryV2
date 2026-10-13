@@ -44,6 +44,7 @@ and with true false unit list set where none some fn` と組込み型名であ�
 reading 内では自分の宣言を短名で参照できる。`use Other as O;` は同梱 reading の別名。
 `use vocabulary N version "V" digest "D";` は登録済みの Atom 定義を参照し、
 その namespace の原始宣言を短名でも使えるようにする。同じ namespace の import は reading 内で一回だけ。
+未使用の import・宣言も受理する。import の版・digest と、全宣言の型・参照は検査する。
 署名・式で直接名指す原始 namespace は、各使用元 reading で直接 import する。
 依存のある型の署名を解決するためだけの namespace は定義の依存表から解決する。
 

@@ -49,6 +49,56 @@ n・ok・audit は missing_observation、missing は `(v,s,Counter.State.count)`
 | 定義の meaning を空にする | syntax / invalid / 65 |
 | 定義の未知 format/semantics | unsupported_version / unsupported / 69 |
 
+### 未使用情報と検査の段階
+
+[共通ライブラリの定義例](examples/counter-library.atoms.json) は同じ Counter 定義に
+未使用の Extras.Note と、Extras が列挙する未使用 dependency Counter を加えた包装である。
+Extras の宣言は Counter の型を使わないが、dependency は登録済み Counter の正しい binding を指す。
+Counter の manifest・版・digest は変えず、定義ファイル全体の model_digest は変わる。
+Law と ArchMap は基本例のまま使う。
+
+```sh
+archsig check --atom-definition examples/counter-library.atoms.json \
+  --law examples/counter.law --archmap examples/counter.archmap.json --out result-counter-library
+```
+
+この check は complete/0、manifest は Counter と Extras の二件。
+Extras.Note を観測していなくても受理し、その宣言と未使用 dependency を結果に保持する。
+基本例と同じ run の三問は amount=2、両条件成立のままで、Extras の値を要求しない。
+未使用 import や過剰な ArchMap binding を追加する場合も、登録先の版・digest を正しく明記すれば受理する。
+
+| 変種 | 期待結果 |
+| --- | --- |
+| Extras.Note が未使用、Extras が Law から未参照、dependency Counter も型・alignment から未使用 | 入力検査成功。未使用情報を結果に保持 |
+| Extras の dependency binding の digest だけを変更 | vocabulary_mismatch / invalid / 65。未使用でも明示された版付き参照は照合する |
+| Extras の dependency を未登録 namespace へ変更 | reference / invalid / 65。明示した参照先が欠けている |
+| 定義の未知欄 meanng に意味を記録 | syntax / invalid / 65。未使用だからという理由で typo を黙認しない |
+| Counter の count Atom を除く | 静的検査成功、値を必要とする run の三問は missing_observation |
+
+### reading 間の宣言対応
+
+次の二つの reading は同じ Reservations 定義を参照する。Law ファイルの宣言片であり、
+基本例と同じ header を付けて使用する。
+
+```text
+reading Before {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  law required nonnegative(s: State): s.free >= 0;
+}
+reading After {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  law required nonnegative(t: State): t.free >= 5;
+}
+```
+
+`map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)` では
+短名 nonnegative・kind law・parameter 位置と型から、Before.nonnegative と After.nonnegative が対応候補となる。
+束縛名 s/t の違いは除く。実際の p↦r では2>=0は成立、4>=5は偽なので、Law 保存は反証される。
+共通の State 型と同名の条件は、条件の保存証拠にならない。
+After の短名だけを bounded に変えると、この固定規則では対応が揃わず condition_failed。
+同名のまま parameter を増やす変種も署名不適合の condition_failed とする。
+いずれも Law 自体は有効な入力であり、構成の保存失敗を入力不正にしない。
+
 ## 1. 状態の保存と移行の保存
 
 [Atom 定義](examples/reservations.atoms.json) は状態・予約操作・移行候補の語彙、型、意味を持つ。

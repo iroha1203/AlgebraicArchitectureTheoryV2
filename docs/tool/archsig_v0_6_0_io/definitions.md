@@ -72,8 +72,10 @@ data の有限木、正の自己再帰、ground value、Set/Map/Term の型適�
 
 ## 3. 依存、参照、digest
 
-各 Vocabulary の外部 namespace への型・Alignment 参照を dependencies に一件ずつ列挙する。
-自己 namespace は列挙しない。未使用の dependency も拒否する。
+各 Vocabulary の外部 namespace への型・Alignment 参照に必要な binding を dependencies に列挙する。
+共通ライブラリとして準備した未使用の dependency も列挙でき、使い切ることは要求しない。
+各 dependency は版付き参照宣言なので、使用の有無によらず登録先と版・digest を照合する。
+自己 namespace は列挙しない。
 namespace 登録後、依存グラフの循環を digest 照合より先に検査する。
 依存の有向グラフは非循環である。自己再帰 data は同じ namespace 内の型規則で扱い、
 namespace の自己 dependency とは区別する。Atom 定義は Law に依存しない。
@@ -95,10 +97,12 @@ Vocabulary を正規化した manifest の canonical JSON の SHA-256 を語彙 
 正規化では declarations は完全名順、dependencies は namespace 順、alignments は
 (source,target)順。parameters、fields、constructors、arguments の順は保持する。
 declarations は空でもよい。二重の dependency、constructor、field、alignment は duplicate_id。
-自己 dependency は cycle、未使用の dependency は reference。use/view/law/local/change/relation を manifest に入れない。
+自己 dependency は cycle。未使用の dependency も manifest に保持し、digest に含める。
+use/view/law/local/change/relation を manifest に入れない。
 meaning、version、全原始宣言と dependency binding は digest に含める。
 意味の説明だけの変更も参照する版・digest の更新を必要とする。内容変更には新しい version を付け、
-同じ版の内容を置換しない。条件や読取りだけを変えた Law は定義の digest を変えない。
+同じ版の内容を置換しない。未使用情報の追加も定義・manifest の変更であり版・digest を更新する。
+条件や読取りだけを変えた Law は定義の digest を変えない。
 依存先の更新は参照元の dependency binding と版の更新を伴う。
 
 AtomDefinition 全体の model_digest は、各 Vocabulary を上記の順序で正規化し、
@@ -108,8 +112,21 @@ vocabularies を namespace 順にした文書全体の canonical JSON の SHA-25
 
 ## 4. 検査と責務
 
-全定義の schema・名前・型・依存を検査し、その後に Law の名前・型・参照を解決し、
-最後に ArchMap の binding・事実を検査する。未使用の定義・Law 宣言も静的検査する。
+検査は次の段階で行い、check/run が同じ手順を使う。利用者によるモード選択は増やさない。
+段階1・2は定義→Law→ArchMap の入力種別順に適用する。定義と Law の検査が完了した後の
+ArchMap の不正では、確認済みの manifest と宣言一覧を保持する。
+
+1. 提示した全ファイルの構文・版・schema・名前の一意性を検査する。未知欄は syntax。
+2. 定義と Law の宣言の型・明示参照を解決し、ArchMap の binding・事実・補完の整合性を検査する。
+   未使用の定義、語彙、import、dependency、Law 宣言も受理し、使われないことをエラーにしない。
+   宣言内の参照や dependency binding 自体は明示された参照なので、欠落・型・版・digest の不正は検出する。
+3. run の問いで選んだ reading・対象・束縛から、必要な構造と計算を生成して成立条件を検査する。
+   未使用の語彙について事実を観測したり、未使用の field に値を埋めたり、全宣言を評価したりする義務は課さない。
+
+宣言された field の Atom が欠ける場合は、subject があれば未観測 slot、subject 自体がなければ
+当該個体の追加生成をしない。値を必要とする問いへ未観測の理由を伝播する。
+型検査に通る Law の不成立や、選んだ構成の保存失敗は段階3の判定であり、不正入力とは区別する。
+未使用情報を黙って捨てず、入力コピー・manifest・解決済み宣言に保持する。
 参照先 namespace が未登録なら reference、登録済みだが版・digest が異なるなら
 vocabulary_mismatch、循環は cycle、重複は duplicate_id。型不一致は type、
 不正な欄・型表記・空 meaning/version は syntax、未知 format/semantics は unsupported_version。

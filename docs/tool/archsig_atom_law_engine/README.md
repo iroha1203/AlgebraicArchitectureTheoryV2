@@ -32,7 +32,8 @@ L : LawModule                    定義参照、関係・制約、読み、許�
   → 診断・対応・反例・修復候補・追加観測の要求
 ```
 
-LawModule は LawPolicy の表現である。係数、局所化規則、比較の読みもその中に置き、
+LawModule は LawPolicy の表現である。条件・局所の公開値・比較の読みをその中に置き、
+係数・局所構造・比較写像は核が生成する。
 MeasurementProfile や RepairPlan の別ファイルを入力に追加しない。
 Law は意味上の設計の出発点として必要な区別を決める。語彙と型の所有者は D であり、
 D を L から生成される従属 artifact としない。複数 L は同じ D を共有できる。
@@ -86,12 +87,12 @@ payload ::= exact_scalar | enum_value | subject_ref
 
 ### 2.3 入力できる事実と導出するもの
 
-| 入力する原始事実 | Law の規則 | 核が導出するもの |
+| 入力する原始事実 | Law の宣言 | 核が導出するもの |
 | --- | --- | --- |
-| 操作の端点と式 | 合成、保存すべき方程式 | 可換性、残差、反例 |
-| 参照・所属・使用の関係 | support の閉包規則 | Context、局所化、重なり |
-| 対象・値・操作の有限提示 | 生成元・関係・係数の構成規則 | 係数表示、制限写像、複体 |
-| 変更前後の原始事実 | 対応の生成・保存条件 | 候補写像、成立済みの射、合成 |
+| 操作の端点と式 | 保存すべき条件・操作列の関係 | 合成、可換性、残差、反例 |
+| 参照・所属・使用の関係 | 局所で公開する読取り | 支持の閉包、Context、局所化、重なり |
+| 対象・値・操作の有限提示 | 条件・関係・許す変更 | 生成元、係数表示、制限写像、複体 |
+| 変更前後の原始事実 | 対応が保つべき条件 | 候補写像、成立済みの射、合成 |
 | 区別できる原始値 | 観測の読みと Law 評価 | 十分性、識別対、追加観測の要求 |
 
 完成した cover、Čech 行列、障害値、rank、acyclic・adequate・repairable 等の判定、
@@ -109,18 +110,18 @@ payload ::= exact_scalar | enum_value | subject_ref
 
 Atom 定義は原始語彙・型・意味を持つ。Law DSL はその語彙を参照し、読みと条件を記述する。
 以下の構成は核の内部設計であり、利用者に計算計画を記述させる構文ではない。
-各宣言には独立した型を与える。
+Atom 定義、Law 宣言、核の内部構成、CLI の問いを次の表で区別し、それぞれに型を与える。
 
-| 宣言 | 内容 | 評価結果 |
+| 定義・処理 | 所有者と内容 | 評価結果 |
 | --- | --- | --- |
-| Atom 定義 | 原始 predicate・型・意味 | Atom の型付け |
-| `derive` | join、射影、有限集合、正の有限閉包 | 関係・生成元と由来 |
-| `object` / `operation` | configuration と項による変換規則 | 対象・候補 configuration map |
-| `context` / `coverage` | support、軸、observable と必要な支持 | context と cover の候補 |
-| `coefficient` | 係数環、生成元・関係、制限の生成規則 | 有限表示された係数と写像 |
-| `law` | typed equation、量化域、役割 | equation index と residual |
-| `reading` | 射影・比較・診断の読み | 導出対象間の対応 |
-| `query` | 方程式の充足、解、比較、観測要求 | 型付きの回答 |
+| Atom 定義 | 定義作者: 原始 predicate・型・意味 | Atom の型付け |
+| `derive` | 核: join、射影、有限集合、正の有限閉包 | 関係・生成元と由来 |
+| `object` / `operation` | 核: configuration と項による変換規則 | 対象・候補 configuration map |
+| `context` / `coverage` | 核: support、軸、observable と必要な支持 | context と cover の候補 |
+| `coefficient` | 核: 係数環、生成元・関係、制限の生成規則 | 有限表示された係数と写像 |
+| `law` | Law 作者: typed equation、量化域、役割 | equation index と residual |
+| `reading` | Law 作者: 公開値・条件・許す変更の読み | 導出対象間の対応 |
+| `query` | CLI: 方程式の充足、解、比較、観測要求 | 型付きの回答 |
 
 型は原始データ、生成対象、写像、条件の検査結果を区別する。
 `VerifiedMap`、`Cocycle`、`ExactSequence` のような成立条件付きの型は、
@@ -137,7 +138,7 @@ query   ::= evaluate(equation) | solve(equation_family)
           | compare(reading, reading) | distinguish(reading, equation)
 ```
 
-これは抽象構文の設計であり、具体構文は [Law DSL仕様](../archsig_v0_6_0_io/law.md)に従う。有限な関係の閉包と、無限に続きうる操作語の生成は別の型・評価方式にする。
+これは核の型・構成と問いの抽象表現であり、作者向け Law の宣言文法は [Law DSL仕様](../archsig_v0_6_0_io/law.md)に従う。有限な関係の閉包と、無限に続きうる操作語の生成は別の型・評価方式にする。
 
 ### 3.2 Law に書く値
 
@@ -266,7 +267,8 @@ translation(a, p, q, 1)    translation(b, q, r, 1)    translation(c, p, r, 3)
 その端点と式 `x ↦ x + k` に必要な値は別々に読み、不足しても操作自身を集合から除かない。
 入力に「三角形」「不整合」「障害」「局所 context」「修復可能性」はない。
 D は操作、端点参照、shift の語彙・型・意味を持つ。
-L の要求と核の構成を、対象名に依存しない次の内部設計記法で示す。
+L の要求、核の構成、CLI の問いを、対象名に依存しない次の内部設計記法で示す。
+derive/context/coefficient は核の構成、law は作者の条件、query は CLI の選択を表す。
 
 ```text
 // Atom 定義 D の translation_operation / source / target / shift を参照する。

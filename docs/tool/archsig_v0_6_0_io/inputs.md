@@ -124,6 +124,8 @@ binding を必須とする。必要な binding がなければ vocabularies の�
 version は非空文字列、値の比較は [Atom 定義](definitions.md#1-ファイルと識別)に従う。過剰な binding も登録済み定義と照合する。
 未登録 namespace は reference、版・digest の不一致は vocabulary_mismatch。
 形が似た型や別の版を自動で読み替えない。ArchMap だけが使う語彙も CLI で明示指定できる。
+未使用語彙の binding も受理し、宣言された参照として登録先・版・digest を照合する。
+定義された全型の subject、全 field の Atom、Law の全宣言への観測事実を揃えることは要求しない。
 
 manifest、定義の依存と語彙 digest は [Atom 定義](definitions.md#3-依存参照digest)に従う。
 `archsig check --atom-definition D --law L --out DIR` が返す manifest と digest を観測側が使用する。
