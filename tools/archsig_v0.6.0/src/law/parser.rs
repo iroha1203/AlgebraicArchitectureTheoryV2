@@ -213,9 +213,30 @@ impl Parser {
                 if self.eat_kw("vocabulary") {
                     let namespace = self.ident()?;
                     self.expect_kw("version")?;
+                    let version_span = self.here();
                     let version = self.string()?;
+                    if version.is_empty() {
+                        return Err(Box::new(Issue::law(
+                            Code::Syntax,
+                            version_span,
+                            "語彙の version は空文字列にできない",
+                        )));
+                    }
                     self.expect_kw("digest")?;
+                    let digest_span = self.here();
                     let digest = self.string()?;
+                    if digest.len() != 71
+                        || !digest.starts_with("sha256:")
+                        || !digest.as_bytes()[7..]
+                            .iter()
+                            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(b))
+                    {
+                        return Err(Box::new(Issue::law(
+                            Code::Syntax,
+                            digest_span,
+                            "digest は sha256: と小文字16進64桁",
+                        )));
+                    }
                     self.expect_sym(";")?;
                     vocabularies.push(VocabularyUse {
                         namespace,

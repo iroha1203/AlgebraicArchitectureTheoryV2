@@ -716,3 +716,78 @@ fn before_after_variants_are_valid_without_cross_reading_preservation() {
         assert_ne!(before.span, after.span);
     }
 }
+
+const QUALIFIED_PRIMITIVES: &str = include_str!("fixtures/qualified-primitive.atoms.json");
+const QUALIFIED_COUNTER_IMPORT: &str = r#"use vocabulary Counter version "1" digest "sha256:cd681e7b88cd6339d41fb5dad43c2f9ccc33687856841da9924ccc4ab06ebff5";"#;
+const QUALIFIED_OTHER_IMPORT: &str = r#"use vocabulary Other version "1" digest "sha256:03c2763098a3408a17a02cebff915af95c2a68c9d77c8b514e1ede7d6e74622a";"#;
+
+#[test]
+fn full_primitive_names_precede_relative_constructor_candidates() {
+    let src = format!(
+        "{HEADER}reading Helpers {{ {QUALIFIED_COUNTER_IMPORT} view amount(s: Counter.State): Z = s.count; }}\nreading R {{ {QUALIFIED_COUNTER_IMPORT} use Helpers as H; view direct(s: Counter.State): Z = s.count; view via_alias(s: Counter.State): Z = H.amount(s); view tag(): Counter.Counter = Counter.Counter.State; }}"
+    );
+    let c = ok(QUALIFIED_PRIMITIVES, &src);
+    assert!(c.definitions.declarations.contains_key("Counter.State"));
+    assert!(c.definitions.declarations.contains_key("Counter.Counter"));
+    for name in ["Helpers.amount", "R.direct", "R.via_alias"] {
+        let i = info(&c, name);
+        assert_eq!(
+            i.parameters,
+            [("s".to_owned(), Type::Ref("Counter.State".into()))]
+        );
+        let r = i
+            .references
+            .iter()
+            .find(|(_, n)| n == "Counter.State")
+            .unwrap();
+        assert_eq!(span_text(&src, r.0), "Counter.State");
+    }
+    let via_alias = info(&c, "R.via_alias");
+    let r = via_alias
+        .references
+        .iter()
+        .find(|(_, n)| n == "Helpers.amount")
+        .unwrap();
+    assert_eq!(span_text(&src, r.0), "H.amount");
+    assert_eq!(info(&c, "R").dependencies, ["Helpers"]);
+    let direct = info(&c, "R.direct");
+    assert!(
+        direct
+            .references
+            .iter()
+            .any(|(span, n)| n == "Counter.State.count" && span_text(&src, *span) == "count")
+    );
+    let tag = info(&c, "R.tag");
+    assert_eq!(tag.returns, Some(Type::Data("Counter.Counter".into())));
+    let r = tag
+        .references
+        .iter()
+        .find(|(_, n)| n == "Counter.Counter.State")
+        .unwrap();
+    assert_eq!(span_text(&src, r.0), "Counter.Counter.State");
+    // 完全名を直接使う reading は、実在する語彙でも直接importする。
+    let missing = reading("view v(s: Counter.State): Z = s.count;");
+    assert_eq!(
+        err(QUALIFIED_PRIMITIVES, &missing).code,
+        archsig::issue::Code::Reference
+    );
+}
+
+#[test]
+fn short_primitive_ambiguity_stays_reference_after_full_name_priority() {
+    let src = reading(&format!(
+        "{QUALIFIED_COUNTER_IMPORT} {QUALIFIED_OTHER_IMPORT} view v(s: State): Z = s.count;"
+    ));
+    let issue = err(QUALIFIED_PRIMITIVES, &src);
+    assert_eq!(issue.code, archsig::issue::Code::Reference);
+    let archsig::issue::Location::Law { span } = issue.location else {
+        panic!()
+    };
+    assert_eq!(span_text(&src, span), "State");
+    let src = src.replace("s: State", "s: Counter.State");
+    let c = ok(QUALIFIED_PRIMITIVES, &src);
+    assert_eq!(
+        info(&c, "R.v").parameters[0].1,
+        Type::Ref("Counter.State".into())
+    );
+}

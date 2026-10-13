@@ -175,3 +175,24 @@ fn old_law_and_embedded_primitives_are_rejected() {
         assert!(span_of(&f.issue).1 <= src.len());
     }
 }
+
+#[test]
+fn invalid_import_strings_report_the_original_string_span() {
+    let import = r#"use vocabulary Counter version "1" digest "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11";"#;
+    for (from, to, token) in [
+        (r#"version "1""#, r#"version """#, r#""""#),
+        (
+            r#""sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11""#,
+            r#""not-a-digest""#,
+            r#""not-a-digest""#,
+        ),
+    ] {
+        let src = reading(&import.replace(from, to));
+        let issue = err(COUNTER_DEFINITION, &src);
+        assert_eq!(issue.code, Code::Syntax);
+        let at = src.find(token).unwrap();
+        assert_eq!(span_of(&issue), (at, at + token.len()));
+        assert_eq!(&src[at..at + token.len()], token);
+    }
+    ok(COUNTER_DEFINITION, &reading(import));
+}

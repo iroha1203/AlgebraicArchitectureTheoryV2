@@ -338,43 +338,59 @@ impl Checker {
         }
     }
 
-    /// 最長一致の全候補を集め、一意なときだけ解決する。
+    fn target(&self, name: &str) -> Option<Target> {
+        if self.decl_index.contains_key(name) || self.definitions.declarations.contains_key(name) {
+            Some(Target::Decl(name.to_owned()))
+        } else {
+            self.ctor_index.get(name).map(|(data, index)| Target::Ctor {
+                data: data.clone(),
+                index: *index,
+            })
+        }
+    }
+
+    fn target_visible(&self, reading: usize, target: &Target) -> bool {
+        let name = match target {
+            Target::Decl(name) => name,
+            Target::Ctor { data, .. } => data,
+        };
+        self.primitive_visible(reading, name, false)
+    }
+
+    /// 最長 prefix を先に選ぶ。実在する完全名は短名へ再展開せず一意に読む。
+    /// alias/import の相対候補しかない場合は、同じ長さの全候補で曖昧性を検査する。
     pub fn resolve_prefix(
         &mut self,
         reading: usize,
         parts: &[Ident],
     ) -> CResult<Option<(Target, usize)>> {
         for k in (1..=parts.len()).rev() {
+            let span = (parts[0].span.0, parts[k - 1].span.1);
+            let written = parts[..k]
+                .iter()
+                .map(|p| p.name.as_str())
+                .collect::<Vec<_>>()
+                .join(".");
+            if let Some(target) = self.target(&written) {
+                if !self.target_visible(reading, &target) {
+                    return reference(span, format!("完全名 `{written}` をこの scope で使えない"));
+                }
+                self.note_reading_edge(reading, &written, span);
+                return Ok(Some((target, k)));
+            }
             let mut hits: BTreeMap<String, Target> = BTreeMap::new();
             for name in self.expand(reading, &parts[..k]) {
-                let target = if self.decl_index.contains_key(&name)
-                    || self.definitions.declarations.contains_key(&name)
-                {
-                    if !self.primitive_visible(reading, &name, false) {
-                        continue;
+                if let Some(target) = self.target(&name) {
+                    if self.target_visible(reading, &target) {
+                        hits.insert(name, target);
                     }
-                    Target::Decl(name.clone())
-                } else if let Some((data, index)) = self.ctor_index.get(&name) {
-                    if !self.primitive_visible(reading, data, false) {
-                        continue;
-                    }
-                    Target::Ctor {
-                        data: data.clone(),
-                        index: *index,
-                    }
-                } else {
-                    continue;
-                };
-                hits.insert(name, target);
+                }
             }
             if hits.len() > 1 {
-                return reference(
-                    (parts[0].span.0, parts[k - 1].span.1),
-                    "短名の解決先が複数ある。完全名で明記する",
-                );
+                return reference(span, "短名の解決先が複数ある。完全名で明記する");
             }
             if let Some((name, target)) = hits.into_iter().next() {
-                self.note_reading_edge(reading, &name, (parts[0].span.0, parts[k - 1].span.1));
+                self.note_reading_edge(reading, &name, span);
                 return Ok(Some((target, k)));
             }
         }
