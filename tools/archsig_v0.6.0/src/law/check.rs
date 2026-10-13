@@ -937,6 +937,16 @@ impl Checker {
                     t.rsplit('.').next().expect("field 名").to_owned(),
                 );
             }
+            // 始域だけでなく終域の全位置も一度ずつ対応させる。
+            for tfield in &target_fields {
+                let target_field = full(f, &[&tfield.name]);
+                if !targets.contains(&target_field) {
+                    return syntax(
+                        d.name.span,
+                        format!("`{target_field}` への対応元を align で明記する"),
+                    );
+                }
+            }
             for sfield in &source_fields {
                 let tname = &alpha[&sfield.name];
                 let tfield = target_fields

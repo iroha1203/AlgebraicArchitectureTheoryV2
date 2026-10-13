@@ -3,7 +3,7 @@
 
 pub mod ast;
 mod body;
-mod check;
+pub(crate) mod check;
 mod expr;
 pub mod lexer;
 mod metadata;

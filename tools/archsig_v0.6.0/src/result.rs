@@ -84,6 +84,11 @@ impl ResultIssue {
                     pointer.clone(),
                     span.map_or(0, |s| s.0),
                 ),
+                Location::Definition {
+                    input,
+                    pointer,
+                    span,
+                } => (input.clone(), pointer.clone(), span.map_or(0, |s| s.0)),
             },
             _ => (String::new(), String::new(), 0),
         };
@@ -170,6 +175,19 @@ pub fn location_wire(l: &Location) -> Json {
         Location::ArchMap { pointer, span } => {
             let mut m = BTreeMap::new();
             m.insert("input".to_owned(), Json::str("archmap"));
+            m.insert("pointer".to_owned(), Json::str(pointer.clone()));
+            if let Some(s) = span {
+                m.insert("span".to_owned(), span_wire(*s));
+            }
+            Json::Obj(m)
+        }
+        Location::Definition {
+            input,
+            pointer,
+            span,
+        } => {
+            let mut m = BTreeMap::new();
+            m.insert("input".to_owned(), Json::str(input.clone()));
             m.insert("pointer".to_owned(), Json::str(pointer.clone()));
             if let Some(s) = span {
                 m.insert("span".to_owned(), span_wire(*s));
