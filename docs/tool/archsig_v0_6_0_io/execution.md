@@ -54,7 +54,7 @@ EnumとDegreeは次節で指定した位置だけに置ける。DegreeはJSONの
 `$id.field`は同じrunの問いidの`outputs[field]`を指す。
 その後の射影は[公開する意味上の射影](results.md#公開する意味上の射影)の閉じた表と、
 Lawの結果型Tの構造射影に限る。List/Tupleの`[index]`は0始まりの成分を指す。
-Set、Map、意味上の集合表はindexで選べない。原始dataはLawで宣言したconstructorの引数を
+Set、Map、意味上の集合表はindexで選べない。原始dataはAtom 定義で宣言したconstructorの引数を
 `[index]`で選ぶ。別constructorの位置を選べない。
 生のnode ID、過去の出力path、JSON PointerをHandleとして受け付けない。
 表外の欄はresult.jsonに表示・検査用として保持し、CLIからの射影は`usage`とする。
