@@ -425,7 +425,7 @@ impl Checker {
                 if ctx.term {
                     return reference(span, "Term の本体は観測族を読めない");
                 }
-                let target = match self.resolve_prefix(ctx.reading, &name.parts) {
+                let target = match self.resolve_prefix(ctx.reading, &name.parts)? {
                     Some((Target::Decl(n), k)) if k == name.parts.len() => n,
                     _ => {
                         return reference(name.span(), format!("`{}` を解決できない", name.text()));
@@ -551,7 +551,9 @@ impl Checker {
         }
         let whole = (head.span.0, parts[parts.len() - 1].span.1);
         if parts.len() == 1 {
-            if let Some((data, index)) = self.short_ctor(&head.name, expected) {
+            if let Some((data, index)) =
+                self.short_ctor(&head.name, expected, ctx.reading, head.span)?
+            {
                 return self.ctor_value(&data, index, head.span, &[], env, ctx);
             }
             if BUILTIN_OPS.contains(&head.name.as_str()) {
@@ -561,7 +563,7 @@ impl Checker {
                 );
             }
         }
-        match self.resolve_prefix(ctx.reading, parts) {
+        match self.resolve_prefix(ctx.reading, parts)? {
             Some((Target::Ctor { data, index }, k)) if k == parts.len() => {
                 self.ctor_value(&data, index, whole, &[], env, ctx)
             }
@@ -598,18 +600,30 @@ impl Checker {
         }
     }
 
-    fn short_ctor(&self, name: &str, expected: Option<&Type>) -> Option<(String, usize)> {
+    fn short_ctor(
+        &self,
+        name: &str,
+        expected: Option<&Type>,
+        reading: usize,
+        span: Span,
+    ) -> CResult<Option<(String, usize)>> {
         let expected = expected.map(Type::erase);
         let Some(Type::Data(d)) = expected.as_ref() else {
-            return None;
+            return Ok(None);
         };
         let Some(Signature::Data { constructors }) = self.sigs.get(d) else {
-            return None;
+            return Ok(None);
         };
-        constructors
-            .iter()
-            .position(|c| c.name == name)
-            .map(|i| (d.clone(), i))
+        let Some(i) = constructors.iter().position(|c| c.name == name) else {
+            return Ok(None);
+        };
+        if !self.primitive_visible(reading, d, true) {
+            return reference(
+                span,
+                format!("constructor `{name}` の短名をこの scope で使えない"),
+            );
+        }
+        Ok(Some((d.clone(), i)))
     }
 
     fn ctor_value(
@@ -671,14 +685,16 @@ impl Checker {
                     Lookup::Missing => {}
                 }
                 if parts.len() == 1 {
-                    if let Some((data, index)) = self.short_ctor(&head.name, expected) {
+                    if let Some((data, index)) =
+                        self.short_ctor(&head.name, expected, ctx.reading, head.span)?
+                    {
                         return Ok((Callee::Ctor(data, index), span));
                     }
                     if let Some(b) = BUILTIN_OPS.iter().find(|b| **b == head.name) {
                         return Ok((Callee::Builtin(b), span));
                     }
                 }
-                match self.resolve_prefix(ctx.reading, &parts) {
+                match self.resolve_prefix(ctx.reading, &parts)? {
                     Some((Target::Ctor { data, index }, k)) if k == parts.len() => {
                         Ok((Callee::Ctor(data, index), span))
                     }
@@ -1064,7 +1080,9 @@ impl Checker {
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || match p {
             Pattern::Wild(_) => Ok(None),
             Pattern::Name(id) => {
-                if let Some((data, index)) = self.short_ctor(&id.name, Some(ty)) {
+                if let Some((data, index)) =
+                    self.short_ctor(&id.name, Some(ty), ctx.reading, id.span)?
+                {
                     if !matches!(env.lookup(&id.name), Lookup::Missing) {
                         return syntax(
                             id.span,
@@ -1091,7 +1109,8 @@ impl Checker {
             }
             Pattern::Ctor { name, args, .. } => {
                 let resolved = if name.parts.len() == 1 {
-                    let hit = self.short_ctor(&name.parts[0].name, Some(ty));
+                    let hit =
+                        self.short_ctor(&name.parts[0].name, Some(ty), ctx.reading, name.span())?;
                     if hit.is_some() && !matches!(env.lookup(&name.parts[0].name), Lookup::Missing)
                     {
                         return syntax(
@@ -1108,7 +1127,7 @@ impl Checker {
                 };
                 let (data, index) = match resolved {
                     Some(hit) => hit,
-                    None => match self.resolve_prefix(ctx.reading, &name.parts) {
+                    None => match self.resolve_prefix(ctx.reading, &name.parts)? {
                         Some((Target::Ctor { data, index }, k)) if k == name.parts.len() => {
                             (data, index)
                         }

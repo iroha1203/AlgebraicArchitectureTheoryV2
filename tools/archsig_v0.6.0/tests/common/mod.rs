@@ -1,34 +1,89 @@
 #![allow(dead_code)]
 
 pub mod cli;
+pub mod law_definitions;
 
 use archsig::archmap::{CheckedArchMap, Field, Slot};
 use archsig::issue::Issue;
 use archsig::law::{CheckedLaw, check_law};
 use archsig::types::Type;
 
-pub const HEADER: &str = "law \"archsig.law/1\" semantics \"archsig/0.6.0\";\n";
-
+pub const HEADER: &str = "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\n";
 pub const RESERVATIONS: &str = include_str!("../fixtures/reservations.law");
 pub const ENGINE: &str = include_str!("../fixtures/engine.law");
+pub const COUNTER: &str = include_str!("../fixtures/counter.law");
+pub const RESERVATIONS_DEFINITION: &str = include_str!("../fixtures/reservations.atoms.json");
+pub const ENGINE_DEFINITION: &str = include_str!("../fixtures/engine.atoms.json");
+pub const COUNTER_DEFINITION: &str = include_str!("../fixtures/counter.atoms.json");
+pub const COUNTER_LIBRARY: &str = include_str!("../fixtures/counter-library.atoms.json");
+pub const EMPTY_DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Unused","version":"1","dependencies":[],"declarations":[]}]}"#;
 
-pub fn ok(src: &str) -> CheckedLaw {
-    match check_law(src.as_bytes()) {
-        Ok(c) => c,
-        Err(e) => panic!("検査が通るはず: {:?}\n{src}", e.issue),
-    }
+pub fn definitions_ok(inputs: &[&str]) -> archsig::definition::CheckedDefinitions {
+    let ids: Vec<_> = (0..inputs.len())
+        .map(|i| format!("definition{i}"))
+        .collect();
+    let files: Vec<_> = inputs
+        .iter()
+        .zip(&ids)
+        .map(|(src, id)| (id.as_str(), src.as_bytes()))
+        .collect();
+    archsig::definition::check_definitions(&files)
+        .unwrap_or_else(|e| panic!("定義の検査: {:?}", e.issue))
 }
-
-pub fn err(src: &str) -> Issue {
-    match check_law(src.as_bytes()) {
-        Ok(_) => panic!("検査が落ちるはず:\n{src}"),
-        Err(e) => e.issue,
-    }
+pub fn ok(definition: &str, src: &str) -> CheckedLaw {
+    check_law(src.as_bytes(), &definitions_ok(&[definition]))
+        .unwrap_or_else(|e| panic!("検査が通るはず: {:?}\n{src}", e.issue))
 }
-
-/// reading を一つ持つ Law。
+pub fn err(definition: &str, src: &str) -> Issue {
+    check_law(src.as_bytes(), &definitions_ok(&[definition]))
+        .expect_err("Law の検査が落ちるはず")
+        .issue
+}
 pub fn reading(body: &str) -> String {
     format!("{HEADER}reading R {{\n{body}\n}}\n")
+}
+pub fn reading_with(namespace: &str, digest: &str, body: &str) -> String {
+    reading(&format!(
+        "use vocabulary {namespace} version \"1\" digest \"{digest}\";\n{body}"
+    ))
+}
+fn quoted(text: &str) -> String {
+    archsig::canonical::Json::str(text).canonical()
+}
+pub fn definition_json(vocabularies: &str) -> String {
+    format!(
+        r#"{{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":{vocabularies}}}"#
+    )
+}
+pub fn vocabulary_json(namespace: &str, declarations: &str, dependencies: &str) -> String {
+    format!(
+        r#"{{"semantics":"archsig/0.6.0","namespace":{},"version":"1","dependencies":{dependencies},"declarations":{declarations}}}"#,
+        quoted(namespace)
+    )
+}
+pub fn entity_json(name: &str, parameters: &str, fields: &str) -> String {
+    format!(
+        r#"{{"kind":"entity","name":{},"meaning":"test entity","parameters":{parameters},"fields":{fields},"alignments":[]}}"#,
+        quoted(name)
+    )
+}
+pub fn field_json(name: &str, type_json: &str) -> String {
+    format!(
+        r#"{{"name":{},"type":{type_json},"meaning":"test field"}}"#,
+        quoted(name)
+    )
+}
+pub fn data_json(name: &str, constructors: &str) -> String {
+    format!(
+        r#"{{"kind":"data","name":{},"meaning":"test data","constructors":{constructors}}}"#,
+        quoted(name)
+    )
+}
+pub fn constructor_json(name: &str, args: &str) -> String {
+    format!(
+        r#"{{"name":{},"arguments":{args},"meaning":"test constructor"}}"#,
+        quoted(name)
+    )
 }
 
 pub fn span_text(src: &str, span: (usize, usize)) -> &str {
@@ -38,20 +93,14 @@ pub fn span_text(src: &str, span: (usize, usize)) -> &str {
 pub const RESERVATIONS_MAP: &str = include_str!("../fixtures/reservations.archmap.json");
 pub const ENGINE_MAP: &str = include_str!("../fixtures/engine.archmap.json");
 
-pub fn map_ok(law: &str, map: &str) -> archsig::archmap::CheckedArchMap {
-    let l = ok(law);
-    match archsig::archmap::check_archmap(map.as_bytes(), &l) {
-        Ok(c) => c,
-        Err(e) => panic!("ArchMap の検査が通るはず: {:?}\n{map}", e.issue),
-    }
+pub fn map_ok(definition: &str, map: &str) -> CheckedArchMap {
+    archsig::archmap::check_archmap(map.as_bytes(), &definitions_ok(&[definition]))
+        .unwrap_or_else(|e| panic!("ArchMap の検査: {:?}\n{map}", e.issue))
 }
-
-pub fn map_err(law: &str, map: &str) -> Issue {
-    let l = ok(law);
-    match archsig::archmap::check_archmap(map.as_bytes(), &l) {
-        Ok(_) => panic!("ArchMap の検査が落ちるはず:\n{map}"),
-        Err(e) => e.issue,
-    }
+pub fn map_err(definition: &str, map: &str) -> Issue {
+    archsig::archmap::check_archmap(map.as_bytes(), &definitions_ok(&[definition]))
+        .expect_err("ArchMap の検査が落ちるはず")
+        .issue
 }
 
 pub fn pointer(issue: &Issue) -> &str {

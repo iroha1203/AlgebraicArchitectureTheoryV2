@@ -1,5 +1,6 @@
 //! 共通 Atom 定義の schema、namespace 登録、依存と原始型の検査。
 pub mod model;
+mod primitive;
 mod reader;
 mod validate;
 use crate::{
@@ -90,11 +91,5 @@ impl CheckedDefinitions {
             location: binding.location.clone(),
             details: Details::Empty,
         }))
-    }
-}
-
-impl CheckedDefinitions {
-    pub(crate) fn primitive_context(&self) -> crate::law::check::Checker {
-        validate::context(self)
     }
 }

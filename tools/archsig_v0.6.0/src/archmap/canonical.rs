@@ -4,7 +4,7 @@ use super::{CheckedArchMap, FORMAT, Origin, SEMANTICS, Slot, Snapshot, Source, S
 use crate::canonical::Json;
 use std::collections::BTreeMap;
 
-/// 集合表を ID・reading 名順へ、Set・Map の値を canonical 値順へ並べた ArchMap。
+/// 集合表を ID・namespace 名順へ、Set・Map の値を canonical 値順へ並べた ArchMap。
 pub fn model_json(a: &CheckedArchMap) -> Json {
     let mut sources: Vec<&Source> = a.sources.iter().collect();
     sources.sort_by(|x, y| x.id.cmp(&y.id));
@@ -14,13 +14,8 @@ pub fn model_json(a: &CheckedArchMap) -> Json {
     snapshots.sort_by(|x, y| x.id.cmp(&y.id));
     let vocabularies = a
         .vocabularies
-        .iter()
-        .map(|(r, d)| {
-            Json::obj([
-                ("reading", Json::str(r.clone())),
-                ("digest", Json::str(d.clone())),
-            ])
-        })
+        .values()
+        .map(|binding| binding.wire())
         .collect();
     let sources = sources
         .into_iter()

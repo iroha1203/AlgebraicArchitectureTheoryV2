@@ -1,10 +1,8 @@
-//! 検査済み Law の宣言metadataと語彙manifest(結果仕様 §1、入力仕様 §4)。
+//! 検査済み Law の宣言metadataと直接 import(結果仕様 §1)。
 
 use super::ast::{DeclKind, ExprId, Span};
 use super::check::{Checker, full};
-use super::model::{DeclarationInfo, Param, Signature, SuppliedRule, Vocabulary};
-use crate::canonical::{Json, sha256_digest};
-use crate::types::Type;
+use super::model::{DeclarationInfo, Param, Signature, SuppliedRule};
 use std::collections::BTreeSet;
 
 impl Checker {
@@ -21,7 +19,19 @@ impl Checker {
                 .decls
                 .iter()
                 .any(|d| matches!(d.kind, DeclKind::Local { .. }));
+            let mut vocabularies: Vec<_> = r
+                .vocabularies
+                .iter()
+                .map(|v| crate::definition::Binding {
+                    namespace: v.namespace.name.clone(),
+                    version: v.version.clone(),
+                    digest: v.digest.clone(),
+                    location: crate::issue::Location::Law { span: v.span },
+                })
+                .collect();
+            vocabularies.sort_by(|a, b| a.namespace.cmp(&b.namespace));
             infos.push(DeclarationInfo {
+                vocabularies,
                 name: r.name.name.clone(),
                 kind: "reading",
                 parameters: Vec::new(),
@@ -50,6 +60,7 @@ impl Checker {
                         .collect::<Vec<_>>()
                 };
                 let mut info = DeclarationInfo {
+                    vocabularies: Vec::new(),
                     name: name.clone(),
                     kind: sig.kind(),
                     parameters: Vec::new(),
@@ -64,57 +75,11 @@ impl Checker {
                 };
                 let guard_omitted = |g: &Option<ExprId>| g.is_none();
                 match sig {
-                    Signature::Entity {
-                        params, members, ..
-                    }
-                    | Signature::Arrow {
-                        params, members, ..
-                    } => {
-                        info.parameters = pairs(params);
-                        info.fields = pairs(members);
-                    }
-                    Signature::Correspondence {
-                        params,
-                        members,
-                        implicit,
-                        ..
-                    } => {
-                        info.parameters = pairs(params);
-                        info.fields = pairs(members);
-                        if !implicit.is_empty() {
-                            info.supplied.push(SuppliedRule::SameNameAlignment {
-                                span: d.span,
-                                pairs: implicit.clone(),
-                            });
-                        }
-                    }
-                    Signature::Data { constructors } => {
-                        for c in constructors {
-                            let cname = full(&name, &[&c.name]);
-                            let crefs: Vec<(Span, String)> = references
-                                .iter()
-                                .filter(|(s, _)| s.0 >= c.span.0 && s.1 <= c.span.1)
-                                .cloned()
-                                .collect();
-                            infos.push(DeclarationInfo {
-                                name: cname,
-                                kind: "data",
-                                parameters: c
-                                    .args
-                                    .iter()
-                                    .enumerate()
-                                    .map(|(i, t)| (format!("arg{i}"), t.clone()))
-                                    .collect(),
-                                fields: Vec::new(),
-                                returns: None,
-                                role: None,
-                                span: c.span,
-                                dependencies: dependencies(&crefs),
-                                references: crefs,
-                                expressions: Vec::new(),
-                                supplied: Vec::new(),
-                            });
-                        }
+                    Signature::Entity { .. }
+                    | Signature::Arrow { .. }
+                    | Signature::Correspondence { .. }
+                    | Signature::Data { .. } => {
+                        unreachable!("Law /2 の原始 metadata は共通定義側が保持する")
                     }
                     Signature::View {
                         params, returns, ..
@@ -149,107 +114,6 @@ impl Checker {
         }
         infos.sort_by(|a, b| a.name.cmp(&b.name));
         infos
-    }
-
-    pub fn vocabularies(&self) -> Vec<Vocabulary> {
-        let mut out = Vec::new();
-        for r in self.ast.iter() {
-            let mut decls: Vec<(String, Json)> = Vec::new();
-            for d in &r.decls {
-                let name = full(&r.name.name, &[&d.name.name]);
-                let fields = |ps: &[Param]| {
-                    Json::Arr(
-                        ps.iter()
-                            .map(|p| {
-                                Json::obj([
-                                    ("name", Json::str(p.name.clone())),
-                                    ("type", p.ty.wire()),
-                                ])
-                            })
-                            .collect(),
-                    )
-                };
-                let entry = match &self.sigs[&name] {
-                    Signature::Entity {
-                        params, members, ..
-                    }
-                    | Signature::Arrow {
-                        params, members, ..
-                    } => Json::obj([
-                        ("kind", Json::str(d.kind.name())),
-                        ("name", Json::str(name.clone())),
-                        ("parameters", fields(params)),
-                        ("fields", fields(members)),
-                        ("alignments", Json::Arr(vec![])),
-                    ]),
-                    Signature::Correspondence {
-                        params,
-                        members,
-                        alignments,
-                        ..
-                    } => Json::obj([
-                        ("kind", Json::str("correspondence")),
-                        ("name", Json::str(name.clone())),
-                        ("parameters", fields(params)),
-                        ("fields", fields(members)),
-                        (
-                            "alignments",
-                            Json::Arr(
-                                alignments
-                                    .iter()
-                                    .map(|(s, t)| {
-                                        Json::obj([
-                                            ("source", Json::str(s.clone())),
-                                            ("target", Json::str(t.clone())),
-                                        ])
-                                    })
-                                    .collect(),
-                            ),
-                        ),
-                    ]),
-                    Signature::Data { constructors } => Json::obj([
-                        ("kind", Json::str("data")),
-                        ("name", Json::str(name.clone())),
-                        (
-                            "constructors",
-                            Json::Arr(
-                                constructors
-                                    .iter()
-                                    .map(|c| {
-                                        Json::obj([
-                                            ("name", Json::str(c.name.clone())),
-                                            (
-                                                "arguments",
-                                                Json::Arr(c.args.iter().map(Type::wire).collect()),
-                                            ),
-                                        ])
-                                    })
-                                    .collect(),
-                            ),
-                        ),
-                    ]),
-                    _ => continue,
-                };
-                decls.push((name, entry));
-            }
-            decls.sort_by(|a, b| a.0.cmp(&b.0));
-            let manifest = Json::obj([
-                ("semantics", Json::str(super::SEMANTICS)),
-                ("reading", Json::str(r.name.name.clone())),
-                (
-                    "declarations",
-                    Json::Arr(decls.into_iter().map(|(_, j)| j).collect()),
-                ),
-            ]);
-            let digest = sha256_digest(manifest.canonical().as_bytes());
-            out.push(Vocabulary {
-                reading: r.name.name.clone(),
-                manifest,
-                digest,
-            });
-        }
-        out.sort_by(|a, b| a.reading.cmp(&b.reading));
-        out
     }
 }
 

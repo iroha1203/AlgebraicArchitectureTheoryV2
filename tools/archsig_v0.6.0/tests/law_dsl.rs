@@ -3,20 +3,21 @@
 mod common;
 use archsig::issue::Code;
 use archsig::types::Type;
+use common::law_definitions::*;
 use common::*;
 
 #[test]
 fn normative_examples_pass_and_bind_their_vocabulary() {
-    let r = ok(RESERVATIONS);
-    assert_eq!(r.vocabularies.len(), 1);
+    let r = ok(RESERVATIONS_DEFINITION, RESERVATIONS);
+    assert_eq!(r.definitions.vocabularies.len(), 1);
     assert_eq!(
-        r.vocabularies[0].digest,
-        "sha256:ede3c701fddea98a6ebf3d31406a0d684dc01256e3ee14a0fb151250b5f05ea1"
+        r.definitions.vocabularies["Reservations"].digest,
+        "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff"
     );
-    let e = ok(ENGINE);
+    let e = ok(ENGINE_DEFINITION, ENGINE);
     assert_eq!(
-        e.vocabularies[0].digest,
-        "sha256:e7e9c16c66de4d4d6d7143af7c9f88a6ef29f0d7510e4bc844b37eb406a8da27"
+        e.definitions.vocabularies["Engine"].digest,
+        "sha256:5c45e2e06c365a98e8d85aa0046ef16d0da903644cecc7f3e3a4dadb87a84d4c"
     );
     // 構造再帰の view と、非アフィンな全整数量化の law を受理する。
     let preserves = e
@@ -38,22 +39,10 @@ fn normative_examples_pass_and_bind_their_vocabulary() {
 }
 
 /// use/alias、align、relation/Path、Term、全 container・数値型を一つの Law で使う。
-const WIDE: &str = r#"law "archsig.law/1" semantics "archsig/0.6.0";
+const WIDE: &str = r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Base {
-  entity Sys;
-  data Kind = Small | Large(Z);
-  data Tree = Leaf | Node(Tree, List<Tree>, Option<Tree>, (Tree, Z));
-  entity Item(owner: Sys) {
-    qty: Z; price: Q; tag: Text; flag: Bool; nothing: Unit; residue: Fp(7);
-    tags: List<Text>; ids: Set<Z>; maybe: Option<Z>; pair: (Z, Q);
-    code: Term<(Z, Z) -> Z>; kind: Kind; tree: Tree; peers: Set<Item>; next: Option<Item[owner]>;
-  }
-  arrow Move(owner: Sys, from: Item[owner], to: Item[owner]) { cost: Z; }
-  correspondence Same(from: Sys, to: Sys) {
-    items: Map<Item[from], Item[to]>;
-    moves: Map<Move[from], Move[to]>;
-  }
-  view q(i: Item): Q = i.price + rat(1, 2) * -rat(3, 4);
+use vocabulary Base version "1" digest "sha256:e6a239ba843b42cb4d6aeb611af0407434eb92c60929390fb62289161040ecfc";
+view q(i: Item): Q = i.price + rat(1, 2) * -rat(3, 4);
   view f(i: Item): Fp(7) = i.residue * 3 + 6 - i.residue;
   view apply(i: Item, x: Z): Z = i.code(x, 1);
   view square(): Term<(Z) -> Z> = fn(y: Z) => y * y + 1;
@@ -75,34 +64,31 @@ reading Base {
   change bump(i: Item, d: Z, k: Kind) when d != 0 = i with { qty = i.qty + d, kind = k };
 }
 reading Paths {
-  entity Sys;
-  entity St(owner: Sys) { v: Z; }
-  arrow Step(owner: Sys, from: St[owner], to: St[owner]);
-  view loop(s: St): Path<St, St> = identity(s);
+use vocabulary Paths version "1" digest "sha256:36473a82447ef032aeda77b9e55941723fcd8c46c29a02efcce7aae91d2108ee";
+view loop(s: St): Path<St, St> = identity(s);
   view ends(a: Step): Option<Path<St, St>> = some(path(a));
   view walk(a: Step, b: Step): Path<St, St> = then(path(a), path(b));
   relation swap(a: Step, b: Step) when target(path(a)) = source(path(b)):
     then(path(a), path(b)) = then(path(b), path(a));
 }
 reading Port {
-  use Base as B;
-  entity Sys2;
-  entity Acc(owner: Sys2) { bal: Z; }
-  entity Root3;
-  entity Ledger(owner: Root3) { total: Z; }
-  correspondence Move(from: Sys2, to: Root3) {
-    accs: Map<Acc[from], Ledger[to]>;
-    align Acc.owner = Ledger.owner;
-    align Acc.bal = Ledger.total;
-  }
-  view total(s: B.Sys): Z = sum(set{ i.qty | i in B.Item[s] });
+use vocabulary Base version "1" digest "sha256:e6a239ba843b42cb4d6aeb611af0407434eb92c60929390fb62289161040ecfc";
+use vocabulary Port version "1" digest "sha256:d2edb18a2ab6d18acd6a54e0ac23ed6b3349099beb9440698f1796484f79d1eb";
+use Base as B;
+
+
+
+
+
+  view total(s: Base.Sys): Z = sum(set{ i.qty | i in Base.Item[s] });
   law optional direct(i: Base.Item): i.qty = i.qty;
+view alias(i: Base.Item): Q = B.q(i);
 }
 "#;
 
 #[test]
 fn every_construct_type_checks() {
-    let c = ok(WIDE);
+    let c = ok(WIDE_DEFINITION, WIDE);
     let info = |n: &str| {
         c.infos
             .iter()
@@ -133,16 +119,16 @@ fn every_construct_type_checks() {
             .contains(&"Base.Item".to_owned())
     );
     // 明記した align は manifest に入り、暗黙の同名対応は入らない。
-    let port = c.vocabularies.iter().find(|v| v.reading == "Port").unwrap();
+    let port = &c.definitions.vocabularies["Port"];
     let text = port.manifest.canonical();
-    assert!(text.contains(r#"{"source":"Port.Acc.bal","target":"Port.Ledger.total"}"#));
-    let base = c.vocabularies.iter().find(|v| v.reading == "Base").unwrap();
+    assert!(text.contains(r#""source":"Port.Acc.bal","target":"Port.Ledger.total""#));
+    let base = &c.definitions.vocabularies["Base"];
     assert!(base.manifest.canonical().contains(r#""alignments":[]"#));
 }
 
-fn rejects(body: &str, code: Code) {
+fn rejects(definition: &str, body: &str, code: Code) {
     let src = reading(body);
-    let issue = err(&src);
+    let issue = err(definition, &src);
     assert_eq!(issue.code, code, "{body}\n=> {:?}", issue);
     let archsig::issue::Location::Law { span } = issue.location else {
         panic!("Law の位置")
@@ -150,137 +136,204 @@ fn rejects(body: &str, code: Code) {
     assert!(span.1 <= src.len() && span.0 <= span.1, "{span:?}");
 }
 
-const ITEM: &str = "entity Sys; entity Item(owner: Sys) { qty: Z; tag: Text; } data Tree = Leaf | Node(Tree, Tree);";
-
 #[test]
 fn name_collisions_are_rejected() {
-    rejects("entity A; entity A;", Code::DuplicateId);
-    rejects("entity A { x: Z; x: Z; }", Code::DuplicateId);
-    rejects("data D = C | C;", Code::DuplicateId);
     rejects(
-        &format!("{ITEM} view v(i: Item, i: Item): Z = 0;"),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view v(i: Item, i: Item): Z = 0;"#,
         Code::DuplicateId,
     );
     rejects(
-        &format!("{ITEM} view v(i: Item): Z = let i = 1 in i;"),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view v(i: Item): Z = let i = 1 in i;"#,
         Code::DuplicateId,
     );
     rejects(
-        &format!("{ITEM} view v(i: Item): Z = let a = 1 in let a = 2 in a;"),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view v(i: Item): Z = let a = 1 in let a = 2 in a;"#,
         Code::DuplicateId,
     );
     rejects(
-        &format!("{ITEM} law required l(i: Item): forall i: Z . i = i;"),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+law required l(i: Item): forall i: Z . i = i;"#,
         Code::DuplicateId,
     );
-    rejects("view count(): Z = 0;", Code::Syntax);
-    rejects("view v(sum: Z): Z = sum;", Code::Syntax);
-    rejects("entity then;", Code::Syntax);
-    let two = format!("{HEADER}reading A {{ use B as X; entity X; }} reading B {{ entity S; }}");
-    assert_eq!(err(&two).code, Code::DuplicateId);
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view count(): Z = 0;"#,
+        Code::Syntax,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(sum: Z): Z = sum;"#,
+        Code::Syntax,
+    );
+    let two = format!("{HEADER}reading A {{ use B as X; view X(): Z = 0; }} reading B {{ }}");
+    assert_eq!(err(EMPTY_DEFINITION, &two).code, Code::DuplicateId);
 }
 
 /// 仕様が別の scope とする名前は重なってよい。`.` 列は候補の最長一致で解決する。
 #[test]
 fn names_in_different_scopes_may_coincide() {
-    let c = ok(&format!(
-        "{HEADER}reading R {{ entity R {{ x: Z; }} data D = sum | path(Z); view v(r: R): Z = r.x; view w(r: R.R): D = sum; \
-         view m(n: Z): Z = match n {{ _ => 0; }}; view k(d: D): Z = match d {{ sum => 0; path(z) => z; }}; }}\n\
-         reading count {{ use R as target; view u(r: target.R): Z = R.v(r); }}"
-    ));
-    assert!(c.infos.iter().any(|i| i.name == "R.R"));
+    let c = ok(
+        DEF_48,
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading R {
+use vocabulary R version "1" digest "sha256:cd820d457df3188c76cc5ff7294ffac9c304673048c2c3642d7759cf2718fc05";
+view v(r: R): Z = r.x; view w(r: R.R): D = sum; view m(n: Z): Z = match n { _ => 0; }; view k(d: D): Z = match d { sum => 0; path(z) => z; };
+}
+reading count {
+use vocabulary R version "1" digest "sha256:cd820d457df3188c76cc5ff7294ffac9c304673048c2c3642d7759cf2718fc05";
+use vocabulary count version "1" digest "sha256:e73dea95163bedd38e8e4bb397fa5755a0d70c3ac58515975788eeebe1b0ea66";
+use R as target; view u(r: R.R): Z = target.v(r);
+}
+"#,
+    );
+    assert!(c.definitions.declarations.contains_key("R.R"));
     assert!(c.infos.iter().any(|i| i.name == "count.u"));
-    // arrow の owner・from・to は body に置いてもよい。
-    ok(&reading(
-        "entity S; entity A(owner: S); arrow M(owner: S) { from: A[owner]; to: A[owner]; }",
-    ));
+    // 移設した arrow の owner・from・to は定義に保持する。
+    ok(
+        DEF_27,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:52c8a421955952bd1a52f1b6275692455900337b0acbe112fccd81c691eacd6d";
+"#,
+        ),
+    );
 }
 
 /// 変数名と衝突する constructor の短名は、pattern でも修飾して書く。
 #[test]
 fn constructor_short_names_colliding_with_variables_are_qualified() {
     rejects(
-        "data D = D0 | D1; view v(D0: Z, d: D): Z = match d { D0 => D0; _ => 1; };",
+        DEF_06,
+        r#"use vocabulary R version "1" digest "sha256:c255627d975d859b823949ecba2cb6f731b2cbd74e31de5d370916f1f5c07f24";
+view v(D0: Z, d: D): Z = match d { D0 => D0; _ => 1; };"#,
         Code::Syntax,
     );
     rejects(
-        "data D = D0(Z) | D1; view v(D0: Z, d: D): Z = match d { D0(n) => n; _ => 1; };",
+        DEF_07,
+        r#"use vocabulary R version "1" digest "sha256:dd35e0b7430b831c606c9d0fd259ea5c3d869fed09e5629f61b99c9178f0844a";
+view v(D0: Z, d: D): Z = match d { D0(n) => n; _ => 1; };"#,
         Code::Syntax,
     );
-    ok(&reading(
-        "data D = D0 | D1; view v(D0: Z, d: D): Z = match d { D.D0 => D0; _ => 1; };",
-    ));
+    ok(
+        DEF_06,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:c255627d975d859b823949ecba2cb6f731b2cbd74e31de5d370916f1f5c07f24";
+view v(D0: Z, d: D): Z = match d { D.D0 => D0; _ => 1; };"#,
+        ),
+    );
 }
 
 #[test]
 fn change_needs_an_entity_as_its_first_parameter() {
-    ok(&reading(
-        "entity S; entity A(owner: S) { x: Z; } change c(a: A) = (a) with { x = 1 };",
-    ));
-    ok(&reading(
-        "entity S; entity A(owner: S) { x: Z; }
-         change c(a: A, d: Z) = if d > 0 then a with { x = d } else a with { x = 0 };
+    ok(
+        DEF_08,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c(a: A) = (a) with { x = 1 };"#,
+        ),
+    );
+    ok(
+        DEF_08,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c(a: A, d: Z) = if d > 0 then a with { x = d } else a with { x = 0 };
          change e(a: A, d: Z) when d != 0 = let n = d + 1 in a with { x = n };
-         change f(a: A, d: Z) when d > 0 = if d = 1 then a with { x = 1 } else (a with { x = 2 });",
-    ));
+         change f(a: A, d: Z) when d > 0 = if d = 1 then a with { x = 1 } else (a with { x = 2 });"#,
+        ),
+    );
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } change c(a: A, d: Z) = if d > 0 then a with { x = 1 } else a;",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c(a: A, d: Z) = if d > 0 then a with { x = 1 } else a;"#,
         Code::Syntax,
     );
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } change c() = a with { x = 1 };",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c() = a with { x = 1 };"#,
         Code::Syntax,
     );
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } change c() when true = a with { x = 1 };",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c() when true = a with { x = 1 };"#,
         Code::Syntax,
     );
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } change c(n: Z) = n with { x = 1 };",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c(n: Z) = n with { x = 1 };"#,
         Code::Syntax,
     );
 }
 
 #[test]
 fn nested_patterns_over_single_constructors_cover_their_branch() {
-    ok(&reading(
-        "data U = U0; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; };",
-    ));
-    ok(&reading(
-        "data U = U0(Z, Z); data W = W0(U) | W1; view f(w: W): Z = match w { W0(U0(a, b)) => a; W1 => 0; };",
-    ));
+    ok(
+        DEF_28,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:f547b9c69a989640fd643a962496f1ade0958571e51ce32e3dca557e8b741580";
+view f(w: W): Z = match w { W0(U0) => 1; };"#,
+        ),
+    );
+    ok(
+        DEF_29,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:e7ac4e678e09a39fe7302f33fdcba09aee1c61122d0200213b06aa4d038bc388";
+view f(w: W): Z = match w { W0(U0(a, b)) => a; W1 => 0; };"#,
+        ),
+    );
     rejects(
-        "data U = U0 | U1; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; };",
+        DEF_09,
+        r#"use vocabulary R version "1" digest "sha256:883c258627c1e1a0abacc9b148ccff90d21eab1e5de236e4e0b534e6979cd2a9";
+view f(w: W): Z = match w { W0(U0) => 1; };"#,
         Code::Syntax,
     );
-    ok(&reading(
-        "data U = U0 | U1; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; _ => 0; };",
-    ));
+    ok(
+        DEF_09,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:883c258627c1e1a0abacc9b148ccff90d21eab1e5de236e4e0b534e6979cd2a9";
+view f(w: W): Z = match w { W0(U0) => 1; _ => 0; };"#,
+        ),
+    );
     // 入れ子の pattern で覆っていても、末尾の `_` は受ける。
-    ok(&reading(
-        "data U = U0; data W = W0(U); view f(w: W): Z = match w { W0(U0) => 1; _ => 0; };",
-    ));
+    ok(
+        DEF_28,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:f547b9c69a989640fd643a962496f1ade0958571e51ce32e3dca557e8b741580";
+view f(w: W): Z = match w { W0(U0) => 1; _ => 0; };"#,
+        ),
+    );
     rejects(
-        "data W = W0(Z); view f(w: W): Z = match w { W0(n) => n; _ => 0; };",
+        DEF_10,
+        r#"use vocabulary R version "1" digest "sha256:09f6cbf9f745c9e6283cc513971483e3c3a69ecebe9bbb49c9cf6062485cf303";
+view f(w: W): Z = match w { W0(n) => n; _ => 0; };"#,
         Code::Syntax,
     );
 }
 
 #[test]
 fn cycles_are_rejected() {
-    let mutual = format!(
-        "{HEADER}reading A {{ use B as Y; entity S; }} reading B {{ use A as X; entity T; }}"
-    );
-    assert_eq!(err(&mutual).code, Code::Cycle);
+    let mutual = format!("{HEADER}reading A {{ use B as Y; }} reading B {{ use A as X; }}");
+    assert_eq!(err(EMPTY_DEFINITION, &mutual).code, Code::Cycle);
     let direct = format!(
         "{HEADER}reading A {{ view a(): Z = B.b(); }} reading B {{ view b(): Z = A.a(); }}"
     );
-    assert_eq!(err(&direct).code, Code::Cycle);
-    let own = format!("{HEADER}reading A {{ use A as Me; entity S; }}");
-    assert_eq!(err(&own).code, Code::Cycle);
-    rejects("data A = A0 | A1(B); data B = B0 | B1(A);", Code::Cycle);
+    assert_eq!(err(EMPTY_DEFINITION, &direct).code, Code::Cycle);
+    let own = format!("{HEADER}reading A {{ use A as Me; }}");
+    assert_eq!(err(EMPTY_DEFINITION, &own).code, Code::Cycle);
     rejects(
-        "view a(x: Z): Z = b(x); view b(x: Z): Z = a(x);",
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view a(x: Z): Z = b(x); view b(x: Z): Z = a(x);"#,
         Code::Cycle,
     );
 }
@@ -288,69 +341,137 @@ fn cycles_are_rejected() {
 #[test]
 fn type_mismatches_are_rejected() {
     rejects(
-        &format!("{ITEM} law required l(i: Item): i.qty = \"x\";"),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+law required l(i: Item): i.qty = "x";"#,
         Code::Type,
     );
-    rejects("view v(): Z = true;", Code::Type);
-    rejects(&format!("{ITEM} view v(i: Item): Z = i.tag;"), Code::Type);
-    rejects("view v(): Q = rat(1, 2) + 1 < 2;", Code::Type);
-    rejects("view v(): Q = rat(-3, 4);", Code::Syntax);
-    rejects("view v(): Q = rat((3), 4);", Code::Syntax);
-    rejects("view v(x: Z): Q = rat(x, 4);", Code::Syntax);
-    rejects("view v(): Q = rat(3, 0);", Code::Syntax);
-    rejects("view v(x: Fp(5)): Bool = x < x;", Code::Type);
     rejects(
-        &format!("{ITEM} view v(t: Tree): Z = match t {{ Leaf => 0; Node(a, b) => true; }};"),
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Z = true;"#,
         Code::Type,
     );
-    rejects("view v(): Fp(5) = 5;", Code::Syntax);
     rejects(
-        "entity S; entity A(owner: S); entity B(owner: S); arrow E(owner: S, from: A[owner], to: A[owner]); arrow F(owner: S, from: B[owner], to: B[owner]); view w(e: E, f: F): Path<A, B> = then(path(e), path(f));",
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view v(i: Item): Z = i.tag;"#,
+        Code::Type,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Q = rat(1, 2) + 1 < 2;"#,
+        Code::Type,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Q = rat(-3, 4);"#,
+        Code::Syntax,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Q = rat((3), 4);"#,
+        Code::Syntax,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(x: Z): Q = rat(x, 4);"#,
+        Code::Syntax,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Q = rat(3, 0);"#,
+        Code::Syntax,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(x: Fp(5)): Bool = x < x;"#,
+        Code::Type,
+    );
+    rejects(
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view v(t: Tree): Z = match t { Leaf => 0; Node(a, b) => true; };"#,
+        Code::Type,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Fp(5) = 5;"#,
+        Code::Syntax,
+    );
+    rejects(
+        DEF_12,
+        r#"use vocabulary R version "1" digest "sha256:8eeae677bb3c10680172d98822b46fd1a4d96168743146b6ba7ab03327c43f2f";
+view w(e: E, f: F): Path<A, B> = then(path(e), path(f));"#,
         Code::Type,
     );
 }
 
 #[test]
 fn invalid_recursion_is_rejected() {
-    rejects("view f(n: Z): Z = f(n);", Code::Cycle);
-    rejects(&format!("{ITEM} view g(t: Tree): Z = g(t);"), Code::Cycle);
     rejects(
-        &format!(
-            "{ITEM} view g(t: Tree): Z = match t {{ Leaf => 0; Node(a, b) => match a {{ Leaf => 0; Node(c, d) => g(c); }}; }};"
-        ),
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view f(n: Z): Z = f(n);"#,
         Code::Cycle,
     );
     rejects(
-        &format!(
-            "{ITEM} view g(n: Z, t: Tree): Z = match t {{ Leaf => n; Node(a, b) => g(n, Node(a, b)); }};"
-        ),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view g(t: Tree): Z = g(t);"#,
         Code::Cycle,
     );
-    rejects("data Bad = B0 | B1(Set<Bad>);", Code::Syntax);
-    rejects("data Bad = B0 | B1(Term<(Z) -> Bad>);", Code::Syntax);
-    rejects("data Empty = E(Empty);", Code::Syntax);
+    rejects(
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view g(t: Tree): Z = match t { Leaf => 0; Node(a, b) => match a { Leaf => 0; Node(c, d) => g(c); }; };"#,
+        Code::Cycle,
+    );
+    rejects(
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view g(n: Z, t: Tree): Z = match t { Leaf => n; Node(a, b) => g(n, Node(a, b)); };"#,
+        Code::Cycle,
+    );
 }
 
 #[test]
 fn capture_and_impure_terms_are_rejected() {
     rejects(
-        "view c(x: Z): Term<(Z) -> Z> = fn(y: Z) => x + y;",
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view c(x: Z): Term<(Z) -> Z> = fn(y: Z) => x + y;"#,
         Code::Reference,
     );
     rejects(
-        &format!("{ITEM} view c(): Term<(Item) -> Z> = fn(i: Item) => i.qty;"),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view c(): Term<(Item) -> Z> = fn(i: Item) => i.qty;"#,
         Code::Syntax,
     );
     rejects(
-        &format!("{ITEM} view h(): Z = 0; view c(): Term<(Z) -> Z> = fn(y: Z) => h();"),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view h(): Z = 0; view c(): Term<(Z) -> Z> = fn(y: Z) => h();"#,
         Code::Reference,
     );
     rejects(
-        "view c(): Term<(Z) -> Term<(Z) -> Z>> = fn(y: Z) => fn(z: Z) => y;",
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view c(): Term<(Z) -> Term<(Z) -> Z>> = fn(y: Z) => fn(z: Z) => y;"#,
         Code::Reference,
     );
     rejects(
-        &format!("{ITEM} view c(s: Sys): Term<(Z) -> Z> = fn(y: Z) => count(Item[s]);"),
+        DEF_03,
+        r#"use vocabulary R version "1" digest "sha256:8b3d6fe0b9d32c10cb3b500b3ea95bf03f2e586ba558f6ca069ef11c76aacae6";
+view c(s: Sys): Term<(Z) -> Z> = fn(y: Z) => count(Item[s]);"#,
         Code::Reference,
     );
 }
@@ -358,138 +479,163 @@ fn capture_and_impure_terms_are_rejected() {
 #[test]
 fn types_in_invalid_positions_are_rejected() {
     rejects(
-        "entity S; entity A(owner: S) { p: Path<A, A>; }",
-        Code::Syntax,
-    );
-    rejects("data D = D0(Path<D, D>);", Code::Syntax);
-    rejects(
-        "view s(): Set<Term<(Z) -> Z>> = set<Term<(Z) -> Z>>{};",
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view s(): Set<Term<(Z) -> Z>> = set<Term<(Z) -> Z>>{};"#,
         Code::Syntax,
     );
     rejects(
-        "data T = T0(Term<(Z) -> Z>); view s(): Set<T> = set<T>{};",
-        Code::Syntax,
-    );
-    rejects("entity E { m: Map<Z, Z>; }", Code::Syntax);
-    rejects("entity E { x: Fp(4); }", Code::Syntax);
-    rejects("entity S; entity E { f: Term<(S) -> Z>; }", Code::Syntax);
-    rejects("data D = D0; entity E(o: D) { x: D[o]; }", Code::Syntax);
-    rejects(
-        "entity S; entity A(owner: S) { x: Z; } change c(a: A, b: A) = a with { x = 1 };",
+        DEF_18,
+        r#"use vocabulary R version "1" digest "sha256:6f950c5ef9a13531ece68725bcd2f0315e1fd8937e7e2a1f883a9bf3b94aba54";
+view s(): Set<T> = set<T>{};"#,
         Code::Syntax,
     );
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } change c(a: A, b: Option<A>) = a with { x = 1 };",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c(a: A, b: A) = a with { x = 1 };"#,
         Code::Syntax,
     );
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } view v(a: A): A = a with { x = 1 };",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c(a: A, b: Option<A>) = a with { x = 1 };"#,
         Code::Syntax,
     );
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } change c(a: A) = a with { owner = a.owner };",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+view v(a: A): A = a with { x = 1 };"#,
         Code::Syntax,
     );
     rejects(
-        "entity S; entity A(owner: S); arrow M(owner: S, from: A[owner], to: A[owner]) { k: Z; } change c(m: M) = m with { k = 1 };",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+change c(a: A) = a with { owner = a.owner };"#,
+        Code::Syntax,
+    );
+    rejects(
+        DEF_23,
+        r#"use vocabulary R version "1" digest "sha256:25e9f01bef8ffe1efcdf7ed71084a333af41dcd9f4f34639fd227b87e1892388";
+change c(m: M) = m with { k = 1 };"#,
         Code::Syntax,
     );
 }
 
 #[test]
 fn non_affine_and_infinite_laws_type_check_without_algorithms() {
-    let c = ok(&reading(
-        "entity S; entity A(owner: S) { x: Z; y: Q; }
-         law required cubic(a: A): a.x * a.x * a.x = a.x;
+    let c = ok(
+        DEF_30,
+        &reading(
+            r#"use vocabulary R version "1" digest "sha256:ad41743d0ff47e1f20c34047ac0d7314644262bdfb88e483d1a4eb4eeda7e099";
+law required cubic(a: A): a.x * a.x * a.x = a.x;
          law optional all(a: A): forall n: Z . forall m: Z . n * m * a.x = m * n * a.x;
-         law optional rational(a: A): exists r: Q . r * r = a.y;",
-    ));
+         law optional rational(a: A): exists r: Q . r * r = a.y;"#,
+        ),
+    );
     assert_eq!(c.infos.iter().filter(|i| i.kind == "law").count(), 3);
 }
 
 #[test]
 fn empty_families_do_not_skip_type_checking() {
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } law required l(s: S): forall a in A[s] . a.x = true;",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+law required l(s: S): forall a in A[s] . a.x = true;"#,
         Code::Type,
     );
     rejects(
-        "entity S; entity A(owner: S) { x: Z; } law required l(s: S): exists a in A[s] . a.missing = 0;",
+        DEF_08,
+        r#"use vocabulary R version "1" digest "sha256:cfc86fe1f3a8c1cfa269bd0706696a31909f583b350f1fe953a34952802c0dbb";
+law required l(s: S): exists a in A[s] . a.missing = 0;"#,
         Code::Reference,
     );
     rejects(
-        "law required l(): forall x in list<Z>[] . x = \"s\";",
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+law required l(): forall x in list<Z>[] . x = "s";"#,
         Code::Type,
     );
     rejects(
-        "law optional unused(): if true then true else 1 = \"one\";",
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+law optional unused(): if true then true else 1 = "one";"#,
         Code::Type,
     );
     rejects(
-        "data D = D0 | D1(Z); view v(d: D): Z = match d { D0 => 0; D1(n) => n + true; };",
+        DEF_24,
+        r#"use vocabulary R version "1" digest "sha256:19f7f3bb9efe12d46eeaecbf989c03ccddf8f16c3addf6a627be4372dec8b7be";
+view v(d: D): Z = match d { D0 => 0; D1(n) => n + true; };"#,
         Code::Type,
     );
 }
 
 #[test]
 fn malformed_syntax_is_rejected() {
-    rejects("view v(x: Z): Bool = 1 < x < 2;", Code::Syntax);
     rejects(
-        "entity S; entity A(owner: S); view v(s: S): Set<A> = (A)[s];",
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(x: Z): Bool = 1 < x < 2;"#,
         Code::Syntax,
     );
     rejects(
-        "data D = D0 | D1; view v(d: D): Z = match d { D0 => 0; };",
+        DEF_25,
+        r#"use vocabulary R version "1" digest "sha256:48493aff068490823c9f6433b51bff4c61010a323fc2128bf288e94f7f35812a";
+view v(s: S): Set<A> = (A)[s];"#,
         Code::Syntax,
     );
     rejects(
-        "data D = D0 | D1; view v(d: D): Z = match d { _ => 0; D0 => 1; };",
+        DEF_06,
+        r#"use vocabulary R version "1" digest "sha256:c255627d975d859b823949ecba2cb6f731b2cbd74e31de5d370916f1f5c07f24";
+view v(d: D): Z = match d { D0 => 0; };"#,
         Code::Syntax,
     );
     rejects(
-        "data D = D0 | D1; view v(d: D): Z = match d { D0 => 0; D1 => 1; _ => 2; };",
+        DEF_06,
+        r#"use vocabulary R version "1" digest "sha256:c255627d975d859b823949ecba2cb6f731b2cbd74e31de5d370916f1f5c07f24";
+view v(d: D): Z = match d { _ => 0; D0 => 1; };"#,
         Code::Syntax,
     );
     rejects(
-        "data D = D0 | D1; view v(d: D): Z = match d { D0 => 0; D0 => 1; _ => 2; };",
+        DEF_06,
+        r#"use vocabulary R version "1" digest "sha256:c255627d975d859b823949ecba2cb6f731b2cbd74e31de5d370916f1f5c07f24";
+view v(d: D): Z = match d { D0 => 0; D1 => 1; _ => 2; };"#,
         Code::Syntax,
     );
-    rejects("view v(): Z = (then);", Code::Syntax);
-    rejects("view v(): Z = 01;", Code::Syntax);
-    rejects("view v(): Text = \"a\u{1}\";", Code::Syntax);
-    rejects("view v(): Text = \"\\ud800\";", Code::Syntax);
-    rejects("view v(): Z = unknown;", Code::Reference);
-    rejects("entity E { in: Z; }", Code::Syntax);
-}
-
-/// 量の field は位置だけを対応させ、参照を含む field は対応表に沿って型を運ぶ。
-#[test]
-fn alignment_moves_references_and_positions_quantities() {
-    ok(&format!(
-        "{HEADER}reading P {{ entity S1; entity E(owner: S1) {{ v: Z; }} entity S2; entity G(owner: S2) {{ w: Q; }}
-         correspondence M(from: S1, to: S2) {{ es: Map<E[from], G[to]>; align E.owner = G.owner; align E.v = G.w; }} }}"
-    ));
-    let wrong_ref = format!(
-        "{HEADER}reading P {{ entity S1; entity E(owner: S1) {{ v: Z; }} entity S2; entity G(owner: S2) {{ w: S1; }}
-         correspondence M(from: S1, to: S2) {{ es: Map<E[from], G[to]>; align E.owner = G.owner; align E.v = G.w; }} }}"
+    rejects(
+        DEF_06,
+        r#"use vocabulary R version "1" digest "sha256:c255627d975d859b823949ecba2cb6f731b2cbd74e31de5d370916f1f5c07f24";
+view v(d: D): Z = match d { D0 => 0; D0 => 1; _ => 2; };"#,
+        Code::Syntax,
     );
-    assert_eq!(err(&wrong_ref).code, Code::Type);
-}
-
-/// correspondence は、同梱した Law で所属先が根の entity・arrow を全て覆う(構成対象は root の全 owned 型)。
-#[test]
-fn correspondence_covers_every_owned_type_of_its_roots() {
-    let outside = format!(
-        "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}\n\
-         reading B {{ use A as P; entity Extra(owner: P.S) {{ w: Z; }} }}"
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Z = (then);"#,
+        Code::Syntax,
     );
-    assert_eq!(err(&outside).code, Code::Syntax);
-    let covered = format!(
-        "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}"
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Z = 01;"#,
+        Code::Syntax,
     );
-    ok(&covered);
-    let inside = format!(
-        "{HEADER}reading A {{ entity S; entity St(owner: S) {{ v: Z; }} entity Extra(owner: S); correspondence M(from: S, to: S) {{ sts: Map<St[from], St[to]>; }} }}"
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Text = "a";"#,
+        Code::Syntax,
     );
-    assert_eq!(err(&inside).code, Code::Syntax);
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Text = "\ud800";"#,
+        Code::Syntax,
+    );
+    rejects(
+        DEF_04,
+        r#"use vocabulary R version "1" digest "sha256:77f55ae72a0d8d023c0aa5ed4ea09caaf02ae3c7edccc90610e3fe537d727d39";
+view v(): Z = unknown;"#,
+        Code::Reference,
+    );
 }

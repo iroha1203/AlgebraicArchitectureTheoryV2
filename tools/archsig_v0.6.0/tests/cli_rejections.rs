@@ -4,6 +4,7 @@ mod common;
 use common::cli::*;
 use std::path::Path;
 
+const DEFINITION: &str = include_str!("fixtures/reservations.atoms.json");
 const LAW: &str = include_str!("fixtures/reservations.law");
 const MAP: &str = include_str!("fixtures/reservations.archmap.json");
 
@@ -33,12 +34,15 @@ fn only_issue(res: &archsig::json::JNode) -> (String, String, String) {
 
 fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run) {
     let dir = workdir(name);
+    write(&dir, "d.json", DEFINITION.as_bytes());
     write(&dir, "l.law", LAW.as_bytes());
     write(&dir, "a.json", map);
     let r = run(
         &dir,
         &[
             "check",
+            "--atom-definition",
+            "d.json",
             "--law",
             "l.law",
             "--archmap",
@@ -87,7 +91,7 @@ fn archmap_rejections_keep_the_law_tables() {
         ),
         (
             "version",
-            MAP.replacen("archsig.archmap/1", "archsig.archmap/2", 1)
+            MAP.replacen("archsig.archmap/2", "archsig.archmap/1", 1)
                 .into_bytes(),
             "unsupported_version",
             "/format",
@@ -96,7 +100,7 @@ fn archmap_rejections_keep_the_law_tables() {
         (
             "binding",
             MAP.replacen(
-                "ede3c701fddea98a6ebf3d31406a0d684dc01256e3ee14a0fb151250b5f05ea1",
+                "8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff",
                 &"0".repeat(64),
                 1,
             )
@@ -161,7 +165,7 @@ fn law_rejections_empty_the_tables() {
         ),
         (
             "law-version",
-            LAW.replacen("archsig.law/1", "archsig.law/9", 1)
+            LAW.replacen("archsig.law/2", "archsig.law/1", 1)
                 .into_bytes(),
             "unsupported_version",
             "law",
@@ -189,12 +193,15 @@ fn law_rejections_empty_the_tables() {
     cases.push(("law-utf8", bad, "syntax", "law", 65));
     for (name, law, code, input, exit) in cases {
         let dir = workdir(name);
+        write(&dir, "d.json", DEFINITION.as_bytes());
         write(&dir, "l.law", &law);
         write(&dir, "a.json", MAP.as_bytes());
         let r = run(
             &dir,
             &[
                 "check",
+                "--atom-definition",
+                "d.json",
                 "--law",
                 "l.law",
                 "--archmap",
@@ -223,8 +230,9 @@ fn law_rejections_empty_the_tables() {
 #[test]
 fn cli_misuse_is_usage() {
     let dir = workdir("usage");
+    write(&dir, "d.json", DEFINITION.as_bytes());
     write(&dir, "l.law", LAW.as_bytes());
-    for args in [
+    for mut args in [
         vec!["check", "--law", "l.law"],
         vec!["check", "--law", "l.law", "--law", "l.law", "--out", "o1"],
         vec!["check", "--law", "l.law", "--out", "o2", "--time-ms", "5"],
@@ -244,6 +252,9 @@ fn cli_misuse_is_usage() {
         ],
         vec!["version", "--law"],
     ] {
+        if args.first() == Some(&"check") {
+            args.splice(1..1, ["--atom-definition", "d.json"]);
+        }
         let r = run(&dir, &args);
         assert_eq!(r.code, 64, "{args:?}");
         assert_eq!(s(get(&r.receipt, "status")), "invalid");
@@ -252,6 +263,36 @@ fn cli_misuse_is_usage() {
             assert_eq!(only_issue(&res).0, "usage");
             assert!(arr(get(&res, "inputs")).is_empty());
         }
+    }
+    // 定義は一つ以上必須。単数 flag の ArchMap 重複も usage。
+    for (out, args) in [
+        (
+            "no-definition",
+            vec!["check", "--law", "l.law", "--out", "no-definition"],
+        ),
+        (
+            "duplicate-map",
+            vec![
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--archmap",
+                "a.json",
+                "--out",
+                "duplicate-map",
+            ],
+        ),
+    ] {
+        let r = run(&dir, &args);
+        let res = consistent(&dir, &r, "invalid", 64);
+        assert_eq!(only_issue(&res).0, "usage");
+        assert!(arr(get(&res, "inputs")).is_empty());
+        assert!(!dir.join(out).join("inputs/law.law").exists());
+        assert!(!dir.join(out).join("inputs/definitions/0.json").exists());
     }
     // 提供しない run は、出力を作らない usage とする。
     let r = run(
@@ -272,13 +313,32 @@ fn cli_misuse_is_usage() {
     // 未知の flag の後の --out も出力先として読む。
     let r = run(
         &dir,
-        &["check", "--law", "l.law", "--bogus", "--out", "o10"],
+        &[
+            "check",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--bogus",
+            "--out",
+            "o10",
+        ],
     );
     consistent(&dir, &r, "invalid", 64);
     // --out が二つあれば出力先を決めず、出力を作らない。
     let r = run(
         &dir,
-        &["check", "--law", "l.law", "--out", "o8", "--out", "o9"],
+        &[
+            "check",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--out",
+            "o8",
+            "--out",
+            "o9",
+        ],
     );
     assert_eq!(r.code, 64);
     assert!(!has(&r.receipt, "result"));
@@ -286,9 +346,186 @@ fn cli_misuse_is_usage() {
     // 出力先を読めた CLI の不正は、usage の issue を result.json に残す。
     let r = run(
         &dir,
-        &["check", "--law", "l.law", "--out", "o6", "--unknown", "x"],
+        &[
+            "check",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--out",
+            "o6",
+            "--unknown",
+            "x",
+        ],
     );
     let res = consistent(&dir, &r, "invalid", 64);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(get(issue, "details"), "argument")), "--unknown");
+}
+
+#[test]
+fn definition_failure_precedes_law_and_archmap_and_empty_tables_keep_copies() {
+    let dir = workdir("definition-first");
+    let definition = DEFINITION.replacen("\"version\": \"1\"", "\"version\": \"\"", 1);
+    write(&dir, "d.json", definition.as_bytes());
+    write(&dir, "l.law", b"invalid law");
+    write(&dir, "a.json", b"invalid JSON");
+    let r = run(
+        &dir,
+        &[
+            "check",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "o",
+        ],
+    );
+    let res = consistent(&dir, &r, "invalid", 65);
+    assert_eq!(
+        only_issue(&res),
+        (
+            "syntax".into(),
+            "definition0".into(),
+            "/vocabularies/0/version".into()
+        )
+    );
+    assert!(arr(get(&res, "declarations")).is_empty());
+    assert!(arr(get(&res, "vocabularies")).is_empty());
+    for (path, bytes) in [
+        ("inputs/definitions/0.json", definition.as_bytes()),
+        ("inputs/law.law", b"invalid law".as_slice()),
+        ("inputs/archmap.json", b"invalid JSON".as_slice()),
+    ] {
+        assert_eq!(std::fs::read(dir.join("o").join(path)).unwrap(), bytes);
+    }
+}
+
+#[test]
+fn unsupported_json_versions_precede_unknown_fields() {
+    for (kind, original, format, pointer) in [
+        (
+            "definition0",
+            DEFINITION,
+            "archsig.atom-definition/1",
+            "/format",
+        ),
+        ("archmap", MAP, "archsig.archmap/2", "/format"),
+    ] {
+        for (field, replacement, expected_pointer) in [
+            (format, "archsig.future/9", pointer),
+            ("archsig/0.6.0", "archsig/9.0.0", "/semantics"),
+        ] {
+            let dir = workdir(&format!(
+                "unknown-{kind}-{}",
+                expected_pointer.trim_start_matches('/')
+            ));
+            let unknown =
+                original
+                    .replacen(field, replacement, 1)
+                    .replacen('{', "{\"future\": true,", 1);
+            write(
+                &dir,
+                "d.json",
+                if kind == "definition0" {
+                    unknown.as_bytes()
+                } else {
+                    DEFINITION.as_bytes()
+                },
+            );
+            write(&dir, "l.law", LAW.as_bytes());
+            write(
+                &dir,
+                "a.json",
+                if kind == "archmap" {
+                    unknown.as_bytes()
+                } else {
+                    MAP.as_bytes()
+                },
+            );
+            let r = run(
+                &dir,
+                &[
+                    "check",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                    "--out",
+                    "o",
+                ],
+            );
+            let res = consistent(&dir, &r, "unsupported", 69);
+            assert_eq!(
+                only_issue(&res),
+                (
+                    "unsupported_version".into(),
+                    kind.into(),
+                    expected_pointer.into()
+                )
+            );
+            assert_eq!(
+                arr(get(&res, "declarations")).is_empty(),
+                kind == "definition0"
+            );
+            assert_eq!(
+                arr(get(&res, "vocabularies")).is_empty(),
+                kind == "definition0"
+            );
+        }
+    }
+}
+
+#[test]
+fn law_header_version_precedes_lexer_and_primitive_declarations_are_rejected() {
+    for (name, law, code, exit) in [
+        (
+            "unknown-law",
+            LAW.replacen("archsig.law/2", "archsig.law/9", 1) + "\n@",
+            "unsupported_version",
+            69,
+        ),
+        (
+            "primitive-law",
+            LAW.replacen(
+                "reading Reservations {",
+                "reading Reservations { entity Hidden;",
+                1,
+            ),
+            "syntax",
+            65,
+        ),
+    ] {
+        let dir = workdir(name);
+        write(&dir, "d.json", DEFINITION.as_bytes());
+        write(&dir, "l.law", law.as_bytes());
+        let r = run(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--out",
+                "o",
+            ],
+        );
+        let res = consistent(
+            &dir,
+            &r,
+            if exit == 69 { "unsupported" } else { "invalid" },
+            exit,
+        );
+        let issue = only_issue(&res);
+        assert_eq!((issue.0.as_str(), issue.1.as_str()), (code, "law"));
+        assert!(issue.2.parse::<usize>().is_ok());
+        assert!(arr(get(&res, "declarations")).is_empty());
+        assert!(arr(get(&res, "vocabularies")).is_empty());
+    }
 }

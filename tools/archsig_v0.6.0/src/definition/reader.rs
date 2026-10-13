@@ -92,7 +92,7 @@ fn name(s: &str, input: &str, p: &str) -> R<()> {
     let mut chars = s.chars();
     if !chars.next().is_some_and(|c| c.is_ascii_alphabetic())
         || !chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
-        || crate::law::parser::is_reserved(s)
+        || crate::names::is_reserved(s)
         || ["vocabulary", "version", "digest"].contains(&s)
     {
         return Err(error(
@@ -340,7 +340,7 @@ fn declaration(
         ));
     }
     let short = name.split('.').nth(1).expect("完全名");
-    if crate::law::check::BUILTIN_OPS.contains(&short) {
+    if crate::names::BUILTIN_OPS.contains(&short) {
         return Err(error(
             Code::Syntax,
             input,

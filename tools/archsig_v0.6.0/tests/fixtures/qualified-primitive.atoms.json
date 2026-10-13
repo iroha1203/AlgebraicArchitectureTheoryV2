@@ -1,0 +1,62 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Counter",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Counter.State",
+          "meaning": "状態参照の完全名解決用。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "count",
+              "type": "Z",
+              "meaning": "整数の読取り位置。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "data",
+          "name": "Counter.Counter",
+          "meaning": "同名namespaceを冠するdata。",
+          "constructors": [
+            {
+              "name": "State",
+              "arguments": [],
+              "meaning": "完全名と同じ短形を持つconstructor。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Other",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Other.State",
+          "meaning": "状態参照の完全名解決用。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "count",
+              "type": "Z",
+              "meaning": "整数の読取り位置。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

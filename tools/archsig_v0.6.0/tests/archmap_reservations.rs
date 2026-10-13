@@ -34,11 +34,11 @@ fn with_value(atom: &str, value: &str) -> String {
 
 #[test]
 fn normative_archmaps_pass_with_their_law() {
-    let c = map_ok(RESERVATIONS, RESERVATIONS_MAP);
+    let c = map_ok(RESERVATIONS_DEFINITION, RESERVATIONS_MAP);
     assert!(missing_slots(&c).is_empty());
     assert_eq!(c.vocabularies.len(), 1);
     // retained は偽だが、静的検査は成立・反証を問わない。
-    let e = map_ok(ENGINE, ENGINE_MAP);
+    let e = map_ok(ENGINE_DEFINITION, ENGINE_MAP);
     assert!(missing_slots(&e).is_empty());
 }
 
@@ -53,12 +53,12 @@ fn unknown_owners_references_and_maps_have_completions() {
         "e-owner",
         "m-reserves",
     ] {
-        let c = map_ok(RESERVATIONS, &without(atom));
+        let c = map_ok(RESERVATIONS_DEFINITION, &without(atom));
         let missing = missing_slots(&c);
         assert_eq!(missing.len(), 1, "{atom}");
         assert_eq!(missing[0].0, "v");
     }
-    let c = map_ok(RESERVATIONS, &without("r-free"));
+    let c = map_ok(RESERVATIONS_DEFINITION, &without("r-free"));
     assert_eq!(missing_slots(&c)[0].1, "r");
     assert_eq!(missing_slots(&c)[0].2, "Reservations.State.free");
     assert_eq!(field(&c, "v", "r", "free").slot, Slot::Missing);
@@ -74,7 +74,7 @@ fn presentations_without_completion_are_inconsistent() {
     assert!(split.contains(
         r#""id": "e-to", "subject": "e", "field": "Reservations.Reserve.to", "value": ["v", "r"]"#
     ));
-    let issue = map_err(RESERVATIONS, &split);
+    let issue = map_err(RESERVATIONS_DEFINITION, &split);
     assert_eq!(issue.code, Code::InconsistentObservation, "{issue:?}");
     // m の from が未知で、states の key が A と B の状態にまたがる。
     let mixed = with_value(
@@ -89,7 +89,7 @@ fn presentations_without_completion_are_inconsistent() {
             .to_owned(),
         "",
     );
-    let issue = map_err(RESERVATIONS, &mixed);
+    let issue = map_err(RESERVATIONS_DEFINITION, &mixed);
     assert_eq!(issue.code, Code::InconsistentObservation, "{issue:?}");
 }
 
@@ -98,7 +98,7 @@ fn known_invalid_references_and_partial_maps_are_rejected() {
     // 既知値だけで破れる全域性・所属は、補完が一つもない入力として拒否する。
     // 全域性違反: q の行がない。
     let partial = with_value("m-states", r#"[[["v", "p"], ["v", "r"]]]"#);
-    let issue = map_err(RESERVATIONS, &partial);
+    let issue = map_err(RESERVATIONS_DEFINITION, &partial);
     assert_eq!(issue.code, Code::InconsistentObservation);
     assert!(pointer(&issue).ends_with("/value"), "{issue:?}");
     // 値が終域の族に属さない。
@@ -107,22 +107,30 @@ fn known_invalid_references_and_partial_maps_are_rejected() {
         r#"[[["v", "p"], ["v", "r"]], [["v", "q"], ["v", "p"]]]"#,
     );
     assert_eq!(
-        map_err(RESERVATIONS, &outside).code,
+        map_err(RESERVATIONS_DEFINITION, &outside).code,
         Code::InconsistentObservation
     );
     // 所属の合わない端点。
     let foreign = with_value("e-to", r#"["v", "r"]"#);
     assert_eq!(
-        map_err(RESERVATIONS, &foreign).code,
+        map_err(RESERVATIONS_DEFINITION, &foreign).code,
         Code::InconsistentObservation
     );
     // 宣言型の違う参照、存在しない参照。
     assert_eq!(
-        map_err(RESERVATIONS, &with_value("e-to", r#"["v", "A"]"#)).code,
+        map_err(
+            RESERVATIONS_DEFINITION,
+            &with_value("e-to", r#"["v", "A"]"#)
+        )
+        .code,
         Code::Type
     );
     assert_eq!(
-        map_err(RESERVATIONS, &with_value("e-to", r#"["w", "q"]"#)).code,
+        map_err(
+            RESERVATIONS_DEFINITION,
+            &with_value("e-to", r#"["w", "q"]"#)
+        )
+        .code,
         Code::Reference
     );
     // key の重複。
@@ -130,7 +138,10 @@ fn known_invalid_references_and_partial_maps_are_rejected() {
         "m-states",
         r#"[[["v", "p"], ["v", "r"]], [["v", "p"], ["v", "s"]]]"#,
     );
-    assert_eq!(map_err(RESERVATIONS, &dup).code, Code::DuplicateKey);
+    assert_eq!(
+        map_err(RESERVATIONS_DEFINITION, &dup).code,
+        Code::DuplicateKey
+    );
     // 同じ値の Atom を二度置く。
     let line = RESERVATIONS_MAP
         .lines()
@@ -140,7 +151,10 @@ fn known_invalid_references_and_partial_maps_are_rejected() {
         line,
         &format!("{line}\n{}", line.replace("p-free", "p-free-again")),
     );
-    assert_eq!(map_err(RESERVATIONS, &twice).code, Code::DuplicateFact);
+    assert_eq!(
+        map_err(RESERVATIONS_DEFINITION, &twice).code,
+        Code::DuplicateFact
+    );
 }
 
 #[test]
@@ -149,38 +163,43 @@ fn endpoint_breaking_maps_pass_the_static_check() {
         "m-states",
         r#"[[["v", "p"], ["v", "s"]], [["v", "q"], ["v", "r"]]]"#,
     );
-    map_ok(RESERVATIONS, &swapped);
+    map_ok(RESERVATIONS_DEFINITION, &swapped);
 }
 
 #[test]
 fn vocabulary_bindings_are_matched_against_the_manifest() {
-    let digest = "sha256:ede3c701fddea98a6ebf3d31406a0d684dc01256e3ee14a0fb151250b5f05ea1";
+    let digest = "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
     let wrong = RESERVATIONS_MAP.replace(digest, &format!("sha256:{}", "0".repeat(64)));
-    let issue = map_err(RESERVATIONS, &wrong);
+    let issue = map_err(RESERVATIONS_DEFINITION, &wrong);
     assert_eq!(
         (issue.code, pointer(&issue)),
         (Code::VocabularyMismatch, "/vocabularies/0/digest")
     );
     let unbound = RESERVATIONS_MAP.replace(
-        &format!(r#"[{{"reading": "Reservations", "digest": "{digest}"}}]"#),
+        &format!(r#"[{{"namespace": "Reservations", "version": "1", "digest": "{digest}"}}]"#),
         "[]",
     );
     assert_eq!(
-        map_err(RESERVATIONS, &unbound).code,
+        map_err(RESERVATIONS_DEFINITION, &unbound).code,
         Code::VocabularyMismatch
     );
     let extra = RESERVATIONS_MAP.replace(
-        &format!(r#"{{"reading": "Reservations", "digest": "{digest}"}}"#),
-        &format!(r#"{{"reading": "Reservations", "digest": "{digest}"}}, {{"reading": "Other", "digest": "{digest}"}}"#),
+        &format!(r#"{{"namespace": "Reservations", "version": "1", "digest": "{digest}"}}"#),
+        &format!(r#"{{"namespace": "Reservations", "version": "1", "digest": "{digest}"}}, {{"namespace": "Other", "version": "1", "digest": "{digest}"}}"#),
     );
-    assert_eq!(map_err(RESERVATIONS, &extra).code, Code::VocabularyMismatch);
-    // 条件だけを変えた Law は同じ binding で読める。
-    let law = RESERVATIONS.replace("law required retained", "law optional retained");
-    map_ok(&law, RESERVATIONS_MAP);
-    // 原始宣言を変えた Law とは一致しない。
-    let law = RESERVATIONS.replace("{ free: Z; held: Z; }", "{ free: Z; held: Z; note: Text; }");
     assert_eq!(
-        map_err(&law, RESERVATIONS_MAP).code,
+        map_err(RESERVATIONS_DEFINITION, &extra).code,
+        Code::Reference
+    );
+    // 条件だけの変更は定義の binding を変えない。
+    let law = RESERVATIONS.replace("law required retained", "law optional retained");
+    ok(RESERVATIONS_DEFINITION, &law);
+    map_ok(RESERVATIONS_DEFINITION, RESERVATIONS_MAP);
+    // 定義の meaning を変えたときは古い digest に一致しない。
+    let changed = RESERVATIONS_DEFINITION.replacen("予約", "予約の説明を変更した", 1);
+    assert_ne!(changed, RESERVATIONS_DEFINITION);
+    assert_eq!(
+        map_err(&changed, RESERVATIONS_MAP).code,
         Code::VocabularyMismatch
     );
 }
@@ -191,15 +210,24 @@ fn subject_types_and_fields_come_from_the_vocabulary() {
         r#""type": "Reservations.System""#,
         r#""type": "Reservations.holdings""#,
     );
-    assert_eq!(map_err(RESERVATIONS, &bad_type).code, Code::Reference);
+    assert_eq!(
+        map_err(RESERVATIONS_DEFINITION, &bad_type).code,
+        Code::Reference
+    );
     let bad_field = RESERVATIONS_MAP.replace(
         "Reservations.State.free\", \"value\": \"2\"",
         "Reservations.State.cash\", \"value\": \"2\"",
     );
-    assert_eq!(map_err(RESERVATIONS, &bad_field).code, Code::Reference);
+    assert_eq!(
+        map_err(RESERVATIONS_DEFINITION, &bad_field).code,
+        Code::Reference
+    );
     let foreign_field = RESERVATIONS_MAP.replace(
         "Reservations.State.free\", \"value\": \"2\"",
         "Reservations.Reserve.from\", \"value\": \"2\"",
     );
-    assert_eq!(map_err(RESERVATIONS, &foreign_field).code, Code::Reference);
+    assert_eq!(
+        map_err(RESERVATIONS_DEFINITION, &foreign_field).code,
+        Code::Reference
+    );
 }

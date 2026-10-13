@@ -1,10 +1,10 @@
 //! 検査済み Law の内部表現。後続の評価へメモリ上で渡す。
 
 use super::ast::{ExprId, Role, Span};
-use crate::canonical::Json;
 use crate::types::Type;
 
-/// 型付きの field・parameter。`span` は名前の出現。
+/// 型付きの field・parameter。Law parameter の `span` は名前の出現。
+/// 式検査内部の原始 field は入力 span を持たず、位置の出力には共通定義を使う。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Param {
     pub name: String,
@@ -16,7 +16,6 @@ pub struct Param {
 pub struct CtorSig {
     pub name: String,
     pub args: Vec<Type>,
-    pub span: Span,
 }
 
 /// 宣言の型付き署名と原式。
@@ -78,6 +77,72 @@ pub enum Signature {
 }
 
 impl Signature {
+    /// 検査済み共通署名を式検査の lookup へ接続する。原始型の検査・位置は定義側が所有する。
+    pub(crate) fn from_primitive(sig: &crate::definition::PrimitiveSignature) -> Self {
+        use crate::definition::PrimitiveSignature as P;
+        let fields = |fs: &[crate::definition::Field]| {
+            fs.iter()
+                .map(|f| Param {
+                    name: f.name.clone(),
+                    ty: f.ty.clone(),
+                    // 原始 field は Law の出現を持たない。この値を Location に出力しない。
+                    span: (0, 0),
+                })
+                .collect()
+        };
+        match sig {
+            P::Entity {
+                parameters,
+                fields: fs,
+                owner,
+            } => Self::Entity {
+                params: fields(parameters),
+                members: fields(fs),
+                owner: owner.clone(),
+            },
+            P::Arrow {
+                parameters,
+                fields: fs,
+                owner,
+                endpoint,
+            } => Self::Arrow {
+                params: fields(parameters),
+                members: fields(fs),
+                owner: owner.clone(),
+                endpoint: endpoint.clone(),
+            },
+            P::Correspondence {
+                parameters,
+                fields: fs,
+                from,
+                to,
+                maps,
+                alignments,
+                implicit,
+            } => Self::Correspondence {
+                params: fields(parameters),
+                members: fields(fs),
+                from: from.clone(),
+                to: to.clone(),
+                maps: maps.clone(),
+                alignments: alignments
+                    .iter()
+                    .map(|a| (a.source.clone(), a.target.clone()))
+                    .collect(),
+                implicit: implicit.clone(),
+            },
+            P::Data { constructors } => Self::Data {
+                constructors: constructors
+                    .iter()
+                    .map(|c| CtorSig {
+                        name: c.name.clone(),
+                        args: c.arguments.clone(),
+                    })
+                    .collect(),
+            },
+        }
+    }
+
     pub fn kind(&self) -> &'static str {
         match self {
             Signature::Entity { .. } => "entity",
@@ -158,6 +223,7 @@ pub enum SuppliedRule {
 /// 結果仕様 §1 の DeclarationInfo。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DeclarationInfo {
+    pub vocabularies: Vec<crate::definition::Binding>,
     pub name: String,
     pub kind: &'static str,
     pub parameters: Vec<(String, Type)>,
@@ -169,12 +235,4 @@ pub struct DeclarationInfo {
     pub references: Vec<(Span, String)>,
     pub expressions: Vec<ResolvedExpression>,
     pub supplied: Vec<SuppliedRule>,
-}
-
-/// 入力仕様 §4 の語彙 manifest と、その canonical JSON の digest。
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Vocabulary {
-    pub reading: String,
-    pub manifest: Json,
-    pub digest: String,
 }

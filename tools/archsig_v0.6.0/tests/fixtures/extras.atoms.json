@@ -1,0 +1,34 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Extras",
+      "version": "1",
+      "dependencies": [
+        {
+          "namespace": "Counter",
+          "version": "1",
+          "digest": "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11"
+        }
+      ],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Extras.Note",
+          "meaning": "解析で使用を選べる補足メモ。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "text",
+              "type": "Text",
+              "meaning": "メモの本文。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

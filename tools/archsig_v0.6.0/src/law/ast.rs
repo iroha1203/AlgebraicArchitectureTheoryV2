@@ -361,9 +361,18 @@ pub struct Use {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VocabularyUse {
+    pub namespace: Ident,
+    pub version: String,
+    pub digest: String,
+    pub span: Span,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Reading {
     pub name: Ident,
     pub uses: Vec<Use>,
+    pub vocabularies: Vec<VocabularyUse>,
     pub decls: Vec<Decl>,
     pub span: Span,
 }

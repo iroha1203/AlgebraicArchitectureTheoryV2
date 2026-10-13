@@ -163,10 +163,10 @@ pub(crate) struct Roster<'a> {
 }
 
 struct Reader<'a, 'b> {
-    law: &'a CheckedLaw,
+    definitions: &'a CheckedDefinitions,
     roster: &'b Roster<'b>,
-    /// 値を読む field が属する宣言の reading。Term の本体の名前の解決に使う。
-    reading: &'a str,
+    /// 値を読む field が属する宣言の namespace。Term の本体の名前の解決に使う。
+    namespace: &'a str,
 }
 
 impl Reader<'_, '_> {
@@ -318,10 +318,10 @@ impl Reader<'_, '_> {
                     return Err(syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}"));
                 };
                 let tag = as_string(tag, &pointer_push(ptr, "tag"))?;
-                let Some(Signature::Data { constructors }) =
-                    self.law.declarations.get(d).map(|x| &x.signature)
+                let Some(PrimitiveSignature::Data { constructors }) =
+                    self.definitions.declarations.get(d).map(|x| &x.signature)
                 else {
-                    unreachable!("data 型は Law の宣言")
+                    unreachable!("data 型は共通 Atom 定義の宣言")
                 };
                 let Some(c) = constructors.iter().find(|c| c.name == tag) else {
                     return Err(syntax(
@@ -333,14 +333,14 @@ impl Reader<'_, '_> {
                 let JValue::Arr(items) = &args.value else {
                     return Err(syntax(&aptr, "args は array"));
                 };
-                if items.len() != c.args.len() {
+                if items.len() != c.arguments.len() {
                     return Err(syntax(
                         &aptr,
-                        format!("constructor `{tag}` の引数は {} 個", c.args.len()),
+                        format!("constructor `{tag}` の引数は {} 個", c.arguments.len()),
                     ));
                 }
                 let mut out = Vec::new();
-                for (i, (n, t)) in items.iter().zip(&c.args).enumerate() {
+                for (i, (n, t)) in items.iter().zip(&c.arguments).enumerate() {
                     out.push(self.read(n, t, &pointer_push(&aptr, &i.to_string()))?);
                 }
                 Value::Data {
@@ -397,6 +397,7 @@ impl Reader<'_, '_> {
                     ));
                 }
                 let mut ps = Vec::new();
+                let mut seen = std::collections::HashSet::new();
                 for (i, n) in names.iter().enumerate() {
                     let name = as_string(n, &pointer_push(&pptr, &i.to_string()))?;
                     let ok = name.starts_with(|c: char| c.is_ascii_alphabetic())
@@ -408,22 +409,33 @@ impl Reader<'_, '_> {
                             format!("`{name}` は parameter 名に使えない"),
                         ));
                     }
+                    if !seen.insert(name.clone()) {
+                        return Err(issue(
+                            Code::DuplicateId,
+                            &pointer_push(&pptr, &i.to_string()),
+                            format!("parameter `{name}` が重複している"),
+                        ));
+                    }
                     ps.push(name);
                 }
                 let bptr = pointer_push(ptr, "body");
                 let body = as_string(body, &bptr)?;
                 let typed: Vec<(String, Type)> =
                     ps.iter().cloned().zip(args.iter().cloned()).collect();
-                let checked = self
-                    .law
-                    .check_term_body(self.reading, &typed, ret, &body)
-                    .map_err(|mut e| {
-                        e.location = Location::ArchMap {
-                            pointer: bptr.clone(),
-                            span: None,
-                        };
-                        e
-                    })?;
+                let checked = crate::law::check_definition_term_body(
+                    self.definitions,
+                    self.namespace,
+                    &typed,
+                    ret,
+                    &body,
+                )
+                .map_err(|mut e| {
+                    e.location = Location::ArchMap {
+                        pointer: bptr.clone(),
+                        span: None,
+                    };
+                    e
+                })?;
                 Value::Term(Box::new(TermValue {
                     params: ps,
                     body,
@@ -436,7 +448,10 @@ impl Reader<'_, '_> {
 }
 
 /// subject の宣言順の全 field と、Atom の値。
-pub(crate) fn check_snapshots(raw: &[RawSnapshot<'_>], law: &CheckedLaw) -> AResult<Vec<Snapshot>> {
+pub(crate) fn check_snapshots(
+    raw: &[RawSnapshot<'_>],
+    definitions: &CheckedDefinitions,
+) -> AResult<Vec<Snapshot>> {
     let mut types = HashMap::new();
     for snap in raw {
         for s in &snap.subjects {
@@ -448,7 +463,7 @@ pub(crate) fn check_snapshots(raw: &[RawSnapshot<'_>], law: &CheckedLaw) -> ARes
     for snap in raw {
         let mut subjects: Vec<Subject> = Vec::new();
         for s in &snap.subjects {
-            let decl = &law.declarations[&s.ty];
+            let decl = &definitions.declarations[&s.ty];
             let (params, members) = decl
                 .signature
                 .record_fields()
@@ -503,9 +518,9 @@ pub(crate) fn check_snapshots(raw: &[RawSnapshot<'_>], law: &CheckedLaw) -> ARes
                 ));
             }
             let reader = Reader {
-                law,
+                definitions,
                 roster: &roster,
-                reading: &law.declarations[subject_ty].reading,
+                namespace: &definitions.declarations[subject_ty].namespace,
             };
             let vptr = format!("{}/value", a.pointer);
             let ty = &subjects[si].fields[fi].ty;

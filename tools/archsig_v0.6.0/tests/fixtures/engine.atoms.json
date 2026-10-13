@@ -1,0 +1,49 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{
+    "semantics": "archsig/0.6.0",
+    "namespace": "Engine",
+    "version": "1",
+    "dependencies": [],
+    "declarations": [
+      {
+        "kind": "entity", "name": "Engine.Compiler",
+        "meaning": "入力式と候補演算を持つコンパイラ仕様モデル。",
+        "parameters": [],
+        "fields": [
+          {"name": "source", "type": ["Data", "Engine.Expr"], "meaning": "変換する入力式。"},
+          {"name": "operator", "type": ["Data", "Engine.Operator"], "meaning": "候補変換で使う演算。"}
+        ],
+        "alignments": []
+      },
+      {
+        "kind": "data", "name": "Engine.Expr",
+        "meaning": "整数式の有限構文木。",
+        "constructors": [
+          {"name": "Lit", "arguments": ["Z"], "meaning": "整数定数。"},
+          {"name": "Var", "arguments": [], "meaning": "評価時の整数変数。"},
+          {"name": "Add", "arguments": [["Data", "Engine.Expr"], ["Data", "Engine.Expr"]], "meaning": "二つの式の加算。"}
+        ]
+      },
+      {
+        "kind": "data", "name": "Engine.IR",
+        "meaning": "変換先の整数式の有限構文木。",
+        "constructors": [
+          {"name": "Const", "arguments": ["Z"], "meaning": "整数定数。"},
+          {"name": "Load", "arguments": [], "meaning": "評価時の整数変数の読込み。"},
+          {"name": "Plus", "arguments": [["Data", "Engine.IR"], ["Data", "Engine.IR"]], "meaning": "二つの式の加算。"},
+          {"name": "Minus", "arguments": [["Data", "Engine.IR"], ["Data", "Engine.IR"]], "meaning": "第1式から第2式を引く減算。"}
+        ]
+      },
+      {
+        "kind": "data", "name": "Engine.Operator",
+        "meaning": "候補変換で選択する演算。",
+        "constructors": [
+          {"name": "AddOp", "arguments": [], "meaning": "加算への変換候補。"},
+          {"name": "SubtractOp", "arguments": [], "meaning": "減算への変換候補。"}
+        ]
+      }
+    ]
+  }]
+}

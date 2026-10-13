@@ -63,7 +63,7 @@ struct Model<'a> {
     vars: Vec<(usize, usize, Vec<usize>)>,
     var_index: HashMap<(usize, usize), usize>,
     data_inhabited: HashMap<String, bool>,
-    law: &'a CheckedLaw,
+    definitions: &'a CheckedDefinitions,
 }
 
 fn and3(a: Option<bool>, b: Option<bool>) -> Option<bool> {
@@ -358,7 +358,9 @@ fn collect_known_inner(
             collect_known(m, holder, t, v, &format!("{pointer}/some"), out)
         }
         (Type::Data(d), Value::Data { constructor, args }) => {
-            let Signature::Data { constructors } = &m.law.declarations[d].signature else {
+            let PrimitiveSignature::Data { constructors } =
+                &m.definitions.declarations[d].signature
+            else {
                 unreachable!("data 型は Law の宣言")
             };
             let tag = &constructor[d.len() + 1..];
@@ -366,7 +368,7 @@ fn collect_known_inner(
                 .iter()
                 .find(|c| c.name == tag)
                 .expect("検査済みの constructor");
-            for (i, (t, v)) in c.args.iter().zip(args).enumerate() {
+            for (i, (t, v)) in c.arguments.iter().zip(args).enumerate() {
                 collect_known(m, holder, t, v, &format!("{pointer}/args/{i}"), out);
             }
         }
@@ -401,7 +403,10 @@ fn has_reference(ty: &Type) -> bool {
     })
 }
 
-pub(crate) fn check_completion(snapshots: &[Snapshot], law: &CheckedLaw) -> AResult<()> {
+pub(crate) fn check_completion(
+    snapshots: &[Snapshot],
+    definitions: &CheckedDefinitions,
+) -> AResult<()> {
     let subjects: Vec<&Subject> = snapshots.iter().flat_map(|s| s.subjects.iter()).collect();
     let mut index = HashMap::new();
     let mut by_type: HashMap<&str, Vec<usize>> = HashMap::new();
@@ -411,15 +416,15 @@ pub(crate) fn check_completion(snapshots: &[Snapshot], law: &CheckedLaw) -> ARes
     }
     let owner_field = subjects
         .iter()
-        .map(|s| match law.declarations[&s.ty].signature {
-            Signature::Entity { .. } | Signature::Arrow { .. } => s
+        .map(|s| match definitions.declarations[&s.ty].signature {
+            PrimitiveSignature::Entity { .. } | PrimitiveSignature::Arrow { .. } => s
                 .fields
                 .iter()
                 .position(|f| f.name.rsplit('.').next() == Some("owner")),
             _ => None,
         })
         .collect();
-    let data_inhabited = data_inhabitation(law, &by_type);
+    let data_inhabited = data_inhabitation(definitions, &by_type);
     let mut m = Model {
         subjects,
         index,
@@ -428,7 +433,7 @@ pub(crate) fn check_completion(snapshots: &[Snapshot], law: &CheckedLaw) -> ARes
         vars: Vec::new(),
         var_index: HashMap::new(),
         data_inhabited,
-        law,
+        definitions,
     };
     for g in 0..m.subjects.len() {
         for (f, field) in m.subjects[g].fields.iter().enumerate() {
@@ -601,14 +606,14 @@ fn search(m: &Model<'_>, cons: &[(&Cons, Vec<usize>)], assign: &mut Vec<Option<u
 
 /// data 型が、登録 subject を使って有限の値を持つか。参照の引数は登録 subject を要する。
 fn data_inhabitation(
-    law: &CheckedLaw,
+    definitions: &CheckedDefinitions,
     by_type: &HashMap<&str, Vec<usize>>,
 ) -> HashMap<String, bool> {
-    let datas: Vec<(&String, &Vec<crate::law::model::CtorSig>)> = law
+    let datas: Vec<(&String, &Vec<crate::definition::model::Constructor>)> = definitions
         .declarations
         .iter()
         .filter_map(|(n, d)| match &d.signature {
-            Signature::Data { constructors } => Some((n, constructors)),
+            PrimitiveSignature::Data { constructors } => Some((n, constructors)),
             _ => None,
         })
         .collect();
@@ -631,7 +636,7 @@ fn data_inhabitation(
             if !ok[*n]
                 && ctors
                     .iter()
-                    .any(|c| c.args.iter().all(|t| inh(t, &ok, by_type)))
+                    .any(|c| c.arguments.iter().all(|t| inh(t, &ok, by_type)))
             {
                 ok.insert((*n).clone(), true);
                 changed = true;

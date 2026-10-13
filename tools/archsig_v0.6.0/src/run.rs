@@ -8,6 +8,7 @@ pub use output::peak_rss_bytes;
 
 use crate::archmap::check_archmap;
 use crate::canonical::{Json, sha256_digest};
+use crate::definition::check_definitions;
 use crate::issue::Code;
 use crate::law::check_law;
 use crate::result::*;
@@ -36,6 +37,7 @@ pub trait Signals {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct CheckArgs {
+    pub atom_definitions: Vec<PathBuf>,
     pub law: PathBuf,
     pub archmap: Option<PathBuf>,
     pub out: PathBuf,
@@ -115,12 +117,13 @@ pub fn usage_outcome(
         exit_code: 64,
         inputs: Vec::new(),
         declarations: Vec::new(),
+        primitives: Vec::new(),
         vocabularies: Vec::new(),
         issues: vec![issue],
         elapsed_ms: 0,
         peak_bytes: 0,
     };
-    finalize(io, signals, &out, result, None, None, started, stderr)
+    finalize(io, signals, &out, result, &[], started, stderr)
 }
 
 /// 内部障害。出力先が使えれば error/70 の結果を残す。
@@ -140,21 +143,34 @@ pub fn internal_outcome(
         exit_code: 70,
         inputs: Vec::new(),
         declarations: Vec::new(),
+        primitives: Vec::new(),
         vocabularies: Vec::new(),
         issues: vec![issue],
         elapsed_ms: 0,
         peak_bytes: 0,
     };
-    finalize(io, signals, &args.out, result, None, None, started, stderr)
+    finalize(io, signals, &args.out, result, &[], started, stderr)
 }
 
-/// `check --law L [--archmap A] --out OUT`。
+/// `check --atom-definition D [--atom-definition D ...] --law L [--archmap A] --out OUT`。
 pub fn run_check(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &CheckArgs,
     started: Instant,
 ) -> Outcome {
+    if args.atom_definitions.is_empty() {
+        return usage_outcome(
+            io,
+            signals,
+            UsageError {
+                argument: "--atom-definition".to_owned(),
+                message: "--atom-definition が一つ以上必要".to_owned(),
+                out: Some(args.out.clone()),
+            },
+            started,
+        );
+    }
     let mut stderr = Vec::new();
     if let Err(m) = out_ok(&args.out) {
         let issue = ResultIssue::Usage {
@@ -164,50 +180,92 @@ pub fn run_check(
         stderr.push(format!("archsig: {}: {m}", args.out.display()));
         return usage_without_result(signals, issue, stderr);
     }
-    // 開始時に両入力を読み切る。
+    // 開始時に明示された全入力を読み切る。検査中に再読しない。
     let mut issues = Vec::new();
+    let definition_bytes: Vec<_> = args
+        .atom_definitions
+        .iter()
+        .map(|p| read(p, &mut issues))
+        .collect();
+    let mut definition_ids: Vec<_> = definition_bytes
+        .iter()
+        .enumerate()
+        .map(|(i, b)| InputIdentity {
+            id: format!("definition{i}"),
+            kind: "atom_definition",
+            read: b.is_some(),
+            bytes_digest: b.as_ref().map(|b| sha256_digest(b)),
+            model_digest: None,
+            path: b.as_ref().map(|_| format!("inputs/definitions/{i}.json")),
+        })
+        .collect();
     let law_bytes = read(&args.law, &mut issues);
     let map_bytes = args.archmap.as_ref().map(|p| read(p, &mut issues));
     let mut law_id = InputIdentity {
+        id: "law".to_owned(),
         kind: "law",
         read: law_bytes.is_some(),
         bytes_digest: law_bytes.as_ref().map(|b| sha256_digest(b)),
         model_digest: None,
-        path: law_bytes.as_ref().map(|_| "inputs/law.law"),
+        path: law_bytes.as_ref().map(|_| "inputs/law.law".to_owned()),
     };
     let mut map_id = map_bytes.as_ref().map(|b| InputIdentity {
+        id: "archmap".to_owned(),
         kind: "archmap",
         read: b.is_some(),
         bytes_digest: b.as_ref().map(|b| sha256_digest(b)),
         model_digest: None,
-        path: b.as_ref().map(|_| "inputs/archmap.json"),
+        path: b.as_ref().map(|_| "inputs/archmap.json".to_owned()),
     });
     let mut declarations = Vec::new();
+    let mut primitives = Vec::new();
     let mut vocabularies = Vec::new();
     let mut status = Status::Complete;
     if !issues.is_empty() {
         status = Status::Error;
     } else {
-        let law_bytes = law_bytes.as_ref().expect("読めた Law");
-        match check_law(law_bytes) {
+        let files: Vec<_> = definition_ids
+            .iter()
+            .zip(&definition_bytes)
+            .map(|(id, bytes)| (id.id.as_str(), bytes.as_deref().expect("読めた定義")))
+            .collect();
+        let definitions = check_definitions(&files);
+        let identities = match &definitions {
+            Ok(d) => &d.inputs,
+            Err(f) => &f.inputs,
+        };
+        for (id, checked) in definition_ids.iter_mut().zip(identities) {
+            id.model_digest = checked.model_digest.clone();
+        }
+        match definitions {
             Err(f) => {
-                law_id.model_digest = f.model_digest.clone();
                 status = input_failure_status(f.issue.code);
                 issues.push(ResultIssue::Input(f.issue));
             }
-            Ok(law) => {
-                law_id.model_digest = Some(law.model_digest.clone());
-                declarations = law.infos.clone();
-                vocabularies = law.vocabularies.clone();
-                if let Some(Some(bytes)) = &map_bytes {
-                    match check_archmap(bytes, &law) {
-                        Err(f) => {
-                            status = input_failure_status(f.issue.code);
-                            issues.push(ResultIssue::Input(f.issue));
-                        }
-                        Ok(map) => {
-                            if let Some(id) = map_id.as_mut() {
-                                id.model_digest = Some(map.model_digest.clone());
+            Ok(definitions) => {
+                let law_bytes = law_bytes.as_ref().expect("読めた Law");
+                match check_law(law_bytes, &definitions) {
+                    Err(f) => {
+                        law_id.model_digest = f.model_digest.clone();
+                        status = input_failure_status(f.issue.code);
+                        issues.push(ResultIssue::Input(f.issue));
+                    }
+                    Ok(law) => {
+                        law_id.model_digest = Some(law.model_digest.clone());
+                        declarations = law.infos.clone();
+                        primitives = definitions.declarations.values().cloned().collect();
+                        vocabularies = definitions.vocabularies.values().cloned().collect();
+                        if let Some(Some(bytes)) = &map_bytes {
+                            match check_archmap(bytes, &definitions) {
+                                Err(f) => {
+                                    status = input_failure_status(f.issue.code);
+                                    issues.push(ResultIssue::Input(f.issue));
+                                }
+                                Ok(map) => {
+                                    if let Some(id) = map_id.as_mut() {
+                                        id.model_digest = Some(map.model_digest.clone());
+                                    }
+                                }
                             }
                         }
                     }
@@ -215,28 +273,34 @@ pub fn run_check(
             }
         }
     }
-    let mut inputs = vec![law_id];
+    let mut inputs = definition_ids;
+    inputs.push(law_id);
     inputs.extend(map_id);
     let result = CheckResult {
         status,
         exit_code: 0,
         inputs,
         declarations,
+        primitives,
         vocabularies,
         issues,
         elapsed_ms: 0,
         peak_bytes: 0,
     };
-    finalize(
-        io,
-        signals,
-        &args.out,
-        result,
-        law_bytes.as_deref(),
-        map_bytes.flatten().as_deref(),
-        started,
-        stderr,
-    )
+    let mut owned_copies = Vec::new();
+    for (i, bytes) in definition_bytes.iter().enumerate() {
+        if let Some(bytes) = bytes {
+            owned_copies.push((format!("inputs/definitions/{i}.json"), bytes.as_slice()));
+        }
+    }
+    if let Some(bytes) = &law_bytes {
+        owned_copies.push(("inputs/law.law".to_owned(), bytes.as_slice()));
+    }
+    if let Some(Some(bytes)) = &map_bytes {
+        owned_copies.push(("inputs/archmap.json".to_owned(), bytes.as_slice()));
+    }
+    let copies: Vec<_> = owned_copies.iter().map(|(p, b)| (p.as_str(), *b)).collect();
+    finalize(io, signals, &args.out, result, &copies, started, stderr)
 }
 
 fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {

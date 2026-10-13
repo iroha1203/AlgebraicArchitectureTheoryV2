@@ -1,0 +1,10 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading CountCheck {
+  use vocabulary Counter version "1" digest "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11";
+  view amount(s: State): Z = s.count;
+  law required nonnegative(s: State): s.count >= 0;
+}
+reading CountAudit {
+  use vocabulary Counter version "1" digest "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11";
+  law optional bounded(s: State): s.count <= 10;
+}
