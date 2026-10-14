@@ -24,8 +24,11 @@ Cの全原始同型による順序・実cochain/H¹輸送とSafe/Max作用を構
 Cycle 5は[PR #5364](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5364#issuecomment-6174995908)、
 merge `8c2e3478d7781ea944cb7eabaa83f258c2c815fc` で受理済み。
 B固定極大判定、C全Aut・自然選択iffと選択独立、Dの三一様主張の不成立と一般相互含意を確定した。
-Cycle 6ではEのW0全候補/定数LawとW3の元比較同定/全A/同じhidden類を構成する。
-全GOALは `target-proof-checkpoint`。Cycle6のPR査読・受入、W1/W2全指定評価と最終監査は未完了。
+Cycle 6は[PR #5365](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5365#issuecomment-6176661031)、
+merge `e09218510ed44defbf4a22dd90c0cac294ef30b8` で受理済み。
+EのW0全候補/定数LawとW3の元比較同定/全A/同じhidden類を完了した。
+Cycle 7では指定W1を全三十分割対/同じ実比較/全Max/全Aut/自然選択へ評価する。
+全GOALは `target-proof-checkpoint`。Cycle7のPR査読・受入、W2全指定評価と別全GOAL最終監査は未完了。
 Formalへの蒸留は未実施。
 
 ## Cycle 1 selection
@@ -648,3 +651,127 @@ W1/W2の全指定評価、別final packetでの全GOAL最終独立4査読と完�
 定理名`joinClosure/newMapsTo/oldMapsTo`を`join_closure/new_maps_to/old_maps_to`へ改め、
 全使用sourceとreport対応を同じPRで更新した。数理statement・原始表・選定要求・premise statusは維持する。
 定理名とdefinition内proofの変更により直接対応の資格を使わず、修正headで独立4票の正式査読を再実行する。
+
+## Cycle 7：指定W1の全分割・実比較・全自己同型
+
+実装前selectionは[Issue5358 comment6176740665](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6176740665)。
+指定S=T=Bool/q=id、V=ZMod4、i→i+1四辺、全chart台、Empty面、ℚを維持する。
+原始restricted-growth色表の全15分割とtarget全二分割を尽くす。結果は予想を入力せず、実部分辺像・period・全関係包含から生成した。
+
+個別Lean証拠による結果は全30候補、全Safe24、全Max7、FixMax1。
+指定四Riは全AでJ零・安全だが極大ではない。
+全Maxはtargettopの全二block分割、全Aut固定元は交互分割 `{0,2}|{1,3}` のみ。
+最大元とjoin閉性は不成立。二安全元 `{0,1,2}|{3}` / `{0,1,3}|{2}` の全共通上界はtopだけであり、
+同じ実full比較の指定spike/periodが余核1を証明する。全固定極大の正出力と全同型類自然選択は成立する。
+これらをDの一様主張へ読み替えず、受理済みDの原始三角形反証と区別する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-137-aat-safe-coarsening-order
+cycle: 7
+goal_blob_sha: 00278db46e595fbe30762a1bb969230f77828f4f
+base_oid: e09218510ed44defbf4a22dd90c0cac294ef30b8
+tracking_issue: 5358
+report_path: research/reports/G-137-aat-safe-coarsening-order.md
+selection:
+  proof_state_ref: Issue5358/comment6176740665
+  proof_dag_predecessors: [受理C1-C6, G133実Hom/同署名/全Law加法, G135同じ有理全A判定, G136周期potential]
+  milestone: E W1全指定原始入力/全分割対/全A実比較/Law/period/全Max/全Aut/自然選択と有限出力の確定
+  proof_obligations:
+    - Bool/id/ZMod4有向四辺/全台/Empty/ℚのT0生成
+    - 元既存H1のperiodと指定辺0→1spike非零
+    - 元部分辺像/全pullback値/正periodから実比較全射liftとrankを構成
+    - 全商d0核を定数関数へ同定し全A実核余核/J/Safeを評価
+    - target二分割/chart全15表と指定Riの実比較/安全性/極大性を尽くす
+    - 全Max/全共通上界/最大元とjoin判定の正負有限出力
+    - 元回転とBool交換の作用/全有向原始Aut/全FixMax
+    - 元二Law発生labelと各値block/同じ実Law欠損/重複度
+    - 同じ全A有理判定と全Safe/Max/fixed/自然選択producer
+  exit_criteria: [上記W1全指定要求の入力生成Lean証拠, 全material premise放電, 個別Lean/累積全個別公理/共通scan, 標準PR独立数学2Lean2/root受入/exact-head CI/main同期]
+  selection_reason: Eの未完全分割・対称性を持つ同じ指定W1の実評価gapを閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [CycleHomology.lean, CycleQuotientHomology.lean, CycleSubsetEvaluation.lean, CycleSubsetRank.lean, CycleLaws.lean, W1Partitions.lean, W1Evaluation.lean, W1Classification.lean, W1SpecifiedCuts.lean, W1Symmetry.lean, W1FiniteResults.lean, W1NaturalSelection.lean, W1LawEvaluation.lean, W1FiniteEvaluation.lean]
+  risks: [同次元射置換, 逆向き辺併合, target分割除外, 指定Riを全Maxと仮定, 一軌道だけの固定点排除, 無向反射混入, Lawlabel重複消去, 未評価有限表の存在だけ]
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 元periodと実pullbackから全30候補/全A診断、全Safe24/Max7/FixMax1と全上界負証拠/自然選択正証拠を生成
+  exit_criteria_status:
+    - 指定全W1の原始表/商mk/実比較/全A/Law/全Max全Aut/全上界/有限出力を下表へ対応
+    - 対象個別Lean/累積全個別公理/共通scanを固定head PRへ公開する
+    - 標準4査読/root受入/CI/main同期はPR後に確定
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [上記全14sourceのspine/API/有限witness]
+  evidence: [元period/spike/実全射lift, 元商d0核/実J/同署名図式, 全原始分割分類と全Aut分類, 全上界排除/実余核証拠, 全label Law比較/同じ有限出力/全同型類自然選択]
+  claim_mapping:
+    theorem_names: [Cycle.periodH1_bijective, spike_nonzero, coarse_H1_euler, fullHom_h1_surjective, actual_full_defect, all_a_defect, actual_nonempty_rank, safe_iff_edges_eq_charts, separatingMap_defect, constantMap_defect, W1.classify_chart, candidate_defect, candidate_safe_classification, maximal_iff_binary, maximal_card_seven, specifiedCut_relation, specifiedCut_defect, specifiedCut_rank, specifiedCut_safe, specifiedCut_not_maximal, aut_classification, rotation_candidate, boolSwap_candidate, fixed_maximal_iff, fixedMaximalDecision_true, common_upper_bounds_top, no_greatest, specified_join_defect, topCokerFailure, top_cokernel_spike_nonzero, generatedNaturalSelection_base, candidate_decision, safeCoarsenings_eq]
+    source_labels: [固定GOAL E W1, witnesses W1項目1-4, T0/A-Cの同じ経路]
+    conjuncts: [元Bool/id有向閉路, 全独立分割対/全商mk/部分像, 全A実rank核余核J, 指定Ri正負, 全Max/全上界, 全Aut/全固定点, 全label実Law/period, 同じ有限出力/自然選択]
+    undischarged_assumptions: []
+    acceptance_point: 原始有限表と元period/受理先行定理からW1の全指定評価を生成
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [元T0条件, period商同型/指定非零, 元商d0核/実pullback全射rank, 全A同署名比較, 全分割完全性/全Max, 全Aut完全性/全固定元, 全共通上界排除/同じ非零余核, Lawadequacy/全発生label/値block/実比較, 全有限正負と全同型類自然選択]
+    remaining: [E W2全指定評価, 別全GOAL最終独立4査読/完了同期]
+  certificate_provenance:
+    discharged: [元色表/商mk可換全単射, 元閉路spike/period/積分, 全有限関係包含/作用, literal余核と同じcochain分離汎関数, 全Aut固定元から自然選択, 実比較から同じ判定true/false]
+    unresolved: []
+  proof_use:
+    used: [原始辺値→period/積分→元H1, 商元辺部分像→正period→実全射lift, 全台→同署名全cochain図式→全A, 全関係表→全Safe/Max/上界, 全有向辺保存→Auttranslation→全固定点, 原始Law値→adequacy/label→実Law直和欠損, 同じfinite結果→B/Cproducer]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [PRに固定する14source個別Lean/公式単一focused/累積全個別公理/共通scan]
+  blocking_findings: []
+  next_obligation: E W2同じ六角形の全候補/全上界/全A実rank核余核J/全Law/periodと別全GOAL最終監査
+```
+
+### 全条項と受理spine候補
+
+namespace `AAT.AG.SafeCoarseningOrder.Cycle` / `.W1`。下表の全定義/API/instanceと公開generated宣言は同じ個別公理監査へ含める。cycle scaffoldはない。
+
+| 固定要求 | module/実spine宣言 | 元構成と使用先 |
+| --- | --- | --- |
+| 指定T0閉路・元period/spike | `CycleHomology`: input/edge/support/read API, fullChart/fullEdge, period/period_apply/period_boundary, extended/potential/differential_potential, classOf/periodH1/periodH1_bijective/fullH1Equiv, spike/period_spike/spike_nonzero | 元有向辺からperiodを生成。G136累積積分へa辺値/b辺零で接続し、同じ実d0の原始関数を生成。元H1商への全射/単射と指定spikeを証明してから次元1を導く。 |
+| 全原始商の元cell/rank/実核余核 | `CycleQuotientHomology`: quotient_support_all, coarseChart/Edge/Equiv, coarseKernelEquiv/coarse_H1_euler, fullHom/fullHom_eq_old/fullHom_edge_none/some, coarseSpike/coarse_edge_has_original/period_coarseSpike_pos/fullHom_h1_surjective/fullHom_h1_rank/fullHom_defect/actual_full_defect | 元商全台からK1セルを生成。実d0核は巡回全点から定数。実部分像の指定商辺spikeを引き戻し、正periodにより同じ実H1の全射liftを構成する。元全射を先に証明し、セル数をrank代用の入力にしない。 |
+| 空含む全A、実図式/rank/Safe | `CycleSubsetEvaluation/Rank`: support_family_all/alpha_nonempty/actual_nonempty_defect_eq_full/actual_empty_defect/all_a_defect/coarse_edges_ge_charts/safe_iff_edges_eq_charts/actual_full_rank/actual_nonempty_rank | 元全支持・商mk全射が六種類の全名付きセルを選択する。G133同署名の全cochain比較図式から同じ実核余核/rankを輸送。非空領域一致を仮定しない。 |
+| 全Law/発生label/値block/実比較 | `CycleLaws`: separatingLaw/Label/LabelEquiv/labels_card/labels_ne/adequate/fiber_mk/fiber/fibers_same_signature, constantLaw/Label/LabelsUnique/adequate/fiber/labels_card, separatingMap/constantMap/各defect; `W1LawEvaluation`各全候補/指定Ri/全charttop defect/bijective | 非定数は元Bool値を返し二label、bottom値blockは元mk singleton。定数は任意商へdescend、一label/全target。元G133 Law比較直和欠損の全label和で二重度を保持し、同じH1射を評価する。 |
+| chart全15分割・元mk可換全単射 | `W1Partitions`: partitionMap/partition/partition_relation_iff/four_rel_ext/classify_chart, numClasses/colorValue/surjective/chartEquiv/chartEquiv_mk/chart_card | 原始色表の核を生成し、六関係の全場合と反射対称推移から全Setoidを尽くす。元発生色への商mk可換全単射でchart数を評価する。期待安全性を関係へ入れない。 |
+| 有向商辺・全30候補・全A実J | `W1Evaluation`: input/candidate/colorEdge/ColorEdge/edgeEquiv/numEdges/color_edge_card/quotient_edge_card/quotientEdge/candidate_defect/candidate_safe_classification/top_H1_subsingleton/top_full_defect/top_nonempty_defect/top_not_safe | 元色の異端点有向順序対を全四原辺から生成。逆向きは保持。元商辺全単射で辺数を数え、既証明の実rankへ戻す。top以外の非空J=(辺数-chart数,0)、top非空J=(0,1)、空J=(0,0)。 |
+| 全Safe/全Maxとtarget二表 | `W1Classification`: classify_target/classify_coarsening/partition_le_iff/binary_le_iff/binary_above/binary_maximal/maximal_iff_binary/partition_injective/binaryIndices/maximalCoarsenings_eq/maximal_card_seven; `W1FiniteEvaluation`: targetChoice/parameterCandidatesEquiv/allCoarsenings_card_thirty/safeParameters/safeCoarsenings_eq/card | 全二target表を保持。全安全元の上に二block元を原始有限包含で構成し、全Maxをtargettopの七二block表に尽くす。全候補30/Safe24を元全単射・有限表完全性で評価。 |
+| 指定四Ri・全A実比較/極大性 | `W1SpecifiedCuts`: cutIndex/specifiedCut/specifiedCut_chart_iff/specifiedCut_relation/cut_cell_counts/specifiedCut_defect/specifiedCut_rank/specifiedCut_safe/specifiedCut_not_maximal/specifiedSpike_period/specifiedSpike_nonzero | 元隣接二元だけの併合を関係式で証明。全A J零、非空実rank1、Safeは成立。全Max分類がtargettopを要求するためtargetbottomの指定Riは非極大。 |
+| 全Aut・回転/Bool交換と全FixMax | `W1Symmetry`: automorphism/aut_source_eq_target/aut_chart_step/aut_chart_apply/aut_classification/bool_equiv_cases, rotation/rotationIndex/rotation_candidate/boolSwap/boolSwap_candidate, alternating_fixed/rotation_fixed_binary_iff/fixed_maximal_iff/fixedMaximalCoarsenings_eq/decision_true/specifiedFixedOutput/generatedFixedOutput | 有向辺保存→chart一段差1→全translation、q=id→source=target、Bool全単射二表。全Autを覆い、回転は他六Maxを全て動かし交互分割を全Autが固定。FixMaxは元交互Rのsingletonで、軌道へ置換しない。 |
+| 全共通上界・最大元/join負出力 | `W1FiniteResults`: partition_zero_top/candidate_zero_top/common_upper_bounds_top/common_upper_bounds_unsafe/noGreatestOutput/no_greatest/greatestDecision_false/generatedNoGreatestOutput/specified_join_top/defect/topCokerFailure/top_cokernel_spike_nonzero/joinDecision_false/generatedJoinFailure | 指定二安全元1/2の全上界の元関係をtopへ強制。実full J=(0,1)、同じspike/periodで明示cochain証拠とliteral余核非零。全上界排除と同じfalseから一般Bproducerを発火。 |
+| 自然選択・有限判定同じ出力 | `W1NaturalSelection`: model/model_input/specifiedNaturalSelection/generatedNaturalSelection/各base/natural_selection_exists/transport_choice_independent; `W1FiniteEvaluation`: candidate_decision/specifiedCut_decision_true/mem_safeCoarsenings_candidate/mem_maximalCoarsenings_iff/mem_fixedMaximalCoarsenings_iff | 元全固定極大と同じtrueから全同型類全原始同型の自然R選択を生成し、元入力で同じ交互Rを返す。同型選択独立を再適用。元全A有理判定が全分割の実評価と一致。 |
+
+### Material premise・provenance・proof-use
+
+T0有限非空S/T/V、全射id、有向非対角辺、全支持/K1、Empty面、ℚは固定入力。補助閉路familyはn≥2でこれらを原始表から放電し、W1はn=4を指定する。
+任意R/P/Q/Aと原始色indexは量化入力。一般rank補題の元商辺e・非空Aは方向条件だが、W1の全top以外候補では原始色辺からeを生成し、空Aは別に零比較を証明する。
+全charttopは実空辺から粗H1零を生成する。原始cell数は実d0核構成と実pullback全射liftの後でJ/rankへ使用する。
+Lawadequacyは元定数値またはbottom商への明示liftから、発生labelは元source点から構成する。実Law欠損は同じ元比較の全label直和へ戻す。
+全Max・全固定性・判定true/false・自然選択compatibilityを入力fieldに置かず、全原始分割/有向Aut/実比較から生成する。
+全上界排除はjoin失敗だけに依存せず、二元包含が全原始関係をtopへ強制する。余核証拠は同じ指定spikeとperiodで生成する。
+
+各前提の使用は、元辺値→積分→H1商、部分辺像→正period→実全射lift、商d0核→Euler/J、原始支持→同署名全Hom→全A、
+全関係包含→全Max/全上界、全有向保存→Aut分類→全FixMax、元Law値→label/adequacy→実Law直和、有限結果→B/C出力、と追跡する。
+同じ署名を持つ異なるLawlabelは二つの実直和成分として残す。
+新述語colorEdgeの正/負は元恒等色表0→1の実在と全chart合併の対角除外で確認する。
+
+### 再利用・新規部分・範囲
+
+新規は元閉路periodを指定T0へ接続する一般補助、全商の同じ実rank/全A、原始全分割分類、W1全指定評価/全Aut/全Max/FixMax/全上界/自然選択の具体発火である。
+受理C1-C6の商生成/実比較/Safe/全有限表/全作用/自然選択を再利用する。
+G133同署名の全cochain比較図式と実核余核/range輸送、全Law直和欠損を再利用し、G135の同じ全A有理判定へ戻す。
+G136 `Width.difference_potential` の一般nを、元a辺値/b辺零の同じcochainに適用する。既存全幅成果は新規計上しない。
+固定既存版f3aeおよびG133/G135/G136受理refから現在必要な定義・statement・実引数/proof-useを追跡し、内部全履歴の再認定へ広げない。
+
+新14sourceは上記全W1到達点の従属証拠/APIであり、途中分割はない。spineは上表、足場なし。
+Research全体/aggregate/全module/全file検証、Formal移植/本体全体buildは未実施。
+E W2の全指定評価と別final packet全GOAL最終4査読/完了同期は未完として保持する。
