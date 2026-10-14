@@ -1300,6 +1300,19 @@ def targetSubsetComparisonHom
   comm0 := M.targetSubsetPullback_comm0 coarseSubset fineSubset hsubset
   comm1 := M.targetSubsetPullback_comm1 coarseSubset fineSubset hsubset
 
+/-- Degree-one evaluation of the selected-subset Hom uses its original partial edge image. -/
+theorem targetSubsetComparisonHom_f1_apply
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (coarseSubset : Set coarseReading.Target)
+    (fineSubset : Set fineReading.Target)
+    (hsubset : ∀ target, target ∈ fineSubset →
+      comparisonFactor coarseReading fineReading hcoarser target ∈ coarseSubset)
+    (cochain : coarse.EdgeInTargetSubset coarseSubset → ℚ)
+    (edge : fine.EdgeInTargetSubset fineSubset) :
+    (M.targetSubsetComparisonHom coarseSubset fineSubset hsubset).f1 cochain edge =
+      (M.targetSubsetEdgeMapOption coarseSubset fineSubset hsubset edge).elim 0 cochain := rfl
+
 /-- The canonical comparison Hom from the coarse A-subnerve to the fine
 preimage-A-subnerve. -/
 def aSubnerveComparisonHom
