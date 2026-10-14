@@ -21,9 +21,11 @@ Bの全有限分類、最大元/join判定、各不安全元の実cochain失敗�
 Cycle 4は[PR #5363](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5363#issuecomment-6172559576)、
 merge `f253296cb1c1155ad6161c8601775dfcb05c2995` で受理済み。
 Cの全原始同型による順序・実cochain/H¹輸送とSafe/Max作用を構成した。
-Cycle 5ではB固定極大判定、C全Aut・自然選択iff、D三一様主張と相互含意を構成した。
-全GOALは `target-proof-checkpoint`。Cycle5のPR査読・受入と、Eの全指定評価・最終監査は未完了。
-B/C/Dの候補結果を全GOAL完了へ昇格しない。
+Cycle 5は[PR #5364](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5364#issuecomment-6174995908)、
+merge `8c2e3478d7781ea944cb7eabaa83f258c2c815fc` で受理済み。
+B固定極大判定、C全Aut・自然選択iffと選択独立、Dの三一様主張の不成立と一般相互含意を確定した。
+Cycle 6ではEのW0全候補/定数LawとW3の元比較同定/全A/同じhidden類を構成する。
+全GOALは `target-proof-checkpoint`。Cycle6のPR査読・受入、W1/W2全指定評価と最終監査は未完了。
 Formalへの蒸留は未実施。
 
 ## Cycle 1 selection
@@ -522,3 +524,116 @@ E全指定W0/W1/W2/W3評価と別final packetによる全GOAL最終独立4査読
 `P_G/P_J/P_N`は全T0にわたる一様命題であり、原始反証により成立instanceは存在しない。
 `GlobalNaturalMaximalChoice`も全Max固定点排除から不存在である。この理由を定義所有moduleに記載し、
 条件付き相互含意の一般producerを具体的な成立判定と混ぜない。
+
+
+## Cycle 6：W0全評価とW3の同じ実比較・hidden回帰
+
+実装前selectionは[Issue5358 comment6175074020](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6175074020)。
+原始表は固定EのW0/W3そのもの。W3 minus=falseは全交互閉路、plus=trueはa₀だけ除去する。
+W1/W2の未検証候補を本cycleの成功例として扱わない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-137-aat-safe-coarsening-order
+cycle: 6
+goal_blob_sha: 00278db46e595fbe30762a1bb969230f77828f4f
+base_oid: 8c2e3478d7781ea944cb7eabaa83f258c2c815fc
+tracking_issue: 5358
+report_path: research/reports/G-137-aat-safe-coarsening-order.md
+selection:
+  proof_state_ref: Issue5358/comment6175074020
+  proof_dag_predecessors: [受理C1-C5, G107全Law/実H1, G133全Homtransport, G134同じ原始比較, G135同じ実診断, G136指定Widthセル/比較/hidden/fiber]
+  milestone: Eの指定W0とW3を同じ原始商/実比較/全A/全Law/有限判定へ通し全要求を閉じる
+  proof_obligations:
+    - W0一つの定数Lawと発生label/全値block/全候補全A実J/実Law射
+    - W0同じ最大元とjoin閉性と全Aut固定の有限正出力
+    - W3旧v/wおよびa/bと新T0端点対の全単射/非対角/元K1支持一致
+    - 指定Rの元target/chart商写像とZMod2/Unitおよび旧reading/全台/空辺の同定
+    - 新m_R部分セル像/全三次数u_R/元H1射を旧comparison2false/trueとactualMapへ可換同定
+    - 全plusAと全properminusAのJ零およびfullminusJ(0,1)
+    - 同じ指定Rの全候補/Safe表と有理全A判定の正負一致
+    - 新literal余核の同じMV類を旧非零hidden類と係数/fiberRestrictionH1へ接続
+  exit_criteria: [上記全指定構成/全比較/全A/同じ類/有限判定のLean証明, 全material premise放電, 個別Lean/全宣言公理/共通scan, 独立数学2Lean2標準PR監査/root受入/exact-head CI/main同期]
+  selection_reason: 一般A-Dから指定支持依存入力への実比較/hidden接続gapを閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [W0Evaluation.lean, W3Input.lean, W3Comparison.lean, W3Evaluation.lean]
+  risks: [minus/plus反転, 旧セルを根拠なくsimple辺へ置換, 実商写像/逆像/全Hom忘却, 同次元H1による代用, hidden類交換, rank/J/Safe入力化, 既存全幅成果を新規計上]
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: W0全候補の同じ定数Law保存と有限正出力、W3旧元セル/比較の新原始商同定から全A診断/同じliteral余核類とfiber項を接続
+  exit_criteria_status:
+    - 原始W0/W3と全要求のsource証拠を下表へ固定
+    - 個別対象Lean/公式単一focused/累積個別公理/共通scanをPRに固定
+    - 標準PR独立4査読/root受入/CI/main同期はPR作成後に確定
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [W0Evaluation.lean, W3Input.lean, W3Comparison.lean, W3Evaluation.lean]
+  evidence: [W0全実J/定数Law比較/同じ最大元固定元, W3元セルEquiv/全cochain図式/actualH1図式, W3全A診断/正負finite表, W3同じhidden/fiber]
+  claim_mapping:
+    theorem_names: [W0Evaluation.all_actual_defects, law_bijective, law_defect, greatestOutput_top, fixedOutput_top, W3.edgeEquiv, factor_region, cochain_square, actual_h1_square, actual_h1_square_direct, actual_defect, plus_safe, proper_actual_defects, full_actual_defect, minus_not_safe, plus_decision_true, minus_decision_false, gluing_hidden_same, gluing_hidden_nonzero, coefficient_hidden_same]
+    source_labels: [GOAL E W0, GOAL E W3, witnesses W0/W3, T0/A-Cの同じ経路]
+    conjuncts: [元W0定数Lawと全候補保存, 元W3T0入力/商同定, 全m/u/T図式, 全A/J/finite判定, 同じliteralhidden類/fiber接続]
+    undischarged_assumptions: []
+    acceptance_point: 入力data/元セルと受理先行定理から選定E二例の全構成と評価を生成
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [元T0原始表, W0全adequacy/値block/同じ実Law全単射, W3元セル全単射/台/商/部分像, canonical全A輸送と同じ実比較, 全有限正負, 同じhidden類とfiber]
+    remaining: [E W1/W2全指定評価, 別final packet全GOAL最終独立4査読]
+  certificate_provenance:
+    discharged: [元W0Law/全候補/同じtrueの最大固定正出力, 元W3セル生成fine/coarse同型と比較図式, 元Width.gluingOldClassの逆セル輸送と同じ実余核]
+    unresolved: []
+  proof_use:
+    used: [旧左端/右端/台から新辺/選択セル, 全商台と元mkから粗同型, 全d0/d1と実部分像から全Hom図式, H1図式から実核/余核同型, 旧plus/proper/fullから全A判定, 同じ旧非零hiddenとcoefficient_hidden_same]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [PRに固定する新4source個別Lean/公式単一focused/全累積個別公理/共通scan]
+  blocking_findings: []
+  next_obligation: W1/W2全指定候補の実比較/全分割/全A/Law/全Max全Aut/全上界評価
+```
+
+### 条項・元入力・実宣言対応
+
+以下のW0宣言は `AAT.AG.SafeCoarseningOrder.W0Evaluation`、W3宣言は `AAT.AG.SafeCoarseningOrder.W3`。
+
+| 固定要求 | 宣言とspine | 元データと必要な全方向/使用 |
+| --- | --- | --- |
+| W0定数Law、発生label、値block | `constantLaw`, `constant_eval`, `constant_adequate`, `constantLabel`, `constantLabelsUnique`, `constant_labels_card`, `constant_fiber` | Unit Sourceで一つのUnit値Lawを構成。全商readingへ定数値をdescend、同じ値block=全target、label1個。値型有限性を一般Law条件へ追加しない。 |
+| W0全候補・全A・実Law保存 | `all_actual_defects`, `lawMap`, `lawMap_eq`, `law_bijective`, `law_defect`, `safeCoarsenings_eq_all`, `all_decision_true` | 受理単一有向辺の元H¹比較Safeを全R/空含む全Aで使う。同じ生成Law射を全Law iffから全単射/J零へ戻す。全候補表から除外しない。 |
+| W0有限B正出力・最大・join・全固定 | `greatestOutput`, `greatestOutput_top`, `joinClosure`, `fixedOutput`, `fixedOutput_top`, `top_fixed` | 同じtrueから一般producerを発火。全安全元の最大topと全原始Aut固定を再検証。受理C3/C5の同じ元出力と一致。 |
+| W3同じ旧原始表をT0へ構成 | `Point`, `Chart`, `old_left`, `input`, `input_edge_iff`, `input_support`, `edgeEquiv`, `edgeEquiv_left/right` | q=id、vᵢ/wᵢの元台、false全a/b、trueだけa₀除去。旧辺名=左端なので端点対全単射、Boolの端点相違で非対角。K1交差を保持。 |
+| W3指定商と元写像 | `coarsening`, `coarsening_target_iff`, `coarsening_chart_rel`, `targetEquiv`, `targetEquiv_mk`, `chartEquiv`, `quotient_support_all`, `quotient_chart_eq`, `quotient_no_edge`, `region`, `mem_region`, `factor_region`, `reading_comm`, `morphism_chart_comm`, `morphism_edge_comm`, `quotient_edge_none` | R=(ker fst,top)。元target商mkをZMod2のfstへ、元chart商mkをUnitへ同定。全台を元vᵢ台から生成、全内部辺none、旧mの元部分像と一致。 |
+| W3全三次数支持複体同型 | `fineChartEquiv/EdgeEquiv/FaceEquiv`, `fineCochainEquiv`, `coarseChartEquiv/EdgeEquiv/FaceEquiv`, `coarseCochainEquiv` | 任意元領域Bの選択セル、K1とd0/d1から関数再添字の実同型を生成。期待rank/H¹同型fieldを入力しない。 |
+| W3新旧同じ実比較と全Hom/H1 | `newMapsTo`, `oldMapsTo`, `newHom`, `oldHom`, 各f0/f1 API、fine/coarse評価API、`newHom_eq_transport`, `oldHom_eq_transport`, `cochain_square`, `reindexed_h1_square`, `actual_h1_square` | 両canonical因子逆像を元領域へ等号transport。全f0/f1/f2可換図式を元商chart/内部辺noneから証明。全Homから同じH¹写像図式へ降ろす。 |
+| W3同じ実核/余核/Jの同定 | `reindexedKernelEquiv`, `reindexedCokernelEquiv`, `reindexed_defect`, `actual_defect`, `actualFineCochainEquiv`, `actual_h1_square_direct`, `actualCokernelEquiv`, `actualCokernelEquiv_mk` | 全Hom図式と元H¹同型から実核/literal余核を輸送。canonical射も同じcell生成同型で可換。直接式のcoarse零は旧coarse_H1_zeroの実商を使用、全cochain図式を数値零に置換しない。 |
+| W3全plus/properminus/fullminus | `plus_defect`, `proper_defect`, `full_defect`, `region_surjective`, `plus_safe`, `proper_actual_defects`, `full_actual_defect`, `minus_not_safe` | 同じ旧actualMapの既受理三診断を接続。targetEquivの全画像/逆像で商targetの全Aを尽くし、proper/fullを保存。空Aを除外しない。 |
+| W3同じ有限入力の正負 | `candidate_mem_all`, `plus_mem_safe`, `minus_not_mem_safe`, `plus_decision_true`, `minus_decision_false` | 指定同じRを全分割対に入力。plus全A保存、minus同じfull失敗から全安全表/同じ有理全A判定が一致する。 |
+| W3同じMV hidden非零/fiber | `gluingRegion`, `gluingFineClass`, `gluingHiddenClass`, `gluing_fine_same`, `gluingHiddenClass_eq_mk`, `old_hiddenClass_eq_mk`, `gluing_hidden_same`, `gluing_hidden_nonzero`, `coefficient_hidden_same` | 元G136 gluingOldClassを元セルfine同型の逆で移し、新literal余核へ入れる。実余核同型が同じ旧hidden類へ戻す。旧非零性と同じ係数列/fiberRestrictionH1の同じ元に接続。 |
+
+### Material premise・再利用と検証範囲
+
+T0有限非空S/T/V・全射q・非対角有向単純E・非空支持・K1/Empty/ℚは固定入力幾何。
+具体W0/W3は定義と既存有限/非空instanceから全条件を放電する。一般領域X/Bやproper条件は評価の方向条件。
+全A適用では `region_surjective` が任意商領域を生成し、proper条件も元全単射の画像/逆像から導出する。
+W0のLaw adequacyは元定数評価から、全候補保存は元単一辺実比較から、最大/固定出力は同じfinite trueから放電。
+W3の同型fieldは元セル全単射とK1・実d0/d1から、領域MapsToは同じcanonical因子から放電する。
+JやSafe/hidden非零を構成recordの入力fieldへ移さない。`gluingFineClass`は指定旧MV類の同じセル同型による逆輸送であり、
+J=(0,1)から任意の同次元類を選ぶ構成ではない。`gluing_hidden_same` と `coefficient_hidden_same` が元代表の使用先を固定する。
+新Prop述語/certificate構造は追加していない。plusの指定R保存、minusの同じR失敗が具体正負回帰である。
+
+新規はW0定数Lawの元全候補評価、W3指定原始表のT0接続・実商/全Hom/H1同定・有限判定/同じhidden類の接続。
+G136の `Width.plus_defect/proper_defect/full_defect/gluing_hidden_nonzero/coefficient_hidden_same` のn=2を再利用する。
+source参照は固定既存版 `f3ae0eab35186e2259fa030eb23fb4657180a868`、G136受理PR5336とtracking Issue5321の
+[完了記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5321#issuecomment-6117232196)。
+使用する現在型・必要定義・実引数/proof-use・関連変更を監査する。既存全有限幅分離・同じ局所大域同値は新規成果に数えない。
+受理C1-C5/G107/G133/G134/G135の同じ原始商/実比較/Law/有限表/実輸送を維持する。
+
+新4source個別Lean、公式単一focused、累積対象宣言の全個別公理照会と共通scanをPRコメントへ固定する。
+Research full/aggregate/全module/全file検証、Formalへの蒸留・本体全体buildは未実施。
+W1/W2の全指定評価、別final packetでの全GOAL最終独立4査読と完了同期は未完として保持する。
