@@ -99,6 +99,24 @@ def reindexedComparisonHom (a : PrimitiveIso M N) (R : Coarsening T V)
       (a.target ⁻¹' (comparisonFactor (N.quotientReading (a.coarseningOrderIso R)) N.reading
         (N.quotient_coarser (a.coarseningOrderIso R)) ⁻¹' A)) (a.reindexedMapsTo R A)
 omit [Fintype V'] in
+/-- 再表示した同じHomの次数0を元公開subset pullbackへ評価する。 -/
+theorem reindexedComparisonHom_f0_apply (a : PrimitiveIso M N) (R : Coarsening T V)
+    (A : Set (Quotient (a.coarseningOrderIso R).1))
+    (x : ((M.quotientSupported R).targetSubsetComplex (a.quotientTarget R ⁻¹' A)).C0) :
+    (a.reindexedComparisonHom R A).f0 x =
+      (M.quotientMorphism R).targetSubsetPullback0 (a.quotientTarget R ⁻¹' A)
+        (a.target ⁻¹' (comparisonFactor (N.quotientReading (a.coarseningOrderIso R)) N.reading
+          (N.quotient_coarser (a.coarseningOrderIso R)) ⁻¹' A)) (a.reindexedMapsTo R A) x := rfl
+omit [Fintype V'] in
+/-- 再表示した同じHomの次数1を元有向部分像の公開pullbackへ評価する。 -/
+theorem reindexedComparisonHom_f1_apply (a : PrimitiveIso M N) (R : Coarsening T V)
+    (A : Set (Quotient (a.coarseningOrderIso R).1))
+    (x : ((M.quotientSupported R).targetSubsetComplex (a.quotientTarget R ⁻¹' A)).C1) :
+    (a.reindexedComparisonHom R A).f1 x =
+      (M.quotientMorphism R).targetSubsetPullback1 (a.quotientTarget R ⁻¹' A)
+        (a.target ⁻¹' (comparisonFactor (N.quotientReading (a.coarseningOrderIso R)) N.reading
+          (N.quotient_coarser (a.coarseningOrderIso R)) ⁻¹' A)) (a.reindexedMapsTo R A) x := rfl
+omit [Fintype V'] in
 /-- 再表示したHomは元canonical比較の全Hom等号transportである。 -/
 theorem reindexedComparisonHom_eq_transport (a : PrimitiveIso M N) (R : Coarsening T V)
     (A : Set (Quotient (a.coarseningOrderIso R).1)) :
@@ -119,20 +137,18 @@ theorem comparison_cochain_square (a : PrimitiveIso M N) (R : Coarsening T V)
     (N.quotient_coarser (a.coarseningOrderIso R)) ⁻¹' A
   apply cochain_ext
   · apply LinearMap.ext; intro x; funext v
-    rw [cochainComp_f0,cochainComp_f0,subsetCochainEquiv_symm_f0_apply]
+    rw [cochainComp_f0,cochainComp_f0,subsetCochainEquiv_symm_f0_apply,
+      reindexedComparisonHom_f0_apply]
     change (N.quotientMorphism (a.coarseningOrderIso R)).targetSubsetPullback0 A B _ x
-      (a.subsetChartEquiv B v) = (M.quotientMorphism R).targetSubsetPullback0
-        (a.quotientTarget R ⁻¹' A) (a.target ⁻¹' B) _
-        ((a.quotientSubsetEquiv R A).symm.toHom.f0 x) v
+      (a.subsetChartEquiv B v) = _
     rw [TargetSupportedNerveMorphism.targetSubsetPullback0_apply,
       TargetSupportedNerveMorphism.targetSubsetPullback0_apply,quotientSubsetEquiv_symm_f0_apply]
     congr 1
   · apply LinearMap.ext; intro x; funext e
-    rw [cochainComp_f1,cochainComp_f1,subsetCochainEquiv_symm_f1_apply]
+    rw [cochainComp_f1,cochainComp_f1,subsetCochainEquiv_symm_f1_apply,
+      reindexedComparisonHom_f1_apply]
     change (N.quotientMorphism (a.coarseningOrderIso R)).targetSubsetPullback1 A B _ x
-      (a.subsetEdgeEquiv B e) = (M.quotientMorphism R).targetSubsetPullback1
-        (a.quotientTarget R ⁻¹' A) (a.target ⁻¹' B) _
-        ((a.quotientSubsetEquiv R A).symm.toHom.f1 x) e
+      (a.subsetEdgeEquiv B e) = _
     rw [TargetSupportedNerveMorphism.targetSubsetPullback1_apply,
       TargetSupportedNerveMorphism.targetSubsetPullback1_apply]
     cases hm : M.quotientEdgeMap R e.1 with
