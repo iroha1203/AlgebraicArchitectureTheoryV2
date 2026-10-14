@@ -25,6 +25,12 @@ def relationTable (P : Setoid X) : Finset (X × X) := by
 def relationOK (F : Finset (X × X)) : Prop :=
   (∀ x, (x,x) ∈ F) ∧ (∀ x y, (x,y) ∈ F → (y,x) ∈ F) ∧
     (∀ x y z, (x,y) ∈ F → (y,z) ∈ F → (x,z) ∈ F)
+omit [Fintype X] in
+/-- 関係表検査の公開特徴づけ。下流は反射・対称・推移をこのAPIで読む。 -/
+theorem relationOK_iff (F : Finset (X × X)) : relationOK F ↔
+    (∀ x, (x,x) ∈ F) ∧ (∀ x y, (x,y) ∈ F → (y,x) ∈ F) ∧
+      (∀ x y z, (x,y) ∈ F → (y,z) ∈ F → (x,z) ∈ F) := Iff.rfl
+/-- 全有限量化を決定し、関係表の反射・対称・推移検査を有限filterへ渡す。 -/
 instance [DecidableEq X] (F : Finset (X × X)) : Decidable (relationOK F) := by
   unfold relationOK
   infer_instance

@@ -6,6 +6,16 @@ import Mathlib.Tactic.FinCases
 
 三辺の一つを内部化する粗化を元表から生成する。残る逆向き二辺は別セルに保ち、
 同じ実比較の全単射性を元cochainとpotentialの正逆liftから示す。
+
+## Implementation notes
+
+cutMapの核を用い、元chartの分割と商写像を保持する。cutLiftは内部化される辺の値を
+隣の残存辺へ加える。元比較のpullbackは内部辺で零になるため、cutPotentialを
+合併される二元の後側だけに置き、その差を元d0で回収する。
+単射側では内部辺の零が細potentialの合併側二元の値を等しくするので、
+cutCoarsePotentialをその共通値と残る一元の値から降ろす。
+この選択は元cochainと同じ実比較の代表元等式を与える。
+同次元H¹間の別の同型を選ぶ方法では元比較の全単射性を証明できないため採用しない。
 -/
 noncomputable section
 namespace AAT.AG.SafeCoarseningOrder
@@ -21,6 +31,9 @@ theorem cutMap_values (i : Fin 3) : cutMap i i = false ∧
   fin_cases i <;> decide +kernel
 /-- targetは恒等分割、chartは原始cutMapの核。 -/
 def cut (i : Fin 3) : Coarsening Unit (Fin 3) := (⊥,Setoid.ker (cutMap i))
+/-- cutのchart関係は元cutMap値の一致。下流の関係包含へ渡す公開API。 -/
+theorem cut_relation_iff (i v w : Fin 3) :
+    (cut i).2.r v w ↔ cutMap i v = cutMap i w := Iff.rfl
 /-- 元chartから指定商chartへの写像。 -/
 def cutChart (i v : Fin 3) : Quotient (cut i).2 := Quotient.mk _ v
 /-- 異なるcutMap値を持つ原始chartは商でも異なる。 -/

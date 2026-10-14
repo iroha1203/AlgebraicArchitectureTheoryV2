@@ -13,10 +13,10 @@ namespace Triangle
 /-- 指定二粗化の全共通上界は、target/chartの両方で全関係。 -/
 theorem common_upper_bound_top (W : Coarsening Unit (Fin 3)) (h0 : cut 0 ≤ W) (h1 : cut 1 ≤ W) :
     W = ⊤ := by
-  have h01 : W.2.r 0 1 := h0.2 (show (cut 0).2.r 0 1 from by
-    change cutMap 0 0 = cutMap 0 1; decide +kernel)
-  have h12 : W.2.r 1 2 := h1.2 (show (cut 1).2.r 1 2 from by
-    change cutMap 1 1 = cutMap 1 2; decide +kernel)
+  have h01 : W.2.r 0 1 := h0.2 ((cut_relation_iff 0 0 1).mpr
+    ((cutMap_values 0).1.trans (cutMap_values 0).2.1.symm))
+  have h12 : W.2.r 1 2 := h1.2 ((cut_relation_iff 1 1 2).mpr
+    ((cutMap_values 1).1.trans (cutMap_values 1).2.1.symm))
   have h0all : ∀ v : Fin 3, W.2.r 0 v := by
     intro v
     fin_cases v

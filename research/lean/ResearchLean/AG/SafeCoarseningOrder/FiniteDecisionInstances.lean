@@ -12,7 +12,8 @@ namespace AAT.AG.SafeCoarseningOrder
 open CanonicalResolution ResolutionInvariance TwoPhase AtlasCoefficientFiber
 /-- 全関係表は反射・対称・推移の有限検査を満たす。 -/
 theorem relationOK_univ : relationOK (Finset.univ : Finset (Bool × Bool)) := by
-  simp [relationOK]
+  rw [relationOK_iff]
+  simp
 /-- 空表はBoolの反射性を満たさない。 -/
 theorem relationOK_empty_false : ¬ relationOK (∅ : Finset (Bool × Bool)) := by
   decide +kernel

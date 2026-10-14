@@ -37,16 +37,15 @@ theorem mem_failureRegions (R : Coarsening T V) (A : Finset (Quotient R.1)) :
 theorem failureRegions_nonempty (R : Coarsening T V) (hn : ¬ M.Safe R) :
     (M.failureRegions R).Nonempty := by
   classical
-  change ¬ ∀ A, Function.Bijective
-    ((M.quotientComparison R).aSubnerveComparisonHom (A : Set (Quotient R.1))).h1Map at hn
-  push_neg at hn
-  obtain ⟨A,hA⟩ := hn
+  have hn' := (M.safe_iff_zeroDefect R).not.mp hn
+  push_neg at hn'
+  obtain ⟨A,hA⟩ := hn'
   let s : Finset (Quotient R.1) := Finset.univ.filter (fun t => t ∈ A)
   have heq : (s : Set (Quotient R.1)) = A := by
     ext t; simp only [s,Finset.mem_coe,Finset.mem_filter,Finset.mem_univ,true_and]
   refine ⟨s,(M.mem_failureRegions R s).mpr ?_⟩
   rw [heq]
-  exact hA
+  exact (blockDefect_eq_zero_iff_bijective _).not.mp hA
 omit [Fintype T] in
 /-- 入力生成Jの核成分が零であることは、同じ実H¹写像の単射性と必要十分。 -/
 theorem primitive_kernel_zero_iff (R : Coarsening T V) (A : Set (Quotient R.1)) :
