@@ -606,11 +606,11 @@ audits:
 | --- | --- | --- |
 | W0定数Law、発生label、値block | `constantLaw`, `constant_eval`, `constant_adequate`, `constantLabel`, `constantLabelsUnique`, `constant_labels_card`, `constant_fiber` | Unit Sourceで一つのUnit値Lawを構成。全商readingへ定数値をdescend、同じ値block=全target、label1個。値型有限性を一般Law条件へ追加しない。 |
 | W0全候補・全A・実Law保存 | `all_actual_defects`, `lawMap`, `lawMap_eq`, `law_bijective`, `law_defect`, `safeCoarsenings_eq_all`, `all_decision_true` | 受理単一有向辺の元H¹比較Safeを全R/空含む全Aで使う。同じ生成Law射を全Law iffから全単射/J零へ戻す。全候補表から除外しない。 |
-| W0有限B正出力・最大・join・全固定 | `greatestOutput`, `greatestOutput_top`, `joinClosure`, `fixedOutput`, `fixedOutput_top`, `top_fixed` | 同じtrueから一般producerを発火。全安全元の最大topと全原始Aut固定を再検証。受理C3/C5の同じ元出力と一致。 |
+| W0有限B正出力・最大・join・全固定 | `greatestOutput`, `greatestOutput_top`, `join_closure`, `fixedOutput`, `fixedOutput_top`, `top_fixed` | 同じtrueから一般producerを発火。全安全元の最大topと全原始Aut固定を再検証。受理C3/C5の同じ元出力と一致。 |
 | W3同じ旧原始表をT0へ構成 | `Point`, `Chart`, `old_left`, `input`, `input_edge_iff`, `input_support`, `edgeEquiv`, `edgeEquiv_left/right` | q=id、vᵢ/wᵢの元台、false全a/b、trueだけa₀除去。旧辺名=左端なので端点対全単射、Boolの端点相違で非対角。K1交差を保持。 |
 | W3指定商と元写像 | `coarsening`, `coarsening_target_iff`, `coarsening_chart_rel`, `targetEquiv`, `targetEquiv_mk`, `chartEquiv`, `quotient_support_all`, `quotient_chart_eq`, `quotient_no_edge`, `region`, `mem_region`, `factor_region`, `reading_comm`, `morphism_chart_comm`, `morphism_edge_comm`, `quotient_edge_none` | R=(ker fst,top)。元target商mkをZMod2のfstへ、元chart商mkをUnitへ同定。全台を元vᵢ台から生成、全内部辺none、旧mの元部分像と一致。 |
 | W3全三次数支持複体同型 | `fineChartEquiv/EdgeEquiv/FaceEquiv`, `fineCochainEquiv`, `coarseChartEquiv/EdgeEquiv/FaceEquiv`, `coarseCochainEquiv` | 任意元領域Bの選択セル、K1とd0/d1から関数再添字の実同型を生成。期待rank/H¹同型fieldを入力しない。 |
-| W3新旧同じ実比較と全Hom/H1 | `newMapsTo`, `oldMapsTo`, `newHom`, `oldHom`, 各f0/f1 API、fine/coarse評価API、`newHom_eq_transport`, `oldHom_eq_transport`, `cochain_square`, `reindexed_h1_square`, `actual_h1_square` | 両canonical因子逆像を元領域へ等号transport。全f0/f1/f2可換図式を元商chart/内部辺noneから証明。全Homから同じH¹写像図式へ降ろす。 |
+| W3新旧同じ実比較と全Hom/H1 | `new_maps_to`, `old_maps_to`, `newHom`, `oldHom`, 各f0/f1 API、fine/coarse評価API、`newHom_eq_transport`, `oldHom_eq_transport`, `cochain_square`, `reindexed_h1_square`, `actual_h1_square` | 両canonical因子逆像を元領域へ等号transport。全f0/f1/f2可換図式を元商chart/内部辺noneから証明。全Homから同じH¹写像図式へ降ろす。 |
 | W3同じ実核/余核/Jの同定 | `reindexedKernelEquiv`, `reindexedCokernelEquiv`, `reindexed_defect`, `actual_defect`, `actualFineCochainEquiv`, `actual_h1_square_direct`, `actualCokernelEquiv`, `actualCokernelEquiv_mk` | 全Hom図式と元H¹同型から実核/literal余核を輸送。canonical射も同じcell生成同型で可換。直接式のcoarse零は旧coarse_H1_zeroの実商を使用、全cochain図式を数値零に置換しない。 |
 | W3全plus/properminus/fullminus | `plus_defect`, `proper_defect`, `full_defect`, `region_surjective`, `plus_safe`, `proper_actual_defects`, `full_actual_defect`, `minus_not_safe` | 同じ旧actualMapの既受理三診断を接続。targetEquivの全画像/逆像で商targetの全Aを尽くし、proper/fullを保存。空Aを除外しない。 |
 | W3同じ有限入力の正負 | `candidate_mem_all`, `plus_mem_safe`, `minus_not_mem_safe`, `plus_decision_true`, `minus_decision_false` | 指定同じRを全分割対に入力。plus全A保存、minus同じfull失敗から全安全表/同じ有理全A判定が一致する。 |
@@ -637,3 +637,14 @@ source参照は固定既存版 `f3ae0eab35186e2259fa030eb23fb4657180a868`、G136
 新4source個別Lean、公式単一focused、累積対象宣言の全個別公理照会と共通scanをPRコメントへ固定する。
 Research full/aggregate/全module/全file検証、Formalへの蒸留・本体全体buildは未実施。
 W1/W2の全指定評価、別final packetでの全GOAL最終独立4査読と完了同期は未完として保持する。
+
+### Cycle6 初回査読後の品質修正
+
+初回の独立数学2/Lean2は中心finding0・Minor issues。全4報告をrootが全文読了し、
+[数学票](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5365#issuecomment-6176133121)と
+[Lean票](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5365#issuecomment-6176223618)へ記録した。
+`constant_fiber`は既存`mem_labelValueFiber`、W3の非対角性は`Width.right_apply`、
+商chart逆写像の領域条件は`mem_region`を使う。
+定理名`joinClosure/newMapsTo/oldMapsTo`を`join_closure/new_maps_to/old_maps_to`へ改め、
+全使用sourceとreport対応を同じPRで更新した。数理statement・原始表・選定要求・premise statusは維持する。
+定理名とdefinition内proofの変更により直接対応の資格を使わず、修正headで独立4票の正式査読を再実行する。

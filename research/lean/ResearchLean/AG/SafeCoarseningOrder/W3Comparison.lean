@@ -69,7 +69,8 @@ def coarseChartEquiv (cut : Bool) (X : Set (Width.Concept 2)) :
   invFun c := ⟨chartEquiv.symm c.1,by
     obtain ⟨i,_,hx⟩ := c.2
     refine ⟨targetEquiv.symm i,quotient_support_all cut _ _,?_⟩
-    simpa only [region,Set.mem_preimage,Equiv.apply_symm_apply] using hx⟩
+    apply (mem_region X _).mpr
+    simpa only [Equiv.apply_symm_apply] using hx⟩
   left_inv c := Subtype.ext (chartEquiv.symm_apply_apply c.1)
   right_inv c := Subtype.ext (chartEquiv.apply_symm_apply c.1)
 /-- 新商と旧coarseの空辺対応。空性を元商辺式から導く。 -/
@@ -100,7 +101,7 @@ def coarseCochainEquiv (cut : Bool) (X : Set (Width.Concept 2)) :
   comm1 x := by funext f; exact f.1.elim
 open AtlasDefectComposition
 /-- newHomの領域条件を元canonical因子から放電する。 -/
-theorem newMapsTo (cut : Bool) (X : Set (Width.Concept 2)) :
+theorem new_maps_to (cut : Bool) (X : Set (Width.Concept 2)) :
     ∀ t, t ∈ Width.region 2 X → comparisonFactor
       ((input cut).quotientReading coarsening) (input cut).reading
       ((input cut).quotient_coarser coarsening) t ∈ region X := by
@@ -108,7 +109,7 @@ theorem newMapsTo (cut : Bool) (X : Set (Width.Concept 2)) :
   rw [PrimitiveInput.quotient_factor]
   exact ht
 /-- oldHomの領域条件を旧fst因子の公開APIから放電する。 -/
-theorem oldMapsTo (X : Set (Width.Concept 2)) :
+theorem old_maps_to (X : Set (Width.Concept 2)) :
     ∀ t, t ∈ Width.region 2 X → comparisonFactor
       (Width.coarseReading 2) (Width.fineReading 2) (Width.coarser 2) t ∈ X := by
   intro t ht
@@ -117,31 +118,31 @@ theorem oldMapsTo (X : Set (Width.Concept 2)) :
 /-- 同じ新生成比較を指定細領域へ再表示した実Hom。 -/
 def newHom (cut : Bool) (X : Set (Width.Concept 2)) :=
     ((input cut).quotientMorphism coarsening).targetSubsetComparisonHom
-      (region X) (Width.region 2 X) (newMapsTo cut X)
+      (region X) (Width.region 2 X) (new_maps_to cut X)
 /-- 同じ旧Width比較を同じ指定細領域へ再表示した実Hom。 -/
 def oldHom (cut : Bool) (X : Set (Width.Concept 2)) :=
     (Width.hereditary 2 cut).targetSubsetComparisonHom
-      X (Width.region 2 X) (oldMapsTo X)
+      X (Width.region 2 X) (old_maps_to X)
 /-- newHomの次数0を同じ公開subset pullbackへ評価する基本API。 -/
 theorem newHom_f0_apply (cut : Bool) (X : Set (Width.Concept 2))
     (x : (((input cut).quotientSupported coarsening).targetSubsetComplex (region X)).C0) :
     (newHom cut X).f0 x = ((input cut).quotientMorphism coarsening).targetSubsetPullback0
-      (region X) (Width.region 2 X) (newMapsTo cut X) x := rfl
+      (region X) (Width.region 2 X) (new_maps_to cut X) x := rfl
 /-- newHomの次数1を元有向部分像の公開pullbackへ評価する基本API。 -/
 theorem newHom_f1_apply (cut : Bool) (X : Set (Width.Concept 2))
     (x : (((input cut).quotientSupported coarsening).targetSubsetComplex (region X)).C1) :
     (newHom cut X).f1 x = ((input cut).quotientMorphism coarsening).targetSubsetPullback1
-      (region X) (Width.region 2 X) (newMapsTo cut X) x := rfl
+      (region X) (Width.region 2 X) (new_maps_to cut X) x := rfl
 /-- oldHomの次数0を同じ旧比較の公開pullbackへ評価する基本API。 -/
 theorem oldHom_f0_apply (cut : Bool) (X : Set (Width.Concept 2))
     (x : ((Width.coarse 2).targetSubsetComplex X).C0) :
     (oldHom cut X).f0 x = (Width.hereditary 2 cut).targetSubsetPullback0
-      X (Width.region 2 X) (oldMapsTo X) x := rfl
+      X (Width.region 2 X) (old_maps_to X) x := rfl
 /-- oldHomの次数1を同じ旧比較の公開pullbackへ評価する基本API。 -/
 theorem oldHom_f1_apply (cut : Bool) (X : Set (Width.Concept 2))
     (x : ((Width.coarse 2).targetSubsetComplex X).C1) :
     (oldHom cut X).f1 x = (Width.hereditary 2 cut).targetSubsetPullback1
-      X (Width.region 2 X) (oldMapsTo X) x := rfl
+      X (Width.region 2 X) (old_maps_to X) x := rfl
 /-- fineCochainEquivの逆Homの次数0を元chart全単射で評価する。 -/
 theorem fine_symm_f0_apply (cut : Bool) (B : Set Point)
     (x : ((input cut).supported.targetSubsetComplex B).C0)

@@ -29,7 +29,7 @@ def input (cut : Bool) : PrimitiveInput Point Point Chart where
   edge_ne v w h := by
     rcases h with ⟨_,rfl⟩
     rcases v with ⟨i,b⟩
-    cases b <;> simp [Width.right]
+    cases b <;> simp [Width.right_apply]
   support := Width.support 2
   support_nonempty v := ⟨(v.1,false),Or.inl rfl⟩
 /-- 指定有向辺表の公開特徴づけ。plusではa₀だけを除く。 -/

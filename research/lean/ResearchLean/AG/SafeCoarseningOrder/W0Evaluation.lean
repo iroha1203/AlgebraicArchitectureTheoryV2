@@ -37,7 +37,7 @@ theorem constant_fiber (R : Coarsening Unit Bool) (l : LawValueLabel constantLaw
     labelValueFiber constantLaw (w0.quotientReading R) (constant_adequate R) l = Set.univ := by
   ext c
   simp only [Set.mem_univ,iff_true]
-  change lawDescend constantLaw (w0.quotientReading R) (constant_adequate R) l.law c = l.value
+  rw [mem_labelValueFiber]
   letI : Subsingleton (constantLaw.Value l.law) := inferInstanceAs (Subsingleton Unit)
   exact Subsingleton.elim _ _
 /-- 同じ全A実比較のJを全候補で評価する。 -/
@@ -75,7 +75,7 @@ def greatestOutput : w0.GreatestWitness := w0.greatestWitness w0_greatestDecisio
 theorem greatestOutput_top : greatestOutput.coarsening = ⊤ :=
   greatestOutput.greatest.unique w0_greatest
 /-- 全W0安全対のjoinは安全。 -/
-theorem joinClosure (R Q : Coarsening Unit Bool) (hR : w0.Safe R) (hQ : w0.Safe Q) :
+theorem join_closure (R Q : Coarsening Unit Bool) (hR : w0.Safe R) (hQ : w0.Safe Q) :
     w0.Safe (R ⊔ Q) :=
   w0.joinDecision_eq_true.mp w0_joinDecision R Q hR hQ
 /-- 同じtrueから生成した全Aut固定極大のB出力。 -/
