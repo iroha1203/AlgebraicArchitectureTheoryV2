@@ -27,7 +27,7 @@ theorem subset_d0_surjective_of_single_edge {S : Type} {q : Reading S}
     funext f
     have hfe : f = e := Subtype.ext (Subsingleton.elim _ _)
     subst f
-    change x (N.targetSubsetEdgeRight A e) - x (N.targetSubsetEdgeLeft A e) = z e
+    rw [N.targetSubsetComplex_d0_apply]
     simp [x, hne e.1]
   · letI : IsEmpty (N.EdgeInTargetSubset A) := not_nonempty_iff.mp hex
     refine ⟨0, ?_⟩

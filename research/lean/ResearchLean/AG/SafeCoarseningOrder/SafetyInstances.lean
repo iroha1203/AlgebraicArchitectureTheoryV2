@@ -62,8 +62,30 @@ def period : fullComplex.C1 →ₗ[ℚ] ℚ where
 
 /-- 原始d0の一巡和はtelescopingで零。 -/
 theorem period_boundary (x : fullComplex.C0) : period (fullComplex.d0 x) = 0 := by
-  change (x (fullChart 1)-x (fullChart 0)) +
-    (x (fullChart 2)-x (fullChart 1)) + (x (fullChart 0)-x (fullChart 2)) = 0
+  change fullComplex.d0 x (fullEdge 0) + fullComplex.d0 x (fullEdge 1) +
+    fullComplex.d0 x (fullEdge 2) = 0
+  rw [input.supported.targetSubsetComplex_d0_apply,
+    input.supported.targetSubsetComplex_d0_apply,
+    input.supported.targetSubsetComplex_d0_apply]
+  have h01 : input.supported.targetSubsetEdgeRight Set.univ (fullEdge 0) =
+      input.supported.targetSubsetEdgeLeft Set.univ (fullEdge 1) := by
+    apply Subtype.ext
+    rw [TargetSupportedNerve.targetSubsetEdgeRight_val,
+      TargetSupportedNerve.targetSubsetEdgeLeft_val]
+    rfl
+  have h12 : input.supported.targetSubsetEdgeRight Set.univ (fullEdge 1) =
+      input.supported.targetSubsetEdgeLeft Set.univ (fullEdge 2) := by
+    apply Subtype.ext
+    rw [TargetSupportedNerve.targetSubsetEdgeRight_val,
+      TargetSupportedNerve.targetSubsetEdgeLeft_val]
+    rfl
+  have h20 : input.supported.targetSubsetEdgeRight Set.univ (fullEdge 2) =
+      input.supported.targetSubsetEdgeLeft Set.univ (fullEdge 0) := by
+    apply Subtype.ext
+    rw [TargetSupportedNerve.targetSubsetEdgeRight_val,
+      TargetSupportedNerve.targetSubsetEdgeLeft_val]
+    rfl
+  rw [h01, h12, h20]
   ring
 
 /-- 面が空なので、指定全辺cochainは同じ実cocycleに入る。 -/
