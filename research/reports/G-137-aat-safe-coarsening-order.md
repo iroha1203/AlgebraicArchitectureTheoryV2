@@ -10,9 +10,14 @@ GOAL blob: `00278db46e595fbe30762a1bb969230f77828f4f`。
 T0・A–Eを固定したまま進める。Cycle 1は
 [PR #5360](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5360#issuecomment-6168427100)、
 merge `7f6ba524fb2f8d18c5707563d442b74a10cb1d56` で受理済み。
-Cycle 2はAの二段商同型、実cochain/H¹の恒等・合成、全Law・G-135診断接続の受理候補。
+Cycle 2は[PR #5361](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5361#issuecomment-6169485942)、
+merge `f0ae3485d72fe4218e4afb448536d7ed65b74296` で受理済み。
+Aの二段商同型、実cochain/H¹の恒等・合成、全Law・G-135診断接続を完了した。
 W0の全粗化安全性と、三角形全関係商の不安全性も同じSafeで構成した。
-全GOALは `target-proof-checkpoint`。B–E、P_G・P_J・P_N、W1・W2の指定評価は未完了。
+Cycle 3ではBの全有限分類、最大元/join判定と実cochain失敗出力を実装中。
+原始三角形の二Safe粗化の全共通上界排除を構成した。
+全GOALは `target-proof-checkpoint`。Bの固定極大判定、Cの全作用/自然選択、
+Dの全一様主張、Eの全指定評価・最終監査は未完了。
 Formalへの蒸留は未実施。
 
 ## Cycle 1 selection
@@ -223,3 +228,117 @@ audits:
   blocking_findings: [標準PR独立査読前]
   next_obligation: Bの全有限分類とCの全同型輸送・自然選択
 ```
+
+## Cycle 3 selection
+
+[Cycle 2同期とCycle 3開始](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6169532688)で実装前に固定。
+merge後main CI成功は[追記](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6169638532)に固定した。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-137-aat-safe-coarsening-order
+cycle: 3
+goal_blob_sha: 00278db46e595fbe30762a1bb969230f77828f4f
+base_oid: f0ae3485d72fe4218e4afb448536d7ed65b74296
+tracking_issue: 5358
+report_path: research/reports/G-137-aat-safe-coarsening-order.md
+selection:
+  proof_state_ref: Cycle 2受理とmerge同期
+  proof_dag_predecessors: [Cycle 2.botIso, Cycle 2.safe_iff_decision, G135実有理診断, RI.CochainEquiv.h1Equiv, mathlib有限半順序]
+  milestone: Bの全粗化・全安全元・全極大元と最大元/joinの有限分類
+  proof_obligations: [全同値関係対の有限列挙, 原始同型の実cochain生成と恒等商Safe, 安全/極大一覧の正しさと完全性, 各安全元上の極大元, 最大元と唯一極大と安全共通上界条件の同値, 最大元/joinの原始判定と正負証拠, 各不安全元の実kernelまたはcoker失敗証拠]
+  exit_criteria: [全関係表列挙と完全性, 恒等商の同じ実H1全単射, 全安全/極大のmem iff, 有限極大存在と最大元同値, greatest/join判定の正負出力, 全共通上界排除, 原始比較からの失敗Aと実非零商類/汎関数, focusedと全宣言公理監査]
+  selection_reason: Bの全候補を尽くしDの最大元/join反証を実比較へ戻す
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [IsomorphismCochains.lean, IdentitySafety.lean, FiniteClassification.lean, FailureCertificates.lean, FiniteDecisions.lean]
+  risks: [Safeの上方閉性を仮定すること, join失敗だけで全共通上界を排除すること, 形式的EMを具体失敗証拠へ読み替えること, 同次元同型による恒等比較代用, 有限一覧を入力fieldに置くこと]
+  unchecked: [正式PR査読]
+```
+
+Bの固定極大元判定はCの全自己同型作用を生成する後続到達点で扱い、固定要求から削除しない。
+
+## Cycle 3 条項・実宣言・前提使用
+
+| 固定条項 | ファイル・宣言 | 構成・使用先 |
+| --- | --- | --- |
+| 恒等粗化の同じ実安全性 | `IsomorphismCochains` の `subsetChart/Edge/FaceEquiv`, `subsetCochainEquiv`, 逆Hom次数評価API、`IdentitySafety.bot_preimage`, `safe_bot` | 全原始同型のq/有向辺/K1台保存から選択セルと全三次数同型を生成。恒等商ではbotIsoを適用し、原始商比較と逆生成Homの全record一致を証明して同じH¹へ降ろす。Cの全同型作用・共役図式は後続。 |
+| 全原始分割対 | `FiniteClassification.relationTable`, `relationOK`, `fromRelationTable`, `allSetoids`, `mem_allSetoids`, `setoidFintype`, `allCoarsenings`, `mem_allCoarsenings` | 全有限順序対表の冪集合、反射/対称/推移の有限検査から全同値関係と全独立分割対を尽くす。安全元一覧を入力として受け取らない。 |
+| 全安全/極大一覧 | `safeCoarsenings`, `mem_safeCoarsenings`, `maximalCoarsenings`, `mem_maximalCoarsenings`, `exists_maximal_above`, `safeCoarsenings_nonempty`, `maximalCoarsenings_nonempty` | 全分割対をG-135同じ全A有理判定でfilterし、包含について全極大元をfilter。soundness/completenessは同じSafeへの必要十分。恒等Safeと有限半順序から非空・各Safe上の極大元を生成。Safeの上方/下方単調性を仮定しない。 |
+| 最大元の有限特徴づけ | `greatest_iff_unique_maximal`, `greatest_iff_safe_upper_bounds`, `greatest_iff_card_one`, `no_greatest_witness`, `greatest_of_join_closed` | 最大元・唯一極大・全安全対の安全共通上界を有限性から同値にし、最大元負では全共通上界排除を得る。join閉性は安全な共通上界を与える方向だけを使う。 |
+| 同じ実cochainへの失敗証拠 | `FailureCertificates.allCycles`, `cochainClass`, 公開評価/全射/d0零/自然性、`KernelFailure`, `CokerFailure`, 両生成定理と `failure_exists`, `class_nonzero`, `annihilate_sum`, `not_injective`, `not_surjective` | 原面なし条件→全cycle→既存の実H¹商。核の非零類から粗代表元・細potential・粗d0像で零/元で1の有理汎関数を構成。literal余核から細cycleと細d0像+粗cycle比較像で零/元で1の汎関数を構成。次元差だけを証拠にしない。 |
+| 全不安全元の領域と証拠 | `FiniteDecisions.failureRegions`, `mem_failureRegions`, `failureRegions_nonempty`, `primitive_kernel_zero_iff`, `RegionFailure`, `regionFailure_exists`, `UnsafeWitness`, `unsafeWitness`, `unsafeWitness_region_mem`, `UnsafeWitness.not_safe` | 全有限部分領域を原始有理kernelへ通す。各Setも有限表で尽くされる。同じ計算Jの核成分で核/余核分岐を選び、原面型が空であることを放電してcochain証拠を生成。生成領域は失敗一覧に所属し、証拠から実不安全性を再検証できる。 |
+| 最大元の入力ごとの正負判定 | `greatestDecision`, `greatestDecision_eq_true`, `GreatestWitness`, `greatestWitness`, `NoGreatestWitness`, `noGreatestWitness_exists`, `noGreatestWitness` | 全極大一覧のcard=1を有限Boolで判定。正なら原始分割対と全Safeに対する最大性。負なら二Safe元・全共通上界Wの排除と、各Wの個別失敗領域/実cochain証拠を生成。同じ失敗Aを全Wに仮定しない。 |
+| joinの入力ごとの正負判定 | `joinDecision`, `joinDecision_eq_true`, `JoinFailure`, `joinFailure_exists`, `joinFailure` | 全分割対の全順序対を有限kernelへ通し、両Safeの場合に同じjoinの安全性を判定。負出力は元二Safe分割とそのjoinの実失敗証拠。 |
+| 原始正負発火 | `FiniteDecisionInstances` のW0最大元/全極大一覧/最大元Bool/joinBool/空失敗一覧、三角形top Bool false/非空失敗一覧/実UnsafeWitness、`CertificateInstances` | 指定W0では全関係が最大元で全極大一覧はsingleton、両Boolはtrue。原始三角形topの同じ安全判定はfalseで実cochain証拠を出力。証拠構造の正負instanceを実入力から生成し、一般核/余核APIは同じ非零三角形複体の零/恒等Homでも正負確認する。零HomはT0粗化反例の代替にしない。 |
+| 原始最大元/join負の発火 | `TriangleCuts.cutMap`, `cut`, 元/商セルと全分類、`cutHom`, 全評価API、`cutLift`, `cutPotential`, `cutCoarsePotential`, `cut_surjective/injective_representatives`, `cutHom_bijective`, `cut_full_bijective`, `cut_safe`、`TriangleCounterexamples.common_upper_bound_top`, `common_upper_bounds_unsafe`, `cut_join_top`, `no_greatest`, 両Bool false、指定/有限生成負出力 | 元3辺を保持する同じ三角形で、iとi+1を合併しi+2を分ける粗化を生成。残る二逆向きセルを別に保持。元cochainと細potential/粗potentialの正逆liftで同じ実H¹比較を全Aで全単射と証明。cut0/cut1の全共通上界をtarget/chartの全関係と証明し、同じtop不安全性から全排除。最大元とjoinの両有限負producerが原始入力で発火。Dの全一様主張とCの全固定点排除は後続である。 |
+
+### 前提・provenance・proof-use
+
+T0の有限原始S/T/V、全射q、有向非対角辺、非空台、空面、ℚは本文由来。
+汎用補助は使わない有限/非空条件を要求しない形で一般化し、全T0への適用を保持する。
+全関係表の列挙にはT/Vの有限性、既存全A判定にはSの有限性を使用する。
+原始同型の三全単射/q/辺/台保存は一般方向仮定で、恒等商ではCycle 2のbotIsoが全fieldを放電する。
+Safe非空は仮定でなく `safe_bot` から生成し、有限性から極大元を得る。
+一般最大元同値の非空条件も入力適用では恒等から放電する。
+
+面なし条件、非全単射/非単射/非全射は一般certificate生成定理の方向仮定。
+入力適用では元Empty面を使ってd1零を証明し、全Aの原始有理判定から失敗を導出する。
+核/余核branchは計算されたJ核成分で決める。代表元/potential/正規化汎関数は同じ実線形商から生成される。
+証拠出力structureには証明済みの結論を格納するが、producerは原始表→有限一覧→同じ実射→商代表元を通り、
+期待rank/安全一覧/失敗certificateを入力に置かない。非計算的選択はこれらの証明済み有限/線形構成に用いる。
+未評価の排中律だけを入力ごとの判定に使っていない。
+
+三角形の指定原始辺/台と有理period非零はCycle 2受理済み。
+今回のcut支持・辺・部分像・全原始表は同じ入力から生成する。原始元辺への全射と全商二辺分類を証明し、
+実pullbackの0/1/2成分・canonical全A逆像transportを保持して実H¹へ接続する。
+cut0/cut1の安全性を前提として受け取らず、元cochain/potentialの正逆liftから放電する。
+全上界W排除は関係包含の反射/対称/推移で行い、join失敗からの推論にはしない。
+
+再利用はCycle 1–2の受理refs、G-107の `CochainEquiv.toHom_h1Map_bijective`、
+G-133の全Hom型輸送・`h1Map_mk_eq_zero_iff`・`h1_mk_mem_range_iff`、
+G-135の `primitiveDiagnostic_eq_blockDefect`・全A Bool・実rank/核/余核接続。
+固定参照版と現在の必要定義/statement/適用を照合し、受理predecessorの内部全履歴は再認定しない。
+mathlibの有限順序の極大存在、Setoid、Finset冪集合、有限次元双対分離、実線形核/商を固定版で使用する。
+
+### Cycle 3 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 全有限関係/安全/極大一覧、恒等実安全性、最大元の三特徴づけ、最大元/join有限正負判定、全不安全元の実cochain失敗出力、原始正負発火
+  exit_criteria_status: [上記全一般構成と必要十分, 恒等商とW0正例, 三角形二Safe粗化の全共通上界排除と同じjoin失敗, 個別検証と累積全宣言公理はPR証跡へ固定]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [IsomorphismCochains.lean, IdentitySafety.lean, FiniteClassification.lean, FailureCertificates.lean, FiniteDecisions.lean, FiniteDecisionInstances.lean, TriangleCuts.lean, TriangleCounterexamples.lean, CertificateInstances.lean]
+  evidence: [Cycle 3条項対応表]
+  claim_mapping:
+    theorem_names: [safe_bot, mem_allCoarsenings, mem_safeCoarsenings, mem_maximalCoarsenings, exists_maximal_above, greatest_iff_unique_maximal, greatest_iff_safe_upper_bounds, greatestDecision_eq_true, joinDecision_eq_true, regionFailure_exists, cut_safe, common_upper_bound_top]
+    source_labels: [B全有限分類と最大元/join, C実cochain同型生成, D対応負証拠の基礎, E W0部分評価]
+    conjuncts: [Cycle 3対応表]
+    undischarged_assumptions: []
+    acceptance_point: 全原始候補の有限判定と同じ実cochain証拠付き正負出力を生成し具体的原始入力で発火
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [恒等実比較全単射, 全関係/部分領域有限列挙, Safe非空, 全極大存在, 全共通上界排除, 実核/余核代表元と汎関数, 三角形cut安全性]
+    remaining: [B固定極大判定, C全作用/実共役/自然選択, D全一様主張と接続, E全指定評価, 全GOAL最終監査]
+  certificate_provenance:
+    discharged: [元表→全有限表→同じ実有理Bool→実H1核/余核→元cochain/potential/dual, 三角形指定二粗化の全原始生成]
+    unresolved: []
+  proof_use:
+    used: [原始同型→全セル/実cochain→恒等商Safe, 全関係表→全分割対→全A判定→Safe/Max一覧, 恒等Safe→有限極大→最大元同値, 実非全単射→同じ商非零類→cochainと汎関数, 原三角形cochain→cutLiftとpotential→実全単射, 二cut包含→全関係上界→同じtop失敗]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [PRに固定する対象個別検証と累積個別公理ログ]
+  blocking_findings: [標準PR独立査読前]
+  next_obligation: Cの全原始同型作用・実共役・全固定極大元と自然選択
+```
+
+当初の5 lean_targetsに対し、有限判定と証拠構造の正負発火のため4つの従属証拠moduleを追加した。
+終了条件・固定GOAL/設計は変更せず、三角形cutの実比較と全上界排除を今回の一般出力へ通した。
+新9sourceと同じreport/manifestだけが書込対象で、Formal蒸留・全体buildは未実施。
