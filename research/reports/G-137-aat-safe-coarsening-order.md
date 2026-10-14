@@ -14,8 +14,11 @@ Cycle 2は[PR #5361](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/
 merge `f0ae3485d72fe4218e4afb448536d7ed65b74296` で受理済み。
 Aの二段商同型、実cochain/H¹の恒等・合成、全Law・G-135診断接続を完了した。
 W0の全粗化安全性と、三角形全関係商の不安全性も同じSafeで構成した。
-Cycle 3ではBの全有限分類、最大元/join判定と実cochain失敗出力を実装中。
-原始三角形の二Safe粗化の全共通上界排除を構成した。
+Cycle 3は[PR #5362](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5362#issuecomment-6171574304)、
+merge `7ab0d926988dc32f13d26252bdaa664e813b66fe` で受理済み。
+Bの全有限分類、最大元/join判定、各不安全元の実cochain失敗出力を構成した。
+三角形の二Safe粗化について全共通上界を排除した。
+Cycle 4ではCの全原始同型による順序・実cochain/H¹輸送とSafe/Max作用を実装中。
 全GOALは `target-proof-checkpoint`。Bの固定極大判定、Cの全作用/自然選択、
 Dの全一様主張、Eの全指定評価・最終監査は未完了。
 Formalへの蒸留は未実施。
@@ -342,3 +345,65 @@ audits:
 当初の5 lean_targetsに対し、有限判定と証拠構造の正負発火のため4つの従属証拠moduleを追加した。
 終了条件・固定GOAL/設計は変更せず、三角形cutの実比較と全上界排除を今回の一般出力へ通した。
 新9sourceと同じreport/manifestだけが書込対象で、Formal蒸留・全体buildは未実施。
+
+
+## Cycle 4 selection
+
+実装前の[Cycle3同期・Cycle4選定](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6171616652)に固定。
+Cycle3 main CI成功と対象11file一致は[main確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6171727657)。
+
+```yaml
+ledger_type: target_cycle_result
+result:
+  goal_id: G-137
+  milestone: Cの全原始同型による実比較輸送
+  proof_obligation: 全S/T/V同型から順序・商入力・全cochainと同じH1を輸送しSafe/Maxを保存反映
+  lean_targets: [CoarseningTransport.lean, IsomorphismComparison.lean, SafeIsomorphism.lean, IsomorphismActionInstances.lean]
+  exit_criteria: [元商写像を保つ順序と商入力同型, 全0/1/2比較図式と実H1共役, 恒等合成, 全AとSafe/Max両方向, 原始作用発火, 個別Leanと全宣言公理, 独立数学2Lean2とroot受入CImain同期]
+  expected_result_type: proof-obligation-discharged
+  completion_candidate: no
+```
+
+### Cycle 4 条項・実宣言・前提使用
+
+| 選定条項 | 実宣言 | 入力からの生成・前提使用・証拠 |
+| --- | --- | --- |
+| 全分割対の包含順序輸送 | `transportSetoid`, `transportSetoid_rel`, `PrimitiveIso.coarseningOrderIso`, target/chart関係API | 逆全単射のSetoid.comapから両包含を保つ順序同型。target/chartは独立な全Setoidの積。安全性を入力せず、軌道同一視なし。 |
+| 恒等・合成・逆の全順序同型 | `coarseningOrderIso_refl`, `coarseningOrderIso_trans`, `coarseningOrderIso_symm` | 全OrderIso recordのext等号。元関係への二段逆像は同じ原始合成と一致。忘却後の部分fieldだけの等号にしない。 |
+| 元商写像を保つ商入力同型 | `transportQuotient`, `quotientTarget/Chart`, 各mk評価、`quotient_edge_iff`, `quotient_support_iff`, `quotientIso`, source/target/chart API | sourceは同じ元source全単射、read_commは元q可換性を商写像に適用。辺は非対角と原辺存在を両方向に輸送、台は同じfiber合併の像を輸送。全fieldを元表から生成。 |
+| 有向部分辺像の自然性 | `quotientEdgeMap_naturality` | 内部辺は同じ関係輸送で両側none。残る辺は元商写像の可換性と両端一意性でsame-direction同じ商辺にする。逆向き辺を併合しない。 |
+| 独立商supportedと実cochain同型 | `quotientSubsetChart/EdgeEquiv`, 各val、`quotientSubsetEquiv`, 逆f0/f1評価 | quotientInputを独立quotientSupportedへ全record同定する受理C2のFintypeを保持。受理C3の原始セル同型→非依存関数再添字→元d0/d1互換を適用し、期待H¹同型を入力しない。 |
+| canonical逆像と同じ全Hom | `canonical_preimage`, `reindexedMapsTo`, `reindexedComparisonHom`, `reindexedComparisonHom_eq_transport` | 元商target写像の可換性から全Set等号を生成。細subsetの再表示は旧生成Homを複体全体で等号transportしたものと証明し、比較を別射へ置換しない。 |
+| 全0/1/2自然性と同じH¹共役 | `comparison_cochain_square`, `comparison_h1_square`, `comparison_actual_h1_square` | f0は元商chart可換性、f1はnone/some部分辺自然性、f2は元Empty。全Hom等号を既存H¹商の合成へ降ろし、G134 incidence埋め込みを同じ実射へ戻す。 |
+| 全A全単射、Safe、Maxと最大性の両方向 | `comparison_bijective_iff`, `safe_iff`, `maximal_forward`, `maximal_iff`, `greatest_forward`, `greatest_iff` | 生成cochain同型の実H¹逆を両側で用いる。同じH¹写像の共役と全Hom等号transportから全単射iff。商target全単射の逆像で全Aを尽くす。全安全元の包含をOrderIsoで保存反映し極大/最大へ接続。 |
+| 原始作用の正負発火 | `w0_top_fixed`, `w0_top_maximal`, `Triangle.rotationChart`, `rotation`, `rotation_ne_refl`, `rotation_cut`, `rotation_moves_cut0`, `rotation_cut0_safe`, `identity_cut0_fixed`, `rotation_top_not_safe` | W0の同じ最大元は全Aut固定。三角形回転のq/E/台を元表から放電。全cutの関係輸送を評価し、指定Safe cut0が動くことを示す。恒等作用は固定、同じ不安全topは共役で不安全のまま。 |
+
+material premiseはT0の有限/原始q・非対角辺・非空台と、一般原始同型の全S/T/V全単射・q/辺/台保存。
+前者は原始幾何、後者は一般同型の方向条件である。商入力同型と三角形回転の適用では全fieldを原始表から放電する。
+cochain/H¹同型は原始同型からの出力であり、Safeや期待rankをfieldへ加えない。
+商target/chart全単射は元商写像を保持し、元source全単射は商read_commに使用する。
+微分/比較は既存実複体、H¹は元cycleのd0像による商である。
+
+新規部分は全分割対のOrderIso、商入力の全同型、部分辺の自然性、全Hom/H¹共役、Safe/Max作用、原始回転の実作用。
+受理C1/C2の原始商と同型、C3のセル再添字/H¹生成・恒等安全性・三角形cut証明を再利用する。
+G107実H¹同型、G133実Hom合成/等号transport、G134同じincidence埋め込み、G135診断保存の既存接続を使用する。
+現在の型・必要定義・実引数・proof-useと受理refを独立査読で照合し、既存内部全履歴の再認定はしない。
+
+### Cycle 4 result proposal
+
+```yaml
+ledger_type: target_cycle_result
+result:
+  goal_id: G-137
+  result_type: proof-obligation-discharged
+  completion_candidate: no
+  overall_goal_status: target-proof-checkpoint
+  formal_port_status: unported
+  status: proposed
+  evidence: [Cycle4条項対応表]
+  validation_refs: [PRに固定する対象個別Leanと累積個別公理]
+  remaining: [B固定極大有限判定, C全Aut分類と固定点自然選択iffと同型選択独立, D三一様主張と接続, E全指定W0W1W2W3評価, 全GOAL最終独立監査]
+```
+
+Researchの対象個別sourceと単一focusedだけを検証する。Research全体build/aggregate/全file elaboration、
+Formal移植・本体全体buildはこのcycleで実施しない。
