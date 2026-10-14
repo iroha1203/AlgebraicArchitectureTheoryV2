@@ -2472,3 +2472,7 @@ ResearchLean.AG.AtlasGluingWidth.WidthPhi	ResearchLean/AG/AtlasGluingWidth/Width
 ResearchLean.AG.AtlasGluingWidth.WidthCoefficient	ResearchLean/AG/AtlasGluingWidth/WidthCoefficient.lean
 ResearchLean.AG.AtlasGluingWidth.WidthH0Regression	ResearchLean/AG/AtlasGluingWidth/WidthH0Regression.lean
 ResearchLean.AG.AtlasGluingWidth.WidthConeRegression	ResearchLean/AG/AtlasGluingWidth/WidthConeRegression.lean
+ResearchLean.AG.SafeCoarseningOrder.PrimitiveInput	ResearchLean/AG/SafeCoarseningOrder/PrimitiveInput.lean
+ResearchLean.AG.SafeCoarseningOrder.QuotientNerve	ResearchLean/AG/SafeCoarseningOrder/QuotientNerve.lean
+ResearchLean.AG.SafeCoarseningOrder.Factorization	ResearchLean/AG/SafeCoarseningOrder/Factorization.lean
+ResearchLean.AG.SafeCoarseningOrder.PrimitiveExamples	ResearchLean/AG/SafeCoarseningOrder/PrimitiveExamples.lean
