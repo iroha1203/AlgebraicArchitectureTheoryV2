@@ -2502,3 +2502,7 @@ ResearchLean.AG.SafeCoarseningOrder.NaturalMaximalSelection	ResearchLean/AG/Safe
 ResearchLean.AG.SafeCoarseningOrder.TriangleMaximalClassification	ResearchLean/AG/SafeCoarseningOrder/TriangleMaximalClassification.lean
 ResearchLean.AG.SafeCoarseningOrder.UniformDecisions	ResearchLean/AG/SafeCoarseningOrder/UniformDecisions.lean
 ResearchLean.AG.SafeCoarseningOrder.FixedSelectionInstances	ResearchLean/AG/SafeCoarseningOrder/FixedSelectionInstances.lean
+ResearchLean.AG.SafeCoarseningOrder.W0Evaluation	ResearchLean/AG/SafeCoarseningOrder/W0Evaluation.lean
+ResearchLean.AG.SafeCoarseningOrder.W3Input	ResearchLean/AG/SafeCoarseningOrder/W3Input.lean
+ResearchLean.AG.SafeCoarseningOrder.W3Comparison	ResearchLean/AG/SafeCoarseningOrder/W3Comparison.lean
+ResearchLean.AG.SafeCoarseningOrder.W3Evaluation	ResearchLean/AG/SafeCoarseningOrder/W3Evaluation.lean
