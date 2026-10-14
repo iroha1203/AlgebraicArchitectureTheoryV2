@@ -30,9 +30,13 @@ EのW0全候補/定数LawとW3の元比較同定/全A/同じhidden類を完了�
 Cycle 7は[PR #5366](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5366#issuecomment-6178686416)、
 merge `7cc9e6509e40867309a864c61c5c2bf81779fce0` で受理済み。
 E W1の全三十分割対/同じ実比較/全Max/全Aut/自然選択を確定した。
-Cycle 8は最後の指定W2の実比較と全共通上界を構成し、累積全GOALの完了候補を監査する。
-全GOALは `target-proof-checkpoint`。Cycle8の標準PR査読・受入、別全GOAL最終4査読と完了同期は未完了。
-Formalへの蒸留は未実施。
+Cycle 8は[PR #5367](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5367)、
+merge `8d323b16c468a60ba387a1cee4c88b1acf63a8aa` で受理済み。
+固定T0・A–Eの全構成・判定群は Researchで `target-theorem-proved`。
+[同head正式完了判定](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5367#issuecomment-6180099392)は、
+標準PR受入後の別fresh数学2・Lean2全票とroot統合が正確に `No major findings`、全15gate pass、中心未確認なしを記録する。
+以下のcycle selection/result/auditsと完了候補の記述は各固定headでの履歴であり、正式最終判定はこの参照へ固定する。
+Formalへの蒸留は未実施、`unported (Research-proved)`。
 
 ## Cycle 1 selection
 
@@ -935,3 +939,18 @@ Researchfull/aggregate/全module/全fileloop、Formal移植/本体全体buildは
 
 この表は最終判定ではない。標準PR受入・同headCIの後に別finalpacketをPRコメントへ固定し、fresh数学2Lean2が固定GOAL/設計/累積実体の全条項を照合する。
 全4票とroot最終統合が正確にNo major findings、全gate pass、unchecked中心項目なしとなるまでtarget-theorem-provedを出さない。
+
+
+## 全GOALの正式完了証跡
+
+- 証明head: `a2c4603604d8c5cc3565c89e18a7d598d1d4b959`。
+- [標準PR受入・同headCI](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5367#issuecomment-6179726904)。
+- [別全GOAL最終packet](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5367#issuecomment-6179792760)。
+- [最終数学2全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5367#issuecomment-6180076376)、
+  [最終Lean2全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5367#issuecomment-6180078784)。
+- [root全gate・全material premise・正式completion ledger](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5367#issuecomment-6180099392)。
+- 全1,122公開宣言の個別公理は標準3公理のみ。元宣言・query・result・compiler originの全順序と全54source/blob対応を照合済み。
+- 固定数学仕様・設計・共通基準は証明loop中不変。Dの三一様主張はすべて不成立、Eの候補判定は同じ指定データの結果として確定した。
+- Researchの証明義務・中心未確認・blockerは空。Formal蒸留と全Formalbuildは未実施。
+  Research全体・aggregate・全module・全file loopのbuildはhard ruleに従い実施していない。
+- merge後のmain検証と完了状態同期の実行記録はtracking Issue #5358へ置く。IssueはOPENを保持する。

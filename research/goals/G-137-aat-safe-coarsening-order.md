@@ -1,7 +1,7 @@
 # G-137-aat-safe-coarsening-order — 安全粗視化の順序と自然選択の存在判定
 
 - `id`: `G-137-aat-safe-coarsening-order`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#5358](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358)
 - `source note`: [n1016 §4.3・候補12](../../docs/note/n1016_rising_sea_v2_paper_plan.md)、[n1006 R10](../../docs/note/n1006_aat_atlas_reinforcement_plan.md)
