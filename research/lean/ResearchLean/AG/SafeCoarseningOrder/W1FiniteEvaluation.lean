@@ -43,6 +43,10 @@ theorem mem_fixedMaximalCoarsenings_iff (R : Coarsening Bool (ZMod 4)) :
 
 /-- 全Bool target分割の元二表。 -/
 def targetChoice (b : Bool) : Setoid Bool := if b then ⊤ else ⊥
+/-- falseで指定する元target分割は等号関係。 -/
+theorem targetChoice_false : targetChoice false = ⊥ := rfl
+/-- trueで指定する元target分割は全関係。 -/
+theorem targetChoice_true : targetChoice true = ⊤ := rfl
 /-- 元target二表の関係評価API。 -/
 theorem targetChoice_relation (b s t : Bool) : (targetChoice b).r s t ↔ b=true ∨ s=t := by
   cases b
@@ -58,8 +62,8 @@ theorem parameter_candidates_surjective :
   intro R
   obtain ⟨i,hi⟩ := classify_coarsening R
   rcases classify_target R.1 with hp|hp
-  · exact ⟨(false,i),by simpa only [targetChoice,Bool.false_eq_true,if_false,hp] using hi.symm⟩
-  · exact ⟨(true,i),by simpa only [targetChoice,if_true,hp] using hi.symm⟩
+  · exact ⟨(false,i),by simpa only [targetChoice_false,hp] using hi.symm⟩
+  · exact ⟨(true,i),by simpa only [targetChoice_true,hp] using hi.symm⟩
 /-- 元target二表は同じ非対角対から区別される。 -/
 theorem targetChoice_injective : Function.Injective targetChoice := by
   intro b c h

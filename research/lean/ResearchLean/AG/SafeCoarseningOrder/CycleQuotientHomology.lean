@@ -153,8 +153,7 @@ theorem fullHom_edge_none (v : ZMod n) (z : (coarseComplex n hn R).C1)
     (he : (input n hn).quotientEdgeMap R (fullEdge n hn v).1=none) :
     (fullHom n hn R).f1 z (fullEdge n hn v)=0 := by
   rw [fullHom_eq_old]
-  change ((input n hn).quotientMorphism R).targetSubsetPullback1 _ _ _ z (fullEdge n hn v)=0
-  rw [TargetSupportedNerveMorphism.targetSubsetPullback1_apply,
+  rw [TargetSupportedNerveMorphism.targetSubsetComparisonHom_f1_apply,
     TargetSupportedNerveMorphism.targetSubsetEdgeMapOption_eq_none _ _ _ _ _ he]
   rfl
 /-- 残る元辺の実引き戻しは同じ有向商辺の評価である。 -/
@@ -163,8 +162,7 @@ theorem fullHom_edge_some (v : ZMod n) (e : (input n hn).QuotientEdge R)
     (he : (input n hn).quotientEdgeMap R (fullEdge n hn v).1=some e) :
     (fullHom n hn R).f1 z (fullEdge n hn v)=z (coarseEdge n hn R e) := by
   rw [fullHom_eq_old]
-  change ((input n hn).quotientMorphism R).targetSubsetPullback1 _ _ _ z (fullEdge n hn v)=_
-  rw [TargetSupportedNerveMorphism.targetSubsetPullback1_apply,
+  rw [TargetSupportedNerveMorphism.targetSubsetComparisonHom_f1_apply,
     TargetSupportedNerveMorphism.targetSubsetEdgeMapOption_eq_some _ _ _ _ _ _ he,Option.elim_some]
   congr 1
 /-- 指定有向商辺だけ1とする元商cochain。 -/

@@ -78,6 +78,9 @@ theorem period_boundary (x : (fullComplex n hn).C0) : period n hn ((fullComplex 
 /-- 各元辺値を旧a辺へ、旧b辺へ零を置く交互閉路cochain。 -/
 def extended (z : (fullComplex n hn).C1) : Width.Cochain n :=
   fun e => if e.2 then 0 else z (fullEdge n hn e.1)
+/-- 零延長の元辺評価を公開する基本API。 -/
+theorem extended_apply (z : (fullComplex n hn).C1) (e : ZMod n × Bool) :
+    extended n hn z e = if e.2 then 0 else z (fullEdge n hn e.1) := rfl
 /-- 交互閉路への零延長は元periodを保持する。 -/
 theorem extended_period (z : (fullComplex n hn).C1) : Width.period n (extended n hn z) = period n hn z := by
   simp only [Width.period_apply,extended,Bool.false_eq_true,if_false,if_true,add_zero]
@@ -85,19 +88,21 @@ theorem extended_period (z : (fullComplex n hn).C1) : Width.period n (extended n
 /-- 受理G136累積積分から元chartへ制限した原始関数。 -/
 def potential (z : (fullComplex n hn).C1) : (fullComplex n hn).C0 :=
   fun v => Width.potential n (extended n hn z) (v.1,false)
+/-- 元chartへの原始関数の制限を評価する基本API。 -/
+theorem potential_apply (z : (fullComplex n hn).C1) (v : ZMod n) :
+    potential n hn z (fullChart n hn v) = Width.potential n (extended n hn z) (v,false) := rfl
 /-- period零の全元cochainは同じ実d0で積分される。 -/
 theorem differential_potential (z : (fullComplex n hn).C1) (hz : period n hn z = 0) :
     (fullComplex n hn).d0 (potential n hn z) = z := by
   have ho := Width.difference_potential n (extended n hn z) ((extended_period n hn z).trans hz)
   funext e
   rw [← full_edge_complete n hn e,edge_d0]
-  let x := Width.potential n (extended n hn z)
   have ha := congrFun ho (e.1.1.1,false)
   have hb := congrFun ho (e.1.1.1,true)
   rw [Width.difference_apply] at ha hb
-  change x (e.1.1.1,true) - x (e.1.1.1,false) = z (fullEdge n hn e.1.1.1) at ha
-  change x (e.1.1.1+1,false) - x (e.1.1.1,true) = 0 at hb
-  change x (e.1.1.1+1,false) - x (e.1.1.1,false) = _
+  simp only [Width.left_apply,Width.right_apply,extended_apply,
+    Bool.false_eq_true,if_false,if_true] at ha hb
+  rw [potential_apply,potential_apply]
   linarith
 /-- 空面から任意元cochainを同じ実cocycleへ入れる。 -/
 def cycle (z : (fullComplex n hn).C1) : LinearMap.ker (fullComplex n hn).d1 :=

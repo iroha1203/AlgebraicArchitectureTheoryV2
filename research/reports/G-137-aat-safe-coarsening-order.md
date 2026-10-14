@@ -738,13 +738,13 @@ namespace `AAT.AG.SafeCoarseningOrder.Cycle` / `.W1`。下表の全定義/API/in
 
 | 固定要求 | module/実spine宣言 | 元構成と使用先 |
 | --- | --- | --- |
-| 指定T0閉路・元period/spike | `CycleHomology`: input/edge/support/read API, fullChart/fullEdge, period/period_apply/period_boundary, extended/potential/differential_potential, classOf/periodH1/periodH1_bijective/fullH1Equiv, spike/period_spike/spike_nonzero | 元有向辺からperiodを生成。G136累積積分へa辺値/b辺零で接続し、同じ実d0の原始関数を生成。元H1商への全射/単射と指定spikeを証明してから次元1を導く。 |
+| 指定T0閉路・元period/spike | `CycleHomology`: input/edge/support/read API, fullChart/fullEdge, period/period_apply/period_boundary, extended/extended_apply/potential/potential_apply/differential_potential, classOf/periodH1/periodH1_bijective/fullH1Equiv, spike/period_spike/spike_nonzero | 元有向辺からperiodを生成。G136累積積分へa辺値/b辺零で接続し、同じ実d0の原始関数を生成。元H1商への全射/単射と指定spikeを証明してから次元1を導く。 |
 | 全原始商の元cell/rank/実核余核 | `CycleQuotientHomology`: quotient_support_all, coarseChart/Edge/Equiv, coarseKernelEquiv/coarse_H1_euler, fullHom/fullHom_eq_old/fullHom_edge_none/some, coarseSpike/coarse_edge_has_original/period_coarseSpike_pos/fullHom_h1_surjective/fullHom_h1_rank/fullHom_defect/actual_full_defect | 元商全台からK1セルを生成。実d0核は巡回全点から定数。実部分像の指定商辺spikeを引き戻し、正periodにより同じ実H1の全射liftを構成する。元全射を先に証明し、セル数をrank代用の入力にしない。 |
 | 空含む全A、実図式/rank/Safe | `CycleSubsetEvaluation/Rank`: support_family_all/alpha_nonempty/actual_nonempty_defect_eq_full/actual_empty_defect/all_a_defect/coarse_edges_ge_charts/safe_iff_edges_eq_charts/actual_full_rank/actual_nonempty_rank | 元全支持・商mk全射が六種類の全名付きセルを選択する。G133同署名の全cochain比較図式から同じ実核余核/rankを輸送。非空領域一致を仮定しない。 |
 | 全Law/発生label/値block/実比較 | `CycleLaws`: separatingLaw/Label/LabelEquiv/labels_card/labels_ne/adequate/fiber_mk/fiber/fibers_same_signature, constantLaw/Label/LabelsUnique/adequate/fiber/labels_card, separatingMap/constantMap/各defect; `W1LawEvaluation`各全候補/指定Ri/全charttop defect/bijective | 非定数は元Bool値を返し二label、bottom値blockは元mk singleton。定数は任意商へdescend、一label/全target。元G133 Law比較直和欠損の全label和で二重度を保持し、同じH1射を評価する。 |
 | chart全15分割・元mk可換全単射 | `W1Partitions`: partitionMap/partition/partition_relation_iff/four_rel_ext/classify_chart, numClasses/colorValue/surjective/chartEquiv/chartEquiv_mk/chart_card | 原始色表の核を生成し、六関係の全場合と反射対称推移から全Setoidを尽くす。元発生色への商mk可換全単射でchart数を評価する。期待安全性を関係へ入れない。 |
 | 有向商辺・全30候補・全A実J | `W1Evaluation`: input/candidate/colorEdge/ColorEdge/edgeEquiv/numEdges/color_edge_card/quotient_edge_card/quotientEdge/candidate_defect/candidate_safe_classification/top_H1_subsingleton/top_full_defect/top_nonempty_defect/top_not_safe | 元色の異端点有向順序対を全四原辺から生成。逆向きは保持。元商辺全単射で辺数を数え、既証明の実rankへ戻す。top以外の非空J=(辺数-chart数,0)、top非空J=(0,1)、空J=(0,0)。 |
-| 全Safe/全Maxとtarget二表 | `W1Classification`: classify_target/classify_coarsening/partition_le_iff/binary_le_iff/binary_above/binary_maximal/maximal_iff_binary/partition_injective/binaryIndices/maximalCoarsenings_eq/maximal_card_seven; `W1FiniteEvaluation`: targetChoice/parameterCandidatesEquiv/allCoarsenings_card_thirty/safeParameters/safeCoarsenings_eq/card | 全二target表を保持。全安全元の上に二block元を原始有限包含で構成し、全Maxをtargettopの七二block表に尽くす。全候補30/Safe24を元全単射・有限表完全性で評価。 |
+| 全Safe/全Maxとtarget二表 | `W1Classification`: classify_target/classify_coarsening/partition_le_iff/binary_le_iff/binary_above/binary_maximal/maximal_iff_binary/partition_injective/binaryIndices/maximalCoarsenings_eq/maximal_card_seven; `W1FiniteEvaluation`: targetChoice/targetChoice_false/targetChoice_true/parameterCandidatesEquiv/allCoarsenings_card_thirty/safeParameters/safeCoarsenings_eq/card | 全二target表を保持。全安全元の上に二block元を原始有限包含で構成し、全Maxをtargettopの七二block表に尽くす。全候補30/Safe24を元全単射・有限表完全性で評価。 |
 | 指定四Ri・全A実比較/極大性 | `W1SpecifiedCuts`: cutIndex/specifiedCut/specifiedCut_chart_iff/specifiedCut_relation/cut_cell_counts/specifiedCut_defect/specifiedCut_rank/specifiedCut_safe/specifiedCut_not_maximal/specifiedSpike_period/specifiedSpike_nonzero | 元隣接二元だけの併合を関係式で証明。全A J零、非空実rank1、Safeは成立。全Max分類がtargettopを要求するためtargetbottomの指定Riは非極大。 |
 | 全Aut・回転/Bool交換と全FixMax | `W1Symmetry`: automorphism/aut_source_eq_target/aut_chart_step/aut_chart_apply/aut_classification/bool_equiv_cases, rotation/rotationIndex/rotation_candidate/boolSwap/boolSwap_candidate, alternating_fixed/rotation_fixed_binary_iff/fixed_maximal_iff/fixedMaximalCoarsenings_eq/decision_true/specifiedFixedOutput/generatedFixedOutput | 有向辺保存→chart一段差1→全translation、q=id→source=target、Bool全単射二表。全Autを覆い、回転は他六Maxを全て動かし交互分割を全Autが固定。FixMaxは元交互Rのsingletonで、軌道へ置換しない。 |
 | 全共通上界・最大元/join負出力 | `W1FiniteResults`: partition_zero_top/candidate_zero_top/common_upper_bounds_top/common_upper_bounds_unsafe/noGreatestOutput/no_greatest/greatestDecision_false/generatedNoGreatestOutput/specified_join_top/defect/topCokerFailure/top_cokernel_spike_nonzero/joinDecision_false/generatedJoinFailure | 指定二安全元1/2の全上界の元関係をtopへ強制。実full J=(0,1)、同じspike/periodで明示cochain証拠とliteral余核非零。全上界排除と同じfalseから一般Bproducerを発火。 |
@@ -775,3 +775,24 @@ G136 `Width.difference_potential` の一般nを、元a辺値/b辺零の同じcoc
 新14sourceは上記全W1到達点の従属証拠/APIであり、途中分割はない。spineは上表、足場なし。
 Research全体/aggregate/全module/全file検証、Formal移植/本体全体buildは未実施。
 E W2の全指定評価と別final packet全GOAL最終4査読/完了同期は未完として保持する。
+
+
+### Cycle7 初回査読の直接対応
+
+初回固定headは `510f883a91d6b202ac559ca43a80e6bfd599fee6`。
+独立数学2・Lean2の全報告をrootが全文読了し、中心finding 0、非中心3件を一括修正した。
+[数学全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5366#issuecomment-6178340514)、
+[Lean全文](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5366#issuecomment-6178343198)に元票を固定する。
+
+数学A F1は `W1.targetChoice_false/true` を追加し、全候補全射性の利用側を値評価APIへ変更した。
+LeanA F1は既存 `Width.left_apply/right_apply` と名指しされた自身の基本評価
+`Cycle.extended_apply/potential_apply` を利用する証明内部修正である。
+LeanA F2は定義所有 `UniformInvariance/ASubnerveReduction.lean` に
+`AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.targetSubsetComparisonHom_f1_apply`
+を追加し、元none/some評価を同じ次数1 projection API経由へ変更した。
+この所有API追加は新たな数学claimや別比較の構成ではなく、同じ既存Homと実pullbackの等式である。
+
+査読済みstatement、def/instance本体・値、入力・仮定、import方向、既存宣言、台帳statusを保持する。
+追加5宣言は指摘が名指しした基本評価APIだけであり、個別公理監査へ全件含める。
+直接対応資格と各指摘の解消は修正後の独立単一確認およびroot受入で別に確定する。
+E W2、別全GOAL最終4査読、完了同期は未完のまま保持する。
