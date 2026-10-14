@@ -18,9 +18,12 @@ Cycle 3は[PR #5362](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/
 merge `7ab0d926988dc32f13d26252bdaa664e813b66fe` で受理済み。
 Bの全有限分類、最大元/join判定、各不安全元の実cochain失敗出力を構成した。
 三角形の二Safe粗化について全共通上界を排除した。
-Cycle 4ではCの全原始同型による順序・実cochain/H¹輸送とSafe/Max作用を実装中。
-全GOALは `target-proof-checkpoint`。Bの固定極大判定、Cの全作用/自然選択、
-Dの全一様主張、Eの全指定評価・最終監査は未完了。
+Cycle 4は[PR #5363](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5363#issuecomment-6172559576)、
+merge `f253296cb1c1155ad6161c8601775dfcb05c2995` で受理済み。
+Cの全原始同型による順序・実cochain/H¹輸送とSafe/Max作用を構成した。
+Cycle 5ではB固定極大判定、C全Aut・自然選択iff、D三一様主張と相互含意を構成した。
+全GOALは `target-proof-checkpoint`。Cycle5のPR査読・受入と、Eの全指定評価・最終監査は未完了。
+B/C/Dの候補結果を全GOAL完了へ昇格しない。
 Formalへの蒸留は未実施。
 
 ## Cycle 1 selection
@@ -407,3 +410,115 @@ result:
 
 Researchの対象個別sourceと単一focusedだけを検証する。Research全体build/aggregate/全file elaboration、
 Formal移植・本体全体buildはこのcycleで実施しない。
+
+
+## Cycle 5 selection・結果提案
+
+実装前の[Cycle4同期・Cycle5選定](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6172660268)で固定した。
+Cycle4の[main CI確認](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6172817239)まで完了済み。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-137
+cycle: 5
+goal_blob_sha: 00278db46e595fbe30762a1bb969230f77828f4f
+base_oid: f253296cb1c1155ad6161c8601775dfcb05c2995
+tracking_issue: 5358
+report_path: research/reports/G-137-aat-safe-coarsening-order.md
+selection:
+  proof_state_ref: Issue5358 comment6172660268
+  proof_dag_predecessors: [C1 PR5360 comment6168427100, C2 PR5361 comment6169485942, C3 PR5362 comment6171574304, C4 PR5363 comment6172559576]
+  milestone: B固定極大判定・C全Autと自然選択iff・D三一様主張の決着
+  proof_obligations: [全S/T/V原始Aut列挙, 全固定極大表と正負出力, 全T0 groupoidと同型類全体の自然選択iff, 全同型選択独立, 全三一様主張と相互含意, 原始全Max固定点排除と各負結果]
+  exit_criteria: [上記一般構成・両方向・全量化, 原始正負producer発火, D各側確定, 対象個別Leanと全宣言公理, 独立数学2Lean2標準PR査読, root受入・exact-head CI・main同期]
+  selection_reason: 受理C4の全実同型作用から固定点・自然選択と一様主張へ直接接続する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiniteIsomorphisms.lean, FixedMaximalDecision.lean, FinitePrimitiveModel.lean, NaturalMaximalSelection.lean, TriangleMaximalClassification.lean, UniformDecisions.lean, FixedSelectionInstances.lean]
+  risks: [全Autを特定生成元へ縮小しない, 全Max固定点排除, 自然選択の出力はRそのもの, 同型選択独立, 全T0量化, 同じ実比較への接続, EMだけで決着しない]
+  unchecked: [PR独立査読・root受入・CIは作成後に固定する]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 全原始Aut有限表と固定極大判定を生成し全groupoid自然選択iffを閉じた。三角形全分割・全Safe・全Max分類から全固定点を排除しP_G/P_J/P_Nを各原始証拠で反証、相互含意は一般構成で証明
+  exit_criteria_status: [一般構成・両方向と原始正負はsourceへ固定, 対象個別Leanと累積個別公理はPR検証証跡へ固定, 独立査読・root受入・CIはPR gateで判定]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [上記新7source]
+  evidence: [下記Cycle5条項対応表とspine declaration list]
+  claim_mapping:
+    theorem_names: [mem_allPrimitiveIsos, mem_fixedMaximalCoarsenings, fixedMaximalDecision_eq_true, naturalSelection_iff_fixed, naturalSelection_iff_decision, transport_independent, Triangle.maximal_iff_cut, Triangle.rotation_moves_all_maximal, P_J_implies_P_G, P_G_implies_P_N, not_P_G, not_P_J, not_P_N]
+    source_labels: [GOAL B固定極大有限判定, GOAL C全同型自然選択, GOAL D一様主張]
+    conjuncts: [下記Cycle5条項対応表]
+    undischarged_assumptions: []
+    acceptance_point: 原始全Aut有限生成と実作用、同型類全入力と全射への選択独立、全Max排除・元比較負証拠を接続し全一様主張の具体的側を確定
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [全Aut原始保存field, 有限正負出力全field, 固定元からの全自然性, 三角形全候補と全Max移動, 全T0原始モデルの埋め込み]
+    remaining: [E全指定評価と全GOAL最終査読]
+  certificate_provenance:
+    discharged: [FixedMaximalWitnessとNoFixedMaximalWitnessは原始有限表から生成, NaturalMaximalSelectionは同じ固定分割の全原始輸送から生成, D反例は元三角形と受理C3/C4同じ実比較・作用]
+    unresolved: []
+  proof_use:
+    used: [有限全Equiv表とq/辺/台保存, 全Maxと全Aut, OrderIso恒等合成逆, Safe/Max保存反映, 固定性と原始逆同型, 全共通上界排除とjoin実失敗, 全Max回転移動]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [PRに固定する新7source個別Lean・公式単一focused・全累積宣言個別公理・共通scan]
+  blocking_findings: []
+  next_obligation: Eの同じW0/W1/W2/W3全指定評価と全GOAL最終監査
+```
+
+### Cycle 5 条項・実宣言・入力生成の対応
+
+| 固定要求 | 実宣言・spine | 原始入力・前提使用・必要な全方向 |
+| --- | --- | --- |
+| 全S/T/V原始同型の有限生成 | `IsoTable`, `isoTableOK`, `isoTableOK_iff`, `fromIsoTable`, `allPrimitiveIsos`, `mem_allPrimitiveIsos` | 元の全Equiv三表の積をq/有向辺/台保存だけでfilter。全fieldを検査から生成し、任意原始Isoの三表を戻して完全性。特定chart回転や安全性で候補を減らさない。 |
+| 全Aut・軌道・安定化集合 | `PrimitiveInput.allAut`, `mem_allAut`, `orbit`, `mem_orbit`, `stabilizer`, `mem_stabilizer`, `stabilizer_identity/composition/inverse`, `orbit_maximal`, `fixed_iff_orbit_singleton` | 同じ全原始自己同型表に同じ受理C4 OrderIsoを作用させる。安定化の全原始恒等/合成/逆閉性、軌道の全Max保存と全固定性iffを証明する。 |
+| 固定極大判定と正負出力 | `fixedMaximalCoarsenings`, `mem_fixedMaximalCoarsenings`, `fixedMaximalDecision`, `fixedMaximalDecision_eq_true`, `FixedMaximalWitness`, `fixedMaximalWitness_exists`, `fixedMaximalWitness`, `NoFixedMaximalWitness`, `noFixedMaximalWitness_exists`, `noFixedMaximalWitness` | 全Maxを全Aut固定検査に通す。正は同じ元RとMax/全固定証拠。負は全Maxの各Rに全原始表内の移動Autを生成。各証拠のdecision_true/decision_not_true/fixed_emptyで同じ有限判定を再検証する。 |
+| 全T0と全原始同型のgroupoid | `FinitePrimitiveModel`, `ofInput`, `ofInput_input`, `primitiveGroupoid`, `hom_eq`, `identity_eq`, `composition_eq` | 全非空有限S/T/V型と原始入力を束ねる。任意T0 inputを埋め込める。Homは元PrimitiveIsoそのもの、恒等/合成/逆と全法則を元record extから生成。H¹/安全性fieldを射に追加しない。 |
+| 同型類全体・全射への自然選択 | `IsoClass`, `base`, `isoTo`, `NaturalMaximalSelection`, `selectionFromFixed`, `selectionFromFixed_select`, `selection_fixed` | Mと同型な全T0入力を対象とし、その間の全原始Isoを自然性で量化。Rそのものを同じOrderIsoで輸送しMax保存から極大性を生成。自然性は原始合成と固定性から導く。 |
+| 同型選択独立と必要十分 | `transport_independent`, `selectionFromFixed_base`, `naturalSelection_iff_fixed`, `naturalSelection_iff_decision`, `selectionFromDecision`, `selectionFromDecision_base` | 任意α/βについてαとβ逆の合成を元Autとして固定性を使用、輸送後Rが一致。逆は自然性をMの全Autへ適用。元入力で同じRを返し、orbit選択に置換しない。 |
+| 原始全候補/Safe/Max分類 | `Triangle.three_rel_ext`, `classify_chart`, `classify_coarsening`, `safe_iff_bottom_or_cut`, `cut_neighbor_iff`, `cut_le_iff`, `cut_maximal`, `maximal_iff_cut`, `safeCoarsenings_eq`, `maximalCoarsenings_eq`, `maximal_card_three` | 三chart全同値関係を反射・対称・推移から五分割に尽くす。受理C3の同じcut比較Safeとtop実失敗から全Safe四元、全Max三cutを導出する。予想一覧を入力しない。 |
+| 全固定点排除と負producer発火 | `Triangle.rotation_moves_cut`, `rotation_moves_all_maximal`, `cut0_orbit`, `fixedMaximalCoarsenings_empty`, `fixedMaximalDecision_false`, `specifiedNoFixedOutput`, `generatedNoFixedOutput` | 全Max三cutを受理C4原始回転が全て動かす。全Aut表内の同じ回転から全Max負出力を明示生成し、同じfalseから一般producerも発火。単一非自明軌道だけで打ち切らない。 |
+| 全一様主張と一般接続 | `GlobalNaturalMaximalChoice`, `P_G`, `P_J`, `P_N`, `globalFromGreatest`, `globalFromGreatest_select`, `P_J_implies_P_G`, `P_G_implies_P_N` | 全T0束で量化。join閉性から有限非空安全poset最大元、全最大元から同じ元分割を選び全原始同型の最大性保存・一意性で自然性。反証済み主張の矛盾消去だけで含意を証明しない。 |
+| 各一様主張の原始負の側 | `triangleModel`, `triangleModel_input`, `not_P_G`, `not_P_J`, `not_P_N` | P_Gは受理C3二Safe元の全共通上界排除、P_Jは同じcut対/join/top実失敗、P_Nは全Max回転移動と全groupoid自然性の矛盾。三つとも不成立の側を確定する。 |
+| 固定極大・自然選択の原始正負と検証 | `w0_fixedMaximalCoarsenings`, `w0_fixedMaximalDecision_true`, `w0SpecifiedFixedOutput`, `w0GeneratedFixedOutput`, 各mem/eq_top/decision、`w0_top_orbit/stabilizer`, `w0_no_negative_fixed_output`, `triangle_no_positive_fixed_output`, `triangleGeneratedNoFixed_moves`, `w0Model`, `w0NaturalSelection`, `w0SpecifiedNaturalSelection`, 各base/exists、`triangle_no_natural_selection`, `w0_identity_isoTableOK`, `triangle_edgeless_isoTable_not_ok` | W0同じ最大topが全Aut固定で表はsingleton。正の指定/一般producerと全同型類自然選択が発火、負証拠は不存在。三角形は正証拠不存在・一般全Max負出力発火・同型類全入力自然選択不存在。 |
+
+### Material premise・provenance・field-content
+
+全finite/nonempty S/T/V・q全射・非対角有向辺・非空台・K1・Empty面・ℚは固定T0原始幾何。
+一般PrimitiveIsoの三全単射とq/辺/台保存はCの方向条件であり、全有限同型表と具体回転の適用では原始表から放電する。
+一般固定元からの自然選択producerのMax/全固定性は必要十分の方向条件。有限正出力とW0では元有限表・同じ実比較から生成する。
+負の有限producerのfalseは方向条件、三角形の全Max分類と元回転移動が具体適用で放電する。
+`P_G`/`P_J`を仮定する相互含意は固定Dが要求する条件付きの一般構成であり、三つの成立判定とは区別する。
+
+`FixedMaximalWitness`のR/Max/fixed、`NoFixedMaximalWitness`の全Max移動、自然選択のselect/maximal/naturalは出力fieldである。
+各producerが全有限原始表・同じOrderIso/Safe/Maxから全fieldを生成し、構造を受け取るだけの証明にしない。
+前提の使用は、三全単射→原始保存検査→全Iso、全Max/Aut→固定表、原始合成/逆＋固定性→選択独立、Max保存→全出力極大、
+原始全分類/受理cut実比較→全Max、受理回転実作用→全固定点排除、全共通上界排除/同じjoin実失敗→各一様否定、で追跡する。
+`not_P_G`は全共通上界Wを排除する `Triangle.common_upper_bounds_unsafe` / `specifiedNoGreatestOutput`、
+`not_P_J`は同じ原始joinの `specifiedJoinFailureOutput` とその実cochain失敗へ接続する受理C3依存を保つ。
+`not_P_N`は一つの移動元だけでなく `maximal_iff_cut` と `rotation_moves_all_maximal` を必要とする。
+
+### 再利用・新規部分・検証範囲
+
+新規は全原始同型表、固定極大有限判定と全正負出力、全T0の実groupoid、全同型類自然選択iff/選択独立、
+三角形の全候補/Safe/Max/固定点分類、全一様主張と一般接続・原始反証である。
+受理C1–C4の同じ原始商/Safe/Max/実Hom/H¹/OrderIso/回転を再利用する。
+G107の実H¹同型、G133の元比較合成、G134の同じincidence比較、G135の同じ有理判定は既存接続を維持し、
+G136 Width入力のhidden/fiber接続はEの未完義務として残す。
+必要な現在型・定義・実引数/proof-use・source版・受理refを独立査読で照合し、内部全履歴の再認定はしない。
+対象新7sourceの個別Lean、公理・placeholder/hiddenBiDi/privacy/語彙/import方向/manifestをPRで固定する。
+Research全体build/aggregate/全file検証、Formal移植・本体全体buildは実施しない。
+E全指定W0/W1/W2/W3評価と別final packetによる全GOAL最終独立4査読は未完として保持する。
+
+
+品質基準の新述語instanceペアは、`isoTableOK`をW0恒等三表の成立と三角形→辺なし表の不成立で示す。
+固定極大の正/負証拠と同型類上の自然選択はW0/三角形で両側を示す。
+`P_G/P_J/P_N`は全T0にわたる一様命題であり、原始反証により成立instanceは存在しない。
+`GlobalNaturalMaximalChoice`も全Max固定点排除から不存在である。この理由を定義所有moduleに記載し、
+条件付き相互含意の一般producerを具体的な成立判定と混ぜない。
