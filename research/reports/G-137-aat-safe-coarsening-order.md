@@ -27,8 +27,11 @@ B固定極大判定、C全Aut・自然選択iffと選択独立、Dの三一様�
 Cycle 6は[PR #5365](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5365#issuecomment-6176661031)、
 merge `e09218510ed44defbf4a22dd90c0cac294ef30b8` で受理済み。
 EのW0全候補/定数LawとW3の元比較同定/全A/同じhidden類を完了した。
-Cycle 7では指定W1を全三十分割対/同じ実比較/全Max/全Aut/自然選択へ評価する。
-全GOALは `target-proof-checkpoint`。Cycle7のPR査読・受入、W2全指定評価と別全GOAL最終監査は未完了。
+Cycle 7は[PR #5366](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5366#issuecomment-6178686416)、
+merge `7cc9e6509e40867309a864c61c5c2bf81779fce0` で受理済み。
+E W1の全三十分割対/同じ実比較/全Max/全Aut/自然選択を確定した。
+Cycle 8は最後の指定W2の実比較と全共通上界を構成し、累積全GOALの完了候補を監査する。
+全GOALは `target-proof-checkpoint`。Cycle8の標準PR査読・受入、別全GOAL最終4査読と完了同期は未完了。
 Formalへの蒸留は未実施。
 
 ## Cycle 1 selection
@@ -796,3 +799,139 @@ LeanA F2は定義所有 `UniformInvariance/ASubnerveReduction.lean` に
 追加5宣言は指摘が名指しした基本評価APIだけであり、個別公理監査へ全件含める。
 直接対応資格と各指摘の解消は修正後の独立単一確認およびroot受入で別に確定する。
 E W2、別全GOAL最終4査読、完了同期は未完のまま保持する。
+
+
+## Cycle 8：指定W2の実比較と全共通上界、全GOAL完了候補
+
+実装前selectionは[Issue5358 comment6178766622](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5358#issuecomment-6178766622)。
+S=T=Bool、q=id、a=0,b=1,c=2,d=3,e=4,f=5をZMod6へ符号化し、元六有向辺・全支持・Empty面・ℚを保持する。
+Racはa/cだけ、Rdfはd/fだけのchart合併でtarget等号関係。真のT0 joinは両二対合併である。
+元商mkを保つchart/有向辺全単射を作り、受理C7の同じ実pullbackの正period・全射lift/全A比較図式へ接続する。
+
+非空Aの同じ実rankは各指定合併/joinで1。指定二併合はそれぞれ核1・余核0、joinは核2・余核0であり、全て不安全。
+空Aではrank/J零。指定二元は安全対join反例の前件を満たさない。
+全共通上界はtarget二表×join四chartの全十五分割の引き戻し、合計30個である。
+同じ実比較について安全なものは全七二block表×target二表、合計14個。
+具体的上界はchart `{a,b,c}|{d,e,f}`、target等号関係であり安全。全共通上界の不存在候補は成立しない。
+これを全W2粗化が30個であるという主張へ読み替えない。全W2粗化はBの全同値関係対一覧が保持する。
+
+元非定数Lawの二発生labelを保持した実比較のJは指定二合併(2,0)、join(4,0)。
+全target分割で元定数Law一labelの同じchart比較はそれぞれ(1,0)、(2,0)。
+同じ署名のlabelを消去せず、元値blockとgeneratedComparisonH1Mapの全label直和欠損へ戻す。
+元a→bだけ1の指定cochainは同じ六辺period=1、同じ既存H1商で非零。
+指定合併/joinの実核は生成した粗cochain・細potential・正規化分離汎関数と同じH1商の非零類へ戻す。
+Dの三一様主張の反証は受理三角形のままであり、不成立のW2候補へ差し替えない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-137-aat-safe-coarsening-order
+cycle: 8
+goal_blob_sha: 00278db46e595fbe30762a1bb969230f77828f4f
+base_oid: 7cc9e6509e40867309a864c61c5c2bf81779fce0
+tracking_issue: 5358
+report_path: research/reports/G-137-aat-safe-coarsening-order.md
+selection:
+  proof_state_ref: Issue5358/comment6178766622
+  proof_dag_predecessors: [受理C1-C7, G133同署名実比較/全Law直和, G135同じ有限全A有理判定, G136period積分]
+  milestone: E W2の指定六角形・二併合・join・全共通上界の同じ実評価を確定し、全GOAL完了候補を監査する
+  proof_obligations:
+    - Bool/idとa..fの同じ六有向辺/全支持/Empty/ℚからT0入力を生成
+    - Rac/Rdfの指定二点だけ合併と元商mk可換chart/有向辺全単射
+    - 同じ元period/spike非零、実部分辺像と既証明実全射liftから全A rank/核余核/J/Safeを評価
+    - T0 joinを原始関係包含/生成で確定し同じjoin実比較を全A評価
+    - 任意共通上界のtarget分割二表とchart合併表を完全分類し、安全上界があれば元Rそのものを明示
+    - 指定Law二発生label/singleton値blockと定数Law一label/全block、同じ実Law比較/重複度/指定periodを接続
+    - 同じ一般Bの全候補/全Safe有限表・全A有理判定へ具体評価を戻し、候補が成立しない場合も固定データの結果として記録
+    - 累積T0/A-D/E W0-W3と全premiseを最終mappingへ照合し、別finalpacket全GOALfresh数学2Lean2/root最終受入を実施
+  exit_criteria: [W2全固定要求の入力生成Lean証拠, 全material premise放電, 個別Lean/累積全個別公理/共通scan, 標準PR独立数学2Lean2/root受入/exact-head CI, 別全GOAL最終4査読/root照合, merge/main/完了同期]
+  selection_reason: Eの最後の指定六角形の全A実比較と全共通上界gapを閉じ、累積全GOAL判定へ進む
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [W2Input.lean, W2SpecifiedEvaluation.lean, W2UpperBounds.lean, W2LawEvaluation.lean, W2FiniteEvaluation.lean]
+  risks: [候補予想を入力する, 逆向き商辺併合, 実rankを次元だけで置換, 全共通上界のtarget分割除外, join不安全だけから最大元不存在, 同署名label重複消去, 既受理C1-C7票を別全GOAL最終票へ代用]
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 指定二合併/joinの全A実rankと核余核を確定し、全三十共通上界/十四安全上界を完全分類、同じLaw/period/有限判定へ接続
+  exit_criteria_status:
+    - W2の全指定数学構成・実比較・全上界・Lawを下表へ対応
+    - 個別Lean/全個別公理/共通scanを固定headのPRへ公開
+    - 標準独立4査読/root受入/CIの後に同head別finalpacketを生成し、全GOAL最終fresh4査読を実施
+    - merge/main/完了同期は全gate通過後に確定
+  split_reason: none
+  completion_candidate: yes
+  lean_artifacts: [新5sourceの全spine/API/原始有限witness, 受理C1-C7累積spine]
+  evidence: [元六有向辺/二点合併関係, 元商mk可換chart/edge全単射, 同じ実全射rank/全A核余核, 全上界関係復元/全分割完全性, 元cochain/potential/汎関数, 同じLaw実直和欠損/元period, 同じB有限一覧/全A有理判定]
+  claim_mapping:
+    theorem_names: [W2.ac_specified_relation, df_specified_relation, specified_join, specifiedSpike_nonzero, fold_defect, fold_rank, fold_empty_rank, fold_not_safe, fold_not_maximal, foldKernelFailure, fold_kernel_class_nonzero, compressed_reconstruct, classify_upper, upperCandidate_defect, upperCandidate_safe_classification, joined_defect, joined_rank, joinedKernelFailure, joined_kernel_class_nonzero, safe_common_upper_classification, safe_common_upper_exists, separating_fold_defect, constant_fold_defect, separating_joined_defect, constant_joined_defect, commonUpperBounds_eq, commonUpperBounds_card, safeCommonUpperBounds_eq, safeCommonUpperBounds_card, upperCandidate_decision]
+    source_labels: [固定GOAL E W2, witnesses W2全評価表, 同じT0/A-C経路, 全GOAL completion criteria1-3]
+    conjuncts: [元六角形と指定合併, 真のjoin/全A実rank核余核J, 全共通上界/具体安全上界, 元Lawと全label重複度/値block, 元period非零, 同じ有限出力, 累積全GOAL最終監査]
+    undischarged_assumptions: []
+    acceptance_point: 元原始表と受理C1-C7の同じ実比較から全指定W2評価を生成
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [指定T0原始条件, 元二点合併/真のjoin, 商mk可換chart/有向辺同定, 実pullback全射rankと全A核余核, 任意上界の全十五分割復元/全target保持, 元Lawadequacy/label/値block/実直和比較, 元period非零, 同じ全A有理判定/全候補・全安全一覧]
+    remaining: [標準PR4査読/root受入/CI, 別全GOAL最終4査読/root最終照合, merge/main/完了同期]
+  certificate_provenance:
+    discharged: [元有限色表/商mk両逆, 同じ実pullback正period/全射lift, 同じ実H1核から元cochain/potential/分離dual, 元sectionとjoin関係から任意上界復元, 元Law発生値から全label直和, 元実Safe分類から有限true-false]
+    unresolved: []
+  proof_use:
+    used: [元六辺/二点合併→商mk可換セル全単射→実rank核余核, 元全台→同署名全Hom→全A, 原始包含/section→全上界完全性→安全十四, 同じ実非単射→元核cochain証拠, 原始Law値→adequacy/label/値block→全実直和欠損, 元実分類→同じB一覧/有限判定]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [固定head PRに公開する新5source個別Lean/公式単一focused/累積全個別公理/共通scan]
+  blocking_findings: []
+  next_obligation: 標準PR/root受入と同headCI、別finalpacket全GOAL最終4査読/root再照合、merge/main/完了同期
+```
+
+### W2 要求・実spine・生成経路
+
+namespace `AAT.AG.SafeCoarseningOrder.W2`。全定義/API/instanceと公開generated宣言を公理監査へ含める。足場はない。
+
+| 固定要求 | source / 実宣言 | 元構成・使用先 |
+| --- | --- | --- |
+| 同じ六角形、指定二点合併、真のjoin、period | W2Input: input/read/support/edge API, acMap/dfMap/joinMap, ac/df/joined, ac_specified_relation/df_specified_relation, specified_join, specifiedSpike_period/nonzero | 元六辺、元二点合併の核関係、原始包含と反射でjoinを証明。元a→bだけ1を同じC7 period/H1へ適用。 |
+| 元指定商セルと全A実比較 | W2SpecifiedEvaluation: foldCandidate/fold_false/true/relation, foldChartEquiv/mk/card, foldEdge/FoldEdge/foldEdgeEquiv/card/実商辺, fold_defect/rank/empty_rank/not_safe/not_maximal | 元五色全射とmathlib核商全単射、元有向順序対を生成。両逆/mkを保持して商セル数を数えた後、実pullback全射liftとd0核へ戻す。各非空J=(1,0)、rank1。 |
+| 同じ実核cochainと非零H1 | W2SpecifiedEvaluation: fold_not_injective/foldKernelFailure/fold_kernel_class_nonzero; W2UpperBounds: joined_not_injective/joinedKernelFailure/joined_kernel_class_nonzero | 元実Jの核1/2から同じ射の非単射を導き、受理C3 producerで実粗cochain・細potential・d0を消す正規化汎関数を生成。literal元H1類非零を保持。 |
+| 全共通上界の完全性と実診断 | W2UpperBounds: compressed/reconstruct, upperCandidate/classify_upper, upperColor/ChartEquiv/edgeEquiv/cards, upperCandidate_defect/rank/safe_classification, joined_eq_upper_candidate/defect/rank, safe_common_upper_classification/exists | joinMapの全射sectionから任意上界関係を全四点へ復元。全十五分割/任意Pを引き戻し、元商mk・向き保持で実Jを評価。安全上界を七二blockに尽くし、具体{abc}|{def}を示す。 |
+| 元Law・値block・重複度 | W2LawEvaluation: separating_fold_defect/constant_fold_defect/separating_joined_defect/constant_joined_defect; 受理CycleLawsのLabelEquiv/labels_card/fiber/adequacy | 非定数は元Bool値/二label/等号商mk singleton値block。定数は全target商へ降下/一label/全値block。両labelを同署名でも保持し、同じgeneratedLaw射の全label欠損和へ戻す。 |
+| 同じ全候補/全安全表と有限結果 | W2FiniteEvaluation: upper_parameter_injective/complete, commonUpperBounds/eq/card, safeCommonUpperBounds/eq/card, fold_decision_false/joined_decision_false/upperCandidate_decision/specified_upper_decision_true | Bの全関係対一覧と同じ全A有理判定を再利用。元関係両包含のfilterを全30表に同定し、安全14表を全実Safeに同定。全W2候補を30に縮めない。 |
+
+### Material premise・provenance・proof-use
+
+指定有限非空S/T/V、id全射、非対角有向辺、全支持/K1/Empty/ℚはT0入力幾何で、n6と元原始表から放電する。
+一般閉路実rankの商辺存在・非空Aは方向条件、指定合併と全非top上界では原始有向色辺から放電し、空Aは別の零比較。
+全chart合併は元空辺と零粗H1から同じ実余核1を生成する。
+各色表の全射/商mk両逆/辺同定、join関係包含、全上界復元は新規構成義務であり、元有限表とsection/rightInverseから証明する。
+元実比較全射・rank・全A共役は受理C7の同じn6/R/A/元実商辺に適用し、期待次元を入力しない。
+核失敗recordは結論を保持する出力だが、そのx/y/functional/normalized/annihilateは同じ実H1核と受理C3の元代表・dualから生成する。
+粗Lawadequacyは元非定数値の等号商降下または元定数値の任意商降下で構成し、細adequacyは一般Aから導出。
+原始全発生labelと同じ値blockが全実直和比較へ使われる。任意target分割を共通上界表から除外しない。
+
+C7の数学spineが新規n6適用の材料であるため、その現在statement/必要定義/実引数と受理PR5366/comment6178686416を確認する。
+既存G133/G135/G136、C1-C6の再利用は現在必要source版/ref・proof-useまで確認し、受理履歴全体の再認定へ広げない。
+source5はW2到達点の従属証拠/APIであり、途中分割はない。
+Researchfull/aggregate/全module/全fileloop、Formal移植/本体全体buildは未実施。Formalunported。
+
+### 累積全GOAL完了候補の対応
+
+| 固定条項 | 累積実証拠と受理段階 | 完了候補で照合する強さ |
+| --- | --- | --- |
+| T0 | C1 PrimitiveInput/QuotientNerve、C2 GeneratedComparison/UniformSafety | 全有限非空原始入力、任意独立同値関係対、元商規則、実canonical逆像の全A比較。 |
+| A | C1 Factorization、C2 IteratedQuotient/UniformSafety、C3 IsomorphismCochains/IdentitySafety | 関係包含 iff 元二商因子化、二段/direct mk可換同型、全Hom/H1恒等合成、全粗adequateLaw、同じJ/G135係数fiberiff。 |
+| B | C3 FiniteClassification/FiniteDecisions/FailureCertificates、C5 FixedMaximalDecision | 全候補/Safe/Max完全性、各Safeの上にMax、最大元 iff 唯一Max iff 全安全対安全上界、最大/join/固定の全正負出力と各実cochain失敗。 |
+| C | C4 CoarseningTransport/IsomorphismComparison/SafeIsomorphism、C5 FiniteIsomorphisms/FinitePrimitiveModel/NaturalMaximalSelection | 全S/T/V原始Iso、順序/元mk/全cochain/H1共役、全Safe/Max/Aut/FixMax、全同型類/全Iso自然R選択 iff 固定Max、任意同型選択独立。 |
+| D | C5 UniformDecisions、C3/C5元Triangle全分類/全上界/全Max作用 | PG/PJ/PNすべて不成立。元T0三角形から二Safeの全上界排除/実join失敗/全Max固定点不存在→全groupoid自然選択不存在。非空虚なPJ⇒PG⇒PNを一般構成で証明。 |
+| E W0 | C6 W0Evaluation、C2 W0全安全 | 元Unit/id/一辺/全台/一定数Law、全R全A実J零、同じB最大/join/全Aut固定の正出力。 |
+| E W1 | C7全Cycle/W1 source | 元四有向辺/全30分割、各Ri全A実比較、安全/非極大、全Safe24/Max7/FixMax1、全上界負証拠、全Aut作用/自然選択、同じLaw/period/有限出力。 |
+| E W2 | C8新5source | 元六有向辺/指定二点合併/真のjoin、全A実rank/J/核証拠、全共通上界30/安全14/具体安全上界、同じLaw/period/有限結果。候補予想を採用しない。 |
+| E W3 | C6 W3Input/Comparison/Evaluation | 元G136 false全a/b・truea0除去、元支持、R=(ker fst,top)、mk可換同定/三次数d0d1/全Hom/H1、plus全A/properminus/fullminus、同じMV hiddenとG135 fiber類。 |
+| 完了条件2-3 | 全53対象sourceと所有API/manifest、本report、Issue/PR固定証跡と別finalpacket | 全spine/API/instanceと前提生成/use対応、全個別公理/placeholder/共通scan、標準PRと別最終4/root全gate、merge/main/完了同期を独立に確定。 |
+
+この表は最終判定ではない。標準PR受入・同headCIの後に別finalpacketをPRコメントへ固定し、fresh数学2Lean2が固定GOAL/設計/累積実体の全条項を照合する。
+全4票とroot最終統合が正確にNo major findings、全gate pass、unchecked中心項目なしとなるまでtarget-theorem-provedを出さない。
