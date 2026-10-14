@@ -500,8 +500,8 @@ audits:
 各producerが全有限原始表・同じOrderIso/Safe/Maxから全fieldを生成し、構造を受け取るだけの証明にしない。
 前提の使用は、三全単射→原始保存検査→全Iso、全Max/Aut→固定表、原始合成/逆＋固定性→選択独立、Max保存→全出力極大、
 原始全分類/受理cut実比較→全Max、受理回転実作用→全固定点排除、全共通上界排除/同じjoin実失敗→各一様否定、で追跡する。
-`not_P_G`は全共通上界Wを排除する `Triangle.common_upper_bounds_unsafe` / `specifiedNoGreatestOutput`、
-`not_P_J`は同じ原始joinの `specifiedJoinFailureOutput` とその実cochain失敗へ接続する受理C3依存を保つ。
+`not_P_G`は全共通上界Wを排除する `Triangle.common_upper_bounds_unsafe` / `Triangle.noGreatestOutput`、
+`not_P_J`は同じ原始joinの `Triangle.joinFailureOutput` とその実cochain失敗へ接続する受理C3依存を保つ。
 `not_P_N`は一つの移動元だけでなく `maximal_iff_cut` と `rotation_moves_all_maximal` を必要とする。
 
 ### 再利用・新規部分・検証範囲
