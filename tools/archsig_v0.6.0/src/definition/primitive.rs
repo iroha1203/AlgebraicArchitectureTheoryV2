@@ -29,6 +29,54 @@ fn fail<T, E: InputError>(code: Code, at: &Location, message: impl Into<String>)
     })
     .into())
 }
+fn required_field<'a, E: InputError>(
+    signature: &'a PrimitiveSignature,
+    name: &str,
+    at: &Location,
+    message: &str,
+    control: &mut Control,
+) -> R<&'a Field, E> {
+    signature.field_checked_controlled::<E, _>(
+        name,
+        control,
+        Checkpoint::DefinitionSemantics,
+        |field, _| match field {
+            Some(field) => Ok(field),
+            None => fail(Code::Syntax, at, message),
+        },
+    )
+}
+fn required_root<E: InputError>(
+    defs: &CheckedDefinitions,
+    name: &str,
+    at: &Location,
+    message: &str,
+    control: &mut Control,
+) -> R<(), E> {
+    defs.root_entity_checked_controlled::<E, _>(name, control, |root, _| {
+        if root {
+            Ok(())
+        } else {
+            fail(Code::Syntax, at, message)
+        }
+    })
+}
+fn required_owner<E: InputError>(
+    defs: &CheckedDefinitions,
+    name: &str,
+    expected: &str,
+    at: &Location,
+    message: &str,
+    control: &mut Control,
+) -> R<(), E> {
+    defs.owner_root_checked_controlled::<E, _>(name, control, |owner, _| {
+        if owner == Some(expected) {
+            Ok(())
+        } else {
+            fail(Code::Syntax, at, message)
+        }
+    })
+}
 fn mismatch<T, E: InputError>(
     at: &Location,
     expected: &Type,
@@ -132,14 +180,26 @@ impl CheckedDefinitions {
         name: &str,
         control: &mut Control,
     ) -> R<bool, E> {
+        self.root_entity_checked_controlled::<E, _>(name, control, |root, _| Ok(root))
+    }
+    fn root_entity_checked_controlled<E: InputError, T>(
+        &self,
+        name: &str,
+        control: &mut Control,
+        check: impl FnOnce(bool, &mut Control) -> R<T, E>,
+    ) -> R<T, E> {
         E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
-        let result = (|| match self.declarations.get(name) {
-            Some(d) if matches!(d.signature, PrimitiveSignature::Entity { .. }) => Ok(d
-                .signature
-                .field_controlled::<E>("owner", control, Checkpoint::DefinitionSemantics)?
-                .is_none()),
-            _ => Ok(false),
-        })();
+        let result = match self.declarations.get(name) {
+            Some(d) if matches!(d.signature, PrimitiveSignature::Entity { .. }) => {
+                d.signature.field_checked_controlled::<E, _>(
+                    "owner",
+                    control,
+                    Checkpoint::DefinitionSemantics,
+                    |owner, control| check(owner.is_none(), control),
+                )
+            }
+            _ => check(false, control),
+        };
         E::finish(result, control, Checkpoint::DefinitionSemantics)
     }
     /// 原始署名に明記した所属先。検査中にも宣言順に依存せず読める。
@@ -152,31 +212,41 @@ impl CheckedDefinitions {
         name: &str,
         control: &mut Control,
     ) -> R<Option<&str>, E> {
+        self.owner_root_checked_controlled::<E, _>(name, control, |root, _| Ok(root))
+    }
+    fn owner_root_checked_controlled<'a, E: InputError, T>(
+        &'a self,
+        name: &str,
+        control: &mut Control,
+        mut check: impl FnMut(Option<&'a str>, &mut Control) -> R<T, E>,
+    ) -> R<T, E> {
         E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
         let result = (|| {
             let Some(d) = self.declarations.get(name) else {
-                return Ok(None);
+                return check(None, control);
             };
             if !matches!(
                 d.signature,
                 PrimitiveSignature::Entity { .. } | PrimitiveSignature::Arrow { .. }
             ) {
-                return Ok(None);
+                return check(None, control);
             }
-            let Some(field) = d.signature.field_controlled::<E>(
+            let root = d.signature.field_checked_controlled::<E, _>(
                 "owner",
                 control,
                 Checkpoint::DefinitionSemantics,
-            )?
-            else {
-                return Ok(None);
-            };
-            let Type::Ref(root) = &field.ty else {
-                return Ok(None);
-            };
-            Ok(self
-                .is_root_entity_controlled::<E>(root, control)?
-                .then_some(root.as_str()))
+                |field, control| match field.map(|field| &field.ty) {
+                    Some(Type::Ref(root)) => Ok(std::ops::ControlFlow::Continue(root)),
+                    _ => check(None, control).map(std::ops::ControlFlow::Break),
+                },
+            )?;
+            match root {
+                std::ops::ControlFlow::Break(result) => Ok(result),
+                std::ops::ControlFlow::Continue(root) => self
+                    .root_entity_checked_controlled::<E, _>(root, control, |valid, control| {
+                        check(valid.then_some(root.as_str()), control)
+                    }),
+            }
         })();
         E::finish(result, control, Checkpoint::DefinitionSemantics)
     }
@@ -341,17 +411,33 @@ fn check_type_inner<E: InputError>(
                 );
             }
             if let Type::Owned(_, index) = t {
-                let Some(root) = defs.owner_root_controlled::<E>(name, control)? else {
-                    return fail(
-                        Code::Syntax,
-                        at,
-                        format!("`{name}` は所属先を持たない entity・arrow"),
-                    );
-                };
+                let root =
+                    defs.owner_root_checked_controlled::<E, _>(name, control, |root, _| {
+                        root.ok_or_else(|| {
+                            E::from(Box::new(Issue {
+                                code: Code::Syntax,
+                                message: format!("`{name}` は所属先を持たない entity・arrow"),
+                                location: at.clone(),
+                                details: Details::Empty,
+                            }))
+                        })
+                    })?;
                 let mut parameter = None;
-                for (name, ty) in earlier {
+                let mut parameters = earlier.iter().peekable();
+                while let Some((name, ty)) = parameters.next() {
                     E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
                     let found = *name == index;
+                    if !found && parameters.peek().is_none() {
+                        return E::finish(
+                            fail(
+                                Code::Reference,
+                                &child(at, "2"),
+                                format!("添字 `{index}` は左にある parameter を指す"),
+                            ),
+                            control,
+                            Checkpoint::DefinitionSemantics,
+                        );
+                    }
                     E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
                     if found {
                         parameter = Some(*ty);
@@ -532,7 +618,14 @@ pub(super) fn check<E: InputError>(
                     Checkpoint::DefinitionSemantics,
                 )? {
                     match &f.ty {
-                        Type::Ref(r) if defs.is_root_entity_controlled::<E>(r, control)? => {
+                        Type::Ref(r) => {
+                            required_root::<E>(
+                                defs,
+                                r,
+                                &child(&f.location, "name"),
+                                "owner の型は所属先を持たない entity",
+                                control,
+                            )?;
                             Some(r.clone())
                         }
                         _ => {
@@ -549,31 +642,22 @@ pub(super) fn check<E: InputError>(
                 Some((owner, None))
             }
             PrimitiveSignature::Arrow { .. } => {
-                let (Some(owner), Some(from), Some(to)) = (
-                    d.signature.field_controlled::<E>(
-                        "owner",
-                        control,
-                        Checkpoint::DefinitionSemantics,
-                    )?,
-                    d.signature.field_controlled::<E>(
-                        "from",
-                        control,
-                        Checkpoint::DefinitionSemantics,
-                    )?,
-                    d.signature.field_controlled::<E>(
-                        "to",
-                        control,
-                        Checkpoint::DefinitionSemantics,
-                    )?,
-                ) else {
-                    return fail(
-                        Code::Syntax,
-                        &child(&d.location, "name"),
-                        "arrow は owner・from・to の field を持つ",
-                    );
-                };
+                let at = child(&d.location, "name");
+                let message = "arrow は owner・from・to の field を持つ";
+                let owner = required_field::<E>(&d.signature, "owner", &at, message, control)?;
+                let from = required_field::<E>(&d.signature, "from", &at, message, control)?;
+                let to = required_field::<E>(&d.signature, "to", &at, message, control)?;
                 let root = match &owner.ty {
-                    Type::Ref(r) if defs.is_root_entity_controlled::<E>(r, control)? => r.clone(),
+                    Type::Ref(r) => {
+                        required_root::<E>(
+                            defs,
+                            r,
+                            &child(&owner.location, "name"),
+                            "arrow の owner の型は根 entity",
+                            control,
+                        )?;
+                        r.clone()
+                    }
                     _ => {
                         return fail(
                             Code::Syntax,
@@ -600,7 +684,6 @@ pub(super) fn check<E: InputError>(
                     .declarations
                     .get(&endpoint)
                     .is_some_and(|d| matches!(d.signature, PrimitiveSignature::Entity { .. }))
-                    || defs.owner_root_controlled::<E>(&endpoint, control)? != Some(root.as_str())
                 {
                     return fail(
                         Code::Syntax,
@@ -608,6 +691,14 @@ pub(super) fn check<E: InputError>(
                         "arrow の端点は owner に所属する entity",
                     );
                 }
+                required_owner::<E>(
+                    defs,
+                    &endpoint,
+                    &root,
+                    &child(&from.location, "name"),
+                    "arrow の端点は owner に所属する entity",
+                    control,
+                )?;
                 Some((Some(root), Some(endpoint)))
             }
             _ => None,
@@ -773,29 +864,40 @@ fn check_correspondence<E: InputError>(
     else {
         unreachable!()
     };
-    let (Some(from), Some(to)) = (
-        super::model::find_field_controlled::<E>(
-            parameters,
-            "from",
-            control,
-            Checkpoint::DefinitionSemantics,
-        )?,
-        super::model::find_field_controlled::<E>(
-            parameters,
-            "to",
-            control,
-            Checkpoint::DefinitionSemantics,
-        )?,
-    ) else {
-        return fail(
-            Code::Syntax,
-            &child(&d.location, "name"),
-            "correspondence は parameters に from・to を持つ",
-        );
-    };
+    let at = child(&d.location, "name");
+    let message = "correspondence は parameters に from・to を持つ";
+    let from = super::model::find_field_checked_controlled::<E, _>(
+        parameters,
+        "from",
+        control,
+        Checkpoint::DefinitionSemantics,
+        |field, _| match field {
+            Some(field) => Ok(field),
+            None => fail(Code::Syntax, &at, message),
+        },
+    )?;
+    let to = super::model::find_field_checked_controlled::<E, _>(
+        parameters,
+        "to",
+        control,
+        Checkpoint::DefinitionSemantics,
+        |field, _| match field {
+            Some(field) => Ok(field),
+            None => fail(Code::Syntax, &at, message),
+        },
+    )?;
     let mut root = |p: &Field| -> R<String, E> {
         match &p.ty {
-            Type::Ref(n) if defs.is_root_entity_controlled::<E>(n, control)? => Ok(n.clone()),
+            Type::Ref(n) => {
+                required_root::<E>(
+                    defs,
+                    n,
+                    &child(&p.location, "name"),
+                    "correspondence の from・to は根 entity",
+                    control,
+                )?;
+                Ok(n.clone())
+            }
             _ => fail(
                 Code::Syntax,
                 &child(&p.location, "name"),
@@ -831,14 +933,15 @@ fn check_correspondence<E: InputError>(
                 );
             }
         };
-        if defs.owner_root_controlled::<E>(&e, control)? != Some(source.as_str())
-            || defs.owner_root_controlled::<E>(&f, control)? != Some(target.as_str())
-        {
-            return fail(
-                Code::Syntax,
+        for (name, root) in [(&e, &source), (&f, &target)] {
+            required_owner::<E>(
+                defs,
+                name,
+                root,
                 &child(&m.location, "name"),
                 "対応表の型は from・to の根に所属する",
-            );
+                control,
+            )?;
         }
         if domain.insert(e.clone(), f.clone()).is_some() || !codomain.insert(f.clone()) {
             return fail(
@@ -1014,12 +1117,20 @@ fn resolve_field<'a, E: InputError>(
     let result = (|| {
         if let Some((owner, field)) = name.rsplit_once('.')
             && let Some(d) = defs.declarations.get(owner)
-            && let Some(f) = d.signature.field_controlled::<E>(
+        {
+            let f = d.signature.field_checked_controlled::<E, _>(
                 field,
                 control,
                 Checkpoint::DefinitionSemantics,
-            )?
-        {
+                |field, _| match field {
+                    Some(field) => Ok(field),
+                    None => fail(
+                        Code::Reference,
+                        at,
+                        format!("field `{name}` を解決できない"),
+                    ),
+                },
+            )?;
             return Ok((owner, f));
         }
         fail(

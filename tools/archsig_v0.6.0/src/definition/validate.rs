@@ -31,9 +31,23 @@ pub(super) fn check<E: InputError>(
             let ns = target.split('.').next().expect("完全名の字句を確認済み");
             let mut declared_dependency = ns == d.namespace;
             if !declared_dependency {
-                for binding in &v.dependencies {
+                let mut bindings = v.dependencies.iter().peekable();
+                while let Some(binding) = bindings.next() {
                     E::checkpoint(control, Checkpoint::DefinitionDependency)?;
                     declared_dependency |= binding.namespace == ns;
+                    if !declared_dependency && bindings.peek().is_none() {
+                        return E::finish(
+                            Err(Box::new(Issue {
+                                code: Code::Reference,
+                                message: format!("namespace `{ns}` の dependency がない"),
+                                location: at.clone(),
+                                details: Details::Empty,
+                            })
+                            .into()),
+                            control,
+                            Checkpoint::DefinitionDependency,
+                        );
+                    }
                     E::checkpoint(control, Checkpoint::DefinitionDependency)?;
                     if declared_dependency {
                         break;

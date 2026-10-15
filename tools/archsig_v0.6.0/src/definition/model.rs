@@ -104,12 +104,27 @@ impl PrimitiveSignature {
         control: &mut Control,
         point: Checkpoint,
     ) -> Result<Option<&Field>, E> {
+        self.field_checked_controlled::<E, _>(name, control, point, |field, _| Ok(field))
+    }
+    /// Interpret the completed search before sampling its post checkpoint.
+    /// A required use constructs its original Issue here; optional lookup keeps None.
+    pub(crate) fn field_checked_controlled<'a, E: InputError, T>(
+        &'a self,
+        name: &str,
+        control: &mut Control,
+        point: Checkpoint,
+        check: impl FnOnce(Option<&'a Field>, &mut Control) -> Result<T, E>,
+    ) -> Result<T, E> {
         E::checkpoint(control, point)?;
         let result = match self.record_fields() {
-            Some((parameters, fields)) => {
-                find_field_controlled::<E>(parameters.iter().chain(fields), name, control, point)
-            }
-            None => Ok(None),
+            Some((parameters, fields)) => find_field_checked_controlled::<E, _>(
+                parameters.iter().chain(fields),
+                name,
+                control,
+                point,
+                check,
+            ),
+            None => check(None, control),
         };
         E::finish(result, control, point)
     }
@@ -121,17 +136,31 @@ pub(crate) fn find_field_controlled<'a, E: InputError>(
     control: &mut Control,
     point: Checkpoint,
 ) -> Result<Option<&'a Field>, E> {
+    find_field_checked_controlled::<E, _>(fields, name, control, point, |field, _| Ok(field))
+}
+
+pub(crate) fn find_field_checked_controlled<'a, E: InputError, T>(
+    fields: impl IntoIterator<Item = &'a Field>,
+    name: &str,
+    control: &mut Control,
+    point: Checkpoint,
+    check: impl FnOnce(Option<&'a Field>, &mut Control) -> Result<T, E>,
+) -> Result<T, E> {
     E::checkpoint(control, point)?;
     let result = (|| {
-        for field in fields {
+        let mut fields = fields.into_iter().peekable();
+        while let Some(field) = fields.next() {
             E::checkpoint(control, point)?;
             let found = field.name == name;
-            E::checkpoint(control, point)?;
             if found {
-                return Ok(Some(field));
+                return E::finish(check(Some(field), control), control, point);
             }
+            if fields.peek().is_none() {
+                return E::finish(check(None, control), control, point);
+            }
+            E::checkpoint(control, point)?;
         }
-        Ok(None)
+        check(None, control)
     })();
     E::finish(result, control, point)
 }
