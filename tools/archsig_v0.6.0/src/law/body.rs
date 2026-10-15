@@ -284,13 +284,18 @@ impl<E: InputError> Checker<E> {
         env: &mut Env,
         ctx: &Ctx,
     ) -> CResult<Type, E> {
-        let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
+        let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.check_change_result(body, params, env, ctx)
-        })?;
+        });
+        // 入力不正も、検査内で発生した取消・消尽を確認した後に返す。
+        E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
+        let t = result?;
         if self.expr_types.len() < self.parser.exprs.len() {
             self.expr_types.resize(self.parser.exprs.len(), None);
         }
         self.expr_types[body] = Some(t.clone());
+        E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
         Ok(t)
     }
 
@@ -302,6 +307,7 @@ impl<E: InputError> Checker<E> {
         env: &mut Env,
         ctx: &Ctx,
     ) -> CResult<Type, E> {
+        E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
         let span = self.parser.exprs[body].span;
         let kind = self.parser.exprs[body].kind.clone();
         let result = match kind {
@@ -330,6 +336,7 @@ impl<E: InputError> Checker<E> {
             _ => None,
         };
         if let Some(t) = result {
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
             return Ok(t);
         }
         let ExprKind::With { base, updates } = self.parser.exprs[body].kind.clone() else {
@@ -338,8 +345,10 @@ impl<E: InputError> Checker<E> {
         let first = &params[0];
         let mut target = base;
         while let ExprKind::Group(inner) = self.parser.exprs[target].kind {
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
             self.cooperate()?;
             target = inner;
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
         }
         let is_first = matches!(&self.parser.exprs[target].kind, ExprKind::Dotted(p) if p.len() == 1 && p[0].name == first.name);
         if !is_first {
@@ -353,6 +362,7 @@ impl<E: InputError> Checker<E> {
         let sig = self.sigs.get(&entity).cloned().expect("entity の署名");
         let mut seen = BTreeSet::new();
         for (field, value) in &updates {
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
             self.cooperate()?;
             let Some(f) = self.signature_field(&sig, &field.name)? else {
                 return reference(
@@ -374,6 +384,7 @@ impl<E: InputError> Checker<E> {
             }
             self.record(field.span, full(&entity, &[&field.name]));
             self.check(*value, Some(&f.ty), env, ctx)?;
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
         }
         let t = Type::Ref(entity);
         if self.expr_types.len() < self.parser.exprs.len() {
