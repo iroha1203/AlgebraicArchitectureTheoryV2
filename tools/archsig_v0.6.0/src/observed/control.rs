@@ -9,6 +9,7 @@ use std::{cell::RefCell, rc::Rc};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Checkpoint {
     InputBundle,
+    TableComparison,
     BeforeDefinitions,
     DefinitionIteration,
     DefinitionSchema,

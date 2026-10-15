@@ -1,5 +1,7 @@
 //! 元 byte 列と検査済み三表を同じ定義 identity の下で保持する。
 
+mod comparison;
+
 use super::control::{CheckFailure, Checkpoint, Control, StopReason};
 use crate::{
     archmap::{CheckedArchMap, check_archmap_controlled},
@@ -295,45 +297,36 @@ impl CheckedInputs {
         if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
             return Err(verified.into_failure(false).checked(error, control));
         }
-        let bad_law = definitions != verified.definitions
-            || law.definitions != definitions
-            || law.bytes_digest != verified.law.bytes_digest
-            || law.model_digest != verified.law.model_digest
-            || law.declarations != verified.law.declarations
-            || law.exprs != verified.law.exprs
-            || law.expr_types != verified.law.expr_types
-            || law.infos != verified.law.infos;
-        let bad_map = archmap.bytes_digest != verified.archmap.bytes_digest
-            || archmap.model_digest != verified.archmap.model_digest
-            || archmap.vocabularies != verified.archmap.vocabularies
-            || archmap.sources != verified.archmap.sources
-            || archmap.origins != verified.archmap.origins
-            || archmap.snapshots != verified.archmap.snapshots;
-        let result = if bad_law || bad_map {
-            let location = if bad_law {
-                Location::Law {
-                    span: (0, verified.sources.law.bytes.len()),
-                }
-            } else {
-                Location::ArchMap {
-                    pointer: String::new(),
-                    span: None,
-                }
-            };
-            Err(CheckFailure::Input(Box::new(Issue {
-                code: Code::VocabularyMismatch,
-                message: "検査済み三表が同じ元入力・定義 identity を参照していない".into(),
-                location,
-                details: Details::Empty,
-            })))
-        } else {
-            Ok(())
+        let mut law_comparison = comparison::Comparison::new(
+            control,
+            Location::Law {
+                span: (0, verified.sources.law.bytes.len()),
+            },
+        );
+        let law_result = (|| {
+            law_comparison.eq(&definitions, &verified.definitions)?;
+            law_comparison.eq(&law.definitions, &definitions)?;
+            law_comparison.eq(&law, &verified.law)
+        })();
+        let bad_law = law_comparison.mismatched;
+        // 比較前の停止は不一致を確定しない。比較で得た不一致の段階だけを保持する。
+        let result = match law_result {
+            Err(error) => Err(error),
+            Ok(()) => {
+                let mut map_comparison = comparison::Comparison::new(
+                    control,
+                    Location::ArchMap {
+                        pointer: String::new(),
+                        span: None,
+                    },
+                );
+                map_comparison.eq(&archmap, &verified.archmap)
+            }
         };
         if let Err(error) = BundleError::finish(result, control, Checkpoint::InputBundle) {
             return Err(verified.into_failure(bad_law).checked(error, control));
         }
-        // 構文木内の TypeAst/Pattern の等値は一部の表示位置を無視する。
-        // 位置まで元 byte 列から得た表を採用し、公開 field の改変を持ち込まない。
+        // 公開 field を照合した後も、元 byte 列から得た表だけを採用する。
         Ok(verified)
     }
 }

@@ -282,7 +282,11 @@ impl<E: InputError> Checker<E> {
         let span = self.span(id);
         let kind = self.parser.exprs[id].kind.clone();
         match kind {
-            ExprKind::Int(text) => match expected.map(Type::erase).as_ref() {
+            ExprKind::Int(text) => match expected
+                .map(|ty| self.erase_type(ty))
+                .transpose()?
+                .as_ref()
+            {
                 None | Some(Type::Z) => Ok(Type::Z),
                 Some(Type::Q) => Ok(Type::Q),
                 Some(Type::Fp(p)) => {
@@ -302,7 +306,7 @@ impl<E: InputError> Checker<E> {
             ExprKind::Unit => Ok(Type::Unit),
             ExprKind::Group(inner) => self.check(inner, expected, env, ctx),
             ExprKind::Tuple(items) => {
-                let parts = match expected.map(Type::erase).as_ref() {
+                let parts = match expected.map(|ty| self.erase_type(ty)).transpose()?.as_ref() {
                     Some(Type::Tuple(ts)) if ts.len() == items.len() => {
                         ts.iter().cloned().map(Some).collect()
                     }
@@ -443,10 +447,11 @@ impl<E: InputError> Checker<E> {
             }
             ExprKind::None(ty) => Ok(Type::Option(Box::new(self.resolve_type_in(&ty, env, ctx)?))),
             ExprKind::Some(inner) => {
-                let inner_expected = match expected.map(Type::erase).as_ref() {
-                    Some(Type::Option(t)) => Some((**t).clone()),
-                    _ => None,
-                };
+                let inner_expected =
+                    match expected.map(|ty| self.erase_type(ty)).transpose()?.as_ref() {
+                        Some(Type::Option(t)) => Some((**t).clone()),
+                        _ => None,
+                    };
                 Ok(Type::Option(Box::new(self.check(
                     inner,
                     inner_expected.as_ref(),
@@ -641,7 +646,7 @@ impl<E: InputError> Checker<E> {
         reading: usize,
         span: Span,
     ) -> CResult<Option<(String, usize)>, E> {
-        let expected = expected.map(Type::erase);
+        let expected = expected.map(|ty| self.erase_type(ty)).transpose()?;
         let Some(Type::Data(d)) = expected.as_ref() else {
             return Ok(None);
         };
@@ -1016,7 +1021,7 @@ impl<E: InputError> Checker<E> {
                 self.bind(env, &p.name, t.clone(), Origin::Other)?;
                 types.push(t);
             }
-            let ret_expected = match expected.map(Type::erase).as_ref() {
+            let ret_expected = match expected.map(|ty| self.erase_type(ty)).transpose()?.as_ref() {
                 Some(Type::Term(_, r)) => Some((**r).clone()),
                 _ => None,
             };
@@ -1068,7 +1073,7 @@ impl<E: InputError> Checker<E> {
         let mut covered = std::collections::HashSet::new();
         let mut plainly_covered = std::collections::HashSet::new();
         let mut catch_all = false;
-        let mut result: Option<Type> = expected.map(Type::erase);
+        let mut result: Option<Type> = expected.map(|ty| self.erase_type(ty)).transpose()?;
         let mut pending = Vec::new();
         for arm in arms {
             self.cooperate()?;
@@ -1412,6 +1417,125 @@ mod semantic_finish_tests {
             span: (0, 4),
         });
         checker.check(0, Some(&Type::Z), &mut Env::default(), &ctx())
+    }
+    // Enter each expectation-reading branch directly. The small ASTs avoid
+    // unrelated parsing/name-resolution work, so the recorded trace includes
+    // the expected type's erasure rather than only its surrounding checks.
+    fn expected_branch(check: &mut Checker<Failure>, branch: usize) -> CResult<Type, Failure> {
+        check.parser.exprs.push(Expr {
+            kind: ExprKind::Bool(true),
+            span: (0, 4),
+        });
+        let mut env = Env::default();
+        match branch {
+            0 => {
+                check.parser.exprs.push(Expr {
+                    kind: ExprKind::Int("1".into()),
+                    span: (5, 6),
+                });
+                check.check_inner(1, Some(&Type::Q), &mut env, &ctx())
+            }
+            1 => {
+                check.parser.exprs.push(Expr {
+                    kind: ExprKind::Tuple(Vec::new()),
+                    span: (5, 7),
+                });
+                check.check_inner(1, Some(&Type::Tuple(Vec::new())), &mut env, &ctx())
+            }
+            2 => {
+                check.parser.exprs.push(Expr {
+                    kind: ExprKind::Some(0),
+                    span: (0, 10),
+                });
+                check.check_inner(
+                    1,
+                    Some(&Type::Option(Box::new(Type::Bool))),
+                    &mut env,
+                    &ctx(),
+                )
+            }
+            3 => check
+                .short_ctor("Missing", Some(&Type::Data("V.Unknown".into())), 0, (0, 4))
+                .map(|found| {
+                    assert!(found.is_none());
+                    Type::Unit
+                }),
+            4 => check.check_fn(
+                &[],
+                0,
+                Some(&Type::Term(Vec::new(), Box::new(Type::Bool))),
+                &mut env,
+                &ctx(),
+            ),
+            5 => check.check_match(
+                0,
+                &[Arm {
+                    pattern: Pattern::Wild((0, 1)),
+                    body: 0,
+                }],
+                (0, 4),
+                Some(&Type::Bool),
+                &mut env,
+                &ctx(),
+            ),
+            _ => unreachable!(),
+        }
+    }
+    fn assert_expected_branch_interruptible(branch: usize, steps: usize, expected: Type) {
+        let (mut control, armed, count) = monitored(usize::MAX, 0);
+        let mut check = checker(&mut control);
+        armed.set(true);
+        assert_eq!(expected_branch(&mut check, branch).unwrap(), expected);
+        // These six minimal traces lose respectively 2, 2, 4, 2, 4, and 2
+        // checkpoints if the expected type goes through the unlimited wrapper.
+        assert_eq!(count.get(), steps);
+        for at in 1..=steps {
+            for mode in 0..3 {
+                let (mut control, armed, seen) = monitored(at, mode);
+                let mut check = checker(&mut control);
+                armed.set(true);
+                let failure = expected_branch(&mut check, branch).unwrap_err();
+                assert_eq!(seen.get(), at);
+                let Failure::Stopped(reason) = failure else {
+                    panic!("unfinished inference must stop before producing a type")
+                };
+                assert_eq!(control.stop_reason(), Some(reason.clone()));
+                if mode == 0 {
+                    assert_eq!(reason, StopReason::Cancelled(Signal::Term));
+                } else {
+                    assert!(matches!(reason, StopReason::BudgetExhausted { .. }));
+                }
+            }
+        }
+    }
+    #[test]
+    fn integer_expected_erasure_uses_shared_control() {
+        assert_expected_branch_interruptible(0, 2, Type::Q);
+    }
+    #[test]
+    fn tuple_expected_erasure_uses_shared_control() {
+        assert_expected_branch_interruptible(1, 2, Type::Tuple(Vec::new()));
+    }
+    #[test]
+    fn some_expected_erasure_uses_shared_control() {
+        assert_expected_branch_interruptible(2, 10, Type::Option(Box::new(Type::Bool)));
+    }
+    #[test]
+    fn short_constructor_expected_erasure_uses_shared_control() {
+        assert_expected_branch_interruptible(3, 2, Type::Unit);
+    }
+    #[test]
+    fn function_expected_erasure_uses_shared_control() {
+        // Term erasure: entry + Bool entry/exit + exit = 4.
+        // Body check: entry + actual Bool erasure + expected Bool erasure
+        // + finish = 6. has_reference: Bool entry/exit + final exit = 3.
+        assert_expected_branch_interruptible(4, 13, Type::Term(Vec::new(), Box::new(Type::Bool)));
+    }
+    #[test]
+    fn match_expected_erasure_uses_shared_control() {
+        // Scrutinee check = 4; expected Bool erasure = 2; arm iteration = 1;
+        // body check with expected Bool = 6. Wild patterns add no checkpoints.
+        assert_expected_branch_interruptible(5, 13, Type::Bool);
     }
     #[test]
     fn checker_errors_reach_post_checkpoints_and_keep_known_invalid_above_budget() {

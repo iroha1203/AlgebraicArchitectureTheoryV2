@@ -59,6 +59,9 @@ pub fn check_archmap_controlled(
     definitions: &CheckedDefinitions,
     control: &mut Control,
 ) -> Result<CheckedArchMap, CheckFailure<ArchMapFailure>> {
+    control
+        .checkpoint(Checkpoint::BeforeArchMap)
+        .map_err(CheckFailure::Stopped)?;
     check_archmap_inner::<CheckFailure<Box<Issue>>>(bytes, definitions, control).map_err(
         |(failure, bytes_digest)| match failure {
             CheckFailure::Input(issue) => CheckFailure::Input(ArchMapFailure {
@@ -74,6 +77,8 @@ fn check_archmap_inner<E: InputError>(
     definitions: &CheckedDefinitions,
     control: &mut Control,
 ) -> Result<CheckedArchMap, (E, String)> {
+    #[cfg(test)]
+    entry_control_tests::BYTES_DIGEST_STARTS.with(|count| count.set(count.get() + 1));
     let bytes_digest = sha256_digest(bytes);
     let fail = |issue| (issue, bytes_digest.clone());
     let root = crate::json::parse_inner::<E>(bytes, control, Checkpoint::ArchMapIteration)
@@ -90,6 +95,71 @@ fn check_archmap_inner<E: InputError>(
     E::checkpoint(control, Checkpoint::ArchMapCanonical).map_err(fail)?;
     E::checkpoint(control, Checkpoint::ArchMapIteration).map_err(fail)?;
     Ok(checked)
+}
+
+#[cfg(test)]
+mod entry_control_tests {
+    use super::*;
+    use crate::observed::control::{Limits, Usage};
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+
+    thread_local! {
+        pub(super) static BYTES_DIGEST_STARTS: Cell<usize> = const { Cell::new(0) };
+    }
+
+    #[test]
+    fn stopped_entry_does_not_start_bytes_digest() {
+        BYTES_DIGEST_STARTS.with(|count| count.set(0));
+        for cancel in [false, true] {
+            for latched in [false, true] {
+                let mut control = Control::new(
+                    Limits {
+                        time_ms: Some(0),
+                        ..Limits::default()
+                    },
+                    move |_| Usage {
+                        signal: cancel.then_some(Signal::Int),
+                        ..Usage::default()
+                    },
+                );
+                if latched {
+                    control.checkpoint(Checkpoint::InputBundle).unwrap_err();
+                }
+                let failure =
+                    check_archmap_controlled(b"bad", &CheckedDefinitions::default(), &mut control)
+                        .unwrap_err();
+                let CheckFailure::Stopped(reason) = failure else {
+                    panic!("entry stop must precede input checking");
+                };
+                assert_eq!(Some(reason), control.stop_reason());
+                BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 0));
+            }
+        }
+    }
+
+    #[test]
+    fn live_entry_checks_control_before_digest_and_preserves_input_failure() {
+        BYTES_DIGEST_STARTS.with(|count| count.set(0));
+        let definitions = CheckedDefinitions::default();
+        let ordinary = check_archmap(b"bad", &definitions).unwrap_err();
+        BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 1));
+        let first = Rc::new(Cell::new(None));
+        let observed = first.clone();
+        let mut control = Control::new(Limits::default(), move |point| {
+            if observed.get().is_none() {
+                observed.set(Some(point));
+            }
+            Usage::default()
+        });
+        let controlled = check_archmap_controlled(b"bad", &definitions, &mut control).unwrap_err();
+        let CheckFailure::Input(controlled) = controlled else {
+            panic!("live control must preserve the input error");
+        };
+        assert_eq!(first.get(), Some(Checkpoint::BeforeArchMap));
+        assert_eq!(controlled, ordinary);
+        BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 2));
+    }
 }
 
 /// subject と、その field 型から推移的に参照する宣言の namespace。

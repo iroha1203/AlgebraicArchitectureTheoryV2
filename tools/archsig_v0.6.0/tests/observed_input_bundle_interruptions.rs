@@ -238,3 +238,119 @@ fn mismatched_checked_tables_preserve_error_and_stage_at_post_comparison_budget(
         }
     }
 }
+
+#[test]
+fn checked_table_comparison_stops_inside_elements_and_recursive_types() {
+    let src = sources();
+    let count = Rc::new(Cell::new(0));
+    let measured = count.clone();
+    let mut control = Control::new(Limits::default(), move |point| {
+        if point == Checkpoint::TableComparison {
+            measured.set(measured.get() + 1);
+        }
+        Usage::default()
+    });
+    let (definitions, law, map) = tables(&src);
+    CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control).unwrap();
+    let total = count.get();
+    assert!(total > 50, "三表の構造内部にも確認点がある");
+    for at in [3, total / 3, total * 2 / 3, total - 1] {
+        for resource in 0..3 {
+            let seen = Rc::new(Cell::new(0));
+            let probe = seen.clone();
+            let mut control = Control::new(
+                Limits {
+                    time_ms: Some(10),
+                    memory_mib: Some(10),
+                },
+                move |point| {
+                    if point == Checkpoint::TableComparison {
+                        probe.set(probe.get() + 1);
+                    }
+                    let exhausted = probe.get() == at;
+                    Usage {
+                        signal: (exhausted && resource == 0).then_some(Signal::Term),
+                        elapsed_ms: if exhausted && resource == 1 { 11 } else { 0 },
+                        memory_mib: if exhausted && resource == 2 { 12 } else { 0 },
+                    }
+                },
+            );
+            let (definitions, law, map) = tables(&src);
+            let failure =
+                CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)
+                    .unwrap_err();
+            assert_eq!(seen.get(), at);
+            assert_stop(&failure, &control, resource, true);
+            assert_eq!(failure.sources(), &src);
+        }
+    }
+}
+
+#[test]
+fn internal_comparison_mismatch_preserves_stage_and_budget_priority() {
+    let src = sources();
+    for bad_law in [true, false] {
+        let changed = || {
+            let (mut definitions, law, mut map) = tables(&src);
+            if bad_law {
+                definitions
+                    .declarations
+                    .values_mut()
+                    .next()
+                    .unwrap()
+                    .meaning
+                    .push_str(" altered");
+            } else {
+                map.snapshots[0].subjects[0].ty = "Foreign.State".into();
+            }
+            (definitions, law, map)
+        };
+        let count = Rc::new(Cell::new(0));
+        let measured = count.clone();
+        let mut control = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::TableComparison {
+                measured.set(measured.get() + 1);
+            }
+            Usage::default()
+        });
+        let (definitions, law, map) = changed();
+        let plain = CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)
+            .unwrap_err();
+        let at = count.get();
+        assert_eq!(plain.status(), InputStatus::Invalid);
+        // 最後の比較確認点は、不一致を得た後の外側 compare の事後確認。
+        for resource in 0..3 {
+            let mut visits = 0;
+            let mut control = Control::new(
+                Limits {
+                    time_ms: Some(10),
+                    memory_mib: Some(10),
+                },
+                move |point| {
+                    if point == Checkpoint::TableComparison {
+                        visits += 1;
+                    }
+                    let exhausted = visits == at;
+                    Usage {
+                        signal: (exhausted && resource == 0).then_some(Signal::Term),
+                        elapsed_ms: if exhausted && resource == 1 { 11 } else { 0 },
+                        memory_mib: if exhausted && resource == 2 { 12 } else { 0 },
+                    }
+                },
+            );
+            let (definitions, law, map) = changed();
+            let failure =
+                CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)
+                    .unwrap_err();
+            assert_eq!(!failure.declarations().is_empty(), !bad_law);
+            assert_eq!(!failure.vocabularies().is_empty(), !bad_law);
+            if resource == 0 {
+                assert_stop(&failure, &control, resource, !bad_law);
+            } else {
+                assert_eq!(failure.status(), InputStatus::Invalid);
+                assert_eq!(failure.issues()[0], control.stop_reason().unwrap().wire());
+                assert_eq!(&failure.issues()[1..], plain.issues());
+            }
+        }
+    }
+}
