@@ -305,12 +305,45 @@ pub(crate) struct Part {
     pub residual: Option<NodeRef>,
     pub children: Vec<NodeRef>,
 }
+/// result/2 の固定変換。未知値は通常値にせず、Bool の全補完での定数だけを返す。
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum TransformOp {
+    Not,
+    And,
+}
+impl TransformOp {
+    fn wire(self) -> &'static str {
+        match self {
+            Self::Not => "not",
+            Self::And => "and",
+        }
+    }
+    pub(crate) fn arity(self) -> usize {
+        match self {
+            Self::Not => 1,
+            Self::And => 2,
+        }
+    }
+}
+pub(crate) fn conditional_bool(guard: Option<bool>, body: Option<bool>) -> Option<bool> {
+    // not(and(guard, not(body)))。None を通常値にせず、slot identity は元 Source に残す。
+    match (guard, body) {
+        (Some(false), _) | (_, Some(true)) => Some(true),
+        (Some(true), Some(false)) => Some(false),
+        _ => None,
+    }
+}
 #[derive(Clone, Debug)]
 pub(crate) enum Payload {
     Scalar(Scalar),
     Expression {
         location: Location,
         parameters: Vec<(String, Type)>,
+        bindings: Vec<Binding>,
+    },
+    Transform {
+        operation: TransformOp,
+        operands: Vec<NodeRef>,
         bindings: Vec<Binding>,
     },
     Evaluation {
@@ -364,6 +397,17 @@ impl Payload {
                             .collect(),
                     ),
                 ),
+                ("bindings", bindings_wire(bindings)),
+            ]),
+            Self::Transform {
+                operation,
+                operands,
+                bindings,
+            } => Json::obj([
+                ("kind", Json::str("transform")),
+                ("operation", Json::str(operation.wire())),
+                ("operands", refs(operands)),
+                ("parameters", Json::Arr(vec![])),
                 ("bindings", bindings_wire(bindings)),
             ]),
             Self::Evaluation {
@@ -678,6 +722,14 @@ impl Graph {
             _ => Err("通常値でない node の消費".into()),
         }
     }
+    pub(crate) fn boolean(&self, value: Option<NodeRef>) -> Result<Option<bool>, String> {
+        value
+            .map(|reference| match self.scalar(reference)? {
+                Scalar::Bool(value) => Ok(*value),
+                _ => Err("Bool 評価の値が Bool でない".into()),
+            })
+            .transpose()
+    }
     fn value(&self, r: NodeRef, ty: &Type) -> Result<(), String> {
         self.expect(r, &NodeType::Value(ty.clone()))?;
         self.scalar(r)?;
@@ -794,6 +846,24 @@ impl Graph {
             (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {}
             (NodeType::Expression(_), Some(Payload::Expression { bindings, .. })) => {
                 self.bindings(bindings)?
+            }
+            (
+                NodeType::Expression(Type::Bool),
+                Some(Payload::Transform {
+                    operation,
+                    operands,
+                    bindings,
+                }),
+            ) => {
+                self.bindings(bindings)?;
+                if operands.len() != operation.arity() {
+                    return Err("Bool 変換の引数数が違う".into());
+                }
+                for &operand in operands {
+                    self.tick()?;
+                    self.expect(operand, &NodeType::Expression(Type::Bool))?;
+                    self.tick()?;
+                }
             }
             (
                 NodeType::Evaluation(t),
