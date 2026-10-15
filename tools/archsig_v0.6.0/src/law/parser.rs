@@ -481,7 +481,7 @@ impl<E: InputError> Parser<E> {
             };
             // 最上位の `=` を後ろから順に試し、guard と body がどちらも読める位置で区切る。
             let mut first_error = None;
-            for &eq in eqs.iter().rev() {
+            for (candidate_index, &eq) in eqs.iter().rev().enumerate() {
                 E::checkpoint(&mut parser.control, parser.point)?;
                 parser.pos = start;
                 let parsed = parser
@@ -502,6 +502,12 @@ impl<E: InputError> Parser<E> {
                             return Err(e);
                         }
                         first_error.get_or_insert(e);
+                        // Every split has failed. Let `checked` finish the
+                        // established Syntax before consulting a latched budget.
+                        // An earlier candidate's failure cannot establish this.
+                        if candidate_index + 1 == eqs.len() {
+                            break;
+                        }
                     }
                 }
 
@@ -844,7 +850,8 @@ impl<E: InputError> Parser<E> {
             let mut candidates = Vec::new();
             let mut end = None;
             let mut first_error = None;
-            for c in dots {
+            let candidate_count = dots.len();
+            for (candidate_index, c) in dots.into_iter().enumerate() {
                 E::checkpoint(&mut parser.control, parser.point)?;
                 let domain = if typed {
                     parser.parse_type_at(from, c).map(QuantDomain::Type)
@@ -865,6 +872,10 @@ impl<E: InputError> Parser<E> {
                         }
                         first_error.get_or_insert(e);
 
+                        if candidate_index + 1 == candidate_count && candidates.is_empty() {
+                            break;
+                        }
+
                         E::checkpoint(&mut parser.control, parser.point)?;
                         continue;
                     }
@@ -879,6 +890,9 @@ impl<E: InputError> Parser<E> {
                             return Err(e);
                         }
                         first_error.get_or_insert(e);
+                        if candidate_index + 1 == candidate_count && candidates.is_empty() {
+                            break;
+                        }
                     }
                 }
 
@@ -1483,6 +1497,12 @@ mod qname_interruption_tests {
                         },
                     };
                     let stopped = run(text, operation, control.clone()).unwrap_err();
+                    if !valid && mode > 0 && at == total {
+                        assert!(
+                            matches!(stopped, CheckFailure::Input(_)),
+                            "final known Syntax must survive budget: {text}"
+                        );
+                    }
                     match stopped {
                         CheckFailure::Stopped(reason) => assert_eq!(reason, expected),
                         CheckFailure::Input(issue) => {
@@ -1492,6 +1512,145 @@ mod qname_interruption_tests {
                     }
                     assert_eq!(control.stop_reason(), Some(expected));
                 }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+pub(super) mod candidate_priority_tests {
+    use super::*;
+    use crate::{
+        issue::Location,
+        observed::control::{CheckFailure, Limits, StopReason, Usage},
+        result::Signal,
+    };
+    use std::{
+        cell::{Cell, RefCell},
+        rc::Rc,
+    };
+
+    // Arm only after the selected diagnostic has actually been constructed.
+    // Counting outer checkpoints cannot identify this candidate-local boundary.
+    thread_local! {
+        static ERROR_ARM: RefCell<Option<(Span, Rc<Cell<bool>>)>> = const { RefCell::new(None) };
+    }
+    #[derive(Debug)]
+    pub(crate) struct Failure(pub CheckFailure<Box<Issue>>);
+    impl From<Box<Issue>> for Failure {
+        fn from(issue: Box<Issue>) -> Self {
+            ERROR_ARM.with(|state| {
+                if let Some((target, armed)) = state.borrow().as_ref()
+                    && issue.location == (Location::Law { span: *target })
+                {
+                    armed.set(true);
+                }
+            });
+            Self(CheckFailure::Input(issue))
+        }
+    }
+    impl InputError for Failure {
+        fn checkpoint(control: &mut Control, point: Checkpoint) -> Result<(), Self> {
+            <CheckFailure<Box<Issue>> as InputError>::checkpoint(control, point).map_err(Self)
+        }
+        fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self {
+            Self(self.0.map_issue(map))
+        }
+        fn is_stopped(&self) -> bool {
+            self.0.is_stopped()
+        }
+        fn is_budget_stop(&self) -> bool {
+            self.0.is_budget_stop()
+        }
+    }
+    pub(crate) struct ErrorArm;
+    impl Drop for ErrorArm {
+        fn drop(&mut self) {
+            ERROR_ARM.with(|state| *state.borrow_mut() = None);
+        }
+    }
+    pub(crate) fn stop_after_issue(span: Span, mode: usize) -> (Control, ErrorArm, Rc<Cell<bool>>) {
+        let armed = Rc::new(Cell::new(false));
+        ERROR_ARM.with(|state| {
+            assert!(state.borrow().is_none());
+            *state.borrow_mut() = Some((span, armed.clone()));
+        });
+        let probe = armed.clone();
+        let control = Control::new(
+            Limits {
+                time_ms: (mode == 1).then_some(1),
+                memory_mib: (mode == 2).then_some(1),
+            },
+            move |_| Usage {
+                signal: (probe.get() && mode == 0).then_some(Signal::Term),
+                elapsed_ms: u128::from(probe.get() && mode == 1),
+                memory_mib: u128::from(probe.get() && mode == 2),
+            },
+        );
+        (control, ErrorArm, armed)
+    }
+    fn run(text: &str, change: bool, control: Control) -> Result<(), Failure> {
+        let tokens = super::super::lexer::lex(text.as_bytes()).unwrap();
+        let mut parser = Parser::<Failure>::with_error(tokens, text.len(), control);
+        if change {
+            parser.change_tail().map(|_| ())
+        } else {
+            parser.parse_expr(Flags::default()).map(|_| ())
+        }
+    }
+    #[test]
+    fn final_candidate_syntax_survives_budget_at_first_post_error_sample() {
+        for (text, change, span) in [
+            ("when true = ;", true, (12, 13)),
+            ("forall x: Z .", false, (13, 13)),
+            ("forall x: . true", false, (10, 11)),
+        ] {
+            let Failure(CheckFailure::Input(expected)) =
+                run(text, change, Control::unlimited()).unwrap_err()
+            else {
+                panic!("ordinary Syntax expected")
+            };
+            assert_eq!(expected.code, Code::Syntax);
+            assert_eq!(expected.location, Location::Law { span });
+            for mode in 0..3 {
+                let (control, _arm, observed) = stop_after_issue(span, mode);
+                let failure = run(text, change, control.clone()).unwrap_err();
+                assert!(observed.get(), "{text}: candidate error was not reached");
+                if mode == 0 {
+                    assert!(matches!(
+                        failure.0,
+                        CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
+                    ));
+                } else {
+                    let CheckFailure::Input(actual) = failure.0 else {
+                        panic!("{text}: final Syntax replaced by budget")
+                    };
+                    assert_eq!(actual, expected);
+                    assert!(matches!(
+                        control.stop_reason(),
+                        Some(StopReason::BudgetExhausted { .. })
+                    ));
+                }
+            }
+        }
+    }
+    #[test]
+    fn speculative_syntax_cannot_replace_untried_or_valid_candidates() {
+        for (text, change, span) in [
+            // The rightmost split fails; a leftward split remains untried.
+            ("when true = false = ;", true, (20, 21)),
+            // The earlier dot already has a syntactically valid domain/body.
+            ("forall x: A . b.", false, (16, 16)),
+        ] {
+            for mode in 0..3 {
+                let (control, _arm, observed) = stop_after_issue(span, mode);
+                let failure = run(text, change, control.clone()).unwrap_err();
+                assert!(observed.get(), "{text}: speculative error was not reached");
+                assert!(
+                    matches!(failure.0, CheckFailure::Stopped(_)),
+                    "{text}: speculative Syntax became final"
+                );
+                assert!(control.stop_reason().is_some());
             }
         }
     }

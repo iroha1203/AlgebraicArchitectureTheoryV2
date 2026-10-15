@@ -9,7 +9,8 @@ use archsig::{
         input::{InputSources, check_inputs},
         prepare_observed,
         projection::{
-            ProjectionFailure, ProjectionStep, ProjectionType, resolve_projection_controlled,
+            ProjectionFailure, ProjectionStep, ProjectionType, can_bind_controlled,
+            resolve_projection_controlled,
         },
         request::{RequestIssueCode, ResolveFailure},
     },
@@ -41,6 +42,8 @@ fn sources() -> InputSources {
         view echo(s: Root): Root = s;
         view choice(): Choice = Maybe(some(1));
         view pair(): (Z,Z) = (1,2);
+        view accept(x: Z, y: Z): Z = x + y;
+        view accept_option(x: Option<Z>): Z = 0;
     "#,
     );
     let map = format!(
@@ -276,6 +279,187 @@ fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
             );
             assert_eq!(count.get(), at);
             assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+            assert_eq!(count.get(), at);
+        }
+    }
+}
+
+fn assert_binding_priority(asks: &[&str], at: usize, kind: Stop, known_mismatch: bool) {
+    let (mut control, count, reason) = probe(Some(at), kind);
+    let failure = prepare_observed(sources(), asks, &mut control).unwrap_err();
+    let wire_value = failure.wire().unwrap();
+    let Json::Obj(wire) = &wire_value else {
+        panic!("object");
+    };
+    assert_eq!(wire["nodes"], Json::Arr(vec![]));
+    assert_eq!(wire["answers"], Json::Arr(vec![]));
+    if known_mismatch && !matches!(kind, Stop::Cancel) {
+        assert_eq!(wire["status"], Json::str("invalid"));
+        let PrepareFailure::Requests {
+            inputs,
+            failure:
+                ResolveFailure::Invalid {
+                    issues,
+                    stop_reason: Some(actual),
+                    ..
+                },
+        } = &failure
+        else {
+            panic!("known binding mismatch");
+        };
+        assert_eq!(actual, &reason);
+        assert_eq!(issues.len(), 1);
+        assert_eq!(issues[0].code, RequestIssueCode::Type);
+        assert_eq!(issues[0].request, "bad");
+        assert_eq!(issues[0].argument, "bind.s");
+        assert_eq!(issues[0].message, "Handle の型が parameter 型と合わない");
+        assert_eq!(
+            wire["issues"],
+            Json::Arr(vec![reason.wire(), issues[0].wire()])
+        );
+        assert!(inputs.law().declarations.contains_key("R.echo"));
+        assert_eq!(inputs.archmap().snapshots[0].subjects[0].id, "s");
+    } else {
+        assert_eq!(wire["status"], Json::str("interrupted"));
+        assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
+        assert!(
+            matches!(&failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == &reason)
+        );
+    }
+    assert_eq!(count.get(), at);
+    assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+    assert_eq!(count.get(), at);
+}
+
+#[test]
+fn single_binding_mismatch_keeps_usage_at_the_sixth_projection_checkpoint() {
+    let asks = [
+        "bad=evaluate(R.echo,s=$number.value)",
+        "number=evaluate(R.accept,x=$pair.value[0],y=$pair.value[1])",
+        "pair=evaluate(R.pair)",
+    ];
+    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let normal = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
+    assert!(
+        matches!(normal, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, stop_reason: None, .. }, .. } if issues[0].code == RequestIssueCode::Type)
+    );
+    // Empty selector path: 1-2; can_bind entry/candidate: 3-4;
+    // Z versus Ref(W.Root) pre/post: 5-6; whole-binding post: 7.
+    assert_eq!(total.get(), 7);
+    for at in 1..=total.get() {
+        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
+            assert_binding_priority(&asks, at, kind, at >= 6);
+        }
+    }
+}
+
+#[test]
+fn dynamic_binding_rejection_is_known_only_after_all_candidates_mismatch() {
+    let asks = [
+        "bad=evaluate(R.echo,s=$choice.value[0])",
+        "choice=evaluate(R.choice)",
+    ];
+    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let normal = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
+    assert!(
+        matches!(normal, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, stop_reason: None, .. }, .. } if issues[0].code == RequestIssueCode::Type)
+    );
+    // The final two samples follow the final candidate mismatch and the
+    // existential comparison. Earlier samples still leave a candidate unchecked.
+    for at in 1..=total.get() {
+        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
+            assert_binding_priority(&asks, at, kind, at >= total.get() - 1);
+        }
+    }
+}
+
+#[test]
+fn binding_candidate_mismatch_cannot_hide_a_stop_before_a_compatible_candidate() {
+    let asks = [
+        "ok=evaluate(R.accept_option,x=$choice.value[0])",
+        "choice=evaluate(R.choice)",
+    ];
+    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let prepared = prepare_observed(sources(), &asks, &mut baseline).unwrap();
+    assert_eq!(prepared.requests().requests()[0].id, "ok");
+    assert!(prepared.requests().requests()[0].constraints[0].dynamic);
+    // Dynamic candidates are Option<Z>, List<Z>; the stack checks List first.
+    // That rejection does not establish a whole-binding mismatch.
+    for at in 1..=total.get() {
+        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
+            assert_binding_priority(&asks, at, kind, false);
+        }
+    }
+}
+
+#[test]
+fn every_type_mismatch_shape_preserves_only_established_false_under_budget() {
+    use Type::*;
+    for (left, right) in [
+        (Z, Ref("W.Root".into())),
+        (Ref("W.A".into()), Ref("W.B".into())),
+        (Data("W.A".into()), Data("W.B".into())),
+        (Fp("W.P".into()), Fp("W.Q".into())),
+        (
+            Owned("W.A".into(), "p".into()),
+            Owned("W.B".into(), "q".into()),
+        ),
+        (Owned("W.A".into(), "p".into()), Ref("W.B".into())),
+        (Ref("W.A".into()), Owned("W.B".into(), "p".into())),
+        (
+            Path("W.A".into(), "W.B".into()),
+            Path("W.A".into(), "W.C".into()),
+        ),
+        (Tuple(vec![Z]), Tuple(vec![Z, Z])),
+        (Term(vec![Z], Box::new(Z)), Term(vec![], Box::new(Z))),
+        (List(Box::new(Z)), List(Box::new(Bool))),
+        (Set(Box::new(Z)), Set(Box::new(Bool))),
+        (Option(Box::new(Z)), Option(Box::new(Bool))),
+        (Tuple(vec![Z, Bool]), Tuple(vec![Z, Z])),
+        (
+            Map(Box::new(Z), Box::new(Bool)),
+            Map(Box::new(Z), Box::new(Z)),
+        ),
+        (Term(vec![Z], Box::new(Bool)), Term(vec![Z], Box::new(Z))),
+        (Term(vec![Bool], Box::new(Z)), Term(vec![Z], Box::new(Z))),
+    ] {
+        let actual = ProjectionType::Law(left);
+        let (mut baseline, total, _) = probe(None, Stop::Time);
+        assert_eq!(
+            can_bind_controlled(&actual, &right, &mut baseline),
+            Ok(false)
+        );
+        for at in 1..=total.get() {
+            for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
+                let (mut control, count, reason) = probe(Some(at), kind);
+                let expected = if !matches!(kind, Stop::Cancel) && at >= total.get() - 1 {
+                    Ok(false)
+                } else {
+                    Err(reason.clone())
+                };
+                assert_eq!(can_bind_controlled(&actual, &right, &mut control), expected);
+                assert_eq!(count.get(), at);
+                assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+                assert_eq!(count.get(), at);
+            }
+        }
+    }
+    // Owned's parameter is intentionally erased for a binding compatibility
+    // check; a successful comparison must still stop at every budget sample.
+    let actual = ProjectionType::Law(Owned("W.A".into(), "p".into()));
+    let expected = Owned("W.A".into(), "q".into());
+    let (mut baseline, total, _) = probe(None, Stop::Time);
+    assert_eq!(
+        can_bind_controlled(&actual, &expected, &mut baseline),
+        Ok(true)
+    );
+    for at in 1..=total.get() {
+        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
+            let (mut control, count, reason) = probe(Some(at), kind);
+            assert_eq!(
+                can_bind_controlled(&actual, &expected, &mut control),
+                Err(reason)
+            );
             assert_eq!(count.get(), at);
         }
     }

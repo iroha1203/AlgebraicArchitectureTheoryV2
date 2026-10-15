@@ -1289,36 +1289,30 @@ impl<E: InputError> Checker<E> {
             QuantSplit::Fixed { domain, body } => (domain.clone(), *body),
             QuantSplit::Candidates(cands) => {
                 let mut valid = Vec::new();
+                let mut first_error = None;
                 for (domain, body) in cands {
                     self.cooperate()?;
                     let cp = self.checkpoint(env);
                     let candidate = match domain {
-                        QuantDomain::In(d) => self
-                            .check(*d, None, env, ctx)
-                            .map(|t| collection_elem(&t).is_some()),
-                        QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx).map(|_| true),
+                        QuantDomain::In(d) => self.quant_domain(*d, env, ctx).map(|_| ()),
+                        QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx).map(|_| ()),
                     };
                     self.rollback(cp, env);
-                    let ok = match candidate {
-                        Ok(ok) => ok,
+                    match candidate {
+                        Ok(()) => valid.push((domain.clone(), *body)),
                         Err(error) if error.is_stopped() => return Err(error),
-                        Err(_) => false,
-                    };
-                    if ok {
-                        valid.push((domain.clone(), *body));
+                        Err(error) => {
+                            first_error.get_or_insert(error);
+                        }
                     }
                 }
                 // 候補は `.` の位置の順。複数の域が読めるときは、名前の最長一致と同じく最も長い域を選ぶ。
                 match valid.len() {
                     0 => {
-                        // 最初の候補の域の誤りを返す。
-                        match &cands[0].0 {
-                            QuantDomain::In(d) => {
-                                self.quant_domain(*d, env, ctx)?;
-                            }
-                            QuantDomain::Type(t) => {
-                                self.resolve_type_in(t, env, ctx)?;
-                            }
+                        // All domains failed. Rechecking the first domain could
+                        // replace its known diagnostic with a latched budget.
+                        if let Some(error) = first_error {
+                            return Err(error);
                         }
                         return syntax(span, "量化の域と本体の区切りが決まらない");
                     }
@@ -1688,6 +1682,160 @@ mod semantic_finish_tests {
                         control.stop_reason(),
                         Some(StopReason::BudgetExhausted { .. })
                     ));
+                }
+            }
+        }
+    }
+
+    fn quant_candidate_fixture(
+        control: &mut Control,
+        typed: bool,
+        valid: [bool; 2],
+    ) -> (
+        Checker<super::super::parser::candidate_priority_tests::Failure>,
+        ExprId,
+    ) {
+        use super::super::parser::candidate_priority_tests::Failure as CandidateFailure;
+        let mut check = Checker::<CandidateFailure>::with_definitions(
+            Parser::with_error(Vec::new(), 32, control.clone()),
+            Vec::new(),
+            &CheckedDefinitions::default(),
+            control,
+            StopPoint::LawSemantics,
+        )
+        .unwrap();
+        let mut domains = Vec::new();
+        for (index, is_valid) in valid.into_iter().enumerate() {
+            let span = (index * 5, index * 5 + 4);
+            let domain = if typed {
+                QuantDomain::Type(if is_valid {
+                    TypeAst::Builtin(Builtin::Bool, span)
+                } else {
+                    TypeAst::Fp {
+                        modulus: if index == 0 { "4" } else { "6" }.into(),
+                        span,
+                    }
+                })
+            } else {
+                check.parser.exprs.push(Expr {
+                    kind: if is_valid {
+                        ExprKind::ListLit {
+                            ty: TypeAst::Builtin(Builtin::Bool, span),
+                            items: Vec::new(),
+                        }
+                    } else if index == 0 {
+                        ExprKind::Bool(true)
+                    } else {
+                        ExprKind::Unit
+                    },
+                    span,
+                });
+                QuantDomain::In(check.parser.exprs.len() - 1)
+            };
+            domains.push(domain);
+        }
+        check.parser.exprs.push(Expr {
+            kind: ExprKind::Bool(true),
+            span: (10, 14),
+        });
+        let body = check.parser.exprs.len() - 1;
+        check.parser.exprs.push(Expr {
+            kind: ExprKind::Quant {
+                kind: QuantKind::Forall,
+                var: Ident {
+                    name: "x".into(),
+                    span: (20, 21),
+                    tok: 0,
+                },
+                split: QuantSplit::Candidates(
+                    domains.into_iter().map(|domain| (domain, body)).collect(),
+                ),
+            },
+            span: (0, 32),
+        });
+        let root = check.parser.exprs.len() - 1;
+        (check, root)
+    }
+    #[test]
+    fn all_failed_quantifier_domains_keep_first_diagnostic_when_last_error_hits_budget() {
+        use super::super::parser::candidate_priority_tests::{
+            Failure as CandidateFailure, stop_after_issue,
+        };
+        for typed in [false, true] {
+            let (mut baseline, root) =
+                quant_candidate_fixture(&mut Control::unlimited(), typed, [false, false]);
+            let CandidateFailure(CheckFailure::Input(expected)) = baseline
+                .check(root, None, &mut Env::default(), &ctx())
+                .unwrap_err()
+            else {
+                panic!("domain error expected")
+            };
+            assert_eq!(
+                expected.location,
+                crate::issue::Location::Law { span: (0, 4) }
+            );
+            if !typed {
+                assert_eq!(expected.code, Code::Type);
+                assert_eq!(expected.message, "量化の域は List か Set");
+                assert_eq!(
+                    expected.details,
+                    Details::Type {
+                        expected: Type::List(Box::new(Type::Bool)),
+                        actual: Type::Bool,
+                    }
+                );
+            }
+            for mode in 0..3 {
+                let (mut control, _arm, observed) = stop_after_issue((5, 9), mode);
+                let (mut check, root) =
+                    quant_candidate_fixture(&mut control, typed, [false, false]);
+                let failure = check
+                    .check(root, None, &mut Env::default(), &ctx())
+                    .unwrap_err();
+                assert!(observed.get(), "last candidate error was not constructed");
+                if mode == 0 {
+                    assert!(matches!(
+                        failure.0,
+                        CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
+                    ));
+                } else {
+                    let CheckFailure::Input(actual) = failure.0 else {
+                        panic!("all domains failed, but diagnostic was replaced")
+                    };
+                    assert_eq!(actual, expected);
+                    assert!(matches!(
+                        control.stop_reason(),
+                        Some(StopReason::BudgetExhausted { .. })
+                    ));
+                }
+            }
+        }
+    }
+    #[test]
+    fn speculative_domain_failure_does_not_become_invalid_with_other_candidates() {
+        use super::super::parser::candidate_priority_tests::stop_after_issue;
+        for typed in [false, true] {
+            for (valid, target) in [([false, true], (0, 4)), ([true, false], (5, 9))] {
+                let (mut baseline, root) =
+                    quant_candidate_fixture(&mut Control::unlimited(), typed, valid);
+                assert_eq!(
+                    baseline
+                        .check(root, None, &mut Env::default(), &ctx())
+                        .unwrap(),
+                    Type::Bool
+                );
+                for mode in 0..3 {
+                    let (mut control, _arm, observed) = stop_after_issue(target, mode);
+                    let (mut check, root) = quant_candidate_fixture(&mut control, typed, valid);
+                    let failure = check
+                        .check(root, None, &mut Env::default(), &ctx())
+                        .unwrap_err();
+                    assert!(observed.get(), "speculative domain failure was not reached");
+                    assert!(
+                        matches!(failure.0, CheckFailure::Stopped(_)),
+                        "an untried or valid domain exists"
+                    );
+                    assert!(control.stop_reason().is_some());
                 }
             }
         }

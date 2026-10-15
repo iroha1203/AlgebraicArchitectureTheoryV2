@@ -258,7 +258,7 @@ pub fn can_bind(actual: &ProjectionType, expected: &Type) -> bool {
         .expect("上限と取消通知のない制御")
 }
 
-/// 候補と型構造の走査にも同じ制御を通し、停止を不適合へ読み替えない。
+/// 候補と型構造に共有制御を通し、全候補の不適合を確定した場合だけ予算と false を保持する。
 pub fn can_bind_controlled(
     actual: &ProjectionType,
     expected: &Type,
@@ -280,13 +280,27 @@ pub fn can_bind_controlled(
             }
             _ => false,
         };
-        tick(control)?;
         if compatible {
+            tick(control)?;
             return Ok(true);
         }
+        if candidates.is_empty() {
+            return finish_type_match(false, control);
+        }
+        // 未検査の候補が残る間は、一候補の不適合で全体を決めず停止を伝播する。
+        tick(control)?;
     }
-    tick(control)?;
-    Ok(false)
+    finish_type_match(false, control)
+}
+
+/// 確定した不一致は予算とともに保つ。適合後の予算と取消は停止として返す。
+/// 呼出し側で、一候補の不一致と全候補の不適合を区別する。
+fn finish_type_match(same: bool, control: &mut Control) -> Result<bool, StopReason> {
+    match tick(control) {
+        Err(StopReason::BudgetExhausted { .. }) if !same => Ok(false),
+        Err(reason) => Err(reason),
+        Ok(()) => Ok(same),
+    }
 }
 
 /// Owned の所属条件を別制約に残し、型の全構造を一段ずつ比較する。
@@ -351,13 +365,12 @@ fn law_types_match(
             }
             _ => false,
         };
-        tick(control)?;
         if !same {
-            return Ok(false);
+            return finish_type_match(false, control);
         }
+        tick(control)?;
     }
-    tick(control)?;
-    Ok(true)
+    finish_type_match(true, control)
 }
 
 /// 型候補の重複除去にも制御を通し、従来の候補順と一意化を保つ。

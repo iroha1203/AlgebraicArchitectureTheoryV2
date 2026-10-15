@@ -97,6 +97,24 @@ impl<'a, E: InputError> Model<'a, E> {
         Ok(value)
     }
 
+    /// 偽はこの代入に対する否定の根拠として先に返す。呼出し側が未検査候補を
+    /// 続ける前、またはprefix全体の不整合を位置付きで返す前に停止を確認する。
+    fn truth(&self, value: Option<bool>) -> Result<Option<bool>, E> {
+        match self.checkpoint() {
+            Err(stop) if value == Some(false) && stop.is_budget_stop() => Ok(value),
+            Err(stop) => Err(stop),
+            Ok(()) => Ok(value),
+        }
+    }
+
+    fn decision(&self, value: bool) -> Result<bool, E> {
+        match self.checkpoint() {
+            Err(stop) if !value && stop.is_budget_stop() => Ok(value),
+            Err(stop) => Err(stop),
+            Ok(()) => Ok(value),
+        }
+    }
+
     fn field_index(&self, g: usize, name: &str) -> Result<usize, E> {
         self.checkpoint()?;
         for (i, f) in self.subjects[g].fields.iter().enumerate() {
@@ -172,18 +190,18 @@ impl<'a, E: InputError> Model<'a, E> {
             Family::All(e) => Some(self.subjects[x].ty == *e),
             Family::Owned { entity, .. } => {
                 if self.subjects[x].ty != *entity {
-                    return self.done(Some(false));
+                    return self.truth(Some(false));
                 }
                 let Some(Some(root)) = self.family_root(holder, family, assign)? else {
                     return self.done(None);
                 };
                 if self.subjects[x].snapshot != self.subjects[root].snapshot {
-                    return self.done(Some(false));
+                    return self.truth(Some(false));
                 }
                 self.owner(x, assign)?.map(|owner| owner == Some(root))
             }
         };
-        self.done(out)
+        self.truth(out)
     }
 
     fn candidates(&self, family: &Family) -> Result<&[usize], E> {
@@ -205,9 +223,14 @@ impl<'a, E: InputError> Model<'a, E> {
         for &x in self.candidates(family)? {
             self.checkpoint()?;
             out = or3(out, self.member(x, holder, family, assign)?);
-            self.checkpoint()?;
+            if out == Some(true) {
+                return self.done(out);
+            }
+            if out.is_none() {
+                self.checkpoint()?;
+            }
         }
-        self.done(out)
+        self.truth(out)
     }
 
     fn family_of(&self, holder: usize, ty: &Type) -> Result<Option<Family>, E> {
@@ -252,6 +275,9 @@ impl<'a, E: InputError> Model<'a, E> {
                     for t in items {
                         self.checkpoint()?;
                         acc = and3(acc, self.inhabited(holder, t, assign)?);
+                        if acc == Some(false) {
+                            return self.truth(acc);
+                        }
                         self.checkpoint()?;
                     }
                     acc
@@ -259,7 +285,7 @@ impl<'a, E: InputError> Model<'a, E> {
                 Type::Data(d) => Some(self.data_inhabited.get(d).copied().unwrap_or(true)),
                 _ => Some(true),
             };
-            self.done(out)
+            self.truth(out)
         })
     }
 
@@ -370,12 +396,18 @@ impl<'a, E: InputError> Model<'a, E> {
                 for &k in keys {
                     self.checkpoint()?;
                     out = and3(out, self.member(k, *holder, family, assign)?);
+                    if out == Some(false) {
+                        return self.truth(out);
+                    }
                     self.checkpoint()?;
                 }
                 for &x in self.candidates(family)? {
                     self.checkpoint()?;
                     if !keys.contains(&x) {
                         out = and3(out, self.member(x, *holder, family, assign)?.map(|m| !m));
+                        if out == Some(false) {
+                            return self.truth(out);
+                        }
                     }
                     self.checkpoint()?;
                 }
@@ -383,7 +415,7 @@ impl<'a, E: InputError> Model<'a, E> {
             }
             Cons::Inhabit { holder, ty, .. } => self.inhabited(*holder, ty, assign)?,
         };
-        self.done(out)
+        self.truth(out)
     }
 }
 
@@ -638,47 +670,25 @@ pub(crate) fn check_completion<E: InputError>(
         }
         m.checkpoint()?;
     }
-    // 原因の位置を絞る前に停止しても、全制約の不整合を既知の入力位置へ帰属する。
-    // 単一制約はその位置、複数制約は全制約を含む入力の根を使う。
-    let fallback_pointer = if cons.len() == 1 {
-        cons[0].pointer()
-    } else {
-        ""
-    };
-    if feasible(&m, &cons)? {
-        return m.done(());
-    }
-    // 入力順に条件を足していき、初めて補完が無くなる条件を位置とする。
-    // この探索は既知の不整合の診断だけを詳しくする。予算消尽でその事実を失わない。
-    let position = (|| -> Result<&str, E> {
-        let (mut lo, mut hi) = (0, cons.len());
-        while hi - lo > 1 {
-            m.checkpoint()?;
-            let mid = (lo + hi) / 2;
-            if feasible(&m, &cons[..mid])? {
-                lo = mid;
-            } else {
-                hi = mid;
-            }
-            m.checkpoint()?;
+    // subject順・field宣言順に条件を足す。初めて補完不能になるprefixとその
+    // 最後の条件の位置を同時に確定し、停止後に原因位置を探し直さない。
+    for end in 1..=cons.len() {
+        m.checkpoint()?;
+        if !feasible(&m, &cons[..end])? {
+            return E::finish(
+                Err(issue(
+                    Code::InconsistentObservation,
+                    cons[end - 1].pointer(),
+                    "既知の値・参照・所属を保つ補完が一つもない",
+                )
+                .into()),
+                control,
+                Checkpoint::Completion,
+            );
         }
-        Ok(cons[hi - 1].pointer())
-    })();
-    let pointer = match position {
-        Ok(pointer) => pointer,
-        Err(stop) if stop.is_budget_stop() => fallback_pointer,
-        Err(stop) => return Err(stop),
-    };
-    E::finish(
-        Err(issue(
-            Code::InconsistentObservation,
-            pointer,
-            "既知の値・参照・所属を保つ補完が一つもない",
-        )
-        .into()),
-        control,
-        Checkpoint::Completion,
-    )
+        m.checkpoint()?;
+    }
+    m.done(())
 }
 
 /// 条件と、その真偽が依存する変数の組。
@@ -693,7 +703,9 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[Cons]) -> Result<bool, E> {
     for c in cons {
         m.checkpoint()?;
         match m.eval(c, &empty)? {
-            Some(false) => return m.done(false),
+            // このprefix全体の補完不能を確定したので、位置付きの入力不正へ
+            // 変換するまで事後budgetと併せて否定の結果を保持する。
+            Some(false) => return m.decision(false),
             Some(true) => {}
             None => open.push((c, m.vars_of(c)?)),
         }
@@ -754,7 +766,7 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[Cons]) -> Result<bool, E> {
     for (_, group) in &groups {
         m.checkpoint()?;
         if !search(m, group, &mut assign)? {
-            return m.done(false);
+            return m.decision(false);
         }
         m.checkpoint()?;
     }
@@ -774,7 +786,7 @@ fn search<E: InputError>(
         for (c, vs) in cons {
             m.checkpoint()?;
             match m.eval(c, assign)? {
-                Some(false) => return m.done(false),
+                Some(false) => return m.decision(false),
                 Some(true) => {}
                 None => {
                     let mut free = Vec::new();
@@ -800,7 +812,7 @@ fn search<E: InputError>(
         };
         // 破る条件のない候補を、真に決まる条件の多い順に置く。
         let mut order: Vec<(usize, usize)> = Vec::new();
-        for &x in &m.vars[v].2 {
+        for (candidate, &x) in m.vars[v].2.iter().enumerate() {
             m.checkpoint()?;
             assign[v] = Some(x);
             let mut decided = 0;
@@ -819,24 +831,34 @@ fn search<E: InputError>(
                 }
                 m.checkpoint()?;
             }
-            m.checkpoint()?;
             if !broken {
                 order.push((decided, x));
             }
+            if candidate + 1 == m.vars[v].2.len() && order.is_empty() {
+                assign[v] = None;
+                return m.decision(false);
+            }
             m.checkpoint()?;
+        }
+        if order.is_empty() {
+            assign[v] = None;
+            return m.decision(false);
         }
         order.sort_by_key(|&(decided, _)| std::cmp::Reverse(decided));
         m.checkpoint()?;
-        for (_, x) in order {
+        let mut remaining = order.into_iter().peekable();
+        while let Some((_, x)) = remaining.next() {
             m.checkpoint()?;
             assign[v] = Some(x);
             if search(m, cons, assign)? {
                 return m.done(true);
             }
-            m.checkpoint()?;
+            if remaining.peek().is_some() {
+                m.checkpoint()?;
+            }
         }
         assign[v] = None;
-        m.done(false)
+        m.decision(false)
     })
 }
 

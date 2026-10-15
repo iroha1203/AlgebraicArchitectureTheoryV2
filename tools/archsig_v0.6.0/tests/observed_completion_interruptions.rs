@@ -209,11 +209,11 @@ fn single_map_constraint_interrupts_before_early_inconsistent_return() {
 fn single_map_budget_keeps_resource_limit_and_observed() {
     let input = map_without_codomain();
     let total = count_completion(&input, false);
-    for stop_after in [1, total / 2, total - 4, total] {
+    for stop_after in [1, total / 2, total - 5, total - 4, total - 1, total] {
         for memory in [false, true] {
             let mut control = budget_at(stop_after, memory);
             let failure = check_inputs(input.clone(), &mut control).unwrap_err();
-            if stop_after == total {
+            if stop_after >= total - 4 {
                 assert_known_inconsistent(failure, "/snapshots/0/subjects/1", memory);
             } else {
                 assert_stopped(failure, "budget_exhausted", budget_details(memory));
@@ -223,7 +223,7 @@ fn single_map_budget_keeps_resource_limit_and_observed() {
 }
 
 #[test]
-fn multiple_constraints_keep_known_inconsistency_when_diagnostic_search_stops() {
+fn multiple_constraints_keep_the_first_inconsistent_prefix_pointer() {
     let input = source(
         &[
             entity("V.A", "[]"),
@@ -263,7 +263,8 @@ fn multiple_constraints_keep_known_inconsistency_when_diagnostic_search_stops() 
         ])
     );
     let total = count_completion(&input, false);
-    // 最終点は原因特定後。その二点前は補完不能を確定した後のprefix探索内。
+    // 最終点では最初の不整合prefixと規定位置が同時に確定している。
+    // その直前のfalse返却も既知の否定を保持し、早期の停止は不整合へ昇格させない。
     for memory in [false, true] {
         let mut final_stop = budget_at(total, memory);
         assert_known_inconsistent(
@@ -271,20 +272,90 @@ fn multiple_constraints_keep_known_inconsistency_when_diagnostic_search_stops() 
             "/snapshots/0/subjects/2",
             memory,
         );
-        let mut diagnostic_stop = budget_at(total - 2, memory);
+        let mut known_stop = budget_at(total - 1, memory);
         assert_known_inconsistent(
-            check_inputs(input.clone(), &mut diagnostic_stop).unwrap_err(),
-            "",
+            check_inputs(input.clone(), &mut known_stop).unwrap_err(),
+            "/snapshots/0/subjects/2",
             memory,
         );
-        let mut early_stop = budget_at(1, memory);
-        assert_stopped(
-            check_inputs(input.clone(), &mut early_stop).unwrap_err(),
-            "budget_exhausted",
-            budget_details(memory),
-        );
+        for stop_after in [1, total / 2] {
+            let mut early_stop = budget_at(stop_after, memory);
+            assert_stopped(
+                check_inputs(input.clone(), &mut early_stop).unwrap_err(),
+                "budget_exhausted",
+                budget_details(memory),
+            );
+        }
     }
     cancel_at(&input, total - 2);
+    cancel_at(&input, total);
+}
+
+#[test]
+fn all_owner_candidates_rejected_keep_the_exact_constraint_and_late_budget() {
+    let owner = r#"[{"name":"owner","type":["Ref","V.Root"],"meaning":"owner"}]"#;
+    let input = source(
+        &[
+            entity("V.Root", "[]"),
+            common::entity_json("V.Item", owner, "[]"),
+            common::entity_json(
+                "V.Holder",
+                owner,
+                &format!(
+                    "[{},{}]",
+                    common::field_json("first", r#"["Owned","V.Item","owner"]"#),
+                    common::field_json("second", r#"["Owned","V.Item","owner"]"#),
+                ),
+            ),
+        ],
+        &[
+            ("r1", "Root"),
+            ("r2", "Root"),
+            ("i1", "Item"),
+            ("i2", "Item"),
+            ("h", "Holder"),
+        ],
+        &[
+            ("i1", "Item.owner", r#"["s","r1"]"#),
+            ("i2", "Item.owner", r#"["s","r2"]"#),
+            ("h", "Holder.first", r#"["s","i1"]"#),
+            ("h", "Holder.second", r#"["s","i2"]"#),
+        ],
+    );
+    // h.owner=r1 はsecondを、r2はfirstを破る。firstまでのprefixには補完がある。
+    let baseline = check_inputs(input.clone(), &mut Control::unlimited()).unwrap_err();
+    let Json::Obj(issue) = &baseline.issues()[0] else {
+        panic!("issue")
+    };
+    let pointer = "/snapshots/0/atoms/3/value";
+    assert_eq!(
+        issue["location"],
+        Json::obj([
+            ("input", Json::str("archmap")),
+            ("pointer", Json::str(pointer)),
+        ])
+    );
+    let total = count_completion(&input, false);
+    for memory in [false, true] {
+        // 最後の候補のmember(false)、eval(false)、search(No)、feasible(No)、Issue返却。
+        for stop_after in [total - 4, total - 3, total - 2, total - 1, total] {
+            let mut control = budget_at(stop_after, memory);
+            assert_known_inconsistent(
+                check_inputs(input.clone(), &mut control).unwrap_err(),
+                pointer,
+                memory,
+            );
+        }
+        for stop_after in [1, total / 2] {
+            let mut control = budget_at(stop_after, memory);
+            assert_stopped(
+                check_inputs(input.clone(), &mut control).unwrap_err(),
+                "budget_exhausted",
+                budget_details(memory),
+            );
+        }
+    }
+    cancel_at(&input, total - 4);
     cancel_at(&input, total);
 }
 
