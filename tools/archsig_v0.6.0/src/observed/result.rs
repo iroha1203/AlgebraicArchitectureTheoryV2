@@ -873,8 +873,16 @@ impl Graph {
             }
             self.tick()?;
         }
+        if let Some(evaluation) = a.outputs.get("evaluation")
+            && self.get(*evaluation)?.scope != a.scope
+        {
+            return Err("Answer の範囲が返却評価と違う".into());
+        }
         if let Some(c) = a.claim {
             self.expect(c, &NodeType::Proposition)?;
+            if self.get(c)?.scope != a.scope {
+                return Err("Answer と claim の範囲が違う".into());
+            }
             let Some(j) = &self.get(c)?.judgment else {
                 return Err("claim に判断がない".into());
             };

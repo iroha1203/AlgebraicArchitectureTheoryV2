@@ -1262,3 +1262,431 @@ fn missing_scope_survives_sigterm_before_root_expression_completes() {
         },
     );
 }
+
+fn reachable_nodes(index: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String> {
+    let mut pending = vec![];
+    for root in roots {
+        visit_refs(root, &mut pending);
+    }
+    let mut reached = BTreeSet::new();
+    while let Some(id) = pending.pop() {
+        if reached.insert(id.clone()) {
+            visit_refs(index[id.as_str()], &mut pending);
+        }
+    }
+    reached
+}
+
+fn guarded_counter(count: &str, guard: &str) -> (InputSources, String) {
+    let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0",
+      "vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Counter","version":"1",
+      "dependencies":[],"declarations":[{"kind":"entity","name":"Counter.State",
+      "meaning":"一つの状態。","parameters":[],"fields":[
+        {"name":"count","type":"Z","meaning":"保持する件数。"},
+        {"name":"enabled","type":"Bool","meaning":"この状態に条件を適用する。"}],"alignments":[]}]}]}"#;
+    let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+    let digest = &checked.vocabularies["Counter"].digest;
+    let law = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Guarded {{
+  use vocabulary Counter version "1" digest "{digest}";
+  law required bounded(s: State) when {guard}: s.count <= 10;
+}}
+"#
+    );
+    let map = format!(
+        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
+      "vocabularies":[{{"namespace":"Counter","version":"1","digest":"{digest}"}}],
+      "sources":[{{"id":"gates","uri":"urn:fixture:gate","revision":"gate-r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],
+      "origins":[
+        {{"id":"body","mode":"specification","method":"状態と件数を提示する。","locations":[],"note":"件数と適用条件の由来を区別する小さい仕様モデル。"}},
+        {{"id":"gate","mode":"specification","method":"適用条件を別の由来で提示する。","locations":[{{"source":"gates","path":"gate.model","span":[1,5]}}]}}],
+      "snapshots":[{{"id":"v","origin":"body",
+        "subjects":[{{"id":"s","type":"Counter.State","origin":"body"}}],
+        "atoms":[{{"id":"count","subject":"s","field":"Counter.State.count","value":"{count}","origin":"body"}},
+                 {{"id":"enabled","subject":"s","field":"Counter.State.enabled","value":true,"origin":"gate"}}]}}]}}"#
+    );
+    (
+        InputSources::from_bytes(
+            vec![definitions.as_bytes().to_vec()],
+            law.as_bytes().to_vec(),
+            map.into_bytes(),
+        ),
+        law,
+    )
+}
+
+fn guarded_answer_retains_applicability(count: &str, guard: &str, decision: &str) {
+    let (sources, law) = guarded_counter(count, guard);
+    let checked = check_inputs(sources.clone(), &mut quiet_control()).unwrap();
+    let result = run(sources, &["bounded=check(Guarded.bounded,s=@v/s)"]);
+    assert_eq!(field(&result, "status"), &Json::str("complete"));
+    let a = answer(&result, "bounded");
+    assert_eq!(field(a, "status"), &Json::str(decision));
+    let index = nodes(&result);
+    let reachable = reachable_nodes(
+        &index,
+        &[field(a, "outputs"), field(a, "claim"), field(a, "evidence")],
+    );
+    let returned_ref = field(field(a, "outputs"), "evaluation");
+    let returned = typed(&index, returned_ref, "Evaluation");
+    let returned_payload = value(returned);
+    let body_expression = value(typed(
+        &index,
+        field(returned_payload, "expression"),
+        "Expression",
+    ));
+    let (body_start, body_end) = span(field(body_expression, "location"));
+    assert_eq!(&law.as_bytes()[body_start..body_end], b"s.count <= 10");
+    assert_eq!(
+        field(returned_payload, "applicability"),
+        &Json::str("applicable")
+    );
+    assert_eq!(
+        value(typed(&index, field(returned_payload, "value"), "Bool")),
+        &Json::Bool(decision == "established")
+    );
+    let from_returned = reachable_nodes(&index, &[returned_ref]);
+    let guard_start = law.find(&format!("when {guard}:")).unwrap() + "when ".len();
+    let guard_span = (guard_start, guard_start + guard.len());
+    let guard_expression = reachable
+        .iter()
+        .map(|id| index[id.as_str()])
+        .find(|n| {
+            field(n, "type") == &Json::str("Expression")
+                && obj(value(n)).get("kind") == Some(&Json::str("source"))
+                && span(field(value(n), "location")) == guard_span
+        })
+        .expect("結論から元guard Expressionへ辿れる");
+    let guard_expression_ref = Json::obj([("node", field(guard_expression, "id").clone())]);
+    let guard_evaluation = reachable
+        .iter()
+        .map(|id| index[id.as_str()])
+        .find(|n| {
+            field(n, "type") == &Json::str("Evaluation")
+                && field(value(n), "expression") == &guard_expression_ref
+        })
+        .expect("guardの実Evaluationは結論の到達集合に含まれる");
+    assert!(
+        from_returned.contains(text(field(guard_evaluation, "id"))),
+        "返却Evaluation.applicabilityの根拠からもguard実評価へ戻れる"
+    );
+    let guard_payload = value(guard_evaluation);
+    assert!(arr(field(value(guard_expression), "parameters")).is_empty());
+    assert_eq!(
+        field(value(guard_expression), "bindings"),
+        field(guard_payload, "bindings")
+    );
+    let true_ref = field(guard_payload, "value");
+    assert_eq!(value(typed(&index, true_ref, "Bool")), &Json::Bool(true));
+    assert!(from_returned.contains(text(field(true_ref, "node"))));
+    assert_eq!(
+        field(guard_payload, "bindings"),
+        field(returned_payload, "bindings")
+    );
+    let binding = &arr(field(guard_payload, "bindings"))[0];
+    assert_eq!(field(binding, "name"), &Json::str("s"));
+    let subject = target(&index, field(binding, "value"));
+    assert_eq!(
+        field(subject, "type"),
+        &Json::Arr(vec![Json::str("Ref"), Json::str("Counter.State")])
+    );
+    assert_eq!(
+        value(subject),
+        &Json::Arr(vec![Json::str("v"), Json::str("s")])
+    );
+    assert!(
+        arr(field(guard_payload, "parts"))
+            .iter()
+            .any(|p| span(field(p, "location")) == guard_span
+                && obj(p).get("value") == Some(true_ref))
+    );
+    let count_fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("s")),
+        ("field", Json::str("Counter.State.count")),
+        ("atom", Json::str("count")),
+    ]);
+    let guard_fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("s")),
+        ("field", Json::str("Counter.State.enabled")),
+        ("atom", Json::str("enabled")),
+    ]);
+    let explicit_field = guard == "s.enabled";
+    assert_eq!(
+        arr(field(guard_evaluation, "support")).contains(&guard_fact),
+        explicit_field
+    );
+    let reached_nodes: Vec<_> = reachable.iter().map(|id| index[id.as_str()]).collect();
+    for node in reached_nodes.iter().copied().filter(|n| {
+        field(n, "type") == &Json::str("LawInstance")
+            || field(n, "type") == &Json::str("Proposition")
+            || field(n, "type") == &Json::str("Evidence")
+    }) {
+        let support = arr(field(node, "support"));
+        assert!(
+            support.contains(&count_fact),
+            "結論/証拠はbodyの原始事実を保持する"
+        );
+        assert_eq!(
+            support.contains(&guard_fact),
+            explicit_field,
+            "適用guardの支持を結論/証拠へ合流する"
+        );
+    }
+    assert!(arr(field(returned, "support")).contains(&count_fact));
+    assert_eq!(
+        arr(field(returned, "support")).contains(&guard_fact),
+        explicit_field
+    );
+    let instance = reached_nodes
+        .iter()
+        .copied()
+        .find(|n| field(n, "type") == &Json::str("LawInstance"))
+        .unwrap();
+    assert_eq!(field(value(instance), "guard"), &guard_expression_ref);
+    for item in [a, returned, guard_evaluation, instance] {
+        let scope = field(item, "scope");
+        assert_eq!(field(scope, "domain"), &Json::str("finite_model"));
+        assert_eq!(
+            field(scope, "readings"),
+            &Json::Arr(vec![Json::str("Guarded")])
+        );
+        assert_eq!(field(scope, "snapshots"), &Json::Arr(vec![Json::str("v")]));
+        assert_eq!(
+            field(scope, "modes"),
+            &Json::Arr(vec![Json::str("specification")])
+        );
+    }
+    if explicit_field {
+        let subject = &checked.archmap().snapshots[0].subjects[0];
+        let field = subject
+            .fields
+            .iter()
+            .find(|f| f.name == "Counter.State.enabled")
+            .unwrap();
+        let archsig::archmap::Slot::Known { atom, origin, .. } = &field.slot else {
+            panic!("guardは観測済み")
+        };
+        assert_eq!(atom, "enabled");
+        assert_eq!(origin, "gate");
+        let origin = checked
+            .archmap()
+            .origins
+            .iter()
+            .find(|o| &o.id == origin)
+            .unwrap();
+        assert_eq!(origin.locations[0].path, "gate.model");
+        assert_eq!(origin.locations[0].span, Some((1, 5)));
+        assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+        let body_slot = &subject
+            .fields
+            .iter()
+            .find(|f| f.name == "Counter.State.count")
+            .unwrap()
+            .slot;
+        let archsig::archmap::Slot::Known {
+            origin: body_origin,
+            ..
+        } = body_slot
+        else {
+            panic!("bodyは観測済み")
+        };
+        assert_eq!(body_origin, "body");
+        assert_ne!(body_origin, &origin.id);
+        let source = checked
+            .archmap()
+            .sources
+            .iter()
+            .find(|s| s.id == origin.locations[0].source)
+            .unwrap();
+        assert_eq!(source.uri, "urn:fixture:gate");
+        assert_eq!(source.revision, "gate-r1");
+    }
+    if decision == "refuted" {
+        let counterexample = reached_nodes
+            .iter()
+            .copied()
+            .find(|n| {
+                field(n, "type") == &Json::str("Evidence")
+                    && field(value(n), "kind") == &Json::str("counterexample")
+            })
+            .expect("反例は結論から到達可能");
+        let data = field(value(counterexample), "data");
+        assert_eq!(
+            value(typed(&index, field(data, "left"), "Z")),
+            &Json::str(count)
+        );
+        assert_eq!(
+            value(typed(&index, field(data, "right"), "Z")),
+            &Json::str("10")
+        );
+        assert!(arr(field(data, "facts")).contains(&count_fact));
+        assert_eq!(
+            arr(field(data, "facts")).contains(&guard_fact),
+            explicit_field
+        );
+    }
+    audit_dag(&result);
+}
+
+#[test]
+fn true_field_guard_refutation_keeps_applicability_reachable_from_the_answer() {
+    guarded_answer_retains_applicability("12", "s.enabled", "refuted");
+}
+
+#[test]
+fn true_field_guard_establishment_keeps_guard_and_body_support() {
+    guarded_answer_retains_applicability("2", "s.enabled", "established");
+}
+
+#[test]
+fn literal_true_guard_keeps_its_evaluation_without_invented_atom_support() {
+    guarded_answer_retains_applicability("2", "true", "established");
+}
+
+#[test]
+fn true_field_guard_with_missing_body_keeps_applicability_and_all_completions() {
+    let (original, law) = guarded_counter("2", "s.enabled");
+    let map = String::from_utf8(original.archmap().bytes().to_vec()).unwrap()
+        .replace(r#"{"id":"count","subject":"s","field":"Counter.State.count","value":"2","origin":"body"},"#, "")
+        .replace("specification", "observed")
+        .replace(r#""locations":[]"#, r#""locations":[{"source":"gates","path":"count.model","span":[6,9]}]"#);
+    let inputs = InputSources::from_bytes(
+        original
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        original.law().bytes().to_vec(),
+        map.into_bytes(),
+    );
+    let checked = check_inputs(inputs.clone(), &mut quiet_control()).unwrap();
+    let subject = &checked.archmap().snapshots[0].subjects[0];
+    assert_eq!(subject.id, "s");
+    assert!(matches!(
+        &subject
+            .fields
+            .iter()
+            .find(|f| f.name == "Counter.State.count")
+            .unwrap()
+            .slot,
+        archsig::archmap::Slot::Missing
+    ));
+    let result = run(inputs, &["bounded=check(Guarded.bounded,s=@v/s)"]);
+    assert_eq!(field(&result, "status"), &Json::str("partial"));
+    let a = answer(&result, "bounded");
+    assert_eq!(field(a, "status"), &Json::str("undetermined"));
+    let index = nodes(&result);
+    let evaluation_ref = field(field(a, "outputs"), "evaluation");
+    let evaluation = typed(&index, evaluation_ref, "Evaluation");
+    let payload = value(evaluation);
+    assert_eq!(field(payload, "applicability"), &Json::str("applicable"));
+    assert!(
+        !obj(payload).contains_key("value"),
+        "適用guardがtrueでも欠測bodyへBool値を補わない"
+    );
+    let proposition = typed(&index, field(a, "claim"), "Proposition");
+    assert_eq!(
+        field(field(proposition, "judgment"), "status"),
+        &Json::str("undetermined")
+    );
+    assert_eq!(field(field(a, "outputs"), "proposition"), field(a, "claim"));
+    let reached = reachable_nodes(
+        &index,
+        &[field(a, "outputs"), field(a, "claim"), field(a, "evidence")],
+    );
+    let from_evaluation = reachable_nodes(&index, &[evaluation_ref]);
+    let guard_span_start = law.find("when s.enabled:").unwrap() + "when ".len();
+    let guard_span = (guard_span_start, guard_span_start + "s.enabled".len());
+    let guard_evaluation = reached
+        .iter()
+        .map(|id| index[id.as_str()])
+        .find(|node| {
+            if field(node, "type") != &Json::str("Evaluation") {
+                return false;
+            }
+            let expression = value(typed(
+                &index,
+                field(value(node), "expression"),
+                "Expression",
+            ));
+            span(field(expression, "location")) == guard_span
+        })
+        .expect("Answerから確認済みguard Evaluationへ到達する");
+    assert!(
+        from_evaluation.contains(text(field(guard_evaluation, "id"))),
+        "返却Evaluationだけから適用根拠へ到達する"
+    );
+    assert_eq!(
+        value(typed(
+            &index,
+            field(value(guard_evaluation), "value"),
+            "Bool"
+        )),
+        &Json::Bool(true)
+    );
+    let guard_fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("s")),
+        ("field", Json::str("Counter.State.enabled")),
+        ("atom", Json::str("enabled")),
+    ]);
+    assert!(arr(field(guard_evaluation, "support")).contains(&guard_fact));
+    assert!(arr(field(evaluation, "support")).contains(&guard_fact));
+    let missing_fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("s")),
+        ("field", Json::str("Counter.State.count")),
+    ]);
+    for item in [a, evaluation] {
+        let missing = arr(field(item, "reasons"))
+            .iter()
+            .find(|r| field(r, "code") == &Json::str("missing_observation"))
+            .unwrap();
+        assert_eq!(
+            field(missing, "missing"),
+            &Json::Arr(vec![missing_fact.clone()])
+        );
+        assert!(!arr(field(missing, "dependencies")).is_empty());
+        for dependency in arr(field(missing, "dependencies")) {
+            assert!(from_evaluation.contains(text(field(dependency, "node"))));
+            let expression = typed(&index, dependency, "Expression");
+            let (start, end) = span(field(value(expression), "location"));
+            assert_eq!(&law.as_bytes()[start..end], b"s.count");
+            assert_eq!(
+                field(field(expression, "scope"), "domain"),
+                &Json::str("all_completions")
+            );
+        }
+        let scope = field(item, "scope");
+        assert_eq!(field(scope, "domain"), &Json::str("all_completions"));
+        assert_eq!(
+            field(scope, "modes"),
+            &Json::Arr(vec![Json::str("observed")])
+        );
+        assert_eq!(field(scope, "snapshots"), &Json::Arr(vec![Json::str("v")]));
+        assert_eq!(
+            field(scope, "readings"),
+            &Json::Arr(vec![Json::str("Guarded")])
+        );
+    }
+    assert_eq!(
+        field(field(guard_evaluation, "scope"), "modes"),
+        &Json::Arr(vec![Json::str("observed")])
+    );
+    for id in &reached {
+        let node = index[id.as_str()];
+        assert!(
+            !arr(field(node, "support"))
+                .iter()
+                .any(|f| obj(f).get("field") == Some(&Json::str("Counter.State.count"))),
+            "欠測slotを観測済みsupportへ昇格しない"
+        );
+        if field(node, "type") == &Json::str("Evidence") {
+            assert_ne!(field(value(node), "kind"), &Json::str("counterexample"));
+        }
+    }
+    audit_dag(&result);
+}

@@ -352,6 +352,7 @@ impl<'a> Environment<'a> {
                 (None, None) => {}
                 _ => return Err("guard の出現不一致".into()),
             }
+            self.application(graph, node)?;
         }
         if let Some(Payload::Evaluation {
             expression,
@@ -361,101 +362,111 @@ impl<'a> Environment<'a> {
             ..
         }) = &node.payload
         {
-            let span = self.expression_span(graph, *expression)?;
-            let source_bindings = self.expression_bindings(graph, *expression)?;
-            if source_bindings != bindings
-                || parts.len() != 1
-                || parts[0].location != (Location::Law { span })
-                || parts[0].value != *value
-            {
-                return Err("Evaluation の原式・束縛・part が合わない".into());
-            }
-            let children = &parts[0].children;
-            let ast = self
-                .expressions
-                .get(&span)
-                .map(|id| &self.inputs.law().exprs[*id]);
-            let expected = match ast.map(|e| &e.kind) {
-                Some(ExprKind::Binary { lhs, rhs, .. }) => vec![
-                    self.inputs.law().exprs[*lhs].span,
-                    self.inputs.law().exprs[*rhs].span,
-                ],
-                Some(ExprKind::Unary { operand, .. } | ExprKind::Group(operand)) => {
-                    vec![self.inputs.law().exprs[*operand].span]
+            let application = node
+                .arguments
+                .first()
+                .copied()
+                .filter(|r| matches!(graph.get(*r).map(|n| &n.ty), Ok(NodeType::LawInstance)));
+            if let Some(instance) = application {
+                self.validate_law_evaluation(graph, node, instance)?;
+            } else {
+                let span = self.expression_span(graph, *expression)?;
+                let source_bindings = self.expression_bindings(graph, *expression)?;
+                if source_bindings != bindings
+                    || parts.len() != 1
+                    || parts[0].location != (Location::Law { span })
+                    || parts[0].value != *value
+                {
+                    return Err("Evaluation の原式・束縛・part が合わない".into());
                 }
-                Some(ExprKind::Field { base, .. }) => vec![self.inputs.law().exprs[*base].span],
-                Some(ExprKind::Dotted(parts)) if parts.len() > 1 => {
-                    vec![(parts[0].span.0, parts[parts.len() - 2].span.1)]
+                let children = &parts[0].children;
+                let ast = self
+                    .expressions
+                    .get(&span)
+                    .map(|id| &self.inputs.law().exprs[*id]);
+                let expected = match ast.map(|e| &e.kind) {
+                    Some(ExprKind::Binary { lhs, rhs, .. }) => vec![
+                        self.inputs.law().exprs[*lhs].span,
+                        self.inputs.law().exprs[*rhs].span,
+                    ],
+                    Some(ExprKind::Unary { operand, .. } | ExprKind::Group(operand)) => {
+                        vec![self.inputs.law().exprs[*operand].span]
+                    }
+                    Some(ExprKind::Field { base, .. }) => vec![self.inputs.law().exprs[*base].span],
+                    Some(ExprKind::Dotted(parts)) if parts.len() > 1 => {
+                        vec![(parts[0].span.0, parts[parts.len() - 2].span.1)]
+                    }
+                    _ => vec![],
+                };
+                if children.len() != expected.len() {
+                    return Err("元 AST と子 Evaluation の個数不一致".into());
                 }
-                _ => vec![],
-            };
-            if children.len() != expected.len() {
-                return Err("元 AST と子 Evaluation の個数不一致".into());
-            }
-            let mut child_values = Vec::new();
-            for (&child, expected_span) in children.iter().zip(expected) {
-                self.tick()?;
-                let (e, b, v) = self.evaluation(graph, child)?;
-                if self.expression_span(graph, e)? != expected_span || b != bindings {
-                    return Err("元 AST の子出現・束縛不一致".into());
+                let mut child_values = Vec::new();
+                for (&child, expected_span) in children.iter().zip(expected) {
+                    self.tick()?;
+                    let (e, b, v) = self.evaluation(graph, child)?;
+                    if self.expression_span(graph, e)? != expected_span || b != bindings {
+                        return Err("元 AST の子出現・束縛不一致".into());
+                    }
+                    child_values.push(v);
+                    self.tick()?;
                 }
-                child_values.push(v);
-                self.tick()?;
-            }
-            match ast.map(|e| &e.kind) {
-                Some(ExprKind::Binary { op, .. }) => {
-                    let pair = child_values[0].zip(child_values[1]);
-                    match (pair, *value) {
-                        (Some((left, right)), Some(result)) => {
-                            if graph.scalar(result)?
-                                != &binary(*op, graph.scalar(left)?, graph.scalar(right)?)?
-                                || graph.get(result)?.arguments != [left, right]
-                            {
-                                return Err("生成比較値の元左右が違う".into());
+                match ast.map(|e| &e.kind) {
+                    Some(ExprKind::Binary { op, .. }) => {
+                        let pair = child_values[0].zip(child_values[1]);
+                        match (pair, *value) {
+                            (Some((left, right)), Some(result)) => {
+                                if graph.scalar(result)?
+                                    != &binary(*op, graph.scalar(left)?, graph.scalar(right)?)?
+                                    || graph.get(result)?.arguments != [left, right]
+                                {
+                                    return Err("生成比較値の元左右が違う".into());
+                                }
                             }
+                            (None, None) => {}
+                            _ => return Err("未確定の子からの比較値生成".into()),
                         }
-                        (None, None) => {}
-                        _ => return Err("未確定の子からの比較値生成".into()),
+                        if parts[0].residual.is_some() && *op != BinOp::Eq {
+                            return Err("不等式に残差が付いている".into());
+                        }
                     }
-                    if parts[0].residual.is_some() && *op != BinOp::Eq {
-                        return Err("不等式に残差が付いている".into());
+                    Some(ExprKind::Group(_)) => {
+                        if *value != child_values[0] {
+                            return Err("括弧の評価値不一致".into());
+                        }
                     }
-                }
-                Some(ExprKind::Group(_)) => {
-                    if *value != child_values[0] {
-                        return Err("括弧の評価値不一致".into());
+                    Some(ExprKind::Unary { op: UnOp::Neg, .. }) => {
+                        if let Some(v) = value
+                            && graph.get(*v)?.arguments
+                                != child_values.iter().flatten().copied().collect::<Vec<_>>()
+                        {
+                            return Err("負号の元 operand が違う".into());
+                        }
                     }
-                }
-                Some(ExprKind::Unary { op: UnOp::Neg, .. }) => {
-                    if let Some(v) = value
-                        && graph.get(*v)?.arguments
-                            != child_values.iter().flatten().copied().collect::<Vec<_>>()
-                    {
-                        return Err("負号の元 operand が違う".into());
+                    Some(ExprKind::Dotted(parts)) => {
+                        if parts.len() == 1 {
+                            self.check_parameter(graph, bindings, &parts[0].name, *value)?;
+                        } else {
+                            self.check_field(
+                                graph,
+                                child_values[0],
+                                &parts[parts.len() - 1].name,
+                                *value,
+                            )?;
+                        }
                     }
-                }
-                Some(ExprKind::Dotted(parts)) => {
-                    if parts.len() == 1 {
-                        self.check_parameter(graph, bindings, &parts[0].name, *value)?;
-                    } else {
-                        self.check_field(
-                            graph,
-                            child_values[0],
-                            &parts[parts.len() - 1].name,
-                            *value,
-                        )?;
+                    Some(ExprKind::Field { name, .. }) => {
+                        self.check_field(graph, child_values[0], &name.name, *value)?
                     }
+                    None => {
+                        let source = std::str::from_utf8(
+                            &self.inputs.sources().law().bytes()[span.0..span.1],
+                        )
+                        .map_err(|_| "parameter token")?;
+                        self.check_parameter(graph, bindings, source, *value)?;
+                    }
+                    _ => {}
                 }
-                Some(ExprKind::Field { name, .. }) => {
-                    self.check_field(graph, child_values[0], &name.name, *value)?
-                }
-                None => {
-                    let source =
-                        std::str::from_utf8(&self.inputs.sources().law().bytes()[span.0..span.1])
-                            .map_err(|_| "parameter token")?;
-                    self.check_parameter(graph, bindings, source, *value)?;
-                }
-                _ => {}
             }
         }
         match &node.payload {
@@ -473,7 +484,7 @@ impl<'a> Environment<'a> {
                 else {
                     unreachable!()
                 };
-                if *residual != parts[0].residual {
+                if *residual != parts.last().ok_or("証拠の評価 part がない")?.residual {
                     return Err("証拠の残差が元評価と違う".into());
                 }
             }
@@ -518,6 +529,21 @@ impl<'a> Environment<'a> {
                 }
             }
             _ => {}
+        }
+        if matches!(
+            node.payload,
+            Some(
+                Payload::EvaluationEvidence { .. }
+                    | Payload::Counterexample { .. }
+                    | Payload::Proposition { .. }
+            )
+        ) {
+            let evaluation = *node.arguments.get(1).ok_or("結論に適用評価がない")?;
+            if node.support != graph.get(evaluation)?.support
+                || node.scope != graph.get(evaluation)?.scope
+            {
+                return Err("結論の支持・範囲が適用評価と合わない".into());
+            }
         }
         self.tick()?;
         Ok(())
@@ -610,21 +636,217 @@ impl<'a> Environment<'a> {
             _ => Err("field の元 slot と導出値が合わない".into()),
         }
     }
+    fn recheck_evaluation(&self, graph: &Graph, root: NodeRef) -> Result<(), ValidationFailure> {
+        let mut pending = vec![root];
+        while let Some(reference) = pending.pop() {
+            self.tick()?;
+            let node = graph.get(reference)?;
+            self.validate(graph, node)?;
+            let Some(Payload::Evaluation {
+                expression,
+                parts,
+                value,
+                ..
+            }) = &node.payload
+            else {
+                return Err("再検査対象が Evaluation でない".into());
+            };
+            self.validate(graph, graph.get(*expression)?)?;
+            let mut support = Vec::new();
+            if let Some(value) = value {
+                self.validate(graph, graph.get(*value)?)?;
+                support.extend(graph.get(*value)?.support.iter().cloned());
+            }
+            for part in parts {
+                self.tick()?;
+                for &child in &part.children {
+                    self.tick()?;
+                    if child.0 >= reference.0 {
+                        return Err("再検査する子評価が既出でない".into());
+                    }
+                    pending.push(child);
+                    support.extend(graph.get(child)?.support.iter().cloned());
+                    self.tick()?;
+                }
+                self.tick()?;
+            }
+            support.sort();
+            support.dedup();
+            if node.support != support {
+                return Err("guard 評価の支持が元値・子評価に合わない".into());
+            }
+            self.tick()?;
+        }
+        Ok(())
+    }
+    // LawInstance の適用根拠を元 guard/body と同じ束縛で照合する。
+    fn application(
+        &self,
+        graph: &Graph,
+        instance: &Node,
+    ) -> Result<(NodeRef, Option<NodeRef>), ValidationFailure> {
+        let Some(Payload::LawInstance {
+            name,
+            body,
+            guard,
+            bindings,
+            ..
+        }) = &instance.payload
+        else {
+            return Err("LawInstance がない".into());
+        };
+        let declaration = self
+            .inputs
+            .law()
+            .declarations
+            .get(name)
+            .ok_or("適用の Law 宣言がない")?;
+        let crate::law::model::Signature::Law {
+            body: source_body,
+            guard: source_guard,
+            ..
+        } = &declaration.signature
+        else {
+            return Err("適用対象が Law でない".into());
+        };
+        self.source_matches(graph, *body, *source_body)?;
+        match (guard, source_guard) {
+            (Some(expression), Some(id)) => self.source_matches(graph, *expression, *id)?,
+            (None, None) => {}
+            _ => return Err("適用 guard の元宣言不一致".into()),
+        }
+        let count = 1 + usize::from(guard.is_some());
+        if instance.arguments.len() != count + bindings.len() {
+            return Err("LawInstance の適用引数数が違う".into());
+        }
+        let body_evaluation = instance.arguments[0];
+        let (expression, body_bindings, _) = self.evaluation(graph, body_evaluation)?;
+        if expression != *body
+            || body_bindings != bindings
+            || self.expression_bindings(graph, expression)? != bindings
+        {
+            return Err("LawInstance の元 body 評価・束縛不一致".into());
+        }
+        let guard_evaluation = if let Some(guard) = guard {
+            let reference = instance.arguments[1];
+            let (expression, guard_bindings, value) = self.evaluation(graph, reference)?;
+            if expression != *guard
+                || guard_bindings != bindings
+                || self.expression_bindings(graph, expression)? != bindings
+            {
+                return Err("guard 評価の元出現・束縛不一致".into());
+            }
+            if value.map(|r| graph.scalar(r)).transpose()? != Some(&Scalar::Bool(true)) {
+                return Err("guard が確認済み true でない".into());
+            }
+            self.recheck_evaluation(graph, reference)?;
+            Some(reference)
+        } else {
+            None
+        };
+        for (binding, &argument) in bindings.iter().zip(&instance.arguments[count..]) {
+            self.tick()?;
+            if binding.value != argument {
+                return Err("適用根拠の parameter identity 不一致".into());
+            }
+            self.tick()?;
+        }
+        let (support, scope) =
+            self.application_context(graph, body_evaluation, guard_evaluation)?;
+        if instance.support != support || instance.scope != scope {
+            return Err("LawInstance の適用支持・範囲不一致".into());
+        }
+        Ok((body_evaluation, guard_evaluation))
+    }
+    fn application_context(
+        &self,
+        graph: &Graph,
+        body: NodeRef,
+        guard: Option<NodeRef>,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let mut support = graph.get(body)?.support.clone();
+        let mut scope = graph.get(body)?.scope.clone();
+        if let Some(guard) = guard {
+            self.tick()?;
+            support.extend(graph.get(guard)?.support.iter().cloned());
+            scope.merge(&graph.get(guard)?.scope);
+            self.tick()?;
+        }
+        support.sort();
+        support.dedup();
+        Ok((support, scope))
+    }
+    fn validate_law_evaluation(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        instance: NodeRef,
+    ) -> Result<(), ValidationFailure> {
+        let instance_node = graph.get(instance)?;
+        let (body, guard) = self.application(graph, instance_node)?;
+        let guard = guard.ok_or("省略 guard に適用集約評価を作っている")?;
+        if node.arguments != [instance, body, guard] {
+            return Err("適用評価の元引数不一致".into());
+        }
+        let Some(Payload::Evaluation {
+            expression,
+            bindings,
+            parts,
+            value,
+            applicability,
+        }) = &node.payload
+        else {
+            return Err("適用評価でない".into());
+        };
+        let (body_expression, body_bindings, body_value) = self.evaluation(graph, body)?;
+        if *expression != body_expression
+            || bindings != body_bindings
+            || *value != body_value
+            || *applicability != "applicable"
+            || parts.len() != 2
+        {
+            return Err("適用評価の元 body・束縛・適用表示不一致".into());
+        }
+        for (part, evaluation) in parts.iter().zip([guard, body]) {
+            self.tick()?;
+            let (expression, _, value) = self.evaluation(graph, evaluation)?;
+            let Some(Payload::Evaluation {
+                parts: original, ..
+            }) = &graph.get(evaluation)?.payload
+            else {
+                unreachable!()
+            };
+            if part.location
+                != (Location::Law {
+                    span: self.expression_span(graph, expression)?,
+                })
+                || part.value != value
+                || part.residual != original.last().ok_or("元評価 part がない")?.residual
+                || part.children != [evaluation]
+            {
+                return Err("適用評価 part の出現・値・子評価不一致".into());
+            }
+            self.tick()?;
+        }
+        let (support, scope) = self.application_context(graph, body, Some(guard))?;
+        if node.support != support || node.scope != scope {
+            return Err("適用評価の支持・範囲不一致".into());
+        }
+        Ok(())
+    }
     fn instance_evaluation(
         &self,
         graph: &Graph,
         instance: NodeRef,
         evaluation: NodeRef,
-    ) -> Result<(), String> {
-        let Some(Payload::LawInstance { body, bindings, .. }) = &graph.get(instance)?.payload
-        else {
-            return Err("証拠に LawInstance がない".into());
-        };
-        let (expression, bs, _) = self.evaluation(graph, evaluation)?;
-        if expression != *body || bs != bindings {
-            return Err("LawInstance と評価 body/束縛の不一致".into());
+    ) -> Result<NodeRef, ValidationFailure> {
+        let (body, guard) = self.application(graph, graph.get(instance)?)?;
+        if guard.is_some() {
+            self.validate_law_evaluation(graph, graph.get(evaluation)?, instance)?;
+        } else if evaluation != body {
+            return Err("省略 guard の元 body 評価不一致".into());
         }
-        Ok(())
+        Ok(body)
     }
     fn evidence_operands(
         &self,
@@ -636,13 +858,13 @@ impl<'a> Environment<'a> {
             return Err("証拠の構成入力不一致".into());
         }
         let evaluation = node.arguments[1];
-        self.instance_evaluation(graph, instance, evaluation)?;
-        let (expression, _, value) = self.evaluation(graph, evaluation)?;
+        let body = self.instance_evaluation(graph, instance, evaluation)?;
+        let (expression, _, value) = self.evaluation(graph, body)?;
         let span = self.expression_span(graph, expression)?;
         let expr =
             &self.inputs.law().exprs[*self.expressions.get(&span).ok_or("証拠の元 AST がない")?];
         if matches!(expr.kind, ExprKind::Binary { .. }) {
-            let Some(Payload::Evaluation { parts, .. }) = &graph.get(evaluation)?.payload else {
+            let Some(Payload::Evaluation { parts, .. }) = &graph.get(body)?.payload else {
                 unreachable!()
             };
             if parts[0].children.len() != 2 {

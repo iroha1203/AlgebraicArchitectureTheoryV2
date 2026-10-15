@@ -75,6 +75,7 @@ struct Evaluator<'a, 'b> {
     retained_scope: Scope,
     reasons: Vec<Reason>,
     completed: BTreeMap<ExprId, Evaluated>,
+    answer_evaluation: Option<NodeRef>,
 }
 impl Evaluator<'_, '_> {
     fn tick(&mut self, point: Checkpoint) -> Result<(), Failure> {
@@ -591,6 +592,8 @@ impl Evaluator<'_, '_> {
         role: Option<Role>,
     ) -> Result<Answer, Failure> {
         self.bind(params)?;
+        let guard_id = guard;
+        let body_id = body;
         let guard = guard.map(|g| self.eval(g)).transpose()?;
         if let Some(g) = &guard {
             match g.value.map(|r| self.graph.scalar(r)).transpose()? {
@@ -607,6 +610,14 @@ impl Evaluator<'_, '_> {
         if let Some(g) = &guard {
             scope.merge(&g.scope);
         }
+        let mut support = body.support.clone();
+        if let Some(g) = &guard {
+            self.tick(Checkpoint::FiniteIteration)?;
+            support.extend(g.support.iter().cloned());
+            self.tick(Checkpoint::FiniteIteration)?;
+        }
+        support.sort();
+        support.dedup();
         let mut reasons = body.reasons.clone();
         if let Some(g) = &guard {
             reasons.extend(g.reasons.iter().cloned());
@@ -644,16 +655,59 @@ impl Evaluator<'_, '_> {
                 },
             }),
             rule: Rule::Construction("law_instance"),
-            arguments: std::iter::once(body.expression)
-                .chain(guard.as_ref().map(|g| g.expression))
+            arguments: std::iter::once(body.evaluation)
+                .chain(guard.as_ref().map(|g| g.evaluation))
                 .chain(self.bindings.iter().map(|b| b.value))
                 .collect(),
-            support: body.support.clone(),
+            support: support.clone(),
             evidence: vec![],
             judgment: None,
             scope: scope.clone(),
             reasons: vec![],
         })?;
+        // 明示 guard の適用評価。parts は実在する guard/body の各出現へ戻る。
+        let evaluation = if let Some(g) = &guard {
+            self.push(Node {
+                ty: NodeType::Evaluation(Type::Bool),
+                payload: Some(Payload::Evaluation {
+                    expression: body.expression,
+                    bindings: self.bindings.clone(),
+                    parts: vec![
+                        Part {
+                            location: Location::Law {
+                                span: self.environment.inputs.law().exprs
+                                    [guard_id.expect("明示 guard")]
+                                .span,
+                            },
+                            value: g.value,
+                            residual: g.residual,
+                            children: vec![g.evaluation],
+                        },
+                        Part {
+                            location: Location::Law {
+                                span: self.environment.inputs.law().exprs[body_id].span,
+                            },
+                            value: body.value,
+                            residual: body.residual,
+                            children: vec![body.evaluation],
+                        },
+                    ],
+                    value: body.value,
+                    applicability: "applicable",
+                }),
+                rule: Rule::Construction("evaluation"),
+                arguments: vec![instance, body.evaluation, g.evaluation],
+                support: support.clone(),
+                evidence: vec![],
+                judgment: None,
+                scope: scope.clone(),
+                reasons: reasons.clone(),
+            })?
+        } else {
+            body.evaluation
+        };
+        answer.outputs.insert("evaluation".into(), evaluation);
+        self.answer_evaluation = Some(evaluation);
         let decision = match body.value.map(|r| self.graph.scalar(r)).transpose()? {
             Some(Scalar::Bool(true)) => Decision::Established,
             Some(Scalar::Bool(false)) => Decision::Refuted,
@@ -684,8 +738,8 @@ impl Evaluator<'_, '_> {
                     residual: body.residual,
                 }),
                 rule: Rule::Construction("evidence"),
-                arguments: vec![instance, body.evaluation],
-                support: body.support.clone(),
+                arguments: vec![instance, evaluation],
+                support: support.clone(),
                 evidence: vec![],
                 judgment: None,
                 scope: scope.clone(),
@@ -699,11 +753,11 @@ impl Evaluator<'_, '_> {
                         bindings: self.bindings.clone(),
                         left,
                         right,
-                        facts: body.support.clone(),
+                        facts: support.clone(),
                     }),
                     rule: Rule::Construction("evidence"),
-                    arguments: vec![instance, body.evaluation],
-                    support: body.support.clone(),
+                    arguments: vec![instance, evaluation],
+                    support: support.clone(),
                     evidence: vec![],
                     judgment: None,
                     scope: scope.clone(),
@@ -716,8 +770,8 @@ impl Evaluator<'_, '_> {
             ty: NodeType::Proposition,
             payload: Some(Payload::Proposition { instance }),
             rule: Rule::Construction("proposition"),
-            arguments: vec![instance, body.evaluation],
-            support: body.support,
+            arguments: vec![instance, evaluation],
+            support,
             evidence: evidence.clone(),
             judgment: Some(Judgment {
                 status: decision,
@@ -791,6 +845,7 @@ pub fn evaluate_observed(
                 retained_scope: Scope::default(),
                 reasons: vec![],
                 completed: BTreeMap::new(),
+                answer_evaluation: None,
             };
             let (params, guard, body, role) = match &declaration.signature {
                 Signature::View { params, body, .. } => (params, None, *body, None),
@@ -847,8 +902,14 @@ pub fn evaluate_observed(
                     let mut scope = evaluator.base.clone();
                     // root が未完成でも、保持済みの依存式・値の範囲と由来を残す。
                     scope.merge(&evaluator.retained_scope);
-                    // 表示の finalize。停止前に完成した root Evaluation/値だけを移す。
-                    if let Some(completed) = evaluator.completed.get(&body) {
+                    // 集約済みの適用評価も、後続の証拠構成が停止した際に保持する。
+                    if let Some(evaluation) = evaluator.answer_evaluation {
+                        outputs.insert("evaluation".into(), evaluation);
+                    }
+                    // 明示 guard の適用集約が未完成なら生 body を回答へ昇格しない。
+                    if let Some(completed) = evaluator.completed.get(&body)
+                        && (request.kind == QuestionKind::Evaluate || guard.is_none())
+                    {
                         outputs.insert("evaluation".into(), completed.evaluation);
                         scope.merge(&completed.scope);
                         if request.kind == QuestionKind::Evaluate
@@ -982,6 +1043,150 @@ mod recheck_tests {
             unreachable!()
         };
         bindings[0].name = "other".into();
+        assert!(matches!(
+            environment.validate(&graph, &evaluation),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+    fn guarded_example() -> ObservedEvaluation {
+        let definitions = include_str!("../../tests/fixtures/counter.atoms.json").replace(
+            "\"fields\": [",
+            "\"fields\": [{\"name\":\"enabled\",\"type\":\"Bool\",\"meaning\":\"この状態への適用が有効。\"},",
+        );
+        let checked =
+            crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies["Counter"].digest;
+        let law = include_str!("../../tests/fixtures/counter.law")
+            .replace("sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11", digest)
+            .replace("law optional bounded(s: State):", "view other(s: State): Bool = true;\n  law optional bounded(s: State) when s.enabled:");
+        let map = include_str!("../../tests/fixtures/counter.archmap.json")
+            .replace("sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11", digest)
+            .replace("\"value\": \"2\"", "\"value\": \"12\"")
+            .replace("\"subjects\": [", "\"subjects\": [{\"id\":\"t\",\"type\":\"Counter.State\",\"origin\":\"model\"},")
+            .replace("\"atoms\": [", "\"atoms\": [{\"id\":\"enabled-s\",\"subject\":\"s\",\"field\":\"Counter.State.enabled\",\"value\":true,\"origin\":\"model\"},{\"id\":\"enabled-t\",\"subject\":\"t\",\"field\":\"Counter.State.enabled\",\"value\":true,\"origin\":\"model\"},{\"id\":\"count-t\",\"subject\":\"t\",\"field\":\"Counter.State.count\",\"value\":\"12\",\"origin\":\"model\"},");
+        evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![definitions.into_bytes()],
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            &[
+                "x=evaluate(CountAudit.other,s=@v/s)",
+                "s=check(CountAudit.bounded,s=@v/s)",
+                "t=check(CountAudit.bounded,s=@v/t)",
+            ],
+            &mut Control::unlimited(),
+        )
+        .unwrap()
+    }
+    #[test]
+    fn rejects_false_guard_value_and_unrelated_guard_occurrence() {
+        let result = guarded_example();
+        assert_eq!(result.status(), "complete");
+        let mut control = Control::unlimited();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let mut graph = Graph::new(&control);
+        graph.nodes = result.nodes.clone();
+        let instance = graph
+            .nodes
+            .iter()
+            .find(|n| matches!(n.payload, Some(Payload::LawInstance { .. })))
+            .unwrap()
+            .clone();
+        let guard = instance.arguments[1];
+        let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &graph.nodes[guard.0].payload
+        else {
+            unreachable!()
+        };
+        let value = *value;
+        graph.nodes[value.0].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        assert!(matches!(
+            environment.validate(&graph, &instance),
+            Err(ValidationFailure::Internal(_))
+        ));
+        graph.nodes = result.nodes.clone();
+        let unrelated = result.answers[0].outputs["evaluation"];
+        let Some(Payload::Evaluation {
+            value: Some(literal_true),
+            ..
+        }) = &graph.nodes[unrelated.0].payload
+        else {
+            unreachable!()
+        };
+        let literal_true = *literal_true;
+        let Some(Payload::Evaluation { value, parts, .. }) = &mut graph.nodes[guard.0].payload
+        else {
+            unreachable!()
+        };
+        *value = Some(literal_true);
+        parts[0].value = Some(literal_true);
+        // true の型・payload だけでは、元 enabled Atom の評価根拠を代用できない。
+        assert!(matches!(
+            environment.validate(&graph, &instance),
+            Err(ValidationFailure::Internal(_))
+        ));
+        graph.nodes = result.nodes.clone();
+        let mut wrong = instance.clone();
+        wrong.arguments[1] = unrelated;
+        assert!(matches!(
+            environment.validate(&graph, &wrong),
+            Err(ValidationFailure::Internal(_))
+        ));
+        // 同じ true でも Law に明記した guard とは異なる出現は使えない。
+        let Some(Payload::Evaluation { expression, .. }) = &graph.nodes[unrelated.0].payload else {
+            unreachable!()
+        };
+        let expression = *expression;
+        let Some(Payload::LawInstance { guard, .. }) = &mut wrong.payload else {
+            unreachable!()
+        };
+        *guard = Some(expression);
+        assert!(matches!(
+            environment.validate(&graph, &wrong),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+    #[test]
+    fn rejects_guard_binding_identity_and_missing_guard_support() {
+        let result = guarded_example();
+        let mut control = Control::unlimited();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let mut graph = Graph::new(&control);
+        graph.nodes = result.nodes.clone();
+        let instances: Vec<_> = graph
+            .nodes
+            .iter()
+            .filter(|n| matches!(n.payload, Some(Payload::LawInstance { .. })))
+            .cloned()
+            .collect();
+        let mut wrong = instances[0].clone();
+        wrong.arguments[1] = instances[1].arguments[1];
+        assert!(matches!(
+            environment.validate(&graph, &wrong),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let mut wrong = instances[0].clone();
+        wrong
+            .support
+            .retain(|f| f.field.as_deref() != Some("Counter.State.enabled"));
+        assert!(matches!(
+            environment.validate(&graph, &wrong),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let guard = instances[0].arguments[1];
+        graph.nodes[guard.0]
+            .support
+            .retain(|f| f.field.as_deref() != Some("Counter.State.enabled"));
+        assert!(matches!(
+            environment.validate(&graph, &instances[0]),
+            Err(ValidationFailure::Internal(_))
+        ));
+        graph.nodes = result.nodes.clone();
+        let mut evaluation = graph.nodes[result.answers[1].outputs["evaluation"].0].clone();
+        evaluation.arguments[2] = instances[1].arguments[1];
         assert!(matches!(
             environment.validate(&graph, &evaluation),
             Err(ValidationFailure::Internal(_))
