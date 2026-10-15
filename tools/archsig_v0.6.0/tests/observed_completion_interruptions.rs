@@ -93,6 +93,68 @@ fn assert_stopped(failure: InputFailure, code: &str, details: Json) {
     }
 }
 
+fn budget_at(stop_after: usize, memory: bool) -> Control {
+    let mut seen = 0;
+    Control::new(
+        Limits {
+            time_ms: (!memory).then_some(3),
+            memory_mib: memory.then_some(3),
+        },
+        move |point| {
+            if point == Checkpoint::Completion {
+                seen += 1;
+            }
+            let usage = if seen >= stop_after { 4 } else { 0 };
+            Usage {
+                elapsed_ms: if memory { 0 } else { usage },
+                memory_mib: if memory { usage } else { 0 },
+                ..Usage::default()
+            }
+        },
+    )
+}
+
+fn budget_details(memory: bool) -> Json {
+    Json::obj([
+        (
+            "resource",
+            Json::str(if memory { "memory_mib" } else { "time_ms" }),
+        ),
+        ("limit", Json::str("3")),
+        ("observed", Json::str("4")),
+    ])
+}
+
+fn assert_known_inconsistent(failure: InputFailure, pointer: &str, memory: bool) {
+    assert_eq!(failure.status(), InputStatus::Invalid);
+    assert_eq!(failure.declarations().len(), 2);
+    assert!(!failure.primitives().is_empty());
+    assert_eq!(failure.vocabularies().len(), 1);
+    assert_eq!(failure.issues().len(), 2);
+    let Json::Obj(budget) = &failure.issues()[0] else {
+        panic!("budget")
+    };
+    assert_eq!(budget["code"], Json::str("budget_exhausted"));
+    assert_eq!(budget["details"], budget_details(memory));
+    let Json::Obj(known) = &failure.issues()[1] else {
+        panic!("known input error")
+    };
+    assert_eq!(known["code"], Json::str("inconsistent_observation"));
+    assert_eq!(
+        known["location"],
+        Json::obj([
+            ("input", Json::str("archmap")),
+            ("pointer", Json::str(pointer)),
+        ])
+    );
+    let Json::Obj(ref wire) = failure.wire() else {
+        panic!("result")
+    };
+    for name in ["requests", "answers", "nodes"] {
+        assert_eq!(wire[name], Json::Arr(vec![]));
+    }
+}
+
 fn cancel_at(source: &InputSources, stop_after: usize) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
@@ -149,49 +211,121 @@ fn single_map_budget_keeps_resource_limit_and_observed() {
     let total = count_completion(&input, false);
     for stop_after in [1, total / 2, total - 4, total] {
         for memory in [false, true] {
-            let mut seen = 0;
-            let mut control = Control::new(
-                if memory {
-                    Limits {
-                        time_ms: None,
-                        memory_mib: Some(3),
-                    }
-                } else {
-                    Limits {
-                        time_ms: Some(3),
-                        memory_mib: None,
-                    }
-                },
-                move |point| {
-                    if point == Checkpoint::Completion {
-                        seen += 1;
-                    }
-                    let usage = if seen >= stop_after { 4 } else { 0 };
-                    if memory {
-                        Usage {
-                            memory_mib: usage,
-                            ..Usage::default()
-                        }
-                    } else {
-                        Usage {
-                            elapsed_ms: usage,
-                            ..Usage::default()
-                        }
-                    }
-                },
-            );
+            let mut control = budget_at(stop_after, memory);
             let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+            if stop_after == total {
+                assert_known_inconsistent(failure, "/snapshots/0/subjects/1", memory);
+            } else {
+                assert_stopped(failure, "budget_exhausted", budget_details(memory));
+            }
+        }
+    }
+}
+
+#[test]
+fn multiple_constraints_keep_known_inconsistency_when_diagnostic_search_stops() {
+    let input = source(
+        &[
+            entity("V.A", "[]"),
+            entity("V.B", "[]"),
+            entity(
+                "V.Empty",
+                &format!(
+                    "[{}]",
+                    common::field_json("value", r#"["Map",["Ref","V.B"],["Ref","V.B"]]"#)
+                ),
+            ),
+            entity(
+                "V.Impossible",
+                &format!(
+                    "[{}]",
+                    common::field_json("value", r#"["Map",["Ref","V.A"],["Ref","V.B"]]"#)
+                ),
+            ),
+        ],
+        &[
+            ("a", "A"),
+            ("first", "Empty"),
+            ("bad", "Impossible"),
+            ("last", "Empty"),
+        ],
+        &[],
+    );
+    let baseline = check_inputs(input.clone(), &mut Control::unlimited()).unwrap_err();
+    let Json::Obj(issue) = &baseline.issues()[0] else {
+        panic!("issue")
+    };
+    assert_eq!(
+        issue["location"],
+        Json::obj([
+            ("input", Json::str("archmap")),
+            ("pointer", Json::str("/snapshots/0/subjects/2")),
+        ])
+    );
+    let total = count_completion(&input, false);
+    // 最終点は原因特定後。その二点前は補完不能を確定した後のprefix探索内。
+    for memory in [false, true] {
+        let mut final_stop = budget_at(total, memory);
+        assert_known_inconsistent(
+            check_inputs(input.clone(), &mut final_stop).unwrap_err(),
+            "/snapshots/0/subjects/2",
+            memory,
+        );
+        let mut diagnostic_stop = budget_at(total - 2, memory);
+        assert_known_inconsistent(
+            check_inputs(input.clone(), &mut diagnostic_stop).unwrap_err(),
+            "",
+            memory,
+        );
+        let mut early_stop = budget_at(1, memory);
+        assert_stopped(
+            check_inputs(input.clone(), &mut early_stop).unwrap_err(),
+            "budget_exhausted",
+            budget_details(memory),
+        );
+    }
+    cancel_at(&input, total - 2);
+    cancel_at(&input, total);
+}
+
+#[test]
+fn a_rejected_owner_candidate_does_not_turn_a_budget_stop_into_input_error() {
+    let owner = r#"[{"name":"owner","type":["Ref","V.Root"],"meaning":"owner"}]"#;
+    let input = source(
+        &[
+            entity("V.Root", "[]"),
+            common::entity_json("V.Item", owner, "[]"),
+            common::entity_json(
+                "V.Holder",
+                owner,
+                &format!(
+                    "[{}]",
+                    common::field_json("value", r#"["Owned","V.Item","owner"]"#)
+                ),
+            ),
+        ],
+        &[
+            ("r1", "Root"),
+            ("r2", "Root"),
+            ("wrong", "Item"),
+            ("right", "Item"),
+            ("h", "Holder"),
+        ],
+        &[
+            ("wrong", "Item.owner", r#"["s","r1"]"#),
+            ("right", "Item.owner", r#"["s","r2"]"#),
+            ("h", "Holder.owner", r#"["s","r2"]"#),
+        ],
+    );
+    // 欠測valueの最初の候補wrongは所属条件を破るが、rightなら全制約を満たす。
+    let total = count_completion(&input, true);
+    for memory in [false, true] {
+        for stop_after in [1, total / 2, total] {
+            let mut control = budget_at(stop_after, memory);
             assert_stopped(
-                failure,
+                check_inputs(input.clone(), &mut control).unwrap_err(),
                 "budget_exhausted",
-                Json::obj([
-                    (
-                        "resource",
-                        Json::str(if memory { "memory_mib" } else { "time_ms" }),
-                    ),
-                    ("limit", Json::str("3")),
-                    ("observed", Json::str("4")),
-                ]),
+                budget_details(memory),
             );
         }
     }

@@ -638,28 +638,47 @@ pub(crate) fn check_completion<E: InputError>(
         }
         m.checkpoint()?;
     }
+    // 原因の位置を絞る前に停止しても、全制約の不整合を既知の入力位置へ帰属する。
+    // 単一制約はその位置、複数制約は全制約を含む入力の根を使う。
+    let fallback_pointer = if cons.len() == 1 {
+        cons[0].pointer()
+    } else {
+        ""
+    };
     if feasible(&m, &cons)? {
         return m.done(());
     }
     // 入力順に条件を足していき、初めて補完が無くなる条件を位置とする。
-    let (mut lo, mut hi) = (0, cons.len());
-    while hi - lo > 1 {
-        m.checkpoint()?;
-        let mid = (lo + hi) / 2;
-        if feasible(&m, &cons[..mid])? {
-            lo = mid;
-        } else {
-            hi = mid;
+    // この探索は既知の不整合の診断だけを詳しくする。予算消尽でその事実を失わない。
+    let position = (|| -> Result<&str, E> {
+        let (mut lo, mut hi) = (0, cons.len());
+        while hi - lo > 1 {
+            m.checkpoint()?;
+            let mid = (lo + hi) / 2;
+            if feasible(&m, &cons[..mid])? {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+            m.checkpoint()?;
         }
-        m.checkpoint()?;
-    }
-    m.checkpoint()?;
-    Err(issue(
-        Code::InconsistentObservation,
-        cons[hi - 1].pointer(),
-        "既知の値・参照・所属を保つ補完が一つもない",
+        Ok(cons[hi - 1].pointer())
+    })();
+    let pointer = match position {
+        Ok(pointer) => pointer,
+        Err(stop) if stop.is_budget_stop() => fallback_pointer,
+        Err(stop) => return Err(stop),
+    };
+    E::finish(
+        Err(issue(
+            Code::InconsistentObservation,
+            pointer,
+            "既知の値・参照・所属を保つ補完が一つもない",
+        )
+        .into()),
+        control,
+        Checkpoint::Completion,
     )
-    .into())
 }
 
 /// 条件と、その真偽が依存する変数の組。

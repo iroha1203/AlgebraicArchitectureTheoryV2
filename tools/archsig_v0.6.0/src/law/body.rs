@@ -396,52 +396,45 @@ impl<E: InputError> Checker<E> {
     /// view の相互呼出しは非循環。自己再帰は構造再帰として別に検査済み。
     fn check_view_cycles(&mut self) -> CResult<(), E> {
         let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-        for (a, b, _) in &self.view_edges {
+        let mut first_spans = BTreeMap::new();
+        for (a, b, span) in &self.view_edges {
             self.cooperate()?;
             edges.entry(a.clone()).or_default().insert(b.clone());
+            first_spans.entry(a.clone()).or_insert(*span);
         }
         if let Some(n) = find_cycle::<E>(&edges, &mut self.control.clone())? {
-            let mut cycle_span = None;
-            for (source, _, span) in &self.view_edges {
-                E::checkpoint(&mut self.control.clone(), Checkpoint::LawCycle)?;
-                if *source == n {
-                    cycle_span = Some(*span);
-                    break;
-                }
-            }
-            let span = cycle_span.expect("閉路の辺");
-            return cycle(span, format!("view `{n}` を含む相互呼出しが循環している"));
+            // Capture the original diagnostic while the detected cycle is known.
+            // Source spans are indexed before DFS, so no new search is needed
+            // after detection. A later budget retains this issue; cancellation wins.
+            let span = first_spans[&n];
+            let failure = cycle(span, format!("view `{n}` を含む相互呼出しが循環している"));
+            return E::finish(failure, &mut self.control.clone(), Checkpoint::LawCycle);
         }
         Ok(())
     }
 
     fn check_reading_cycles(&mut self) -> CResult<(), E> {
         let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-        for (a, b, _) in &self.reading_edges {
+        let mut first_spans = BTreeMap::new();
+        for (a, b, span) in &self.reading_edges {
             self.cooperate()?;
             edges
                 .entry(a.to_string())
                 .or_default()
                 .insert(b.to_string());
+            first_spans.entry(*a).or_insert(*span);
         }
         if let Some(n) = find_cycle::<E>(&edges, &mut self.control.clone())? {
             let i: usize = n.parse().expect("reading の位置");
-            let mut cycle_span = None;
-            for (source, _, span) in &self.reading_edges {
-                E::checkpoint(&mut self.control.clone(), Checkpoint::LawCycle)?;
-                if *source == i {
-                    cycle_span = Some(*span);
-                    break;
-                }
-            }
-            let span = cycle_span.expect("閉路の辺");
-            return cycle(
+            let span = first_spans[&i];
+            let failure = cycle(
                 span,
                 format!(
                     "reading `{}` を含む参照が循環している",
                     self.reading_name(i)
                 ),
             );
+            return E::finish(failure, &mut self.control.clone(), Checkpoint::LawCycle);
         }
         Ok(())
     }

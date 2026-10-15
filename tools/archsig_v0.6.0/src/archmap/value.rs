@@ -359,15 +359,16 @@ impl<E: InputError> Reader<'_, '_, E> {
                             Checkpoint::ArchMapCanonical,
                         )?;
                         E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
-                        let inserted = seen.insert(key);
-                        E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
-                        if !inserted {
-                            return Err((syntax(
+                        let inserted = if seen.insert(key) {
+                            Ok(())
+                        } else {
+                            Err((syntax(
                                 &pointer_push(ptr, &i.to_string()),
                                 "Set に同じ値が二度ある",
                             ))
-                            .into());
-                        }
+                            .into())
+                        };
+                        E::finish(inserted, &mut self.control, Checkpoint::ArchMapCanonical)?;
                     }
                     Value::Set(out)
                 } else {
@@ -475,16 +476,17 @@ impl<E: InputError> Reader<'_, '_, E> {
                         Checkpoint::ArchMapCanonical,
                     )?;
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
-                    let inserted = keys.insert(key);
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
-                    if !inserted {
-                        return Err((issue(
+                    let inserted = if keys.insert(key) {
+                        Ok(())
+                    } else {
+                        Err((issue(
                             Code::DuplicateKey,
                             &pointer_push(&ip, "0"),
                             "Map の key が重複している",
                         ))
-                        .into());
-                    }
+                        .into())
+                    };
+                    E::finish(inserted, &mut self.control, Checkpoint::ArchMapCanonical)?;
                     pairs.push((k, v));
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                 }

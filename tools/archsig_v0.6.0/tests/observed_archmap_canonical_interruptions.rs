@@ -169,10 +169,14 @@ fn set_duplicate_comparison_walks_nested_values_before_rejection() {
     invalid(make(), "syntax", "/snapshots/0/atoms/0/value/1");
     let total = count(make(), Checkpoint::ArchMapCanonical);
     assert!(total > 20);
-    for at in [1, total / 2, total] {
+    for at in [1, total / 2] {
         for resource in 0..3 {
             interrupted(make(), Checkpoint::ArchMapCanonical, at, resource);
         }
+    }
+    interrupted(make(), Checkpoint::ArchMapCanonical, total, 0);
+    for resource in 1..3 {
+        invalid_after_budget(make(), Checkpoint::ArchMapCanonical, total, resource);
     }
 }
 
@@ -199,6 +203,10 @@ fn map_key_duplicate_comparison_is_controlled_inside_the_key() {
     assert!(total > 20);
     for at in [1, total / 2, total] {
         interrupted(make(), Checkpoint::ArchMapCanonical, at, 0);
+    }
+    for resource in 1..3 {
+        interrupted(make(), Checkpoint::ArchMapCanonical, 1, resource);
+        invalid_after_budget(make(), Checkpoint::ArchMapCanonical, total, resource);
     }
 }
 

@@ -81,7 +81,7 @@ pub fn resolve_projection_controlled(
     let mut at = 0;
     while at < path.len() {
         tick(control)?;
-        let (next, used) = project(law, &plan.ty, &path[at..], control)?;
+        let (next, used) = project(law, &plan.ty, &path[at..], control, true)?;
         plan.ty = next.ty;
         plan.conditional |= next.conditional;
         at += used;
@@ -100,10 +100,31 @@ fn project(
     ty: &ProjectionType,
     path: &[ProjectionStep],
     control: &mut Control,
+    whole_projection: bool,
+) -> Result<(ProjectionPlan, usize), ProjectionFailure> {
+    tick(control)?;
+    let result = project_inner(law, ty, path, control);
+    match (result, tick(control)) {
+        // A rejected Dynamic candidate does not establish an invalid projection.
+        // Only an error for the whole projection outranks a later budget stop.
+        (Err(error @ ProjectionFailure::Invalid(_)), Err(StopReason::BudgetExhausted { .. }))
+            if whole_projection =>
+        {
+            Err(error)
+        }
+        (_, Err(reason)) => Err(ProjectionFailure::Interrupted(reason)),
+        (result, Ok(())) => result,
+    }
+}
+
+fn project_inner(
+    law: &CheckedLaw,
+    ty: &ProjectionType,
+    path: &[ProjectionStep],
+    control: &mut Control,
 ) -> Result<(ProjectionPlan, usize), ProjectionFailure> {
     use ProjectionStep::{Field, Index};
     use ProjectionType::{Architecture, Dynamic, Evaluation, Law};
-    tick(control)?;
     let exact = |ty| {
         Ok((
             ProjectionPlan {
@@ -122,7 +143,7 @@ fn project(
             1,
         ))
     };
-    let result = match (ty, &path[0]) {
+    match (ty, &path[0]) {
         (Evaluation(t), Field(f)) if f == "value" => conditional(Law(t.clone())),
         (Evaluation(_), Field(f)) if f == "environment" => conditional(Architecture),
         (Architecture, Field(f)) if f == "root" => {
@@ -199,7 +220,7 @@ fn project(
             let mut used = None;
             for t in ts {
                 tick(control)?;
-                match project(law, t, path, control) {
+                match project(law, t, path, control, false) {
                     Ok((p, n)) => {
                         if used.is_some_and(|u| u != n) {
                             return Err("射影の構造が型候補間で異なる".into());
@@ -228,9 +249,7 @@ fn project(
             ))
         }
         _ => Err("この型で公開されていない射影".into()),
-    };
-    tick(control)?;
-    result
+    }
 }
 
 /// 動的な候補が一つでも宣言型へ適合し得る場合だけ、束縛制約として残せる。
