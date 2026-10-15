@@ -701,6 +701,11 @@ impl Graph {
         self.tick()?;
         for reason in rs {
             self.tick()?;
+            if matches!(reason.kind, ReasonKind::Missing)
+                && (reason.dependencies.is_empty() || reason.missing.is_empty())
+            {
+                return Err("canonical 欠測理由に依存式・slot がない".into());
+            }
             for &r in &reason.dependencies {
                 self.tick()?;
                 let node = self.get(r)?;
@@ -765,6 +770,14 @@ impl Graph {
         Ok(())
     }
     pub fn push(&mut self, node: Node) -> Result<NodeRef, ValidationFailure> {
+        self.push_with_metadata(node, |_| {})
+    }
+    /// append と metadata の確定を一つの commit とし、その後にだけ停止を調べる。
+    pub(crate) fn push_with_metadata(
+        &mut self,
+        node: Node,
+        committed: impl FnOnce(NodeRef),
+    ) -> Result<NodeRef, ValidationFailure> {
         self.tick()?;
         for &r in &node.arguments {
             self.tick()?;
@@ -897,6 +910,7 @@ impl Graph {
         }
         let r = NodeRef(self.nodes.len());
         self.nodes.push(node);
+        committed(r);
         self.tick()?;
         Ok(r)
     }

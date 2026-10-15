@@ -1723,15 +1723,20 @@ fn missing_source_expression_id(result: &Json) -> Option<String> {
 
 fn missing_finite_probe(stop_at: usize) -> Json {
     let mut finite = 0;
+    let calls = Rc::new(Cell::new(0));
+    let stopped_calls = Rc::new(Cell::new(None));
+    let (seen_calls, captured_stop) = (calls.clone(), stopped_calls.clone());
     let mut control = Control::new(
         Limits {
             time_ms: Some(1),
             memory_mib: None,
         },
         move |point| {
+            seen_calls.set(seen_calls.get() + 1);
             if point == Checkpoint::FiniteIteration {
                 finite += 1;
                 if finite == stop_at {
+                    captured_stop.set(Some(seen_calls.get()));
                     return Usage {
                         elapsed_ms: 1,
                         ..Usage::default()
@@ -1741,13 +1746,22 @@ fn missing_finite_probe(stop_at: usize) -> Json {
             Usage::default()
         },
     );
-    evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
+    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
         .unwrap()
-        .wire()
+        .wire();
+    assert_eq!(
+        Some(calls.get()),
+        stopped_calls.get(),
+        "停止後のprobe回数は凍結する"
+    );
+    let before = calls.get();
+    assert!(control.checkpoint(Checkpoint::FiniteIteration).is_err());
+    assert!(control.checkpoint(Checkpoint::Expression).is_err());
+    assert_eq!(calls.get(), before);
+    result
 }
 
-#[test]
-fn missing_reason_survives_the_first_source_expression_post_stop() {
+fn first_missing_source_expression_post_stop() -> (usize, usize) {
     let (start, end) = missing_root_expression_finite_interval();
     assert!(
         start < end && end - start <= 4096,
@@ -1766,6 +1780,12 @@ fn missing_reason_survives_the_first_source_expression_post_stop() {
             low = middle + 1;
         }
     }
+    (low, end)
+}
+
+#[test]
+fn missing_reason_survives_the_first_source_expression_post_stop() {
+    let (low, _) = first_missing_source_expression_post_stop();
     let witness = missing_finite_probe(low);
     let expression =
         missing_source_expression_id(&witness).expect("欠測source Expression挿入直後を選ぶ");
@@ -1932,4 +1952,141 @@ reading Follow {{
             .any(|f| obj(f).get("field") == Some(&Json::str("Counter.State.count")))
     );
     audit_dag(&result);
+}
+
+fn collect_published_missing<'a>(wire: &'a Json, reasons: &mut Vec<&'a Json>) {
+    match wire {
+        Json::Obj(fields) => {
+            if fields.get("code") == Some(&Json::str("missing_observation")) {
+                reasons.push(wire);
+            }
+            for value in fields.values() {
+                collect_published_missing(value, reasons);
+            }
+        }
+        Json::Arr(values) => {
+            for value in values {
+                collect_published_missing(value, reasons);
+            }
+        }
+        _ => {}
+    }
+}
+
+#[test]
+fn missing_source_and_canonical_reason_commit_atomically_before_and_after_stop() {
+    let (commit, end) = first_missing_source_expression_post_stop();
+    assert!(0 < commit && commit < end);
+    let missing_fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("s")),
+        ("field", Json::str("Counter.State.count")),
+    ]);
+    let subject_fact = Json::obj([("snapshot", Json::str("v")), ("subject", Json::str("s"))]);
+    // 第一式内のcommit直前・直後と二つの後続点だけ。全checkpointを走査しない。
+    for stop_at in BTreeSet::from([commit - 1, commit, commit + 1, end]) {
+        let result = missing_finite_probe(stop_at);
+        assert_eq!(field(&result, "status"), &Json::str("interrupted"));
+        let a = answer(&result, "n");
+        let scope = field(a, "scope");
+        assert_eq!(
+            field(scope, "domain"),
+            &Json::str("all_completions"),
+            "認識済み欠測のscopeはcommit前でも保持する"
+        );
+        assert_eq!(
+            field(scope, "readings"),
+            &Json::Arr(vec![Json::str("CountCheck")])
+        );
+        assert_eq!(field(scope, "snapshots"), &Json::Arr(vec![Json::str("v")]));
+        assert_eq!(
+            field(scope, "modes"),
+            &Json::Arr(vec![Json::str("specification")])
+        );
+        let index = nodes(&result);
+        assert!(
+            index.values().any(|n| field(n, "type")
+                == &Json::Arr(vec![Json::str("Ref"), Json::str("Counter.State")])
+                && value(n) == &Json::Arr(vec![Json::str("v"), Json::str("s")])
+                && arr(field(n, "support")).contains(&subject_fact)),
+            "欠測の実subject存在事実を失わない"
+        );
+        let source = missing_source_expression_id(&result);
+        assert_eq!(
+            source.is_some(),
+            stop_at >= commit,
+            "選択した最初のSource挿入点を跨ぐ"
+        );
+        let mut published = vec![];
+        collect_published_missing(&result, &mut published);
+        let has_published = !published.is_empty();
+        for reason in published {
+            assert_eq!(field(reason, "request"), &Json::str("n"));
+            assert_eq!(
+                field(reason, "missing"),
+                &Json::Arr(vec![missing_fact.clone()])
+            );
+            let dependencies = arr(field(reason, "dependencies"));
+            assert!(
+                !dependencies.is_empty(),
+                "公開済みの全Missing理由は実在する元式Refを持つ"
+            );
+            for reference in dependencies {
+                let expression = typed(&index, reference, "Expression");
+                assert_eq!(text(field(expression, "id")), source.as_deref().unwrap());
+                assert_eq!(field(expression, "scope"), scope);
+                let payload = value(expression);
+                assert_eq!(field(payload, "kind"), &Json::str("source"));
+                let (start, end) = span(field(payload, "location"));
+                assert_eq!(&LAW[start..end], b"s.count");
+                assert_eq!(span(field(reason, "location")), (start, end));
+                let binding = &arr(field(payload, "bindings"))[0];
+                assert_eq!(field(binding, "name"), &Json::str("s"));
+                assert_eq!(
+                    value(target(&index, field(binding, "value"))),
+                    &Json::Arr(vec![Json::str("v"), Json::str("s")])
+                );
+            }
+        }
+        // Source未挿入のPendingはcanonical理由と区別する。空dependenciesでの公開は許さない。
+        assert_eq!(
+            has_published,
+            source.is_some(),
+            "Sourceとcanonical Missingを同時に公開し、以後の停止で理由を消さない"
+        );
+        for container in [field(a, "reasons"), field(&result, "issues")] {
+            let found = arr(container)
+                .iter()
+                .any(|r| field(r, "code") == &Json::str("missing_observation"));
+            assert_eq!(
+                found,
+                source.is_some(),
+                "Answerとissuesの双方へ同じcanonical理由を保持する"
+            );
+        }
+        for a in arr(field(&result, "answers")) {
+            assert_eq!(field(a, "status"), &Json::str("undetermined"));
+            assert!(obj(field(a, "outputs")).is_empty());
+            let stopped = arr(field(a, "reasons"))
+                .iter()
+                .find(|r| field(r, "code") == &Json::str("budget_exhausted"))
+                .unwrap();
+            assert_eq!(
+                field(stopped, "details"),
+                &Json::obj([
+                    ("resource", Json::str("time_ms")),
+                    ("limit", Json::str("1")),
+                    ("observed", Json::str("1")),
+                ])
+            );
+        }
+        assert!(
+            index
+                .values()
+                .all(|n| field(n, "type") != &Json::str("Z")
+                    && field(n, "type") != &Json::str("Bool")),
+            "保留中の欠測を通常値や後続の判断へ置換しない"
+        );
+        audit_dag(&result);
+    }
 }

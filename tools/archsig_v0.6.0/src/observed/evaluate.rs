@@ -2,7 +2,7 @@
 use super::{
     PreparedObserved,
     control::{Checkpoint, Control, StopReason},
-    environment::{Environment, binary, scalar_from},
+    environment::{Environment, SourceAnalysis, binary, scalar_from},
     input::InputSources,
     prepare_observed,
     request::{QuestionKind, Request, Selector},
@@ -63,6 +63,14 @@ struct Evaluated {
     comparison: Option<(NodeRef, NodeRef)>,
     residual: Option<NodeRef>,
 }
+/// commit 済みの元式。未検査の分析結果とは区別し、通常値には使用しない。
+#[derive(Clone, Debug)]
+struct SourceHandle {
+    expression: NodeRef,
+    scope: Scope,
+    known_value: Option<Scalar>,
+    missing: Option<Reason>,
+}
 struct Evaluator<'a, 'b> {
     environment: &'a Environment<'a>,
     graph: &'b mut Graph,
@@ -76,6 +84,7 @@ struct Evaluator<'a, 'b> {
     reasons: Vec<Reason>,
     completed: BTreeMap<ExprId, Evaluated>,
     answer_evaluation: Option<NodeRef>,
+    sources: BTreeMap<(usize, usize), SourceHandle>,
 }
 impl Evaluator<'_, '_> {
     fn tick(&mut self, point: Checkpoint) -> Result<(), Failure> {
@@ -195,8 +204,20 @@ impl Evaluator<'_, '_> {
         }
         Ok(())
     }
-    fn source(&mut self, span: (usize, usize), ty: Type, scope: Scope) -> Result<NodeRef, Failure> {
-        self.push(Node {
+    fn source(&mut self, span: (usize, usize), ty: Type) -> Result<SourceHandle, Failure> {
+        if let Some(source) = self.sources.get(&span) {
+            self.graph
+                .expect(source.expression, &NodeType::Expression(ty))?;
+            return Ok(source.clone());
+        }
+        // この照合中の SourceAnalysis/PendingMissing は、まだ canonical な理由でない。
+        let analysis = self
+            .environment
+            .analyze_source(self.graph, span, &self.bindings)?;
+        // 照合が完了した pending の実入力範囲は、Source commit 前の停止でも残す。
+        // canonical Missing はまだ作らず、実在 Ref との atomic commit まで待つ。
+        self.retained_scope.merge(&analysis.scope);
+        let node = Node {
             ty: NodeType::Expression(ty),
             payload: Some(Payload::Expression {
                 location: Location::Law { span },
@@ -211,8 +232,137 @@ impl Evaluator<'_, '_> {
             support: vec![],
             evidence: vec![],
             judgment: None,
-            scope,
+            scope: analysis.scope.clone(),
             reasons: vec![],
+        };
+        self.environment.validate(self.graph, &node)?;
+        let SourceAnalysis {
+            scope,
+            known_value,
+            missing,
+        } = analysis;
+        let registry = &mut self.reasons;
+        let retained = &mut self.retained_scope;
+        let cache = &mut self.sources;
+        let request = self.request.id.clone();
+        self.graph.push_with_metadata(node, |expression| {
+            // Source の実在 Ref と元 slot の理由を post checkpoint より先に同時確定する。
+            // callback は検査済み metadata の転記のみで、入力を読まず新たに導出しない。
+            let missing = missing.map(|pending| Reason {
+                kind: ReasonKind::Missing,
+                request,
+                dependencies: vec![expression],
+                missing: vec![pending.fact],
+                location: Some(Location::Law { span }),
+            });
+            if let Some(reason) = &missing {
+                registry.push(reason.clone());
+            }
+            retained.merge(&scope);
+            cache.insert(
+                span,
+                SourceHandle {
+                    expression,
+                    scope,
+                    known_value,
+                    missing,
+                },
+            );
+        })?;
+        self.sources
+            .get(&span)
+            .cloned()
+            .ok_or_else(|| Failure::Internal("Source commit cache がない".into()))
+    }
+    /// 対応済みの式だけを子→親で構成する。各 field は直ちに個別 commit する。
+    fn prepare_source(&mut self, id: ExprId) -> Result<SourceHandle, Failure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            let expr = &self.environment.inputs.law().exprs[id];
+            let span = expr.span;
+            let ty = self
+                .environment
+                .inputs
+                .law()
+                .expr_type(id)
+                .ok_or_else(|| Failure::Internal("元式の型がない".into()))?
+                .clone();
+            if let Some(source) = self.sources.get(&span) {
+                self.graph
+                    .expect(source.expression, &NodeType::Expression(ty))?;
+                return Ok(source.clone());
+            }
+            self.tick(Checkpoint::FiniteIteration)?;
+            match &expr.kind {
+                ExprKind::Int(_) if ty == Type::Z => {}
+                ExprKind::Bool(_) => {}
+                ExprKind::Dotted(parts) => {
+                    if parts.len() > 2 {
+                        return Err(self.unsupported(span, "複数 field のドット列"));
+                    }
+                    let first = parts
+                        .first()
+                        .ok_or_else(|| Failure::Internal("空のドット式".into()))?;
+                    let mut parameter = None;
+                    for binding in &self.bindings {
+                        self.control.checkpoint(Checkpoint::FiniteIteration)?;
+                        if binding.name == first.name {
+                            parameter = Some(binding.ty.clone());
+                        }
+                        self.control.checkpoint(Checkpoint::FiniteIteration)?;
+                    }
+                    let parameter = parameter.ok_or_else(|| {
+                        self.unsupported(span, "束縛変数以外を先頭とするドット式")
+                    })?;
+                    self.source(first.span, parameter)?;
+                    if parts.len() > 1
+                        && !matches!(ty, Type::Z | Type::Bool | Type::Ref(_) | Type::Owned(_, _))
+                    {
+                        return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
+                    }
+                }
+                ExprKind::Field { base, .. } => {
+                    let owner = self.prepare_source(*base)?;
+                    if !matches!(owner.known_value, Some(Scalar::Subject { .. })) {
+                        return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
+                    }
+                    if !matches!(ty, Type::Z | Type::Bool | Type::Ref(_) | Type::Owned(_, _)) {
+                        return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
+                    }
+                }
+                ExprKind::Group(child) => {
+                    self.prepare_source(*child)?;
+                }
+                ExprKind::Unary {
+                    op: UnOp::Neg,
+                    operand,
+                } if ty == Type::Z => {
+                    self.prepare_source(*operand)?;
+                }
+                ExprKind::Binary { op, lhs, rhs }
+                    if matches!(
+                        op,
+                        BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
+                    ) =>
+                {
+                    let input_ty = self
+                        .environment
+                        .inputs
+                        .law()
+                        .expr_type(*lhs)
+                        .ok_or_else(|| Failure::Internal("比較の型".into()))?;
+                    if input_ty != &Type::Z
+                        && !(input_ty == &Type::Bool && matches!(op, BinOp::Eq | BinOp::Ne))
+                    {
+                        return Err(self.unsupported(span, "Z/Bool 以外の比較"));
+                    }
+                    self.prepare_source(*lhs)?;
+                    self.prepare_source(*rhs)?;
+                }
+                _ => return Err(self.unsupported(span, format!("式形 {:?}", expr.kind))),
+            }
+            let source = self.source(span, ty)?;
+            self.tick(Checkpoint::FiniteIteration)?;
+            Ok(source)
         })
     }
     // 一つの原式出現へ位置・型・値・子評価・支持・欠測・比較左右・残差を対応付ける。
@@ -229,55 +379,33 @@ impl Evaluator<'_, '_> {
         comparison: Option<(NodeRef, NodeRef)>,
         residual: Option<NodeRef>,
     ) -> Result<Evaluated, Failure> {
-        // slot の欠測は、子の転記や node 検査が停止する前に記録する。
-        // 依存 Ref は元式が実際に挿入された場合だけ後で結び付ける。
-        let missing_reason = missing.map(|fact| {
-            let index = self.reasons.len();
-            self.reasons.push(Reason {
-                kind: ReasonKind::Missing,
-                request: self.request.id.clone(),
-                dependencies: vec![],
-                missing: vec![fact],
-                location: Some(Location::Law { span }),
-            });
-            index
-        });
-        let mut scope = self.base.clone();
-        if let Some(index) = missing_reason {
-            let fact = &self.reasons[index].missing[0];
-            let subject = self.environment.subject(&fact.snapshot, &fact.subject)?;
-            scope.merge(
-                &self
-                    .environment
-                    .scope(subject, &self.declaration.reading, None)?,
-            );
-            scope.completions = true;
-            self.retained_scope.merge(&scope);
+        let source = self
+            .sources
+            .get(&span)
+            .cloned()
+            .ok_or_else(|| Failure::Internal("評価前の Source がない".into()))?;
+        self.graph
+            .expect(source.expression, &NodeType::Expression(ty.clone()))?;
+        if source.missing.as_ref().and_then(|r| r.missing.first()) != missing.as_ref() {
+            return Err(Failure::Internal(
+                "元 slot と commit 済み欠測理由が違う".into(),
+            ));
         }
-        if let Some(value) = value {
-            scope.merge(&self.graph.get(value)?.scope);
-        }
+        let scope = source.scope;
+        let expression = source.expression;
         let mut support = own_support;
         let mut reasons = Vec::new();
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
-            scope.merge(&child.scope);
             support.extend(child.support.iter().cloned());
             reasons.extend(child.reasons.iter().cloned());
             self.tick(Checkpoint::FiniteIteration)?;
         }
         support.sort();
         support.dedup();
-        let next = NodeRef(self.graph.nodes.len());
-        let source = self.source(span, ty.clone(), scope.clone());
-        if let Some(index) = missing_reason {
-            if self.graph.nodes.len() > next.0 {
-                // post 停止でも、検査・挿入済みの元式への Ref を保持する。
-                self.reasons[index].dependencies.push(next);
-            }
-            reasons.push(self.reasons[index].clone());
+        if let Some(reason) = source.missing {
+            reasons.push(reason);
         }
-        let expression = source?;
         sort_reasons(&mut reasons);
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
@@ -318,6 +446,7 @@ impl Evaluator<'_, '_> {
     fn eval(&mut self, id: ExprId) -> Result<Evaluated, Failure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick(Checkpoint::Expression)?;
+            self.prepare_source(id)?;
             let value = self.eval_inner(id)?;
             // post checkpoint が停止しても検査済みの値と Evaluation を保持する。
             self.completed.insert(id, value.clone());
@@ -865,6 +994,7 @@ pub fn evaluate_observed(
                 reasons: vec![],
                 completed: BTreeMap::new(),
                 answer_evaluation: None,
+                sources: BTreeMap::new(),
             };
             let (params, guard, body, role) = match &declaration.signature {
                 Signature::View { params, body, .. } => (params, None, *body, None),

@@ -12,6 +12,18 @@ use crate::{
 };
 use std::collections::BTreeMap;
 
+/// 入力照合中の metadata。Source の commit までは結果の理由へ昇格しない。
+#[derive(Clone, Debug)]
+pub(crate) struct PendingMissing {
+    pub fact: Fact,
+}
+#[derive(Clone, Debug)]
+pub(crate) struct SourceAnalysis {
+    pub scope: Scope,
+    pub known_value: Option<Scalar>,
+    pub missing: Option<PendingMissing>,
+}
+
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
     subjects: BTreeMap<(String, String), &'a Subject>,
@@ -620,6 +632,15 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Scope, ValidationFailure> {
+        self.analyze_source(graph, span, bindings)
+            .map(|analysis| analysis.scope)
+    }
+    pub(crate) fn analyze_source(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Result<SourceAnalysis, ValidationFailure> {
         let mut declaration = None;
         for d in self.inputs.law().declarations.values() {
             self.tick()?;
@@ -666,9 +687,49 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         if let Some(&id) = self.expressions.get(&span) {
-            return self
-                .scoped_ast(id, &variables, &base, &declaration.reading)
-                .map(|(scope, _)| scope);
+            let (scope, known_value) =
+                self.scoped_ast(id, &variables, &base, &declaration.reading)?;
+            let direct_field = match &self.inputs.law().exprs[id].kind {
+                ExprKind::Dotted(parts) if parts.len() == 2 => Some((
+                    variables.get(&parts[0].name).cloned(),
+                    parts[1].name.as_str(),
+                )),
+                ExprKind::Field { base: owner, name } => Some((
+                    self.scoped_ast(*owner, &variables, &base, &declaration.reading)?
+                        .1,
+                    name.name.as_str(),
+                )),
+                _ => None,
+            };
+            let missing = if let Some((
+                Some(Scalar::Subject {
+                    snapshot,
+                    subject,
+                    entity,
+                }),
+                name,
+            )) = direct_field
+            {
+                let field = self.field(&snapshot, &subject, &format!("{entity}.{name}"))?;
+                match &field.slot {
+                    Slot::Missing => Some(PendingMissing {
+                        fact: Fact {
+                            snapshot,
+                            subject,
+                            field: Some(field.name.clone()),
+                            atom: None,
+                        },
+                    }),
+                    Slot::Known { .. } => None,
+                }
+            } else {
+                None
+            };
+            return Ok(SourceAnalysis {
+                scope,
+                known_value,
+                missing,
+            });
         }
         // Dotted の先頭 parameter は実在 token のみを指す。
         let token = self
@@ -682,7 +743,12 @@ impl<'a> Environment<'a> {
         if !variables.contains_key(name) {
             return Err("評価範囲に元parameter以外のfragmentがある".into());
         }
-        Ok(base)
+        let known_value = variables.get(name).cloned();
+        Ok(SourceAnalysis {
+            scope: base,
+            known_value,
+            missing: None,
+        })
     }
     fn scoped_ast(
         &self,
