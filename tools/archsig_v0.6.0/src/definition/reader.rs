@@ -72,9 +72,21 @@ fn find<'a, E: InputError>(
     entries: &'a [(String, JNode)],
     key: &str,
     control: &mut Control,
+    mut missing: Option<Box<Issue>>,
 ) -> R<Option<&'a JNode>, E> {
-    for (name, node) in entries {
-        let matches = step::<E, _>(control, |_| Ok(name == key))?;
+    for (index, (name, node)) in entries.iter().enumerate() {
+        let matches = step::<E, _>(control, |_| {
+            if name == key {
+                Ok(true)
+            } else if index + 1 == entries.len() {
+                match missing.take() {
+                    Some(issue) => Err(issue.into()),
+                    None => Ok(false),
+                }
+            } else {
+                Ok(false)
+            }
+        })?;
         if matches {
             return Ok(Some(node));
         }
@@ -117,7 +129,14 @@ impl<'a, E: InputError> Obj<'a, E> {
             }
             for k in keys {
                 step::<E, _>(control, |control| {
-                    if find::<E>(es, k, control)?.is_none() {
+                    if find::<E>(
+                        es,
+                        k,
+                        control,
+                        Some(error(Code::Syntax, input, p, format!("欄 `{k}` が必要"))),
+                    )?
+                    .is_none()
+                    {
                         return Err(
                             error(Code::Syntax, input, p, format!("欄 `{k}` が必要")).into()
                         );
@@ -135,7 +154,8 @@ impl<'a, E: InputError> Obj<'a, E> {
         })
     }
     fn get(&self, k: &str) -> R<(&'a JNode, String), E> {
-        let node = find::<E>(self.node, k, &mut self.control.clone())?.expect("必須欄を確認済み");
+        let node =
+            find::<E>(self.node, k, &mut self.control.clone(), None)?.expect("必須欄を確認済み");
         Ok((node, pointer_push(&self.pointer, k)))
     }
 
@@ -188,19 +208,20 @@ fn array<'a, E: InputError>(n: &'a JNode, input: &str, p: &str) -> R<&'a [JNode]
 fn name<E: InputError>(control: &mut Control, s: &str, input: &str, p: &str) -> R<(), E> {
     step::<E, _>(control, |control| {
         let mut chars = s.chars();
-        let mut valid = chars.next().is_some_and(|c| c.is_ascii_alphabetic());
-        if valid {
-            for c in chars {
-                valid = step::<E, _>(control, |_| Ok(c.is_ascii_alphanumeric() || c == '_'))?;
-                if !valid {
-                    break;
-                }
-            }
+        let invalid = || error(Code::Syntax, input, p, "Name の字句が不正または予約済み");
+        if !chars.next().is_some_and(|c| c.is_ascii_alphabetic()) {
+            return Err(invalid().into());
         }
-        if !valid
-            || crate::names::is_reserved(s)
-            || ["vocabulary", "version", "digest"].contains(&s)
-        {
+        for c in chars {
+            step::<E, _>(control, |_| {
+                if c.is_ascii_alphanumeric() || c == '_' {
+                    Ok(())
+                } else {
+                    Err(invalid().into())
+                }
+            })?;
+        }
+        if crate::names::is_reserved(s) || ["vocabulary", "version", "digest"].contains(&s) {
             return Err(error(Code::Syntax, input, p, "Name の字句が不正または予約済み").into());
         }
         Ok(())
@@ -273,12 +294,31 @@ pub(super) fn read<E: InputError>(
             return Err((error(Code::Syntax, input, "", "object が必要")).into());
         };
         let format = string(
-            find::<E>(entries, "format", control)?
-                .ok_or_else(|| error(Code::Syntax, input, "", "欄 `format` が必要"))?,
+            find::<E>(
+                entries,
+                "format",
+                control,
+                Some(error(Code::Syntax, input, "", "欄 `format` が必要")),
+            )?
+            .ok_or_else(|| error(Code::Syntax, input, "", "欄 `format` が必要"))?,
             input,
             "/format",
         )?;
-        let semantics = find::<E>(entries, "semantics", control)?
+        let mut missing_semantics = error(
+            Code::UnsupportedVersion,
+            input,
+            if format != FORMAT {
+                "/format"
+            } else {
+                "/semantics"
+            },
+            "未対応の format または semantics",
+        );
+        missing_semantics.details = Details::Version {
+            found_format: format.clone(),
+            found_semantics: None,
+        };
+        let semantics = find::<E>(entries, "semantics", control, Some(missing_semantics))?
             .map(|n| string::<E>(n, input, "/semantics"))
             .transpose()?;
         if format != FORMAT || semantics.as_deref() != Some(SEMANTICS) {
@@ -320,8 +360,13 @@ pub(super) fn read<E: InputError>(
                 let JValue::Obj(entries) = &n.value else {
                     return Err((error(Code::Syntax, input, &vp, "object が必要")).into());
                 };
-                let semantics_node = find::<E>(entries, "semantics", control)?
-                    .ok_or_else(|| error(Code::Syntax, input, &vp, "欄 `semantics` が必要"))?;
+                let semantics_node = find::<E>(
+                    entries,
+                    "semantics",
+                    control,
+                    Some(error(Code::Syntax, input, &vp, "欄 `semantics` が必要")),
+                )?
+                .ok_or_else(|| error(Code::Syntax, input, &vp, "欄 `semantics` が必要"))?;
                 let semantics = string(semantics_node, input, &pointer_push(&vp, "semantics"))?;
                 if semantics != SEMANTICS {
                     let mut e = error(
@@ -443,8 +488,13 @@ fn declaration<E: InputError>(
         let JValue::Obj(es) = &n.value else {
             return Err(error(Code::Syntax, input, p, "object が必要").into());
         };
-        let kind = find::<E>(es, "kind", control)?
-            .ok_or_else(|| error(Code::Syntax, input, p, "kind が必要"))?;
+        let kind = find::<E>(
+            es,
+            "kind",
+            control,
+            Some(error(Code::Syntax, input, p, "kind が必要")),
+        )?
+        .ok_or_else(|| error(Code::Syntax, input, p, "kind が必要"))?;
         let kind = string(kind, input, &pointer_push(p, "kind"))?;
         let keys = match kind.as_str() {
             "data" => vec!["kind", "name", "meaning", "constructors"],
@@ -741,19 +791,22 @@ fn ty_inner<E: InputError>(
     match (tag.as_str(), a.len()) {
         ("Fp", 2) => {
             let v = string(&a[1], input, &child(1))?;
-            let mut digits = true;
-            if !v.starts_with('0') {
-                for b in v.bytes() {
-                    digits = step::<E, _>(control, |_| Ok(b.is_ascii_digit()))?;
-                    if !digits {
-                        break;
-                    }
-                }
-            }
-            if v.starts_with('0') || !digits || v.is_empty() {
+            if v.starts_with('0') || v.is_empty() {
                 return Err(
                     error(Code::Syntax, input, &child(1), "正の10進整数文字列が必要").into(),
                 );
+            }
+            for b in v.bytes() {
+                step::<E, _>(control, |_| {
+                    if b.is_ascii_digit() {
+                        Ok(())
+                    } else {
+                        Err(
+                            error(Code::Syntax, input, &child(1), "正の10進整数文字列が必要")
+                                .into(),
+                        )
+                    }
+                })?;
             }
             Ok(Type::Fp(v))
         }
@@ -965,5 +1018,96 @@ mod interruption_tests {
         ] {
             boundaries(|control| qname::<Failure>(control, value, "definition0", "/name", 3));
         }
+    }
+
+    #[test]
+    fn rejecting_characters_are_errors_before_their_exact_post_checkpoint() {
+        let fp = crate::json::parse(br#"["Fp","1x"]"#).unwrap();
+        let entries = crate::json::parse(br#"{"a":true,"b":true}"#).unwrap();
+        let JValue::Obj(entries) = &entries.value else {
+            unreachable!()
+        };
+        for (case, first_post, total) in [(0, 7, 8), (1, 2, 2), (2, 6, 6), (3, 5, 6), (4, 4, 4)] {
+            for at in 1..=total {
+                for mode in 0..3 {
+                    let mut visits = 0;
+                    let mut control = Control::new(
+                        Limits {
+                            time_ms: (mode == 1).then_some(1),
+                            memory_mib: (mode == 2).then_some(1),
+                        },
+                        move |point| {
+                            if point == Checkpoint::DefinitionSchema {
+                                visits += 1;
+                            }
+                            let stop = visits == at;
+                            Usage {
+                                signal: (stop && mode == 0).then_some(Signal::Term),
+                                elapsed_ms: u128::from(stop && mode == 1),
+                                memory_mib: u128::from(stop && mode == 2),
+                            }
+                        },
+                    );
+                    let result = match case {
+                        0 => name::<Failure>(&mut control, "bad!", "definition0", "/name"),
+                        1 => name::<Failure>(&mut control, "!bad", "definition0", "/name"),
+                        2 => name::<Failure>(&mut control, "law", "definition0", "/name"),
+                        3 => ty::<Failure>(
+                            &mut control,
+                            &fp,
+                            "definition0",
+                            "/type",
+                            &mut Vec::new(),
+                        )
+                        .map(|_| ()),
+                        _ => find::<Failure>(
+                            entries,
+                            "missing",
+                            &mut control,
+                            Some(error(
+                                Code::Syntax,
+                                "definition0",
+                                "",
+                                "欄 `missing` が必要",
+                            )),
+                        )
+                        .map(|_| ()),
+                    };
+                    if mode > 0 && at >= first_post {
+                        assert!(
+                            matches!(result, Err(CheckFailure::Input(_))),
+                            "case {case} at {at}"
+                        );
+                    } else {
+                        assert!(
+                            matches!(result, Err(CheckFailure::Stopped(_))),
+                            "case {case} at {at}"
+                        );
+                    }
+                }
+            }
+        }
+        // A missing optional field is a valid lookup result, and an early
+        // mismatch while another entry remains is not a required-field error.
+        let mut visits = 0;
+        let mut control = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: None,
+            },
+            move |point| {
+                if point == Checkpoint::DefinitionSchema {
+                    visits += 1;
+                }
+                Usage {
+                    elapsed_ms: u128::from(visits == 4),
+                    ..Usage::default()
+                }
+            },
+        );
+        assert!(matches!(
+            find::<Failure>(entries, "missing", &mut control, None),
+            Err(CheckFailure::Stopped(_))
+        ));
     }
 }

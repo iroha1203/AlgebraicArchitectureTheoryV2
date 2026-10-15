@@ -354,14 +354,7 @@ fn resolve_inner(
                 "宣言名を指定する",
             )));
         };
-        let full = declaration(law, name, control)?.ok_or_else(|| {
-            invalid(problem(
-                RequestIssueCode::Reference,
-                &raw.id,
-                name,
-                "宣言名が存在しないか曖昧",
-            ))
-        })?;
+        let full = declaration(law, name, control, &raw.id)?;
         let params = parameters(&law.declarations[&full].signature, kind).ok_or_else(|| {
             invalid(problem(
                 RequestIssueCode::Type,
@@ -375,21 +368,20 @@ fn resolve_inner(
         for (key, value) in raw.arguments {
             phase(control, Checkpoint::RequestBinding)?;
             let name = key.strip_prefix("bind.").unwrap_or(&key);
-            if checked_find(
+            checked_require(
                 params,
                 |p| p.name == name,
                 control,
                 Checkpoint::RequestBinding,
-            )?
-            .is_none()
-            {
-                return Err(invalid(problem(
-                    RequestIssueCode::Reference,
-                    &raw.id,
-                    &key,
-                    "未知の parameter",
-                )));
-            }
+                || {
+                    invalid(problem(
+                        RequestIssueCode::Reference,
+                        &raw.id,
+                        &key,
+                        "未知の parameter",
+                    ))
+                },
+            )?;
             if matches!(value, Selector::Declaration { .. }) {
                 return Err(invalid(problem(
                     RequestIssueCode::Type,
@@ -438,17 +430,21 @@ fn resolve_inner(
         for param in params {
             phase(control, Checkpoint::RequestBinding)?;
             if !arguments.contains_key(&format!("bind.{}", param.name)) {
+                if kind == QuestionKind::Evaluate {
+                    return finish_request(
+                        Err(invalid(problem(
+                            RequestIssueCode::MissingBinding,
+                            &raw.id,
+                            &param.name,
+                            "view の全 parameter を束縛する",
+                        ))),
+                        control,
+                        Checkpoint::RequestBinding,
+                    );
+                }
                 unbound.push(param.name.clone());
             }
             phase(control, Checkpoint::RequestBinding)?;
-        }
-        if kind == QuestionKind::Evaluate && !unbound.is_empty() {
-            return Err(invalid(problem(
-                RequestIssueCode::MissingBinding,
-                &raw.id,
-                &unbound[0],
-                "view の全 parameter を束縛する",
-            )));
         }
         let mut defaults = vec![RequestDefault::ObservedEnvironment];
         if !unbound.is_empty() {
@@ -647,54 +643,87 @@ fn invalid(issue: RequestIssue) -> ResolveFailure {
     }
 }
 
-/// 小さい検索も早期一致・不一致を返す前に共有制御を再確認する。
-fn checked_find<'a, T>(
+/// 任意検索の不一致は途中結果。必須検索は最後の候補の不一致を診断へ
+/// 変換してから事後確認する。未試行の候補があれば中断を優先する。
+fn checked_find_map<'a, T, R>(
     items: &'a [T],
     mut predicate: impl FnMut(&T) -> bool,
     control: &mut Control,
     point: Checkpoint,
-) -> Result<Option<&'a T>, ResolveFailure> {
+    finish: impl FnOnce(Option<&'a T>) -> Result<R, ResolveFailure>,
+) -> Result<R, ResolveFailure> {
     phase(control, point)?;
-    for item in items {
+    for (index, item) in items.iter().enumerate() {
         phase(control, point)?;
         let found = predicate(item);
-        phase(control, point)?;
-        if found {
-            return Ok(Some(item));
+        if found || index + 1 == items.len() {
+            return finish_request(finish(found.then_some(item)), control, point);
         }
+        phase(control, point)?;
     }
-    phase(control, point)?;
-    Ok(None)
+    finish_request(finish(None), control, point)
+}
+fn checked_find<'a, T>(
+    items: &'a [T],
+    predicate: impl FnMut(&T) -> bool,
+    control: &mut Control,
+    point: Checkpoint,
+) -> Result<Option<&'a T>, ResolveFailure> {
+    checked_find_map(items, predicate, control, point, Ok)
+}
+fn checked_require<'a, T>(
+    items: &'a [T],
+    predicate: impl FnMut(&T) -> bool,
+    control: &mut Control,
+    point: Checkpoint,
+    missing: impl FnOnce() -> ResolveFailure,
+) -> Result<&'a T, ResolveFailure> {
+    checked_find_map(items, predicate, control, point, |found| {
+        found.ok_or_else(missing)
+    })
 }
 
 fn declaration(
     law: &CheckedLaw,
     name: &str,
     control: &mut Control,
-) -> Result<Option<String>, ResolveFailure> {
+    request: &str,
+) -> Result<String, ResolveFailure> {
+    let missing = || {
+        invalid(problem(
+            RequestIssueCode::Reference,
+            request,
+            name,
+            "宣言名が存在しないか曖昧",
+        ))
+    };
     phase(control, Checkpoint::RequestBinding)?;
     if law.declarations.contains_key(name) {
-        phase(control, Checkpoint::RequestBinding)?;
-        return Ok(Some(name.to_owned()));
+        return finish_request(Ok(name.to_owned()), control, Checkpoint::RequestBinding);
     }
     if name.contains('.') {
-        phase(control, Checkpoint::RequestBinding)?;
-        return Ok(None);
+        return finish_request(Err(missing()), control, Checkpoint::RequestBinding);
     }
     let mut found = None;
-    for candidate in law.declarations.keys() {
+    for (index, candidate) in law.declarations.keys().enumerate() {
         phase(control, Checkpoint::RequestBinding)?;
         let matches = candidate.rsplit('.').next() == Some(name);
-        phase(control, Checkpoint::RequestBinding)?;
         if matches {
             if found.is_some() {
-                return Ok(None);
+                return finish_request(Err(missing()), control, Checkpoint::RequestBinding);
             }
             found = Some(candidate.clone());
         }
+        if index + 1 == law.declarations.len() {
+            return finish_request(
+                found.ok_or_else(missing),
+                control,
+                Checkpoint::RequestBinding,
+            );
+        }
+        phase(control, Checkpoint::RequestBinding)?;
     }
-    phase(control, Checkpoint::RequestBinding)?;
-    Ok(found)
+    finish_request(Err(missing()), control, Checkpoint::RequestBinding)
 }
 fn parameters(sig: &Signature, kind: QuestionKind) -> Option<&[Param]> {
     match (sig, kind) {
@@ -709,21 +738,29 @@ fn subject<'a>(
     snapshot: &str,
     id: &str,
     control: &mut Control,
-) -> Result<Option<&'a Subject>, ResolveFailure> {
-    let Some(snapshot) = checked_find(
+    context: (&str, &str),
+) -> Result<&'a Subject, ResolveFailure> {
+    let missing = || {
+        invalid(problem(
+            RequestIssueCode::Reference,
+            context.0,
+            context.1,
+            "subject が存在しない",
+        ))
+    };
+    let snapshot = checked_require(
         &map.snapshots,
         |s| s.id == snapshot,
         control,
         Checkpoint::RequestBinding,
-    )?
-    else {
-        return Ok(None);
-    };
-    checked_find(
+        missing,
+    )?;
+    checked_require(
         &snapshot.subjects,
         |s| s.id == id,
         control,
         Checkpoint::RequestBinding,
+        missing,
     )
 }
 fn selector_type(
@@ -744,8 +781,7 @@ fn selector_type(
             snapshot,
             subject: id,
         } => {
-            let s = subject(map, snapshot, id, control)?
-                .ok_or_else(|| failure(RequestIssueCode::Reference, "subject が存在しない"))?;
+            let s = subject(map, snapshot, id, control, context)?;
             ProjectionPlan {
                 ty: ProjectionType::Law(Type::Ref(s.ty.clone())),
                 conditional: false,
@@ -1046,14 +1082,7 @@ fn owner_check(
         )));
         return finish_request(result, control, Checkpoint::RequestBinding);
     }
-    let s = subject(map, snapshot, id, control)?.ok_or_else(|| {
-        invalid(problem(
-            RequestIssueCode::Reference,
-            request,
-            argument,
-            "subject が存在しない",
-        ))
-    })?;
+    let s = subject(map, snapshot, id, control, (request, argument))?;
     let field = checked_find(
         &s.fields,
         |f| f.name.rsplit('.').next() == Some("owner"),
@@ -1281,11 +1310,20 @@ impl<'a> Parser<'a> {
         Ok(matched)
     }
     fn expect(&mut self, c: u8) -> Result<(), ResolveFailure> {
-        if self.take(c)? {
+        self.tick()?;
+        self.ws()?;
+        let result = if self.src.as_bytes().get(self.at) == Some(&c) {
+            self.at += 1;
             Ok(())
         } else {
-            Err(self.error("要求の区切りが不正"))
-        }
+            Err(invalid(problem(
+                RequestIssueCode::Syntax,
+                &self.id,
+                self.src,
+                "要求の区切りが不正",
+            )))
+        };
+        finish_request(result, &mut self.control, Checkpoint::RequestSyntax)
     }
     fn name(&mut self, id: bool) -> Result<String, ResolveFailure> {
         self.tick()?;
@@ -1431,5 +1469,93 @@ impl<'a> Parser<'a> {
             head,
             arguments,
         })
+    }
+}
+
+#[cfg(test)]
+mod required_predicate_priority_tests {
+    use super::*;
+    use crate::observed::control::{Limits, Usage};
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+
+    fn probe(point: Checkpoint, at: usize, mode: usize) -> Control {
+        let seen = Rc::new(Cell::new(0));
+        Control::new(
+            Limits {
+                time_ms: (mode == 1).then_some(1),
+                memory_mib: (mode == 2).then_some(1),
+            },
+            move |current| {
+                if current == point {
+                    seen.set(seen.get() + 1);
+                }
+                let stop = seen.get() >= at;
+                Usage {
+                    signal: (stop && mode == 0).then_some(Signal::Term),
+                    elapsed_ms: u128::from(stop && mode == 1),
+                    memory_mib: u128::from(stop && mode == 2),
+                }
+            },
+        )
+    }
+    #[test]
+    fn required_and_optional_delimiter_false_have_different_priority() {
+        for mode in 0..3 {
+            // take/expect pre 1, ws pre/post 2/3, mismatch post 4.
+            let control = probe(Checkpoint::RequestSyntax, 4, mode);
+            let mut parser = Parser::new("!", &control);
+            assert!(matches!(
+                parser.take(b'='),
+                Err(ResolveFailure::Interrupted { .. })
+            ));
+            let control = probe(Checkpoint::RequestSyntax, 4, mode);
+            let mut parser = Parser::new("!", &control);
+            parser.id = "a".into();
+            let result = parser.expect(b'=').unwrap_err();
+            if mode == 0 {
+                assert!(matches!(result, ResolveFailure::Interrupted { .. }));
+            } else {
+                assert!(
+                    matches!(result, ResolveFailure::Invalid { issues, stop_reason: Some(StopReason::BudgetExhausted { .. }), .. }
+                    if issues == [problem(RequestIssueCode::Syntax, "a", "!", "要求の区切りが不正")])
+                );
+            }
+        }
+    }
+    #[test]
+    fn required_lookup_only_promotes_the_exhausted_search_to_reference() {
+        for mode in 0..3 {
+            for at in [3, 5] {
+                // pre 1, candidate 1 pre/post 2/3, candidate 2 pre/post 4/5.
+                let mut control = probe(Checkpoint::RequestBinding, at, mode);
+                let error = checked_require(
+                    &[1, 2],
+                    |value| *value == 3,
+                    &mut control,
+                    Checkpoint::RequestBinding,
+                    || invalid(problem(RequestIssueCode::Reference, "a", "x", "missing")),
+                )
+                .unwrap_err();
+                if at == 5 && mode != 0 {
+                    assert!(
+                        matches!(error, ResolveFailure::Invalid { issues, stop_reason: Some(StopReason::BudgetExhausted { .. }), .. }
+                        if issues == [problem(RequestIssueCode::Reference, "a", "x", "missing")])
+                    );
+                } else {
+                    assert!(matches!(error, ResolveFailure::Interrupted { .. }));
+                }
+                let mut control = probe(Checkpoint::RequestBinding, at, mode);
+                assert!(matches!(
+                    checked_find(
+                        &[1, 2],
+                        |value| *value == 3,
+                        &mut control,
+                        Checkpoint::RequestBinding
+                    ),
+                    Err(ResolveFailure::Interrupted { .. })
+                ));
+            }
+        }
     }
 }

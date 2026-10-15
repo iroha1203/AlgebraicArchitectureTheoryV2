@@ -203,18 +203,86 @@ fn syntax(pointer: &str, message: impl Into<String>) -> Box<Issue> {
     issue(Code::Syntax, pointer, message)
 }
 
-fn is_z<E: InputError>(s: &str, control: &mut Control) -> Result<bool, E> {
+// This reader is used only where a noncanonical integer rejects the input.
+// Materialize that caller's diagnostic before sampling the rejection's post.
+fn z_encoding<E: InputError>(
+    s: &str,
+    control: &mut Control,
+    invalid: impl Fn() -> Box<Issue>,
+) -> Result<(), E> {
     let point = Checkpoint::ArchMapSchema;
     E::checkpoint(control, point)?;
     let digits = s.strip_prefix('-').unwrap_or(s);
-    let mut canonical = digits == "0" || digits.starts_with(|c: char| ('1'..='9').contains(&c));
+    if !(digits == "0" || digits.starts_with(|c: char| ('1'..='9').contains(&c))) || s == "-0" {
+        return E::finish(Err(invalid().into()), control, point);
+    }
     for byte in digits.bytes() {
         E::checkpoint(control, point)?;
-        canonical &= byte.is_ascii_digit();
-        E::checkpoint(control, point)?;
+        let checked = if byte.is_ascii_digit() {
+            Ok(())
+        } else {
+            Err(invalid().into())
+        };
+        E::finish(checked, control, point)?;
     }
     E::checkpoint(control, point)?;
-    Ok(canonical && s != "-0")
+    Ok(())
+}
+
+#[cfg(test)]
+mod lexical_priority_tests {
+    use super::*;
+    use crate::observed::control::{CheckFailure, Limits, Usage};
+    use crate::result::Signal;
+
+    #[test]
+    fn each_integer_refusal_is_materialized_before_its_first_post() {
+        for (text, first_post, total) in [
+            ("1x", 5, 5),
+            ("", 2, 2),
+            ("x1", 2, 2),
+            ("00", 2, 2),
+            ("-0", 2, 2),
+            ("12", 7, 6),
+        ] {
+            for at in 1..=total {
+                for mode in 0..3 {
+                    let mut visits = 0;
+                    let mut control = Control::new(
+                        Limits {
+                            time_ms: (mode == 1).then_some(1),
+                            memory_mib: (mode == 2).then_some(1),
+                        },
+                        move |point| {
+                            if point == Checkpoint::ArchMapSchema {
+                                visits += 1;
+                            }
+                            let stop = visits == at;
+                            Usage {
+                                signal: (stop && mode == 0).then_some(Signal::Term),
+                                elapsed_ms: u128::from(stop && mode == 1),
+                                memory_mib: u128::from(stop && mode == 2),
+                            }
+                        },
+                    );
+                    let result = z_encoding::<CheckFailure<Box<Issue>>>(text, &mut control, || {
+                        syntax("/value", "original rejection")
+                    });
+                    if mode > 0 && at >= first_post {
+                        assert!(
+                            matches!(result, Err(CheckFailure::Input(ref issue)) if issue == &syntax("/value", "original rejection")),
+                            "{text:?} at {at}"
+                        );
+                    } else {
+                        assert!(
+                            matches!(result, Err(CheckFailure::Stopped(_))),
+                            "{text:?} at {at}"
+                        );
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// 全 snapshot の subject 表。参照の検査に使う。
@@ -262,18 +330,21 @@ impl<E: InputError> Reader<'_, '_, E> {
             },
             Type::Z => {
                 let s = string()?;
-                if !is_z::<E>(&s, &mut self.control)? {
-                    return Err((syntax(ptr, format!("`{s}` は Z の encoding でない"))).into());
-                }
+                z_encoding::<E>(&s, &mut self.control, || {
+                    syntax(ptr, format!("`{s}` は Z の encoding でない"))
+                })?;
                 Value::Z(s.parse().expect("Z の形式"))
             }
             Type::Q => {
                 let items = arr(2)?;
                 let n = as_string(&items[0], &pointer_push(ptr, "0"))?;
                 let d = as_string(&items[1], &pointer_push(ptr, "1"))?;
-                if !is_z::<E>(&n, &mut self.control)? || !is_z::<E>(&d, &mut self.control)? {
-                    return Err((syntax(ptr, "Q の分子・分母は Z の encoding")).into());
-                }
+                z_encoding::<E>(&n, &mut self.control, || {
+                    syntax(ptr, "Q の分子・分母は Z の encoding")
+                })?;
+                z_encoding::<E>(&d, &mut self.control, || {
+                    syntax(ptr, "Q の分子・分母は Z の encoding")
+                })?;
                 let (n, d): (BigInt, BigInt) = (n.parse().expect("Z"), d.parse().expect("Z"));
                 if !d.is_positive() {
                     return Err((syntax(&pointer_push(ptr, "1"), "Q の分母は正")).into());
@@ -285,9 +356,12 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::Fp(p) => {
                 let s = string()?;
-                if !is_z::<E>(&s, &mut self.control)? || s.starts_with('-') {
+                if s.starts_with('-') {
                     return Err((syntax(ptr, format!("`{s}` は Fp の encoding でない"))).into());
                 }
+                z_encoding::<E>(&s, &mut self.control, || {
+                    syntax(ptr, format!("`{s}` は Fp の encoding でない"))
+                })?;
                 let v: BigUint = s.parse().expect("非負整数");
                 let p: BigUint = p.parse().expect("法");
                 if v >= p {
@@ -402,12 +476,18 @@ impl<E: InputError> Reader<'_, '_, E> {
                         (syntax(ptr, "data の値は tag と args の二つの欄だけを持つ")).into(),
                     );
                 }
-                let (Some(tag), Some(args)) = (
-                    super::schema::field::<E>(entries, "tag", &mut self.control)?,
-                    super::schema::field::<E>(entries, "args", &mut self.control)?,
-                ) else {
-                    return Err((syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}")).into());
-                };
+                let tag =
+                    super::schema::field_map::<E, _>(entries, "tag", &mut self.control, |node| {
+                        node.ok_or_else(|| {
+                            syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}").into()
+                        })
+                    })?;
+                let args =
+                    super::schema::field_map::<E, _>(entries, "args", &mut self.control, |node| {
+                        node.ok_or_else(|| {
+                            syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}").into()
+                        })
+                    })?;
                 let tag = as_string(tag, &pointer_push(ptr, "tag"))?;
                 let Some(PrimitiveSignature::Data { constructors }) =
                     self.definitions.declarations.get(d).map(|x| &x.signature)
@@ -415,10 +495,19 @@ impl<E: InputError> Reader<'_, '_, E> {
                     unreachable!("data 型は共通 Atom 定義の宣言")
                 };
                 let mut constructor = None;
-                for candidate in constructors {
+                for (index, candidate) in constructors.iter().enumerate() {
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
                     let matches = candidate.name == tag;
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                    let checked = if !matches && index + 1 == constructors.len() {
+                        Err(syntax(
+                            &pointer_push(ptr, "tag"),
+                            format!("`{d}` に constructor `{tag}` はない"),
+                        )
+                        .into())
+                    } else {
+                        Ok(())
+                    };
+                    E::finish(checked, &mut self.control, Checkpoint::ArchMapSchema)?;
                     if matches {
                         constructor = Some(candidate);
                         break;
@@ -499,12 +588,22 @@ impl<E: InputError> Reader<'_, '_, E> {
                 if entries.len() != 2 {
                     return Err((syntax(ptr, "Term は params と body の二つの欄だけを持つ")).into());
                 }
-                let (Some(params), Some(body)) = (
-                    super::schema::field::<E>(entries, "params", &mut self.control)?,
-                    super::schema::field::<E>(entries, "body", &mut self.control)?,
-                ) else {
-                    return Err((syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}")).into());
-                };
+                let params = super::schema::field_map::<E, _>(
+                    entries,
+                    "params",
+                    &mut self.control,
+                    |node| {
+                        node.ok_or_else(|| {
+                            syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}").into()
+                        })
+                    },
+                )?;
+                let body =
+                    super::schema::field_map::<E, _>(entries, "body", &mut self.control, |node| {
+                        node.ok_or_else(|| {
+                            syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}").into()
+                        })
+                    })?;
                 let pptr = pointer_push(ptr, "params");
                 let JValue::Arr(names) = &params.value else {
                     return Err((syntax(&pptr, "params は array")).into());
@@ -519,19 +618,26 @@ impl<E: InputError> Reader<'_, '_, E> {
                 for (i, n) in names.iter().enumerate() {
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     let name = as_string(n, &pointer_push(&pptr, &i.to_string()))?;
-                    let mut ok = name.starts_with(|c: char| c.is_ascii_alphabetic());
-                    for ch in name.chars() {
-                        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
-                        ok &= ch.is_ascii_alphanumeric() || ch == '_';
-                        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
-                    }
-                    ok &= !crate::law::parser::is_reserved(&name);
-                    if !ok {
-                        return Err((syntax(
+                    let invalid = || {
+                        syntax(
                             &pointer_push(&pptr, &i.to_string()),
                             format!("`{name}` は parameter 名に使えない"),
-                        ))
-                        .into());
+                        )
+                    };
+                    if !name.starts_with(|c: char| c.is_ascii_alphabetic()) {
+                        return Err(invalid().into());
+                    }
+                    for ch in name.chars() {
+                        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                        let checked = if ch.is_ascii_alphanumeric() || ch == '_' {
+                            Ok(())
+                        } else {
+                            Err(invalid().into())
+                        };
+                        E::finish(checked, &mut self.control, Checkpoint::ArchMapSchema)?;
+                    }
+                    if crate::law::parser::is_reserved(&name) {
+                        return Err(invalid().into());
                     }
                     if !seen.insert(name.clone()) {
                         return Err((issue(
@@ -659,7 +765,17 @@ fn check_snapshots_inner<E: InputError>(
             for (i, field) in subjects[si].fields.iter().enumerate() {
                 E::checkpoint(control, Checkpoint::ArchMapSchema)?;
                 let matches = field.name == a.field;
-                E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+                let checked = if !matches && i + 1 == subjects[si].fields.len() {
+                    Err(issue(
+                        Code::Reference,
+                        &format!("{}/field", a.pointer),
+                        format!("`{subject_ty}` に field `{}` はない", a.field),
+                    )
+                    .into())
+                } else {
+                    Ok(())
+                };
+                E::finish(checked, control, Checkpoint::ArchMapSchema)?;
                 if matches {
                     field_index = Some(i);
                     break;

@@ -78,8 +78,14 @@ impl<'a, E: InputError> Obj<'a, E> {
                 step::<E, _>(control, |control| {
                     let child = pointer_push(pointer, k);
                     let mut allowed = false;
-                    for candidate in required.iter().chain(optional) {
-                        if step::<E, _>(control, |_| Ok(*candidate == k))? {
+                    for (index, candidate) in required.iter().chain(optional).enumerate() {
+                        if step::<E, _>(control, |_| {
+                            let matches = *candidate == k;
+                            if !matches && index + 1 == required.len() + optional.len() {
+                                return Err(syntax(&child, format!("未知の欄 `{k}`")).into());
+                            }
+                            Ok(matches)
+                        })? {
                             allowed = true;
                             break;
                         }
@@ -95,10 +101,11 @@ impl<'a, E: InputError> Obj<'a, E> {
             }
             for r in required {
                 step::<E, _>(control, |control| {
-                    if field::<E>(entries, r, control)?.is_none() {
-                        return Err(syntax(pointer, format!("欄 `{r}` が必要")).into());
-                    }
-                    Ok(())
+                    field_map::<E, _>(entries, r, control, |found| {
+                        found
+                            .map(|_| ())
+                            .ok_or_else(|| syntax(pointer, format!("欄 `{r}` が必要")).into())
+                    })
                 })?;
             }
             Ok(Self {
@@ -128,9 +135,12 @@ impl<'a, E: InputError> Obj<'a, E> {
         step::<E, _>(&mut self.control.clone(), |control| {
             let (v, p) = self.req(key)?;
             let s = as_string(v, &p)?;
-            if !is_id_controlled::<E>(&s, control)? {
-                return Err(syntax(&p, format!("`{s}` は Id の形式でない")).into());
-            }
+            identifier::<E>(
+                &s,
+                true,
+                control,
+                Some(&|| syntax(&p, format!("`{s}` は Id の形式でない"))),
+            )?;
             Ok(s)
         })
     }
@@ -145,17 +155,32 @@ impl<'a, E: InputError> Obj<'a, E> {
     }
 }
 
+pub(crate) fn field_map<'a, E: InputError, T>(
+    entries: &'a [(String, JNode)],
+    key: &str,
+    control: &mut Control,
+    finish: impl FnOnce(Option<&'a JNode>) -> Result<T, E>,
+) -> Result<T, E> {
+    for (index, (k, v)) in entries.iter().enumerate() {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        let found = k == key;
+        if found || index + 1 == entries.len() {
+            return E::finish(
+                finish(found.then_some(v)),
+                control,
+                Checkpoint::ArchMapSchema,
+            );
+        }
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
+    E::finish(finish(None), control, Checkpoint::ArchMapSchema)
+}
 pub(crate) fn field<'a, E: InputError>(
     entries: &'a [(String, JNode)],
     key: &str,
     control: &mut Control,
 ) -> Result<Option<&'a JNode>, E> {
-    for (k, v) in entries {
-        if step::<E, _>(control, |_| Ok(k == key))? {
-            return Ok(Some(v));
-        }
-    }
-    Ok(None)
+    field_map(entries, key, control, Ok)
 }
 
 fn not_null(node: &JNode, pointer: &str) -> Option<Box<Issue>> {
@@ -174,18 +199,32 @@ pub fn is_id(s: &str) -> bool {
     is_id_controlled::<Box<Issue>>(s, &mut Control::unlimited()).expect("ordinary schema helper")
 }
 
-fn identifier<E: InputError>(s: &str, dotted: bool, control: &mut Control) -> Result<bool, E> {
+fn identifier<E: InputError>(
+    s: &str,
+    dotted: bool,
+    control: &mut Control,
+    invalid: Option<&dyn Fn() -> Box<Issue>>,
+) -> Result<bool, E> {
     step::<E, _>(control, |control| {
         let mut cs = s.chars();
         let first = step::<E, _>(control, |_| {
-            Ok(cs.next().is_some_and(|c| c.is_ascii_alphabetic()))
+            let valid = cs.next().is_some_and(|c| c.is_ascii_alphabetic());
+            if !valid && let Some(invalid) = invalid {
+                return Err(invalid().into());
+            }
+            Ok(valid)
         })?;
         if !first {
             return Ok(false);
         }
         for c in cs {
             if !step::<E, _>(control, |_| {
-                Ok(c.is_ascii_alphanumeric() || c == '_' || (dotted && matches!(c, '.' | '-')))
+                let valid =
+                    c.is_ascii_alphanumeric() || c == '_' || (dotted && matches!(c, '.' | '-'));
+                if !valid && let Some(invalid) = invalid {
+                    return Err(invalid().into());
+                }
+                Ok(valid)
             })? {
                 return Ok(false);
             }
@@ -195,10 +234,7 @@ fn identifier<E: InputError>(s: &str, dotted: bool, control: &mut Control) -> Re
 }
 
 pub(crate) fn is_id_controlled<E: InputError>(s: &str, control: &mut Control) -> Result<bool, E> {
-    identifier::<E>(s, true, control)
-}
-fn is_name_controlled<E: InputError>(s: &str, control: &mut Control) -> Result<bool, E> {
-    identifier::<E>(s, false, control)
+    identifier::<E>(s, true, control, None)
 }
 
 #[allow(dead_code)]
@@ -206,9 +242,18 @@ pub fn is_qname(s: &str) -> bool {
     is_qname_controlled::<Box<Issue>>(s, &mut Control::unlimited()).expect("ordinary schema helper")
 }
 fn is_qname_controlled<E: InputError>(s: &str, control: &mut Control) -> Result<bool, E> {
+    qname::<E>(s, control, None)
+}
+fn qname<E: InputError>(
+    s: &str,
+    control: &mut Control,
+    invalid: Option<&dyn Fn() -> Box<Issue>>,
+) -> Result<bool, E> {
     step::<E, _>(control, |control| {
         for part in s.split('.') {
-            if !step::<E, _>(control, |control| is_name_controlled::<E>(part, control))? {
+            if !step::<E, _>(control, |control| {
+                identifier::<E>(part, false, control, invalid)
+            })? {
                 return Ok(false);
             }
         }
@@ -265,6 +310,26 @@ fn nat_value(text: &str) -> Option<u64> {
     (value <= MAX).then_some(value)
 }
 
+fn unsupported_version(format: String, semantics: Option<String>) -> Box<Issue> {
+    Box::new(Issue {
+        code: Code::UnsupportedVersion,
+        message: "未対応の format または semantics".into(),
+        location: Location::ArchMap {
+            pointer: if format != FORMAT {
+                "/format"
+            } else {
+                "/semantics"
+            }
+            .into(),
+            span: None,
+        },
+        details: Details::Version {
+            found_format: format,
+            found_semantics: semantics,
+        },
+    })
+}
+
 /// 版を先に確かめてから schema を読む。未知版の欄を未知欄として先に拒否しない。
 pub fn read_document<'a, E: InputError>(
     root: &'a JNode,
@@ -280,34 +345,22 @@ fn read_document_inner<'a, E: InputError>(
     let JValue::Obj(entries) = &root.value else {
         return Err((syntax("", "ArchMap は object")).into());
     };
-    let format = match field::<E>(entries, "format", control)?.map(|v| &v.value) {
-        Some(JValue::Str(s)) => s.clone(),
+    let format_node = field_map::<E, _>(entries, "format", control, |found| {
+        found.ok_or_else(|| syntax("/format", "format の文字列が必要").into())
+    })?;
+    let format = match &format_node.value {
+        JValue::Str(s) => s.clone(),
         _ => return Err((syntax("/format", "format の文字列が必要")).into()),
     };
-    let semantics = match field::<E>(entries, "semantics", control)?.map(|v| &v.value) {
-        Some(JValue::Str(s)) => Some(s.clone()),
-        Some(_) => return Err((syntax("/semantics", "semantics の文字列が必要")).into()),
-        None => None,
+    let semantics_node = field_map::<E, _>(entries, "semantics", control, |found| {
+        found.ok_or_else(|| unsupported_version(format.clone(), None).into())
+    })?;
+    let semantics = match &semantics_node.value {
+        JValue::Str(s) => Some(s.clone()),
+        _ => return Err((syntax("/semantics", "semantics の文字列が必要")).into()),
     };
     if format != FORMAT || semantics.as_deref() != Some(SEMANTICS) {
-        return Err((Box::new(Issue {
-            code: Code::UnsupportedVersion,
-            message: "未対応の format または semantics".into(),
-            location: Location::ArchMap {
-                pointer: if format != FORMAT {
-                    "/format"
-                } else {
-                    "/semantics"
-                }
-                .into(),
-                span: None,
-            },
-            details: Details::Version {
-                found_format: format,
-                found_semantics: semantics,
-            },
-        }))
-        .into());
+        return Err(unsupported_version(format, semantics).into());
     }
     let top = Obj::<E>::new(
         root,
@@ -338,9 +391,13 @@ fn read_document_inner<'a, E: InputError>(
             control,
         )?;
         let namespace = o.string("namespace")?;
-        if !is_name_controlled::<E>(&namespace, control)?
-            || crate::law::parser::is_reserved(&namespace)
-        {
+        identifier::<E>(
+            &namespace,
+            false,
+            control,
+            Some(&|| syntax(&format!("{pointer}/namespace"), "namespace は名前")),
+        )?;
+        if crate::law::parser::is_reserved(&namespace) {
             return Err((syntax(&format!("{pointer}/namespace"), "namespace は名前")).into());
         }
         let version = o.string("version")?;
@@ -515,9 +572,11 @@ fn read_document_inner<'a, E: InputError>(
                 .into());
             }
             let ty = so.string("type")?;
-            if !is_qname_controlled::<E>(&ty, control)? {
-                return Err((syntax(&format!("{sp}/type"), "type は宣言の完全名")).into());
-            }
+            qname::<E>(
+                &ty,
+                control,
+                Some(&|| syntax(&format!("{sp}/type"), "type は宣言の完全名")),
+            )?;
             subjects.push(RawSubject {
                 id: sid,
                 ty,
@@ -548,9 +607,11 @@ fn read_document_inner<'a, E: InputError>(
                 .into());
             }
             let field = ao.string("field")?;
-            if !is_qname_controlled::<E>(&field, control)? {
-                return Err((syntax(&format!("{ap}/field"), "field は完全名")).into());
-            }
+            qname::<E>(
+                &field,
+                control,
+                Some(&|| syntax(&format!("{ap}/field"), "field は完全名")),
+            )?;
             atoms.push(RawAtom {
                 id: aid,
                 subject: ao.id("subject")?,
@@ -593,21 +654,23 @@ fn read_location_inner<E: InputError>(
     let o = Obj::<E>::new(node, pointer, &["source", "path"], &["span"], control)?;
     let source = o.id("source")?;
     let path = o.string("path")?;
-    let mut bad_path = path.is_empty() || path.starts_with('/');
-    if !bad_path {
-        for segment in path.split('/') {
-            if step::<E, _>(control, |_| Ok(segment == "." || segment == ".."))? {
-                bad_path = true;
-                break;
-            }
-        }
-    }
-    if bad_path {
-        return Err(syntax(
+    let path_error = || {
+        syntax(
             &format!("{pointer}/path"),
             "path は source root 相対で、空・絶対 path・`.`・`..` を含まない",
         )
-        .into());
+    };
+    if path.is_empty() || path.starts_with('/') {
+        return Err(path_error().into());
+    }
+    for segment in path.split('/') {
+        step::<E, _>(control, |_| {
+            if segment == "." || segment == ".." {
+                Err(path_error().into())
+            } else {
+                Ok(())
+            }
+        })?;
     }
     let span = match o.get("span")? {
         None => None,
@@ -734,6 +797,66 @@ mod interruption_tests {
                 read_location::<E>(&root, "/location", &mut control),
                 Err(CheckFailure::Stopped(_))
             ));
+        }
+    }
+}
+
+#[cfg(test)]
+mod required_identifier_priority_tests {
+    use super::*;
+    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+    type E = CheckFailure<Box<Issue>>;
+
+    #[test]
+    fn first_or_later_invalid_character_is_diagnosed_before_its_post_checkpoint() {
+        for (text, at) in [("!", 3), ("x!", 5)] {
+            for mode in 0..3 {
+                let probe = || {
+                    let seen = Rc::new(Cell::new(0));
+                    Control::new(
+                        Limits {
+                            time_ms: (mode == 1).then_some(1),
+                            memory_mib: (mode == 2).then_some(1),
+                        },
+                        move |point| {
+                            if point == Checkpoint::ArchMapSchema {
+                                seen.set(seen.get() + 1);
+                            }
+                            let stop = seen.get() >= at;
+                            Usage {
+                                signal: (stop && mode == 0).then_some(Signal::Term),
+                                elapsed_ms: u128::from(stop && mode == 1),
+                                memory_mib: u128::from(stop && mode == 2),
+                            }
+                        },
+                    )
+                };
+                let original = || syntax("/snapshots/0/id", format!("`{text}` は Id の形式でない"));
+                let mut control = probe();
+                let result = identifier::<E>(text, true, &mut control, Some(&original));
+                if mode == 0 {
+                    assert!(matches!(
+                        result,
+                        Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Term)))
+                    ));
+                } else {
+                    let Err(CheckFailure::Input(issue)) = result else {
+                        panic!("known identifier syntax")
+                    };
+                    assert_eq!(issue, original());
+                    assert!(matches!(
+                        control.stop_reason(),
+                        Some(StopReason::BudgetExhausted { .. })
+                    ));
+                }
+                let mut control = probe();
+                assert!(matches!(
+                    is_id_controlled::<E>(text, &mut control),
+                    Err(CheckFailure::Stopped(_))
+                ));
+            }
         }
     }
 }
