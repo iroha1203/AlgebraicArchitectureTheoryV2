@@ -18,7 +18,16 @@
   digest と検査済み三表を保持し、`evaluate` / `check` の束縛・型・公開射影・
   依存順を解決する。循環は該当する問いの ID と依存グラフを保持して拒否する。
   検査済み bundle を再利用する入口と、検査・要求解決で共有する予算・取消制御を持つ。
-  値の評価・回答・導出 node の生成は未実装。
+- 観測評価 API (`archsig::observed::evaluate_observed_bytes` / `evaluate_observed`):
+  明示束縛した原始参照、field 射影、Z/Bool literal、括弧、Z の負号・等値・順序比較、
+  Bool の等値を共通の AST 評価器で読む。ドット列は束縛変数と一つの field まで扱う。
+  Law の guard は省略または評価値が true の場合を扱う。
+  型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
+  欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
+  その他の式形・false/未観測 guard・未束縛 parameter の量化・Answer 由来の束縛・
+  動的 owner 制約の評価は未実装であり、
+  専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
+  `unsupported_algorithm` や未決回答へ変換しない。
 - CLI の `archsig check` と `archsig version`。入力のコピー、`result.json`、stdout の receipt を
   [実行仕様](../../docs/tool/archsig_v0_6_0_io/execution.md) §§5–7 に従って出す。
 

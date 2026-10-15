@@ -1,0 +1,1018 @@
+//! AC1 の byte → 型付き回答。期待値は I/O の最小の一周と結果 §§1–3,6 による。
+use archsig::{
+    canonical::Json,
+    definition::check_definitions,
+    observed::{
+        EvaluationFailure, PrepareFailure,
+        control::{Checkpoint, Control, Limits, Usage},
+        evaluate_observed, evaluate_observed_bytes,
+        input::{InputSources, check_inputs},
+        prepare_checked_observed,
+    },
+    result::Signal,
+};
+use std::{
+    cell::Cell,
+    collections::{BTreeMap, BTreeSet},
+    rc::Rc,
+};
+
+const DEFINITIONS: &[u8] = include_bytes!("fixtures/counter.atoms.json");
+const LAW: &[u8] = include_bytes!("fixtures/counter.law");
+const MAP: &[u8] = include_bytes!("fixtures/counter.archmap.json");
+const ASKS: [&str; 3] = [
+    "n=evaluate(CountCheck.amount,s=@v/s)",
+    "ok=check(CountCheck.nonnegative,s=@v/s)",
+    "audit=check(CountAudit.bounded,s=@v/s)",
+];
+
+fn quiet_control() -> Control {
+    Control::new(Limits::default(), |_| Usage::default())
+}
+fn sources(law: &[u8], map: &[u8]) -> InputSources {
+    InputSources::from_bytes(vec![DEFINITIONS.to_vec()], law.to_vec(), map.to_vec())
+}
+fn map_count(value: Option<&str>) -> Vec<u8> {
+    let text = String::from_utf8(MAP.to_vec()).unwrap();
+    match value {
+        Some(value) => text.replace("\"value\": \"2\"", &format!("\"value\": \"{value}\"")).into_bytes(),
+        None => text.replace("{\"id\": \"count\", \"subject\": \"s\", \"field\": \"Counter.State.count\", \"value\": \"2\", \"origin\": \"model\"}", "").into_bytes(),
+    }
+}
+fn run(src: InputSources, asks: &[&str]) -> Json {
+    evaluate_observed_bytes(src, asks, &mut quiet_control())
+        .unwrap()
+        .wire()
+}
+fn obj(value: &Json) -> &BTreeMap<String, Json> {
+    let Json::Obj(fields) = value else {
+        panic!("object: {value:?}")
+    };
+    fields
+}
+fn arr(value: &Json) -> &[Json] {
+    let Json::Arr(values) = value else {
+        panic!("array: {value:?}")
+    };
+    values
+}
+fn text(value: &Json) -> &str {
+    let Json::Str(value) = value else {
+        panic!("string: {value:?}")
+    };
+    value
+}
+fn field<'a>(value: &'a Json, name: &str) -> &'a Json {
+    &obj(value)[name]
+}
+fn number(value: &Json) -> usize {
+    let Json::Nat(value) = value else {
+        panic!("Nat: {value:?}")
+    };
+    *value as usize
+}
+fn nodes(result: &Json) -> BTreeMap<&str, &Json> {
+    arr(field(result, "nodes"))
+        .iter()
+        .map(|node| (text(field(node, "id")), node))
+        .collect()
+}
+fn target<'a>(index: &BTreeMap<&str, &'a Json>, reference: &Json) -> &'a Json {
+    assert_eq!(obj(reference).len(), 1, "Ref の欄は node だけ");
+    index[text(field(reference, "node"))]
+}
+fn typed<'a>(index: &BTreeMap<&str, &'a Json>, reference: &Json, ty: &str) -> &'a Json {
+    let node = target(index, reference);
+    assert_eq!(field(node, "type"), &Json::str(ty));
+    node
+}
+fn value(node: &Json) -> &Json {
+    assert_eq!(field(node, "state"), &Json::str("value"));
+    field(node, "value")
+}
+fn answer<'a>(result: &'a Json, id: &str) -> &'a Json {
+    arr(field(result, "answers"))
+        .iter()
+        .find(|a| text(field(a, "id")) == id)
+        .unwrap()
+}
+fn span(location: &Json) -> (usize, usize) {
+    assert_eq!(field(location, "input"), &Json::str("law"));
+    let pair = arr(field(location, "span"));
+    assert_eq!(pair.len(), 2);
+    (number(&pair[0]), number(&pair[1]))
+}
+fn visit_refs(value: &Json, refs: &mut Vec<String>) {
+    match value {
+        Json::Obj(fields) if fields.len() == 1 && fields.contains_key("node") => {
+            refs.push(text(&fields["node"]).to_owned())
+        }
+        Json::Obj(fields) => {
+            for child in fields.values() {
+                visit_refs(child, refs);
+            }
+        }
+        Json::Arr(values) => {
+            for child in values {
+                visit_refs(child, refs);
+            }
+        }
+        _ => {}
+    }
+}
+
+// 表示番号の個数や具体値には依存せず、参照順、型、blocked の非消費を読む。
+fn audit_dag(result: &Json) {
+    let index = nodes(result);
+    let mut earlier = BTreeSet::new();
+    for node in arr(field(result, "nodes")) {
+        let id = text(field(node, "id"));
+        let mut refs = vec![];
+        visit_refs(node, &mut refs);
+        for reference in refs {
+            assert!(
+                earlier.contains(reference.as_str()),
+                "{id} → {reference} は既出である"
+            );
+        }
+        assert!(earlier.insert(id));
+        let ty = field(node, "type");
+        if ty != &Json::str("Proposition") {
+            assert!(!obj(node).contains_key("judgment"));
+        }
+        if field(node, "state") == &Json::str("blocked") {
+            assert!(!obj(node).contains_key("value"));
+            assert!(!arr(field(node, "reasons")).is_empty());
+        }
+        if let Some(payload) = obj(node).get("value") {
+            let mut consumed = vec![];
+            visit_refs(payload, &mut consumed);
+            for reference in consumed {
+                assert_ne!(
+                    field(index[reference.as_str()], "state"),
+                    &Json::str("blocked"),
+                    "payload に blocked 値を消費しない"
+                );
+            }
+            match ty {
+                Json::Str(ty) if ty == "Evaluation" => {
+                    typed(&index, field(payload, "expression"), "Expression");
+                    for binding in arr(field(payload, "bindings")) {
+                        target(&index, field(binding, "value"));
+                    }
+                    for part in arr(field(payload, "parts")) {
+                        for child in arr(field(part, "children")) {
+                            typed(&index, child, "Evaluation");
+                        }
+                    }
+                }
+                Json::Str(ty) if ty == "LawInstance" => {
+                    typed(&index, field(payload, "body"), "Expression");
+                    if let Some(guard) = obj(payload).get("guard") {
+                        typed(&index, guard, "Expression");
+                    }
+                }
+                Json::Str(ty) if ty == "Proposition" => {
+                    assert_eq!(field(payload, "predicate"), &Json::str("law_holds"));
+                    for operand in arr(field(payload, "operands")) {
+                        typed(&index, operand, "LawInstance");
+                    }
+                }
+                Json::Str(ty) if ty == "Evidence" => {
+                    let data = field(payload, "data");
+                    if field(payload, "kind") == &Json::str("evaluation") {
+                        typed(&index, field(data, "instance"), "LawInstance");
+                        for side in ["lhs", "rhs"] {
+                            target(&index, field(data, side));
+                        }
+                    }
+                    if field(payload, "kind") == &Json::str("counterexample") {
+                        for side in ["left", "right"] {
+                            typed(&index, field(data, side), "Z");
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        for evidence in arr(field(node, "evidence")) {
+            typed(&index, evidence, "Evidence");
+        }
+        for condition in arr(field(node, "conditions")) {
+            typed(&index, condition, "Proposition");
+        }
+    }
+    for answer in arr(field(result, "answers")) {
+        let mut refs = vec![];
+        visit_refs(answer, &mut refs);
+        for reference in refs {
+            assert!(
+                index.contains_key(reference.as_str()),
+                "Answer の全 Ref は生成済み node を指す"
+            );
+        }
+        for (name, reference) in obj(field(answer, "outputs")) {
+            match name.as_str() {
+                "evaluation" => {
+                    typed(&index, reference, "Evaluation");
+                }
+                "proposition" => {
+                    typed(&index, reference, "Proposition");
+                }
+                "value" => {
+                    target(&index, reference);
+                }
+                _ => panic!("対象二問に未知の output: {name}"),
+            }
+        }
+        for reference in arr(field(answer, "evidence")) {
+            typed(&index, reference, "Evidence");
+        }
+        if let Some(claim) = obj(answer).get("claim") {
+            let proposition = typed(&index, claim, "Proposition");
+            assert_eq!(
+                field(field(proposition, "judgment"), "status"),
+                field(answer, "status")
+            );
+            assert_eq!(claim, field(field(answer, "outputs"), "proposition"));
+        }
+    }
+}
+
+fn counter_scopes(result: &Json, domain: &str) {
+    for item in arr(field(result, "answers"))
+        .iter()
+        .chain(arr(field(result, "nodes")))
+    {
+        let scope = field(item, "scope");
+        if obj(item).contains_key("outputs") {
+            assert_eq!(field(scope, "domain"), &Json::str(domain));
+        } else {
+            assert!(matches!(
+                text(field(scope, "domain")),
+                "finite_model" | "all_completions"
+            ));
+        }
+        assert_eq!(field(scope, "snapshots"), &Json::Arr(vec![Json::str("v")]));
+        assert_eq!(
+            field(scope, "modes"),
+            &Json::Arr(vec![Json::str("specification")])
+        );
+        assert!(arr(field(scope, "assumptions")).is_empty());
+        assert!(arr(field(scope, "quantifiers")).is_empty());
+        let readings = arr(field(scope, "readings"));
+        assert!(!readings.is_empty());
+        assert!(
+            readings
+                .iter()
+                .all(|r| matches!(text(r), "CountCheck" | "CountAudit"))
+        );
+    }
+}
+
+#[test]
+fn counter_two_has_typed_ordered_complete_answers() {
+    let result = run(sources(LAW, MAP), &ASKS);
+    assert_eq!(field(&result, "status"), &Json::str("complete"));
+    assert_eq!(
+        arr(field(&result, "answers"))
+            .iter()
+            .map(|a| text(field(a, "id")))
+            .collect::<Vec<_>>(),
+        ["n", "ok", "audit"]
+    );
+    let index = nodes(&result);
+    for id in ["n", "ok", "audit"] {
+        assert_eq!(
+            field(answer(&result, id), "status"),
+            &Json::str("established")
+        );
+    }
+    let amount = answer(&result, "n");
+    assert!(!obj(amount).contains_key("claim"));
+    let output = typed(&index, field(field(amount, "outputs"), "value"), "Z");
+    assert_eq!(value(output), &Json::str("2"));
+    let evaluation = value(typed(
+        &index,
+        field(field(amount, "outputs"), "evaluation"),
+        "Evaluation",
+    ));
+    assert_eq!(
+        field(evaluation, "value"),
+        field(field(amount, "outputs"), "value")
+    );
+    assert_eq!(field(evaluation, "applicability"), &Json::str("applicable"));
+    assert!(!obj(evaluation).contains_key("environment"));
+    for (request, original) in arr(field(&result, "requests")).iter().zip(ASKS) {
+        assert_eq!(field(request, "text"), &Json::str(original));
+        assert_eq!(
+            field(&arr(field(request, "arguments"))[0], "origin"),
+            &Json::str("explicit")
+        );
+        assert_eq!(
+            field(request, "defaults"),
+            &Json::Arr(vec![Json::obj([(
+                "rule",
+                Json::str("observed_environment")
+            )])])
+        );
+    }
+    audit_dag(&result);
+    counter_scopes(&result, "finite_model");
+}
+
+#[test]
+fn counter_twelve_keeps_exact_refutation_and_input_provenance() {
+    let map = map_count(Some("12"));
+    let result = run(sources(LAW, &map), &ASKS);
+    assert_eq!(field(&result, "status"), &Json::str("complete"));
+    assert_eq!(
+        field(answer(&result, "ok"), "status"),
+        &Json::str("established")
+    );
+    let audit = answer(&result, "audit");
+    assert_eq!(field(audit, "status"), &Json::str("refuted"));
+    let index = nodes(&result);
+    assert_eq!(
+        field(answer(&result, "n"), "status"),
+        &Json::str("established")
+    );
+    assert_eq!(
+        value(typed(
+            &index,
+            field(field(answer(&result, "n"), "outputs"), "value"),
+            "Z"
+        )),
+        &Json::str("12")
+    );
+    let evidence = arr(field(audit, "evidence"))
+        .iter()
+        .map(|r| value(typed(&index, r, "Evidence")))
+        .find(|e| field(e, "kind") == &Json::str("counterexample"))
+        .expect("反証には検査できる反例");
+    let data = field(evidence, "data");
+    assert_eq!(
+        value(typed(&index, field(data, "left"), "Z")),
+        &Json::str("12")
+    );
+    assert_eq!(
+        value(typed(&index, field(data, "right"), "Z")),
+        &Json::str("10")
+    );
+    let binding = &arr(field(data, "bindings"))[0];
+    assert_eq!(field(binding, "name"), &Json::str("s"));
+    let subject = target(&index, field(binding, "value"));
+    assert_eq!(
+        field(subject, "type"),
+        &Json::Arr(vec![Json::str("Ref"), Json::str("Counter.State")])
+    );
+    let expected_fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("s")),
+        ("field", Json::str("Counter.State.count")),
+        ("atom", Json::str("count")),
+    ]);
+    assert!(arr(field(data, "facts")).contains(&expected_fact));
+    let checked = check_inputs(sources(LAW, &map), &mut quiet_control()).unwrap();
+    let snapshot = checked
+        .archmap()
+        .snapshots
+        .iter()
+        .find(|v| v.id == "v")
+        .unwrap();
+    let subject = snapshot.subjects.iter().find(|s| s.id == "s").unwrap();
+    let slot = &subject
+        .fields
+        .iter()
+        .find(|f| f.name == "Counter.State.count")
+        .unwrap()
+        .slot;
+    let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+        panic!("反例は既知の原始事実を使う")
+    };
+    assert_eq!(atom, "count");
+    assert!(
+        checked
+            .archmap()
+            .origins
+            .iter()
+            .any(|o| &o.id == origin && o.mode == archsig::archmap::Mode::Specification)
+    );
+    for node in index.values() {
+        if field(node, "type") == &Json::str("Evidence")
+            && field(node, "state") == &Json::str("value")
+        {
+            let payload = value(node);
+            if field(payload, "kind") == &Json::str("evaluation") {
+                assert!(
+                    !obj(field(payload, "data")).contains_key("residual"),
+                    "不等式に整数残差を作らない"
+                );
+            }
+        }
+    }
+    audit_dag(&result);
+    counter_scopes(&result, "finite_model");
+}
+
+#[test]
+fn absent_count_keeps_subject_missing_expression_and_all_completions() {
+    let map = map_count(None);
+    let checked = check_inputs(sources(LAW, &map), &mut quiet_control()).unwrap();
+    assert!(
+        checked
+            .archmap()
+            .snapshots
+            .iter()
+            .find(|s| s.id == "v")
+            .unwrap()
+            .subjects
+            .iter()
+            .any(|s| s.id == "s")
+    );
+    let result = run(sources(LAW, &map), &ASKS);
+    assert_eq!(field(&result, "status"), &Json::str("partial"));
+    let index = nodes(&result);
+    assert!(index.values().any(|node| field(node, "type")
+        == &Json::Arr(vec![Json::str("Ref"), Json::str("Counter.State")])
+        && field(node, "state") == &Json::str("value")
+        && value(node) == &Json::Arr(vec![Json::str("v"), Json::str("s")])));
+    let missing = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("s")),
+        ("field", Json::str("Counter.State.count")),
+    ]);
+    for a in arr(field(&result, "answers")) {
+        assert_eq!(field(a, "status"), &Json::str("undetermined"));
+        let reasons = arr(field(a, "reasons"));
+        let reason = reasons
+            .iter()
+            .find(|r| field(r, "code") == &Json::str("missing_observation"))
+            .unwrap();
+        assert_eq!(field(reason, "missing"), &Json::Arr(vec![missing.clone()]));
+        assert!(!arr(field(reason, "dependencies")).is_empty());
+        for dependency in arr(field(reason, "dependencies")) {
+            typed(&index, dependency, "Expression");
+        }
+        let evaluation = value(typed(
+            &index,
+            field(field(a, "outputs"), "evaluation"),
+            "Evaluation",
+        ));
+        assert!(!obj(evaluation).contains_key("value"));
+        if let Some(v) = obj(field(a, "outputs")).get("value") {
+            assert_eq!(field(target(&index, v), "state"), &Json::str("blocked"));
+        }
+    }
+    for node in index.values() {
+        if field(node, "type") == &Json::str("Evaluation")
+            && field(node, "state") == &Json::str("value")
+        {
+            for part in arr(field(value(node), "parts")) {
+                let (start, end) = span(field(part, "location"));
+                if &LAW[start..end] == b"s.count" {
+                    assert!(
+                        !obj(part).contains_key("value"),
+                        "欠測fieldを零/none/補完値にしない"
+                    );
+                }
+            }
+        }
+    }
+    audit_dag(&result);
+    counter_scopes(&result, "all_completions");
+}
+
+#[test]
+fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
+    let checked = check_inputs(sources(LAW, MAP), &mut quiet_control()).unwrap();
+    let result = run(sources(LAW, MAP), &ASKS);
+    let index = nodes(&result);
+    let mut expressions = BTreeMap::new();
+    for node in index
+        .values()
+        .filter(|n| field(n, "type") == &Json::str("Expression"))
+    {
+        let payload = value(node);
+        assert!(
+            arr(field(payload, "parameters")).is_empty(),
+            "全 parameter を明示束縛した式に自由 parameter を残さない"
+        );
+        if field(payload, "kind") == &Json::str("source") {
+            let position = span(field(payload, "location"));
+            assert!(
+                checked.law().exprs.iter().any(|e| e.span == position)
+                    || &LAW[position.0..position.1] == b"s",
+                "省略guardへ架空の原式spanを作らない"
+            );
+            expressions.insert(position, text(field(node, "id")));
+            let declaration = checked
+                .law()
+                .declarations
+                .values()
+                .find(|d| {
+                    matches!(
+                        &d.signature,
+                        archsig::law::model::Signature::View { .. }
+                            | archsig::law::model::Signature::Law { .. }
+                    ) && d.span.0 <= position.0
+                        && position.1 <= d.span.1
+                })
+                .unwrap();
+            let params = match &declaration.signature {
+                archsig::law::model::Signature::View { params, .. }
+                | archsig::law::model::Signature::Law { params, .. } => params,
+                _ => unreachable!(),
+            };
+            for binding in arr(field(payload, "bindings")) {
+                let parameter = params
+                    .iter()
+                    .find(|p| p.name == text(field(binding, "name")))
+                    .expect("束縛名は元署名にある");
+                let bound = target(&index, field(binding, "value"));
+                assert_eq!(field(bound, "type"), &parameter.ty.wire());
+                assert_eq!(
+                    value(bound),
+                    &Json::Arr(vec![Json::str("v"), Json::str("s")])
+                );
+            }
+            if std::str::from_utf8(&LAW[position.0..position.1])
+                .unwrap()
+                .contains('s')
+            {
+                assert!(
+                    arr(field(payload, "bindings"))
+                        .iter()
+                        .any(|b| field(b, "name") == &Json::str("s")),
+                    "s の自由出現を実束縛へ戻す"
+                );
+            }
+        }
+    }
+    for (expr_id, expr) in checked.law().exprs.iter().enumerate() {
+        if checked.law().expr_type(expr_id).is_none() {
+            continue;
+        }
+        let source = expressions
+            .get(&expr.span)
+            .expect("各 AST 出現の source Expression");
+        let evaluation = index
+            .values()
+            .find(|n| {
+                field(n, "type") == &Json::str("Evaluation")
+                    && field(value(n), "expression") == &Json::obj([("node", Json::str(*source))])
+            })
+            .expect("各出現の評価");
+        let part = arr(field(value(evaluation), "parts"))
+            .iter()
+            .find(|p| span(field(p, "location")) == expr.span)
+            .unwrap();
+        let output = target(&index, field(part, "value"));
+        assert_eq!(
+            field(output, "type"),
+            &checked.law().expr_type(expr_id).unwrap().wire()
+        );
+        for child in arr(field(part, "children")) {
+            let evaluation = value(typed(&index, child, "Evaluation"));
+            let expression = value(typed(&index, field(evaluation, "expression"), "Expression"));
+            let child_span = span(field(expression, "location"));
+            assert!(expr.span.0 <= child_span.0 && child_span.1 <= expr.span.1);
+            assert_ne!(child_span, expr.span);
+        }
+    }
+    for node in index
+        .values()
+        .filter(|n| field(n, "type") == &Json::str("LawInstance"))
+    {
+        let payload = value(node);
+        let role = match text(field(payload, "name")) {
+            "CountCheck.nonnegative" => "required",
+            "CountAudit.bounded" => "optional",
+            other => panic!("{other}"),
+        };
+        assert_eq!(field(payload, "role"), &Json::str(role));
+        let declaration = &checked.law().declarations[text(field(payload, "name"))];
+        assert_eq!(span(field(payload, "occurrence")), declaration.span);
+        let archsig::law::model::Signature::Law { body, params, .. } = &declaration.signature
+        else {
+            panic!("Law")
+        };
+        let expression = value(typed(&index, field(payload, "body"), "Expression"));
+        assert_eq!(
+            span(field(expression, "location")),
+            checked.law().exprs[*body].span
+        );
+        let bindings = arr(field(payload, "bindings"));
+        assert_eq!(bindings.len(), params.len());
+        for (binding, parameter) in bindings.iter().zip(params) {
+            assert_eq!(text(field(binding, "name")), parameter.name);
+            assert_eq!(
+                field(target(&index, field(binding, "value")), "type"),
+                &parameter.ty.wire()
+            );
+        }
+        assert!(
+            !obj(payload).contains_key("guard"),
+            "guard_true は原式ではない"
+        );
+    }
+    audit_dag(&result);
+}
+
+#[test]
+fn byte_and_checked_bundle_evaluation_have_the_same_semantics() {
+    let bytes = run(sources(LAW, MAP), &ASKS);
+    let mut control = quiet_control();
+    let checked = check_inputs(sources(LAW, MAP), &mut control).unwrap();
+    let prepared = prepare_checked_observed(checked, &ASKS, &mut control).unwrap();
+    let result = evaluate_observed(prepared, &mut control).unwrap().wire();
+    for key in [
+        "status",
+        "requests",
+        "answers",
+        "nodes",
+        "issues",
+        "declarations",
+        "vocabularies",
+        "inputs",
+    ] {
+        assert_eq!(field(&bytes, key), field(&result, key), "{key}");
+    }
+}
+
+#[test]
+fn renamed_vocabulary_reading_field_binding_and_large_z_use_the_common_path() {
+    let renamed = |bytes: &[u8]| {
+        String::from_utf8(bytes.to_vec())
+            .unwrap()
+            .replace("Counter", "Gauge")
+            .replace("State", "Reading")
+            .replace("count", "level")
+    };
+    let definitions = renamed(DEFINITIONS);
+    let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+    let digest = &checked.vocabularies["Gauge"].digest;
+    let old_digest = "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11";
+    let law = renamed(LAW)
+        .replace(old_digest, digest)
+        .replace("CountCheck", "North")
+        .replace("CountAudit", "South")
+        .replace("s: Reading", "item: Reading")
+        .replace("s.level", "item.level")
+        .replace("<= 10", "<= 9223372036854775810");
+    let map = renamed(MAP)
+        .replace(old_digest, digest)
+        .replace("\"value\": \"2\"", "\"value\": \"9223372036854775809\"")
+        .replace("\"id\": \"v\"", "\"id\": \"snapshot\"")
+        .replace("\"id\": \"s\"", "\"id\": \"record\"")
+        .replace("\"subject\": \"s\"", "\"subject\": \"record\"")
+        .replace("specification", "proposed");
+    let result = run(
+        InputSources::from_bytes(
+            vec![definitions.into_bytes()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ),
+        &[
+            "read=evaluate(North.amount,item=@snapshot/record)",
+            "low=check(North.nonnegative,item=@snapshot/record)",
+            "high=check(South.bounded,item=@snapshot/record)",
+        ],
+    );
+    assert_eq!(field(&result, "status"), &Json::str("complete"));
+    let index = nodes(&result);
+    assert_eq!(
+        value(typed(
+            &index,
+            field(field(answer(&result, "read"), "outputs"), "value"),
+            "Z"
+        )),
+        &Json::str("9223372036854775809")
+    );
+    for a in arr(field(&result, "answers")) {
+        assert_eq!(field(a, "status"), &Json::str("established"));
+        assert_eq!(
+            field(field(a, "scope"), "snapshots"),
+            &Json::Arr(vec![Json::str("snapshot")])
+        );
+        assert_eq!(
+            field(field(a, "scope"), "modes"),
+            &Json::Arr(vec![Json::str("proposed")])
+        );
+    }
+    audit_dag(&result);
+}
+
+#[test]
+fn bool_false_is_an_established_evaluation_value() {
+    let law = String::from_utf8(LAW.to_vec()).unwrap().replace(
+        "view amount",
+        "view flag(s: State): Bool = false;\n  view amount",
+    );
+    let result = run(
+        sources(law.as_bytes(), MAP),
+        &["f=evaluate(CountCheck.flag,s=@v/s)"],
+    );
+    let a = answer(&result, "f");
+    assert_eq!(field(a, "status"), &Json::str("established"));
+    assert!(!obj(a).contains_key("claim"));
+    assert_eq!(
+        value(typed(
+            &nodes(&result),
+            field(field(a, "outputs"), "value"),
+            "Bool"
+        )),
+        &Json::Bool(false)
+    );
+    audit_dag(&result);
+}
+
+#[test]
+fn fact_support_resolves_to_the_actual_origin_and_source() {
+    let map = String::from_utf8(MAP.to_vec()).unwrap()
+        .replace("\"sources\": []", "\"sources\": [{\"id\":\"src\",\"uri\":\"urn:counter:fixture\",\"revision\":\"r1\",\"digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]")
+        .replace("\"locations\": []", "\"locations\": [{\"source\":\"src\",\"path\":\"counter.model\",\"span\":[3,8]}]");
+    let checked = check_inputs(sources(LAW, map.as_bytes()), &mut quiet_control()).unwrap();
+    let result = run(sources(LAW, map.as_bytes()), &ASKS);
+    let mut saw_count = false;
+    for node in arr(field(&result, "nodes")) {
+        for fact in arr(field(node, "support")) {
+            let snapshot = checked
+                .archmap()
+                .snapshots
+                .iter()
+                .find(|s| s.id == text(field(fact, "snapshot")))
+                .unwrap();
+            let subject = snapshot
+                .subjects
+                .iter()
+                .find(|s| s.id == text(field(fact, "subject")))
+                .unwrap();
+            let origin = if let Some(atom) = obj(fact).get("atom") {
+                let field_name = text(field(fact, "field"));
+                let slot = &subject
+                    .fields
+                    .iter()
+                    .find(|f| f.name == field_name)
+                    .unwrap()
+                    .slot;
+                let archsig::archmap::Slot::Known {
+                    atom: actual,
+                    origin,
+                    ..
+                } = slot
+                else {
+                    panic!("原始事実である")
+                };
+                assert_eq!(actual, text(atom));
+                saw_count = true;
+                origin
+            } else {
+                &subject.origin
+            };
+            let origin = checked
+                .archmap()
+                .origins
+                .iter()
+                .find(|o| &o.id == origin)
+                .unwrap();
+            assert_eq!(origin.mode, archsig::archmap::Mode::Specification);
+            assert_eq!(origin.locations[0].path, "counter.model");
+            assert_eq!(origin.locations[0].span, Some((3, 8)));
+            let source = checked
+                .archmap()
+                .sources
+                .iter()
+                .find(|s| s.id == origin.locations[0].source)
+                .unwrap();
+            assert_eq!(source.uri, "urn:counter:fixture");
+            assert_eq!(source.revision, "r1");
+        }
+    }
+    assert!(saw_count, "値の支持は実在する count Atom へ戻る");
+    audit_dag(&result);
+}
+
+#[test]
+fn preparation_failures_retain_the_original_stage_and_have_no_evaluation() {
+    let failure =
+        evaluate_observed_bytes(sources(b"bad", MAP), &ASKS, &mut quiet_control()).unwrap_err();
+    assert!(matches!(
+        &failure,
+        EvaluationFailure::Prepare(PrepareFailure::Inputs(_))
+    ));
+    let wire = failure.wire().unwrap();
+    for key in [
+        "declarations",
+        "vocabularies",
+        "requests",
+        "answers",
+        "nodes",
+    ] {
+        assert!(arr(field(&wire, key)).is_empty());
+    }
+    let failure =
+        evaluate_observed_bytes(sources(LAW, b"bad"), &ASKS, &mut quiet_control()).unwrap_err();
+    assert!(matches!(
+        &failure,
+        EvaluationFailure::Prepare(PrepareFailure::Inputs(_))
+    ));
+    let wire = failure.wire().unwrap();
+    assert!(!arr(field(&wire, "declarations")).is_empty());
+    assert!(!arr(field(&wire, "vocabularies")).is_empty());
+    for key in ["requests", "answers", "nodes"] {
+        assert!(arr(field(&wire, key)).is_empty());
+    }
+    let failure = evaluate_observed_bytes(
+        sources(LAW, MAP),
+        &["n=evaluate(CountCheck.amount)"],
+        &mut quiet_control(),
+    )
+    .unwrap_err();
+    assert!(matches!(
+        &failure,
+        EvaluationFailure::Prepare(PrepareFailure::Requests { .. })
+    ));
+    let wire = failure.wire().unwrap();
+    assert!(!arr(field(&wire, "declarations")).is_empty());
+    for key in ["answers", "nodes"] {
+        assert!(arr(field(&wire, key)).is_empty());
+    }
+}
+
+#[test]
+fn unimplemented_valid_expression_quantification_and_answer_dependencies_are_not_results() {
+    let law = String::from_utf8(LAW.to_vec()).unwrap().replace(
+        "view amount",
+        "view plus(s: State): Z = s.count + 1;\n  view same(s: State): State = s;\n  view amount",
+    );
+    for asks in [
+        vec!["x=evaluate(CountCheck.plus,s=@v/s)"],
+        vec!["x=check(CountCheck.nonnegative)"],
+        vec![
+            "a=evaluate(CountCheck.same,s=@v/s)",
+            "b=evaluate(CountCheck.amount,s=$a.value)",
+        ],
+    ] {
+        let failure =
+            evaluate_observed_bytes(sources(law.as_bytes(), MAP), &asks, &mut quiet_control())
+                .unwrap_err();
+        assert!(
+            matches!(&failure, EvaluationFailure::NotImplemented { .. }),
+            "{failure:?}"
+        );
+        assert!(
+            failure.wire().is_none(),
+            "未実装を unsupported_algorithm/partial の結果へ変換しない"
+        );
+    }
+}
+
+fn expression_count(asks: &[&str]) -> usize {
+    let count = Rc::new(Cell::new(0));
+    let capture = count.clone();
+    let mut control = Control::new(Limits::default(), move |point| {
+        if point == Checkpoint::Expression {
+            capture.set(capture.get() + 1);
+        }
+        Usage::default()
+    });
+    evaluate_observed_bytes(sources(LAW, MAP), asks, &mut control).unwrap();
+    count.get()
+}
+
+fn interrupted_at_expression(
+    asks: &[&str],
+    stop_at: usize,
+    usage: Usage,
+    limits: Limits,
+    first_complete: bool,
+) -> Json {
+    let calls = Rc::new(Cell::new(0));
+    let capture = calls.clone();
+    let expressions = Rc::new(Cell::new(0));
+    let observed = expressions.clone();
+    let mut control = Control::new(limits, move |point| {
+        capture.set(capture.get() + 1);
+        if point == Checkpoint::Expression {
+            observed.set(observed.get() + 1);
+            if observed.get() == stop_at {
+                return usage;
+            }
+        }
+        Usage::default()
+    });
+    let result = evaluate_observed_bytes(sources(LAW, MAP), asks, &mut control)
+        .unwrap()
+        .wire();
+    assert_eq!(field(&result, "status"), &Json::str("interrupted"));
+    assert_eq!(expressions.get(), stop_at, "停止後は新しい式を始めない");
+    let original = control.stop_reason().unwrap().wire();
+    for a in arr(field(&result, "answers"))
+        .iter()
+        .skip(usize::from(first_complete))
+    {
+        assert_eq!(field(a, "status"), &Json::str("undetermined"));
+        let reason = arr(field(a, "reasons"))
+            .iter()
+            .find(|r| field(r, "code") == field(&original, "code"))
+            .unwrap();
+        assert_eq!(
+            field(reason, "details"),
+            field(&original, "details"),
+            "未着手にも最初の停止理由を保持"
+        );
+    }
+    if first_complete {
+        let first = answer(&result, "n");
+        assert_eq!(field(first, "status"), &Json::str("established"));
+        assert_eq!(
+            value(typed(
+                &nodes(&result),
+                field(field(first, "outputs"), "value"),
+                "Z"
+            )),
+            &Json::str("2")
+        );
+    }
+    let before = calls.get();
+    assert!(control.checkpoint(Checkpoint::Expression).is_err());
+    assert_eq!(calls.get(), before, "停止後はprobeを再実行しない");
+    audit_dag(&result);
+    result
+}
+
+#[test]
+fn cancellation_before_the_first_expression_keeps_all_requests_undetermined() {
+    interrupted_at_expression(
+        &ASKS,
+        1,
+        Usage {
+            signal: Some(Signal::Int),
+            ..Usage::default()
+        },
+        Limits::default(),
+        false,
+    );
+}
+
+#[test]
+fn time_budget_inside_the_first_evaluation_keeps_the_original_reason() {
+    // 比較の左辺を確認した後、右辺/比較全体が未完了の位置で止める。
+    // 単一の Dotted 式である amount の開始点停止とは異なる部分評価を検査する。
+    let asks = [ASKS[1], ASKS[0], ASKS[2]];
+    let count = expression_count(&asks[..1]);
+    assert!(count > 2);
+    let midway = count / 2;
+    assert!(1 < midway && midway < count);
+    let result = interrupted_at_expression(
+        &asks,
+        midway,
+        Usage {
+            elapsed_ms: 7,
+            ..Usage::default()
+        },
+        Limits {
+            time_ms: Some(7),
+            memory_mib: None,
+        },
+        false,
+    );
+    let index = nodes(&result);
+    let known = index
+        .values()
+        .find(|n| {
+            field(n, "type") == &Json::str("Z")
+                && field(n, "state") == &Json::str("value")
+                && value(n) == &Json::str("2")
+        })
+        .expect("途中停止でも確認済みの左辺 count=2 を保持する");
+    assert_eq!(field(field(known, "rule"), "kind"), &Json::str("atom"));
+    assert!(
+        index
+            .values()
+            .any(|n| field(n, "type") == &Json::str("Evaluation")
+                && field(n, "state") == &Json::str("value")
+                && obj(value(n)).get("value")
+                    == Some(&Json::obj([("node", field(known, "id").clone())]))),
+        "確認済み左辺の Evaluation も失わない"
+    );
+}
+
+#[test]
+fn memory_budget_after_the_first_answer_preserves_its_known_value() {
+    let first = expression_count(&ASKS[..1]);
+    interrupted_at_expression(
+        &ASKS,
+        first + 1,
+        Usage {
+            memory_mib: 1,
+            ..Usage::default()
+        },
+        Limits {
+            time_ms: None,
+            memory_mib: Some(1),
+        },
+        true,
+    );
+}
