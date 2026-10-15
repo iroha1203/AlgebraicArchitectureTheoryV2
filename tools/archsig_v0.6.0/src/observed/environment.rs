@@ -492,6 +492,31 @@ impl<'a> Environment<'a> {
                     .expressions
                     .get(&span)
                     .map(|id| &self.inputs.law().exprs[*id]);
+                // literal/演算はこの出現で新しい値を作る。op・値・引数の一致だけで
+                // 別 AST や固定構成に帰属を付け替えられないよう、生成規則も結ぶ。
+                // Group/field/parameter は既存の子値・原始値を再利用するため区別する。
+                if matches!(
+                    ast.map(|e| &e.kind),
+                    Some(
+                        ExprKind::Int(_)
+                            | ExprKind::Bool(_)
+                            | ExprKind::Unary { .. }
+                            | ExprKind::Binary { .. }
+                    )
+                ) && let Some(value) = value
+                {
+                    self.tick()?;
+                    if !matches!(
+                        &graph.get(*value)?.rule,
+                        Rule::Input {
+                            kind: "law",
+                            location: Location::Law { span: source },
+                        } if *source == span
+                    ) {
+                        return Err("生成値の規則・元 Law 出現が評価元 AST と違う".into());
+                    }
+                    self.tick()?;
+                }
                 let expected = match ast.map(|e| &e.kind) {
                     Some(ExprKind::Binary { lhs, rhs, .. }) => vec![
                         self.inputs.law().exprs[*lhs].span,
@@ -570,6 +595,12 @@ impl<'a> Environment<'a> {
                             {
                                 let residual = residual.ok_or("既知 Z 等号の残差がない")?;
                                 graph.expect(residual, &NodeType::Value(Type::Z))?;
+                                if !matches!(
+                                    graph.get(residual)?.rule,
+                                    Rule::Construction("evaluation")
+                                ) {
+                                    return Err("Z 等号残差の生成規則が違う".into());
+                                }
                                 if graph.get(residual)?.scope != expected_scope {
                                     return Err("Z等号残差Scalarの範囲が元等式と違う".into());
                                 }

@@ -2409,6 +2409,10 @@ reading R {{
           view total(s: State): Z = s.count + s.other;
           view difference(s: State): Z = s.count - s.other;
           view product(s: State): Z = s.count * s.other;
+          view foreign_add(s: State): Z = s.count + 1;
+          view foreign_subtract(s: State): Z = s.count - 1;
+          view foreign_product(s: State): Z = s.count * 1;
+          view add_zero(s: State): Z = s.count + 0;
           view disjunction(s: State): Bool = s.p or s.q;
           view conjunction(s: State): Bool = s.p and s.q;
           view consequence(s: State): Bool = s.p implies s.q;
@@ -2449,6 +2453,7 @@ reading R {{
                 "total=evaluate(CountCheck.total,s=@v/s)",
                 "difference=evaluate(CountCheck.difference,s=@v/s)",
                 "product=evaluate(CountCheck.product,s=@v/s)",
+                "add_zero=evaluate(CountCheck.add_zero,s=@v/s)",
                 "or_value=evaluate(CountCheck.disjunction,s=@v/s)",
                 "and_value=evaluate(CountCheck.conjunction,s=@v/s)",
                 "imp_value=evaluate(CountCheck.consequence,s=@v/s)",
@@ -2591,5 +2596,187 @@ reading R {{
                 "Source/Scalar/Evaluation/Answerのmode自己一致でも元仕様originをobservedへ変更できない"
             );
         }
+    }
+    #[test]
+    fn rejects_arithmetic_scalar_rule_span_from_a_different_same_operator_occurrence() {
+        let result = scalar_operation_private_example(Some(false), Some(true));
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("外来の未選択宣言を含む正常fixtureの全nodeは元順で再検査できる");
+        for (id, foreign_name, expected_op, value, foreign_value) in [
+            ("total", "CountCheck.foreign_add", BinOp::Add, 10, 8),
+            (
+                "difference",
+                "CountCheck.foreign_subtract",
+                BinOp::Sub,
+                4,
+                6,
+            ),
+            ("product", "CountCheck.foreign_product", BinOp::Mul, 21, 7),
+        ] {
+            assert!(
+                result
+                    .prepared
+                    .requests()
+                    .requests()
+                    .iter()
+                    .all(|r| r.declaration() != foreign_name)
+            );
+            let foreign = &result.prepared.inputs().law().declarations[foreign_name];
+            let Signature::View { body, returns, .. } = &foreign.signature else {
+                panic!("型付きの外来view")
+            };
+            assert_eq!(returns, &Type::Z);
+            let foreign_ast = &result.prepared.inputs().law().exprs[*body];
+            let ExprKind::Binary { op, rhs, .. } = &foreign_ast.kind else {
+                panic!("元と同型・同演算子の二項AST")
+            };
+            assert_eq!(*op, expected_op);
+            assert!(
+                matches!(&result.prepared.inputs().law().exprs[*rhs].kind, ExprKind::Int(n) if n=="1")
+            );
+            assert_ne!(
+                value, foreign_value,
+                "実count=7に対する外来式の手計算値は元の値と異なる"
+            );
+            let answer = result.answers.iter().find(|a| a.id == id).unwrap();
+            let reference = answer.outputs["value"];
+            assert_eq!(graph.scalar(reference).unwrap(), &Scalar::Z(value.into()));
+            let original = &result.nodes[reference.0];
+            let Rule::Input {
+                kind: "law",
+                location: Location::Law {
+                    span: original_span,
+                },
+            } = &original.rule
+            else {
+                panic!("元の算術値は元Law出現を根とする")
+            };
+            assert_ne!(*original_span, foreign_ast.span);
+            assert_eq!(original.arguments.len(), 2);
+            assert_eq!(
+                graph.scalar(original.arguments[0]).unwrap(),
+                &Scalar::Z(7.into())
+            );
+            assert_eq!(
+                graph.scalar(original.arguments[1]).unwrap(),
+                &Scalar::Z(3.into())
+            );
+            let mut changed = result.nodes.clone();
+            // 唯一の変更はRule.location.span。値/args/支持/Scope/親Eval/Answerは変更しない。
+            changed[reference.0].rule = Rule::Input {
+                kind: "law",
+                location: Location::Law {
+                    span: foreign_ast.span,
+                },
+            };
+            assert_eq!(changed[reference.0].arguments, original.arguments);
+            assert_eq!(changed[reference.0].support, original.support);
+            assert_eq!(changed[reference.0].scope, original.scope);
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "同じ演算子だけの一致で別AST出現へScalarの帰属を変更できない"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_addition_scalar_relabelled_as_an_integer_residual_rule() {
+        let result = scalar_operation_private_example(Some(false), Some(true));
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("count+0を含む正規DAGと由来を元順で再検査できる");
+        let answer = result.answers.iter().find(|a| a.id == "add_zero").unwrap();
+        let reference = answer.outputs["value"];
+        let original = &result.nodes[reference.0];
+        assert_eq!(graph.scalar(reference).unwrap(), &Scalar::Z(7.into()));
+        assert_eq!(original.arguments.len(), 2);
+        assert_eq!(
+            graph.scalar(original.arguments[0]).unwrap(),
+            &Scalar::Z(7.into())
+        );
+        assert_eq!(
+            graph.scalar(original.arguments[1]).unwrap(),
+            &Scalar::Z(0.into())
+        );
+        let Rule::Input {
+            kind: "law",
+            location: Location::Law { span },
+        } = &original.rule
+        else {
+            panic!("元の加算Rule")
+        };
+        let expression = result
+            .prepared
+            .inputs()
+            .law()
+            .exprs
+            .iter()
+            .find(|e| e.span == *span)
+            .unwrap();
+        assert!(matches!(
+            &expression.kind,
+            ExprKind::Binary { op: BinOp::Add, .. }
+        ));
+        let mut changed = result.nodes.clone();
+        // 7+0と7-0は値も二つのargsも一致する。元の加算を残差構成へ読み替えない。
+        changed[reference.0].rule = Rule::Construction("evaluation");
+        assert_eq!(changed[reference.0].arguments, original.arguments);
+        assert_eq!(changed[reference.0].support, original.support);
+        assert_eq!(changed[reference.0].scope, original.scope);
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "値と引数が同じでも算術Scalarの元source kindを残差へ付け替えられない"
+        );
+    }
+    #[test]
+    fn rejects_integer_equality_residual_relabelled_as_a_foreign_subtraction() {
+        let result = scalar_operation_private_example(Some(false), Some(true));
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("元の算術値と等式残差を持つ正規DAG");
+        let answer = result.answers.iter().find(|a| a.id == "computed").unwrap();
+        let evaluation = answer.outputs["evaluation"];
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[evaluation.0].payload else {
+            panic!("数値等式の元評価")
+        };
+        let residual = parts[0].residual.expect("数値等式の残差");
+        assert_eq!(graph.scalar(residual).unwrap(), &Scalar::Z(0.into()));
+        assert!(matches!(
+            &result.nodes[residual.0].rule,
+            Rule::Construction("evaluation")
+        ));
+        assert_eq!(result.nodes[residual.0].arguments.len(), 2);
+        for argument in &result.nodes[residual.0].arguments {
+            assert_eq!(graph.scalar(*argument).unwrap(), &Scalar::Z(10.into()));
+        }
+        let foreign = &result.prepared.inputs().law().declarations["CountCheck.foreign_subtract"];
+        let Signature::View { body, .. } = &foreign.signature else {
+            panic!("未選択view")
+        };
+        let foreign = &result.prepared.inputs().law().exprs[*body];
+        assert!(matches!(
+            &foreign.kind,
+            ExprKind::Binary { op: BinOp::Sub, .. }
+        ));
+        let mut changed = result.nodes.clone();
+        changed[residual.0].rule = Rule::Input {
+            kind: "law",
+            location: Location::Law { span: foreign.span },
+        };
+        // 値0と引数10/10、支持・Scope・親評価は保ち、残差の生成規則だけを変える。
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "数値等式残差を別ASTの減算出所へ読み替えられない"
+        );
     }
 }
