@@ -136,7 +136,7 @@ impl<E: InputError> Checker<E> {
         }
         env.vars.push(Binding {
             name: id.name.clone(),
-            ty: ty.erase(),
+            ty: self.erase_type(&ty)?,
             origin,
             span: id.span,
         });
@@ -156,7 +156,8 @@ impl<E: InputError> Checker<E> {
     fn resolve_type_in(&mut self, ast: &TypeAst, env: &Env, ctx: &Ctx) -> CResult<Type, E> {
         let index = self.env_params(env)?;
         let tctx = self.expr_type_ctx(ctx, &index);
-        Ok(self.resolve_type(ast, &tctx)?.erase())
+        let ty = self.resolve_type(ast, &tctx)?;
+        self.erase_type(&ty)
     }
 
     /// 式を検査して型を返す。`expected` があればその型との一致を確かめる。
@@ -168,21 +169,23 @@ impl<E: InputError> Checker<E> {
         ctx: &Ctx,
     ) -> CResult<Type, E> {
         self.cooperate()?;
-        let t = stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
-            self.check_inner(id, expected, env, ctx)
-        })?;
-        let t = t.erase();
-        if let Some(e) = expected
-            && e.erase() != t
-        {
-            return type_error(self.span(id), e, &t, "式の型が合わない");
-        }
-        if self.expr_types.len() < self.parser.exprs.len() {
-            self.expr_types.resize(self.parser.exprs.len(), None);
-        }
-        self.expr_types[id] = Some(t.clone());
-        self.cooperate()?;
-        Ok(t)
+        let result = (|| {
+            let t = stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
+                self.check_inner(id, expected, env, ctx)
+            })?;
+            let t = self.erase_type(&t)?;
+            if let Some(e) = expected
+                && self.erase_type(e)? != t
+            {
+                return self.type_error(self.span(id), e, &t, "式の型が合わない");
+            }
+            if self.expr_types.len() < self.parser.exprs.len() {
+                self.expr_types.resize(self.parser.exprs.len(), None);
+            }
+            self.expr_types[id] = Some(t.clone());
+            Ok(t)
+        })();
+        E::finish(result, &mut self.control.clone(), self.semantic_point)
     }
 
     fn check_bool(&mut self, id: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<(), E> {
@@ -193,9 +196,8 @@ impl<E: InputError> Checker<E> {
     fn needs_context(&mut self, id: ExprId, env: &Env) -> CResult<bool, E> {
         self.cooperate()?;
         let result =
-            stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.needs_context_inner(id, env))?;
-        self.cooperate()?;
-        Ok(result)
+            stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.needs_context_inner(id, env));
+        E::finish(result, &mut self.control.clone(), self.semantic_point)
     }
     fn needs_context_inner(&mut self, id: ExprId, env: &Env) -> CResult<bool, E> {
         Ok(match self.parser.exprs[id].kind.clone() {
@@ -291,7 +293,9 @@ impl<E: InputError> Checker<E> {
                     }
                     Ok(Type::Fp(p.clone()))
                 }
-                Some(other) => type_error(span, other, &Type::Z, "整数 literal の型が合わない"),
+                Some(other) => {
+                    self.type_error(span, other, &Type::Z, "整数 literal の型が合わない")
+                }
             },
             ExprKind::Str(_) => Ok(Type::Text),
             ExprKind::Bool(_) => Ok(Type::Bool),
@@ -324,7 +328,7 @@ impl<E: InputError> Checker<E> {
             } => {
                 let t = self.check(operand, expected, env, ctx)?;
                 if !self.is_numeric(&t)? {
-                    return type_error(span, &Type::Z, &t, "単項 - は Z・Q・Fp とその組");
+                    return self.type_error(span, &Type::Z, &t, "単項 - は Z・Q・Fp とその組");
                 }
                 Ok(t)
             }
@@ -378,7 +382,7 @@ impl<E: InputError> Checker<E> {
                 match &t {
                     Type::Tuple(items) if index < items.len() => Ok(items[index].clone()),
                     Type::Tuple(_) => syntax(index_span, "組の位置が範囲外"),
-                    other => type_error(
+                    other => self.type_error(
                         self.span(base),
                         &Type::Tuple(vec![]),
                         other,
@@ -418,7 +422,7 @@ impl<E: InputError> Checker<E> {
             } => {
                 let d = self.check(domain, None, env, ctx)?;
                 let Some(e) = collection_elem(&d) else {
-                    return type_error(
+                    return self.type_error(
                         self.span(domain),
                         &Type::List(Box::new(d.clone())),
                         &d,
@@ -499,7 +503,7 @@ impl<E: InputError> Checker<E> {
                     self.pair_type(lhs, rhs, env, ctx)?
                 };
                 if !self.is_numeric(&t)? {
-                    return type_error(span, &Type::Z, &t, "算術は Z・Q・Fp とその組");
+                    return self.type_error(span, &Type::Z, &t, "算術は Z・Q・Fp とその組");
                 }
                 Ok(t)
             }
@@ -510,14 +514,14 @@ impl<E: InputError> Checker<E> {
             BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
                 let t = self.pair_type(lhs, rhs, env, ctx)?;
                 if t != Type::Z && t != Type::Q {
-                    return type_error(span, &Type::Z, &t, "順序は Z と Q だけ");
+                    return self.type_error(span, &Type::Z, &t, "順序は Z と Q だけ");
                 }
                 Ok(Type::Bool)
             }
             BinOp::In => {
                 let c = self.check(rhs, None, env, ctx)?;
                 let Some(e) = collection_elem(&c) else {
-                    return type_error(
+                    return self.type_error(
                         self.span(rhs),
                         &Type::List(Box::new(c.clone())),
                         &c,
@@ -551,7 +555,7 @@ impl<E: InputError> Checker<E> {
             );
         };
         self.record(name.span, full(&decl, &[&name.name]));
-        Ok(field.ty.erase())
+        self.erase_type(&field.ty)
     }
 
     fn check_dotted(
@@ -807,9 +811,10 @@ impl<E: InputError> Checker<E> {
                 }
                 for (a, p) in args.iter().zip(&params) {
                     self.cooperate()?;
-                    self.check(*a, Some(&p.ty.erase()), env, ctx)?;
+                    let expected = self.erase_type(&p.ty)?;
+                    self.check(*a, Some(&expected), env, ctx)?;
                 }
-                Ok(returns.erase())
+                self.erase_type(&returns)
             }
             Callee::Value(t) => match &t {
                 Type::Map(a, b) => {
@@ -828,12 +833,23 @@ impl<E: InputError> Checker<E> {
                     }
                     Ok((**r).clone())
                 }
-                other => syntax(
-                    name_span,
-                    format!("型 {} の値は適用できない", other.wire().canonical()),
-                ),
+                other => self.non_callable_error(name_span, other),
             },
             Callee::Builtin(b) => self.check_builtin(b, args, span, name_span, expected, env, ctx),
+        }
+    }
+
+    fn non_callable_error<T>(&self, span: Span, ty: &Type) -> CResult<T, E> {
+        let diagnostic = (|| {
+            let wire = ty.wire_controlled::<E>(&mut self.control.clone(), self.semantic_point)?;
+            wire.canonical_controlled::<E>(&mut self.control.clone(), self.semantic_point)
+        })();
+        match diagnostic {
+            Ok(text) => syntax(span, format!("型 {text} の値は適用できない")),
+            // Applicability was already rejected. A display budget cannot
+            // replace this known input failure or start a new derivation.
+            Err(stop) if stop.is_budget_stop() => syntax(span, "この型の値は適用できない"),
+            Err(stop) => Err(stop),
         }
     }
 
@@ -895,7 +911,7 @@ impl<E: InputError> Checker<E> {
                 self.arity(span, args, 1, b)?;
                 let c = self.check(args[0], None, env, ctx)?;
                 let Some(e) = collection_elem(&c) else {
-                    return type_error(
+                    return self.type_error(
                         self.span(args[0]),
                         &Type::List(Box::new(c.clone())),
                         &c,
@@ -906,7 +922,7 @@ impl<E: InputError> Checker<E> {
                     return Ok(Type::Z);
                 }
                 if !self.is_numeric(&e)? {
-                    return type_error(
+                    return self.type_error(
                         self.span(args[0]),
                         &Type::List(Box::new(Type::Z)),
                         &c,
@@ -952,7 +968,7 @@ impl<E: InputError> Checker<E> {
                 let q = self.check(args[1], None, env, ctx)?;
                 match &q {
                     Type::Path(m, c) if *m == mid => Ok(Type::Path(a, c.clone())),
-                    Type::Path(_, c) => type_error(
+                    Type::Path(_, c) => self.type_error(
                         self.span(args[1]),
                         &Type::Path(mid, c.clone()),
                         &q,
@@ -1186,7 +1202,7 @@ impl<E: InputError> Checker<E> {
                     },
                 };
                 if Type::Data(data.clone()) != *ty {
-                    return type_error(
+                    return self.type_error(
                         name.span(),
                         ty,
                         &Type::Data(data),
@@ -1323,12 +1339,233 @@ impl<E: InputError> Checker<E> {
         let t = self.check(d, None, env, ctx)?;
         match collection_elem(&t) {
             Some(e) => Ok(e),
-            None => type_error(
+            None => self.type_error(
                 self.span(d),
                 &Type::List(Box::new(t.clone())),
                 &t,
                 "量化の域は List か Set",
             ),
+        }
+    }
+}
+
+#[cfg(test)]
+mod semantic_finish_tests {
+    use super::*;
+    use crate::{
+        definition::CheckedDefinitions,
+        issue::{Code, Details, Issue},
+        law::parser::Parser,
+        observed::control::{
+            CheckFailure, Checkpoint as StopPoint, Control, Limits, StopReason, Usage,
+        },
+        result::Signal,
+    };
+    use std::{cell::Cell, rc::Rc};
+    type Failure = CheckFailure<Box<Issue>>;
+    fn checker(control: &mut Control) -> Checker<Failure> {
+        Checker::with_definitions(
+            Parser::with_error(Vec::new(), 4, control.clone()),
+            Vec::new(),
+            &CheckedDefinitions::default(),
+            control,
+            StopPoint::LawSemantics,
+        )
+        .unwrap()
+    }
+    fn monitored(at: usize, mode: usize) -> (Control, Rc<Cell<bool>>, Rc<Cell<usize>>) {
+        let armed = Rc::new(Cell::new(false));
+        let count = Rc::new(Cell::new(0));
+        let a = armed.clone();
+        let c = count.clone();
+        let control = Control::new(
+            Limits {
+                time_ms: (mode == 1).then_some(1),
+                memory_mib: (mode == 2).then_some(1),
+            },
+            move |point| {
+                if a.get() && point == StopPoint::LawSemantics {
+                    c.set(c.get() + 1);
+                }
+                let stop = a.get() && c.get() == at;
+                Usage {
+                    signal: (stop && mode == 0).then_some(Signal::Term),
+                    elapsed_ms: u128::from(stop && mode == 1),
+                    memory_mib: u128::from(stop && mode == 2),
+                }
+            },
+        );
+        (control, armed, count)
+    }
+    fn ctx() -> Ctx {
+        Ctx {
+            reading: 0,
+            decl: "R.v".into(),
+            is_view: true,
+            rec: None,
+            term: false,
+        }
+    }
+    fn bool_mismatch(checker: &mut Checker<Failure>) -> CResult<Type, Failure> {
+        checker.parser.exprs.push(Expr {
+            kind: ExprKind::Bool(true),
+            span: (0, 4),
+        });
+        checker.check(0, Some(&Type::Z), &mut Env::default(), &ctx())
+    }
+    #[test]
+    fn checker_errors_reach_post_checkpoints_and_keep_known_invalid_above_budget() {
+        let (mut control, armed, count) = monitored(usize::MAX, 0);
+        let mut check = checker(&mut control);
+        armed.set(true);
+        let ordinary = bool_mismatch(&mut check).unwrap_err();
+        assert!(
+            matches!(ordinary,Failure::Input(ref issue) if issue.code==Code::Type && matches!(issue.details,Details::Type{expected:Type::Z,actual:Type::Bool}))
+        );
+        let final_step = count.get();
+        assert!(final_step >= 4);
+        for mode in 0..3 {
+            let (mut control, armed, seen) = monitored(final_step, mode);
+            let mut check = checker(&mut control);
+            armed.set(true);
+            let failure = bool_mismatch(&mut check).unwrap_err();
+            assert_eq!(seen.get(), final_step);
+            if mode == 0 {
+                assert!(matches!(
+                    failure,
+                    Failure::Stopped(StopReason::Cancelled(Signal::Term))
+                ));
+            } else {
+                assert!(
+                    matches!(failure,Failure::Input(ref issue) if issue.code==Code::Type && matches!(issue.details,Details::Type{expected:Type::Z,actual:Type::Bool}))
+                );
+                assert!(matches!(
+                    control.stop_reason(),
+                    Some(StopReason::BudgetExhausted { .. })
+                ));
+            }
+        }
+    }
+    #[test]
+    fn resolve_type_error_checks_its_exit_before_returning_invalid() {
+        for mode in 0..3 {
+            let (mut control, armed, count) = monitored(2, mode);
+            let mut check = checker(&mut control);
+            armed.set(true);
+            let failure = check
+                .resolve_type(
+                    &TypeAst::Fp {
+                        modulus: "4".into(),
+                        span: (0, 4),
+                    },
+                    &TypeCtx {
+                        reading: 0,
+                        index: &[],
+                        allow_path: true,
+                        ref_free: false,
+                        validate: true,
+                    },
+                )
+                .unwrap_err();
+            assert_eq!(count.get(), 2);
+            if mode == 0 {
+                assert!(matches!(
+                    failure,
+                    Failure::Stopped(StopReason::Cancelled(Signal::Term))
+                ));
+            } else {
+                assert!(matches!(failure,Failure::Input(ref issue) if issue.code==Code::Syntax));
+                assert!(matches!(
+                    control.stop_reason(),
+                    Some(StopReason::BudgetExhausted { .. })
+                ));
+            }
+        }
+    }
+    #[test]
+    fn known_type_mismatch_diagnostic_keeps_erased_details_when_budget_expires() {
+        let expected = Type::Tuple(vec![
+            Type::Owned("V.Item".into(), "owner".into()),
+            Type::Option(Box::new(Type::Bool)),
+        ]);
+        let actual = Type::Tuple(vec![Type::Z, Type::Unit]);
+        let (mut control, armed, count) = monitored(usize::MAX, 0);
+        let check = checker(&mut control);
+        armed.set(true);
+        assert!(matches!(
+            check.type_error::<()>((0, 4), &expected, &actual, "mismatch"),
+            Err(Failure::Input(_))
+        ));
+        for at in 1..=count.get() {
+            for mode in 0..3 {
+                let (mut control, armed, _) = monitored(at, mode);
+                let check = checker(&mut control);
+                armed.set(true);
+                let failure = check
+                    .type_error::<()>((0, 4), &expected, &actual, "mismatch")
+                    .unwrap_err();
+                if mode == 0 {
+                    assert!(matches!(
+                        failure,
+                        Failure::Stopped(StopReason::Cancelled(Signal::Term))
+                    ));
+                } else {
+                    let Failure::Input(issue) = failure else {
+                        panic!("known mismatch replaced")
+                    };
+                    assert_eq!(
+                        issue.details,
+                        Details::Type {
+                            expected: expected.erase(),
+                            actual: actual.erase()
+                        }
+                    );
+                    assert!(matches!(
+                        control.stop_reason(),
+                        Some(StopReason::BudgetExhausted { .. })
+                    ));
+                }
+            }
+        }
+    }
+    #[test]
+    fn invalid_call_diagnostic_checks_nested_wire_and_canonical_components() {
+        let ty = Type::Tuple(vec![
+            Type::Z,
+            Type::Option(Box::new(Type::Tuple(vec![Type::Bool, Type::Unit]))),
+        ]);
+        let (mut control, armed, count) = monitored(usize::MAX, 0);
+        let check = checker(&mut control);
+        armed.set(true);
+        let Failure::Input(issue) = check.non_callable_error::<()>((0, 4), &ty).unwrap_err() else {
+            panic!("syntax expected")
+        };
+        assert_eq!(
+            issue.message,
+            format!("型 {} の値は適用できない", ty.wire().canonical())
+        );
+        assert!(count.get() > 20);
+        for at in 1..=count.get() {
+            for mode in 0..3 {
+                let (mut control, armed, _) = monitored(at, mode);
+                let check = checker(&mut control);
+                armed.set(true);
+                let failure = check.non_callable_error::<()>((0, 4), &ty).unwrap_err();
+                if mode == 0 {
+                    assert!(matches!(
+                        failure,
+                        Failure::Stopped(StopReason::Cancelled(Signal::Term))
+                    ));
+                } else {
+                    assert!(
+                        matches!(failure,Failure::Input(ref issue) if issue.code==Code::Syntax)
+                    );
+                    assert!(matches!(
+                        control.stop_reason(),
+                        Some(StopReason::BudgetExhausted { .. })
+                    ));
+                }
+            }
         }
     }
 }

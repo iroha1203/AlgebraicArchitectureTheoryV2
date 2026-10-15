@@ -53,8 +53,7 @@ impl<E: InputError> Parser<E> {
     fn checked<T>(&mut self, parse: impl FnOnce(&mut Self) -> PResult<T, E>) -> PResult<T, E> {
         E::checkpoint(&mut self.control, self.point)?;
         let result = parse(self);
-        E::checkpoint(&mut self.control, self.point)?;
-        result
+        E::finish(result, &mut self.control, self.point)
     }
 
     // ---- 字句の参照 ----
@@ -172,8 +171,7 @@ impl<E: InputError> Parser<E> {
         };
         E::checkpoint(&mut self.control, point)?;
         let first = self.ident();
-        E::checkpoint(&mut self.control, point)?;
-        let mut parts = vec![first?];
+        let mut parts = vec![E::finish(first, &mut self.control, point)?];
         while self.is_sym(".")
             && self
                 .peek_at(1)
@@ -182,8 +180,7 @@ impl<E: InputError> Parser<E> {
             E::checkpoint(&mut self.control, point)?;
             self.pos += 1;
             let next = self.ident();
-            E::checkpoint(&mut self.control, point)?;
-            parts.push(next?);
+            parts.push(E::finish(next, &mut self.control, point)?);
         }
         E::checkpoint(&mut self.control, point)?;
         Ok(QName { parts })
@@ -1485,11 +1482,15 @@ mod qname_interruption_tests {
                             observed: 1,
                         },
                     };
-                    let stopped = run(text, operation, control).unwrap_err();
-                    assert!(
-                        matches!(stopped, CheckFailure::Stopped(ref r) if r == &expected),
-                        "{text} {at}/{total}: {stopped:?}"
-                    );
+                    let stopped = run(text, operation, control.clone()).unwrap_err();
+                    match stopped {
+                        CheckFailure::Stopped(reason) => assert_eq!(reason, expected),
+                        CheckFailure::Input(issue) => {
+                            assert!(!valid && mode > 0, "{text} {at}/{total}");
+                            assert_eq!(issue.code, Code::Syntax);
+                        }
+                    }
+                    assert_eq!(control.stop_reason(), Some(expected));
                 }
             }
         }

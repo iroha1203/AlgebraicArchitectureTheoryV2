@@ -110,9 +110,8 @@ fn check_definitions_inner<E: InputError>(
         validate::check::<E>(&mut checked, control)
     })();
     // A validation error cannot hide a stop observed at the checking boundary.
-    E::checkpoint(control, Checkpoint::DefinitionCanonical)
+    E::finish(result, control, Checkpoint::DefinitionCanonical)
         .map_err(|issue| (issue, checked.inputs.clone()))?;
-    result.map_err(|issue| (issue, checked.inputs.clone()))?;
     Ok(checked)
 }
 

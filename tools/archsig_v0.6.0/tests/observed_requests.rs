@@ -47,7 +47,12 @@ fn inputs() -> (CheckedLaw, CheckedArchMap) {
 fn rejects(asks: &[&str], expected: RequestIssueCode) {
     let (law, map) = inputs();
     match resolve_observed_requests(&law, &map, asks).unwrap_err() {
-        ResolveFailure::Invalid { requests, issues } => {
+        ResolveFailure::Invalid {
+            requests,
+            issues,
+            stop_reason,
+        } => {
+            assert!(stop_reason.is_none());
             assert!(requests.is_empty());
             assert_eq!(issues[0].code, expected, "{issues:?}");
             assert!(!issues[0].wire().canonical().contains("location"));
@@ -222,9 +227,15 @@ fn cycles_report_each_member_and_keep_the_graph_without_marking_downstream() {
         ],
     )
     .unwrap_err();
-    let ResolveFailure::Invalid { requests, issues } = error else {
+    let ResolveFailure::Invalid {
+        requests,
+        issues,
+        stop_reason,
+    } = error
+    else {
         panic!("cycle");
     };
+    assert!(stop_reason.is_none());
     assert_eq!(requests.len(), 3);
     assert_eq!(requests[2].dependencies, ["a"]);
     assert_eq!(
@@ -285,6 +296,7 @@ fn dependent_inputs(known_owner: bool) -> (CheckedLaw, CheckedArchMap) {
     let law = format!(
         r#"{}reading R {{ use vocabulary W version "1" digest "{digest}";
       view belongs(a: Root, b: Item[a]): Bool = true;
+      view echo(a: Root): Root = a;
       law required present(a: Root, b: Item[a]): true;
     }}"#,
         common::HEADER
@@ -298,7 +310,7 @@ fn dependent_inputs(known_owner: bool) -> (CheckedLaw, CheckedArchMap) {
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
       "vocabularies":[{{"namespace":"W","version":"1","digest":"{digest}"}}],"sources":[],
       "origins":[{{"id":"o","mode":"specification","method":"小さい観測","locations":[],"note":"所属"}}],
-      "snapshots":[{{"id":"v","origin":"o","subjects":[{{"id":"A","type":"W.Root","origin":"o"}},{{"id":"B","type":"W.Root","origin":"o"}},{{"id":"i","type":"W.Item","origin":"o"}}],"atoms":[{atoms}]}}]}}"#
+      "snapshots":[{{"id":"v","origin":"o","subjects":[{{"id":"A","type":"W.Root","origin":"o"}},{{"id":"B","type":"W.Root","origin":"o"}},{{"id":"i","type":"W.Item","origin":"o"}}],"atoms":[{atoms}]}},{{"id":"w","origin":"o","subjects":[{{"id":"B","type":"W.Root","origin":"o"}}],"atoms":[]}}]}}"#
     );
     (
         archsig::law::check_law(law.as_bytes(), &definitions).unwrap(),
@@ -337,6 +349,47 @@ fn owner_mismatches_are_static_and_missing_owners_remain_constraints() {
             parameters: vec!["a".into()]
         }
     );
+}
+
+#[test]
+fn cross_snapshot_owned_bindings_are_static_errors_even_with_missing_owner() {
+    for known_owner in [false, true] {
+        let (law, map) = dependent_inputs(known_owner);
+        for ask in [
+            "a=evaluate(R.belongs,a=@w/B,b=@v/i)",
+            "a=check(R.present,a=@w/B,b=@v/i)",
+        ] {
+            let failure = resolve_observed_requests(&law, &map, &[ask]).unwrap_err();
+            assert!(
+                matches!(failure, ResolveFailure::Invalid { issues, .. }
+                if issues.len() == 1 && issues[0].code == RequestIssueCode::Type
+                && issues[0].argument == "bind.b"),
+                "known owner={known_owner}, {ask}"
+            );
+        }
+    }
+}
+
+#[test]
+fn unevaluated_owner_answer_projection_remains_a_dynamic_constraint() {
+    for known_owner in [false, true] {
+        let (law, map) = dependent_inputs(known_owner);
+        for ask in [
+            "a=evaluate(R.belongs,a=$root.value,b=@v/i)",
+            "a=check(R.present,a=$root.value,b=@v/i)",
+        ] {
+            let resolved =
+                resolve_observed_requests(&law, &map, &[ask, "root=evaluate(R.echo,a=@w/B)"])
+                    .unwrap();
+            let constraint = &resolved.requests()[0].constraints[1];
+            assert!(constraint.dynamic);
+            assert!(matches!(
+                constraint.owner,
+                Some(archsig::observed::request::Selector::Answer { .. })
+            ));
+            assert_eq!(resolved.evaluation_order(), &[1, 0]);
+        }
+    }
 }
 
 #[test]

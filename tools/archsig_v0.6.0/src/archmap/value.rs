@@ -188,8 +188,7 @@ impl Value {
                 }
             })
         });
-        E::checkpoint(control, point)?;
-        result
+        E::finish(result, control, point)
     }
 
     pub fn as_ref(&self) -> Option<(&str, &str)> {
@@ -239,9 +238,8 @@ impl<E: InputError> Reader<'_, '_, E> {
         let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.read_inner(node, ty, ptr)
         });
-        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
-        E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
-        result
+        let result = E::finish(result, &mut self.control, Checkpoint::ArchMapSchema);
+        E::finish(result, &mut self.control, Checkpoint::ArchMapIteration)
     }
 
     fn read_inner(&mut self, node: &JNode, ty: &Type, ptr: &str) -> Result<Value, E> {
@@ -398,13 +396,15 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let JValue::Obj(entries) = &node.value else {
                     return Err((syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}")).into());
                 };
-                let get = |k: &str| entries.iter().find(|(key, _)| key == k).map(|(_, v)| v);
                 if entries.len() != 2 {
                     return Err(
                         (syntax(ptr, "data の値は tag と args の二つの欄だけを持つ")).into(),
                     );
                 }
-                let (Some(tag), Some(args)) = (get("tag"), get("args")) else {
+                let (Some(tag), Some(args)) = (
+                    super::schema::field::<E>(entries, "tag", &mut self.control)?,
+                    super::schema::field::<E>(entries, "args", &mut self.control)?,
+                ) else {
                     return Err((syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}")).into());
                 };
                 let tag = as_string(tag, &pointer_push(ptr, "tag"))?;
@@ -494,11 +494,13 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let JValue::Obj(entries) = &node.value else {
                     return Err((syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}")).into());
                 };
-                let get = |k: &str| entries.iter().find(|(key, _)| key == k).map(|(_, v)| v);
                 if entries.len() != 2 {
                     return Err((syntax(ptr, "Term は params と body の二つの欄だけを持つ")).into());
                 }
-                let (Some(params), Some(body)) = (get("params"), get("body")) else {
+                let (Some(params), Some(body)) = (
+                    super::schema::field::<E>(entries, "params", &mut self.control)?,
+                    super::schema::field::<E>(entries, "body", &mut self.control)?,
+                ) else {
                     return Err((syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}")).into());
                 };
                 let pptr = pointer_push(ptr, "params");
@@ -584,8 +586,7 @@ pub(crate) fn check_snapshots<E: InputError>(
 ) -> Result<Vec<Snapshot>, E> {
     E::checkpoint(control, Checkpoint::ArchMapSchema)?;
     let result = check_snapshots_inner::<E>(raw, definitions, control);
-    E::checkpoint(control, Checkpoint::ArchMapSchema)?;
-    result
+    E::finish(result, control, Checkpoint::ArchMapSchema)
 }
 
 fn check_snapshots_inner<E: InputError>(

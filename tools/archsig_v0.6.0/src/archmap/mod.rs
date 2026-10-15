@@ -176,8 +176,7 @@ fn check_document<E: InputError>(
 ) -> Result<CheckedArchMap, E> {
     E::checkpoint(control, Checkpoint::ArchMapSchema)?;
     let result = check_document_inner::<E>(raw, definitions, control);
-    E::checkpoint(control, Checkpoint::ArchMapSchema)?;
-    result
+    E::finish(result, control, Checkpoint::ArchMapSchema)
 }
 
 fn check_document_inner<E: InputError>(

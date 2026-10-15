@@ -90,16 +90,38 @@ pub fn cycle<T, E: InputError>(span: Span, message: impl Into<String>) -> CResul
     Err(Box::new(Issue::law(Code::Cycle, span, message)).into())
 }
 
-pub fn type_error<T, E: InputError>(
-    span: Span,
-    expected: &Type,
-    actual: &Type,
-    message: impl Into<String>,
-) -> CResult<T, E> {
-    Err(Box::new(Issue::law_type(span, expected, actual, message)).into())
-}
-
 impl<E: InputError> Checker<E> {
+    pub(super) fn erase_type(&self, ty: &Type) -> CResult<Type, E> {
+        ty.erase_controlled::<E>(&mut self.control.clone(), self.semantic_point)
+    }
+    pub(super) fn type_error<T>(
+        &self,
+        span: Span,
+        expected: &Type,
+        actual: &Type,
+        message: impl Into<String>,
+    ) -> CResult<T, E> {
+        let message = message.into();
+        let details: CResult<crate::issue::Details, E> = (|| {
+            Ok(crate::issue::Details::Type {
+                expected: self.erase_type(expected)?,
+                actual: self.erase_type(actual)?,
+            })
+        })();
+        let issue = match details {
+            Ok(details) => Issue {
+                code: Code::Type,
+                message,
+                location: Location::Law { span },
+                details,
+            },
+            // The mismatch is already known. Finish only its display payload;
+            // no additional semantic check or mathematical derivation is performed.
+            Err(stop) if stop.is_budget_stop() => Issue::law_type(span, expected, actual, message),
+            Err(stop) => return Err(stop),
+        };
+        Err(Box::new(issue).into())
+    }
     pub fn with_definitions(
         parser: Parser<E>,
         readings: Vec<Reading>,
@@ -502,14 +524,16 @@ impl<E: InputError> Checker<E> {
 
     pub fn resolve_type(&mut self, ast: &TypeAst, ctx: &TypeCtx) -> CResult<Type, E> {
         self.cooperate()?;
-        let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
-            self.resolve_type_inner(ast, ctx)
-        })?;
-        if ctx.validate && ctx.ref_free && self.has_reference(&t)? {
-            return syntax(ast.span(), "ここには参照・Map・Path を含まない値型が必要");
-        }
-        self.cooperate()?;
-        Ok(t)
+        let result = (|| {
+            let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+                self.resolve_type_inner(ast, ctx)
+            })?;
+            if ctx.validate && ctx.ref_free && self.has_reference(&t)? {
+                return syntax(ast.span(), "ここには参照・Map・Path を含まない値型が必要");
+            }
+            Ok(t)
+        })();
+        E::finish(result, &mut self.control.clone(), self.semantic_point)
     }
 
     fn resolve_type_inner(&mut self, ast: &TypeAst, ctx: &TypeCtx) -> CResult<Type, E> {
@@ -637,8 +661,8 @@ impl<E: InputError> Checker<E> {
                     );
                 };
                 let expected = Type::Ref(root);
-                if p.ty.erase() != expected {
-                    return type_error(
+                if self.erase_type(&p.ty)? != expected {
+                    return self.type_error(
                         i.span,
                         &expected,
                         &p.ty,
@@ -659,6 +683,7 @@ impl<E: InputError> Checker<E> {
         while let Some(ty) = stack.pop() {
             self.cooperate()?;
             if predicate(ty) {
+                self.cooperate()?;
                 return Ok(true);
             }
             match ty {
@@ -674,6 +699,7 @@ impl<E: InputError> Checker<E> {
                 }
                 _ => {}
             }
+            self.cooperate()?;
         }
         self.cooperate()?;
         Ok(false)

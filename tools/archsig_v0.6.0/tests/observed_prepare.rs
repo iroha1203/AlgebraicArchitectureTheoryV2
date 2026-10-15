@@ -52,9 +52,15 @@ fn request_failure_preserves_checked_input_tables() {
     };
     assert_eq!(checked.sources(), &inputs());
     assert!(checked.law().declarations.contains_key("CountCheck.amount"));
-    let ResolveFailure::Invalid { requests, issues } = failure else {
+    let ResolveFailure::Invalid {
+        requests,
+        issues,
+        stop_reason,
+    } = failure
+    else {
         panic!("束縛不足")
     };
+    assert!(stop_reason.is_none());
     assert!(requests.is_empty());
     assert_eq!(issues[0].code, RequestIssueCode::MissingBinding);
 }
@@ -121,12 +127,18 @@ fn cycles_keep_the_graph_and_leave_computation_outputs_empty() {
     for key in ["answers", "nodes"] {
         assert_eq!(fields[key], archsig::canonical::Json::Arr(vec![]));
     }
-    let ResolveFailure::Invalid { requests, issues } = (match &failure {
+    let ResolveFailure::Invalid {
+        requests,
+        issues,
+        stop_reason,
+    } = (match &failure {
         PrepareFailure::Requests { failure, .. } => failure,
         _ => panic!("要求の循環"),
-    }) else {
+    })
+    else {
         panic!("invalid")
     };
+    assert!(stop_reason.is_none());
     assert_eq!(requests.len(), 3);
     assert_eq!(requests[0].dependencies, ["b"]);
     assert_eq!(requests[2].dependencies, ["a"]);

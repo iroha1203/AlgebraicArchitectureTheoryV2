@@ -111,6 +111,30 @@ fn invalid(sources: InputSources, code: &str, pointer: &str) {
     );
 }
 
+fn invalid_after_budget(sources: InputSources, point: Checkpoint, at: usize, resource: usize) {
+    assert!(resource == 1 || resource == 2);
+    let baseline = check_inputs(sources.clone(), &mut Control::unlimited()).unwrap_err();
+    assert_eq!(baseline.status(), InputStatus::Invalid);
+    let mut control = stop(point, at, resource);
+    let failure = check_inputs(sources, &mut control).unwrap_err();
+    assert_eq!(failure.status(), baseline.status());
+    let mut expected_issues = vec![control.stop_reason().expect("observed budget").wire()];
+    expected_issues.extend_from_slice(baseline.issues());
+    assert_eq!(failure.issues(), expected_issues);
+    assert_eq!(
+        control.stop_reason(),
+        Some(StopReason::BudgetExhausted {
+            resource: if resource == 1 {
+                archsig::observed::control::Resource::TimeMs
+            } else {
+                archsig::observed::control::Resource::MemoryMib
+            },
+            limit: 1,
+            observed: 1,
+        })
+    );
+}
+
 #[test]
 fn model_digest_nested_values_and_string_escaping_observe_all_resources() {
     let make = || {
@@ -242,8 +266,9 @@ fn missing_field_slots_and_late_field_lookup_add_per_field_boundaries() {
     };
     invalid(unknown(), "reference", "/snapshots/0/atoms/0/field");
     let last = count(unknown(), Checkpoint::ArchMapSchema);
-    for resource in 0..3 {
-        interrupted(unknown(), Checkpoint::ArchMapSchema, last, resource);
+    interrupted(unknown(), Checkpoint::ArchMapSchema, last, 0);
+    for resource in 1..3 {
+        invalid_after_budget(unknown(), Checkpoint::ArchMapSchema, last, resource);
     }
 }
 
@@ -276,8 +301,15 @@ fn unknown_constructor_checks_each_candidate_and_post_error_boundary() {
     let total = count(make(4, "Absent"), Checkpoint::ArchMapSchema);
     assert!(total >= first + 12);
     for at in [1, total / 2, total] {
-        for resource in 0..3 {
-            interrupted(make(4, "Absent"), Checkpoint::ArchMapSchema, at, resource);
-        }
+        interrupted(make(4, "Absent"), Checkpoint::ArchMapSchema, at, 0);
+    }
+    for resource in 1..3 {
+        interrupted(make(4, "Absent"), Checkpoint::ArchMapSchema, 1, resource);
+        invalid_after_budget(
+            make(4, "Absent"),
+            Checkpoint::ArchMapSchema,
+            total,
+            resource,
+        );
     }
 }

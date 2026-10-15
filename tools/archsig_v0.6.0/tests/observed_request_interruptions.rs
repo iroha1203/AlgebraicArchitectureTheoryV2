@@ -131,7 +131,15 @@ fn assert_request_stop(
     at: usize,
     reason: &StopReason,
 ) {
-    let wire = failure.wire().expect("中断は内部結果を返す").canonical();
+    let wire_value = failure.wire().expect("中断は内部結果を返す");
+    let archsig::canonical::Json::Obj(fields) = &wire_value else {
+        panic!("object")
+    };
+    assert_eq!(
+        fields["issues"],
+        archsig::canonical::Json::Arr(vec![reason.wire()])
+    );
+    let wire = wire_value.canonical();
     for empty in [r#""requests":[]"#, r#""nodes":[]"#, r#""answers":[]"#] {
         assert!(wire.contains(empty), "{empty}: {wire}");
     }
@@ -151,6 +159,39 @@ fn assert_request_stop(
     assert_eq!(count.get(), at);
     assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason.clone()));
     assert_eq!(count.get(), at, "停止後にprobeや新たな導出を始めない");
+}
+
+fn assert_known_budget_wire(failure: &PrepareFailure, reason: &StopReason, original_code: &str) {
+    use archsig::canonical::Json;
+    let Json::Obj(ref wire) = failure.wire().unwrap() else {
+        panic!("object")
+    };
+    assert_eq!(wire["status"], Json::str("invalid"));
+    assert_eq!(wire["nodes"], Json::Arr(vec![]));
+    assert_eq!(wire["answers"], Json::Arr(vec![]));
+    let Json::Arr(issues) = &wire["issues"] else {
+        panic!("issues")
+    };
+    assert_eq!(
+        issues[0],
+        reason.wire(),
+        "resource/limit/observedを理由に保持する"
+    );
+    assert!(issues.len() > 1, "元の確定した不正も保持する");
+    for issue in &issues[1..] {
+        let Json::Obj(issue) = issue else {
+            panic!("issue object")
+        };
+        assert_eq!(issue["code"], Json::str(original_code));
+    }
+    let PrepareFailure::Requests {
+        failure: ResolveFailure::Invalid { stop_reason, .. },
+        ..
+    } = failure
+    else {
+        panic!("known Invalid")
+    };
+    assert_eq!(stop_reason.as_ref(), Some(reason));
 }
 
 #[test]
@@ -176,7 +217,7 @@ fn syntax_binding_dependency_and_projection_stop_at_start_middle_and_end() {
 }
 
 #[test]
-fn stopping_inside_cycle_walk_or_cycle_issue_collection_never_returns_cycle() {
+fn stopping_inside_cycle_walk_preserves_only_cycles_already_established() {
     let asks = [
         "a=evaluate(R.echo,s=$b.value)",
         "b=evaluate(R.echo,s=$a.value)",
@@ -185,13 +226,36 @@ fn stopping_inside_cycle_walk_or_cycle_issue_collection_never_returns_cycle() {
     let (mut baseline, total) = counting(Checkpoint::RequestDependency);
     let cycle = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
     assert!(
-        matches!(cycle,PrepareFailure::Requests { failure: ResolveFailure::Invalid { ref issues,.. },.. } if issues.iter().all(|i|i.code == RequestIssueCode::Cycle))
+        matches!(cycle,PrepareFailure::Requests { failure: ResolveFailure::Invalid { ref issues,.. },.. }
+        if issues.iter().map(|i| i.request.as_str()).collect::<Vec<_>>() == ["a", "b"])
     );
     for at in [1, total.get() / 2, total.get() - 4, total.get()] {
         for kind in [Stop::Cancel, Stop::Time] {
             let (mut control, count, reason) = interrupt(Checkpoint::RequestDependency, at, kind);
             let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
-            assert_request_stop(failure, &mut control, &count, at, &reason);
+            if matches!(kind, Stop::Time)
+                && let PrepareFailure::Requests {
+                    failure:
+                        ResolveFailure::Invalid {
+                            requests,
+                            issues,
+                            stop_reason,
+                        },
+                    ..
+                } = &failure
+            {
+                assert_eq!(stop_reason.as_ref(), Some(&reason));
+                assert_known_budget_wire(&failure, &reason, "cycle");
+                assert_eq!(requests.len(), 3, "解決済みgraphを保持する");
+                assert!(!issues.is_empty());
+                assert!(issues.iter().all(|i| i.code == RequestIssueCode::Cycle
+                    && ["a", "b"].contains(&i.request.as_str())));
+                assert_eq!(count.get(), at, "budget後に未確認cycleを探索しない");
+                assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+                assert_eq!(count.get(), at);
+            } else {
+                assert_request_stop(failure, &mut control, &count, at, &reason);
+            }
         }
     }
 }
@@ -207,10 +271,20 @@ fn a_stop_at_the_last_syntax_error_boundary_is_not_usage() {
             ..
         })
     ));
-    for kind in [Stop::Cancel, Stop::Time] {
+    let (mut control, count, reason) =
+        interrupt(Checkpoint::RequestSyntax, total.get(), Stop::Cancel);
+    let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
+    assert_request_stop(failure, &mut control, &count, total.get(), &reason);
+    for kind in [Stop::Time, Stop::Memory] {
         let (mut control, count, reason) = interrupt(Checkpoint::RequestSyntax, total.get(), kind);
         let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
-        assert_request_stop(failure, &mut control, &count, total.get(), &reason);
+        assert_known_budget_wire(&failure, &reason, "usage");
+        assert!(matches!(failure, PrepareFailure::Requests {
+            failure: ResolveFailure::Invalid { issues, .. }, ..
+        } if issues.len() == 1 && issues[0].code == RequestIssueCode::Syntax));
+        assert_eq!(count.get(), total.get());
+        assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+        assert_eq!(count.get(), total.get());
     }
 }
 
@@ -240,4 +314,112 @@ fn failed_projection_candidates_cannot_swallow_cancellation_or_budget() {
             assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
         }
     }
+}
+
+#[test]
+fn final_request_budget_preserves_known_type_error_but_cancellation_wins() {
+    let type_asks = [
+        "bad=evaluate(R.echo,s=$number.value)",
+        "number=evaluate(R.accept,x=$pair.value[0],y=$pair.value[1])",
+        "pair=evaluate(R.pair,s=@v/s,t=@v/s)",
+    ];
+    let raw_duplicate = ["bad=evaluate(R.echo,s=@v/s,s=@v/s)"];
+    let normalized_duplicate = ["bad=evaluate(R.echo,s=@v/s,bind.s=@v/s)"];
+    let reserved = ["let=evaluate(R.echo,s=@v/s)"];
+    for (asks, point, expected) in [
+        (
+            type_asks.as_slice(),
+            Checkpoint::Resolve,
+            RequestIssueCode::Type,
+        ),
+        (
+            raw_duplicate.as_slice(),
+            Checkpoint::RequestSyntax,
+            RequestIssueCode::DuplicateArgument,
+        ),
+        (
+            normalized_duplicate.as_slice(),
+            Checkpoint::RequestBinding,
+            RequestIssueCode::DuplicateArgument,
+        ),
+        (
+            reserved.as_slice(),
+            Checkpoint::RequestSyntax,
+            RequestIssueCode::Syntax,
+        ),
+    ] {
+        let (mut baseline, total) = counting(point);
+        let normal = prepare_observed(sources(), asks, &mut baseline).unwrap_err();
+        assert!(matches!(normal,
+            PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, stop_reason: None, .. }, .. }
+            if issues[0].code == expected));
+        for kind in [Stop::Time, Stop::Memory, Stop::Cancel] {
+            let (mut control, count, reason) = interrupt(point, total.get(), kind);
+            let failure = prepare_observed(sources(), asks, &mut control).unwrap_err();
+            if matches!(kind, Stop::Cancel) {
+                assert_request_stop(failure, &mut control, &count, total.get(), &reason);
+            } else {
+                assert_known_budget_wire(&failure, &reason, "usage");
+                assert!(
+                    matches!(failure, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, .. }, .. }
+                    if issues[0].code == expected)
+                );
+                assert_eq!(count.get(), total.get());
+                assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+            }
+        }
+    }
+}
+
+#[test]
+fn budget_after_first_of_two_independent_cycles_keeps_only_confirmed_cycle() {
+    use archsig::observed::request::resolve_observed_requests_controlled;
+    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let asks = [
+        "a=evaluate(R.echo,s=$b.value)",
+        "b=evaluate(R.echo,s=$a.value)",
+        "c=evaluate(R.echo,s=$d.value)",
+        "d=evaluate(R.echo,s=$c.value)",
+    ];
+    let (mut baseline, total) = counting(Checkpoint::RequestDependency);
+    let normal = resolve_observed_requests_controlled(
+        checked.law(),
+        checked.archmap(),
+        &asks,
+        &mut baseline,
+    )
+    .unwrap_err();
+    assert!(
+        matches!(normal, ResolveFailure::Invalid { issues, stop_reason: None, .. }
+        if issues.iter().map(|i| i.request.as_str()).collect::<Vec<_>>() == ["a", "b", "c", "d"])
+    );
+    let mut first_known = None;
+    // Each candidate is the same fixed four-node graph, stopped at one of its finite checkpoints.
+    for at in 1..=total.get() {
+        let (mut control, count, reason) = interrupt(Checkpoint::RequestDependency, at, Stop::Time);
+        let failure = resolve_observed_requests_controlled(
+            checked.law(),
+            checked.archmap(),
+            &asks,
+            &mut control,
+        )
+        .unwrap_err();
+        assert_eq!(count.get(), at);
+        assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+        if let ResolveFailure::Invalid {
+            requests,
+            issues,
+            stop_reason,
+        } = failure
+        {
+            assert_eq!(requests.len(), 4);
+            assert!(matches!(
+                stop_reason,
+                Some(StopReason::BudgetExhausted { .. })
+            ));
+            first_known = Some(issues.into_iter().map(|i| i.request).collect::<Vec<_>>());
+            break;
+        }
+    }
+    assert_eq!(first_known.unwrap(), ["a"]);
 }

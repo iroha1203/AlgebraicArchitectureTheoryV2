@@ -54,91 +54,94 @@ pub(super) fn lex_inner<E: InputError>(
     control: &mut Control,
     point: Checkpoint,
 ) -> Result<Vec<Token>, E> {
-    E::checkpoint(control, point)?;
-    if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
-        return Err((Box::new(Issue::law(Code::Syntax, (0, 3), "BOM は使えない"))).into());
-    }
-    let text = std::str::from_utf8(bytes).map_err(|e| {
-        let at = e.valid_up_to();
-        let end = at + e.error_len().unwrap_or(bytes.len() - at);
-        Box::new(Issue::law(Code::Syntax, (at, end), "不正な UTF-8"))
-    })?;
-    let src = text.as_bytes();
-    let mut tokens = Vec::new();
-    let mut i = 0;
-    while i < src.len() && tokens.len() < max {
+    let result = (|| {
         E::checkpoint(control, point)?;
-        let c = src[i];
-        if matches!(c, b' ' | b'\t' | b'\r' | b'\n') {
-            i += 1;
-        } else if src[i..].starts_with(b"//") {
-            while i < src.len() && src[i] != b'\n' {
-                E::checkpoint(control, point)?;
+        if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
+            return Err((Box::new(Issue::law(Code::Syntax, (0, 3), "BOM は使えない"))).into());
+        }
+        let text = std::str::from_utf8(bytes).map_err(|e| {
+            let at = e.valid_up_to();
+            let end = at + e.error_len().unwrap_or(bytes.len() - at);
+            Box::new(Issue::law(Code::Syntax, (at, end), "不正な UTF-8"))
+        })?;
+        let src = text.as_bytes();
+        let mut tokens = Vec::new();
+        let mut i = 0;
+        while i < src.len() && tokens.len() < max {
+            E::checkpoint(control, point)?;
+            let c = src[i];
+            if matches!(c, b' ' | b'\t' | b'\r' | b'\n') {
                 i += 1;
-            }
-        } else if c.is_ascii_alphabetic() {
-            let start = i;
-            while i < src.len() && (src[i].is_ascii_alphanumeric() || src[i] == b'_') {
-                E::checkpoint(control, point)?;
+            } else if src[i..].starts_with(b"//") {
+                while i < src.len() && src[i] != b'\n' {
+                    E::checkpoint(control, point)?;
+                    i += 1;
+                }
+            } else if c.is_ascii_alphabetic() {
+                let start = i;
+                while i < src.len() && (src[i].is_ascii_alphanumeric() || src[i] == b'_') {
+                    E::checkpoint(control, point)?;
+                    i += 1;
+                }
+                tokens.push(Token {
+                    kind: TokenKind::Name,
+                    text: text[start..i].to_owned(),
+                    span: (start, i),
+                });
+            } else if c.is_ascii_digit() {
+                let start = i;
+                while i < src.len() && src[i].is_ascii_digit() {
+                    E::checkpoint(control, point)?;
+                    i += 1;
+                }
+                if c == b'0' && i - start > 1 {
+                    return Err((Box::new(Issue::law(
+                        Code::Syntax,
+                        (start, i),
+                        "整数に先頭の0は置けない",
+                    )))
+                    .into());
+                }
+                tokens.push(Token {
+                    kind: TokenKind::Int,
+                    text: text[start..i].to_owned(),
+                    span: (start, i),
+                });
+            } else if c == b'"' {
+                let (value, end) = lex_string::<E>(text, i, control, point)?;
+                tokens.push(Token {
+                    kind: TokenKind::Str,
+                    text: value,
+                    span: (i, end),
+                });
+                i = end;
+            } else if let Some(s) = SYMBOLS2.iter().find(|s| src[i..].starts_with(s.as_bytes())) {
+                tokens.push(Token {
+                    kind: TokenKind::Sym,
+                    text: (*s).to_owned(),
+                    span: (i, i + 2),
+                });
+                i += 2;
+            } else if c.is_ascii() && SYMBOLS1.as_bytes().contains(&c) {
+                tokens.push(Token {
+                    kind: TokenKind::Sym,
+                    text: (c as char).to_string(),
+                    span: (i, i + 1),
+                });
                 i += 1;
-            }
-            tokens.push(Token {
-                kind: TokenKind::Name,
-                text: text[start..i].to_owned(),
-                span: (start, i),
-            });
-        } else if c.is_ascii_digit() {
-            let start = i;
-            while i < src.len() && src[i].is_ascii_digit() {
-                E::checkpoint(control, point)?;
-                i += 1;
-            }
-            if c == b'0' && i - start > 1 {
+            } else {
+                let len = text[i..].chars().next().map_or(1, char::len_utf8);
                 return Err((Box::new(Issue::law(
                     Code::Syntax,
-                    (start, i),
-                    "整数に先頭の0は置けない",
+                    (i, i + len),
+                    "字句として読めない文字",
                 )))
                 .into());
             }
-            tokens.push(Token {
-                kind: TokenKind::Int,
-                text: text[start..i].to_owned(),
-                span: (start, i),
-            });
-        } else if c == b'"' {
-            let (value, end) = lex_string::<E>(text, i, control, point)?;
-            tokens.push(Token {
-                kind: TokenKind::Str,
-                text: value,
-                span: (i, end),
-            });
-            i = end;
-        } else if let Some(s) = SYMBOLS2.iter().find(|s| src[i..].starts_with(s.as_bytes())) {
-            tokens.push(Token {
-                kind: TokenKind::Sym,
-                text: (*s).to_owned(),
-                span: (i, i + 2),
-            });
-            i += 2;
-        } else if c.is_ascii() && SYMBOLS1.as_bytes().contains(&c) {
-            tokens.push(Token {
-                kind: TokenKind::Sym,
-                text: (c as char).to_string(),
-                span: (i, i + 1),
-            });
-            i += 1;
-        } else {
-            let len = text[i..].chars().next().map_or(1, char::len_utf8);
-            return Err((Box::new(Issue::law(
-                Code::Syntax,
-                (i, i + len),
-                "字句として読めない文字",
-            )))
-            .into());
         }
-    }
-    Ok(tokens)
+        Ok(tokens)
+    })();
+    E::finish(result, control, point)
 }
 
 /// JSON の string 文法。制御文字の生の出現と unpaired surrogate を拒否する。
@@ -249,4 +252,148 @@ fn hex4(src: &[u8], at: usize) -> Option<u32> {
         return None;
     }
     u32::from_str_radix(s, 16).ok()
+}
+
+#[cfg(test)]
+mod interruption_tests {
+    use super::*;
+    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+
+    #[test]
+    fn pending_cancel_after_leading_zero_detection_is_sampled_before_return() {
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let mut control = Control::new(Limits::default(), move |_| {
+            seen.set(seen.get() + 1);
+            Usage {
+                signal: (seen.get() >= 5).then_some(Signal::Term),
+                ..Usage::default()
+            }
+        });
+        let failure = lex_inner::<CheckFailure<Box<Issue>>>(
+            b"01",
+            usize::MAX,
+            &mut control,
+            Checkpoint::LawIteration,
+        )
+        .unwrap_err();
+        assert_eq!(count.get(), 5, "入口・outer・二つのdigitの後にも確認する");
+        assert!(matches!(
+            failure,
+            CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
+        ));
+    }
+
+    #[test]
+    fn known_lexer_errors_outrank_final_time_and_memory_limits() {
+        for bytes in [
+            b"01".as_slice(),
+            b"?",
+            &[0xff],
+            b"\xef\xbb\xbf",
+            b"\"\\x\"",
+            b"\"unclosed",
+        ] {
+            for memory in [false, true] {
+                let mut baseline = Control::unlimited();
+                let ordinary = lex_inner::<CheckFailure<Box<Issue>>>(
+                    bytes,
+                    usize::MAX,
+                    &mut baseline,
+                    Checkpoint::LawIteration,
+                )
+                .unwrap_err();
+                let CheckFailure::Input(expected) = ordinary else {
+                    panic!("syntax expected")
+                };
+                assert_eq!(expected.code, Code::Syntax);
+                let seen = Rc::new(Cell::new(0));
+                let count = seen.clone();
+                let mut baseline = Control::new(Limits::default(), move |_| {
+                    count.set(count.get() + 1);
+                    Usage::default()
+                });
+                let _ = lex_inner::<CheckFailure<Box<Issue>>>(
+                    bytes,
+                    usize::MAX,
+                    &mut baseline,
+                    Checkpoint::LawIteration,
+                );
+                let total = seen.get();
+                let mut n = 0;
+                let mut control = Control::new(
+                    Limits {
+                        time_ms: (!memory).then_some(1),
+                        memory_mib: memory.then_some(1),
+                    },
+                    move |_| {
+                        n += 1;
+                        Usage {
+                            elapsed_ms: u128::from(n >= total && !memory),
+                            memory_mib: u128::from(n >= total && memory),
+                            signal: None,
+                        }
+                    },
+                );
+                assert!(
+                    matches!(
+                        lex_inner::<CheckFailure<Box<Issue>>>(bytes, usize::MAX, &mut control, Checkpoint::LawIteration),
+                        Err(CheckFailure::Input(actual)) if actual == expected
+                    ),
+                    "known syntax must survive final budget: {bytes:?}"
+                );
+                assert!(matches!(
+                    control.stop_reason(),
+                    Some(StopReason::BudgetExhausted { .. })
+                ));
+            }
+        }
+    }
+
+    #[test]
+    fn utf8_unknown_byte_and_string_error_exits_sample_pending_cancel() {
+        for bytes in [
+            b"?".as_slice(),
+            &[0xff],
+            b"\xef\xbb\xbf",
+            b"\"\\x\"",
+            b"\"unclosed",
+        ] {
+            let seen = Rc::new(Cell::new(0));
+            let count = seen.clone();
+            let mut baseline = Control::new(Limits::default(), move |_| {
+                count.set(count.get() + 1);
+                Usage::default()
+            });
+            assert!(matches!(
+                lex_inner::<CheckFailure<Box<Issue>>>(
+                    bytes,
+                    usize::MAX,
+                    &mut baseline,
+                    Checkpoint::LawIteration
+                ),
+                Err(CheckFailure::Input(_))
+            ));
+            let total = seen.get();
+            let mut n = 0;
+            let mut control = Control::new(Limits::default(), move |_| {
+                n += 1;
+                Usage {
+                    signal: (n >= total).then_some(Signal::Int),
+                    ..Usage::default()
+                }
+            });
+            assert!(matches!(
+                lex_inner::<CheckFailure<Box<Issue>>>(
+                    bytes,
+                    usize::MAX,
+                    &mut control,
+                    Checkpoint::LawIteration
+                ),
+                Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Int)))
+            ));
+        }
+    }
 }

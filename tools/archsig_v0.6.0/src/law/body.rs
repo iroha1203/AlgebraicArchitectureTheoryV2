@@ -289,8 +289,7 @@ impl<E: InputError> Checker<E> {
             self.check_change_result(body, params, env, ctx)
         });
         // 入力不正も、検査内で発生した取消・消尽を確認した後に返す。
-        E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
-        let t = result?;
+        let t = E::finish(result, &mut self.control.clone(), Checkpoint::LawChange)?;
         if self.expr_types.len() < self.parser.exprs.len() {
             self.expr_types.resize(self.parser.exprs.len(), None);
         }

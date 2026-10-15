@@ -44,11 +44,23 @@ impl PrepareFailure {
             Self::Inputs(failure) => Some(failure.wire()),
             Self::Requests { inputs, failure } => {
                 let (status, requests, issues) = match failure {
-                    ResolveFailure::Invalid { requests, issues } => (
-                        "invalid",
-                        requests.iter().map(request::Request::wire).collect(),
-                        issues.iter().map(request::RequestIssue::wire).collect(),
-                    ),
+                    ResolveFailure::Invalid {
+                        requests,
+                        issues,
+                        stop_reason,
+                    } => {
+                        let mut wire_issues: Vec<Json> =
+                            issues.iter().map(request::RequestIssue::wire).collect();
+                        if let Some(reason) = stop_reason {
+                            // budget_exhausted precedes both cycle and usage in the specified code order.
+                            wire_issues.insert(0, reason.wire());
+                        }
+                        (
+                            "invalid",
+                            requests.iter().map(request::Request::wire).collect(),
+                            wire_issues,
+                        )
+                    }
                     ResolveFailure::Interrupted { reason } => {
                         ("interrupted", vec![], vec![reason.wire()])
                     }

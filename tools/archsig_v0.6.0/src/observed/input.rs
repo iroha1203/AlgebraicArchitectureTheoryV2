@@ -8,6 +8,7 @@ use crate::{
         CheckedDefinitions, PrimitiveDeclaration, Vocabulary, check_definitions_controlled,
     },
     issue::{Code, Details, Issue, Location},
+    json::InputError,
     law::{CheckedLaw, check_law_controlled, model::DeclarationInfo},
     result::{CheckResult, InputIdentity, ResultIssue, Status},
 };
@@ -73,29 +74,27 @@ impl InputSources {
         &self.archmap
     }
 
-    fn identities(&self) -> Vec<InputIdentity> {
+    // 失敗表示にも必要な全 read 行を準備する。digest の計算・入力検査は含めない。
+    fn identity_rows(&self) -> Vec<InputIdentity> {
         let mut ids: Vec<_> = self
             .definitions
             .iter()
             .enumerate()
-            .map(|(i, b)| InputIdentity {
+            .map(|(i, _)| InputIdentity {
                 id: format!("definition{i}"),
                 kind: "atom_definition",
                 read: true,
-                bytes_digest: Some(sha256_digest(b.bytes())),
+                bytes_digest: None,
                 model_digest: None,
                 path: None,
             })
             .collect();
-        for (id, kind, bytes) in [
-            ("law", "law", self.law.bytes()),
-            ("archmap", "archmap", self.archmap.bytes()),
-        ] {
+        for (id, kind) in [("law", "law"), ("archmap", "archmap")] {
             ids.push(InputIdentity {
                 id: id.into(),
                 kind,
                 read: true,
-                bytes_digest: Some(sha256_digest(bytes)),
+                bytes_digest: None,
                 model_digest: None,
                 path: None,
             });
@@ -179,6 +178,13 @@ impl InputFailure {
         wire
     }
 
+    fn checked(self, error: CheckFailure<Box<Issue>>, control: &Control) -> Self {
+        match error {
+            CheckFailure::Input(issue) => self.input_with_control(*issue, control),
+            CheckFailure::Stopped(reason) => self.stopped(reason),
+        }
+    }
+
     fn input(mut self, issue: Issue) -> Self {
         self.status = if issue.code == Code::UnsupportedVersion {
             InputStatus::Unsupported
@@ -188,11 +194,21 @@ impl InputFailure {
         self.issues.push(ResultIssue::Input(issue).wire());
         self
     }
+    fn input_with_control(self, issue: Issue, control: &Control) -> Self {
+        let mut failure = self.input(issue);
+        if let Some(reason @ StopReason::BudgetExhausted { .. }) = control.stop_reason() {
+            // 全入力 Issue code より budget_exhausted が辞書順で先。
+            // 既知の入力不正の優先状態を保ち、併発した停止理由も出力に残す。
+            failure.issues.insert(0, reason.wire());
+        }
+        failure
+    }
     fn stopped(mut self, reason: StopReason) -> Self {
         self.status = InputStatus::Interrupted;
         self.issues.push(reason.wire());
         self
     }
+    // 検査で既に得た digest を失敗時の表示へ写す finalize。意味検査を開始しない。
     fn digest(&mut self, id: &str, digest: Option<String>) {
         if let Some(input) = self.inputs.iter_mut().find(|i| i.id == id) {
             input.model_digest = digest;
@@ -245,6 +261,26 @@ impl CheckedInputs {
         )
     }
 
+    fn into_failure(self, clear_law: bool) -> InputFailure {
+        InputFailure {
+            status: InputStatus::Invalid,
+            sources: self.sources,
+            inputs: self.inputs,
+            declarations: if clear_law { vec![] } else { self.law.infos },
+            primitives: if clear_law {
+                vec![]
+            } else {
+                self.definitions.declarations.into_values().collect()
+            },
+            vocabularies: if clear_law {
+                vec![]
+            } else {
+                self.definitions.vocabularies.into_values().collect()
+            },
+            issues: vec![],
+        }
+    }
+
     /// 外部の検査済み表を採用するときだけ元 byte 列へ照合する。
     /// 現行の表は公開 field を持つため digest の一致だけを証拠にしない。
     #[allow(clippy::result_large_err)]
@@ -256,6 +292,9 @@ impl CheckedInputs {
         control: &mut Control,
     ) -> Result<Self, InputFailure> {
         let verified = check_inputs(sources, control)?;
+        if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
+            return Err(verified.into_failure(false).checked(error, control));
+        }
         let bad_law = definitions != verified.definitions
             || law.definitions != definitions
             || law.bytes_digest != verified.law.bytes_digest
@@ -270,7 +309,7 @@ impl CheckedInputs {
             || archmap.sources != verified.archmap.sources
             || archmap.origins != verified.archmap.origins
             || archmap.snapshots != verified.archmap.snapshots;
-        if bad_law || bad_map {
+        let result = if bad_law || bad_map {
             let location = if bad_law {
                 Location::Law {
                     span: (0, verified.sources.law.bytes.len()),
@@ -281,26 +320,17 @@ impl CheckedInputs {
                     span: None,
                 }
             };
-            let mut failure = InputFailure {
-                status: InputStatus::Invalid,
-                sources: verified.sources,
-                inputs: verified.inputs,
-                declarations: verified.law.infos,
-                primitives: verified.definitions.declarations.into_values().collect(),
-                vocabularies: verified.definitions.vocabularies.into_values().collect(),
-                issues: vec![],
-            };
-            if bad_law {
-                failure.declarations.clear();
-                failure.primitives.clear();
-                failure.vocabularies.clear();
-            }
-            return Err(failure.input(Issue {
+            Err(CheckFailure::Input(Box::new(Issue {
                 code: Code::VocabularyMismatch,
                 message: "検査済み三表が同じ元入力・定義 identity を参照していない".into(),
                 location,
                 details: Details::Empty,
-            }));
+            })))
+        } else {
+            Ok(())
+        };
+        if let Err(error) = BundleError::finish(result, control, Checkpoint::InputBundle) {
+            return Err(verified.into_failure(bad_law).checked(error, control));
         }
         // 構文木内の TypeAst/Pattern の等値は一部の表示位置を無視する。
         // 位置まで元 byte 列から得た表を採用し、公開 field の改変を持ち込まない。
@@ -334,6 +364,8 @@ fn metadata_wire(
     wire
 }
 
+type BundleError = CheckFailure<Box<Issue>>;
+
 /// 定義→Law→ArchMap の全検査。どの段階の中断にも同じ制御を渡す。
 #[allow(clippy::result_large_err)]
 pub fn check_inputs(
@@ -342,23 +374,38 @@ pub fn check_inputs(
 ) -> Result<CheckedInputs, InputFailure> {
     let mut failure = InputFailure {
         status: InputStatus::Invalid,
-        inputs: sources.identities(),
+        inputs: sources.identity_rows(),
         sources,
         declarations: vec![],
         primitives: vec![],
         vocabularies: vec![],
         issues: vec![],
     };
-    let valid_ids = !failure.sources.definitions.is_empty()
-        && failure
-            .sources
-            .definitions
-            .iter()
-            .enumerate()
-            .all(|(i, b)| b.id == format!("definition{i}"))
-        && failure.sources.law.id == "law"
-        && failure.sources.archmap.id == "archmap";
-    if !valid_ids {
+    // 全入力の byte 列は取得済み。未計算の SHA は optional のまま残し、
+    // 停止を観測した後に次の入力の原始演算を開始しない。
+    for index in 0..failure.inputs.len() {
+        if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
+            return Err(failure.checked(error, control));
+        }
+        let id = failure.inputs[index].id.as_str();
+        let bytes = match id {
+            "law" => failure.sources.law.bytes(),
+            "archmap" => failure.sources.archmap.bytes(),
+            _ => {
+                let index = id
+                    .strip_prefix("definition")
+                    .unwrap()
+                    .parse::<usize>()
+                    .unwrap();
+                failure.sources.definitions[index].bytes()
+            }
+        };
+        failure.inputs[index].bytes_digest = Some(sha256_digest(bytes));
+        if let Err(error) = BundleError::finish(Ok(()), control, Checkpoint::InputBundle) {
+            return Err(failure.checked(error, control));
+        }
+    }
+    let invalid_id = || {
         let location = if failure.sources.definitions.is_empty() {
             Location::Law { span: (0, 0) }
         } else {
@@ -368,29 +415,57 @@ pub fn check_inputs(
                 span: None,
             }
         };
-        return Err(failure.input(Issue {
+        CheckFailure::Input(Box::new(Issue {
             code: Code::Reference,
             message: "入力 ID は指定順の definition0,…、law、archmap でなければならない".into(),
             location,
             details: Details::Empty,
-        }));
+        }))
+    };
+    // ID 照合は実際の検査であり、失敗する一回にも事後確認を行う。
+    for index in 0..failure.sources.definitions.len() + 2 {
+        if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
+            return Err(failure.checked(error, control));
+        }
+        let (actual, expected) = if index < failure.sources.definitions.len() {
+            (
+                failure.sources.definitions[index].id(),
+                format!("definition{index}"),
+            )
+        } else if index == failure.sources.definitions.len() {
+            (failure.sources.law.id(), "law".into())
+        } else {
+            (failure.sources.archmap.id(), "archmap".into())
+        };
+        let result = if actual == expected && !failure.sources.definitions.is_empty() {
+            Ok(())
+        } else {
+            Err(invalid_id())
+        };
+        if let Err(error) = BundleError::finish(result, control, Checkpoint::InputBundle) {
+            return Err(failure.checked(error, control));
+        }
     }
     if let Err(reason) = control.checkpoint(Checkpoint::BeforeDefinitions) {
         return Err(failure.stopped(reason));
     }
-    let files: Vec<_> = failure
-        .sources
-        .definitions
-        .iter()
-        .map(|b| (b.id(), b.bytes()))
-        .collect();
+    let mut files = Vec::with_capacity(failure.sources.definitions.len());
+    for input in &failure.sources.definitions {
+        if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
+            return Err(failure.checked(error, control));
+        }
+        files.push((input.id(), input.bytes()));
+        if let Err(error) = BundleError::finish(Ok(()), control, Checkpoint::InputBundle) {
+            return Err(failure.checked(error, control));
+        }
+    }
     let definitions = match check_definitions_controlled(&files, control) {
         Ok(d) => d,
         Err(CheckFailure::Input(f)) => {
             for identity in f.inputs {
                 failure.digest(&identity.input, identity.model_digest);
             }
-            return Err(failure.input(f.issue));
+            return Err(failure.input_with_control(f.issue, control));
         }
         Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
     };
@@ -406,7 +481,7 @@ pub fn check_inputs(
         Ok(law) => law,
         Err(CheckFailure::Input(f)) => {
             failure.digest("law", f.model_digest);
-            return Err(failure.input(f.issue));
+            return Err(failure.input_with_control(f.issue, control));
         }
         Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
     };
@@ -422,7 +497,7 @@ pub fn check_inputs(
     let archmap =
         match check_archmap_controlled(failure.sources.archmap.bytes(), &definitions, control) {
             Ok(map) => map,
-            Err(CheckFailure::Input(f)) => return Err(failure.input(f.issue)),
+            Err(CheckFailure::Input(f)) => return Err(failure.input_with_control(f.issue, control)),
             Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
         };
     failure.digest("archmap", Some(archmap.model_digest.clone()));

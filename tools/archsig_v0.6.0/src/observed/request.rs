@@ -222,6 +222,8 @@ pub enum ResolveFailure {
     Invalid {
         requests: Vec<Request>,
         issues: Vec<RequestIssue>,
+        /// A budget stop observed after an already established request error.
+        stop_reason: Option<StopReason>,
     },
     /// この入口では意味を持たない問い。成功や算法非対応、公開 CLI の usage と区別する。
     NotApplicable {
@@ -260,6 +262,16 @@ pub fn resolve_observed_requests(
 
 /// 入力検査と同じ中断制御で、構文・束縛・公開射影・循環を意味計算前に検査する。
 pub fn resolve_observed_requests_controlled(
+    law: &CheckedLaw,
+    map: &CheckedArchMap,
+    texts: &[&str],
+    control: &mut Control,
+) -> Result<ResolvedRequests, ResolveFailure> {
+    let result = resolve_inner(law, map, texts, control);
+    finish_request(result, control, Checkpoint::Resolve)
+}
+
+fn resolve_inner(
     law: &CheckedLaw,
     map: &CheckedArchMap,
     texts: &[&str],
@@ -405,15 +417,17 @@ pub fn resolve_observed_requests_controlled(
                     },
                 )
                 .is_some();
-            phase(control, Checkpoint::RequestBinding)?;
-            if duplicate {
-                return Err(invalid(problem(
+            let result = if duplicate {
+                Err(invalid(problem(
                     RequestIssueCode::DuplicateArgument,
                     &raw.id,
                     &key,
                     "同じ parameter の束縛が重複している",
-                )));
-            }
+                )))
+            } else {
+                Ok(())
+            };
+            finish_request(result, control, Checkpoint::RequestBinding)?;
         }
         let mut unbound = Vec::new();
         for param in params {
@@ -541,27 +555,11 @@ pub fn resolve_observed_requests_controlled(
     }
     let (evaluation_order, cyclic) = order(&requests, &names, control)?;
     if !cyclic.is_empty() {
-        let mut sorted_issues = BTreeMap::new();
-        for i in cyclic {
-            phase(control, Checkpoint::RequestDependency)?;
-            sorted_issues.insert(
-                requests[i].id.clone(),
-                problem(
-                    RequestIssueCode::Cycle,
-                    &requests[i].id,
-                    &requests[i].id,
-                    "問いの依存に循環がある",
-                ),
-            );
-            phase(control, Checkpoint::RequestDependency)?;
-        }
-        let mut issues = Vec::new();
-        for issue in sorted_issues.into_values() {
-            phase(control, Checkpoint::RequestDependency)?;
-            issues.push(issue);
-            phase(control, Checkpoint::RequestDependency)?;
-        }
-        return Err(ResolveFailure::Invalid { requests, issues });
+        return finish_request(
+            Err(cycle_failure(&requests, &cyclic)),
+            control,
+            Checkpoint::RequestDependency,
+        );
     }
     phase(control, Checkpoint::RequestDependency)?;
     Ok(ResolvedRequests {
@@ -575,6 +573,27 @@ fn stopped(reason: StopReason) -> ResolveFailure {
 }
 fn phase(control: &mut Control, point: Checkpoint) -> Result<(), ResolveFailure> {
     control.checkpoint(point).map_err(stopped)
+}
+/// A known request error outranks a budget stop; cancellation remains first.
+fn finish_request<T>(
+    result: Result<T, ResolveFailure>,
+    control: &mut Control,
+    point: Checkpoint,
+) -> Result<T, ResolveFailure> {
+    match (result, control.checkpoint(point)) {
+        (
+            Err(ResolveFailure::Invalid {
+                requests, issues, ..
+            }),
+            Err(reason @ StopReason::BudgetExhausted { .. }),
+        ) => Err(ResolveFailure::Invalid {
+            requests,
+            issues,
+            stop_reason: Some(reason),
+        }),
+        (_, Err(reason)) => Err(stopped(reason)),
+        (result, Ok(())) => result,
+    }
 }
 fn checkpoint(control: &mut Control) -> Result<(), ResolveFailure> {
     phase(control, Checkpoint::Resolve)
@@ -591,6 +610,7 @@ fn invalid(issue: RequestIssue) -> ResolveFailure {
     ResolveFailure::Invalid {
         requests: vec![],
         issues: vec![issue],
+        stop_reason: None,
     }
 }
 
@@ -807,6 +827,15 @@ fn owner_check(
         phase(control, Checkpoint::RequestBinding)?;
         return Ok(true);
     };
+    if snapshot != os {
+        let result = Err(invalid(problem(
+            RequestIssueCode::Type,
+            request,
+            argument,
+            "依存 parameter の owner と subject は同じ snapshot に属する",
+        )));
+        return finish_request(result, control, Checkpoint::RequestBinding);
+    }
     let s = subject(map, snapshot, id, control)?.ok_or_else(|| {
         invalid(problem(
             RequestIssueCode::Reference,
@@ -839,8 +868,28 @@ fn owner_check(
         }
         _ => Ok(true),
     };
-    phase(control, Checkpoint::RequestBinding)?;
-    result
+    finish_request(result, control, Checkpoint::RequestBinding)
+}
+
+/// Diagnostics only: the traversal has already established each listed cycle.
+fn cycle_failure(requests: &[Request], cyclic: &[usize]) -> ResolveFailure {
+    let mut issues = BTreeMap::new();
+    for &i in cyclic {
+        issues.insert(
+            requests[i].id.clone(),
+            problem(
+                RequestIssueCode::Cycle,
+                &requests[i].id,
+                &requests[i].id,
+                "問いの依存に循環がある",
+            ),
+        );
+    }
+    ResolveFailure::Invalid {
+        requests: requests.to_vec(),
+        issues: issues.into_values().collect(),
+        stop_reason: None,
+    }
 }
 
 fn order(
@@ -902,40 +951,62 @@ fn order(
     }
     // 未処理の下流も cycle とする誤りを避け、各自へ戻れる node だけを記録する。
     let mut cyclic = Vec::new();
-    for start in 0..requests.len() {
-        checkpoint(control)?;
-        phase(control, Checkpoint::RequestDependency)?;
-        if done[start] {
-            phase(control, Checkpoint::RequestDependency)?;
-            continue;
-        }
-        let mut seen = BTreeSet::new();
-        let mut stack = Vec::new();
-        for &dependency in &deps[start] {
-            phase(control, Checkpoint::RequestDependency)?;
-            stack.push(dependency);
-            phase(control, Checkpoint::RequestDependency)?;
-        }
-        while let Some(i) = stack.pop() {
+    let result = (|| {
+        for start in 0..requests.len() {
             checkpoint(control)?;
             phase(control, Checkpoint::RequestDependency)?;
-            if i == start {
-                cyclic.push(start);
+            if done[start] {
                 phase(control, Checkpoint::RequestDependency)?;
-                break;
+                continue;
             }
-            if seen.insert(i) {
-                for &dependency in &deps[i] {
+            let mut seen = BTreeSet::new();
+            let mut stack = Vec::new();
+            for &dependency in &deps[start] {
+                phase(control, Checkpoint::RequestDependency)?;
+                stack.push(dependency);
+                phase(control, Checkpoint::RequestDependency)?;
+            }
+            while let Some(i) = stack.pop() {
+                checkpoint(control)?;
+                phase(control, Checkpoint::RequestDependency)?;
+                if i == start {
+                    cyclic.push(start);
                     phase(control, Checkpoint::RequestDependency)?;
-                    stack.push(dependency);
-                    phase(control, Checkpoint::RequestDependency)?;
+                    break;
                 }
+                if seen.insert(i) {
+                    for &dependency in &deps[i] {
+                        phase(control, Checkpoint::RequestDependency)?;
+                        stack.push(dependency);
+                        phase(control, Checkpoint::RequestDependency)?;
+                    }
+                }
+                phase(control, Checkpoint::RequestDependency)?;
             }
             phase(control, Checkpoint::RequestDependency)?;
         }
         phase(control, Checkpoint::RequestDependency)?;
+        Ok(())
+    })();
+    if let Err(error) = result {
+        if !cyclic.is_empty()
+            && matches!(
+                error,
+                ResolveFailure::Interrupted {
+                    reason: StopReason::BudgetExhausted { .. }
+                }
+            )
+        {
+            // Keep only the cycles already witnessed; do not continue traversal after the stop.
+            return finish_request(
+                Err(cycle_failure(requests, &cyclic)),
+                control,
+                Checkpoint::RequestDependency,
+            );
+        }
+        return Err(error);
     }
-    phase(control, Checkpoint::RequestDependency)?;
+
     Ok((sorted, cyclic))
 }
 
@@ -965,16 +1036,16 @@ impl<'a> Parser<'a> {
         phase(&mut self.control, Checkpoint::RequestSyntax)
     }
     fn error(&mut self, message: &str) -> ResolveFailure {
-        if let Err(stopped) = self.tick() {
-            return stopped;
-        }
-        invalid(problem(
+        let failure = invalid(problem(
             RequestIssueCode::Syntax,
             &self.id,
             self.src,
             message,
-        ))
+        ));
+        finish_request::<()>(Err(failure), &mut self.control, Checkpoint::RequestSyntax)
+            .unwrap_err()
     }
+
     fn ws(&mut self) -> Result<(), ResolveFailure> {
         self.tick()?;
         while self
@@ -1035,10 +1106,10 @@ impl<'a> Parser<'a> {
         self.tick()?;
         let name = self.name(false)?;
         let is_reserved = crate::law::parser::is_reserved(&name);
-        self.tick()?;
         if is_reserved {
             return Err(self.error("予約語は識別子に使えない"));
         }
+        self.tick()?;
         Ok(name)
     }
     fn selector(&mut self) -> Result<Selector, ResolveFailure> {
@@ -1123,15 +1194,17 @@ impl<'a> Parser<'a> {
                 key.push_str(&self.name(false)?);
             }
             let duplicate = !keys.insert(key.clone());
-            self.tick()?;
-            if duplicate {
-                return Err(invalid(problem(
+            let result = if duplicate {
+                Err(invalid(problem(
                     RequestIssueCode::DuplicateArgument,
                     &self.id,
                     &key,
                     "引数名が重複している",
-                )));
-            }
+                )))
+            } else {
+                Ok(())
+            };
+            finish_request(result, &mut self.control, Checkpoint::RequestSyntax)?;
             self.expect(b'=')?;
             arguments.push((key, self.selector()?));
             self.tick()?;

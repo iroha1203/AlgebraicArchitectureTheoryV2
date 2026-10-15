@@ -108,18 +108,55 @@ impl Type {
 
     /// 依存参照を、所属条件を除いた参照型へ落とす。式の型の比較と表示に使う。
     pub fn erase(&self) -> Type {
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
-            Type::Owned(n, _) => Type::Ref(n.clone()),
-            Type::Tuple(items) => Type::Tuple(items.iter().map(Type::erase).collect()),
-            Type::List(t) => Type::List(Box::new(t.erase())),
-            Type::Set(t) => Type::Set(Box::new(t.erase())),
-            Type::Option(t) => Type::Option(Box::new(t.erase())),
-            Type::Map(a, b) => Type::Map(Box::new(a.erase()), Box::new(b.erase())),
-            Type::Term(args, ret) => Type::Term(
-                args.iter().map(Type::erase).collect(),
-                Box::new(ret.erase()),
-            ),
-            t => t.clone(),
+        self.erase_controlled::<Box<crate::issue::Issue>>(
+            &mut Control::unlimited(),
+            Checkpoint::Expression,
+        )
+        .expect("通常の型消去は中断しない")
+    }
+
+    /// 型成分の消去を入力検査と同じ停止制御の下で行う。
+    pub(crate) fn erase_controlled<E: InputError>(
+        &self,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<Type, E> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            E::checkpoint(control, point)?;
+            let result = (|| {
+                Ok(match self {
+                    Type::Owned(n, _) => Type::Ref(n.clone()),
+                    Type::Tuple(items) => {
+                        let mut erased = Vec::new();
+                        for item in items {
+                            E::checkpoint(control, point)?;
+                            erased.push(item.erase_controlled::<E>(control, point)?);
+                            E::checkpoint(control, point)?;
+                        }
+                        Type::Tuple(erased)
+                    }
+                    Type::List(t) => Type::List(Box::new(t.erase_controlled::<E>(control, point)?)),
+                    Type::Set(t) => Type::Set(Box::new(t.erase_controlled::<E>(control, point)?)),
+                    Type::Option(t) => {
+                        Type::Option(Box::new(t.erase_controlled::<E>(control, point)?))
+                    }
+                    Type::Map(a, b) => Type::Map(
+                        Box::new(a.erase_controlled::<E>(control, point)?),
+                        Box::new(b.erase_controlled::<E>(control, point)?),
+                    ),
+                    Type::Term(args, ret) => {
+                        let mut erased = Vec::new();
+                        for arg in args {
+                            E::checkpoint(control, point)?;
+                            erased.push(arg.erase_controlled::<E>(control, point)?);
+                            E::checkpoint(control, point)?;
+                        }
+                        Type::Term(erased, Box::new(ret.erase_controlled::<E>(control, point)?))
+                    }
+                    t => t.clone(),
+                })
+            })();
+            E::finish(result, control, point)
         })
     }
 
@@ -399,6 +436,45 @@ mod controlled_tests {
                     Err(Failure::Stopped(StopReason::Cancelled(Signal::Term)))
                 ));
             }
+        }
+    }
+    #[test]
+    fn controlled_erase_visits_nested_components_and_preserves_owned_erasure() {
+        let ty = Type::Term(
+            vec![Type::Tuple(vec![
+                Type::Owned("V.Item".into(), "owner".into()),
+                Type::Option(Box::new(Type::Bool)),
+            ])],
+            Box::new(Type::Z),
+        );
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let mut control = Control::new(Limits::default(), move |_| {
+            seen.set(seen.get() + 1);
+            Usage::default()
+        });
+        let erased = ty
+            .erase_controlled::<Failure>(&mut control, Checkpoint::Expression)
+            .unwrap();
+        assert_eq!(erased, ty.erase());
+        assert_eq!(
+            erased.wire().canonical(),
+            r#"["Term",[["Tuple",["Ref","V.Item"],["Option","Bool"]]],"Z"]"#
+        );
+        assert!(count.get() > 10);
+        for at in 1..=count.get() {
+            let mut visits = 0;
+            let mut control = Control::new(Limits::default(), move |_| {
+                visits += 1;
+                Usage {
+                    signal: (visits == at).then_some(Signal::Term),
+                    ..Usage::default()
+                }
+            });
+            assert!(matches!(
+                ty.erase_controlled::<Failure>(&mut control, Checkpoint::Expression),
+                Err(Failure::Stopped(StopReason::Cancelled(Signal::Term)))
+            ));
         }
     }
 }

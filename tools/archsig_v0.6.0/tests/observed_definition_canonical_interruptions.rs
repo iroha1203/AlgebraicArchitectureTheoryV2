@@ -191,12 +191,24 @@ fn definition_errors_keep_their_stage_and_cannot_hide_final_canonical_stop() {
         assert_eq!(total.get(), 3, "byte digest before/after and error exit");
         for kind in 0..3 {
             let (mut control, count) = probe(Some((total.get(), kind)));
-            stopped(
-                check_inputs(source.clone(), &mut control).unwrap_err(),
-                reason(kind),
-                &count,
-                total.get(),
-            );
+            let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+            if kind == 0 {
+                stopped(failure, reason(kind), &count, total.get());
+            } else {
+                assert_eq!(failure.status(), status);
+                assert!(failure.primitives().is_empty());
+                assert!(failure.declarations().is_empty());
+                assert!(failure.vocabularies().is_empty());
+                let expected_code = if status == InputStatus::Invalid {
+                    "syntax"
+                } else {
+                    "unsupported_version"
+                };
+                assert!(failure.issues().iter().any(|issue| matches!(issue, Json::Obj(fields) if fields["code"] == Json::str(expected_code))));
+                assert!(failure.issues().contains(&reason(kind).wire()));
+                assert_eq!(control.stop_reason(), Some(reason(kind)));
+                assert_eq!(count.get(), total.get());
+            }
         }
     }
 }

@@ -15,6 +15,21 @@ impl From<Box<Issue>> for CheckFailure<Box<Issue>> {
 pub trait InputError: From<Box<Issue>> {
     fn checkpoint(control: &mut Control, point: Checkpoint) -> Result<(), Self>;
     fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self;
+    fn is_budget_stop(&self) -> bool {
+        false
+    }
+    /// Preserve known input failures above budget exhaustion; cancellation stays first.
+    fn finish<T>(
+        result: Result<T, Self>,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<T, Self> {
+        match (result, Self::checkpoint(control, point)) {
+            (Err(input), Err(stop)) if !input.is_stopped() && stop.is_budget_stop() => Err(input),
+            (_, Err(stop)) => Err(stop),
+            (result, Ok(())) => result,
+        }
+    }
     fn is_stopped(&self) -> bool {
         false
     }
@@ -39,6 +54,12 @@ impl InputError for CheckFailure<Box<Issue>> {
     }
     fn is_stopped(&self) -> bool {
         matches!(self, Self::Stopped(_))
+    }
+    fn is_budget_stop(&self) -> bool {
+        matches!(
+            self,
+            Self::Stopped(crate::observed::control::StopReason::BudgetExhausted { .. })
+        )
     }
 }
 
@@ -110,31 +131,34 @@ pub(crate) fn parse_inner<E: InputError>(
     point: Checkpoint,
 ) -> Result<JNode, E> {
     E::checkpoint(control, point)?;
-    if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
-        return Err((syntax((0, 3), "BOM は使えない")).into());
-    }
-    let text = std::str::from_utf8(bytes).map_err(|e| {
-        let at = e.valid_up_to();
-        syntax(
-            (at, at + e.error_len().unwrap_or(bytes.len() - at)),
-            "不正な UTF-8",
-        )
-    })?;
-    let mut p = P {
-        s: text.as_bytes(),
-        text,
-        i: 0,
-        control,
-        point,
-        error: std::marker::PhantomData::<E>,
-    };
-    p.ws()?;
-    let v = p.value("")?;
-    p.ws()?;
-    if p.i != p.s.len() {
-        return Err((syntax((p.i, p.s.len()), "JSON 値の後に余分な文字がある")).into());
-    }
-    Ok(v)
+    let result = (|| -> Result<JNode, E> {
+        if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
+            return Err((syntax((0, 3), "BOM は使えない")).into());
+        }
+        let text = std::str::from_utf8(bytes).map_err(|e| {
+            let at = e.valid_up_to();
+            syntax(
+                (at, at + e.error_len().unwrap_or(bytes.len() - at)),
+                "不正な UTF-8",
+            )
+        })?;
+        let mut p = P {
+            s: text.as_bytes(),
+            text,
+            i: 0,
+            control,
+            point,
+            error: std::marker::PhantomData::<E>,
+        };
+        p.ws()?;
+        let v = p.value("")?;
+        p.ws()?;
+        if p.i != p.s.len() {
+            return Err((syntax((p.i, p.s.len()), "JSON 値の後に余分な文字がある")).into());
+        }
+        Ok(v)
+    })();
+    E::finish(result, control, point)
 }
 
 struct P<'a, 'c, E> {
@@ -168,7 +192,8 @@ impl<E: InputError> P<'_, '_, E> {
 
     fn value(&mut self, pointer: &str) -> Result<JNode, E> {
         self.checkpoint()?;
-        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || self.value_inner(pointer))
+        let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || self.value_inner(pointer));
+        E::finish(result, self.control, self.point)
     }
 
     fn value_inner(&mut self, pointer: &str) -> Result<JNode, E> {

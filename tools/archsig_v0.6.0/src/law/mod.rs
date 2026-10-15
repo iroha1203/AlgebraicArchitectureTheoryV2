@@ -217,6 +217,24 @@ fn check_law_inner<E: InputError>(
     definitions: &CheckedDefinitions,
     control: &mut Control,
 ) -> Result<CheckedLaw, (E, String, Option<String>)> {
+    let result = check_law_processing::<E>(bytes, definitions, control);
+    // The final sample also covers version and parser error exits. Preserve the
+    // known input failure over a budget, and let cancellation take priority.
+    match (result, E::checkpoint(control, Checkpoint::LawIteration)) {
+        (result, Ok(())) => result,
+        (Err((input, bytes, model)), Err(stop)) if !input.is_stopped() && stop.is_budget_stop() => {
+            Err((input, bytes, model))
+        }
+        (Err((_, bytes, model)), Err(stop)) => Err((stop, bytes, model)),
+        (Ok(checked), Err(stop)) => Err((stop, checked.bytes_digest, Some(checked.model_digest))),
+    }
+}
+
+fn check_law_processing<E: InputError>(
+    bytes: &[u8],
+    definitions: &CheckedDefinitions,
+    control: &mut Control,
+) -> Result<CheckedLaw, (E, String, Option<String>)> {
     let bytes_digest = sha256_digest(bytes);
     let fail = |issue: E, model_digest: Option<String>| (issue, bytes_digest.clone(), model_digest);
     // 検査順: UTF-8、header の版、残りの字句と宣言の文法、名前・型・参照。
@@ -257,7 +275,8 @@ fn check_law_inner<E: InputError>(
         checker.collect_names_controlled(control)?;
         checker.check_bodies_controlled(control)
     })();
-    result.map_err(|i| fail(i, Some(digest.clone())))?;
+    E::finish(result, control, Checkpoint::LawSemantics)
+        .map_err(|i| fail(i, Some(digest.clone())))?;
     let infos = checker
         .declaration_infos()
         .map_err(|i| fail(i, Some(digest.clone())))?;

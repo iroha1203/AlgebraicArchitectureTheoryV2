@@ -15,8 +15,7 @@ fn step<E: InputError, T>(
 ) -> R<T, E> {
     E::checkpoint(control, Checkpoint::DefinitionSchema)?;
     let result = run(control);
-    E::checkpoint(control, Checkpoint::DefinitionSchema)?;
-    result
+    E::finish(result, control, Checkpoint::DefinitionSchema)
 }
 
 // These values feed vocabulary/model digests, so their construction belongs to
@@ -27,8 +26,7 @@ fn canonical_step<E: InputError, T>(
 ) -> R<T, E> {
     E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
     let result = run(control);
-    E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
-    result
+    E::finish(result, control, Checkpoint::DefinitionCanonical)
 }
 
 fn wires<E: InputError, T>(
@@ -833,6 +831,10 @@ mod interruption_tests {
         });
         let outcome = run(&mut baseline);
         assert!(!matches!(outcome, Err(CheckFailure::Stopped(_))));
+        let baseline_code = match &outcome {
+            Err(CheckFailure::Input(issue)) => Some(issue.code),
+            _ => None,
+        };
         let total = count.get();
         assert!(total >= 2);
         for at in [1, total / 2, total] {
@@ -870,10 +872,17 @@ mod interruption_tests {
                     },
                 };
                 let failure = run(&mut control).expect_err("helper 内の前後境界で停止");
-                assert!(
-                    matches!(failure, CheckFailure::Stopped(ref r) if r == &expected),
-                    "{at}/{total}: {failure:?}"
-                );
+                match failure {
+                    CheckFailure::Stopped(reason) => assert_eq!(reason, expected),
+                    CheckFailure::Input(issue) => {
+                        assert!(kind > 0, "signal takes priority at {at}/{total}");
+                        assert_eq!(
+                            Some(issue.code),
+                            baseline_code,
+                            "only an already established input failure can outrank budget"
+                        );
+                    }
+                }
                 assert_eq!(control.stop_reason(), Some(expected));
             }
         }
