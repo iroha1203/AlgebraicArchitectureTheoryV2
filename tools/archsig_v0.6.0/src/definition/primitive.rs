@@ -1,10 +1,12 @@
 //! 共通原始定義の型適格性・所属・対応・有限 data の検査。
 //! 原始署名・Type・実入力位置から直接検査し、解決した構造を同じ表へ保持する。
 use super::*;
-use crate::{prime::is_prime, types::Type};
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
+use crate::{prime::is_prime_controlled, types::Type};
 use num_bigint::BigUint;
 use std::collections::{BTreeMap, BTreeSet};
-type R<T> = Result<T, Box<Issue>>;
+type R<T, E = Box<Issue>> = Result<T, E>;
 
 pub(crate) fn child(parent: &Location, token: &str) -> Location {
     match parent {
@@ -18,56 +20,144 @@ pub(crate) fn child(parent: &Location, token: &str) -> Location {
         Location::Law { .. } => parent.clone(),
     }
 }
-fn fail<T>(code: Code, at: &Location, message: impl Into<String>) -> R<T> {
+fn fail<T, E: InputError>(code: Code, at: &Location, message: impl Into<String>) -> R<T, E> {
     Err(Box::new(Issue {
         code,
         message: message.into(),
         location: at.clone(),
         details: Details::Empty,
-    }))
+    })
+    .into())
 }
-fn mismatch<T>(at: &Location, expected: &Type, actual: &Type, message: impl Into<String>) -> R<T> {
-    Err(Box::new(Issue {
-        code: Code::Type,
-        message: message.into(),
-        location: at.clone(),
-        details: Details::Type {
+fn required_field<'a, E: InputError>(
+    signature: &'a PrimitiveSignature,
+    name: &str,
+    at: &Location,
+    message: &str,
+    control: &mut Control,
+) -> R<&'a Field, E> {
+    signature.field_checked_controlled::<E, _>(
+        name,
+        control,
+        Checkpoint::DefinitionSemantics,
+        |field, _| match field {
+            Some(field) => Ok(field),
+            None => fail(Code::Syntax, at, message),
+        },
+    )
+}
+fn required_root<E: InputError>(
+    defs: &CheckedDefinitions,
+    name: &str,
+    at: &Location,
+    message: &str,
+    control: &mut Control,
+) -> R<(), E> {
+    defs.root_entity_checked_controlled::<E, _>(name, control, |root, _| {
+        if root {
+            Ok(())
+        } else {
+            fail(Code::Syntax, at, message)
+        }
+    })
+}
+fn required_owner<E: InputError>(
+    defs: &CheckedDefinitions,
+    name: &str,
+    expected: &str,
+    at: &Location,
+    message: &str,
+    control: &mut Control,
+) -> R<(), E> {
+    defs.owner_root_checked_controlled::<E, _>(name, control, |owner, _| {
+        if owner == Some(expected) {
+            Ok(())
+        } else {
+            fail(Code::Syntax, at, message)
+        }
+    })
+}
+fn mismatch<T, E: InputError>(
+    at: &Location,
+    expected: &Type,
+    actual: &Type,
+    message: impl Into<String>,
+    control: &mut Control,
+) -> R<T, E> {
+    let message = message.into();
+    let details: R<Details, E> = (|| {
+        Ok(Details::Type {
+            expected: expected.erase_controlled::<E>(control, Checkpoint::DefinitionSemantics)?,
+            actual: actual.erase_controlled::<E>(control, Checkpoint::DefinitionSemantics)?,
+        })
+    })();
+    let details = match details {
+        Ok(details) => details,
+        // Complete only the payload of the already detected mismatch.
+        Err(stop) if stop.is_budget_stop() => Details::Type {
             expected: expected.erase(),
             actual: actual.erase(),
         },
-    }))
+        Err(stop) => return Err(stop),
+    };
+    Err(Box::new(Issue {
+        code: Code::Type,
+        message,
+        location: at.clone(),
+        details,
+    })
+    .into())
 }
 
 impl CheckedDefinitions {
     /// data を通じた参照・Term の包含を、原始定義だけから固定点で計算する。
     pub fn data_properties(&self) -> BTreeMap<String, DataProperties> {
-        let mut props: BTreeMap<String, DataProperties> = self
-            .declarations
-            .iter()
-            .filter_map(|(n, d)| {
-                matches!(d.signature, PrimitiveSignature::Data { .. })
-                    .then(|| (n.clone(), DataProperties::default()))
-            })
-            .collect();
+        self.data_properties_controlled::<Box<Issue>>(&mut Control::unlimited())
+            .expect("通常の性質計算は中断しない")
+    }
+    /// 同じ固定点計算に検査の共有制御を渡す。
+    pub(crate) fn data_properties_controlled<E: InputError>(
+        &self,
+        control: &mut Control,
+    ) -> R<BTreeMap<String, DataProperties>, E> {
+        let mut props = BTreeMap::new();
+        for (name, d) in &self.declarations {
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
+            if matches!(d.signature, PrimitiveSignature::Data { .. }) {
+                props.insert(name.clone(), DataProperties::default());
+            }
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
+        }
         loop {
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
             let mut changed = false;
             for (name, d) in &self.declarations {
+                E::checkpoint(control, Checkpoint::DefinitionData)?;
                 let PrimitiveSignature::Data { constructors } = &d.signature else {
                     continue;
                 };
                 let mut p = DataProperties::default();
-                for t in constructors.iter().flat_map(|c| &c.arguments) {
-                    p.term_or_path |= has_term_or_path(t, &props);
-                    p.reference |= has_reference(t, &props);
+                for constructor in constructors {
+                    E::checkpoint(control, Checkpoint::DefinitionData)?;
+                    for t in &constructor.arguments {
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        p.term_or_path |= has_term_or_path::<E>(t, &props, control)?;
+                        p.reference |= has_reference::<E>(t, &props, control)?;
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                    }
+                    E::checkpoint(control, Checkpoint::DefinitionData)?;
                 }
                 if props[name] != p {
                     props.insert(name.clone(), p);
                     changed = true;
                 }
+                E::checkpoint(control, Checkpoint::DefinitionData)?;
             }
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
             if !changed {
-                return props;
+                return Ok(props);
             }
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
         }
     }
     /// 完全名へ解決済みの原始型を、左にある parameter と実入力位置で検査する。
@@ -77,68 +167,230 @@ impl CheckedDefinitions {
         at: &Location,
         earlier: &[(&str, &Type)],
     ) -> R<()> {
-        check_type(self, &self.data_properties(), ty, at, earlier)
+        let mut control = Control::unlimited();
+        let props = self.data_properties_controlled::<Box<Issue>>(&mut control)?;
+        check_type::<Box<Issue>>(self, &props, ty, at, earlier, &mut control)
     }
     pub fn is_root_entity(&self, name: &str) -> bool {
-        self.declarations.get(name).is_some_and(|d| {
-            matches!(d.signature, PrimitiveSignature::Entity { .. })
-                && d.signature.field("owner").is_none()
-        })
+        self.is_root_entity_controlled::<Box<Issue>>(name, &mut Control::unlimited())
+            .expect("通常の所属検査は中断しない")
+    }
+    pub(crate) fn is_root_entity_controlled<E: InputError>(
+        &self,
+        name: &str,
+        control: &mut Control,
+    ) -> R<bool, E> {
+        self.root_entity_checked_controlled::<E, _>(name, control, |root, _| Ok(root))
+    }
+    fn root_entity_checked_controlled<E: InputError, T>(
+        &self,
+        name: &str,
+        control: &mut Control,
+        check: impl FnOnce(bool, &mut Control) -> R<T, E>,
+    ) -> R<T, E> {
+        E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+        let result = match self.declarations.get(name) {
+            Some(d) if matches!(d.signature, PrimitiveSignature::Entity { .. }) => {
+                d.signature.field_checked_controlled::<E, _>(
+                    "owner",
+                    control,
+                    Checkpoint::DefinitionSemantics,
+                    |owner, control| check(owner.is_none(), control),
+                )
+            }
+            _ => check(false, control),
+        };
+        E::finish(result, control, Checkpoint::DefinitionSemantics)
     }
     /// 原始署名に明記した所属先。検査中にも宣言順に依存せず読める。
     pub fn owner_root(&self, name: &str) -> Option<&str> {
-        let d = self.declarations.get(name)?;
-        if !matches!(
-            d.signature,
-            PrimitiveSignature::Entity { .. } | PrimitiveSignature::Arrow { .. }
-        ) {
-            return None;
-        }
-        let Type::Ref(root) = &d.signature.field("owner")?.ty else {
-            return None;
-        };
-        self.is_root_entity(root).then_some(root.as_str())
+        self.owner_root_controlled::<Box<Issue>>(name, &mut Control::unlimited())
+            .expect("通常の所属検査は中断しない")
+    }
+    pub(crate) fn owner_root_controlled<E: InputError>(
+        &self,
+        name: &str,
+        control: &mut Control,
+    ) -> R<Option<&str>, E> {
+        self.owner_root_checked_controlled::<E, _>(name, control, |root, _| Ok(root))
+    }
+    fn owner_root_checked_controlled<'a, E: InputError, T>(
+        &'a self,
+        name: &str,
+        control: &mut Control,
+        mut check: impl FnMut(Option<&'a str>, &mut Control) -> R<T, E>,
+    ) -> R<T, E> {
+        E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+        let result = (|| {
+            let Some(d) = self.declarations.get(name) else {
+                return check(None, control);
+            };
+            if !matches!(
+                d.signature,
+                PrimitiveSignature::Entity { .. } | PrimitiveSignature::Arrow { .. }
+            ) {
+                return check(None, control);
+            }
+            let root = d.signature.field_checked_controlled::<E, _>(
+                "owner",
+                control,
+                Checkpoint::DefinitionSemantics,
+                |field, control| match field.map(|field| &field.ty) {
+                    Some(Type::Ref(root)) => Ok(std::ops::ControlFlow::Continue(root)),
+                    _ => check(None, control).map(std::ops::ControlFlow::Break),
+                },
+            )?;
+            match root {
+                std::ops::ControlFlow::Break(result) => Ok(result),
+                std::ops::ControlFlow::Continue(root) => self
+                    .root_entity_checked_controlled::<E, _>(root, control, |valid, control| {
+                        check(valid.then_some(root.as_str()), control)
+                    }),
+            }
+        })();
+        E::finish(result, control, Checkpoint::DefinitionSemantics)
     }
 }
-fn has_term_or_path(t: &Type, props: &BTreeMap<String, DataProperties>) -> bool {
-    t.any(&mut |t| match t {
-        Type::Term(..) | Type::Path(..) => true,
-        Type::Data(n) => props.get(n).is_some_and(|p| p.term_or_path),
-        _ => false,
-    })
-}
-fn has_reference(t: &Type, props: &BTreeMap<String, DataProperties>) -> bool {
-    t.any(&mut |t| match t {
-        Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
-        Type::Data(n) => props.get(n).is_some_and(|p| p.reference),
-        _ => false,
-    })
-}
-fn check_type(
-    defs: &CheckedDefinitions,
-    props: &BTreeMap<String, DataProperties>,
+/// Bool を読む探索と、拒否を確定する検査で同じ traversal を使う。
+/// predicate が元 Issue を返した後は post-budget よりその Issue を優先する。
+fn type_scan<E: InputError>(
     t: &Type,
-    at: &Location,
-    earlier: &[(&str, &Type)],
-) -> R<()> {
+    predicate: &mut impl FnMut(&Type) -> R<bool, E>,
+    control: &mut Control,
+) -> R<bool, E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
-        check_type_inner(defs, props, t, at, earlier)
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
+        let result = (|| {
+            let found = if predicate(t)? {
+                true
+            } else {
+                match t {
+                    Type::Tuple(items) => {
+                        let mut found = false;
+                        for item in items {
+                            E::checkpoint(control, Checkpoint::DefinitionData)?;
+                            if type_scan::<E>(item, predicate, control)? {
+                                found = true;
+                                break;
+                            }
+                            E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        }
+                        found
+                    }
+                    Type::List(t) | Type::Set(t) | Type::Option(t) => {
+                        type_scan::<E>(t, predicate, control)?
+                    }
+                    Type::Map(a, b) => {
+                        type_scan::<E>(a, predicate, control)?
+                            || type_scan::<E>(b, predicate, control)?
+                    }
+                    Type::Term(args, ret) => {
+                        let mut found = false;
+                        for arg in args {
+                            E::checkpoint(control, Checkpoint::DefinitionData)?;
+                            if type_scan::<E>(arg, predicate, control)? {
+                                found = true;
+                                break;
+                            }
+                            E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        }
+                        found || type_scan::<E>(ret, predicate, control)?
+                    }
+                    _ => false,
+                }
+            };
+            Ok(found)
+        })();
+        E::finish(result, control, Checkpoint::DefinitionData)
     })
 }
-fn check_type_inner(
+fn type_any<E: InputError>(
+    t: &Type,
+    predicate: &mut impl FnMut(&Type) -> bool,
+    control: &mut Control,
+) -> R<bool, E> {
+    type_scan::<E>(t, &mut |ty| Ok(predicate(ty)), control)
+}
+fn reject_type_component<E: InputError>(
+    t: &Type,
+    mut forbidden: impl FnMut(&Type) -> bool,
+    at: &Location,
+    message: &str,
+    control: &mut Control,
+) -> R<(), E> {
+    type_scan::<E>(
+        t,
+        &mut |ty| {
+            if forbidden(ty) {
+                fail(Code::Syntax, at, message)
+            } else {
+                Ok(false)
+            }
+        },
+        control,
+    )?;
+    Ok(())
+}
+fn has_term_or_path<E: InputError>(
+    t: &Type,
+    props: &BTreeMap<String, DataProperties>,
+    control: &mut Control,
+) -> R<bool, E> {
+    type_any::<E>(
+        t,
+        &mut |t| match t {
+            Type::Term(..) | Type::Path(..) => true,
+            Type::Data(n) => props.get(n).is_some_and(|p| p.term_or_path),
+            _ => false,
+        },
+        control,
+    )
+}
+fn has_reference<E: InputError>(
+    t: &Type,
+    props: &BTreeMap<String, DataProperties>,
+    control: &mut Control,
+) -> R<bool, E> {
+    type_any::<E>(
+        t,
+        &mut |t| match t {
+            Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
+            Type::Data(n) => props.get(n).is_some_and(|p| p.reference),
+            _ => false,
+        },
+        control,
+    )
+}
+fn check_type<E: InputError>(
     defs: &CheckedDefinitions,
     props: &BTreeMap<String, DataProperties>,
     t: &Type,
     at: &Location,
     earlier: &[(&str, &Type)],
-) -> R<()> {
+    control: &mut Control,
+) -> R<(), E> {
+    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+        let result = check_type_inner::<E>(defs, props, t, at, earlier, control);
+        E::finish(result, control, Checkpoint::DefinitionSemantics)
+    })
+}
+fn check_type_inner<E: InputError>(
+    defs: &CheckedDefinitions,
+    props: &BTreeMap<String, DataProperties>,
+    t: &Type,
+    at: &Location,
+    earlier: &[(&str, &Type)],
+    control: &mut Control,
+) -> R<(), E> {
+    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
     match t {
         Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text => {}
         Type::Fp(modulus) => {
             let Ok(n) = modulus.parse::<BigUint>() else {
                 return fail(Code::Syntax, at, "Fp の法は正の10進整数文字列");
             };
-            if !is_prime(&n) {
+            if !is_prime_controlled::<E>(&n, control, Checkpoint::DefinitionSemantics)? {
                 return fail(Code::Syntax, at, format!("Fp の法 {modulus} は素数でない"));
             }
         }
@@ -159,14 +411,40 @@ fn check_type_inner(
                 );
             }
             if let Type::Owned(_, index) = t {
-                let Some(root) = defs.owner_root(name) else {
-                    return fail(
-                        Code::Syntax,
-                        at,
-                        format!("`{name}` は所属先を持たない entity・arrow"),
-                    );
-                };
-                let Some((_, param)) = earlier.iter().find(|(n, _)| *n == index) else {
+                let root =
+                    defs.owner_root_checked_controlled::<E, _>(name, control, |root, _| {
+                        root.ok_or_else(|| {
+                            E::from(Box::new(Issue {
+                                code: Code::Syntax,
+                                message: format!("`{name}` は所属先を持たない entity・arrow"),
+                                location: at.clone(),
+                                details: Details::Empty,
+                            }))
+                        })
+                    })?;
+                let mut parameter = None;
+                let mut parameters = earlier.iter().peekable();
+                while let Some((name, ty)) = parameters.next() {
+                    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+                    let found = *name == index;
+                    if !found && parameters.peek().is_none() {
+                        return E::finish(
+                            fail(
+                                Code::Reference,
+                                &child(at, "2"),
+                                format!("添字 `{index}` は左にある parameter を指す"),
+                            ),
+                            control,
+                            Checkpoint::DefinitionSemantics,
+                        );
+                    }
+                    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+                    if found {
+                        parameter = Some(*ty);
+                        break;
+                    }
+                }
+                let Some(param) = parameter else {
                     return fail(
                         Code::Reference,
                         &child(at, "2"),
@@ -174,31 +452,53 @@ fn check_type_inner(
                     );
                 };
                 let expected = Type::Ref(root.into());
-                if param.erase() != expected {
+                if param.erase_controlled::<E>(control, Checkpoint::DefinitionSemantics)?
+                    != expected
+                {
                     return mismatch(
                         &child(at, "2"),
                         &expected,
                         param,
                         "添字の parameter は所属先の根 entity の参照",
+                        control,
                     );
                 }
             }
         }
         Type::Tuple(items) => {
             for (i, t) in items.iter().enumerate() {
-                check_type(defs, props, t, &child(at, &(i + 1).to_string()), earlier)?
+                E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+                check_type::<E>(
+                    defs,
+                    props,
+                    t,
+                    &child(at, &(i + 1).to_string()),
+                    earlier,
+                    control,
+                )?;
+                E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
             }
         }
-        Type::List(t) | Type::Option(t) => check_type(defs, props, t, &child(at, "1"), earlier)?,
+        Type::List(t) | Type::Option(t) => {
+            check_type::<E>(defs, props, t, &child(at, "1"), earlier, control)?
+        }
         Type::Set(t) => {
-            check_type(defs, props, t, &child(at, "1"), earlier)?;
-            if has_term_or_path(t, props) {
-                return fail(Code::Syntax, at, "Set の要素型は Term・Path を含まない");
-            }
+            check_type::<E>(defs, props, t, &child(at, "1"), earlier, control)?;
+            reject_type_component::<E>(
+                t,
+                |ty| match ty {
+                    Type::Term(..) | Type::Path(..) => true,
+                    Type::Data(name) => props.get(name).is_some_and(|p| p.term_or_path),
+                    _ => false,
+                },
+                at,
+                "Set の要素型は Term・Path を含まない",
+                control,
+            )?;
         }
         Type::Map(a, b) => {
-            check_type(defs, props, a, &child(at, "1"), earlier)?;
-            check_type(defs, props, b, &child(at, "2"), earlier)?;
+            check_type::<E>(defs, props, a, &child(at, "1"), earlier, control)?;
+            check_type::<E>(defs, props, b, &child(at, "2"), earlier, control)?;
             if a.ref_target().is_none() || b.ref_target().is_none() {
                 return fail(Code::Syntax, at, "Map の定義域・値域は参照型");
             }
@@ -206,15 +506,36 @@ fn check_type_inner(
         Type::Term(args, ret) => {
             let args_at = child(at, "1");
             for (i, t) in args.iter().enumerate() {
-                check_type(defs, props, t, &child(&args_at, &i.to_string()), &[])?
+                E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+                check_type::<E>(
+                    defs,
+                    props,
+                    t,
+                    &child(&args_at, &i.to_string()),
+                    &[],
+                    control,
+                )?;
+                E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
             }
-            check_type(defs, props, ret, &child(at, "2"), &[])?;
-            if args.iter().any(|t| has_reference(t, props)) || has_reference(ret, props) {
-                return fail(
-                    Code::Syntax,
+            check_type::<E>(defs, props, ret, &child(at, "2"), &[], control)?;
+            for (i, ty) in args.iter().chain(std::iter::once(ret.as_ref())).enumerate() {
+                if i < args.len() {
+                    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+                }
+                reject_type_component::<E>(
+                    ty,
+                    |ty| match ty {
+                        Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
+                        Type::Data(name) => props.get(name).is_some_and(|p| p.reference),
+                        _ => false,
+                    },
                     at,
                     "Term の引数・戻り型は参照・Map・Path を含まない値型",
-                );
+                    control,
+                )?;
+                if i < args.len() {
+                    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+                }
             }
         }
         Type::Path(..) => {
@@ -225,39 +546,88 @@ fn check_type_inner(
             );
         }
     }
+    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
     Ok(())
 }
 
-pub(super) fn check(defs: &mut CheckedDefinitions) -> R<()> {
-    let props = defs.data_properties();
+pub(super) fn check<E: InputError>(
+    defs: &mut CheckedDefinitions,
+    control: &mut Control,
+) -> R<(), E> {
+    let props = defs.data_properties_controlled::<E>(control)?;
     for d in defs.declarations.values() {
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         if let Some((parameters, fields)) = d.signature.record_fields() {
             let mut earlier = Vec::new();
             for p in parameters {
-                check_type(defs, &props, &p.ty, &child(&p.location, "type"), &earlier)?;
+                E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+                check_type::<E>(
+                    defs,
+                    &props,
+                    &p.ty,
+                    &child(&p.location, "type"),
+                    &earlier,
+                    control,
+                )?;
                 earlier.push((p.name.as_str(), &p.ty));
+                E::checkpoint(control, Checkpoint::DefinitionDependency)?;
             }
             for f in fields {
-                check_type(defs, &props, &f.ty, &child(&f.location, "type"), &earlier)?
+                E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+                check_type::<E>(
+                    defs,
+                    &props,
+                    &f.ty,
+                    &child(&f.location, "type"),
+                    &earlier,
+                    control,
+                )?;
+                E::checkpoint(control, Checkpoint::DefinitionDependency)?;
             }
         } else if let PrimitiveSignature::Data { constructors } = &d.signature {
             for c in constructors {
+                E::checkpoint(control, Checkpoint::DefinitionDependency)?;
                 let args_at = child(&c.location, "arguments");
                 for (i, t) in c.arguments.iter().enumerate() {
-                    check_type(defs, &props, t, &child(&args_at, &i.to_string()), &[])?
+                    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+                    check_type::<E>(
+                        defs,
+                        &props,
+                        t,
+                        &child(&args_at, &i.to_string()),
+                        &[],
+                        control,
+                    )?;
+                    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
                 }
+                E::checkpoint(control, Checkpoint::DefinitionDependency)?;
             }
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
     // 解決した owner/endpoint は同じ原始表に保持し、reading ごとの複製を作らない。
     let names: Vec<_> = defs.declarations.keys().cloned().collect();
     for name in &names {
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         let d = &defs.declarations[name];
         let resolved = match &d.signature {
             PrimitiveSignature::Entity { .. } => {
-                let owner = if let Some(f) = d.signature.field("owner") {
+                let owner = if let Some(f) = d.signature.field_controlled::<E>(
+                    "owner",
+                    control,
+                    Checkpoint::DefinitionSemantics,
+                )? {
                     match &f.ty {
-                        Type::Ref(r) if defs.is_root_entity(r) => Some(r.clone()),
+                        Type::Ref(r) => {
+                            required_root::<E>(
+                                defs,
+                                r,
+                                &child(&f.location, "name"),
+                                "owner の型は所属先を持たない entity",
+                                control,
+                            )?;
+                            Some(r.clone())
+                        }
                         _ => {
                             return fail(
                                 Code::Syntax,
@@ -272,19 +642,22 @@ pub(super) fn check(defs: &mut CheckedDefinitions) -> R<()> {
                 Some((owner, None))
             }
             PrimitiveSignature::Arrow { .. } => {
-                let (Some(owner), Some(from), Some(to)) = (
-                    d.signature.field("owner"),
-                    d.signature.field("from"),
-                    d.signature.field("to"),
-                ) else {
-                    return fail(
-                        Code::Syntax,
-                        &child(&d.location, "name"),
-                        "arrow は owner・from・to の field を持つ",
-                    );
-                };
+                let at = child(&d.location, "name");
+                let message = "arrow は owner・from・to の field を持つ";
+                let owner = required_field::<E>(&d.signature, "owner", &at, message, control)?;
+                let from = required_field::<E>(&d.signature, "from", &at, message, control)?;
+                let to = required_field::<E>(&d.signature, "to", &at, message, control)?;
                 let root = match &owner.ty {
-                    Type::Ref(r) if defs.is_root_entity(r) => r.clone(),
+                    Type::Ref(r) => {
+                        required_root::<E>(
+                            defs,
+                            r,
+                            &child(&owner.location, "name"),
+                            "arrow の owner の型は根 entity",
+                            control,
+                        )?;
+                        r.clone()
+                    }
                     _ => {
                         return fail(
                             Code::Syntax,
@@ -311,7 +684,6 @@ pub(super) fn check(defs: &mut CheckedDefinitions) -> R<()> {
                     .declarations
                     .get(&endpoint)
                     .is_some_and(|d| matches!(d.signature, PrimitiveSignature::Entity { .. }))
-                    || defs.owner_root(&endpoint) != Some(root.as_str())
                 {
                     return fail(
                         Code::Syntax,
@@ -319,6 +691,14 @@ pub(super) fn check(defs: &mut CheckedDefinitions) -> R<()> {
                         "arrow の端点は owner に所属する entity",
                     );
                 }
+                required_owner::<E>(
+                    defs,
+                    &endpoint,
+                    &root,
+                    &child(&from.location, "name"),
+                    "arrow の端点は owner に所属する entity",
+                    control,
+                )?;
                 Some((Some(root), Some(endpoint)))
             }
             _ => None,
@@ -338,46 +718,60 @@ pub(super) fn check(defs: &mut CheckedDefinitions) -> R<()> {
                 _ => unreachable!(),
             }
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
-    check_data(defs)?;
+    check_data::<E>(defs, control)?;
     for name in names {
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         if matches!(
             defs.declarations[&name].signature,
             PrimitiveSignature::Correspondence { .. }
         ) {
-            check_correspondence(defs, &props, &name)?
+            check_correspondence::<E>(defs, &props, &name, control)?
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
+    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     Ok(())
 }
 
-fn check_data(defs: &CheckedDefinitions) -> R<()> {
+fn check_data<E: InputError>(defs: &CheckedDefinitions, control: &mut Control) -> R<(), E> {
     let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for (name, d) in &defs.declarations {
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
         let PrimitiveSignature::Data { constructors } = &d.signature else {
             continue;
         };
         for c in constructors {
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
             for (i, t) in c.arguments.iter().enumerate() {
-                if !positive_self(t, name, true) {
-                    return fail(
-                        Code::Syntax,
-                        &child(&child(&c.location, "arguments"), &i.to_string()),
-                        "data の自己参照は直接または Tuple・List・Option を通る",
-                    );
-                }
-                t.any(&mut |t| {
-                    if let Type::Data(other) = t {
-                        if other != name {
-                            edges.entry(name.clone()).or_default().insert(other.clone());
+                E::checkpoint(control, Checkpoint::DefinitionData)?;
+                check_positive_self::<E>(
+                    t,
+                    name,
+                    true,
+                    &child(&child(&c.location, "arguments"), &i.to_string()),
+                    control,
+                )?;
+                type_any::<E>(
+                    t,
+                    &mut |t| {
+                        if let Type::Data(other) = t {
+                            if other != name {
+                                edges.entry(name.clone()).or_default().insert(other.clone());
+                            }
                         }
-                    }
-                    false
-                });
+                        false
+                    },
+                    control,
+                )?;
+                E::checkpoint(control, Checkpoint::DefinitionData)?;
             }
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
         }
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
     }
-    if let Some(n) = find_cycle(&edges) {
+    if let Some(n) = find_cycle_controlled::<E>(&edges, control)? {
         return fail(
             Code::Cycle,
             &child(&defs.declarations[&n].location, "name"),
@@ -386,27 +780,47 @@ fn check_data(defs: &CheckedDefinitions) -> R<()> {
     }
     let mut inhabited = BTreeSet::new();
     loop {
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
         let mut changed = false;
         for (name, d) in &defs.declarations {
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
             if inhabited.contains(name) {
                 continue;
             }
             let PrimitiveSignature::Data { constructors } = &d.signature else {
                 continue;
             };
-            if constructors
-                .iter()
-                .any(|c| c.arguments.iter().all(|t| type_inhabited(t, &inhabited)))
-            {
+            let mut has_constructor = false;
+            for constructor in constructors {
+                E::checkpoint(control, Checkpoint::DefinitionData)?;
+                let mut all_inhabited = true;
+                for t in &constructor.arguments {
+                    E::checkpoint(control, Checkpoint::DefinitionData)?;
+                    if !type_inhabited::<E>(t, &inhabited, control)? {
+                        all_inhabited = false;
+                        break;
+                    }
+                    E::checkpoint(control, Checkpoint::DefinitionData)?;
+                }
+                if all_inhabited {
+                    has_constructor = true;
+                    break;
+                }
+                E::checkpoint(control, Checkpoint::DefinitionData)?;
+            }
+            if has_constructor {
                 inhabited.insert(name.clone());
                 changed = true;
             }
+            E::checkpoint(control, Checkpoint::DefinitionData)?;
         }
         if !changed {
             break;
         }
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
     }
     for (name, d) in &defs.declarations {
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
         if matches!(d.signature, PrimitiveSignature::Data { .. }) && !inhabited.contains(name) {
             return fail(
                 Code::Syntax,
@@ -414,21 +828,32 @@ fn check_data(defs: &CheckedDefinitions) -> R<()> {
                 format!("data `{name}` は有限の値を持たない"),
             );
         }
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
     }
+    E::checkpoint(control, Checkpoint::DefinitionData)?;
     Ok(())
 }
-fn owned_types(defs: &CheckedDefinitions, root: &str) -> BTreeSet<String> {
-    defs.declarations
-        .keys()
-        .filter(|n| defs.owner_root(n) == Some(root))
-        .cloned()
-        .collect()
+fn owned_types<E: InputError>(
+    defs: &CheckedDefinitions,
+    root: &str,
+    control: &mut Control,
+) -> R<BTreeSet<String>, E> {
+    let mut owned = BTreeSet::new();
+    for name in defs.declarations.keys() {
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+        if defs.owner_root_controlled::<E>(name, control)? == Some(root) {
+            owned.insert(name.clone());
+        }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+    }
+    Ok(owned)
 }
-fn check_correspondence(
+fn check_correspondence<E: InputError>(
     defs: &mut CheckedDefinitions,
     props: &BTreeMap<String, DataProperties>,
     name: &str,
-) -> R<()> {
+    control: &mut Control,
+) -> R<(), E> {
     let d = &defs.declarations[name];
     let PrimitiveSignature::Correspondence {
         parameters,
@@ -439,19 +864,40 @@ fn check_correspondence(
     else {
         unreachable!()
     };
-    let (Some(from), Some(to)) = (
-        parameters.iter().find(|p| p.name == "from"),
-        parameters.iter().find(|p| p.name == "to"),
-    ) else {
-        return fail(
-            Code::Syntax,
-            &child(&d.location, "name"),
-            "correspondence は parameters に from・to を持つ",
-        );
-    };
-    let root = |p: &Field| -> R<String> {
+    let at = child(&d.location, "name");
+    let message = "correspondence は parameters に from・to を持つ";
+    let from = super::model::find_field_checked_controlled::<E, _>(
+        parameters,
+        "from",
+        control,
+        Checkpoint::DefinitionSemantics,
+        |field, _| match field {
+            Some(field) => Ok(field),
+            None => fail(Code::Syntax, &at, message),
+        },
+    )?;
+    let to = super::model::find_field_checked_controlled::<E, _>(
+        parameters,
+        "to",
+        control,
+        Checkpoint::DefinitionSemantics,
+        |field, _| match field {
+            Some(field) => Ok(field),
+            None => fail(Code::Syntax, &at, message),
+        },
+    )?;
+    let mut root = |p: &Field| -> R<String, E> {
         match &p.ty {
-            Type::Ref(n) if defs.is_root_entity(n) => Ok(n.clone()),
+            Type::Ref(n) => {
+                required_root::<E>(
+                    defs,
+                    n,
+                    &child(&p.location, "name"),
+                    "correspondence の from・to は根 entity",
+                    control,
+                )?;
+                Ok(n.clone())
+            }
             _ => fail(
                 Code::Syntax,
                 &child(&p.location, "name"),
@@ -465,6 +911,7 @@ fn check_correspondence(
     let mut domain = BTreeMap::new();
     let mut codomain = BTreeSet::new();
     for m in fields {
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         let (e, f) = match &m.ty {
             Type::Map(a, b) => match (a.as_ref(), b.as_ref()) {
                 (Type::Owned(e, p), Type::Owned(f, q)) if p == "from" && q == "to" => {
@@ -486,14 +933,15 @@ fn check_correspondence(
                 );
             }
         };
-        if defs.owner_root(&e) != Some(source.as_str())
-            || defs.owner_root(&f) != Some(target.as_str())
-        {
-            return fail(
-                Code::Syntax,
+        for (name, root) in [(&e, &source), (&f, &target)] {
+            required_owner::<E>(
+                defs,
+                name,
+                root,
                 &child(&m.location, "name"),
                 "対応表の型は from・to の根に所属する",
-            );
+                control,
+            )?;
         }
         if domain.insert(e.clone(), f.clone()).is_some() || !codomain.insert(f.clone()) {
             return fail(
@@ -503,9 +951,10 @@ fn check_correspondence(
             );
         }
         maps.push((m.name.clone(), e, f));
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
-    if domain.keys().cloned().collect::<BTreeSet<_>>() != owned_types(defs, &source)
-        || codomain != owned_types(defs, &target)
+    if domain.keys().cloned().collect::<BTreeSet<_>>() != owned_types::<E>(defs, &source, control)?
+        || codomain != owned_types::<E>(defs, &target, control)?
     {
         return fail(
             Code::Syntax,
@@ -518,8 +967,9 @@ fn check_correspondence(
     let mut explicit = BTreeMap::new();
     let mut targets = BTreeSet::new();
     for a in alignments {
-        let (se, _) = resolve_field(defs, &a.source, &child(&a.location, "source"))?;
-        let (te, _) = resolve_field(defs, &a.target, &child(&a.location, "target"))?;
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+        let (se, _) = resolve_field::<E>(defs, &a.source, &child(&a.location, "source"), control)?;
+        let (te, _) = resolve_field::<E>(defs, &a.target, &child(&a.location, "target"), control)?;
         if domain.get(se) != Some(&te.to_owned()) {
             return fail(
                 Code::Reference,
@@ -544,9 +994,11 @@ fn check_correspondence(
                 "target への align が重複している",
             );
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
     let mut implicit = Vec::new();
     for (_, e, f) in &maps {
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         let es = &defs.declarations[e].signature;
         let fs = &defs.declarations[f].signature;
         let (ep, em) = es.record_fields().expect("owned record");
@@ -555,6 +1007,7 @@ fn check_correspondence(
         let target_fields: Vec<_> = fp.iter().chain(fm).collect();
         let mut alpha = BTreeMap::new();
         for sf in &source_fields {
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
             let s = format!("{e}.{}", sf.name);
             let t = if let Some(t) = explicit.get(&s) {
                 t.clone()
@@ -580,8 +1033,10 @@ fn check_correspondence(
                 sf.name.clone(),
                 t.rsplit('.').next().expect("field 完全名").to_owned(),
             );
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         }
         for tf in &target_fields {
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
             let t = format!("{f}.{}", tf.name);
             if !targets.contains(&t) {
                 return fail(
@@ -590,22 +1045,48 @@ fn check_correspondence(
                     format!("`{t}` への対応元を align で明記する"),
                 );
             }
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         }
         for sf in source_fields {
-            let tf = target_fields
-                .iter()
-                .find(|t| t.name == alpha[&sf.name])
-                .expect("解決済み field");
-            let moved = transport(&sf.ty, &mu, &alpha);
-            if (has_reference(&sf.ty, props) || has_reference(&tf.ty, props)) && moved != tf.ty {
-                return mismatch(
-                    &child(&tf.location, "name"),
-                    &moved,
-                    &tf.ty,
-                    format!("`{e}.{}` と `{f}.{}` の型が対応しない", sf.name, tf.name),
-                );
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+            let tf = super::model::find_field_controlled::<E>(
+                target_fields.iter().copied(),
+                &alpha[&sf.name],
+                control,
+                Checkpoint::DefinitionSemantics,
+            )?
+            .expect("解決済み field");
+            let moved = transport::<E>(&sf.ty, &mu, &alpha, control)?;
+            for ty in [&sf.ty, &tf.ty] {
+                let mut diagnostic_control = control.clone();
+                let references = type_scan::<E>(
+                    ty,
+                    &mut |ty| {
+                        let references = match ty {
+                            Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
+                            Type::Data(name) => props.get(name).is_some_and(|p| p.reference),
+                            _ => false,
+                        };
+                        if references && moved != tf.ty {
+                            return mismatch(
+                                &child(&tf.location, "name"),
+                                &moved,
+                                &tf.ty,
+                                format!("`{e}.{}` と `{f}.{}` の型が対応しない", sf.name, tf.name),
+                                &mut diagnostic_control,
+                            );
+                        }
+                        Ok(references)
+                    },
+                    control,
+                )?;
+                if references {
+                    break;
+                }
             }
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
     implicit.sort();
     let d = defs.declarations.get_mut(name).expect("登録済み");
@@ -623,120 +1104,196 @@ fn check_correspondence(
     *to = target;
     *m = maps;
     *i = implicit;
+    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     Ok(())
 }
-fn resolve_field<'a>(
+fn resolve_field<'a, E: InputError>(
     defs: &'a CheckedDefinitions,
     name: &'a str,
     at: &Location,
-) -> R<(&'a str, &'a Field)> {
-    if let Some((owner, field)) = name.rsplit_once('.') {
-        if let Some(f) = defs
-            .declarations
-            .get(owner)
-            .and_then(|d| d.signature.field(field))
+    control: &mut Control,
+) -> R<(&'a str, &'a Field), E> {
+    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+    let result = (|| {
+        if let Some((owner, field)) = name.rsplit_once('.')
+            && let Some(d) = defs.declarations.get(owner)
         {
+            let f = d.signature.field_checked_controlled::<E, _>(
+                field,
+                control,
+                Checkpoint::DefinitionSemantics,
+                |field, _| match field {
+                    Some(field) => Ok(field),
+                    None => fail(
+                        Code::Reference,
+                        at,
+                        format!("field `{name}` を解決できない"),
+                    ),
+                },
+            )?;
             return Ok((owner, f));
         }
-    }
-    fail(
-        Code::Reference,
-        at,
-        format!("field `{name}` を解決できない"),
-    )
+        fail(
+            Code::Reference,
+            at,
+            format!("field `{name}` を解決できない"),
+        )
+    })();
+    E::finish(result, control, Checkpoint::DefinitionSemantics)
 }
 
-fn positive_self(t: &Type, me: &str, positive: bool) -> bool {
+fn check_positive_self<E: InputError>(
+    t: &Type,
+    me: &str,
+    positive: bool,
+    at: &Location,
+    control: &mut Control,
+) -> R<(), E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
-        positive_self_inner(t, me, positive)
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
+        let result = (|| {
+            match t {
+                Type::Data(d) if d == me && !positive => {
+                    return fail(
+                        Code::Syntax,
+                        at,
+                        "data の自己参照は直接または Tuple・List・Option を通る",
+                    );
+                }
+                Type::Tuple(items) => {
+                    for t in items {
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        check_positive_self::<E>(t, me, positive, at, control)?;
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                    }
+                }
+                Type::List(t) | Type::Option(t) => {
+                    check_positive_self::<E>(t, me, positive, at, control)?;
+                }
+                Type::Set(t) => check_positive_self::<E>(t, me, false, at, control)?,
+                Type::Map(a, b) => {
+                    check_positive_self::<E>(a, me, false, at, control)?;
+                    check_positive_self::<E>(b, me, false, at, control)?;
+                }
+                Type::Term(args, ret) => {
+                    for t in args {
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        check_positive_self::<E>(t, me, false, at, control)?;
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                    }
+                    check_positive_self::<E>(ret, me, false, at, control)?;
+                }
+                _ => {}
+            }
+            Ok(())
+        })();
+        E::finish(result, control, Checkpoint::DefinitionData)
     })
 }
-
-fn positive_self_inner(t: &Type, me: &str, positive: bool) -> bool {
-    match t {
-        Type::Data(d) if d == me => positive,
-        Type::Tuple(items) => items.iter().all(|t| positive_self(t, me, positive)),
-        Type::List(t) | Type::Option(t) => positive_self(t, me, positive),
-        Type::Set(t) => positive_self(t, me, false),
-        Type::Map(a, b) => positive_self(a, me, false) && positive_self(b, me, false),
-        Type::Term(args, ret) => {
-            args.iter().all(|t| positive_self(t, me, false)) && positive_self(ret, me, false)
-        }
-        _ => true,
-    }
-}
-
-fn type_inhabited(t: &Type, inhabited: &BTreeSet<String>) -> bool {
+fn type_inhabited<E: InputError>(
+    t: &Type,
+    inhabited: &BTreeSet<String>,
+    control: &mut Control,
+) -> R<bool, E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
-        type_inhabited_inner(t, inhabited)
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
+        let result = match t {
+            Type::Data(d) => inhabited.contains(d),
+            Type::Tuple(items) => {
+                let mut result = true;
+                for t in items {
+                    E::checkpoint(control, Checkpoint::DefinitionData)?;
+                    if !type_inhabited::<E>(t, inhabited, control)? {
+                        result = false;
+                        break;
+                    }
+                    E::checkpoint(control, Checkpoint::DefinitionData)?;
+                }
+                result
+            }
+            _ => true,
+        };
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
+        Ok(result)
     })
 }
-
-fn type_inhabited_inner(t: &Type, inhabited: &BTreeSet<String>) -> bool {
-    match t {
-        Type::Data(d) => inhabited.contains(d),
-        Type::Tuple(items) => items.iter().all(|t| type_inhabited(t, inhabited)),
-        _ => true,
-    }
-}
-
-fn transport(t: &Type, mu: &BTreeMap<String, String>, alpha: &BTreeMap<String, String>) -> Type {
-    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
-        transport_inner(t, mu, alpha)
-    })
-}
-
-fn transport_inner(
+fn transport<E: InputError>(
     t: &Type,
     mu: &BTreeMap<String, String>,
     alpha: &BTreeMap<String, String>,
-) -> Type {
-    let map = |n: &String| mu.get(n).cloned().unwrap_or_else(|| n.clone());
-    match t {
-        Type::Ref(n) => Type::Ref(map(n)),
-        Type::Owned(n, p) => {
-            Type::Owned(map(n), alpha.get(p).cloned().unwrap_or_else(|| p.clone()))
-        }
-        Type::Tuple(items) => Type::Tuple(items.iter().map(|t| transport(t, mu, alpha)).collect()),
-        Type::List(t) => Type::List(Box::new(transport(t, mu, alpha))),
-        Type::Set(t) => Type::Set(Box::new(transport(t, mu, alpha))),
-        Type::Option(t) => Type::Option(Box::new(transport(t, mu, alpha))),
-        Type::Map(a, b) => Type::Map(
-            Box::new(transport(a, mu, alpha)),
-            Box::new(transport(b, mu, alpha)),
-        ),
-        t => t.clone(),
-    }
+    control: &mut Control,
+) -> R<Type, E> {
+    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+        let map = |n: &String| mu.get(n).cloned().unwrap_or_else(|| n.clone());
+        let result = match t {
+            Type::Ref(n) => Type::Ref(map(n)),
+            Type::Owned(n, p) => {
+                Type::Owned(map(n), alpha.get(p).cloned().unwrap_or_else(|| p.clone()))
+            }
+            Type::Tuple(items) => {
+                let mut result = Vec::new();
+                for t in items {
+                    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+                    result.push(transport::<E>(t, mu, alpha, control)?);
+                    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+                }
+                Type::Tuple(result)
+            }
+            Type::List(t) => Type::List(Box::new(transport::<E>(t, mu, alpha, control)?)),
+            Type::Set(t) => Type::Set(Box::new(transport::<E>(t, mu, alpha, control)?)),
+            Type::Option(t) => Type::Option(Box::new(transport::<E>(t, mu, alpha, control)?)),
+            Type::Map(a, b) => Type::Map(
+                Box::new(transport::<E>(a, mu, alpha, control)?),
+                Box::new(transport::<E>(b, mu, alpha, control)?),
+            ),
+            t => t.clone(),
+        };
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+        Ok(result)
+    })
 }
 
 /// 有向グラフの閉路の一点。自己辺は含まない。
-pub fn find_cycle(edges: &BTreeMap<String, BTreeSet<String>>) -> Option<String> {
-    fn visit(
+fn find_cycle_controlled<E: InputError>(
+    edges: &BTreeMap<String, BTreeSet<String>>,
+    control: &mut Control,
+) -> R<Option<String>, E> {
+    fn visit<E: InputError>(
         n: &str,
         edges: &BTreeMap<String, BTreeSet<String>>,
         state: &mut BTreeMap<String, u8>,
-    ) -> Option<String> {
-        match state.get(n) {
-            Some(1) => return Some(n.to_owned()),
-            Some(2) => return None,
-            _ => {}
-        }
-        state.insert(n.to_owned(), 1);
-        if let Some(next) = edges.get(n) {
-            for m in next {
-                if let Some(c) = visit(m, edges, state) {
-                    return Some(c);
+        control: &mut Control,
+    ) -> R<Option<String>, E> {
+        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+            match state.get(n) {
+                Some(1) => return Ok(Some(n.to_owned())),
+                Some(2) => return Ok(None),
+                _ => {}
+            }
+            state.insert(n.to_owned(), 1);
+            if let Some(next) = edges.get(n) {
+                for m in next {
+                    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+                    if let Some(c) = visit::<E>(m, edges, state, control)? {
+                        return Ok(Some(c));
+                    }
+                    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
                 }
             }
-        }
-        state.insert(n.to_owned(), 2);
-        None
+            state.insert(n.to_owned(), 2);
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+            Ok(None)
+        })
     }
     let mut state = BTreeMap::new();
     for n in edges.keys() {
-        if let Some(c) = visit(n, edges, &mut state) {
-            return Some(c);
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+        if let Some(c) = visit::<E>(n, edges, &mut state, control)? {
+            return Ok(Some(c));
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
-    None
+    Ok(None)
 }

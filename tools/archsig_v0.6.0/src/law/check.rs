@@ -5,13 +5,15 @@ use super::model::*;
 use super::parser::Parser;
 use crate::definition::{Binding, CheckedDefinitions, PrimitiveSignature};
 use crate::issue::{Code, Issue, Location};
-use crate::prime::is_prime;
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
+use crate::prime::is_prime_controlled;
 use crate::types::Type;
 use num_bigint::BigUint;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::rc::Rc;
 
-pub type CResult<T> = Result<T, Box<Issue>>;
+pub type CResult<T, E = Box<Issue>> = Result<T, E>;
 
 pub use crate::names::BUILTIN_OPS;
 
@@ -36,8 +38,10 @@ pub struct TypeCtx<'a> {
     pub validate: bool,
 }
 
-pub struct Checker {
-    pub parser: Parser,
+pub struct Checker<E = Box<Issue>> {
+    pub parser: Parser<E>,
+    pub(super) control: Control,
+    pub(super) semantic_point: Checkpoint,
     /// Law の reading と分離した検査済み共通定義。
     pub definitions: Rc<CheckedDefinitions>,
     pub imports: Vec<BTreeSet<String>>,
@@ -70,52 +74,89 @@ pub fn full(reading: &str, rest: &[&str]) -> String {
     s
 }
 
-pub fn syntax<T>(span: Span, message: impl Into<String>) -> CResult<T> {
-    Err(Box::new(Issue::law(Code::Syntax, span, message)))
+pub fn syntax<T, E: InputError>(span: Span, message: impl Into<String>) -> CResult<T, E> {
+    Err(Box::new(Issue::law(Code::Syntax, span, message)).into())
 }
 
-pub fn reference<T>(span: Span, message: impl Into<String>) -> CResult<T> {
-    Err(Box::new(Issue::law(Code::Reference, span, message)))
+pub fn reference<T, E: InputError>(span: Span, message: impl Into<String>) -> CResult<T, E> {
+    Err(Box::new(Issue::law(Code::Reference, span, message)).into())
 }
 
-pub fn duplicate<T>(span: Span, message: impl Into<String>) -> CResult<T> {
-    Err(Box::new(Issue::law(Code::DuplicateId, span, message)))
+pub fn duplicate<T, E: InputError>(span: Span, message: impl Into<String>) -> CResult<T, E> {
+    Err(Box::new(Issue::law(Code::DuplicateId, span, message)).into())
 }
 
-pub fn cycle<T>(span: Span, message: impl Into<String>) -> CResult<T> {
-    Err(Box::new(Issue::law(Code::Cycle, span, message)))
+pub fn cycle<T, E: InputError>(span: Span, message: impl Into<String>) -> CResult<T, E> {
+    Err(Box::new(Issue::law(Code::Cycle, span, message)).into())
 }
 
-pub fn type_error<T>(
-    span: Span,
-    expected: &Type,
-    actual: &Type,
-    message: impl Into<String>,
-) -> CResult<T> {
-    Err(Box::new(Issue::law_type(span, expected, actual, message)))
-}
-
-impl Checker {
+impl<E: InputError> Checker<E> {
+    pub(super) fn erase_type(&self, ty: &Type) -> CResult<Type, E> {
+        ty.erase_controlled::<E>(&mut self.control.clone(), self.semantic_point)
+    }
+    pub(super) fn type_error<T>(
+        &self,
+        span: Span,
+        expected: &Type,
+        actual: &Type,
+        message: impl Into<String>,
+    ) -> CResult<T, E> {
+        let message = message.into();
+        let details: CResult<crate::issue::Details, E> = (|| {
+            Ok(crate::issue::Details::Type {
+                expected: self.erase_type(expected)?,
+                actual: self.erase_type(actual)?,
+            })
+        })();
+        let issue = match details {
+            Ok(details) => Issue {
+                code: Code::Type,
+                message,
+                location: Location::Law { span },
+                details,
+            },
+            // The mismatch is already known. Finish only its display payload;
+            // no additional semantic check or mathematical derivation is performed.
+            Err(stop) if stop.is_budget_stop() => Issue::law_type(span, expected, actual, message),
+            Err(stop) => return Err(stop),
+        };
+        Err(Box::new(issue).into())
+    }
     pub fn with_definitions(
-        parser: Parser,
+        parser: Parser<E>,
         readings: Vec<Reading>,
         definitions: &CheckedDefinitions,
-    ) -> Checker {
-        let sigs = definitions
-            .declarations
-            .iter()
-            .map(|(name, d)| (name.clone(), Signature::from_primitive(&d.signature)))
-            .collect();
+        control: &mut Control,
+        semantic_point: Checkpoint,
+    ) -> CResult<Self, E> {
+        E::checkpoint(control, semantic_point)?;
+        let mut sigs = HashMap::new();
+        for (name, d) in &definitions.declarations {
+            E::checkpoint(control, semantic_point)?;
+            sigs.insert(
+                name.clone(),
+                Signature::from_primitive::<E>(&d.signature, control, semantic_point)?,
+            );
+        }
         let mut ctor_index = HashMap::new();
         for (name, d) in &definitions.declarations {
+            E::checkpoint(control, semantic_point)?;
             if let PrimitiveSignature::Data { constructors } = &d.signature {
                 for (i, ctor) in constructors.iter().enumerate() {
+                    E::checkpoint(control, semantic_point)?;
                     ctor_index.insert(full(name, &[&ctor.name]), (name.clone(), i));
                 }
             }
         }
-        Checker {
+        let data_props = definitions
+            .data_properties_controlled::<E>(control)?
+            .into_iter()
+            .collect();
+        E::checkpoint(control, semantic_point)?;
+        Ok(Checker {
             parser,
+            control: control.clone(),
+            semantic_point,
             definitions: Rc::new(definitions.clone()),
             imports: Vec::new(),
             term_namespace: None,
@@ -126,7 +167,7 @@ impl Checker {
             decl_index: HashMap::new(),
             ctor_index,
             sigs,
-            data_props: definitions.data_properties().into_iter().collect(),
+            data_props,
             refs: Vec::new(),
             expr_types: Vec::new(),
             view_edges: Vec::new(),
@@ -134,7 +175,11 @@ impl Checker {
             current_reading: 0,
             decl_refs: HashMap::new(),
             decl_exprs: HashMap::new(),
-        }
+        })
+    }
+
+    pub(super) fn cooperate(&self) -> CResult<(), E> {
+        E::checkpoint(&mut self.control.clone(), self.semantic_point)
     }
 
     pub fn reading_name(&self, r: usize) -> &str {
@@ -157,9 +202,11 @@ impl Checker {
     // ---- 名前の表 ----
 
     /// reading・alias・Law 宣言の名前を集め、同じ scope と共通定義との完全名衝突を拒否する。
-    pub fn collect_names(&mut self) -> CResult<()> {
+    pub(super) fn collect_names_controlled(&mut self, control: &mut Control) -> Result<(), E> {
         let ast = self.ast.clone();
         for (ri, r) in ast.iter().enumerate() {
+            self.cooperate()?;
+            E::checkpoint(control, Checkpoint::LawIteration)?;
             if self.reading_index.insert(r.name.name.clone(), ri).is_some() {
                 return duplicate(
                     r.name.span,
@@ -168,10 +215,14 @@ impl Checker {
             }
         }
         for (ri, r) in ast.iter().enumerate() {
+            self.cooperate()?;
+            E::checkpoint(control, Checkpoint::LawIteration)?;
             let mut scope: HashSet<String> = HashSet::new();
             let mut shorts = HashSet::new();
             let mut aliases = HashMap::new();
             for u in &r.uses {
+                self.cooperate()?;
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 if !scope.insert(u.alias.name.clone()) {
                     return duplicate(
                         u.alias.span,
@@ -192,6 +243,8 @@ impl Checker {
             }
             let mut imports = BTreeSet::new();
             for v in &r.vocabularies {
+                self.cooperate()?;
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 if !imports.insert(v.namespace.name.clone()) {
                     return duplicate(v.namespace.span, "同じ namespace の import が重複している");
                 }
@@ -204,7 +257,9 @@ impl Checker {
             }
             self.imports.push(imports);
             for (di, d) in r.decls.iter().enumerate() {
-                check_decl_name(&d.name)?;
+                self.cooperate()?;
+                E::checkpoint(control, Checkpoint::LawIteration)?;
+                check_decl_name::<E>(&d.name)?;
                 if !scope.insert(d.name.name.clone()) {
                     return duplicate(
                         d.name.span,
@@ -213,7 +268,7 @@ impl Checker {
                 }
                 shorts.insert(d.name.name.clone());
                 let name = full(&r.name.name, &[&d.name.name]);
-                if self.primitive_identifier_exists(&name) {
+                if self.primitive_identifier_exists(&name)? {
                     return duplicate(
                         d.name.span,
                         format!("完全名 `{name}` は原始定義と衝突している"),
@@ -234,7 +289,9 @@ impl Checker {
                     | DeclKind::Relation { params, .. } => {
                         let mut seen = HashSet::new();
                         for f in params {
-                            check_binding_name(&f.name)?;
+                            self.cooperate()?;
+                            E::checkpoint(control, Checkpoint::LawIteration)?;
+                            check_binding_name::<E>(&f.name)?;
                             if !seen.insert(f.name.name.clone()) {
                                 return duplicate(
                                     f.name.span,
@@ -252,23 +309,37 @@ impl Checker {
     }
 
     /// 原始宣言、constructor、field の完全名は Law 宣言と共有する一意な名前空間。
-    fn primitive_identifier_exists(&self, name: &str) -> bool {
+    fn primitive_identifier_exists(&self, name: &str) -> CResult<bool, E> {
+        self.cooperate()?;
         let definitions = &self.definitions;
         if definitions.declarations.contains_key(name) {
-            return true;
+            return Ok(true);
         }
         if let Some((decl, member)) = name.rsplit_once('.') {
             if let Some(d) = definitions.declarations.get(decl) {
-                return d.signature.field(member).is_some()
-                    || matches!(&d.signature, PrimitiveSignature::Data { constructors }
-                        if constructors.iter().any(|c| c.name == member));
+                if let Some((params, fields)) = d.signature.record_fields() {
+                    for field in params.iter().chain(fields) {
+                        self.cooperate()?;
+                        if field.name == member {
+                            return Ok(true);
+                        }
+                    }
+                }
+                if let PrimitiveSignature::Data { constructors } = &d.signature {
+                    for ctor in constructors {
+                        self.cooperate()?;
+                        if ctor.name == member {
+                            return Ok(true);
+                        }
+                    }
+                }
             }
         }
-        false
+        Ok(false)
     }
 
     /// `.` 列の先頭を別名、自分の宣言、直接 import、完全名の候補へ展開する。
-    fn expand(&self, reading: usize, parts: &[Ident]) -> Vec<String> {
+    fn expand(&self, reading: usize, parts: &[Ident]) -> CResult<Vec<String>, E> {
         let head = &parts[0].name;
         let rest: Vec<&str> = parts[1..].iter().map(|p| p.name.as_str()).collect();
         let mut out = Vec::new();
@@ -277,14 +348,14 @@ impl Checker {
             let mut all = vec![head.as_str()];
             all.extend(rest.iter().copied());
             out.push(full(namespace, &all));
-            if self.term_namespaces().contains(head) {
+            if self.term_namespaces()?.contains(head) {
                 out.push(full(head, &rest));
             }
-            return out;
+            return Ok(out);
         }
         if let Some(target) = self.aliases[reading].get(head) {
             // alias が先頭の意味を固定する。展開先が未解決でも元の reading 名へ戻さない。
-            return vec![full(target, &rest)];
+            return Ok(vec![full(target, &rest)]);
         }
         if self.shorts[reading].contains(head) {
             let mut all = vec![head.as_str()];
@@ -295,6 +366,7 @@ impl Checker {
             out.push(full(head, &rest));
         }
         for namespace in &self.imports[reading] {
+            self.cooperate()?;
             let mut all = vec![head.as_str()];
             all.extend(rest.iter().copied());
             out.push(full(namespace, &all));
@@ -302,41 +374,43 @@ impl Checker {
                 out.push(full(head, &rest));
             }
         }
-        out
+        Ok(out)
     }
 
-    fn term_namespaces(&self) -> BTreeSet<String> {
+    fn term_namespaces(&self) -> CResult<BTreeSet<String>, E> {
         let Some(namespace) = &self.term_namespace else {
-            return BTreeSet::new();
+            return Ok(BTreeSet::new());
         };
         let mut visible = BTreeSet::from([namespace.clone()]);
         let mut pending = vec![namespace.clone()];
         let definitions = &self.definitions;
         while let Some(n) = pending.pop() {
+            self.cooperate()?;
             for dependency in &definitions.vocabularies[&n].dependencies {
+                self.cooperate()?;
                 if visible.insert(dependency.namespace.clone()) {
                     pending.push(dependency.namespace.clone());
                 }
             }
         }
-        visible
+        Ok(visible)
     }
 
     /// 明示的な原始名には Law の直接 import、観測 Term の短名には定義元を要求する。
-    pub fn primitive_visible(&self, reading: usize, data: &str, short: bool) -> bool {
+    pub fn primitive_visible(&self, reading: usize, data: &str, short: bool) -> CResult<bool, E> {
         let definitions = &self.definitions;
         let Some(d) = definitions.declarations.get(data) else {
-            return true;
+            return Ok(true);
         };
-        if let Some(namespace) = &self.term_namespace {
+        Ok(if let Some(namespace) = &self.term_namespace {
             if short {
                 &d.namespace == namespace
             } else {
-                self.term_namespaces().contains(&d.namespace)
+                self.term_namespaces()?.contains(&d.namespace)
             }
         } else {
             self.imports[reading].contains(&d.namespace)
-        }
+        })
     }
 
     fn target(&self, name: &str) -> Option<Target> {
@@ -350,7 +424,7 @@ impl Checker {
         }
     }
 
-    fn target_visible(&self, reading: usize, target: &Target) -> bool {
+    fn target_visible(&self, reading: usize, target: &Target) -> CResult<bool, E> {
         let name = match target {
             Target::Decl(name) => name,
             Target::Ctor { data, .. } => data,
@@ -364,10 +438,11 @@ impl Checker {
         &mut self,
         reading: usize,
         parts: &[Ident],
-    ) -> CResult<Option<(Target, usize)>> {
+    ) -> CResult<Option<(Target, usize)>, E> {
         let aliased =
             self.term_namespace.is_none() && self.aliases[reading].contains_key(&parts[0].name);
         for k in (1..=parts.len()).rev() {
+            self.cooperate()?;
             let span = (parts[0].span.0, parts[k - 1].span.1);
             let written = parts[..k]
                 .iter()
@@ -375,16 +450,17 @@ impl Checker {
                 .collect::<Vec<_>>()
                 .join(".");
             if !aliased && let Some(target) = self.target(&written) {
-                if !self.target_visible(reading, &target) {
+                if !self.target_visible(reading, &target)? {
                     return reference(span, format!("完全名 `{written}` をこの scope で使えない"));
                 }
                 self.note_reading_edge(reading, &written, span);
                 return Ok(Some((target, k)));
             }
             let mut hits: BTreeMap<String, Target> = BTreeMap::new();
-            for name in self.expand(reading, &parts[..k]) {
+            for name in self.expand(reading, &parts[..k])? {
+                self.cooperate()?;
                 if let Some(target) = self.target(&name) {
-                    if self.target_visible(reading, &target) {
+                    if self.target_visible(reading, &target)? {
                         hits.insert(name, target);
                     }
                 }
@@ -433,26 +509,38 @@ impl Checker {
         &mut self,
         reading: usize,
         parts: &[Ident],
-    ) -> Option<(Target, usize)> {
+    ) -> CResult<Option<(Target, usize)>, E> {
         let edges = self.reading_edges.len();
-        let hit = self.resolve_prefix(reading, parts).ok().flatten();
+        let hit = self.resolve_prefix(reading, parts);
         self.reading_edges.truncate(edges);
-        hit
+        match hit {
+            Ok(hit) => Ok(hit),
+            Err(error) if error.is_stopped() => Err(error),
+            Err(_) => Ok(None),
+        }
     }
 
     // ---- 型 ----
 
-    pub fn resolve_type(&mut self, ast: &TypeAst, ctx: &TypeCtx) -> CResult<Type> {
-        let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
-            self.resolve_type_inner(ast, ctx)
-        })?;
-        if ctx.validate && ctx.ref_free && self.has_reference(&t) {
-            return syntax(ast.span(), "ここには参照・Map・Path を含まない値型が必要");
-        }
-        Ok(t)
+    pub fn resolve_type(&mut self, ast: &TypeAst, ctx: &TypeCtx) -> CResult<Type, E> {
+        self.cooperate()?;
+        let result = (|| {
+            let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+                self.resolve_type_inner(ast, ctx)
+            })?;
+            if ctx.validate && ctx.ref_free {
+                self.reject_reference(
+                    &t,
+                    ast.span(),
+                    "ここには参照・Map・Path を含まない値型が必要",
+                )?;
+            }
+            Ok(t)
+        })();
+        E::finish(result, &mut self.control.clone(), self.semantic_point)
     }
 
-    fn resolve_type_inner(&mut self, ast: &TypeAst, ctx: &TypeCtx) -> CResult<Type> {
+    fn resolve_type_inner(&mut self, ast: &TypeAst, ctx: &TypeCtx) -> CResult<Type, E> {
         Ok(match ast {
             TypeAst::Builtin(b, _) => match b {
                 Builtin::Unit => Type::Unit,
@@ -463,7 +551,7 @@ impl Checker {
             },
             TypeAst::Fp { modulus, span } => {
                 let n: BigUint = modulus.parse().expect("字句で10進整数を確認済み");
-                if !is_prime(&n) {
+                if !is_prime_controlled::<E>(&n, &mut self.control.clone(), self.semantic_point)? {
                     return syntax(*span, format!("Fp の法 {modulus} は素数でない"));
                 }
                 Type::Fp(modulus.clone())
@@ -475,14 +563,14 @@ impl Checker {
                 items
                     .iter()
                     .map(|t| self.resolve_type(t, ctx))
-                    .collect::<CResult<_>>()?,
+                    .collect::<CResult<_, E>>()?,
             ),
             TypeAst::List(t, _) => Type::List(Box::new(self.resolve_type(t, ctx)?)),
             TypeAst::Option(t, _) => Type::Option(Box::new(self.resolve_type(t, ctx)?)),
             TypeAst::Set(t, span) => {
                 let inner = self.resolve_type(t, ctx)?;
-                if ctx.validate && self.has_term_or_path(&inner) {
-                    return syntax(*span, "Set の要素型は Term・Path を含まない");
+                if ctx.validate {
+                    self.reject_term_or_path(&inner, *span)?;
                 }
                 Type::Set(Box::new(inner))
             }
@@ -505,12 +593,29 @@ impl Checker {
                 let args = args
                     .iter()
                     .map(|t| self.resolve_type(t, &inner))
-                    .collect::<CResult<Vec<_>>>()?;
+                    .collect::<CResult<Vec<_>, E>>()?;
                 let ret = self.resolve_type(ret, &inner)?;
-                if ctx.validate
-                    && (args.iter().any(|t| self.has_reference(t)) || self.has_reference(&ret))
-                {
-                    return syntax(*span, "Term の引数・戻り型は参照・Map・Path を含まない値型");
+                if ctx.validate {
+                    self.reject_reference(
+                        &ret,
+                        *span,
+                        "Term の引数・戻り型は参照・Map・Path を含まない値型",
+                    )?;
+                    for ty in &args {
+                        self.cooperate()?;
+                        self.reject_reference(
+                            ty,
+                            *span,
+                            "Term の引数・戻り型は参照・Map・Path を含まない値型",
+                        )?;
+                    }
+                } else {
+                    // This is an intermediate type observation, rather than rejection.
+                    self.has_reference(&ret)?;
+                    for ty in &args {
+                        self.cooperate()?;
+                        self.has_reference(ty)?;
+                    }
                 }
                 Type::Term(args, Box::new(ret))
             }
@@ -525,7 +630,7 @@ impl Checker {
         })
     }
 
-    fn resolve_entity_name(&mut self, q: &QName, reading: usize) -> CResult<String> {
+    fn resolve_entity_name(&mut self, q: &QName, reading: usize) -> CResult<String, E> {
         match self.resolve_prefix(reading, &q.parts)? {
             Some((Target::Decl(n), k)) if k == q.parts.len() => {
                 if self.decl_kind(&n) != Some("entity") {
@@ -544,7 +649,7 @@ impl Checker {
         index: Option<&Ident>,
         span: Span,
         ctx: &TypeCtx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let target = match self.resolve_prefix(ctx.reading, &q.parts)? {
             Some((Target::Decl(n), k)) if k == q.parts.len() => n,
             _ => return reference(q.span(), format!("型名 `{}` を解決できない", q.text())),
@@ -559,15 +664,23 @@ impl Checker {
                 let Some(root) = self.owner_root(&target) else {
                     return syntax(span, format!("`{}` は所属先を持たない", q.text()));
                 };
-                let Some(p) = ctx.index.iter().find(|p| p.name == i.name) else {
+                let mut index_parameter = None;
+                for parameter in ctx.index {
+                    self.cooperate()?;
+                    if parameter.name == i.name {
+                        index_parameter = Some(parameter);
+                        break;
+                    }
+                }
+                let Some(p) = index_parameter else {
                     return reference(
                         i.span,
                         format!("添字 `{}` は左にある parameter を指す", i.name),
                     );
                 };
                 let expected = Type::Ref(root);
-                if p.ty.erase() != expected {
-                    return type_error(
+                if self.erase_type(&p.ty)? != expected {
+                    return self.type_error(
                         i.span,
                         &expected,
                         &p.ty,
@@ -583,17 +696,118 @@ impl Checker {
         }
     }
 
-    pub fn has_term_or_path(&self, t: &Type) -> bool {
-        t.any(&mut |t| match t {
-            Type::Term(..) | Type::Path(..) => true,
-            Type::Data(d) => self.data_props.get(d).is_some_and(|p| p.term_or_path),
-            _ => false,
-        })
+    fn type_scan(
+        &self,
+        root: &Type,
+        mut predicate: impl FnMut(&Type) -> CResult<bool, E>,
+    ) -> CResult<bool, E> {
+        let mut stack = vec![root];
+        while let Some(ty) = stack.pop() {
+            self.cooperate()?;
+            let found = predicate(ty);
+            if !matches!(found, Ok(false)) {
+                return E::finish(found, &mut self.control.clone(), self.semantic_point);
+            }
+            match ty {
+                Type::Tuple(items) => stack.extend(items),
+                Type::List(t) | Type::Set(t) | Type::Option(t) => stack.push(t),
+                Type::Map(a, b) => {
+                    stack.push(a);
+                    stack.push(b);
+                }
+                Type::Term(args, ret) => {
+                    stack.extend(args);
+                    stack.push(ret);
+                }
+                _ => {}
+            }
+            self.cooperate()?;
+        }
+        self.cooperate()?;
+        Ok(false)
     }
-
-    /// 参照・Map・Path を、data の定義を通して含むか。
-    pub fn has_reference(&self, t: &Type) -> bool {
-        t.any(&mut |t| match t {
+    fn type_any(&self, root: &Type, mut predicate: impl FnMut(&Type) -> bool) -> CResult<bool, E> {
+        self.type_scan(root, |ty| Ok(predicate(ty)))
+    }
+    pub(super) fn reject_type_component(
+        &self,
+        root: &Type,
+        mut forbidden: impl FnMut(&Type) -> bool,
+        span: Span,
+        message: &str,
+    ) -> CResult<(), E> {
+        self.type_scan(root, |ty| {
+            if forbidden(ty) {
+                syntax(span, message)
+            } else {
+                Ok(false)
+            }
+        })?;
+        Ok(())
+    }
+    pub(super) fn reject_reference(
+        &self,
+        root: &Type,
+        span: Span,
+        message: &str,
+    ) -> CResult<(), E> {
+        self.reject_type_component(
+            root,
+            |ty| match ty {
+                Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
+                Type::Data(name) => self.data_props.get(name).is_some_and(|p| p.reference),
+                _ => false,
+            },
+            span,
+            message,
+        )
+    }
+    pub(super) fn require_numeric(
+        &self,
+        root: &Type,
+        span: Span,
+        expected: &Type,
+        actual: &Type,
+        message: &str,
+    ) -> CResult<(), E> {
+        self.type_scan(root, |ty| {
+            if !matches!(ty, Type::Z | Type::Q | Type::Fp(_) | Type::Tuple(_)) {
+                self.type_error(span, expected, actual, message)
+            } else {
+                Ok(false)
+            }
+        })?;
+        Ok(())
+    }
+    pub(super) fn reject_term_or_path(&self, root: &Type, span: Span) -> CResult<(), E> {
+        self.reject_type_component(
+            root,
+            |ty| match ty {
+                Type::Term(..) | Type::Path(..) => true,
+                Type::Data(name) => self.data_props.get(name).is_some_and(|p| p.term_or_path),
+                _ => false,
+            },
+            span,
+            "Set の要素型は Term・Path を含まない",
+        )
+    }
+    pub(super) fn signature_field(
+        &self,
+        signature: &Signature,
+        name: &str,
+    ) -> CResult<Option<Param>, E> {
+        if let Some((parameters, members)) = signature.record_fields() {
+            for field in parameters.iter().chain(members) {
+                self.cooperate()?;
+                if field.name == name {
+                    return Ok(Some(field.clone()));
+                }
+            }
+        }
+        Ok(None)
+    }
+    pub fn has_reference(&self, t: &Type) -> CResult<bool, E> {
+        self.type_any(t, |t| match t {
             Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
             Type::Data(d) => self.data_props.get(d).is_some_and(|p| p.reference),
             _ => false,
@@ -602,7 +816,7 @@ impl Checker {
 }
 
 /// 宣言名の規則。組込み演算名は宣言名に使えない。
-pub fn check_decl_name(id: &Ident) -> CResult<()> {
+pub fn check_decl_name<E: InputError>(id: &Ident) -> CResult<(), E> {
     if BUILTIN_OPS.contains(&id.name.as_str()) {
         return syntax(
             id.span,
@@ -612,7 +826,7 @@ pub fn check_decl_name(id: &Ident) -> CResult<()> {
     Ok(())
 }
 
-pub fn check_binding_name(id: &Ident) -> CResult<()> {
+pub fn check_binding_name<E: InputError>(id: &Ident) -> CResult<(), E> {
     if BUILTIN_OPS.contains(&id.name.as_str()) {
         return syntax(
             id.span,
@@ -623,38 +837,49 @@ pub fn check_binding_name(id: &Ident) -> CResult<()> {
 }
 
 /// 有向グラフの閉路の一点。自己辺は含まない。
-pub fn find_cycle(edges: &BTreeMap<String, BTreeSet<String>>) -> Option<String> {
-    fn visit(
+pub fn find_cycle<E: InputError>(
+    edges: &BTreeMap<String, BTreeSet<String>>,
+    control: &mut Control,
+) -> CResult<Option<String>, E> {
+    fn visit<E: InputError>(
         n: &str,
         edges: &BTreeMap<String, BTreeSet<String>>,
         state: &mut HashMap<String, u8>,
-    ) -> Option<String> {
-        match state.get(n) {
-            Some(1) => return Some(n.to_owned()),
-            Some(2) => return None,
-            _ => {}
-        }
-        state.insert(n.to_owned(), 1);
-        if let Some(next) = edges.get(n) {
-            for m in next {
-                if let Some(c) = visit(m, edges, state) {
-                    return Some(c);
+        control: &mut Control,
+    ) -> CResult<Option<String>, E> {
+        E::checkpoint(control, Checkpoint::LawCycle)?;
+        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+            match state.get(n) {
+                Some(1) => return Ok(Some(n.to_owned())),
+                Some(2) => return Ok(None),
+                _ => {}
+            }
+            state.insert(n.to_owned(), 1);
+            if let Some(next) = edges.get(n) {
+                for m in next {
+                    E::checkpoint(control, Checkpoint::LawCycle)?;
+                    if let Some(c) = visit::<E>(m, edges, state, control)? {
+                        return Ok(Some(c));
+                    }
                 }
             }
-        }
-        state.insert(n.to_owned(), 2);
-        None
+            state.insert(n.to_owned(), 2);
+            E::checkpoint(control, Checkpoint::LawCycle)?;
+            Ok(None)
+        })
     }
     let mut state = HashMap::new();
     for n in edges.keys() {
-        if let Some(c) = visit(n, edges, &mut state) {
-            return Some(c);
+        E::checkpoint(control, Checkpoint::LawCycle)?;
+        if let Some(c) = visit::<E>(n, edges, &mut state, control)? {
+            return Ok(Some(c));
         }
     }
-    None
+    E::checkpoint(control, Checkpoint::LawCycle)?;
+    Ok(None)
 }
 
-impl std::fmt::Debug for Checker {
+impl<E> std::fmt::Debug for Checker<E> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Checker")
             .field("declarations", &self.decl_index.len())

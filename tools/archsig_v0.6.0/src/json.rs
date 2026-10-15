@@ -2,6 +2,66 @@
 //! 構文エラーは byte 区間、それ以外は JSON Pointer で位置を返す。
 
 use crate::issue::{Code, Issue, Location};
+use crate::observed::control::{CheckFailure, Checkpoint, Control};
+
+impl From<Box<Issue>> for CheckFailure<Box<Issue>> {
+    fn from(issue: Box<Issue>) -> Self {
+        Self::Input(issue)
+    }
+}
+
+/// Internal error policy shared by ordinary and interruptible input readers.
+#[doc(hidden)]
+pub trait InputError: From<Box<Issue>> {
+    fn checkpoint(control: &mut Control, point: Checkpoint) -> Result<(), Self>;
+    fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self;
+    fn is_budget_stop(&self) -> bool {
+        false
+    }
+    /// Preserve known input failures above budget exhaustion; cancellation stays first.
+    fn finish<T>(
+        result: Result<T, Self>,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<T, Self> {
+        match (result, Self::checkpoint(control, point)) {
+            (Err(input), Err(stop)) if !input.is_stopped() && stop.is_budget_stop() => Err(input),
+            (_, Err(stop)) => Err(stop),
+            (result, Ok(())) => result,
+        }
+    }
+    fn is_stopped(&self) -> bool {
+        false
+    }
+}
+impl InputError for Box<Issue> {
+    fn checkpoint(_: &mut Control, _: Checkpoint) -> Result<(), Self> {
+        Ok(())
+    }
+    fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self {
+        map(self)
+    }
+}
+impl InputError for CheckFailure<Box<Issue>> {
+    fn checkpoint(control: &mut Control, point: Checkpoint) -> Result<(), Self> {
+        control.checkpoint(point).map_err(CheckFailure::Stopped)
+    }
+    fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self {
+        match self {
+            Self::Input(issue) => Self::Input(map(issue)),
+            Self::Stopped(reason) => Self::Stopped(reason),
+        }
+    }
+    fn is_stopped(&self) -> bool {
+        matches!(self, Self::Stopped(_))
+    }
+    fn is_budget_stop(&self) -> bool {
+        matches!(
+            self,
+            Self::Stopped(crate::observed::control::StopReason::BudgetExhausted { .. })
+        )
+    }
+}
 
 pub type Span = (usize, usize);
 
@@ -58,41 +118,68 @@ fn syntax(span: Span, message: impl Into<String>) -> Box<Issue> {
 }
 
 pub fn parse(bytes: &[u8]) -> Result<JNode, Box<Issue>> {
-    if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
-        return Err(syntax((0, 3), "BOM は使えない"));
-    }
-    let text = std::str::from_utf8(bytes).map_err(|e| {
-        let at = e.valid_up_to();
-        syntax(
-            (at, at + e.error_len().unwrap_or(bytes.len() - at)),
-            "不正な UTF-8",
-        )
-    })?;
-    let mut p = P {
-        s: text.as_bytes(),
-        text,
-        i: 0,
-    };
-    p.ws();
-    let v = p.value("")?;
-    p.ws();
-    if p.i != p.s.len() {
-        return Err(syntax((p.i, p.s.len()), "JSON 値の後に余分な文字がある"));
-    }
-    Ok(v)
+    parse_inner(
+        bytes,
+        &mut Control::unlimited(),
+        Checkpoint::ArchMapIteration,
+    )
 }
 
-struct P<'a> {
+pub(crate) fn parse_inner<E: InputError>(
+    bytes: &[u8],
+    control: &mut Control,
+    point: Checkpoint,
+) -> Result<JNode, E> {
+    E::checkpoint(control, point)?;
+    let result = (|| -> Result<JNode, E> {
+        if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
+            return Err((syntax((0, 3), "BOM は使えない")).into());
+        }
+        let text = std::str::from_utf8(bytes).map_err(|e| {
+            let at = e.valid_up_to();
+            syntax(
+                (at, at + e.error_len().unwrap_or(bytes.len() - at)),
+                "不正な UTF-8",
+            )
+        })?;
+        let mut p = P {
+            s: text.as_bytes(),
+            text,
+            i: 0,
+            control,
+            point,
+            error: std::marker::PhantomData::<E>,
+        };
+        p.ws()?;
+        let v = p.value("")?;
+        p.ws()?;
+        if p.i != p.s.len() {
+            return Err((syntax((p.i, p.s.len()), "JSON 値の後に余分な文字がある")).into());
+        }
+        Ok(v)
+    })();
+    E::finish(result, control, point)
+}
+
+struct P<'a, 'c, E> {
     s: &'a [u8],
     text: &'a str,
     i: usize,
+    control: &'c mut Control,
+    point: Checkpoint,
+    error: std::marker::PhantomData<E>,
 }
 
-impl P<'_> {
-    fn ws(&mut self) {
+impl<E: InputError> P<'_, '_, E> {
+    fn checkpoint(&mut self) -> Result<(), E> {
+        E::checkpoint(self.control, self.point)
+    }
+    fn ws(&mut self) -> Result<(), E> {
         while self.i < self.s.len() && matches!(self.s[self.i], b' ' | b'\t' | b'\n' | b'\r') {
+            self.checkpoint()?;
             self.i += 1;
         }
+        Ok(())
     }
 
     fn here(&self) -> Span {
@@ -103,32 +190,34 @@ impl P<'_> {
         (self.i, self.i + len)
     }
 
-    fn value(&mut self, pointer: &str) -> Result<JNode, Box<Issue>> {
-        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || self.value_inner(pointer))
+    fn value(&mut self, pointer: &str) -> Result<JNode, E> {
+        self.checkpoint()?;
+        let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || self.value_inner(pointer));
+        E::finish(result, self.control, self.point)
     }
 
-    fn value_inner(&mut self, pointer: &str) -> Result<JNode, Box<Issue>> {
+    fn value_inner(&mut self, pointer: &str) -> Result<JNode, E> {
         let Some(&c) = self.s.get(self.i) else {
-            return Err(syntax(self.here(), "JSON 値が必要"));
+            return Err((syntax(self.here(), "JSON 値が必要")).into());
         };
         let value = match c {
             b'{' => {
                 self.i += 1;
                 let mut entries: Vec<(String, JNode)> = Vec::new();
                 let mut keys = std::collections::HashSet::new();
-                self.ws();
+                self.ws()?;
                 if self.s.get(self.i) == Some(&b'}') {
                     self.i += 1;
                 } else {
                     loop {
-                        self.ws();
+                        self.ws()?;
                         if self.s.get(self.i) != Some(&b'"') {
-                            return Err(syntax(self.here(), "object の key は文字列"));
+                            return Err((syntax(self.here(), "object の key は文字列")).into());
                         }
                         let key = self.string()?;
                         let child = pointer_push(pointer, &key);
                         if !keys.insert(key.clone()) {
-                            return Err(Box::new(Issue {
+                            return Err((Box::new(Issue {
                                 code: Code::DuplicateKey,
                                 message: format!("key `{key}` が重複している"),
                                 location: Location::ArchMap {
@@ -136,24 +225,25 @@ impl P<'_> {
                                     span: None,
                                 },
                                 details: crate::issue::Details::Empty,
-                            }));
+                            }))
+                            .into());
                         }
-                        self.ws();
+                        self.ws()?;
                         if self.s.get(self.i) != Some(&b':') {
-                            return Err(syntax(self.here(), "`:` が必要"));
+                            return Err((syntax(self.here(), "`:` が必要")).into());
                         }
                         self.i += 1;
-                        self.ws();
+                        self.ws()?;
                         let v = self.value(&child)?;
                         entries.push((key, v));
-                        self.ws();
+                        self.ws()?;
                         match self.s.get(self.i) {
                             Some(b',') => self.i += 1,
                             Some(b'}') => {
                                 self.i += 1;
                                 break;
                             }
-                            _ => return Err(syntax(self.here(), "`,` か `}` が必要")),
+                            _ => return Err((syntax(self.here(), "`,` か `}` が必要")).into()),
                         }
                     }
                 }
@@ -162,22 +252,22 @@ impl P<'_> {
             b'[' => {
                 self.i += 1;
                 let mut items = Vec::new();
-                self.ws();
+                self.ws()?;
                 if self.s.get(self.i) == Some(&b']') {
                     self.i += 1;
                 } else {
                     loop {
-                        self.ws();
+                        self.ws()?;
                         let child = pointer_push(pointer, &items.len().to_string());
                         items.push(self.value(&child)?);
-                        self.ws();
+                        self.ws()?;
                         match self.s.get(self.i) {
                             Some(b',') => self.i += 1,
                             Some(b']') => {
                                 self.i += 1;
                                 break;
                             }
-                            _ => return Err(syntax(self.here(), "`,` か `]` が必要")),
+                            _ => return Err((syntax(self.here(), "`,` か `]` が必要")).into()),
                         }
                     }
                 }
@@ -197,32 +287,33 @@ impl P<'_> {
                 JValue::Null
             }
             b'-' | b'0'..=b'9' => JValue::Num(self.number()?),
-            _ => return Err(syntax(self.here(), "JSON 値が必要")),
+            _ => return Err((syntax(self.here(), "JSON 値が必要")).into()),
         };
         Ok(JNode { value })
     }
 
-    fn number(&mut self) -> Result<String, Box<Issue>> {
+    fn number(&mut self) -> Result<String, E> {
         let start = self.i;
-        let digits = |p: &mut Self| {
+        let digits = |p: &mut Self| -> Result<bool, E> {
             let s = p.i;
             while p.i < p.s.len() && p.s[p.i].is_ascii_digit() {
+                p.checkpoint()?;
                 p.i += 1;
             }
-            p.i > s
+            Ok(p.i > s)
         };
         if self.s[self.i] == b'-' {
             self.i += 1;
         }
         if self.s.get(self.i) == Some(&b'0') {
             self.i += 1;
-        } else if !digits(self) {
-            return Err(syntax((start, self.i), "不正な number"));
+        } else if !digits(self)? {
+            return Err((syntax((start, self.i), "不正な number")).into());
         }
         if self.s.get(self.i) == Some(&b'.') {
             self.i += 1;
-            if !digits(self) {
-                return Err(syntax((start, self.i), "不正な number"));
+            if !digits(self)? {
+                return Err((syntax((start, self.i), "不正な number")).into());
             }
         }
         if matches!(self.s.get(self.i), Some(b'e' | b'E')) {
@@ -230,24 +321,25 @@ impl P<'_> {
             if matches!(self.s.get(self.i), Some(b'+' | b'-')) {
                 self.i += 1;
             }
-            if !digits(self) {
-                return Err(syntax((start, self.i), "不正な number"));
+            if !digits(self)? {
+                return Err((syntax((start, self.i), "不正な number")).into());
             }
         }
         let text = self.text[start..self.i].to_owned();
         if !text.parse::<f64>().is_ok_and(f64::is_finite) {
-            return Err(syntax((start, self.i), "非有限の number"));
+            return Err((syntax((start, self.i), "非有限の number")).into());
         }
         Ok(text)
     }
 
-    fn string(&mut self) -> Result<String, Box<Issue>> {
+    fn string(&mut self) -> Result<String, E> {
         let start = self.i;
         self.i += 1;
         let mut out = String::new();
         loop {
+            self.checkpoint()?;
             let Some(&c) = self.s.get(self.i) else {
-                return Err(syntax((start, self.s.len()), "文字列が閉じていない"));
+                return Err((syntax((start, self.s.len()), "文字列が閉じていない")).into());
             };
             match c {
                 b'"' => {
@@ -257,7 +349,7 @@ impl P<'_> {
                 b'\\' => {
                     let at = self.i;
                     let Some(&e) = self.s.get(self.i + 1) else {
-                        return Err(syntax((at, self.s.len()), "文字列が閉じていない"));
+                        return Err((syntax((at, self.s.len()), "文字列が閉じていない")).into());
                     };
                     self.i += 2;
                     match e {
@@ -274,7 +366,7 @@ impl P<'_> {
                                 syntax((at, self.i.min(self.s.len())), "不正な \\u escape")
                             })?;
                             if (0xDC00..0xE000).contains(&hi) {
-                                return Err(syntax((at, self.i), "unpaired surrogate"));
+                                return Err((syntax((at, self.i), "unpaired surrogate")).into());
                             }
                             if (0xD800..0xDC00).contains(&hi) {
                                 let lo = (self.s.get(self.i) == Some(&b'\\')
@@ -294,14 +386,13 @@ impl P<'_> {
                                 out.push(char::from_u32(hi).expect("surrogate 以外は scalar"));
                             }
                         }
-                        _ => return Err(syntax((at, at + 2), "不正な escape")),
+                        _ => return Err((syntax((at, at + 2), "不正な escape")).into()),
                     }
                 }
                 c if c < 0x20 => {
-                    return Err(syntax(
-                        (self.i, self.i + 1),
-                        "文字列内の制御文字は escape する",
-                    ));
+                    return Err(
+                        (syntax((self.i, self.i + 1), "文字列内の制御文字は escape する")).into(),
+                    );
                 }
                 _ => {
                     let ch = self.text[self.i..].chars().next().expect("UTF-8 確認済み");
@@ -333,5 +424,24 @@ pub fn parse_definition(bytes: &[u8], input: &str) -> Result<JNode, Box<Issue>> 
             };
         }
         issue
+    })
+}
+
+pub(crate) fn parse_definition_inner<E: InputError>(
+    bytes: &[u8],
+    input: &str,
+    control: &mut Control,
+) -> Result<JNode, E> {
+    parse_inner::<E>(bytes, control, Checkpoint::DefinitionIteration).map_err(|failure| {
+        failure.map_issue(|mut issue| {
+            if let Location::ArchMap { pointer, span } = &issue.location {
+                issue.location = Location::Definition {
+                    input: input.into(),
+                    pointer: pointer.clone(),
+                    span: *span,
+                };
+            }
+            issue
+        })
     })
 }

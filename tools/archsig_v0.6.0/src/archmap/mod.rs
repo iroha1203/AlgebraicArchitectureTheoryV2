@@ -10,6 +10,8 @@ pub mod value;
 use crate::canonical::{Json, sha256_digest};
 use crate::definition::model::{Binding, CheckedDefinitions, PrimitiveSignature};
 use crate::issue::{Code, Details, Issue, Location};
+use crate::json::InputError;
+use crate::observed::control::{CheckFailure, Checkpoint, Control};
 use crate::types::Type;
 pub use canonical::model_json;
 pub use model::{
@@ -44,86 +46,243 @@ pub fn check_archmap(
     bytes: &[u8],
     definitions: &CheckedDefinitions,
 ) -> Result<CheckedArchMap, ArchMapFailure> {
+    check_archmap_inner::<Box<Issue>>(bytes, definitions, &mut Control::unlimited()).map_err(
+        |(issue, bytes_digest)| ArchMapFailure {
+            issue: *issue,
+            bytes_digest,
+        },
+    )
+}
+#[allow(clippy::result_large_err)]
+pub fn check_archmap_controlled(
+    bytes: &[u8],
+    definitions: &CheckedDefinitions,
+    control: &mut Control,
+) -> Result<CheckedArchMap, CheckFailure<ArchMapFailure>> {
+    control
+        .checkpoint(Checkpoint::BeforeArchMap)
+        .map_err(CheckFailure::Stopped)?;
+    check_archmap_inner::<CheckFailure<Box<Issue>>>(bytes, definitions, control).map_err(
+        |(failure, bytes_digest)| match failure {
+            CheckFailure::Input(issue) => CheckFailure::Input(ArchMapFailure {
+                issue: *issue,
+                bytes_digest,
+            }),
+            CheckFailure::Stopped(reason) => CheckFailure::Stopped(reason),
+        },
+    )
+}
+fn check_archmap_inner<E: InputError>(
+    bytes: &[u8],
+    definitions: &CheckedDefinitions,
+    control: &mut Control,
+) -> Result<CheckedArchMap, (E, String)> {
+    #[cfg(test)]
+    entry_control_tests::BYTES_DIGEST_STARTS.with(|count| count.set(count.get() + 1));
     let bytes_digest = sha256_digest(bytes);
-    let fail = |i: Box<Issue>| ArchMapFailure {
-        issue: *i,
-        bytes_digest: bytes_digest.clone(),
-    };
-    let root = crate::json::parse(bytes).map_err(fail)?;
-    let raw = read_document(&root).map_err(fail)?;
-    let mut checked = check_document(raw, definitions).map_err(fail)?;
+    let fail = |issue| (issue, bytes_digest.clone());
+    let root = crate::json::parse_inner::<E>(bytes, control, Checkpoint::ArchMapIteration)
+        .map_err(fail)?;
+    let raw = read_document::<E>(&root, control).map_err(fail)?;
+    let mut checked = check_document::<E>(raw, definitions, control).map_err(fail)?;
     checked.bytes_digest = bytes_digest.clone();
-    checked.model_digest = sha256_digest(model_json(&checked).canonical().as_bytes());
+    let model = canonical::model_json_controlled::<E>(&checked, control).map_err(fail)?;
+    let canonical = model
+        .canonical_controlled::<E>(control, Checkpoint::ArchMapCanonical)
+        .map_err(fail)?;
+    E::checkpoint(control, Checkpoint::ArchMapCanonical).map_err(fail)?;
+    checked.model_digest = sha256_digest(canonical.as_bytes());
+    E::checkpoint(control, Checkpoint::ArchMapCanonical).map_err(fail)?;
+    E::checkpoint(control, Checkpoint::ArchMapIteration).map_err(fail)?;
     Ok(checked)
 }
 
-/// subject と、その field 型から推移的に参照する宣言の namespace。
-fn required_namespaces(
-    definitions: &CheckedDefinitions,
-    types: &BTreeSet<String>,
-) -> BTreeSet<String> {
-    let mut seen: BTreeSet<String> = BTreeSet::new();
-    let mut stack: Vec<String> = types.iter().cloned().collect();
-    while let Some(name) = stack.pop() {
-        if !seen.insert(name.clone()) {
-            continue;
-        }
-        let Some(decl) = definitions.declarations.get(&name) else {
-            continue;
-        };
-        let mut field_types: Vec<&Type> = Vec::new();
-        match &decl.signature {
-            PrimitiveSignature::Data { constructors } => {
-                field_types.extend(constructors.iter().flat_map(|c| c.arguments.iter()))
-            }
-            sig => {
-                if let Some((p, m)) = sig.record_fields() {
-                    field_types.extend(p.iter().chain(m).map(|f| &f.ty));
+#[cfg(test)]
+mod entry_control_tests {
+    use super::*;
+    use crate::observed::control::{Limits, Usage};
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+
+    thread_local! {
+        pub(super) static BYTES_DIGEST_STARTS: Cell<usize> = const { Cell::new(0) };
+    }
+
+    #[test]
+    fn stopped_entry_does_not_start_bytes_digest() {
+        BYTES_DIGEST_STARTS.with(|count| count.set(0));
+        for cancel in [false, true] {
+            for latched in [false, true] {
+                let mut control = Control::new(
+                    Limits {
+                        time_ms: Some(0),
+                        ..Limits::default()
+                    },
+                    move |_| Usage {
+                        signal: cancel.then_some(Signal::Int),
+                        ..Usage::default()
+                    },
+                );
+                if latched {
+                    control.checkpoint(Checkpoint::InputBundle).unwrap_err();
                 }
+                let failure =
+                    check_archmap_controlled(b"bad", &CheckedDefinitions::default(), &mut control)
+                        .unwrap_err();
+                let CheckFailure::Stopped(reason) = failure else {
+                    panic!("entry stop must precede input checking");
+                };
+                assert_eq!(Some(reason), control.stop_reason());
+                BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 0));
             }
-        }
-        for t in field_types {
-            t.any(&mut |t| {
-                match t {
-                    Type::Ref(n) | Type::Owned(n, _) | Type::Data(n) => stack.push(n.clone()),
-                    Type::Path(a, b) => {
-                        stack.push(a.clone());
-                        stack.push(b.clone());
-                    }
-                    _ => {}
-                }
-                false
-            });
         }
     }
-    seen.iter()
-        .map(|n| definitions.declarations[n].namespace.clone())
-        .collect()
+
+    #[test]
+    fn live_entry_checks_control_before_digest_and_preserves_input_failure() {
+        BYTES_DIGEST_STARTS.with(|count| count.set(0));
+        let definitions = CheckedDefinitions::default();
+        let ordinary = check_archmap(b"bad", &definitions).unwrap_err();
+        BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 1));
+        let first = Rc::new(Cell::new(None));
+        let observed = first.clone();
+        let mut control = Control::new(Limits::default(), move |point| {
+            if observed.get().is_none() {
+                observed.set(Some(point));
+            }
+            Usage::default()
+        });
+        let controlled = check_archmap_controlled(b"bad", &definitions, &mut control).unwrap_err();
+        let CheckFailure::Input(controlled) = controlled else {
+            panic!("live control must preserve the input error");
+        };
+        assert_eq!(first.get(), Some(Checkpoint::BeforeArchMap));
+        assert_eq!(controlled, ordinary);
+        BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 2));
+    }
 }
 
-fn check_document(raw: RawDocument, definitions: &CheckedDefinitions) -> AResult<CheckedArchMap> {
+/// subject と、その field 型から推移的に参照する宣言の namespace。
+fn required_namespaces<E: InputError>(
+    definitions: &CheckedDefinitions,
+    types: &BTreeSet<String>,
+    control: &mut Control,
+) -> Result<BTreeSet<String>, E> {
+    let point = Checkpoint::ArchMapSchema;
+    E::checkpoint(control, point)?;
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    let mut stack = Vec::new();
+    for ty in types {
+        E::checkpoint(control, point)?;
+        stack.push(ty.clone());
+        E::checkpoint(control, point)?;
+    }
+    while let Some(name) = stack.pop() {
+        E::checkpoint(control, point)?;
+        if seen.insert(name.clone())
+            && let Some(declaration) = definitions.declarations.get(&name)
+        {
+            let mut field_types: Vec<&Type> = Vec::new();
+            match &declaration.signature {
+                PrimitiveSignature::Data { constructors } => {
+                    for constructor in constructors {
+                        E::checkpoint(control, point)?;
+                        for argument in &constructor.arguments {
+                            E::checkpoint(control, point)?;
+                            field_types.push(argument);
+                            E::checkpoint(control, point)?;
+                        }
+                        E::checkpoint(control, point)?;
+                    }
+                }
+                signature => {
+                    if let Some((parameters, members)) = signature.record_fields() {
+                        for field in parameters.iter().chain(members) {
+                            E::checkpoint(control, point)?;
+                            field_types.push(&field.ty);
+                            E::checkpoint(control, point)?;
+                        }
+                    }
+                }
+            }
+            for ty in field_types {
+                E::checkpoint(control, point)?;
+                ty.any_controlled::<E>(
+                    &mut |ty| {
+                        match ty {
+                            Type::Ref(name) | Type::Owned(name, _) | Type::Data(name) => {
+                                stack.push(name.clone())
+                            }
+                            Type::Path(source, target) => {
+                                stack.push(source.clone());
+                                stack.push(target.clone());
+                            }
+                            _ => {}
+                        }
+                        false
+                    },
+                    control,
+                    point,
+                )?;
+                E::checkpoint(control, point)?;
+            }
+        }
+        E::checkpoint(control, point)?;
+    }
+    let mut namespaces = BTreeSet::new();
+    for name in seen {
+        E::checkpoint(control, point)?;
+        namespaces.insert(definitions.declarations[&name].namespace.clone());
+        E::checkpoint(control, point)?;
+    }
+    E::checkpoint(control, point)?;
+    Ok(namespaces)
+}
+
+fn check_document<E: InputError>(
+    raw: RawDocument,
+    definitions: &CheckedDefinitions,
+    control: &mut Control,
+) -> Result<CheckedArchMap, E> {
+    E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    let result = check_document_inner::<E>(raw, definitions, control);
+    E::finish(result, control, Checkpoint::ArchMapSchema)
+}
+
+fn check_document_inner<E: InputError>(
+    raw: RawDocument,
+    definitions: &CheckedDefinitions,
+    control: &mut Control,
+) -> Result<CheckedArchMap, E> {
     // 由来の参照と mode。
-    let sources: HashMap<&str, &Source> = raw
-        .sources
-        .iter()
-        .map(|s| (s.0.id.as_str(), &s.0))
-        .collect();
+    let mut sources: HashMap<&str, &Source> = HashMap::new();
+    for (source, _) in &raw.sources {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        sources.insert(source.id.as_str(), source);
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
     for (o, ptr) in &raw.origins {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         for (i, l) in o.locations.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             if !sources.contains_key(l.source.as_str()) {
-                return Err(issue(
+                return Err((issue(
                     Code::Reference,
                     &format!("{ptr}/locations/{i}/source"),
                     format!("source `{}` がない", l.source),
-                ));
+                ))
+                .into());
             }
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
-    let origins: HashMap<&str, &Origin> = raw
-        .origins
-        .iter()
-        .map(|o| (o.0.id.as_str(), &o.0))
-        .collect();
+    let mut origins: HashMap<&str, &Origin> = HashMap::new();
+    for (origin, _) in &raw.origins {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        origins.insert(origin.id.as_str(), origin);
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
     let mode_of = |id: &str, ptr: &str| -> AResult<Mode> {
         origins
             .get(id)
@@ -133,15 +292,18 @@ fn check_document(raw: RawDocument, definitions: &CheckedDefinitions) -> AResult
     // subject の型と、語彙 binding。
     let mut subject_types = BTreeSet::new();
     for snap in &raw.snapshots {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let mode = mode_of(&snap.origin, &format!("{}/origin", snap.pointer))?;
         for s in &snap.subjects {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             let sm = mode_of(&s.origin, &format!("{}/origin", s.pointer))?;
             if sm != mode {
-                return Err(issue(
+                return Err((issue(
                     Code::Reference,
                     &format!("{}/origin", s.pointer),
                     "subject の origin.mode が snapshot と異なる",
-                ));
+                ))
+                .into());
             }
             match definitions
                 .declarations
@@ -150,75 +312,101 @@ fn check_document(raw: RawDocument, definitions: &CheckedDefinitions) -> AResult
             {
                 Some("entity" | "arrow" | "correspondence") => {}
                 _ => {
-                    return Err(issue(
+                    return Err((issue(
                         Code::Reference,
                         &format!("{}/type", s.pointer),
                         format!("`{}` は entity・arrow・correspondence の宣言ではない", s.ty),
-                    ));
+                    ))
+                    .into());
                 }
             }
             subject_types.insert(s.ty.clone());
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
         for a in &snap.atoms {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             let am = mode_of(&a.origin, &format!("{}/origin", a.pointer))?;
             if am != mode {
-                return Err(issue(
+                return Err((issue(
                     Code::Reference,
                     &format!("{}/origin", a.pointer),
                     "Atom の origin.mode が snapshot と異なる",
-                ));
+                ))
+                .into());
             }
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
     let mut bound = BTreeMap::new();
     for (i, binding) in raw.vocabularies.iter().enumerate() {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let ptr = format!("/vocabularies/{i}");
         let Some(vocabulary) = definitions.vocabularies.get(&binding.namespace) else {
-            return Err(issue(
+            return Err((issue(
                 Code::Reference,
                 &format!("{ptr}/namespace"),
                 format!("namespace `{}` の定義がない", binding.namespace),
-            ));
+            ))
+            .into());
         };
         if vocabulary.version != binding.version {
-            return Err(issue(
+            return Err((issue(
                 Code::VocabularyMismatch,
                 &format!("{ptr}/version"),
                 format!(
                     "namespace `{}` の語彙 version が定義と異なる",
                     binding.namespace
                 ),
-            ));
+            ))
+            .into());
         }
         if vocabulary.digest != binding.digest {
-            return Err(issue(
+            return Err((issue(
                 Code::VocabularyMismatch,
                 &format!("{ptr}/digest"),
                 format!(
                     "namespace `{}` の語彙 digest が定義と異なる",
                     binding.namespace
                 ),
-            ));
+            ))
+            .into());
         }
         bound.insert(binding.namespace.clone(), binding.clone());
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
-    for namespace in required_namespaces(definitions, &subject_types) {
+    for namespace in required_namespaces::<E>(definitions, &subject_types, control)? {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         if !bound.contains_key(&namespace) {
-            return Err(issue(
+            return Err((issue(
                 Code::VocabularyMismatch,
                 "/vocabularies",
                 format!("namespace `{namespace}` の binding がない"),
-            ));
+            ))
+            .into());
         }
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
-    let snapshots = value::check_snapshots(&raw.snapshots, definitions)?;
-    complete::check_completion(&snapshots, definitions)?;
+    let snapshots = value::check_snapshots::<E>(&raw.snapshots, definitions, control)?;
+    complete::check_completion::<E>(&snapshots, definitions, control)?;
+    let mut sources = Vec::new();
+    for (source, _) in raw.sources {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        sources.push(source);
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
+    let mut origins = Vec::new();
+    for (origin, _) in raw.origins {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        origins.push(origin);
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
     Ok(CheckedArchMap {
         bytes_digest: String::new(),
         model_digest: String::new(),
         vocabularies: bound,
-        sources: raw.sources.into_iter().map(|s| s.0).collect(),
-        origins: raw.origins.into_iter().map(|o| o.0).collect(),
+        sources,
+        origins,
         snapshots,
     })
 }

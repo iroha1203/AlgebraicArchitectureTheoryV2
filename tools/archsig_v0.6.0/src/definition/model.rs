@@ -1,4 +1,6 @@
 //! 共通原始定義。意味・依存・入力位置を Law の構文木から独立して保持する。
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 use crate::{canonical::Json, issue::Location, types::Type};
 use std::collections::BTreeMap;
 
@@ -89,9 +91,78 @@ impl PrimitiveSignature {
         }
     }
     pub fn field(&self, name: &str) -> Option<&Field> {
-        let (p, f) = self.record_fields()?;
-        p.iter().chain(f).find(|f| f.name == name)
+        self.field_controlled::<Box<crate::issue::Issue>>(
+            name,
+            &mut Control::unlimited(),
+            Checkpoint::DefinitionSemantics,
+        )
+        .expect("通常の field 探索は中断しない")
     }
+    pub(crate) fn field_controlled<E: InputError>(
+        &self,
+        name: &str,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<Option<&Field>, E> {
+        self.field_checked_controlled::<E, _>(name, control, point, |field, _| Ok(field))
+    }
+    /// Interpret the completed search before sampling its post checkpoint.
+    /// A required use constructs its original Issue here; optional lookup keeps None.
+    pub(crate) fn field_checked_controlled<'a, E: InputError, T>(
+        &'a self,
+        name: &str,
+        control: &mut Control,
+        point: Checkpoint,
+        check: impl FnOnce(Option<&'a Field>, &mut Control) -> Result<T, E>,
+    ) -> Result<T, E> {
+        E::checkpoint(control, point)?;
+        let result = match self.record_fields() {
+            Some((parameters, fields)) => find_field_checked_controlled::<E, _>(
+                parameters.iter().chain(fields),
+                name,
+                control,
+                point,
+                check,
+            ),
+            None => check(None, control),
+        };
+        E::finish(result, control, point)
+    }
+}
+
+pub(crate) fn find_field_controlled<'a, E: InputError>(
+    fields: impl IntoIterator<Item = &'a Field>,
+    name: &str,
+    control: &mut Control,
+    point: Checkpoint,
+) -> Result<Option<&'a Field>, E> {
+    find_field_checked_controlled::<E, _>(fields, name, control, point, |field, _| Ok(field))
+}
+
+pub(crate) fn find_field_checked_controlled<'a, E: InputError, T>(
+    fields: impl IntoIterator<Item = &'a Field>,
+    name: &str,
+    control: &mut Control,
+    point: Checkpoint,
+    check: impl FnOnce(Option<&'a Field>, &mut Control) -> Result<T, E>,
+) -> Result<T, E> {
+    E::checkpoint(control, point)?;
+    let result = (|| {
+        let mut fields = fields.into_iter().peekable();
+        while let Some(field) = fields.next() {
+            E::checkpoint(control, point)?;
+            let found = field.name == name;
+            if found {
+                return E::finish(check(Some(field), control), control, point);
+            }
+            if fields.peek().is_none() {
+                return E::finish(check(None, control), control, point);
+            }
+            E::checkpoint(control, point)?;
+        }
+        check(None, control)
+    })();
+    E::finish(result, control, point)
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PrimitiveDeclaration {
@@ -131,4 +202,61 @@ pub struct CheckedDefinitions {
 pub struct DataProperties {
     pub term_or_path: bool,
     pub reference: bool,
+}
+
+#[cfg(test)]
+mod field_control_tests {
+    use super::*;
+    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+    type Failure = CheckFailure<Box<crate::issue::Issue>>;
+    #[test]
+    fn field_lookup_checks_each_candidate_and_its_success_and_absence_exit() {
+        let fields: Vec<_> = ["first", "second", "last"]
+            .into_iter()
+            .map(|name| Field {
+                name: name.into(),
+                ty: Type::Bool,
+                meaning: String::new(),
+                location: Location::Law { span: (0, 1) },
+            })
+            .collect();
+        let signature = PrimitiveSignature::Entity {
+            parameters: vec![fields[0].clone()],
+            fields: fields[1..].to_vec(),
+            owner: None,
+        };
+        for name in ["last", "absent"] {
+            let count = Rc::new(Cell::new(0));
+            let seen = count.clone();
+            let mut control = Control::new(Limits::default(), move |_| {
+                seen.set(seen.get() + 1);
+                Usage::default()
+            });
+            let hit = signature
+                .field_controlled::<Failure>(name, &mut control, Checkpoint::DefinitionSemantics)
+                .unwrap();
+            assert_eq!(hit, signature.field(name));
+            assert!(count.get() >= 8);
+            for at in 1..=count.get() {
+                let mut visits = 0;
+                let mut control = Control::new(Limits::default(), move |_| {
+                    visits += 1;
+                    Usage {
+                        signal: (visits == at).then_some(Signal::Term),
+                        ..Usage::default()
+                    }
+                });
+                assert!(matches!(
+                    signature.field_controlled::<Failure>(
+                        name,
+                        &mut control,
+                        Checkpoint::DefinitionSemantics
+                    ),
+                    Err(Failure::Stopped(StopReason::Cancelled(Signal::Term)))
+                ));
+            }
+        }
+    }
 }

@@ -3,6 +3,8 @@ pub mod model;
 mod primitive;
 mod reader;
 mod validate;
+use crate::json::InputError;
+use crate::observed::control::{CheckFailure, Checkpoint, Control};
 use crate::{
     canonical::sha256_digest,
     issue::{Code, Details, Issue, Location},
@@ -39,21 +41,55 @@ pub(crate) fn error(
 /// 全ファイルを登録してから依存 DAG、binding、原始型を検査する。
 #[allow(clippy::result_large_err)]
 pub fn check_definitions(files: &[(&str, &[u8])]) -> Result<CheckedDefinitions, DefinitionFailure> {
+    check_definitions_inner::<Box<Issue>>(files, &mut Control::unlimited()).map_err(
+        |(issue, inputs)| DefinitionFailure {
+            issue: *issue,
+            inputs,
+        },
+    )
+}
+
+#[allow(clippy::result_large_err)]
+pub fn check_definitions_controlled(
+    files: &[(&str, &[u8])],
+    control: &mut Control,
+) -> Result<CheckedDefinitions, CheckFailure<DefinitionFailure>> {
+    check_definitions_inner::<CheckFailure<Box<Issue>>>(files, control).map_err(
+        |(failure, inputs)| match failure {
+            CheckFailure::Input(issue) => CheckFailure::Input(DefinitionFailure {
+                issue: *issue,
+                inputs,
+            }),
+            CheckFailure::Stopped(reason) => CheckFailure::Stopped(reason),
+        },
+    )
+}
+fn check_definitions_inner<E: InputError>(
+    files: &[(&str, &[u8])],
+    control: &mut Control,
+) -> Result<CheckedDefinitions, (E, Vec<DefinitionIdentity>)> {
     let mut checked = CheckedDefinitions::default();
-    checked.inputs = files
-        .iter()
-        .map(|(input, bytes)| DefinitionIdentity {
-            input: (*input).into(),
-            bytes_digest: sha256_digest(bytes),
-            model_digest: None,
-        })
-        .collect();
-    let result = (|| {
+    let result = (|| -> Result<(), E> {
+        for (input, bytes) in files {
+            E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
+            checked.inputs.push(DefinitionIdentity {
+                input: (*input).into(),
+                bytes_digest: sha256_digest(bytes),
+                model_digest: None,
+            });
+            E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
+        }
         for (i, (input, bytes)) in files.iter().enumerate() {
-            let node = crate::json::parse_definition(bytes, input)?;
-            let (vs, ds, normalized) = reader::read(&node, input)?;
-            checked.inputs[i].model_digest = Some(sha256_digest(normalized.canonical().as_bytes()));
+            E::checkpoint(control, Checkpoint::DefinitionIteration)?;
+            let node = crate::json::parse_definition_inner::<E>(bytes, input, control)?;
+            let (vs, ds, normalized) = reader::read::<E>(&node, input, control)?;
+            let canonical =
+                normalized.canonical_controlled::<E>(control, Checkpoint::DefinitionCanonical)?;
+            E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
+            checked.inputs[i].model_digest = Some(sha256_digest(canonical.as_bytes()));
+            E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
             for v in vs {
+                E::checkpoint(control, Checkpoint::DefinitionIteration)?;
                 if checked.vocabularies.contains_key(&v.namespace) {
                     let mut issue = error(
                         Code::DuplicateId,
@@ -62,22 +98,23 @@ pub fn check_definitions(files: &[(&str, &[u8])]) -> Result<CheckedDefinitions, 
                         format!("namespace `{}` が重複している", v.namespace),
                     );
                     issue.location = v.location;
-                    return Err(issue);
+                    return Err(issue.into());
                 }
                 checked.vocabularies.insert(v.namespace.clone(), v);
             }
             for d in ds {
+                E::checkpoint(control, Checkpoint::DefinitionIteration)?;
                 checked.declarations.insert(d.name.clone(), d);
             }
         }
-        validate::check(&mut checked)
+        validate::check::<E>(&mut checked, control)
     })();
-    result.map_err(|issue| DefinitionFailure {
-        issue: *issue,
-        inputs: checked.inputs.clone(),
-    })?;
+    // A validation error cannot hide a stop observed at the checking boundary.
+    E::finish(result, control, Checkpoint::DefinitionCanonical)
+        .map_err(|issue| (issue, checked.inputs.clone()))?;
     Ok(checked)
 }
+
 impl CheckedDefinitions {
     pub fn check_binding(&self, binding: &Binding) -> Result<(), Box<Issue>> {
         let code = match self.vocabularies.get(&binding.namespace) {

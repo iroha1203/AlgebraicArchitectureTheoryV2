@@ -3,32 +3,37 @@
 use super::ast::{DeclKind, ExprId, Span};
 use super::check::{Checker, full};
 use super::model::{DeclarationInfo, Param, Signature, SuppliedRule};
+use crate::json::InputError;
 use std::collections::BTreeSet;
 
-impl Checker {
-    pub fn declaration_infos(&self) -> Vec<DeclarationInfo> {
+impl<E: InputError> Checker<E> {
+    pub fn declaration_infos(&self) -> Result<Vec<DeclarationInfo>, E> {
         let mut infos = Vec::new();
         for r in self.ast.iter() {
-            let mut references: Vec<(Span, String)> = r
-                .uses
-                .iter()
-                .map(|u| (u.reading.span, u.reading.name.clone()))
-                .collect();
+            self.cooperate()?;
+            let mut references = Vec::new();
+            for used in &r.uses {
+                self.cooperate()?;
+                references.push((used.reading.span, used.reading.name.clone()));
+            }
             references.sort();
-            let has_local = r
-                .decls
-                .iter()
-                .any(|d| matches!(d.kind, DeclKind::Local { .. }));
-            let mut vocabularies: Vec<_> = r
-                .vocabularies
-                .iter()
-                .map(|v| crate::definition::Binding {
-                    namespace: v.namespace.name.clone(),
-                    version: v.version.clone(),
-                    digest: v.digest.clone(),
-                    location: crate::issue::Location::Law { span: v.span },
-                })
-                .collect();
+            let mut has_local = false;
+            for declaration in &r.decls {
+                self.cooperate()?;
+                has_local |= matches!(declaration.kind, DeclKind::Local { .. });
+            }
+            let mut vocabularies = Vec::new();
+            for vocabulary in &r.vocabularies {
+                self.cooperate()?;
+                vocabularies.push(crate::definition::Binding {
+                    namespace: vocabulary.namespace.name.clone(),
+                    version: vocabulary.version.clone(),
+                    digest: vocabulary.digest.clone(),
+                    location: crate::issue::Location::Law {
+                        span: vocabulary.span,
+                    },
+                });
+            }
             vocabularies.sort_by(|a, b| a.namespace.cmp(&b.namespace));
             infos.push(DeclarationInfo {
                 vocabularies,
@@ -39,7 +44,7 @@ impl Checker {
                 returns: None,
                 role: None,
                 span: r.span,
-                dependencies: dependencies(&references),
+                dependencies: self.dependencies(&references)?,
                 references,
                 expressions: Vec::new(),
                 supplied: vec![if has_local {
@@ -49,15 +54,19 @@ impl Checker {
                 }],
             });
             for d in &r.decls {
+                self.cooperate()?;
                 let name = full(&r.name.name, &[&d.name.name]);
                 let sig = &self.sigs[&name];
                 let mut references = self.decl_refs.get(&name).cloned().unwrap_or_default();
                 references.sort();
                 let expressions = self.decl_exprs.get(&name).cloned().unwrap_or_default();
-                let pairs = |ps: &[Param]| {
-                    ps.iter()
-                        .map(|p| (p.name.clone(), p.ty.clone()))
-                        .collect::<Vec<_>>()
+                let pairs = |ps: &[Param]| -> Result<Vec<(String, crate::types::Type)>, E> {
+                    let mut pairs = Vec::new();
+                    for parameter in ps {
+                        self.cooperate()?;
+                        pairs.push((parameter.name.clone(), parameter.ty.clone()));
+                    }
+                    Ok(pairs)
                 };
                 let mut info = DeclarationInfo {
                     vocabularies: Vec::new(),
@@ -68,7 +77,7 @@ impl Checker {
                     returns: None,
                     role: None,
                     span: d.span,
-                    dependencies: dependencies(&references),
+                    dependencies: self.dependencies(&references)?,
                     references: Vec::new(),
                     expressions,
                     supplied: Vec::new(),
@@ -84,7 +93,7 @@ impl Checker {
                     Signature::View {
                         params, returns, ..
                     } => {
-                        info.parameters = pairs(params);
+                        info.parameters = pairs(params)?;
                         info.returns = Some(returns.clone());
                     }
                     Signature::Law {
@@ -93,7 +102,7 @@ impl Checker {
                         guard,
                         ..
                     } => {
-                        info.parameters = pairs(params);
+                        info.parameters = pairs(params)?;
                         info.role = Some(*role);
                         if guard_omitted(guard) {
                             info.supplied.push(SuppliedRule::GuardTrue { span: d.span });
@@ -102,7 +111,7 @@ impl Checker {
                     Signature::Local { params, guard, .. }
                     | Signature::Change { params, guard, .. }
                     | Signature::Relation { params, guard, .. } => {
-                        info.parameters = pairs(params);
+                        info.parameters = pairs(params)?;
                         if guard_omitted(guard) {
                             info.supplied.push(SuppliedRule::GuardTrue { span: d.span });
                         }
@@ -113,16 +122,16 @@ impl Checker {
             }
         }
         infos.sort_by(|a, b| a.name.cmp(&b.name));
-        infos
+        self.cooperate()?;
+        Ok(infos)
     }
-}
-
-/// resolution.references の解決先を重複なく辞書順に並べる。
-fn dependencies(references: &[(Span, String)]) -> Vec<String> {
-    references
-        .iter()
-        .map(|(_, n)| n.clone())
-        .collect::<BTreeSet<_>>()
-        .into_iter()
-        .collect()
+    /// 解決先を重複なく辞書順に並べる。
+    fn dependencies(&self, references: &[(Span, String)]) -> Result<Vec<String>, E> {
+        let mut names = BTreeSet::new();
+        for (_, name) in references {
+            self.cooperate()?;
+            names.insert(name.clone());
+        }
+        Ok(names.into_iter().collect())
+    }
 }

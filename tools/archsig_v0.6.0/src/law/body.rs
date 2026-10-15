@@ -4,16 +4,22 @@ use super::ast::*;
 use super::check::*;
 use super::expr::*;
 use super::model::*;
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 use crate::types::Type;
 use std::collections::{BTreeMap, BTreeSet};
 
-impl Checker {
-    pub fn check_bodies(&mut self) -> CResult<()> {
+impl<E: InputError> Checker<E> {
+    pub(super) fn check_bodies_controlled(&mut self, control: &mut Control) -> Result<(), E> {
         let ast = self.ast.clone();
         // 先に全 view の署名を解決し、本体から呼べるようにする。
         for (ri, r) in ast.iter().enumerate() {
+            self.cooperate()?;
+            E::checkpoint(control, Checkpoint::LawIteration)?;
             self.current_reading = ri;
             for d in &r.decls {
+                self.cooperate()?;
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 if let DeclKind::View {
                     params,
                     returns,
@@ -45,8 +51,12 @@ impl Checker {
             }
         }
         for (ri, r) in ast.iter().enumerate() {
+            self.cooperate()?;
+            E::checkpoint(control, Checkpoint::LawIteration)?;
             self.current_reading = ri;
             for d in &r.decls {
+                self.cooperate()?;
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 if d.kind.is_primitive() {
                     continue;
                 }
@@ -62,12 +72,15 @@ impl Checker {
             }
         }
         self.check_view_cycles()?;
-        self.check_reading_cycles()
+        self.check_reading_cycles()?;
+        E::checkpoint(control, Checkpoint::LawIteration)?;
+        Ok(())
     }
 
-    fn params(&mut self, ri: usize, fields: &[Field], change: bool) -> CResult<Vec<Param>> {
+    fn params(&mut self, ri: usize, fields: &[Field], change: bool) -> CResult<Vec<Param>, E> {
         let mut ps: Vec<Param> = Vec::new();
         for (i, f) in fields.iter().enumerate() {
+            self.cooperate()?;
             let value_only = change && i > 0;
             let tctx = TypeCtx {
                 reading: ri,
@@ -95,9 +108,10 @@ impl Checker {
         Ok(ps)
     }
 
-    fn env_for(&mut self, params: &[Param]) -> CResult<Env> {
+    fn env_for(&mut self, params: &[Param]) -> CResult<Env, E> {
         let mut env = Env::default();
         for (i, p) in params.iter().enumerate() {
+            self.cooperate()?;
             let id = Ident {
                 name: p.name.clone(),
                 span: p.span,
@@ -114,7 +128,7 @@ impl Checker {
         name: &str,
         d: &Decl,
         exprs: &mut Vec<ResolvedExpression>,
-    ) -> CResult<Signature> {
+    ) -> CResult<Signature, E> {
         let mut ctx = Ctx {
             reading: ri,
             decl: name.to_owned(),
@@ -138,10 +152,14 @@ impl Checker {
                     unreachable!()
                 };
                 ctx.is_view = true;
-                ctx.rec = params.iter().enumerate().find_map(|(i, p)| match &p.ty {
-                    Type::Data(dname) => Some((i, dname.clone())),
-                    _ => None,
-                });
+                ctx.rec = None;
+                for (index, parameter) in params.iter().enumerate() {
+                    self.cooperate()?;
+                    if let Type::Data(name) = &parameter.ty {
+                        ctx.rec = Some((index, name.clone()));
+                        break;
+                    }
+                }
                 let mut env = self.env_for(&params)?;
                 let t = self.check(*body, Some(&returns), &mut env, &ctx)?;
                 record(self, ExpressionKind::Body, *body, t);
@@ -184,6 +202,7 @@ impl Checker {
                     record(self, ExpressionKind::Guard, *g, t);
                 }
                 for r in reads {
+                    self.cooperate()?;
                     let t = self.check(*r, None, &mut env, &ctx)?;
                     record(self, ExpressionKind::Read, *r, t);
                 }
@@ -264,14 +283,18 @@ impl Checker {
         params: &[Param],
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
-        let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+    ) -> CResult<Type, E> {
+        E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
+        let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.check_change_result(body, params, env, ctx)
-        })?;
+        });
+        // 入力不正も、検査内で発生した取消・消尽を確認した後に返す。
+        let t = E::finish(result, &mut self.control.clone(), Checkpoint::LawChange)?;
         if self.expr_types.len() < self.parser.exprs.len() {
             self.expr_types.resize(self.parser.exprs.len(), None);
         }
         self.expr_types[body] = Some(t.clone());
+        E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
         Ok(t)
     }
 
@@ -282,7 +305,8 @@ impl Checker {
         params: &[Param],
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
+        E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
         let span = self.parser.exprs[body].span;
         let kind = self.parser.exprs[body].kind.clone();
         let result = match kind {
@@ -311,6 +335,7 @@ impl Checker {
             _ => None,
         };
         if let Some(t) = result {
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
             return Ok(t);
         }
         let ExprKind::With { base, updates } = self.parser.exprs[body].kind.clone() else {
@@ -319,7 +344,10 @@ impl Checker {
         let first = &params[0];
         let mut target = base;
         while let ExprKind::Group(inner) = self.parser.exprs[target].kind {
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
+            self.cooperate()?;
             target = inner;
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
         }
         let is_first = matches!(&self.parser.exprs[target].kind, ExprKind::Dotted(p) if p.len() == 1 && p[0].name == first.name);
         if !is_first {
@@ -333,7 +361,9 @@ impl Checker {
         let sig = self.sigs.get(&entity).cloned().expect("entity の署名");
         let mut seen = BTreeSet::new();
         for (field, value) in &updates {
-            let Some(f) = sig.field(&field.name).cloned() else {
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
+            self.cooperate()?;
+            let Some(f) = self.signature_field(&sig, &field.name)? else {
                 return reference(
                     field.span,
                     format!("`{entity}` に field `{}` はない", field.name),
@@ -345,14 +375,20 @@ impl Checker {
                     format!("field `{}` の更新が重複している", field.name),
                 );
             }
-            if field.name == "owner" || self.has_reference(&f.ty) {
+            if field.name == "owner" {
                 return syntax(
                     field.span,
                     "change は owner・参照・Map を含む field を更新しない",
                 );
             }
+            self.reject_reference(
+                &f.ty,
+                field.span,
+                "change は owner・参照・Map を含む field を更新しない",
+            )?;
             self.record(field.span, full(&entity, &[&field.name]));
             self.check(*value, Some(&f.ty), env, ctx)?;
+            E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;
         }
         let t = Type::Ref(entity);
         if self.expr_types.len() < self.parser.exprs.len() {
@@ -363,46 +399,47 @@ impl Checker {
     }
 
     /// view の相互呼出しは非循環。自己再帰は構造再帰として別に検査済み。
-    fn check_view_cycles(&mut self) -> CResult<()> {
+    fn check_view_cycles(&mut self) -> CResult<(), E> {
         let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-        for (a, b, _) in &self.view_edges {
+        let mut first_spans = BTreeMap::new();
+        for (a, b, span) in &self.view_edges {
+            self.cooperate()?;
             edges.entry(a.clone()).or_default().insert(b.clone());
+            first_spans.entry(a.clone()).or_insert(*span);
         }
-        if let Some(n) = find_cycle(&edges) {
-            let span = self
-                .view_edges
-                .iter()
-                .find(|(a, _, _)| *a == n)
-                .map(|e| e.2)
-                .expect("閉路の辺");
-            return cycle(span, format!("view `{n}` を含む相互呼出しが循環している"));
+        if let Some(n) = find_cycle::<E>(&edges, &mut self.control.clone())? {
+            // Capture the original diagnostic while the detected cycle is known.
+            // Source spans are indexed before DFS, so no new search is needed
+            // after detection. A later budget retains this issue; cancellation wins.
+            let span = first_spans[&n];
+            let failure = cycle(span, format!("view `{n}` を含む相互呼出しが循環している"));
+            return E::finish(failure, &mut self.control.clone(), Checkpoint::LawCycle);
         }
         Ok(())
     }
 
-    fn check_reading_cycles(&mut self) -> CResult<()> {
+    fn check_reading_cycles(&mut self) -> CResult<(), E> {
         let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-        for (a, b, _) in &self.reading_edges {
+        let mut first_spans = BTreeMap::new();
+        for (a, b, span) in &self.reading_edges {
+            self.cooperate()?;
             edges
                 .entry(a.to_string())
                 .or_default()
                 .insert(b.to_string());
+            first_spans.entry(*a).or_insert(*span);
         }
-        if let Some(n) = find_cycle(&edges) {
+        if let Some(n) = find_cycle::<E>(&edges, &mut self.control.clone())? {
             let i: usize = n.parse().expect("reading の位置");
-            let span = self
-                .reading_edges
-                .iter()
-                .find(|(a, _, _)| *a == i)
-                .map(|e| e.2)
-                .expect("閉路の辺");
-            return cycle(
+            let span = first_spans[&i];
+            let failure = cycle(
                 span,
                 format!(
                     "reading `{}` を含む参照が循環している",
                     self.reading_name(i)
                 ),
             );
+            return E::finish(failure, &mut self.control.clone(), Checkpoint::LawCycle);
         }
         Ok(())
     }

@@ -7,6 +7,7 @@ pub mod issue;
 pub mod json;
 pub mod law;
 pub(crate) mod names;
+pub mod observed;
 pub mod prime;
 pub mod result;
 pub mod run;
