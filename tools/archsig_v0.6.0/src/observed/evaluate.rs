@@ -71,6 +71,8 @@ struct Evaluator<'a, 'b> {
     declaration: &'a Declaration,
     bindings: Vec<Binding>,
     base: Scope,
+    // この Request で挿入済みの node が保持する評価範囲。root の完成とは独立。
+    retained_scope: Scope,
     reasons: Vec<Reason>,
     completed: BTreeMap<ExprId, Evaluated>,
 }
@@ -80,7 +82,15 @@ impl Evaluator<'_, '_> {
     }
     fn push(&mut self, node: Node) -> Result<NodeRef, Failure> {
         self.environment.validate(self.graph, &node)?;
-        self.graph.push(node).map_err(Failure::from)
+        let previous_nodes = self.graph.nodes.len();
+        let scope = node.scope.clone();
+        let result = self.graph.push(node).map_err(Failure::from);
+        if self.graph.nodes.len() > previous_nodes {
+            // 挿入後の post checkpoint が停止しても、既存 node の範囲を記録する。
+            // 既に検査・保持したデータの転記であり、新しい意味導出を行わない。
+            self.retained_scope.merge(&scope);
+        }
+        result
     }
     fn unsupported(&self, span: (usize, usize), feature: impl Into<String>) -> Failure {
         Failure::NotImplemented {
@@ -778,6 +788,7 @@ pub fn evaluate_observed(
                 declaration,
                 bindings: vec![],
                 base: base.clone(),
+                retained_scope: Scope::default(),
                 reasons: vec![],
                 completed: BTreeMap::new(),
             };
@@ -834,6 +845,8 @@ pub fn evaluate_observed(
                     sort_reasons(&mut reasons);
                     let mut outputs = BTreeMap::new();
                     let mut scope = evaluator.base.clone();
+                    // root が未完成でも、保持済みの依存式・値の範囲と由来を残す。
+                    scope.merge(&evaluator.retained_scope);
                     // 表示の finalize。停止前に完成した root Evaluation/値だけを移す。
                     if let Some(completed) = evaluator.completed.get(&body) {
                         outputs.insert("evaluation".into(), completed.evaluation);

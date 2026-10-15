@@ -1016,3 +1016,249 @@ fn memory_budget_after_the_first_answer_preserves_its_known_value() {
         true,
     );
 }
+
+// 公開 checkpoint の列から、先頭 amount の式終了直前を選ぶ。
+// FiniteIteration の絶対数や node 数には固定した期待値を置かない。
+fn missing_root_last_finite_before_expression_post() -> usize {
+    let finite = Rc::new(Cell::new(0));
+    let expression = Rc::new(Cell::new(0));
+    let at_post = Rc::new(Cell::new(None));
+    let (seen_finite, seen_expression, captured) =
+        (finite.clone(), expression.clone(), at_post.clone());
+    let mut control = Control::new(Limits::default(), move |point| {
+        if point == Checkpoint::FiniteIteration {
+            seen_finite.set(seen_finite.get() + 1);
+        }
+        if point == Checkpoint::Expression {
+            seen_expression.set(seen_expression.get() + 1);
+            if seen_expression.get() == 2 {
+                captured.set(Some(seen_finite.get()));
+            }
+        }
+        Usage::default()
+    });
+    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
+        .unwrap()
+        .wire();
+    assert_eq!(field(&result, "status"), &Json::str("partial"));
+    assert_eq!(
+        field(field(answer(&result, "n"), "scope"), "domain"),
+        &Json::str("all_completions")
+    );
+    let count = at_post
+        .get()
+        .expect("先頭 amount の Expression post がある");
+    assert!(count > 1);
+    count
+}
+
+fn missing_scope_survives_finite_stop(offset: usize, limits: Limits, usage: Usage) {
+    let stop_at = missing_root_last_finite_before_expression_post() - offset;
+    let finite = Rc::new(Cell::new(0));
+    let expression = Rc::new(Cell::new(0));
+    let probes = Rc::new(Cell::new(0));
+    let probes_at_stop = Rc::new(Cell::new(None));
+    let (seen_finite, seen_expression, calls, stopped_calls) = (
+        finite.clone(),
+        expression.clone(),
+        probes.clone(),
+        probes_at_stop.clone(),
+    );
+    let mut control = Control::new(limits, move |point| {
+        calls.set(calls.get() + 1);
+        if point == Checkpoint::Expression {
+            seen_expression.set(seen_expression.get() + 1);
+        }
+        if point == Checkpoint::FiniteIteration {
+            seen_finite.set(seen_finite.get() + 1);
+            if seen_finite.get() == stop_at {
+                stopped_calls.set(Some(calls.get()));
+                return usage;
+            }
+        }
+        Usage::default()
+    });
+    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
+        .unwrap()
+        .wire();
+    assert_eq!(field(&result, "status"), &Json::str("interrupted"));
+    assert_eq!(finite.get(), stop_at);
+    assert_eq!(expression.get(), 1, "root の式終了/完成登録より前で止まる");
+    assert_eq!(
+        Some(probes.get()),
+        probes_at_stop.get(),
+        "停止確認後に probe を再実行しない"
+    );
+    let stop = control.stop_reason().expect("元の停止理由を保持").wire();
+    if let Some(signal) = usage.signal {
+        assert_eq!(field(&stop, "code"), &Json::str("cancelled"));
+        assert_eq!(
+            field(field(&stop, "details"), "signal"),
+            &Json::str(signal.wire())
+        );
+    } else {
+        assert_eq!(field(&stop, "code"), &Json::str("budget_exhausted"));
+        let (resource, limit, observed) = match limits.time_ms {
+            Some(limit) => ("time_ms", limit, usage.elapsed_ms),
+            None => ("memory_mib", limits.memory_mib.unwrap(), usage.memory_mib),
+        };
+        assert_eq!(
+            field(&stop, "details"),
+            &Json::obj([
+                ("resource", Json::str(resource)),
+                ("limit", Json::str(limit.to_string())),
+                ("observed", Json::str(observed.to_string())),
+            ])
+        );
+    }
+    for a in arr(field(&result, "answers")) {
+        assert_eq!(field(a, "status"), &Json::str("undetermined"));
+        assert!(
+            obj(field(a, "outputs")).is_empty(),
+            "完成前rootと未着手Requestに通常値を補わない"
+        );
+        assert!(!obj(a).contains_key("claim"));
+        let reason = arr(field(a, "reasons"))
+            .iter()
+            .find(|r| field(r, "code") == field(&stop, "code"))
+            .unwrap();
+        assert_eq!(field(reason, "details"), field(&stop, "details"));
+        assert_eq!(field(reason, "request"), field(a, "id"));
+    }
+    let a = answer(&result, "n");
+    let scope = field(a, "scope");
+    assert_eq!(
+        field(scope, "domain"),
+        &Json::str("all_completions"),
+        "既知の欠測を有限モデルへ戻さない"
+    );
+    assert_eq!(
+        field(scope, "readings"),
+        &Json::Arr(vec![Json::str("CountCheck")])
+    );
+    assert_eq!(field(scope, "snapshots"), &Json::Arr(vec![Json::str("v")]));
+    assert_eq!(
+        field(scope, "modes"),
+        &Json::Arr(vec![Json::str("specification")])
+    );
+    let missing = arr(field(a, "reasons"))
+        .iter()
+        .find(|r| field(r, "code") == &Json::str("missing_observation"))
+        .expect("root未完成でも認識済みの欠測理由は保持する");
+    assert_eq!(
+        field(missing, "missing"),
+        &Json::Arr(vec![Json::obj([
+            ("snapshot", Json::str("v")),
+            ("subject", Json::str("s")),
+            ("field", Json::str("Counter.State.count")),
+        ])])
+    );
+    let index = nodes(&result);
+    assert!(!arr(field(missing, "dependencies")).is_empty());
+    for dependency in arr(field(missing, "dependencies")) {
+        let expression = typed(&index, dependency, "Expression");
+        assert_eq!(
+            field(expression, "scope"),
+            scope,
+            "Answerと依存原式は同じ全補完域/由来を保持する"
+        );
+        let payload = value(expression);
+        let (start, end) = span(field(payload, "location"));
+        assert_eq!(&LAW[start..end], b"s.count");
+        let binding = &arr(field(payload, "bindings"))[0];
+        assert_eq!(field(binding, "name"), &Json::str("s"));
+        let subject = target(&index, field(binding, "value"));
+        assert_eq!(
+            field(subject, "type"),
+            &Json::Arr(vec![Json::str("Ref"), Json::str("Counter.State")])
+        );
+        assert_eq!(
+            value(subject),
+            &Json::Arr(vec![Json::str("v"), Json::str("s")])
+        );
+        assert!(
+            arr(field(subject, "support")).contains(&Json::obj([
+                ("snapshot", Json::str("v")),
+                ("subject", Json::str("s")),
+            ])),
+            "実在するsubjectの由来を保持する"
+        );
+    }
+    for node in index.values() {
+        assert_ne!(
+            field(node, "type"),
+            &Json::str("Z"),
+            "欠測の具体的補完値を作らない"
+        );
+        assert_ne!(
+            field(node, "type"),
+            &Json::str("Bool"),
+            "未着手の比較を導出しない"
+        );
+        assert_eq!(
+            field(field(node, "scope"), "readings"),
+            &Json::Arr(vec![Json::str("CountCheck")])
+        );
+        if field(node, "type") == &Json::str("Evaluation") {
+            let expression = value(typed(
+                &index,
+                field(value(node), "expression"),
+                "Expression",
+            ));
+            let (start, end) = span(field(expression, "location"));
+            if &LAW[start..end] == b"s.count" {
+                assert!(
+                    !obj(value(node)).contains_key("value"),
+                    "欠測依存Evaluationを通常値として消費しない"
+                );
+            }
+        }
+    }
+    let before = probes.get();
+    assert!(control.checkpoint(Checkpoint::FiniteIteration).is_err());
+    assert!(control.checkpoint(Checkpoint::Expression).is_err());
+    assert_eq!(probes.get(), before);
+    audit_dag(&result);
+}
+
+#[test]
+fn missing_scope_survives_time_stop_during_root_evaluation_push() {
+    missing_scope_survives_finite_stop(
+        1,
+        Limits {
+            time_ms: Some(13),
+            memory_mib: None,
+        },
+        Usage {
+            elapsed_ms: 13,
+            ..Usage::default()
+        },
+    );
+}
+
+#[test]
+fn missing_scope_survives_memory_stop_before_root_evaluation_push_completes() {
+    missing_scope_survives_finite_stop(
+        2,
+        Limits {
+            time_ms: None,
+            memory_mib: Some(1),
+        },
+        Usage {
+            memory_mib: 1,
+            ..Usage::default()
+        },
+    );
+}
+
+#[test]
+fn missing_scope_survives_sigterm_before_root_expression_completes() {
+    missing_scope_survives_finite_stop(
+        0,
+        Limits::default(),
+        Usage {
+            signal: Some(Signal::Term),
+            ..Usage::default()
+        },
+    );
+}
