@@ -1,8 +1,11 @@
-//! 明示束縛の参照・原始 field・Z/Bool literal・整数比較を原 AST から評価する。
+//! 明示束縛の参照・原始 field と Z/Bool 演算を原 AST から評価する。
 use super::{
     PreparedObserved,
     control::{Checkpoint, Control, StopReason},
-    environment::{Environment, SourceAnalysis, binary, scalar_from},
+    environment::{
+        Environment, SourceAnalysis, is_boolean_binary, is_comparison, partial_binary, scalar_from,
+        supports_binary, unary,
+    },
     input::InputSources,
     prepare_observed,
     request::{QuestionKind, Request, Selector},
@@ -333,28 +336,21 @@ impl Evaluator<'_, '_> {
                 ExprKind::Group(child) => {
                     self.prepare_source(*child)?;
                 }
-                ExprKind::Unary {
-                    op: UnOp::Neg,
-                    operand,
-                } if ty == Type::Z => {
+                ExprKind::Unary { op, operand }
+                    if (*op == UnOp::Neg && ty == Type::Z)
+                        || (*op == UnOp::Not && ty == Type::Bool) =>
+                {
                     self.prepare_source(*operand)?;
                 }
-                ExprKind::Binary { op, lhs, rhs }
-                    if matches!(
-                        op,
-                        BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
-                    ) =>
-                {
+                ExprKind::Binary { op, lhs, rhs } => {
                     let input_ty = self
                         .environment
                         .inputs
                         .law()
                         .expr_type(*lhs)
-                        .ok_or_else(|| Failure::Internal("比較の型".into()))?;
-                    if input_ty != &Type::Z
-                        && !(input_ty == &Type::Bool && matches!(op, BinOp::Eq | BinOp::Ne))
-                    {
-                        return Err(self.unsupported(span, "Z/Bool 以外の比較"));
+                        .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
+                    if !supports_binary(*op, input_ty) {
+                        return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                     }
                     self.prepare_source(*lhs)?;
                     self.prepare_source(*rhs)?;
@@ -546,47 +542,39 @@ impl Evaluator<'_, '_> {
                 let child = self.eval(*child)?;
                 self.finish(span, ty, child.value, vec![child], vec![], None, None, None)
             }
-            ExprKind::Unary {
-                op: UnOp::Neg,
-                operand,
-            } if ty == Type::Z => {
+            ExprKind::Unary { op, operand }
+                if (*op == UnOp::Neg && ty == Type::Z)
+                    || (*op == UnOp::Not && ty == Type::Bool) =>
+            {
                 let operand = self.eval(*operand)?;
                 let value = match operand.value {
-                    Some(r) => {
-                        let Scalar::Z(v) = self.graph.scalar(r)? else {
-                            return Err(Failure::Internal("負号の型".into()));
-                        };
-                        Some(self.value(
-                            Scalar::Z(-v),
-                            Rule::Input {
-                                kind: "law",
-                                location: Location::Law { span },
-                            },
-                            vec![r],
-                            operand.support.clone(),
-                            operand.scope.clone(),
-                        )?)
-                    }
+                    Some(r) => Some(self.value(
+                        unary(*op, self.graph.scalar(r)?)?,
+                        Rule::Input {
+                            kind: "law",
+                            location: Location::Law { span },
+                        },
+                        if *op == UnOp::Not {
+                            vec![operand.evaluation]
+                        } else {
+                            vec![r]
+                        },
+                        operand.support.clone(),
+                        operand.scope.clone(),
+                    )?),
                     None => None,
                 };
                 self.finish(span, ty, value, vec![operand], vec![], None, None, None)
             }
-            ExprKind::Binary { op, lhs, rhs }
-                if matches!(
-                    op,
-                    BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
-                ) =>
-            {
+            ExprKind::Binary { op, lhs, rhs } => {
                 let input_ty = self
                     .environment
                     .inputs
                     .law()
                     .expr_type(*lhs)
-                    .ok_or_else(|| Failure::Internal("比較の型".into()))?;
-                if input_ty != &Type::Z
-                    && !(input_ty == &Type::Bool && matches!(op, BinOp::Eq | BinOp::Ne))
-                {
-                    return Err(self.unsupported(span, "Z/Bool 以外の比較"));
+                    .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
+                if !supports_binary(*op, input_ty) {
+                    return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                 }
                 let left = self.eval(*lhs)?;
                 let right = self.eval(*rhs)?;
@@ -596,15 +584,29 @@ impl Evaluator<'_, '_> {
                 support.extend(right.support.iter().cloned());
                 support.sort();
                 support.dedup();
-                let comparison = left.value.zip(right.value);
-                let value = if let Some((l, r)) = comparison {
+                let pair = left.value.zip(right.value);
+                let comparison = pair.filter(|_| is_comparison(*op));
+                let known_value = partial_binary(
+                    *op,
+                    left.value.map(|r| self.graph.scalar(r)).transpose()?,
+                    right.value.map(|r| self.graph.scalar(r)).transpose()?,
+                )?;
+                let value = if let Some(value) = known_value {
+                    let arguments = if is_boolean_binary(*op) {
+                        vec![left.evaluation, right.evaluation]
+                    } else {
+                        let (l, r) = pair.ok_or_else(|| {
+                            Failure::Internal("既知二項演算の左右値がない".into())
+                        })?;
+                        vec![l, r]
+                    };
                     Some(self.value(
-                        binary(*op, self.graph.scalar(l)?, self.graph.scalar(r)?)?,
+                        value,
                         Rule::Input {
                             kind: "law",
                             location: Location::Law { span },
                         },
-                        vec![l, r],
+                        arguments,
                         support.clone(),
                         scope.clone(),
                     )?)
@@ -2387,6 +2389,207 @@ reading R {{
                 ),
                 Err(ValidationFailure::Internal(_))
             ));
+        }
+    }
+    fn scalar_operation_private_example(p: Option<bool>, q: Option<bool>) -> ObservedEvaluation {
+        let definitions=include_str!("../../tests/fixtures/counter.atoms.json").replace("\"fields\": [",
+        "\"fields\": [{\"name\":\"other\",\"type\":\"Z\",\"meaning\":\"第二整数。\"},{\"name\":\"p\",\"type\":\"Bool\",\"meaning\":\"第一条件。\"},{\"name\":\"q\",\"type\":\"Bool\",\"meaning\":\"第二条件。\"},");
+        let checked =
+            crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies["Counter"].digest;
+        let law = include_str!("../../tests/fixtures/counter.law")
+            .replace(
+                "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11",
+                digest,
+            )
+            .replace(
+                "view amount(s: State): Z = s.count;",
+                r#"view amount(s: State): Z = s.count;
+          view total(s: State): Z = s.count + s.other;
+          view difference(s: State): Z = s.count - s.other;
+          view product(s: State): Z = s.count * s.other;
+          view disjunction(s: State): Bool = s.p or s.q;
+          view conjunction(s: State): Bool = s.p and s.q;
+          view consequence(s: State): Bool = s.p implies s.q;
+          view yes(s: State): Bool = true;
+          view no(s: State): Bool = false;
+          law required computed(s: State): s.count + s.other = 10;"#,
+            );
+        let mut additions=vec![r#"{"id":"other","subject":"s","field":"Counter.State.other","value":"3","origin":"model"}"#.to_owned()];
+        for (field, value) in [("p", p), ("q", q)] {
+            if let Some(value) = value {
+                additions.push(format!(r#"{{"id":"{field}","subject":"s","field":"Counter.State.{field}","value":{value},"origin":"model"}}"#));
+            }
+        }
+        let additions = additions.join(",");
+        let map = include_str!("../../tests/fixtures/counter.archmap.json")
+            .replace(
+                "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11",
+                digest,
+            )
+            .replace("\"value\": \"2\"", "\"value\": \"7\"")
+            .replace(
+                "件数が2である仕様モデル。",
+                "件数と条件を提示する仕様モデル。",
+            )
+            .replace("\"atoms\": [", &format!("\"atoms\": [{additions},"));
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![definitions.into_bytes()],
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            &[
+                "yes=evaluate(CountCheck.yes,s=@v/s)",
+                "no=evaluate(CountCheck.no,s=@v/s)",
+                "total=evaluate(CountCheck.total,s=@v/s)",
+                "difference=evaluate(CountCheck.difference,s=@v/s)",
+                "product=evaluate(CountCheck.product,s=@v/s)",
+                "or_value=evaluate(CountCheck.disjunction,s=@v/s)",
+                "and_value=evaluate(CountCheck.conjunction,s=@v/s)",
+                "imp_value=evaluate(CountCheck.consequence,s=@v/s)",
+                "computed=check(CountCheck.computed,s=@v/s)",
+            ],
+            &mut control,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn rejects_arithmetic_value_and_commutative_argument_substitution() {
+        let result = scalar_operation_private_example(Some(false), Some(true));
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("正常な整数演算DAGを元順で再buildする");
+        for (id, expected) in [("total", 10), ("difference", 4), ("product", 21)] {
+            let reference = result.answers.iter().find(|a| a.id == id).unwrap().outputs["value"];
+            assert_eq!(
+                graph.scalar(reference).unwrap(),
+                &Scalar::Z(expected.into())
+            );
+            let mut changed = result.nodes.clone();
+            changed[reference.0].payload = Some(Payload::Scalar(Scalar::Z(99.into())));
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "元ASTと入力に反する整数値を拒否する"
+            );
+        }
+        let sum = result
+            .answers
+            .iter()
+            .find(|a| a.id == "total")
+            .unwrap()
+            .outputs["value"];
+        let mut changed = result.nodes.clone();
+        assert_eq!(changed[sum.0].arguments.len(), 2);
+        assert_ne!(
+            graph.scalar(changed[sum.0].arguments[0]).unwrap(),
+            graph.scalar(changed[sum.0].arguments[1]).unwrap()
+        );
+        changed[sum.0].arguments.swap(0, 1);
+        // 7+3=3+7で値10は同じでも、元の左右fieldの出現と既出Ref identityは異なる。
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "可換な値だけの一致で元ASTの左右を置換できない"
+        );
+    }
+
+    #[test]
+    fn rejects_short_circuit_value_and_foreign_operand_evaluation_substitution() {
+        let result = scalar_operation_private_example(None, Some(false));
+        assert_eq!(result.status(), "partial");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("未知pとfalse qの全raw評価を保つ正常DAG");
+        let answer = result.answers.iter().find(|a| a.id == "and_value").unwrap();
+        assert_eq!(answer.status, Decision::Established);
+        let value = answer.outputs["value"];
+        assert_eq!(graph.scalar(value).unwrap(), &Scalar::Bool(false));
+        let mut changed = result.nodes.clone();
+        changed[value.0].payload = Some(Payload::Scalar(Scalar::Bool(true)));
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "x and falseは全補完でfalseでありtrueへ変更できない"
+        );
+        let prior_or = result
+            .answers
+            .iter()
+            .find(|a| a.id == "or_value")
+            .unwrap()
+            .outputs["evaluation"];
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[prior_or.0].payload else {
+            panic!("先行orの元子Evaluation")
+        };
+        let foreign = parts[0].children[0];
+        assert!(foreign.0 < value.0, "代替は既出の同型p Evaluation");
+        let mut changed = result.nodes.clone();
+        assert_eq!(changed[value.0].arguments.len(), 2);
+        assert_ne!(changed[value.0].arguments[0], foreign);
+        assert_eq!(
+            result.nodes[changed[value.0].arguments[0].0].ty,
+            result.nodes[foreign.0].ty
+        );
+        changed[value.0].arguments[0] = foreign;
+        // 同じsubjectの同じ未知slotを読む子でも、別の元AST出現を混ぜない。
+        assert!(matches!(
+            rebuild_for_origin_and_support_recheck(&result, &changed),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+
+    #[test]
+    fn rejects_scalar_operation_support_and_scope_pair_substitution() {
+        let result = scalar_operation_private_example(Some(false), Some(true));
+        assert_eq!(result.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("支持とScopeの正常baseline");
+        for id in ["total", "and_value"] {
+            let answer = result.answers.iter().find(|a| a.id == id).unwrap();
+            let value = answer.outputs["value"];
+            let evaluation = answer.outputs["evaluation"];
+            let Some(Payload::Evaluation { expression, .. }) = &result.nodes[evaluation.0].payload
+            else {
+                panic!("元演算のEvaluation")
+            };
+            let expression = *expression;
+            assert!(!result.nodes[value.0].support.is_empty());
+            let mut changed = result.nodes.clone();
+            changed[value.0].support.clear();
+            changed[evaluation.0].support.clear();
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "値とEvaluationの支持を空へ揃えても原始field由来を削除できない"
+            );
+            let mut changed = result.nodes.clone();
+            for reference in [expression, value, evaluation] {
+                changed[reference.0].scope.modes =
+                    std::collections::BTreeSet::from(["observed".to_owned()]);
+            }
+            let mut forged_answer = answer.clone();
+            forged_answer.scope.modes = std::collections::BTreeSet::from(["observed".to_owned()]);
+            assert_eq!(forged_answer.scope, changed[evaluation.0].scope);
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "Source/Scalar/Evaluation/Answerのmode自己一致でも元仕様originをobservedへ変更できない"
+            );
         }
     }
 }
