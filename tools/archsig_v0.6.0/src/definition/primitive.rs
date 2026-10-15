@@ -3,7 +3,7 @@
 use super::*;
 use crate::json::InputError;
 use crate::observed::control::{Checkpoint, Control};
-use crate::{prime::is_prime, types::Type};
+use crate::{prime::is_prime_controlled, types::Type};
 use num_bigint::BigUint;
 use std::collections::{BTreeMap, BTreeSet};
 type R<T, E = Box<Issue>> = Result<T, E>;
@@ -289,7 +289,7 @@ fn check_type_inner<E: InputError>(
             let Ok(n) = modulus.parse::<BigUint>() else {
                 return fail(Code::Syntax, at, "Fp の法は正の10進整数文字列");
             };
-            if !is_prime(&n) {
+            if !is_prime_controlled::<E>(&n, control, Checkpoint::DefinitionSemantics)? {
                 return fail(Code::Syntax, at, format!("Fp の法 {modulus} は素数でない"));
             }
         }

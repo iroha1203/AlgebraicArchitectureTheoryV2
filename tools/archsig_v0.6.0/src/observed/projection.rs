@@ -81,7 +81,7 @@ pub fn resolve_projection_controlled(
     let mut at = 0;
     while at < path.len() {
         tick(control)?;
-        let (next, used) = project(law, &plan.ty, &path[at..], control, true)?;
+        let (next, used) = project(law, &plan.ty, &path[at..], control)?;
         plan.ty = next.ty;
         plan.conditional |= next.conditional;
         at += used;
@@ -100,16 +100,21 @@ fn project(
     ty: &ProjectionType,
     path: &[ProjectionStep],
     control: &mut Control,
-    whole_projection: bool,
 ) -> Result<(ProjectionPlan, usize), ProjectionFailure> {
     tick(control)?;
     let result = project_inner(law, ty, path, control);
+    finish_projection(result, control)
+}
+
+fn finish_projection<T>(
+    result: Result<T, ProjectionFailure>,
+    control: &mut Control,
+) -> Result<T, ProjectionFailure> {
     match (result, tick(control)) {
-        // A rejected Dynamic candidate does not establish an invalid projection.
-        // Only an error for the whole projection outranks a later budget stop.
-        (Err(error @ ProjectionFailure::Invalid(_)), Err(StopReason::BudgetExhausted { .. }))
-            if whole_projection =>
-        {
+        // Keep the completed result and the latched budget together. A Dynamic
+        // caller must still stop before any untried candidate, or when a prior
+        // candidate succeeded; only exhaustive rejection establishes its error.
+        (Err(error @ ProjectionFailure::Invalid(_)), Err(StopReason::BudgetExhausted { .. })) => {
             Err(error)
         }
         (_, Err(reason)) => Err(ProjectionFailure::Interrupted(reason)),
@@ -174,10 +179,16 @@ fn project_inner(
                 return Err("data 型でない".into());
             };
             let mut ts = Vec::new();
-            for c in constructors {
+            for (index, c) in constructors.iter().enumerate() {
                 tick(control)?;
                 if let Some(t) = usize::try_from(*i).ok().and_then(|i| c.arguments.get(i)) {
                     push_unique(&mut ts, Law(t.clone()), control)?;
+                }
+                if index + 1 == constructors.len() && ts.is_empty() {
+                    return finish_projection(
+                        Err("全 constructor で index が範囲外".into()),
+                        control,
+                    );
                 }
                 tick(control)?;
             }
@@ -218,9 +229,9 @@ fn project_inner(
         (Dynamic(ts), _) => {
             let mut out = Vec::new();
             let mut used = None;
-            for t in ts {
+            for (index, t) in ts.iter().enumerate() {
                 tick(control)?;
-                match project(law, t, path, control, false) {
+                match project(law, t, path, control) {
                     Ok((p, n)) => {
                         if used.is_some_and(|u| u != n) {
                             return Err("射影の構造が型候補間で異なる".into());
@@ -230,6 +241,12 @@ fn project_inner(
                     }
                     Err(ProjectionFailure::Invalid(_)) => {}
                     Err(stopped @ ProjectionFailure::Interrupted(_)) => return Err(stopped),
+                }
+                if index + 1 == ts.len() && out.is_empty() {
+                    // Every candidate has now rejected this step. Form that
+                    // conclusion before the final iteration's post checkpoint,
+                    // including a budget latched by the last candidate's post.
+                    return finish_projection(Err("公開された射影が型候補にない".into()), control);
                 }
                 tick(control)?;
             }

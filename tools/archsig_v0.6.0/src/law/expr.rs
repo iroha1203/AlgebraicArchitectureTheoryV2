@@ -1566,26 +1566,32 @@ mod semantic_finish_tests {
     }
     #[test]
     fn resolve_type_error_checks_its_exit_before_returning_invalid() {
+        let ast = TypeAst::Fp {
+            modulus: "4".into(),
+            span: (0, 4),
+        };
+        let ctx = TypeCtx {
+            reading: 0,
+            index: &[],
+            allow_path: true,
+            ref_free: false,
+            validate: true,
+        };
+        let (mut baseline, armed, total) = monitored(usize::MAX, 0);
+        let mut check = checker(&mut baseline);
+        armed.set(true);
+        assert!(matches!(
+            check.resolve_type(&ast, &ctx),
+            Err(Failure::Input(ref issue)) if issue.code == Code::Syntax
+        ));
+        let exit = total.get();
+        assert!(exit > 2, "primality now has its own internal checkpoints");
         for mode in 0..3 {
-            let (mut control, armed, count) = monitored(2, mode);
+            let (mut control, armed, count) = monitored(exit, mode);
             let mut check = checker(&mut control);
             armed.set(true);
-            let failure = check
-                .resolve_type(
-                    &TypeAst::Fp {
-                        modulus: "4".into(),
-                        span: (0, 4),
-                    },
-                    &TypeCtx {
-                        reading: 0,
-                        index: &[],
-                        allow_path: true,
-                        ref_free: false,
-                        validate: true,
-                    },
-                )
-                .unwrap_err();
-            assert_eq!(count.get(), 2);
+            let failure = check.resolve_type(&ast, &ctx).unwrap_err();
+            assert_eq!(count.get(), exit);
             if mode == 0 {
                 assert!(matches!(
                     failure,

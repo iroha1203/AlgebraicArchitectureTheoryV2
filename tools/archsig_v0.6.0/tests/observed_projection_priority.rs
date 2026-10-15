@@ -20,15 +20,22 @@ use archsig::{
 use std::{cell::Cell, rc::Rc};
 
 fn sources() -> InputSources {
+    sources_with_empty_constructor(None)
+}
+
+fn sources_with_empty_constructor(empty_first: Option<bool>) -> InputSources {
     let root = common::entity_json("W.Root", "[]", "[]");
-    let choice = common::data_json(
-        "W.Choice",
-        &format!(
-            "[{},{}]",
-            common::constructor_json("Maybe", r#"[["Option","Z"]]"#),
-            common::constructor_json("Items", r#"[["List","Z"]]"#)
-        ),
+    let nonempty = format!(
+        "{},{}",
+        common::constructor_json("Maybe", r#"[["Option","Z"]]"#),
+        common::constructor_json("Items", r#"[["List","Z"]]"#)
     );
+    let constructors = match empty_first {
+        None => format!("[{nonempty}]"),
+        Some(true) => format!("[{},{}]", common::constructor_json("Empty", "[]"), nonempty),
+        Some(false) => format!("[{},{}]", nonempty, common::constructor_json("Empty", "[]")),
+    };
+    let choice = common::data_json("W.Choice", &constructors);
     let definition = common::definition_json(&format!(
         "[{}]",
         common::vocabulary_json("W", &format!("[{root},{choice}]"), "[]")
@@ -257,29 +264,217 @@ fn early_projection_errors_use_the_same_priority_policy() {
 }
 
 #[test]
-fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
+fn final_dynamic_rejection_keeps_invalid_at_both_internal_post_checkpoints() {
     let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
-    let initial = || {
-        ProjectionType::Dynamic(vec![
-            ProjectionType::Law(Type::Bool),
-            ProjectionType::Law(Type::Option(Box::new(Type::Z))),
-        ])
-    };
+    let initial = ProjectionType::Dynamic(vec![
+        ProjectionType::Law(Type::Bool),
+        ProjectionType::Law(Type::Z),
+    ]);
     let path = [ProjectionStep::Field("some".into())];
+    let invalid = ProjectionFailure::Invalid("公開された射影が型候補にない".into());
     let (mut baseline, total, _) = probe(None, Stop::Time);
-    let normal =
-        resolve_projection_controlled(checked.law(), initial(), &path, &mut baseline).unwrap();
-    assert_eq!(normal.ty, ProjectionType::Law(Type::Z));
+    assert_eq!(
+        resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut baseline),
+        Err(invalid.clone())
+    );
+    // Last candidate post = 10, last iteration post = 11, whole project post = 12.
+    // At 6 only the first candidate has rejected; the second remains untried.
+    assert_eq!(total.get(), 12);
     for at in 1..=total.get() {
         for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
             let (mut control, count, reason) = probe(Some(at), kind);
+            let expected = if at >= 10 && !matches!(kind, Stop::Cancel) {
+                invalid.clone()
+            } else {
+                ProjectionFailure::Interrupted(reason.clone())
+            };
             assert_eq!(
-                resolve_projection_controlled(checked.law(), initial(), &path, &mut control),
-                Err(ProjectionFailure::Interrupted(reason.clone()))
+                resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
+                Err(expected)
             );
+            assert_eq!(control.stop_reason(), Some(reason.clone()));
+            assert_eq!(count.get(), at);
+            assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+            assert_eq!(count.get(), at, "latched stop cannot resume candidate work");
+        }
+    }
+}
+
+#[test]
+fn dynamic_projection_from_bytes_keeps_the_final_candidate_and_iteration_results() {
+    let asks = [
+        "bad=evaluate(R.echo,s=$choice.value[0].missing)",
+        "choice=evaluate(R.choice)",
+    ];
+    // .value[0] produces Option<Z> / List<Z>; .missing rejects both.
+    assert_exhausted_projection_from_bytes(&asks, "公開された射影が型候補にない", 3);
+}
+
+#[test]
+fn final_constructor_rejection_from_bytes_keeps_both_post_results() {
+    let asks = [
+        "bad=evaluate(R.echo,s=$choice.value[1])",
+        "choice=evaluate(R.choice)",
+    ];
+    // Both constructors have exactly one argument, so index 1 is out of range.
+    assert_exhausted_projection_from_bytes(&asks, "全 constructor で index が範囲外", 2);
+}
+
+#[test]
+fn a_rejected_constructor_cannot_hide_untried_or_accepted_candidates() {
+    let asks = [
+        "ok=evaluate(R.accept_option,x=$choice.value[0])",
+        "choice=evaluate(R.choice)",
+    ];
+    for empty_first in [true, false] {
+        let (mut baseline, total, _) = probe(None, Stop::Time);
+        let normal = prepare_observed(
+            sources_with_empty_constructor(Some(empty_first)),
+            &asks,
+            &mut baseline,
+        )
+        .unwrap();
+        assert_eq!(normal.requests().requests()[0].id, "ok");
+        for at in 1..=total.get() {
+            for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
+                let (mut control, count, reason) = probe(Some(at), kind);
+                let failure = prepare_observed(
+                    sources_with_empty_constructor(Some(empty_first)),
+                    &asks,
+                    &mut control,
+                )
+                .unwrap_err();
+                assert!(matches!(
+                    failure,
+                    PrepareFailure::Requests {
+                        failure: ResolveFailure::Interrupted { reason: actual }, ..
+                    } if actual == reason
+                ));
+                assert_eq!(count.get(), at);
+                assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+                assert_eq!(count.get(), at);
+            }
+        }
+    }
+}
+
+fn assert_exhausted_projection_from_bytes(asks: &[&str], message: &str, known_posts: usize) {
+    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let normal = prepare_observed(sources(), asks, &mut baseline).unwrap_err();
+    let PrepareFailure::Requests {
+        failure:
+            ResolveFailure::Invalid {
+                issues,
+                stop_reason: None,
+                ..
+            },
+        ..
+    } = &normal
+    else {
+        panic!("invalid projection");
+    };
+    assert_eq!(issues.len(), 1);
+    assert_eq!(issues[0].code, RequestIssueCode::Projection);
+    assert_eq!(issues[0].request, "bad");
+    assert_eq!(issues[0].argument, "bind.s");
+    assert_eq!(issues[0].message, message);
+    let expected_issue = issues[0].wire();
+    assert!(total.get() >= known_posts);
+    for at in 1..=total.get() {
+        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
+            let (mut control, count, reason) = probe(Some(at), kind);
+            let failure = prepare_observed(sources(), asks, &mut control).unwrap_err();
+            let Json::Obj(ref wire) = failure.wire().unwrap() else {
+                panic!("object");
+            };
+            assert_eq!(wire["answers"], Json::Arr(vec![]));
+            assert_eq!(wire["nodes"], Json::Arr(vec![]));
+            if at > total.get() - known_posts && !matches!(kind, Stop::Cancel) {
+                assert_eq!(wire["status"], Json::str("invalid"));
+                assert_eq!(
+                    wire["issues"],
+                    Json::Arr(vec![reason.wire(), expected_issue.clone()])
+                );
+                let PrepareFailure::Requests {
+                    inputs,
+                    failure:
+                        ResolveFailure::Invalid {
+                            stop_reason: Some(actual),
+                            ..
+                        },
+                } = &failure
+                else {
+                    panic!("known projection error and budget");
+                };
+                assert_eq!(actual, &reason);
+                assert!(inputs.law().declarations.contains_key("R.choice"));
+                assert_eq!(inputs.archmap().snapshots[0].subjects[0].id, "s");
+            } else {
+                assert_eq!(wire["status"], Json::str("interrupted"));
+                assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
+                assert!(matches!(
+                    &failure,
+                    PrepareFailure::Requests {
+                        failure: ResolveFailure::Interrupted { reason: actual }, ..
+                    } if actual == &reason
+                ));
+            }
+            assert_eq!(control.stop_reason(), Some(reason.clone()));
             assert_eq!(count.get(), at);
             assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
             assert_eq!(count.get(), at);
+        }
+    }
+}
+
+#[test]
+fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
+    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let rejected = ProjectionType::Dynamic(vec![
+        ProjectionType::Law(Type::Bool),
+        ProjectionType::Law(Type::Z),
+    ]);
+    for candidates in [
+        vec![
+            ProjectionType::Law(Type::Bool),
+            ProjectionType::Law(Type::Option(Box::new(Type::Z))),
+        ],
+        vec![
+            ProjectionType::Law(Type::Option(Box::new(Type::Z))),
+            ProjectionType::Law(Type::Bool),
+        ],
+        vec![
+            rejected.clone(),
+            ProjectionType::Law(Type::Option(Box::new(Type::Z))),
+        ],
+        vec![
+            ProjectionType::Law(Type::Option(Box::new(Type::Z))),
+            rejected,
+        ],
+    ] {
+        let initial = ProjectionType::Dynamic(candidates);
+        let path = [ProjectionStep::Field("some".into())];
+        let (mut baseline, total, _) = probe(None, Stop::Time);
+        let normal =
+            resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut baseline)
+                .unwrap();
+        assert_eq!(normal.ty, ProjectionType::Law(Type::Z));
+        for at in 1..=total.get() {
+            for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
+                let (mut control, count, reason) = probe(Some(at), kind);
+                assert_eq!(
+                    resolve_projection_controlled(
+                        checked.law(),
+                        initial.clone(),
+                        &path,
+                        &mut control
+                    ),
+                    Err(ProjectionFailure::Interrupted(reason.clone()))
+                );
+                assert_eq!(count.get(), at);
+                assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+                assert_eq!(count.get(), at);
+            }
         }
     }
 }

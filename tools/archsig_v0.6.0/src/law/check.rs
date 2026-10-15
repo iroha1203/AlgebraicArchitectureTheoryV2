@@ -7,7 +7,7 @@ use crate::definition::{Binding, CheckedDefinitions, PrimitiveSignature};
 use crate::issue::{Code, Issue, Location};
 use crate::json::InputError;
 use crate::observed::control::{Checkpoint, Control};
-use crate::prime::is_prime;
+use crate::prime::is_prime_controlled;
 use crate::types::Type;
 use num_bigint::BigUint;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
@@ -547,7 +547,7 @@ impl<E: InputError> Checker<E> {
             },
             TypeAst::Fp { modulus, span } => {
                 let n: BigUint = modulus.parse().expect("字句で10進整数を確認済み");
-                if !is_prime(&n) {
+                if !is_prime_controlled::<E>(&n, &mut self.control.clone(), self.semantic_point)? {
                     return syntax(*span, format!("Fp の法 {modulus} は素数でない"));
                 }
                 Type::Fp(modulus.clone())
