@@ -19,8 +19,10 @@
   依存順を解決する。循環は該当する問いの ID と依存グラフを保持して拒否する。
   検査済み bundle を再利用する入口と、検査・要求解決で共有する予算・取消制御を持つ。
 - 観測評価 API (`archsig::observed::evaluate_observed_bytes` / `evaluate_observed`):
-  明示束縛した原始参照、field 射影、Z/Bool literal、括弧、Z の負号・等値・順序比較、
-  Bool の等値を共通の AST 評価器で読む。ドット列は束縛変数と一つの field まで扱う。
+  明示束縛した原始参照、field 射影、Z/Bool literal、括弧、Z の加減乗算・負号・比較、
+  Bool の等値と not/and/or/implies を共通の AST 評価器で読む。
+  ドット列は束縛変数と一つの field まで扱う。
+  Bool は false and x / true or x などを全補完で確定し、元の両子評価と欠測理由を保持する。
   Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
   Law の guard が false なら非適用、未観測なら body が true のとき全補完で成立し、
   body が false または未観測なら未決となる。
