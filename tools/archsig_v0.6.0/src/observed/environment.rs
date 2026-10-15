@@ -2,6 +2,7 @@
 use super::{
     control::{Checkpoint, Control, StopReason},
     input::CheckedInputs,
+    request::{QuestionKind, Request, Selector},
     result::*,
 };
 use crate::{
@@ -22,12 +23,22 @@ pub(crate) struct SourceAnalysis {
     pub scope: Scope,
     pub known_value: Option<Scalar>,
     pub missing: Option<PendingMissing>,
+    pub support: Vec<Fact>,
+    pub scalar_scope: Option<Scope>,
+}
+
+struct SourceValue {
+    scope: Scope,
+    known_value: Option<Scalar>,
+    support: Vec<Fact>,
+    scalar_scope: Option<Scope>,
 }
 
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
     subjects: BTreeMap<(String, String), &'a Subject>,
     fields: BTreeMap<(String, String, String), &'a crate::archmap::Field>,
+    atoms: BTreeMap<String, Fact>,
     modes: BTreeMap<String, &'static str>,
     snapshot_origins: BTreeMap<String, String>,
     expressions: BTreeMap<(usize, usize), usize>,
@@ -37,6 +48,7 @@ impl<'a> Environment<'a> {
     pub fn new(inputs: &'a CheckedInputs, control: &mut Control) -> Result<Self, StopReason> {
         let mut subjects = BTreeMap::new();
         let mut fields = BTreeMap::new();
+        let mut atoms = BTreeMap::new();
         let mut modes = BTreeMap::new();
         let mut snapshot_origins = BTreeMap::new();
         let mut expressions = BTreeMap::new();
@@ -65,6 +77,17 @@ impl<'a> Environment<'a> {
                         (s.snapshot.clone(), s.id.clone(), field.name.clone()),
                         field,
                     );
+                    if let Slot::Known { atom, pointer, .. } = &field.slot {
+                        atoms.insert(
+                            pointer.clone(),
+                            Fact {
+                                snapshot: s.snapshot.clone(),
+                                subject: s.id.clone(),
+                                field: Some(field.name.clone()),
+                                atom: Some(atom.clone()),
+                            },
+                        );
+                    }
                     control.checkpoint(Checkpoint::FiniteIteration)?;
                 }
                 control.checkpoint(Checkpoint::FiniteIteration)?;
@@ -76,6 +99,7 @@ impl<'a> Environment<'a> {
             inputs,
             subjects,
             fields,
+            atoms,
             modes,
             snapshot_origins,
             expressions,
@@ -275,6 +299,10 @@ impl<'a> Environment<'a> {
                 }
                 _ => return Err("値 leaf の導出規則がない".into()),
             }
+            let support = self.scalar_support(graph, node, graph.nodes.len())?;
+            if node.support != support {
+                return Err("値の支持が元入力・実引数の完全な集合と違う".into());
+            }
         }
         if let Some(Payload::Expression {
             location: Location::Law { span },
@@ -400,9 +428,35 @@ impl<'a> Environment<'a> {
                 {
                     return Err("Evaluation の原式・束縛・part が合わない".into());
                 }
-                let expected_scope = self.source_scope(graph, span, bindings)?;
+                let analysis = self.analyze_source(graph, span, bindings)?;
+                let expected_scope = analysis.scope;
                 if node.scope != expected_scope || graph.get(*expression)?.scope != expected_scope {
                     return Err("Evaluation と元式の範囲が元入力と違う".into());
+                }
+                if node.support != analysis.support {
+                    return Err("Evaluation の支持が元 AST・原始事実の完全な集合と違う".into());
+                }
+                let mut used_support = Vec::new();
+                if let Some(reference) = value {
+                    let expected = analysis
+                        .scalar_scope
+                        .as_ref()
+                        .ok_or("元式に確定値の範囲がない")?;
+                    if &graph.get(*reference)?.scope != expected {
+                        return Err("評価値Scalarの範囲が元Source・束縛・originと違う".into());
+                    }
+                    used_support.extend(graph.get(*reference)?.support.iter().cloned());
+                }
+                let children = &parts[0].children;
+                for &child in children {
+                    self.tick()?;
+                    used_support.extend(graph.get(child)?.support.iter().cloned());
+                    self.tick()?;
+                }
+                used_support.sort();
+                used_support.dedup();
+                if node.support != used_support {
+                    return Err("Evaluation の支持が使用した値・子評価の和集合と違う".into());
                 }
                 let children = &parts[0].children;
                 let ast = self
@@ -477,6 +531,9 @@ impl<'a> Environment<'a> {
                             {
                                 let residual = residual.ok_or("既知 Z 等号の残差がない")?;
                                 graph.expect(residual, &NodeType::Value(Type::Z))?;
+                                if graph.get(residual)?.scope != expected_scope {
+                                    return Err("Z等号残差Scalarの範囲が元等式と違う".into());
+                                }
                                 let (Scalar::Z(l), Scalar::Z(r), Scalar::Z(d)) = (
                                     graph.scalar(left)?,
                                     graph.scalar(right)?,
@@ -625,6 +682,237 @@ impl<'a> Environment<'a> {
         self.tick()?;
         Ok(())
     }
+    // Scalar の支持も自己申告の集合を信じず、原始 leaf または実引数から復元する。
+    fn scalar_support(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<Vec<Fact>, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            let Some(Payload::Scalar(value)) = &node.payload else {
+                return Err("支持の依存先が通常値でない".into());
+            };
+            for reference in &node.arguments {
+                self.tick()?;
+                if reference.0 >= limit {
+                    return Err("値支持の引数が既出でない".into());
+                }
+                self.tick()?;
+            }
+            let mut support = match &node.rule {
+                Rule::Input {
+                    kind: "subject",
+                    location: Location::ArchMap { pointer, .. },
+                } => {
+                    let Scalar::Subject {
+                        snapshot,
+                        subject,
+                        entity,
+                    } = value
+                    else {
+                        return Err("subject支持の値型".into());
+                    };
+                    let actual = self.subject(snapshot, subject)?;
+                    if actual.pointer != *pointer
+                        || actual.ty != *entity
+                        || !node.arguments.is_empty()
+                    {
+                        return Err("subject支持の元入力不一致".into());
+                    }
+                    self.subject_support(value)?
+                }
+                Rule::Input {
+                    kind: "atom",
+                    location: Location::ArchMap { pointer, .. },
+                } => {
+                    let fact = self
+                        .atoms
+                        .get(pointer)
+                        .ok_or("Atom支持の元入力位置がない")?;
+                    let field = self.field(
+                        &fact.snapshot,
+                        &fact.subject,
+                        fact.field.as_ref().ok_or("Atom fieldがない")?,
+                    )?;
+                    let Slot::Known { value: actual, .. } = &field.slot else {
+                        return Err("Atom支持が欠測slotを指す".into());
+                    };
+                    if scalar_from(actual, &field.ty).as_ref() != Some(value)
+                        || node.arguments.len() != 1
+                    {
+                        return Err("Atom支持の原始値・owner引数数が違う".into());
+                    }
+                    let Scalar::Subject {
+                        snapshot, subject, ..
+                    } = graph.scalar(node.arguments[0])?
+                    else {
+                        return Err("Atom支持のownerがRefでない".into());
+                    };
+                    if snapshot != &fact.snapshot || subject != &fact.subject {
+                        return Err("Atom支持のowner identity不一致".into());
+                    }
+                    vec![fact.clone()]
+                }
+                Rule::Input {
+                    kind: "law",
+                    location: Location::Law { span },
+                } => {
+                    let expr = &self.inputs.law().exprs
+                        [*self.expressions.get(span).ok_or("値支持の元ASTがない")?];
+                    match expr.kind {
+                        ExprKind::Int(_) | ExprKind::Bool(_) => {
+                            if !node.arguments.is_empty() {
+                                return Err("literalに引数支持がある".into());
+                            }
+                            vec![]
+                        }
+                        ExprKind::Binary { .. } | ExprKind::Unary { .. } => {
+                            self.argument_support(graph, &node.arguments, limit)?
+                        }
+                        _ => return Err("値支持の未実装元式".into()),
+                    }
+                }
+                Rule::Construction("evaluation") => {
+                    self.argument_support(graph, &node.arguments, limit)?
+                }
+                Rule::Construction("proposition") => vec![],
+                _ => return Err("値支持の導出規則がない".into()),
+            };
+            support.sort();
+            support.dedup();
+            self.tick()?;
+            Ok(support)
+        })
+    }
+    fn argument_support(
+        &self,
+        graph: &Graph,
+        arguments: &[NodeRef],
+        limit: usize,
+    ) -> Result<Vec<Fact>, ValidationFailure> {
+        let mut support = Vec::new();
+        for &reference in arguments {
+            self.tick()?;
+            if reference.0 >= limit {
+                return Err("支持の引数が既出でない".into());
+            }
+            let node = graph.get(reference)?;
+            let actual = self.scalar_support(graph, node, reference.0)?;
+            if node.support != actual {
+                return Err("引数値の支持が元入力から欠落・過剰".into());
+            }
+            support.extend(actual);
+            // Atom 値の direct support は field 一件だが、その式を使うには owner の
+            // 参照元も必要。中間 Ref field を含む owner 依存を意味に従って合流する。
+            if matches!(&node.rule, Rule::Input { kind: "atom", .. }) {
+                support.extend(self.argument_support(graph, &node.arguments, reference.0)?);
+            }
+            self.tick()?;
+        }
+        support.sort();
+        support.dedup();
+        Ok(support)
+    }
+    /// 完成 Answer の必須検査。構造検査と、元 Request への意味上の帰属を一緒に確かめる。
+    pub(crate) fn validate_answer(
+        &self,
+        graph: &Graph,
+        request: &Request,
+        answer: &Answer,
+    ) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        graph.validate_answer(answer, request.kind == QuestionKind::Check)?;
+        if answer.id != request.id {
+            return Err("Answer ID が元Requestと違う".into());
+        }
+        let Selector::Declaration { name } = &request.head else {
+            return Err("解決済みRequestのheadが宣言でない".into());
+        };
+        let declaration = self
+            .inputs
+            .law()
+            .declarations
+            .get(name)
+            .ok_or("Requestの元宣言がない")?;
+        let (params, body) = match (&request.kind, &declaration.signature) {
+            (QuestionKind::Evaluate, crate::law::model::Signature::View { params, body, .. }) => {
+                (params, *body)
+            }
+            (QuestionKind::Check, crate::law::model::Signature::Law { params, body, .. }) => {
+                (params, *body)
+            }
+            _ => return Err("Request種別と元宣言が違う".into()),
+        };
+        let evaluation = *answer
+            .outputs
+            .get("evaluation")
+            .ok_or("完成Answerに元評価がない")?;
+        let (expression, bindings, _) = self.evaluation(graph, evaluation)?;
+        self.source_matches(graph, expression, body)?;
+        self.recheck_evaluation(graph, evaluation)?;
+        if bindings.len() != params.len() || request.arguments.len() != params.len() {
+            return Err("Requestの明示束縛数がAnswerと違う".into());
+        }
+        for (parameter, binding) in params.iter().zip(bindings) {
+            self.tick()?;
+            if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
+                return Err("Requestのparameter署名がAnswerと違う".into());
+            }
+            let key = format!("bind.{}", parameter.name);
+            let mut selected = None;
+            for argument in &request.arguments {
+                self.tick()?;
+                if argument.name == key {
+                    if selected.is_some() {
+                        return Err("Requestの束縛名が重複".into());
+                    }
+                    selected = Some(&argument.value);
+                }
+                self.tick()?;
+            }
+            let Some(Selector::Subject { snapshot, subject }) = selected else {
+                return Err("完成Answerの元明示subject束縛がない".into());
+            };
+            let Scalar::Subject {
+                snapshot: actual_snapshot,
+                subject: actual_subject,
+                entity,
+            } = graph.scalar(binding.value)?
+            else {
+                return Err("Answer束縛が通常のRef値でない".into());
+            };
+            if actual_snapshot != snapshot
+                || actual_subject != subject
+                || &self.subject(snapshot, subject)?.ty != entity
+            {
+                return Err("Answer束縛がRequestのsubject identityと違う".into());
+            }
+            self.tick()?;
+        }
+        if request.kind == QuestionKind::Check {
+            let claim = answer.claim.ok_or("完成check Answerにclaimがない")?;
+            let Some(Payload::Proposition { instance }) = &graph.get(claim)?.payload else {
+                return Err("Requestのclaimが命題でない".into());
+            };
+            let Some(Payload::LawInstance {
+                name: actual,
+                bindings: instance_bindings,
+                ..
+            }) = &graph.get(*instance)?.payload
+            else {
+                return Err("RequestのclaimにLawInstanceがない".into());
+            };
+            if actual != name || instance_bindings != bindings {
+                return Err("check AnswerのLawInstanceがRequestと違う".into());
+            }
+            self.instance_evaluation(graph, *instance, evaluation)?;
+            self.validate(graph, graph.get(claim)?)?;
+        }
+        self.tick()?;
+        Ok(())
+    }
     // 自己申告の node.scope へ依存せず、元宣言・束縛と原始 slot から再構成する。
     fn source_scope(
         &self,
@@ -682,13 +970,21 @@ impl<'a> Environment<'a> {
             if &actual.ty != entity || value.ty() != binding.ty {
                 return Err("評価範囲の束縛subject型が違う".into());
             }
-            base.merge(&self.scope(actual, &declaration.reading, None)?);
+            let subject_scope = self.scope(actual, &declaration.reading, None)?;
+            if graph.get(binding.value)?.scope != subject_scope {
+                return Err("束縛subject値の範囲が元宣言・subject由来と違う".into());
+            }
+            base.merge(&subject_scope);
             variables.insert(binding.name.clone(), value.clone());
             self.tick()?;
         }
         if let Some(&id) = self.expressions.get(&span) {
-            let (scope, known_value) =
-                self.scoped_ast(id, &variables, &base, &declaration.reading)?;
+            let SourceValue {
+                scope,
+                known_value,
+                support,
+                scalar_scope,
+            } = self.scoped_ast(id, &variables, &base, &declaration.reading)?;
             let direct_field = match &self.inputs.law().exprs[id].kind {
                 ExprKind::Dotted(parts) if parts.len() == 2 => Some((
                     variables.get(&parts[0].name).cloned(),
@@ -696,7 +992,7 @@ impl<'a> Environment<'a> {
                 )),
                 ExprKind::Field { base: owner, name } => Some((
                     self.scoped_ast(*owner, &variables, &base, &declaration.reading)?
-                        .1,
+                        .known_value,
                     name.name.as_str(),
                 )),
                 _ => None,
@@ -729,6 +1025,8 @@ impl<'a> Environment<'a> {
                 scope,
                 known_value,
                 missing,
+                support,
+                scalar_scope,
             });
         }
         // Dotted の先頭 parameter は実在 token のみを指す。
@@ -744,11 +1042,50 @@ impl<'a> Environment<'a> {
             return Err("評価範囲に元parameter以外のfragmentがある".into());
         }
         let known_value = variables.get(name).cloned();
+        let support = self.subject_support(known_value.as_ref().ok_or("元parameter値がない")?)?;
+        let scalar_scope = Some(self.subject_scalar_scope(
+            known_value.as_ref().ok_or("元parameter値がない")?,
+            &declaration.reading,
+        )?);
         Ok(SourceAnalysis {
             scope: base,
             known_value,
             missing: None,
+            support,
+            scalar_scope,
         })
+    }
+    fn subject_support(&self, value: &Scalar) -> Result<Vec<Fact>, ValidationFailure> {
+        let Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        } = value
+        else {
+            return Err("支持の元parameterがRefでない".into());
+        };
+        if self.subject(snapshot, subject)?.ty != *entity {
+            return Err("支持の元subject型が違う".into());
+        }
+        Ok(vec![Fact {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: None,
+            atom: None,
+        }])
+    }
+    fn subject_scalar_scope(
+        &self,
+        value: &Scalar,
+        reading: &str,
+    ) -> Result<Scope, ValidationFailure> {
+        let Scalar::Subject {
+            snapshot, subject, ..
+        } = value
+        else {
+            return Err("subject値の範囲をRef以外へ適用".into());
+        };
+        Ok(self.scope(self.subject(snapshot, subject)?, reading, None)?)
     }
     fn scoped_ast(
         &self,
@@ -756,32 +1093,44 @@ impl<'a> Environment<'a> {
         variables: &BTreeMap<String, Scalar>,
         base: &Scope,
         reading: &str,
-    ) -> Result<(Scope, Option<Scalar>), ValidationFailure> {
+    ) -> Result<SourceValue, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
             let expression = &self.inputs.law().exprs[id];
             let result = match &expression.kind {
-                ExprKind::Int(n) if self.inputs.law().expr_type(id) == Some(&Type::Z) => (
-                    base.clone(),
-                    Some(Scalar::Z(
-                        n.parse().map_err(|_| "範囲検査の整数literal不正")?,
-                    )),
-                ),
-                ExprKind::Bool(b) => (base.clone(), Some(Scalar::Bool(*b))),
+                ExprKind::Int(n) if self.inputs.law().expr_type(id) == Some(&Type::Z) => {
+                    SourceValue {
+                        scope: base.clone(),
+                        known_value: Some(Scalar::Z(
+                            n.parse().map_err(|_| "範囲検査の整数literal不正")?,
+                        )),
+                        support: vec![],
+                        scalar_scope: Some(base.clone()),
+                    }
+                }
+                ExprKind::Bool(b) => SourceValue {
+                    scope: base.clone(),
+                    known_value: Some(Scalar::Bool(*b)),
+                    support: vec![],
+                    scalar_scope: Some(base.clone()),
+                },
                 ExprKind::Dotted(parts) => {
                     let first = parts.first().ok_or("範囲検査の空Dotted")?;
-                    let mut result = (
-                        base.clone(),
-                        Some(
-                            variables
-                                .get(&first.name)
-                                .ok_or("範囲検査の未知parameter")?
-                                .clone(),
-                        ),
-                    );
+                    let value = variables
+                        .get(&first.name)
+                        .ok_or("範囲検査の未知parameter")?
+                        .clone();
+                    let support = self.subject_support(&value)?;
+                    let scalar_scope = Some(self.subject_scalar_scope(&value, reading)?);
+                    let mut result = SourceValue {
+                        scope: base.clone(),
+                        known_value: Some(value),
+                        support,
+                        scalar_scope,
+                    };
                     for part in parts.iter().skip(1) {
                         self.tick()?;
-                        result = self.scoped_field(result, &part.name, reading)?;
+                        result = self.scoped_field(result, &part.name, base, reading)?;
                         self.tick()?;
                     }
                     result
@@ -789,6 +1138,7 @@ impl<'a> Environment<'a> {
                 ExprKind::Field { base: owner, name } => self.scoped_field(
                     self.scoped_ast(*owner, variables, base, reading)?,
                     &name.name,
+                    base,
                     reading,
                 )?,
                 ExprKind::Group(child) => self.scoped_ast(*child, variables, base, reading)?,
@@ -796,23 +1146,48 @@ impl<'a> Environment<'a> {
                     op: UnOp::Neg,
                     operand,
                 } => {
-                    let (scope, value) = self.scoped_ast(*operand, variables, base, reading)?;
-                    let value = match value {
+                    let SourceValue {
+                        scope,
+                        known_value,
+                        support,
+                        ..
+                    } = self.scoped_ast(*operand, variables, base, reading)?;
+                    let known_value = match known_value {
                         Some(Scalar::Z(v)) => Some(Scalar::Z(-v)),
                         None => None,
                         _ => return Err("範囲検査の負号型不一致".into()),
                     };
-                    (scope, value)
+                    let scalar_scope = known_value.as_ref().map(|_| scope.clone());
+                    SourceValue {
+                        scope,
+                        known_value,
+                        support,
+                        scalar_scope,
+                    }
                 }
                 ExprKind::Binary { op, lhs, rhs } => {
-                    let (mut scope, left) = self.scoped_ast(*lhs, variables, base, reading)?;
-                    let (right_scope, right) = self.scoped_ast(*rhs, variables, base, reading)?;
-                    scope.merge(&right_scope);
-                    let value = match (left, right) {
+                    let SourceValue {
+                        mut scope,
+                        known_value: left,
+                        mut support,
+                        ..
+                    } = self.scoped_ast(*lhs, variables, base, reading)?;
+                    let right = self.scoped_ast(*rhs, variables, base, reading)?;
+                    scope.merge(&right.scope);
+                    support.extend(right.support);
+                    support.sort();
+                    support.dedup();
+                    let known_value = match (left, right.known_value) {
                         (Some(l), Some(r)) => Some(binary(*op, &l, &r)?),
                         _ => None,
                     };
-                    (scope, value)
+                    let scalar_scope = known_value.as_ref().map(|_| scope.clone());
+                    SourceValue {
+                        scope,
+                        known_value,
+                        support,
+                        scalar_scope,
+                    }
                 }
                 _ => return Err("未実装式の範囲を自己申告から採用できない".into()),
             };
@@ -822,16 +1197,22 @@ impl<'a> Environment<'a> {
     }
     fn scoped_field(
         &self,
-        base: (Scope, Option<Scalar>),
+        base: SourceValue,
         name: &str,
+        request_base: &Scope,
         reading: &str,
-    ) -> Result<(Scope, Option<Scalar>), ValidationFailure> {
-        let (mut scope, value) = base;
+    ) -> Result<SourceValue, ValidationFailure> {
+        let SourceValue {
+            mut scope,
+            known_value,
+            mut support,
+            ..
+        } = base;
         let Some(Scalar::Subject {
             snapshot,
             subject,
             entity,
-        }) = value
+        }) = known_value
         else {
             return Err("範囲検査のfield ownerが未確定/Ref以外".into());
         };
@@ -840,18 +1221,42 @@ impl<'a> Environment<'a> {
             return Err("範囲検査のfield owner型不一致".into());
         }
         let field = self.field(&snapshot, &subject, &format!("{entity}.{name}"))?;
-        let value = match &field.slot {
-            Slot::Known { origin, value, .. } => {
-                scope.merge(&self.scope(owner, reading, Some(origin))?);
-                Some(scalar_from(value, &field.ty).ok_or("範囲検査の未実装原始値")?)
+        let (known_value, scalar_scope) = match &field.slot {
+            Slot::Known {
+                atom,
+                origin,
+                value,
+                ..
+            } => {
+                let owner_scope = self.scope(owner, reading, Some(origin))?;
+                scope.merge(&owner_scope);
+                let mut scalar_scope = request_base.clone();
+                scalar_scope.merge(&owner_scope);
+                support.push(Fact {
+                    snapshot,
+                    subject,
+                    field: Some(field.name.clone()),
+                    atom: Some(atom.clone()),
+                });
+                (
+                    Some(scalar_from(value, &field.ty).ok_or("範囲検査の未実装原始値")?),
+                    Some(scalar_scope),
+                )
             }
             Slot::Missing => {
                 scope.merge(&self.scope(owner, reading, None)?);
                 scope.completions = true;
-                None
+                (None, None)
             }
         };
-        Ok((scope, value))
+        support.sort();
+        support.dedup();
+        Ok(SourceValue {
+            scope,
+            known_value,
+            support,
+            scalar_scope,
+        })
     }
     fn expression_span(&self, graph: &Graph, r: NodeRef) -> Result<(usize, usize), String> {
         match &graph.get(r)?.payload {
@@ -946,6 +1351,14 @@ impl<'a> Environment<'a> {
         while let Some(reference) = pending.pop() {
             self.tick()?;
             let node = graph.get(reference)?;
+            // aggregate の適用検査へ入る前に、子・適用依存が既出であることを確かめる。
+            for argument in &node.arguments {
+                self.tick()?;
+                if argument.0 >= reference.0 {
+                    return Err("再検査する評価の引数が既出でない".into());
+                }
+                self.tick()?;
+            }
             self.validate(graph, node)?;
             let Some(Payload::Evaluation {
                 expression,
@@ -978,7 +1391,7 @@ impl<'a> Environment<'a> {
             support.sort();
             support.dedup();
             if node.support != support {
-                return Err("guard 評価の支持が元値・子評価に合わない".into());
+                return Err("評価の支持が元値・子評価に合わない".into());
             }
             self.tick()?;
         }
@@ -1081,14 +1494,28 @@ impl<'a> Environment<'a> {
         support.dedup();
         Ok((support, scope))
     }
+    fn application_at(
+        &self,
+        graph: &Graph,
+        instance: NodeRef,
+    ) -> Result<(NodeRef, Option<NodeRef>), ValidationFailure> {
+        let node = graph.get(instance)?;
+        for reference in &node.arguments {
+            self.tick()?;
+            if reference.0 >= instance.0 {
+                return Err("LawInstanceの適用引数が既出でない".into());
+            }
+            self.tick()?;
+        }
+        self.application(graph, node)
+    }
     fn validate_law_evaluation(
         &self,
         graph: &Graph,
         node: &Node,
         instance: NodeRef,
     ) -> Result<(), ValidationFailure> {
-        let instance_node = graph.get(instance)?;
-        let (body, guard) = self.application(graph, instance_node)?;
+        let (body, guard) = self.application_at(graph, instance)?;
         let guard = guard.ok_or("省略 guard に適用集約評価を作っている")?;
         if node.arguments != [instance, body, guard] {
             return Err("適用評価の元引数不一致".into());
@@ -1145,7 +1572,7 @@ impl<'a> Environment<'a> {
         instance: NodeRef,
         evaluation: NodeRef,
     ) -> Result<NodeRef, ValidationFailure> {
-        let (body, guard) = self.application(graph, graph.get(instance)?)?;
+        let (body, guard) = self.application_at(graph, instance)?;
         if guard.is_some() {
             self.validate_law_evaluation(graph, graph.get(evaluation)?, instance)?;
         } else if evaluation != body {
@@ -1193,6 +1620,29 @@ impl<'a> Environment<'a> {
                 || graph.get(supplied_right)?.arguments != [instance]
             {
                 return Err("Bool 証拠の true 要求が違う".into());
+            }
+            let Some(Payload::LawInstance {
+                body,
+                guard,
+                bindings,
+                ..
+            }) = &graph.get(instance)?.payload
+            else {
+                return Err("固定trueの元LawInstanceがない".into());
+            };
+            let mut expected =
+                self.source_scope(graph, self.expression_span(graph, *body)?, bindings)?;
+            if let Some(guard) = guard {
+                self.tick()?;
+                expected.merge(&self.source_scope(
+                    graph,
+                    self.expression_span(graph, *guard)?,
+                    bindings,
+                )?);
+                self.tick()?;
+            }
+            if graph.get(supplied_right)?.scope != expected {
+                return Err("固定true Scalarの範囲が元Law適用と違う".into());
             }
             Ok((evaluation, left, supplied_right))
         }

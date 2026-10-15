@@ -914,6 +914,9 @@ impl Graph {
         self.tick()?;
         Ok(r)
     }
+    /// Ref・出力・claim 間の構造検査。完成回答は Environment::validate_answer で
+    /// 元 Request・宣言・明示束縛への意味上の帰属も必ず検査する。
+    /// 構造の検査。元 Request への帰属は Environment の総合 Answer 検査で確かめる。
     pub fn validate_answer(&self, a: &Answer, check: bool) -> Result<(), ValidationFailure> {
         self.tick()?;
         self.reasons(&a.reasons)?;

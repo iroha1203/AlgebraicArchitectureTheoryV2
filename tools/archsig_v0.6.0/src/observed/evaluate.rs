@@ -240,6 +240,7 @@ impl Evaluator<'_, '_> {
             scope,
             known_value,
             missing,
+            ..
         } = analysis;
         let registry = &mut self.reasons;
         let retained = &mut self.retained_scope;
@@ -1013,8 +1014,8 @@ pub fn evaluate_observed(
             // Answer の検査は意味導出の完了前に行い、post 停止で完成済み Answer を捨てない。
             let result = result.and_then(|a| {
                 evaluator
-                    .graph
-                    .validate_answer(&a, request.kind == QuestionKind::Check)?;
+                    .environment
+                    .validate_answer(evaluator.graph, request, &a)?;
                 Ok(a)
             });
             match result {
@@ -1636,5 +1637,441 @@ mod recheck_tests {
             environment.validate(&graph, &evaluation),
             Err(ValidationFailure::Internal(_))
         ));
+    }
+
+    fn rebuild_for_origin_and_support_recheck(
+        result: &ObservedEvaluation,
+        nodes: &[Node],
+    ) -> Result<Graph, ValidationFailure> {
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        let environment = Environment::new(result.prepared.inputs(), &mut control)
+            .map_err(ValidationFailure::from)?;
+        let mut graph = Graph::new(&control);
+        for node in nodes {
+            environment.validate(&graph, node)?;
+            graph.push(node.clone())?;
+        }
+        Ok(graph)
+    }
+
+    #[test]
+    fn rejects_complete_answer_substitution_against_its_request() {
+        let result = value_examples(false);
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("改変前の全nodeは元順の入力照合とGraph検査を通る");
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let requests = result.prepared.requests().requests();
+        for (request, answer) in requests.iter().zip(&result.answers) {
+            environment
+                .validate_answer(&graph, request, answer)
+                .expect("元Requestとその正しいAnswerの組は総合検査を通る");
+        }
+        let amount = &result.answers[0];
+        let zero = &result.answers[1];
+        assert_eq!(amount.id, "amount");
+        assert_eq!(zero.id, "zero");
+        assert_eq!(amount.scope, zero.scope);
+        assert_eq!(amount.status, zero.status);
+        assert_eq!(
+            graph.scalar(amount.outputs["value"]).unwrap(),
+            &Scalar::Z(2.into())
+        );
+        assert_eq!(
+            graph.scalar(zero.outputs["value"]).unwrap(),
+            &Scalar::Z(0.into())
+        );
+        let mut wrong = amount.clone();
+        wrong.outputs = zero.outputs.clone();
+        // valueとEvaluationの双方は正しいzeroの組。id/status/scopeはamountのまま。
+        assert_eq!(wrong.id, amount.id);
+        assert_eq!(wrong.status, amount.status);
+        assert_eq!(wrong.scope, amount.scope);
+        assert!(
+            matches!(
+                environment.validate_answer(&graph, &requests[0], &wrong),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "正しい別宣言の出力ペアを元Requestの回答にできない"
+        );
+        let mut wrong_id = amount.clone();
+        wrong_id.id = zero.id.clone();
+        assert!(
+            matches!(
+                environment.validate_answer(&graph, &requests[0], &wrong_id),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "元式が同じでもAnswer.idは選択Requestへ帰属する"
+        );
+
+        let guarded = guarded_example();
+        assert_eq!(guarded.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&guarded, &guarded.nodes)
+            .expect("二つの明示束縛もともに有効な入力と導出である");
+        let environment = Environment::new(guarded.prepared.inputs(), &mut control).unwrap();
+        let requests = guarded.prepared.requests().requests();
+        for (request, answer) in requests.iter().zip(&guarded.answers) {
+            environment
+                .validate_answer(&graph, request, answer)
+                .unwrap();
+        }
+        let first = &guarded.answers[1];
+        let second = &guarded.answers[2];
+        assert_eq!(first.id, "s");
+        assert_eq!(second.id, "t");
+        assert_eq!(first.status, Decision::Refuted);
+        assert_eq!(first.status, second.status);
+        assert_eq!(first.scope, second.scope);
+        assert_eq!(requests[1].declaration(), requests[2].declaration());
+        assert_ne!(requests[1].arguments, requests[2].arguments);
+        let mut wrong_binding = first.clone();
+        wrong_binding.outputs = second.outputs.clone();
+        wrong_binding.claim = second.claim;
+        wrong_binding.evidence = second.evidence.clone();
+        wrong_binding.reasons = second.reasons.clone();
+        assert!(
+            matches!(
+                environment.validate_answer(&graph, &requests[1], &wrong_binding),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "同じ宣言/値/判断でも別subjectへの明示束縛の回答を流用できない"
+        );
+    }
+
+    #[test]
+    fn rejects_self_consistent_removal_of_body_support_and_counterexample_facts() {
+        let result = example();
+        assert_eq!(result.status(), "complete");
+        let original = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("改変前Counter12の全導出は元順で再検査できる");
+        let answer = &result.answers[0];
+        assert_eq!(answer.status, Decision::Refuted);
+        let body = answer.outputs["evaluation"];
+        let claim = answer.claim.unwrap();
+        let Some(Payload::Proposition { instance }) = &result.nodes[claim.0].payload else {
+            panic!("元のclaimはLawInstanceを指す命題");
+        };
+        let instance = *instance;
+        let Some(Payload::LawInstance { guard, .. }) = &result.nodes[instance.0].payload else {
+            unreachable!()
+        };
+        assert!(
+            guard.is_none(),
+            "明示guardを介さないbody支持の経路を検査する"
+        );
+        let Some(Payload::Evaluation {
+            value: Some(value),
+            parts,
+            ..
+        }) = &result.nodes[body.0].payload
+        else {
+            panic!("比較bodyは値と元の子評価を保持する");
+        };
+        assert_eq!(original.scalar(*value).unwrap(), &Scalar::Bool(false));
+        assert!(!parts[0].children.is_empty());
+        let count_fact = result.nodes[body.0]
+            .support
+            .iter()
+            .find(|f| {
+                f.field.as_deref() == Some("Counter.State.count")
+                    && f.atom.as_deref() == Some("count")
+            })
+            .expect("元bodyはcount=12の実在Atomを使用する")
+            .clone();
+        let mut changed = result.nodes.clone();
+        let mut affected = vec![body.0, instance.0, claim.0];
+        affected.extend(answer.evidence.iter().map(|r| r.0));
+        affected.sort_unstable();
+        affected.dedup();
+        let (mut evaluation_evidence, mut counterexample) = (false, false);
+        for index in affected {
+            assert!(changed[index].support.contains(&count_fact));
+            changed[index].support.clear();
+            match &mut changed[index].payload {
+                Some(Payload::EvaluationEvidence { .. }) => evaluation_evidence = true,
+                Some(Payload::Counterexample {
+                    left, right, facts, ..
+                }) => {
+                    counterexample = true;
+                    assert_eq!(original.scalar(*left).unwrap(), &Scalar::Z(12.into()));
+                    assert_eq!(original.scalar(*right).unwrap(), &Scalar::Z(10.into()));
+                    assert!(facts.contains(&count_fact));
+                    facts.clear();
+                }
+                _ => {}
+            }
+        }
+        assert!(evaluation_evidence && counterexample);
+        // 子値・子Evaluationには元支持を残す。bodyと全下流を空へ揃えただけである。
+        assert!(
+            parts[0]
+                .children
+                .iter()
+                .any(|r| changed[r.0].support.contains(&count_fact))
+        );
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "body/instance/証拠/命題の自己一致だけで元count支持を削除できない"
+        );
+
+        // Law適用経路に限らず、値を返すamountも元field読取りの支持を省略できない。
+        let values = value_examples(false);
+        assert_eq!(values.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&values, &values.nodes)
+            .expect("改変前のamountも全nodeを元順で再検査できる");
+        let mut changed = values.nodes.clone();
+        let amount = values.answers[0].outputs["evaluation"];
+        assert!(
+            changed[amount.0]
+                .support
+                .iter()
+                .any(|f| f.field.as_deref() == Some("Counter.State.count"))
+        );
+        changed[amount.0].support.clear();
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&values, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "evaluateの通常値でも元fieldの使用事実を失えない"
+        );
+    }
+    fn assert_only_scalar_origin_mode_substitution_is_rejected(
+        result: &ObservedEvaluation,
+        reference: NodeRef,
+        label: &str,
+    ) {
+        let original = &result.nodes[reference.0];
+        assert!(
+            matches!(original.payload, Some(Payload::Scalar(_))),
+            "{label}"
+        );
+        assert_eq!(
+            original.scope.modes,
+            std::collections::BTreeSet::from(["specification".to_owned()]),
+            "{label}"
+        );
+        let mut changed = result.nodes.clone();
+        changed[reference.0].scope.modes =
+            std::collections::BTreeSet::from(["observed".to_owned()]);
+        assert_eq!(changed[reference.0].support, original.support);
+        assert_eq!(changed[reference.0].arguments, original.arguments);
+        assert_eq!(changed[reference.0].scope.readings, original.scope.readings);
+        assert_eq!(
+            changed[reference.0].scope.snapshots,
+            original.scope.snapshots
+        );
+        // 値・支持・Ref・Answerを元のまま保ち、Scalar単独のmodeだけを偽装する。
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "{label}: 元入力がspecificationであるScalarをobservedへ付け替えられない"
+        );
+    }
+
+    #[test]
+    fn rejects_scalar_origin_scope_substitution_under_an_unchanged_answer() {
+        let result = value_examples(false);
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("改変前の全Scalarと導出は元入力のScopeで再検査できる");
+        let answer = |id: &str| result.answers.iter().find(|a| a.id == id).unwrap();
+        let amount = answer("amount");
+        let amount_evaluation = amount.outputs["evaluation"];
+        let Some(Payload::Evaluation { bindings, .. }) = &result.nodes[amount_evaluation.0].payload
+        else {
+            panic!("amountの実束縛を保持するEvaluation");
+        };
+        assert_eq!(bindings[0].name, "s");
+        let subject = bindings[0].value;
+        assert!(
+            matches!(graph.scalar(subject).unwrap(), Scalar::Subject { snapshot, subject, .. } if snapshot == "v" && subject == "s")
+        );
+        let mut targets = vec![("明示bindingのsubject", subject)];
+        for (id, expected) in [
+            ("amount", Scalar::Z(2.into())),
+            ("zero", Scalar::Z(0.into())),
+            ("yes", Scalar::Bool(true)),
+            ("no", Scalar::Bool(false)),
+            ("negative", Scalar::Z((-2).into())),
+            ("same", Scalar::Bool(false)),
+            ("sameBool", Scalar::Bool(false)),
+        ] {
+            let value = answer(id).outputs["value"];
+            assert_eq!(
+                graph.scalar(value).unwrap(),
+                &expected,
+                "{id}の正常baseline値"
+            );
+            targets.push((id, value));
+        }
+        let Some(Payload::Evaluation { parts, .. }) =
+            &result.nodes[answer("same").outputs["evaluation"].0].payload
+        else {
+            panic!("Z等号のEvaluation");
+        };
+        let residual = parts[0].residual.expect("Z等号の元左右の差を保持する");
+        assert_eq!(graph.scalar(residual).unwrap(), &Scalar::Z((-8).into()));
+        targets.push(("Z等号の残差", residual));
+        for (label, reference) in targets {
+            assert_only_scalar_origin_mode_substitution_is_rejected(&result, reference, label);
+        }
+
+        // Bool Lawで生成する固定trueも、元の適用Scopeに帰属するScalarである。
+        let law = include_str!("../../tests/fixtures/counter.law").replace(
+            "view amount(s: State): Z = s.count;",
+            "law required truth(s: State): true;\n  view amount(s: State): Z = s.count;",
+        );
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        let truth = evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![include_bytes!("../../tests/fixtures/counter.atoms.json").to_vec()],
+                law.into_bytes(),
+                include_bytes!("../../tests/fixtures/counter.archmap.json").to_vec(),
+            ),
+            &["truth=check(CountCheck.truth,s=@v/s)"],
+            &mut control,
+        )
+        .unwrap();
+        assert_eq!(truth.status(), "complete");
+        assert_eq!(truth.answers[0].status, Decision::Established);
+        let graph = rebuild_for_origin_and_support_recheck(&truth, &truth.nodes)
+            .expect("固定trueを含むBool Lawの正常Scope/支持で再buildできる");
+        let fixed = truth
+            .nodes
+            .iter()
+            .enumerate()
+            .find(|(_, n)| {
+                matches!(&n.rule, Rule::Construction("proposition"))
+                    && matches!(&n.payload, Some(Payload::Scalar(Scalar::Bool(true))))
+            })
+            .map(|(i, _)| NodeRef(i))
+            .expect("Bool Lawの証拠が使う固定true Scalar");
+        assert_eq!(graph.scalar(fixed).unwrap(), &Scalar::Bool(true));
+        assert!(
+            truth.nodes[fixed.0].support.is_empty(),
+            "固定規則に架空のAtom支持はない"
+        );
+        assert_only_scalar_origin_mode_substitution_is_rejected(
+            &truth,
+            fixed,
+            "固定proposition true",
+        );
+    }
+
+    #[test]
+    fn accepts_two_hop_reference_with_distinct_scalar_leaf_and_expression_scopes() {
+        let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0",
+      "vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Counter","version":"1",
+      "dependencies":[],"declarations":[{"kind":"entity","name":"Counter.State","meaning":"次の状態への参照を持つ。",
+      "parameters":[],"fields":[{"name":"count","type":"Z","meaning":"保持する件数。"},
+      {"name":"next","type":["Ref","Counter.State"],"meaning":"次に参照する状態。"}],"alignments":[]}]}]}"#;
+        let checked =
+            crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies["Counter"].digest;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Follow {{
+  use vocabulary Counter version "1" digest "{digest}";
+  view amount(s: State): Z = ((s.next).next).count;
+}}
+"#
+        );
+        let map = format!(
+            r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
+      "vocabularies":[{{"namespace":"Counter","version":"1","digest":"{digest}"}}],
+      "sources":[{{"id":"source","uri":"urn:fixture:two-hop","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],
+      "origins":[
+        {{"id":"seen","mode":"observed","method":"参照を観測する。","locations":[{{"source":"source","path":"state.model","span":[0,4]}}]}},
+        {{"id":"plan","mode":"proposed","method":"次の参照を提示する。","locations":[],"note":"提案する状態tの参照先をuとする。"}},
+        {{"id":"model","mode":"specification","method":"末尾状態を提示する。","locations":[],"note":"仕様状態uの件数は7。"}}],
+      "snapshots":[
+        {{"id":"v","origin":"seen","subjects":[{{"id":"s","type":"Counter.State","origin":"seen"}}],
+          "atoms":[{{"id":"next-s","subject":"s","field":"Counter.State.next","value":["w","t"],"origin":"seen"}}]}},
+        {{"id":"w","origin":"plan","subjects":[{{"id":"t","type":"Counter.State","origin":"plan"}}],
+          "atoms":[{{"id":"next-t","subject":"t","field":"Counter.State.next","value":["x","u"],"origin":"plan"}}]}},
+        {{"id":"x","origin":"model","subjects":[{{"id":"u","type":"Counter.State","origin":"model"}}],
+          "atoms":[{{"id":"count-u","subject":"u","field":"Counter.State.count","value":"7","origin":"model"}}]}}]}}"#
+        );
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        let result = evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![definitions.as_bytes().to_vec()],
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            &["n=evaluate(Follow.amount,s=@v/s)"],
+            &mut control,
+        )
+        .expect("各snapshot内のmodeを一致させた三入力は有効");
+        assert_eq!(result.status(), "complete");
+        let answer = &result.answers[0];
+        assert_eq!(answer.status, Decision::Established);
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("異なる実由来を持つ二hopの全nodeを元順で再検査できる");
+        let value = answer.outputs["value"];
+        assert_eq!(graph.scalar(value).unwrap(), &Scalar::Z(7.into()));
+        let leaf = &graph.nodes[value.0];
+        assert!(matches!(&leaf.rule, Rule::Input { kind: "atom", .. }));
+        let set = |values: &[&str]| {
+            values
+                .iter()
+                .map(|s| (*s).to_owned())
+                .collect::<std::collections::BTreeSet<_>>()
+        };
+        assert_eq!(leaf.scope.readings, set(&["Follow"]));
+        // Scalarは明示束縛sと実際に読んだu.countの原始leafに帰属する。
+        assert_eq!(leaf.scope.snapshots, set(&["v", "x"]));
+        assert_eq!(leaf.scope.modes, set(&["observed", "specification"]));
+        assert!(!leaf.scope.completions);
+        assert!(leaf.support.iter().any(|f| f.snapshot == "x"
+            && f.subject == "u"
+            && f.field.as_deref() == Some("Counter.State.count")
+            && f.atom.as_deref() == Some("count-u")));
+        let evaluation = &graph.nodes[answer.outputs["evaluation"].0];
+        let Some(Payload::Evaluation {
+            value: evaluated, ..
+        }) = &evaluation.payload
+        else {
+            panic!("元の二hop式を持つEvaluation");
+        };
+        assert_eq!(*evaluated, Some(value));
+        // 式全体は経由したw/tの提案originも根拠に含む。
+        assert_eq!(evaluation.scope.snapshots, set(&["v", "w", "x"]));
+        assert_eq!(
+            evaluation.scope.modes,
+            set(&["observed", "proposed", "specification"])
+        );
+        assert_eq!(answer.scope, evaluation.scope);
+        assert_ne!(leaf.scope, evaluation.scope);
+        for (snapshot, subject, atom, field) in [
+            ("v", "s", "next-s", "Counter.State.next"),
+            ("w", "t", "next-t", "Counter.State.next"),
+            ("x", "u", "count-u", "Counter.State.count"),
+        ] {
+            assert!(evaluation.support.iter().any(|f| f.snapshot == snapshot
+                && f.subject == subject
+                && f.atom.as_deref() == Some(atom)
+                && f.field.as_deref() == Some(field)));
+        }
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        environment
+            .validate_answer(&graph, &result.prepared.requests().requests()[0], answer)
+            .expect("Scalar leafと式全体のScopeが異なる正常Answerも総合検査を通る");
     }
 }
