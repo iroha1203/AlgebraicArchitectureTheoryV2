@@ -229,7 +229,31 @@ impl Evaluator<'_, '_> {
         comparison: Option<(NodeRef, NodeRef)>,
         residual: Option<NodeRef>,
     ) -> Result<Evaluated, Failure> {
+        // slot の欠測は、子の転記や node 検査が停止する前に記録する。
+        // 依存 Ref は元式が実際に挿入された場合だけ後で結び付ける。
+        let missing_reason = missing.map(|fact| {
+            let index = self.reasons.len();
+            self.reasons.push(Reason {
+                kind: ReasonKind::Missing,
+                request: self.request.id.clone(),
+                dependencies: vec![],
+                missing: vec![fact],
+                location: Some(Location::Law { span }),
+            });
+            index
+        });
         let mut scope = self.base.clone();
+        if let Some(index) = missing_reason {
+            let fact = &self.reasons[index].missing[0];
+            let subject = self.environment.subject(&fact.snapshot, &fact.subject)?;
+            scope.merge(
+                &self
+                    .environment
+                    .scope(subject, &self.declaration.reading, None)?,
+            );
+            scope.completions = true;
+            self.retained_scope.merge(&scope);
+        }
         if let Some(value) = value {
             scope.merge(&self.graph.get(value)?.scope);
         }
@@ -242,23 +266,18 @@ impl Evaluator<'_, '_> {
             reasons.extend(child.reasons.iter().cloned());
             self.tick(Checkpoint::FiniteIteration)?;
         }
-        if missing.is_some() {
-            scope.completions = true;
-        }
         support.sort();
         support.dedup();
-        let expression = self.source(span, ty.clone(), scope.clone())?;
-        if let Some(f) = missing {
-            let reason = Reason {
-                kind: ReasonKind::Missing,
-                request: self.request.id.clone(),
-                dependencies: vec![expression],
-                missing: vec![f],
-                location: Some(Location::Law { span }),
-            };
-            self.reasons.push(reason.clone());
-            reasons.push(reason);
+        let next = NodeRef(self.graph.nodes.len());
+        let source = self.source(span, ty.clone(), scope.clone());
+        if let Some(index) = missing_reason {
+            if self.graph.nodes.len() > next.0 {
+                // post 停止でも、検査・挿入済みの元式への Ref を保持する。
+                self.reasons[index].dependencies.push(next);
+            }
+            reasons.push(self.reasons[index].clone());
         }
+        let expression = source?;
         sort_reasons(&mut reasons);
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
@@ -963,7 +982,7 @@ mod recheck_tests {
     fn value_examples(missing: bool) -> ObservedEvaluation {
         let law = include_str!("../../tests/fixtures/counter.law").replace(
             "view amount(s: State): Z = s.count;",
-            "view amount(s: State): Z = s.count;\n  view zero(s: State): Z = 0;\n  view yes(s: State): Bool = true;\n  view no(s: State): Bool = false;\n  view negative(s: State): Z = -s.count;",
+            "view amount(s: State): Z = s.count;\n  view zero(s: State): Z = 0;\n  view yes(s: State): Bool = true;\n  view no(s: State): Bool = false;\n  view negative(s: State): Z = -s.count;\n  view same(s: State): Bool = s.count = 10;\n  view sameBool(s: State): Bool = true = false;",
         );
         let mut map = include_str!("../../tests/fixtures/counter.archmap.json").to_owned();
         if missing {
@@ -985,6 +1004,8 @@ mod recheck_tests {
                 "no=evaluate(CountCheck.no,s=@v/s)",
                 "negative=evaluate(CountCheck.negative,s=@v/s)",
                 "judgment=check(CountCheck.nonnegative,s=@v/s)",
+                "same=evaluate(CountCheck.same,s=@v/s)",
+                "sameBool=evaluate(CountCheck.sameBool,s=@v/s)",
             ],
             &mut Control::unlimited(),
         )
@@ -1132,6 +1153,125 @@ mod recheck_tests {
             .insert("proposition".into(), original.claim.unwrap());
         assert!(matches!(
             graph.validate_answer(&wrong, false),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+    #[test]
+    fn rejects_evidence_from_a_different_law_or_without_the_counterexample() {
+        let result = example();
+        let mut control = Control::unlimited();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let mut graph = Graph::new(&control);
+        graph.nodes = result.nodes.clone();
+        let original = graph.nodes[result.answers[0].claim.unwrap().0].clone();
+        environment.validate(&graph, &original).unwrap();
+        let foreign = result.answers[1].evidence[0];
+        let evaluation_only = original
+            .evidence
+            .iter()
+            .copied()
+            .find(|r| {
+                matches!(
+                    graph.nodes[r.0].payload,
+                    Some(Payload::EvaluationEvidence { .. })
+                )
+            })
+            .unwrap();
+        for evidence in [vec![foreign], vec![evaluation_only]] {
+            let mut wrong = original.clone();
+            wrong.evidence = evidence.clone();
+            wrong.judgment.as_mut().unwrap().evidence = evidence;
+            assert!(matches!(
+                environment.validate(&graph, &wrong),
+                Err(ValidationFailure::Internal(_))
+            ));
+            assert!(matches!(
+                graph.push(wrong),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
+        let mut wrong = result.answers[0].clone();
+        wrong.evidence = vec![foreign];
+        assert!(matches!(
+            graph.validate_answer(&wrong, true),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let mut wrong = original.clone();
+        wrong.judgment.as_mut().unwrap().evidence = vec![foreign];
+        assert!(matches!(
+            environment.validate(&graph, &wrong),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+    #[test]
+    fn rejects_evaluation_scope_changed_with_its_source_and_answer() {
+        let result = value_examples(false);
+        let mut control = Control::unlimited();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let mut graph = Graph::new(&control);
+        graph.nodes = result.nodes.clone();
+        let reference = result.answers[0].outputs["evaluation"];
+        let original = graph.nodes[reference.0].clone();
+        environment.validate(&graph, &original).unwrap();
+        for field in ["modes", "readings", "snapshots", "domain"] {
+            graph.nodes = result.nodes.clone();
+            let mut wrong = original.clone();
+            match field {
+                "modes" => wrong.scope.modes = ["observed".into()].into(),
+                "readings" => wrong.scope.readings = ["CountAudit".into()].into(),
+                "snapshots" => wrong.scope.snapshots = ["other".into()].into(),
+                _ => wrong.scope.completions = true,
+            }
+            let Some(Payload::Evaluation { expression, .. }) = &wrong.payload else {
+                unreachable!()
+            };
+            graph.nodes[expression.0].scope = wrong.scope.clone();
+            let mut answer = result.answers[0].clone();
+            answer.scope = wrong.scope.clone();
+            graph.nodes[reference.0] = wrong.clone();
+            graph.validate_answer(&answer, false).unwrap();
+            // source/evaluation/answer の相互同値だけでは元入力の代用にならない。
+            assert!(matches!(
+                environment.validate(&graph, &wrong),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
+    }
+    #[test]
+    fn rejects_wrong_or_missing_integer_residual_and_residual_on_bool_equality() {
+        let result = value_examples(false);
+        let mut control = Control::unlimited();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let mut graph = Graph::new(&control);
+        graph.nodes = result.nodes.clone();
+        let original = &graph.nodes[result.answers[6].outputs["evaluation"].0];
+        environment.validate(&graph, original).unwrap();
+        let Some(Payload::Evaluation { parts, .. }) = &original.payload else {
+            unreachable!()
+        };
+        assert_eq!(
+            graph.scalar(parts[0].residual.unwrap()).unwrap(),
+            &Scalar::Z((-8).into())
+        );
+        for residual in [Some(result.answers[0].outputs["value"]), None] {
+            let mut wrong = original.clone();
+            let Some(Payload::Evaluation { parts, .. }) = &mut wrong.payload else {
+                unreachable!()
+            };
+            parts[0].residual = residual;
+            assert!(matches!(
+                environment.validate(&graph, &wrong),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
+        let mut wrong = graph.nodes[result.answers[7].outputs["evaluation"].0].clone();
+        let Some(Payload::Evaluation { parts, .. }) = &mut wrong.payload else {
+            unreachable!()
+        };
+        assert!(parts[0].residual.is_none());
+        parts[0].residual = Some(result.answers[0].outputs["value"]);
+        assert!(matches!(
+            environment.validate(&graph, &wrong),
             Err(ValidationFailure::Internal(_))
         ));
     }

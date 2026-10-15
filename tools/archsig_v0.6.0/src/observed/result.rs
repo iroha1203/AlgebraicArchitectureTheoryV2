@@ -716,6 +716,54 @@ impl Graph {
         self.tick()?;
         Ok(())
     }
+    /// 添付する証拠は、同じ命題の元 LawInstance と適用評価を証明する。
+    pub(crate) fn validate_proposition_evidence(
+        &self,
+        node: &Node,
+    ) -> Result<(), ValidationFailure> {
+        let Some(Payload::Proposition { instance }) = &node.payload else {
+            return Err("証拠添付先が Proposition でない".into());
+        };
+        let judgment = node.judgment.as_ref().ok_or("命題に判断がない")?;
+        if node.evidence != judgment.evidence {
+            return Err("命題と判断の証拠列が違う".into());
+        }
+        if node.arguments.len() != 2 || node.arguments[0] != *instance {
+            return Err("命題の証拠対象が元 LawInstance と違う".into());
+        }
+        let evaluation = node.arguments[1];
+        let Some(Payload::LawInstance {
+            bindings: instance_bindings,
+            ..
+        }) = &self.get(*instance)?.payload
+        else {
+            return Err("証拠添付先の LawInstance が値でない".into());
+        };
+        let mut counterexample = false;
+        for &reference in &node.evidence {
+            self.tick()?;
+            self.expect(reference, &NodeType::Evidence)?;
+            let evidence = self.get(reference)?;
+            if evidence.arguments != [*instance, evaluation] {
+                return Err("添付証拠が別の LawInstance・適用評価を指す".into());
+            }
+            match &evidence.payload {
+                Some(Payload::EvaluationEvidence {
+                    instance: evidence_instance,
+                    ..
+                }) if evidence_instance == instance => {}
+                Some(Payload::Counterexample { bindings, .. }) if bindings == instance_bindings => {
+                    counterexample = true
+                }
+                _ => return Err("命題に対応する検査済み証拠でない".into()),
+            }
+            self.tick()?;
+        }
+        if judgment.status == Decision::Refuted && !counterexample {
+            return Err("反証に当該 LawInstance の反例がない".into());
+        }
+        Ok(())
+    }
     pub fn push(&mut self, node: Node) -> Result<NodeRef, ValidationFailure> {
         self.tick()?;
         for &r in &node.arguments {
@@ -844,6 +892,9 @@ impl Graph {
                 return Err("反証の証拠がない".into());
             }
         }
+        if node.ty == NodeType::Proposition {
+            self.validate_proposition_evidence(&node)?;
+        }
         let r = NodeRef(self.nodes.len());
         self.nodes.push(node);
         self.tick()?;
@@ -881,6 +932,9 @@ impl Graph {
             }
             self.tick()?;
         }
+        if a.claim.is_none() && !a.evidence.is_empty() {
+            return Err("claim のない Answer に命題証拠がある".into());
+        }
         if !check && (a.claim.is_some() || a.status == Decision::Refuted) {
             return Err("evaluate に命題の判断がある".into());
         }
@@ -917,6 +971,10 @@ impl Graph {
             let Some(j) = &self.get(c)?.judgment else {
                 return Err("claim に判断がない".into());
             };
+            self.validate_proposition_evidence(self.get(c)?)?;
+            if a.evidence != j.evidence || a.evidence != self.get(c)?.evidence {
+                return Err("Answer の証拠が claim・判断と違う".into());
+            }
             if j.status != a.status || a.outputs.get("proposition") != Some(&c) {
                 return Err("Answer と claim が不一致".into());
             }

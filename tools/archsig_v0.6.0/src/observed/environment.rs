@@ -302,6 +302,15 @@ impl<'a> Environment<'a> {
                 }
             }
         }
+        if let Some(Payload::Expression {
+            location: Location::Law { span },
+            bindings,
+            ..
+        }) = &node.payload
+            && node.scope != self.source_scope(graph, *span, bindings)?
+        {
+            return Err("Expression の範囲が元宣言・入力と違う".into());
+        }
         if let Some(Payload::LawInstance {
             name,
             role,
@@ -379,6 +388,10 @@ impl<'a> Environment<'a> {
                 {
                     return Err("Evaluation の原式・束縛・part が合わない".into());
                 }
+                let expected_scope = self.source_scope(graph, span, bindings)?;
+                if node.scope != expected_scope || graph.get(*expression)?.scope != expected_scope {
+                    return Err("Evaluation と元式の範囲が元入力と違う".into());
+                }
                 let children = &parts[0].children;
                 let ast = self
                     .expressions
@@ -411,6 +424,11 @@ impl<'a> Environment<'a> {
                     child_values.push(v);
                     self.tick()?;
                 }
+                if !matches!(ast.map(|e| &e.kind), Some(ExprKind::Binary { .. }))
+                    && parts[0].residual.is_some()
+                {
+                    return Err("比較以外の式に残差がある".into());
+                }
                 match ast.map(|e| &e.kind) {
                     Some(ExprKind::Int(n)) => {
                         let expected = Scalar::Z(n.parse().map_err(|_| "元整数 literal が不正")?);
@@ -423,7 +441,7 @@ impl<'a> Environment<'a> {
                             return Err("Bool literal の評価値が元 AST と違う".into());
                         }
                     }
-                    Some(ExprKind::Binary { op, .. }) => {
+                    Some(ExprKind::Binary { op, lhs, .. }) => {
                         let pair = child_values[0].zip(child_values[1]);
                         match (pair, *value) {
                             (Some((left, right)), Some(result)) => {
@@ -437,8 +455,30 @@ impl<'a> Environment<'a> {
                             (None, None) => {}
                             _ => return Err("未確定の子からの比較値生成".into()),
                         }
-                        if parts[0].residual.is_some() && *op != BinOp::Eq {
-                            return Err("不等式に残差が付いている".into());
+                        match (op, pair, parts[0].residual) {
+                            (BinOp::Eq, Some((left, right)), residual)
+                                if self.inputs.law().expr_type(*lhs) == Some(&Type::Z)
+                                    && matches!(
+                                        (graph.scalar(left)?, graph.scalar(right)?),
+                                        (Scalar::Z(_), Scalar::Z(_))
+                                    ) =>
+                            {
+                                let residual = residual.ok_or("既知 Z 等号の残差がない")?;
+                                graph.expect(residual, &NodeType::Value(Type::Z))?;
+                                let (Scalar::Z(l), Scalar::Z(r), Scalar::Z(d)) = (
+                                    graph.scalar(left)?,
+                                    graph.scalar(right)?,
+                                    graph.scalar(residual)?,
+                                ) else {
+                                    return Err("Z 等号残差の型が違う".into());
+                                };
+                                if l - r != *d || graph.get(residual)?.arguments != [left, right] {
+                                    return Err("Z 等号の残差が元左右の正確な差でない".into());
+                                }
+                                self.validate(graph, graph.get(residual)?)?;
+                            }
+                            (_, _, None) => {}
+                            _ => return Err("Z 等号の既知左右以外に整数残差がある".into()),
                         }
                     }
                     Some(ExprKind::Group(_)) => {
@@ -534,6 +574,12 @@ impl<'a> Environment<'a> {
                 }
             }
             Some(Payload::Proposition { instance }) => {
+                graph.validate_proposition_evidence(node)?;
+                for &reference in &node.evidence {
+                    self.tick()?;
+                    self.validate(graph, graph.get(reference)?)?;
+                    self.tick()?;
+                }
                 let evaluation = *node.arguments.get(1).ok_or("命題に元評価がない")?;
                 self.instance_evaluation(graph, *instance, evaluation)?;
                 let (_, _, v) = self.evaluation(graph, evaluation)?;
@@ -566,6 +612,180 @@ impl<'a> Environment<'a> {
         }
         self.tick()?;
         Ok(())
+    }
+    // 自己申告の node.scope へ依存せず、元宣言・束縛と原始 slot から再構成する。
+    fn source_scope(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Result<Scope, ValidationFailure> {
+        let mut declaration = None;
+        for d in self.inputs.law().declarations.values() {
+            self.tick()?;
+            if d.span.0 <= span.0 && span.1 <= d.span.1 {
+                if declaration.is_some() {
+                    return Err("原式を所有する宣言が一意でない".into());
+                }
+                declaration = Some(d);
+            }
+            self.tick()?;
+        }
+        let declaration = declaration.ok_or("原式を所有する宣言がない")?;
+        let params = match &declaration.signature {
+            crate::law::model::Signature::View { params, .. }
+            | crate::law::model::Signature::Law { params, .. } => params,
+            _ => return Err("評価範囲の元宣言が view/Law でない".into()),
+        };
+        if params.len() != bindings.len() {
+            return Err("評価範囲のparameter束縛数が違う".into());
+        }
+        let mut base = Scope::default();
+        base.readings.insert(declaration.reading.clone());
+        let mut variables = BTreeMap::new();
+        for (parameter, binding) in params.iter().zip(bindings) {
+            self.tick()?;
+            if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
+                return Err("評価範囲の元parameter署名が違う".into());
+            }
+            let value = graph.scalar(binding.value)?;
+            let Scalar::Subject {
+                snapshot,
+                subject,
+                entity,
+            } = value
+            else {
+                return Err("未実装の値parameterを評価範囲へ持ち込んでいる".into());
+            };
+            let actual = self.subject(snapshot, subject)?;
+            if &actual.ty != entity || value.ty() != binding.ty {
+                return Err("評価範囲の束縛subject型が違う".into());
+            }
+            base.merge(&self.scope(actual, &declaration.reading, None)?);
+            variables.insert(binding.name.clone(), value.clone());
+            self.tick()?;
+        }
+        if let Some(&id) = self.expressions.get(&span) {
+            return self
+                .scoped_ast(id, &variables, &base, &declaration.reading)
+                .map(|(scope, _)| scope);
+        }
+        // Dotted の先頭 parameter は実在 token のみを指す。
+        let token = self
+            .inputs
+            .sources()
+            .law()
+            .bytes()
+            .get(span.0..span.1)
+            .ok_or("評価範囲のtokenが元byte外")?;
+        let name = std::str::from_utf8(token).map_err(|_| "評価範囲のtokenがUTF-8でない")?;
+        if !variables.contains_key(name) {
+            return Err("評価範囲に元parameter以外のfragmentがある".into());
+        }
+        Ok(base)
+    }
+    fn scoped_ast(
+        &self,
+        id: usize,
+        variables: &BTreeMap<String, Scalar>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<(Scope, Option<Scalar>), ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            let expression = &self.inputs.law().exprs[id];
+            let result = match &expression.kind {
+                ExprKind::Int(n) if self.inputs.law().expr_type(id) == Some(&Type::Z) => (
+                    base.clone(),
+                    Some(Scalar::Z(
+                        n.parse().map_err(|_| "範囲検査の整数literal不正")?,
+                    )),
+                ),
+                ExprKind::Bool(b) => (base.clone(), Some(Scalar::Bool(*b))),
+                ExprKind::Dotted(parts) => {
+                    let first = parts.first().ok_or("範囲検査の空Dotted")?;
+                    let mut result = (
+                        base.clone(),
+                        Some(
+                            variables
+                                .get(&first.name)
+                                .ok_or("範囲検査の未知parameter")?
+                                .clone(),
+                        ),
+                    );
+                    for part in parts.iter().skip(1) {
+                        self.tick()?;
+                        result = self.scoped_field(result, &part.name, reading)?;
+                        self.tick()?;
+                    }
+                    result
+                }
+                ExprKind::Field { base: owner, name } => self.scoped_field(
+                    self.scoped_ast(*owner, variables, base, reading)?,
+                    &name.name,
+                    reading,
+                )?,
+                ExprKind::Group(child) => self.scoped_ast(*child, variables, base, reading)?,
+                ExprKind::Unary {
+                    op: UnOp::Neg,
+                    operand,
+                } => {
+                    let (scope, value) = self.scoped_ast(*operand, variables, base, reading)?;
+                    let value = match value {
+                        Some(Scalar::Z(v)) => Some(Scalar::Z(-v)),
+                        None => None,
+                        _ => return Err("範囲検査の負号型不一致".into()),
+                    };
+                    (scope, value)
+                }
+                ExprKind::Binary { op, lhs, rhs } => {
+                    let (mut scope, left) = self.scoped_ast(*lhs, variables, base, reading)?;
+                    let (right_scope, right) = self.scoped_ast(*rhs, variables, base, reading)?;
+                    scope.merge(&right_scope);
+                    let value = match (left, right) {
+                        (Some(l), Some(r)) => Some(binary(*op, &l, &r)?),
+                        _ => None,
+                    };
+                    (scope, value)
+                }
+                _ => return Err("未実装式の範囲を自己申告から採用できない".into()),
+            };
+            self.tick()?;
+            Ok(result)
+        })
+    }
+    fn scoped_field(
+        &self,
+        base: (Scope, Option<Scalar>),
+        name: &str,
+        reading: &str,
+    ) -> Result<(Scope, Option<Scalar>), ValidationFailure> {
+        let (mut scope, value) = base;
+        let Some(Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        }) = value
+        else {
+            return Err("範囲検査のfield ownerが未確定/Ref以外".into());
+        };
+        let owner = self.subject(&snapshot, &subject)?;
+        if owner.ty != entity {
+            return Err("範囲検査のfield owner型不一致".into());
+        }
+        let field = self.field(&snapshot, &subject, &format!("{entity}.{name}"))?;
+        let value = match &field.slot {
+            Slot::Known { origin, value, .. } => {
+                scope.merge(&self.scope(owner, reading, Some(origin))?);
+                Some(scalar_from(value, &field.ty).ok_or("範囲検査の未実装原始値")?)
+            }
+            Slot::Missing => {
+                scope.merge(&self.scope(owner, reading, None)?);
+                scope.completions = true;
+                None
+            }
+        };
+        Ok((scope, value))
     }
     fn expression_span(&self, graph: &Graph, r: NodeRef) -> Result<(usize, usize), String> {
         match &graph.get(r)?.payload {

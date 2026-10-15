@@ -1019,18 +1019,26 @@ fn memory_budget_after_the_first_answer_preserves_its_known_value() {
 
 // 公開 checkpoint の列から、先頭 amount の式終了直前を選ぶ。
 // FiniteIteration の絶対数や node 数には固定した期待値を置かない。
-fn missing_root_last_finite_before_expression_post() -> usize {
+fn missing_root_expression_finite_interval() -> (usize, usize) {
     let finite = Rc::new(Cell::new(0));
     let expression = Rc::new(Cell::new(0));
     let at_post = Rc::new(Cell::new(None));
-    let (seen_finite, seen_expression, captured) =
-        (finite.clone(), expression.clone(), at_post.clone());
+    let at_start = Rc::new(Cell::new(None));
+    let (seen_finite, seen_expression, captured, started) = (
+        finite.clone(),
+        expression.clone(),
+        at_post.clone(),
+        at_start.clone(),
+    );
     let mut control = Control::new(Limits::default(), move |point| {
         if point == Checkpoint::FiniteIteration {
             seen_finite.set(seen_finite.get() + 1);
         }
         if point == Checkpoint::Expression {
             seen_expression.set(seen_expression.get() + 1);
+            if seen_expression.get() == 1 {
+                started.set(Some(seen_finite.get()));
+            }
             if seen_expression.get() == 2 {
                 captured.set(Some(seen_finite.get()));
             }
@@ -1049,11 +1057,20 @@ fn missing_root_last_finite_before_expression_post() -> usize {
         .get()
         .expect("先頭 amount の Expression post がある");
     assert!(count > 1);
-    count
+    (
+        at_start
+            .get()
+            .expect("先頭 amount の Expression pre がある"),
+        count,
+    )
 }
 
 fn missing_scope_survives_finite_stop(offset: usize, limits: Limits, usage: Usage) {
-    let stop_at = missing_root_last_finite_before_expression_post() - offset;
+    let stop_at = missing_root_expression_finite_interval().1 - offset;
+    missing_scope_survives_at_finite(stop_at, limits, usage);
+}
+
+fn missing_scope_survives_at_finite(stop_at: usize, limits: Limits, usage: Usage) -> Json {
     let finite = Rc::new(Cell::new(0));
     let expression = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
@@ -1219,6 +1236,7 @@ fn missing_scope_survives_finite_stop(offset: usize, limits: Limits, usage: Usag
     assert!(control.checkpoint(Checkpoint::Expression).is_err());
     assert_eq!(probes.get(), before);
     audit_dag(&result);
+    result
 }
 
 #[test]
@@ -1688,5 +1706,230 @@ fn true_field_guard_with_missing_body_keeps_applicability_and_all_completions() 
             assert_ne!(field(value(node), "kind"), &Json::str("counterexample"));
         }
     }
+    audit_dag(&result);
+}
+
+fn missing_source_expression_id(result: &Json) -> Option<String> {
+    arr(field(result, "nodes")).iter().find_map(|node| {
+        if field(node, "type") != &Json::str("Expression")
+            || field(field(node, "scope"), "domain") != &Json::str("all_completions")
+        {
+            return None;
+        }
+        let (start, end) = span(field(value(node), "location"));
+        (&LAW[start..end] == b"s.count").then(|| text(field(node, "id")).to_owned())
+    })
+}
+
+fn missing_finite_probe(stop_at: usize) -> Json {
+    let mut finite = 0;
+    let mut control = Control::new(
+        Limits {
+            time_ms: Some(1),
+            memory_mib: None,
+        },
+        move |point| {
+            if point == Checkpoint::FiniteIteration {
+                finite += 1;
+                if finite == stop_at {
+                    return Usage {
+                        elapsed_ms: 1,
+                        ..Usage::default()
+                    };
+                }
+            }
+            Usage::default()
+        },
+    );
+    evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
+        .unwrap()
+        .wire()
+}
+
+#[test]
+fn missing_reason_survives_the_first_source_expression_post_stop() {
+    let (start, end) = missing_root_expression_finite_interval();
+    assert!(
+        start < end && end - start <= 4096,
+        "小さい第一式区間だけを対象にする"
+    );
+    // 挿入済みsource Expressionの存在はこの区間で単調。全停止点の走査はしない。
+    let (mut low, mut high) = (start + 1, end);
+    let mut probes = 0;
+    while low < high {
+        assert!(probes < 12, "小さい上限付き二分探索");
+        probes += 1;
+        let middle = low + (high - low) / 2;
+        if missing_source_expression_id(&missing_finite_probe(middle)).is_some() {
+            high = middle;
+        } else {
+            low = middle + 1;
+        }
+    }
+    let witness = missing_finite_probe(low);
+    let expression =
+        missing_source_expression_id(&witness).expect("欠測source Expression挿入直後を選ぶ");
+    assert!(
+        !arr(field(&witness, "nodes"))
+            .iter()
+            .any(|n| field(n, "type") == &Json::str("Evaluation")
+                && field(value(n), "expression") == &Json::obj([("node", Json::str(&expression))])),
+        "root Evaluationはまだ生成されていない"
+    );
+    for (limits, usage) in [
+        (
+            Limits {
+                time_ms: Some(13),
+                memory_mib: None,
+            },
+            Usage {
+                elapsed_ms: 13,
+                ..Usage::default()
+            },
+        ),
+        (
+            Limits {
+                time_ms: None,
+                memory_mib: Some(1),
+            },
+            Usage {
+                memory_mib: 1,
+                ..Usage::default()
+            },
+        ),
+        (
+            Limits::default(),
+            Usage {
+                signal: Some(Signal::Term),
+                ..Usage::default()
+            },
+        ),
+    ] {
+        let result = missing_scope_survives_at_finite(low, limits, usage);
+        let expression = missing_source_expression_id(&result).unwrap();
+        assert!(
+            !arr(field(&result, "nodes")).iter().any(|n| field(n, "type")
+                == &Json::str("Evaluation")
+                && field(value(n), "expression") == &Json::obj([("node", Json::str(&expression))]))
+        );
+    }
+}
+
+#[test]
+fn missing_field_through_a_cross_snapshot_reference_keeps_target_scope() {
+    let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0",
+      "vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Counter","version":"1",
+      "dependencies":[],"declarations":[{"kind":"entity","name":"Counter.State","meaning":"参照先を持つ状態。",
+      "parameters":[],"fields":[{"name":"count","type":"Z","meaning":"保持する件数。"},
+      {"name":"next","type":["Ref","Counter.State"],"meaning":"次の状態。"}],"alignments":[]}]}]}"#;
+    let checked_definitions =
+        check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+    let digest = &checked_definitions.vocabularies["Counter"].digest;
+    let law = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Follow {{
+  use vocabulary Counter version "1" digest "{digest}";
+  view amount(s: State): Z = (s.next).count;
+}}
+"#
+    );
+    let map = format!(
+        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
+      "vocabularies":[{{"namespace":"Counter","version":"1","digest":"{digest}"}}],
+      "sources":[{{"id":"source","uri":"urn:fixture:reference","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],
+      "origins":[{{"id":"observed","mode":"observed","method":"参照を観測する。","locations":[{{"source":"source","path":"state.model","span":[0,4]}}]}},
+                 {{"id":"target","mode":"specification","method":"参照先の存在を提示する。","locations":[],"note":"件数は提示しない。"}}],
+      "snapshots":[{{"id":"v","origin":"observed","subjects":[{{"id":"s","type":"Counter.State","origin":"observed"}}],
+        "atoms":[{{"id":"next","subject":"s","field":"Counter.State.next","value":["w","t"],"origin":"observed"}}]}},
+        {{"id":"w","origin":"target","subjects":[{{"id":"t","type":"Counter.State","origin":"target"}}],"atoms":[]}}]}}"#
+    );
+    let inputs = InputSources::from_bytes(
+        vec![definitions.as_bytes().to_vec()],
+        law.as_bytes().to_vec(),
+        map.into_bytes(),
+    );
+    let checked = check_inputs(inputs.clone(), &mut quiet_control()).unwrap();
+    let target_subject = &checked
+        .archmap()
+        .snapshots
+        .iter()
+        .find(|v| v.id == "w")
+        .unwrap()
+        .subjects[0];
+    assert_eq!(target_subject.id, "t");
+    assert!(matches!(
+        &target_subject
+            .fields
+            .iter()
+            .find(|f| f.name == "Counter.State.count")
+            .unwrap()
+            .slot,
+        archsig::archmap::Slot::Missing
+    ));
+    let result = run(inputs, &["n=evaluate(Follow.amount,s=@v/s)"]);
+    assert_eq!(field(&result, "status"), &Json::str("partial"));
+    let a = answer(&result, "n");
+    assert_eq!(field(a, "status"), &Json::str("undetermined"));
+    let index = nodes(&result);
+    let evaluation_ref = field(field(a, "outputs"), "evaluation");
+    let evaluation = typed(&index, evaluation_ref, "Evaluation");
+    assert!(!obj(value(evaluation)).contains_key("value"));
+    assert!(!obj(field(a, "outputs")).contains_key("value"));
+    let missing_fact = Json::obj([
+        ("snapshot", Json::str("w")),
+        ("subject", Json::str("t")),
+        ("field", Json::str("Counter.State.count")),
+    ]);
+    let reached = reachable_nodes(&index, &[evaluation_ref]);
+    for item in [a, evaluation] {
+        let scope = field(item, "scope");
+        assert_eq!(field(scope, "domain"), &Json::str("all_completions"));
+        assert_eq!(
+            field(scope, "snapshots"),
+            &Json::Arr(vec![Json::str("v"), Json::str("w")])
+        );
+        assert_eq!(
+            field(scope, "modes"),
+            &Json::Arr(vec![Json::str("observed"), Json::str("specification")])
+        );
+        let reason = arr(field(item, "reasons"))
+            .iter()
+            .find(|r| field(r, "code") == &Json::str("missing_observation"))
+            .unwrap();
+        assert_eq!(
+            field(reason, "missing"),
+            &Json::Arr(vec![missing_fact.clone()])
+        );
+        assert!(!arr(field(reason, "dependencies")).is_empty());
+        for reference in arr(field(reason, "dependencies")) {
+            assert!(reached.contains(text(field(reference, "node"))));
+            let expression = typed(&index, reference, "Expression");
+            let (start, end) = span(field(value(expression), "location"));
+            assert_eq!(&law.as_bytes()[start..end], b"(s.next).count");
+            assert_eq!(field(expression, "scope"), scope);
+        }
+    }
+    let next_fact = Json::obj([
+        ("snapshot", Json::str("v")),
+        ("subject", Json::str("s")),
+        ("field", Json::str("Counter.State.next")),
+        ("atom", Json::str("next")),
+    ]);
+    assert!(
+        reached
+            .iter()
+            .map(|id| index[id.as_str()])
+            .any(|n| field(n, "type")
+                == &Json::Arr(vec![Json::str("Ref"), Json::str("Counter.State")])
+                && value(n) == &Json::Arr(vec![Json::str("w"), Json::str("t")])
+                && arr(field(n, "support")).contains(&next_fact)),
+        "既知next Atomから実在する別snapshotのtへ辿る"
+    );
+    assert!(arr(field(evaluation, "support")).contains(&next_fact));
+    assert!(
+        !arr(field(evaluation, "support"))
+            .iter()
+            .any(|f| obj(f).get("field") == Some(&Json::str("Counter.State.count")))
+    );
     audit_dag(&result);
 }
