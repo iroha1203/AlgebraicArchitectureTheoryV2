@@ -10,23 +10,37 @@ pub(super) fn check<E: InputError>(
 ) -> Result<(), E> {
     let mut done = BTreeSet::new();
     for n in defs.vocabularies.keys() {
-        E::checkpoint(control, Checkpoint::DefinitionIteration)?;
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         dag::<E>(n, defs, &mut BTreeSet::new(), &mut done, control)?;
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
     for v in defs.vocabularies.values() {
-        E::checkpoint(control, Checkpoint::DefinitionIteration)?;
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         for b in &v.dependencies {
-            E::checkpoint(control, Checkpoint::DefinitionIteration)?;
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
             defs.check_binding(b)?;
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
     for d in defs.declarations.values() {
-        E::checkpoint(control, Checkpoint::DefinitionIteration)?;
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         let v = &defs.vocabularies[&d.namespace];
         for (at, target) in &d.references {
-            E::checkpoint(control, Checkpoint::DefinitionIteration)?;
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
             let ns = target.split('.').next().expect("完全名の字句を確認済み");
-            if ns != d.namespace && !v.dependencies.iter().any(|b| b.namespace == ns) {
+            let mut declared_dependency = ns == d.namespace;
+            if !declared_dependency {
+                for binding in &v.dependencies {
+                    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+                    declared_dependency |= binding.namespace == ns;
+                    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
+                    if declared_dependency {
+                        break;
+                    }
+                }
+            }
+            if !declared_dependency {
                 return Err((Box::new(Issue {
                     code: Code::Reference,
                     message: format!("namespace `{ns}` の dependency がない"),
@@ -35,10 +49,12 @@ pub(super) fn check<E: InputError>(
                 }))
                 .into());
             }
+            E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
-    super::primitive::check(defs)?;
-    E::checkpoint(control, Checkpoint::DefinitionIteration)?;
+    super::primitive::check::<E>(defs, control)?;
+    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     Ok(())
 }
 fn dag<E: InputError>(
@@ -59,6 +75,7 @@ fn dag_inner<E: InputError>(
     done: &mut BTreeSet<String>,
     control: &mut Control,
 ) -> Result<(), E> {
+    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     if done.contains(n) {
         return Ok(());
     }
@@ -67,7 +84,7 @@ fn dag_inner<E: InputError>(
         return Ok(());
     };
     for b in &v.dependencies {
-        E::checkpoint(control, Checkpoint::DefinitionIteration)?;
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         if active.contains(&b.namespace) {
             return Err((Box::new(Issue {
                 code: Code::Cycle,
@@ -80,8 +97,10 @@ fn dag_inner<E: InputError>(
         if defs.vocabularies.contains_key(&b.namespace) {
             dag::<E>(&b.namespace, defs, active, done, control)?
         }
+        E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
     active.remove(n);
     done.insert(n.into());
+    E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     Ok(())
 }

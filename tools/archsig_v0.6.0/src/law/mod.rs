@@ -61,21 +61,53 @@ pub fn check_definition_term_body(
     ret: &Type,
     body: &str,
 ) -> Result<TermBody, Box<Issue>> {
+    check_definition_term_body_inner::<Box<Issue>>(
+        definitions,
+        namespace,
+        params,
+        ret,
+        body,
+        &mut Control::unlimited(),
+    )
+}
+
+pub(crate) fn check_definition_term_body_inner<E: InputError>(
+    definitions: &CheckedDefinitions,
+    namespace: &str,
+    params: &[(String, Type)],
+    ret: &Type,
+    body: &str,
+    control: &mut Control,
+) -> Result<TermBody, E> {
     if !definitions.vocabularies.contains_key(namespace) {
         return Err(Box::new(Issue::law(
             Code::Reference,
             (0, body.len()),
             format!("namespace `{namespace}` が登録されていない"),
-        )));
+        ))
+        .into());
     }
-    let tokens = lexer::lex(body.as_bytes())?;
-    let mut parser = parser::Parser::new(tokens, body.len());
+    let tokens = lexer::lex_inner::<E>(
+        body.as_bytes(),
+        usize::MAX,
+        control,
+        Checkpoint::ArchMapTerm,
+    )?;
+    let mut parser = parser::Parser::<E>::with_error(tokens, body.len(), control.clone())
+        .at_checkpoint(Checkpoint::ArchMapTerm);
     let root = parser.parse_expr(ast::Flags::default())?;
     parser.expect_end()?;
-    let mut checker = Checker::with_definitions(parser, Vec::new(), definitions);
+    let mut checker = Checker::with_definitions(
+        parser,
+        Vec::new(),
+        definitions,
+        control,
+        Checkpoint::ArchMapTerm,
+    )?;
     checker.term_namespace = Some(namespace.to_owned());
     let mut env = expr::Env::default();
     for (name, ty) in params {
+        E::checkpoint(control, Checkpoint::ArchMapTerm)?;
         let id = ast::Ident {
             name: name.clone(),
             span: (0, 0),
@@ -93,6 +125,7 @@ pub fn check_definition_term_body(
     checker.check(root, Some(ret), &mut env, &ctx)?;
     let mut types = std::mem::take(&mut checker.expr_types);
     types.resize(checker.parser.exprs.len(), None);
+    E::checkpoint(control, Checkpoint::ArchMapTerm)?;
     Ok(TermBody {
         exprs: std::mem::take(&mut checker.parser.exprs),
         root,
@@ -166,7 +199,8 @@ fn check_law_inner<E: InputError>(
     let bytes_digest = sha256_digest(bytes);
     let fail = |issue: E, model_digest: Option<String>| (issue, bytes_digest.clone(), model_digest);
     // 検査順: UTF-8、header の版、残りの字句と宣言の文法、名前・型・参照。
-    let head = lexer::lex_inner::<E>(bytes, 5, control).map_err(|i| fail(i, None))?;
+    let head = lexer::lex_inner::<E>(bytes, 5, control, Checkpoint::LawIteration)
+        .map_err(|i| fail(i, None))?;
     let header = parser::Parser::<E>::with_error(head, bytes.len(), control.clone())
         .header()
         .map_err(|i| fail(i, None))?;
@@ -182,20 +216,30 @@ fn check_law_inner<E: InputError>(
         };
         return Err(fail(Box::new(issue).into(), None));
     }
-    let tokens = lexer::lex_inner::<E>(bytes, usize::MAX, control).map_err(|i| fail(i, None))?;
+    let tokens = lexer::lex_inner::<E>(bytes, usize::MAX, control, Checkpoint::LawIteration)
+        .map_err(|i| fail(i, None))?;
     let digest = model_digest(&tokens);
     let mut parser = parser::Parser::<E>::with_error(tokens, bytes.len(), control.clone());
     parser.header().map_err(|i| fail(i, Some(digest.clone())))?;
     let readings = parser
         .readings()
         .map_err(|i| fail(i, Some(digest.clone())))?;
-    let mut checker = Checker::with_definitions(parser.into_uncontrolled(), readings, definitions);
+    let mut checker = Checker::with_definitions(
+        parser,
+        readings,
+        definitions,
+        control,
+        Checkpoint::LawSemantics,
+    )
+    .map_err(|i| fail(i, Some(digest.clone())))?;
     let result = (|| -> Result<(), E> {
-        checker.collect_names_controlled::<E>(control)?;
-        checker.check_bodies_controlled::<E>(control)
+        checker.collect_names_controlled(control)?;
+        checker.check_bodies_controlled(control)
     })();
     result.map_err(|i| fail(i, Some(digest.clone())))?;
-    let infos = checker.declaration_infos();
+    let infos = checker
+        .declaration_infos()
+        .map_err(|i| fail(i, Some(digest.clone())))?;
     let mut declarations = BTreeMap::new();
     for r in checker.ast.iter() {
         E::checkpoint(control, Checkpoint::LawIteration)

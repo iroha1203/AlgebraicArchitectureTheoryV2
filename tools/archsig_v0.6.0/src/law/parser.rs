@@ -22,6 +22,7 @@ type PResult<T, E> = Result<T, E>;
 
 pub struct Parser<E = Box<Issue>> {
     control: Control,
+    point: Checkpoint,
     error: std::marker::PhantomData<E>,
     pub toks: Vec<Token>,
     pub exprs: Vec<Expr>,
@@ -36,6 +37,7 @@ impl<E: InputError> Parser<E> {
         let limit = toks.len();
         Parser {
             control,
+            point: Checkpoint::LawIteration,
             error: std::marker::PhantomData,
             toks,
             exprs: Vec::new(),
@@ -198,7 +200,7 @@ impl<E: InputError> Parser<E> {
     pub fn readings(&mut self) -> PResult<Vec<Reading>, E> {
         let mut readings = Vec::new();
         loop {
-            E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+            E::checkpoint(&mut self.control, self.point)?;
             readings.push(self.reading()?);
             if self.peek().is_none() {
                 return Ok(readings);
@@ -215,7 +217,7 @@ impl<E: InputError> Parser<E> {
         let mut vocabularies = Vec::new();
         let mut decls = Vec::new();
         while !self.is_sym("}") {
-            E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+            E::checkpoint(&mut self.control, self.point)?;
             if self.eat_kw("use") {
                 let use_start = self.toks[self.pos - 1].span.0;
                 if self.eat_kw("vocabulary") {
@@ -340,7 +342,7 @@ impl<E: InputError> Parser<E> {
                 self.expect_kw("reads")?;
                 let mut reads = vec![self.parse_expr(Flags::default())?];
                 while self.eat_sym(",") {
-                    E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                    E::checkpoint(&mut self.control, self.point)?;
                     reads.push(self.parse_expr(Flags::default())?);
                 }
                 self.expect_sym(";")?;
@@ -414,7 +416,7 @@ impl<E: InputError> Parser<E> {
         let mut eqs = Vec::new();
         let mut end = None;
         for i in self.pos..self.limit {
-            E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+            E::checkpoint(&mut self.control, self.point)?;
             let t = &self.toks[i];
             if t.kind != TokenKind::Sym {
                 continue;
@@ -441,7 +443,7 @@ impl<E: InputError> Parser<E> {
         // 最上位の `=` を後ろから順に試し、guard と body がどちらも読める位置で区切る。
         let mut first_error = None;
         for &eq in eqs.iter().rev() {
-            E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+            E::checkpoint(&mut self.control, self.point)?;
             self.pos = start;
             let parsed = self
                 .parse_until(eq, |p| p.parse_expr(Flags::default()))
@@ -498,7 +500,7 @@ impl<E: InputError> Parser<E> {
         let mut fields = Vec::new();
         if !self.is_sym(")") {
             loop {
-                E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                E::checkpoint(&mut self.control, self.point)?;
                 let name = self.ident()?;
                 self.expect_sym(":")?;
                 fields.push(Field {
@@ -515,7 +517,7 @@ impl<E: InputError> Parser<E> {
     }
 
     pub fn ty(&mut self) -> PResult<TypeAst, E> {
-        E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+        E::checkpoint(&mut self.control, self.point)?;
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.ty_inner())
     }
 
@@ -589,7 +591,7 @@ impl<E: InputError> Parser<E> {
                     let mut args = Vec::new();
                     if !self.is_sym(")") {
                         loop {
-                            E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                            E::checkpoint(&mut self.control, self.point)?;
                             args.push(self.ty()?);
                             if !self.eat_sym(",") {
                                 break;
@@ -617,7 +619,7 @@ impl<E: InputError> Parser<E> {
         if self.eat_sym("(") {
             let mut items = vec![self.ty()?];
             while self.eat_sym(",") {
-                E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                E::checkpoint(&mut self.control, self.point)?;
                 items.push(self.ty()?);
             }
             self.expect_sym(")")?;
@@ -649,7 +651,7 @@ impl<E: InputError> Parser<E> {
     // ---- 式 ----
 
     pub fn parse_expr(&mut self, flags: Flags) -> PResult<ExprId, E> {
-        E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+        E::checkpoint(&mut self.control, self.point)?;
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.expr_inner(flags))
     }
 
@@ -707,7 +709,7 @@ impl<E: InputError> Parser<E> {
             self.expect_sym("{")?;
             let mut arms = Vec::new();
             loop {
-                E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                E::checkpoint(&mut self.control, self.point)?;
                 let pattern = self.pattern()?;
                 self.expect_sym("=>")?;
                 let body = self.parse_expr(Flags::default())?;
@@ -752,7 +754,7 @@ impl<E: InputError> Parser<E> {
         let mut depth = 0isize;
         let mut dots = Vec::new();
         for i in from..limit {
-            E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+            E::checkpoint(&mut self.control, self.point)?;
             let t = &self.toks[i];
             if t.kind != TokenKind::Sym {
                 continue;
@@ -774,7 +776,7 @@ impl<E: InputError> Parser<E> {
         let mut end = None;
         let mut first_error = None;
         for c in dots {
-            E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+            E::checkpoint(&mut self.control, self.point)?;
             let domain = if typed {
                 self.parse_type_at(from, c).map(QuantDomain::Type)
             } else {
@@ -886,12 +888,12 @@ impl<E: InputError> Parser<E> {
     }
 
     fn binary(&mut self, min_prec: u8, flags: Flags) -> PResult<ExprId, E> {
-        E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+        E::checkpoint(&mut self.control, self.point)?;
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
             let mut lhs = self.unary(flags)?;
             let mut compared = false;
             while let Some((op, prec)) = self.binop(flags) {
-                E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                E::checkpoint(&mut self.control, self.point)?;
                 if prec < min_prec {
                     break;
                 }
@@ -913,7 +915,7 @@ impl<E: InputError> Parser<E> {
     }
 
     fn unary(&mut self, flags: Flags) -> PResult<ExprId, E> {
-        E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+        E::checkpoint(&mut self.control, self.point)?;
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
             let start = self.here().0;
             let op = if self.is_kw("not") {
@@ -933,7 +935,7 @@ impl<E: InputError> Parser<E> {
     fn postfix(&mut self, flags: Flags) -> PResult<ExprId, E> {
         let mut base = self.primary(flags)?;
         loop {
-            E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+            E::checkpoint(&mut self.control, self.point)?;
             if self.is_sym(".") {
                 let dot_tok = self.pos;
                 match self.peek_at(1) {
@@ -967,7 +969,7 @@ impl<E: InputError> Parser<E> {
                 let mut args = Vec::new();
                 if !self.is_sym(")") {
                     loop {
-                        E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                        E::checkpoint(&mut self.control, self.point)?;
                         args.push(self.parse_expr(Flags::default())?);
                         if !self.eat_sym(",") {
                             break;
@@ -985,7 +987,7 @@ impl<E: InputError> Parser<E> {
             self.expect_sym("{")?;
             let mut updates = Vec::new();
             loop {
-                E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                E::checkpoint(&mut self.control, self.point)?;
                 let name = self.ident()?;
                 self.expect_sym("=")?;
                 updates.push((name, self.parse_expr(Flags::default())?));
@@ -1021,7 +1023,7 @@ impl<E: InputError> Parser<E> {
                 if self.eat_sym(",") {
                     let mut items = vec![first];
                     loop {
-                        E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                        E::checkpoint(&mut self.control, self.point)?;
                         items.push(self.parse_expr(Flags::default())?);
                         if !self.eat_sym(",") {
                             break;
@@ -1135,7 +1137,7 @@ impl<E: InputError> Parser<E> {
         let mut items = Vec::new();
         if !self.is_sym(close) {
             loop {
-                E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                E::checkpoint(&mut self.control, self.point)?;
                 items.push(self.parse_expr(Flags::default())?);
                 if !self.eat_sym(",") {
                     break;
@@ -1147,7 +1149,7 @@ impl<E: InputError> Parser<E> {
     }
 
     fn pattern(&mut self) -> PResult<Pattern, E> {
-        E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+        E::checkpoint(&mut self.control, self.point)?;
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
             if self.is_sym("_") {
                 let span = self.here();
@@ -1158,7 +1160,7 @@ impl<E: InputError> Parser<E> {
             if self.eat_sym("(") {
                 let mut args = vec![self.pattern()?];
                 while self.eat_sym(",") {
-                    E::checkpoint(&mut self.control, Checkpoint::LawIteration)?;
+                    E::checkpoint(&mut self.control, self.point)?;
                     args.push(self.pattern()?);
                 }
                 self.expect_sym(")")?;
@@ -1186,17 +1188,8 @@ impl Parser {
     }
 }
 impl<E: InputError> Parser<E> {
-    /// Syntax checking has completed; retain the same AST for semantic checking.
-    pub(super) fn into_uncontrolled(self) -> Parser {
-        Parser {
-            toks: self.toks,
-            exprs: self.exprs,
-            src_len: self.src_len,
-            pos: self.pos,
-            limit: self.limit,
-            memo: self.memo,
-            control: Control::unlimited(),
-            error: std::marker::PhantomData,
-        }
+    pub(super) fn at_checkpoint(mut self, point: Checkpoint) -> Self {
+        self.point = point;
+        self
     }
 }

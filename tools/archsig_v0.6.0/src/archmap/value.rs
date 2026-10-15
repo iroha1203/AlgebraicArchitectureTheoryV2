@@ -446,19 +446,22 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let body = as_string(body, &bptr)?;
                 let typed: Vec<(String, Type)> =
                     ps.iter().cloned().zip(args.iter().cloned()).collect();
-                let checked = crate::law::check_definition_term_body(
+                let checked = crate::law::check_definition_term_body_inner::<E>(
                     self.definitions,
                     self.namespace,
                     &typed,
                     ret,
                     &body,
+                    &mut self.control,
                 )
-                .map_err(|mut e| {
-                    e.location = Location::ArchMap {
-                        pointer: bptr.clone(),
-                        span: None,
-                    };
-                    e
+                .map_err(|failure| {
+                    failure.map_issue(|mut issue| {
+                        issue.location = Location::ArchMap {
+                            pointer: bptr.clone(),
+                            span: None,
+                        };
+                        issue
+                    })
                 })?;
                 Value::Term(Box::new(TermValue {
                     params: ps,

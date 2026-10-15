@@ -3,6 +3,7 @@
 use super::ast::*;
 use super::check::*;
 use super::model::*;
+use crate::json::InputError;
 use crate::types::Type;
 use num_bigint::BigUint;
 
@@ -33,27 +34,6 @@ pub enum Lookup<'a> {
     Found(&'a Binding),
     Captured,
     Missing,
-}
-
-impl Env {
-    pub fn lookup(&self, name: &str) -> Lookup<'_> {
-        match self.vars.iter().rposition(|b| b.name == name) {
-            Some(i) if i >= self.boundary => Lookup::Found(&self.vars[i]),
-            Some(_) => Lookup::Captured,
-            None => Lookup::Missing,
-        }
-    }
-
-    fn params(&self) -> Vec<Param> {
-        self.vars[self.boundary..]
-            .iter()
-            .map(|b| Param {
-                name: b.name.clone(),
-                ty: b.ty.clone(),
-                span: b.span,
-            })
-            .collect()
-    }
 }
 
 /// 式を検査する宣言の文脈。
@@ -99,7 +79,33 @@ fn collection_elem(t: &Type) -> Option<Type> {
     }
 }
 
-impl Checker {
+impl<E: InputError> Checker<E> {
+    fn lookup<'a>(&self, env: &'a Env, name: &str) -> CResult<Lookup<'a>, E> {
+        for (index, binding) in env.vars.iter().enumerate().rev() {
+            self.cooperate()?;
+            if binding.name == name {
+                return Ok(if index >= env.boundary {
+                    Lookup::Found(binding)
+                } else {
+                    Lookup::Captured
+                });
+            }
+        }
+        self.cooperate()?;
+        Ok(Lookup::Missing)
+    }
+    fn env_params(&self, env: &Env) -> CResult<Vec<Param>, E> {
+        let mut params = Vec::new();
+        for binding in &env.vars[env.boundary..] {
+            self.cooperate()?;
+            params.push(Param {
+                name: binding.name.clone(),
+                ty: binding.ty.clone(),
+                span: binding.span,
+            });
+        }
+        Ok(params)
+    }
     fn checkpoint(&self, env: &Env) -> Checkpoint {
         Checkpoint {
             refs: self.refs.len(),
@@ -120,9 +126,9 @@ impl Checker {
         self.parser.exprs[id].span
     }
 
-    pub fn bind(&mut self, env: &mut Env, id: &Ident, ty: Type, origin: Origin) -> CResult<()> {
-        check_binding_name(id)?;
-        if env.vars.iter().any(|b| b.name == id.name) {
+    pub fn bind(&mut self, env: &mut Env, id: &Ident, ty: Type, origin: Origin) -> CResult<(), E> {
+        check_binding_name::<E>(id)?;
+        if !matches!(self.lookup(env, &id.name)?, Lookup::Missing) {
             return duplicate(
                 id.span,
                 format!("束縛名 `{}` が外側の束縛と重なる", id.name),
@@ -147,8 +153,8 @@ impl Checker {
         }
     }
 
-    fn resolve_type_in(&mut self, ast: &TypeAst, env: &Env, ctx: &Ctx) -> CResult<Type> {
-        let index = env.params();
+    fn resolve_type_in(&mut self, ast: &TypeAst, env: &Env, ctx: &Ctx) -> CResult<Type, E> {
+        let index = self.env_params(env)?;
         let tctx = self.expr_type_ctx(ctx, &index);
         Ok(self.resolve_type(ast, &tctx)?.erase())
     }
@@ -160,7 +166,8 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
+        self.cooperate()?;
         let t = stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
             self.check_inner(id, expected, env, ctx)
         })?;
@@ -174,65 +181,85 @@ impl Checker {
             self.expr_types.resize(self.parser.exprs.len(), None);
         }
         self.expr_types[id] = Some(t.clone());
+        self.cooperate()?;
         Ok(t)
     }
 
-    fn check_bool(&mut self, id: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<()> {
+    fn check_bool(&mut self, id: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<(), E> {
         self.check(id, Some(&Type::Bool), env, ctx).map(|_| ())
     }
 
     /// 文脈の型がないと読めない式(整数 literal、短い constructor 名)。
-    fn needs_context(&mut self, id: ExprId, env: &Env) -> bool {
-        stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.needs_context_inner(id, env))
+    fn needs_context(&mut self, id: ExprId, env: &Env) -> CResult<bool, E> {
+        self.cooperate()?;
+        let result =
+            stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.needs_context_inner(id, env))?;
+        self.cooperate()?;
+        Ok(result)
     }
-
-    fn needs_context_inner(&mut self, id: ExprId, env: &Env) -> bool {
-        match self.parser.exprs[id].kind.clone() {
+    fn needs_context_inner(&mut self, id: ExprId, env: &Env) -> CResult<bool, E> {
+        Ok(match self.parser.exprs[id].kind.clone() {
             ExprKind::Int(_) => true,
             ExprKind::Unary {
                 op: UnOp::Neg,
                 operand,
             }
             | ExprKind::Group(operand)
-            | ExprKind::Some(operand) => self.needs_context(operand, env),
-            ExprKind::Let { body, .. } | ExprKind::Fn { body, .. } => self.needs_context(body, env),
-            ExprKind::Match { arms, .. } => arms.iter().all(|a| self.needs_context(a.body, env)),
+            | ExprKind::Some(operand) => self.needs_context(operand, env)?,
+            ExprKind::Let { body, .. } | ExprKind::Fn { body, .. } => {
+                self.needs_context(body, env)?
+            }
+            ExprKind::Match { arms, .. } => {
+                for arm in arms {
+                    self.cooperate()?;
+                    if !self.needs_context(arm.body, env)? {
+                        return Ok(false);
+                    }
+                }
+                true
+            }
             ExprKind::Binary {
                 op: BinOp::Add | BinOp::Sub | BinOp::Mul,
                 lhs,
                 rhs,
-            } => self.needs_context(lhs, env) && self.needs_context(rhs, env),
-            ExprKind::Tuple(items) => items.iter().any(|&i| self.needs_context(i, env)),
+            } => self.needs_context(lhs, env)? && self.needs_context(rhs, env)?,
+            ExprKind::Tuple(items) => {
+                for item in items {
+                    self.cooperate()?;
+                    if self.needs_context(item, env)? {
+                        return Ok(true);
+                    }
+                }
+                false
+            }
             ExprKind::If {
                 then_branch,
                 else_branch,
                 ..
-            } => self.needs_context(then_branch, env) && self.needs_context(else_branch, env),
-            ExprKind::Dotted(parts) => parts.len() == 1 && self.is_unknown_short(&parts[0], env),
+            } => self.needs_context(then_branch, env)? && self.needs_context(else_branch, env)?,
+            ExprKind::Dotted(parts) => parts.len() == 1 && self.is_unknown_short(&parts[0], env)?,
             ExprKind::Call { callee, .. } => match &self.parser.exprs[callee].kind {
                 ExprKind::Dotted(parts) if parts.len() == 1 => {
                     let p = parts[0].clone();
-                    !BUILTIN_OPS.contains(&p.name.as_str()) && self.is_unknown_short(&p, env)
+                    !BUILTIN_OPS.contains(&p.name.as_str()) && self.is_unknown_short(&p, env)?
                 }
                 _ => false,
             },
             _ => false,
-        }
+        })
     }
-
-    fn is_unknown_short(&mut self, p: &Ident, env: &Env) -> bool {
-        matches!(env.lookup(&p.name), Lookup::Missing)
-            && self.resolve_prefix_silent_ref(p).is_none()
+    fn is_unknown_short(&mut self, p: &Ident, env: &Env) -> CResult<bool, E> {
+        Ok(matches!(self.lookup(env, &p.name)?, Lookup::Missing)
+            && self.resolve_prefix_silent_ref(p)?.is_none())
     }
-
-    fn resolve_prefix_silent_ref(&mut self, p: &Ident) -> Option<(Target, usize)> {
+    fn resolve_prefix_silent_ref(&mut self, p: &Ident) -> CResult<Option<(Target, usize)>, E> {
         let reading = self.current_reading;
         self.resolve_prefix_silent(reading, std::slice::from_ref(p))
     }
 
     /// 二つの被演算子の共通の型。文脈の要る側を後に読む。
-    fn pair_type(&mut self, l: ExprId, r: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<Type> {
-        if self.needs_context(l, env) && !self.needs_context(r, env) {
+    fn pair_type(&mut self, l: ExprId, r: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<Type, E> {
+        if self.needs_context(l, env)? && !self.needs_context(r, env)? {
             let t = self.check(r, None, env, ctx)?;
             self.check(l, Some(&t), env, ctx)?;
             Ok(t)
@@ -249,7 +276,7 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let span = self.span(id);
         let kind = self.parser.exprs[id].kind.clone();
         match kind {
@@ -279,6 +306,7 @@ impl Checker {
                 };
                 let mut out = Vec::new();
                 for (i, t) in items.iter().zip(parts) {
+                    self.cooperate()?;
                     out.push(self.check(*i, t.as_ref(), env, ctx)?);
                 }
                 Ok(Type::Tuple(out))
@@ -295,7 +323,7 @@ impl Checker {
                 operand,
             } => {
                 let t = self.check(operand, expected, env, ctx)?;
-                if !t.is_numeric() {
+                if !self.is_numeric(&t)? {
                     return type_error(span, &Type::Z, &t, "単項 - は Z・Q・Fp とその組");
                 }
                 Ok(t)
@@ -366,16 +394,18 @@ impl Checker {
             ExprKind::ListLit { ty, items } => {
                 let t = self.resolve_type_in(&ty, env, ctx)?;
                 for i in items {
+                    self.cooperate()?;
                     self.check(i, Some(&t), env, ctx)?;
                 }
                 Ok(Type::List(Box::new(t)))
             }
             ExprKind::SetLit { ty, items } => {
                 let t = self.resolve_type_in(&ty, env, ctx)?;
-                if self.has_term_or_path(&t) {
+                if self.has_term_or_path(&t)? {
                     return syntax(ty.span(), "Set の要素型は Term・Path を含まない");
                 }
                 for i in items {
+                    self.cooperate()?;
                     self.check(i, Some(&t), env, ctx)?;
                 }
                 Ok(Type::Set(Box::new(t)))
@@ -402,7 +432,7 @@ impl Checker {
                 }
                 let t = self.check(elem, None, env, ctx)?;
                 env.vars.truncate(mark);
-                if self.has_term_or_path(&t) {
+                if self.has_term_or_path(&t)? {
                     return syntax(self.span(elem), "Set の要素型は Term・Path を含まない");
                 }
                 Ok(Type::Set(Box::new(t)))
@@ -454,7 +484,7 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         match op {
             BinOp::And | BinOp::Or | BinOp::Implies => {
                 self.check_bool(lhs, env, ctx)?;
@@ -468,7 +498,7 @@ impl Checker {
                 } else {
                     self.pair_type(lhs, rhs, env, ctx)?
                 };
-                if !t.is_numeric() {
+                if !self.is_numeric(&t)? {
                     return type_error(span, &Type::Z, &t, "算術は Z・Q・Fp とその組");
                 }
                 Ok(t)
@@ -500,7 +530,7 @@ impl Checker {
         }
     }
 
-    fn project_field(&mut self, base: &Type, name: &Ident, ctx: &Ctx) -> CResult<Type> {
+    fn project_field(&mut self, base: &Type, name: &Ident, ctx: &Ctx) -> CResult<Type, E> {
         if ctx.term {
             return reference(name.span, "Term の本体は field を読めない");
         }
@@ -510,12 +540,11 @@ impl Checker {
                 format!("field `{}` は参照型の値から読む", name.name),
             );
         };
-        let Some(field) = self
-            .sigs
-            .get(&decl)
-            .and_then(|s| s.field(&name.name))
-            .cloned()
-        else {
+        let field = match self.sigs.get(&decl) {
+            Some(signature) => self.signature_field(signature, &name.name)?,
+            None => None,
+        };
+        let Some(field) = field else {
             return reference(
                 name.span,
                 format!("`{decl}` に field `{}` はない", name.name),
@@ -531,12 +560,13 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let head = &parts[0];
-        match env.lookup(&head.name) {
+        match self.lookup(env, &head.name)? {
             Lookup::Found(b) => {
                 let mut t = b.ty.clone();
                 for p in &parts[1..] {
+                    self.cooperate()?;
                     t = self.project_field(&t, p, ctx)?;
                 }
                 return Ok(t);
@@ -606,7 +636,7 @@ impl Checker {
         expected: Option<&Type>,
         reading: usize,
         span: Span,
-    ) -> CResult<Option<(String, usize)>> {
+    ) -> CResult<Option<(String, usize)>, E> {
         let expected = expected.map(Type::erase);
         let Some(Type::Data(d)) = expected.as_ref() else {
             return Ok(None);
@@ -614,10 +644,18 @@ impl Checker {
         let Some(Signature::Data { constructors }) = self.sigs.get(d) else {
             return Ok(None);
         };
-        let Some(i) = constructors.iter().position(|c| c.name == name) else {
+        let mut constructor_index = None;
+        for (index, constructor) in constructors.iter().enumerate() {
+            self.cooperate()?;
+            if constructor.name == name {
+                constructor_index = Some(index);
+                break;
+            }
+        }
+        let Some(i) = constructor_index else {
             return Ok(None);
         };
-        if !self.primitive_visible(reading, d, true) {
+        if !self.primitive_visible(reading, d, true)? {
             return reference(
                 span,
                 format!("constructor `{name}` の短名をこの scope で使えない"),
@@ -634,7 +672,7 @@ impl Checker {
         args: &[ExprId],
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let Some(Signature::Data { constructors }) = self.sigs.get(data).cloned() else {
             unreachable!()
         };
@@ -647,16 +685,18 @@ impl Checker {
         }
         self.record(span, full(data, &[&c.name]));
         for (a, t) in args.iter().zip(&c.args) {
+            self.cooperate()?;
             self.check(*a, Some(t), env, ctx)?;
         }
         Ok(Type::Data(data.to_owned()))
     }
 
-    fn strip_groups(&self, mut id: ExprId) -> ExprId {
+    fn strip_groups(&self, mut id: ExprId) -> CResult<ExprId, E> {
         while let ExprKind::Group(inner) = self.parser.exprs[id].kind {
+            self.cooperate()?;
             id = inner;
         }
-        id
+        Ok(id)
     }
 
     fn resolve_callee(
@@ -665,14 +705,14 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<(Callee, Span)> {
-        let inner = self.strip_groups(callee);
+    ) -> CResult<(Callee, Span), E> {
+        let inner = self.strip_groups(callee)?;
         let span = self.span(inner);
         match self.parser.exprs[inner].kind.clone() {
             ExprKind::ThenOp => Ok((Callee::Builtin("then"), span)),
             ExprKind::Dotted(parts) => {
                 let head = &parts[0];
-                match env.lookup(&head.name) {
+                match self.lookup(env, &head.name)? {
                     Lookup::Found(_) => {
                         return Ok((Callee::Value(self.check(callee, None, env, ctx)?), span));
                     }
@@ -728,7 +768,7 @@ impl Checker {
         }
     }
 
-    fn arity(&self, span: Span, args: &[ExprId], n: usize, what: &str) -> CResult<()> {
+    fn arity(&self, span: Span, args: &[ExprId], n: usize, what: &str) -> CResult<(), E> {
         if args.len() != n {
             return syntax(span, format!("{what} の引数は {n} 個"));
         }
@@ -744,7 +784,7 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let (target, name_span) = self.resolve_callee(callee, expected, env, ctx)?;
         match target {
             Callee::Ctor(data, index) => self.ctor_value(&data, index, name_span, args, env, ctx),
@@ -766,6 +806,7 @@ impl Checker {
                         .push((ctx.decl.clone(), view.clone(), name_span));
                 }
                 for (a, p) in args.iter().zip(&params) {
+                    self.cooperate()?;
                     self.check(*a, Some(&p.ty.erase()), env, ctx)?;
                 }
                 Ok(returns.erase())
@@ -782,6 +823,7 @@ impl Checker {
                     }
                     self.arity(span, args, ps.len(), "Term の適用")?;
                     for (a, p) in args.iter().zip(ps.iter()) {
+                        self.cooperate()?;
                         self.check(*a, Some(p), env, ctx)?;
                     }
                     Ok((**r).clone())
@@ -801,15 +843,15 @@ impl Checker {
         span: Span,
         env: &Env,
         ctx: &Ctx,
-    ) -> CResult<()> {
+    ) -> CResult<(), E> {
         let rec = ctx.rec.clone();
         let Some((index, data)) = rec else {
             return cycle(span, "view の自己再帰には左端の data parameter が要る");
         };
-        let arg = self.strip_groups(args[index]);
+        let arg = self.strip_groups(args[index])?;
         if let ExprKind::Dotted(parts) = &self.parser.exprs[arg].kind
             && parts.len() == 1
-            && let Lookup::Found(b) = env.lookup(&parts[0].name)
+            && let Lookup::Found(b) = self.lookup(env, &parts[0].name)?
             && b.origin == Origin::RecChild
             && b.ty == Type::Data(data.clone())
         {
@@ -831,7 +873,7 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let path_op = matches!(b, "path" | "identity" | "then" | "source" | "target");
         if ctx.term && path_op {
             return reference(name_span, format!("Term の本体は `{b}` を呼べない"));
@@ -863,7 +905,7 @@ impl Checker {
                 if b == "count" {
                     return Ok(Type::Z);
                 }
-                if !e.is_numeric() {
+                if !self.is_numeric(&e)? {
                     return type_error(
                         self.span(args[0]),
                         &Type::List(Box::new(Type::Z)),
@@ -942,7 +984,7 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let term_ctx = Ctx {
             term: true,
             ..ctx.clone()
@@ -953,6 +995,7 @@ impl Checker {
         let mut types = Vec::new();
         let result = (|| {
             for p in params {
+                self.cooperate()?;
                 let t = self.resolve_type_in(&p.ty, env, &term_ctx)?;
                 self.bind(env, &p.name, t.clone(), Origin::Other)?;
                 types.push(t);
@@ -966,7 +1009,7 @@ impl Checker {
         env.vars.truncate(mark);
         env.boundary = saved_boundary;
         let ret = result?;
-        if self.has_reference(&ret) {
+        if self.has_reference(&ret)? {
             return syntax(
                 self.span(body),
                 "Term の戻り型は参照・Map・Path を含まない値型",
@@ -985,7 +1028,7 @@ impl Checker {
         expected: Option<&Type>,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let st = self.check(scrutinee, None, env, ctx)?;
         // data 型の値は constructor で場合分けする。その他の型の値は `_` と束縛だけで受ける。
         let constructors = match &st {
@@ -996,9 +1039,9 @@ impl Checker {
             _ => 0,
         };
         let is_data = matches!(st, Type::Data(_));
-        let rec_scrutinee = match &self.parser.exprs[self.strip_groups(scrutinee)].kind {
+        let rec_scrutinee = match &self.parser.exprs[self.strip_groups(scrutinee)?].kind {
             ExprKind::Dotted(parts) if parts.len() == 1 => {
-                match (env.lookup(&parts[0].name), &ctx.rec) {
+                match (self.lookup(env, &parts[0].name)?, &ctx.rec) {
                     (Lookup::Found(b), Some((i, _))) => b.origin == Origin::Param(*i),
                     _ => false,
                 }
@@ -1012,6 +1055,7 @@ impl Checker {
         let mut result: Option<Type> = expected.map(Type::erase);
         let mut pending = Vec::new();
         for arm in arms {
+            self.cooperate()?;
             if catch_all {
                 return syntax(arm.pattern.span(), "到達できない分岐");
             }
@@ -1044,7 +1088,7 @@ impl Checker {
                     let t = t.clone();
                     self.check(arm.body, Some(&t), env, ctx)?;
                 }
-                None if self.needs_context(arm.body, env) => {
+                None if self.needs_context(arm.body, env)? => {
                     pending.push((arm.body, env.vars[mark..].to_vec()))
                 }
                 None => result = Some(self.check(arm.body, None, env, ctx)?),
@@ -1058,6 +1102,7 @@ impl Checker {
             );
         }
         for (body, vars) in pending {
+            self.cooperate()?;
             let mark = env.vars.len();
             env.vars.extend(vars);
             let t = self.check(body, result.as_ref(), env, ctx)?;
@@ -1076,14 +1121,14 @@ impl Checker {
         ctx: &Ctx,
         rec_scrutinee: bool,
         top: bool,
-    ) -> CResult<Option<PatternCover>> {
+    ) -> CResult<Option<PatternCover>, E> {
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || match p {
             Pattern::Wild(_) => Ok(None),
             Pattern::Name(id) => {
                 if let Some((data, index)) =
                     self.short_ctor(&id.name, Some(ty), ctx.reading, id.span)?
                 {
-                    if !matches!(env.lookup(&id.name), Lookup::Missing) {
+                    if !matches!(self.lookup(env, &id.name)?, Lookup::Missing) {
                         return syntax(
                             id.span,
                             format!(
@@ -1111,7 +1156,8 @@ impl Checker {
                 let resolved = if name.parts.len() == 1 {
                     let hit =
                         self.short_ctor(&name.parts[0].name, Some(ty), ctx.reading, name.span())?;
-                    if hit.is_some() && !matches!(env.lookup(&name.parts[0].name), Lookup::Missing)
+                    if hit.is_some()
+                        && !matches!(self.lookup(env, &name.parts[0].name)?, Lookup::Missing)
                     {
                         return syntax(
                             name.span(),
@@ -1158,6 +1204,7 @@ impl Checker {
                 let mut covers = true;
                 let mut plain = true;
                 for (a, t) in args.iter().zip(&constructors[index].args) {
+                    self.cooperate()?;
                     let arg_covers = match self.check_pattern(a, t, env, ctx, child_rec, false)? {
                         None => true,
                         Some(inner) => {
@@ -1188,7 +1235,7 @@ impl Checker {
         args: &[Pattern],
         _env: &mut Env,
         _ctx: &Ctx,
-    ) -> CResult<()> {
+    ) -> CResult<(), E> {
         let Some(Signature::Data { constructors }) = self.sigs.get(data) else {
             unreachable!()
         };
@@ -1216,20 +1263,26 @@ impl Checker {
         span: Span,
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<()> {
+    ) -> CResult<(), E> {
         let (domain, body) = match split {
             QuantSplit::Fixed { domain, body } => (domain.clone(), *body),
             QuantSplit::Candidates(cands) => {
                 let mut valid = Vec::new();
                 for (domain, body) in cands {
+                    self.cooperate()?;
                     let cp = self.checkpoint(env);
-                    let ok = match domain {
-                        QuantDomain::In(d) => {
-                            matches!(self.check(*d, None, env, ctx), Ok(t) if collection_elem(&t).is_some())
-                        }
-                        QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx).is_ok(),
+                    let candidate = match domain {
+                        QuantDomain::In(d) => self
+                            .check(*d, None, env, ctx)
+                            .map(|t| collection_elem(&t).is_some()),
+                        QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx).map(|_| true),
                     };
                     self.rollback(cp, env);
+                    let ok = match candidate {
+                        Ok(ok) => ok,
+                        Err(error) if error.is_stopped() => return Err(error),
+                        Err(_) => false,
+                    };
                     if ok {
                         valid.push((domain.clone(), *body));
                     }
@@ -1266,7 +1319,7 @@ impl Checker {
         Ok(())
     }
 
-    fn quant_domain(&mut self, d: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<Type> {
+    fn quant_domain(&mut self, d: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<Type, E> {
         let t = self.check(d, None, env, ctx)?;
         match collection_elem(&t) {
             Some(e) => Ok(e),

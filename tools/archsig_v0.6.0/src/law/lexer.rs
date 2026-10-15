@@ -41,14 +41,20 @@ pub fn lex(bytes: &[u8]) -> Result<Vec<Token>, Box<Issue>> {
 
 /// 先頭から `max` 個までの字句。header の版を、残りの字句より先に読むために使う。
 pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
-    lex_inner(bytes, max, &mut Control::unlimited())
+    lex_inner(
+        bytes,
+        max,
+        &mut Control::unlimited(),
+        Checkpoint::LawIteration,
+    )
 }
 pub(super) fn lex_inner<E: InputError>(
     bytes: &[u8],
     max: usize,
     control: &mut Control,
+    point: Checkpoint,
 ) -> Result<Vec<Token>, E> {
-    E::checkpoint(control, Checkpoint::LawIteration)?;
+    E::checkpoint(control, point)?;
     if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
         return Err((Box::new(Issue::law(Code::Syntax, (0, 3), "BOM は使えない"))).into());
     }
@@ -61,19 +67,19 @@ pub(super) fn lex_inner<E: InputError>(
     let mut tokens = Vec::new();
     let mut i = 0;
     while i < src.len() && tokens.len() < max {
-        E::checkpoint(control, Checkpoint::LawIteration)?;
+        E::checkpoint(control, point)?;
         let c = src[i];
         if matches!(c, b' ' | b'\t' | b'\r' | b'\n') {
             i += 1;
         } else if src[i..].starts_with(b"//") {
             while i < src.len() && src[i] != b'\n' {
-                E::checkpoint(control, Checkpoint::LawIteration)?;
+                E::checkpoint(control, point)?;
                 i += 1;
             }
         } else if c.is_ascii_alphabetic() {
             let start = i;
             while i < src.len() && (src[i].is_ascii_alphanumeric() || src[i] == b'_') {
-                E::checkpoint(control, Checkpoint::LawIteration)?;
+                E::checkpoint(control, point)?;
                 i += 1;
             }
             tokens.push(Token {
@@ -84,7 +90,7 @@ pub(super) fn lex_inner<E: InputError>(
         } else if c.is_ascii_digit() {
             let start = i;
             while i < src.len() && src[i].is_ascii_digit() {
-                E::checkpoint(control, Checkpoint::LawIteration)?;
+                E::checkpoint(control, point)?;
                 i += 1;
             }
             if c == b'0' && i - start > 1 {
@@ -101,7 +107,7 @@ pub(super) fn lex_inner<E: InputError>(
                 span: (start, i),
             });
         } else if c == b'"' {
-            let (value, end) = lex_string::<E>(text, i, control)?;
+            let (value, end) = lex_string::<E>(text, i, control, point)?;
             tokens.push(Token {
                 kind: TokenKind::Str,
                 text: value,
@@ -140,12 +146,13 @@ fn lex_string<E: InputError>(
     text: &str,
     start: usize,
     control: &mut Control,
+    point: Checkpoint,
 ) -> Result<(String, usize), E> {
     let src = text.as_bytes();
     let mut out = String::new();
     let mut i = start + 1;
     loop {
-        E::checkpoint(control, Checkpoint::LawIteration)?;
+        E::checkpoint(control, point)?;
         let Some(&c) = src.get(i) else {
             return Err((Box::new(Issue::law(
                 Code::Syntax,

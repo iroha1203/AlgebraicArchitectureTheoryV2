@@ -78,26 +78,32 @@ pub enum Signature {
 
 impl Signature {
     /// 検査済み共通署名を式検査の lookup へ接続する。原始型の検査・位置は定義側が所有する。
-    pub(crate) fn from_primitive(sig: &crate::definition::PrimitiveSignature) -> Self {
+    pub(crate) fn from_primitive<E: crate::json::InputError>(
+        sig: &crate::definition::PrimitiveSignature,
+        control: &mut crate::observed::control::Control,
+        point: crate::observed::control::Checkpoint,
+    ) -> Result<Self, E> {
         use crate::definition::PrimitiveSignature as P;
-        let fields = |fs: &[crate::definition::Field]| {
-            fs.iter()
-                .map(|f| Param {
-                    name: f.name.clone(),
-                    ty: f.ty.clone(),
-                    // 原始 field は Law の出現を持たない。この値を Location に出力しない。
+        let mut fields = |fs: &[crate::definition::Field]| -> Result<Vec<Param>, E> {
+            let mut fields = Vec::new();
+            for field in fs {
+                E::checkpoint(control, point)?;
+                fields.push(Param {
+                    name: field.name.clone(),
+                    ty: field.ty.clone(),
                     span: (0, 0),
-                })
-                .collect()
+                });
+            }
+            Ok(fields)
         };
-        match sig {
+        Ok(match sig {
             P::Entity {
                 parameters,
                 fields: fs,
                 owner,
             } => Self::Entity {
-                params: fields(parameters),
-                members: fields(fs),
+                params: fields(parameters)?,
+                members: fields(fs)?,
                 owner: owner.clone(),
             },
             P::Arrow {
@@ -106,8 +112,8 @@ impl Signature {
                 owner,
                 endpoint,
             } => Self::Arrow {
-                params: fields(parameters),
-                members: fields(fs),
+                params: fields(parameters)?,
+                members: fields(fs)?,
                 owner: owner.clone(),
                 endpoint: endpoint.clone(),
             },
@@ -120,27 +126,35 @@ impl Signature {
                 alignments,
                 implicit,
             } => Self::Correspondence {
-                params: fields(parameters),
-                members: fields(fs),
+                params: fields(parameters)?,
+                members: fields(fs)?,
                 from: from.clone(),
                 to: to.clone(),
                 maps: maps.clone(),
-                alignments: alignments
-                    .iter()
-                    .map(|a| (a.source.clone(), a.target.clone()))
-                    .collect(),
+                alignments: {
+                    let mut out = Vec::new();
+                    for alignment in alignments {
+                        E::checkpoint(control, point)?;
+                        out.push((alignment.source.clone(), alignment.target.clone()));
+                    }
+                    out
+                },
                 implicit: implicit.clone(),
             },
             P::Data { constructors } => Self::Data {
-                constructors: constructors
-                    .iter()
-                    .map(|c| CtorSig {
-                        name: c.name.clone(),
-                        args: c.arguments.clone(),
-                    })
-                    .collect(),
+                constructors: {
+                    let mut out = Vec::new();
+                    for constructor in constructors {
+                        E::checkpoint(control, point)?;
+                        out.push(CtorSig {
+                            name: constructor.name.clone(),
+                            args: constructor.arguments.clone(),
+                        });
+                    }
+                    out
+                },
             },
-        }
+        })
     }
 
     pub fn kind(&self) -> &'static str {

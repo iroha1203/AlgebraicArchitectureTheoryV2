@@ -9,17 +9,16 @@ use crate::observed::control::{Checkpoint, Control};
 use crate::types::Type;
 use std::collections::{BTreeMap, BTreeSet};
 
-impl Checker {
-    pub(super) fn check_bodies_controlled<E: InputError>(
-        &mut self,
-        control: &mut Control,
-    ) -> Result<(), E> {
+impl<E: InputError> Checker<E> {
+    pub(super) fn check_bodies_controlled(&mut self, control: &mut Control) -> Result<(), E> {
         let ast = self.ast.clone();
         // 先に全 view の署名を解決し、本体から呼べるようにする。
         for (ri, r) in ast.iter().enumerate() {
+            self.cooperate()?;
             E::checkpoint(control, Checkpoint::LawIteration)?;
             self.current_reading = ri;
             for d in &r.decls {
+                self.cooperate()?;
                 E::checkpoint(control, Checkpoint::LawIteration)?;
                 if let DeclKind::View {
                     params,
@@ -52,9 +51,11 @@ impl Checker {
             }
         }
         for (ri, r) in ast.iter().enumerate() {
+            self.cooperate()?;
             E::checkpoint(control, Checkpoint::LawIteration)?;
             self.current_reading = ri;
             for d in &r.decls {
+                self.cooperate()?;
                 E::checkpoint(control, Checkpoint::LawIteration)?;
                 if d.kind.is_primitive() {
                     continue;
@@ -76,9 +77,10 @@ impl Checker {
         Ok(())
     }
 
-    fn params(&mut self, ri: usize, fields: &[Field], change: bool) -> CResult<Vec<Param>> {
+    fn params(&mut self, ri: usize, fields: &[Field], change: bool) -> CResult<Vec<Param>, E> {
         let mut ps: Vec<Param> = Vec::new();
         for (i, f) in fields.iter().enumerate() {
+            self.cooperate()?;
             let value_only = change && i > 0;
             let tctx = TypeCtx {
                 reading: ri,
@@ -106,9 +108,10 @@ impl Checker {
         Ok(ps)
     }
 
-    fn env_for(&mut self, params: &[Param]) -> CResult<Env> {
+    fn env_for(&mut self, params: &[Param]) -> CResult<Env, E> {
         let mut env = Env::default();
         for (i, p) in params.iter().enumerate() {
+            self.cooperate()?;
             let id = Ident {
                 name: p.name.clone(),
                 span: p.span,
@@ -125,7 +128,7 @@ impl Checker {
         name: &str,
         d: &Decl,
         exprs: &mut Vec<ResolvedExpression>,
-    ) -> CResult<Signature> {
+    ) -> CResult<Signature, E> {
         let mut ctx = Ctx {
             reading: ri,
             decl: name.to_owned(),
@@ -149,10 +152,14 @@ impl Checker {
                     unreachable!()
                 };
                 ctx.is_view = true;
-                ctx.rec = params.iter().enumerate().find_map(|(i, p)| match &p.ty {
-                    Type::Data(dname) => Some((i, dname.clone())),
-                    _ => None,
-                });
+                ctx.rec = None;
+                for (index, parameter) in params.iter().enumerate() {
+                    self.cooperate()?;
+                    if let Type::Data(name) = &parameter.ty {
+                        ctx.rec = Some((index, name.clone()));
+                        break;
+                    }
+                }
                 let mut env = self.env_for(&params)?;
                 let t = self.check(*body, Some(&returns), &mut env, &ctx)?;
                 record(self, ExpressionKind::Body, *body, t);
@@ -195,6 +202,7 @@ impl Checker {
                     record(self, ExpressionKind::Guard, *g, t);
                 }
                 for r in reads {
+                    self.cooperate()?;
                     let t = self.check(*r, None, &mut env, &ctx)?;
                     record(self, ExpressionKind::Read, *r, t);
                 }
@@ -275,7 +283,7 @@ impl Checker {
         params: &[Param],
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.check_change_result(body, params, env, ctx)
         })?;
@@ -293,7 +301,7 @@ impl Checker {
         params: &[Param],
         env: &mut Env,
         ctx: &Ctx,
-    ) -> CResult<Type> {
+    ) -> CResult<Type, E> {
         let span = self.parser.exprs[body].span;
         let kind = self.parser.exprs[body].kind.clone();
         let result = match kind {
@@ -330,6 +338,7 @@ impl Checker {
         let first = &params[0];
         let mut target = base;
         while let ExprKind::Group(inner) = self.parser.exprs[target].kind {
+            self.cooperate()?;
             target = inner;
         }
         let is_first = matches!(&self.parser.exprs[target].kind, ExprKind::Dotted(p) if p.len() == 1 && p[0].name == first.name);
@@ -344,7 +353,8 @@ impl Checker {
         let sig = self.sigs.get(&entity).cloned().expect("entity の署名");
         let mut seen = BTreeSet::new();
         for (field, value) in &updates {
-            let Some(f) = sig.field(&field.name).cloned() else {
+            self.cooperate()?;
+            let Some(f) = self.signature_field(&sig, &field.name)? else {
                 return reference(
                     field.span,
                     format!("`{entity}` に field `{}` はない", field.name),
@@ -356,7 +366,7 @@ impl Checker {
                     format!("field `{}` の更新が重複している", field.name),
                 );
             }
-            if field.name == "owner" || self.has_reference(&f.ty) {
+            if field.name == "owner" || self.has_reference(&f.ty)? {
                 return syntax(
                     field.span,
                     "change は owner・参照・Map を含む field を更新しない",
@@ -374,39 +384,47 @@ impl Checker {
     }
 
     /// view の相互呼出しは非循環。自己再帰は構造再帰として別に検査済み。
-    fn check_view_cycles(&mut self) -> CResult<()> {
+    fn check_view_cycles(&mut self) -> CResult<(), E> {
         let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
         for (a, b, _) in &self.view_edges {
+            self.cooperate()?;
             edges.entry(a.clone()).or_default().insert(b.clone());
         }
-        if let Some(n) = find_cycle(&edges) {
-            let span = self
-                .view_edges
-                .iter()
-                .find(|(a, _, _)| *a == n)
-                .map(|e| e.2)
-                .expect("閉路の辺");
+        if let Some(n) = find_cycle::<E>(&edges, &mut self.control.clone())? {
+            let mut cycle_span = None;
+            for (source, _, span) in &self.view_edges {
+                E::checkpoint(&mut self.control.clone(), Checkpoint::LawCycle)?;
+                if *source == n {
+                    cycle_span = Some(*span);
+                    break;
+                }
+            }
+            let span = cycle_span.expect("閉路の辺");
             return cycle(span, format!("view `{n}` を含む相互呼出しが循環している"));
         }
         Ok(())
     }
 
-    fn check_reading_cycles(&mut self) -> CResult<()> {
+    fn check_reading_cycles(&mut self) -> CResult<(), E> {
         let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
         for (a, b, _) in &self.reading_edges {
+            self.cooperate()?;
             edges
                 .entry(a.to_string())
                 .or_default()
                 .insert(b.to_string());
         }
-        if let Some(n) = find_cycle(&edges) {
+        if let Some(n) = find_cycle::<E>(&edges, &mut self.control.clone())? {
             let i: usize = n.parse().expect("reading の位置");
-            let span = self
-                .reading_edges
-                .iter()
-                .find(|(a, _, _)| *a == i)
-                .map(|e| e.2)
-                .expect("閉路の辺");
+            let mut cycle_span = None;
+            for (source, _, span) in &self.reading_edges {
+                E::checkpoint(&mut self.control.clone(), Checkpoint::LawCycle)?;
+                if *source == i {
+                    cycle_span = Some(*span);
+                    break;
+                }
+            }
+            let span = cycle_span.expect("閉路の辺");
             return cycle(
                 span,
                 format!(
