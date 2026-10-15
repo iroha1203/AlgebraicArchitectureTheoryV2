@@ -960,6 +960,181 @@ pub fn evaluate_observed(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    fn value_examples(missing: bool) -> ObservedEvaluation {
+        let law = include_str!("../../tests/fixtures/counter.law").replace(
+            "view amount(s: State): Z = s.count;",
+            "view amount(s: State): Z = s.count;\n  view zero(s: State): Z = 0;\n  view yes(s: State): Bool = true;\n  view no(s: State): Bool = false;\n  view negative(s: State): Z = -s.count;",
+        );
+        let mut map = include_str!("../../tests/fixtures/counter.archmap.json").to_owned();
+        if missing {
+            map = map.replace(
+                r#"{"id": "count", "subject": "s", "field": "Counter.State.count", "value": "2", "origin": "model"}"#,
+                "",
+            );
+        }
+        evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![include_bytes!("../../tests/fixtures/counter.atoms.json").to_vec()],
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            &[
+                "amount=evaluate(CountCheck.amount,s=@v/s)",
+                "zero=evaluate(CountCheck.zero,s=@v/s)",
+                "yes=evaluate(CountCheck.yes,s=@v/s)",
+                "no=evaluate(CountCheck.no,s=@v/s)",
+                "negative=evaluate(CountCheck.negative,s=@v/s)",
+                "judgment=check(CountCheck.nonnegative,s=@v/s)",
+            ],
+            &mut Control::unlimited(),
+        )
+        .unwrap()
+    }
+    #[test]
+    fn rejects_literal_evaluation_value_substitution_and_omission() {
+        let result = value_examples(false);
+        assert_eq!(result.status(), "complete");
+        let mut control = Control::unlimited();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let mut graph = Graph::new(&control);
+        graph.nodes = result.nodes.clone();
+        for (answer, replacement) in [(1, 0), (3, 2)] {
+            let evaluation = result.answers[answer].outputs["evaluation"];
+            let replacement = result.answers[replacement].outputs["value"];
+            assert!(replacement.0 < evaluation.0, "差替え先は既出の正しい値");
+            environment
+                .validate(&graph, &graph.nodes[evaluation.0])
+                .unwrap();
+            for new_value in [Some(replacement), None] {
+                let mut wrong = graph.nodes[evaluation.0].clone();
+                let Some(Payload::Evaluation { value, parts, .. }) = &mut wrong.payload else {
+                    unreachable!()
+                };
+                *value = new_value;
+                parts[0].value = new_value;
+                assert!(matches!(
+                    environment.validate(&graph, &wrong),
+                    Err(ValidationFailure::Internal(_))
+                ));
+            }
+        }
+    }
+    #[test]
+    fn rejects_negation_result_omission_and_wrong_value() {
+        for missing in [false, true] {
+            let result = value_examples(missing);
+            assert_eq!(
+                result.status(),
+                if missing { "partial" } else { "complete" }
+            );
+            let mut control = Control::unlimited();
+            let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+            let mut graph = Graph::new(&control);
+            graph.nodes = result.nodes.clone();
+            let evaluation = result.answers[4].outputs["evaluation"];
+            let original = &graph.nodes[evaluation.0];
+            environment.validate(&graph, original).unwrap();
+            let Some(Payload::Evaluation { value, .. }) = &original.payload else {
+                unreachable!()
+            };
+            if missing {
+                assert!(value.is_none());
+            } else {
+                assert_eq!(
+                    graph.scalar(value.unwrap()).unwrap(),
+                    &Scalar::Z((-2).into())
+                );
+            }
+            let zero = result.answers[1].outputs["value"];
+            for new_value in [Some(zero), None] {
+                if missing && new_value.is_none() {
+                    continue;
+                }
+                let mut wrong = original.clone();
+                let Some(Payload::Evaluation { value, parts, .. }) = &mut wrong.payload else {
+                    unreachable!()
+                };
+                *value = new_value;
+                parts[0].value = new_value;
+                assert!(matches!(
+                    environment.validate(&graph, &wrong),
+                    Err(ValidationFailure::Internal(_))
+                ));
+            }
+        }
+    }
+    #[test]
+    fn rejects_answer_value_with_wrong_type_value_or_missing_evaluation() {
+        let result = value_examples(false);
+        let mut graph = Graph::default();
+        graph.nodes = result.nodes.clone();
+        let original = &result.answers[0];
+        graph.validate_answer(original, false).unwrap();
+        let subject = NodeRef(
+            graph
+                .nodes
+                .iter()
+                .position(|n| matches!(n.payload, Some(Payload::Scalar(Scalar::Subject { .. }))))
+                .unwrap(),
+        );
+        for replacement in [subject, result.answers[1].outputs["value"]] {
+            let mut wrong = original.clone();
+            wrong.outputs.insert("value".into(), replacement);
+            assert!(matches!(
+                graph.validate_answer(&wrong, false),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
+        for removed in ["value", "evaluation"] {
+            let mut wrong = original.clone();
+            wrong.outputs.remove(removed);
+            assert!(matches!(
+                graph.validate_answer(&wrong, false),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
+        let mut wrong = original.clone();
+        wrong
+            .outputs
+            .insert("evaluation".into(), result.answers[1].outputs["evaluation"]);
+        assert!(matches!(
+            graph.validate_answer(&wrong, false),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+    #[test]
+    fn rejects_answer_output_from_a_different_check_evaluation() {
+        let result = value_examples(false);
+        let mut graph = Graph::default();
+        graph.nodes = result.nodes.clone();
+        let original = &result.answers[5];
+        graph.validate_answer(original, true).unwrap();
+        let mut wrong = original.clone();
+        wrong
+            .outputs
+            .insert("evaluation".into(), result.answers[2].outputs["evaluation"]);
+        assert!(matches!(
+            graph.validate_answer(&wrong, true),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let mut wrong = original.clone();
+        wrong
+            .outputs
+            .insert("value".into(), result.answers[2].outputs["value"]);
+        assert!(matches!(
+            graph.validate_answer(&wrong, true),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let mut wrong = result.answers[2].clone();
+        wrong.claim = original.claim;
+        wrong
+            .outputs
+            .insert("proposition".into(), original.claim.unwrap());
+        assert!(matches!(
+            graph.validate_answer(&wrong, false),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
     fn example() -> ObservedEvaluation {
         let sources = InputSources::from_bytes(
             vec![include_bytes!("../../tests/fixtures/counter.atoms.json").to_vec()],

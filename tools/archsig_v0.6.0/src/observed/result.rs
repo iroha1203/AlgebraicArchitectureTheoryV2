@@ -861,6 +861,9 @@ impl Graph {
             self.tick()?;
             match name.as_str() {
                 "value" => {
+                    if check {
+                        return Err("check に value 出力がある".into());
+                    }
                     self.scalar(r)?;
                 }
                 "evaluation" => {
@@ -868,10 +871,38 @@ impl Graph {
                         return Err("出力 evaluation の型不一致".into());
                     }
                 }
-                "proposition" => self.expect(r, &NodeType::Proposition)?,
+                "proposition" => {
+                    if !check {
+                        return Err("evaluate に proposition 出力がある".into());
+                    }
+                    self.expect(r, &NodeType::Proposition)?;
+                }
                 _ => return Err("未定義の出力欄".into()),
             }
             self.tick()?;
+        }
+        if !check && (a.claim.is_some() || a.status == Decision::Refuted) {
+            return Err("evaluate に命題の判断がある".into());
+        }
+        if let Some(&value) = a.outputs.get("value") {
+            let evaluation = a.outputs.get("evaluation").ok_or("値の元評価がない")?;
+            let node = self.get(*evaluation)?;
+            let (
+                NodeType::Evaluation(ty),
+                Some(Payload::Evaluation {
+                    value: Some(expected),
+                    ..
+                }),
+            ) = (&node.ty, &node.payload)
+            else {
+                return Err("値の元評価に確定値がない".into());
+            };
+            self.value(value, ty)?;
+            if value != *expected {
+                return Err("Answer の値が返却評価の値と違う".into());
+            }
+        } else if !check && a.status == Decision::Established {
+            return Err("確定 evaluate に値がない".into());
         }
         if let Some(evaluation) = a.outputs.get("evaluation")
             && self.get(*evaluation)?.scope != a.scope
@@ -888,6 +919,9 @@ impl Graph {
             };
             if j.status != a.status || a.outputs.get("proposition") != Some(&c) {
                 return Err("Answer と claim が不一致".into());
+            }
+            if a.outputs.get("evaluation") != self.get(c)?.arguments.get(1) {
+                return Err("Answer と claim の元評価が違う".into());
             }
         }
         if check && a.status != Decision::Undetermined && a.claim.is_none() {

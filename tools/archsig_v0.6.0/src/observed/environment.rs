@@ -412,6 +412,17 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                 }
                 match ast.map(|e| &e.kind) {
+                    Some(ExprKind::Int(n)) => {
+                        let expected = Scalar::Z(n.parse().map_err(|_| "元整数 literal が不正")?);
+                        if value.map(|r| graph.scalar(r)).transpose()? != Some(&expected) {
+                            return Err("整数 literal の評価値が元 AST と違う".into());
+                        }
+                    }
+                    Some(ExprKind::Bool(b)) => {
+                        if value.map(|r| graph.scalar(r)).transpose()? != Some(&Scalar::Bool(*b)) {
+                            return Err("Bool literal の評価値が元 AST と違う".into());
+                        }
+                    }
                     Some(ExprKind::Binary { op, .. }) => {
                         let pair = child_values[0].zip(child_values[1]);
                         match (pair, *value) {
@@ -436,11 +447,19 @@ impl<'a> Environment<'a> {
                         }
                     }
                     Some(ExprKind::Unary { op: UnOp::Neg, .. }) => {
-                        if let Some(v) = value
-                            && graph.get(*v)?.arguments
-                                != child_values.iter().flatten().copied().collect::<Vec<_>>()
-                        {
-                            return Err("負号の元 operand が違う".into());
+                        match (child_values[0], *value) {
+                            (Some(operand), Some(result)) => {
+                                let Scalar::Z(n) = graph.scalar(operand)? else {
+                                    return Err("負号の元 operand が整数でない".into());
+                                };
+                                if graph.scalar(result)? != &Scalar::Z(-n)
+                                    || graph.get(result)?.arguments != [operand]
+                                {
+                                    return Err("負号の元 operand・結果値が違う".into());
+                                }
+                            }
+                            (None, None) => {}
+                            _ => return Err("負号の子値と結果値の有無が違う".into()),
                         }
                     }
                     Some(ExprKind::Dotted(parts)) => {
