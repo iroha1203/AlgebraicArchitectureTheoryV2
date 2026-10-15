@@ -171,6 +171,16 @@ impl<'a> Environment<'a> {
         }
     }
     pub fn validate(&self, graph: &Graph, node: &Node) -> Result<(), ValidationFailure> {
+        self.validate_at(graph, node, graph.nodes.len())
+    }
+    // 新規挿入時は prefix の長さ、既存 node はその挿入位置を cutoff とする。
+    // 後からできた Source/Evaluation を、先行 Scalar の証人にしない。
+    fn validate_at(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
         self.tick()?;
         for f in &node.support {
             self.tick()?;
@@ -248,37 +258,21 @@ impl<'a> Environment<'a> {
                         return Err("導出値が元式の型に合わない".into());
                     }
                     let computed = match &expr.1.kind {
-                        ExprKind::Int(n) => {
-                            Scalar::Z(n.parse().map_err(|_| "整数 literal の内部不整合")?)
-                        }
-                        ExprKind::Bool(b) => Scalar::Bool(*b),
                         ExprKind::Binary { op, .. } if is_boolean_binary(*op) => self
-                            .logic_source_analysis(graph, node, graph.nodes.len())?
+                            .logic_source_analysis(graph, node, limit)?
                             .known_value
                             .ok_or("Bool 論理値が全補完で確定しない")?,
                         ExprKind::Unary { op: UnOp::Not, .. } => self
-                            .logic_source_analysis(graph, node, graph.nodes.len())?
+                            .logic_source_analysis(graph, node, limit)?
                             .known_value
                             .ok_or("Bool 否定値が確定しない")?,
-                        ExprKind::Binary { op, .. } => {
-                            if node.arguments.len() != 2 {
-                                return Err("二項演算の引数数".into());
-                            }
-                            binary(
-                                *op,
-                                graph.scalar(node.arguments[0])?,
-                                graph.scalar(node.arguments[1])?,
-                            )?
-                        }
-                        ExprKind::Unary { op: UnOp::Neg, .. } => {
-                            if node.arguments.len() != 1 {
-                                return Err("負号の引数数".into());
-                            }
-                            let Scalar::Z(v) = graph.scalar(node.arguments[0])? else {
-                                return Err("負号が整数でない".into());
-                            };
-                            Scalar::Z(-v)
-                        }
+                        ExprKind::Int(_)
+                        | ExprKind::Bool(_)
+                        | ExprKind::Binary { .. }
+                        | ExprKind::Unary { op: UnOp::Neg, .. } => self
+                            .scalar_source_analysis(graph, node, limit)?
+                            .known_value
+                            .ok_or("元 Source で生成値が確定しない")?,
                         _ => return Err("元式に対する値検査がない".into()),
                     };
                     if &computed != scalar {
@@ -322,7 +316,7 @@ impl<'a> Environment<'a> {
                 }
                 _ => return Err("値 leaf の導出規則がない".into()),
             }
-            let support = self.scalar_support(graph, node, graph.nodes.len())?;
+            let support = self.scalar_support(graph, node, limit)?;
             if node.support != support {
                 return Err("値の支持が元入力・実引数の完全な集合と違う".into());
             }
@@ -375,7 +369,7 @@ impl<'a> Environment<'a> {
             return Err("Expression の範囲が元宣言・入力と違う".into());
         }
         if matches!(&node.payload, Some(Payload::Transform { .. })) {
-            self.transform_scope(graph, node, graph.nodes.len())?;
+            self.transform_scope(graph, node, limit)?;
         }
         if let Some(Payload::LawInstance {
             name,
@@ -614,7 +608,7 @@ impl<'a> Environment<'a> {
                                 if l - r != *d || graph.get(residual)?.arguments != [left, right] {
                                     return Err("Z 等号の残差が元左右の正確な差でない".into());
                                 }
-                                self.validate(graph, graph.get(residual)?)?;
+                                self.validate_at(graph, graph.get(residual)?, residual.0)?;
                             }
                             (_, _, None) => {}
                             _ => return Err("Z 等号の既知左右以外に整数残差がある".into()),
@@ -725,7 +719,7 @@ impl<'a> Environment<'a> {
                 graph.validate_proposition_evidence(node)?;
                 for &reference in &node.evidence {
                     self.tick()?;
-                    self.validate(graph, graph.get(reference)?)?;
+                    self.validate_at(graph, graph.get(reference)?, reference.0)?;
                     self.tick()?;
                 }
                 let evaluation = *node.arguments.get(1).ok_or("命題に元評価がない")?;
@@ -760,6 +754,179 @@ impl<'a> Environment<'a> {
         }
         self.tick()?;
         Ok(())
+    }
+    /// law の値は親 Evaluation より先に挿入する。既存の Scalar 引数を保ったまま、
+    /// cutoff 未満の own Source と元子 Evaluation を構成の証人として照合する。
+    fn scalar_source_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            let Rule::Input {
+                kind: "law",
+                location: Location::Law { span },
+            } = &node.rule
+            else {
+                return Err("生成値に元 Law 出現がない".into());
+            };
+            let Some(Payload::Scalar(scalar)) = &node.payload else {
+                return Err("元 Law の生成値が通常 Scalar でない".into());
+            };
+            let id = *self.expressions.get(span).ok_or("生成値の元 AST がない")?;
+            let law = self.inputs.law();
+            let operands = match law.exprs[id].kind {
+                ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
+                ExprKind::Unary {
+                    op: UnOp::Neg,
+                    operand,
+                } => vec![operand],
+                ExprKind::Binary { op, lhs, rhs } if !is_boolean_binary(op) => vec![lhs, rhs],
+                _ => return Err("Scalar 引数から構成できる元式でない".into()),
+            };
+            let ty = scalar.ty();
+            if law.expr_type(id) != Some(&ty)
+                || node.ty != NodeType::Value(ty.clone())
+                || node.arguments.len() != operands.len()
+            {
+                return Err("生成 Scalar の型・引数数が元 AST と違う".into());
+            }
+            for (&argument, &operand) in node.arguments.iter().zip(&operands) {
+                self.tick()?;
+                if argument.0 >= limit {
+                    return Err("生成値の引数 Scalar が既出でない".into());
+                }
+                graph.expect(
+                    argument,
+                    &NodeType::Value(law.expr_type(operand).ok_or("元子の型がない")?.clone()),
+                )?;
+                graph.scalar(argument)?;
+                self.tick()?;
+            }
+            for (source_index, source) in graph.nodes.iter().enumerate().take(limit) {
+                self.tick()?;
+                let Some(Payload::Expression {
+                    location: Location::Law { span: actual },
+                    bindings,
+                    parameters,
+                }) = &source.payload
+                else {
+                    self.tick()?;
+                    continue;
+                };
+                if actual != span {
+                    self.tick()?;
+                    continue;
+                }
+                let candidate = (|| -> Result<SourceAnalysis, ValidationFailure> {
+                    if source.ty != NodeType::Expression(ty.clone())
+                        || !parameters.is_empty()
+                        || !matches!(&source.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if actual == span)
+                    {
+                        return Err("生成値の own Source の型・出所が違う".into());
+                    }
+                    let mut arguments = Vec::new();
+                    for binding in bindings {
+                        self.tick()?;
+                        if binding.value.0 >= source_index {
+                            return Err("own Source の束縛が既出でない".into());
+                        }
+                        arguments.push(binding.value);
+                        self.tick()?;
+                    }
+                    if source.arguments != arguments {
+                        return Err("own Source の引数と束縛が違う".into());
+                    }
+                    self.validate_at(graph, source, source_index)?;
+                    let analysis = self.analyze_source(graph, *span, bindings)?;
+                    if analysis.known_value.as_ref() != Some(scalar)
+                        || analysis.support != node.support
+                        || analysis.scalar_scope.as_ref() != Some(&node.scope)
+                    {
+                        return Err("生成値・支持・ScalarScope が own Source の実入力と違う".into());
+                    }
+                    for (&argument, &operand) in node.arguments.iter().zip(&operands) {
+                        self.tick()?;
+                        if !self
+                            .has_operand_evaluation(graph, limit, operand, bindings, argument)?
+                        {
+                            return Err("生成値の引数に元子 Evaluation がない".into());
+                        }
+                        self.tick()?;
+                    }
+                    Ok(analysis)
+                })();
+                match candidate {
+                    Ok(analysis) => {
+                        self.tick()?;
+                        return Ok(analysis);
+                    }
+                    Err(ValidationFailure::Stop(reason)) => {
+                        return Err(ValidationFailure::Stop(reason));
+                    }
+                    Err(ValidationFailure::Internal(_)) => {}
+                }
+                self.tick()?;
+            }
+            self.tick()?;
+            Err("生成 Scalar に既出の own Source・元子評価の証人がない".into())
+        })
+    }
+    fn has_operand_evaluation(
+        &self,
+        graph: &Graph,
+        limit: usize,
+        operand: usize,
+        bindings: &[Binding],
+        argument: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        let span = self.inputs.law().exprs[operand].span;
+        let ty = self
+            .inputs
+            .law()
+            .expr_type(operand)
+            .ok_or("元子評価の型がない")?;
+        for (index, node) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            let Some(Payload::Evaluation {
+                expression,
+                bindings: actual_bindings,
+                value,
+                ..
+            }) = &node.payload
+            else {
+                self.tick()?;
+                continue;
+            };
+            if node.ty != NodeType::Evaluation(ty.clone())
+                || actual_bindings != bindings
+                || *value != Some(argument)
+                || expression.0 >= index
+                || argument.0 >= index
+                || !matches!(&graph.get(*expression)?.payload, Some(Payload::Expression { location: Location::Law { span: actual }, .. }) if *actual == span)
+            {
+                self.tick()?;
+                continue;
+            }
+            // payload/引数の全ての辺を元子の挿入位置より前に確認してから再検査する。
+            // Scalar -> 子 Evaluation -> 引数 Scalar の位置は厳密に減少する。
+            match self.recheck_evaluation(graph, NodeRef(index)) {
+                Ok(()) => {
+                    self.tick()?;
+                    return Ok(true);
+                }
+                Err(ValidationFailure::Stop(reason)) => {
+                    return Err(ValidationFailure::Stop(reason));
+                }
+                Err(ValidationFailure::Internal(_)) => {}
+            }
+            self.tick()?;
+        }
+        self.tick()?;
+        Ok(false)
     }
     /// Bool 論理値の arguments は元の子 Evaluation。欠測を通常 Scalar にしない。
     /// 元 AST・実入力から期待値/支持/Scope を独立に求め、既出の各子も再検査する。
@@ -908,20 +1075,17 @@ impl<'a> Environment<'a> {
                     let expr = &self.inputs.law().exprs
                         [*self.expressions.get(span).ok_or("値支持の元ASTがない")?];
                     match expr.kind {
-                        ExprKind::Int(_) | ExprKind::Bool(_) => {
-                            if !node.arguments.is_empty() {
-                                return Err("literalに引数支持がある".into());
-                            }
-                            vec![]
-                        }
                         ExprKind::Binary { op, .. } if is_boolean_binary(op) => {
                             self.logic_source_analysis(graph, node, limit)?.support
                         }
                         ExprKind::Unary { op: UnOp::Not, .. } => {
                             self.logic_source_analysis(graph, node, limit)?.support
                         }
-                        ExprKind::Binary { .. } | ExprKind::Unary { .. } => {
-                            self.argument_support(graph, &node.arguments, limit)?
+                        ExprKind::Int(_)
+                        | ExprKind::Bool(_)
+                        | ExprKind::Binary { .. }
+                        | ExprKind::Unary { .. } => {
+                            self.scalar_source_analysis(graph, node, limit)?.support
                         }
                         _ => return Err("値支持の未実装元式".into()),
                     }
@@ -1085,7 +1249,7 @@ impl<'a> Environment<'a> {
                 return Err("check AnswerのLawInstanceがRequestと違う".into());
             }
             self.instance_evaluation(graph, *instance, evaluation)?;
-            self.validate(graph, graph.get(claim)?)?;
+            self.validate_at(graph, graph.get(claim)?, claim.0)?;
         }
         self.tick()?;
         Ok(())
@@ -1474,7 +1638,7 @@ impl<'a> Environment<'a> {
                         bindings,
                         ..
                     }) => {
-                        self.validate(graph, operand)?;
+                        self.validate_at(graph, operand, reference.0)?;
                         self.source_scope(graph, *span, bindings)?
                     }
                     Some(Payload::Transform { .. }) => {
@@ -1701,11 +1865,11 @@ impl<'a> Environment<'a> {
                 }
                 self.tick()?;
             }
-            self.validate(graph, node)?;
-            self.validate(graph, graph.get(*expression)?)?;
+            self.validate_at(graph, node, reference.0)?;
+            self.validate_at(graph, graph.get(*expression)?, expression.0)?;
             let mut support = Vec::new();
             if let Some(value) = value {
-                self.validate(graph, graph.get(*value)?)?;
+                self.validate_at(graph, graph.get(*value)?, value.0)?;
                 support.extend(graph.get(*value)?.support.iter().cloned());
             }
             for part in parts {
@@ -1889,7 +2053,7 @@ impl<'a> Environment<'a> {
                 {
                     return Err("条件付き Law 値が当該の元式・適用から導出されていない".into());
                 }
-                self.validate(graph, scalar)?;
+                self.validate_at(graph, scalar, value.0)?;
             }
         }
         for (part, evaluation) in parts.iter().zip([guard, body]) {

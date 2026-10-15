@@ -2779,4 +2779,290 @@ reading R {{
             "数値等式残差を別ASTの減算出所へ読み替えられない"
         );
     }
+    // evaluate.rs の既存 #[cfg(test)] mod recheck_tests 内へ追加する。
+    // 既存 scalar_operation_private_example / rebuild_for_origin_and_support_recheck を使う。
+    #[test]
+    fn rejects_foreign_arithmetic_rule_span_in_a_scalar_only_dag_prefix() {
+        let result = scalar_operation_private_example(Some(false), Some(true));
+        assert_eq!(result.status(), "complete");
+        for (id, foreign_name, expected_op, expected) in [
+            ("total", "CountCheck.foreign_add", BinOp::Add, 10),
+            ("difference", "CountCheck.foreign_subtract", BinOp::Sub, 4),
+            ("product", "CountCheck.foreign_product", BinOp::Mul, 21),
+        ] {
+            let answer = result.answers.iter().find(|a| a.id == id).unwrap();
+            let reference = answer.outputs["value"];
+            let parent_evaluation = answer.outputs["evaluation"];
+            assert!(
+                reference.0 < parent_evaluation.0,
+                "Scalar push後・親Evaluation未挿入のprefix"
+            );
+            let prefix = &result.nodes[..=reference.0];
+            let graph = rebuild_for_origin_and_support_recheck(&result, prefix)
+                .expect("親Evaluationを待たずとも保持可能な正常prefixは元順再検査を通る");
+            assert_eq!(
+                graph.scalar(reference).unwrap(),
+                &Scalar::Z(expected.into())
+            );
+            assert!(
+                graph.get(parent_evaluation).is_err(),
+                "親Evaluationによる後続検査はこのprefixにない"
+            );
+            assert!(
+                result
+                    .prepared
+                    .requests()
+                    .requests()
+                    .iter()
+                    .all(|r| r.declaration() != foreign_name)
+            );
+            let foreign = &result.prepared.inputs().law().declarations[foreign_name];
+            let Signature::View { body, returns, .. } = &foreign.signature else {
+                panic!("検査済みの未選択Z view")
+            };
+            assert_eq!(returns, &Type::Z);
+            let foreign_ast = &result.prepared.inputs().law().exprs[*body];
+            let ExprKind::Binary { op, rhs, .. } = &foreign_ast.kind else {
+                panic!("同型・同演算子の別出現")
+            };
+            assert_eq!(*op, expected_op);
+            assert!(
+                matches!(&result.prepared.inputs().law().exprs[*rhs].kind, ExprKind::Int(n) if n == "1")
+            );
+            let original = &prefix[reference.0];
+            let Rule::Input {
+                kind: "law",
+                location: Location::Law { span },
+            } = &original.rule
+            else {
+                panic!("元算術ScalarのLaw Rule")
+            };
+            assert_ne!(*span, foreign_ast.span);
+            assert_eq!(original.arguments.len(), 2);
+            assert!(original.arguments.iter().all(|r| r.0 < reference.0));
+            assert_eq!(
+                graph.scalar(original.arguments[0]).unwrap(),
+                &Scalar::Z(7.into())
+            );
+            assert_eq!(
+                graph.scalar(original.arguments[1]).unwrap(),
+                &Scalar::Z(3.into())
+            );
+            let mut changed = prefix.to_vec();
+            // 唯一の変更は元RuleのLaw span。Scalarの値・args・support・scopeは据え置く。
+            changed[reference.0].rule = Rule::Input {
+                kind: "law",
+                location: Location::Law {
+                    span: foreign_ast.span,
+                },
+            };
+            assert_eq!(changed[reference.0].arguments, original.arguments);
+            assert_eq!(changed[reference.0].support, original.support);
+            assert_eq!(changed[reference.0].scope, original.scope);
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "親Evaluationが未生成の保持prefixでも別ASTへの算術Scalar帰属偽装を拒否する"
+            );
+            assert!(!original.support.is_empty());
+            for change_scope in [false, true] {
+                let mut changed = prefix.to_vec();
+                if change_scope {
+                    changed[reference.0].scope.modes.clear();
+                    let mode = if original.scope.modes.contains("observed") {
+                        "proposed"
+                    } else {
+                        "observed"
+                    };
+                    changed[reference.0].scope.modes.insert(mode.into());
+                    assert_ne!(changed[reference.0].scope, original.scope);
+                } else {
+                    changed[reference.0].support.clear();
+                }
+                assert!(
+                    matches!(
+                        rebuild_for_origin_and_support_recheck(&result, &changed),
+                        Err(ValidationFailure::Internal(_))
+                    ),
+                    "親Evaluationを待たず、Scalar自身の支持またはScopeの改変も拒否する"
+                );
+            }
+        }
+    }
+    #[test]
+    fn rejects_selected_reversed_occurrence_in_prefix_with_repeated_total_requests() {
+        let original = scalar_operation_private_example(Some(false), Some(true));
+        assert_eq!(original.status(), "complete");
+        let existing = original.prepared.inputs().sources().clone();
+        let old_law = std::str::from_utf8(existing.law().bytes()).unwrap();
+        let anchor = "view total(s: State): Z = s.count + s.other;";
+        assert_eq!(old_law.matches(anchor).count(), 1);
+        let law = old_law.replace(anchor,
+        "view total(s: State): Z = s.count + s.other;\n  view reversed(s: State): Z = s.other + s.count;");
+        let inputs = InputSources::new(
+            existing.definitions().to_vec(),
+            super::super::input::InputBytes::new(existing.law().id(), law.into_bytes()),
+            existing.archmap().clone(),
+        );
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        let result = evaluate_observed_bytes(
+            inputs,
+            &[
+                "first=evaluate(CountCheck.reversed,s=@v/s)",
+                "one=evaluate(CountCheck.total,s=@v/s)",
+                "two=evaluate(CountCheck.total,s=@v/s)",
+            ],
+            &mut control,
+        )
+        .expect("三入力の検査と元Request解決を通る正常な同AST反復fixture");
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("同ASTを二度選択した正常全DAGは元入力から再検査できる");
+        let first = result.answers.iter().find(|a| a.id == "first").unwrap();
+        let one = result.answers.iter().find(|a| a.id == "one").unwrap();
+        let two = result.answers.iter().find(|a| a.id == "two").unwrap();
+        let foreign = &result.prepared.inputs().law().declarations["CountCheck.reversed"];
+        let Signature::View {
+            body: foreign_body, ..
+        } = &foreign.signature
+        else {
+            panic!("先行して実評価したview")
+        };
+        let foreign_span = result.prepared.inputs().law().exprs[*foreign_body].span;
+        assert_eq!(
+            &result.prepared.inputs().sources().law().bytes()[foreign_span.0..foreign_span.1],
+            b"s.other + s.count"
+        );
+        let total = &result.prepared.inputs().law().declarations["CountCheck.total"];
+        let Signature::View {
+            body: total_body, ..
+        } = &total.signature
+        else {
+            panic!("二度選択したtotal")
+        };
+        let ExprKind::Binary {
+            op: BinOp::Add,
+            lhs,
+            ..
+        } = &result.prepared.inputs().law().exprs[*total_body].kind
+        else {
+            panic!("元の加算AST")
+        };
+        let left_span = result.prepared.inputs().law().exprs[*lhs].span;
+        let first_value = first.outputs["value"];
+        assert_eq!(graph.scalar(first_value).unwrap(), &Scalar::Z(10.into()));
+        assert_eq!(
+            graph
+                .scalar(result.nodes[first_value.0].arguments[0])
+                .unwrap(),
+            &Scalar::Z(3.into())
+        );
+        assert_eq!(
+            graph
+                .scalar(result.nodes[first_value.0].arguments[1])
+                .unwrap(),
+            &Scalar::Z(7.into())
+        );
+
+        let root_binding = |answer: &Answer| {
+            let Some(Payload::Evaluation { expression, .. }) =
+                &result.nodes[answer.outputs["evaluation"].0].payload
+            else {
+                panic!("実Evaluation")
+            };
+            let Some(Payload::Expression { bindings, .. }) = &result.nodes[expression.0].payload
+            else {
+                panic!("元total Source")
+            };
+            assert_eq!(bindings[0].name, "s");
+            bindings[0].value
+        };
+        let one_binding = root_binding(one);
+        let two_binding = root_binding(two);
+        assert_ne!(
+            one_binding, two_binding,
+            "同じ明示subjectでも各Requestは異なる表示Refを持つ"
+        );
+        assert_eq!(
+            graph.scalar(one_binding).unwrap(),
+            graph.scalar(two_binding).unwrap()
+        );
+
+        for answer in [one, two] {
+            assert_eq!(answer.status, Decision::Established);
+            let reference = answer.outputs["value"];
+            let parent = answer.outputs["evaluation"];
+            assert!(first_value.0 < reference.0 && reference.0 < parent.0);
+            let prefix = &result.nodes[..=reference.0];
+            let prefix_graph = rebuild_for_origin_and_support_recheck(&result, prefix)
+                .expect("先行reversedや同ASTのSource候補があっても正常な各total prefixは受理する");
+            assert!(prefix_graph.get(parent).is_err());
+            let original = &prefix[reference.0];
+            assert_eq!(
+                prefix_graph.scalar(reference).unwrap(),
+                &Scalar::Z(10.into())
+            );
+            assert_eq!(
+                prefix_graph.scalar(original.arguments[0]).unwrap(),
+                &Scalar::Z(7.into())
+            );
+            assert_eq!(
+                prefix_graph.scalar(original.arguments[1]).unwrap(),
+                &Scalar::Z(3.into())
+            );
+            assert_eq!(original.support, result.nodes[first_value.0].support);
+            assert_eq!(original.scope, result.nodes[first_value.0].scope);
+            if answer.id == "two" {
+                let mut binding_candidates = vec![];
+                for node in prefix {
+                    if let Some(Payload::Expression {
+                        location: Location::Law { span },
+                        bindings,
+                        ..
+                    }) = &node.payload
+                        && *span == left_span
+                        && !binding_candidates.contains(&bindings[0].value)
+                    {
+                        binding_candidates.push(bindings[0].value);
+                    }
+                }
+                assert!(
+                    binding_candidates.len() >= 2,
+                    "同じ左子AST出現に、one/twoの異なる束縛Refを持つSource候補がある"
+                );
+                assert!(
+                    binding_candidates.contains(&one_binding)
+                        && binding_candidates.contains(&two_binding)
+                );
+            }
+            let Rule::Input {
+                kind: "law",
+                location: Location::Law { span },
+            } = &original.rule
+            else {
+                panic!("元totalのLaw Rule")
+            };
+            assert_ne!(*span, foreign_span);
+            let mut changed = prefix.to_vec();
+            // 先行選択済みの別ASTは同値10・同支持・同Scopeだが、元の左右は3/7で異なる。
+            changed[reference.0].rule = Rule::Input {
+                kind: "law",
+                location: Location::Law { span: foreign_span },
+            };
+            assert_eq!(changed[reference.0].arguments, original.arguments);
+            assert_eq!(changed[reference.0].support, original.support);
+            assert_eq!(changed[reference.0].scope, original.scope);
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "別ASTが選択済みで値/支持/Scopeも一致していても、元child occurrenceと引数Refの帰属偽装を拒否する"
+            );
+        }
+    }
 }
