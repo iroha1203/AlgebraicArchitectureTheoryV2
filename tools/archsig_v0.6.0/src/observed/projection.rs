@@ -1,5 +1,6 @@
 //! 観測評価の公開射影の静的型付け。動的な constructor・index・owner 条件は評価へ残す。
 
+use super::control::{Checkpoint, Control, StopReason};
 use crate::{canonical::Json, definition::PrimitiveSignature, law::CheckedLaw, types::Type};
 
 /// Law の型と、計算結果だけに存在する record 型を区別する。
@@ -35,33 +36,74 @@ pub struct ProjectionPlan {
     pub conditional: bool,
 }
 
+/// 射影の提示違反と、同じ中断制御による停止を区別する。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ProjectionFailure {
+    Invalid(String),
+    Interrupted(StopReason),
+}
+impl From<&str> for ProjectionFailure {
+    fn from(message: &str) -> Self {
+        Self::Invalid(message.into())
+    }
+}
+impl From<StopReason> for ProjectionFailure {
+    fn from(reason: StopReason) -> Self {
+        Self::Interrupted(reason)
+    }
+}
+
 /// 閉じた公開表と Law の構造射影だけを解決する。
 pub fn resolve_projection(
     law: &CheckedLaw,
     initial: ProjectionType,
     path: &[ProjectionStep],
 ) -> Result<ProjectionPlan, String> {
+    match resolve_projection_controlled(law, initial, path, &mut Control::unlimited()) {
+        Ok(plan) => Ok(plan),
+        Err(ProjectionFailure::Invalid(message)) => Err(message),
+        Err(ProjectionFailure::Interrupted(_)) => unreachable!("上限と取消通知のない制御"),
+    }
+}
+
+/// 各 path と型候補の走査前後で、要求解決と共有する制御を確認する。
+pub fn resolve_projection_controlled(
+    law: &CheckedLaw,
+    initial: ProjectionType,
+    path: &[ProjectionStep],
+    control: &mut Control,
+) -> Result<ProjectionPlan, ProjectionFailure> {
+    tick(control)?;
     let mut plan = ProjectionPlan {
         ty: initial,
         conditional: false,
     };
     let mut at = 0;
     while at < path.len() {
-        let (next, used) = project(law, &plan.ty, &path[at..])?;
+        tick(control)?;
+        let (next, used) = project(law, &plan.ty, &path[at..], control)?;
         plan.ty = next.ty;
         plan.conditional |= next.conditional;
         at += used;
+        tick(control)?;
     }
+    tick(control)?;
     Ok(plan)
+}
+
+fn tick(control: &mut Control) -> Result<(), StopReason> {
+    control.checkpoint(Checkpoint::Projection)
 }
 
 fn project(
     law: &CheckedLaw,
     ty: &ProjectionType,
     path: &[ProjectionStep],
-) -> Result<(ProjectionPlan, usize), String> {
+    control: &mut Control,
+) -> Result<(ProjectionPlan, usize), ProjectionFailure> {
     use ProjectionStep::{Field, Index};
     use ProjectionType::{Architecture, Dynamic, Evaluation, Law};
+    tick(control)?;
     let exact = |ty| {
         Ok((
             ProjectionPlan {
@@ -80,21 +122,18 @@ fn project(
             1,
         ))
     };
-    match (ty, &path[0]) {
+    let result = match (ty, &path[0]) {
         (Evaluation(t), Field(f)) if f == "value" => conditional(Law(t.clone())),
         (Evaluation(_), Field(f)) if f == "environment" => conditional(Architecture),
         (Architecture, Field(f)) if f == "root" => {
-            let candidates = law
-                .definitions
-                .declarations
-                .values()
-                .filter_map(|d| match &d.signature {
-                    PrimitiveSignature::Entity { owner: None, .. } => {
-                        Some(Law(Type::Ref(d.name.clone())))
-                    }
-                    _ => None,
-                })
-                .collect();
+            let mut candidates = Vec::new();
+            for d in law.definitions.declarations.values() {
+                tick(control)?;
+                if matches!(&d.signature, PrimitiveSignature::Entity { owner: None, .. }) {
+                    candidates.push(Law(Type::Ref(d.name.clone())));
+                }
+                tick(control)?;
+            }
             conditional(Dynamic(candidates))
         }
         (Law(Type::Tuple(ts)), Index(i)) => {
@@ -115,12 +154,11 @@ fn project(
             };
             let mut ts = Vec::new();
             for c in constructors {
+                tick(control)?;
                 if let Some(t) = usize::try_from(*i).ok().and_then(|i| c.arguments.get(i)) {
-                    let t = Law(t.clone());
-                    if !ts.contains(&t) {
-                        ts.push(t);
-                    }
+                    push_unique(&mut ts, Law(t.clone()), control)?;
                 }
+                tick(control)?;
             }
             if ts.is_empty() {
                 return Err("全 constructor で index が範囲外".into());
@@ -137,18 +175,17 @@ fn project(
             if !matches!(path.get(1), Some(Index(_))) {
                 return Err("generators は index まで指定する".into());
             }
-            let ts = law
-                .definitions
-                .declarations
-                .values()
-                .filter_map(|d| match &d.signature {
-                    PrimitiveSignature::Arrow { .. }
-                    | PrimitiveSignature::Correspondence { .. } => {
-                        Some(Law(Type::Ref(d.name.clone())))
-                    }
-                    _ => None,
-                })
-                .collect();
+            let mut ts = Vec::new();
+            for d in law.definitions.declarations.values() {
+                tick(control)?;
+                if matches!(
+                    &d.signature,
+                    PrimitiveSignature::Arrow { .. } | PrimitiveSignature::Correspondence { .. }
+                ) {
+                    ts.push(Law(Type::Ref(d.name.clone())));
+                }
+                tick(control)?;
+            }
             Ok((
                 ProjectionPlan {
                     ty: Dynamic(ts),
@@ -161,15 +198,19 @@ fn project(
             let mut out = Vec::new();
             let mut used = None;
             for t in ts {
-                if let Ok((p, n)) = project(law, t, path) {
-                    if used.is_some_and(|u| u != n) {
-                        return Err("射影の構造が型候補間で異なる".into());
+                tick(control)?;
+                match project(law, t, path, control) {
+                    Ok((p, n)) => {
+                        if used.is_some_and(|u| u != n) {
+                            return Err("射影の構造が型候補間で異なる".into());
+                        }
+                        used = Some(n);
+                        push_unique(&mut out, p.ty, control)?;
                     }
-                    used = Some(n);
-                    if !out.contains(&p.ty) {
-                        out.push(p.ty);
-                    }
+                    Err(ProjectionFailure::Invalid(_)) => {}
+                    Err(stopped @ ProjectionFailure::Interrupted(_)) => return Err(stopped),
                 }
+                tick(control)?;
             }
             if out.is_empty() {
                 return Err("公開された射影が型候補にない".into());
@@ -187,14 +228,173 @@ fn project(
             ))
         }
         _ => Err("この型で公開されていない射影".into()),
-    }
+    };
+    tick(control)?;
+    result
 }
 
 /// 動的な候補が一つでも宣言型へ適合し得る場合だけ、束縛制約として残せる。
 pub fn can_bind(actual: &ProjectionType, expected: &Type) -> bool {
-    match actual {
-        ProjectionType::Law(t) => t.erase() == expected.erase(),
-        ProjectionType::Dynamic(ts) => ts.iter().any(|t| can_bind(t, expected)),
-        _ => false,
+    can_bind_controlled(actual, expected, &mut Control::unlimited())
+        .expect("上限と取消通知のない制御")
+}
+
+/// 候補と型構造の走査にも同じ制御を通し、停止を不適合へ読み替えない。
+pub fn can_bind_controlled(
+    actual: &ProjectionType,
+    expected: &Type,
+    control: &mut Control,
+) -> Result<bool, StopReason> {
+    tick(control)?;
+    let mut candidates = vec![actual];
+    while let Some(actual) = candidates.pop() {
+        tick(control)?;
+        let compatible = match actual {
+            ProjectionType::Law(t) => law_types_match(t, expected, true, control)?,
+            ProjectionType::Dynamic(ts) => {
+                for t in ts {
+                    tick(control)?;
+                    candidates.push(t);
+                    tick(control)?;
+                }
+                false
+            }
+            _ => false,
+        };
+        tick(control)?;
+        if compatible {
+            return Ok(true);
+        }
     }
+    tick(control)?;
+    Ok(false)
+}
+
+/// Owned の所属条件を別制約に残し、型の全構造を一段ずつ比較する。
+fn law_types_match(
+    left: &Type,
+    right: &Type,
+    erase_owner: bool,
+    control: &mut Control,
+) -> Result<bool, StopReason> {
+    let mut pending = vec![(left, right)];
+    while let Some((left, right)) = pending.pop() {
+        tick(control)?;
+        let same = match (left, right) {
+            (Type::Unit, Type::Unit)
+            | (Type::Bool, Type::Bool)
+            | (Type::Z, Type::Z)
+            | (Type::Q, Type::Q)
+            | (Type::Text, Type::Text) => true,
+            (Type::Ref(a), Type::Ref(b))
+            | (Type::Fp(a), Type::Fp(b))
+            | (Type::Data(a), Type::Data(b)) => a == b,
+            (Type::Owned(a, p), Type::Owned(b, q)) => a == b && (erase_owner || p == q),
+            (Type::Ref(a), Type::Owned(b, _)) | (Type::Owned(a, _), Type::Ref(b)) => {
+                erase_owner && a == b
+            }
+            (Type::Path(a, b), Type::Path(c, d)) => a == c && b == d,
+            (Type::Tuple(a), Type::Tuple(b)) => {
+                if a.len() != b.len() {
+                    false
+                } else {
+                    for (a, b) in a.iter().zip(b) {
+                        tick(control)?;
+                        pending.push((a, b));
+                        tick(control)?;
+                    }
+                    true
+                }
+            }
+            (Type::List(a), Type::List(b))
+            | (Type::Set(a), Type::Set(b))
+            | (Type::Option(a), Type::Option(b)) => {
+                pending.push((a, b));
+                true
+            }
+            (Type::Map(a, b), Type::Map(c, d)) => {
+                pending.push((a, c));
+                pending.push((b, d));
+                true
+            }
+            (Type::Term(a, r), Type::Term(b, s)) => {
+                if a.len() != b.len() {
+                    false
+                } else {
+                    for (a, b) in a.iter().zip(b) {
+                        tick(control)?;
+                        pending.push((a, b));
+                        tick(control)?;
+                    }
+                    pending.push((r, s));
+                    true
+                }
+            }
+            _ => false,
+        };
+        tick(control)?;
+        if !same {
+            return Ok(false);
+        }
+    }
+    tick(control)?;
+    Ok(true)
+}
+
+/// 型候補の重複除去にも制御を通し、従来の候補順と一意化を保つ。
+fn push_unique(
+    candidates: &mut Vec<ProjectionType>,
+    candidate: ProjectionType,
+    control: &mut Control,
+) -> Result<(), StopReason> {
+    tick(control)?;
+    for existing in candidates.iter() {
+        tick(control)?;
+        let same = projection_types_match(existing, &candidate, control)?;
+        tick(control)?;
+        if same {
+            return Ok(());
+        }
+    }
+    candidates.push(candidate);
+    tick(control)?;
+    Ok(())
+}
+
+fn projection_types_match(
+    left: &ProjectionType,
+    right: &ProjectionType,
+    control: &mut Control,
+) -> Result<bool, StopReason> {
+    let mut pending = vec![(left, right)];
+    while let Some((left, right)) = pending.pop() {
+        tick(control)?;
+        let same = match (left, right) {
+            (ProjectionType::Law(a), ProjectionType::Law(b))
+            | (ProjectionType::Evaluation(a), ProjectionType::Evaluation(b)) => {
+                law_types_match(a, b, false, control)?
+            }
+            (ProjectionType::Architecture, ProjectionType::Architecture)
+            | (ProjectionType::Proposition, ProjectionType::Proposition) => true,
+            (ProjectionType::Dynamic(a), ProjectionType::Dynamic(b)) => {
+                if a.len() != b.len() {
+                    false
+                } else {
+                    for (a, b) in a.iter().zip(b) {
+                        tick(control)?;
+                        pending.push((a, b));
+                        tick(control)?;
+                    }
+                    true
+                }
+            }
+            _ => false,
+        };
+        tick(control)?;
+        if !same {
+            return Ok(false);
+        }
+    }
+    tick(control)?;
+    Ok(true)
 }

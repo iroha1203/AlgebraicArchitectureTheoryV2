@@ -24,6 +24,10 @@ pub enum Checkpoint {
     ArchMapTerm,
     AfterArchMap,
     Resolve,
+    RequestSyntax,
+    RequestBinding,
+    RequestDependency,
+    Projection,
     Expression,
     FiniteIteration,
 }

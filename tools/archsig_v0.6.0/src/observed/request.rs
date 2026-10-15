@@ -269,11 +269,11 @@ pub fn resolve_observed_requests_controlled(
     let mut names = BTreeMap::new();
     for text in texts {
         checkpoint(control)?;
-        let mut prefix = Parser::new(text);
-        prefix.id = prefix.user_name().map_err(invalid)?;
-        prefix.expect(b'=').map_err(invalid)?;
-        let prefix_kind = prefix.name(false).map_err(invalid)?;
-        prefix.expect(b'(').map_err(invalid)?;
+        let mut prefix = Parser::new(text, control);
+        prefix.id = prefix.user_name()?;
+        prefix.expect(b'=')?;
+        let prefix_kind = prefix.name(false)?;
+        prefix.expect(b'(')?;
         if matches!(
             prefix_kind.as_str(),
             "build"
@@ -293,7 +293,8 @@ pub fn resolve_observed_requests_controlled(
                 architecture_environment: false,
             });
         }
-        let raw = Parser::new(text).parse().map_err(invalid)?;
+        let raw = Parser::new(text, control).parse()?;
+        phase(control, Checkpoint::RequestBinding)?;
         if names.contains_key(&raw.id) {
             return Err(invalid(problem(
                 RequestIssueCode::DuplicateId,
@@ -305,14 +306,6 @@ pub fn resolve_observed_requests_controlled(
         let kind = match raw.kind.as_str() {
             "evaluate" => QuestionKind::Evaluate,
             "check" => QuestionKind::Check,
-            "build" | "map" | "compose" | "compare" | "localize" | "diagnose" | "repair"
-            | "solve" | "quotient" | "needed" => {
-                return Err(ResolveFailure::NotApplicable {
-                    request: raw.id,
-                    kind: raw.kind,
-                    architecture_environment: false,
-                });
-            }
             _ => {
                 return Err(invalid(problem(
                     RequestIssueCode::Syntax,
@@ -322,7 +315,14 @@ pub fn resolve_observed_requests_controlled(
                 )));
             }
         };
-        if raw.arguments.iter().any(|(key, _)| key == "on") {
+        if checked_find(
+            &raw.arguments,
+            |(key, _)| key == "on",
+            control,
+            Checkpoint::RequestBinding,
+        )?
+        .is_some()
+        {
             return Err(ResolveFailure::NotApplicable {
                 request: raw.id,
                 kind: raw.kind,
@@ -337,7 +337,7 @@ pub fn resolve_observed_requests_controlled(
                 "宣言名を指定する",
             )));
         };
-        let full = declaration(law, name).ok_or_else(|| {
+        let full = declaration(law, name, control)?.ok_or_else(|| {
             invalid(problem(
                 RequestIssueCode::Reference,
                 &raw.id,
@@ -345,8 +345,7 @@ pub fn resolve_observed_requests_controlled(
                 "宣言名が存在しないか曖昧",
             ))
         })?;
-        let sig = &law.declarations[&full].signature;
-        let params = parameters(sig, kind).ok_or_else(|| {
+        let params = parameters(&law.declarations[&full].signature, kind).ok_or_else(|| {
             invalid(problem(
                 RequestIssueCode::Type,
                 &raw.id,
@@ -357,8 +356,16 @@ pub fn resolve_observed_requests_controlled(
         let mut arguments = BTreeMap::new();
         let mut dependencies = BTreeSet::new();
         for (key, value) in raw.arguments {
+            phase(control, Checkpoint::RequestBinding)?;
             let name = key.strip_prefix("bind.").unwrap_or(&key);
-            if !params.iter().any(|p| p.name == name) {
+            if checked_find(
+                params,
+                |p| p.name == name,
+                control,
+                Checkpoint::RequestBinding,
+            )?
+            .is_none()
+            {
                 return Err(invalid(problem(
                     RequestIssueCode::Reference,
                     &raw.id,
@@ -375,6 +382,7 @@ pub fn resolve_observed_requests_controlled(
                 )));
             }
             if let Selector::Answer { id, path } = &value {
+                phase(control, Checkpoint::RequestDependency)?;
                 if path.is_empty() {
                     return Err(invalid(problem(
                         RequestIssueCode::Projection,
@@ -384,9 +392,10 @@ pub fn resolve_observed_requests_controlled(
                     )));
                 }
                 dependencies.insert(id.clone());
+                phase(control, Checkpoint::RequestDependency)?;
             }
             let normalized = format!("bind.{name}");
-            if arguments
+            let duplicate = arguments
                 .insert(
                     normalized.clone(),
                     RequestArgument {
@@ -395,8 +404,9 @@ pub fn resolve_observed_requests_controlled(
                         origin: ArgumentOrigin::Explicit,
                     },
                 )
-                .is_some()
-            {
+                .is_some();
+            phase(control, Checkpoint::RequestBinding)?;
+            if duplicate {
                 return Err(invalid(problem(
                     RequestIssueCode::DuplicateArgument,
                     &raw.id,
@@ -405,11 +415,14 @@ pub fn resolve_observed_requests_controlled(
                 )));
             }
         }
-        let unbound: Vec<_> = params
-            .iter()
-            .filter(|p| !arguments.contains_key(&format!("bind.{}", p.name)))
-            .map(|p| p.name.clone())
-            .collect();
+        let mut unbound = Vec::new();
+        for param in params {
+            phase(control, Checkpoint::RequestBinding)?;
+            if !arguments.contains_key(&format!("bind.{}", param.name)) {
+                unbound.push(param.name.clone());
+            }
+            phase(control, Checkpoint::RequestBinding)?;
+        }
         if kind == QuestionKind::Evaluate && !unbound.is_empty() {
             return Err(invalid(problem(
                 RequestIssueCode::MissingBinding,
@@ -425,36 +438,61 @@ pub fn resolve_observed_requests_controlled(
                 parameters: unbound,
             });
         }
+        let mut argument_list = Vec::new();
+        for argument in arguments.into_values() {
+            phase(control, Checkpoint::RequestBinding)?;
+            argument_list.push(argument);
+            phase(control, Checkpoint::RequestBinding)?;
+        }
+        let mut dependency_list = Vec::new();
+        for dependency in dependencies {
+            phase(control, Checkpoint::RequestDependency)?;
+            dependency_list.push(dependency);
+            phase(control, Checkpoint::RequestDependency)?;
+        }
         names.insert(raw.id.clone(), requests.len());
         requests.push(Request {
             id: raw.id,
             text: (*text).to_owned(),
             kind,
             head: Selector::Declaration { name: full },
-            arguments: arguments.into_values().collect(),
+            arguments: argument_list,
             defaults,
-            dependencies: dependencies.into_iter().collect(),
+            dependencies: dependency_list,
             constraints: vec![],
         });
+        phase(control, Checkpoint::RequestBinding)?;
         checkpoint(control)?;
     }
     for i in 0..requests.len() {
         checkpoint(control)?;
+        phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
         let params = parameters(&law.declarations[req.declaration()].signature, req.kind).unwrap();
         let mut constraints = Vec::new();
         for param in params {
             checkpoint(control)?;
-            let Some(arg) = req
-                .arguments
-                .iter()
-                .find(|a| a.name == format!("bind.{}", param.name))
+            phase(control, Checkpoint::RequestBinding)?;
+            let key = format!("bind.{}", param.name);
+            let Some(arg) = checked_find(
+                &req.arguments,
+                |a| a.name == key,
+                control,
+                Checkpoint::RequestBinding,
+            )?
             else {
                 continue;
             };
-            let plan = selector_type(law, map, &requests, &names, &arg.value)
-                .map_err(|(code, message)| invalid(problem(code, &req.id, &arg.name, &message)))?;
-            if !projection::can_bind(&plan.ty, &param.ty) {
+            let plan = selector_type(
+                law,
+                map,
+                &requests,
+                &names,
+                &arg.value,
+                control,
+                (&req.id, &arg.name),
+            )?;
+            if !projection::can_bind_controlled(&plan.ty, &param.ty, control).map_err(stopped)? {
                 return Err(invalid(problem(
                     RequestIssueCode::Type,
                     &req.id,
@@ -463,22 +501,27 @@ pub fn resolve_observed_requests_controlled(
                 )));
             }
             let owner = match &param.ty {
-                Type::Owned(_, p) => req
-                    .arguments
-                    .iter()
-                    .find(|a| a.name == format!("bind.{p}"))
-                    .map(|a| a.value.clone()),
+                Type::Owned(_, p) => {
+                    let key = format!("bind.{p}");
+                    checked_find(
+                        &req.arguments,
+                        |a| a.name == key,
+                        control,
+                        Checkpoint::RequestBinding,
+                    )?
+                    .map(|a| a.value.clone())
+                }
                 _ => None,
             };
-            let owner_dynamic =
-                owner_check(map, &arg.value, &param.ty, owner.as_ref()).map_err(|message| {
-                    invalid(problem(
-                        RequestIssueCode::Type,
-                        &req.id,
-                        &arg.name,
-                        &message,
-                    ))
-                })?;
+            let owner_dynamic = owner_check(
+                map,
+                &arg.value,
+                &param.ty,
+                owner.as_ref(),
+                control,
+                &req.id,
+                &arg.name,
+            )?;
             let dynamic =
                 plan.conditional || matches!(plan.ty, ProjectionType::Dynamic(_)) || owner_dynamic;
             constraints.push(BindingConstraint {
@@ -489,37 +532,52 @@ pub fn resolve_observed_requests_controlled(
                 owner,
                 dynamic,
             });
+            phase(control, Checkpoint::RequestBinding)?;
             checkpoint(control)?;
         }
         requests[i].constraints = constraints;
+        phase(control, Checkpoint::RequestBinding)?;
         checkpoint(control)?;
     }
     let (evaluation_order, cyclic) = order(&requests, &names, control)?;
     if !cyclic.is_empty() {
-        let mut issues: Vec<_> = cyclic
-            .into_iter()
-            .map(|i| {
+        let mut sorted_issues = BTreeMap::new();
+        for i in cyclic {
+            phase(control, Checkpoint::RequestDependency)?;
+            sorted_issues.insert(
+                requests[i].id.clone(),
                 problem(
                     RequestIssueCode::Cycle,
                     &requests[i].id,
                     &requests[i].id,
                     "問いの依存に循環がある",
-                )
-            })
-            .collect();
-        issues.sort_by(|a, b| a.request.cmp(&b.request));
+                ),
+            );
+            phase(control, Checkpoint::RequestDependency)?;
+        }
+        let mut issues = Vec::new();
+        for issue in sorted_issues.into_values() {
+            phase(control, Checkpoint::RequestDependency)?;
+            issues.push(issue);
+            phase(control, Checkpoint::RequestDependency)?;
+        }
         return Err(ResolveFailure::Invalid { requests, issues });
     }
+    phase(control, Checkpoint::RequestDependency)?;
     Ok(ResolvedRequests {
         requests,
         evaluation_order,
     })
 }
 
+fn stopped(reason: StopReason) -> ResolveFailure {
+    ResolveFailure::Interrupted { reason }
+}
+fn phase(control: &mut Control, point: Checkpoint) -> Result<(), ResolveFailure> {
+    control.checkpoint(point).map_err(stopped)
+}
 fn checkpoint(control: &mut Control) -> Result<(), ResolveFailure> {
-    control
-        .checkpoint(Checkpoint::Resolve)
-        .map_err(|reason| ResolveFailure::Interrupted { reason })
+    phase(control, Checkpoint::Resolve)
 }
 fn problem(code: RequestIssueCode, request: &str, argument: &str, message: &str) -> RequestIssue {
     RequestIssue {
@@ -536,23 +594,54 @@ fn invalid(issue: RequestIssue) -> ResolveFailure {
     }
 }
 
-fn declaration(law: &CheckedLaw, name: &str) -> Option<String> {
+/// 小さい検索も早期一致・不一致を返す前に共有制御を再確認する。
+fn checked_find<'a, T>(
+    items: &'a [T],
+    mut predicate: impl FnMut(&T) -> bool,
+    control: &mut Control,
+    point: Checkpoint,
+) -> Result<Option<&'a T>, ResolveFailure> {
+    phase(control, point)?;
+    for item in items {
+        phase(control, point)?;
+        let found = predicate(item);
+        phase(control, point)?;
+        if found {
+            return Ok(Some(item));
+        }
+    }
+    phase(control, point)?;
+    Ok(None)
+}
+
+fn declaration(
+    law: &CheckedLaw,
+    name: &str,
+    control: &mut Control,
+) -> Result<Option<String>, ResolveFailure> {
+    phase(control, Checkpoint::RequestBinding)?;
     if law.declarations.contains_key(name) {
-        return Some(name.to_owned());
+        phase(control, Checkpoint::RequestBinding)?;
+        return Ok(Some(name.to_owned()));
     }
     if name.contains('.') {
-        return None;
+        phase(control, Checkpoint::RequestBinding)?;
+        return Ok(None);
     }
-    let mut choices = law
-        .declarations
-        .keys()
-        .filter(|n| n.rsplit('.').next() == Some(name));
-    let first = choices.next()?;
-    if choices.next().is_some() {
-        None
-    } else {
-        Some(first.clone())
+    let mut found = None;
+    for candidate in law.declarations.keys() {
+        phase(control, Checkpoint::RequestBinding)?;
+        let matches = candidate.rsplit('.').next() == Some(name);
+        phase(control, Checkpoint::RequestBinding)?;
+        if matches {
+            if found.is_some() {
+                return Ok(None);
+            }
+            found = Some(candidate.clone());
+        }
     }
+    phase(control, Checkpoint::RequestBinding)?;
+    Ok(found)
 }
 fn parameters(sig: &Signature, kind: QuestionKind) -> Option<&[Param]> {
     match (sig, kind) {
@@ -562,13 +651,27 @@ fn parameters(sig: &Signature, kind: QuestionKind) -> Option<&[Param]> {
     }
 }
 
-fn subject<'a>(map: &'a CheckedArchMap, snapshot: &str, subject: &str) -> Option<&'a Subject> {
-    map.snapshots
-        .iter()
-        .find(|s| s.id == snapshot)?
-        .subjects
-        .iter()
-        .find(|s| s.id == subject)
+fn subject<'a>(
+    map: &'a CheckedArchMap,
+    snapshot: &str,
+    id: &str,
+    control: &mut Control,
+) -> Result<Option<&'a Subject>, ResolveFailure> {
+    let Some(snapshot) = checked_find(
+        &map.snapshots,
+        |s| s.id == snapshot,
+        control,
+        Checkpoint::RequestBinding,
+    )?
+    else {
+        return Ok(None);
+    };
+    checked_find(
+        &snapshot.subjects,
+        |s| s.id == id,
+        control,
+        Checkpoint::RequestBinding,
+    )
 }
 fn selector_type(
     law: &CheckedLaw,
@@ -576,24 +679,30 @@ fn selector_type(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     selector: &Selector,
-) -> Result<ProjectionPlan, (RequestIssueCode, String)> {
-    let failure = |code, message: &str| (code, message.to_owned());
-    match selector {
+    control: &mut Control,
+    context: (&str, &str),
+) -> Result<ProjectionPlan, ResolveFailure> {
+    let (request, argument) = context;
+    phase(control, Checkpoint::RequestBinding)?;
+    let failure = |code, message: &str| invalid(problem(code, request, argument, message));
+    let plan = match selector {
         Selector::Subject {
             snapshot,
             subject: id,
         } => {
-            let s = subject(map, snapshot, id)
+            let s = subject(map, snapshot, id, control)?
                 .ok_or_else(|| failure(RequestIssueCode::Reference, "subject が存在しない"))?;
-            Ok(ProjectionPlan {
+            ProjectionPlan {
                 ty: ProjectionType::Law(Type::Ref(s.ty.clone())),
                 conditional: false,
-            })
+            }
         }
         Selector::Answer { id, path } => {
+            phase(control, Checkpoint::RequestDependency)?;
             let r = &requests[*names
                 .get(id)
                 .ok_or_else(|| failure(RequestIssueCode::Reference, "問い ID が存在しない"))?];
+            phase(control, Checkpoint::RequestDependency)?;
             let Some(ProjectionStep::Field(field)) = path.first() else {
                 return Err(failure(
                     RequestIssueCode::Projection,
@@ -623,11 +732,52 @@ fn selector_type(
                     ));
                 }
             };
-            projection::resolve_projection(law, initial, &path[1..])
-                .map_err(|m| (RequestIssueCode::Projection, m))
+            match projection::resolve_projection_controlled(law, initial, &path[1..], control) {
+                Ok(plan) => plan,
+                Err(projection::ProjectionFailure::Invalid(message)) => {
+                    return Err(failure(RequestIssueCode::Projection, &message));
+                }
+                Err(projection::ProjectionFailure::Interrupted(reason)) => {
+                    return Err(stopped(reason));
+                }
+            }
         }
-        _ => Err(failure(RequestIssueCode::Type, "Handle を指定する")),
+        _ => return Err(failure(RequestIssueCode::Type, "Handle を指定する")),
+    };
+    phase(control, Checkpoint::RequestBinding)?;
+    Ok(plan)
+}
+
+fn contains_owned(expected: &Type, control: &mut Control) -> Result<bool, ResolveFailure> {
+    let mut pending = vec![expected];
+    while let Some(ty) = pending.pop() {
+        phase(control, Checkpoint::RequestBinding)?;
+        match ty {
+            Type::Owned(_, _) => {
+                phase(control, Checkpoint::RequestBinding)?;
+                return Ok(true);
+            }
+            Type::Tuple(ts) | Type::Term(ts, _) => {
+                for t in ts {
+                    phase(control, Checkpoint::RequestBinding)?;
+                    pending.push(t);
+                    phase(control, Checkpoint::RequestBinding)?;
+                }
+                if let Type::Term(_, ret) = ty {
+                    pending.push(ret);
+                }
+            }
+            Type::List(t) | Type::Set(t) | Type::Option(t) => pending.push(t),
+            Type::Map(a, b) => {
+                pending.push(a);
+                pending.push(b);
+            }
+            _ => {}
+        }
+        phase(control, Checkpoint::RequestBinding)?;
     }
+    phase(control, Checkpoint::RequestBinding)?;
+    Ok(false)
 }
 
 fn owner_check(
@@ -635,9 +785,13 @@ fn owner_check(
     value: &Selector,
     expected: &Type,
     owner: Option<&Selector>,
-) -> Result<bool, String> {
+    control: &mut Control,
+    request: &str,
+    argument: &str,
+) -> Result<bool, ResolveFailure> {
+    phase(control, Checkpoint::RequestBinding)?;
     let Type::Owned(_, _) = expected else {
-        return Ok(expected.any(&mut |t| matches!(t, Type::Owned(_, _))));
+        return contains_owned(expected, control);
     };
     let (
         Selector::Subject {
@@ -650,14 +804,24 @@ fn owner_check(
         }),
     ) = (value, owner)
     else {
+        phase(control, Checkpoint::RequestBinding)?;
         return Ok(true);
     };
-    let s = subject(map, snapshot, id).ok_or("subject が存在しない")?;
-    let field = s
-        .fields
-        .iter()
-        .find(|f| f.name.rsplit('.').next() == Some("owner"));
-    match field.map(|f| &f.slot) {
+    let s = subject(map, snapshot, id, control)?.ok_or_else(|| {
+        invalid(problem(
+            RequestIssueCode::Reference,
+            request,
+            argument,
+            "subject が存在しない",
+        ))
+    })?;
+    let field = checked_find(
+        &s.fields,
+        |f| f.name.rsplit('.').next() == Some("owner"),
+        control,
+        Checkpoint::RequestBinding,
+    )?;
+    let result = match field.map(|f| &f.slot) {
         Some(Slot::Known {
             value: Value::Ref { snapshot, subject },
             ..
@@ -665,11 +829,18 @@ fn owner_check(
             if snapshot == os && subject == oi {
                 Ok(false)
             } else {
-                Err("依存 parameter の owner が合わない".into())
+                Err(invalid(problem(
+                    RequestIssueCode::Type,
+                    request,
+                    argument,
+                    "依存 parameter の owner が合わない",
+                )))
             }
         }
         _ => Ok(true),
-    }
+    };
+    phase(control, Checkpoint::RequestBinding)?;
+    result
 }
 
 fn order(
@@ -677,47 +848,94 @@ fn order(
     names: &BTreeMap<String, usize>,
     control: &mut Control,
 ) -> Result<(Vec<usize>, Vec<usize>), ResolveFailure> {
-    let deps: Vec<Vec<usize>> = requests
-        .iter()
-        .map(|r| r.dependencies.iter().map(|d| names[d]).collect())
-        .collect();
-    let mut remaining: Vec<_> = deps.iter().map(Vec::len).collect();
+    phase(control, Checkpoint::RequestDependency)?;
+    let mut deps = Vec::new();
+    let mut remaining = Vec::new();
+    for request in requests {
+        phase(control, Checkpoint::RequestDependency)?;
+        let mut targets = Vec::new();
+        for id in &request.dependencies {
+            phase(control, Checkpoint::RequestDependency)?;
+            targets.push(names[id]);
+            phase(control, Checkpoint::RequestDependency)?;
+        }
+        remaining.push(targets.len());
+        deps.push(targets);
+        phase(control, Checkpoint::RequestDependency)?;
+    }
     let mut done = vec![false; requests.len()];
     let mut sorted = Vec::new();
     loop {
         checkpoint(control)?;
-        let Some(i) = (0..requests.len()).find(|&i| !done[i] && remaining[i] == 0) else {
+        phase(control, Checkpoint::RequestDependency)?;
+        let mut ready = None;
+        for i in 0..requests.len() {
+            phase(control, Checkpoint::RequestDependency)?;
+            let matches = !done[i] && remaining[i] == 0;
+            phase(control, Checkpoint::RequestDependency)?;
+            if matches {
+                ready = Some(i);
+                break;
+            }
+        }
+        let Some(i) = ready else {
             break;
         };
         done[i] = true;
         sorted.push(i);
         for j in 0..requests.len() {
-            if deps[j].contains(&i) {
+            phase(control, Checkpoint::RequestDependency)?;
+            if checked_find(
+                &deps[j],
+                |d| *d == i,
+                control,
+                Checkpoint::RequestDependency,
+            )?
+            .is_some()
+            {
                 remaining[j] -= 1;
             }
+            phase(control, Checkpoint::RequestDependency)?;
         }
+        phase(control, Checkpoint::RequestDependency)?;
         checkpoint(control)?;
     }
     // 未処理の下流も cycle とする誤りを避け、各自へ戻れる node だけを記録する。
     let mut cyclic = Vec::new();
     for start in 0..requests.len() {
         checkpoint(control)?;
+        phase(control, Checkpoint::RequestDependency)?;
         if done[start] {
+            phase(control, Checkpoint::RequestDependency)?;
             continue;
         }
         let mut seen = BTreeSet::new();
-        let mut stack = deps[start].clone();
+        let mut stack = Vec::new();
+        for &dependency in &deps[start] {
+            phase(control, Checkpoint::RequestDependency)?;
+            stack.push(dependency);
+            phase(control, Checkpoint::RequestDependency)?;
+        }
         while let Some(i) = stack.pop() {
             checkpoint(control)?;
+            phase(control, Checkpoint::RequestDependency)?;
             if i == start {
                 cyclic.push(start);
+                phase(control, Checkpoint::RequestDependency)?;
                 break;
             }
             if seen.insert(i) {
-                stack.extend(&deps[i]);
+                for &dependency in &deps[i] {
+                    phase(control, Checkpoint::RequestDependency)?;
+                    stack.push(dependency);
+                    phase(control, Checkpoint::RequestDependency)?;
+                }
             }
+            phase(control, Checkpoint::RequestDependency)?;
         }
+        phase(control, Checkpoint::RequestDependency)?;
     }
+    phase(control, Checkpoint::RequestDependency)?;
     Ok((sorted, cyclic))
 }
 
@@ -731,46 +949,66 @@ struct Parser<'a> {
     src: &'a str,
     at: usize,
     id: String,
+    control: Control,
 }
 impl<'a> Parser<'a> {
-    fn new(src: &'a str) -> Self {
+    // clone した制御も元と同じ probe・停止 latch を共有する。
+    fn new(src: &'a str, control: &Control) -> Self {
         Self {
             src,
             at: 0,
             id: String::new(),
+            control: control.clone(),
         }
     }
-    fn error(&self, message: &str) -> RequestIssue {
-        problem(RequestIssueCode::Syntax, &self.id, self.src, message)
+    fn tick(&mut self) -> Result<(), ResolveFailure> {
+        phase(&mut self.control, Checkpoint::RequestSyntax)
     }
-    fn ws(&mut self) {
+    fn error(&mut self, message: &str) -> ResolveFailure {
+        if let Err(stopped) = self.tick() {
+            return stopped;
+        }
+        invalid(problem(
+            RequestIssueCode::Syntax,
+            &self.id,
+            self.src,
+            message,
+        ))
+    }
+    fn ws(&mut self) -> Result<(), ResolveFailure> {
+        self.tick()?;
         while self
             .src
             .as_bytes()
             .get(self.at)
             .is_some_and(u8::is_ascii_whitespace)
         {
+            self.tick()?;
+            self.at += 1;
+            self.tick()?;
+        }
+        self.tick()
+    }
+    fn take(&mut self, c: u8) -> Result<bool, ResolveFailure> {
+        self.tick()?;
+        self.ws()?;
+        let matched = self.src.as_bytes().get(self.at) == Some(&c);
+        if matched {
             self.at += 1;
         }
+        self.tick()?;
+        Ok(matched)
     }
-    fn take(&mut self, c: u8) -> bool {
-        self.ws();
-        if self.src.as_bytes().get(self.at) == Some(&c) {
-            self.at += 1;
-            true
-        } else {
-            false
-        }
-    }
-    fn expect(&mut self, c: u8) -> Result<(), RequestIssue> {
-        if self.take(c) {
+    fn expect(&mut self, c: u8) -> Result<(), ResolveFailure> {
+        if self.take(c)? {
             Ok(())
         } else {
             Err(self.error("要求の区切りが不正"))
         }
     }
-    fn name(&mut self, id: bool) -> Result<String, RequestIssue> {
-        self.ws();
+    fn name(&mut self, id: bool) -> Result<String, ResolveFailure> {
+        self.tick()?;
+        self.ws()?;
         let start = self.at;
         if !self
             .src
@@ -781,69 +1019,92 @@ impl<'a> Parser<'a> {
             return Err(self.error("識別子を指定する"));
         }
         self.at += 1;
+        self.tick()?;
         while self.src.as_bytes().get(self.at).is_some_and(|b| {
             b.is_ascii_alphanumeric() || *b == b'_' || (id && matches!(b, b'.' | b'-'))
         }) {
+            self.tick()?;
             self.at += 1;
+            self.tick()?;
         }
-        Ok(self.src[start..self.at].to_owned())
+        let name = self.src[start..self.at].to_owned();
+        self.tick()?;
+        Ok(name)
     }
-    fn user_name(&mut self) -> Result<String, RequestIssue> {
+    fn user_name(&mut self) -> Result<String, ResolveFailure> {
+        self.tick()?;
         let name = self.name(false)?;
-        if reserved(&name) {
+        let is_reserved = crate::law::parser::is_reserved(&name);
+        self.tick()?;
+        if is_reserved {
             return Err(self.error("予約語は識別子に使えない"));
         }
         Ok(name)
     }
-    fn selector(&mut self) -> Result<Selector, RequestIssue> {
-        if self.take(b'@') {
+    fn selector(&mut self) -> Result<Selector, ResolveFailure> {
+        self.tick()?;
+        if self.take(b'@')? {
             let snapshot = self.name(true)?;
             self.expect(b'/')?;
             let subject = self.name(true)?;
+            self.tick()?;
             return Ok(Selector::Subject { snapshot, subject });
         }
-        if self.take(b'$') {
+        if self.take(b'$')? {
             let id = self.user_name()?;
             let mut path = Vec::new();
             loop {
-                if self.take(b'.') {
+                self.tick()?;
+                if self.take(b'.')? {
                     path.push(ProjectionStep::Field(self.name(false)?));
-                } else if self.take(b'[') {
-                    self.ws();
+                } else if self.take(b'[')? {
+                    self.ws()?;
                     let start = self.at;
+                    let mut n = Some(0u64);
                     while self
                         .src
                         .as_bytes()
                         .get(self.at)
                         .is_some_and(u8::is_ascii_digit)
                     {
+                        self.tick()?;
+                        let digit = u64::from(self.src.as_bytes()[self.at] - b'0');
+                        n = n
+                            .and_then(|n| n.checked_mul(10))
+                            .and_then(|n| n.checked_add(digit));
                         self.at += 1;
+                        self.tick()?;
                     }
                     let digits = &self.src[start..self.at];
                     if digits.is_empty() || (digits.len() > 1 && digits.starts_with('0')) {
                         return Err(self.error("index は正規化した非負整数で指定する"));
                     }
-                    let n = digits
-                        .parse::<u64>()
-                        .ok()
+                    let n = n
                         .filter(|n| *n <= 9_007_199_254_740_991)
                         .ok_or_else(|| self.error("index が Nat の上限を超える"))?;
                     self.expect(b']')?;
                     path.push(ProjectionStep::Index(n));
                 } else {
+                    self.tick()?;
                     break;
                 }
+                self.tick()?;
             }
+            self.tick()?;
             return Ok(Selector::Answer { id, path });
         }
         let mut name = self.user_name()?;
-        while self.take(b'.') {
+        while self.take(b'.')? {
+            self.tick()?;
             name.push('.');
             name.push_str(&self.user_name()?);
+            self.tick()?;
         }
+        self.tick()?;
         Ok(Selector::Declaration { name })
     }
-    fn parse(mut self) -> Result<RawRequest, RequestIssue> {
+    fn parse(mut self) -> Result<RawRequest, ResolveFailure> {
+        self.tick()?;
         self.id = self.user_name()?;
         self.expect(b'=')?;
         let kind = self.name(false)?;
@@ -851,31 +1112,36 @@ impl<'a> Parser<'a> {
         let head = self.selector()?;
         let mut arguments = Vec::new();
         let mut keys = BTreeSet::new();
-        while self.take(b',') {
+        while self.take(b',')? {
+            self.tick()?;
             let mut key = self.name(false)?;
-            if self.take(b'.') {
+            if self.take(b'.')? {
                 if key != "bind" {
                     return Err(self.error("束縛 key の接頭辞は bind"));
                 }
                 key.push('.');
                 key.push_str(&self.name(false)?);
             }
-            if !keys.insert(key.clone()) {
-                return Err(problem(
+            let duplicate = !keys.insert(key.clone());
+            self.tick()?;
+            if duplicate {
+                return Err(invalid(problem(
                     RequestIssueCode::DuplicateArgument,
                     &self.id,
                     &key,
                     "引数名が重複している",
-                ));
+                )));
             }
             self.expect(b'=')?;
             arguments.push((key, self.selector()?));
+            self.tick()?;
         }
         self.expect(b')')?;
-        self.ws();
+        self.ws()?;
         if self.at != self.src.len() {
             return Err(self.error("要求の末尾に余分な字句がある"));
         }
+        self.tick()?;
         Ok(RawRequest {
             id: self.id,
             kind,
@@ -883,8 +1149,4 @@ impl<'a> Parser<'a> {
             arguments,
         })
     }
-}
-
-fn reserved(name: &str) -> bool {
-    crate::law::parser::is_reserved(name)
 }
