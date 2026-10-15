@@ -181,54 +181,85 @@ impl CheckedDefinitions {
         E::finish(result, control, Checkpoint::DefinitionSemantics)
     }
 }
-/// 型の各成分の前後で確認し、短絡しても中断を bool に変換しない。
+/// Bool を読む探索と、拒否を確定する検査で同じ traversal を使う。
+/// predicate が元 Issue を返した後は post-budget よりその Issue を優先する。
+fn type_scan<E: InputError>(
+    t: &Type,
+    predicate: &mut impl FnMut(&Type) -> R<bool, E>,
+    control: &mut Control,
+) -> R<bool, E> {
+    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        E::checkpoint(control, Checkpoint::DefinitionData)?;
+        let result = (|| {
+            let found = if predicate(t)? {
+                true
+            } else {
+                match t {
+                    Type::Tuple(items) => {
+                        let mut found = false;
+                        for item in items {
+                            E::checkpoint(control, Checkpoint::DefinitionData)?;
+                            if type_scan::<E>(item, predicate, control)? {
+                                found = true;
+                                break;
+                            }
+                            E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        }
+                        found
+                    }
+                    Type::List(t) | Type::Set(t) | Type::Option(t) => {
+                        type_scan::<E>(t, predicate, control)?
+                    }
+                    Type::Map(a, b) => {
+                        type_scan::<E>(a, predicate, control)?
+                            || type_scan::<E>(b, predicate, control)?
+                    }
+                    Type::Term(args, ret) => {
+                        let mut found = false;
+                        for arg in args {
+                            E::checkpoint(control, Checkpoint::DefinitionData)?;
+                            if type_scan::<E>(arg, predicate, control)? {
+                                found = true;
+                                break;
+                            }
+                            E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        }
+                        found || type_scan::<E>(ret, predicate, control)?
+                    }
+                    _ => false,
+                }
+            };
+            Ok(found)
+        })();
+        E::finish(result, control, Checkpoint::DefinitionData)
+    })
+}
 fn type_any<E: InputError>(
     t: &Type,
     predicate: &mut impl FnMut(&Type) -> bool,
     control: &mut Control,
 ) -> R<bool, E> {
-    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
-        E::checkpoint(control, Checkpoint::DefinitionData)?;
-        let found = if predicate(t) {
-            true
-        } else {
-            match t {
-                Type::Tuple(items) => {
-                    let mut found = false;
-                    for item in items {
-                        E::checkpoint(control, Checkpoint::DefinitionData)?;
-                        if type_any::<E>(item, predicate, control)? {
-                            found = true;
-                            break;
-                        }
-                        E::checkpoint(control, Checkpoint::DefinitionData)?;
-                    }
-                    found
-                }
-                Type::List(t) | Type::Set(t) | Type::Option(t) => {
-                    type_any::<E>(t, predicate, control)?
-                }
-                Type::Map(a, b) => {
-                    type_any::<E>(a, predicate, control)? || type_any::<E>(b, predicate, control)?
-                }
-                Type::Term(args, ret) => {
-                    let mut found = false;
-                    for arg in args {
-                        E::checkpoint(control, Checkpoint::DefinitionData)?;
-                        if type_any::<E>(arg, predicate, control)? {
-                            found = true;
-                            break;
-                        }
-                        E::checkpoint(control, Checkpoint::DefinitionData)?;
-                    }
-                    found || type_any::<E>(ret, predicate, control)?
-                }
-                _ => false,
+    type_scan::<E>(t, &mut |ty| Ok(predicate(ty)), control)
+}
+fn reject_type_component<E: InputError>(
+    t: &Type,
+    mut forbidden: impl FnMut(&Type) -> bool,
+    at: &Location,
+    message: &str,
+    control: &mut Control,
+) -> R<(), E> {
+    type_scan::<E>(
+        t,
+        &mut |ty| {
+            if forbidden(ty) {
+                fail(Code::Syntax, at, message)
+            } else {
+                Ok(false)
             }
-        };
-        E::checkpoint(control, Checkpoint::DefinitionData)?;
-        Ok(found)
-    })
+        },
+        control,
+    )?;
+    Ok(())
 }
 fn has_term_or_path<E: InputError>(
     t: &Type,
@@ -367,9 +398,17 @@ fn check_type_inner<E: InputError>(
         }
         Type::Set(t) => {
             check_type::<E>(defs, props, t, &child(at, "1"), earlier, control)?;
-            if has_term_or_path::<E>(t, props, control)? {
-                return fail(Code::Syntax, at, "Set の要素型は Term・Path を含まない");
-            }
+            reject_type_component::<E>(
+                t,
+                |ty| match ty {
+                    Type::Term(..) | Type::Path(..) => true,
+                    Type::Data(name) => props.get(name).is_some_and(|p| p.term_or_path),
+                    _ => false,
+                },
+                at,
+                "Set の要素型は Term・Path を含まない",
+                control,
+            )?;
         }
         Type::Map(a, b) => {
             check_type::<E>(defs, props, a, &child(at, "1"), earlier, control)?;
@@ -393,18 +432,24 @@ fn check_type_inner<E: InputError>(
                 E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
             }
             check_type::<E>(defs, props, ret, &child(at, "2"), &[], control)?;
-            let mut references = false;
-            for arg in args {
-                E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
-                references |= has_reference::<E>(arg, props, control)?;
-                E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
-            }
-            if references || has_reference::<E>(ret, props, control)? {
-                return fail(
-                    Code::Syntax,
+            for (i, ty) in args.iter().chain(std::iter::once(ret.as_ref())).enumerate() {
+                if i < args.len() {
+                    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+                }
+                reject_type_component::<E>(
+                    ty,
+                    |ty| match ty {
+                        Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
+                        Type::Data(name) => props.get(name).is_some_and(|p| p.reference),
+                        _ => false,
+                    },
                     at,
                     "Term の引数・戻り型は参照・Map・Path を含まない値型",
-                );
+                    control,
+                )?;
+                if i < args.len() {
+                    E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+                }
             }
         }
         Type::Path(..) => {
@@ -610,13 +655,13 @@ fn check_data<E: InputError>(defs: &CheckedDefinitions, control: &mut Control) -
             E::checkpoint(control, Checkpoint::DefinitionData)?;
             for (i, t) in c.arguments.iter().enumerate() {
                 E::checkpoint(control, Checkpoint::DefinitionData)?;
-                if !positive_self::<E>(t, name, true, control)? {
-                    return fail(
-                        Code::Syntax,
-                        &child(&child(&c.location, "arguments"), &i.to_string()),
-                        "data の自己参照は直接または Tuple・List・Option を通る",
-                    );
-                }
+                check_positive_self::<E>(
+                    t,
+                    name,
+                    true,
+                    &child(&child(&c.location, "arguments"), &i.to_string()),
+                    control,
+                )?;
                 type_any::<E>(
                     t,
                     &mut |t| {
@@ -909,17 +954,32 @@ fn check_correspondence<E: InputError>(
             )?
             .expect("解決済み field");
             let moved = transport::<E>(&sf.ty, &mu, &alpha, control)?;
-            if (has_reference::<E>(&sf.ty, props, control)?
-                || has_reference::<E>(&tf.ty, props, control)?)
-                && moved != tf.ty
-            {
-                return mismatch(
-                    &child(&tf.location, "name"),
-                    &moved,
-                    &tf.ty,
-                    format!("`{e}.{}` と `{f}.{}` の型が対応しない", sf.name, tf.name),
+            for ty in [&sf.ty, &tf.ty] {
+                let mut diagnostic_control = control.clone();
+                let references = type_scan::<E>(
+                    ty,
+                    &mut |ty| {
+                        let references = match ty {
+                            Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
+                            Type::Data(name) => props.get(name).is_some_and(|p| p.reference),
+                            _ => false,
+                        };
+                        if references && moved != tf.ty {
+                            return mismatch(
+                                &child(&tf.location, "name"),
+                                &moved,
+                                &tf.ty,
+                                format!("`{e}.{}` と `{f}.{}` の型が対応しない", sf.name, tf.name),
+                                &mut diagnostic_control,
+                            );
+                        }
+                        Ok(references)
+                    },
                     control,
-                );
+                )?;
+                if references {
+                    break;
+                }
             }
             E::checkpoint(control, Checkpoint::DefinitionDependency)?;
         }
@@ -971,50 +1031,52 @@ fn resolve_field<'a, E: InputError>(
     E::finish(result, control, Checkpoint::DefinitionSemantics)
 }
 
-fn positive_self<E: InputError>(
+fn check_positive_self<E: InputError>(
     t: &Type,
     me: &str,
     positive: bool,
+    at: &Location,
     control: &mut Control,
-) -> R<bool, E> {
+) -> R<(), E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         E::checkpoint(control, Checkpoint::DefinitionData)?;
-        let result = match t {
-            Type::Data(d) if d == me => positive,
-            Type::Tuple(items) => {
-                let mut result = true;
-                for t in items {
-                    E::checkpoint(control, Checkpoint::DefinitionData)?;
-                    if !positive_self::<E>(t, me, positive, control)? {
-                        result = false;
-                        break;
-                    }
-                    E::checkpoint(control, Checkpoint::DefinitionData)?;
+        let result = (|| {
+            match t {
+                Type::Data(d) if d == me && !positive => {
+                    return fail(
+                        Code::Syntax,
+                        at,
+                        "data の自己参照は直接または Tuple・List・Option を通る",
+                    );
                 }
-                result
-            }
-            Type::List(t) | Type::Option(t) => positive_self::<E>(t, me, positive, control)?,
-            Type::Set(t) => positive_self::<E>(t, me, false, control)?,
-            Type::Map(a, b) => {
-                positive_self::<E>(a, me, false, control)?
-                    && positive_self::<E>(b, me, false, control)?
-            }
-            Type::Term(args, ret) => {
-                let mut result = true;
-                for t in args {
-                    E::checkpoint(control, Checkpoint::DefinitionData)?;
-                    if !positive_self::<E>(t, me, false, control)? {
-                        result = false;
-                        break;
+                Type::Tuple(items) => {
+                    for t in items {
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        check_positive_self::<E>(t, me, positive, at, control)?;
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
                     }
-                    E::checkpoint(control, Checkpoint::DefinitionData)?;
                 }
-                result && positive_self::<E>(ret, me, false, control)?
+                Type::List(t) | Type::Option(t) => {
+                    check_positive_self::<E>(t, me, positive, at, control)?;
+                }
+                Type::Set(t) => check_positive_self::<E>(t, me, false, at, control)?,
+                Type::Map(a, b) => {
+                    check_positive_self::<E>(a, me, false, at, control)?;
+                    check_positive_self::<E>(b, me, false, at, control)?;
+                }
+                Type::Term(args, ret) => {
+                    for t in args {
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                        check_positive_self::<E>(t, me, false, at, control)?;
+                        E::checkpoint(control, Checkpoint::DefinitionData)?;
+                    }
+                    check_positive_self::<E>(ret, me, false, at, control)?;
+                }
+                _ => {}
             }
-            _ => true,
-        };
-        E::checkpoint(control, Checkpoint::DefinitionData)?;
-        Ok(result)
+            Ok(())
+        })();
+        E::finish(result, control, Checkpoint::DefinitionData)
     })
 }
 fn type_inhabited<E: InputError>(

@@ -123,6 +123,11 @@ pub struct BindingConstraint {
     pub selector: Selector,
     pub projection: ProjectionPlan,
     pub owner: Option<Selector>,
+    /// 射影後の型内の Owned 添字を、生産側 Request の束縛へ対応付ける。
+    /// 型名や添字の文字列だけで別の Request の文脈を同一視しない。
+    pub projection_owners: BTreeMap<String, Selector>,
+    /// 消費側 parameter 型の Owned 添字に対する明示束縛。未束縛は動的に検査する。
+    pub expected_owners: BTreeMap<String, Selector>,
     pub dynamic: bool,
 }
 
@@ -484,6 +489,7 @@ fn resolve_inner(
         let req = &requests[i];
         let params = parameters(&law.declarations[req.declaration()].signature, req.kind).unwrap();
         let mut constraints = Vec::new();
+        let expected_owners = owner_bindings(req, control)?;
         for param in params {
             checkpoint(control)?;
             phase(control, Checkpoint::RequestBinding)?;
@@ -497,7 +503,7 @@ fn resolve_inner(
             else {
                 continue;
             };
-            let plan = selector_type(
+            let (plan, projection_owners) = selector_type(
                 law,
                 map,
                 &requests,
@@ -527,15 +533,40 @@ fn resolve_inner(
                 }
                 _ => None,
             };
-            let owner_dynamic = owner_check(
-                map,
-                &arg.value,
-                &param.ty,
-                owner.as_ref(),
-                control,
-                &req.id,
-                &arg.name,
-            )?;
+            let owner_dynamic = if matches!(arg.value, Selector::Answer { .. }) {
+                let relation = projection_owner_check(
+                    &plan.ty,
+                    &projection_owners,
+                    &param.ty,
+                    &expected_owners,
+                    control,
+                )?;
+                match relation {
+                    Some(dynamic) => dynamic,
+                    None => {
+                        return finish_request(
+                            Err(invalid(problem(
+                                RequestIssueCode::Type,
+                                &req.id,
+                                &arg.name,
+                                "依存 parameter の owner が合わない",
+                            ))),
+                            control,
+                            Checkpoint::RequestBinding,
+                        );
+                    }
+                }
+            } else {
+                owner_check(
+                    map,
+                    &arg.value,
+                    &param.ty,
+                    owner.as_ref(),
+                    control,
+                    &req.id,
+                    &arg.name,
+                )?
+            };
             let dynamic =
                 plan.conditional || matches!(plan.ty, ProjectionType::Dynamic(_)) || owner_dynamic;
             constraints.push(BindingConstraint {
@@ -544,6 +575,8 @@ fn resolve_inner(
                 selector: arg.value.clone(),
                 projection: plan,
                 owner,
+                projection_owners,
+                expected_owners: owner_bindings(req, control)?,
                 dynamic,
             });
             phase(control, Checkpoint::RequestBinding)?;
@@ -701,10 +734,11 @@ fn selector_type(
     selector: &Selector,
     control: &mut Control,
     context: (&str, &str),
-) -> Result<ProjectionPlan, ResolveFailure> {
+) -> Result<(ProjectionPlan, BTreeMap<String, Selector>), ResolveFailure> {
     let (request, argument) = context;
     phase(control, Checkpoint::RequestBinding)?;
     let failure = |code, message: &str| invalid(problem(code, request, argument, message));
+    let mut owners = BTreeMap::new();
     let plan = match selector {
         Selector::Subject {
             snapshot,
@@ -729,6 +763,9 @@ fn selector_type(
                     "出力 field を指定する",
                 ));
             };
+            // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
+            // 評価して参照値を推測しない。後方参照でも同じ有限な表を参照する。
+            owners = owner_bindings(r, control)?;
             let sig = &law.declarations[r.declaration()].signature;
             let initial = match (r.kind, field.as_str()) {
                 (QuestionKind::Evaluate, "value") => {
@@ -765,7 +802,180 @@ fn selector_type(
         _ => return Err(failure(RequestIssueCode::Type, "Handle を指定する")),
     };
     phase(control, Checkpoint::RequestBinding)?;
-    Ok(plan)
+    Ok((plan, owners))
+}
+
+/// 添字の scope は Request ごとに独立。wire に追加する値入力ではなく、既存束縛の索引。
+fn owner_bindings(
+    request: &Request,
+    control: &mut Control,
+) -> Result<BTreeMap<String, Selector>, ResolveFailure> {
+    let mut bindings = BTreeMap::new();
+    for argument in &request.arguments {
+        phase(control, Checkpoint::RequestBinding)?;
+        let name = argument.name.strip_prefix("bind.").expect("正規化済み束縛");
+        bindings.insert(name.to_owned(), clone_selector(&argument.value, control)?);
+        phase(control, Checkpoint::RequestBinding)?;
+    }
+    Ok(bindings)
+}
+
+fn clone_selector(selector: &Selector, control: &mut Control) -> Result<Selector, ResolveFailure> {
+    phase(control, Checkpoint::RequestBinding)?;
+    let selector = match selector {
+        Selector::Declaration { name } => Selector::Declaration { name: name.clone() },
+        Selector::Subject { snapshot, subject } => Selector::Subject {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+        },
+        Selector::Answer { id, path } => {
+            let mut steps = Vec::new();
+            for step in path {
+                phase(control, Checkpoint::RequestBinding)?;
+                steps.push(step.clone());
+                phase(control, Checkpoint::RequestBinding)?;
+            }
+            Selector::Answer {
+                id: id.clone(),
+                path: steps,
+            }
+        }
+    };
+    phase(control, Checkpoint::RequestBinding)?;
+    Ok(selector)
+}
+
+/// Some(false) は所属が型から一致、Some(true) は実値で検査、None は全候補が静的不一致。
+/// 異なる Answer の値を同一とも別物とも仮定しない。
+fn projection_owner_check(
+    actual: &ProjectionType,
+    actual_owners: &BTreeMap<String, Selector>,
+    expected: &Type,
+    expected_owners: &BTreeMap<String, Selector>,
+    control: &mut Control,
+) -> Result<Option<bool>, ResolveFailure> {
+    let mut candidates = vec![actual];
+    while let Some(candidate) = candidates.pop() {
+        phase(control, Checkpoint::RequestBinding)?;
+        let result = match candidate {
+            ProjectionType::Dynamic(types) => {
+                for ty in types {
+                    phase(control, Checkpoint::RequestBinding)?;
+                    candidates.push(ty);
+                    phase(control, Checkpoint::RequestBinding)?;
+                }
+                None
+            }
+            ProjectionType::Law(ty)
+                if projection::can_bind_controlled(candidate, expected, control)
+                    .map_err(stopped)? =>
+            {
+                type_owner_check(ty, actual_owners, expected, expected_owners, control)?
+            }
+            _ => None,
+        };
+        if result.is_some() || candidates.is_empty() {
+            return finish_owner_check(result, control);
+        }
+        // 一候補の棄却後に停止したら、未検査の候補も棄却したとはしない。
+        phase(control, Checkpoint::RequestBinding)?;
+    }
+    finish_owner_check(None, control)
+}
+
+fn finish_owner_check(
+    relation: Option<bool>,
+    control: &mut Control,
+) -> Result<Option<bool>, ResolveFailure> {
+    match control.checkpoint(Checkpoint::RequestBinding) {
+        Err(StopReason::BudgetExhausted { .. }) if relation.is_none() => Ok(None),
+        Err(reason) => Err(stopped(reason)),
+        Ok(()) => Ok(relation),
+    }
+}
+
+fn type_owner_check(
+    actual: &Type,
+    actual_owners: &BTreeMap<String, Selector>,
+    expected: &Type,
+    expected_owners: &BTreeMap<String, Selector>,
+    control: &mut Control,
+) -> Result<Option<bool>, ResolveFailure> {
+    let mut pending = vec![(actual, expected)];
+    let mut dynamic = false;
+    while let Some((actual, expected)) = pending.pop() {
+        phase(control, Checkpoint::RequestBinding)?;
+        match (actual, expected) {
+            (Type::Owned(_, source), Type::Owned(_, target)) => {
+                match owner_selector_relation(
+                    actual_owners.get(source),
+                    expected_owners.get(target),
+                    control,
+                )? {
+                    Some(true) => {}
+                    Some(false) => return finish_owner_check(None, control),
+                    None => dynamic = true,
+                }
+            }
+            (Type::Ref(_), Type::Owned(_, _)) => dynamic = true,
+            (Type::Tuple(left), Type::Tuple(right))
+            | (Type::Term(left, _), Type::Term(right, _)) => {
+                for pair in left.iter().zip(right) {
+                    phase(control, Checkpoint::RequestBinding)?;
+                    pending.push(pair);
+                    phase(control, Checkpoint::RequestBinding)?;
+                }
+                if let (Type::Term(_, left), Type::Term(_, right)) = (actual, expected) {
+                    pending.push((left, right));
+                }
+            }
+            (Type::List(left), Type::List(right))
+            | (Type::Set(left), Type::Set(right))
+            | (Type::Option(left), Type::Option(right)) => pending.push((left, right)),
+            (Type::Map(a, b), Type::Map(c, d)) => {
+                pending.push((a, c));
+                pending.push((b, d));
+            }
+            _ => {}
+        }
+        phase(control, Checkpoint::RequestBinding)?;
+    }
+    finish_owner_check(Some(dynamic), control)
+}
+
+/// true/false は証明済みの参照同一性/相違。別 Answer や未束縛添字は未知。
+fn owner_selector_relation(
+    actual: Option<&Selector>,
+    expected: Option<&Selector>,
+    control: &mut Control,
+) -> Result<Option<bool>, ResolveFailure> {
+    phase(control, Checkpoint::RequestBinding)?;
+    match (actual, expected) {
+        (
+            Some(Selector::Subject {
+                snapshot: a,
+                subject: b,
+            }),
+            Some(Selector::Subject {
+                snapshot: c,
+                subject: d,
+            }),
+        ) => Ok(Some(a == c && b == d)),
+        (
+            Some(Selector::Answer { id: a, path: left }),
+            Some(Selector::Answer { id: b, path: right }),
+        ) if a == b && left.len() == right.len() => {
+            for (left, right) in left.iter().zip(right) {
+                phase(control, Checkpoint::RequestBinding)?;
+                if left != right {
+                    return Ok(None);
+                }
+                phase(control, Checkpoint::RequestBinding)?;
+            }
+            Ok(Some(true))
+        }
+        _ => Ok(None),
+    }
 }
 
 fn contains_owned(expected: &Type, control: &mut Control) -> Result<bool, ResolveFailure> {

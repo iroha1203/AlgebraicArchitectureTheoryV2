@@ -331,9 +331,7 @@ impl<E: InputError> Checker<E> {
                 operand,
             } => {
                 let t = self.check(operand, expected, env, ctx)?;
-                if !self.is_numeric(&t)? {
-                    return self.type_error(span, &Type::Z, &t, "単項 - は Z・Q・Fp とその組");
-                }
+                self.require_numeric(&t, span, &Type::Z, &t, "単項 - は Z・Q・Fp とその組")?;
                 Ok(t)
             }
             ExprKind::Binary { op, lhs, rhs } => {
@@ -409,9 +407,7 @@ impl<E: InputError> Checker<E> {
             }
             ExprKind::SetLit { ty, items } => {
                 let t = self.resolve_type_in(&ty, env, ctx)?;
-                if self.has_term_or_path(&t)? {
-                    return syntax(ty.span(), "Set の要素型は Term・Path を含まない");
-                }
+                self.reject_term_or_path(&t, ty.span())?;
                 for i in items {
                     self.cooperate()?;
                     self.check(i, Some(&t), env, ctx)?;
@@ -440,9 +436,7 @@ impl<E: InputError> Checker<E> {
                 }
                 let t = self.check(elem, None, env, ctx)?;
                 env.vars.truncate(mark);
-                if self.has_term_or_path(&t)? {
-                    return syntax(self.span(elem), "Set の要素型は Term・Path を含まない");
-                }
+                self.reject_term_or_path(&t, self.span(elem))?;
                 Ok(Type::Set(Box::new(t)))
             }
             ExprKind::None(ty) => Ok(Type::Option(Box::new(self.resolve_type_in(&ty, env, ctx)?))),
@@ -507,9 +501,7 @@ impl<E: InputError> Checker<E> {
                 } else {
                     self.pair_type(lhs, rhs, env, ctx)?
                 };
-                if !self.is_numeric(&t)? {
-                    return self.type_error(span, &Type::Z, &t, "算術は Z・Q・Fp とその組");
-                }
+                self.require_numeric(&t, span, &Type::Z, &t, "算術は Z・Q・Fp とその組")?;
                 Ok(t)
             }
             BinOp::Eq | BinOp::Ne => {
@@ -926,14 +918,13 @@ impl<E: InputError> Checker<E> {
                 if b == "count" {
                     return Ok(Type::Z);
                 }
-                if !self.is_numeric(&e)? {
-                    return self.type_error(
-                        self.span(args[0]),
-                        &Type::List(Box::new(Type::Z)),
-                        &c,
-                        "sum の要素は数値",
-                    );
-                }
+                self.require_numeric(
+                    &e,
+                    self.span(args[0]),
+                    &Type::List(Box::new(Type::Z)),
+                    &c,
+                    "sum の要素は数値",
+                )?;
                 Ok(e)
             }
             "path" => {
@@ -1030,12 +1021,11 @@ impl<E: InputError> Checker<E> {
         env.vars.truncate(mark);
         env.boundary = saved_boundary;
         let ret = result?;
-        if self.has_reference(&ret)? {
-            return syntax(
-                self.span(body),
-                "Term の戻り型は参照・Map・Path を含まない値型",
-            );
-        }
+        self.reject_reference(
+            &ret,
+            self.span(body),
+            "Term の戻り型は参照・Map・Path を含まない値型",
+        )?;
         Ok(Type::Term(types, Box::new(ret)))
     }
 

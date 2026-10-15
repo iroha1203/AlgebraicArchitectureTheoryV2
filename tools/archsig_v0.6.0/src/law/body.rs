@@ -375,12 +375,17 @@ impl<E: InputError> Checker<E> {
                     format!("field `{}` の更新が重複している", field.name),
                 );
             }
-            if field.name == "owner" || self.has_reference(&f.ty)? {
+            if field.name == "owner" {
                 return syntax(
                     field.span,
                     "change は owner・参照・Map を含む field を更新しない",
                 );
             }
+            self.reject_reference(
+                &f.ty,
+                field.span,
+                "change は owner・参照・Map を含む field を更新しない",
+            )?;
             self.record(field.span, full(&entity, &[&field.name]));
             self.check(*value, Some(&f.ty), env, ctx)?;
             E::checkpoint(&mut self.control.clone(), Checkpoint::LawChange)?;

@@ -528,8 +528,12 @@ impl<E: InputError> Checker<E> {
             let t = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
                 self.resolve_type_inner(ast, ctx)
             })?;
-            if ctx.validate && ctx.ref_free && self.has_reference(&t)? {
-                return syntax(ast.span(), "ここには参照・Map・Path を含まない値型が必要");
+            if ctx.validate && ctx.ref_free {
+                self.reject_reference(
+                    &t,
+                    ast.span(),
+                    "ここには参照・Map・Path を含まない値型が必要",
+                )?;
             }
             Ok(t)
         })();
@@ -565,8 +569,8 @@ impl<E: InputError> Checker<E> {
             TypeAst::Option(t, _) => Type::Option(Box::new(self.resolve_type(t, ctx)?)),
             TypeAst::Set(t, span) => {
                 let inner = self.resolve_type(t, ctx)?;
-                if ctx.validate && self.has_term_or_path(&inner)? {
-                    return syntax(*span, "Set の要素型は Term・Path を含まない");
+                if ctx.validate {
+                    self.reject_term_or_path(&inner, *span)?;
                 }
                 Type::Set(Box::new(inner))
             }
@@ -591,13 +595,27 @@ impl<E: InputError> Checker<E> {
                     .map(|t| self.resolve_type(t, &inner))
                     .collect::<CResult<Vec<_>, E>>()?;
                 let ret = self.resolve_type(ret, &inner)?;
-                let mut contains_reference = self.has_reference(&ret)?;
-                for ty in &args {
-                    self.cooperate()?;
-                    contains_reference |= self.has_reference(ty)?;
-                }
-                if ctx.validate && contains_reference {
-                    return syntax(*span, "Term の引数・戻り型は参照・Map・Path を含まない値型");
+                if ctx.validate {
+                    self.reject_reference(
+                        &ret,
+                        *span,
+                        "Term の引数・戻り型は参照・Map・Path を含まない値型",
+                    )?;
+                    for ty in &args {
+                        self.cooperate()?;
+                        self.reject_reference(
+                            ty,
+                            *span,
+                            "Term の引数・戻り型は参照・Map・Path を含まない値型",
+                        )?;
+                    }
+                } else {
+                    // This is an intermediate type observation, rather than rejection.
+                    self.has_reference(&ret)?;
+                    for ty in &args {
+                        self.cooperate()?;
+                        self.has_reference(ty)?;
+                    }
                 }
                 Type::Term(args, Box::new(ret))
             }
@@ -678,13 +696,17 @@ impl<E: InputError> Checker<E> {
         }
     }
 
-    fn type_any(&self, root: &Type, mut predicate: impl FnMut(&Type) -> bool) -> CResult<bool, E> {
+    fn type_scan(
+        &self,
+        root: &Type,
+        mut predicate: impl FnMut(&Type) -> CResult<bool, E>,
+    ) -> CResult<bool, E> {
         let mut stack = vec![root];
         while let Some(ty) = stack.pop() {
             self.cooperate()?;
-            if predicate(ty) {
-                self.cooperate()?;
-                return Ok(true);
+            let found = predicate(ty);
+            if !matches!(found, Ok(false)) {
+                return E::finish(found, &mut self.control.clone(), self.semantic_point);
             }
             match ty {
                 Type::Tuple(items) => stack.extend(items),
@@ -704,10 +726,70 @@ impl<E: InputError> Checker<E> {
         self.cooperate()?;
         Ok(false)
     }
-    pub(super) fn is_numeric(&self, t: &Type) -> CResult<bool, E> {
-        Ok(!self.type_any(t, |t| {
-            !matches!(t, Type::Z | Type::Q | Type::Fp(_) | Type::Tuple(_))
-        })?)
+    fn type_any(&self, root: &Type, mut predicate: impl FnMut(&Type) -> bool) -> CResult<bool, E> {
+        self.type_scan(root, |ty| Ok(predicate(ty)))
+    }
+    pub(super) fn reject_type_component(
+        &self,
+        root: &Type,
+        mut forbidden: impl FnMut(&Type) -> bool,
+        span: Span,
+        message: &str,
+    ) -> CResult<(), E> {
+        self.type_scan(root, |ty| {
+            if forbidden(ty) {
+                syntax(span, message)
+            } else {
+                Ok(false)
+            }
+        })?;
+        Ok(())
+    }
+    pub(super) fn reject_reference(
+        &self,
+        root: &Type,
+        span: Span,
+        message: &str,
+    ) -> CResult<(), E> {
+        self.reject_type_component(
+            root,
+            |ty| match ty {
+                Type::Ref(_) | Type::Owned(..) | Type::Map(..) | Type::Path(..) => true,
+                Type::Data(name) => self.data_props.get(name).is_some_and(|p| p.reference),
+                _ => false,
+            },
+            span,
+            message,
+        )
+    }
+    pub(super) fn require_numeric(
+        &self,
+        root: &Type,
+        span: Span,
+        expected: &Type,
+        actual: &Type,
+        message: &str,
+    ) -> CResult<(), E> {
+        self.type_scan(root, |ty| {
+            if !matches!(ty, Type::Z | Type::Q | Type::Fp(_) | Type::Tuple(_)) {
+                self.type_error(span, expected, actual, message)
+            } else {
+                Ok(false)
+            }
+        })?;
+        Ok(())
+    }
+    pub(super) fn reject_term_or_path(&self, root: &Type, span: Span) -> CResult<(), E> {
+        self.reject_type_component(
+            root,
+            |ty| match ty {
+                Type::Term(..) | Type::Path(..) => true,
+                Type::Data(name) => self.data_props.get(name).is_some_and(|p| p.term_or_path),
+                _ => false,
+            },
+            span,
+            "Set の要素型は Term・Path を含まない",
+        )
     }
     pub(super) fn signature_field(
         &self,
@@ -723,13 +805,6 @@ impl<E: InputError> Checker<E> {
             }
         }
         Ok(None)
-    }
-    pub fn has_term_or_path(&self, t: &Type) -> CResult<bool, E> {
-        self.type_any(t, |t| match t {
-            Type::Term(..) | Type::Path(..) => true,
-            Type::Data(d) => self.data_props.get(d).is_some_and(|p| p.term_or_path),
-            _ => false,
-        })
     }
     pub fn has_reference(&self, t: &Type) -> CResult<bool, E> {
         self.type_any(t, |t| match t {
