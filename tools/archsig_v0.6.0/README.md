@@ -14,6 +14,11 @@
 - ArchMap の静的検査: 版・schema・ID・由来・語彙 binding・原始値の型と encoding・参照・
   依存型の所属・Map の全域性・欠測 slot の補完の存在。既知値と欠測 slot を持つ内部表現と
   `model_digest`(`archsig::archmap::check_archmap`)。
+- 観測環境の準備 API (`archsig::observed::prepare_observed`): 元 byte 列・入力識別・
+  digest と検査済み三表を保持し、`evaluate` / `check` の束縛・型・公開射影・
+  依存順を解決する。循環は該当する問いの ID と依存グラフを保持して拒否する。
+  検査済み bundle を再利用する入口と、検査・要求解決で共有する予算・取消制御を持つ。
+  値の評価・回答・導出 node の生成は未実装。
 - CLI の `archsig check` と `archsig version`。入力のコピー、`result.json`、stdout の receipt を
   [実行仕様](../../docs/tool/archsig_v0_6_0_io/execution.md) §§5–7 に従って出す。
 

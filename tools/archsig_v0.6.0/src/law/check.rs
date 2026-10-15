@@ -5,6 +5,8 @@ use super::model::*;
 use super::parser::Parser;
 use crate::definition::{Binding, CheckedDefinitions, PrimitiveSignature};
 use crate::issue::{Code, Issue, Location};
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 use crate::prime::is_prime;
 use crate::types::Type;
 use num_bigint::BigUint;
@@ -157,43 +159,55 @@ impl Checker {
     // ---- 名前の表 ----
 
     /// reading・alias・Law 宣言の名前を集め、同じ scope と共通定義との完全名衝突を拒否する。
-    pub fn collect_names(&mut self) -> CResult<()> {
+    pub(super) fn collect_names_controlled<E: InputError>(
+        &mut self,
+        control: &mut Control,
+    ) -> Result<(), E> {
         let ast = self.ast.clone();
         for (ri, r) in ast.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::LawIteration)?;
             if self.reading_index.insert(r.name.name.clone(), ri).is_some() {
                 return duplicate(
                     r.name.span,
                     format!("reading `{}` が重複している", r.name.name),
-                );
+                )
+                .map_err(Into::into);
             }
         }
         for (ri, r) in ast.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::LawIteration)?;
             let mut scope: HashSet<String> = HashSet::new();
             let mut shorts = HashSet::new();
             let mut aliases = HashMap::new();
             for u in &r.uses {
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 if !scope.insert(u.alias.name.clone()) {
                     return duplicate(
                         u.alias.span,
                         format!("名前 `{}` が重複している", u.alias.name),
-                    );
+                    )
+                    .map_err(Into::into);
                 }
                 let Some(&target) = self.reading_index.get(&u.reading.name) else {
                     return reference(
                         u.reading.span,
                         format!("reading `{}` が同梱されていない", u.reading.name),
-                    );
+                    )
+                    .map_err(Into::into);
                 };
                 if target == ri {
-                    return cycle(u.reading.span, "reading が自分自身を use している");
+                    return cycle(u.reading.span, "reading が自分自身を use している")
+                        .map_err(Into::into);
                 }
                 self.reading_edges.push((ri, target, u.reading.span));
                 aliases.insert(u.alias.name.clone(), u.reading.name.clone());
             }
             let mut imports = BTreeSet::new();
             for v in &r.vocabularies {
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 if !imports.insert(v.namespace.name.clone()) {
-                    return duplicate(v.namespace.span, "同じ namespace の import が重複している");
+                    return duplicate(v.namespace.span, "同じ namespace の import が重複している")
+                        .map_err(Into::into);
                 }
                 self.definitions.check_binding(&Binding {
                     namespace: v.namespace.name.clone(),
@@ -204,12 +218,14 @@ impl Checker {
             }
             self.imports.push(imports);
             for (di, d) in r.decls.iter().enumerate() {
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 check_decl_name(&d.name)?;
                 if !scope.insert(d.name.name.clone()) {
                     return duplicate(
                         d.name.span,
                         format!("名前 `{}` が重複している", d.name.name),
-                    );
+                    )
+                    .map_err(Into::into);
                 }
                 shorts.insert(d.name.name.clone());
                 let name = full(&r.name.name, &[&d.name.name]);
@@ -217,7 +233,8 @@ impl Checker {
                     return duplicate(
                         d.name.span,
                         format!("完全名 `{name}` は原始定義と衝突している"),
-                    );
+                    )
+                    .map_err(Into::into);
                 }
                 self.decl_index.insert(name.clone(), (ri, di));
                 match &d.kind {
@@ -234,12 +251,14 @@ impl Checker {
                     | DeclKind::Relation { params, .. } => {
                         let mut seen = HashSet::new();
                         for f in params {
+                            E::checkpoint(control, Checkpoint::LawIteration)?;
                             check_binding_name(&f.name)?;
                             if !seen.insert(f.name.name.clone()) {
                                 return duplicate(
                                     f.name.span,
                                     format!("parameter `{}` が重複している", f.name.name),
-                                );
+                                )
+                                .map_err(Into::into);
                             }
                         }
                     }

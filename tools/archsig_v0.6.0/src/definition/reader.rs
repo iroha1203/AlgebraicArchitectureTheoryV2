@@ -1,4 +1,6 @@
 use super::*;
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 use crate::{
     canonical::Json,
     json::{JNode, JValue, pointer_push},
@@ -147,12 +149,13 @@ fn binding(n: &JNode, input: &str, p: &str) -> R<Binding> {
         location: location(input, p),
     })
 }
-pub(super) fn read(
+pub(super) fn read<E: InputError>(
     n: &JNode,
     input: &str,
-) -> R<(Vec<Vocabulary>, Vec<PrimitiveDeclaration>, Json)> {
+    control: &mut Control,
+) -> Result<(Vec<Vocabulary>, Vec<PrimitiveDeclaration>, Json), E> {
     let JValue::Obj(entries) = &n.value else {
-        return Err(error(Code::Syntax, input, "", "object が必要"));
+        return Err((error(Code::Syntax, input, "", "object が必要")).into());
     };
     let header = |key: &str| -> R<String> {
         let node = &entries
@@ -183,26 +186,22 @@ pub(super) fn read(
             found_format: format,
             found_semantics: semantics,
         };
-        return Err(e);
+        return Err((e).into());
     }
     let o = Obj::new(n, input, "", &["format", "semantics", "vocabularies"])?;
     let (nodes, p) = o.array("vocabularies")?;
     if nodes.is_empty() {
-        return Err(error(
-            Code::Syntax,
-            input,
-            &p,
-            "一つ以上の Vocabulary が必要",
-        ));
+        return Err((error(Code::Syntax, input, &p, "一つ以上の Vocabulary が必要")).into());
     }
     let mut vs = Vec::new();
     let mut ds = Vec::new();
     let mut seen = BTreeSet::new();
     for (i, n) in nodes.iter().enumerate() {
+        E::checkpoint(control, Checkpoint::DefinitionIteration)?;
         let vp = pointer_push(&p, &i.to_string());
         // 語彙の意味の版を、対応版の schema 検査より先に読む。
         let JValue::Obj(entries) = &n.value else {
-            return Err(error(Code::Syntax, input, &vp, "object が必要"));
+            return Err((error(Code::Syntax, input, &vp, "object が必要")).into());
         };
         let semantics_node = &entries
             .iter()
@@ -221,7 +220,7 @@ pub(super) fn read(
                 found_format: FORMAT.into(),
                 found_semantics: Some(semantics),
             };
-            return Err(e);
+            return Err((e).into());
         }
         let o = Obj::new(
             n,
@@ -247,6 +246,7 @@ pub(super) fn read(
         let mut dependencies = Vec::new();
         let mut seen = BTreeSet::new();
         for (i, n) in nodes.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::DefinitionIteration)?;
             let p = pointer_push(&p, &i.to_string());
             let b = binding(n, input, &p)?;
             unique(&mut seen, &b.namespace, input, &p)?;
@@ -257,6 +257,7 @@ pub(super) fn read(
         let mut decls = BTreeMap::new();
         let mut seen = BTreeSet::new();
         for (i, n) in nodes.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::DefinitionIteration)?;
             let p = pointer_push(&p, &i.to_string());
             let (d, j) = declaration(n, input, &p, &namespace)?;
             unique(&mut seen, &d.name, input, &p)?;

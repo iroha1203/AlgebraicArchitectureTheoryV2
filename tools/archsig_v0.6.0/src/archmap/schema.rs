@@ -2,7 +2,9 @@
 //! 表の重複・由来の形式を検査する。
 
 use super::*;
+use crate::json::InputError;
 use crate::json::{JNode, JValue, pointer_push};
+use crate::observed::control::{Checkpoint, Control};
 use std::collections::HashSet;
 
 pub struct RawSubject {
@@ -187,22 +189,25 @@ fn nat_value(text: &str) -> Option<u64> {
 }
 
 /// 版を先に確かめてから schema を読む。未知版の欄を未知欄として先に拒否しない。
-pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
+pub fn read_document<'a, E: InputError>(
+    root: &'a JNode,
+    control: &mut Control,
+) -> Result<RawDocument<'a>, E> {
     let JValue::Obj(entries) = &root.value else {
-        return Err(syntax("", "ArchMap は object"));
+        return Err((syntax("", "ArchMap は object")).into());
     };
     let field = |k: &str| entries.iter().find(|(key, _)| key == k).map(|(_, v)| v);
     let format = match field("format").map(|v| &v.value) {
         Some(JValue::Str(s)) => s.clone(),
-        _ => return Err(syntax("/format", "format の文字列が必要")),
+        _ => return Err((syntax("/format", "format の文字列が必要")).into()),
     };
     let semantics = match field("semantics").map(|v| &v.value) {
         Some(JValue::Str(s)) => Some(s.clone()),
-        Some(_) => return Err(syntax("/semantics", "semantics の文字列が必要")),
+        Some(_) => return Err((syntax("/semantics", "semantics の文字列が必要")).into()),
         None => None,
     };
     if format != FORMAT || semantics.as_deref() != Some(SEMANTICS) {
-        return Err(Box::new(Issue {
+        return Err((Box::new(Issue {
             code: Code::UnsupportedVersion,
             message: "未対応の format または semantics".into(),
             location: Location::ArchMap {
@@ -218,7 +223,8 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
                 found_format: format,
                 found_semantics: semantics,
             },
-        }));
+        }))
+        .into());
     }
     let top = Obj::new(
         root,
@@ -238,29 +244,28 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
     let mut vocabularies = Vec::new();
     let mut namespaces = HashSet::new();
     for (i, v) in items.iter().enumerate() {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let pointer = format!("{ptr}/{i}");
         let o = Obj::new(v, &pointer, &["namespace", "version", "digest"], &[])?;
         let namespace = o.string("namespace")?;
         if !is_name(&namespace) || crate::law::parser::is_reserved(&namespace) {
-            return Err(syntax(&format!("{pointer}/namespace"), "namespace は名前"));
+            return Err((syntax(&format!("{pointer}/namespace"), "namespace は名前")).into());
         }
         let version = o.string("version")?;
         if version.is_empty() {
-            return Err(syntax(
-                &format!("{pointer}/version"),
-                "version は非空文字列",
-            ));
+            return Err((syntax(&format!("{pointer}/version"), "version は非空文字列")).into());
         }
         let digest = o.string("digest")?;
         if !is_digest(&digest) {
-            return Err(syntax(&format!("{pointer}/digest"), "Digest の形式でない"));
+            return Err((syntax(&format!("{pointer}/digest"), "Digest の形式でない")).into());
         }
         if !namespaces.insert(namespace.clone()) {
-            return Err(issue(
+            return Err((issue(
                 Code::DuplicateId,
                 &format!("{pointer}/namespace"),
                 format!("namespace `{namespace}` の binding が重複している"),
-            ));
+            ))
+            .into());
         }
         vocabularies.push(Binding {
             namespace,
@@ -277,24 +282,26 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
     let mut sources = Vec::new();
     let mut ids = HashSet::new();
     for (i, v) in items.iter().enumerate() {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let p = format!("{ptr}/{i}");
         let o = Obj::new(v, &p, &["id", "uri", "revision", "digest"], &[])?;
         let id = o.id("id")?;
         if !ids.insert(id.clone()) {
-            return Err(issue(
+            return Err((issue(
                 Code::DuplicateId,
                 &format!("{p}/id"),
                 format!("source `{id}` が重複している"),
-            ));
+            ))
+            .into());
         }
         let uri = o.string("uri")?;
         let revision = o.string("revision")?;
         if uri.is_empty() || revision.is_empty() {
-            return Err(syntax(&p, "uri と revision は空でない文字列"));
+            return Err((syntax(&p, "uri と revision は空でない文字列")).into());
         }
         let digest = o.string("digest")?;
         if !is_digest(&digest) {
-            return Err(syntax(&format!("{p}/digest"), "Digest の形式でない"));
+            return Err((syntax(&format!("{p}/digest"), "Digest の形式でない")).into());
         }
         sources.push((
             Source {
@@ -311,30 +318,33 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
     let mut origins = Vec::new();
     let mut ids = HashSet::new();
     for (i, v) in items.iter().enumerate() {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let p = format!("{ptr}/{i}");
         let o = Obj::new(v, &p, &["id", "mode", "method", "locations"], &["note"])?;
         let id = o.id("id")?;
         if !ids.insert(id.clone()) {
-            return Err(issue(
+            return Err((issue(
                 Code::DuplicateId,
                 &format!("{p}/id"),
                 format!("origin `{id}` が重複している"),
-            ));
+            ))
+            .into());
         }
         let mode = match o.string("mode")?.as_str() {
             "observed" => Mode::Observed,
             "proposed" => Mode::Proposed,
             "specification" => Mode::Specification,
             _ => {
-                return Err(syntax(
+                return Err((syntax(
                     &format!("{p}/mode"),
                     "mode は observed・proposed・specification",
-                ));
+                ))
+                .into());
             }
         };
         let method = o.string("method")?;
         if method.is_empty() {
-            return Err(syntax(&format!("{p}/method"), "method は空でない文字列"));
+            return Err((syntax(&format!("{p}/method"), "method は空でない文字列")).into());
         }
         let note = match o.get("note") {
             Some((v, np)) => Some(as_string(v, &np)?),
@@ -343,22 +353,23 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
         let (locs, lptr) = o.array("locations")?;
         let mut locations = Vec::new();
         for (j, l) in locs.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             locations.push(read_location(l, &format!("{lptr}/{j}"))?);
         }
         if mode == Mode::Observed && locations.is_empty() {
-            return Err(syntax(
-                &format!("{p}/locations"),
-                "observed の locations は1件以上",
-            ));
+            return Err(
+                (syntax(&format!("{p}/locations"), "observed の locations は1件以上")).into(),
+            );
         }
         if mode != Mode::Observed
             && locations.is_empty()
             && note.as_deref().unwrap_or("").is_empty()
         {
-            return Err(syntax(
+            return Err((syntax(
                 &p,
                 "locations が空の proposed・specification は空でない note を持つ",
-            ));
+            ))
+            .into());
         }
         origins.push((
             Origin {
@@ -376,34 +387,38 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
     let mut snapshots = Vec::new();
     let mut ids = HashSet::new();
     for (i, v) in items.iter().enumerate() {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let p = format!("{ptr}/{i}");
         let o = Obj::new(v, &p, &["id", "origin", "subjects", "atoms"], &[])?;
         let id = o.id("id")?;
         if !ids.insert(id.clone()) {
-            return Err(issue(
+            return Err((issue(
                 Code::DuplicateId,
                 &format!("{p}/id"),
                 format!("snapshot `{id}` が重複している"),
-            ));
+            ))
+            .into());
         }
         let origin = o.id("origin")?;
         let (subs, sptr) = o.array("subjects")?;
         let mut subjects = Vec::new();
         let mut sub_ids = HashSet::new();
         for (j, s) in subs.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             let sp = format!("{sptr}/{j}");
             let so = Obj::new(s, &sp, &["id", "type", "origin"], &[])?;
             let sid = so.id("id")?;
             if !sub_ids.insert(sid.clone()) {
-                return Err(issue(
+                return Err((issue(
                     Code::DuplicateId,
                     &format!("{sp}/id"),
                     format!("subject `{sid}` が重複している"),
-                ));
+                ))
+                .into());
             }
             let ty = so.string("type")?;
             if !is_qname(&ty) {
-                return Err(syntax(&format!("{sp}/type"), "type は宣言の完全名"));
+                return Err((syntax(&format!("{sp}/type"), "type は宣言の完全名")).into());
             }
             subjects.push(RawSubject {
                 id: sid,
@@ -416,19 +431,21 @@ pub fn read_document(root: &JNode) -> AResult<RawDocument<'_>> {
         let mut atoms = Vec::new();
         let mut atom_ids = HashSet::new();
         for (j, a) in ats.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             let ap = format!("{aptr}/{j}");
             let ao = Obj::new(a, &ap, &["id", "subject", "field", "value", "origin"], &[])?;
             let aid = ao.id("id")?;
             if !atom_ids.insert(aid.clone()) {
-                return Err(issue(
+                return Err((issue(
                     Code::DuplicateId,
                     &format!("{ap}/id"),
                     format!("Atom `{aid}` が重複している"),
-                ));
+                ))
+                .into());
             }
             let field = ao.string("field")?;
             if !is_qname(&field) {
-                return Err(syntax(&format!("{ap}/field"), "field は完全名"));
+                return Err((syntax(&format!("{ap}/field"), "field は完全名")).into());
             }
             atoms.push(RawAtom {
                 id: aid,

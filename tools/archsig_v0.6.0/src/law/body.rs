@@ -4,16 +4,23 @@ use super::ast::*;
 use super::check::*;
 use super::expr::*;
 use super::model::*;
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 use crate::types::Type;
 use std::collections::{BTreeMap, BTreeSet};
 
 impl Checker {
-    pub fn check_bodies(&mut self) -> CResult<()> {
+    pub(super) fn check_bodies_controlled<E: InputError>(
+        &mut self,
+        control: &mut Control,
+    ) -> Result<(), E> {
         let ast = self.ast.clone();
         // 先に全 view の署名を解決し、本体から呼べるようにする。
         for (ri, r) in ast.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::LawIteration)?;
             self.current_reading = ri;
             for d in &r.decls {
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 if let DeclKind::View {
                     params,
                     returns,
@@ -45,8 +52,10 @@ impl Checker {
             }
         }
         for (ri, r) in ast.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::LawIteration)?;
             self.current_reading = ri;
             for d in &r.decls {
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 if d.kind.is_primitive() {
                     continue;
                 }
@@ -62,7 +71,9 @@ impl Checker {
             }
         }
         self.check_view_cycles()?;
-        self.check_reading_cycles()
+        self.check_reading_cycles()?;
+        E::checkpoint(control, Checkpoint::LawIteration)?;
+        Ok(())
     }
 
     fn params(&mut self, ri: usize, fields: &[Field], change: bool) -> CResult<Vec<Param>> {

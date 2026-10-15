@@ -5,6 +5,8 @@
 //! Law の成立は補完の条件に使わない。
 
 use super::*;
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum RefSrc {
@@ -403,14 +405,16 @@ fn has_reference(ty: &Type) -> bool {
     })
 }
 
-pub(crate) fn check_completion(
+pub(crate) fn check_completion<E: InputError>(
     snapshots: &[Snapshot],
     definitions: &CheckedDefinitions,
-) -> AResult<()> {
+    control: &mut Control,
+) -> Result<(), E> {
     let subjects: Vec<&Subject> = snapshots.iter().flat_map(|s| s.subjects.iter()).collect();
     let mut index = HashMap::new();
     let mut by_type: HashMap<&str, Vec<usize>> = HashMap::new();
     for (g, s) in subjects.iter().enumerate() {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         index.insert((s.snapshot.as_str(), s.id.as_str()), g);
         by_type.entry(s.ty.as_str()).or_default().push(g);
     }
@@ -424,7 +428,7 @@ pub(crate) fn check_completion(
             _ => None,
         })
         .collect();
-    let data_inhabited = data_inhabitation(definitions, &by_type);
+    let data_inhabited = data_inhabitation::<E>(definitions, &by_type, control)?;
     let mut m = Model {
         subjects,
         index,
@@ -436,7 +440,9 @@ pub(crate) fn check_completion(
         definitions,
     };
     for g in 0..m.subjects.len() {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         for (f, field) in m.subjects[g].fields.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             if field.slot == Slot::Missing
                 && let Type::Ref(e) | Type::Owned(e, _) = &field.ty
             {
@@ -448,8 +454,10 @@ pub(crate) fn check_completion(
     }
     let mut cons = Vec::new();
     for g in 0..m.subjects.len() {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let s = m.subjects[g];
         for (f, field) in s.fields.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             match &field.slot {
                 Slot::Known { value, pointer, .. } => {
                     collect_known(&m, g, &field.ty, value, pointer, &mut cons)
@@ -482,24 +490,26 @@ pub(crate) fn check_completion(
             }
         }
     }
-    if feasible(&m, &cons) {
+    if feasible::<E>(&m, &cons, control)? {
         return Ok(());
     }
     // 入力順に条件を足していき、初めて補完が無くなる条件を位置とする。
     let (mut lo, mut hi) = (0, cons.len());
     while hi - lo > 1 {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let mid = (lo + hi) / 2;
-        if feasible(&m, &cons[..mid]) {
+        if feasible::<E>(&m, &cons[..mid], control)? {
             lo = mid;
         } else {
             hi = mid;
         }
     }
-    Err(issue(
+    Err((issue(
         Code::InconsistentObservation,
         cons[hi - 1].pointer(),
         "既知の値・参照・所属を保つ補完が一つもない",
     ))
+    .into())
 }
 
 /// 条件と、その真偽が依存する変数の組。
@@ -507,17 +517,17 @@ type Group<'a> = Vec<(&'a Cons, Vec<usize>)>;
 
 /// 条件のすべてを満たす補完があるか。欠測 slot を共有する条件の組ごとに、
 /// その組の変数だけで探す。
-fn feasible(m: &Model<'_>, cons: &[Cons]) -> bool {
+fn feasible<E: InputError>(m: &Model<'_>, cons: &[Cons], control: &mut Control) -> Result<bool, E> {
     let empty = vec![None; m.vars.len()];
     let mut open: Vec<(&Cons, Vec<usize>)> = Vec::new();
     for c in cons {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         match m.eval(c, &empty) {
-            Some(false) => return false,
+            Some(false) => return Ok(false),
             Some(true) => {}
             None => open.push((c, m.vars_of(c))),
         }
     }
-    let mut parent: Vec<usize> = (0..m.vars.len()).collect();
     fn find(parent: &mut [usize], mut v: usize) -> usize {
         while parent[v] != v {
             parent[v] = parent[parent[v]];
@@ -525,14 +535,19 @@ fn feasible(m: &Model<'_>, cons: &[Cons]) -> bool {
         }
         v
     }
+
+    let mut parent: Vec<usize> = (0..m.vars.len()).collect();
     for (_, vs) in &open {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         for w in vs.iter().skip(1) {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             let (a, b) = (find(&mut parent, vs[0]), find(&mut parent, *w));
             parent[a] = b;
         }
     }
     let mut groups: Vec<(usize, Group<'_>)> = Vec::new();
     for (c, vs) in open {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let root = find(&mut parent, vs[0]);
         match groups.iter_mut().find(|(r, _)| *r == root) {
             Some((_, g)) => g.push((c, vs)),
@@ -540,19 +555,29 @@ fn feasible(m: &Model<'_>, cons: &[Cons]) -> bool {
         }
     }
     let mut assign = empty;
-    groups
-        .iter()
-        .all(|(_, group)| search(m, group, &mut assign))
+    for (_, group) in &groups {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
+        if !search::<E>(m, group, &mut assign, control)? {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
 
 /// 組の変数へ候補を置き、組の全条件を満たす補完を探す。未定の変数が最も少ない条件の変数から、
 /// 条件を多く満たす候補を先に置く。全条件が真に決まれば、残りの変数はどの候補でもよい。
-fn search(m: &Model<'_>, cons: &[(&Cons, Vec<usize>)], assign: &mut Vec<Option<usize>>) -> bool {
+fn search<E: InputError>(
+    m: &Model<'_>,
+    cons: &[(&Cons, Vec<usize>)],
+    assign: &mut Vec<Option<usize>>,
+    control: &mut Control,
+) -> Result<bool, E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         let mut next: Option<(usize, usize)> = None;
         for (c, vs) in cons {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             match m.eval(c, assign) {
-                Some(false) => return false,
+                Some(false) => return Ok(false),
                 Some(true) => {}
                 None => {
                     let free: Vec<usize> = vs
@@ -570,15 +595,17 @@ fn search(m: &Model<'_>, cons: &[(&Cons, Vec<usize>)], assign: &mut Vec<Option<u
             }
         }
         let Some((_, v)) = next else {
-            return true;
+            return Ok(true);
         };
         // 破る条件のない候補を、真に決まる条件の多い順に置く。
         let mut order: Vec<(usize, usize)> = Vec::new();
         for &x in &m.vars[v].2 {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             assign[v] = Some(x);
             let mut decided = 0;
             let mut broken = false;
             for (c, _) in cons.iter().filter(|(_, vs)| vs.binary_search(&v).is_ok()) {
+                E::checkpoint(control, Checkpoint::ArchMapIteration)?;
                 match m.eval(c, assign) {
                     Some(true) => decided += 1,
                     Some(false) => {
@@ -594,21 +621,23 @@ fn search(m: &Model<'_>, cons: &[(&Cons, Vec<usize>)], assign: &mut Vec<Option<u
         }
         order.sort_by_key(|&(decided, _)| std::cmp::Reverse(decided));
         for (_, x) in order {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             assign[v] = Some(x);
-            if search(m, cons, assign) {
-                return true;
+            if search::<E>(m, cons, assign, control)? {
+                return Ok(true);
             }
         }
         assign[v] = None;
-        false
+        Ok(false)
     })
 }
 
 /// data 型が、登録 subject を使って有限の値を持つか。参照の引数は登録 subject を要する。
-fn data_inhabitation(
+fn data_inhabitation<E: InputError>(
     definitions: &CheckedDefinitions,
     by_type: &HashMap<&str, Vec<usize>>,
-) -> HashMap<String, bool> {
+    control: &mut Control,
+) -> Result<HashMap<String, bool>, E> {
     let datas: Vec<(&String, &Vec<crate::definition::model::Constructor>)> = definitions
         .declarations
         .iter()
@@ -631,8 +660,10 @@ fn data_inhabitation(
         }
     }
     loop {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let mut changed = false;
         for (n, ctors) in &datas {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             if !ok[*n]
                 && ctors
                     .iter()
@@ -643,7 +674,7 @@ fn data_inhabitation(
             }
         }
         if !changed {
-            return ok;
+            return Ok(ok);
         }
     }
 }

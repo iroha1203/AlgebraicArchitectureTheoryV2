@@ -2,8 +2,10 @@
 
 use super::schema::{RawSnapshot, as_string};
 use super::*;
+use crate::json::InputError;
 use crate::json::{JNode, JValue, pointer_push};
 use crate::law::TermBody;
+use crate::observed::control::{Checkpoint, Control};
 use num_bigint::{BigInt, BigUint};
 use num_integer::Integer;
 use num_traits::{One, Signed};
@@ -162,21 +164,24 @@ pub(crate) struct Roster<'a> {
     pub types: HashMap<(&'a str, &'a str), &'a str>,
 }
 
-struct Reader<'a, 'b> {
+struct Reader<'a, 'b, E> {
+    control: Control,
+    error: std::marker::PhantomData<E>,
     definitions: &'a CheckedDefinitions,
     roster: &'b Roster<'b>,
     /// 値を読む field が属する宣言の namespace。Term の本体の名前の解決に使う。
     namespace: &'a str,
 }
 
-impl Reader<'_, '_> {
-    fn read(&self, node: &JNode, ty: &Type, ptr: &str) -> AResult<Value> {
+impl<E: InputError> Reader<'_, '_, E> {
+    fn read(&mut self, node: &JNode, ty: &Type, ptr: &str) -> Result<Value, E> {
+        E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.read_inner(node, ty, ptr)
         })
     }
 
-    fn read_inner(&self, node: &JNode, ty: &Type, ptr: &str) -> AResult<Value> {
+    fn read_inner(&mut self, node: &JNode, ty: &Type, ptr: &str) -> Result<Value, E> {
         let arr = |n: usize| -> AResult<&[JNode]> {
             match &node.value {
                 JValue::Arr(items) if items.len() == n => Ok(items),
@@ -192,12 +197,12 @@ impl Reader<'_, '_> {
             }
             Type::Bool => match node.value {
                 JValue::Bool(b) => Value::Bool(b),
-                _ => return Err(syntax(ptr, "Bool は true か false")),
+                _ => return Err((syntax(ptr, "Bool は true か false")).into()),
             },
             Type::Z => {
                 let s = string()?;
                 if !is_z(&s) {
-                    return Err(syntax(ptr, format!("`{s}` は Z の encoding でない")));
+                    return Err((syntax(ptr, format!("`{s}` は Z の encoding でない"))).into());
                 }
                 Value::Z(s.parse().expect("Z の形式"))
             }
@@ -206,26 +211,26 @@ impl Reader<'_, '_> {
                 let n = as_string(&items[0], &pointer_push(ptr, "0"))?;
                 let d = as_string(&items[1], &pointer_push(ptr, "1"))?;
                 if !is_z(&n) || !is_z(&d) {
-                    return Err(syntax(ptr, "Q の分子・分母は Z の encoding"));
+                    return Err((syntax(ptr, "Q の分子・分母は Z の encoding")).into());
                 }
                 let (n, d): (BigInt, BigInt) = (n.parse().expect("Z"), d.parse().expect("Z"));
                 if !d.is_positive() {
-                    return Err(syntax(&pointer_push(ptr, "1"), "Q の分母は正"));
+                    return Err((syntax(&pointer_push(ptr, "1"), "Q の分母は正")).into());
                 }
                 if !n.gcd(&d).is_one() {
-                    return Err(syntax(ptr, "Q は既約分数で書く(零は [\"0\",\"1\"])"));
+                    return Err((syntax(ptr, "Q は既約分数で書く(零は [\"0\",\"1\"])")).into());
                 }
                 Value::Q(n, d)
             }
             Type::Fp(p) => {
                 let s = string()?;
                 if !is_z(&s) || s.starts_with('-') {
-                    return Err(syntax(ptr, format!("`{s}` は Fp の encoding でない")));
+                    return Err((syntax(ptr, format!("`{s}` は Fp の encoding でない"))).into());
                 }
                 let v: BigUint = s.parse().expect("非負整数");
                 let p: BigUint = p.parse().expect("法");
                 if v >= p {
-                    return Err(syntax(ptr, format!("Fp の値は 0 以上 {p} 未満")));
+                    return Err((syntax(ptr, format!("Fp の値は 0 以上 {p} 未満"))).into());
                 }
                 Value::Fp(v)
             }
@@ -239,14 +244,15 @@ impl Reader<'_, '_> {
                     .types
                     .get(&(snapshot.as_str(), subject.as_str()))
                 else {
-                    return Err(issue(
+                    return Err((issue(
                         Code::Reference,
                         ptr,
                         format!("subject `{snapshot}/{subject}` がない"),
-                    ));
+                    ))
+                    .into());
                 };
                 if *actual != e {
-                    return Err(Box::new(Issue {
+                    return Err((Box::new(Issue {
                         code: Code::Type,
                         message: format!("`{snapshot}/{subject}` は {e} ではない"),
                         location: Location::ArchMap {
@@ -257,7 +263,8 @@ impl Reader<'_, '_> {
                             expected: Type::Ref(e.clone()),
                             actual: Type::Ref((*actual).to_owned()),
                         },
-                    }));
+                    }))
+                    .into());
                 }
                 Value::Ref { snapshot, subject }
             }
@@ -265,26 +272,30 @@ impl Reader<'_, '_> {
                 let items = arr(ts.len())?;
                 let mut out = Vec::new();
                 for (i, (n, t)) in items.iter().zip(ts).enumerate() {
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(ptr, &i.to_string()))?);
                 }
                 Value::Tuple(out)
             }
             Type::List(t) | Type::Set(t) => {
                 let JValue::Arr(items) = &node.value else {
-                    return Err(syntax(ptr, "array が必要"));
+                    return Err((syntax(ptr, "array が必要")).into());
                 };
                 let mut out = Vec::new();
                 for (i, n) in items.iter().enumerate() {
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(ptr, &i.to_string()))?);
                 }
                 if matches!(ty, Type::Set(_)) {
                     let mut seen = std::collections::HashSet::new();
                     for (i, v) in out.iter().enumerate() {
+                        E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                         if !seen.insert(v.canonical_json().canonical()) {
-                            return Err(syntax(
+                            return Err((syntax(
                                 &pointer_push(ptr, &i.to_string()),
                                 "Set に同じ値が二度ある",
-                            ));
+                            ))
+                            .into());
                         }
                     }
                     Value::Set(out)
@@ -294,7 +305,7 @@ impl Reader<'_, '_> {
             }
             Type::Option(t) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err(syntax(ptr, "Option は {\"none\":true} か {\"some\":v}"));
+                    return Err((syntax(ptr, "Option は {\"none\":true} か {\"some\":v}")).into());
                 };
                 match entries.as_slice() {
                     [(k, v)] if k == "none" && v.value == JValue::Bool(true) => Value::Option(None),
@@ -303,19 +314,25 @@ impl Reader<'_, '_> {
                         t,
                         &pointer_push(ptr, "some"),
                     )?))),
-                    _ => return Err(syntax(ptr, "Option は {\"none\":true} か {\"some\":v}")),
+                    _ => {
+                        return Err(
+                            (syntax(ptr, "Option は {\"none\":true} か {\"some\":v}")).into()
+                        );
+                    }
                 }
             }
             Type::Data(d) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err(syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}"));
+                    return Err((syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}")).into());
                 };
                 let get = |k: &str| entries.iter().find(|(key, _)| key == k).map(|(_, v)| v);
                 if entries.len() != 2 {
-                    return Err(syntax(ptr, "data の値は tag と args の二つの欄だけを持つ"));
+                    return Err(
+                        (syntax(ptr, "data の値は tag と args の二つの欄だけを持つ")).into(),
+                    );
                 }
                 let (Some(tag), Some(args)) = (get("tag"), get("args")) else {
-                    return Err(syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}"));
+                    return Err((syntax(ptr, "data の値は {\"tag\":...,\"args\":[...]}")).into());
                 };
                 let tag = as_string(tag, &pointer_push(ptr, "tag"))?;
                 let Some(PrimitiveSignature::Data { constructors }) =
@@ -324,23 +341,26 @@ impl Reader<'_, '_> {
                     unreachable!("data 型は共通 Atom 定義の宣言")
                 };
                 let Some(c) = constructors.iter().find(|c| c.name == tag) else {
-                    return Err(syntax(
+                    return Err((syntax(
                         &pointer_push(ptr, "tag"),
                         format!("`{d}` に constructor `{tag}` はない"),
-                    ));
+                    ))
+                    .into());
                 };
                 let aptr = pointer_push(ptr, "args");
                 let JValue::Arr(items) = &args.value else {
-                    return Err(syntax(&aptr, "args は array"));
+                    return Err((syntax(&aptr, "args は array")).into());
                 };
                 if items.len() != c.arguments.len() {
-                    return Err(syntax(
+                    return Err((syntax(
                         &aptr,
                         format!("constructor `{tag}` の引数は {} 個", c.arguments.len()),
-                    ));
+                    ))
+                    .into());
                 }
                 let mut out = Vec::new();
                 for (i, (n, t)) in items.iter().zip(&c.arguments).enumerate() {
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(&aptr, &i.to_string()))?);
                 }
                 Value::Data {
@@ -350,26 +370,28 @@ impl Reader<'_, '_> {
             }
             Type::Map(a, b) => {
                 let JValue::Arr(items) = &node.value else {
-                    return Err(syntax(ptr, "Map は [key, value] の array"));
+                    return Err((syntax(ptr, "Map は [key, value] の array")).into());
                 };
                 let mut pairs = Vec::new();
                 let mut keys = std::collections::HashSet::new();
                 for (i, n) in items.iter().enumerate() {
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     let ip = pointer_push(ptr, &i.to_string());
                     let JValue::Arr(kv) = &n.value else {
-                        return Err(syntax(&ip, "Map の行は [key, value]"));
+                        return Err((syntax(&ip, "Map の行は [key, value]")).into());
                     };
                     if kv.len() != 2 {
-                        return Err(syntax(&ip, "Map の行は [key, value]"));
+                        return Err((syntax(&ip, "Map の行は [key, value]")).into());
                     }
                     let k = self.read(&kv[0], a, &pointer_push(&ip, "0"))?;
                     let v = self.read(&kv[1], b, &pointer_push(&ip, "1"))?;
                     if !keys.insert(k.canonical_json().canonical()) {
-                        return Err(issue(
+                        return Err((issue(
                             Code::DuplicateKey,
                             &pointer_push(&ip, "0"),
                             "Map の key が重複している",
-                        ));
+                        ))
+                        .into());
                     }
                     pairs.push((k, v));
                 }
@@ -377,44 +399,46 @@ impl Reader<'_, '_> {
             }
             Type::Term(args, ret) => {
                 let JValue::Obj(entries) = &node.value else {
-                    return Err(syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}"));
+                    return Err((syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}")).into());
                 };
                 let get = |k: &str| entries.iter().find(|(key, _)| key == k).map(|(_, v)| v);
                 if entries.len() != 2 {
-                    return Err(syntax(ptr, "Term は params と body の二つの欄だけを持つ"));
+                    return Err((syntax(ptr, "Term は params と body の二つの欄だけを持つ")).into());
                 }
                 let (Some(params), Some(body)) = (get("params"), get("body")) else {
-                    return Err(syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}"));
+                    return Err((syntax(ptr, "Term は {\"params\":[...],\"body\":\"...\"}")).into());
                 };
                 let pptr = pointer_push(ptr, "params");
                 let JValue::Arr(names) = &params.value else {
-                    return Err(syntax(&pptr, "params は array"));
+                    return Err((syntax(&pptr, "params は array")).into());
                 };
                 if names.len() != args.len() {
-                    return Err(syntax(
-                        &pptr,
-                        format!("Term の parameter は {} 個", args.len()),
-                    ));
+                    return Err(
+                        (syntax(&pptr, format!("Term の parameter は {} 個", args.len()))).into(),
+                    );
                 }
                 let mut ps = Vec::new();
                 let mut seen = std::collections::HashSet::new();
                 for (i, n) in names.iter().enumerate() {
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     let name = as_string(n, &pointer_push(&pptr, &i.to_string()))?;
                     let ok = name.starts_with(|c: char| c.is_ascii_alphabetic())
                         && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
                         && !crate::law::parser::is_reserved(&name);
                     if !ok {
-                        return Err(syntax(
+                        return Err((syntax(
                             &pointer_push(&pptr, &i.to_string()),
                             format!("`{name}` は parameter 名に使えない"),
-                        ));
+                        ))
+                        .into());
                     }
                     if !seen.insert(name.clone()) {
-                        return Err(issue(
+                        return Err((issue(
                             Code::DuplicateId,
                             &pointer_push(&pptr, &i.to_string()),
                             format!("parameter `{name}` が重複している"),
-                        ));
+                        ))
+                        .into());
                     }
                     ps.push(name);
                 }
@@ -448,21 +472,26 @@ impl Reader<'_, '_> {
 }
 
 /// subject の宣言順の全 field と、Atom の値。
-pub(crate) fn check_snapshots(
+pub(crate) fn check_snapshots<E: InputError>(
     raw: &[RawSnapshot<'_>],
     definitions: &CheckedDefinitions,
-) -> AResult<Vec<Snapshot>> {
+    control: &mut Control,
+) -> Result<Vec<Snapshot>, E> {
     let mut types = HashMap::new();
     for snap in raw {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         for s in &snap.subjects {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             types.insert((snap.id.as_str(), s.id.as_str()), s.ty.as_str());
         }
     }
     let roster = Roster { types };
     let mut out = Vec::new();
     for snap in raw {
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         let mut subjects: Vec<Subject> = Vec::new();
         for s in &snap.subjects {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             let decl = &definitions.declarations[&s.ty];
             let (params, members) = decl
                 .signature
@@ -492,32 +521,38 @@ pub(crate) fn check_snapshots(
             .map(|(i, s)| (s.id.clone(), i))
             .collect();
         for a in &snap.atoms {
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             let Some(&si) = index.get(&a.subject) else {
-                return Err(issue(
+                return Err((issue(
                     Code::Reference,
                     &format!("{}/subject", a.pointer),
                     format!("subject `{}` がない", a.subject),
-                ));
+                ))
+                .into());
             };
             let subject_ty = &subjects[si].ty;
             let Some(fi) = subjects[si].fields.iter().position(|f| f.name == a.field) else {
-                return Err(issue(
+                return Err((issue(
                     Code::Reference,
                     &format!("{}/field", a.pointer),
                     format!("`{subject_ty}` に field `{}` はない", a.field),
-                ));
+                ))
+                .into());
             };
             if subjects[si].fields[fi].slot != Slot::Missing {
-                return Err(issue(
+                return Err((issue(
                     Code::DuplicateFact,
                     &a.pointer,
                     format!(
                         "`{}` の field `{}` が二度記録されている",
                         a.subject, a.field
                     ),
-                ));
+                ))
+                .into());
             }
-            let reader = Reader {
+            let mut reader = Reader::<E> {
+                control: control.clone(),
+                error: std::marker::PhantomData,
                 definitions,
                 roster: &roster,
                 namespace: &definitions.declarations[subject_ty].namespace,

@@ -1,6 +1,8 @@
 //! Law の字句(Law 仕様 §1)。空白と `//` コメントを除き、字句列を元の順に保持する。
 
 use crate::issue::{Code, Issue};
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TokenKind {
@@ -39,8 +41,16 @@ pub fn lex(bytes: &[u8]) -> Result<Vec<Token>, Box<Issue>> {
 
 /// 先頭から `max` 個までの字句。header の版を、残りの字句より先に読むために使う。
 pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
+    lex_inner(bytes, max, &mut Control::unlimited())
+}
+pub(super) fn lex_inner<E: InputError>(
+    bytes: &[u8],
+    max: usize,
+    control: &mut Control,
+) -> Result<Vec<Token>, E> {
+    E::checkpoint(control, Checkpoint::LawIteration)?;
     if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
-        return Err(Box::new(Issue::law(Code::Syntax, (0, 3), "BOM は使えない")));
+        return Err((Box::new(Issue::law(Code::Syntax, (0, 3), "BOM は使えない"))).into());
     }
     let text = std::str::from_utf8(bytes).map_err(|e| {
         let at = e.valid_up_to();
@@ -51,16 +61,19 @@ pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
     let mut tokens = Vec::new();
     let mut i = 0;
     while i < src.len() && tokens.len() < max {
+        E::checkpoint(control, Checkpoint::LawIteration)?;
         let c = src[i];
         if matches!(c, b' ' | b'\t' | b'\r' | b'\n') {
             i += 1;
         } else if src[i..].starts_with(b"//") {
             while i < src.len() && src[i] != b'\n' {
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 i += 1;
             }
         } else if c.is_ascii_alphabetic() {
             let start = i;
             while i < src.len() && (src[i].is_ascii_alphanumeric() || src[i] == b'_') {
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 i += 1;
             }
             tokens.push(Token {
@@ -71,14 +84,16 @@ pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
         } else if c.is_ascii_digit() {
             let start = i;
             while i < src.len() && src[i].is_ascii_digit() {
+                E::checkpoint(control, Checkpoint::LawIteration)?;
                 i += 1;
             }
             if c == b'0' && i - start > 1 {
-                return Err(Box::new(Issue::law(
+                return Err((Box::new(Issue::law(
                     Code::Syntax,
                     (start, i),
                     "整数に先頭の0は置けない",
-                )));
+                )))
+                .into());
             }
             tokens.push(Token {
                 kind: TokenKind::Int,
@@ -86,7 +101,7 @@ pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
                 span: (start, i),
             });
         } else if c == b'"' {
-            let (value, end) = lex_string(text, i)?;
+            let (value, end) = lex_string::<E>(text, i, control)?;
             tokens.push(Token {
                 kind: TokenKind::Str,
                 text: value,
@@ -109,28 +124,35 @@ pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
             i += 1;
         } else {
             let len = text[i..].chars().next().map_or(1, char::len_utf8);
-            return Err(Box::new(Issue::law(
+            return Err((Box::new(Issue::law(
                 Code::Syntax,
                 (i, i + len),
                 "字句として読めない文字",
-            )));
+            )))
+            .into());
         }
     }
     Ok(tokens)
 }
 
 /// JSON の string 文法。制御文字の生の出現と unpaired surrogate を拒否する。
-fn lex_string(text: &str, start: usize) -> Result<(String, usize), Box<Issue>> {
+fn lex_string<E: InputError>(
+    text: &str,
+    start: usize,
+    control: &mut Control,
+) -> Result<(String, usize), E> {
     let src = text.as_bytes();
     let mut out = String::new();
     let mut i = start + 1;
     loop {
+        E::checkpoint(control, Checkpoint::LawIteration)?;
         let Some(&c) = src.get(i) else {
-            return Err(Box::new(Issue::law(
+            return Err((Box::new(Issue::law(
                 Code::Syntax,
                 (start, src.len()),
                 "文字列が閉じていない",
-            )));
+            )))
+            .into());
         };
         match c {
             b'"' => return Ok((out, i + 1)),
@@ -160,11 +182,12 @@ fn lex_string(text: &str, start: usize) -> Result<(String, usize), Box<Issue>> {
                             ))
                         })?;
                         if (0xDC00..0xE000).contains(&hi) {
-                            return Err(Box::new(Issue::law(
+                            return Err((Box::new(Issue::law(
                                 Code::Syntax,
                                 (i, i + 6),
                                 "unpaired surrogate",
-                            )));
+                            )))
+                            .into());
                         }
                         if (0xD800..0xDC00).contains(&hi) {
                             let lo = (src.get(i + 6) == Some(&b'\\')
@@ -185,21 +208,23 @@ fn lex_string(text: &str, start: usize) -> Result<(String, usize), Box<Issue>> {
                         continue;
                     }
                     _ => {
-                        return Err(Box::new(Issue::law(
+                        return Err((Box::new(Issue::law(
                             Code::Syntax,
                             (i, i + 2),
                             "不正な escape",
-                        )));
+                        )))
+                        .into());
                     }
                 }
                 i += 2;
             }
             c if c < 0x20 => {
-                return Err(Box::new(Issue::law(
+                return Err((Box::new(Issue::law(
                     Code::Syntax,
                     (i, i + 1),
                     "文字列内の制御文字は escape する",
-                )));
+                )))
+                .into());
             }
             _ => {
                 let ch = text[i..].chars().next().expect("UTF-8 確認済み");
