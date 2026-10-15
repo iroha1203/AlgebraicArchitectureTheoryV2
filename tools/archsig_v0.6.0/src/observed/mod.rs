@@ -1,6 +1,11 @@
 //! 原始観測環境の三入力検査と、型付きの問いの解決。
 
 pub mod control;
+mod environment;
+pub mod evaluate;
+pub mod result;
+pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
+pub use result::{EvaluationFailure, ObservedEvaluation};
 pub mod input;
 pub mod projection;
 pub mod request;
