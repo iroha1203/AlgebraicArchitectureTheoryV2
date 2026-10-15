@@ -143,24 +143,45 @@ pub struct LawFailure {
 
 /// 字句列の正規化(Law 仕様 §1)。`{semantics, tokens}` の canonical JSON。
 pub fn model_canonical(tokens: &[lexer::Token]) -> String {
-    let toks = tokens
-        .iter()
-        .map(|t| {
-            Json::obj([
-                ("kind", Json::str(t.kind.wire())),
-                ("text", Json::str(t.text.clone())),
-            ])
-        })
-        .collect();
+    model_canonical_inner::<Box<Issue>>(tokens, &mut Control::unlimited())
+        .expect("通常の正規化は中断しない")
+}
+
+fn model_canonical_inner<E: InputError>(
+    tokens: &[lexer::Token],
+    control: &mut Control,
+) -> Result<String, E> {
+    E::checkpoint(control, Checkpoint::LawCanonical)?;
+    let mut toks = Vec::with_capacity(tokens.len());
+    for token in tokens {
+        E::checkpoint(control, Checkpoint::LawCanonical)?;
+        toks.push(Json::obj([
+            ("kind", Json::str(token.kind.wire())),
+            ("text", Json::str(token.text.clone())),
+        ]));
+        E::checkpoint(control, Checkpoint::LawCanonical)?;
+    }
     Json::obj([
         ("semantics", Json::str(SEMANTICS)),
         ("tokens", Json::Arr(toks)),
     ])
-    .canonical()
+    .canonical_controlled::<E>(control, Checkpoint::LawCanonical)
 }
 
 pub fn model_digest(tokens: &[lexer::Token]) -> String {
-    sha256_digest(model_canonical(tokens).as_bytes())
+    model_digest_inner::<Box<Issue>>(tokens, &mut Control::unlimited())
+        .expect("通常の digest 計算は中断しない")
+}
+
+fn model_digest_inner<E: InputError>(
+    tokens: &[lexer::Token],
+    control: &mut Control,
+) -> Result<String, E> {
+    let canonical = model_canonical_inner::<E>(tokens, control)?;
+    E::checkpoint(control, Checkpoint::LawCanonical)?;
+    let digest = sha256_digest(canonical.as_bytes());
+    E::checkpoint(control, Checkpoint::LawCanonical)?;
+    Ok(digest)
 }
 
 /// Law を検査する。深い入れ子でも呼出し側のスタックを使い切らないよう、再帰は stacker を通す。
@@ -218,7 +239,7 @@ fn check_law_inner<E: InputError>(
     }
     let tokens = lexer::lex_inner::<E>(bytes, usize::MAX, control, Checkpoint::LawIteration)
         .map_err(|i| fail(i, None))?;
-    let digest = model_digest(&tokens);
+    let digest = model_digest_inner::<E>(&tokens, control).map_err(|i| fail(i, None))?;
     let mut parser = parser::Parser::<E>::with_error(tokens, bytes.len(), control.clone());
     parser.header().map_err(|i| fail(i, Some(digest.clone())))?;
     let readings = parser

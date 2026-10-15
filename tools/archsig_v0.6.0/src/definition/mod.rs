@@ -69,20 +69,25 @@ fn check_definitions_inner<E: InputError>(
     control: &mut Control,
 ) -> Result<CheckedDefinitions, (E, Vec<DefinitionIdentity>)> {
     let mut checked = CheckedDefinitions::default();
-    checked.inputs = files
-        .iter()
-        .map(|(input, bytes)| DefinitionIdentity {
-            input: (*input).into(),
-            bytes_digest: sha256_digest(bytes),
-            model_digest: None,
-        })
-        .collect();
     let result = (|| -> Result<(), E> {
+        for (input, bytes) in files {
+            E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
+            checked.inputs.push(DefinitionIdentity {
+                input: (*input).into(),
+                bytes_digest: sha256_digest(bytes),
+                model_digest: None,
+            });
+            E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
+        }
         for (i, (input, bytes)) in files.iter().enumerate() {
             E::checkpoint(control, Checkpoint::DefinitionIteration)?;
             let node = crate::json::parse_definition_inner::<E>(bytes, input, control)?;
             let (vs, ds, normalized) = reader::read::<E>(&node, input, control)?;
-            checked.inputs[i].model_digest = Some(sha256_digest(normalized.canonical().as_bytes()));
+            let canonical =
+                normalized.canonical_controlled::<E>(control, Checkpoint::DefinitionCanonical)?;
+            E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
+            checked.inputs[i].model_digest = Some(sha256_digest(canonical.as_bytes()));
+            E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
             for v in vs {
                 E::checkpoint(control, Checkpoint::DefinitionIteration)?;
                 if checked.vocabularies.contains_key(&v.namespace) {
@@ -104,6 +109,9 @@ fn check_definitions_inner<E: InputError>(
         }
         validate::check::<E>(&mut checked, control)
     })();
+    // A validation error cannot hide a stop observed at the checking boundary.
+    E::checkpoint(control, Checkpoint::DefinitionCanonical)
+        .map_err(|issue| (issue, checked.inputs.clone()))?;
     result.map_err(|issue| (issue, checked.inputs.clone()))?;
     Ok(checked)
 }

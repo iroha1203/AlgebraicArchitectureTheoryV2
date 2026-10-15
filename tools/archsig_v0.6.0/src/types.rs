@@ -1,6 +1,8 @@
 //! 型の内部表現と wire 表現(入力仕様 §3、結果仕様 §2)。
 
 use crate::canonical::Json;
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 
 /// Law の型。`Owned` は依存参照 `E[p]` で、宣言 metadata だけで保持する。
 /// 式の型では `erase` で `Ref` へ落とす。
@@ -26,39 +28,81 @@ pub enum Type {
 
 impl Type {
     pub fn wire(&self) -> Json {
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
-            Type::Unit => Json::str("Unit"),
-            Type::Bool => Json::str("Bool"),
-            Type::Z => Json::str("Z"),
-            Type::Q => Json::str("Q"),
-            Type::Text => Json::str("Text"),
-            Type::Fp(p) => Json::Arr(vec![Json::str("Fp"), Json::str(p.clone())]),
-            Type::Ref(n) => Json::Arr(vec![Json::str("Ref"), Json::str(n.clone())]),
-            Type::Owned(n, p) => Json::Arr(vec![
-                Json::str("Owned"),
-                Json::str(n.clone()),
-                Json::str(p.clone()),
-            ]),
-            Type::Data(n) => Json::Arr(vec![Json::str("Data"), Json::str(n.clone())]),
-            Type::Tuple(items) => {
-                let mut v = vec![Json::str("Tuple")];
-                v.extend(items.iter().map(Type::wire));
-                Json::Arr(v)
-            }
-            Type::List(t) => Json::Arr(vec![Json::str("List"), t.wire()]),
-            Type::Set(t) => Json::Arr(vec![Json::str("Set"), t.wire()]),
-            Type::Option(t) => Json::Arr(vec![Json::str("Option"), t.wire()]),
-            Type::Map(a, b) => Json::Arr(vec![Json::str("Map"), a.wire(), b.wire()]),
-            Type::Term(args, ret) => Json::Arr(vec![
-                Json::str("Term"),
-                Json::Arr(args.iter().map(Type::wire).collect()),
-                ret.wire(),
-            ]),
-            Type::Path(a, b) => Json::Arr(vec![
-                Json::str("Path"),
-                Json::str(a.clone()),
-                Json::str(b.clone()),
-            ]),
+        self.wire_controlled::<Box<crate::issue::Issue>>(
+            &mut Control::unlimited(),
+            Checkpoint::Expression,
+        )
+        .expect("通常の型表示は中断しない")
+    }
+
+    /// 入力の正規化で使う型木にも共有された停止制御を渡す。
+    pub(crate) fn wire_controlled<E: InputError>(
+        &self,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<Json, E> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            E::checkpoint(control, point)?;
+            let value = match self {
+                Type::Unit => Json::str("Unit"),
+                Type::Bool => Json::str("Bool"),
+                Type::Z => Json::str("Z"),
+                Type::Q => Json::str("Q"),
+                Type::Text => Json::str("Text"),
+                Type::Fp(p) => Json::Arr(vec![Json::str("Fp"), Json::str(p.clone())]),
+                Type::Ref(n) => Json::Arr(vec![Json::str("Ref"), Json::str(n.clone())]),
+                Type::Owned(n, p) => Json::Arr(vec![
+                    Json::str("Owned"),
+                    Json::str(n.clone()),
+                    Json::str(p.clone()),
+                ]),
+                Type::Data(n) => Json::Arr(vec![Json::str("Data"), Json::str(n.clone())]),
+                Type::Tuple(items) => {
+                    let mut values = vec![Json::str("Tuple")];
+                    for ty in items {
+                        E::checkpoint(control, point)?;
+                        values.push(ty.wire_controlled::<E>(control, point)?);
+                        E::checkpoint(control, point)?;
+                    }
+                    Json::Arr(values)
+                }
+                Type::List(t) | Type::Set(t) | Type::Option(t) => {
+                    let tag = match self {
+                        Type::List(_) => "List",
+                        Type::Set(_) => "Set",
+                        _ => "Option",
+                    };
+                    Json::Arr(vec![
+                        Json::str(tag),
+                        t.wire_controlled::<E>(control, point)?,
+                    ])
+                }
+                Type::Map(a, b) => Json::Arr(vec![
+                    Json::str("Map"),
+                    a.wire_controlled::<E>(control, point)?,
+                    b.wire_controlled::<E>(control, point)?,
+                ]),
+                Type::Term(args, ret) => {
+                    let mut arguments = Vec::new();
+                    for ty in args {
+                        E::checkpoint(control, point)?;
+                        arguments.push(ty.wire_controlled::<E>(control, point)?);
+                        E::checkpoint(control, point)?;
+                    }
+                    Json::Arr(vec![
+                        Json::str("Term"),
+                        Json::Arr(arguments),
+                        ret.wire_controlled::<E>(control, point)?,
+                    ])
+                }
+                Type::Path(a, b) => Json::Arr(vec![
+                    Json::str("Path"),
+                    Json::str(a.clone()),
+                    Json::str(b.clone()),
+                ]),
+            };
+            E::checkpoint(control, point)?;
+            Ok(value)
         })
     }
 
@@ -107,6 +151,58 @@ impl Type {
                 Type::Term(args, ret) => args.iter().any(|t| t.any(f)) || ret.any(f),
                 _ => false,
             }
+        })
+    }
+
+    /// `any` と同じ順序・短絡で、各型成分の前後に共有制御を確認する。
+    pub(crate) fn any_controlled<E: InputError>(
+        &self,
+        f: &mut impl FnMut(&Type) -> bool,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<bool, E> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            E::checkpoint(control, point)?;
+            let found = if f(self) {
+                true
+            } else {
+                match self {
+                    Type::Tuple(items) => {
+                        let mut found = false;
+                        for ty in items {
+                            E::checkpoint(control, point)?;
+                            found = ty.any_controlled::<E>(f, control, point)?;
+                            E::checkpoint(control, point)?;
+                            if found {
+                                break;
+                            }
+                        }
+                        found
+                    }
+                    Type::List(t) | Type::Set(t) | Type::Option(t) => {
+                        t.any_controlled::<E>(f, control, point)?
+                    }
+                    Type::Map(a, b) => {
+                        a.any_controlled::<E>(f, control, point)?
+                            || b.any_controlled::<E>(f, control, point)?
+                    }
+                    Type::Term(args, ret) => {
+                        let mut found = false;
+                        for ty in args {
+                            E::checkpoint(control, point)?;
+                            found = ty.any_controlled::<E>(f, control, point)?;
+                            E::checkpoint(control, point)?;
+                            if found {
+                                break;
+                            }
+                        }
+                        found || ret.any_controlled::<E>(f, control, point)?
+                    }
+                    _ => false,
+                }
+            };
+            E::checkpoint(control, point)?;
+            Ok(found)
         })
     }
 }
@@ -186,5 +282,123 @@ impl PartialEq for Type {
             (Type::Term(a, r), Type::Term(b, q)) => a == b && **r == **q,
             _ => false,
         })
+    }
+}
+
+#[cfg(test)]
+mod controlled_tests {
+    use super::*;
+    use crate::issue::Issue;
+    use crate::observed::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+
+    type Failure = CheckFailure<Box<Issue>>;
+
+    fn example() -> Type {
+        Type::Term(
+            vec![
+                Type::Tuple(vec![Type::Z, Type::Option(Box::new(Type::Bool))]),
+                Type::List(Box::new(Type::Ref("V.Root".into()))),
+            ],
+            Box::new(Type::Map(
+                Box::new(Type::Ref("V.Root".into())),
+                Box::new(Type::Q),
+            )),
+        )
+    }
+
+    #[test]
+    fn controlled_type_wire_preserves_nested_component_encoding_and_stops() {
+        let ty = example();
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let mut control = Control::new(Limits::default(), move |_| {
+            seen.set(seen.get() + 1);
+            Usage::default()
+        });
+        let wire = ty
+            .wire_controlled::<Failure>(&mut control, Checkpoint::Expression)
+            .unwrap();
+        assert_eq!(
+            wire.canonical(),
+            r#"["Term",[["Tuple","Z",["Option","Bool"]],["List",["Ref","V.Root"]]],["Map",["Ref","V.Root"],"Q"]]"#
+        );
+        assert_eq!(ty.wire(), wire);
+        let total = count.get();
+        assert!(total > 20);
+        for at in 1..=total {
+            let mut visits = 0;
+            let mut control = Control::new(Limits::default(), move |_| {
+                visits += 1;
+                Usage {
+                    signal: (visits == at).then_some(Signal::Int),
+                    ..Usage::default()
+                }
+            });
+            assert!(matches!(
+                ty.wire_controlled::<Failure>(&mut control, Checkpoint::Expression),
+                Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
+            ));
+        }
+    }
+
+    #[test]
+    fn controlled_any_preserves_preorder_and_short_circuit_with_internal_stops() {
+        let ty = example();
+        for target in ["Bool", "Q", "absent"] {
+            let mut ordinary = Vec::new();
+            let found = ty.any(&mut |t| {
+                let name = match t {
+                    Type::Bool => "Bool",
+                    Type::Q => "Q",
+                    _ => "other",
+                };
+                ordinary.push(name);
+                name == target
+            });
+            let count = Rc::new(Cell::new(0));
+            let seen = count.clone();
+            let mut control = Control::new(Limits::default(), move |_| {
+                seen.set(seen.get() + 1);
+                Usage::default()
+            });
+            let mut controlled = Vec::new();
+            let actual = ty
+                .any_controlled::<Failure>(
+                    &mut |t| {
+                        let name = match t {
+                            Type::Bool => "Bool",
+                            Type::Q => "Q",
+                            _ => "other",
+                        };
+                        controlled.push(name);
+                        name == target
+                    },
+                    &mut control,
+                    Checkpoint::Expression,
+                )
+                .unwrap();
+            assert_eq!(actual, found);
+            assert_eq!(ordinary, controlled);
+            for at in 1..=count.get() {
+                let mut visits = 0;
+                let mut control = Control::new(Limits::default(), move |_| {
+                    visits += 1;
+                    Usage {
+                        signal: (visits == at).then_some(Signal::Term),
+                        ..Usage::default()
+                    }
+                });
+                assert!(matches!(
+                    ty.any_controlled::<Failure>(
+                        &mut |_| false,
+                        &mut control,
+                        Checkpoint::Expression
+                    ),
+                    Err(Failure::Stopped(StopReason::Cancelled(Signal::Term)))
+                ));
+            }
+        }
     }
 }

@@ -19,6 +19,57 @@ fn step<E: InputError, T>(
     result
 }
 
+// These values feed vocabulary/model digests, so their construction belongs to
+// input checking rather than output rendering.
+fn canonical_step<E: InputError, T>(
+    control: &mut Control,
+    run: impl FnOnce(&mut Control) -> R<T, E>,
+) -> R<T, E> {
+    E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
+    let result = run(control);
+    E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
+    result
+}
+
+fn wires<E: InputError, T>(
+    control: &mut Control,
+    items: &[T],
+    mut wire: impl FnMut(&T, &mut Control) -> R<Json, E>,
+) -> R<Json, E> {
+    canonical_step::<E, _>(control, |control| {
+        let mut values = Vec::new();
+        for item in items {
+            values.push(canonical_step::<E, _>(control, |control| {
+                wire(item, control)
+            })?);
+        }
+        Ok(Json::Arr(values))
+    })
+}
+
+fn copy_json<E: InputError>(value: &Json, control: &mut Control) -> R<Json, E> {
+    canonical_step::<E, _>(control, |control| {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            Ok(match value {
+                Json::Bool(value) => Json::Bool(*value),
+                Json::Nat(value) => Json::Nat(*value),
+                Json::Str(value) => Json::Str(value.clone()),
+                Json::Arr(values) => wires::<E, _>(control, values, copy_json::<E>)?,
+                Json::Obj(entries) => {
+                    let mut copied = BTreeMap::new();
+                    for (key, value) in entries {
+                        canonical_step::<E, _>(control, |control| {
+                            copied.insert(key.clone(), copy_json::<E>(value, control)?);
+                            Ok(())
+                        })?;
+                    }
+                    Json::Obj(copied)
+                }
+            })
+        })
+    })
+}
+
 fn find<'a, E: InputError>(
     entries: &'a [(String, JNode)],
     key: &str,
@@ -318,7 +369,10 @@ pub(super) fn read<E: InputError>(
                     unique(&mut seen, &b.namespace, input, &p)?;
                     dependencies.push(b)
                 }
-                dependencies.sort_by(|a, b| a.namespace.cmp(&b.namespace));
+                canonical_step::<E, _>(control, |_| {
+                    dependencies.sort_by(|a, b| a.namespace.cmp(&b.namespace));
+                    Ok(())
+                })?;
                 let (nodes, p) = o.array("declarations")?;
                 let mut decls = BTreeMap::new();
                 let mut seen = BTreeSet::new();
@@ -330,17 +384,27 @@ pub(super) fn read<E: InputError>(
                     decls.insert(d.name.clone(), j);
                     ds.push(d)
                 }
-                let manifest = Json::obj([
-                    ("semantics", Json::str(SEMANTICS)),
-                    ("namespace", Json::str(&namespace)),
-                    ("version", Json::str(&version)),
-                    (
-                        "dependencies",
-                        Json::Arr(dependencies.iter().map(Binding::wire).collect()),
-                    ),
-                    ("declarations", Json::Arr(decls.into_values().collect())),
-                ]);
-                let digest = sha256_digest(manifest.canonical().as_bytes());
+                let dependencies_wire = wires::<E, _>(control, &dependencies, |b, _| Ok(b.wire()))?;
+                let mut declarations_wire = Vec::new();
+                for value in decls.into_values() {
+                    canonical_step::<E, _>(control, |_| {
+                        declarations_wire.push(value);
+                        Ok(())
+                    })?;
+                }
+                let manifest = canonical_step::<E, _>(control, |_| {
+                    Ok(Json::obj([
+                        ("semantics", Json::str(SEMANTICS)),
+                        ("namespace", Json::str(&namespace)),
+                        ("version", Json::str(&version)),
+                        ("dependencies", dependencies_wire),
+                        ("declarations", Json::Arr(declarations_wire)),
+                    ]))
+                })?;
+                let canonical =
+                    manifest.canonical_controlled::<E>(control, Checkpoint::DefinitionCanonical)?;
+                let digest =
+                    canonical_step::<E, _>(control, |_| Ok(sha256_digest(canonical.as_bytes())))?;
                 vs.push(Vocabulary {
                     namespace,
                     version,
@@ -352,15 +416,20 @@ pub(super) fn read<E: InputError>(
                 Ok(())
             })?;
         }
-        vs.sort_by(|a, b| a.namespace.cmp(&b.namespace));
-        let normalized = Json::obj([
-            ("format", Json::str(FORMAT)),
-            ("semantics", Json::str(SEMANTICS)),
-            (
-                "vocabularies",
-                Json::Arr(vs.iter().map(|v| v.manifest.clone()).collect()),
-            ),
-        ]);
+        canonical_step::<E, _>(control, |_| {
+            vs.sort_by(|a, b| a.namespace.cmp(&b.namespace));
+            Ok(())
+        })?;
+        let manifests = wires::<E, _>(control, &vs, |v, control| {
+            copy_json::<E>(&v.manifest, control)
+        })?;
+        let normalized = canonical_step::<E, _>(control, |_| {
+            Ok(Json::obj([
+                ("format", Json::str(FORMAT)),
+                ("semantics", Json::str(SEMANTICS)),
+                ("vocabularies", manifests),
+            ]))
+        })?;
         Ok((vs, ds, normalized))
     })
 }
@@ -452,14 +521,17 @@ fn declaration<E: InputError>(
                             &mut references,
                         )?)
                     }
-                    wire.push(Json::obj([
-                        ("name", Json::str(&name)),
-                        (
-                            "arguments",
-                            Json::Arr(arguments.iter().map(Type::wire).collect()),
-                        ),
-                        ("meaning", Json::str(&meaning)),
-                    ]));
+                    let arguments_wire = wires::<E, _>(control, &arguments, |ty, control| {
+                        ty.wire_controlled::<E>(control, Checkpoint::DefinitionCanonical)
+                    })?;
+                    canonical_step::<E, _>(control, |_| {
+                        wire.push(Json::obj([
+                            ("name", Json::str(&name)),
+                            ("arguments", arguments_wire),
+                            ("meaning", Json::str(&meaning)),
+                        ]));
+                        Ok(())
+                    })?;
                     constructors.push(Constructor {
                         name,
                         arguments,
@@ -477,11 +549,11 @@ fn declaration<E: InputError>(
             let fields = fields::<E>(control, &o, "fields", &mut seen, &mut references)?;
             json.insert(
                 "parameters".into(),
-                Json::Arr(parameters.iter().map(field_wire).collect()),
+                wires::<E, _>(control, &parameters, field_wire::<E>)?,
             );
             json.insert(
                 "fields".into(),
-                Json::Arr(fields.iter().map(field_wire).collect()),
+                wires::<E, _>(control, &fields, field_wire::<E>)?,
             );
             let (nodes, ap) = o.array("alignments")?;
             let mut alignments = Vec::new();
@@ -506,7 +578,10 @@ fn declaration<E: InputError>(
                     Ok(())
                 })?;
             }
-            alignments.sort_by(|a, b| (&a.source, &a.target).cmp(&(&b.source, &b.target)));
+            canonical_step::<E, _>(control, |_| {
+                alignments.sort_by(|a, b| (&a.source, &a.target).cmp(&(&b.source, &b.target)));
+                Ok(())
+            })?;
             if kind != "correspondence" && !alignments.is_empty() {
                 return Err(error(
                     Code::Syntax,
@@ -518,18 +593,13 @@ fn declaration<E: InputError>(
             }
             json.insert(
                 "alignments".into(),
-                Json::Arr(
-                    alignments
-                        .iter()
-                        .map(|a| {
-                            Json::obj([
-                                ("source", Json::str(&a.source)),
-                                ("target", Json::str(&a.target)),
-                                ("meaning", Json::str(&a.meaning)),
-                            ])
-                        })
-                        .collect(),
-                ),
+                wires::<E, _>(control, &alignments, |a, _| {
+                    Ok(Json::obj([
+                        ("source", Json::str(&a.source)),
+                        ("target", Json::str(&a.target)),
+                        ("meaning", Json::str(&a.meaning)),
+                    ]))
+                })?,
             );
             match kind.as_str() {
                 "entity" => PrimitiveSignature::Entity {
@@ -561,8 +631,18 @@ fn declaration<E: InputError>(
                 Ok(())
             })?;
         }
-        let dependencies = dependencies.into_iter().collect();
-        references.sort_by(|(a, _), (b, _)| pointer(a).cmp(pointer(b)));
+        let mut dependency_names = Vec::new();
+        for dependency in dependencies {
+            canonical_step::<E, _>(control, |_| {
+                dependency_names.push(dependency);
+                Ok(())
+            })?;
+        }
+        let dependencies = dependency_names;
+        canonical_step::<E, _>(control, |_| {
+            references.sort_by(|(a, _), (b, _)| pointer(a).cmp(pointer(b)));
+            Ok(())
+        })?;
         Ok((
             PrimitiveDeclaration {
                 name,
@@ -584,12 +664,16 @@ pub(super) fn pointer(l: &Location) -> &str {
         ""
     }
 }
-fn field_wire(f: &Field) -> Json {
-    Json::obj([
-        ("name", Json::str(&f.name)),
-        ("type", f.ty.wire()),
-        ("meaning", Json::str(&f.meaning)),
-    ])
+fn field_wire<E: InputError>(f: &Field, control: &mut Control) -> R<Json, E> {
+    canonical_step::<E, _>(control, |control| {
+        let ty =
+            f.ty.wire_controlled::<E>(control, Checkpoint::DefinitionCanonical)?;
+        Ok(Json::obj([
+            ("name", Json::str(&f.name)),
+            ("type", ty),
+            ("meaning", Json::str(&f.meaning)),
+        ]))
+    })
 }
 fn fields<E: InputError>(
     control: &mut Control,
@@ -741,7 +825,9 @@ mod interruption_tests {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
         let mut baseline = Control::new(Limits::default(), move |point| {
-            assert_eq!(point, Checkpoint::DefinitionSchema);
+            if point != Checkpoint::DefinitionSchema {
+                return Usage::default();
+            }
             seen.set(seen.get() + 1);
             Usage::default()
         });
@@ -758,7 +844,9 @@ mod interruption_tests {
                         memory_mib: (kind == 2).then_some(1),
                     },
                     move |point| {
-                        assert_eq!(point, Checkpoint::DefinitionSchema);
+                        if point != Checkpoint::DefinitionSchema {
+                            return Usage::default();
+                        }
                         visits += 1;
                         let stop = visits == at;
                         Usage {

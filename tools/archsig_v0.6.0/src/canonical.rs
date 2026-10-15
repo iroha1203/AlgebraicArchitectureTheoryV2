@@ -1,5 +1,7 @@
 //! canonical JSON(入力仕様 §4)と SHA-256 digest。
 
+use crate::json::InputError;
+use crate::observed::control::{Checkpoint, Control};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 
@@ -30,55 +32,93 @@ impl Json {
 
     /// 空白なし、key は Unicode scalar 順、非 ASCII は UTF-8 のまま出力する。
     pub fn canonical(&self) -> String {
-        let mut out = String::new();
-        self.write(&mut out);
-        out
+        self.canonical_controlled::<Box<crate::issue::Issue>>(
+            &mut Control::unlimited(),
+            Checkpoint::Expression,
+        )
+        .expect("通常の表示は中断しない")
     }
 
-    fn write(&self, out: &mut String) {
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
-            Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
-            Json::Nat(n) => out.push_str(&n.to_string()),
-            Json::Str(s) => write_string(s, out),
-            Json::Arr(items) => {
-                out.push('[');
-                for (i, item) in items.iter().enumerate() {
-                    if i > 0 {
-                        out.push(',');
+    /// 検査中のcanonical encodingは、子構造と各文字にも同じ停止制御を渡す。
+    pub(crate) fn canonical_controlled<E: InputError>(
+        &self,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<String, E> {
+        E::checkpoint(control, point)?;
+        let mut out = String::new();
+        self.write_controlled::<E>(&mut out, control, point)?;
+        E::checkpoint(control, point)?;
+        Ok(out)
+    }
+
+    fn write_controlled<E: InputError>(
+        &self,
+        out: &mut String,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<(), E> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            E::checkpoint(control, point)?;
+            match self {
+                Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
+                Json::Nat(n) => out.push_str(&n.to_string()),
+                Json::Str(s) => write_string_controlled::<E>(s, out, control, point)?,
+                Json::Arr(items) => {
+                    out.push('[');
+                    for (i, item) in items.iter().enumerate() {
+                        E::checkpoint(control, point)?;
+                        if i > 0 {
+                            out.push(',');
+                        }
+                        item.write_controlled::<E>(out, control, point)?;
+                        E::checkpoint(control, point)?;
                     }
-                    item.write(out);
+                    out.push(']');
                 }
-                out.push(']');
-            }
-            Json::Obj(entries) => {
-                out.push('{');
-                for (i, (k, v)) in entries.iter().enumerate() {
-                    if i > 0 {
-                        out.push(',');
+                Json::Obj(entries) => {
+                    out.push('{');
+                    for (i, (k, v)) in entries.iter().enumerate() {
+                        E::checkpoint(control, point)?;
+                        if i > 0 {
+                            out.push(',');
+                        }
+                        write_string_controlled::<E>(k, out, control, point)?;
+                        out.push(':');
+                        v.write_controlled::<E>(out, control, point)?;
+                        E::checkpoint(control, point)?;
                     }
-                    write_string(k, out);
-                    out.push(':');
-                    v.write(out);
+                    out.push('}');
                 }
-                out.push('}');
             }
+            E::checkpoint(control, point)?;
+            Ok(())
         })
     }
 }
 
-/// 引用符と backslash を escape し、U+0000..001F を小文字4桁の `\u00xx` にする。
-/// その他の文字(`/` を含む)は escape しない。
-fn write_string(s: &str, out: &mut String) {
+/// Canonical escaping keeps the original UTF-8 bytes and checks each scalar.
+fn write_string_controlled<E: InputError>(
+    s: &str,
+    out: &mut String,
+    control: &mut Control,
+    point: Checkpoint,
+) -> Result<(), E> {
+    E::checkpoint(control, point)?;
     out.push('"');
     for c in s.chars() {
+        E::checkpoint(control, point)?;
         match c {
             '"' => out.push_str("\\\""),
             '\\' => out.push_str("\\\\"),
             c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
             c => out.push(c),
         }
+        E::checkpoint(control, point)?;
     }
     out.push('"');
+    E::checkpoint(control, point)?;
+    Ok(())
 }
 
 /// `sha256:` と小文字16進64桁。
@@ -132,5 +172,89 @@ impl PartialEq for Json {
             (Json::Obj(a), Json::Obj(b)) => a == b,
             _ => false,
         })
+    }
+}
+
+#[cfg(test)]
+mod controlled_tests {
+    use super::*;
+    use crate::issue::Issue;
+    use crate::observed::control::{CheckFailure, Limits, Resource, StopReason, Usage};
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+
+    type Failure = CheckFailure<Box<Issue>>;
+
+    fn example() -> Json {
+        Json::obj([
+            ("z", Json::Arr(vec![Json::Bool(false), Json::Nat(7)])),
+            ("é", Json::str("\"\\\n/雪")),
+            ("a", Json::obj([("empty", Json::Arr(vec![]))])),
+        ])
+    }
+
+    #[test]
+    fn controlled_encoding_keeps_canonical_order_and_exact_escaping() {
+        let value = example();
+        let expected = r#"{"a":{"empty":[]},"z":[false,7],"é":"\"\\\u000a/雪"}"#;
+        let result = value
+            .canonical_controlled::<Failure>(&mut Control::unlimited(), Checkpoint::Expression)
+            .unwrap();
+        assert_eq!(result, expected);
+        assert_eq!(value.canonical(), expected);
+    }
+
+    #[test]
+    fn nested_json_and_each_string_scalar_stop_at_every_boundary() {
+        let value = example();
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let mut control = Control::new(Limits::default(), move |point| {
+            assert_eq!(point, Checkpoint::Expression);
+            seen.set(seen.get() + 1);
+            Usage::default()
+        });
+        value
+            .canonical_controlled::<Failure>(&mut control, Checkpoint::Expression)
+            .unwrap();
+        let total = count.get();
+        assert!(total > 30);
+        for at in 1..=total {
+            for kind in 0..3 {
+                let mut visits = 0;
+                let mut control = Control::new(
+                    Limits {
+                        time_ms: (kind == 1).then_some(1),
+                        memory_mib: (kind == 2).then_some(1),
+                    },
+                    move |_| {
+                        visits += 1;
+                        let hit = visits == at;
+                        Usage {
+                            signal: (hit && kind == 0).then_some(Signal::Term),
+                            elapsed_ms: u128::from(hit && kind == 1),
+                            memory_mib: u128::from(hit && kind == 2),
+                        }
+                    },
+                );
+                let expected = match kind {
+                    0 => StopReason::Cancelled(Signal::Term),
+                    1 => StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    _ => StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 1,
+                        observed: 1,
+                    },
+                };
+                assert!(
+                    matches!(value.canonical_controlled::<Failure>(&mut control, Checkpoint::Expression), Err(Failure::Stopped(reason)) if reason == expected)
+                );
+                assert_eq!(control.stop_reason(), Some(expected));
+            }
+        }
     }
 }

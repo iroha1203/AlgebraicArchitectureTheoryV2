@@ -81,62 +81,115 @@ fn take(v: &mut Value, stack: &mut Vec<Value>) {
 impl Value {
     /// 入力 encoding に沿う canonical 値。Set の要素と Map の対は canonical 値の byte 順に並べる。
     pub fn canonical_json(&self) -> Json {
-        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || match self {
-            Value::Unit => Json::Arr(vec![]),
-            Value::Bool(b) => Json::Bool(*b),
-            Value::Z(n) => Json::str(n.to_string()),
-            Value::Q(n, d) => Json::Arr(vec![Json::str(n.to_string()), Json::str(d.to_string())]),
-            Value::Fp(n) => Json::str(n.to_string()),
-            Value::Text(s) => Json::str(s.clone()),
-            Value::Ref { snapshot, subject } => Json::Arr(vec![
-                Json::str(snapshot.clone()),
-                Json::str(subject.clone()),
-            ]),
-            Value::Tuple(items) | Value::List(items) => {
-                Json::Arr(items.iter().map(Value::canonical_json).collect())
-            }
-            Value::Set(items) => {
-                let mut v: Vec<(String, Json)> = items
-                    .iter()
-                    .map(|i| {
-                        let j = i.canonical_json();
-                        (j.canonical(), j)
-                    })
-                    .collect();
-                v.sort_by(|a, b| a.0.cmp(&b.0));
-                Json::Arr(v.into_iter().map(|(_, j)| j).collect())
-            }
-            Value::Option(None) => Json::obj([("none", Json::Bool(true))]),
-            Value::Option(Some(v)) => Json::obj([("some", v.canonical_json())]),
-            Value::Data { constructor, args } => Json::obj([
-                (
-                    "tag",
-                    Json::str(constructor.rsplit('.').next().expect("constructor 名")),
-                ),
-                (
-                    "args",
-                    Json::Arr(args.iter().map(Value::canonical_json).collect()),
-                ),
-            ]),
-            Value::Map(pairs) => {
-                let mut v: Vec<(String, Json)> = pairs
-                    .iter()
-                    .map(|(k, x)| {
-                        let kj = k.canonical_json();
-                        (kj.canonical(), Json::Arr(vec![kj, x.canonical_json()]))
-                    })
-                    .collect();
-                v.sort_by(|a, b| a.0.cmp(&b.0));
-                Json::Arr(v.into_iter().map(|(_, j)| j).collect())
-            }
-            Value::Term(t) => Json::obj([
-                (
-                    "params",
-                    Json::Arr(t.params.iter().cloned().map(Json::Str).collect()),
-                ),
-                ("body", Json::str(t.body.clone())),
-            ]),
-        })
+        self.canonical_json_controlled::<Box<Issue>>(&mut Control::unlimited())
+            .expect("unlimited value canonicalization")
+    }
+
+    pub(crate) fn canonical_json_controlled<E: InputError>(
+        &self,
+        control: &mut Control,
+    ) -> Result<Json, E> {
+        let point = Checkpoint::ArchMapCanonical;
+        E::checkpoint(control, point)?;
+        let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || -> Result<Json, E> {
+            Ok(match self {
+                Value::Unit => Json::Arr(vec![]),
+                Value::Bool(b) => Json::Bool(*b),
+                Value::Z(n) => Json::str(n.to_string()),
+                Value::Q(n, d) => {
+                    Json::Arr(vec![Json::str(n.to_string()), Json::str(d.to_string())])
+                }
+                Value::Fp(n) => Json::str(n.to_string()),
+                Value::Text(s) => Json::str(s.clone()),
+                Value::Ref { snapshot, subject } => Json::Arr(vec![
+                    Json::str(snapshot.clone()),
+                    Json::str(subject.clone()),
+                ]),
+                Value::Tuple(items) | Value::List(items) => {
+                    let mut out = Vec::new();
+                    for item in items {
+                        E::checkpoint(control, point)?;
+                        out.push(item.canonical_json_controlled::<E>(control)?);
+                        E::checkpoint(control, point)?;
+                    }
+                    Json::Arr(out)
+                }
+                Value::Set(items) => {
+                    let mut out = Vec::new();
+                    for item in items {
+                        E::checkpoint(control, point)?;
+                        let json = item.canonical_json_controlled::<E>(control)?;
+                        let key = json.canonical_controlled::<E>(control, point)?;
+                        out.push((key, json));
+                        E::checkpoint(control, point)?;
+                    }
+                    E::checkpoint(control, point)?;
+                    out.sort_by(|a, b| a.0.cmp(&b.0));
+                    E::checkpoint(control, point)?;
+                    let mut sorted = Vec::new();
+                    for (_, json) in out {
+                        E::checkpoint(control, point)?;
+                        sorted.push(json);
+                        E::checkpoint(control, point)?;
+                    }
+                    Json::Arr(sorted)
+                }
+                Value::Option(None) => Json::obj([("none", Json::Bool(true))]),
+                Value::Option(Some(value)) => {
+                    Json::obj([("some", value.canonical_json_controlled::<E>(control)?)])
+                }
+                Value::Data { constructor, args } => {
+                    let mut out = Vec::new();
+                    for value in args {
+                        E::checkpoint(control, point)?;
+                        out.push(value.canonical_json_controlled::<E>(control)?);
+                        E::checkpoint(control, point)?;
+                    }
+                    Json::obj([
+                        (
+                            "tag",
+                            Json::str(constructor.rsplit('.').next().expect("constructor 名")),
+                        ),
+                        ("args", Json::Arr(out)),
+                    ])
+                }
+                Value::Map(pairs) => {
+                    let mut out = Vec::new();
+                    for (key, value) in pairs {
+                        E::checkpoint(control, point)?;
+                        let key = key.canonical_json_controlled::<E>(control)?;
+                        let order = key.canonical_controlled::<E>(control, point)?;
+                        let value = value.canonical_json_controlled::<E>(control)?;
+                        out.push((order, Json::Arr(vec![key, value])));
+                        E::checkpoint(control, point)?;
+                    }
+                    E::checkpoint(control, point)?;
+                    out.sort_by(|a, b| a.0.cmp(&b.0));
+                    E::checkpoint(control, point)?;
+                    let mut sorted = Vec::new();
+                    for (_, json) in out {
+                        E::checkpoint(control, point)?;
+                        sorted.push(json);
+                        E::checkpoint(control, point)?;
+                    }
+                    Json::Arr(sorted)
+                }
+                Value::Term(term) => {
+                    let mut params = Vec::new();
+                    for param in &term.params {
+                        E::checkpoint(control, point)?;
+                        params.push(Json::str(param.clone()));
+                        E::checkpoint(control, point)?;
+                    }
+                    Json::obj([
+                        ("params", Json::Arr(params)),
+                        ("body", Json::str(term.body.clone())),
+                    ])
+                }
+            })
+        });
+        E::checkpoint(control, point)?;
+        result
     }
 
     pub fn as_ref(&self) -> Option<(&str, &str)> {
@@ -151,12 +204,18 @@ fn syntax(pointer: &str, message: impl Into<String>) -> Box<Issue> {
     issue(Code::Syntax, pointer, message)
 }
 
-fn is_z(s: &str) -> bool {
+fn is_z<E: InputError>(s: &str, control: &mut Control) -> Result<bool, E> {
+    let point = Checkpoint::ArchMapSchema;
+    E::checkpoint(control, point)?;
     let digits = s.strip_prefix('-').unwrap_or(s);
-    let canonical = digits == "0"
-        || (digits.starts_with(|c: char| ('1'..='9').contains(&c))
-            && digits.bytes().all(|b| b.is_ascii_digit()));
-    canonical && s != "-0"
+    let mut canonical = digits == "0" || digits.starts_with(|c: char| ('1'..='9').contains(&c));
+    for byte in digits.bytes() {
+        E::checkpoint(control, point)?;
+        canonical &= byte.is_ascii_digit();
+        E::checkpoint(control, point)?;
+    }
+    E::checkpoint(control, point)?;
+    Ok(canonical && s != "-0")
 }
 
 /// 全 snapshot の subject 表。参照の検査に使う。
@@ -176,9 +235,13 @@ struct Reader<'a, 'b, E> {
 impl<E: InputError> Reader<'_, '_, E> {
     fn read(&mut self, node: &JNode, ty: &Type, ptr: &str) -> Result<Value, E> {
         E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
-        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+        let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.read_inner(node, ty, ptr)
-        })
+        });
+        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+        E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+        result
     }
 
     fn read_inner(&mut self, node: &JNode, ty: &Type, ptr: &str) -> Result<Value, E> {
@@ -201,7 +264,7 @@ impl<E: InputError> Reader<'_, '_, E> {
             },
             Type::Z => {
                 let s = string()?;
-                if !is_z(&s) {
+                if !is_z::<E>(&s, &mut self.control)? {
                     return Err((syntax(ptr, format!("`{s}` は Z の encoding でない"))).into());
                 }
                 Value::Z(s.parse().expect("Z の形式"))
@@ -210,7 +273,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let items = arr(2)?;
                 let n = as_string(&items[0], &pointer_push(ptr, "0"))?;
                 let d = as_string(&items[1], &pointer_push(ptr, "1"))?;
-                if !is_z(&n) || !is_z(&d) {
+                if !is_z::<E>(&n, &mut self.control)? || !is_z::<E>(&d, &mut self.control)? {
                     return Err((syntax(ptr, "Q の分子・分母は Z の encoding")).into());
                 }
                 let (n, d): (BigInt, BigInt) = (n.parse().expect("Z"), d.parse().expect("Z"));
@@ -224,7 +287,7 @@ impl<E: InputError> Reader<'_, '_, E> {
             }
             Type::Fp(p) => {
                 let s = string()?;
-                if !is_z(&s) || s.starts_with('-') {
+                if !is_z::<E>(&s, &mut self.control)? || s.starts_with('-') {
                     return Err((syntax(ptr, format!("`{s}` は Fp の encoding でない"))).into());
                 }
                 let v: BigUint = s.parse().expect("非負整数");
@@ -274,6 +337,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                 for (i, (n, t)) in items.iter().zip(ts).enumerate() {
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(ptr, &i.to_string()))?);
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                 }
                 Value::Tuple(out)
             }
@@ -285,12 +349,21 @@ impl<E: InputError> Reader<'_, '_, E> {
                 for (i, n) in items.iter().enumerate() {
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(ptr, &i.to_string()))?);
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                 }
                 if matches!(ty, Type::Set(_)) {
                     let mut seen = std::collections::HashSet::new();
                     for (i, v) in out.iter().enumerate() {
                         E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
-                        if !seen.insert(v.canonical_json().canonical()) {
+                        let value = v.canonical_json_controlled::<E>(&mut self.control)?;
+                        let key = value.canonical_controlled::<E>(
+                            &mut self.control,
+                            Checkpoint::ArchMapCanonical,
+                        )?;
+                        E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
+                        let inserted = seen.insert(key);
+                        E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
+                        if !inserted {
                             return Err((syntax(
                                 &pointer_push(ptr, &i.to_string()),
                                 "Set に同じ値が二度ある",
@@ -340,7 +413,17 @@ impl<E: InputError> Reader<'_, '_, E> {
                 else {
                     unreachable!("data 型は共通 Atom 定義の宣言")
                 };
-                let Some(c) = constructors.iter().find(|c| c.name == tag) else {
+                let mut constructor = None;
+                for candidate in constructors {
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                    let matches = candidate.name == tag;
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                    if matches {
+                        constructor = Some(candidate);
+                        break;
+                    }
+                }
+                let Some(c) = constructor else {
                     return Err((syntax(
                         &pointer_push(ptr, "tag"),
                         format!("`{d}` に constructor `{tag}` はない"),
@@ -362,6 +445,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                 for (i, (n, t)) in items.iter().zip(&c.arguments).enumerate() {
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(&aptr, &i.to_string()))?);
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                 }
                 Value::Data {
                     constructor: format!("{d}.{tag}"),
@@ -385,7 +469,15 @@ impl<E: InputError> Reader<'_, '_, E> {
                     }
                     let k = self.read(&kv[0], a, &pointer_push(&ip, "0"))?;
                     let v = self.read(&kv[1], b, &pointer_push(&ip, "1"))?;
-                    if !keys.insert(k.canonical_json().canonical()) {
+                    let key = k.canonical_json_controlled::<E>(&mut self.control)?;
+                    let key = key.canonical_controlled::<E>(
+                        &mut self.control,
+                        Checkpoint::ArchMapCanonical,
+                    )?;
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
+                    let inserted = keys.insert(key);
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
+                    if !inserted {
                         return Err((issue(
                             Code::DuplicateKey,
                             &pointer_push(&ip, "0"),
@@ -394,6 +486,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                         .into());
                     }
                     pairs.push((k, v));
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                 }
                 Value::Map(pairs)
             }
@@ -422,9 +515,13 @@ impl<E: InputError> Reader<'_, '_, E> {
                 for (i, n) in names.iter().enumerate() {
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     let name = as_string(n, &pointer_push(&pptr, &i.to_string()))?;
-                    let ok = name.starts_with(|c: char| c.is_ascii_alphabetic())
-                        && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-                        && !crate::law::parser::is_reserved(&name);
+                    let mut ok = name.starts_with(|c: char| c.is_ascii_alphabetic());
+                    for ch in name.chars() {
+                        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                        ok &= ch.is_ascii_alphanumeric() || ch == '_';
+                        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                    }
+                    ok &= !crate::law::parser::is_reserved(&name);
                     if !ok {
                         return Err((syntax(
                             &pointer_push(&pptr, &i.to_string()),
@@ -441,11 +538,16 @@ impl<E: InputError> Reader<'_, '_, E> {
                         .into());
                     }
                     ps.push(name);
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                 }
                 let bptr = pointer_push(ptr, "body");
                 let body = as_string(body, &bptr)?;
-                let typed: Vec<(String, Type)> =
-                    ps.iter().cloned().zip(args.iter().cloned()).collect();
+                let mut typed = Vec::new();
+                for (name, ty) in ps.iter().zip(args) {
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                    typed.push((name.clone(), ty.clone()));
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                }
                 let checked = crate::law::check_definition_term_body_inner::<E>(
                     self.definitions,
                     self.namespace,
@@ -480,13 +582,26 @@ pub(crate) fn check_snapshots<E: InputError>(
     definitions: &CheckedDefinitions,
     control: &mut Control,
 ) -> Result<Vec<Snapshot>, E> {
+    E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    let result = check_snapshots_inner::<E>(raw, definitions, control);
+    E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    result
+}
+
+fn check_snapshots_inner<E: InputError>(
+    raw: &[RawSnapshot<'_>],
+    definitions: &CheckedDefinitions,
+    control: &mut Control,
+) -> Result<Vec<Snapshot>, E> {
     let mut types = HashMap::new();
     for snap in raw {
         E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         for s in &snap.subjects {
             E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             types.insert((snap.id.as_str(), s.id.as_str()), s.ty.as_str());
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
     let roster = Roster { types };
     let mut out = Vec::new();
@@ -500,15 +615,16 @@ pub(crate) fn check_snapshots<E: InputError>(
                 .signature
                 .record_fields()
                 .expect("entity・arrow・correspondence");
-            let fields = params
-                .iter()
-                .chain(members)
-                .map(|p| Field {
-                    name: format!("{}.{}", s.ty, p.name),
-                    ty: p.ty.clone(),
+            let mut fields = Vec::new();
+            for parameter in params.iter().chain(members) {
+                E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+                fields.push(Field {
+                    name: format!("{}.{}", s.ty, parameter.name),
+                    ty: parameter.ty.clone(),
                     slot: Slot::Missing,
-                })
-                .collect();
+                });
+                E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+            }
             subjects.push(Subject {
                 snapshot: snap.id.clone(),
                 id: s.id.clone(),
@@ -517,12 +633,14 @@ pub(crate) fn check_snapshots<E: InputError>(
                 fields,
                 pointer: s.pointer.clone(),
             });
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
-        let index: HashMap<String, usize> = subjects
-            .iter()
-            .enumerate()
-            .map(|(i, s)| (s.id.clone(), i))
-            .collect();
+        let mut index = HashMap::new();
+        for (i, subject) in subjects.iter().enumerate() {
+            E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+            index.insert(subject.id.clone(), i);
+            E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        }
         for a in &snap.atoms {
             E::checkpoint(control, Checkpoint::ArchMapIteration)?;
             let Some(&si) = index.get(&a.subject) else {
@@ -534,7 +652,17 @@ pub(crate) fn check_snapshots<E: InputError>(
                 .into());
             };
             let subject_ty = &subjects[si].ty;
-            let Some(fi) = subjects[si].fields.iter().position(|f| f.name == a.field) else {
+            let mut field_index = None;
+            for (i, field) in subjects[si].fields.iter().enumerate() {
+                E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+                let matches = field.name == a.field;
+                E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+                if matches {
+                    field_index = Some(i);
+                    break;
+                }
+            }
+            let Some(fi) = field_index else {
                 return Err((issue(
                     Code::Reference,
                     &format!("{}/field", a.pointer),
@@ -569,12 +697,14 @@ pub(crate) fn check_snapshots<E: InputError>(
                 value,
                 pointer: vptr,
             };
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
         out.push(Snapshot {
             id: snap.id.clone(),
             origin: snap.origin.clone(),
             subjects,
         });
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
     Ok(out)
 }

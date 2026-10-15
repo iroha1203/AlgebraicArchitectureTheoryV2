@@ -81,7 +81,13 @@ fn check_archmap_inner<E: InputError>(
     let raw = read_document::<E>(&root, control).map_err(fail)?;
     let mut checked = check_document::<E>(raw, definitions, control).map_err(fail)?;
     checked.bytes_digest = bytes_digest.clone();
-    checked.model_digest = sha256_digest(model_json(&checked).canonical().as_bytes());
+    let model = canonical::model_json_controlled::<E>(&checked, control).map_err(fail)?;
+    let canonical = model
+        .canonical_controlled::<E>(control, Checkpoint::ArchMapCanonical)
+        .map_err(fail)?;
+    E::checkpoint(control, Checkpoint::ArchMapCanonical).map_err(fail)?;
+    checked.model_digest = sha256_digest(canonical.as_bytes());
+    E::checkpoint(control, Checkpoint::ArchMapCanonical).map_err(fail)?;
     E::checkpoint(control, Checkpoint::ArchMapIteration).map_err(fail)?;
     Ok(checked)
 }
@@ -92,46 +98,75 @@ fn required_namespaces<E: InputError>(
     types: &BTreeSet<String>,
     control: &mut Control,
 ) -> Result<BTreeSet<String>, E> {
+    let point = Checkpoint::ArchMapSchema;
+    E::checkpoint(control, point)?;
     let mut seen: BTreeSet<String> = BTreeSet::new();
-    let mut stack: Vec<String> = types.iter().cloned().collect();
-    while let Some(name) = stack.pop() {
-        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
-        if !seen.insert(name.clone()) {
-            continue;
-        }
-        let Some(decl) = definitions.declarations.get(&name) else {
-            continue;
-        };
-        let mut field_types: Vec<&Type> = Vec::new();
-        match &decl.signature {
-            PrimitiveSignature::Data { constructors } => {
-                field_types.extend(constructors.iter().flat_map(|c| c.arguments.iter()))
-            }
-            sig => {
-                if let Some((p, m)) = sig.record_fields() {
-                    field_types.extend(p.iter().chain(m).map(|f| &f.ty));
-                }
-            }
-        }
-        for t in field_types {
-            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
-            t.any(&mut |t| {
-                match t {
-                    Type::Ref(n) | Type::Owned(n, _) | Type::Data(n) => stack.push(n.clone()),
-                    Type::Path(a, b) => {
-                        stack.push(a.clone());
-                        stack.push(b.clone());
-                    }
-                    _ => {}
-                }
-                false
-            });
-        }
+    let mut stack = Vec::new();
+    for ty in types {
+        E::checkpoint(control, point)?;
+        stack.push(ty.clone());
+        E::checkpoint(control, point)?;
     }
-    Ok(seen
-        .iter()
-        .map(|n| definitions.declarations[n].namespace.clone())
-        .collect())
+    while let Some(name) = stack.pop() {
+        E::checkpoint(control, point)?;
+        if seen.insert(name.clone())
+            && let Some(declaration) = definitions.declarations.get(&name)
+        {
+            let mut field_types: Vec<&Type> = Vec::new();
+            match &declaration.signature {
+                PrimitiveSignature::Data { constructors } => {
+                    for constructor in constructors {
+                        E::checkpoint(control, point)?;
+                        for argument in &constructor.arguments {
+                            E::checkpoint(control, point)?;
+                            field_types.push(argument);
+                            E::checkpoint(control, point)?;
+                        }
+                        E::checkpoint(control, point)?;
+                    }
+                }
+                signature => {
+                    if let Some((parameters, members)) = signature.record_fields() {
+                        for field in parameters.iter().chain(members) {
+                            E::checkpoint(control, point)?;
+                            field_types.push(&field.ty);
+                            E::checkpoint(control, point)?;
+                        }
+                    }
+                }
+            }
+            for ty in field_types {
+                E::checkpoint(control, point)?;
+                ty.any_controlled::<E>(
+                    &mut |ty| {
+                        match ty {
+                            Type::Ref(name) | Type::Owned(name, _) | Type::Data(name) => {
+                                stack.push(name.clone())
+                            }
+                            Type::Path(source, target) => {
+                                stack.push(source.clone());
+                                stack.push(target.clone());
+                            }
+                            _ => {}
+                        }
+                        false
+                    },
+                    control,
+                    point,
+                )?;
+                E::checkpoint(control, point)?;
+            }
+        }
+        E::checkpoint(control, point)?;
+    }
+    let mut namespaces = BTreeSet::new();
+    for name in seen {
+        E::checkpoint(control, point)?;
+        namespaces.insert(definitions.declarations[&name].namespace.clone());
+        E::checkpoint(control, point)?;
+    }
+    E::checkpoint(control, point)?;
+    Ok(namespaces)
 }
 
 fn check_document<E: InputError>(
@@ -139,12 +174,24 @@ fn check_document<E: InputError>(
     definitions: &CheckedDefinitions,
     control: &mut Control,
 ) -> Result<CheckedArchMap, E> {
+    E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    let result = check_document_inner::<E>(raw, definitions, control);
+    E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    result
+}
+
+fn check_document_inner<E: InputError>(
+    raw: RawDocument,
+    definitions: &CheckedDefinitions,
+    control: &mut Control,
+) -> Result<CheckedArchMap, E> {
     // 由来の参照と mode。
-    let sources: HashMap<&str, &Source> = raw
-        .sources
-        .iter()
-        .map(|s| (s.0.id.as_str(), &s.0))
-        .collect();
+    let mut sources: HashMap<&str, &Source> = HashMap::new();
+    for (source, _) in &raw.sources {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        sources.insert(source.id.as_str(), source);
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
     for (o, ptr) in &raw.origins {
         E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         for (i, l) in o.locations.iter().enumerate() {
@@ -157,13 +204,16 @@ fn check_document<E: InputError>(
                 ))
                 .into());
             }
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
-    let origins: HashMap<&str, &Origin> = raw
-        .origins
-        .iter()
-        .map(|o| (o.0.id.as_str(), &o.0))
-        .collect();
+    let mut origins: HashMap<&str, &Origin> = HashMap::new();
+    for (origin, _) in &raw.origins {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        origins.insert(origin.id.as_str(), origin);
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
     let mode_of = |id: &str, ptr: &str| -> AResult<Mode> {
         origins
             .get(id)
@@ -202,6 +252,7 @@ fn check_document<E: InputError>(
                 }
             }
             subject_types.insert(s.ty.clone());
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
         for a in &snap.atoms {
             E::checkpoint(control, Checkpoint::ArchMapIteration)?;
@@ -214,7 +265,9 @@ fn check_document<E: InputError>(
                 ))
                 .into());
             }
+            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
         }
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
     let mut bound = BTreeMap::new();
     for (i, binding) in raw.vocabularies.iter().enumerate() {
@@ -251,6 +304,7 @@ fn check_document<E: InputError>(
             .into());
         }
         bound.insert(binding.namespace.clone(), binding.clone());
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
     for namespace in required_namespaces::<E>(definitions, &subject_types, control)? {
         E::checkpoint(control, Checkpoint::ArchMapIteration)?;
@@ -262,15 +316,28 @@ fn check_document<E: InputError>(
             ))
             .into());
         }
+        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
     }
     let snapshots = value::check_snapshots::<E>(&raw.snapshots, definitions, control)?;
     complete::check_completion::<E>(&snapshots, definitions, control)?;
+    let mut sources = Vec::new();
+    for (source, _) in raw.sources {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        sources.push(source);
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
+    let mut origins = Vec::new();
+    for (origin, _) in raw.origins {
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+        origins.push(origin);
+        E::checkpoint(control, Checkpoint::ArchMapSchema)?;
+    }
     Ok(CheckedArchMap {
         bytes_digest: String::new(),
         model_digest: String::new(),
         vocabularies: bound,
-        sources: raw.sources.into_iter().map(|s| s.0).collect(),
-        origins: raw.origins.into_iter().map(|o| o.0).collect(),
+        sources,
+        origins,
         snapshots,
     })
 }
