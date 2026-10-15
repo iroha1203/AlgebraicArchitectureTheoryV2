@@ -282,6 +282,21 @@ impl<'a> Environment<'a> {
                 {
                     graph.expect(node.arguments[0], &NodeType::LawInstance)?
                 }
+                Rule::Construction("evaluation") if matches!(scalar, Scalar::Bool(_)) => {
+                    if node.arguments.len() != 2 {
+                        return Err("含意値の構成入力数が違う".into());
+                    }
+                    let instance = node.arguments[0];
+                    let expression = node.arguments[1];
+                    let expected = self.conditional_value(graph, instance, expression)?;
+                    if expected.map(Scalar::Bool).as_ref() != Some(scalar) {
+                        return Err("条件付き Law 値が元 guard/body の全補完と違う".into());
+                    }
+                    let (body, guard) = self.application_at(graph, instance)?;
+                    if node.scope != self.application_context(graph, body, guard)?.1 {
+                        return Err("含意 Scalar の範囲が元 Law 適用と違う".into());
+                    }
+                }
                 Rule::Construction("evaluation") => {
                     if node.arguments.len() != 2 {
                         return Err("残差の引数数".into());
@@ -351,6 +366,9 @@ impl<'a> Environment<'a> {
         {
             return Err("Expression の範囲が元宣言・入力と違う".into());
         }
+        if matches!(&node.payload, Some(Payload::Transform { .. })) {
+            self.transform_scope(graph, node, graph.nodes.len())?;
+        }
         if let Some(Payload::LawInstance {
             name,
             role,
@@ -408,7 +426,7 @@ impl<'a> Environment<'a> {
             bindings,
             parts,
             value,
-            ..
+            applicability,
         }) = &node.payload
         {
             let application = node
@@ -419,6 +437,9 @@ impl<'a> Environment<'a> {
             if let Some(instance) = application {
                 self.validate_law_evaluation(graph, node, instance)?;
             } else {
+                if *applicability != "applicable" {
+                    return Err("通常式の評価に Law の適用判定を付けている".into());
+                }
                 let span = self.expression_span(graph, *expression)?;
                 let source_bindings = self.expression_bindings(graph, *expression)?;
                 if source_bindings != bindings
@@ -612,7 +633,16 @@ impl<'a> Environment<'a> {
                 else {
                     unreachable!()
                 };
-                if *residual != parts.last().ok_or("証拠の評価 part がない")?.residual {
+                let expression = self.evaluation(graph, evaluation)?.0;
+                let expected = if matches!(
+                    &graph.get(expression)?.payload,
+                    Some(Payload::Transform { .. })
+                ) {
+                    None
+                } else {
+                    parts.last().ok_or("証拠の評価 part がない")?.residual
+                };
+                if *residual != expected {
                     return Err("証拠の残差が元評価と違う".into());
                 }
             }
@@ -774,6 +804,22 @@ impl<'a> Environment<'a> {
                         _ => return Err("値支持の未実装元式".into()),
                     }
                 }
+                Rule::Construction("evaluation") if matches!(value, Scalar::Bool(_)) => {
+                    if node.arguments.len() != 2 {
+                        return Err("含意値支持の構成入力数が違う".into());
+                    }
+                    let instance = node.arguments[0];
+                    if self
+                        .conditional_value(graph, instance, node.arguments[1])?
+                        .map(Scalar::Bool)
+                        .as_ref()
+                        != Some(value)
+                    {
+                        return Err("含意値支持の元 guard/body 不一致".into());
+                    }
+                    let (body, guard) = self.application_at(graph, instance)?;
+                    self.application_context(graph, body, guard)?.0
+                }
                 Rule::Construction("evaluation") => {
                     self.argument_support(graph, &node.arguments, limit)?
                 }
@@ -850,7 +896,16 @@ impl<'a> Environment<'a> {
             .get("evaluation")
             .ok_or("完成Answerに元評価がない")?;
         let (expression, bindings, _) = self.evaluation(graph, evaluation)?;
-        self.source_matches(graph, expression, body)?;
+        let source = if request.kind == QuestionKind::Check
+            && let Some(&instance) = graph.get(evaluation)?.arguments.first()
+            && graph.get(instance)?.ty == NodeType::LawInstance
+        {
+            let raw_body = self.instance_evaluation(graph, instance, evaluation)?;
+            self.evaluation(graph, raw_body)?.0
+        } else {
+            expression
+        };
+        self.source_matches(graph, source, body)?;
         self.recheck_evaluation(graph, evaluation)?;
         if bindings.len() != params.len() || request.arguments.len() != params.len() {
             return Err("Requestの明示束縛数がAnswerと違う".into());
@@ -1258,6 +1313,135 @@ impl<'a> Environment<'a> {
             scalar_scope,
         })
     }
+    // 変換の Scope は元 Source と実束縛から再構成し、中間 node の自己申告を使わない。
+    fn transform_scope(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<Scope, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            let Some(Payload::Transform {
+                operation,
+                operands,
+                bindings,
+            }) = &node.payload
+            else {
+                return Err("Bool 固定変換でない".into());
+            };
+            if node.ty != NodeType::Expression(Type::Bool)
+                || !matches!(&node.rule, Rule::Construction("expression"))
+                || operands.len() != operation.arity()
+                || !node.support.is_empty()
+                || !node.evidence.is_empty()
+                || !node.reasons.is_empty()
+                || node.judgment.is_some()
+            {
+                return Err("Bool 固定変換の型・構成条件が違う".into());
+            }
+            let mut arguments = Vec::new();
+            let mut scope = Scope::default();
+            for &reference in operands {
+                self.tick()?;
+                if reference.0 >= limit {
+                    return Err("Bool 変換の operand が既出でない".into());
+                }
+                graph.expect(reference, &NodeType::Expression(Type::Bool))?;
+                if self.expression_bindings(graph, reference)? != bindings {
+                    return Err("Bool 変換の元 operand 束縛が違う".into());
+                }
+                let operand = graph.get(reference)?;
+                let original_scope = match &operand.payload {
+                    Some(Payload::Expression {
+                        location: Location::Law { span },
+                        bindings,
+                        ..
+                    }) => {
+                        self.validate(graph, operand)?;
+                        self.source_scope(graph, *span, bindings)?
+                    }
+                    Some(Payload::Transform { .. }) => {
+                        self.transform_scope(graph, operand, reference.0)?
+                    }
+                    _ => return Err("Bool 変換が元式・固定変換以外に依存する".into()),
+                };
+                scope.merge(&original_scope);
+                arguments.push(reference);
+                self.tick()?;
+            }
+            for binding in bindings {
+                self.tick()?;
+                if binding.value.0 >= limit {
+                    return Err("Bool 変換の束縛が既出でない".into());
+                }
+                graph.expect(binding.value, &NodeType::Value(binding.ty.clone()))?;
+                arguments.push(binding.value);
+                self.tick()?;
+            }
+            if node.arguments != arguments || node.scope != scope {
+                return Err("Bool 変換の依存・範囲が元式と違う".into());
+            }
+            self.tick()?;
+            Ok(scope)
+        })
+    }
+    fn transform_operands<'g>(
+        &self,
+        graph: &'g Graph,
+        expression: NodeRef,
+        operation: TransformOp,
+        bindings: &[Binding],
+    ) -> Result<&'g [NodeRef], ValidationFailure> {
+        self.tick()?;
+        let Some(Payload::Transform {
+            operation: actual,
+            operands,
+            bindings: actual_bindings,
+        }) = &graph.get(expression)?.payload
+        else {
+            return Err("含意の native Bool 変換がない".into());
+        };
+        if *actual != operation
+            || operands.len() != operation.arity()
+            || actual_bindings != bindings
+        {
+            return Err("含意の変換・束縛が元 Law と違う".into());
+        }
+        self.tick()?;
+        Ok(operands)
+    }
+    // 未知 guard を false にせず、元 guard/body の再検査済み値から含意を確認する。
+    fn conditional_value(
+        &self,
+        graph: &Graph,
+        instance: NodeRef,
+        expression: NodeRef,
+    ) -> Result<Option<bool>, ValidationFailure> {
+        self.tick()?;
+        let (body, guard) = self.application_at(graph, instance)?;
+        let guard = guard.ok_or("省略 guard に含意変換を作っている")?;
+        let (body_expression, bindings, body_value) = self.evaluation(graph, body)?;
+        let (guard_expression, _, guard_value) = self.evaluation(graph, guard)?;
+        let guard_value = graph.boolean(guard_value)?;
+        if guard_value == Some(true) {
+            return Err("既知 true guard の適用は元 body を評価する".into());
+        }
+        self.transform_scope(graph, graph.get(expression)?, expression.0)?;
+        let violation = self.transform_operands(graph, expression, TransformOp::Not, bindings)?[0];
+        let conjunction = self.transform_operands(graph, violation, TransformOp::And, bindings)?;
+        if conjunction[0] != guard_expression {
+            return Err("含意の guard が元出現と違う".into());
+        }
+        let negated_body =
+            self.transform_operands(graph, conjunction[1], TransformOp::Not, bindings)?;
+        if negated_body != [body_expression] {
+            return Err("含意の body が元出現と違う".into());
+        }
+        let value = conditional_bool(guard_value, graph.boolean(body_value)?);
+        self.tick()?;
+        Ok(value)
+    }
     fn expression_span(&self, graph: &Graph, r: NodeRef) -> Result<(usize, usize), String> {
         match &graph.get(r)?.payload {
             Some(Payload::Expression {
@@ -1273,7 +1457,9 @@ impl<'a> Environment<'a> {
         r: NodeRef,
     ) -> Result<&'g [Binding], String> {
         match &graph.get(r)?.payload {
-            Some(Payload::Expression { bindings, .. }) => Ok(bindings),
+            Some(Payload::Expression { bindings, .. } | Payload::Transform { bindings, .. }) => {
+                Ok(bindings)
+            }
             _ => Err("式束縛がない".into()),
         }
     }
@@ -1445,6 +1631,7 @@ impl<'a> Environment<'a> {
         {
             return Err("LawInstance の元 body 評価・束縛不一致".into());
         }
+        self.recheck_evaluation(graph, body_evaluation)?;
         let guard_evaluation = if let Some(guard) = guard {
             let reference = instance.arguments[1];
             let (expression, guard_bindings, value) = self.evaluation(graph, reference)?;
@@ -1454,9 +1641,7 @@ impl<'a> Environment<'a> {
             {
                 return Err("guard 評価の元出現・束縛不一致".into());
             }
-            if value.map(|r| graph.scalar(r)).transpose()? != Some(&Scalar::Bool(true)) {
-                return Err("guard が確認済み true でない".into());
-            }
+            graph.boolean(value)?;
             self.recheck_evaluation(graph, reference)?;
             Some(reference)
         } else {
@@ -1531,13 +1716,34 @@ impl<'a> Environment<'a> {
             return Err("適用評価でない".into());
         };
         let (body_expression, body_bindings, body_value) = self.evaluation(graph, body)?;
-        if *expression != body_expression
-            || bindings != body_bindings
-            || *value != body_value
-            || *applicability != "applicable"
-            || parts.len() != 2
+        let guard_value = graph.boolean(self.evaluation(graph, guard)?.2)?;
+        let expected_applicability = match guard_value {
+            Some(true) => "applicable",
+            Some(false) => "not_applicable",
+            None => "undetermined",
+        };
+        if bindings != body_bindings || *applicability != expected_applicability || parts.len() != 2
         {
-            return Err("適用評価の元 body・束縛・適用表示不一致".into());
+            return Err("適用評価の元束縛・適用表示不一致".into());
+        }
+        if guard_value == Some(true) {
+            if *expression != body_expression || *value != body_value {
+                return Err("既知 true guard の元 body 評価不一致".into());
+            }
+        } else {
+            let expected = self.conditional_value(graph, instance, *expression)?;
+            if graph.boolean(*value)? != expected {
+                return Err("条件付き Law 評価が全補完での含意値と違う".into());
+            }
+            if let Some(value) = value {
+                let scalar = graph.get(*value)?;
+                if !matches!(&scalar.rule, Rule::Construction("evaluation"))
+                    || scalar.arguments != [instance, *expression]
+                {
+                    return Err("条件付き Law 値が当該の元式・適用から導出されていない".into());
+                }
+                self.validate(graph, scalar)?;
+            }
         }
         for (part, evaluation) in parts.iter().zip([guard, body]) {
             self.tick()?;
@@ -1595,7 +1801,12 @@ impl<'a> Environment<'a> {
         let span = self.expression_span(graph, expression)?;
         let expr =
             &self.inputs.law().exprs[*self.expressions.get(&span).ok_or("証拠の元 AST がない")?];
-        if matches!(expr.kind, ExprKind::Binary { .. }) {
+        let (law_expression, _, law_value) = self.evaluation(graph, evaluation)?;
+        let conditional = matches!(
+            &graph.get(law_expression)?.payload,
+            Some(Payload::Transform { .. })
+        );
+        if !conditional && matches!(expr.kind, ExprKind::Binary { .. }) {
             let Some(Payload::Evaluation { parts, .. }) = &graph.get(body)?.payload else {
                 unreachable!()
             };
@@ -1610,7 +1821,7 @@ impl<'a> Environment<'a> {
                 right.ok_or("右辺が未確定")?,
             ))
         } else {
-            let left = value.ok_or("Bool body が未確定")?;
+            let left = if conditional { law_value } else { value }.ok_or("Bool Law が未確定")?;
             let supplied_right = match &node.payload {
                 Some(Payload::Counterexample { right, .. }) => *right,
                 Some(Payload::EvaluationEvidence { rhs, .. }) => *rhs,

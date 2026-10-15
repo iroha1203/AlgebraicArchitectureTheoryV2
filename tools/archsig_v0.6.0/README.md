@@ -21,11 +21,13 @@
 - 観測評価 API (`archsig::observed::evaluate_observed_bytes` / `evaluate_observed`):
   明示束縛した原始参照、field 射影、Z/Bool literal、括弧、Z の負号・等値・順序比較、
   Bool の等値を共通の AST 評価器で読む。ドット列は束縛変数と一つの field まで扱う。
-  Law の guard は省略または評価値が true の場合を扱う。
-  明示 guard の評価と支持は body とともに返却評価・結論の導出へ接続する。
+  Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
+  Law の guard が false なら非適用、未観測なら body が true のとき全補完で成立し、
+  body が false または未観測なら未決となる。
+  明示 guard と元の body の評価・支持を条件付き Law の導出へ接続する。
   型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
   欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
-  その他の式形・false/未観測 guard・未束縛 parameter の量化・Answer 由来の束縛・
+  その他の式形・未束縛 parameter の量化・Answer 由来の束縛・
   動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
   `unsupported_algorithm` や未決回答へ変換しない。

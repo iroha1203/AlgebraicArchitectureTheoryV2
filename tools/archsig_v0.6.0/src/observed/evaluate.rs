@@ -733,6 +733,66 @@ impl Evaluator<'_, '_> {
             ),
         }
     }
+    fn transform_expression(
+        &mut self,
+        operation: TransformOp,
+        operands: Vec<NodeRef>,
+        scope: Scope,
+    ) -> Result<NodeRef, Failure> {
+        let mut arguments = Vec::new();
+        for &operand in &operands {
+            self.tick(Checkpoint::FiniteIteration)?;
+            arguments.push(operand);
+            self.tick(Checkpoint::FiniteIteration)?;
+        }
+        for binding in &self.bindings {
+            self.control.checkpoint(Checkpoint::FiniteIteration)?;
+            arguments.push(binding.value);
+            self.control.checkpoint(Checkpoint::FiniteIteration)?;
+        }
+        self.push(Node {
+            ty: NodeType::Expression(Type::Bool),
+            payload: Some(Payload::Transform {
+                operation,
+                operands,
+                bindings: self.bindings.clone(),
+            }),
+            rule: Rule::Construction("expression"),
+            arguments,
+            support: vec![],
+            evidence: vec![],
+            judgment: None,
+            scope,
+            reasons: vec![],
+        })
+    }
+    // 原 guard/body の Source を native not/and で結ぶ。架空の AST span は作らない。
+    fn conditional_expression(
+        &mut self,
+        guard: &Evaluated,
+        body: &Evaluated,
+        scope: &Scope,
+    ) -> Result<NodeRef, Failure> {
+        let not_body =
+            self.transform_expression(TransformOp::Not, vec![body.expression], body.scope.clone())?;
+        let violation = self.transform_expression(
+            TransformOp::And,
+            vec![guard.expression, not_body],
+            scope.clone(),
+        )?;
+        self.transform_expression(TransformOp::Not, vec![violation], scope.clone())
+    }
+    fn push_law_evaluation(&mut self, node: Node) -> Result<NodeRef, Failure> {
+        self.environment.validate(self.graph, &node)?;
+        let scope = node.scope.clone();
+        let retained = &mut self.retained_scope;
+        let completed = &mut self.answer_evaluation;
+        // 検査済みの適用評価を append と同時に保持し、post 停止でも生 body に戻さない。
+        Ok(self.graph.push_with_metadata(node, |reference| {
+            retained.merge(&scope);
+            *completed = Some(reference);
+        })?)
+    }
     fn answer(
         &mut self,
         params: &[Param],
@@ -744,16 +804,6 @@ impl Evaluator<'_, '_> {
         let guard_id = guard;
         let body_id = body;
         let guard = guard.map(|g| self.eval(g)).transpose()?;
-        if let Some(g) = &guard {
-            match g.value.map(|r| self.graph.scalar(r)).transpose()? {
-                Some(Scalar::Bool(true)) => {}
-                _ => {
-                    return Err(
-                        self.unsupported(self.declaration.span, "false/未観測 guard の適用判定")
-                    );
-                }
-            }
-        }
         let body = self.eval(body)?;
         let mut scope = body.scope.clone();
         if let Some(g) = &guard {
@@ -814,12 +864,43 @@ impl Evaluator<'_, '_> {
             scope: scope.clone(),
             reasons: vec![],
         })?;
-        // 明示 guard の適用評価。parts は実在する guard/body の各出現へ戻る。
+        // raw body の値と、guard による条件付き Law の値を区別する。
+        let guard_value = guard
+            .as_ref()
+            .map(|g| self.graph.boolean(g.value))
+            .transpose()?;
+        let conditional = guard_value.is_some_and(|g| g != Some(true));
+        let (law_expression, law_value) = if conditional {
+            self.tick(Checkpoint::Expression)?;
+            let g = guard.as_ref().expect("明示 guard");
+            let expression = self.conditional_expression(g, &body, &scope)?;
+            let value = conditional_bool(guard_value.flatten(), self.graph.boolean(body.value)?)
+                .map(|value| {
+                    self.value(
+                        Scalar::Bool(value),
+                        Rule::Construction("evaluation"),
+                        vec![instance, expression],
+                        support.clone(),
+                        scope.clone(),
+                    )
+                })
+                .transpose()?;
+            self.tick(Checkpoint::Expression)?;
+            (expression, value)
+        } else {
+            (body.expression, body.value)
+        };
+        let applicability = match guard_value {
+            None | Some(Some(true)) => "applicable",
+            Some(Some(false)) => "not_applicable",
+            Some(None) => "undetermined",
+        };
+        // 明示 guard の適用評価。parts は値を上書きせず元 guard/body を保持する。
         let evaluation = if let Some(g) = &guard {
-            self.push(Node {
+            self.push_law_evaluation(Node {
                 ty: NodeType::Evaluation(Type::Bool),
                 payload: Some(Payload::Evaluation {
-                    expression: body.expression,
+                    expression: law_expression,
                     bindings: self.bindings.clone(),
                     parts: vec![
                         Part {
@@ -841,8 +922,8 @@ impl Evaluator<'_, '_> {
                             children: vec![body.evaluation],
                         },
                     ],
-                    value: body.value,
-                    applicability: "applicable",
+                    value: law_value,
+                    applicability,
                 }),
                 rule: Rule::Construction("evaluation"),
                 arguments: vec![instance, body.evaluation, g.evaluation],
@@ -857,15 +938,15 @@ impl Evaluator<'_, '_> {
         };
         answer.outputs.insert("evaluation".into(), evaluation);
         self.answer_evaluation = Some(evaluation);
-        let decision = match body.value.map(|r| self.graph.scalar(r)).transpose()? {
+        let decision = match law_value.map(|r| self.graph.scalar(r)).transpose()? {
             Some(Scalar::Bool(true)) => Decision::Established,
             Some(Scalar::Bool(false)) => Decision::Refuted,
             None => Decision::Undetermined,
             _ => return Err(Failure::Internal("Law body が Bool でない".into())),
         };
         let mut evidence = Vec::new();
-        if let Some(value) = body.value {
-            let (left, right) = match body.comparison {
+        if let Some(value) = law_value {
+            let (left, right) = match body.comparison.filter(|_| !conditional) {
                 Some(pair) => pair,
                 None => (
                     value,
@@ -884,7 +965,7 @@ impl Evaluator<'_, '_> {
                     instance,
                     lhs: left,
                     rhs: right,
-                    residual: body.residual,
+                    residual: if conditional { None } else { body.residual },
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments: vec![instance, evaluation],
@@ -2073,5 +2154,239 @@ reading Follow {{
         environment
             .validate_answer(&graph, &result.prepared.requests().requests()[0], answer)
             .expect("Scalar leafと式全体のScopeが異なる正常Answerも総合検査を通る");
+    }
+    fn ac2_private_guard_example(gate: Option<bool>, body: Option<bool>) -> ObservedEvaluation {
+        let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0",
+      "vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Signal","version":"1",
+      "dependencies":[],"declarations":[{"kind":"entity","name":"Signal.Cell","meaning":"二つのBool値を保持する対象。",
+      "parameters":[],"fields":[{"name":"gate","type":"Bool","meaning":"適用条件。"},
+      {"name":"payload","type":"Bool","meaning":"検査する値。"}],"alignments":[]}]}]}"#;
+        let checked =
+            crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies["Signal"].digest;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading R {{
+  use vocabulary Signal version "1" digest "{digest}";
+  view yes(item: Cell): Bool = true;
+  view no(item: Cell): Bool = false;
+  view zero(item: Cell): Z = 0;
+  law required condition(item: Cell) when item.gate: item.payload;
+}}
+"#
+        );
+        let mut atoms = vec![];
+        for subject in ["s", "t"] {
+            for (field, value) in [("gate", gate), ("payload", body)] {
+                if let Some(value) = value {
+                    atoms.push(format!(r#"{{"id":"{subject}-{field}","subject":"{subject}","field":"Signal.Cell.{field}","value":{value},"origin":"model"}}"#));
+                }
+            }
+        }
+        let atoms = atoms.join(",");
+        let map = format!(
+            r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
+      "vocabularies":[{{"namespace":"Signal","version":"1","digest":"{digest}"}}],"sources":[],
+      "origins":[{{"id":"model","mode":"specification","method":"二つの対象を提示する。","locations":[],"note":"Bool条件と値の小さい仕様モデル。"}}],
+      "snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Signal.Cell","origin":"model"}},{{"id":"t","type":"Signal.Cell","origin":"model"}}],"atoms":[{atoms}]}}]}}"#
+        );
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![definitions.as_bytes().to_vec()],
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            &[
+                "yes=evaluate(R.yes,item=@v/s)",
+                "no=evaluate(R.no,item=@v/s)",
+                "zero=evaluate(R.zero,item=@v/s)",
+                "s=check(R.condition,item=@v/s)",
+                "t=check(R.condition,item=@v/t)",
+            ],
+            &mut control,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn rejects_false_guard_applicability_conditional_value_and_bool_residual_forgery() {
+        let result = ac2_private_guard_example(Some(false), Some(false));
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("false guardの正規DAGを元順で再buildできる");
+        let answer = result.answers.iter().find(|a| a.id == "s").unwrap();
+        assert_eq!(answer.status, Decision::Established);
+        let root = answer.outputs["evaluation"];
+        let Some(Payload::Evaluation {
+            value: Some(value),
+            applicability,
+            ..
+        }) = &result.nodes[root.0].payload
+        else {
+            panic!("条件付き評価")
+        };
+        assert_eq!(*applicability, "not_applicable");
+        assert_eq!(graph.scalar(*value).unwrap(), &Scalar::Bool(true));
+        let mut changed = result.nodes.clone();
+        changed[value.0].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "同じ構成入力でも含意Scalarの値を偽装できない"
+        );
+        for claimed in ["applicable", "undetermined"] {
+            let mut changed = result.nodes.clone();
+            let Some(Payload::Evaluation { applicability, .. }) = &mut changed[root.0].payload
+            else {
+                unreachable!()
+            };
+            *applicability = claimed;
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "false guardの実評価に反するapplicabilityを拒否する"
+            );
+        }
+        let false_value = result
+            .answers
+            .iter()
+            .find(|a| a.id == "no")
+            .unwrap()
+            .outputs["value"];
+        let mut changed = result.nodes.clone();
+        let Some(Payload::Evaluation { value, .. }) = &mut changed[root.0].payload else {
+            unreachable!()
+        };
+        *value = Some(false_value);
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "非適用Lawをraw falseの反証へ変換できない"
+        );
+        let zero = result
+            .answers
+            .iter()
+            .find(|a| a.id == "zero")
+            .unwrap()
+            .outputs["value"];
+        let mut changed = result.nodes.clone();
+        let Some(Payload::Evaluation { parts, .. }) = &mut changed[root.0].payload else {
+            unreachable!()
+        };
+        assert!(parts.iter().all(|p| p.residual.is_none()));
+        parts[0].residual = Some(zero);
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "一般BoolへZ残差を捏造できない"
+        );
+    }
+
+    #[test]
+    fn rejects_conditional_guard_and_body_from_different_explicit_bindings() {
+        let result = ac2_private_guard_example(Some(false), Some(false));
+        assert_eq!(result.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("二つの正規明示束縛のDAG");
+        let first = result.answers.iter().find(|a| a.id == "s").unwrap().outputs["evaluation"];
+        let second = result.answers.iter().find(|a| a.id == "t").unwrap().outputs["evaluation"];
+        let Some(Payload::Evaluation {
+            parts: other_parts, ..
+        }) = &result.nodes[first.0].payload
+        else {
+            panic!("guard/bodyの各原式評価")
+        };
+        for part in [0, 1] {
+            let mut changed = result.nodes.clone();
+            let Some(Payload::Evaluation { parts, .. }) = &mut changed[second.0].payload else {
+                unreachable!()
+            };
+            assert_eq!(parts[part].location, other_parts[part].location);
+            assert!(!other_parts[part].children.is_empty());
+            assert!(
+                other_parts[part]
+                    .children
+                    .iter()
+                    .all(|child| child.0 < second.0)
+            );
+            parts[part].children = other_parts[part].children.clone();
+            // 元式span・値が同じでも別subjectのguard/bodyを同じLaw適用へ混ぜない。
+            assert!(matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
+    }
+
+    #[test]
+    fn rejects_determinate_values_or_judgments_for_missing_guard_and_false_body() {
+        let result = ac2_private_guard_example(None, Some(false));
+        assert_eq!(result.status(), "partial");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
+            .expect("未観測guardとfalse bodyの正規DAGを再buildできる");
+        let answer_index = result.answers.iter().position(|a| a.id == "s").unwrap();
+        let answer = &result.answers[answer_index];
+        assert_eq!(answer.status, Decision::Undetermined);
+        let root = answer.outputs["evaluation"];
+        let Some(Payload::Evaluation {
+            value,
+            applicability,
+            ..
+        }) = &result.nodes[root.0].payload
+        else {
+            panic!("条件付き評価")
+        };
+        assert!(value.is_none());
+        assert_eq!(*applicability, "undetermined");
+        for id in ["yes", "no"] {
+            let replacement = result.answers.iter().find(|a| a.id == id).unwrap().outputs["value"];
+            let mut changed = result.nodes.clone();
+            let Some(Payload::Evaluation { value, .. }) = &mut changed[root.0].payload else {
+                unreachable!()
+            };
+            *value = Some(replacement);
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "補完で真偽が異なるLawへ確定値を補えない"
+            );
+        }
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        environment
+            .validate_answer(
+                &graph,
+                &result.prepared.requests().requests()[answer_index],
+                answer,
+            )
+            .unwrap();
+        for status in [Decision::Established, Decision::Refuted] {
+            let mut wrong = answer.clone();
+            wrong.status = status;
+            assert!(matches!(
+                environment.validate_answer(
+                    &graph,
+                    &result.prepared.requests().requests()[answer_index],
+                    &wrong
+                ),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
     }
 }
