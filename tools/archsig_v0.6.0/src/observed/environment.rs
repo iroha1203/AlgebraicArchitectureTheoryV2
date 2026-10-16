@@ -779,6 +779,8 @@ impl<'a> Environment<'a> {
                         || self.current_context(graph).instance.is_some()
                         || self.current_context(graph).iteration.is_some()
                         || self.current_context(graph).case.is_some()
+                        || (node.arguments.len() == 1
+                            && self.has_chain_owner(graph, node.arguments[0], limit)?)
                     {
                         self.call_field_source(graph, node, limit)?;
                     }
@@ -3967,6 +3969,39 @@ impl<'a> Environment<'a> {
             return Ok(self.evaluation(graph, input)?.2);
         }
         Ok(None)
+    }
+    // Source付きchain参照をownerとして消費するときは、その元出現を再検査する。
+    // 単なる原始Ref Atomや旧一段fieldは、Ruleの名だけでchainと扱わない。
+    fn has_chain_owner(
+        &self,
+        graph: &Graph,
+        reference: NodeRef,
+        limit: usize,
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        if reference.0 >= limit {
+            return Err("fieldのownerが既出でない".into());
+        }
+        let owner = graph.get(reference)?;
+        if !matches!(
+            &owner.payload,
+            Some(Payload::Scalar(Scalar::Subject { .. }))
+        ) || !matches!(&owner.rule, Rule::Input { kind: "atom", .. })
+            || owner.arguments.len() != 2
+        {
+            self.tick()?;
+            return Ok(false);
+        }
+        // 提示されたSource辺の形だけでは採用しない。実owner Evaluation・束縛・
+        // 元AST・原始Fact・Scopeまで、そのRef Scalar自身の生成を独立に照合する。
+        self.validate_at(graph, owner, reference.0)?;
+        let span = self.expression_span(graph, owner.arguments[1])?;
+        let chained = self.dotted_prefix(span)?.is_some_and(|(id, count)| {
+            count > 1
+                && matches!(&self.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
+        });
+        self.tick()?;
+        Ok(chained)
     }
     // calleeのfield Scalarも、slot値の一致だけで別producerへ移せない。
     fn call_field_source(

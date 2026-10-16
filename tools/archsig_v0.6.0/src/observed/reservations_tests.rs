@@ -281,6 +281,46 @@ fn reservations_chain_rejects_equal_intermediate_reference_from_another_occurren
 }
 
 #[test]
+fn reservations_chain_rejects_source_edge_erasure_with_equal_foreign_owner_at_scalar_prefix() {
+    let result = reservations_private_example(
+        "view calls(e:Reserve):(Z,Z)=(e.to.free,e.to.free);",
+        &["current=evaluate(Reservations.calls,e=@v/e)"],
+        false,
+    );
+    assert_eq!(result.status(), "complete");
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let leaves = reservations_private_evaluations(&result, "e.to.free");
+    assert_eq!(leaves.len(), 2);
+    let (_, _, first_owner) = reservations_private_parts(&result, leaves[0]);
+    let (source, scalar, second_owner) = reservations_private_parts(&result, leaves[1]);
+    let (_, first_owner_value, _) = reservations_private_parts(&result, first_owner);
+    let (_, second_owner_value, _) = reservations_private_parts(&result, second_owner);
+    assert_ne!(first_owner_value, second_owner_value);
+    assert_eq!(
+        data_scalar_at(&result, first_owner_value),
+        data_scalar_at(&result, second_owner_value)
+    );
+    assert!(
+        matches!(data_scalar_at(&result, first_owner_value), Scalar::Subject { snapshot, subject, entity } if snapshot=="v" && subject=="q" && entity=="Reservations.State")
+    );
+    assert_eq!(
+        result.nodes[scalar].arguments,
+        [NodeRef(second_owner_value), NodeRef(source)]
+    );
+    assert!(first_owner_value < scalar);
+    assert!(scalar < leaves[1], "target prefix has no consuming parent");
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+    // 元Sourceを消して同値の別出現ownerへ移す。正常prefixの受理と実変更、
+    // 親未挿入prefix/fullのInternal拒否を同じ既存helperで確認する。
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].arguments = vec![NodeRef(first_owner_value)];
+    });
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].arguments = vec![NodeRef(second_owner_value)];
+    });
+}
+
+#[test]
 fn reservations_chain_missing_and_counterexample_recheck_original_fact_and_evidence() {
     let missing = reservations_private_example(
         "view current(e:Reserve):Z=e.to.held;",
