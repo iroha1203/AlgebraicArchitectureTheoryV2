@@ -3,6 +3,7 @@
 pub mod control;
 mod environment;
 pub mod evaluate;
+mod numeric;
 pub mod result;
 pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
 pub use result::{EvaluationFailure, ObservedEvaluation};

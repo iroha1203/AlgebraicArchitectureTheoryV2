@@ -70,9 +70,14 @@ impl NodeType {
         }
     }
 }
-#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Scalar {
     Z(BigInt),
+    Q(BigInt, BigInt),
+    Fp {
+        modulus: String,
+        value: BigInt,
+    },
+    Tuple(Vec<Scalar>),
     Bool(bool),
     Subject {
         snapshot: String,
@@ -82,22 +87,124 @@ pub(crate) enum Scalar {
 }
 impl Scalar {
     pub(crate) fn ty(&self) -> Type {
-        match self {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Z(_) => Type::Z,
+            Self::Q(_, _) => Type::Q,
+            Self::Fp { modulus, .. } => Type::Fp(modulus.clone()),
+            Self::Tuple(items) => Type::Tuple(items.iter().map(Scalar::ty).collect()),
             Self::Bool(_) => Type::Bool,
             Self::Subject { entity, .. } => Type::Ref(entity.clone()),
-        }
+        })
     }
     fn wire(&self) -> Json {
-        match self {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Z(n) => Json::str(n.to_string()),
+            Self::Q(n, d) => Json::Arr(vec![Json::str(n.to_string()), Json::str(d.to_string())]),
+            Self::Fp { value, .. } => Json::str(value.to_string()),
+            Self::Tuple(items) => Json::Arr(items.iter().map(Scalar::wire).collect()),
             Self::Bool(b) => Json::Bool(*b),
             Self::Subject {
                 snapshot, subject, ..
             } => Json::Arr(vec![Json::str(snapshot), Json::str(subject)]),
+        })
+    }
+}
+// Tuple は再帰的な値。解放も表示も呼出し元のスタック深さへ依存させない。
+impl Drop for Scalar {
+    fn drop(&mut self) {
+        let mut pending = Vec::new();
+        if let Self::Tuple(items) = self {
+            pending.append(items);
+        }
+        while let Some(mut value) = pending.pop() {
+            if let Self::Tuple(items) = &mut value {
+                pending.append(items);
+            }
         }
     }
 }
+impl std::fmt::Debug for Scalar {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Z(n) => f.debug_tuple("Z").field(n).finish(),
+            Self::Q(n, d) => f.debug_tuple("Q").field(n).field(d).finish(),
+            Self::Fp { modulus, value } => f
+                .debug_struct("Fp")
+                .field("modulus", modulus)
+                .field("value", value)
+                .finish(),
+            Self::Tuple(items) => f.debug_tuple("Tuple").field(items).finish(),
+            Self::Bool(b) => f.debug_tuple("Bool").field(b).finish(),
+            Self::Subject {
+                snapshot,
+                subject,
+                entity,
+            } => f
+                .debug_struct("Subject")
+                .field("snapshot", snapshot)
+                .field("subject", subject)
+                .field("entity", entity)
+                .finish(),
+        })
+    }
+}
+impl Clone for Scalar {
+    fn clone(&self) -> Self {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Z(n) => Self::Z(n.clone()),
+            Self::Q(n, d) => Self::Q(n.clone(), d.clone()),
+            Self::Fp { modulus, value } => Self::Fp {
+                modulus: modulus.clone(),
+                value: value.clone(),
+            },
+            Self::Tuple(items) => Self::Tuple(items.clone()),
+            Self::Bool(b) => Self::Bool(*b),
+            Self::Subject {
+                snapshot,
+                subject,
+                entity,
+            } => Self::Subject {
+                snapshot: snapshot.clone(),
+                subject: subject.clone(),
+                entity: entity.clone(),
+            },
+        })
+    }
+}
+impl PartialEq for Scalar {
+    fn eq(&self, other: &Self) -> bool {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
+            (Self::Z(a), Self::Z(b)) => a == b,
+            (Self::Q(a, b), Self::Q(c, d)) => a == c && b == d,
+            (
+                Self::Fp {
+                    modulus: p,
+                    value: a,
+                },
+                Self::Fp {
+                    modulus: q,
+                    value: b,
+                },
+            ) => p == q && a == b,
+            (Self::Tuple(a), Self::Tuple(b)) => a == b,
+            (Self::Bool(a), Self::Bool(b)) => a == b,
+            (
+                Self::Subject {
+                    snapshot: a,
+                    subject: b,
+                    entity: c,
+                },
+                Self::Subject {
+                    snapshot: d,
+                    subject: e,
+                    entity: f,
+                },
+            ) => a == d && b == e && c == f,
+            _ => false,
+        })
+    }
+}
+impl Eq for Scalar {}
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct Fact {
     pub snapshot: String,
@@ -843,7 +950,9 @@ impl Graph {
         }
         self.reasons(&node.reasons)?;
         match (&node.ty, &node.payload) {
-            (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {}
+            (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {
+                super::numeric::check(s, &self.control)?;
+            }
             (NodeType::Expression(_), Some(Payload::Expression { bindings, .. })) => {
                 self.bindings(bindings)?
             }
@@ -889,7 +998,11 @@ impl Graph {
                         self.scalar(v)?;
                     }
                     if let Some(r) = p.residual {
-                        self.value(r, &Type::Z)?;
+                        let value = self.scalar(r)?;
+                        if !super::numeric::is_numeric_type(&value.ty(), &self.control)? {
+                            return Err("残差が数値型でない".into());
+                        }
+                        super::numeric::check(value, &self.control)?;
                     }
                     for &c in &p.children {
                         self.tick()?;
@@ -935,12 +1048,10 @@ impl Graph {
                     return Err("証拠両辺の型不一致".into());
                 }
                 if let Some(d) = residual {
-                    let (Scalar::Z(l), Scalar::Z(r), Scalar::Z(d)) = (l, r, self.scalar(*d)?)
-                    else {
-                        return Err("整数以外の残差".into());
-                    };
-                    if l - r != *d {
-                        return Err("残差が元の両辺に合わない".into());
+                    let expected =
+                        super::numeric::binary(crate::law::ast::BinOp::Sub, l, r, &self.control)?;
+                    if self.scalar(*d)? != &expected {
+                        return Err("型付き残差が元の両辺に合わない".into());
                     }
                 }
             }
