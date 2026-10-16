@@ -351,6 +351,12 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
+        for (index, quantifier) in node.scope.quantifiers.iter().enumerate() {
+            self.tick()?;
+            if node.scope.quantifiers[..index].contains(quantifier) {
+                return Err("Scopeに同じ実量化descriptorが重複する".into());
+            }
+        }
         for reference in node
             .arguments
             .iter()
@@ -3612,6 +3618,9 @@ impl<'a> Environment<'a> {
                 let mut scope = Scope::default();
                 scope.add_quantifier(spec.descriptor(Some(finite), Some(record.caller)));
                 analysis.scope.merge(&scope);
+                analysis
+                    .scope
+                    .order_quantifiers_like(&graph.get(record.source)?.scope);
             } else if record.finite.is_some() {
                 return Err("内包反復に量化Domainがある".into());
             }
@@ -4241,8 +4250,22 @@ impl<'a> Environment<'a> {
                 ExprKind::Quant { .. } => {
                     let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
                     let input = self.scoped_ast(spec.domain, variables, base, reading)?;
+                    // 親/lexical値が既に持つ出現はその由来順を保つ。
+                    // このdomain式で新たに現れる量化は自身より後に置く。
+                    let mut inherited = base.clone();
+                    for value in variables.values() {
+                        self.tick()?;
+                        inherited.merge_quantifiers(&value.scope);
+                    }
                     let mut scope = input.scope.clone();
+                    scope.quantifiers.retain(|q| {
+                        inherited
+                            .quantifiers
+                            .iter()
+                            .any(|old| old.occurrence == q.occurrence)
+                    });
                     scope.add_quantifier(spec.descriptor(None, self.scoped_context.get()));
+                    scope.merge_quantifiers(&input.scope);
                     let Some(container) = input.known_value.as_ref() else {
                         return Ok(SourceValue {
                             scope,
@@ -5428,6 +5451,7 @@ impl<'a> Environment<'a> {
         }
         let mut scope = graph.get(node.arguments[1])?.scope.clone();
         scope.add_quantifier(spec.descriptor(None, Some(self.current_context(graph))));
+        scope.order_quantifiers_like(&graph.get(node.arguments[0])?.scope);
         if node.scope != scope
             || node.support != graph.get(node.arguments[1])?.support
             || !node.evidence.is_empty()
@@ -5475,6 +5499,7 @@ impl<'a> Environment<'a> {
         }
         let mut scope = graph.get(input)?.scope.clone();
         scope.add_quantifier(descriptor.clone());
+        scope.order_quantifiers_like(&graph.get(source)?.scope);
         let mut support = graph.get(input)?.support.clone();
         let mut results = Vec::new();
         let mut seen = Vec::new();

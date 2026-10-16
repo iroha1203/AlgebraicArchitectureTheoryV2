@@ -958,6 +958,7 @@ impl Evaluator<'_, '_> {
             }
             let mut domain_scope = input.scope.clone();
             domain_scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
+            domain_scope.order_quantifiers_like(&self.graph.get(source)?.scope);
             let arguments = std::iter::once(source)
                 .chain([input.evaluation])
                 .chain(elements.iter().copied())
@@ -978,6 +979,7 @@ impl Evaluator<'_, '_> {
             })?;
             finite = Some(domain);
             scope.add_quantifier(spec.descriptor(finite, Some(self.graph.active)));
+            scope.order_quantifiers_like(&self.graph.get(source)?.scope);
             for item in items {
                 #[cfg(test)]
                 let position = results.len();
@@ -1060,6 +1062,7 @@ impl Evaluator<'_, '_> {
             }
         } else {
             scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
+            scope.order_quantifiers_like(&self.graph.get(source)?.scope);
         }
         let known = if finite.is_some() {
             super::quantifier::reduce(spec.kind, &results, self.control)?
@@ -7487,6 +7490,134 @@ reading Calc {{
             &mut named_call_quiet(),
         )
         .unwrap()
+    }
+    #[test]
+    fn in_quantifier_scope_rejects_duplicate_actual_domain_at_scalar_prefix() {
+        let result = in_quantifier_example(&["capture=evaluate(Calc.nested)"]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let scalar = result.nodes.iter().enumerate().find_map(|(index, node)| {
+            (result.contexts[index].iteration.is_none()
+                && matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_))))
+                && matches!(&node.rule, Rule::Input { kind: "law", location: Location::Law { span } }
+                    if result.prepared.inputs().sources().law().bytes()[span.0..span.1].starts_with(b"forall x in")))
+                .then_some(index)
+        }).unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+        let original = &result.nodes[scalar].scope;
+        let inner: Vec<_> = original
+            .quantifiers
+            .iter()
+            .enumerate()
+            .filter_map(|(index, q)| (q.name == "z").then_some(index))
+            .collect();
+        assert_eq!(inner.len(), 2);
+        assert_eq!(
+            original.quantifiers[inner[0]].occurrence,
+            original.quantifiers[inner[1]].occurrence
+        );
+        assert_ne!(
+            original.quantifiers[inner[0]].domain,
+            original.quantifiers[inner[1]].domain
+        );
+        assert_ne!(
+            original.quantifiers[inner[0]].context,
+            original.quantifiers[inner[1]].context
+        );
+        let mut reordered = result.nodes[..=scalar].to_vec();
+        reordered[scalar].scope.quantifiers.swap(inner[0], inner[1]);
+        assert_eq!(&reordered[scalar].scope, original);
+        assert_eq!(original, &reordered[scalar].scope);
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        let mut changed = result.nodes[..=scalar].to_vec();
+        changed[scalar].scope.quantifiers[inner[1]] = original.quantifiers[inner[0]].clone();
+        assert_ne!(&changed[scalar].scope, original);
+        assert_ne!(original, &changed[scalar].scope);
+        rejects_named_prefix(&result, &changed);
+        // 拒否対象は未完成Scalarまで。完成Answer受理をこの改変からは主張しない。
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+    }
+    #[test]
+    fn in_quantifier_domain_nesting_keeps_ast_order_across_callee_definitions() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(&[], r#"
+ view early_domain(flag: Bool): Bool = exists early in list<Bool>[flag] . early;
+ view from_early(): Bool = forall outside in list<Bool>[early_domain((exists argument in list<Z>[1] . argument=1))] . outside;
+ view domain_nested(): Bool = forall x in list<Bool>[(exists y in list<Z>[1] . y=1)] . x;
+ view branch_nested(): Bool = forall n in (if (forall b in list<Bool>[true] . b) then list<Z>[1] else list<Z>[]) . n>0;
+ view from_late(): Bool = forall outside in list<Bool>[late_domain((exists argument in list<Z>[1] . argument=1))] . outside;
+ view late_domain(flag: Bool): Bool = exists late in list<Bool>[flag] . late;
+"#),
+            &["direct=evaluate(Calc.domain_nested)", "branch=evaluate(Calc.branch_nested)",
+              "before=evaluate(Calc.from_early)", "after=evaluate(Calc.from_late)"],
+            &mut named_call_quiet(),
+        ).unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let expected = [
+            vec!["x", "y"],
+            vec!["n", "b"],
+            vec!["outside", "argument", "early"],
+            vec!["outside", "argument", "late"],
+        ];
+        for (request, names) in expected.iter().enumerate() {
+            let answer = &result.answers[request];
+            assert_eq!(
+                data_scalar_at(&result, answer.outputs["value"].0),
+                &Scalar::Bool(true)
+            );
+            let scalar = answer.outputs["value"].0;
+            let quantifiers = &result.nodes[scalar].scope.quantifiers;
+            assert_eq!(
+                quantifiers
+                    .iter()
+                    .map(|q| q.name.as_str())
+                    .collect::<Vec<_>>(),
+                *names
+            );
+            assert!(quantifiers.iter().all(|q| q.domain.is_some()));
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+            let outer = quantifiers[0].occurrence;
+            let targets: Vec<_> = result.nodes.iter().enumerate().filter_map(|(index,node)| {
+                (result.contexts[index].request == request
+                    && result.contexts[index].frame.is_none()
+                    && result.contexts[index].iteration.is_none()
+                    && node.scope.quantifiers.first().is_some_and(|q| q.occurrence == outer)
+                    && (matches!(&node.rule, Rule::Input {kind:"law",location:Location::Law {span}} if *span==outer)
+                        || matches!(&node.payload, Some(Payload::Domain {..}))
+                        || matches!(&node.payload, Some(Payload::Evaluation {..}))))
+                    .then_some(index)
+            }).collect();
+            assert!(targets.iter().any(|index| *index == scalar));
+            assert!(
+                targets
+                    .iter()
+                    .any(|index| result.nodes[*index].ty == NodeType::Domain)
+            );
+            assert!(targets.iter().any(|index| matches!(
+                &result.nodes[*index].payload,
+                Some(Payload::Expression { .. })
+            )));
+            assert!(targets.iter().any(|index| matches!(
+                &result.nodes[*index].payload,
+                Some(Payload::Evaluation { .. })
+            )));
+            for target in targets {
+                assert_eq!(
+                    result.nodes[target]
+                        .scope
+                        .quantifiers
+                        .iter()
+                        .map(|q| q.name.as_str())
+                        .collect::<Vec<_>>(),
+                    *names
+                );
+                rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+                let mut changed = result.nodes[..=target].to_vec();
+                changed[target].scope.quantifiers.swap(0, 1);
+                rejects_named_prefix(&result, &changed);
+            }
+        }
     }
     fn in_domain(result: &ObservedEvaluation, request: usize) -> usize {
         result

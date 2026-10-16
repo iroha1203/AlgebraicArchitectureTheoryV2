@@ -401,10 +401,17 @@ impl PartialEq for Scope {
             && self.completions == other.completions
             && occurrences(self) == occurrences(other)
             && self.quantifiers.len() == other.quantifiers.len()
-            && self
-                .quantifiers
-                .iter()
-                .all(|q| other.quantifiers.contains(q))
+            && self.quantifiers.iter().all(|q| {
+                self.quantifiers
+                    .iter()
+                    .filter(|actual| *actual == q)
+                    .count()
+                    == other
+                        .quantifiers
+                        .iter()
+                        .filter(|actual| *actual == q)
+                        .count()
+            })
     }
 }
 impl Eq for Scope {}
@@ -439,6 +446,17 @@ impl Quantifier {
     }
 }
 impl Scope {
+    // 元式を展開したScopeを順序の正本にする。異なる実Context/Domainは
+    // 省略せず、同じ元出現の実域間の表示順には意味を与えない。
+    pub(super) fn order_quantifiers_like(&mut self, original: &Self) {
+        self.quantifiers.sort_by_key(|quantifier| {
+            original
+                .quantifiers
+                .iter()
+                .position(|q| q.occurrence == quantifier.occurrence)
+                .unwrap_or(original.quantifiers.len())
+        });
+    }
     pub(crate) fn add_quantifier(&mut self, quantifier: Quantifier) {
         let scope = Self {
             quantifiers: vec![quantifier],
@@ -1389,8 +1407,11 @@ impl Graph {
             self.tick()?;
         }
         self.reasons(&node.reasons)?;
-        for quantifier in &node.scope.quantifiers {
+        for (index, quantifier) in node.scope.quantifiers.iter().enumerate() {
             self.tick()?;
+            if node.scope.quantifiers[..index].contains(quantifier) {
+                return Err("Scopeに同じ実量化descriptorが重複する".into());
+            }
             if let Some(domain) = quantifier.domain {
                 self.expect(domain, &NodeType::Domain)?;
             }

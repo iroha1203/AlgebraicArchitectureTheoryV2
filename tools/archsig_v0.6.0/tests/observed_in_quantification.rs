@@ -1203,3 +1203,156 @@ view by_call(s: Sample): Bool = nested() and (s.zero=0);
         }
     }
 }
+
+#[test]
+fn quantifier_scopes_follow_ast_order_through_domains_and_view_calls() {
+    let script = r#"
+view earlier_domain(s: Sample): List<Z> = if (exists earlier in list<Z>[s.zero] . earlier=0) then list<Z>[1] else list<Z>[];
+view call_earlier(s: Sample): Bool = forall outerearly in earlier_domain(s) . outerearly>0;
+view call_later(s: Sample): Bool = forall outerlate in later_domain(s) . outerlate>0;
+view later_domain(s: Sample): List<Z> = if (exists later in list<Z>[s.zero] . later=0) then list<Z>[1] else list<Z>[];
+view literal_domain(): Bool = forall x in list<Bool>[(exists y in list<Z>[1] . y=1)] . x;
+view conditional_domain(): Bool = forall n in (if (forall b in list<Bool>[true] . b) then list<Z>[1] else list<Z>[]) . n>0;
+law required ordered(s: Sample): forall outerlaw in later_domain(s) . outerlaw>0;
+"#;
+    let asks = [
+        "a=evaluate(Calc.literal_domain)",
+        "b=evaluate(Calc.conditional_domain)",
+        "c=evaluate(Calc.call_earlier,s=@v/sample)",
+        "d=evaluate(Calc.call_later,s=@v/sample)",
+        "e=check(Calc.ordered,s=@v/sample)",
+    ];
+    let (wire, checked) = run(fixture(script, false, false), &asks);
+    assert_eq!(f(&wire, "status"), &Json::str("complete"));
+    let ns = index(&wire);
+    for id in ["a", "b", "c", "d"] {
+        output(&wire, id, &Json::str("Bool"), Json::Bool(true));
+    }
+    check_claim(&wire, "e", "established");
+    // 順序は量化を根とする元ASTの順。callee宣言のbyte位置やdomainの評価順には依存しない。
+    for (id, names, kinds, types, values, collection_sources) in [
+        (
+            "a",
+            ["x", "y"],
+            ["forall", "exists"],
+            ["Bool", "Z"],
+            [Json::Bool(true), Json::str("1")],
+            ["list<Bool>[(exists y in list<Z>[1] . y=1)]", "list<Z>[1]"],
+        ),
+        (
+            "b",
+            ["n", "b"],
+            ["forall", "forall"],
+            ["Z", "Bool"],
+            [Json::str("1"), Json::Bool(true)],
+            [
+                "(if (forall b in list<Bool>[true] . b) then list<Z>[1] else list<Z>[])",
+                "list<Bool>[true]",
+            ],
+        ),
+        (
+            "c",
+            ["outerearly", "earlier"],
+            ["forall", "exists"],
+            ["Z", "Z"],
+            [Json::str("1"), Json::str("0")],
+            ["earlier_domain(s)", "list<Z>[s.zero]"],
+        ),
+        (
+            "d",
+            ["outerlate", "later"],
+            ["forall", "exists"],
+            ["Z", "Z"],
+            [Json::str("1"), Json::str("0")],
+            ["later_domain(s)", "list<Z>[s.zero]"],
+        ),
+        (
+            "e",
+            ["outerlaw", "later"],
+            ["forall", "exists"],
+            ["Z", "Z"],
+            [Json::str("1"), Json::str("0")],
+            ["later_domain(s)", "list<Z>[s.zero]"],
+        ),
+    ] {
+        let a = answer(&wire, id);
+        let qs = f(f(a, "scope"), "quantifiers");
+        assert_eq!(arr(qs).len(), 2, "{id}");
+        for (position, q) in arr(qs).iter().enumerate() {
+            assert_eq!(f(q, "name"), &Json::str(names[position]), "{id}");
+            assert_eq!(f(q, "kind"), &Json::str(kinds[position]), "{id}");
+            assert_eq!(f(q, "type"), &Json::str(types[position]), "{id}");
+            let domain = target(&ns, f(q, "domain"), &Json::str("Domain"));
+            assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
+            assert_eq!(f(val(domain), "type"), f(q, "type"));
+            assert_eq!(
+                domain_values(&wire, domain),
+                vec![values[position].canonical()]
+            );
+            let collection = arr(f(domain, "arguments"))
+                .iter()
+                .map(|r| ns[text(f(r, "node"))])
+                .find(|n| f(n, "type") == &Json::str("Evaluation"))
+                .unwrap();
+            assert_eq!(
+                source(&checked, evaluation_span(&ns, collection)),
+                collection_sources[position].as_bytes(),
+                "{id}の元domain AST位置"
+            );
+            assert_eq!(
+                val(target(
+                    &ns,
+                    f(val(collection), "value"),
+                    &ty("List", Json::str(types[position]))
+                )),
+                &Json::Arr(vec![values[position].clone()])
+            );
+        }
+        let evaluation = root(&wire, id);
+        assert_eq!(f(f(evaluation, "scope"), "quantifiers"), qs);
+        let value = target(&ns, f(val(evaluation), "value"), &Json::str("Bool"));
+        assert_eq!(val(value), &Json::Bool(true));
+        assert_eq!(f(f(value, "scope"), "quantifiers"), qs);
+        if id == "e" {
+            let claim = target(&ns, f(a, "claim"), &Json::str("Proposition"));
+            assert_eq!(f(f(claim, "scope"), "quantifiers"), qs);
+        }
+        // 中間Domainは自身へのRefを持てない。保持している量化の部分列を元順と照合する。
+        for node in reached(&ns, &[a]).iter().map(|id| ns[id.as_str()]) {
+            let ordered = arr(f(f(node, "scope"), "quantifiers"))
+                .iter()
+                .filter_map(|q| {
+                    names
+                        .iter()
+                        .position(|name| f(q, "name") == &Json::str(*name))
+                })
+                .collect::<Vec<_>>();
+            assert!(
+                ordered.windows(2).all(|p| p[0] <= p[1]),
+                "{id}: {:?}",
+                f(node, "id")
+            );
+            for q in arr(f(f(node, "scope"), "quantifiers")) {
+                if let Some(domain) = obj(q).get("domain") {
+                    let domain = target(&ns, domain, &Json::str("Domain"));
+                    assert_eq!(f(val(domain), "type"), f(q, "type"));
+                }
+            }
+        }
+        if ["c", "d", "e"].contains(&id) {
+            assert!(
+                arr(f(evaluation, "support")).iter().any(|fact| {
+                    obj(fact).get("field") == Some(&Json::str("Quantification.Sample.zero"))
+                        && f(fact, "subject") == &Json::str("sample")
+                }),
+                "domainの呼出しから原始支持を保持"
+            );
+        }
+    }
+    let earlier = declared_body(&checked, "Calc.earlier_domain");
+    let call_earlier = declared_body(&checked, "Calc.call_earlier");
+    let later = declared_body(&checked, "Calc.later_domain");
+    let call_later = declared_body(&checked, "Calc.call_later");
+    assert!(checked.law().exprs[earlier].span.0 < checked.law().exprs[call_earlier].span.0);
+    assert!(checked.law().exprs[later].span.0 > checked.law().exprs[call_later].span.0);
+}
