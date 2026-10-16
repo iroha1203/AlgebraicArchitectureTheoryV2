@@ -145,6 +145,55 @@ impl Evaluator<'_, '_> {
             reasons: vec![],
         })
     }
+    /// 欠測を含む元算術が定数になる場合だけ、元出現と実子評価から通常値を作る。
+    fn affine_constant(
+        &mut self,
+        span: (usize, usize),
+        ty: &Type,
+        children: &[&Evaluated],
+    ) -> Result<Option<NodeRef>, Failure> {
+        if !matches!(ty, Type::Z | Type::Q) {
+            return Ok(None);
+        }
+        let source = self
+            .sources
+            .get(&span)
+            .cloned()
+            .ok_or_else(|| Failure::Internal("算術の元Sourceがない".into()))?;
+        let Some(known) = source.known_value else {
+            return Ok(None);
+        };
+        if known.ty() != *ty {
+            return Err(Failure::Internal("元算術の確定値の型が違う".into()));
+        }
+        let mut scope = source.scope;
+        let mut support = vec![];
+        for child in children {
+            self.tick(Checkpoint::FiniteIteration)?;
+            scope.merge(&child.scope);
+            support.extend(child.support.iter().cloned());
+            self.tick(Checkpoint::FiniteIteration)?;
+        }
+        support.sort();
+        support.dedup();
+        let arguments = std::iter::once(source.expression)
+            .chain(children.iter().map(|child| child.evaluation))
+            .collect();
+        let value = self.value(
+            known,
+            Rule::Input {
+                kind: "law",
+                location: Location::Law { span },
+            },
+            arguments,
+            support,
+            scope,
+        )?;
+        #[cfg(test)]
+        data::observe_actual(span, self.graph.active, "affine_scalar", 1);
+        self.tick(Checkpoint::FiniteIteration)?;
+        Ok(Some(value))
+    }
     fn bind(&mut self, params: &[Param]) -> Result<(), Failure> {
         for p in params {
             self.tick(Checkpoint::FiniteIteration)?;
@@ -853,6 +902,7 @@ impl Evaluator<'_, '_> {
                         operand.support.clone(),
                         operand.scope.clone(),
                     )?),
+                    None if *op == UnOp::Neg => self.affine_constant(span, &ty, &[&operand])?,
                     None => None,
                 };
                 self.finish(span, ty, value, vec![operand], vec![], None, None, None)
@@ -902,6 +952,8 @@ impl Evaluator<'_, '_> {
                         support.clone(),
                         scope.clone(),
                     )?)
+                } else if matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) {
+                    self.affine_constant(span, &ty, &[&left, &right])?
                 } else {
                     None
                 };
@@ -2176,6 +2228,641 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    fn affine_private_fixture(body: &str) -> InputSources {
+        let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
+        let checked =
+            crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies["Affine"].digest;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
+{body}
+}}"#
+        );
+        let map = format!(
+            r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Affine","version":"1","digest":"{digest}"}}],"sources":[{{"id":"scan","uri":"urn:fixture:affine","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],"origins":[{{"id":"base","mode":"observed","method":"数値の対象を観測する。","locations":[{{"source":"scan","path":"sample.model","span":[0,1]}}]}}],"snapshots":[{{"id":"v","origin":"base","subjects":[{{"id":"sample","type":"Affine.Sample","origin":"base"}},{{"id":"other","type":"Affine.Sample","origin":"base"}}],"atoms":[]}},{{"id":"v2","origin":"base","subjects":[{{"id":"sample","type":"Affine.Sample","origin":"base"}}],"atoms":[]}}]}}"#
+        );
+        InputSources::from_bytes(
+            vec![definitions.as_bytes().to_vec()],
+            law.into_bytes(),
+            map.into_bytes(),
+        )
+    }
+
+    fn affine_private_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
+        let result =
+            evaluate_observed_bytes(affine_private_fixture(body), asks, &mut named_call_quiet())
+                .unwrap();
+        assert_ne!(result.status(), "error", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        result
+    }
+
+    fn affine_private_scalars(result: &ObservedEvaluation) -> Vec<usize> {
+        result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                (matches!(
+                    &node.payload,
+                    Some(Payload::Scalar(Scalar::Z(_) | Scalar::Q(..)))
+                ) && matches!(&node.rule, Rule::Input { kind: "law", .. })
+                    && node
+                        .arguments
+                        .first()
+                        .is_some_and(|r| matches!(result.nodes[r.0].ty, NodeType::Expression(_)))
+                    && node.arguments.len() > 1)
+                    .then_some(index)
+            })
+            .collect()
+    }
+
+    #[test]
+    fn affine_constants_recheck_scalar_prefix_values_types_sources_and_children() {
+        let result = affine_private_example(
+            r#"view z(s:Sample):Z=s.z-s.z;
+view q(s:Sample):Q=((s.q+rat(1,2))+rat(1,2))-s.q;
+view foreign(s:Sample):Z=s.z-s.z;"#,
+            &[
+                "z=evaluate(Calc.z,s=@v/sample)",
+                "q=evaluate(Calc.q,s=@v/sample)",
+                "other=evaluate(Calc.foreign,s=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        let scalars = affine_private_scalars(&result);
+        assert_eq!(scalars.len(), 3);
+        for &target in &scalars[..2] {
+            let node = &result.nodes[target];
+            let graph =
+                rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+            assert!(matches!(&node.ty, NodeType::Value(Type::Z | Type::Q)));
+            let expected = if node.ty == NodeType::Value(Type::Z) {
+                Scalar::Z(0.into())
+            } else {
+                Scalar::Q(1.into(), 1.into())
+            };
+            assert_eq!(graph.scalar(NodeRef(target)).unwrap(), &expected);
+            assert_eq!(node.arguments.len(), 3);
+            assert!(node.arguments.iter().all(|r| r.0 < target));
+            assert!(!node.support.is_empty());
+            assert!(result.nodes[target+1..].iter().any(|parent| matches!(&parent.payload, Some(Payload::Evaluation { value: Some(v), .. }) if v.0 == target)));
+            for variant in 0..7 {
+                completion_mutation(&result, target, |nodes| match variant {
+                    0 => nodes[target].payload = Some(Payload::Scalar(Scalar::Z(9.into()))),
+                    1 => nodes[target].ty = NodeType::Value(Type::Bool),
+                    2 => nodes[target].arguments.swap(1, 2),
+                    3 => {
+                        nodes[target].arguments.remove(0);
+                    }
+                    4 => nodes[target].support.clear(),
+                    5 => nodes[target].scope.snapshots.clear(),
+                    _ => nodes[target].arguments[0] = node.arguments[1],
+                });
+            }
+            if let Scalar::Q(..) = graph.scalar(NodeRef(target)).unwrap() {
+                completion_mutation(&result, target, |nodes| {
+                    nodes[target].payload = Some(Payload::Scalar(Scalar::Q(2.into(), 2.into())))
+                });
+                completion_mutation(&result, target, |nodes| {
+                    nodes[target].payload =
+                        Some(Payload::Scalar(Scalar::Q((-1).into(), (-1).into())))
+                });
+            }
+        }
+        let target = scalars[2];
+        let own_source = result.nodes[target].arguments[0];
+        let foreign_source = result.nodes[scalars[0]].arguments[0];
+        assert_ne!(own_source, foreign_source);
+        completion_mutation(&result, target, |nodes| {
+            nodes[target].arguments[0] = foreign_source
+        });
+        completion_mutation(&result, target, |nodes| {
+            let Rule::Input { location, .. } = &mut nodes[target].rule else {
+                unreachable!()
+            };
+            let Some(Payload::Expression {
+                location: original, ..
+            }) = &result.nodes[foreign_source.0].payload
+            else {
+                unreachable!()
+            };
+            *location = original.clone();
+        });
+    }
+
+    #[test]
+    fn affine_constants_recheck_exact_call_request_subject_and_snapshot_producers() {
+        let mut result = affine_private_example(
+            "view shrink(x:Q):Q=x-x; view caller(s:Sample):Q=shrink(s.q)+shrink(s.q); view slot(s:Sample):Q=s.q-s.q;",
+            &[
+                "first=evaluate(Calc.caller,s=@v/sample)",
+                "again=evaluate(Calc.caller,s=@v/sample)",
+                "other=evaluate(Calc.slot,s=@v/other)",
+                "snapshot=evaluate(Calc.slot,s=@v2/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        let scalars = affine_private_scalars(&result);
+        assert_eq!(scalars.len(), 6);
+        for pair in scalars.windows(2) {
+            let (prior, target) = (pair[0], pair[1]);
+            assert_eq!(result.nodes[prior].ty, result.nodes[target].ty);
+            assert_eq!(
+                data_scalar_at(&result, prior),
+                data_scalar_at(&result, target)
+            );
+            assert_ne!(result.contexts[prior], result.contexts[target]);
+            for index in 0..3 {
+                let old = result.nodes[prior].arguments[index];
+                assert_ne!(old, result.nodes[target].arguments[index]);
+                completion_mutation(&result, target, |nodes| {
+                    nodes[target].arguments[index] = old
+                });
+            }
+        }
+        let target = scalars[1];
+        let context = result.contexts[target];
+        let frame = context.frame.unwrap();
+        let previous = result.contexts[scalars[0]].frame.unwrap();
+        let original = result.frames[frame].arguments[0];
+        let foreign = result.frames[previous].arguments[0];
+        assert_ne!(original, foreign);
+        assert_eq!(result.nodes[original.0].ty, result.nodes[foreign.0].ty);
+        assert!(matches!(
+            &result.nodes[original.0].payload,
+            Some(Payload::Evaluation { value: None, .. })
+        ));
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+        result.frames[frame].arguments[0] = foreign;
+        rejects_named_prefix(&result, &result.nodes[..=target]);
+        rejects_named_prefix(&result, &result.nodes);
+        result.frames[frame].arguments[0] = original;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        // 独立sessionは成功memoを持ち越さず、元欠測理由の省略を照合する。
+        let field = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (index < scalars[0]
+                    && !node.reasons.is_empty()
+                    && matches!(&node.payload, Some(Payload::Evaluation { value: None, .. })))
+                .then_some(index)
+            })
+            .unwrap();
+        completion_mutation(&result, target, |nodes| nodes[field].reasons.clear());
+        let target = scalars[4];
+        let source = result.nodes[target].arguments[0].0;
+        completion_mutation(&result, target, |nodes| {
+            let Some(Payload::Expression { bindings, .. }) = &mut nodes[source].payload else {
+                unreachable!()
+            };
+            assert!(!bindings.is_empty());
+            bindings[0].name.push_str("_changed");
+        });
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    }
+
+    #[test]
+    fn affine_constants_recheck_comparison_residual_counterexample_and_missing_origin() {
+        let result = affine_private_example(
+            "view hole(s:Sample):Z=s.z; law required yes(s:Sample):s.z-s.z=0; law required no(s:Sample):s.z-s.z=1;",
+            &[
+                "hole=evaluate(Calc.hole,s=@v/sample)",
+                "yes=check(Calc.yes,s=@v/sample)",
+                "no=check(Calc.no,s=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "partial");
+        assert_eq!(result.answers[0].status, Decision::Undetermined);
+        assert!(!result.answers[0].outputs.contains_key("value"));
+        assert_eq!(result.answers[1].status, Decision::Established);
+        assert_eq!(result.answers[2].status, Decision::Refuted);
+        for answer in &result.answers[1..] {
+            assert!(
+                answer
+                    .reasons
+                    .iter()
+                    .any(|reason| matches!(reason.kind, ReasonKind::Missing))
+            );
+            assert!(!answer.evidence.is_empty());
+            let scalar = result
+                .nodes
+                .iter()
+                .enumerate()
+                .find_map(|(index, node)| {
+                    (result.contexts[index].request == if answer.id == "yes" { 1 } else { 2 }
+                        && matches!(&node.rule, Rule::Input { kind: "law", .. })
+                        && matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_)))))
+                    .then_some(index)
+                })
+                .unwrap();
+            completion_mutation(&result, scalar, |nodes| {
+                nodes[scalar].payload = Some(Payload::Scalar(Scalar::Bool(answer.id != "yes")))
+            });
+        }
+        let residual = result.nodes.iter().enumerate().find_map(|(index,node)| {
+            (result.contexts[index].request == 2 && matches!(&node.rule, Rule::Construction("evaluation")) && matches!(&node.payload, Some(Payload::Scalar(Scalar::Z(value))) if *value == (-1).into())).then_some(index)
+        }).unwrap();
+        completion_mutation(&result, residual, |nodes| {
+            nodes[residual].payload = Some(Payload::Scalar(Scalar::Z(0.into())))
+        });
+        let counterexample = result.answers[2]
+            .evidence
+            .iter()
+            .find_map(|r| {
+                matches!(
+                    &result.nodes[r.0].payload,
+                    Some(Payload::Counterexample { .. })
+                )
+                .then_some(r.0)
+            })
+            .unwrap();
+        let Some(Payload::Counterexample {
+            left, right, facts, ..
+        }) = &result.nodes[counterexample].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(data_scalar_at(&result, left.0), &Scalar::Z(0.into()));
+        assert_eq!(data_scalar_at(&result, right.0), &Scalar::Z(1.into()));
+        assert_eq!(
+            facts,
+            &[Fact {
+                snapshot: "v".into(),
+                subject: "sample".into(),
+                field: None,
+                atom: None,
+            }]
+        );
+        assert!(result.answers[2].reasons.iter().any(|reason| {
+            matches!(reason.kind, ReasonKind::Missing)
+                && reason.missing.contains(&Fact {
+                    snapshot: "v".into(),
+                    subject: "sample".into(),
+                    field: Some("Affine.Sample.z".into()),
+                    atom: None,
+                })
+        }));
+        completion_mutation(&result, counterexample, |nodes| {
+            let Some(Payload::Counterexample { facts, .. }) = &mut nodes[counterexample].payload
+            else {
+                unreachable!()
+            };
+            facts.clear();
+        });
+        completion_mutation(&result, counterexample, |nodes| {
+            let Some(Payload::Counterexample { left, right, .. }) =
+                &mut nodes[counterexample].payload
+            else {
+                unreachable!()
+            };
+            std::mem::swap(left, right);
+        });
+    }
+
+    #[test]
+    fn affine_constants_in_finite_cases_recheck_whole_and_foreign_case_producers() {
+        let result = affine_private_example(
+            "view mixed(s:Sample):Bool=(s.p and (s.q-s.q=rat(0,1))) or not s.p;",
+            &["mixed=evaluate(Calc.mixed,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        assert_eq!(
+            data_scalar_at(&result, result.answers[0].outputs["value"].0),
+            &Scalar::Bool(true)
+        );
+        let scalars = affine_private_scalars(&result);
+        let cases = scalars
+            .iter()
+            .copied()
+            .filter(|index| result.contexts[*index].case.is_some())
+            .collect::<Vec<_>>();
+        assert_eq!(cases.len(), 2);
+        let (prior, target) = (cases[0], cases[1]);
+        assert_ne!(result.contexts[prior].case, result.contexts[target].case);
+        assert_eq!(
+            data_scalar_at(&result, prior),
+            data_scalar_at(&result, target)
+        );
+        for index in 0..3 {
+            completion_mutation(&result, target, |nodes| {
+                nodes[target].arguments[index] = result.nodes[prior].arguments[index]
+            });
+        }
+        assert!(result.cases.iter().all(|case| case.values.len() == 1));
+        assert!(
+            result
+                .nodes
+                .iter()
+                .filter(|node| matches!(
+                    &node.payload,
+                    Some(Payload::Scalar(Scalar::Z(_) | Scalar::Q(..)))
+                ))
+                .all(|node| !matches!(&node.rule, Rule::Construction("completion_assignment")))
+        );
+        let whole = result.answers[0].outputs["evaluation"].0;
+        completion_mutation(&result, whole, |nodes| {
+            let Some(Payload::Evaluation { parts, .. }) = &mut nodes[whole].payload else {
+                unreachable!()
+            };
+            assert!(!parts[0].children.is_empty());
+            parts[0].children.pop();
+        });
+    }
+
+    #[test]
+    fn affine_coefficient_stop_preserves_prior_results_and_source_prefix() {
+        affine_private_phase_stop("coefficient", 0);
+    }
+    #[test]
+    fn affine_constant_stop_preserves_prior_results_and_source_prefix() {
+        affine_private_phase_stop("constant", 1);
+    }
+    #[test]
+    fn affine_scalar_post_stop_preserves_completed_scalar_prefix() {
+        affine_private_phase_stop("scalar", 2);
+    }
+    #[test]
+    fn affine_verified_current_post_stop_retains_value_and_unstarted_request() {
+        affine_private_phase_stop("verified", 0);
+    }
+
+    fn affine_private_phase_stop(phase: &'static str, kind: usize) {
+        use super::super::{
+            affine,
+            control::{Limits, Resource, Usage},
+        };
+        use crate::result::Signal;
+        use std::{cell::Cell, rc::Rc};
+        let sources = affine_private_fixture(
+            "view seed():Z=7; law required prior():1=2; view hole(s:Sample):Z=s.z; view current(s:Sample):Q=s.q-s.q; view later():Z=19;",
+        );
+        let asks = [
+            "seed=evaluate(Calc.seed)",
+            "prior=check(Calc.prior)",
+            "hole=evaluate(Calc.hole,s=@v/sample)",
+            "current=evaluate(Calc.current,s=@v/sample)",
+            "later=evaluate(Calc.later)",
+        ];
+        let normal =
+            evaluate_observed_bytes(sources.clone(), &asks, &mut named_call_quiet()).unwrap();
+        assert_eq!(normal.status(), "partial");
+        assert_eq!(normal.answers[0].status, Decision::Established);
+        assert_eq!(normal.answers[1].status, Decision::Refuted);
+        assert_eq!(normal.answers[2].status, Decision::Undetermined);
+        assert_eq!(normal.answers[3].status, Decision::Established);
+        assert_eq!(
+            data_scalar_at(&normal, normal.answers[3].outputs["value"].0),
+            &Scalar::Q(0.into(), 1.into())
+        );
+        assert!(!normal.answers[1].evidence.is_empty());
+        assert!(
+            normal.answers[2]
+                .reasons
+                .iter()
+                .any(|reason| matches!(reason.kind, ReasonKind::Missing))
+        );
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let (limits, usage, expected) = match kind {
+            0 => (
+                Limits::default(),
+                Usage {
+                    signal: Some(Signal::Term),
+                    ..Usage::default()
+                },
+                StopReason::Cancelled(Signal::Term),
+            ),
+            1 => (
+                Limits {
+                    time_ms: Some(3),
+                    memory_mib: None,
+                },
+                Usage {
+                    elapsed_ms: 4,
+                    ..Usage::default()
+                },
+                StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 3,
+                    observed: 4,
+                },
+            ),
+            _ => (
+                Limits {
+                    time_ms: None,
+                    memory_mib: Some(7),
+                },
+                Usage {
+                    memory_mib: 8,
+                    ..Usage::default()
+                },
+                StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 7,
+                    observed: 8,
+                },
+            ),
+        };
+        let armed = Rc::new(Cell::new(false));
+        let ready = Rc::new(Cell::new(false));
+        let probes = Rc::new(Cell::new(0));
+        let frozen = Rc::new(Cell::new(None));
+        let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+        let mut control = Control::new(limits, move |point| {
+            count.set(count.get() + 1);
+            if arm.replace(false) {
+                assert_eq!(point, Checkpoint::FiniteIteration);
+                assert!(freeze.replace(Some(count.get())).is_none());
+                usage
+            } else {
+                Usage::default()
+            }
+        });
+        let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
+        let (observer_arm, observer_ready) = (armed.clone(), ready.clone());
+        let stopped = affine::with_observer(
+            move |point| {
+                if observer_ready.get()
+                    && ((phase == "coefficient" && point == affine::TestPoint::Coefficient)
+                        || (phase == "constant" && point == affine::TestPoint::Constant))
+                {
+                    observer_arm.set(true);
+                }
+            },
+            || {
+                evaluate_observed_with_validator(
+                    prepared,
+                    &mut control,
+                    |environment, graph, request, answer| {
+                        environment.validate_answer(graph, request, answer)?;
+                        if request.id == "hole" {
+                            ready.set(true);
+                            if phase == "scalar" {
+                                let armed = armed.clone();
+                                data::observe_iterations(move |_, context, operation, index| {
+                                    if context.request == 3
+                                        && operation == "affine_scalar"
+                                        && index == 1
+                                    {
+                                        armed.set(true)
+                                    }
+                                });
+                            }
+                        }
+                        if request.id == "current" && phase == "verified" {
+                            armed.set(true)
+                        }
+                        Ok(())
+                    },
+                )
+            },
+        );
+        data::clear_iteration_observer();
+        let stopped = stopped.unwrap();
+        assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
+        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(Some(probes.get()), frozen.get());
+        let Json::Obj(ref normal_wire) = normal.wire() else {
+            unreachable!()
+        };
+        let Json::Obj(ref stopped_wire) = stopped.wire() else {
+            unreachable!()
+        };
+        let (Json::Arr(normal_answers), Json::Arr(stopped_answers)) =
+            (&normal_wire["answers"], &stopped_wire["answers"])
+        else {
+            unreachable!()
+        };
+        assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
+        if phase == "verified" {
+            assert_eq!(stopped_answers[3], normal_answers[3]);
+        } else {
+            assert_eq!(stopped.answers[3].status, Decision::Undetermined);
+            assert!(stopped.answers[3].outputs.is_empty());
+            assert!(stopped.answers[3].evidence.is_empty());
+            assert!(stopped.answers[3].claim.is_none());
+            assert!(
+                stopped.answers[3]
+                    .reasons
+                    .iter()
+                    .any(|reason| matches!(reason.kind, ReasonKind::Missing))
+            );
+        }
+        let first_unfinished = if phase == "verified" { 4 } else { 3 };
+        for answer in &stopped.answers[first_unfinished..] {
+            let reason = answer
+                .reasons
+                .iter()
+                .find(|reason| matches!(&reason.kind,ReasonKind::Stop(actual) if actual==&expected))
+                .unwrap();
+            let Json::Obj(ref reason_wire) = reason.wire() else {
+                unreachable!()
+            };
+            let Json::Obj(ref expected_wire) = expected.wire() else {
+                unreachable!()
+            };
+            assert_eq!(reason_wire["details"], expected_wire["details"]);
+        }
+        assert_eq!(stopped.answers[4].status, Decision::Undetermined);
+        assert!(stopped.answers[4].outputs.is_empty());
+        assert!(!stopped.contexts.iter().any(|context| context.request == 4));
+        let scalars = affine_private_scalars(&stopped);
+        if phase == "scalar" {
+            assert_eq!(scalars.len(), 1);
+            assert_eq!(scalars[0] + 1, stopped.nodes.len());
+            assert_eq!(
+                data_scalar_at(&stopped, scalars[0]),
+                &Scalar::Q(0.into(), 1.into())
+            );
+        } else if phase != "verified" {
+            assert!(scalars.is_empty())
+        }
+        assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
+            stopped.contexts[index].request == 3
+                && matches!(
+                    &node.payload,
+                    Some(Payload::Counterexample { .. } | Payload::FiniteExhaustion { .. })
+                )
+        }));
+        let (Json::Arr(normal_nodes), Json::Arr(stopped_nodes)) =
+            (&normal_wire["nodes"], &stopped_wire["nodes"])
+        else {
+            unreachable!()
+        };
+        assert_eq!(stopped_nodes, &normal_nodes[..stopped_nodes.len()]);
+        rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+        let before = probes.get();
+        assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+        assert_eq!(probes.get(), before);
+    }
+
+    #[test]
+    fn affine_scalar_recheck_stop_does_not_reuse_success_memo_or_probe_after_stop() {
+        use super::super::{
+            affine,
+            control::{Limits, Usage},
+        };
+        use crate::result::Signal;
+        use std::{cell::Cell, rc::Rc};
+        let result = affine_private_example(
+            "view q(s:Sample):Q=s.q-s.q;",
+            &["q=evaluate(Calc.q,s=@v/sample)"],
+        );
+        let scalar = affine_private_scalars(&result)[0];
+        let mut graph =
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+        let armed = Rc::new(Cell::new(false));
+        let probes = Rc::new(Cell::new(0));
+        let (arm, count) = (armed.clone(), probes.clone());
+        let mut control = Control::new(Limits::default(), move |point| {
+            count.set(count.get() + 1);
+            if arm.replace(false) {
+                assert_eq!(point, Checkpoint::FiniteIteration);
+                Usage {
+                    signal: Some(Signal::Term),
+                    ..Usage::default()
+                }
+            } else {
+                Usage::default()
+            }
+        });
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        graph.active = result.contexts[scalar];
+        environment
+            .recheck_node(&graph, &graph.nodes[scalar], scalar)
+            .unwrap();
+        let before = probes.get();
+        let failure = affine::with_observer(
+            move |point| {
+                if point == affine::TestPoint::Constant {
+                    armed.set(true)
+                }
+            },
+            || environment.recheck_node(&graph, &graph.nodes[scalar], scalar),
+        );
+        assert!(matches!(
+            failure,
+            Err(ValidationFailure::Stop(StopReason::Cancelled(Signal::Term)))
+        ));
+        assert!(probes.get() > before);
+        let frozen = probes.get();
+        assert!(matches!(
+            environment.recheck_node(&graph, &graph.nodes[scalar], scalar),
+            Err(ValidationFailure::Stop(StopReason::Cancelled(Signal::Term)))
+        ));
+        assert_eq!(probes.get(), frozen);
+        assert_eq!(
+            control.checkpoint(Checkpoint::Expression),
+            Err(StopReason::Cancelled(Signal::Term))
+        );
+        assert_eq!(probes.get(), frozen);
+        rebuild_for_origin_and_support_recheck(&result, &graph.nodes).unwrap();
+    }
+
     #[test]
     fn answer_identity_failure_reaches_driver_and_preserves_prior_results() {
         fn prepare(control: &mut Control) -> PreparedObserved {
@@ -2463,7 +3150,14 @@ mod recheck_tests {
             let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
             let mut graph = Graph::new(&control);
             graph.nodes = result.nodes.clone();
+            graph.requests = result.prepared.requests().requests().to_vec();
+            graph.contexts = result.contexts.clone();
+            graph.frames = result.frames.clone();
+            graph.iterations = result.iterations.clone();
+            graph.instances = result.instances.clone();
+            graph.cases = result.cases.clone();
             let evaluation = result.answers[4].outputs["evaluation"];
+            graph.active = result.contexts[evaluation.0];
             let original = &graph.nodes[evaluation.0];
             environment.validate(&graph, original).unwrap();
             let Some(Payload::Evaluation { value, .. }) = &original.payload else {
@@ -9735,8 +10429,8 @@ reading Calc {{
         };
         items.reverse();
         rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
-        type_quantifier_call_capture_keeps_original_alias_producers();
     }
+    #[test]
     fn type_quantifier_call_capture_keeps_original_alias_producers() {
         let result = evaluate_observed_bytes(
             numeric_recheck_fixture(
@@ -10939,6 +11633,9 @@ reading Calc {{
     }
     #[test]
     fn finite_completion_data_families_check_all_rows_before_case_coverage() {
+        finite_completion_data_family_example();
+    }
+    fn finite_completion_data_family_example() -> (ObservedEvaluation, usize) {
         let result = finite_completion_example(
             "law required related(s:Sample,b:D):b=s.d;",
             &["family=check(Calc.related,s=@v/sample)"],
@@ -10973,27 +11670,45 @@ reading Calc {{
             );
             assert!(result.nodes.iter().enumerate().any(|(i,node)|result.contexts[i].case==context.case && matches!(&node.payload,Some(Payload::Counterexample {bindings,..}) if bindings.iter().any(|b|b.name=="b" && data_scalar_at(&result,b.value.0)!=assignment))));
         }
-        for variant in 0..3 {
-            completion_mutation(&result, proof, |nodes| {
-                let Some(Payload::FiniteExhaustion {
-                    checked, instances, ..
-                }) = &mut nodes[proof].payload
-                else {
-                    unreachable!()
-                };
-                match variant {
-                    0 => *checked += 1,
-                    1 => {
-                        instances[1] = instances[0];
-                        nodes[proof].arguments[3] = nodes[proof].arguments[2];
-                    }
-                    _ => {
-                        instances.pop();
-                        nodes[proof].arguments.pop();
-                    }
-                }
-            });
-        }
+        (result, proof)
+    }
+    #[test]
+    fn finite_completion_data_family_rejects_wrong_case_count() {
+        let (result, proof) = finite_completion_data_family_example();
+        completion_mutation(&result, proof, |nodes| {
+            let Some(Payload::FiniteExhaustion { checked, .. }) = &mut nodes[proof].payload else {
+                unreachable!()
+            };
+            *checked += 1;
+        });
+    }
+    #[test]
+    fn finite_completion_data_family_rejects_duplicate_case_producer() {
+        let (result, proof) = finite_completion_data_family_example();
+        completion_mutation(&result, proof, |nodes| {
+            let Some(Payload::FiniteExhaustion { instances, .. }) = &mut nodes[proof].payload
+            else {
+                unreachable!()
+            };
+            instances[1] = instances[0];
+            nodes[proof].arguments[3] = nodes[proof].arguments[2];
+        });
+    }
+    #[test]
+    fn finite_completion_data_family_rejects_omitted_case_producer() {
+        let (result, proof) = finite_completion_data_family_example();
+        completion_mutation(&result, proof, |nodes| {
+            let Some(Payload::FiniteExhaustion { instances, .. }) = &mut nodes[proof].payload
+            else {
+                unreachable!()
+            };
+            instances.pop();
+            nodes[proof].arguments.pop();
+        });
+    }
+    #[test]
+    fn finite_completion_data_family_rejects_claim_decision_flip() {
+        let (result, _) = finite_completion_data_family_example();
         let proposition = result.answers[0].claim.unwrap().0;
         completion_mutation(&result, proposition, |nodes| {
             nodes[proposition].judgment.as_mut().unwrap().status = Decision::Established

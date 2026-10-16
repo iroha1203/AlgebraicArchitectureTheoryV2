@@ -32,6 +32,7 @@ pub(crate) struct PendingMissing {
 pub(crate) struct SourceAnalysis {
     pub scope: Scope,
     pub known_value: Option<Scalar>,
+    pub affine: Option<Box<super::affine::Form>>,
     pub missing: Option<PendingMissing>,
     pub support: Vec<Fact>,
     pub scalar_scope: Option<Scope>,
@@ -41,6 +42,7 @@ pub(crate) struct SourceAnalysis {
 struct SourceValue {
     scope: Scope,
     known_value: Option<Scalar>,
+    affine: Option<Box<super::affine::Form>>,
     support: Vec<Fact>,
     scalar_scope: Option<Scope>,
 }
@@ -385,18 +387,22 @@ impl<'a> Environment<'a> {
         &self,
         run: impl FnOnce() -> Result<T, ValidationFailure>,
     ) -> Result<T, ValidationFailure> {
-        let depth = self.validation_depth.get();
-        if depth == 0 {
-            *self.cache.borrow_mut() = ValidationCache::default();
-        }
-        self.validation_depth.set(depth + 1);
-        let result = run();
-        self.validation_depth.set(depth);
-        // success/失敗/停止の全経路で、次のGraph/改変nodeへ成功を持ち越さない。
-        if depth == 0 {
-            *self.cache.borrow_mut() = ValidationCache::default();
-        }
-        result
+        // Source/Frame の再分析と Evaluation の再検査は相互再入する。
+        // 個別の AST 再帰だけでなく、この共通入口でも残りスタックを確保する。
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            let depth = self.validation_depth.get();
+            if depth == 0 {
+                *self.cache.borrow_mut() = ValidationCache::default();
+            }
+            self.validation_depth.set(depth + 1);
+            let result = run();
+            self.validation_depth.set(depth);
+            // success/失敗/停止の全経路で、次のGraph/改変nodeへ成功を持ち越さない。
+            if depth == 0 {
+                *self.cache.borrow_mut() = ValidationCache::default();
+            }
+            result
+        })
     }
     fn resolve_analysis(
         &self,
@@ -418,6 +424,52 @@ impl<'a> Environment<'a> {
             }
         }
         Ok(analysis)
+    }
+    /// finish の理由集合を元 Source と実子から再構成し、欠測理由の省略も拒否する。
+    /// 通常値が導出できても、元fieldの欠測・実引数の理由は保持する。
+    fn evaluation_missing_reasons(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        expression: NodeRef,
+        children: &[NodeRef],
+        missing: Option<&PendingMissing>,
+    ) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        let mut reasons = Vec::new();
+        for child in children {
+            self.tick()?;
+            reasons.extend(graph.get(*child)?.reasons.iter().cloned());
+            self.tick()?;
+        }
+        if let Some(missing) = missing {
+            let request = graph
+                .requests
+                .get(self.current_context(graph).request)
+                .ok_or("欠測Evaluationの元Requestがない")?;
+            reasons.push(Reason {
+                kind: ReasonKind::Missing,
+                request: request.id.clone(),
+                dependencies: vec![expression],
+                missing: vec![missing.fact.clone()],
+                location: Some(Location::Law {
+                    span: self.expression_span(graph, expression)?,
+                }),
+            });
+        }
+        sort_reasons(&mut reasons);
+        if node.reasons.len() != reasons.len() {
+            return Err("Evaluationの元欠測理由数が違う".into());
+        }
+        for (actual, expected) in node.reasons.iter().zip(&reasons) {
+            self.tick()?;
+            if actual.wire() != expected.wire() {
+                return Err("Evaluationの元欠測理由・依存Source・位置が違う".into());
+            }
+            self.tick()?;
+        }
+        self.tick()?;
+        Ok(())
     }
     fn iteration_syntax(
         &self,
@@ -953,6 +1005,13 @@ impl<'a> Environment<'a> {
                     self.analyze_source(graph, span, bindings)?,
                     &parts[0].children,
                 )?;
+                self.evaluation_missing_reasons(
+                    graph,
+                    node,
+                    *expression,
+                    &parts[0].children,
+                    analysis.missing.as_ref(),
+                )?;
                 // 名前/括弧が再使用する値は元producerのScopeを保つ。
                 // 子Evaluationの量化Scopeは、この使用位置の評価範囲である。
                 if let Some(original) = self.reused_source_value(graph, span, bindings)? {
@@ -1352,9 +1411,26 @@ impl<'a> Environment<'a> {
                             child_values[1].map(|r| graph.scalar(r)).transpose()?,
                             &self.control,
                         )?;
+                        let affine_constant = computed.is_none()
+                            && matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul)
+                            && matches!(self.inputs.law().expr_type(*lhs), Some(Type::Z | Type::Q));
+                        let computed = if affine_constant {
+                            analysis.known_value.clone()
+                        } else {
+                            computed
+                        };
                         match (computed, *value) {
                             (Some(expected), Some(result)) => {
-                                let arguments = if is_boolean_binary(*op) {
+                                let arguments = if affine_constant {
+                                    let mut arguments = vec![*expression];
+                                    arguments.extend(children.iter().copied());
+                                    self.affine_source_analysis(
+                                        graph,
+                                        graph.get(result)?,
+                                        result.0,
+                                    )?;
+                                    arguments
+                                } else if is_boolean_binary(*op) {
                                     vec![children[0], children[1]]
                                 } else {
                                     let (left, right) = pair.ok_or("二項演算の既知左右がない")?;
@@ -1468,7 +1544,16 @@ impl<'a> Environment<'a> {
                                 return Err("単項演算の元 operand・結果値が違う".into());
                             }
                         }
-                        (None, None) => {}
+                        (None, Some(result)) if *op == UnOp::Neg => {
+                            self.affine_source_analysis(graph, graph.get(result)?, result.0)?;
+                            if graph.scalar(result)?
+                                != analysis.known_value.as_ref().ok_or("負号の定数値がない")?
+                                || graph.get(result)?.arguments != [*expression, children[0]]
+                            {
+                                return Err("負号のアフィン定数値・元Source・実子が違う".into());
+                            }
+                        }
+                        (None, None) if analysis.known_value.is_none() => {}
                         _ => return Err("単項演算の子値と結果値の有無が違う".into()),
                     },
                     Some(ExprKind::Dotted(_))
@@ -1866,6 +1951,14 @@ impl<'a> Environment<'a> {
             let Some(Payload::Scalar(scalar)) = &node.payload else {
                 return Err("元 Law の生成値が通常 Scalar でない".into());
             };
+            if node.arguments.first().is_some_and(|reference| {
+                matches!(
+                    graph.get(*reference).map(|node| &node.payload),
+                    Ok(Some(Payload::Expression { .. }))
+                )
+            }) {
+                return self.affine_source_analysis(graph, node, limit);
+            }
             let id = *self.expressions.get(span).ok_or("生成値の元 AST がない")?;
             let law = self.inputs.law();
             let operands = match law.exprs[id].kind {
@@ -1985,6 +2078,131 @@ impl<'a> Environment<'a> {
             self.tick()?;
             Err("生成 Scalar に既出の own Source・元子評価の証人がない".into())
         })
+    }
+    /// 相殺で確定した Z/Q Scalar は own Source と実子 Evaluation を直接保持する。
+    /// 正規形の申告や後から挿入される親 Evaluation に頼らず、元入力から再分析する。
+    fn affine_source_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        self.tick()?;
+        let Rule::Input {
+            kind: "law",
+            location: Location::Law { span },
+        } = &node.rule
+        else {
+            return Err("アフィン定数値の元 Law 出現がない".into());
+        };
+        let Some(Payload::Scalar(scalar)) = &node.payload else {
+            return Err("アフィン定数値が通常 Scalar でない".into());
+        };
+        let ty = scalar.ty();
+        let law = self.inputs.law();
+        let id = *self
+            .expressions
+            .get(span)
+            .ok_or("アフィン定数値の元 AST がない")?;
+        let operands = match law.exprs[id].kind {
+            ExprKind::Unary {
+                op: UnOp::Neg,
+                operand,
+            } => vec![operand],
+            ExprKind::Binary {
+                op: BinOp::Add | BinOp::Sub | BinOp::Mul,
+                lhs,
+                rhs,
+            } => vec![lhs, rhs],
+            _ => return Err("アフィン定数値が加減算・定数倍・負号以外を指す".into()),
+        };
+        if !matches!(ty, Type::Z | Type::Q)
+            || law.expr_type(id) != Some(&ty)
+            || node.ty != NodeType::Value(ty.clone())
+            || node.arguments.len() != operands.len() + 1
+        {
+            return Err("アフィン定数値の型・構成入力数が違う".into());
+        }
+        let own = node.arguments[0];
+        if own.0 >= limit || graph.context_at(own.0) != self.current_context(graph) {
+            return Err("アフィン定数値の own Source が既出の同じ実評価でない".into());
+        }
+        let source = graph.get(own)?;
+        let Some(Payload::Expression {
+            location: Location::Law { span: actual },
+            parameters,
+            bindings,
+        }) = &source.payload
+        else {
+            return Err("アフィン定数値の own Source が元式でない".into());
+        };
+        if actual != span
+            || !parameters.is_empty()
+            || source.ty != NodeType::Expression(ty.clone())
+            || !matches!(&source.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if actual == span)
+            || source.arguments != self.source_arguments(graph, *span, bindings)?
+        {
+            return Err("アフィン定数値の own Source の出現・束縛・型が違う".into());
+        }
+        self.validate_at(graph, source, own.0)?;
+        let children = &node.arguments[1..];
+        let mut previous = own.0;
+        let mut values = Vec::new();
+        for (&reference, operand) in children.iter().zip(operands) {
+            self.tick()?;
+            if reference.0 <= previous
+                || reference.0 >= limit
+                || graph.context_at(reference.0) != self.current_context(graph)
+            {
+                return Err("アフィン定数値の実子 Evaluation の出現順・実評価が違う".into());
+            }
+            graph.expect(reference, &NodeType::Evaluation(ty.clone()))?;
+            if law.expr_type(operand) != Some(&ty) {
+                return Err("アフィン定数値の元子型が違う".into());
+            }
+            self.recheck_evaluation(graph, reference)?;
+            let (expression, actual_bindings, value) = self.evaluation(graph, reference)?;
+            self.source_matches(graph, expression, operand)?;
+            if actual_bindings != bindings
+                || graph.context_at(expression.0) != self.current_context(graph)
+                || expression.0 >= reference.0
+            {
+                return Err("アフィン定数値の実子 Source・元束縛が違う".into());
+            }
+            values.push(value.map(|reference| graph.scalar(reference)).transpose()?);
+            previous = reference.0;
+            self.tick()?;
+        }
+        let ordinary = match law.exprs[id].kind {
+            ExprKind::Unary { op, .. } => values[0]
+                .map(|value| unary(op, value, &self.control))
+                .transpose()?,
+            ExprKind::Binary { op, .. } => partial_binary(op, values[0], values[1], &self.control)?,
+            _ => unreachable!(),
+        };
+        if ordinary.is_some() {
+            return Err("通常算術で確定する値にアフィン専用構成を使っている".into());
+        }
+        let analysis = self.resolve_analysis(
+            graph,
+            self.analyze_source(graph, *span, bindings)?,
+            children,
+        )?;
+        let recomputed = analysis
+            .affine
+            .as_ref()
+            .map(|form| form.value(&self.control))
+            .transpose()?
+            .flatten();
+        if recomputed.as_ref() != Some(scalar)
+            || analysis.known_value.as_ref() != Some(scalar)
+            || analysis.support != node.support
+            || analysis.scalar_scope.as_ref() != Some(&node.scope)
+        {
+            return Err("アフィン定数値・係数相殺・支持・Scope が元入力と違う".into());
+        }
+        self.tick()?;
+        Ok(analysis)
     }
     /// 数値の差というだけでは残差でない。既出の実数値等号と同じ束縛・左右の
     /// child Evaluation を証人にし、親 Evaluation 未挿入の prefix でも帰属を閉じる。
@@ -3330,6 +3548,13 @@ impl<'a> Environment<'a> {
         }
         let (source, analysis, body_value) =
             self.call_parts(graph, span, &parts[0].children, limit)?;
+        self.evaluation_missing_reasons(
+            graph,
+            node,
+            *expression,
+            &parts[0].children,
+            analysis.missing.as_ref(),
+        )?;
         if source != *expression
             || node.support != analysis.support
             || node.scope != analysis.scope
@@ -3517,6 +3742,7 @@ impl<'a> Environment<'a> {
                 variables.insert(
                     parameter.name.clone(),
                     SourceValue {
+                        affine: analysis.affine,
                         scope: analysis.scope,
                         known_value: analysis.known_value,
                         support: analysis.support,
@@ -3861,6 +4087,7 @@ impl<'a> Environment<'a> {
                     finite,
                     member.clone(),
                     SourceAnalysis {
+                        affine: None,
                         scope: scope.clone(),
                         known_value: None,
                         support: node.support.clone(),
@@ -4220,6 +4447,7 @@ impl<'a> Environment<'a> {
                 variables.insert(
                     binding.name.clone(),
                     SourceValue {
+                        affine: None,
                         scope: base.clone(),
                         known_value: Some(value.clone()),
                         support: self.subject_support(value)?,
@@ -4283,6 +4511,7 @@ impl<'a> Environment<'a> {
                         value.scope.merge(&base);
                     }
                     SourceValue {
+                        affine: super::affine::constant(&member, &self.control)?.map(Box::new),
                         scope: base.clone(),
                         known_value: Some(member),
                         support: analysis.support,
@@ -4319,6 +4548,13 @@ impl<'a> Environment<'a> {
                         .as_ref()
                         .map(|value| data::project(value, &binder.path, &self.control))
                         .transpose()?;
+                    input.affine = input
+                        .known_value
+                        .as_ref()
+                        .map(|value| super::affine::constant(value, &self.control))
+                        .transpose()?
+                        .flatten()
+                        .map(Box::new);
                     input.scalar_scope = input.known_value.as_ref().map(|_| input.scope.clone());
                     input
                 }
@@ -4332,6 +4568,7 @@ impl<'a> Environment<'a> {
             let SourceValue {
                 scope,
                 known_value,
+                affine,
                 support,
                 scalar_scope,
             } = self.scoped_ast(id, &variables, &base, &declaration.reading)?;
@@ -4374,6 +4611,7 @@ impl<'a> Environment<'a> {
                 None
             };
             return Ok(SourceAnalysis {
+                affine,
                 scope,
                 known_value,
                 missing,
@@ -4387,6 +4625,7 @@ impl<'a> Environment<'a> {
             .get(name)
             .ok_or("評価範囲に元束縛以外のfragmentがある")?;
         Ok(SourceAnalysis {
+            affine: value.affine.clone(),
             scope: value.scope.clone(),
             known_value: value.known_value.clone(),
             missing: None,
@@ -4452,8 +4691,9 @@ impl<'a> Environment<'a> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
             let expression = &self.inputs.law().exprs[id];
-            let result = match &expression.kind {
+            let mut result = match &expression.kind {
                 ExprKind::Int(n) => SourceValue {
+                    affine: None,
                     scope: base.clone(),
                     known_value: Some(numeric::literal(
                         n,
@@ -4467,6 +4707,7 @@ impl<'a> Environment<'a> {
                     scalar_scope: Some(base.clone()),
                 },
                 ExprKind::Bool(b) => SourceValue {
+                    affine: None,
                     scope: base.clone(),
                     known_value: Some(Scalar::Bool(*b)),
                     support: vec![],
@@ -4476,6 +4717,7 @@ impl<'a> Environment<'a> {
                     if data::expression(self.inputs.law(), id, &self.control)?.is_some() =>
                 {
                     SourceValue {
+                        affine: None,
                         scope: base.clone(),
                         known_value: Some(self.composite_value(id, &[])?),
                         support: vec![],
@@ -4535,15 +4777,27 @@ impl<'a> Environment<'a> {
                     let SourceValue {
                         scope,
                         known_value,
+                        affine,
                         support,
                         ..
                     } = self.scoped_ast(*operand, variables, base, reading)?;
+                    let affine =
+                        super::affine::unary(*op, affine.as_deref(), &self.control)?.map(Box::new);
                     let known_value = known_value
                         .as_ref()
                         .map(|value| unary(*op, value, &self.control))
                         .transpose()?;
+                    let known_value = match known_value {
+                        Some(value) => Some(value),
+                        None => affine
+                            .as_ref()
+                            .map(|form| form.value(&self.control))
+                            .transpose()?
+                            .flatten(),
+                    };
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        affine,
                         scope,
                         known_value,
                         support,
@@ -4569,6 +4823,7 @@ impl<'a> Environment<'a> {
                     let SourceValue {
                         mut scope,
                         known_value: left,
+                        affine: left_affine,
                         mut support,
                         ..
                     } = self.scoped_ast(*lhs, variables, base, reading)?;
@@ -4577,14 +4832,30 @@ impl<'a> Environment<'a> {
                     support.extend(right.support);
                     support.sort();
                     support.dedup();
+                    let affine = super::affine::binary(
+                        *op,
+                        left_affine.as_deref(),
+                        right.affine.as_deref(),
+                        &self.control,
+                    )?
+                    .map(Box::new);
                     let known_value = partial_binary(
                         *op,
                         left.as_ref(),
                         right.known_value.as_ref(),
                         &self.control,
                     )?;
+                    let known_value = match known_value {
+                        Some(value) => Some(value),
+                        None => affine
+                            .as_ref()
+                            .map(|form| form.value(&self.control))
+                            .transpose()?
+                            .flatten(),
+                    };
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        affine,
                         scope,
                         known_value,
                         support,
@@ -4613,6 +4884,7 @@ impl<'a> Environment<'a> {
                         scope.merge(&enumeration.scope);
                         (
                             SourceValue {
+                                affine: None,
                                 scope,
                                 known_value: None,
                                 support: enumeration.support,
@@ -4639,6 +4911,7 @@ impl<'a> Environment<'a> {
                     scope.merge_quantifiers(&input.scope);
                     let Some(items) = members else {
                         return Ok(SourceValue {
+                            affine: None,
                             scope,
                             known_value: None,
                             support: input.support,
@@ -4657,6 +4930,7 @@ impl<'a> Environment<'a> {
                             .insert(
                                 spec.name.into(),
                                 SourceValue {
+                                    affine: None,
                                     scope: scope.clone(),
                                     known_value: Some(item.clone()),
                                     support: input.support.clone(),
@@ -4682,6 +4956,7 @@ impl<'a> Environment<'a> {
                     let known_value =
                         quantifier::reduce(spec.kind, &values, &self.control)?.map(Scalar::Bool);
                     SourceValue {
+                        affine: None,
                         scalar_scope: known_value.as_ref().map(|_| scope.clone()),
                         scope,
                         known_value,
@@ -4709,6 +4984,7 @@ impl<'a> Environment<'a> {
                     let input = self.scoped_ast(*domain, variables, base, reading)?;
                     let Some(container) = input.known_value.as_ref() else {
                         return Ok(SourceValue {
+                            affine: None,
                             scalar_scope: None,
                             ..input
                         });
@@ -4731,6 +5007,7 @@ impl<'a> Environment<'a> {
                             .insert(
                                 var.name.clone(),
                                 SourceValue {
+                                    affine: None,
                                     scope: input.scope.clone(),
                                     known_value: Some(item.clone()),
                                     support: input.support.clone(),
@@ -4784,6 +5061,7 @@ impl<'a> Environment<'a> {
                         None
                     };
                     SourceValue {
+                        affine: None,
                         scalar_scope: known_value.as_ref().map(|_| scope.clone()),
                         scope,
                         known_value,
@@ -4800,6 +5078,7 @@ impl<'a> Environment<'a> {
                     )?
                     else {
                         return Ok(SourceValue {
+                            affine: None,
                             scalar_scope: None,
                             ..input
                         });
@@ -4813,6 +5092,7 @@ impl<'a> Environment<'a> {
                             .insert(
                                 name,
                                 SourceValue {
+                                    affine: None,
                                     scope: input.scope.clone(),
                                     known_value: Some(value),
                                     support: input.support.clone(),
@@ -4832,6 +5112,7 @@ impl<'a> Environment<'a> {
                     support.sort();
                     support.dedup();
                     SourceValue {
+                        affine: body.affine,
                         scalar_scope: body.known_value.as_ref().map(|_| scope.clone()),
                         scope,
                         known_value: body.known_value,
@@ -4851,9 +5132,11 @@ impl<'a> Environment<'a> {
                     support.extend(body.support);
                     support.sort();
                     support.dedup();
+                    let affine = body.affine;
                     let known_value = body.known_value;
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        affine,
                         scope,
                         support,
                         known_value,
@@ -4874,6 +5157,11 @@ impl<'a> Environment<'a> {
                         right.known_value.as_ref(),
                         &self.control,
                     )?;
+                    let affine = match condition.known_value.as_ref() {
+                        Some(Scalar::Bool(true)) => left.affine,
+                        Some(Scalar::Bool(false)) => right.affine,
+                        _ => None,
+                    };
                     let mut scope = condition.scope;
                     scope.merge(&left.scope);
                     scope.merge(&right.scope);
@@ -4884,6 +5172,7 @@ impl<'a> Environment<'a> {
                     support.dedup();
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        affine,
                         scope,
                         support,
                         known_value,
@@ -4918,6 +5207,7 @@ impl<'a> Environment<'a> {
                     support.sort();
                     support.dedup();
                     SourceValue {
+                        affine: body.affine,
                         scalar_scope: body.known_value.as_ref().map(|_| call_base.clone()),
                         scope: call_base,
                         known_value: body.known_value,
@@ -4966,6 +5256,7 @@ impl<'a> Environment<'a> {
                     };
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        affine: None,
                         scope,
                         support,
                         known_value,
@@ -4981,6 +5272,11 @@ impl<'a> Environment<'a> {
                     });
                 }
             };
+            if result.affine.is_none()
+                && let Some(value) = &result.known_value
+            {
+                result.affine = super::affine::constant(value, &self.control)?.map(Box::new);
+            }
             self.tick()?;
             Ok(result)
         })
@@ -5031,8 +5327,8 @@ impl<'a> Environment<'a> {
                 let mut scalar_scope = request_base.clone();
                 scalar_scope.merge(&owner_scope);
                 support.push(Fact {
-                    snapshot,
-                    subject,
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
                     field: Some(field.name.clone()),
                     atom: Some(atom.clone()),
                 });
@@ -5074,9 +5370,25 @@ impl<'a> Environment<'a> {
                 }
             }
         };
+        let affine = if let Some(value) = &known_value {
+            super::affine::constant(value, &self.control)?
+        } else {
+            super::affine::missing(
+                &field.ty,
+                &Fact {
+                    snapshot,
+                    subject,
+                    field: Some(field.name.clone()),
+                    atom: None,
+                },
+                &self.control,
+            )?
+        }
+        .map(Box::new);
         support.sort();
         support.dedup();
         Ok(SourceValue {
+            affine,
             scope,
             known_value,
             support,
@@ -6133,6 +6445,7 @@ impl<'a> Environment<'a> {
         }
         Ok((
             SourceAnalysis {
+                affine: None,
                 scalar_scope: computed.as_ref().map(|_| scope.clone()),
                 scope,
                 known_value: computed,

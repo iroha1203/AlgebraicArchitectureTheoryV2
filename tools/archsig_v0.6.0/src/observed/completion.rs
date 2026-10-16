@@ -1350,9 +1350,13 @@ impl Environment<'_> {
             && matches!(&node.payload, Some(Payload::Scalar(_)))
             && node.arguments.len() == 3
             && matches!((&node.rule,&graph.get(node.arguments[0])?.payload),
-                (Rule::Input {kind:"law",location:Location::Law {span}},
-                 Some(Payload::Expression {location:Location::Law {span:source_span},parameters,..}))
-                if span==source_span && parameters.is_empty())
+            (Rule::Input {kind:"law",location:Location::Law {span}},
+             Some(Payload::Expression {location:Location::Law {span:source_span},parameters,..}))
+            if span==source_span && parameters.is_empty()
+                && self.expressions.get(source_span).is_some_and(|&id| {
+                    matches!(&self.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 1)
+                        || matches!(&self.inputs.law().exprs[id].kind, ExprKind::Field { .. })
+                }))
         {
             self.completion_field_node(graph, node, limit)?;
             return Ok(true);
