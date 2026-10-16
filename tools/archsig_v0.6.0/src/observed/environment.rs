@@ -43,6 +43,7 @@ struct SourceValue {
 #[derive(Clone)]
 enum LexicalOrigin {
     Let(usize),
+    Iteration(usize),
     Pattern {
         matching: usize,
         arm: usize,
@@ -59,6 +60,7 @@ type SourceCacheEntry = (
 );
 type FrameInputs = (Vec<Binding>, BTreeMap<String, SourceValue>, Scope);
 type NodeRefKey = (super::call::Context, usize);
+type IterationInputs = (NodeRef, Scalar, SourceAnalysis);
 
 // 一回の不変Graph借用に閉じた成功照合だけを共有する。呼出し終了時に破棄する。
 #[derive(Default)]
@@ -67,6 +69,7 @@ struct ValidationCache {
     rechecked: BTreeSet<NodeRefKey>,
     sources: Vec<SourceCacheEntry>,
     frames: BTreeMap<(usize, usize), FrameInputs>,
+    iterations: BTreeMap<(usize, usize), IterationInputs>,
 }
 
 #[cfg(test)]
@@ -311,6 +314,50 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
         let context = self.current_context(graph);
+        if let Some(index) = context.iteration {
+            let iteration = graph.iterations.get(index).ok_or("nodeの反復がない")?;
+            if iteration.caller.request != context.request
+                || iteration.caller.frame != context.frame
+                || iteration
+                    .caller
+                    .iteration
+                    .is_some_and(|parent| parent >= index)
+            {
+                return Err("反復の親Contextが違う".into());
+            }
+            self.iteration_input(graph, index)?;
+            let own_span = match &node.payload {
+                Some(Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }) => Some(*span),
+                Some(Payload::Evaluation { expression, .. }) => {
+                    Some(self.expression_span(graph, *expression)?)
+                }
+                _ => match &node.rule {
+                    Rule::Input {
+                        kind: "law",
+                        location: Location::Law { span },
+                    } => Some(*span),
+                    _ => None,
+                },
+            };
+            if let Some(span) = own_span {
+                let comp_span = self.expression_span(graph, iteration.source)?;
+                let ExprKind::SetComp { elem, filter, .. } = self.inputs.law().exprs
+                    [*self.expressions.get(&comp_span).ok_or("反復元ASTがない")?]
+                .kind
+                else {
+                    return Err("反復元が内包でない".into());
+                };
+                if !std::iter::once(elem).chain(filter).any(|child| {
+                    let body = self.inputs.law().exprs[child].span;
+                    body.0 <= span.0 && span.1 <= body.1
+                }) {
+                    return Err("反復nodeの元出現がfilter/elem外にある".into());
+                }
+            }
+        }
         if !graph.requests.is_empty() && graph.requests.get(context.request).is_none() {
             return Err("nodeの元Requestがない".into());
         }
@@ -392,7 +439,9 @@ impl<'a> Environment<'a> {
                     if !found {
                         return Err("Atom 値が元 slot に合わない".into());
                     }
-                    if self.current_context(graph).frame.is_some() {
+                    if self.current_context(graph).frame.is_some()
+                        || self.current_context(graph).iteration.is_some()
+                    {
                         self.call_field_source(graph, node, limit)?;
                     }
                 }
@@ -407,6 +456,10 @@ impl<'a> Environment<'a> {
                     }
                     let computed = if let Some(id) = id {
                         match &law.exprs[id].kind {
+                            ExprKind::SetComp { .. } => self
+                                .comprehension_source_analysis(graph, node, limit)?
+                                .known_value
+                                .ok_or("内包値が確定しない")?,
                             ExprKind::Call { .. } if self.named_view(id)?.is_some() => self
                                 .call_source_analysis(graph, node, limit)?
                                 .known_value
@@ -550,6 +603,12 @@ impl<'a> Environment<'a> {
                     expected = Some(ty.clone());
                 }
                 if expected.is_none()
+                    && let Some((_, value)) =
+                        self.iteration_argument(graph, *span, source, bindings)?
+                {
+                    expected = Some(value.ty());
+                }
+                if expected.is_none()
                     && let Some((_, _, binder)) = self.pattern_binding(*span, source)?
                 {
                     expected = Some(binder.ty);
@@ -648,6 +707,9 @@ impl<'a> Environment<'a> {
                 if *applicability != "applicable" {
                     return Err("通常式の評価に Law の適用判定を付けている".into());
                 }
+                if self.validate_comprehension_evaluation(graph, node, limit)? {
+                    return Ok(());
+                }
                 if self.validate_call_evaluation(graph, node, limit)? {
                     return Ok(());
                 }
@@ -706,6 +768,9 @@ impl<'a> Environment<'a> {
                             )?
                             .is_some()
                             || self.pattern_binding(span, &parts[0].name)?.is_some()
+                            || self
+                                .iteration_argument(graph, span, &parts[0].name, bindings)?
+                                .is_some()
                     }
                     Some(
                         ExprKind::Int(_)
@@ -729,6 +794,9 @@ impl<'a> Environment<'a> {
                     None => {
                         if let Some(name) = self.find_name_token(span)? {
                             self.pattern_binding(span, name)?.is_some()
+                                || self
+                                    .iteration_argument(graph, span, name, bindings)?
+                                    .is_some()
                         } else {
                             false
                         }
@@ -829,6 +897,17 @@ impl<'a> Environment<'a> {
                     }
                     Some(ExprKind::Dotted(parts))
                         if parts.len() == 1
+                            && self
+                                .iteration_argument(graph, span, &parts[0].name, bindings)?
+                                .is_some() =>
+                    {
+                        let (domain, _) = self
+                            .iteration_argument(graph, span, &parts[0].name, bindings)?
+                            .ok_or("反復domainがない")?;
+                        vec![self.expression_span(graph, self.evaluation(graph, domain)?.0)?]
+                    }
+                    Some(ExprKind::Dotted(parts))
+                        if parts.len() == 1
                             && self.pattern_binding(span, &parts[0].name)?.is_some() =>
                     {
                         let (input, _) = self
@@ -878,6 +957,10 @@ impl<'a> Environment<'a> {
                         )
                         .map_err(|_| "lexical token がUTF8でない")?;
                         if let Some((input, _)) =
+                            self.iteration_argument(graph, span, token, bindings)?
+                        {
+                            vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
+                        } else if let Some((input, _)) =
                             self.pattern_argument(graph, span, token, bindings)?
                         {
                             vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
@@ -888,6 +971,21 @@ impl<'a> Environment<'a> {
                         }
                     }
                     _ => vec![],
+                };
+                let iteration_parameter = if let Some(name) = self.find_name_token(span)? {
+                    self.iteration_argument(graph, span, name, bindings)?
+                        .map(|(domain, _)| domain)
+                } else {
+                    None
+                };
+                let lexical_parameter = if let Some(name) = self.find_name_token(span)? {
+                    if let Some((input, _)) = self.pattern_argument(graph, span, name, bindings)? {
+                        Some(input)
+                    } else {
+                        self.lexical_argument(graph, span, name, bindings)?
+                    }
+                } else {
+                    None
                 };
                 let parameter = if expected.is_empty() {
                     #[cfg(test)]
@@ -909,8 +1007,15 @@ impl<'a> Environment<'a> {
                 } else {
                     expected
                 };
+                if iteration_parameter.is_some() && children.first().copied() != iteration_parameter
+                {
+                    return Err("反復名の実domain Evaluationが違う".into());
+                }
                 if parameter.is_some() && children.first().copied() != parameter {
                     return Err("callee parameterの実引数Evaluationが違う".into());
+                }
+                if lexical_parameter.is_some() && children.first().copied() != lexical_parameter {
+                    return Err("lexical名の元実Evaluationが違う".into());
                 }
                 if children.len() != expected.len() {
                     return Err("元 AST と子 Evaluation の個数不一致".into());
@@ -920,7 +1025,9 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                     let (e, b, v) = self.evaluation(graph, child)?;
                     if self.expression_span(graph, e)? != expected_span
-                        || (parameter.is_none()
+                        || ((parameter.is_none()
+                            && iteration_parameter.is_none()
+                            && lexical_parameter.is_none())
                             && (b != bindings
                                 || graph.context_at(child.0) != self.current_context(graph)))
                     {
@@ -1273,7 +1380,34 @@ impl<'a> Environment<'a> {
                 return Err("let/if 値に元出現がない".into());
             };
             let id = self.expressions.get(span).copied();
-            let operands = if let Some(id) = id {
+            let binder = if let Some(name) = self.find_name_token(*span)? {
+                {
+                    let bindings = node
+                        .arguments
+                        .first()
+                        .and_then(|reference| match &graph.get(*reference).ok()?.payload {
+                            Some(Payload::Evaluation { bindings, .. }) => Some(bindings.as_slice()),
+                            _ => None,
+                        })
+                        .unwrap_or(&[]);
+                    if let Some(input) = self.iteration_argument(graph, *span, name, bindings)? {
+                        Some(input)
+                    } else {
+                        self.pattern_argument(graph, *span, name, bindings)?
+                    }
+                }
+            } else {
+                None
+            };
+            let operands = if let Some((domain, _)) = &binder {
+                let source = self.evaluation(graph, *domain)?.0;
+                vec![
+                    *self
+                        .expressions
+                        .get(&self.expression_span(graph, source)?)
+                        .ok_or("反復domain元式がない")?,
+                ]
+            } else if let Some(id) = id {
                 match self.inputs.law().exprs[id].kind {
                     ExprKind::Let { value, body, .. } => vec![value, body],
                     ExprKind::Match {
@@ -1346,7 +1480,12 @@ impl<'a> Environment<'a> {
                             .clone(),
                     ),
                 )?;
-                if graph.context_at(reference.0) != self.current_context(graph) {
+                if binder
+                    .as_ref()
+                    .is_some_and(|(domain, _)| *domain != reference)
+                    || (binder.is_none()
+                        && graph.context_at(reference.0) != self.current_context(graph))
+                {
                     return Err("let/if子が別frameに属する".into());
                 }
                 self.recheck_evaluation(graph, reference)?;
@@ -1886,6 +2025,10 @@ impl<'a> Environment<'a> {
                 } => {
                     if let Some(&id) = self.expressions.get(span) {
                         match self.inputs.law().exprs[id].kind {
+                            ExprKind::SetComp { .. } => {
+                                self.comprehension_source_analysis(graph, node, limit)?
+                                    .support
+                            }
                             ExprKind::Call { .. }
                                 if self
                                     .named_view(
@@ -1979,7 +2122,7 @@ impl<'a> Environment<'a> {
                 .ok_or("完成Answerに元評価がない")?;
             graph.get(evaluation)?;
             let context = graph.context_at(evaluation.0);
-            if context.frame.is_some() {
+            if context.frame.is_some() || context.iteration.is_some() {
                 return Err("Answerの返却評価がcallee frameに属する".into());
             }
             if !graph.requests.is_empty()
@@ -2349,12 +2492,53 @@ impl<'a> Environment<'a> {
         }
         Ok(found)
     }
+    // lexical RHS/scrutinee は元 AST の位置で生成所属を決める。内包の外で
+    // 完成した値を反復内へ移さず、当該式を含まない反復だけを親へ戻す。
+    // call frame は越えず、同値ノードや任意祖先を代用することもない。
+    fn lexical_evaluation_context(
+        &self,
+        graph: &Graph,
+        id: usize,
+    ) -> Result<super::call::Context, ValidationFailure> {
+        let span = self.inputs.law().exprs[id].span;
+        let mut context = self.current_context(graph);
+        while let Some(index) = context.iteration {
+            self.tick()?;
+            let record = graph.iterations.get(index).ok_or("lexical反復元がない")?;
+            if record.caller.request != context.request
+                || record.caller.frame != context.frame
+                || record
+                    .caller
+                    .iteration
+                    .is_some_and(|parent| parent >= index)
+            {
+                return Err("lexical反復の親Request/frame/先行性が違う".into());
+            }
+            self.iteration_input(graph, index)?;
+            let comp = *self
+                .expressions
+                .get(&self.expression_span(graph, record.source)?)
+                .ok_or("lexical反復の元ASTがない")?;
+            let ExprKind::SetComp { elem, filter, .. } = self.inputs.law().exprs[comp].kind else {
+                return Err("lexical反復の元式が内包でない".into());
+            };
+            if std::iter::once(elem).chain(filter).any(|child| {
+                let body = self.inputs.law().exprs[child].span;
+                body.0 <= span.0 && span.1 <= body.1
+            }) {
+                return Ok(context);
+            }
+            context = record.caller;
+        }
+        Ok(context)
+    }
     fn actual_evaluation(
         &self,
         graph: &Graph,
         id: usize,
         bindings: &[Binding],
     ) -> Result<NodeRef, ValidationFailure> {
+        let context = self.lexical_evaluation_context(graph, id)?;
         let mut found = None;
         for (index, node) in graph
             .nodes
@@ -2363,7 +2547,7 @@ impl<'a> Environment<'a> {
             .take(self.cutoff.get().min(graph.nodes.len()))
         {
             self.tick()?;
-            if graph.context_at(index) != self.current_context(graph) {
+            if graph.context_at(index) != context {
                 continue;
             }
             let Some(Payload::Evaluation {
@@ -2386,6 +2570,17 @@ impl<'a> Environment<'a> {
         let reference = found.ok_or("元scrutineeの既出実Evaluationがない")?;
         self.recheck_evaluation(graph, reference)?;
         Ok(reference)
+    }
+    fn lexical_argument(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        name: &str,
+        bindings: &[Binding],
+    ) -> Result<Option<NodeRef>, ValidationFailure> {
+        self.lexical_rhs(span, name)?
+            .map(|rhs| self.actual_evaluation(graph, rhs, bindings))
+            .transpose()
     }
     pub(crate) fn pattern_argument(
         &self,
@@ -2430,6 +2625,22 @@ impl<'a> Environment<'a> {
         let law = self.inputs.law();
         for (id, expression) in law.exprs.iter().enumerate() {
             self.tick()?;
+            if let ExprKind::SetComp {
+                elem, var, filter, ..
+            } = &expression.kind
+                && law.expr_type(id).is_some()
+                && self.expressions.get(&expression.span) == Some(&id)
+                && std::iter::once(*elem).chain(*filter).any(|child| {
+                    let body = law.exprs[child].span;
+                    body.0 <= span.0 && span.1 <= body.1
+                })
+            {
+                enclosing.push((
+                    expression.span.0,
+                    var.name.clone(),
+                    LexicalOrigin::Iteration(id),
+                ));
+            }
             if let ExprKind::Let { name, value, body } = &expression.kind {
                 let body_span = law.exprs[*body].span;
                 let rhs_span = law.exprs[*value].span;
@@ -2506,6 +2717,22 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         Ok(result)
+    }
+    fn projects_lexical_binding(
+        &self,
+        span: (usize, usize),
+        name: &str,
+    ) -> Result<bool, ValidationFailure> {
+        for (actual, origin) in self.lexical_context(span)? {
+            self.tick()?;
+            if actual == name {
+                return Ok(matches!(
+                    origin,
+                    LexicalOrigin::Iteration(_) | LexicalOrigin::Pattern { .. }
+                ));
+            }
+        }
+        Ok(false)
     }
     // calleeのfield Scalarも、slot値の一致だけで別producerへ移せない。
     fn call_field_source(
@@ -2695,7 +2922,15 @@ impl<'a> Environment<'a> {
         if self.named_view(id)?.is_none() {
             return Ok(false);
         }
-        if parts.len() != 1
+        if node.ty
+            != NodeType::Evaluation(
+                self.inputs
+                    .law()
+                    .expr_type(id)
+                    .ok_or("内包元型がない")?
+                    .clone(),
+            )
+            || parts.len() != 1
             || parts[0].location != (Location::Law { span })
             || parts[0].residual.is_some()
             || parts[0].value != *value
@@ -2907,6 +3142,363 @@ impl<'a> Environment<'a> {
         }
         result
     }
+    fn comprehension_parts(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        children: &[NodeRef],
+        limit: usize,
+    ) -> Result<(NodeRef, SourceAnalysis), ValidationFailure> {
+        let id = *self.expressions.get(&span).ok_or("内包元ASTがない")?;
+        let ExprKind::SetComp {
+            elem,
+            domain,
+            filter,
+            ..
+        } = self.inputs.law().exprs[id].kind
+        else {
+            return Err("内包元式が違う".into());
+        };
+        let input = *children.first().ok_or("内包domain子がない")?;
+        if children.iter().any(|child| child.0 >= limit)
+            || graph.context_at(input.0) != self.current_context(graph)
+        {
+            return Err("内包子の既出性/親Contextが違う".into());
+        }
+        self.recheck_evaluation(graph, input)?;
+        let (domain_source, bindings, value) = self.evaluation(graph, input)?;
+        self.source_matches(graph, domain_source, domain)?;
+        let mut own = None;
+        for (index, node) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            if graph.context_at(index) == self.current_context(graph)
+                && matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span:actual},bindings:actual_bindings,..}) if *actual==span && actual_bindings==bindings)
+            {
+                self.validate_at(graph, node, index)?;
+                own = Some(NodeRef(index));
+                break;
+            }
+        }
+        let own = own.ok_or("内包値の既出own Sourceがない")?;
+        let analysis = self.analyze_source(graph, span, bindings)?;
+        let items = match value.map(|r| graph.scalar(r)).transpose()? {
+            Some(Scalar::List { items, .. }) => Some((items, true)),
+            Some(Scalar::Set { items, .. }) => Some((items, false)),
+            None => None,
+            _ => return Err("実内包域がList/Setでない".into()),
+        };
+        let mut cursor = 1;
+        let mut seen = Vec::new();
+        let mut used_support = graph.get(input)?.support.clone();
+        let mut scope = graph.get(input)?.scope.clone();
+        let mut collected = Vec::new();
+        let mut known = items.is_some();
+        if let Some((items, is_list)) = items {
+            for position in 0..items.len() {
+                self.tick()?;
+                let first = *children.get(cursor).ok_or("内包に反復漏れがある")?;
+                let context = graph.context_at(first.0);
+                let index = context.iteration.ok_or("内包子に反復Contextがない")?;
+                let record = graph.iterations.get(index).ok_or("内包反復元がない")?;
+                if record.caller != self.current_context(graph)
+                    || record.source != own
+                    || record.domain != input
+                    || context.frame != record.caller.frame
+                    || context.request != record.caller.request
+                {
+                    return Err("内包子の元Source/domain/親Contextが違う".into());
+                }
+                let (_, member, _) = self.iteration_input(graph, index)?;
+                match (&record.member, is_list) {
+                    (super::call::Member::ListPosition(actual), true) if *actual == position => {}
+                    (super::call::Member::SetElement(_), false)
+                        if !data::contains(&seen, &member, &self.control)? => {}
+                    _ => return Err("内包走査のList位置/Set要素が重複または不一致".into()),
+                }
+                seen.push(member);
+                let mut consume = |expected: usize| -> Result<Option<NodeRef>, ValidationFailure> {
+                    let reference = *children.get(cursor).ok_or("内包の必要子がない")?;
+                    cursor += 1;
+                    if graph.context_at(reference.0) != context {
+                        return Err("内包子が別反復に属する".into());
+                    }
+                    self.recheck_evaluation(graph, reference)?;
+                    let (source, actual, value) = self.evaluation(graph, reference)?;
+                    self.source_matches(graph, source, expected)?;
+                    if actual != bindings {
+                        return Err("内包子の宣言束縛が違う".into());
+                    }
+                    used_support.extend(graph.get(reference)?.support.iter().cloned());
+                    scope.merge(&graph.get(reference)?.scope);
+                    Ok(value)
+                };
+                let condition = if let Some(filter) = filter {
+                    match consume(filter)?.map(|r| graph.scalar(r)).transpose()? {
+                        Some(Scalar::Bool(value)) => Some(*value),
+                        None => None,
+                        _ => return Err("内包filter実値がBoolでない".into()),
+                    }
+                } else {
+                    Some(true)
+                };
+                match condition {
+                    Some(true) => {
+                        if let Some(value) = consume(elem)? {
+                            collected.push(graph.scalar(value)?.clone());
+                        } else {
+                            known = false;
+                        }
+                    }
+                    Some(false) => {}
+                    None => known = false,
+                }
+            }
+        }
+        if cursor != children.len() {
+            return Err("内包に余分な反復/除外elemがある".into());
+        }
+        used_support.sort();
+        used_support.dedup();
+        let Type::Set(element) = self.inputs.law().expr_type(id).ok_or("内包型がない")?
+        else {
+            return Err("内包型がSetでない".into());
+        };
+        let computed = if known {
+            Some(data::set((**element).clone(), &collected, &self.control)?)
+        } else {
+            None
+        };
+        if computed != analysis.known_value
+            || scope != analysis.scope
+            || used_support != analysis.support
+        {
+            return Err("内包の元domain/filter/採用値・支持・範囲が違う".into());
+        }
+        Ok((own, analysis))
+    }
+    fn comprehension_source_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        let Rule::Input {
+            kind: "law",
+            location: Location::Law { span },
+        } = &node.rule
+        else {
+            return Err("内包Scalarの元規則がない".into());
+        };
+        let (_, analysis) = self.comprehension_parts(graph, *span, &node.arguments, limit)?;
+        if !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
+            || node.support != analysis.support
+            || analysis.scalar_scope.as_ref() != Some(&node.scope)
+        {
+            return Err("内包Scalarが元入力/値/支持/Scopeと違う".into());
+        }
+        Ok(analysis)
+    }
+    fn validate_comprehension_evaluation(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Evaluation {
+            expression,
+            bindings,
+            parts,
+            value,
+            applicability,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        let span = self.expression_span(graph, *expression)?;
+        let Some(&id) = self.expressions.get(&span) else {
+            return Ok(false);
+        };
+        if !matches!(self.inputs.law().exprs[id].kind, ExprKind::SetComp { .. }) {
+            return Ok(false);
+        }
+        if parts.len() != 1
+            || parts[0].location != (Location::Law { span })
+            || parts[0].value != *value
+            || parts[0].residual.is_some()
+            || *applicability != "applicable"
+            || graph.context_at(expression.0) != self.current_context(graph)
+        {
+            return Err("内包Evaluationの元出現/型/partが違う".into());
+        }
+        let (own, analysis) = self.comprehension_parts(graph, span, &parts[0].children, limit)?;
+        if own != *expression
+            || self.expression_bindings(graph, own)? != bindings
+            || node.scope != analysis.scope
+            || node.support != analysis.support
+        {
+            return Err("内包Evaluationが元Source/支持/Scopeと違う".into());
+        }
+        let arguments: Vec<_> = std::iter::once(*expression)
+            .chain(parts[0].children.iter().copied())
+            .chain(*value)
+            .collect();
+        if node.arguments != arguments {
+            return Err("内包Evaluationの構成辺が違う".into());
+        }
+        let mut reasons = Vec::new();
+        for child in &parts[0].children {
+            self.tick()?;
+            reasons.extend(graph.get(*child)?.reasons.iter().cloned());
+        }
+        sort_reasons(&mut reasons);
+        if node.reasons.len() != reasons.len() {
+            return Err("内包Evaluationの元欠測理由数が違う".into());
+        }
+        for (actual, expected) in node.reasons.iter().zip(&reasons) {
+            self.tick()?;
+            // canonical理由の既存dedupと同じ、全wire欄の同一性を照合する。
+            if actual.wire() != expected.wire() {
+                return Err("内包Evaluationの元欠測理由が違う".into());
+            }
+        }
+        match (value, &analysis.known_value) {
+            (Some(value), Some(expected)) => {
+                let scalar = graph.get(*value)?;
+                if graph.context_at(value.0) != self.current_context(graph)
+                    || graph.scalar(*value)? != expected
+                    || scalar.arguments != parts[0].children
+                    || !matches!(&scalar.rule,Rule::Input {kind:"law",location:Location::Law {span:actual}} if *actual==span)
+                {
+                    return Err("内包の生成値の元出現/反復辺が違う".into());
+                }
+                self.validate_at(graph, scalar, value.0)?;
+            }
+            (None, None) => {}
+            _ => return Err("未知の内包を通常値へ変えている".into()),
+        }
+        Ok(true)
+    }
+    fn iteration_for(
+        &self,
+        graph: &Graph,
+        comp: usize,
+    ) -> Result<Option<usize>, ValidationFailure> {
+        let mut current = self.current_context(graph).iteration;
+        while let Some(index) = current {
+            self.tick()?;
+            let record = graph.iterations.get(index).ok_or("反復索引がない")?;
+            if self.expression_span(graph, record.source)? == self.inputs.law().exprs[comp].span {
+                return Ok(Some(index));
+            }
+            if record
+                .caller
+                .iteration
+                .is_some_and(|parent| parent >= index)
+            {
+                return Err("反復の親が先行しない".into());
+            }
+            current = record.caller.iteration;
+        }
+        Ok(None)
+    }
+    fn iteration_input(
+        &self,
+        graph: &Graph,
+        index: usize,
+    ) -> Result<IterationInputs, ValidationFailure> {
+        self.tick()?;
+        let cache_key = (index, self.cutoff.get().min(graph.nodes.len()));
+        if let Some(value) = self.cache.borrow().iterations.get(&cache_key).cloned() {
+            return Ok(value);
+        }
+        let record = graph.iterations.get(index).ok_or("反復元がない")?;
+        if record
+            .caller
+            .iteration
+            .is_some_and(|parent| parent >= index)
+            || record.source.0 >= record.domain.0
+            || record.domain.0 >= self.cutoff.get().min(graph.nodes.len())
+        {
+            return Err("反復元Source/domain/親の先行性が違う".into());
+        }
+        if graph.context_at(record.source.0) != record.caller
+            || graph.context_at(record.domain.0) != record.caller
+        {
+            return Err("反復元が親Contextに属さない".into());
+        }
+        let span = self.expression_span(graph, record.source)?;
+        let id = *self.expressions.get(&span).ok_or("反復元ASTがない")?;
+        let ExprKind::SetComp { domain, .. } = self.inputs.law().exprs[id].kind else {
+            return Err("反復元がSet内包でない".into());
+        };
+        let previous = self.context.replace(Some(record.caller));
+        let result = (|| {
+            self.validate_at(graph, graph.get(record.source)?, record.source.0)?;
+            self.recheck_evaluation(graph, record.domain)?;
+            let (source, bindings, value) = self.evaluation(graph, record.domain)?;
+            self.source_matches(graph, source, domain)?;
+            if self.expression_bindings(graph, record.source)? != bindings {
+                return Err("反復元の実束縛が違う".into());
+            }
+            let analysis =
+                self.analyze_source(graph, self.inputs.law().exprs[domain].span, bindings)?;
+            if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
+                return Err("反復域値が元入力と違う".into());
+            }
+            let value = graph.scalar(value.ok_or("未知domainに反復がある")?)?;
+            let member = match (&record.member, value) {
+                (super::call::Member::ListPosition(position), Scalar::List { items, .. }) => {
+                    items.get(*position).ok_or("List反復位置が域外")?.clone()
+                }
+                (super::call::Member::SetElement(member), Scalar::Set { element, items })
+                    if member.ty() == *element && data::contains(items, member, &self.control)? =>
+                {
+                    member.clone()
+                }
+                _ => return Err("List位置/Set要素が元domainと違う".into()),
+            };
+            Ok((record.domain, member, analysis))
+        })();
+        self.context.set(previous);
+        if let Ok(value) = &result {
+            self.cache
+                .borrow_mut()
+                .iterations
+                .insert(cache_key, value.clone());
+        }
+        result
+    }
+    pub(crate) fn iteration_argument(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        name: &str,
+        bindings: &[Binding],
+    ) -> Result<Option<(NodeRef, Scalar)>, ValidationFailure> {
+        if self.name_token(span)? != name {
+            return Err("反復名の元使用tokenが違う".into());
+        }
+        let mut result = None;
+        for (actual, origin) in self.lexical_context(span)? {
+            self.tick()?;
+            if actual == name
+                && let LexicalOrigin::Iteration(comp) = origin
+            {
+                let index = self
+                    .iteration_for(graph, comp)?
+                    .ok_or("反復binderの実Contextがない")?;
+                let record = &graph.iterations[index];
+                if self.expression_bindings(graph, record.source)? != bindings {
+                    return Err("反復binderの宣言束縛が違う".into());
+                }
+                let (domain, member, _) = self.iteration_input(graph, index)?;
+                if result.replace((domain, member)).is_some() {
+                    return Err("反復binderが一意でない".into());
+                }
+            }
+        }
+        Ok(result)
+    }
     pub(crate) fn source_arguments(
         &self,
         graph: &Graph,
@@ -2918,6 +3510,10 @@ impl<'a> Environment<'a> {
             let frame = graph.frames.get(index).ok_or("Sourceのcall frameがない")?;
             arguments.push(frame.source);
             arguments.extend(&frame.arguments);
+        }
+        if let Some(index) = self.current_context(graph).iteration {
+            let record = graph.iterations.get(index).ok_or("Sourceの反復がない")?;
+            arguments.extend([record.source, record.domain]);
         }
         for (matching, arm) in self.enclosing_matches(span)? {
             let ExprKind::Match { scrutinee, .. } = self.inputs.law().exprs[matching].kind else {
@@ -3013,7 +3609,7 @@ impl<'a> Environment<'a> {
             | crate::law::model::Signature::Law { params, .. } => params,
             _ => return Err("評価範囲の元宣言が view/Law でない".into()),
         };
-        let (base, mut variables) = if let Some(index) = self.current_context(graph).frame {
+        let (mut base, mut variables) = if let Some(index) = self.current_context(graph).frame {
             let frame = graph.frames.get(index).ok_or("元式のframeがない")?;
             let call_span = self.expression_span(graph, frame.source)?;
             let target = self
@@ -3110,6 +3706,22 @@ impl<'a> Environment<'a> {
             let value = match rhs {
                 LexicalOrigin::Let(rhs) => {
                     self.scoped_ast(rhs, &variables, &base, &declaration.reading)?
+                }
+                LexicalOrigin::Iteration(comp) => {
+                    let index = self
+                        .iteration_for(graph, comp)?
+                        .ok_or("元内包binderに実反復がない")?;
+                    let (_, member, analysis) = self.iteration_input(graph, index)?;
+                    base.merge(&analysis.scope);
+                    for value in variables.values_mut() {
+                        value.scope.merge(&base);
+                    }
+                    SourceValue {
+                        scope: base.clone(),
+                        known_value: Some(member),
+                        support: analysis.support,
+                        scalar_scope: Some(base.clone()),
+                    }
                 }
                 LexicalOrigin::Pattern {
                     matching,
@@ -3208,7 +3820,11 @@ impl<'a> Environment<'a> {
             known_value: value.known_value.clone(),
             missing: None,
             support: value.support.clone(),
-            scalar_scope: value.scalar_scope.clone(),
+            scalar_scope: if self.projects_lexical_binding(span, name)? {
+                value.known_value.as_ref().map(|_| value.scope.clone())
+            } else {
+                value.scalar_scope.clone()
+            },
         })
     }
     fn subject_support(&self, value: &Scalar) -> Result<Vec<Fact>, ValidationFailure> {
@@ -3288,6 +3904,13 @@ impl<'a> Environment<'a> {
                         .get(&first.name)
                         .ok_or("範囲検査の未知lexical名")?
                         .clone();
+                    // pattern/反復binderは使用位置で射影Scalarを作る。let alias
+                    // は元RHS Scalarを参照するので、そのscalar_scopeを変えない。
+                    if self.projects_lexical_binding(first.span, &first.name)? {
+                        result.scope.merge(base);
+                        result.scalar_scope =
+                            result.known_value.as_ref().map(|_| result.scope.clone());
+                    }
                     for part in parts.iter().skip(1) {
                         self.tick()?;
                         result = self.scoped_field(
@@ -3382,6 +4005,107 @@ impl<'a> Environment<'a> {
                         known_value,
                         support,
                         scalar_scope,
+                    }
+                }
+                ExprKind::SetComp {
+                    elem,
+                    var,
+                    domain,
+                    filter,
+                } => {
+                    if !data::supported(
+                        self.inputs.law().expr_type(id).ok_or("内包結果型がない")?,
+                        self.inputs.law(),
+                        &self.control,
+                    )? {
+                        return Err(ValidationFailure::UnsupportedExpression {
+                            location: Location::Law {
+                                span: expression.span,
+                            },
+                            feature: "未対応payload・型または再帰DataのSet内包".into(),
+                        });
+                    }
+                    let input = self.scoped_ast(*domain, variables, base, reading)?;
+                    let Some(container) = input.known_value.as_ref() else {
+                        return Ok(SourceValue {
+                            scalar_scope: None,
+                            ..input
+                        });
+                    };
+                    let items = match container {
+                        Scalar::List { items, .. } | Scalar::Set { items, .. } => items,
+                        _ => return Err("内包元域がList/Setでない".into()),
+                    };
+                    let mut scope = input.scope.clone();
+                    let mut support = input.support.clone();
+                    let mut values = Vec::new();
+                    let mut known = true;
+                    for item in items {
+                        self.tick()?;
+                        let mut local = self.copy_variables(variables)?;
+                        for value in local.values_mut() {
+                            value.scope.merge(&input.scope);
+                        }
+                        if local
+                            .insert(
+                                var.name.clone(),
+                                SourceValue {
+                                    scope: input.scope.clone(),
+                                    known_value: Some(item.clone()),
+                                    support: input.support.clone(),
+                                    scalar_scope: Some(input.scope.clone()),
+                                },
+                            )
+                            .is_some()
+                        {
+                            return Err("内包binderが重複する".into());
+                        }
+                        let condition = if let Some(filter) = filter {
+                            let value = self.scoped_ast(*filter, &local, &input.scope, reading)?;
+                            scope.merge(&value.scope);
+                            support.extend(value.support);
+                            match value.known_value.as_ref() {
+                                Some(Scalar::Bool(b)) => Some(*b),
+                                None => None,
+                                _ => return Err("内包filterがBoolでない".into()),
+                            }
+                        } else {
+                            Some(true)
+                        };
+                        match condition {
+                            Some(true) => {
+                                let value =
+                                    self.scoped_ast(*elem, &local, &input.scope, reading)?;
+                                scope.merge(&value.scope);
+                                support.extend(value.support);
+                                if let Some(value) = value.known_value {
+                                    values.push(value);
+                                } else {
+                                    known = false;
+                                }
+                            }
+                            Some(false) => {}
+                            None => known = false,
+                        }
+                        self.tick()?;
+                    }
+                    support.sort();
+                    support.dedup();
+                    let Type::Set(element) =
+                        self.inputs.law().expr_type(id).ok_or("内包結果型がない")?
+                    else {
+                        return Err("内包結果型がSetでない".into());
+                    };
+                    let known_value = if known {
+                        Some(data::set((**element).clone(), &values, &self.control)?)
+                    } else {
+                        None
+                    };
+                    SourceValue {
+                        scalar_scope: known_value.as_ref().map(|_| scope.clone()),
+                        scope,
+                        known_value,
+                        support,
                     }
                 }
                 ExprKind::Match { scrutinee, arms } => {
@@ -3830,7 +4554,17 @@ impl<'a> Environment<'a> {
         children: &[Option<NodeRef>],
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
-        if let Some((input, expected)) = self.pattern_argument(graph, span, name, bindings)? {
+        if let Some((input, expected)) = self.iteration_argument(graph, span, name, bindings)? {
+            if children.len() != 1
+                || children[0] != self.evaluation(graph, input)?.2
+                || value.map(|r| graph.scalar(r)).transpose()? != Some(&expected)
+                || value.is_none_or(|r| graph.get(r).map_or(true, |node| node.arguments != [input]))
+            {
+                return Err("反復binder値・元位置/要素・domain辺が違う".into());
+            }
+        } else if let Some((input, expected)) =
+            self.pattern_argument(graph, span, name, bindings)?
+        {
             if children.len() != 1
                 || children[0] != self.evaluation(graph, input)?.2
                 || value.map(|r| graph.scalar(r)).transpose()? != Some(&expected)
@@ -3838,8 +4572,11 @@ impl<'a> Environment<'a> {
             {
                 return Err("pattern binderの元path・値・実scrutinee辺が違う".into());
             }
-        } else if self.lexical_rhs(span, name)?.is_some() {
-            if children.len() != 1 || value != children[0] {
+        } else if let Some(input) = self.lexical_argument(graph, span, name, bindings)? {
+            if children.len() != 1
+                || value != self.evaluation(graph, input)?.2
+                || value != children[0]
+            {
                 return Err("lexical 名が実右辺の値を参照していない".into());
             }
         } else if let Some(argument) = self.call_parameter(graph, name)? {

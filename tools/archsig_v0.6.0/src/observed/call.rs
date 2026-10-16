@@ -5,6 +5,7 @@ use super::result::NodeRef;
 pub(super) struct Context {
     pub request: usize,
     pub frame: Option<usize>,
+    pub iteration: Option<usize>,
 }
 
 #[derive(Clone, Debug)]
@@ -12,4 +13,18 @@ pub(super) struct Frame {
     pub caller: Context,
     pub source: NodeRef,
     pub arguments: Vec<NodeRef>,
+}
+
+/// List位置とSetの意味上の要素を区別する。Setの表示ordinalをidentityにしない。
+#[derive(Clone, Debug)]
+pub(super) enum Member {
+    ListPosition(usize),
+    SetElement(super::result::Scalar),
+}
+#[derive(Clone, Debug)]
+pub(super) struct Iteration {
+    pub caller: Context,
+    pub source: NodeRef,
+    pub domain: NodeRef,
+    pub member: Member,
 }
