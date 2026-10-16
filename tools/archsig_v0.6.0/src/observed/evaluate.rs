@@ -650,6 +650,7 @@ impl Evaluator<'_, '_> {
                         .scope
                         .clone();
                     let ty = known.ty();
+                    let support = self.graph.get(domain)?.support.clone();
                     let value = self.value(
                         known,
                         Rule::Input {
@@ -657,7 +658,7 @@ impl Evaluator<'_, '_> {
                             location: Location::Law { span: first.span },
                         },
                         vec![domain],
-                        vec![],
+                        support.clone(),
                         scope,
                     )?;
                     self.finish(
@@ -665,7 +666,7 @@ impl Evaluator<'_, '_> {
                         ty,
                         Some(value),
                         vec![],
-                        vec![],
+                        support,
                         None,
                         None,
                         None,
@@ -978,11 +979,10 @@ impl Evaluator<'_, '_> {
             .as_ref()
             .map(|input| input.scope.clone())
             .unwrap_or(self.graph.get(source)?.scope.clone());
-        let domain_support = input
+        let mut domain_support = input
             .as_ref()
             .map(|input| input.support.clone())
             .unwrap_or_default();
-        let member_scope = scope.clone();
         let mut finite = None;
         let members = if let Some(input) = &input {
             input
@@ -1003,16 +1003,17 @@ impl Evaluator<'_, '_> {
         } else {
             #[cfg(test)]
             let (span, context) = (spec.span, self.graph.active);
-            Some(super::finite::values(
-                &spec.element,
-                self.environment.inputs.law(),
-                self.control,
-                &mut |_index| {
-                    #[cfg(test)]
-                    data::observe_actual(span, context, "type_enum", _index);
-                },
-            )?)
+            let enumeration =
+                self.environment
+                    .finite_values(&spec.element, &mut |_phase, _index| {
+                        #[cfg(test)]
+                        data::observe_actual(span, context, _phase, _index);
+                    })?;
+            domain_support = enumeration.support;
+            scope.merge(&enumeration.scope);
+            Some(enumeration.values)
         };
+        let member_scope = scope.clone();
         if let Some(items) = members {
             let mut elements = Vec::new();
             for item in &items {
@@ -1148,7 +1149,7 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        let mut support = Vec::new();
+        let mut support = domain_support.clone();
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
             scope.merge(&child.scope);
@@ -1227,7 +1228,7 @@ impl Evaluator<'_, '_> {
             Type::Bool,
             value,
             children,
-            vec![],
+            domain_support,
             None,
             None,
             None,
@@ -7559,6 +7560,527 @@ reading Calc {{
             rejects_named_prefix(&result, &changed);
         }
     }
+    fn plain_ref_fixture(changed_provenance: bool) -> InputSources {
+        let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Roster","version":"1","dependencies":[],"declarations":[
+{"kind":"entity","name":"Roster.Root","meaning":"所属先。","parameters":[],"fields":[],"alignments":[]},
+{"kind":"entity","name":"Roster.E","meaning":"登録対象。","parameters":[{"name":"owner","type":["Ref","Roster.Root"],"meaning":"所属先。"}],"fields":[{"name":"flag","type":"Bool","meaning":"条件。"}],"alignments":[]},
+{"kind":"entity","name":"Roster.Other","meaning":"異なる型。","parameters":[],"fields":[],"alignments":[]},
+{"kind":"entity","name":"Roster.Empty","meaning":"空の登録族。","parameters":[],"fields":[],"alignments":[]},
+{"kind":"data","name":"Roster.At","meaning":"登録対象を含む値。","constructors":[{"name":"NoneCase","arguments":[],"meaning":"参照なし。"},{"name":"At","arguments":[["Ref","Roster.E"]],"meaning":"参照あり。"}]}]}]}"#;
+        let checked =
+            crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies["Roster"].digest;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Calc {{
+ use vocabulary Roster version "1" digest "{digest}";
+ view all(): Bool = forall r:E . r=r;
+ view powers(): Bool = forall item:Set<E> . item=item;
+ view voidproduct(): Bool = forall item:(Empty,E) . true;
+ view negative(): Bool = forall r:E . r.flag;
+ law required called(): negative();
+ law required both(): negative() and negative();
+ view observe(s:E): Bool = s.flag;
+ view full(): Bool = forall r:E . true;
+ view construct(): Bool = forall item:(E,Bool) . true;
+ view later(): Z = 9;
+}}
+"#
+        );
+        let modes = if changed_provenance {
+            ["specification", "specification", "specification"]
+        } else {
+            ["specification", "proposed", "observed"]
+        };
+        let revision = if changed_provenance { "r2" } else { "r1" };
+        let map = format!(
+            r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Roster","version":"1","digest":"{digest}"}}],
+"sources":[{{"id":"scan","uri":"urn:fixture:plain-ref-roster","revision":"{revision}","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],
+"origins":[{{"id":"ov","mode":"{}","method":"最初の登録表。","locations":[{{"source":"scan","path":"v.model","span":[0,1]}}]}},{{"id":"ow","mode":"{}","method":"次の登録表。","locations":[{{"source":"scan","path":"w.model","span":[2,3]}}]}},{{"id":"oz","mode":"{}","method":"空の登録表。","locations":[{{"source":"scan","path":"z.model","span":[4,5]}}]}}],
+"snapshots":[{{"id":"v","origin":"ov","subjects":[{{"id":"root","type":"Roster.Root","origin":"ov"}},{{"id":"item","type":"Roster.E","origin":"ov"}},{{"id":"other","type":"Roster.Other","origin":"ov"}}],"atoms":[]}},
+{{"id":"w","origin":"ow","subjects":[{{"id":"root","type":"Roster.Root","origin":"ow"}},{{"id":"item","type":"Roster.E","origin":"ow"}}],"atoms":[{{"id":"flag","subject":"item","field":"Roster.E.flag","value":false,"origin":"ow"}}]}},
+{{"id":"z","origin":"oz","subjects":[],"atoms":[]}}]}}"#,
+            modes[0], modes[1], modes[2]
+        );
+        InputSources::from_bytes(
+            vec![definitions.as_bytes().to_vec()],
+            law.into_bytes(),
+            map.into_bytes(),
+        )
+    }
+    fn plain_ref_example(asks: &[&str]) -> ObservedEvaluation {
+        evaluate_observed_bytes(plain_ref_fixture(false), asks, &mut named_call_quiet()).unwrap()
+    }
+    #[test]
+    fn plain_ref_domains_recheck_snapshot_identity_scope_support_and_empty_products() {
+        let asks = [
+            "first=evaluate(Calc.all)",
+            "again=evaluate(Calc.all)",
+            "empty=evaluate(Calc.voidproduct)",
+        ];
+        let result = plain_ref_example(&asks);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let reject = |nodes: &[Node], stage: String| {
+            let failure = rebuild_for_origin_and_support_recheck(&result, nodes).err();
+            assert!(
+                matches!(&failure, Some(ValidationFailure::Internal(_))),
+                "{stage}: {failure:?}"
+            );
+        };
+        let domain = in_domain(&result, 0);
+        let Some(Payload::Domain { ty, elements }) = &result.nodes[domain].payload else {
+            unreachable!()
+        };
+        assert_eq!(ty, &Type::Ref("Roster.E".into()));
+        assert_eq!(elements.len(), 2);
+        assert_eq!(
+            data_scalar_at(&result, elements[0].0),
+            &Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "item".into(),
+                entity: "Roster.E".into()
+            }
+        );
+        assert_eq!(
+            data_scalar_at(&result, elements[1].0),
+            &Scalar::Subject {
+                snapshot: "w".into(),
+                subject: "item".into(),
+                entity: "Roster.E".into()
+            }
+        );
+        let facts = vec![
+            Fact {
+                snapshot: "v".into(),
+                subject: "item".into(),
+                field: None,
+                atom: None,
+            },
+            Fact {
+                snapshot: "w".into(),
+                subject: "item".into(),
+                field: None,
+                atom: None,
+            },
+        ];
+        assert_eq!(result.nodes[domain].support, facts);
+        assert_eq!(
+            result.nodes[domain].scope.snapshots,
+            ["v".into(), "w".into(), "z".into()].into_iter().collect()
+        );
+        assert_eq!(
+            result.nodes[domain].scope.modes,
+            ["specification".into(), "proposed".into(), "observed".into()]
+                .into_iter()
+                .collect()
+        );
+        let empty = in_domain(&result, 2);
+        assert!(
+            matches!(&result.nodes[empty].payload,Some(Payload::Domain {elements,..}) if elements.is_empty())
+        );
+        assert_eq!(result.nodes[empty].support, facts);
+        assert_eq!(
+            result.nodes[empty].scope.snapshots,
+            result.nodes[domain].scope.snapshots
+        );
+        assert_eq!(
+            result.nodes[result.answers[2].outputs["value"].0].support,
+            facts
+        );
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=domain]).unwrap();
+        for mutation in 0..6 {
+            let mut changed = result.nodes[..=domain].to_vec();
+            match mutation {
+                0 => {
+                    changed[elements[1].0].payload = Some(Payload::Scalar(
+                        data_scalar_at(&result, elements[0].0).clone(),
+                    ));
+                }
+                1 => {
+                    let Some(Payload::Domain { elements, .. }) = &mut changed[domain].payload
+                    else {
+                        unreachable!()
+                    };
+                    elements.pop();
+                    let refs = elements.clone();
+                    changed[domain].arguments.truncate(1);
+                    changed[domain].arguments.extend(refs);
+                }
+                2 => {
+                    let Some(Payload::Domain { elements, .. }) = &mut changed[domain].payload
+                    else {
+                        unreachable!()
+                    };
+                    elements[1] = elements[0];
+                    let refs = elements.clone();
+                    changed[domain].arguments.truncate(1);
+                    changed[domain].arguments.extend(refs);
+                }
+                3 => {
+                    changed[domain].scope.snapshots.remove("z");
+                }
+                4 => {
+                    changed[domain].support.pop();
+                }
+                _ => {
+                    let Some(Payload::Domain { ty, .. }) = &mut changed[domain].payload else {
+                        unreachable!()
+                    };
+                    *ty = Type::Ref("Roster.Other".into());
+                }
+            }
+            reject(&changed, format!("Domain variant {mutation}"));
+        }
+        let member = elements[0].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=member]).unwrap();
+        for mutation in 0..2 {
+            let mut changed = result.nodes[..=member].to_vec();
+            let scalar = if mutation == 0 {
+                Scalar::Subject {
+                    snapshot: "z".into(),
+                    subject: "item".into(),
+                    entity: "Roster.E".into(),
+                }
+            } else {
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: "other".into(),
+                    entity: "Roster.Other".into(),
+                }
+            };
+            changed[member].ty = NodeType::Value(scalar.ty());
+            changed[member].payload = Some(Payload::Scalar(scalar));
+            reject(&changed, format!("member Scalar variant {mutation}"));
+        }
+        let binder = iteration_binder_scalar_for_name(&result, 1, b"r");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
+        let mut changed = result.nodes[..=binder].to_vec();
+        changed[binder].payload = Some(Payload::Scalar(
+            data_scalar_at(&result, elements[0].0).clone(),
+        ));
+        reject(&changed, "binder same-ID foreign snapshot".into());
+        let source = result.nodes[domain].arguments[0].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=source]).unwrap();
+        let mut changed = result.nodes[..=source].to_vec();
+        // raw AST Sourceは空支持。rosterの支持は元Source再分析から域へ導く。
+        assert!(result.nodes[source].support.is_empty());
+        changed[source].support.push(facts[0].clone());
+        assert_ne!(changed[source].support, result.nodes[source].support);
+        reject(&changed, "raw Source injected subject Fact".into());
+        let changed =
+            evaluate_observed_bytes(plain_ref_fixture(true), &asks, &mut named_call_quiet())
+                .unwrap();
+        assert_eq!(changed.status(), result.status());
+        rebuild_for_origin_and_support_recheck(&changed, &changed.nodes).unwrap();
+        for (original, new) in result.answers.iter().zip(&changed.answers) {
+            assert_eq!(original.status, new.status);
+            assert_eq!(
+                data_scalar_at(&result, original.outputs["value"].0),
+                data_scalar_at(&changed, new.outputs["value"].0)
+            );
+        }
+        let changed_domain = in_domain(&changed, 0);
+        assert_eq!(changed.nodes[changed_domain].support, facts);
+        assert_eq!(
+            changed.nodes[changed_domain].scope.modes,
+            ["specification".into()].into_iter().collect()
+        );
+        assert_eq!(
+            changed.prepared.inputs().archmap().sources[0].revision,
+            "r2"
+        );
+        plain_ref_owned_type_syntax_stays_distinct_from_plain_roster();
+    }
+    fn plain_ref_owned_type_syntax_stays_distinct_from_plain_roster() {
+        let sources = plain_ref_fixture(false);
+        let law = String::from_utf8(sources.law().bytes().to_vec())
+            .unwrap()
+            .replace(
+                " view later(): Z = 9;",
+                r#" view later(): Z = 9;
+ view plain(root:Root): Bool = forall r:E . true;
+ view owned(root:Root): Bool = forall r:E[root] . true;
+ view nested_owned(root:Root): Bool = exists packed:(Unit,Option<Set<E[root]>>) . false;
+"#,
+            );
+        let sources = InputSources::from_bytes(
+            sources
+                .definitions()
+                .iter()
+                .map(|d| d.bytes().to_vec())
+                .collect(),
+            law.as_bytes().to_vec(),
+            sources.archmap().bytes().to_vec(),
+        );
+        let normal = evaluate_observed_bytes(
+            sources.clone(),
+            &["normal=evaluate(Calc.plain,root=@v/root)"],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(normal.status(), "complete", "{:?}", normal.issues);
+        assert_eq!(
+            data_scalar_at(&normal, normal.answers[0].outputs["value"].0),
+            &Scalar::Bool(true)
+        );
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let domain = in_domain(&normal, 0);
+        assert!(
+            matches!(&normal.nodes[domain].payload,Some(Payload::Domain {elements,..}) if elements.len()==2)
+        );
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=domain]).unwrap();
+        rebuild_for_origin_and_support_recheck(
+            &normal,
+            &normal.nodes[..=normal.answers[0].outputs["value"].0],
+        )
+        .unwrap();
+        for (name, original) in [
+            ("owned", "forall r:E[root] . true"),
+            (
+                "nested_owned",
+                "exists packed:(Unit,Option<Set<E[root]>>) . false",
+            ),
+        ] {
+            let ask = format!("bad=evaluate(Calc.{name},root=@v/root)");
+            let failure =
+                evaluate_observed_bytes(sources.clone(), &[&ask], &mut named_call_quiet())
+                    .unwrap_err();
+            assert!(failure.wire().is_none());
+            let EvaluationFailure::NotImplemented {
+                declaration,
+                location: Location::Law { span },
+                feature,
+            } = failure
+            else {
+                panic!("Owned型量化をplain族の成功へ変えない")
+            };
+            assert_eq!(declaration, format!("Calc.{name}"));
+            assert_eq!(&law.as_bytes()[span.0..span.1], original.as_bytes());
+            assert_eq!(feature, "依存 owner 制約を持つ型全域量化");
+        }
+    }
+    #[test]
+    fn plain_ref_exhaustion_rechecks_complete_coverage_and_accepts_set_presentations() {
+        let result = plain_ref_example(&[
+            "all=evaluate(Calc.all)",
+            "sets=evaluate(Calc.powers)",
+            "empty=evaluate(Calc.voidproduct)",
+        ]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let proof = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (result.contexts[index].request == 0
+                    && matches!(&node.payload, Some(Payload::FiniteExhaustion { .. })))
+                .then_some(index)
+            })
+            .unwrap();
+        let Some(Payload::FiniteExhaustion { instances, .. }) = &result.nodes[proof].payload else {
+            unreachable!()
+        };
+        let bodies = instances.clone();
+        assert_eq!(bodies.len(), 2);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=proof]).unwrap();
+        for mutation in 0..6 {
+            let mut changed = result.nodes[..=proof].to_vec();
+            match mutation {
+                0 => {
+                    let Some(Payload::FiniteExhaustion { checked, .. }) =
+                        &mut changed[proof].payload
+                    else {
+                        unreachable!()
+                    };
+                    *checked = 1;
+                }
+                1 => {
+                    finite_instances(&mut changed, proof, vec![bodies[0]]);
+                    let Some(Payload::FiniteExhaustion { checked, .. }) =
+                        &mut changed[proof].payload
+                    else {
+                        unreachable!()
+                    };
+                    *checked = 1;
+                }
+                2 => finite_instances(&mut changed, proof, vec![bodies[0], bodies[0]]),
+                3 => changed[proof].scope.quantifiers[0].kind = crate::law::ast::QuantKind::Exists,
+                4 => {
+                    changed[proof].scope.modes.remove("observed");
+                }
+                _ => {
+                    changed[proof].support.clear();
+                }
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+        let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &result.nodes[bodies[0].0].payload
+        else {
+            unreachable!()
+        };
+        let value = value.0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value]).unwrap();
+        let mut changed = result.nodes[..=value].to_vec();
+        changed[value].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        rejects_named_prefix(&result, &changed);
+        let value = result.answers[0].outputs["value"].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value]).unwrap();
+        let mut changed = result.nodes[..=value].to_vec();
+        changed[value].evidence.clear();
+        rejects_named_prefix(&result, &changed);
+        let mut reordered = result.nodes.clone();
+        let mut reverse = bodies;
+        reverse.reverse();
+        finite_instances(&mut reordered, proof, reverse);
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        let domain = in_domain(&result, 0);
+        let mut reordered = result.nodes.clone();
+        let Some(Payload::Domain { elements, .. }) = &mut reordered[domain].payload else {
+            unreachable!()
+        };
+        elements.reverse();
+        let refs = elements.clone();
+        reordered[domain].arguments.truncate(1);
+        reordered[domain].arguments.extend(refs);
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        let set=result.nodes.iter().enumerate().find_map(|(index,node)|(result.contexts[index].request==1 && matches!(&node.payload,Some(Payload::Scalar(Scalar::Set {items,..})) if items.len()==2)).then_some(index)).unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=set]).unwrap();
+        let mut reordered = result.nodes.clone();
+        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut reordered[set].payload else {
+            unreachable!()
+        };
+        items.reverse();
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+    }
+    #[test]
+    fn plain_ref_counterexamples_reject_foreign_request_and_call_producers() {
+        let result = plain_ref_example(&[
+            "first=check(Calc.called)",
+            "again=check(Calc.called)",
+            "both=check(Calc.both)",
+        ]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        assert!(
+            result
+                .answers
+                .iter()
+                .all(|answer| answer.status == Decision::Refuted)
+        );
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let counters: Vec<_> = result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                (node.arguments.len() == 3
+                    && matches!(&node.payload, Some(Payload::Counterexample { .. })))
+                .then_some(index)
+            })
+            .collect();
+        assert_eq!(counters.len(), 4);
+        for &counter in &counters {
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=counter]).unwrap();
+            let Some(Payload::Counterexample {
+                bindings,
+                left,
+                right,
+                facts,
+            }) = &result.nodes[counter].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(bindings.len(), 1);
+            assert_eq!(bindings[0].name, "r");
+            assert_eq!(
+                data_scalar_at(&result, bindings[0].value.0),
+                &Scalar::Subject {
+                    snapshot: "w".into(),
+                    subject: "item".into(),
+                    entity: "Roster.E".into()
+                }
+            );
+            assert_eq!(data_scalar_at(&result, left.0), &Scalar::Bool(false));
+            assert_eq!(data_scalar_at(&result, right.0), &Scalar::Bool(true));
+            assert!(
+                facts
+                    .iter()
+                    .any(|f| f.snapshot == "v" && f.subject == "item" && f.field.is_none())
+            );
+            assert!(
+                facts
+                    .iter()
+                    .any(|f| f.snapshot == "w" && f.atom.as_deref() == Some("flag"))
+            );
+            let body = result.nodes[counter].arguments[2];
+            assert!(result.nodes[body.0].scope.snapshots.contains("z"));
+            assert!(
+                result.answers[result.contexts[counter].request]
+                    .reasons
+                    .iter()
+                    .any(
+                        |reason| reason.missing.iter().any(|fact| fact.snapshot == "v"
+                            && fact.subject == "item"
+                            && fact.field.as_deref() == Some("Roster.E.flag"))
+                    )
+            );
+        }
+        for (foreign, target) in [(counters[0], counters[1]), (counters[2], counters[3])] {
+            assert_ne!(
+                result.contexts[foreign].frame,
+                result.contexts[target].frame
+            );
+            assert_eq!(
+                result.contexts[foreign].request == result.contexts[target].request,
+                foreign == counters[2]
+            );
+            let Some(Payload::Counterexample {
+                bindings: other,
+                left: other_left,
+                right: other_right,
+                ..
+            }) = &result.nodes[foreign].payload
+            else {
+                unreachable!()
+            };
+            for mutation in 0..5 {
+                let mut changed = result.nodes[..=target].to_vec();
+                let Some(Payload::Counterexample {
+                    bindings,
+                    left,
+                    right,
+                    ..
+                }) = &mut changed[target].payload
+                else {
+                    unreachable!()
+                };
+                match mutation {
+                    0 => bindings[0].value = other[0].value,
+                    1 => *left = *other_left,
+                    2 => *right = *other_right,
+                    _ => {}
+                }
+                if mutation == 3 {
+                    changed[target].arguments = result.nodes[foreign].arguments.clone();
+                    changed[target].payload = result.nodes[foreign].payload.clone();
+                    changed[target].scope = result.nodes[foreign].scope.clone();
+                }
+                if mutation == 4 {
+                    changed[target].support.clear();
+                    if let Some(Payload::Counterexample { facts, .. }) =
+                        &mut changed[target].payload
+                    {
+                        facts.clear();
+                    }
+                }
+                rejects_named_prefix(&result, &changed);
+            }
+        }
+    }
     fn type_quantifier_fixture(omitted: &[&str]) -> InputSources {
         numeric_recheck_fixture(
             omitted,
@@ -8466,25 +8988,41 @@ reading Calc {{
     }
     #[test]
     fn in_quantifier_actual_domain_body_and_exhaustion_phases_preserve_stops() {
-        quantifier_actual_phases_preserve_stops(false);
+        quantifier_actual_phases_preserve_stops(false, false);
     }
     #[test]
     fn type_quantifier_actual_enumeration_body_and_exhaustion_phases_preserve_stops() {
-        quantifier_actual_phases_preserve_stops(true);
+        quantifier_actual_phases_preserve_stops(true, false);
     }
-    fn quantifier_actual_phases_preserve_stops(typed: bool) {
+    #[test]
+    fn plain_ref_actual_roster_construction_domain_and_recheck_stops() {
+        quantifier_actual_phases_preserve_stops(true, true);
+    }
+    fn quantifier_actual_phases_preserve_stops(typed: bool, plain: bool) {
         use super::super::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
             cell::{Cell, RefCell},
             rc::Rc,
         };
-        for (operation, view, stop) in [
-            (if typed { "type_enum" } else { "quant_domain" }, "full", 0),
-            ("quant_body", "early", 1),
-            ("quant_exhaustion", "full", 2),
-        ] {
-            let sources = if typed {
+        let phases = if plain {
+            vec![
+                ("ref_roster", "full", 0),
+                ("type_enum", "construct", 1),
+                ("quant_domain", "full", 2),
+                ("ref_recheck", "full", 0),
+            ]
+        } else {
+            vec![
+                (if typed { "type_enum" } else { "quant_domain" }, "full", 0),
+                ("quant_body", "early", 1),
+                ("quant_exhaustion", "full", 2),
+            ]
+        };
+        for (operation, view, stop) in phases {
+            let sources = if plain {
+                plain_ref_fixture(false)
+            } else if typed {
                 type_quantifier_fixture(&["q"])
             } else {
                 in_quantifier_fixture(&["q"])
@@ -8492,8 +9030,16 @@ reading Calc {{
             let current = format!("current=evaluate(Calc.{view})");
             let asks = [
                 "seed=evaluate(Calc.later)",
-                "prior=check(Calc.called,x=@v/sample)",
-                "hole=evaluate(Calc.observe,s=@v/sample)",
+                if plain {
+                    "prior=check(Calc.called)"
+                } else {
+                    "prior=check(Calc.called,x=@v/sample)"
+                },
+                if plain {
+                    "hole=evaluate(Calc.observe,s=@v/item)"
+                } else {
+                    "hole=evaluate(Calc.observe,s=@v/sample)"
+                },
                 current.as_str(),
                 "later=evaluate(Calc.later)",
             ];
@@ -8533,14 +9079,28 @@ reading Calc {{
             assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
             assert_eq!(normal.answers[1].status, Decision::Refuted);
             assert_eq!(normal.answers[3].status, Decision::Established);
-            assert_eq!(
-                &*progress.borrow(),
-                if operation == "quant_exhaustion" {
-                    &[0, 1, 2][..]
-                } else {
-                    &[0, 1][..]
+            if plain {
+                let progress = progress.borrow();
+                match operation {
+                    "ref_roster" => assert_eq!(&*progress, &[0, 1, 2]),
+                    "type_enum" => assert_eq!(&*progress, &[0, 1, 2, 3]),
+                    "quant_domain" => assert_eq!(&*progress, &[0, 1]),
+                    "ref_recheck" => {
+                        assert!(progress.starts_with(&[0, 1]));
+                        assert!(progress.iter().all(|index| *index < 2));
+                    }
+                    _ => unreachable!(),
                 }
-            );
+            } else {
+                assert_eq!(
+                    &*progress.borrow(),
+                    if operation == "quant_exhaustion" {
+                        &[0, 1, 2][..]
+                    } else {
+                        &[0, 1][..]
+                    }
+                );
+            }
             rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
             let Json::Obj(ref normal_wire) = normal.wire() else {
                 unreachable!()
@@ -8637,6 +9197,16 @@ reading Calc {{
                 unreachable!()
             };
             assert_eq!(&answers[..3], &normal_answers[..3]);
+            if plain {
+                assert!(
+                    !stopped
+                        .nodes
+                        .iter()
+                        .enumerate()
+                        .any(|(index, node)| stopped.contexts[index].request == 3
+                            && node.ty == NodeType::Domain)
+                );
+            }
             for answer in &stopped.answers[3..] {
                 assert_eq!(answer.status, Decision::Undetermined);
                 assert!(answer.outputs.is_empty());

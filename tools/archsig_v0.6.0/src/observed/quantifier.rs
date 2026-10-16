@@ -8,7 +8,7 @@ use crate::{
     issue::Location,
     law::{
         CheckedLaw,
-        ast::{ExprKind, QuantDomain, QuantKind, QuantSplit},
+        ast::{ExprKind, QuantDomain, QuantKind, QuantSplit, TypeAst},
     },
     types::Type,
 };
@@ -48,7 +48,19 @@ pub(super) fn spec<'a>(
             }
             (Some(*domain), data::supported(element, law, control)?)
         }
-        QuantDomain::Type(_) => (None, finite::supported(element, law, control)?),
+        QuantDomain::Type(original) => {
+            // checkerの式型はOwnedをRefへeraseする。元量化の型構文を読み、
+            // 未提供の所属制約をplain全族へ落として列挙しない。
+            if has_owner(original, control)? {
+                return Err(ValidationFailure::UnsupportedExpression {
+                    location: Location::Law {
+                        span: expression.span,
+                    },
+                    feature: "依存 owner 制約を持つ型全域量化".into(),
+                });
+            }
+            (None, finite::supported(element, law, control)?)
+        }
     };
     if !supported {
         return Err(ValidationFailure::UnsupportedExpression {
@@ -71,6 +83,27 @@ pub(super) fn spec<'a>(
         element: element.clone(),
         span: expression.span,
     })
+}
+fn has_owner(original: &TypeAst, control: &Control) -> Result<bool, ValidationFailure> {
+    let mut pending = vec![original];
+    while let Some(ty) = pending.pop() {
+        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        match ty {
+            TypeAst::Named { index: Some(_), .. } => return Ok(true),
+            TypeAst::Tuple(types, _) => pending.extend(types),
+            TypeAst::List(element, _) | TypeAst::Set(element, _) | TypeAst::Option(element, _) => {
+                pending.push(element)
+            }
+            TypeAst::Map(key, value, _) => pending.extend([key.as_ref(), value.as_ref()]),
+            TypeAst::Term(arguments, returns, _) => {
+                pending.extend(arguments);
+                pending.push(returns);
+            }
+            _ => {}
+        }
+        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+    }
+    Ok(false)
 }
 impl Spec<'_> {
     pub fn descriptor(
