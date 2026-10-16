@@ -878,6 +878,8 @@ pub struct ObservedEvaluation {
     pub(super) contexts: Vec<super::call::Context>,
     #[cfg(test)]
     pub(super) frames: Vec<super::call::Frame>,
+    #[cfg(test)]
+    pub(super) iterations: Vec<super::call::Iteration>,
 }
 impl ObservedEvaluation {
     pub fn status(&self) -> &str {
@@ -931,6 +933,7 @@ pub(crate) struct Graph {
     pub nodes: Vec<Node>,
     pub(super) contexts: Vec<super::call::Context>,
     pub(super) frames: Vec<super::call::Frame>,
+    pub(super) iterations: Vec<super::call::Iteration>,
     pub(super) active: super::call::Context,
     pub(super) requests: Vec<super::request::Request>,
     control: Control,
@@ -966,6 +969,7 @@ impl Graph {
             nodes: vec![],
             contexts: vec![],
             frames: vec![],
+            iterations: vec![],
             active: super::call::Context::default(),
             requests: vec![],
             control: control.clone(),

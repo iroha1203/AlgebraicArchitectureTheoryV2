@@ -337,6 +337,16 @@ impl Evaluator<'_, '_> {
                         parameter = Some(ty.clone());
                     }
                     if parameter.is_none()
+                        && let Some((_, value)) = self.environment.iteration_argument(
+                            self.graph,
+                            first.span,
+                            &first.name,
+                            &self.bindings,
+                        )?
+                    {
+                        parameter = Some(value.ty());
+                    }
+                    if parameter.is_none()
                         && let Some((_, _, binder)) =
                             self.environment.pattern_binding(first.span, &first.name)?
                     {
@@ -372,6 +382,9 @@ impl Evaluator<'_, '_> {
                     {
                         return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
                     }
+                }
+                ExprKind::SetComp { domain, .. } => {
+                    self.prepare_source(*domain)?;
                 }
                 ExprKind::Match { scrutinee, .. } => {
                     self.prepare_source(*scrutinee)?;
@@ -525,6 +538,13 @@ impl Evaluator<'_, '_> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick(Checkpoint::Expression)?;
             self.prepare_source(id)?;
+            #[cfg(test)]
+            data::observe_actual(
+                self.environment.inputs.law().exprs[id].span,
+                self.graph.active,
+                "expression",
+                0,
+            );
             let value = self.eval_inner(id)?;
             // post checkpoint が停止しても検査済みの値と Evaluation を保持する。
             self.completed.insert(id, value.clone());
@@ -591,7 +611,13 @@ impl Evaluator<'_, '_> {
                 }
                 // 宣言parameter と lexical alias を区別する。欠測の alias は
                 // RHS Evaluation を指し、通常の Binding.value を捏造しない。
-                let mut current = if let Some((input, known)) = self.environment.pattern_argument(
+                let mut current = if let Some((input, known)) = self
+                    .environment
+                    .iteration_argument(self.graph, first.span, &first.name, &self.bindings)?
+                {
+                    let child = self.evaluated_reference(input)?;
+                    self.lexical_result(first.span, known.ty(), Some(known), vec![child])?
+                } else if let Some((input, known)) = self.environment.pattern_argument(
                     self.graph,
                     first.span,
                     &first.name,
@@ -687,6 +713,12 @@ impl Evaluator<'_, '_> {
                 let base = self.eval(*base)?;
                 self.field(base, &name.name, span)
             }
+            ExprKind::SetComp {
+                elem,
+                var: _,
+                domain,
+                filter,
+            } => self.comprehension(*domain, *elem, *filter, span, ty),
             ExprKind::Match { scrutinee, arms } => {
                 let input = self.eval(*scrutinee)?;
                 let selected = data::select(
@@ -866,6 +898,124 @@ impl Evaluator<'_, '_> {
             _ => Err(self.unsupported(span, format!("式形 {:?}", expr.kind))),
         }
     }
+    fn evaluated_reference(&self, reference: NodeRef) -> Result<Evaluated, Failure> {
+        let node = self.graph.get(reference)?;
+        let Some(Payload::Evaluation {
+            expression, value, ..
+        }) = &node.payload
+        else {
+            return Err(Failure::Internal("反復元がEvaluationでない".into()));
+        };
+        Ok(Evaluated {
+            expression: *expression,
+            evaluation: reference,
+            value: *value,
+            scope: node.scope.clone(),
+            support: node.support.clone(),
+            reasons: node.reasons.clone(),
+            comparison: None,
+            residual: None,
+        })
+    }
+    fn comprehension(
+        &mut self,
+        domain: usize,
+        elem: usize,
+        filter: Option<usize>,
+        span: (usize, usize),
+        ty: Type,
+    ) -> Result<Evaluated, Failure> {
+        let input = self.eval(domain)?;
+        let source = self
+            .sources
+            .get(&span)
+            .ok_or_else(|| Failure::Internal("内包元Sourceがない".into()))?
+            .expression;
+        let mut children = vec![input.clone()];
+        let Some(value) = input.value else {
+            return self.lexical_result(span, ty, None, children);
+        };
+        let container = self.graph.scalar(value)?.clone();
+        let (members, is_list) = match &container {
+            Scalar::List { items, .. } => (items, true),
+            Scalar::Set { items, .. } => (items, false),
+            _ => return Err(Failure::Internal("内包域がList/Setでない".into())),
+        };
+        let mut values = Vec::new();
+        let mut known = true;
+        for (position, member) in members.iter().enumerate() {
+            #[cfg(test)]
+            data::observe_actual(span, self.graph.active, "comprehension_iteration", position);
+            self.tick(Checkpoint::FiniteIteration)?;
+            let caller = self.graph.active;
+            let index = self.graph.iterations.len();
+            self.graph.iterations.push(super::call::Iteration {
+                caller,
+                source,
+                domain: input.evaluation,
+                member: if is_list {
+                    super::call::Member::ListPosition(position)
+                } else {
+                    super::call::Member::SetElement(member.clone())
+                },
+            });
+            let old_sources = std::mem::take(&mut self.sources);
+            let old_completed = std::mem::take(&mut self.completed);
+            let old_base = std::mem::replace(&mut self.base, input.scope.clone());
+            let old_lexical = self.lexical.clone();
+            self.graph.active = super::call::Context {
+                iteration: Some(index),
+                ..caller
+            };
+            let result = (|| -> Result<(), Failure> {
+                let condition = if let Some(filter) = filter {
+                    let evaluated = self.eval(filter)?;
+                    let condition = self.graph.boolean(evaluated.value)?;
+                    children.push(evaluated);
+                    condition
+                } else {
+                    Some(true)
+                };
+                match condition {
+                    Some(true) => {
+                        let evaluated = self.eval(elem)?;
+                        if let Some(value) = evaluated.value {
+                            values.push(self.graph.scalar(value)?.clone());
+                        } else {
+                            known = false;
+                        }
+                        children.push(evaluated);
+                    }
+                    Some(false) => {}
+                    None => {
+                        known = false;
+                    }
+                }
+                Ok(())
+            })();
+            self.graph.active = caller;
+            self.sources = old_sources;
+            self.completed = old_completed;
+            self.base = old_base;
+            self.lexical = old_lexical;
+            result?;
+            self.tick(Checkpoint::FiniteIteration)?;
+        }
+        let Type::Set(element) = &ty else {
+            return Err(Failure::Internal("内包結果型がSetでない".into()));
+        };
+        let value = if known {
+            #[cfg(test)]
+            let previous = data::evaluation_context(Some((span, self.graph.active)));
+            let constructed = data::set((**element).clone(), &values, self.control);
+            #[cfg(test)]
+            data::evaluation_context(previous);
+            Some(constructed?)
+        } else {
+            None
+        };
+        self.lexical_result(span, ty, value, children)
+    }
     fn composite(
         &mut self,
         id: ExprId,
@@ -961,6 +1111,7 @@ impl Evaluator<'_, '_> {
         self.graph.active = super::call::Context {
             request: caller.request,
             frame: Some(frame),
+            iteration: None,
         };
         for (parameter, argument) in params.iter().zip(&arguments) {
             self.formal.insert(parameter.name.clone(), argument.clone());
@@ -1470,6 +1621,7 @@ fn evaluate_observed_with_validator(
             graph.active = super::call::Context {
                 request: index,
                 frame: None,
+                iteration: None,
             };
             let mut evaluator = Evaluator {
                 environment,
@@ -1593,6 +1745,8 @@ fn evaluate_observed_with_validator(
         contexts: graph.contexts,
         #[cfg(test)]
         frames: graph.frames,
+        #[cfg(test)]
+        iterations: graph.iterations,
         answers,
         issues,
         status,
@@ -2358,6 +2512,7 @@ mod recheck_tests {
         let mut graph = Graph::new(&control);
         graph.requests = result.prepared.requests().requests().to_vec();
         graph.frames = result.frames.clone();
+        graph.iterations = result.iterations.clone();
         for (index, node) in nodes.iter().enumerate() {
             graph.active = result.contexts.get(index).copied().unwrap_or_default();
             environment.validate(&graph, node)?;
@@ -5350,6 +5505,7 @@ reading Calc {{
         let target_context = super::super::call::Context {
             request: 2,
             frame: Some(0),
+            iteration: None,
         };
         let mut problems = Vec::new();
         for kind in 0..3 {
@@ -6087,6 +6243,7 @@ reading Calc {{
             let context = super::super::call::Context {
                 request: 2,
                 frame: None,
+                iteration: None,
             };
             let seen = Rc::new(RefCell::new(Vec::new()));
             let progress = seen.clone();
@@ -6249,5 +6406,558 @@ reading Calc {{
                 assert_eq!(probes.get(), before);
             }
         }
+    }
+    fn comprehension_recheck_example(requests: &[&str]) -> ObservedEvaluation {
+        evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &[],
+                r#"
+ view list_case(): Set<Z> = let older=list<Z>[2,1,2] in set { x+1 | x in list<Z>[2,1,2] where x>1 };
+ view set_case(): Set<Z> = set { x+1 | x in set<Z>{2,1} };
+ view repeated(): (Set<Z>,Set<Z>) = (list_case(),list_case());
+"#,
+            ),
+            requests,
+            &mut named_call_quiet(),
+        )
+        .unwrap()
+    }
+    fn iteration_binder_scalar(result: &ObservedEvaluation, iteration: usize) -> usize {
+        result.nodes.iter().enumerate().find_map(|(index,node)| {
+            (result.contexts[index].iteration==Some(iteration) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"x"))).then_some(index)
+        }).unwrap()
+    }
+    fn replace_comprehension_children(
+        nodes: &mut [Node],
+        evaluation: usize,
+        children: Vec<NodeRef>,
+    ) {
+        let (expression, value) = match &mut nodes[evaluation].payload {
+            Some(Payload::Evaluation {
+                expression,
+                value,
+                parts,
+                ..
+            }) => {
+                parts[0].children = children.clone();
+                (*expression, *value)
+            }
+            _ => unreachable!(),
+        };
+        nodes[evaluation].arguments = std::iter::once(expression)
+            .chain(children.iter().copied())
+            .chain(value)
+            .collect();
+        if let Some(value) = value {
+            nodes[value.0].arguments = children;
+        }
+    }
+    #[test]
+    fn set_comprehension_prefix_rechecks_domain_list_position_binder_type_and_value() {
+        let mut result = comprehension_recheck_example(&["value=evaluate(Calc.list_case)"]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let binder = iteration_binder_scalar(&result, 0);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
+        let original = result.iterations[0].clone();
+        result.iterations[0].member = super::super::call::Member::ListPosition(1);
+        rejects_named_prefix(&result, &result.nodes[..=binder]);
+        result.iterations[0] = original.clone();
+        for mutation in 0..2 {
+            let mut changed = result.nodes[..=binder].to_vec();
+            if mutation == 0 {
+                changed[binder].payload = Some(Payload::Scalar(Scalar::Z(1.into())));
+            } else {
+                changed[binder].payload = Some(Payload::Scalar(Scalar::Q(2.into(), 1.into())));
+                changed[binder].ty = NodeType::Value(Type::Q);
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+        let earlier=result.nodes.iter().enumerate().find_map(|(index,node)| {
+            (index<original.domain.0 && matches!(&node.payload,Some(Payload::Evaluation {value:Some(value),..}) if matches!(&result.nodes[value.0].payload,Some(Payload::Scalar(Scalar::List {..}))))).then_some(NodeRef(index))
+        }).unwrap();
+        assert_ne!(earlier, original.domain);
+        assert_eq!(
+            data_scalar_at(
+                &result,
+                match &result.nodes[earlier.0].payload {
+                    Some(Payload::Evaluation {
+                        value: Some(value), ..
+                    }) => value.0,
+                    _ => unreachable!(),
+                }
+            ),
+            data_scalar_at(
+                &result,
+                match &result.nodes[original.domain.0].payload {
+                    Some(Payload::Evaluation {
+                        value: Some(value), ..
+                    }) => value.0,
+                    _ => unreachable!(),
+                }
+            )
+        );
+        result.iterations[0].domain = earlier;
+        let mut changed = result.nodes[..=binder].to_vec();
+        for (index, node) in changed.iter_mut().enumerate() {
+            if result.contexts[index].iteration == Some(0) {
+                for reference in &mut node.arguments {
+                    if *reference == original.domain {
+                        *reference = earlier;
+                    }
+                }
+            }
+        }
+        rejects_named_prefix(&result, &changed);
+        result.iterations[0] = original;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    }
+    #[test]
+    fn set_comprehension_completed_walk_rejects_omitted_duplicate_or_misclassified_children() {
+        let mut result = comprehension_recheck_example(&["value=evaluate(Calc.list_case)"]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let root = result.answers[0].outputs["evaluation"].0;
+        let comp = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| match &node.payload {
+                Some(Payload::Evaluation { expression, .. }) => {
+                    match &result.nodes[expression.0].payload {
+                        Some(Payload::Expression {
+                            location: Location::Law { span },
+                            ..
+                        }) if result
+                            .prepared
+                            .inputs()
+                            .sources()
+                            .law()
+                            .bytes()
+                            .get(span.0..span.1)
+                            .is_some_and(|text| text.starts_with(b"set {")) =>
+                        {
+                            Some(index)
+                        }
+                        _ => None,
+                    }
+                }
+                _ => None,
+            })
+            .unwrap();
+        assert!(comp < root);
+        let Some(Payload::Evaluation {
+            parts,
+            value: Some(value),
+            ..
+        }) = &result.nodes[comp].payload
+        else {
+            unreachable!()
+        };
+        let scalar = value.0;
+        let children = parts[0].children.clone();
+        assert_eq!(children.len(), 6);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+        // 同値位置2を読む孤立prefixは正しい読取りだが、全走査のposition0を落としてはならない。
+        let original = result.iterations[0].member.clone();
+        result.iterations[0].member = super::super::call::Member::ListPosition(2);
+        let binder = iteration_binder_scalar(&result, 0);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
+        rejects_named_prefix(&result, &result.nodes[..=comp]);
+        result.iterations[0].member = original;
+        for mutation in 0..3 {
+            let mut changed = result.nodes[..=comp].to_vec();
+            let mut altered = children.clone();
+            match mutation {
+                0 => {
+                    altered.remove(2);
+                }
+                1 => {
+                    altered.push(children[2]);
+                }
+                _ => {
+                    altered.swap(1, 3);
+                }
+            }
+            replace_comprehension_children(&mut changed, comp, altered);
+            rejects_named_prefix(&result, &changed[..=scalar]);
+        }
+        let false_filter = children[3];
+        let Some(Payload::Evaluation {
+            value: Some(filter),
+            ..
+        }) = &result.nodes[false_filter.0].payload
+        else {
+            unreachable!()
+        };
+        let mut changed = result.nodes[..=filter.0].to_vec();
+        let Some(Payload::Scalar(Scalar::Bool(value))) = &mut changed[filter.0].payload else {
+            unreachable!()
+        };
+        assert!(!*value);
+        *value = true;
+        rejects_named_prefix(&result, &changed);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    }
+    #[test]
+    fn set_comprehension_set_members_are_extensional_and_prefix_support_is_original() {
+        let mut result = comprehension_recheck_example(&["value=evaluate(Calc.set_case)"]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let domain = result.iterations[0].domain;
+        let domain_value = match &result.nodes[domain.0].payload {
+            Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) => *value,
+            _ => unreachable!(),
+        };
+        let mut display = result.nodes.clone();
+        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut display[domain_value.0].payload
+        else {
+            unreachable!()
+        };
+        items.reverse();
+        let output = result.answers[0].outputs["value"].0;
+        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut display[output].payload else {
+            unreachable!()
+        };
+        items.reverse();
+        rebuild_for_origin_and_support_recheck(&result, &display[..=output]).unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &display).unwrap();
+        let binder = iteration_binder_scalar(&result, 0);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
+        let original = result.iterations[0].member.clone();
+        result.iterations[0].member = super::super::call::Member::SetElement(Scalar::Z(9.into()));
+        rejects_named_prefix(&result, &result.nodes[..=binder]);
+        result.iterations[0].member = original;
+        for mutation in 0..3 {
+            let mut changed = result.nodes[..=binder].to_vec();
+            let source=match &changed[binder].rule {Rule::Input {location:Location::Law {span},..}=>result.nodes.iter().enumerate().find_map(|(index,node)| (index<binder&&result.contexts[index].iteration==Some(0)&&matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span:actual},..}) if actual==span)).then_some(index)).unwrap(),_=>unreachable!()};
+            match mutation {
+                0 => {
+                    changed[source].scope.readings.insert("Foreign".into());
+                }
+                1 => {
+                    changed[binder].support.push(Fact {
+                        snapshot: "v".into(),
+                        subject: "sample".into(),
+                        field: None,
+                        atom: None,
+                    });
+                }
+                _ => {
+                    changed[source].arguments.pop();
+                }
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+    }
+    #[test]
+    fn set_comprehension_equal_binder_values_do_not_replace_other_iteration_call_or_request() {
+        let result = comprehension_recheck_example(&[
+            "first=evaluate(Calc.repeated)",
+            "second=evaluate(Calc.repeated)",
+        ]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let earlier = iteration_binder_scalar(&result, 0);
+        for iteration in [2, 3, 6] {
+            let later = iteration_binder_scalar(&result, iteration);
+            assert_eq!(
+                data_scalar_at(&result, earlier),
+                data_scalar_at(&result, later)
+            );
+            assert_ne!(result.contexts[earlier], result.contexts[later]);
+            let evaluation=result.nodes.iter().enumerate().find_map(|(index,node)|matches!(&node.payload,Some(Payload::Evaluation {value:Some(value),..}) if value.0==later).then_some(index)).unwrap();
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=evaluation]).unwrap();
+            let mut changed = result.nodes[..=evaluation].to_vec();
+            let Some(Payload::Evaluation { value, parts, .. }) = &mut changed[evaluation].payload
+            else {
+                unreachable!()
+            };
+            *value = Some(NodeRef(earlier));
+            parts[0].value = *value;
+            for argument in &mut changed[evaluation].arguments {
+                if argument.0 == later {
+                    *argument = NodeRef(earlier);
+                }
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+    }
+    #[test]
+    fn set_comprehension_actual_iteration_filter_and_set_loops_keep_original_stops() {
+        use super::super::control::{Limits, Resource, Usage};
+        use crate::result::Signal;
+        use std::{
+            cell::{Cell, RefCell},
+            rc::Rc,
+        };
+        let sources = numeric_recheck_fixture(
+            &["p"],
+            r#"
+ view domain(p: Bool): List<Z> = list<Z>[2,1];
+ view seed(s: Sample): Q = s.q;
+ view missing(s: Sample): Bool = s.p;
+ view current(s: Sample): Set<Z> = set { x+1 | x in domain(s.p) where x>0 };
+ view later(s: Sample): Q = s.q;
+"#,
+        );
+        let asks = [
+            "seed=evaluate(Calc.seed,s=@v/sample)",
+            "missing=evaluate(Calc.missing,s=@v/sample)",
+            "current=evaluate(Calc.current,s=@v/sample)",
+            "later=evaluate(Calc.later,s=@v/sample)",
+        ];
+        let mut control = named_call_quiet();
+        let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+        let Signature::View { body, .. } =
+            &prepared.inputs().law().declarations["Calc.current"].signature
+        else {
+            unreachable!()
+        };
+        let target = prepared.inputs().law().exprs[*body].span;
+        let ExprKind::SetComp {
+            filter: Some(filter),
+            ..
+        } = prepared.inputs().law().exprs[*body].kind
+        else {
+            unreachable!()
+        };
+        let ExprKind::Binary { rhs, .. } = prepared.inputs().law().exprs[filter].kind else {
+            unreachable!()
+        };
+        let filter_literal = prepared.inputs().law().exprs[rhs].span;
+        assert_eq!(
+            &sources.law().bytes()[filter_literal.0..filter_literal.1],
+            b"0"
+        );
+        let parent = super::super::call::Context {
+            request: 2,
+            frame: None,
+            iteration: None,
+        };
+        let event = move |span, context: super::super::call::Context, name: &str, index| {
+            if span == target && context == parent && name == "comprehension_iteration" {
+                Some(("iteration", index))
+            } else if span == filter_literal
+                && context
+                    == (super::super::call::Context {
+                        iteration: Some(0),
+                        ..parent
+                    })
+                && name == "expression"
+            {
+                Some(("filter", 0))
+            } else if span == target && context == parent && name == "set" {
+                Some(("set", index))
+            } else {
+                None
+            }
+        };
+        let seen = Rc::new(RefCell::new(Vec::new()));
+        let progress = seen.clone();
+        data::observe_iterations(move |span, context, name, index| {
+            if let Some(event) = event(span, context, name, index) {
+                progress.borrow_mut().push(event);
+            }
+        });
+        let normal = evaluate_observed(prepared, &mut control);
+        data::clear_iteration_observer();
+        let normal = normal.unwrap();
+        assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
+        let expected_progress = [
+            ("iteration", 0),
+            ("filter", 0),
+            ("iteration", 1),
+            ("set", 0),
+            ("set", 1),
+        ];
+        assert_eq!(
+            &*seen.borrow(),
+            &expected_progress,
+            "実反復/実filter/結果Setだけを観測しSource再分析を含めない"
+        );
+        let graph = rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        assert_eq!(
+            graph.scalar(normal.answers[2].outputs["value"]).unwrap(),
+            &Scalar::Set {
+                element: Type::Z,
+                items: vec![Scalar::Z(3.into()), Scalar::Z(2.into())]
+            }
+        );
+        let first_domain = normal.iterations[0].domain.0;
+        let filter_scalar = data_rule_scalar(&normal, "0", 2);
+        let result_scalar = normal.answers[2].outputs["value"].0;
+        let cuts = [first_domain + 1, filter_scalar, result_scalar];
+        for cut in cuts {
+            rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..cut]).unwrap();
+        }
+        let Json::Obj(ref normal_wire) = normal.wire() else {
+            unreachable!()
+        };
+        let Json::Arr(normal_answers) = &normal_wire["answers"] else {
+            unreachable!()
+        };
+        for phase in 0..3 {
+            let (limits, usage, expected) = match phase {
+                0 => (
+                    Limits::default(),
+                    Usage {
+                        signal: Some(Signal::Term),
+                        ..Usage::default()
+                    },
+                    StopReason::Cancelled(Signal::Term),
+                ),
+                1 => (
+                    Limits {
+                        time_ms: Some(1),
+                        memory_mib: None,
+                    },
+                    Usage {
+                        elapsed_ms: 1,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 1,
+                        observed: 1,
+                    },
+                ),
+                _ => (
+                    Limits {
+                        time_ms: None,
+                        memory_mib: Some(1),
+                    },
+                    Usage {
+                        memory_mib: 1,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 1,
+                        observed: 1,
+                    },
+                ),
+            };
+            let armed = Rc::new(Cell::new(false));
+            let probes = Rc::new(Cell::new(0));
+            let frozen = Rc::new(Cell::new(None));
+            let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+            let mut control = Control::new(limits, move |point| {
+                count.set(count.get() + 1);
+                if arm.replace(false) {
+                    assert_eq!(point, Checkpoint::FiniteIteration);
+                    assert!(freeze.replace(Some(count.get())).is_none());
+                    usage
+                } else {
+                    Usage::default()
+                }
+            });
+            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+            let seen = Rc::new(RefCell::new(Vec::new()));
+            let observed = seen.clone();
+            let result = evaluate_observed_with_validator(
+                prepared,
+                &mut control,
+                |environment, graph, request, answer| {
+                    environment.validate_answer(graph, request, answer)?;
+                    if request.id == "missing" {
+                        let (seen, armed) = (observed.clone(), armed.clone());
+                        data::observe_iterations(move |span, context, name, index| {
+                            if let Some(actual) = event(span, context, name, index) {
+                                seen.borrow_mut().push(actual);
+                                if actual == [("iteration", 0), ("filter", 0), ("set", 1)][phase] {
+                                    armed.set(true);
+                                }
+                            }
+                        });
+                    }
+                    Ok(())
+                },
+            );
+            data::clear_iteration_observer();
+            let result = result.unwrap();
+            assert_eq!(
+                &*seen.borrow(),
+                &expected_progress[..[1, 2, 5][phase]],
+                "元AST/親Context/反復位置/実評価phaseを確認する"
+            );
+            assert_eq!(
+                result.nodes.len(),
+                cuts[phase],
+                "未完成親/結果Scalarをcommitしない"
+            );
+            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(Some(probes.get()), frozen.get());
+            assert_eq!(result.status(), "interrupted", "{:?}", result.issues);
+            assert!(
+                result
+                    .issues
+                    .iter()
+                    .all(|r| !matches!(r.kind, ReasonKind::Internal(_)))
+            );
+            let Json::Obj(ref wire) = result.wire() else {
+                unreachable!()
+            };
+            let Json::Arr(answers) = &wire["answers"] else {
+                unreachable!()
+            };
+            assert_eq!(&answers[..2], &normal_answers[..2]);
+            for answer in &result.answers[2..] {
+                assert_eq!(answer.status, Decision::Undetermined);
+                assert!(answer.outputs.is_empty());
+                assert!(
+                    answer
+                        .reasons
+                        .iter()
+                        .any(|r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected))
+                );
+            }
+            assert!(
+                result.answers[2].reasons.iter().any(|r| r
+                    .missing
+                    .iter()
+                    .any(|f| f.field.as_deref() == Some("Numeric.Sample.p"))),
+                "current domain実引数の元missingを保持する"
+            );
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+            let before = probes.get();
+            assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+            assert_eq!(probes.get(), before);
+        }
+    }
+    #[test]
+    fn set_comprehension_empty_domain_does_not_implement_map_container_results() {
+        let body = "set { list<Map<Sample,Sample>>[] | x in list<Z>[] }";
+        let sources = numeric_recheck_fixture(
+            &[],
+            &format!(
+                "view normal(): Set<Z> = set {{ x+1 | x in list<Z>[1] }}; view deferred(): Set<List<Map<Sample,Sample>>> = {body};"
+            ),
+        );
+        let normal = evaluate_observed_bytes(
+            sources.clone(),
+            &["value=evaluate(Calc.normal)"],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(normal.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let failure = evaluate_observed_bytes(
+            sources.clone(),
+            &["value=evaluate(Calc.deferred)"],
+            &mut named_call_quiet(),
+        )
+        .unwrap_err();
+        assert!(failure.wire().is_none());
+        let EvaluationFailure::NotImplemented {
+            location: Location::Law { span },
+            ..
+        } = failure
+        else {
+            panic!("Mapを含む内包結果は専用未実装を保持する")
+        };
+        assert_eq!(&sources.law().bytes()[span.0..span.1], body.as_bytes());
     }
 }

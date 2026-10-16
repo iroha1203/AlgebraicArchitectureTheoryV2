@@ -39,6 +39,19 @@ pub(super) fn clear_iteration_observer() {
     ITERATION_OBSERVER.with(|current| *current.borrow_mut() = None);
 }
 #[cfg(test)]
+pub(super) fn observe_actual(
+    span: Span,
+    context: super::call::Context,
+    operation: &'static str,
+    index: usize,
+) {
+    ITERATION_OBSERVER.with(|observer| {
+        if let Some(observer) = observer.borrow_mut().as_mut() {
+            observer(span, context, operation, index);
+        }
+    });
+}
+#[cfg(test)]
 fn observe_iteration(operation: &'static str, index: usize) {
     EVALUATION_CONTEXT.with(|current| {
         if let Some((span, context)) = current.get() {
