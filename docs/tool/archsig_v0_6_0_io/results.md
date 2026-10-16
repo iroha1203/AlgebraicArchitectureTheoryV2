@@ -346,6 +346,16 @@ Evaluation.partsは元ASTの各出現を保持し、子のEvaluationを先に置
 等号の左右の値、数値成分の残差、量化instanceの束縛を異なる参照として残す。
 guard=falseのLawはapplicability=not_applicableとし、全称要求へ違反を追加しない。
 
+有限な未束縛Law parameterのcheckは、元Sourceのparametersに残るparameterを宣言順に持ち、
+明示bindingsを固定したLawInstanceをlaw_holdsのoperandとする。各parameterの型Domainと実直積Domainを保持する。
+直積の型は一parameterならその型、二parameter以上なら宣言順のTuple型とし、各実rowは全parameterを束縛した
+LawInstanceと適用Evaluationを持つ。族全体のEvaluationは元body Sourceをexpressionとし、固定bindingsと、
+元body位置の一part（childrenは実rowの適用Evaluation全件、valueは全称集約値）を持つ。
+wholeのapplicability=applicableは族全体の要求を表す。個々のguard=false rowはnot_applicableとし、
+そのpartsにはguardの実評価と、valueもchildrenもない元body位置を残す。未評価bodyを成立値にしない。
+全row非適用の族は全称成立であり、finite_exhaustionのcheckedは非適用rowも含む実直積件数となる。
+空直積は成立・checked=0・instances=[]とし、具体rowやbody Evaluationを生成しない。
+
 Predicateは`law_holds, constructible, equal, word_equal, action_equal, relation_equal,
 configuration_preserved, object_algebra_preserved, cover_adequate, restrictions_compatible,
 sheaf_condition, action_laws, inhabited, solution_member, unique_solution, class_zero, diagnostics_preserved, sufficient, divides,

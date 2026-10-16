@@ -13,6 +13,9 @@ use crate::{
     law::ast::{BinOp, ExprKind, UnOp},
     types::Type,
 };
+#[path = "family.rs"]
+pub(super) mod family;
+
 use std::{
     cell::{Cell, RefCell},
     collections::{BTreeMap, BTreeSet},
@@ -451,7 +454,8 @@ impl<'a> Environment<'a> {
         let context = self.current_context(graph);
         if let Some(index) = context.iteration {
             let iteration = graph.iterations.get(index).ok_or("nodeの反復がない")?;
-            if iteration.caller.request != context.request
+            if iteration.caller.instance != context.instance
+                || iteration.caller.request != context.request
                 || iteration.caller.frame != context.frame
                 || iteration
                     .caller
@@ -490,6 +494,12 @@ impl<'a> Environment<'a> {
                 }
             }
         }
+        if let Some(index) = context.instance {
+            let record = graph.instances.get(index).ok_or("nodeの実instanceがない")?;
+            if record.caller.request != context.request || record.caller.instance.is_some() {
+                return Err("nodeの実instance Requestが違う".into());
+            }
+        }
         if !graph.requests.is_empty() && graph.requests.get(context.request).is_none() {
             return Err("nodeの元Requestがない".into());
         }
@@ -503,6 +513,17 @@ impl<'a> Environment<'a> {
                 != context.request
         {
             return Err("nodeのRequestがcall元と違う".into());
+        }
+        if let Some(frame) = context.frame
+            && graph
+                .frames
+                .get(frame)
+                .ok_or("node frameがない")?
+                .caller
+                .instance
+                != context.instance
+        {
+            return Err("nodeの実instanceがcall元と違う".into());
         }
         for f in &node.support {
             self.tick()?;
@@ -520,6 +541,9 @@ impl<'a> Environment<'a> {
                 self.tick()?;
             }
             self.tick()?;
+        }
+        if self.validate_family_node(graph, node, limit)? {
+            return Ok(());
         }
         if let Some(Payload::Scalar(scalar)) = &node.payload {
             data::check(scalar, self.inputs.law(), &self.control)?;
@@ -572,6 +596,7 @@ impl<'a> Environment<'a> {
                         return Err("Atom 値が元 slot に合わない".into());
                     }
                     if self.current_context(graph).frame.is_some()
+                        || self.current_context(graph).instance.is_some()
                         || self.current_context(graph).iteration.is_some()
                     {
                         self.call_field_source(graph, node, limit)?;
@@ -2372,7 +2397,8 @@ impl<'a> Environment<'a> {
                 .ok_or("完成Answerに元評価がない")?;
             graph.get(evaluation)?;
             let context = graph.context_at(evaluation.0);
-            if context.frame.is_some() || context.iteration.is_some() {
+            if context.frame.is_some() || context.iteration.is_some() || context.instance.is_some()
+            {
                 return Err("Answerの返却評価がcallee frameに属する".into());
             }
             if !graph.requests.is_empty()
@@ -2426,6 +2452,9 @@ impl<'a> Environment<'a> {
             }
             _ => return Err("Request種別と元宣言が違う".into()),
         };
+        if self.validate_family_answer(graph, request, answer)? {
+            return Ok(());
+        }
         let evaluation = *answer
             .outputs
             .get("evaluation")
@@ -2755,7 +2784,8 @@ impl<'a> Environment<'a> {
         while let Some(index) = context.iteration {
             self.tick()?;
             let record = graph.iterations.get(index).ok_or("lexical反復元がない")?;
-            if record.caller.request != context.request
+            if record.caller.instance != context.instance
+                || record.caller.request != context.request
                 || record.caller.frame != context.frame
                 || record
                     .caller
@@ -2806,9 +2836,22 @@ impl<'a> Environment<'a> {
             else {
                 continue;
             };
-            if actual == bindings
-                && self.expression_span(graph, *expression)? == self.inputs.law().exprs[id].span
+            // Law適用/族集約は、元bodyを実評価したproducerではない。
+            // true guardのwrapperもNAの未評価bodyも、このAST候補へ混ぜない。
+            if let Some(&instance) = node.arguments.first()
+                && graph.get(instance)?.ty == NodeType::LawInstance
             {
+                continue;
+            }
+            let Some(Payload::Expression {
+                location: Location::Law { span: actual_span },
+                ..
+            }) = &graph.get(*expression)?.payload
+            else {
+                // native Transformは元AST spanを持たない。結果の照合は適用側で行う。
+                continue;
+            };
+            if actual == bindings && *actual_span == self.inputs.law().exprs[id].span {
                 if found.is_some() {
                     return Err("同じ元式・Contextの実評価が一意でない".into());
                 }
@@ -3512,6 +3555,7 @@ impl<'a> Environment<'a> {
                     || record.source != own
                     || record.domain != input
                     || context.frame != record.caller.frame
+                    || context.instance != record.caller.instance
                     || context.request != record.caller.request
                 {
                     return Err("内包子の元Source/domain/親Contextが違う".into());
@@ -3948,6 +3992,13 @@ impl<'a> Environment<'a> {
                 arguments.push(reference);
             }
         }
+        if let Some(index) = self.current_context(graph).instance {
+            let record = graph
+                .instances
+                .get(index)
+                .ok_or("Sourceの実instanceがない")?;
+            arguments.extend([record.source, record.domain, record.member]);
+        }
         for (matching, arm) in self.enclosing_matches(span)? {
             let ExprKind::Match { scrutinee, .. } = self.inputs.law().exprs[matching].kind else {
                 unreachable!()
@@ -4062,6 +4113,19 @@ impl<'a> Environment<'a> {
             let (expected, variables, base) = self.frame_arguments(graph, index)?;
             if expected != bindings {
                 return Err("calleeの既知束縛が実引数と違う".into());
+            }
+            (base, variables)
+        } else if let Some(index) = self.current_context(graph).instance {
+            let request = graph
+                .requests
+                .get(self.current_context(graph).request)
+                .ok_or("実instance元Requestがない")?;
+            if request.declaration() != declaration.name {
+                return Err("instance Sourceが別宣言".into());
+            }
+            let (expected, variables, base) = self.family_instance_inputs(graph, index)?;
+            if expected != bindings {
+                return Err("Sourceの実instance bindingsが元直積と違う".into());
             }
             (base, variables)
         } else {
@@ -5287,6 +5351,12 @@ impl<'a> Environment<'a> {
             }
             self.validate_at(graph, node, reference.0)?;
             self.validate_at(graph, graph.get(*expression)?, expression.0)?;
+            if let Some(&instance) = node.arguments.first()
+                && self.family_template(graph, instance)?
+            {
+                continue;
+            }
+
             let mut support = Vec::new();
             if let Some(value) = value {
                 self.validate_at(graph, graph.get(*value)?, value.0)?;
@@ -5896,6 +5966,7 @@ impl<'a> Environment<'a> {
                         || record.source != source
                         || record.domain != input
                         || record.finite != finite
+                        || context.instance != record.caller.instance
                         || context.request != record.caller.request
                         || context.frame != record.caller.frame
                     {

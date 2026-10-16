@@ -6,6 +6,7 @@ pub(super) struct Context {
     pub request: usize,
     pub frame: Option<usize>,
     pub iteration: Option<usize>,
+    pub instance: Option<usize>,
 }
 
 #[derive(Clone, Debug)]
@@ -29,4 +30,13 @@ pub(super) struct Iteration {
     pub domain: NodeRef,
     pub member: Member,
     pub finite: Option<NodeRef>,
+}
+
+/// 元Law族の一組。番号は格納索引だけで、identityは元Sourceと実直積member。
+#[derive(Clone, Debug)]
+pub(super) struct Instance {
+    pub caller: Context,
+    pub source: NodeRef,
+    pub domain: NodeRef,
+    pub member: NodeRef,
 }
