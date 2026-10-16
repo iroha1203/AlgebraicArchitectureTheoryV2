@@ -482,9 +482,6 @@ impl Evaluator<'_, '_> {
                         .ok_or_else(|| self.unsupported(span, "未対応Data constructor"))?;
                 }
                 ExprKind::Dotted(parts) => {
-                    if parts.len() > 2 {
-                        return Err(self.unsupported(span, "複数 field のドット列"));
-                    }
                     let first = parts
                         .first()
                         .ok_or_else(|| Failure::Internal("空のドット式".into()))?;
@@ -536,16 +533,33 @@ impl Evaluator<'_, '_> {
                     let parameter = parameter.ok_or_else(|| {
                         self.unsupported(span, "束縛変数以外を先頭とするドット式")
                     })?;
-                    let owner = self.source(first.span, parameter)?;
-                    if parts.len() > 1 && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
+                    let mut owner = self.source(first.span, parameter)?;
+                    // 元の各 token prefix を、その prefix 自身の検査済み型と範囲で
+                    // commit する。最終型を中間 Ref の型として流用しない。
+                    for (_index, (prefix, prefix_ty)) in self
+                        .environment
+                        .dotted_prefixes(id)?
+                        .into_iter()
+                        .enumerate()
+                        .skip(1)
                     {
-                        return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
-                    }
-                    if parts.len() > 1
-                        && !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
-                        && !data::supported(&ty, self.environment.inputs.law(), self.control)?
-                    {
-                        return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
+                        self.tick(Checkpoint::FiniteIteration)?;
+                        if !matches!(owner.known_value, Some(Scalar::Subject { .. })) {
+                            return Err(self.unsupported(prefix, "未確定の参照からの field 読取り"));
+                        }
+                        if !matches!(prefix_ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
+                            && !data::supported(
+                                &prefix_ty,
+                                self.environment.inputs.law(),
+                                self.control,
+                            )?
+                        {
+                            return Err(self.unsupported(prefix, "Z/Bool/Ref 以外の原始 slot 評価"));
+                        }
+                        owner = self.source(prefix, prefix_ty)?;
+                        #[cfg(test)]
+                        data::observe_actual(span, self.graph.active, "field_prepare", _index);
+                        self.tick(Checkpoint::FiniteIteration)?;
                     }
                 }
                 ExprKind::Field { base, .. } => {
@@ -810,9 +824,6 @@ impl Evaluator<'_, '_> {
                 self.composite(id, span, ty)
             }
             ExprKind::Dotted(parts) => {
-                if parts.len() > 2 {
-                    return Err(self.unsupported(span, "複数 field のドット列"));
-                }
                 let Some(first) = parts.first() else {
                     return Err(Failure::Internal("空のドット式".into()));
                 };
@@ -928,9 +939,16 @@ impl Evaluator<'_, '_> {
                 } else {
                     return Err(self.unsupported(span, "束縛変数以外を先頭とするドット式"));
                 };
-                for part in parts.iter().skip(1) {
+                for (_index, part) in parts.iter().enumerate().skip(1) {
                     self.tick(Checkpoint::FiniteIteration)?;
-                    current = self.field(current, &part.name, (first.span.0, part.span.1))?;
+                    current = self.field(
+                        current,
+                        &part.name,
+                        (first.span.0, part.span.1),
+                        parts.len() > 2,
+                    )?;
+                    #[cfg(test)]
+                    data::observe_actual(span, self.graph.active, "field_evaluate", _index);
                     self.tick(Checkpoint::FiniteIteration)?;
                 }
                 if parts.len() == 1 {
@@ -944,7 +962,7 @@ impl Evaluator<'_, '_> {
             }
             ExprKind::Field { base, name } => {
                 let base = self.eval(*base)?;
-                self.field(base, &name.name, span)
+                self.field(base, &name.name, span, false)
             }
             ExprKind::Quant { .. } => self.quantification(id),
             ExprKind::SetComp {
@@ -1704,6 +1722,7 @@ impl Evaluator<'_, '_> {
         base: Evaluated,
         name: &str,
         span: (usize, usize),
+        chain: bool,
     ) -> Result<Evaluated, Failure> {
         let Some(reference) = base.value else {
             return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
@@ -1792,6 +1811,17 @@ impl Evaluator<'_, '_> {
                         .environment
                         .scope(s, &self.declaration.reading, Some(origin))?,
                 );
+                let mut arguments = vec![reference];
+                if chain {
+                    // chain の中間参照も、同じ slot を読む別出現の producer で
+                    // 置き換えられないよう、その原出現の Source を保持する。
+                    arguments.push(
+                        self.sources
+                            .get(&span)
+                            .ok_or_else(|| Failure::Internal("chain fieldの元Sourceがない".into()))?
+                            .expression,
+                    );
+                }
                 let r = self.value(
                     value,
                     Rule::Input {
@@ -1801,7 +1831,7 @@ impl Evaluator<'_, '_> {
                             span: None,
                         },
                     },
-                    vec![reference],
+                    arguments,
                     vec![fact.clone()],
                     scope,
                 )?;
@@ -2402,6 +2432,7 @@ mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
     include!("universal_tests.rs");
+    include!("reservations_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =
