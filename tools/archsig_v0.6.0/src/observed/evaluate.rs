@@ -4552,6 +4552,30 @@ reading Calc {{
             super::super::control::Usage::default()
         })
     }
+    #[test]
+    fn named_calls_reject_out_of_range_request_at_root_source_prefix() {
+        let mut result = evaluate_observed_bytes(
+            numeric_recheck_fixture(&[], "view one(): Z = 1; view zero(): Z = one();"),
+            &["v=evaluate(Calc.zero)"],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete");
+        assert_eq!(result.contexts[0].request, 0);
+        assert_eq!(result.contexts[0].frame, None);
+        assert!(matches!(
+            &result.nodes[0].payload,
+            Some(Payload::Expression { .. })
+        ));
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..1]).unwrap();
+
+        result.contexts[0].request = usize::MAX;
+        assert!(matches!(
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..1]),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
     fn named_call_private_example(omitted: &[&str]) -> ObservedEvaluation {
         evaluate_observed_bytes(
             numeric_recheck_fixture(

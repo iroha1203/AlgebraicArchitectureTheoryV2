@@ -300,6 +300,9 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
         let context = self.current_context(graph);
+        if !graph.requests.is_empty() && graph.requests.get(context.request).is_none() {
+            return Err("nodeの元Requestがない".into());
+        }
         if let Some(frame) = context.frame
             && graph
                 .frames
