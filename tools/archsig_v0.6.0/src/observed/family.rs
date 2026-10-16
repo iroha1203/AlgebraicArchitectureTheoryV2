@@ -148,7 +148,7 @@ impl Environment<'_> {
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()
-            || node.arguments != bindings.iter().map(|b| b.value).collect::<Vec<_>>()
+            || node.arguments != self.source_arguments(graph, *span, bindings)?
         {
             return Err("族Sourceの元parameter・出現・辺が違う".into());
         }
@@ -191,6 +191,7 @@ impl Environment<'_> {
             self.validate_at(graph, graph.get(b.value)?, b.value.0)?;
             scope.merge(&graph.get(b.value)?.scope);
         }
+        scope.completions = context.case.is_some();
         scope.quantifiers = self.family_descriptors(&plan, &[], context);
         if node.scope != scope {
             return Err("族SourceのScopeが元宣言と違う".into());
@@ -759,18 +760,66 @@ impl Environment<'_> {
         {
             return Ok(None);
         }
-        let index = self
-            .current_context(graph)
-            .instance
-            .ok_or("非適用rowにinstanceがない")?;
-        let expected = self.family_instance_inputs(graph, index)?;
+        let context = self.current_context(graph);
         let request = graph
             .requests
             .get(self.current_context(graph).request)
             .ok_or("非適用rowのRequestがない")?;
-        let plan = self.family_plan(request)?.ok_or("非適用rowの族がない")?;
-        self.source_matches(graph, *body, plan.body)?;
-        let id = plan.guard.ok_or("非適用rowに元guardがない")?;
+        let (expected_bindings, body_id, id) = if let Some(index) = context.instance {
+            let expected = self.family_instance_inputs(graph, index)?;
+            let plan = self.family_plan(request)?.ok_or("非適用rowの族がない")?;
+            (
+                expected.0,
+                plan.body,
+                plan.guard.ok_or("非適用rowに元guardがない")?,
+            )
+        } else if context.case.is_some() && context.frame.is_none() && context.iteration.is_none() {
+            let declaration = &self.inputs.law().declarations[request.declaration()];
+            let Signature::Law {
+                params,
+                body,
+                guard: Some(id),
+                ..
+            } = &declaration.signature
+            else {
+                return Err("補完非適用の元Law/guardがない".into());
+            };
+            if params.len() != bindings.len() || request.arguments.len() != params.len() {
+                return Err("補完非適用の明示束縛数が違う".into());
+            }
+            for (parameter, binding) in params.iter().zip(bindings) {
+                self.tick()?;
+                let selector = request
+                    .arguments
+                    .iter()
+                    .find(|argument| argument.name == format!("bind.{}", parameter.name))
+                    .ok_or("補完非適用の元selectorがない")?;
+                let Selector::Subject { snapshot, subject } = &selector.value else {
+                    return Err("補完非適用に未対応selectorがある".into());
+                };
+                let producer = graph.get(binding.value)?;
+                if parameter.name != binding.name
+                    || parameter.ty.erase() != binding.ty
+                    || graph.context_at(binding.value.0) != context
+                    || !producer.arguments.is_empty()
+                    || !matches!(
+                        &producer.rule,
+                        Rule::Input {
+                            kind: "subject",
+                            ..
+                        }
+                    )
+                    || !matches!(graph.scalar(binding.value)?,Scalar::Subject {snapshot:actual_snapshot,subject:actual_subject,entity} if actual_snapshot==snapshot && actual_subject==subject && Type::Ref(entity.clone())==binding.ty)
+                {
+                    return Err("補完非適用の固定束縛producerが違う".into());
+                }
+                self.validate_at(graph, producer, binding.value.0)?;
+            }
+            (bindings.clone(), *body, *id)
+        } else {
+            return Err("非適用rowにinstance/caseがない".into());
+        };
+        self.source_matches(graph, *body, body_id)?;
         self.source_matches(graph, *guard, id)?;
         let g = *instance
             .arguments
@@ -787,7 +836,7 @@ impl Environment<'_> {
         }
         if *guard != expression
             || bs != bindings
-            || bindings != &expected.0
+            || bindings != &expected_bindings
             || graph.boolean(value)? != Some(false)
             || instance.arguments[2..] != bindings.iter().map(|b| b.value).collect::<Vec<_>>()
             || instance.scope != graph.get(g)?.scope
@@ -841,7 +890,8 @@ impl Environment<'_> {
                 }
                 return Ok(true);
             }
-            if self.current_context(graph).instance.is_some()
+            if (self.current_context(graph).instance.is_some()
+                || self.current_context(graph).case.is_some())
                 && self.family_skipped(graph, node)?.is_some()
             {
                 return Ok(true);
@@ -1006,7 +1056,8 @@ impl Environment<'_> {
             }
             return Ok(true);
         }
-        if self.current_context(graph).instance.is_some()
+        if (self.current_context(graph).instance.is_some()
+            || self.current_context(graph).case.is_some())
             && let Some((body, guard)) = self.family_skipped(graph, graph.get(instance)?)?
         {
             match &node.payload {

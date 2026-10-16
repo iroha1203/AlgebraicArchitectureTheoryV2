@@ -7,6 +7,7 @@ pub(super) struct Context {
     pub frame: Option<usize>,
     pub iteration: Option<usize>,
     pub instance: Option<usize>,
+    pub case: Option<usize>,
 }
 
 #[derive(Clone, Debug)]
@@ -39,4 +40,14 @@ pub(super) struct Instance {
     pub source: NodeRef,
     pub domain: NodeRef,
     pub member: NodeRef,
+}
+
+/// Bool補完は元slot列と型付き実assignmentへ属する。索引は表示identityにしない。
+#[derive(Clone, Debug)]
+pub(super) struct CompletionCase {
+    pub caller: Context,
+    pub seed: NodeRef,
+    pub domain: NodeRef,
+    pub member: NodeRef,
+    pub values: Vec<NodeRef>,
 }

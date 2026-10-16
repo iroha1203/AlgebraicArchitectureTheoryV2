@@ -235,21 +235,237 @@ fn audit_dag(result: &Json) {
 
 fn source_evaluation<'a>(
     nodes: &BTreeMap<&str, &'a Json>,
-    reached: &BTreeSet<String>,
+    application: &Json,
     position: (usize, usize),
 ) -> &'a Json {
-    reached
+    let parts: Vec<_> = arr(f(payload(application), "parts"))
         .iter()
-        .map(|id| nodes[id.as_str()])
-        .find(|node| {
-            if f(node, "type") != &Json::str("Evaluation") {
-                return false;
+        .filter(|part| span(f(part, "location")) == position)
+        .collect();
+    assert_eq!(parts.len(), 1, "元適用評価のAST位置は一意");
+    let children = arr(f(parts[0], "children"));
+    assert_eq!(children.len(), 1, "元観測guard/bodyの直接実評価を保持");
+    let evaluation = target(nodes, &children[0], "Evaluation");
+    let expression = payload(target(
+        nodes,
+        f(payload(evaluation), "expression"),
+        "Expression",
+    ));
+    assert_eq!(f(expression, "kind"), &Json::str("source"));
+    assert_eq!(span(f(expression, "location")), position);
+    assert_eq!(
+        f(payload(evaluation), "bindings"),
+        f(payload(application), "bindings")
+    );
+    assert_eq!(
+        f(expression, "bindings"),
+        f(payload(evaluation), "bindings")
+    );
+    evaluation
+}
+
+fn completion_cases(
+    nodes: &BTreeMap<&str, &Json>,
+    answer: &Json,
+    root: &Json,
+    seed: &Json,
+    observed: &Json,
+    values: (Option<bool>, Option<bool>),
+    positions: ((usize, usize), (usize, usize)),
+) {
+    let (gate, body) = values;
+    let (guard_span, body_span) = positions;
+    let root_args = arr(f(root, "arguments"));
+    assert_eq!(f(&root_args[0], "node"), f(seed, "id"));
+    let domain = target(nodes, &root_args[1], "Domain");
+    let elements = arr(f(payload(domain), "elements"));
+    let missing: Vec<_> = [("gate", gate), ("payload", body)]
+        .into_iter()
+        .filter(|(_, v)| v.is_none())
+        .map(|(name, _)| name)
+        .collect();
+    assert_eq!(elements.len(), 1usize << missing.len());
+    let parts = arr(f(payload(root), "parts"));
+    assert_eq!(parts.len(), 1);
+    assert_eq!(span(f(&parts[0], "location")), body_span);
+    let cases = arr(f(&parts[0], "children"));
+    assert_eq!(cases.len(), elements.len());
+    assert_eq!(&root_args[2..2 + cases.len()], cases);
+    let propositions = &root_args[2 + cases.len()..];
+    assert_eq!(propositions.len(), cases.len());
+    assert_eq!(f(payload(root), "applicability"), &Json::str("applicable"));
+    assert_eq!(f(payload(seed), "kind"), &Json::str("source"));
+    assert_eq!(span(f(payload(seed), "location")), body_span);
+    assert_eq!(
+        f(payload(seed), "bindings"),
+        f(payload(observed), "bindings")
+    );
+    let mut seen = BTreeSet::new();
+    let mut case_values = Vec::new();
+    for case_ref in cases {
+        let case = target(nodes, case_ref, "Evaluation");
+        let raw_guard = source_evaluation(nodes, case, guard_span);
+        let source = target(nodes, f(payload(raw_guard), "expression"), "Expression");
+        let anchors = arr(f(source, "arguments"));
+        assert_eq!(anchors.len(), 4 + missing.len());
+        assert_eq!(&anchors[1], &root_args[0]);
+        assert_eq!(&anchors[2], &root_args[1]);
+        let member = &anchors[3];
+        assert!(elements.contains(member));
+        assert!(seen.insert(text(f(member, "node"))));
+        let member_node = nodes[text(f(member, "node"))];
+        let assignment: Vec<_> = if missing.len() == 1 {
+            vec![payload(member_node)]
+        } else {
+            arr(payload(member_node)).iter().collect()
+        };
+        let projections = &anchors[4..];
+        for (i, projection) in projections.iter().enumerate() {
+            let value = target(nodes, projection, "Bool");
+            assert_eq!(payload(value), assignment[i]);
+            for support in arr(f(value, "support")) {
+                if obj(support).contains_key("field") {
+                    assert!(
+                        [("gate", gate), ("payload", body)]
+                            .into_iter()
+                            .any(|(name, known)| known.is_some() && *support == fact(name)),
+                        "補完projectionへ欠測Atomを加えない"
+                    );
+                }
             }
-            let expression = payload(target(nodes, f(payload(node), "expression"), "Expression"));
-            f(expression, "kind") == &Json::str("source")
-                && span(f(expression, "location")) == position
-        })
-        .expect("選択した結果から元Sourceの実Evaluationへ戻れる")
+            let args = arr(f(value, "arguments"));
+            assert_eq!(args.len(), 4);
+            assert_eq!(&args[..3], &anchors[1..4]);
+            let field_source = target(nodes, &args[3], "Expression");
+            assert_eq!(
+                span(f(payload(field_source), "location")),
+                if missing[i] == "gate" {
+                    guard_span
+                } else {
+                    body_span
+                }
+            );
+        }
+        let assigned = |name: &str, known: Option<bool>| {
+            known.unwrap_or_else(|| {
+                let i = missing.iter().position(|field| *field == name).unwrap();
+                let Json::Bool(value) = assignment[i] else {
+                    panic!("Bool補完")
+                };
+                *value
+            })
+        };
+        let actual_gate = assigned("gate", gate);
+        bool_value(nodes, raw_guard, Some(actual_gate));
+        let case_parts = arr(f(payload(case), "parts"));
+        assert_eq!(case_parts.len(), 2);
+        let body_part = case_parts
+            .iter()
+            .find(|part| span(f(part, "location")) == body_span)
+            .unwrap();
+        let expected = if actual_gate {
+            assert_eq!(f(payload(case), "applicability"), &Json::str("applicable"));
+            let actual_body = assigned("payload", body);
+            bool_value(
+                nodes,
+                source_evaluation(nodes, case, body_span),
+                Some(actual_body),
+            );
+            actual_body
+        } else {
+            assert_eq!(
+                f(payload(case), "applicability"),
+                &Json::str("not_applicable")
+            );
+            assert!(arr(f(body_part, "children")).is_empty());
+            assert!(!obj(body_part).contains_key("value"));
+            true
+        };
+        bool_value(nodes, case, Some(expected));
+        case_values.push(expected);
+        let matches: Vec<_> = propositions
+            .iter()
+            .map(|p| target(nodes, p, "Proposition"))
+            .filter(|p| arr(f(p, "arguments")).get(1) == Some(case_ref))
+            .collect();
+        assert_eq!(matches.len(), 1);
+        let proposition = matches[0];
+        assert_eq!(
+            f(f(proposition, "judgment"), "status"),
+            &Json::str(if expected { "established" } else { "refuted" })
+        );
+        let instance = target(nodes, &arr(f(proposition, "arguments"))[0], "LawInstance");
+        assert_eq!(
+            f(payload(instance), "bindings"),
+            f(payload(case), "bindings")
+        );
+        for (field, position) in [("guard", guard_span), ("body", body_span)] {
+            let expression = target(nodes, f(payload(instance), field), "Expression");
+            assert_eq!(span(f(payload(expression), "location")), position);
+            assert_eq!(
+                f(payload(expression), "bindings"),
+                f(payload(case), "bindings")
+            );
+        }
+        let counterexamples: Vec<_> = arr(f(proposition, "evidence"))
+            .iter()
+            .map(|e| target(nodes, e, "Evidence"))
+            .filter(|e| f(payload(e), "kind") == &Json::str("counterexample"))
+            .collect();
+        assert_eq!(!counterexamples.is_empty(), !expected);
+        for example in counterexamples {
+            assert_eq!(&arr(f(example, "arguments"))[1], case_ref);
+            assert_eq!(
+                f(f(payload(example), "data"), "bindings"),
+                f(payload(case), "bindings")
+            );
+        }
+    }
+    assert_eq!(seen.len(), elements.len());
+    let all_same = case_values.iter().all(|value| *value == case_values[0]);
+    let evidence = arr(f(answer, "evidence"));
+    assert_eq!(evidence.len(), 1);
+    assert_eq!(f(root, "evidence"), f(answer, "evidence"));
+    let proof = target(nodes, &evidence[0], "Evidence");
+    let data = f(payload(proof), "data");
+    assert_ne!(
+        f(payload(proof), "kind"),
+        &Json::str("counterexample"),
+        "補完外の単一観測反例を捏造しない"
+    );
+    if all_same {
+        bool_value(nodes, root, Some(case_values[0]));
+        assert_eq!(f(payload(proof), "kind"), &Json::str("finite_exhaustion"));
+        assert_eq!(f(data, "domain"), &root_args[1]);
+        assert_eq!(f(data, "checked"), &Json::Nat(cases.len() as u64));
+        let covered = arr(f(data, "instances"));
+        assert_eq!(covered.len(), cases.len());
+        for case in cases {
+            assert_eq!(covered.iter().filter(|r| *r == case).count(), 1);
+        }
+    } else {
+        bool_value(nodes, root, None);
+        assert_eq!(f(payload(proof), "kind"), &Json::str("completion_pair"));
+        let fields = arr(f(data, "fields"));
+        assert_eq!(fields.len(), missing.len());
+        for (field, name) in fields.iter().zip(&missing) {
+            assert_eq!(f(field, "snapshot"), &Json::str("current"));
+            assert_eq!(f(field, "subject"), &Json::str("root"));
+            assert_eq!(f(field, "field"), &Json::str(format!("Signal.Cell.{name}")));
+            assert!(!obj(field).contains_key("atom"));
+        }
+        let mut results = Vec::new();
+        for (side, result_field) in [("first", "first_result"), ("second", "second_result")] {
+            let reference = f(data, result_field);
+            assert!(cases.contains(reference));
+            let result = target(nodes, reference, "Evaluation");
+            let guard = source_evaluation(nodes, result, guard_span);
+            let source = target(nodes, f(payload(guard), "expression"), "Expression");
+            assert_eq!(arr(f(data, side)), &arr(f(source, "arguments"))[4..]);
+            results.push(payload(target(nodes, f(payload(result), "value"), "Bool")));
+        }
+        assert_ne!(results[0], results[1]);
+    }
 }
 
 fn bool_value(nodes: &BTreeMap<&str, &Json>, evaluation: &Json, expected: Option<bool>) {
@@ -293,9 +509,27 @@ fn guarded_case(
     assert_eq!(f(a, "status"), &Json::str(decision));
     let nodes = index(&result);
     let root_ref = f(f(a, "outputs"), "evaluation");
-    let root = target(&nodes, root_ref, "Evaluation");
+    let final_root = target(&nodes, root_ref, "Evaluation");
+    let root_args = arr(f(final_root, "arguments"));
+    let completion = root_args.get(1).is_some_and(|reference| {
+        f(nodes[text(f(reference, "node"))], "type") == &Json::str("Domain")
+    });
+    let seed = completion.then(|| target(&nodes, &root_args[0], "Expression"));
+    let root = if let Some(seed) = seed {
+        assert_eq!(f(payload(final_root), "expression"), &root_args[0]);
+        let originals: Vec<_> = arr(f(seed, "arguments"))
+            .iter()
+            .map(|r| nodes[text(f(r, "node"))])
+            .filter(|node| f(node, "type") == &Json::str("Evaluation"))
+            .collect();
+        assert_eq!(originals.len(), 1, "CompletionSeed直下の元観測適用を選ぶ");
+        originals[0]
+    } else {
+        final_root
+    };
     assert_eq!(f(payload(root), "applicability"), &Json::str(applicability));
     bool_value(&nodes, root, conditional);
+    bool_value(&nodes, final_root, conditional);
     let reached = reachable(&nodes, &[f(a, "outputs"), f(a, "claim"), f(a, "evidence")]);
     let from_evaluation = reachable(&nodes, &[root_ref]);
     let declaration = &checked.law().declarations["Inspect.guarded"];
@@ -307,8 +541,8 @@ fn guarded_case(
     else {
         panic!("明示guardとbody")
     };
-    let raw_guard = source_evaluation(&nodes, &reached, checked.law().exprs[*guard].span);
-    let raw_body = source_evaluation(&nodes, &reached, checked.law().exprs[*body_id].span);
+    let raw_guard = source_evaluation(&nodes, root, checked.law().exprs[*guard].span);
+    let raw_body = source_evaluation(&nodes, root, checked.law().exprs[*body_id].span);
     for raw in [raw_guard, raw_body] {
         assert!(
             from_evaluation.contains(text(f(raw, "id"))),
@@ -372,7 +606,7 @@ fn guarded_case(
         }
     }
     assert_eq!(actual_missing, expected_missing);
-    for item in [a, root] {
+    for item in [a, root, final_root] {
         let scope = f(item, "scope");
         assert_eq!(
             f(scope, "domain"),
@@ -401,6 +635,7 @@ fn guarded_case(
         .collect();
     for expected in &expected_facts {
         assert!(arr(f(root, "support")).contains(expected));
+        assert!(arr(f(final_root, "support")).contains(expected));
     }
     for support in arr(f(root, "support")) {
         if obj(support).contains_key("field") {
@@ -438,7 +673,19 @@ fn guarded_case(
             );
         }
     }
-    let counterexamples: Vec<_> = reached
+    let observed_reached = if let Some(seed) = seed {
+        let original_roots: Vec<_> = arr(f(seed, "arguments"))
+            .iter()
+            .filter(|reference| {
+                let ty = f(nodes[text(f(reference, "node"))], "type");
+                ty == &Json::str("Evaluation") || ty == &Json::str("Proposition")
+            })
+            .collect();
+        reachable(&nodes, &original_roots)
+    } else {
+        reached.clone()
+    };
+    let counterexamples: Vec<_> = observed_reached
         .iter()
         .map(|id| nodes[id.as_str()])
         .filter(|n| {
@@ -446,6 +693,20 @@ fn guarded_case(
                 && f(payload(n), "kind") == &Json::str("counterexample")
         })
         .collect();
+    if let Some(seed) = seed {
+        completion_cases(
+            &nodes,
+            a,
+            final_root,
+            seed,
+            root,
+            (gate, body),
+            (
+                checked.law().exprs[*guard].span,
+                checked.law().exprs[*body_id].span,
+            ),
+        );
+    }
     if decision == "refuted" {
         assert!(!counterexamples.is_empty());
         for e in counterexamples {

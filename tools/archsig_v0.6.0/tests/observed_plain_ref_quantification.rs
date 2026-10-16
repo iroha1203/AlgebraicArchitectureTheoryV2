@@ -925,9 +925,12 @@ law required flags_law(): forall r:E . r.flag;
             let example = examples
                 .iter()
                 .find(|e| {
-                    arr(f(f(val(e), "data"), "bindings"))
-                        .iter()
-                        .any(|b| f(b, "name") == &Json::str("r"))
+                    arr(f(f(val(e), "data"), "facts")).contains(&Json::obj([
+                        ("snapshot", Json::str("w")),
+                        ("subject", Json::str("item")),
+                        ("field", Json::str("Roster.E.flag")),
+                        ("atom", Json::str("flag")),
+                    ]))
                 })
                 .unwrap();
             let data = f(val(example), "data");
@@ -975,6 +978,61 @@ law required flags_law(): forall r:E . r.flag;
         assert_eq!(f(a, "status"), &Json::str("undetermined"));
         assert!(!obj(f(a, "outputs")).contains_key("value"));
         assert_missing(&all_missing, id, &checked);
+        let aggregate = root(&all_missing, id);
+        let seed = expression(&ns, aggregate);
+        assert_eq!(
+            arr(f(aggregate, "arguments")).first(),
+            Some(f(val(aggregate), "expression"))
+        );
+        let name = if id == "a" {
+            "Calc.all_flags"
+        } else {
+            "Calc.any_flag"
+        };
+        let expected_span = checked.law().exprs[declared_body(&checked, name)].span;
+        let originals = arr(f(seed, "arguments"))
+            .iter()
+            .map(|r| ns[text(f(r, "node"))])
+            .filter(|n| {
+                f(n, "type") == &Json::str("Evaluation")
+                    && evaluation_span(&ns, n) == expected_span
+                    && f(val(expression(&ns, n)), "kind") == &Json::str("source")
+                    && arr(f(val(expression(&ns, n)), "parameters")).is_empty()
+                    && arr(f(val(expression(&ns, n)), "bindings")).is_empty()
+                    && arr(f(val(n), "bindings")).is_empty()
+                    && arr(f(n, "arguments")).first() == Some(f(val(n), "expression"))
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            originals.len(),
+            1,
+            "元補完seedの直接rootsから元AST/束縛/型付き辺の評価を一意選択"
+        );
+        let original = originals[0];
+        assert!(!obj(val(original)).contains_key("value"));
+        assert_eq!(
+            f(f(original, "scope"), "domain"),
+            &Json::str("all_completions")
+        );
+        assert_roster_scope(original);
+        assert_roster_support(original);
+        let q = arr(f(f(original, "scope"), "quantifiers"))
+            .iter()
+            .find(|q| f(q, "name") == &Json::str("r") && f(q, "kind") == &Json::str(kind))
+            .unwrap();
+        let original_domain = target(&ns, f(q, "domain"), &Json::str("Domain"));
+        assert_eq!(f(val(original_domain), "kind"), &Json::str("finite"));
+        assert_eq!(
+            f(val(original_domain), "type"),
+            &ty("Ref", Json::str("Roster.E"))
+        );
+        assert_eq!(
+            domain_values(&all_missing, original_domain),
+            vec![
+                reference("v", "item").canonical(),
+                reference("w", "item").canonical()
+            ]
+        );
         assert_eq!(
             domain_values(
                 &all_missing,
@@ -996,8 +1054,241 @@ law required flags_law(): forall r:E . r.flag;
             .map(|m| text(f(m, "snapshot")))
             .collect::<BTreeSet<_>>();
         assert_eq!(missing, BTreeSet::from(["v", "w"]));
-        assert!(evidence(&ns, a, "finite_exhaustion").is_empty());
-        assert!(evidence(&ns, a, "counterexample").is_empty());
+        let original_missing = arr(f(original, "reasons"))
+            .iter()
+            .filter(|r| f(r, "code") == &Json::str("missing_observation"))
+            .flat_map(|r| arr(f(r, "missing")))
+            .map(|m| text(f(m, "snapshot")))
+            .collect::<BTreeSet<_>>();
+        assert_eq!(original_missing, BTreeSet::from(["v", "w"]));
+        assert!(evidence(&ns, original, "finite_exhaustion").is_empty());
+        assert!(evidence(&ns, original, "counterexample").is_empty());
+        let original_bodies = children(&ns, original);
+        assert_eq!(original_bodies.len(), 2);
+        assert!(
+            original_bodies
+                .iter()
+                .all(|body| !obj(val(body)).contains_key("value"))
+        );
+        assert_eq!(
+            f(f(aggregate, "scope"), "domain"),
+            &Json::str("all_completions")
+        );
+        let assignment_domain_ref = &arr(f(aggregate, "arguments"))[1];
+        let assignment_domain = target(&ns, assignment_domain_ref, &Json::str("Domain"));
+        let assignment_type = Json::Arr(vec![
+            Json::str("Tuple"),
+            Json::str("Bool"),
+            Json::str("Bool"),
+        ]);
+        assert_eq!(f(val(assignment_domain), "kind"), &Json::str("finite"));
+        assert_eq!(f(val(assignment_domain), "type"), &assignment_type);
+        assert_eq!(
+            arr(f(assignment_domain, "arguments")).first(),
+            Some(f(val(aggregate), "expression"))
+        );
+        let members = arr(f(val(assignment_domain), "elements"));
+        assert_eq!(members.len(), 4);
+        let cases = children(&ns, aggregate);
+        assert_eq!(cases.len(), 4);
+        let mut assignments = BTreeSet::new();
+        let mut case_assignments = BTreeMap::new();
+        for case in cases {
+            assert_eq!(evaluation_span(&ns, case), expected_span);
+            assert!(arr(f(val(case), "bindings")).is_empty());
+            let case_source = expression(&ns, case);
+            let selected = arr(f(case_source, "arguments"))
+                .iter()
+                .filter(|r| members.contains(r))
+                .collect::<Vec<_>>();
+            assert_eq!(selected.len(), 1);
+            let assignment = arr(val(target(&ns, selected[0], &assignment_type)))
+                .iter()
+                .map(|b| {
+                    let Json::Bool(b) = b else {
+                        panic!("Bool slot")
+                    };
+                    *b
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(assignment.len(), 2);
+            assert!(assignments.insert(assignment.clone()));
+            case_assignments.insert(text(f(case, "id")), assignment.clone());
+            let expected = if kind == "forall" {
+                assignment[0] && assignment[1]
+            } else {
+                assignment[0] || assignment[1]
+            };
+            assert_eq!(
+                val(target(&ns, f(val(case), "value"), &Json::str("Bool"))),
+                &Json::Bool(expected)
+            );
+            assert_eq!(f(f(case, "scope"), "domain"), &Json::str("all_completions"));
+            let case_q = arr(f(f(case, "scope"), "quantifiers"))
+                .iter()
+                .find(|q| f(q, "name") == &Json::str("r") && f(q, "kind") == &Json::str(kind))
+                .unwrap();
+            let domain = target(&ns, f(case_q, "domain"), &Json::str("Domain"));
+            assert_eq!(
+                domain_values(&all_missing, domain),
+                domain_values(&all_missing, original_domain)
+            );
+            let bodies = children(&ns, case);
+            assert_eq!(bodies.len(), 2);
+            let mut owners = BTreeSet::new();
+            for body in bodies {
+                assert_eq!(source(&checked, evaluation_span(&ns, body)), b"r.flag");
+                let value = target(&ns, f(val(body), "value"), &Json::str("Bool"));
+                assert_eq!(f(f(value, "rule"), "kind"), &Json::str("law"));
+                let inputs = arr(f(value, "arguments"));
+                assert_eq!(inputs.len(), 3);
+                assert_eq!(&inputs[0], f(val(body), "expression"));
+                let owner = val(target(&ns, &inputs[1], &ty("Ref", Json::str("Roster.E"))));
+                let at = if owner == &reference("v", "item") {
+                    0
+                } else {
+                    assert_eq!(owner, &reference("w", "item"));
+                    1
+                };
+                assert!(owners.insert(at));
+                assert_eq!(val(value), &Json::Bool(assignment[at]));
+                let projection = target(&ns, &inputs[2], &Json::str("Bool"));
+                assert_eq!(f(f(projection, "rule"), "kind"), &Json::str("construction"));
+                assert_eq!(val(projection), val(value));
+                assert_eq!(&arr(f(projection, "arguments"))[1], assignment_domain_ref);
+                assert_eq!(&arr(f(projection, "arguments"))[2], selected[0]);
+                assert_roster_scope(body);
+                assert_roster_support(body);
+            }
+            assert_eq!(owners, BTreeSet::from([0, 1]));
+            let proofs = arr(f(case, "evidence"))
+                .iter()
+                .map(|r| target(&ns, r, &Json::str("Evidence")))
+                .collect::<Vec<_>>();
+            if (kind == "forall" && expected) || (kind == "exists" && !expected) {
+                let full = proofs
+                    .iter()
+                    .filter(|p| f(val(p), "kind") == &Json::str("finite_exhaustion"))
+                    .collect::<Vec<_>>();
+                assert_eq!(full.len(), 1);
+                let data = f(val(full[0]), "data");
+                assert_eq!(f(data, "domain"), f(case_q, "domain"));
+                assert_eq!(f(data, "checked"), &Json::Nat(2));
+                assert_eq!(f(data, "instances"), f(part(case), "children"));
+            } else if kind == "forall" {
+                let counterexamples = proofs
+                    .iter()
+                    .filter(|p| f(val(p), "kind") == &Json::str("counterexample"))
+                    .collect::<Vec<_>>();
+                assert_eq!(
+                    counterexamples.len(),
+                    assignment.iter().filter(|b| !**b).count()
+                );
+                for counterexample in counterexamples {
+                    let data = f(val(counterexample), "data");
+                    let bindings = arr(f(data, "bindings"));
+                    assert_eq!(bindings.len(), 1);
+                    assert_eq!(f(&bindings[0], "name"), &Json::str("r"));
+                    let owner = val(target(
+                        &ns,
+                        f(&bindings[0], "value"),
+                        &ty("Ref", Json::str("Roster.E")),
+                    ));
+                    let at = if owner == &reference("v", "item") {
+                        0
+                    } else {
+                        assert_eq!(owner, &reference("w", "item"));
+                        1
+                    };
+                    assert!(!assignment[at]);
+                    assert_eq!(
+                        val(target(&ns, f(data, "left"), &Json::str("Bool"))),
+                        &Json::Bool(false)
+                    );
+                    assert_eq!(
+                        val(target(&ns, f(data, "right"), &Json::str("Bool"))),
+                        &Json::Bool(true)
+                    );
+                    let edges = arr(f(counterexample, "arguments"));
+                    assert_eq!(edges.len(), 3);
+                    assert_eq!(&edges[0], f(val(case), "expression"));
+                    assert_eq!(&edges[1], f(case_q, "domain"));
+                    assert!(arr(f(part(case), "children")).contains(&edges[2]));
+                    assert_eq!(
+                        f(
+                            val(target(&ns, &edges[2], &Json::str("Evaluation"))),
+                            "value"
+                        ),
+                        f(data, "left")
+                    );
+                    assert_roster_scope(counterexample);
+                    assert_roster_support(counterexample);
+                }
+            }
+        }
+        assert_eq!(
+            assignments,
+            BTreeSet::from([
+                vec![false, false],
+                vec![false, true],
+                vec![true, false],
+                vec![true, true]
+            ])
+        );
+        assert!(
+            arr(f(aggregate, "evidence"))
+                .iter()
+                .all(|r| f(val(target(&ns, r, &Json::str("Evidence"))), "kind")
+                    != &Json::str("finite_exhaustion")),
+            "異なるwhole値に全case同値の完成証拠を付けない"
+        );
+        let pairs = arr(f(aggregate, "evidence"))
+            .iter()
+            .map(|r| target(&ns, r, &Json::str("Evidence")))
+            .filter(|e| f(val(e), "kind") == &Json::str("completion_pair"))
+            .collect::<Vec<_>>();
+        assert_eq!(pairs.len(), 1);
+        let pair = f(val(pairs[0]), "data");
+        assert_eq!(
+            f(pair, "fields"),
+            &Json::Arr(
+                ["v", "w"]
+                    .iter()
+                    .map(|snap| Json::obj([
+                        ("snapshot", Json::str(*snap)),
+                        ("subject", Json::str("item")),
+                        ("field", Json::str("Roster.E.flag"))
+                    ]))
+                    .collect()
+            )
+        );
+        let mut results = BTreeSet::new();
+        for (binding_key, result_key) in [("first", "first_result"), ("second", "second_result")] {
+            let values = arr(f(pair, binding_key));
+            assert_eq!(values.len(), 2);
+            let assignment = values
+                .iter()
+                .map(|r| {
+                    let Json::Bool(b) = val(target(&ns, r, &Json::str("Bool"))) else {
+                        panic!("Bool")
+                    };
+                    *b
+                })
+                .collect::<Vec<_>>();
+            let case = target(&ns, f(pair, result_key), &Json::str("Evaluation"));
+            assert_eq!(case_assignments[text(f(case, "id"))], assignment);
+            assert!(
+                values
+                    .iter()
+                    .all(|r| arr(f(expression(&ns, case), "arguments")).contains(r))
+            );
+            let value = val(target(&ns, f(val(case), "value"), &Json::str("Bool")));
+            results.insert(value.canonical());
+        }
+        assert_eq!(
+            results,
+            BTreeSet::from([Json::Bool(false).canonical(), Json::Bool(true).canonical()])
+        );
     }
     let (wire, checked) = run(
         fixture(script, Some(true), false, false),

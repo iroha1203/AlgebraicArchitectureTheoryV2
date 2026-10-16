@@ -68,17 +68,19 @@
   明示Ref束縛を固定した実直積の各LawInstanceを検査する。自由parameter・型Domain・実bindingsと
   全称命題を保ち、既知違反の実反例は他rowの欠測によらず残す。空直積は成立・全検査0件となる。
   guard=falseのrowはbodyを評価せず非適用として残し、全非適用N件の族は成立・全検査N件となる。
-  Law の guard が false なら非適用、未観測なら body が true のとき全補完で成立し、
-  body が false または未観測なら未決となる。
+  Law の guard が false なら非適用となり、元の guard/body から条件付き要求を判断する。
   明示 guard と元の body の評価・支持を条件付き Law の導出へ接続する。
   型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
   欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
-  共有欠測の全補完を列挙して相関を判断する処理は未実装である。
-  現在の有限族は各rowの既知値・未決を集約し、判断が確定しなければ欠測理由付きの未決回答を返す。
+  必要な原始Bool欠測slotはsnapshot・subject・fieldごとに共有し、型付きの全補完域を列挙する。
+  各補完内で元の問い全体（未束縛Law parameterの全族を含む）を評価してから集約し、
+  全caseで同じ既知値なら値を確定する。Lawは全case成立/全case違反を区別し、
+  補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
+  元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdata・再帰dataの評価、その他の式形・
   無限型・依存ownerの型/式族・無限parameterの量化・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
-  未確定の参照からのfield読取り・動的 owner 制約の評価は未実装であり、
+  Bool補完でも確定しない参照からのfield読取り・動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
   `unsupported_algorithm` や未決回答へ変換しない。
 - CLI の `archsig check` と `archsig version`。入力のコピー、`result.json`、stdout の receipt を

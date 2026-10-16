@@ -22,6 +22,8 @@ use crate::{
     types::Type,
 };
 use std::collections::BTreeMap;
+#[path = "completion_evaluate.rs"]
+mod completion;
 #[path = "family_evaluate.rs"]
 mod family;
 
@@ -95,6 +97,9 @@ struct Evaluator<'a, 'b> {
     reasons: Vec<Reason>,
     completed: BTreeMap<ExprId, Evaluated>,
     answer_evaluation: Option<NodeRef>,
+    // 補完開始前に元Controlで独立検査を終えた回答だけを、停止時に保持する。
+    verified_observed: Option<Answer>,
+    completing: bool,
     sources: BTreeMap<(usize, usize), SourceHandle>,
 }
 impl Evaluator<'_, '_> {
@@ -1433,6 +1438,7 @@ impl Evaluator<'_, '_> {
             frame: Some(frame),
             iteration: None,
             instance: caller.instance,
+            case: caller.case,
         };
         for (parameter, argument) in params.iter().zip(&arguments) {
             self.formal.insert(parameter.name.clone(), argument.clone());
@@ -1534,6 +1540,42 @@ impl Evaluator<'_, '_> {
             field: Some(fullname),
             atom: None,
         };
+        if field.ty == Type::Bool
+            && matches!(field.slot, Slot::Missing)
+            && let Some(assigned) = self.environment.completion_slot(self.graph, &fact)?
+        {
+            let source = self
+                .sources
+                .get(&span)
+                .ok_or_else(|| Failure::Internal("補完fieldの元Sourceがない".into()))?
+                .expression;
+            let analysis = self
+                .environment
+                .analyze_source(self.graph, span, &self.bindings)?;
+            let scope = analysis
+                .scalar_scope
+                .ok_or_else(|| Failure::Internal("補完fieldの値Scopeがない".into()))?;
+            let value = self.value(
+                self.graph.scalar(assigned)?.clone(),
+                Rule::Input {
+                    kind: "law",
+                    location: Location::Law { span },
+                },
+                vec![source, reference, assigned],
+                vec![],
+                scope,
+            )?;
+            return self.finish(
+                span,
+                Type::Bool,
+                Some(value),
+                vec![base],
+                vec![],
+                Some(fact),
+                None,
+                None,
+            );
+        }
         match &field.slot {
             Slot::Known {
                 atom,
@@ -1665,7 +1707,7 @@ impl Evaluator<'_, '_> {
         let guard_id = guard;
         let body_id = body;
         let guard = guard.map(|g| self.eval(g)).transpose()?;
-        if self.graph.active.instance.is_some()
+        if (self.graph.active.instance.is_some() || self.graph.active.case.is_some())
             && guard
                 .as_ref()
                 .map(|g| self.graph.boolean(g.value))
@@ -1975,6 +2017,7 @@ fn evaluate_observed_with_validator(
                 frame: None,
                 iteration: None,
                 instance: None,
+                case: None,
             };
             let mut evaluator = Evaluator {
                 environment,
@@ -1990,6 +2033,8 @@ fn evaluate_observed_with_validator(
                 reasons: vec![],
                 completed: BTreeMap::new(),
                 answer_evaluation: None,
+                verified_observed: None,
+                completing: false,
                 sources: BTreeMap::new(),
             };
             let (params, guard, body, role) = match &declaration.signature {
@@ -2010,6 +2055,7 @@ fn evaluate_observed_with_validator(
                     evaluator.answer(params, guard, body, role)
                 }
             })();
+            let result = evaluator.complete_answer(result, params, guard, body, role);
             // Answer の検査は意味導出の完了前に行い、post 停止で完成済み Answer を捨てない。
             let result = result.and_then(|a| {
                 validate_answer(evaluator.environment, evaluator.graph, request, &a)?;
@@ -2034,6 +2080,7 @@ fn evaluate_observed_with_validator(
                     });
                 }
                 Err(failure) => {
+                    let stopped = matches!(&failure, Failure::Stop(_));
                     let reason = match failure {
                         Failure::Stop(reason) => Reason::stopped(&request.id, reason),
                         Failure::Internal(operation) => {
@@ -2042,6 +2089,15 @@ fn evaluate_observed_with_validator(
                         }
                         _ => unreachable!(),
                     };
+                    if stopped && let Some(mut answer) = evaluator.verified_observed.take() {
+                        // 凍結したControlへ再入せず、既に検査済みのclaimとそのproducerを保持する。
+                        answer.reasons.push(reason);
+                        sort_reasons(&mut answer.reasons);
+                        issues.extend(evaluator.reasons.iter().cloned());
+                        issues.extend(answer.reasons.iter().cloned());
+                        answers[index] = Some(answer);
+                        continue;
+                    }
                     let mut reasons = evaluator.reasons.clone();
                     reasons.push(reason);
                     sort_reasons(&mut reasons);
@@ -2056,6 +2112,7 @@ fn evaluate_observed_with_validator(
                     // 明示 guard の適用集約が未完成なら生 body を回答へ昇格しない。
                     if let Some(completed) = evaluator.completed.get(&body)
                         && !evaluator.is_family(params)
+                        && !evaluator.completing
                         && (request.kind == QuestionKind::Evaluate || guard.is_none())
                     {
                         outputs.insert("evaluation".into(), completed.evaluation);
@@ -2107,6 +2164,8 @@ fn evaluate_observed_with_validator(
         iterations: graph.iterations,
         #[cfg(test)]
         instances: graph.instances,
+        #[cfg(test)]
+        cases: graph.cases,
         answers,
         issues,
         status,
@@ -2874,6 +2933,7 @@ mod recheck_tests {
         graph.frames = result.frames.clone();
         graph.iterations = result.iterations.clone();
         graph.instances = result.instances.clone();
+        graph.cases = result.cases.clone();
         for (index, node) in nodes.iter().enumerate() {
             graph.active = result.contexts.get(index).copied().unwrap_or_default();
             environment.validate(&graph, node)?;
@@ -3484,7 +3544,22 @@ reading R {{
         let answer_index = result.answers.iter().position(|a| a.id == "s").unwrap();
         let answer = &result.answers[answer_index];
         assert_eq!(answer.status, Decision::Undetermined);
-        let root = answer.outputs["evaluation"];
+        let Signature::Law { body, .. } =
+            &result.prepared.inputs().law().declarations["R.condition"].signature
+        else {
+            unreachable!()
+        };
+        let body_span = result.prepared.inputs().law().exprs[*body].span;
+        let original:Vec<_>=result.nodes.iter().enumerate().filter_map(|(index,node)| {
+            let context=result.contexts[index];
+            if context.request!=answer_index || context.case.is_some() || context.frame.is_some() || context.instance.is_some() || context.iteration.is_some() {return None;}
+            if !matches!(&node.payload,Some(Payload::Evaluation {..})) {return None;}
+            let instance=*node.arguments.first()?;
+            (matches!(&result.nodes[instance.0].payload,Some(Payload::LawInstance {name,body,..}) if name=="R.condition" && matches!(&result.nodes[body.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))).then_some(NodeRef(index))
+        }).collect();
+        assert_eq!(original.len(), 1, "unique observed conditional application");
+        let root = original[0];
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=root.0]).unwrap();
         let Some(Payload::Evaluation {
             value,
             applicability,
@@ -3660,7 +3735,18 @@ reading R {{
             .expect("未知pとfalse qの全raw評価を保つ正常DAG");
         let answer = result.answers.iter().find(|a| a.id == "and_value").unwrap();
         assert_eq!(answer.status, Decision::Established);
-        let value = answer.outputs["value"];
+        assert_eq!(
+            graph.scalar(answer.outputs["value"]).unwrap(),
+            &Scalar::Bool(false)
+        );
+        let operation = original_view_evaluation_for_answer(&result, "and_value");
+        let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &result.nodes[operation.0].payload
+        else {
+            panic!("known observed native conjunction")
+        };
+        let value = *value;
         assert_eq!(graph.scalar(value).unwrap(), &Scalar::Bool(false));
         let mut changed = result.nodes.clone();
         changed[value.0].payload = Some(Payload::Scalar(Scalar::Bool(true)));
@@ -3671,12 +3757,7 @@ reading R {{
             ),
             "x and falseは全補完でfalseでありtrueへ変更できない"
         );
-        let prior_or = result
-            .answers
-            .iter()
-            .find(|a| a.id == "or_value")
-            .unwrap()
-            .outputs["evaluation"];
+        let prior_or = original_view_evaluation_for_answer(&result, "or_value");
         let Some(Payload::Evaluation { parts, .. }) = &result.nodes[prior_or.0].payload else {
             panic!("先行orの元子Evaluation")
         };
@@ -5246,7 +5327,100 @@ reading R {{
         assert_eq!(unknown.answers[0].status, Decision::Undetermined);
         assert_eq!(unknown.answers[1].status, Decision::Established);
         rebuild_for_origin_and_support_recheck(&unknown, &unknown.nodes).unwrap();
-        let (_, _, rows) = family_whole(&unknown, 0);
+        // 元観測の条件付き族を、補完後の回答rootと区別して元宣言・Contextから選ぶ。
+        let original_rows = |request, name: &str| {
+            let Signature::Law { body, .. } =
+                &unknown.prepared.inputs().law().declarations[name].signature
+            else {
+                unreachable!()
+            };
+            let span = unknown.prepared.inputs().law().exprs[*body].span;
+            let candidates: Vec<_> = unknown.nodes.iter().enumerate().filter_map(|(index,node)| {
+                let context=unknown.contexts[index];
+                if context.request!=request || context.case.is_some() || context.frame.is_some()
+                    || context.instance.is_some() || context.iteration.is_some() {return None;}
+                let Some(Payload::Evaluation {expression,parts,..})=&node.payload else {return None;};
+                let instance=*node.arguments.first()?;
+                let Some(Payload::LawInstance {name:actual,body:source,..})=&unknown.nodes[instance.0].payload else {return None;};
+                if actual!=name || source!=expression {return None;}
+                assert!(matches!(&unknown.nodes[source.0].payload,Some(Payload::Expression {location:Location::Law {span:actual},parameters,..}) if *actual==span && parameters.len()==1 && parameters[0].0=="s"));
+                Some(parts[0].children.clone())
+            }).collect();
+            assert_eq!(candidates.len(), 1, "unique original whole family: {name}");
+            candidates.into_iter().next().unwrap()
+        };
+        // 回答rootはBool補完2caseのwhole族を指す。各caseの元Ref族は一行のままである。
+        for (request, name) in [(0, "Calc.uncertain"), (1, "Calc.ensured")] {
+            let evaluation = &unknown.nodes[unknown.answers[request].outputs["evaluation"].0];
+            assert!(matches!(
+                &unknown.nodes[evaluation.arguments[0].0].payload,
+                Some(Payload::CompletionSeed { .. })
+            ));
+            let Some(Payload::Evaluation { parts, .. }) = &evaluation.payload else {
+                unreachable!()
+            };
+            let cases = &parts[0].children;
+            assert_eq!(cases.len(), 2);
+            let mut values = Vec::new();
+            for case in cases {
+                let context = unknown.contexts[case.0];
+                assert_eq!(context.request, request);
+                assert!(
+                    context.case.is_some()
+                        && context.frame.is_none()
+                        && context.instance.is_none()
+                        && context.iteration.is_none()
+                );
+                let whole = &unknown.nodes[case.0];
+                assert!(
+                    matches!(&unknown.nodes[whole.arguments[0].0].payload,Some(Payload::LawInstance {name:actual,..}) if actual==name)
+                );
+                let Some(Payload::Evaluation {
+                    parts,
+                    value: Some(value),
+                    ..
+                }) = &whole.payload
+                else {
+                    panic!("known whole family in completion")
+                };
+                assert_eq!(parts[0].children.len(), 1);
+                let Scalar::Bool(value) = data_scalar_at(&unknown, value.0) else {
+                    unreachable!()
+                };
+                values.push(*value);
+                let propositions: Vec<_> = unknown
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, node)| {
+                        (unknown.contexts[i] == context
+                            && matches!(&node.payload, Some(Payload::Proposition { .. }))
+                            && node.arguments.get(1) == Some(case))
+                        .then_some(node)
+                    })
+                    .collect();
+                assert_eq!(propositions.len(), 1);
+                assert_eq!(
+                    propositions[0].judgment.as_ref().unwrap().status,
+                    if *value {
+                        Decision::Established
+                    } else {
+                        Decision::Refuted
+                    }
+                );
+            }
+            if request == 0 {
+                assert!(values.contains(&true) && values.contains(&false));
+                assert!(unknown.answers[request].evidence.iter().any(|r| matches!(
+                    &unknown.nodes[r.0].payload,
+                    Some(Payload::CompletionPair { .. })
+                )));
+            } else {
+                assert_eq!(values, vec![true, true]);
+                assert!(unknown.answers[request].evidence.iter().any(|r|matches!(&unknown.nodes[r.0].payload,Some(Payload::FiniteExhaustion {checked:2,instances,..}) if instances.len()==cases.len() && instances.iter().all(|instance|cases.contains(instance)))));
+            }
+        }
+        let rows = original_rows(0, "Calc.uncertain");
         assert_eq!(rows.len(), 1);
         let row = rows[0].0;
         let Some(Payload::Evaluation {
@@ -5281,7 +5455,7 @@ reading R {{
         operands[0] = *raw_body;
         changed[expression.0].arguments[0] = *raw_body;
         rejects_named_prefix(&unknown, &changed);
-        let (_, _, ensured) = family_whole(&unknown, 1);
+        let ensured = original_rows(1, "Calc.ensured");
         let ensured = ensured[0].0;
         let Some(Payload::Evaluation {
             expression: target,
@@ -5336,6 +5510,7 @@ reading R {{
             frame: None,
             iteration: None,
             instance: None,
+            case: None,
         };
         let progress = Rc::new(RefCell::new(Vec::new()));
         let observed = progress.clone();
@@ -5992,6 +6167,28 @@ reading Calc {{
         }
     }
 
+    fn original_view_evaluation_for_answer(result: &ObservedEvaluation, id: &str) -> NodeRef {
+        let request = result
+            .answers
+            .iter()
+            .position(|answer| answer.id == id)
+            .unwrap();
+        let declaration = result.prepared.requests().requests()[request].declaration();
+        let Signature::View { body, .. } =
+            &result.prepared.inputs().law().declarations[declaration].signature
+        else {
+            unreachable!()
+        };
+        let span = result.prepared.inputs().law().exprs[*body].span;
+        let candidates:Vec<_>=result.nodes.iter().enumerate().filter_map(|(index,node)| {
+            let context=result.contexts[index];
+            (context.request==request && context.case.is_none() && context.frame.is_none() && context.iteration.is_none() && context.instance.is_none()
+                && matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if matches!(&result.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span:actual},..}) if *actual==span)))
+                .then_some(NodeRef(index))
+        }).collect();
+        assert_eq!(candidates.len(), 1, "unique original view root: {id}");
+        candidates[0]
+    }
     #[test]
     fn rejects_unknown_let_if_value_and_fabricated_lexical_binding() {
         let result = evaluate_observed_bytes(
@@ -6013,7 +6210,7 @@ reading Calc {{
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         for answer in &result.answers {
             assert!(!answer.outputs.contains_key("value"));
-            let root = answer.outputs["evaluation"];
+            let root = original_view_evaluation_for_answer(&result, &answer.id);
             let node = &result.nodes[root.0];
             let Some(Payload::Evaluation {
                 expression,
@@ -6540,7 +6737,7 @@ reading Calc {{
             .unwrap();
     }
     #[test]
-    fn named_calls_keep_unknown_ref_field_as_not_implemented_at_callee_source() {
+    fn named_calls_complete_bool_ref_choices_and_keep_other_missing_at_callee_source() {
         fn inputs(unknown: bool) -> InputSources {
             let sources = numeric_recheck_fixture(
                 if unknown { &["p"] } else { &[] },
@@ -6575,23 +6772,51 @@ reading Calc {{
         );
         let sources = inputs(true);
         let law = sources.law().bytes().to_vec();
-        let failure = evaluate_observed_bytes(
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let partial = evaluate_observed_bytes(
             sources,
             &["v=evaluate(Calc.caller,s=@v/sample,t=@v/other)"],
             &mut named_call_quiet(),
         )
-        .unwrap_err();
-        assert!(failure.wire().is_none());
-        let EvaluationFailure::NotImplemented {
-            location: Location::Law { span },
-            feature,
-            ..
-        } = failure
-        else {
-            panic!("未知Ref fieldをInternalへ変えない");
-        };
-        assert_eq!(&law[span.0..span.1], b"x.q");
-        assert_eq!(feature, "未確定の参照からの field 読取り");
+        .unwrap();
+        assert_eq!(partial.status(), "partial", "{:?}", partial.issues);
+        assert_eq!(partial.answers[0].status, Decision::Undetermined);
+        assert!(!partial.answers[0].outputs.contains_key("value"));
+        assert!(partial.answers[0].claim.is_none());
+        for (subject, field) in [
+            ("sample", "Numeric.Sample.p"),
+            ("other", "Numeric.Sample.q"),
+        ] {
+            assert!(
+                partial.answers[0]
+                    .reasons
+                    .iter()
+                    .flat_map(|r| &r.missing)
+                    .any(|f| f.subject == subject && f.field.as_deref() == Some(field))
+            );
+        }
+        let values: Vec<_> = partial
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(i, node)| {
+                (partial.contexts[i].case.is_some()
+                    && partial.contexts[i].frame.is_some()
+                    && matches!(&node.rule, Rule::Input { kind: "atom", .. })
+                    && matches!(&node.payload, Some(Payload::Scalar(Scalar::Q(_, _)))))
+                .then_some(i)
+            })
+            .collect();
+        assert_eq!(values.len(), 1);
+        assert!(
+            matches!(&partial.nodes[values[0]].payload,Some(Payload::Scalar(Scalar::Q(n,d))) if n==&(-2).into() && d==&3.into())
+        );
+        assert!(partial.nodes.iter().any(|node|matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span},bindings,..}) if &law[span.0..span.1]==b"x.q" && bindings.iter().any(|b|b.name=="x"))));
+        rebuild_for_origin_and_support_recheck(&partial, &partial.nodes).unwrap();
+        rebuild_for_origin_and_support_recheck(&partial, &partial.nodes[..=values[0]]).unwrap();
+        let mut changed = partial.nodes[..=values[0]].to_vec();
+        changed[values[0]].scope.readings.insert("Foreign".into());
+        rejects_named_prefix(&partial, &changed);
     }
     #[test]
     fn named_calls_reject_equal_literal_and_field_scalars_from_another_call_frame() {
@@ -6927,6 +7152,7 @@ reading Calc {{
             frame: Some(0),
             iteration: None,
             instance: None,
+            case: None,
         };
         let mut problems = Vec::new();
         for kind in 0..3 {
@@ -7666,6 +7892,7 @@ reading Calc {{
                 frame: None,
                 iteration: None,
                 instance: None,
+                case: None,
             };
             let seen = Rc::new(RefCell::new(Vec::new()));
             let progress = seen.clone();
@@ -8140,12 +8367,14 @@ reading Calc {{
         };
         let target = prepared.inputs().law().exprs[*body].span;
         let ExprKind::SetComp {
+            domain,
             filter: Some(filter),
             ..
         } = prepared.inputs().law().exprs[*body].kind
         else {
             unreachable!()
         };
+        let domain_span = prepared.inputs().law().exprs[domain].span;
         let ExprKind::Binary { rhs, .. } = prepared.inputs().law().exprs[filter].kind else {
             unreachable!()
         };
@@ -8159,19 +8388,27 @@ reading Calc {{
             frame: None,
             iteration: None,
             instance: None,
+            case: None,
         };
+        let first_filter_iteration = Rc::new(Cell::new(None));
+        let first_filter = first_filter_iteration.clone();
         let event = move |span, context: super::super::call::Context, name: &str, index| {
             if span == target && context == parent && name == "comprehension_iteration" {
                 Some(("iteration", index))
             } else if span == filter_literal
-                && context
-                    == (super::super::call::Context {
-                        iteration: Some(0),
-                        ..parent
-                    })
+                && context.request == parent.request
+                && context.case == parent.case
+                && context.frame == parent.frame
+                && context.instance == parent.instance
+                && context.iteration.is_some()
                 && name == "expression"
             {
-                Some(("filter", 0))
+                let iteration = context.iteration.unwrap();
+                let first = first_filter.get().unwrap_or_else(|| {
+                    first_filter.set(Some(iteration));
+                    iteration
+                });
+                (iteration == first).then_some(("filter", 0))
             } else if span == target && context == parent && name == "set" {
                 Some(("set", index))
             } else {
@@ -8180,8 +8417,9 @@ reading Calc {{
         };
         let seen = Rc::new(RefCell::new(Vec::new()));
         let progress = seen.clone();
+        let baseline_event = event.clone();
         data::observe_iterations(move |span, context, name, index| {
-            if let Some(event) = event(span, context, name, index) {
+            if let Some(event) = baseline_event(span, context, name, index) {
                 progress.borrow_mut().push(event);
             }
         });
@@ -8209,9 +8447,31 @@ reading Calc {{
                 items: vec![Scalar::Z(3.into()), Scalar::Z(2.into())]
             }
         );
-        let first_domain = normal.iterations[0].domain.0;
-        let filter_scalar = data_rule_scalar(&normal, "0", 2);
-        let result_scalar = normal.answers[2].outputs["value"].0;
+        let first:Vec<_>=normal.iterations.iter().enumerate().filter(|(_,iteration)| {
+            iteration.caller==parent && matches!(&iteration.member,super::super::call::Member::ListPosition(0))
+                && matches!(&normal.nodes[iteration.source.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==target)
+                && matches!(&normal.nodes[iteration.domain.0].payload,Some(Payload::Evaluation {expression,..}) if matches!(&normal.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==domain_span))
+        }).collect();
+        assert_eq!(first.len(), 1);
+        let (first_iteration, iteration) = first[0];
+        assert_eq!(first_filter_iteration.get(), Some(first_iteration));
+        let first_domain = iteration.domain.0;
+        let original_scalar = |span, context| {
+            let scalars:Vec<_>=normal.nodes.iter().enumerate().filter_map(|(index,node)| {
+                (normal.contexts[index]==context && matches!(&node.payload,Some(Payload::Scalar(_)))
+                    && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span:actual}} if *actual==span)).then_some(index)
+            }).collect();
+            assert_eq!(scalars.len(), 1, "unique original Scalar at {span:?}");
+            scalars[0]
+        };
+        let filter_scalar = original_scalar(
+            filter_literal,
+            super::super::call::Context {
+                iteration: Some(first_iteration),
+                ..parent
+            },
+        );
+        let result_scalar = original_scalar(target, parent);
         let cuts = [first_domain + 1, filter_scalar, result_scalar];
         for cut in cuts {
             rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..cut]).unwrap();
@@ -8287,6 +8547,7 @@ reading Calc {{
                     environment.validate_answer(graph, request, answer)?;
                     if request.id == "missing" {
                         let (seen, armed) = (observed.clone(), armed.clone());
+                        let event = event.clone();
                         data::observe_iterations(move |span, context, name, index| {
                             if let Some(actual) = event(span, context, name, index) {
                                 seen.borrow_mut().push(actual);
@@ -8485,7 +8746,7 @@ reading Calc {{
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         let bytes = result.prepared.inputs().sources().law().bytes();
         let mut nested = 0;
-        let mut pattern = 0;
+        let mut pattern = BTreeMap::new();
         for (index, node) in result.nodes.iter().enumerate() {
             if let Some(Payload::Evaluation {
                 expression,
@@ -8504,9 +8765,11 @@ reading Calc {{
                 let origin = result.contexts[input.0];
                 assert_eq!(context.request, origin.request);
                 assert_eq!(context.frame, origin.frame);
+                assert_eq!(context.case, origin.case);
                 assert!(context.iteration.is_some());
                 if bytes.get(span.0..span.1) == Some(b"y") {
                     nested += 1;
+                    assert!(context.case.is_none());
                     assert!(origin.iteration.is_some(), "外側反復のRHSをrootへ戻さない");
                     assert_eq!(result.iterations[context.iteration.unwrap()].caller, origin);
                     let Some(Payload::Evaluation { value: rhs, .. }) =
@@ -8516,11 +8779,14 @@ reading Calc {{
                     };
                     assert_eq!(value, rhs, "元RHS Scalarをそのまま参照する");
                 } else {
-                    pattern += 1;
+                    *pattern.entry(context.case).or_insert(0usize) += 1;
                     assert_eq!(origin.iteration, None);
                     let scalar = value.unwrap();
                     assert_eq!(result.nodes[scalar.0].arguments, vec![input]);
-                    assert!(!result.nodes[input.0].scope.completions);
+                    assert_eq!(
+                        result.nodes[input.0].scope.completions,
+                        origin.case.is_some()
+                    );
                     assert!(result.nodes[scalar.0].scope.completions);
                     rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar.0])
                         .unwrap();
@@ -8532,7 +8798,38 @@ reading Calc {{
                 rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=index]).unwrap();
             }
         }
-        assert_eq!((nested, pattern), (4, 2));
+        assert_eq!(nested, 4);
+        assert_eq!(pattern.get(&None), Some(&2));
+        let evaluation = &result.nodes[result.answers[1].outputs["evaluation"].0];
+        assert!(matches!(
+            &result.nodes[evaluation.arguments[0].0].payload,
+            Some(Payload::CompletionSeed { .. })
+        ));
+        let Some(Payload::Evaluation { parts, .. }) = &evaluation.payload else {
+            unreachable!()
+        };
+        let cases = &parts[0].children;
+        assert_eq!(cases.len(), 2);
+        assert_eq!(pattern.len(), 1 + cases.len());
+        for case in cases {
+            let context = result.contexts[case.0];
+            assert_eq!(context.request, 1);
+            assert!(
+                context.case.is_some()
+                    && context.frame.is_none()
+                    && context.instance.is_none()
+                    && context.iteration.is_none()
+            );
+            assert_eq!(pattern.get(&context.case), Some(&2));
+            let Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) = &result.nodes[case.0].payload
+            else {
+                panic!("known pattern result in Bool case")
+            };
+            assert_eq!(data_scalar_at(&result, value.0), &set(&[11, 12]));
+        }
+        assert!(result.answers[1].evidence.iter().any(|r|matches!(&result.nodes[r.0].payload,Some(Payload::FiniteExhaustion {checked:2,instances,..}) if instances.len()==cases.len() && instances.iter().all(|instance|cases.contains(instance)))));
     }
     #[test]
     fn set_comprehension_captured_let_rejects_equal_foreign_iteration_request_and_call() {
@@ -9041,11 +9338,19 @@ reading Calc {{
     }
     #[test]
     fn plain_ref_counterexamples_reject_foreign_request_and_call_producers() {
-        let result = plain_ref_example(&[
-            "first=check(Calc.called)",
-            "again=check(Calc.called)",
-            "both=check(Calc.both)",
-        ]);
+        plain_ref_counterexample_producers(false);
+    }
+    #[test]
+    fn plain_ref_counterexamples_reject_same_request_call_producers() {
+        plain_ref_counterexample_producers(true);
+    }
+    fn plain_ref_counterexample_producers(same_request: bool) {
+        let asks = if same_request {
+            vec!["both=check(Calc.both)"]
+        } else {
+            vec!["first=check(Calc.called)", "again=check(Calc.called)"]
+        };
+        let result = plain_ref_example(&asks);
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
         assert!(
             result
@@ -9053,18 +9358,19 @@ reading Calc {{
                 .iter()
                 .all(|answer| answer.status == Decision::Refuted)
         );
-        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         let counters: Vec<_> = result
             .nodes
             .iter()
             .enumerate()
             .filter_map(|(index, node)| {
-                (node.arguments.len() == 3
+                (result.contexts[index].case.is_none()
+                    && node.arguments.len() == 3
                     && matches!(&node.payload, Some(Payload::Counterexample { .. })))
                 .then_some(index)
             })
             .collect();
-        assert_eq!(counters.len(), 4);
+        assert_eq!(counters.len(), 2);
         for &counter in &counters {
             rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=counter]).unwrap();
             let Some(Payload::Counterexample {
@@ -9111,14 +9417,55 @@ reading Calc {{
                     )
             );
         }
-        for (foreign, target) in [(counters[0], counters[1]), (counters[2], counters[3])] {
+        // 補完後も二つのwhole評価がfalseであり、観測済wの反例が各caseへ実到達する。
+        for (request, answer) in result.answers.iter().enumerate() {
+            let evaluation = &result.nodes[answer.outputs["evaluation"].0];
+            assert!(matches!(
+                &result.nodes[evaluation.arguments[0].0].payload,
+                Some(Payload::CompletionSeed { .. })
+            ));
+            let Some(Payload::Evaluation {
+                parts,
+                value: Some(value),
+                ..
+            }) = &evaluation.payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(data_scalar_at(&result, value.0), &Scalar::Bool(false));
+            let cases = &parts[0].children;
+            assert_eq!(cases.len(), 2);
+            assert!(answer.evidence.iter().any(|r|matches!(&result.nodes[r.0].payload,Some(Payload::FiniteExhaustion {checked:2,instances,..}) if instances.len()==cases.len() && instances.iter().all(|instance|cases.contains(instance)))));
+            for &case in cases {
+                let context = result.contexts[case.0];
+                assert_eq!(context.request, request);
+                assert!(
+                    context.case.is_some()
+                        && context.frame.is_none()
+                        && context.instance.is_none()
+                        && context.iteration.is_none()
+                );
+                assert!(
+                    matches!(&result.nodes[case.0].payload,Some(Payload::Evaluation {value:Some(value),..}) if data_scalar_at(&result,value.0)==&Scalar::Bool(false))
+                );
+                let known=result.nodes.iter().enumerate().filter(|(i,node)| {
+                    result.contexts[*i].request==request && result.contexts[*i].case==context.case
+                        && node.arguments.len()==3
+                        && matches!(&node.payload,Some(Payload::Counterexample {bindings,..}) if bindings.len()==1 && bindings[0].name=="r" && matches!(data_scalar_at(&result,bindings[0].value.0),Scalar::Subject {snapshot,subject,entity} if snapshot=="w" && subject=="item" && entity=="Roster.E"))
+                        && graph.evaluation_evidence_contains(case,NodeRef(*i)).unwrap()
+                }).count();
+                assert_eq!(known, if same_request { 2 } else { 1 });
+            }
+        }
+        {
+            let (foreign, target) = (counters[0], counters[1]);
             assert_ne!(
                 result.contexts[foreign].frame,
                 result.contexts[target].frame
             );
             assert_eq!(
                 result.contexts[foreign].request == result.contexts[target].request,
-                foreign == counters[2]
+                same_request
             );
             let Some(Payload::Counterexample {
                 bindings: other,
@@ -10080,6 +10427,1007 @@ reading Calc {{
     fn plain_ref_actual_roster_construction_domain_and_recheck_stops() {
         quantifier_actual_phases_preserve_stops(true, true);
     }
+    fn completion_private_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(&["p"], body),
+            asks,
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_ne!(result.status(), "error", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        result
+    }
+    fn completion_mutation(
+        result: &ObservedEvaluation,
+        target: usize,
+        change: impl Fn(&mut [Node]),
+    ) {
+        rebuild_for_origin_and_support_recheck(result, &result.nodes[..=target]).unwrap();
+        let mut prefix = result.nodes[..=target].to_vec();
+        change(&mut prefix);
+        assert_ne!(
+            format!("{prefix:?}"),
+            format!("{:?}", &result.nodes[..=target]),
+            "mutation must change a claim"
+        );
+        rejects_named_prefix(result, &prefix);
+        let mut full = result.nodes.clone();
+        change(&mut full);
+        rejects_named_prefix(result, &full);
+    }
+    #[test]
+    fn bool_completion_domains_recheck_slots_assignments_and_sources() {
+        let result = completion_private_example(
+            "view stable(s:Sample):Bool=s.p or not s.p;",
+            &["first=evaluate(Calc.stable,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        assert_eq!(result.answers[0].status, Decision::Established);
+        let domain = result.nodes[result.answers[0].outputs["evaluation"].0].arguments[1].0;
+        let seed = result.nodes[domain].arguments[0].0;
+        for variant in 0..4 {
+            completion_mutation(&result, domain, |nodes| match variant {
+                0 => {
+                    let Some(Payload::Domain { ty, .. }) = &mut nodes[domain].payload else {
+                        unreachable!()
+                    };
+                    *ty = Type::Unit;
+                }
+                1 => {
+                    let Some(Payload::Domain { elements, .. }) = &mut nodes[domain].payload else {
+                        unreachable!()
+                    };
+                    elements.pop();
+                    nodes[domain].arguments.pop();
+                }
+                2 => {
+                    let Some(Payload::Domain { elements, .. }) = &mut nodes[domain].payload else {
+                        unreachable!()
+                    };
+                    elements[1] = elements[0];
+                    nodes[domain].arguments[2] = nodes[domain].arguments[1];
+                }
+                _ => {
+                    let Some(Payload::CompletionSeed { fields, .. }) = &mut nodes[seed].payload
+                    else {
+                        unreachable!()
+                    };
+                    fields[0].field = Some("Numeric.Sample.q".into());
+                }
+            });
+        }
+        let law = result.prepared.inputs().sources().law().bytes();
+        let fields:Vec<_>=result.nodes.iter().enumerate().filter_map(|(i,node)| {
+            (result.contexts[i].case.is_some() && node.arguments.len()==3
+                && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if &law[span.0..span.1]==b"s.p")
+                && matches!(&node.payload,Some(Payload::Scalar(Scalar::Bool(_)))))
+                .then_some(i)
+        }).collect();
+        assert_eq!(fields.len(), 4);
+        let projection = result.nodes[fields[0]].arguments[2].0;
+        completion_mutation(&result, projection, |nodes| {
+            let Some(Payload::Scalar(value)) = &mut nodes[projection].payload else {
+                unreachable!()
+            };
+            let Scalar::Bool(value) = value else {
+                unreachable!()
+            };
+            *value = !*value;
+        });
+        let source = result.nodes[fields[0]].arguments[0].0;
+        completion_mutation(&result, source, |nodes| {
+            let Some(Payload::Expression { bindings, .. }) = &mut nodes[source].payload else {
+                unreachable!()
+            };
+            bindings[0].name = "foreign".into();
+        });
+    }
+    #[test]
+    fn bool_completion_field_prefixes_reject_other_call_case_and_request_owners() {
+        let result = completion_private_example(
+            "view read(x:Sample):Bool=x.p; view correlated(s:Sample,t:Sample):Bool=read(s) or not read(t);",
+            &[
+                "first=evaluate(Calc.correlated,s=@v/sample,t=@v/sample)",
+                "again=evaluate(Calc.correlated,s=@v/sample,t=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        assert_eq!(result.answers[0].status, Decision::Established);
+        let law = result.prepared.inputs().sources().law().bytes();
+        let fields:Vec<_>=result.nodes.iter().enumerate().filter_map(|(i,node)| {
+            (result.contexts[i].case.is_some() && node.arguments.len()==3
+                && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if &law[span.0..span.1]==b"x.p")
+                && matches!(&node.payload,Some(Payload::Scalar(Scalar::Bool(_)))))
+                .then_some(i)
+        }).collect();
+        assert_eq!(fields.len(), 8);
+        // 同値を与えたs/tは同じcaseでも元selectorのproducerが異なる。
+        for (foreign, target) in [
+            (fields[0], fields[1]),
+            (fields[0], fields[2]),
+            (fields[0], fields[4]),
+        ] {
+            let (old, own) = (
+                result.nodes[foreign].arguments[1],
+                result.nodes[target].arguments[1],
+            );
+            assert_ne!(old, own);
+            assert_eq!(
+                data_scalar_at(&result, old.0),
+                data_scalar_at(&result, own.0)
+            );
+            completion_mutation(&result, target, |nodes| nodes[target].arguments[1] = old);
+        }
+    }
+    #[test]
+    fn bool_completion_whole_law_families_recheck_case_coverage() {
+        let result = completion_private_example(
+            "law required related(s:Sample,b:Bool):b=s.p;",
+            &["related=check(Calc.related,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        assert_eq!(result.answers[0].status, Decision::Refuted);
+        let proof = result.answers[0].evidence[0].0;
+        let Some(Payload::FiniteExhaustion {
+            instances, checked, ..
+        }) = &result.nodes[proof].payload
+        else {
+            panic!("all-false case coverage")
+        };
+        assert_eq!(*checked, 2);
+        assert_eq!(instances.len(), 2);
+        let aggregate = &result.nodes[result.answers[0].outputs["evaluation"].0];
+        for (index, reason) in aggregate.reasons.iter().enumerate() {
+            assert!(
+                aggregate.reasons[..index]
+                    .iter()
+                    .all(|old| old.wire() != reason.wire())
+            );
+        }
+        for case in instances {
+            assert_eq!(result.nodes[case.0].ty, NodeType::Evaluation(Type::Bool));
+            assert!(
+                matches!(&result.nodes[case.0].payload,Some(Payload::Evaluation {value:Some(v),..}) if data_scalar_at(&result,v.0)==&Scalar::Bool(false))
+            );
+            let context = result.contexts[case.0];
+            assert!(
+                result
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .any(|(i, node)| result.contexts[i].case == context.case
+                        && matches!(&node.payload, Some(Payload::Counterexample { .. })))
+            );
+        }
+        for case in instances {
+            for reason in &result.nodes[case.0].reasons {
+                assert!(
+                    aggregate
+                        .reasons
+                        .iter()
+                        .any(|retained| retained.wire() == reason.wire())
+                );
+            }
+        }
+        for variant in 0..3 {
+            completion_mutation(&result, proof, |nodes| {
+                let Some(Payload::FiniteExhaustion {
+                    checked, instances, ..
+                }) = &mut nodes[proof].payload
+                else {
+                    unreachable!()
+                };
+                match variant {
+                    0 => *checked += 1,
+                    1 => {
+                        instances[1] = instances[0];
+                        nodes[proof].arguments[3] = nodes[proof].arguments[2];
+                    }
+                    _ => {
+                        instances.pop();
+                        nodes[proof].arguments.pop();
+                    }
+                }
+            });
+        }
+    }
+    #[test]
+    fn bool_completion_pairs_and_inapplicable_cases_recheck_evidence() {
+        let result = completion_private_example(
+            "law required gated(s:Sample) when s.p:false; view stable(s:Sample):Q=if s.p then s.q else s.q;",
+            &[
+                "seed=evaluate(Calc.stable,s=@v/sample)",
+                "gated=check(Calc.gated,s=@v/sample)",
+                "stable=evaluate(Calc.stable,s=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "partial");
+        assert_eq!(result.answers[0].status, Decision::Established);
+        assert_eq!(result.answers[1].status, Decision::Undetermined);
+        assert_eq!(result.answers[2].status, Decision::Established);
+        let proof = result.answers[0].evidence[0].0;
+        let pair = result.answers[1]
+            .evidence
+            .iter()
+            .find(|r| {
+                matches!(
+                    &result.nodes[r.0].payload,
+                    Some(Payload::CompletionPair { .. })
+                )
+            })
+            .unwrap()
+            .0;
+        for variant in 0..3 {
+            completion_mutation(&result, pair, |nodes| {
+                let Some(Payload::CompletionPair {
+                    fields,
+                    first,
+                    second,
+                    first_result,
+                    second_result,
+                }) = &mut nodes[pair].payload
+                else {
+                    unreachable!()
+                };
+                match variant {
+                    0 => fields[0].snapshot = "foreign".into(),
+                    1 => {
+                        *second = first.clone();
+                        let n = nodes[pair].arguments.len();
+                        nodes[pair].arguments[n - 1] = nodes[pair].arguments[n - 2];
+                    }
+                    _ => {
+                        *second_result = *first_result;
+                        nodes[pair].arguments[3] = nodes[pair].arguments[2];
+                    }
+                }
+            });
+        }
+        let stable = result.answers[2].outputs["value"].0;
+        completion_mutation(&result, stable, |nodes| {
+            nodes[stable].evidence = vec![NodeRef(pair)]
+        });
+        let skipped = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(i, n)| {
+                (result.contexts[i].request == 1
+                    && result.contexts[i].case.is_some()
+                    && matches!(
+                        &n.payload,
+                        Some(Payload::Evaluation {
+                            applicability: "not_applicable",
+                            ..
+                        })
+                    ))
+                .then_some(i)
+            })
+            .unwrap();
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[skipped].payload else {
+            unreachable!()
+        };
+        assert_eq!(parts.len(), 2);
+        assert!(parts[1].value.is_none() && parts[1].children.is_empty());
+        completion_mutation(&result, skipped, |nodes| {
+            nodes[skipped].evidence = vec![NodeRef(proof)]
+        });
+    }
+    #[test]
+    fn bool_completion_scopes_support_and_source_origins_remain_exact() {
+        let result = completion_private_example(
+            "view stable(s:Sample):Q=if s.p then s.q else s.q;",
+            &["first=evaluate(Calc.stable,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        let evaluation = result.answers[0].outputs["evaluation"].0;
+        let scalar = result.answers[0].outputs["value"].0;
+        let domain = result.nodes[evaluation].arguments[1].0;
+        let seed = result.nodes[domain].arguments[0].0;
+        let fact = result.nodes[scalar]
+            .support
+            .iter()
+            .find(|f| f.atom.is_some())
+            .unwrap()
+            .clone();
+        for target in [seed, domain, scalar, evaluation] {
+            completion_mutation(&result, target, |nodes| {
+                if nodes[target].support.is_empty() {
+                    nodes[target].support.push(fact.clone());
+                } else {
+                    nodes[target].support.clear();
+                }
+            });
+            completion_mutation(&result, target, |nodes| {
+                assert!(nodes[target].scope.snapshots.remove("v"));
+            });
+        }
+        completion_mutation(&result, seed, |nodes| {
+            let Some(Payload::CompletionSeed { location, .. }) = &mut nodes[seed].payload else {
+                unreachable!()
+            };
+            *location = Location::Law { span: (0, 1) };
+            nodes[seed].rule = Rule::Input {
+                kind: "law",
+                location: Location::Law { span: (0, 1) },
+            };
+        });
+    }
+    #[test]
+    fn bool_completion_foreign_requests_set_order_and_fresh_sessions_remain_exact() {
+        let result = completion_private_example(
+            "view stable(s:Sample):Set<Bool> = if s.p then set<Bool>{false,true} else set<Bool>{true,false};",
+            &[
+                "first=evaluate(Calc.stable,s=@v/sample)",
+                "again=evaluate(Calc.stable,s=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        let evaluation = result.answers[1].outputs["evaluation"].0;
+        let scalar = result.answers[1].outputs["value"].0;
+        let domain = result.nodes[evaluation].arguments[1].0;
+        let seed = result.nodes[domain].arguments[0].0;
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[evaluation].payload else {
+            unreachable!()
+        };
+        assert!(
+            result
+                .answers
+                .iter()
+                .all(|answer| answer.status == Decision::Established)
+        );
+        assert!(
+            result
+                .answers
+                .iter()
+                .all(|answer| answer.evidence.iter().any(|r| matches!(
+                    &result.nodes[r.0].payload,
+                    Some(Payload::FiniteExhaustion { checked: 2, .. })
+                )))
+        );
+        assert!(
+            !result
+                .nodes
+                .iter()
+                .any(|node| matches!(&node.payload, Some(Payload::CompletionPair { .. })))
+        );
+        let values: Vec<_> = parts[0]
+            .children
+            .iter()
+            .map(|r| {
+                let Some(Payload::Evaluation {
+                    value: Some(value), ..
+                }) = &result.nodes[r.0].payload
+                else {
+                    panic!("known case Set")
+                };
+                data_scalar_at(&result, value.0)
+            })
+            .collect();
+        assert_eq!(values.len(), 2);
+        let (Scalar::Set { items: first, .. }, Scalar::Set { items: second, .. }) =
+            (values[0], values[1])
+        else {
+            panic!("typed case Set values")
+        };
+        assert_ne!(first, second, "the case displays actually differ");
+        assert!(data::equal(values[0], values[1], &named_call_quiet()).unwrap());
+        let row = parts[0].children[0];
+        let previous = result.nodes[result.answers[0].outputs["evaluation"].0].arguments[2];
+        assert_ne!(row, previous);
+        completion_mutation(&result, evaluation, |nodes| {
+            let Some(Payload::Evaluation { parts, .. }) = &mut nodes[evaluation].payload else {
+                unreachable!()
+            };
+            parts[0].children[0] = previous;
+            nodes[evaluation].arguments[2] = previous;
+        });
+        // Domainと全coverageの表示順を一貫して変える。caseの数学的identityはmemberである。
+        let proof = result.answers[1].evidence[0].0;
+        let mut reordered = result.nodes.clone();
+        let Some(Payload::Domain { elements, .. }) = &mut reordered[domain].payload else {
+            unreachable!()
+        };
+        elements.reverse();
+        reordered[domain].arguments[1..].reverse();
+        let Some(Payload::FiniteExhaustion { instances, .. }) = &mut reordered[proof].payload
+        else {
+            unreachable!()
+        };
+        instances.reverse();
+        reordered[proof].arguments[2..].reverse();
+        let Some(Payload::Evaluation { parts, .. }) = &mut reordered[evaluation].payload else {
+            unreachable!()
+        };
+        parts[0].children.reverse();
+        reordered[evaluation].arguments[2..].reverse();
+        reordered[scalar].arguments[2..].reverse();
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        // 同じEnvironmentの次session・同じGraphを改変した検査へ成功を持ち越さない。
+        let mut graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let mut control = named_call_quiet();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        environment
+            .recheck_node(&graph, &graph.nodes[scalar], scalar)
+            .unwrap();
+        let original = graph.nodes[seed].scope.clone();
+        assert!(graph.nodes[seed].scope.readings.insert("Foreign".into()));
+        assert!(matches!(
+            environment.recheck_node(&graph, &graph.nodes[scalar], scalar),
+            Err(ValidationFailure::Internal(_))
+        ));
+        graph.nodes[seed].scope = original;
+        environment
+            .recheck_node(&graph, &graph.nodes[scalar], scalar)
+            .unwrap();
+    }
+    #[test]
+    fn bool_completion_actual_enumeration_stop_keeps_prefixes() {
+        bool_completion_actual_phase_stop("completion_enum", 1, 0);
+    }
+    #[test]
+    fn bool_completion_actual_case_stop_keeps_prefixes() {
+        bool_completion_actual_phase_stop("completion_case", 1, 1);
+    }
+    #[test]
+    fn bool_completion_actual_coverage_stop_keeps_prefixes() {
+        bool_completion_actual_phase_stop("completion_coverage", 0, 2);
+    }
+    #[test]
+    fn bool_completion_recheck_entry_stops_preserve_graph_and_reason() {
+        use super::super::control::{Limits, Resource, Usage};
+        use crate::result::Signal;
+        use std::{cell::Cell, rc::Rc};
+        let result = completion_private_example(
+            "view stable(s:Sample):Bool=s.p or not s.p;",
+            &["first=evaluate(Calc.stable,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        let scalar = result.answers[0].outputs["value"].0;
+        let graph =
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+        let snapshot = || {
+            format!(
+                "{:?}",
+                (
+                    &graph.nodes,
+                    &graph.contexts,
+                    &graph.frames,
+                    &graph.iterations,
+                    &graph.instances,
+                    &graph.cases
+                )
+            )
+        };
+        let before = snapshot();
+        // 深い全停止点ではなく、補完Scalar再照合の入口の一つの既存tickを検査する。
+        for kind in 0..3 {
+            let (limits, usage, expected) = match kind {
+                0 => (
+                    Limits::default(),
+                    Usage {
+                        signal: Some(Signal::Term),
+                        ..Usage::default()
+                    },
+                    StopReason::Cancelled(Signal::Term),
+                ),
+                1 => (
+                    Limits {
+                        time_ms: Some(3),
+                        memory_mib: None,
+                    },
+                    Usage {
+                        elapsed_ms: 4,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 3,
+                        observed: 4,
+                    },
+                ),
+                _ => (
+                    Limits {
+                        time_ms: None,
+                        memory_mib: Some(7),
+                    },
+                    Usage {
+                        memory_mib: 8,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 7,
+                        observed: 8,
+                    },
+                ),
+            };
+            let armed = Rc::new(Cell::new(false));
+            let probes = Rc::new(Cell::new(0));
+            let frozen = Rc::new(Cell::new(None));
+            let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+            let mut control = Control::new(limits, move |checkpoint| {
+                count.set(count.get() + 1);
+                if arm.replace(false) {
+                    assert_eq!(checkpoint, Checkpoint::FiniteIteration);
+                    assert!(freeze.replace(Some(count.get())).is_none());
+                    usage
+                } else {
+                    Usage::default()
+                }
+            });
+            let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+            environment
+                .recheck_node(&graph, &graph.nodes[scalar], scalar)
+                .unwrap();
+            let normal_probes = probes.get();
+            armed.set(true);
+            let failure = environment
+                .recheck_node(&graph, &graph.nodes[scalar], scalar)
+                .unwrap_err();
+            let ValidationFailure::Stop(actual) = failure else {
+                panic!("補完再照合のStopをInternalへ変えない")
+            };
+            assert_eq!(actual, expected);
+            assert_eq!(actual.wire(), expected.wire());
+            assert_eq!(probes.get(), normal_probes + 1);
+            assert_eq!(Some(probes.get()), frozen.get());
+            assert_eq!(snapshot(), before);
+            assert!(
+                matches!(environment.recheck_node(&graph,&graph.nodes[scalar],scalar),Err(ValidationFailure::Stop(actual)) if actual==expected)
+            );
+            assert_eq!(Some(probes.get()), frozen.get());
+            assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+            assert_eq!(Some(probes.get()), frozen.get());
+        }
+        rebuild_for_origin_and_support_recheck(&result, &graph.nodes).unwrap();
+    }
+    #[test]
+    fn bool_completion_enumeration_stop_retains_verified_original_view_value() {
+        bool_completion_known_original_stop(false);
+    }
+    #[test]
+    fn bool_completion_enumeration_stop_retains_verified_original_law_counterexample() {
+        bool_completion_known_original_stop(true);
+    }
+    fn bool_completion_known_original_stop(check: bool) {
+        use super::super::control::{Limits, Usage};
+        use crate::result::Signal;
+        use std::{
+            cell::{Cell, RefCell},
+            rc::Rc,
+        };
+        let body = if check {
+            "view seed():Unit=unit; law required current(s:Sample):false and s.p;"
+        } else {
+            "view seed():Unit=unit; view current(s:Sample):Bool=false and s.p;"
+        };
+        let inputs = numeric_recheck_fixture(&["p"], body);
+        let current = if check {
+            "current=check(Calc.current,s=@v/sample)"
+        } else {
+            "current=evaluate(Calc.current,s=@v/sample)"
+        };
+        let asks = [
+            "seed=evaluate(Calc.seed)",
+            current,
+            "later=evaluate(Calc.seed)",
+        ];
+        let mut quiet = named_call_quiet();
+        let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
+        let declaration = &prepared.inputs().law().declarations["Calc.current"];
+        let target = declaration.span;
+        let body_id = match &declaration.signature {
+            Signature::View { body, .. } | Signature::Law { body, .. } => *body,
+            _ => unreachable!(),
+        };
+        let body_span = prepared.inputs().law().exprs[body_id].span;
+        let normal = evaluate_observed(prepared, &mut quiet).unwrap();
+        assert_eq!(normal.status(), "complete", "{:?}", normal.issues);
+        assert_eq!(
+            normal.answers[1].status,
+            if check {
+                Decision::Refuted
+            } else {
+                Decision::Established
+            }
+        );
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let raw:Vec<_>=normal.nodes.iter().enumerate().filter_map(|(index,node)| {
+            let context=normal.contexts[index];
+            if context.request!=1 || context.case.is_some() || context.frame.is_some() || context.iteration.is_some() || context.instance.is_some() {return None;}
+            (matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if matches!(&normal.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))).then_some(index)
+        }).collect();
+        assert_eq!(raw.len(), 1);
+        let raw = NodeRef(raw[0]);
+        let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &normal.nodes[raw.0].payload
+        else {
+            panic!("known observed false")
+        };
+        let value = *value;
+        assert_eq!(data_scalar_at(&normal, value.0), &Scalar::Bool(false));
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=value.0]).unwrap();
+        let original_prop = if check {
+            let refs: Vec<_> = normal
+                .nodes
+                .iter()
+                .enumerate()
+                .filter_map(|(index, node)| {
+                    (normal.contexts[index].request == 1
+                        && normal.contexts[index].case.is_none()
+                        && matches!(&node.payload, Some(Payload::Proposition { .. }))
+                        && node.arguments.get(1) == Some(&raw))
+                    .then_some(NodeRef(index))
+                })
+                .collect();
+            assert_eq!(refs.len(), 1);
+            let proposition = refs[0];
+            assert_eq!(
+                normal.nodes[proposition.0]
+                    .judgment
+                    .as_ref()
+                    .unwrap()
+                    .status,
+                Decision::Refuted
+            );
+            assert!(
+                normal.nodes[proposition.0]
+                    .evidence
+                    .iter()
+                    .any(|r| matches!(
+                        &normal.nodes[r.0].payload,
+                        Some(Payload::Counterexample { .. })
+                    ))
+            );
+            rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=proposition.0])
+                .unwrap();
+            Some(proposition)
+        } else {
+            None
+        };
+        let armed = Rc::new(Cell::new(false));
+        let probes = Rc::new(Cell::new(0));
+        let frozen = Rc::new(Cell::new(None));
+        let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+        let mut control = Control::new(Limits::default(), move |checkpoint| {
+            count.set(count.get() + 1);
+            if arm.replace(false) {
+                assert_eq!(checkpoint, Checkpoint::FiniteIteration);
+                assert!(freeze.replace(Some(count.get())).is_none());
+                Usage {
+                    signal: Some(Signal::Term),
+                    ..Usage::default()
+                }
+            } else {
+                Usage::default()
+            }
+        });
+        let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+        let seen = Rc::new(RefCell::new(Vec::new()));
+        let progress = seen.clone();
+        let stopped = evaluate_observed_with_validator(
+            prepared,
+            &mut control,
+            |environment, graph, request, answer| {
+                environment.validate_answer(graph, request, answer)?;
+                if request.id == "seed" {
+                    let (progress, armed) = (progress.clone(), armed.clone());
+                    data::observe_iterations(move |span, context, phase, index| {
+                        if span == target
+                            && context.request == 1
+                            && context.case.is_none()
+                            && phase == "completion_enum"
+                        {
+                            progress.borrow_mut().push(index);
+                            if index == 1 {
+                                armed.set(true);
+                            }
+                        }
+                    });
+                }
+                Ok(())
+            },
+        );
+        data::clear_iteration_observer();
+        let stopped = stopped.unwrap();
+        assert_eq!(&*seen.borrow(), &[0, 1]);
+        let expected = StopReason::Cancelled(Signal::Term);
+        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(Some(probes.get()), frozen.get());
+        assert_eq!(stopped.status(), "interrupted");
+        let Json::Obj(ref normal_wire) = normal.wire() else {
+            unreachable!()
+        };
+        let Json::Arr(normal_answers) = &normal_wire["answers"] else {
+            unreachable!()
+        };
+        let Json::Obj(ref stopped_wire) = stopped.wire() else {
+            unreachable!()
+        };
+        let Json::Arr(stopped_answers) = &stopped_wire["answers"] else {
+            unreachable!()
+        };
+        assert_eq!(stopped_answers[0], normal_answers[0]);
+        assert_eq!(
+            stopped.answers[1].status,
+            if check {
+                Decision::Refuted
+            } else {
+                Decision::Established
+            }
+        );
+        assert_eq!(stopped.answers[1].outputs.get("evaluation"), Some(&raw));
+        assert_eq!(stopped.answers[1].claim, original_prop);
+        if check {
+            let proposition = original_prop.unwrap();
+            assert_eq!(
+                stopped.answers[1].evidence,
+                normal.nodes[proposition.0].evidence
+            );
+            assert!(stopped.answers[1].evidence.iter().any(|r| matches!(
+                &stopped.nodes[r.0].payload,
+                Some(Payload::Counterexample { .. })
+            )));
+        } else {
+            assert_eq!(stopped.answers[1].outputs.get("value"), Some(&value));
+        }
+        assert!(
+            stopped.answers[1]
+                .reasons
+                .iter()
+                .flat_map(|reason| &reason.missing)
+                .any(|fact| fact.field.as_deref() == Some("Numeric.Sample.p"))
+        );
+        for answer in &stopped.answers[1..] {
+            let reason = answer
+                .reasons
+                .iter()
+                .find(|r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected))
+                .unwrap();
+            let Json::Obj(ref wire) = reason.wire() else {
+                unreachable!()
+            };
+            let Json::Obj(ref expected_wire) = expected.wire() else {
+                unreachable!()
+            };
+            assert_eq!(wire.get("details"), expected_wire.get("details"));
+        }
+        assert!(stopped.answers[2].outputs.is_empty());
+        assert_eq!(stopped.answers[2].status, Decision::Undetermined);
+        assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
+            stopped.contexts[index].request == 1
+                && matches!(
+                    &node.payload,
+                    Some(
+                        Payload::Domain { .. }
+                            | Payload::FiniteExhaustion { .. }
+                            | Payload::CompletionPair { .. }
+                    )
+                )
+        }));
+        rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+        let before = probes.get();
+        assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+        assert_eq!(probes.get(), before);
+    }
+    fn bool_completion_actual_phase_stop(phase: &'static str, at: usize, kind: usize) {
+        use super::super::control::{Limits, Resource, Usage};
+        use crate::result::Signal;
+        use std::{
+            cell::{Cell, RefCell},
+            rc::Rc,
+        };
+        let body = "view seed():Unit=unit; law required prior(s:Sample):s.f=0; view hole(s:Sample):Q=s.q; view current(s:Sample):Bool=s.p or not s.p;";
+        let asks = [
+            "seed=evaluate(Calc.seed)",
+            "prior=check(Calc.prior,s=@v/sample)",
+            "hole=evaluate(Calc.hole,s=@v/sample)",
+            "current=evaluate(Calc.current,s=@v/sample)",
+            "later=evaluate(Calc.seed)",
+        ];
+        {
+            let inputs = numeric_recheck_fixture(&["p", "q"], body);
+            let mut quiet = named_call_quiet();
+            let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
+            let target = prepared.inputs().law().declarations["Calc.current"].span;
+            let Signature::View {
+                body: current_body, ..
+            } = &prepared.inputs().law().declarations["Calc.current"].signature
+            else {
+                unreachable!()
+            };
+            let body_span = prepared.inputs().law().exprs[*current_body].span;
+            let progress = Rc::new(RefCell::new(Vec::new()));
+            let observed = progress.clone();
+            let normal = evaluate_observed_with_validator(
+                prepared,
+                &mut quiet,
+                |environment, graph, request, answer| {
+                    environment.validate_answer(graph, request, answer)?;
+                    if request.id == "hole" {
+                        let observed = observed.clone();
+                        data::observe_iterations(move |span, context, operation, index| {
+                            if span == target
+                                && context.request == 3
+                                && context.case.is_none()
+                                && operation == phase
+                            {
+                                observed.borrow_mut().push(index);
+                            }
+                        });
+                    }
+                    Ok(())
+                },
+            );
+            data::clear_iteration_observer();
+            let normal = normal.unwrap();
+            assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
+            assert_eq!(normal.answers[1].status, Decision::Refuted);
+            assert_eq!(normal.answers[3].status, Decision::Established);
+            assert_eq!(
+                &*progress.borrow(),
+                if phase == "completion_coverage" {
+                    &[0][..]
+                } else {
+                    &[0, 1][..]
+                }
+            );
+            rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+            let (limits, usage, expected) = match kind {
+                0 => (
+                    Limits::default(),
+                    Usage {
+                        signal: Some(Signal::Term),
+                        ..Usage::default()
+                    },
+                    StopReason::Cancelled(Signal::Term),
+                ),
+                1 => (
+                    Limits {
+                        time_ms: Some(3),
+                        memory_mib: None,
+                    },
+                    Usage {
+                        elapsed_ms: 4,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 3,
+                        observed: 4,
+                    },
+                ),
+                _ => (
+                    Limits {
+                        time_ms: None,
+                        memory_mib: Some(7),
+                    },
+                    Usage {
+                        memory_mib: 8,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 7,
+                        observed: 8,
+                    },
+                ),
+            };
+            let armed = Rc::new(Cell::new(false));
+            let probes = Rc::new(Cell::new(0));
+            let frozen = Rc::new(Cell::new(None));
+            let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+            let mut control = Control::new(limits, move |checkpoint| {
+                count.set(count.get() + 1);
+                if arm.replace(false) {
+                    assert_eq!(checkpoint, Checkpoint::FiniteIteration);
+                    assert!(freeze.replace(Some(count.get())).is_none());
+                    usage
+                } else {
+                    Usage::default()
+                }
+            });
+            let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+            let seen = Rc::new(RefCell::new(Vec::new()));
+            let observed = seen.clone();
+            let stopped = evaluate_observed_with_validator(
+                prepared,
+                &mut control,
+                |environment, graph, request, answer| {
+                    environment.validate_answer(graph, request, answer)?;
+                    if request.id == "hole" {
+                        let (observed, armed) = (observed.clone(), armed.clone());
+                        data::observe_iterations(move |span, context, operation, index| {
+                            if span == target
+                                && context.request == 3
+                                && context.case.is_none()
+                                && operation == phase
+                            {
+                                observed.borrow_mut().push(index);
+                                if index == at {
+                                    armed.set(true);
+                                }
+                            }
+                        });
+                    }
+                    Ok(())
+                },
+            );
+            data::clear_iteration_observer();
+            let stopped = stopped.unwrap();
+            assert_eq!(seen.borrow().last(), Some(&at));
+            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(Some(probes.get()), frozen.get());
+            assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
+            let Json::Obj(ref normal_wire) = normal.wire() else {
+                unreachable!()
+            };
+            let Json::Arr(normal_answers) = &normal_wire["answers"] else {
+                unreachable!()
+            };
+            let Json::Obj(ref stopped_wire) = stopped.wire() else {
+                unreachable!()
+            };
+            let Json::Arr(stopped_answers) = &stopped_wire["answers"] else {
+                unreachable!()
+            };
+            assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
+            for answer in &stopped.answers[3..] {
+                assert!(answer.outputs.is_empty());
+                assert!(answer.evidence.is_empty());
+                let reason = answer
+                    .reasons
+                    .iter()
+                    .find(|r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected))
+                    .unwrap();
+                let Json::Obj(ref rw) = reason.wire() else {
+                    unreachable!()
+                };
+                let Json::Obj(ref ew) = expected.wire() else {
+                    unreachable!()
+                };
+                assert_eq!(rw.get("details"), ew.get("details"));
+            }
+            assert!(
+                stopped.answers[3]
+                    .reasons
+                    .iter()
+                    .flat_map(|r| &r.missing)
+                    .any(|f| f.field.as_deref() == Some("Numeric.Sample.p"))
+            );
+            let expected_cases = if phase == "completion_enum" {
+                0
+            } else if phase == "completion_case" {
+                1
+            } else {
+                2
+            };
+            let completed=stopped.nodes.iter().enumerate().filter(|(i,node)| {
+                stopped.contexts[*i].request==3 && stopped.contexts[*i].case.is_some()
+                    && matches!(&node.payload,Some(Payload::Evaluation {expression,..})
+                        if matches!(&stopped.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))
+            }).count();
+            assert_eq!(completed, expected_cases);
+            assert!(
+                !stopped
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .any(|(i, n)| stopped.contexts[i].request == 3
+                        && matches!(
+                            &n.payload,
+                            Some(Payload::FiniteExhaustion { .. } | Payload::CompletionPair { .. })
+                        ))
+            );
+            rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+            let before = probes.get();
+            assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+            assert_eq!(probes.get(), before);
+        }
+    }
     fn quantifier_actual_phases_preserve_stops(typed: bool, plain: bool) {
         use super::super::control::{Limits, Resource, Usage};
         use crate::result::Signal;
@@ -10138,6 +11486,7 @@ reading Calc {{
                 frame: None,
                 iteration: None,
                 instance: None,
+                case: None,
             };
             let progress = Rc::new(RefCell::new(Vec::new()));
             let progress_clone = progress.clone();

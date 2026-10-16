@@ -13,6 +13,8 @@ use crate::{
     law::ast::{BinOp, ExprKind, UnOp},
     types::Type,
 };
+#[path = "completion.rs"]
+pub(super) mod completion;
 #[path = "family.rs"]
 pub(super) mod family;
 
@@ -64,6 +66,7 @@ type SourceCacheEntry = (
 type FrameInputs = (Vec<Binding>, BTreeMap<String, SourceValue>, Scope);
 type NodeRefKey = (super::call::Context, usize);
 type IterationInputs = (NodeRef, Scalar, SourceAnalysis);
+type CompletionValues = Vec<(Fact, NodeRef, Scalar)>;
 
 // 一回の不変Graph借用に閉じた成功照合だけを共有する。呼出し終了時に破棄する。
 #[derive(Default)]
@@ -73,6 +76,10 @@ struct ValidationCache {
     sources: Vec<SourceCacheEntry>,
     frames: BTreeMap<(usize, usize), FrameInputs>,
     iterations: BTreeMap<(usize, usize), IterationInputs>,
+    completion_seeds: BTreeMap<completion::MemoKey, completion::Seed>,
+    completion_domains: BTreeMap<completion::DomainKey, Vec<NodeRef>>,
+    completion_cases: BTreeMap<completion::MemoKey, CompletionValues>,
+    completion_slots: BTreeMap<completion::SlotsKey, completion::SlotCollection>,
 }
 
 #[cfg(test)]
@@ -88,6 +95,7 @@ pub(crate) struct Environment<'a> {
     expressions: BTreeMap<(usize, usize), usize>,
     control: Control,
     context: Cell<Option<super::call::Context>>,
+    completion_values: RefCell<CompletionValues>,
     scoped_context: Cell<Option<super::call::Context>>,
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
@@ -158,6 +166,7 @@ impl<'a> Environment<'a> {
             expressions,
             control: control.clone(),
             context: Cell::new(None),
+            completion_values: RefCell::new(Vec::new()),
             scoped_context: Cell::new(None),
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
@@ -348,16 +357,22 @@ impl<'a> Environment<'a> {
             }
             let previous = self.context.replace(Some(context));
             let old_cutoff = self.cutoff.replace(limit);
-            let result = self
-                .validate_in_context(graph, node, limit)
-                .map_err(|failure| match failure {
-                    ValidationFailure::UnsupportedExpression { feature, .. } => {
-                        ValidationFailure::Internal(format!(
-                            "未対応の元式から生成済みnodeを照合できない: {feature}"
-                        ))
-                    }
-                    other => other,
-                });
+            let previous_completion = self.completion_values.replace(Vec::new());
+            let result = (|| {
+                if let Some(case) = context.case {
+                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                }
+                self.validate_in_context(graph, node, limit)
+            })()
+            .map_err(|failure| match failure {
+                ValidationFailure::UnsupportedExpression { feature, .. } => {
+                    ValidationFailure::Internal(format!(
+                        "未対応の元式から生成済みnodeを照合できない: {feature}"
+                    ))
+                }
+                other => other,
+            });
+            self.completion_values.replace(previous_completion);
             self.cutoff.set(old_cutoff);
             self.context.set(previous);
             if resident && result.is_ok() {
@@ -454,7 +469,8 @@ impl<'a> Environment<'a> {
         let context = self.current_context(graph);
         if let Some(index) = context.iteration {
             let iteration = graph.iterations.get(index).ok_or("nodeの反復がない")?;
-            if iteration.caller.instance != context.instance
+            if iteration.caller.case != context.case
+                || iteration.caller.instance != context.instance
                 || iteration.caller.request != context.request
                 || iteration.caller.frame != context.frame
                 || iteration
@@ -525,6 +541,28 @@ impl<'a> Environment<'a> {
         {
             return Err("nodeの実instanceがcall元と違う".into());
         }
+        if let Some(frame) = context.frame
+            && graph
+                .frames
+                .get(frame)
+                .ok_or("node frameがない")?
+                .caller
+                .case
+                != context.case
+        {
+            return Err("nodeの補完がcall元と違う".into());
+        }
+        if let Some(instance) = context.instance
+            && graph
+                .instances
+                .get(instance)
+                .ok_or("node instanceがない")?
+                .caller
+                .case
+                != context.case
+        {
+            return Err("nodeの補完がinstance元と違う".into());
+        }
         for f in &node.support {
             self.tick()?;
             self.fact(f)?;
@@ -541,6 +579,9 @@ impl<'a> Environment<'a> {
                 self.tick()?;
             }
             self.tick()?;
+        }
+        if self.validate_completion_node(graph, node, limit)? {
+            return Ok(());
         }
         if self.validate_family_node(graph, node, limit)? {
             return Ok(());
@@ -598,6 +639,7 @@ impl<'a> Environment<'a> {
                     if self.current_context(graph).frame.is_some()
                         || self.current_context(graph).instance.is_some()
                         || self.current_context(graph).iteration.is_some()
+                        || self.current_context(graph).case.is_some()
                     {
                         self.call_field_source(graph, node, limit)?;
                     }
@@ -2452,6 +2494,9 @@ impl<'a> Environment<'a> {
             }
             _ => return Err("Request種別と元宣言が違う".into()),
         };
+        if self.validate_completion_answer(graph, request, answer)? {
+            return Ok(());
+        }
         if self.validate_family_answer(graph, request, answer)? {
             return Ok(());
         }
@@ -2784,7 +2829,8 @@ impl<'a> Environment<'a> {
         while let Some(index) = context.iteration {
             self.tick()?;
             let record = graph.iterations.get(index).ok_or("lexical反復元がない")?;
-            if record.caller.instance != context.instance
+            if record.caller.case != context.case
+                || record.caller.instance != context.instance
                 || record.caller.request != context.request
                 || record.caller.frame != context.frame
                 || record
@@ -3555,6 +3601,7 @@ impl<'a> Environment<'a> {
                     || record.source != own
                     || record.domain != input
                     || context.frame != record.caller.frame
+                    || context.case != record.caller.case
                     || context.instance != record.caller.instance
                     || context.request != record.caller.request
                 {
@@ -3999,6 +4046,11 @@ impl<'a> Environment<'a> {
                 .ok_or("Sourceの実instanceがない")?;
             arguments.extend([record.source, record.domain, record.member]);
         }
+        if let Some(case) = self.current_context(graph).case {
+            let record = graph.cases.get(case).ok_or("Sourceの補完がない")?;
+            arguments.extend([record.seed, record.domain, record.member]);
+            arguments.extend(record.values.iter().copied());
+        }
         for (matching, arm) in self.enclosing_matches(span)? {
             let ExprKind::Match { scrutinee, .. } = self.inputs.law().exprs[matching].kind else {
                 unreachable!()
@@ -4060,7 +4112,14 @@ impl<'a> Environment<'a> {
                 return Ok(value);
             }
             let previous = self.scoped_context.replace(Some(context));
-            let result = self.analyze_source_uncached(graph, span, bindings);
+            let previous_completion = self.completion_values.replace(Vec::new());
+            let result = (|| {
+                if let Some(case) = context.case {
+                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                }
+                self.analyze_source_uncached(graph, span, bindings)
+            })();
+            self.completion_values.replace(previous_completion);
             self.scoped_context.set(previous);
             let value = result?;
             self.cache.borrow_mut().sources.push((
@@ -4195,6 +4254,9 @@ impl<'a> Environment<'a> {
             }
             (base, variables)
         };
+        if self.current_context(graph).case.is_some() {
+            base.completions = true;
+        }
         // parameter の範囲は全明示束縛を含む。Scalar 自体の由来範囲とは区別する。
         for variable in variables.values_mut() {
             self.tick()?;
@@ -4986,9 +5048,30 @@ impl<'a> Environment<'a> {
                 )
             }
             Slot::Missing => {
-                scope.merge(&self.scope(owner, reading, None)?);
+                let owner_scope = self.scope(owner, reading, None)?;
+                scope.merge(&owner_scope);
                 scope.completions = true;
-                (None, None)
+                let assigned = self
+                    .completion_values
+                    .borrow()
+                    .iter()
+                    .find(|(fact, _, _)| {
+                        fact.snapshot == snapshot
+                            && fact.subject == subject
+                            && fact.field.as_deref() == Some(field.name.as_str())
+                    })
+                    .map(|(_, _, value)| value.clone());
+                if let Some(assigned) = assigned {
+                    if field.ty != Type::Bool || assigned.ty() != Type::Bool {
+                        return Err("Bool以外のslotを補完した".into());
+                    }
+                    let mut scalar_scope = request_base.clone();
+                    scalar_scope.merge(&owner_scope);
+                    scalar_scope.completions = true;
+                    (Some(assigned), Some(scalar_scope))
+                } else {
+                    (None, None)
+                }
             }
         };
         support.sort();
@@ -5137,10 +5220,16 @@ impl<'a> Environment<'a> {
     }
     fn expression_span(&self, graph: &Graph, r: NodeRef) -> Result<(usize, usize), String> {
         match &graph.get(r)?.payload {
-            Some(Payload::Expression {
-                location: Location::Law { span },
-                ..
-            }) => Ok(*span),
+            Some(
+                Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }
+                | Payload::CompletionSeed {
+                    location: Location::Law { span },
+                    ..
+                },
+            ) => Ok(*span),
             _ => Err("元式 span がない".into()),
         }
     }
@@ -5150,9 +5239,11 @@ impl<'a> Environment<'a> {
         r: NodeRef,
     ) -> Result<&'g [Binding], String> {
         match &graph.get(r)?.payload {
-            Some(Payload::Expression { bindings, .. } | Payload::Transform { bindings, .. }) => {
-                Ok(bindings)
-            }
+            Some(
+                Payload::Expression { bindings, .. }
+                | Payload::CompletionSeed { bindings, .. }
+                | Payload::Transform { bindings, .. },
+            ) => Ok(bindings),
             _ => Err("式束縛がない".into()),
         }
     }
@@ -5259,6 +5350,28 @@ impl<'a> Environment<'a> {
         };
         let field = self.field(snapshot, subject, &format!("{entity}.{name}"))?;
         match (&field.slot, value) {
+            (Slot::Missing, Some(actual)) if field.ty == Type::Bool => {
+                let fact = Fact {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: Some(field.name.clone()),
+                    atom: None,
+                };
+                let assigned = self
+                    .completion_slot(graph, &fact)?
+                    .ok_or("元slotの補完代入がない")?;
+                let node = graph.get(actual)?;
+                if node.arguments.len() != 3
+                    || node.arguments[1] != base
+                    || node.arguments[2] != assigned
+                    || graph.scalar(actual)? != graph.scalar(assigned)?
+                    || graph.context_at(actual.0) != self.current_context(graph)
+                {
+                    return Err("field値が元補完producerと違う".into());
+                }
+                self.validate_at(graph, node, actual.0)?;
+                Ok(())
+            }
             (Slot::Missing, None) => Ok(()),
             (
                 Slot::Known {
@@ -5351,6 +5464,14 @@ impl<'a> Environment<'a> {
             }
             self.validate_at(graph, node, reference.0)?;
             self.validate_at(graph, graph.get(*expression)?, expression.0)?;
+            if node.arguments.first().is_some_and(|r| {
+                matches!(
+                    graph.get(*r).map(|n| &n.payload),
+                    Ok(Some(Payload::CompletionSeed { .. }))
+                )
+            }) {
+                continue;
+            }
             if let Some(&instance) = node.arguments.first()
                 && self.family_template(graph, instance)?
             {
@@ -5966,6 +6087,7 @@ impl<'a> Environment<'a> {
                         || record.source != source
                         || record.domain != input
                         || record.finite != finite
+                        || context.case != record.caller.case
                         || context.instance != record.caller.instance
                         || context.request != record.caller.request
                         || context.frame != record.caller.frame

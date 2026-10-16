@@ -6,6 +6,8 @@ use super::{
 };
 use crate::{canonical::Json, issue::Location, result::location_wire, types::Type};
 use num_bigint::BigInt;
+#[path = "completion_graph.rs"]
+mod completion_graph;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Debug)]
@@ -722,6 +724,29 @@ pub(crate) fn conditional_bool(guard: Option<bool>, body: Option<bool>) -> Optio
 }
 #[derive(Clone, Debug)]
 pub(crate) enum Payload {
+    CompletionSeed {
+        location: Location,
+        parameters: Vec<(String, Type)>,
+        bindings: Vec<Binding>,
+        roots: Vec<NodeRef>,
+        fields: Vec<Fact>,
+        sources: Vec<NodeRef>,
+    },
+    CompletionInstance {
+        name: String,
+        role: &'static str,
+        bindings: Vec<Binding>,
+        guard: Option<NodeRef>,
+        body: NodeRef,
+        occurrence: Location,
+    },
+    CompletionPair {
+        fields: Vec<Fact>,
+        first: Vec<NodeRef>,
+        second: Vec<NodeRef>,
+        first_result: NodeRef,
+        second_result: NodeRef,
+    },
     Domain {
         ty: Type,
         elements: Vec<NodeRef>,
@@ -781,6 +806,25 @@ impl Payload {
                 ("type", ty.wire()),
                 ("elements", refs(elements)),
             ]),
+            Self::CompletionPair {
+                fields,
+                first,
+                second,
+                first_result,
+                second_result,
+            } => Json::obj([
+                ("kind", Json::str("completion_pair")),
+                (
+                    "data",
+                    Json::obj([
+                        ("fields", Json::Arr(fields.iter().map(Fact::wire).collect())),
+                        ("first", refs(first)),
+                        ("second", refs(second)),
+                        ("first_result", first_result.wire()),
+                        ("second_result", second_result.wire()),
+                    ]),
+                ),
+            ]),
             Self::FiniteExhaustion {
                 domain,
                 checked,
@@ -801,6 +845,12 @@ impl Payload {
                 location,
                 parameters,
                 bindings,
+            }
+            | Self::CompletionSeed {
+                location,
+                parameters,
+                bindings,
+                ..
             } => Json::obj([
                 ("kind", Json::str("source")),
                 ("location", location_wire(location)),
@@ -865,6 +915,14 @@ impl Payload {
                 Json::Obj(wire)
             }
             Self::LawInstance {
+                name,
+                role,
+                bindings,
+                guard,
+                body,
+                occurrence,
+            }
+            | Self::CompletionInstance {
                 name,
                 role,
                 bindings,
@@ -1059,6 +1117,8 @@ pub struct ObservedEvaluation {
     pub(super) iterations: Vec<super::call::Iteration>,
     #[cfg(test)]
     pub(super) instances: Vec<super::call::Instance>,
+    #[cfg(test)]
+    pub(super) cases: Vec<super::call::CompletionCase>,
 }
 impl ObservedEvaluation {
     pub fn status(&self) -> &str {
@@ -1114,6 +1174,7 @@ pub(crate) struct Graph {
     pub(super) frames: Vec<super::call::Frame>,
     pub(super) iterations: Vec<super::call::Iteration>,
     pub(super) instances: Vec<super::call::Instance>,
+    pub(super) cases: Vec<super::call::CompletionCase>,
     pub(super) active: super::call::Context,
     pub(super) requests: Vec<super::request::Request>,
     control: Control,
@@ -1151,6 +1212,7 @@ impl Graph {
             frames: vec![],
             iterations: vec![],
             instances: vec![],
+            cases: vec![],
             active: super::call::Context::default(),
             requests: vec![],
             control: control.clone(),
@@ -1237,6 +1299,9 @@ impl Graph {
         &self,
         node: &Node,
     ) -> Result<(), ValidationFailure> {
+        if self.completion_proposition_evidence(node)? {
+            return Ok(());
+        }
         let Some(Payload::Proposition { instance }) = &node.payload else {
             return Err("証拠添付先が Proposition でない".into());
         };
@@ -1515,15 +1580,29 @@ impl Graph {
                 }
                 for instance in instances {
                     self.tick()?;
-                    self.expect(*instance, &NodeType::Evaluation(Type::Bool))?;
+                    if self.get(*domain)?.arguments.first().is_some_and(|r| {
+                        matches!(
+                            self.get(*r).map(|n| &n.payload),
+                            Ok(Some(Payload::CompletionSeed { .. }))
+                        )
+                    }) {
+                        if !matches!(self.get(*instance)?.ty, NodeType::Evaluation(_)) {
+                            return Err("補完coverageがEvaluationでない".into());
+                        }
+                    } else {
+                        self.expect(*instance, &NodeType::Evaluation(Type::Bool))?;
+                    }
                 }
             }
             (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {
                 super::data::check_shape(s, &self.control)?;
             }
-            (NodeType::Expression(_), Some(Payload::Expression { bindings, .. })) => {
-                self.bindings(bindings)?
-            }
+            (
+                NodeType::Expression(_),
+                Some(
+                    Payload::Expression { bindings, .. } | Payload::CompletionSeed { bindings, .. },
+                ),
+            ) => self.bindings(bindings)?,
             (
                 NodeType::Expression(Type::Bool),
                 Some(Payload::Transform {
@@ -1584,12 +1663,20 @@ impl Graph {
             }
             (
                 NodeType::LawInstance,
-                Some(Payload::LawInstance {
-                    bindings,
-                    guard,
-                    body,
-                    ..
-                }),
+                Some(
+                    Payload::LawInstance {
+                        bindings,
+                        guard,
+                        body,
+                        ..
+                    }
+                    | Payload::CompletionInstance {
+                        bindings,
+                        guard,
+                        body,
+                        ..
+                    },
+                ),
             ) => {
                 self.bindings(bindings)?;
                 self.expect(*body, &NodeType::Expression(Type::Bool))?;
@@ -1621,6 +1708,34 @@ impl Graph {
                     if self.scalar(*d)? != &expected {
                         return Err("型付き残差が元の両辺に合わない".into());
                     }
+                }
+            }
+            (
+                NodeType::Evidence,
+                Some(Payload::CompletionPair {
+                    fields,
+                    first,
+                    second,
+                    first_result,
+                    second_result,
+                }),
+            ) => {
+                if fields.is_empty()
+                    || fields.len() != first.len()
+                    || fields.len() != second.len()
+                    || fields.iter().enumerate().any(|(i, f)| {
+                        f.field.is_none() || f.atom.is_some() || fields[..i].contains(f)
+                    })
+                {
+                    return Err("補完対の元slot列が不正".into());
+                }
+                for r in first.iter().chain(second) {
+                    self.value(*r, &Type::Bool)?;
+                }
+                if !matches!(&self.get(*first_result)?.ty, NodeType::Evaluation(_))
+                    || self.get(*first_result)?.ty != self.get(*second_result)?.ty
+                {
+                    return Err("補完対の結果型が違う".into());
                 }
             }
             (
@@ -1699,7 +1814,19 @@ impl Graph {
             }
             self.tick()?;
         }
-        if a.claim.is_none() && !a.evidence.is_empty() {
+        if a.claim.is_none()
+            && !a.evidence.is_empty()
+            && !a.outputs.get("evaluation").is_some_and(|r| {
+                self.get(*r).is_ok_and(|n| {
+                    n.arguments.first().is_some_and(|s| {
+                        matches!(
+                            self.get(*s).map(|n| &n.payload),
+                            Ok(Some(Payload::CompletionSeed { .. }))
+                        )
+                    })
+                })
+            })
+        {
             return Err("claim のない Answer に命題証拠がある".into());
         }
         if !check && (a.claim.is_some() || a.status == Decision::Refuted) {
