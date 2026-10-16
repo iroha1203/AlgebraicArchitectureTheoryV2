@@ -47,6 +47,14 @@ struct SourceValue {
     scalar_scope: Option<Scope>,
 }
 
+/// 元の左右は未確定のまま、差だけが定数になった比較の再分析結果。
+struct AffineComparison {
+    analysis: SourceAnalysis,
+    value: Scalar,
+    residual: Scalar,
+    operands: [NodeRef; 2],
+}
+
 #[derive(Clone)]
 enum LexicalOrigin {
     Let(usize),
@@ -1414,14 +1422,34 @@ impl<'a> Environment<'a> {
                         let affine_constant = computed.is_none()
                             && matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul)
                             && matches!(self.inputs.law().expr_type(*lhs), Some(Type::Z | Type::Q));
-                        let computed = if affine_constant {
+                        let affine_comparison = computed.is_none()
+                            && matches!(op, BinOp::Eq | BinOp::Ne)
+                            && matches!(self.inputs.law().expr_type(*lhs), Some(Type::Z | Type::Q))
+                            && analysis.known_value.is_some();
+                        let computed = if affine_constant || affine_comparison {
                             analysis.known_value.clone()
                         } else {
                             computed
                         };
                         match (computed, *value) {
                             (Some(expected), Some(result)) => {
-                                let arguments = if affine_constant {
+                                let arguments = if affine_comparison {
+                                    let result_node = graph.get(result)?;
+                                    self.affine_comparison_source_analysis(
+                                        graph,
+                                        result_node,
+                                        result.0,
+                                    )?;
+                                    if result_node.arguments[..3]
+                                        != [*expression, children[0], children[1]]
+                                    {
+                                        return Err(
+                                            "アフィン比較Boolの元Source・実左右が親評価と違う"
+                                                .into(),
+                                        );
+                                    }
+                                    result_node.arguments.clone()
+                                } else if affine_constant {
                                     let mut arguments = vec![*expression];
                                     arguments.extend(children.iter().copied());
                                     self.affine_source_analysis(
@@ -1446,6 +1474,16 @@ impl<'a> Environment<'a> {
                             _ => return Err("部分既知の元演算と結果値の有無が違う".into()),
                         }
                         match (op, pair, parts[0].residual) {
+                            (BinOp::Eq | BinOp::Ne, _, Some(residual)) if affine_comparison => {
+                                let result = value.ok_or("アフィン比較のBool値がない")?;
+                                if graph.get(result)?.arguments[4] != residual {
+                                    return Err("アフィン比較のpart残差が実差導出と違う".into());
+                                }
+                                self.validate_at(graph, graph.get(residual)?, residual.0)?;
+                            }
+                            (BinOp::Eq | BinOp::Ne, _, None) if affine_comparison => {
+                                return Err("アフィン比較の型付き残差がない".into());
+                            }
                             (BinOp::Eq, Some((left, right)), residual)
                                 if numeric::is_numeric_type(
                                     self.inputs
@@ -1605,6 +1643,9 @@ impl<'a> Environment<'a> {
             }
         }
         match &node.payload {
+            Some(Payload::Normalization { .. }) => {
+                self.affine_normalization_analysis(graph, node, limit)?;
+            }
             Some(Payload::Domain { .. }) => self.validate_domain(graph, node, limit)?,
             Some(Payload::FiniteExhaustion { .. }) => {
                 self.validate_finite_exhaustion(graph, node, limit)?
@@ -1957,6 +1998,9 @@ impl<'a> Environment<'a> {
                     Ok(Some(Payload::Expression { .. }))
                 )
             }) {
+                if scalar.ty() == Type::Bool {
+                    return self.affine_comparison_source_analysis(graph, node, limit);
+                }
                 return self.affine_source_analysis(graph, node, limit);
             }
             let id = *self.expressions.get(span).ok_or("生成値の元 AST がない")?;
@@ -2078,6 +2122,285 @@ impl<'a> Environment<'a> {
             self.tick()?;
             Err("生成 Scalar に既出の own Source・元子評価の証人がない".into())
         })
+    }
+    /// 通常値を持たない元左右から、定数残差による Eq/Ne だけを返す。
+    pub(super) fn affine_comparison(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
+        self.validation_session(|| {
+            self.tick()?;
+            let id = *self.expressions.get(&span).ok_or("比較の元ASTがない")?;
+            let ExprKind::Binary {
+                op: op @ (BinOp::Eq | BinOp::Ne),
+                lhs,
+                rhs,
+            } = self.inputs.law().exprs[id].kind
+            else {
+                return Ok(None);
+            };
+            let left = self.analyze_source(graph, self.inputs.law().exprs[lhs].span, bindings)?;
+            let right = self.analyze_source(graph, self.inputs.law().exprs[rhs].span, bindings)?;
+            if left.known_value.is_some() && right.known_value.is_some() {
+                return Ok(None);
+            }
+            super::affine::equality(
+                op,
+                left.affine.as_deref(),
+                right.affine.as_deref(),
+                &self.control,
+            )
+        })
+    }
+    /// 差の導出に先行する own Source と元実子を、親 Evaluation に頼らず確定する。
+    fn affine_comparison_parts(
+        &self,
+        graph: &Graph,
+        own: NodeRef,
+        left: NodeRef,
+        right: NodeRef,
+        limit: usize,
+    ) -> Result<AffineComparison, ValidationFailure> {
+        self.tick()?;
+        if !(own.0 < left.0 && left.0 < right.0 && right.0 < limit) {
+            return Err("アフィン比較の元Source・実左右の既出順が違う".into());
+        }
+        let context = self.current_context(graph);
+        let source = graph.get(own)?;
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            bindings,
+            parameters,
+        }) = &source.payload
+        else {
+            return Err("アフィン比較の元Sourceが原式でない".into());
+        };
+        let law = self.inputs.law();
+        let id = *self
+            .expressions
+            .get(span)
+            .ok_or("アフィン比較の元ASTがない")?;
+        let ExprKind::Binary {
+            op: op @ (BinOp::Eq | BinOp::Ne),
+            lhs,
+            rhs,
+        } = law.exprs[id].kind
+        else {
+            return Err("アフィン比較の元SourceがEq/Neでない".into());
+        };
+        let ty = law.expr_type(lhs).ok_or("アフィン比較の元左型がない")?;
+        if !matches!(ty, Type::Z | Type::Q)
+            || law.expr_type(rhs) != Some(ty)
+            || law.expr_type(id) != Some(&Type::Bool)
+            || source.ty != NodeType::Expression(Type::Bool)
+            || !parameters.is_empty()
+            || !matches!(&source.rule, Rule::Input {kind:"law",location:Location::Law{span:actual}} if actual==span)
+            || source.arguments != self.source_arguments(graph, *span, bindings)?
+            || graph.context_at(own.0) != context
+        {
+            return Err("アフィン比較の元型・束縛・出所が違う".into());
+        }
+        self.validate_at(graph, source, own.0)?;
+        let mut operands = [own; 2];
+        let mut known = true;
+        for (index, (reference, operand)) in [(left, lhs), (right, rhs)].into_iter().enumerate() {
+            self.tick()?;
+            graph.expect(reference, &NodeType::Evaluation(ty.clone()))?;
+            if graph.context_at(reference.0) != context {
+                return Err("アフィン比較の実左右が別Contextに属する".into());
+            }
+            self.recheck_evaluation(graph, reference)?;
+            let (expression, actual, value) = self.evaluation(graph, reference)?;
+            self.source_matches(graph, expression, operand)?;
+            if expression.0 >= reference.0
+                || graph.context_at(expression.0) != context
+                || actual != bindings
+            {
+                return Err("アフィン比較の実左右Source・束縛が違う".into());
+            }
+            operands[index] = expression;
+            known &= value.is_some();
+            self.tick()?;
+        }
+        if known {
+            return Err("通常の既知左右をアフィン比較の証拠へ付け替えている".into());
+        }
+        let (value, residual) = self
+            .affine_comparison(graph, *span, bindings)?
+            .ok_or("アフィン比較の差が元入力から定数にならない")?;
+        let analysis = self.resolve_analysis(
+            graph,
+            self.analyze_source(graph, *span, bindings)?,
+            &[left, right],
+        )?;
+        if analysis.known_value.as_ref() != Some(&value)
+            || analysis.scalar_scope.as_ref() != Some(&analysis.scope)
+            || residual.ty() != *ty
+        {
+            return Err("アフィン比較の元式分析と定数残差が違う".into());
+        }
+        if numeric::binary(
+            op,
+            &residual,
+            &numeric::zero(ty, &self.control)?,
+            &self.control,
+        )? != value
+        {
+            return Err("アフィン比較のEq/Ne判断が残差零性と違う".into());
+        }
+        self.tick()?;
+        Ok(AffineComparison {
+            analysis,
+            value,
+            residual,
+            operands,
+        })
+    }
+    fn affine_difference_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<AffineComparison, ValidationFailure> {
+        let Some(Payload::Transform {
+            operation: TransformOp::Difference,
+            operands,
+            bindings,
+        }) = &node.payload
+        else {
+            return Err("アフィン比較の差Expressionでない".into());
+        };
+        let [own, left, right] = node.arguments.as_slice() else {
+            return Err("アフィン比較の差Expressionの元実辺が違う".into());
+        };
+        let parts = self.affine_comparison_parts(graph, *own, *left, *right, limit)?;
+        if operands.as_slice() != parts.operands
+            || bindings != self.expression_bindings(graph, *own)?
+            || node.ty != NodeType::Expression(parts.residual.ty())
+            || !matches!(&node.rule, Rule::Construction("expression"))
+            || node.scope != parts.analysis.scope
+            || node.support != parts.analysis.support
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+            || node.judgment.is_some()
+        {
+            return Err("差Expressionの元左右・型・Scope・構成が違う".into());
+        }
+        Ok(parts)
+    }
+    fn affine_residual_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<AffineComparison, ValidationFailure> {
+        let [difference, own, left, right] = node.arguments.as_slice() else {
+            return Err("アフィン比較の残差の元実辺が違う".into());
+        };
+        if difference.0 >= limit {
+            return Err("アフィン比較の差Expressionが既出でない".into());
+        }
+        let source = graph.get(*difference)?;
+        if source.arguments != [*own, *left, *right]
+            || graph.context_at(difference.0) != self.current_context(graph)
+        {
+            return Err("アフィン比較の残差が別の元比較を指す".into());
+        }
+        self.validate_at(graph, source, difference.0)?;
+        let parts = self.affine_difference_analysis(graph, source, difference.0)?;
+        if node.ty != NodeType::Value(parts.residual.ty())
+            || !matches!(&node.payload, Some(Payload::Scalar(value)) if value==&parts.residual)
+            || !matches!(&node.rule, Rule::Construction("evaluation"))
+            || node.scope != parts.analysis.scope
+            || node.support != parts.analysis.support
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+            || node.judgment.is_some()
+        {
+            return Err("アフィン比較の残差値・型・支持・Scopeが元入力と違う".into());
+        }
+        Ok(parts)
+    }
+    fn affine_normalization_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<AffineComparison, ValidationFailure> {
+        let Some(Payload::Normalization {
+            before,
+            after,
+            steps,
+        }) = &node.payload
+        else {
+            return Err("アフィン比較のnormalization証拠でない".into());
+        };
+        let [own, left, right, difference, residual] = node.arguments.as_slice() else {
+            return Err("normalizationの元実辺が違う".into());
+        };
+        if before != difference
+            || after != residual
+            || !(difference.0 < residual.0 && residual.0 < limit)
+        {
+            return Err("normalizationの差・残差・既出順が違う".into());
+        }
+        let value = graph.get(*residual)?;
+        if value.arguments != [*difference, *own, *left, *right]
+            || graph.context_at(residual.0) != self.current_context(graph)
+        {
+            return Err("normalizationの残差が別の元比較を指す".into());
+        }
+        self.validate_at(graph, value, residual.0)?;
+        let parts = self.affine_residual_analysis(graph, value, residual.0)?;
+        if steps.as_slice() != [parts.operands[0], parts.operands[1], *difference]
+            || node.ty != NodeType::Evidence
+            || !matches!(&node.rule, Rule::Construction("evidence"))
+            || node.scope != parts.analysis.scope
+            || node.support != parts.analysis.support
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+            || node.judgment.is_some()
+        {
+            return Err("normalizationのsteps・支持・Scope・構成が元入力と違う".into());
+        }
+        Ok(parts)
+    }
+    fn affine_comparison_source_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        let [own, left, right, difference, residual, normalization] = node.arguments.as_slice()
+        else {
+            return Err("アフィン比較Boolの元実辺が違う".into());
+        };
+        if normalization.0 >= limit {
+            return Err("アフィン比較Boolのnormalizationが既出でない".into());
+        }
+        let evidence = graph.get(*normalization)?;
+        if evidence.arguments != [*own, *left, *right, *difference, *residual]
+            || graph.context_at(normalization.0) != self.current_context(graph)
+        {
+            return Err("アフィン比較Boolが別のnormalizationを指す".into());
+        }
+        self.validate_at(graph, evidence, normalization.0)?;
+        let parts = self.affine_normalization_analysis(graph, evidence, normalization.0)?;
+        let span = self.expression_span(graph, *own)?;
+        if node.ty != NodeType::Value(Type::Bool)
+            || !matches!(&node.payload, Some(Payload::Scalar(value)) if value==&parts.value)
+            || !matches!(&node.rule, Rule::Input {kind:"law",location:Location::Law{span:actual}} if *actual==span)
+            || node.evidence != [*normalization]
+            || node.scope != parts.analysis.scope
+            || node.support != parts.analysis.support
+            || !node.reasons.is_empty()
+            || node.judgment.is_some()
+        {
+            return Err("アフィン比較Boolの値・型・元演算・支持・Scope・証拠が違う".into());
+        }
+        Ok(parts.analysis)
     }
     /// 相殺で確定した Z/Q Scalar は own Source と実子 Evaluation を直接保持する。
     /// 正規形の申告や後から挿入される親 Evaluation に頼らず、元入力から再分析する。
@@ -2214,6 +2537,17 @@ impl<'a> Environment<'a> {
     ) -> Result<SourceAnalysis, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
+            if node.arguments.first().is_some_and(|reference| {
+                matches!(
+                    &graph.get(*reference).map(|node| &node.payload),
+                    Ok(Some(Payload::Transform {
+                        operation: TransformOp::Difference,
+                        ..
+                    }))
+                )
+            }) {
+                return Ok(self.affine_residual_analysis(graph, node, limit)?.analysis);
+            }
             let Some(Payload::Scalar(residual)) = &node.payload else {
                 return Err("残差が通常 Scalar でない".into());
             };
@@ -4847,6 +5181,13 @@ impl<'a> Environment<'a> {
                     )?;
                     let known_value = match known_value {
                         Some(value) => Some(value),
+                        None if matches!(op, BinOp::Eq | BinOp::Ne) => super::affine::equality(
+                            *op,
+                            left_affine.as_deref(),
+                            right.affine.as_deref(),
+                            &self.control,
+                        )?
+                        .map(|(value, _)| value),
                         None => affine
                             .as_ref()
                             .map(|form| form.value(&self.control))
@@ -5412,6 +5753,12 @@ impl<'a> Environment<'a> {
             else {
                 return Err("Bool 固定変換でない".into());
             };
+            if *operation == TransformOp::Difference {
+                return Ok(self
+                    .affine_difference_analysis(graph, node, limit)?
+                    .analysis
+                    .scope);
+            }
             if node.ty != NodeType::Expression(Type::Bool)
                 || !matches!(&node.rule, Rule::Construction("expression"))
                 || operands.len() != operation.arity()
@@ -6050,6 +6397,18 @@ impl<'a> Environment<'a> {
             }
             let (_, _, left) = self.evaluation(graph, parts[0].children[0])?;
             let (_, _, right) = self.evaluation(graph, parts[0].children[1])?;
+            if left.is_none() || right.is_none() {
+                let result = value.ok_or("未知左右の比較に確定Boolがない")?;
+                let scalar = graph.get(result)?;
+                self.affine_comparison_source_analysis(graph, scalar, result.0)?;
+                if scalar.arguments[..3] != [expression, parts[0].children[0], parts[0].children[1]]
+                    || parts[0].residual != Some(scalar.arguments[4])
+                    || graph.get(body)?.evidence != scalar.evidence
+                {
+                    return Err("未知左右の比較証拠が元実左右・残差・normalizationと違う".into());
+                }
+                return Ok((evaluation, parts[0].children[0], parts[0].children[1]));
+            }
             Ok((
                 evaluation,
                 left.ok_or("左辺が未確定")?,

@@ -694,23 +694,25 @@ pub(crate) struct Part {
     pub residual: Option<NodeRef>,
     pub children: Vec<NodeRef>,
 }
-/// result/2 の固定変換。未知値は通常値にせず、Bool の全補完での定数だけを返す。
+/// result/2 の固定変換。差は元の左右Expressionと実子Evaluationを保持する。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum TransformOp {
     Not,
     And,
+    Difference,
 }
 impl TransformOp {
     fn wire(self) -> &'static str {
         match self {
             Self::Not => "not",
             Self::And => "and",
+            Self::Difference => "difference",
         }
     }
     pub(crate) fn arity(self) -> usize {
         match self {
             Self::Not => 1,
-            Self::And => 2,
+            Self::And | Self::Difference => 2,
         }
     }
 }
@@ -790,6 +792,11 @@ pub(crate) enum Payload {
         lhs: NodeRef,
         rhs: NodeRef,
         residual: Option<NodeRef>,
+    },
+    Normalization {
+        before: NodeRef,
+        after: NodeRef,
+        steps: Vec<NodeRef>,
     },
     Counterexample {
         bindings: Vec<Binding>,
@@ -963,6 +970,21 @@ impl Payload {
                 }
                 Json::obj([("kind", Json::str("evaluation")), ("data", Json::Obj(data))])
             }
+            Self::Normalization {
+                before,
+                after,
+                steps,
+            } => Json::obj([
+                ("kind", Json::str("normalization")),
+                (
+                    "data",
+                    Json::obj([
+                        ("before", before.wire()),
+                        ("after", after.wire()),
+                        ("steps", refs(steps)),
+                    ]),
+                ),
+            ]),
             Self::Counterexample {
                 bindings,
                 left,
@@ -1520,6 +1542,144 @@ impl Graph {
         }
         Ok(false)
     }
+    /// Differenceだけの型と実子参照を検査する。元ASTの算術はEnvironmentで再構成する。
+    fn difference_shape(&self, node: &Node) -> Result<(NodeRef, [NodeRef; 2]), ValidationFailure> {
+        self.tick()?;
+        let NodeType::Expression(ty @ (Type::Z | Type::Q)) = &node.ty else {
+            return Err("差のExpressionがZ/Qでない".into());
+        };
+        let Some(Payload::Transform {
+            operation: TransformOp::Difference,
+            operands,
+            bindings,
+        }) = &node.payload
+        else {
+            return Err("差がdifference変換でない".into());
+        };
+        let [source, left, right] = node.arguments.as_slice() else {
+            return Err("差の元Source・実左右Evaluationがない".into());
+        };
+        self.expect(*source, &NodeType::Expression(Type::Bool))?;
+        let Some(Payload::Expression {
+            bindings: source_bindings,
+            ..
+        }) = &self.get(*source)?.payload
+        else {
+            return Err("差の元比較がSourceでない".into());
+        };
+        if bindings != source_bindings || operands.len() != 2 {
+            return Err("差の元束縛・operand数が違う".into());
+        }
+        self.bindings(bindings)?;
+        for (&evaluation, &operand) in [*left, *right].iter().zip(operands) {
+            self.tick()?;
+            self.expect(evaluation, &NodeType::Evaluation(ty.clone()))?;
+            self.expect(operand, &NodeType::Expression(ty.clone()))?;
+            if !matches!(&self.get(evaluation)?.payload, Some(Payload::Evaluation { expression, .. }) if expression == &operand)
+            {
+                return Err("差のoperandが実子EvaluationのExpressionと違う".into());
+            }
+            self.tick()?;
+        }
+        Ok((*source, [*left, *right]))
+    }
+
+    fn normalization_shape(&self, node: &Node) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        let Some(Payload::Normalization {
+            before,
+            after,
+            steps,
+        }) = &node.payload
+        else {
+            return Err("正規化証拠のpayloadが違う".into());
+        };
+        let difference = self.get(*before)?;
+        let (source, [left, right]) = self.difference_shape(difference)?;
+        let NodeType::Expression(ty) = &difference.ty else {
+            unreachable!()
+        };
+        self.value(*after, ty)?;
+        let Some(Payload::Transform { operands, .. }) = &difference.payload else {
+            unreachable!()
+        };
+        for &step in steps {
+            self.tick()?;
+            self.expect(step, &NodeType::Expression(ty.clone()))?;
+            self.tick()?;
+        }
+        if steps != &[operands[0], operands[1], *before]
+            || node.arguments != [source, left, right, *before, *after]
+            || self.get(*after)?.arguments != [*before, source, left, right]
+            || !matches!(self.get(*after)?.rule, Rule::Construction("evaluation"))
+            || node.support != difference.support
+            || node.scope != difference.scope
+        {
+            return Err("正規化証拠の実変換・導出・支持・Scopeが違う".into());
+        }
+        self.tick()?;
+        Ok(())
+    }
+
+    fn affine_comparison_shape(
+        &self,
+        evaluation: NodeRef,
+        left: NodeRef,
+        right: NodeRef,
+        residual: NodeRef,
+    ) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        let NodeType::Evaluation(ty @ (Type::Z | Type::Q)) = &self.get(left)?.ty else {
+            return Err("アフィン証拠の左辺がZ/QのEvaluationでない".into());
+        };
+        self.expect(right, &NodeType::Evaluation(ty.clone()))?;
+        self.value(residual, ty)?;
+        self.expect(evaluation, &NodeType::Evaluation(Type::Bool))?;
+        let Some(Payload::Evaluation {
+            expression,
+            parts,
+            value: Some(value),
+            ..
+        }) = &self.get(evaluation)?.payload
+        else {
+            return Err("アフィン証拠の元比較が確定Evaluationでない".into());
+        };
+        let part = parts.last().ok_or("アフィン比較の元partがない")?;
+        if part.children != [left, right] || part.residual != Some(residual) {
+            return Err("アフィン比較の実左右・残差が違う".into());
+        }
+        let result = self.get(*value)?;
+        self.value(*value, &Type::Bool)?;
+        let [
+            source,
+            lhs,
+            rhs,
+            difference,
+            supplied_residual,
+            normalization,
+        ] = result.arguments.as_slice()
+        else {
+            return Err("アフィン比較値の導出入力が違う".into());
+        };
+        if source != expression
+            || *lhs != left
+            || *rhs != right
+            || *supplied_residual != residual
+            || result.evidence != [*normalization]
+        {
+            return Err("アフィン比較値と元評価・正規化証拠が違う".into());
+        }
+        let evidence = self.get(*normalization)?;
+        self.expect(*normalization, &NodeType::Evidence)?;
+        self.normalization_shape(evidence)?;
+        if !matches!(&evidence.payload, Some(Payload::Normalization { before, after, .. }) if before == difference && *after == residual)
+        {
+            return Err("アフィン比較の差と正規化証拠が違う".into());
+        }
+        self.tick()?;
+        Ok(())
+    }
+
     pub fn push(&mut self, node: Node) -> Result<NodeRef, ValidationFailure> {
         self.push_with_metadata(node, |_| {})
     }
@@ -1604,6 +1764,15 @@ impl Graph {
                 ),
             ) => self.bindings(bindings)?,
             (
+                NodeType::Expression(Type::Z | Type::Q),
+                Some(Payload::Transform {
+                    operation: TransformOp::Difference,
+                    ..
+                }),
+            ) => {
+                self.difference_shape(&node)?;
+            }
+            (
                 NodeType::Expression(Type::Bool),
                 Some(Payload::Transform {
                     operation,
@@ -1611,6 +1780,9 @@ impl Graph {
                     bindings,
                 }),
             ) => {
+                if *operation == TransformOp::Difference {
+                    return Err("Boolにdifference変換を適用できない".into());
+                }
                 self.bindings(bindings)?;
                 if operands.len() != operation.arity() {
                     return Err("Bool 変換の引数数が違う".into());
@@ -1687,6 +1859,9 @@ impl Graph {
             (NodeType::Proposition, Some(Payload::Proposition { instance })) => {
                 self.expect(*instance, &NodeType::LawInstance)?
             }
+            (NodeType::Evidence, Some(Payload::Normalization { .. })) => {
+                self.normalization_shape(&node)?
+            }
             (
                 NodeType::Evidence,
                 Some(Payload::EvaluationEvidence {
@@ -1697,16 +1872,37 @@ impl Graph {
                 }),
             ) => {
                 self.expect(*instance, &NodeType::LawInstance)?;
-                let l = self.scalar(*lhs)?;
-                let r = self.scalar(*rhs)?;
-                if l.ty() != r.ty() {
-                    return Err("証拠両辺の型不一致".into());
-                }
-                if let Some(d) = residual {
-                    let expected =
-                        super::numeric::binary(crate::law::ast::BinOp::Sub, l, r, &self.control)?;
-                    if self.scalar(*d)? != &expected {
-                        return Err("型付き残差が元の両辺に合わない".into());
+                if matches!(self.get(*lhs)?.ty, NodeType::Evaluation(_))
+                    || matches!(self.get(*rhs)?.ty, NodeType::Evaluation(_))
+                {
+                    let [actual_instance, evaluation] = node.arguments.as_slice() else {
+                        return Err("アフィン評価証拠の元instance・評価がない".into());
+                    };
+                    if actual_instance != instance {
+                        return Err("アフィン評価証拠のinstanceが違う".into());
+                    }
+                    self.affine_comparison_shape(
+                        *evaluation,
+                        *lhs,
+                        *rhs,
+                        residual.ok_or("アフィン評価証拠に残差がない")?,
+                    )?;
+                } else {
+                    let l = self.scalar(*lhs)?;
+                    let r = self.scalar(*rhs)?;
+                    if l.ty() != r.ty() {
+                        return Err("証拠両辺の型不一致".into());
+                    }
+                    if let Some(d) = residual {
+                        let expected = super::numeric::binary(
+                            crate::law::ast::BinOp::Sub,
+                            l,
+                            r,
+                            &self.control,
+                        )?;
+                        if self.scalar(*d)? != &expected {
+                            return Err("型付き残差が元の両辺に合わない".into());
+                        }
                     }
                 }
             }
@@ -1754,7 +1950,27 @@ impl Graph {
                 }),
             ) => {
                 self.bindings(bindings)?;
-                if self.scalar(*left)?.ty() != self.scalar(*right)?.ty() {
+                if matches!(self.get(*left)?.ty, NodeType::Evaluation(_))
+                    || matches!(self.get(*right)?.ty, NodeType::Evaluation(_))
+                {
+                    let [instance, evaluation] = node.arguments.as_slice() else {
+                        return Err("アフィン反例の元instance・評価がない".into());
+                    };
+                    self.expect(*instance, &NodeType::LawInstance)?;
+                    let Some(Payload::Evaluation { parts, value, .. }) =
+                        &self.get(*evaluation)?.payload
+                    else {
+                        return Err("アフィン反例の元比較Evaluationがない".into());
+                    };
+                    let residual = parts
+                        .last()
+                        .and_then(|part| part.residual)
+                        .ok_or("アフィン反例に元残差がない")?;
+                    self.affine_comparison_shape(*evaluation, *left, *right, residual)?;
+                    if self.boolean(*value)? != Some(false) {
+                        return Err("アフィン反例の元比較がfalseでない".into());
+                    }
+                } else if self.scalar(*left)?.ty() != self.scalar(*right)?.ty() {
                     return Err("反例の型不一致".into());
                 }
             }

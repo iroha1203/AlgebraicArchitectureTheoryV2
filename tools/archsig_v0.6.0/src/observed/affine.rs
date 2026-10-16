@@ -272,6 +272,29 @@ pub(crate) fn binary(
     })
 }
 
+/// 元の左右は未知のまま、差が全補完で定数となるEq/Neだけを判断する。
+pub(crate) fn equality(
+    op: BinOp,
+    left: Option<&Form>,
+    right: Option<&Form>,
+    control: &Control,
+) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
+    controlled(control, || {
+        if !matches!(op, BinOp::Eq | BinOp::Ne) {
+            return Ok(None);
+        }
+        let Some(difference) = binary(BinOp::Sub, left, right, control)? else {
+            return Ok(None);
+        };
+        let Some(residual) = difference.value(control)? else {
+            return Ok(None);
+        };
+        let zero = numeric::zero(&difference.ty, control)?;
+        let value = numeric::binary(op, &residual, &zero, control)?;
+        Ok(Some((value, residual)))
+    })
+}
+
 /// 正規化の実処理を固定点で中断する試験専用通知。時間・RSSは測定しない。
 #[cfg(test)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
