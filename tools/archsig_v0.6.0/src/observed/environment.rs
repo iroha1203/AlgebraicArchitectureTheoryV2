@@ -774,13 +774,10 @@ impl<'a> Environment<'a> {
                     if !found {
                         return Err("Atom 値が元 slot に合わない".into());
                     }
-                    if node.arguments.len() == 2
-                        || self.current_context(graph).frame.is_some()
+                    if self.current_context(graph).frame.is_some()
                         || self.current_context(graph).instance.is_some()
                         || self.current_context(graph).iteration.is_some()
                         || self.current_context(graph).case.is_some()
-                        || (node.arguments.len() == 1
-                            && self.has_chain_owner(graph, node.arguments[0], limit)?)
                     {
                         self.call_field_source(graph, node, limit)?;
                     }
@@ -794,7 +791,9 @@ impl<'a> Environment<'a> {
                     if id.is_some_and(|id| law.expr_type(id) != Some(&scalar.ty())) {
                         return Err("導出値が元式の型に合わない".into());
                     }
-                    let computed = if let Some(id) = id {
+                    let computed = if self.chain_field_occurrence(*span)?.is_some() {
+                        self.chain_field_source_analysis(graph, node, limit)?.0
+                    } else if let Some(id) = id {
                         match &law.exprs[id].kind {
                             ExprKind::Quant { .. } => self
                                 .quant_scalar(graph, node, limit)?
@@ -2961,7 +2960,7 @@ impl<'a> Environment<'a> {
                     };
                     if scalar_from(actual, &field.ty, self.inputs.law(), &self.control)?.as_ref()
                         != Some(value)
-                        || !matches!(node.arguments.len(), 1 | 2)
+                        || node.arguments.len() != 1
                     {
                         return Err("Atom支持の原始値・owner引数数が違う".into());
                     }
@@ -2980,7 +2979,9 @@ impl<'a> Environment<'a> {
                     kind: "law",
                     location: Location::Law { span },
                 } => {
-                    if let Some(&id) = self.expressions.get(span) {
+                    if self.chain_field_occurrence(*span)?.is_some() {
+                        vec![self.chain_field_source_analysis(graph, node, limit)?.1]
+                    } else if let Some(&id) = self.expressions.get(span) {
                         match self.inputs.law().exprs[id].kind {
                             ExprKind::Quant { .. } => {
                                 self.quant_scalar(graph, node, limit)?.support
@@ -3970,38 +3971,141 @@ impl<'a> Environment<'a> {
         }
         Ok(None)
     }
-    // Source付きchain参照をownerとして消費するときは、その元出現を再検査する。
-    // 単なる原始Ref Atomや旧一段fieldは、Ruleの名だけでchainと扱わない。
-    fn has_chain_owner(
+    fn chain_field_occurrence(
         &self,
-        graph: &Graph,
-        reference: NodeRef,
-        limit: usize,
-    ) -> Result<bool, ValidationFailure> {
-        self.tick()?;
-        if reference.0 >= limit {
-            return Err("fieldのownerが既出でない".into());
-        }
-        let owner = graph.get(reference)?;
-        if !matches!(
-            &owner.payload,
-            Some(Payload::Scalar(Scalar::Subject { .. }))
-        ) || !matches!(&owner.rule, Rule::Input { kind: "atom", .. })
-            || owner.arguments.len() != 2
-        {
-            self.tick()?;
-            return Ok(false);
-        }
-        // 提示されたSource辺の形だけでは採用しない。実owner Evaluation・束縛・
-        // 元AST・原始Fact・Scopeまで、そのRef Scalar自身の生成を独立に照合する。
-        self.validate_at(graph, owner, reference.0)?;
-        let span = self.expression_span(graph, owner.arguments[1])?;
-        let chained = self.dotted_prefix(span)?.is_some_and(|(id, count)| {
+        span: (usize, usize),
+    ) -> Result<Option<DottedOccurrence>, ValidationFailure> {
+        Ok(self.dotted_prefix(span)?.filter(|&(id, count)| {
             count > 1
                 && matches!(&self.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
-        });
+        }))
+    }
+    // 引数の本数ではなく、Scalar自身の元Law出現からchain fieldを照合する。
+    // Source辺を消した値も、原始Factの読取りへ読み替えない。
+    fn chain_field_source_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(Scalar, Fact), ValidationFailure> {
         self.tick()?;
-        Ok(chained)
+        let Rule::Input {
+            kind: "law",
+            location: Location::Law { span },
+        } = &node.rule
+        else {
+            return Err("chain field値に元Law出現がない".into());
+        };
+        let (id, count) = self
+            .chain_field_occurrence(*span)?
+            .ok_or("元chain field出現でない")?;
+        let prefixes = self.dotted_prefixes(id)?;
+        let [owner, own_source] = node.arguments.as_slice() else {
+            return Err("chain field値の実owner・own Source辺がない".into());
+        };
+        if owner.0 >= limit
+            || own_source.0 >= limit
+            || graph.context_at(own_source.0) != self.current_context(graph)
+        {
+            return Err("chain fieldのown Source・ownerが既出の実評価でない".into());
+        }
+        let source = graph.get(*own_source)?;
+        let Some(Payload::Expression {
+            location: Location::Law { span: actual },
+            parameters,
+            bindings,
+        }) = &source.payload
+        else {
+            return Err("chain fieldのown Sourceが元Expressionでない".into());
+        };
+        if actual != span
+            || prefixes[count - 1].0 != *span
+            || !parameters.is_empty()
+            || source.ty != NodeType::Expression(prefixes[count - 1].1.clone())
+            || node.ty != NodeType::Value(prefixes[count - 1].1.clone())
+            || source.arguments != self.source_arguments(graph, *span, bindings)?
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+            || node.judgment.is_some()
+        {
+            return Err("chain fieldの元span・型・束縛・metadataが違う".into());
+        }
+        self.validate_at(graph, source, own_source.0)?;
+        self.validate_at(graph, graph.get(*owner)?, owner.0)?;
+        let owner_span = prefixes[count - 2].0;
+        let original_owner = self.analyze_source(graph, owner_span, bindings)?;
+        if original_owner.known_value.as_ref() != Some(graph.scalar(*owner)?) {
+            return Err("chain fieldの実owner値が元入力と違う".into());
+        }
+        let mut actual_owner = false;
+        for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            if graph.context_at(index) == self.current_context(graph)
+                && let Some(Payload::Evaluation {
+                    expression,
+                    bindings: owner_bindings,
+                    value,
+                    ..
+                }) = &candidate.payload
+                && *value == Some(*owner)
+                && owner_bindings == bindings
+                && self.expression_span(graph, *expression)? == owner_span
+            {
+                if candidate.ty != NodeType::Evaluation(prefixes[count - 2].1.clone()) {
+                    return Err("chain fieldの元owner Evaluation型が違う".into());
+                }
+                self.recheck_evaluation(graph, NodeRef(index))?;
+                actual_owner = true;
+                self.tick()?;
+                break;
+            }
+            self.tick()?;
+        }
+        if !actual_owner {
+            return Err("chain field値に元prefixの実owner Evaluationがない".into());
+        }
+        let Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        } = graph.scalar(*owner)?
+        else {
+            return Err("chain fieldの実ownerがRefでない".into());
+        };
+        let ExprKind::Dotted(parts) = &self.inputs.law().exprs[id].kind else {
+            return Err("chain fieldの元token列がDottedでない".into());
+        };
+        let field = self.field(
+            snapshot,
+            subject,
+            &format!("{entity}.{}", parts[count - 1].name),
+        )?;
+        let Slot::Known { value, atom, .. } = &field.slot else {
+            return Err("chain fieldの既知値が欠測slotを指す".into());
+        };
+        let expected = scalar_from(value, &field.ty, self.inputs.law(), &self.control)?
+            .ok_or("chain fieldの元slotに対応する値がない")?;
+        let fact = Fact {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: Some(field.name.clone()),
+            atom: Some(atom.clone()),
+        };
+        let analysis = self.resolve_analysis(
+            graph,
+            self.analyze_source(graph, *span, bindings)?,
+            &node.arguments,
+        )?;
+        if field.ty.erase() != prefixes[count - 1].1
+            || !matches!(&node.payload, Some(Payload::Scalar(value)) if value == &expected)
+            || analysis.known_value.as_ref() != Some(&expected)
+            || analysis.scalar_scope.as_ref() != Some(&node.scope)
+            || node.support != [fact.clone()]
+        {
+            return Err("chain field値の元slot・型・支持・Scopeが違う".into());
+        }
+        self.tick()?;
+        Ok((expected, fact))
     }
     // calleeのfield Scalarも、slot値の一致だけで別producerへ移せない。
     fn call_field_source(
@@ -4013,14 +4117,12 @@ impl<'a> Environment<'a> {
         let Some(Payload::Scalar(value)) = &node.payload else {
             return Err("field値がScalarでない".into());
         };
-        if !matches!(node.arguments.len(), 1 | 2) {
+        if node.arguments.len() != 1 {
             return Err("field owner数が違う".into());
         }
         for (source_index, source) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
-            if graph.context_at(source_index) != self.current_context(graph)
-                || (node.arguments.len() == 2 && node.arguments[1] != NodeRef(source_index))
-            {
+            if graph.context_at(source_index) != self.current_context(graph) {
                 continue;
             }
             let Some(Payload::Expression {
@@ -4044,7 +4146,7 @@ impl<'a> Environment<'a> {
                 count > 1
                     && matches!(&self.inputs.law().exprs[original].kind, ExprKind::Dotted(parts) if parts.len() > 2)
             });
-            if chained != (node.arguments.len() == 2) {
+            if chained {
                 continue;
             }
             let (owner_span, field_name) = match &self.inputs.law().exprs[id].kind {
@@ -6587,6 +6689,10 @@ impl<'a> Environment<'a> {
                 == Some(graph.scalar(actual)?)
                 && if chained {
                     graph.get(actual)?.arguments == [base, expression]
+                        && matches!(&graph.get(actual)?.rule, Rule::Input {
+                            kind: "law",
+                            location: Location::Law { span: actual_span },
+                        } if *actual_span == span)
                 } else {
                     graph.get(actual)?.arguments == [base]
                 } =>

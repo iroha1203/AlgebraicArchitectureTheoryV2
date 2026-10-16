@@ -2,6 +2,7 @@
 use archsig::{
     archmap::{Mode, Slot},
     canonical::{Json, sha256_digest},
+    json::{JNode, JValue},
     law::{ast::ExprKind, model::Signature},
     observed::{
         ObservedEvaluation,
@@ -65,6 +66,23 @@ fn text(j: &Json) -> &str {
 }
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     &obj(j)[key]
+}
+fn input_at<'a>(mut node: &'a JNode, pointer: &str) -> &'a JNode {
+    for token in pointer.strip_prefix('/').unwrap().split('/') {
+        node = match &node.value {
+            JValue::Obj(fields) => &fields.iter().find(|(key, _)| key == token).unwrap().1,
+            JValue::Arr(items) => &items[token.parse::<usize>().unwrap()],
+            _ => panic!("実入力内の pointer: {pointer}"),
+        };
+    }
+    node
+}
+fn primitive_input(node: &JNode) -> Json {
+    match &node.value {
+        JValue::Str(s) => Json::str(s),
+        JValue::Arr(items) => Json::Arr(items.iter().map(primitive_input).collect()),
+        _ => panic!("この原fixtureの支持は整数か参照"),
+    }
 }
 fn val(j: &Json) -> &Json {
     assert_eq!(f(j, "state"), &Json::str("value"));
@@ -370,7 +388,8 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
             f(val(middle), "value"),
             &ref_type("Reservations.State"),
         );
-        assert_eq!(f(f(middle_value, "rule"), "kind"), &Json::str("atom"));
+        assert_eq!(f(f(middle_value, "rule"), "kind"), &Json::str("law"));
+        assert_eq!(span(f(f(middle_value, "rule"), "location")), middle_span);
         assert_eq!(
             arr(f(middle_value, "arguments")),
             &[
@@ -403,13 +422,14 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
                     f(val(evaluation), "expression").clone(),
                 ]
             );
-            assert_eq!(f(f(leaf, "rule"), "kind"), &Json::str("atom"));
+            assert_eq!(f(f(leaf, "rule"), "kind"), &Json::str("law"));
+            assert_eq!(span(f(f(leaf, "rule"), "location")), expr.span);
             let subject = checked.archmap().snapshots[0]
                 .subjects
                 .iter()
                 .find(|s| s.id == owner)
                 .unwrap();
-            let Slot::Known { value, pointer, .. } = &subject
+            let Slot::Known { value, .. } = &subject
                 .fields
                 .iter()
                 .find(|f| f.name == leaf_field)
@@ -419,9 +439,6 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
                 panic!("既知数値")
             };
             assert_eq!(val(leaf), &value.canonical_json());
-            let location = f(f(leaf, "rule"), "location");
-            assert_eq!(f(location, "input"), &Json::str("archmap"));
-            assert_eq!(f(location, "pointer"), &Json::str(pointer));
         }
     }
     assert_eq!(dotted_count, 4, "四つの元field出現を保持する");
@@ -493,6 +510,7 @@ fn assert_occurrences(checked: &CheckedInputs, wire: &Json, missing: bool) {
 
 fn assert_support(checked: &CheckedInputs, wire: &Json, uri: Option<&str>) {
     let mut seen = BTreeSet::new();
+    let original = archsig::json::parse(checked.sources().archmap().bytes()).unwrap();
     for node in arr(f(wire, "nodes")) {
         for pointer in arr(f(node, "support")) {
             assert_eq!(f(pointer, "snapshot"), &Json::str("v"));
@@ -509,10 +527,33 @@ fn assert_support(checked: &CheckedInputs, wire: &Json, uri: Option<&str>) {
                     .find(|s| s.name == text(field))
                     .unwrap()
                     .slot;
-                let Slot::Known { atom, origin, .. } = slot else {
+                let Slot::Known {
+                    atom,
+                    origin,
+                    value,
+                    pointer: input_pointer,
+                } = slot
+                else {
                     panic!("欠測は既知支持へ加えない")
                 };
                 assert_eq!(atom, text(f(pointer, "atom")));
+                // chain Scalar の元位置は Law。原始事実の byte 位置は実 slot を通して追う。
+                assert_eq!(
+                    primitive_input(input_at(&original, input_pointer)),
+                    value.canonical_json()
+                );
+                let atom_pointer = input_pointer.strip_suffix("/value").unwrap();
+                for (key, expected) in [
+                    ("id", atom.as_str()),
+                    ("subject", subject.id.as_str()),
+                    ("field", text(field)),
+                    ("origin", origin.as_str()),
+                ] {
+                    assert_eq!(
+                        primitive_input(input_at(&original, &format!("{atom_pointer}/{key}"))),
+                        Json::str(expected)
+                    );
+                }
                 seen.insert(atom.as_str());
                 origin
             } else {

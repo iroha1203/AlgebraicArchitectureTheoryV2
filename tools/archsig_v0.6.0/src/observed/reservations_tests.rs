@@ -321,6 +321,155 @@ fn reservations_chain_rejects_source_edge_erasure_with_equal_foreign_owner_at_sc
 }
 
 #[test]
+fn reservations_chain_rejects_first_reference_source_edge_erasure_at_scalar_prefix() {
+    let result = reservations_private_example(
+        "view current(e:Reserve):Z=e.to.free;",
+        &["current=evaluate(Reservations.current,e=@v/e)"],
+        false,
+    );
+    assert_eq!(result.status(), "complete");
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let owners = reservations_private_evaluations(&result, "e.to");
+    assert_eq!(owners.len(), 1);
+    let (source, scalar, root) = reservations_private_parts(&result, owners[0]);
+    let Some(Payload::Evaluation {
+        value: Some(root_e),
+        ..
+    }) = &result.nodes[root].payload
+    else {
+        panic!("known root reference")
+    };
+    let root_e = *root_e;
+    assert!(
+        matches!(data_scalar_at(&result, root_e.0), Scalar::Subject { snapshot, subject, entity } if snapshot=="v" && subject=="e" && entity=="Reservations.Reserve")
+    );
+    assert!(
+        matches!(data_scalar_at(&result, scalar), Scalar::Subject { snapshot, subject, entity } if snapshot=="v" && subject=="q" && entity=="Reservations.State")
+    );
+    assert_eq!(reservations_private_text(&result, NodeRef(source)), "e.to");
+    assert_eq!(result.nodes[scalar].arguments, [root_e, NodeRef(source)]);
+    assert_eq!(result.nodes[scalar].support.len(), 1);
+    let fact = &result.nodes[scalar].support[0];
+    assert_eq!(fact.snapshot, "v");
+    assert_eq!(fact.subject, "e");
+    assert_eq!(fact.field.as_deref(), Some("Reservations.Reserve.to"));
+    assert_eq!(fact.atom.as_deref(), Some("e-to"));
+    assert!(root_e.0 < scalar);
+    assert!(scalar < owners[0], "target prefix has no consuming parent");
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+    // 元入力のroot Refをownerとする最初のfieldでも、Source辺の削除を
+    // 親未挿入prefix/fullの両方でInternalとして拒否する。
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].arguments = vec![root_e];
+    });
+}
+
+#[test]
+fn reservations_chain_rejects_coherent_source_erasure_and_rule_or_producer_substitution() {
+    let result = reservations_private_example(
+        "view calls(e:Reserve):(Z,Z)=(e.to.free,e.to.free);",
+        &["current=evaluate(Reservations.calls,e=@v/e)"],
+        false,
+    );
+    assert_eq!(result.status(), "complete");
+    let leaves = reservations_private_evaluations(&result, "e.to.free");
+    assert_eq!(leaves.len(), 2);
+    let (first_source, _, first_owner) = reservations_private_parts(&result, leaves[0]);
+    let (source, scalar, owner) = reservations_private_parts(&result, leaves[1]);
+    let (first_owner_source, first_owner_value, _) =
+        reservations_private_parts(&result, first_owner);
+    let (owner_source, owner_value, _) = reservations_private_parts(&result, owner);
+    assert_ne!(first_source, source);
+    assert_ne!(first_owner_source, owner_source);
+    assert_ne!(first_owner_value, owner_value);
+    assert_eq!(
+        data_scalar_at(&result, first_owner_value),
+        data_scalar_at(&result, owner_value)
+    );
+    let Some(Payload::Expression {
+        location: Location::Law { span: first_span },
+        ..
+    }) = &result.nodes[first_source].payload
+    else {
+        panic!("first leaf Source")
+    };
+    let Some(Payload::Expression {
+        location: Location::Law {
+            span: first_owner_span,
+        },
+        ..
+    }) = &result.nodes[first_owner_source].payload
+    else {
+        panic!("first owner Source")
+    };
+    let first_span = *first_span;
+    let first_owner_span = *first_owner_span;
+    let root = result.nodes[owner_value].arguments[0];
+    assert_eq!(
+        result.nodes[scalar].arguments,
+        [NodeRef(owner_value), NodeRef(source)]
+    );
+    let fact = &result.nodes[scalar].support[0];
+    let input_slot = &result
+        .prepared
+        .inputs()
+        .archmap()
+        .snapshots
+        .iter()
+        .find(|snapshot| snapshot.id == fact.snapshot)
+        .unwrap()
+        .subjects
+        .iter()
+        .find(|subject| subject.id == fact.subject)
+        .unwrap()
+        .fields
+        .iter()
+        .find(|field| Some(field.name.as_str()) == fact.field.as_deref())
+        .unwrap()
+        .slot;
+    let Slot::Known { pointer, .. } = input_slot else {
+        panic!("actual terminal Atom slot")
+    };
+    let pointer = pointer.clone();
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[owner_value].arguments = vec![root];
+        nodes[scalar].arguments = vec![NodeRef(owner_value)];
+    });
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].rule = Rule::Input {
+            kind: "law",
+            location: Location::Law { span: first_span },
+        };
+    });
+    completion_mutation(&result, owner_value, |nodes| {
+        nodes[owner_value].rule = Rule::Input {
+            kind: "law",
+            location: Location::Law {
+                span: first_owner_span,
+            },
+        };
+    });
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].arguments[1] = NodeRef(first_source);
+    });
+    completion_mutation(&result, owner_value, |nodes| {
+        nodes[owner_value].arguments[1] = NodeRef(first_owner_source);
+    });
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].arguments[0] = NodeRef(first_owner_value);
+    });
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].rule = Rule::Input {
+            kind: "atom",
+            location: Location::ArchMap {
+                pointer: pointer.clone(),
+                span: None,
+            },
+        };
+    });
+}
+
+#[test]
 fn reservations_chain_missing_and_counterexample_recheck_original_fact_and_evidence() {
     let missing = reservations_private_example(
         "view current(e:Reserve):Z=e.to.held;",

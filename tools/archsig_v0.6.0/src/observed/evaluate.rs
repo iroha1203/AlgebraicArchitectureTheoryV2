@@ -1822,19 +1822,23 @@ impl Evaluator<'_, '_> {
                             .expression,
                     );
                 }
-                let r = self.value(
-                    value,
+                let rule = if chain {
+                    // 原出現をRuleにも固定し、Source辺を消して通常Atomの
+                    // 検査経路へ移ることを防ぐ。支持は実際の終端Atomを保つ。
+                    Rule::Input {
+                        kind: "law",
+                        location: Location::Law { span },
+                    }
+                } else {
                     Rule::Input {
                         kind: "atom",
                         location: Location::ArchMap {
                             pointer: pointer.clone(),
                             span: None,
                         },
-                    },
-                    arguments,
-                    vec![fact.clone()],
-                    scope,
-                )?;
+                    }
+                };
+                let r = self.value(value, rule, arguments, vec![fact.clone()], scope)?;
                 self.finish(
                     span,
                     field.ty.erase(),
