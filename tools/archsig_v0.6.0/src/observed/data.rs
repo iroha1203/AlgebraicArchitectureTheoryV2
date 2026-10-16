@@ -15,6 +15,42 @@ use crate::{
 };
 use std::collections::BTreeMap;
 
+#[cfg(test)]
+type IterationObserver = Box<dyn FnMut(Span, super::call::Context, &'static str, usize)>;
+#[cfg(test)]
+thread_local! {
+    static EVALUATION_CONTEXT: std::cell::Cell<Option<(Span, super::call::Context)>> = const { std::cell::Cell::new(None) };
+    static ITERATION_OBSERVER: std::cell::RefCell<Option<IterationObserver>> = const { std::cell::RefCell::new(None) };
+}
+#[cfg(test)]
+pub(super) fn evaluation_context(
+    context: Option<(Span, super::call::Context)>,
+) -> Option<(Span, super::call::Context)> {
+    EVALUATION_CONTEXT.with(|current| current.replace(context))
+}
+#[cfg(test)]
+pub(super) fn observe_iterations(
+    observer: impl FnMut(Span, super::call::Context, &'static str, usize) + 'static,
+) {
+    ITERATION_OBSERVER.with(|current| *current.borrow_mut() = Some(Box::new(observer)));
+}
+#[cfg(test)]
+pub(super) fn clear_iteration_observer() {
+    ITERATION_OBSERVER.with(|current| *current.borrow_mut() = None);
+}
+#[cfg(test)]
+fn observe_iteration(operation: &'static str, index: usize) {
+    EVALUATION_CONTEXT.with(|current| {
+        if let Some((span, context)) = current.get() {
+            ITERATION_OBSERVER.with(|observer| {
+                if let Some(observer) = observer.borrow_mut().as_mut() {
+                    observer(span, context, operation, index);
+                }
+            });
+        }
+    });
+}
+
 fn tick(control: &Control) -> Result<(), ValidationFailure> {
     control
         .clone()
@@ -50,7 +86,19 @@ pub(super) fn supported(
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(control)?;
             match ty {
-                Type::Bool | Type::Ref(_) => Ok(true),
+                Type::Unit | Type::Text | Type::Bool | Type::Ref(_) => Ok(true),
+                Type::Tuple(items) => {
+                    for item in items {
+                        tick(control)?;
+                        if !visit(item, law, control, active)? {
+                            return Ok(false);
+                        }
+                    }
+                    Ok(true)
+                }
+                Type::List(item) | Type::Set(item) | Type::Option(item) => {
+                    visit(item, law, control, active)
+                }
                 Type::Data(family) => {
                     if active.contains(family) {
                         return Ok(false);
@@ -181,7 +229,28 @@ pub(super) fn check(
                 }
                 Ok(())
             }
-            _ => numeric::check(value, control),
+            Scalar::Tuple(items) | Scalar::List { items, .. } | Scalar::Set { items, .. } => {
+                check_shape(value, control)?;
+                if !supported(&value.ty(), law, control)? {
+                    return Err("一般値の要素型が未対応".into());
+                }
+                for item in items {
+                    tick(control)?;
+                    check(item, law, control)?;
+                }
+                Ok(())
+            }
+            Scalar::Option { value: item, .. } => {
+                check_shape(value, control)?;
+                if !supported(&value.ty(), law, control)? {
+                    return Err("Optionの要素型が未対応".into());
+                }
+                if let Some(item) = item {
+                    check(item, law, control)?;
+                }
+                Ok(())
+            }
+            _ => check_shape(value, control),
         }
     })
 }
@@ -197,6 +266,52 @@ pub(super) fn from_input(
             return Ok(None);
         }
         let result = match (value, ty) {
+            (Value::Unit, Type::Unit) => Scalar::Unit,
+            (Value::Text(text), Type::Text) => Scalar::Text(text.clone()),
+            (Value::Tuple(items), Type::Tuple(types)) => {
+                if items.len() != types.len() {
+                    return Err("原始Tupleの要素数が違う".into());
+                }
+                let mut result = Vec::new();
+                for (item, ty) in items.iter().zip(types) {
+                    tick(control)?;
+                    result
+                        .push(from_input(item, ty, law, control)?.ok_or("原始Tuple要素が未対応")?);
+                }
+                Scalar::Tuple(result)
+            }
+            (Value::List(items), Type::List(element)) | (Value::Set(items), Type::Set(element)) => {
+                let mut result = Vec::new();
+                for item in items {
+                    tick(control)?;
+                    result.push(
+                        from_input(item, element, law, control)?
+                            .ok_or("原始container要素が未対応")?,
+                    );
+                }
+                if matches!(ty, Type::List(_)) {
+                    Scalar::List {
+                        element: (**element).clone(),
+                        items: result,
+                    }
+                } else {
+                    Scalar::Set {
+                        element: (**element).clone(),
+                        items: result,
+                    }
+                }
+            }
+            (Value::Option(item), Type::Option(element)) => Scalar::Option {
+                element: (**element).clone(),
+                value: item
+                    .as_ref()
+                    .map(|item| {
+                        from_input(item, element, law, control)
+                            .and_then(|value| value.ok_or_else(|| "原始Option要素が未対応".into()))
+                            .map(Box::new)
+                    })
+                    .transpose()?,
+            },
             (
                 Value::Data {
                     constructor: name,
@@ -429,6 +544,38 @@ pub(super) fn equal(
                     same
                 }
             }
+            (Scalar::Unit, Scalar::Unit) => true,
+            (Scalar::Text(a), Scalar::Text(b)) => a == b,
+            (Scalar::Tuple(a), Scalar::Tuple(b))
+            | (Scalar::List { items: a, .. }, Scalar::List { items: b, .. }) => {
+                if a.len() != b.len() {
+                    false
+                } else {
+                    let mut same = true;
+                    for (a, b) in a.iter().zip(b) {
+                        tick(control)?;
+                        same &= equal(a, b, control)?;
+                    }
+                    same
+                }
+            }
+            (Scalar::Set { items: a, .. }, Scalar::Set { items: b, .. }) => {
+                if a.len() != b.len() {
+                    false
+                } else {
+                    let mut same = true;
+                    for item in a {
+                        tick(control)?;
+                        same &= contains(b, item, control)?;
+                    }
+                    same
+                }
+            }
+            (Scalar::Option { value: a, .. }, Scalar::Option { value: b, .. }) => match (a, b) {
+                (None, None) => true,
+                (Some(a), Some(b)) => equal(a, b, control)?,
+                _ => false,
+            },
             (Scalar::Bool(a), Scalar::Bool(b)) => a == b,
             (
                 Scalar::Subject {
@@ -457,6 +604,44 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         match value {
+            Scalar::Unit | Scalar::Text(_) => Ok(()),
+            Scalar::Tuple(items) => {
+                for item in items {
+                    tick(control)?;
+                    check_shape(item, control)?;
+                }
+                Ok(())
+            }
+            Scalar::List { element, items } | Scalar::Set { element, items } => {
+                if !primitive_type(element, control)? {
+                    return Err("containerの要素型が原始対応型でない".into());
+                }
+                for (index, item) in items.iter().enumerate() {
+                    tick(control)?;
+                    if &item.ty() != element {
+                        return Err("containerの要素型が違う".into());
+                    }
+                    check_shape(item, control)?;
+                    if matches!(value, Scalar::Set { .. })
+                        && contains(&items[..index], item, control)?
+                    {
+                        return Err("Set値に意味上の重複がある".into());
+                    }
+                }
+                Ok(())
+            }
+            Scalar::Option { element, value } => {
+                if !primitive_type(element, control)? {
+                    return Err("Optionの要素型が原始対応型でない".into());
+                }
+                if let Some(value) = value {
+                    if &value.ty() != element {
+                        return Err("someの要素型が違う".into());
+                    }
+                    check_shape(value, control)?;
+                }
+                Ok(())
+            }
             Scalar::Data {
                 family,
                 constructor,
@@ -480,4 +665,100 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
             _ => numeric::check(value, control),
         }
     })
+}
+
+/// 原始container内で表せる型の形。Dataのsignatureは別に必須照合する。
+pub(super) fn primitive_type(ty: &Type, control: &Control) -> Result<bool, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        tick(control)?;
+        match ty {
+            Type::Unit
+            | Type::Text
+            | Type::Bool
+            | Type::Z
+            | Type::Q
+            | Type::Fp(_)
+            | Type::Ref(_)
+            | Type::Data(_) => Ok(true),
+            Type::Tuple(items) => {
+                for item in items {
+                    tick(control)?;
+                    if !primitive_type(item, control)? {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+            Type::List(item) | Type::Set(item) | Type::Option(item) => {
+                primitive_type(item, control)
+            }
+            _ => Ok(false),
+        }
+    })
+}
+pub(super) fn contains(
+    items: &[Scalar],
+    item: &Scalar,
+    control: &Control,
+) -> Result<bool, ValidationFailure> {
+    for candidate in items {
+        tick(control)?;
+        if equal(candidate, item, control)? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+pub(super) fn set(
+    element: Type,
+    items: &[Scalar],
+    control: &Control,
+) -> Result<Scalar, ValidationFailure> {
+    let mut result = Vec::new();
+    let mut remaining = items;
+    while let Some((item, rest)) = remaining.split_first() {
+        #[cfg(test)]
+        observe_iteration("set", items.len() - remaining.len());
+        remaining = rest;
+        tick(control)?;
+        if item.ty() != element {
+            return Err("Set構成要素の型が違う".into());
+        }
+        if !contains(&result, item, control)? {
+            result.push(item.clone());
+        }
+        tick(control)?;
+    }
+    Ok(Scalar::Set {
+        element,
+        items: result,
+    })
+}
+pub(super) fn aggregate(
+    name: &str,
+    value: &Scalar,
+    control: &Control,
+) -> Result<Scalar, ValidationFailure> {
+    let (element, items) = match value {
+        Scalar::List { element, items } | Scalar::Set { element, items } => (element, items),
+        _ => return Err("count/sumの元値がList/Setでない".into()),
+    };
+    tick(control)?;
+    if name == "count" {
+        return Ok(Scalar::Z(items.len().into()));
+    }
+    if name != "sum" {
+        return Err("containerの固定演算名が違う".into());
+    }
+    let mut result = numeric::zero(element, control)?;
+    let mut remaining = items.as_slice();
+    while let Some((item, rest)) = remaining.split_first() {
+        #[cfg(test)]
+        observe_iteration("sum", items.len() - remaining.len());
+        remaining = rest;
+        tick(control)?;
+        result = numeric::binary(crate::law::ast::BinOp::Add, &result, item, control)?;
+        tick(control)?;
+    }
+    Ok(result)
 }

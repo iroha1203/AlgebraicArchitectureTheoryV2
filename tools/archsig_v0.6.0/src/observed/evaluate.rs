@@ -417,7 +417,15 @@ impl Evaluator<'_, '_> {
                         self.prepare_source(argument)?;
                     }
                 }
-                ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. } => {
+                ExprKind::Tuple(_)
+                | ExprKind::ListLit { .. }
+                | ExprKind::SetLit { .. }
+                | ExprKind::None(_)
+                | ExprKind::Some(_)
+                | ExprKind::Unit
+                | ExprKind::Str(_)
+                | ExprKind::Index { .. }
+                | ExprKind::Call { .. } => {
                     let children = self
                         .environment
                         .composite_children(id)?
@@ -846,9 +854,15 @@ impl Evaluator<'_, '_> {
             ExprKind::Call { args, .. } if self.environment.named_view(id)?.is_some() => {
                 self.call(id, args, span, ty)
             }
-            ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. } => {
-                self.composite(id, span, ty)
-            }
+            ExprKind::Tuple(_)
+            | ExprKind::ListLit { .. }
+            | ExprKind::SetLit { .. }
+            | ExprKind::None(_)
+            | ExprKind::Some(_)
+            | ExprKind::Unit
+            | ExprKind::Str(_)
+            | ExprKind::Index { .. }
+            | ExprKind::Call { .. } => self.composite(id, span, ty),
             _ => Err(self.unsupported(span, format!("式形 {:?}", expr.kind))),
         }
     }
@@ -885,8 +899,13 @@ impl Evaluator<'_, '_> {
         support.sort();
         support.dedup();
         let value = if known {
+            #[cfg(test)]
+            let previous = data::evaluation_context(Some((span, self.graph.active)));
+            let constructed = self.environment.composite_value(id, &values);
+            #[cfg(test)]
+            data::evaluation_context(previous);
             Some(self.value(
-                self.environment.composite_value(id, &values)?,
+                constructed?,
                 Rule::Input {
                     kind: "law",
                     location: Location::Law { span },
@@ -5078,8 +5097,8 @@ reading Calc {{
             numeric_recheck_fixture(
                 &[],
                 r#"
- view retain(x: Bool): Bool = x;
- view caller(s: Sample): Bool = retain(s.p);
+ view retain(x: Bool): (Bool,Bool) = (x,x);
+ view caller(s: Sample): (Bool,Bool) = retain(s.p);
 "#,
             ),
             &["v=evaluate(Calc.caller,s=@v/sample)"],
@@ -5088,11 +5107,17 @@ reading Calc {{
         .unwrap();
         assert_eq!(normal.status(), "complete");
         rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let value = data_scalar_at(&normal, normal.answers[0].outputs["value"].0);
+        assert_eq!(value.ty(), Type::Tuple(vec![Type::Bool, Type::Bool]));
+        assert_eq!(
+            value,
+            &Scalar::Tuple(vec![Scalar::Bool(false), Scalar::Bool(false)])
+        );
         let sources = numeric_recheck_fixture(
             &[],
             r#"
- view unsupported(s: Sample): (Bool,Bool) = (s.p,s.p);
- view caller(s: Sample): (Bool,Bool) = unsupported(s);
+ view unsupported(s: Sample): Bool = forall item: Bool. item;
+ view caller(s: Sample): Bool = unsupported(s);
 "#,
         );
         let law = sources.law().bytes().to_vec();
@@ -5110,7 +5135,7 @@ reading Calc {{
         else {
             panic!("範囲外のcallee式は専用未実装を保つ");
         };
-        assert_eq!(&law[span.0..span.1], b"(s.p,s.p)");
+        assert_eq!(&law[span.0..span.1], b"forall item: Bool. item");
     }
     #[test]
     fn named_calls_reject_equal_atom_from_another_field_at_scalar_prefix() {
@@ -5795,5 +5820,434 @@ reading Calc {{
         parts[0].children.push(child);
         changed[root].arguments.insert(2, child);
         rejects_named_prefix(&result, &changed);
+    }
+    fn container_recheck_example(omitted: &[&str], requests: &[&str]) -> ObservedEvaluation {
+        evaluate_observed_bytes(numeric_recheck_fixture(omitted, r#"
+ view ordered(): List<Z> = list<Z>[2,1,2];
+ view unique(): Set<Z> = set<Z>{2,1,2};
+ view mixed(): (Unit,Text,Bool,List<Z>) = (unit,"kept",false,list<Z>[2,1,2]);
+ view absent(): Option<Z> = none<Z>;
+ view present(): Option<Z> = some(2);
+ view echo(x: List<Z>): List<Z> = x;
+ view called(): (List<Z>,List<Z>) = (echo(list<Z>[2,1]),echo(list<Z>[2,1]));
+ view unknown(s: Sample): List<Q> = list<Q>[s.q];
+ view maybe(s: Sample): Option<Q> = some(s.q);
+ view total(s: Sample): Q = sum(list<Q>[s.q]);
+ view empty(): (Z,Q,Fp(5),(Z,Q,Fp(5))) = (sum(list<Z>[]),sum(set<Q>{}),sum(list<Fp(5)>[]),sum(list<(Z,Q,Fp(5))>[]));
+"#),requests,&mut named_call_quiet()).unwrap()
+    }
+    #[test]
+    fn primitive_containers_recheck_sequence_type_and_option_tags_at_scalar_prefix() {
+        let result = container_recheck_example(
+            &[],
+            &[
+                "ordered=evaluate(Calc.ordered)",
+                "mixed=evaluate(Calc.mixed)",
+                "absent=evaluate(Calc.absent)",
+            ],
+        );
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let list = data_rule_scalar(&result, "list<Z>[2,1,2]", 0);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=list]).unwrap();
+        let mut changed = result.nodes[..=list].to_vec();
+        let Some(Payload::Scalar(Scalar::List { items, .. })) = &mut changed[list].payload else {
+            unreachable!()
+        };
+        items.swap(0, 1);
+        changed[list].arguments.swap(0, 1);
+        rejects_named_prefix(&result, &changed);
+        let mut changed = result.nodes[..=list].to_vec();
+        let Some(Payload::Scalar(Scalar::List { element, .. })) = &mut changed[list].payload else {
+            unreachable!()
+        };
+        *element = Type::Q;
+        changed[list].ty = NodeType::Value(Type::List(Box::new(Type::Q)));
+        rejects_named_prefix(&result, &changed);
+        let mixed = result.answers[1].outputs["value"].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=mixed]).unwrap();
+        let mut changed = result.nodes[..=mixed].to_vec();
+        let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut changed[mixed].payload else {
+            unreachable!()
+        };
+        items.swap(0, 1);
+        let ty = Type::Tuple(items.iter().map(Scalar::ty).collect());
+        changed[mixed].ty = NodeType::Value(ty);
+        changed[mixed].arguments.swap(0, 1);
+        rejects_named_prefix(&result, &changed);
+        let absent = result.answers[2].outputs["value"].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=absent]).unwrap();
+        let mut changed = result.nodes[..=absent].to_vec();
+        let Some(Payload::Scalar(Scalar::Option { value, .. })) = &mut changed[absent].payload
+        else {
+            unreachable!()
+        };
+        *value = Some(Box::new(Scalar::Z(0.into())));
+        rejects_named_prefix(&result, &changed);
+    }
+    #[test]
+    fn primitive_sets_keep_all_source_children_and_accept_extensional_display_order() {
+        let result = container_recheck_example(&[], &["value=evaluate(Calc.unique)"]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let value = result.answers[0].outputs["value"].0;
+        let root = result.answers[0].outputs["evaluation"].0;
+        let Scalar::Set { items, .. } = data_scalar_at(&result, value) else {
+            unreachable!()
+        };
+        assert_eq!(items, &vec![Scalar::Z(2.into()), Scalar::Z(1.into())]);
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[root].payload else {
+            unreachable!()
+        };
+        assert_eq!(parts[0].children.len(), 3);
+        assert_eq!(result.nodes[value].arguments.len(), 3);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value]).unwrap();
+        let mut display = result.nodes.clone();
+        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut display[value].payload else {
+            unreachable!()
+        };
+        items.reverse();
+        // 同じ集合の独立な表示順は、数学的に不正な導出へ数えない。
+        rebuild_for_origin_and_support_recheck(&result, &display[..=value]).unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &display).unwrap();
+        let mut duplicate = result.nodes[..=value].to_vec();
+        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut duplicate[value].payload else {
+            unreachable!()
+        };
+        items.push(items[0].clone());
+        rejects_named_prefix(&result, &duplicate);
+        let mut omitted = result.nodes[..=value].to_vec();
+        omitted[value].arguments.pop();
+        rejects_named_prefix(&result, &omitted);
+        let mut reordered = result.nodes[..=value].to_vec();
+        reordered[value].arguments.swap(0, 1);
+        rejects_named_prefix(&result, &reordered);
+    }
+    #[test]
+    fn primitive_container_sources_reject_other_call_producers_scope_and_support() {
+        let result = container_recheck_example(
+            &[],
+            &[
+                "first=evaluate(Calc.called)",
+                "second=evaluate(Calc.called)",
+            ],
+        );
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let values:Vec<_>=result.nodes.iter().enumerate().filter_map(|(index,node)| {
+            (result.contexts[index].frame.is_none() && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"echo(list<Z>[2,1])")) && matches!(node.payload,Some(Payload::Scalar(_)))).then_some(index)
+        }).collect();
+        assert_eq!(values.len(), 4);
+        for (early, later) in [(values[0], values[1]), (values[0], values[2])] {
+            assert_eq!(
+                data_scalar_at(&result, early),
+                data_scalar_at(&result, later)
+            );
+            let evaluation=result.nodes.iter().enumerate().find_map(|(index,node)| matches!(&node.payload,Some(Payload::Evaluation {value:Some(value),..}) if value.0==later).then_some(index)).unwrap();
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=evaluation]).unwrap();
+            let mut changed = result.nodes[..=evaluation].to_vec();
+            let Some(Payload::Evaluation { value, parts, .. }) = &mut changed[evaluation].payload
+            else {
+                unreachable!()
+            };
+            *value = Some(NodeRef(early));
+            parts[0].value = *value;
+            for argument in &mut changed[evaluation].arguments {
+                if argument.0 == later {
+                    *argument = NodeRef(early);
+                }
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+        let later = values[1];
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=later]).unwrap();
+        for mutation in 0..3 {
+            let mut changed = result.nodes[..=later].to_vec();
+            match mutation {
+                0 => changed[later].scope.readings.insert("Foreign".into()),
+                1 => {
+                    changed[later].support.push(Fact {
+                        snapshot: "v".into(),
+                        subject: "sample".into(),
+                        field: None,
+                        atom: None,
+                    });
+                    true
+                }
+                _ => {
+                    changed[later].rule = changed[values[0]].rule.clone();
+                    true
+                }
+            };
+            rejects_named_prefix(&result, &changed);
+        }
+    }
+    #[test]
+    fn primitive_empty_sums_keep_exact_types_and_missing_elements_stay_blocked() {
+        let known = container_recheck_example(
+            &[],
+            &[
+                "empty=evaluate(Calc.empty)",
+                "absentvalue=evaluate(Calc.absent)",
+                "presentvalue=evaluate(Calc.present)",
+            ],
+        );
+        assert_eq!(known.status(), "complete", "{:?}", known.issues);
+        rebuild_for_origin_and_support_recheck(&known, &known.nodes).unwrap();
+        let zero = Scalar::Tuple(vec![
+            Scalar::Z(0.into()),
+            Scalar::Q(0.into(), 1.into()),
+            Scalar::Fp {
+                modulus: "5".into(),
+                value: 0.into(),
+            },
+            Scalar::Tuple(vec![
+                Scalar::Z(0.into()),
+                Scalar::Q(0.into(), 1.into()),
+                Scalar::Fp {
+                    modulus: "5".into(),
+                    value: 0.into(),
+                },
+            ]),
+        ]);
+        assert_eq!(
+            data_scalar_at(&known, known.answers[0].outputs["value"].0),
+            &zero
+        );
+        let missing = container_recheck_example(
+            &["q"],
+            &[
+                "unknownlist=evaluate(Calc.unknown,s=@v/sample)",
+                "unknownoption=evaluate(Calc.maybe,s=@v/sample)",
+                "unknowntotal=evaluate(Calc.total,s=@v/sample)",
+            ],
+        );
+        assert_eq!(missing.status(), "partial", "{:?}", missing.issues);
+        rebuild_for_origin_and_support_recheck(&missing, &missing.nodes).unwrap();
+        for answer in &missing.answers {
+            assert!(!answer.outputs.contains_key("value"));
+            assert!(answer.reasons.iter().any(|r| {
+                r.missing
+                    .iter()
+                    .any(|f| f.field.as_deref() == Some("Numeric.Sample.q"))
+            }));
+        }
+        let root = missing.answers[1].outputs["evaluation"].0;
+        rebuild_for_origin_and_support_recheck(&missing, &missing.nodes[..=root]).unwrap();
+        let mut forged = missing.nodes[..=root].to_vec();
+        let Some(Payload::Evaluation { parts, .. }) = &mut forged[root].payload else {
+            unreachable!()
+        };
+        parts[0].children.clear();
+        forged[root].arguments.remove(1);
+        rejects_named_prefix(&missing, &forged);
+    }
+
+    #[test]
+    fn primitive_set_and_sum_iterations_preserve_original_stop_inside_actual_evaluation() {
+        use super::super::control::{Limits, Resource, Usage};
+        use crate::result::Signal;
+        use std::{
+            cell::{Cell, RefCell},
+            rc::Rc,
+        };
+        for operation in ["set", "sum"] {
+            let (returns, body) = if operation == "set" {
+                ("Set<Z>", "set<Z>{1,2,1}")
+            } else {
+                ("Z", "sum(list<Z>[1,2,3])")
+            };
+            let sources = numeric_recheck_fixture(
+                &["p"],
+                &format!(
+                    r#"
+ view seed(s: Sample): Q = s.q;
+ view missing(s: Sample): Bool = s.p;
+ view current(s: Sample): {returns} = {body};
+ view later(s: Sample): Q = s.q;
+"#
+                ),
+            );
+            let asks = [
+                "seed=evaluate(Calc.seed,s=@v/sample)",
+                "missing=evaluate(Calc.missing,s=@v/sample)",
+                "current=evaluate(Calc.current,s=@v/sample)",
+                "later=evaluate(Calc.later,s=@v/sample)",
+            ];
+            let mut control = named_call_quiet();
+            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+            let Signature::View {
+                body: expression, ..
+            } = &prepared.inputs().law().declarations["Calc.current"].signature
+            else {
+                unreachable!()
+            };
+            let target = prepared.inputs().law().exprs[*expression].span;
+            assert_eq!(&sources.law().bytes()[target.0..target.1], body.as_bytes());
+            let context = super::super::call::Context {
+                request: 2,
+                frame: None,
+            };
+            let seen = Rc::new(RefCell::new(Vec::new()));
+            let progress = seen.clone();
+            data::observe_iterations(move |span, actual, name, index| {
+                if span == target && actual == context && name == operation {
+                    progress.borrow_mut().push(index);
+                }
+            });
+            let normal = evaluate_observed(prepared, &mut control);
+            data::clear_iteration_observer();
+            let normal = normal.unwrap();
+            assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
+            assert_eq!(
+                &*seen.borrow(),
+                &[0, 1, 2],
+                "Source再解析を混ぜず実評価の三要素の進行だけを観測する"
+            );
+            let graph = rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+            let value = normal.answers[2].outputs["value"];
+            if operation == "sum" {
+                assert_eq!(graph.scalar(value).unwrap(), &Scalar::Z(6.into()));
+            } else {
+                assert_eq!(
+                    graph.scalar(value).unwrap(),
+                    &Scalar::Set {
+                        element: Type::Z,
+                        items: vec![Scalar::Z(1.into()), Scalar::Z(2.into())]
+                    }
+                );
+            }
+            let scalar = value.0;
+            rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..scalar]).unwrap();
+            let Json::Obj(ref normal_wire) = normal.wire() else {
+                unreachable!()
+            };
+            let Json::Arr(normal_answers) = &normal_wire["answers"] else {
+                unreachable!()
+            };
+            for kind in 0..3 {
+                let (limits, usage, expected) = match kind {
+                    0 => (
+                        Limits {
+                            time_ms: Some(1),
+                            memory_mib: None,
+                        },
+                        Usage {
+                            elapsed_ms: 1,
+                            ..Usage::default()
+                        },
+                        StopReason::BudgetExhausted {
+                            resource: Resource::TimeMs,
+                            limit: 1,
+                            observed: 1,
+                        },
+                    ),
+                    1 => (
+                        Limits {
+                            time_ms: None,
+                            memory_mib: Some(1),
+                        },
+                        Usage {
+                            memory_mib: 1,
+                            ..Usage::default()
+                        },
+                        StopReason::BudgetExhausted {
+                            resource: Resource::MemoryMib,
+                            limit: 1,
+                            observed: 1,
+                        },
+                    ),
+                    _ => (
+                        Limits::default(),
+                        Usage {
+                            signal: Some(Signal::Term),
+                            ..Usage::default()
+                        },
+                        StopReason::Cancelled(Signal::Term),
+                    ),
+                };
+                let armed = Rc::new(Cell::new(false));
+                let probes = Rc::new(Cell::new(0));
+                let frozen = Rc::new(Cell::new(None));
+                let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+                let mut control = Control::new(limits, move |point| {
+                    count.set(count.get() + 1);
+                    if arm.replace(false) {
+                        assert_eq!(point, Checkpoint::FiniteIteration);
+                        assert!(freeze.replace(Some(count.get())).is_none());
+                        usage
+                    } else {
+                        Usage::default()
+                    }
+                });
+                let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+                let seen = Rc::new(RefCell::new(Vec::new()));
+                let observed = seen.clone();
+                let result = evaluate_observed_with_validator(
+                    prepared,
+                    &mut control,
+                    |environment, graph, request, answer| {
+                        environment.validate_answer(graph, request, answer)?;
+                        if request.id == "missing" {
+                            let (observed, armed) = (observed.clone(), armed.clone());
+                            data::observe_iterations(move |span, actual, name, index| {
+                                if span == target && actual == context && name == operation {
+                                    observed.borrow_mut().push(index);
+                                    if index == 1 {
+                                        armed.set(true);
+                                    }
+                                }
+                            });
+                        }
+                        Ok(())
+                    },
+                );
+                data::clear_iteration_observer();
+                let result = result.unwrap();
+                assert_eq!(
+                    &*seen.borrow(),
+                    &[0, 1],
+                    "実評価loopの第一要素完了後、第二要素の既存tickで停止する"
+                );
+                assert_eq!(
+                    result.nodes.len(),
+                    scalar,
+                    "未完成のcontainer/sum値をcommitしない"
+                );
+                assert_eq!(control.stop_reason(), Some(expected.clone()));
+                assert_eq!(Some(probes.get()), frozen.get());
+                assert_eq!(result.status(), "interrupted", "{:?}", result.issues);
+                assert!(
+                    result
+                        .issues
+                        .iter()
+                        .all(|r| !matches!(r.kind, ReasonKind::Internal(_)))
+                );
+                let Json::Obj(ref wire) = result.wire() else {
+                    unreachable!()
+                };
+                let Json::Arr(answers) = &wire["answers"] else {
+                    unreachable!()
+                };
+                assert_eq!(
+                    &answers[..2],
+                    &normal_answers[..2],
+                    "先行値と元missingを保持する"
+                );
+                for answer in &result.answers[2..] {
+                    assert_eq!(answer.status, Decision::Undetermined);
+                    assert!(answer.outputs.is_empty());
+                    assert!(
+                        answer.reasons.iter().any(
+                            |r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected)
+                        )
+                    );
+                }
+                rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+                let before = probes.get();
+                assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+                assert_eq!(probes.get(), before);
+            }
+        }
     }
 }
