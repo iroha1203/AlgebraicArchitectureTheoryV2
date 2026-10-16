@@ -727,6 +727,10 @@ pub struct ObservedEvaluation {
     pub(crate) answers: Vec<Answer>,
     pub(crate) issues: Vec<Reason>,
     pub(crate) status: &'static str,
+    #[cfg(test)]
+    pub(super) contexts: Vec<super::call::Context>,
+    #[cfg(test)]
+    pub(super) frames: Vec<super::call::Frame>,
 }
 impl ObservedEvaluation {
     pub fn status(&self) -> &str {
@@ -778,12 +782,21 @@ impl ObservedEvaluation {
 #[derive(Debug, Default)]
 pub(crate) struct Graph {
     pub nodes: Vec<Node>,
+    pub(super) contexts: Vec<super::call::Context>,
+    pub(super) frames: Vec<super::call::Frame>,
+    pub(super) active: super::call::Context,
+    pub(super) requests: Vec<super::request::Request>,
     control: Control,
 }
 #[derive(Debug)]
 pub(crate) enum ValidationFailure {
     Internal(String),
     Stop(StopReason),
+    /// 元式の事前分析だけが返す。生成済みnodeの照合ではInternalへ変換する。
+    UnsupportedExpression {
+        location: Location,
+        feature: String,
+    },
 }
 impl From<String> for ValidationFailure {
     fn from(s: String) -> Self {
@@ -804,8 +817,15 @@ impl Graph {
     pub fn new(control: &Control) -> Self {
         Self {
             nodes: vec![],
+            contexts: vec![],
+            frames: vec![],
+            active: super::call::Context::default(),
+            requests: vec![],
             control: control.clone(),
         }
+    }
+    pub(super) fn context_at(&self, index: usize) -> super::call::Context {
+        self.contexts.get(index).copied().unwrap_or(self.active)
     }
     pub(crate) fn tick(&self) -> Result<(), ValidationFailure> {
         self.control
@@ -1091,6 +1111,7 @@ impl Graph {
         }
         let r = NodeRef(self.nodes.len());
         self.nodes.push(node);
+        self.contexts.push(self.active);
         committed(r);
         self.tick()?;
         Ok(r)
