@@ -73,8 +73,10 @@
   明示 guard と元の body の評価・支持を条件付き Law の導出へ接続する。
   型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
   欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
+  共有欠測の全補完を列挙して相関を判断する処理は未実装である。
+  現在の有限族は各rowの既知値・未決を集約し、判断が確定しなければ欠測理由付きの未決回答を返す。
   上記以外のpayloadを持つdata・再帰dataの評価、その他の式形・
-  無限型・依存ownerの型/式族・無限parameterの量化・共有欠測の相関を含む全補完の判断・全補完の列挙・Answer 由来の束縛・
+  無限型・依存ownerの型/式族・無限parameterの量化・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   未確定の参照からのfield読取り・動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の

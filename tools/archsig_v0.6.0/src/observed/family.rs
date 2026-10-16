@@ -825,7 +825,7 @@ impl Environment<'_> {
         &self,
         graph: &Graph,
         node: &Node,
-        _limit: usize,
+        limit: usize,
     ) -> Result<bool, ValidationFailure> {
         if let Some(Payload::LawInstance { body, .. }) = &node.payload {
             if self.family_source_ref(graph, *body)? {
@@ -1068,14 +1068,37 @@ impl Environment<'_> {
                     {
                         return Err("非適用rowに架空body/値/範囲がある".into());
                     }
-                    self.validate_at(
-                        graph,
-                        graph.get(value.ok_or("非適用値がない")?)?,
-                        value.unwrap().0,
-                    )?;
+                    let value = value.ok_or("非適用値がない")?;
+                    let producer = graph.get(value)?;
+                    // 値自身の正当性に加え、このrowが実際に構成した適用値へ結ぶ。
+                    if value.0 >= limit
+                        || graph.context_at(value.0) != self.current_context(graph)
+                        || producer.arguments != [instance, guard]
+                    {
+                        return Err("非適用rowの値が現在instance/guardのproducerでない".into());
+                    }
+                    self.validate_at(graph, producer, value.0)?;
                 }
                 Some(Payload::Proposition { instance: actual }) => {
                     let eval = *node.arguments.get(1).ok_or("非適用命題の元評価がない")?;
+                    let application = graph.get(eval)?;
+                    let Some(Payload::Evaluation {
+                        value: Some(value),
+                        applicability: "not_applicable",
+                        ..
+                    }) = &application.payload
+                    else {
+                        return Err("非適用命題の根拠が非適用Law評価でない".into());
+                    };
+                    if eval.0 >= limit
+                        || application.ty != NodeType::Evaluation(Type::Bool)
+                        || graph.context_at(eval.0) != self.current_context(graph)
+                        || application.arguments != [instance, guard]
+                        || graph.scalar(*value)? != &Scalar::Bool(true)
+                    {
+                        return Err("非適用命題の根拠が現在instance/guardの適用評価でない".into());
+                    }
+                    // 元guard/body Source・bindings・parts・値producerの既存照合も通す。
                     self.recheck_evaluation(graph, eval)?;
                     if node.ty != NodeType::Proposition
                         || !matches!(node.rule, Rule::Construction("proposition"))

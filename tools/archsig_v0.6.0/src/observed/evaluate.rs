@@ -4545,6 +4545,172 @@ reading R {{
         )
     }
     #[test]
+    fn finite_law_non_applicable_rows_reject_foreign_and_unrelated_producers() {
+        let result = finite_family_example(
+            "law required skipped(b:Bool) when false and true:false;",
+            &["family=check(Calc.skipped)"],
+            false,
+        );
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        assert_eq!(result.answers[0].status, Decision::Established);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let (_, _, rows) = family_whole(&result, 0);
+        assert_eq!(rows.len(), 2);
+        let first = rows[0];
+        let row = rows[1];
+        let Some(Payload::Evaluation {
+            value: Some(foreign_value),
+            applicability: "not_applicable",
+            ..
+        }) = &result.nodes[first.0].payload
+        else {
+            panic!("first NA applied Evaluation")
+        };
+        let Some(Payload::Evaluation {
+            value: Some(own_value),
+            applicability: "not_applicable",
+            parts,
+            ..
+        }) = &result.nodes[row.0].payload
+        else {
+            panic!("second NA applied Evaluation")
+        };
+        assert!(parts[1].value.is_none() && parts[1].children.is_empty());
+        assert_ne!(own_value, foreign_value);
+        assert_ne!(
+            result.contexts[row.0].instance,
+            result.contexts[foreign_value.0].instance
+        );
+        let instance = result.nodes[row.0].arguments[0];
+        let guard = result.nodes[row.0].arguments[1];
+        assert_eq!(parts[0].children, vec![guard]);
+        let Some(Payload::Evaluation {
+            value: Some(guard_value),
+            parts: guard_parts,
+            ..
+        }) = &result.nodes[guard.0].payload
+        else {
+            panic!("real false guard")
+        };
+        assert!(matches!(
+            result.nodes[guard_value.0].payload,
+            Some(Payload::Scalar(Scalar::Bool(false)))
+        ));
+        assert_eq!(guard_parts[0].children.len(), 2);
+        let left = guard_parts[0].children[0];
+        let right = guard_parts[0].children[1];
+        let Some(Payload::Evaluation {
+            expression: left_source,
+            value: Some(left_value),
+            ..
+        }) = &result.nodes[left.0].payload
+        else {
+            panic!("left literal")
+        };
+        let Some(Payload::Evaluation {
+            expression: right_source,
+            value: Some(unrelated_true),
+            ..
+        }) = &result.nodes[right.0].payload
+        else {
+            panic!("right literal")
+        };
+        assert!(matches!(
+            result.nodes[left_value.0].payload,
+            Some(Payload::Scalar(Scalar::Bool(false)))
+        ));
+        for reference in [*foreign_value, *own_value, *unrelated_true] {
+            assert!(matches!(
+                result.nodes[reference.0].payload,
+                Some(Payload::Scalar(Scalar::Bool(true)))
+            ));
+        }
+        assert_ne!(own_value, unrelated_true);
+        assert_eq!(result.contexts[right.0], result.contexts[row.0]);
+        assert_eq!(result.contexts[unrelated_true.0], result.contexts[row.0]);
+        // 実二項評価は元ASTの左右を順に生成し、falseでも右のtrueを読む。
+        for (reference, expected) in [
+            (*left_source, b"false".as_slice()),
+            (*right_source, b"true".as_slice()),
+        ] {
+            let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &result.nodes[reference.0].payload
+            else {
+                panic!("literal Source")
+            };
+            assert_eq!(
+                &result.prepared.inputs().sources().law().bytes()[span.0..span.1],
+                expected
+            );
+        }
+        assert!(
+            left.0 < right.0 && right.0 < guard.0 && guard.0 < instance.0 && instance.0 < row.0
+        );
+        let proposition = result.nodes.iter().enumerate().find_map(|(index,node)| {
+            (matches!(&node.payload,Some(Payload::Proposition {instance:actual}) if *actual==instance)
+                && node.arguments==[instance,row]).then_some(index)
+        }).unwrap();
+        assert!(row.0 < proposition);
+        let mut failures = Vec::new();
+        for (label, target, replacement, replace_value) in [
+            (
+                "foreign-instance NA true Scalar",
+                row.0,
+                *foreign_value,
+                true,
+            ),
+            (
+                "same-row unrelated true guard-child Scalar",
+                row.0,
+                *unrelated_true,
+                true,
+            ),
+            (
+                "NA Proposition to false guard Evaluation",
+                proposition,
+                guard,
+                false,
+            ),
+            (
+                "NA Proposition to true raw child Evaluation",
+                proposition,
+                right,
+                false,
+            ),
+        ] {
+            let prefix = &result.nodes[..=target];
+            rebuild_for_origin_and_support_recheck(&result, prefix).unwrap();
+            for (extent, original) in [("prefix", prefix), ("full", result.nodes.as_slice())] {
+                let mut changed = original.to_vec();
+                if replace_value {
+                    let Some(Payload::Evaluation { value, .. }) = &mut changed[target].payload
+                    else {
+                        unreachable!()
+                    };
+                    assert_ne!(*value, Some(replacement));
+                    *value = Some(replacement);
+                } else {
+                    assert_ne!(changed[target].arguments[1], replacement);
+                    changed[target].arguments[1] = replacement;
+                }
+                let outcome = rebuild_for_origin_and_support_recheck(&result, &changed);
+                match outcome {
+                    Err(ValidationFailure::Internal(_)) => {}
+                    Err(other) => failures.push(format!("{label} ({extent}): {other:?}")),
+                    Ok(_) => failures.push(format!("{label} ({extent}): accepted")),
+                }
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "all NA consumer substitution outcomes:\n{}",
+            failures.join("\n")
+        );
+    }
+
+    #[test]
     fn finite_law_families_recheck_products_rows_guards_and_coverage() {
         let result = finite_family_example(
             "law required product(a: Bool,b: Bool): a or not a; law required guarded(b: Bool,s: Sample) when b: s.p; law required skipped(b: Bool,s: Sample) when false: s.p;",
