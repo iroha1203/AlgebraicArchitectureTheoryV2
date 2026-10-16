@@ -5062,8 +5062,8 @@ impl<'a> Environment<'a> {
                     })
                     .map(|(_, _, value)| value.clone());
                 if let Some(assigned) = assigned {
-                    if field.ty != Type::Bool || assigned.ty() != Type::Bool {
-                        return Err("Bool以外のslotを補完した".into());
+                    if !matches!(&field.ty, Type::Bool | Type::Fp(_)) || assigned.ty() != field.ty {
+                        return Err("補完slotの元有限原始型が違う".into());
                     }
                     let mut scalar_scope = request_base.clone();
                     scalar_scope.merge(&owner_scope);
@@ -5350,7 +5350,7 @@ impl<'a> Environment<'a> {
         };
         let field = self.field(snapshot, subject, &format!("{entity}.{name}"))?;
         match (&field.slot, value) {
-            (Slot::Missing, Some(actual)) if field.ty == Type::Bool => {
+            (Slot::Missing, Some(actual)) if matches!(&field.ty, Type::Bool | Type::Fp(_)) => {
                 let fact = Fact {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),

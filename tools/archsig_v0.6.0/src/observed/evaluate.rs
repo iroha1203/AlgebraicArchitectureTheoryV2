@@ -1540,7 +1540,7 @@ impl Evaluator<'_, '_> {
             field: Some(fullname),
             atom: None,
         };
-        if field.ty == Type::Bool
+        if matches!(&field.ty, Type::Bool | Type::Fp(_))
             && matches!(field.slot, Slot::Missing)
             && let Some(assigned) = self.environment.completion_slot(self.graph, &fact)?
         {
@@ -1567,7 +1567,7 @@ impl Evaluator<'_, '_> {
             )?;
             return self.finish(
                 span,
-                Type::Bool,
+                field.ty.clone(),
                 Some(value),
                 vec![base],
                 vec![],
@@ -10426,6 +10426,995 @@ reading Calc {{
     #[test]
     fn plain_ref_actual_roster_construction_domain_and_recheck_stops() {
         quantifier_actual_phases_preserve_stops(true, true);
+    }
+    fn fp_completion_fixture(body: &str, missing_q: bool) -> InputSources {
+        let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"FiniteScalar","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"FiniteScalar.Sample","meaning":"有限原始値を観測する対象。","parameters":[],"fields":[{"name":"f","type":["Fp","2"],"meaning":"二元体。"},{"name":"g","type":["Fp","3"],"meaning":"三元体。"},{"name":"p","type":"Bool","meaning":"条件。"},{"name":"q","type":"Q","meaning":"有理数。"}],"alignments":[]}]}]}"#;
+        let checked =
+            crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies["FiniteScalar"].digest;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary FiniteScalar version "1" digest "{digest}"; {body} }}"#
+        );
+        let atoms = if missing_q {
+            ""
+        } else {
+            r#"{"id":"q","subject":"sample","field":"FiniteScalar.Sample.q","value":["-2","3"],"origin":"values"}"#
+        };
+        let map = format!(
+            r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"FiniteScalar","version":"1","digest":"{digest}"}}],"sources":[{{"id":"scan","uri":"urn:fixture:finite-scalar","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],"origins":[{{"id":"base","mode":"observed","method":"対象を観測する。","locations":[{{"source":"scan","path":"state.model","span":[0,1]}}]}},{{"id":"values","mode":"observed","method":"有理数を観測する。","locations":[{{"source":"scan","path":"values.model","span":[2,3]}}]}}],"snapshots":[{{"id":"v","origin":"base","subjects":[{{"id":"sample","type":"FiniteScalar.Sample","origin":"base"}}],"atoms":[{atoms}]}}]}}"#
+        );
+        InputSources::from_bytes(
+            vec![definitions.as_bytes().to_vec()],
+            law.into_bytes(),
+            map.into_bytes(),
+        )
+    }
+    fn fp_completion_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
+        let result = evaluate_observed_bytes(
+            fp_completion_fixture(body, false),
+            asks,
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_ne!(result.status(), "error", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        result
+    }
+    fn fp_completion_field_scalars(result: &ObservedEvaluation, bytes: &[u8]) -> Vec<usize> {
+        let law = result.prepared.inputs().sources().law().bytes();
+        result.nodes.iter().enumerate().filter_map(|(index,node)| {
+            (result.contexts[index].case.is_some() && node.arguments.len()==3
+                && matches!(&node.payload,Some(Payload::Scalar(Scalar::Fp {..})))
+                && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if &law[span.0..span.1]==bytes)).then_some(index)
+        }).collect()
+    }
+    #[test]
+    fn fp_completion_domains_recheck_moduli_members_and_projection_prefixes() {
+        let result = fp_completion_example(
+            "view stable(s:Sample):Fp(2)=s.f-s.f;",
+            &["first=evaluate(Calc.stable,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        assert_eq!(
+            data_scalar_at(&result, result.answers[0].outputs["value"].0),
+            &Scalar::Fp {
+                modulus: "2".into(),
+                value: 0.into()
+            }
+        );
+        let root = result.answers[0].outputs["evaluation"].0;
+        let domain = result.nodes[root].arguments[1].0;
+        let seed = result.nodes[domain].arguments[0].0;
+        let Some(Payload::Domain { ty, elements }) = &result.nodes[domain].payload else {
+            unreachable!()
+        };
+        assert_eq!(ty, &Type::Fp("2".into()));
+        assert_eq!(elements.len(), 2);
+        for variant in 0..4 {
+            completion_mutation(&result, domain, |nodes| match variant {
+                0 | 1 => {
+                    let Some(Payload::Domain { ty, .. }) = &mut nodes[domain].payload else {
+                        unreachable!()
+                    };
+                    *ty = if variant == 0 {
+                        Type::Bool
+                    } else {
+                        Type::Fp("3".into())
+                    };
+                }
+                2 => {
+                    let Some(Payload::Domain { elements, .. }) = &mut nodes[domain].payload else {
+                        unreachable!()
+                    };
+                    elements.pop();
+                    nodes[domain].arguments.pop();
+                }
+                _ => {
+                    let Some(Payload::Domain { elements, .. }) = &mut nodes[domain].payload else {
+                        unreachable!()
+                    };
+                    elements[1] = elements[0];
+                    nodes[domain].arguments[2] = nodes[domain].arguments[1];
+                }
+            });
+        }
+        let member = elements[0].0;
+        completion_mutation(&result, member, |nodes| {
+            nodes[member].payload = Some(Payload::Scalar(Scalar::Fp {
+                modulus: "2".into(),
+                value: 2.into(),
+            }))
+        });
+        completion_mutation(&result, member, |nodes| {
+            nodes[member].ty = NodeType::Value(Type::Bool);
+            nodes[member].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        });
+        let fields = fp_completion_field_scalars(&result, b"s.f");
+        assert_eq!(fields.len(), 4);
+        let field = fields[0];
+        let projection = result.nodes[field].arguments[2].0;
+        for variant in 0..2 {
+            completion_mutation(&result, projection, |nodes| {
+                let ty = if variant == 0 {
+                    Type::Bool
+                } else {
+                    Type::Fp("3".into())
+                };
+                nodes[projection].ty = NodeType::Value(ty);
+                nodes[projection].payload = Some(Payload::Scalar(if variant == 0 {
+                    Scalar::Bool(false)
+                } else {
+                    Scalar::Fp {
+                        modulus: "3".into(),
+                        value: 0.into(),
+                    }
+                }));
+            });
+        }
+        completion_mutation(&result, seed, |nodes| {
+            let Some(Payload::CompletionSeed { fields, .. }) = &mut nodes[seed].payload else {
+                unreachable!()
+            };
+            fields[0].field = Some("FiniteScalar.Sample.g".into());
+        });
+        let source = result.nodes[field].arguments[0].0;
+        completion_mutation(&result, source, |nodes| {
+            let Some(Payload::Expression { bindings, .. }) = &mut nodes[source].payload else {
+                unreachable!()
+            };
+            bindings[0].name = "foreign".into();
+        });
+        let Signature::View { body, .. } =
+            &result.prepared.inputs().law().declarations["Calc.stable"].signature
+        else {
+            unreachable!()
+        };
+        let span = result.prepared.inputs().law().exprs[*body].span;
+        completion_mutation(&result, field, |nodes| {
+            nodes[field].rule = Rule::Input {
+                kind: "law",
+                location: Location::Law { span },
+            }
+        });
+    }
+    #[test]
+    fn fp_completion_mixed_assignments_recheck_slot_order_and_original_types() {
+        let result = fp_completion_example(
+            "view mixed(s:Sample):(Fp(2),Bool)=(s.f,s.p);",
+            &["first=evaluate(Calc.mixed,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "partial");
+        assert_eq!(result.answers[0].status, Decision::Undetermined);
+        let root = result.answers[0].outputs["evaluation"].0;
+        let domain = result.nodes[root].arguments[1].0;
+        let seed = result.nodes[domain].arguments[0].0;
+        let Some(Payload::Domain { ty, elements }) = &result.nodes[domain].payload else {
+            unreachable!()
+        };
+        assert_eq!(ty, &Type::Tuple(vec![Type::Fp("2".into()), Type::Bool]));
+        assert_eq!(elements.len(), 4);
+        let Some(Payload::CompletionSeed {
+            fields, sources, ..
+        }) = &result.nodes[seed].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(
+            fields
+                .iter()
+                .map(|f| f.field.as_deref())
+                .collect::<Vec<_>>(),
+            vec![Some("FiniteScalar.Sample.f"), Some("FiniteScalar.Sample.p")]
+        );
+        let source_count = sources.len();
+        completion_mutation(&result, domain, |nodes| {
+            let Some(Payload::CompletionSeed {
+                fields, sources, ..
+            }) = &mut nodes[seed].payload
+            else {
+                unreachable!()
+            };
+            fields.swap(0, 1);
+            sources.swap(0, 1);
+            let n = nodes[seed].arguments.len();
+            nodes[seed]
+                .arguments
+                .swap(n - source_count, n - source_count + 1);
+        });
+        completion_mutation(&result, domain, |nodes| {
+            let swapped = Type::Tuple(vec![Type::Bool, Type::Fp("2".into())]);
+            let Some(Payload::Domain { ty, .. }) = &mut nodes[domain].payload else {
+                unreachable!()
+            };
+            *ty = swapped.clone();
+            for member in elements {
+                nodes[member.0].ty = NodeType::Value(swapped.clone());
+                let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut nodes[member.0].payload
+                else {
+                    unreachable!()
+                };
+                values.swap(0, 1);
+            }
+        });
+        let record = result
+            .cases
+            .iter()
+            .find(|record| record.seed == NodeRef(seed))
+            .unwrap();
+        assert_eq!(record.values.len(), 2);
+        assert_eq!(
+            result.nodes[record.values[0].0].ty,
+            NodeType::Value(Type::Fp("2".into()))
+        );
+        assert_eq!(
+            result.nodes[record.values[1].0].ty,
+            NodeType::Value(Type::Bool)
+        );
+        let projection = record.values[0].0;
+        completion_mutation(&result, projection, |nodes| {
+            nodes[projection].ty = NodeType::Value(Type::Bool);
+            nodes[projection].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        });
+        let pair = result.answers[0]
+            .evidence
+            .iter()
+            .find(|r| {
+                matches!(
+                    &result.nodes[r.0].payload,
+                    Some(Payload::CompletionPair { .. })
+                )
+            })
+            .unwrap()
+            .0;
+        completion_mutation(&result, pair, |nodes| {
+            let Some(Payload::CompletionPair { fields, .. }) = &mut nodes[pair].payload else {
+                unreachable!()
+            };
+            fields.swap(0, 1);
+        });
+        for scalar in fp_completion_field_scalars(&result, b"s.f") {
+            assert!(result.nodes[scalar].support.is_empty());
+            assert_eq!(
+                result.nodes[scalar].ty,
+                NodeType::Value(Type::Fp("2".into()))
+            );
+        }
+    }
+    #[test]
+    fn fp_completion_prefixes_reject_foreign_call_case_and_request_producers() {
+        let result = fp_completion_example(
+            "view read(x:Sample):Fp(2)=x.f; view paired(s:Sample,t:Sample):Fp(2)=read(s)-read(t);",
+            &[
+                "first=evaluate(Calc.paired,s=@v/sample,t=@v/sample)",
+                "again=evaluate(Calc.paired,s=@v/sample,t=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        let fields = fp_completion_field_scalars(&result, b"x.f");
+        assert_eq!(fields.len(), 8);
+        for (foreign, target) in [
+            (fields[0], fields[1]),
+            (fields[0], fields[2]),
+            (fields[0], fields[4]),
+        ] {
+            let (old, own) = (
+                result.nodes[foreign].arguments[1],
+                result.nodes[target].arguments[1],
+            );
+            assert_ne!(old, own);
+            assert_eq!(
+                data_scalar_at(&result, old.0),
+                data_scalar_at(&result, own.0)
+            );
+            completion_mutation(&result, target, |nodes| nodes[target].arguments[1] = old);
+        }
+        assert_eq!(
+            data_scalar_at(&result, fields[0]),
+            data_scalar_at(&result, fields[1])
+        );
+        completion_mutation(&result, fields[1], |nodes| {
+            nodes[fields[1]].arguments[0] = result.nodes[fields[0]].arguments[0]
+        });
+        let Signature::View { body, .. } =
+            &result.prepared.inputs().law().declarations["Calc.paired"].signature
+        else {
+            unreachable!()
+        };
+        let span = result.prepared.inputs().law().exprs[*body].span;
+        let roots:Vec<_>=result.nodes.iter().enumerate().filter_map(|(i,node)| {
+            (result.contexts[i].case.is_some() && result.contexts[i].frame.is_none() && result.contexts[i].iteration.is_none() && result.contexts[i].instance.is_none()
+                && matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if matches!(&result.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span:actual},..}) if *actual==span))).then_some(i)
+        }).collect();
+        assert_eq!(roots.len(), 4);
+        for target in [roots[1], roots[2]] {
+            let value = |index: usize| {
+                let Some(Payload::Evaluation {
+                    value: Some(value), ..
+                }) = &result.nodes[index].payload
+                else {
+                    unreachable!()
+                };
+                *value
+            };
+            let (foreign, own) = (value(roots[0]), value(target));
+            assert_ne!(foreign, own);
+            assert_eq!(
+                data_scalar_at(&result, foreign.0),
+                data_scalar_at(&result, own.0)
+            );
+            completion_mutation(&result, target, |nodes| {
+                let Some(Payload::Evaluation { value, parts, .. }) = &mut nodes[target].payload
+                else {
+                    unreachable!()
+                };
+                *value = Some(foreign);
+                parts[0].value = Some(foreign);
+                for argument in &mut nodes[target].arguments {
+                    if *argument == own {
+                        *argument = foreign;
+                    }
+                }
+            });
+        }
+    }
+    #[test]
+    fn fp_completion_law_families_recheck_instance_producers_and_case_coverage() {
+        let result = fp_completion_example(
+            "law required related(s:Sample,b:Fp(2)):b=s.f;",
+            &["family=check(Calc.related,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        assert_eq!(result.answers[0].status, Decision::Refuted);
+        let proof = result.answers[0]
+            .evidence
+            .iter()
+            .find(|r| {
+                matches!(
+                    &result.nodes[r.0].payload,
+                    Some(Payload::FiniteExhaustion { .. })
+                )
+            })
+            .unwrap()
+            .0;
+        let Some(Payload::FiniteExhaustion {
+            instances, checked, ..
+        }) = &result.nodes[proof].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(*checked, 2);
+        assert_eq!(instances.len(), 2);
+        for &case in instances {
+            let context = result.contexts[case.0];
+            let record = &result.cases[context.case.unwrap()];
+            let assignment = data_scalar_at(&result, record.values[0].0);
+            assert!(
+                matches!(&result.nodes[case.0].payload,Some(Payload::Evaluation {value:Some(v),parts,..}) if data_scalar_at(&result,v.0)==&Scalar::Bool(false) && parts[0].children.len()==2)
+            );
+            assert!(result.nodes.iter().enumerate().any(|(i,node)|result.contexts[i].case==context.case && matches!(&node.payload,Some(Payload::Counterexample {bindings,..}) if bindings.iter().any(|b|b.name=="b" && data_scalar_at(&result,b.value.0)!=assignment))));
+        }
+        for variant in 0..3 {
+            completion_mutation(&result, proof, |nodes| {
+                let Some(Payload::FiniteExhaustion {
+                    checked, instances, ..
+                }) = &mut nodes[proof].payload
+                else {
+                    unreachable!()
+                };
+                match variant {
+                    0 => *checked += 1,
+                    1 => {
+                        instances[1] = instances[0];
+                        nodes[proof].arguments[3] = nodes[proof].arguments[2];
+                    }
+                    _ => {
+                        instances.pop();
+                        nodes[proof].arguments.pop();
+                    }
+                }
+            });
+        }
+        let fields = fp_completion_field_scalars(&result, b"s.f");
+        assert_eq!(fields.len(), 4);
+        assert_eq!(
+            result.contexts[fields[0]].case,
+            result.contexts[fields[1]].case
+        );
+        assert_ne!(
+            result.contexts[fields[0]].instance,
+            result.contexts[fields[1]].instance
+        );
+        assert_eq!(
+            data_scalar_at(&result, fields[0]),
+            data_scalar_at(&result, fields[1])
+        );
+        completion_mutation(&result, fields[1], |nodes| {
+            nodes[fields[1]].arguments[0] = result.nodes[fields[0]].arguments[0]
+        });
+    }
+    #[test]
+    fn fp_completion_pairs_recheck_original_field_assignment_and_result() {
+        let result = fp_completion_example(
+            "view observe(s:Sample):Fp(3)=s.g;",
+            &["first=evaluate(Calc.observe,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "partial");
+        assert!(!result.answers[0].outputs.contains_key("value"));
+        let pair = result.answers[0]
+            .evidence
+            .iter()
+            .find(|r| {
+                matches!(
+                    &result.nodes[r.0].payload,
+                    Some(Payload::CompletionPair { .. })
+                )
+            })
+            .unwrap()
+            .0;
+        let Some(Payload::CompletionPair {
+            first,
+            second,
+            first_result,
+            second_result,
+            ..
+        }) = &result.nodes[pair].payload
+        else {
+            unreachable!()
+        };
+        for value in first.iter().chain(second) {
+            assert_eq!(
+                result.nodes[value.0].ty,
+                NodeType::Value(Type::Fp("3".into()))
+            );
+        }
+        assert_ne!(
+            data_scalar_at(&result, first[0].0),
+            data_scalar_at(&result, second[0].0)
+        );
+        assert_ne!(first_result, second_result);
+        let root = result.answers[0].outputs["evaluation"].0;
+        let seed = result.nodes[root].arguments[0];
+        let third = result
+            .cases
+            .iter()
+            .filter(|case| case.seed == seed)
+            .nth(2)
+            .unwrap()
+            .values[0];
+        for variant in 0..3 {
+            completion_mutation(&result, pair, |nodes| {
+                let Some(Payload::CompletionPair {
+                    fields,
+                    first,
+                    second_result,
+                    first_result,
+                    ..
+                }) = &mut nodes[pair].payload
+                else {
+                    unreachable!()
+                };
+                match variant {
+                    0 => fields[0].field = Some("FiniteScalar.Sample.f".into()),
+                    1 => {
+                        first[0] = third;
+                        nodes[pair].arguments[4] = third;
+                    }
+                    _ => {
+                        *second_result = *first_result;
+                        nodes[pair].arguments[3] = nodes[pair].arguments[2];
+                    }
+                }
+            });
+        }
+    }
+    #[test]
+    fn fp_completion_scopes_support_order_and_fresh_sessions_remain_exact() {
+        let result = fp_completion_example(
+            "view stable(s:Sample):Fp(2)=s.f-s.f;",
+            &["first=evaluate(Calc.stable,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        let root = result.answers[0].outputs["evaluation"].0;
+        let scalar = result.answers[0].outputs["value"].0;
+        let domain = result.nodes[root].arguments[1].0;
+        let seed = result.nodes[domain].arguments[0].0;
+        let proof = result.answers[0].evidence[0].0;
+        let fact = result.nodes[scalar].support.first().unwrap().clone();
+        for target in [seed, scalar, proof] {
+            completion_mutation(&result, target, |nodes| {
+                if nodes[target].support.is_empty() {
+                    nodes[target].support.push(fact.clone());
+                } else {
+                    nodes[target].support.clear();
+                }
+            });
+        }
+        for target in [domain, scalar, root] {
+            completion_mutation(&result, target, |nodes| {
+                assert!(nodes[target].scope.snapshots.remove("v"));
+            });
+        }
+        completion_mutation(&result, scalar, |nodes| {
+            nodes[scalar].payload = Some(Payload::Scalar(Scalar::Fp {
+                modulus: "2".into(),
+                value: 1.into(),
+            }))
+        });
+        let mut reordered = result.nodes.clone();
+        let Some(Payload::Domain { elements, .. }) = &mut reordered[domain].payload else {
+            unreachable!()
+        };
+        elements.reverse();
+        reordered[domain].arguments[1..].reverse();
+        let Some(Payload::FiniteExhaustion { instances, .. }) = &mut reordered[proof].payload
+        else {
+            unreachable!()
+        };
+        instances.reverse();
+        reordered[proof].arguments[2..].reverse();
+        let Some(Payload::Evaluation { parts, .. }) = &mut reordered[root].payload else {
+            unreachable!()
+        };
+        parts[0].children.reverse();
+        reordered[root].arguments[2..].reverse();
+        reordered[scalar].arguments[2..].reverse();
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        let mut graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let mut control = named_call_quiet();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        environment
+            .recheck_node(&graph, &graph.nodes[scalar], scalar)
+            .unwrap();
+        let original = graph.nodes[seed].scope.clone();
+        assert!(graph.nodes[seed].scope.readings.insert("Foreign".into()));
+        assert!(matches!(
+            environment.recheck_node(&graph, &graph.nodes[scalar], scalar),
+            Err(ValidationFailure::Internal(_))
+        ));
+        graph.nodes[seed].scope = original;
+        environment
+            .recheck_node(&graph, &graph.nodes[scalar], scalar)
+            .unwrap();
+    }
+    #[test]
+    fn fp_completion_enumeration_stop_keeps_original_prefixes() {
+        fp_completion_phase_stop("completion_enum", 1, 0, None);
+    }
+    #[test]
+    fn fp_completion_case_stop_keeps_completed_case_and_original_reasons() {
+        fp_completion_phase_stop("completion_case", 1, 1, None);
+    }
+    #[test]
+    fn fp_completion_coverage_stop_keeps_cases_without_unfinished_evidence() {
+        fp_completion_phase_stop("completion_coverage", 0, 2, None);
+    }
+    #[test]
+    fn fp_completion_enumeration_stop_keeps_verified_original_fp_value() {
+        fp_completion_phase_stop("completion_enum", 1, 1, Some(false));
+    }
+    #[test]
+    fn fp_completion_enumeration_stop_keeps_verified_original_law_counterexample() {
+        fp_completion_phase_stop("completion_enum", 1, 2, Some(true));
+    }
+    fn fp_completion_phase_stop(phase: &'static str, at: usize, kind: usize, known: Option<bool>) {
+        use super::super::control::{Limits, Resource, Usage};
+        use crate::result::Signal;
+        use std::{
+            cell::{Cell, RefCell},
+            rc::Rc,
+        };
+        let current = match known {
+            Some(true) => "law required current(s:Sample):false and s.f=0;",
+            Some(false) => "view current(s:Sample):Fp(2)=if s.f=0 then 1 else 1;",
+            None => "view current(s:Sample):Fp(2)=s.f-s.f;",
+        };
+        let body = format!(
+            "view seed():Unit=unit; law required prior(s:Sample):false; view hole(s:Sample):Q=s.q; {current}"
+        );
+        let inputs = fp_completion_fixture(&body, true);
+        let ask = if known == Some(true) {
+            "current=check(Calc.current,s=@v/sample)"
+        } else {
+            "current=evaluate(Calc.current,s=@v/sample)"
+        };
+        let asks = [
+            "seed=evaluate(Calc.seed)",
+            "prior=check(Calc.prior,s=@v/sample)",
+            "hole=evaluate(Calc.hole,s=@v/sample)",
+            ask,
+            "later=evaluate(Calc.seed)",
+        ];
+        let mut quiet = named_call_quiet();
+        let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
+        let declaration = &prepared.inputs().law().declarations["Calc.current"];
+        let target = declaration.span;
+        let body_id = match &declaration.signature {
+            Signature::View { body, .. } | Signature::Law { body, .. } => *body,
+            _ => unreachable!(),
+        };
+        let body_span = prepared.inputs().law().exprs[body_id].span;
+        let progress = Rc::new(RefCell::new(Vec::new()));
+        let observed = progress.clone();
+        let normal = evaluate_observed_with_validator(
+            prepared,
+            &mut quiet,
+            |environment, graph, request, answer| {
+                environment.validate_answer(graph, request, answer)?;
+                if request.id == "hole" {
+                    let observed = observed.clone();
+                    data::observe_iterations(move |span, context, operation, index| {
+                        if span == target
+                            && context.request == 3
+                            && context.case.is_none()
+                            && operation == phase
+                        {
+                            observed.borrow_mut().push(index);
+                        }
+                    });
+                }
+                Ok(())
+            },
+        );
+        data::clear_iteration_observer();
+        let normal = normal.unwrap();
+        assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
+        assert_eq!(normal.answers[1].status, Decision::Refuted);
+        assert!(normal.answers[1].evidence.iter().any(|r| matches!(
+            &normal.nodes[r.0].payload,
+            Some(Payload::Counterexample { .. })
+        )));
+        assert_eq!(
+            normal.answers[3].status,
+            if known == Some(true) {
+                Decision::Refuted
+            } else {
+                Decision::Established
+            }
+        );
+        assert_eq!(
+            &*progress.borrow(),
+            if phase == "completion_coverage" {
+                &[0][..]
+            } else {
+                &[0, 1][..]
+            }
+        );
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let original = if let Some(check) = known {
+            let roots:Vec<_>=normal.nodes.iter().enumerate().filter_map(|(index,node)| {
+                let context=normal.contexts[index];
+                (context.request==3 && context.case.is_none() && context.frame.is_none() && context.iteration.is_none() && context.instance.is_none()
+                    && matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if matches!(&normal.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))).then_some(NodeRef(index))
+            }).collect();
+            assert_eq!(roots.len(), 1);
+            let root = roots[0];
+            let Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) = &normal.nodes[root.0].payload
+            else {
+                panic!("verified known observed root")
+            };
+            let value = *value;
+            assert_eq!(
+                data_scalar_at(&normal, value.0),
+                &if check {
+                    Scalar::Bool(false)
+                } else {
+                    Scalar::Fp {
+                        modulus: "2".into(),
+                        value: 1.into(),
+                    }
+                }
+            );
+            rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=value.0]).unwrap();
+            let proposition = if check {
+                let props: Vec<_> = normal
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, node)| {
+                        (normal.contexts[i].request == 3
+                            && normal.contexts[i].case.is_none()
+                            && matches!(&node.payload, Some(Payload::Proposition { .. }))
+                            && node.arguments.get(1) == Some(&root))
+                        .then_some(NodeRef(i))
+                    })
+                    .collect();
+                assert_eq!(props.len(), 1);
+                let reference = props[0];
+                assert!(normal.nodes[reference.0].evidence.iter().any(|r| matches!(
+                    &normal.nodes[r.0].payload,
+                    Some(Payload::Counterexample { .. })
+                )));
+                rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=reference.0])
+                    .unwrap();
+                Some(reference)
+            } else {
+                None
+            };
+            Some((root, value, proposition))
+        } else {
+            None
+        };
+        let (limits, usage, expected) = match kind {
+            0 => (
+                Limits::default(),
+                Usage {
+                    signal: Some(Signal::Term),
+                    ..Usage::default()
+                },
+                StopReason::Cancelled(Signal::Term),
+            ),
+            1 => (
+                Limits {
+                    time_ms: Some(3),
+                    memory_mib: None,
+                },
+                Usage {
+                    elapsed_ms: 4,
+                    ..Usage::default()
+                },
+                StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 3,
+                    observed: 4,
+                },
+            ),
+            _ => (
+                Limits {
+                    time_ms: None,
+                    memory_mib: Some(7),
+                },
+                Usage {
+                    memory_mib: 8,
+                    ..Usage::default()
+                },
+                StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 7,
+                    observed: 8,
+                },
+            ),
+        };
+        let armed = Rc::new(Cell::new(false));
+        let probes = Rc::new(Cell::new(0));
+        let frozen = Rc::new(Cell::new(None));
+        let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+        let mut control = Control::new(limits, move |checkpoint| {
+            count.set(count.get() + 1);
+            if arm.replace(false) {
+                assert_eq!(checkpoint, Checkpoint::FiniteIteration);
+                assert!(freeze.replace(Some(count.get())).is_none());
+                usage
+            } else {
+                Usage::default()
+            }
+        });
+        let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+        let seen = Rc::new(RefCell::new(Vec::new()));
+        let observed = seen.clone();
+        let stopped = evaluate_observed_with_validator(
+            prepared,
+            &mut control,
+            |environment, graph, request, answer| {
+                environment.validate_answer(graph, request, answer)?;
+                if request.id == "hole" {
+                    let (observed, armed) = (observed.clone(), armed.clone());
+                    data::observe_iterations(move |span, context, operation, index| {
+                        if span == target
+                            && context.request == 3
+                            && context.case.is_none()
+                            && operation == phase
+                        {
+                            observed.borrow_mut().push(index);
+                            if index == at {
+                                armed.set(true);
+                            }
+                        }
+                    });
+                }
+                Ok(())
+            },
+        );
+        data::clear_iteration_observer();
+        let stopped = stopped.unwrap();
+        assert_eq!(seen.borrow().last(), Some(&at));
+        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(Some(probes.get()), frozen.get());
+        assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
+        let Json::Obj(ref normal_wire) = normal.wire() else {
+            unreachable!()
+        };
+        let Json::Arr(normal_answers) = &normal_wire["answers"] else {
+            unreachable!()
+        };
+        let Json::Obj(ref stopped_wire) = stopped.wire() else {
+            unreachable!()
+        };
+        let Json::Arr(stopped_answers) = &stopped_wire["answers"] else {
+            unreachable!()
+        };
+        assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
+        if let Some((root, value, proposition)) = original {
+            assert_eq!(stopped.answers[3].status, normal.answers[3].status);
+            assert_eq!(stopped.answers[3].outputs.get("evaluation"), Some(&root));
+            assert_eq!(stopped.answers[3].claim, proposition);
+            if let Some(proposition) = proposition {
+                assert_eq!(
+                    stopped.answers[3].evidence,
+                    normal.nodes[proposition.0].evidence
+                );
+                assert!(stopped.answers[3].evidence.iter().any(|r| matches!(
+                    &stopped.nodes[r.0].payload,
+                    Some(Payload::Counterexample { .. })
+                )));
+            } else {
+                assert_eq!(stopped.answers[3].outputs.get("value"), Some(&value));
+            }
+        } else {
+            assert_eq!(stopped.answers[3].status, Decision::Undetermined);
+            assert!(stopped.answers[3].outputs.is_empty());
+            assert!(stopped.answers[3].evidence.is_empty());
+        }
+        assert!(
+            stopped.answers[3]
+                .reasons
+                .iter()
+                .flat_map(|reason| &reason.missing)
+                .any(|fact| fact.field.as_deref() == Some("FiniteScalar.Sample.f"))
+        );
+        assert_eq!(stopped.answers[4].status, Decision::Undetermined);
+        assert!(stopped.answers[4].outputs.is_empty());
+        for answer in &stopped.answers[3..] {
+            let reason = answer
+                .reasons
+                .iter()
+                .find(|r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected))
+                .unwrap();
+            let Json::Obj(ref wire) = reason.wire() else {
+                unreachable!()
+            };
+            let Json::Obj(ref expected_wire) = expected.wire() else {
+                unreachable!()
+            };
+            assert_eq!(wire.get("details"), expected_wire.get("details"));
+        }
+        let completed=stopped.nodes.iter().enumerate().filter(|(i,node)|stopped.contexts[*i].request==3 && stopped.contexts[*i].case.is_some() && stopped.contexts[*i].frame.is_none() && stopped.contexts[*i].iteration.is_none() && stopped.contexts[*i].instance.is_none()
+            && matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if matches!(&stopped.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))).count();
+        assert_eq!(
+            completed,
+            if phase == "completion_enum" {
+                0
+            } else if phase == "completion_case" {
+                1
+            } else {
+                2
+            }
+        );
+        assert!(
+            !stopped
+                .nodes
+                .iter()
+                .enumerate()
+                .any(|(i, node)| stopped.contexts[i].request == 3
+                    && matches!(
+                        &node.payload,
+                        Some(Payload::FiniteExhaustion { .. } | Payload::CompletionPair { .. })
+                    ))
+        );
+        rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+        let before = probes.get();
+        assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+        assert_eq!(probes.get(), before);
+    }
+    #[test]
+    fn fp_completion_recheck_entry_stops_keep_graph_and_original_reason() {
+        use super::super::control::{Limits, Resource, Usage};
+        use crate::result::Signal;
+        use std::{cell::Cell, rc::Rc};
+        let result = fp_completion_example(
+            "view stable(s:Sample):Fp(2)=s.f-s.f;",
+            &["first=evaluate(Calc.stable,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        let scalar = result.answers[0].outputs["value"].0;
+        let graph =
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+        let snapshot = || {
+            format!(
+                "{:?}",
+                (
+                    &graph.nodes,
+                    &graph.contexts,
+                    &graph.frames,
+                    &graph.iterations,
+                    &graph.instances,
+                    &graph.cases
+                )
+            )
+        };
+        let before = snapshot();
+        for kind in 0..3 {
+            let (limits, usage, expected) = match kind {
+                0 => (
+                    Limits::default(),
+                    Usage {
+                        signal: Some(Signal::Term),
+                        ..Usage::default()
+                    },
+                    StopReason::Cancelled(Signal::Term),
+                ),
+                1 => (
+                    Limits {
+                        time_ms: Some(3),
+                        memory_mib: None,
+                    },
+                    Usage {
+                        elapsed_ms: 4,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 3,
+                        observed: 4,
+                    },
+                ),
+                _ => (
+                    Limits {
+                        time_ms: None,
+                        memory_mib: Some(7),
+                    },
+                    Usage {
+                        memory_mib: 8,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 7,
+                        observed: 8,
+                    },
+                ),
+            };
+            let armed = Rc::new(Cell::new(false));
+            let probes = Rc::new(Cell::new(0));
+            let frozen = Rc::new(Cell::new(None));
+            let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+            let mut control = Control::new(limits, move |checkpoint| {
+                count.set(count.get() + 1);
+                if arm.replace(false) {
+                    assert_eq!(checkpoint, Checkpoint::FiniteIteration);
+                    assert!(freeze.replace(Some(count.get())).is_none());
+                    usage
+                } else {
+                    Usage::default()
+                }
+            });
+            let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+            environment
+                .recheck_node(&graph, &graph.nodes[scalar], scalar)
+                .unwrap();
+            let prior = probes.get();
+            armed.set(true);
+            let failure = environment
+                .recheck_node(&graph, &graph.nodes[scalar], scalar)
+                .unwrap_err();
+            let ValidationFailure::Stop(actual) = failure else {
+                panic!("Fp再照合のStopを保持する")
+            };
+            assert_eq!(actual, expected);
+            assert_eq!(actual.wire(), expected.wire());
+            assert_eq!(probes.get(), prior + 1);
+            assert_eq!(Some(probes.get()), frozen.get());
+            assert_eq!(snapshot(), before);
+            assert!(
+                matches!(environment.recheck_node(&graph,&graph.nodes[scalar],scalar),Err(ValidationFailure::Stop(actual)) if actual==expected)
+            );
+            assert_eq!(Some(probes.get()), frozen.get());
+            assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+            assert_eq!(Some(probes.get()), frozen.get());
+        }
+        rebuild_for_origin_and_support_recheck(&result, &graph.nodes).unwrap();
     }
     fn completion_private_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
         let result = evaluate_observed_bytes(

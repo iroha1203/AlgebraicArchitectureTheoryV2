@@ -1,4 +1,4 @@
-//! 元Bool slotの共有assignmentごとに選択した問い全体を評価する。
+//! 元有限原始slotの共有assignmentごとに選択した問い全体を評価する。
 use super::*;
 impl Evaluator<'_, '_> {
     fn completion_observe(&self, _phase: &'static str, _index: usize) {
@@ -86,7 +86,7 @@ impl Evaluator<'_, '_> {
             let (fields, sources, reasons) =
                 self.environment.completion_slots(self.graph, &roots)?;
             if fields.is_empty() {
-                return Err(Failure::Internal("既読Bool補完域が消えた".into()));
+                return Err(Failure::Internal("既読の有限原始補完域が消えた".into()));
             }
             let mut scope = self.base.clone();
             scope.completions = true;
@@ -138,11 +138,7 @@ impl Evaluator<'_, '_> {
                 scope: scope.clone(),
                 reasons: reasons.clone(),
             })?;
-            let ty = if fields.len() == 1 {
-                Type::Bool
-            } else {
-                Type::Tuple(vec![Type::Bool; fields.len()])
-            };
+            let ty = self.environment.completion_assignment_type(&fields)?;
             #[cfg(test)]
             let (span, context) = (self.declaration.span, root);
             let assignments = self.environment.finite_values(&ty, &mut |_phase, _index| {
