@@ -188,6 +188,81 @@ impl<'a> Environment<'a> {
             .copied()
             .ok_or_else(|| "field がない".into())
     }
+    pub(super) fn finite_values(
+        &self,
+        ty: &Type,
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<super::finite::Enumeration, ValidationFailure> {
+        // callbackは元の不変三表だけを読む。依存を再構成する呼出しごとに走査し、
+        // Source解析・生成済みDomainの再検査へ実評価の結果を転記しない。
+        let observer = RefCell::new(observer);
+        super::finite::values(
+            ty,
+            self.inputs.law(),
+            &self.control,
+            &mut |entity| {
+                self.reference_roster(entity, &mut |index| {
+                    observer.borrow_mut()("ref_roster", index)
+                })
+            },
+            &mut |index| observer.borrow_mut()("type_enum", index),
+        )
+    }
+    fn reference_roster(
+        &self,
+        entity: &str,
+        observer: &mut dyn FnMut(usize),
+    ) -> Result<super::finite::Enumeration, ValidationFailure> {
+        use crate::definition::PrimitiveSignature;
+        if !matches!(
+            self.inputs
+                .law()
+                .definitions
+                .declarations
+                .get(entity)
+                .map(|d| &d.signature),
+            Some(
+                PrimitiveSignature::Entity { .. }
+                    | PrimitiveSignature::Arrow { .. }
+                    | PrimitiveSignature::Correspondence { .. }
+            )
+        ) {
+            return Err("plain参照族の元完全型名が原始参照型でない".into());
+        }
+        let mut family = super::finite::Enumeration::default();
+        for (index, snapshot) in self.inputs.archmap().snapshots.iter().enumerate() {
+            observer(index);
+            self.tick()?;
+            family.scope.snapshots.insert(snapshot.id.clone());
+            family
+                .scope
+                .modes
+                .insert(self.origin_mode(&snapshot.origin)?.into());
+            for subject in &snapshot.subjects {
+                self.tick()?;
+                if subject.ty == entity {
+                    family.values.push(Scalar::Subject {
+                        snapshot: snapshot.id.clone(),
+                        subject: subject.id.clone(),
+                        entity: entity.into(),
+                    });
+                    family
+                        .scope
+                        .modes
+                        .insert(self.origin_mode(&subject.origin)?.into());
+                    family.support.push(Fact {
+                        snapshot: snapshot.id.clone(),
+                        subject: subject.id.clone(),
+                        field: None,
+                        atom: None,
+                    });
+                }
+                self.tick()?;
+            }
+            self.tick()?;
+        }
+        Ok(family)
+    }
     fn tick(&self) -> Result<(), ValidationFailure> {
         self.control
             .clone()
@@ -4407,19 +4482,17 @@ impl<'a> Environment<'a> {
                         };
                         (input, members)
                     } else {
+                        let enumeration = self.finite_values(&spec.element, &mut |_, _| {})?;
+                        let mut scope = base.clone();
+                        scope.merge(&enumeration.scope);
                         (
                             SourceValue {
-                                scope: base.clone(),
+                                scope,
                                 known_value: None,
-                                support: vec![],
+                                support: enumeration.support,
                                 scalar_scope: None,
                             },
-                            Some(super::finite::values(
-                                &spec.element,
-                                self.inputs.law(),
-                                &self.control,
-                                &mut |_| {},
-                            )?),
+                            Some(enumeration.values),
                         )
                     };
                     // 親/lexical値が既に持つ出現はその由来順を保つ。
@@ -5572,7 +5645,7 @@ impl<'a> Environment<'a> {
         source: NodeRef,
         input: Option<NodeRef>,
         limit: usize,
-    ) -> Result<(quantifier::Spec<'_>, Vec<Scalar>), ValidationFailure> {
+    ) -> Result<(quantifier::Spec<'_>, super::finite::Enumeration), ValidationFailure> {
         if source.0 >= limit
             || input.is_some_and(|input| input.0 >= limit)
             || graph.context_at(source.0) != self.current_context(graph)
@@ -5590,12 +5663,7 @@ impl<'a> Environment<'a> {
             if spec.domain.is_some() {
                 return Err("In量化のcollection辺がない".into());
             }
-            let values = super::finite::values(
-                &spec.element,
-                self.inputs.law(),
-                &self.control,
-                &mut |_| {},
-            )?;
+            let values = self.finite_values(&spec.element, &mut |_, _| {})?;
             return Ok((spec, values));
         };
         self.recheck_evaluation(graph, input)?;
@@ -5620,7 +5688,14 @@ impl<'a> Environment<'a> {
         else {
             unreachable!()
         };
-        Ok((spec, items.clone()))
+        Ok((
+            spec,
+            super::finite::Enumeration {
+                values: items.clone(),
+                scope: graph.get(input)?.scope.clone(),
+                support: graph.get(input)?.support.clone(),
+            },
+        ))
     }
     fn domain_member(
         &self,
@@ -5633,7 +5708,7 @@ impl<'a> Environment<'a> {
         {
             return Err("Domain要素の元辺が違う".into());
         }
-        let (spec, items) = self.quant_input(
+        let (spec, enumeration) = self.quant_input(
             graph,
             node.arguments[0],
             node.arguments.get(1).copied(),
@@ -5644,12 +5719,8 @@ impl<'a> Environment<'a> {
         };
         let input = graph.get(*node.arguments.get(1).unwrap_or(&node.arguments[0]))?;
         if value.ty() != spec.element
-            || !data::contains(&items, value, &self.control)?
-            || if spec.domain.is_some() {
-                node.support != input.support
-            } else {
-                !node.support.is_empty()
-            }
+            || !data::contains(&enumeration.values, value, &self.control)?
+            || node.support != enumeration.support
             || node.scope != input.scope
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
@@ -5684,7 +5755,7 @@ impl<'a> Environment<'a> {
         {
             return Err("Domainの型/規則/元辺が違う".into());
         }
-        let (spec, items) = self.quant_input(
+        let (spec, enumeration) = self.quant_input(
             graph,
             source,
             if offset == 2 {
@@ -5694,11 +5765,20 @@ impl<'a> Environment<'a> {
             },
             limit,
         )?;
-        if *ty != spec.element || elements.len() != items.len() {
+        if *ty != spec.element || elements.len() != enumeration.values.len() {
             return Err("Domainの元型/全要素数が違う".into());
         }
         let mut seen = Vec::new();
         for reference in elements {
+            #[cfg(test)]
+            if spec.domain.is_none() {
+                data::observe_actual(
+                    spec.span,
+                    self.current_context(graph),
+                    "ref_recheck",
+                    seen.len(),
+                );
+            }
             self.tick()?;
             if reference.0 >= limit || graph.context_at(reference.0) != self.current_context(graph)
             {
@@ -5710,7 +5790,7 @@ impl<'a> Environment<'a> {
                 return Err("Domain要素が別collection出現に属する".into());
             }
             let value = graph.scalar(*reference)?;
-            if !data::contains(&items, value, &self.control)?
+            if !data::contains(&enumeration.values, value, &self.control)?
                 || data::contains(&seen, value, &self.control)?
             {
                 return Err("Domain要素の漏れ/重複/別値".into());
@@ -5722,11 +5802,7 @@ impl<'a> Environment<'a> {
         scope.add_quantifier(spec.descriptor(None, Some(self.current_context(graph))));
         scope.order_quantifiers_like(&graph.get(node.arguments[0])?.scope);
         if node.scope != scope
-            || if offset == 2 {
-                node.support != input.support
-            } else {
-                !node.support.is_empty()
-            }
+            || node.support != enumeration.support
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
         {
