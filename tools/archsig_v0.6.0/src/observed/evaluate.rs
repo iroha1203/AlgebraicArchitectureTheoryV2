@@ -194,6 +194,114 @@ impl Evaluator<'_, '_> {
         self.tick(Checkpoint::FiniteIteration)?;
         Ok(Some(value))
     }
+    /// 元左右は欠測のまま保持し、差の全係数が消えた比較だけを導出する。
+    fn affine_equality(
+        &mut self,
+        span: (usize, usize),
+        ty: &Type,
+        left: &Evaluated,
+        right: &Evaluated,
+    ) -> Result<Option<(NodeRef, NodeRef)>, Failure> {
+        if !matches!(ty, Type::Z | Type::Q) {
+            return Ok(None);
+        }
+        let source = self
+            .sources
+            .get(&span)
+            .cloned()
+            .ok_or_else(|| Failure::Internal("アフィン比較の元Sourceがない".into()))?;
+        let Some(known @ Scalar::Bool(_)) = source.known_value else {
+            return Ok(None);
+        };
+        let Some((expected, residual)) =
+            self.environment
+                .affine_comparison(self.graph, span, &self.bindings)?
+        else {
+            return Err(Failure::Internal("元比較の定数残差が再構成できない".into()));
+        };
+        if known != expected || residual.ty() != *ty {
+            return Err(Failure::Internal("元比較の定数残差・Bool型が違う".into()));
+        }
+        let own = source.expression;
+        let mut scope = source.scope;
+        scope.merge(&left.scope);
+        scope.merge(&right.scope);
+        let mut support = left.support.clone();
+        support.extend(right.support.iter().cloned());
+        support.sort();
+        support.dedup();
+        let difference = self.push(Node {
+            ty: NodeType::Expression(ty.clone()),
+            payload: Some(Payload::Transform {
+                operation: TransformOp::Difference,
+                operands: vec![left.expression, right.expression],
+                bindings: self.bindings.clone(),
+            }),
+            rule: Rule::Construction("expression"),
+            arguments: vec![own, left.evaluation, right.evaluation],
+            support: support.clone(),
+            evidence: vec![],
+            judgment: None,
+            scope: scope.clone(),
+            reasons: vec![],
+        })?;
+        #[cfg(test)]
+        data::observe_actual(span, self.graph.active, "affine_comparison", 0);
+        self.tick(Checkpoint::FiniteIteration)?;
+        let residual = self.value(
+            residual,
+            Rule::Construction("evaluation"),
+            vec![difference, own, left.evaluation, right.evaluation],
+            support.clone(),
+            scope.clone(),
+        )?;
+        #[cfg(test)]
+        data::observe_actual(span, self.graph.active, "affine_comparison", 1);
+        self.tick(Checkpoint::FiniteIteration)?;
+        let normalization = self.push(Node {
+            ty: NodeType::Evidence,
+            payload: Some(Payload::Normalization {
+                before: difference,
+                after: residual,
+                steps: vec![left.expression, right.expression, difference],
+            }),
+            rule: Rule::Construction("evidence"),
+            arguments: vec![own, left.evaluation, right.evaluation, difference, residual],
+            support: support.clone(),
+            evidence: vec![],
+            judgment: None,
+            scope: scope.clone(),
+            reasons: vec![],
+        })?;
+        #[cfg(test)]
+        data::observe_actual(span, self.graph.active, "affine_comparison", 2);
+        self.tick(Checkpoint::FiniteIteration)?;
+        let value = self.push(Node {
+            ty: NodeType::Value(Type::Bool),
+            payload: Some(Payload::Scalar(known)),
+            rule: Rule::Input {
+                kind: "law",
+                location: Location::Law { span },
+            },
+            arguments: vec![
+                own,
+                left.evaluation,
+                right.evaluation,
+                difference,
+                residual,
+                normalization,
+            ],
+            support,
+            evidence: vec![normalization],
+            judgment: None,
+            scope,
+            reasons: vec![],
+        })?;
+        #[cfg(test)]
+        data::observe_actual(span, self.graph.active, "affine_comparison", 3);
+        self.tick(Checkpoint::FiniteIteration)?;
+        Ok(Some((value, residual)))
+    }
     fn bind(&mut self, params: &[Param]) -> Result<(), Failure> {
         for p in params {
             self.tick(Checkpoint::FiniteIteration)?;
@@ -926,13 +1034,21 @@ impl Evaluator<'_, '_> {
                 support.sort();
                 support.dedup();
                 let pair = left.value.zip(right.value);
-                let comparison = pair.filter(|_| is_comparison(*op));
+                let mut comparison = pair.filter(|_| is_comparison(*op));
                 let known_value = partial_binary(
                     *op,
                     left.value.map(|r| self.graph.scalar(r)).transpose()?,
                     right.value.map(|r| self.graph.scalar(r)).transpose()?,
                     self.control,
                 )?;
+                let affine = if known_value.is_none() && matches!(op, BinOp::Eq | BinOp::Ne) {
+                    self.affine_equality(span, input_ty, &left, &right)?
+                } else {
+                    None
+                };
+                if affine.is_some() {
+                    comparison = Some((left.evaluation, right.evaluation));
+                }
                 let value = if let Some(value) = known_value {
                     let arguments = if is_boolean_binary(*op) {
                         vec![left.evaluation, right.evaluation]
@@ -952,32 +1068,35 @@ impl Evaluator<'_, '_> {
                         support.clone(),
                         scope.clone(),
                     )?)
+                } else if let Some((value, _)) = affine {
+                    Some(value)
                 } else if matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) {
                     self.affine_constant(span, &ty, &[&left, &right])?
                 } else {
                     None
                 };
-                let residual =
-                    if *op == BinOp::Eq && numeric::is_numeric_type(input_ty, self.control)? {
-                        if let Some((l, r)) = comparison {
-                            Some(self.value(
-                                numeric::binary(
-                                    BinOp::Sub,
-                                    self.graph.scalar(l)?,
-                                    self.graph.scalar(r)?,
-                                    self.control,
-                                )?,
-                                Rule::Construction("evaluation"),
-                                vec![l, r],
-                                support,
-                                scope,
-                            )?)
-                        } else {
-                            None
-                        }
+                let residual = if let Some((_, residual)) = affine {
+                    Some(residual)
+                } else if *op == BinOp::Eq && numeric::is_numeric_type(input_ty, self.control)? {
+                    if let Some((l, r)) = comparison {
+                        Some(self.value(
+                            numeric::binary(
+                                BinOp::Sub,
+                                self.graph.scalar(l)?,
+                                self.graph.scalar(r)?,
+                                self.control,
+                            )?,
+                            Rule::Construction("evaluation"),
+                            vec![l, r],
+                            support,
+                            scope,
+                        )?)
                     } else {
                         None
-                    };
+                    }
+                } else {
+                    None
+                };
                 self.finish(
                     span,
                     ty,
@@ -2277,6 +2396,639 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                     .then_some(index)
             })
             .collect()
+    }
+
+    // own Source, 実左右、差Expression、残差、正規化、比較Bool。
+    fn affine_comparison_chain(result: &ObservedEvaluation, normalization: usize) -> [usize; 7] {
+        let node = &result.nodes[normalization];
+        let Some(Payload::Normalization {
+            before,
+            after,
+            steps,
+        }) = &node.payload
+        else {
+            unreachable!()
+        };
+        let own = node.arguments[0].0;
+        let left = node.arguments[1].0;
+        let right = node.arguments[2].0;
+        assert_eq!(before.0, node.arguments[3].0);
+        assert_eq!(after.0, node.arguments[4].0);
+        assert_eq!(steps.len(), 3);
+        let boolean = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (index > normalization
+                    && matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_))))
+                    && node.evidence == [NodeRef(normalization)])
+                .then_some(index)
+            })
+            .unwrap();
+        [own, left, right, before.0, after.0, normalization, boolean]
+    }
+
+    fn affine_comparison_proofs(result: &ObservedEvaluation) -> Vec<usize> {
+        result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                matches!(&node.payload, Some(Payload::Normalization { .. })).then_some(index)
+            })
+            .collect()
+    }
+
+    #[test]
+    fn affine_comparison_prefixes_reject_difference_residual_normalization_and_bool_changes() {
+        let result = affine_private_example(
+            "view unequal(s:Sample):Bool=s.q+rat(1,2)!=s.q+rat(3,2);",
+            &["value=evaluate(Calc.unequal,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        let proof = affine_comparison_proofs(&result)[0];
+        let [
+            own,
+            left,
+            right,
+            difference,
+            residual,
+            normalization,
+            boolean,
+        ] = affine_comparison_chain(&result, proof);
+        assert_eq!(
+            data_scalar_at(&result, residual),
+            &Scalar::Q((-1).into(), 1.into())
+        );
+        assert_eq!(data_scalar_at(&result, boolean), &Scalar::Bool(true));
+        for target in [difference, residual, normalization, boolean] {
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+            assert!(result.answers[0].outputs["evaluation"].0 > target);
+            assert!(!result.nodes[target].support.is_empty());
+            completion_mutation(&result, target, |nodes| nodes[target].support.clear());
+            completion_mutation(&result, target, |nodes| {
+                nodes[target].scope.snapshots.clear()
+            });
+        }
+        for child in [left, right] {
+            assert!(matches!(
+                &result.nodes[child].payload,
+                Some(Payload::Evaluation { value: None, .. })
+            ));
+        }
+        completion_mutation(&result, difference, |nodes| {
+            let Some(Payload::Transform { operands, .. }) = &mut nodes[difference].payload else {
+                unreachable!()
+            };
+            operands.swap(0, 1);
+        });
+        completion_mutation(&result, difference, |nodes| {
+            nodes[difference].arguments.swap(1, 2)
+        });
+        completion_mutation(&result, difference, |nodes| {
+            nodes[difference].ty = NodeType::Expression(Type::Z)
+        });
+        completion_mutation(&result, residual, |nodes| {
+            nodes[residual].payload = Some(Payload::Scalar(Scalar::Q(0.into(), 1.into())))
+        });
+        completion_mutation(&result, residual, |nodes| {
+            nodes[residual].payload = Some(Payload::Scalar(Scalar::Q((-2).into(), 2.into())))
+        });
+        completion_mutation(&result, residual, |nodes| {
+            nodes[residual].arguments[0] = NodeRef(own)
+        });
+        for variant in 0..4 {
+            completion_mutation(&result, normalization, |nodes| {
+                let Some(Payload::Normalization {
+                    before,
+                    after,
+                    steps,
+                }) = &mut nodes[normalization].payload
+                else {
+                    unreachable!()
+                };
+                match variant {
+                    0 => *before = NodeRef(own),
+                    1 => *after = NodeRef(left),
+                    2 => steps.swap(0, 1),
+                    _ => {
+                        steps.pop();
+                    }
+                }
+            });
+        }
+        completion_mutation(&result, boolean, |nodes| {
+            nodes[boolean].payload = Some(Payload::Scalar(Scalar::Bool(false)))
+        });
+        completion_mutation(&result, boolean, |nodes| nodes[boolean].evidence.clear());
+        completion_mutation(&result, boolean, |nodes| {
+            nodes[boolean].arguments[4] = NodeRef(difference)
+        });
+    }
+
+    #[test]
+    fn affine_comparison_rejects_other_calls_requests_and_actual_argument_producers() {
+        let mut result = affine_private_example(
+            "view equal(x:Z):Bool=x+1=x+1; view caller(s:Sample):Bool=equal(s.z) and equal(s.z);",
+            &[
+                "first=evaluate(Calc.caller,s=@v/sample)",
+                "again=evaluate(Calc.caller,s=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        let proofs = affine_comparison_proofs(&result);
+        assert_eq!(proofs.len(), 4);
+        let prior = affine_comparison_chain(&result, proofs[0]);
+        for proof in [proofs[1], proofs[2]] {
+            let target = affine_comparison_chain(&result, proof);
+            assert_ne!(result.contexts[prior[5]], result.contexts[target[5]]);
+            assert_eq!(
+                data_scalar_at(&result, prior[4]),
+                data_scalar_at(&result, target[4])
+            );
+            for (position, target_node) in [
+                (0, target[3]),
+                (1, target[3]),
+                (2, target[3]),
+                (3, target[5]),
+                (4, target[5]),
+            ] {
+                let replacement = NodeRef(match position {
+                    0 => prior[0],
+                    1 => prior[1],
+                    2 => prior[2],
+                    3 => prior[3],
+                    _ => prior[4],
+                });
+                completion_mutation(&result, target_node, |nodes| {
+                    nodes[target_node].arguments[position] = replacement
+                });
+            }
+        }
+        let target = affine_comparison_chain(&result, proofs[1]);
+        let frame = result.contexts[target[5]].frame.unwrap();
+        let prior_frame = result.contexts[prior[5]].frame.unwrap();
+        let original = result.frames[frame].arguments[0];
+        let foreign = result.frames[prior_frame].arguments[0];
+        assert_ne!(original, foreign);
+        assert_eq!(result.nodes[original.0].ty, result.nodes[foreign.0].ty);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target[6]]).unwrap();
+        result.frames[frame].arguments[0] = foreign;
+        rejects_named_prefix(&result, &result.nodes[..=target[6]]);
+        rejects_named_prefix(&result, &result.nodes);
+        result.frames[frame].arguments[0] = original;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let missing = (0..target[6])
+            .find(|index| !result.nodes[*index].reasons.is_empty())
+            .unwrap();
+        completion_mutation(&result, target[6], |nodes| nodes[missing].reasons.clear());
+    }
+
+    #[test]
+    fn affine_comparison_rejects_other_operators_sources_and_bindings_at_prefix() {
+        let result = affine_private_example(
+            "view eq(s:Sample):Bool=s.q+1=s.q+2; view ne(s:Sample):Bool=s.q+1!=s.q+2;",
+            &[
+                "eq=evaluate(Calc.eq,s=@v/sample)",
+                "ne=evaluate(Calc.ne,s=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        let proofs = affine_comparison_proofs(&result);
+        let prior = affine_comparison_chain(&result, proofs[0]);
+        let target = affine_comparison_chain(&result, proofs[1]);
+        assert_eq!(
+            data_scalar_at(&result, prior[4]),
+            data_scalar_at(&result, target[4])
+        );
+        assert_ne!(
+            data_scalar_at(&result, prior[6]),
+            data_scalar_at(&result, target[6])
+        );
+        completion_mutation(&result, target[6], |nodes| {
+            nodes[target[6]].rule = result.nodes[prior[6]].rule.clone()
+        });
+        completion_mutation(&result, target[3], |nodes| {
+            nodes[target[3]].arguments[0] = NodeRef(prior[0])
+        });
+        completion_mutation(&result, target[6], |nodes| {
+            let Some(Payload::Expression { bindings, .. }) = &mut nodes[target[0]].payload else {
+                unreachable!()
+            };
+            bindings[0].name.push_str("_changed");
+        });
+        completion_mutation(&result, target[6], |nodes| {
+            let Some(Payload::Transform { bindings, .. }) = &mut nodes[target[3]].payload else {
+                unreachable!()
+            };
+            bindings[0].ty = Type::Z;
+        });
+        let evaluation = result.answers[1].outputs["evaluation"].0;
+        completion_mutation(&result, evaluation, |nodes| {
+            let Some(Payload::Evaluation { parts, .. }) = &mut nodes[evaluation].payload else {
+                unreachable!()
+            };
+            parts[0].residual = None;
+        });
+    }
+
+    #[test]
+    fn affine_comparison_finite_case_and_law_evidence_retain_original_unknown_operands() {
+        let result = affine_private_example(
+            "law required mixed(s:Sample):s.p and (s.z+1=s.z+2);",
+            &["mixed=check(Calc.mixed,s=@v/sample)"],
+        );
+        assert_eq!(result.status(), "complete");
+        assert_eq!(result.answers[0].status, Decision::Refuted);
+        let proofs = affine_comparison_proofs(&result);
+        let cases = proofs
+            .iter()
+            .copied()
+            .filter(|index| result.contexts[*index].case.is_some())
+            .collect::<Vec<_>>();
+        assert_eq!(cases.len(), 2);
+        let prior = affine_comparison_chain(&result, cases[0]);
+        let target = affine_comparison_chain(&result, cases[1]);
+        assert_ne!(
+            result.contexts[prior[5]].case,
+            result.contexts[target[5]].case
+        );
+        assert_eq!(
+            data_scalar_at(&result, prior[4]),
+            data_scalar_at(&result, target[4])
+        );
+        completion_mutation(&result, target[3], |nodes| {
+            nodes[target[3]].arguments[0] = NodeRef(prior[0])
+        });
+        completion_mutation(&result, target[5], |nodes| {
+            nodes[target[5]].arguments[4] = NodeRef(prior[4])
+        });
+        let direct = affine_private_example(
+            "law required no(s:Sample):s.z+1=s.z+2;",
+            &["no=check(Calc.no,s=@v/sample)"],
+        );
+        let chain = affine_comparison_chain(&direct, affine_comparison_proofs(&direct)[0]);
+        let evaluation_evidence = direct.answers[0]
+            .evidence
+            .iter()
+            .find_map(|r| {
+                matches!(
+                    &direct.nodes[r.0].payload,
+                    Some(Payload::EvaluationEvidence { .. })
+                )
+                .then_some(r.0)
+            })
+            .unwrap();
+        let counterexample = direct.answers[0]
+            .evidence
+            .iter()
+            .find_map(|r| {
+                matches!(
+                    &direct.nodes[r.0].payload,
+                    Some(Payload::Counterexample { .. })
+                )
+                .then_some(r.0)
+            })
+            .unwrap();
+        let Some(Payload::EvaluationEvidence {
+            lhs,
+            rhs,
+            residual: Some(residual),
+            ..
+        }) = &direct.nodes[evaluation_evidence].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!([lhs.0, rhs.0, residual.0], [chain[1], chain[2], chain[4]]);
+        let Some(Payload::Counterexample { left, right, .. }) =
+            &direct.nodes[counterexample].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!([left.0, right.0], [chain[1], chain[2]]);
+        for child in [*left, *right] {
+            assert!(matches!(
+                &direct.nodes[child.0].payload,
+                Some(Payload::Evaluation { value: None, .. })
+            ));
+        }
+        completion_mutation(&direct, evaluation_evidence, |nodes| {
+            let Some(Payload::EvaluationEvidence { lhs, rhs, .. }) =
+                &mut nodes[evaluation_evidence].payload
+            else {
+                unreachable!()
+            };
+            std::mem::swap(lhs, rhs);
+        });
+        completion_mutation(&direct, counterexample, |nodes| {
+            let Some(Payload::Counterexample { left, right, .. }) =
+                &mut nodes[counterexample].payload
+            else {
+                unreachable!()
+            };
+            std::mem::swap(left, right);
+        });
+        completion_mutation(&direct, counterexample, |nodes| {
+            let Some(Payload::Counterexample { facts, .. }) = &mut nodes[counterexample].payload
+            else {
+                unreachable!()
+            };
+            facts.clear();
+        });
+    }
+
+    #[test]
+    fn affine_comparison_difference_coefficient_stop_preserves_source_prefix() {
+        affine_comparison_phase_stop(0, 0);
+    }
+    #[test]
+    fn affine_comparison_residual_post_stop_preserves_typed_difference_prefix() {
+        affine_comparison_phase_stop(1, 1);
+    }
+    #[test]
+    fn affine_comparison_normalization_post_stop_preserves_completed_evidence_prefix() {
+        affine_comparison_phase_stop(2, 2);
+    }
+    #[test]
+    fn affine_comparison_bool_post_stop_preserves_value_without_unfinished_parent() {
+        affine_comparison_phase_stop(3, 0);
+    }
+    #[test]
+    fn affine_comparison_verified_answer_stop_retains_current_and_prior_results() {
+        affine_comparison_phase_stop(4, 0);
+    }
+
+    fn affine_comparison_phase_stop(stage: usize, kind: usize) {
+        use super::super::{
+            affine,
+            control::{Limits, Resource, Usage},
+        };
+        use crate::result::Signal;
+        use std::{cell::Cell, rc::Rc};
+        let sources = affine_private_fixture(
+            "view seed():Z=7; law required prior():1=2; view hole(s:Sample):Z=s.z; view current(s:Sample):Bool=s.q=s.q; view later():Z=19;",
+        );
+        let asks = [
+            "seed=evaluate(Calc.seed)",
+            "prior=check(Calc.prior)",
+            "hole=evaluate(Calc.hole,s=@v/sample)",
+            "current=evaluate(Calc.current,s=@v/sample)",
+            "later=evaluate(Calc.later)",
+        ];
+        let normal =
+            evaluate_observed_bytes(sources.clone(), &asks, &mut named_call_quiet()).unwrap();
+        assert_eq!(normal.status(), "partial");
+        assert_eq!(normal.answers[0].status, Decision::Established);
+        assert_eq!(normal.answers[1].status, Decision::Refuted);
+        assert!(!normal.answers[1].evidence.is_empty());
+        assert_eq!(normal.answers[2].status, Decision::Undetermined);
+        assert!(
+            normal.answers[2]
+                .reasons
+                .iter()
+                .any(|reason| matches!(reason.kind, ReasonKind::Missing))
+        );
+        assert_eq!(normal.answers[3].status, Decision::Established);
+        assert_eq!(
+            data_scalar_at(&normal, normal.answers[3].outputs["value"].0),
+            &Scalar::Bool(true)
+        );
+        let chain = affine_comparison_chain(&normal, affine_comparison_proofs(&normal)[0]);
+        for target in [chain[3], chain[4], chain[5], chain[6]] {
+            rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=target]).unwrap();
+        }
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let (limits, usage, expected) = match kind {
+            0 => (
+                Limits::default(),
+                Usage {
+                    signal: Some(Signal::Term),
+                    ..Usage::default()
+                },
+                StopReason::Cancelled(Signal::Term),
+            ),
+            1 => (
+                Limits {
+                    time_ms: Some(3),
+                    memory_mib: None,
+                },
+                Usage {
+                    elapsed_ms: 4,
+                    ..Usage::default()
+                },
+                StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 3,
+                    observed: 4,
+                },
+            ),
+            _ => (
+                Limits {
+                    time_ms: None,
+                    memory_mib: Some(7),
+                },
+                Usage {
+                    memory_mib: 8,
+                    ..Usage::default()
+                },
+                StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 7,
+                    observed: 8,
+                },
+            ),
+        };
+        let ready = Rc::new(Cell::new(false));
+        let armed = Rc::new(Cell::new(false));
+        let probes = Rc::new(Cell::new(0));
+        let frozen = Rc::new(Cell::new(None));
+        let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+        let mut control = Control::new(limits, move |point| {
+            count.set(count.get() + 1);
+            if arm.replace(false) {
+                assert_eq!(point, Checkpoint::FiniteIteration);
+                assert!(freeze.replace(Some(count.get())).is_none());
+                usage
+            } else {
+                Usage::default()
+            }
+        });
+        let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
+        let (observer_arm, observer_ready) = (armed.clone(), ready.clone());
+        let stopped = affine::with_observer(
+            move |point| {
+                if stage == 0 && observer_ready.get() && point == affine::TestPoint::Coefficient {
+                    observer_arm.set(true)
+                }
+            },
+            || {
+                evaluate_observed_with_validator(
+                    prepared,
+                    &mut control,
+                    |environment, graph, request, answer| {
+                        environment.validate_answer(graph, request, answer)?;
+                        if request.id == "hole" {
+                            ready.set(true);
+                            if (1..=3).contains(&stage) {
+                                let armed = armed.clone();
+                                data::observe_iterations(move |_, context, operation, index| {
+                                    if context.request == 3
+                                        && operation == "affine_comparison"
+                                        && index == stage
+                                    {
+                                        armed.set(true)
+                                    }
+                                });
+                            }
+                        }
+                        if request.id == "current" && stage == 4 {
+                            armed.set(true)
+                        }
+                        Ok(())
+                    },
+                )
+            },
+        );
+        data::clear_iteration_observer();
+        let stopped = stopped.unwrap();
+        assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
+        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(Some(probes.get()), frozen.get());
+        let Json::Obj(ref normal_wire) = normal.wire() else {
+            unreachable!()
+        };
+        let Json::Obj(ref stopped_wire) = stopped.wire() else {
+            unreachable!()
+        };
+        let (Json::Arr(normal_answers), Json::Arr(stopped_answers)) =
+            (&normal_wire["answers"], &stopped_wire["answers"])
+        else {
+            unreachable!()
+        };
+        assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
+        if stage == 4 {
+            assert_eq!(stopped_answers[3], normal_answers[3]);
+        } else {
+            assert_eq!(stopped.answers[3].status, Decision::Undetermined);
+            assert!(stopped.answers[3].outputs.is_empty());
+            assert!(stopped.answers[3].claim.is_none());
+            assert!(stopped.answers[3].evidence.is_empty());
+            assert!(
+                stopped.answers[3]
+                    .reasons
+                    .iter()
+                    .any(|reason| matches!(reason.kind, ReasonKind::Missing))
+            );
+        }
+        for answer in &stopped.answers[if stage == 4 { 4 } else { 3 }..] {
+            let reason = answer
+                .reasons
+                .iter()
+                .find(|reason| matches!(&reason.kind,ReasonKind::Stop(actual) if actual==&expected))
+                .unwrap();
+            let Json::Obj(ref actual) = reason.wire() else {
+                unreachable!()
+            };
+            let Json::Obj(ref expected) = expected.wire() else {
+                unreachable!()
+            };
+            assert_eq!(actual["details"], expected["details"]);
+        }
+        assert!(stopped.answers[4].outputs.is_empty());
+        assert!(!stopped.contexts.iter().any(|context| context.request == 4));
+        if (1..=3).contains(&stage) {
+            let last = chain[stage + 3];
+            assert_eq!(stopped.nodes.len(), last + 1);
+            assert!(
+                !stopped
+                    .nodes
+                    .iter()
+                    .any(|node| matches!(&node.payload, Some(Payload::Normalization { .. })))
+                    || stage >= 2
+            );
+        }
+        assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
+            stopped.contexts[index].request == 3
+                && matches!(
+                    &node.payload,
+                    Some(Payload::Counterexample { .. } | Payload::FiniteExhaustion { .. })
+                )
+        }));
+        let (Json::Arr(normal_nodes), Json::Arr(stopped_nodes)) =
+            (&normal_wire["nodes"], &stopped_wire["nodes"])
+        else {
+            unreachable!()
+        };
+        assert_eq!(stopped_nodes, &normal_nodes[..stopped_nodes.len()]);
+        rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+        let before = probes.get();
+        assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+        assert_eq!(probes.get(), before);
+    }
+
+    #[test]
+    fn affine_normalization_recheck_reconstructs_difference_in_fresh_sessions_and_stops() {
+        use super::super::{
+            affine,
+            control::{Limits, Usage},
+        };
+        use crate::result::Signal;
+        use std::{cell::Cell, rc::Rc};
+        let result = affine_private_example(
+            "view equal(s:Sample):Bool=s.q=s.q;",
+            &["equal=evaluate(Calc.equal,s=@v/sample)"],
+        );
+        let normalization = affine_comparison_proofs(&result)[0];
+        let mut graph =
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=normalization])
+                .unwrap();
+        let armed = Rc::new(Cell::new(false));
+        let probes = Rc::new(Cell::new(0));
+        let (arm, count) = (armed.clone(), probes.clone());
+        let mut control = Control::new(Limits::default(), move |point| {
+            count.set(count.get() + 1);
+            if arm.replace(false) {
+                assert_eq!(point, Checkpoint::FiniteIteration);
+                Usage {
+                    signal: Some(Signal::Term),
+                    ..Usage::default()
+                }
+            } else {
+                Usage::default()
+            }
+        });
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        graph.active = result.contexts[normalization];
+        environment
+            .recheck_node(&graph, &graph.nodes[normalization], normalization)
+            .unwrap();
+        let before = probes.get();
+        let failure = affine::with_observer(
+            move |point| {
+                if point == affine::TestPoint::Coefficient {
+                    armed.set(true)
+                }
+            },
+            || environment.recheck_node(&graph, &graph.nodes[normalization], normalization),
+        );
+        assert!(matches!(
+            failure,
+            Err(ValidationFailure::Stop(StopReason::Cancelled(Signal::Term)))
+        ));
+        assert!(probes.get() > before);
+        let frozen = probes.get();
+        assert!(matches!(
+            environment.recheck_node(&graph, &graph.nodes[normalization], normalization),
+            Err(ValidationFailure::Stop(StopReason::Cancelled(Signal::Term)))
+        ));
+        assert_eq!(probes.get(), frozen);
+        assert_eq!(
+            control.checkpoint(Checkpoint::Expression),
+            Err(StopReason::Cancelled(Signal::Term))
+        );
+        assert_eq!(probes.get(), frozen);
+        rebuild_for_origin_and_support_recheck(&result, &graph.nodes).unwrap();
     }
 
     #[test]
