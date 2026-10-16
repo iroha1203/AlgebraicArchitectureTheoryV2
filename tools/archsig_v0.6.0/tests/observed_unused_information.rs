@@ -479,7 +479,7 @@ fn mathematical_answers(result: &Json, count: Option<&str>) -> Json {
     Json::Arr(summaries)
 }
 
-fn selected_derivations(checked: &CheckedInputs, result: &Json) {
+fn selected_derivations(checked: &CheckedInputs, result: &Json, has_spare: bool) {
     for node in arr(get(result, "nodes")) {
         for reading in arr(get(get(node, "scope"), "readings")) {
             assert!(matches!(text(reading), "CountCheck" | "CountAudit"));
@@ -501,7 +501,67 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json) {
             }
         }
     }
-    if let Some(declaration) = checked.law().declarations.get("Spare.untouched") {
+    if has_spare {
+        let spare = checked
+            .law()
+            .infos
+            .iter()
+            .find(|d| d.name == "Spare")
+            .expect("拡張入力の Spare reading を保持する");
+        assert_eq!(spare.kind, "reading");
+        assert_eq!(
+            named(result, "declarations", "name", "Spare"),
+            &declaration_wire(spare)
+        );
+        assert_eq!(
+            spare
+                .vocabularies
+                .iter()
+                .map(|v| v.namespace.as_str())
+                .collect::<Vec<_>>(),
+            ["Counter", "Extras"]
+        );
+        let script = std::str::from_utf8(checked.sources().law().bytes()).unwrap();
+        assert!(script[spare.span.0..spare.span.1].starts_with("reading Spare {"));
+        for (name, source, kind) in [
+            (
+                "Spare.untouched",
+                "view untouched(s: State): Z = match s.count { _ => 7; };",
+                "view",
+            ),
+            (
+                "Spare.caption",
+                "view caption(note: Note): Text = note.text;",
+                "view",
+            ),
+            ("Spare.spare", "law optional spare(n: Z): n >= 0;", "law"),
+        ] {
+            let declaration = checked
+                .law()
+                .declarations
+                .get(name)
+                .expect("拡張入力の非選択宣言を map に保持する");
+            assert_eq!(declaration.reading, "Spare");
+            assert_eq!(declaration.signature.kind(), kind);
+            assert_eq!(&script[declaration.span.0..declaration.span.1], source);
+            let info = checked
+                .law()
+                .infos
+                .iter()
+                .find(|d| d.name == name)
+                .expect("拡張入力の非選択宣言を infos に保持する");
+            assert_eq!(info.span, declaration.span);
+            assert_eq!(info.kind, kind);
+            assert_eq!(
+                named(result, "declarations", "name", name),
+                &declaration_wire(info)
+            );
+        }
+        let declaration = checked
+            .law()
+            .declarations
+            .get("Spare.untouched")
+            .expect("非選択 match view を保持する");
         let Signature::View { body, .. } = &declaration.signature else {
             panic!("view")
         };
@@ -509,6 +569,11 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json) {
             &checked.law().exprs[*body].kind,
             ExprKind::Match { .. }
         ));
+        let expression = &checked.law().exprs[*body];
+        assert_eq!(
+            &script[expression.span.0..expression.span.1],
+            "match s.count { _ => 7; }"
+        );
         let reading = checked
             .law()
             .infos
@@ -539,8 +604,6 @@ fn selected_derivations(checked: &CheckedInputs, result: &Json) {
                 .unwrap()
                 .contains("use Spare as S;")
         );
-        assert!(checked.law().declarations.contains_key("Spare.caption"));
-        assert!(checked.law().declarations.contains_key("Spare.spare"));
     }
 }
 
@@ -548,14 +611,20 @@ fn compare_unused(count: Option<&str>) {
     let map = map_count(count);
     let extended = extended_law();
     let variants = [
-        sources(vec![COUNTER.to_vec()], LAW, &map),
-        sources(vec![LIBRARY.to_vec()], LAW, &map),
-        sources(vec![COUNTER.to_vec(), EXTRAS.to_vec()], LAW, &map),
-        sources(vec![EXTRAS.to_vec(), COUNTER.to_vec()], LAW, &map),
-        sources(vec![LIBRARY.to_vec()], &extended, &map),
+        (false, sources(vec![COUNTER.to_vec()], LAW, &map)),
+        (false, sources(vec![LIBRARY.to_vec()], LAW, &map)),
+        (
+            false,
+            sources(vec![COUNTER.to_vec(), EXTRAS.to_vec()], LAW, &map),
+        ),
+        (
+            false,
+            sources(vec![EXTRAS.to_vec(), COUNTER.to_vec()], LAW, &map),
+        ),
+        (true, sources(vec![LIBRARY.to_vec()], &extended, &map)),
     ];
     let mut baseline = None;
-    for src in variants {
+    for (has_spare, src) in variants {
         let prepared = prepare_observed(src.clone(), &ASKS, &mut Control::unlimited()).unwrap();
         assert_eq!(prepared.inputs().sources(), &src);
         let checked_metadata = prepared.inputs().metadata_wire();
@@ -569,7 +638,7 @@ fn compare_unused(count: Option<&str>) {
         let checked = evaluated.prepared().inputs();
         assert_eq!(checked.sources(), &src);
         retained_metadata(checked, &result);
-        selected_derivations(checked, &result);
+        selected_derivations(checked, &result, has_spare);
         let current = mathematical_answers(&result, count);
         if let Some(baseline) = &baseline {
             assert_eq!(&current, baseline);
@@ -581,7 +650,7 @@ fn compare_unused(count: Option<&str>) {
                 .iter()
                 .all(|issue| get(issue, "code") == &Json::str("missing_observation"))
         );
-        if count == Some("2") && checked.law().declarations.contains_key("Spare.untouched") {
+        if count == Some("2") && has_spare {
             let Signature::View { body, .. } =
                 &checked.law().declarations["Spare.untouched"].signature
             else {
