@@ -19,11 +19,15 @@
   依存順を解決する。循環は該当する問いの ID と依存グラフを保持して拒否する。
   検査済み bundle を再利用する入口と、検査・要求解決で共有する予算・取消制御を持つ。
 - 観測評価 API (`archsig::observed::evaluate_observed_bytes` / `evaluate_observed`):
-  明示束縛した原始参照、Z/Q/Fp/数値Tuple/Bool の field、型付き数値/Bool literal、
-  `rat`、数値Tuple の構成・数値射影、括弧を共通の AST 評価器で読む。
+  明示束縛した原始参照、Z/Q/Fp/Bool/Unit/Text/一般Tuple/List/Set/Option の fieldと
+  型付きliteral、`rat`、Tupleの構成・射影、括弧を共通の AST 評価器で読む。
   Z/Q/Fp と数値Tupleの加減乗算・負号・等値、Z/Q の順序、
   Bool の等値と not/and/or/implies を計算する。
   Q は正分母の既約形、Fp は宣言した法、数値Tuple は入れ子の成分型を保つ。
+  Listは順序と重複を保ち、Setの構成は重複を除いて外延的に比較する。
+  元literalの全要素評価・順序・支持を導出に保持し、空List/Setとnoneにも要素型を保つ。
+  `count`・数値要素の`sum`・`in`を評価し、空の和は元の数値型の零を返す。
+  一般Tupleを数値演算の対象にせず、none・空・零・欠測を区別する。
   数値等式には元左右と同じ型・形の残差を保持し、一般Boolには数値残差を付けない。
   これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
@@ -32,7 +36,7 @@
   引数なし・複数引数・入れ子・import aliasを扱い、呼出しごとに元の引数評価・parameter束縛・
   callee bodyの導出を保持し、呼出し元のlexical bindingへ戻る。
   未観測の実引数は欠測理由を保ち、その引数を使わないbodyは既知値を返せる。
-  Z/Q/Fp/数値Tuple/Bool/原始Refと入れ子の非再帰dataを引数に持つdataについて、
+  上記の値型・原始Refと入れ子の非再帰dataを引数に持つdataについて、
   観測field・constructorを評価し、data型・正規constructor・引数の型と順序を保つ。
   これらのdata値をlet/if/viewで渡し、構造的な等値・不等値を計算する。
   既知値のmatchはconstructor・wildcard・名前・入れ子patternを扱い、

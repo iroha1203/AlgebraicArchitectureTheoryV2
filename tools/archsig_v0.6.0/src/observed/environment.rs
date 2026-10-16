@@ -436,6 +436,12 @@ impl<'a> Environment<'a> {
                             | ExprKind::Bool(_)
                             | ExprKind::Binary { .. }
                             | ExprKind::Tuple(_)
+                            | ExprKind::ListLit { .. }
+                            | ExprKind::SetLit { .. }
+                            | ExprKind::None(_)
+                            | ExprKind::Some(_)
+                            | ExprKind::Unit
+                            | ExprKind::Str(_)
                             | ExprKind::Index { .. }
                             | ExprKind::Call { .. }
                             | ExprKind::Unary { op: UnOp::Neg, .. } => self
@@ -707,6 +713,12 @@ impl<'a> Environment<'a> {
                         | ExprKind::Unary { .. }
                         | ExprKind::Binary { .. }
                         | ExprKind::Tuple(_)
+                        | ExprKind::ListLit { .. }
+                        | ExprKind::SetLit { .. }
+                        | ExprKind::None(_)
+                        | ExprKind::Some(_)
+                        | ExprKind::Unit
+                        | ExprKind::Str(_)
                         | ExprKind::Index { .. }
                         | ExprKind::Let { .. }
                         | ExprKind::If { .. }
@@ -741,6 +753,12 @@ impl<'a> Environment<'a> {
                             | ExprKind::Unary { .. }
                             | ExprKind::Binary { .. }
                             | ExprKind::Tuple(_)
+                            | ExprKind::ListLit { .. }
+                            | ExprKind::SetLit { .. }
+                            | ExprKind::None(_)
+                            | ExprKind::Some(_)
+                            | ExprKind::Unit
+                            | ExprKind::Str(_)
                             | ExprKind::Index { .. }
                             | ExprKind::Call { .. }
                             | ExprKind::Let { .. }
@@ -830,7 +848,17 @@ impl<'a> Environment<'a> {
                         vec![self.inputs.law().exprs[*operand].span]
                     }
                     Some(ExprKind::Field { base, .. }) => vec![self.inputs.law().exprs[*base].span],
-                    Some(ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. }) => {
+                    Some(
+                        ExprKind::Tuple(_)
+                        | ExprKind::ListLit { .. }
+                        | ExprKind::SetLit { .. }
+                        | ExprKind::None(_)
+                        | ExprKind::Some(_)
+                        | ExprKind::Unit
+                        | ExprKind::Str(_)
+                        | ExprKind::Index { .. }
+                        | ExprKind::Call { .. },
+                    ) => {
                         let id = *self.expressions.get(&span).ok_or("数値構成の元式がない")?;
                         let mut spans = Vec::new();
                         for child in self.composite_children(id)?.ok_or("数値構成の子がない")?
@@ -1026,7 +1054,17 @@ impl<'a> Environment<'a> {
                             _ => return Err("数値等号の既知左右以外に整数残差がある".into()),
                         }
                     }
-                    Some(ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. }) => {
+                    Some(
+                        ExprKind::Tuple(_)
+                        | ExprKind::ListLit { .. }
+                        | ExprKind::SetLit { .. }
+                        | ExprKind::None(_)
+                        | ExprKind::Some(_)
+                        | ExprKind::Unit
+                        | ExprKind::Str(_)
+                        | ExprKind::Index { .. }
+                        | ExprKind::Call { .. },
+                    ) => {
                         let id = *self.expressions.get(&span).ok_or("数値構成の元式がない")?;
                         let mut values = Vec::new();
                         let mut arguments = Vec::new();
@@ -1406,7 +1444,15 @@ impl<'a> Environment<'a> {
                     operand,
                 } => vec![operand],
                 ExprKind::Binary { op, lhs, rhs } if !is_boolean_binary(op) => vec![lhs, rhs],
-                ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. } => {
+                ExprKind::Tuple(_)
+                | ExprKind::ListLit { .. }
+                | ExprKind::SetLit { .. }
+                | ExprKind::None(_)
+                | ExprKind::Some(_)
+                | ExprKind::Unit
+                | ExprKind::Str(_)
+                | ExprKind::Index { .. }
+                | ExprKind::Call { .. } => {
                     self.composite_children(id)?.ok_or("元数値構成の子がない")?
                 }
                 _ => return Err("Scalar 引数から構成できる元式でない".into()),
@@ -1873,6 +1919,12 @@ impl<'a> Environment<'a> {
                             | ExprKind::Bool(_)
                             | ExprKind::Binary { .. }
                             | ExprKind::Tuple(_)
+                            | ExprKind::ListLit { .. }
+                            | ExprKind::SetLit { .. }
+                            | ExprKind::None(_)
+                            | ExprKind::Some(_)
+                            | ExprKind::Unit
+                            | ExprKind::Str(_)
                             | ExprKind::Index { .. }
                             | ExprKind::Call { .. }
                             | ExprKind::Unary { .. } => {
@@ -2060,6 +2112,29 @@ impl<'a> Environment<'a> {
     }
     /// この段階で構成する数値組・射影・固定 rat の typed 子だけを返す。
     /// builtin callee は値でないため架空の型・Evaluation を付けない。
+    fn builtin(&self, id: usize) -> Result<Option<&str>, ValidationFailure> {
+        let law = self.inputs.law();
+        let ExprKind::Call { callee, .. } = law.exprs[id].kind else {
+            return Ok(None);
+        };
+        if data::expression(law, id, &self.control)?.is_some() {
+            return Ok(None);
+        }
+        let mut callee = callee;
+        while let ExprKind::Group(inner) = law.exprs[callee].kind {
+            self.tick()?;
+            callee = inner;
+        }
+        match &law.exprs[callee].kind {
+            ExprKind::Dotted(parts)
+                if parts.len() == 1
+                    && matches!(parts[0].name.as_str(), "rat" | "count" | "sum") =>
+            {
+                Ok(Some(parts[0].name.as_str()))
+            }
+            _ => Ok(None),
+        }
+    }
     pub(crate) fn composite_children(
         &self,
         id: usize,
@@ -2069,62 +2144,24 @@ impl<'a> Environment<'a> {
         let Some(ty) = law.expr_type(id) else {
             return Ok(None);
         };
+        if !data::supported(ty, law, &self.control)? {
+            return Err(ValidationFailure::UnsupportedExpression {
+                location: Location::Law {
+                    span: law.exprs[id].span,
+                },
+                feature: "未対応payload・型または再帰Dataの構成".into(),
+            });
+        }
         if let Some((_, args)) = data::expression(law, id, &self.control)? {
-            if !data::supported(ty, law, &self.control)? {
-                return Err(ValidationFailure::UnsupportedExpression {
-                    location: Location::Law {
-                        span: law.exprs[id].span,
-                    },
-                    feature: "未対応payloadまたは再帰Dataのconstructor".into(),
-                });
-            }
             return Ok(Some(args));
         }
-        if !numeric::is_numeric_type(ty, &self.control)? {
-            return Ok(None);
-        }
         let children = match &law.exprs[id].kind {
-            ExprKind::Tuple(items) => Some(items.clone()),
-            ExprKind::Index { base, .. }
-                if numeric::is_numeric_type(
-                    law.expr_type(*base).ok_or("射影元の型がない")?,
-                    &self.control,
-                )? =>
-            {
-                Some(vec![*base])
-            }
-            ExprKind::Call { callee, args } if ty == &Type::Q => {
-                let mut callee = *callee;
-                loop {
-                    self.tick()?;
-                    match &law.exprs[callee].kind {
-                        ExprKind::Group(inner) => {
-                            callee = *inner;
-                            self.tick()?;
-                        }
-                        ExprKind::Dotted(parts) if parts.len() == 1 && parts[0].name == "rat" => {
-                            if args.len() != 2 {
-                                return Err("rat 引数数の内部不整合".into());
-                            }
-                            for &arg in args {
-                                self.tick()?;
-                                if law.expr_type(arg) != Some(&Type::Z)
-                                    || !matches!(law.exprs[arg].kind, ExprKind::Int(_))
-                                {
-                                    return Err("rat の元整数 literal がない".into());
-                                }
-                                self.tick()?;
-                            }
-                            self.tick()?;
-                            break Some(args.clone());
-                        }
-                        _ => {
-                            self.tick()?;
-                            break None;
-                        }
-                    }
-                }
-            }
+            ExprKind::Unit | ExprKind::Str(_) | ExprKind::None(_) => Some(vec![]),
+            ExprKind::Tuple(items)
+            | ExprKind::ListLit { items, .. }
+            | ExprKind::SetLit { items, .. } => Some(items.clone()),
+            ExprKind::Index { base, .. } | ExprKind::Some(base) => Some(vec![*base]),
+            ExprKind::Call { args, .. } if self.builtin(id)?.is_some() => Some(args.clone()),
             _ => None,
         };
         self.tick()?;
@@ -2162,14 +2199,53 @@ impl<'a> Environment<'a> {
             }
         } else {
             match &law.exprs[id].kind {
+                ExprKind::Unit => Scalar::Unit,
+                ExprKind::Str(text) => Scalar::Text(text.clone()),
                 ExprKind::Tuple(_) => Scalar::Tuple(values.to_vec()),
+                ExprKind::ListLit { .. } => {
+                    let Type::List(element) = law.expr_type(id).ok_or("List型がない")? else {
+                        return Err("List構成型が違う".into());
+                    };
+                    Scalar::List {
+                        element: (**element).clone(),
+                        items: values.to_vec(),
+                    }
+                }
+                ExprKind::SetLit { .. } => {
+                    let Type::Set(element) = law.expr_type(id).ok_or("Set型がない")? else {
+                        return Err("Set構成型が違う".into());
+                    };
+                    data::set((**element).clone(), values, &self.control)?
+                }
+                ExprKind::None(_) | ExprKind::Some(_) => {
+                    let Type::Option(element) = law.expr_type(id).ok_or("Option型がない")?
+                    else {
+                        return Err("Option構成型が違う".into());
+                    };
+                    Scalar::Option {
+                        element: (**element).clone(),
+                        value: values.first().cloned().map(Box::new),
+                    }
+                }
                 ExprKind::Index { index, .. } => {
                     let Scalar::Tuple(items) = &values[0] else {
                         return Err("数値射影元が Tuple でない".into());
                     };
                     items.get(*index).ok_or("数値射影位置の内部不整合")?.clone()
                 }
-                ExprKind::Call { .. } => numeric::rational(&values[0], &values[1], &self.control)?,
+                ExprKind::Call { .. } => match self.builtin(id)?.ok_or("固定演算がない")? {
+                    "rat" => {
+                        if values.len() != 2 {
+                            return Err("rat arityが違う".into());
+                        };
+                        numeric::rational(&values[0], &values[1], &self.control)?
+                    }
+                    name => data::aggregate(
+                        name,
+                        values.first().ok_or("count/sum引数がない")?,
+                        &self.control,
+                    )?,
+                },
                 _ => return Err("元数値構成がない".into()),
             }
         };
@@ -3441,7 +3517,15 @@ impl<'a> Environment<'a> {
                         support,
                     }
                 }
-                ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. } => {
+                ExprKind::Tuple(_)
+                | ExprKind::ListLit { .. }
+                | ExprKind::SetLit { .. }
+                | ExprKind::None(_)
+                | ExprKind::Some(_)
+                | ExprKind::Unit
+                | ExprKind::Str(_)
+                | ExprKind::Index { .. }
+                | ExprKind::Call { .. } => {
                     let children = self.composite_children(id)?.ok_or_else(|| {
                         ValidationFailure::UnsupportedExpression {
                             location: Location::Law {
@@ -4257,25 +4341,7 @@ pub(crate) fn conditional_branch(
                 if left.ty() != right.ty() {
                     return Err("if の既知両枝の型が違う".into());
                 }
-                match (left, right) {
-                    (Scalar::Bool(left), Scalar::Bool(right)) => left == right,
-                    (
-                        Scalar::Subject {
-                            snapshot: a,
-                            subject: b,
-                            entity: c,
-                        },
-                        Scalar::Subject {
-                            snapshot: x,
-                            subject: y,
-                            entity: z,
-                        },
-                    ) => a == x && b == y && c == z,
-                    (Scalar::Data { .. }, Scalar::Data { .. }) => {
-                        data::equal(left, right, control)?
-                    }
-                    _ => numeric::binary(BinOp::Eq, left, right, control)? == Scalar::Bool(true),
-                }
+                data::equal(left, right, control)?
             } else {
                 false
             };
@@ -4297,8 +4363,8 @@ pub(crate) fn supports_binary(
     input: &Type,
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
-    if matches!(input, Type::Data(_) | Type::Ref(_)) {
-        return Ok(matches!(op, BinOp::Eq | BinOp::Ne));
+    if matches!(op, BinOp::Eq | BinOp::Ne | BinOp::In) && data::primitive_type(input, control)? {
+        return Ok(true);
     }
     if input == &Type::Bool {
         return Ok(matches!(op, BinOp::Eq | BinOp::Ne) || is_boolean_binary(op));
@@ -4360,15 +4426,19 @@ pub(crate) fn binary(
     right: &Scalar,
     control: &Control,
 ) -> Result<Scalar, ValidationFailure> {
-    if matches!(left, Scalar::Data { .. } | Scalar::Subject { .. }) {
-        if left.ty() != right.ty() {
-            return Err("構造等値の型が違う".into());
-        }
-        return match op {
-            BinOp::Eq => Ok(Scalar::Bool(data::equal(left, right, control)?)),
-            BinOp::Ne => Ok(Scalar::Bool(!data::equal(left, right, control)?)),
-            _ => Err("構造値に等値以外を適用している".into()),
+    if op == BinOp::In {
+        let (element, items) = match right {
+            Scalar::List { element, items } | Scalar::Set { element, items } => (element, items),
+            _ => return Err("inの右辺がList/Setでない".into()),
         };
+        if &left.ty() != element {
+            return Err("in要素型が違う".into());
+        };
+        return Ok(Scalar::Bool(data::contains(items, left, control)?));
+    }
+    if matches!(op, BinOp::Eq | BinOp::Ne) {
+        let equal = data::equal(left, right, control)?;
+        return Ok(Scalar::Bool(if op == BinOp::Eq { equal } else { !equal }));
     }
     if let (Scalar::Bool(a), Scalar::Bool(b)) = (left, right) {
         let value = match op {

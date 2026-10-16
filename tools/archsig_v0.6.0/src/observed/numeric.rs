@@ -364,3 +364,27 @@ fn input_numeric(value: &Value, ty: &Type, control: &Control) -> Result<Scalar, 
         _ => Err("原始数値の値と宣言型が異なる".into()),
     })
 }
+
+/// 空sumでも宣言した数値要素型を失わない零。
+pub(crate) fn zero(ty: &Type, control: &Control) -> Result<Scalar, ValidationFailure> {
+    controlled(control, || match ty {
+        Type::Z => Ok(Scalar::Z(BigInt::zero())),
+        Type::Q => Ok(Scalar::Q(BigInt::zero(), BigInt::one())),
+        Type::Fp(p) => {
+            modulus(p, control)?;
+            Ok(Scalar::Fp {
+                modulus: p.clone(),
+                value: BigInt::zero(),
+            })
+        }
+        Type::Tuple(types) => {
+            let mut items = Vec::new();
+            for ty in types {
+                tick(control)?;
+                items.push(zero(ty, control)?);
+            }
+            Ok(Scalar::Tuple(items))
+        }
+        _ => Err("sumの要素型が数値型でない".into()),
+    })
+}

@@ -71,6 +71,20 @@ impl NodeType {
     }
 }
 pub(crate) enum Scalar {
+    Unit,
+    Text(String),
+    List {
+        element: Type,
+        items: Vec<Scalar>,
+    },
+    Set {
+        element: Type,
+        items: Vec<Scalar>,
+    },
+    Option {
+        element: Type,
+        value: Option<Box<Scalar>>,
+    },
     Z(BigInt),
     Q(BigInt, BigInt),
     Fp {
@@ -93,6 +107,11 @@ pub(crate) enum Scalar {
 impl Scalar {
     pub(crate) fn ty(&self) -> Type {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Unit => Type::Unit,
+            Self::Text(_) => Type::Text,
+            Self::List { element, .. } => Type::List(Box::new(element.clone())),
+            Self::Set { element, .. } => Type::Set(Box::new(element.clone())),
+            Self::Option { element, .. } => Type::Option(Box::new(element.clone())),
             Self::Z(_) => Type::Z,
             Self::Q(_, _) => Type::Q,
             Self::Fp { modulus, .. } => Type::Fp(modulus.clone()),
@@ -104,6 +123,15 @@ impl Scalar {
     }
     fn wire(&self) -> Json {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Unit => Json::Arr(vec![]),
+            Self::Text(text) => Json::str(text),
+            Self::List { items, .. } | Self::Set { items, .. } => {
+                Json::Arr(items.iter().map(Scalar::wire).collect())
+            }
+            Self::Option { value: None, .. } => Json::obj([("none", Json::Bool(true))]),
+            Self::Option {
+                value: Some(value), ..
+            } => Json::obj([("some", value.wire())]),
             Self::Z(n) => Json::str(n.to_string()),
             Self::Q(n, d) => Json::Arr(vec![Json::str(n.to_string()), Json::str(d.to_string())]),
             Self::Fp { value, .. } => Json::str(value.to_string()),
@@ -127,20 +155,47 @@ impl Scalar {
 // Tuple は再帰的な値。解放も表示も呼出し元のスタック深さへ依存させない。
 impl Drop for Scalar {
     fn drop(&mut self) {
-        let mut pending = Vec::new();
-        if let Self::Tuple(items) | Self::Data { args: items, .. } = self {
-            pending.append(items);
-        }
-        while let Some(mut value) = pending.pop() {
-            if let Self::Tuple(items) | Self::Data { args: items, .. } = &mut value {
-                pending.append(items);
+        fn take(value: &mut Scalar, pending: &mut Vec<Scalar>) {
+            match value {
+                Scalar::Tuple(items)
+                | Scalar::Data { args: items, .. }
+                | Scalar::List { items, .. }
+                | Scalar::Set { items, .. } => pending.append(items),
+                Scalar::Option { value, .. } => {
+                    if let Some(value) = value.take() {
+                        pending.push(*value);
+                    }
+                }
+                _ => {}
             }
+        }
+        let mut pending = Vec::new();
+        take(self, &mut pending);
+        while let Some(mut value) = pending.pop() {
+            take(&mut value, &mut pending);
         }
     }
 }
 impl std::fmt::Debug for Scalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Unit => f.write_str("Unit"),
+            Self::Text(text) => f.debug_tuple("Text").field(text).finish(),
+            Self::List { element, items } => f
+                .debug_struct("List")
+                .field("element", element)
+                .field("items", items)
+                .finish(),
+            Self::Set { element, items } => f
+                .debug_struct("Set")
+                .field("element", element)
+                .field("items", items)
+                .finish(),
+            Self::Option { element, value } => f
+                .debug_struct("Option")
+                .field("element", element)
+                .field("value", value)
+                .finish(),
             Self::Z(n) => f.debug_tuple("Z").field(n).finish(),
             Self::Q(n, d) => f.debug_tuple("Q").field(n).field(d).finish(),
             Self::Fp { modulus, value } => f
@@ -176,6 +231,20 @@ impl std::fmt::Debug for Scalar {
 impl Clone for Scalar {
     fn clone(&self) -> Self {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Unit => Self::Unit,
+            Self::Text(text) => Self::Text(text.clone()),
+            Self::List { element, items } => Self::List {
+                element: element.clone(),
+                items: items.clone(),
+            },
+            Self::Set { element, items } => Self::Set {
+                element: element.clone(),
+                items: items.clone(),
+            },
+            Self::Option { element, value } => Self::Option {
+                element: element.clone(),
+                value: value.clone(),
+            },
             Self::Z(n) => Self::Z(n.clone()),
             Self::Q(n, d) => Self::Q(n.clone(), d.clone()),
             Self::Fp { modulus, value } => Self::Fp {
@@ -208,6 +277,38 @@ impl Clone for Scalar {
 impl PartialEq for Scalar {
     fn eq(&self, other: &Self) -> bool {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
+            (Self::Unit, Self::Unit) => true,
+            (Self::Text(a), Self::Text(b)) => a == b,
+            (
+                Self::List {
+                    element: a,
+                    items: b,
+                },
+                Self::List {
+                    element: c,
+                    items: d,
+                },
+            ) => a == c && b == d,
+            (
+                Self::Set {
+                    element: a,
+                    items: b,
+                },
+                Self::Set {
+                    element: c,
+                    items: d,
+                },
+            ) => a == c && b.len() == d.len() && b.iter().all(|value| d.contains(value)),
+            (
+                Self::Option {
+                    element: a,
+                    value: b,
+                },
+                Self::Option {
+                    element: c,
+                    value: d,
+                },
+            ) => a == c && b == d,
             (Self::Z(a), Self::Z(b)) => a == b,
             (Self::Q(a, b), Self::Q(c, d)) => a == c && b == d,
             (
