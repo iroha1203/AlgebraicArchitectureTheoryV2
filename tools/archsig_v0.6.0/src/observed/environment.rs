@@ -28,6 +28,7 @@ pub(crate) struct SourceAnalysis {
     pub scalar_scope: Option<Scope>,
 }
 
+#[derive(Clone)]
 struct SourceValue {
     scope: Scope,
     known_value: Option<Scalar>,
@@ -261,6 +262,10 @@ impl<'a> Environment<'a> {
                         return Err("導出値が元式の型に合わない".into());
                     }
                     let computed = match &expr.1.kind {
+                        ExprKind::Let { .. } | ExprKind::If { .. } => self
+                            .lexical_source_analysis(graph, node, limit)?
+                            .known_value
+                            .ok_or("let/if 値が全補完で確定しない")?,
                         ExprKind::Binary { op, .. } if is_boolean_binary(*op) => self
                             .logic_source_analysis(graph, node, limit)?
                             .known_value
@@ -349,7 +354,20 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                 }
                 if !found {
-                    return Err("元 AST にない式 fragment".into());
+                    let rhs = self
+                        .lexical_rhs(*span, source)?
+                        .ok_or("元 AST にない式 fragment")?;
+                    if node.ty
+                        != NodeType::Expression(
+                            self.inputs
+                                .law()
+                                .expr_type(rhs)
+                                .ok_or("lexical 右辺の型がない")?
+                                .clone(),
+                        )
+                    {
+                        return Err("lexical fragment の元型が違う".into());
+                    }
                 }
             }
         }
@@ -493,6 +511,8 @@ impl<'a> Environment<'a> {
                             | ExprKind::Tuple(_)
                             | ExprKind::Index { .. }
                             | ExprKind::Call { .. }
+                            | ExprKind::Let { .. }
+                            | ExprKind::If { .. }
                     )
                 ) && let Some(value) = value
                 {
@@ -509,6 +529,23 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                 }
                 let expected = match ast.map(|e| &e.kind) {
+                    Some(ExprKind::Let { value, body, .. }) => vec![
+                        self.inputs.law().exprs[*value].span,
+                        self.inputs.law().exprs[*body].span,
+                    ],
+                    Some(ExprKind::If {
+                        cond,
+                        then_branch,
+                        else_branch,
+                    }) => vec![
+                        self.inputs.law().exprs[*cond].span,
+                        self.inputs.law().exprs[*then_branch].span,
+                        self.inputs.law().exprs[*else_branch].span,
+                    ],
+                    Some(ExprKind::Dotted(parts)) if parts.len() == 1 => self
+                        .lexical_rhs(span, &parts[0].name)?
+                        .map(|rhs| vec![self.inputs.law().exprs[rhs].span])
+                        .unwrap_or_default(),
                     Some(ExprKind::Binary { lhs, rhs, .. }) => vec![
                         self.inputs.law().exprs[*lhs].span,
                         self.inputs.law().exprs[*rhs].span,
@@ -531,6 +568,15 @@ impl<'a> Environment<'a> {
                     Some(ExprKind::Dotted(parts)) if parts.len() > 1 => {
                         vec![(parts[0].span.0, parts[parts.len() - 2].span.1)]
                     }
+                    None => {
+                        let token = std::str::from_utf8(
+                            &self.inputs.sources().law().bytes()[span.0..span.1],
+                        )
+                        .map_err(|_| "lexical token がUTF8でない")?;
+                        self.lexical_rhs(span, token)?
+                            .map(|rhs| vec![self.inputs.law().exprs[rhs].span])
+                            .unwrap_or_default()
+                    }
                     _ => vec![],
                 };
                 if children.len() != expected.len() {
@@ -552,6 +598,26 @@ impl<'a> Environment<'a> {
                     return Err("比較以外の式に残差がある".into());
                 }
                 match ast.map(|e| &e.kind) {
+                    Some(ExprKind::Let { .. } | ExprKind::If { .. }) => {
+                        let known = match ast.map(|e| &e.kind) {
+                            Some(ExprKind::Let { .. }) => child_values[1]
+                                .map(|r| graph.scalar(r).cloned())
+                                .transpose()?,
+                            _ => conditional_branch(
+                                child_values[0].map(|r| graph.scalar(r)).transpose()?,
+                                child_values[1].map(|r| graph.scalar(r)).transpose()?,
+                                child_values[2].map(|r| graph.scalar(r)).transpose()?,
+                                &self.control,
+                            )?,
+                        };
+                        match (known, value) {
+                            (Some(expected), Some(result))
+                                if graph.scalar(*result)? == &expected
+                                    && graph.get(*result)?.arguments == *children => {}
+                            (None, None) => {}
+                            _ => return Err("let/if の元子・確定結果・構成引数が違う".into()),
+                        }
+                    }
                     Some(ExprKind::Int(n)) => {
                         let ty = self
                             .inputs
@@ -687,7 +753,14 @@ impl<'a> Environment<'a> {
                     },
                     Some(ExprKind::Dotted(parts)) => {
                         if parts.len() == 1 {
-                            self.check_parameter(graph, bindings, &parts[0].name, *value)?;
+                            self.check_name(
+                                graph,
+                                span,
+                                bindings,
+                                &parts[0].name,
+                                *value,
+                                &child_values,
+                            )?;
                         } else {
                             self.check_field(
                                 graph,
@@ -705,7 +778,7 @@ impl<'a> Environment<'a> {
                             &self.inputs.sources().law().bytes()[span.0..span.1],
                         )
                         .map_err(|_| "parameter token")?;
-                        self.check_parameter(graph, bindings, source, *value)?;
+                        self.check_name(graph, span, bindings, source, *value, &child_values)?;
                     }
                     _ => {}
                 }
@@ -804,6 +877,117 @@ impl<'a> Environment<'a> {
         }
         self.tick()?;
         Ok(())
+    }
+    // let/if の Scalar は未知の子を値へ補完せず、元順の子 Evaluation を引数にする。
+    // Scalar の挿入位置で own Source と各子を再検査し、親がまだなくても帰属を確かめる。
+    fn lexical_source_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            let Rule::Input {
+                kind: "law",
+                location: Location::Law { span },
+            } = &node.rule
+            else {
+                return Err("let/if 値に元出現がない".into());
+            };
+            let id = *self.expressions.get(span).ok_or("let/if 元式がない")?;
+            let operands = match self.inputs.law().exprs[id].kind {
+                ExprKind::Let { value, body, .. } => vec![value, body],
+                ExprKind::If {
+                    cond,
+                    then_branch,
+                    else_branch,
+                } => vec![cond, then_branch, else_branch],
+                _ => return Err("let/if 値の元式形が違う".into()),
+            };
+            let Some(Payload::Scalar(scalar)) = &node.payload else {
+                return Err("let/if 結果が通常値でない".into());
+            };
+            if node.ty != NodeType::Value(scalar.ty())
+                || self.inputs.law().expr_type(id) != Some(&scalar.ty())
+                || node.arguments.len() != operands.len()
+            {
+                return Err("let/if 値の元型・引数数が違う".into());
+            }
+            let mut bindings = None;
+            for (&reference, operand) in node.arguments.iter().zip(operands) {
+                self.tick()?;
+                if reference.0 >= limit {
+                    return Err("let/if の子評価が既出でない".into());
+                }
+                graph.expect(
+                    reference,
+                    &NodeType::Evaluation(
+                        self.inputs
+                            .law()
+                            .expr_type(operand)
+                            .ok_or("let/if 元子の型がない")?
+                            .clone(),
+                    ),
+                )?;
+                self.recheck_evaluation(graph, reference)?;
+                let (expression, actual, _) = self.evaluation(graph, reference)?;
+                self.source_matches(graph, expression, operand)?;
+                if bindings.is_some_and(|previous| previous != actual) {
+                    return Err("let/if の子束縛が違う".into());
+                }
+                bindings = Some(actual);
+                self.tick()?;
+            }
+            let bindings = bindings.ok_or("let/if の子束縛がない")?;
+            let mut source_found = false;
+            for (index, source) in graph.nodes.iter().enumerate().take(limit) {
+                self.tick()?;
+                if source.ty == NodeType::Expression(scalar.ty())
+                    && matches!(&source.payload, Some(Payload::Expression {location: Location::Law {span: actual}, bindings: b, parameters}) if actual == span && b == bindings && parameters.is_empty())
+                {
+                    let candidate = (|| -> Result<(), ValidationFailure> {
+                        if !matches!(&source.rule, Rule::Input {kind: "law", location: Location::Law {span: actual}} if actual == span)
+                        {
+                            return Err("let/if Source の元規則が違う".into());
+                        }
+                        let mut arguments = Vec::new();
+                        for binding in bindings {
+                            self.tick()?;
+                            if binding.value.0 >= index {
+                                return Err("let/if Source の束縛が既出でない".into());
+                            }
+                            arguments.push(binding.value);
+                            self.tick()?;
+                        }
+                        if arguments != source.arguments {
+                            return Err("let/if Source の引数と束縛が違う".into());
+                        }
+                        self.validate_at(graph, source, index)
+                    })();
+                    match candidate {
+                        Ok(()) => source_found = true,
+                        Err(ValidationFailure::Stop(reason)) => {
+                            return Err(ValidationFailure::Stop(reason));
+                        }
+                        Err(ValidationFailure::Internal(_)) => {}
+                    }
+                }
+                self.tick()?;
+            }
+            if !source_found {
+                return Err("let/if 値に既出の own Source がない".into());
+            }
+            let analysis = self.analyze_source(graph, *span, bindings)?;
+            if analysis.known_value.as_ref() != Some(scalar)
+                || analysis.support != node.support
+                || analysis.scalar_scope.as_ref() != Some(&node.scope)
+            {
+                return Err("let/if 値・支持・Scope が元式・実入力と違う".into());
+            }
+            self.tick()?;
+            Ok(analysis)
+        })
     }
     /// law の値は親 Evaluation より先に挿入する。既存の Scalar 引数を保ったまま、
     /// cutoff 未満の own Source と元子 Evaluation を構成の証人として照合する。
@@ -1252,6 +1436,9 @@ impl<'a> Environment<'a> {
                     let expr = &self.inputs.law().exprs
                         [*self.expressions.get(span).ok_or("値支持の元ASTがない")?];
                     match expr.kind {
+                        ExprKind::Let { .. } | ExprKind::If { .. } => {
+                            self.lexical_source_analysis(graph, node, limit)?.support
+                        }
                         ExprKind::Binary { op, .. } if is_boolean_binary(op) => {
                             self.logic_source_analysis(graph, node, limit)?.support
                         }
@@ -1515,6 +1702,63 @@ impl<'a> Environment<'a> {
         self.analyze_source(graph, span, bindings)
             .map(|analysis| analysis.scope)
     }
+    // lexical scope は元 binder の body 範囲から復元する。右辺自身や同名の別出現を
+    // 束縛としない。静的検査済みの shadowing 禁止により、外→内の順は一意になる。
+    fn lexical_context(
+        &self,
+        span: (usize, usize),
+    ) -> Result<Vec<(String, usize)>, ValidationFailure> {
+        let mut enclosing = Vec::new();
+        let law = self.inputs.law();
+        for (id, expression) in law.exprs.iter().enumerate() {
+            self.tick()?;
+            if let ExprKind::Let { name, value, body } = &expression.kind {
+                let body_span = law.exprs[*body].span;
+                let rhs_span = law.exprs[*value].span;
+                // arena には構文解析の未採用候補もある。型検査した実出現だけを
+                // lexical binder とし、Source が使う span 索引との同一性も確かめる。
+                if law.expr_type(id).is_some()
+                    && law.expr_type(*value).is_some()
+                    && law.expr_type(*body).is_some()
+                    && self.expressions.get(&expression.span) == Some(&id)
+                    && self.expressions.get(&body_span) == Some(body)
+                    && self.expressions.get(&rhs_span) == Some(value)
+                    && body_span.0 <= span.0
+                    && span.1 <= body_span.1
+                {
+                    enclosing.push((expression.span.0, name.name.clone(), *value));
+                }
+            }
+            self.tick()?;
+        }
+        enclosing.sort_by_key(|(start, _, _)| *start);
+        self.tick()?;
+        let mut result = Vec::new();
+        for (_, name, rhs) in enclosing {
+            self.tick()?;
+            result.push((name, rhs));
+            self.tick()?;
+        }
+        Ok(result)
+    }
+    pub(crate) fn lexical_rhs(
+        &self,
+        span: (usize, usize),
+        name: &str,
+    ) -> Result<Option<usize>, ValidationFailure> {
+        let mut result = None;
+        for (actual, rhs) in self.lexical_context(span)? {
+            self.tick()?;
+            if actual == name {
+                if result.is_some() {
+                    return Err("lexical binder が一意でない".into());
+                }
+                result = Some(rhs);
+            }
+            self.tick()?;
+        }
+        Ok(result)
+    }
     pub(crate) fn analyze_source(
         &self,
         graph: &Graph,
@@ -1567,7 +1811,29 @@ impl<'a> Environment<'a> {
                 return Err("束縛subject値の範囲が元宣言・subject由来と違う".into());
             }
             base.merge(&subject_scope);
-            variables.insert(binding.name.clone(), value.clone());
+            variables.insert(
+                binding.name.clone(),
+                SourceValue {
+                    scope: base.clone(),
+                    known_value: Some(value.clone()),
+                    support: self.subject_support(value)?,
+                    scalar_scope: Some(subject_scope),
+                },
+            );
+            self.tick()?;
+        }
+        // parameter の範囲は全明示束縛を含む。Scalar 自体の由来範囲とは区別する。
+        for variable in variables.values_mut() {
+            self.tick()?;
+            variable.scope = base.clone();
+            self.tick()?;
+        }
+        for (name, rhs) in self.lexical_context(span)? {
+            self.tick()?;
+            let value = self.scoped_ast(rhs, &variables, &base, &declaration.reading)?;
+            if variables.insert(name, value).is_some() {
+                return Err("lexical 名が元parameterと重複する".into());
+            }
             self.tick()?;
         }
         if let Some(&id) = self.expressions.get(&span) {
@@ -1579,7 +1845,9 @@ impl<'a> Environment<'a> {
             } = self.scoped_ast(id, &variables, &base, &declaration.reading)?;
             let direct_field = match &self.inputs.law().exprs[id].kind {
                 ExprKind::Dotted(parts) if parts.len() == 2 => Some((
-                    variables.get(&parts[0].name).cloned(),
+                    variables
+                        .get(&parts[0].name)
+                        .and_then(|v| v.known_value.clone()),
                     parts[1].name.as_str(),
                 )),
                 ExprKind::Field { base: owner, name } => Some((
@@ -1630,21 +1898,15 @@ impl<'a> Environment<'a> {
             .get(span.0..span.1)
             .ok_or("評価範囲のtokenが元byte外")?;
         let name = std::str::from_utf8(token).map_err(|_| "評価範囲のtokenがUTF-8でない")?;
-        if !variables.contains_key(name) {
-            return Err("評価範囲に元parameter以外のfragmentがある".into());
-        }
-        let known_value = variables.get(name).cloned();
-        let support = self.subject_support(known_value.as_ref().ok_or("元parameter値がない")?)?;
-        let scalar_scope = Some(self.subject_scalar_scope(
-            known_value.as_ref().ok_or("元parameter値がない")?,
-            &declaration.reading,
-        )?);
+        let value = variables
+            .get(name)
+            .ok_or("評価範囲に元束縛以外のfragmentがある")?;
         Ok(SourceAnalysis {
-            scope: base,
-            known_value,
+            scope: value.scope.clone(),
+            known_value: value.known_value.clone(),
             missing: None,
-            support,
-            scalar_scope,
+            support: value.support.clone(),
+            scalar_scope: value.scalar_scope.clone(),
         })
     }
     fn subject_support(&self, value: &Scalar) -> Result<Vec<Fact>, ValidationFailure> {
@@ -1666,23 +1928,22 @@ impl<'a> Environment<'a> {
             atom: None,
         }])
     }
-    fn subject_scalar_scope(
+    fn copy_variables(
         &self,
-        value: &Scalar,
-        reading: &str,
-    ) -> Result<Scope, ValidationFailure> {
-        let Scalar::Subject {
-            snapshot, subject, ..
-        } = value
-        else {
-            return Err("subject値の範囲をRef以外へ適用".into());
-        };
-        Ok(self.scope(self.subject(snapshot, subject)?, reading, None)?)
+        variables: &BTreeMap<String, SourceValue>,
+    ) -> Result<BTreeMap<String, SourceValue>, ValidationFailure> {
+        let mut copy = BTreeMap::new();
+        for (name, value) in variables {
+            self.tick()?;
+            copy.insert(name.clone(), value.clone());
+            self.tick()?;
+        }
+        Ok(copy)
     }
     fn scoped_ast(
         &self,
         id: usize,
-        variables: &BTreeMap<String, Scalar>,
+        variables: &BTreeMap<String, SourceValue>,
         base: &Scope,
         reading: &str,
     ) -> Result<SourceValue, ValidationFailure> {
@@ -1711,18 +1972,10 @@ impl<'a> Environment<'a> {
                 },
                 ExprKind::Dotted(parts) => {
                     let first = parts.first().ok_or("範囲検査の空Dotted")?;
-                    let value = variables
+                    let mut result = variables
                         .get(&first.name)
-                        .ok_or("範囲検査の未知parameter")?
+                        .ok_or("範囲検査の未知lexical名")?
                         .clone();
-                    let support = self.subject_support(&value)?;
-                    let scalar_scope = Some(self.subject_scalar_scope(&value, reading)?);
-                    let mut result = SourceValue {
-                        scope: base.clone(),
-                        known_value: Some(value),
-                        support,
-                        scalar_scope,
-                    };
                     for part in parts.iter().skip(1) {
                         self.tick()?;
                         result = self.scoped_field(result, &part.name, base, reading)?;
@@ -1779,6 +2032,58 @@ impl<'a> Environment<'a> {
                         scope,
                         known_value,
                         support,
+                        scalar_scope,
+                    }
+                }
+                ExprKind::Let { name, value, body } => {
+                    let rhs = self.scoped_ast(*value, variables, base, reading)?;
+                    let mut local = self.copy_variables(variables)?;
+                    if local.insert(name.name.clone(), rhs.clone()).is_some() {
+                        return Err("let 名が重複する".into());
+                    }
+                    let body = self.scoped_ast(*body, &local, base, reading)?;
+                    let mut scope = rhs.scope;
+                    scope.merge(&body.scope);
+                    let mut support = rhs.support;
+                    support.extend(body.support);
+                    support.sort();
+                    support.dedup();
+                    let known_value = body.known_value;
+                    let scalar_scope = known_value.as_ref().map(|_| scope.clone());
+                    SourceValue {
+                        scope,
+                        support,
+                        known_value,
+                        scalar_scope,
+                    }
+                }
+                ExprKind::If {
+                    cond,
+                    then_branch,
+                    else_branch,
+                } => {
+                    let condition = self.scoped_ast(*cond, variables, base, reading)?;
+                    let left = self.scoped_ast(*then_branch, variables, base, reading)?;
+                    let right = self.scoped_ast(*else_branch, variables, base, reading)?;
+                    let known_value = conditional_branch(
+                        condition.known_value.as_ref(),
+                        left.known_value.as_ref(),
+                        right.known_value.as_ref(),
+                        &self.control,
+                    )?;
+                    let mut scope = condition.scope;
+                    scope.merge(&left.scope);
+                    scope.merge(&right.scope);
+                    let mut support = condition.support;
+                    support.extend(left.support);
+                    support.extend(right.support);
+                    support.sort();
+                    support.dedup();
+                    let scalar_scope = known_value.as_ref().map(|_| scope.clone());
+                    SourceValue {
+                        scope,
+                        support,
+                        known_value,
                         scalar_scope,
                     }
                 }
@@ -2052,6 +2357,26 @@ impl<'a> Environment<'a> {
             }) => Ok((*expression, bindings, *value)),
             _ => Err("Evaluation でない".into()),
         }
+    }
+    fn check_name(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+        name: &str,
+        value: Option<NodeRef>,
+        children: &[Option<NodeRef>],
+    ) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        if self.lexical_rhs(span, name)?.is_some() {
+            if children.len() != 1 || value != children[0] {
+                return Err("lexical 名が実右辺の値を参照していない".into());
+            }
+        } else {
+            self.check_parameter(graph, bindings, name, value)?;
+        }
+        self.tick()?;
+        Ok(())
     }
     fn check_parameter(
         &self,
@@ -2495,6 +2820,54 @@ pub(crate) fn is_comparison(op: BinOp) -> bool {
         op,
         BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
     )
+}
+// 元の条件と両枝だけから全補完で固定する値を求める。未知をBoolへ補わない。
+pub(crate) fn conditional_branch(
+    condition: Option<&Scalar>,
+    left: Option<&Scalar>,
+    right: Option<&Scalar>,
+    control: &Control,
+) -> Result<Option<Scalar>, ValidationFailure> {
+    control
+        .clone()
+        .checkpoint(Checkpoint::FiniteIteration)
+        .map_err(ValidationFailure::Stop)?;
+    let value = match condition {
+        Some(Scalar::Bool(true)) => left.cloned(),
+        Some(Scalar::Bool(false)) => right.cloned(),
+        None => {
+            let equal = if let Some((left, right)) = left.zip(right) {
+                if left.ty() != right.ty() {
+                    return Err("if の既知両枝の型が違う".into());
+                }
+                match (left, right) {
+                    (Scalar::Bool(left), Scalar::Bool(right)) => left == right,
+                    (
+                        Scalar::Subject {
+                            snapshot: a,
+                            subject: b,
+                            entity: c,
+                        },
+                        Scalar::Subject {
+                            snapshot: x,
+                            subject: y,
+                            entity: z,
+                        },
+                    ) => a == x && b == y && c == z,
+                    _ => numeric::binary(BinOp::Eq, left, right, control)? == Scalar::Bool(true),
+                }
+            } else {
+                false
+            };
+            if equal { left.cloned() } else { None }
+        }
+        _ => return Err("if の条件が Bool でない".into()),
+    };
+    control
+        .clone()
+        .checkpoint(Checkpoint::FiniteIteration)
+        .map_err(ValidationFailure::Stop)?;
+    Ok(value)
 }
 pub(crate) fn is_boolean_binary(op: BinOp) -> bool {
     matches!(op, BinOp::And | BinOp::Or | BinOp::Implies)

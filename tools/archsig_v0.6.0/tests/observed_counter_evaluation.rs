@@ -844,7 +844,7 @@ fn preparation_failures_retain_the_original_stage_and_have_no_evaluation() {
 fn unimplemented_valid_expression_quantification_and_answer_dependencies_are_not_results() {
     let law = String::from_utf8(LAW.to_vec()).unwrap().replace(
         "view amount",
-        "view conditional(s: State): Z = if true then s.count else 1;\n  view same(s: State): State = s;\n  view amount",
+        "view conditional(s: State): Z = match true { _ => s.count; };\n  view same(s: State): State = s;\n  view amount",
     );
     for asks in [
         vec!["x=evaluate(CountCheck.conditional,s=@v/s)"],
