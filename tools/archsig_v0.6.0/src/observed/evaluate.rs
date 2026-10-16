@@ -2,6 +2,7 @@
 use super::{
     PreparedObserved,
     control::{Checkpoint, Control, StopReason},
+    data,
     environment::{
         Environment, SourceAnalysis, conditional_branch, is_boolean_binary, is_comparison,
         partial_binary, scalar_from, supports_binary, unary,
@@ -238,7 +239,7 @@ impl Evaluator<'_, '_> {
             },
             arguments: self
                 .environment
-                .source_arguments(self.graph, &self.bindings)?,
+                .source_arguments(self.graph, span, &self.bindings)?,
             support: vec![],
             evidence: vec![],
             judgment: None,
@@ -306,6 +307,14 @@ impl Evaluator<'_, '_> {
             match &expr.kind {
                 ExprKind::Int(_) if matches!(ty, Type::Z | Type::Q | Type::Fp(_)) => {}
                 ExprKind::Bool(_) => {}
+                ExprKind::Dotted(_)
+                    if data::expression(self.environment.inputs.law(), id, self.control)?
+                        .is_some() =>
+                {
+                    self.environment
+                        .composite_children(id)?
+                        .ok_or_else(|| self.unsupported(span, "未対応Data constructor"))?;
+                }
                 ExprKind::Dotted(parts) => {
                     if parts.len() > 2 {
                         return Err(self.unsupported(span, "複数 field のドット列"));
@@ -328,6 +337,12 @@ impl Evaluator<'_, '_> {
                         parameter = Some(ty.clone());
                     }
                     if parameter.is_none()
+                        && let Some((_, _, binder)) =
+                            self.environment.pattern_binding(first.span, &first.name)?
+                    {
+                        parameter = Some(binder.ty);
+                    }
+                    if parameter.is_none()
                         && let Some(rhs) = self.environment.lexical_rhs(first.span, &first.name)?
                     {
                         parameter = self.environment.inputs.law().expr_type(rhs).cloned();
@@ -342,7 +357,7 @@ impl Evaluator<'_, '_> {
                     }
                     if parts.len() > 1
                         && !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
-                        && !numeric::is_numeric_type(&ty, self.control)?
+                        && !data::supported(&ty, self.environment.inputs.law(), self.control)?
                     {
                         return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
                     }
@@ -353,10 +368,13 @@ impl Evaluator<'_, '_> {
                         return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
                     }
                     if !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
-                        && !numeric::is_numeric_type(&ty, self.control)?
+                        && !data::supported(&ty, self.environment.inputs.law(), self.control)?
                     {
                         return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
                     }
+                }
+                ExprKind::Match { scrutinee, .. } => {
+                    self.prepare_source(*scrutinee)?;
                 }
                 ExprKind::Group(child) => {
                     self.prepare_source(*child)?;
@@ -543,6 +561,11 @@ impl Evaluator<'_, '_> {
                 )?;
                 self.finish(span, ty, Some(v), vec![], vec![], None, None, None)
             }
+            ExprKind::Dotted(_)
+                if data::expression(self.environment.inputs.law(), id, self.control)?.is_some() =>
+            {
+                self.composite(id, span, ty)
+            }
             ExprKind::Dotted(parts) => {
                 if parts.len() > 2 {
                     return Err(self.unsupported(span, "複数 field のドット列"));
@@ -560,7 +583,31 @@ impl Evaluator<'_, '_> {
                 }
                 // 宣言parameter と lexical alias を区別する。欠測の alias は
                 // RHS Evaluation を指し、通常の Binding.value を捏造しない。
-                let mut current = if let Some(argument) = self.formal.get(&first.name).cloned() {
+                let mut current = if let Some((input, known)) = self.environment.pattern_argument(
+                    self.graph,
+                    first.span,
+                    &first.name,
+                    &self.bindings,
+                )? {
+                    let (matching, _, binder) = self
+                        .environment
+                        .pattern_binding(first.span, &first.name)?
+                        .ok_or_else(|| Failure::Internal("pattern元binderがない".into()))?;
+                    let ExprKind::Match { scrutinee, .. } =
+                        self.environment.inputs.law().exprs[matching].kind
+                    else {
+                        unreachable!()
+                    };
+                    let child = self
+                        .completed
+                        .get(&scrutinee)
+                        .cloned()
+                        .ok_or_else(|| Failure::Internal("pattern実scrutineeが未完".into()))?;
+                    if child.evaluation != input {
+                        return Err(Failure::Internal("pattern元scrutineeが違う".into()));
+                    }
+                    self.lexical_result(first.span, binder.ty, Some(known), vec![child])?
+                } else if let Some(argument) = self.formal.get(&first.name).cloned() {
                     let NodeType::Evaluation(parameter_ty) =
                         &self.graph.get(argument.evaluation)?.ty
                     else {
@@ -631,6 +678,28 @@ impl Evaluator<'_, '_> {
             ExprKind::Field { base, name } => {
                 let base = self.eval(*base)?;
                 self.field(base, &name.name, span)
+            }
+            ExprKind::Match { scrutinee, arms } => {
+                let input = self.eval(*scrutinee)?;
+                let selected = data::select(
+                    self.environment.inputs.law(),
+                    id,
+                    input.value.map(|v| self.graph.scalar(v)).transpose()?,
+                    self.control,
+                )?;
+                let mut children = vec![input];
+                let known = if let Some(arm) = selected {
+                    let body = self.eval(arms[arm].body)?;
+                    let known = body
+                        .value
+                        .map(|v| self.graph.scalar(v).cloned())
+                        .transpose()?;
+                    children.push(body);
+                    known
+                } else {
+                    None
+                };
+                self.lexical_result(span, ty, known, children)
             }
             ExprKind::Let { name, value, body } => {
                 let rhs = self.eval(*value)?;
@@ -778,50 +847,58 @@ impl Evaluator<'_, '_> {
                 self.call(id, args, span, ty)
             }
             ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. } => {
-                let children = self
-                    .environment
-                    .composite_children(id)?
-                    .ok_or_else(|| self.unsupported(span, "数値組・射影・rat 以外の構成"))?;
-                let mut evaluated = Vec::new();
-                let mut arguments = Vec::new();
-                let mut values = Vec::new();
-                let mut known = true;
-                let mut scope = self.base.clone();
-                let mut support = Vec::new();
-                for child in children {
-                    self.tick(Checkpoint::FiniteIteration)?;
-                    let child = self.eval(child)?;
-                    scope.merge(&child.scope);
-                    support.extend(child.support.iter().cloned());
-                    if let Some(value) = child.value {
-                        arguments.push(value);
-                        values.push(self.graph.scalar(value)?.clone());
-                    } else {
-                        known = false;
-                    }
-                    evaluated.push(child);
-                    self.tick(Checkpoint::FiniteIteration)?;
-                }
-                support.sort();
-                support.dedup();
-                let value = if known {
-                    Some(self.value(
-                        self.environment.composite_value(id, &values)?,
-                        Rule::Input {
-                            kind: "law",
-                            location: Location::Law { span },
-                        },
-                        arguments,
-                        support,
-                        scope,
-                    )?)
-                } else {
-                    None
-                };
-                self.finish(span, ty, value, evaluated, vec![], None, None, None)
+                self.composite(id, span, ty)
             }
             _ => Err(self.unsupported(span, format!("式形 {:?}", expr.kind))),
         }
+    }
+    fn composite(
+        &mut self,
+        id: ExprId,
+        span: (usize, usize),
+        ty: Type,
+    ) -> Result<Evaluated, Failure> {
+        let children = self
+            .environment
+            .composite_children(id)?
+            .ok_or_else(|| self.unsupported(span, "数値組・射影・rat 以外の構成"))?;
+        let mut evaluated = Vec::new();
+        let mut arguments = Vec::new();
+        let mut values = Vec::new();
+        let mut known = true;
+        let mut scope = self.base.clone();
+        let mut support = Vec::new();
+        for child in children {
+            self.tick(Checkpoint::FiniteIteration)?;
+            let child = self.eval(child)?;
+            scope.merge(&child.scope);
+            support.extend(child.support.iter().cloned());
+            if let Some(value) = child.value {
+                arguments.push(value);
+                values.push(self.graph.scalar(value)?.clone());
+            } else {
+                known = false;
+            }
+            evaluated.push(child);
+            self.tick(Checkpoint::FiniteIteration)?;
+        }
+        support.sort();
+        support.dedup();
+        let value = if known {
+            Some(self.value(
+                self.environment.composite_value(id, &values)?,
+                Rule::Input {
+                    kind: "law",
+                    location: Location::Law { span },
+                },
+                arguments,
+                support,
+                scope,
+            )?)
+        } else {
+            None
+        };
+        self.finish(span, ty, value, evaluated, vec![], None, None, None)
     }
     fn call(
         &mut self,
@@ -956,7 +1033,7 @@ impl Evaluator<'_, '_> {
         let fullname = format!("{entity}.{name}");
         let field = self.environment.field(&s.snapshot, &s.id, &fullname)?;
         if !matches!(field.ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
-            && !numeric::is_numeric_type(&field.ty, self.control)?
+            && !data::supported(&field.ty, self.environment.inputs.law(), self.control)?
         {
             return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
         }
@@ -973,8 +1050,13 @@ impl Evaluator<'_, '_> {
                 value,
                 pointer,
             } => {
-                let value = scalar_from(value, &field.ty, self.control)?
-                    .ok_or_else(|| self.unsupported(span, "Z/Bool/Ref 以外の原始値読取り"))?;
+                let value = scalar_from(
+                    value,
+                    &field.ty,
+                    self.environment.inputs.law(),
+                    self.control,
+                )?
+                .ok_or_else(|| self.unsupported(span, "Z/Bool/Ref 以外の原始値読取り"))?;
                 let mut fact = fact;
                 fact.atom = Some(atom.clone());
                 let mut scope = self.base.clone();
@@ -5400,5 +5482,318 @@ reading Calc {{
             problems.is_empty(),
             "同じname_token内既存tickで3種類の停止を保持する: {problems:#?}"
         );
+    }
+    fn data_recheck_example(omitted: &[&str], requests: &[&str]) -> ObservedEvaluation {
+        let original = numeric_recheck_fixture(
+            &[],
+            r#"
+ view make(): Packet = Pair(1,2);
+ view matched(): Z = match Packet.Pair(7,7) { Pair(left,right) => let copy=right in left+copy; Swap(_,_) => 0; Empty => 0; };
+ view inner(x: Packet): Z = match x { Pair(left,right) => left; Swap(_,_) => 0; Empty => 0; };
+ view caller(): Z = inner(Pair(7,7))+inner(Pair(7,7));
+ view observed(s: Sample): Packet = s.packet;
+ view unknown(s: Sample): Z = match s.packet { Pair(left,right) => left; Swap(_,_) => 0; Empty => 0; };
+ view nested(): Z = match Envelope.Wrap(Pair(7,7)) { Wrap(Pair(left,_)) => left; _ => 0; };
+"#,
+        );
+        let definitions = std::str::from_utf8(original.definitions()[0].bytes()).unwrap()
+            .replace(r#""declarations":["#, r#""declarations":[
+{"kind":"data","name":"Numeric.Packet","meaning":"数値の組を区別する。","constructors":[{"name":"Pair","arguments":["Z","Z"],"meaning":"組。"},{"name":"Swap","arguments":["Z","Z"],"meaning":"別の組。"},{"name":"Empty","arguments":[],"meaning":"空。"}]},
+{"kind":"data","name":"Numeric.Envelope","meaning":"組を包む。","constructors":[{"name":"Wrap","arguments":[["Data","Numeric.Packet"]],"meaning":"包み。"}]},
+{"kind":"data","name":"Numeric.Other","meaning":"異なる型の組。","constructors":[{"name":"Pair","arguments":["Z","Z"],"meaning":"組。"}]},"#)
+            .replace(r#""fields":["#, r#""fields":[{"name":"packet","type":["Data","Numeric.Packet"],"meaning":"観測した組。"},"#);
+        let checked = crate::definition::check_definitions_controlled(
+            &[("definition0", definitions.as_bytes())],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        let previous = crate::definition::check_definitions_controlled(
+            &[("definition0", original.definitions()[0].bytes())],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        let old_digest = &previous.vocabularies["Numeric"].digest;
+        let new_digest = &checked.vocabularies["Numeric"].digest;
+        let law = std::str::from_utf8(original.law().bytes())
+            .unwrap()
+            .replace(old_digest, new_digest);
+        let mut map = std::str::from_utf8(original.archmap().bytes())
+            .unwrap()
+            .replace(old_digest, new_digest);
+        if !omitted.contains(&"packet") {
+            map = map.replace(r#""atoms":["#, r#""atoms":[{"id":"packet","subject":"sample","field":"Numeric.Sample.packet","value":{"tag":"Pair","args":["7","7"]},"origin":"values"},"#);
+        }
+        evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![definitions.into_bytes()],
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            requests,
+            &mut named_call_quiet(),
+        )
+        .unwrap()
+    }
+    fn data_rule_scalar(result: &ObservedEvaluation, source: &str, request: usize) -> usize {
+        result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                if result.contexts[index].request != request
+                    || !matches!(node.payload, Some(Payload::Scalar(_)))
+                {
+                    return None;
+                }
+                let Rule::Input {
+                    kind: "law",
+                    location: Location::Law { span },
+                } = &node.rule
+                else {
+                    return None;
+                };
+                (result
+                    .prepared
+                    .inputs()
+                    .sources()
+                    .law()
+                    .bytes()
+                    .get(span.0..span.1)
+                    == Some(source.as_bytes()))
+                .then_some(index)
+            })
+            .unwrap()
+    }
+    fn data_scalar_at(result: &ObservedEvaluation, index: usize) -> &Scalar {
+        match &result.nodes[index].payload {
+            Some(Payload::Scalar(scalar)) => scalar,
+            _ => panic!("通常Scalarでない"),
+        }
+    }
+    #[test]
+    fn data_constructors_recheck_family_tag_argument_order_and_payload_type_at_prefix() {
+        let result = data_recheck_example(&[], &["value=evaluate(Calc.make)"]);
+        assert_eq!(result.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let value = data_rule_scalar(&result, "Pair(1,2)", 0);
+        let prefix = &result.nodes[..=value];
+        rebuild_for_origin_and_support_recheck(&result, prefix).unwrap();
+        for mutation in 0..4 {
+            let mut changed = prefix.to_vec();
+            let node = &mut changed[value];
+            let Some(Payload::Scalar(Scalar::Data {
+                family,
+                constructor,
+                args,
+            })) = &mut node.payload
+            else {
+                unreachable!()
+            };
+            match mutation {
+                0 => {
+                    *family = "Numeric.Other".into();
+                    *constructor = "Numeric.Other.Pair".into();
+                    node.ty = NodeType::Value(Type::Data(family.clone()));
+                }
+                1 => *constructor = "Numeric.Packet.Swap".into(),
+                2 => {
+                    args.swap(0, 1);
+                    node.arguments.swap(0, 1);
+                }
+                _ => args[0] = Scalar::Q(1.into(), 1.into()),
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+        rebuild_for_origin_and_support_recheck(&result, prefix).unwrap();
+    }
+    #[test]
+    fn data_matches_recheck_selected_arm_binder_path_scope_and_support_at_prefix() {
+        let result = data_recheck_example(
+            &[],
+            &[
+                "value=evaluate(Calc.matched)",
+                "nested=evaluate(Calc.nested)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let binder = data_rule_scalar(&result, "left", 0);
+        let prefix = &result.nodes[..=binder];
+        rebuild_for_origin_and_support_recheck(&result, prefix).unwrap();
+        let right = data_rule_scalar(&result, "right", 0);
+        assert!(right < binder);
+        assert_eq!(
+            data_scalar_at(&result, binder),
+            data_scalar_at(&result, right)
+        );
+        // 同型同値でも別のconstructor引数位置を読む元名へ付け替えない。
+        let mut changed = prefix.to_vec();
+        changed[binder].rule = changed[right].rule.clone();
+        // rule単独をrightへ変えれば独立した正しいright読取りになるので、
+        // 元leftを主張するEvaluationまでのprefixで元使用出現との対応を検査する。
+        let evaluation = result.nodes.iter().enumerate().find_map(|(index, node)| {
+            matches!(&node.payload, Some(Payload::Evaluation { value: Some(value), .. }) if value.0 == binder).then_some(index)
+        }).unwrap();
+        changed.extend_from_slice(&result.nodes[changed.len()..=evaluation]);
+        rejects_named_prefix(&result, &changed);
+        for mutation in 0..2 {
+            let mut changed = prefix.to_vec();
+            if mutation == 0 {
+                changed[binder].scope.readings.insert("Foreign".into());
+            } else {
+                changed[binder].support.push(Fact {
+                    snapshot: "v".into(),
+                    subject: "sample".into(),
+                    field: None,
+                    atom: None,
+                });
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+        let root = result.answers[0].outputs["evaluation"].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=root]).unwrap();
+        let mut changed = result.nodes[..=root].to_vec();
+        let id = *result
+            .prepared
+            .inputs()
+            .law()
+            .declarations
+            .get("Calc.matched")
+            .map(|d| match &d.signature {
+                Signature::View { body, .. } => body,
+                _ => unreachable!(),
+            })
+            .unwrap();
+        let ExprKind::Match { arms, .. } = &result.prepared.inputs().law().exprs[id].kind else {
+            unreachable!()
+        };
+        let selected = match &changed[root].payload {
+            Some(Payload::Evaluation { parts, .. }) => parts[0].children[1],
+            _ => unreachable!(),
+        };
+        let source = match &changed[selected.0].payload {
+            Some(Payload::Evaluation { expression, .. }) => *expression,
+            _ => unreachable!(),
+        };
+        let wrong_span = result.prepared.inputs().law().exprs[arms[1].body].span;
+        let Some(Payload::Expression { location, .. }) = &mut changed[source.0].payload else {
+            unreachable!()
+        };
+        *location = Location::Law { span: wrong_span };
+        changed[source.0].rule = Rule::Input {
+            kind: "law",
+            location: Location::Law { span: wrong_span },
+        };
+        rejects_named_prefix(&result, &changed);
+    }
+    #[test]
+    fn data_matches_reject_equal_binder_producers_from_other_calls_and_requests() {
+        let result = data_recheck_example(
+            &[],
+            &[
+                "first=evaluate(Calc.caller)",
+                "second=evaluate(Calc.caller)",
+            ],
+        );
+        assert_eq!(result.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let binders: Vec<_> = result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                let Rule::Input {
+                    kind: "law",
+                    location: Location::Law { span },
+                } = &node.rule
+                else {
+                    return None;
+                };
+                (matches!(node.payload, Some(Payload::Scalar(Scalar::Z(_))))
+                    && result
+                        .prepared
+                        .inputs()
+                        .sources()
+                        .law()
+                        .bytes()
+                        .get(span.0..span.1)
+                        == Some(b"left"))
+                .then_some(index)
+            })
+            .collect();
+        assert_eq!(binders.len(), 4);
+        for (earlier, later) in [(binders[0], binders[1]), (binders[0], binders[2])] {
+            assert_eq!(
+                data_scalar_at(&result, earlier),
+                data_scalar_at(&result, later)
+            );
+            assert_ne!(result.contexts[earlier], result.contexts[later]);
+            let evaluation = result.nodes.iter().enumerate().find_map(|(index,node)| matches!(&node.payload,Some(Payload::Evaluation{value:Some(value),..}) if value.0==later).then_some(index)).unwrap();
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=evaluation]).unwrap();
+            let mut changed = result.nodes[..=evaluation].to_vec();
+            let Some(Payload::Evaluation { value, parts, .. }) = &mut changed[evaluation].payload
+            else {
+                unreachable!()
+            };
+            *value = Some(NodeRef(earlier));
+            parts[0].value = *value;
+            for argument in &mut changed[evaluation].arguments {
+                if argument.0 == later {
+                    *argument = NodeRef(earlier);
+                }
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+    }
+    #[test]
+    fn unknown_data_match_prefix_keeps_missing_without_tag_binder_or_free_parameter() {
+        let result = data_recheck_example(
+            &["packet"],
+            &[
+                "direct=evaluate(Calc.observed,s=@v/sample)",
+                "unknown=evaluate(Calc.unknown,s=@v/sample)",
+            ],
+        );
+        assert_eq!(result.status(), "partial");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let root = result.answers[1].outputs["evaluation"].0;
+        let Some(Payload::Evaluation {
+            parts,
+            value,
+            expression,
+            ..
+        }) = &result.nodes[root].payload
+        else {
+            unreachable!()
+        };
+        assert!(value.is_none());
+        assert_eq!(parts[0].children.len(), 1);
+        assert!(
+            result
+                .nodes
+                .iter()
+                .all(|n| !matches!(n.payload, Some(Payload::Scalar(Scalar::Data { .. }))))
+        );
+        assert!(result.answers[1].reasons.iter().any(|r| {
+            r.missing
+                .iter()
+                .any(|f| f.field.as_deref() == Some("Numeric.Sample.packet") && f.atom.is_none())
+        }));
+        let source = expression.0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=source]).unwrap();
+        let mut changed = result.nodes[..=source].to_vec();
+        let Some(Payload::Expression { parameters, .. }) = &mut changed[source].payload else {
+            unreachable!()
+        };
+        parameters.push(("left".into(), Type::Z));
+        rejects_named_prefix(&result, &changed);
+        let mut changed = result.nodes[..=root].to_vec();
+        let Some(Payload::Evaluation { parts, .. }) = &mut changed[root].payload else {
+            unreachable!()
+        };
+        let child = parts[0].children[0];
+        parts[0].children.push(child);
+        changed[root].arguments.insert(2, child);
+        rejects_named_prefix(&result, &changed);
     }
 }

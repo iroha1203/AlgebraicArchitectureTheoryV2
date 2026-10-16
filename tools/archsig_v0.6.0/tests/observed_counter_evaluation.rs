@@ -841,13 +841,56 @@ fn preparation_failures_retain_the_original_stage_and_have_no_evaluation() {
 }
 
 #[test]
-fn unimplemented_valid_expression_quantification_and_answer_dependencies_are_not_results() {
+fn known_bool_wildcard_match_keeps_counter_value_and_original_children() {
+    let law = String::from_utf8(LAW.to_vec()).unwrap().replace(
+        "view amount",
+        "view conditional(s: State): Z = match true { _ => s.count; };\n  view amount",
+    );
+    let result = run(
+        sources(law.as_bytes(), MAP),
+        &["x=evaluate(CountCheck.conditional,s=@v/s)"],
+    );
+    audit_dag(&result);
+    let a = answer(&result, "x");
+    assert_eq!(field(a, "status"), &Json::str("established"));
+    assert!(!obj(a).contains_key("claim"));
+    let ns = nodes(&result);
+    assert_eq!(
+        value(typed(&ns, field(field(a, "outputs"), "value"), "Z")),
+        &Json::str("2")
+    );
+    let e = typed(&ns, field(field(a, "outputs"), "evaluation"), "Evaluation");
+    let parts = arr(field(value(e), "parts"));
+    assert_eq!(parts.len(), 1);
+    let at = span(field(&parts[0], "location"));
+    assert_eq!(&law.as_bytes()[at.0..at.1], b"match true { _ => s.count; }");
+    let children = arr(field(&parts[0], "children"));
+    assert_eq!(children.len(), 2);
+    for (child, original, ty, expected) in [
+        (&children[0], b"true".as_slice(), "Bool", Json::Bool(true)),
+        (&children[1], b"s.count".as_slice(), "Z", Json::str("2")),
+    ] {
+        let child = typed(&ns, child, "Evaluation");
+        let part = &arr(field(value(child), "parts"))[0];
+        let at = span(field(part, "location"));
+        assert_eq!(&law.as_bytes()[at.0..at.1], original);
+        assert_eq!(
+            value(typed(&ns, field(value(child), "value"), ty)),
+            &expected
+        );
+        for fact in arr(field(child, "support")) {
+            assert!(arr(field(e, "support")).contains(fact));
+        }
+    }
+}
+
+#[test]
+fn unimplemented_valid_quantification_and_answer_dependencies_are_not_results() {
     let law = String::from_utf8(LAW.to_vec()).unwrap().replace(
         "view amount",
         "view conditional(s: State): Z = match true { _ => s.count; };\n  view same(s: State): State = s;\n  view amount",
     );
     for asks in [
-        vec!["x=evaluate(CountCheck.conditional,s=@v/s)"],
         vec!["x=check(CountCheck.nonnegative)"],
         vec![
             "a=evaluate(CountCheck.same,s=@v/s)",

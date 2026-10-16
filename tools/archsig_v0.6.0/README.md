@@ -32,6 +32,13 @@
   引数なし・複数引数・入れ子・import aliasを扱い、呼出しごとに元の引数評価・parameter束縛・
   callee bodyの導出を保持し、呼出し元のlexical bindingへ戻る。
   未観測の実引数は欠測理由を保ち、その引数を使わないbodyは既知値を返せる。
+  Z/Q/Fp/数値Tuple/Bool/原始Refと入れ子の非再帰dataを引数に持つdataについて、
+  観測field・constructorを評価し、data型・正規constructor・引数の型と順序を保つ。
+  これらのdata値をlet/if/viewで渡し、構造的な等値・不等値を計算する。
+  既知値のmatchはconstructor・wildcard・名前・入れ子patternを扱い、
+  pattern束縛を元scrutineeのconstructor引数位置へ接続する。
+  data以外の既知値もwildcard・名前patternで受ける。
+  未観測dataのmatchは元missingを保ち、constructorやpattern束縛値を作らない。
   ドット列は束縛変数と一つの field まで扱う。
   Bool は false and x / true or x などを全補完で確定し、元の両子評価と欠測理由を保持する。
   Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
@@ -40,7 +47,8 @@
   明示 guard と元の body の評価・支持を条件付き Law の導出へ接続する。
   型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
   欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
-  その他の式形・未束縛 parameter の量化・Answer 由来の束縛・
+  上記以外のpayloadを持つdata・再帰dataの評価、その他の式形・
+  未束縛 parameter の量化・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   未確定の参照からのfield読取り・動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の

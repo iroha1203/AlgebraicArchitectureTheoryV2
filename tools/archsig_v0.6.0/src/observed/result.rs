@@ -78,6 +78,11 @@ pub(crate) enum Scalar {
         value: BigInt,
     },
     Tuple(Vec<Scalar>),
+    Data {
+        family: String,
+        constructor: String,
+        args: Vec<Scalar>,
+    },
     Bool(bool),
     Subject {
         snapshot: String,
@@ -92,6 +97,7 @@ impl Scalar {
             Self::Q(_, _) => Type::Q,
             Self::Fp { modulus, .. } => Type::Fp(modulus.clone()),
             Self::Tuple(items) => Type::Tuple(items.iter().map(Scalar::ty).collect()),
+            Self::Data { family, .. } => Type::Data(family.clone()),
             Self::Bool(_) => Type::Bool,
             Self::Subject { entity, .. } => Type::Ref(entity.clone()),
         })
@@ -102,6 +108,15 @@ impl Scalar {
             Self::Q(n, d) => Json::Arr(vec![Json::str(n.to_string()), Json::str(d.to_string())]),
             Self::Fp { value, .. } => Json::str(value.to_string()),
             Self::Tuple(items) => Json::Arr(items.iter().map(Scalar::wire).collect()),
+            Self::Data {
+                constructor, args, ..
+            } => Json::obj([
+                (
+                    "tag",
+                    Json::str(constructor.rsplit('.').next().unwrap_or(constructor)),
+                ),
+                ("args", Json::Arr(args.iter().map(Scalar::wire).collect())),
+            ]),
             Self::Bool(b) => Json::Bool(*b),
             Self::Subject {
                 snapshot, subject, ..
@@ -113,11 +128,11 @@ impl Scalar {
 impl Drop for Scalar {
     fn drop(&mut self) {
         let mut pending = Vec::new();
-        if let Self::Tuple(items) = self {
+        if let Self::Tuple(items) | Self::Data { args: items, .. } = self {
             pending.append(items);
         }
         while let Some(mut value) = pending.pop() {
-            if let Self::Tuple(items) = &mut value {
+            if let Self::Tuple(items) | Self::Data { args: items, .. } = &mut value {
                 pending.append(items);
             }
         }
@@ -134,6 +149,16 @@ impl std::fmt::Debug for Scalar {
                 .field("value", value)
                 .finish(),
             Self::Tuple(items) => f.debug_tuple("Tuple").field(items).finish(),
+            Self::Data {
+                family,
+                constructor,
+                args,
+            } => f
+                .debug_struct("Data")
+                .field("family", family)
+                .field("constructor", constructor)
+                .field("args", args)
+                .finish(),
             Self::Bool(b) => f.debug_tuple("Bool").field(b).finish(),
             Self::Subject {
                 snapshot,
@@ -158,6 +183,15 @@ impl Clone for Scalar {
                 value: value.clone(),
             },
             Self::Tuple(items) => Self::Tuple(items.clone()),
+            Self::Data {
+                family,
+                constructor,
+                args,
+            } => Self::Data {
+                family: family.clone(),
+                constructor: constructor.clone(),
+                args: args.clone(),
+            },
             Self::Bool(b) => Self::Bool(*b),
             Self::Subject {
                 snapshot,
@@ -187,6 +221,18 @@ impl PartialEq for Scalar {
                 },
             ) => p == q && a == b,
             (Self::Tuple(a), Self::Tuple(b)) => a == b,
+            (
+                Self::Data {
+                    family: a,
+                    constructor: b,
+                    args: c,
+                },
+                Self::Data {
+                    family: d,
+                    constructor: e,
+                    args: f,
+                },
+            ) => a == d && b == e && c == f,
             (Self::Bool(a), Self::Bool(b)) => a == b,
             (
                 Self::Subject {
@@ -971,7 +1017,7 @@ impl Graph {
         self.reasons(&node.reasons)?;
         match (&node.ty, &node.payload) {
             (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {
-                super::numeric::check(s, &self.control)?;
+                super::data::check_shape(s, &self.control)?;
             }
             (NodeType::Expression(_), Some(Payload::Expression { bindings, .. })) => {
                 self.bindings(bindings)?

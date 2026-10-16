@@ -1,6 +1,7 @@
 //! 不変の原始観測表からの参照・slot 読取りと、生成 leaf の元入力照合。
 use super::{
     control::{Checkpoint, Control, StopReason},
+    data,
     input::CheckedInputs,
     numeric,
     request::{QuestionKind, Request, Selector},
@@ -37,6 +38,16 @@ struct SourceValue {
     known_value: Option<Scalar>,
     support: Vec<Fact>,
     scalar_scope: Option<Scope>,
+}
+
+#[derive(Clone)]
+enum LexicalOrigin {
+    Let(usize),
+    Pattern {
+        matching: usize,
+        arm: usize,
+        binder: data::Binder,
+    },
 }
 
 type SourceCacheEntry = (
@@ -332,7 +343,7 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         if let Some(Payload::Scalar(scalar)) = &node.payload {
-            numeric::check(scalar, &self.control)?;
+            data::check(scalar, self.inputs.law(), &self.control)?;
             match &node.rule {
                 Rule::Input {
                     kind: "subject",
@@ -369,7 +380,8 @@ impl<'a> Environment<'a> {
                                 value, pointer: p, ..
                             } = &field.slot
                                 && p == pointer
-                                && scalar_from(value, &field.ty, &self.control)?.as_ref()
+                                && scalar_from(value, &field.ty, self.inputs.law(), &self.control)?
+                                    .as_ref()
                                     == Some(scalar)
                             {
                                 found = true;
@@ -389,39 +401,53 @@ impl<'a> Environment<'a> {
                     location: Location::Law { span },
                 } => {
                     let law = self.inputs.law();
-                    let id = *self.expressions.get(span).ok_or("原 AST がない")?;
-                    let expr = (id, &law.exprs[id]);
-                    if law.expr_type(expr.0) != Some(&scalar.ty()) {
+                    let id = self.expressions.get(span).copied();
+                    if id.is_some_and(|id| law.expr_type(id) != Some(&scalar.ty())) {
                         return Err("導出値が元式の型に合わない".into());
                     }
-                    let computed = match &expr.1.kind {
-                        ExprKind::Call { .. } if self.named_view(id)?.is_some() => self
-                            .call_source_analysis(graph, node, limit)?
+                    let computed = if let Some(id) = id {
+                        match &law.exprs[id].kind {
+                            ExprKind::Call { .. } if self.named_view(id)?.is_some() => self
+                                .call_source_analysis(graph, node, limit)?
+                                .known_value
+                                .ok_or("call結果が確定しない")?,
+                            ExprKind::Let { .. } | ExprKind::If { .. } | ExprKind::Match { .. } => {
+                                self.lexical_source_analysis(graph, node, limit)?
+                                    .known_value
+                                    .ok_or("let/if 値が全補完で確定しない")?
+                            }
+                            ExprKind::Binary { op, .. } if is_boolean_binary(*op) => self
+                                .logic_source_analysis(graph, node, limit)?
+                                .known_value
+                                .ok_or("Bool 論理値が全補完で確定しない")?,
+                            ExprKind::Unary { op: UnOp::Not, .. } => self
+                                .logic_source_analysis(graph, node, limit)?
+                                .known_value
+                                .ok_or("Bool 否定値が確定しない")?,
+                            ExprKind::Dotted(_)
+                                if data::expression(law, id, &self.control)?.is_none() =>
+                            {
+                                self.lexical_source_analysis(graph, node, limit)?
+                                    .known_value
+                                    .ok_or("pattern値が確定しない")?
+                            }
+                            ExprKind::Dotted(_)
+                            | ExprKind::Int(_)
+                            | ExprKind::Bool(_)
+                            | ExprKind::Binary { .. }
+                            | ExprKind::Tuple(_)
+                            | ExprKind::Index { .. }
+                            | ExprKind::Call { .. }
+                            | ExprKind::Unary { op: UnOp::Neg, .. } => self
+                                .scalar_source_analysis(graph, node, limit)?
+                                .known_value
+                                .ok_or("元 Source で生成値が確定しない")?,
+                            _ => return Err("元式に対する値検査がない".into()),
+                        }
+                    } else {
+                        self.lexical_source_analysis(graph, node, limit)?
                             .known_value
-                            .ok_or("call結果が確定しない")?,
-                        ExprKind::Let { .. } | ExprKind::If { .. } => self
-                            .lexical_source_analysis(graph, node, limit)?
-                            .known_value
-                            .ok_or("let/if 値が全補完で確定しない")?,
-                        ExprKind::Binary { op, .. } if is_boolean_binary(*op) => self
-                            .logic_source_analysis(graph, node, limit)?
-                            .known_value
-                            .ok_or("Bool 論理値が全補完で確定しない")?,
-                        ExprKind::Unary { op: UnOp::Not, .. } => self
-                            .logic_source_analysis(graph, node, limit)?
-                            .known_value
-                            .ok_or("Bool 否定値が確定しない")?,
-                        ExprKind::Int(_)
-                        | ExprKind::Bool(_)
-                        | ExprKind::Binary { .. }
-                        | ExprKind::Tuple(_)
-                        | ExprKind::Index { .. }
-                        | ExprKind::Call { .. }
-                        | ExprKind::Unary { op: UnOp::Neg, .. } => self
-                            .scalar_source_analysis(graph, node, limit)?
-                            .known_value
-                            .ok_or("元 Source で生成値が確定しない")?,
-                        _ => return Err("元式に対する値検査がない".into()),
+                            .ok_or("pattern fragment値がない")?
                     };
                     if &computed != scalar {
                         return Err("生成算術が元式に合わない".into());
@@ -472,7 +498,7 @@ impl<'a> Environment<'a> {
                 return Err("元Sourceの規則・支持・証拠が違う".into());
             }
             if let Some(Payload::Expression { bindings, .. }) = &node.payload
-                && node.arguments != self.source_arguments(graph, bindings)?
+                && node.arguments != self.source_arguments(graph, *span, bindings)?
             {
                 return Err("Sourceの元束縛・call実引数辺が違う".into());
             }
@@ -516,6 +542,11 @@ impl<'a> Environment<'a> {
                     && let NodeType::Evaluation(ty) = &graph.get(argument)?.ty
                 {
                     expected = Some(ty.clone());
+                }
+                if expected.is_none()
+                    && let Some((_, _, binder)) = self.pattern_binding(*span, source)?
+                {
+                    expected = Some(binder.ty);
                 }
                 if expected.is_none() {
                     let rhs = self
@@ -660,7 +691,16 @@ impl<'a> Environment<'a> {
                     .get(&span)
                     .map(|id| &self.inputs.law().exprs[*id]);
                 let generated_here = match ast.map(|e| &e.kind) {
-                    Some(ExprKind::Dotted(parts)) => parts.len() > 1,
+                    Some(ExprKind::Dotted(parts)) => {
+                        parts.len() > 1
+                            || data::expression(
+                                self.inputs.law(),
+                                *self.expressions.get(&span).ok_or("名元ASTがない")?,
+                                &self.control,
+                            )?
+                            .is_some()
+                            || self.pattern_binding(span, &parts[0].name)?.is_some()
+                    }
                     Some(
                         ExprKind::Int(_)
                         | ExprKind::Bool(_)
@@ -670,9 +710,17 @@ impl<'a> Environment<'a> {
                         | ExprKind::Index { .. }
                         | ExprKind::Let { .. }
                         | ExprKind::If { .. }
+                        | ExprKind::Match { .. }
                         | ExprKind::Field { .. }
                         | ExprKind::Call { .. },
                     ) => true,
+                    None => {
+                        if let Some(name) = self.find_name_token(span)? {
+                            self.pattern_binding(span, name)?.is_some()
+                        } else {
+                            false
+                        }
+                    }
                     _ => false,
                 };
                 if generated_here
@@ -697,6 +745,7 @@ impl<'a> Environment<'a> {
                             | ExprKind::Call { .. }
                             | ExprKind::Let { .. }
                             | ExprKind::If { .. }
+                            | ExprKind::Match { .. }
                     )
                 ) && let Some(value) = value
                 {
@@ -712,7 +761,31 @@ impl<'a> Environment<'a> {
                     }
                     self.tick()?;
                 }
+                if generated_here
+                    && (ast.is_none()
+                        || matches!(ast.map(|e| &e.kind), Some(ExprKind::Dotted(parts)) if parts.len() == 1 || data::expression(self.inputs.law(), *self.expressions.get(&span).ok_or("名元ASTがない")?, &self.control)?.is_some()))
+                    && let Some(value) = value
+                    && !matches!(&graph.get(*value)?.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if *actual == span)
+                {
+                    return Err("constructor/binderの生成規則・元出現が違う".into());
+                }
                 let expected = match ast.map(|e| &e.kind) {
+                    Some(ExprKind::Match { scrutinee, arms }) => {
+                        let input = *children.first().ok_or("match実scrutinee辺がない")?;
+                        let known = self
+                            .evaluation(graph, input)?
+                            .2
+                            .map(|r| graph.scalar(r))
+                            .transpose()?;
+                        let id = *self.expressions.get(&span).ok_or("match元ASTがない")?;
+                        let mut spans = vec![self.inputs.law().exprs[*scrutinee].span];
+                        if let Some(arm) =
+                            data::select(self.inputs.law(), id, known, &self.control)?
+                        {
+                            spans.push(self.inputs.law().exprs[arms[arm].body].span);
+                        }
+                        spans
+                    }
                     Some(ExprKind::Let { value, body, .. }) => vec![
                         self.inputs.law().exprs[*value].span,
                         self.inputs.law().exprs[*body].span,
@@ -726,6 +799,25 @@ impl<'a> Environment<'a> {
                         self.inputs.law().exprs[*then_branch].span,
                         self.inputs.law().exprs[*else_branch].span,
                     ],
+                    Some(ExprKind::Dotted(_))
+                        if data::expression(
+                            self.inputs.law(),
+                            *self.expressions.get(&span).ok_or("constructor元式がない")?,
+                            &self.control,
+                        )?
+                        .is_some() =>
+                    {
+                        vec![]
+                    }
+                    Some(ExprKind::Dotted(parts))
+                        if parts.len() == 1
+                            && self.pattern_binding(span, &parts[0].name)?.is_some() =>
+                    {
+                        let (input, _) = self
+                            .pattern_argument(graph, span, &parts[0].name, bindings)?
+                            .ok_or("pattern引数がない")?;
+                        vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
+                    }
                     Some(ExprKind::Dotted(parts)) if parts.len() == 1 => self
                         .lexical_rhs(span, &parts[0].name)?
                         .map(|rhs| vec![self.inputs.law().exprs[rhs].span])
@@ -757,9 +849,15 @@ impl<'a> Environment<'a> {
                             &self.inputs.sources().law().bytes()[span.0..span.1],
                         )
                         .map_err(|_| "lexical token がUTF8でない")?;
-                        self.lexical_rhs(span, token)?
-                            .map(|rhs| vec![self.inputs.law().exprs[rhs].span])
-                            .unwrap_or_default()
+                        if let Some((input, _)) =
+                            self.pattern_argument(graph, span, token, bindings)?
+                        {
+                            vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
+                        } else {
+                            self.lexical_rhs(span, token)?
+                                .map(|rhs| vec![self.inputs.law().exprs[rhs].span])
+                                .unwrap_or_default()
+                        }
                     }
                     _ => vec![],
                 };
@@ -809,6 +907,21 @@ impl<'a> Environment<'a> {
                     return Err("比較以外の式に残差がある".into());
                 }
                 match ast.map(|e| &e.kind) {
+                    Some(ExprKind::Match { .. }) => {
+                        let known = child_values
+                            .get(1)
+                            .copied()
+                            .flatten()
+                            .map(|r| graph.scalar(r).cloned())
+                            .transpose()?;
+                        match (known, value) {
+                            (Some(expected), Some(result))
+                                if graph.scalar(*result)? == &expected
+                                    && graph.get(*result)?.arguments == *children => {}
+                            (None, None) => {}
+                            _ => return Err("match元scrutinee・選択arm・結果辺が違う".into()),
+                        }
+                    }
                     Some(ExprKind::Let { .. } | ExprKind::If { .. }) => {
                         let known = match ast.map(|e| &e.kind) {
                             Some(ExprKind::Let { .. }) => child_values[1]
@@ -962,6 +1075,21 @@ impl<'a> Environment<'a> {
                         (None, None) => {}
                         _ => return Err("単項演算の子値と結果値の有無が違う".into()),
                     },
+                    Some(ExprKind::Dotted(_))
+                        if data::expression(
+                            self.inputs.law(),
+                            *self.expressions.get(&span).ok_or("constructor元式がない")?,
+                            &self.control,
+                        )?
+                        .is_some() =>
+                    {
+                        let id = *self.expressions.get(&span).ok_or("constructor元式がない")?;
+                        if value.map(|r| graph.scalar(r)).transpose()?
+                            != Some(&self.composite_value(id, &[])?)
+                        {
+                            return Err("零引数constructor値が違う".into());
+                        }
+                    }
                     Some(ExprKind::Dotted(parts)) => {
                         if parts.len() == 1 {
                             self.check_name(
@@ -1106,21 +1234,60 @@ impl<'a> Environment<'a> {
             else {
                 return Err("let/if 値に元出現がない".into());
             };
-            let id = *self.expressions.get(span).ok_or("let/if 元式がない")?;
-            let operands = match self.inputs.law().exprs[id].kind {
-                ExprKind::Let { value, body, .. } => vec![value, body],
-                ExprKind::If {
-                    cond,
-                    then_branch,
-                    else_branch,
-                } => vec![cond, then_branch, else_branch],
-                _ => return Err("let/if 値の元式形が違う".into()),
+            let id = self.expressions.get(span).copied();
+            let operands = if let Some(id) = id {
+                match self.inputs.law().exprs[id].kind {
+                    ExprKind::Let { value, body, .. } => vec![value, body],
+                    ExprKind::Match {
+                        scrutinee,
+                        ref arms,
+                    } => {
+                        let input = *node
+                            .arguments
+                            .first()
+                            .ok_or("match生成値にscrutinee辺がない")?;
+                        let value = self
+                            .evaluation(graph, input)?
+                            .2
+                            .map(|v| graph.scalar(v))
+                            .transpose()?;
+                        let arm = data::select(self.inputs.law(), id, value, &self.control)?
+                            .ok_or("未知matchに生成値がある")?;
+                        vec![scrutinee, arms[arm].body]
+                    }
+                    ExprKind::Dotted(ref parts) if parts.len() == 1 => {
+                        let (matching, _, _) = self
+                            .pattern_binding(*span, &parts[0].name)?
+                            .ok_or("生成値の元patternがない")?;
+                        let ExprKind::Match { scrutinee, .. } =
+                            self.inputs.law().exprs[matching].kind
+                        else {
+                            unreachable!()
+                        };
+                        vec![scrutinee]
+                    }
+                    ExprKind::If {
+                        cond,
+                        then_branch,
+                        else_branch,
+                    } => vec![cond, then_branch, else_branch],
+                    _ => return Err("let/if 値の元式形が違う".into()),
+                }
+            } else {
+                let (matching, _, _) = self
+                    .pattern_binding(*span, self.name_token(*span)?)?
+                    .ok_or("fragmentの元patternがない")?;
+                let ExprKind::Match { scrutinee, .. } = self.inputs.law().exprs[matching].kind
+                else {
+                    unreachable!()
+                };
+                vec![scrutinee]
             };
             let Some(Payload::Scalar(scalar)) = &node.payload else {
                 return Err("let/if 結果が通常値でない".into());
             };
             if node.ty != NodeType::Value(scalar.ty())
-                || self.inputs.law().expr_type(id) != Some(&scalar.ty())
+                || id.is_some_and(|id| self.inputs.law().expr_type(id) != Some(&scalar.ty()))
                 || node.arguments.len() != operands.len()
             {
                 return Err("let/if 値の元型・引数数が違う".into());
@@ -1175,7 +1342,7 @@ impl<'a> Environment<'a> {
                             arguments.push(binding.value);
                             self.tick()?;
                         }
-                        if self.source_arguments(graph, bindings)? != source.arguments {
+                        if self.source_arguments(graph, *span, bindings)? != source.arguments {
                             return Err("let/if Source の引数と束縛が違う".into());
                         }
                         self.validate_at(graph, source, index)
@@ -1231,6 +1398,9 @@ impl<'a> Environment<'a> {
             let law = self.inputs.law();
             let operands = match law.exprs[id].kind {
                 ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
+                ExprKind::Dotted(_) if data::expression(law, id, &self.control)?.is_some() => {
+                    vec![]
+                }
                 ExprKind::Unary {
                     op: UnOp::Neg,
                     operand,
@@ -1291,7 +1461,7 @@ impl<'a> Environment<'a> {
                         arguments.push(binding.value);
                         self.tick()?;
                     }
-                    if source.arguments != self.source_arguments(graph, bindings)? {
+                    if source.arguments != self.source_arguments(graph, *span, bindings)? {
                         return Err("own Source の引数と束縛が違う".into());
                     }
                     self.validate_at(graph, source, source_index)?;
@@ -1416,7 +1586,7 @@ impl<'a> Environment<'a> {
                         arguments.push(binding.value);
                         self.tick()?;
                     }
-                    if source.arguments != self.source_arguments(graph, bindings)? {
+                    if source.arguments != self.source_arguments(graph, *span, bindings)? {
                         return Err("数値等号 Source の引数と束縛が違う".into());
                     }
                     self.validate_at(graph, source, source_index)?;
@@ -1647,7 +1817,8 @@ impl<'a> Environment<'a> {
                     let Slot::Known { value: actual, .. } = &field.slot else {
                         return Err("Atom支持が欠測slotを指す".into());
                     };
-                    if scalar_from(actual, &field.ty, &self.control)?.as_ref() != Some(value)
+                    if scalar_from(actual, &field.ty, self.inputs.law(), &self.control)?.as_ref()
+                        != Some(value)
                         || node.arguments.len() != 1
                     {
                         return Err("Atom支持の原始値・owner引数数が違う".into());
@@ -1667,35 +1838,50 @@ impl<'a> Environment<'a> {
                     kind: "law",
                     location: Location::Law { span },
                 } => {
-                    let expr = &self.inputs.law().exprs
-                        [*self.expressions.get(span).ok_or("値支持の元ASTがない")?];
-                    match expr.kind {
-                        ExprKind::Call { .. }
-                            if self
-                                .named_view(*self.expressions.get(span).ok_or("call ASTがない")?)?
-                                .is_some() =>
-                        {
-                            self.call_source_analysis(graph, node, limit)?.support
+                    if let Some(&id) = self.expressions.get(span) {
+                        match self.inputs.law().exprs[id].kind {
+                            ExprKind::Call { .. }
+                                if self
+                                    .named_view(
+                                        *self.expressions.get(span).ok_or("call ASTがない")?,
+                                    )?
+                                    .is_some() =>
+                            {
+                                self.call_source_analysis(graph, node, limit)?.support
+                            }
+                            ExprKind::Let { .. } | ExprKind::If { .. } | ExprKind::Match { .. } => {
+                                self.lexical_source_analysis(graph, node, limit)?.support
+                            }
+                            ExprKind::Binary { op, .. } if is_boolean_binary(op) => {
+                                self.logic_source_analysis(graph, node, limit)?.support
+                            }
+                            ExprKind::Unary { op: UnOp::Not, .. } => {
+                                self.logic_source_analysis(graph, node, limit)?.support
+                            }
+                            ExprKind::Dotted(_)
+                                if data::expression(
+                                    self.inputs.law(),
+                                    *self.expressions.get(span).ok_or("constructor元式がない")?,
+                                    &self.control,
+                                )?
+                                .is_none() =>
+                            {
+                                self.lexical_source_analysis(graph, node, limit)?.support
+                            }
+                            ExprKind::Dotted(_)
+                            | ExprKind::Int(_)
+                            | ExprKind::Bool(_)
+                            | ExprKind::Binary { .. }
+                            | ExprKind::Tuple(_)
+                            | ExprKind::Index { .. }
+                            | ExprKind::Call { .. }
+                            | ExprKind::Unary { .. } => {
+                                self.scalar_source_analysis(graph, node, limit)?.support
+                            }
+                            _ => return Err("値支持の未実装元式".into()),
                         }
-                        ExprKind::Let { .. } | ExprKind::If { .. } => {
-                            self.lexical_source_analysis(graph, node, limit)?.support
-                        }
-                        ExprKind::Binary { op, .. } if is_boolean_binary(op) => {
-                            self.logic_source_analysis(graph, node, limit)?.support
-                        }
-                        ExprKind::Unary { op: UnOp::Not, .. } => {
-                            self.logic_source_analysis(graph, node, limit)?.support
-                        }
-                        ExprKind::Int(_)
-                        | ExprKind::Bool(_)
-                        | ExprKind::Binary { .. }
-                        | ExprKind::Tuple(_)
-                        | ExprKind::Index { .. }
-                        | ExprKind::Call { .. }
-                        | ExprKind::Unary { .. } => {
-                            self.scalar_source_analysis(graph, node, limit)?.support
-                        }
-                        _ => return Err("値支持の未実装元式".into()),
+                    } else {
+                        self.lexical_source_analysis(graph, node, limit)?.support
                     }
                 }
                 Rule::Construction("evaluation") if matches!(value, Scalar::Bool(_)) => {
@@ -1883,6 +2069,17 @@ impl<'a> Environment<'a> {
         let Some(ty) = law.expr_type(id) else {
             return Ok(None);
         };
+        if let Some((_, args)) = data::expression(law, id, &self.control)? {
+            if !data::supported(ty, law, &self.control)? {
+                return Err(ValidationFailure::UnsupportedExpression {
+                    location: Location::Law {
+                        span: law.exprs[id].span,
+                    },
+                    feature: "未対応payloadまたは再帰Dataのconstructor".into(),
+                });
+            }
+            return Ok(Some(args));
+        }
         if !numeric::is_numeric_type(ty, &self.control)? {
             return Ok(None);
         }
@@ -1951,24 +2148,35 @@ impl<'a> Environment<'a> {
             if law.expr_type(child) != Some(&value.ty()) {
                 return Err("数値構成の引数型が元式と違う".into());
             }
-            numeric::check(value, &self.control)?;
+            data::check(value, law, &self.control)?;
             self.tick()?;
         }
-        let value = match &law.exprs[id].kind {
-            ExprKind::Tuple(_) => Scalar::Tuple(values.to_vec()),
-            ExprKind::Index { index, .. } => {
-                let Scalar::Tuple(items) = &values[0] else {
-                    return Err("数値射影元が Tuple でない".into());
-                };
-                items.get(*index).ok_or("数値射影位置の内部不整合")?.clone()
+        let value = if let Some((constructor, _)) = data::expression(law, id, &self.control)? {
+            let Type::Data(family) = law.expr_type(id).ok_or("Data構成型がない")? else {
+                return Err("Data構成型が違う".into());
+            };
+            Scalar::Data {
+                family: family.clone(),
+                constructor,
+                args: values.to_vec(),
             }
-            ExprKind::Call { .. } => numeric::rational(&values[0], &values[1], &self.control)?,
-            _ => return Err("元数値構成がない".into()),
+        } else {
+            match &law.exprs[id].kind {
+                ExprKind::Tuple(_) => Scalar::Tuple(values.to_vec()),
+                ExprKind::Index { index, .. } => {
+                    let Scalar::Tuple(items) = &values[0] else {
+                        return Err("数値射影元が Tuple でない".into());
+                    };
+                    items.get(*index).ok_or("数値射影位置の内部不整合")?.clone()
+                }
+                ExprKind::Call { .. } => numeric::rational(&values[0], &values[1], &self.control)?,
+                _ => return Err("元数値構成がない".into()),
+            }
         };
         if law.expr_type(id) != Some(&value.ty()) {
             return Err("数値構成の結果型が元式と違う".into());
         }
-        numeric::check(&value, &self.control)?;
+        data::check(&value, law, &self.control)?;
         self.tick()?;
         Ok(value)
     }
@@ -2015,12 +2223,133 @@ impl<'a> Environment<'a> {
         }
         Ok(name)
     }
+    fn enclosing_matches(
+        &self,
+        span: (usize, usize),
+    ) -> Result<Vec<(usize, usize)>, ValidationFailure> {
+        let law = self.inputs.law();
+        let mut result = Vec::new();
+        for (id, expr) in law.exprs.iter().enumerate() {
+            self.tick()?;
+            if law.expr_type(id).is_none() || self.expressions.get(&expr.span) != Some(&id) {
+                continue;
+            }
+            if let ExprKind::Match { arms, .. } = &expr.kind {
+                for (arm, branch) in arms.iter().enumerate() {
+                    self.tick()?;
+                    let body = law.exprs[branch.body].span;
+                    if body.0 <= span.0 && span.1 <= body.1 {
+                        result.push((id, arm));
+                    }
+                }
+            }
+        }
+        result.sort_by_key(|(id, _)| law.exprs[*id].span.0);
+        Ok(result)
+    }
+    pub(crate) fn pattern_binding(
+        &self,
+        span: (usize, usize),
+        name: &str,
+    ) -> Result<Option<(usize, usize, data::Binder)>, ValidationFailure> {
+        if self.name_token(span)? != name {
+            return Err("pattern binderの実使用tokenが違う".into());
+        }
+        let mut found = None;
+        for (actual, origin) in self.lexical_context(span)? {
+            self.tick()?;
+            if actual == name
+                && let LexicalOrigin::Pattern {
+                    matching,
+                    arm,
+                    binder,
+                } = origin
+            {
+                if found.is_some() {
+                    return Err("pattern binderが重複する".into());
+                }
+                found = Some((matching, arm, binder));
+            }
+        }
+        Ok(found)
+    }
+    fn actual_evaluation(
+        &self,
+        graph: &Graph,
+        id: usize,
+        bindings: &[Binding],
+    ) -> Result<NodeRef, ValidationFailure> {
+        let mut found = None;
+        for (index, node) in graph
+            .nodes
+            .iter()
+            .enumerate()
+            .take(self.cutoff.get().min(graph.nodes.len()))
+        {
+            self.tick()?;
+            if graph.context_at(index) != self.current_context(graph) {
+                continue;
+            }
+            let Some(Payload::Evaluation {
+                expression,
+                bindings: actual,
+                ..
+            }) = &node.payload
+            else {
+                continue;
+            };
+            if actual == bindings
+                && self.expression_span(graph, *expression)? == self.inputs.law().exprs[id].span
+            {
+                if found.is_some() {
+                    return Err("同じ元式・Contextの実評価が一意でない".into());
+                }
+                found = Some(NodeRef(index));
+            }
+        }
+        let reference = found.ok_or("元scrutineeの既出実Evaluationがない")?;
+        self.recheck_evaluation(graph, reference)?;
+        Ok(reference)
+    }
+    pub(crate) fn pattern_argument(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        name: &str,
+        bindings: &[Binding],
+    ) -> Result<Option<(NodeRef, Scalar)>, ValidationFailure> {
+        let Some((matching, arm, binder)) = self.pattern_binding(span, name)? else {
+            return Ok(None);
+        };
+        let ExprKind::Match { scrutinee, .. } = self.inputs.law().exprs[matching].kind else {
+            unreachable!()
+        };
+        let input = self.actual_evaluation(graph, scrutinee, bindings)?;
+        let value = self
+            .evaluation(graph, input)?
+            .2
+            .ok_or("未知scrutineeにpattern binderがある")?;
+        if data::select(
+            self.inputs.law(),
+            matching,
+            Some(graph.scalar(value)?),
+            &self.control,
+        )? != Some(arm)
+        {
+            return Err("binderが選択されないarmに属する".into());
+        }
+        let value = data::project(graph.scalar(value)?, &binder.path, &self.control)?;
+        if value.ty() != binder.ty {
+            return Err("binder元型がpathと違う".into());
+        }
+        Ok(Some((input, value)))
+    }
     // lexical scope は元 binder の body 範囲から復元する。右辺自身や同名の別出現を
     // 束縛としない。静的検査済みの shadowing 禁止により、外→内の順は一意になる。
     fn lexical_context(
         &self,
         span: (usize, usize),
-    ) -> Result<Vec<(String, usize)>, ValidationFailure> {
+    ) -> Result<Vec<(String, LexicalOrigin)>, ValidationFailure> {
         let mut enclosing = Vec::new();
         let law = self.inputs.law();
         for (id, expression) in law.exprs.iter().enumerate() {
@@ -2039,10 +2368,35 @@ impl<'a> Environment<'a> {
                     && body_span.0 <= span.0
                     && span.1 <= body_span.1
                 {
-                    enclosing.push((expression.span.0, name.name.clone(), *value));
+                    enclosing.push((
+                        expression.span.0,
+                        name.name.clone(),
+                        LexicalOrigin::Let(*value),
+                    ));
                 }
             }
             self.tick()?;
+        }
+        for (matching, arm) in self.enclosing_matches(span)? {
+            let ExprKind::Match { scrutinee, arms } = &law.exprs[matching].kind else {
+                unreachable!()
+            };
+            for binder in data::binders(
+                &arms[arm].pattern,
+                law.expr_type(*scrutinee).ok_or("pattern元型がない")?,
+                law,
+                &self.control,
+            )? {
+                enclosing.push((
+                    law.exprs[matching].span.0,
+                    binder.name.clone(),
+                    LexicalOrigin::Pattern {
+                        matching,
+                        arm,
+                        binder,
+                    },
+                ));
+            }
         }
         enclosing.sort_by_key(|(start, _, _)| *start);
         self.tick()?;
@@ -2065,7 +2419,9 @@ impl<'a> Environment<'a> {
         let mut result = None;
         for (actual, rhs) in self.lexical_context(span)? {
             self.tick()?;
-            if actual == name {
+            if actual == name
+                && let LexicalOrigin::Let(rhs) = rhs
+            {
                 if result.is_some() {
                     return Err("lexical binder が一意でない".into());
                 }
@@ -2478,6 +2834,7 @@ impl<'a> Environment<'a> {
     pub(crate) fn source_arguments(
         &self,
         graph: &Graph,
+        span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Vec<NodeRef>, ValidationFailure> {
         let mut arguments: Vec<_> = bindings.iter().map(|b| b.value).collect();
@@ -2485,6 +2842,21 @@ impl<'a> Environment<'a> {
             let frame = graph.frames.get(index).ok_or("Sourceのcall frameがない")?;
             arguments.push(frame.source);
             arguments.extend(&frame.arguments);
+        }
+        for (matching, arm) in self.enclosing_matches(span)? {
+            let ExprKind::Match { scrutinee, .. } = self.inputs.law().exprs[matching].kind else {
+                unreachable!()
+            };
+            let input = self.actual_evaluation(graph, scrutinee, bindings)?;
+            let value = self
+                .evaluation(graph, input)?
+                .2
+                .map(|r| graph.scalar(r))
+                .transpose()?;
+            if data::select(self.inputs.law(), matching, value, &self.control)? != Some(arm) {
+                return Err("Sourceが実選択armに属さない".into());
+            }
+            arguments.push(input);
         }
         Ok(arguments)
     }
@@ -2659,7 +3031,39 @@ impl<'a> Environment<'a> {
         }
         for (name, rhs) in self.lexical_context(span)? {
             self.tick()?;
-            let value = self.scoped_ast(rhs, &variables, &base, &declaration.reading)?;
+            let value = match rhs {
+                LexicalOrigin::Let(rhs) => {
+                    self.scoped_ast(rhs, &variables, &base, &declaration.reading)?
+                }
+                LexicalOrigin::Pattern {
+                    matching,
+                    arm,
+                    binder,
+                } => {
+                    let ExprKind::Match { scrutinee, .. } = self.inputs.law().exprs[matching].kind
+                    else {
+                        unreachable!()
+                    };
+                    let mut input =
+                        self.scoped_ast(scrutinee, &variables, &base, &declaration.reading)?;
+                    if data::select(
+                        self.inputs.law(),
+                        matching,
+                        input.known_value.as_ref(),
+                        &self.control,
+                    )? != Some(arm)
+                    {
+                        return Err("Sourceが実選択armに属さない".into());
+                    }
+                    input.known_value = input
+                        .known_value
+                        .as_ref()
+                        .map(|value| data::project(value, &binder.path, &self.control))
+                        .transpose()?;
+                    input.scalar_scope = input.known_value.as_ref().map(|_| input.scope.clone());
+                    input
+                }
+            };
             if variables.insert(name, value).is_some() {
                 return Err("lexical 名が元parameterと重複する".into());
             }
@@ -2792,6 +3196,16 @@ impl<'a> Environment<'a> {
                     support: vec![],
                     scalar_scope: Some(base.clone()),
                 },
+                ExprKind::Dotted(_)
+                    if data::expression(self.inputs.law(), id, &self.control)?.is_some() =>
+                {
+                    SourceValue {
+                        scope: base.clone(),
+                        known_value: Some(self.composite_value(id, &[])?),
+                        support: vec![],
+                        scalar_scope: Some(base.clone()),
+                    }
+                }
                 ExprKind::Dotted(parts) => {
                     let first = parts.first().ok_or("範囲検査の空Dotted")?;
                     let mut result = variables
@@ -2892,6 +3306,54 @@ impl<'a> Environment<'a> {
                         known_value,
                         support,
                         scalar_scope,
+                    }
+                }
+                ExprKind::Match { scrutinee, arms } => {
+                    let input = self.scoped_ast(*scrutinee, variables, base, reading)?;
+                    let Some(arm) = data::select(
+                        self.inputs.law(),
+                        id,
+                        input.known_value.as_ref(),
+                        &self.control,
+                    )?
+                    else {
+                        return Ok(SourceValue {
+                            scalar_scope: None,
+                            ..input
+                        });
+                    };
+                    let mut local = self.copy_variables(variables)?;
+                    let value = input.known_value.as_ref().ok_or("選択済matchの値がない")?;
+                    for (name, value) in
+                        data::bindings(self.inputs.law(), id, arm, value, &self.control)?
+                    {
+                        if local
+                            .insert(
+                                name,
+                                SourceValue {
+                                    scope: input.scope.clone(),
+                                    known_value: Some(value),
+                                    support: input.support.clone(),
+                                    scalar_scope: Some(input.scope.clone()),
+                                },
+                            )
+                            .is_some()
+                        {
+                            return Err("pattern名が重複する".into());
+                        }
+                    }
+                    let body = self.scoped_ast(arms[arm].body, &local, base, reading)?;
+                    let mut scope = input.scope;
+                    scope.merge(&body.scope);
+                    let mut support = input.support;
+                    support.extend(body.support);
+                    support.sort();
+                    support.dedup();
+                    SourceValue {
+                        scalar_scope: body.known_value.as_ref().map(|_| scope.clone()),
+                        scope,
+                        known_value: body.known_value,
+                        support,
                     }
                 }
                 ExprKind::Let { name, value, body } => {
@@ -3085,12 +3547,11 @@ impl<'a> Environment<'a> {
                 });
                 (
                     Some(
-                        scalar_from(value, &field.ty, &self.control)?.ok_or_else(|| {
-                            ValidationFailure::UnsupportedExpression {
+                        scalar_from(value, &field.ty, self.inputs.law(), &self.control)?
+                            .ok_or_else(|| ValidationFailure::UnsupportedExpression {
                                 location: Location::Law { span },
                                 feature: "Z/Bool/Ref 以外の原始値読取り".into(),
-                            }
-                        })?,
+                            })?,
                     ),
                     Some(scalar_scope),
                 )
@@ -3285,7 +3746,15 @@ impl<'a> Environment<'a> {
         children: &[Option<NodeRef>],
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
-        if self.lexical_rhs(span, name)?.is_some() {
+        if let Some((input, expected)) = self.pattern_argument(graph, span, name, bindings)? {
+            if children.len() != 1
+                || children[0] != self.evaluation(graph, input)?.2
+                || value.map(|r| graph.scalar(r)).transpose()? != Some(&expected)
+                || value.is_none_or(|r| graph.get(r).map_or(true, |n| n.arguments != [input]))
+            {
+                return Err("pattern binderの元path・値・実scrutinee辺が違う".into());
+            }
+        } else if self.lexical_rhs(span, name)?.is_some() {
             if children.len() != 1 || value != children[0] {
                 return Err("lexical 名が実右辺の値を参照していない".into());
             }
@@ -3348,7 +3817,7 @@ impl<'a> Environment<'a> {
                     value: expected, ..
                 },
                 Some(actual),
-            ) if scalar_from(expected, &field.ty, &self.control)?.as_ref()
+            ) if scalar_from(expected, &field.ty, self.inputs.law(), &self.control)?.as_ref()
                 == Some(graph.scalar(actual)?)
                 && graph.get(actual)?.arguments == [base] =>
             {
@@ -3750,6 +4219,7 @@ impl<'a> Environment<'a> {
 pub(crate) fn scalar_from(
     value: &Value,
     ty: &Type,
+    law: &crate::law::CheckedLaw,
     control: &Control,
 ) -> Result<Option<Scalar>, ValidationFailure> {
     match value {
@@ -3759,7 +4229,7 @@ pub(crate) fn scalar_from(
             subject: subject.clone(),
             entity: entity.into(),
         })),
-        _ => numeric::from_input(value, ty, control),
+        _ => data::from_input(value, ty, law, control),
     }
 }
 pub(crate) fn is_comparison(op: BinOp) -> bool {
@@ -3801,6 +4271,9 @@ pub(crate) fn conditional_branch(
                             entity: z,
                         },
                     ) => a == x && b == y && c == z,
+                    (Scalar::Data { .. }, Scalar::Data { .. }) => {
+                        data::equal(left, right, control)?
+                    }
                     _ => numeric::binary(BinOp::Eq, left, right, control)? == Scalar::Bool(true),
                 }
             } else {
@@ -3824,6 +4297,9 @@ pub(crate) fn supports_binary(
     input: &Type,
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
+    if matches!(input, Type::Data(_) | Type::Ref(_)) {
+        return Ok(matches!(op, BinOp::Eq | BinOp::Ne));
+    }
     if input == &Type::Bool {
         return Ok(matches!(op, BinOp::Eq | BinOp::Ne) || is_boolean_binary(op));
     }
@@ -3884,6 +4360,16 @@ pub(crate) fn binary(
     right: &Scalar,
     control: &Control,
 ) -> Result<Scalar, ValidationFailure> {
+    if matches!(left, Scalar::Data { .. } | Scalar::Subject { .. }) {
+        if left.ty() != right.ty() {
+            return Err("構造等値の型が違う".into());
+        }
+        return match op {
+            BinOp::Eq => Ok(Scalar::Bool(data::equal(left, right, control)?)),
+            BinOp::Ne => Ok(Scalar::Bool(!data::equal(left, right, control)?)),
+            _ => Err("構造値に等値以外を適用している".into()),
+        };
+    }
     if let (Scalar::Bool(a), Scalar::Bool(b)) = (left, right) {
         let value = match op {
             BinOp::Eq => a == b,
