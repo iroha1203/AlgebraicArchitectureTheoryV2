@@ -38,7 +38,9 @@ impl Evaluator<'_, '_> {
                 kind: "law",
                 location: Location::Law { span },
             },
-            arguments: self.bindings.iter().map(|b| b.value).collect(),
+            arguments: self
+                .environment
+                .source_arguments(self.graph, span, &self.bindings)?,
             support: vec![],
             evidence: vec![],
             judgment: None,

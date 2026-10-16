@@ -594,6 +594,32 @@ view prior(s: Sample): Z = s.zero;
         assert!(!obj(answer(&wire, id)).contains_key("claim"));
     }
     let ns = index(&wire);
+    let aggregate_d = root(&wire, "d");
+    let seed = expression(&ns, aggregate_d);
+    assert_eq!(
+        arr(f(aggregate_d, "arguments")).first(),
+        Some(f(val(aggregate_d), "expression"))
+    );
+    let original_span = checked.law().exprs[declared_body(&checked, "Calc.unknown_filter")].span;
+    let originals = arr(f(seed, "arguments"))
+        .iter()
+        .map(|r| ns[text(f(r, "node"))])
+        .filter(|n| {
+            f(n, "type") == &Json::str("Evaluation")
+                && evaluation_span(&ns, n) == original_span
+                && f(val(expression(&ns, n)), "kind") == &Json::str("source")
+                && f(val(expression(&ns, n)), "bindings") == f(val(seed), "bindings")
+                && f(val(n), "bindings") == f(val(seed), "bindings")
+                && arr(f(n, "arguments")).first() == Some(f(val(n), "expression"))
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        originals.len(),
+        1,
+        "元seedの直接rootから元内包AST/明示bindingsの評価を一意選択"
+    );
+    let original_d = originals[0];
+    assert!(!obj(val(original_d)).contains_key("value"));
     for (id, name, count) in [
         ("a", "Calc.excluded", 2),
         ("c", "Calc.unknown_domain", 1),
@@ -603,12 +629,133 @@ view prior(s: Sample): Z = s.zero;
         let ExprKind::SetComp { elem, .. } = &checked.law().exprs[body].kind else {
             panic!("内包")
         };
-        assert_eq!(children(&ns, root(&wire, id)).len(), count);
+        let evaluated = if id == "d" {
+            original_d
+        } else {
+            root(&wire, id)
+        };
+        assert_eq!(children(&ns, evaluated).len(), count);
+        let elems = evaluations_at(&wire, checked.law().exprs[*elem].span);
+        let original_reachable = reached(&ns, &[evaluated]);
         assert!(
-            evaluations_at(&wire, checked.law().exprs[*elem].span).is_empty(),
+            if id == "d" {
+                elems
+                    .iter()
+                    .all(|e| !original_reachable.contains(text(f(e, "id"))))
+            } else {
+                elems.is_empty()
+            },
             "不要/未確定要素を値や欠測へ昇格しない: {id}"
         );
     }
+    let ExprKind::SetComp {
+        elem,
+        domain,
+        filter: Some(filter),
+        ..
+    } = &checked.law().exprs[declared_body(&checked, "Calc.unknown_filter")].kind
+    else {
+        panic!("filter付き内包")
+    };
+    let domain_ref = &arr(f(aggregate_d, "arguments"))[1];
+    let assignments = target(&ns, domain_ref, &Json::str("Domain"));
+    assert_eq!(f(val(assignments), "kind"), &Json::str("finite"));
+    assert_eq!(f(val(assignments), "type"), &Json::str("Bool"));
+    let members = arr(f(val(assignments), "elements"));
+    assert_eq!(members.len(), 2);
+    let cases = children(&ns, aggregate_d);
+    assert_eq!(cases.len(), 2);
+    let set_type = ty("Set", Json::str("Z"));
+    let mut flags = BTreeSet::new();
+    for case in cases {
+        assert_eq!(evaluation_span(&ns, case), original_span);
+        let case_source = expression(&ns, case);
+        let selected = arr(f(case_source, "arguments"))
+            .iter()
+            .filter(|r| members.contains(r))
+            .collect::<Vec<_>>();
+        assert_eq!(selected.len(), 1);
+        let Json::Bool(flag) = val(target(&ns, selected[0], &Json::str("Bool"))) else {
+            panic!("Bool")
+        };
+        assert!(flags.insert(*flag));
+        let expected = Json::Arr(if *flag { vec![Json::str("2")] } else { vec![] });
+        assert_eq!(
+            val(target(&ns, f(val(case), "value"), &set_type)),
+            &expected
+        );
+        let ch = children(&ns, case);
+        assert_eq!(ch.len(), if *flag { 3 } else { 2 });
+        assert_eq!(
+            evaluation_span(&ns, ch[0]),
+            checked.law().exprs[*domain].span
+        );
+        assert_eq!(
+            val(target(
+                &ns,
+                f(val(ch[0]), "value"),
+                &ty("List", Json::str("Z"))
+            )),
+            &Json::Arr(vec![Json::str("1")])
+        );
+        assert_eq!(
+            evaluation_span(&ns, ch[1]),
+            checked.law().exprs[*filter].span
+        );
+        assert_eq!(source(&checked, evaluation_span(&ns, ch[1])), b"s.flag");
+        assert_eq!(
+            val(target(&ns, f(val(ch[1]), "value"), &Json::str("Bool"))),
+            &Json::Bool(*flag)
+        );
+        if *flag {
+            assert_eq!(evaluation_span(&ns, ch[2]), checked.law().exprs[*elem].span);
+            assert_eq!(source(&checked, evaluation_span(&ns, ch[2])), b"x+1");
+            assert_eq!(
+                val(target(&ns, f(val(ch[2]), "value"), &Json::str("Z"))),
+                &Json::str("2")
+            );
+        } else {
+            let reachable = reached(&ns, &[case]);
+            assert!(
+                evaluations_at(&wire, checked.law().exprs[*elem].span)
+                    .iter()
+                    .all(|e| !reachable.contains(text(f(e, "id"))))
+            );
+        }
+    }
+    assert_eq!(flags, BTreeSet::from([false, true]));
+    let proofs = arr(f(aggregate_d, "evidence"))
+        .iter()
+        .map(|r| target(&ns, r, &Json::str("Evidence")))
+        .collect::<Vec<_>>();
+    assert_eq!(proofs.len(), 1);
+    assert_eq!(f(val(proofs[0]), "kind"), &Json::str("completion_pair"));
+    let pair = f(val(proofs[0]), "data");
+    assert_eq!(
+        f(pair, "fields"),
+        &Json::Arr(vec![Json::obj([
+            ("snapshot", Json::str("v")),
+            ("subject", Json::str("sample")),
+            ("field", Json::str("Comprehensions.Sample.flag"))
+        ])])
+    );
+    let mut pair_flags = BTreeSet::new();
+    for (bindings, result) in [("first", "first_result"), ("second", "second_result")] {
+        let values = arr(f(pair, bindings));
+        assert_eq!(values.len(), 1);
+        let Json::Bool(flag) = val(target(&ns, &values[0], &Json::str("Bool"))) else {
+            panic!("Bool")
+        };
+        assert!(pair_flags.insert(*flag));
+        assert!(arr(f(part(aggregate_d), "children")).contains(f(pair, result)));
+        let case = target(&ns, f(pair, result), &Json::str("Evaluation"));
+        assert!(arr(f(expression(&ns, case), "arguments")).contains(&values[0]));
+        assert_eq!(
+            val(target(&ns, f(val(case), "value"), &set_type)),
+            &Json::Arr(if *flag { vec![Json::str("2")] } else { vec![] })
+        );
+    }
+    assert_eq!(pair_flags, BTreeSet::from([false, true]));
     for bad in [
         "view bad(): Set<Z> = set { x | x in 1 };",
         "view bad(): Set<Z> = set { x | x in list<Z>[] where 1 };",

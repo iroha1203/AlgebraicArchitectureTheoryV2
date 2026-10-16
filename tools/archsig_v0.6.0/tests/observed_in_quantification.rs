@@ -938,6 +938,124 @@ view later(s: Sample): Z = s.zero+9;
 
 #[test]
 fn in_quantifiers_keep_known_decisions_with_missing_instances() {
+    fn original_completion_root<'a>(
+        wire: &'a Json,
+        checked: &CheckedInputs,
+        id: &str,
+        name: &str,
+    ) -> &'a Json {
+        let ns = index(wire);
+        let aggregate = root(wire, id);
+        let seed = expression(&ns, aggregate);
+        assert_eq!(
+            arr(f(aggregate, "arguments")).first(),
+            Some(f(val(aggregate), "expression"))
+        );
+        let at = checked.law().exprs[declared_body(checked, name)].span;
+        let originals = arr(f(seed, "arguments"))
+            .iter()
+            .map(|r| ns[text(f(r, "node"))])
+            .filter(|n| {
+                f(n, "type") == &Json::str("Evaluation")
+                    && evaluation_span(&ns, n) == at
+                    && f(val(expression(&ns, n)), "kind") == &Json::str("source")
+                    && f(val(expression(&ns, n)), "bindings") == f(val(seed), "bindings")
+                    && f(val(expression(&ns, n)), "parameters") == f(val(seed), "parameters")
+                    && f(val(n), "bindings") == f(val(seed), "bindings")
+                    && arr(f(n, "arguments")).first() == Some(f(val(n), "expression"))
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            originals.len(),
+            1,
+            "元seed直接rootsの元AST/明示bindingsを持つ実評価"
+        );
+        originals[0]
+    }
+    fn completion_cases<'a>(wire: &'a Json, id: &str, wanted: &[(bool, bool)]) -> Vec<&'a Json> {
+        let ns = index(wire);
+        let aggregate = root(wire, id);
+        let domain_ref = &arr(f(aggregate, "arguments"))[1];
+        let domain = target(&ns, domain_ref, &Json::str("Domain"));
+        assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
+        assert_eq!(f(val(domain), "type"), &Json::str("Bool"));
+        let members = arr(f(val(domain), "elements"));
+        assert_eq!(members.len(), 2);
+        let cases = children(&ns, aggregate);
+        assert_eq!(cases.len(), 2);
+        let mut seen = BTreeSet::new();
+        for case in &cases {
+            assert_eq!(evaluation_span(&ns, case), evaluation_span(&ns, aggregate));
+            let actual_bindings = arr(f(val(case), "bindings"));
+            let fixed_bindings = arr(f(val(expression(&ns, aggregate)), "bindings"));
+            assert_eq!(actual_bindings.len(), fixed_bindings.len());
+            for (actual, fixed) in actual_bindings.iter().zip(fixed_bindings) {
+                assert_eq!(f(actual, "name"), f(fixed, "name"));
+                let t = ty("Ref", Json::str("Quantification.Sample"));
+                assert_eq!(
+                    val(target(&ns, f(actual, "value"), &t)),
+                    val(target(&ns, f(fixed, "value"), &t))
+                );
+            }
+            let source = expression(&ns, case);
+            let selected = arr(f(source, "arguments"))
+                .iter()
+                .filter(|r| members.contains(r))
+                .collect::<Vec<_>>();
+            assert_eq!(selected.len(), 1);
+            let Json::Bool(flag) = val(target(&ns, selected[0], &Json::str("Bool"))) else {
+                panic!("Bool")
+            };
+            assert!(seen.insert(*flag));
+            let expected = wanted.iter().find(|(h, _)| h == flag).unwrap().1;
+            assert_eq!(
+                val(target(&ns, f(val(case), "value"), &Json::str("Bool"))),
+                &Json::Bool(expected)
+            );
+        }
+        assert_eq!(seen, BTreeSet::from([false, true]));
+        let proofs = arr(f(aggregate, "evidence"))
+            .iter()
+            .map(|r| target(&ns, r, &Json::str("Evidence")))
+            .collect::<Vec<_>>();
+        assert_eq!(proofs.len(), 1);
+        let proof = proofs[0];
+        let data = f(val(proof), "data");
+        if wanted[0].1 == wanted[1].1 {
+            assert_eq!(f(val(proof), "kind"), &Json::str("finite_exhaustion"));
+            assert_eq!(f(data, "domain"), domain_ref);
+            assert_eq!(f(data, "checked"), &Json::Nat(2));
+            assert_eq!(f(data, "instances"), f(part(aggregate), "children"));
+        } else {
+            assert_eq!(f(val(proof), "kind"), &Json::str("completion_pair"));
+            assert_eq!(
+                f(data, "fields"),
+                &Json::Arr(vec![Json::obj([
+                    ("snapshot", Json::str("v")),
+                    ("subject", Json::str("sample")),
+                    ("field", Json::str("Quantification.Sample.flag"))
+                ])])
+            );
+            let mut flags = BTreeSet::new();
+            for (binding, result) in [("first", "first_result"), ("second", "second_result")] {
+                let assignment = arr(f(data, binding));
+                assert_eq!(assignment.len(), 1);
+                let Json::Bool(flag) = val(target(&ns, &assignment[0], &Json::str("Bool"))) else {
+                    panic!("Bool")
+                };
+                assert!(flags.insert(*flag));
+                assert!(arr(f(part(aggregate), "children")).contains(f(data, result)));
+                let case = target(&ns, f(data, result), &Json::str("Evaluation"));
+                assert!(arr(f(expression(&ns, case), "arguments")).contains(&assignment[0]));
+                assert_eq!(
+                    val(target(&ns, f(val(case), "value"), &Json::str("Bool"))),
+                    &Json::Bool(wanted.iter().find(|(h, _)| h == flag).unwrap().1)
+                );
+            }
+            assert_eq!(flags, BTreeSet::from([false, true]));
+        }
+        cases
+    }
     let script = r#"
 view all_refs(s: Sample): Bool = forall r in s.refs . r.flag;
 view any_refs(s: Sample): Bool = exists r in s.refs . r.flag;
@@ -989,9 +1107,12 @@ law required all_law(s: Sample): forall r in s.refs . r.flag;
             let matching = examples
                 .iter()
                 .find(|example| {
-                    arr(f(f(val(example), "data"), "bindings"))
-                        .iter()
-                        .any(|b| f(b, "name") == &Json::str("r"))
+                    arr(f(f(val(example), "data"), "facts")).contains(&Json::obj([
+                        ("snapshot", Json::str("v")),
+                        ("subject", Json::str("peer")),
+                        ("field", Json::str("Quantification.Sample.flag")),
+                        ("atom", Json::str("peerflag")),
+                    ]))
                 })
                 .expect("実量化binderを持つ反例");
             let data = f(val(matching), "data");
@@ -1041,11 +1162,18 @@ law required all_law(s: Sample): forall r in s.refs . r.flag;
             assert_eq!(f(a, "status"), &Json::str("undetermined"));
             assert!(!obj(f(a, "outputs")).contains_key("value"));
             assert_missing(&wire, id, field, expression_text, &checked);
+            let original = if id == "c" {
+                original_completion_root(&wire, &checked, id, "Calc.missing_only")
+            } else {
+                root(&wire, id)
+            };
+            assert!(!obj(val(original)).contains_key("value"));
             assert!(
-                evidence(&ns, a, "finite_exhaustion").is_empty(),
+                evidence(&ns, original, "finite_exhaustion").is_empty(),
                 "未知を全検査済みにしない"
             );
         }
+        completion_cases(&wire, "c", &[(false, false), (true, true)]);
         let (domain, body) = quant_parts(&checked, declared_body(&checked, "Calc.unknown_domain"));
         assert_eq!(children(&ns, root(&wire, "d")).len(), 1);
         assert!(evaluations_at(&wire, checked.law().exprs[body].span).is_empty());
@@ -1077,16 +1205,43 @@ law required all_law(s: Sample): forall r in s.refs . r.flag;
         .len(),
         2
     );
-    assert!(
-        evidence(&ns, answer(&wire, "a"), "finite_exhaustion").is_empty(),
-        "存在証人を全域全検査へ置き換えない"
-    );
+    let original = original_completion_root(&wire, &checked, "a", "Calc.any_refs");
+    let mut exists_levels = vec![original];
+    exists_levels.extend(completion_cases(&wire, "a", &[(false, true), (true, true)]));
+    for level in exists_levels {
+        assert!(
+            evidence(&ns, level, "finite_exhaustion").is_empty(),
+            "元/各caseの存在証人を全域全検査へ置き換えない"
+        );
+        assert_eq!(
+            val(target(&ns, f(val(level), "value"), &Json::str("Bool"))),
+            &Json::Bool(true)
+        );
+        assert!(
+            children(&ns, level).iter().any(|body| {
+                source(&checked, evaluation_span(&ns, body)) == b"r.flag"
+                    && obj(val(body)).get("value").is_some_and(|r| {
+                        val(target(&ns, r, &Json::str("Bool"))) == &Json::Bool(true)
+                    })
+                    && arr(f(body, "support")).contains(&Json::obj([
+                        ("snapshot", Json::str("v")),
+                        ("subject", Json::str("peer")),
+                        ("field", Json::str("Quantification.Sample.flag")),
+                        ("atom", Json::str("peerflag")),
+                    ]))
+            }),
+            "元peerflag=trueの実bodyを存在証人として保持"
+        );
+    }
     let (wire, checked) = run(
         fixture(script, true, false),
         &["a=evaluate(Calc.missing_exists,s=@v/sample)"],
     );
     assert_eq!(f(answer(&wire, "a"), "status"), &Json::str("undetermined"));
     assert_missing(&wire, "a", "flag", b"r.flag", &checked);
+    let original = original_completion_root(&wire, &checked, "a", "Calc.missing_exists");
+    assert!(!obj(val(original)).contains_key("value"));
+    completion_cases(&wire, "a", &[(false, false), (true, true)]);
 }
 
 #[test]

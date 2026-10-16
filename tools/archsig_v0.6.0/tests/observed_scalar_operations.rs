@@ -77,18 +77,46 @@ fn links(j: &Json, rs: &mut Vec<String>) {
         _ => {}
     }
 }
-fn reached(ns: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String> {
-    let mut todo = vec![];
-    for r in roots {
-        links(r, &mut todo);
-    }
+fn evaluation_tree<'a>(ns: &BTreeMap<&str, &'a Json>, root: &'a Json) -> Vec<&'a Json> {
+    let mut todo = vec![root];
     let mut seen = BTreeSet::new();
-    while let Some(id) = todo.pop() {
-        if seen.insert(id.clone()) {
-            links(ns[id.as_str()], &mut todo);
+    let mut evaluations = vec![];
+    while let Some(evaluation) = todo.pop() {
+        if seen.insert(txt(f(evaluation, "id"))) {
+            evaluations.push(evaluation);
+            for part in arr(f(val(evaluation), "parts")) {
+                for child in arr(f(part, "children")) {
+                    todo.push(target(ns, child, "Evaluation"));
+                }
+            }
         }
     }
-    seen
+    evaluations
+}
+fn original_root<'a>(ns: &BTreeMap<&str, &'a Json>, result: &Json, id: &str) -> &'a Json {
+    let root = target(
+        ns,
+        f(f(answer(result, id), "outputs"), "evaluation"),
+        "Evaluation",
+    );
+    let expression = target(ns, f(val(root), "expression"), "Expression");
+    let arguments = arr(f(root, "arguments"));
+    let completion = arguments.get(1).is_some_and(|r| {
+        let n = ns[txt(f(r, "node"))];
+        f(n, "type") == &Json::str("Domain")
+            && arr(f(n, "arguments")).first() == Some(f(val(root), "expression"))
+    });
+    if !completion {
+        return root;
+    }
+    let originals = arr(f(expression, "arguments"))
+        .iter()
+        .map(|r| ns[txt(f(r, "node"))])
+        .filter(|n| f(n, "type") == &Json::str("Evaluation"))
+        .collect::<Vec<_>>();
+    assert_eq!(originals.len(), 1, "補完seedの直接の元式rootを一意に辿る");
+    assert_ne!(f(originals[0], "id"), f(root, "id"));
+    originals[0]
 }
 fn span(location: &Json) -> (usize, usize) {
     assert_eq!(f(location, "input"), &Json::str("law"));
@@ -179,6 +207,236 @@ fn output<'a>(result: &'a Json, id: &str, ty: &str) -> Option<&'a Json> {
     obj(f(a, "outputs"))
         .get("value")
         .map(|r| val(target(&ns, r, ty)))
+}
+
+fn original_source<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
+    if let Some(first) = arr(f(evaluation, "arguments")).first() {
+        let node = ns[txt(f(first, "node"))];
+        if f(node, "type") == &Json::str("LawInstance") {
+            return target(ns, f(val(node), "body"), "Expression");
+        }
+    }
+    target(ns, f(val(evaluation), "expression"), "Expression")
+}
+
+// The finite Bool oracle is independent of the evaluator's expression traversal.
+fn bool_oracle(name: &str, p: bool, q: bool) -> bool {
+    match name.rsplit('.').next().unwrap() {
+        "negate" | "not_law" => !p,
+        "both" | "both_law" => p && q,
+        "either" | "either_law" => p || q,
+        "implication" | "implies_law" => !p || q,
+        "same" => p == q,
+        "forced" => false,
+        "open" | "vacuous" => true,
+        other => panic!("Bool completion oracle has no fixture {other}"),
+    }
+}
+fn audit_completion(result: &Json, checked: &CheckedInputs, request: &Json, original: &Json) {
+    let ns = nodes(result);
+    let answer = answer(result, txt(f(request, "id")));
+    let root = target(&ns, f(f(answer, "outputs"), "evaluation"), "Evaluation");
+    if f(root, "id") == f(original, "id") {
+        return;
+    }
+    let seed = target(&ns, f(val(root), "expression"), "Expression");
+    let source = original_source(&ns, original);
+    assert_eq!(f(val(seed), "location"), f(val(source), "location"));
+    let (start, end) = span(f(val(seed), "location"));
+    let text = std::str::from_utf8(&checked.sources().law().bytes()[start..end]).unwrap();
+    let sample = &checked.archmap().snapshots[0].subjects[0];
+    let mut fixed = BTreeMap::new();
+    let mut fields = vec![];
+    for name in ["p", "q"] {
+        let field = sample
+            .fields
+            .iter()
+            .find(|f| f.name == format!("Measure.Point.{name}"))
+            .unwrap();
+        match &field.slot {
+            archsig::archmap::Slot::Known {
+                value: archsig::archmap::Value::Bool(v),
+                ..
+            } => {
+                fixed.insert(name, *v);
+            }
+            archsig::archmap::Slot::Missing if text.contains(&format!("s.{name}")) => {
+                fields.push(name)
+            }
+            archsig::archmap::Slot::Missing => {}
+            _ => panic!("fixture Bool field"),
+        }
+    }
+    assert!(!fields.is_empty());
+    let arguments = arr(f(root, "arguments"));
+    assert_eq!(&arguments[0], f(val(root), "expression"));
+    let domain = target(&ns, &arguments[1], "Domain");
+    assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
+    assert_eq!(arr(f(domain, "arguments")).first(), Some(&arguments[0]));
+    let domain_type = if fields.len() == 1 {
+        Json::str("Bool")
+    } else {
+        Json::Arr(vec![
+            Json::str("Tuple"),
+            Json::str("Bool"),
+            Json::str("Bool"),
+        ])
+    };
+    assert_eq!(f(val(domain), "type"), &domain_type);
+    let decode = |value: &Json| {
+        let scalar = |v: &Json| {
+            let Json::Bool(b) = v else {
+                panic!("Bool assignment")
+            };
+            *b
+        };
+        if fields.len() == 1 {
+            vec![scalar(value)]
+        } else {
+            arr(value).iter().map(scalar).collect::<Vec<_>>()
+        }
+    };
+    let expected_rows = (0..(1 << fields.len()))
+        .map(|mask| {
+            (0..fields.len())
+                .map(|bit| mask & (1 << bit) != 0)
+                .collect::<Vec<_>>()
+        })
+        .collect::<BTreeSet<_>>();
+    let members = arr(f(val(domain), "elements"));
+    let mut member_rows = BTreeMap::new();
+    for r in members {
+        let member = ns[txt(f(r, "node"))];
+        assert_eq!(f(member, "type"), &domain_type);
+        assert_eq!(f(f(member, "rule"), "kind"), &Json::str("construction"));
+        assert!(
+            member_rows
+                .insert(r.canonical(), decode(val(member)))
+                .is_none()
+        );
+    }
+    assert_eq!(
+        member_rows.values().cloned().collect::<BTreeSet<_>>(),
+        expected_rows
+    );
+    assert_eq!(members.len(), 1 << fields.len());
+    let parts = arr(f(val(root), "parts"));
+    assert_eq!(parts.len(), 1);
+    assert!(!obj(&parts[0]).contains_key("residual"));
+    let cases = arr(f(&parts[0], "children"));
+    assert_eq!(cases.len(), members.len());
+    let mut case_rows = BTreeMap::new();
+    let mut case_values = BTreeMap::new();
+    for r in cases {
+        let case = target(&ns, r, "Evaluation");
+        let case_source = original_source(&ns, case);
+        assert_eq!(f(val(case_source), "location"), f(val(seed), "location"));
+        let expression = target(&ns, f(val(case), "expression"), "Expression");
+        let selected = [expression, case_source]
+            .iter()
+            .flat_map(|n| arr(f(n, "arguments")))
+            .filter(|r| member_rows.contains_key(&r.canonical()))
+            .map(Json::canonical)
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            selected.len(),
+            1,
+            "each actual case selects one real assignment member"
+        );
+        let row = member_rows[selected.first().unwrap()].clone();
+        let mut assignment = fixed.clone();
+        for (&field, &value) in fields.iter().zip(&row) {
+            assignment.insert(field, value);
+        }
+        let expected = bool_oracle(
+            txt(f(f(request, "head"), "name")),
+            *assignment.get("p").unwrap_or(&false),
+            *assignment.get("q").unwrap_or(&false),
+        );
+        let actual = target(&ns, f(val(case), "value"), "Bool");
+        assert_eq!(val(actual), &Json::Bool(expected));
+        assert_eq!(f(f(case, "scope"), "domain"), &Json::str("all_completions"));
+        assert!(case_rows.insert(r.canonical(), row).is_none());
+        case_values.insert(r.canonical(), expected);
+    }
+    assert_eq!(
+        case_rows.values().cloned().collect::<BTreeSet<_>>(),
+        expected_rows
+    );
+    let proofs = arr(f(answer, "evidence"))
+        .iter()
+        .map(|r| val(target(&ns, r, "Evidence")))
+        .collect::<Vec<_>>();
+    let covers = proofs
+        .iter()
+        .filter(|p| {
+            f(p, "kind") == &Json::str("finite_exhaustion")
+                && f(f(p, "data"), "domain") == &arguments[1]
+        })
+        .collect::<Vec<_>>();
+    let pairs = proofs
+        .iter()
+        .filter(|p| f(p, "kind") == &Json::str("completion_pair"))
+        .collect::<Vec<_>>();
+    let unanimous = case_values
+        .values()
+        .all(|v| v == case_values.values().next().unwrap());
+    if unanimous {
+        assert_eq!(covers.len(), 1);
+        assert!(pairs.is_empty());
+        let data = f(covers[0], "data");
+        assert_eq!(f(data, "checked"), &Json::Nat(cases.len() as u64));
+        assert_eq!(
+            arr(f(data, "instances"))
+                .iter()
+                .map(Json::canonical)
+                .collect::<BTreeSet<_>>(),
+            case_rows.keys().cloned().collect()
+        );
+        assert_eq!(
+            val(target(&ns, f(val(root), "value"), "Bool")),
+            &Json::Bool(*case_values.values().next().unwrap())
+        );
+    } else {
+        assert!(covers.is_empty());
+        assert_eq!(pairs.len(), 1);
+        assert!(!obj(val(root)).contains_key("value"));
+        let data = f(pairs[0], "data");
+        assert_eq!(
+            f(data, "fields"),
+            &Json::Arr(
+                fields
+                    .iter()
+                    .map(|field| Json::obj([
+                        ("snapshot", Json::str("v")),
+                        ("subject", Json::str("sample")),
+                        ("field", Json::str(format!("Measure.Point.{field}")))
+                    ]))
+                    .collect()
+            )
+        );
+        let mut result_values = vec![];
+        let mut rows = vec![];
+        for (binding, result) in [("first", "first_result"), ("second", "second_result")] {
+            let r = f(data, result).canonical();
+            let row = arr(f(data, binding))
+                .iter()
+                .map(|r| {
+                    let value = target(&ns, r, "Bool");
+                    assert_eq!(f(f(value, "rule"), "kind"), &Json::str("construction"));
+                    let Json::Bool(b) = val(value) else {
+                        panic!("Bool")
+                    };
+                    *b
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(case_rows[&r], row);
+            rows.push(row);
+            result_values.push(case_values[&r]);
+        }
+        assert_ne!(rows[0], rows[1]);
+        assert_ne!(result_values[0], result_values[1]);
+    }
 }
 
 fn audit(result: &Json, checked: &CheckedInputs) {
@@ -274,7 +532,9 @@ fn audit(result: &Json, checked: &CheckedInputs) {
         }
         let name = txt(f(f(request, "head"), "name"));
         let decl = &checked.law().declarations[name];
-        let reach = reached(&ns, &[f(a, "outputs"), f(a, "evidence")]);
+        let original = original_root(&ns, result, txt(f(a, "id")));
+        let evaluations = evaluation_tree(&ns, original);
+        audit_completion(result, checked, request, original);
         for (id, expr) in checked
             .law()
             .exprs
@@ -285,37 +545,30 @@ fn audit(result: &Json, checked: &CheckedInputs) {
             if checked.law().expr_type(id).is_none() {
                 continue;
             }
-            let source = reach
+            let evaluation = evaluations
                 .iter()
-                .map(|id| ns[id.as_str()])
+                .copied()
                 .find(|n| {
-                    f(n, "type") == &Json::str("Expression")
-                        && f(val(n), "kind") == &Json::str("source")
-                        && span(f(val(n), "location")) == expr.span
-                })
-                .expect("元ASTの各出現を保持する");
-            let source_ref = Json::obj([("node", f(source, "id").clone())]);
-            let evaluation = reach
-                .iter()
-                .map(|id| ns[id.as_str()])
-                .find(|n| {
-                    f(n, "type") == &Json::str("Evaluation")
-                        && f(val(n), "expression") == &source_ref
+                    let expression = target(&ns, f(val(n), "expression"), "Expression");
+                    f(val(expression), "kind") == &Json::str("source")
+                        && span(f(val(expression), "location")) == expr.span
                         && arr(f(val(n), "parts"))
                             .iter()
                             .filter(|p| span(f(p, "location")) == expr.span)
                             .all(|p| {
                                 arr(f(p, "children")).iter().all(|r| {
                                     let child = val(target(&ns, r, "Evaluation"));
-                                    let expression =
+                                    let source =
                                         val(target(&ns, f(child, "expression"), "Expression"));
-                                    obj(expression)
+                                    obj(source)
                                         .get("location")
-                                        .is_none_or(|location| span(location) != expr.span)
+                                        .is_none_or(|l| span(l) != expr.span)
                                 })
                             })
                 })
-                .expect("各出現の実Evaluation");
+                .expect("元rootのAST各出現の実Evaluationを保持する");
+            let source = target(&ns, f(val(evaluation), "expression"), "Expression");
+            assert_eq!(span(f(val(source), "location")), expr.span);
             let bindings = arr(f(val(evaluation), "bindings"));
             assert_eq!(f(&bindings[0], "name"), &Json::str("s"));
             let binding = ns[txt(f(f(&bindings[0], "value"), "node"))];
@@ -502,8 +755,7 @@ fn missing_integer_operands_stay_missing_without_fabricated_scalar_values() {
     audit(&result, &checked);
 }
 
-#[test]
-fn boolean_truth_tables_distinguish_values_law_judgments_and_unknown_slots() {
+fn boolean_truth_tables(cases: &[(usize, usize)]) {
     const F: Option<bool> = Some(false);
     const T: Option<bool> = Some(true);
     const U: Option<bool> = None;
@@ -523,75 +775,90 @@ fn boolean_truth_tables_distinguish_values_law_judgments_and_unknown_slots() {
         "ol=check(Calc.either_law,s=@v/sample)",
         "il=check(Calc.implies_law,s=@v/sample)",
     ];
-    for (i, p) in [F, T, U].into_iter().enumerate() {
-        for (j, q) in [F, T, U].into_iter().enumerate() {
-            let (result, checked) = run(fixture(Some("1"), Some("2"), p, q), &asks);
-            for (id, expected) in [
-                ("v_not", not[i]),
-                ("v_and", both[i][j]),
-                ("v_or", either[i][j]),
-                ("imp", implies[i][j]),
-                ("eq", equal[i][j]),
-            ] {
-                let a = answer(&result, id);
-                assert!(!obj(a).contains_key("claim"));
-                assert_eq!(
-                    f(a, "status"),
-                    &Json::str(if expected.is_some() {
-                        "established"
-                    } else {
-                        "undetermined"
-                    })
-                );
-                assert_eq!(
-                    output(&result, id, "Bool"),
-                    expected.map(Json::Bool).as_ref()
-                );
-            }
-            for (id, expected) in [
-                ("nl", not[i]),
-                ("al", both[i][j]),
-                ("ol", either[i][j]),
-                ("il", implies[i][j]),
-            ] {
-                assert_eq!(
-                    f(answer(&result, id), "status"),
-                    &Json::str(match expected {
-                        Some(true) => "established",
-                        Some(false) => "refuted",
-                        None => "undetermined",
-                    })
-                );
-            }
-            for id in ["v_and", "v_or", "imp", "al", "ol", "il"] {
-                let a = answer(&result, id);
-                assert_eq!(
-                    f(f(a, "scope"), "domain"),
-                    &Json::str(if p.is_none() || q.is_none() {
-                        "all_completions"
-                    } else {
-                        "finite_model"
-                    })
-                );
-                let missing: BTreeSet<_> = arr(f(a, "reasons"))
-                    .iter()
-                    .filter(|r| f(r, "code") == &Json::str("missing_observation"))
-                    .flat_map(|r| arr(f(r, "missing")))
-                    .map(|m| txt(f(m, "field")).to_owned())
-                    .collect();
-                let expected: BTreeSet<_> = [("Measure.Point.p", p), ("Measure.Point.q", q)]
-                    .into_iter()
-                    .filter(|(_, v)| v.is_none())
-                    .map(|(n, _)| n.to_owned())
-                    .collect();
-                assert_eq!(
-                    missing, expected,
-                    "短絡で確定しても両raw operandの欠測identityを残す"
-                );
-            }
-            audit(&result, &checked);
+    for &(i, j) in cases {
+        let p = [F, T, U][i];
+        let q = [F, T, U][j];
+        let (result, checked) = run(fixture(Some("1"), Some("2"), p, q), &asks);
+        for (id, expected) in [
+            ("v_not", not[i]),
+            ("v_and", both[i][j]),
+            ("v_or", either[i][j]),
+            ("imp", implies[i][j]),
+            ("eq", equal[i][j]),
+        ] {
+            let a = answer(&result, id);
+            assert!(!obj(a).contains_key("claim"));
+            assert_eq!(
+                f(a, "status"),
+                &Json::str(if expected.is_some() {
+                    "established"
+                } else {
+                    "undetermined"
+                })
+            );
+            assert_eq!(
+                output(&result, id, "Bool"),
+                expected.map(Json::Bool).as_ref()
+            );
         }
+        for (id, expected) in [
+            ("nl", not[i]),
+            ("al", both[i][j]),
+            ("ol", either[i][j]),
+            ("il", implies[i][j]),
+        ] {
+            assert_eq!(
+                f(answer(&result, id), "status"),
+                &Json::str(match expected {
+                    Some(true) => "established",
+                    Some(false) => "refuted",
+                    None => "undetermined",
+                })
+            );
+        }
+        for id in ["v_and", "v_or", "imp", "al", "ol", "il"] {
+            let a = answer(&result, id);
+            assert_eq!(
+                f(f(a, "scope"), "domain"),
+                &Json::str(if p.is_none() || q.is_none() {
+                    "all_completions"
+                } else {
+                    "finite_model"
+                })
+            );
+            let missing: BTreeSet<_> = arr(f(a, "reasons"))
+                .iter()
+                .filter(|r| f(r, "code") == &Json::str("missing_observation"))
+                .flat_map(|r| arr(f(r, "missing")))
+                .map(|m| txt(f(m, "field")).to_owned())
+                .collect();
+            let expected: BTreeSet<_> = [("Measure.Point.p", p), ("Measure.Point.q", q)]
+                .into_iter()
+                .filter(|(_, v)| v.is_none())
+                .map(|(n, _)| n.to_owned())
+                .collect();
+            assert_eq!(
+                missing, expected,
+                "短絡で確定しても両raw operandの欠測identityを残す"
+            );
+        }
+        audit(&result, &checked);
     }
+}
+
+#[test]
+fn boolean_truth_tables_distinguish_values_law_judgments_and_unknown_slots() {
+    boolean_truth_tables(&[(0, 0), (0, 1), (1, 0), (1, 1)]);
+}
+
+#[test]
+fn boolean_truth_tables_with_exactly_one_unknown_slot() {
+    boolean_truth_tables(&[(0, 2), (1, 2), (2, 0), (2, 1)]);
+}
+
+#[test]
+fn boolean_truth_tables_with_both_slots_unknown() {
+    boolean_truth_tables(&[(2, 2)]);
 }
 
 #[test]

@@ -519,11 +519,38 @@ fn instance_for_eval<'a>(wire: &'a Json, id: &str, name: &str, evaluation: &Json
     instances[0]
 }
 fn row_instances<'a>(wire: &'a Json, id: &str, name: &str) -> Vec<(&'a Json, &'a Json)> {
+    row_instances_selected(wire, root(wire, id), name)
+}
+fn row_instances_selected<'a>(
+    wire: &'a Json,
+    whole_eval: &Json,
+    name: &str,
+) -> Vec<(&'a Json, &'a Json)> {
     let ns = index(wire);
-    children(&ns, root(wire, id))
+    let whole = aggregate_instance(&ns, whole_eval).expect("選択した実Law族whole");
+    children(&ns, whole_eval)
         .into_iter()
         .map(|evaluation| {
-            let instance = instance_for_eval(wire, id, name, evaluation);
+            let reference = Json::obj([("node", f(evaluation, "id").clone())]);
+            let instances = arr(f(whole, "arguments"))
+                .iter()
+                .map(|r| ns[text(f(r, "node"))])
+                .filter(|n| {
+                    f(n, "type") == &Json::str("LawInstance")
+                        && f(val(n), "name") == &Json::str(name)
+                        && (aggregate_instance(&ns, evaluation)
+                            .is_some_and(|instance| f(instance, "id") == f(n, "id"))
+                            || (arr(f(n, "arguments")).first() == Some(&reference)
+                                && f(val(n), "bindings") == f(val(evaluation), "bindings")
+                                && f(val(n), "body") == f(val(evaluation), "expression")))
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(
+                instances.len(),
+                1,
+                "選択したwholeの直接辺から実row instanceを一意照合"
+            );
+            let instance = instances[0];
             (instance, evaluation)
         })
         .collect()
@@ -540,6 +567,52 @@ fn row_keys(rows: &[Vec<Json>], types: &[(&str, Json)]) -> BTreeSet<String> {
             .canonical()
         })
         .collect()
+}
+fn retained_observed_family<'a>(wire: &'a Json, id: &str, name: &str) -> (&'a Json, &'a Json) {
+    let ns = index(wire);
+    let aggregate = root(wire, id);
+    let seed = expression(&ns, aggregate);
+    assert_eq!(
+        arr(f(aggregate, "arguments")).first(),
+        Some(f(val(aggregate), "expression"))
+    );
+    let direct = arr(f(seed, "arguments"))
+        .iter()
+        .map(|r| ns[text(f(r, "node"))])
+        .collect::<Vec<_>>();
+    let claims = direct
+        .iter()
+        .copied()
+        .filter(|n| {
+            f(n, "type") == &Json::str("Proposition")
+                && f(val(n), "predicate") == &Json::str("law_holds")
+                && arr(f(val(n), "operands")).len() == 1
+                && f(
+                    val(target(
+                        &ns,
+                        &arr(f(val(n), "operands"))[0],
+                        &Json::str("LawInstance"),
+                    )),
+                    "name",
+                ) == &Json::str(name)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        claims.len(),
+        1,
+        "元補完seedの直接辺から元Law族命題を一意選択"
+    );
+    let claim = claims[0];
+    let args = arr(f(claim, "arguments"));
+    assert_eq!(args.len(), 2);
+    assert_eq!(&args[0], &arr(f(val(claim), "operands"))[0]);
+    let whole_eval = target(&ns, &args[1], &Json::str("Evaluation"));
+    assert!(
+        direct.iter().any(|n| f(n, "id") == f(whole_eval, "id")),
+        "元whole評価もseedの直接root"
+    );
+    assert_eq!(arr(f(whole_eval, "arguments")).first(), Some(&args[0]));
+    (whole_eval, claim)
 }
 fn assert_universal_request(wire: &Json, id: &str, name: &str, parameters: &[&str]) {
     let request = arr(f(wire, "requests"))
@@ -583,6 +656,37 @@ fn assert_family(
     let a = answer(wire, id);
     assert_eq!(f(a, "status"), &Json::str(decision));
     let claim = target(&ns, f(a, "claim"), &Json::str("Proposition"));
+    assert_eq!(f(claim, "scope"), f(a, "scope"));
+    assert_family_selected(
+        wire,
+        checked,
+        id,
+        name,
+        remaining,
+        fixed,
+        all_types,
+        expected_rows,
+        decision,
+        exhausted,
+        root(wire, id),
+        claim,
+    );
+}
+fn assert_family_selected(
+    wire: &Json,
+    checked: &CheckedInputs,
+    id: &str,
+    name: &str,
+    remaining: &[(&str, Json, Vec<Json>)],
+    fixed: &[(&str, Json, Json)],
+    all_types: &[(&str, Json)],
+    expected_rows: &[Vec<Json>],
+    decision: &str,
+    exhausted: bool,
+    whole_eval: &Json,
+    claim: &Json,
+) {
+    let ns = index(wire);
     assert_eq!(f(f(claim, "judgment"), "status"), &Json::str(decision));
     assert_eq!(f(val(claim), "predicate"), &Json::str("law_holds"));
     let operands = arr(f(val(claim), "operands"));
@@ -628,7 +732,13 @@ fn assert_family(
             f(val(source_node), "parameters")
         );
     }
-    let whole_eval = root(wire, id);
+    assert_eq!(
+        f(claim, "arguments"),
+        &Json::Arr(vec![
+            operands[0].clone(),
+            Json::obj([("node", f(whole_eval, "id").clone())])
+        ])
+    );
     assert_eq!(f(val(whole_eval), "expression"), f(val(whole), "body"));
     assert_eq!(f(val(whole_eval), "bindings"), f(val(whole), "bindings"));
     assert_eq!(
@@ -646,7 +756,7 @@ fn assert_family(
     }
     let quantifiers = arr(f(val(claim), "quantifiers"));
     assert!(quantifiers.len() >= remaining.len());
-    let scope_qs = arr(f(f(a, "scope"), "quantifiers"));
+    let scope_qs = arr(f(f(claim, "scope"), "quantifiers"));
     assert!(scope_qs.len() >= remaining.len());
     assert_eq!(quantifiers, scope_qs, "freeparameterと内部量化を全件保持");
     for (i, (parameter, t, wanted)) in remaining.iter().enumerate() {
@@ -667,7 +777,7 @@ fn assert_family(
         expected.sort();
         assert_eq!(actual, expected, "{name}.{parameter}:元型全域");
     }
-    let row_pairs = row_instances(wire, id, name);
+    let row_pairs = row_instances_selected(wire, whole_eval, name);
     assert_eq!(row_pairs.len(), expected_rows.len());
     let mut actual_rows = vec![];
     for (instance, evaluation) in &row_pairs {
@@ -732,7 +842,7 @@ fn assert_family(
     expected_product.sort();
     assert_eq!(product_values, expected_product, "元parameter順の実直積");
     let product_ref = Json::obj([("node", f(product, "id").clone())]);
-    let proofs = evidence(&ns, a, "finite_exhaustion")
+    let proofs = evidence(&ns, claim, "finite_exhaustion")
         .into_iter()
         .filter(|e| f(f(val(e), "data"), "domain") == &product_ref)
         .collect::<Vec<_>>();
@@ -1115,7 +1225,9 @@ law required observed(r:E): r.flag;
         );
     }
     let rows = refs.iter().map(|r| vec![r.clone()]).collect::<Vec<_>>();
-    assert_family(
+    let (original_d, original_d_claim) = retained_observed_family(&wire, "d", "Calc.unknown_guard");
+    let (original_e, original_e_claim) = retained_observed_family(&wire, "e", "Calc.observed");
+    assert_family_selected(
         &wire,
         &checked,
         "d",
@@ -1126,8 +1238,10 @@ law required observed(r:E): r.flag;
         &rows,
         "undetermined",
         false,
+        original_d,
+        original_d_claim,
     );
-    assert_family(
+    assert_family_selected(
         &wire,
         &checked,
         "e",
@@ -1138,6 +1252,8 @@ law required observed(r:E): r.flag;
         &rows,
         "refuted",
         false,
+        original_e,
+        original_e_claim,
     );
     for id in ["d", "e"] {
         assert_missing(&wire, id, &checked);
@@ -1151,7 +1267,7 @@ law required observed(r:E): r.flag;
             && f(m, "field") == &Json::str("Roster.E.flag")
             && !obj(m).contains_key("atom")));
     }
-    let unknown = row_instances(&wire, "d", "Calc.unknown_guard");
+    let unknown = row_instances_selected(&wire, original_d, "Calc.unknown_guard");
     assert_eq!(unknown.len(), 2);
     for (instance, row) in unknown {
         let bound = binding_values(&wire, f(val(instance), "bindings"), &[("r", e.clone())]);
@@ -1164,13 +1280,163 @@ law required observed(r:E): r.flag;
             })
         );
     }
-    let examples = evidence(&ns, answer(&wire, "e"), "counterexample");
+    let examples = evidence(&ns, original_e_claim, "counterexample");
     assert!(examples.iter().any(|ce| {
         let bs = f(f(val(ce), "data"), "bindings");
         arr(bs).len() == 1
             && binding_values(&wire, bs, &[("r", e.clone())]) == vec![refs[1].clone()]
     }));
-    // 共有欠測hに対する b=h 全補完相関の完成は、この実instance三値集約の検査には含めない。
+    for (id, name) in [("d", "Calc.unknown_guard"), ("e", "Calc.observed")] {
+        let aggregate = root(&wire, id);
+        assert_eq!(
+            f(f(aggregate, "scope"), "domain"),
+            &Json::str("all_completions")
+        );
+        let domain_ref = &arr(f(aggregate, "arguments"))[1];
+        let domain = target(&ns, domain_ref, &Json::str("Domain"));
+        assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
+        assert_eq!(f(val(domain), "type"), &Json::str("Bool"));
+        let members = arr(f(val(domain), "elements"));
+        assert_eq!(members.len(), 2);
+        assert_eq!(
+            members
+                .iter()
+                .map(|r| val(target(&ns, r, &Json::str("Bool"))).canonical())
+                .collect::<BTreeSet<_>>(),
+            BTreeSet::from([Json::Bool(false).canonical(), Json::Bool(true).canonical()])
+        );
+        let cases = children(&ns, aggregate);
+        assert_eq!(cases.len(), 2);
+        let propositions = arr(f(aggregate, "arguments"))
+            .iter()
+            .map(|r| ns[text(f(r, "node"))])
+            .filter(|n| f(n, "type") == &Json::str("Proposition"))
+            .collect::<Vec<_>>();
+        assert_eq!(propositions.len(), 2);
+        let mut used = BTreeSet::new();
+        let mut matched = BTreeSet::new();
+        for case in cases {
+            let whole = aggregate_instance(&ns, case).expect("補完内の実Ref全域Law族");
+            assert_eq!(f(val(whole), "name"), &Json::str(name));
+            let body = target(&ns, f(val(whole), "body"), &Json::str("Expression"));
+            let selected = arr(f(body, "arguments"))
+                .iter()
+                .filter(|r| members.contains(r))
+                .collect::<Vec<_>>();
+            assert_eq!(selected.len(), 1);
+            assert!(used.insert(selected[0].canonical()));
+            let Json::Bool(h) = val(target(&ns, selected[0], &Json::str("Bool"))) else {
+                panic!("Bool代入")
+            };
+            let case_ref = Json::obj([("node", f(case, "id").clone())]);
+            let claims = propositions
+                .iter()
+                .copied()
+                .filter(|p| arr(f(p, "arguments")).get(1) == Some(&case_ref))
+                .collect::<Vec<_>>();
+            assert_eq!(claims.len(), 1);
+            assert!(matched.insert(text(f(claims[0], "id"))));
+            let decision = if id == "d" && !h {
+                "established"
+            } else {
+                "refuted"
+            };
+            assert_family_selected(
+                &wire,
+                &checked,
+                id,
+                name,
+                &[("r", e.clone(), refs.clone())],
+                &[],
+                &[("r", e.clone())],
+                &rows,
+                decision,
+                decision == "established",
+                case,
+                claims[0],
+            );
+            if id == "e" {
+                let examples = evidence(&ns, claims[0], "counterexample");
+                assert!(
+                    examples.iter().any(|ce| {
+                        let data = f(val(ce), "data");
+                        binding_values(&wire, f(data, "bindings"), &[("r", e.clone())])
+                            == vec![refs[1].clone()]
+                            && arr(f(data, "facts")).iter().any(|fact| {
+                                f(fact, "snapshot") == &Json::str("w")
+                                    && f(fact, "subject") == &Json::str("item")
+                                    && obj(fact).get("atom") == Some(&Json::str("flag"))
+                            })
+                            && val(target(&ns, f(data, "left"), &Json::str("Bool")))
+                                == &Json::Bool(false)
+                            && val(target(&ns, f(data, "right"), &Json::str("Bool")))
+                                == &Json::Bool(true)
+                    }),
+                    "各補完も元w.flag=falseの実反例を保持"
+                );
+            }
+        }
+        assert_eq!(used.len(), 2);
+        assert_eq!(matched.len(), 2);
+        if id == "d" {
+            check_claim(&wire, id, "undetermined");
+            assert!(!obj(val(aggregate)).contains_key("value"));
+            let pairs = evidence(&ns, answer(&wire, id), "completion_pair");
+            assert_eq!(pairs.len(), 1);
+            let pair = f(val(pairs[0]), "data");
+            assert_eq!(
+                f(pair, "fields"),
+                &Json::Arr(vec![Json::obj([
+                    ("snapshot", Json::str("v")),
+                    ("subject", Json::str("item")),
+                    ("field", Json::str("Roster.E.flag"))
+                ])])
+            );
+            let mut values = BTreeSet::new();
+            for (assignment_key, result_key) in
+                [("first", "first_result"), ("second", "second_result")]
+            {
+                let assignment = arr(f(pair, assignment_key));
+                assert_eq!(assignment.len(), 1);
+                let h = val(target(&ns, &assignment[0], &Json::str("Bool")));
+                let Json::Bool(h) = h else { panic!("Bool") };
+                assert!(values.insert(*h));
+                assert!(arr(f(part(aggregate), "children")).contains(f(pair, result_key)));
+                let case = target(&ns, f(pair, result_key), &Json::str("Evaluation"));
+                let body = expression(&ns, case);
+                assert!(
+                    arr(f(body, "arguments")).contains(&assignment[0]),
+                    "補完対代入はその実whole caseに属する"
+                );
+                assert_eq!(
+                    val(target(&ns, f(val(case), "value"), &Json::str("Bool"))),
+                    &Json::Bool(!h)
+                );
+            }
+            assert_eq!(values, BTreeSet::from([false, true]));
+        } else {
+            check_claim(&wire, id, "refuted");
+            assert_eq!(
+                val(target(&ns, f(val(aggregate), "value"), &Json::str("Bool"))),
+                &Json::Bool(false)
+            );
+            let claim = target(
+                &ns,
+                f(answer(&wire, id), "claim"),
+                &Json::str("Proposition"),
+            );
+            let proofs = arr(f(claim, "evidence"))
+                .iter()
+                .map(|r| target(&ns, r, &Json::str("Evidence")))
+                .collect::<Vec<_>>();
+            assert_eq!(proofs.len(), 1);
+            assert_eq!(f(val(proofs[0]), "kind"), &Json::str("finite_exhaustion"));
+            let proof = f(val(proofs[0]), "data");
+            assert_eq!(f(proof, "domain"), domain_ref);
+            assert_eq!(f(proof, "checked"), &Json::Nat(2));
+            assert_eq!(f(proof, "instances"), f(part(aggregate), "children"));
+        }
+    }
 }
 
 #[test]
