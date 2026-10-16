@@ -322,9 +322,15 @@ impl<'a> Environment<'a> {
         }
         if let Some(Payload::Expression {
             location: Location::Law { span },
+            parameters,
             ..
         }) = &node.payload
         {
+            // この観測経路は元宣言parameterを全て明示束縛する。内部のlet名や
+            // 欠測slotを自由parameterとして持ち込むことはできない。
+            if !parameters.is_empty() {
+                return Err("全明示束縛の元 Source に自由parameterがある".into());
+            }
             let bytes = self.inputs.sources().law().bytes();
             if span.0 >= span.1 || bytes.get(span.0..span.1).is_none() {
                 return Err("元 byte span の外".into());
@@ -341,33 +347,28 @@ impl<'a> Environment<'a> {
                     return Err("Expression の型が元 AST に合わない".into());
                 }
             } else {
-                // Dotted の先頭 parameter と射影途中は実在 token の半開区間。
-                let source = std::str::from_utf8(&bytes[span.0..span.1])
-                    .map_err(|_| "式 token が UTF-8 でない")?;
+                // fragment は型検査した実 Dotted の先頭 token だけである。
+                // body 内の同綴りfield名・コメント・部分文字列では代用しない。
+                let source = self.name_token(*span)?;
                 let Some(Payload::Expression { bindings, .. }) = &node.payload else {
                     unreachable!()
                 };
-                let mut found = false;
+                let mut expected = None;
                 for binding in bindings {
                     self.tick()?;
-                    found |= binding.name == source;
+                    if binding.name == source {
+                        expected = Some(binding.ty.clone());
+                    }
                     self.tick()?;
                 }
-                if !found {
+                if expected.is_none() {
                     let rhs = self
                         .lexical_rhs(*span, source)?
                         .ok_or("元 AST にない式 fragment")?;
-                    if node.ty
-                        != NodeType::Expression(
-                            self.inputs
-                                .law()
-                                .expr_type(rhs)
-                                .ok_or("lexical 右辺の型がない")?
-                                .clone(),
-                        )
-                    {
-                        return Err("lexical fragment の元型が違う".into());
-                    }
+                    expected = self.inputs.law().expr_type(rhs).cloned();
+                }
+                if node.ty != NodeType::Expression(expected.ok_or("fragment の元型がない")?) {
+                    return Err("fragment の型が元parameter/lexical右辺と違う".into());
                 }
             }
         }
@@ -1702,6 +1703,28 @@ impl<'a> Environment<'a> {
         self.analyze_source(graph, span, bindings)
             .map(|analysis| analysis.scope)
     }
+    // 元byteの綴りだけでなく、採用・型検査済みDottedの実先頭出現へ戻る。
+    // 単独名は全体のSource、field読みの先頭名だけがfragmentとして使える。
+    fn name_token(&self, span: (usize, usize)) -> Result<&str, ValidationFailure> {
+        let mut name = None;
+        let law = self.inputs.law();
+        for (id, expression) in law.exprs.iter().enumerate() {
+            self.tick()?;
+            if law.expr_type(id).is_some()
+                && self.expressions.get(&expression.span) == Some(&id)
+                && let ExprKind::Dotted(parts) = &expression.kind
+                && let Some(first) = parts.first()
+                && first.span == span
+            {
+                if name.is_some_and(|actual| actual != first.name.as_str()) {
+                    return Err("名前tokenの元出現が一意でない".into());
+                }
+                name = Some(first.name.as_str());
+            }
+            self.tick()?;
+        }
+        name.ok_or_else(|| "fragment が元Dottedの先頭tokenでない".into())
+    }
     // lexical scope は元 binder の body 範囲から復元する。右辺自身や同名の別出現を
     // 束縛としない。静的検査済みの shadowing 禁止により、外→内の順は一意になる。
     fn lexical_context(
@@ -1746,6 +1769,9 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         name: &str,
     ) -> Result<Option<usize>, ValidationFailure> {
+        if self.name_token(span)? != name {
+            return Err("lexical 名の元使用tokenが違う".into());
+        }
         let mut result = None;
         for (actual, rhs) in self.lexical_context(span)? {
             self.tick()?;
@@ -1889,15 +1915,8 @@ impl<'a> Environment<'a> {
                 scalar_scope,
             });
         }
-        // Dotted の先頭 parameter は実在 token のみを指す。
-        let token = self
-            .inputs
-            .sources()
-            .law()
-            .bytes()
-            .get(span.0..span.1)
-            .ok_or("評価範囲のtokenが元byte外")?;
-        let name = std::str::from_utf8(token).map_err(|_| "評価範囲のtokenがUTF-8でない")?;
+        // prefix の独立再分析も、Source validation と同じ実token照合を必須にする。
+        let name = self.name_token(span)?;
         let value = variables
             .get(name)
             .ok_or("評価範囲に元束縛以外のfragmentがある")?;

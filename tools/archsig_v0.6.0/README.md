@@ -37,7 +37,7 @@
   型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
   欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
   その他の式形・未束縛 parameter の量化・Answer 由来の束縛・
-  動的 owner 制約の評価は未実装であり、
+  未確定の参照からのfield読取り・動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
   `unsupported_algorithm` や未決回答へ変換しない。
 - CLI の `archsig check` と `archsig version`。入力のコピー、`result.json`、stdout の receipt を

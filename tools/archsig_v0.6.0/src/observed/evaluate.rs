@@ -323,7 +323,11 @@ impl Evaluator<'_, '_> {
                     let parameter = parameter.ok_or_else(|| {
                         self.unsupported(span, "束縛変数以外を先頭とするドット式")
                     })?;
-                    self.source(first.span, parameter)?;
+                    let owner = self.source(first.span, parameter)?;
+                    if parts.len() > 1 && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
+                    {
+                        return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
+                    }
                     if parts.len() > 1
                         && !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
                         && !numeric::is_numeric_type(&ty, self.control)?
@@ -4051,5 +4055,147 @@ reading Calc {{
             rebuild_for_origin_and_support_recheck(&result, &changed),
             Err(ValidationFailure::Internal(_))
         ));
+    }
+
+    #[test]
+    fn rejects_lexical_use_relocated_to_field_or_comment_token_at_prefix() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &[],
+                "view token_case(s: Sample): Q = let q = rat(5,7) in q + // q\n s.q;",
+            ),
+            &["token=evaluate(Calc.token_case,s=@v/sample)"],
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let law = result.prepared.inputs().law();
+        let bytes = result.prepared.inputs().sources().law().bytes();
+        let (alias, source, original_span) = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                let Some(Payload::Evaluation {
+                    expression, parts, ..
+                }) = &node.payload
+                else {
+                    return None;
+                };
+                let Some(Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }) = &result.nodes[expression.0].payload
+                else {
+                    return None;
+                };
+                (&bytes[span.0..span.1] == b"q" && parts[0].children.len() == 1).then_some((
+                    NodeRef(index),
+                    *expression,
+                    *span,
+                ))
+            })
+            .unwrap();
+        let field_span = law
+            .exprs
+            .iter()
+            .find_map(|e| match &e.kind {
+                ExprKind::Dotted(parts)
+                    if parts.len() == 2 && parts[0].name == "s" && parts[1].name == "q" =>
+                {
+                    Some(parts[1].span)
+                }
+                _ => None,
+            })
+            .unwrap();
+        let comment_start = bytes.windows(4).position(|w| w == b"// q").unwrap() + 3;
+        let comment_span = (comment_start, comment_start + 1);
+        assert!(source.0 < alias.0);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=source.0]).unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=alias.0]).unwrap();
+        for false_span in [field_span, comment_span] {
+            assert_ne!(false_span, original_span);
+            assert_eq!(&bytes[false_span.0..false_span.1], b"q");
+            assert!(
+                !law.exprs
+                    .iter()
+                    .enumerate()
+                    .any(|(id, e)| law.expr_type(id).is_some() && e.span == false_span)
+            );
+            assert!(!law.exprs.iter().enumerate().any(|(id,e)| law.expr_type(id).is_some() && matches!(&e.kind,ExprKind::Dotted(parts) if parts[0].span == false_span)));
+            let mut changed = result.nodes[..=alias.0].to_vec();
+            let Some(Payload::Expression { location, .. }) = &mut changed[source.0].payload else {
+                unreachable!()
+            };
+            *location = Location::Law { span: false_span };
+            changed[source.0].rule = Rule::Input {
+                kind: "law",
+                location: Location::Law { span: false_span },
+            };
+            let Some(Payload::Evaluation { parts, .. }) = &mut changed[alias.0].payload else {
+                unreachable!()
+            };
+            parts[0].location = Location::Law { span: false_span };
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "同綴りのfield名/コメントをlexical使用出現へ付替えたprefixを拒否する"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_missing_lexical_source_with_invented_free_parameter_at_prefix() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &["q"],
+                "view dependent(s: Sample): Q = let x = s.q in x + 1;",
+            ),
+            &["dependent=evaluate(Calc.dependent,s=@v/sample)"],
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "partial");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let alias = lexical_alias_evaluation(&result, "dependent");
+        let Some(Payload::Evaluation {
+            expression, value, ..
+        }) = &result.nodes[alias.0].payload
+        else {
+            unreachable!()
+        };
+        assert!(value.is_none());
+        assert!(result.nodes[expression.0].scope.completions);
+        let Some(Payload::Expression {
+            parameters,
+            bindings,
+            ..
+        }) = &result.nodes[expression.0].payload
+        else {
+            unreachable!()
+        };
+        assert!(parameters.is_empty());
+        assert_eq!(
+            bindings.iter().map(|b| b.name.as_str()).collect::<Vec<_>>(),
+            vec!["s"]
+        );
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=expression.0]).unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=alias.0]).unwrap();
+        let mut changed = result.nodes[..=expression.0].to_vec();
+        let Some(Payload::Expression { parameters, .. }) = &mut changed[expression.0].payload
+        else {
+            unreachable!()
+        };
+        parameters.push(("x".into(), Type::Q));
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "元の欠測lexical名を新たな自由parameterに変更したSourceを拒否する"
+        );
     }
 }

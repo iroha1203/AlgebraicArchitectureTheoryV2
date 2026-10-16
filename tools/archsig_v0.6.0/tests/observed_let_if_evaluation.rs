@@ -876,3 +876,64 @@ fn injected_stop_inside_let_if_keeps_prior_values_missing_reason_and_unstarted_r
     assert!(c.checkpoint(Checkpoint::Expression).is_err());
     assert_eq!(probes.get(), before, "停止した同Controlはprobeも再開しない");
 }
+
+#[test]
+fn unknown_lexical_reference_field_uses_dedicated_not_implemented_for_both_spellings() {
+    let body = r#"
+ view known_dot(s: Sample,t: Sample): Z = let x=if true then s else t in x.z;
+ view known_group(s: Sample,t: Sample): Z = let x=if true then s else t in (x).z;
+ view unknown_dot(s: Sample,t: Sample): Z = let x=if s.p then s else t in x.z;
+ view unknown_group(s: Sample,t: Sample): Z = let x=if s.p then s else t in (x).z;
+"#;
+    // other.zは欠測だが、既知条件のlet右辺はsampleへ確定する。
+    let (known, _) = run(
+        fixture(&["p"], body),
+        &[
+            "dot=evaluate(Calc.known_dot,s=@v/sample,t=@v/other)",
+            "grouped=evaluate(Calc.known_group,s=@v/sample,t=@v/other)",
+        ],
+    );
+    assert_eq!(f(&known, "status"), &Json::str("complete"));
+    for id in ["dot", "grouped"] {
+        assert_output(&known, id, &Json::str("Z"), Json::str("3"));
+    }
+    for (name, ask) in [
+        (
+            "Calc.unknown_dot",
+            "dot=evaluate(Calc.unknown_dot,s=@v/sample,t=@v/other)",
+        ),
+        (
+            "Calc.unknown_group",
+            "grouped=evaluate(Calc.unknown_group,s=@v/sample,t=@v/other)",
+        ),
+    ] {
+        let inputs = fixture(&["p"], body);
+        check_inputs(inputs.clone(), &mut control())
+            .unwrap_or_else(|failure| panic!("入力検査: {:?}", failure.issues()));
+        let failure = match evaluate_observed_bytes(inputs, &[ask], &mut control()) {
+            Err(failure) => failure,
+            Ok(result) => {
+                let wire = result.wire();
+                panic!(
+                    "未知lexical Refのfieldは専用NotImplementedを要求する: status={:?}, issues={:?}",
+                    f(&wire, "status"),
+                    f(&wire, "issues")
+                );
+            }
+        };
+        assert!(
+            failure.wire().is_none(),
+            "Internal/errorのresultへ分類しない"
+        );
+        let archsig::observed::EvaluationFailure::NotImplemented {
+            declaration,
+            location,
+            ..
+        } = failure
+        else {
+            panic!("未知lexical Refのfieldは専用NotImplementedを要求する");
+        };
+        assert_eq!(declaration, name);
+        assert!(matches!(location, archsig::issue::Location::Law { .. }));
+    }
+}
