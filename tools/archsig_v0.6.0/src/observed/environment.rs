@@ -978,6 +978,15 @@ impl<'a> Environment<'a> {
                 } else {
                     None
                 };
+                let lexical_parameter = if let Some(name) = self.find_name_token(span)? {
+                    if let Some((input, _)) = self.pattern_argument(graph, span, name, bindings)? {
+                        Some(input)
+                    } else {
+                        self.lexical_argument(graph, span, name, bindings)?
+                    }
+                } else {
+                    None
+                };
                 let parameter = if expected.is_empty() {
                     #[cfg(test)]
                     let previous_name_context = self
@@ -1005,6 +1014,9 @@ impl<'a> Environment<'a> {
                 if parameter.is_some() && children.first().copied() != parameter {
                     return Err("callee parameterの実引数Evaluationが違う".into());
                 }
+                if lexical_parameter.is_some() && children.first().copied() != lexical_parameter {
+                    return Err("lexical名の元実Evaluationが違う".into());
+                }
                 if children.len() != expected.len() {
                     return Err("元 AST と子 Evaluation の個数不一致".into());
                 }
@@ -1013,7 +1025,9 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                     let (e, b, v) = self.evaluation(graph, child)?;
                     if self.expression_span(graph, e)? != expected_span
-                        || ((parameter.is_none() && iteration_parameter.is_none())
+                        || ((parameter.is_none()
+                            && iteration_parameter.is_none()
+                            && lexical_parameter.is_none())
                             && (b != bindings
                                 || graph.context_at(child.0) != self.current_context(graph)))
                     {
@@ -1366,7 +1380,7 @@ impl<'a> Environment<'a> {
                 return Err("let/if 値に元出現がない".into());
             };
             let id = self.expressions.get(span).copied();
-            let iteration = if let Some(name) = self.find_name_token(*span)? {
+            let binder = if let Some(name) = self.find_name_token(*span)? {
                 {
                     let bindings = node
                         .arguments
@@ -1376,12 +1390,16 @@ impl<'a> Environment<'a> {
                             _ => None,
                         })
                         .unwrap_or(&[]);
-                    self.iteration_argument(graph, *span, name, bindings)?
+                    if let Some(input) = self.iteration_argument(graph, *span, name, bindings)? {
+                        Some(input)
+                    } else {
+                        self.pattern_argument(graph, *span, name, bindings)?
+                    }
                 }
             } else {
                 None
             };
-            let operands = if let Some((domain, _)) = &iteration {
+            let operands = if let Some((domain, _)) = &binder {
                 let source = self.evaluation(graph, *domain)?.0;
                 vec![
                     *self
@@ -1462,10 +1480,10 @@ impl<'a> Environment<'a> {
                             .clone(),
                     ),
                 )?;
-                if iteration
+                if binder
                     .as_ref()
                     .is_some_and(|(domain, _)| *domain != reference)
-                    || (iteration.is_none()
+                    || (binder.is_none()
                         && graph.context_at(reference.0) != self.current_context(graph))
                 {
                     return Err("let/if子が別frameに属する".into());
@@ -2474,12 +2492,53 @@ impl<'a> Environment<'a> {
         }
         Ok(found)
     }
+    // lexical RHS/scrutinee は元 AST の位置で生成所属を決める。内包の外で
+    // 完成した値を反復内へ移さず、当該式を含まない反復だけを親へ戻す。
+    // call frame は越えず、同値ノードや任意祖先を代用することもない。
+    fn lexical_evaluation_context(
+        &self,
+        graph: &Graph,
+        id: usize,
+    ) -> Result<super::call::Context, ValidationFailure> {
+        let span = self.inputs.law().exprs[id].span;
+        let mut context = self.current_context(graph);
+        while let Some(index) = context.iteration {
+            self.tick()?;
+            let record = graph.iterations.get(index).ok_or("lexical反復元がない")?;
+            if record.caller.request != context.request
+                || record.caller.frame != context.frame
+                || record
+                    .caller
+                    .iteration
+                    .is_some_and(|parent| parent >= index)
+            {
+                return Err("lexical反復の親Request/frame/先行性が違う".into());
+            }
+            self.iteration_input(graph, index)?;
+            let comp = *self
+                .expressions
+                .get(&self.expression_span(graph, record.source)?)
+                .ok_or("lexical反復の元ASTがない")?;
+            let ExprKind::SetComp { elem, filter, .. } = self.inputs.law().exprs[comp].kind else {
+                return Err("lexical反復の元式が内包でない".into());
+            };
+            if std::iter::once(elem).chain(filter).any(|child| {
+                let body = self.inputs.law().exprs[child].span;
+                body.0 <= span.0 && span.1 <= body.1
+            }) {
+                return Ok(context);
+            }
+            context = record.caller;
+        }
+        Ok(context)
+    }
     fn actual_evaluation(
         &self,
         graph: &Graph,
         id: usize,
         bindings: &[Binding],
     ) -> Result<NodeRef, ValidationFailure> {
+        let context = self.lexical_evaluation_context(graph, id)?;
         let mut found = None;
         for (index, node) in graph
             .nodes
@@ -2488,7 +2547,7 @@ impl<'a> Environment<'a> {
             .take(self.cutoff.get().min(graph.nodes.len()))
         {
             self.tick()?;
-            if graph.context_at(index) != self.current_context(graph) {
+            if graph.context_at(index) != context {
                 continue;
             }
             let Some(Payload::Evaluation {
@@ -2511,6 +2570,17 @@ impl<'a> Environment<'a> {
         let reference = found.ok_or("元scrutineeの既出実Evaluationがない")?;
         self.recheck_evaluation(graph, reference)?;
         Ok(reference)
+    }
+    fn lexical_argument(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        name: &str,
+        bindings: &[Binding],
+    ) -> Result<Option<NodeRef>, ValidationFailure> {
+        self.lexical_rhs(span, name)?
+            .map(|rhs| self.actual_evaluation(graph, rhs, bindings))
+            .transpose()
     }
     pub(crate) fn pattern_argument(
         &self,
@@ -2647,6 +2717,22 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         Ok(result)
+    }
+    fn projects_lexical_binding(
+        &self,
+        span: (usize, usize),
+        name: &str,
+    ) -> Result<bool, ValidationFailure> {
+        for (actual, origin) in self.lexical_context(span)? {
+            self.tick()?;
+            if actual == name {
+                return Ok(matches!(
+                    origin,
+                    LexicalOrigin::Iteration(_) | LexicalOrigin::Pattern { .. }
+                ));
+            }
+        }
+        Ok(false)
     }
     // calleeのfield Scalarも、slot値の一致だけで別producerへ移せない。
     fn call_field_source(
@@ -3734,7 +3820,11 @@ impl<'a> Environment<'a> {
             known_value: value.known_value.clone(),
             missing: None,
             support: value.support.clone(),
-            scalar_scope: value.scalar_scope.clone(),
+            scalar_scope: if self.projects_lexical_binding(span, name)? {
+                value.known_value.as_ref().map(|_| value.scope.clone())
+            } else {
+                value.scalar_scope.clone()
+            },
         })
     }
     fn subject_support(&self, value: &Scalar) -> Result<Vec<Fact>, ValidationFailure> {
@@ -3814,6 +3904,13 @@ impl<'a> Environment<'a> {
                         .get(&first.name)
                         .ok_or("範囲検査の未知lexical名")?
                         .clone();
+                    // pattern/反復binderは使用位置で射影Scalarを作る。let alias
+                    // は元RHS Scalarを参照するので、そのscalar_scopeを変えない。
+                    if self.projects_lexical_binding(first.span, &first.name)? {
+                        result.scope.merge(base);
+                        result.scalar_scope =
+                            result.known_value.as_ref().map(|_| result.scope.clone());
+                    }
                     for part in parts.iter().skip(1) {
                         self.tick()?;
                         result = self.scoped_field(
@@ -4475,8 +4572,11 @@ impl<'a> Environment<'a> {
             {
                 return Err("pattern binderの元path・値・実scrutinee辺が違う".into());
             }
-        } else if self.lexical_rhs(span, name)?.is_some() {
-            if children.len() != 1 || value != children[0] {
+        } else if let Some(input) = self.lexical_argument(graph, span, name, bindings)? {
+            if children.len() != 1
+                || value != self.evaluation(graph, input)?.2
+                || value != children[0]
+            {
                 return Err("lexical 名が実右辺の値を参照していない".into());
             }
         } else if let Some(argument) = self.call_parameter(graph, name)? {

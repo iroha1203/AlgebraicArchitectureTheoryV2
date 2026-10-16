@@ -623,24 +623,8 @@ impl Evaluator<'_, '_> {
                     &first.name,
                     &self.bindings,
                 )? {
-                    let (matching, _, binder) = self
-                        .environment
-                        .pattern_binding(first.span, &first.name)?
-                        .ok_or_else(|| Failure::Internal("pattern元binderがない".into()))?;
-                    let ExprKind::Match { scrutinee, .. } =
-                        self.environment.inputs.law().exprs[matching].kind
-                    else {
-                        unreachable!()
-                    };
-                    let child = self
-                        .completed
-                        .get(&scrutinee)
-                        .cloned()
-                        .ok_or_else(|| Failure::Internal("pattern実scrutineeが未完".into()))?;
-                    if child.evaluation != input {
-                        return Err(Failure::Internal("pattern元scrutineeが違う".into()));
-                    }
-                    self.lexical_result(first.span, binder.ty, Some(known), vec![child])?
+                    let child = self.evaluated_reference(input)?;
+                    self.lexical_result(first.span, known.ty(), Some(known), vec![child])?
                 } else if let Some(argument) = self.formal.get(&first.name).cloned() {
                     let NodeType::Evaluation(parameter_ty) =
                         &self.graph.get(argument.evaluation)?.ty
@@ -6959,5 +6943,264 @@ reading Calc {{
             panic!("Mapを含む内包結果は専用未実装を保持する")
         };
         assert_eq!(&sources.law().bytes()[span.0..span.1], body.as_bytes());
+    }
+    #[test]
+    fn set_comprehension_captures_enclosing_let_rhs_without_reassigning_its_origin() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &[],
+                "view capture(): Set<Z> = let y=10 in set { x+y | x in list<Z>[1,2] };",
+            ),
+            &["value=evaluate(Calc.capture)"],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        let value = result.answers[0].outputs["value"];
+        assert_eq!(
+            data_scalar_at(&result, value.0),
+            &Scalar::Set {
+                element: Type::Z,
+                items: vec![Scalar::Z(11.into()), Scalar::Z(12.into())]
+            }
+        );
+        assert_eq!(
+            result.nodes[value.0].ty,
+            NodeType::Value(Type::Set(Box::new(Type::Z)))
+        );
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let rhs = data_rule_scalar(&result, "10", 0);
+        assert_eq!(result.contexts[rhs].iteration, None);
+        let rhs_evaluation = result.nodes.iter().enumerate().find_map(|(index, node)| matches!(&node.payload, Some(Payload::Evaluation { value: Some(value), .. }) if value.0 == rhs).then_some(NodeRef(index))).unwrap();
+        assert_eq!(result.contexts[rhs_evaluation.0].iteration, None);
+        let bytes = result.prepared.inputs().sources().law().bytes();
+        let mut captured = false;
+        let mut scalar_prefix = false;
+        for (index, node) in result.nodes.iter().enumerate() {
+            if let Some(Payload::Evaluation {
+                expression, parts, ..
+            }) = &node.payload
+                && let Some(Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }) = &result.nodes[expression.0].payload
+                && bytes.get(span.0..span.1) == Some(b"y")
+            {
+                captured = true;
+                assert!(result.contexts[index].iteration.is_some());
+                assert_eq!(
+                    parts[0].children,
+                    vec![rhs_evaluation],
+                    "外側letの元RHS Evaluationを参照し、反復内へ再所属させない"
+                );
+            }
+            if matches!(&node.payload, Some(Payload::Scalar(_)))
+                && matches!(&node.rule, Rule::Input { kind: "law", location: Location::Law { span } } if bytes.get(span.0..span.1) == Some(b"x+y"))
+            {
+                rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=index]).unwrap();
+                scalar_prefix = true;
+            }
+        }
+        assert!(captured && scalar_prefix);
+    }
+    #[test]
+    fn set_comprehension_nested_let_and_outer_pattern_captures_keep_original_producers() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &["p"],
+                r#"
+ view nested_capture(): Set<Set<Z>> = set { let y=x+10 in set { y+z | z in list<Z>[1,2] } | x in list<Z>[1,2] };
+ view pattern_capture(s: Sample): Set<Z> = match 10 { held => set { held+x | x in if s.p then list<Z>[1,2] else list<Z>[1,2] }; };
+"#,
+            ),
+            &[
+                "nested=evaluate(Calc.nested_capture)",
+                "pattern=evaluate(Calc.pattern_capture,s=@v/sample)",
+            ],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        let set = |items: &[i32]| Scalar::Set {
+            element: Type::Z,
+            items: items.iter().map(|n| Scalar::Z((*n).into())).collect(),
+        };
+        assert_eq!(
+            data_scalar_at(&result, result.answers[0].outputs["value"].0),
+            &Scalar::Set {
+                element: Type::Set(Box::new(Type::Z)),
+                items: vec![set(&[12, 13]), set(&[13, 14])],
+            }
+        );
+        assert_eq!(
+            data_scalar_at(&result, result.answers[1].outputs["value"].0),
+            &set(&[11, 12])
+        );
+        assert!(result.answers[1].scope.completions);
+        assert!(result.answers[1].reasons.iter().any(|reason| {
+            reason
+                .missing
+                .iter()
+                .any(|fact| fact.field.as_deref() == Some("Numeric.Sample.p"))
+        }));
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let bytes = result.prepared.inputs().sources().law().bytes();
+        let mut nested = 0;
+        let mut pattern = 0;
+        for (index, node) in result.nodes.iter().enumerate() {
+            if let Some(Payload::Evaluation {
+                expression,
+                parts,
+                value,
+                ..
+            }) = &node.payload
+                && let Some(Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }) = &result.nodes[expression.0].payload
+                && matches!(bytes.get(span.0..span.1), Some(b"y" | b"held"))
+            {
+                let input = parts[0].children[0];
+                let context = result.contexts[index];
+                let origin = result.contexts[input.0];
+                assert_eq!(context.request, origin.request);
+                assert_eq!(context.frame, origin.frame);
+                assert!(context.iteration.is_some());
+                if bytes.get(span.0..span.1) == Some(b"y") {
+                    nested += 1;
+                    assert!(origin.iteration.is_some(), "外側反復のRHSをrootへ戻さない");
+                    assert_eq!(result.iterations[context.iteration.unwrap()].caller, origin);
+                    let Some(Payload::Evaluation { value: rhs, .. }) =
+                        &result.nodes[input.0].payload
+                    else {
+                        unreachable!()
+                    };
+                    assert_eq!(value, rhs, "元RHS Scalarをそのまま参照する");
+                } else {
+                    pattern += 1;
+                    assert_eq!(origin.iteration, None);
+                    let scalar = value.unwrap();
+                    assert_eq!(result.nodes[scalar.0].arguments, vec![input]);
+                    assert!(!result.nodes[input.0].scope.completions);
+                    assert!(result.nodes[scalar.0].scope.completions);
+                    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar.0])
+                        .unwrap();
+                }
+            }
+            if matches!(&node.payload, Some(Payload::Scalar(_)))
+                && matches!(&node.rule, Rule::Input { kind: "law", location: Location::Law { span } } if bytes.get(span.0..span.1) == Some(b"y+z"))
+            {
+                rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=index]).unwrap();
+            }
+        }
+        assert_eq!((nested, pattern), (4, 2));
+    }
+    #[test]
+    fn set_comprehension_captured_let_rejects_equal_foreign_iteration_request_and_call() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &[],
+                r#"
+ view captured(): Set<Set<Z>> = set { let y=10 in set { y+z | z in list<Z>[1] } | x in list<Z>[1,2] };
+ view repeated(): (Set<Set<Z>>,Set<Set<Z>>) = (captured(),captured());
+"#,
+            ),
+            &[
+                "first=evaluate(Calc.captured)",
+                "second=evaluate(Calc.captured)",
+                "calls=evaluate(Calc.repeated)",
+            ],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let bytes = result.prepared.inputs().sources().law().bytes();
+        let aliases: Vec<_> = result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                let Some(Payload::Evaluation {
+                    expression, parts, ..
+                }) = &node.payload
+                else {
+                    return None;
+                };
+                let Some(Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }) = &result.nodes[expression.0].payload
+                else {
+                    return None;
+                };
+                if bytes.get(span.0..span.1) == Some(b"y") {
+                    Some((index, parts[0].children[0]))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        assert_eq!(aliases.len(), 8);
+        for kind in 0..3 {
+            let (target, original, foreign) = aliases
+                .iter()
+                .find_map(|&(target, original)| {
+                    let own = result.contexts[original.0];
+                    aliases.iter().find_map(|&(_, foreign)| {
+                        let other = result.contexts[foreign.0];
+                        let differs = match kind {
+                            0 => {
+                                own.request == other.request
+                                    && own.frame == other.frame
+                                    && own.iteration != other.iteration
+                            }
+                            1 => own.request != other.request && own.frame == other.frame,
+                            _ => own.request == other.request && own.frame != other.frame,
+                        };
+                        (differs && foreign.0 < target).then_some((target, original, foreign))
+                    })
+                })
+                .unwrap();
+            assert_ne!(original, foreign);
+            let Some(Payload::Evaluation {
+                value: original_value,
+                ..
+            }) = &result.nodes[original.0].payload
+            else {
+                unreachable!()
+            };
+            let Some(Payload::Evaluation {
+                value: foreign_value,
+                ..
+            }) = &result.nodes[foreign.0].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(
+                data_scalar_at(&result, original_value.unwrap().0),
+                data_scalar_at(&result, foreign_value.unwrap().0)
+            );
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+            let mut changed = result.nodes[..=target].to_vec();
+            let Some(Payload::Evaluation {
+                expression,
+                parts,
+                value,
+                ..
+            }) = &mut changed[target].payload
+            else {
+                unreachable!()
+            };
+            parts[0].children = vec![foreign];
+            parts[0].value = *foreign_value;
+            *value = *foreign_value;
+            let arguments = std::iter::once(*expression)
+                .chain([foreign])
+                .chain(*foreign_value)
+                .collect();
+            changed[target].arguments = arguments;
+            rejects_named_prefix(&result, &changed);
+        }
     }
 }
