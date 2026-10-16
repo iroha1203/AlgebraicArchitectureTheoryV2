@@ -55,6 +55,33 @@ impl Evaluator<'_, '_> {
         body: usize,
         role: Option<Role>,
     ) -> Result<Answer, Failure> {
+        let numeric = _params
+            .iter()
+            .filter(|parameter| {
+                !self
+                    .request
+                    .arguments
+                    .iter()
+                    .any(|argument| argument.name == format!("bind.{}", parameter.name))
+            })
+            .collect::<Vec<_>>();
+        if !numeric.is_empty()
+            && numeric
+                .iter()
+                .all(|parameter| matches!(parameter.ty, Type::Z | Type::Q))
+        {
+            return self.universal_family_answer(_params, role);
+        }
+        self.finite_family_answer(guard, body, role)
+    }
+
+    #[inline(never)]
+    fn finite_family_answer(
+        &mut self,
+        guard: Option<usize>,
+        body: usize,
+        role: Option<Role>,
+    ) -> Result<Answer, Failure> {
         let plan = self
             .environment
             .family_plan(self.request)?
@@ -62,7 +89,12 @@ impl Evaluator<'_, '_> {
         let fixed: Vec<_> = plan
             .parameters
             .iter()
-            .filter(|p| !plan.unbound.iter().any(|u| u.name == p.name))
+            .filter(|p| {
+                self.request
+                    .arguments
+                    .iter()
+                    .any(|argument| argument.name == format!("bind.{}", p.name))
+            })
             .cloned()
             .collect();
         self.bind(&fixed)?;
@@ -70,9 +102,10 @@ impl Evaluator<'_, '_> {
         let fixed_bindings = self.bindings.clone();
         let mut raw_scope = self.base.clone();
         raw_scope.quantifiers = self.environment.family_descriptors(&plan, &[], root);
-        let source = self.family_source(body, &plan.unbound, &raw_scope)?;
+        raw_scope.assignments = !plan.numeric.is_empty();
+        let source = self.family_source(body, &plan.free, &raw_scope)?;
         let guard_source = guard
-            .map(|g| self.family_source(g, &plan.unbound, &raw_scope))
+            .map(|g| self.family_source(g, &plan.free, &raw_scope))
             .transpose()?;
         let mut domains = Vec::new();
         let mut all_scope = raw_scope.clone();
@@ -224,6 +257,9 @@ impl Evaluator<'_, '_> {
             let row_result = (|| -> Result<Answer, Failure> {
                 for p in &plan.parameters {
                     self.tick(Checkpoint::FiniteIteration)?;
+                    if plan.numeric.iter().any(|numeric| numeric.name == p.name) {
+                        continue;
+                    }
                     let value = if let Some(i) = plan.unbound.iter().position(|u| u.name == p.name)
                     {
                         self.value(
@@ -296,6 +332,7 @@ impl Evaluator<'_, '_> {
         all_support.sort();
         all_support.dedup();
         sort_reasons(&mut reasons);
+        self.environment.family_order_scope(&plan, &mut all_scope)?;
         let template = self.push(Node {
             ty: NodeType::LawInstance,
             payload: Some(Payload::LawInstance {

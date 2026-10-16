@@ -1062,6 +1062,167 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
                 ""
             }
         );
+        if let Some(ty) = match name {
+            "integers" => Some("Z"),
+            "rationals" => Some("Q"),
+            _ => None,
+        } {
+            let wire = evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet())
+                .unwrap()
+                .wire();
+            output(&wire, "a", &Json::str("Bool"), Json::Bool(true));
+            assert_eq!(f(&wire, "status"), &Json::str("complete"));
+            assert!(arr(f(&wire, "issues")).is_empty());
+            let ns = index(&wire);
+            let evaluation = root(&wire, "a");
+            let original = expression(&ns, evaluation);
+            let declaration = format!("Calc.{name}");
+            let original_span = checked.law().exprs[declared_body(&checked, &declaration)].span;
+            let body_span = checked.law().exprs[type_body(&checked, &declaration)].span;
+            assert_eq!(span(f(val(original), "location")), original_span);
+            assert_eq!(f(val(original), "kind"), &Json::str("source"));
+            assert!(arr(f(val(original), "parameters")).is_empty());
+            assert_eq!(
+                f(f(evaluation, "scope"), "domain"),
+                &Json::str("all_assignments")
+            );
+            assert_eq!(f(evaluation, "scope"), f(answer(&wire, "a"), "scope"));
+            let quantifiers = arr(f(f(evaluation, "scope"), "quantifiers"));
+            assert_eq!(quantifiers.len(), 1);
+            assert_eq!(f(&quantifiers[0], "kind"), &Json::str("forall"));
+            assert_eq!(f(&quantifiers[0], "name"), &Json::str("unused"));
+            assert_eq!(f(&quantifiers[0], "type"), &Json::str(ty));
+            let domain = target(&ns, f(&quantifiers[0], "domain"), &Json::str("Domain"));
+            assert_eq!(f(val(domain), "kind"), &Json::str("type"));
+            assert_eq!(f(val(domain), "type"), &Json::str(ty));
+            assert!(!obj(val(domain)).contains_key("elements"));
+            assert_eq!(
+                arr(f(domain, "arguments")),
+                &[f(val(evaluation), "expression").clone()]
+            );
+            let quantifier_id = declared_body(&checked, &declaration);
+            let ExprKind::Quant {
+                kind: archsig::law::ast::QuantKind::Forall,
+                var,
+                split:
+                    QuantSplit::Fixed {
+                        domain: QuantDomain::Type(archsig::law::ast::TypeAst::Builtin(builtin, _)),
+                        body: body_id,
+                    },
+            } = &checked.law().exprs[quantifier_id].kind
+            else {
+                panic!("元のZ/Q forall AST")
+            };
+            assert_eq!(var.name, "unused");
+            assert_eq!(*body_id, type_body(&checked, &declaration));
+            assert_eq!(
+                builtin,
+                &if ty == "Z" {
+                    archsig::law::ast::Builtin::Z
+                } else {
+                    archsig::law::ast::Builtin::Q
+                }
+            );
+            for id in [quantifier_id, *body_id] {
+                assert_eq!(
+                    checked.law().expr_type(id).unwrap().wire(),
+                    Json::str("Bool")
+                );
+            }
+            let whole_children = children(&ns, evaluation);
+            assert_eq!(whole_children.len(), 1);
+            let quantifier = whole_children[0];
+            let quantifier_source = expression(&ns, quantifier);
+            assert_eq!(f(val(quantifier_source), "kind"), &Json::str("source"));
+            assert_eq!(evaluation_span(&ns, quantifier), original_span);
+            assert_eq!(span(f(part(quantifier), "location")), original_span);
+            assert_eq!(f(val(quantifier_source), "parameters"), &Json::Arr(vec![]));
+            assert_eq!(
+                arr(f(quantifier_source, "arguments")).first(),
+                Some(f(val(evaluation), "expression"))
+            );
+            assert_eq!(
+                f(val(quantifier), "bindings"),
+                f(val(evaluation), "bindings")
+            );
+            let quantifier_children = children(&ns, quantifier);
+            assert_eq!(quantifier_children.len(), 1);
+            let body = quantifier_children[0];
+            assert_eq!(evaluation_span(&ns, body), body_span);
+            assert_eq!(span(f(part(body), "location")), body_span);
+            for (parent, child) in [(evaluation, quantifier), (quantifier, body)] {
+                assert_eq!(f(val(parent), "applicability"), &Json::str("applicable"));
+                for fact in arr(f(child, "support")) {
+                    assert!(arr(f(parent, "support")).contains(fact));
+                }
+            }
+            let body_source = expression(&ns, body);
+            assert_eq!(f(val(body_source), "kind"), &Json::str("source"));
+            assert_eq!(span(f(f(body_source, "rule"), "location")), body_span);
+            assert_eq!(
+                f(val(body_source), "parameters"),
+                &Json::Arr(vec![Json::obj([
+                    ("name", Json::str("unused")),
+                    ("type", Json::str(ty)),
+                ])])
+            );
+            assert_eq!(
+                val(target(&ns, f(val(body), "value"), &Json::str("Bool"))),
+                &Json::Bool(true)
+            );
+            assert!(
+                arr(f(val(evaluation), "bindings"))
+                    .iter()
+                    .all(|b| f(b, "name") != &Json::str("unused"))
+            );
+            for node in [original, quantifier_source, body_source] {
+                assert_eq!(
+                    span(f(f(node, "rule"), "location")),
+                    span(f(val(node), "location"))
+                );
+                assert_eq!(f(f(node, "rule"), "kind"), &Json::str("law"));
+            }
+            let proofs = arr(f(evaluation, "evidence"));
+            assert_eq!(proofs.len(), 1);
+            let proof = target(&ns, &proofs[0], &Json::str("Evidence"));
+            assert_eq!(f(val(proof), "kind"), &Json::str("normalization"));
+            let data = f(val(proof), "data");
+            assert_eq!(f(data, "before"), f(val(evaluation), "expression"));
+            assert_eq!(f(data, "after"), f(val(evaluation), "value"));
+            assert_eq!(f(proof, "support"), f(evaluation, "support"));
+            assert_eq!(f(proof, "scope"), f(evaluation, "scope"));
+            if name == "rationals" {
+                assert!(arr(f(data, "steps")).is_empty());
+                assert!(!obj(part(evaluation)).contains_key("residual"));
+            }
+            let mut earlier = BTreeSet::new();
+            for node in arr(f(&wire, "nodes")) {
+                let mut references = vec![];
+                refs(node, &mut references);
+                assert!(references.iter().all(|id| earlier.contains(id)));
+                assert!(earlier.insert(text(f(node, "id")).to_owned()));
+                if f(node, "type") == &Json::str("Domain") {
+                    assert_eq!(f(val(node), "kind"), &Json::str("type"));
+                    assert_eq!(f(val(node), "type"), &Json::str(ty));
+                }
+            }
+            let support = arr(f(evaluation, "support"));
+            if name == "integers" {
+                let fact = support
+                    .iter()
+                    .find(|fact| {
+                        obj(fact).get("field") == Some(&Json::str("FiniteTypes.Sample.zero"))
+                    })
+                    .unwrap();
+                assert_eq!(f(fact, "snapshot"), &Json::str("v"));
+                assert_eq!(f(fact, "subject"), &Json::str("sample"));
+                assert_eq!(f(fact, "atom"), &Json::str("zero"));
+                assert!(arr(f(body, "support")).contains(fact));
+            } else {
+                assert!(support.is_empty());
+            }
+            continue;
+        }
         let error = evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet()).unwrap_err();
         assert!(
             error.wire().is_none(),

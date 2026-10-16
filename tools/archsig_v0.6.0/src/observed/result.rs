@@ -384,6 +384,7 @@ pub(crate) struct Scope {
     pub snapshots: BTreeSet<String>,
     pub modes: BTreeSet<String>,
     pub completions: bool,
+    pub assignments: bool,
     pub quantifiers: Vec<Quantifier>,
 }
 impl PartialEq for Scope {
@@ -401,6 +402,7 @@ impl PartialEq for Scope {
             && self.snapshots == other.snapshots
             && self.modes == other.modes
             && self.completions == other.completions
+            && self.assignments == other.assignments
             && occurrences(self) == occurrences(other)
             && self.quantifiers.len() == other.quantifiers.len()
             && self.quantifiers.iter().all(|q| {
@@ -518,6 +520,7 @@ impl Scope {
         self.snapshots.extend(other.snapshots.iter().cloned());
         self.modes.extend(other.modes.iter().cloned());
         self.completions |= other.completions;
+        self.assignments |= other.assignments;
         self.merge_quantifiers(other);
     }
     pub(crate) fn wire(&self) -> Json {
@@ -538,6 +541,8 @@ impl Scope {
                 "domain",
                 Json::str(if self.completions {
                     "all_completions"
+                } else if self.assignments {
+                    "all_assignments"
                 } else {
                     "finite_model"
                 }),
@@ -553,6 +558,11 @@ impl Scope {
 #[derive(Clone, Debug)]
 pub(crate) enum ReasonKind {
     Missing,
+    UnsupportedAlgorithm {
+        question: super::request::QuestionKind,
+        operand_types: Vec<Type>,
+        method: String,
+    },
     Stop(StopReason),
     Internal(String),
 }
@@ -586,6 +596,7 @@ impl Reason {
     pub(crate) fn code(&self) -> &str {
         match &self.kind {
             ReasonKind::Missing => "missing_observation",
+            ReasonKind::UnsupportedAlgorithm { .. } => "unsupported_algorithm",
             ReasonKind::Stop(r) => r.code(),
             ReasonKind::Internal(_) => "internal",
         }
@@ -593,6 +604,21 @@ impl Reason {
     pub(crate) fn wire(&self) -> Json {
         let (message, details) = match &self.kind {
             ReasonKind::Missing => ("原始 slot の観測が必要", Json::obj([])),
+            ReasonKind::UnsupportedAlgorithm {
+                question,
+                operand_types,
+                method,
+            } => (
+                "元の型付き問いに対応する算法がない",
+                Json::obj([
+                    ("question", Json::str(question.wire())),
+                    (
+                        "operand_types",
+                        Json::Arr(operand_types.iter().map(Type::wire).collect()),
+                    ),
+                    ("method", Json::str(method)),
+                ]),
+            ),
             ReasonKind::Internal(op) => (
                 "導出の内部照合に失敗した",
                 Json::obj([("operation", Json::str(op))]),
@@ -700,6 +726,7 @@ pub(crate) enum TransformOp {
     Not,
     And,
     Difference,
+    Substitute,
 }
 impl TransformOp {
     fn wire(self) -> &'static str {
@@ -707,11 +734,12 @@ impl TransformOp {
             Self::Not => "not",
             Self::And => "and",
             Self::Difference => "difference",
+            Self::Substitute => "substitute",
         }
     }
     pub(crate) fn arity(self) -> usize {
         match self {
-            Self::Not => 1,
+            Self::Not | Self::Substitute => 1,
             Self::And | Self::Difference => 2,
         }
     }
@@ -749,6 +777,9 @@ pub(crate) enum Payload {
         first_result: NodeRef,
         second_result: NodeRef,
     },
+    TypeDomain {
+        ty: Type,
+    },
     Domain {
         ty: Type,
         elements: Vec<NodeRef>,
@@ -767,6 +798,12 @@ pub(crate) enum Payload {
     Transform {
         operation: TransformOp,
         operands: Vec<NodeRef>,
+        bindings: Vec<Binding>,
+    },
+    ParameterizedTransform {
+        operation: TransformOp,
+        operands: Vec<NodeRef>,
+        parameters: Vec<(String, Type)>,
         bindings: Vec<Binding>,
     },
     Evaluation {
@@ -808,6 +845,9 @@ pub(crate) enum Payload {
 impl Payload {
     fn wire(&self) -> Json {
         match self {
+            Self::TypeDomain { ty } => {
+                Json::obj([("kind", Json::str("type")), ("type", ty.wire())])
+            }
             Self::Domain { ty, elements } => Json::obj([
                 ("kind", Json::str("finite")),
                 ("type", ty.wire()),
@@ -881,6 +921,28 @@ impl Payload {
                 ("operation", Json::str(operation.wire())),
                 ("operands", refs(operands)),
                 ("parameters", Json::Arr(vec![])),
+                ("bindings", bindings_wire(bindings)),
+            ]),
+            Self::ParameterizedTransform {
+                operation,
+                operands,
+                parameters,
+                bindings,
+            } => Json::obj([
+                ("kind", Json::str("transform")),
+                ("operation", Json::str(operation.wire())),
+                ("operands", refs(operands)),
+                (
+                    "parameters",
+                    Json::Arr(
+                        parameters
+                            .iter()
+                            .map(|(name, ty)| {
+                                Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+                            })
+                            .collect(),
+                    ),
+                ),
                 ("bindings", bindings_wire(bindings)),
             ]),
             Self::Evaluation {
@@ -1123,6 +1185,15 @@ impl Answer {
     }
 }
 
+/// 数値補完の証拠内case。型全域parameterの通常Bindingや観測Factではない。
+#[derive(Clone, Debug)]
+pub(super) struct UniversalWitness {
+    pub caller: super::call::Context,
+    pub template: NodeRef,
+    pub anchor: NodeRef,
+    pub ordinal: usize,
+}
+
 /// Node/Answer は外から変更できず、検査済みの入力を所有して由来を保持する。
 #[derive(Debug)]
 pub struct ObservedEvaluation {
@@ -1141,6 +1212,8 @@ pub struct ObservedEvaluation {
     pub(super) instances: Vec<super::call::Instance>,
     #[cfg(test)]
     pub(super) cases: Vec<super::call::CompletionCase>,
+    #[cfg(test)]
+    pub(super) universal_witnesses: Vec<UniversalWitness>,
 }
 impl ObservedEvaluation {
     pub fn status(&self) -> &str {
@@ -1197,6 +1270,7 @@ pub(crate) struct Graph {
     pub(super) iterations: Vec<super::call::Iteration>,
     pub(super) instances: Vec<super::call::Instance>,
     pub(super) cases: Vec<super::call::CompletionCase>,
+    pub(super) universal_witnesses: Vec<UniversalWitness>,
     pub(super) active: super::call::Context,
     pub(super) requests: Vec<super::request::Request>,
     control: Control,
@@ -1235,6 +1309,7 @@ impl Graph {
             iterations: vec![],
             instances: vec![],
             cases: vec![],
+            universal_witnesses: vec![],
             active: super::call::Context::default(),
             requests: vec![],
             control: control.clone(),
@@ -1301,13 +1376,24 @@ impl Graph {
             {
                 return Err("canonical 欠測理由に依存式・slot がない".into());
             }
+            if let ReasonKind::UnsupportedAlgorithm {
+                operand_types,
+                method,
+                ..
+            } = &reason.kind
+                && (operand_types.is_empty() || method.is_empty() || reason.dependencies.is_empty())
+            {
+                return Err("非対応算法理由に元の型・式・方法がない".into());
+            }
             for &r in &reason.dependencies {
                 self.tick()?;
                 let node = self.get(r)?;
-                if matches!(reason.kind, ReasonKind::Missing)
-                    && !matches!(node.ty, NodeType::Expression(_))
+                if matches!(
+                    reason.kind,
+                    ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. }
+                ) && !matches!(node.ty, NodeType::Expression(_))
                 {
-                    return Err("欠測の依存先が元式でない".into());
+                    return Err("欠測・非対応算法理由の依存先が元式でない".into());
                 }
                 self.tick()?;
             }
@@ -1342,6 +1428,75 @@ impl Graph {
         else {
             return Err("証拠添付先の LawInstance が値でない".into());
         };
+        if self.universal_evaluation_shape(self.get(evaluation)?)? {
+            let whole = self.get(evaluation)?;
+            let Some(Payload::Evaluation {
+                expression,
+                bindings,
+                value,
+                ..
+            }) = &whole.payload
+            else {
+                unreachable!()
+            };
+            let Some(Payload::LawInstance { body, guard, .. }) = &self.get(*instance)?.payload
+            else {
+                unreachable!()
+            };
+            let (original_body, original_guard) = self.universal_template_sources(*expression)?;
+            if *body != original_body
+                || *guard != original_guard
+                || instance_bindings != bindings
+                || node.scope != whole.scope
+                || node.support != whole.support
+            {
+                return Err("全域命題の元LawInstance・whole・Scope・支持が違う".into());
+            }
+            let expected = match self.boolean(*value)? {
+                Some(true) => Decision::Established,
+                Some(false) => Decision::Refuted,
+                None => Decision::Undetermined,
+            };
+            if judgment.status != expected {
+                return Err("全域命題の判断が元wholeと違う".into());
+            }
+            match expected {
+                Decision::Undetermined => {
+                    if node.evidence != whole.evidence {
+                        return Err("未決の全域命題が別wholeの補完証拠を指す".into());
+                    }
+                }
+                Decision::Established => {
+                    if node.evidence != whole.evidence {
+                        return Err("全域成立の証拠が元whole正規化でない".into());
+                    }
+                }
+                Decision::Refuted => {
+                    let [normalization, counterexample] = node.evidence.as_slice() else {
+                        return Err("全域反証に元正規化・反例がない".into());
+                    };
+                    let counterexample = self.get(*counterexample)?;
+                    let same_normalization = match counterexample.arguments.as_slice() {
+                        [source, actual_whole, actual_normalization] => {
+                            source == expression
+                                && *actual_whole == evaluation
+                                && actual_normalization == normalization
+                        }
+                        [source, actual_normalization, _, _, _] => {
+                            source == expression && actual_normalization == normalization
+                        }
+                        _ => false,
+                    };
+                    if whole.evidence != [*normalization]
+                        || !self.universal_counterexample_shape(counterexample)?
+                        || !same_normalization
+                    {
+                        return Err("全域反証が別のwhole・正規化の反例を指す".into());
+                    }
+                }
+            }
+            return Ok(());
+        }
         if let Some(Payload::LawInstance { body, .. }) = &self.get(*instance)?.payload
             && matches!(&self.get(*body)?.payload,Some(Payload::Expression {parameters,..}) if !parameters.is_empty())
         {
@@ -1371,7 +1526,9 @@ impl Graph {
                         let mut connected = false;
                         for &row in rows {
                             self.tick()?;
-                            if e.arguments.get(1) == Some(&row) {
+                            if self.universal_counterexample_for_evaluation(reference, row)? {
+                                connected = true;
+                            } else if e.arguments.get(1) == Some(&row) {
                                 let Some(&actual) = e.arguments.first() else {
                                     return Err("row反例に元instanceがない".into());
                                 };
@@ -1584,8 +1741,307 @@ impl Graph {
         Ok((*source, [*left, *right]))
     }
 
+    /// guarded Law の全域wholeは元bodyでなく not(and(guard, not(body))) を読む。
+    fn universal_template_sources(
+        &self,
+        template: NodeRef,
+    ) -> Result<(NodeRef, Option<NodeRef>), ValidationFailure> {
+        self.tick()?;
+        self.expect(template, &NodeType::Expression(Type::Bool))?;
+        let node = self.get(template)?;
+        if matches!(&node.payload, Some(Payload::Expression { .. })) {
+            return Ok((template, None));
+        }
+        self.parameterized_transform_shape(node)?;
+        let Some(Payload::ParameterizedTransform {
+            operation: TransformOp::Not,
+            operands: outer,
+            ..
+        }) = &node.payload
+        else {
+            return Err("全域templateが元Source・元適用条件式でない".into());
+        };
+        let conjunction = self.get(outer[0])?;
+        self.parameterized_transform_shape(conjunction)?;
+        let Some(Payload::ParameterizedTransform {
+            operation: TransformOp::And,
+            operands: conjunction,
+            ..
+        }) = &conjunction.payload
+        else {
+            return Err("全域templateの元guard連言がない".into());
+        };
+        let guard = conjunction[0];
+        let negated_body = self.get(conjunction[1])?;
+        self.parameterized_transform_shape(negated_body)?;
+        let Some(Payload::ParameterizedTransform {
+            operation: TransformOp::Not,
+            operands: body,
+            ..
+        }) = &negated_body.payload
+        else {
+            return Err("全域templateの元body否定がない".into());
+        };
+        let body = body[0];
+        for original in [guard, body] {
+            self.tick()?;
+            if !matches!(
+                &self.get(original)?.payload,
+                Some(Payload::Expression { .. })
+            ) {
+                return Err("全域templateのguard/bodyが元Sourceでない".into());
+            }
+        }
+        Ok((body, Some(guard)))
+    }
+
+    fn parameterized_transform_shape(&self, node: &Node) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        let NodeType::Expression(ty) = &node.ty else {
+            return Err("parameter変換がExpressionでない".into());
+        };
+        let Some(Payload::ParameterizedTransform {
+            operation,
+            operands,
+            parameters,
+            bindings,
+        }) = &node.payload
+        else {
+            return Err("parameter変換のpayloadが違う".into());
+        };
+        self.bindings(bindings)?;
+        let mut names = BTreeSet::new();
+        for (name, _) in parameters {
+            self.tick()?;
+            if !names.insert(name) || bindings.iter().any(|binding| &binding.name == name) {
+                return Err("自由parameterが重複または束縛済み".into());
+            }
+        }
+        match operation {
+            TransformOp::Difference => {
+                if !matches!(ty, Type::Z | Type::Q) || operands.len() != 2 {
+                    return Err("全域差の型・operand数が違う".into());
+                }
+                if node.arguments.len() < 4 {
+                    return Err("全域差に元Source・型Domain・左右評価がない".into());
+                }
+                let source = node.arguments[0];
+                self.expect(source, &NodeType::Expression(Type::Bool))?;
+                let (body_source, _) = self.universal_template_sources(source)?;
+                let Some(Payload::Expression {
+                    bindings: fixed, ..
+                }) = &self.get(body_source)?.payload
+                else {
+                    return Err("全域差の元式がSourceでない".into());
+                };
+                if bindings != fixed {
+                    return Err("全域差が元固定束縛を変えた".into());
+                }
+                let split = node.arguments.len() - 2;
+                for &domain in &node.arguments[1..split] {
+                    self.tick()?;
+                    self.expect(domain, &NodeType::Domain)?;
+                    let domain = self.get(domain)?;
+                    if !matches!(&domain.payload, Some(Payload::TypeDomain { .. }))
+                        || domain.arguments != [source]
+                    {
+                        return Err("全域差の型Domainが別の元式を指す".into());
+                    }
+                }
+                for (&evaluation, &operand) in node.arguments[split..].iter().zip(operands) {
+                    self.tick()?;
+                    self.expect(evaluation, &NodeType::Evaluation(ty.clone()))?;
+                    self.expect(operand, &NodeType::Expression(ty.clone()))?;
+                    if !matches!(&self.get(evaluation)?.payload, Some(Payload::Evaluation { expression, .. }) if expression == &operand)
+                        || !matches!(
+                            &self.get(operand)?.payload,
+                            Some(Payload::Expression { .. })
+                        )
+                        || self.get(operand)?.arguments.first() != Some(&source)
+                    {
+                        return Err("全域差が元左右の実Source・Evaluationを保持しない".into());
+                    }
+                }
+            }
+            TransformOp::Substitute => {
+                let [original] = operands.as_slice() else {
+                    return Err("同時代入のoperand数が違う".into());
+                };
+                self.expect(*original, &NodeType::Expression(ty.clone()))?;
+                let (original_parameters, original_bindings) = match &self.get(*original)?.payload {
+                    Some(Payload::Expression {
+                        parameters,
+                        bindings,
+                        ..
+                    })
+                    | Some(Payload::ParameterizedTransform {
+                        parameters,
+                        bindings,
+                        ..
+                    }) => (parameters, bindings),
+                    _ => return Err("同時代入の対象が元parameter式でない".into()),
+                };
+                let expected_arguments: Vec<_> = std::iter::once(*original)
+                    .chain(bindings.iter().map(|binding| binding.value))
+                    .collect();
+                if node.arguments != expected_arguments {
+                    return Err("同時代入の実対象・型付き値列が違う".into());
+                }
+                for binding in original_bindings {
+                    self.tick()?;
+                    if !bindings.contains(binding) {
+                        return Err("同時代入が元固定束縛を変えた".into());
+                    }
+                }
+                for binding in bindings {
+                    self.tick()?;
+                    if !original_bindings.contains(binding)
+                        && !original_parameters
+                            .iter()
+                            .any(|(name, ty)| name == &binding.name && ty == &binding.ty)
+                    {
+                        return Err("同時代入に元式の自由parameterでない束縛がある".into());
+                    }
+                }
+                let remaining: Vec<_> = original_parameters
+                    .iter()
+                    .filter(|(name, _)| !bindings.iter().any(|binding| &binding.name == name))
+                    .cloned()
+                    .collect();
+                if parameters != &remaining {
+                    return Err("同時代入の残る自由parameterが違う".into());
+                }
+            }
+            TransformOp::Not | TransformOp::And => {
+                if *ty != Type::Bool || operands.len() != operation.arity() {
+                    return Err("適用条件変換の型・operand数が違う".into());
+                }
+                for &operand in operands {
+                    self.tick()?;
+                    self.expect(operand, &NodeType::Expression(Type::Bool))?;
+                    if !matches!(
+                        &self.get(operand)?.payload,
+                        Some(Payload::Expression { .. } | Payload::ParameterizedTransform { .. })
+                    ) {
+                        return Err("適用条件変換が未生成の元式を消費した".into());
+                    }
+                }
+                let expected_arguments: Vec<_> = operands
+                    .iter()
+                    .copied()
+                    .chain(bindings.iter().map(|binding| binding.value))
+                    .collect();
+                if node.arguments != expected_arguments {
+                    return Err("適用条件変換の元operand・束縛値列が違う".into());
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub(super) fn universal_normalization_shape(
+        &self,
+        node: &Node,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Normalization {
+            before,
+            after,
+            steps,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        if self.get(*before)?.ty != NodeType::Expression(Type::Bool) {
+            return Ok(false);
+        }
+        self.tick()?;
+        let source = self.get(*before)?;
+        let (_, guard) = self.universal_template_sources(*before)?;
+        if !source.scope.assignments || node.ty != NodeType::Evidence {
+            return Err("全域正規化の元式が全代入templateでない".into());
+        }
+        self.value(*after, &Type::Bool)?;
+        let expected_support;
+        if steps.is_empty() {
+            // 元Bool式の確定値はEnvironmentが全域の元入力から再構成する。
+            expected_support = &node.support;
+        } else if guard.is_some_and(|guard| steps == &[guard]) {
+            if self.scalar(*after)? != &Scalar::Bool(true) {
+                return Err("非適用全域正規化の含意がtrueでない".into());
+            }
+            expected_support = &source.support;
+        } else {
+            let [difference, substitutions @ ..] = steps.as_slice() else {
+                return Err("全域正規化に元differenceがない".into());
+            };
+            let difference_node = self.get(*difference)?;
+            if !matches!(
+                &difference_node.payload,
+                Some(Payload::ParameterizedTransform {
+                    operation: TransformOp::Difference,
+                    ..
+                })
+            ) || difference_node.arguments.first() != Some(before)
+            {
+                return Err("全域正規化の差が別の元templateを指す".into());
+            }
+            self.parameterized_transform_shape(difference_node)?;
+            let mut seen = BTreeSet::from([difference.0]);
+            for &substitution in substitutions {
+                self.tick()?;
+                if !seen.insert(substitution.0) {
+                    return Err("全域正規化のstepが重複する".into());
+                }
+                let step = self.get(substitution)?;
+                let Some(Payload::ParameterizedTransform {
+                    operation: TransformOp::Substitute,
+                    operands,
+                    ..
+                }) = &step.payload
+                else {
+                    return Err("全域正規化のstepが元同時代入でない".into());
+                };
+                self.parameterized_transform_shape(step)?;
+                let original = self.get(operands[0])?;
+                if operands[0] != *before && original.arguments.first() != Some(before) {
+                    return Err("全域正規化の同時代入が別の元templateを指す".into());
+                }
+            }
+            expected_support = if guard.is_some() {
+                &source.support
+            } else {
+                &difference_node.support
+            };
+        }
+        let expected_arguments: Vec<_> = [*before, *after]
+            .into_iter()
+            .chain(steps.iter().copied())
+            .collect();
+        let expected_value_arguments: Vec<_> = std::iter::once(*before)
+            .chain(steps.iter().copied())
+            .collect();
+        let value = self.get(*after)?;
+        if node.arguments != expected_arguments
+            || value.arguments != expected_value_arguments
+            || !matches!(value.rule, Rule::Construction("evaluation"))
+            || !value.evidence.is_empty()
+            || !node.scope.assignments
+            || node.scope != value.scope
+            || !node.scope.source_compatible(&source.scope)
+            || node.support != value.support
+            || &node.support != expected_support
+        {
+            return Err("全域正規化の導出・Scope・支持が違う".into());
+        }
+        self.tick()?;
+        Ok(true)
+    }
+
     fn normalization_shape(&self, node: &Node) -> Result<(), ValidationFailure> {
         self.tick()?;
+        if self.universal_normalization_shape(node)? {
+            return Ok(());
+        }
         let Some(Payload::Normalization {
             before,
             after,
@@ -1619,6 +2075,1149 @@ impl Graph {
         }
         self.tick()?;
         Ok(())
+    }
+
+    fn universal_local_header_root(
+        &self,
+        header: NodeRef,
+    ) -> Result<Option<NodeRef>, ValidationFailure> {
+        self.tick()?;
+        let node = self.get(header)?;
+        if node.ty != NodeType::Expression(Type::Bool)
+            || !matches!(&node.payload, Some(Payload::Expression { .. }))
+        {
+            return Ok(None);
+        }
+        let [root, domain, ..] = node.arguments.as_slice() else {
+            return Ok(None);
+        };
+        if *root == header
+            || !matches!(
+                &self.get(*domain)?.payload,
+                Some(Payload::TypeDomain { .. })
+            )
+            || self.get(*domain)?.arguments != [*root]
+        {
+            return Ok(None);
+        }
+        self.universal_template_sources(*root)?;
+        Ok(Some(*root))
+    }
+
+    fn universal_local_quantifier_inputs(
+        &self,
+        header: NodeRef,
+        domain: NodeRef,
+        body: NodeRef,
+        scope: &Scope,
+    ) -> Result<(), ValidationFailure> {
+        let root = self
+            .universal_local_header_root(header)?
+            .ok_or("局所数値量化の元header・root型Domainがない")?;
+        let context = self.context_at(header.0);
+        let domain_node = self.get(domain)?;
+        let Some(Payload::TypeDomain { ty }) = &domain_node.payload else {
+            return Err("局所数値量化の型Domainがない".into());
+        };
+        let Rule::Input {
+            kind: "law",
+            location: Location::Law { span: binder },
+        } = &domain_node.rule
+        else {
+            return Err("局所数値量化の元binder位置がない".into());
+        };
+        self.expect(body, &NodeType::Evaluation(Type::Bool))?;
+        let Some(Payload::Evaluation {
+            expression: body_source,
+            ..
+        }) = &self.get(body)?.payload
+        else {
+            return Err("局所数値量化が未生成のbody評価を消費した".into());
+        };
+        let body_node = self.get(*body_source)?;
+        if domain_node.arguments != [header]
+            || self.context_at(domain.0) != context
+            || self.context_at(body.0) != context
+            || self.context_at(body_source.0) != context
+            || body_node.arguments.first() != Some(&root)
+            || !body_node.arguments.contains(&domain)
+            || !matches!(&body_node.payload, Some(Payload::Expression { .. }))
+            || !scope.assignments
+        {
+            return Err("局所数値量化の元root・body・型Domain・実Contextが違う".into());
+        }
+        let descriptors: Vec<_> = scope
+            .quantifiers
+            .iter()
+            .filter(|q| q.domain == Some(domain))
+            .collect();
+        let [descriptor] = descriptors.as_slice() else {
+            return Err("局所数値量化の実型Domainに一つのbinder descriptorがない".into());
+        };
+        if descriptor.kind != crate::law::ast::QuantKind::Forall
+            || descriptor.ty != *ty
+            || descriptor.occurrence != *binder
+            || descriptor.context != Some(context)
+        {
+            return Err("局所数値量化の元binder・型・全称・実Contextが違う".into());
+        }
+        let mut expected_scope = self.get(header)?.scope.clone();
+        expected_scope.merge(&self.get(body)?.scope);
+        if *scope != expected_scope || !scope.source_compatible(&self.get(header)?.scope) {
+            return Err("局所数値量化のScopeが元header・実bodyから精密化されていない".into());
+        }
+        Ok(())
+    }
+
+    fn universal_local_quantifier_value_shape(
+        &self,
+        node: &Node,
+    ) -> Result<bool, ValidationFailure> {
+        let [header, domain, body] = node.arguments.as_slice() else {
+            return Ok(false);
+        };
+        if self.universal_local_header_root(*header)?.is_none()
+            || !matches!(
+                &self.get(*domain)?.payload,
+                Some(Payload::TypeDomain { .. })
+            )
+            || self.get(*domain)?.arguments != [*header]
+        {
+            return Ok(false);
+        }
+        let Some(Payload::Expression { location, .. }) = &self.get(*header)?.payload else {
+            unreachable!()
+        };
+        self.universal_local_quantifier_inputs(*header, *domain, *body, &node.scope)?;
+        if node.ty != NodeType::Value(Type::Bool)
+            || !matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_))))
+            || !matches!(&node.rule, Rule::Input {kind:"law",location:actual} if actual == location)
+            || !node.evidence.is_empty()
+            || node.support != self.get(*body)?.support
+        {
+            return Err("局所数値量化の確定Boolが元型・Quant位置・支持に合わない".into());
+        }
+        Ok(true)
+    }
+
+    fn universal_local_quantifier_evaluation_shape(
+        &self,
+        node: &Node,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Evaluation {
+            expression: header,
+            bindings,
+            parts,
+            value,
+            applicability,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        let [actual_header, domain, body, values @ ..] = node.arguments.as_slice() else {
+            return Ok(false);
+        };
+        if actual_header != header
+            || self.universal_local_header_root(*header)?.is_none()
+            || !matches!(
+                &self.get(*domain)?.payload,
+                Some(Payload::TypeDomain { .. })
+            )
+            || self.get(*domain)?.arguments != [*header]
+        {
+            return Ok(false);
+        }
+        self.universal_local_quantifier_inputs(*header, *domain, *body, &node.scope)?;
+        let Some(Payload::Expression {
+            location,
+            bindings: fixed,
+            ..
+        }) = &self.get(*header)?.payload
+        else {
+            unreachable!()
+        };
+        let [part] = parts.as_slice() else {
+            return Err("局所数値量化の元part数が違う".into());
+        };
+        let expected_values: Vec<_> = value.iter().copied().collect();
+        if node.ty != NodeType::Evaluation(Type::Bool)
+            || bindings != fixed
+            || part.location != *location
+            || part.value != *value
+            || part.residual.is_some()
+            || part.children != [*body]
+            || values != expected_values
+            || *applicability != "applicable"
+            || !node.evidence.is_empty()
+            || node.support != self.get(*body)?.support
+        {
+            return Err("局所数値量化の実body・元位置・値・支持が違う".into());
+        }
+        if let Some(value) = value {
+            let scalar = self.get(*value)?;
+            if !self.universal_local_quantifier_value_shape(scalar)?
+                || scalar.arguments != [*header, *domain, *body]
+                || scalar.scope != node.scope
+                || scalar.support != node.support
+            {
+                return Err("局所数値量化の値が別のbody・binderで導出された".into());
+            }
+        }
+        Ok(true)
+    }
+
+    fn universal_evaluation_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Evaluation {
+            expression,
+            bindings,
+            parts,
+            value,
+            applicability,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        if node.ty != NodeType::Evaluation(Type::Bool) || !node.scope.assignments {
+            return Ok(false);
+        }
+        let residual_whole = parts.iter().any(|part| {
+            part.residual.is_some_and(|residual| {
+                matches!(
+                    self.get(residual).map(|node| &node.ty),
+                    Ok(NodeType::Evaluation(Type::Z | Type::Q))
+                )
+            })
+        });
+        let guarded_not_applicable = *applicability == "not_applicable"
+            && matches!(
+                &self.get(*expression)?.payload,
+                Some(Payload::ParameterizedTransform {
+                    operation: TransformOp::Not,
+                    ..
+                })
+            );
+        let typed_whole = node.arguments.get(1).is_some_and(|domain| {
+            self.get(*domain).is_ok_and(|node| {
+                matches!(&node.payload, Some(Payload::TypeDomain { .. }))
+                    && node.arguments == [*expression]
+            })
+        });
+        if typed_whole && self.universal_local_header_root(*expression)?.is_some() {
+            return Ok(false);
+        }
+        if !residual_whole && !guarded_not_applicable && !typed_whole {
+            return Ok(false);
+        }
+        self.tick()?;
+        let source = self.get(*expression)?;
+        let (body_source, guard_source) = self.universal_template_sources(*expression)?;
+        let Some(Payload::Expression {
+            location,
+            bindings: fixed,
+            ..
+        }) = &self.get(body_source)?.payload
+        else {
+            unreachable!()
+        };
+        let (guard_part, body_part) = if guard_source.is_some() {
+            let [guard, body] = parts.as_slice() else {
+                return Err("guard付き全域wholeの元part数が違う".into());
+            };
+            (Some(guard), body)
+        } else {
+            let [body] = parts.as_slice() else {
+                return Err("全域wholeの元part数が違う".into());
+            };
+            (None, body)
+        };
+        if bindings != fixed
+            || body_part.location != *location
+            || !node.scope.source_compatible(&source.scope)
+        {
+            return Err("全域wholeの元位置・束縛・Scopeが違う".into());
+        }
+        let mut expected_arguments = vec![*expression];
+        let mut domain_end = 1;
+        while let Some(&domain) = node.arguments.get(domain_end) {
+            self.tick()?;
+            if !matches!(&self.get(domain)?.payload, Some(Payload::TypeDomain { .. })) {
+                break;
+            }
+            if self.get(domain)?.arguments != [*expression] {
+                return Err("全域wholeの型Domainが別のtemplateを指す".into());
+            }
+            expected_arguments.push(domain);
+            domain_end += 1;
+        }
+        let mut guard_value = None;
+        if let (Some(guard_source), Some(guard_part)) = (guard_source, guard_part) {
+            let Some(Payload::Expression {
+                location: guard_location,
+                ..
+            }) = &self.get(guard_source)?.payload
+            else {
+                unreachable!()
+            };
+            let [guard_evaluation] = guard_part.children.as_slice() else {
+                return Err("全域wholeの元guard評価がない".into());
+            };
+            self.expect(*guard_evaluation, &NodeType::Evaluation(Type::Bool))?;
+            let Some(Payload::Evaluation {
+                expression: actual_guard,
+                value,
+                ..
+            }) = &self.get(*guard_evaluation)?.payload
+            else {
+                return Err("全域wholeが未生成のguard評価を消費した".into());
+            };
+            if guard_part.location != *guard_location
+                || guard_part.value != *value
+                || guard_part.residual.is_some()
+                || self.get(*actual_guard)?.arguments.first() != Some(expression)
+            {
+                return Err("全域wholeの元guard・値・実評価が違う".into());
+            }
+            guard_value = self.boolean(*value)?;
+            expected_arguments.push(*guard_evaluation);
+        }
+        let expected_step;
+        if guarded_not_applicable {
+            if guard_value != Some(false)
+                || self.boolean(*value)? != Some(true)
+                || body_part.value.is_some()
+                || body_part.residual.is_some()
+                || !body_part.children.is_empty()
+            {
+                return Err("非適用全域wholeが未評価bodyを成立値として消費した".into());
+            }
+            expected_step = Some(guard_source.ok_or("非適用全域wholeに元guardがない")?);
+        } else {
+            let [body] = body_part.children.as_slice() else {
+                return Err("全域wholeの元body評価がない".into());
+            };
+            self.expect(*body, &NodeType::Evaluation(Type::Bool))?;
+            let Some(Payload::Evaluation {
+                expression: actual_body,
+                value: body_value,
+                ..
+            }) = &self.get(*body)?.payload
+            else {
+                return Err("全域wholeが未生成のbody評価を消費した".into());
+            };
+            if self.get(*actual_body)?.arguments.first() != Some(expression)
+                || body_part.value
+                    != if guard_source.is_some() {
+                        *body_value
+                    } else {
+                        *value
+                    }
+            {
+                return Err("全域wholeのbodyが別の元template・値を指す".into());
+            }
+            let expected_applicability = if guard_source.is_some() && guard_value.is_none() {
+                "undetermined"
+            } else {
+                "applicable"
+            };
+            if *applicability != expected_applicability || guard_value == Some(false) {
+                return Err("全域wholeの元guard適用性が違う".into());
+            }
+            if let Some(residual) = body_part.residual {
+                let Some(Payload::Evaluation {
+                    expression: difference,
+                    ..
+                }) = &self.get(residual)?.payload
+                else {
+                    return Err("全域wholeの残差が完成したEvaluationでない".into());
+                };
+                let difference_node = self.get(*difference)?;
+                self.parameterized_transform_shape(difference_node)?;
+                if !matches!(
+                    &difference_node.payload,
+                    Some(Payload::ParameterizedTransform {
+                        operation: TransformOp::Difference,
+                        ..
+                    })
+                ) || difference_node.arguments.first() != Some(expression)
+                    || difference_node.arguments[1..difference_node.arguments.len() - 2]
+                        != node.arguments[1..domain_end]
+                {
+                    return Err("全域wholeの元差・型Domainが違う".into());
+                }
+                expected_step = Some(*difference);
+                expected_arguments.extend([*body, residual]);
+            } else {
+                if value.is_some() {
+                    let body_value = self.boolean(*body_value)?;
+                    let expected = if guard_source.is_some() {
+                        conditional_bool(guard_value, body_value)
+                    } else {
+                        body_value
+                    };
+                    if expected.is_none() || expected != self.boolean(*value)? {
+                        return Err("定数論理全域wholeの元body・guard・判断が違う".into());
+                    }
+                } else if !node
+                    .reasons
+                    .iter()
+                    .any(|reason| matches!(&reason.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+                {
+                    return Err("全域wholeに正確な差も元式の非対応算法理由もない".into());
+                }
+                expected_step = None;
+                expected_arguments.push(*body);
+            }
+        }
+        if let Some(value) = value {
+            let [normalization] = node.evidence.as_slice() else {
+                return Err("確定した全域wholeに一つの正規化証拠がない".into());
+            };
+            let proof = self.get(*normalization)?;
+            if !self.universal_normalization_shape(proof)?
+                || !matches!(&proof.payload, Some(Payload::Normalization { before, after, steps }) if before == expression && after == value && steps.first() == expected_step.as_ref())
+                || proof.scope != node.scope
+                || proof.support != node.support
+            {
+                return Err("全域wholeの正規化証拠が元式・判断に合わない".into());
+            }
+            expected_arguments.extend([*value, *normalization]);
+        } else if let [pair] = node.evidence.as_slice() {
+            let proof = self.get(*pair)?;
+            if !self.universal_completion_pair_shape(proof)?
+                || proof.arguments.first() != Some(expression)
+                || proof.support != node.support
+            {
+                return Err("未決の全域wholeが別template・支持の補完対を指す".into());
+            }
+            expected_arguments.push(*pair);
+        } else if !node.evidence.is_empty() {
+            return Err("未決の全域wholeに完成正規化証拠がある".into());
+        }
+        if node.arguments != expected_arguments {
+            return Err("全域wholeの元Domain・実評価・判断の導出が違う".into());
+        }
+        self.tick()?;
+        Ok(true)
+    }
+
+    pub(super) fn universal_witness_record(
+        &self,
+        anchor: NodeRef,
+    ) -> Result<Option<&UniversalWitness>, ValidationFailure> {
+        let mut matching = self
+            .universal_witnesses
+            .iter()
+            .filter(|witness| witness.anchor == anchor);
+        let Some(witness) = matching.next() else {
+            return Ok(None);
+        };
+        if matching.next().is_some() || witness.ordinal > 1 {
+            return Err("数値補完anchorの実case identityが重複・不正".into());
+        }
+        self.tick()?;
+        if self
+            .universal_witnesses
+            .iter()
+            .filter(|other| {
+                other.caller == witness.caller
+                    && other.template == witness.template
+                    && other.ordinal == witness.ordinal
+            })
+            .count()
+            != 1
+            || self.context_at(anchor.0) != witness.caller
+            || self.context_at(witness.template.0) != witness.caller
+        {
+            return Err("数値補完anchorが別のcaller・caseへ移された".into());
+        }
+        let node = self.get(anchor)?;
+        self.parameterized_transform_shape(node)?;
+        let Some(Payload::ParameterizedTransform {
+            operation: TransformOp::Substitute,
+            operands,
+            parameters,
+            bindings,
+        }) = &node.payload
+        else {
+            return Err("数値補完anchorが元wholeの恒等代入でない".into());
+        };
+        let (original_parameters, original_bindings) = match &self.get(witness.template)?.payload {
+            Some(Payload::Expression {
+                parameters,
+                bindings,
+                ..
+            })
+            | Some(Payload::ParameterizedTransform {
+                parameters,
+                bindings,
+                ..
+            }) => (parameters, bindings),
+            _ => return Err("数値補完anchorの元templateがExpressionでない".into()),
+        };
+        self.universal_template_sources(witness.template)?;
+        let mut source_scope = self.get(witness.template)?.scope.clone();
+        source_scope.completions = true;
+        if operands != &[witness.template]
+            || parameters != original_parameters
+            || bindings != original_bindings
+            || !node.scope.assignments
+            || !node.scope.completions
+            || !node.scope.source_compatible(&source_scope)
+            || !matches!(node.rule, Rule::Construction("expression"))
+        {
+            return Err("数値補完anchorが元の型・自由parameter・固定束縛を変えた".into());
+        }
+        Ok(Some(witness))
+    }
+
+    fn universal_witness_value_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+        let [template, anchor, values @ ..] = node.arguments.as_slice() else {
+            return Ok(false);
+        };
+        let Some(witness) = self.universal_witness_record(*anchor)? else {
+            return Ok(false);
+        };
+        if witness.template != *template
+            || self.active != witness.caller
+            || node.scope != self.get(*anchor)?.scope
+            || !matches!(node.rule, Rule::Construction("evaluation"))
+            || !node.evidence.is_empty()
+        {
+            return Err("数値補完証拠値の元template・anchor・Scopeが違う".into());
+        }
+        match &node.ty {
+            NodeType::Value(Type::Bool) => {
+                if values.is_empty() {
+                    return Err("数値補完case判断に元slot値がない".into());
+                }
+                for &value in values {
+                    self.tick()?;
+                    let scalar = self.scalar(value)?;
+                    if !matches!(scalar.ty(), Type::Z | Type::Q)
+                        || !matches!(self.get(value)?.arguments.as_slice(), [source, case, _] if source == template && case == anchor)
+                    {
+                        return Err("数値補完case判断が別のslot代入を消費した".into());
+                    }
+                }
+            }
+            NodeType::Value(ty @ (Type::Z | Type::Q)) => {
+                let [source] = values else {
+                    return Err("数値補完slot値に元field出現がない".into());
+                };
+                self.expect(*source, &NodeType::Expression(ty.clone()))?;
+                if !matches!(
+                    &self.get(*source)?.payload,
+                    Some(Payload::Expression { .. })
+                ) || self.get(*source)?.arguments.first() != Some(template)
+                {
+                    return Err("数値補完slot値の元fieldが別のtemplateを指す".into());
+                }
+            }
+            _ => return Err("数値補完証拠値の型がZ/Q/Boolでない".into()),
+        }
+        Ok(true)
+    }
+
+    fn universal_witness_evaluation_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Evaluation {
+            expression: anchor,
+            bindings,
+            parts,
+            value,
+            applicability,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        let Some(witness) = self.universal_witness_record(*anchor)? else {
+            return Ok(false);
+        };
+        self.tick()?;
+        let template = witness.template;
+        let (body_source, _) = self.universal_template_sources(template)?;
+        let Some(Payload::Expression {
+            location,
+            bindings: fixed,
+            ..
+        }) = &self.get(body_source)?.payload
+        else {
+            unreachable!()
+        };
+        let [part] = parts.as_slice() else {
+            return Err("数値補完case wholeの元part数が違う".into());
+        };
+        let [body] = part.children.as_slice() else {
+            return Err("数値補完case wholeに元body評価がない".into());
+        };
+        self.expect(*body, &NodeType::Evaluation(Type::Bool))?;
+        let Some(Payload::Evaluation {
+            expression: actual_body,
+            ..
+        }) = &self.get(*body)?.payload
+        else {
+            return Err("数値補完caseが未生成のbodyを消費した".into());
+        };
+        let residual = part.residual.ok_or("数値補完caseに元残差評価がない")?;
+        let NodeType::Evaluation(Type::Z | Type::Q) = self.get(residual)?.ty else {
+            return Err("数値補完caseの元残差が数値Evaluationでない".into());
+        };
+        let Some(Payload::Evaluation {
+            expression: difference,
+            ..
+        }) = &self.get(residual)?.payload
+        else {
+            return Err("数値補完caseが未生成の残差を消費した".into());
+        };
+        let difference_node = self.get(*difference)?;
+        self.parameterized_transform_shape(difference_node)?;
+        if !matches!(
+            &difference_node.payload,
+            Some(Payload::ParameterizedTransform {
+                operation: TransformOp::Difference,
+                ..
+            })
+        ) || difference_node.arguments.first() != Some(&template)
+            || self.get(*actual_body)?.arguments.first() != Some(&template)
+        {
+            return Err("数値補完caseのbody・差が別のtemplateを指す".into());
+        }
+        let value = value.ok_or("数値補完caseのwhole判断が未完成")?;
+        self.value(value, &Type::Bool)?;
+        let value_node = self.get(value)?;
+        if !self.universal_witness_value_shape(value_node)? {
+            return Err("数値補完caseのwhole判断に型付きslot代入がない".into());
+        }
+        let [actual_template, actual_anchor, values @ ..] = value_node.arguments.as_slice() else {
+            unreachable!()
+        };
+        let mut expected_arguments = vec![*anchor];
+        expected_arguments
+            .extend_from_slice(&difference_node.arguments[1..difference_node.arguments.len() - 2]);
+        expected_arguments.extend([*body, residual]);
+        expected_arguments.extend_from_slice(values);
+        expected_arguments.push(value);
+        if *actual_template != template
+            || actual_anchor != anchor
+            || node.ty != NodeType::Evaluation(Type::Bool)
+            || bindings != fixed
+            || part.location != *location
+            || part.value != Some(value)
+            || *applicability != "applicable"
+            || node.arguments != expected_arguments
+            || !node.evidence.is_empty()
+            || node.scope != self.get(*anchor)?.scope
+            || node.scope != value_node.scope
+            || node.support != value_node.support
+            || self.active != witness.caller
+        {
+            return Err("数値補完caseの元型域・slot順・whole・Scopeが違う".into());
+        }
+        Ok(true)
+    }
+
+    fn universal_completion_pair_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+        let Some(Payload::CompletionPair {
+            fields,
+            first,
+            second,
+            first_result,
+            second_result,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        let [
+            template,
+            first_anchor,
+            second_anchor,
+            first_whole,
+            second_whole,
+            values @ ..,
+        ] = node.arguments.as_slice()
+        else {
+            return Ok(false);
+        };
+        let Some(first_witness) = self.universal_witness_record(*first_anchor)? else {
+            return Ok(false);
+        };
+        let Some(second_witness) = self.universal_witness_record(*second_anchor)? else {
+            return Ok(false);
+        };
+        if first_witness.template != *template
+            || second_witness.template != *template
+            || first_witness.caller != second_witness.caller
+            || first_witness.caller != self.active
+            || first_witness.ordinal != 0
+            || second_witness.ordinal != 1
+            || first_whole != first_result
+            || second_whole != second_result
+            || fields.len() != first.len()
+            || fields.len() != second.len()
+            || !fields.windows(2).all(|pair| pair[0] < pair[1])
+            || values != first.iter().chain(second).copied().collect::<Vec<_>>()
+        {
+            return Err("数値補完対の元template・ordinal・slot順・case結果が違う".into());
+        }
+        for (anchor, whole, values) in [
+            (*first_anchor, *first_whole, first),
+            (*second_anchor, *second_whole, second),
+        ] {
+            self.tick()?;
+            let whole_node = self.get(whole)?;
+            if !self.universal_witness_evaluation_shape(whole_node)? {
+                return Err("数値補完対のwhole caseが未完成".into());
+            }
+            let Some(Payload::Evaluation {
+                expression,
+                value: Some(value),
+                ..
+            }) = &whole_node.payload
+            else {
+                unreachable!()
+            };
+            let mut expected = vec![*template, anchor];
+            expected.extend(values.iter().copied());
+            if *expression != anchor
+                || self.get(*value)?.arguments != expected
+                || whole_node.scope != node.scope
+                || whole_node.support != node.support
+            {
+                return Err("数値補完対が別caseのslot値・whole結果を指す".into());
+            }
+        }
+        let Some(Payload::Evaluation { value: left, .. }) = &self.get(*first_result)?.payload
+        else {
+            unreachable!()
+        };
+        let Some(Payload::Evaluation { value: right, .. }) = &self.get(*second_result)?.payload
+        else {
+            unreachable!()
+        };
+        if self.boolean(*left)? == self.boolean(*right)? {
+            return Err("数値補完対の全称whole判断が同じ".into());
+        }
+        Ok(true)
+    }
+
+    fn universal_body_contains_source(
+        &self,
+        body_source: NodeRef,
+        call_source: NodeRef,
+        caller: super::call::Context,
+    ) -> Result<bool, ValidationFailure> {
+        let mut body_evaluation = None;
+        for (index, node) in self.nodes.iter().enumerate() {
+            self.tick()?;
+            if self.context_at(index) == self.context_at(body_source.0)
+                && matches!(&node.payload, Some(Payload::Evaluation { expression, .. }) if *expression == body_source)
+                && node.arguments.first() == Some(&body_source)
+                && body_evaluation.replace(NodeRef(index)).is_some()
+            {
+                return Err("全域反例の元body Sourceに複数の実Evaluationがある".into());
+            }
+        }
+        let root = body_evaluation.ok_or("全域反例の元body実Evaluationがない")?;
+        let mut pending = vec![root];
+        let mut seen = BTreeSet::new();
+        while let Some(reference) = pending.pop() {
+            self.tick()?;
+            if !seen.insert(reference.0) {
+                continue;
+            }
+            let node = self.get(reference)?;
+            let Some(Payload::Evaluation {
+                expression, parts, ..
+            }) = &node.payload
+            else {
+                return Err("全域反例の元body実子が完成Evaluationでない".into());
+            };
+            if *expression == call_source && self.context_at(reference.0) == caller {
+                if node.arguments.first() != Some(&call_source) {
+                    return Err("全域反例の実call評価が元CallSourceを保持しない".into());
+                }
+                return Ok(true);
+            }
+            for part in parts {
+                for &child in &part.children {
+                    self.tick()?;
+                    if child.0 >= reference.0
+                        || !matches!(self.get(child)?.ty, NodeType::Evaluation(_))
+                    {
+                        return Err("全域反例の元body実子DAGが既出Evaluationでない".into());
+                    }
+                    pending.push(child);
+                }
+            }
+        }
+        Ok(false)
+    }
+
+    fn universal_call_descends_from(
+        &self,
+        callee: NodeRef,
+        caller: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        let target = self.context_at(caller.0);
+        let mut context = self.context_at(callee.0);
+        let mut source = callee;
+        let mut seen = BTreeSet::new();
+        while let Some(index) = context.frame {
+            self.tick()?;
+            if !seen.insert(index) {
+                return Err("全域反例の実call frameが循環する".into());
+            }
+            let frame = self
+                .frames
+                .get(index)
+                .ok_or("全域反例の実call frameがない")?;
+            if self.context_at(frame.source.0) != frame.caller
+                || !self.get(source)?.arguments.contains(&frame.source)
+                || !matches!(
+                    &self.get(frame.source)?.payload,
+                    Some(Payload::Expression { .. })
+                )
+            {
+                return Err("全域反例のcallee Sourceが元実call producerを保持しない".into());
+            }
+            for &argument in &frame.arguments {
+                self.tick()?;
+                if !matches!(
+                    &self.get(argument)?.payload,
+                    Some(Payload::Evaluation { .. })
+                ) || !self.get(source)?.arguments.contains(&argument)
+                {
+                    return Err("全域反例の実call引数Evaluationが別のproducer".into());
+                }
+            }
+            if frame.caller == target {
+                return self.universal_body_contains_source(caller, frame.source, frame.caller);
+            }
+            source = frame.source;
+            context = frame.caller;
+        }
+        Ok(false)
+    }
+
+    fn universal_local_binding_witness(
+        &self,
+        original_side: NodeRef,
+        caller_body: NodeRef,
+        binding: &Binding,
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        let original = self.get(original_side)?;
+        let Some(Payload::Expression { parameters, .. }) = &original.payload else {
+            return Ok(false);
+        };
+        if !parameters
+            .iter()
+            .any(|(name, ty)| *name == binding.name && *ty == binding.ty)
+        {
+            return Ok(false);
+        }
+        let Some(&root) = original.arguments.first() else {
+            return Ok(false);
+        };
+        self.universal_template_sources(root)?;
+        let scalar = self.get(binding.value)?;
+        if scalar.ty != NodeType::Value(binding.ty.clone())
+            || scalar.arguments != [root, original_side]
+            || self.context_at(binding.value.0) != self.context_at(caller_body.0)
+        {
+            return Ok(false);
+        }
+        for &domain in &original.arguments {
+            self.tick()?;
+            let domain_node = self.get(domain)?;
+            let Some(Payload::TypeDomain { ty }) = &domain_node.payload else {
+                continue;
+            };
+            let [header] = domain_node.arguments.as_slice() else {
+                continue;
+            };
+            if self.universal_local_header_root(*header)? != Some(root)
+                || *ty != binding.ty
+                || self.context_at(domain.0) != self.context_at(original_side.0)
+                || self.context_at(header.0) != self.context_at(original_side.0)
+            {
+                continue;
+            }
+            let Rule::Input {
+                kind: "law",
+                location: Location::Law { span: binder },
+            } = &domain_node.rule
+            else {
+                continue;
+            };
+            if !matches!(&scalar.rule, Rule::Input {kind:"law", location:Location::Law {span}} if span == binder)
+            {
+                continue;
+            }
+            let matching = original
+                .scope
+                .quantifiers
+                .iter()
+                .filter(|q| {
+                    q.domain == Some(domain)
+                        && q.kind == crate::law::ast::QuantKind::Forall
+                        && q.name == binding.name
+                        && q.ty == binding.ty
+                        && q.occurrence == *binder
+                        && q.context == Some(self.context_at(original_side.0))
+                })
+                .count();
+            if matching == 1
+                && self.universal_body_contains_source(
+                    caller_body,
+                    *header,
+                    self.context_at(original_side.0),
+                )?
+            {
+                self.value(binding.value, &binding.ty)?;
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    fn universal_local_substitution_extends_caller(
+        &self,
+        original_side: NodeRef,
+        caller_body: NodeRef,
+        caller_bindings: &[Binding],
+        side_bindings: &[Binding],
+    ) -> Result<bool, ValidationFailure> {
+        let mut local_changes = false;
+        for binding in side_bindings {
+            self.tick()?;
+            if !caller_bindings.contains(binding) {
+                if !self.universal_local_binding_witness(original_side, caller_body, binding)? {
+                    return Ok(false);
+                }
+                local_changes = true;
+            }
+        }
+        for original in caller_bindings {
+            self.tick()?;
+            if side_bindings.contains(original) {
+                continue;
+            }
+            let mut shadowed = false;
+            for binding in side_bindings
+                .iter()
+                .filter(|binding| binding.name == original.name)
+            {
+                self.tick()?;
+                if self.universal_local_binding_witness(original_side, caller_body, binding)? {
+                    shadowed = true;
+                    break;
+                }
+            }
+            if !shadowed {
+                return Ok(false);
+            }
+            local_changes = true;
+        }
+        Ok(local_changes)
+    }
+
+    /// 有限族の各rowは、そのrowで全数値parameterを全称化したwholeを証明する。
+    fn universal_counterexample_for_evaluation(
+        &self,
+        evidence: NodeRef,
+        evaluation: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        let proof = self.get(evidence)?;
+        if !self.universal_counterexample_shape(proof)? {
+            return Ok(false);
+        }
+        let whole = self.get(evaluation)?;
+        if !self.universal_evaluation_shape(whole)? {
+            return Ok(false);
+        }
+        let Some(Payload::Evaluation {
+            expression, value, ..
+        }) = &whole.payload
+        else {
+            unreachable!()
+        };
+        let [normalization] = whole.evidence.as_slice() else {
+            return Ok(false);
+        };
+        if self.boolean(*value)? != Some(false)
+            || self.context_at(evidence.0) != self.context_at(evaluation.0)
+            || proof.scope != whole.scope
+            || proof.support != whole.support
+        {
+            return Ok(false);
+        }
+        Ok(match proof.arguments.as_slice() {
+            [source, actual_whole, actual_normalization] => {
+                source == expression
+                    && *actual_whole == evaluation
+                    && actual_normalization == normalization
+            }
+            [source, actual_normalization, _, _, _] => {
+                source == expression && actual_normalization == normalization
+            }
+            _ => false,
+        })
+    }
+
+    fn universal_counterexample_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Counterexample {
+            bindings,
+            left,
+            right,
+            facts,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        match node.arguments.as_slice() {
+            [source, evaluation, normalization] => {
+                if !matches!(&self.get(*normalization)?.payload, Some(Payload::Normalization { before, .. }) if before == source)
+                    || !self.universal_normalization_shape(self.get(*normalization)?)?
+                {
+                    return Ok(false);
+                }
+                let whole = self.get(*evaluation)?;
+                if !self.universal_evaluation_shape(whole)? {
+                    return Err("全域反例が元whole評価を指さない".into());
+                }
+                let Some(Payload::Evaluation {
+                    expression,
+                    bindings: fixed,
+                    value,
+                    ..
+                }) = &whole.payload
+                else {
+                    unreachable!()
+                };
+                let expected = self.get(*right)?;
+                if expression != source
+                    || bindings != fixed
+                    || *value != Some(*left)
+                    || self.scalar(*left)? != &Scalar::Bool(false)
+                    || self.scalar(*right)? != &Scalar::Bool(true)
+                    || whole.evidence != [*normalization]
+                    || expected.arguments != node.arguments
+                    || !matches!(expected.rule, Rule::Construction("proposition"))
+                    || node.scope != whole.scope
+                    || facts != &node.support
+                    || node.support != whole.support
+                {
+                    return Err("全域反例の偽・要求真・正規化・支持が違う".into());
+                }
+                Ok(true)
+            }
+            [
+                source,
+                normalization,
+                substitution,
+                left_evaluation,
+                right_evaluation,
+            ] => {
+                if !matches!(&self.get(*normalization)?.payload, Some(Payload::Normalization { before, .. }) if before == source)
+                    || !self.universal_normalization_shape(self.get(*normalization)?)?
+                {
+                    return Ok(false);
+                }
+                let Some(Payload::Normalization { after, steps, .. }) =
+                    &self.get(*normalization)?.payload
+                else {
+                    unreachable!()
+                };
+                if self.scalar(*after)? != &Scalar::Bool(false) {
+                    return Err("具体全域反例のwholeが偽でない".into());
+                }
+                let [difference_step, body_substitution_step] = steps.as_slice() else {
+                    return Err("具体全域反例の正規化stepが元差・caller代入でない".into());
+                };
+                let substitute = self.get(*substitution)?;
+                self.parameterized_transform_shape(substitute)?;
+                let Some(Payload::ParameterizedTransform {
+                    operation: TransformOp::Substitute,
+                    operands,
+                    bindings: actual,
+                    ..
+                }) = &substitute.payload
+                else {
+                    return Err("具体全域反例に元bodyの同時代入がない".into());
+                };
+                if substitute.ty != NodeType::Expression(Type::Bool)
+                    || self.get(operands[0])?.arguments.first() != Some(source)
+                    || bindings != actual
+                    || body_substitution_step != substitution
+                    || left != left_evaluation
+                    || right != right_evaluation
+                {
+                    return Err("具体全域反例の元body・束縛・左右が違う".into());
+                }
+                let NodeType::Evaluation(ty @ (Type::Z | Type::Q)) = &self.get(*left)?.ty else {
+                    return Err("具体全域反例の左辺が数値Evaluationでない".into());
+                };
+                self.expect(*right, &NodeType::Evaluation(ty.clone()))?;
+                let Some(Payload::ParameterizedTransform {
+                    operands: original_sides,
+                    ..
+                }) = &self.get(*difference_step)?.payload
+                else {
+                    return Err("具体全域反例の元差Expressionがない".into());
+                };
+                for (&evaluation, &original_side) in [*left, *right].iter().zip(original_sides) {
+                    self.tick()?;
+                    let Some(Payload::Evaluation {
+                        expression,
+                        bindings: evaluation_bindings,
+                        ..
+                    }) = &self.get(evaluation)?.payload
+                    else {
+                        return Err("具体全域反例が未生成の左右評価を消費した".into());
+                    };
+                    let expression = self.get(*expression)?;
+                    self.parameterized_transform_shape(expression)?;
+                    let Some(Payload::ParameterizedTransform {
+                        operation: TransformOp::Substitute,
+                        operands: actual_sides,
+                        bindings: actual,
+                        ..
+                    }) = &expression.payload
+                    else {
+                        return Err("具体全域反例が元左右へ再代入していない".into());
+                    };
+                    if actual_sides != &[original_side] || actual != evaluation_bindings {
+                        return Err("具体全域反例の左右が別の元式・同時代入を使う".into());
+                    }
+                    if self.context_at(original_side.0) == self.context_at(operands[0].0) {
+                        if actual != bindings
+                            && !self.universal_local_substitution_extends_caller(
+                                original_side,
+                                operands[0],
+                                bindings,
+                                actual,
+                            )?
+                        {
+                            return Err(
+                                "直接Eqの全域反例が局所型Domainによらず左右の同時代入を変えた"
+                                    .into(),
+                            );
+                        }
+                    } else if !self.universal_call_descends_from(original_side, operands[0])? {
+                        return Err("具体全域反例のcalleeが元caller代入に属さない".into());
+                    }
+                }
+                if node.scope != self.get(*normalization)?.scope
+                    || node.support != self.get(*normalization)?.support
+                    || facts != &node.support
+                {
+                    return Err("具体全域反例のScope・支持が違う".into());
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
     }
 
     fn affine_comparison_shape(
@@ -1708,9 +3307,26 @@ impl Graph {
             }
             if let Some(domain) = quantifier.domain {
                 self.expect(domain, &NodeType::Domain)?;
+                let domain_type = match &self.get(domain)?.payload {
+                    Some(Payload::TypeDomain { ty }) | Some(Payload::Domain { ty, .. }) => ty,
+                    _ => return Err("Scopeが未生成の量化Domainを消費した".into()),
+                };
+                if domain_type != &quantifier.ty {
+                    return Err("Scopeの量化型とDomain型が違う".into());
+                }
             }
         }
         match (&node.ty, &node.payload) {
+            (NodeType::Domain, Some(Payload::TypeDomain { ty })) => {
+                if !matches!(ty, Type::Z | Type::Q) || !node.scope.assignments {
+                    return Err("型全域DomainがZ/Q全代入域でない".into());
+                }
+                let [source] = node.arguments.as_slice() else {
+                    return Err("型全域Domainに元Sourceがない".into());
+                };
+                self.expect(*source, &NodeType::Expression(Type::Bool))?;
+                self.universal_template_sources(*source)?;
+            }
             (NodeType::Domain, Some(Payload::Domain { ty, elements })) => {
                 let mut values = Vec::new();
                 for element in elements {
@@ -1756,6 +3372,8 @@ impl Graph {
             }
             (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {
                 super::data::check_shape(s, &self.control)?;
+                self.universal_witness_value_shape(&node)?;
+                self.universal_local_quantifier_value_shape(&node)?;
             }
             (
                 NodeType::Expression(_),
@@ -1763,6 +3381,9 @@ impl Graph {
                     Payload::Expression { bindings, .. } | Payload::CompletionSeed { bindings, .. },
                 ),
             ) => self.bindings(bindings)?,
+            (NodeType::Expression(_), Some(Payload::ParameterizedTransform { .. })) => {
+                self.parameterized_transform_shape(&node)?;
+            }
             (
                 NodeType::Expression(Type::Z | Type::Q),
                 Some(Payload::Transform {
@@ -1780,8 +3401,8 @@ impl Graph {
                     bindings,
                 }),
             ) => {
-                if *operation == TransformOp::Difference {
-                    return Err("Boolにdifference変換を適用できない".into());
+                if !matches!(operation, TransformOp::Not | TransformOp::And) {
+                    return Err("Boolの既存変換がnot/andでない".into());
                 }
                 self.bindings(bindings)?;
                 if operands.len() != operation.arity() {
@@ -1804,6 +3425,9 @@ impl Graph {
                 }),
             ) => {
                 self.expect(*expression, &NodeType::Expression(t.clone()))?;
+                if node.scope.assignments && self.get(*expression)?.payload.is_none() {
+                    return Err("全域評価が未生成のExpressionを消費した".into());
+                }
                 self.bindings(bindings)?;
                 if !["applicable", "not_applicable", "undetermined"].contains(applicability) {
                     return Err("適用表示が不正".into());
@@ -1817,20 +3441,42 @@ impl Graph {
                         self.scalar(v)?;
                     }
                     if let Some(r) = p.residual {
-                        let value = self.scalar(r)?;
-                        if !super::numeric::is_numeric_type(&value.ty(), &self.control)? {
-                            return Err("残差が数値型でない".into());
+                        if let NodeType::Evaluation(ty @ (Type::Z | Type::Q)) = &self.get(r)?.ty {
+                            if !node.scope.assignments
+                                || !matches!(
+                                    &self.get(r)?.payload,
+                                    Some(Payload::Evaluation { .. })
+                                )
+                            {
+                                return Err("全域残差が完成した数値Evaluationでない".into());
+                            }
+                            self.expect(r, &NodeType::Evaluation(ty.clone()))?;
+                        } else {
+                            let value = self.scalar(r)?;
+                            if !super::numeric::is_numeric_type(&value.ty(), &self.control)? {
+                                return Err("残差が数値型でない".into());
+                            }
+                            super::numeric::check(value, &self.control)?;
                         }
-                        super::numeric::check(value, &self.control)?;
                     }
                     for &c in &p.children {
                         self.tick()?;
                         if !matches!(self.get(c)?.ty, NodeType::Evaluation(_)) {
                             return Err("子が Evaluation でない".into());
                         }
+                        if node.scope.assignments
+                            && !matches!(&self.get(c)?.payload, Some(Payload::Evaluation { .. }))
+                        {
+                            return Err("全域評価が未生成の子Evaluationを消費した".into());
+                        }
                         self.tick()?;
                     }
                     self.tick()?;
+                }
+                if !self.universal_witness_evaluation_shape(&node)?
+                    && !self.universal_local_quantifier_evaluation_shape(&node)?
+                {
+                    self.universal_evaluation_shape(&node)?;
                 }
             }
             (
@@ -1939,6 +3585,17 @@ impl Graph {
                 {
                     return Err("補完対の結果型が違う".into());
                 }
+                if !self.universal_completion_pair_shape(&node)?
+                    && node.scope.assignments
+                    && !node.arguments.first().is_some_and(|source| {
+                        matches!(
+                            self.get(*source).map(|node| &node.payload),
+                            Ok(Some(Payload::CompletionSeed { .. }))
+                        )
+                    })
+                {
+                    return Err("数値補完対に元whole・slot代入の専用導出がない".into());
+                }
             }
             (
                 NodeType::Evidence,
@@ -1950,7 +3607,16 @@ impl Graph {
                 }),
             ) => {
                 self.bindings(bindings)?;
-                if matches!(self.get(*left)?.ty, NodeType::Evaluation(_))
+                if self.universal_counterexample_shape(&node)? {
+                    // 数値値が未確定でも、元同時代入とwhole正規化を保持する専用形だけを通す。
+                } else if node.scope.assignments
+                    && !(matches!(node.arguments.as_slice(), [instance, evaluation]
+                        if self.get(*instance)?.ty == NodeType::LawInstance
+                            && self.get(*evaluation)?.ty == NodeType::Evaluation(Type::Bool))
+                        || self.quantifier_counterexample_shape(&node)?)
+                {
+                    return Err("全域反例に元whole正規化の専用導出がない".into());
+                } else if matches!(self.get(*left)?.ty, NodeType::Evaluation(_))
                     || matches!(self.get(*right)?.ty, NodeType::Evaluation(_))
                 {
                     let [instance, evaluation] = node.arguments.as_slice() else {
