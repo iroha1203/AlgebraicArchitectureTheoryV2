@@ -58,6 +58,9 @@ struct ValidationCache {
     frames: BTreeMap<(usize, usize), FrameInputs>,
 }
 
+#[cfg(test)]
+type NameTokenObserver = Box<dyn FnMut((usize, usize), super::call::Context)>;
+
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
     subjects: BTreeMap<(String, String), &'a Subject>,
@@ -71,6 +74,10 @@ pub(crate) struct Environment<'a> {
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
     cache: RefCell<ValidationCache>,
+    #[cfg(test)]
+    optional_name_context: Cell<Option<super::call::Context>>,
+    #[cfg(test)]
+    name_token_observer: RefCell<Option<NameTokenObserver>>,
 }
 impl<'a> Environment<'a> {
     pub fn new(inputs: &'a CheckedInputs, control: &mut Control) -> Result<Self, StopReason> {
@@ -136,6 +143,10 @@ impl<'a> Environment<'a> {
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
             cache: RefCell::new(ValidationCache::default()),
+            #[cfg(test)]
+            optional_name_context: Cell::new(None),
+            #[cfg(test)]
+            name_token_observer: RefCell::new(None),
         })
     }
     pub fn subject(&self, snapshot: &str, id: &str) -> Result<&'a Subject, String> {
@@ -213,6 +224,13 @@ impl<'a> Environment<'a> {
         index: usize,
     ) -> Result<(), ValidationFailure> {
         self.validate_at(graph, node, index)
+    }
+    #[cfg(test)]
+    pub(super) fn observe_optional_name_token(
+        &self,
+        observer: impl FnMut((usize, usize), super::call::Context) + 'static,
+    ) {
+        *self.name_token_observer.borrow_mut() = Some(Box::new(observer));
     }
     // 新規挿入時は prefix の長さ、既存 node はその挿入位置を cutoff とする。
     // 後からできた Source/Evaluation を、先行 Scalar の証人にしない。
@@ -743,7 +761,14 @@ impl<'a> Environment<'a> {
                     _ => vec![],
                 };
                 let parameter = if expected.is_empty() {
-                    let name = self.name_token(span).ok();
+                    #[cfg(test)]
+                    let previous_name_context = self
+                        .optional_name_context
+                        .replace(Some(self.current_context(graph)));
+                    let name = self.find_name_token(span);
+                    #[cfg(test)]
+                    self.optional_name_context.set(previous_name_context);
+                    let name = name?;
                     name.map(|name| self.call_parameter(graph, name))
                         .transpose()?
                         .flatten()
@@ -1957,9 +1982,20 @@ impl<'a> Environment<'a> {
     // 元byteの綴りだけでなく、採用・型検査済みDottedの実先頭出現へ戻る。
     // 単独名は全体のSource、field読みの先頭名だけがfragmentとして使える。
     fn name_token(&self, span: (usize, usize)) -> Result<&str, ValidationFailure> {
+        self.find_name_token(span)?
+            .ok_or_else(|| "fragment が元Dottedの先頭tokenでない".into())
+    }
+    // 非一致だけをNoneとし、停止と元出現の不整合は任意照合でも伝播する。
+    fn find_name_token(&self, span: (usize, usize)) -> Result<Option<&str>, ValidationFailure> {
         let mut name = None;
         let law = self.inputs.law();
         for (id, expression) in law.exprs.iter().enumerate() {
+            #[cfg(test)]
+            if let Some(context) = self.optional_name_context.get()
+                && let Some(observer) = self.name_token_observer.borrow_mut().as_mut()
+            {
+                observer(span, context);
+            }
             self.tick()?;
             if law.expr_type(id).is_some()
                 && self.expressions.get(&expression.span) == Some(&id)
@@ -1974,7 +2010,7 @@ impl<'a> Environment<'a> {
             }
             self.tick()?;
         }
-        name.ok_or_else(|| "fragment が元Dottedの先頭tokenでない".into())
+        Ok(name)
     }
     // lexical scope は元 binder の body 範囲から復元する。右辺自身や同名の別出現を
     // 束縛としない。静的検査済みの shadowing 禁止により、外→内の順は一意になる。

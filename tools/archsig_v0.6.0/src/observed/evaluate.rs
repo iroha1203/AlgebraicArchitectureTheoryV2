@@ -5141,4 +5141,240 @@ reading Calc {{
         let scalar = result.nodes.iter().enumerate().find_map(|(index, node)| (result.contexts[index].frame == Some(0) && matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer, ..}} if pointer.ends_with("/atoms/1/value"))).then_some(index)).unwrap();
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
     }
+    #[test]
+    fn named_parameter_name_token_checkpoint_preserves_original_stop_through_driver() {
+        use super::super::control::{Limits, Resource, Usage};
+        use crate::result::Signal;
+        use std::{
+            cell::{Cell, RefCell},
+            rc::Rc,
+        };
+        let sources = numeric_recheck_fixture(
+            &["p"],
+            r#"
+ view retain(x: Bool): Bool = x;
+ view seed(s: Sample): Q = s.q;
+ view missing(s: Sample): Bool = s.p;
+ view current(s: Sample): Bool = retain(s.p);
+ view later(s: Sample): Q = s.q;
+"#,
+        );
+        let asks = [
+            "seed=evaluate(Calc.seed,s=@v/sample)",
+            "missing=evaluate(Calc.missing,s=@v/sample)",
+            "current=evaluate(Calc.current,s=@v/sample)",
+            "later=evaluate(Calc.later,s=@v/sample)",
+        ];
+        let mut baseline_control = named_call_quiet();
+        let prepared = prepare_observed(sources.clone(), &asks, &mut baseline_control).unwrap();
+        let Signature::View { body, .. } =
+            &prepared.inputs().law().declarations["Calc.retain"].signature
+        else {
+            unreachable!()
+        };
+        let parameter_span = prepared.inputs().law().exprs[*body].span;
+        assert_eq!(
+            &sources.law().bytes()[parameter_span.0..parameter_span.1],
+            b"x"
+        );
+        let normal = evaluate_observed(prepared, &mut baseline_control).unwrap();
+        assert_eq!(normal.status(), "partial");
+        let Json::Obj(ref normal_wire) = normal.wire() else {
+            unreachable!()
+        };
+        let Json::Arr(normal_answers) = &normal_wire["answers"] else {
+            unreachable!()
+        };
+        assert_eq!(normal.answers[0].status, Decision::Established);
+        let graph = rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        assert_eq!(
+            graph.scalar(normal.answers[0].outputs["value"]).unwrap(),
+            &Scalar::Q((-2).into(), 3.into())
+        );
+        let parameter_evaluation = normal
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (normal.contexts[index].frame == Some(0)
+                    && matches!(&node.payload, Some(Payload::Evaluation { .. })))
+                .then_some(index)
+            })
+            .unwrap();
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=parameter_evaluation])
+            .unwrap();
+        let Some(Payload::Evaluation { parts, value, .. }) =
+            &normal.nodes[parameter_evaluation].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(
+            parts[0].location,
+            Location::Law {
+                span: parameter_span
+            }
+        );
+        assert_eq!(parts[0].children.len(), 1);
+        assert!(value.is_none());
+        let target_context = super::super::call::Context {
+            request: 2,
+            frame: Some(0),
+        };
+        let mut problems = Vec::new();
+        for kind in 0..3 {
+            let (limits, usage, expected) = match kind {
+                0 => (
+                    Limits {
+                        time_ms: Some(1),
+                        memory_mib: None,
+                    },
+                    Usage {
+                        elapsed_ms: 1,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 1,
+                        observed: 1,
+                    },
+                ),
+                1 => (
+                    Limits {
+                        time_ms: None,
+                        memory_mib: Some(1),
+                    },
+                    Usage {
+                        memory_mib: 1,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 1,
+                        observed: 1,
+                    },
+                ),
+                _ => (
+                    Limits::default(),
+                    Usage {
+                        signal: Some(Signal::Term),
+                        ..Usage::default()
+                    },
+                    StopReason::Cancelled(Signal::Term),
+                ),
+            };
+            let armed = Rc::new(Cell::new(false));
+            let probes = Rc::new(Cell::new(0));
+            let frozen = Rc::new(Cell::new(None));
+            let seen = Rc::new(RefCell::new(Vec::new()));
+            let (probe_armed, probe_count, at_stop) =
+                (armed.clone(), probes.clone(), frozen.clone());
+            let mut control = Control::new(limits, move |point| {
+                probe_count.set(probe_count.get() + 1);
+                if probe_armed.replace(false) {
+                    assert_eq!(point, Checkpoint::FiniteIteration);
+                    assert!(
+                        at_stop.replace(Some(probe_count.get())).is_none(),
+                        "同じ既存tick一箇所だけへ注入する"
+                    );
+                    return usage;
+                }
+                Usage::default()
+            });
+            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+            let result = evaluate_observed_with_validator(
+                prepared,
+                &mut control,
+                |environment, graph, request, answer| {
+                    // 元のvalidatorを通した先行欠測Answerの後に、同じEnvironmentを観測する。
+                    environment.validate_answer(graph, request, answer)?;
+                    if request.id == "missing" {
+                        assert!(
+                            answer
+                                .reasons
+                                .iter()
+                                .any(|r| matches!(r.kind, ReasonKind::Missing))
+                        );
+                        let (observed, arm) = (seen.clone(), armed.clone());
+                        environment.observe_optional_name_token(move |span, context| {
+                            if span == parameter_span && context == target_context {
+                                observed.borrow_mut().push((span, context));
+                                arm.set(true);
+                            }
+                        });
+                    }
+                    Ok(())
+                },
+            )
+            .unwrap();
+            assert_eq!(
+                result.nodes.len(),
+                parameter_evaluation,
+                "停止したparameter評価をcommitせず新nodeを追加しない"
+            );
+            assert_eq!(&*seen.borrow(), &[(parameter_span, target_context)]);
+            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(
+                Some(probes.get()),
+                frozen.get(),
+                "停止後はprobeを再開しない"
+            );
+            let Json::Obj(ref wire) = result.wire() else {
+                unreachable!()
+            };
+            let Json::Arr(answers) = &wire["answers"] else {
+                unreachable!()
+            };
+            assert_eq!(
+                &answers[..2],
+                &normal_answers[..2],
+                "先行確定値と元missing/依存を保持する"
+            );
+            for index in [2, 3] {
+                let answer = &result.answers[index];
+                assert_eq!(answer.status, Decision::Undetermined);
+                assert!(
+                    answer.outputs.is_empty(),
+                    "未完成/未着手を通常値へ昇格しない"
+                );
+                if !answer
+                    .reasons
+                    .iter()
+                    .any(|r| matches!(&r.kind, ReasonKind::Stop(stop) if stop == &expected))
+                {
+                    problems.push(format!(
+                        "{kind}:{}の元停止理由を失った: {:?}",
+                        answer.id, answer.reasons
+                    ));
+                }
+            }
+            assert!(
+                result.answers[2]
+                    .reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::Missing)
+                        && r.missing
+                            .iter()
+                            .any(|f| f.field.as_deref() == Some("Numeric.Sample.p"))),
+                "current引数の元missingを保持する"
+            );
+            if result.status() != "interrupted" {
+                problems.push(format!("{kind}:status={}", result.status()));
+            }
+            if result
+                .issues
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+            {
+                problems.push(format!("{kind}:停止をInternalへ変えた"));
+            }
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+            let before = probes.get();
+            assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+            assert_eq!(probes.get(), before);
+        }
+        assert!(
+            problems.is_empty(),
+            "同じname_token内既存tickで3種類の停止を保持する: {problems:#?}"
+        );
+    }
 }
