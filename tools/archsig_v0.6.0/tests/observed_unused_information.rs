@@ -657,24 +657,54 @@ fn compare_unused(count: Option<&str>) {
                 unreachable!()
             };
             let expected = checked.law().exprs[*body].span;
-            let failure = evaluate_observed_bytes(
+            let selected = evaluate_observed_bytes(
                 src,
                 &["probe=evaluate(Spare.untouched,s=@v/s)"],
                 &mut Control::unlimited(),
             )
-            .unwrap_err();
-            assert!(failure.wire().is_none());
-            let EvaluationFailure::NotImplemented {
-                declaration,
-                location,
-                feature,
-            } = failure
-            else {
-                panic!("選択した match の評価は未実装")
-            };
-            assert_eq!(declaration, "Spare.untouched");
-            assert_eq!(location, archsig::issue::Location::Law { span: expected });
-            assert!(!feature.is_empty());
+            .unwrap()
+            .wire();
+            retained_metadata(checked, &selected);
+            let probe = named(&selected, "answers", "id", "probe");
+            assert_eq!(get(probe, "status"), &Json::str("established"));
+            assert!(!obj(probe).contains_key("claim"));
+            let scalar = typed(
+                &selected,
+                get(get(probe, "outputs"), "value"),
+                &Json::str("Z"),
+            );
+            assert_eq!(value(scalar), &Json::str("7"));
+            let evaluation = typed(
+                &selected,
+                get(get(probe, "outputs"), "evaluation"),
+                &Json::str("Evaluation"),
+            );
+            let parts = arr(get(value(evaluation), "parts"));
+            assert_eq!(parts.len(), 1);
+            assert_eq!(span(get(&parts[0], "location")), expected);
+            let children = arr(get(&parts[0], "children"));
+            assert_eq!(children.len(), 2);
+            for (child, original, expected_value) in [
+                (&children[0], b"s.count".as_slice(), "2"),
+                (&children[1], b"7".as_slice(), "7"),
+            ] {
+                let e = typed(&selected, child, &Json::str("Evaluation"));
+                let at = span(get(&arr(get(value(e), "parts"))[0], "location"));
+                assert_eq!(&checked.sources().law().bytes()[at.0..at.1], original);
+                assert_eq!(
+                    value(typed(&selected, get(value(e), "value"), &Json::str("Z"))),
+                    &Json::str(expected_value)
+                );
+                for fact in arr(get(e, "support")) {
+                    assert!(arr(get(evaluation, "support")).contains(fact));
+                }
+            }
+            assert!(
+                arr(get(evaluation, "support"))
+                    .iter()
+                    .any(|fact| obj(fact).get("field") == Some(&Json::str("Counter.State.count")))
+            );
+            assert_eq!(get(evaluation, "scope"), get(probe, "scope"));
         }
     }
 }
