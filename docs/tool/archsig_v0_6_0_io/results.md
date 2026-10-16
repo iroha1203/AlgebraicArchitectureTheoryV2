@@ -681,8 +681,9 @@ divisibilityは各対角行の係数が対応するtransformed_rhs成分を割�
 零行では0がその成分を割る条件、すなわち成分=0を使う。rhsを扱わない場合はdivisibility=[]。
 completion_pairは未知slotの型を保つ補完対、separating_pairは宣言済み候補域の二候補であり、
 観測された反例と区別する。反証には元の名前・入力値・結果・source位置を保持する。
-原始Bool slotの有限補完では、元Expressionを補完域の起点にし、Domainのelementsを
-slot一個ならBool、二個以上なら元slot順のBool Tupleとして表示する。各slotは元の
+原始Bool/Fp slotの有限補完では、元Expressionを補完域の起点にし、Domainのelementsを
+slot一個ならその元型、二個以上なら元slot順の型付きTupleとして表示する。Fpは元の
+素数型とその全要素を保ち、Bool/Fpが混在する直積でも各成分型を保つ。各slotは元の
 欠測FactPointerとfield Sourceに接続し、同じslotの全出現は同じ代入を読む。
 補完内のfield値は元Law位置・owner・代入値への導出であり、観測Atomとして表示しない。
 補完内Sourceのargumentsには元Expression・補完Domain・選択member・slot値を保持し、

@@ -1729,8 +1729,14 @@ impl Graph {
                 {
                     return Err("補完対の元slot列が不正".into());
                 }
-                for r in first.iter().chain(second) {
-                    self.value(*r, &Type::Bool)?;
+                for (&left, &right) in first.iter().zip(second) {
+                    self.tick()?;
+                    let ty = self.scalar(left)?.ty();
+                    if !matches!(ty, Type::Bool | Type::Fp(_)) || self.scalar(right)?.ty() != ty {
+                        return Err("補完対のslot代入が同じBool/Fp型でない".into());
+                    }
+                    self.value(left, &ty)?;
+                    self.value(right, &ty)?;
                 }
                 if !matches!(&self.get(*first_result)?.ty, NodeType::Evaluation(_))
                     || self.get(*first_result)?.ty != self.get(*second_result)?.ty

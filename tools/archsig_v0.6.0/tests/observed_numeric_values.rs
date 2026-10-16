@@ -77,19 +77,7 @@ fn links(j: &Json, rs: &mut Vec<String>) {
         _ => {}
     }
 }
-fn reached(ns: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String> {
-    let mut todo = vec![];
-    for r in roots {
-        links(r, &mut todo);
-    }
-    let mut seen = BTreeSet::new();
-    while let Some(id) = todo.pop() {
-        if seen.insert(id.clone()) {
-            links(ns[id.as_str()], &mut todo);
-        }
-    }
-    seen
-}
+
 fn span(location: &Json) -> (usize, usize) {
     assert_eq!(f(location, "input"), &Json::str("law"));
     let a = arr(f(location, "span"));
@@ -189,6 +177,60 @@ fn assert_output(result: &Json, id: &str, ty: &Json, expected: Json) {
         "viewの値はLaw判断へ昇格しない"
     );
     assert_eq!(output(result, id, ty), Some(&expected), "{id}");
+}
+
+fn evaluation_tree<'a>(ns: &BTreeMap<&str, &'a Json>, root: &'a Json) -> Vec<&'a Json> {
+    let mut pending = vec![root];
+    let mut seen = BTreeSet::new();
+    let mut evaluations = Vec::new();
+    while let Some(evaluation) = pending.pop() {
+        assert_eq!(f(evaluation, "type"), &Json::str("Evaluation"));
+        if !seen.insert(txt(f(evaluation, "id"))) {
+            continue;
+        }
+        evaluations.push(evaluation);
+        for part in arr(f(val(evaluation), "parts")) {
+            for child in arr(f(part, "children")) {
+                pending.push(target(ns, child, &Json::str("Evaluation")));
+            }
+        }
+    }
+    evaluations
+}
+fn original_evaluation<'a>(ns: &BTreeMap<&str, &'a Json>, root: &'a Json) -> &'a Json {
+    let source = target(ns, f(val(root), "expression"), &Json::str("Expression"));
+    let original = arr(f(source, "arguments"))
+        .iter()
+        .filter_map(|reference| {
+            let node = ns[txt(f(reference, "node"))];
+            (f(node, "type") == &Json::str("Evaluation")).then_some(node)
+        })
+        .collect::<Vec<_>>();
+    if original.is_empty() {
+        return root;
+    }
+    assert_eq!(
+        original.len(),
+        1,
+        "CompletionSeedから元Evaluationへ直接戻る"
+    );
+    let arguments = arr(f(root, "arguments"));
+    assert_eq!(&arguments[0], f(val(root), "expression"));
+    let domain = target(ns, &arguments[1], &Json::str("Domain"));
+    assert_eq!(
+        arr(f(domain, "arguments")).first(),
+        Some(f(val(root), "expression"))
+    );
+    let original_source = target(
+        ns,
+        f(val(original[0]), "expression"),
+        &Json::str("Expression"),
+    );
+    assert_eq!(
+        f(val(source), "location"),
+        f(val(original_source), "location")
+    );
+    original[0]
 }
 
 fn numeric(ty: &archsig::types::Type) -> bool {
@@ -307,152 +349,178 @@ fn audit(result: &Json, checked: &CheckedInputs) {
         }
         let name = txt(f(f(request, "head"), "name"));
         let decl = &checked.law().declarations[name];
-        let reach = reached(&ns, &[f(a, "outputs"), f(a, "evidence")]);
-        for (id, expr) in checked
-            .law()
-            .exprs
-            .iter()
-            .enumerate()
-            .filter(|(_, e)| decl.span.0 <= e.span.0 && e.span.1 <= decl.span.1)
-        {
-            if checked.law().expr_type(id).is_none() {
-                continue;
+        let root = target(
+            &ns,
+            f(f(a, "outputs"), "evaluation"),
+            &Json::str("Evaluation"),
+        );
+        let original = original_evaluation(&ns, root);
+        let mut runs = vec![(evaluation_tree(&ns, original), false)];
+        if f(root, "id") != f(original, "id") {
+            for part in arr(f(val(root), "parts")) {
+                for child in arr(f(part, "children")) {
+                    runs.push((
+                        evaluation_tree(&ns, target(&ns, child, &Json::str("Evaluation"))),
+                        true,
+                    ));
+                }
             }
-            let source = reach
+        }
+        for (evaluations, completion_case) in runs {
+            for (id, expr) in checked
+                .law()
+                .exprs
                 .iter()
-                .map(|id| ns[id.as_str()])
-                .find(|n| {
-                    f(n, "type") == &Json::str("Expression")
-                        && f(val(n), "kind") == &Json::str("source")
-                        && span(f(val(n), "location")) == expr.span
-                })
-                .expect("元ASTの各出現を保持する");
-            let source_ref = Json::obj([("node", f(source, "id").clone())]);
-            let evaluation = reach
-                .iter()
-                .map(|id| ns[id.as_str()])
-                .find(|n| {
-                    f(n, "type") == &Json::str("Evaluation")
-                        && f(val(n), "expression") == &source_ref
-                        && arr(f(val(n), "parts"))
-                            .iter()
-                            .filter(|p| span(f(p, "location")) == expr.span)
-                            .all(|p| {
-                                arr(f(p, "children")).iter().all(|r| {
-                                    let child = val(target(&ns, r, &Json::str("Evaluation")));
-                                    let expression = val(target(
-                                        &ns,
-                                        f(child, "expression"),
-                                        &Json::str("Expression"),
-                                    ));
-                                    obj(expression)
-                                        .get("location")
-                                        .is_none_or(|location| span(location) != expr.span)
-                                })
-                            })
-                })
-                .expect("各出現の実Evaluation");
-            let bindings = arr(f(val(evaluation), "bindings"));
-            assert_eq!(f(&bindings[0], "name"), &Json::str("s"));
-            let binding = ns[txt(f(f(&bindings[0], "value"), "node"))];
-            assert_eq!(
-                val(binding),
-                &Json::Arr(vec![Json::str("v"), Json::str("sample")])
-            );
-            let part = arr(f(val(evaluation), "parts"))
-                .iter()
-                .find(|p| span(f(p, "location")) == expr.span)
-                .unwrap();
-            let source_text =
-                std::str::from_utf8(&checked.sources().law().bytes()[expr.span.0..expr.span.1])
-                    .unwrap();
-            let mut has_missing = false;
-            for name in ["q", "f", "g", "t", "p"] {
-                if !source_text.contains(&format!("s.{name}")) {
+                .enumerate()
+                .filter(|(_, e)| decl.span.0 <= e.span.0 && e.span.1 <= decl.span.1)
+            {
+                if checked.law().expr_type(id).is_none() {
                     continue;
                 }
-                let field = checked.archmap().snapshots[0].subjects[0]
-                    .fields
+                let matching = evaluations
                     .iter()
-                    .find(|field| field.name == format!("Numeric.Sample.{name}"))
-                    .unwrap();
-                match &field.slot {
-                    archsig::archmap::Slot::Known { atom, .. } => {
-                        assert!(
-                            arr(f(evaluation, "support"))
-                                .iter()
-                                .any(|fact| obj(fact).get("field")
-                                    == Some(&Json::str(&field.name))
-                                    && obj(fact).get("atom") == Some(&Json::str(atom))),
-                            "演算の各既知operandの支持を失わない"
+                    .copied()
+                    .filter(|evaluation| {
+                        let source = target(
+                            &ns,
+                            f(val(evaluation), "expression"),
+                            &Json::str("Expression"),
                         );
-                    }
-                    archsig::archmap::Slot::Missing => has_missing = true,
-                }
-            }
-            assert_eq!(
-                f(f(evaluation, "scope"), "domain"),
-                &Json::str(if has_missing {
-                    "all_completions"
-                } else {
-                    "finite_model"
-                })
-            );
-            if let Some(value) = obj(part).get("value") {
-                assert_eq!(
-                    f(ns[txt(f(value, "node"))], "type"),
-                    &checked.law().expr_type(id).unwrap().wire()
-                );
-            }
-            let expected: Vec<_> = match &expr.kind {
-                ExprKind::Binary { lhs, rhs, .. } => vec![
-                    checked.law().exprs[*lhs].span,
-                    checked.law().exprs[*rhs].span,
-                ],
-                ExprKind::Unary { operand, .. }
-                | ExprKind::Group(operand)
-                | ExprKind::Index { base: operand, .. }
-                | ExprKind::Field { base: operand, .. } => {
-                    vec![checked.law().exprs[*operand].span]
-                }
-                ExprKind::Tuple(items) | ExprKind::Call { args: items, .. } => items
-                    .iter()
-                    .map(|id| checked.law().exprs[*id].span)
-                    .collect(),
-                _ => vec![],
-            };
-            if !expected.is_empty() {
-                let actual = arr(f(part, "children"))
-                    .iter()
-                    .map(|r| {
-                        let ev = val(target(&ns, r, &Json::str("Evaluation")));
-                        let ex = val(target(&ns, f(ev, "expression"), &Json::str("Expression")));
-                        span(f(ex, "location"))
+                        f(val(source), "kind") == &Json::str("source")
+                            && span(f(val(source), "location")) == expr.span
+                            && arr(f(val(evaluation), "parts"))
+                                .iter()
+                                .filter(|p| span(f(p, "location")) == expr.span)
+                                .all(|p| {
+                                    arr(f(p, "children")).iter().all(|r| {
+                                        let child = val(target(&ns, r, &Json::str("Evaluation")));
+                                        let expression = val(target(
+                                            &ns,
+                                            f(child, "expression"),
+                                            &Json::str("Expression"),
+                                        ));
+                                        obj(expression)
+                                            .get("location")
+                                            .is_none_or(|location| span(location) != expr.span)
+                                    })
+                                })
                     })
                     .collect::<Vec<_>>();
-                assert_eq!(actual, expected, "両子評価を元AST順に残す");
-            }
-            if let Some(residual) = obj(part).get("residual") {
-                let ExprKind::Binary {
-                    op: archsig::law::ast::BinOp::Eq,
-                    lhs,
-                    ..
-                } = &expr.kind
-                else {
-                    panic!("数値等号だけが残差を持つ")
-                };
                 assert_eq!(
-                    f(ns[txt(f(residual, "node"))], "type"),
-                    &checked.law().expr_type(*lhs).unwrap().wire()
+                    matching.len(),
+                    1,
+                    "各元AST出現に一つの実Evaluationを保持する"
                 );
-            }
-            if checked.law().expr_type(id) == Some(&archsig::types::Type::Bool) {
-                let numeric_equality = matches!(&expr.kind,ExprKind::Binary{op:archsig::law::ast::BinOp::Eq,lhs,..} if checked.law().expr_type(*lhs).is_some_and(numeric));
-                if !numeric_equality {
-                    assert!(
-                        !obj(part).contains_key("residual"),
-                        "一般Boolや不等式に数値残差を作らない"
+                let evaluation = matching[0];
+                let source = target(
+                    &ns,
+                    f(val(evaluation), "expression"),
+                    &Json::str("Expression"),
+                );
+                assert_eq!(span(f(val(source), "location")), expr.span);
+                let bindings = arr(f(val(evaluation), "bindings"));
+                assert_eq!(f(&bindings[0], "name"), &Json::str("s"));
+                let binding = ns[txt(f(f(&bindings[0], "value"), "node"))];
+                assert_eq!(
+                    val(binding),
+                    &Json::Arr(vec![Json::str("v"), Json::str("sample")])
+                );
+                let part = arr(f(val(evaluation), "parts"))
+                    .iter()
+                    .find(|p| span(f(p, "location")) == expr.span)
+                    .unwrap();
+                let source_text =
+                    std::str::from_utf8(&checked.sources().law().bytes()[expr.span.0..expr.span.1])
+                        .unwrap();
+                let mut has_missing = false;
+                for name in ["q", "f", "g", "t", "p"] {
+                    if !source_text.contains(&format!("s.{name}")) {
+                        continue;
+                    }
+                    let field = checked.archmap().snapshots[0].subjects[0]
+                        .fields
+                        .iter()
+                        .find(|field| field.name == format!("Numeric.Sample.{name}"))
+                        .unwrap();
+                    match &field.slot {
+                        archsig::archmap::Slot::Known { atom, .. } => {
+                            assert!(
+                                arr(f(evaluation, "support"))
+                                    .iter()
+                                    .any(|fact| obj(fact).get("field")
+                                        == Some(&Json::str(&field.name))
+                                        && obj(fact).get("atom") == Some(&Json::str(atom))),
+                                "演算の各既知operandの支持を失わない"
+                            );
+                        }
+                        archsig::archmap::Slot::Missing => has_missing = true,
+                    }
+                }
+                assert_eq!(
+                    f(f(evaluation, "scope"), "domain"),
+                    &Json::str(if has_missing || completion_case {
+                        "all_completions"
+                    } else {
+                        "finite_model"
+                    })
+                );
+                if let Some(value) = obj(part).get("value") {
+                    assert_eq!(
+                        f(ns[txt(f(value, "node"))], "type"),
+                        &checked.law().expr_type(id).unwrap().wire()
                     );
+                }
+                let expected: Vec<_> = match &expr.kind {
+                    ExprKind::Binary { lhs, rhs, .. } => vec![
+                        checked.law().exprs[*lhs].span,
+                        checked.law().exprs[*rhs].span,
+                    ],
+                    ExprKind::Unary { operand, .. }
+                    | ExprKind::Group(operand)
+                    | ExprKind::Index { base: operand, .. }
+                    | ExprKind::Field { base: operand, .. } => {
+                        vec![checked.law().exprs[*operand].span]
+                    }
+                    ExprKind::Tuple(items) | ExprKind::Call { args: items, .. } => items
+                        .iter()
+                        .map(|id| checked.law().exprs[*id].span)
+                        .collect(),
+                    _ => vec![],
+                };
+                if !expected.is_empty() {
+                    let actual = arr(f(part, "children"))
+                        .iter()
+                        .map(|r| {
+                            let ev = val(target(&ns, r, &Json::str("Evaluation")));
+                            let ex =
+                                val(target(&ns, f(ev, "expression"), &Json::str("Expression")));
+                            span(f(ex, "location"))
+                        })
+                        .collect::<Vec<_>>();
+                    assert_eq!(actual, expected, "両子評価を元AST順に残す");
+                }
+                if let Some(residual) = obj(part).get("residual") {
+                    let ExprKind::Binary {
+                        op: archsig::law::ast::BinOp::Eq,
+                        lhs,
+                        ..
+                    } = &expr.kind
+                    else {
+                        panic!("数値等号だけが残差を持つ")
+                    };
+                    assert_eq!(
+                        f(ns[txt(f(residual, "node"))], "type"),
+                        &checked.law().expr_type(*lhs).unwrap().wire()
+                    );
+                }
+                if checked.law().expr_type(id) == Some(&archsig::types::Type::Bool) {
+                    let numeric_equality = matches!(&expr.kind,ExprKind::Binary{op:archsig::law::ast::BinOp::Eq,lhs,..} if checked.law().expr_type(*lhs).is_some_and(numeric));
+                    if !numeric_equality {
+                        assert!(
+                            !obj(part).contains_key("residual"),
+                            "一般Boolや不等式に数値残差を作らない"
+                        );
+                    }
                 }
             }
         }
@@ -770,11 +838,15 @@ fn missing_numeric_slots_keep_identity_children_and_scope_without_filling_compon
         ("pair", vec!["q", "f"]),
     ] {
         let a = answer(&result, id);
-        assert_eq!(f(a, "status"), &Json::str("undetermined"));
-        assert!(
-            !obj(f(a, "outputs")).contains_key("value"),
-            "欠測を確定値へ補わない: {id}"
-        );
+        if id == "f" {
+            assert_output(&result, id, &fp("5"), Json::str("0"));
+        } else {
+            assert_eq!(f(a, "status"), &Json::str("undetermined"));
+            assert!(
+                !obj(f(a, "outputs")).contains_key("value"),
+                "未決定の欠測を確定値へ補わない: {id}"
+            );
+        }
         assert_eq!(f(f(a, "scope"), "domain"), &Json::str("all_completions"));
         let actual: BTreeSet<_> = arr(f(a, "reasons"))
             .iter()
@@ -789,6 +861,92 @@ fn missing_numeric_slots_keep_identity_children_and_scope_without_filling_compon
         assert_eq!(actual, expected, "各slot identity: {id}");
     }
     audit(&result, &checked);
+    let ns = nodes(&result);
+    let a = answer(&result, "f");
+    let root = target(
+        &ns,
+        f(f(a, "outputs"), "evaluation"),
+        &Json::str("Evaluation"),
+    );
+    let original = original_evaluation(&ns, root);
+    assert_ne!(f(root, "id"), f(original, "id"));
+    assert!(
+        !obj(val(original)).contains_key("value"),
+        "元観測評価へ補完値を貼らない"
+    );
+    let original_parts = arr(f(val(original), "parts"));
+    assert_eq!(original_parts.len(), 1);
+    assert_eq!(arr(f(&original_parts[0], "children")).len(), 2);
+    for child in arr(f(&original_parts[0], "children")) {
+        let evaluation = target(&ns, child, &Json::str("Evaluation"));
+        assert!(!obj(val(evaluation)).contains_key("value"));
+        assert!(
+            arr(f(evaluation, "reasons"))
+                .iter()
+                .any(|reason| f(reason, "code") == &Json::str("missing_observation"))
+        );
+    }
+    let domain = target(&ns, &arr(f(root, "arguments"))[1], &Json::str("Domain"));
+    assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
+    assert_eq!(f(val(domain), "type"), &fp("5"));
+    let members = arr(f(val(domain), "elements"));
+    assert_eq!(members.len(), 5);
+    let expected = (0..5)
+        .map(|value| Json::str(value.to_string()).canonical())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        members
+            .iter()
+            .map(|r| val(target(&ns, r, &fp("5"))).canonical())
+            .collect::<BTreeSet<_>>(),
+        expected
+    );
+    let parts = arr(f(val(root), "parts"));
+    assert_eq!(parts.len(), 1);
+    let cases = arr(f(&parts[0], "children"));
+    assert_eq!(cases.len(), 5);
+    let mut assignments = BTreeSet::new();
+    for reference in cases {
+        let case = target(&ns, reference, &Json::str("Evaluation"));
+        let source = target(&ns, f(val(case), "expression"), &Json::str("Expression"));
+        let assigned = arr(f(source, "arguments"))
+            .iter()
+            .filter(|r| members.contains(r))
+            .collect::<Vec<_>>();
+        assert_eq!(assigned.len(), 1);
+        let assigned = val(target(&ns, assigned[0], &fp("5")));
+        assert!(assignments.insert(assigned.canonical()));
+        assert_eq!(
+            val(target(&ns, f(val(case), "value"), &fp("5"))),
+            &Json::str("0")
+        );
+        let parts = arr(f(val(case), "parts"));
+        assert_eq!(parts.len(), 1);
+        let operands = arr(f(&parts[0], "children"));
+        assert_eq!(operands.len(), 2);
+        for operand in operands {
+            let evaluation = target(&ns, operand, &Json::str("Evaluation"));
+            assert_eq!(
+                val(target(&ns, f(val(evaluation), "value"), &fp("5"))),
+                assigned,
+                "同じslotの左右は同じ補完値"
+            );
+        }
+    }
+    assert_eq!(assignments, expected);
+    let coverage = arr(f(a, "evidence"))
+        .iter()
+        .map(|r| target(&ns, r, &Json::str("Evidence")))
+        .filter(|e| f(val(e), "kind") == &Json::str("finite_exhaustion"))
+        .collect::<Vec<_>>();
+    assert_eq!(coverage.len(), 1);
+    let proof = f(val(coverage[0]), "data");
+    assert_eq!(f(proof, "checked"), &Json::Nat(5));
+    assert_eq!(
+        target(&ns, f(proof, "domain"), &Json::str("Domain")),
+        domain
+    );
+    assert_eq!(f(proof, "instances"), &Json::Arr(cases.to_vec()));
 }
 
 #[test]
