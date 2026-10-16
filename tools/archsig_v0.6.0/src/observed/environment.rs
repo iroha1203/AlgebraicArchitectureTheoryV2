@@ -3974,6 +3974,60 @@ impl<'a> Environment<'a> {
                 && matches!(&self.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
         }))
     }
+    // 完了済みの元Sourceは、その通常Evaluationが固定した既出producerへ戻る。
+    // 別の未挿入Scalarが同じSourceを借りて、別出現の値に成り替わらない。
+    fn field_source_producer_matches(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+        source: NodeRef,
+        bindings: &[Binding],
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        if source.0 >= limit {
+            return Err("fieldの元Sourceが既出でない".into());
+        }
+        let Some(Payload::Expression {
+            parameters,
+            bindings: source_bindings,
+            ..
+        }) = &graph.get(source)?.payload
+        else {
+            return Err("field producerの元SourceがExpressionでない".into());
+        };
+        if !parameters.is_empty() || source_bindings != bindings {
+            self.tick()?;
+            return Ok(false);
+        }
+        let context = self.current_context(graph);
+        for (index, completed) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            if graph.context_at(index) == context
+                && completed.arguments.first() == Some(&source)
+                && let Some(Payload::Evaluation {
+                    expression,
+                    bindings: actual_bindings,
+                    value: Some(producer),
+                    ..
+                }) = &completed.payload
+                && *expression == source
+                && actual_bindings == bindings
+            {
+                // 通常finishの第一辺はSource。LawInstance適用wrapperや
+                // parameterを残す族集約を、この元式の実producerと混ぜない。
+                self.recheck_evaluation(graph, NodeRef(index))?;
+                let original = graph.get(*producer)?;
+                self.tick()?;
+                if !std::ptr::eq(original, node) {
+                    return Ok(false);
+                }
+            }
+            self.tick()?;
+        }
+        self.tick()?;
+        Ok(true)
+    }
     // 引数の本数ではなく、Scalar自身の元Law出現からchain fieldを照合する。
     // Source辺を消した値も、原始Factの読取りへ読み替えない。
     fn chain_field_source_analysis(
@@ -4025,6 +4079,9 @@ impl<'a> Environment<'a> {
             return Err("chain fieldの元span・型・束縛・metadataが違う".into());
         }
         self.validate_at(graph, source, own_source.0)?;
+        if !self.field_source_producer_matches(graph, node, limit, *own_source, bindings)? {
+            return Err("chain fieldの元Sourceは別の実producerで評価済み".into());
+        }
         self.validate_at(graph, graph.get(*owner)?, owner.0)?;
         let owner_span = prefixes[count - 2].0;
         let original_owner = self.analyze_source(graph, owner_span, bindings)?;
@@ -4172,6 +4229,15 @@ impl<'a> Environment<'a> {
             // 提示supportではなく、元pointerの不変Factとchecked tokenで絞る。
             // 実owner・値・Scopeの照合は、この候補選別の後にも全て行う。
             if format!("{}.{field_name}", input_owner.ty) != *input_field {
+                continue;
+            }
+            if !self.field_source_producer_matches(
+                graph,
+                node,
+                limit,
+                NodeRef(source_index),
+                bindings,
+            )? {
                 continue;
             }
             let analysis = self.resolve_analysis(
