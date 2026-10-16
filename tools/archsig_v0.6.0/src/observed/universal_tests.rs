@@ -17,6 +17,741 @@ fn universal_private_normalization(result: &ObservedEvaluation, request: usize) 
 }
 
 #[test]
+fn universal_mixed_bool_integer_rows_recheck_declaration_order_and_distinct_domains() {
+    let result = universal_private_example(
+        "law required example(z:Z,b:Bool):z+1=z+1;",
+        &["example=check(Calc.example)"],
+    );
+    assert_eq!(result.status(), "complete");
+    assert_eq!(result.answers[0].status, Decision::Established);
+    let whole = result.answers[0].outputs["evaluation"];
+    let Some(Payload::Evaluation {
+        expression, parts, ..
+    }) = &result.nodes[whole.0].payload
+    else {
+        unreachable!()
+    };
+    let Some(Payload::Expression { parameters, .. }) = &result.nodes[expression.0].payload else {
+        unreachable!()
+    };
+    assert_eq!(
+        parameters,
+        &[("z".into(), Type::Z), ("b".into(), Type::Bool)]
+    );
+    let rows = &parts[0].children;
+    assert_eq!(rows.len(), 2);
+    let mut names = Vec::new();
+    for quantifier in &result.nodes[whole.0].scope.quantifiers {
+        if !names.contains(&quantifier.name) {
+            names.push(quantifier.name.clone());
+        }
+    }
+    assert_eq!(names, ["z", "b"]);
+    let coverage=result.answers[0].evidence.iter().find_map(|proof| {
+        matches!(&result.nodes[proof.0].payload,Some(Payload::FiniteExhaustion {checked:2,instances,..}) if instances==rows).then_some(*proof)
+    }).unwrap();
+    let mut domains = Vec::new();
+    let mut normalizations = Vec::new();
+    for row in rows {
+        let Some(Payload::Evaluation {
+            expression,
+            value: Some(value),
+            bindings,
+            ..
+        }) = &result.nodes[row.0].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(data_scalar_at(&result, value.0), &Scalar::Bool(true));
+        assert_eq!(bindings.len(), 1);
+        assert_eq!(bindings[0].name, "b");
+        assert!(matches!(
+            data_scalar_at(&result, bindings[0].value.0),
+            Scalar::Bool(_)
+        ));
+        let context = result.contexts[row.0];
+        assert!(context.instance.is_some());
+        let domain = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (result.contexts[index] == context
+                    && node.arguments == [*expression]
+                    && matches!(&node.payload, Some(Payload::TypeDomain { ty: Type::Z })))
+                .then_some(index)
+            })
+            .unwrap();
+        let normalization = result.nodes[row.0].evidence[0];
+        assert!(
+            matches!(&result.nodes[normalization.0].payload,Some(Payload::Normalization {before,..}) if before==expression)
+        );
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=row.0]).unwrap();
+        domains.push(domain);
+        normalizations.push(normalization);
+    }
+    assert_ne!(
+        result.contexts[domains[0]].instance,
+        result.contexts[domains[1]].instance
+    );
+    completion_mutation(&result, domains[1], |nodes| {
+        nodes[domains[1]].payload = Some(Payload::TypeDomain { ty: Type::Q });
+    });
+    completion_mutation(&result, domains[1], |nodes| {
+        nodes[domains[1]].arguments[0] = result.nodes[domains[0]].arguments[0];
+    });
+    completion_mutation(&result, normalizations[1].0, |nodes| {
+        let Some(Payload::Normalization { steps, .. }) = &mut nodes[normalizations[1].0].payload
+        else {
+            unreachable!()
+        };
+        let Some(Payload::Normalization { steps: prior, .. }) =
+            &result.nodes[normalizations[0].0].payload
+        else {
+            unreachable!()
+        };
+        steps[0] = prior[0];
+    });
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=coverage.0]).unwrap();
+}
+
+#[test]
+fn universal_mixed_reference_rational_rows_recheck_missing_and_subject_producers() {
+    let result = universal_private_example(
+        "law required example(s:Sample,z:Q):z+s.q=z+s.q+rat(1,1);",
+        &["example=check(Calc.example)"],
+    );
+    assert_eq!(result.status(), "complete");
+    assert_eq!(result.answers[0].status, Decision::Refuted);
+    let whole = result.answers[0].outputs["evaluation"];
+    let Some(Payload::Evaluation { parts, .. }) = &result.nodes[whole.0].payload else {
+        unreachable!()
+    };
+    let rows = &parts[0].children;
+    let expected = result
+        .prepared
+        .inputs()
+        .archmap()
+        .snapshots
+        .iter()
+        .flat_map(|snapshot| snapshot.subjects.iter())
+        .filter(|subject| subject.ty == "Affine.Sample")
+        .count();
+    assert_eq!(rows.len(), expected);
+    assert_eq!(rows.len(), 3);
+    let mut templates = Vec::new();
+    for row in rows {
+        let Some(Payload::Evaluation {
+            expression,
+            bindings,
+            value: Some(value),
+            ..
+        }) = &result.nodes[row.0].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(data_scalar_at(&result, value.0), &Scalar::Bool(false));
+        let binding = bindings.iter().find(|binding| binding.name == "s").unwrap();
+        let Scalar::Subject {
+            snapshot, subject, ..
+        } = data_scalar_at(&result, binding.value.0)
+        else {
+            unreachable!()
+        };
+        assert!(
+            result.nodes[row.0]
+                .support
+                .iter()
+                .any(|fact| fact.snapshot == *snapshot
+                    && fact.subject == *subject
+                    && fact.field.is_none())
+        );
+        assert!(result.nodes[row.0].reasons.iter().any(|reason| {
+            matches!(reason.kind, ReasonKind::Missing)
+                && reason.missing.iter().any(|fact| {
+                    fact.snapshot == *snapshot
+                        && fact.subject == *subject
+                        && fact.field.as_deref() == Some("Affine.Sample.q")
+                })
+        }));
+        let context = result.contexts[row.0];
+        assert!(result.answers[0].evidence.iter().any(|proof| {
+            result.contexts[proof.0] == context
+                && matches!(
+                    &result.nodes[proof.0].payload,
+                    Some(Payload::Counterexample { .. })
+                )
+        }));
+        let Some(Payload::Expression { parameters, .. }) = &result.nodes[expression.0].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(parameters, &[("z".into(), Type::Q)]);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=row.0]).unwrap();
+        templates.push(*expression);
+    }
+    let target = templates[1].0;
+    completion_mutation(&result, target, |nodes| {
+        let Some(Payload::Expression { bindings, .. }) = &mut nodes[target].payload else {
+            unreachable!()
+        };
+        let Some(Payload::Expression { bindings: old, .. }) = &result.nodes[templates[0].0].payload
+        else {
+            unreachable!()
+        };
+        bindings[0].value = old[0].value;
+    });
+    completion_mutation(&result, rows[1].0, |nodes| nodes[rows[1].0].reasons.clear());
+}
+
+#[test]
+fn universal_view_local_integer_binder_rechecks_header_domain_and_original_scope() {
+    let result = universal_private_example(
+        "view inner(x:Z):Bool=forall y:Z . x+y=y+x; law required example(z:Z):inner(z);",
+        &["example=check(Calc.example)"],
+    );
+    assert_eq!(result.status(), "complete");
+    assert_eq!(result.answers[0].status, Decision::Established);
+    let domains = result
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(index, node)| {
+            matches!(&node.payload, Some(Payload::TypeDomain { ty: Type::Z })).then_some(index)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(domains.len(), 2);
+    let (root_domain, local_domain) = (domains[0], domains[1]);
+    let header = result.nodes[local_domain].arguments[0];
+    let context = result.contexts[local_domain];
+    assert!(context.frame.is_some());
+    assert!(result.contexts[root_domain].frame.is_none());
+    let law = result.prepared.inputs().law();
+    let callee = &law.declarations["Calc.inner"];
+    let Signature::View { body, .. } = &callee.signature else {
+        unreachable!()
+    };
+    let ExprKind::Quant {
+        var,
+        split: crate::law::ast::QuantSplit::Fixed { body: equation, .. },
+        ..
+    } = &law.exprs[*body].kind
+    else {
+        unreachable!()
+    };
+    let Some(Payload::Expression {
+        location: Location::Law { span },
+        parameters,
+        ..
+    }) = &result.nodes[header.0].payload
+    else {
+        unreachable!()
+    };
+    assert_eq!(*span, law.exprs[*body].span);
+    assert_eq!(parameters, &[("x".into(), Type::Z)]);
+    assert!(
+        matches!(&result.nodes[local_domain].rule,Rule::Input {kind:"law",location:Location::Law {span}} if *span==var.span)
+    );
+    assert_eq!(result.contexts[header.0], context);
+    assert!(
+        result.nodes[header.0]
+            .scope
+            .quantifiers
+            .iter()
+            .any(|q| q.occurrence == var.span && q.domain.is_none())
+    );
+    let local=result.nodes.iter().enumerate().find_map(|(index,node)|
+        (matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if *expression==header)
+            && node.arguments.get(1)==Some(&NodeRef(local_domain))).then_some(index)).unwrap();
+    let Some(Payload::Evaluation {
+        parts,
+        value: Some(value),
+        ..
+    }) = &result.nodes[local].payload
+    else {
+        unreachable!()
+    };
+    assert_eq!(data_scalar_at(&result, value.0), &Scalar::Bool(true));
+    assert_eq!(parts[0].children.len(), 1);
+    let body_eval = parts[0].children[0];
+    let Some(Payload::Evaluation {
+        expression: body_source,
+        ..
+    }) = &result.nodes[body_eval.0].payload
+    else {
+        unreachable!()
+    };
+    assert!(
+        matches!(&result.nodes[body_source.0].payload,Some(Payload::Expression {location:Location::Law {span},parameters,..})
+        if *span==law.exprs[*equation].span && parameters==&[("x".into(),Type::Z),("y".into(),Type::Z)])
+    );
+    let position = result.nodes[body_source.0]
+        .arguments
+        .iter()
+        .position(|r| *r == NodeRef(local_domain))
+        .unwrap();
+    assert!(
+        result.nodes[local]
+            .scope
+            .quantifiers
+            .iter()
+            .any(|q| q.occurrence == var.span
+                && q.name == "y"
+                && q.ty == Type::Z
+                && q.domain == Some(NodeRef(local_domain))
+                && q.context == Some(context))
+    );
+    for target in [local_domain, body_source.0, local] {
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+    }
+    completion_mutation(&result, local_domain, |nodes| {
+        nodes[local_domain].payload = Some(Payload::TypeDomain { ty: Type::Q })
+    });
+    completion_mutation(&result, local_domain, |nodes| {
+        nodes[local_domain].rule = result.nodes[root_domain].rule.clone()
+    });
+    completion_mutation(&result, body_source.0, |nodes| {
+        nodes[body_source.0].arguments[position] = NodeRef(root_domain)
+    });
+    completion_mutation(&result, local, |nodes| {
+        let q = nodes[local]
+            .scope
+            .quantifiers
+            .iter_mut()
+            .find(|q| q.occurrence == var.span)
+            .unwrap();
+        q.domain = Some(NodeRef(root_domain));
+    });
+}
+
+#[test]
+fn universal_view_local_rational_dependency_rechecks_outer_closure_and_requests() {
+    let result = universal_private_example(
+        "view inner(x:Q):Bool=forall y:Q . x+y=y; law required example(z:Q):inner(z);",
+        &["first=check(Calc.example)", "again=check(Calc.example)"],
+    );
+    assert_eq!(result.status(), "complete");
+    assert!(
+        result
+            .answers
+            .iter()
+            .all(|answer| answer.status == Decision::Refuted)
+    );
+    let mut local_domains = Vec::new();
+    let mut normalizations = Vec::new();
+    for request in 0..2 {
+        let normalization = universal_private_normalization(&result, request);
+        let Some(Payload::Normalization { steps, after, .. }) =
+            &result.nodes[normalization].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(steps.len(), 2);
+        assert_eq!(data_scalar_at(&result, after.0), &Scalar::Bool(false));
+        let local_domain = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (result.contexts[index].request == request
+                    && result.contexts[index].frame.is_some()
+                    && matches!(&node.payload, Some(Payload::TypeDomain { ty: Type::Q })))
+                .then_some(index)
+            })
+            .unwrap();
+        let header = result.nodes[local_domain].arguments[0];
+        let local = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                matches!(&node.payload,Some(Payload::Evaluation {expression,parts,value:None,..})
+                if *expression==header && parts[0].children.len()==1)
+                .then_some(index)
+            })
+            .unwrap();
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[local].payload else {
+            unreachable!()
+        };
+        assert!(matches!(
+            &result.nodes[parts[0].children[0].0].payload,
+            Some(Payload::Evaluation { value: None, .. })
+        ));
+        let Some(Payload::ParameterizedTransform { bindings, .. }) =
+            &result.nodes[steps[1].0].payload
+        else {
+            unreachable!()
+        };
+        let z = bindings.iter().find(|binding| binding.name == "z").unwrap();
+        assert_eq!(
+            data_scalar_at(&result, z.value.0),
+            &Scalar::Q(1.into(), 1.into())
+        );
+        let counterexample = result.answers[request]
+            .evidence
+            .iter()
+            .find_map(|proof| {
+                matches!(
+                    &result.nodes[proof.0].payload,
+                    Some(Payload::Counterexample { .. })
+                )
+                .then_some(*proof)
+            })
+            .unwrap();
+        let Some(Payload::Counterexample { left, right, .. }) =
+            &result.nodes[counterexample.0].payload
+        else {
+            unreachable!()
+        };
+        for (side, expected) in [(left, 1), (right, 0)] {
+            let Some(Payload::Evaluation {
+                expression,
+                value: Some(value),
+                ..
+            }) = &result.nodes[side.0].payload
+            else {
+                unreachable!()
+            };
+            assert!(
+                matches!(&result.nodes[expression.0].payload,Some(Payload::ParameterizedTransform {parameters,bindings,..})
+                if parameters.is_empty() && bindings.iter().any(|binding|
+                    binding.name=="x" && data_scalar_at(&result,binding.value.0)==&Scalar::Q(1.into(),1.into()))
+                    && bindings.iter().any(|binding|binding.name=="y"
+                        && data_scalar_at(&result,binding.value.0)==&Scalar::Q(0.into(),1.into())))
+            );
+            assert_eq!(
+                data_scalar_at(&result, value.0),
+                &Scalar::Q(expected.into(), 1.into())
+            );
+        }
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=local_domain]).unwrap();
+        normalizations.push(normalization);
+        local_domains.push(local_domain);
+    }
+    completion_mutation(&result, local_domains[1], |nodes| {
+        nodes[local_domains[1]].arguments[0] = result.nodes[local_domains[0]].arguments[0]
+    });
+    completion_mutation(&result, normalizations[1], |nodes| {
+        let Some(Payload::Normalization { steps, .. }) = &mut nodes[normalizations[1]].payload
+        else {
+            unreachable!()
+        };
+        let Some(Payload::Normalization { steps: prior, .. }) =
+            &result.nodes[normalizations[0]].payload
+        else {
+            unreachable!()
+        };
+        steps[1] = prior[1];
+    });
+}
+
+#[test]
+fn universal_view_local_nonzero_binder_rechecks_concrete_closed_axis_counterexample() {
+    let result = universal_private_example(
+        "view inner(x:Z):Bool=forall y:Z . x+y=x; law required example(z:Z):inner(z);",
+        &["example=check(Calc.example)"],
+    );
+    assert_eq!(result.answers[0].status, Decision::Refuted);
+    let whole = result.answers[0].outputs["evaluation"];
+    let normalization = universal_private_normalization(&result, 0);
+    let Some(Payload::Normalization { steps, after, .. }) = &result.nodes[normalization].payload
+    else {
+        unreachable!()
+    };
+    assert_eq!(steps.len(), 2);
+    assert_eq!(data_scalar_at(&result, after.0), &Scalar::Bool(false));
+    assert!(
+        matches!(&result.nodes[whole.0].payload,Some(Payload::Evaluation {parts,..}) if parts[0].residual.is_some())
+    );
+    let domain = result
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(index, node)| {
+            (result.contexts[index].frame.is_some()
+                && matches!(&node.payload, Some(Payload::TypeDomain { ty: Type::Z })))
+            .then_some(index)
+        })
+        .unwrap();
+    let header = result.nodes[domain].arguments[0];
+    let local=result.nodes.iter().enumerate().find_map(|(index,node)|
+        matches!(&node.payload,Some(Payload::Evaluation {expression,value:Some(_),..}) if *expression==header).then_some(index)).unwrap();
+    let Some(Payload::Evaluation {
+        value: Some(value),
+        parts,
+        ..
+    }) = &result.nodes[local].payload
+    else {
+        unreachable!()
+    };
+    assert_eq!(data_scalar_at(&result, value.0), &Scalar::Bool(false));
+    assert!(matches!(
+        &result.nodes[parts[0].children[0].0].payload,
+        Some(Payload::Evaluation { value: None, .. })
+    ));
+    assert_eq!(
+        result.nodes[value.0].arguments,
+        [header, NodeRef(domain), parts[0].children[0]]
+    );
+    let counterexample = result.answers[0]
+        .evidence
+        .iter()
+        .find_map(|proof| {
+            matches!(
+                &result.nodes[proof.0].payload,
+                Some(Payload::Counterexample { .. })
+            )
+            .then_some(*proof)
+        })
+        .unwrap();
+    assert_eq!(result.nodes[counterexample.0].arguments.len(), 5);
+    let Some(Payload::Counterexample { left, right, .. }) = &result.nodes[counterexample.0].payload
+    else {
+        unreachable!()
+    };
+    let mut closed_values = Vec::new();
+    for (side, expected) in [(*left, 1), (*right, 0)] {
+        let Some(Payload::Evaluation {
+            expression,
+            value: Some(value),
+            bindings,
+            ..
+        }) = &result.nodes[side.0].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(
+            data_scalar_at(&result, value.0),
+            &Scalar::Z(expected.into())
+        );
+        assert!(
+            matches!(&result.nodes[expression.0].payload,Some(Payload::ParameterizedTransform {parameters,..}) if parameters.is_empty())
+        );
+        for (name, expected) in [("x", 0), ("y", 1)] {
+            let binding = bindings
+                .iter()
+                .find(|binding| binding.name == name)
+                .unwrap();
+            assert_eq!(
+                data_scalar_at(&result, binding.value.0),
+                &Scalar::Z(expected.into())
+            );
+            if name == "y" {
+                closed_values.push(binding.value);
+            }
+        }
+    }
+    assert_ne!(closed_values[0], closed_values[1]);
+    completion_mutation(&result, closed_values[1].0, |nodes| {
+        nodes[closed_values[1].0].arguments[1] = result.nodes[closed_values[0].0].arguments[1];
+    });
+    completion_mutation(&result, value.0, |nodes| {
+        nodes[value.0].payload = Some(Payload::Scalar(Scalar::Bool(true)))
+    });
+    completion_mutation(&result, local, |nodes| {
+        nodes[local]
+            .scope
+            .quantifiers
+            .retain(|q| q.domain != Some(NodeRef(domain)))
+    });
+}
+
+#[test]
+fn universal_view_local_missing_keeps_whole_counterexample_without_common_assignment() {
+    let result = universal_private_example(
+        "view inner(x:Z,s:Sample):Bool=forall y:Z . x+y=s.z; law required example(z:Z,s:Sample):inner(z,s);",
+        &["example=check(Calc.example,s=@v/sample)"],
+    );
+    assert_eq!(result.answers[0].status, Decision::Refuted);
+    let whole = result.answers[0].outputs["evaluation"];
+    let counterexample = result.answers[0]
+        .evidence
+        .iter()
+        .find_map(|proof| {
+            matches!(
+                &result.nodes[proof.0].payload,
+                Some(Payload::Counterexample { .. })
+            )
+            .then_some(*proof)
+        })
+        .unwrap();
+    assert_eq!(result.nodes[counterexample.0].arguments.len(), 3);
+    assert_eq!(result.nodes[counterexample.0].arguments[1], whole);
+    assert!(
+        !result
+            .nodes
+            .iter()
+            .any(|node| matches!(&node.payload, Some(Payload::Scalar(Scalar::Z(_)))))
+    );
+    assert!(result.nodes[whole.0].reasons.iter().any(|reason| matches!(
+        reason.kind,
+        ReasonKind::Missing
+    ) && reason.missing.iter().any(
+        |fact| fact.snapshot == "v"
+            && fact.subject == "sample"
+            && fact.field.as_deref() == Some("Affine.Sample.z")
+    )));
+    completion_mutation(&result, whole.0, |nodes| nodes[whole.0].reasons.clear());
+}
+
+#[test]
+fn universal_view_repeated_local_binders_reject_equal_cross_call_producers() {
+    let result = universal_private_example(
+        "view inner(x:Z):Bool=forall y:Z . x+y=y+x; law required example(z:Z):inner(z) and inner(z+1);",
+        &["example=check(Calc.example)"],
+    );
+    assert_eq!(result.status(), "complete");
+    assert_eq!(result.answers[0].status, Decision::Established);
+    let domains = result
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(index, node)| {
+            (result.contexts[index].frame.is_some()
+                && matches!(&node.payload, Some(Payload::TypeDomain { ty: Type::Z })))
+            .then_some(index)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(domains.len(), 2);
+    assert_ne!(
+        result.contexts[domains[0]].frame,
+        result.contexts[domains[1]].frame
+    );
+    assert_eq!(
+        format!("{:?}", result.nodes[domains[0]].rule),
+        format!("{:?}", result.nodes[domains[1]].rule)
+    );
+    let headers = domains
+        .iter()
+        .map(|domain| result.nodes[*domain].arguments[0])
+        .collect::<Vec<_>>();
+    let local=result.nodes.iter().enumerate().filter_map(|(index,node)|
+        matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if headers.contains(expression)).then_some(index)).collect::<Vec<_>>();
+    assert_eq!(local.len(), 2);
+    let mut bodies = Vec::new();
+    for &evaluation in &local {
+        let Some(Payload::Evaluation {
+            parts,
+            value: Some(value),
+            ..
+        }) = &result.nodes[evaluation].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(data_scalar_at(&result, value.0), &Scalar::Bool(true));
+        bodies.push(parts[0].children[0]);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=evaluation]).unwrap();
+    }
+    completion_mutation(&result, domains[1], |nodes| {
+        nodes[domains[1]].arguments[0] = headers[0]
+    });
+    completion_mutation(&result, local[1], |nodes| {
+        let Some(Payload::Evaluation { parts, .. }) = &mut nodes[local[1]].payload else {
+            unreachable!()
+        };
+        parts[0].children[0] = bodies[0];
+        nodes[local[1]].arguments[2] = bodies[0];
+    });
+}
+
+#[test]
+fn universal_same_context_local_counterexample_preserves_shared_outer_witness_producer() {
+    let result = universal_private_example(
+        "law required example(z:Z):(forall y:Z . z+y=z+0);",
+        &["example=check(Calc.example)"],
+    );
+    assert_eq!(result.answers[0].status, Decision::Refuted);
+    let normalization = universal_private_normalization(&result, 0);
+    let Some(Payload::Normalization { steps, .. }) = &result.nodes[normalization].payload else {
+        unreachable!()
+    };
+    let Some(Payload::ParameterizedTransform { bindings, .. }) = &result.nodes[steps[1].0].payload
+    else {
+        unreachable!()
+    };
+    let outer = bindings
+        .iter()
+        .find(|binding| binding.name == "z")
+        .unwrap()
+        .value;
+    assert_eq!(data_scalar_at(&result, outer.0), &Scalar::Z(0.into()));
+    let counterexample = result.answers[0]
+        .evidence
+        .iter()
+        .find_map(|proof| {
+            matches!(
+                &result.nodes[proof.0].payload,
+                Some(Payload::Counterexample { .. })
+            )
+            .then_some(*proof)
+        })
+        .unwrap();
+    let Some(Payload::Counterexample { left, right, .. }) = &result.nodes[counterexample.0].payload
+    else {
+        unreachable!()
+    };
+    let mut substitutes = Vec::new();
+    for side in [left, right] {
+        let Some(Payload::Evaluation {
+            expression,
+            bindings,
+            ..
+        }) = &result.nodes[side.0].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(
+            bindings
+                .iter()
+                .find(|binding| binding.name == "z")
+                .unwrap()
+                .value,
+            outer
+        );
+        let y = bindings
+            .iter()
+            .find(|binding| binding.name == "y")
+            .unwrap()
+            .value;
+        assert_eq!(data_scalar_at(&result, y.0), &Scalar::Z(1.into()));
+        substitutes.push(*expression);
+    }
+    let literal = result
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(index, node)| {
+            (matches!(&node.payload,Some(Payload::Scalar(Scalar::Z(value))) if *value==0.into())
+                && node.arguments.len() == 1
+                && matches!(&node.rule, Rule::Input { kind: "law", .. }))
+            .then_some(index)
+        })
+        .unwrap();
+    assert_ne!(outer, NodeRef(literal));
+    assert_eq!(
+        data_scalar_at(&result, literal),
+        data_scalar_at(&result, outer.0)
+    );
+    completion_mutation(&result, substitutes[0].0, |nodes| {
+        let Some(Payload::ParameterizedTransform { bindings, .. }) =
+            &mut nodes[substitutes[0].0].payload
+        else {
+            unreachable!()
+        };
+        bindings
+            .iter_mut()
+            .find(|binding| binding.name == "z")
+            .unwrap()
+            .value = NodeRef(literal);
+        for argument in &mut nodes[substitutes[0].0].arguments {
+            if *argument == outer {
+                *argument = NodeRef(literal);
+            }
+        }
+    });
+}
+
+#[test]
 fn universal_type_domains_and_free_parameters_recheck_original_binder_order() {
     let result = universal_private_example(
         "law required numericIdentity(x:Z,y:Z):x+y=x+y;",
@@ -860,12 +1595,6 @@ fn universal_verified_current_stop_retains_current_and_unstarted_request() {
 }
 
 fn universal_private_stop(stage: usize, kind: usize) {
-    use super::super::{
-        affine,
-        control::{Limits, Resource, Usage},
-    };
-    use crate::result::Signal;
-    use std::{cell::Cell, rc::Rc};
     let current = if stage == 4 {
         "law required current(z:Z,s:Sample):z+s.z=z+s.z+1;"
     } else if stage == 6 {
@@ -875,6 +1604,51 @@ fn universal_private_stop(stage: usize, kind: usize) {
     } else {
         "view current(s:Sample):Bool=forall z:Z . z+s.z=z+s.z;"
     };
+    let request = if stage == 4 {
+        "current=check(Calc.current,s=@v/sample)"
+    } else {
+        "current=evaluate(Calc.current,s=@v/sample)"
+    };
+    universal_private_stop_with_current(stage, kind, current, request);
+}
+
+#[test]
+fn universal_mixed_family_row_stop_keeps_completed_numeric_whole_and_unstarted_row() {
+    universal_private_stop_with_current(
+        9,
+        2,
+        "law required current(b:Bool,z:Z):z+1=z+1;",
+        "current=check(Calc.current)",
+    );
+}
+
+#[test]
+fn universal_view_local_domain_stop_keeps_actual_frame_prefix_without_unfinished_proof() {
+    universal_private_stop_with_current(
+        10,
+        0,
+        "view inner(x:Z):Bool=forall y:Z . x+y=y+x; law required current(z:Z):inner(z);",
+        "current=check(Calc.current)",
+    );
+}
+
+#[test]
+fn universal_mixed_verified_current_stop_retains_aggregate_and_unstarted_request() {
+    universal_private_stop_with_current(
+        7,
+        1,
+        "law required current(b:Bool,z:Z):z+1=z+1;",
+        "current=check(Calc.current)",
+    );
+}
+
+fn universal_private_stop_with_current(stage: usize, kind: usize, current: &str, request: &str) {
+    use super::super::{
+        affine,
+        control::{Limits, Resource, Usage},
+    };
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
     let sources = affine_private_fixture(&format!(
         "view seed():Z=7;law required prior():1=2;view hole(s:Sample):Z=s.k;{current}view later():Z=19;"
     ));
@@ -882,11 +1656,7 @@ fn universal_private_stop(stage: usize, kind: usize) {
         "seed=evaluate(Calc.seed)",
         "prior=check(Calc.prior)",
         "hole=evaluate(Calc.hole,s=@v/sample)",
-        if stage == 4 {
-            "current=check(Calc.current,s=@v/sample)"
-        } else {
-            "current=evaluate(Calc.current,s=@v/sample)"
-        },
+        request,
         "later=evaluate(Calc.later)",
     ];
     let normal = evaluate_observed_bytes(sources.clone(), &asks, &mut named_call_quiet()).unwrap();
@@ -990,8 +1760,11 @@ fn universal_private_stop(stage: usize, kind: usize) {
                             let armed = armed.clone();
                             data::observe_iterations(move |_, context, operation, index| {
                                 if context.request == 3
-                                    && operation == "universal"
-                                    && index == stage
+                                    && ((operation == "universal" && index == stage)
+                                        || (stage == 9 && operation == "family_row" && index == 1)
+                                        || (stage == 10
+                                            && operation == "universal_local"
+                                            && index == 1))
                                 {
                                     armed.set(true)
                                 }
@@ -1076,6 +1849,59 @@ fn universal_private_stop(stage: usize, kind: usize) {
         ));
         assert_eq!(stopped.universal_witnesses.len(), 2);
     }
+    if stage == 9 {
+        assert_eq!(stopped.instances.len(), 1);
+        assert_eq!(stopped.instances[0].caller.request, 3);
+        let rows = stopped
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                (stopped.contexts[index].request == 3
+                    && stopped.contexts[index].instance == Some(0)
+                    && matches!(
+                        &node.payload,
+                        Some(Payload::Evaluation { value: Some(_), .. })
+                    )
+                    && node.evidence.iter().any(|proof| {
+                        matches!(
+                            &stopped.nodes[proof.0].payload,
+                            Some(Payload::Normalization { .. })
+                        )
+                    }))
+                .then_some(index)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(rows.len(), 1);
+        assert!(
+            !stopped
+                .contexts
+                .iter()
+                .any(|context| context.request == 3 && context.instance == Some(1))
+        );
+        assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
+            stopped.contexts[index].request == 3
+                && matches!(&node.payload, Some(Payload::FiniteExhaustion { .. }))
+        }));
+    }
+    if stage == 10 {
+        let local_domain = stopped.nodes.len() - 1;
+        assert!(matches!(
+            &stopped.nodes[local_domain].payload,
+            Some(Payload::TypeDomain { ty: Type::Z })
+        ));
+        let header = stopped.nodes[local_domain].arguments[0];
+        let context = stopped.contexts[local_domain];
+        assert_eq!(context, stopped.contexts[header.0]);
+        assert!(context.frame.is_some());
+        assert_eq!(stopped.frames[context.frame.unwrap()].arguments.len(), 1);
+        assert!(!stopped.nodes.iter().enumerate().any(|(index, node)| {
+            stopped.contexts[index].request == 3
+                && matches!(&node.payload, Some(Payload::Normalization { .. }))
+        }));
+        assert!(!stopped.nodes.iter().any(|node| matches!(&node.payload,
+            Some(Payload::Evaluation {expression,..}) if *expression==header)));
+    }
     let (Json::Arr(normal_nodes), Json::Arr(stopped_nodes)) =
         (&normal_wire["nodes"], &stopped_wire["nodes"])
     else {
@@ -1090,16 +1916,30 @@ fn universal_private_stop(stage: usize, kind: usize) {
 
 #[test]
 fn universal_normalization_fresh_recheck_stop_does_not_reuse_success_memo() {
+    universal_fresh_recheck_stop(
+        "view all(s:Sample):Bool=forall z:Z . z+s.z=z+s.z;",
+        "all=evaluate(Calc.all,s=@v/sample)",
+        super::super::affine::TestPoint::Universal,
+    );
+}
+
+#[test]
+fn universal_view_partial_recheck_stop_does_not_reuse_success_memo() {
+    universal_fresh_recheck_stop(
+        "view inner(x:Z):Bool=forall y:Z . x+y=y+x; law required example(z:Z):inner(z);",
+        "example=check(Calc.example)",
+        super::super::affine::TestPoint::PartialUniversal,
+    );
+}
+
+fn universal_fresh_recheck_stop(body: &str, request: &str, stop: super::super::affine::TestPoint) {
     use super::super::{
         affine,
         control::{Limits, Usage},
     };
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
-    let result = universal_private_example(
-        "view all(s:Sample):Bool=forall z:Z . z+s.z=z+s.z;",
-        &["all=evaluate(Calc.all,s=@v/sample)"],
-    );
+    let result = universal_private_example(body, &[request]);
     let normalization = universal_private_normalization(&result, 0);
     let mut graph =
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=normalization]).unwrap();
@@ -1126,7 +1966,7 @@ fn universal_normalization_fresh_recheck_stop_does_not_reuse_success_memo() {
     let before = probes.get();
     let stopped = affine::with_observer(
         move |point| {
-            if point == affine::TestPoint::Universal {
+            if point == stop {
                 armed.set(true)
             }
         },

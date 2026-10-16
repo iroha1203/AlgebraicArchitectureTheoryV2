@@ -57,6 +57,7 @@ pub(super) struct AffinePredicate {
     op: BinOp,
     left: super::affine::Form,
     right: super::affine::Form,
+    bound_axes: Vec<super::affine::Parameter>,
 }
 
 /// 元の左右は未確定のまま、差だけが定数になった比較の再分析結果。
@@ -4970,7 +4971,18 @@ impl<'a> Environment<'a> {
         if self.current_context(graph).case.is_some() {
             base.completions = true;
         }
-        self.universal_extend_scope(&mut base)?;
+        self.universal_extend_scope(&mut base, span)?;
+        if self.current_context(graph).instance.is_some()
+            && self.universal_context.borrow().is_some()
+        {
+            let request = graph
+                .requests
+                .get(self.current_context(graph).request)
+                .ok_or("数値rowの元Requestがない")?;
+            if let Some(plan) = self.family_plan(request)? {
+                self.family_order_scope(&plan, &mut base)?;
+            }
+        }
         // parameter の範囲は全明示束縛を含む。Scalar 自体の由来範囲とは区別する。
         for variable in variables.values_mut() {
             self.tick()?;
@@ -5562,8 +5574,13 @@ impl<'a> Environment<'a> {
                     for value in local.values_mut() {
                         value.scope.merge(&call_base);
                     }
-                    let body =
-                        self.scoped_ast_at(*body, &local, &call_base, &declaration.reading, None)?;
+                    let body = self.scoped_ast_at(
+                        *body,
+                        &local,
+                        &call_base,
+                        &declaration.reading,
+                        self.universal_call_context(id),
+                    )?;
                     call_base.merge(&body.scope);
                     support.extend(body.support);
                     support.sort();
@@ -5701,6 +5718,7 @@ impl<'a> Environment<'a> {
                             op: *op,
                             left: left.clone(),
                             right: right.clone(),
+                            bound_axes: Vec::new(),
                         })
                     })
             } else {

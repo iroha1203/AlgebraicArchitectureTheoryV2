@@ -7,7 +7,9 @@ use crate::law::{
 
 pub(in crate::observed) struct Plan {
     pub parameters: Vec<Param>,
+    pub free: Vec<Param>,
     pub unbound: Vec<Param>,
+    pub numeric: Vec<Param>,
     pub body: usize,
     pub guard: Option<usize>,
 }
@@ -34,7 +36,7 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let unbound: Vec<_> = params
+        let free: Vec<_> = params
             .iter()
             .filter(|p| {
                 !request
@@ -44,6 +46,10 @@ impl Environment<'_> {
             })
             .cloned()
             .collect();
+        let (numeric, unbound): (Vec<_>, Vec<_>) = free
+            .iter()
+            .cloned()
+            .partition(|p| matches!(p.ty, Type::Z | Type::Q));
         if unbound.is_empty() {
             return Ok(None);
         }
@@ -61,10 +67,28 @@ impl Environment<'_> {
         }
         Ok(Some(Plan {
             parameters: params.clone(),
+            free,
             unbound,
+            numeric,
             body: *body,
             guard: *guard,
         }))
+    }
+    pub(in crate::observed) fn family_order_scope(
+        &self,
+        plan: &Plan,
+        scope: &mut Scope,
+    ) -> Result<(), ValidationFailure> {
+        for _ in &scope.quantifiers {
+            self.tick()?;
+        }
+        scope.quantifiers.sort_by_key(|q| {
+            plan.parameters
+                .iter()
+                .position(|p| p.span == q.occurrence && p.name == q.name && p.ty.erase() == q.ty)
+                .unwrap_or(plan.parameters.len())
+        });
+        Ok(())
     }
     pub(in crate::observed) fn family_descriptors(
         &self,
@@ -72,16 +96,20 @@ impl Environment<'_> {
         domains: &[NodeRef],
         context: super::super::call::Context,
     ) -> Vec<Quantifier> {
-        plan.unbound
+        plan.free
             .iter()
-            .enumerate()
-            .map(|(i, p)| Quantifier {
+            .map(|p| Quantifier {
                 kind: QuantKind::Forall,
                 name: p.name.clone(),
                 ty: p.ty.clone(),
-                domain: domains.get(i).copied(),
+                domain: plan
+                    .unbound
+                    .iter()
+                    .position(|finite| finite.name == p.name)
+                    .and_then(|i| domains.get(i))
+                    .copied(),
                 occurrence: p.span,
-                context: Some(context),
+                context: (!matches!(p.ty, Type::Z | Type::Q)).then_some(context),
             })
             .collect()
     }
@@ -138,7 +166,7 @@ impl Environment<'_> {
                 && Some(*span) != plan.guard.map(|g| self.inputs.law().exprs[g].span))
             || parameters
                 != &plan
-                    .unbound
+                    .free
                     .iter()
                     .map(|p| (p.name.clone(), p.ty.clone()))
                     .collect::<Vec<_>>()
@@ -154,10 +182,11 @@ impl Environment<'_> {
         }
         let mut scope = Scope::default();
         scope.readings.insert(d.reading.clone());
+        scope.assignments = !plan.numeric.is_empty();
         let fixed: Vec<_> = plan
             .parameters
             .iter()
-            .filter(|p| !plan.unbound.iter().any(|u| u.name == p.name))
+            .filter(|p| !plan.free.iter().any(|u| u.name == p.name))
             .collect();
         if bindings.len() != fixed.len() {
             return Err("族Sourceの固定束縛数が違う".into());
@@ -288,6 +317,19 @@ impl Environment<'_> {
         let mut variables = BTreeMap::new();
         for p in &plan.parameters {
             self.tick()?;
+            if plan
+                .numeric
+                .iter()
+                .any(|parameter| parameter.name == p.name)
+            {
+                if self.universal_context.borrow().is_some() {
+                    variables.insert(
+                        p.name.clone(),
+                        self.universal_parameter_value(p.span, &p.name, &p.ty, &base)?,
+                    );
+                }
+                continue;
+            }
             let value = if let Some(i) = plan.unbound.iter().position(|u| u.name == p.name) {
                 let expected = items.get(i).ok_or("instance tuple位置がない")?;
                 let mut found = None;
@@ -701,7 +743,15 @@ impl Environment<'_> {
             }
             let previous = self.context.replace(Some(context));
             let connection = (|| -> Result<(), ValidationFailure> {
-                if self
+                if !plan.numeric.is_empty() {
+                    // 数値rowのLawInstanceは、専用wholeを先行辺として検査済み。
+                    // 通常のbody Evaluation/guard wrapperへ読み替えない。
+                    if graph.get(concrete_instance)?.arguments.first() != Some(&row)
+                        || !self.universal_owned_evaluation(graph, row)?
+                    {
+                        return Err("有限族の数値rowが当該全域wholeに接続しない".into());
+                    }
+                } else if self
                     .family_skipped(graph, graph.get(concrete_instance)?)?
                     .is_some()
                 {
@@ -734,6 +784,7 @@ impl Environment<'_> {
         support.sort();
         support.dedup();
         sort_reasons(&mut reasons);
+        self.family_order_scope(&plan, &mut scope)?;
         Ok(Aggregate {
             rows,
             domain,
@@ -741,6 +792,76 @@ impl Environment<'_> {
             support,
             reasons,
             value,
+        })
+    }
+    /// 元直積・LawInstanceとの接続を検査済みの数値rowに、実反例を結び付ける。
+    fn family_numeric_counterexample(
+        &self,
+        graph: &Graph,
+        evidence: NodeRef,
+        row: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        self.validation_session(|| {
+            self.tick()?;
+            let previous = self.context.replace(Some(graph.context_at(row.0)));
+            let previous_cutoff = self.cutoff.replace(row.0);
+            let previous_universal = self.universal_context.replace(None);
+            let previous_completion = self.completion_values.replace(Vec::new());
+            let result = self.family_numeric_counterexample_in_context(graph, evidence, row);
+            self.completion_values.replace(previous_completion);
+            self.universal_context.replace(previous_universal);
+            self.cutoff.set(previous_cutoff);
+            self.context.set(previous);
+            result
+        })
+    }
+    fn family_numeric_counterexample_in_context(
+        &self,
+        graph: &Graph,
+        evidence: NodeRef,
+        row: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        let proof = graph.get(evidence)?;
+        if !matches!(proof.payload, Some(Payload::Counterexample { .. })) {
+            return Ok(false);
+        }
+        let normalization = match proof.arguments.as_slice() {
+            [_, _, normalization] | [_, normalization, _, _, _]
+                if matches!(
+                    graph.get(*normalization)?.payload,
+                    Some(Payload::Normalization { .. })
+                ) =>
+            {
+                *normalization
+            }
+            _ => return Ok(false),
+        };
+        self.recheck_evaluation(graph, row)?;
+        if !self.universal_owned_evaluation(graph, row)? {
+            return Ok(false);
+        }
+        self.validate_at(graph, proof, evidence.0)?;
+        self.validate_at(graph, graph.get(normalization)?, normalization.0)?;
+        let whole = graph.get(row)?;
+        let (expression, _, value) = self.evaluation(graph, row)?;
+        if graph.boolean(value)? != Some(false)
+            || graph.context_at(evidence.0) != graph.context_at(row.0)
+            || proof.scope != whole.scope
+            || proof.support != whole.support
+            || whole.evidence != [normalization]
+        {
+            return Ok(false);
+        }
+        Ok(match proof.arguments.as_slice() {
+            [source, actual_whole, actual_normalization] => {
+                *source == expression
+                    && *actual_whole == row
+                    && *actual_normalization == normalization
+            }
+            [source, actual_normalization, _, _, _] => {
+                *source == expression && *actual_normalization == normalization
+            }
+            _ => false,
         })
     }
     fn family_skipped(
@@ -1042,7 +1163,8 @@ impl Environment<'_> {
                                 if matches!(
                                     graph.get(e)?.payload,
                                     Some(Payload::Counterexample { .. })
-                                ) && (graph.get(e)?.arguments.get(1) == Some(&row)
+                                ) && (self.family_numeric_counterexample(graph, e, row)?
+                                    || graph.get(e)?.arguments.get(1) == Some(&row)
                                     || graph.evaluation_evidence_contains(row, e)?)
                                 {
                                     found = true;

@@ -15,6 +15,27 @@ struct EvaluationPayload<'n> {
     applicability: &'n str,
 }
 
+/// 元の局所全称binder。外側Planの全称軸とは区別する。
+struct LocalQuantifier {
+    template: NodeRef,
+    plan: UniversalPlan,
+    domains: Vec<NodeRef>,
+    parameter: affine::Parameter,
+}
+
+struct LocalEvaluation {
+    arguments: Vec<NodeRef>,
+    analysis: SourceAnalysis,
+    scope: Scope,
+}
+
+struct ParameterScalarProducer {
+    source: NodeRef,
+    ty: Type,
+    value: Scalar,
+    binder: (usize, usize),
+}
+
 fn evaluation_payload(node: &Node) -> Result<EvaluationPayload<'_>, ValidationFailure> {
     let Some(Payload::Evaluation {
         expression,
@@ -710,6 +731,15 @@ impl Environment<'_> {
         request: &Request,
         bindings: &[Binding],
     ) -> Result<(), ValidationFailure> {
+        if let Some(instance) = self.current_context(graph).instance {
+            // 混在族では元の有限rowだけを固定し、残る数値軸をBindingにしない。
+            // rowの実producer・直積member・宣言順は既存の元入力再構成で照合する。
+            let (expected, _, _) = self.family_instance_inputs(graph, instance)?;
+            if bindings != expected {
+                return Err("全域rowの固定bindingが元有限instanceと違う".into());
+            }
+            return Ok(());
+        }
         let declaration = self
             .inputs
             .law()
@@ -862,6 +892,59 @@ impl Environment<'_> {
         Ok(())
     }
 
+    fn universal_local_header(
+        &self,
+        graph: &Graph,
+        header: NodeRef,
+    ) -> Result<Option<LocalQuantifier>, ValidationFailure> {
+        let source = graph.get(header)?;
+        let Some(template) = self.universal_source_root(graph, header)? else {
+            return Ok(None);
+        };
+        if template == header {
+            return Ok(None);
+        }
+        let (span, _) = self.universal_source_fields(graph, header)?;
+        let Some(&id) = self.expressions.get(&span) else {
+            return Ok(None);
+        };
+        let (_, fixed) = self.universal_source_fields(graph, template)?;
+        let plan = self.universal_plan_at(graph, template, fixed)?;
+        let domains = self.universal_domains_from(graph, source, template, &plan)?;
+        let Some(parameter) =
+            self.universal_local_parameter(graph, &plan, template, &domains, id)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(LocalQuantifier {
+            template,
+            plan,
+            domains,
+            parameter,
+        }))
+    }
+
+    fn universal_local_domain(
+        &self,
+        graph: &Graph,
+        header: NodeRef,
+        limit: usize,
+    ) -> Result<NodeRef, ValidationFailure> {
+        let mut result = None;
+        for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            if matches!(candidate.payload, Some(Payload::TypeDomain { .. }))
+                && candidate.arguments == [header]
+                && result.replace(NodeRef(index)).is_some()
+            {
+                return Err("局所全称binderの実型Domainが一意でない".into());
+            }
+        }
+        let domain = result.ok_or("局所全称binderの実型Domainがない")?;
+        self.validate_at(graph, graph.get(domain)?, domain.0)?;
+        Ok(domain)
+    }
+
     fn universal_validate_domain(
         &self,
         graph: &Graph,
@@ -874,6 +957,30 @@ impl Environment<'_> {
             .first()
             .ok_or("全域型Domainの元templateがない")?;
         self.validate_at(graph, graph.get(template)?, template.0)?;
+        if let Some(local) = self.universal_local_header(graph, template)? {
+            for candidate in graph.nodes.iter().take(limit) {
+                self.tick()?;
+                if matches!(candidate.payload, Some(Payload::TypeDomain { .. }))
+                    && candidate.arguments == [template]
+                {
+                    return Err("局所全称型Domainに同じ元headerの先行producerがある".into());
+                }
+            }
+            if node.arguments != [template]
+                || *ty != local.parameter.kind.ty()
+                || self.current_context(graph) != local.parameter.context
+                || graph.context_at(template.0) != self.current_context(graph)
+            {
+                return Err("局所全称型Domainの元binder・型・Context・producerが違う".into());
+            }
+            return self.universal_input_metadata(
+                node,
+                local.parameter.binder,
+                NodeType::Domain,
+                &graph.get(template)?.scope,
+                &[],
+            );
+        }
         let (_, bindings) = self.universal_source_fields(graph, template)?;
         let plan = self.universal_plan_at(graph, template, bindings)?;
         let prior = graph
@@ -1104,6 +1211,103 @@ impl Environment<'_> {
         )
     }
 
+    fn universal_local_evaluation(
+        &self,
+        graph: &Graph,
+        header: NodeRef,
+        children: &[NodeRef],
+        limit: usize,
+        local: LocalQuantifier,
+    ) -> Result<LocalEvaluation, ValidationFailure> {
+        self.universal_pointwise_children(graph, header, children, limit)?;
+        if children.len() != 1 {
+            return Err("局所全称評価の元body数が違う".into());
+        }
+        let domain = self.universal_local_domain(graph, header, limit)?;
+        let (span, bindings) = self.universal_source_fields(graph, header)?;
+        let analysis = self
+            .universal_source_analysis(
+                graph,
+                span,
+                bindings,
+                &local.plan,
+                &local.domains,
+                local.template,
+            )?
+            .analysis;
+        let mut scope = graph.get(header)?.scope.clone();
+        scope.merge(&graph.get(children[0])?.scope);
+        Ok(LocalEvaluation {
+            arguments: vec![header, domain, children[0]],
+            analysis,
+            scope,
+        })
+    }
+
+    fn universal_validate_local_pointwise(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+        local: LocalQuantifier,
+    ) -> Result<(), ValidationFailure> {
+        let EvaluationPayload {
+            expression,
+            bindings,
+            parts,
+            value,
+            applicability,
+        } = evaluation_payload(node)?;
+        if bindings != self.universal_source_fields(graph, expression)?.1
+            || parts.len() != 1
+            || parts[0].location
+                != (Location::Law {
+                    span: self.expression_span(graph, expression)?,
+                })
+            || parts[0].residual.is_some()
+            || parts[0].value != value
+            || applicability != "applicable"
+            || !node.evidence.is_empty()
+        {
+            return Err("局所全称評価の元body・束縛・適用が違う".into());
+        }
+        let checked =
+            self.universal_local_evaluation(graph, expression, &parts[0].children, limit, local)?;
+        if node.arguments
+            != checked
+                .arguments
+                .iter()
+                .copied()
+                .chain(value)
+                .collect::<Vec<_>>()
+            || value.map(|value| graph.scalar(value)).transpose()?
+                != checked.analysis.known_value.as_ref()
+        {
+            return Err("局所全称評価の元値・Domain・body辺が違う".into());
+        }
+        if let Some(value) = value {
+            if graph.get(value)?.arguments != checked.arguments {
+                return Err("局所全称評価の値が別producerに属す".into());
+            }
+            self.validate_at(graph, graph.get(value)?, value.0)?;
+        }
+        self.evaluation_missing_reasons(
+            graph,
+            node,
+            expression,
+            &parts[0].children,
+            checked.analysis.missing.as_ref(),
+        )?;
+        self.universal_metadata(
+            node,
+            NodeType::Evaluation(Type::Bool),
+            &checked.scope,
+            &checked.analysis.support,
+            &node.reasons,
+            "evaluation",
+        )
+    }
+
     fn universal_validate_pointwise(
         &self,
         graph: &Graph,
@@ -1119,6 +1323,9 @@ impl Environment<'_> {
         } = evaluation_payload(node)?;
         let source = graph.get(expression)?;
         self.validate_at(graph, source, expression.0)?;
+        if let Some(local) = self.universal_local_header(graph, expression)? {
+            return self.universal_validate_local_pointwise(graph, node, limit, local);
+        }
         let template = self
             .universal_source_root(graph, expression)?
             .ok_or("全域評価に元templateがない")?;
@@ -1127,7 +1334,7 @@ impl Environment<'_> {
         let domains = self.universal_domains_from(graph, source, template, &plan)?;
         let (span, original) = self.universal_source_fields(graph, expression)?;
         let analyzed = self
-            .universal_source_analysis(graph, span, bindings, &plan, domains, template)?
+            .universal_source_analysis(graph, span, bindings, &plan, &domains, template)?
             .analysis;
         if bindings != original
             || parts.len() != 1
@@ -1141,6 +1348,11 @@ impl Environment<'_> {
         }
         let children = &parts[0].children;
         self.universal_pointwise_children(graph, expression, children, limit)?;
+        let mut scope = source.scope.clone();
+        for child in children {
+            self.tick()?;
+            scope.merge(&graph.get(*child)?.scope);
+        }
         let expected = std::iter::once(expression)
             .chain(children.iter().copied())
             .chain(value)
@@ -1174,7 +1386,7 @@ impl Environment<'_> {
                 NodeType::Expression(ty) => ty.clone(),
                 _ => return Err("全域Sourceの型がExpressionでない".into()),
             }),
-            &analyzed.scope,
+            &scope,
             &analyzed.support,
             &node.reasons,
             "evaluation",
@@ -1207,13 +1419,22 @@ impl Environment<'_> {
         {
             return Err("全域代入の元固定binding・代入数が違う".into());
         }
-        let binding_source = if graph.context_at(original.0) == graph.context_at(template.0) {
-            self.universal_counterexample_source(graph, template, &plan, limit)?
+        let caller_body = self.universal_counterexample_source(graph, template, &plan, limit)?;
+        let caller_values = if graph.context_at(original.0) == graph.context_at(caller_body.0) {
+            self.universal_counterexample_bindings(graph, caller_body, template, &domains)?
         } else {
-            original
+            Vec::new()
         };
         for (binding, (name, ty, value, binder)) in bindings[fixed.len()..].iter().zip(&expected) {
             self.tick()?;
+            // 実Contextと元binderを含む同一代入だけcallerのScalarを共有する。
+            // 局所binder・別callee formalは各実Sourceを起点に生成する。
+            let binding_source =
+                if caller_values.contains(&(name.clone(), ty.clone(), value.clone(), *binder)) {
+                    caller_body
+                } else {
+                    original
+                };
             let producer = graph.get(binding.value)?;
             if binding.name != *name
                 || binding.ty != *ty
@@ -1655,6 +1876,57 @@ impl Environment<'_> {
         })
     }
 
+    fn universal_parameter_scalar_producer(
+        &self,
+        graph: &Graph,
+        template: NodeRef,
+        plan: &UniversalPlan,
+        domains: &[NodeRef],
+        limit: usize,
+    ) -> Result<ParameterScalarProducer, ValidationFailure> {
+        let body = self.universal_counterexample_source(graph, template, plan, limit)?;
+        let (_, left, right) = self.universal_comparison_producer(graph, template, plan, limit)?;
+        let left = self.evaluation(graph, left)?.0;
+        let right = self.evaluation(graph, right)?.0;
+        let caller = self.universal_counterexample_bindings(graph, body, template, domains)?;
+        let mut producers = Vec::new();
+        for source in [body, left, right] {
+            self.tick()?;
+            let values =
+                self.universal_counterexample_bindings(graph, source, template, domains)?;
+            for binding in values {
+                self.tick()?;
+                if source != body
+                    && graph.context_at(source.0) == graph.context_at(body.0)
+                    && caller.contains(&binding)
+                {
+                    continue;
+                }
+                producers.push(ParameterScalarProducer {
+                    source,
+                    ty: binding.1,
+                    value: binding.2,
+                    binder: binding.3,
+                });
+            }
+        }
+        let mut ordinal = 0;
+        for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            if matches!(candidate.payload, Some(Payload::Scalar(_)))
+                && matches!(candidate.rule, Rule::Input { kind: "law", .. })
+                && candidate.arguments.first() == Some(&template)
+            {
+                self.validate_at(graph, candidate, index)?;
+                ordinal += 1;
+            }
+        }
+        producers
+            .into_iter()
+            .nth(ordinal)
+            .ok_or_else(|| "全域具体parameter Scalarが元caller/左右の生成列を超える".into())
+    }
+
     fn universal_validate_parameter_scalar(
         &self,
         graph: &Graph,
@@ -1667,9 +1939,9 @@ impl Environment<'_> {
             return Err("全域具体parameter Scalarの元辺数が違う".into());
         }
         let original = node.arguments[1];
-        let (_, domains, analysis) = self.universal_reanalysis(graph, template, limit)?;
+        let (plan, domains, analysis) = self.universal_reanalysis(graph, template, limit)?;
         let expected =
-            self.universal_counterexample_bindings(graph, original, template, &domains)?;
+            self.universal_parameter_scalar_producer(graph, template, &plan, &domains, limit)?;
         let Rule::Input {
             location: Location::Law { span },
             ..
@@ -1677,11 +1949,13 @@ impl Environment<'_> {
         else {
             return Err("全域具体parameterに元binderがない".into());
         };
-        if !expected
-            .iter()
-            .any(|(_, ty, value, binder)| ty == &scalar.ty() && value == scalar && binder == span)
+        if original != expected.source
+            || scalar.ty() != expected.ty
+            || scalar != &expected.value
+            || *span != expected.binder
+            || self.current_context(graph) != graph.context_at(template.0)
         {
-            return Err("全域具体parameterの元binder・型付き値が違う".into());
+            return Err("全域具体parameterの元binder・型付き値・実producer順が違う".into());
         }
         self.universal_input_metadata(
             node,
@@ -1689,6 +1963,35 @@ impl Environment<'_> {
             NodeType::Value(scalar.ty()),
             &analysis.analysis.scope,
             &analysis.analysis.support,
+        )?;
+        Ok(true)
+    }
+
+    fn universal_validate_local_scalar(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        scalar: &Scalar,
+        limit: usize,
+        header: NodeRef,
+        local: LocalQuantifier,
+    ) -> Result<bool, ValidationFailure> {
+        let children = node
+            .arguments
+            .get(2..)
+            .ok_or("局所全称Scalarの元bodyがない")?;
+        let checked = self.universal_local_evaluation(graph, header, children, limit, local)?;
+        if node.arguments != checked.arguments
+            || checked.analysis.known_value.as_ref() != Some(scalar)
+        {
+            return Err("局所全称Scalarの値・Domain・実bodyが違う".into());
+        }
+        self.universal_input_metadata(
+            node,
+            self.expression_span(graph, header)?,
+            NodeType::Value(scalar.ty()),
+            &checked.scope,
+            &checked.analysis.support,
         )?;
         Ok(true)
     }
@@ -1704,14 +2007,22 @@ impl Environment<'_> {
     ) -> Result<bool, ValidationFailure> {
         let source = graph.get(first)?;
         self.validate_at(graph, source, first.0)?;
+        if let Some(local) = self.universal_local_header(graph, first)? {
+            return self.universal_validate_local_scalar(graph, node, scalar, limit, first, local);
+        }
         let (span, bindings) = self.universal_source_fields(graph, first)?;
         let (_, fixed) = self.universal_source_fields(graph, template)?;
         let plan = self.universal_plan_at(graph, template, fixed)?;
         let domains = self.universal_domains_from(graph, source, template, &plan)?;
         let analysis = self
-            .universal_source_analysis(graph, span, bindings, &plan, domains, template)?
+            .universal_source_analysis(graph, span, bindings, &plan, &domains, template)?
             .analysis;
         self.universal_pointwise_children(graph, first, &node.arguments[1..], limit)?;
+        let mut scope = source.scope.clone();
+        for child in &node.arguments[1..] {
+            self.tick()?;
+            scope.merge(&graph.get(*child)?.scope);
+        }
         if analysis.known_value.as_ref() != Some(scalar) {
             return Err("全域出現のScalarが元入力の値と違う".into());
         }
@@ -1719,7 +2030,7 @@ impl Environment<'_> {
             node,
             span,
             NodeType::Value(scalar.ty()),
-            &analysis.scope,
+            &scope,
             &analysis.support,
         )?;
         Ok(true)
@@ -2445,6 +2756,9 @@ impl Environment<'_> {
         let Some(request) = self.universal_source_request(graph, *span, bindings)? else {
             return Ok(false);
         };
+        if self.universal_finite_template(graph, request, *span, bindings)? {
+            return Ok(false);
+        }
         if let Some(declaration) = self.inputs.law().declarations.get(request.declaration())
             && let Signature::Law { body, .. } = &declaration.signature
             && self
@@ -2489,6 +2803,50 @@ impl Environment<'_> {
             return Err("全域の元numeric templateにRequestがない".into());
         }
         Ok(None)
+    }
+
+    fn universal_finite_template(
+        &self,
+        graph: &Graph,
+        request: &Request,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Result<bool, ValidationFailure> {
+        let context = self.current_context(graph);
+        if context.instance.is_some() || context.frame.is_some() {
+            return Ok(false);
+        }
+        let declaration = self
+            .inputs
+            .law()
+            .declarations
+            .get(request.declaration())
+            .ok_or("全域/有限族の元宣言がない")?;
+        let Signature::Law {
+            params,
+            body,
+            guard,
+            ..
+        } = &declaration.signature
+        else {
+            return Ok(false);
+        };
+        if self.inputs.law().exprs[*body].span != span
+            && guard.map(|guard| self.inputs.law().exprs[guard].span) != Some(span)
+        {
+            return Ok(false);
+        }
+        for parameter in params {
+            self.tick()?;
+            if !bindings
+                .iter()
+                .any(|binding| binding.name == parameter.name)
+                && !matches!(parameter.ty, Type::Z | Type::Q)
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
     }
 
     fn universal_numeric_source(
@@ -2624,22 +2982,15 @@ impl Environment<'_> {
         Ok(())
     }
 
-    fn universal_domains_from<'g>(
+    fn universal_domains_from(
         &self,
         graph: &Graph,
-        node: &'g Node,
+        node: &Node,
         template: NodeRef,
         plan: &UniversalPlan,
-    ) -> Result<&'g [NodeRef], ValidationFailure> {
-        if node.arguments.first() != Some(&template) {
-            return Err("全域の元template辺が違う".into());
-        }
-        let domains = node
-            .arguments
-            .get(1..1 + plan.parameters.len())
-            .ok_or("全域の型Domain辺が足りない")?;
-        self.universal_check_domains(graph, template, domains, plan)?;
-        for domain in domains {
+    ) -> Result<Vec<NodeRef>, ValidationFailure> {
+        let domains = self.universal_source_domain_refs(graph, node, template, plan)?;
+        for domain in &domains {
             self.tick()?;
             self.validate_at(graph, graph.get(*domain)?, domain.0)?;
         }
@@ -2748,7 +3099,7 @@ impl Environment<'_> {
         let plan = self.universal_plan_at(graph, template, fixed)?;
         let domains = self.universal_domains_from(graph, node, template, &plan)?;
         let analyzed =
-            self.universal_source_analysis(graph, span, bindings, &plan, domains, template)?;
+            self.universal_source_analysis(graph, span, bindings, &plan, &domains, template)?;
         let arguments = std::iter::once(template)
             .chain(domains.iter().copied())
             .chain(self.source_arguments(graph, span, bindings)?)
@@ -2765,6 +3116,9 @@ impl Environment<'_> {
         let Some(request) = self.universal_source_request(graph, span, bindings)? else {
             return Ok(None);
         };
+        if self.universal_finite_template(graph, request, span, bindings)? {
+            return Ok(None);
+        }
         let id = self.expressions.get(&span).copied();
         let matches_source = |plan: &UniversalPlan| {
             plan.template_span == span
@@ -3012,7 +3366,7 @@ impl Environment<'_> {
         }
         self.validate_at(graph, node, source.0)?;
         let analyzed =
-            self.universal_source_analysis(graph, *span, bindings, &plan, domains, template)?;
+            self.universal_source_analysis(graph, *span, bindings, &plan, &domains, template)?;
         if parameters != &analyzed.parameters
             || node.scope != analyzed.analysis.scope
             || node.ty

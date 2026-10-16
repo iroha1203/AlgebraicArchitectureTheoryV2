@@ -6,6 +6,7 @@ use crate::observed::{affine::CompletionPair, environment::universal::UniversalP
 struct SymbolicEvaluation {
     evaluated: Evaluated,
     comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
+    has_local_domains: bool,
 }
 
 pub(super) struct UniversalEvaluation {
@@ -24,6 +25,13 @@ struct NumericCompletion<'a> {
     reasons: &'a [Reason],
     support: &'a [Fact],
     original_scope: &'a Scope,
+}
+
+struct CounterexampleContext<'a> {
+    template: NodeRef,
+    domains: &'a [NodeRef],
+    support: &'a [Fact],
+    scope: &'a Scope,
 }
 
 impl Evaluator<'_, '_> {
@@ -300,29 +308,50 @@ impl Evaluator<'_, '_> {
     fn universal_counterexample_values(
         &mut self,
         original: NodeRef,
-        template: NodeRef,
-        domains: &[NodeRef],
-        support: &[Fact],
-        scope: &Scope,
+        context: &CounterexampleContext<'_>,
+        shared: &[Binding],
     ) -> Result<Vec<Binding>, Failure> {
         let mut bindings = match &self.graph.get(original)?.payload {
             Some(Payload::Expression { bindings, .. }) => bindings.clone(),
             _ => return Err(Failure::Internal("全域反例の元EqSourceがない".into())),
         };
-        for (name, ty, value, binder) in self
-            .environment
-            .universal_counterexample_bindings(self.graph, original, template, domains)?
-        {
-            let value = self.value(
-                value,
-                Rule::Input {
-                    kind: "law",
-                    location: Location::Law { span: binder },
-                },
-                vec![template, original],
-                support.to_vec(),
-                scope.clone(),
-            )?;
+        for (name, ty, value, binder) in self.environment.universal_counterexample_bindings(
+            self.graph,
+            original,
+            context.template,
+            context.domains,
+        )? {
+            let mut inherited = None;
+            for candidate in shared {
+                self.tick(Checkpoint::FiniteIteration)?;
+                let producer = self.graph.get(candidate.value)?;
+                if candidate.name == name
+                    && candidate.ty == ty
+                    && self.graph.scalar(candidate.value)? == &value
+                    && matches!(&producer.rule,Rule::Input {kind:"law",location:Location::Law {span}} if *span==binder)
+                    && producer.arguments.first() == Some(&context.template)
+                    && producer.arguments.get(1).is_some_and(|source| {
+                        self.graph.context_at(source.0) == self.graph.context_at(original.0)
+                    })
+                {
+                    inherited = Some(candidate.value);
+                    break;
+                }
+            }
+            let value = if let Some(value) = inherited {
+                value
+            } else {
+                self.value(
+                    value,
+                    Rule::Input {
+                        kind: "law",
+                        location: Location::Law { span: binder },
+                    },
+                    vec![context.template, original],
+                    context.support.to_vec(),
+                    context.scope.clone(),
+                )?
+            };
             bindings.push(Binding { name, ty, value });
         }
         Ok(bindings)
@@ -337,35 +366,34 @@ impl Evaluator<'_, '_> {
         support: &[Fact],
         scope: &Scope,
     ) -> Result<(NodeRef, Vec<Binding>, NodeRef, NodeRef), Failure> {
-        let bindings =
-            self.universal_counterexample_values(original, template, domains, support, scope)?;
+        let context = CounterexampleContext {
+            template,
+            domains,
+            support,
+            scope,
+        };
+        let bindings = self.universal_counterexample_values(original, &context, &[])?;
         let (body, _) =
             self.universal_substitute_expression(original, &bindings, template, domains)?;
-        let left_bindings = if self.graph.context_at(comparison.1.expression.0)
-            == self.graph.context_at(original.0)
-        {
+        let left_bindings = if self.universal_counterexample_shares_bindings(
+            comparison.1.expression,
+            original,
+            template,
+            domains,
+        )? {
             bindings.clone()
         } else {
-            self.universal_counterexample_values(
-                comparison.1.expression,
-                template,
-                domains,
-                support,
-                scope,
-            )?
+            self.universal_counterexample_values(comparison.1.expression, &context, &bindings)?
         };
-        let right_bindings = if self.graph.context_at(comparison.2.expression.0)
-            == self.graph.context_at(original.0)
-        {
+        let right_bindings = if self.universal_counterexample_shares_bindings(
+            comparison.2.expression,
+            original,
+            template,
+            domains,
+        )? {
             bindings.clone()
         } else {
-            self.universal_counterexample_values(
-                comparison.2.expression,
-                template,
-                domains,
-                support,
-                scope,
-            )?
+            self.universal_counterexample_values(comparison.2.expression, &context, &bindings)?
         };
         let left =
             self.universal_substitute_evaluation(&comparison.1, &left_bindings, template, domains)?;
@@ -376,6 +404,41 @@ impl Evaluator<'_, '_> {
             domains,
         )?;
         Ok((body, bindings, left, right))
+    }
+
+    fn universal_counterexample_shares_bindings(
+        &self,
+        side: NodeRef,
+        original: NodeRef,
+        template: NodeRef,
+        domains: &[NodeRef],
+    ) -> Result<bool, Failure> {
+        if self.graph.context_at(side.0) != self.graph.context_at(original.0) {
+            return Ok(false);
+        }
+        let (
+            Some(Payload::Expression {
+                bindings: side_bindings,
+                ..
+            }),
+            Some(Payload::Expression {
+                bindings: original_bindings,
+                ..
+            }),
+        ) = (
+            &self.graph.get(side)?.payload,
+            &self.graph.get(original)?.payload,
+        )
+        else {
+            return Err(Failure::Internal("全域反例の共有元Sourceがない".into()));
+        };
+        Ok(side_bindings == original_bindings
+            && self
+                .environment
+                .universal_counterexample_bindings(self.graph, side, template, domains)?
+                == self
+                    .environment
+                    .universal_counterexample_bindings(self.graph, original, template, domains)?)
     }
     fn universal_raw_source(
         &mut self,
@@ -544,6 +607,16 @@ impl Evaluator<'_, '_> {
                 .position(|expression| expression.span == plan.template_span)
                 .ok_or_else(|| Failure::Internal("全域templateの元ASTがない".into()))?;
             Some(self.universal_pointwise(&plan, template, &domains, id)?)
+        };
+        let analyzed = if guard
+            .iter()
+            .chain(body.iter())
+            .any(|value| value.has_local_domains)
+        {
+            self.environment
+                .universal_analysis(self.graph, template, &domains, &self.bindings)?
+        } else {
+            analyzed
         };
         let scope = analyzed.analysis.scope.clone();
         let support = analyzed.analysis.support.clone();
@@ -1071,6 +1144,7 @@ impl Evaluator<'_, '_> {
         ty: Type,
         children: Vec<SymbolicEvaluation>,
         comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
+        local_domain: Option<NodeRef>,
     ) -> Result<SymbolicEvaluation, Failure> {
         let expression = source.expression;
         let span = match &self.graph.get(expression)?.payload {
@@ -1080,6 +1154,12 @@ impl Evaluator<'_, '_> {
             }) => *span,
             _ => return Err(Failure::Internal("全域の元出現がない".into())),
         };
+        let mut scope = source.scope;
+        let mut has_local_domains = local_domain.is_some();
+        for child in &children {
+            scope.merge(&child.evaluated.scope);
+            has_local_domains |= child.has_local_domains;
+        }
         let value = source
             .known_value
             .map(|known| {
@@ -1090,10 +1170,11 @@ impl Evaluator<'_, '_> {
                         location: Location::Law { span },
                     },
                     std::iter::once(expression)
+                        .chain(local_domain)
                         .chain(children.iter().map(|child| child.evaluated.evaluation))
                         .collect(),
                     support.clone(),
-                    source.scope.clone(),
+                    scope.clone(),
                 )
             })
             .transpose()?;
@@ -1124,13 +1205,14 @@ impl Evaluator<'_, '_> {
             }),
             rule: Rule::Construction("evaluation"),
             arguments: std::iter::once(expression)
+                .chain(local_domain)
                 .chain(children.iter().map(|child| child.evaluated.evaluation))
                 .chain(value)
                 .collect(),
             support: support.clone(),
             evidence: vec![],
             judgment: None,
-            scope: source.scope.clone(),
+            scope: scope.clone(),
             reasons: reasons.clone(),
         })?;
         Ok(SymbolicEvaluation {
@@ -1138,13 +1220,14 @@ impl Evaluator<'_, '_> {
                 expression,
                 evaluation,
                 value,
-                scope: source.scope,
+                scope,
                 support,
                 reasons,
                 comparison: None,
                 residual: None,
             },
             comparison,
+            has_local_domains,
         })
     }
 
@@ -1180,6 +1263,7 @@ impl Evaluator<'_, '_> {
         let (source, support) =
             self.universal_source(plan, template, domains, expr.span, ty.clone())?;
         let mut comparison = None;
+        let mut local_domain = None;
         let children = match &expr.kind {
             ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
             ExprKind::Dotted(parts) => {
@@ -1194,6 +1278,7 @@ impl Evaluator<'_, '_> {
                         .map(|evaluated| SymbolicEvaluation {
                             evaluated,
                             comparison: None,
+                            has_local_domains: false,
                         })
                         .into_iter()
                         .collect()
@@ -1226,10 +1311,11 @@ impl Evaluator<'_, '_> {
                         .map(|evaluated| SymbolicEvaluation {
                             evaluated,
                             comparison: None,
+                            has_local_domains: false,
                         })
                         .into_iter()
                         .collect();
-                    vec![self.universal_finish(owner, owner_support, owner_ty, args, None)?]
+                    vec![self.universal_finish(owner, owner_support, owner_ty, args, None, None)?]
                 } else {
                     return Err(self.unsupported(expr.span, "全域式の複数fieldドット列"));
                 }
@@ -1303,8 +1389,48 @@ impl Evaluator<'_, '_> {
                 else {
                     return Err(self.unsupported(expr.span, "全域アフィン式内の未対応量化"));
                 };
-                let body = self.universal_pointwise(plan, template, domains, *body)?;
-                comparison = body.comparison.clone();
+                let mut nested_domains = domains.to_vec();
+                if let Some(parameter) = self
+                    .environment
+                    .universal_local_parameter(self.graph, plan, template, domains, id)?
+                {
+                    let domain = self.push(Node {
+                        ty: NodeType::Domain,
+                        payload: Some(Payload::TypeDomain {
+                            ty: parameter.kind.ty(),
+                        }),
+                        rule: Rule::Input {
+                            kind: "law",
+                            location: Location::Law {
+                                span: parameter.binder,
+                            },
+                        },
+                        arguments: vec![source.expression],
+                        support: vec![],
+                        evidence: vec![],
+                        judgment: None,
+                        scope: source.scope.clone(),
+                        reasons: vec![],
+                    })?;
+                    local_domain = Some(domain);
+                    nested_domains.push(domain);
+                    #[cfg(test)]
+                    data::observe_actual(expr.span, self.graph.active, "universal_local", 1);
+                    self.tick(Checkpoint::FiniteIteration)?;
+                }
+                let body = self.universal_pointwise(plan, template, &nested_domains, *body)?;
+                if local_domain.is_none()
+                    || self.environment.universal_local_retains_comparison(
+                        self.graph,
+                        plan,
+                        template,
+                        &nested_domains,
+                        id,
+                        &self.bindings,
+                    )?
+                {
+                    comparison = body.comparison.clone();
+                }
                 vec![body]
             }
             ExprKind::Call { args, .. } if self.environment.named_view(id)?.is_some() => {
@@ -1371,7 +1497,8 @@ impl Evaluator<'_, '_> {
             }
             _ => return Err(self.unsupported(expr.span, "全域アフィン式の未対応構成")),
         };
-        let result = self.universal_finish(source, support, ty, children, comparison)?;
+        let result =
+            self.universal_finish(source, support, ty, children, comparison, local_domain)?;
         self.tick(Checkpoint::Expression)?;
         Ok(result)
     }

@@ -22,6 +22,20 @@ pub(super) struct AnalysisContext {
     pub template: Option<NodeRef>,
     pub domains: Vec<NodeRef>,
     pub completions: Vec<(Fact, Scalar)>,
+    pub local_axes: Vec<LocalAxis>,
+    pub calls: Vec<ResolvedCall>,
+}
+#[derive(Clone)]
+pub(super) struct LocalAxis {
+    pub parameter: Parameter,
+    pub domain: Option<NodeRef>,
+    pub actual: bool,
+}
+#[derive(Clone)]
+pub(super) struct ResolvedCall {
+    pub expression: usize,
+    pub caller: super::super::call::Context,
+    pub callee: super::super::call::Context,
 }
 pub(in crate::observed) struct UniversalSourceAnalysis {
     pub parameters: Vec<(String, Type)>,
@@ -44,6 +58,333 @@ fn number(ty: &Type) -> Option<NumberType> {
     }
 }
 impl Environment<'_> {
+    fn universal_closed_parameters(
+        &self,
+        plan: &UniversalPlan,
+        predicate: &AffinePredicate,
+    ) -> Result<Vec<Parameter>, ValidationFailure> {
+        let mut parameters = plan.parameters.clone();
+        for bound in &predicate.bound_axes {
+            self.tick()?;
+            if !parameters.contains(bound) {
+                parameters.push(bound.clone());
+            }
+        }
+        Ok(parameters)
+    }
+    pub(super) fn universal_call_context(&self, id: usize) -> Option<super::super::call::Context> {
+        let caller = self
+            .scoped_context
+            .get()
+            .or(self.context.get())
+            .unwrap_or_default();
+        self.universal_context
+            .borrow()
+            .as_ref()
+            .and_then(|context| {
+                context
+                    .calls
+                    .iter()
+                    .find(|call| call.expression == id && call.caller == caller)
+                    .map(|call| call.callee)
+            })
+    }
+    fn universal_graph_context(
+        &self,
+        graph: &Graph,
+        plan: &UniversalPlan,
+        template: NodeRef,
+        domains: &[NodeRef],
+        completions: Vec<(Fact, Scalar)>,
+    ) -> Result<AnalysisContext, ValidationFailure> {
+        let mut result = AnalysisContext {
+            plan: plan.clone(),
+            template: Some(template),
+            domains: domains.to_vec(),
+            completions,
+            local_axes: Vec::new(),
+            calls: Vec::new(),
+        };
+        let cutoff = self.cutoff.get().min(graph.nodes.len());
+        for (index, frame) in graph.frames.iter().enumerate() {
+            self.tick()?;
+            if frame.source.0 >= cutoff
+                || frame.arguments.iter().any(|argument| argument.0 >= cutoff)
+            {
+                continue;
+            }
+            let source = graph.get(frame.source)?;
+            if source.arguments.first() != Some(&template) {
+                continue;
+            }
+            let span = self.expression_span(graph, frame.source)?;
+            let id = *self
+                .expressions
+                .get(&span)
+                .ok_or("局所全称callの元ASTがない")?;
+            if self.named_view(id)?.is_none() || graph.context_at(frame.source.0) != frame.caller {
+                return Err("局所全称callの実Frameが元構文と違う".into());
+            }
+            if result
+                .calls
+                .iter()
+                .any(|call| call.expression == id && call.caller == frame.caller)
+            {
+                return Err("同じ元call・callerの実Frameが一意でない".into());
+            }
+            result.calls.push(ResolvedCall {
+                expression: id,
+                caller: frame.caller,
+                callee: super::super::call::Context {
+                    frame: Some(index),
+                    iteration: None,
+                    ..frame.caller
+                },
+            });
+        }
+        for (index, node) in graph.nodes.iter().enumerate().take(cutoff) {
+            self.tick()?;
+            if !matches!(node.payload, Some(Payload::TypeDomain { .. }))
+                || node.arguments.len() != 1
+                || node.arguments[0] == template
+            {
+                continue;
+            }
+            let header = graph.get(node.arguments[0])?;
+            if header.arguments.first() != Some(&template) {
+                continue;
+            }
+            let axis = self.universal_local_domain_axis(
+                graph,
+                NodeRef(index),
+                template,
+                plan,
+                &domains[..plan.parameters.len()],
+            )?;
+            if result
+                .local_axes
+                .iter()
+                .any(|old| old.parameter == axis.parameter)
+            {
+                return Err("同じ局所全称binderの型Domainが重複する".into());
+            }
+            result.local_axes.push(axis);
+        }
+        Ok(result)
+    }
+    fn universal_local_domain_axis(
+        &self,
+        graph: &Graph,
+        domain: NodeRef,
+        template: NodeRef,
+        plan: &UniversalPlan,
+        root_domains: &[NodeRef],
+    ) -> Result<LocalAxis, ValidationFailure> {
+        let node = graph.get(domain)?;
+        let [header] = node.arguments.as_slice() else {
+            return Err("局所型Domainの元headerが一つでない".into());
+        };
+        let source = graph.get(*header)?;
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &source.payload
+        else {
+            return Err("局所型Domainのheaderが元Sourceでない".into());
+        };
+        let id = *self
+            .expressions
+            .get(span)
+            .ok_or("局所型Domainの元量化がない")?;
+        let ExprKind::Quant {
+            kind: QuantKind::Forall,
+            var,
+            split:
+                QuantSplit::Fixed {
+                    domain: QuantDomain::Type(_),
+                    ..
+                },
+        } = &self.inputs.law().exprs[id].kind
+        else {
+            return Err("局所型Domainの元構文が型全称でない".into());
+        };
+        let ty = self.inputs.law().quantifier_types[id]
+            .as_ref()
+            .ok_or("局所全称型がない")?;
+        let kind = number(ty).ok_or("局所全称が数値型でない")?;
+        let context = graph.context_at(header.0);
+        if graph.context_at(domain.0) != context
+            || header.0 >= domain.0
+            || source.arguments.first() != Some(&template)
+            || source.arguments.get(1..1 + root_domains.len()) != Some(root_domains)
+            || plan
+                .parameters
+                .iter()
+                .any(|p| p.binder == var.span && p.context == context)
+            || !matches!(&node.payload,Some(Payload::TypeDomain{ty:actual}) if actual==ty)
+            || !matches!(&node.rule,Rule::Input{kind:"law",location:Location::Law{span}} if *span==var.span)
+        {
+            return Err("局所全称Domainの元binder・型・実Contextが違う".into());
+        }
+        Ok(LocalAxis {
+            parameter: Parameter {
+                binder: var.span,
+                name: var.name.clone(),
+                context,
+                kind,
+            },
+            domain: Some(domain),
+            actual: true,
+        })
+    }
+    pub(in crate::observed) fn universal_source_domain_refs(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        template: NodeRef,
+        plan: &UniversalPlan,
+    ) -> Result<Vec<NodeRef>, ValidationFailure> {
+        if node.arguments.first() != Some(&template) {
+            return Err("全域Sourceの元templateが違う".into());
+        }
+        let mut domains = Vec::new();
+        for &reference in &node.arguments[1..] {
+            self.tick()?;
+            if !matches!(
+                graph.get(reference)?.payload,
+                Some(Payload::TypeDomain { .. })
+            ) {
+                break;
+            }
+            domains.push(reference);
+        }
+        self.universal_check_domains(graph, template, &domains, plan)?;
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &node.payload
+        else {
+            return Err("局所Domain列を持つ元Sourceがない".into());
+        };
+        let root = &domains[..plan.parameters.len()];
+        let registry = self.universal_graph_context(graph, plan, template, root, Vec::new())?;
+        let mut path = vec![(self.current_context(graph), *span)];
+        let mut current = self.current_context(graph);
+        while let Some(index) = current.frame {
+            self.tick()?;
+            let frame = graph
+                .frames
+                .get(index)
+                .ok_or("局所Domain列の実Frameがない")?;
+            if frame.caller.frame.is_some_and(|parent| parent >= index) {
+                return Err("局所Domain列の親Frameが先行しない".into());
+            }
+            path.push((frame.caller, self.expression_span(graph, frame.source)?));
+            current = frame.caller;
+        }
+        path.reverse();
+        let mut expected = root.to_vec();
+        for (context, span) in path {
+            for (_, binding) in self.lexical_context(span)? {
+                self.tick()?;
+                let LexicalOrigin::Universal(id) = binding else {
+                    continue;
+                };
+                let ExprKind::Quant { var, .. } = &self.inputs.law().exprs[id].kind else {
+                    unreachable!()
+                };
+                if plan
+                    .parameters
+                    .iter()
+                    .any(|parameter| parameter.binder == var.span && parameter.context == context)
+                {
+                    continue;
+                }
+                let axis = registry
+                    .local_axes
+                    .iter()
+                    .find(|axis| {
+                        axis.parameter.binder == var.span && axis.parameter.context == context
+                    })
+                    .ok_or("元lexical全称に先行する局所型Domainがない")?;
+                let domain = axis.domain.ok_or("実局所型Domainがない")?;
+                if !expected.contains(&domain) {
+                    expected.push(domain);
+                }
+            }
+        }
+        if domains != expected {
+            return Err("全域Sourceの局所型Domain列が元lexical/実call順と違う".into());
+        }
+        Ok(domains)
+    }
+    pub(in crate::observed) fn universal_local_parameter(
+        &self,
+        graph: &Graph,
+        plan: &UniversalPlan,
+        template: NodeRef,
+        domains: &[NodeRef],
+        id: usize,
+    ) -> Result<Option<Parameter>, ValidationFailure> {
+        self.universal_check_domains(graph, template, domains, plan)?;
+        let ExprKind::Quant {
+            kind: QuantKind::Forall,
+            var,
+            split:
+                QuantSplit::Fixed {
+                    domain: QuantDomain::Type(_),
+                    ..
+                },
+        } = &self.inputs.law().exprs[id].kind
+        else {
+            return Ok(None);
+        };
+        let Some(kind) = self.inputs.law().quantifier_types[id]
+            .as_ref()
+            .and_then(number)
+        else {
+            return Ok(None);
+        };
+        let context = self.current_context(graph);
+        Ok((!plan
+            .parameters
+            .iter()
+            .any(|p| p.binder == var.span && p.context == context))
+        .then(|| Parameter {
+            binder: var.span,
+            name: var.name.clone(),
+            context,
+            kind,
+        }))
+    }
+    pub(in crate::observed) fn universal_local_retains_comparison(
+        &self,
+        graph: &Graph,
+        plan: &UniversalPlan,
+        template: NodeRef,
+        domains: &[NodeRef],
+        id: usize,
+        bindings: &[Binding],
+    ) -> Result<bool, ValidationFailure> {
+        if self
+            .universal_local_parameter(graph, plan, template, domains, id)?
+            .is_none()
+        {
+            return Ok(true);
+        }
+        Ok(self
+            .universal_source_analysis(
+                graph,
+                self.inputs.law().exprs[id].span,
+                bindings,
+                plan,
+                domains,
+                template,
+            )?
+            .analysis
+            .comparison
+            .is_some())
+    }
     pub(super) fn universal_completion_frame(
         &self,
         graph: &Graph,
@@ -153,12 +494,7 @@ impl Environment<'_> {
             }
         }
         self.with_universal(
-            AnalysisContext {
-                plan,
-                template: Some(template),
-                domains: domains.to_vec(),
-                completions: values.to_vec(),
-            },
+            self.universal_graph_context(graph, &plan, template, domains, values.to_vec())?,
             || self.universal_analysis(graph, template, domains, fixed),
         )
     }
@@ -251,10 +587,12 @@ impl Environment<'_> {
                     template: None,
                     domains: Vec::new(),
                     completions: Vec::new(),
+                    local_axes: Vec::new(),
+                    calls: Vec::new(),
                 },
                 || {
                     let mut scope = base.clone();
-                    self.universal_extend_scope(&mut scope)?;
+                    self.universal_extend_scope(&mut scope, self.inputs.law().exprs[id].span)?;
                     let mut local = self.copy_variables(variables)?;
                     for parameter in &plan.parameters {
                         local.insert(
@@ -274,7 +612,7 @@ impl Environment<'_> {
                         Some(predicate) if predicate.op == BinOp::Eq => affine::universal_equality(
                             Some(&predicate.left),
                             Some(&predicate.right),
-                            &plan.parameters,
+                            &self.universal_closed_parameters(&plan, predicate)?,
                             &self.control,
                         )?
                         .and_then(|classification| classification.value)
@@ -288,6 +626,17 @@ impl Environment<'_> {
                 },
             );
         }
+        let active = self
+            .universal_context
+            .borrow()
+            .clone()
+            .ok_or("全域分析contextがない")?;
+        let root_axis = active.plan.parameters.iter().any(|p| p.binder == var.span);
+        if !root_axis {
+            return self
+                .universal_local_quantifier_value(id, variables, base, reading)
+                .map(Some);
+        }
         let mut local = self.copy_variables(variables)?;
         local.insert(
             var.name.clone(),
@@ -298,6 +647,96 @@ impl Environment<'_> {
         value.affine = None;
         value.comparison = None;
         Ok(Some(value))
+    }
+    fn universal_local_quantifier_value(
+        &self,
+        id: usize,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<SourceValue, ValidationFailure> {
+        let ExprKind::Quant {
+            var,
+            split: QuantSplit::Fixed { body, .. },
+            ..
+        } = &self.inputs.law().exprs[id].kind
+        else {
+            unreachable!()
+        };
+        let ty = self.inputs.law().quantifier_types[id]
+            .as_ref()
+            .ok_or("局所全称型がない")?;
+        let mut context = self
+            .universal_context
+            .borrow()
+            .clone()
+            .ok_or("局所全称のcaller Planがない")?;
+        let actual = self.scoped_context.get();
+        let origin = actual.or(self.context.get()).unwrap_or_default();
+        let axis = context
+            .local_axes
+            .iter()
+            .find(|axis| axis.parameter.binder == var.span && axis.parameter.context == origin)
+            .cloned()
+            .unwrap_or(LocalAxis {
+                parameter: Parameter {
+                    binder: var.span,
+                    name: var.name.clone(),
+                    context: origin,
+                    kind: number(ty).ok_or("局所全称が数値型でない")?,
+                },
+                domain: None,
+                actual: actual.is_some(),
+            });
+        if !context
+            .local_axes
+            .iter()
+            .any(|old| old.parameter == axis.parameter)
+        {
+            context.local_axes.push(axis.clone());
+        }
+        let mut scope = base.clone();
+        scope.assignments = true;
+        scope.add_quantifier(Quantifier {
+            kind: QuantKind::Forall,
+            name: var.name.clone(),
+            ty: ty.clone(),
+            domain: axis.domain,
+            occurrence: var.span,
+            context: axis.actual.then_some(origin),
+        });
+        self.with_universal(context, || {
+            let mut local = self.copy_variables(variables)?;
+            for value in local.values_mut() {
+                self.tick()?;
+                value.scope.merge(&scope);
+            }
+            local.insert(
+                var.name.clone(),
+                self.universal_parameter_value(var.span, &var.name, ty, &scope)?,
+            );
+            let mut value = self.scoped_ast(*body, &local, &scope, reading)?;
+            value.scope.merge(&scope);
+            if let Some(predicate) = value.comparison.as_ref()
+                && predicate.op == BinOp::Eq
+                && let Some(partial) = affine::partial_forall(
+                    Some(&predicate.left),
+                    Some(&predicate.right),
+                    std::slice::from_ref(&axis.parameter),
+                    &self.control,
+                )?
+            {
+                value.known_value = partial.value.map(Scalar::Bool).or(value.known_value);
+            }
+            if let Some(predicate) = &mut value.comparison
+                && !predicate.bound_axes.contains(&axis.parameter)
+            {
+                predicate.bound_axes.insert(0, axis.parameter.clone());
+            }
+            value.affine = None;
+            value.scalar_scope = value.known_value.as_ref().map(|_| value.scope.clone());
+            Ok(value)
+        })
     }
     pub(super) fn universal_parameter_value(
         &self,
@@ -320,6 +759,23 @@ impl Environment<'_> {
             .find(|parameter| {
                 parameter.binder == binder && parameter.name == name && parameter.kind.ty() == *ty
             })
+            .or_else(|| {
+                context
+                    .local_axes
+                    .iter()
+                    .find(|axis| {
+                        axis.parameter.binder == binder
+                            && axis.parameter.name == name
+                            && axis.parameter.kind.ty() == *ty
+                            && axis.parameter.context
+                                == self
+                                    .scoped_context
+                                    .get()
+                                    .or(self.context.get())
+                                    .unwrap_or_default()
+                    })
+                    .map(|axis| &axis.parameter)
+            })
             .ok_or_else(|| ValidationFailure::UnsupportedExpression {
                 location: Location::Law { span: binder },
                 feature: "call展開内で追加されるZ/Q全称binderの全域Plan".into(),
@@ -336,6 +792,7 @@ impl Environment<'_> {
     pub(super) fn universal_extend_scope(
         &self,
         scope: &mut Scope,
+        span: (usize, usize),
     ) -> Result<(), ValidationFailure> {
         if let Some(context) = self.universal_context.borrow().as_ref() {
             scope.assignments = true;
@@ -348,6 +805,24 @@ impl Environment<'_> {
                     domain: context.domains.get(index).copied(),
                     occurrence: parameter.binder,
                     context: Some(parameter.context),
+                });
+            }
+            let origin = self
+                .scoped_context
+                .get()
+                .or(self.context.get())
+                .unwrap_or_default();
+            let lexical = self.lexical_context(span)?;
+            for axis in &context.local_axes {
+                self.tick()?;
+                if axis.parameter.context!=origin || !lexical.iter().any(|(_,binding)|matches!(binding,LexicalOrigin::Universal(id) if matches!(&self.inputs.law().exprs[*id].kind,ExprKind::Quant{var,..} if var.span==axis.parameter.binder))){continue;}
+                scope.add_quantifier(Quantifier {
+                    kind: QuantKind::Forall,
+                    name: axis.parameter.name.clone(),
+                    ty: axis.parameter.kind.ty(),
+                    domain: axis.domain,
+                    occurrence: axis.parameter.binder,
+                    context: axis.actual.then_some(origin),
                 });
             }
         }
@@ -503,6 +978,8 @@ impl Environment<'_> {
                 template: None,
                 domains: Vec::new(),
                 completions: Vec::new(),
+                local_axes: Vec::new(),
+                calls: Vec::new(),
             },
             || self.universal_analyze_at(graph, span, bindings),
         )
@@ -518,12 +995,13 @@ impl Environment<'_> {
     ) -> Result<UniversalSourceAnalysis, ValidationFailure> {
         self.universal_check_domains(graph, template, domains, plan)?;
         self.with_universal(
-            AnalysisContext {
-                plan: plan.clone(),
-                template: Some(template),
-                domains: domains.to_vec(),
-                completions: self.universal_completions(template),
-            },
+            self.universal_graph_context(
+                graph,
+                plan,
+                template,
+                domains,
+                self.universal_completions(template),
+            )?,
             || self.universal_analyze_at(graph, span, bindings),
         )
     }
@@ -620,12 +1098,13 @@ impl Environment<'_> {
             let plan = self.universal_plan_at(graph, template, bindings)?;
             self.universal_check_domains(graph, template, domains, &plan)?;
             self.with_universal(
-                AnalysisContext {
-                    plan: plan.clone(),
-                    template: Some(template),
-                    domains: domains.to_vec(),
-                    completions: self.universal_completions(template),
-                },
+                self.universal_graph_context(
+                    graph,
+                    &plan,
+                    template,
+                    domains,
+                    self.universal_completions(template),
+                )?,
                 || {
                     let guard_analysis = plan
                         .guard
@@ -666,12 +1145,15 @@ impl Environment<'_> {
                     )?;
                     let predicate = analysis.comparison.as_ref();
                     let classification = match predicate {
-                        Some(predicate) if predicate.op == BinOp::Eq => affine::universal_equality(
-                            Some(&predicate.left),
-                            Some(&predicate.right),
-                            &plan.parameters,
-                            &self.control,
-                        )?,
+                        Some(predicate) if predicate.op == BinOp::Eq => {
+                            let parameters = self.universal_closed_parameters(&plan, predicate)?;
+                            affine::universal_equality(
+                                Some(&predicate.left),
+                                Some(&predicate.right),
+                                &parameters,
+                                &self.control,
+                            )?
+                        }
                         _ => None,
                     };
                     let comparison_expression = predicate.map(|predicate| predicate.expression);
@@ -750,12 +1232,7 @@ impl Environment<'_> {
         let span = self.expression_span(graph, original)?;
         let old_context = self.context.replace(Some(graph.context_at(original.0)));
         let result = self.with_universal(
-            AnalysisContext {
-                plan: plan.clone(),
-                template: Some(template),
-                domains: domains.to_vec(),
-                completions: Vec::new(),
-            },
+            self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
             || {
                 let mut result = self.universal_analyze_at(graph, span, original_bindings)?;
                 for binding in bindings
@@ -805,6 +1282,7 @@ impl Environment<'_> {
                         op: predicate.op,
                         left,
                         right,
+                        bound_axes: predicate.bound_axes.clone(),
                     }));
                 }
                 result.analysis.scalar_scope = result
@@ -858,12 +1336,7 @@ impl Environment<'_> {
         };
         let previous = self.context.replace(Some(graph.context_at(original.0)));
         let result = self.with_universal(
-            AnalysisContext {
-                plan: plan.clone(),
-                template: Some(template),
-                domains: domains.to_vec(),
-                completions: Vec::new(),
-            },
+            self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
             || {
                 let variables = graph
                     .context_at(original.0)
@@ -900,10 +1373,40 @@ impl Environment<'_> {
                                 .span,
                         )
                     } else {
+                        let lexical = self.lexical_context(span)?;
+                        let declared_binder = formal
+                            .iter()
+                            .find(|parameter| {
+                                parameter.name == *name && parameter.ty.erase() == *ty
+                            })
+                            .map(|parameter| parameter.span);
+                        let binder = lexical
+                            .iter()
+                            .rev()
+                            .find_map(|(local, origin)| {
+                                if local == name {
+                                    match origin {
+                                        LexicalOrigin::Universal(id) => {
+                                            match &self.inputs.law().exprs[*id].kind {
+                                                ExprKind::Quant { var, .. } => Some(var.span),
+                                                _ => None,
+                                            }
+                                        }
+                                        _ => None,
+                                    }
+                                } else {
+                                    None
+                                }
+                            })
+                            .or(declared_binder)
+                            .ok_or("具体反例の元自由binderがない")?;
                         let (parameter, value) = assignment
                             .iter()
                             .find(|(parameter, _)| {
-                                parameter.name == *name && parameter.kind.ty() == *ty
+                                parameter.name == *name
+                                    && parameter.kind.ty() == *ty
+                                    && parameter.binder == binder
+                                    && parameter.context == graph.context_at(original.0)
                             })
                             .ok_or("具体反例の元parameterがない")?;
                         (value.clone(), parameter.binder)
@@ -952,11 +1455,15 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         if self.expression_span(graph, self.universal_raw_body(graph, template)?)?
             != plan.template_span
-            || domains.len() != plan.parameters.len()
+            || domains.len() < plan.parameters.len()
         {
             return Err("全域型Domainの元template・軸数が違う".into());
         }
-        for (&domain, parameter) in domains.iter().zip(&plan.parameters) {
+        for (&domain, parameter) in domains
+            .iter()
+            .take(plan.parameters.len())
+            .zip(&plan.parameters)
+        {
             self.tick()?;
             let node = graph.get(domain)?;
             if node.arguments != [template]
@@ -966,6 +1473,19 @@ impl Environment<'_> {
             {
                 return Err("全域型Domainの元binder・型・Contextが違う".into());
             }
+        }
+        for (index, &domain) in domains.iter().enumerate().skip(plan.parameters.len()) {
+            self.tick()?;
+            if domains[..index].contains(&domain) {
+                return Err("全域Sourceの局所Domain参照が重複する".into());
+            }
+            self.universal_local_domain_axis(
+                graph,
+                domain,
+                template,
+                plan,
+                &domains[..plan.parameters.len()],
+            )?;
         }
         Ok(())
     }

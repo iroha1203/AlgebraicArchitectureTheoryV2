@@ -1526,7 +1526,9 @@ impl Graph {
                         let mut connected = false;
                         for &row in rows {
                             self.tick()?;
-                            if e.arguments.get(1) == Some(&row) {
+                            if self.universal_counterexample_for_evaluation(reference, row)? {
+                                connected = true;
+                            } else if e.arguments.get(1) == Some(&row) {
                                 let Some(&actual) = e.arguments.first() else {
                                     return Err("row反例に元instanceがない".into());
                                 };
@@ -2075,6 +2077,195 @@ impl Graph {
         Ok(())
     }
 
+    fn universal_local_header_root(
+        &self,
+        header: NodeRef,
+    ) -> Result<Option<NodeRef>, ValidationFailure> {
+        self.tick()?;
+        let node = self.get(header)?;
+        if node.ty != NodeType::Expression(Type::Bool)
+            || !matches!(&node.payload, Some(Payload::Expression { .. }))
+        {
+            return Ok(None);
+        }
+        let [root, domain, ..] = node.arguments.as_slice() else {
+            return Ok(None);
+        };
+        if *root == header
+            || !matches!(
+                &self.get(*domain)?.payload,
+                Some(Payload::TypeDomain { .. })
+            )
+            || self.get(*domain)?.arguments != [*root]
+        {
+            return Ok(None);
+        }
+        self.universal_template_sources(*root)?;
+        Ok(Some(*root))
+    }
+
+    fn universal_local_quantifier_inputs(
+        &self,
+        header: NodeRef,
+        domain: NodeRef,
+        body: NodeRef,
+        scope: &Scope,
+    ) -> Result<(), ValidationFailure> {
+        let root = self
+            .universal_local_header_root(header)?
+            .ok_or("局所数値量化の元header・root型Domainがない")?;
+        let context = self.context_at(header.0);
+        let domain_node = self.get(domain)?;
+        let Some(Payload::TypeDomain { ty }) = &domain_node.payload else {
+            return Err("局所数値量化の型Domainがない".into());
+        };
+        let Rule::Input {
+            kind: "law",
+            location: Location::Law { span: binder },
+        } = &domain_node.rule
+        else {
+            return Err("局所数値量化の元binder位置がない".into());
+        };
+        self.expect(body, &NodeType::Evaluation(Type::Bool))?;
+        let Some(Payload::Evaluation {
+            expression: body_source,
+            ..
+        }) = &self.get(body)?.payload
+        else {
+            return Err("局所数値量化が未生成のbody評価を消費した".into());
+        };
+        let body_node = self.get(*body_source)?;
+        if domain_node.arguments != [header]
+            || self.context_at(domain.0) != context
+            || self.context_at(body.0) != context
+            || self.context_at(body_source.0) != context
+            || body_node.arguments.first() != Some(&root)
+            || !body_node.arguments.contains(&domain)
+            || !matches!(&body_node.payload, Some(Payload::Expression { .. }))
+            || !scope.assignments
+        {
+            return Err("局所数値量化の元root・body・型Domain・実Contextが違う".into());
+        }
+        let descriptors: Vec<_> = scope
+            .quantifiers
+            .iter()
+            .filter(|q| q.domain == Some(domain))
+            .collect();
+        let [descriptor] = descriptors.as_slice() else {
+            return Err("局所数値量化の実型Domainに一つのbinder descriptorがない".into());
+        };
+        if descriptor.kind != crate::law::ast::QuantKind::Forall
+            || descriptor.ty != *ty
+            || descriptor.occurrence != *binder
+            || descriptor.context != Some(context)
+        {
+            return Err("局所数値量化の元binder・型・全称・実Contextが違う".into());
+        }
+        let mut expected_scope = self.get(header)?.scope.clone();
+        expected_scope.merge(&self.get(body)?.scope);
+        if *scope != expected_scope || !scope.source_compatible(&self.get(header)?.scope) {
+            return Err("局所数値量化のScopeが元header・実bodyから精密化されていない".into());
+        }
+        Ok(())
+    }
+
+    fn universal_local_quantifier_value_shape(
+        &self,
+        node: &Node,
+    ) -> Result<bool, ValidationFailure> {
+        let [header, domain, body] = node.arguments.as_slice() else {
+            return Ok(false);
+        };
+        if self.universal_local_header_root(*header)?.is_none()
+            || !matches!(
+                &self.get(*domain)?.payload,
+                Some(Payload::TypeDomain { .. })
+            )
+            || self.get(*domain)?.arguments != [*header]
+        {
+            return Ok(false);
+        }
+        let Some(Payload::Expression { location, .. }) = &self.get(*header)?.payload else {
+            unreachable!()
+        };
+        self.universal_local_quantifier_inputs(*header, *domain, *body, &node.scope)?;
+        if node.ty != NodeType::Value(Type::Bool)
+            || !matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_))))
+            || !matches!(&node.rule, Rule::Input {kind:"law",location:actual} if actual == location)
+            || !node.evidence.is_empty()
+            || node.support != self.get(*body)?.support
+        {
+            return Err("局所数値量化の確定Boolが元型・Quant位置・支持に合わない".into());
+        }
+        Ok(true)
+    }
+
+    fn universal_local_quantifier_evaluation_shape(
+        &self,
+        node: &Node,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Evaluation {
+            expression: header,
+            bindings,
+            parts,
+            value,
+            applicability,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        let [actual_header, domain, body, values @ ..] = node.arguments.as_slice() else {
+            return Ok(false);
+        };
+        if actual_header != header
+            || self.universal_local_header_root(*header)?.is_none()
+            || !matches!(
+                &self.get(*domain)?.payload,
+                Some(Payload::TypeDomain { .. })
+            )
+            || self.get(*domain)?.arguments != [*header]
+        {
+            return Ok(false);
+        }
+        self.universal_local_quantifier_inputs(*header, *domain, *body, &node.scope)?;
+        let Some(Payload::Expression {
+            location,
+            bindings: fixed,
+            ..
+        }) = &self.get(*header)?.payload
+        else {
+            unreachable!()
+        };
+        let [part] = parts.as_slice() else {
+            return Err("局所数値量化の元part数が違う".into());
+        };
+        let expected_values: Vec<_> = value.iter().copied().collect();
+        if node.ty != NodeType::Evaluation(Type::Bool)
+            || bindings != fixed
+            || part.location != *location
+            || part.value != *value
+            || part.residual.is_some()
+            || part.children != [*body]
+            || values != expected_values
+            || *applicability != "applicable"
+            || !node.evidence.is_empty()
+            || node.support != self.get(*body)?.support
+        {
+            return Err("局所数値量化の実body・元位置・値・支持が違う".into());
+        }
+        if let Some(value) = value {
+            let scalar = self.get(*value)?;
+            if !self.universal_local_quantifier_value_shape(scalar)?
+                || scalar.arguments != [*header, *domain, *body]
+                || scalar.scope != node.scope
+                || scalar.support != node.support
+            {
+                return Err("局所数値量化の値が別のbody・binderで導出された".into());
+            }
+        }
+        Ok(true)
+    }
+
     fn universal_evaluation_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
         let Some(Payload::Evaluation {
             expression,
@@ -2111,6 +2302,9 @@ impl Graph {
                     && node.arguments == [*expression]
             })
         });
+        if typed_whole && self.universal_local_header_root(*expression)?.is_some() {
+            return Ok(false);
+        }
         if !residual_whole && !guarded_not_applicable && !typed_whole {
             return Ok(false);
         }
@@ -2605,7 +2799,7 @@ impl Graph {
         Ok(true)
     }
 
-    fn universal_body_contains_call(
+    fn universal_body_contains_source(
         &self,
         body_source: NodeRef,
         call_source: NodeRef,
@@ -2696,12 +2890,179 @@ impl Graph {
                 }
             }
             if frame.caller == target {
-                return self.universal_body_contains_call(caller, frame.source, frame.caller);
+                return self.universal_body_contains_source(caller, frame.source, frame.caller);
             }
             source = frame.source;
             context = frame.caller;
         }
         Ok(false)
+    }
+
+    fn universal_local_binding_witness(
+        &self,
+        original_side: NodeRef,
+        caller_body: NodeRef,
+        binding: &Binding,
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        let original = self.get(original_side)?;
+        let Some(Payload::Expression { parameters, .. }) = &original.payload else {
+            return Ok(false);
+        };
+        if !parameters
+            .iter()
+            .any(|(name, ty)| *name == binding.name && *ty == binding.ty)
+        {
+            return Ok(false);
+        }
+        let Some(&root) = original.arguments.first() else {
+            return Ok(false);
+        };
+        self.universal_template_sources(root)?;
+        let scalar = self.get(binding.value)?;
+        if scalar.ty != NodeType::Value(binding.ty.clone())
+            || scalar.arguments != [root, original_side]
+            || self.context_at(binding.value.0) != self.context_at(caller_body.0)
+        {
+            return Ok(false);
+        }
+        for &domain in &original.arguments {
+            self.tick()?;
+            let domain_node = self.get(domain)?;
+            let Some(Payload::TypeDomain { ty }) = &domain_node.payload else {
+                continue;
+            };
+            let [header] = domain_node.arguments.as_slice() else {
+                continue;
+            };
+            if self.universal_local_header_root(*header)? != Some(root)
+                || *ty != binding.ty
+                || self.context_at(domain.0) != self.context_at(original_side.0)
+                || self.context_at(header.0) != self.context_at(original_side.0)
+            {
+                continue;
+            }
+            let Rule::Input {
+                kind: "law",
+                location: Location::Law { span: binder },
+            } = &domain_node.rule
+            else {
+                continue;
+            };
+            if !matches!(&scalar.rule, Rule::Input {kind:"law", location:Location::Law {span}} if span == binder)
+            {
+                continue;
+            }
+            let matching = original
+                .scope
+                .quantifiers
+                .iter()
+                .filter(|q| {
+                    q.domain == Some(domain)
+                        && q.kind == crate::law::ast::QuantKind::Forall
+                        && q.name == binding.name
+                        && q.ty == binding.ty
+                        && q.occurrence == *binder
+                        && q.context == Some(self.context_at(original_side.0))
+                })
+                .count();
+            if matching == 1
+                && self.universal_body_contains_source(
+                    caller_body,
+                    *header,
+                    self.context_at(original_side.0),
+                )?
+            {
+                self.value(binding.value, &binding.ty)?;
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    fn universal_local_substitution_extends_caller(
+        &self,
+        original_side: NodeRef,
+        caller_body: NodeRef,
+        caller_bindings: &[Binding],
+        side_bindings: &[Binding],
+    ) -> Result<bool, ValidationFailure> {
+        let mut local_changes = false;
+        for binding in side_bindings {
+            self.tick()?;
+            if !caller_bindings.contains(binding) {
+                if !self.universal_local_binding_witness(original_side, caller_body, binding)? {
+                    return Ok(false);
+                }
+                local_changes = true;
+            }
+        }
+        for original in caller_bindings {
+            self.tick()?;
+            if side_bindings.contains(original) {
+                continue;
+            }
+            let mut shadowed = false;
+            for binding in side_bindings
+                .iter()
+                .filter(|binding| binding.name == original.name)
+            {
+                self.tick()?;
+                if self.universal_local_binding_witness(original_side, caller_body, binding)? {
+                    shadowed = true;
+                    break;
+                }
+            }
+            if !shadowed {
+                return Ok(false);
+            }
+            local_changes = true;
+        }
+        Ok(local_changes)
+    }
+
+    /// 有限族の各rowは、そのrowで全数値parameterを全称化したwholeを証明する。
+    fn universal_counterexample_for_evaluation(
+        &self,
+        evidence: NodeRef,
+        evaluation: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        let proof = self.get(evidence)?;
+        if !self.universal_counterexample_shape(proof)? {
+            return Ok(false);
+        }
+        let whole = self.get(evaluation)?;
+        if !self.universal_evaluation_shape(whole)? {
+            return Ok(false);
+        }
+        let Some(Payload::Evaluation {
+            expression, value, ..
+        }) = &whole.payload
+        else {
+            unreachable!()
+        };
+        let [normalization] = whole.evidence.as_slice() else {
+            return Ok(false);
+        };
+        if self.boolean(*value)? != Some(false)
+            || self.context_at(evidence.0) != self.context_at(evaluation.0)
+            || proof.scope != whole.scope
+            || proof.support != whole.support
+        {
+            return Ok(false);
+        }
+        Ok(match proof.arguments.as_slice() {
+            [source, actual_whole, actual_normalization] => {
+                source == expression
+                    && *actual_whole == evaluation
+                    && actual_normalization == normalization
+            }
+            [source, actual_normalization, _, _, _] => {
+                source == expression && actual_normalization == normalization
+            }
+            _ => false,
+        })
     }
 
     fn universal_counterexample_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
@@ -2830,8 +3191,18 @@ impl Graph {
                         return Err("具体全域反例の左右が別の元式・同時代入を使う".into());
                     }
                     if self.context_at(original_side.0) == self.context_at(operands[0].0) {
-                        if actual != bindings {
-                            return Err("直接Eqの全域反例が左右の同時代入を変えた".into());
+                        if actual != bindings
+                            && !self.universal_local_substitution_extends_caller(
+                                original_side,
+                                operands[0],
+                                bindings,
+                                actual,
+                            )?
+                        {
+                            return Err(
+                                "直接Eqの全域反例が局所型Domainによらず左右の同時代入を変えた"
+                                    .into(),
+                            );
                         }
                     } else if !self.universal_call_descends_from(original_side, operands[0])? {
                         return Err("具体全域反例のcalleeが元caller代入に属さない".into());
@@ -3002,6 +3373,7 @@ impl Graph {
             (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {
                 super::data::check_shape(s, &self.control)?;
                 self.universal_witness_value_shape(&node)?;
+                self.universal_local_quantifier_value_shape(&node)?;
             }
             (
                 NodeType::Expression(_),
@@ -3101,7 +3473,9 @@ impl Graph {
                     }
                     self.tick()?;
                 }
-                if !self.universal_witness_evaluation_shape(&node)? {
+                if !self.universal_witness_evaluation_shape(&node)?
+                    && !self.universal_local_quantifier_evaluation_shape(&node)?
+                {
                     self.universal_evaluation_shape(&node)?;
                 }
             }

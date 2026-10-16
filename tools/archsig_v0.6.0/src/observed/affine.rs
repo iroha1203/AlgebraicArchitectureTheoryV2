@@ -93,6 +93,14 @@ pub(crate) struct Universal {
     pub completion_pair: Option<CompletionPair>,
 }
 
+/// 指定した内側binderだけを閉じた全称Eq。自由な外側parameterは閉じない。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct PartialUniversal {
+    pub difference: Form,
+    pub nonzero_bound: Option<(Parameter, Scalar)>,
+    pub value: Option<bool>,
+}
+
 /// 全補完で偽となる共通parameter代入と、その代入後に残る算術証拠。
 struct CommonCounterexample {
     parameters: Vec<(Parameter, Scalar)>,
@@ -414,6 +422,84 @@ pub(crate) fn equality(
         let zero = numeric::zero(&difference.ty, control)?;
         let value = numeric::binary(op, &residual, &zero, control)?;
         Ok(Some((value, residual)))
+    })
+}
+
+/// inner binderの係数だけを検査する。非零係数はその局所全称の偽を示し、
+/// 全係数が消えた場合は自由なouter parameterと欠測Factの等値述語を残す。
+pub(crate) fn partial_forall(
+    left: Option<&Form>,
+    right: Option<&Form>,
+    bound: &[Parameter],
+    control: &Control,
+) -> Result<Option<PartialUniversal>, ValidationFailure> {
+    controlled(control, || {
+        let mut declared = BTreeMap::new();
+        for parameter in bound {
+            tick(control)?;
+            parameter_check(parameter)?;
+            if declared
+                .insert((parameter.binder, parameter.context), parameter)
+                .is_some()
+            {
+                return Err("部分全称の元binder・Contextが重複する".into());
+            }
+            tick(control)?;
+        }
+        for form in [left, right].into_iter().flatten() {
+            form.check(control)?;
+            for symbol in form.coefficients.keys() {
+                tick(control)?;
+                if let Symbol::Parameter(parameter) = symbol
+                    && let Some(expected) = declared.get(&(parameter.binder, parameter.context))
+                    && *expected != parameter
+                {
+                    return Err("部分全称の元binderの名前・型が元左右の記号と違う".into());
+                }
+                tick(control)?;
+            }
+        }
+        let Some(difference) = binary(BinOp::Sub, left, right, control)? else {
+            return Ok(None);
+        };
+        let mut nonzero_bound = None;
+        for (symbol, coefficient) in &difference.coefficients {
+            tick(control)?;
+            if let Symbol::Parameter(parameter) = symbol
+                && let Some(expected) = declared.get(&(parameter.binder, parameter.context))
+            {
+                if *expected != parameter {
+                    return Err("部分全称の元binderの名前・型が記号と違う".into());
+                }
+                if nonzero_bound.is_none() {
+                    nonzero_bound = Some((parameter.clone(), coefficient.clone()));
+                }
+            }
+            tick(control)?;
+        }
+        tick(control)?;
+        #[cfg(test)]
+        observe(TestPoint::PartialUniversal);
+        tick(control)?;
+        let value = if nonzero_bound.is_some() {
+            Some(false)
+        } else {
+            match difference.value(control)? {
+                Some(residual) => {
+                    let zero = numeric::zero(&difference.ty, control)?;
+                    match numeric::binary(BinOp::Eq, &residual, &zero, control)? {
+                        Scalar::Bool(value) => Some(value),
+                        _ => return Err("部分全称の定数残差の比較がBoolでない".into()),
+                    }
+                }
+                None => None,
+            }
+        };
+        Ok(Some(PartialUniversal {
+            difference,
+            nonzero_bound,
+            value,
+        }))
     })
 }
 
@@ -878,6 +964,7 @@ pub(crate) enum TestPoint {
     Constant,
     Gcd,
     Universal,
+    PartialUniversal,
 }
 
 #[cfg(test)]
@@ -1239,6 +1326,234 @@ mod tests {
             false_outcome.common_counterexample,
             Some(vec![(key, Scalar::Q(0.into(), 1.into()))])
         );
+    }
+
+    #[test]
+    fn partial_forall_retains_outer_parameter_predicate() {
+        let control = control();
+        for kind in [NumberType::Z, NumberType::Q] {
+            let x = binder(kind);
+            let mut y = x.clone();
+            y.binder = (3, 4);
+            y.name = "y".into();
+            y.context.frame = Some(0);
+            let x_form = parameter(&kind.ty(), &x, &control).unwrap().unwrap();
+            let y_form = parameter(&kind.ty(), &y, &control).unwrap().unwrap();
+            let lhs = add(&x_form, &y_form, &control);
+            let local = partial_forall(Some(&lhs), Some(&y_form), &[y], &control)
+                .unwrap()
+                .unwrap();
+            assert_eq!(local.value, None);
+            assert!(local.nonzero_bound.is_none());
+            assert_eq!(local.difference, x_form);
+            assert!(local.difference.value(&control).unwrap().is_none());
+            assert!(lhs.value(&control).unwrap().is_none());
+            assert!(y_form.value(&control).unwrap().is_none());
+            let residual = local.difference;
+            let zero = c(numeric::zero(&kind.ty(), &control).unwrap(), &control);
+            assert_eq!(residual, x_form);
+            assert_eq!(
+                zero.value(&control).unwrap(),
+                Some(numeric::zero(&kind.ty(), &control).unwrap())
+            );
+            assert_eq!(
+                universal_equality(Some(&residual), Some(&zero), &[x], &control)
+                    .unwrap()
+                    .unwrap()
+                    .value,
+                Some(false)
+            );
+        }
+    }
+
+    #[test]
+    fn partial_forall_classifies_only_local_inner_coefficients() {
+        let control = control();
+        for kind in [NumberType::Z, NumberType::Q] {
+            let x = binder(kind);
+            let mut y = x.clone();
+            y.binder = (3, 4);
+            y.name = "y".into();
+            y.context.frame = Some(0);
+            let x_form = parameter(&kind.ty(), &x, &control).unwrap().unwrap();
+            let y_form = parameter(&kind.ty(), &y, &control).unwrap().unwrap();
+            let lhs = add(&x_form, &y_form, &control);
+            let rhs = add(&y_form, &x_form, &control);
+            let identity = partial_forall(Some(&lhs), Some(&rhs), &[y.clone()], &control)
+                .unwrap()
+                .unwrap();
+            assert_eq!(identity.value, Some(true));
+            assert!(identity.nonzero_bound.is_none());
+            let false_local = partial_forall(Some(&lhs), Some(&x_form), &[y.clone()], &control)
+                .unwrap()
+                .unwrap();
+            assert_eq!(false_local.value, Some(false));
+            assert_eq!(
+                false_local.nonzero_bound,
+                Some((
+                    y.clone(),
+                    numeric::literal("1", &kind.ty(), &control).unwrap()
+                ))
+            );
+            assert_eq!(false_local.difference, y_form);
+            let h = missing(&kind.ty(), &slot("h"), &control).unwrap().unwrap();
+            let missing_local =
+                partial_forall(Some(&add(&lhs, &h, &control)), Some(&rhs), &[y], &control)
+                    .unwrap()
+                    .unwrap();
+            assert_eq!(missing_local.value, None);
+            assert!(missing_local.nonzero_bound.is_none());
+            assert_eq!(missing_local.difference, h);
+        }
+    }
+
+    #[test]
+    fn partial_forall_distinguishes_context_and_rejects_binder_mutations() {
+        let control = control();
+        let mut first = binder(NumberType::Z);
+        first.context.frame = Some(0);
+        let mut second = first.clone();
+        second.context.frame = Some(1);
+        let first_form = parameter(&Type::Z, &first, &control).unwrap().unwrap();
+        let second_form = parameter(&Type::Z, &second, &control).unwrap().unwrap();
+        let zero = c(z(0), &control);
+        let free = partial_forall(Some(&first_form), Some(&zero), &[second.clone()], &control)
+            .unwrap()
+            .unwrap();
+        assert_eq!(free.value, None);
+        assert!(free.nonzero_bound.is_none());
+        assert_eq!(free.difference, first_form);
+        let closed = partial_forall(Some(&second_form), Some(&zero), &[second.clone()], &control)
+            .unwrap()
+            .unwrap();
+        assert_eq!(closed.value, Some(false));
+        assert_eq!(closed.nonzero_bound, Some((second.clone(), z(1))));
+        let mut wrong_type = first.clone();
+        wrong_type.kind = NumberType::Q;
+        assert!(matches!(
+            partial_forall(Some(&first_form), Some(&zero), &[wrong_type], &control),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let mut wrong_cancelled_type = first.clone();
+        wrong_cancelled_type.kind = NumberType::Q;
+        assert!(matches!(
+            partial_forall(
+                Some(&first_form),
+                Some(&first_form),
+                &[wrong_cancelled_type],
+                &control
+            ),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let mut wrong_name = first.clone();
+        wrong_name.name = "renamed".into();
+        assert!(matches!(
+            partial_forall(Some(&first_form), Some(&zero), &[wrong_name], &control),
+            Err(ValidationFailure::Internal(_))
+        ));
+        assert!(matches!(
+            partial_forall(Some(&zero), Some(&zero), &[first.clone(), first], &control),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let mut malformed = second;
+        malformed.binder = (4, 4);
+        assert!(matches!(
+            partial_forall(Some(&zero), Some(&zero), &[malformed], &control),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+
+    #[test]
+    fn partial_forall_control_preserves_free_predicate_and_freezes() {
+        use crate::observed::control::{Resource, StopReason};
+        use crate::result::Signal;
+        use std::{cell::Cell, rc::Rc};
+
+        let baseline = control();
+        let x = binder(NumberType::Z);
+        let mut y = x.clone();
+        y.binder = (3, 4);
+        y.name = "y".into();
+        y.context.frame = Some(0);
+        let x_form = parameter(&Type::Z, &x, &baseline).unwrap().unwrap();
+        let y_form = parameter(&Type::Z, &y, &baseline).unwrap().unwrap();
+        let lhs = add(&x_form, &y_form, &baseline);
+        let bound = vec![y];
+        assert_eq!(
+            partial_forall(Some(&lhs), Some(&y_form), &bound, &baseline)
+                .unwrap()
+                .unwrap()
+                .value,
+            None
+        );
+        for mode in 0..3 {
+            let ready = Rc::new(Cell::new(false));
+            let calls = Rc::new(Cell::new(0usize));
+            let notifications = Rc::new(Cell::new(0usize));
+            let probe_ready = ready.clone();
+            let probe_calls = calls.clone();
+            let controlled = Control::new(
+                Limits {
+                    time_ms: (mode == 1).then_some(5),
+                    memory_mib: (mode == 2).then_some(5),
+                },
+                move |_| {
+                    probe_calls.set(probe_calls.get() + 1);
+                    if !probe_ready.get() {
+                        return Usage::default();
+                    }
+                    Usage {
+                        signal: (mode == 0).then_some(Signal::Int),
+                        elapsed_ms: if mode == 1 { 7 } else { 0 },
+                        memory_mib: if mode == 2 { 7 } else { 0 },
+                    }
+                },
+            );
+            let expected = match mode {
+                0 => StopReason::Cancelled(Signal::Int),
+                1 => StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 5,
+                    observed: 7,
+                },
+                _ => StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 5,
+                    observed: 7,
+                },
+            };
+            let seen = notifications.clone();
+            with_observer(
+                move |point| {
+                    seen.set(seen.get() + 1);
+                    if point == TestPoint::PartialUniversal {
+                        ready.set(true);
+                    }
+                },
+                || {
+                    assert!(
+                        matches!(partial_forall(Some(&lhs), Some(&y_form), &bound, &controlled),
+                    Err(ValidationFailure::Stop(reason)) if reason == expected)
+                    );
+                    assert_eq!(controlled.stop_reason(), Some(expected.clone()));
+                    let frozen_calls = calls.get();
+                    let frozen_notifications = notifications.get();
+                    assert!(
+                        matches!(partial_forall(Some(&lhs), Some(&y_form), &bound, &controlled),
+                    Err(ValidationFailure::Stop(reason)) if reason == expected)
+                    );
+                    assert_eq!(calls.get(), frozen_calls);
+                    assert_eq!(notifications.get(), frozen_notifications);
+                },
+            );
+            assert_eq!(
+                partial_forall(Some(&lhs), Some(&y_form), &bound, &baseline)
+                    .unwrap()
+                    .unwrap()
+                    .difference,
+                x_form
+            );
+        }
     }
 
     #[test]

@@ -205,6 +205,16 @@ fn fixture(script: &str, missing_bool: bool, moved: bool) -> InputSources {
     )
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
+    run_parameter_types(inputs, asks, false)
+}
+fn run_declared_parameters(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
+    run_parameter_types(inputs, asks, true)
+}
+fn run_parameter_types(
+    inputs: InputSources,
+    asks: &[&str],
+    declared_parameters: bool,
+) -> (Json, CheckedInputs) {
     let checked = check_inputs(inputs.clone(), &mut quiet())
         .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
     let evaluated =
@@ -235,10 +245,17 @@ fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
         "評価wireのエラー: {:?}",
         f(&wire, "issues")
     );
-    audit(&wire, &checked);
+    if declared_parameters {
+        audit_parameter_types(&wire, &checked, true);
+    } else {
+        audit(&wire, &checked);
+    }
     (wire, checked)
 }
 fn audit(wire: &Json, checked: &CheckedInputs) {
+    audit_parameter_types(wire, checked, false);
+}
+fn audit_parameter_types(wire: &Json, checked: &CheckedInputs, declared_parameters: bool) {
     let ns = index(wire);
     let mut earlier = BTreeSet::new();
     for n in arr(f(wire, "nodes")) {
@@ -286,7 +303,30 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             let mut names = BTreeSet::new();
             for p in parameters {
                 assert!(names.insert(text(f(p, "name"))));
-                assert!([Json::str("Z"), Json::str("Q"), Json::str("Bool")].contains(f(p, "type")));
+                if declared_parameters {
+                    let declaration = checked
+                        .law()
+                        .declarations
+                        .values()
+                        .find(|declaration| {
+                            declaration.span.0 <= position.0 && position.1 <= declaration.span.1
+                        })
+                        .unwrap();
+                    let (Signature::Law { params, .. } | Signature::View { params, .. }) =
+                        &declaration.signature
+                    else {
+                        panic!("元Sourceのparameter宣言")
+                    };
+                    let original = params
+                        .iter()
+                        .find(|param| param.name == text(f(p, "name")))
+                        .unwrap();
+                    assert_eq!(f(p, "type"), &original.ty.wire());
+                } else {
+                    assert!(
+                        [Json::str("Z"), Json::str("Q"), Json::str("Bool")].contains(f(p, "type"))
+                    );
+                }
             }
             for b in arr(f(val(n), "bindings")) {
                 assert!(
@@ -2219,4 +2259,816 @@ fn bool_view_counterexample_substitutes_caller_and_preserves_missing_callee_argu
     }
     assert_eq!(f(example, "support"), f(evaluation, "support"));
     assert_eq!(f(example, "scope"), f(evaluation, "scope"));
+}
+
+fn completion_pair_for_whole(
+    wire: &Json,
+    checked: &CheckedInputs,
+    evaluation: &Json,
+    ty: &str,
+    field: &str,
+    axes: usize,
+) {
+    let ns = index(wire);
+    let evidence = arr(f(evaluation, "evidence"));
+    assert_eq!(evidence.len(), 1);
+    let pair = target(&ns, &evidence[0], "Evidence");
+    assert_eq!(f(val(pair), "kind"), &Json::str("completion_pair"));
+    let data = f(val(pair), "data");
+    assert_eq!(f(data, "fields"), &Json::Arr(vec![fact(field)]));
+    let original_args = arr(f(evaluation, "arguments"));
+    let template = target(&ns, &original_args[0], "Expression");
+    let body = &original_args[1 + axes];
+    let residual = &original_args[2 + axes];
+    assert!(!obj(val(target(&ns, residual, "Evaluation"))).contains_key("value"));
+    let mut anchors = vec![];
+    let mut results = vec![];
+    let mut assignments = vec![];
+    let mut seen = BTreeSet::new();
+    for (key, result_key) in [("first", "first_result"), ("second", "second_result")] {
+        let values = arr(f(data, key));
+        assert_eq!(values.len(), 1);
+        let scalar = target(&ns, &values[0], ty);
+        let expected = if val(scalar) == &numeric(ty, "0") {
+            true
+        } else {
+            assert_eq!(val(scalar), &numeric(ty, "1"));
+            false
+        };
+        assert!(seen.insert(expected));
+        let case = target(&ns, f(data, result_key), "Evaluation");
+        let anchor = expression(&ns, case);
+        assert_eq!(f(val(anchor), "operation"), &Json::str("substitute"));
+        assert_eq!(
+            f(val(anchor), "operands"),
+            &Json::Arr(vec![reference(template)])
+        );
+        assert_eq!(f(val(anchor), "parameters"), f(val(template), "parameters"));
+        assert_eq!(f(val(anchor), "bindings"), f(val(template), "bindings"));
+        let slot_args = arr(f(scalar, "arguments"));
+        assert_eq!(slot_args.len(), 3);
+        assert_eq!(&slot_args[..2], &[reference(template), reference(anchor)]);
+        let original_field = target(&ns, &slot_args[2], "Expression");
+        assert_eq!(
+            source(checked, span(f(val(original_field), "location"))),
+            format!("s.{field}").as_bytes()
+        );
+        let boolean = target(&ns, f(val(case), "value"), "Bool");
+        assert_eq!(val(boolean), &Json::Bool(expected));
+        assert_eq!(
+            f(boolean, "arguments"),
+            &Json::Arr(vec![
+                reference(template),
+                reference(anchor),
+                values[0].clone()
+            ])
+        );
+        let mut expected_arguments = vec![reference(anchor)];
+        expected_arguments.extend_from_slice(&original_args[1..1 + axes]);
+        expected_arguments.extend([
+            body.clone(),
+            residual.clone(),
+            values[0].clone(),
+            reference(boolean),
+        ]);
+        assert_eq!(f(case, "arguments"), &Json::Arr(expected_arguments));
+        let parts = arr(f(val(case), "parts"));
+        assert_eq!(parts.len(), 1);
+        assert_eq!(f(&parts[0], "children"), &Json::Arr(vec![body.clone()]));
+        assert_eq!(f(&parts[0], "residual"), residual);
+        assert_eq!(f(&parts[0], "value"), &reference(boolean));
+        assert_eq!(f(val(case), "bindings"), f(val(template), "bindings"));
+        assert!(arr(f(case, "evidence")).is_empty());
+        assert_eq!(f(case, "scope"), f(evaluation, "scope"));
+        assert_eq!(f(case, "support"), f(evaluation, "support"));
+        anchors.push(reference(anchor));
+        results.push(reference(case));
+        assignments.extend_from_slice(values);
+    }
+    assert_eq!(seen, BTreeSet::from([false, true]));
+    let mut pair_arguments = vec![reference(template)];
+    pair_arguments.extend(anchors);
+    pair_arguments.extend(results);
+    pair_arguments.extend(assignments);
+    assert_eq!(f(pair, "arguments"), &Json::Arr(pair_arguments));
+    assert_eq!(f(pair, "support"), f(evaluation, "support"));
+    assert_eq!(f(pair, "scope"), f(evaluation, "scope"));
+}
+
+fn mixed_parameter_family(ty: &str, reference_family: bool, mode: u8) {
+    let field = if ty == "Z" { "z" } else { "q" };
+    let known = if ty == "Z" { "s.knownz" } else { "s.knownq" };
+    let same = if ty == "Z" { "7" } else { "rat(1,2)" };
+    let different = if ty == "Z" { "8" } else { "rat(3,2)" };
+    let parameters = if reference_family {
+        format!("s:Sample,z:{ty}")
+    } else if mode == 2 {
+        format!("z:{ty},b:Bool,s:Sample")
+    } else {
+        format!("z:{ty},b:Bool")
+    };
+    let formula = match (reference_family, mode) {
+        (true, 0) => format!("z+{known}=z+{same}"),
+        (true, 1) => format!("z+{known}=z+{different}"),
+        (_, 2) => format!("z+s.{field}=z"),
+        (false, 0) => "if b then z+1=z+1 else z+2=z+2".into(),
+        (false, 1) => "if b then z+1=z+2 else z+1=z+1".into(),
+        _ => unreachable!(),
+    };
+    let script = format!("law required requirement({parameters}): {formula};");
+    let request = if !reference_family && mode == 2 {
+        "a=check(Calc.requirement,s=@v/item)"
+    } else {
+        "a=check(Calc.requirement)"
+    };
+    let (wire, checked) = run_declared_parameters(fixture(&script, false, false), &[request]);
+    decision(
+        &wire,
+        "a",
+        match mode {
+            0 => "established",
+            1 => "refuted",
+            _ => "undetermined",
+        },
+        None,
+    );
+    missing(
+        &wire,
+        "a",
+        if mode == 2 {
+            std::slice::from_ref(&field)
+        } else {
+            &[]
+        },
+    );
+    assert_eq!(
+        f(&wire, "status"),
+        &Json::str(if mode == 2 { "partial" } else { "complete" })
+    );
+    let ns = index(&wire);
+    let aggregate = root(&wire, "a");
+    let aggregate_args = arr(f(aggregate, "arguments"));
+    let family = target(&ns, &aggregate_args[0], "LawInstance");
+    assert_eq!(f(val(family), "name"), &Json::str("Calc.requirement"));
+    assert_eq!(f(val(family), "role"), &Json::str("required"));
+    let family_source = expression(&ns, aggregate);
+    assert_eq!(f(val(family), "body"), &reference(family_source));
+    assert_eq!(
+        source(&checked, span(f(val(family_source), "location"))),
+        formula.as_bytes()
+    );
+    let finite_name = if reference_family { "s" } else { "b" };
+    let finite_type = if reference_family {
+        Json::Arr(vec![Json::str("Ref"), Json::str("Universal.Sample")])
+    } else {
+        Json::str("Bool")
+    };
+    let ordered = if reference_family {
+        vec![
+            Json::obj([("name", Json::str("s")), ("type", finite_type.clone())]),
+            parameter("z", ty),
+        ]
+    } else {
+        vec![parameter("z", ty), parameter("b", "Bool")]
+    };
+    assert_eq!(f(val(family_source), "parameters"), &Json::Arr(ordered));
+    let defaults = arr(f(&arr(f(&wire, "requests"))[0], "defaults"));
+    let default = defaults
+        .iter()
+        .find(|d| f(d, "rule") == &Json::str("universal_parameters"))
+        .unwrap();
+    assert_eq!(
+        f(default, "parameters"),
+        &Json::Arr(if reference_family {
+            vec![Json::str("s"), Json::str("z")]
+        } else {
+            vec![Json::str("z"), Json::str("b")]
+        })
+    );
+    let finite = target(&ns, &aggregate_args[1], "Domain");
+    assert_eq!(f(val(finite), "kind"), &Json::str("finite"));
+    assert_eq!(f(val(finite), "type"), &finite_type);
+    let members = arr(f(val(finite), "elements"));
+    let expected_members = if reference_family {
+        vec![Json::Arr(vec![Json::str("v"), Json::str("item")])]
+    } else {
+        vec![Json::Bool(false), Json::Bool(true)]
+    };
+    assert_eq!(
+        members
+            .iter()
+            .map(|member| val(typed(&ns, member, &finite_type)).clone())
+            .collect::<Vec<_>>(),
+        expected_members
+    );
+    let parts = arr(f(val(aggregate), "parts"));
+    assert_eq!(parts.len(), 1);
+    let rows = arr(f(&parts[0], "children"));
+    assert_eq!(rows.len(), members.len());
+    assert_eq!(&aggregate_args[2..], rows);
+    assert_eq!(
+        f(f(aggregate, "scope"), "domain"),
+        &Json::str(if mode == 2 {
+            "all_completions"
+        } else {
+            "all_assignments"
+        })
+    );
+    let scope_names = arr(f(f(aggregate, "scope"), "quantifiers"))
+        .iter()
+        .map(|q| text(f(q, "name")))
+        .fold(Vec::new(), |mut names, name| {
+            if !names.contains(&name) {
+                names.push(name);
+            }
+            names
+        });
+    assert_eq!(
+        scope_names,
+        if reference_family {
+            vec!["s", "z"]
+        } else {
+            vec!["z", "b"]
+        }
+    );
+    for (position, (row_ref, member)) in rows.iter().zip(members).enumerate() {
+        let row = target(&ns, row_ref, "Evaluation");
+        let row_source = expression(&ns, row);
+        let finite_binding = arr(f(val(row), "bindings"))
+            .iter()
+            .find(|b| f(b, "name") == &Json::str(finite_name))
+            .unwrap();
+        let selected = typed(&ns, f(finite_binding, "value"), &finite_type);
+        assert_eq!(val(selected), val(typed(&ns, member, &finite_type)));
+        assert_eq!(
+            f(selected, "arguments"),
+            &Json::Arr(vec![
+                reference(family_source),
+                reference(finite),
+                member.clone()
+            ])
+        );
+        for producer in [reference(family_source), reference(finite), member.clone()] {
+            assert!(arr(f(row_source, "arguments")).contains(&producer));
+        }
+        let row_instance = arr(f(family, "arguments"))
+            .iter()
+            .filter_map(|r| {
+                let n = ns[text(f(r, "node"))];
+                (f(n, "type") == &Json::str("LawInstance")
+                    && arr(f(n, "arguments")).first() == Some(row_ref))
+                .then_some(n)
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(row_instance.len(), 1);
+        assert_eq!(f(val(row_instance[0]), "body"), &reference(row_source));
+        assert_eq!(f(val(row_instance[0]), "bindings"), f(val(row), "bindings"));
+        let expected = if mode == 2 {
+            None
+        } else {
+            Some(mode == 0 || (!reference_family && position == 0))
+        };
+        whole(
+            &wire,
+            &checked,
+            row,
+            &[("z", ty)],
+            true,
+            expected,
+            mode == 2,
+            mode == 2,
+        );
+        let row_domain = &arr(f(row, "arguments"))[1];
+        assert!(
+            arr(f(f(aggregate, "scope"), "quantifiers"))
+                .iter()
+                .any(|q| {
+                    f(q, "name") == &Json::str("z") && obj(q).get("domain") == Some(row_domain)
+                }),
+            "各実rowの数値全域を集約Scopeに保持する"
+        );
+        if mode == 2 {
+            completion_pair_for_whole(&wire, &checked, row, ty, field, 1);
+        }
+        for supported in arr(f(row, "support")) {
+            assert!(arr(f(aggregate, "support")).contains(supported));
+        }
+    }
+    if mode == 0 {
+        let proofs = arr(f(answer(&wire, "a"), "evidence"))
+            .iter()
+            .map(|r| target(&ns, r, "Evidence"))
+            .filter(|proof| f(val(proof), "kind") == &Json::str("finite_exhaustion"))
+            .collect::<Vec<_>>();
+        assert_eq!(proofs.len(), 1);
+        let data = f(val(proofs[0]), "data");
+        assert_eq!(f(data, "domain"), &reference(finite));
+        assert_eq!(f(data, "checked"), &Json::Nat(members.len() as u64));
+        assert_eq!(f(data, "instances"), &Json::Arr(rows.to_vec()));
+    } else if mode == 1 {
+        concrete_counterexample(
+            &wire,
+            &checked,
+            "a",
+            ty,
+            "z",
+            numeric(ty, "0"),
+            if reference_family {
+                if ty == "Z" {
+                    numeric(ty, "7")
+                } else {
+                    q("1", "2")
+                }
+            } else {
+                numeric(ty, "1")
+            },
+            if reference_family {
+                if ty == "Z" {
+                    numeric(ty, "8")
+                } else {
+                    q("3", "2")
+                }
+            } else {
+                numeric(ty, "2")
+            },
+        );
+    }
+}
+
+#[test]
+fn mixed_bool_z_rows_establish_each_numeric_whole_before_family_aggregation() {
+    mixed_parameter_family("Z", false, 0);
+}
+#[test]
+fn mixed_bool_q_rows_establish_each_numeric_whole_before_family_aggregation() {
+    mixed_parameter_family("Q", false, 0);
+}
+#[test]
+fn mixed_bool_z_row_refutation_retains_typed_original_counterexample() {
+    mixed_parameter_family("Z", false, 1);
+}
+#[test]
+fn mixed_bool_q_row_refutation_retains_typed_original_counterexample() {
+    mixed_parameter_family("Q", false, 1);
+}
+#[test]
+fn mixed_bool_z_rows_preserve_missing_and_numeric_completion_pairs() {
+    mixed_parameter_family("Z", false, 2);
+}
+#[test]
+fn mixed_bool_q_rows_preserve_missing_and_numeric_completion_pairs() {
+    mixed_parameter_family("Q", false, 2);
+}
+#[test]
+fn mixed_reference_z_row_establishes_numeric_whole_with_original_subject() {
+    mixed_parameter_family("Z", true, 0);
+}
+#[test]
+fn mixed_reference_q_row_establishes_numeric_whole_with_original_subject() {
+    mixed_parameter_family("Q", true, 0);
+}
+#[test]
+fn mixed_reference_z_row_refutes_with_known_atom_and_typed_counterexample() {
+    mixed_parameter_family("Z", true, 1);
+}
+#[test]
+fn mixed_reference_q_row_refutes_with_known_atom_and_typed_counterexample() {
+    mixed_parameter_family("Q", true, 1);
+}
+#[test]
+fn mixed_reference_z_row_preserves_missing_and_original_numeric_slot() {
+    mixed_parameter_family("Z", true, 2);
+}
+#[test]
+fn mixed_reference_q_row_preserves_missing_and_original_numeric_slot() {
+    mixed_parameter_family("Q", true, 2);
+}
+
+fn additional_view_quantifier(ty: &str, mode: u8) {
+    let field = if ty == "Z" { "z" } else { "q" };
+    let formula = match mode {
+        0 => "x+y=y+x".to_string(),
+        1 => "x+y=y+x+1".to_string(),
+        2 => format!("x+y+s.{field}=y+x"),
+        3 => "x+y=y".to_string(),
+        4 => "x+y=x".to_string(),
+        _ => unreachable!(),
+    };
+    let (script, call, request) = if mode == 2 {
+        (
+            format!(
+                "view inner(s:Sample,x:{ty}): Bool = forall y:{ty} . {formula}; law required requirement(s:Sample,z:{ty}): inner(s,z);"
+            ),
+            "inner(s,z)",
+            "a=check(Calc.requirement,s=@v/item)",
+        )
+    } else {
+        (
+            format!(
+                "view inner(x:{ty}): Bool = forall y:{ty} . {formula}; law required requirement(z:{ty}): inner(z);"
+            ),
+            "inner(z)",
+            "a=check(Calc.requirement)",
+        )
+    };
+    let (wire, checked) = run(fixture(&script, false, false), &[request]);
+    decision(
+        &wire,
+        "a",
+        match mode {
+            0 => "established",
+            2 => "undetermined",
+            _ => "refuted",
+        },
+        None,
+    );
+    missing(
+        &wire,
+        "a",
+        if mode == 2 {
+            std::slice::from_ref(&field)
+        } else {
+            &[]
+        },
+    );
+    assert_eq!(
+        f(&wire, "status"),
+        &Json::str(if mode == 2 { "partial" } else { "complete" })
+    );
+    let ns = index(&wire);
+    let evaluation = root(&wire, "a");
+    let template = expression(&ns, evaluation);
+    assert_eq!(
+        source(&checked, span(f(val(template), "location"))),
+        call.as_bytes()
+    );
+    assert_eq!(
+        f(val(template), "parameters"),
+        &Json::Arr(vec![parameter("z", ty)])
+    );
+    assert_eq!(
+        f(f(evaluation, "scope"), "domain"),
+        &Json::str(if mode == 2 {
+            "all_completions"
+        } else {
+            "all_assignments"
+        })
+    );
+    assert_ast(&wire, &checked, evaluation);
+    let call_evaluations = evaluation_tree(&wire, evaluation)
+        .into_iter()
+        .filter(|node| {
+            let original = expression(&ns, node);
+            f(val(original), "kind") == &Json::str("source")
+                && source(&checked, span(f(val(original), "location"))) == call.as_bytes()
+                && arr(f(original, "arguments")).first() == Some(&reference(template))
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(call_evaluations.len(), 1);
+    let call_evaluation = call_evaluations[0];
+    let call_source = expression(&ns, call_evaluation);
+    let call_children = arr(f(&arr(f(val(call_evaluation), "parts"))[0], "children"));
+    assert_eq!(call_children.len(), if mode == 2 { 3 } else { 2 });
+    let actual = target(
+        &ns,
+        &call_children[if mode == 2 { 1 } else { 0 }],
+        "Evaluation",
+    );
+    assert!(!obj(val(actual)).contains_key("value"));
+    assert_eq!(
+        source(&checked, span(f(val(expression(&ns, actual)), "location"))),
+        b"z"
+    );
+    let inner = target(&ns, call_children.last().unwrap(), "Evaluation");
+    let inner_source = expression(&ns, inner);
+    let inner_original = format!("forall y:{ty} . {formula}");
+    assert_eq!(
+        source(&checked, span(f(val(inner_source), "location"))),
+        inner_original.as_bytes()
+    );
+    assert_eq!(
+        f(val(inner_source), "parameters"),
+        &Json::Arr(vec![parameter("x", ty)])
+    );
+    assert!(arr(f(inner_source, "arguments")).contains(&reference(call_source)));
+    assert!(arr(f(inner_source, "arguments")).contains(&reference(actual)));
+    assert_ast(&wire, &checked, inner);
+    let inner_children = arr(f(&arr(f(val(inner), "parts"))[0], "children"));
+    assert_eq!(inner_children.len(), 1);
+    let comparison = target(&ns, &inner_children[0], "Evaluation");
+    let comparison_source = expression(&ns, comparison);
+    assert_eq!(
+        source(&checked, span(f(val(comparison_source), "location"))),
+        formula.as_bytes()
+    );
+    assert_eq!(
+        f(val(comparison_source), "parameters"),
+        &Json::Arr(vec![parameter("x", ty), parameter("y", ty)])
+    );
+    let outer_args = arr(f(evaluation, "arguments"));
+    let outer_domain = target(&ns, &outer_args[1], "Domain");
+    assert_eq!(
+        f(outer_domain, "arguments"),
+        &Json::Arr(vec![reference(template)])
+    );
+    let inner_args = arr(f(inner, "arguments"));
+    assert_eq!(inner_args[0], reference(inner_source));
+    let local_domain = target(&ns, &inner_args[1], "Domain");
+    assert_eq!(
+        f(local_domain, "arguments"),
+        &Json::Arr(vec![reference(inner_source)])
+    );
+    assert_eq!(inner_args[2], reference(comparison));
+    let Signature::View { body: inner_id, .. } =
+        &checked.law().declarations["Calc.inner"].signature
+    else {
+        panic!("元inner view")
+    };
+    let ExprKind::Quant { var, .. } = &checked.law().exprs[*inner_id].kind else {
+        panic!("元追加forall")
+    };
+    assert_eq!(var.name, "y");
+    assert_eq!(span(f(f(local_domain, "rule"), "location")), var.span);
+    for domain in [outer_domain, local_domain] {
+        assert_eq!(f(val(domain), "kind"), &Json::str("type"));
+        assert_eq!(f(val(domain), "type"), &Json::str(ty));
+        assert!(!obj(val(domain)).contains_key("elements"));
+        assert_eq!(f(f(domain, "rule"), "kind"), &Json::str("law"));
+    }
+    let quantifiers = arr(f(f(evaluation, "scope"), "quantifiers"));
+    assert_eq!(
+        quantifiers
+            .iter()
+            .map(|q| text(f(q, "name")))
+            .collect::<Vec<_>>(),
+        ["z", "y"]
+    );
+    for (q, domain) in quantifiers.iter().zip([outer_domain, local_domain]) {
+        assert_eq!(f(q, "kind"), &Json::str("forall"));
+        assert_eq!(f(q, "type"), &Json::str(ty));
+        assert_eq!(f(q, "domain"), &reference(domain));
+    }
+    for producer in [
+        reference(template),
+        reference(outer_domain),
+        reference(local_domain),
+        reference(call_source),
+        reference(actual),
+    ] {
+        assert!(arr(f(comparison_source, "arguments")).contains(&producer));
+    }
+    if mode <= 1 || mode == 4 {
+        let value = target(&ns, f(val(inner), "value"), "Bool");
+        assert_eq!(val(value), &Json::Bool(mode == 0));
+        assert_eq!(
+            f(value, "arguments"),
+            &Json::Arr(vec![
+                reference(inner_source),
+                reference(local_domain),
+                reference(comparison)
+            ])
+        );
+        assert_eq!(
+            span(f(f(value, "rule"), "location")),
+            checked.law().exprs[*inner_id].span
+        );
+        assert_eq!(inner_args.len(), 4);
+        assert_eq!(inner_args[3], reference(value));
+    } else {
+        assert_eq!(inner_args.len(), 3);
+        assert!(!obj(val(inner)).contains_key("value"));
+    }
+    assert!(!obj(&arr(f(val(inner), "parts"))[0]).contains_key("residual"));
+    let original_numeric_sides = arr(f(&arr(f(val(comparison), "parts"))[0], "children"));
+    assert_eq!(original_numeric_sides.len(), 2);
+    for side_ref in original_numeric_sides {
+        let side = target(&ns, side_ref, "Evaluation");
+        assert!(
+            !obj(val(side)).contains_key("value"),
+            "元のpointwise左右を通常Scalarで埋めない"
+        );
+        let original = expression(&ns, side);
+        assert_eq!(
+            f(val(original), "parameters"),
+            &Json::Arr(vec![parameter("x", ty), parameter("y", ty)])
+        );
+        let position = span(f(val(original), "location"));
+        let (id, _) = checked
+            .law()
+            .exprs
+            .iter()
+            .enumerate()
+            .find(|(_, expr)| expr.span == position)
+            .unwrap();
+        assert_eq!(checked.law().expr_type(id).unwrap().wire(), Json::str(ty));
+        for producer in [
+            reference(template),
+            reference(outer_domain),
+            reference(local_domain),
+            reference(call_source),
+            reference(actual),
+        ] {
+            assert!(arr(f(original, "arguments")).contains(&producer));
+        }
+    }
+    if mode == 4 {
+        assert!(!obj(val(comparison)).contains_key("value"));
+        assert_eq!(
+            val(target(&ns, f(val(call_evaluation), "value"), "Bool")),
+            &Json::Bool(false)
+        );
+    }
+    let difference_evaluation = target(&ns, &outer_args[3], "Evaluation");
+    let difference = expression(&ns, difference_evaluation);
+    assert_eq!(f(val(difference), "operation"), &Json::str("difference"));
+    let comparison_children = arr(f(&arr(f(val(comparison), "parts"))[0], "children"));
+    assert_eq!(comparison_children.len(), 2);
+    let original_sides = comparison_children
+        .iter()
+        .map(|r| expression(&ns, target(&ns, r, "Evaluation")))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        f(val(difference), "operands"),
+        &Json::Arr(original_sides.iter().map(|s| reference(s)).collect())
+    );
+    assert_eq!(
+        f(difference, "arguments"),
+        &Json::Arr(vec![
+            reference(template),
+            reference(outer_domain),
+            comparison_children[0].clone(),
+            comparison_children[1].clone()
+        ])
+    );
+    assert_eq!(
+        f(&arr(f(val(evaluation), "parts"))[0], "residual"),
+        &reference(difference_evaluation)
+    );
+    if mode <= 1 {
+        assert_eq!(
+            val(target(&ns, f(val(difference_evaluation), "value"), ty)),
+            &numeric(ty, if mode == 0 { "0" } else { "-1" })
+        );
+    } else {
+        assert!(!obj(val(difference_evaluation)).contains_key("value"));
+    }
+    if mode == 3 {
+        assert!(
+            !obj(val(inner)).contains_key("value"),
+            "innerは外側xに依存するpredicateを保つ"
+        );
+        assert!(!obj(val(call_evaluation)).contains_key("value"));
+        assert!(!obj(val(comparison)).contains_key("value"));
+    }
+    if mode == 2 {
+        missing_occurrences(&wire, &checked, "a", field, 1);
+        completion_pair_for_whole(&wire, &checked, evaluation, ty, field, 1);
+    } else {
+        let boolean = target(&ns, f(val(evaluation), "value"), "Bool");
+        assert_eq!(val(boolean), &Json::Bool(mode == 0));
+        let proofs = arr(f(evaluation, "evidence"));
+        assert_eq!(proofs.len(), 1);
+        let proof = target(&ns, &proofs[0], "Evidence");
+        assert_eq!(f(val(proof), "kind"), &Json::str("normalization"));
+        let data = f(val(proof), "data");
+        assert_eq!(f(data, "before"), &reference(template));
+        assert_eq!(f(data, "after"), &reference(boolean));
+        let steps = arr(f(data, "steps"));
+        assert_eq!(steps[0], reference(difference));
+        assert_eq!(steps.len(), if mode == 0 { 1 } else { 2 });
+        let mut proof_arguments = vec![reference(template), reference(boolean)];
+        proof_arguments.extend_from_slice(steps);
+        assert_eq!(f(proof, "arguments"), &Json::Arr(proof_arguments));
+        let mut value_arguments = vec![reference(template)];
+        value_arguments.extend_from_slice(steps);
+        assert_eq!(f(boolean, "arguments"), &Json::Arr(value_arguments));
+        assert_eq!(f(proof, "support"), f(evaluation, "support"));
+        assert_eq!(f(proof, "scope"), f(evaluation, "scope"));
+        substitutions(&wire, proof);
+        if mode != 0 {
+            let example = counterexample(&wire, "a");
+            let ce = f(val(example), "data");
+            let ce_arguments = arr(f(example, "arguments"));
+            assert_eq!(ce_arguments.len(), 5);
+            assert_eq!(
+                &ce_arguments[..3],
+                &[reference(template), reference(proof), steps[1].clone()]
+            );
+            let assigned = if mode == 3 { "1" } else { "0" };
+            let caller_substitute = target(&ns, &steps[1], "Expression");
+            assert_eq!(
+                f(val(caller_substitute), "operands"),
+                &Json::Arr(vec![reference(call_source)])
+            );
+            let caller_bindings = arr(f(ce, "bindings"));
+            assert_eq!(caller_bindings.len(), 1);
+            assert_eq!(f(&caller_bindings[0], "name"), &Json::str("z"));
+            assert_eq!(
+                val(target(&ns, f(&caller_bindings[0], "value"), ty)),
+                &numeric(ty, assigned)
+            );
+            for (position, key) in ["left", "right"].into_iter().enumerate() {
+                let side = target(&ns, &ce_arguments[3 + position], "Evaluation");
+                assert_eq!(f(ce, key), &reference(side));
+                let result = target(&ns, f(val(side), "value"), ty);
+                assert_eq!(
+                    val(result),
+                    &numeric(
+                        ty,
+                        if (mode == 1 && position == 0) || (mode != 1 && position == 1) {
+                            "0"
+                        } else {
+                            "1"
+                        }
+                    )
+                );
+                let substitute = expression(&ns, side);
+                assert_eq!(f(val(substitute), "operation"), &Json::str("substitute"));
+                assert_eq!(
+                    f(val(substitute), "operands"),
+                    &Json::Arr(vec![reference(original_sides[position])])
+                );
+                assert!(arr(f(val(substitute), "parameters")).is_empty());
+                let bindings = arr(f(val(substitute), "bindings"));
+                assert_eq!(bindings.len(), 2);
+                assert_eq!(f(&bindings[0], "name"), &Json::str("x"));
+                assert_eq!(
+                    val(target(&ns, f(&bindings[0], "value"), ty)),
+                    &numeric(ty, assigned)
+                );
+                assert_eq!(f(&bindings[1], "name"), &Json::str("y"));
+                let y_value = target(&ns, f(&bindings[1], "value"), ty);
+                assert_eq!(
+                    val(y_value),
+                    &numeric(ty, if mode == 4 { "1" } else { "0" })
+                );
+                assert_eq!(span(f(f(y_value, "rule"), "location")), var.span);
+                assert_eq!(
+                    arr(f(y_value, "arguments")).first(),
+                    Some(&reference(template))
+                );
+                let mut substitute_arguments = vec![reference(original_sides[position])];
+                substitute_arguments.extend(bindings.iter().map(|b| f(b, "value").clone()));
+                assert_eq!(f(substitute, "arguments"), &Json::Arr(substitute_arguments));
+                assert_eq!(f(val(side), "bindings"), f(val(substitute), "bindings"));
+                let side_arguments = arr(f(side, "arguments"));
+                assert_eq!(side_arguments.len(), 3);
+                assert_eq!(side_arguments[0], reference(substitute));
+                assert_eq!(side_arguments[1], comparison_children[position]);
+                assert_eq!(side_arguments[2], reference(result));
+                assert_eq!(
+                    f(&arr(f(val(side), "parts"))[0], "children"),
+                    &Json::Arr(vec![comparison_children[position].clone()])
+                );
+                assert_eq!(
+                    f(result, "arguments"),
+                    &Json::Arr(vec![
+                        reference(substitute),
+                        comparison_children[position].clone()
+                    ])
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn view_added_z_forall_establishes_with_distinct_caller_and_callee_binders() {
+    additional_view_quantifier("Z", 0);
+}
+#[test]
+fn view_added_q_forall_establishes_with_distinct_caller_and_callee_binders() {
+    additional_view_quantifier("Q", 0);
+}
+#[test]
+fn view_added_z_forall_refutes_by_original_typed_reapplication() {
+    additional_view_quantifier("Z", 1);
+}
+#[test]
+fn view_added_q_forall_refutes_by_original_typed_reapplication() {
+    additional_view_quantifier("Q", 1);
+}
+#[test]
+fn view_added_z_forall_preserves_missing_slot_and_completion_pair() {
+    additional_view_quantifier("Z", 2);
+}
+#[test]
+fn view_added_q_forall_preserves_missing_slot_and_completion_pair() {
+    additional_view_quantifier("Q", 2);
+}
+#[test]
+fn view_added_z_forall_keeps_outer_dependent_inner_predicate_unvalued() {
+    additional_view_quantifier("Z", 3);
+}
+#[test]
+fn view_added_q_forall_keeps_outer_dependent_inner_predicate_unvalued() {
+    additional_view_quantifier("Q", 3);
+}
+#[test]
+fn view_added_z_forall_nonzero_local_coefficient_refutes_without_numeric_fabrication() {
+    additional_view_quantifier("Z", 4);
+}
+#[test]
+fn view_added_q_forall_nonzero_local_coefficient_refutes_without_numeric_fabrication() {
+    additional_view_quantifier("Q", 4);
 }

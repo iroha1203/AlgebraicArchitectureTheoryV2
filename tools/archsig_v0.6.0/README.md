@@ -73,6 +73,8 @@
   反証の具体代入は元式へ戻し、共通の代入が存在しない場合はwholeの正規化から反証する。
   補完で成否が変わる場合は型付き補完対を保持し、その値を観測に追加しない。
   有限型slotの各補完でも先に全域のwholeを判断し、元の支持・欠測・量化を保って集約する。
+  有限型のLaw parameterとZ/Q parameterの混在も、元宣言順の有限族の各instanceでZ/Q全域を判断する。
+  view内で追加されるZ/Q forallも、外側の自由parameterと区別して評価する。
   この全域評価で必須範囲外の式は、原式・型Domainとunsupported_algorithm理由を保持する。
   未束縛Law parameterのcheckは、plain参照族と上記の有限型を元宣言順に列挙し、
   明示Ref束縛を固定した実直積の各LawInstanceを検査する。自由parameter・型Domain・実bindingsと
@@ -90,7 +92,7 @@
   補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdata・再帰dataの評価、その他の式形・
-  上記以外の無限型・依存ownerの型/式族・量化、全域アフィン評価中のview展開で追加される数値量化・Answer 由来の束縛・
+  上記以外の無限型・依存ownerの型/式族・量化・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   有限型補完でも確定しない参照からのfield読取り・動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の

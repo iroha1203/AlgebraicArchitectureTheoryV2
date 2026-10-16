@@ -1898,6 +1898,13 @@ impl Evaluator<'_, '_> {
         if self.graph.active.instance.is_none() {
             self.bind(params)?;
         }
+        if self.graph.active.instance.is_some()
+            && let Some(plan) =
+                self.environment
+                    .universal_family_plan(self.graph, self.request, &self.bindings)?
+        {
+            return self.universal_law_answer(plan, role);
+        }
         if self.request.kind == QuestionKind::Check
             && matches!(
                 self.environment.inputs.law().exprs[body].kind,
