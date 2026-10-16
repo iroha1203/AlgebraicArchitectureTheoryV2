@@ -347,6 +347,16 @@ impl Evaluator<'_, '_> {
                         parameter = Some(value.ty());
                     }
                     if parameter.is_none()
+                        && let Some((_, value)) = self.environment.type_iteration_argument(
+                            self.graph,
+                            first.span,
+                            &first.name,
+                            &self.bindings,
+                        )?
+                    {
+                        parameter = Some(value.ty());
+                    }
+                    if parameter.is_none()
                         && let Some((_, _, binder)) =
                             self.environment.pattern_binding(first.span, &first.name)?
                     {
@@ -386,7 +396,9 @@ impl Evaluator<'_, '_> {
                 ExprKind::Quant { .. } => {
                     let spec =
                         super::quantifier::spec(self.environment.inputs.law(), id, self.control)?;
-                    self.prepare_source(spec.domain)?;
+                    if let Some(domain) = spec.domain {
+                        self.prepare_source(domain)?;
+                    }
                 }
                 ExprKind::SetComp { domain, .. } => {
                     self.prepare_source(*domain)?;
@@ -627,10 +639,43 @@ impl Evaluator<'_, '_> {
                 }
                 // 宣言parameter と lexical alias を区別する。欠測の alias は
                 // RHS Evaluation を指し、通常の Binding.value を捏造しない。
-                let mut current = if let Some((input, known)) = self
+                let mut current = if let Some((domain, known)) = self
                     .environment
-                    .iteration_argument(self.graph, first.span, &first.name, &self.bindings)?
+                    .type_iteration_argument(self.graph, first.span, &first.name, &self.bindings)?
                 {
+                    let scope = self
+                        .sources
+                        .get(&first.span)
+                        .ok_or_else(|| Failure::Internal("型binderの元Sourceがない".into()))?
+                        .scope
+                        .clone();
+                    let ty = known.ty();
+                    let value = self.value(
+                        known,
+                        Rule::Input {
+                            kind: "law",
+                            location: Location::Law { span: first.span },
+                        },
+                        vec![domain],
+                        vec![],
+                        scope,
+                    )?;
+                    self.finish(
+                        first.span,
+                        ty,
+                        Some(value),
+                        vec![],
+                        vec![],
+                        None,
+                        None,
+                        None,
+                    )?
+                } else if let Some((input, known)) = self.environment.iteration_argument(
+                    self.graph,
+                    first.span,
+                    &first.name,
+                    &self.bindings,
+                )? {
                     let child = self.evaluated_reference(input)?;
                     self.lexical_result(first.span, known.ty(), Some(known), vec![child])?
                 } else if let Some((input, known)) = self.environment.pattern_argument(
@@ -920,47 +965,78 @@ impl Evaluator<'_, '_> {
     }
     fn quantification(&mut self, id: usize) -> Result<Evaluated, Failure> {
         let spec = super::quantifier::spec(self.environment.inputs.law(), id, self.control)?;
-        let input = self.eval(spec.domain)?;
+        let input = spec.domain.map(|domain| self.eval(domain)).transpose()?;
         let source = self
             .sources
             .get(&spec.span)
             .ok_or_else(|| Failure::Internal("量化元Sourceがない".into()))?
             .expression;
-        let mut children = vec![input.clone()];
+        let mut children: Vec<_> = input.iter().cloned().collect();
         let mut evidence = Vec::new();
         let mut results = Vec::new();
-        let mut scope = input.scope.clone();
+        let mut scope = input
+            .as_ref()
+            .map(|input| input.scope.clone())
+            .unwrap_or(self.graph.get(source)?.scope.clone());
+        let domain_support = input
+            .as_ref()
+            .map(|input| input.support.clone())
+            .unwrap_or_default();
+        let member_scope = scope.clone();
         let mut finite = None;
-        if let Some(value) = input.value {
-            let (Scalar::List { items, .. } | Scalar::Set { items, .. }) =
-                self.graph.scalar(value)?
-            else {
-                return Err(Failure::Internal("量化域がList/Setでない".into()));
-            };
-            let Scalar::Set { ref items, .. } =
-                data::set(spec.element.clone(), items, self.control)?
-            else {
-                unreachable!()
-            };
+        let members = if let Some(input) = &input {
+            input
+                .value
+                .map(|value| -> Result<Vec<Scalar>, Failure> {
+                    let (Scalar::List { items, .. } | Scalar::Set { items, .. }) =
+                        self.graph.scalar(value)?
+                    else {
+                        return Err(Failure::Internal("量化域がList/Setでない".into()));
+                    };
+                    let value = data::set(spec.element.clone(), items, self.control)?;
+                    let Scalar::Set { items, .. } = &value else {
+                        unreachable!()
+                    };
+                    Ok(items.clone())
+                })
+                .transpose()?
+        } else {
+            #[cfg(test)]
+            let (span, context) = (spec.span, self.graph.active);
+            Some(super::finite::values(
+                &spec.element,
+                self.environment.inputs.law(),
+                self.control,
+                &mut |_index| {
+                    #[cfg(test)]
+                    data::observe_actual(span, context, "type_enum", _index);
+                },
+            )?)
+        };
+        if let Some(items) = members {
             let mut elements = Vec::new();
-            for item in items {
+            for item in &items {
                 #[cfg(test)]
                 data::observe_actual(spec.span, self.graph.active, "quant_domain", elements.len());
                 self.tick(Checkpoint::FiniteIteration)?;
-                elements.push(self.value(
-                    item.clone(),
-                    Rule::Construction("domain"),
-                    vec![source, input.evaluation],
-                    input.support.clone(),
-                    input.scope.clone(),
-                )?);
+                elements.push(
+                    self.value(
+                        item.clone(),
+                        Rule::Construction("domain"),
+                        std::iter::once(source)
+                            .chain(input.as_ref().map(|input| input.evaluation))
+                            .collect(),
+                        domain_support.clone(),
+                        member_scope.clone(),
+                    )?,
+                );
                 self.tick(Checkpoint::FiniteIteration)?;
             }
-            let mut domain_scope = input.scope.clone();
+            let mut domain_scope = member_scope.clone();
             domain_scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
             domain_scope.order_quantifiers_like(&self.graph.get(source)?.scope);
             let arguments = std::iter::once(source)
-                .chain([input.evaluation])
+                .chain(input.as_ref().map(|input| input.evaluation))
                 .chain(elements.iter().copied())
                 .collect();
             let domain = self.push(Node {
@@ -971,7 +1047,7 @@ impl Evaluator<'_, '_> {
                 }),
                 rule: Rule::Construction("domain"),
                 arguments,
-                support: input.support.clone(),
+                support: domain_support.clone(),
                 evidence: vec![],
                 judgment: None,
                 scope: domain_scope,
@@ -980,7 +1056,7 @@ impl Evaluator<'_, '_> {
             finite = Some(domain);
             scope.add_quantifier(spec.descriptor(finite, Some(self.graph.active)));
             scope.order_quantifiers_like(&self.graph.get(source)?.scope);
-            for item in items {
+            for item in &items {
                 #[cfg(test)]
                 let position = results.len();
                 #[cfg(test)]
@@ -991,7 +1067,10 @@ impl Evaluator<'_, '_> {
                 self.graph.iterations.push(super::call::Iteration {
                     caller,
                     source,
-                    domain: input.evaluation,
+                    domain: input
+                        .as_ref()
+                        .map(|input| input.evaluation)
+                        .unwrap_or(domain),
                     member: super::call::Member::SetElement(item.clone()),
                     finite,
                 });
@@ -1027,7 +1106,7 @@ impl Evaluator<'_, '_> {
                         let bindings = self
                             .environment
                             .quant_bindings(self.graph, self.graph.active)?;
-                        let mut counter_support = input.support.clone();
+                        let mut counter_support = domain_support.clone();
                         counter_support.extend(body.support.iter().cloned());
                         counter_support.sort();
                         counter_support.dedup();
@@ -1087,7 +1166,7 @@ impl Evaluator<'_, '_> {
             #[cfg(test)]
             data::observe_actual(spec.span, self.graph.active, "quant_exhaustion", 0);
             self.tick(Checkpoint::FiniteIteration)?;
-            for body in &children[1..] {
+            for body in &children[usize::from(input.is_some())..] {
                 #[cfg(test)]
                 data::observe_actual(
                     spec.span,
@@ -1120,20 +1199,26 @@ impl Evaluator<'_, '_> {
             })?);
         }
         let value = if let Some(known) = known {
-            Some(self.push(Node {
-                ty: NodeType::Value(Type::Bool),
-                payload: Some(Payload::Scalar(Scalar::Bool(known))),
-                rule: Rule::Input {
-                    kind: "law",
-                    location: Location::Law { span: spec.span },
-                },
-                arguments: children.iter().map(|c| c.evaluation).collect(),
-                support,
-                evidence,
-                judgment: None,
-                scope,
-                reasons: vec![],
-            })?)
+            Some(
+                self.push(Node {
+                    ty: NodeType::Value(Type::Bool),
+                    payload: Some(Payload::Scalar(Scalar::Bool(known))),
+                    rule: Rule::Input {
+                        kind: "law",
+                        location: Location::Law { span: spec.span },
+                    },
+                    arguments: finite
+                        .filter(|_| input.is_none())
+                        .into_iter()
+                        .chain(children.iter().map(|c| c.evaluation))
+                        .collect(),
+                    support,
+                    evidence,
+                    judgment: None,
+                    scope,
+                    reasons: vec![],
+                })?,
+            )
         } else {
             None
         };
@@ -5513,10 +5598,20 @@ reading Calc {{
             value,
             &Scalar::Tuple(vec![Scalar::Bool(false), Scalar::Bool(false)])
         );
+        let finite = evaluate_observed_bytes(
+            numeric_recheck_fixture(&[], "view quantify(): Bool = forall item: Bool. item; view caller(): Bool = quantify();"),
+            &["v=evaluate(Calc.caller)"], &mut named_call_quiet(),
+        ).unwrap();
+        assert_eq!(finite.status(), "complete", "{:?}", finite.issues);
+        assert_eq!(
+            data_scalar_at(&finite, finite.answers[0].outputs["value"].0),
+            &Scalar::Bool(false)
+        );
+        rebuild_for_origin_and_support_recheck(&finite, &finite.nodes).unwrap();
         let sources = numeric_recheck_fixture(
             &[],
             r#"
- view unsupported(s: Sample): Bool = forall item: Bool. item;
+ view unsupported(s: Sample): Bool = forall item: Z. item=0;
  view caller(s: Sample): Bool = unsupported(s);
 "#,
         );
@@ -5535,7 +5630,7 @@ reading Calc {{
         else {
             panic!("範囲外のcallee式は専用未実装を保つ");
         };
-        assert_eq!(&law[span.0..span.1], b"forall item: Bool. item");
+        assert_eq!(&law[span.0..span.1], b"forall item: Z. item=0");
     }
     #[test]
     fn named_calls_reject_equal_atom_from_another_field_at_scalar_prefix() {
@@ -7464,6 +7559,418 @@ reading Calc {{
             rejects_named_prefix(&result, &changed);
         }
     }
+    fn type_quantifier_fixture(omitted: &[&str]) -> InputSources {
+        numeric_recheck_fixture(
+            omitted,
+            r#"
+ view all(): Bool = forall bit: Bool . bit=bit;
+ view unused(): Bool = forall item: Option<Bool> . true;
+ view powers(): Bool = forall bag: Set<Bool> . count(bag)<=2;
+ view negative(s: Sample): Bool = forall bit: Bool . bit or s.p;
+ law required called(x: Sample): negative(x);
+ law required both(x: Sample): negative(x) and negative(x);
+ view nested(): Bool = let flag=true in forall singleton: Unit . exists bit in list<Bool>[flag] . match bit { held => exists option: Option<Bool> . held and option=option; };
+ view observe(s: Sample): Q = s.q;
+ view full(): Bool = forall bit: Bool . true;
+ view early(): Bool = forall bit: Bool . bit;
+ view later(): Z = 9;
+"#,
+        )
+    }
+    fn type_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
+        evaluate_observed_bytes(
+            type_quantifier_fixture(&[]),
+            requests,
+            &mut named_call_quiet(),
+        )
+        .unwrap()
+    }
+    #[test]
+    fn type_quantifier_prefixes_recheck_original_type_domain_members_scope_and_support() {
+        let result = type_quantifier_example(&[
+            "first=evaluate(Calc.all)",
+            "again=evaluate(Calc.all)",
+            "unused=evaluate(Calc.unused)",
+            "powers=evaluate(Calc.powers)",
+        ]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        for (request, count, ty) in [
+            (0, 2, Type::Bool),
+            (2, 3, Type::Option(Box::new(Type::Bool))),
+            (3, 4, Type::Set(Box::new(Type::Bool))),
+        ] {
+            let domain = in_domain(&result, request);
+            let Some(Payload::Domain {
+                ty: actual,
+                elements,
+            }) = &result.nodes[domain].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(actual, &ty);
+            assert_eq!(elements.len(), count);
+            assert_eq!(result.nodes[domain].arguments.len(), 1 + count);
+            let source = result.nodes[domain].arguments[0];
+            let Some(Payload::Expression {
+                location: Location::Law { span },
+                parameters,
+                ..
+            }) = &result.nodes[source.0].payload
+            else {
+                unreachable!()
+            };
+            assert!(parameters.is_empty());
+            let id = result
+                .prepared
+                .inputs()
+                .law()
+                .exprs
+                .iter()
+                .enumerate()
+                .find_map(|(id, e)| {
+                    (e.span == *span && result.prepared.inputs().law().expr_type(id).is_some())
+                        .then_some(id)
+                })
+                .unwrap();
+            assert_eq!(
+                result.prepared.inputs().law().quantifier_types[id].as_ref(),
+                Some(&ty)
+            );
+            for element in elements {
+                assert_eq!(result.nodes[element.0].arguments, vec![source]);
+            }
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=domain]).unwrap();
+        }
+        let domain = in_domain(&result, 0);
+        let Some(Payload::Domain { elements, .. }) = &result.nodes[domain].payload else {
+            unreachable!()
+        };
+        let member = elements[0].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=member]).unwrap();
+        let mut changed = result.nodes[..=member].to_vec();
+        changed[member].payload = Some(Payload::Scalar(Scalar::Z(0.into())));
+        changed[member].ty = NodeType::Value(Type::Z);
+        rejects_named_prefix(&result, &changed);
+        for mutation in 0..3 {
+            let mut changed = result.nodes[..=domain].to_vec();
+            let Some(Payload::Domain { ty, elements }) = &mut changed[domain].payload else {
+                unreachable!()
+            };
+            match mutation {
+                0 => *ty = Type::Unit,
+                1 => {
+                    elements.pop();
+                }
+                _ => {
+                    elements[1] = elements[0];
+                }
+            }
+            let members = elements.clone();
+            changed[domain].arguments.truncate(1);
+            changed[domain].arguments.extend(members);
+            rejects_named_prefix(&result, &changed);
+        }
+        let source = result.nodes[domain].arguments[0].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=source]).unwrap();
+        let mut changed = result.nodes[..=source].to_vec();
+        changed[source].scope.quantifiers[0].kind = crate::law::ast::QuantKind::Exists;
+        rejects_named_prefix(&result, &changed);
+        let scalar = result.answers[1].outputs["value"].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+        let mut changed = result.nodes[..=scalar].to_vec();
+        changed[scalar].arguments[0] = NodeRef(domain);
+        changed[scalar].scope.quantifiers[0].domain = Some(NodeRef(domain));
+        rejects_named_prefix(&result, &changed);
+        for mutation in 0..2 {
+            let mut changed = result.nodes[..=scalar].to_vec();
+            if mutation == 0 {
+                changed[scalar].scope.completions = true;
+            } else {
+                changed[scalar].support.push(Fact {
+                    snapshot: "v".into(),
+                    subject: "sample".into(),
+                    field: Some("Numeric.Sample.p".into()),
+                    atom: Some("p".into()),
+                });
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+    }
+    #[test]
+    fn type_quantifier_exhaustion_rechecks_coverage_binder_body_and_evidence() {
+        let mut result = type_quantifier_example(&[
+            "full=evaluate(Calc.all)",
+            "powers=evaluate(Calc.powers)",
+            "nested=evaluate(Calc.nested)",
+        ]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let proof = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (result.contexts[index].request == 0
+                    && matches!(&node.payload, Some(Payload::FiniteExhaustion { .. })))
+                .then_some(index)
+            })
+            .unwrap();
+        let Some(Payload::FiniteExhaustion { instances, .. }) = &result.nodes[proof].payload else {
+            unreachable!()
+        };
+        let bodies = instances.clone();
+        assert_eq!(bodies.len(), 2);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=proof]).unwrap();
+        for mutation in 0..4 {
+            let mut changed = result.nodes[..=proof].to_vec();
+            match mutation {
+                0 => {
+                    if let Some(Payload::FiniteExhaustion { checked, .. }) =
+                        &mut changed[proof].payload
+                    {
+                        *checked = 1;
+                    }
+                }
+                1 => finite_instances(&mut changed, proof, vec![bodies[0]]),
+                2 => finite_instances(&mut changed, proof, vec![bodies[0], bodies[0]]),
+                _ => changed[proof].scope.quantifiers[0].kind = crate::law::ast::QuantKind::Exists,
+            }
+            rejects_named_prefix(&result, &changed);
+        }
+        let binder = iteration_binder_scalar_for_name(&result, 0, b"bit");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
+        let old = result.iterations[0].member.clone();
+        result.iterations[0].member = super::super::call::Member::SetElement(Scalar::Bool(true));
+        rejects_named_prefix(&result, &result.nodes[..=binder]);
+        result.iterations[0].member = old;
+        let Some(Payload::Evaluation {
+            value: Some(body_value),
+            ..
+        }) = &result.nodes[bodies[0].0].payload
+        else {
+            unreachable!()
+        };
+        let body_value = body_value.0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=body_value]).unwrap();
+        let mut changed = result.nodes[..=body_value].to_vec();
+        changed[body_value].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        rejects_named_prefix(&result, &changed);
+        let scalar = result.answers[0].outputs["value"].0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+        let mut changed = result.nodes[..=scalar].to_vec();
+        changed[scalar].evidence.clear();
+        rejects_named_prefix(&result, &changed);
+        let mut reordered = result.nodes.clone();
+        let mut reverse = bodies;
+        reverse.reverse();
+        finite_instances(&mut reordered, proof, reverse);
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        let domain = in_domain(&result, 1);
+        let mut reordered = result.nodes.clone();
+        let Some(Payload::Domain { elements, .. }) = &mut reordered[domain].payload else {
+            unreachable!()
+        };
+        elements.reverse();
+        let reverse = elements.clone();
+        reordered[domain].arguments.truncate(1);
+        reordered[domain].arguments.extend(reverse);
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        let set=result.nodes.iter().enumerate().find_map(|(index,node)|(result.contexts[index].request==1 && matches!(&node.payload,Some(Payload::Scalar(Scalar::Set {items,..})) if items.len()==2)).then_some(index)).unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=set]).unwrap();
+        let mut reordered = result.nodes.clone();
+        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut reordered[set].payload else {
+            unreachable!()
+        };
+        items.reverse();
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        type_quantifier_call_capture_keeps_original_alias_producers();
+    }
+    fn type_quantifier_call_capture_keeps_original_alias_producers() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &[],
+                r#"
+ view assess(b: Bool,s: Sample): Bool = let kept=b in match kept { p => (p or not p) and s.q<0; };
+ view mixed(s: Sample): Bool = forall x:Bool . exists n in list<Z>[0] . assess(x or not x,s);
+"#,
+            ),
+            &[
+                "first=evaluate(Calc.mixed,s=@v/sample)",
+                "again=evaluate(Calc.mixed,s=@v/sample)",
+            ],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        for answer in &result.answers {
+            assert_eq!(
+                data_scalar_at(&result, answer.outputs["value"].0),
+                &Scalar::Bool(true)
+            );
+        }
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let aliases: Vec<_> = result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                let Some(Payload::Evaluation {
+                    expression,
+                    value: Some(value),
+                    ..
+                }) = &node.payload
+                else {
+                    return None;
+                };
+                let Some(Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }) = &result.nodes[expression.0].payload
+                else {
+                    return None;
+                };
+                (result.contexts[index].frame.is_some()
+                    && &result.prepared.inputs().sources().law().bytes()[span.0..span.1] == b"b")
+                    .then_some((index, *value))
+            })
+            .collect();
+        assert_eq!(aliases.len(), 4);
+        for (foreign, target) in [(aliases[0], aliases[1]), (aliases[1], aliases[2])] {
+            assert_ne!(foreign.1, target.1);
+            assert_eq!(
+                result.contexts[foreign.0].request == result.contexts[target.0].request,
+                foreign == aliases[0]
+            );
+            assert_eq!(
+                data_scalar_at(&result, foreign.1.0),
+                data_scalar_at(&result, target.1.0)
+            );
+            assert_ne!(
+                result.contexts[foreign.0].frame,
+                result.contexts[target.0].frame
+            );
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target.1.0]).unwrap();
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target.0]).unwrap();
+            let Some(Payload::Evaluation {
+                parts: foreign_parts,
+                ..
+            }) = &result.nodes[foreign.0].payload
+            else {
+                unreachable!()
+            };
+            for change_child in [false, true] {
+                let mut changed = result.nodes[..=target.0].to_vec();
+                let Some(Payload::Evaluation {
+                    expression,
+                    parts,
+                    value,
+                    ..
+                }) = &mut changed[target.0].payload
+                else {
+                    unreachable!()
+                };
+                *value = Some(foreign.1);
+                parts[0].value = Some(foreign.1);
+                if change_child {
+                    parts[0].children = foreign_parts[0].children.clone();
+                }
+                let arguments = std::iter::once(*expression)
+                    .chain(parts[0].children.iter().copied())
+                    .chain(*value)
+                    .collect();
+                changed[target.0].arguments = arguments;
+                rejects_named_prefix(&result, &changed);
+            }
+        }
+    }
+    #[test]
+    fn type_quantifier_counterexamples_reject_foreign_request_and_call_producers() {
+        let result = type_quantifier_example(&[
+            "first=check(Calc.called,x=@v/sample)",
+            "again=check(Calc.called,x=@v/sample)",
+            "both=check(Calc.both,x=@v/sample)",
+        ]);
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        assert!(result.answers.iter().all(|a| a.status == Decision::Refuted));
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let counters: Vec<_> = result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                (node.arguments.len() == 3
+                    && matches!(&node.payload, Some(Payload::Counterexample { .. })))
+                .then_some(index)
+            })
+            .collect();
+        assert_eq!(counters.len(), 4);
+        for &counter in &counters {
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=counter]).unwrap();
+            let Some(Payload::Counterexample {
+                bindings,
+                left,
+                right,
+                ..
+            }) = &result.nodes[counter].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(
+                bindings.iter().map(|b| b.name.as_str()).collect::<Vec<_>>(),
+                vec!["s", "bit"]
+            );
+            assert_eq!(
+                data_scalar_at(&result, bindings[1].value.0),
+                &Scalar::Bool(false)
+            );
+            assert_eq!(data_scalar_at(&result, left.0), &Scalar::Bool(false));
+            assert_eq!(data_scalar_at(&result, right.0), &Scalar::Bool(true));
+        }
+        for (foreign, target) in [(counters[0], counters[1]), (counters[2], counters[3])] {
+            assert_ne!(
+                result.contexts[foreign].frame,
+                result.contexts[target].frame
+            );
+            assert_eq!(
+                result.contexts[foreign].request == result.contexts[target].request,
+                foreign == counters[2]
+            );
+            let Some(Payload::Counterexample {
+                bindings: other,
+                left: other_left,
+                right: other_right,
+                ..
+            }) = &result.nodes[foreign].payload
+            else {
+                unreachable!()
+            };
+            for mutation in 0..4 {
+                let mut changed = result.nodes[..=target].to_vec();
+                let Some(Payload::Counterexample {
+                    bindings,
+                    left,
+                    right,
+                    ..
+                }) = &mut changed[target].payload
+                else {
+                    unreachable!()
+                };
+                match mutation {
+                    0 => bindings[1].value = other[1].value,
+                    1 => *left = *other_left,
+                    2 => *right = *other_right,
+                    _ => {}
+                }
+                if mutation == 3 {
+                    changed[target].arguments = result.nodes[foreign].arguments.clone();
+                    changed[target].payload = result.nodes[foreign].payload.clone();
+                    changed[target].scope = result.nodes[foreign].scope.clone();
+                }
+                rejects_named_prefix(&result, &changed);
+            }
+        }
+    }
     fn in_quantifier_fixture(omitted: &[&str]) -> InputSources {
         numeric_recheck_fixture(
             omitted,
@@ -7959,6 +8466,13 @@ reading Calc {{
     }
     #[test]
     fn in_quantifier_actual_domain_body_and_exhaustion_phases_preserve_stops() {
+        quantifier_actual_phases_preserve_stops(false);
+    }
+    #[test]
+    fn type_quantifier_actual_enumeration_body_and_exhaustion_phases_preserve_stops() {
+        quantifier_actual_phases_preserve_stops(true);
+    }
+    fn quantifier_actual_phases_preserve_stops(typed: bool) {
         use super::super::control::{Limits, Resource, Usage};
         use crate::result::Signal;
         use std::{
@@ -7966,11 +8480,15 @@ reading Calc {{
             rc::Rc,
         };
         for (operation, view, stop) in [
-            ("quant_domain", "full", 0),
+            (if typed { "type_enum" } else { "quant_domain" }, "full", 0),
             ("quant_body", "early", 1),
             ("quant_exhaustion", "full", 2),
         ] {
-            let sources = in_quantifier_fixture(&["q"]);
+            let sources = if typed {
+                type_quantifier_fixture(&["q"])
+            } else {
+                in_quantifier_fixture(&["q"])
+            };
             let current = format!("current=evaluate(Calc.{view})");
             let asks = [
                 "seed=evaluate(Calc.later)",
