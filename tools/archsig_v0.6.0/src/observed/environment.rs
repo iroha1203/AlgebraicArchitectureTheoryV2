@@ -774,13 +774,7 @@ impl<'a> Environment<'a> {
                     if !found {
                         return Err("Atom 値が元 slot に合わない".into());
                     }
-                    if self.current_context(graph).frame.is_some()
-                        || self.current_context(graph).instance.is_some()
-                        || self.current_context(graph).iteration.is_some()
-                        || self.current_context(graph).case.is_some()
-                    {
-                        self.call_field_source(graph, node, limit)?;
-                    }
+                    self.call_field_source(graph, node, limit)?;
                 }
                 Rule::Input {
                     kind: "law",
@@ -4107,7 +4101,7 @@ impl<'a> Environment<'a> {
         self.tick()?;
         Ok((expected, fact))
     }
-    // calleeのfield Scalarも、slot値の一致だけで別producerへ移せない。
+    // 全Contextの原始field Scalarを、元Sourceと実owner評価へ結ぶ。
     fn call_field_source(
         &self,
         graph: &Graph,
@@ -4120,6 +4114,19 @@ impl<'a> Environment<'a> {
         if node.arguments.len() != 1 {
             return Err("field owner数が違う".into());
         }
+        let Rule::Input {
+            kind: "atom",
+            location: Location::ArchMap { pointer, .. },
+        } = &node.rule
+        else {
+            return Err("fieldの原始値に元Atom位置がない".into());
+        };
+        let input_fact = self.atoms.get(pointer).ok_or("fieldの元Atom位置がない")?;
+        let input_field = input_fact
+            .field
+            .as_ref()
+            .ok_or("fieldの元Atomにfieldがない")?;
+        let input_owner = self.subject(&input_fact.snapshot, &input_fact.subject)?;
         for (source_index, source) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
             if graph.context_at(source_index) != self.current_context(graph) {
@@ -4162,6 +4169,11 @@ impl<'a> Environment<'a> {
                 }
                 _ => continue,
             };
+            // 提示supportではなく、元pointerの不変Factとchecked tokenで絞る。
+            // 実owner・値・Scopeの照合は、この候補選別の後にも全て行う。
+            if format!("{}.{field_name}", input_owner.ty) != *input_field {
+                continue;
+            }
             let analysis = self.resolve_analysis(
                 graph,
                 self.analyze_source(graph, *span, bindings)?,

@@ -470,6 +470,181 @@ fn reservations_chain_rejects_coherent_source_erasure_and_rule_or_producer_subst
 }
 
 #[test]
+fn reservations_chain_rejects_atom_rule_retag_with_source_erasure_at_scalar_prefix() {
+    let result = reservations_private_example(
+        "view calls(e:Reserve):(Z,Z)=(e.to.free,e.to.free);",
+        &["current=evaluate(Reservations.calls,e=@v/e)"],
+        false,
+    );
+    assert_eq!(result.status(), "complete");
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let leaves = reservations_private_evaluations(&result, "e.to.free");
+    assert_eq!(leaves.len(), 2);
+    let (_, first_scalar, first_owner) = reservations_private_parts(&result, leaves[0]);
+    let (source, scalar, owner) = reservations_private_parts(&result, leaves[1]);
+    let (_, first_owner_value, _) = reservations_private_parts(&result, first_owner);
+    let (owner_source, owner_value, _) = reservations_private_parts(&result, owner);
+    assert_ne!(first_owner_value, owner_value);
+    assert_eq!(
+        data_scalar_at(&result, first_owner_value),
+        data_scalar_at(&result, owner_value)
+    );
+    assert!(
+        matches!(data_scalar_at(&result, owner_value), Scalar::Subject { snapshot, subject, entity } if snapshot=="v" && subject=="q" && entity=="Reservations.State")
+    );
+    assert_eq!(data_scalar_at(&result, scalar), &Scalar::Z(1.into()));
+    assert_eq!(
+        data_scalar_at(&result, first_scalar),
+        data_scalar_at(&result, scalar)
+    );
+    assert_eq!(
+        result.nodes[first_scalar].support,
+        result.nodes[scalar].support
+    );
+    assert_eq!(result.nodes[first_scalar].scope, result.nodes[scalar].scope);
+    let scope = &result.nodes[scalar].scope;
+    assert_eq!(
+        scope
+            .readings
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
+        ["Reservations"]
+    );
+    assert_eq!(
+        scope
+            .snapshots
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
+        ["v"]
+    );
+    assert_eq!(
+        scope.modes.iter().map(String::as_str).collect::<Vec<_>>(),
+        ["observed"]
+    );
+    assert!(!scope.completions && !scope.assignments && scope.quantifiers.is_empty());
+    assert_eq!(
+        result.nodes[scalar].arguments,
+        [NodeRef(owner_value), NodeRef(source)]
+    );
+    assert_eq!(
+        reservations_private_text(&result, NodeRef(source)),
+        "e.to.free"
+    );
+    assert!(source < scalar && owner < scalar && scalar < leaves[1]);
+    assert!(owner_source < owner_value && owner_value < owner);
+    assert_eq!(result.nodes[scalar].support.len(), 1);
+    let fact = &result.nodes[scalar].support[0];
+    assert_eq!(fact.snapshot, "v");
+    assert_eq!(fact.subject, "q");
+    assert_eq!(fact.field.as_deref(), Some("Reservations.State.free"));
+    assert_eq!(fact.atom.as_deref(), Some("q-free"));
+    assert_eq!(
+        result.contexts[scalar],
+        super::super::call::Context::default()
+    );
+    for value in [first_owner_value, owner_value] {
+        assert_eq!(result.nodes[value].support.len(), 1);
+        let fact = &result.nodes[value].support[0];
+        assert_eq!(fact.snapshot, "v");
+        assert_eq!(fact.subject, "e");
+        assert_eq!(fact.field.as_deref(), Some("Reservations.Reserve.to"));
+        assert_eq!(fact.atom.as_deref(), Some("e-to"));
+    }
+    let pointer_for = |value: usize| {
+        let fact = &result.nodes[value].support[0];
+        let slot = &result
+            .prepared
+            .inputs()
+            .archmap()
+            .snapshots
+            .iter()
+            .find(|snapshot| snapshot.id == fact.snapshot)
+            .unwrap()
+            .subjects
+            .iter()
+            .find(|subject| subject.id == fact.subject)
+            .unwrap()
+            .fields
+            .iter()
+            .find(|field| Some(field.name.as_str()) == fact.field.as_deref())
+            .unwrap()
+            .slot;
+        let Slot::Known { atom, pointer, .. } = slot else {
+            panic!("actual supporting Atom")
+        };
+        assert_eq!(Some(atom.as_str()), fact.atom.as_deref());
+        pointer.clone()
+    };
+    let leaf_pointer = pointer_for(scalar);
+    let owner_pointer = pointer_for(owner_value);
+    let first_owner_pointer = pointer_for(first_owner_value);
+    let root_e = result.nodes[owner_value].arguments[0];
+    let first_root_e = result.nodes[first_owner_value].arguments[0];
+    assert!(
+        matches!(data_scalar_at(&result, root_e.0), Scalar::Subject { snapshot, subject, entity } if snapshot=="v" && subject=="e" && entity=="Reservations.Reserve")
+    );
+    assert!(matches!(
+        &result.nodes[first_root_e.0].rule,
+        Rule::Input {
+            kind: "subject",
+            ..
+        }
+    ));
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=first_owner_value]).unwrap();
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].rule = Rule::Input {
+            kind: "atom",
+            location: Location::ArchMap {
+                pointer: leaf_pointer.clone(),
+                span: None,
+            },
+        };
+        nodes[scalar].arguments = vec![NodeRef(owner_value)];
+    });
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].rule = Rule::Input {
+            kind: "atom",
+            location: Location::ArchMap {
+                pointer: leaf_pointer.clone(),
+                span: None,
+            },
+        };
+        nodes[scalar].arguments = vec![NodeRef(first_owner_value)];
+    });
+    completion_mutation(&result, first_owner_value, |nodes| {
+        nodes[first_owner_value].rule = Rule::Input {
+            kind: "atom",
+            location: Location::ArchMap {
+                pointer: first_owner_pointer.clone(),
+                span: None,
+            },
+        };
+        nodes[first_owner_value].arguments = vec![first_root_e];
+    });
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[owner_value].rule = Rule::Input {
+            kind: "atom",
+            location: Location::ArchMap {
+                pointer: owner_pointer.clone(),
+                span: None,
+            },
+        };
+        nodes[owner_value].arguments = vec![root_e];
+        nodes[scalar].rule = Rule::Input {
+            kind: "atom",
+            location: Location::ArchMap {
+                pointer: leaf_pointer.clone(),
+                span: None,
+            },
+        };
+        nodes[scalar].arguments = vec![NodeRef(owner_value)];
+    });
+}
+
+#[test]
 fn reservations_chain_missing_and_counterexample_recheck_original_fact_and_evidence() {
     let missing = reservations_private_example(
         "view current(e:Reserve):Z=e.to.held;",
