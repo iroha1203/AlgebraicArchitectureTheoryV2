@@ -1732,8 +1732,8 @@ impl Graph {
                 for (&left, &right) in first.iter().zip(second) {
                     self.tick()?;
                     let ty = self.scalar(left)?.ty();
-                    if !matches!(ty, Type::Bool | Type::Fp(_)) || self.scalar(right)?.ty() != ty {
-                        return Err("補完対のslot代入が同じBool/Fp型でない".into());
+                    if self.scalar(right)?.ty() != ty {
+                        return Err("補完対のslot代入型が左右で違う".into());
                     }
                     self.value(left, &ty)?;
                     self.value(right, &ty)?;

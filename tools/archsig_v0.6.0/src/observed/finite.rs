@@ -26,25 +26,48 @@ pub(super) fn supported(
     law: &CheckedLaw,
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
+    supported_with_references(ty, law, control, true)
+}
+
+/// 欠測fieldを入力の参照制約と独立に補完できる有限値型。
+/// Dataの全constructor引数も元宣言から読み、参照を含む型を許可しない。
+pub(super) fn completion_supported(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+) -> Result<bool, ValidationFailure> {
+    supported_with_references(ty, law, control, false)
+}
+
+fn supported_with_references(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+    references: bool,
+) -> Result<bool, ValidationFailure> {
     fn visit(
         ty: &Type,
         law: &CheckedLaw,
         control: &Control,
         active: &mut Vec<String>,
+        references: bool,
     ) -> Result<bool, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(control)?;
             match ty {
-                Type::Unit | Type::Bool | Type::Fp(_) | Type::Ref(_) => Ok(true),
+                Type::Unit | Type::Bool | Type::Fp(_) => Ok(true),
+                Type::Ref(_) => Ok(references),
                 Type::Tuple(types) => {
                     for ty in types {
-                        if !visit(ty, law, control, active)? {
+                        if !visit(ty, law, control, active, references)? {
                             return Ok(false);
                         }
                     }
                     Ok(true)
                 }
-                Type::Option(element) | Type::Set(element) => visit(element, law, control, active),
+                Type::Option(element) | Type::Set(element) => {
+                    visit(element, law, control, active, references)
+                }
                 Type::Data(family) => {
                     if active.contains(family) {
                         return Ok(false);
@@ -54,7 +77,7 @@ pub(super) fn supported(
                         for ctor in data::constructors(law, family)? {
                             tick(control)?;
                             for arg in &ctor.arguments {
-                                if !visit(arg, law, control, active)? {
+                                if !visit(arg, law, control, active, references)? {
                                     return Ok(false);
                                 }
                             }
@@ -68,7 +91,7 @@ pub(super) fn supported(
             }
         })
     }
-    visit(ty, law, control, &mut Vec::new())
+    visit(ty, law, control, &mut Vec::new(), references)
 }
 
 /// visitorは実評価時だけ渡す。Source再分析・再検査は同じ列挙とControlを使うが

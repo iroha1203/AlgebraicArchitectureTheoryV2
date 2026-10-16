@@ -1,4 +1,4 @@
-//! 元有限原始slotの共有assignmentごとに選択した問い全体を評価する。
+//! 元の参照なし有限slotの共有assignmentごとに選択した問い全体を評価する。
 use super::*;
 impl Evaluator<'_, '_> {
     fn completion_observe(&self, _phase: &'static str, _index: usize) {
