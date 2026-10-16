@@ -5,6 +5,7 @@ pub mod control;
 mod data;
 mod environment;
 pub mod evaluate;
+mod finite;
 mod numeric;
 mod quantifier;
 pub mod result;

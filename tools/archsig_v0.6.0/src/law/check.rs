@@ -58,6 +58,7 @@ pub struct Checker<E = Box<Issue>> {
     /// 現在の宣言で記録している名前の参照。
     pub refs: Vec<(Span, String)>,
     pub expr_types: Vec<Option<Type>>,
+    pub(super) quantifier_types: Vec<Option<Type>>,
     pub view_edges: Vec<(String, String, Span)>,
     pub reading_edges: Vec<(usize, usize, Span)>,
     pub current_reading: usize,
@@ -170,6 +171,7 @@ impl<E: InputError> Checker<E> {
             data_props,
             refs: Vec::new(),
             expr_types: Vec::new(),
+            quantifier_types: Vec::new(),
             view_edges: Vec::new(),
             reading_edges: Vec::new(),
             current_reading: 0,

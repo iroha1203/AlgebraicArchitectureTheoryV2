@@ -70,7 +70,7 @@ fn tick(control: &Control) -> Result<(), ValidationFailure> {
         .checkpoint(Checkpoint::FiniteIteration)
         .map_err(ValidationFailure::Stop)
 }
-fn constructors<'a>(
+pub(super) fn constructors<'a>(
     law: &'a CheckedLaw,
     family: &str,
 ) -> Result<&'a [Constructor], ValidationFailure> {

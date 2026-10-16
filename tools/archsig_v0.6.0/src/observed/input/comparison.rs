@@ -1285,6 +1285,7 @@ impl ControlledEq for crate::law::CheckedLaw {
         c.eq(&self.declarations, &other.declarations)?;
         c.eq(&self.exprs, &other.exprs)?;
         c.eq(&self.expr_types, &other.expr_types)?;
+        c.eq(&self.quantifier_types, &other.quantifier_types)?;
         c.eq(&self.infos, &other.infos)?;
         c.eq(&self.definitions, &other.definitions)?;
         Ok(())

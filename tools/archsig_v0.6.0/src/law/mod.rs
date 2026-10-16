@@ -34,6 +34,8 @@ pub struct CheckedLaw {
     /// 原式の arena と、各出現の解決した型。
     pub exprs: Vec<Expr>,
     pub expr_types: Vec<Option<Type>>,
+    /// 各量化の検査時に解決した元binder型。body中の使用から推測しない。
+    pub(crate) quantifier_types: Vec<Option<Type>>,
     pub infos: Vec<DeclarationInfo>,
     pub definitions: CheckedDefinitions,
 }
@@ -313,6 +315,7 @@ fn check_law_processing<E: InputError>(
         declarations,
         exprs: std::mem::take(&mut checker.parser.exprs),
         expr_types,
+        quantifier_types: std::mem::take(&mut checker.quantifier_types),
         infos,
         definitions: definitions.clone(),
     })

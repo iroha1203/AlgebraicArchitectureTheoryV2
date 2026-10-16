@@ -1315,9 +1315,11 @@ impl<E: InputError> Checker<E> {
             QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx)?,
         };
         let mark = env.vars.len();
-        self.bind(env, var, elem, Origin::Other)?;
+        self.bind(env, var, elem.clone(), Origin::Other)?;
         self.check_bool(body, env, ctx)?;
         env.vars.truncate(mark);
+        self.quantifier_types.resize(self.parser.exprs.len(), None);
+        self.quantifier_types[id] = Some(elem);
         if let ExprKind::Quant { split, .. } = &mut self.parser.exprs[id].kind {
             *split = QuantSplit::Fixed { domain, body };
         }

@@ -25,6 +25,7 @@ pub(super) enum Member {
 pub(super) struct Iteration {
     pub caller: Context,
     pub source: NodeRef,
+    /// In/内包では元collection Evaluation、型量化では実finite Domain。
     pub domain: NodeRef,
     pub member: Member,
     pub finite: Option<NodeRef>,

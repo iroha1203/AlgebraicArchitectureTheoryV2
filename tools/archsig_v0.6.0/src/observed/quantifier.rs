@@ -1,7 +1,7 @@
-//! 明示In量化の静的出現と、未知を補わない有限Bool集約。
+//! 明示In/有限型量化の静的出現と、未知を補わない有限Bool集約。
 use super::{
     control::{Checkpoint, Control},
-    data,
+    data, finite,
     result::{Quantifier, ValidationFailure},
 };
 use crate::{
@@ -16,7 +16,7 @@ use crate::{
 pub(super) struct Spec<'a> {
     pub kind: QuantKind,
     pub name: &'a str,
-    pub domain: usize,
+    pub domain: Option<usize>,
     pub body: usize,
     pub element: Type,
     pub span: (usize, usize),
@@ -30,35 +30,45 @@ pub(super) fn spec<'a>(
     let ExprKind::Quant { kind, var, split } = &expression.kind else {
         return Err("量化の元ASTでない".into());
     };
-    let QuantSplit::Fixed {
-        domain: QuantDomain::In(domain),
-        body,
-    } = split
-    else {
+    let QuantSplit::Fixed { domain, body } = split else {
+        return Err("検査済み量化の区切りがない".into());
+    };
+    let element = law
+        .quantifier_types
+        .get(id)
+        .and_then(Option::as_ref)
+        .ok_or("量化の元解決済みbinder型がない")?;
+    let (domain, supported) = match domain {
+        QuantDomain::In(domain) => {
+            let Some(Type::List(actual) | Type::Set(actual)) = law.expr_type(*domain) else {
+                return Err("In量化の元域がList/Setでない".into());
+            };
+            if actual.as_ref() != element {
+                return Err("In量化の元binder型が違う".into());
+            }
+            (Some(*domain), data::supported(element, law, control)?)
+        }
+        QuantDomain::Type(_) => (None, finite::supported(element, law, control)?),
+    };
+    if !supported {
         return Err(ValidationFailure::UnsupportedExpression {
             location: Location::Law {
                 span: expression.span,
             },
-            feature: "型全域の量化評価".into(),
-        });
-    };
-    let Some(Type::List(element) | Type::Set(element)) = law.expr_type(*domain) else {
-        return Err("In量化の元域がList/Setでない".into());
-    };
-    if !data::supported(element, law, control)? {
-        return Err(ValidationFailure::UnsupportedExpression {
-            location: Location::Law {
-                span: expression.span,
-            },
-            feature: "未対応要素型のIn量化".into(),
+            feature: if domain.is_some() {
+                "未対応要素型のIn量化"
+            } else {
+                "未対応・無限型の型全域量化"
+            }
+            .into(),
         });
     }
     Ok(Spec {
         kind: *kind,
         name: &var.name,
-        domain: *domain,
+        domain,
         body: *body,
-        element: (**element).clone(),
+        element: element.clone(),
         span: expression.span,
     })
 }
