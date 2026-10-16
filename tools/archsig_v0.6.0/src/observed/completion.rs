@@ -84,10 +84,11 @@ fn assignment_type(types: &[Type]) -> Type {
 fn components(
     value: &Scalar,
     types: &[Type],
+    law: &crate::law::CheckedLaw,
     control: &Control,
 ) -> Result<Vec<Scalar>, ValidationFailure> {
     control.clone().checkpoint(Checkpoint::FiniteIteration)?;
-    data::check_shape(value, control)?;
+    data::check(value, law, control)?;
     let values = match value {
         value if types.len() == 1 => vec![value.clone()],
         Scalar::Tuple(values) if types.len() > 1 && values.len() == types.len() => values.clone(),
@@ -95,8 +96,8 @@ fn components(
     };
     for (value, ty) in values.iter().zip(types) {
         control.clone().checkpoint(Checkpoint::FiniteIteration)?;
-        if !matches!(ty, Type::Bool | Type::Fp(_)) || value.ty() != *ty {
-            return Err("補完代入の成分型が元Bool/Fp slotと違う".into());
+        if !super::super::finite::completion_supported(ty, law, control)? || value.ty() != *ty {
+            return Err("補完代入の成分型が元の参照なし有限slotと違う".into());
         }
     }
     control.clone().checkpoint(Checkpoint::FiniteIteration)?;
@@ -104,6 +105,13 @@ fn components(
 }
 
 impl Environment<'_> {
+    pub(in crate::observed) fn completion_type_supported(
+        &self,
+        ty: &Type,
+    ) -> Result<bool, ValidationFailure> {
+        super::super::finite::completion_supported(ty, self.inputs.law(), &self.control)
+    }
+
     fn completion_slot_types(&self, fields: &[Fact]) -> Result<Vec<Type>, ValidationFailure> {
         self.tick()?;
         if fields.is_empty() {
@@ -119,9 +127,9 @@ impl Environment<'_> {
             )?;
             if fact.atom.is_some()
                 || field.slot != Slot::Missing
-                || !matches!(&field.ty, Type::Bool | Type::Fp(_))
+                || !self.completion_type_supported(&field.ty)?
             {
-                return Err("補完slotが元の欠測Bool/Fp fieldでない".into());
+                return Err("補完slotが元の参照なし有限型の欠測fieldでない".into());
             }
             types.push(field.ty.clone());
             self.tick()?;
@@ -305,7 +313,7 @@ impl Environment<'_> {
                 missing: vec![fact.clone()],
                 location: Some(Location::Law { span: *span }),
             });
-            if matches!(&field.ty, Type::Bool | Type::Fp(_)) {
+            if self.completion_type_supported(&field.ty)? {
                 slots
                     .entry(fact)
                     .and_modify(|old| {
@@ -587,7 +595,7 @@ impl Environment<'_> {
             }
             let member = graph.get(*element)?;
             let value = graph.scalar(*element)?;
-            components(value, &seed.types, &self.control)?;
+            components(value, &seed.types, self.inputs.law(), &self.control)?;
             if member.ty != NodeType::Value(ty.clone())
                 || !clean(member, "domain")
                 || !member.reasons.is_empty()
@@ -640,15 +648,21 @@ impl Environment<'_> {
         if !elements.contains(&record.member) || record.values.len() != seed.fields.len() {
             return Err("補完caseのmember/slot数が違う".into());
         }
-        let values = components(graph.scalar(record.member)?, &seed.types, &self.control)?;
+        let values = components(
+            graph.scalar(record.member)?,
+            &seed.types,
+            self.inputs.law(),
+            &self.control,
+        )?;
         let mut result = Vec::new();
         for (i, (&reference, value)) in record.values.iter().zip(values).enumerate() {
             self.tick()?;
             let node = graph.get(reference)?;
+            data::check(graph.scalar(reference)?, self.inputs.law(), &self.control)?;
             if reference.0 <= record.domain.0
                 || graph.context_at(reference.0) != seed.context
                 || node.ty != NodeType::Value(seed.types[i].clone())
-                || graph.scalar(reference)? != &value
+                || !data::equal(graph.scalar(reference)?, &value, &self.control)?
                 || !clean(node, "domain")
                 || node.arguments != [record.seed, record.domain, record.member, seed.sources[i]]
                 || node.scope != seed.scope
@@ -1333,10 +1347,7 @@ impl Environment<'_> {
             return Ok(true);
         }
         if self.current_context(graph).case.is_some()
-            && matches!(
-                &node.payload,
-                Some(Payload::Scalar(Scalar::Bool(_) | Scalar::Fp { .. }))
-            )
+            && matches!(&node.payload, Some(Payload::Scalar(_)))
             && node.arguments.len() == 3
             && matches!((&node.rule,&graph.get(node.arguments[0])?.payload),
                 (Rule::Input {kind:"law",location:Location::Law {span}},
@@ -1556,12 +1567,13 @@ impl Environment<'_> {
             return Err("補完代入のScope/支持が違う".into());
         }
         if node.arguments == [seed.reference] {
-            components(value, &seed.types, &self.control)?;
+            components(value, &seed.types, self.inputs.law(), &self.control)?;
             if node.ty != NodeType::Value(assignment_type(&seed.types)) {
                 return Err("補完member型が違う".into());
             }
             return Ok(());
         }
+        data::check(value, self.inputs.law(), &self.control)?;
         let [actual, domain, member, source] = node.arguments.as_slice() else {
             return Err("補完projectionの元辺が違う".into());
         };
@@ -1577,8 +1589,15 @@ impl Environment<'_> {
             .iter()
             .position(|r| r == source)
             .ok_or("補完projectionのfieldSourceがない")?;
-        let values = components(graph.scalar(*member)?, &seed.types, &self.control)?;
-        if value != &values[i] || node.ty != NodeType::Value(seed.types[i].clone()) {
+        let values = components(
+            graph.scalar(*member)?,
+            &seed.types,
+            self.inputs.law(),
+            &self.control,
+        )?;
+        if !data::equal(value, &values[i], &self.control)?
+            || node.ty != NodeType::Value(seed.types[i].clone())
+        {
             return Err("補完projectionのslot値/型が違う".into());
         }
         Ok(())
@@ -1653,16 +1672,16 @@ impl Environment<'_> {
             return Err("補完field ownerがRefでない".into());
         };
         let types = self.completion_slot_types(std::slice::from_ref(&fact))?;
+        let Some(Payload::Scalar(value)) = &node.payload else {
+            return Err("補完field値がない".into());
+        };
+        data::check(value, self.inputs.law(), &self.control)?;
         if *assignment != expected
             || fact.snapshot != *snapshot
             || fact.subject != *subject
             || node.ty != NodeType::Value(types[0].clone())
             || graph.scalar(*assignment)?.ty() != types[0]
-            || graph.scalar(*assignment)?
-                != match &node.payload {
-                    Some(Payload::Scalar(v)) => v,
-                    _ => return Err("補完field値がない".into()),
-                }
+            || !data::equal(graph.scalar(*assignment)?, value, &self.control)?
             || !matches!(&node.rule,Rule::Input{kind:"law",location:Location::Law{span:s}}if s==span)
             || node.scope != a.scalar_scope.unwrap_or(a.scope)
             || !node.support.is_empty()
