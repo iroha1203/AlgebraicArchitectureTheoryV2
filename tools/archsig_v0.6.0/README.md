@@ -33,6 +33,12 @@
   入れ子内包・view呼出し・let/ifの親環境へ戻る。
   falseのfilterでは要素式を実行せず、空域は元要素型の空Setを返す。
   未観測の域・filter・必要な要素で結果が決まらない場合は、元missingと依存式を保つ。
+  既知List/Setの明示`forall/exists ... in ...`は、元collectionと型付きの有限Domain、
+  実binder・body評価・元順の量化Scopeを保持する。Domainは重複しない意味上の要素域とし、
+  元Listの順序・重複出現はcollection評価に残す。空域はforall=true・exists=falseとなる。
+  全域に依存する確定判断は全要素・bodyのcoverageを再検査したfinite_exhaustionへ接続し、
+  forallの既知false instanceは他instanceの欠測によらず反例として保持する。
+  existsは既知true instanceでtrueとなり、既読のmissing・支持を保持する。
   数値等式には元左右と同じ型・形の残差を保持し、一般Boolには数値残差を付けない。
   これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
@@ -57,7 +63,7 @@
   型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
   欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
   上記以外のpayloadを持つdata・再帰dataの評価、その他の式形・
-  未束縛 parameter の量化・Answer 由来の束縛・
+  型全域・未束縛 parameter の量化・全補完の列挙・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   未確定の参照からのfield読取り・動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の

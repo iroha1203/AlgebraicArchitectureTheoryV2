@@ -6,6 +6,7 @@ mod data;
 mod environment;
 pub mod evaluate;
 mod numeric;
+mod quantifier;
 pub mod result;
 pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
 pub use result::{EvaluationFailure, ObservedEvaluation};
