@@ -27,4 +27,5 @@ pub(super) struct Iteration {
     pub source: NodeRef,
     pub domain: NodeRef,
     pub member: Member,
+    pub finite: Option<NodeRef>,
 }

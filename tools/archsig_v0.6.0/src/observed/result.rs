@@ -57,6 +57,7 @@ pub(crate) enum NodeType {
     LawInstance,
     Proposition,
     Evidence,
+    Domain,
 }
 impl NodeType {
     fn wire(&self) -> Json {
@@ -67,6 +68,7 @@ impl NodeType {
             Self::LawInstance => Json::str("LawInstance"),
             Self::Proposition => Json::str("Proposition"),
             Self::Evidence => Json::str("Evidence"),
+            Self::Domain => Json::str("Domain"),
         }
     }
 }
@@ -374,19 +376,147 @@ impl Fact {
         Json::Obj(f)
     }
 }
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct Scope {
     pub readings: BTreeSet<String>,
     pub snapshots: BTreeSet<String>,
     pub modes: BTreeSet<String>,
     pub completions: bool,
+    pub quantifiers: Vec<Quantifier>,
+}
+impl PartialEq for Scope {
+    fn eq(&self, other: &Self) -> bool {
+        let occurrences = |scope: &Self| {
+            let mut order = Vec::new();
+            for q in &scope.quantifiers {
+                if !order.contains(&q.occurrence) {
+                    order.push(q.occurrence);
+                }
+            }
+            order
+        };
+        self.readings == other.readings
+            && self.snapshots == other.snapshots
+            && self.modes == other.modes
+            && self.completions == other.completions
+            && occurrences(self) == occurrences(other)
+            && self.quantifiers.len() == other.quantifiers.len()
+            && self.quantifiers.iter().all(|q| {
+                self.quantifiers
+                    .iter()
+                    .filter(|actual| *actual == q)
+                    .count()
+                    == other
+                        .quantifiers
+                        .iter()
+                        .filter(|actual| *actual == q)
+                        .count()
+            })
+    }
+}
+impl Eq for Scope {}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct Quantifier {
+    pub kind: crate::law::ast::QuantKind,
+    pub name: String,
+    pub ty: Type,
+    pub domain: Option<NodeRef>,
+    // 元AST出現を区別する内部索引。wireの名前だけをidentityにしない。
+    pub occurrence: (usize, usize),
+    pub(super) context: Option<super::call::Context>,
+}
+impl Quantifier {
+    fn wire(&self) -> Json {
+        let mut fields = BTreeMap::from([
+            (
+                "kind".into(),
+                Json::str(if self.kind == crate::law::ast::QuantKind::Forall {
+                    "forall"
+                } else {
+                    "exists"
+                }),
+            ),
+            ("name".into(), Json::str(&self.name)),
+            ("type".into(), self.ty.wire()),
+        ]);
+        if let Some(domain) = self.domain {
+            fields.insert("domain".into(), domain.wire());
+        }
+        Json::Obj(fields)
+    }
 }
 impl Scope {
+    // 元式を展開したScopeを順序の正本にする。異なる実Context/Domainは
+    // 省略せず、同じ元出現の実域間の表示順には意味を与えない。
+    pub(super) fn order_quantifiers_like(&mut self, original: &Self) {
+        self.quantifiers.sort_by_key(|quantifier| {
+            original
+                .quantifiers
+                .iter()
+                .position(|q| q.occurrence == quantifier.occurrence)
+                .unwrap_or(original.quantifiers.len())
+        });
+    }
+    pub(crate) fn add_quantifier(&mut self, quantifier: Quantifier) {
+        let scope = Self {
+            quantifiers: vec![quantifier],
+            ..Self::default()
+        };
+        self.merge_quantifiers(&scope);
+    }
+    pub(crate) fn merge_quantifiers(&mut self, other: &Self) {
+        for q in &other.quantifiers {
+            if self.quantifiers.contains(q) {
+                continue;
+            }
+            let same = |old: &Quantifier| {
+                old.occurrence == q.occurrence
+                    && old.kind == q.kind
+                    && old.name == q.name
+                    && old.ty == q.ty
+            };
+            if q.context.is_none() && q.domain.is_none() && self.quantifiers.iter().any(same) {
+                continue;
+            }
+            if let Some(old) = self.quantifiers.iter_mut().find(|old| {
+                same(old)
+                    && old.domain.is_none()
+                    && (old.context.is_none() || old.context == q.context)
+            }) {
+                *old = q.clone();
+            } else if q.domain.is_some()
+                || !self
+                    .quantifiers
+                    .iter()
+                    .any(|old| same(old) && old.context == q.context)
+            {
+                self.quantifiers.push(q.clone());
+            }
+        }
+    }
+    pub(crate) fn source_compatible(&self, other: &Self) -> bool {
+        let normalize = |scope: &Self| {
+            let mut copy = scope.clone();
+            let mut qs = Vec::new();
+            for q in &scope.quantifiers {
+                let mut q = q.clone();
+                q.domain = None;
+                q.context = None;
+                if !qs.contains(&q) {
+                    qs.push(q);
+                }
+            }
+            copy.quantifiers = qs;
+            copy
+        };
+        normalize(self) == normalize(other)
+    }
     pub(crate) fn merge(&mut self, other: &Self) {
         self.readings.extend(other.readings.iter().cloned());
         self.snapshots.extend(other.snapshots.iter().cloned());
         self.modes.extend(other.modes.iter().cloned());
         self.completions |= other.completions;
+        self.merge_quantifiers(other);
     }
     pub(crate) fn wire(&self) -> Json {
         Json::obj([
@@ -410,7 +540,10 @@ impl Scope {
                     "finite_model"
                 }),
             ),
-            ("quantifiers", Json::Arr(vec![])),
+            (
+                "quantifiers",
+                Json::Arr(self.quantifiers.iter().map(Quantifier::wire).collect()),
+            ),
             ("assumptions", Json::Arr(vec![])),
         ])
     }
@@ -589,6 +722,15 @@ pub(crate) fn conditional_bool(guard: Option<bool>, body: Option<bool>) -> Optio
 }
 #[derive(Clone, Debug)]
 pub(crate) enum Payload {
+    Domain {
+        ty: Type,
+        elements: Vec<NodeRef>,
+    },
+    FiniteExhaustion {
+        domain: NodeRef,
+        checked: usize,
+        instances: Vec<NodeRef>,
+    },
     Scalar(Scalar),
     Expression {
         location: Location,
@@ -634,6 +776,26 @@ pub(crate) enum Payload {
 impl Payload {
     fn wire(&self) -> Json {
         match self {
+            Self::Domain { ty, elements } => Json::obj([
+                ("kind", Json::str("finite")),
+                ("type", ty.wire()),
+                ("elements", refs(elements)),
+            ]),
+            Self::FiniteExhaustion {
+                domain,
+                checked,
+                instances,
+            } => Json::obj([
+                ("kind", Json::str("finite_exhaustion")),
+                (
+                    "data",
+                    Json::obj([
+                        ("domain", domain.wire()),
+                        ("checked", Json::Nat(*checked as u64)),
+                        ("instances", refs(instances)),
+                    ]),
+                ),
+            ]),
             Self::Scalar(v) => v.wire(),
             Self::Expression {
                 location,
@@ -810,7 +972,22 @@ impl Node {
             ),
         ]);
         if let Some(payload) = &self.payload {
-            wire.insert("value".into(), payload.wire());
+            let mut value = payload.wire();
+            if matches!(payload, Payload::Proposition { .. })
+                && let Json::Obj(fields) = &mut value
+            {
+                fields.insert(
+                    "quantifiers".into(),
+                    Json::Arr(
+                        self.scope
+                            .quantifiers
+                            .iter()
+                            .map(Quantifier::wire)
+                            .collect(),
+                    ),
+                );
+            }
+            wire.insert("value".into(), value);
         }
         if let Some(j) = &self.judgment {
             wire.insert(
@@ -1080,6 +1257,14 @@ impl Graph {
             self.expect(reference, &NodeType::Evidence)?;
             let evidence = self.get(reference)?;
             if evidence.arguments != [*instance, evaluation] {
+                if judgment.status == Decision::Refuted
+                    && matches!(&self.get(evaluation)?.payload,Some(Payload::Evaluation {value:Some(value),..}) if self.scalar(*value)?==&Scalar::Bool(false))
+                    && self.quantifier_counterexample_shape(evidence)?
+                    && self.evaluation_evidence_contains(evaluation, reference)?
+                {
+                    counterexample = true;
+                    continue;
+                }
                 return Err("添付証拠が別の LawInstance・適用評価を指す".into());
             }
             match &evidence.payload {
@@ -1098,6 +1283,108 @@ impl Graph {
             return Err("反証に当該 LawInstance の反例がない".into());
         }
         Ok(())
+    }
+    fn quantifier_counterexample_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Counterexample {
+            bindings,
+            left,
+            right,
+            facts,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        let [source, domain, body] = node.arguments.as_slice() else {
+            return Ok(false);
+        };
+        let Some(Payload::Expression {
+            bindings: parameters,
+            ..
+        }) = &self.get(*source)?.payload
+        else {
+            return Ok(false);
+        };
+        let Some(index) = self.context_at(body.0).iteration else {
+            return Ok(false);
+        };
+        let record = self
+            .iterations
+            .get(index)
+            .ok_or("量化反例の実binderがない")?;
+        let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &self.get(*body)?.payload
+        else {
+            return Ok(false);
+        };
+        let Some(Payload::Domain { ty, elements }) = &self.get(*domain)?.payload else {
+            return Ok(false);
+        };
+        let quantifier = self
+            .get(*body)?
+            .scope
+            .quantifiers
+            .iter()
+            .find(|q| q.domain == Some(*domain));
+        let Some(quantifier) = quantifier else {
+            return Ok(false);
+        };
+        let mut support = self.get(*domain)?.support.clone();
+        support.extend(self.get(*body)?.support.iter().cloned());
+        support.sort();
+        support.dedup();
+        if record.source != *source
+            || record.finite != Some(*domain)
+            || *value != *left
+            || self.scalar(*left)? != &Scalar::Bool(false)
+            || self.scalar(*right)? != &Scalar::Bool(true)
+            || !bindings.starts_with(parameters)
+            || ty != &quantifier.ty
+            || facts != &support
+        {
+            return Ok(false);
+        }
+        Ok(bindings.iter().any(|binding| {
+            binding.name == quantifier.name
+                && binding.ty == *ty
+                && elements.contains(&binding.value)
+                && match &record.member {
+                    super::call::Member::SetElement(member) => {
+                        self.scalar(binding.value).is_ok_and(|v| v == member)
+                    }
+                    _ => false,
+                }
+        }))
+    }
+    pub(crate) fn evaluation_evidence_contains(
+        &self,
+        root: NodeRef,
+        evidence: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        let mut pending = vec![root];
+        let mut seen = BTreeSet::new();
+        while let Some(reference) = pending.pop() {
+            self.tick()?;
+            if !seen.insert(reference.0) {
+                continue;
+            }
+            let node = self.get(reference)?;
+            if node.evidence.contains(&evidence) {
+                return Ok(true);
+            }
+            if let Some(Payload::Evaluation { parts, .. }) = &node.payload {
+                for part in parts {
+                    for child in &part.children {
+                        self.tick()?;
+                        if child.0 >= reference.0 {
+                            return Err("証拠への評価依存が既出でない".into());
+                        }
+                        pending.push(*child);
+                    }
+                }
+            }
+        }
+        Ok(false)
     }
     pub fn push(&mut self, node: Node) -> Result<NodeRef, ValidationFailure> {
         self.push_with_metadata(node, |_| {})
@@ -1120,7 +1407,48 @@ impl Graph {
             self.tick()?;
         }
         self.reasons(&node.reasons)?;
+        for (index, quantifier) in node.scope.quantifiers.iter().enumerate() {
+            self.tick()?;
+            if node.scope.quantifiers[..index].contains(quantifier) {
+                return Err("Scopeに同じ実量化descriptorが重複する".into());
+            }
+            if let Some(domain) = quantifier.domain {
+                self.expect(domain, &NodeType::Domain)?;
+            }
+        }
         match (&node.ty, &node.payload) {
+            (NodeType::Domain, Some(Payload::Domain { ty, elements })) => {
+                let mut values = Vec::new();
+                for element in elements {
+                    self.tick()?;
+                    self.value(*element, ty)?;
+                    let scalar = self.scalar(*element)?;
+                    if super::data::contains(&values, scalar, &self.control)? {
+                        return Err("Domainに意味上重複する要素がある".into());
+                    }
+                    values.push(scalar.clone());
+                }
+            }
+            (
+                NodeType::Evidence,
+                Some(Payload::FiniteExhaustion {
+                    domain,
+                    checked,
+                    instances,
+                }),
+            ) => {
+                self.expect(*domain, &NodeType::Domain)?;
+                let Some(Payload::Domain { elements, .. }) = &self.get(*domain)?.payload else {
+                    return Err("全検査域が有限域でない".into());
+                };
+                if *checked != elements.len() || instances.len() != elements.len() {
+                    return Err("全検査の件数と域が違う".into());
+                }
+                for instance in instances {
+                    self.tick()?;
+                    self.expect(*instance, &NodeType::Evaluation(Type::Bool))?;
+                }
+            }
             (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {
                 super::data::check_shape(s, &self.control)?;
             }

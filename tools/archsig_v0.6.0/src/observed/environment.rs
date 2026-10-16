@@ -3,7 +3,7 @@ use super::{
     control::{Checkpoint, Control, StopReason},
     data,
     input::CheckedInputs,
-    numeric,
+    numeric, quantifier,
     request::{QuestionKind, Request, Selector},
     result::*,
 };
@@ -85,6 +85,7 @@ pub(crate) struct Environment<'a> {
     expressions: BTreeMap<(usize, usize), usize>,
     control: Control,
     context: Cell<Option<super::call::Context>>,
+    scoped_context: Cell<Option<super::call::Context>>,
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
     cache: RefCell<ValidationCache>,
@@ -154,6 +155,7 @@ impl<'a> Environment<'a> {
             expressions,
             control: control.clone(),
             context: Cell::new(None),
+            scoped_context: Cell::new(None),
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
             cache: RefCell::new(ValidationCache::default()),
@@ -303,6 +305,42 @@ impl<'a> Environment<'a> {
         }
         result
     }
+    fn resolve_analysis(
+        &self,
+        graph: &Graph,
+        mut analysis: SourceAnalysis,
+        arguments: &[NodeRef],
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        for reference in arguments {
+            self.tick()?;
+            let node = graph.get(*reference)?;
+            if matches!(&node.payload, Some(Payload::Evaluation { .. })) {
+                self.recheck_evaluation(graph, *reference)?;
+            } else {
+                self.validate_at(graph, node, reference.0)?;
+            }
+            analysis.scope.merge_quantifiers(&node.scope);
+            if let Some(scope) = &mut analysis.scalar_scope {
+                scope.merge_quantifiers(&node.scope);
+            }
+        }
+        Ok(analysis)
+    }
+    fn iteration_syntax(&self, id: usize) -> Result<(usize, Vec<usize>), ValidationFailure> {
+        match self.inputs.law().exprs[id].kind {
+            ExprKind::SetComp {
+                domain,
+                elem,
+                filter,
+                ..
+            } => Ok((domain, std::iter::once(elem).chain(filter).collect())),
+            ExprKind::Quant { .. } => {
+                let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+                Ok((spec.domain, vec![spec.body]))
+            }
+            _ => Err("反復元が内包/In量化でない".into()),
+        }
+    }
     fn current_context(&self, graph: &Graph) -> super::call::Context {
         self.context.get().unwrap_or(graph.active)
     }
@@ -313,6 +351,25 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
+        for (index, quantifier) in node.scope.quantifiers.iter().enumerate() {
+            self.tick()?;
+            if node.scope.quantifiers[..index].contains(quantifier) {
+                return Err("Scopeに同じ実量化descriptorが重複する".into());
+            }
+        }
+        for reference in node
+            .arguments
+            .iter()
+            .chain(&node.evidence)
+            .copied()
+            .chain(node.scope.quantifiers.iter().filter_map(|q| q.domain))
+        {
+            self.tick()?;
+            if reference.0 >= limit {
+                return Err("nodeの元依存/証拠/量化域が既出でない".into());
+            }
+            graph.get(reference)?;
+        }
         let context = self.current_context(graph);
         if let Some(index) = context.iteration {
             let iteration = graph.iterations.get(index).ok_or("nodeの反復がない")?;
@@ -344,13 +401,10 @@ impl<'a> Environment<'a> {
             };
             if let Some(span) = own_span {
                 let comp_span = self.expression_span(graph, iteration.source)?;
-                let ExprKind::SetComp { elem, filter, .. } = self.inputs.law().exprs
-                    [*self.expressions.get(&comp_span).ok_or("反復元ASTがない")?]
-                .kind
-                else {
-                    return Err("反復元が内包でない".into());
-                };
-                if !std::iter::once(elem).chain(filter).any(|child| {
+                let (_, bodies) = self.iteration_syntax(
+                    *self.expressions.get(&comp_span).ok_or("反復元ASTがない")?,
+                )?;
+                if !bodies.into_iter().any(|child| {
                     let body = self.inputs.law().exprs[child].span;
                     body.0 <= span.0 && span.1 <= body.1
                 }) {
@@ -456,6 +510,10 @@ impl<'a> Environment<'a> {
                     }
                     let computed = if let Some(id) = id {
                         match &law.exprs[id].kind {
+                            ExprKind::Quant { .. } => self
+                                .quant_scalar(graph, node, limit)?
+                                .known_value
+                                .ok_or("量化値が確定しない")?,
                             ExprKind::SetComp { .. } => self
                                 .comprehension_source_analysis(graph, node, limit)?
                                 .known_value
@@ -510,6 +568,16 @@ impl<'a> Environment<'a> {
                     };
                     if &computed != scalar {
                         return Err("生成算術が元式に合わない".into());
+                    }
+                }
+                Rule::Construction("domain") => self.domain_member(graph, node, limit)?,
+                Rule::Construction("evidence") => {
+                    self.quant_counter_parts(graph, node, limit)?;
+                    if scalar != &Scalar::Bool(true)
+                        || node.scope != graph.get(node.arguments[2])?.scope
+                        || !node.support.is_empty()
+                    {
+                        return Err("量化のtrue要求値が違う".into());
                     }
                 }
                 Rule::Construction("proposition")
@@ -707,6 +775,9 @@ impl<'a> Environment<'a> {
                 if *applicability != "applicable" {
                     return Err("通常式の評価に Law の適用判定を付けている".into());
                 }
+                if self.validate_quant_evaluation(graph, node, limit)? {
+                    return Ok(());
+                }
                 if self.validate_comprehension_evaluation(graph, node, limit)? {
                     return Ok(());
                 }
@@ -723,9 +794,18 @@ impl<'a> Environment<'a> {
                 {
                     return Err("Evaluation の原式・束縛・part が合わない".into());
                 }
-                let analysis = self.analyze_source(graph, span, bindings)?;
+                let analysis = self.resolve_analysis(
+                    graph,
+                    self.analyze_source(graph, span, bindings)?,
+                    &parts[0].children,
+                )?;
                 let expected_scope = analysis.scope;
-                if node.scope != expected_scope || graph.get(*expression)?.scope != expected_scope {
+                if node.scope != expected_scope
+                    || !graph
+                        .get(*expression)?
+                        .scope
+                        .source_compatible(&expected_scope)
+                {
                     return Err("Evaluation と元式の範囲が元入力と違う".into());
                 }
                 if node.support != analysis.support {
@@ -741,6 +821,14 @@ impl<'a> Environment<'a> {
                         return Err("評価値Scalarの範囲が元Source・束縛・originと違う".into());
                     }
                     used_support.extend(graph.get(*reference)?.support.iter().cloned());
+                }
+                let expected_evidence = if let Some(value) = value {
+                    graph.get(*value)?.evidence.as_slice()
+                } else {
+                    &[]
+                };
+                if node.evidence != expected_evidence {
+                    return Err("通常Evaluationの証拠が元値と違う".into());
                 }
                 let children = &parts[0].children;
                 for &child in children {
@@ -1269,6 +1357,18 @@ impl<'a> Environment<'a> {
             }
         }
         match &node.payload {
+            Some(Payload::Domain { .. }) => self.validate_domain(graph, node, limit)?,
+            Some(Payload::FiniteExhaustion { .. }) => {
+                self.validate_finite_exhaustion(graph, node, limit)?
+            }
+            Some(Payload::Counterexample { .. })
+                if node.arguments.first().is_some_and(|r| {
+                    matches!(graph.get(*r).map(|n| &n.ty), Ok(NodeType::Expression(_)))
+                }) =>
+            {
+                self.validate_quant_counter(graph, node, limit)?;
+                return Ok(());
+            }
             Some(Payload::EvaluationEvidence {
                 instance,
                 lhs,
@@ -1540,7 +1640,11 @@ impl<'a> Environment<'a> {
             if !source_found {
                 return Err("let/if 値に既出の own Source がない".into());
             }
-            let analysis = self.analyze_source(graph, *span, bindings)?;
+            let analysis = self.resolve_analysis(
+                graph,
+                self.analyze_source(graph, *span, bindings)?,
+                &node.arguments,
+            )?;
             if analysis.known_value.as_ref() != Some(scalar)
                 || analysis.support != node.support
                 || analysis.scalar_scope.as_ref() != Some(&node.scope)
@@ -1650,7 +1754,11 @@ impl<'a> Environment<'a> {
                         return Err("own Source の引数と束縛が違う".into());
                     }
                     self.validate_at(graph, source, source_index)?;
-                    let analysis = self.analyze_source(graph, *span, bindings)?;
+                    let analysis = self.resolve_analysis(
+                        graph,
+                        self.analyze_source(graph, *span, bindings)?,
+                        &node.arguments,
+                    )?;
                     if analysis.known_value.as_ref() != Some(scalar)
                         || analysis.support != node.support
                         || analysis.scalar_scope.as_ref() != Some(&node.scope)
@@ -1775,7 +1883,11 @@ impl<'a> Environment<'a> {
                         return Err("数値等号 Source の引数と束縛が違う".into());
                     }
                     self.validate_at(graph, source, source_index)?;
-                    let analysis = self.analyze_source(graph, *span, bindings)?;
+                    let analysis = self.resolve_analysis(
+                        graph,
+                        self.analyze_source(graph, *span, bindings)?,
+                        &node.arguments,
+                    )?;
                     if analysis.known_value != Some(Scalar::Bool(left == right))
                         || analysis.support != node.support
                         || analysis.scope != node.scope
@@ -1930,8 +2042,11 @@ impl<'a> Environment<'a> {
                 bindings = Some(actual_bindings);
                 self.tick()?;
             }
-            let analysis =
-                self.analyze_source(graph, *span, bindings.ok_or("Bool 論理値に子束縛がない")?)?;
+            let analysis = self.resolve_analysis(
+                graph,
+                self.analyze_source(graph, *span, bindings.ok_or("Bool 論理値に子束縛がない")?)?,
+                &node.arguments,
+            )?;
             let Some(Payload::Scalar(Scalar::Bool(value))) = &node.payload else {
                 return Err("Bool 論理値が通常 Bool Scalar でない".into());
             };
@@ -2025,6 +2140,9 @@ impl<'a> Environment<'a> {
                 } => {
                     if let Some(&id) = self.expressions.get(span) {
                         match self.inputs.law().exprs[id].kind {
+                            ExprKind::Quant { .. } => {
+                                self.quant_scalar(graph, node, limit)?.support
+                            }
                             ExprKind::SetComp { .. } => {
                                 self.comprehension_source_analysis(graph, node, limit)?
                                     .support
@@ -2097,6 +2215,14 @@ impl<'a> Environment<'a> {
                 }
                 Rule::Construction("evaluation") => {
                     self.residual_source_analysis(graph, node, limit)?.support
+                }
+                Rule::Construction("domain") => {
+                    self.domain_member(graph, node, limit)?;
+                    node.support.clone()
+                }
+                Rule::Construction("evidence") => {
+                    self.quant_counter_parts(graph, node, limit)?;
+                    vec![]
                 }
                 Rule::Construction("proposition") => vec![],
                 _ => return Err("値支持の導出規則がない".into()),
@@ -2519,10 +2645,8 @@ impl<'a> Environment<'a> {
                 .expressions
                 .get(&self.expression_span(graph, record.source)?)
                 .ok_or("lexical反復の元ASTがない")?;
-            let ExprKind::SetComp { elem, filter, .. } = self.inputs.law().exprs[comp].kind else {
-                return Err("lexical反復の元式が内包でない".into());
-            };
-            if std::iter::once(elem).chain(filter).any(|child| {
+            let (_, bodies) = self.iteration_syntax(comp)?;
+            if bodies.into_iter().any(|child| {
                 let body = self.inputs.law().exprs[child].span;
                 body.0 <= span.0 && span.1 <= body.1
             }) {
@@ -2625,6 +2749,26 @@ impl<'a> Environment<'a> {
         let law = self.inputs.law();
         for (id, expression) in law.exprs.iter().enumerate() {
             self.tick()?;
+            if let ExprKind::Quant {
+                var,
+                split:
+                    crate::law::ast::QuantSplit::Fixed {
+                        domain: crate::law::ast::QuantDomain::In(_),
+                        body,
+                    },
+                ..
+            } = &expression.kind
+                && law.expr_type(id).is_some()
+                && self.expressions.get(&expression.span) == Some(&id)
+                && law.exprs[*body].span.0 <= span.0
+                && span.1 <= law.exprs[*body].span.1
+            {
+                enclosing.push((
+                    expression.span.0,
+                    var.name.clone(),
+                    LexicalOrigin::Iteration(id),
+                ));
+            }
             if let ExprKind::SetComp {
                 elem, var, filter, ..
             } = &expression.kind
@@ -2773,7 +2917,11 @@ impl<'a> Environment<'a> {
                 }
                 _ => continue,
             };
-            let analysis = self.analyze_source(graph, *span, bindings)?;
+            let analysis = self.resolve_analysis(
+                graph,
+                self.analyze_source(graph, *span, bindings)?,
+                &node.arguments,
+            )?;
             if analysis.known_value.as_ref() != Some(value)
                 || analysis.scalar_scope.as_ref() != Some(&node.scope)
             {
@@ -2871,7 +3019,8 @@ impl<'a> Environment<'a> {
             return Err("callee body Sourceのframeが違う".into());
         }
         let bindings = self.expression_bindings(graph, frame.source)?;
-        let analysis = self.analyze_source(graph, span, bindings)?;
+        let analysis =
+            self.resolve_analysis(graph, self.analyze_source(graph, span, bindings)?, children)?;
         if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
             return Err("call body値が元入力展開と違う".into());
         }
@@ -2945,7 +3094,7 @@ impl<'a> Environment<'a> {
         if source != *expression
             || node.support != analysis.support
             || node.scope != analysis.scope
-            || graph.get(source)?.scope != analysis.scope
+            || !graph.get(source)?.scope.source_compatible(&analysis.scope)
         {
             return Err("call Evaluationの元出現・支持・Scopeが違う".into());
         }
@@ -3106,8 +3255,16 @@ impl<'a> Environment<'a> {
                 if graph.context_at(expression.0) != frame.caller {
                     return Err("実引数Sourceのframeが違う".into());
                 }
-                let analysis =
+                let mut analysis =
                     self.analyze_source(graph, self.inputs.law().exprs[arg].span, actual)?;
+                analysis
+                    .scope
+                    .merge_quantifiers(&graph.get(reference)?.scope);
+                if let Some(scope) = &mut analysis.scalar_scope
+                    && let Some(value) = value
+                {
+                    scope.merge_quantifiers(&graph.get(value)?.scope);
+                }
                 if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
                     return Err("call実引数が元入力の値と違う".into());
                 }
@@ -3180,7 +3337,8 @@ impl<'a> Environment<'a> {
             }
         }
         let own = own.ok_or("内包値の既出own Sourceがない")?;
-        let analysis = self.analyze_source(graph, span, bindings)?;
+        let analysis =
+            self.resolve_analysis(graph, self.analyze_source(graph, span, bindings)?, children)?;
         let items = match value.map(|r| graph.scalar(r)).transpose()? {
             Some(Scalar::List { items, .. }) => Some((items, true)),
             Some(Scalar::Set { items, .. }) => Some((items, false)),
@@ -3428,9 +3586,7 @@ impl<'a> Environment<'a> {
         }
         let span = self.expression_span(graph, record.source)?;
         let id = *self.expressions.get(&span).ok_or("反復元ASTがない")?;
-        let ExprKind::SetComp { domain, .. } = self.inputs.law().exprs[id].kind else {
-            return Err("反復元がSet内包でない".into());
-        };
+        let (domain, _) = self.iteration_syntax(id)?;
         let previous = self.context.replace(Some(record.caller));
         let result = (|| {
             self.validate_at(graph, graph.get(record.source)?, record.source.0)?;
@@ -3440,18 +3596,65 @@ impl<'a> Environment<'a> {
             if self.expression_bindings(graph, record.source)? != bindings {
                 return Err("反復元の実束縛が違う".into());
             }
-            let analysis =
+            let mut analysis =
                 self.analyze_source(graph, self.inputs.law().exprs[domain].span, bindings)?;
             if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
                 return Err("反復域値が元入力と違う".into());
             }
+            analysis
+                .scope
+                .merge_quantifiers(&graph.get(record.domain)?.scope);
             let value = graph.scalar(value.ok_or("未知domainに反復がある")?)?;
+            let quantified = matches!(self.inputs.law().exprs[id].kind, ExprKind::Quant { .. });
+            if quantified {
+                let finite = record.finite.ok_or("量化反復にDomainがない")?;
+                self.validate_at(graph, graph.get(finite)?, finite.0)?;
+                if graph.get(finite)?.arguments.get(..2)
+                    != Some([record.source, record.domain].as_slice())
+                {
+                    return Err("量化反復Domainの元辺が違う".into());
+                }
+                let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+                let mut scope = Scope::default();
+                scope.add_quantifier(spec.descriptor(Some(finite), Some(record.caller)));
+                analysis.scope.merge(&scope);
+                analysis
+                    .scope
+                    .order_quantifiers_like(&graph.get(record.source)?.scope);
+            } else if record.finite.is_some() {
+                return Err("内包反復に量化Domainがある".into());
+            }
             let member = match (&record.member, value) {
-                (super::call::Member::ListPosition(position), Scalar::List { items, .. }) => {
+                (
+                    super::call::Member::SetElement(member),
+                    Scalar::List { element, items } | Scalar::Set { element, items },
+                ) if quantified
+                    && member.ty() == *element
+                    && data::contains(items, member, &self.control)? =>
+                {
+                    let Some(Payload::Domain { elements, .. }) = &graph
+                        .get(record.finite.ok_or("量化反復にDomainがない")?)?
+                        .payload
+                    else {
+                        return Err("量化反復の有限域がない".into());
+                    };
+                    if !elements
+                        .iter()
+                        .any(|r| graph.scalar(*r).is_ok_and(|value| value == member))
+                    {
+                        return Err("量化binderが実Domain要素でない".into());
+                    }
+                    member.clone()
+                }
+                (super::call::Member::ListPosition(position), Scalar::List { items, .. })
+                    if !quantified =>
+                {
                     items.get(*position).ok_or("List反復位置が域外")?.clone()
                 }
                 (super::call::Member::SetElement(member), Scalar::Set { element, items })
-                    if member.ty() == *element && data::contains(items, member, &self.control)? =>
+                    if !quantified
+                        && member.ty() == *element
+                        && data::contains(items, member, &self.control)? =>
                 {
                     member.clone()
                 }
@@ -3514,6 +3717,18 @@ impl<'a> Environment<'a> {
         if let Some(index) = self.current_context(graph).iteration {
             let record = graph.iterations.get(index).ok_or("Sourceの反復がない")?;
             arguments.extend([record.source, record.domain]);
+            arguments.extend(record.finite);
+            if let Some(domain) = record.finite {
+                let (_, member, _) = self.iteration_input(graph, index)?;
+                let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
+                    return Err("量化SourceのDomain要素がない".into());
+                };
+                let reference = *elements
+                    .iter()
+                    .find(|r| graph.scalar(**r).is_ok_and(|v| v == &member))
+                    .ok_or("量化Sourceの実memberがない")?;
+                arguments.push(reference);
+            }
         }
         for (matching, arm) in self.enclosing_matches(span)? {
             let ExprKind::Match { scrutinee, .. } = self.inputs.law().exprs[matching].kind else {
@@ -3575,7 +3790,10 @@ impl<'a> Environment<'a> {
             if let Some(value) = cached {
                 return Ok(value);
             }
-            let value = self.analyze_source_uncached(graph, span, bindings)?;
+            let previous = self.scoped_context.replace(Some(context));
+            let result = self.analyze_source_uncached(graph, span, bindings);
+            self.scoped_context.set(previous);
+            let value = result?;
             self.cache.borrow_mut().sources.push((
                 context,
                 cutoff,
@@ -3704,9 +3922,13 @@ impl<'a> Environment<'a> {
         for (name, rhs) in self.lexical_context(span)? {
             self.tick()?;
             let value = match rhs {
-                LexicalOrigin::Let(rhs) => {
-                    self.scoped_ast(rhs, &variables, &base, &declaration.reading)?
-                }
+                LexicalOrigin::Let(rhs) => self.scoped_ast_at(
+                    rhs,
+                    &variables,
+                    &base,
+                    &declaration.reading,
+                    Some(self.lexical_evaluation_context(graph, rhs)?),
+                )?,
                 LexicalOrigin::Iteration(comp) => {
                     let index = self
                         .iteration_for(graph, comp)?
@@ -3732,8 +3954,13 @@ impl<'a> Environment<'a> {
                     else {
                         unreachable!()
                     };
-                    let mut input =
-                        self.scoped_ast(scrutinee, &variables, &base, &declaration.reading)?;
+                    let mut input = self.scoped_ast_at(
+                        scrutinee,
+                        &variables,
+                        &base,
+                        &declaration.reading,
+                        Some(self.lexical_evaluation_context(graph, scrutinee)?),
+                    )?;
                     if data::select(
                         self.inputs.law(),
                         matching,
@@ -3857,6 +4084,19 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         Ok(copy)
+    }
+    fn scoped_ast_at(
+        &self,
+        id: usize,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+        context: Option<super::call::Context>,
+    ) -> Result<SourceValue, ValidationFailure> {
+        let previous = self.scoped_context.replace(context);
+        let result = self.scoped_ast(id, variables, base, reading);
+        self.scoped_context.set(previous);
+        result
     }
     fn scoped_ast(
         &self,
@@ -4007,6 +4247,84 @@ impl<'a> Environment<'a> {
                         scalar_scope,
                     }
                 }
+                ExprKind::Quant { .. } => {
+                    let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+                    let input = self.scoped_ast(spec.domain, variables, base, reading)?;
+                    // 親/lexical値が既に持つ出現はその由来順を保つ。
+                    // このdomain式で新たに現れる量化は自身より後に置く。
+                    let mut inherited = base.clone();
+                    for value in variables.values() {
+                        self.tick()?;
+                        inherited.merge_quantifiers(&value.scope);
+                    }
+                    let mut scope = input.scope.clone();
+                    scope.quantifiers.retain(|q| {
+                        inherited
+                            .quantifiers
+                            .iter()
+                            .any(|old| old.occurrence == q.occurrence)
+                    });
+                    scope.add_quantifier(spec.descriptor(None, self.scoped_context.get()));
+                    scope.merge_quantifiers(&input.scope);
+                    let Some(container) = input.known_value.as_ref() else {
+                        return Ok(SourceValue {
+                            scope,
+                            known_value: None,
+                            support: input.support,
+                            scalar_scope: None,
+                        });
+                    };
+                    let (Scalar::List { items, .. } | Scalar::Set { items, .. }) = container else {
+                        return Err("量化域がList/Setでない".into());
+                    };
+                    let Scalar::Set { ref items, .. } =
+                        data::set(spec.element.clone(), items, &self.control)?
+                    else {
+                        unreachable!()
+                    };
+                    let mut support = input.support.clone();
+                    let mut values = Vec::new();
+                    for item in items {
+                        self.tick()?;
+                        let mut local = self.copy_variables(variables)?;
+                        for value in local.values_mut() {
+                            value.scope.merge(&scope);
+                        }
+                        if local
+                            .insert(
+                                spec.name.into(),
+                                SourceValue {
+                                    scope: scope.clone(),
+                                    known_value: Some(item.clone()),
+                                    support: input.support.clone(),
+                                    scalar_scope: Some(scope.clone()),
+                                },
+                            )
+                            .is_some()
+                        {
+                            return Err("量化binderが重複する".into());
+                        }
+                        let body = self.scoped_ast_at(spec.body, &local, &scope, reading, None)?;
+                        scope.merge(&body.scope);
+                        support.extend(body.support);
+                        values.push(match body.known_value {
+                            Some(Scalar::Bool(value)) => Some(value),
+                            None => None,
+                            _ => return Err("量化本体がBoolでない".into()),
+                        });
+                        self.tick()?;
+                    }
+                    support.sort();
+                    support.dedup();
+                    let known_value =
+                        quantifier::reduce(spec.kind, &values, &self.control)?.map(Scalar::Bool);
+                    SourceValue {
+                        scalar_scope: known_value.as_ref().map(|_| scope.clone()),
+                        scope,
+                        known_value,
+                        support,
+                    }
+                }
                 ExprKind::SetComp {
                     elem,
                     var,
@@ -4061,7 +4379,8 @@ impl<'a> Environment<'a> {
                             return Err("内包binderが重複する".into());
                         }
                         let condition = if let Some(filter) = filter {
-                            let value = self.scoped_ast(*filter, &local, &input.scope, reading)?;
+                            let value =
+                                self.scoped_ast_at(*filter, &local, &input.scope, reading, None)?;
                             scope.merge(&value.scope);
                             support.extend(value.support);
                             match value.known_value.as_ref() {
@@ -4075,7 +4394,7 @@ impl<'a> Environment<'a> {
                         match condition {
                             Some(true) => {
                                 let value =
-                                    self.scoped_ast(*elem, &local, &input.scope, reading)?;
+                                    self.scoped_ast_at(*elem, &local, &input.scope, reading, None)?;
                                 scope.merge(&value.scope);
                                 support.extend(value.support);
                                 if let Some(value) = value.known_value {
@@ -4229,7 +4548,8 @@ impl<'a> Environment<'a> {
                     for value in local.values_mut() {
                         value.scope.merge(&call_base);
                     }
-                    let body = self.scoped_ast(*body, &local, &call_base, &declaration.reading)?;
+                    let body =
+                        self.scoped_ast_at(*body, &local, &call_base, &declaration.reading, None)?;
                     call_base.merge(&body.scope);
                     support.extend(body.support);
                     support.sort();
@@ -4425,7 +4745,13 @@ impl<'a> Environment<'a> {
                         ..
                     }) => {
                         self.validate_at(graph, operand, reference.0)?;
-                        self.source_scope(graph, *span, bindings)?
+                        let mut scope = self.source_scope(graph, *span, bindings)?;
+                        if !scope.quantifiers.is_empty() {
+                            let id = *self.expressions.get(span).ok_or("変換元量化ASTがない")?;
+                            let actual = self.actual_evaluation(graph, id, bindings)?;
+                            scope.merge_quantifiers(&graph.get(actual)?.scope);
+                        }
+                        scope
                     }
                     Some(Payload::Transform { .. }) => {
                         self.transform_scope(graph, operand, reference.0)?
@@ -5001,26 +5327,8 @@ impl<'a> Environment<'a> {
             {
                 return Err("Bool 証拠の true 要求が違う".into());
             }
-            let Some(Payload::LawInstance {
-                body,
-                guard,
-                bindings,
-                ..
-            }) = &graph.get(instance)?.payload
-            else {
-                return Err("固定trueの元LawInstanceがない".into());
-            };
-            let mut expected =
-                self.source_scope(graph, self.expression_span(graph, *body)?, bindings)?;
-            if let Some(guard) = guard {
-                self.tick()?;
-                expected.merge(&self.source_scope(
-                    graph,
-                    self.expression_span(graph, *guard)?,
-                    bindings,
-                )?);
-                self.tick()?;
-            }
+            let (body, guard) = self.application_at(graph, instance)?;
+            let expected = self.application_context(graph, body, guard)?.1;
             if graph.get(supplied_right)?.scope != expected {
                 return Err("固定true Scalarの範囲が元Law適用と違う".into());
             }
@@ -5035,6 +5343,659 @@ impl<'a> Environment<'a> {
             }) if *span == self.inputs.law().exprs[id].span => Ok(()),
             _ => Err("元式との出現不一致".into()),
         }
+    }
+    fn quant_input(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        input: NodeRef,
+        limit: usize,
+    ) -> Result<(quantifier::Spec<'_>, Vec<Scalar>), ValidationFailure> {
+        if source.0 >= limit
+            || input.0 >= limit
+            || graph.context_at(source.0) != self.current_context(graph)
+            || graph.context_at(input.0) != self.current_context(graph)
+        {
+            return Err("量化元Source/collectionの既出性・Contextが違う".into());
+        }
+        let id = *self
+            .expressions
+            .get(&self.expression_span(graph, source)?)
+            .ok_or("量化元ASTがない")?;
+        let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+        self.validate_at(graph, graph.get(source)?, source.0)?;
+        self.recheck_evaluation(graph, input)?;
+        let (actual, bindings, value) = self.evaluation(graph, input)?;
+        self.source_matches(graph, actual, spec.domain)?;
+        if self.expression_bindings(graph, source)? != bindings {
+            return Err("量化collectionの宣言束縛が違う".into());
+        }
+        let items = match value.map(|r| graph.scalar(r)).transpose()? {
+            Some(Scalar::List { element, items } | Scalar::Set { element, items })
+                if *element == spec.element =>
+            {
+                items
+            }
+            _ => return Err("量化の既知collection/typeがない".into()),
+        };
+        let Scalar::Set { ref items, .. } = data::set(spec.element.clone(), items, &self.control)?
+        else {
+            unreachable!()
+        };
+        Ok((spec, items.clone()))
+    }
+    fn domain_member(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if node.arguments.len() != 2 || !matches!(&node.rule, Rule::Construction("domain")) {
+            return Err("Domain要素の元辺が違う".into());
+        }
+        let (spec, items) = self.quant_input(graph, node.arguments[0], node.arguments[1], limit)?;
+        let Some(Payload::Scalar(value)) = &node.payload else {
+            return Err("Domain要素が通常値でない".into());
+        };
+        let input = graph.get(node.arguments[1])?;
+        if value.ty() != spec.element
+            || !data::contains(&items, value, &self.control)?
+            || node.support != input.support
+            || node.scope != input.scope
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+        {
+            return Err("Domain要素が元collection/型/支持/Scopeと違う".into());
+        }
+        Ok(())
+    }
+    fn validate_domain(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        let Some(Payload::Domain { ty, elements }) = &node.payload else {
+            return Err("Domain payloadがない".into());
+        };
+        if node.ty != NodeType::Domain
+            || !matches!(&node.rule, Rule::Construction("domain"))
+            || node.arguments.len() != 2 + elements.len()
+            || node.arguments[2..] != *elements
+        {
+            return Err("Domainの型/規則/元辺が違う".into());
+        }
+        let (spec, items) = self.quant_input(graph, node.arguments[0], node.arguments[1], limit)?;
+        if *ty != spec.element || elements.len() != items.len() {
+            return Err("Domainの元型/全要素数が違う".into());
+        }
+        let mut seen = Vec::new();
+        for reference in elements {
+            self.tick()?;
+            if reference.0 >= limit || graph.context_at(reference.0) != self.current_context(graph)
+            {
+                return Err("Domain要素の既出Contextが違う".into());
+            }
+            let member = graph.get(*reference)?;
+            self.validate_at(graph, member, reference.0)?;
+            if member.arguments != node.arguments[..2] {
+                return Err("Domain要素が別collection出現に属する".into());
+            }
+            let value = graph.scalar(*reference)?;
+            if !data::contains(&items, value, &self.control)?
+                || data::contains(&seen, value, &self.control)?
+            {
+                return Err("Domain要素の漏れ/重複/別値".into());
+            }
+            seen.push(value.clone());
+        }
+        let mut scope = graph.get(node.arguments[1])?.scope.clone();
+        scope.add_quantifier(spec.descriptor(None, Some(self.current_context(graph))));
+        scope.order_quantifiers_like(&graph.get(node.arguments[0])?.scope);
+        if node.scope != scope
+            || node.support != graph.get(node.arguments[1])?.support
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+        {
+            return Err("DomainのScope/支持/証拠が違う".into());
+        }
+        Ok(())
+    }
+    fn quant_parts(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        children: &[NodeRef],
+        claimed: &Scope,
+        limit: usize,
+    ) -> Result<(SourceAnalysis, Option<NodeRef>), ValidationFailure> {
+        let input = *children.first().ok_or("量化collection辺がない")?;
+        if source.0 >= limit
+            || input.0 >= limit
+            || graph.context_at(source.0) != self.current_context(graph)
+            || graph.context_at(input.0) != self.current_context(graph)
+        {
+            return Err("量化元の既出Contextが違う".into());
+        }
+        let span = self.expression_span(graph, source)?;
+        let id = *self.expressions.get(&span).ok_or("量化ASTがない")?;
+        let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+        self.validate_at(graph, graph.get(source)?, source.0)?;
+        self.recheck_evaluation(graph, input)?;
+        let (expression, bindings, value) = self.evaluation(graph, input)?;
+        self.source_matches(graph, expression, spec.domain)?;
+        if self.expression_bindings(graph, source)? != bindings {
+            return Err("量化元束縛が違う".into());
+        }
+        let mut own = claimed
+            .quantifiers
+            .iter()
+            .filter(|q| q.occurrence == span && q.context == Some(self.current_context(graph)));
+        let descriptor = own.next().ok_or("量化Scopeがない")?;
+        if own.next().is_some()
+            || *descriptor != spec.descriptor(descriptor.domain, Some(self.current_context(graph)))
+        {
+            return Err("量化Scopeのkind/name/type/元出現が違う".into());
+        }
+        let mut scope = graph.get(input)?.scope.clone();
+        scope.add_quantifier(descriptor.clone());
+        scope.order_quantifiers_like(&graph.get(source)?.scope);
+        let mut support = graph.get(input)?.support.clone();
+        let mut results = Vec::new();
+        let mut seen = Vec::new();
+        let finite = descriptor.domain;
+        match value {
+            None => {
+                if finite.is_some() || children.len() != 1 {
+                    return Err("未知collectionに域/instanceがある".into());
+                }
+            }
+            Some(_) => {
+                let domain = finite.ok_or("既知量化に有限Domainがない")?;
+                if domain.0 >= limit || graph.context_at(domain.0) != self.current_context(graph) {
+                    return Err("量化Domainの既出Contextが違う".into());
+                }
+                self.validate_at(graph, graph.get(domain)?, domain.0)?;
+                if graph.get(domain)?.arguments.get(..2) != Some([source, input].as_slice()) {
+                    return Err("量化Domainが別元collectionに属する".into());
+                }
+                let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
+                    return Err("量化域が有限でない".into());
+                };
+                if children.len() != 1 + elements.len() {
+                    return Err("量化instance全coverageの件数が違う".into());
+                }
+                for body in &children[1..] {
+                    self.tick()?;
+                    if body.0 >= limit {
+                        return Err("量化bodyが未来を指す".into());
+                    }
+                    let context = graph.context_at(body.0);
+                    let index = context.iteration.ok_or("量化bodyにbinderContextがない")?;
+                    let record = graph.iterations.get(index).ok_or("量化binder元がない")?;
+                    if record.caller != self.current_context(graph)
+                        || record.source != source
+                        || record.domain != input
+                        || record.finite != finite
+                        || context.request != record.caller.request
+                        || context.frame != record.caller.frame
+                    {
+                        return Err("量化bodyの元域/binder/親Contextが違う".into());
+                    }
+                    let (_, member, _) = self.iteration_input(graph, index)?;
+                    if !matches!(record.member, super::call::Member::SetElement(_))
+                        || data::contains(&seen, &member, &self.control)?
+                        || !elements
+                            .iter()
+                            .any(|r| graph.scalar(*r).is_ok_and(|v| v == &member))
+                    {
+                        return Err("量化binderの漏れ/重複/別要素".into());
+                    }
+                    seen.push(member);
+                    self.recheck_evaluation(graph, *body)?;
+                    let (expression, actual, value) = self.evaluation(graph, *body)?;
+                    self.source_matches(graph, expression, spec.body)?;
+                    if actual != bindings {
+                        return Err("量化bodyの元宣言束縛が違う".into());
+                    }
+                    results.push(graph.boolean(value)?);
+                    scope.merge(&graph.get(*body)?.scope);
+                    support.extend(graph.get(*body)?.support.iter().cloned());
+                }
+            }
+        }
+        support.sort();
+        support.dedup();
+        let computed = if value.is_some() {
+            quantifier::reduce(spec.kind, &results, &self.control)?.map(Scalar::Bool)
+        } else {
+            None
+        };
+        let analysis = self.analyze_source(graph, span, bindings)?;
+        if analysis.known_value != computed
+            || analysis.support != support
+            || !analysis.scope.source_compatible(&scope)
+            || !graph.get(source)?.scope.source_compatible(&scope)
+        {
+            return Err("量化の元AST/Bool集約/支持/Scopeが違う".into());
+        }
+        Ok((
+            SourceAnalysis {
+                scalar_scope: computed.as_ref().map(|_| scope.clone()),
+                scope,
+                known_value: computed,
+                support,
+                missing: None,
+            },
+            finite,
+        ))
+    }
+    fn quant_scalar(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        let Rule::Input {
+            kind: "law",
+            location: Location::Law { span },
+        } = &node.rule
+        else {
+            return Err("量化Scalarの元規則がない".into());
+        };
+        let mut descriptors =
+            node.scope.quantifiers.iter().filter(|q| {
+                q.occurrence == *span && q.context == Some(self.current_context(graph))
+            });
+        let descriptor = descriptors
+            .next()
+            .ok_or("量化Scalarに自身の量化Scopeがない")?;
+        if descriptors.next().is_some() {
+            return Err("量化Scalarに自身の域が複数ある".into());
+        }
+        let finite = descriptor.domain.ok_or("量化Scalarの実Domainがない")?;
+        let source = *graph
+            .get(finite)?
+            .arguments
+            .first()
+            .ok_or("量化ScalarのDomain元Sourceがない")?;
+        if self.expression_span(graph, source)? != *span {
+            return Err("量化Scalarが別元出現のDomainを指す".into());
+        }
+        let (analysis, domain) =
+            self.quant_parts(graph, source, &node.arguments, &node.scope, limit)?;
+        if !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
+            || node.scope != analysis.scope
+            || node.support != analysis.support
+        {
+            return Err("量化Scalarの値/元Scope/支持が違う".into());
+        }
+        self.quant_evidence(
+            graph,
+            source,
+            domain,
+            &node.arguments[1..],
+            &analysis,
+            &node.evidence,
+        )?;
+        Ok(analysis)
+    }
+    fn validate_quant_evaluation(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Evaluation {
+            expression,
+            bindings,
+            parts,
+            value,
+            applicability,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        let span = self.expression_span(graph, *expression)?;
+        let Some(id) = self.expressions.get(&span) else {
+            return Ok(false);
+        };
+        if !matches!(self.inputs.law().exprs[*id].kind, ExprKind::Quant { .. }) {
+            return Ok(false);
+        }
+        if parts.len() != 1
+            || parts[0].location != (Location::Law { span })
+            || parts[0].value != *value
+            || parts[0].residual.is_some()
+            || *applicability != "applicable"
+            || self.expression_bindings(graph, *expression)? != bindings
+        {
+            return Err("量化Evaluationの元part/束縛が違う".into());
+        }
+        let (analysis, domain) =
+            self.quant_parts(graph, *expression, &parts[0].children, &node.scope, limit)?;
+        if node.scope != analysis.scope
+            || node.support != analysis.support
+            || value.map(|r| graph.scalar(r)).transpose() != Ok(analysis.known_value.as_ref())
+        {
+            return Err("量化Evaluationの値/Scope/支持が違う".into());
+        }
+        let expected: Vec<_> = std::iter::once(*expression)
+            .chain(parts[0].children.iter().copied())
+            .chain(*value)
+            .collect();
+        if node.arguments != expected {
+            return Err("量化Evaluationの元依存辺が違う".into());
+        }
+        if let Some(value) = value {
+            if value.0 >= limit
+                || graph.context_at(value.0) != self.current_context(graph)
+                || graph.get(*value)?.arguments != parts[0].children
+            {
+                return Err("量化結果のproducerが違う".into());
+            }
+            self.validate_at(graph, graph.get(*value)?, value.0)?;
+            if graph.get(*value)?.evidence != node.evidence {
+                return Err("量化Scalar/Evaluationの証拠が違う".into());
+            }
+        }
+        self.quant_evidence(
+            graph,
+            *expression,
+            domain,
+            &parts[0].children[1..],
+            &analysis,
+            &node.evidence,
+        )?;
+        let mut reasons = Vec::new();
+        for child in &parts[0].children {
+            reasons.extend(graph.get(*child)?.reasons.iter().cloned());
+        }
+        sort_reasons(&mut reasons);
+        if node.reasons.len() != reasons.len()
+            || node
+                .reasons
+                .iter()
+                .zip(&reasons)
+                .any(|(a, b)| a.wire() != b.wire())
+        {
+            return Err("量化が元missing/理由を捨てている".into());
+        }
+        Ok(true)
+    }
+    fn quant_evidence(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        domain: Option<NodeRef>,
+        bodies: &[NodeRef],
+        analysis: &SourceAnalysis,
+        evidence: &[NodeRef],
+    ) -> Result<(), ValidationFailure> {
+        let id = *self
+            .expressions
+            .get(&self.expression_span(graph, source)?)
+            .ok_or("証拠量化ASTがない")?;
+        let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+        let exhaustive = matches!(
+            (&analysis.known_value, spec.kind),
+            (Some(Scalar::Bool(true)), crate::law::ast::QuantKind::Forall)
+                | (
+                    Some(Scalar::Bool(false)),
+                    crate::law::ast::QuantKind::Exists
+                )
+        );
+        let mut full = false;
+        let mut false_bodies = Vec::new();
+        for reference in evidence {
+            self.tick()?;
+            self.validate_at(graph, graph.get(*reference)?, reference.0)?;
+            match &graph.get(*reference)?.payload {
+                Some(Payload::FiniteExhaustion {
+                    domain: actual,
+                    instances,
+                    ..
+                }) if Some(*actual) == domain
+                    && instances.len() == bodies.len()
+                    && instances.iter().all(|r| bodies.contains(r))
+                    && graph.get(*reference)?.arguments.first() == Some(&source) =>
+                {
+                    if full {
+                        return Err("全検査証拠が重複する".into());
+                    }
+                    full = true;
+                }
+                Some(Payload::Counterexample { .. })
+                    if spec.kind == crate::law::ast::QuantKind::Forall
+                        && graph.get(*reference)?.arguments.get(..2)
+                            == domain.map(|d| [source, d]).as_ref().map(|a| a.as_slice()) =>
+                {
+                    let body = *graph
+                        .get(*reference)?
+                        .arguments
+                        .get(2)
+                        .ok_or("量化反例のbodyがない")?;
+                    if !bodies.contains(&body) || false_bodies.contains(&body) {
+                        return Err("量化反例が別body/重複である".into());
+                    }
+                    false_bodies.push(body);
+                }
+                _ => return Err("量化に別の証拠を添付している".into()),
+            }
+        }
+        if full != exhaustive {
+            return Err("全域判断に対応する全検査証拠がない/余分".into());
+        }
+        if spec.kind == crate::law::ast::QuantKind::Forall {
+            for body in bodies {
+                self.tick()?;
+                if graph.boolean(self.evaluation(graph, *body)?.2)? == Some(false)
+                    && !false_bodies.contains(body)
+                {
+                    return Err("既知falseinstanceの反例を落としている".into());
+                }
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn quant_bindings(
+        &self,
+        graph: &Graph,
+        context: super::call::Context,
+    ) -> Result<Vec<Binding>, ValidationFailure> {
+        let mut records = Vec::new();
+        let mut current = context.iteration;
+        while let Some(index) = current {
+            self.tick()?;
+            let record = graph.iterations.get(index).ok_or("反例binder元がない")?;
+            if record.caller.iteration.is_some_and(|p| p >= index) {
+                return Err("反例binderの親が先行しない".into());
+            }
+            records.push(index);
+            current = record.caller.iteration;
+        }
+        records.reverse();
+        let first = *records.last().ok_or("量化反例に反復がない")?;
+        let mut bindings = self
+            .expression_bindings(graph, graph.iterations[first].source)?
+            .to_vec();
+        for index in records {
+            self.tick()?;
+            let record = &graph.iterations[index];
+            if let Some(domain) = record.finite {
+                let spec = quantifier::spec(
+                    self.inputs.law(),
+                    *self
+                        .expressions
+                        .get(&self.expression_span(graph, record.source)?)
+                        .ok_or("binder量化ASTがない")?,
+                    &self.control,
+                )?;
+                let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
+                    return Err("binderDomainがない".into());
+                };
+                let (_, member, _) = self.iteration_input(graph, index)?;
+                let value = *elements
+                    .iter()
+                    .find(|r| graph.scalar(**r).is_ok_and(|v| v == &member))
+                    .ok_or("反例binder要素がDomainにない")?;
+                bindings.push(Binding {
+                    name: spec.name.into(),
+                    ty: spec.element,
+                    value,
+                });
+            }
+        }
+        Ok(bindings)
+    }
+    fn quant_counter_parts(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(Vec<Binding>, NodeRef), ValidationFailure> {
+        let [source, domain, body] = node.arguments.as_slice() else {
+            return Err("量化反例の元依存辺数が違う".into());
+        };
+        if node.arguments.iter().any(|r| r.0 >= limit) {
+            return Err("量化反例が未来を参照する".into());
+        }
+        self.validate_at(graph, graph.get(*domain)?, domain.0)?;
+        self.recheck_evaluation(graph, *body)?;
+        let context = graph.context_at(body.0);
+        let record = graph
+            .iterations
+            .get(context.iteration.ok_or("量化反例のbinderContextがない")?)
+            .ok_or("量化反例の反復がない")?;
+        if self.current_context(graph) != context
+            || record.source != *source
+            || record.finite != Some(*domain)
+            || graph.get(*domain)?.arguments.get(..2) != Some([*source, record.domain].as_slice())
+        {
+            return Err("量化反例が元Domain/body/binderに属さない".into());
+        }
+        let spec = quantifier::spec(
+            self.inputs.law(),
+            *self
+                .expressions
+                .get(&self.expression_span(graph, *source)?)
+                .ok_or("反例量化ASTがない")?,
+            &self.control,
+        )?;
+        if spec.kind != crate::law::ast::QuantKind::Forall {
+            return Err("forall以外のfalsebodyを全称反例にしている".into());
+        }
+        let (expression, _, value) = self.evaluation(graph, *body)?;
+        self.source_matches(graph, expression, spec.body)?;
+        let left = value.ok_or("未知bodyに反例がある")?;
+        if graph.scalar(left)? != &Scalar::Bool(false) {
+            return Err("量化反例のbodyがfalseでない".into());
+        }
+        Ok((self.quant_bindings(graph, context)?, left))
+    }
+    fn validate_quant_counter(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if node.ty != NodeType::Evidence
+            || !matches!(&node.rule, Rule::Construction("evidence"))
+            || !node.evidence.is_empty()
+            || node.judgment.is_some()
+        {
+            return Err("量化反例の型/規則/証拠が違う".into());
+        }
+        let (expected, left) = self.quant_counter_parts(graph, node, limit)?;
+        let Some(Payload::Counterexample {
+            bindings,
+            left: actual,
+            right,
+            facts,
+        }) = &node.payload
+        else {
+            return Err("量化反例payloadがない".into());
+        };
+        let body = graph.get(node.arguments[2])?;
+        let mut support = graph.get(node.arguments[1])?.support.clone();
+        support.extend(body.support.iter().cloned());
+        support.sort();
+        support.dedup();
+        if bindings != &expected
+            || *actual != left
+            || graph.scalar(*right)? != &Scalar::Bool(true)
+            || graph.get(*right)?.arguments != node.arguments
+            || facts != &support
+            || node.support != support
+            || node.scope != body.scope
+            || !node.reasons.is_empty()
+        {
+            return Err("量化反例の実binder/falsebody/要求/支持/Scopeが違う".into());
+        }
+        self.validate_at(graph, graph.get(*right)?, right.0)?;
+        Ok(())
+    }
+    fn validate_finite_exhaustion(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if node.ty != NodeType::Evidence
+            || !matches!(&node.rule, Rule::Construction("evidence"))
+            || node.judgment.is_some()
+        {
+            return Err("全検査証拠の型/規則が違う".into());
+        }
+        let Some(Payload::FiniteExhaustion {
+            domain,
+            checked,
+            instances,
+        }) = &node.payload
+        else {
+            return Err("全検査payloadがない".into());
+        };
+        let source = *node.arguments.first().ok_or("全検査元Sourceがない")?;
+        let input = *graph
+            .get(*domain)?
+            .arguments
+            .get(1)
+            .ok_or("全検査元域Evalがない")?;
+        let children: Vec<_> = std::iter::once(input)
+            .chain(instances.iter().copied())
+            .collect();
+        let (analysis, actual) = self.quant_parts(graph, source, &children, &node.scope, limit)?;
+        let spec = quantifier::spec(
+            self.inputs.law(),
+            *self
+                .expressions
+                .get(&self.expression_span(graph, source)?)
+                .ok_or("全検査元量化がない")?,
+            &self.control,
+        )?;
+        if actual != Some(*domain)
+            || *checked != instances.len()
+            || node.arguments
+                != std::iter::once(source)
+                    .chain([*domain])
+                    .chain(instances.iter().copied())
+                    .collect::<Vec<_>>()
+            || node.support != analysis.support
+            || node.scope != analysis.scope
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+            || !matches!(
+                (spec.kind, analysis.known_value),
+                (crate::law::ast::QuantKind::Forall, Some(Scalar::Bool(true)))
+                    | (
+                        crate::law::ast::QuantKind::Exists,
+                        Some(Scalar::Bool(false))
+                    )
+            )
+        {
+            return Err("全検査証拠の元域/coverage/body/件数/判断が違う".into());
+        }
+        Ok(())
     }
 }
 pub(crate) fn scalar_from(
