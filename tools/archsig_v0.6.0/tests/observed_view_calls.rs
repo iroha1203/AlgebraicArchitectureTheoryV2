@@ -1104,3 +1104,198 @@ fn one_zero_argument_named_call_retains_original_body_and_typed_derivation() {
     assert_eq!(f(call_scalar, "support"), f(evaluation, "support"));
     assert_eq!(f(call_scalar, "scope"), scope);
 }
+
+#[test]
+fn owned_callee_parameters_remain_not_implemented_without_membership_evidence() {
+    use archsig::observed::{
+        EvaluationFailure, PrepareFailure,
+        request::{RequestIssueCode, ResolveFailure},
+    };
+    let original_law = include_str!("fixtures/reservations.law");
+    let original_map = include_str!("fixtures/reservations.archmap.json");
+    let law = original_law.replace(
+        "  view holdings(s: State): (Z, Z) = (s.free, s.held);",
+        r#"  view raw(s: State): Z = s.free;
+  view plain(system: System,s: State): Z = raw(s);
+  view owned(system: System,s: State[system]): Z = s.free;
+  view caller(system: System,s: State): Z = owned(system,s);
+  view claimed(system: System,s: State): State[system] = s;
+  view return_caller(system: System,s: State): State = claimed(system,s);
+  law required member(system: System,s: State): owned(system,s)=4;
+  view holdings(s: State): (Z, Z) = (s.free, s.held);"#,
+    );
+    assert!(law.contains("view owned(system: System,s: State[system])"));
+    let missing_map = original_map
+        .lines()
+        .filter(|line| !line.contains(r#""id": "r-owner""#))
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert_ne!(original_map, missing_map);
+    let sources = |map: &str| {
+        InputSources::from_bytes(
+            vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],
+            law.as_bytes().to_vec(),
+            map.as_bytes().to_vec(),
+        )
+    };
+    // plain Ref callは所属を要求せず、直接Owned Requestは所属一致を既存経路で確認する。
+    let (normal, checked) = run(
+        sources(original_map),
+        &[
+            "plain=evaluate(Reservations.plain,system=@v/A,s=@v/r)",
+            "direct=evaluate(Reservations.owned,system=@v/B,s=@v/r)",
+        ],
+    );
+    assert_eq!(f(&normal, "status"), &Json::str("complete"));
+    for id in ["plain", "direct"] {
+        output(&normal, id, &Json::str("Z"), Json::str("4"));
+    }
+    let ns = index(&normal);
+    let plain = target(
+        &ns,
+        f(f(answer(&normal, "plain"), "outputs"), "evaluation"),
+        &Json::str("Evaluation"),
+    );
+    assert_eq!(arr(f(part(plain), "children")).len(), 2);
+    let direct_failure = evaluate_observed_bytes(
+        sources(original_map),
+        &["bad=evaluate(Reservations.owned,system=@v/A,s=@v/r)"],
+        &mut quiet(),
+    )
+    .unwrap_err();
+    let direct_invalid = direct_failure
+        .wire()
+        .expect("既知owner不一致の直接Requestは既存のinvalid");
+    let EvaluationFailure::Prepare(PrepareFailure::Requests {
+        failure: ResolveFailure::Invalid { issues, .. },
+        ..
+    }) = &direct_failure
+    else {
+        panic!("既存のRequest型不一致");
+    };
+    assert_eq!(issues.len(), 1);
+    assert_eq!(issues[0].code, RequestIssueCode::Type);
+    assert_eq!(issues[0].request, "bad");
+    assert_eq!(issues[0].argument, "bind.s");
+    assert_eq!(issues[0].message, "依存 parameter の owner が合わない");
+    assert_eq!(f(&direct_invalid, "status"), &Json::str("invalid"));
+    let direct_issue = &arr(f(&direct_invalid, "issues"))[0];
+    assert_eq!(f(direct_issue, "request"), &Json::str("bad"));
+    assert_eq!(
+        f(direct_issue, "message"),
+        &Json::str("依存 parameter の owner が合わない")
+    );
+    assert_eq!(arr(f(&direct_invalid, "issues")).len(), 1);
+    assert_eq!(
+        f(&arr(f(&direct_invalid, "issues"))[0], "code"),
+        &Json::str("usage")
+    );
+    assert_eq!(
+        f(&arr(f(&direct_invalid, "issues"))[0], "details"),
+        &Json::obj([("argument", Json::str("bind.s"))])
+    );
+    for key in ["nodes", "answers"] {
+        assert!(arr(f(&direct_invalid, key)).is_empty());
+    }
+    let Signature::View {
+        body: caller_body, ..
+    } = &checked.law().declarations["Reservations.caller"].signature
+    else {
+        panic!("caller view");
+    };
+    let caller_span = checked.law().exprs[*caller_body].span;
+    let Signature::Law {
+        body: member_body, ..
+    } = &checked.law().declarations["Reservations.member"].signature
+    else {
+        panic!("member Law");
+    };
+    let ExprKind::Binary {
+        lhs: member_call, ..
+    } = &checked.law().exprs[*member_body].kind
+    else {
+        panic!("元等号");
+    };
+    let member_span = checked.law().exprs[*member_call].span;
+    for at in [caller_span, member_span] {
+        assert_eq!(&law.as_bytes()[at.0..at.1], b"owned(system,s)");
+    }
+    let Signature::View {
+        body: return_body, ..
+    } = &checked.law().declarations["Reservations.return_caller"].signature
+    else {
+        panic!("return caller view");
+    };
+    let return_span = checked.law().exprs[*return_body].span;
+    assert_eq!(
+        &law.as_bytes()[return_span.0..return_span.1],
+        b"claimed(system,s)"
+    );
+    let mut unexpected = Vec::new();
+    for (label, map, ask, at) in [
+        (
+            "known mismatch",
+            original_map,
+            "bad=evaluate(Reservations.caller,system=@v/A,s=@v/r)",
+            caller_span,
+        ),
+        (
+            "missing owner",
+            missing_map.as_str(),
+            "bad=evaluate(Reservations.caller,system=@v/A,s=@v/r)",
+            caller_span,
+        ),
+        (
+            "Law",
+            original_map,
+            "badcheck=check(Reservations.member,system=@v/A,s=@v/r)",
+            member_span,
+        ),
+        (
+            "same owner named call",
+            original_map,
+            "same=evaluate(Reservations.caller,system=@v/B,s=@v/r)",
+            caller_span,
+        ),
+        (
+            "Owned return with plain parameters",
+            original_map,
+            "returned=evaluate(Reservations.return_caller,system=@v/A,s=@v/r)",
+            return_span,
+        ),
+    ] {
+        match evaluate_observed_bytes(sources(map), &[ask], &mut quiet()) {
+            Err(failure) => {
+                assert!(
+                    failure.wire().is_none(),
+                    "未確認所属をinvalidへ変えない: {label}"
+                );
+                let EvaluationFailure::NotImplemented {
+                    location: archsig::issue::Location::Law { span },
+                    feature,
+                    ..
+                } = failure
+                else {
+                    panic!("Owned calleeは専用未実装: {label}");
+                };
+                assert_eq!(span, at, "元call出現を保持: {label}");
+                assert!(
+                    feature.contains("owner"),
+                    "所属条件の未実装を示す: {feature}"
+                );
+            }
+            Ok(result) => {
+                let wire = result.wire();
+                unexpected.push(format!(
+                    "{label}: status={}, answer={:?}",
+                    result.status(),
+                    f(&wire, "answers")
+                ));
+            }
+        }
+    }
+    assert!(
+        unexpected.is_empty(),
+        "Owned calleeの未確認所属から値/Law判断を確定しない: {unexpected:#?}"
+    );
+}

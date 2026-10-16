@@ -2332,7 +2332,59 @@ impl<'a> Environment<'a> {
                 }
             }
         }
-        Ok(found)
+        let Some(declaration) = found else {
+            return Ok(None);
+        };
+        let crate::law::model::Signature::View {
+            params, returns, ..
+        } = &declaration.signature
+        else {
+            unreachable!()
+        };
+        // 式型へeraseする前の宣言型を読む。所属条件を確認するcall評価は未提供。
+        let mut pending = vec![returns];
+        for parameter in params {
+            self.tick()?;
+            pending.push(&parameter.ty);
+            self.tick()?;
+        }
+        while let Some(ty) = pending.pop() {
+            self.tick()?;
+            match ty {
+                Type::Owned(_, _) => {
+                    self.tick()?;
+                    return Err(ValidationFailure::UnsupportedExpression {
+                        location: Location::Law {
+                            span: law.exprs[id].span,
+                        },
+                        feature: "依存 owner 制約を持つ view parameter・戻り型の呼出し評価".into(),
+                    });
+                }
+                Type::Tuple(items) => {
+                    for item in items {
+                        self.tick()?;
+                        pending.push(item);
+                        self.tick()?;
+                    }
+                }
+                Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
+                Type::Map(from, to) => {
+                    pending.push(from);
+                    pending.push(to);
+                }
+                Type::Term(params, returns) => {
+                    pending.push(returns);
+                    for parameter in params {
+                        self.tick()?;
+                        pending.push(parameter);
+                        self.tick()?;
+                    }
+                }
+                _ => {}
+            }
+            self.tick()?;
+        }
+        Ok(Some(declaration))
     }
     fn frame_arguments(
         &self,

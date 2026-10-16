@@ -28,8 +28,8 @@
   これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
   ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
-  これらの値型を引数・返り値に持つ非再帰view呼出しを、引数なし・複数引数・
-  入れ子・import aliasを含めて評価する。呼出しごとに元の引数評価・parameter束縛・
+  これらの値型を引数・返り値に持ち、ownerに依存しない署名の非再帰view呼出しを評価する。
+  引数なし・複数引数・入れ子・import aliasを扱い、呼出しごとに元の引数評価・parameter束縛・
   callee bodyの導出を保持し、呼出し元のlexical bindingへ戻る。
   未観測の実引数は欠測理由を保ち、その引数を使わないbodyは既知値を返せる。
   ドット列は束縛変数と一つの field まで扱う。
@@ -41,6 +41,7 @@
   型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
   欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
   その他の式形・未束縛 parameter の量化・Answer 由来の束縛・
+  ownerに依存するparameter・返り値を宣言したviewの呼出し・
   未確定の参照からのfield読取り・動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
   `unsupported_algorithm` や未決回答へ変換しない。
