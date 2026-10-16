@@ -7,7 +7,7 @@ use super::{
         supports_binary, unary,
     },
     input::InputSources,
-    prepare_observed,
+    numeric, prepare_observed,
     request::{QuestionKind, Request, Selector},
     result::*,
 };
@@ -297,7 +297,7 @@ impl Evaluator<'_, '_> {
             }
             self.tick(Checkpoint::FiniteIteration)?;
             match &expr.kind {
-                ExprKind::Int(_) if ty == Type::Z => {}
+                ExprKind::Int(_) if matches!(ty, Type::Z | Type::Q | Type::Fp(_)) => {}
                 ExprKind::Bool(_) => {}
                 ExprKind::Dotted(parts) => {
                     if parts.len() > 2 {
@@ -319,7 +319,8 @@ impl Evaluator<'_, '_> {
                     })?;
                     self.source(first.span, parameter)?;
                     if parts.len() > 1
-                        && !matches!(ty, Type::Z | Type::Bool | Type::Ref(_) | Type::Owned(_, _))
+                        && !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
+                        && !numeric::is_numeric_type(&ty, self.control)?
                     {
                         return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
                     }
@@ -329,7 +330,9 @@ impl Evaluator<'_, '_> {
                     if !matches!(owner.known_value, Some(Scalar::Subject { .. })) {
                         return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
                     }
-                    if !matches!(ty, Type::Z | Type::Bool | Type::Ref(_) | Type::Owned(_, _)) {
+                    if !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
+                        && !numeric::is_numeric_type(&ty, self.control)?
+                    {
                         return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
                     }
                 }
@@ -337,7 +340,7 @@ impl Evaluator<'_, '_> {
                     self.prepare_source(*child)?;
                 }
                 ExprKind::Unary { op, operand }
-                    if (*op == UnOp::Neg && ty == Type::Z)
+                    if (*op == UnOp::Neg && numeric::is_numeric_type(&ty, self.control)?)
                         || (*op == UnOp::Not && ty == Type::Bool) =>
                 {
                     self.prepare_source(*operand)?;
@@ -349,11 +352,22 @@ impl Evaluator<'_, '_> {
                         .law()
                         .expr_type(*lhs)
                         .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
-                    if !supports_binary(*op, input_ty) {
+                    if !supports_binary(*op, input_ty, self.control)? {
                         return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                     }
                     self.prepare_source(*lhs)?;
                     self.prepare_source(*rhs)?;
+                }
+                ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. } => {
+                    let children = self
+                        .environment
+                        .composite_children(id)?
+                        .ok_or_else(|| self.unsupported(span, "数値組・射影・rat 以外の構成"))?;
+                    for child in children {
+                        self.tick(Checkpoint::FiniteIteration)?;
+                        self.prepare_source(child)?;
+                        self.tick(Checkpoint::FiniteIteration)?;
+                    }
                 }
                 _ => return Err(self.unsupported(span, format!("式形 {:?}", expr.kind))),
             }
@@ -462,12 +476,9 @@ impl Evaluator<'_, '_> {
             .ok_or_else(|| Failure::Internal("原式の型がない".into()))?
             .clone();
         match &expr.kind {
-            ExprKind::Int(n) if ty == Type::Z => {
+            ExprKind::Int(n) if matches!(ty, Type::Z | Type::Q | Type::Fp(_)) => {
                 let v = self.value(
-                    Scalar::Z(
-                        n.parse()
-                            .map_err(|_| Failure::Internal("整数 literal".into()))?,
-                    ),
+                    numeric::literal(n, &ty, self.control)?,
                     Rule::Input {
                         kind: "law",
                         location: Location::Law { span },
@@ -543,13 +554,13 @@ impl Evaluator<'_, '_> {
                 self.finish(span, ty, child.value, vec![child], vec![], None, None, None)
             }
             ExprKind::Unary { op, operand }
-                if (*op == UnOp::Neg && ty == Type::Z)
+                if (*op == UnOp::Neg && numeric::is_numeric_type(&ty, self.control)?)
                     || (*op == UnOp::Not && ty == Type::Bool) =>
             {
                 let operand = self.eval(*operand)?;
                 let value = match operand.value {
                     Some(r) => Some(self.value(
-                        unary(*op, self.graph.scalar(r)?)?,
+                        unary(*op, self.graph.scalar(r)?, self.control)?,
                         Rule::Input {
                             kind: "law",
                             location: Location::Law { span },
@@ -573,7 +584,7 @@ impl Evaluator<'_, '_> {
                     .law()
                     .expr_type(*lhs)
                     .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
-                if !supports_binary(*op, input_ty) {
+                if !supports_binary(*op, input_ty, self.control)? {
                     return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                 }
                 let left = self.eval(*lhs)?;
@@ -590,6 +601,7 @@ impl Evaluator<'_, '_> {
                     *op,
                     left.value.map(|r| self.graph.scalar(r)).transpose()?,
                     right.value.map(|r| self.graph.scalar(r)).transpose()?,
+                    self.control,
                 )?;
                 let value = if let Some(value) = known_value {
                     let arguments = if is_boolean_binary(*op) {
@@ -613,26 +625,27 @@ impl Evaluator<'_, '_> {
                 } else {
                     None
                 };
-                let residual = if *op == BinOp::Eq && input_ty == &Type::Z {
-                    if let Some((l, r)) = comparison {
-                        let (Scalar::Z(a), Scalar::Z(b)) =
-                            (self.graph.scalar(l)?, self.graph.scalar(r)?)
-                        else {
-                            return Err(Failure::Internal("等式残差の型".into()));
-                        };
-                        Some(self.value(
-                            Scalar::Z(a - b),
-                            Rule::Construction("evaluation"),
-                            vec![l, r],
-                            support,
-                            scope,
-                        )?)
+                let residual =
+                    if *op == BinOp::Eq && numeric::is_numeric_type(input_ty, self.control)? {
+                        if let Some((l, r)) = comparison {
+                            Some(self.value(
+                                numeric::binary(
+                                    BinOp::Sub,
+                                    self.graph.scalar(l)?,
+                                    self.graph.scalar(r)?,
+                                    self.control,
+                                )?,
+                                Rule::Construction("evaluation"),
+                                vec![l, r],
+                                support,
+                                scope,
+                            )?)
+                        } else {
+                            None
+                        }
                     } else {
                         None
-                    }
-                } else {
-                    None
-                };
+                    };
                 self.finish(
                     span,
                     ty,
@@ -643,6 +656,49 @@ impl Evaluator<'_, '_> {
                     comparison,
                     residual,
                 )
+            }
+            ExprKind::Tuple(_) | ExprKind::Index { .. } | ExprKind::Call { .. } => {
+                let children = self
+                    .environment
+                    .composite_children(id)?
+                    .ok_or_else(|| self.unsupported(span, "数値組・射影・rat 以外の構成"))?;
+                let mut evaluated = Vec::new();
+                let mut arguments = Vec::new();
+                let mut values = Vec::new();
+                let mut known = true;
+                let mut scope = self.base.clone();
+                let mut support = Vec::new();
+                for child in children {
+                    self.tick(Checkpoint::FiniteIteration)?;
+                    let child = self.eval(child)?;
+                    scope.merge(&child.scope);
+                    support.extend(child.support.iter().cloned());
+                    if let Some(value) = child.value {
+                        arguments.push(value);
+                        values.push(self.graph.scalar(value)?.clone());
+                    } else {
+                        known = false;
+                    }
+                    evaluated.push(child);
+                    self.tick(Checkpoint::FiniteIteration)?;
+                }
+                support.sort();
+                support.dedup();
+                let value = if known {
+                    Some(self.value(
+                        self.environment.composite_value(id, &values)?,
+                        Rule::Input {
+                            kind: "law",
+                            location: Location::Law { span },
+                        },
+                        arguments,
+                        support,
+                        scope,
+                    )?)
+                } else {
+                    None
+                };
+                self.finish(span, ty, value, evaluated, vec![], None, None, None)
             }
             _ => Err(self.unsupported(span, format!("式形 {:?}", expr.kind))),
         }
@@ -660,20 +716,20 @@ impl Evaluator<'_, '_> {
             snapshot,
             subject,
             entity,
-        } = self.graph.scalar(reference)?.clone()
+        } = self.graph.scalar(reference)?
         else {
             return Err(self.unsupported(span, "原始 Ref 以外の field 読取り"));
         };
+        let (snapshot, subject, entity) = (snapshot.clone(), subject.clone(), entity.clone());
         let s = self.environment.subject(&snapshot, &subject)?;
         if s.ty != entity {
             return Err(Failure::Internal("field owner 型が合わない".into()));
         }
         let fullname = format!("{entity}.{name}");
         let field = self.environment.field(&s.snapshot, &s.id, &fullname)?;
-        if !matches!(
-            field.ty,
-            Type::Z | Type::Bool | Type::Ref(_) | Type::Owned(_, _)
-        ) {
+        if !matches!(field.ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
+            && !numeric::is_numeric_type(&field.ty, self.control)?
+        {
             return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
         }
         let fact = Fact {
@@ -689,7 +745,7 @@ impl Evaluator<'_, '_> {
                 value,
                 pointer,
             } => {
-                let value = scalar_from(value, &field.ty)
+                let value = scalar_from(value, &field.ty, self.control)?
                     .ok_or_else(|| self.unsupported(span, "Z/Bool/Ref 以外の原始値読取り"))?;
                 let mut fact = fact;
                 fact.atom = Some(atom.clone());
@@ -3350,5 +3406,228 @@ reading R {{
                 );
             }
         }
+    }
+
+    fn numeric_recheck_fixture(omitted: &[&str], body: &str) -> InputSources {
+        let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0",
+      "vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Numeric","version":"1","dependencies":[],
+      "declarations":[{"kind":"entity","name":"Numeric.Sample","meaning":"小さい数値を観測する対象。","parameters":[],
+      "fields":[{"name":"q","type":"Q","meaning":"有理数。"},
+      {"name":"f","type":["Fp","5"],"meaning":"五元体の値。"},
+      {"name":"g","type":["Fp","7"],"meaning":"七元体の値。"},
+      {"name":"t","type":["Tuple","Z","Q",["Tuple",["Fp","5"],"Z"]],"meaning":"混合した数値Tuple。"},
+      {"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
+        let checked =
+            crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies["Numeric"].digest;
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Calc {{
+ use vocabulary Numeric version "1" digest "{digest}";
+ {body}
+}}
+"#
+        );
+        let atoms = [
+        ("q", r#"["-2","3"]"#),
+        ("f", r#""4""#),
+        ("g", r#""4""#),
+        ("t", r#"["-2",["1","2"],["4","3"]]"#),
+        ("p", "false"),
+    ].into_iter().filter(|(name, _)| !omitted.contains(name)).map(|(name, value)| {
+        format!(r#"{{"id":"{name}","subject":"sample","field":"Numeric.Sample.{name}","value":{value},"origin":"values"}}"#)
+    }).collect::<Vec<_>>().join(",");
+        let map = format!(
+            r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0",
+      "vocabularies":[{{"namespace":"Numeric","version":"1","digest":"{digest}"}}],
+      "sources":[{{"id":"scan","uri":"urn:fixture:numeric-values","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],
+      "origins":[{{"id":"base","mode":"observed","method":"対象を観測する。","locations":[{{"source":"scan","path":"state.model","span":[0,1]}}]}},
+      {{"id":"values","mode":"observed","method":"数値と条件を観測する。","locations":[{{"source":"scan","path":"values.model","span":[2,5]}}]}}],
+      "snapshots":[{{"id":"v","origin":"base","subjects":[{{"id":"sample","type":"Numeric.Sample","origin":"base"}}],"atoms":[{atoms}]}}]}}"#
+        );
+        InputSources::from_bytes(
+            vec![definitions.as_bytes().to_vec()],
+            law.into_bytes(),
+            map.into_bytes(),
+        )
+    }
+
+    fn numeric_recheck_example() -> ObservedEvaluation {
+        evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &[],
+                r#"
+ view q(s: Sample): Q = s.q + rat(5,6);
+ view f(s: Sample): Fp(5) = s.f + 3;
+ view t(s: Sample): (Z,Q,(Fp(5),Z)) = -s.t;
+ view projected(s: Sample): Fp(5) = s.t.2.0;
+ view foreign(s: Sample): Q = rat(5,6) + s.q;
+ law required equal_q(s: Sample): s.q = rat(1,3);
+ law required equal_f(s: Sample): s.f = 1;
+ law required equal_t(s: Sample): s.t = (0,rat(1,2),(1,3));
+"#,
+            ),
+            &[
+                "foreign=evaluate(Calc.foreign,s=@v/sample)",
+                "q=evaluate(Calc.q,s=@v/sample)",
+                "f=evaluate(Calc.f,s=@v/sample)",
+                "t=evaluate(Calc.t,s=@v/sample)",
+                "project=evaluate(Calc.projected,s=@v/sample)",
+                "qeq=check(Calc.equal_q,s=@v/sample)",
+                "feq=check(Calc.equal_f,s=@v/sample)",
+                "teq=check(Calc.equal_t,s=@v/sample)",
+                "again=evaluate(Calc.q,s=@v/sample)",
+            ],
+            &mut Control::unlimited(),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn rejects_numeric_value_type_normalization_and_producer_substitution_at_prefix() {
+        let result = numeric_recheck_example();
+        assert_eq!(result.status(), "complete");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        for (id, false_value) in [
+            ("q", Scalar::Q(2.into(), 12.into())),
+            (
+                "f",
+                Scalar::Fp {
+                    modulus: "7".into(),
+                    value: 2.into(),
+                },
+            ),
+            (
+                "t",
+                Scalar::Tuple(vec![
+                    Scalar::Z(2.into()),
+                    Scalar::Q((-1).into(), 2.into()),
+                    Scalar::Tuple(vec![
+                        Scalar::Fp {
+                            modulus: "7".into(),
+                            value: 1.into(),
+                        },
+                        Scalar::Z((-3).into()),
+                    ]),
+                ]),
+            ),
+        ] {
+            let value = result.answers.iter().find(|a| a.id == id).unwrap().outputs["value"];
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value.0]).unwrap();
+            let mut changed = result.nodes[..=value.0].to_vec();
+            let false_type = NodeType::Value(false_value.ty());
+            if id != "q" {
+                assert_ne!(false_type, result.nodes[value.0].ty);
+            }
+            changed[value.0].ty = false_type;
+            changed[value.0].payload = Some(Payload::Scalar(false_value));
+            assert!(matches!(
+                rebuild_for_origin_and_support_recheck(&result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
+        let value = result.answers.iter().find(|a| a.id == "q").unwrap().outputs["value"];
+        assert_eq!(graph.scalar(value).unwrap(), &Scalar::Q(1.into(), 6.into()));
+        let repeated = result
+            .answers
+            .iter()
+            .find(|a| a.id == "again")
+            .unwrap()
+            .outputs["value"];
+        assert_eq!(
+            graph.scalar(repeated).unwrap(),
+            graph.scalar(value).unwrap()
+        );
+        assert_ne!(
+            result.nodes[repeated.0].arguments,
+            result.nodes[value.0].arguments
+        );
+        let foreign_value = result
+            .answers
+            .iter()
+            .find(|a| a.id == "foreign")
+            .unwrap()
+            .outputs["value"];
+        assert!(foreign_value.0 < value.0);
+        assert_eq!(
+            graph.scalar(foreign_value).unwrap(),
+            graph.scalar(value).unwrap()
+        );
+        assert_eq!(
+            result.nodes[foreign_value.0].support,
+            result.nodes[value.0].support
+        );
+        assert_eq!(
+            result.nodes[foreign_value.0].scope,
+            result.nodes[value.0].scope
+        );
+        assert_ne!(
+            result.nodes[foreign_value.0].arguments,
+            result.nodes[value.0].arguments
+        );
+        let foreign = &result.prepared.inputs().law().declarations["Calc.foreign"];
+        let Signature::View { body, .. } = &foreign.signature else {
+            unreachable!()
+        };
+        let foreign_span = result.prepared.inputs().law().exprs[*body].span;
+        assert!(
+            matches!(&result.nodes[value.0].rule, Rule::Input { kind: "law", location: Location::Law {span} } if *span != foreign_span)
+        );
+        assert!(result.nodes[..value.0].iter().any(|node| matches!(&node.payload, Some(Payload::Expression {location: Location::Law {span}, ..}) if *span == foreign_span)));
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value.0]).unwrap();
+        let mut changed = result.nodes[..=value.0].to_vec();
+        changed[value.0].rule = Rule::Input {
+            kind: "law",
+            location: Location::Law { span: foreign_span },
+        };
+        assert!(matches!(
+            rebuild_for_origin_and_support_recheck(&result, &changed),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+
+    #[test]
+    fn rejects_typed_numeric_residual_and_operand_substitution_at_prefix() {
+        let result = numeric_recheck_example();
+        assert_eq!(result.status(), "complete");
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        for answer in result
+            .answers
+            .iter()
+            .filter(|a| ["qeq", "feq", "teq"].contains(&a.id.as_str()))
+        {
+            let evaluation = &result.nodes[answer.outputs["evaluation"].0];
+            let Some(Payload::Evaluation { parts, .. }) = &evaluation.payload else {
+                unreachable!()
+            };
+            let residual = parts.iter().find_map(|p| p.residual).unwrap();
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=residual.0]).unwrap();
+            assert_eq!(
+                result.nodes[residual.0].scope.modes,
+                ["observed".to_owned()].into()
+            );
+            for mutation in 0..4 {
+                let mut changed = result.nodes[..=residual.0].to_vec();
+                match mutation {
+                    0 => changed[residual.0].payload = Some(Payload::Scalar(Scalar::Z(0.into()))),
+                    1 => changed[residual.0].arguments.swap(0, 1),
+                    2 => changed[residual.0].support.clear(),
+                    _ => changed[residual.0].scope.modes = ["specification".to_owned()].into(),
+                }
+                assert!(matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ));
+            }
+        }
+        let value = result.answers.iter().find(|a| a.id == "q").unwrap().outputs["value"];
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value.0]).unwrap();
+        let mut changed = result.nodes[..=value.0].to_vec();
+        changed[value.0].arguments.swap(0, 1);
+        assert!(matches!(
+            rebuild_for_origin_and_support_recheck(&result, &changed),
+            Err(ValidationFailure::Internal(_))
+        ));
     }
 }
