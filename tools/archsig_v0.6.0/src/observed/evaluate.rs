@@ -1201,6 +1201,21 @@ pub fn evaluate_observed(
     prepared: PreparedObserved,
     control: &mut Control,
 ) -> Result<ObservedEvaluation, EvaluationFailure> {
+    evaluate_observed_with_validator(prepared, control, |environment, graph, request, answer| {
+        environment.validate_answer(graph, request, answer)
+    })
+}
+
+fn evaluate_observed_with_validator(
+    prepared: PreparedObserved,
+    control: &mut Control,
+    mut validate_answer: impl FnMut(
+        &Environment<'_>,
+        &Graph,
+        &Request,
+        &Answer,
+    ) -> Result<(), ValidationFailure>,
+) -> Result<ObservedEvaluation, EvaluationFailure> {
     let mut graph = Graph::new(control);
     let mut answers: Vec<Option<Answer>> = vec![None; prepared.requests().requests().len()];
     let mut issues = Vec::new();
@@ -1273,9 +1288,7 @@ pub fn evaluate_observed(
             })();
             // Answer の検査は意味導出の完了前に行い、post 停止で完成済み Answer を捨てない。
             let result = result.and_then(|a| {
-                evaluator
-                    .environment
-                    .validate_answer(evaluator.graph, request, &a)?;
+                validate_answer(evaluator.environment, evaluator.graph, request, &a)?;
                 Ok(a)
             });
             match result {
@@ -1370,6 +1383,221 @@ pub fn evaluate_observed(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    use crate::canonical::Json;
+    #[test]
+    fn answer_identity_failure_reaches_driver_and_preserves_prior_results() {
+        fn prepare(control: &mut Control) -> PreparedObserved {
+            let law = include_str!("../../tests/fixtures/counter.law").replace(
+                "view amount(s: State): Z = s.count;",
+                "view amount(s: State): Z = s.count;\n  view later(s: State): Z = s.count + 137;",
+            );
+            prepare_observed(
+                InputSources::from_bytes(
+                    vec![include_bytes!("../../tests/fixtures/counter.atoms.json").to_vec()],
+                    law.into_bytes(),
+                    include_str!("../../tests/fixtures/counter.archmap.json")
+                        .replace("\"value\": \"2\"", "\"value\": \"12\"")
+                        .into_bytes(),
+                ),
+                &[
+                    "amount=evaluate(CountCheck.amount,s=@v/s)",
+                    "bounded=check(CountAudit.bounded,s=@v/s)",
+                    "fault=check(CountCheck.nonnegative,s=@v/s)",
+                    "later=evaluate(CountCheck.later,s=@v/s)",
+                ],
+                control,
+            )
+            .unwrap()
+        }
+
+        let mut normal_control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        let normal_prepared = prepare(&mut normal_control);
+        let normal = evaluate_observed(normal_prepared, &mut normal_control).unwrap();
+        assert_eq!(normal.status(), "complete");
+        assert!(normal.issues.is_empty());
+        assert_eq!(normal.answers[2].status, Decision::Established);
+        assert!(normal.answers[2].claim.is_some());
+        let mut normal_graph = Graph::default();
+        normal_graph.nodes = normal.nodes.clone();
+        assert_eq!(
+            normal_graph
+                .scalar(normal.answers[3].outputs["value"])
+                .unwrap(),
+            &Scalar::Z(149.into())
+        );
+
+        let mut control = Control::new(super::super::control::Limits::default(), |_| {
+            super::super::control::Usage::default()
+        });
+        let prepared = prepare(&mut control);
+        let Signature::View { body: later, .. } =
+            &prepared.inputs().law().declarations["CountCheck.later"].signature
+        else {
+            unreachable!()
+        };
+        let later_span = prepared.inputs().law().exprs[*later].span;
+        let mut validated = Vec::new();
+        let mut nodes_at_failure = None;
+        let mut original_failure = None;
+        let result = evaluate_observed_with_validator(
+            prepared,
+            &mut control,
+            |environment, graph, request, answer| {
+                validated.push(request.id.clone());
+                environment.validate_answer(graph, request, answer)?;
+                if request.id != "fault" {
+                    return Ok(());
+                }
+                assert_eq!(answer.status, Decision::Established);
+                assert!(answer.claim.is_some());
+                assert!(!answer.evidence.is_empty());
+                let mut wrong = answer.clone();
+                wrong.id = "different-request".into();
+                nodes_at_failure = Some(graph.nodes.len());
+                let failure = environment.validate_answer(graph, request, &wrong);
+                let Err(ValidationFailure::Internal(operation)) = &failure else {
+                    panic!("実validatorはAnswerの帰属不整合をInternalで拒否する")
+                };
+                original_failure = Some(operation.clone());
+                failure
+            },
+        )
+        .unwrap();
+        assert_eq!(result.status(), "error");
+        assert!(control.stop_reason().is_none());
+        assert_eq!(validated, ["amount", "bounded", "fault"]);
+        assert_eq!(Some(result.nodes.len()), nodes_at_failure);
+        assert_eq!(
+            original_failure.as_deref(),
+            Some("Answer ID が元Requestと違う")
+        );
+        assert_eq!(result.answers.len(), 4);
+        let mut graph = Graph::default();
+        graph.nodes = result.nodes.clone();
+        let amount = &result.answers[0];
+        assert_eq!(amount.status, Decision::Established);
+        assert!(amount.claim.is_none());
+        assert!(amount.evidence.is_empty());
+        assert_eq!(
+            graph.get(amount.outputs["value"]).unwrap().ty,
+            NodeType::Value(Type::Z)
+        );
+        assert_eq!(
+            graph.scalar(amount.outputs["value"]).unwrap(),
+            &Scalar::Z(12.into())
+        );
+        let count = Fact {
+            snapshot: "v".into(),
+            subject: "s".into(),
+            field: Some("Counter.State.count".into()),
+            atom: Some("count".into()),
+        };
+        assert!(
+            graph
+                .get(amount.outputs["evaluation"])
+                .unwrap()
+                .support
+                .contains(&count)
+        );
+        let bounded = &result.answers[1];
+        assert_eq!(bounded.status, Decision::Refuted);
+        let claim = graph.get(bounded.claim.unwrap()).unwrap();
+        assert_eq!(claim.ty, NodeType::Proposition);
+        let judgment = claim.judgment.as_ref().unwrap();
+        assert_eq!(judgment.status, Decision::Refuted);
+        assert_eq!(judgment.evidence, bounded.evidence);
+        assert!(claim.support.contains(&count));
+        let counterexample = bounded
+            .evidence
+            .iter()
+            .find_map(|r| {
+                let node = graph.get(*r).unwrap();
+                if let Some(Payload::Counterexample {
+                    bindings,
+                    left,
+                    right,
+                    facts,
+                }) = &node.payload
+                {
+                    Some((node, bindings, left, right, facts))
+                } else {
+                    None
+                }
+            })
+            .expect("先行Lawの元反例を保持する");
+        let (node, bindings, left, right, facts) = counterexample;
+        assert_eq!(graph.scalar(*left).unwrap(), &Scalar::Z(12.into()));
+        assert_eq!(graph.scalar(*right).unwrap(), &Scalar::Z(10.into()));
+        assert!(node.support.contains(&count));
+        assert!(facts.contains(&count));
+        assert_eq!(bindings[0].name, "s");
+        assert_eq!(
+            graph.scalar(bindings[0].value).unwrap(),
+            &Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "s".into(),
+                entity: "Counter.State".into(),
+            }
+        );
+        assert!(result.nodes.iter().any(|node| {
+            node.support.contains(&count)
+                && matches!(&node.rule,
+                Rule::Input { kind: "atom", location: Location::ArchMap { pointer, .. } }
+                if pointer == "/snapshots/0/atoms/0/value")
+        }));
+        let Json::Obj(ref normal_wire) = normal.wire() else {
+            unreachable!()
+        };
+        let Json::Obj(ref failed_wire) = result.wire() else {
+            unreachable!()
+        };
+        let (Json::Arr(normal_answers), Json::Arr(failed_answers)) =
+            (&normal_wire["answers"], &failed_wire["answers"])
+        else {
+            unreachable!()
+        };
+        assert_eq!(&failed_answers[..2], &normal_answers[..2]);
+        let (Json::Arr(normal_nodes), Json::Arr(failed_nodes)) =
+            (&normal_wire["nodes"], &failed_wire["nodes"])
+        else {
+            unreachable!()
+        };
+        assert_eq!(failed_nodes, &normal_nodes[..failed_nodes.len()]);
+        for (index, operation) in [
+            (2, "Answer ID が元Requestと違う"),
+            (3, "先行導出の内部照合失敗"),
+        ] {
+            let answer = &result.answers[index];
+            assert_eq!(answer.status, Decision::Undetermined);
+            assert!(answer.claim.is_none());
+            assert!(answer.evidence.is_empty());
+            assert!(!answer.outputs.contains_key("proposition"));
+            assert_eq!(answer.reasons.len(), 1);
+            let reason = &answer.reasons[0];
+            assert!(matches!(&reason.kind, ReasonKind::Internal(value) if value == operation));
+            assert_eq!(reason.request, answer.id);
+            assert!(reason.location.is_none());
+            assert!(
+                result
+                    .issues
+                    .iter()
+                    .any(|issue| issue.wire() == reason.wire())
+            );
+        }
+        assert_eq!(result.issues.len(), 2);
+        assert!(result.answers[2].outputs.contains_key("evaluation"));
+        assert!(result.answers[3].outputs.is_empty());
+        assert!(result.nodes.iter().all(|node| !matches!(&node.rule,
+            Rule::Input { location: Location::Law { span }, .. }
+            if later_span.0 <= span.0 && span.1 <= later_span.1
+        )));
+        assert!(result.nodes.iter().all(|node| !matches!(&node.payload,
+            Some(Payload::Scalar(Scalar::Z(value))) if *value == 149.into()
+        )));
+    }
+
     fn value_examples(missing: bool) -> ObservedEvaluation {
         let law = include_str!("../../tests/fixtures/counter.law").replace(
             "view amount(s: State): Z = s.count;",
