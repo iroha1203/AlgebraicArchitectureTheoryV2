@@ -22,6 +22,8 @@ use crate::{
     types::Type,
 };
 use std::collections::BTreeMap;
+#[path = "family_evaluate.rs"]
+mod family;
 
 pub fn evaluate_observed_bytes(
     sources: InputSources,
@@ -1430,6 +1432,7 @@ impl Evaluator<'_, '_> {
             request: caller.request,
             frame: Some(frame),
             iteration: None,
+            instance: caller.instance,
         };
         for (parameter, argument) in params.iter().zip(&arguments) {
             self.formal.insert(parameter.name.clone(), argument.clone());
@@ -1656,10 +1659,28 @@ impl Evaluator<'_, '_> {
         body: ExprId,
         role: Option<Role>,
     ) -> Result<Answer, Failure> {
-        self.bind(params)?;
+        if self.graph.active.instance.is_none() {
+            self.bind(params)?;
+        }
         let guard_id = guard;
         let body_id = body;
         let guard = guard.map(|g| self.eval(g)).transpose()?;
+        if self.graph.active.instance.is_some()
+            && guard
+                .as_ref()
+                .map(|g| self.graph.boolean(g.value))
+                .transpose()?
+                .flatten()
+                == Some(false)
+        {
+            return self.inapplicable_family_row(
+                params,
+                guard_id.expect("guard"),
+                body_id,
+                role,
+                guard.as_ref().expect("guard"),
+            );
+        }
         let body = self.eval(body)?;
         let mut scope = body.scope.clone();
         if let Some(g) = &guard {
@@ -1953,6 +1974,7 @@ fn evaluate_observed_with_validator(
                 request: index,
                 frame: None,
                 iteration: None,
+                instance: None,
             };
             let mut evaluator = Evaluator {
                 environment,
@@ -1982,7 +2004,11 @@ fn evaluate_observed_with_validator(
             };
             let result = (|| {
                 evaluator.tick(Checkpoint::FiniteIteration)?;
-                evaluator.answer(params, guard, body, role)
+                if evaluator.is_family(params) {
+                    evaluator.family_answer(params, guard, body, role)
+                } else {
+                    evaluator.answer(params, guard, body, role)
+                }
             })();
             // Answer の検査は意味導出の完了前に行い、post 停止で完成済み Answer を捨てない。
             let result = result.and_then(|a| {
@@ -2029,6 +2055,7 @@ fn evaluate_observed_with_validator(
                     }
                     // 明示 guard の適用集約が未完成なら生 body を回答へ昇格しない。
                     if let Some(completed) = evaluator.completed.get(&body)
+                        && !evaluator.is_family(params)
                         && (request.kind == QuestionKind::Evaluate || guard.is_none())
                     {
                         outputs.insert("evaluation".into(), completed.evaluation);
@@ -2078,6 +2105,8 @@ fn evaluate_observed_with_validator(
         frames: graph.frames,
         #[cfg(test)]
         iterations: graph.iterations,
+        #[cfg(test)]
+        instances: graph.instances,
         answers,
         issues,
         status,
@@ -2844,6 +2873,7 @@ mod recheck_tests {
         graph.requests = result.prepared.requests().requests().to_vec();
         graph.frames = result.frames.clone();
         graph.iterations = result.iterations.clone();
+        graph.instances = result.instances.clone();
         for (index, node) in nodes.iter().enumerate() {
             graph.active = result.contexts.get(index).copied().unwrap_or_default();
             environment.validate(&graph, node)?;
@@ -4465,6 +4495,1055 @@ reading R {{
         }
     }
 
+    #[test]
+    fn finite_law_parameter_family_rechecks_normal_scalar_prefix_and_source() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(&[], "law required every(b: Bool): b or not b;"),
+            &["family=check(Calc.every)"],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        assert_eq!(result.answers[0].status, Decision::Established);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let evaluation = result.answers[0].outputs["evaluation"];
+        let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &result.nodes[evaluation.0].payload
+        else {
+            panic!("whole value")
+        };
+        assert!(value.0 < evaluation.0);
+        let prefix = &result.nodes[..=value.0];
+        rebuild_for_origin_and_support_recheck(&result, prefix).unwrap();
+        let mut changed = prefix.to_vec();
+        let source=changed.iter().position(|n| matches!(&n.payload,Some(Payload::Expression {parameters,..}) if !parameters.is_empty())).unwrap();
+        let Some(Payload::Expression { parameters, .. }) = &mut changed[source].payload else {
+            unreachable!()
+        };
+        parameters[0].0 = "other".into();
+        rejects_named_prefix(&result, &changed);
+    }
+
+    fn finite_family_example(body: &str, asks: &[&str], missing: bool) -> ObservedEvaluation {
+        evaluate_observed_bytes(
+            numeric_recheck_fixture(if missing { &["p"] } else { &[] }, body),
+            asks,
+            &mut named_call_quiet(),
+        )
+        .unwrap()
+    }
+    fn family_whole(result: &ObservedEvaluation, request: usize) -> (usize, usize, Vec<NodeRef>) {
+        let evaluation = result.answers[request].outputs["evaluation"].0;
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[evaluation].payload else {
+            panic!("whole Evaluation")
+        };
+        (
+            result.nodes[evaluation].arguments[0].0,
+            result.nodes[evaluation].arguments[1].0,
+            parts[0].children.clone(),
+        )
+    }
+    #[test]
+    fn finite_law_non_applicable_rows_reject_foreign_and_unrelated_producers() {
+        let result = finite_family_example(
+            "law required skipped(b:Bool) when false and true:false;",
+            &["family=check(Calc.skipped)"],
+            false,
+        );
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        assert_eq!(result.answers[0].status, Decision::Established);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let (_, _, rows) = family_whole(&result, 0);
+        assert_eq!(rows.len(), 2);
+        let first = rows[0];
+        let row = rows[1];
+        let Some(Payload::Evaluation {
+            value: Some(foreign_value),
+            applicability: "not_applicable",
+            ..
+        }) = &result.nodes[first.0].payload
+        else {
+            panic!("first NA applied Evaluation")
+        };
+        let Some(Payload::Evaluation {
+            value: Some(own_value),
+            applicability: "not_applicable",
+            parts,
+            ..
+        }) = &result.nodes[row.0].payload
+        else {
+            panic!("second NA applied Evaluation")
+        };
+        assert!(parts[1].value.is_none() && parts[1].children.is_empty());
+        assert_ne!(own_value, foreign_value);
+        assert_ne!(
+            result.contexts[row.0].instance,
+            result.contexts[foreign_value.0].instance
+        );
+        let instance = result.nodes[row.0].arguments[0];
+        let guard = result.nodes[row.0].arguments[1];
+        assert_eq!(parts[0].children, vec![guard]);
+        let Some(Payload::Evaluation {
+            value: Some(guard_value),
+            parts: guard_parts,
+            ..
+        }) = &result.nodes[guard.0].payload
+        else {
+            panic!("real false guard")
+        };
+        assert!(matches!(
+            result.nodes[guard_value.0].payload,
+            Some(Payload::Scalar(Scalar::Bool(false)))
+        ));
+        assert_eq!(guard_parts[0].children.len(), 2);
+        let left = guard_parts[0].children[0];
+        let right = guard_parts[0].children[1];
+        let Some(Payload::Evaluation {
+            expression: left_source,
+            value: Some(left_value),
+            ..
+        }) = &result.nodes[left.0].payload
+        else {
+            panic!("left literal")
+        };
+        let Some(Payload::Evaluation {
+            expression: right_source,
+            value: Some(unrelated_true),
+            ..
+        }) = &result.nodes[right.0].payload
+        else {
+            panic!("right literal")
+        };
+        assert!(matches!(
+            result.nodes[left_value.0].payload,
+            Some(Payload::Scalar(Scalar::Bool(false)))
+        ));
+        for reference in [*foreign_value, *own_value, *unrelated_true] {
+            assert!(matches!(
+                result.nodes[reference.0].payload,
+                Some(Payload::Scalar(Scalar::Bool(true)))
+            ));
+        }
+        assert_ne!(own_value, unrelated_true);
+        assert_eq!(result.contexts[right.0], result.contexts[row.0]);
+        assert_eq!(result.contexts[unrelated_true.0], result.contexts[row.0]);
+        // 実二項評価は元ASTの左右を順に生成し、falseでも右のtrueを読む。
+        for (reference, expected) in [
+            (*left_source, b"false".as_slice()),
+            (*right_source, b"true".as_slice()),
+        ] {
+            let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &result.nodes[reference.0].payload
+            else {
+                panic!("literal Source")
+            };
+            assert_eq!(
+                &result.prepared.inputs().sources().law().bytes()[span.0..span.1],
+                expected
+            );
+        }
+        assert!(
+            left.0 < right.0 && right.0 < guard.0 && guard.0 < instance.0 && instance.0 < row.0
+        );
+        let proposition = result.nodes.iter().enumerate().find_map(|(index,node)| {
+            (matches!(&node.payload,Some(Payload::Proposition {instance:actual}) if *actual==instance)
+                && node.arguments==[instance,row]).then_some(index)
+        }).unwrap();
+        assert!(row.0 < proposition);
+        let mut failures = Vec::new();
+        for (label, target, replacement, replace_value) in [
+            (
+                "foreign-instance NA true Scalar",
+                row.0,
+                *foreign_value,
+                true,
+            ),
+            (
+                "same-row unrelated true guard-child Scalar",
+                row.0,
+                *unrelated_true,
+                true,
+            ),
+            (
+                "NA Proposition to false guard Evaluation",
+                proposition,
+                guard,
+                false,
+            ),
+            (
+                "NA Proposition to true raw child Evaluation",
+                proposition,
+                right,
+                false,
+            ),
+        ] {
+            let prefix = &result.nodes[..=target];
+            rebuild_for_origin_and_support_recheck(&result, prefix).unwrap();
+            for (extent, original) in [("prefix", prefix), ("full", result.nodes.as_slice())] {
+                let mut changed = original.to_vec();
+                if replace_value {
+                    let Some(Payload::Evaluation { value, .. }) = &mut changed[target].payload
+                    else {
+                        unreachable!()
+                    };
+                    assert_ne!(*value, Some(replacement));
+                    *value = Some(replacement);
+                } else {
+                    assert_ne!(changed[target].arguments[1], replacement);
+                    changed[target].arguments[1] = replacement;
+                }
+                let outcome = rebuild_for_origin_and_support_recheck(&result, &changed);
+                match outcome {
+                    Err(ValidationFailure::Internal(_)) => {}
+                    Err(other) => failures.push(format!("{label} ({extent}): {other:?}")),
+                    Ok(_) => failures.push(format!("{label} ({extent}): accepted")),
+                }
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "all NA consumer substitution outcomes:\n{}",
+            failures.join("\n")
+        );
+    }
+
+    #[test]
+    fn finite_law_families_recheck_products_rows_guards_and_coverage() {
+        let result = finite_family_example(
+            "law required product(a: Bool,b: Bool): a or not a; law required guarded(b: Bool,s: Sample) when b: s.p; law required skipped(b: Bool,s: Sample) when false: s.p;",
+            &[
+                "product=check(Calc.product)",
+                "guarded=check(Calc.guarded,s=@v/sample)",
+                "skipped=check(Calc.skipped,s=@v/sample)",
+            ],
+            false,
+        );
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let (template, domain, rows) = family_whole(&result, 0);
+        assert_eq!(rows.len(), 4);
+        let Some(Payload::Domain { elements, ty }) = &result.nodes[domain].payload else {
+            panic!("product Domain")
+        };
+        assert_eq!(ty, &Type::Tuple(vec![Type::Bool, Type::Bool]));
+        assert_eq!(elements.len(), 4);
+        let Some(Payload::Evaluation {
+            value: Some(scalar),
+            ..
+        }) = &result.nodes[result.answers[0].outputs["evaluation"].0].payload
+        else {
+            panic!("whole Scalar")
+        };
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar.0]).unwrap();
+        for variant in 0..9 {
+            let mut changed = result.nodes.clone();
+            match variant {
+                0 => {
+                    let Some(Payload::Domain { ty, .. }) = &mut changed[domain].payload else {
+                        unreachable!()
+                    };
+                    *ty = Type::Tuple(vec![Type::Bool, Type::Unit]);
+                }
+                1 | 2 => {
+                    let Some(Payload::Domain { elements, .. }) = &mut changed[domain].payload
+                    else {
+                        unreachable!()
+                    };
+                    if variant == 1 {
+                        elements.pop();
+                        changed[domain].arguments.pop();
+                    } else {
+                        elements[1] = elements[0];
+                        let len = changed[domain].arguments.len();
+                        changed[domain].arguments[len - 3] = changed[domain].arguments[len - 4];
+                    }
+                }
+                3 => {
+                    let n = changed[template].arguments.len();
+                    changed[template].arguments[n - 1] = changed[template].arguments[n - 2];
+                }
+                4 => {
+                    changed[template].arguments.pop();
+                }
+                5 => {
+                    let source = changed[domain].arguments[0].0;
+                    let Some(Payload::Expression { parameters, .. }) = &mut changed[source].payload
+                    else {
+                        unreachable!()
+                    };
+                    parameters.swap(0, 1);
+                }
+                6 => {
+                    changed[domain].scope.quantifiers.swap(0, 1);
+                }
+                7 => {
+                    let proof = result.answers[0]
+                        .evidence
+                        .iter()
+                        .find(|r| {
+                            matches!(
+                                result.nodes[r.0].payload,
+                                Some(Payload::FiniteExhaustion { .. })
+                            )
+                        })
+                        .unwrap()
+                        .0;
+                    let Some(Payload::FiniteExhaustion { checked, .. }) =
+                        &mut changed[proof].payload
+                    else {
+                        unreachable!()
+                    };
+                    *checked -= 1;
+                }
+                _ => {
+                    let instance = changed[template].arguments[2].0;
+                    let other = changed[template].arguments[3].0;
+                    let Some(Payload::LawInstance { bindings: b, .. }) = &changed[other].payload
+                    else {
+                        unreachable!()
+                    };
+                    let foreign = b[0].value;
+                    let Some(Payload::LawInstance { bindings, .. }) =
+                        &mut changed[instance].payload
+                    else {
+                        unreachable!()
+                    };
+                    bindings[0].value = foreign;
+                    let n = changed[instance].arguments.len();
+                    changed[instance].arguments[n - 2] = foreign;
+                }
+            }
+            assert!(
+                matches!(
+                    rebuild_for_origin_and_support_recheck(&result, &changed),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "product variant {variant}"
+            );
+        }
+        let mut reordered = result.nodes.clone();
+        let Some(Payload::Domain { elements, .. }) = &mut reordered[domain].payload else {
+            unreachable!()
+        };
+        elements.reverse();
+        reordered[domain].arguments[3..].reverse();
+        // 実row/実LawInstanceとproofの集合表示は順を変えても同じcoverageを主張する。
+        reordered[template].arguments[2..6].reverse();
+        reordered[template].arguments[6..].reverse();
+        let evaluation = result.answers[0].outputs["evaluation"].0;
+        let Some(Payload::Evaluation { parts, .. }) = &mut reordered[evaluation].payload else {
+            unreachable!()
+        };
+        parts[0].children.reverse();
+        reordered[evaluation].arguments[2..].reverse();
+        for &proof in &result.answers[0].evidence {
+            if let Some(Payload::FiniteExhaustion { instances, .. }) =
+                &mut reordered[proof.0].payload
+            {
+                instances.reverse();
+            }
+        }
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+        assert_eq!(result.answers[1].status, Decision::Refuted);
+        assert_eq!(result.answers[2].status, Decision::Established);
+        let (_, _, skiprows) = family_whole(&result, 2);
+        assert_eq!(skiprows.len(), 2);
+        for row in skiprows {
+            let Some(Payload::Evaluation {
+                applicability,
+                parts,
+                ..
+            }) = &result.nodes[row.0].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(*applicability, "not_applicable");
+            assert!(parts[1].value.is_none() && parts[1].children.is_empty());
+        }
+        let (_, _, guardrows) = family_whole(&result, 1);
+        let target = guardrows
+            .iter()
+            .find(|r| {
+                matches!(
+                    &result.nodes[r.0].payload,
+                    Some(Payload::Evaluation {
+                        applicability: "not_applicable",
+                        ..
+                    })
+                )
+            })
+            .unwrap()
+            .0;
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+        let mut changed = result.nodes[..=target].to_vec();
+        let Some(Payload::Evaluation { parts, .. }) = &mut changed[target].payload else {
+            unreachable!()
+        };
+        parts[1].value = Some(NodeRef(0));
+        rejects_named_prefix(&result, &changed);
+
+        let fact = Fact {
+            snapshot: "v".into(),
+            subject: "sample".into(),
+            field: Some("Numeric.Sample.p".into()),
+            atom: Some("p".into()),
+        };
+        let mut changed = result.nodes[..=domain].to_vec();
+        assert!(changed[domain].support.is_empty());
+        changed[domain].support.push(fact.clone());
+        assert_ne!(changed[domain].support, result.nodes[domain].support);
+        rejects_named_prefix(&result, &changed);
+        let guarded_whole = result.answers[1].outputs["evaluation"].0;
+        let mut changed = result.nodes[..=guarded_whole].to_vec();
+        assert!(!changed[guarded_whole].support.is_empty());
+        changed[guarded_whole].support.clear();
+        assert_ne!(
+            changed[guarded_whole].support,
+            result.nodes[guarded_whole].support
+        );
+        rejects_named_prefix(&result, &changed);
+        let earlier_proof = result.answers[0].evidence[0];
+        for target in [target, result.answers[2].outputs["evaluation"].0] {
+            assert!(earlier_proof.0 < target);
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+            let mut changed = result.nodes[..=target].to_vec();
+            assert!(changed[target].evidence.is_empty());
+            changed[target].evidence.push(earlier_proof);
+            assert_ne!(changed[target].evidence, result.nodes[target].evidence);
+            rejects_named_prefix(&result, &changed);
+        }
+        let mut scalar_order = result.nodes.clone();
+        scalar_order[scalar.0].arguments[1..].reverse();
+        rebuild_for_origin_and_support_recheck(&result, &scalar_order).unwrap();
+        let (foreign_template, _, _) = family_whole(&result, 1);
+        let (target_template, _, _) = family_whole(&result, 2);
+        let Some(Payload::LawInstance {
+            body: foreign_source,
+            ..
+        }) = &result.nodes[foreign_template].payload
+        else {
+            unreachable!()
+        };
+        let Some(Payload::LawInstance {
+            body: target_source,
+            ..
+        }) = &result.nodes[target_template].payload
+        else {
+            unreachable!()
+        };
+        let Some(Payload::Expression {
+            bindings: foreign_bindings,
+            ..
+        }) = &result.nodes[foreign_source.0].payload
+        else {
+            unreachable!()
+        };
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target_source.0]).unwrap();
+        let mut changed = result.nodes[..=target_source.0].to_vec();
+        let Some(Payload::Expression { bindings, .. }) = &mut changed[target_source.0].payload
+        else {
+            unreachable!()
+        };
+        assert_ne!(bindings[0].value, foreign_bindings[0].value);
+        bindings[0].value = foreign_bindings[0].value;
+        changed[target_source.0].arguments[0] = foreign_bindings[0].value;
+        rejects_named_prefix(&result, &changed);
+        let (_, _, skiprows) = family_whole(&result, 2);
+        let skip = skiprows[0].0;
+        let skip_instance = result.nodes[skip].arguments[0].0;
+        let Some(Payload::Evaluation {
+            value: Some(skip_value),
+            ..
+        }) = &result.nodes[skip].payload
+        else {
+            unreachable!()
+        };
+        for index in [template, evaluation, skip_instance, skip_value.0, skip] {
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=index]).unwrap();
+            let mut changed = result.nodes[..=index].to_vec();
+            changed[index].rule = Rule::Construction("difference");
+            rejects_named_prefix(&result, &changed);
+            let mut changed = result.nodes[..=index].to_vec();
+            changed[index]
+                .reasons
+                .push(Reason::internal("forged", "metadata".into()));
+            rejects_named_prefix(&result, &changed);
+        }
+        let mut changed = result.nodes[..=skip].to_vec();
+        let Some(Payload::Evaluation { parts, .. }) = &mut changed[skip].payload else {
+            unreachable!()
+        };
+        parts[0].location = parts[1].location.clone();
+        rejects_named_prefix(&result, &changed);
+
+        // 適用wrapperを走査しても、生の元body producerだけを選ぶ。
+        let mut graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let mut control = named_call_quiet();
+        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let (.., guardrows) = family_whole(&result, 1);
+        let applicable = *guardrows
+            .iter()
+            .find(|r| {
+                matches!(
+                    &result.nodes[r.0].payload,
+                    Some(Payload::Evaluation {
+                        applicability: "applicable",
+                        ..
+                    })
+                )
+            })
+            .unwrap();
+        for (row, accept) in [(applicable, true), (NodeRef(skip), false)] {
+            let instance = result.nodes[row.0].arguments[0];
+            let Some(Payload::LawInstance { body, bindings, .. }) =
+                &result.nodes[instance.0].payload
+            else {
+                unreachable!()
+            };
+            graph.active = result.contexts[row.0];
+            let probe = Node {
+                ty: NodeType::Expression(Type::Bool),
+                payload: Some(Payload::Transform {
+                    operation: TransformOp::Not,
+                    operands: vec![*body],
+                    bindings: bindings.clone(),
+                }),
+                rule: Rule::Construction("expression"),
+                arguments: std::iter::once(*body)
+                    .chain(bindings.iter().map(|b| b.value))
+                    .collect(),
+                support: vec![],
+                evidence: vec![],
+                judgment: None,
+                scope: result.nodes[row.0].scope.clone(),
+                reasons: vec![],
+            };
+            if accept {
+                environment.validate(&graph, &probe).unwrap();
+            } else {
+                assert!(
+                    matches!(
+                        environment.validate(&graph, &probe),
+                        Err(ValidationFailure::Internal(_))
+                    ),
+                    "NA body Sourceは実raw Evaluationの代わりにならない"
+                );
+            }
+        }
+    }
+    #[test]
+    fn finite_law_families_reject_equal_request_instance_and_call_producers() {
+        let result = finite_family_example(
+            "view keep(b:Bool): Bool = true; view twice(b:Bool): Bool = keep(b) and keep(b); view negative(b:Bool):Bool = false; law required success(b:Bool): twice(b); law required failure(b:Bool): negative(b);",
+            &[
+                "one=check(Calc.success)",
+                "again=check(Calc.success)",
+                "bad=check(Calc.failure)",
+                "bad_again=check(Calc.failure)",
+            ],
+            false,
+        );
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let projections: Vec<_> = result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(i, n)| {
+                (result.contexts[i].instance.is_some()
+                    && result.contexts[i].frame.is_none()
+                    && n.arguments.len() == 3
+                    && matches!(n.payload, Some(Payload::Scalar(Scalar::Bool(false))))
+                    && matches!(&n.rule, Rule::Input { kind: "law", .. }))
+                .then_some(i)
+            })
+            .collect();
+        let foreign = projections[0];
+        let target = projections
+            .iter()
+            .copied()
+            .find(|i| result.contexts[*i].request == 1)
+            .unwrap();
+        assert_ne!(
+            result.contexts[target].request,
+            result.contexts[foreign].request
+        );
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+        let mut changed = result.nodes[..=target].to_vec();
+        changed[target].arguments = result.nodes[foreign].arguments.clone();
+        rejects_named_prefix(&result, &changed);
+        let calls: Vec<_> = result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(i, n)| {
+                let Some(Payload::Evaluation {
+                    expression,
+                    value: Some(_),
+                    ..
+                }) = &n.payload
+                else {
+                    return None;
+                };
+                let Some(Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }) = &result.nodes[expression.0].payload
+                else {
+                    return None;
+                };
+                (result.contexts[i].request == 0
+                    && result.contexts[i].frame.is_some()
+                    && &result.prepared.inputs().sources().law().bytes()[span.0..span.1] == b"true")
+                    .then_some(i)
+            })
+            .collect();
+        assert_eq!(calls.len(), 4);
+        let Some(Payload::Evaluation {
+            value: Some(foreign_value),
+            ..
+        }) = &result.nodes[calls[0]].payload
+        else {
+            unreachable!()
+        };
+        for target in [calls[1], calls[2]] {
+            assert_ne!(
+                result.contexts[calls[0]].frame,
+                result.contexts[target].frame
+            );
+            if target == calls[1] {
+                assert_eq!(
+                    result.contexts[calls[0]].instance,
+                    result.contexts[target].instance
+                );
+            } else {
+                assert_ne!(
+                    result.contexts[calls[0]].instance,
+                    result.contexts[target].instance
+                );
+            }
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+            let mut changed = result.nodes[..=target].to_vec();
+            let Some(Payload::Evaluation { value, parts, .. }) = &mut changed[target].payload
+            else {
+                unreachable!()
+            };
+            assert_ne!(*value, Some(*foreign_value));
+            *value = Some(*foreign_value);
+            parts[0].value = Some(*foreign_value);
+            *changed[target].arguments.last_mut().unwrap() = *foreign_value;
+            rejects_named_prefix(&result, &changed);
+        }
+        let counters: Vec<_> = result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(i, n)| {
+                matches!(&n.payload, Some(Payload::Counterexample { .. })).then_some(i)
+            })
+            .collect();
+        assert_eq!(counters.len(), 4);
+        for target in [counters[1], counters[2]] {
+            let foreign = counters[0];
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+            let mut changed = result.nodes[..=target].to_vec();
+            changed[target].arguments = result.nodes[foreign].arguments.clone();
+            changed[target].payload = result.nodes[foreign].payload.clone();
+            changed[target].scope = result.nodes[foreign].scope.clone();
+            rejects_named_prefix(&result, &changed);
+        }
+    }
+    #[test]
+    fn finite_law_families_keep_empty_domain_scope_and_unused_guard_bodies() {
+        let sources = numeric_recheck_fixture(
+            &["p"],
+            "law required empty(e:Empty,b:Bool): e = e; law required skipped(b:Bool,s:Sample) when false: s.p; law required sets(s:Set<Bool>):s=s;",
+        );
+        let old = crate::definition::check_definitions(&[(
+            "definition0",
+            sources.definitions()[0].bytes(),
+        )])
+        .unwrap();
+        let definitions=String::from_utf8(sources.definitions()[0].bytes().to_vec()).unwrap().replace("\"declarations\":[", "\"declarations\":[{\"kind\":\"entity\",\"name\":\"Numeric.Empty\",\"meaning\":\"空の対象族。\",\"parameters\":[],\"fields\":[],\"alignments\":[]},");
+        let new = crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+            .unwrap();
+        let old_digest = &old.vocabularies["Numeric"].digest;
+        let new_digest = &new.vocabularies["Numeric"].digest;
+        let law = String::from_utf8(sources.law().bytes().to_vec())
+            .unwrap()
+            .replace(old_digest, new_digest);
+        let map = String::from_utf8(sources.archmap().bytes().to_vec())
+            .unwrap()
+            .replace(old_digest, new_digest);
+        let result = evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![definitions.into_bytes()],
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            &[
+                "empty=check(Calc.empty)",
+                "skipped=check(Calc.skipped,s=@v/sample)",
+                "sets=check(Calc.sets)",
+            ],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let (template, domain, rows) = family_whole(&result, 0);
+        assert!(rows.is_empty());
+        assert!(result.nodes[domain].scope.snapshots.contains("v"));
+        assert_eq!(result.nodes[template].arguments.len(), 2);
+        let proof = result.answers[0].evidence[0];
+        assert!(
+            matches!(&result.nodes[proof.0].payload,Some(Payload::FiniteExhaustion {checked:0,instances,..}) if instances.is_empty())
+        );
+        let mut changed = result.nodes[..=proof.0].to_vec();
+        changed[domain].scope.snapshots.clear();
+        rejects_named_prefix(&result, &changed);
+        assert!(result.answers[1].reasons.is_empty());
+        let (_, _, rows) = family_whole(&result, 1);
+        assert_eq!(rows.len(), 2);
+        for row in rows {
+            let Some(Payload::Evaluation { parts, .. }) = &result.nodes[row.0].payload else {
+                unreachable!()
+            };
+            assert!(parts[1].children.is_empty() && parts[1].value.is_none());
+        }
+
+        assert!(result.answers[1].evidence.iter().any(|r|matches!(&result.nodes[r.0].payload,Some(Payload::FiniteExhaustion {checked:2,instances,..}) if instances.len()==2)));
+        let display = result
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(i, n)| {
+                matches!(&n.payload,Some(Payload::Scalar(Scalar::Set {items,..})) if items.len()==2)
+                    .then_some(i)
+            })
+            .unwrap();
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=display]).unwrap();
+        let mut reordered = result.nodes.clone();
+        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut reordered[display].payload
+        else {
+            unreachable!()
+        };
+        items.reverse();
+        rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
+
+        let unknown = finite_family_example(
+            "law required uncertain(s:Sample) when s.p:false; law required ensured(s:Sample) when s.p:true;",
+            &[
+                "uncertain=check(Calc.uncertain)",
+                "ensured=check(Calc.ensured)",
+            ],
+            true,
+        );
+        assert_eq!(unknown.status(), "partial", "{:?}", unknown.issues);
+        assert_eq!(unknown.answers[0].status, Decision::Undetermined);
+        assert_eq!(unknown.answers[1].status, Decision::Established);
+        rebuild_for_origin_and_support_recheck(&unknown, &unknown.nodes).unwrap();
+        let (_, _, rows) = family_whole(&unknown, 0);
+        assert_eq!(rows.len(), 1);
+        let row = rows[0].0;
+        let Some(Payload::Evaluation {
+            expression,
+            parts,
+            value,
+            applicability,
+            ..
+        }) = &unknown.nodes[row].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(*applicability, "undetermined");
+        assert!(value.is_none());
+        assert_eq!(parts.len(), 2);
+        assert_eq!(parts[0].children.len(), 1);
+        assert_eq!(parts[1].children.len(), 1);
+        assert!(matches!(
+            unknown.nodes[expression.0].payload,
+            Some(Payload::Transform { .. })
+        ));
+        rebuild_for_origin_and_support_recheck(&unknown, &unknown.nodes[..=row]).unwrap();
+        let Some(Payload::LawInstance { body: raw_body, .. }) =
+            &unknown.nodes[unknown.nodes[row].arguments[0].0].payload
+        else {
+            unreachable!()
+        };
+        let mut changed = unknown.nodes[..=row].to_vec();
+        let Some(Payload::Transform { operands, .. }) = &mut changed[expression.0].payload else {
+            unreachable!()
+        };
+        operands[0] = *raw_body;
+        changed[expression.0].arguments[0] = *raw_body;
+        rejects_named_prefix(&unknown, &changed);
+        let (_, _, ensured) = family_whole(&unknown, 1);
+        let ensured = ensured[0].0;
+        let Some(Payload::Evaluation {
+            expression: target,
+            value: Some(scalar),
+            ..
+        }) = &unknown.nodes[ensured].payload
+        else {
+            unreachable!()
+        };
+        rebuild_for_origin_and_support_recheck(&unknown, &unknown.nodes[..=scalar.0]).unwrap();
+        let Some(Payload::Evaluation {
+            bindings: foreign, ..
+        }) = &unknown.nodes[row].payload
+        else {
+            unreachable!()
+        };
+        rebuild_for_origin_and_support_recheck(&unknown, &unknown.nodes[..=target.0]).unwrap();
+        let mut changed = unknown.nodes[..=target.0].to_vec();
+        let Some(Payload::Transform { bindings, .. }) = &mut changed[target.0].payload else {
+            unreachable!()
+        };
+        assert_ne!(bindings[0].value, foreign[0].value);
+        bindings[0].value = foreign[0].value;
+        *changed[target.0].arguments.last_mut().unwrap() = foreign[0].value;
+        rejects_named_prefix(&unknown, &changed);
+    }
+
+    #[test]
+    fn finite_law_family_actual_domain_product_row_evidence_and_recheck_stops() {
+        use super::super::control::{Limits, Resource, Usage};
+        use crate::result::Signal;
+        use std::{
+            cell::{Cell, RefCell},
+            rc::Rc,
+        };
+        let sources = numeric_recheck_fixture(
+            &["p"],
+            "view seed():Z = 7; view hole(s:Sample):Bool = s.p; law required prior(b:Bool):false; law required current(a:Bool,b:Bool):true;",
+        );
+        let asks = [
+            "seed=evaluate(Calc.seed)",
+            "prior=check(Calc.prior)",
+            "hole=evaluate(Calc.hole,s=@v/sample)",
+            "current=check(Calc.current)",
+            "later=evaluate(Calc.seed)",
+        ];
+        let mut normal_control = named_call_quiet();
+        let prepared = prepare_observed(sources.clone(), &asks, &mut normal_control).unwrap();
+        let target = prepared.inputs().law().declarations["Calc.current"].span;
+        let context = super::super::call::Context {
+            request: 3,
+            frame: None,
+            iteration: None,
+            instance: None,
+        };
+        let progress = Rc::new(RefCell::new(Vec::new()));
+        let observed = progress.clone();
+        let normal = evaluate_observed_with_validator(
+            prepared,
+            &mut normal_control,
+            |environment, graph, request, answer| {
+                environment.validate_answer(graph, request, answer)?;
+                if request.id == "hole" {
+                    let observed = observed.clone();
+                    data::observe_iterations(move |span, actual, phase, index| {
+                        if span == target && actual == context && phase.starts_with("family_") {
+                            observed.borrow_mut().push((phase, index));
+                        }
+                    });
+                }
+                Ok(())
+            },
+        );
+        data::clear_iteration_observer();
+        let normal = normal.unwrap();
+        assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
+        assert_eq!(normal.answers[1].status, Decision::Refuted);
+        assert_eq!(normal.answers[3].status, Decision::Established);
+        rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
+        let normal_wire = normal.wire();
+        let Json::Obj(ref normal_fields) = normal_wire else {
+            unreachable!()
+        };
+        let Json::Arr(normal_answers) = &normal_fields["answers"] else {
+            unreachable!()
+        };
+        // 五つの実phaseの一点ずつ。全phase×停止種別×位置の走査はしない。
+        for (phase, position, kind) in [
+            ("family_enum", 1, 0),
+            ("family_product", 1, 2),
+            ("family_row", 1, 1),
+            ("family_exhaustion", 0, 2),
+            ("family_recheck", 1, 0),
+        ] {
+            let baseline: Vec<_> = progress
+                .borrow()
+                .iter()
+                .filter_map(|(actual, index)| (*actual == phase).then_some(*index))
+                .collect();
+            assert!(baseline.contains(&position), "{phase}: {baseline:?}");
+            if position == 1 {
+                assert!(baseline.starts_with(&[0, 1]), "{phase}: {baseline:?}");
+            }
+            let (limits, usage, expected) = match kind {
+                0 => (
+                    Limits {
+                        time_ms: Some(1),
+                        memory_mib: None,
+                    },
+                    Usage {
+                        elapsed_ms: 2,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 1,
+                        observed: 2,
+                    },
+                ),
+                1 => (
+                    Limits {
+                        time_ms: None,
+                        memory_mib: Some(1),
+                    },
+                    Usage {
+                        memory_mib: 2,
+                        ..Usage::default()
+                    },
+                    StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 1,
+                        observed: 2,
+                    },
+                ),
+                _ => (
+                    Limits::default(),
+                    Usage {
+                        signal: Some(Signal::Term),
+                        ..Usage::default()
+                    },
+                    StopReason::Cancelled(Signal::Term),
+                ),
+            };
+            let armed = Rc::new(Cell::new(false));
+            let probes = Rc::new(Cell::new(0));
+            let frozen = Rc::new(Cell::new(None));
+            let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
+            let mut control = Control::new(limits, move |checkpoint| {
+                count.set(count.get() + 1);
+                if arm.replace(false) {
+                    assert_eq!(checkpoint, Checkpoint::FiniteIteration);
+                    assert!(freeze.replace(Some(count.get())).is_none());
+                    usage
+                } else {
+                    Usage::default()
+                }
+            });
+            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+            let seen = Rc::new(RefCell::new(Vec::new()));
+            let observed = seen.clone();
+            let stopped = evaluate_observed_with_validator(
+                prepared,
+                &mut control,
+                |environment, graph, request, answer| {
+                    environment.validate_answer(graph, request, answer)?;
+                    if request.id == "hole" {
+                        let (armed, observed) = (armed.clone(), observed.clone());
+                        data::observe_iterations(move |span, actual, operation, index| {
+                            if span == target && actual == context && operation == phase {
+                                observed.borrow_mut().push(index);
+                                if index == position {
+                                    armed.set(true);
+                                }
+                            }
+                        });
+                    }
+                    Ok(())
+                },
+            );
+            data::clear_iteration_observer();
+            let stopped = stopped.unwrap();
+            assert_eq!(seen.borrow().last(), Some(&position), "{phase}");
+            assert_eq!(
+                stopped.status(),
+                "interrupted",
+                "{phase}: {:?}",
+                stopped.issues
+            );
+            assert_eq!(control.stop_reason(), Some(expected.clone()));
+            assert_eq!(Some(probes.get()), frozen.get());
+            let wire = stopped.wire();
+            let Json::Obj(ref fields) = wire else {
+                unreachable!()
+            };
+            let Json::Arr(answers) = &fields["answers"] else {
+                unreachable!()
+            };
+            assert_eq!(&answers[..3], &normal_answers[..3], "{phase}");
+            assert_eq!(stopped.answers[3].status, Decision::Undetermined);
+            assert!(stopped.answers[3].claim.is_none() && stopped.answers[3].evidence.is_empty());
+            if phase == "family_exhaustion" {
+                assert!(stopped.answers[3].outputs.contains_key("evaluation"));
+            } else {
+                assert!(stopped.answers[3].outputs.is_empty());
+            }
+            assert!(stopped.answers[4].outputs.is_empty());
+            for answer in &stopped.answers[3..] {
+                let reason = answer
+                    .reasons
+                    .iter()
+                    .find(|r| matches!(&r.kind,ReasonKind::Stop(actual) if actual==&expected))
+                    .unwrap();
+                let expected_wire = expected.wire();
+                let Json::Obj(ref expected_fields) = expected_wire else {
+                    unreachable!()
+                };
+                let reason_wire = reason.wire();
+                let Json::Obj(ref reason_fields) = reason_wire else {
+                    unreachable!()
+                };
+                assert_eq!(reason_fields.get("details"), expected_fields.get("details"));
+                assert!(
+                    !answer
+                        .reasons
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+                );
+            }
+            assert!(
+                stopped
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .any(|(i, n)| stopped.contexts[i].request == 1
+                        && matches!(n.payload, Some(Payload::Counterexample { .. })))
+            );
+            assert!(
+                !stopped
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .any(|(i, n)| stopped.contexts[i].request == 3
+                        && matches!(n.payload, Some(Payload::FiniteExhaustion { .. })))
+            );
+            assert!(!stopped.contexts.iter().any(|c| c.request == 4));
+            if phase == "family_row" {
+                assert!(
+                    stopped
+                        .nodes
+                        .iter()
+                        .enumerate()
+                        .any(|(i, n)| stopped.contexts[i].request == 3
+                            && n.ty == NodeType::LawInstance)
+                );
+            }
+            rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+            let before = probes.get();
+            assert_eq!(control.checkpoint(Checkpoint::Expression), Err(expected));
+            assert_eq!(probes.get(), before);
+        }
+    }
+
     fn numeric_recheck_fixture(omitted: &[&str], body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0",
       "vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Numeric","version":"1","dependencies":[],
@@ -5847,6 +6926,7 @@ reading Calc {{
             request: 2,
             frame: Some(0),
             iteration: None,
+            instance: None,
         };
         let mut problems = Vec::new();
         for kind in 0..3 {
@@ -6585,6 +7665,7 @@ reading Calc {{
                 request: 2,
                 frame: None,
                 iteration: None,
+                instance: None,
             };
             let seen = Rc::new(RefCell::new(Vec::new()));
             let progress = seen.clone();
@@ -7077,6 +8158,7 @@ reading Calc {{
             request: 2,
             frame: None,
             iteration: None,
+            instance: None,
         };
         let event = move |span, context: super::super::call::Context, name: &str, index| {
             if span == target && context == parent && name == "comprehension_iteration" {
@@ -9055,6 +10137,7 @@ reading Calc {{
                 request: 3,
                 frame: None,
                 iteration: None,
+                instance: None,
             };
             let progress = Rc::new(RefCell::new(Vec::new()));
             let progress_clone = progress.clone();

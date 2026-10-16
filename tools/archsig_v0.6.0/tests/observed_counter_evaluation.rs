@@ -885,30 +885,48 @@ fn known_bool_wildcard_match_keeps_counter_value_and_original_children() {
 }
 
 #[test]
-fn unimplemented_valid_quantification_and_answer_dependencies_are_not_results() {
+fn finite_law_quantification_and_unimplemented_answer_dependencies_are_distinct() {
     let law = String::from_utf8(LAW.to_vec()).unwrap().replace(
         "view amount",
         "view conditional(s: State): Z = match true { _ => s.count; };\n  view same(s: State): State = s;\n  view amount",
     );
-    for asks in [
-        vec!["x=check(CountCheck.nonnegative)"],
-        vec![
+    let quantified = run(
+        sources(law.as_bytes(), MAP),
+        &["x=check(CountCheck.nonnegative)"],
+    );
+    audit_dag(&quantified);
+    assert_eq!(field(&quantified, "status"), &Json::str("complete"));
+    assert_eq!(
+        field(answer(&quantified, "x"), "status"),
+        &Json::str("established")
+    );
+    let missing = run(
+        sources(law.as_bytes(), &map_count(None)),
+        &["x=check(CountCheck.nonnegative)"],
+    );
+    audit_dag(&missing);
+    assert_eq!(field(&missing, "status"), &Json::str("partial"));
+    assert_eq!(
+        field(answer(&missing, "x"), "status"),
+        &Json::str("undetermined")
+    );
+    let failure = evaluate_observed_bytes(
+        sources(law.as_bytes(), MAP),
+        &[
             "a=evaluate(CountCheck.same,s=@v/s)",
             "b=evaluate(CountCheck.amount,s=$a.value)",
         ],
-    ] {
-        let failure =
-            evaluate_observed_bytes(sources(law.as_bytes(), MAP), &asks, &mut quiet_control())
-                .unwrap_err();
-        assert!(
-            matches!(&failure, EvaluationFailure::NotImplemented { .. }),
-            "{failure:?}"
-        );
-        assert!(
-            failure.wire().is_none(),
-            "未実装を unsupported_algorithm/partial の結果へ変換しない"
-        );
-    }
+        &mut quiet_control(),
+    )
+    .unwrap_err();
+    assert!(
+        matches!(&failure, EvaluationFailure::NotImplemented { .. }),
+        "{failure:?}"
+    );
+    assert!(
+        failure.wire().is_none(),
+        "未実装を unsupported_algorithm/partial の結果へ変換しない"
+    );
 }
 
 fn expression_count(asks: &[&str]) -> usize {

@@ -1057,6 +1057,8 @@ pub struct ObservedEvaluation {
     pub(super) frames: Vec<super::call::Frame>,
     #[cfg(test)]
     pub(super) iterations: Vec<super::call::Iteration>,
+    #[cfg(test)]
+    pub(super) instances: Vec<super::call::Instance>,
 }
 impl ObservedEvaluation {
     pub fn status(&self) -> &str {
@@ -1111,6 +1113,7 @@ pub(crate) struct Graph {
     pub(super) contexts: Vec<super::call::Context>,
     pub(super) frames: Vec<super::call::Frame>,
     pub(super) iterations: Vec<super::call::Iteration>,
+    pub(super) instances: Vec<super::call::Instance>,
     pub(super) active: super::call::Context,
     pub(super) requests: Vec<super::request::Request>,
     control: Control,
@@ -1147,6 +1150,7 @@ impl Graph {
             contexts: vec![],
             frames: vec![],
             iterations: vec![],
+            instances: vec![],
             active: super::call::Context::default(),
             requests: vec![],
             control: control.clone(),
@@ -1251,6 +1255,71 @@ impl Graph {
         else {
             return Err("証拠添付先の LawInstance が値でない".into());
         };
+        if let Some(Payload::LawInstance { body, .. }) = &self.get(*instance)?.payload
+            && matches!(&self.get(*body)?.payload,Some(Payload::Expression {parameters,..}) if !parameters.is_empty())
+        {
+            let Some(Payload::Evaluation { parts, value, .. }) = &self.get(evaluation)?.payload
+            else {
+                return Err("whole命題に集約評価がない".into());
+            };
+            let rows = &parts.first().ok_or("whole partがない")?.children;
+            let mut counterexample = false;
+            for &reference in &node.evidence {
+                self.tick()?;
+                let e = self.get(reference)?;
+                match &e.payload {
+                    Some(Payload::FiniteExhaustion { instances, .. })
+                        if e.arguments == [*instance, evaluation] =>
+                    {
+                        if instances.len() != rows.len()
+                            || instances.iter().any(|r| !rows.contains(r))
+                        {
+                            return Err("whole全検査が別のrow族".into());
+                        }
+                    }
+                    Some(Payload::Counterexample { .. })
+                        if judgment.status == Decision::Refuted
+                            && self.boolean(*value)? == Some(false) =>
+                    {
+                        let mut connected = false;
+                        for &row in rows {
+                            self.tick()?;
+                            if e.arguments.get(1) == Some(&row) {
+                                let Some(&actual) = e.arguments.first() else {
+                                    return Err("row反例に元instanceがない".into());
+                                };
+                                let Some(Payload::LawInstance { bindings, .. }) =
+                                    &self.get(actual)?.payload
+                                else {
+                                    return Err("row反例の元LawInstanceがない".into());
+                                };
+                                if self.get(actual)?.arguments.is_empty() {
+                                    return Err("row反例に元bodyがない".into());
+                                }
+                                if !matches!(&e.payload,Some(Payload::Counterexample {bindings:bs,..}) if bs==bindings)
+                                {
+                                    return Err("row反例bindingsが元instanceと違う".into());
+                                }
+                                connected = true;
+                            } else if self.quantifier_counterexample_shape(e)?
+                                && self.evaluation_evidence_contains(row, reference)?
+                            {
+                                connected = true;
+                            }
+                        }
+                        if !connected {
+                            return Err("whole反例が別のinstance".into());
+                        }
+                        counterexample = true;
+                    }
+                    _ => return Err("whole命題に別の証拠を添付した".into()),
+                }
+            }
+            if judgment.status == Decision::Refuted && !counterexample {
+                return Err("whole反証に実row反例がない".into());
+            }
+            return Ok(());
+        }
         let mut counterexample = false;
         for &reference in &node.evidence {
             self.tick()?;
