@@ -1,5 +1,6 @@
 //! 原始観測環境の三入力検査と、型付きの問いの解決。
 
+mod affine;
 mod call;
 pub mod control;
 mod data;

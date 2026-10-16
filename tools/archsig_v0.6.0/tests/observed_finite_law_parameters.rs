@@ -1439,22 +1439,20 @@ law required observed(r:E): r.flag;
     }
 }
 
-#[test]
-fn finite_law_instances_preserve_nested_sources_and_parent_bindings() {
+fn nested_sources_fixture(moved: bool) -> InputSources {
     let script = r#"
 view helper(s:E,b:Bool): Bool = let held=s in match MaybeAt.At(held) { NoRef => false; At(x) => x=s and (b or not b); };
 view echo(s:E): E = let held=s in match MaybeAt.At(held) { NoRef => s; At(x) => x; };
 law required nested(s:E,b:Bool): (forall z in list<E>[s] . helper(z,b)) and (forall u:Unit . true);
 law required bound(s:E): helper(s,true);
 "#;
-    let asks = [
-        "a=check(Calc.nested)",
-        "b=check(Calc.nested)",
-        "c=check(Calc.nested,s=@v/item)",
-        "d=check(Calc.bound,s=@v/item)",
-        "e=evaluate(Calc.echo,s=@w/item)",
-    ];
-    let (wire, checked) = run(fixture(script, Some(false), false, false), &asks);
+    fixture(script, Some(false), false, moved)
+}
+
+#[test]
+fn finite_law_instances_preserve_nested_sources_and_parent_bindings() {
+    let asks = ["a=check(Calc.nested)", "b=check(Calc.nested)"];
+    let (wire, checked) = run(nested_sources_fixture(false), &asks);
     assert_eq!(f(&wire, "status"), &Json::str("complete"));
     let e = ty("Ref", Json::str("Roster.E"));
     let refs = vec![reference("v", "item"), reference("w", "item")];
@@ -1482,20 +1480,6 @@ law required bound(s:E): helper(s,true);
             true,
         );
     }
-    assert_family(
-        &wire,
-        &checked,
-        "c",
-        "Calc.nested",
-        &[("b", Json::str("Bool"), bools)],
-        &[("s", e.clone(), refs[0].clone())],
-        &[("s", e.clone()), ("b", Json::str("Bool"))],
-        &rows[..2],
-        "established",
-        true,
-    );
-    check_claim(&wire, "d", "established");
-    output(&wire, "e", &e, refs[1].clone());
     let ns = index(&wire);
     assert_ne!(
         f(root(&wire, "a"), "id"),
@@ -1560,6 +1544,48 @@ law required bound(s:E): helper(s,true);
             bindings
         );
     }
+}
+
+#[test]
+fn finite_law_instances_preserve_nested_sources_with_explicit_subject_binding() {
+    let (wire, checked) = run(
+        nested_sources_fixture(false),
+        &["c=check(Calc.nested,s=@v/item)"],
+    );
+    assert_eq!(f(&wire, "status"), &Json::str("complete"));
+    let e = ty("Ref", Json::str("Roster.E"));
+    let refs = vec![reference("v", "item"), reference("w", "item")];
+    let bools = vec![Json::Bool(false), Json::Bool(true)];
+    let rows = vec![
+        vec![refs[0].clone(), bools[0].clone()],
+        vec![refs[0].clone(), bools[1].clone()],
+        vec![refs[1].clone(), bools[0].clone()],
+        vec![refs[1].clone(), bools[1].clone()],
+    ];
+    assert_family(
+        &wire,
+        &checked,
+        "c",
+        "Calc.nested",
+        &[("b", Json::str("Bool"), bools)],
+        &[("s", e.clone(), refs[0].clone())],
+        &[("s", e.clone()), ("b", Json::str("Bool"))],
+        &rows[..2],
+        "established",
+        true,
+    );
+}
+
+#[test]
+fn finite_law_instances_preserve_bound_call_parent_binding() {
+    let (wire, _) = run(
+        nested_sources_fixture(false),
+        &["d=check(Calc.bound,s=@v/item)"],
+    );
+    assert_eq!(f(&wire, "status"), &Json::str("complete"));
+    let e = ty("Ref", Json::str("Roster.E"));
+    let refs = vec![reference("v", "item"), reference("w", "item")];
+    check_claim(&wire, "d", "established");
     let request = arr(f(&wire, "requests"))
         .iter()
         .find(|r| f(r, "id") == &Json::str("d"))
@@ -1574,7 +1600,23 @@ law required bound(s:E): helper(s,true);
         binding_values(&wire, f(val(explicit), "bindings"), &[("s", e.clone())]),
         vec![refs[0].clone()]
     );
-    let (moved, moved_checked) = run(fixture(script, Some(false), false, true), &[asks[0]]);
+}
+
+#[test]
+fn finite_law_instances_preserve_nested_view_return() {
+    let (wire, _) = run(
+        nested_sources_fixture(false),
+        &["e=evaluate(Calc.echo,s=@w/item)"],
+    );
+    assert_eq!(f(&wire, "status"), &Json::str("complete"));
+    let e = ty("Ref", Json::str("Roster.E"));
+    let refs = vec![reference("v", "item"), reference("w", "item")];
+    output(&wire, "e", &e, refs[1].clone());
+}
+
+#[test]
+fn finite_law_instances_preserve_nested_sources_after_provenance_relocation() {
+    let (moved, moved_checked) = run(nested_sources_fixture(true), &["a=check(Calc.nested)"]);
     check_claim(&moved, "a", "established");
     assert_eq!(moved_checked.archmap().sources[0].revision, "r2");
     assert!(

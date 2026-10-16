@@ -332,6 +332,7 @@ impl Environment<'_> {
             variables.insert(
                 p.name.clone(),
                 SourceValue {
+                    affine: super::super::affine::constant(&scalar, &self.control)?.map(Box::new),
                     scope: base.clone(),
                     known_value: Some(scalar),
                     support: graph.get(value)?.support.clone(),

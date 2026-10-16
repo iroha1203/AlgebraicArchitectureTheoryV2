@@ -838,7 +838,14 @@ fn missing_numeric_slots_keep_identity_children_and_scope_without_filling_compon
         ("pair", vec!["q", "f"]),
     ] {
         let a = answer(&result, id);
-        if id == "f" {
+        if id == "q" {
+            assert_output(
+                &result,
+                id,
+                &Json::str("Q"),
+                Json::Arr(vec![Json::str("0"), Json::str("1")]),
+            );
+        } else if id == "f" {
             assert_output(&result, id, &fp("5"), Json::str("0"));
         } else {
             assert_eq!(f(a, "status"), &Json::str("undetermined"));
@@ -862,6 +869,42 @@ fn missing_numeric_slots_keep_identity_children_and_scope_without_filling_compon
     }
     audit(&result, &checked);
     let ns = nodes(&result);
+    let q_answer = answer(&result, "q");
+    let q_root = target(
+        &ns,
+        f(f(q_answer, "outputs"), "evaluation"),
+        &Json::str("Evaluation"),
+    );
+    assert_eq!(
+        f(q_root, "id"),
+        f(original_evaluation(&ns, q_root), "id"),
+        "Qの定数化を有限個の補完例へ置換しない"
+    );
+    let q_parts = arr(f(val(q_root), "parts"));
+    assert_eq!(q_parts.len(), 1);
+    let q_children = arr(f(&q_parts[0], "children"));
+    assert_eq!(q_children.len(), 2);
+    let missing_q = target(&ns, &q_children[0], &Json::str("Evaluation"));
+    assert!(!obj(val(missing_q)).contains_key("value"));
+    assert!(arr(f(missing_q, "reasons")).iter().any(|reason| {
+        f(reason, "code") == &Json::str("missing_observation")
+            && arr(f(reason, "missing")).iter().any(|fact| {
+                f(fact, "field") == &Json::str("Numeric.Sample.q")
+                    && !obj(fact).contains_key("atom")
+            })
+    }));
+    let q_zero = target(&ns, f(f(q_answer, "outputs"), "value"), &Json::str("Q"));
+    assert_eq!(
+        f(q_zero, "arguments"),
+        &Json::Arr(
+            std::iter::once(f(val(q_root), "expression").clone())
+                .chain(q_children.iter().cloned())
+                .collect()
+        ),
+        "定数Q零を元Expressionと両子Evaluationから導出する"
+    );
+    assert_eq!(f(q_zero, "scope"), f(q_root, "scope"));
+    assert_eq!(f(q_zero, "support"), f(q_root, "support"));
     let a = answer(&result, "f");
     let root = target(
         &ns,

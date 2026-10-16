@@ -64,6 +64,8 @@
   ドット列は束縛変数と一つの field まで扱う。
   Bool は false and x / true or x などを全補完で確定し、元の両子評価と欠測理由を保持する。
   Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
+  Z/Qの欠測slotは同じ記号として係数をまとめ、加減算・負号・定数倍で係数が消えた式の値を確定する。
+  元fieldの欠測と全出現を保持し、`h-h`の零から`h-h=0/1`の通常比較・Law判断へ接続する。
   未束縛Law parameterのcheckは、plain参照族と上記の有限型を元宣言順に列挙し、
   明示Ref束縛を固定した実直積の各LawInstanceを検査する。自由parameter・型Domain・実bindingsと
   全称命題を保ち、既知違反の実反例は他rowの欠測によらず残す。空直積は成立・全検査0件となる。
