@@ -273,16 +273,19 @@ impl Environment<'_> {
             else {
                 continue;
             };
-            // 自由parameterを持つwhole Sourceはfieldの実読取りではない。
-            // その実instanceのSourceは既出の子DAGから別に拾う。
-            if !parameters.is_empty() {
-                continue;
-            }
             let context = graph.context_at(reference.0);
             let previous = self.context.replace(Some(context));
-            let analysis = self.analyze_source(graph, *span, bindings);
+            let analysis = if parameters.is_empty() {
+                self.analyze_source(graph, *span, bindings).map(Some)
+            } else {
+                // 数値全称軸を持つ実field Sourceだけは、自身のtemplate/Domainと
+                // 元binderへ戻って分析する。一般族wholeは従来通り対象外とする。
+                self.universal_missing_source_analysis(graph, reference)
+            };
             self.context.set(previous);
-            let analysis = analysis?;
+            let Some(analysis) = analysis? else {
+                continue;
+            };
             let Some(missing) = analysis.missing else {
                 continue;
             };
@@ -842,6 +845,16 @@ impl Environment<'_> {
                 if let Some(&instance) = graph.get(evaluation)?.arguments.first() {
                     match &graph.get(instance)?.payload {
                         Some(Payload::LawInstance { body, .. }) => *body,
+                        Some(Payload::ParameterizedTransform {
+                            operation: TransformOp::Not,
+                            ..
+                        }) if instance == expression
+                            && self.universal_owned_evaluation(graph, evaluation)? =>
+                        {
+                            // 上でwhole自体を再検査済み。全域guardの固定含意式は、
+                            // 元Law body Sourceへの既定not/and/not辺を明示的に辿る。
+                            self.universal_raw_body(graph, expression)?
+                        }
                         _ => expression,
                     }
                 } else {
@@ -980,10 +993,24 @@ impl Environment<'_> {
                 let evaluation = *node.arguments.get(1).ok_or("補完case命題の評価がない")?;
                 evaluations.push(evaluation);
                 propositions.push(NodeRef(i));
-            } else if let Some(Payload::Evaluation { expression, .. }) = &node.payload
-                && self.expression_span(graph, *expression)? == self.inputs.law().exprs[body].span
-            {
-                evaluations.push(NodeRef(i));
+            } else if let Some(Payload::Evaluation { expression, .. }) = &node.payload {
+                let Some(
+                    Payload::Expression {
+                        location: Location::Law { span },
+                        ..
+                    }
+                    | Payload::CompletionSeed {
+                        location: Location::Law { span },
+                        ..
+                    },
+                ) = &graph.get(*expression)?.payload
+                else {
+                    // 数値差などの合成式は、元bodyを返す実Sourceではない。
+                    continue;
+                };
+                if *span == self.inputs.law().exprs[body].span {
+                    evaluations.push(NodeRef(i));
+                }
             }
         }
         Ok((evaluations, propositions))
@@ -1646,7 +1673,23 @@ impl Environment<'_> {
             else {
                 continue;
             };
-            if actual != bindings || self.expression_span(graph, *expression)? != owner_span {
+            if actual != bindings {
+                continue;
+            }
+            let Some(
+                Payload::Expression {
+                    location: Location::Law { span },
+                    ..
+                }
+                | Payload::CompletionSeed {
+                    location: Location::Law { span },
+                    ..
+                },
+            ) = &graph.get(*expression)?.payload
+            else {
+                continue;
+            };
+            if *span != owner_span {
                 continue;
             }
             if candidate

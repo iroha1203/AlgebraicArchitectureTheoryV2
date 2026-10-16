@@ -17,6 +17,8 @@ use crate::{
 pub(super) mod completion;
 #[path = "family.rs"]
 pub(super) mod family;
+#[path = "universal.rs"]
+pub(super) mod universal;
 
 use std::{
     cell::{Cell, RefCell},
@@ -30,6 +32,7 @@ pub(crate) struct PendingMissing {
 }
 #[derive(Clone, Debug)]
 pub(crate) struct SourceAnalysis {
+    pub(super) comparison: Option<Box<AffinePredicate>>,
     pub scope: Scope,
     pub known_value: Option<Scalar>,
     pub affine: Option<Box<super::affine::Form>>,
@@ -40,11 +43,20 @@ pub(crate) struct SourceAnalysis {
 
 #[derive(Clone)]
 struct SourceValue {
+    comparison: Option<Box<AffinePredicate>>,
     scope: Scope,
     known_value: Option<Scalar>,
     affine: Option<Box<super::affine::Form>>,
     support: Vec<Fact>,
     scalar_scope: Option<Scope>,
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct AffinePredicate {
+    expression: usize,
+    op: BinOp,
+    left: super::affine::Form,
+    right: super::affine::Form,
 }
 
 /// 元の左右は未確定のまま、差だけが定数になった比較の再分析結果。
@@ -59,6 +71,7 @@ struct AffineComparison {
 enum LexicalOrigin {
     Let(usize),
     Iteration(usize),
+    Universal(usize),
     Pattern {
         matching: usize,
         arm: usize,
@@ -110,6 +123,7 @@ pub(crate) struct Environment<'a> {
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
     cache: RefCell<ValidationCache>,
+    universal_context: RefCell<Option<universal::AnalysisContext>>,
     #[cfg(test)]
     optional_name_context: Cell<Option<super::call::Context>>,
     #[cfg(test)]
@@ -181,6 +195,7 @@ impl<'a> Environment<'a> {
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
             cache: RefCell::new(ValidationCache::default()),
+            universal_context: RefCell::new(None),
             #[cfg(test)]
             optional_name_context: Cell::new(None),
             #[cfg(test)]
@@ -367,6 +382,9 @@ impl<'a> Environment<'a> {
             }
             let previous = self.context.replace(Some(context));
             let old_cutoff = self.cutoff.replace(limit);
+            // 原producerの再検査は、そのnode自身のPlanから始める。呼出し側の
+            // 記号分析・数値補完を、別case/旧callerの通常Sourceへ持ち込まない。
+            let previous_universal = self.universal_context.replace(None);
             let previous_completion = self.completion_values.replace(Vec::new());
             let result = (|| {
                 if let Some(case) = context.case {
@@ -383,6 +401,7 @@ impl<'a> Environment<'a> {
                 other => other,
             });
             self.completion_values.replace(previous_completion);
+            self.universal_context.replace(previous_universal);
             self.cutoff.set(old_cutoff);
             self.context.set(previous);
             if resident && result.is_ok() {
@@ -640,12 +659,41 @@ impl<'a> Environment<'a> {
             }
             self.tick()?;
         }
+        if self.validate_universal_node(graph, node, limit)? {
+            return Ok(());
+        }
         if self.validate_completion_node(graph, node, limit)? {
             return Ok(());
         }
         if self.validate_family_node(graph, node, limit)? {
             return Ok(());
         }
+        self.validate_native_node(graph, node, limit)
+    }
+    fn validate_native_node(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        // 専用全域/補完のdispatchから、従来payloadの大きな局所値を分離する。
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match &node.payload {
+            Some(Payload::Scalar(_)) => self.validate_native_scalar(graph, node, limit),
+            Some(
+                Payload::Expression { .. }
+                | Payload::Transform { .. }
+                | Payload::LawInstance { .. },
+            ) => self.validate_native_source(graph, node, limit),
+            Some(Payload::Evaluation { .. }) => self.validate_native_evaluation(graph, node, limit),
+            _ => self.validate_native_evidence(graph, node, limit),
+        })
+    }
+    fn validate_native_scalar(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
         if let Some(Payload::Scalar(scalar)) = &node.payload {
             data::check(scalar, self.inputs.law(), &self.control)?;
             match &node.rule {
@@ -815,6 +863,15 @@ impl<'a> Environment<'a> {
                 return Err("値の支持が元入力・実引数の完全な集合と違う".into());
             }
         }
+        self.tick()?;
+        Ok(())
+    }
+    fn validate_native_source(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
         if let Some(Payload::Expression {
             location: Location::Law { span },
             parameters,
@@ -967,6 +1024,15 @@ impl<'a> Environment<'a> {
             }
             self.application(graph, node)?;
         }
+        self.tick()?;
+        Ok(())
+    }
+    fn validate_native_evaluation(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
         if let Some(Payload::Evaluation {
             expression,
             bindings,
@@ -1642,6 +1708,15 @@ impl<'a> Environment<'a> {
                 }
             }
         }
+        self.tick()?;
+        Ok(())
+    }
+    fn validate_native_evidence(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
         match &node.payload {
             Some(Payload::Normalization { .. }) => {
                 self.affine_normalization_analysis(graph, node, limit)?;
@@ -3046,6 +3121,9 @@ impl<'a> Environment<'a> {
             }
             _ => return Err("Request種別と元宣言が違う".into()),
         };
+        if self.validate_universal_answer(graph, request, answer)? {
+            return Ok(());
+        }
         if self.validate_completion_answer(graph, request, answer)? {
             return Ok(());
         }
@@ -3450,6 +3528,11 @@ impl<'a> Environment<'a> {
                 continue;
             };
             if actual == bindings && *actual_span == self.inputs.law().exprs[id].span {
+                // 全称rootの内部pointwise評価は、外側ASTへ返すwholeの実producer
+                // ではない。元template/Domain/Source辺から再検査したrootだけを除く。
+                if self.universal_internal_root_evaluation(graph, NodeRef(index))? {
+                    continue;
+                }
                 if found.is_some() {
                     return Err("同じ元式・Contextの実評価が一意でない".into());
                 }
@@ -3524,10 +3607,26 @@ impl<'a> Environment<'a> {
                 && law.exprs[*body].span.0 <= span.0
                 && span.1 <= law.exprs[*body].span.1
             {
+                let symbolic =
+                    matches!(
+                        &expression.kind,
+                        ExprKind::Quant {
+                            kind: crate::law::ast::QuantKind::Forall,
+                            split: crate::law::ast::QuantSplit::Fixed {
+                                domain: crate::law::ast::QuantDomain::Type(_),
+                                ..
+                            },
+                            ..
+                        }
+                    ) && matches!(law.quantifier_types[id].as_ref(), Some(Type::Z | Type::Q));
                 enclosing.push((
                     expression.span.0,
                     var.name.clone(),
-                    LexicalOrigin::Iteration(id),
+                    if symbolic {
+                        LexicalOrigin::Universal(id)
+                    } else {
+                        LexicalOrigin::Iteration(id)
+                    },
                 ));
             }
             if let ExprKind::SetComp {
@@ -4009,8 +4108,13 @@ impl<'a> Environment<'a> {
         index: usize,
     ) -> Result<FrameInputs, ValidationFailure> {
         self.tick()?;
+        if let Some(value) = self.universal_completion_frame(graph, index)? {
+            return Ok(value);
+        }
         let cache_key = (index, self.cutoff.get().min(graph.nodes.len()));
-        if let Some(value) = self.cache.borrow().frames.get(&cache_key).cloned() {
+        if self.universal_context.borrow().is_none()
+            && let Some(value) = self.cache.borrow().frames.get(&cache_key).cloned()
+        {
             return Ok(value);
         }
         let frame = graph.frames.get(index).ok_or("call frameがない")?;
@@ -4076,6 +4180,7 @@ impl<'a> Environment<'a> {
                 variables.insert(
                     parameter.name.clone(),
                     SourceValue {
+                        comparison: analysis.comparison,
                         affine: analysis.affine,
                         scope: analysis.scope,
                         known_value: analysis.known_value,
@@ -4090,7 +4195,9 @@ impl<'a> Environment<'a> {
             Ok((bindings, variables, base))
         })();
         self.context.set(previous);
-        if let Ok(value) = &result {
+        if self.universal_context.borrow().is_none()
+            && let Ok(value) = &result
+        {
             self.cache
                 .borrow_mut()
                 .frames
@@ -4421,6 +4528,7 @@ impl<'a> Environment<'a> {
                     finite,
                     member.clone(),
                     SourceAnalysis {
+                        comparison: None,
                         affine: None,
                         scope: scope.clone(),
                         known_value: None,
@@ -4658,6 +4766,11 @@ impl<'a> Environment<'a> {
     ) -> Result<SourceAnalysis, ValidationFailure> {
         self.validation_session(|| {
             self.tick()?;
+            // 全域Plan/DomainはSource cacheの旧keyに含まれない。各実producerを
+            // 現在の記号contextで再構成し、別templateの成功を流用しない。
+            if self.universal_context.borrow().is_some() {
+                return self.universal_uncached_source(graph, span, bindings);
+            }
             let context = self.current_context(graph);
             let cutoff = self.cutoff.get().min(graph.nodes.len());
             let cached = self
@@ -4749,14 +4862,51 @@ impl<'a> Environment<'a> {
             }
             (base, variables)
         } else {
-            if params.len() != bindings.len() {
+            if params.len() != bindings.len() && self.universal_context.borrow().is_none() {
                 return Err("評価範囲のparameter束縛数が違う".into());
+            }
+            if !params
+                .iter()
+                .filter(|parameter| {
+                    bindings
+                        .iter()
+                        .any(|binding| binding.name == parameter.name)
+                })
+                .zip(bindings)
+                .all(|(parameter, binding)| {
+                    parameter.name == binding.name && parameter.ty.erase() == binding.ty
+                })
+            {
+                return Err("評価範囲の元parameter順・署名が違う".into());
+            }
+            if bindings.iter().enumerate().any(|(index, binding)| {
+                bindings[..index]
+                    .iter()
+                    .any(|previous| previous.name == binding.name)
+                    || !params.iter().any(|parameter| {
+                        parameter.name == binding.name && parameter.ty.erase() == binding.ty
+                    })
+            }) {
+                return Err("評価範囲の固定parameterが重複・余分・異型である".into());
             }
             let mut base = Scope::default();
             base.readings.insert(declaration.reading.clone());
             let mut variables = BTreeMap::new();
-            for (parameter, binding) in params.iter().zip(bindings) {
+            for parameter in params {
                 self.tick()?;
+                let Some(binding) = bindings
+                    .iter()
+                    .find(|binding| binding.name == parameter.name)
+                else {
+                    let value = self.universal_parameter_value(
+                        parameter.span,
+                        &parameter.name,
+                        &parameter.ty,
+                        &base,
+                    )?;
+                    variables.insert(parameter.name.clone(), value);
+                    continue;
+                };
                 if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
                     return Err("評価範囲の元parameter署名が違う".into());
                 }
@@ -4781,6 +4931,7 @@ impl<'a> Environment<'a> {
                 variables.insert(
                     binding.name.clone(),
                     SourceValue {
+                        comparison: None,
                         affine: None,
                         scope: base.clone(),
                         known_value: Some(value.clone()),
@@ -4819,6 +4970,7 @@ impl<'a> Environment<'a> {
         if self.current_context(graph).case.is_some() {
             base.completions = true;
         }
+        self.universal_extend_scope(&mut base)?;
         // parameter の範囲は全明示束縛を含む。Scalar 自体の由来範囲とは区別する。
         for variable in variables.values_mut() {
             self.tick()?;
@@ -4828,6 +4980,15 @@ impl<'a> Environment<'a> {
         for (name, rhs) in self.lexical_context(span)? {
             self.tick()?;
             let value = match rhs {
+                LexicalOrigin::Universal(id) => {
+                    let ExprKind::Quant { var, .. } = &self.inputs.law().exprs[id].kind else {
+                        unreachable!()
+                    };
+                    let ty = self.inputs.law().quantifier_types[id]
+                        .as_ref()
+                        .ok_or("全域binderの型がない")?;
+                    self.universal_parameter_value(var.span, &var.name, ty, &base)?
+                }
                 LexicalOrigin::Let(rhs) => self.scoped_ast_at(
                     rhs,
                     &variables,
@@ -4845,6 +5006,7 @@ impl<'a> Environment<'a> {
                         value.scope.merge(&base);
                     }
                     SourceValue {
+                        comparison: None,
                         affine: super::affine::constant(&member, &self.control)?.map(Box::new),
                         scope: base.clone(),
                         known_value: Some(member),
@@ -4900,6 +5062,7 @@ impl<'a> Environment<'a> {
         }
         if let Some(&id) = self.expressions.get(&span) {
             let SourceValue {
+                comparison,
                 scope,
                 known_value,
                 affine,
@@ -4945,6 +5108,7 @@ impl<'a> Environment<'a> {
                 None
             };
             return Ok(SourceAnalysis {
+                comparison,
                 affine,
                 scope,
                 known_value,
@@ -4959,6 +5123,7 @@ impl<'a> Environment<'a> {
             .get(name)
             .ok_or("評価範囲に元束縛以外のfragmentがある")?;
         Ok(SourceAnalysis {
+            comparison: value.comparison.clone(),
             affine: value.affine.clone(),
             scope: value.scope.clone(),
             known_value: value.known_value.clone(),
@@ -5025,8 +5190,12 @@ impl<'a> Environment<'a> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
             let expression = &self.inputs.law().exprs[id];
+            if matches!(&expression.kind, ExprKind::Quant { .. }) {
+                return self.scoped_quantified(id, variables, base, reading);
+            }
             let mut result = match &expression.kind {
                 ExprKind::Int(n) => SourceValue {
+                    comparison: None,
                     affine: None,
                     scope: base.clone(),
                     known_value: Some(numeric::literal(
@@ -5041,6 +5210,7 @@ impl<'a> Environment<'a> {
                     scalar_scope: Some(base.clone()),
                 },
                 ExprKind::Bool(b) => SourceValue {
+                    comparison: None,
                     affine: None,
                     scope: base.clone(),
                     known_value: Some(Scalar::Bool(*b)),
@@ -5051,6 +5221,7 @@ impl<'a> Environment<'a> {
                     if data::expression(self.inputs.law(), id, &self.control)?.is_some() =>
                 {
                     SourceValue {
+                        comparison: None,
                         affine: None,
                         scope: base.clone(),
                         known_value: Some(self.composite_value(id, &[])?),
@@ -5131,6 +5302,7 @@ impl<'a> Environment<'a> {
                     };
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        comparison: None,
                         affine,
                         scope,
                         known_value,
@@ -5138,172 +5310,7 @@ impl<'a> Environment<'a> {
                         scalar_scope,
                     }
                 }
-                ExprKind::Binary { op, lhs, rhs } => {
-                    if !supports_binary(
-                        *op,
-                        self.inputs
-                            .law()
-                            .expr_type(*lhs)
-                            .ok_or("二項元式の型がない")?,
-                        &self.control,
-                    )? {
-                        return Err(ValidationFailure::UnsupportedExpression {
-                            location: Location::Law {
-                                span: expression.span,
-                            },
-                            feature: "対応済み Z/Bool 二項演算以外".into(),
-                        });
-                    }
-                    let SourceValue {
-                        mut scope,
-                        known_value: left,
-                        affine: left_affine,
-                        mut support,
-                        ..
-                    } = self.scoped_ast(*lhs, variables, base, reading)?;
-                    let right = self.scoped_ast(*rhs, variables, base, reading)?;
-                    scope.merge(&right.scope);
-                    support.extend(right.support);
-                    support.sort();
-                    support.dedup();
-                    let affine = super::affine::binary(
-                        *op,
-                        left_affine.as_deref(),
-                        right.affine.as_deref(),
-                        &self.control,
-                    )?
-                    .map(Box::new);
-                    let known_value = partial_binary(
-                        *op,
-                        left.as_ref(),
-                        right.known_value.as_ref(),
-                        &self.control,
-                    )?;
-                    let known_value = match known_value {
-                        Some(value) => Some(value),
-                        None if matches!(op, BinOp::Eq | BinOp::Ne) => super::affine::equality(
-                            *op,
-                            left_affine.as_deref(),
-                            right.affine.as_deref(),
-                            &self.control,
-                        )?
-                        .map(|(value, _)| value),
-                        None => affine
-                            .as_ref()
-                            .map(|form| form.value(&self.control))
-                            .transpose()?
-                            .flatten(),
-                    };
-                    let scalar_scope = known_value.as_ref().map(|_| scope.clone());
-                    SourceValue {
-                        affine,
-                        scope,
-                        known_value,
-                        support,
-                        scalar_scope,
-                    }
-                }
-                ExprKind::Quant { .. } => {
-                    let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
-                    let (input, members) = if let Some(domain) = spec.domain {
-                        let input = self.scoped_ast(domain, variables, base, reading)?;
-                        let members = match &input.known_value {
-                            Some(Scalar::List { items, .. } | Scalar::Set { items, .. }) => {
-                                let value = data::set(spec.element.clone(), items, &self.control)?;
-                                let Scalar::Set { items, .. } = &value else {
-                                    unreachable!()
-                                };
-                                Some(items.clone())
-                            }
-                            None => None,
-                            _ => return Err("量化域がList/Setでない".into()),
-                        };
-                        (input, members)
-                    } else {
-                        let enumeration = self.finite_values(&spec.element, &mut |_, _| {})?;
-                        let mut scope = base.clone();
-                        scope.merge(&enumeration.scope);
-                        (
-                            SourceValue {
-                                affine: None,
-                                scope,
-                                known_value: None,
-                                support: enumeration.support,
-                                scalar_scope: None,
-                            },
-                            Some(enumeration.values),
-                        )
-                    };
-                    // 親/lexical値が既に持つ出現はその由来順を保つ。
-                    // このdomain式で新たに現れる量化は自身より後に置く。
-                    let mut inherited = base.clone();
-                    for value in variables.values() {
-                        self.tick()?;
-                        inherited.merge_quantifiers(&value.scope);
-                    }
-                    let mut scope = input.scope.clone();
-                    scope.quantifiers.retain(|q| {
-                        inherited
-                            .quantifiers
-                            .iter()
-                            .any(|old| old.occurrence == q.occurrence)
-                    });
-                    scope.add_quantifier(spec.descriptor(None, self.scoped_context.get()));
-                    scope.merge_quantifiers(&input.scope);
-                    let Some(items) = members else {
-                        return Ok(SourceValue {
-                            affine: None,
-                            scope,
-                            known_value: None,
-                            support: input.support,
-                            scalar_scope: None,
-                        });
-                    };
-                    let mut support = input.support.clone();
-                    let mut values = Vec::new();
-                    for item in items {
-                        self.tick()?;
-                        let mut local = self.copy_variables(variables)?;
-                        for value in local.values_mut() {
-                            value.scope.merge(&scope);
-                        }
-                        if local
-                            .insert(
-                                spec.name.into(),
-                                SourceValue {
-                                    affine: None,
-                                    scope: scope.clone(),
-                                    known_value: Some(item.clone()),
-                                    support: input.support.clone(),
-                                    scalar_scope: Some(scope.clone()),
-                                },
-                            )
-                            .is_some()
-                        {
-                            return Err("量化binderが重複する".into());
-                        }
-                        let body = self.scoped_ast_at(spec.body, &local, &scope, reading, None)?;
-                        scope.merge(&body.scope);
-                        support.extend(body.support);
-                        values.push(match body.known_value {
-                            Some(Scalar::Bool(value)) => Some(value),
-                            None => None,
-                            _ => return Err("量化本体がBoolでない".into()),
-                        });
-                        self.tick()?;
-                    }
-                    support.sort();
-                    support.dedup();
-                    let known_value =
-                        quantifier::reduce(spec.kind, &values, &self.control)?.map(Scalar::Bool);
-                    SourceValue {
-                        affine: None,
-                        scalar_scope: known_value.as_ref().map(|_| scope.clone()),
-                        scope,
-                        known_value,
-                        support,
-                    }
-                }
+                ExprKind::Binary { .. } => self.scoped_binary(id, variables, base, reading)?,
                 ExprKind::SetComp {
                     elem,
                     var,
@@ -5325,6 +5332,7 @@ impl<'a> Environment<'a> {
                     let input = self.scoped_ast(*domain, variables, base, reading)?;
                     let Some(container) = input.known_value.as_ref() else {
                         return Ok(SourceValue {
+                            comparison: None,
                             affine: None,
                             scalar_scope: None,
                             ..input
@@ -5348,6 +5356,7 @@ impl<'a> Environment<'a> {
                             .insert(
                                 var.name.clone(),
                                 SourceValue {
+                                    comparison: None,
                                     affine: None,
                                     scope: input.scope.clone(),
                                     known_value: Some(item.clone()),
@@ -5402,6 +5411,7 @@ impl<'a> Environment<'a> {
                         None
                     };
                     SourceValue {
+                        comparison: None,
                         affine: None,
                         scalar_scope: known_value.as_ref().map(|_| scope.clone()),
                         scope,
@@ -5419,6 +5429,7 @@ impl<'a> Environment<'a> {
                     )?
                     else {
                         return Ok(SourceValue {
+                            comparison: None,
                             affine: None,
                             scalar_scope: None,
                             ..input
@@ -5433,6 +5444,7 @@ impl<'a> Environment<'a> {
                             .insert(
                                 name,
                                 SourceValue {
+                                    comparison: None,
                                     affine: None,
                                     scope: input.scope.clone(),
                                     known_value: Some(value),
@@ -5453,6 +5465,7 @@ impl<'a> Environment<'a> {
                     support.sort();
                     support.dedup();
                     SourceValue {
+                        comparison: body.comparison,
                         affine: body.affine,
                         scalar_scope: body.known_value.as_ref().map(|_| scope.clone()),
                         scope,
@@ -5474,9 +5487,11 @@ impl<'a> Environment<'a> {
                     support.sort();
                     support.dedup();
                     let affine = body.affine;
+                    let comparison = body.comparison;
                     let known_value = body.known_value;
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        comparison,
                         affine,
                         scope,
                         support,
@@ -5503,6 +5518,11 @@ impl<'a> Environment<'a> {
                         Some(Scalar::Bool(false)) => right.affine,
                         _ => None,
                     };
+                    let comparison = match condition.known_value.as_ref() {
+                        Some(Scalar::Bool(true)) => left.comparison,
+                        Some(Scalar::Bool(false)) => right.comparison,
+                        _ => None,
+                    };
                     let mut scope = condition.scope;
                     scope.merge(&left.scope);
                     scope.merge(&right.scope);
@@ -5513,6 +5533,7 @@ impl<'a> Environment<'a> {
                     support.dedup();
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        comparison,
                         affine,
                         scope,
                         support,
@@ -5548,6 +5569,7 @@ impl<'a> Environment<'a> {
                     support.sort();
                     support.dedup();
                     SourceValue {
+                        comparison: body.comparison,
                         affine: body.affine,
                         scalar_scope: body.known_value.as_ref().map(|_| call_base.clone()),
                         scope: call_base,
@@ -5597,6 +5619,7 @@ impl<'a> Environment<'a> {
                     };
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
+                        comparison: None,
                         affine: None,
                         scope,
                         support,
@@ -5621,6 +5644,225 @@ impl<'a> Environment<'a> {
             self.tick()?;
             Ok(result)
         })
+    }
+    fn scoped_binary(
+        &self,
+        id: usize,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<SourceValue, ValidationFailure> {
+        let expression = &self.inputs.law().exprs[id];
+        let ExprKind::Binary { op, lhs, rhs } = &expression.kind else {
+            unreachable!()
+        };
+        let result = {
+            if !supports_binary(
+                *op,
+                self.inputs
+                    .law()
+                    .expr_type(*lhs)
+                    .ok_or("二項元式の型がない")?,
+                &self.control,
+            )? {
+                return Err(ValidationFailure::UnsupportedExpression {
+                    location: Location::Law {
+                        span: expression.span,
+                    },
+                    feature: "対応済み Z/Bool 二項演算以外".into(),
+                });
+            }
+            let SourceValue {
+                mut scope,
+                known_value: left,
+                affine: left_affine,
+                mut support,
+                ..
+            } = self.scoped_ast(*lhs, variables, base, reading)?;
+            let right = self.scoped_ast(*rhs, variables, base, reading)?;
+            scope.merge(&right.scope);
+            support.extend(right.support);
+            support.sort();
+            support.dedup();
+            let affine = super::affine::binary(
+                *op,
+                left_affine.as_deref(),
+                right.affine.as_deref(),
+                &self.control,
+            )?
+            .map(Box::new);
+            let comparison = if matches!(op, BinOp::Eq | BinOp::Ne) {
+                left_affine
+                    .as_deref()
+                    .zip(right.affine.as_deref())
+                    .map(|(left, right)| {
+                        Box::new(AffinePredicate {
+                            expression: id,
+                            op: *op,
+                            left: left.clone(),
+                            right: right.clone(),
+                        })
+                    })
+            } else {
+                None
+            };
+            let known_value = partial_binary(
+                *op,
+                left.as_ref(),
+                right.known_value.as_ref(),
+                &self.control,
+            )?;
+            let known_value = match known_value {
+                Some(value) => Some(value),
+                None if matches!(op, BinOp::Eq | BinOp::Ne) => super::affine::equality(
+                    *op,
+                    left_affine.as_deref(),
+                    right.affine.as_deref(),
+                    &self.control,
+                )?
+                .map(|(value, _)| value),
+                None => affine
+                    .as_ref()
+                    .map(|form| form.value(&self.control))
+                    .transpose()?
+                    .flatten(),
+            };
+            let scalar_scope = known_value.as_ref().map(|_| scope.clone());
+            SourceValue {
+                comparison,
+                affine,
+                scope,
+                known_value,
+                support,
+                scalar_scope,
+            }
+        };
+        Ok(result)
+    }
+    fn scoped_quantified(
+        &self,
+        id: usize,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<SourceValue, ValidationFailure> {
+        let mut result = {
+            if let Some(value) =
+                self.universal_quantifier_source_value(id, variables, base, reading)?
+            {
+                return Ok(value);
+            }
+            let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+            let (input, members) = if let Some(domain) = spec.domain {
+                let input = self.scoped_ast(domain, variables, base, reading)?;
+                let members = match &input.known_value {
+                    Some(Scalar::List { items, .. } | Scalar::Set { items, .. }) => {
+                        let value = data::set(spec.element.clone(), items, &self.control)?;
+                        let Scalar::Set { items, .. } = &value else {
+                            unreachable!()
+                        };
+                        Some(items.clone())
+                    }
+                    None => None,
+                    _ => return Err("量化域がList/Setでない".into()),
+                };
+                (input, members)
+            } else {
+                let enumeration = self.finite_values(&spec.element, &mut |_, _| {})?;
+                let mut scope = base.clone();
+                scope.merge(&enumeration.scope);
+                (
+                    SourceValue {
+                        comparison: None,
+                        affine: None,
+                        scope,
+                        known_value: None,
+                        support: enumeration.support,
+                        scalar_scope: None,
+                    },
+                    Some(enumeration.values),
+                )
+            };
+            // 親/lexical値が既に持つ出現はその由来順を保つ。
+            // このdomain式で新たに現れる量化は自身より後に置く。
+            let mut inherited = base.clone();
+            for value in variables.values() {
+                self.tick()?;
+                inherited.merge_quantifiers(&value.scope);
+            }
+            let mut scope = input.scope.clone();
+            scope.quantifiers.retain(|q| {
+                inherited
+                    .quantifiers
+                    .iter()
+                    .any(|old| old.occurrence == q.occurrence)
+            });
+            scope.add_quantifier(spec.descriptor(None, self.scoped_context.get()));
+            scope.merge_quantifiers(&input.scope);
+            let Some(items) = members else {
+                return Ok(SourceValue {
+                    comparison: None,
+                    affine: None,
+                    scope,
+                    known_value: None,
+                    support: input.support,
+                    scalar_scope: None,
+                });
+            };
+            let mut support = input.support.clone();
+            let mut values = Vec::new();
+            for item in items {
+                self.tick()?;
+                let mut local = self.copy_variables(variables)?;
+                for value in local.values_mut() {
+                    value.scope.merge(&scope);
+                }
+                if local
+                    .insert(
+                        spec.name.into(),
+                        SourceValue {
+                            comparison: None,
+                            affine: None,
+                            scope: scope.clone(),
+                            known_value: Some(item.clone()),
+                            support: input.support.clone(),
+                            scalar_scope: Some(scope.clone()),
+                        },
+                    )
+                    .is_some()
+                {
+                    return Err("量化binderが重複する".into());
+                }
+                let body = self.scoped_ast_at(spec.body, &local, &scope, reading, None)?;
+                scope.merge(&body.scope);
+                support.extend(body.support);
+                values.push(match body.known_value {
+                    Some(Scalar::Bool(value)) => Some(value),
+                    None => None,
+                    _ => return Err("量化本体がBoolでない".into()),
+                });
+                self.tick()?;
+            }
+            support.sort();
+            support.dedup();
+            let known_value =
+                quantifier::reduce(spec.kind, &values, &self.control)?.map(Scalar::Bool);
+            SourceValue {
+                comparison: None,
+                affine: None,
+                scalar_scope: known_value.as_ref().map(|_| scope.clone()),
+                scope,
+                known_value,
+                support,
+            }
+        };
+        if result.affine.is_none()
+            && let Some(value) = &result.known_value
+        {
+            result.affine = super::affine::constant(value, &self.control)?.map(Box::new);
+        }
+        self.tick()?;
+        Ok(result)
     }
     fn scoped_field(
         &self,
@@ -5688,6 +5930,15 @@ impl<'a> Environment<'a> {
                 let owner_scope = self.scope(owner, reading, None)?;
                 scope.merge(&owner_scope);
                 scope.completions = true;
+                let numeric_assigned = self.universal_missing_value(
+                    &Fact {
+                        snapshot: snapshot.clone(),
+                        subject: subject.clone(),
+                        field: Some(field.name.clone()),
+                        atom: None,
+                    },
+                    &field.ty,
+                )?;
                 let assigned = self
                     .completion_values
                     .borrow()
@@ -5698,7 +5949,12 @@ impl<'a> Environment<'a> {
                             && fact.field.as_deref() == Some(field.name.as_str())
                     })
                     .map(|(_, _, value)| value.clone());
-                if let Some(assigned) = assigned {
+                if let Some(assigned) = numeric_assigned {
+                    let mut scalar_scope = request_base.clone();
+                    scalar_scope.merge(&owner_scope);
+                    scalar_scope.completions = true;
+                    (Some(assigned), Some(scalar_scope))
+                } else if let Some(assigned) = assigned {
                     if !self.completion_type_supported(&field.ty)? || assigned.ty() != field.ty {
                         return Err("補完slotの元参照なし有限型が違う".into());
                     }
@@ -5729,6 +5985,7 @@ impl<'a> Environment<'a> {
         support.sort();
         support.dedup();
         Ok(SourceValue {
+            comparison: None,
             affine,
             scope,
             known_value,
@@ -5901,7 +6158,8 @@ impl<'a> Environment<'a> {
             Some(
                 Payload::Expression { bindings, .. }
                 | Payload::CompletionSeed { bindings, .. }
-                | Payload::Transform { bindings, .. },
+                | Payload::Transform { bindings, .. }
+                | Payload::ParameterizedTransform { bindings, .. },
             ) => Ok(bindings),
             _ => Err("式束縛がない".into()),
         }
@@ -6123,6 +6381,9 @@ impl<'a> Environment<'a> {
             }
             self.validate_at(graph, node, reference.0)?;
             self.validate_at(graph, graph.get(*expression)?, expression.0)?;
+            if self.universal_owned_evaluation(graph, reference)? {
+                continue;
+            }
             if node.arguments.first().is_some_and(|r| {
                 matches!(
                     graph.get(*r).map(|n| &n.payload),
@@ -6804,6 +7065,7 @@ impl<'a> Environment<'a> {
         }
         Ok((
             SourceAnalysis {
+                comparison: None,
                 affine: None,
                 scalar_scope: computed.as_ref().map(|_| scope.clone()),
                 scope,

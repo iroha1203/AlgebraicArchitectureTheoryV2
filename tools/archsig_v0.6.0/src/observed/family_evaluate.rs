@@ -55,6 +55,33 @@ impl Evaluator<'_, '_> {
         body: usize,
         role: Option<Role>,
     ) -> Result<Answer, Failure> {
+        let numeric = _params
+            .iter()
+            .filter(|parameter| {
+                !self
+                    .request
+                    .arguments
+                    .iter()
+                    .any(|argument| argument.name == format!("bind.{}", parameter.name))
+            })
+            .collect::<Vec<_>>();
+        if !numeric.is_empty()
+            && numeric
+                .iter()
+                .all(|parameter| matches!(parameter.ty, Type::Z | Type::Q))
+        {
+            return self.universal_family_answer(_params, role);
+        }
+        self.finite_family_answer(guard, body, role)
+    }
+
+    #[inline(never)]
+    fn finite_family_answer(
+        &mut self,
+        guard: Option<usize>,
+        body: usize,
+        role: Option<Role>,
+    ) -> Result<Answer, Failure> {
         let plan = self
             .environment
             .family_plan(self.request)?

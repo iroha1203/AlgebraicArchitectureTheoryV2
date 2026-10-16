@@ -26,6 +26,8 @@ use std::collections::BTreeMap;
 mod completion;
 #[path = "family_evaluate.rs"]
 mod family;
+#[path = "universal_evaluate.rs"]
+mod universal;
 
 pub fn evaluate_observed_bytes(
     sources: InputSources,
@@ -558,10 +560,19 @@ impl Evaluator<'_, '_> {
                     }
                 }
                 ExprKind::Quant { .. } => {
-                    let spec =
-                        super::quantifier::spec(self.environment.inputs.law(), id, self.control)?;
-                    if let Some(domain) = spec.domain {
-                        self.prepare_source(domain)?;
+                    if self
+                        .environment
+                        .universal_quantifier_plan(self.graph, id, &self.bindings)?
+                        .is_none()
+                    {
+                        let spec = super::quantifier::spec(
+                            self.environment.inputs.law(),
+                            id,
+                            self.control,
+                        )?;
+                        if let Some(domain) = spec.domain {
+                            self.prepare_source(domain)?;
+                        }
                     }
                 }
                 ExprKind::SetComp { domain, .. } => {
@@ -729,6 +740,18 @@ impl Evaluator<'_, '_> {
     fn eval(&mut self, id: ExprId) -> Result<Evaluated, Failure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick(Checkpoint::Expression)?;
+            if matches!(
+                self.environment.inputs.law().exprs[id].kind,
+                ExprKind::Quant { .. }
+            ) && let Some(plan) =
+                self.environment
+                    .universal_quantifier_plan(self.graph, id, &self.bindings)?
+            {
+                let value = self.universal_evaluation(plan)?.evaluated;
+                self.completed.insert(id, value.clone());
+                self.tick(Checkpoint::Expression)?;
+                return Ok(value);
+            }
             self.prepare_source(id)?;
             #[cfg(test)]
             data::observe_actual(
@@ -1875,6 +1898,28 @@ impl Evaluator<'_, '_> {
         if self.graph.active.instance.is_none() {
             self.bind(params)?;
         }
+        if self.request.kind == QuestionKind::Check
+            && matches!(
+                self.environment.inputs.law().exprs[body].kind,
+                ExprKind::Quant { .. }
+            )
+            && let Some(plan) =
+                self.environment
+                    .universal_quantifier_plan(self.graph, body, &self.bindings)?
+        {
+            return self.universal_law_answer(plan, role);
+        }
+        self.answer_regular(params, guard, body, role)
+    }
+
+    #[inline(never)]
+    fn answer_regular(
+        &mut self,
+        params: &[Param],
+        guard: Option<ExprId>,
+        body: ExprId,
+        role: Option<Role>,
+    ) -> Result<Answer, Failure> {
         let guard_id = guard;
         let body_id = body;
         let guard = guard.map(|g| self.eval(g)).transpose()?;
@@ -2337,6 +2382,8 @@ fn evaluate_observed_with_validator(
         instances: graph.instances,
         #[cfg(test)]
         cases: graph.cases,
+        #[cfg(test)]
+        universal_witnesses: graph.universal_witnesses,
         answers,
         issues,
         status,
@@ -2347,6 +2394,7 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    include!("universal_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =
@@ -3908,6 +3956,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
             graph.iterations = result.iterations.clone();
             graph.instances = result.instances.clone();
             graph.cases = result.cases.clone();
+            graph.universal_witnesses = result.universal_witnesses.clone();
             let evaluation = result.answers[4].outputs["evaluation"];
             graph.active = result.contexts[evaluation.0];
             let original = &graph.nodes[evaluation.0];
@@ -4380,6 +4429,7 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
         graph.iterations = result.iterations.clone();
         graph.instances = result.instances.clone();
         graph.cases = result.cases.clone();
+        graph.universal_witnesses = result.universal_witnesses.clone();
         for (index, node) in nodes.iter().enumerate() {
             graph.active = result.contexts.get(index).copied().unwrap_or_default();
             environment.validate(&graph, node)?;
@@ -8367,6 +8417,146 @@ reading Calc {{
 "#,
         );
         let law = sources.law().bytes().to_vec();
+        let quantified = evaluate_observed_bytes(
+            sources,
+            &["v=evaluate(Calc.caller,s=@v/sample)"],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(quantified.status(), "complete", "{:?}", quantified.issues);
+        assert_eq!(
+            data_scalar_at(&quantified, quantified.answers[0].outputs["value"].0),
+            &Scalar::Bool(false)
+        );
+        rebuild_for_origin_and_support_recheck(&quantified, &quantified.nodes).unwrap();
+        let checked = quantified.prepared.inputs().law();
+        let callee = &checked.declarations["Calc.unsupported"];
+        let Signature::View { body, .. } = &callee.signature else {
+            unreachable!()
+        };
+        let span = checked.exprs[*body].span;
+        let ExprKind::Quant {
+            kind: crate::law::ast::QuantKind::Forall,
+            var,
+            split:
+                crate::law::ast::QuantSplit::Fixed {
+                    domain: crate::law::ast::QuantDomain::Type(_),
+                    body: equation,
+                },
+        } = &checked.exprs[*body].kind
+        else {
+            unreachable!()
+        };
+        assert_eq!(var.name, "item");
+        assert_eq!(checked.quantifier_types[*body], Some(Type::Z));
+        let normalization = quantified.nodes.iter().enumerate().find_map(|(index,node)| {
+            let Some(Payload::Normalization {before,..})=&node.payload else {return None};
+            (quantified.contexts[index].frame.is_some()
+                && matches!(&quantified.nodes[before.0].payload,
+                    Some(Payload::Expression {location:Location::Law {span:actual},..}) if *actual==span))
+                .then_some(index)
+        }).unwrap();
+        let Some(Payload::Normalization {
+            before,
+            after,
+            steps,
+        }) = &quantified.nodes[normalization].payload
+        else {
+            unreachable!()
+        };
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            parameters,
+            ..
+        }) = &quantified.nodes[before.0].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(&law[span.0..span.1], b"forall item: Z. item=0");
+        assert!(parameters.is_empty(), "元forallはitemを束縛する");
+        assert_eq!(data_scalar_at(&quantified, after.0), &Scalar::Bool(false));
+        assert_eq!(steps.len(), 2);
+        assert!(matches!(
+            &quantified.nodes[steps[0].0].payload,
+            Some(Payload::ParameterizedTransform {
+                operation: TransformOp::Difference,
+                ..
+            })
+        ));
+        assert_eq!(
+            quantified.nodes[steps[0].0].ty,
+            NodeType::Expression(Type::Z)
+        );
+        let context = quantified.contexts[before.0];
+        let frame = &quantified.frames[context.frame.unwrap()];
+        assert_eq!(frame.arguments.len(), 1);
+        let Some(Payload::Expression {
+            location: Location::Law { span: call_span },
+            ..
+        }) = &quantified.nodes[frame.source.0].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(&law[call_span.0..call_span.1], b"unsupported(s)");
+        let domain = quantified
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (quantified.contexts[index] == context
+                    && matches!(&node.payload, Some(Payload::TypeDomain { ty: Type::Z }))
+                    && node.arguments == [*before])
+                .then_some(index)
+            })
+            .unwrap();
+        assert!(matches!(&quantified.nodes[domain].rule,
+            Rule::Input {kind:"law",location:Location::Law {span}} if *span==var.span));
+        let ExprKind::Binary { lhs, rhs, .. } = &checked.exprs[*equation].kind else {
+            unreachable!()
+        };
+        for original in [*body, *equation, *lhs, *rhs] {
+            assert!(quantified.nodes.iter().enumerate().any(|(index,node)| {
+                quantified.contexts[index]==context
+                    && matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span},..})
+                        if *span==checked.exprs[original].span)
+            }), "calleeの元AST出現を保持する");
+        }
+        let whole = quantified
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(index, node)| {
+                (matches!(&node.payload,Some(Payload::Evaluation {expression,value:Some(value),..})
+                if expression==before && value==after)
+                    && node.evidence == [NodeRef(normalization)])
+                .then_some(index)
+            })
+            .unwrap();
+        assert!(
+            quantified.nodes[whole]
+                .scope
+                .quantifiers
+                .iter()
+                .any(|quantifier| {
+                    quantifier.name == var.name
+                        && quantifier.ty == Type::Z
+                        && quantifier.occurrence == var.span
+                        && quantifier.domain == Some(NodeRef(domain))
+                        && quantifier.context == Some(context)
+                })
+        );
+        for target in [domain, steps[0].0, normalization, whole] {
+            rebuild_for_origin_and_support_recheck(&quantified, &quantified.nodes[..=target])
+                .unwrap();
+        }
+        let sources = numeric_recheck_fixture(
+            &[],
+            r#"
+ view unsupported(s: Sample): Bool = exists item: Z. item=0;
+ view caller(s: Sample): Bool = unsupported(s);
+"#,
+        );
+        let law = sources.law().bytes().to_vec();
         let failure = evaluate_observed_bytes(
             sources,
             &["v=evaluate(Calc.caller,s=@v/sample)"],
@@ -8381,7 +8571,7 @@ reading Calc {{
         else {
             panic!("範囲外のcallee式は専用未実装を保つ");
         };
-        assert_eq!(&law[span.0..span.1], b"forall item: Z. item=0");
+        assert_eq!(&law[span.0..span.1], b"exists item: Z. item=0");
     }
     #[test]
     fn named_calls_reject_equal_atom_from_another_field_at_scalar_prefix() {
