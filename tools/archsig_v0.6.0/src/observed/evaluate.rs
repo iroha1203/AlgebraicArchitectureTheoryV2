@@ -2499,6 +2499,7 @@ mod recheck_tests {
     include!("owned_family_tests.rs");
     include!("owned_type_tests.rs");
     include!("recursive_tree_tests.rs");
+    include!("known_map_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =
@@ -10368,21 +10369,31 @@ reading Calc {{
         .unwrap();
         assert_eq!(normal.status(), "complete");
         rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
-        let failure = evaluate_observed_bytes(
+        // Keep the original regression test identity; known Map container values are now supported.
+        let result = evaluate_observed_bytes(
             sources.clone(),
             &["value=evaluate(Calc.deferred)"],
             &mut named_call_quiet(),
         )
-        .unwrap_err();
-        assert!(failure.wire().is_none());
-        let EvaluationFailure::NotImplemented {
-            location: Location::Law { span },
-            ..
-        } = failure
+        .unwrap();
+        assert_eq!(result.status(), "complete");
+        let answer = &result.answers[0];
+        assert_eq!(answer.status, Decision::Established);
+        let Some(Payload::Scalar(Scalar::Set { element, items })) =
+            &result.nodes[answer.outputs["value"].0].payload
         else {
-            panic!("Mapを含む内包結果は専用未実装を保持する")
+            panic!("typed empty Set")
         };
-        assert_eq!(&sources.law().bytes()[span.0..span.1], body.as_bytes());
+        assert!(items.is_empty());
+        let sample = Type::Ref("Numeric.Sample".into());
+        assert_eq!(
+            *element,
+            Type::List(Box::new(Type::Map(
+                Box::new(sample.clone()),
+                Box::new(sample)
+            )))
+        );
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     }
     #[test]
     fn set_comprehension_captures_enclosing_let_rhs_without_reassigning_its_origin() {

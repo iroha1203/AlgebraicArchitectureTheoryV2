@@ -100,6 +100,9 @@ pub(super) fn supported(
             tick(control)?;
             match ty {
                 Type::Unit | Type::Text | Type::Bool | Type::Ref(_) => Ok(true),
+                Type::Map(domain, codomain) => {
+                    Ok(domain.ref_target().is_some() && codomain.ref_target().is_some())
+                }
                 Type::Tuple(items) => {
                     for item in items {
                         tick(control)?;
@@ -224,6 +227,7 @@ pub(super) fn check(
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         match value {
+            Scalar::Map { .. } => check_shape(value, control),
             Scalar::Data {
                 family,
                 constructor: name,
@@ -282,6 +286,27 @@ pub(super) fn from_input(
             return Ok(None);
         }
         let result = match (value, ty) {
+            (Value::Map(pairs), Type::Map(domain, codomain)) => {
+                let domain = domain.erase();
+                let codomain = codomain.erase();
+                let mut values = Vec::new();
+                for (_index, (key, value)) in pairs.iter().enumerate() {
+                    #[cfg(test)]
+                    observe_iteration("map_input", _index);
+                    tick(control)?;
+                    let key =
+                        from_input(key, &domain, law, control)?.ok_or("Mapの元key型が未対応")?;
+                    let value = from_input(value, &codomain, law, control)?
+                        .ok_or("Mapの元value型が未対応")?;
+                    values.push((key, value));
+                    tick(control)?;
+                }
+                Scalar::Map {
+                    domain,
+                    codomain,
+                    pairs: values,
+                }
+            }
             (Value::Unit, Type::Unit) => Scalar::Unit,
             (Value::Text(text), Type::Text) => Scalar::Text(text.clone()),
             (Value::Tuple(items), Type::Tuple(types)) => {
@@ -307,18 +332,20 @@ pub(super) fn from_input(
                 }
                 if matches!(ty, Type::List(_)) {
                     Scalar::List {
-                        element: (**element).clone(),
+                        // 元fieldのowner条件は入力表に保持する。値の型は内側の
+                        // Mapと同じ消去型に揃え、空containerでも型を保存する。
+                        element: element.erase(),
                         items: result,
                     }
                 } else {
                     Scalar::Set {
-                        element: (**element).clone(),
+                        element: element.erase(),
                         items: result,
                     }
                 }
             }
             (Value::Option(item), Type::Option(element)) => Scalar::Option {
-                element: (**element).clone(),
+                element: element.erase(),
                 value: item
                     .as_ref()
                     .map(|item| {
@@ -533,6 +560,25 @@ pub(super) fn equal(
             return Err("構造等値の元型が違う".into());
         }
         let equal = match (left, right) {
+            (Scalar::Map { pairs: a, .. }, Scalar::Map { pairs: b, .. }) => {
+                let mut same = a.len() == b.len();
+                for (_index, (key, value)) in a.iter().enumerate() {
+                    #[cfg(test)]
+                    observe_iteration("map_equal", _index);
+                    tick(control)?;
+                    let mut found = false;
+                    for (other_key, other_value) in b {
+                        tick(control)?;
+                        if equal(key, other_key, control)? {
+                            found = equal(value, other_value, control)?;
+                            break;
+                        }
+                    }
+                    same &= found;
+                    tick(control)?;
+                }
+                same
+            }
             (
                 Scalar::Data {
                     family: a,
@@ -620,6 +666,33 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         match value {
+            Scalar::Map {
+                domain,
+                codomain,
+                pairs,
+            } => {
+                if !matches!(domain, Type::Ref(_)) || !matches!(codomain, Type::Ref(_)) {
+                    return Err("Mapの両端型が参照でない".into());
+                }
+                for (index, (key, value)) in pairs.iter().enumerate() {
+                    #[cfg(test)]
+                    observe_iteration("map_check", index);
+                    tick(control)?;
+                    if key.ty() != *domain || value.ty() != *codomain {
+                        return Err("Mapのkey/value型が違う".into());
+                    }
+                    check_shape(key, control)?;
+                    check_shape(value, control)?;
+                    for (previous, _) in &pairs[..index] {
+                        tick(control)?;
+                        if equal(key, previous, control)? {
+                            return Err("Mapに重複keyがある".into());
+                        }
+                    }
+                    tick(control)?;
+                }
+                Ok(())
+            }
             Scalar::Unit | Scalar::Text(_) => Ok(()),
             Scalar::Tuple(items) => {
                 for item in items {
@@ -696,6 +769,8 @@ pub(super) fn primitive_type(ty: &Type, control: &Control) -> Result<bool, Valid
             | Type::Fp(_)
             | Type::Ref(_)
             | Type::Data(_) => Ok(true),
+            Type::Map(domain, codomain) => Ok(matches!(domain.as_ref(), Type::Ref(_))
+                && matches!(codomain.as_ref(), Type::Ref(_))),
             Type::Tuple(items) => {
                 for item in items {
                     tick(control)?;
