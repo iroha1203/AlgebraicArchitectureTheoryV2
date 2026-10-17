@@ -233,12 +233,16 @@ fn owned_call_universal_condition_rechecks_binders_and_unknown_foreign_arguments
         });
     }
 }
-fn owned_call_stop_in_batch(recheck: bool) {
+fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "seed=evaluate(Reservations.seed)",
         "prior=check(Reservations.prior)",
-        "current=evaluate(Reservations.parameter,a=@v/A,s=@v/p)",
+        if failed_field {
+            "current=evaluate(Reservations.fieldDirect,a=@v/B,s=@v/p)"
+        } else {
+            "current=evaluate(Reservations.parameter,a=@v/A,s=@v/p)"
+        },
         "later=evaluate(Reservations.seed)",
     ];
     let normal = owned_call_result(&asks);
@@ -268,7 +272,9 @@ fn owned_call_stop_in_batch(recheck: bool) {
             data::observe_iterations(move |_, ctx, operation, _| {
                 if ctx.request == 2
                     && operation
-                        == if recheck {
+                        == if failed_field {
+                            "failed_field"
+                        } else if recheck {
                             "owned_call_constraint"
                         } else {
                             "owned_call_parameter"
@@ -333,11 +339,11 @@ fn owned_call_stop_in_batch(recheck: bool) {
 }
 #[test]
 fn owned_call_actual_constraint_stop_keeps_prior_value_refutation_and_prefix() {
-    owned_call_stop_in_batch(false)
+    owned_call_stop_in_batch(false, false)
 }
 #[test]
 fn owned_call_original_input_recheck_stop_keeps_prior_value_refutation_and_prefix() {
-    owned_call_stop_in_batch(true)
+    owned_call_stop_in_batch(true, false)
 }
 #[test]
 fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
@@ -675,4 +681,140 @@ fn owned_failed_quantifier_keeps_partial_counterexamples_without_a_boolean_value
         };
         facts.clear();
     });
+}
+
+#[test]
+fn owned_failed_field_actual_stop_keeps_prior_value_refutation_and_prefix() {
+    owned_call_stop_in_batch(false, true)
+}
+
+#[test]
+fn owned_failed_fields_recheck_original_children_reasons_type_scope_and_value_absence() {
+    let r = owned_call_result(&[
+        "seed=evaluate(Reservations.seed)",
+        "first=evaluate(Reservations.fieldDirect,a=@v/B,s=@v/p)",
+        "second=evaluate(Reservations.fieldDirect,a=@v/B,s=@v/p)",
+        "lexical=evaluate(Reservations.fieldLexical,a=@v/B,s=@v/p)",
+        "owner=evaluate(Reservations.failedFieldOwner,a=@v/B,s=@v/p)",
+        "affine=check(Reservations.fieldAffine,a=@v/B,s=@v/p)",
+    ]);
+    assert_eq!(r.status(), "partial");
+    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
+    let bytes = r.prepared.inputs().sources().law().bytes();
+    let targets = r
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| {
+            let Some(Payload::Evaluation {
+                expression, value, ..
+            }) = &n.payload
+            else {
+                return None;
+            };
+            let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &r.nodes[expression.0].payload
+            else {
+                return None;
+            };
+            let text = std::str::from_utf8(&bytes[span.0..span.1]).unwrap();
+            ["(narrow(a,s)).free", "selected.free", "(narrow(a,s)).owner"]
+                .contains(&text)
+                .then(|| {
+                    assert!(value.is_none());
+                    assert!(
+                        n.reasons
+                            .iter()
+                            .any(|x| matches!(x.kind, ReasonKind::ConditionFailed { .. }))
+                    );
+                    assert!(!n.support.is_empty());
+                    e.recheck_node(&g, n, i).unwrap();
+                    i
+                })
+        })
+        .collect::<Vec<_>>();
+    let mut requests = targets
+        .iter()
+        .map(|i| r.contexts[*i].request)
+        .collect::<Vec<_>>();
+    requests.sort();
+    requests.dedup();
+    assert_eq!(requests, vec![1, 2, 3, 4, 5]);
+    for &target in &targets {
+        completion_mutation(&r, target, |ns| ns[target].reasons.clear());
+        completion_mutation(&r, target, |ns| ns[target].support.clear());
+        completion_mutation(&r, target, |ns| ns[target].scope.snapshots.clear());
+        completion_mutation(&r, target, |ns| {
+            ns[target].ty = NodeType::Evaluation(Type::Bool)
+        });
+        completion_mutation(&r, target, |ns| {
+            let Some(Payload::Evaluation { parts, .. }) = &mut ns[target].payload else {
+                panic!("evaluation")
+            };
+            parts[0].children.clear();
+        });
+    }
+    let donor = *targets
+        .iter()
+        .find(|i| r.contexts[**i].request == 1)
+        .unwrap();
+    let target = *targets
+        .iter()
+        .find(|i| r.contexts[**i].request == 2)
+        .unwrap();
+    let (
+        Some(Payload::Evaluation {
+            expression: de,
+            parts: dp,
+            ..
+        }),
+        Some(Payload::Evaluation {
+            expression: te,
+            parts: tp,
+            ..
+        }),
+    ) = (&r.nodes[donor].payload, &r.nodes[target].payload)
+    else {
+        panic!("evaluation")
+    };
+    assert_ne!(de, te);
+    assert_ne!(dp[0].children, tp[0].children);
+    assert_eq!(r.nodes[de.0].ty, r.nodes[te.0].ty);
+    completion_mutation(&r, target, |ns| {
+        let Some(Payload::Evaluation { parts, .. }) = &mut ns[target].payload else {
+            panic!("evaluation")
+        };
+        parts[0].children = dp[0].children.clone();
+        ns[target].arguments[1] = dp[0].children[0];
+    });
+    completion_mutation(&r, target, |ns| {
+        let Some(Payload::Evaluation { expression, .. }) = &mut ns[target].payload else {
+            panic!("evaluation")
+        };
+        *expression = *de;
+        ns[target].arguments[0] = *de;
+    });
+    let seed = r.answers[0].outputs["value"];
+    completion_mutation(&r, target, |ns| {
+        let Some(Payload::Evaluation { value, parts, .. }) = &mut ns[target].payload else {
+            panic!("evaluation")
+        };
+        *value = Some(seed);
+        parts[0].value = Some(seed);
+        ns[target].arguments.push(seed);
+    });
+    let mut g = g;
+    let original = g.nodes[target].clone();
+    e.recheck_node(&g, &g.nodes[target], target).unwrap();
+    g.nodes[target].reasons.clear();
+    assert_ne!(format!("{:?}", g.nodes[target]), format!("{original:?}"));
+    assert!(matches!(
+        e.recheck_node(&g, &g.nodes[target], target),
+        Err(ValidationFailure::Internal(_))
+    ));
+    g.nodes[target] = original;
+    e.recheck_node(&g, &g.nodes[target], target).unwrap();
 }

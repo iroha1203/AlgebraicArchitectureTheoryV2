@@ -380,3 +380,69 @@ fn failed_inner_call_cannot_be_ignored_by_plain_or_other_owned_outer_parameters(
         }
     }
 }
+
+#[test]
+fn failed_call_field_projection_preserves_original_condition_and_batch_answers() {
+    let result = evaluate_observed_bytes(
+        fixture::input(false, true, "r1"),
+        &[
+            "seed=evaluate(Reservations.seed)",
+            "prior=check(Reservations.prior)",
+            "direct=evaluate(Reservations.fieldDirect,a=@v/B,s=@v/p)",
+            "lexical=evaluate(Reservations.fieldLexical,a=@v/B,s=@v/p)",
+            "owner=evaluate(Reservations.failedFieldOwner,a=@v/B,s=@v/p)",
+            "ignored=evaluate(Reservations.fieldIgnored,a=@v/B,s=@v/p)",
+            "affine=check(Reservations.fieldAffine,a=@v/B,s=@v/p)",
+            "ordinary=evaluate(Reservations.fieldDirect,a=@v/A,s=@v/p)",
+            "later=evaluate(Reservations.seed)",
+        ],
+        &mut quiet(),
+    );
+    let r = match result {
+        Ok(r) => r,
+        Err(archsig::observed::EvaluationFailure::NotImplemented { feature, .. }) => {
+            panic!("field projection lost a known failed condition: {feature}")
+        }
+        Err(_) => panic!("unexpected input/evaluation failure"),
+    };
+    let w = r.wire();
+    assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
+    for id in ["seed", "later"] {
+        assert_eq!(get(answer(&w, id), "status"), &Json::str("established"));
+    }
+    assert_eq!(get(answer(&w, "prior"), "status"), &Json::str("refuted"));
+    for id in ["direct", "lexical", "owner", "ignored", "affine"] {
+        let a = answer(&w, id);
+        assert_eq!(get(a, "status"), &Json::str("undetermined"), "{id}");
+        let Json::Obj(outputs) = get(a, "outputs") else {
+            panic!("outputs")
+        };
+        assert!(!outputs.contains_key("value"));
+        let reasons = arr(get(a, "reasons"));
+        assert!(
+            reasons
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("condition_failed"))
+        );
+        assert!(
+            !reasons.iter().any(|r| [
+                Json::str("missing_observation"),
+                Json::str("unsupported_algorithm")
+            ]
+            .contains(get(r, "code"))),
+            "{id}: {reasons:?}"
+        );
+    }
+    let ordinary = answer(&w, "ordinary");
+    assert_eq!(get(ordinary, "status"), &Json::str("undetermined"));
+    assert!(
+        arr(get(ordinary, "reasons"))
+            .iter()
+            .any(|r| get(r, "code") == &Json::str("missing_observation"))
+    );
+    assert!(
+        !arr(get(ordinary, "reasons"))
+            .iter()
+            .any(|r| get(r, "code") == &Json::str("condition_failed"))
+    );
+}

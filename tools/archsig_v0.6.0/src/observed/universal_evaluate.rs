@@ -726,6 +726,9 @@ impl Evaluator<'_, '_> {
         }
         sort_reasons(&mut reasons);
         if analyzed.value.is_none()
+            && !reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
             && (analyzed.classification.is_none()
                 || (plan.guard.is_some() && analyzed.guard_value.is_none()))
         {
@@ -1129,6 +1132,7 @@ impl Evaluator<'_, '_> {
             }
             retained.merge(&analysis.scope);
             source = Some(SourceHandle {
+                condition_failed: analysis.condition_failed,
                 expression,
                 scope: analysis.scope,
                 known_value: analysis.known_value,

@@ -40,6 +40,12 @@ view invalidConditional(a:System,s:State):Bool=if invalidIgnored(a,s) then true 
 view invalidProjection(a:System,s:State):Bool=ignore((narrow(a,s),0).0);
 view invalidForall(a:System):Bool=forall s:State.not invalidIgnored(a,s);
 view invalidExists(a:System):Bool=exists s:State.invalidIgnored(a,s);
+view fieldDirect(a:System,s:State):Z=(narrow(a,s)).free;
+view fieldLexical(a:System,s:State):Z=let selected=narrow(a,s) in selected.free;
+view failedFieldOwner(a:System,s:State):System=(narrow(a,s)).owner;
+view ignoreInt(x:Z):Bool=true;
+view fieldIgnored(a:System,s:State):Bool=ignoreInt((narrow(a,s)).free);
+law required fieldAffine(a:System,s:State,z:Z):(narrow(a,s)).free=z;
 view ignoreZ(x:State,z:Z):Z=z;
 law required ignoredAffine(a:System,s:State,z:Z):ignoreZ(narrow(a,s),z)=z;
 view plainAdd(x:Z):Z=x+1;

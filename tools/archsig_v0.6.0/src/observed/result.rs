@@ -2792,12 +2792,14 @@ impl Graph {
                     if expected.is_none() || expected != self.boolean(*value)? {
                         return Err("定数論理全域wholeの元body・guard・判断が違う".into());
                     }
-                } else if !node
-                    .reasons
-                    .iter()
-                    .any(|reason| matches!(&reason.kind, ReasonKind::UnsupportedAlgorithm { .. }))
-                {
-                    return Err("全域wholeに正確な差も元式の非対応算法理由もない".into());
+                } else if !node.reasons.iter().any(|reason| {
+                    matches!(
+                        &reason.kind,
+                        ReasonKind::UnsupportedAlgorithm { .. }
+                            | ReasonKind::ConditionFailed { .. }
+                    )
+                }) {
+                    return Err("全域wholeに正確な差も元式の未確定理由もない".into());
                 }
                 expected_step = None;
                 expected_arguments.push(*body);

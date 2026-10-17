@@ -48,6 +48,7 @@ pub(crate) struct PendingMissing {
 }
 #[derive(Clone, Debug)]
 pub(crate) struct SourceAnalysis {
+    pub(super) condition_failed: bool,
     pub(super) symbolic: Option<Box<super::term::affine::Value>>,
     pub(super) comparison: Option<Box<AffinePredicate>>,
     pub scope: Scope,
@@ -5680,6 +5681,7 @@ impl<'a> Environment<'a> {
                     finite,
                     member.clone(),
                     SourceAnalysis {
+                        condition_failed: false,
                         symbolic: None,
                         comparison: None,
                         affine: None,
@@ -6243,7 +6245,7 @@ impl<'a> Environment<'a> {
             .or(dotted.map(|(id, _)| id))
         {
             let SourceValue {
-                condition_failed: _,
+                condition_failed,
                 symbolic,
                 comparison,
                 scope,
@@ -6297,6 +6299,7 @@ impl<'a> Environment<'a> {
                 None
             };
             return Ok(SourceAnalysis {
+                condition_failed,
                 symbolic,
                 comparison,
                 affine,
@@ -8755,6 +8758,7 @@ impl<'a> Environment<'a> {
         }
         Ok((
             SourceAnalysis {
+                condition_failed: failed,
                 symbolic: None,
                 comparison: None,
                 affine: None,

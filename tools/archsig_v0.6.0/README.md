@@ -93,6 +93,7 @@
   snapshot不一致は実snapshotのText不等のcounterexampleに接続するcondition_failedを返す。
   引数不適合ではcallee bodyへ入らず、内側callの構成条件が反証されて値が未生成なら、
   非Owned引数でも元理由を保って外側へ通常値を返さない。
+  失敗した戻り参照のfield読取りも、元条件・支持・Scopeを保持し、通常値や未読slotの欠測を生成しない。
   有限binder・fieldからの実ownerと、Z/Q全域式内の同じ呼出し境界も元の束縛を保つ。
   左端data parameterのmatchから得た直接subtermへの構造再帰も、各実引数とcall frameを保持して評価する。
   既存Engineの有限ExprからIRへの変換を各viewへ接続し、全Z代入の保存をアフィン正規化で判定する。

@@ -89,6 +89,7 @@ struct Evaluated {
 /// commit 済みの元式。未検査の分析結果とは区別し、通常値には使用しない。
 #[derive(Clone, Debug)]
 struct SourceHandle {
+    condition_failed: bool,
     expression: NodeRef,
     scope: Scope,
     known_value: Option<Scalar>,
@@ -430,6 +431,7 @@ impl Evaluator<'_, '_> {
         };
         self.environment.validate(self.graph, &node)?;
         let SourceAnalysis {
+            condition_failed,
             scope,
             known_value,
             missing,
@@ -456,6 +458,7 @@ impl Evaluator<'_, '_> {
             cache.insert(
                 span,
                 SourceHandle {
+                    condition_failed,
                     expression,
                     scope,
                     known_value,
@@ -560,7 +563,9 @@ impl Evaluator<'_, '_> {
                         .skip(1)
                     {
                         self.tick(Checkpoint::FiniteIteration)?;
-                        if !matches!(owner.known_value, Some(Scalar::Subject { .. })) {
+                        if !owner.condition_failed
+                            && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
+                        {
                             return Err(self.unsupported(prefix, "未確定の参照からの field 読取り"));
                         }
                         if !matches!(prefix_ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
@@ -580,7 +585,9 @@ impl Evaluator<'_, '_> {
                 }
                 ExprKind::Field { base, .. } => {
                     let owner = self.prepare_source(*base)?;
-                    if !matches!(owner.known_value, Some(Scalar::Subject { .. })) {
+                    if !owner.condition_failed
+                        && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
+                    {
                         return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
                     }
                     if !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
@@ -2038,6 +2045,23 @@ impl Evaluator<'_, '_> {
         chain: bool,
     ) -> Result<Evaluated, Failure> {
         let Some(reference) = base.value else {
+            if base
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            {
+                let source = self
+                    .sources
+                    .get(&span)
+                    .ok_or_else(|| Failure::Internal("失敗fieldの元Sourceがない".into()))?;
+                let NodeType::Expression(ty) = &self.graph.get(source.expression)?.ty else {
+                    return Err(Failure::Internal("失敗fieldの元Source型がない".into()));
+                };
+                let ty = ty.clone();
+                #[cfg(test)]
+                data::observe_actual(span, self.graph.active, "failed_field", 0);
+                return self.lexical_result(span, ty, None, vec![base]);
+            }
             return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
         };
         let Scalar::Subject {
