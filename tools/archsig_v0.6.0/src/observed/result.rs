@@ -911,6 +911,14 @@ pub(crate) enum Payload {
         left: NodeRef,
         right: NodeRef,
         certificate: Box<super::term::affine::Certificate>,
+        before: NodeRef,
+        after: NodeRef,
+    },
+    TermCounterexample {
+        bindings: Vec<Binding>,
+        left: NodeRef,
+        right: NodeRef,
+        facts: Vec<Fact>,
     },
     Normalization {
         before: NodeRef,
@@ -1121,25 +1129,35 @@ impl Payload {
             }
             Self::TermComparison {
                 source,
-                left,
-                right,
-                certificate,
+                before,
+                after,
+                ..
             } => Json::obj([
-                (
-                    "kind",
-                    Json::str(if certificate.equal() {
-                        "normalization"
-                    } else {
-                        "counterexample"
-                    }),
-                ),
+                ("kind", Json::str("normalization")),
                 (
                     "data",
                     Json::obj([
-                        ("source", source.wire()),
+                        ("before", before.wire()),
+                        ("after", after.wire()),
+                        ("steps", refs(&[*source])),
+                    ]),
+                ),
+            ]),
+            Self::TermCounterexample {
+                bindings,
+                left,
+                right,
+                facts,
+            } => Json::obj([
+                ("kind", Json::str("counterexample")),
+                (
+                    "data",
+                    Json::obj([
+                        ("bindings", bindings_wire(bindings)),
+                        ("paths", refs(&[])),
                         ("left", left.wire()),
                         ("right", right.wire()),
-                        ("term_comparison", certificate.wire()),
+                        ("facts", Json::Arr(facts.iter().map(Fact::wire).collect())),
                     ]),
                 ),
             ]),
@@ -1912,9 +1930,12 @@ impl Graph {
     /// Differenceだけの型と実子参照を検査する。元ASTの算術はEnvironmentで再構成する。
     fn difference_shape(&self, node: &Node) -> Result<(NodeRef, [NodeRef; 2]), ValidationFailure> {
         self.tick()?;
-        let NodeType::Expression(ty @ (Type::Z | Type::Q)) = &node.ty else {
-            return Err("差のExpressionがZ/Qでない".into());
+        let NodeType::Expression(ty) = &node.ty else {
+            return Err("差のExpressionの型が違う".into());
         };
+        if !super::numeric::is_numeric_type(ty, &self.control)? {
+            return Err("差のExpressionが数値型でない".into());
+        }
         let Some(Payload::Transform {
             operation: TransformOp::Difference,
             operands,
@@ -2803,14 +2824,14 @@ impl Graph {
                 for &value in values {
                     self.tick()?;
                     let scalar = self.scalar(value)?;
-                    if !matches!(scalar.ty(), Type::Z | Type::Q)
+                    if !super::numeric::is_numeric_type(&scalar.ty(), &self.control)?
                         || !matches!(self.get(value)?.arguments.as_slice(), [source, case, _] if source == template && case == anchor)
                     {
                         return Err("数値補完case判断が別のslot代入を消費した".into());
                     }
                 }
             }
-            NodeType::Value(ty @ (Type::Z | Type::Q)) => {
+            NodeType::Value(ty) if super::numeric::is_numeric_type(ty, &self.control)? => {
                 let [source] = values else {
                     return Err("数値補完slot値に元field出現がない".into());
                 };
@@ -2823,7 +2844,7 @@ impl Graph {
                     return Err("数値補完slot値の元fieldが別のtemplateを指す".into());
                 }
             }
-            _ => return Err("数値補完証拠値の型がZ/Q/Boolでない".into()),
+            _ => return Err("数値補完証拠値の型が数値/Boolでない".into()),
         }
         Ok(true)
     }
@@ -3438,9 +3459,12 @@ impl Graph {
         residual: NodeRef,
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
-        let NodeType::Evaluation(ty @ (Type::Z | Type::Q)) = &self.get(left)?.ty else {
-            return Err("アフィン証拠の左辺がZ/QのEvaluationでない".into());
+        let NodeType::Evaluation(ty) = &self.get(left)?.ty else {
+            return Err("アフィン証拠の左辺がEvaluationでない".into());
         };
+        if !super::numeric::is_numeric_type(ty, &self.control)? {
+            return Err("アフィン証拠の元型が数値型でない".into());
+        }
         self.expect(right, &NodeType::Evaluation(ty.clone()))?;
         self.value(residual, ty)?;
         self.expect(evaluation, &NodeType::Evaluation(Type::Bool))?;
@@ -3595,7 +3619,7 @@ impl Graph {
                 self.parameterized_transform_shape(&node)?;
             }
             (
-                NodeType::Expression(Type::Z | Type::Q),
+                NodeType::Expression(_),
                 Some(Payload::Transform {
                     operation: TransformOp::Difference,
                     ..
@@ -3730,23 +3754,45 @@ impl Graph {
                     source,
                     left,
                     right,
+                    before,
+                    after,
                     ..
                 }),
             ) => {
-                let [own, l, r, a, b] = node.arguments.as_slice() else {
-                    return Err("Term比較証拠の元実辺数が違う".into());
+                let [own, le, re, l, r, selected, normal] = node.arguments.as_slice() else {
+                    return Err("Term正規化の元実辺数が違う".into());
                 };
                 if source != own
-                    || left != a
-                    || right != b
-                    || self.get(*a)?.ty != self.get(*b)?.ty
-                    || !matches!(self.get(*a)?.ty, NodeType::Value(Type::Term(..)))
+                    || left != l
+                    || right != r
+                    || before != selected
+                    || after != normal
+                    || !([*l, *r].contains(selected))
                     || self.get(*l)?.ty != self.get(*r)?.ty
-                    || !matches!(self.get(*l)?.ty, NodeType::Evaluation(Type::Term(..)))
+                    || !matches!(self.get(*l)?.ty, NodeType::Value(Type::Term(..)))
+                    || self.get(*le)?.ty != self.get(*re)?.ty
+                    || !matches!(self.get(*le)?.ty, NodeType::Evaluation(Type::Term(..)))
+                    || !matches!(self.get(*normal)?.ty, NodeType::Value(_))
                 {
-                    return Err("Term比較証拠の元型・左右が違う".into());
+                    return Err("Term正規化の元型・左右が違う".into());
                 }
                 self.expect(*own, &NodeType::Expression(Type::Bool))?;
+            }
+            (
+                NodeType::Evidence,
+                Some(Payload::TermCounterexample {
+                    bindings,
+                    left,
+                    right,
+                    ..
+                }),
+            ) => {
+                self.bindings(bindings)?;
+                if self.get(*left)?.ty != self.get(*right)?.ty
+                    || !matches!(self.get(*left)?.ty, NodeType::Value(_))
+                {
+                    return Err("Term相違点の左右結果型が違う".into());
+                }
             }
             (NodeType::Evidence, Some(Payload::Normalization { .. })) => {
                 self.normalization_shape(&node)?

@@ -461,7 +461,7 @@ impl Environment<'_> {
         }) else {
             return Ok(None);
         };
-        if number(ty).is_none() || value.ty() != *ty {
+        if !numeric::is_numeric_type(ty, &self.control)? || value.ty() != *ty {
             return Err("全域数値補完の元slot型が違う".into());
         }
         Ok(Some(value.clone()))
@@ -488,7 +488,7 @@ impl Environment<'_> {
                 fact.field.as_deref().ok_or("全域数値補完にfieldがない")?,
             )?;
             if !matches!(field.slot, Slot::Missing)
-                || number(&field.ty).is_none()
+                || !numeric::is_numeric_type(&field.ty, &self.control)?
                 || value.ty() != field.ty
             {
                 return Err("全域数値補完の元欠測slot・型が違う".into());

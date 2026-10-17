@@ -2,7 +2,7 @@ mod terms {
     include!("terms.rs");
 }
 pub fn definitions() -> String {
-    terms::DEFINITIONS.replace(r#"{"name":"h","type":"Z","meaning":"h"}"#,r#"{"name":"h","type":"Z","meaning":"h"},{"name":"k","type":"Z","meaning":"k"},{"name":"q","type":"Q","meaning":"q"},{"name":"p","type":"Bool","meaning":"p"}"#)
+    terms::DEFINITIONS.replace(r#"{"name":"h","type":"Z","meaning":"h"}"#,r#"{"name":"h","type":"Z","meaning":"h"},{"name":"k","type":"Z","meaning":"k"},{"name":"q","type":"Q","meaning":"q"},{"name":"p","type":"Bool","meaning":"p"},{"name":"t","type":["Tuple","Z","Q"],"meaning":"数値組の一slot。"},{"name":"u","type":["Tuple","Z","Q"],"meaning":"別の数値組slot。"},{"name":"zz","type":["Tuple","Z","Z"],"meaning":"独立成分を持つ一slot。"}"#)
 }
 pub const SCRIPT: &str = r#"
 view same(s:Sample):Bool=s.f=(fn(a:Z,b:Z)=>a+a-b);
@@ -59,6 +59,16 @@ view tupleComponent(t:(Z,Q)):Z=(fn(u:(Z,Q))=>u.0)(t);
 view tupleCache(s:Sample):Bool=tupleComponent((s.h,s.q))-tupleComponent((s.k,s.q))=s.h-s.k;
 view tupleDifference(s:Sample):(Z,Q)=let t=(s.h,s.q) in t-t;
 view tupleSameNormal():Bool=(fn(x:Z)=>(x-x,1))=(fn(y:Z)=>(0,0)+(0,1));
+view tupleEq(s:Sample):Bool=(fn(x:Z)=>(x,x))(s.h)=(s.h,s.h);
+law required tupleEqLaw(s:Sample):(fn(x:Z)=>(x,x))(s.h)=(s.h,s.h);
+view tupleNe(s:Sample):Bool=(fn(x:Z)=>(x,x))(s.h)!=(s.h,s.h);
+view tupleOffset(s:Sample):Bool=(fn(x:Z)=>(x,x+1))(s.h)=(s.h,s.h);
+view tupleSlot(s:Sample):(Z,Q)=(fn(u:(Z,Q))=>(u.0-u.0,u.1-u.1))(s.t);
+view tupleSlotEq(s:Sample):Bool=(fn(u:(Z,Q))=>(u.0,u.1))(s.t)=s.t;
+view tupleSlotsIndependent(s:Sample):Z=(fn(a:(Z,Q),b:(Z,Q))=>a.0-b.0)(s.t,s.u);
+view tupleComponentsIndependent(s:Sample):Z=(fn(a:(Z,Z))=>a.0-a.1)(s.zz);
+law required tupleSlotUniversal(s:Sample,z:Z):(fn(a:(Z,Q))=>a.0-a.0)(s.t)+z=z;
+law required tupleSlotVary(s:Sample,z:Z):z+(fn(a:(Z,Z))=>a.0)(s.zz)=z;
 view seed():Z=1;
 law required prior():false;
 "#;

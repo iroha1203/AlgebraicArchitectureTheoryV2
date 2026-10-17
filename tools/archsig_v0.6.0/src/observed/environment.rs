@@ -21,6 +21,8 @@ pub(super) mod dependent_family;
 pub(super) mod family;
 #[path = "map_application.rs"]
 mod map_application;
+#[path = "numeric_slots.rs"]
+mod numeric_slots;
 #[path = "owned_family.rs"]
 pub(super) mod owned_family;
 #[path = "owned_type.rs"]
@@ -1080,6 +1082,9 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         if let Some(Payload::Scalar(scalar)) = &node.payload {
             data::check(scalar, self.inputs.law(), &self.control)?;
+            if self.validate_term_presentation_node(graph, node, limit)? {
+                return Ok(());
+            }
             self.validate_term_comparison_value(graph, node, limit)?;
             match &node.rule {
                 Rule::Input {
@@ -1866,7 +1871,13 @@ impl<'a> Environment<'a> {
                             )?;
                         let affine_comparison = computed.is_none()
                             && matches!(op, BinOp::Eq | BinOp::Ne)
-                            && matches!(self.inputs.law().expr_type(*lhs), Some(Type::Z | Type::Q))
+                            && numeric::is_numeric_type(
+                                self.inputs
+                                    .law()
+                                    .expr_type(*lhs)
+                                    .ok_or("比較の元型がない")?,
+                                &self.control,
+                            )?
                             && analysis.known_value.is_some();
                         let computed = if affine_constant || affine_comparison {
                             analysis.known_value.clone()
@@ -1909,9 +1920,12 @@ impl<'a> Environment<'a> {
                                 for reference in &graph.get(result)?.evidence {
                                     if matches!(
                                         graph.get(*reference)?.payload,
-                                        Some(Payload::TermComparison { .. })
-                                    ) && graph.get(*reference)?.arguments[..3]
-                                        != [*expression, children[0], children[1]]
+                                        Some(
+                                            Payload::TermComparison { .. }
+                                                | Payload::TermCounterexample { .. }
+                                        )
+                                    ) && graph.get(*reference)?.arguments.get(..3)
+                                        != Some(&[*expression, children[0], children[1]][..])
                                     {
                                         return Err("Term比較証拠が親の元実左右と違う".into());
                                     }
@@ -2133,7 +2147,7 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         match &node.payload {
-            Some(Payload::TermComparison { .. }) => {
+            Some(Payload::TermComparison { .. } | Payload::TermCounterexample { .. }) => {
                 self.validate_term_comparison_evidence(graph, node, limit)?;
             }
             Some(Payload::Normalization { .. }) => {
@@ -2624,6 +2638,34 @@ impl<'a> Environment<'a> {
             Err("生成 Scalar に既出の own Source・元子評価の証人がない".into())
         })
     }
+    fn tuple_affine_comparison(
+        &self,
+        op: BinOp,
+        left: &super::term::affine::Value,
+        right: &super::term::affine::Value,
+        ty: &Type,
+        span: (usize, usize),
+    ) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
+        let difference = super::term::affine::operation(
+            BinOp::Sub,
+            left,
+            right,
+            ty,
+            self.inputs.law(),
+            span,
+            &self.control,
+        )?;
+        let Some(residual) = difference.known(&self.control)? else {
+            return Ok(None);
+        };
+        let value = numeric::binary(
+            op,
+            &residual,
+            &numeric::zero(ty, &self.control)?,
+            &self.control,
+        )?;
+        Ok(Some((value, residual)))
+    }
     /// 通常値を持たない元左右から、定数残差による Eq/Ne だけを返す。
     pub(super) fn affine_comparison(
         &self,
@@ -2646,6 +2688,32 @@ impl<'a> Environment<'a> {
             let right = self.analyze_source(graph, self.inputs.law().exprs[rhs].span, bindings)?;
             if left.known_value.is_some() && right.known_value.is_some() {
                 return Ok(None);
+            }
+            let ty = self
+                .inputs
+                .law()
+                .expr_type(lhs)
+                .ok_or("比較の元左型がない")?;
+            if matches!(ty, Type::Tuple(_)) && numeric::is_numeric_type(ty, &self.control)? {
+                let symbolic = |v: &SourceAnalysis| {
+                    v.known_value
+                        .as_ref()
+                        .map(|v| super::term::affine::Value::Known(v.clone()))
+                        .or_else(|| {
+                            v.affine
+                                .as_ref()
+                                .map(|v| super::term::affine::Value::Number((**v).clone()))
+                        })
+                        .or_else(|| v.symbolic.as_deref().cloned())
+                        .unwrap_or_else(|| super::term::affine::Value::Unsupported(ty.clone()))
+                };
+                return self.tuple_affine_comparison(
+                    op,
+                    &symbolic(&left),
+                    &symbolic(&right),
+                    ty,
+                    span,
+                );
             }
             super::affine::equality(
                 op,
@@ -2692,7 +2760,7 @@ impl<'a> Environment<'a> {
             return Err("アフィン比較の元SourceがEq/Neでない".into());
         };
         let ty = law.expr_type(lhs).ok_or("アフィン比較の元左型がない")?;
-        if !matches!(ty, Type::Z | Type::Q)
+        if !numeric::is_numeric_type(ty, &self.control)?
             || law.expr_type(rhs) != Some(ty)
             || law.expr_type(id) != Some(&Type::Bool)
             || source.ty != NodeType::Expression(Type::Bool)
@@ -6935,7 +7003,7 @@ impl<'a> Environment<'a> {
         let ExprKind::Binary { op, lhs, rhs } = &expression.kind else {
             unreachable!()
         };
-        let result = {
+        let mut result = {
             if !supports_binary(
                 *op,
                 self.inputs
@@ -7021,6 +7089,24 @@ impl<'a> Environment<'a> {
                 scalar_scope,
             }
         };
+        let law = self.inputs.law();
+        let ty = law.expr_type(*lhs).ok_or("二項元型がない")?;
+        if result.known_value.is_none()
+            && matches!(op, BinOp::Eq | BinOp::Ne)
+            && matches!(ty, Type::Tuple(_))
+            && numeric::is_numeric_type(ty, &self.control)?
+        {
+            if let Some((value, _)) = self.tuple_affine_comparison(
+                *op,
+                &self.symbolic_source(*lhs, variables, base, reading)?,
+                &self.symbolic_source(*rhs, variables, base, reading)?,
+                ty,
+                expression.span,
+            )? {
+                result.known_value = Some(value);
+                result.scalar_scope = Some(result.scope.clone());
+            }
+        }
         Ok(result)
     }
     fn scoped_quantified(
@@ -7256,25 +7342,35 @@ impl<'a> Environment<'a> {
                 }
             }
         };
+        let fact = Fact {
+            snapshot,
+            subject,
+            field: Some(field.name.clone()),
+            atom: None,
+        };
         let affine = if let Some(value) = &known_value {
             super::affine::constant(value, &self.control)?
         } else {
-            super::affine::missing(
-                &field.ty,
-                &Fact {
-                    snapshot,
-                    subject,
-                    field: Some(field.name.clone()),
-                    atom: None,
-                },
-                &self.control,
-            )?
+            super::affine::missing(&field.ty, &fact, &self.control)?
         }
         .map(Box::new);
+        let symbolic = if known_value.is_none()
+            && matches!(field.ty, Type::Tuple(_))
+            && numeric::is_numeric_type(&field.ty, &self.control)?
+        {
+            Some(Box::new(super::term::affine::Value::missing(
+                &field.ty,
+                &fact,
+                &[],
+                &self.control,
+            )?))
+        } else {
+            None
+        };
         support.sort();
         support.dedup();
         Ok(SourceValue {
-            symbolic: None,
+            symbolic,
             comparison: None,
             affine,
             scope,

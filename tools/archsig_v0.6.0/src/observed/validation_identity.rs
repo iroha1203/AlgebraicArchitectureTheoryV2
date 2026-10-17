@@ -150,6 +150,7 @@ fn payload(
                 | Payload::MapDomainCondition { .. }
                 | Payload::EvaluationEvidence { .. }
                 | Payload::TermComparison { .. }
+                | Payload::TermCounterexample { .. }
                 | Payload::Normalization { .. }
                 | Payload::Counterexample { .. },
             ),

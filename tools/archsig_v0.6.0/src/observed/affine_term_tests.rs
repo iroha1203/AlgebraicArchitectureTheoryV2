@@ -378,20 +378,15 @@ fn affine_term_actual_original_input_recheck_stop_preserves_prior_value_refutati
  {
     affine_term_stop_in_batch(true)
 }
-#[test]
-fn affine_term_comparison_rechecks_retained_forms_points_and_evidence_after_normal_prefix() {
-    let r = affine_term_result(&[
-        "e=evaluate(Terms.same,s=@v/s)",
-        "d=check(Terms.unequal,s=@v/s)",
-        "q=evaluate(Terms.qCoefficient)",
-    ]);
+fn affine_term_certificate_mutations(ask: &str) {
+    let r = affine_term_result(&[ask]);
     let proofs: Vec<_> = r
         .nodes
         .iter()
         .enumerate()
         .filter_map(|(i, n)| matches!(n.payload, Some(Payload::TermComparison { .. })).then_some(i))
         .collect();
-    assert_eq!(proofs.len(), 3);
+    assert_eq!(proofs.len(), 2);
     for &target in &proofs {
         for mode in 0..6 {
             completion_mutation(&r, target, |ns| {
@@ -467,7 +462,7 @@ fn affine_term_comparison_rechecks_retained_forms_points_and_evidence_after_norm
         .nodes
         .iter()
         .enumerate()
-        .find_map(|(i, n)| (n.evidence == [NodeRef(proofs[0])]).then_some(i))
+        .find_map(|(i, n)| n.evidence.contains(&NodeRef(proofs[0])).then_some(i))
         .unwrap();
     completion_mutation(&r, value, |ns| ns[value].evidence.clear());
     let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
@@ -489,6 +484,18 @@ fn affine_term_comparison_rechecks_retained_forms_points_and_evidence_after_norm
         .unwrap();
 }
 #[test]
+fn affine_term_comparison_rechecks_retained_forms_points_and_evidence_after_normal_prefix() {
+    affine_term_certificate_mutations("e=evaluate(Terms.same,s=@v/s)");
+}
+#[test]
+fn affine_term_integer_point_rechecks_retained_forms_and_original_reapplication() {
+    affine_term_certificate_mutations("d=check(Terms.unequal,s=@v/s)");
+}
+#[test]
+fn affine_term_rational_point_rechecks_retained_forms_and_original_reapplication() {
+    affine_term_certificate_mutations("q=evaluate(Terms.qCoefficient)");
+}
+#[test]
 fn affine_term_comparison_rejects_foreign_coherent_same_value_certificate_producers() {
     let r = affine_term_result(&[
         "first=evaluate(Terms.same,s=@v/s)",
@@ -500,8 +507,8 @@ fn affine_term_comparison_rejects_foreign_coherent_same_value_certificate_produc
         .enumerate()
         .filter_map(|(i, n)| matches!(n.payload, Some(Payload::TermComparison { .. })).then_some(i))
         .collect();
-    assert_eq!(proofs.len(), 2);
-    let (donor, target) = (proofs[0], proofs[1]);
+    assert_eq!(proofs.len(), 4);
+    let (donor, target) = (proofs[0], proofs[2]);
     assert!(donor < target);
     let (
         Some(Payload::TermComparison { certificate: a, .. }),
@@ -520,9 +527,9 @@ fn affine_term_comparison_rejects_foreign_coherent_same_value_certificate_produc
         .nodes
         .iter()
         .enumerate()
-        .find_map(|(i, n)| (n.evidence == [NodeRef(target)]).then_some(i))
+        .find_map(|(i, n)| n.evidence.contains(&NodeRef(target)).then_some(i))
         .unwrap();
-    completion_mutation(&r, result, |ns| ns[result].evidence = vec![NodeRef(donor)]);
+    completion_mutation(&r, result, |ns| ns[result].evidence[0] = NodeRef(donor));
 }
 #[test]
 fn affine_tuple_binding_rechecks_unknown_actual_producers_and_cached_source_components() {
@@ -594,4 +601,161 @@ fn affine_tuple_binding_rechecks_unknown_actual_producers_and_cached_source_comp
         &Scalar::Bool(true)
     );
     assert_eq!(r.status(), "complete");
+}
+
+#[test]
+fn affine_term_standard_evidence_rechecks_typed_matrix_point_nodes_and_foreign_producers() {
+    let r = affine_term_result(&[
+        "a=evaluate(Terms.same,s=@v/s)",
+        "b=evaluate(Terms.same,s=@v/s)",
+        "q=evaluate(Terms.qCoefficient)",
+    ]);
+    let normals: Vec<_> = r
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| match &n.payload {
+            Some(Payload::TermComparison { after, .. }) => Some((i, *after)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(normals.len(), 6);
+    for &(proof, value) in &normals {
+        completion_mutation(&r, value.0, |ns| {
+            let Some(Payload::Scalar(Scalar::List { items, .. })) = &mut ns[value.0].payload else {
+                panic!("matrix")
+            };
+            items.clear();
+        });
+        completion_mutation(&r, proof, |ns| {
+            let Some(Payload::TermComparison { after, .. }) = &mut ns[proof].payload else {
+                panic!("normal")
+            };
+            *after = NodeRef(0);
+        });
+    }
+    let (donor, target) = (normals[0].1, normals[2].1);
+    assert_eq!(r.nodes[donor.0].payload, r.nodes[target.0].payload);
+    completion_mutation(&r, target.0, |ns| {
+        ns[target.0].arguments = ns[donor.0].arguments.clone()
+    });
+    let (counter, bindings, left, right) = r
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| match &n.payload {
+            Some(Payload::TermCounterexample {
+                bindings,
+                left,
+                right,
+                ..
+            }) => Some((i, bindings.clone(), *left, *right)),
+            _ => None,
+        })
+        .unwrap();
+    for reference in bindings.iter().map(|b| b.value).chain([left, right]) {
+        completion_mutation(&r, reference.0, |ns| {
+            let Some(Payload::Scalar(value)) = &mut ns[reference.0].payload else {
+                panic!("point")
+            };
+            *value =
+                super::super::numeric::literal("17", &value.ty(), &named_call_quiet()).unwrap();
+        });
+    }
+    for mode in 0..4 {
+        completion_mutation(&r, counter, |ns| {
+            let Some(Payload::TermCounterexample {
+                bindings,
+                left,
+                right,
+                ..
+            }) = &mut ns[counter].payload
+            else {
+                panic!("counter")
+            };
+            match mode {
+                0 => bindings[0].name = "foreign".into(),
+                1 => bindings[0].ty = Type::Z,
+                2 => std::mem::swap(left, right),
+                3 => {
+                    bindings.clear();
+                }
+                _ => unreachable!(),
+            }
+        });
+    }
+}
+#[test]
+fn affine_missing_tuple_rechecks_whole_slot_completions_and_component_correlations() {
+    let r = affine_term_result(&[
+        "e=evaluate(Terms.tupleSlotEq,s=@v/s)",
+        "u=check(Terms.tupleSlotVary,s=@v/s)",
+    ]);
+    let (counter, first) = r
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| match &n.payload {
+            Some(Payload::CompletionPair { first, .. }) => Some((i, first.clone())),
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(first.len(), 1);
+    let slot = first[0];
+    assert!(matches!(
+        r.nodes[slot.0].payload,
+        Some(Payload::Scalar(Scalar::Tuple(_)))
+    ));
+    completion_mutation(&r, slot.0, |ns| {
+        let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut ns[slot.0].payload else {
+            panic!("whole Tuple")
+        };
+        values.swap(0, 1);
+        values[0] = Scalar::Z(17.into());
+    });
+    completion_mutation(&r, counter, |ns| {
+        let Some(Payload::CompletionPair { fields, .. }) = &mut ns[counter].payload else {
+            panic!("pair")
+        };
+        fields[0].field = Some("Terms.Sample.t".into());
+    });
+}
+#[test]
+fn affine_term_point_rejects_coherent_foreign_same_value_arguments_outputs_and_evidence() {
+    let r = affine_term_result(&[
+        "first=evaluate(Terms.qCoefficient)",
+        "second=evaluate(Terms.qCoefficient)",
+    ]);
+    let proofs: Vec<_> = r
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| match &n.payload {
+            Some(Payload::TermCounterexample {
+                bindings,
+                left,
+                right,
+                ..
+            }) => Some((i, bindings.clone(), *left, *right)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(proofs.len(), 2);
+    let (donor, target) = (&proofs[0], &proofs[1]);
+    for (d, t) in donor
+        .1
+        .iter()
+        .map(|b| b.value)
+        .chain([donor.2, donor.3])
+        .zip(target.1.iter().map(|b| b.value).chain([target.2, target.3]))
+    {
+        assert!(d.0 < t.0);
+        assert_eq!(r.nodes[d.0].payload, r.nodes[t.0].payload);
+        completion_mutation(&r, t.0, |ns| ns[t.0].arguments = ns[d.0].arguments.clone());
+    }
+    completion_mutation(&r, target.0, |ns| {
+        let foreign = ns[donor.0].clone();
+        ns[target.0].payload = foreign.payload;
+        ns[target.0].arguments = foreign.arguments;
+    });
 }

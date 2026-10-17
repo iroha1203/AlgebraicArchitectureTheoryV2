@@ -212,7 +212,7 @@ impl Evaluator<'_, '_> {
         left: &Evaluated,
         right: &Evaluated,
     ) -> Result<Option<(NodeRef, NodeRef)>, Failure> {
-        if !matches!(ty, Type::Z | Type::Q) {
+        if !numeric::is_numeric_type(ty, self.control)? {
             return Ok(None);
         }
         let source = self

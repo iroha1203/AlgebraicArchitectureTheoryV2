@@ -1,6 +1,7 @@
 //! 元Termの型付きbodyへ、引数の位置または観測の相関する数値式を代入する。
 use super::*;
 use crate::law::ast::UnOp;
+use crate::observed::result::Fact;
 use crate::observed::{affine as forms, finite, value_equality};
 
 #[derive(Debug)]
@@ -62,6 +63,33 @@ impl Drop for Value {
     }
 }
 impl Value {
+    pub(in crate::observed) fn missing(
+        ty: &Type,
+        fact: &Fact,
+        path: &[usize],
+        c: &Control,
+    ) -> Result<Self, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(c)?;
+            if let Some(form) = forms::missing_component(ty, fact, path, c)? {
+                return Ok(Self::Number(form));
+            }
+            Ok(match ty {
+                Type::Tuple(types) => Self::Tuple(
+                    types
+                        .iter()
+                        .enumerate()
+                        .map(|(i, t)| {
+                            let mut p = path.to_vec();
+                            p.push(i);
+                            Self::missing(t, fact, &p, c)
+                        })
+                        .collect::<Result<_, _>>()?,
+                ),
+                _ => Self::Unsupported(ty.clone()),
+            })
+        })
+    }
     pub(in crate::observed) fn unsupported(&self, c: &Control) -> Result<bool, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
@@ -446,43 +474,6 @@ impl Certificate {
         tick(c)?;
         Ok(true)
     }
-
-    pub(in crate::observed) fn wire(&self) -> crate::canonical::Json {
-        use crate::canonical::Json;
-        let typed = |v: &Scalar| Json::obj([("type", v.ty().wire()), ("value", v.wire())]);
-        let mut data = BTreeMap::from([(
-            "cases".into(),
-            Json::Arr(
-                self.cases
-                    .iter()
-                    .map(|case| {
-                        Json::obj([
-                            (
-                                "arguments",
-                                Json::Arr(case.arguments.iter().map(Value::wire).collect()),
-                            ),
-                            ("left", case.left.wire()),
-                            ("right", case.right.wire()),
-                        ])
-                    })
-                    .collect(),
-            ),
-        )]);
-        if let Some(p) = &self.point {
-            data.insert(
-                "counterexample".into(),
-                Json::obj([
-                    (
-                        "arguments",
-                        Json::Arr(p.arguments.iter().map(typed).collect()),
-                    ),
-                    ("left", typed(&p.left)),
-                    ("right", typed(&p.right)),
-                ]),
-            );
-        }
-        Json::Obj(data)
-    }
 }
 impl Value {
     fn normal_form(&self, c: &Control) -> Result<Self, ValidationFailure> {
@@ -554,24 +545,6 @@ impl Value {
             };
             tick(c)?;
             Ok(same)
-        })
-    }
-    fn wire(&self) -> crate::canonical::Json {
-        use crate::canonical::Json;
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
-            Self::Known(v) => Json::obj([("type", v.ty().wire()), ("value", v.wire())]),
-            Self::Number(v) => v.term_wire(),
-            Self::Tuple(v) => Json::obj([
-                ("kind", Json::str("tuple")),
-                ("components", Json::Arr(v.iter().map(Self::wire).collect())),
-            ]),
-            Self::List { element, items } => Json::obj([
-                ("type", Type::List(Box::new(element.clone())).wire()),
-                ("items", Json::Arr(items.iter().map(Self::wire).collect())),
-            ]),
-            Self::Unsupported(t) => {
-                Json::obj([("type", t.wire()), ("kind", Json::str("unsupported"))])
-            }
         })
     }
 }
@@ -1026,5 +999,120 @@ impl Term {
             }
         };
         Ok(Value::Known(value))
+    }
+}
+
+/// 正規形は既存ScalarのList/Tupleとして表示する。各rowは元引数の零点と
+/// 出力の(定数項,全係数)であり、軸順は元parameter順・Tuple成分順で固定する。
+impl Certificate {
+    pub(in crate::observed) fn presentation(
+        &self,
+        term: &Term,
+        left: bool,
+        c: &Control,
+    ) -> Result<Scalar, ValidationFailure> {
+        fn axes(
+            ty: &Type,
+            argument: usize,
+            path: &mut Vec<usize>,
+            out: &mut Vec<forms::TermArgument>,
+            c: &Control,
+        ) -> Result<(), ValidationFailure> {
+            stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+                tick(c)?;
+                match ty {
+                    Type::Z | Type::Q => out.push(forms::TermArgument {
+                        argument,
+                        component: path.clone(),
+                        kind: if *ty == Type::Z {
+                            forms::NumberType::Z
+                        } else {
+                            forms::NumberType::Q
+                        },
+                    }),
+                    Type::Tuple(ts) => {
+                        for (i, t) in ts.iter().enumerate() {
+                            path.push(i);
+                            axes(t, argument, path, out, c)?;
+                            path.pop();
+                        }
+                    }
+                    _ => {}
+                }
+                Ok(())
+            })
+        }
+        let mut coordinates = vec![];
+        for (i, (_, ty)) in term.params.iter().enumerate() {
+            axes(ty, i, &mut vec![], &mut coordinates, c)?;
+        }
+        let pack = |values: Vec<Scalar>| match values.len() {
+            0 => Scalar::Unit,
+            1 => values.into_iter().next().unwrap(),
+            _ => Scalar::Tuple(values),
+        };
+        let mut rows = vec![];
+        for case in &self.cases {
+            tick(c)?;
+            let arguments = pack(
+                case.arguments
+                    .iter()
+                    .map(|v| v.at(None, c))
+                    .collect::<Result<_, _>>()?,
+            );
+            let output = if left { &case.left } else { &case.right };
+            rows.push(Scalar::Tuple(vec![
+                arguments,
+                output.presentation(&coordinates, c)?,
+            ]));
+        }
+        let element = rows.first().map(Scalar::ty).unwrap_or(Type::Unit);
+        Ok(Scalar::List {
+            element,
+            items: rows,
+        })
+    }
+}
+impl Value {
+    fn presentation(
+        &self,
+        axes: &[forms::TermArgument],
+        c: &Control,
+    ) -> Result<Scalar, ValidationFailure> {
+        fn element(ty: &Type, c: &Control) -> Result<Type, ValidationFailure> {
+            stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+                tick(c)?;
+                Ok(match ty {
+                    Type::Z | Type::Q => {
+                        Type::Tuple(vec![ty.clone(), Type::List(Box::new(ty.clone()))])
+                    }
+                    Type::Tuple(ts) => {
+                        Type::Tuple(ts.iter().map(|t| element(t, c)).collect::<Result<_, _>>()?)
+                    }
+                    Type::List(t) => Type::List(Box::new(element(t, c)?)),
+                    _ => ty.clone(),
+                })
+            })
+        }
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(c)?;
+            Ok(match self {
+                Self::Number(f) => f.term_coordinates(axes, c)?,
+                Self::Known(v) => v.clone(),
+                Self::Tuple(v) => Scalar::Tuple(
+                    v.iter()
+                        .map(|v| v.presentation(axes, c))
+                        .collect::<Result<_, _>>()?,
+                ),
+                Self::List { element: t, items } => Scalar::List {
+                    element: element(t, c)?,
+                    items: items
+                        .iter()
+                        .map(|v| v.presentation(axes, c))
+                        .collect::<Result<_, _>>()?,
+                },
+                Self::Unsupported(_) => return Err("算法外値を正規形表示にできない".into()),
+            })
+        })
     }
 }

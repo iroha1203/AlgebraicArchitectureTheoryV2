@@ -565,89 +565,265 @@ fn affine_term_comparison_retains_normal_forms_and_reapplied_original_points() {
     assert_eq!(r.status(), "complete");
     let w = r.wire();
     let nodes = arr(get(&w, "nodes"));
-    let proofs:Vec<_>=nodes.iter().filter(|n| matches!(n,Json::Obj(m) if m.get("value").is_some_and(|v|matches!(v,Json::Obj(m) if matches!(m.get("data"),Some(Json::Obj(d)) if d.contains_key("term_comparison")))))).collect();
-    assert_eq!(proofs.len(), 4);
-    for (index, n) in proofs.iter().enumerate() {
-        let proof = get(n, "value");
-        let data = get(proof, "data");
-        let certificate = get(data, "term_comparison");
-        let cases = arr(get(certificate, "cases"));
-        assert_eq!(cases.len(), 1);
-        let args = arr(get(&cases[0], "arguments"));
-        assert_eq!(args.len(), if index < 2 { 2 } else { 1 });
-        for (position, arg) in args.iter().enumerate() {
-            assert_eq!(
-                get(arg, "type"),
-                &Json::str(if index == 2 { "Q" } else { "Z" })
+    let target = |reference: &Json| {
+        nodes
+            .iter()
+            .find(|n| get(n, "id") == get(reference, "node"))
+            .unwrap()
+    };
+    let proofs:Vec<_>=nodes.iter().filter(|n| matches!(n,Json::Obj(m) if m.get("type")==Some(&Json::str("Evidence")) && m.get("value").is_some_and(|v|matches!(v,Json::Obj(m) if m.get("kind")==Some(&Json::str("normalization")))))).collect();
+    assert_eq!(proofs.len(), 8);
+    let matrices: Vec<_> = proofs
+        .iter()
+        .map(|n| {
+            let data = get(get(n, "value"), "data");
+            let before = target(get(data, "before"));
+            assert!(
+                matches!(get(before,"type"),Json::Arr(t) if t.first()==Some(&Json::str("Term")))
             );
-            let coefficients = arr(get(arg, "coefficients"));
-            assert_eq!(coefficients.len(), 1);
+            let steps = arr(get(data, "steps"));
+            assert_eq!(steps.len(), 1);
+            assert_eq!(get(target(&steps[0]), "type"), &Json::str("Expression"));
+            let after = target(get(data, "after"));
+            assert!(
+                matches!(get(after,"type"),Json::Arr(t) if t.first()==Some(&Json::str("List")))
+            );
+            get(after, "value")
+        })
+        .collect();
+    assert_eq!(matrices[0], matrices[1]);
+    assert_eq!(matrices[6], matrices[7]);
+    let row = arr(&arr(matrices[0])[0]);
+    assert_eq!(row[0], Json::Arr(vec![Json::str("0"), Json::str("0")]));
+    assert_eq!(
+        row[1],
+        Json::Arr(vec![
+            Json::str("0"),
+            Json::Arr(vec![Json::str("2"), Json::str("-1")])
+        ])
+    );
+    let counters:Vec<_>=nodes.iter().filter(|n|matches!(n,Json::Obj(m) if m.get("type")==Some(&Json::str("Evidence")) && m.get("value").is_some_and(|v|matches!(v,Json::Obj(m) if m.get("kind")==Some(&Json::str("counterexample")))))).collect();
+    let counters: Vec<_> = counters
+        .into_iter()
+        .filter(|n| {
+            arr(get(get(get(n, "value"), "data"), "bindings"))
+                .first()
+                .is_some_and(|b| matches!(get(b,"name"),Json::Str(name) if name=="x"||name=="q"))
+        })
+        .collect();
+    assert_eq!(counters.len(), 2);
+    for (index, n) in counters.iter().enumerate() {
+        let data = get(get(n, "value"), "data");
+        let bindings = arr(get(data, "bindings"));
+        assert_eq!(bindings.len(), if index == 0 { 2 } else { 1 });
+        let expected = if index == 0 {
+            Json::str("0")
+        } else {
+            Json::Arr(vec![Json::str("1"), Json::str("1")])
+        };
+        for (position, binding) in bindings.iter().enumerate() {
             assert_eq!(
-                get(get(&coefficients[0], "coordinate"), "argument"),
-                &Json::Nat(position as u64)
+                get(binding, "name"),
+                &Json::str(if index == 1 {
+                    "q"
+                } else if position == 0 {
+                    "x"
+                } else {
+                    "y"
+                })
             );
             assert_eq!(
-                get(get(&coefficients[0], "coordinate"), "component"),
-                &Json::Arr(vec![])
+                get(target(get(binding, "value")), "type"),
+                &Json::str(if index == 0 { "Z" } else { "Q" })
             );
+            assert_eq!(get(target(get(binding, "value")), "value"), &expected);
         }
-        for key in ["source", "left", "right"] {
-            let node = get(get(data, key), "node");
-            assert!(nodes.iter().any(|n| get(n, "id") == node));
+        let (left, right) = (
+            get(target(get(data, "left")), "value"),
+            get(target(get(data, "right")), "value"),
+        );
+        if index == 0 {
+            assert_eq!(left, &Json::str("0"));
+            assert_eq!(right, &Json::str("1"));
+        } else {
+            assert_eq!(left, &Json::Arr(vec![Json::str("3"), Json::str("2")]));
+            assert_eq!(right, &Json::Arr(vec![Json::str("5"), Json::str("3")]));
         }
+        assert_ne!(left, right);
+        assert_eq!(get(data, "paths"), &Json::Arr(vec![]));
         let reference = Json::obj([("node", get(n, "id").clone())]);
         assert!(
             nodes
                 .iter()
                 .any(|v| arr(get(v, "evidence")).contains(&reference))
         );
-        if index == 3 {
-            assert_eq!(get(proof, "kind"), &Json::str("normalization"));
-            assert_eq!(get(&cases[0], "left"), get(&cases[0], "right"));
-        } else if index == 0 {
-            assert_eq!(get(proof, "kind"), &Json::str("normalization"));
-            assert_eq!(get(&cases[0], "left"), get(&cases[0], "right"));
-            let Json::Obj(c) = certificate else {
-                panic!("certificate")
-            };
-            assert!(!c.contains_key("counterexample"));
-            let coefficients = arr(get(get(&cases[0], "left"), "coefficients"));
-            assert_eq!(
-                coefficients
-                    .iter()
-                    .map(|v| get(v, "value").clone())
-                    .collect::<Vec<_>>(),
-                vec![Json::str("2"), Json::str("-1")]
-            );
-        } else {
-            assert_eq!(get(proof, "kind"), &Json::str("counterexample"));
-            let point = get(certificate, "counterexample");
-            let arguments = arr(get(point, "arguments"));
-            if index == 1 {
-                assert_eq!(arguments.len(), 2);
-                for a in arguments {
-                    assert_eq!(get(a, "type"), &Json::str("Z"));
-                    assert_eq!(get(a, "value"), &Json::str("0"));
-                }
-                assert_eq!(get(get(point, "left"), "value"), &Json::str("0"));
-                assert_eq!(get(get(point, "right"), "value"), &Json::str("1"));
-            } else {
-                assert_eq!(arguments.len(), 1);
-                assert_eq!(get(&arguments[0], "type"), &Json::str("Q"));
-                assert_eq!(
-                    get(&arguments[0], "value"),
-                    &Json::Arr(vec![Json::str("1"), Json::str("1")])
-                );
-                assert_eq!(
-                    get(get(point, "left"), "value"),
-                    &Json::Arr(vec![Json::str("3"), Json::str("2")])
-                );
-                assert_eq!(
-                    get(get(point, "right"), "value"),
-                    &Json::Arr(vec![Json::str("5"), Json::str("3")])
-                );
-            }
-            assert_ne!(get(point, "left"), get(point, "right"));
-        }
     }
+}
+
+#[test]
+fn affine_term_evidence_uses_the_fixed_result_two_keys_and_typed_prior_refs() {
+    use std::collections::BTreeSet;
+    let r = evaluate_observed_bytes(
+        sources(),
+        &[
+            "e=evaluate(Terms.same,s=@v/s)",
+            "d=check(Terms.unequal,s=@v/s)",
+            "q=evaluate(Terms.qCoefficient)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete");
+    let w = r.wire();
+    let nodes = arr(get(&w, "nodes"));
+    let node_id = |r: &Json| {
+        let Json::Str(id) = get(r, "node") else {
+            panic!("Ref")
+        };
+        id.clone()
+    };
+    let mut seen = BTreeSet::<String>::new();
+    let mut counts = [0, 0];
+    for n in nodes {
+        let Json::Obj(m) = n else { panic!("node") };
+        if m.get("type") == Some(&Json::str("Evidence")) {
+            let value = get(n, "value");
+            let kind = get(value, "kind");
+            if kind == &Json::str("normalization") || kind == &Json::str("counterexample") {
+                let Json::Obj(d) = get(value, "data") else {
+                    panic!("data")
+                };
+                let expected = if kind == &Json::str("normalization") {
+                    counts[0] += 1;
+                    vec!["before", "after", "steps"]
+                } else {
+                    counts[1] += 1;
+                    vec!["bindings", "paths", "left", "right", "facts"]
+                };
+                assert_eq!(
+                    d.keys().map(String::as_str).collect::<BTreeSet<_>>(),
+                    expected.into_iter().collect()
+                );
+                let keys = if kind == &Json::str("normalization") {
+                    vec!["before", "after"]
+                } else {
+                    vec!["left", "right"]
+                };
+                for key in keys {
+                    assert!(seen.contains(&node_id(get(get(value, "data"), key))));
+                }
+                if kind == &Json::str("normalization") {
+                    for step in arr(get(get(value, "data"), "steps")) {
+                        let id = get(step, "node");
+                        let target = nodes.iter().find(|n| get(n, "id") == id).unwrap();
+                        assert_eq!(get(target, "type"), &Json::str("Expression"));
+                        assert!(seen.contains(&node_id(step)));
+                    }
+                }
+            }
+        }
+        // Ordered Ref identities, without giving IDs mathematical meaning.
+        let Json::Str(id) = get(n, "id") else {
+            panic!("node id")
+        };
+        seen.insert(id.clone());
+    }
+    assert!(counts[0] > 0 && counts[1] > 0);
+}
+#[test]
+fn affine_term_tuple_outer_comparisons_preserve_each_missing_component() {
+    let r = evaluate_observed_bytes(
+        sources(),
+        &[
+            "e=evaluate(Terms.tupleEq,s=@v/s)",
+            "n=evaluate(Terms.tupleNe,s=@v/s)",
+            "o=evaluate(Terms.tupleOffset,s=@v/s)",
+            "l=check(Terms.tupleEqLaw,s=@v/s)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
+    let w = r.wire();
+    assert_eq!(get(answer(&w, "l"), "status"), &Json::str("established"));
+    assert_eq!(value(&w, "e"), &Json::Bool(true));
+    for id in ["n", "o"] {
+        assert_eq!(value(&w, id), &Json::Bool(false));
+    }
+}
+#[test]
+fn affine_term_single_missing_tuple_slot_keeps_paths_and_whole_slot_completions() {
+    let r = evaluate_observed_bytes(
+        sources(),
+        &[
+            "z=evaluate(Terms.tupleSlot,s=@v/s)",
+            "e=evaluate(Terms.tupleSlotEq,s=@v/s)",
+            "u=check(Terms.tupleSlotUniversal,s=@v/s)",
+            "d=evaluate(Terms.tupleSlotsIndependent,s=@v/s)",
+            "c=evaluate(Terms.tupleComponentsIndependent,s=@v/s)",
+            "v=check(Terms.tupleSlotVary,s=@v/s)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", get(&r.wire(), "issues"));
+    let w = r.wire();
+    assert_eq!(
+        value(&w, "z"),
+        &Json::Arr(vec![
+            Json::str("0"),
+            Json::Arr(vec![Json::str("0"), Json::str("1")])
+        ])
+    );
+    assert_eq!(value(&w, "e"), &Json::Bool(true));
+    assert_eq!(get(answer(&w, "u"), "status"), &Json::str("established"));
+    for (id, fields) in [
+        ("z", vec!["Terms.Sample.t"]),
+        ("d", vec!["Terms.Sample.t", "Terms.Sample.u"]),
+        ("c", vec!["Terms.Sample.zz"]),
+        ("v", vec!["Terms.Sample.zz"]),
+    ] {
+        let a = answer(&w, id);
+        let reasons = arr(get(a, "reasons"));
+        for field in fields {
+            assert!(
+                reasons
+                    .iter()
+                    .flat_map(|r| arr(get(r, "missing")))
+                    .any(|m| get(m, "field") == &Json::str(field))
+            );
+        }
+        assert!(
+            !reasons
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("unsupported_algorithm")),
+            "{a:?}"
+        );
+    }
+    for id in ["d", "c", "v"] {
+        assert_eq!(get(answer(&w, id), "status"), &Json::str("undetermined"));
+    }
+    let nodes = arr(get(&w, "nodes"));
+    let pair=nodes.iter().find(|n|matches!(n,Json::Obj(m) if m.get("type")==Some(&Json::str("Evidence"))&&m.get("value").is_some_and(|v|matches!(v,Json::Obj(m) if m.get("kind")==Some(&Json::str("completion_pair")))))).unwrap();
+    let data = get(get(pair, "value"), "data");
+    let fields = arr(get(data, "fields"));
+    assert_eq!(fields.len(), 1);
+    assert_eq!(get(&fields[0], "field"), &Json::str("Terms.Sample.zz"));
+    let mut slot_values = vec![];
+    for side in ["first", "second"] {
+        let refs = arr(get(data, side));
+        assert_eq!(refs.len(), 1);
+        let n = nodes
+            .iter()
+            .find(|n| get(n, "id") == get(&refs[0], "node"))
+            .unwrap();
+        slot_values.push(get(n, "value").clone());
+    }
+    assert_eq!(
+        slot_values,
+        vec![
+            Json::Arr(vec![Json::str("0"), Json::str("0")]),
+            Json::Arr(vec![Json::str("1"), Json::str("0")])
+        ]
+    );
 }
