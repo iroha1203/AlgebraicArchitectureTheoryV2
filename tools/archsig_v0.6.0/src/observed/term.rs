@@ -701,10 +701,9 @@ impl Term {
                         let Scalar::Bool(b) = self.eval(*body, &local, law, c)? else {
                             return Err("Term量化bodyがBoolでない".into());
                         };
-                        if *kind == QuantKind::Forall {
-                            result &= b
-                        } else {
-                            result |= b
+                        if (*kind == QuantKind::Forall && !b) || (*kind == QuantKind::Exists && b) {
+                            result = b;
+                            break;
                         }
                     }
                     Scalar::Bool(result)

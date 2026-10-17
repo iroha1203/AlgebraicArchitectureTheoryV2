@@ -516,3 +516,56 @@ fn closed_term_boolean_short_circuit_skips_only_unneeded_comparisons() {
         Err(archsig::observed::EvaluationFailure::NotImplemented { .. })
     ));
 }
+
+#[test]
+fn closed_term_finite_quantifiers_keep_decisive_values_before_unsupported_later_member() {
+    let script = r#"
+    view allList():Bool=(fn()=>forall b in list<Bool>[false,true] . if b then ((fn()=>0)=(fn()=>0)) else false)();
+    view anyList():Bool=(fn()=>exists b in list<Bool>[true,false] . if b then true else ((fn()=>0)=(fn()=>0)))();
+    view allType():Bool=(fn()=>forall b:Bool . if b then ((fn()=>0)=(fn()=>0)) else false)();
+    view anyType():Bool=(fn()=>exists b:Bool . if b then ((fn()=>0)=(fn()=>0)) else true)();
+    view allEmpty():Bool=(fn()=>forall b in list<Bool>[] . b)();
+    view anyEmpty():Bool=(fn()=>exists b in list<Bool>[] . b)();
+    law required falseAll():(fn()=>forall b in list<Bool>[false,true] . if b then ((fn()=>0)=(fn()=>0)) else false)();
+    view allNeeded():Bool=(fn()=>forall b in list<Bool>[false,true] . if b then ((fn()=>0)=(fn()=>0)) else true)();
+    view anyNeeded():Bool=(fn()=>exists b in list<Bool>[false,true] . if b then ((fn()=>0)=(fn()=>0)) else false)();
+    "#;
+    let r = evaluate_observed_bytes(
+        term_branch_sources(script, false),
+        &[
+            "al=evaluate(Terms.allList)",
+            "an=evaluate(Terms.anyList)",
+            "tl=evaluate(Terms.allType)",
+            "tn=evaluate(Terms.anyType)",
+            "el=evaluate(Terms.allEmpty)",
+            "en=evaluate(Terms.anyEmpty)",
+            "c=check(Terms.falseAll)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete");
+    let w = r.wire();
+    for (id, b) in [
+        ("al", false),
+        ("an", true),
+        ("tl", false),
+        ("tn", true),
+        ("el", true),
+        ("en", false),
+    ] {
+        assert_eq!(result_value(&w, id), &Json::Bool(b));
+    }
+    let law = arr(get(&w, "answers"))
+        .iter()
+        .find(|a| get(a, "id") == &Json::str("c"))
+        .unwrap();
+    assert_eq!(get(law, "status"), &Json::str("refuted"));
+    for declaration in ["allNeeded", "anyNeeded"] {
+        let ask = format!("n=evaluate(Terms.{declaration})");
+        assert!(matches!(
+            evaluate_observed_bytes(term_branch_sources(script, false), &[&ask], &mut quiet()),
+            Err(archsig::observed::EvaluationFailure::NotImplemented { .. })
+        ));
+    }
+}

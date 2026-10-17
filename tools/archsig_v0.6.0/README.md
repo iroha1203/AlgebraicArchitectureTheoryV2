@@ -59,6 +59,7 @@
   bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
   元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。
   body内のand/or/impliesは左辺で決まるとき右辺を評価せず、未観測条件の両枝で同じ元Termを保持する。
+  有限forallの反例・existsの証人を得た後は、不要な後続bodyを評価せず決定値を保持する。
   未観測callee・必要な実引数は元missingを保持する。
   これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
