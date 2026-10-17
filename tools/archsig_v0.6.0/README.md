@@ -92,6 +92,8 @@
   既知ownerに依存する未束縛Law parameterは、先行束縛ごとに同snapshot・owner一致の参照族を使う。
   固定ownerと自由child、自由ownerと固定childを含め、各prefixの実Domain・元順の束縛と適合するrowを保持する。
   所属を判断したownerの原始事実を支持へ接続し、空fiberも範囲へ残す。
+  Ownedを含む有限Tuple/Option/Setと両端Owned Mapの未束縛parameterも、各実prefixの元owner族から全域を列挙する。
+  Option/Setは空fiberでもnone/空集合を保ち、Mapは空始域の空表1個と非空始域・空値域の表0個を区別する。
   既知ownerの `State[a]` 式は、同snapshotでownerが一致するentity/arrowの登録族を
   型付きSetとして返し、Set演算・内包・明示In量化へ接続する。
   owner子式のEvaluation・束縛・実producerと所属の原始事実を保持する。
