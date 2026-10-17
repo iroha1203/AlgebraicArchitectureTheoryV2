@@ -15,6 +15,8 @@ use crate::{
 };
 #[path = "answer_binding.rs"]
 mod answer_binding;
+#[path = "answer_dependency.rs"]
+mod answer_dependency;
 #[path = "completion.rs"]
 pub(super) mod completion;
 #[path = "dependent_family.rs"]
@@ -3675,6 +3677,20 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
+            if let Some(expected) = self.unavailable_binding_answer(graph, request)? {
+                graph.validate_answer(answer, request.kind == QuestionKind::Check)?;
+                if answer != &expected {
+                    return Err("依存停止Answerが元Request・未生成出力・元理由と違う".into());
+                }
+                return Ok(());
+            }
+            if answer
+                .reasons
+                .iter()
+                .any(|reason| matches!(reason.kind, ReasonKind::DependencyBlocked { .. }))
+            {
+                return Err("未生成出力に接続しない依存停止理由".into());
+            }
             if answer.outputs.is_empty()
                 && let Some(plan) = self.family_plan(request)?
                 && plan.dependent
