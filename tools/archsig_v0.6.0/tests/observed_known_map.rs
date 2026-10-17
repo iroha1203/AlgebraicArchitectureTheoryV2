@@ -303,7 +303,7 @@ fn known_map_provenance_pairs_preserve_answers_and_current_sources() {
 }
 
 #[test]
-fn known_map_values_do_not_enable_type_universes_or_application() {
+fn known_map_application_remains_unimplemented_after_finite_type_domains() {
     let input = sources("r1");
     let mut law = String::from_utf8(input.law().bytes().to_vec()).unwrap();
     let close = law.rfind('}').unwrap();
@@ -319,17 +319,36 @@ fn known_map_values_do_not_enable_type_universes_or_application() {
         law.into_bytes(),
         maps::archmap(digest, "r1").into_bytes(),
     );
-    for ask in [
-        "all=evaluate(Maps.all)",
-        "apply=evaluate(Maps.apply,s=@v/s,x=@v/a)",
-    ] {
-        let failure = evaluate_observed_bytes(input.clone(), &[ask], &mut quiet()).unwrap_err();
-        assert!(failure.wire().is_none());
-        assert!(matches!(
-            failure,
-            archsig::observed::EvaluationFailure::NotImplemented { .. }
-        ));
-    }
+    let result =
+        evaluate_observed_bytes(input.clone(), &["all=evaluate(Maps.all)"], &mut quiet()).unwrap();
+    assert_eq!(result.status(), "complete");
+    assert_eq!(
+        value(&result.wire(), "all", Json::str("Bool")),
+        &Json::Bool(true)
+    );
+    let wire = result.wire();
+    let domains: Vec<_> = array(get(&wire, "nodes"))
+        .iter()
+        .filter(|n| {
+            get(n, "type") == &Json::str("Domain")
+                && object(n)
+                    .get("value")
+                    .is_some_and(|v| object(v).get("type") == Some(&map_type()))
+        })
+        .collect();
+    assert_eq!(domains.len(), 1);
+    assert_eq!(array(get(get(domains[0], "value"), "elements")).len(), 4);
+    let failure = evaluate_observed_bytes(
+        input,
+        &["apply=evaluate(Maps.apply,s=@v/s,x=@v/a)"],
+        &mut quiet(),
+    )
+    .unwrap_err();
+    assert!(failure.wire().is_none());
+    assert!(matches!(
+        failure,
+        archsig::observed::EvaluationFailure::NotImplemented { .. }
+    ));
 }
 
 #[test]

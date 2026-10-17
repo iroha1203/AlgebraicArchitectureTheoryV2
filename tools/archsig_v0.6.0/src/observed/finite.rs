@@ -58,6 +58,13 @@ fn supported_with_references(
             match ty {
                 Type::Unit | Type::Bool | Type::Fp(_) => Ok(true),
                 Type::Ref(_) => Ok(references),
+                // Map fieldの補完には入力全体の参照制約が必要。型全域の
+                // 列挙だけを、元の有限参照族上の全域関数として許可する。
+                // Ownedは実ownerを復元する明示型量化だけが扱う。その入口は
+                // 消去型で本判定を行う。未束縛の複合Law parameterは未対応。
+                Type::Map(domain, codomain) => Ok(references
+                    && matches!(domain.as_ref(), Type::Ref(_))
+                    && matches!(codomain.as_ref(), Type::Ref(_))),
                 Type::Tuple(types) => {
                     for ty in types {
                         if !visit(ty, law, control, active, references)? {
@@ -182,6 +189,59 @@ pub(super) fn values_with_owned(
                     let mut values = Vec::new();
                     for value in family.values {
                         emit(&mut values, value, control, visitor)?;
+                    }
+                    values
+                }
+                Type::Map(domain, codomain) => {
+                    let keys = enumerate(
+                        domain,
+                        law,
+                        control,
+                        roster,
+                        owned,
+                        dependencies,
+                        &mut |_| {},
+                    )?;
+                    let images = enumerate(
+                        codomain,
+                        law,
+                        control,
+                        roster,
+                        owned,
+                        dependencies,
+                        &mut |_| {},
+                    )?;
+                    // 空始域は空表1個。非空始域・空値域は直積0個。
+                    let mut tables = vec![Vec::new()];
+                    for key in keys {
+                        tick(control)?;
+                        let mut next = Vec::new();
+                        for table in &tables {
+                            for image in &images {
+                                tick(control)?;
+                                let mut table = table.clone();
+                                table.push((key.clone(), image.clone()));
+                                next.push(table);
+                                tick(control)?;
+                            }
+                        }
+                        tables = next;
+                        tick(control)?;
+                    }
+                    let mut values = Vec::new();
+                    for pairs in tables {
+                        tick(control)?;
+                        emit(
+                            &mut values,
+                            Scalar::Map {
+                                domain: domain.erase(),
+                                codomain: codomain.erase(),
+                                pairs,
+                            },
+                            control,
+                            visitor,
+                        )?;
+                        tick(control)?;
                     }
                     values
                 }

@@ -40,7 +40,10 @@
   forallの既知false instanceは他instanceの欠測によらず反例として保持する。
   existsは既知true instanceでtrueとなり、既読のmissing・支持を保持する。
   `forall/exists x:T`はUnit/Bool/Fp・登録済みplain参照族と、それらからなる有限な非再帰Data・Tuple・Option・Setの
-  全値域を元型・宣言から列挙する。未使用binderも元の検査済み型を保持し、
+  全値域を元型・宣言から列挙する。
+  有限Map型とそのTuple/Option/Setは元の両端参照族から全域単一値関数を全列挙し、
+  空始域は空表1個、非空始域・空値域は表0個を保持する。plain Mapの未束縛Law parameterも同じ全域を使う。
+  未使用binderも元の検査済み型を保持し、
   型付きDomain・実要素・全coverage・反例へ接続する。型域にはcollection評価を作らず、
   全列挙は同じ中断制御の下で行う。
   plain参照族は全snapshotの完全型名が一致するsubjectを(snapshot,id)ごとに列挙し、
@@ -49,7 +52,7 @@
   数値等式には元左右と同じ型・形の残差を保持し、一般Boolには数値残差を付けない。
   検査済み既知Mapは元の参照pairと両端型を保ち、行順によらず同じ域上の値で等値を判定する。
   空域の空表、Mapを含むTuple/List/Set/Optionも型を保つ。欠測Mapは元slotのまま通常値へ補わない。
-  Map適用・有限Map型全域と参照制約付きMap補完は未実装である。
+  Map適用・参照制約付きMap補完は未実装である。
   これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
   ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
@@ -93,7 +96,8 @@
   型付きSetとして返し、Set演算・内包・明示In量化へ接続する。
   owner子式のEvaluation・束縛・実producerと所属の原始事実を保持する。
   明示 `forall s:State[a]` / `exists` と、owner添字を持つ参照を含む有限Tuple/Option/Setは、
-  元型の添字と現在の実束縛に従う登録族を使い、実Domain・元binder・件数と所属の支持を保持する。
+  Mapの両端owner添字も含め、元型の添字と現在の実束縛に従う登録族を使い、
+  実Domain・元binder・件数と所属の支持を保持する。
   ownerが未観測で族を確定できない場合は、全補完の範囲と元slotの欠測、
   unsupported_algorithmを未決回答に保持する。
   Law の guard が false なら非適用となり、元の guard/body から条件付き要求を判断する。

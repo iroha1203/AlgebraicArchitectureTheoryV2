@@ -169,6 +169,10 @@ fn restore_owned_type(
             (TypeAst::List(item, _), Type::List(ty)) => Type::List(Box::new(restore_owned_type(
                 law, item, ty, owners, control,
             )?)),
+            (TypeAst::Map(key, value, _), Type::Map(from, to)) => Type::Map(
+                Box::new(restore_owned_type(law, key, from, owners, control)?),
+                Box::new(restore_owned_type(law, value, to, owners, control)?),
+            ),
             (TypeAst::Builtin(builtin, _), _) => {
                 let expected = match builtin {
                     crate::law::ast::Builtin::Unit => Type::Unit,
