@@ -7167,6 +7167,29 @@ impl<'a> Environment<'a> {
                                 .collect::<Result<_, _>>()?,
                         })
                     }
+                    ExprKind::SetLit { items, .. } => {
+                        let Type::Set(element) = ty else {
+                            return Err("部分Setの元型が違う".into());
+                        };
+                        Some(Value::SetLiteral {
+                            element: (**element).clone(),
+                            items: items
+                                .iter()
+                                .map(|i| self.symbolic_source(*i, variables, base, reading))
+                                .collect::<Result<_, _>>()?,
+                        })
+                    }
+                    ExprKind::Some(item) => {
+                        let Type::Option(element) = ty else {
+                            return Err("部分Optionの元型が違う".into());
+                        };
+                        Some(Value::Option {
+                            element: (**element).clone(),
+                            value: Some(Box::new(
+                                self.symbolic_source(*item, variables, base, reading)?,
+                            )),
+                        })
+                    }
                     ExprKind::Binary { op, lhs, rhs }
                         if matches!(ty, Type::Tuple(_))
                             && numeric::is_numeric_type(ty, &self.control)? =>

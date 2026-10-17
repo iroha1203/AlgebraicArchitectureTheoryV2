@@ -82,6 +82,7 @@ impl Environment<'_> {
                     }
                 }
                 (Type::List(ty), Member::Partial(PartialValue::List { element, items }))
+                | (Type::Set(ty), Member::Partial(PartialValue::SetLiteral { element, items }))
                     if *element == ty.erase() =>
                 {
                     for value in items.iter().rev() {
@@ -94,6 +95,13 @@ impl Environment<'_> {
                 {
                     if let Some(value) = value {
                         pending.push((ty, Member::Known(value)));
+                    }
+                }
+                (Type::Option(ty), Member::Partial(PartialValue::Option { element, value }))
+                    if *element == ty.erase() =>
+                {
+                    if let Some(value) = value {
+                        pending.push((ty, Member::Partial(value)));
                     }
                 }
                 _ => return Err("Owned callの複合memberが元署名型と違う".into()),
