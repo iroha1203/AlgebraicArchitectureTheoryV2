@@ -5224,6 +5224,9 @@ impl<'a> Environment<'a> {
         let crate::law::model::Signature::View { params, .. } = &d.signature else {
             unreachable!()
         };
+        if frame.arguments.len() != params.len() {
+            return Err("call引数数が元署名と違う".into());
+        }
         Ok(params
             .iter()
             .position(|p| p.name == name)

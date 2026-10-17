@@ -1084,3 +1084,52 @@ fn owned_type_quantification_option_tag_changes_are_legal_members_but_rejected_i
         });
     }
 }
+
+#[test]
+fn owned_type_quantification_rejects_empty_and_short_actual_call_frame_arguments() {
+    let mut result = owned_private_example(
+        "view inner(a:System,b:System):Bool=forall s:State[b] . true; view caller(m:Migration):Bool=inner(m.from,m.to);",
+        &["current=evaluate(Reservations.caller,m=@v/m)"],
+        None,
+        false,
+    );
+    assert_eq!(result.status(), "complete");
+    let domains = owned_type_private_domains(&result, 0);
+    assert_eq!(domains.len(), 1);
+    let source = result.nodes[domains[0]].arguments[0].0;
+    assert_eq!(
+        reservations_private_text(&result, NodeRef(source)),
+        "forall s:State[b] . true"
+    );
+    let frame = result.contexts[source].frame.expect("actual callee frame");
+    let original = result.frames[frame].arguments.clone();
+    assert_eq!(original.len(), 2);
+    assert!(original.iter().all(|argument| argument.0 < source
+        && matches!(
+            result.nodes[argument.0].payload,
+            Some(Payload::Evaluation { .. })
+        )));
+    assert_eq!(result.nodes[source].arguments.last(), Some(&original[1]));
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=source]).unwrap();
+    let normal_nodes = format!("{:?}", result.nodes);
+    let normal_contexts = result.contexts.clone();
+    for retained in [0, 1] {
+        result.frames[frame].arguments.truncate(retained);
+        assert_ne!(result.frames[frame].arguments, original);
+        assert_eq!(result.frames[frame].arguments.len(), retained);
+        assert_eq!(format!("{:?}", result.nodes), normal_nodes);
+        assert_eq!(result.contexts, normal_contexts);
+        assert!(matches!(
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=source]),
+            Err(ValidationFailure::Internal(_))
+        ));
+        assert!(matches!(
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes),
+            Err(ValidationFailure::Internal(_))
+        ));
+        result.frames[frame].arguments = original.clone();
+    }
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=source]).unwrap();
+}
