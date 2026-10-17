@@ -260,3 +260,63 @@ fn known_map_stops_preserve_prefix_prior_refutation_and_verified_answer() {
     }
     known_map_private_stop(0, true);
 }
+
+#[test]
+fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
+    let definitions = known_map_fixture::OWNED_DEFINITIONS.as_bytes();
+    let d = crate::definition::check_definitions(&[("definition0", definitions)]).unwrap();
+    let digest = &d.vocabularies["Maps"].digest;
+    let input = InputSources::from_bytes(
+        vec![definitions.to_vec()],
+        known_map_fixture::owned_law(digest).into_bytes(),
+        known_map_fixture::owned_archmap(digest).into_bytes(),
+    );
+    let mut control = named_call_quiet();
+    let prepared =
+        prepare_observed(input, &["a=evaluate(Maps.tables,s=@v/h)"], &mut control).unwrap();
+    let result = evaluate_observed(prepared, &mut control).unwrap();
+    assert_eq!(result.status(), "complete");
+    let target=result.nodes.iter().position(|n|matches!((&n.payload,&n.rule),(Some(Payload::Scalar(Scalar::List{items,..})),Rule::Input{kind:"atom",..}) if !items.is_empty())).unwrap();
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+    completion_mutation(&result, target, |nodes| {
+        let Some(Payload::Scalar(Scalar::List { element, .. })) = &mut nodes[target].payload else {
+            unreachable!()
+        };
+        *element = Type::Map(
+            Box::new(Type::Owned("Maps.Item".into(), "owner".into())),
+            Box::new(Type::Owned("Maps.Item".into(), "owner".into())),
+        );
+    });
+    completion_mutation(&result, target, |nodes| {
+        let Some(Payload::Scalar(Scalar::List { items, .. })) = &mut nodes[target].payload else {
+            unreachable!()
+        };
+        let Scalar::Map { pairs, .. } = &mut items[0] else {
+            unreachable!()
+        };
+        let Scalar::Subject { snapshot, .. } = &mut pairs[0].1 else {
+            unreachable!()
+        };
+        *snapshot = "other".into();
+    });
+    completion_mutation(&result, target, |nodes| {
+        nodes[target].support.clear();
+    });
+    completion_mutation(&result, target, |nodes| {
+        nodes[target].scope.snapshots.clear();
+    });
+    let holder = result.prepared.inputs().archmap().snapshots[0]
+        .subjects
+        .iter()
+        .find(|s| s.id == "h")
+        .unwrap();
+    let field = holder
+        .fields
+        .iter()
+        .find(|f| f.name == "Maps.Holder.tables")
+        .unwrap();
+    assert!(
+        matches!(&field.ty,Type::List(t) if matches!(t.as_ref(),Type::Map(a,b) if matches!(a.as_ref(),Type::Owned(n,o) if n=="Maps.Item"&&o=="owner")&&matches!(b.as_ref(),Type::Owned(n,o) if n=="Maps.Item"&&o=="owner")))
+    );
+}

@@ -332,18 +332,20 @@ pub(super) fn from_input(
                 }
                 if matches!(ty, Type::List(_)) {
                     Scalar::List {
-                        element: (**element).clone(),
+                        // 元fieldのowner条件は入力表に保持する。値の型は内側の
+                        // Mapと同じ消去型に揃え、空containerでも型を保存する。
+                        element: element.erase(),
                         items: result,
                     }
                 } else {
                     Scalar::Set {
-                        element: (**element).clone(),
+                        element: element.erase(),
                         items: result,
                     }
                 }
             }
             (Value::Option(item), Type::Option(element)) => Scalar::Option {
-                element: (**element).clone(),
+                element: element.erase(),
                 value: item
                     .as_ref()
                     .map(|item| {

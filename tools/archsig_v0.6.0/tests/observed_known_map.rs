@@ -331,3 +331,78 @@ fn known_map_values_do_not_enable_type_universes_or_application() {
         ));
     }
 }
+
+#[test]
+fn owned_map_primitive_wrappers_erase_value_types_and_preserve_original_owner_slots() {
+    let definitions = maps::OWNED_DEFINITIONS.as_bytes();
+    let d = check_definitions(&[("definition0", definitions)]).unwrap();
+    let digest = &d.vocabularies["Maps"].digest;
+    let input = InputSources::from_bytes(
+        vec![definitions.to_vec()],
+        maps::owned_law(digest).into_bytes(),
+        maps::owned_archmap(digest).into_bytes(),
+    );
+    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let before = format!("{:?}", checked.archmap());
+    let m = map_type();
+    let list = Json::Arr(vec![Json::str("List"), m.clone()]);
+    let set = Json::Arr(vec![Json::str("Set"), m.clone()]);
+    let option = Json::Arr(vec![Json::str("Option"), m.clone()]);
+    let table = Json::Arr(vec![Json::Arr(vec![
+        Json::Arr(vec![Json::str("v"), Json::str("a")]),
+        Json::Arr(vec![Json::str("v"), Json::str("a")]),
+    ])]);
+    let some = Json::obj([("some", table.clone())]);
+    let cases = [
+        ("emptylist", list.clone(), Json::Arr(vec![])),
+        ("emptyset", set.clone(), Json::Arr(vec![])),
+        (
+            "absent",
+            option.clone(),
+            Json::obj([("none", Json::Bool(true))]),
+        ),
+        ("tables", list, Json::Arr(vec![table.clone()])),
+        ("bag", set, Json::Arr(vec![table.clone()])),
+        ("maybe", option.clone(), some.clone()),
+        (
+            "nested",
+            Json::Arr(vec![
+                Json::str("Tuple"),
+                Json::str("Unit"),
+                Json::Arr(vec![Json::str("List"), option]),
+            ]),
+            Json::Arr(vec![Json::Arr(vec![]), Json::Arr(vec![some])]),
+        ),
+    ];
+    let mut failures = vec![];
+    for (name, ty, expected) in cases {
+        let ask = format!("a=evaluate(Maps.{name},s=@v/h)");
+        let result = evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet()).unwrap();
+        if result.status() != "complete" {
+            failures.push((name.to_string(), result.status().to_string()));
+            continue;
+        }
+        assert_eq!(value(&result.wire(), "a", ty), &expected);
+        assert_eq!(
+            format!("{:?}", result.prepared().inputs().archmap()),
+            before
+        );
+        let owner = &result.prepared().inputs().archmap().snapshots[0]
+            .subjects
+            .iter()
+            .find(|s| s.id == "h")
+            .unwrap()
+            .fields
+            .iter()
+            .find(|f| f.name == "Maps.Holder.owner")
+            .unwrap()
+            .slot;
+        assert!(
+            matches!(owner,archsig::archmap::Slot::Known{value:archsig::archmap::Value::Ref{snapshot,subject},..} if snapshot=="v"&&subject=="r")
+        );
+    }
+    assert!(
+        failures.is_empty(),
+        "合法なOwned Map wrapperが失敗: {failures:?}"
+    );
+}
