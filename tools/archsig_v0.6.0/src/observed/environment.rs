@@ -741,6 +741,9 @@ impl<'a> Environment<'a> {
         )? {
             reasons.push(reason);
         }
+        if let Some(reason) = self.term_algorithm_reason(graph, expression, children)? {
+            reasons.push(reason);
+        }
         sort_reasons(&mut reasons);
         if node.reasons.len() != reasons.len() {
             return Err("Evaluationの元欠測理由数が違う".into());
@@ -754,6 +757,100 @@ impl<'a> Environment<'a> {
         }
         self.tick()?;
         Ok(())
+    }
+    pub(super) fn term_algorithm_reason(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        children: &[NodeRef],
+    ) -> Result<Option<Reason>, ValidationFailure> {
+        self.tick()?;
+        // 全称templateの各出現は、wholeの元Domain付き算法理由を既存の全称経路が再構成する。
+        if self.universal_source_root(graph, source)?.is_some() {
+            return Ok(None);
+        }
+        let span = self.expression_span(graph, source)?;
+        let Some(&id) = self.expressions.get(&span) else {
+            return Ok(None);
+        };
+        let law = self.inputs.law();
+        let mut types = Vec::new();
+        let method = match &law.exprs[id].kind {
+            ExprKind::Binary {
+                op: BinOp::Eq | BinOp::Ne | BinOp::In,
+                lhs,
+                rhs,
+            } if super::term::contains(
+                law.expr_type(*lhs).ok_or("Term比較元型がない")?,
+                law,
+                &self.control,
+            )? =>
+            {
+                if children.len() != 2 {
+                    return Err("Term比較の元実引数数が違う".into());
+                }
+                let a = self.evaluation(graph, children[0])?.2;
+                let b = self.evaluation(graph, children[1])?.2;
+                if a.is_none() || b.is_none() {
+                    return Ok(None);
+                }
+                types.extend([
+                    law.expr_type(*lhs).ok_or("Term左型がない")?.clone(),
+                    law.expr_type(*rhs).ok_or("Term右型がない")?.clone(),
+                ]);
+                "Term外延等値の有限列挙またはZ/Qアフィン正規化"
+            }
+            ExprKind::Call { callee, args }
+                if matches!(law.expr_type(*callee), Some(Type::Term(..))) =>
+            {
+                if children.len() != args.len() + 1 {
+                    return Err("Term適用の元実引数数が違う".into());
+                }
+                if self.evaluation(graph, children[0])?.2.is_none() {
+                    return Ok(None);
+                }
+                let original =
+                    self.analyze_source(graph, span, self.expression_bindings(graph, source)?)?;
+                if original.known_value.is_some() || original.affine.is_some() {
+                    return Ok(None);
+                }
+                // 有限な未知条件を持つ元の問いは、各整合補完内の実分析へ判断を渡す。
+                if self.current_context(graph).case.is_none()
+                    && !self.completion_slots(graph, children)?.0.is_empty()
+                {
+                    return Ok(None);
+                }
+                if !matches!(law.expr_type(id), Some(Type::Z | Type::Q | Type::Bool)) {
+                    return Ok(None);
+                }
+                types.push(law.expr_type(*callee).ok_or("Term callee型がない")?.clone());
+                for arg in args {
+                    types.push(law.expr_type(*arg).ok_or("Term実引数型がない")?.clone())
+                }
+                "元Termの実引数上のZ/Qアフィン正規化"
+            }
+            _ => return Ok(None),
+        };
+        let bindings = self.expression_bindings(graph, source)?;
+        let analysis = self.analyze_source(graph, span, bindings)?;
+        if analysis.known_value.is_some() || analysis.affine.is_some() {
+            return Ok(None);
+        }
+        let request = graph
+            .requests
+            .get(self.current_context(graph).request)
+            .ok_or("Term算法の元Requestがない")?;
+        Ok(Some(Reason {
+            kind: ReasonKind::UnsupportedAlgorithm {
+                question: request.kind,
+                operand_types: types,
+                method: method.into(),
+            },
+            request: request.id.clone(),
+            dependencies: vec![source],
+            missing: vec![],
+            location: Some(Location::Law { span }),
+        }))
     }
     fn iteration_syntax(
         &self,
@@ -1887,6 +1984,16 @@ impl<'a> Environment<'a> {
                                 }
                             }
                             (true, None) if self.composite_value(id, &values)?.is_none() => {}
+                            (false, Some(result)) => {
+                                let mut edges = vec![*expression];
+                                edges.extend(children.iter().copied());
+                                self.affine_source_analysis(graph, graph.get(result)?, result.0)?;
+                                if analysis.known_value.as_ref() != Some(graph.scalar(result)?)
+                                    || graph.get(result)?.arguments != edges
+                                {
+                                    return Err("Term相殺値の元Source・実引数が違う".into());
+                                }
+                            }
                             (false, None) => {}
                             _ => return Err("未確定の数値構成から値を作っている".into()),
                         }
@@ -2351,7 +2458,14 @@ impl<'a> Environment<'a> {
                     Ok(Some(Payload::Expression { .. }))
                 )
             }) {
-                if scalar.ty() == Type::Bool {
+                if scalar.ty() == Type::Bool
+                    && !matches!(
+                        self.inputs.law().exprs
+                            [*self.expressions.get(span).ok_or("生成Boolの元式がない")?]
+                        .kind,
+                        ExprKind::Call { .. } | ExprKind::Index { .. }
+                    )
+                {
                     return self.affine_comparison_source_analysis(graph, node, limit);
                 }
                 return self.affine_source_analysis(graph, node, limit);
@@ -2791,9 +2905,17 @@ impl<'a> Environment<'a> {
                 lhs,
                 rhs,
             } => vec![lhs, rhs],
-            _ => return Err("アフィン定数値が加減算・定数倍・負号以外を指す".into()),
+            ExprKind::Call { callee, ref args }
+                if matches!(law.expr_type(callee), Some(Type::Term(..))) =>
+            {
+                std::iter::once(callee)
+                    .chain(args.iter().copied())
+                    .collect()
+            }
+            ExprKind::Index { base, .. } => vec![base],
+            _ => return Err("相殺値が加減算・定数倍・負号・Term適用・射影以外を指す".into()),
         };
-        if !matches!(ty, Type::Z | Type::Q)
+        if !(numeric::is_numeric_type(&ty, &self.control)? || ty == Type::Bool)
             || law.expr_type(id) != Some(&ty)
             || node.ty != NodeType::Value(ty.clone())
             || node.arguments.len() != operands.len() + 1
@@ -2833,10 +2955,8 @@ impl<'a> Environment<'a> {
             {
                 return Err("アフィン定数値の実子 Evaluation の出現順・実評価が違う".into());
             }
-            graph.expect(reference, &NodeType::Evaluation(ty.clone()))?;
-            if law.expr_type(operand) != Some(&ty) {
-                return Err("アフィン定数値の元子型が違う".into());
-            }
+            let operand_type = law.expr_type(operand).ok_or("相殺値の元子型がない")?;
+            graph.expect(reference, &NodeType::Evaluation(operand_type.clone()))?;
             self.recheck_evaluation(graph, reference)?;
             let (expression, actual_bindings, value) = self.evaluation(graph, reference)?;
             self.source_matches(graph, expression, operand)?;
@@ -2862,6 +2982,19 @@ impl<'a> Environment<'a> {
                 *span,
                 &self.control,
             )?,
+            ExprKind::Call { .. } | ExprKind::Index { .. } => {
+                if values.iter().all(Option::is_some) {
+                    self.composite_value(
+                        id,
+                        &values
+                            .iter()
+                            .map(|v| v.unwrap().clone())
+                            .collect::<Vec<_>>(),
+                    )?
+                } else {
+                    None
+                }
+            }
             _ => unreachable!(),
         };
         if ordinary.is_some() {
@@ -2872,12 +3005,19 @@ impl<'a> Environment<'a> {
             self.analyze_source(graph, *span, bindings)?,
             children,
         )?;
-        let recomputed = analysis
-            .affine
-            .as_ref()
-            .map(|form| form.value(&self.control))
-            .transpose()?
-            .flatten();
+        let recomputed = if matches!(
+            law.exprs[id].kind,
+            ExprKind::Call { .. } | ExprKind::Index { .. }
+        ) {
+            analysis.known_value.clone()
+        } else {
+            analysis
+                .affine
+                .as_ref()
+                .map(|form| form.value(&self.control))
+                .transpose()?
+                .flatten()
+        };
         if recomputed.as_ref() != Some(scalar)
             || analysis.known_value.as_ref() != Some(scalar)
             || analysis.support != node.support
@@ -6063,6 +6203,77 @@ impl<'a> Environment<'a> {
         self.tick()?;
         Ok(result)
     }
+    fn symbolic_source(
+        &self,
+        id: usize,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<super::term::affine::Value, ValidationFailure> {
+        use super::term::affine::Value;
+        self.tick()?;
+        let value = self.scoped_ast(id, variables, base, reading)?;
+        if let Some(v) = value.known_value {
+            return Ok(Value::Known(v));
+        }
+        if let Some(v) = value.affine {
+            return Ok(Value::Number(*v));
+        }
+        let law = self.inputs.law();
+        Ok(match &law.exprs[id].kind {
+            ExprKind::Tuple(items) => Value::Tuple(
+                items
+                    .iter()
+                    .map(|i| self.symbolic_source(*i, variables, base, reading))
+                    .collect::<Result<_, _>>()?,
+            ),
+            ExprKind::Group(i) => self.symbolic_source(*i, variables, base, reading)?,
+            ExprKind::Index {
+                base: input, index, ..
+            } => match self.symbolic_source(*input, variables, base, reading)? {
+                Value::Tuple(ref v) => v
+                    .get(*index)
+                    .ok_or("アフィン実引数のTuple位置が違う")?
+                    .clone(),
+                _ => Value::Unsupported(law.expr_type(id).ok_or("実引数型がない")?.clone()),
+            },
+            ExprKind::Call { callee, .. }
+                if matches!(law.expr_type(*callee), Some(Type::Term(..))) =>
+            {
+                self.scoped_term_value(id, variables, base, reading)?
+            }
+            _ => Value::Unsupported(
+                law.expr_type(id)
+                    .ok_or("アフィン実引数の元型がない")?
+                    .clone(),
+            ),
+        })
+    }
+    fn scoped_term_value(
+        &self,
+        id: usize,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<super::term::affine::Value, ValidationFailure> {
+        use super::term::affine::Value;
+        self.tick()?;
+        let law = self.inputs.law();
+        let ExprKind::Call { callee, args } = &law.exprs[id].kind else {
+            return Err("Term元callがない".into());
+        };
+        let f = self.scoped_ast(*callee, variables, base, reading)?;
+        let Some(Scalar::Term(ref f)) = f.known_value else {
+            return Ok(Value::Unsupported(
+                law.expr_type(id).ok_or("Term元戻り型がない")?.clone(),
+            ));
+        };
+        let args = args
+            .iter()
+            .map(|i| self.symbolic_source(*i, variables, base, reading))
+            .collect::<Result<Vec<_>, _>>()?;
+        f.apply_symbolic(&args, law, &self.control)
+    }
     fn scoped_ast(
         &self,
         id: usize,
@@ -6524,15 +6735,43 @@ impl<'a> Environment<'a> {
                     }
                     support.sort();
                     support.dedup();
-                    let known_value = if known {
+                    let symbolic = if matches!(&expression.kind,ExprKind::Call{callee,..} if matches!(self.inputs.law().expr_type(*callee),Some(Type::Term(..))))
+                    {
+                        Some(self.scoped_term_value(id, variables, base, reading)?)
+                    } else if matches!(&expression.kind, ExprKind::Index { .. }) && !known {
+                        if let ExprKind::Index {
+                            base: input, index, ..
+                        } = &expression.kind
+                        {
+                            match self.symbolic_source(*input, variables, base, reading)? {
+                                super::term::affine::Value::Tuple(ref v) => {
+                                    Some(v.get(*index).ok_or("Term結果のTuple位置が違う")?.clone())
+                                }
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
+                    let known_value = if let Some(v) = &symbolic {
+                        v.known(&self.control)?
+                    } else if known {
                         self.composite_value(id, &values)?
                     } else {
                         None
                     };
+                    let affine = symbolic
+                        .as_ref()
+                        .map(|v| v.number(&self.control))
+                        .transpose()?
+                        .flatten()
+                        .map(Box::new);
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
                         comparison: None,
-                        affine: None,
+                        affine,
                         scope,
                         support,
                         known_value,
@@ -8659,6 +8898,22 @@ pub(crate) fn partial_binary(
     control: &Control,
 ) -> Result<Option<Scalar>, ValidationFailure> {
     if !is_boolean_binary(op) {
+        if let Some((a, b)) = left.zip(right) {
+            if super::term::contains(&a.ty(), law, control)? {
+                let value = match op {
+                    BinOp::Eq | BinOp::Ne => super::value_equality::equal(a, b, law, control)?
+                        .map(|v| if op == BinOp::Eq { v } else { !v }),
+                    BinOp::In => match b {
+                        Scalar::List { items, .. } | Scalar::Set { items, .. } => {
+                            super::value_equality::contains(items, a, law, control)?
+                        }
+                        _ => return Err("Term所属の右辺が有限containerでない".into()),
+                    },
+                    _ => return Err("Termを未対応の二項演算へ渡した".into()),
+                };
+                return Ok(value.map(Scalar::Bool));
+            }
+        }
         return left
             .zip(right)
             .map(|(left, right)| binary(op, left, right, law, span, control))

@@ -160,7 +160,7 @@ impl Evaluator<'_, '_> {
         ty: &Type,
         children: &[&Evaluated],
     ) -> Result<Option<NodeRef>, Failure> {
-        if !matches!(ty, Type::Z | Type::Q) {
+        if !(numeric::is_numeric_type(ty, self.control)? || *ty == Type::Bool) {
             return Ok(None);
         }
         let source = self
@@ -748,6 +748,13 @@ impl Evaluator<'_, '_> {
         support.sort();
         support.dedup();
         if let Some(reason) = source.missing {
+            reasons.push(reason);
+        }
+        let child_refs: Vec<_> = children.iter().map(|c| c.evaluation).collect();
+        if let Some(reason) =
+            self.environment
+                .term_algorithm_reason(self.graph, expression, &child_refs)?
+        {
             reasons.push(reason);
         }
         sort_reasons(&mut reasons);
@@ -1756,7 +1763,8 @@ impl Evaluator<'_, '_> {
                 None
             }
         } else {
-            None
+            let children: Vec<_> = evaluated.iter().collect();
+            self.affine_constant(span, &ty, &children)?
         };
         self.finish_with_reasons(
             span,
@@ -2612,6 +2620,7 @@ mod recheck_tests {
     include!("engine_tests.rs");
     include!("term_tests.rs");
     include!("term_equality_tests.rs");
+    include!("affine_term_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

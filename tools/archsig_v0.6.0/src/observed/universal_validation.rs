@@ -2904,7 +2904,7 @@ impl Environment<'_> {
         Ok(false)
     }
 
-    fn universal_source_root(
+    pub(in crate::observed) fn universal_source_root(
         &self,
         graph: &Graph,
         source: NodeRef,

@@ -24,7 +24,7 @@ view choose(s:Sample):Term<(Bool)->Z> = if s.p then (fn(t:Bool)=>if not t then 9
 view stable(s:Sample):Term<(Bool)->Z> = if s.p then choose(s) else s.g;
 view unstable(s:Sample):Term<(Bool)->Z> = if s.p then choose(s) else (fn(t:Bool)=>if t then 7 else 9);
 view branch(s:Sample):Term<(Bool)->Z> = if s.p then s.g else (fn(t:Bool)=>if not t then 9 else 4);
-view unresolved(s:Sample):Term<(Z,Z)->Z> = if s.p then s.f else (fn(a:Z,b:Z)=>a+a-b);
+view unresolved(s:Sample):Term<(Z,Z)->Z> = if s.p then s.f else (fn(a:Z,b:Z)=>a*a-b);
 view seed():Z=1;
 law required prior():false;
 view andSkip():Bool=(fn(b:Bool)=>b and ((fn()=>0)=(fn()=>0)))(false);

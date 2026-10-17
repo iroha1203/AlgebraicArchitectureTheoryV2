@@ -40,6 +40,20 @@ pub(crate) struct Parameter {
 enum Symbol {
     Missing(Fact),
     Parameter(Parameter),
+    // 関数外延の座標。観測slot/全称binderではなく、元引数の位置だけで対応付ける。
+    TermArgument(TermArgument),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(super) struct TermArgument {
+    pub argument: usize,
+    pub component: Vec<usize>,
+    pub kind: NumberType,
+}
+
+pub(super) enum TermDifference {
+    Same,
+    Different { unit: Option<TermArgument> },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -163,6 +177,10 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 }
 
 impl Form {
+    pub(super) fn ty(&self, control: &Control) -> Result<Type, ValidationFailure> {
+        self.check(control)?;
+        Ok(self.ty.clone())
+    }
     fn check(&self, control: &Control) -> Result<(), ValidationFailure> {
         controlled(control, || {
             scalar_check(&self.constant, &self.ty, control)?;
@@ -170,6 +188,11 @@ impl Form {
                 tick(control)?;
                 match symbol {
                     Symbol::Missing(fact) => fact_check(fact)?,
+                    Symbol::TermArgument(argument) => {
+                        if argument.kind.ty() != self.ty {
+                            return Err("Term引数座標の型が係数型と違う".into());
+                        }
+                    }
                     Symbol::Parameter(parameter) => {
                         parameter_check(parameter)?;
                         if parameter.kind.ty() != self.ty {
@@ -450,6 +473,9 @@ pub(crate) fn partial_forall(
             form.check(control)?;
             for symbol in form.coefficients.keys() {
                 tick(control)?;
+                if matches!(symbol, Symbol::TermArgument(_)) {
+                    return Err("Term外延座標を部分全称のbinderにできない".into());
+                }
                 if let Symbol::Parameter(parameter) = symbol
                     && let Some(expected) = declared.get(&(parameter.binder, parameter.context))
                     && *expected != parameter
@@ -729,7 +755,7 @@ pub(crate) fn substitute_parameters(
         for (symbol, coefficient) in &form.coefficients {
             tick(control)?;
             match symbol {
-                Symbol::Missing(_) => {
+                Symbol::Missing(_) | Symbol::TermArgument(_) => {
                     add_coefficient(
                         &mut result.coefficients,
                         symbol,
@@ -843,6 +869,9 @@ pub(crate) fn universal_equality(
             tick(control)?;
             match symbol {
                 Symbol::Missing(fact) => missing.push((fact.clone(), coefficient.clone())),
+                Symbol::TermArgument(_) => {
+                    return Err("Term外延座標を観測の全称binderにできない".into());
+                }
                 Symbol::Parameter(parameter) => {
                     if !declared.contains(parameter) {
                         return Err("アフィン差のparameterが元全域binder列にない".into());
@@ -957,6 +986,68 @@ pub(crate) fn universal_equality(
 }
 
 /// 正規化の実処理を固定点で中断する試験専用通知。時間・RSSは測定しない。
+
+/// 元Termの引数位置を独立座標にする。外側の観測missing/parameterを供給しない。
+pub(super) fn term_argument(key: TermArgument, c: &Control) -> Result<Form, ValidationFailure> {
+    controlled(c, || {
+        let ty = key.kind.ty();
+        let mut coefficients = BTreeMap::new();
+        coefficients.insert(Symbol::TermArgument(key), numeric::literal("1", &ty, c)?);
+        Ok(Form {
+            constant: numeric::zero(&ty, c)?,
+            ty,
+            coefficients,
+        })
+    })
+}
+
+/// 異なる係数には零/単位点を返す。反例は呼出し側が両方の元bodyへ再代入する。
+pub(super) fn term_difference(
+    a: &Form,
+    b: &Form,
+    c: &Control,
+) -> Result<TermDifference, ValidationFailure> {
+    controlled(c, || {
+        let d = binary(BinOp::Sub, Some(a), Some(b), c)?.ok_or("Term差の型が数値アフィンでない")?;
+        for key in d.coefficients.keys() {
+            tick(c)?;
+            if !matches!(key, Symbol::TermArgument(_)) {
+                return Err("Term外延比較へ観測の記号が混入した".into());
+            }
+        }
+        if !is_zero(&d.constant)? {
+            return Ok(TermDifference::Different { unit: None });
+        }
+        if let Some((Symbol::TermArgument(key), _)) = d.coefficients.first_key_value() {
+            return Ok(TermDifference::Different {
+                unit: Some(key.clone()),
+            });
+        }
+        Ok(TermDifference::Same)
+    })
+}
+
+pub(super) fn term_point(
+    f: &Form,
+    unit: Option<&TermArgument>,
+    c: &Control,
+) -> Result<Scalar, ValidationFailure> {
+    controlled(c, || {
+        f.check(c)?;
+        let mut value = f.constant.clone();
+        for (key, coefficient) in &f.coefficients {
+            tick(c)?;
+            let Symbol::TermArgument(key) = key else {
+                return Err("Term反例点へ観測の記号が混入した".into());
+            };
+            if Some(key) == unit {
+                value = numeric::binary(BinOp::Add, &value, coefficient, c)?;
+            }
+        }
+        Ok(value)
+    })
+}
+
 #[cfg(test)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum TestPoint {
