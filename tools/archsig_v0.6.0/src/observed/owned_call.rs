@@ -453,7 +453,7 @@ impl Environment<'_> {
             scope.merge(&graph.get(child)?.scope);
             support.extend(graph.get(child)?.support.iter().cloned());
         }
-        let mut checks = if inherited_failure || inherited_pending {
+        let mut checks = if inherited_failure {
             Checks {
                 blocked: true,
                 ..Checks::default()
@@ -461,6 +461,7 @@ impl Environment<'_> {
         } else {
             self.owned_call_checks(declaration, &values, None, span)?
         };
+        checks.blocked |= inherited_pending;
         if children.len() == args.len() + 1 {
             if checks.failure.is_some() || checks.blocked {
                 return Err("所属不適合・未確定のcallee bodyを評価した".into());

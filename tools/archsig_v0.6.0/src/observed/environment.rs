@@ -6960,7 +6960,7 @@ impl<'a> Environment<'a> {
                     }
                     let inherited_failure = local.values().any(|v| v.condition_failed);
                     let inherited_pending = local.values().any(|v| v.condition_pending);
-                    let checks = if inherited_failure || inherited_pending {
+                    let mut checks = if inherited_failure {
                         owned_call::Checks {
                             blocked: true,
                             ..Default::default()
@@ -6968,6 +6968,7 @@ impl<'a> Environment<'a> {
                     } else {
                         self.owned_call_checks(declaration, &arguments, None, expression.span)?
                     };
+                    checks.blocked |= inherited_pending;
                     call_base.merge(&checks.scope);
                     support.extend(checks.support);
                     if checks.failure.is_some() || checks.blocked {
@@ -7132,7 +7133,7 @@ impl<'a> Environment<'a> {
                     });
                 }
             };
-            if result.condition_failed || result.condition_pending {
+            if result.condition_failed {
                 result.known_value = None;
                 result.symbolic = None;
                 result.comparison = None;
@@ -7204,6 +7205,14 @@ impl<'a> Environment<'a> {
                     result.symbolic = Some(Box::new(v));
                     result.scalar_scope = result.known_value.as_ref().map(|_| result.scope.clone());
                 }
+            }
+            if result.condition_pending {
+                // 元の部分成分は所属検査に残し、構成未確定の通常値・数値判断は作らない。
+                result.known_value = None;
+                result.comparison = None;
+                result.affine = None;
+                result.scalar_scope = None;
+                return Ok(result);
             }
             if result.affine.is_none()
                 && let Some(value) = &result.known_value
@@ -7307,7 +7316,7 @@ impl<'a> Environment<'a> {
                 condition_failed: left_failed || right.condition_failed,
                 condition_pending: left_pending
                     || match (op, left.as_ref()) {
-                        (BinOp::And, Some(Scalar::Bool(false)))
+                        (BinOp::And | BinOp::Implies, Some(Scalar::Bool(false)))
                         | (BinOp::Or, Some(Scalar::Bool(true))) => false,
                         _ => right.condition_pending,
                     },

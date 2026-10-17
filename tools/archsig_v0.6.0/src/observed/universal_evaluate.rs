@@ -1525,13 +1525,12 @@ impl Evaluator<'_, '_> {
                         .environment
                         .evaluation_condition_pending(self.graph, argument.evaluated.evaluation)?;
                 }
-                let checks = if pending
-                    || arguments.iter().any(|a| {
-                        a.evaluated
-                            .reasons
-                            .iter()
-                            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-                    }) {
+                let mut checks = if arguments.iter().any(|a| {
+                    a.evaluated
+                        .reasons
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                }) {
                     super::super::environment::owned_call::Checks {
                         blocked: true,
                         ..Default::default()
@@ -1540,6 +1539,7 @@ impl Evaluator<'_, '_> {
                     self.environment
                         .owned_call_checks(declaration, &values, None, expr.span)?
                 };
+                checks.blocked |= pending;
                 if checks.failure.is_some() || checks.blocked {
                     let has_local_domains = arguments.iter().any(|a| a.has_local_domains);
                     let evaluated = self.owned_call_finish_at(

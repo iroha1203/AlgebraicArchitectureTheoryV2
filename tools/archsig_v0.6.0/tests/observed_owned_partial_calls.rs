@@ -580,3 +580,163 @@ fn partial_owned_pending_conditions_in_unselected_branches_allow_the_selected_re
         );
     }
 }
+
+#[test]
+fn partial_owned_pending_numeric_condition_keeps_independent_known_mismatch() {
+    let r = evaluate_observed_bytes(
+        fixture::missing_reference_input(),
+        &["bad=evaluate(Reservations.pcUnknownNumeric,a=@v/B,e=@v/e,p=@v/p)"],
+        &mut quiet(),
+    )
+    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let w = r.wire();
+    assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
+    let a = answer(&w, "bad");
+    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    let failed = arr(get(a, "reasons"))
+        .iter()
+        .find(|r| get(r, "code") == &Json::str("condition_failed"))
+        .expect("pendingな数値子とは独立に既知owner不等を保持する");
+    let c = node(&w, get(get(failed, "details"), "condition"));
+    assert_eq!(get(get(c, "judgment"), "status"), &Json::str("refuted"));
+    for (operand, id) in arr(get(get(c, "value"), "operands")).iter().zip(["A", "B"]) {
+        let n = node(&w, operand);
+        assert_eq!(
+            get(n, "type"),
+            &Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.System")])
+        );
+        assert_eq!(
+            get(n, "value"),
+            &Json::Arr(vec![Json::str("v"), Json::str(id)])
+        );
+    }
+    assert!(
+        arr(get(a, "reasons"))
+            .iter()
+            .filter(|r| get(r, "code") == &Json::str("missing_observation"))
+            .flat_map(|r| arr(get(r, "missing")))
+            .any(|f| get(f, "field") == &Json::str("Reservations.Reserve.to"))
+    );
+}
+
+#[test]
+fn partial_owned_false_implies_pending_right_keeps_true_value_and_missing() {
+    let r = evaluate_observed_bytes(
+        fixture::missing_reference_input(),
+        &[
+            "implication=evaluate(Reservations.pcSkipImplies,a=@v/B,e=@v/e)",
+            "universal=check(Reservations.pcSkipImpliesLaw,a=@v/B,e=@v/e)",
+            "conjunction=evaluate(Reservations.pcSkipAnd,a=@v/B,e=@v/e)",
+            "needed=evaluate(Reservations.pcTrueImplies,a=@v/B,e=@v/e)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let w = r.wire();
+    assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
+    for (id, value) in [
+        ("implication", true),
+        ("universal", true),
+        ("conjunction", false),
+    ] {
+        let a = answer(&w, id);
+        assert_eq!(get(a, "status"), &Json::str("established"), "{id}");
+        let value_ref = if id == "universal" {
+            get(
+                get(node(&w, get(get(a, "outputs"), "evaluation")), "value"),
+                "value",
+            )
+        } else {
+            get(get(a, "outputs"), "value")
+        };
+        assert_eq!(get(node(&w, value_ref), "value"), &Json::Bool(value));
+        assert!(
+            arr(get(a, "reasons"))
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("missing_observation"))
+        );
+    }
+    let a = answer(&w, "needed");
+    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    let Json::Obj(outputs) = get(a, "outputs") else {
+        panic!("outputs")
+    };
+    assert!(!outputs.contains_key("value"));
+}
+
+#[test]
+fn partial_owned_pending_components_keep_mismatch_across_order_list_returns_and_universal_calls() {
+    let mut asks = Vec::new();
+    for (id, view) in [
+        ("reverse", "pcPendingReverse"),
+        ("list", "pcPendingList"),
+        ("returned", "pcPendingReturnUse"),
+        ("returnlist", "pcPendingReturnListUse"),
+        ("separate", "pcPendingTwo"),
+        ("universal", "pcPendingUniversal"),
+    ] {
+        for (suffix, p) in [("good", "r"), ("bad", "p")] {
+            asks.push(format!(
+                "{id}{suffix}={}(Reservations.{view},a=@v/B,e=@v/e,p=@v/{p})",
+                if id == "universal" {
+                    "check"
+                } else {
+                    "evaluate"
+                }
+            ));
+        }
+    }
+    let r = evaluate_observed_bytes(
+        fixture::missing_reference_input(),
+        &asks.iter().map(String::as_str).collect::<Vec<_>>(),
+        &mut quiet(),
+    )
+    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let w = r.wire();
+    assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
+    for a in arr(get(&w, "answers")) {
+        let Json::Str(id) = get(a, "id") else {
+            panic!("id")
+        };
+        assert_eq!(get(a, "status"), &Json::str("undetermined"), "{id}");
+        let Json::Obj(o) = get(a, "outputs") else {
+            panic!("outputs")
+        };
+        assert!(!o.contains_key("value"), "{id}");
+        let reasons = arr(get(a, "reasons"));
+        let failed = reasons
+            .iter()
+            .find(|r| get(r, "code") == &Json::str("condition_failed"));
+        assert_eq!(failed.is_some(), id.ends_with("bad"), "{id}");
+        if let Some(failed) = failed {
+            let c = node(&w, get(get(failed, "details"), "condition"));
+            assert_eq!(get(get(c, "judgment"), "status"), &Json::str("refuted"));
+            let operands = arr(get(get(c, "value"), "operands"));
+            assert_eq!(operands.len(), 2);
+            for (operand, owner) in operands.iter().zip(["A", "B"]) {
+                let n = node(&w, operand);
+                assert_eq!(
+                    get(n, "type"),
+                    &Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.System")])
+                );
+                assert_eq!(
+                    get(n, "value"),
+                    &Json::Arr(vec![Json::str("v"), Json::str(owner)])
+                );
+            }
+            assert!(
+                arr(get(c, "support"))
+                    .iter()
+                    .any(|f| matches!(f,Json::Obj(m)if m.get("atom")==Some(&Json::str("p-owner"))))
+            );
+        }
+        assert!(
+            reasons
+                .iter()
+                .filter(|r| get(r, "code") == &Json::str("missing_observation"))
+                .flat_map(|r| arr(get(r, "missing")))
+                .any(|f| get(f, "field") == &Json::str("Reservations.Reserve.to")),
+            "{id}"
+        );
+    }
+}

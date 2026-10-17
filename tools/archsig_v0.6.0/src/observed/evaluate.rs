@@ -1926,12 +1926,11 @@ impl Evaluator<'_, '_> {
                 .environment
                 .evaluation_condition_pending(self.graph, argument.evaluation)?;
         }
-        let checks = if pending
-            || arguments.iter().any(|a| {
-                a.reasons
-                    .iter()
-                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-            }) {
+        let mut checks = if arguments.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        }) {
             super::environment::owned_call::Checks {
                 blocked: true,
                 ..Default::default()
@@ -1940,6 +1939,7 @@ impl Evaluator<'_, '_> {
             self.environment
                 .owned_call_checks(declaration, &values, None, span)?
         };
+        checks.blocked |= pending;
         if owned {
             #[cfg(test)]
             data::observe_actual(span, self.graph.active, "owned_call_parameter", 0);

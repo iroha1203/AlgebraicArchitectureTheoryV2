@@ -405,3 +405,86 @@ fn partial_owned_pending_calls_recheck_original_reasons_children_and_value_absen
         );
     }
 }
+
+#[test]
+fn partial_owned_pending_known_mismatch_and_implication_recheck_actual_producers() {
+    let r = evaluate_observed_bytes(
+        partial_call_fixture::missing_reference_input(),
+        &[
+            "first=evaluate(Reservations.pcUnknownNumeric,a=@v/B,e=@v/e,p=@v/p)",
+            "second=evaluate(Reservations.pcUnknownNumeric,a=@v/B,e=@v/e,p=@v/p)",
+            "universal=check(Reservations.pcPendingUniversal,a=@v/B,e=@v/e,p=@v/p)",
+            "implication=check(Reservations.pcSkipImpliesLaw,a=@v/B,e=@v/e)",
+        ],
+        &mut named_call_quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", r.issues);
+    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    for ordinal in 0..3 {
+        let target = owned_condition(&r, ordinal);
+        let edges = r.nodes[target].arguments.clone();
+        let n = edges.len();
+        let source = edges[0];
+        assert!(!r.frames.iter().any(|f| f.source == source));
+        let tuple = edges[2];
+        let Some(Payload::Evaluation { value, .. }) = &r.nodes[tuple.0].payload else {
+            panic!("tuple")
+        };
+        assert!(value.is_none());
+        assert!(
+            r.nodes[target]
+                .support
+                .iter()
+                .any(|f| f.atom.as_deref() == Some("p-owner"))
+        );
+        completion_mutation(&r, target, |ns| ns[target].support.clear());
+        completion_mutation(&r, target, |ns| {
+            ns[edges[n - 1].0].ty = NodeType::Value(Type::Bool)
+        });
+        completion_mutation(&r, tuple.0, |ns| {
+            let Some(Payload::Evaluation { parts, .. }) = &mut ns[tuple.0].payload else {
+                panic!("tuple")
+            };
+            parts[0].children.swap(0, 1);
+        });
+        let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+        let env = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
+        env.recheck_node(&g, &g.nodes[target], target).unwrap();
+        let old = g.nodes[target].support.clone();
+        g.nodes[target].support.clear();
+        assert!(matches!(
+            env.recheck_node(&g, &g.nodes[target], target),
+            Err(ValidationFailure::Internal(_))
+        ));
+        g.nodes[target].support = old;
+        env.recheck_node(&g, &g.nodes[target], target).unwrap();
+    }
+    let donor = owned_condition(&r, 0);
+    let target = owned_condition(&r, 1);
+    let own = r.nodes[target].arguments.clone();
+    let other = r.nodes[donor].arguments.clone();
+    let n = own.len();
+    completion_mutation(&r, target, |ns| {
+        for p in [own[n - 3], own[n - 2], own[n - 1], NodeRef(target)] {
+            ns[p.0].arguments[2] = other[2];
+        }
+    });
+    assert_eq!(r.answers[3].status, Decision::Established);
+    let whole = r.answers[3].outputs["evaluation"];
+    let Some(Payload::Evaluation {
+        value: Some(value), ..
+    }) = &r.nodes[whole.0].payload
+    else {
+        panic!("true whole")
+    };
+    let value = *value;
+    assert!(matches!(
+        r.nodes[value.0].payload,
+        Some(Payload::Scalar(Scalar::Bool(true)))
+    ));
+    completion_mutation(&r, value.0, |ns| {
+        ns[value.0].payload = Some(Payload::Scalar(Scalar::Bool(false)))
+    });
+    completion_mutation(&r, whole.0, |ns| ns[whole.0].reasons.clear());
+}
