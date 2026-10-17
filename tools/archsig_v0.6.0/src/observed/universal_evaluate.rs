@@ -726,6 +726,7 @@ impl Evaluator<'_, '_> {
         }
         sort_reasons(&mut reasons);
         if analyzed.value.is_none()
+            && !analyzed.analysis.condition_pending
             && !reasons
                 .iter()
                 .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
@@ -1133,6 +1134,7 @@ impl Evaluator<'_, '_> {
             retained.merge(&analysis.scope);
             source = Some(SourceHandle {
                 condition_failed: analysis.condition_failed,
+                condition_pending: analysis.condition_pending,
                 expression,
                 scope: analysis.scope,
                 known_value: analysis.known_value,
@@ -1154,12 +1156,13 @@ impl Evaluator<'_, '_> {
         mut comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
         local_domain: Option<NodeRef>,
     ) -> Result<SymbolicEvaluation, Failure> {
-        let failed = children.iter().any(|a| {
-            a.evaluated
-                .reasons
-                .iter()
-                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-        });
+        let failed = source.condition_pending
+            || children.iter().any(|a| {
+                a.evaluated
+                    .reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            });
         if failed {
             comparison = None;
         }
@@ -1509,16 +1512,20 @@ impl Evaluator<'_, '_> {
                     arguments
                         .iter()
                         .map(|a| {
-                            a.evaluated
-                                .value
-                                .map(|r| self.graph.scalar(r).cloned())
-                                .transpose()
+                            self.environment
+                                .owned_call_argument(self.graph, a.evaluated.evaluation)
                         })
                         .collect::<Result<Vec<_>, _>>()?
                 } else {
                     vec![]
                 };
-                let checks = if arguments.iter().any(|a| {
+                let mut pending = false;
+                for argument in &arguments {
+                    pending |= self
+                        .environment
+                        .evaluation_condition_pending(self.graph, argument.evaluated.evaluation)?;
+                }
+                let mut checks = if arguments.iter().any(|a| {
                     a.evaluated
                         .reasons
                         .iter()
@@ -1532,6 +1539,7 @@ impl Evaluator<'_, '_> {
                     self.environment
                         .owned_call_checks(declaration, &values, None, expr.span)?
                 };
+                checks.blocked |= pending;
                 if checks.failure.is_some() || checks.blocked {
                     let has_local_domains = arguments.iter().any(|a| a.has_local_domains);
                     let evaluated = self.owned_call_finish_at(
@@ -1583,15 +1591,18 @@ impl Evaluator<'_, '_> {
                 self.formal = old_formal;
                 self.lexical = old_lexical;
                 let body = body_result?;
-                let known = body
-                    .evaluated
-                    .value
-                    .map(|r| self.graph.scalar(r))
-                    .transpose()?;
+                let partial = if owned {
+                    Some(
+                        self.environment
+                            .owned_call_argument(self.graph, body.evaluated.evaluation)?,
+                    )
+                } else {
+                    None
+                };
                 let checks = self.environment.owned_call_checks(
                     declaration,
                     &values,
-                    Some(known),
+                    partial.as_ref(),
                     expr.span,
                 )?;
                 if checks.failure.is_some() || checks.blocked {

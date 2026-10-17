@@ -49,6 +49,7 @@ pub(crate) struct PendingMissing {
 #[derive(Clone, Debug)]
 pub(crate) struct SourceAnalysis {
     pub(super) condition_failed: bool,
+    pub(super) condition_pending: bool,
     pub(super) symbolic: Option<Box<super::term::affine::Value>>,
     pub(super) comparison: Option<Box<AffinePredicate>>,
     pub scope: Scope,
@@ -63,6 +64,8 @@ pub(crate) struct SourceAnalysis {
 struct SourceValue {
     // 欠測と分けて、原式の構成条件が反証されたことを伝える。
     condition_failed: bool,
+    // 通常の欠測値と分けて、原式の構成条件が未確定であることを伝える。
+    condition_pending: bool,
     symbolic: Option<Box<super::term::affine::Value>>,
     comparison: Option<Box<AffinePredicate>>,
     scope: Scope,
@@ -1827,12 +1830,13 @@ impl<'a> Environment<'a> {
                 {
                     return Err("比較以外の式に残差がある".into());
                 }
-                let failed = children.iter().any(|r| {
-                    graph.nodes[r.0]
-                        .reasons
-                        .iter()
-                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-                });
+                let failed = analysis.condition_pending
+                    || children.iter().any(|r| {
+                        graph.nodes[r.0]
+                            .reasons
+                            .iter()
+                            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                    });
                 if failed {
                     let NodeType::Expression(ty) = &graph.get(*expression)?.ty else {
                         return Err("不成立構成の元Source型が違う".into());
@@ -5322,6 +5326,7 @@ impl<'a> Environment<'a> {
                             .reasons
                             .iter()
                             .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. })),
+                        condition_pending: analysis.condition_pending,
                         symbolic: analysis.symbolic,
                         comparison: analysis.comparison,
                         affine: analysis.affine,
@@ -5679,6 +5684,7 @@ impl<'a> Environment<'a> {
                     member.clone(),
                     SourceAnalysis {
                         condition_failed: false,
+                        condition_pending: false,
                         symbolic: None,
                         comparison: None,
                         affine: None,
@@ -6091,6 +6097,7 @@ impl<'a> Environment<'a> {
                     binding.name.clone(),
                     SourceValue {
                         condition_failed: false,
+                        condition_pending: false,
                         symbolic: None,
                         comparison: None,
                         affine: None,
@@ -6179,6 +6186,7 @@ impl<'a> Environment<'a> {
                     }
                     SourceValue {
                         condition_failed: false,
+                        condition_pending: false,
                         symbolic: None,
                         comparison: None,
                         affine: super::affine::constant(&member, &self.control)?.map(Box::new),
@@ -6243,6 +6251,7 @@ impl<'a> Environment<'a> {
         {
             let SourceValue {
                 condition_failed,
+                condition_pending,
                 symbolic,
                 comparison,
                 scope,
@@ -6297,6 +6306,7 @@ impl<'a> Environment<'a> {
             };
             return Ok(SourceAnalysis {
                 condition_failed,
+                condition_pending,
                 symbolic,
                 comparison,
                 affine,
@@ -6521,6 +6531,7 @@ impl<'a> Environment<'a> {
             let mut result = match &expression.kind {
                 ExprKind::Int(n) => SourceValue {
                     condition_failed: false,
+                    condition_pending: false,
                     symbolic: None,
                     comparison: None,
                     affine: None,
@@ -6538,6 +6549,7 @@ impl<'a> Environment<'a> {
                 },
                 ExprKind::Bool(b) => SourceValue {
                     condition_failed: false,
+                    condition_pending: false,
                     symbolic: None,
                     comparison: None,
                     affine: None,
@@ -6551,6 +6563,7 @@ impl<'a> Environment<'a> {
                 {
                     SourceValue {
                         condition_failed: false,
+                        condition_pending: false,
                         symbolic: None,
                         comparison: None,
                         affine: None,
@@ -6594,6 +6607,7 @@ impl<'a> Environment<'a> {
                     }
                     let SourceValue {
                         condition_failed,
+                        condition_pending,
                         scope,
                         known_value,
                         affine,
@@ -6617,6 +6631,7 @@ impl<'a> Environment<'a> {
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
                         condition_failed,
+                        condition_pending,
                         symbolic: None,
                         comparison: None,
                         affine,
@@ -6660,6 +6675,7 @@ impl<'a> Environment<'a> {
                         _ => return Err("内包元域がList/Setでない".into()),
                     };
                     let mut condition_failed = input.condition_failed;
+                    let mut condition_pending = input.condition_pending;
                     let mut scope = input.scope.clone();
                     let mut support = input.support.clone();
                     let mut values = Vec::new();
@@ -6675,6 +6691,7 @@ impl<'a> Environment<'a> {
                                 var.name.clone(),
                                 SourceValue {
                                     condition_failed: false,
+                                    condition_pending: false,
                                     symbolic: None,
                                     comparison: None,
                                     affine: None,
@@ -6692,6 +6709,7 @@ impl<'a> Environment<'a> {
                             let value =
                                 self.scoped_ast_at(*filter, &local, &input.scope, reading, None)?;
                             condition_failed |= value.condition_failed;
+                            condition_pending |= value.condition_pending;
                             scope.merge(&value.scope);
                             support.extend(value.support);
                             match value.known_value.as_ref() {
@@ -6707,6 +6725,7 @@ impl<'a> Environment<'a> {
                                 let value =
                                     self.scoped_ast_at(*elem, &local, &input.scope, reading, None)?;
                                 condition_failed |= value.condition_failed;
+                                condition_pending |= value.condition_pending;
                                 scope.merge(&value.scope);
                                 support.extend(value.support);
                                 if let Some(value) = value.known_value {
@@ -6734,6 +6753,7 @@ impl<'a> Environment<'a> {
                     };
                     SourceValue {
                         condition_failed,
+                        condition_pending,
                         symbolic: None,
                         comparison: None,
                         affine: None,
@@ -6770,6 +6790,7 @@ impl<'a> Environment<'a> {
                                 name,
                                 SourceValue {
                                     condition_failed: false,
+                                    condition_pending: false,
                                     symbolic: None,
                                     comparison: None,
                                     affine: None,
@@ -6793,6 +6814,7 @@ impl<'a> Environment<'a> {
                     support.dedup();
                     SourceValue {
                         condition_failed: input.condition_failed || body.condition_failed,
+                        condition_pending: input.condition_pending || body.condition_pending,
                         symbolic: body.symbolic,
                         comparison: body.comparison,
                         affine: body.affine,
@@ -6810,6 +6832,7 @@ impl<'a> Environment<'a> {
                     }
                     let body = self.scoped_ast(*body, &local, base, reading)?;
                     let condition_failed = rhs.condition_failed || body.condition_failed;
+                    let condition_pending = rhs.condition_pending || body.condition_pending;
                     let mut scope = rhs.scope;
                     scope.merge(&body.scope);
                     let mut support = rhs.support;
@@ -6823,6 +6846,7 @@ impl<'a> Environment<'a> {
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
                         condition_failed,
+                        condition_pending,
                         symbolic,
                         comparison,
                         affine,
@@ -6877,6 +6901,12 @@ impl<'a> Environment<'a> {
                     let condition_failed = condition.condition_failed
                         || left.condition_failed
                         || right.condition_failed;
+                    let condition_pending = condition.condition_pending
+                        || match condition.known_value.as_ref() {
+                            Some(Scalar::Bool(true)) => left.condition_pending,
+                            Some(Scalar::Bool(false)) => right.condition_pending,
+                            _ => left.condition_pending || right.condition_pending,
+                        };
                     let mut scope = condition.scope;
                     scope.merge(&left.scope);
                     scope.merge(&right.scope);
@@ -6888,6 +6918,7 @@ impl<'a> Environment<'a> {
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
                         condition_failed,
+                        condition_pending,
                         symbolic,
                         comparison,
                         affine,
@@ -6899,8 +6930,11 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Call { args, .. } if self.named_view(id)?.is_some() => {
                     let declaration = self.named_view(id)?.ok_or("named viewがない")?;
-                    let crate::law::model::Signature::View { params, body, .. } =
-                        &declaration.signature
+                    let crate::law::model::Signature::View {
+                        params,
+                        body,
+                        returns,
+                    } = &declaration.signature
                     else {
                         unreachable!()
                     };
@@ -6916,12 +6950,17 @@ impl<'a> Environment<'a> {
                         call_base.merge(&value.scope);
                         support.extend(value.support.iter().cloned());
                         if owned {
-                            arguments.push(value.known_value.clone());
+                            arguments.push(Self::owned_source_argument(
+                                &value.known_value,
+                                value.symbolic.as_deref(),
+                                &parameter.ty,
+                            ));
                         }
                         local.insert(parameter.name.clone(), value);
                     }
                     let inherited_failure = local.values().any(|v| v.condition_failed);
-                    let checks = if inherited_failure {
+                    let inherited_pending = local.values().any(|v| v.condition_pending);
+                    let mut checks = if inherited_failure {
                         owned_call::Checks {
                             blocked: true,
                             ..Default::default()
@@ -6929,14 +6968,17 @@ impl<'a> Environment<'a> {
                     } else {
                         self.owned_call_checks(declaration, &arguments, None, expression.span)?
                     };
+                    checks.blocked |= inherited_pending;
                     call_base.merge(&checks.scope);
                     support.extend(checks.support);
                     if checks.failure.is_some() || checks.blocked {
                         let condition_failed = inherited_failure || checks.failure.is_some();
+                        let condition_pending = inherited_pending || checks.blocked;
                         support.sort();
                         support.dedup();
                         return Ok(SourceValue {
                             condition_failed,
+                            condition_pending,
                             symbolic: None,
                             comparison: None,
                             affine: None,
@@ -6958,10 +7000,15 @@ impl<'a> Environment<'a> {
                     )?;
                     call_base.merge(&body.scope);
                     support.extend(body.support);
+                    let returned = Self::owned_source_argument(
+                        &body.known_value,
+                        body.symbolic.as_deref(),
+                        returns,
+                    );
                     let checks = self.owned_call_checks(
                         declaration,
                         &arguments,
-                        Some(body.known_value.as_ref()),
+                        Some(&returned),
                         expression.span,
                     )?;
                     call_base.merge(&checks.scope);
@@ -6971,6 +7018,7 @@ impl<'a> Environment<'a> {
                     let failed = checks.failure.is_some() || checks.blocked;
                     SourceValue {
                         condition_failed: body.condition_failed || checks.failure.is_some(),
+                        condition_pending: body.condition_pending || checks.blocked,
                         symbolic: if failed { None } else { body.symbolic },
                         comparison: if failed { None } else { body.comparison },
                         affine: if failed { None } else { body.affine },
@@ -7007,10 +7055,12 @@ impl<'a> Environment<'a> {
                     let mut values = Vec::new();
                     let mut known = true;
                     let mut condition_failed = false;
+                    let mut condition_pending = false;
                     for child in children {
                         self.tick()?;
                         let child = self.scoped_ast(child, variables, base, reading)?;
                         condition_failed |= child.condition_failed;
+                        condition_pending |= child.condition_pending;
                         scope.merge(&child.scope);
                         support.extend(child.support);
                         if let Some(value) = child.known_value {
@@ -7064,6 +7114,7 @@ impl<'a> Environment<'a> {
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
                         condition_failed,
+                        condition_pending,
                         symbolic: symbolic.map(Box::new),
                         comparison: None,
                         affine,
@@ -7104,6 +7155,18 @@ impl<'a> Environment<'a> {
                             .map(|i| self.symbolic_source(*i, variables, base, reading))
                             .collect::<Result<_, _>>()?,
                     )),
+                    ExprKind::ListLit { items, .. } => {
+                        let Type::List(element) = ty else {
+                            return Err("部分Listの元型が違う".into());
+                        };
+                        Some(Value::List {
+                            element: (**element).clone(),
+                            items: items
+                                .iter()
+                                .map(|i| self.symbolic_source(*i, variables, base, reading))
+                                .collect::<Result<_, _>>()?,
+                        })
+                    }
                     ExprKind::Binary { op, lhs, rhs }
                         if matches!(ty, Type::Tuple(_))
                             && numeric::is_numeric_type(ty, &self.control)? =>
@@ -7142,6 +7205,14 @@ impl<'a> Environment<'a> {
                     result.symbolic = Some(Box::new(v));
                     result.scalar_scope = result.known_value.as_ref().map(|_| result.scope.clone());
                 }
+            }
+            if result.condition_pending {
+                // 元の部分成分は所属検査に残し、構成未確定の通常値・数値判断は作らない。
+                result.known_value = None;
+                result.comparison = None;
+                result.affine = None;
+                result.scalar_scope = None;
+                return Ok(result);
             }
             if result.affine.is_none()
                 && let Some(value) = &result.known_value
@@ -7182,6 +7253,7 @@ impl<'a> Environment<'a> {
             }
             let SourceValue {
                 condition_failed: left_failed,
+                condition_pending: left_pending,
                 mut scope,
                 known_value: left,
                 affine: left_affine,
@@ -7242,6 +7314,12 @@ impl<'a> Environment<'a> {
             let scalar_scope = known_value.as_ref().map(|_| scope.clone());
             SourceValue {
                 condition_failed: left_failed || right.condition_failed,
+                condition_pending: left_pending
+                    || match (op, left.as_ref()) {
+                        (BinOp::And | BinOp::Implies, Some(Scalar::Bool(false)))
+                        | (BinOp::Or, Some(Scalar::Bool(true))) => false,
+                        _ => right.condition_pending,
+                    },
                 symbolic: None,
                 comparison,
                 affine,
@@ -7307,6 +7385,7 @@ impl<'a> Environment<'a> {
                 (
                     SourceValue {
                         condition_failed: false,
+                        condition_pending: false,
                         symbolic: None,
                         comparison: None,
                         affine: None,
@@ -7337,6 +7416,7 @@ impl<'a> Environment<'a> {
             let Some(items) = members else {
                 return Ok(SourceValue {
                     condition_failed: input.condition_failed,
+                    condition_pending: input.condition_pending,
                     symbolic: None,
                     comparison: None,
                     affine: None,
@@ -7347,6 +7427,7 @@ impl<'a> Environment<'a> {
                 });
             };
             let mut condition_failed = input.condition_failed;
+            let mut condition_pending = input.condition_pending;
             let mut support = input.support.clone();
             let mut values = Vec::new();
             for item in items {
@@ -7360,6 +7441,7 @@ impl<'a> Environment<'a> {
                         spec.name.into(),
                         SourceValue {
                             condition_failed: false,
+                            condition_pending: false,
                             symbolic: None,
                             comparison: None,
                             affine: None,
@@ -7375,6 +7457,7 @@ impl<'a> Environment<'a> {
                 }
                 let body = self.scoped_ast_at(spec.body, &local, &scope, reading, None)?;
                 condition_failed |= body.condition_failed;
+                condition_pending |= body.condition_pending;
                 scope.merge(&body.scope);
                 support.extend(body.support);
                 values.push(match body.known_value {
@@ -7390,6 +7473,7 @@ impl<'a> Environment<'a> {
                 quantifier::reduce(spec.kind, &values, &self.control)?.map(Scalar::Bool);
             SourceValue {
                 condition_failed,
+                condition_pending,
                 symbolic: None,
                 comparison: None,
                 affine: None,
@@ -7399,7 +7483,7 @@ impl<'a> Environment<'a> {
                 support,
             }
         };
-        if result.condition_failed {
+        if result.condition_failed || result.condition_pending {
             result.known_value = None;
             result.scalar_scope = None;
         }
@@ -7419,7 +7503,7 @@ impl<'a> Environment<'a> {
         reading: &str,
         span: (usize, usize),
     ) -> Result<SourceValue, ValidationFailure> {
-        if base.condition_failed {
+        if base.condition_failed || base.condition_pending {
             return Ok(base);
         }
         let SourceValue {
@@ -7546,6 +7630,7 @@ impl<'a> Environment<'a> {
         support.dedup();
         Ok(SourceValue {
             condition_failed: false,
+            condition_pending: false,
             symbolic,
             comparison: None,
             affine,
@@ -8736,7 +8821,11 @@ impl<'a> Environment<'a> {
                 .iter()
                 .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
         });
-        let computed = if known && !failed {
+        let mut pending = false;
+        for child in &children[usize::from(spec.domain.is_none())..] {
+            pending |= self.evaluation_condition_pending(graph, *child)?;
+        }
+        let computed = if known && !failed && !pending {
             quantifier::reduce(spec.kind, &results, &self.control)?.map(Scalar::Bool)
         } else {
             None
@@ -8752,6 +8841,7 @@ impl<'a> Environment<'a> {
         Ok((
             SourceAnalysis {
                 condition_failed: failed,
+                condition_pending: pending,
                 symbolic: None,
                 comparison: None,
                 affine: None,

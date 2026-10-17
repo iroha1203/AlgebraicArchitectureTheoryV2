@@ -90,8 +90,13 @@
   これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
   view呼出し式のOwned参照と、それを含むTuple/List/Set/Optionの引数・返り型は、各実memberを
   元署名のownerと同snapshotの原始所属事実で検査する。none・空の値はmemberを生成せず保持する。
+  Tuple・有限List内で数値が未束縛/欠測でも、元Sourceの既知Owned成分を検査し、
+  数値の全域軸・共有slot相関と、通常値が未生成であることを保つ。
   entity/arrowの所属一致は成功値の支持・Scopeにも残し、既知不一致は元callと型付きowner不等、
   snapshot不一致は実snapshotのText不等のcounterexampleに接続するcondition_failedを返す。
+  内側呼出しの構成条件が未確定なら、通常の数値欠測と区別し、外側の引数・let・射影・量化へ伝播する。
+  元の欠測理由を保持して通常値の構成を保留し、全域評価も元の理由から未決を返す。
+  独立に既知のOwned成分は所属検査を続け、未確定な数値子と同居する既知不一致も条件・証拠へ残す。
   引数不適合ではcallee bodyへ入らず、内側callの構成条件が反証されて値が未生成なら、
   非Owned引数でも元理由を保って外側へ通常値を返さない。
   失敗した戻り参照のfield読取りも、元条件・支持・Scopeを保持し、通常値や未読slotの欠測を生成しない。
@@ -113,7 +118,7 @@
   Tuple/List/Optionを通る正の自己参照も個別の有限木として扱い、再帰型の全域を有限とは扱わない。
   ドット列は束縛変数から既知参照を順にたどり、各prefixの元span・型・実owner・支持を保持する。
   Z/Q全域式内のドット列は一つのfieldまで扱う。
-  Bool は false and x / true or x などを全補完で確定し、元の両子評価と欠測理由を保持する。
+  Bool は false and x / true or x / false implies x などを全補完で確定し、元の両子評価と欠測理由を保持する。
   Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
   Z/Qの欠測slotは同じ記号として係数をまとめ、加減算・負号・定数倍で係数が消えた式の値を確定する。
   元fieldの欠測と全出現を保持し、`h-h`の零から`h-h=0/1`の通常比較・Law判断へ接続する。

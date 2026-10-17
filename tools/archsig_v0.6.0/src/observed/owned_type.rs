@@ -258,6 +258,7 @@ impl Environment<'_> {
                 leaf.name.clone(),
                 SourceValue {
                     condition_failed: false,
+                    condition_pending: false,
                     symbolic: None,
                     comparison: None,
                     affine: None,
