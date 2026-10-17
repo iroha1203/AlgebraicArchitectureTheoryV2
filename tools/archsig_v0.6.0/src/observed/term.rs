@@ -8,7 +8,7 @@ use crate::{
     canonical::Json,
     law::{
         CheckedLaw, TermBody,
-        ast::{Expr, ExprKind, Pattern, QuantDomain, QuantKind, QuantSplit, Span},
+        ast::{BinOp, Expr, ExprKind, Pattern, QuantDomain, QuantKind, QuantSplit, Span},
     },
     types::Type,
 };
@@ -490,14 +490,25 @@ impl Term {
                 }
                 ExprKind::Binary { op, lhs, rhs } => {
                     let a = self.eval(*lhs, vars, law, c)?;
-                    let b = self.eval(*rhs, vars, law, c)?;
-                    if !environment::supports_binary(*op, &a.ty(), law, c)? {
-                        return Err(ValidationFailure::UnsupportedExpression {
-                            location: crate::issue::Location::Law { span: e.span },
-                            feature: "Term bodyの未対応の型・演算".into(),
-                        });
+                    let short = match (op, &a) {
+                        (BinOp::And, Scalar::Bool(false)) => Some(false),
+                        (BinOp::Or, Scalar::Bool(true)) | (BinOp::Implies, Scalar::Bool(false)) => {
+                            Some(true)
+                        }
+                        _ => None,
+                    };
+                    if let Some(b) = short {
+                        Scalar::Bool(b)
+                    } else {
+                        let b = self.eval(*rhs, vars, law, c)?;
+                        if !environment::supports_binary(*op, &a.ty(), law, c)? {
+                            return Err(ValidationFailure::UnsupportedExpression {
+                                location: crate::issue::Location::Law { span: e.span },
+                                feature: "Term bodyの未対応の型・演算".into(),
+                            });
+                        }
+                        environment::binary(*op, &a, &b, c)?
                     }
-                    environment::binary(*op, &a, &b, c)?
                 }
                 ExprKind::Let { name, value, body } => {
                     let v = self.eval(*value, vars, law, c)?;

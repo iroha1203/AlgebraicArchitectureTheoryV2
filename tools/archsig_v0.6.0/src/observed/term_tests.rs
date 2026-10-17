@@ -286,3 +286,65 @@ fn closed_term_rechecks_original_constructor_references_and_quantifier_binder_ty
         *term.quantifier_types.values_mut().next().unwrap() = Type::Z;
     });
 }
+
+#[test]
+fn closed_term_rechecks_equal_earlier_request_argument_producers() {
+    let r = term_private_result(&[
+        "first=evaluate(Terms.applied,s=@v/s)",
+        "second=evaluate(Terms.applied,s=@v/s)",
+    ]);
+    let donor = r.answers[0].outputs["evaluation"].0;
+    let target = r.answers[1].outputs["evaluation"].0;
+    let Some(Payload::Evaluation {
+        parts: donor_parts, ..
+    }) = &r.nodes[donor].payload
+    else {
+        panic!("donor")
+    };
+    let Some(Payload::Evaluation {
+        parts,
+        value: Some(result),
+        ..
+    }) = &r.nodes[target].payload
+    else {
+        panic!("target")
+    };
+    let result = *result;
+    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    assert_eq!(parts[0].children.len(), 3);
+    for position in [1, 2] {
+        let original = parts[0].children[position];
+        let replacement = donor_parts[0].children[position];
+        let Some(Payload::Evaluation { value: Some(a), .. }) = &r.nodes[original.0].payload else {
+            panic!("argument")
+        };
+        let Some(Payload::Evaluation { value: Some(b), .. }) = &r.nodes[replacement.0].payload
+        else {
+            panic!("donor argument")
+        };
+        let (a, b) = (*a, *b);
+        assert_ne!(original, replacement);
+        assert_ne!(a, b);
+        assert!(replacement.0 < original.0 && b.0 < a.0);
+        assert_eq!(g.scalar(a).unwrap().ty(), g.scalar(b).unwrap().ty());
+        assert_eq!(g.scalar(a).unwrap(), g.scalar(b).unwrap());
+        assert!(r.nodes[result.0].arguments.contains(&a));
+        assert!(r.nodes[target].arguments.contains(&original));
+        completion_mutation(&r, target, |ns| {
+            let Some(Payload::Evaluation { parts, .. }) = &mut ns[target].payload else {
+                panic!("evaluation")
+            };
+            parts[0].children[position] = replacement;
+            for edge in &mut ns[result.0].arguments {
+                if *edge == a {
+                    *edge = b;
+                }
+            }
+            for edge in &mut ns[target].arguments {
+                if *edge == original {
+                    *edge = replacement;
+                }
+            }
+        });
+    }
+}

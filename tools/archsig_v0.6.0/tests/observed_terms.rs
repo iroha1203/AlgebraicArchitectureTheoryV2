@@ -293,6 +293,44 @@ fn closed_term_provenance_pair_preserves_results_and_the_current_source() {
     let b = evaluate_observed_bytes(sources("r2"), &asks, &mut quiet()).unwrap();
     let (aw, bw) = (a.wire(), b.wire());
     assert_eq!(get(&aw, "answers"), get(&bw, "answers"));
+    for id in ["a", "f", "m"] {
+        assert_eq!(result_value(&aw, id), result_value(&bw, id));
+        let node_type = |w: &Json| {
+            let answer = arr(get(w, "answers"))
+                .iter()
+                .find(|a| get(a, "id") == &Json::str(id))
+                .unwrap();
+            let reference = get(get(get(answer, "outputs"), "value"), "node");
+            get(
+                arr(get(w, "nodes"))
+                    .iter()
+                    .find(|n| get(n, "id") == reference)
+                    .unwrap(),
+                "type",
+            )
+            .clone()
+        };
+        assert_eq!(node_type(&aw), node_type(&bw));
+        let expected_type = if id == "f" {
+            Json::Arr(vec![
+                Json::str("Term"),
+                Json::Arr(vec![Json::str("Z"), Json::str("Z")]),
+                Json::str("Z"),
+            ])
+        } else {
+            Json::str("Z")
+        };
+        assert_eq!(node_type(&aw), expected_type);
+    }
+    assert_eq!(result_value(&aw, "a"), &Json::str("11"));
+    assert_eq!(result_value(&aw, "m"), &Json::str("6"));
+    assert_eq!(
+        result_value(&aw, "f"),
+        &Json::obj([
+            ("params", Json::Arr(vec![Json::str("x"), Json::str("y")])),
+            ("body", Json::str("let twice=2*x in twice-y")),
+        ])
+    );
     assert_ne!(
         a.prepared().inputs().metadata_wire(),
         b.prepared().inputs().metadata_wire()
@@ -371,4 +409,110 @@ fn closed_terms_return_closed_functions_and_preserve_typed_term_arguments() {
     assert_eq!(result_value(&w, "n"), &Json::str("5"));
     assert_eq!(result_value(&w, "f"), result_value(&w, "r"));
     audit_inputs(&r, "r1");
+}
+
+fn term_branch_sources(script: &str, boxed: bool) -> InputSources {
+    let mut definitions = terms::DEFINITIONS.replace(
+        r#"{"name":"h","type":"Z","meaning":"h"}"#,
+        r#"{"name":"p","type":"Bool","meaning":"p"}"#,
+    );
+    if boxed {
+        definitions = definitions.replace(
+            r#"{"kind":"data","name":"Terms.Choice""#,
+            r#"{"kind":"data","name":"Terms.Box","meaning":"box","constructors":[{"name":"Wrap","arguments":[["Term",["Z","Z"],"Z"]],"meaning":"wrap"}]},{"kind":"data","name":"Terms.Choice""#,
+        );
+    }
+    let checked = check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+    let digest = &checked.vocabularies["Terms"].digest;
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Terms {{ use vocabulary Terms version \"1\" digest \"{digest}\"; {script} }}"
+    );
+    InputSources::from_bytes(
+        vec![definitions.into_bytes()],
+        law.into_bytes(),
+        terms::archmap(digest, "r1").into_bytes(),
+    )
+}
+#[test]
+fn closed_term_unknown_condition_keeps_identical_callee_and_containers() {
+    let script = r#"
+    view pick(s:Sample):Term<(Z,Z)->Z> = if s.p then s.f else s.f;
+    view applied(s:Sample):Z = pick(s)(7,3);
+    view packed(s:Sample):(Term<(Z,Z)->Z>,List<Term<(Z,Z)->Z>>,Option<Term<(Z,Z)->Z>>,Box) =
+      if s.p then (s.f,list<Term<(Z,Z)->Z>>[s.f],some(s.f),Box.Wrap(s.f))
+      else (s.f,list<Term<(Z,Z)->Z>>[s.f],some(s.f),Box.Wrap(s.f));
+    view differing(s:Sample):Z = (if s.p then s.f else fn(x:Z,y:Z)=>x+y)(7,3);
+    "#;
+    let r = evaluate_observed_bytes(
+        term_branch_sources(script, true),
+        &[
+            "a=evaluate(Terms.applied,s=@v/s)",
+            "p=evaluate(Terms.packed,s=@v/s)",
+            "d=evaluate(Terms.differing,s=@v/s)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial");
+    let w = r.wire();
+    assert_eq!(result_value(&w, "a"), &Json::str("11"));
+    let f = Json::obj([
+        ("params", Json::Arr(vec![Json::str("x"), Json::str("y")])),
+        ("body", Json::str("let twice=2*x in twice-y")),
+    ]);
+    assert_eq!(
+        result_value(&w, "p"),
+        &Json::Arr(vec![
+            f.clone(),
+            Json::Arr(vec![f.clone()]),
+            Json::obj([("some", f.clone())]),
+            Json::obj([("tag", Json::str("Wrap")), ("args", Json::Arr(vec![f]))])
+        ])
+    );
+    let d = arr(get(&w, "answers"))
+        .iter()
+        .find(|a| get(a, "id") == &Json::str("d"))
+        .unwrap();
+    assert_eq!(get(d, "status"), &Json::str("undetermined"));
+    assert!(!obj(get(d, "outputs")).contains_key("value"));
+    assert!(
+        arr(get(d, "reasons"))
+            .iter()
+            .flat_map(|r| arr(get(r, "missing")))
+            .any(|m| get(m, "field") == &Json::str("Terms.Sample.p"))
+    );
+    assert!(!format!("{:?}", get(&w, "issues")).contains("internal"));
+    audit_inputs(&r, "r1");
+}
+#[test]
+fn closed_term_boolean_short_circuit_skips_only_unneeded_comparisons() {
+    let script = r#"
+    view a():Bool=(fn(b:Bool)=>b and ((fn()=>0)=(fn()=>0)))(false);
+    view o():Bool=(fn(b:Bool)=>b or ((fn()=>0)=(fn()=>0)))(true);
+    view i():Bool=(fn(b:Bool)=>b implies ((fn()=>0)=(fn()=>0)))(false);
+    view needed():Bool=(fn(b:Bool)=>b and ((fn()=>0)=(fn()=>0)))(true);
+    "#;
+    let r = evaluate_observed_bytes(
+        term_branch_sources(script, false),
+        &[
+            "a=evaluate(Terms.a)",
+            "o=evaluate(Terms.o)",
+            "i=evaluate(Terms.i)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete");
+    let w = r.wire();
+    for (id, b) in [("a", false), ("o", true), ("i", true)] {
+        assert_eq!(result_value(&w, id), &Json::Bool(b));
+    }
+    assert!(matches!(
+        evaluate_observed_bytes(
+            term_branch_sources(script, false),
+            &["n=evaluate(Terms.needed)"],
+            &mut quiet()
+        ),
+        Err(archsig::observed::EvaluationFailure::NotImplemented { .. })
+    ));
 }
