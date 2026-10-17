@@ -1065,6 +1065,7 @@ impl Evaluator<'_, '_> {
                     condition.value.map(|r| self.graph.scalar(r)).transpose()?,
                     left.value.map(|r| self.graph.scalar(r)).transpose()?,
                     right.value.map(|r| self.graph.scalar(r)).transpose()?,
+                    self.environment.inputs.law(),
                     self.control,
                 )?;
                 self.lexical_result(span, ty, known, vec![condition, left, right])
@@ -1118,12 +1119,19 @@ impl Evaluator<'_, '_> {
                 support.dedup();
                 let pair = left.value.zip(right.value);
                 let mut comparison = pair.filter(|_| is_comparison(*op));
-                let known_value = partial_binary(
+                #[cfg(test)]
+                let previous = data::evaluation_context(Some((span, self.graph.active)));
+                let computed = partial_binary(
                     *op,
                     left.value.map(|r| self.graph.scalar(r)).transpose()?,
                     right.value.map(|r| self.graph.scalar(r)).transpose()?,
+                    self.environment.inputs.law(),
+                    span,
                     self.control,
-                )?;
+                );
+                #[cfg(test)]
+                data::evaluation_context(previous);
+                let known_value = computed?;
                 let affine = if known_value.is_none() && matches!(op, BinOp::Eq | BinOp::Ne) {
                     self.affine_equality(span, input_ty, &left, &right)?
                 } else {
@@ -2603,6 +2611,7 @@ mod recheck_tests {
     include!("map_application_tests.rs");
     include!("engine_tests.rs");
     include!("term_tests.rs");
+    include!("term_equality_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

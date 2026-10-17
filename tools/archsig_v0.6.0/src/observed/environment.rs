@@ -1706,6 +1706,7 @@ impl<'a> Environment<'a> {
                                 child_values[0].map(|r| graph.scalar(r)).transpose()?,
                                 child_values[1].map(|r| graph.scalar(r)).transpose()?,
                                 child_values[2].map(|r| graph.scalar(r)).transpose()?,
+                                self.inputs.law(),
                                 &self.control,
                             )?,
                         };
@@ -1739,6 +1740,8 @@ impl<'a> Environment<'a> {
                             *op,
                             child_values[0].map(|r| graph.scalar(r)).transpose()?,
                             child_values[1].map(|r| graph.scalar(r)).transpose()?,
+                            self.inputs.law(),
+                            span,
                             &self.control,
                         )?;
                         let affine_constant = computed.is_none()
@@ -2851,7 +2854,14 @@ impl<'a> Environment<'a> {
             ExprKind::Unary { op, .. } => values[0]
                 .map(|value| unary(op, value, &self.control))
                 .transpose()?,
-            ExprKind::Binary { op, .. } => partial_binary(op, values[0], values[1], &self.control)?,
+            ExprKind::Binary { op, .. } => partial_binary(
+                op,
+                values[0],
+                values[1],
+                self.inputs.law(),
+                *span,
+                &self.control,
+            )?,
             _ => unreachable!(),
         };
         if ordinary.is_some() {
@@ -6406,6 +6416,7 @@ impl<'a> Environment<'a> {
                         condition.known_value.as_ref(),
                         left.known_value.as_ref(),
                         right.known_value.as_ref(),
+                        self.inputs.law(),
                         &self.control,
                     )?;
                     let affine = match condition.known_value.as_ref() {
@@ -6613,6 +6624,8 @@ impl<'a> Environment<'a> {
                 *op,
                 left.as_ref(),
                 right.known_value.as_ref(),
+                self.inputs.law(),
+                expression.span,
                 &self.control,
             )?;
             let known_value = match known_value {
@@ -8572,6 +8585,7 @@ pub(crate) fn conditional_branch(
     condition: Option<&Scalar>,
     left: Option<&Scalar>,
     right: Option<&Scalar>,
+    law: &crate::law::CheckedLaw,
     control: &Control,
 ) -> Result<Option<Scalar>, ValidationFailure> {
     control
@@ -8586,7 +8600,7 @@ pub(crate) fn conditional_branch(
                 if left.ty() != right.ty() {
                     return Err("if の既知両枝の型が違う".into());
                 }
-                data::equal(left, right, control)?
+                super::value_equality::equal(left, right, law, control)? == Some(true)
             } else {
                 false
             };
@@ -8610,7 +8624,8 @@ pub(crate) fn supports_binary(
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
     if super::term::contains(input, law, control)? {
-        return Ok(false);
+        return Ok(matches!(op, BinOp::Eq | BinOp::Ne | BinOp::In)
+            && super::value_equality::supported(input, law, control)?);
     }
     if matches!(op, BinOp::Eq | BinOp::Ne | BinOp::In) && data::primitive_type(input, control)? {
         return Ok(true);
@@ -8639,12 +8654,14 @@ pub(crate) fn partial_binary(
     op: BinOp,
     left: Option<&Scalar>,
     right: Option<&Scalar>,
+    law: &crate::law::CheckedLaw,
+    span: (usize, usize),
     control: &Control,
 ) -> Result<Option<Scalar>, ValidationFailure> {
     if !is_boolean_binary(op) {
         return left
             .zip(right)
-            .map(|(left, right)| binary(op, left, right, control))
+            .map(|(left, right)| binary(op, left, right, law, span, control))
             .transpose();
     }
     let boolean = |value: &Scalar| match value {
@@ -8673,8 +8690,14 @@ pub(crate) fn binary(
     op: BinOp,
     left: &Scalar,
     right: &Scalar,
+    law: &crate::law::CheckedLaw,
+    span: (usize, usize),
     control: &Control,
 ) -> Result<Scalar, ValidationFailure> {
+    let unsupported = || ValidationFailure::UnsupportedExpression {
+        location: Location::Law { span },
+        feature: "Term外延比較に必要な算法".into(),
+    };
     if op == BinOp::In {
         let (element, items) = match right {
             Scalar::List { element, items } | Scalar::Set { element, items } => (element, items),
@@ -8683,10 +8706,13 @@ pub(crate) fn binary(
         if &left.ty() != element {
             return Err("in要素型が違う".into());
         };
-        return Ok(Scalar::Bool(data::contains(items, left, control)?));
+        return Ok(Scalar::Bool(
+            super::value_equality::contains(items, left, law, control)?.ok_or_else(unsupported)?,
+        ));
     }
     if matches!(op, BinOp::Eq | BinOp::Ne) {
-        let equal = data::equal(left, right, control)?;
+        let equal =
+            super::value_equality::equal(left, right, law, control)?.ok_or_else(unsupported)?;
         return Ok(Scalar::Bool(if op == BinOp::Eq { equal } else { !equal }));
     }
     if let (Scalar::Bool(a), Scalar::Bool(b)) = (left, right) {

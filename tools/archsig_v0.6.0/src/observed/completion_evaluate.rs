@@ -1,5 +1,6 @@
 //! 元の参照なし有限slotの共有assignmentごとに選択した問い全体を評価する。
 use super::*;
+use crate::observed::value_equality;
 impl Evaluator<'_, '_> {
     fn completion_observe(&self, _phase: &'static str, _index: usize) {
         #[cfg(test)]
@@ -270,10 +271,6 @@ impl Evaluator<'_, '_> {
             }
             all_support.sort();
             all_support.dedup();
-            crate::observed::environment::completion::canonical_reasons(
-                &mut all_reasons,
-                self.control,
-            )?;
             let result_values: Vec<_> = cases
                 .iter()
                 .map(|r| match &self.graph.get(*r)?.payload {
@@ -281,22 +278,34 @@ impl Evaluator<'_, '_> {
                     _ => Err(Failure::Internal("補完caseが評価でない".into())),
                 })
                 .collect::<Result<_, _>>()?;
-            let known = if let Some(first) = result_values[0] {
-                let first = self.graph.scalar(first)?.clone();
-                let mut same = true;
-                for value in &result_values {
-                    self.tick(Checkpoint::FiniteIteration)?;
-                    same &= match value {
-                        Some(value) => {
-                            data::equal(self.graph.scalar(*value)?, &first, self.control)?
-                        }
-                        None => false,
-                    };
-                }
-                same.then_some(first)
-            } else {
-                None
-            };
+            let scalar_values = result_values
+                .iter()
+                .map(|v| v.map(|r| self.graph.scalar(r)).transpose())
+                .collect::<Result<Vec<_>, _>>()?;
+            let outcome = value_equality::all_cases(
+                &scalar_values,
+                self.environment.inputs.law(),
+                self.control,
+            )?;
+            if outcome.unsupported {
+                all_reasons.push(
+                    crate::observed::environment::completion::value_comparison_reason(
+                        self.request,
+                        self.environment
+                            .inputs
+                            .law()
+                            .expr_type(body)
+                            .ok_or_else(|| Failure::Internal("補完元型がない".into()))?,
+                        &location,
+                        seed,
+                    ),
+                );
+            }
+            crate::observed::environment::completion::canonical_reasons(
+                &mut all_reasons,
+                self.control,
+            )?;
+            let known = outcome.value;
             let mut evidence = Vec::new();
             if known.is_some() {
                 self.completion_observe("completion_coverage", 0);
@@ -322,26 +331,7 @@ impl Evaluator<'_, '_> {
                     })?,
                 );
             } else {
-                let mut pair = None;
-                for i in 0..cases.len() {
-                    for j in i + 1..cases.len() {
-                        self.tick(Checkpoint::FiniteIteration)?;
-                        if let (Some(a), Some(b)) = (result_values[i], result_values[j])
-                            && !data::equal(
-                                self.graph.scalar(a)?,
-                                self.graph.scalar(b)?,
-                                self.control,
-                            )?
-                        {
-                            pair = Some((i, j));
-                            break;
-                        }
-                    }
-                    if pair.is_some() {
-                        break;
-                    }
-                }
-                if let Some((i, j)) = pair {
+                if let Some((i, j)) = outcome.pair {
                     self.completion_observe("completion_pair", 0);
                     self.tick(Checkpoint::FiniteIteration)?;
                     evidence.push(

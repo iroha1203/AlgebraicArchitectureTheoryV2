@@ -59,6 +59,11 @@
   bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
   元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。
   body内のand/or/impliesは左辺で決まるとき右辺を評価せず、未観測条件の両枝で同じ元Termを保持する。
+  有限なUnit/Bool/Fp・非再帰Data・Tuple/Option/Setの全引数域からTermの外延等値を計算する。
+  0/複数引数と元順を保ち、異なるparameter名やbodyの同じ関数を等値とする。
+  Termを含むTuple/List/Option/DataとList所属、未知条件の両枝・全補完の比較にも同じ外延を使う。
+  元programの由来検査は原式を照合し、構文相違だけのcompletion_pairを作らない。
+  全域で判定できない補完値の比較は、元missingと型付きunsupported_algorithmを残す。
   有限forallの反例・existsの証人を得た後は、不要な後続bodyを評価せず決定値を保持する。
   未観測callee・必要な実引数は元missingを保持する。
   これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
@@ -125,7 +130,7 @@
   補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdataの評価、その他の式形・
-  Termの外延等値・全称/欠測アフィン式へのTerm適用の接続・
+  上記以外のTerm外延等値・全称/欠測アフィン式へのTerm適用の接続・
   上記以外の無限型・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
