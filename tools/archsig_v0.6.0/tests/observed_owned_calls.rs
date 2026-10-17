@@ -285,3 +285,98 @@ fn owned_call_provenance_pair_and_fixed_evidence_keys_preserve_current_sources()
     assert_eq!(get(&results[0], "nodes"), get(&results[1], "nodes"));
     assert_ne!(get(&results[0], "inputs"), get(&results[1], "inputs"));
 }
+
+#[test]
+fn equal_owner_cross_snapshot_calls_keep_the_actual_failed_snapshot_condition() {
+    let r = evaluate_observed_bytes(
+        fixture::cross_snapshot_input(),
+        &[
+            "seed=evaluate(Reservations.seed)",
+            "p=evaluate(Reservations.parameter,a=@w/A,s=@v/p)",
+            "r=evaluate(Reservations.returned,a=@w/A,s=@v/p)",
+            "skip=evaluate(Reservations.skipped,a=@w/A,s=@v/p)",
+            "affine=check(Reservations.affineCall,a=@w/A,s=@v/p)",
+            "affineReturn=check(Reservations.affineReturn,a=@w/A,s=@v/p)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    let w = r.wire();
+    assert_eq!(r.status(), "partial", "{w:?}");
+    assert_eq!(get(answer(&w, "seed"), "status"), &Json::str("established"));
+    for id in ["p", "r", "skip", "affine", "affineReturn"] {
+        let a = answer(&w, id);
+        assert_eq!(get(a, "status"), &Json::str("undetermined"), "{id}");
+        let Json::Obj(outputs) = get(a, "outputs") else {
+            panic!("outputs")
+        };
+        assert!(!outputs.contains_key("value"));
+        assert!(
+            arr(get(a, "reasons"))
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("condition_failed"))
+        );
+        assert!(
+            !arr(get(a, "reasons"))
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("missing_observation")),
+            "invalid parameter must skip missing free body"
+        );
+    }
+}
+#[test]
+fn failed_inner_call_cannot_be_ignored_by_plain_or_other_owned_outer_parameters() {
+    let r = run(&[
+        "seed=evaluate(Reservations.seed)",
+        "prior=check(Reservations.prior)",
+        "plain=evaluate(Reservations.invalidIgnored,a=@v/B,s=@v/p)",
+        "owned=evaluate(Reservations.invalidIgnoredOwned,a=@v/B,b=@v/A,s=@v/p,t=@v/q)",
+        "binding=evaluate(Reservations.invalidLet,a=@v/B,s=@v/p)",
+        "boolean=evaluate(Reservations.invalidBoolean,a=@v/B,s=@v/p)",
+        "discarded=evaluate(Reservations.invalidDiscardedLet,a=@v/B,s=@v/p)",
+        "conditional=evaluate(Reservations.invalidConditional,a=@v/B,s=@v/p)",
+        "projection=evaluate(Reservations.invalidProjection,a=@v/B,s=@v/p)",
+        "quantified=evaluate(Reservations.invalidForall,a=@v/A)",
+        "existential=evaluate(Reservations.invalidExists,a=@v/A)",
+        "affine=check(Reservations.ignoredAffine,a=@v/B,s=@v/p)",
+        "good=evaluate(Reservations.invalidIgnored,a=@v/A,s=@v/p)",
+    ]);
+    let w = r.wire();
+    assert_eq!(r.status(), "partial", "{w:?}");
+    assert_eq!(get(answer(&w, "seed"), "status"), &Json::str("established"));
+    assert_eq!(get(answer(&w, "prior"), "status"), &Json::str("refuted"));
+    assert_eq!(get(answer(&w, "good"), "status"), &Json::str("established"));
+    for id in [
+        "plain",
+        "owned",
+        "binding",
+        "boolean",
+        "discarded",
+        "conditional",
+        "projection",
+        "quantified",
+        "existential",
+        "affine",
+    ] {
+        let a = answer(&w, id);
+        assert_eq!(get(a, "status"), &Json::str("undetermined"), "{id}");
+        let Json::Obj(outputs) = get(a, "outputs") else {
+            panic!("outputs")
+        };
+        assert!(!outputs.contains_key("value"));
+        assert!(
+            arr(get(a, "reasons"))
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("condition_failed"))
+        );
+        if id == "quantified" {
+            let evaluation = node(&w, &outputs["evaluation"]);
+            let proofs = arr(get(evaluation, "evidence"));
+            assert!(
+                !proofs.is_empty(),
+                "既に得た正常false-instance反例を保持する"
+            );
+            assert!(proofs.iter().all(|r|get(get(node(&w,r),"value"),"kind")==&Json::str("counterexample")));
+        }
+    }
+}

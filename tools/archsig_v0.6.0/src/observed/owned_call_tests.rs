@@ -514,3 +514,165 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
         assert_eq!(Some(probes.get()), frozen.get());
     }
 }
+
+#[test]
+fn owned_counterexample_type_is_rechecked_in_the_same_environment_after_success() {
+    let r = owned_call_result(&["x=evaluate(Reservations.parameter,a=@v/B,s=@v/p)"]);
+    let p = owned_condition(&r, 0);
+    let proof = r.nodes[p].arguments.last().unwrap().0;
+    let evaluation = r.answers[0].outputs["evaluation"].0;
+    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
+    for target in [proof, p, evaluation] {
+        e.recheck_node(&g, &g.nodes[target], target).unwrap();
+        let old = g.nodes[proof].ty.clone();
+        assert_eq!(old, NodeType::Evidence);
+        g.nodes[proof].ty = NodeType::Value(Type::Bool);
+        assert_ne!(g.nodes[proof].ty, old);
+        assert!(
+            matches!(
+                e.recheck_node(&g, &g.nodes[target], target),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "target={target}"
+        );
+        g.nodes[proof].ty = old;
+        e.recheck_node(&g, &g.nodes[target], target).unwrap();
+    }
+}
+
+#[test]
+fn owned_snapshot_condition_rechecks_actual_text_values_facts_and_prefixes() {
+    let r = evaluate_observed_bytes(
+        owned_call_fixture::cross_snapshot_input(),
+        &[
+            "p=evaluate(Reservations.parameter,a=@w/A,s=@v/p)",
+            "r=evaluate(Reservations.returned,a=@w/A,s=@v/p)",
+            "a=check(Reservations.affineCall,a=@w/A,s=@v/p)",
+        ],
+        &mut named_call_quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", r.issues);
+    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    for request in 0..3 {
+        let p = owned_condition(&r, request);
+        let n = r.nodes[p].arguments.len();
+        let l = r.nodes[p].arguments[n - 3].0;
+        let right = r.nodes[p].arguments[n - 2].0;
+        assert_eq!(data_scalar_at(&r, l), &Scalar::Text("v".into()));
+        assert_eq!(data_scalar_at(&r, right), &Scalar::Text("w".into()));
+        assert_eq!(r.nodes[l].ty, NodeType::Value(Type::Text));
+        assert!(r.nodes[p].support.iter().any(|f| f.snapshot == "v"
+            && f.subject == "p"
+            && f.atom.as_deref() == Some("p-owner")));
+        assert!(
+            r.nodes[p].scope.snapshots.contains("v") && r.nodes[p].scope.snapshots.contains("w")
+        );
+        completion_mutation(&r, l, |ns| {
+            ns[l].payload = Some(Payload::Scalar(Scalar::Text("w".into())))
+        });
+        completion_mutation(&r, right, |ns| ns[right].support.clear());
+        completion_mutation(&r, p, |ns| {
+            ns[p].scope.snapshots.remove("v");
+        });
+    }
+}
+#[test]
+fn owned_failed_inner_calls_keep_original_reasons_and_never_create_an_outer_frame() {
+    let r = owned_call_result(&[
+        "plain=evaluate(Reservations.invalidIgnored,a=@v/B,s=@v/p)",
+        "owned=evaluate(Reservations.invalidIgnoredOwned,a=@v/B,b=@v/A,s=@v/p,t=@v/q)",
+        "binding=evaluate(Reservations.invalidLet,a=@v/B,s=@v/p)",
+        "affine=check(Reservations.ignoredAffine,a=@v/B,s=@v/p)",
+    ]);
+    assert_eq!(r.status(), "partial");
+    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
+    let mut found = vec![];
+    for (i, node) in r.nodes.iter().enumerate() {
+        let Some(Payload::Evaluation {
+            expression,
+            parts,
+            value,
+            ..
+        }) = &node.payload
+        else {
+            continue;
+        };
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &r.nodes[expression.0].payload
+        else {
+            continue;
+        };
+        let Some(id) = r
+            .prepared
+            .inputs()
+            .law()
+            .exprs
+            .iter()
+            .position(|e| e.span == *span)
+        else {
+            continue;
+        };
+        let Some(d) = e.named_view(id).unwrap() else {
+            continue;
+        };
+        if ![
+            "Reservations.ignore",
+            "Reservations.ignoreOwned",
+            "Reservations.ignoreZ",
+        ]
+        .contains(&d.name.as_str())
+        {
+            continue;
+        }
+        let Signature::View { params, .. } = &d.signature else {
+            panic!("view")
+        };
+        e.recheck_node(&g, node, i).unwrap();
+        assert!(value.is_none());
+        assert_eq!(parts[0].children.len(), params.len());
+        assert!(!r.frames.iter().any(|f| f.source == *expression));
+        assert!(
+            node.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        );
+        completion_mutation(&r, i, |ns| ns[i].reasons.clear());
+        found.push(r.contexts[i].request);
+    }
+    found.sort();
+    found.dedup();
+    assert_eq!(found, vec![0, 1, 2, 3]);
+}
+
+#[test]
+fn owned_failed_quantifier_keeps_partial_counterexamples_without_a_boolean_value() {
+    let r = owned_call_result(&["x=evaluate(Reservations.invalidForall,a=@v/A)"]);
+    assert_eq!(r.status(), "partial");
+    let target = r.answers[0].outputs["evaluation"].0;
+    assert!(!r.answers[0].outputs.contains_key("value"));
+    let n = &r.nodes[target];
+    assert!(!n.evidence.is_empty());
+    assert!(
+        n.evidence
+            .iter()
+            .all(|p| matches!(r.nodes[p.0].payload, Some(Payload::Counterexample { .. })))
+    );
+    assert!(
+        n.reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+    );
+    completion_mutation(&r, target, |ns| ns[target].evidence.clear());
+    let proof = n.evidence[0].0;
+    completion_mutation(&r, proof, |ns| {
+        let Some(Payload::Counterexample { facts, .. }) = &mut ns[proof].payload else {
+            panic!("proof")
+        };
+        facts.clear();
+    });
+}

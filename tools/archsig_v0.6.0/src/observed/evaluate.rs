@@ -720,7 +720,35 @@ impl Evaluator<'_, '_> {
         missing: Option<Fact>,
         comparison: Option<(NodeRef, NodeRef)>,
         residual: Option<NodeRef>,
+        reasons: Vec<Reason>,
+    ) -> Result<Evaluated, Failure> {
+        self.finish_with_evidence(
+            span,
+            ty,
+            value,
+            children,
+            own_support,
+            missing,
+            comparison,
+            residual,
+            reasons,
+            vec![],
+        )
+    }
+    // 値が未生成でも、量化の正常instanceから既に得た反例を残す。
+    #[allow(clippy::too_many_arguments)]
+    fn finish_with_evidence(
+        &mut self,
+        span: (usize, usize),
+        ty: Type,
+        value: Option<NodeRef>,
+        children: Vec<Evaluated>,
+        own_support: Vec<Fact>,
+        missing: Option<Fact>,
+        comparison: Option<(NodeRef, NodeRef)>,
+        residual: Option<NodeRef>,
         mut reasons: Vec<Reason>,
+        partial_evidence: Vec<NodeRef>,
     ) -> Result<Evaluated, Failure> {
         let source = self
             .sources
@@ -763,9 +791,12 @@ impl Evaluator<'_, '_> {
         }
         sort_reasons(&mut reasons);
         let evidence = if let Some(value) = value {
+            if !partial_evidence.is_empty() {
+                return Err(Failure::Internal("確定値に部分証拠を重ねている".into()));
+            }
             self.graph.get(value)?.evidence.clone()
         } else {
-            vec![]
+            partial_evidence
         };
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
@@ -1102,6 +1133,13 @@ impl Evaluator<'_, '_> {
                     || (*op == UnOp::Not && ty == Type::Bool) =>
             {
                 let operand = self.eval(*operand)?;
+                if operand
+                    .reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                {
+                    return self.lexical_result(span, ty, None, vec![operand]);
+                }
                 let value = match operand.value {
                     Some(r) => Some(self.value(
                         unary(*op, self.graph.scalar(r)?, self.control)?,
@@ -1134,6 +1172,13 @@ impl Evaluator<'_, '_> {
                 }
                 let left = self.eval(*lhs)?;
                 let right = self.eval(*rhs)?;
+                if [&left, &right].iter().any(|a| {
+                    a.reasons
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                }) {
+                    return self.lexical_result(span, ty, None, vec![left, right]);
+                }
                 let mut scope = left.scope.clone();
                 scope.merge(&right.scope);
                 let mut support = left.support.clone();
@@ -1460,7 +1505,12 @@ impl Evaluator<'_, '_> {
             scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
             scope.order_quantifiers_like(&self.graph.get(source)?.scope);
         }
-        let known = if finite.is_some() {
+        let failed = children.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        });
+        let known = if finite.is_some() && !failed {
             super::quantifier::reduce(spec.kind, &results, self.control)?
         } else {
             None
@@ -1515,6 +1565,11 @@ impl Evaluator<'_, '_> {
                 reasons: vec![],
             })?);
         }
+        let partial_evidence = if known.is_none() {
+            evidence.clone()
+        } else {
+            vec![]
+        };
         let value = if let Some(known) = known {
             Some(
                 self.push(Node {
@@ -1539,7 +1594,7 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        self.finish_with_reasons(
+        self.finish_with_evidence(
             spec.span,
             Type::Bool,
             value,
@@ -1549,6 +1604,7 @@ impl Evaluator<'_, '_> {
             None,
             None,
             unresolved_reasons,
+            partial_evidence,
         )
     }
     fn comprehension(
@@ -1684,6 +1740,14 @@ impl Evaluator<'_, '_> {
         support.sort();
         support.dedup();
         let mut reasons = Vec::new();
+        let failed = evaluated.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        });
+        if failed {
+            return self.lexical_result(span, ty, None, evaluated);
+        }
         let value = if known {
             #[cfg(test)]
             let previous = data::evaluation_context(Some((span, self.graph.active)));
@@ -1841,9 +1905,19 @@ impl Evaluator<'_, '_> {
         } else {
             vec![]
         };
-        let checks = self
-            .environment
-            .owned_call_checks(declaration, &values, None, span)?;
+        let checks = if arguments.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        }) {
+            super::environment::owned_call::Checks {
+                blocked: true,
+                ..Default::default()
+            }
+        } else {
+            self.environment
+                .owned_call_checks(declaration, &values, None, span)?
+        };
         if owned {
             #[cfg(test)]
             data::observe_actual(span, self.graph.active, "owned_call_parameter", 0);
@@ -1935,7 +2009,12 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
-        let value = if let Some(known) = known {
+        let failed = children.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        });
+        let value = if let Some(known) = known.filter(|_| !failed) {
             Some(self.value(
                 known,
                 Rule::Input {

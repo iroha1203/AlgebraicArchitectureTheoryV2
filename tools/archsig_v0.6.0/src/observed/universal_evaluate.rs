@@ -1147,9 +1147,18 @@ impl Evaluator<'_, '_> {
         support: Vec<Fact>,
         ty: Type,
         children: Vec<SymbolicEvaluation>,
-        comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
+        mut comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
         local_domain: Option<NodeRef>,
     ) -> Result<SymbolicEvaluation, Failure> {
+        let failed = children.iter().any(|a| {
+            a.evaluated
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        });
+        if failed {
+            comparison = None;
+        }
         let expression = source.expression;
         let span = match &self.graph.get(expression)?.payload {
             Some(Payload::Expression {
@@ -1166,6 +1175,7 @@ impl Evaluator<'_, '_> {
         }
         let value = source
             .known_value
+            .filter(|_| !failed)
             .map(|known| {
                 self.value(
                     known,
@@ -1510,9 +1520,20 @@ impl Evaluator<'_, '_> {
                 } else {
                     vec![]
                 };
-                let checks =
+                let checks = if arguments.iter().any(|a| {
+                    a.evaluated
+                        .reasons
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                }) {
+                    super::super::environment::owned_call::Checks {
+                        blocked: true,
+                        ..Default::default()
+                    }
+                } else {
                     self.environment
-                        .owned_call_checks(declaration, &values, None, expr.span)?;
+                        .owned_call_checks(declaration, &values, None, expr.span)?
+                };
                 if checks.failure.is_some() || checks.blocked {
                     let has_local_domains = arguments.iter().any(|a| a.has_local_domains);
                     let evaluated = self.owned_call_finish_at(

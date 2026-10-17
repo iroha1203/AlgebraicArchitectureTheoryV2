@@ -28,6 +28,20 @@ view shifted(a:System,s:State[a],z:Z):Z=z+0;
 law required affineCall(a:System,s:State,z:Z):shifted(a,s,z)=z;
 view mixedReturn(a:System,s:State,z:Z):State[a]=s;
 law required affineReturn(a:System,s:State,z:Z):mixedReturn(a,s,z)=s;
+view ignore(x:State):Bool=true;
+view invalidIgnored(a:System,s:State):Bool=ignore(narrow(a,s));
+view ignoreOwned(a:System,t:State[a],x:State):Bool=true;
+view invalidIgnoredOwned(a:System,b:System,s:State,t:State):Bool=ignoreOwned(b,t,narrow(a,s));
+view invalidLet(a:System,s:State):Bool=let bad=narrow(a,s) in ignore(bad);
+view ignoreBool(x:Bool):Bool=true;
+view invalidBoolean(a:System,s:State):Bool=ignoreBool(invalidIgnored(a,s) or true);
+view invalidDiscardedLet(a:System,s:State):Bool=let bad=narrow(a,s) in true;
+view invalidConditional(a:System,s:State):Bool=if invalidIgnored(a,s) then true else true;
+view invalidProjection(a:System,s:State):Bool=ignore((narrow(a,s),0).0);
+view invalidForall(a:System):Bool=forall s:State.not invalidIgnored(a,s);
+view invalidExists(a:System):Bool=exists s:State.invalidIgnored(a,s);
+view ignoreZ(x:State,z:Z):Z=z;
+law required ignoredAffine(a:System,s:State,z:Z):ignoreZ(narrow(a,s),z)=z;
 view plainAdd(x:Z):Z=x+1;
 view plainCaller():Z=let n=plainAdd(3) in n+1;
 view seed():Z=1;
@@ -96,6 +110,53 @@ pub fn input(unknown: bool, second: bool, revision: &str) -> InputSources {
             .map(|d| d.bytes().to_vec())
             .collect(),
         law.into_bytes(),
+        map.canonical().into_bytes(),
+    )
+}
+
+/// owner参照値は等しいが、subjectのsnapshotだけが違う入力。
+/// arrowを含めず、Ref型ownerの元事実だけから境界を検査する。
+pub fn cross_snapshot_input() -> InputSources {
+    let input = input(false, true, "r1");
+    let mut map = convert(&parse(input.archmap().bytes()).unwrap());
+    let Json::Obj(m) = &mut map else {
+        panic!("map")
+    };
+    let Json::Arr(snapshots) = m.get_mut("snapshots").unwrap() else {
+        panic!("snapshots")
+    };
+    for snapshot in snapshots {
+        let Json::Obj(s) = snapshot else {
+            panic!("snapshot")
+        };
+        let is_v = s["id"] == Json::str("v");
+        let Json::Arr(subjects) = s.get_mut("subjects").unwrap() else {
+            panic!("subjects")
+        };
+        subjects.retain(|x| !matches!(x,Json::Obj(m) if m["id"] == Json::str("e")));
+        let Json::Arr(atoms) = s.get_mut("atoms").unwrap() else {
+            panic!("atoms")
+        };
+        atoms.retain(|x| !matches!(x,Json::Obj(m) if m["subject"] == Json::str("e")));
+        if is_v {
+            for atom in atoms {
+                let Json::Obj(a) = atom else { panic!("atom") };
+                if a["id"] == Json::str("p-owner") {
+                    a.insert(
+                        "value".into(),
+                        Json::Arr(vec![Json::str("w"), Json::str("A")]),
+                    );
+                }
+            }
+        }
+    }
+    InputSources::from_bytes(
+        input
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        input.law().bytes().to_vec(),
         map.canonical().into_bytes(),
     )
 }

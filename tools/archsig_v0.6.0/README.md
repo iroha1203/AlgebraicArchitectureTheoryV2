@@ -89,9 +89,10 @@
   ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
   これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
   view呼出し式の最上位が単一Owned参照である引数・返り型は、実ownerと同snapshotの原始所属事実で検査する。
-  entity/arrowの所属一致は成功値の支持・Scopeにも残し、既知不一致は元callと型付きowner不等の
-  counterexampleに接続するcondition_failedを返す。引数不適合ではcallee bodyへ入らず、
-  内側のcallで値が未生成なら元理由を保って外側へ通常値を返さない。
+  entity/arrowの所属一致は成功値の支持・Scopeにも残し、既知不一致は元callと型付きowner不等、
+  snapshot不一致は実snapshotのText不等のcounterexampleに接続するcondition_failedを返す。
+  引数不適合ではcallee bodyへ入らず、内側callの構成条件が反証されて値が未生成なら、
+  非Owned引数でも元理由を保って外側へ通常値を返さない。
   有限binder・fieldからの実ownerと、Z/Q全域式内の同じ呼出し境界も元の束縛を保つ。
   左端data parameterのmatchから得た直接subtermへの構造再帰も、各実引数とcall frameを保持して評価する。
   既存Engineの有限ExprからIRへの変換を各viewへ接続し、全Z代入の保存をアフィン正規化で判定する。

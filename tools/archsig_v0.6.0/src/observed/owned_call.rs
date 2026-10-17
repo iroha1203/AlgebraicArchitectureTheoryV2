@@ -130,7 +130,9 @@ impl Environment<'_> {
             field: None,
             atom: None,
         });
-        if actual != *expected {
+        if snapshot != os {
+            checks.failure = Some((Scalar::Text(snapshot.clone()), Scalar::Text(os.clone())));
+        } else if actual != *expected {
             checks.failure = Some((actual, expected.clone()));
         }
         #[cfg(test)]
@@ -236,10 +238,9 @@ impl Environment<'_> {
         let Some(&id) = self.expressions.get(&span) else {
             return Ok(None);
         };
-        if !self.owns_call(id)? {
+        let Some(declaration) = self.named_view(id)? else {
             return Ok(None);
-        }
-        let declaration = self.named_view(id)?.ok_or("Owned callの元targetがない")?;
+        };
         let Signature::View { params, body, .. } = &declaration.signature else {
             unreachable!()
         };
@@ -252,6 +253,18 @@ impl Environment<'_> {
             || graph.context_at(source.0) != self.current_context(graph)
         {
             return Err("Owned callの元引数数・Source Contextが違う".into());
+        }
+        let mut inherited_failure = false;
+        for child in &children[..args.len()] {
+            self.tick()?;
+            inherited_failure |= graph
+                .get(*child)?
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }));
+        }
+        if !self.owns_call(id)? && !inherited_failure {
+            return Ok(None);
         }
         self.validate_at(graph, graph.get(source)?, source.0)?;
         let bindings = self.expression_bindings(graph, source)?;
@@ -274,7 +287,14 @@ impl Environment<'_> {
             scope.merge(&graph.get(child)?.scope);
             support.extend(graph.get(child)?.support.iter().cloned());
         }
-        let mut checks = self.owned_call_checks(declaration, &values, None, span)?;
+        let mut checks = if inherited_failure {
+            Checks {
+                blocked: true,
+                ..Checks::default()
+            }
+        } else {
+            self.owned_call_checks(declaration, &values, None, span)?
+        };
         if children.len() == args.len() + 1 {
             if checks.failure.is_some() || checks.blocked {
                 return Err("所属不適合・未確定のcallee bodyを評価した".into());
@@ -339,7 +359,7 @@ impl Environment<'_> {
             (Some(Payload::OwnedCallCondition { .. }), _) => 3,
             (Some(Payload::OwnedCallCounterexample { .. }), _) => 2,
             (
-                Some(Payload::Scalar(Scalar::Subject { .. })),
+                Some(Payload::Scalar(Scalar::Subject { .. } | Scalar::Text(_))),
                 Rule::Construction("evaluation" | "domain"),
             ) => 0,
             _ => return Ok(false),
@@ -500,9 +520,6 @@ impl Environment<'_> {
         let Some(&id) = self.expressions.get(&span) else {
             return Ok(false);
         };
-        if !self.owns_call(id)? {
-            return Ok(false);
-        }
         let Some(declaration) = self.named_view(id)? else {
             return Ok(false);
         };
@@ -512,9 +529,9 @@ impl Environment<'_> {
         if children.len() != params.len() && children.len() != params.len() + 1 {
             return Ok(false);
         }
-        let checks = self
-            .owned_call_inputs(graph, source, children, limit)?
-            .ok_or("Owned callの元条件がない")?;
+        let Some(checks) = self.owned_call_inputs(graph, source, children, limit)? else {
+            return Ok(false);
+        };
         if checks.failure.is_none() && !checks.blocked {
             return Ok(false);
         }

@@ -1641,10 +1641,11 @@ impl Graph {
         };
         self.bindings(bindings)?;
         let n = node.arguments.len();
-        if n < 3
+        if node.ty != NodeType::Evidence
+            || n < 3
             || node.arguments[n - 2..] != [*left, *right]
             || !matches!(self.get(node.arguments[0])?.ty, NodeType::Expression(_))
-            || !matches!(self.scalar(*left)?.ty(), Type::Ref(_))
+            || !matches!(self.scalar(*left)?.ty(), Type::Ref(_) | Type::Text)
             || self.scalar(*left)?.ty() != self.scalar(*right)?.ty()
             || self.scalar(*left)? == self.scalar(*right)?
             || facts != &node.support
@@ -1694,7 +1695,8 @@ impl Graph {
                 return Err("Owned条件に元callの反例がない".into());
             };
             let judgment = node.judgment.as_ref().ok_or("Owned条件に判断がない")?;
-            if left != l
+            if proof.ty != NodeType::Evidence
+                || left != l
                 || right != r
                 || proof.arguments != edges
                 || !self.owned_call_counterexample_shape(proof)?
@@ -3851,8 +3853,8 @@ impl Graph {
                 self.expect(*right, &self.get(*left)?.ty)?;
             }
             (NodeType::Proposition, Some(Payload::OwnedCallCondition { left, right })) => {
-                if !matches!(self.scalar(*left)?.ty(), Type::Ref(_)) {
-                    return Err("Owned条件のownerが参照型でない".into());
+                if !matches!(self.scalar(*left)?.ty(), Type::Ref(_) | Type::Text) {
+                    return Err("Owned条件がowner参照・snapshot値でない".into());
                 }
                 self.expect(*right, &self.get(*left)?.ty)?;
             }
