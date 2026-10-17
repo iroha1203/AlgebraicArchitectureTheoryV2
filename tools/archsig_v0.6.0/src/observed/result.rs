@@ -609,6 +609,10 @@ impl Scope {
 #[derive(Clone, Debug)]
 pub(crate) enum ReasonKind {
     Missing,
+    ConditionFailed {
+        condition: NodeRef,
+        construction: &'static str,
+    },
     UnsupportedAlgorithm {
         question: super::request::QuestionKind,
         operand_types: Vec<Type>,
@@ -647,6 +651,7 @@ impl Reason {
     pub(crate) fn code(&self) -> &str {
         match &self.kind {
             ReasonKind::Missing => "missing_observation",
+            ReasonKind::ConditionFailed { .. } => "condition_failed",
             ReasonKind::UnsupportedAlgorithm { .. } => "unsupported_algorithm",
             ReasonKind::Stop(r) => r.code(),
             ReasonKind::Internal(_) => "internal",
@@ -655,6 +660,16 @@ impl Reason {
     pub(crate) fn wire(&self) -> Json {
         let (message, details) = match &self.kind {
             ReasonKind::Missing => ("原始 slot の観測が必要", Json::obj([])),
+            ReasonKind::ConditionFailed {
+                condition,
+                construction,
+            } => (
+                "実値が構成の適用条件を満たさない",
+                Json::obj([
+                    ("condition", condition.wire()),
+                    ("construction", Json::str(*construction)),
+                ]),
+            ),
             ReasonKind::UnsupportedAlgorithm {
                 question,
                 operand_types,
@@ -875,6 +890,10 @@ pub(crate) enum Payload {
     Proposition {
         instance: NodeRef,
     },
+    MapDomainCondition {
+        left: NodeRef,
+        right: NodeRef,
+    },
     EvaluationEvidence {
         instance: NodeRef,
         lhs: NodeRef,
@@ -1067,6 +1086,11 @@ impl Payload {
                 ("operands", refs(&[*instance])),
                 ("quantifiers", Json::Arr(vec![])),
             ]),
+            Self::MapDomainCondition { left, right } => Json::obj([
+                ("predicate", Json::str("equal")),
+                ("operands", refs(&[*left, *right])),
+                ("quantifiers", Json::Arr(vec![])),
+            ]),
             Self::EvaluationEvidence {
                 instance,
                 lhs,
@@ -1166,8 +1190,10 @@ impl Node {
         ]);
         if let Some(payload) = &self.payload {
             let mut value = payload.wire();
-            if matches!(payload, Payload::Proposition { .. })
-                && let Json::Obj(fields) = &mut value
+            if matches!(
+                payload,
+                Payload::Proposition { .. } | Payload::MapDomainCondition { .. }
+            ) && let Json::Obj(fields) = &mut value
             {
                 fields.insert(
                     "quantifiers".into(),
@@ -1352,6 +1378,52 @@ impl From<StopReason> for ValidationFailure {
     }
 }
 impl Graph {
+    pub(super) fn map_domain_counterexample_shape(
+        &self,
+        node: &Node,
+    ) -> Result<bool, ValidationFailure> {
+        let [source, map, key, left, right] = node.arguments.as_slice() else {
+            return Ok(false);
+        };
+        let Some(Payload::Counterexample {
+            bindings,
+            left: actual,
+            right: required,
+            facts,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        let NodeType::Evaluation(Type::Map(domain, _)) = &self.get(*map)?.ty else {
+            return Ok(false);
+        };
+        let Some(Payload::Expression {
+            bindings: original, ..
+        }) = &self.get(*source)?.payload
+        else {
+            return Err("Map域反例の元Sourceがない".into());
+        };
+        if self.get(*key)?.ty != NodeType::Evaluation((**domain).clone())
+            || left != actual
+            || right != required
+            || bindings != original
+            || self.scalar(*left)?.ty() != Type::Set(domain.clone())
+            || self.scalar(*right)?.ty() != Type::Set(domain.clone())
+            || node.ty != NodeType::Evidence
+            || !matches!(node.rule, Rule::Construction("evidence"))
+            || !node.evidence.is_empty()
+            || node.judgment.is_some()
+            || !node.reasons.is_empty()
+            || facts != &node.support
+            || !matches!(self.get(*left)?.rule, Rule::Construction("evaluation"))
+            || !matches!(self.get(*right)?.rule, Rule::Construction("domain"))
+            || self.get(*left)?.arguments != node.arguments[..3]
+            || self.get(*right)?.arguments != node.arguments[..3]
+        {
+            return Err("Map域反例の元実子・値型・束縛が違う".into());
+        }
+        Ok(true)
+    }
     pub fn new(control: &Control) -> Self {
         Self {
             nodes: vec![],
@@ -1422,6 +1494,31 @@ impl Graph {
         self.tick()?;
         for reason in rs {
             self.tick()?;
+            if let ReasonKind::ConditionFailed {
+                condition,
+                construction,
+            } = reason.kind
+            {
+                let proposition = self.get(condition)?;
+                if construction != "evaluation"
+                    || proposition.ty != NodeType::Proposition
+                    || !matches!(
+                        proposition.payload,
+                        Some(Payload::MapDomainCondition { .. })
+                    )
+                    || !proposition
+                        .judgment
+                        .as_ref()
+                        .is_some_and(|j| j.status == Decision::Refuted)
+                    || !proposition
+                        .arguments
+                        .first()
+                        .is_some_and(|source| reason.dependencies == [*source])
+                    || !reason.missing.is_empty()
+                {
+                    return Err("構成条件失敗の元命題・構成・依存が違う".into());
+                }
+            }
             if matches!(reason.kind, ReasonKind::Missing)
                 && (reason.dependencies.is_empty() || reason.missing.is_empty())
             {
@@ -1458,6 +1555,32 @@ impl Graph {
         &self,
         node: &Node,
     ) -> Result<(), ValidationFailure> {
+        if let Some(Payload::MapDomainCondition { left, right }) = &node.payload {
+            let [source, map, key, actual, required, evidence] = node.arguments.as_slice() else {
+                return Err("Map域条件の元式・実子・反証がない".into());
+            };
+            let proof = self.get(*evidence)?;
+            let Some(judgment) = &node.judgment else {
+                return Err("Map域条件の判断がない".into());
+            };
+            if left != actual
+                || right != required
+                || node.evidence != [*evidence]
+                || judgment.status != Decision::Refuted
+                || judgment.evidence != node.evidence
+                || !judgment.reasons.is_empty()
+                || !node.reasons.is_empty()
+                || !matches!(node.rule, Rule::Construction("proposition"))
+                || proof.arguments != [*source, *map, *key, *actual, *required]
+                || !self.map_domain_counterexample_shape(proof)?
+                || proof.scope != node.scope
+                || proof.support != node.support
+                || super::data::equal(self.scalar(*left)?, self.scalar(*right)?, &self.control)?
+            {
+                return Err("Map域条件の反証・導出・Scopeが違う".into());
+            }
+            return Ok(());
+        }
         if self.completion_proposition_evidence(node)? {
             return Ok(());
         }
@@ -3556,6 +3679,15 @@ impl Graph {
             (NodeType::Proposition, Some(Payload::Proposition { instance })) => {
                 self.expect(*instance, &NodeType::LawInstance)?
             }
+            (NodeType::Proposition, Some(Payload::MapDomainCondition { left, right })) => {
+                let Type::Set(ref element) = self.scalar(*left)?.ty() else {
+                    return Err("Map域条件の左辺がSetでない".into());
+                };
+                if !matches!(element.as_ref(), Type::Ref(_)) {
+                    return Err("Map域条件の要素型が参照でない".into());
+                }
+                self.expect(*right, &self.get(*left)?.ty)?;
+            }
             (NodeType::Evidence, Some(Payload::Normalization { .. })) => {
                 self.normalization_shape(&node)?
             }
@@ -3658,7 +3790,9 @@ impl Graph {
                 }),
             ) => {
                 self.bindings(bindings)?;
-                if self.universal_counterexample_shape(&node)? {
+                if self.map_domain_counterexample_shape(&node)? {
+                    // 元Map適用に対する型付き集合等値の反例。
+                } else if self.universal_counterexample_shape(&node)? {
                     // 数値値が未確定でも、元同時代入とwhole正規化を保持する専用形だけを通す。
                 } else if node.scope.assignments
                     && !(matches!(node.arguments.as_slice(), [instance, evaluation]
