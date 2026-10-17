@@ -394,12 +394,22 @@ impl Evaluator<'_, '_> {
                     {
                         return Err(self.unsupported(p.span, "Answer束縛の動的owner制約"));
                     }
-                    let value = self.environment.answer_binding_value(
-                        self.graph,
-                        &argument.value,
-                        p.span,
-                    )?;
-                    self.graph.expect(value, &NodeType::Value(p.ty.erase()))?;
+                    let plan =
+                        self.environment
+                            .answer_binding(self.graph, &argument.value, p.span)?;
+                    let actual = match &plan {
+                        super::environment::AnswerBinding::Reference(value) => {
+                            self.graph.get(*value)?.ty.clone()
+                        }
+                        super::environment::AnswerBinding::Projection(node) => node.ty.clone(),
+                    };
+                    if actual != NodeType::Value(p.ty.erase()) {
+                        return Err(self.unsupported(p.span, "Answer構造成分の動的型不適合"));
+                    }
+                    let value = match plan {
+                        super::environment::AnswerBinding::Reference(value) => value,
+                        super::environment::AnswerBinding::Projection(node) => self.push(node)?,
+                    };
                     self.base.merge(&self.graph.get(value)?.scope);
                     self.bindings.push(Binding {
                         name: p.name.clone(),
@@ -2844,6 +2854,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod answer_projection_tests {
+        include!("answer_projection_tests.rs");
+    }
     mod answer_dependency_tests {
         include!("answer_dependency_tests.rs");
     }

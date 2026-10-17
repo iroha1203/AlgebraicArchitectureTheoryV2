@@ -766,13 +766,10 @@ impl Environment<'_> {
                 .find(|argument| argument.name == format!("bind.{}", parameter.name))
                 .ok_or("全域固定selectorがない")?;
             if matches!(selected.value, Selector::Answer { .. }) {
-                if binding.name != parameter.name
-                    || binding.ty != parameter.ty.erase()
-                    || self.answer_binding_value(graph, &selected.value, parameter.span)?
-                        != binding.value
-                {
+                if binding.name != parameter.name || binding.ty != parameter.ty.erase() {
                     return Err("全域固定bindingが元Answer出力と違う".into());
                 }
+                self.answer_binding_matches(graph, &selected.value, binding.value, parameter.span)?;
                 graph.expect(binding.value, &NodeType::Value(binding.ty.clone()))?;
                 continue;
             }
@@ -2705,11 +2702,7 @@ impl Environment<'_> {
                 .find(|argument| argument.name == format!("bind.{}", parameter.name))
                 .ok_or("全域Answer固定selectorがない")?;
             if matches!(argument.value, Selector::Answer { .. }) {
-                if self.answer_binding_value(graph, &argument.value, parameter.span)?
-                    != binding.value
-                {
-                    return Err("全域Answer固定bindingが元Answer出力と違う".into());
-                }
+                self.answer_binding_matches(graph, &argument.value, binding.value, parameter.span)?;
                 graph.expect(binding.value, &NodeType::Value(binding.ty.clone()))?;
                 continue;
             }

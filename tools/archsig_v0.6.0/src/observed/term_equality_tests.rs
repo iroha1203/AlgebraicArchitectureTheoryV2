@@ -342,12 +342,16 @@ fn equality_stop_in_batch(recheck: bool) {
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
     for (index, answer) in stopped.answers.iter().enumerate().skip(2) {
-        assert_eq!(answer.status, Decision::Undetermined);
         assert!(answer.claim.is_none() && answer.evidence.is_empty());
         if recheck && index == 2 {
-            // 実再検査前に完成した式の値は、停止理由付き部分結果として保持する。
+            // 元入力の独立検査を終えた値と判断を、fresh再検査の停止後も保持する。
+            assert_eq!(answer.status, normal.answers[index].status);
             assert_eq!(answer.outputs, normal.answers[index].outputs);
+            assert_eq!(answer.claim, normal.answers[index].claim);
+            assert_eq!(answer.evidence, normal.answers[index].evidence);
+            assert_eq!(answer.scope, normal.answers[index].scope);
         } else {
+            assert_eq!(answer.status, Decision::Undetermined);
             assert!(answer.outputs.is_empty());
         }
         let reason = answer

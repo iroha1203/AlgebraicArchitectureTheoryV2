@@ -15,8 +15,11 @@ use crate::{
 };
 #[path = "answer_binding.rs"]
 mod answer_binding;
+pub(in crate::observed) use answer_binding::AnswerBinding;
 #[path = "answer_dependency.rs"]
 mod answer_dependency;
+#[path = "answer_projection.rs"]
+mod answer_projection;
 #[path = "completion.rs"]
 pub(super) mod completion;
 #[path = "dependent_family.rs"]
@@ -1136,6 +1139,9 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         if let Some(Payload::Scalar(scalar)) = &node.payload {
             data::check(scalar, self.inputs.law(), &self.control)?;
+            if matches!(node.rule, Rule::Projection(_)) {
+                return self.validate_answer_projection_node(graph, node, limit);
+            }
             if self.validate_term_presentation_node(graph, node, limit)? {
                 return Ok(());
             }
@@ -3812,10 +3818,7 @@ impl<'a> Environment<'a> {
                 self.tick()?;
             }
             if let Some(selector @ Selector::Answer { .. }) = selected {
-                let value = self.answer_binding_value(graph, selector, parameter.span)?;
-                if binding.value != value {
-                    return Err("Answer束縛が元出力の値Refでない".into());
-                }
+                self.answer_binding_matches(graph, selector, binding.value, parameter.span)?;
                 self.tick()?;
                 continue;
             }
@@ -6130,9 +6133,8 @@ impl<'a> Environment<'a> {
                     })
                     .map(|argument| &argument.value);
                 if let Some(selector @ Selector::Answer { .. }) = selector {
-                    if self.answer_binding_value(graph, selector, parameter.span)? != binding.value
-                        || value.ty() != binding.ty
-                    {
+                    self.answer_binding_matches(graph, selector, binding.value, parameter.span)?;
+                    if value.ty() != binding.ty {
                         return Err("元SourceのAnswer束縛のproducer・型が違う".into());
                     }
                     let original = graph.get(binding.value)?;
@@ -6199,9 +6201,9 @@ impl<'a> Environment<'a> {
                         .find(|a| a.name == format!("bind.{}", binding.name))
                         .ok_or("Requestの元束縛がない")?;
                     match (&arg.value, graph.scalar(binding.value)?) {
-                        (selector @ Selector::Answer { .. }, _)
-                            if self.answer_binding_value(graph, selector, span)?
-                                == binding.value => {}
+                        (selector @ Selector::Answer { .. }, _) => {
+                            self.answer_binding_matches(graph, selector, binding.value, span)?;
+                        }
                         (
                             Selector::Subject { snapshot, subject },
                             Scalar::Subject {

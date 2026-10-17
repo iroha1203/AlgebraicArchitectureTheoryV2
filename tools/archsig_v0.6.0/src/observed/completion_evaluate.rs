@@ -32,9 +32,8 @@ impl Evaluator<'_, '_> {
         }
         if let Ok(answer) = &observed
             && answer.status != Decision::Undetermined
-            && !answer.reasons.is_empty()
         {
-            // 原式だけで既知となった回答を、追加の補完導出に先立ち独立に検査する。
+            // 理由の有無にかかわらず、原式で確定した値・反例を追加の導出/再検査より前に保持する。
             // 外側のvalidator callbackは呼ばず、Stop/失敗なら保存もしない。
             self.environment
                 .validate_answer(self.graph, self.request, answer)?;
