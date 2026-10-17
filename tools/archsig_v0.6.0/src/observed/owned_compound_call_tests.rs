@@ -318,10 +318,15 @@ fn compound_call_member_stop(recheck: bool) {
     assert_eq!(stopped.answers[0].status, Decision::Established);
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
     for (i, a) in stopped.answers.iter().enumerate().skip(2) {
-        assert_eq!(a.status, Decision::Undetermined);
         if recheck && i == 2 {
+            // fresh再検査の前に、理由のない確定Answerも独立検査を終えている。
+            assert_eq!(a.status, normal.answers[i].status);
             assert_eq!(a.outputs, normal.answers[i].outputs);
+            assert_eq!(a.claim, normal.answers[i].claim);
+            assert_eq!(a.evidence, normal.answers[i].evidence);
+            assert_eq!(a.scope, normal.answers[i].scope);
         } else {
+            assert_eq!(a.status, Decision::Undetermined);
             assert!(a.outputs.is_empty());
         }
         let reason = a

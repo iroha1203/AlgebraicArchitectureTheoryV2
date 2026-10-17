@@ -2,52 +2,64 @@
 use super::*;
 use crate::observed::projection::ProjectionStep;
 
+pub(in crate::observed) enum AnswerBinding {
+    Reference(NodeRef),
+    Projection(Node),
+}
+
 impl Environment<'_> {
-    pub(in crate::observed) fn answer_binding_value(
+    pub(in crate::observed) fn answer_binding(
         &self,
         graph: &Graph,
         selector: &Selector,
         span: (usize, usize),
-    ) -> Result<NodeRef, ValidationFailure> {
+    ) -> Result<AnswerBinding, ValidationFailure> {
         self.tick()?;
         let Selector::Answer { id, path } = selector else {
             return Err("Answer束縛の元selectorが違う".into());
         };
-        let unsupported = || ValidationFailure::UnsupportedExpression {
-            location: Location::Law { span },
-            feature: "未生成出力・構造成分射影を含むAnswer束縛".into(),
-        };
-        let evaluation = match path.as_slice() {
-            [ProjectionStep::Field(value)] if value == "value" => false,
-            [ProjectionStep::Field(output), ProjectionStep::Field(value)]
-                if output == "evaluation" && value == "value" =>
-            {
-                true
-            }
-            _ => return Err(unsupported()),
-        };
         let answer =
             self.answer_binding_source(graph, self.current_context(graph).request, id, span)?;
         if answer.status == Decision::Undetermined {
-            return Err(unsupported());
+            return Err(self.answer_projection_unprovided(span));
         }
-        let value = if evaluation {
-            let root = *answer
-                .outputs
-                .get("evaluation")
-                .ok_or_else(|| unsupported())?;
-            self.evaluation(graph, root)?
-                .2
-                .ok_or_else(|| unsupported())?
-        } else {
-            *answer.outputs.get("value").ok_or_else(|| unsupported())?
+        let Some(ProjectionStep::Field(output)) = path.first() else {
+            return Err("Answer出力fieldがない".into());
         };
-        graph.scalar(value)?;
+        let root = *answer
+            .outputs
+            .get(output)
+            .ok_or_else(|| self.answer_projection_unprovided(span))?;
+        self.answer_projection(graph, root, &path[1..], span)
+    }
+
+    pub(in crate::observed) fn answer_binding_matches(
+        &self,
+        graph: &Graph,
+        selector: &Selector,
+        value: NodeRef,
+        span: (usize, usize),
+    ) -> Result<(), ValidationFailure> {
         if value.0 >= self.cutoff.get() {
             return Err("Answer束縛の値が既出prefixにない".into());
         }
+        match self.answer_binding(graph, selector, span)? {
+            AnswerBinding::Reference(original) if original == value => {}
+            AnswerBinding::Projection(expected) if graph.get(value)? == &expected => {
+                let context = graph.context_at(value.0);
+                if context.request != self.current_context(graph).request
+                    || context.frame.is_some()
+                    || context.iteration.is_some()
+                    || context.instance.is_some()
+                    || context.case.is_some()
+                {
+                    return Err("Answer射影値の元Request/contextが違う".into());
+                }
+            }
+            _ => return Err("Answer束縛が元出力・公開射影と違う".into()),
+        }
         self.tick()?;
-        Ok(value)
+        Ok(())
     }
 
     /// 不変Requestと選択producerへ戻る。未決Answerも理由の元導出を検査する。

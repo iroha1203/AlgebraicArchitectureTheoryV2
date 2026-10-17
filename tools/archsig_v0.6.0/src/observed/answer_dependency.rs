@@ -48,12 +48,12 @@ impl Environment<'_> {
                 continue;
             };
             let evaluation = match path.as_slice() {
-                [ProjectionStep::Field(value)] if value == "value" => false,
-                [ProjectionStep::Field(root), ProjectionStep::Field(value)]
-                    if root == "evaluation" && value == "value" =>
-                {
-                    true
-                }
+                [ProjectionStep::Field(value), ..] if value == "value" => false,
+                [
+                    ProjectionStep::Field(root),
+                    ProjectionStep::Field(value),
+                    ..,
+                ] if root == "evaluation" && value == "value" => true,
                 _ => continue,
             };
             let parameter = params

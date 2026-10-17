@@ -314,9 +314,12 @@ fn owned_call_stop_in_batch(recheck: bool, failed_field: bool) {
     assert_eq!(stopped.answers[1].status, Decision::Refuted);
     for (i, a) in stopped.answers.iter().enumerate().skip(2) {
         if recheck && i == 2 {
-            // 元値は検査済みで残るが、停止した現在Answerの最終検査は未完了。
-            assert_eq!(a.status, Decision::Undetermined);
+            // fresh再検査の前に独立検査済みの確定Answerを、判断とともに保持する。
+            assert_eq!(a.status, normal.answers[i].status);
             assert_eq!(a.outputs, normal.answers[i].outputs);
+            assert_eq!(a.claim, normal.answers[i].claim);
+            assert_eq!(a.evidence, normal.answers[i].evidence);
+            assert_eq!(a.scope, normal.answers[i].scope);
         } else {
             assert_eq!(a.status, Decision::Undetermined);
             assert!(a.outputs.is_empty());

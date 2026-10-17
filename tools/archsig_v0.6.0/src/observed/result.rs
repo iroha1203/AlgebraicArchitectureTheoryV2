@@ -778,6 +778,7 @@ pub(crate) enum Rule {
         location: Location,
     },
     Construction(&'static str),
+    Projection(Vec<super::projection::ProjectionStep>),
 }
 impl Rule {
     fn wire(&self) -> Json {
@@ -785,6 +786,18 @@ impl Rule {
             Self::Input { kind, location } => Json::obj([
                 ("kind", Json::str(*kind)),
                 ("location", location_wire(location)),
+            ]),
+            Self::Projection(path) => Json::obj([
+                ("kind", Json::str("construction")),
+                ("name", Json::str("projection")),
+                (
+                    "path",
+                    Json::Arr(
+                        path.iter()
+                            .map(super::projection::ProjectionStep::wire)
+                            .collect(),
+                    ),
+                ),
             ]),
             Self::Construction(name) => Json::obj([
                 ("kind", Json::str("construction")),
