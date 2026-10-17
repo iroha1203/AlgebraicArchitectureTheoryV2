@@ -126,6 +126,67 @@ fn engine_rechecks_all_z_coefficients_counterexample_assignment_and_original_sid
     });
 }
 #[test]
+fn engine_original_bytes_rejects_changed_normalization_residual_and_difference_operands() {
+    let mut c = named_call_quiet();
+    let prepared = prepare_observed(
+        InputSources::from_bytes(
+            vec![engine_fixture::DEFINITIONS.to_vec()],
+            engine_fixture::law(false),
+            engine_fixture::map(false, None),
+        ),
+        &["a=check(Engine.preserves,c=@engine/subtract)"],
+        &mut c,
+    )
+    .unwrap();
+    let r = evaluate_observed(prepared, &mut c).unwrap();
+    assert_eq!(r.status(), "complete");
+    assert_eq!(r.answers[0].status, Decision::Refuted);
+    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let norm = universal_private_normalization(&r, 0);
+    let Some(Payload::Normalization { steps, .. }) = &r.nodes[norm].payload else {
+        panic!("normalization")
+    };
+    let difference = steps
+        .iter()
+        .copied()
+        .find(|s| {
+            matches!(
+                &r.nodes[s.0].payload,
+                Some(Payload::ParameterizedTransform {
+                    operation: TransformOp::Difference,
+                    operands,
+                    ..
+                }) if operands.len() == 2 && operands[0] != operands[1]
+            )
+        })
+        .unwrap();
+    let residual = r
+        .nodes
+        .iter()
+        .find_map(|n| match &n.payload {
+            Some(Payload::Evaluation {
+                expression,
+                value: Some(value),
+                ..
+            }) if *expression == difference && n.ty == NodeType::Evaluation(Type::Z) => {
+                Some(*value)
+            }
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(data_scalar_at(&r, residual.0), &Scalar::Z((-2).into()));
+    completion_mutation(&r, residual.0, |ns| {
+        ns[residual.0].payload = Some(Payload::Scalar(Scalar::Z(77.into())));
+    });
+    completion_mutation(&r, difference.0, |ns| {
+        let Some(Payload::ParameterizedTransform { operands, .. }) = &mut ns[difference.0].payload
+        else {
+            panic!("difference")
+        };
+        operands.swap(0, 1);
+    });
+}
+#[test]
 fn engine_symbolic_match_rejects_equal_other_request_call_producers() {
     let mut r = engine_private_result(
         &[
