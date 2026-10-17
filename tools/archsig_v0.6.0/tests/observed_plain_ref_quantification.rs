@@ -1394,8 +1394,86 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
             "Calc.owned_tuple",
             "d=evaluate(Calc.owned_tuple,root=@v/root)",
         ),
-        ("Calc.unbounded_list", "d=evaluate(Calc.unbounded_list)"),
     ] {
+        let result = evaluate_observed_bytes(input.clone(), &[ask], &mut quiet()).unwrap();
+        let wire = result.wire();
+        assert_eq!(f(&wire, "status"), &Json::str("partial"));
+        let answer = answer(&wire, "d");
+        assert_eq!(f(answer, "status"), &Json::str("undetermined"));
+        assert!(!obj(f(answer, "outputs")).contains_key("value"));
+        assert_eq!(
+            f(f(answer, "scope"), "domain"),
+            &Json::str("all_completions")
+        );
+        let body = declared_body(&checked, declaration);
+        let ExprKind::Quant {
+            split:
+                QuantSplit::Fixed {
+                    domain: QuantDomain::Type(original),
+                    ..
+                },
+            ..
+        } = &checked.law().exprs[body].kind
+        else {
+            panic!("元Owned型量化")
+        };
+        let reasons = arr(f(answer, "reasons"));
+        let missing = reasons
+            .iter()
+            .find(|r| f(r, "code") == &Json::str("missing_observation"))
+            .unwrap();
+        assert_eq!(
+            f(missing, "missing"),
+            &Json::Arr(vec![Json::obj([
+                ("snapshot", Json::str("v")),
+                ("subject", Json::str("item")),
+                ("field", Json::str("Roster.E.owner")),
+            ])])
+        );
+        let unsupported = reasons
+            .iter()
+            .find(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+            .unwrap();
+        assert_eq!(span(f(unsupported, "location")), original.span());
+        let details = f(unsupported, "details");
+        assert_eq!(
+            f(details, "method"),
+            &Json::str("unresolved_owned_type_quantification")
+        );
+        let expected = match declaration {
+            "Calc.owned" => t.clone(),
+            "Calc.owned_option" => ty("Option", t.clone()),
+            "Calc.owned_tuple" => Json::Arr(vec![Json::str("Tuple"), t.clone(), Json::str("Bool")]),
+            _ => unreachable!(),
+        };
+        assert_eq!(f(details, "operand_types"), &Json::Arr(vec![expected]));
+        let ns = index(&wire);
+        for reason in [missing, unsupported] {
+            assert_eq!(arr(f(reason, "dependencies")).len(), 1);
+            for r in arr(f(reason, "dependencies")) {
+                let expression = target(&ns, r, &Json::str("Expression"));
+                assert_eq!(
+                    span(f(val(expression), "location")),
+                    checked.law().exprs[body].span
+                );
+            }
+        }
+        assert!(
+            result
+                .prepared()
+                .inputs()
+                .archmap()
+                .snapshots
+                .iter()
+                .find(|s| s.id == "v")
+                .unwrap()
+                .subjects
+                .iter()
+                .any(|s| s.id == "item")
+        );
+        assert_eq!(result.prepared().inputs().sources(), &input);
+    }
+    for (declaration, ask) in [("Calc.unbounded_list", "d=evaluate(Calc.unbounded_list)")] {
         let error = match evaluate_observed_bytes(input.clone(), &[ask], &mut quiet()) {
             Err(error) => error,
             Ok(result) => panic!(

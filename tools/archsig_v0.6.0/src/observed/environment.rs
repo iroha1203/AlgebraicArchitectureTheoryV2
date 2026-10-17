@@ -21,6 +21,8 @@ pub(super) mod dependent_family;
 pub(super) mod family;
 #[path = "owned_family.rs"]
 pub(super) mod owned_family;
+#[path = "owned_type.rs"]
+pub(super) mod owned_type;
 #[path = "universal.rs"]
 pub(super) mod universal;
 
@@ -5199,6 +5201,11 @@ impl<'a> Environment<'a> {
             }
             arguments.push(input);
         }
+        if let Some(&id) = self.expressions.get(&span)
+            && matches!(self.inputs.law().exprs[id].kind, ExprKind::Quant { .. })
+        {
+            arguments.extend(self.owned_type_arguments(graph, id, bindings)?);
+        }
         Ok(arguments)
     }
     pub(crate) fn call_parameter(
@@ -5217,6 +5224,9 @@ impl<'a> Environment<'a> {
         let crate::law::model::Signature::View { params, .. } = &d.signature else {
             unreachable!()
         };
+        if frame.arguments.len() != params.len() {
+            return Err("call引数数が元署名と違う".into());
+        }
         Ok(params
             .iter()
             .position(|p| p.name == name)
@@ -6264,7 +6274,8 @@ impl<'a> Environment<'a> {
                 };
                 (input, members)
             } else {
-                let enumeration = self.finite_values(&spec.element, &mut |_, _| {})?;
+                let enumeration =
+                    self.owned_type_values(&spec, variables, reading, &mut |_, _| {})?;
                 let mut scope = base.clone();
                 scope.merge(&enumeration.scope);
                 (
@@ -6276,7 +6287,7 @@ impl<'a> Environment<'a> {
                         support: enumeration.support,
                         scalar_scope: None,
                     },
-                    Some(enumeration.values),
+                    enumeration.values,
                 )
             };
             // 親/lexical値が既に持つ出現はその由来順を保つ。
@@ -6906,6 +6917,25 @@ impl<'a> Environment<'a> {
                 // 値・子だけの支持和へ縮めない。
                 continue;
             }
+            if let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &graph.get(*expression)?.payload
+                && let Some(&id) = self.expressions.get(span)
+                && let ExprKind::Quant {
+                    split:
+                        crate::law::ast::QuantSplit::Fixed {
+                            domain: crate::law::ast::QuantDomain::Type(original),
+                            ..
+                        },
+                    ..
+                } = &self.inputs.law().exprs[id].kind
+                && quantifier::has_owner(original, &self.control)?
+            {
+                // validate_quant_evaluationが元owner・域または欠測を検査した。
+                // 未知域も型の所属判断に使った支持を保持し、値/子だけへ縮めない。
+                continue;
+            }
             if node.arguments.first().is_some_and(|r| {
                 matches!(
                     graph.get(*r).map(|n| &n.payload),
@@ -7308,8 +7338,20 @@ impl<'a> Environment<'a> {
             if spec.domain.is_some() {
                 return Err("In量化のcollection辺がない".into());
             }
-            let values = self.finite_values(&spec.element, &mut |_, _| {})?;
-            return Ok((spec, values));
+            let values = self.owned_type_domain(
+                graph,
+                id,
+                self.expression_bindings(graph, source)?,
+                &mut |_, _| {},
+            )?;
+            return Ok((
+                spec,
+                super::finite::Enumeration {
+                    values: values.values.ok_or("未知ownerから完全型Domainを生成した")?,
+                    scope: values.scope,
+                    support: values.support,
+                },
+            ));
         };
         self.recheck_evaluation(graph, input)?;
         let (actual, bindings, value) = self.evaluation(graph, input)?;
@@ -7348,25 +7390,53 @@ impl<'a> Environment<'a> {
         node: &Node,
         limit: usize,
     ) -> Result<(), ValidationFailure> {
-        if !(1..=2).contains(&node.arguments.len())
-            || !matches!(&node.rule, Rule::Construction("domain"))
-        {
+        if node.arguments.is_empty() || !matches!(&node.rule, Rule::Construction("domain")) {
             return Err("Domain要素の元辺が違う".into());
+        }
+        let source = node.arguments[0];
+        let id = *self
+            .expressions
+            .get(&self.expression_span(graph, source)?)
+            .ok_or("Domain要素の元ASTがない")?;
+        let original = quantifier::spec(self.inputs.law(), id, &self.control)?;
+        let mut expected = vec![source];
+        if original.domain.is_some() {
+            expected.push(
+                *node
+                    .arguments
+                    .get(1)
+                    .ok_or("In Domain要素にcollection辺がない")?,
+            );
+        } else {
+            expected.extend(self.owned_type_arguments(
+                graph,
+                id,
+                self.expression_bindings(graph, source)?,
+            )?);
+        }
+        if node.arguments != expected {
+            return Err("Domain要素の元owner producer列が違う".into());
         }
         let (spec, enumeration) = self.quant_input(
             graph,
-            node.arguments[0],
-            node.arguments.get(1).copied(),
+            source,
+            original.domain.and_then(|_| node.arguments.get(1).copied()),
             limit,
         )?;
         let Some(Payload::Scalar(value)) = &node.payload else {
             return Err("Domain要素が通常値でない".into());
         };
-        let input = graph.get(*node.arguments.get(1).unwrap_or(&node.arguments[0]))?;
+        let input = graph.get(if spec.domain.is_some() {
+            node.arguments[1]
+        } else {
+            source
+        })?;
+        let mut scope = input.scope.clone();
+        scope.merge(&enumeration.scope);
         if value.ty() != spec.element
             || !data::contains(&enumeration.values, value, &self.control)?
             || node.support != enumeration.support
-            || node.scope != input.scope
+            || node.scope != scope
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
         {
@@ -7392,18 +7462,39 @@ impl<'a> Environment<'a> {
                 .ok_or("Domain元ASTがない")?,
             &self.control,
         )?;
-        let offset = 1 + usize::from(spec.domain.is_some());
+        let offset = 1 + usize::from(spec.domain.is_some()) + spec.owners.len();
+        let mut expected = vec![source];
+        if spec.domain.is_some() {
+            expected.push(
+                *node
+                    .arguments
+                    .get(1)
+                    .ok_or("In Domainにcollection辺がない")?,
+            );
+        } else {
+            expected.extend(
+                self.owned_type_arguments(
+                    graph,
+                    *self
+                        .expressions
+                        .get(&self.expression_span(graph, source)?)
+                        .ok_or("型Domain元ASTがない")?,
+                    self.expression_bindings(graph, source)?,
+                )?,
+            );
+        }
         if node.ty != NodeType::Domain
             || !matches!(&node.rule, Rule::Construction("domain"))
             || node.arguments.len() != offset + elements.len()
             || node.arguments[offset..] != *elements
+            || node.arguments.get(..offset) != Some(expected.as_slice())
         {
             return Err("Domainの型/規則/元辺が違う".into());
         }
         let (spec, enumeration) = self.quant_input(
             graph,
             source,
-            if offset == 2 {
+            if spec.domain.is_some() {
                 node.arguments.get(1).copied()
             } else {
                 None
@@ -7442,8 +7533,9 @@ impl<'a> Environment<'a> {
             }
             seen.push(value.clone());
         }
-        let input = graph.get(node.arguments[if offset == 2 { 1 } else { 0 }])?;
+        let input = graph.get(node.arguments[if spec.domain.is_some() { 1 } else { 0 }])?;
         let mut scope = input.scope.clone();
+        scope.merge(&enumeration.scope);
         scope.add_quantifier(spec.descriptor(None, Some(self.current_context(graph))));
         scope.order_quantifiers_like(&graph.get(node.arguments[0])?.scope);
         if node.scope != scope
@@ -7630,6 +7722,25 @@ impl<'a> Environment<'a> {
         if self.expression_span(graph, source)? != *span {
             return Err("量化Scalarが別元出現のDomainを指す".into());
         }
+        let spec = quantifier::spec(
+            self.inputs.law(),
+            *self
+                .expressions
+                .get(span)
+                .ok_or("量化Scalarの元ASTがない")?,
+            &self.control,
+        )?;
+        if !spec.owners.is_empty()
+            && !self.field_source_producer_matches(
+                graph,
+                node,
+                limit,
+                source,
+                self.expression_bindings(graph, source)?,
+            )?
+        {
+            return Err("Owned型量化Scalarが元Sourceの実producerと違う".into());
+        }
         let (analysis, domain) =
             self.quant_parts(graph, source, &node.arguments, &node.scope, limit)?;
         if !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
@@ -7681,6 +7792,9 @@ impl<'a> Environment<'a> {
             return Err("量化Evaluationの元part/束縛が違う".into());
         }
         let spec = quantifier::spec(self.inputs.law(), *id, &self.control)?;
+        if !spec.owners.is_empty() && self.validate_owned_type_unknown(graph, node, *id, limit)? {
+            return Ok(true);
+        }
         let mut children = parts[0].children.clone();
         if spec.domain.is_none() {
             let domain = node
