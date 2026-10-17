@@ -1,4 +1,4 @@
-//! 非再帰Dataの正規constructor・payloadと、静的に解決済みpatternの照合。
+//! 検査済み有限Data値の正規constructor・payloadと、静的に解決済みpatternの照合。
 use super::{
     control::{Checkpoint, Control},
     numeric,
@@ -114,7 +114,10 @@ pub(super) fn supported(
                 }
                 Type::Data(family) => {
                     if active.contains(family) {
-                        return Ok(false);
+                        // 定義検査済みの正の自己参照。ここでは値の演算が対応するかを
+                        // 読むだけで、型の全値域が有限だとは判断しない。実値の有限木は
+                        // check/from_inputで辿り、全域の有限性はfiniteが別に検査する。
+                        return Ok(true);
                     }
                     active.push(family.clone());
                     let result = (|| {
@@ -227,7 +230,7 @@ pub(super) fn check(
                 args,
             } => {
                 if !supported(&Type::Data(family.clone()), law, control)? {
-                    return Err("未対応Data payload・再帰型の生成値".into());
+                    return Err("未対応Data payloadの生成値".into());
                 }
                 let ctor = constructor(law, family, name, control)?;
                 if args.len() != ctor.arguments.len() {

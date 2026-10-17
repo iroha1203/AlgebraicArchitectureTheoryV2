@@ -50,17 +50,19 @@
   これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
   ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
-  これらの値型を引数・返り値に持ち、ownerに依存しない署名の非再帰view呼出しを評価する。
+  これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
+  左端data parameterのmatchから得た直接subtermへの構造再帰も、各実引数とcall frameを保持して評価する。
   引数なし・複数引数・入れ子・import aliasを扱い、呼出しごとに元の引数評価・parameter束縛・
   callee bodyの導出を保持し、呼出し元のlexical bindingへ戻る。
   未観測の実引数は欠測理由を保ち、その引数を使わないbodyは既知値を返せる。
-  上記の値型・原始Refと入れ子の非再帰dataを引数に持つdataについて、
+  上記の値型・原始Refと有限data木を引数に持つdataについて、
   観測field・constructorを評価し、data型・正規constructor・引数の型と順序を保つ。
   これらのdata値をlet/if/viewで渡し、構造的な等値・不等値を計算する。
   既知値のmatchはconstructor・wildcard・名前・入れ子patternを扱い、
   pattern束縛を元scrutineeのconstructor引数位置へ接続する。
   data以外の既知値もwildcard・名前patternで受ける。
   未観測dataのmatchは元missingを保ち、constructorやpattern束縛値を作らない。
+  Tuple/List/Optionを通る正の自己参照も個別の有限木として扱い、再帰型の全域を有限とは扱わない。
   ドット列は束縛変数から既知参照を順にたどり、各prefixの元span・型・実owner・支持を保持する。
   Z/Q全域式内のドット列は一つのfieldまで扱う。
   Bool は false and x / true or x などを全補完で確定し、元の両子評価と欠測理由を保持する。
@@ -102,7 +104,7 @@
   全caseで同じ既知値なら値を確定する。Lawは全case成立/全case違反を区別し、
   補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
-  上記以外のpayloadを持つdata・再帰dataの評価、その他の式形・
+  上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
