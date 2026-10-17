@@ -874,3 +874,213 @@ fn owned_type_quantification_recheck_stops_and_success_memo_are_session_local() 
         );
     }
 }
+
+#[test]
+fn owned_type_quantification_rejects_valid_original_type_resolution_and_index_transfers() {
+    use crate::law::ast::{QuantDomain, QuantSplit, TypeAst};
+    let result = owned_private_example(
+        "view origins(a:System,b:System):(Bool,Bool,Bool,Bool)=((forall x:State[a] . true),(forall x:Reservations.State[a] . true),(forall x:Reserve[a] . true),(forall x:State[b] . true));",
+        &["current=evaluate(Reservations.origins,a=@v/A,b=@v/B)"],
+        None,
+        false,
+    );
+    assert_eq!(result.status(), "complete");
+    let domains = owned_type_private_domains(&result, 0);
+    assert_eq!(domains.len(), 4);
+    let law = result.prepared.inputs().law();
+    let bytes = result.prepared.inputs().sources().law().bytes();
+    let expected = [
+        ("State[a]", "State", "Reservations.State", "a", 2),
+        (
+            "Reservations.State[a]",
+            "Reservations.State",
+            "Reservations.State",
+            "a",
+            2,
+        ),
+        ("Reserve[a]", "Reserve", "Reservations.Reserve", "a", 1),
+        ("State[b]", "State", "Reservations.State", "b", 2),
+    ];
+    let mut sources = Vec::new();
+    let mut indices = Vec::new();
+    for (&domain, (original, spelling, resolved, owner_name, count)) in domains.iter().zip(expected)
+    {
+        let source = result.nodes[domain].arguments[0];
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            bindings,
+            ..
+        }) = &result.nodes[source.0].payload
+        else {
+            panic!("actual quantifier Source")
+        };
+        let (id, expression) = law
+            .exprs
+            .iter()
+            .enumerate()
+            .find(|(id, e)| e.span == *span && law.quantifier_types[*id].is_some())
+            .unwrap();
+        let ExprKind::Quant {
+            split:
+                QuantSplit::Fixed {
+                    domain:
+                        QuantDomain::Type(TypeAst::Named {
+                            name,
+                            index: Some(index),
+                            span: type_span,
+                        }),
+                    ..
+                },
+            ..
+        } = &expression.kind
+        else {
+            panic!("original named Owned TypeAst")
+        };
+        assert_eq!(&bytes[type_span.0..type_span.1], original.as_bytes());
+        assert_eq!(&bytes[name.span().0..name.span().1], spelling.as_bytes());
+        assert_eq!(name.text(), spelling);
+        assert_eq!(index.name, owner_name);
+        assert_eq!(&bytes[index.span.0..index.span.1], owner_name.as_bytes());
+        assert!(name.span().1 < index.span.0 && index.span.1 < type_span.1);
+        let targets: Vec<_> = law
+            .infos
+            .iter()
+            .flat_map(|info| &info.references)
+            .filter(|(at, _)| *at == name.span())
+            .map(|(_, target)| target.as_str())
+            .collect();
+        assert!(!targets.is_empty());
+        assert!(targets.iter().all(|target| *target == resolved));
+        let ty = Type::Ref(resolved.into());
+        assert_eq!(law.quantifier_types[id].as_ref(), Some(&ty));
+        let Some(Payload::Domain {
+            ty: actual,
+            elements,
+        }) = &result.nodes[domain].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(actual, &ty);
+        assert_eq!(elements.len(), count);
+        let owner = bindings
+            .iter()
+            .find(|binding| binding.name == owner_name)
+            .unwrap()
+            .value;
+        assert_eq!(result.nodes[source.0].arguments.last(), Some(&owner));
+        assert_eq!(result.nodes[domain].arguments[1], owner);
+        assert_eq!(result.contexts[source.0], result.contexts[domain]);
+        assert!(
+            result.contexts[source.0].frame.is_none()
+                && result.contexts[source.0].iteration.is_none()
+        );
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=domain]).unwrap();
+        indices.push(index.span);
+        sources.push(source);
+    }
+    assert!(indices.windows(2).all(|pair| pair[0] != pair[1]));
+    assert_ne!(indices[0], indices[2]);
+    // 同じRequest・Contextの実在Source全体を移す。Source単体は合法でも、
+    // 元TypeAst・静的解決・添字出現が変わり、保持したDomainと不整合になる。
+    for (target, donor) in [(1, 0), (2, 1), (3, 0)] {
+        let source = sources[target].0;
+        let replacement = result.nodes[sources[donor].0].clone();
+        assert!(sources[donor].0 < source && source < domains[target]);
+        assert_eq!(result.contexts[source], result.contexts[sources[donor].0]);
+        assert_ne!(
+            reservations_private_text(&result, sources[target]),
+            reservations_private_text(&result, sources[donor])
+        );
+        let mut legal_source = result.nodes[..=source].to_vec();
+        legal_source[source] = replacement.clone();
+        assert_ne!(
+            format!("{legal_source:?}"),
+            format!("{:?}", &result.nodes[..=source])
+        );
+        rebuild_for_origin_and_support_recheck(&result, &legal_source).unwrap();
+        completion_mutation(&result, domains[target], |nodes| {
+            nodes[source] = replacement.clone();
+        });
+    }
+}
+
+#[test]
+fn owned_type_quantification_option_tag_changes_are_legal_members_but_rejected_in_complete_domain()
+{
+    let result = owned_private_example(
+        "view options(a:System):Bool=forall x:Option<State[a]> . true;",
+        &["current=evaluate(Reservations.options,a=@v/A)"],
+        None,
+        false,
+    );
+    assert_eq!(result.status(), "complete");
+    let domain = owned_type_private_domains(&result, 0)[0];
+    let elements = owned_type_private_elements(&result, domain);
+    assert_eq!(elements.len(), 3);
+    let element = Type::Ref("Reservations.State".into());
+    let none = elements
+        .iter()
+        .find(|r| {
+            matches!(
+                data_scalar_at(&result, r.0),
+                Scalar::Option { value: None, .. }
+            )
+        })
+        .unwrap()
+        .0;
+    let somes: Vec<_> = elements
+        .iter()
+        .filter(|r| {
+            matches!(
+                data_scalar_at(&result, r.0),
+                Scalar::Option { value: Some(_), .. }
+            )
+        })
+        .copied()
+        .collect();
+    assert_eq!(somes.len(), 2);
+    assert!(
+        elements
+            .iter()
+            .all(|r| result.nodes[r.0].ty
+                == NodeType::Value(Type::Option(Box::new(element.clone()))))
+    );
+    for (target, donor) in [(somes[0].0, none), (none, somes[0].0)] {
+        let Some(Payload::Scalar(Scalar::Option {
+            element: original_element,
+            value: original_tag,
+        })) = &result.nodes[target].payload
+        else {
+            unreachable!()
+        };
+        let Some(Payload::Scalar(Scalar::Option {
+            element: replacement_element,
+            value: replacement_tag,
+        })) = &result.nodes[donor].payload
+        else {
+            unreachable!()
+        };
+        assert_eq!(original_element, &element);
+        assert_eq!(replacement_element, &element);
+        assert_ne!(original_tag.is_some(), replacement_tag.is_some());
+        assert_eq!(
+            result.nodes[target].arguments,
+            result.nodes[donor].arguments
+        );
+        assert_eq!(result.nodes[target].scope, result.nodes[donor].scope);
+        assert_eq!(result.nodes[target].support, result.nodes[donor].support);
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+        let replacement = result.nodes[donor].payload.clone();
+        let mut legal_member = result.nodes[..=target].to_vec();
+        legal_member[target].payload = replacement.clone();
+        assert_ne!(
+            format!("{legal_member:?}"),
+            format!("{:?}", &result.nodes[..=target])
+        );
+        // 将来nodeのRefを使わず、このmemberの生のOption tag/valueだけを変える。
+        rebuild_for_origin_and_support_recheck(&result, &legal_member).unwrap();
+        completion_mutation(&result, domain, |nodes| {
+            nodes[target].payload = replacement.clone();
+        });
+    }
+}
