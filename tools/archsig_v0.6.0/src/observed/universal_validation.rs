@@ -176,11 +176,11 @@ impl Environment<'_> {
             .completion_pair
             .as_ref()
             .ok_or("元式に成否を分ける数値補完対がない")?;
-        let selected = if record.ordinal == 0 {
+        let selected = self.restore_numeric_assignment(if record.ordinal == 0 {
             &pair.0
         } else {
             &pair.1
-        };
+        })?;
         let body = self.universal_body_producer(
             graph,
             record.template,
@@ -208,7 +208,7 @@ impl Environment<'_> {
                     &fact.subject,
                     fact.field.as_deref().ok_or("数値補完理由に元fieldがない")?,
                 )?;
-                if matches!(field.ty, Type::Z | Type::Q) {
+                if numeric::is_numeric_type(&field.ty, &self.control)? {
                     let source = *reason
                         .dependencies
                         .first()
@@ -229,13 +229,8 @@ impl Environment<'_> {
                 .iter()
                 .find(|(candidate, _)| candidate == &fact)
                 .map(|(_, value)| value.clone())
-                .unwrap_or_else(|| {
-                    if field.ty == Type::Z {
-                        Scalar::Z(0.into())
-                    } else {
-                        Scalar::Q(0.into(), 1.into())
-                    }
-                });
+                .map(Ok)
+                .unwrap_or_else(|| numeric::zero(&field.ty, &self.control))?;
             if !matches!(field.slot, Slot::Missing) || value.ty() != field.ty {
                 return Err("数値補完の元slot・型が違う".into());
             }
@@ -2904,7 +2899,7 @@ impl Environment<'_> {
         Ok(false)
     }
 
-    fn universal_source_root(
+    pub(in crate::observed) fn universal_source_root(
         &self,
         graph: &Graph,
         source: NodeRef,

@@ -40,6 +40,10 @@ impl Evaluator<'_, '_> {
         context: NumericCompletion<'_>,
         pair: &CompletionPair,
     ) -> Result<Option<NodeRef>, Failure> {
+        let pair = (
+            self.environment.restore_numeric_assignment(&pair.0)?,
+            self.environment.restore_numeric_assignment(&pair.1)?,
+        );
         let NumericCompletion {
             plan,
             template,
@@ -56,8 +60,8 @@ impl Evaluator<'_, '_> {
             if matches!(reason.kind, ReasonKind::Missing) {
                 for fact in &reason.missing {
                     if let Some(&source) = reason.dependencies.first()
-                        && let NodeType::Expression(ty @ (Type::Z | Type::Q)) =
-                            &self.graph.get(source)?.ty
+                        && let NodeType::Expression(ty) = &self.graph.get(source)?.ty
+                        && numeric::is_numeric_type(ty, self.control)?
                     {
                         fields.entry(fact.clone()).or_insert((source, ty.clone()));
                     }
@@ -126,7 +130,7 @@ impl Evaluator<'_, '_> {
                 self.tick(Checkpoint::FiniteIteration)?;
                 let value = match values.iter().find(|(candidate, _)| candidate == fact) {
                     Some((_, value)) => value.clone(),
-                    None => numeric::literal("0", ty, self.control)?,
+                    None => numeric::zero(ty, self.control)?,
                 };
                 facts.push((fact.clone(), value.clone()));
                 references.push(self.value(

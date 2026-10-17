@@ -13,6 +13,8 @@ use crate::{
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
+#[path = "term_affine.rs"]
+pub(super) mod affine;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Term {
     pub params: Vec<(String, Type)>,

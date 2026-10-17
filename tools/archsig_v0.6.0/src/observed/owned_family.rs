@@ -252,6 +252,7 @@ impl Environment<'_> {
         };
         let scalar_scope = known_value.as_ref().map(|_| scope.clone());
         Ok(SourceValue {
+            symbolic: None,
             comparison: None,
             affine: None,
             scope,

@@ -1,4 +1,6 @@
 //! 明示束縛の参照・原始 field と Z/Bool 演算を原 AST から評価する。
+#[path = "term_comparison_evaluate.rs"]
+mod term_comparison_evaluate;
 use super::{
     PreparedObserved,
     control::{Checkpoint, Control, StopReason},
@@ -160,7 +162,7 @@ impl Evaluator<'_, '_> {
         ty: &Type,
         children: &[&Evaluated],
     ) -> Result<Option<NodeRef>, Failure> {
-        if !matches!(ty, Type::Z | Type::Q) {
+        if !(numeric::is_numeric_type(ty, self.control)? || *ty == Type::Bool) {
             return Ok(None);
         }
         let source = self
@@ -210,7 +212,7 @@ impl Evaluator<'_, '_> {
         left: &Evaluated,
         right: &Evaluated,
     ) -> Result<Option<(NodeRef, NodeRef)>, Failure> {
-        if !matches!(ty, Type::Z | Type::Q) {
+        if !numeric::is_numeric_type(ty, self.control)? {
             return Ok(None);
         }
         let source = self
@@ -750,6 +752,13 @@ impl Evaluator<'_, '_> {
         if let Some(reason) = source.missing {
             reasons.push(reason);
         }
+        let child_refs: Vec<_> = children.iter().map(|c| c.evaluation).collect();
+        if let Some(reason) =
+            self.environment
+                .term_algorithm_reason(self.graph, expression, &child_refs)?
+        {
+            reasons.push(reason);
+        }
         sort_reasons(&mut reasons);
         let evidence = if let Some(value) = value {
             self.graph.get(value)?.evidence.clone()
@@ -1149,16 +1158,22 @@ impl Evaluator<'_, '_> {
                         })?;
                         vec![l, r]
                     };
-                    Some(self.value(
-                        value,
-                        Rule::Input {
+                    let evidence =
+                        self.term_comparison_evidence(span, *op, &left, &right, &support, &scope)?;
+                    Some(self.push(Node {
+                        ty: NodeType::Value(value.ty()),
+                        payload: Some(Payload::Scalar(value)),
+                        rule: Rule::Input {
                             kind: "law",
                             location: Location::Law { span },
                         },
                         arguments,
-                        support.clone(),
-                        scope.clone(),
-                    )?)
+                        support: support.clone(),
+                        scope: scope.clone(),
+                        evidence,
+                        judgment: None,
+                        reasons: vec![],
+                    })?)
                 } else if let Some((value, _)) = affine {
                     Some(value)
                 } else if matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) {
@@ -1756,7 +1771,8 @@ impl Evaluator<'_, '_> {
                 None
             }
         } else {
-            None
+            let children: Vec<_> = evaluated.iter().collect();
+            self.affine_constant(span, &ty, &children)?
         };
         self.finish_with_reasons(
             span,
@@ -2612,6 +2628,7 @@ mod recheck_tests {
     include!("engine_tests.rs");
     include!("term_tests.rs");
     include!("term_equality_tests.rs");
+    include!("affine_term_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

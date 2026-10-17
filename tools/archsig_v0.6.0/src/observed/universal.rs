@@ -423,6 +423,7 @@ impl Environment<'_> {
                 variables.insert(
                     parameter.name.clone(),
                     SourceValue {
+                        symbolic: analysis.symbolic,
                         comparison: analysis.comparison,
                         affine: analysis.affine,
                         scope,
@@ -460,7 +461,7 @@ impl Environment<'_> {
         }) else {
             return Ok(None);
         };
-        if number(ty).is_none() || value.ty() != *ty {
+        if !numeric::is_numeric_type(ty, &self.control)? || value.ty() != *ty {
             return Err("全域数値補完の元slot型が違う".into());
         }
         Ok(Some(value.clone()))
@@ -487,7 +488,7 @@ impl Environment<'_> {
                 fact.field.as_deref().ok_or("全域数値補完にfieldがない")?,
             )?;
             if !matches!(field.slot, Slot::Missing)
-                || number(&field.ty).is_none()
+                || !numeric::is_numeric_type(&field.ty, &self.control)?
                 || value.ty() != field.ty
             {
                 return Err("全域数値補完の元欠測slot・型が違う".into());
@@ -782,6 +783,7 @@ impl Environment<'_> {
                 feature: "call展開内で追加されるZ/Q全称binderの全域Plan".into(),
             })?;
         Ok(SourceValue {
+            symbolic: None,
             comparison: None,
             affine: affine::parameter(ty, parameter, &self.control)?.map(Box::new),
             scope: base.clone(),

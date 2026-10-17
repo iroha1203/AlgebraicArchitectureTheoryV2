@@ -1,0 +1,86 @@
+mod terms {
+    include!("terms.rs");
+}
+pub fn definitions() -> String {
+    terms::DEFINITIONS.replace(r#"{"name":"h","type":"Z","meaning":"h"}"#,r#"{"name":"h","type":"Z","meaning":"h"},{"name":"k","type":"Z","meaning":"k"},{"name":"q","type":"Q","meaning":"q"},{"name":"p","type":"Bool","meaning":"p"},{"name":"t","type":["Tuple","Z","Q"],"meaning":"数値組の一slot。"},{"name":"u","type":["Tuple","Z","Q"],"meaning":"別の数値組slot。"},{"name":"zz","type":["Tuple","Z","Z"],"meaning":"独立成分を持つ一slot。"}"#)
+}
+pub const SCRIPT: &str = r#"
+view same(s:Sample):Bool=s.f=(fn(a:Z,b:Z)=>a+a-b);
+view different(s:Sample):Bool=s.f!=(fn(a:Z,b:Z)=>a+a-b+1);
+law required equality(s:Sample):s.f=(fn(a:Z,b:Z)=>a+a-b);
+law required unequal(s:Sample):s.f=(fn(a:Z,b:Z)=>a+a-b+1);
+view rational():Bool=(fn(q:Q)=>q+rat(1,2)+rat(1,2))=(fn(x:Q)=>x+1);
+view tuple():Bool=(fn(t:(Z,Q))=>(t.0+t.0,t.1+rat(1,2)+rat(1,2)))=(fn(u:(Z,Q))=>(2*u.0,u.1+1));
+view mixed():Bool=(fn(b:Bool,x:Z)=>if b then x+x else x+1)=(fn(c:Bool,y:Z)=>if not c then 1+y else 2*y);
+view coefficient(s:Sample):Bool=s.f!=(fn(a:Z,b:Z)=>2*a-2*b);
+view qCoefficient():Bool=(fn(q:Q)=>rat(1,2)*q+1)!=(fn(x:Q)=>rat(2,3)*x+1);
+view tupleCoefficient():Bool=(fn(t:(Z,Q))=>t.1+1)!=(fn(u:(Z,Q))=>u.1+u.1+1);
+view tupleArithmetic():Bool=(fn(t:(Z,Q))=>-(t+t))=(fn(u:(Z,Q))=>(-2*u.0,-2*u.1));
+view aggregation():Bool=(fn(x:Z)=>sum(list<Z>[x,x,1]))=(fn(y:Z)=>2*y+1);
+view finiteBody():Bool=(fn(x:Z)=>if forall b:Bool . (x-x=0) or b then x+1 else x+2)=(fn(y:Z)=>y+1);
+view cancel(s:Sample):Z=s.f(s.h,s.h+s.h);
+view delta(s:Sample):Z=s.f(s.h+1,s.h+s.h);
+view cancelEquality(s:Sample):Bool=s.f(s.h,s.h)=s.h;
+view independent(s:Sample):Bool=s.f(s.h,s.k)=s.h;
+law required universal(s:Sample,z:Z):s.f(z,z)=z;
+view explicit(s:Sample):Bool=forall z:Z . s.f(z,z)=z;
+view qcancel(s:Sample):Q=(fn(q:Q)=>q-q)(s.q);
+view tupleCancel(s:Sample):(Z,Q)=(fn(t:(Z,Q))=>(t.0-t.0,t.1-t.1))((s.h,s.q));
+view opaqueText():Bool=(fn(x:Text)=>3)=(fn(y:Text)=>4);
+view opaque():Bool=(fn(x:Z)=>x*x)=(fn(y:Z)=>y*y+1);
+view opaqueMissing(s:Sample):Z=(fn(x:Z)=>x*x)(s.h);
+view concreteNonlinear():Z=(fn(x:Z)=>x*x)(3);
+view finiteNonlinear():Bool=(fn(b:Bool)=>if b then 3*3 else 2*2)=(fn(c:Bool)=>if c then 9 else 4);
+law required outside(s:Sample,z:Z):(fn(x:Z)=>x*x)(z)=z;
+view inner(s:Sample,x:Z):Z=s.f(x,x);
+law required viaView(s:Sample,z:Z):inner(s,z)=z;
+view letCancel(s:Sample):Z=let a=s.h in s.f(a,a+a);
+view choice(s:Sample):Term<(Z)->Z> =if s.p then (fn(x:Z)=>x+1) else (fn(y:Z)=>1+y);
+view affineStable(s:Sample):Z=choice(s)(s.h)-s.h;
+view partial(s:Sample):Z=(fn(x:Z,y:Z)=>x-x+y)(s.h,1);
+view needMissing(s:Sample):Z=s.missing(s.h,s.h);
+view tupleKnownAdd():Bool=(fn(x:Z)=>(x,1))=(fn(y:Z)=>(0,0)+(0,1));
+view tupleKnownReverse():Bool=(fn(y:Z)=>-(0,0))=(fn(x:Z)=>(x,0));
+view tupleKnownLet():Bool=(fn(x:Z)=>let t=(0,0) in t)=(fn(y:Z)=>(y,0));
+view tupleKnownNested():Bool=(fn(x:Q)=>((x,1),0))=(fn(y:Q)=>let t=((rat(0,1),1),0) in t);
+view viaTupleLet(s:Sample):Z=let t=(s.h,s.q) in (fn(u:(Z,Q))=>u.0-u.0)(t);
+view tupleInput(t:(Z,Q)):Q=(fn(u:(Z,Q))=>u.1-u.1)(t);
+view viaTupleView(s:Sample):Q=tupleInput((s.h,s.q));
+view tupleOutput(s:Sample):(Z,Q)=(s.h,s.q);
+view viaTupleOutput(s:Sample):Z=(fn(u:(Z,Q))=>u.0-u.0)(tupleOutput(s));
+view viaTupleArithmetic(s:Sample):(Z,Q)=(fn(u:(Z,Q))=>(u.0-u.0,u.1-u.1))(-((s.h,s.q)+(s.k,s.q)));
+view viaTupleProjection(s:Sample):Q=let t=((s.h,s.q),s.h) in (fn(u:(Z,Q))=>u.1-u.1)(t.0);
+law required viaUniversalTuple(s:Sample,z:Z):let t=(z,s.q) in (fn(u:(Z,Q))=>u.0+u.0)(t)=z+z;
+view tupleOutside(s:Sample):Bool=(fn(x:Z)=>(x*x,x))(s.h)=(0,0);
+view tupleNestedOutside(s:Sample):(Z,(Z,Q))=(fn(x:Z,q:Q)=>(x,(x*x,q)))(s.h,s.q);
+view tupleChoice(s:Sample):(Z,Q)=if s.p then (s.h,s.q) else (s.k,s.q);
+view viaTupleChoice(s:Sample):Z=(fn(u:(Z,Q))=>u.0-u.0)(tupleChoice(s));
+view tupleComponent(t:(Z,Q)):Z=(fn(u:(Z,Q))=>u.0)(t);
+view tupleCache(s:Sample):Bool=tupleComponent((s.h,s.q))-tupleComponent((s.k,s.q))=s.h-s.k;
+view tupleDifference(s:Sample):(Z,Q)=let t=(s.h,s.q) in t-t;
+view tupleSameNormal():Bool=(fn(x:Z)=>(x-x,1))=(fn(y:Z)=>(0,0)+(0,1));
+view tupleEq(s:Sample):Bool=(fn(x:Z)=>(x,x))(s.h)=(s.h,s.h);
+law required tupleEqLaw(s:Sample):(fn(x:Z)=>(x,x))(s.h)=(s.h,s.h);
+view tupleNe(s:Sample):Bool=(fn(x:Z)=>(x,x))(s.h)!=(s.h,s.h);
+view tupleOffset(s:Sample):Bool=(fn(x:Z)=>(x,x+1))(s.h)=(s.h,s.h);
+view tupleSlot(s:Sample):(Z,Q)=(fn(u:(Z,Q))=>(u.0-u.0,u.1-u.1))(s.t);
+view tupleSlotEq(s:Sample):Bool=(fn(u:(Z,Q))=>(u.0,u.1))(s.t)=s.t;
+view tupleSlotsIndependent(s:Sample):Z=(fn(a:(Z,Q),b:(Z,Q))=>a.0-b.0)(s.t,s.u);
+view tupleComponentsIndependent(s:Sample):Z=(fn(a:(Z,Z))=>a.0-a.1)(s.zz);
+law required tupleSlotUniversal(s:Sample,z:Z):(fn(a:(Z,Q))=>a.0-a.0)(s.t)+z=z;
+law required tupleSlotVary(s:Sample,z:Z):z+(fn(a:(Z,Z))=>a.0)(s.zz)=z;
+view partialNonlinearTuple():Bool=(fn(x:Z)=>(x*x,x))=(fn(y:Z)=>(y*y,y+1));
+view partialNonlinearFinite():Bool=(fn(b:Bool,x:Z)=>if b then x else x*x)=(fn(c:Bool,y:Z)=>if c then y+1 else y*y);
+view partialNonlinearList():Bool=(fn(x:Z)=>list<Z>[x*x,x])=(fn(y:Z)=>list<Z>[y*y,y+1]);
+law required canceledTupleWithMissing(s:Sample,z:Z):z+s.h+(fn(a:(Z,Q))=>a.0-a.0)(s.t)=z;
+view seed():Z=1;
+law required prior():false;
+"#;
+pub fn law(digest: &str) -> String {
+    format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Terms {{use vocabulary Terms version \"1\" digest \"{digest}\";{SCRIPT}}}"
+    )
+}
+pub fn archmap(digest: &str, revision: &str) -> String {
+    terms::archmap(digest, revision)
+}

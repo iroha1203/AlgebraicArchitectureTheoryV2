@@ -6,65 +6,17 @@ use super::{
     term,
 };
 use crate::{law::CheckedLaw, types::Type};
-use std::collections::BTreeSet;
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.clone().checkpoint(Checkpoint::FiniteIteration)?;
     Ok(())
 }
-/// 型から保証できる有限Term比較の範囲。値の構文相違を不等とする判定ではない。
+/// 値を受理する型の範囲。有限/アフィン算法の成否は、元の値から別に計算する。
 pub(super) fn supported(
     ty: &Type,
     law: &CheckedLaw,
     c: &Control,
 ) -> Result<bool, ValidationFailure> {
-    fn visit(
-        t: &Type,
-        law: &CheckedLaw,
-        c: &Control,
-        active: &mut BTreeSet<String>,
-    ) -> Result<bool, ValidationFailure> {
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-            tick(c)?;
-            Ok(match t {
-                Type::Term(args, ret) => {
-                    for a in args {
-                        if !finite::completion_supported(a, law, c)? {
-                            return Ok(false);
-                        }
-                    }
-                    visit(ret, law, c, active)?
-                }
-                Type::Tuple(items) => {
-                    for t in items {
-                        if !visit(t, law, c, active)? {
-                            return Ok(false);
-                        }
-                    }
-                    true
-                }
-                Type::List(t) | Type::Set(t) | Type::Option(t) => visit(t, law, c, active)?,
-                Type::Data(name) => {
-                    if !active.insert(name.clone()) {
-                        return Ok(true);
-                    }
-                    let result: Result<bool, ValidationFailure> = (|| {
-                        for ctor in data::constructors(law, name)? {
-                            for t in &ctor.arguments {
-                                if !visit(t, law, c, active)? {
-                                    return Ok(false);
-                                }
-                            }
-                        }
-                        Ok(true)
-                    })();
-                    active.remove(name);
-                    result?
-                }
-                _ => data::supported(t, law, c)?,
-            })
-        })
-    }
-    visit(ty, law, c, &mut BTreeSet::new())
+    data::supported(ty, law, c)
 }
 fn sequence(
     a: &[Scalar],
@@ -107,9 +59,10 @@ pub(super) fn equal(
                 b.check(c)?;
                 for (_, ty) in &a.params {
                     if !finite::completion_supported(ty, law, c)? {
-                        // 非有限域の同じ元programの保持。Lawの二項演算の対応範囲はsupportedが別に決める。
+                        // 非有限域はZ/Q係数から比較し、算法外の同じ元programは保持する。
                         tick(c)?;
-                        return Ok((a == b).then_some(true));
+                        let compared = term::affine::equal(a, b, law, c)?;
+                        return Ok(compared.or_else(|| (a == b).then_some(true)));
                     }
                 }
                 let mut rows = vec![Vec::new()];

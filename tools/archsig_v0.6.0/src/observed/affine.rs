@@ -38,8 +38,22 @@ pub(crate) struct Parameter {
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum Symbol {
-    Missing(Fact),
+    Missing(MissingKey),
     Parameter(Parameter),
+    // 関数外延の座標。観測slot/全称binderではなく、元引数の位置だけで対応付ける。
+    TermArgument(TermArgument),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(super) struct TermArgument {
+    pub argument: usize,
+    pub component: Vec<usize>,
+    pub kind: NumberType,
+}
+
+pub(super) enum TermDifference {
+    Same,
+    Different { unit: Option<TermArgument> },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -49,19 +63,26 @@ pub(crate) struct Form {
     coefficients: BTreeMap<Symbol, Scalar>,
 }
 
-pub(crate) type MissingAssignment = Vec<(Fact, Scalar)>;
+/// 原始slotは一つのFactのまま保持し、数値Tupleの成分だけを内部座標に分ける。
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) struct MissingKey {
+    pub fact: Fact,
+    pub component: Vec<usize>,
+    pub kind: NumberType,
+}
+pub(crate) type MissingAssignment = Vec<(MissingKey, Scalar)>;
 pub(crate) type CompletionPair = (MissingAssignment, MissingAssignment);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum MissingArithmetic {
     Rational {
-        solution: Vec<(Fact, Scalar)>,
+        solution: Vec<(MissingKey, Scalar)>,
     },
     Integer {
         gcd: Scalar,
         bezout: Vec<Scalar>,
         remainder: Scalar,
-        solution: Option<Vec<(Fact, Scalar)>>,
+        solution: Option<Vec<(MissingKey, Scalar)>>,
     },
 }
 
@@ -87,7 +108,7 @@ pub(crate) struct Universal {
     pub value: Option<bool>,
     pub difference: Form,
     pub parameter_coefficients: Vec<(Parameter, Scalar)>,
-    pub missing_coefficients: Vec<(Fact, Scalar)>,
+    pub missing_coefficients: Vec<(MissingKey, Scalar)>,
     pub proof: UniversalProof,
     pub common_counterexample: Option<Vec<(Parameter, Scalar)>>,
     pub completion_pair: Option<CompletionPair>,
@@ -163,13 +184,62 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 }
 
 impl Form {
+    /// 元引数・Tuple成分の辞書式順で、定数項と全係数を型付き表示する。
+    pub(in crate::observed) fn term_coordinates(
+        &self,
+        axes: &[TermArgument],
+        c: &Control,
+    ) -> Result<Scalar, ValidationFailure> {
+        self.check(c)?;
+        for key in self.coefficients.keys() {
+            tick(c)?;
+            let Symbol::TermArgument(axis) = key else {
+                return Err("Term正規形に別種の記号がある".into());
+            };
+            if !axes.contains(axis) {
+                return Err("Term正規形の元引数軸がない".into());
+            }
+        }
+        let mut items = Vec::new();
+        for axis in axes {
+            tick(c)?;
+            items.push(
+                self.coefficients
+                    .get(&Symbol::TermArgument(axis.clone()))
+                    .cloned()
+                    .unwrap_or(numeric::zero(&self.ty, c)?),
+            );
+        }
+        Ok(Scalar::Tuple(vec![
+            self.constant.clone(),
+            Scalar::List {
+                element: self.ty.clone(),
+                items,
+            },
+        ]))
+    }
+
+    pub(super) fn ty(&self, control: &Control) -> Result<Type, ValidationFailure> {
+        self.check(control)?;
+        Ok(self.ty.clone())
+    }
     fn check(&self, control: &Control) -> Result<(), ValidationFailure> {
         controlled(control, || {
             scalar_check(&self.constant, &self.ty, control)?;
             for (symbol, coefficient) in &self.coefficients {
                 tick(control)?;
                 match symbol {
-                    Symbol::Missing(fact) => fact_check(fact)?,
+                    Symbol::Missing(key) => {
+                        fact_check(&key.fact)?;
+                        if key.kind.ty() != self.ty {
+                            return Err("欠測成分の数値型が違う".into());
+                        }
+                    }
+                    Symbol::TermArgument(argument) => {
+                        if argument.kind.ty() != self.ty {
+                            return Err("Term引数座標の型が係数型と違う".into());
+                        }
+                    }
                     Symbol::Parameter(parameter) => {
                         parameter_check(parameter)?;
                         if parameter.kind.ty() != self.ty {
@@ -241,7 +311,18 @@ pub(crate) fn missing(
         };
         let mut coefficients = BTreeMap::new();
         tick(control)?;
-        coefficients.insert(Symbol::Missing(fact.clone()), one);
+        coefficients.insert(
+            Symbol::Missing(MissingKey {
+                fact: fact.clone(),
+                component: vec![],
+                kind: if *ty == Type::Z {
+                    NumberType::Z
+                } else {
+                    NumberType::Q
+                },
+            }),
+            one,
+        );
         tick(control)?;
         Ok(Some(Form {
             ty: ty.clone(),
@@ -251,6 +332,27 @@ pub(crate) fn missing(
     })
 }
 
+pub(crate) fn missing_component(
+    ty: &Type,
+    fact: &Fact,
+    component: &[usize],
+    control: &Control,
+) -> Result<Option<Form>, ValidationFailure> {
+    let Some(mut form) = missing(ty, fact, control)? else {
+        return Ok(None);
+    };
+    let coefficients = std::mem::take(&mut form.coefficients);
+    for (symbol, value) in coefficients {
+        tick(control)?;
+        let Symbol::Missing(mut key) = symbol else {
+            return Err("成分の元記号が欠測でない".into());
+        };
+        key.component = component.to_vec();
+        form.coefficients.insert(Symbol::Missing(key), value);
+    }
+    form.check(control)?;
+    Ok(Some(form))
+}
 pub(crate) fn parameter(
     ty: &Type,
     key: &Parameter,
@@ -450,6 +552,9 @@ pub(crate) fn partial_forall(
             form.check(control)?;
             for symbol in form.coefficients.keys() {
                 tick(control)?;
+                if matches!(symbol, Symbol::TermArgument(_)) {
+                    return Err("Term外延座標を部分全称のbinderにできない".into());
+                }
                 if let Symbol::Parameter(parameter) = symbol
                     && let Some(expected) = declared.get(&(parameter.binder, parameter.context))
                     && *expected != parameter
@@ -564,7 +669,7 @@ fn rational_quotient(
 fn missing_arithmetic(
     ty: &Type,
     constant: &Scalar,
-    missing: &[(Fact, Scalar)],
+    missing: &[(MissingKey, Scalar)],
     control: &Control,
 ) -> Result<MissingArithmetic, ValidationFailure> {
     controlled(control, || {
@@ -658,8 +763,8 @@ fn missing_arithmetic(
 
 fn check_missing_solution(
     constant: &Scalar,
-    missing: &[(Fact, Scalar)],
-    values: &[(Fact, Scalar)],
+    missing: &[(MissingKey, Scalar)],
+    values: &[(MissingKey, Scalar)],
     expected_zero: bool,
     control: &Control,
 ) -> Result<(), ValidationFailure> {
@@ -729,7 +834,7 @@ pub(crate) fn substitute_parameters(
         for (symbol, coefficient) in &form.coefficients {
             tick(control)?;
             match symbol {
-                Symbol::Missing(_) => {
+                Symbol::Missing(_) | Symbol::TermArgument(_) => {
                     add_coefficient(
                         &mut result.coefficients,
                         symbol,
@@ -765,7 +870,7 @@ fn common_counterexample(
     difference: &Form,
     parameters: &[Parameter],
     active: &[(Parameter, Scalar)],
-    missing: &[(Fact, Scalar)],
+    missing: &[(MissingKey, Scalar)],
     control: &Control,
 ) -> Result<Option<CommonCounterexample>, ValidationFailure> {
     controlled(control, || {
@@ -843,6 +948,9 @@ pub(crate) fn universal_equality(
             tick(control)?;
             match symbol {
                 Symbol::Missing(fact) => missing.push((fact.clone(), coefficient.clone())),
+                Symbol::TermArgument(_) => {
+                    return Err("Term外延座標を観測の全称binderにできない".into());
+                }
                 Symbol::Parameter(parameter) => {
                     if !declared.contains(parameter) {
                         return Err("アフィン差のparameterが元全域binder列にない".into());
@@ -957,6 +1065,68 @@ pub(crate) fn universal_equality(
 }
 
 /// 正規化の実処理を固定点で中断する試験専用通知。時間・RSSは測定しない。
+
+/// 元Termの引数位置を独立座標にする。外側の観測missing/parameterを供給しない。
+pub(super) fn term_argument(key: TermArgument, c: &Control) -> Result<Form, ValidationFailure> {
+    controlled(c, || {
+        let ty = key.kind.ty();
+        let mut coefficients = BTreeMap::new();
+        coefficients.insert(Symbol::TermArgument(key), numeric::literal("1", &ty, c)?);
+        Ok(Form {
+            constant: numeric::zero(&ty, c)?,
+            ty,
+            coefficients,
+        })
+    })
+}
+
+/// 異なる係数には零/単位点を返す。反例は呼出し側が両方の元bodyへ再代入する。
+pub(super) fn term_difference(
+    a: &Form,
+    b: &Form,
+    c: &Control,
+) -> Result<TermDifference, ValidationFailure> {
+    controlled(c, || {
+        let d = binary(BinOp::Sub, Some(a), Some(b), c)?.ok_or("Term差の型が数値アフィンでない")?;
+        for key in d.coefficients.keys() {
+            tick(c)?;
+            if !matches!(key, Symbol::TermArgument(_)) {
+                return Err("Term外延比較へ観測の記号が混入した".into());
+            }
+        }
+        if !is_zero(&d.constant)? {
+            return Ok(TermDifference::Different { unit: None });
+        }
+        if let Some((Symbol::TermArgument(key), _)) = d.coefficients.first_key_value() {
+            return Ok(TermDifference::Different {
+                unit: Some(key.clone()),
+            });
+        }
+        Ok(TermDifference::Same)
+    })
+}
+
+pub(super) fn term_point(
+    f: &Form,
+    unit: Option<&TermArgument>,
+    c: &Control,
+) -> Result<Scalar, ValidationFailure> {
+    controlled(c, || {
+        f.check(c)?;
+        let mut value = f.constant.clone();
+        for (key, coefficient) in &f.coefficients {
+            tick(c)?;
+            let Symbol::TermArgument(key) = key else {
+                return Err("Term反例点へ観測の記号が混入した".into());
+            };
+            if Some(key) == unit {
+                value = numeric::binary(BinOp::Add, &value, coefficient, c)?;
+            }
+        }
+        Ok(value)
+    })
+}
+
 #[cfg(test)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum TestPoint {
@@ -1064,7 +1234,17 @@ mod tests {
             .unwrap();
         assert_eq!(distinct.value, Some(false));
         assert_eq!(distinct.parameter_coefficients, vec![(key.clone(), z(1))]);
-        assert_eq!(distinct.missing_coefficients, vec![(slot("h"), z(-1))]);
+        assert_eq!(
+            distinct.missing_coefficients,
+            vec![(
+                MissingKey {
+                    fact: slot("h"),
+                    component: vec![],
+                    kind: NumberType::Z
+                },
+                z(-1)
+            )]
+        );
         assert!(distinct.common_counterexample.is_none());
         let mut foreign = key.clone();
         foreign.context.request = 1;
@@ -1242,7 +1422,14 @@ mod tests {
         };
         assert_eq!(
             solution,
-            &vec![(slot("h"), Scalar::Q(15.into(), 14.into()))]
+            &vec![(
+                MissingKey {
+                    fact: slot("h"),
+                    component: vec![],
+                    kind: NumberType::Q
+                },
+                Scalar::Q(15.into(), 14.into())
+            )]
         );
         let (first, second) = outcome.completion_pair.unwrap();
         check_missing_solution(

@@ -61,6 +61,24 @@
   body内のand/or/impliesは左辺で決まるとき右辺を評価せず、未観測条件の両枝で同じ元Termを保持する。
   有限なUnit/Bool/Fp・非再帰Data・Tuple/Option/Setの全引数域からTermの外延等値を計算する。
   0/複数引数と元順を保ち、異なるparameter名やbodyの同じ関数を等値とする。
+  Z/Qと数値TupleのアフィンTermは元bodyの正確な係数から比較し、相違点を零・単位点から作って元bodyへ再代入する。
+  有限引数と数値全域を分け、let・Tuple演算/射影・有限Listの和・有限量化を型付きで分析する。
+  Termの等号/不等号には、元左右・元出現と各有限caseの型付き係数正規形を導出に保持する。
+  外延が異なるときは元順の実引数と両bodyへ再代入した出力対をcounterexampleに残し、元入力から再検査する。
+  各Termのnormalizationはbeforeに元Term、afterに型付きListの正規形、stepsに元比較Expressionを参照する。
+  Listの各rowは有限caseの引数零点と出力正規形の組であり、0/1/複数引数はUnit/元値/Tupleで保持する。
+  数値出力の正規形は(定数項,全係数List)で、軸は元parameter順・Tuple成分順、他の数値型の軸には零係数を置く。
+  出力Tuple/Listでは同じ表示を成分へ適用し、元Termの型を表示の解釈に使う。
+  counterexampleのbindingsは元parameter名と型付き引数値、left/rightは元bodyへ再代入した値の既出参照である。
+  既知Termへの量化parameter/欠測数値の適用は元の記号へ接続し、相殺した値・等号を確定する。
+  view/let/有限補完でも元slotの相関・実引数producer・支持・Scopeを保持する。
+  未確定な数値Tupleも成分の記号を束縛後へ保持し、Tuple演算・入れ子の射影と外側等号を通じて同じslotの相関を使う。
+  単一の欠測Tuple fieldは元の一slotを保ち、成分pathだけを内部の相関に用いる。
+  その数値補完対は各成分を元のTuple型の値へ復元し、元FactPointer一個へ接続する。
+  外延比較や数値適用が算法外なら、元の型・式・必要な域/判定を持つunsupported_algorithmを返す。
+  比較で読み取ったcaseの成分に算法外値があれば、他成分・後続caseの相違だけで係数証拠を作らず未決へ戻す。
+  数値補完の係数から相殺したTuple slotも、元missingと元型の証拠値を保持する。
+  既知実値や有限全域の非線形計算も実計算し、未観測calleeを既定fnへ置き換えない。
   Termを含むTuple/List/Option/DataとList所属、未知条件の両枝・全補完の比較にも同じ外延を使う。
   元programの由来検査は原式を照合し、構文相違だけのcompletion_pairを作らない。
   全域で判定できない補完値の比較は、元missingと型付きunsupported_algorithmを残す。
@@ -130,7 +148,6 @@
   補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdataの評価、その他の式形・
-  上記以外のTerm外延等値・全称/欠測アフィン式へのTerm適用の接続・
   上記以外の無限型・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
