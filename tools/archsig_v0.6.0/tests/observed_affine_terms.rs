@@ -827,3 +827,117 @@ fn affine_term_single_missing_tuple_slot_keeps_paths_and_whole_slot_completions(
         ]
     );
 }
+
+#[test]
+fn partial_nonlinear_term_comparison_keeps_a_typed_algorithm_reason_instead_of_internal() {
+    let r = evaluate_observed_bytes(
+        sources(),
+        &[
+            "seed=evaluate(Terms.seed)",
+            "prior=check(Terms.prior)",
+            "x=evaluate(Terms.partialNonlinearTuple)",
+            "f=evaluate(Terms.partialNonlinearFinite)",
+            "l=evaluate(Terms.partialNonlinearList)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", get(&r.wire(), "issues"));
+    let w = r.wire();
+    assert_eq!(value(&w, "seed"), &Json::str("1"));
+    assert_eq!(get(answer(&w, "prior"), "status"), &Json::str("refuted"));
+    for id in ["x", "f", "l"] {
+        let a = answer(&w, id);
+        assert_eq!(get(a, "status"), &Json::str("undetermined"));
+        assert!(!format!("{:?}", get(&w, "issues")).contains("internal"));
+        let Json::Obj(outputs) = get(a, "outputs") else {
+            panic!("outputs")
+        };
+        assert!(!outputs.contains_key("value"));
+        let reason = arr(get(a, "reasons"))
+            .iter()
+            .find(|r| get(r, "code") == &Json::str("unsupported_algorithm"))
+            .unwrap();
+        assert!(!arr(get(reason, "dependencies")).is_empty());
+        assert_eq!(get(get(reason, "location"), "input"), &Json::str("law"));
+        let parameters = if id == "f" {
+            vec![Json::str("Bool"), Json::str("Z")]
+        } else {
+            vec![Json::str("Z")]
+        };
+        let returns = match id {
+            "x" => Json::Arr(vec![Json::str("Tuple"), Json::str("Z"), Json::str("Z")]),
+            "f" => Json::str("Z"),
+            "l" => Json::Arr(vec![Json::str("List"), Json::str("Z")]),
+            _ => unreachable!(),
+        };
+        let ty = Json::Arr(vec![Json::str("Term"), Json::Arr(parameters), returns]);
+        assert_eq!(
+            get(get(reason, "details"), "operand_types"),
+            &Json::Arr(vec![ty.clone(), ty])
+        );
+    }
+}
+#[test]
+fn canceled_missing_tuple_keeps_whole_typed_values_in_another_slots_universal_completion_pair() {
+    let r = evaluate_observed_bytes(
+        sources(),
+        &["x=check(Terms.canceledTupleWithMissing,s=@v/s)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", get(&r.wire(), "issues"));
+    let w = r.wire();
+    let a = answer(&w, "x");
+    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    assert!(!format!("{:?}", get(&w, "issues")).contains("internal"));
+    for field in ["Terms.Sample.h", "Terms.Sample.t"] {
+        assert!(
+            arr(get(a, "reasons"))
+                .iter()
+                .flat_map(|r| arr(get(r, "missing")))
+                .any(|m| get(m, "field") == &Json::str(field))
+        );
+    }
+    let nodes = arr(get(&w, "nodes"));
+    let node = |reference: &Json| {
+        nodes
+            .iter()
+            .find(|n| get(n, "id") == get(reference, "node"))
+            .unwrap()
+    };
+    let pairs:Vec<_>=nodes.iter().filter(|n|matches!(n,Json::Obj(m) if m.get("type")==Some(&Json::str("Evidence"))&&m.get("value").is_some_and(|v|matches!(v,Json::Obj(m) if m.get("kind")==Some(&Json::str("completion_pair")))))).collect();
+    assert_eq!(pairs.len(), 1);
+    let data = get(get(pairs[0], "value"), "data");
+    assert_eq!(
+        arr(get(data, "fields"))
+            .iter()
+            .map(|f| get(f, "field").clone())
+            .collect::<Vec<_>>(),
+        vec![Json::str("Terms.Sample.h"), Json::str("Terms.Sample.t")]
+    );
+    for (side, h) in [("first", "0"), ("second", "1")] {
+        let values = arr(get(data, side));
+        assert_eq!(values.len(), 2);
+        let t = node(&values[1]);
+        assert_eq!(
+            get(t, "type"),
+            &Json::Arr(vec![Json::str("Tuple"), Json::str("Z"), Json::str("Q")])
+        );
+        assert_eq!(
+            get(t, "value"),
+            &Json::Arr(vec![
+                Json::str("0"),
+                Json::Arr(vec![Json::str("0"), Json::str("1")])
+            ])
+        );
+        assert_eq!(get(node(&values[0]), "value"), &Json::str(h));
+    }
+    for (key, wanted) in [("first_result", true), ("second_result", false)] {
+        let evaluation = node(get(data, key));
+        assert_eq!(
+            get(node(get(get(evaluation, "value"), "value")), "value"),
+            &Json::Bool(wanted)
+        );
+    }
+}

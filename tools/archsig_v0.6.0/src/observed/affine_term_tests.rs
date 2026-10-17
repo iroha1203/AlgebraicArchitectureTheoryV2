@@ -759,3 +759,75 @@ fn affine_term_point_rejects_coherent_foreign_same_value_arguments_outputs_and_e
         ns[target.0].arguments = foreign.arguments;
     });
 }
+
+#[test]
+fn partial_nonlinear_term_algorithm_reason_rejects_changed_types_and_foreign_dependencies() {
+    let r = affine_term_result(&[
+        "first=evaluate(Terms.partialNonlinearTuple)",
+        "second=evaluate(Terms.partialNonlinearTuple)",
+    ]);
+    let (donor, target) = (
+        r.answers[0].outputs["evaluation"].0,
+        r.answers[1].outputs["evaluation"].0,
+    );
+    let foreign = r.nodes[donor]
+        .reasons
+        .iter()
+        .find(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+        .unwrap()
+        .dependencies
+        .clone();
+    for mode in 0..2 {
+        completion_mutation(&r, target, |ns| {
+            let reason = ns[target]
+                .reasons
+                .iter_mut()
+                .find(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+                .unwrap();
+            if mode == 0 {
+                let ReasonKind::UnsupportedAlgorithm { operand_types, .. } = &mut reason.kind
+                else {
+                    unreachable!()
+                };
+                *operand_types = vec![Type::Bool];
+            } else {
+                reason.dependencies = foreign.clone();
+            }
+        });
+    }
+}
+#[test]
+fn canceled_tuple_completion_rejects_foreign_same_value_whole_slot_producer() {
+    let r = affine_term_result(&[
+        "first=check(Terms.canceledTupleWithMissing,s=@v/s)",
+        "second=check(Terms.canceledTupleWithMissing,s=@v/s)",
+    ]);
+    let pairs: Vec<_> = r
+        .nodes
+        .iter()
+        .filter_map(|n| match &n.payload {
+            Some(Payload::CompletionPair { fields, first, .. }) => {
+                Some((fields.clone(), first.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+    assert_eq!(pairs.len(), 2);
+    assert_eq!(pairs[0].0, pairs[1].0);
+    assert_eq!(pairs[0].0.len(), 2);
+    let index = pairs[0]
+        .0
+        .iter()
+        .position(|f| f.field.as_deref() == Some("Terms.Sample.t"))
+        .unwrap();
+    let (donor, target) = (pairs[0].1[index], pairs[1].1[index]);
+    assert!(donor.0 < target.0);
+    assert_eq!(r.nodes[donor.0].payload, r.nodes[target.0].payload);
+    assert!(matches!(
+        r.nodes[target.0].payload,
+        Some(Payload::Scalar(Scalar::Tuple(_)))
+    ));
+    completion_mutation(&r, target.0, |ns| {
+        ns[target.0].arguments = ns[donor.0].arguments.clone()
+    });
+}

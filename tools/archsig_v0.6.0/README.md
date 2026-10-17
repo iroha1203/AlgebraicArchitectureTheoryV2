@@ -76,6 +76,8 @@
   単一の欠測Tuple fieldは元の一slotを保ち、成分pathだけを内部の相関に用いる。
   その数値補完対は各成分を元のTuple型の値へ復元し、元FactPointer一個へ接続する。
   外延比較や数値適用が算法外なら、元の型・式・必要な域/判定を持つunsupported_algorithmを返す。
+  比較で読み取ったcaseの成分に算法外値があれば、他成分・後続caseの相違だけで係数証拠を作らず未決へ戻す。
+  数値補完の係数から相殺したTuple slotも、元missingと元型の証拠値を保持する。
   既知実値や有限全域の非線形計算も実計算し、未観測calleeを既定fnへ置き換えない。
   Termを含むTuple/List/Option/DataとList所属、未知条件の両枝・全補完の比較にも同じ外延を使う。
   元programの由来検査は原式を照合し、構文相違だけのcompletion_pairを作らない。

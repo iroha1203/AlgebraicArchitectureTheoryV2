@@ -584,7 +584,6 @@ pub(in crate::observed) fn comparison(
         }
         rows = next;
     }
-    let mut unsupported = false;
     let mut cases = Vec::new();
     for (_index, row) in rows.iter().enumerate() {
         #[cfg(test)]
@@ -592,6 +591,11 @@ pub(in crate::observed) fn comparison(
         tick(c)?;
         let left = a.apply_symbolic(row, law, c)?.normal_form(c)?;
         let right = b.apply_symbolic(row, law, c)?.normal_form(c)?;
+        // 証拠へ保持する全成分を係数化できるcaseだけを受理する。
+        // 部分的な相違だけで算法外成分を正規形表示へ持ち込まない。
+        if left.unsupported(c)? || right.unsupported(c)? {
+            return Ok(None);
+        }
         let result = compare(&left, &right, law, c)?;
         cases.push(Case {
             arguments: row.clone(),
@@ -600,7 +604,7 @@ pub(in crate::observed) fn comparison(
         });
         match result {
             Comparison::Same => {}
-            Comparison::Unsupported => unsupported = true,
+            Comparison::Unsupported => return Ok(None),
             Comparison::Different(unit) => {
                 let args = row
                     .iter()
@@ -622,7 +626,7 @@ pub(in crate::observed) fn comparison(
         }
         tick(c)?;
     }
-    Ok((!unsupported).then_some(Certificate { cases, point: None }))
+    Ok(Some(Certificate { cases, point: None }))
 }
 impl Term {
     pub(in crate::observed) fn apply_symbolic(

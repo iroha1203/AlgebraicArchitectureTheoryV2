@@ -130,7 +130,7 @@ impl Evaluator<'_, '_> {
                 self.tick(Checkpoint::FiniteIteration)?;
                 let value = match values.iter().find(|(candidate, _)| candidate == fact) {
                     Some((_, value)) => value.clone(),
-                    None => numeric::literal("0", ty, self.control)?,
+                    None => numeric::zero(ty, self.control)?,
                 };
                 facts.push((fact.clone(), value.clone()));
                 references.push(self.value(
