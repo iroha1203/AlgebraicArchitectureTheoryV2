@@ -164,8 +164,11 @@
   全caseで同じ既知値なら値を確定する。Lawは全case成立/全case違反を区別し、
   補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
+  同一batchの既知の`$id.value`・`$id.evaluation.value`を、全parameterが束縛されたview/Lawへ渡す。
+  元出力の既出Refを再利用し、数値・参照・container・有限data・Map/Termの型と値、支持・Scopeを保つ。
+  要求の依存順に計算し、Answerは指定順に返す。消費時には検査済みの元Request列と元出力を再検査する。
   上記以外のpayloadを持つdataの評価、その他の式形・
-  上記以外の無限型・Answer 由来の束縛・
+  上記以外の無限型・Answer由来の構造成分射影/未生成出力/動的owner/自由Law族との混合・
   未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
