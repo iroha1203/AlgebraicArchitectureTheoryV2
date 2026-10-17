@@ -60,9 +60,11 @@ fn supported_with_references(
                 Type::Ref(_) => Ok(references),
                 // Map fieldの補完には入力全体の参照制約が必要。型全域の
                 // 列挙だけを、元の有限参照族上の全域関数として許可する。
+                // Ownedは実ownerを復元する明示型量化だけが扱う。その入口は
+                // 消去型で本判定を行う。未束縛の複合Law parameterは未対応。
                 Type::Map(domain, codomain) => Ok(references
-                    && domain.ref_target().is_some()
-                    && codomain.ref_target().is_some()),
+                    && matches!(domain.as_ref(), Type::Ref(_))
+                    && matches!(codomain.as_ref(), Type::Ref(_))),
                 Type::Tuple(types) => {
                     for ty in types {
                         if !visit(ty, law, control, active, references)? {

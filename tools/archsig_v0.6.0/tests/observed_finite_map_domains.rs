@@ -543,3 +543,55 @@ fn finite_map_empty_domain_still_rejects_an_ill_typed_body() {
     );
     assert!(check_inputs(input, &mut quiet()).is_err());
 }
+
+#[test]
+fn finite_owned_map_unbound_parameters_keep_dedicated_unimplemented_failure() {
+    for ty in [
+        "Map<State[a],State[b]>",
+        "Option<Map<State[a],State[b]>>",
+        "(Unit,Map<State[a],State[b]>)",
+        "Set<Map<State[a],State[b]>>",
+    ] {
+        let original = owned_sources(false);
+        let mut law = String::from_utf8(original.law().bytes().to_vec()).unwrap();
+        let pos = law.rfind('}').unwrap();
+        law.insert_str(
+            pos,
+            &format!("law required nested(a:System,b:System,f:{ty}):true;"),
+        );
+        let input = InputSources::from_bytes(
+            vec![maps::OWNED_DEFINITIONS.as_bytes().to_vec()],
+            law.into_bytes(),
+            original.archmap().bytes().to_vec(),
+        );
+        let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+        let archsig::law::model::Signature::Law { params, .. } =
+            &checked.law().declarations["Reservations.nested"].signature
+        else {
+            panic!("Law signature");
+        };
+        let expected = archsig::issue::Location::Law {
+            span: params[2].span,
+        };
+        let outcome = evaluate_observed_bytes(
+            input,
+            &["c=check(Reservations.nested,a=@v/A,b=@v/B)"],
+            &mut quiet(),
+        );
+        let Err(failure) = outcome else {
+            panic!("{ty}: unsupported parameter produced a result instead of dedicated failure");
+        };
+        assert!(failure.wire().is_none());
+        let archsig::observed::EvaluationFailure::NotImplemented {
+            declaration,
+            location,
+            feature,
+        } = failure
+        else {
+            panic!("{ty}: wrong failure");
+        };
+        assert_eq!(declaration, "Reservations.nested");
+        assert_eq!(location, expected);
+        assert!(feature.contains("parameter `f`"), "{feature}");
+    }
+}
