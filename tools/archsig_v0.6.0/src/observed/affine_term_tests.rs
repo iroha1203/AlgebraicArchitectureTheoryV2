@@ -207,6 +207,7 @@ fn affine_term_application_rechecks_normalization_and_typed_algorithm_obligation
         "i=evaluate(Terms.cancelEquality,s=@v/s)",
         "o=evaluate(Terms.opaque)",
         "m=evaluate(Terms.opaqueMissing,s=@v/s)",
+        "t=evaluate(Terms.tupleOutside,s=@v/s)",
     ]);
     let normalizations: Vec<_> = r
         .nodes
@@ -224,7 +225,7 @@ fn affine_term_application_rechecks_normalization_and_typed_algorithm_obligation
             steps.pop();
         });
     }
-    for index in [1, 2] {
+    for index in [1, 2, 3] {
         let target = r.answers[index].outputs["evaluation"].0;
         for mode in 0..3 {
             completion_mutation(&r, target, |ns| {
@@ -376,4 +377,221 @@ fn affine_term_actual_case_stop_preserves_prior_value_refutation_and_verified_pr
 fn affine_term_actual_original_input_recheck_stop_preserves_prior_value_refutation_and_verified_prefix()
  {
     affine_term_stop_in_batch(true)
+}
+#[test]
+fn affine_term_comparison_rechecks_retained_forms_points_and_evidence_after_normal_prefix() {
+    let r = affine_term_result(&[
+        "e=evaluate(Terms.same,s=@v/s)",
+        "d=check(Terms.unequal,s=@v/s)",
+        "q=evaluate(Terms.qCoefficient)",
+    ]);
+    let proofs: Vec<_> = r
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| matches!(n.payload, Some(Payload::TermComparison { .. })).then_some(i))
+        .collect();
+    assert_eq!(proofs.len(), 3);
+    for &target in &proofs {
+        for mode in 0..6 {
+            completion_mutation(&r, target, |ns| {
+                if mode == 0 {
+                    ns[target].support.push(Fact {
+                        snapshot: "v".into(),
+                        subject: "s".into(),
+                        field: None,
+                        atom: None,
+                    });
+                    return;
+                }
+                if mode == 1 {
+                    ns[target].scope.readings.clear();
+                    return;
+                }
+                let Some(Payload::TermComparison {
+                    certificate,
+                    left,
+                    right,
+                    ..
+                }) = &mut ns[target].payload
+                else {
+                    panic!("certificate")
+                };
+                match mode {
+                    2 => {
+                        certificate.cases.clear();
+                    }
+                    3 => {
+                        certificate.cases[0].arguments.clear();
+                    }
+                    4 => {
+                        let c = named_call_quiet();
+                        let ty = certificate.cases[0].left.ty(&c).unwrap();
+                        let changed = super::super::numeric::literal("17", &ty, &c).unwrap();
+                        certificate.cases[0].left = super::super::term::affine::Value::Number(
+                            super::super::affine::constant(&changed, &c)
+                                .unwrap()
+                                .unwrap(),
+                        );
+                    }
+                    5 => {
+                        std::mem::swap(left, right);
+                    }
+                    _ => unreachable!(),
+                }
+            });
+        }
+        if matches!(&r.nodes[target].payload,Some(Payload::TermComparison{certificate,..}) if certificate.point.is_some())
+        {
+            for mode in 0..3 {
+                completion_mutation(&r, target, |ns| {
+                    let Some(Payload::TermComparison { certificate, .. }) = &mut ns[target].payload
+                    else {
+                        panic!("certificate")
+                    };
+                    if mode == 0 {
+                        certificate.point = None;
+                        return;
+                    }
+                    let point = certificate.point.as_mut().unwrap();
+                    if mode == 1 {
+                        point.arguments.clear();
+                    } else {
+                        point.right = point.left.clone();
+                    }
+                });
+            }
+        }
+    }
+    let value = r
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| (n.evidence == [NodeRef(proofs[0])]).then_some(i))
+        .unwrap();
+    completion_mutation(&r, value, |ns| ns[value].evidence.clear());
+    let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let e = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
+    let target = proofs[0];
+    e.recheck_node(&graph, &graph.nodes[target], target)
+        .unwrap();
+    let original = graph.nodes[target].clone();
+    let Some(Payload::TermComparison { certificate, .. }) = &mut graph.nodes[target].payload else {
+        panic!("certificate")
+    };
+    certificate.cases.clear();
+    assert!(matches!(
+        e.recheck_node(&graph, &graph.nodes[target], target),
+        Err(ValidationFailure::Internal(_))
+    ));
+    graph.nodes[target] = original;
+    e.recheck_node(&graph, &graph.nodes[target], target)
+        .unwrap();
+}
+#[test]
+fn affine_term_comparison_rejects_foreign_coherent_same_value_certificate_producers() {
+    let r = affine_term_result(&[
+        "first=evaluate(Terms.same,s=@v/s)",
+        "second=evaluate(Terms.same,s=@v/s)",
+    ]);
+    let proofs: Vec<_> = r
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| matches!(n.payload, Some(Payload::TermComparison { .. })).then_some(i))
+        .collect();
+    assert_eq!(proofs.len(), 2);
+    let (donor, target) = (proofs[0], proofs[1]);
+    assert!(donor < target);
+    let (
+        Some(Payload::TermComparison { certificate: a, .. }),
+        Some(Payload::TermComparison { certificate: b, .. }),
+    ) = (&r.nodes[donor].payload, &r.nodes[target].payload)
+    else {
+        panic!("certificate")
+    };
+    assert!(a.identical(b, &named_call_quiet()).unwrap());
+    completion_mutation(&r, target, |ns| {
+        let foreign = ns[donor].clone();
+        ns[target].payload = foreign.payload;
+        ns[target].arguments = foreign.arguments;
+    });
+    let result = r
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| (n.evidence == [NodeRef(target)]).then_some(i))
+        .unwrap();
+    completion_mutation(&r, result, |ns| ns[result].evidence = vec![NodeRef(donor)]);
+}
+#[test]
+fn affine_tuple_binding_rechecks_unknown_actual_producers_and_cached_source_components() {
+    let r = affine_term_result(&[
+        "first=evaluate(Terms.viaTupleView,s=@v/s)",
+        "second=evaluate(Terms.viaTupleView,s=@v/s)",
+    ]);
+    let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let mut applications = Vec::new();
+    for (i, n) in r.nodes.iter().enumerate() {
+        let Some(Payload::Evaluation {
+            expression,
+            parts,
+            value: Some(v),
+            ..
+        }) = &n.payload
+        else {
+            continue;
+        };
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &r.nodes[expression.0].payload
+        else {
+            continue;
+        };
+        let source =
+            std::str::from_utf8(&r.prepared.inputs.sources().law().bytes()[span.0..span.1])
+                .unwrap();
+        if source == "(fn(u:(Z,Q))=>u.1-u.1)(t)" {
+            assert_eq!(graph.scalar(*v).unwrap(), &Scalar::Q(0.into(), 1.into()));
+            assert_eq!(parts[0].children.len(), 2);
+            applications.push((i, parts[0].children.clone(), *v));
+        }
+    }
+    assert_eq!(applications.len(), 2);
+    let (target, children, value) = &applications[1];
+    let donor = applications[0].1[1];
+    let original = children[1];
+    assert!(donor.0 < original.0);
+    assert_ne!(donor, original);
+    assert_eq!(r.nodes[donor.0].ty, r.nodes[original.0].ty);
+    assert!(matches!(
+        &r.nodes[donor.0].payload,
+        Some(Payload::Evaluation { value: None, .. })
+    ));
+    assert!(matches!(
+        &r.nodes[original.0].payload,
+        Some(Payload::Evaluation { value: None, .. })
+    ));
+    completion_mutation(&r, *target, |ns| {
+        let Some(Payload::Evaluation { parts, .. }) = &mut ns[*target].payload else {
+            panic!("evaluation")
+        };
+        parts[0].children[1] = donor;
+        for edge in &mut ns[*target].arguments {
+            if *edge == original {
+                *edge = donor;
+            }
+        }
+        assert_eq!(ns[value.0].arguments[2], original);
+        ns[value.0].arguments[2] = donor;
+    });
+    // 同じview本体を、一つの問いのh/qとk/qという異なる成分で再分析する。
+    let r = affine_term_result(&["c=evaluate(Terms.tupleCache,s=@v/s)"]);
+    let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    assert_eq!(
+        graph.scalar(r.answers[0].outputs["value"]).unwrap(),
+        &Scalar::Bool(true)
+    );
+    assert_eq!(r.status(), "complete");
 }

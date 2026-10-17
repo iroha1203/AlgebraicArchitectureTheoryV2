@@ -25,6 +25,28 @@ impl Clone for Value {
         })
     }
 }
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
+            (Self::Known(a), Self::Known(b)) => a == b,
+            (Self::Number(a), Self::Number(b)) => a == b,
+            (Self::Tuple(a), Self::Tuple(b)) => a == b,
+            (
+                Self::List {
+                    element: a,
+                    items: x,
+                },
+                Self::List {
+                    element: b,
+                    items: y,
+                },
+            ) => a == b && x == y,
+            (Self::Unsupported(a), Self::Unsupported(b)) => a == b,
+            _ => false,
+        })
+    }
+}
+impl Eq for Value {}
 impl Drop for Value {
     fn drop(&mut self) {
         let mut pending = match self {
@@ -40,6 +62,23 @@ impl Drop for Value {
     }
 }
 impl Value {
+    pub(in crate::observed) fn unsupported(&self, c: &Control) -> Result<bool, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(c)?;
+            match self {
+                Self::Unsupported(_) => Ok(true),
+                Self::Tuple(v) | Self::List { items: v, .. } => {
+                    for v in v {
+                        if v.unsupported(c)? {
+                            return Ok(true);
+                        }
+                    }
+                    Ok(false)
+                }
+                _ => Ok(false),
+            }
+        })
+    }
     pub(in crate::observed) fn ty(&self, c: &Control) -> Result<Type, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
@@ -124,6 +163,16 @@ impl Value {
         })
     }
 }
+fn list_values(v: &Value, c: &Control) -> Result<Option<Vec<Value>>, ValidationFailure> {
+    tick(c)?;
+    Ok(match v {
+        Value::List { items, .. } => Some(items.clone()),
+        Value::Known(Scalar::List { items, .. }) => {
+            Some(items.iter().cloned().map(Value::Known).collect())
+        }
+        _ => None,
+    })
+}
 fn tuple_values(v: &Value, c: &Control) -> Result<Option<Vec<Value>>, ValidationFailure> {
     tick(c)?;
     Ok(match v {
@@ -132,7 +181,7 @@ fn tuple_values(v: &Value, c: &Control) -> Result<Option<Vec<Value>>, Validation
         _ => None,
     })
 }
-fn pointwise_equal(
+pub(in crate::observed) fn pointwise_equal(
     a: &Value,
     b: &Value,
     law: &CheckedLaw,
@@ -167,7 +216,7 @@ fn pointwise_equal(
         )
     })
 }
-fn operation(
+pub(in crate::observed) fn operation(
     op: BinOp,
     a: &Value,
     b: &Value,
@@ -304,12 +353,12 @@ fn compare(
                 forms::TermDifference::Different { unit } => Comparison::Different(unit),
             });
         }
-        if let (Value::List { items: a, .. }, Value::List { items: b, .. }) = (a, b) {
+        if let (Some(a), Some(b)) = (list_values(a, c)?, list_values(b, c)?) {
             if a.len() != b.len() {
                 return Ok(Comparison::Different(None));
             }
             let mut unknown = false;
-            for (a, b) in a.iter().zip(b) {
+            for (a, b) in a.iter().zip(&b) {
                 match compare(a, b, law, c)? {
                     Comparison::Same => {}
                     Comparison::Unsupported => unknown = true,
@@ -322,9 +371,12 @@ fn compare(
                 Comparison::Same
             });
         }
-        if let (Value::Tuple(a), Value::Tuple(b)) = (a, b) {
+        if let (Some(a), Some(b)) = (tuple_values(a, c)?, tuple_values(b, c)?) {
+            if a.len() != b.len() {
+                return Err("Term正規形のTuple長が違う".into());
+            }
             let mut unknown = false;
-            for (a, b) in a.iter().zip(b) {
+            for (a, b) in a.iter().zip(&b) {
                 match compare(a, b, law, c)? {
                     Comparison::Same => {}
                     Comparison::Unsupported => unknown = true,
@@ -347,12 +399,196 @@ fn compare(
         })
     })
 }
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct Case {
+    pub arguments: Vec<Value>,
+    pub left: Value,
+    pub right: Value,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct Point {
+    pub arguments: Vec<Scalar>,
+    pub left: Scalar,
+    pub right: Scalar,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct Certificate {
+    pub(in crate::observed) cases: Vec<Case>,
+    pub(in crate::observed) point: Option<Point>,
+}
+impl Certificate {
+    pub(in crate::observed) fn equal(&self) -> bool {
+        self.point.is_none()
+    }
+    pub(in crate::observed) fn identical(
+        &self,
+        other: &Self,
+        c: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        tick(c)?;
+        if self.cases.len() != other.cases.len() || self.point != other.point {
+            return Ok(false);
+        }
+        for (a, b) in self.cases.iter().zip(&other.cases) {
+            tick(c)?;
+            if a.arguments.len() != b.arguments.len()
+                || !a.left.identical(&b.left, c)?
+                || !a.right.identical(&b.right, c)?
+            {
+                return Ok(false);
+            }
+            for (a, b) in a.arguments.iter().zip(&b.arguments) {
+                if !a.identical(b, c)? {
+                    return Ok(false);
+                }
+            }
+        }
+        tick(c)?;
+        Ok(true)
+    }
+
+    pub(in crate::observed) fn wire(&self) -> crate::canonical::Json {
+        use crate::canonical::Json;
+        let typed = |v: &Scalar| Json::obj([("type", v.ty().wire()), ("value", v.wire())]);
+        let mut data = BTreeMap::from([(
+            "cases".into(),
+            Json::Arr(
+                self.cases
+                    .iter()
+                    .map(|case| {
+                        Json::obj([
+                            (
+                                "arguments",
+                                Json::Arr(case.arguments.iter().map(Value::wire).collect()),
+                            ),
+                            ("left", case.left.wire()),
+                            ("right", case.right.wire()),
+                        ])
+                    })
+                    .collect(),
+            ),
+        )]);
+        if let Some(p) = &self.point {
+            data.insert(
+                "counterexample".into(),
+                Json::obj([
+                    (
+                        "arguments",
+                        Json::Arr(p.arguments.iter().map(typed).collect()),
+                    ),
+                    ("left", typed(&p.left)),
+                    ("right", typed(&p.right)),
+                ]),
+            );
+        }
+        Json::Obj(data)
+    }
+}
+impl Value {
+    fn normal_form(&self, c: &Control) -> Result<Self, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(c)?;
+            let value = match self {
+                Self::Known(v) => {
+                    if let Some(form) = forms::constant(v, c)? {
+                        Self::Number(form)
+                    } else {
+                        match v {
+                            Scalar::Tuple(items) => Self::Tuple(
+                                items
+                                    .iter()
+                                    .map(|v| Self::Known(v.clone()).normal_form(c))
+                                    .collect::<Result<_, _>>()?,
+                            ),
+                            Scalar::List { element, items } => Self::List {
+                                element: element.clone(),
+                                items: items
+                                    .iter()
+                                    .map(|v| Self::Known(v.clone()).normal_form(c))
+                                    .collect::<Result<_, _>>()?,
+                            },
+                            _ => self.clone(),
+                        }
+                    }
+                }
+                Self::Tuple(items) => Self::Tuple(
+                    items
+                        .iter()
+                        .map(|v| v.normal_form(c))
+                        .collect::<Result<_, _>>()?,
+                ),
+                Self::List { element, items } => Self::List {
+                    element: element.clone(),
+                    items: items
+                        .iter()
+                        .map(|v| v.normal_form(c))
+                        .collect::<Result<_, _>>()?,
+                },
+                _ => self.clone(),
+            };
+            tick(c)?;
+            Ok(value)
+        })
+    }
+    pub(in crate::observed) fn identical(
+        &self,
+        other: &Self,
+        c: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(c)?;
+            let same = match (self, other) {
+                (Self::Tuple(a), Self::Tuple(b))
+                | (Self::List { items: a, .. }, Self::List { items: b, .. }) => {
+                    if self.ty(c)? != other.ty(c)? || a.len() != b.len() {
+                        return Ok(false);
+                    }
+                    for (a, b) in a.iter().zip(b) {
+                        if !a.identical(b, c)? {
+                            return Ok(false);
+                        }
+                    }
+                    true
+                }
+                _ => self == other,
+            };
+            tick(c)?;
+            Ok(same)
+        })
+    }
+    fn wire(&self) -> crate::canonical::Json {
+        use crate::canonical::Json;
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Known(v) => Json::obj([("type", v.ty().wire()), ("value", v.wire())]),
+            Self::Number(v) => v.term_wire(),
+            Self::Tuple(v) => Json::obj([
+                ("kind", Json::str("tuple")),
+                ("components", Json::Arr(v.iter().map(Self::wire).collect())),
+            ]),
+            Self::List { element, items } => Json::obj([
+                ("type", Type::List(Box::new(element.clone())).wire()),
+                ("items", Json::Arr(items.iter().map(Self::wire).collect())),
+            ]),
+            Self::Unsupported(t) => {
+                Json::obj([("type", t.wire()), ("kind", Json::str("unsupported"))])
+            }
+        })
+    }
+}
 pub(in crate::observed) fn equal(
     a: &Term,
     b: &Term,
     law: &CheckedLaw,
     c: &Control,
 ) -> Result<Option<bool>, ValidationFailure> {
+    Ok(comparison(a, b, law, c)?.map(|v| v.equal()))
+}
+pub(in crate::observed) fn comparison(
+    a: &Term,
+    b: &Term,
+    law: &CheckedLaw,
+    c: &Control,
+) -> Result<Option<Certificate>, ValidationFailure> {
     a.check(c)?;
     b.check(c)?;
     if a.ty() != b.ty() {
@@ -376,16 +612,20 @@ pub(in crate::observed) fn equal(
         rows = next;
     }
     let mut unsupported = false;
+    let mut cases = Vec::new();
     for (_index, row) in rows.iter().enumerate() {
         #[cfg(test)]
         data::observe_iteration("term_affine_case", _index);
         tick(c)?;
-        match compare(
-            &a.apply_symbolic(row, law, c)?,
-            &b.apply_symbolic(row, law, c)?,
-            law,
-            c,
-        )? {
+        let left = a.apply_symbolic(row, law, c)?.normal_form(c)?;
+        let right = b.apply_symbolic(row, law, c)?.normal_form(c)?;
+        let result = compare(&left, &right, law, c)?;
+        cases.push(Case {
+            arguments: row.clone(),
+            left,
+            right,
+        });
+        match result {
             Comparison::Same => {}
             Comparison::Unsupported => unsupported = true,
             Comparison::Different(unit) => {
@@ -397,12 +637,19 @@ pub(in crate::observed) fn equal(
                 if value_equality::equal(&left, &right, law, c)? != Some(false) {
                     return Err("Term係数の反例が元bodyへの再代入で相違しない".into());
                 }
-                return Ok(Some(false));
+                return Ok(Some(Certificate {
+                    cases,
+                    point: Some(Point {
+                        arguments: args,
+                        left,
+                        right,
+                    }),
+                }));
             }
         }
         tick(c)?;
     }
-    Ok((!unsupported).then_some(true))
+    Ok((!unsupported).then_some(Certificate { cases, point: None }))
 }
 impl Term {
     pub(in crate::observed) fn apply_symbolic(

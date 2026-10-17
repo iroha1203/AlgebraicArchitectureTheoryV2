@@ -135,7 +135,7 @@ impl Scalar {
             Self::Subject { entity, .. } => Type::Ref(entity.clone()),
         })
     }
-    fn wire(&self) -> Json {
+    pub(super) fn wire(&self) -> Json {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Term(t) => t.wire(),
             Self::Unit => Json::Arr(vec![]),
@@ -906,6 +906,12 @@ pub(crate) enum Payload {
         rhs: NodeRef,
         residual: Option<NodeRef>,
     },
+    TermComparison {
+        source: NodeRef,
+        left: NodeRef,
+        right: NodeRef,
+        certificate: Box<super::term::affine::Certificate>,
+    },
     Normalization {
         before: NodeRef,
         after: NodeRef,
@@ -1113,6 +1119,30 @@ impl Payload {
                 }
                 Json::obj([("kind", Json::str("evaluation")), ("data", Json::Obj(data))])
             }
+            Self::TermComparison {
+                source,
+                left,
+                right,
+                certificate,
+            } => Json::obj([
+                (
+                    "kind",
+                    Json::str(if certificate.equal() {
+                        "normalization"
+                    } else {
+                        "counterexample"
+                    }),
+                ),
+                (
+                    "data",
+                    Json::obj([
+                        ("source", source.wire()),
+                        ("left", left.wire()),
+                        ("right", right.wire()),
+                        ("term_comparison", certificate.wire()),
+                    ]),
+                ),
+            ]),
             Self::Normalization {
                 before,
                 after,
@@ -3693,6 +3723,30 @@ impl Graph {
                     return Err("Map域条件の要素型が参照でない".into());
                 }
                 self.expect(*right, &self.get(*left)?.ty)?;
+            }
+            (
+                NodeType::Evidence,
+                Some(Payload::TermComparison {
+                    source,
+                    left,
+                    right,
+                    ..
+                }),
+            ) => {
+                let [own, l, r, a, b] = node.arguments.as_slice() else {
+                    return Err("Term比較証拠の元実辺数が違う".into());
+                };
+                if source != own
+                    || left != a
+                    || right != b
+                    || self.get(*a)?.ty != self.get(*b)?.ty
+                    || !matches!(self.get(*a)?.ty, NodeType::Value(Type::Term(..)))
+                    || self.get(*l)?.ty != self.get(*r)?.ty
+                    || !matches!(self.get(*l)?.ty, NodeType::Evaluation(Type::Term(..)))
+                {
+                    return Err("Term比較証拠の元型・左右が違う".into());
+                }
+                self.expect(*own, &NodeType::Expression(Type::Bool))?;
             }
             (NodeType::Evidence, Some(Payload::Normalization { .. })) => {
                 self.normalization_shape(&node)?

@@ -149,6 +149,7 @@ fn payload(
                 | Payload::Proposition { .. }
                 | Payload::MapDomainCondition { .. }
                 | Payload::EvaluationEvidence { .. }
+                | Payload::TermComparison { .. }
                 | Payload::Normalization { .. }
                 | Payload::Counterexample { .. },
             ),
@@ -199,6 +200,11 @@ fn value(a: &SourceValue, b: &SourceValue, c: &Control) -> Result<bool, Validati
     tick(c)?;
     let same = a.comparison == b.comparison
         && a.affine == b.affine
+        && match (&a.symbolic, &b.symbolic) {
+            (None, None) => true,
+            (Some(a), Some(b)) => a.identical(b, c)?,
+            _ => false,
+        }
         && a.support == b.support
         && scope(&a.scope, &b.scope)
         && option_scope(&a.scalar_scope, &b.scalar_scope)

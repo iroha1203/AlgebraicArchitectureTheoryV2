@@ -257,6 +257,7 @@ impl Environment<'_> {
             variables.insert(
                 leaf.name.clone(),
                 SourceValue {
+                    symbolic: None,
                     comparison: None,
                     affine: None,
                     scope,

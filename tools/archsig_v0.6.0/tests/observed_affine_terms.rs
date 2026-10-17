@@ -431,3 +431,223 @@ fn affine_term_application_keeps_view_let_and_finite_completion_contexts() {
     );
     audit_current_sources(&r, "r1");
 }
+
+#[test]
+fn affine_tuple_comparison_handles_known_and_symbolic_output_representations() {
+    let r = evaluate_observed_bytes(
+        sources(),
+        &[
+            "a=evaluate(Terms.tupleKnownAdd)",
+            "r=evaluate(Terms.tupleKnownReverse)",
+            "c=evaluate(Terms.tupleKnownLet)",
+            "n=evaluate(Terms.tupleKnownNested)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
+    for id in ["a", "r", "c", "n"] {
+        assert_eq!(value(&r.wire(), id), &Json::Bool(false));
+    }
+}
+#[test]
+fn affine_tuple_actuals_preserve_let_view_arithmetic_projection_and_universal_components() {
+    let r = evaluate_observed_bytes(
+        sources(),
+        &[
+            "l=evaluate(Terms.viaTupleLet,s=@v/s)",
+            "v=evaluate(Terms.viaTupleView,s=@v/s)",
+            "o=evaluate(Terms.viaTupleOutput,s=@v/s)",
+            "a=evaluate(Terms.viaTupleArithmetic,s=@v/s)",
+            "p=evaluate(Terms.viaTupleProjection,s=@v/s)",
+            "u=check(Terms.viaUniversalTuple,s=@v/s)",
+            "c=evaluate(Terms.viaTupleChoice,s=@v/s)",
+            "k=evaluate(Terms.tupleCache,s=@v/s)",
+            "d=evaluate(Terms.tupleDifference,s=@v/s)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
+    let w = r.wire();
+    let q = Json::Arr(vec![Json::str("0"), Json::str("1")]);
+    for id in ["l", "o", "c"] {
+        assert_eq!(value(&w, id), &Json::str("0"));
+    }
+    for id in ["v", "p"] {
+        assert_eq!(value(&w, id), &q);
+    }
+    assert_eq!(value(&w, "a"), &Json::Arr(vec![Json::str("0"), q.clone()]));
+    assert_eq!(value(&w, "d"), &Json::Arr(vec![Json::str("0"), q]));
+    assert_eq!(get(answer(&w, "u"), "status"), &Json::str("established"));
+    assert_eq!(value(&w, "k"), &Json::Bool(true));
+    for id in ["l", "v", "o", "a", "p", "c"] {
+        let a = answer(&w, id);
+        assert!(
+            arr(get(a, "reasons"))
+                .iter()
+                .flat_map(|r| arr(get(r, "missing")))
+                .any(|m| get(m, "field") == &Json::str("Terms.Sample.h")
+                    || get(m, "field") == &Json::str("Terms.Sample.q"))
+        );
+        assert!(
+            !arr(get(a, "reasons"))
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("unsupported_algorithm"))
+        );
+    }
+}
+#[test]
+fn nonlinear_tuple_term_application_keeps_algorithm_and_original_missing_reasons() {
+    let r = evaluate_observed_bytes(
+        sources(),
+        &[
+            "t=evaluate(Terms.tupleOutside,s=@v/s)",
+            "n=evaluate(Terms.tupleNestedOutside,s=@v/s)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", get(&r.wire(), "issues"));
+    let w = r.wire();
+    for id in ["t", "n"] {
+        let a = answer(&w, id);
+        assert_eq!(get(a, "status"), &Json::str("undetermined"));
+        let Json::Obj(outputs) = get(a, "outputs") else {
+            panic!("outputs")
+        };
+        assert!(!outputs.contains_key("value"));
+        let reasons = arr(get(a, "reasons"));
+        assert!(
+            reasons
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("unsupported_algorithm")),
+            "{a:?}"
+        );
+        for reason in reasons
+            .iter()
+            .filter(|r| get(r, "code") == &Json::str("unsupported_algorithm"))
+        {
+            assert!(!arr(get(reason, "dependencies")).is_empty());
+            assert!(
+                matches!(get(reason,"location"),Json::Obj(m) if m.get("input")==Some(&Json::str("law")))
+            );
+            let types = arr(get(get(reason, "details"), "operand_types"));
+            assert!(
+                matches!(types.first(),Some(Json::Arr(t)) if t.first()==Some(&Json::str("Term")))
+            );
+            assert!(
+                matches!(types.first(),Some(Json::Arr(t)) if matches!(t.last(),Some(Json::Arr(tuple)) if tuple.first()==Some(&Json::str("Tuple"))))
+            );
+        }
+
+        assert!(
+            reasons
+                .iter()
+                .flat_map(|r| arr(get(r, "missing")))
+                .any(|m| get(m, "field") == &Json::str("Terms.Sample.h"))
+        );
+    }
+}
+#[test]
+fn affine_term_comparison_retains_normal_forms_and_reapplied_original_points() {
+    let r = evaluate_observed_bytes(
+        sources(),
+        &[
+            "e=evaluate(Terms.same,s=@v/s)",
+            "d=check(Terms.unequal,s=@v/s)",
+            "q=evaluate(Terms.qCoefficient)",
+            "t=evaluate(Terms.tupleSameNormal)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete");
+    let w = r.wire();
+    let nodes = arr(get(&w, "nodes"));
+    let proofs:Vec<_>=nodes.iter().filter(|n| matches!(n,Json::Obj(m) if m.get("value").is_some_and(|v|matches!(v,Json::Obj(m) if matches!(m.get("data"),Some(Json::Obj(d)) if d.contains_key("term_comparison")))))).collect();
+    assert_eq!(proofs.len(), 4);
+    for (index, n) in proofs.iter().enumerate() {
+        let proof = get(n, "value");
+        let data = get(proof, "data");
+        let certificate = get(data, "term_comparison");
+        let cases = arr(get(certificate, "cases"));
+        assert_eq!(cases.len(), 1);
+        let args = arr(get(&cases[0], "arguments"));
+        assert_eq!(args.len(), if index < 2 { 2 } else { 1 });
+        for (position, arg) in args.iter().enumerate() {
+            assert_eq!(
+                get(arg, "type"),
+                &Json::str(if index == 2 { "Q" } else { "Z" })
+            );
+            let coefficients = arr(get(arg, "coefficients"));
+            assert_eq!(coefficients.len(), 1);
+            assert_eq!(
+                get(get(&coefficients[0], "coordinate"), "argument"),
+                &Json::Nat(position as u64)
+            );
+            assert_eq!(
+                get(get(&coefficients[0], "coordinate"), "component"),
+                &Json::Arr(vec![])
+            );
+        }
+        for key in ["source", "left", "right"] {
+            let node = get(get(data, key), "node");
+            assert!(nodes.iter().any(|n| get(n, "id") == node));
+        }
+        let reference = Json::obj([("node", get(n, "id").clone())]);
+        assert!(
+            nodes
+                .iter()
+                .any(|v| arr(get(v, "evidence")).contains(&reference))
+        );
+        if index == 3 {
+            assert_eq!(get(proof, "kind"), &Json::str("normalization"));
+            assert_eq!(get(&cases[0], "left"), get(&cases[0], "right"));
+        } else if index == 0 {
+            assert_eq!(get(proof, "kind"), &Json::str("normalization"));
+            assert_eq!(get(&cases[0], "left"), get(&cases[0], "right"));
+            let Json::Obj(c) = certificate else {
+                panic!("certificate")
+            };
+            assert!(!c.contains_key("counterexample"));
+            let coefficients = arr(get(get(&cases[0], "left"), "coefficients"));
+            assert_eq!(
+                coefficients
+                    .iter()
+                    .map(|v| get(v, "value").clone())
+                    .collect::<Vec<_>>(),
+                vec![Json::str("2"), Json::str("-1")]
+            );
+        } else {
+            assert_eq!(get(proof, "kind"), &Json::str("counterexample"));
+            let point = get(certificate, "counterexample");
+            let arguments = arr(get(point, "arguments"));
+            if index == 1 {
+                assert_eq!(arguments.len(), 2);
+                for a in arguments {
+                    assert_eq!(get(a, "type"), &Json::str("Z"));
+                    assert_eq!(get(a, "value"), &Json::str("0"));
+                }
+                assert_eq!(get(get(point, "left"), "value"), &Json::str("0"));
+                assert_eq!(get(get(point, "right"), "value"), &Json::str("1"));
+            } else {
+                assert_eq!(arguments.len(), 1);
+                assert_eq!(get(&arguments[0], "type"), &Json::str("Q"));
+                assert_eq!(
+                    get(&arguments[0], "value"),
+                    &Json::Arr(vec![Json::str("1"), Json::str("1")])
+                );
+                assert_eq!(
+                    get(get(point, "left"), "value"),
+                    &Json::Arr(vec![Json::str("3"), Json::str("2")])
+                );
+                assert_eq!(
+                    get(get(point, "right"), "value"),
+                    &Json::Arr(vec![Json::str("5"), Json::str("3")])
+                );
+            }
+            assert_ne!(get(point, "left"), get(point, "right"));
+        }
+    }
+}

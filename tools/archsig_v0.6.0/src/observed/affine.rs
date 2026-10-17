@@ -177,6 +177,44 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 }
 
 impl Form {
+    pub(in crate::observed) fn term_wire(&self) -> crate::canonical::Json {
+        use crate::canonical::Json;
+        let coefficients = self
+            .coefficients
+            .iter()
+            .map(|(key, value)| {
+                let coordinate = match key {
+                    Symbol::TermArgument(key) => Json::obj([
+                        ("argument", Json::Nat(key.argument as u64)),
+                        (
+                            "component",
+                            Json::Arr(key.component.iter().map(|i| Json::Nat(*i as u64)).collect()),
+                        ),
+                        ("type", key.kind.ty().wire()),
+                    ]),
+                    Symbol::Missing(fact) => Json::obj([("missing", fact.wire())]),
+                    Symbol::Parameter(key) => Json::obj([
+                        ("parameter", Json::str(&key.name)),
+                        (
+                            "binder",
+                            Json::Arr(vec![
+                                Json::Nat(key.binder.0 as u64),
+                                Json::Nat(key.binder.1 as u64),
+                            ]),
+                        ),
+                        ("type", key.kind.ty().wire()),
+                    ]),
+                };
+                Json::obj([("coordinate", coordinate), ("value", value.wire())])
+            })
+            .collect();
+        Json::obj([
+            ("type", self.ty.wire()),
+            ("constant", self.constant.wire()),
+            ("coefficients", Json::Arr(coefficients)),
+        ])
+    }
+
     pub(super) fn ty(&self, control: &Control) -> Result<Type, ValidationFailure> {
         self.check(control)?;
         Ok(self.ty.clone())

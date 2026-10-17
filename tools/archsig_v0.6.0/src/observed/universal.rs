@@ -423,6 +423,7 @@ impl Environment<'_> {
                 variables.insert(
                     parameter.name.clone(),
                     SourceValue {
+                        symbolic: analysis.symbolic,
                         comparison: analysis.comparison,
                         affine: analysis.affine,
                         scope,
@@ -782,6 +783,7 @@ impl Environment<'_> {
                 feature: "call展開内で追加されるZ/Q全称binderの全域Plan".into(),
             })?;
         Ok(SourceValue {
+            symbolic: None,
             comparison: None,
             affine: affine::parameter(ty, parameter, &self.control)?.map(Box::new),
             scope: base.clone(),

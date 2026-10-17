@@ -1,4 +1,6 @@
 //! 明示束縛の参照・原始 field と Z/Bool 演算を原 AST から評価する。
+#[path = "term_comparison_evaluate.rs"]
+mod term_comparison_evaluate;
 use super::{
     PreparedObserved,
     control::{Checkpoint, Control, StopReason},
@@ -1156,16 +1158,22 @@ impl Evaluator<'_, '_> {
                         })?;
                         vec![l, r]
                     };
-                    Some(self.value(
-                        value,
-                        Rule::Input {
+                    let evidence =
+                        self.term_comparison_evidence(span, *op, &left, &right, &support, &scope)?;
+                    Some(self.push(Node {
+                        ty: NodeType::Value(value.ty()),
+                        payload: Some(Payload::Scalar(value)),
+                        rule: Rule::Input {
                             kind: "law",
                             location: Location::Law { span },
                         },
                         arguments,
-                        support.clone(),
-                        scope.clone(),
-                    )?)
+                        support: support.clone(),
+                        scope: scope.clone(),
+                        evidence,
+                        judgment: None,
+                        reasons: vec![],
+                    })?)
                 } else if let Some((value, _)) = affine {
                     Some(value)
                 } else if matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) {
