@@ -6,6 +6,7 @@ use crate::law::{
 };
 
 pub(in crate::observed) struct Plan {
+    pub dependent: bool,
     pub parameters: Vec<Param>,
     pub free: Vec<Param>,
     pub unbound: Vec<Param>,
@@ -53,11 +54,21 @@ impl Environment<'_> {
         if unbound.is_empty() {
             return Ok(None);
         }
+        let dependent = params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
+        if dependent && let Some(p) = numeric.first() {
+            return Err(ValidationFailure::UnsupportedExpression {
+                location: Location::Law { span: p.span },
+                feature: "依存Law族と無限数値parameterの混合全称評価".into(),
+            });
+        }
         for p in params {
             self.tick()?;
-            if matches!(&p.ty, Type::Owned(..))
-                || (unbound.iter().any(|u| u.name == p.name)
-                    && !super::super::finite::supported(&p.ty, self.inputs.law(), &self.control)?)
+            let finite_type = match &p.ty {
+                Type::Owned(entity, _) => Type::Ref(entity.clone()),
+                ty => ty.clone(),
+            };
+            if unbound.iter().any(|u| u.name == p.name)
+                && !super::super::finite::supported(&finite_type, self.inputs.law(), &self.control)?
             {
                 return Err(ValidationFailure::UnsupportedExpression {
                     location: Location::Law { span: p.span },
@@ -66,6 +77,7 @@ impl Environment<'_> {
             }
         }
         Ok(Some(Plan {
+            dependent,
             parameters: params.clone(),
             free,
             unbound,
@@ -101,7 +113,7 @@ impl Environment<'_> {
             .map(|p| Quantifier {
                 kind: QuantKind::Forall,
                 name: p.name.clone(),
-                ty: p.ty.clone(),
+                ty: p.ty.erase(),
                 domain: plan
                     .unbound
                     .iter()
@@ -118,7 +130,7 @@ impl Environment<'_> {
             matches!(&graph.get(r)?.payload,Some(Payload::Expression {parameters,..}) if !parameters.is_empty()),
         )
     }
-    fn family_request<'g>(
+    pub(super) fn family_request<'g>(
         &self,
         graph: &'g Graph,
         source: NodeRef,
@@ -168,7 +180,7 @@ impl Environment<'_> {
                 != &plan
                     .free
                     .iter()
-                    .map(|p| (p.name.clone(), p.ty.clone()))
+                    .map(|p| (p.name.clone(), p.ty.erase()))
                     .collect::<Vec<_>>()
             || node.ty != NodeType::Expression(Type::Bool)
             || !matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span:actual}} if actual==span)
@@ -248,6 +260,9 @@ impl Environment<'_> {
         domains: &[NodeRef],
         plan: &Plan,
     ) -> Result<Scope, ValidationFailure> {
+        if plan.dependent {
+            return self.dependent_family_domains(graph, source, domains, plan);
+        }
         if domains.len() != plan.unbound.len() {
             return Err("parameter域の個数が違う".into());
         }
@@ -274,6 +289,9 @@ impl Environment<'_> {
         let node = graph.get(domain)?;
         let source = *node.arguments.first().ok_or("直積の元Sourceがない")?;
         let (_, plan) = self.family_request(graph, source)?;
+        if plan.dependent {
+            return self.dependent_family_domain_parts(graph, domain, source, plan);
+        }
         let count = plan.unbound.len();
         let domains = if count == 1 {
             vec![domain]
@@ -363,6 +381,9 @@ impl Environment<'_> {
                     .value
             };
             let scalar = graph.scalar(value)?.clone();
+            if plan.dependent {
+                self.validate_at(graph, graph.get(value)?, value.0)?;
+            }
             if scalar.ty() != p.ty.erase() {
                 return Err("実instance parameter型が違う".into());
             }
@@ -397,6 +418,9 @@ impl Environment<'_> {
         if matches!(&node.payload,Some(Payload::Expression {parameters,..}) if !parameters.is_empty())
         {
             self.family_source(graph, node, context)?;
+            return Ok(true);
+        }
+        if self.validate_dependent_family_node(graph, node, limit)? {
             return Ok(true);
         }
         if let Some(&source) = node.arguments.first()
@@ -693,7 +717,7 @@ impl Environment<'_> {
         let mut reasons = Vec::new();
         let mut seen = Vec::new();
         let mut value = Some(true);
-        for &row in &rows {
+        for (row_index, &row) in rows.iter().enumerate() {
             self.tick()?;
             let context = graph.context_at(row.0);
             let index = context.instance.ok_or("whole rowにinstanceがない")?;
@@ -708,6 +732,7 @@ impl Environment<'_> {
                 || record.domain != domain
                 || !elements.contains(&record.member)
                 || seen.contains(&record.member)
+                || (plan.dependent && elements.get(row_index) != Some(&record.member))
             {
                 return Err("wholeに別instance/欠落/重複rowがある".into());
             }
@@ -731,6 +756,9 @@ impl Environment<'_> {
                 return Err("whole実rowとLawInstanceが一対一でない".into());
             }
             let concrete_instance = candidates[0];
+            if plan.dependent && concrete.get(row_index) != Some(&concrete_instance) {
+                return Err("依存wholeの実row LawInstance順が元域と違う".into());
+            }
             self.validate_at(graph, graph.get(concrete_instance)?, concrete_instance.0)?;
             let Some(Payload::LawInstance {
                 bindings: actual, ..
@@ -1307,8 +1335,13 @@ impl Environment<'_> {
         request: &Request,
         answer: &Answer,
     ) -> Result<bool, ValidationFailure> {
-        if self.family_plan(request)?.is_none() {
+        let Some(plan) = self.family_plan(request)? else {
             return Ok(false);
+        };
+        if plan.dependent
+            && self.validate_dependent_family_unknown(graph, request, answer, &plan)?
+        {
+            return Ok(true);
         }
         let evaluation = *answer
             .outputs
