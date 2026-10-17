@@ -3296,7 +3296,7 @@ impl<'a> Environment<'a> {
                 location: Location::Law {
                     span: law.exprs[id].span,
                 },
-                feature: "未対応payload・型または再帰Dataの構成".into(),
+                feature: "未対応payload・型の構成".into(),
             });
         }
         if let Some((_, args)) = data::expression(law, id, &self.control)? {
