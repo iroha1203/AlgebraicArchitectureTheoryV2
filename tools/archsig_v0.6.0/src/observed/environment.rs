@@ -6899,8 +6899,11 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Call { args, .. } if self.named_view(id)?.is_some() => {
                     let declaration = self.named_view(id)?.ok_or("named viewがない")?;
-                    let crate::law::model::Signature::View { params, body, .. } =
-                        &declaration.signature
+                    let crate::law::model::Signature::View {
+                        params,
+                        body,
+                        returns,
+                    } = &declaration.signature
                     else {
                         unreachable!()
                     };
@@ -6916,7 +6919,11 @@ impl<'a> Environment<'a> {
                         call_base.merge(&value.scope);
                         support.extend(value.support.iter().cloned());
                         if owned {
-                            arguments.push(value.known_value.clone());
+                            arguments.push(Self::owned_source_argument(
+                                &value.known_value,
+                                value.symbolic.as_deref(),
+                                &parameter.ty,
+                            ));
                         }
                         local.insert(parameter.name.clone(), value);
                     }
@@ -6958,10 +6965,15 @@ impl<'a> Environment<'a> {
                     )?;
                     call_base.merge(&body.scope);
                     support.extend(body.support);
+                    let returned = Self::owned_source_argument(
+                        &body.known_value,
+                        body.symbolic.as_deref(),
+                        returns,
+                    );
                     let checks = self.owned_call_checks(
                         declaration,
                         &arguments,
-                        Some(body.known_value.as_ref()),
+                        Some(&returned),
                         expression.span,
                     )?;
                     call_base.merge(&checks.scope);
@@ -7104,6 +7116,18 @@ impl<'a> Environment<'a> {
                             .map(|i| self.symbolic_source(*i, variables, base, reading))
                             .collect::<Result<_, _>>()?,
                     )),
+                    ExprKind::ListLit { items, .. } => {
+                        let Type::List(element) = ty else {
+                            return Err("部分Listの元型が違う".into());
+                        };
+                        Some(Value::List {
+                            element: (**element).clone(),
+                            items: items
+                                .iter()
+                                .map(|i| self.symbolic_source(*i, variables, base, reading))
+                                .collect::<Result<_, _>>()?,
+                        })
+                    }
                     ExprKind::Binary { op, lhs, rhs }
                         if matches!(ty, Type::Tuple(_))
                             && numeric::is_numeric_type(ty, &self.control)? =>

@@ -1901,7 +1901,10 @@ impl Evaluator<'_, '_> {
         let values = if owned {
             arguments
                 .iter()
-                .map(|a| a.value.map(|v| self.graph.scalar(v).cloned()).transpose())
+                .map(|a| {
+                    self.environment
+                        .owned_call_argument(self.graph, a.evaluation)
+                })
                 .collect::<Result<Vec<_>, _>>()?
         } else {
             vec![]
@@ -1979,9 +1982,17 @@ impl Evaluator<'_, '_> {
             .value
             .map(|v| self.graph.scalar(v).cloned())
             .transpose()?;
+        let partial = if owned {
+            Some(
+                self.environment
+                    .owned_call_argument(self.graph, body.evaluation)?,
+            )
+        } else {
+            None
+        };
         let checks =
             self.environment
-                .owned_call_checks(declaration, &values, Some(known.as_ref()), span)?;
+                .owned_call_checks(declaration, &values, partial.as_ref(), span)?;
         arguments.push(body);
         if owned {
             self.owned_call_finish(span, ty, arguments, known, checks)
@@ -2782,6 +2793,7 @@ mod recheck_tests {
     include!("affine_term_tests.rs");
     include!("owned_call_tests.rs");
     include!("owned_compound_call_tests.rs");
+    include!("owned_partial_call_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

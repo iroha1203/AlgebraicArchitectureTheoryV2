@@ -1509,10 +1509,8 @@ impl Evaluator<'_, '_> {
                     arguments
                         .iter()
                         .map(|a| {
-                            a.evaluated
-                                .value
-                                .map(|r| self.graph.scalar(r).cloned())
-                                .transpose()
+                            self.environment
+                                .owned_call_argument(self.graph, a.evaluated.evaluation)
                         })
                         .collect::<Result<Vec<_>, _>>()?
                 } else {
@@ -1583,15 +1581,18 @@ impl Evaluator<'_, '_> {
                 self.formal = old_formal;
                 self.lexical = old_lexical;
                 let body = body_result?;
-                let known = body
-                    .evaluated
-                    .value
-                    .map(|r| self.graph.scalar(r))
-                    .transpose()?;
+                let partial = if owned {
+                    Some(
+                        self.environment
+                            .owned_call_argument(self.graph, body.evaluated.evaluation)?,
+                    )
+                } else {
+                    None
+                };
                 let checks = self.environment.owned_call_checks(
                     declaration,
                     &values,
-                    Some(known),
+                    partial.as_ref(),
                     expr.span,
                 )?;
                 if checks.failure.is_some() || checks.blocked {

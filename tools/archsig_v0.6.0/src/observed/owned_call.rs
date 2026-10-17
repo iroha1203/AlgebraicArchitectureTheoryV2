@@ -1,4 +1,5 @@
 //! Owned参照とcontainerのcall境界を元署名・実引数・原始owner事実から検査する。
+use super::super::term::affine::Value as PartialValue;
 use super::*;
 use crate::law::model::{Declaration, Signature};
 
@@ -29,57 +30,121 @@ impl Environment<'_> {
     fn owned_call_value_check(
         &self,
         ty: &Type,
-        value: Option<&Scalar>,
+        value: &PartialValue,
         values: &BTreeMap<&str, Option<&Scalar>>,
         reading: &str,
         span: (usize, usize),
         checks: &mut Checks,
     ) -> Result<(), ValidationFailure> {
-        if !self.call_type_has_owned(ty)? {
-            return Ok(());
+        enum Member<'a> {
+            Known(&'a Scalar),
+            Partial(&'a PartialValue),
         }
-        let Some(value) = value else {
-            checks.blocked = true;
-            return Ok(());
-        };
-        let mut pending = vec![(ty, value)];
-        while let Some((ty, value)) = pending.pop() {
+        let mut pending = vec![(ty, Member::Partial(value))];
+        while let Some((ty, member)) = pending.pop() {
             self.tick()?;
             if !self.call_type_has_owned(ty)? {
                 continue;
             }
-            match (ty, value) {
-                (Type::Owned(..), _) => {
+            let member = match member {
+                Member::Partial(PartialValue::Known(v)) => Member::Known(v),
+                other => other,
+            };
+            match (ty, member) {
+                (Type::Owned(..), Member::Known(value)) => {
                     self.owned_reference_check(ty, Some(value), values, reading, span, checks)?;
                 }
-                (Type::Tuple(types), Scalar::Tuple(items)) if types.len() == items.len() => {
-                    for pair in types.iter().zip(items).rev() {
+                // 未生成memberを補わず、後続の既知不適合は引き続き探す。
+                (_, Member::Partial(PartialValue::Unsupported(_))) => checks.blocked = true,
+                (Type::Tuple(types), Member::Known(Scalar::Tuple(items)))
+                    if types.len() == items.len() =>
+                {
+                    for (ty, value) in types.iter().zip(items).rev() {
                         self.tick()?;
-                        pending.push(pair);
+                        pending.push((ty, Member::Known(value)));
                     }
                 }
-                (Type::List(ty), Scalar::List { element, items })
-                | (Type::Set(ty), Scalar::Set { element, items })
+                (Type::Tuple(types), Member::Partial(PartialValue::Tuple(items)))
+                    if types.len() == items.len() =>
+                {
+                    for (ty, value) in types.iter().zip(items).rev() {
+                        self.tick()?;
+                        pending.push((ty, Member::Partial(value)));
+                    }
+                }
+                (Type::List(ty), Member::Known(Scalar::List { element, items }))
+                | (Type::Set(ty), Member::Known(Scalar::Set { element, items }))
                     if *element == ty.erase() =>
                 {
-                    for item in items.iter().rev() {
+                    for value in items.iter().rev() {
                         self.tick()?;
-                        pending.push((ty, item));
+                        pending.push((ty, Member::Known(value)));
                     }
                 }
-                (Type::Option(ty), Scalar::Option { element, value }) if *element == ty.erase() => {
+                (Type::List(ty), Member::Partial(PartialValue::List { element, items }))
+                    if *element == ty.erase() =>
+                {
+                    for value in items.iter().rev() {
+                        self.tick()?;
+                        pending.push((ty, Member::Partial(value)));
+                    }
+                }
+                (Type::Option(ty), Member::Known(Scalar::Option { element, value }))
+                    if *element == ty.erase() =>
+                {
                     if let Some(value) = value {
-                        pending.push((ty, value));
+                        pending.push((ty, Member::Known(value)));
                     }
                 }
                 _ => return Err("Owned callの複合memberが元署名型と違う".into()),
             }
-            if checks.failure.is_some() || checks.blocked {
+            if checks.failure.is_some() {
                 break;
             }
             self.tick()?;
         }
         Ok(())
+    }
+
+    // 通常値がない場合も、元Sourceが保持する部分成分だけを所属検査に使う。
+    // この内部値をScalar nodeや引数Bindingへ変換しない。
+    pub(in crate::observed) fn owned_call_argument(
+        &self,
+        graph: &Graph,
+        evaluation: NodeRef,
+    ) -> Result<PartialValue, ValidationFailure> {
+        let (source, bindings, known) = self.evaluation(graph, evaluation)?;
+        if let Some(known) = known {
+            return Ok(PartialValue::Known(graph.scalar(known)?.clone()));
+        }
+        let analysis = self.original_evaluation_source(graph, evaluation, source, bindings)?;
+        Ok(Self::owned_source_argument(
+            &analysis.known_value,
+            analysis.symbolic.as_deref(),
+            self.inputs
+                .law()
+                .expr_type(
+                    *self
+                        .expressions
+                        .get(&self.expression_span(graph, source)?)
+                        .ok_or("部分引数の元式がない")?,
+                )
+                .ok_or("部分引数の元型がない")?,
+        ))
+    }
+
+    pub(super) fn owned_source_argument(
+        known: &Option<Scalar>,
+        symbolic: Option<&PartialValue>,
+        ty: &Type,
+    ) -> PartialValue {
+        if let Some(v) = known {
+            PartialValue::Known(v.clone())
+        } else if let Some(v) = symbolic {
+            v.clone()
+        } else {
+            PartialValue::Unsupported(ty.erase())
+        }
     }
 
     fn owned_reference_check(
@@ -220,8 +285,8 @@ impl Environment<'_> {
     pub(in crate::observed) fn owned_call_checks(
         &self,
         declaration: &Declaration,
-        arguments: &[Option<Scalar>],
-        returned: Option<Option<&Scalar>>,
+        arguments: &[PartialValue],
+        returned: Option<&PartialValue>,
         span: (usize, usize),
     ) -> Result<Checks, ValidationFailure> {
         let Signature::View {
@@ -246,16 +311,25 @@ impl Environment<'_> {
             self.tick()?;
             self.owned_call_value_check(
                 &p.ty,
-                value.as_ref(),
+                value,
                 &values,
                 &declaration.reading,
                 span,
                 &mut checks,
             )?;
-            if checks.failure.is_some() || checks.blocked {
+            if checks.failure.is_some() {
                 break;
             }
-            if values.insert(p.name.as_str(), value.as_ref()).is_some() {
+            if values
+                .insert(
+                    p.name.as_str(),
+                    match value {
+                        PartialValue::Known(v) => Some(v),
+                        _ => None,
+                    },
+                )
+                .is_some()
+            {
                 return Err("Owned callの元parameter名が重複する".into());
             }
         }
@@ -353,13 +427,13 @@ impl Environment<'_> {
                 return Err("Owned callの実引数が既出同callerでない".into());
             }
             self.recheck_evaluation(graph, child)?;
-            let (expression, actual_bindings, value) = self.evaluation(graph, child)?;
+            let (expression, actual_bindings, _) = self.evaluation(graph, child)?;
             self.source_matches(graph, expression, id)?;
             if actual_bindings != bindings || self.actual_evaluation(graph, id, bindings)? != child
             {
                 return Err("Owned callの引数producer・束縛が元出現と違う".into());
             }
-            values.push(value.map(|r| graph.scalar(r).cloned()).transpose()?);
+            values.push(self.owned_call_argument(graph, child)?);
             scope.merge(&graph.get(child)?.scope);
             support.extend(graph.get(child)?.support.iter().cloned());
         }
@@ -400,17 +474,13 @@ impl Environment<'_> {
             // 全域Sourceでは上のcaller/実引数対応と、以下の元Planからの
             // body再検査でframeを照合する。数値binderを通常の既知束縛へ落とさない。
             self.recheck_evaluation(graph, child)?;
-            let (expression, _, value) = self.evaluation(graph, child)?;
+            let (expression, _, _) = self.evaluation(graph, child)?;
             self.source_matches(graph, expression, *body)?;
             if graph.context_at(expression.0) != context {
                 return Err("Owned body SourceのContextが違う".into());
             }
-            checks = self.owned_call_checks(
-                declaration,
-                &values,
-                Some(value.map(|r| graph.scalar(r)).transpose()?),
-                span,
-            )?;
+            let partial = self.owned_call_argument(graph, child)?;
+            checks = self.owned_call_checks(declaration, &values, Some(&partial), span)?;
             scope.merge(&graph.get(child)?.scope);
             support.extend(graph.get(child)?.support.iter().cloned());
         } else if checks.failure.is_none() && !checks.blocked {
@@ -590,6 +660,11 @@ impl Environment<'_> {
                 ..
             })
         ) {
+            return Ok(false);
+        }
+        // 全称wholeの単一body子を、一引数callの実引数と取り違えない。
+        // 各出現のcall Sourceはtemplateを別の既出nodeとして指す。
+        if self.universal_source_root(graph, source)? == Some(source) {
             return Ok(false);
         }
         let span = self.expression_span(graph, source)?;

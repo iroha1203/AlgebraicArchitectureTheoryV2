@@ -3085,6 +3085,32 @@ impl Environment<'_> {
         Ok(true)
     }
 
+    pub(in crate::observed) fn original_evaluation_source(
+        &self,
+        graph: &Graph,
+        evaluation: NodeRef,
+        source: NodeRef,
+        bindings: &[Binding],
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        let previous = self.context.replace(Some(graph.context_at(evaluation.0)));
+        let result = (|| {
+            let span = self.expression_span(graph, source)?;
+            if let Some(template) = self.universal_source_root(graph, source)? {
+                let (_, fixed) = self.universal_source_fields(graph, template)?;
+                let plan = self.universal_plan_at(graph, template, fixed)?;
+                let domains =
+                    self.universal_domains_from(graph, graph.get(source)?, template, &plan)?;
+                Ok(self
+                    .universal_source_analysis(graph, span, bindings, &plan, &domains, template)?
+                    .analysis)
+            } else {
+                self.analyze_source(graph, span, bindings)
+            }
+        })();
+        self.context.set(previous);
+        result
+    }
+
     fn universal_pointwise_source_expectation(
         &self,
         graph: &Graph,

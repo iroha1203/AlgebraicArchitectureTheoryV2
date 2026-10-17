@@ -90,6 +90,8 @@
   これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
   view呼出し式のOwned参照と、それを含むTuple/List/Set/Optionの引数・返り型は、各実memberを
   元署名のownerと同snapshotの原始所属事実で検査する。none・空の値はmemberを生成せず保持する。
+  Tuple・有限List内で数値が未束縛/欠測でも、元Sourceの既知Owned成分を検査し、
+  数値の全域軸・共有slot相関と、通常値が未生成であることを保つ。
   entity/arrowの所属一致は成功値の支持・Scopeにも残し、既知不一致は元callと型付きowner不等、
   snapshot不一致は実snapshotのText不等のcounterexampleに接続するcondition_failedを返す。
   引数不適合ではcallee bodyへ入らず、内側callの構成条件が反証されて値が未生成なら、
