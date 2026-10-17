@@ -1497,20 +1497,14 @@ impl Evaluator<'_, '_> {
                     .environment
                     .named_view(id)?
                     .ok_or_else(|| Failure::Internal("全域call targetがない".into()))?;
-                let Signature::View {
-                    params,
-                    body,
-                    returns,
-                } = &declaration.signature
-                else {
+                let Signature::View { params, body, .. } = &declaration.signature else {
                     unreachable!()
                 };
                 let mut arguments = Vec::new();
                 for argument in args {
                     arguments.push(self.universal_pointwise(plan, template, domains, *argument)?);
                 }
-                let owned = matches!(returns, Type::Owned(..))
-                    || params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
+                let owned = self.environment.owns_call(id)?;
                 let values = if owned {
                     arguments
                         .iter()

@@ -5144,44 +5144,41 @@ impl<'a> Environment<'a> {
         else {
             unreachable!()
         };
-        // 単一Owned参照は元署名と実owner事実で検査する。複合署名は別経路を要する。
+        // 実containerを走査する。Map/Term内部の所属条件には別の経路が必要。
         let mut pending = Vec::new();
         for ty in std::iter::once(returns).chain(params.iter().map(|p| &p.ty)) {
             self.tick()?;
-            if !matches!(ty, Type::Owned(_, _)) {
-                pending.push(ty);
-            }
+            pending.push((ty, true));
         }
-        while let Some(ty) = pending.pop() {
+        while let Some((ty, allowed)) = pending.pop() {
             self.tick()?;
             match ty {
-                Type::Owned(_, _) => {
-                    self.tick()?;
+                Type::Owned(_, _) if !allowed => {
                     return Err(ValidationFailure::UnsupportedExpression {
                         location: Location::Law {
                             span: law.exprs[id].span,
                         },
-                        feature: "依存 owner 制約を持つ view parameter・戻り型の呼出し評価".into(),
+                        feature: "Map/Term内部のowner制約を持つview呼出し".into(),
                     });
                 }
                 Type::Tuple(items) => {
                     for item in items {
                         self.tick()?;
-                        pending.push(item);
-                        self.tick()?;
+                        pending.push((item, allowed));
                     }
                 }
-                Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
+                Type::List(item) | Type::Set(item) | Type::Option(item) => {
+                    pending.push((item, allowed))
+                }
                 Type::Map(from, to) => {
-                    pending.push(from);
-                    pending.push(to);
+                    pending.push((from, false));
+                    pending.push((to, false));
                 }
                 Type::Term(params, returns) => {
-                    pending.push(returns);
+                    pending.push((returns, false));
                     for parameter in params {
                         self.tick()?;
-                        pending.push(parameter);
-                        self.tick()?;
+                        pending.push((parameter, false));
                     }
                 }
                 _ => {}
@@ -6902,11 +6899,8 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Call { args, .. } if self.named_view(id)?.is_some() => {
                     let declaration = self.named_view(id)?.ok_or("named viewがない")?;
-                    let crate::law::model::Signature::View {
-                        params,
-                        body,
-                        returns,
-                    } = &declaration.signature
+                    let crate::law::model::Signature::View { params, body, .. } =
+                        &declaration.signature
                     else {
                         unreachable!()
                     };
@@ -6915,8 +6909,7 @@ impl<'a> Environment<'a> {
                     call_base.readings.insert(declaration.reading.clone());
                     let mut support = Vec::new();
                     let mut arguments = Vec::new();
-                    let owned = matches!(returns, Type::Owned(..))
-                        || params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
+                    let owned = self.owns_call(id)?;
                     for (parameter, &arg) in params.iter().zip(args) {
                         self.tick()?;
                         let value = self.scoped_ast(arg, variables, base, reading)?;

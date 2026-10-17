@@ -1,4 +1,4 @@
-//! 単一Owned参照のcall境界を元署名・実引数・原始owner事実から検査する。
+//! Owned参照とcontainerのcall境界を元署名・実引数・原始owner事実から検査する。
 use super::*;
 use crate::law::model::{Declaration, Signature};
 
@@ -11,6 +11,77 @@ pub(in crate::observed) struct Checks {
 }
 
 impl Environment<'_> {
+    fn call_type_has_owned(&self, ty: &Type) -> Result<bool, ValidationFailure> {
+        let mut pending = vec![ty];
+        while let Some(ty) = pending.pop() {
+            self.tick()?;
+            match ty {
+                Type::Owned(..) => return Ok(true),
+                Type::Tuple(items) => pending.extend(items),
+                Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
+                // named_viewでMap/Term内部のOwnedは引き続き拒否する。
+                _ => {}
+            }
+        }
+        Ok(false)
+    }
+
+    fn owned_call_value_check(
+        &self,
+        ty: &Type,
+        value: Option<&Scalar>,
+        values: &BTreeMap<&str, Option<&Scalar>>,
+        reading: &str,
+        span: (usize, usize),
+        checks: &mut Checks,
+    ) -> Result<(), ValidationFailure> {
+        if !self.call_type_has_owned(ty)? {
+            return Ok(());
+        }
+        let Some(value) = value else {
+            checks.blocked = true;
+            return Ok(());
+        };
+        let mut pending = vec![(ty, value)];
+        while let Some((ty, value)) = pending.pop() {
+            self.tick()?;
+            if !self.call_type_has_owned(ty)? {
+                continue;
+            }
+            match (ty, value) {
+                (Type::Owned(..), _) => {
+                    self.owned_reference_check(ty, Some(value), values, reading, span, checks)?;
+                }
+                (Type::Tuple(types), Scalar::Tuple(items)) if types.len() == items.len() => {
+                    for pair in types.iter().zip(items).rev() {
+                        self.tick()?;
+                        pending.push(pair);
+                    }
+                }
+                (Type::List(ty), Scalar::List { element, items })
+                | (Type::Set(ty), Scalar::Set { element, items })
+                    if *element == ty.erase() =>
+                {
+                    for item in items.iter().rev() {
+                        self.tick()?;
+                        pending.push((ty, item));
+                    }
+                }
+                (Type::Option(ty), Scalar::Option { element, value }) if *element == ty.erase() => {
+                    if let Some(value) = value {
+                        pending.push((ty, value));
+                    }
+                }
+                _ => return Err("Owned callの複合memberが元署名型と違う".into()),
+            }
+            if checks.failure.is_some() || checks.blocked {
+                break;
+            }
+            self.tick()?;
+        }
+        Ok(())
+    }
+
     fn owned_reference_check(
         &self,
         ty: &Type,
@@ -159,9 +230,11 @@ impl Environment<'_> {
         else {
             return Err("Owned callの元宣言がviewでない".into());
         };
-        if !matches!(returns, Type::Owned(..))
-            && !params.iter().any(|p| matches!(p.ty, Type::Owned(..)))
-        {
+        let mut owned = self.call_type_has_owned(returns)?;
+        for parameter in params {
+            owned |= self.call_type_has_owned(&parameter.ty)?;
+        }
+        if !owned {
             return Ok(Checks::default());
         }
         if params.len() != arguments.len() {
@@ -171,7 +244,7 @@ impl Environment<'_> {
         let mut checks = Checks::default();
         for (p, value) in params.iter().zip(arguments) {
             self.tick()?;
-            self.owned_reference_check(
+            self.owned_call_value_check(
                 &p.ty,
                 value.as_ref(),
                 &values,
@@ -190,7 +263,7 @@ impl Environment<'_> {
             && !checks.blocked
             && let Some(value) = returned
         {
-            self.owned_reference_check(
+            self.owned_call_value_check(
                 returns,
                 value,
                 &values,
@@ -204,7 +277,7 @@ impl Environment<'_> {
         Ok(checks)
     }
 
-    pub(super) fn owns_call(&self, id: usize) -> Result<bool, ValidationFailure> {
+    pub(in crate::observed) fn owns_call(&self, id: usize) -> Result<bool, ValidationFailure> {
         let Some(d) = self.named_view(id)? else {
             return Ok(false);
         };
@@ -214,8 +287,11 @@ impl Environment<'_> {
         else {
             unreachable!()
         };
-        Ok(matches!(returns, Type::Owned(..))
-            || params.iter().any(|p| matches!(p.ty, Type::Owned(..))))
+        let mut owned = self.call_type_has_owned(returns)?;
+        for parameter in params {
+            owned |= self.call_type_has_owned(&parameter.ty)?;
+        }
+        Ok(owned)
     }
 
     pub(in crate::observed) fn owned_call_inputs(

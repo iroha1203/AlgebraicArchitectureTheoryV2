@@ -88,7 +88,8 @@
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
   ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
   これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
-  view呼出し式の最上位が単一Owned参照である引数・返り型は、実ownerと同snapshotの原始所属事実で検査する。
+  view呼出し式のOwned参照と、それを含むTuple/List/Set/Optionの引数・返り型は、各実memberを
+  元署名のownerと同snapshotの原始所属事実で検査する。none・空の値はmemberを生成せず保持する。
   entity/arrowの所属一致は成功値の支持・Scopeにも残し、既知不一致は元callと型付きowner不等、
   snapshot不一致は実snapshotのText不等のcounterexampleに接続するcondition_failedを返す。
   引数不適合ではcallee bodyへ入らず、内側callの構成条件が反証されて値が未生成なら、
@@ -156,7 +157,7 @@
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・Answer 由来の束縛・
-  Ownedを含む複合型parameter・返り値を宣言したviewの呼出し・未観測ownerの所属条件・
+  OwnedをMap/Term内部に含むparameter・返り値を宣言したviewの呼出し・未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
   `unsupported_algorithm` や未決回答へ変換しない。
