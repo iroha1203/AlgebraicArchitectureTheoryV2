@@ -30,6 +30,8 @@ mod completion;
 mod dependent_family;
 #[path = "family_evaluate.rs"]
 mod family;
+#[path = "owned_call_evaluate.rs"]
+mod owned_call;
 #[path = "owned_family_evaluate.rs"]
 mod owned_family;
 #[path = "owned_type_evaluate.rs"]
@@ -827,6 +829,18 @@ impl Evaluator<'_, '_> {
             let value = self.eval_inner(id)?;
             // post checkpoint が停止しても検査済みの値と Evaluation を保持する。
             self.completed.insert(id, value.clone());
+            #[cfg(test)]
+            if matches!(
+                self.environment.inputs.law().exprs[id].kind,
+                ExprKind::Call { .. }
+            ) {
+                data::observe_actual(
+                    self.environment.inputs.law().exprs[id].span,
+                    self.graph.active,
+                    "call_evaluation_complete",
+                    0,
+                );
+            }
             self.tick(Checkpoint::Expression)?;
             Ok(value)
         })
@@ -1797,13 +1811,46 @@ impl Evaluator<'_, '_> {
             .environment
             .named_view(id)?
             .ok_or_else(|| Failure::Internal("named view targetがない".into()))?;
-        let Signature::View { params, body, .. } = &declaration.signature else {
+        let Signature::View {
+            params,
+            body,
+            returns,
+        } = &declaration.signature
+        else {
             unreachable!()
         };
         let mut arguments = Vec::new();
         for &arg in args {
             self.tick(Checkpoint::FiniteIteration)?;
             arguments.push(self.eval(arg)?);
+        }
+        #[cfg(test)]
+        data::observe_actual(
+            span,
+            self.graph.active,
+            "call_arguments_complete",
+            arguments.len(),
+        );
+        let owned = matches!(returns, Type::Owned(..))
+            || params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
+        let values = if owned {
+            arguments
+                .iter()
+                .map(|a| a.value.map(|v| self.graph.scalar(v).cloned()).transpose())
+                .collect::<Result<Vec<_>, _>>()?
+        } else {
+            vec![]
+        };
+        let checks = self
+            .environment
+            .owned_call_checks(declaration, &values, None, span)?;
+        if owned {
+            #[cfg(test)]
+            data::observe_actual(span, self.graph.active, "owned_call_parameter", 0);
+            self.tick(Checkpoint::FiniteIteration)?;
+        }
+        if checks.failure.is_some() || checks.blocked {
+            return self.owned_call_finish(span, ty, arguments, None, checks);
         }
         let source = self
             .sources
@@ -1857,8 +1904,15 @@ impl Evaluator<'_, '_> {
             .value
             .map(|v| self.graph.scalar(v).cloned())
             .transpose()?;
+        let checks =
+            self.environment
+                .owned_call_checks(declaration, &values, Some(known.as_ref()), span)?;
         arguments.push(body);
-        self.lexical_result(span, ty, known, arguments)
+        if owned {
+            self.owned_call_finish(span, ty, arguments, known, checks)
+        } else {
+            self.lexical_result(span, ty, known, arguments)
+        }
     }
     // let/if の新しい値は元の子 Evaluation から構成する。値がない子も保持し、
     // その Evaluation を通常 Scalar として消費しない。
@@ -2629,6 +2683,7 @@ mod recheck_tests {
     include!("term_tests.rs");
     include!("term_equality_tests.rs");
     include!("affine_term_tests.rs");
+    include!("owned_call_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

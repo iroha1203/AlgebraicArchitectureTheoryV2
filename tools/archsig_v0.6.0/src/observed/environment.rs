@@ -23,6 +23,8 @@ pub(super) mod family;
 mod map_application;
 #[path = "numeric_slots.rs"]
 mod numeric_slots;
+#[path = "owned_call.rs"]
+pub(super) mod owned_call;
 #[path = "owned_family.rs"]
 pub(super) mod owned_family;
 #[path = "owned_type.rs"]
@@ -750,6 +752,14 @@ impl<'a> Environment<'a> {
         if let Some(reason) = self.term_algorithm_reason(graph, expression, children)? {
             reasons.push(reason);
         }
+        if let Some(reason) = self.owned_call_condition_reason(
+            graph,
+            expression,
+            children,
+            self.cutoff.get().min(graph.nodes.len()),
+        )? {
+            reasons.push(reason);
+        }
         sort_reasons(&mut reasons);
         if node.reasons.len() != reasons.len() {
             return Err("Evaluationの元欠測理由数が違う".into());
@@ -1041,6 +1051,23 @@ impl<'a> Environment<'a> {
                 self.tick()?;
             }
             self.tick()?;
+        }
+        if self.validate_owned_call_condition_node(graph, node, limit)? {
+            return Ok(());
+        }
+        if let Some(Payload::Evaluation {
+            expression, parts, ..
+        }) = &node.payload
+            && parts.len() == 1
+            && self.validate_failed_owned_call(
+                graph,
+                node,
+                *expression,
+                &parts[0].children,
+                limit,
+            )?
+        {
+            return Ok(());
         }
         if self.validate_universal_node(graph, node, limit)? {
             return Ok(());
@@ -4926,6 +4953,10 @@ impl<'a> Environment<'a> {
         let bindings = self.expression_bindings(graph, frame.source)?;
         let analysis =
             self.resolve_analysis(graph, self.analyze_source(graph, span, bindings)?, children)?;
+        let failed = self
+            .owned_call_inputs(graph, frame.source, children, limit)?
+            .is_some_and(|checks| checks.failure.is_some() || checks.blocked);
+        let value = if failed { None } else { value };
         if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
             return Err("call body値が元入力展開と違う".into());
         }
@@ -4975,6 +5006,17 @@ impl<'a> Environment<'a> {
         };
         if self.named_view(id)?.is_none() {
             return Ok(false);
+        }
+        if parts.len() == 1
+            && self.validate_failed_owned_call(
+                graph,
+                node,
+                *expression,
+                &parts[0].children,
+                limit,
+            )?
+        {
+            return Ok(true);
         }
         if node.ty
             != NodeType::Evaluation(
@@ -5072,12 +5114,13 @@ impl<'a> Environment<'a> {
         else {
             unreachable!()
         };
-        // 式型へeraseする前の宣言型を読む。所属条件を確認するcall評価は未提供。
-        let mut pending = vec![returns];
-        for parameter in params {
+        // 単一Owned参照は元署名と実owner事実で検査する。複合署名は別経路を要する。
+        let mut pending = Vec::new();
+        for ty in std::iter::once(returns).chain(params.iter().map(|p| &p.ty)) {
             self.tick()?;
-            pending.push(&parameter.ty);
-            self.tick()?;
+            if !matches!(ty, Type::Owned(_, _)) {
+                pending.push(ty);
+            }
         }
         while let Some(ty) = pending.pop() {
             self.tick()?;
@@ -6801,8 +6844,11 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Call { args, .. } if self.named_view(id)?.is_some() => {
                     let declaration = self.named_view(id)?.ok_or("named viewがない")?;
-                    let crate::law::model::Signature::View { params, body, .. } =
-                        &declaration.signature
+                    let crate::law::model::Signature::View {
+                        params,
+                        body,
+                        returns,
+                    } = &declaration.signature
                     else {
                         unreachable!()
                     };
@@ -6810,12 +6856,35 @@ impl<'a> Environment<'a> {
                     let mut call_base = base.clone();
                     call_base.readings.insert(declaration.reading.clone());
                     let mut support = Vec::new();
+                    let mut arguments = Vec::new();
+                    let owned = matches!(returns, Type::Owned(..))
+                        || params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
                     for (parameter, &arg) in params.iter().zip(args) {
                         self.tick()?;
                         let value = self.scoped_ast(arg, variables, base, reading)?;
                         call_base.merge(&value.scope);
                         support.extend(value.support.iter().cloned());
+                        if owned {
+                            arguments.push(value.known_value.clone());
+                        }
                         local.insert(parameter.name.clone(), value);
+                    }
+                    let checks =
+                        self.owned_call_checks(declaration, &arguments, None, expression.span)?;
+                    call_base.merge(&checks.scope);
+                    support.extend(checks.support);
+                    if checks.failure.is_some() || checks.blocked {
+                        support.sort();
+                        support.dedup();
+                        return Ok(SourceValue {
+                            symbolic: None,
+                            comparison: None,
+                            affine: None,
+                            scalar_scope: None,
+                            scope: call_base,
+                            known_value: None,
+                            support,
+                        });
                     }
                     for value in local.values_mut() {
                         value.scope.merge(&call_base);
@@ -6829,15 +6898,28 @@ impl<'a> Environment<'a> {
                     )?;
                     call_base.merge(&body.scope);
                     support.extend(body.support);
+                    let checks = self.owned_call_checks(
+                        declaration,
+                        &arguments,
+                        Some(body.known_value.as_ref()),
+                        expression.span,
+                    )?;
+                    call_base.merge(&checks.scope);
+                    support.extend(checks.support);
                     support.sort();
                     support.dedup();
+                    let failed = checks.failure.is_some() || checks.blocked;
                     SourceValue {
-                        symbolic: body.symbolic,
-                        comparison: body.comparison,
-                        affine: body.affine,
-                        scalar_scope: body.known_value.as_ref().map(|_| call_base.clone()),
+                        symbolic: if failed { None } else { body.symbolic },
+                        comparison: if failed { None } else { body.comparison },
+                        affine: if failed { None } else { body.affine },
+                        scalar_scope: if failed {
+                            None
+                        } else {
+                            body.known_value.as_ref().map(|_| call_base.clone())
+                        },
                         scope: call_base,
-                        known_value: body.known_value,
+                        known_value: if failed { None } else { body.known_value },
                         support,
                     }
                 }
@@ -7782,6 +7864,17 @@ impl<'a> Environment<'a> {
             self.validate_at(graph, node, reference.0)?;
             self.validate_at(graph, graph.get(*expression)?, expression.0)?;
             if self.universal_owned_evaluation(graph, reference)? {
+                continue;
+            }
+            if let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &graph.get(*expression)?.payload
+                && let Some(&id) = self.expressions.get(span)
+                && self.owns_call(id)?
+            {
+                // validate_call_evaluationが実引数・body・元所属事実まで検査済み。
+                // 不適合時の支持も値と子だけへ縮めない。
                 continue;
             }
             if let Some(Payload::Expression {

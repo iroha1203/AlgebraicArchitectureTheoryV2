@@ -88,6 +88,11 @@
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
   ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
   これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
+  view呼出し式の最上位が単一Owned参照である引数・返り型は、実ownerと同snapshotの原始所属事実で検査する。
+  entity/arrowの所属一致は成功値の支持・Scopeにも残し、既知不一致は元callと型付きowner不等の
+  counterexampleに接続するcondition_failedを返す。引数不適合ではcallee bodyへ入らず、
+  内側のcallで値が未生成なら元理由を保って外側へ通常値を返さない。
+  有限binder・fieldからの実ownerと、Z/Q全域式内の同じ呼出し境界も元の束縛を保つ。
   左端data parameterのmatchから得た直接subtermへの構造再帰も、各実引数とcall frameを保持して評価する。
   既存Engineの有限ExprからIRへの変換を各viewへ接続し、全Z代入の保存をアフィン正規化で判定する。
   addは成立、subtractは元式へ再代入できる反例、operator欠測は整合する補完対を持つ未決となる。
@@ -149,7 +154,7 @@
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・Answer 由来の束縛・
-  ownerに依存するparameter・返り値を宣言したviewの呼出し・
+  Ownedを含む複合型parameter・返り値を宣言したviewの呼出し・未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
   `unsupported_algorithm` や未決回答へ変換しない。

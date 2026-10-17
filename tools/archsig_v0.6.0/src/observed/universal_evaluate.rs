@@ -1483,12 +1483,51 @@ impl Evaluator<'_, '_> {
                     .environment
                     .named_view(id)?
                     .ok_or_else(|| Failure::Internal("全域call targetがない".into()))?;
-                let Signature::View { params, body, .. } = &declaration.signature else {
+                let Signature::View {
+                    params,
+                    body,
+                    returns,
+                } = &declaration.signature
+                else {
                     unreachable!()
                 };
                 let mut arguments = Vec::new();
                 for argument in args {
                     arguments.push(self.universal_pointwise(plan, template, domains, *argument)?);
+                }
+                let owned = matches!(returns, Type::Owned(..))
+                    || params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
+                let values = if owned {
+                    arguments
+                        .iter()
+                        .map(|a| {
+                            a.evaluated
+                                .value
+                                .map(|r| self.graph.scalar(r).cloned())
+                                .transpose()
+                        })
+                        .collect::<Result<Vec<_>, _>>()?
+                } else {
+                    vec![]
+                };
+                let checks =
+                    self.environment
+                        .owned_call_checks(declaration, &values, None, expr.span)?;
+                if checks.failure.is_some() || checks.blocked {
+                    let has_local_domains = arguments.iter().any(|a| a.has_local_domains);
+                    let evaluated = self.owned_call_finish_at(
+                        source,
+                        expr.span,
+                        ty,
+                        arguments.into_iter().map(|a| a.evaluated).collect(),
+                        None,
+                        checks,
+                    )?;
+                    return Ok(SymbolicEvaluation {
+                        evaluated,
+                        comparison: None,
+                        has_local_domains,
+                    });
                 }
                 let caller = self.graph.active;
                 let frame = self.graph.frames.len();
@@ -1525,6 +1564,34 @@ impl Evaluator<'_, '_> {
                 self.formal = old_formal;
                 self.lexical = old_lexical;
                 let body = body_result?;
+                let known = body
+                    .evaluated
+                    .value
+                    .map(|r| self.graph.scalar(r))
+                    .transpose()?;
+                let checks = self.environment.owned_call_checks(
+                    declaration,
+                    &values,
+                    Some(known),
+                    expr.span,
+                )?;
+                if checks.failure.is_some() || checks.blocked {
+                    arguments.push(body);
+                    let has_local_domains = arguments.iter().any(|a| a.has_local_domains);
+                    let evaluated = self.owned_call_finish_at(
+                        source,
+                        expr.span,
+                        ty,
+                        arguments.into_iter().map(|a| a.evaluated).collect(),
+                        None,
+                        checks,
+                    )?;
+                    return Ok(SymbolicEvaluation {
+                        evaluated,
+                        comparison: None,
+                        has_local_domains,
+                    });
+                }
                 comparison = body.comparison.clone();
                 arguments.push(body);
                 arguments
