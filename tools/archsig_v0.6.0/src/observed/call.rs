@@ -10,7 +10,7 @@ pub(super) struct Context {
     pub case: Option<usize>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Frame {
     pub caller: Context,
     pub source: NodeRef,
@@ -18,12 +18,12 @@ pub(super) struct Frame {
 }
 
 /// List位置とSetの意味上の要素を区別する。Setの表示ordinalをidentityにしない。
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) enum Member {
     ListPosition(usize),
     SetElement(super::result::Scalar),
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Iteration {
     pub caller: Context,
     pub source: NodeRef,
@@ -34,7 +34,7 @@ pub(super) struct Iteration {
 }
 
 /// 元Law族の一組。番号は格納索引だけで、identityは元Sourceと実直積member。
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Instance {
     pub caller: Context,
     pub source: NodeRef,
@@ -43,7 +43,7 @@ pub(super) struct Instance {
 }
 
 /// Bool補完は元slot列と型付き実assignmentへ属する。索引は表示identityにしない。
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct CompletionCase {
     pub caller: Context,
     pub seed: NodeRef,

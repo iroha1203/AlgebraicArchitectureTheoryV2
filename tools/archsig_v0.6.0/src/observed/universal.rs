@@ -16,7 +16,7 @@ pub(in crate::observed) struct UniversalPlan {
     pub parameters: Vec<Parameter>,
     pub family: bool,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct AnalysisContext {
     pub plan: UniversalPlan,
     pub template: Option<NodeRef>,
@@ -25,13 +25,13 @@ pub(super) struct AnalysisContext {
     pub local_axes: Vec<LocalAxis>,
     pub calls: Vec<ResolvedCall>,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct LocalAxis {
     pub parameter: Parameter,
     pub domain: Option<NodeRef>,
     pub actual: bool,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ResolvedCall {
     pub expression: usize,
     pub caller: super::super::call::Context,
@@ -398,7 +398,7 @@ impl Environment<'_> {
         // まず提示された元実引数を、補完を入れずに照合する。代入した値を元の
         // unknown Evaluationの値と取り違えず、その後に原ASTを補完下で再分析する。
         let (bindings, mut variables, base) =
-            self.with_universal(original, || self.frame_arguments(graph, index))?;
+            self.with_universal_graph(graph, original, || self.frame_arguments(graph, index))?;
         let frame = graph.frames.get(index).ok_or("全域補完の元frameがない")?;
         let call = *self
             .expressions
@@ -493,7 +493,8 @@ impl Environment<'_> {
                 return Err("全域数値補完の元欠測slot・型が違う".into());
             }
         }
-        self.with_universal(
+        self.with_universal_graph(
+            graph,
             self.universal_graph_context(graph, &plan, template, domains, values.to_vec())?,
             || self.universal_analysis(graph, template, domains, fixed),
         )
@@ -953,6 +954,14 @@ impl Environment<'_> {
         }
         Ok(())
     }
+    fn with_universal_graph<T>(
+        &self,
+        graph: &Graph,
+        context: AnalysisContext,
+        run: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<T, ValidationFailure> {
+        self.validation_graph_session(graph, || self.with_universal(context, run))
+    }
     fn with_universal<T>(
         &self,
         context: AnalysisContext,
@@ -972,7 +981,8 @@ impl Environment<'_> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<UniversalSourceAnalysis, ValidationFailure> {
-        self.with_universal(
+        self.with_universal_graph(
+            graph,
             AnalysisContext {
                 plan: plan.clone(),
                 template: None,
@@ -993,17 +1003,20 @@ impl Environment<'_> {
         domains: &[NodeRef],
         template: NodeRef,
     ) -> Result<UniversalSourceAnalysis, ValidationFailure> {
-        self.universal_check_domains(graph, template, domains, plan)?;
-        self.with_universal(
-            self.universal_graph_context(
+        self.validation_graph_session(graph, || {
+            self.universal_check_domains(graph, template, domains, plan)?;
+            self.with_universal_graph(
                 graph,
-                plan,
-                template,
-                domains,
-                self.universal_completions(template),
-            )?,
-            || self.universal_analyze_at(graph, span, bindings),
-        )
+                self.universal_graph_context(
+                    graph,
+                    plan,
+                    template,
+                    domains,
+                    self.universal_completions(template),
+                )?,
+                || self.universal_analyze_at(graph, span, bindings),
+            )
+        })
     }
     fn universal_analyze_at(
         &self,
@@ -1012,7 +1025,7 @@ impl Environment<'_> {
         bindings: &[Binding],
     ) -> Result<UniversalSourceAnalysis, ValidationFailure> {
         self.tick()?;
-        let analysis = self.universal_uncached_source(graph, span, bindings)?;
+        let analysis = self.universal_source_with_context(graph, span, bindings)?;
         let mut parameters = Vec::new();
         let law = self.inputs.law();
         let declaration = law
@@ -1052,6 +1065,47 @@ impl Environment<'_> {
         Ok(UniversalSourceAnalysis {
             parameters,
             analysis,
+        })
+    }
+    pub(super) fn universal_source_with_context(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Result<SourceAnalysis, ValidationFailure> {
+        self.validation_graph_session(graph, || {
+            self.tick()?;
+            let context = self.current_context(graph);
+            let cutoff = self.cutoff.get().min(graph.nodes.len());
+            let active = self
+                .universal_context
+                .borrow()
+                .clone()
+                .ok_or("全域sourceの分析Contextがない")?;
+            let cached = self
+                .cache
+                .borrow()
+                .universal_sources
+                .iter()
+                .find(|(c, l, at, b, a, _)| {
+                    *c == context && *l == cutoff && *at == span && b == bindings && a == &active
+                })
+                .map(|entry| entry.5.clone());
+            if let Some(value) = cached {
+                self.tick()?;
+                return Ok(value);
+            }
+            let value = self.universal_uncached_source(graph, span, bindings)?;
+            self.tick()?;
+            self.cache.borrow_mut().universal_sources.push((
+                context,
+                cutoff,
+                span,
+                bindings.to_vec(),
+                active,
+                value.clone(),
+            ));
+            Ok(value)
         })
     }
     pub(super) fn universal_uncached_source(
@@ -1097,7 +1151,8 @@ impl Environment<'_> {
         let result = (|| {
             let plan = self.universal_plan_at(graph, template, bindings)?;
             self.universal_check_domains(graph, template, domains, &plan)?;
-            self.with_universal(
+            self.with_universal_graph(
+                graph,
                 self.universal_graph_context(
                     graph,
                     &plan,
@@ -1231,7 +1286,8 @@ impl Environment<'_> {
         }
         let span = self.expression_span(graph, original)?;
         let old_context = self.context.replace(Some(graph.context_at(original.0)));
-        let result = self.with_universal(
+        let result = self.with_universal_graph(
+            graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
             || {
                 let mut result = self.universal_analyze_at(graph, span, original_bindings)?;
@@ -1335,7 +1391,8 @@ impl Environment<'_> {
             _ => return Err("具体反例の元署名が違う".into()),
         };
         let previous = self.context.replace(Some(graph.context_at(original.0)));
-        let result = self.with_universal(
+        let result = self.with_universal_graph(
+            graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
             || {
                 let variables = graph

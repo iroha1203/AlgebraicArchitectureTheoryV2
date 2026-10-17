@@ -60,6 +60,9 @@
   ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
   これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
   左端data parameterのmatchから得た直接subtermへの構造再帰も、各実引数とcall frameを保持して評価する。
+  既存Engineの有限ExprからIRへの変換を各viewへ接続し、全Z代入の保存をアフィン正規化で判定する。
+  addは成立、subtractは元式へ再代入できる反例、operator欠測は整合する補完対を持つ未決となる。
+  生成IR・実call・元のsource/operator事実と由来を保持し、未知のExpr型全域を有限標本へ置き換えない。
   引数なし・複数引数・入れ子・import aliasを扱い、呼出しごとに元の引数評価・parameter束縛・
   callee bodyの導出を保持し、呼出し元のlexical bindingへ戻る。
   未観測の実引数は欠測理由を保ち、その引数を使わないbodyは既知値を返せる。

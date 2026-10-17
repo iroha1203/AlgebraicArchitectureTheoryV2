@@ -671,6 +671,7 @@ impl Environment<'_> {
                 }
                 ExprKind::Group(_) | ExprKind::Quant { .. } if children.len() == 1 => children[0],
                 ExprKind::Let { .. } if children.len() == 2 => children[1],
+                ExprKind::Match { .. } if children.len() == 2 => children[1],
                 ExprKind::If { .. } if children.len() == 3 => {
                     match graph.boolean(self.evaluation(graph, children[0])?.2)? {
                         Some(true) => children[1],
@@ -3186,6 +3187,23 @@ impl Environment<'_> {
             | ExprKind::Group(base)
             | ExprKind::Unary { operand: base, .. } => vec![*base],
             ExprKind::Binary { lhs, rhs, .. } => vec![*lhs, *rhs],
+            ExprKind::Match { scrutinee, arms } => {
+                let input = *children.first().ok_or("全域matchの実scrutineeがない")?;
+                if input.0 >= limit || graph.context_at(input.0) != self.current_context(graph) {
+                    return Err("全域matchの実scrutineeが未出・別Context".into());
+                }
+                self.source_matches(graph, self.evaluation(graph, input)?.0, *scrutinee)?;
+                self.recheck_evaluation(graph, input)?;
+                let value = self
+                    .evaluation(graph, input)?
+                    .2
+                    .map(|r| graph.scalar(r))
+                    .transpose()?;
+                let selected = data::select(law, id, value, &self.control)?;
+                std::iter::once(*scrutinee)
+                    .chain(selected.map(|arm| arms[arm].body))
+                    .collect()
+            }
             ExprKind::Let { value, body, .. } => vec![*value, *body],
             ExprKind::If {
                 cond,
@@ -3229,10 +3247,17 @@ impl Environment<'_> {
                 }
                 return Ok(());
             }
+            ExprKind::Dotted(_) if data::expression(law, id, &self.control)?.is_some() => vec![],
             ExprKind::Dotted(parts) => {
                 let first = parts.first().ok_or("全域Dottedが空")?;
                 if parts.len() == 1 {
-                    if let Some(argument) = self.call_parameter(graph, &first.name)? {
+                    if let Some((argument, _)) =
+                        self.pattern_argument(graph, first.span, &first.name, bindings)?
+                    {
+                        if children != [argument] {
+                            return Err("全域patternの実scrutinee producerが違う".into());
+                        }
+                    } else if let Some(argument) = self.call_parameter(graph, &first.name)? {
                         if children != [argument] {
                             return Err("全域名のcall producerが違う".into());
                         }
@@ -3304,7 +3329,7 @@ impl Environment<'_> {
         graph: &Graph,
         source: NodeRef,
     ) -> Result<Option<SourceAnalysis>, ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             let previous = self.context.replace(Some(graph.context_at(source.0)));
             let previous_cutoff = self.cutoff.replace(source.0);
             let previous_universal = self.universal_context.replace(None);
@@ -3394,7 +3419,7 @@ impl Environment<'_> {
         graph: &Graph,
         reference: NodeRef,
     ) -> Result<bool, ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             let previous = self.context.replace(Some(graph.context_at(reference.0)));
             let result = self.universal_internal_root_evaluation_in_context(graph, reference);
             self.context.set(previous);

@@ -27,6 +27,8 @@ pub(super) mod owned_family;
 pub(super) mod owned_type;
 #[path = "universal.rs"]
 pub(super) mod universal;
+#[path = "validation_identity.rs"]
+mod validation_identity;
 
 use std::{
     cell::{Cell, RefCell},
@@ -49,7 +51,7 @@ pub(crate) struct SourceAnalysis {
     pub scalar_scope: Option<Scope>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct SourceValue {
     comparison: Option<Box<AffinePredicate>>,
     scope: Scope,
@@ -59,7 +61,7 @@ struct SourceValue {
     scalar_scope: Option<Scope>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct AffinePredicate {
     expression: usize,
     op: BinOp,
@@ -110,13 +112,165 @@ struct DottedInputCache {
     occurrences: BTreeMap<(usize, usize), Option<DottedOccurrence>>,
 }
 
-// 一回の不変Graph借用に閉じた成功照合だけを共有する。呼出し終了時に破棄する。
+// 純粋AST計算の全入力。Graphの照合成功とは別に保持する。
+#[derive(Clone, PartialEq, Eq)]
+struct ScopedKey {
+    expression: usize,
+    variables: BTreeMap<String, SourceValue>,
+    base: Scope,
+    reading: String,
+    context: Option<super::call::Context>,
+    scoped: Option<super::call::Context>,
+    universal: Option<universal::AnalysisContext>,
+    completions: CompletionValues,
+}
+// 前回のGraphの全typed bytes相当と全隠しregistryを照合してからだけ成功を再利用する。
+// nodeの追加は既出DAGの意味を変えない。新frameも旧prefixから必ず除外される
+// producerを持つ場合だけ許す。新caseも同じprefix境界を守る。
+// 既存metadataの改変は全て失効させる。
+struct ValidationSnapshot {
+    nodes: Vec<Node>,
+    contexts: Vec<super::call::Context>,
+    frames: Vec<super::call::Frame>,
+    iterations: Vec<super::call::Iteration>,
+    instances: Vec<super::call::Instance>,
+    cases: Vec<super::call::CompletionCase>,
+    witnesses: Vec<super::result::UniversalWitness>,
+    requests: Vec<Request>,
+}
+impl ValidationSnapshot {
+    fn tick(control: &Control) -> Result<(), ValidationFailure> {
+        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        Ok(())
+    }
+    fn same<T: PartialEq>(
+        left: &[T],
+        right: &[T],
+        control: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        Self::tick(control)?;
+        if left.len() != right.len() {
+            return Ok(false);
+        }
+        for (a, b) in left.iter().zip(right) {
+            Self::tick(control)?;
+            let equal = a == b;
+            Self::tick(control)?;
+            if !equal {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+    fn copy<T: Clone>(items: &[T], control: &Control) -> Result<Vec<T>, ValidationFailure> {
+        let mut copied = Vec::new();
+        for item in items {
+            Self::tick(control)?;
+            copied.push(item.clone());
+            Self::tick(control)?;
+        }
+        Ok(copied)
+    }
+    fn after(
+        refs: impl Iterator<Item = NodeRef>,
+        limit: usize,
+        control: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        for reference in refs {
+            Self::tick(control)?;
+            let after = reference.0 >= limit;
+            Self::tick(control)?;
+            if after {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+    fn matches(&self, g: &Graph, control: &Control) -> Result<bool, ValidationFailure> {
+        Self::tick(control)?;
+        if self.nodes.len() > g.nodes.len()
+            || self.contexts.len() != self.nodes.len()
+            || g.contexts.len() != g.nodes.len()
+            || g.frames.len() < self.frames.len()
+            || g.cases.len() < self.cases.len()
+        {
+            return Ok(false);
+        }
+        for (a, b) in g.nodes[..self.nodes.len()].iter().zip(&self.nodes) {
+            if !validation_identity::node(a, b, control)? {
+                return Ok(false);
+            }
+        }
+        if !Self::same(&g.contexts[..self.contexts.len()], &self.contexts, control)?
+            || !Self::same(&g.frames[..self.frames.len()], &self.frames, control)?
+            || !Self::same(&g.cases[..self.cases.len()], &self.cases, control)?
+            || !Self::same(&g.instances, &self.instances, control)?
+            || !Self::same(&g.universal_witnesses, &self.witnesses, control)?
+            || !Self::same(&g.requests, &self.requests, control)?
+        {
+            return Ok(false);
+        }
+        if g.iterations.len() != self.iterations.len() {
+            return Ok(false);
+        }
+        for (a, b) in g.iterations.iter().zip(&self.iterations) {
+            if !validation_identity::iteration(a, b, control)? {
+                return Ok(false);
+            }
+        }
+        for frame in &g.frames[self.frames.len()..] {
+            if !Self::after(
+                std::iter::once(frame.source).chain(frame.arguments.iter().copied()),
+                self.nodes.len(),
+                control,
+            )? {
+                return Ok(false);
+            }
+        }
+        for case in &g.cases[self.cases.len()..] {
+            if !Self::after(
+                std::iter::once(case.seed)
+                    .chain([case.domain, case.member])
+                    .chain(case.values.iter().copied()),
+                self.nodes.len(),
+                control,
+            )? {
+                return Ok(false);
+            }
+        }
+        Self::tick(control)?;
+        Ok(true)
+    }
+    fn from_graph(g: &Graph, control: &Control) -> Result<Self, ValidationFailure> {
+        Ok(Self {
+            nodes: Self::copy(&g.nodes, control)?,
+            contexts: Self::copy(&g.contexts, control)?,
+            frames: Self::copy(&g.frames, control)?,
+            iterations: Self::copy(&g.iterations, control)?,
+            instances: Self::copy(&g.instances, control)?,
+            cases: Self::copy(&g.cases, control)?,
+            witnesses: Self::copy(&g.universal_witnesses, control)?,
+            requests: Self::copy(&g.requests, control)?,
+        })
+    }
+}
+
 #[derive(Default)]
 struct ValidationCache {
     checked: BTreeSet<NodeRefKey>,
     rechecked: BTreeSet<NodeRefKey>,
     sources: Vec<SourceCacheEntry>,
     frames: BTreeMap<(usize, usize), FrameInputs>,
+    // 全域の成功にもprefix照合を要求し、Plan・局所軸・実call・補完を全てkeyにする。
+    universal_frames: Vec<(usize, usize, universal::AnalysisContext, FrameInputs)>,
+    universal_sources: Vec<(
+        super::call::Context,
+        usize,
+        (usize, usize),
+        Vec<Binding>,
+        universal::AnalysisContext,
+        SourceAnalysis,
+    )>,
     iterations: BTreeMap<(usize, usize), IterationInputs>,
     completion_seeds: BTreeMap<completion::MemoKey, completion::Seed>,
     completion_domains: BTreeMap<completion::DomainKey, Vec<NodeRef>>,
@@ -137,6 +291,9 @@ pub(crate) struct Environment<'a> {
     expressions: BTreeMap<(usize, usize), usize>,
     dotted_candidates: BTreeMap<(usize, usize), Vec<DottedOccurrence>>,
     dotted_inputs: RefCell<DottedInputCache>,
+    // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
+    // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
+    scoped_values: RefCell<Vec<(ScopedKey, SourceValue)>>,
     control: Control,
     context: Cell<Option<super::call::Context>>,
     completion_values: RefCell<CompletionValues>,
@@ -144,6 +301,7 @@ pub(crate) struct Environment<'a> {
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
     cache: RefCell<ValidationCache>,
+    validation_snapshot: RefCell<Option<ValidationSnapshot>>,
     universal_context: RefCell<Option<universal::AnalysisContext>>,
     #[cfg(test)]
     optional_name_context: Cell<Option<super::call::Context>>,
@@ -226,6 +384,7 @@ impl<'a> Environment<'a> {
             expressions,
             dotted_candidates,
             dotted_inputs: RefCell::new(DottedInputCache::default()),
+            scoped_values: RefCell::new(Vec::new()),
             control: control.clone(),
             context: Cell::new(None),
             completion_values: RefCell::new(Vec::new()),
@@ -233,6 +392,7 @@ impl<'a> Environment<'a> {
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
             cache: RefCell::new(ValidationCache::default()),
+            validation_snapshot: RefCell::new(None),
             universal_context: RefCell::new(None),
             #[cfg(test)]
             optional_name_context: Cell::new(None),
@@ -406,7 +566,7 @@ impl<'a> Environment<'a> {
         node: &Node,
         limit: usize,
     ) -> Result<(), ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
             let context = graph.context_at(limit);
             // 渡されたcloneや未挿入nodeには既存nodeの照合成功を使わない。
@@ -448,23 +608,74 @@ impl<'a> Environment<'a> {
             result
         })
     }
+    fn validation_graph_session<T>(
+        &self,
+        graph: &Graph,
+        run: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<T, ValidationFailure> {
+        if self.validation_depth.get() != 0 {
+            return self.validation_session(run);
+        }
+        stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            graph.tick()?;
+            let same = self
+                .validation_snapshot
+                .borrow()
+                .as_ref()
+                .map(|s| s.matches(graph, &self.control))
+                .transpose();
+            let same = match same {
+                Ok(value) => value.unwrap_or(false),
+                Err(failure) => {
+                    *self.cache.borrow_mut() = ValidationCache::default();
+                    self.validation_snapshot.replace(None);
+                    return Err(failure);
+                }
+            };
+            if !same {
+                *self.cache.borrow_mut() = ValidationCache::default();
+            }
+            self.validation_depth.set(1);
+            let result = self.validation_session(run);
+            self.validation_depth.set(0);
+            if result.is_ok() {
+                match ValidationSnapshot::from_graph(graph, &self.control) {
+                    Ok(snapshot) => {
+                        *self.validation_snapshot.borrow_mut() = Some(snapshot);
+                    }
+                    Err(failure) => {
+                        *self.cache.borrow_mut() = ValidationCache::default();
+                        self.validation_snapshot.replace(None);
+                        return Err(failure);
+                    }
+                }
+            } else {
+                *self.cache.borrow_mut() = ValidationCache::default();
+                self.validation_snapshot.replace(None);
+            }
+            result
+        })
+    }
     fn validation_session<T>(
         &self,
         run: impl FnOnce() -> Result<T, ValidationFailure>,
     ) -> Result<T, ValidationFailure> {
         // Source/Frame の再分析と Evaluation の再検査は相互再入する。
-        // 個別の AST 再帰だけでなく、この共通入口でも残りスタックを確保する。
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        // Source・pattern・実引数復元の局所値を確保する前に十分な余白を取る。
+        stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             let depth = self.validation_depth.get();
             if depth == 0 {
                 *self.cache.borrow_mut() = ValidationCache::default();
+                self.validation_snapshot.replace(None);
             }
             self.validation_depth.set(depth + 1);
             let result = run();
             self.validation_depth.set(depth);
-            // success/失敗/停止の全経路で、次のGraph/改変nodeへ成功を持ち越さない。
+            // Graphのprefixを確認できないroot解析では、成功も失敗も必ず破棄する。
             if depth == 0 {
                 *self.cache.borrow_mut() = ValidationCache::default();
+                self.validation_snapshot.replace(None);
             }
             result
         })
@@ -572,6 +783,20 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
+        // 保存済みnodeの再検査も、Graph.push時の表現検査を前提にしない。
+        // 不正な重複Set/Mapを数学的等値で比較する前に形・型を確認する。
+        if let Some(Payload::Scalar(value)) = &node.payload {
+            data::check(value, self.inputs.law(), &self.control)?;
+        }
+        if let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &node.payload
+        {
+            if value.0 >= limit {
+                return Err("Evaluationの通常値が未出である".into());
+            }
+            data::check(graph.scalar(*value)?, self.inputs.law(), &self.control)?;
+        }
         for (index, quantifier) in node.scope.quantifiers.iter().enumerate() {
             self.tick()?;
             if node.scope.quantifiers[..index].contains(quantifier) {
@@ -2250,7 +2475,7 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
             let id = *self.expressions.get(&span).ok_or("比較の元ASTがない")?;
             let ExprKind::Binary {
@@ -3109,7 +3334,7 @@ impl<'a> Environment<'a> {
         request: &Request,
         answer: &Answer,
     ) -> Result<(), ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
             if answer.outputs.is_empty()
                 && let Some(plan) = self.family_plan(request)?
@@ -4601,12 +4826,64 @@ impl<'a> Environment<'a> {
         graph: &Graph,
         index: usize,
     ) -> Result<FrameInputs, ValidationFailure> {
+        self.validation_graph_session(graph, || {
+            self.tick()?;
+            let frame = graph.frames.get(index).ok_or("call frameがない")?;
+            let limit = self.cutoff.get().min(graph.nodes.len());
+            let prefix = std::iter::once(frame.source)
+                .chain(frame.arguments.iter().copied())
+                .map(|r| r.0)
+                .max()
+                .ok_or("callの元producerがない")?;
+            if prefix >= limit {
+                return Err("call frameに未出producerがある".into());
+            }
+            // 実引数はframe作成より前の不変prefixだけで復元する。
+            // 後から生成した別call/Domainを根拠にもcache keyにも混ぜない。
+            let prefix = prefix + 1;
+            let old_limit = self.cutoff.replace(prefix);
+            let previous = self.universal_context.borrow().clone();
+            if let Some(active) = &previous {
+                let mut scoped = active.clone();
+                scoped
+                    .calls
+                    .retain(|call| call.callee.frame.is_some_and(|i| i < index));
+                scoped
+                    .local_axes
+                    .retain(|axis| axis.domain.is_none_or(|r| r.0 < prefix));
+                self.universal_context.replace(Some(scoped));
+            }
+            let result = self.frame_arguments_inner(graph, index);
+            self.universal_context.replace(previous);
+            self.cutoff.set(old_limit);
+            result
+        })
+    }
+    fn frame_arguments_inner(
+        &self,
+        graph: &Graph,
+        index: usize,
+    ) -> Result<FrameInputs, ValidationFailure> {
         self.tick()?;
         if let Some(value) = self.universal_completion_frame(graph, index)? {
             return Ok(value);
         }
         let cache_key = (index, self.cutoff.get().min(graph.nodes.len()));
-        if self.universal_context.borrow().is_none()
+        let universal = self.universal_context.borrow().clone();
+        if let Some(active) = &universal {
+            let cached = self
+                .cache
+                .borrow()
+                .universal_frames
+                .iter()
+                .find(|(i, l, a, _)| *i == index && *l == cache_key.1 && a == active)
+                .map(|entry| entry.3.clone());
+            if let Some(value) = cached {
+                self.tick()?;
+                return Ok(value);
+            }
+        }
+        if universal.is_none()
             && let Some(value) = self.cache.borrow().frames.get(&cache_key).cloned()
         {
             return Ok(value);
@@ -4689,13 +4966,20 @@ impl<'a> Environment<'a> {
             Ok((bindings, variables, base))
         })();
         self.context.set(previous);
-        if self.universal_context.borrow().is_none()
-            && let Ok(value) = &result
-        {
-            self.cache
-                .borrow_mut()
-                .frames
-                .insert(cache_key, value.clone());
+        if let Ok(value) = &result {
+            if let Some(active) = universal {
+                self.cache.borrow_mut().universal_frames.push((
+                    index,
+                    cache_key.1,
+                    active,
+                    value.clone(),
+                ));
+            } else {
+                self.cache
+                    .borrow_mut()
+                    .frames
+                    .insert(cache_key, value.clone());
+            }
         }
         result
     }
@@ -5266,12 +5550,11 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<SourceAnalysis, ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
-            // 全域Plan/DomainはSource cacheの旧keyに含まれない。各実producerを
-            // 現在の記号contextで再構成し、別templateの成功を流用しない。
+            // 全域Plan/Domain/実call/補完を全て含む専用keyで同じ不変借用内だけ共有する。
             if self.universal_context.borrow().is_some() {
-                return self.universal_uncached_source(graph, span, bindings);
+                return self.universal_source_with_context(graph, span, bindings);
             }
             let context = self.current_context(graph);
             let cutoff = self.cutoff.get().min(graph.nodes.len());
@@ -5733,7 +6016,47 @@ impl<'a> Environment<'a> {
         base: &Scope,
         reading: &str,
     ) -> Result<SourceValue, ValidationFailure> {
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            let key = ScopedKey {
+                expression: id,
+                variables: self.copy_variables(variables)?,
+                base: base.clone(),
+                reading: reading.into(),
+                context: self.context.get(),
+                scoped: self.scoped_context.get(),
+                universal: self.universal_context.borrow().clone(),
+                completions: self.completion_values.borrow().clone(),
+            };
+            let cached = {
+                let values = self.scoped_values.borrow();
+                let mut found = None;
+                for (candidate, value) in values.iter() {
+                    if validation_identity::key(candidate, &key, &self.control)? {
+                        found = Some(value.clone());
+                        break;
+                    }
+                }
+                found
+            };
+            if let Some(value) = cached {
+                self.tick()?;
+                return Ok(value);
+            }
+            let value = self.scoped_ast_uncached(id, variables, base, reading)?;
+            self.tick()?;
+            self.scoped_values.borrow_mut().push((key, value.clone()));
+            Ok(value)
+        })
+    }
+    fn scoped_ast_uncached(
+        &self,
+        id: usize,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<SourceValue, ValidationFailure> {
+        stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             self.tick()?;
             let expression = &self.inputs.law().exprs[id];
             if matches!(&expression.kind, ExprKind::Quant { .. }) {
@@ -6854,7 +7177,7 @@ impl<'a> Environment<'a> {
         }
     }
     fn recheck_evaluation(&self, graph: &Graph, root: NodeRef) -> Result<(), ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
             let key = (graph.context_at(root.0), root.0);
             if self.cache.borrow().rechecked.contains(&key) {
