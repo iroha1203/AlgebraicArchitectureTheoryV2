@@ -507,14 +507,13 @@ fn closed_term_boolean_short_circuit_skips_only_unneeded_comparisons() {
     for (id, b) in [("a", false), ("o", true), ("i", true)] {
         assert_eq!(result_value(&w, id), &Json::Bool(b));
     }
-    assert!(matches!(
-        evaluate_observed_bytes(
-            term_branch_sources(script, false),
-            &["n=evaluate(Terms.needed)"],
-            &mut quiet()
-        ),
-        Err(archsig::observed::EvaluationFailure::NotImplemented { .. })
-    ));
+    let needed = evaluate_observed_bytes(
+        term_branch_sources(script, false),
+        &["n=evaluate(Terms.needed)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(result_value(&needed.wire(), "n"), &Json::Bool(true));
 }
 
 #[test]
@@ -563,9 +562,9 @@ fn closed_term_finite_quantifiers_keep_decisive_values_before_unsupported_later_
     assert_eq!(get(law, "status"), &Json::str("refuted"));
     for declaration in ["allNeeded", "anyNeeded"] {
         let ask = format!("n=evaluate(Terms.{declaration})");
-        assert!(matches!(
-            evaluate_observed_bytes(term_branch_sources(script, false), &[&ask], &mut quiet()),
-            Err(archsig::observed::EvaluationFailure::NotImplemented { .. })
-        ));
+        let needed =
+            evaluate_observed_bytes(term_branch_sources(script, false), &[&ask], &mut quiet())
+                .unwrap();
+        assert_eq!(result_value(&needed.wire(), "n"), &Json::Bool(true));
     }
 }

@@ -1,6 +1,7 @@
 //! 元の欠測 slot、補完代入、補完内の whole 評価を照合する。
 use super::*;
 use crate::law::{ast::Role, model::Signature};
+use crate::observed::value_equality;
 
 #[derive(Clone)]
 pub(super) struct Seed {
@@ -28,6 +29,25 @@ struct Aggregate {
     support: Vec<Fact>,
     reasons: Vec<Reason>,
     value: Option<Scalar>,
+    pair: Option<(usize, usize)>,
+}
+pub(in crate::observed) fn value_comparison_reason(
+    request: &crate::observed::request::Request,
+    ty: &Type,
+    location: &Location,
+    source: NodeRef,
+) -> Reason {
+    Reason {
+        kind: ReasonKind::UnsupportedAlgorithm {
+            question: request.kind,
+            operand_types: vec![ty.clone()],
+            method: "extensional value equality in completions".into(),
+        },
+        request: request.id.clone(),
+        dependencies: vec![source],
+        missing: vec![],
+        location: Some(location.clone()),
+    }
 }
 fn reasons_equal(a: &[Reason], b: &[Reason]) -> bool {
     a.iter().map(Reason::wire).collect::<Vec<_>>() == b.iter().map(Reason::wire).collect::<Vec<_>>()
@@ -823,8 +843,7 @@ impl Environment<'_> {
         let mut support = seed.support.clone();
         let mut reasons = seed.reasons.clone();
         let mut seen = Vec::new();
-        let mut value: Option<Scalar> = None;
-        let mut unique = true;
+        let mut case_values = Vec::new();
         for &evaluation in evaluations {
             self.tick()?;
             let context = graph.context_at(evaluation.0);
@@ -887,18 +906,7 @@ impl Environment<'_> {
             };
             self.source_matches(graph, raw_source, body)?;
             self.completion_case_bindings(graph, &seed, raw_source, bindings, context)?;
-            let current = v.map(|v| graph.scalar(v).cloned()).transpose()?;
-            if let Some(current) = current {
-                if let Some(old) = &value {
-                    if !data::equal(old, &current, &self.control)? {
-                        unique = false;
-                    }
-                } else {
-                    value = Some(current);
-                }
-            } else {
-                unique = false;
-            }
+            case_values.push(v.map(|v| graph.scalar(v)).transpose()?);
             scope.merge(&graph.get(evaluation)?.scope);
             support.extend(graph.get(evaluation)?.support.iter().cloned());
             reasons.extend(graph.get(evaluation)?.reasons.iter().cloned());
@@ -926,6 +934,15 @@ impl Environment<'_> {
         }
         support.sort();
         support.dedup();
+        let outcome = value_equality::all_cases(&case_values, self.inputs.law(), &self.control)?;
+        if outcome.unsupported {
+            reasons.push(value_comparison_reason(
+                request,
+                &seed.ty,
+                &seed.location,
+                seed.reference,
+            ));
+        }
         canonical_reasons(&mut reasons, &self.control)?;
         Ok(Aggregate {
             seed,
@@ -933,7 +950,8 @@ impl Environment<'_> {
             scope,
             support,
             reasons,
-            value: if unique { value } else { None },
+            value: outcome.value,
+            pair: outcome.pair,
         })
     }
 
@@ -1073,20 +1091,7 @@ impl Environment<'_> {
                 _ => return Err("補完集約に別wholeの証拠がある".into()),
             }
         }
-        let mut differs = false;
-        for (i, &left) in a.evaluations.iter().enumerate() {
-            for &right in &a.evaluations[i + 1..] {
-                self.tick()?;
-                if let (Some(left), Some(right)) = (
-                    self.evaluation(graph, left)?.2,
-                    self.evaluation(graph, right)?.2,
-                ) && !data::equal(graph.scalar(left)?, graph.scalar(right)?, &self.control)?
-                {
-                    differs = true;
-                }
-            }
-        }
-        if full != usize::from(a.value.is_some()) || pair != usize::from(differs) {
+        if full != usize::from(a.value.is_some()) || pair != usize::from(a.pair.is_some()) {
             return Err("補完集約の全検査/補完対が不足/余分".into());
         }
         Ok(())
@@ -1806,7 +1811,12 @@ impl Environment<'_> {
             .evaluation(graph, second_result)?
             .2
             .ok_or("補完対の第二結果が未知")?;
-        if data::equal(graph.scalar(left)?, graph.scalar(right)?, &self.control)?
+        if value_equality::equal(
+            graph.scalar(left)?,
+            graph.scalar(right)?,
+            self.inputs.law(),
+            &self.control,
+        )? != Some(false)
             || node.ty != NodeType::Evidence
             || !clean(node, "evidence")
             || !node.reasons.is_empty()

@@ -507,7 +507,7 @@ impl Term {
                                 feature: "Term bodyの未対応の型・演算".into(),
                             });
                         }
-                        environment::binary(*op, &a, &b, c)?
+                        environment::binary(*op, &a, &b, law, e.span, c)?
                     }
                 }
                 ExprKind::Let { name, value, body } => {
