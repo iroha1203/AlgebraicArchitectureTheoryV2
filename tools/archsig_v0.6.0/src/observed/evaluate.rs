@@ -90,6 +90,7 @@ struct Evaluated {
 #[derive(Clone, Debug)]
 struct SourceHandle {
     condition_failed: bool,
+    condition_pending: bool,
     expression: NodeRef,
     scope: Scope,
     known_value: Option<Scalar>,
@@ -432,6 +433,7 @@ impl Evaluator<'_, '_> {
         self.environment.validate(self.graph, &node)?;
         let SourceAnalysis {
             condition_failed,
+            condition_pending,
             scope,
             known_value,
             missing,
@@ -459,6 +461,7 @@ impl Evaluator<'_, '_> {
                 span,
                 SourceHandle {
                     condition_failed,
+                    condition_pending,
                     expression,
                     scope,
                     known_value,
@@ -563,7 +566,7 @@ impl Evaluator<'_, '_> {
                         .skip(1)
                     {
                         self.tick(Checkpoint::FiniteIteration)?;
-                        if !owner.condition_failed
+                        if !(owner.condition_failed || owner.condition_pending)
                             && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
                         {
                             return Err(self.unsupported(prefix, "未確定の参照からの field 読取り"));
@@ -585,7 +588,7 @@ impl Evaluator<'_, '_> {
                 }
                 ExprKind::Field { base, .. } => {
                     let owner = self.prepare_source(*base)?;
-                    if !owner.condition_failed
+                    if !(owner.condition_failed || owner.condition_pending)
                         && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
                     {
                         return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
@@ -1179,11 +1182,13 @@ impl Evaluator<'_, '_> {
                 }
                 let left = self.eval(*lhs)?;
                 let right = self.eval(*rhs)?;
-                if [&left, &right].iter().any(|a| {
-                    a.reasons
-                        .iter()
-                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-                }) {
+                if self.source(span, ty.clone())?.condition_pending
+                    || [&left, &right].iter().any(|a| {
+                        a.reasons
+                            .iter()
+                            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                    })
+                {
                     return self.lexical_result(span, ty, None, vec![left, right]);
                 }
                 let mut scope = left.scope.clone();
@@ -1517,7 +1522,13 @@ impl Evaluator<'_, '_> {
                 .iter()
                 .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
         });
-        let known = if finite.is_some() && !failed {
+        let mut pending = false;
+        for child in &children {
+            pending |= self
+                .environment
+                .evaluation_condition_pending(self.graph, child.evaluation)?;
+        }
+        let known = if finite.is_some() && !failed && !pending {
             super::quantifier::reduce(spec.kind, &results, self.control)?
         } else {
             None
@@ -1909,11 +1920,18 @@ impl Evaluator<'_, '_> {
         } else {
             vec![]
         };
-        let checks = if arguments.iter().any(|a| {
-            a.reasons
-                .iter()
-                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-        }) {
+        let mut pending = false;
+        for argument in &arguments {
+            pending |= self
+                .environment
+                .evaluation_condition_pending(self.graph, argument.evaluation)?;
+        }
+        let checks = if pending
+            || arguments.iter().any(|a| {
+                a.reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            }) {
             super::environment::owned_call::Checks {
                 blocked: true,
                 ..Default::default()
@@ -2021,11 +2039,12 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
-        let failed = children.iter().any(|a| {
-            a.reasons
-                .iter()
-                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-        });
+        let failed = self.source(span, ty.clone())?.condition_pending
+            || children.iter().any(|a| {
+                a.reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            });
         let value = if let Some(known) = known.filter(|_| !failed) {
             Some(self.value(
                 known,
@@ -2050,10 +2069,13 @@ impl Evaluator<'_, '_> {
         chain: bool,
     ) -> Result<Evaluated, Failure> {
         let Some(reference) = base.value else {
-            if base
-                .reasons
-                .iter()
-                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            if self
+                .environment
+                .evaluation_condition_pending(self.graph, base.evaluation)?
+                || base
+                    .reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
             {
                 let source = self
                     .sources

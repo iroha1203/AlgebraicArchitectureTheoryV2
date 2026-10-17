@@ -428,6 +428,7 @@ impl Environment<'_> {
                             .reasons
                             .iter()
                             .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. })),
+                        condition_pending: analysis.condition_pending,
                         symbolic: analysis.symbolic,
                         comparison: analysis.comparison,
                         affine: analysis.affine,
@@ -789,6 +790,7 @@ impl Environment<'_> {
             })?;
         Ok(SourceValue {
             condition_failed: false,
+            condition_pending: false,
             symbolic: None,
             comparison: None,
             affine: affine::parameter(ty, parameter, &self.control)?.map(Box::new),

@@ -253,6 +253,7 @@ impl Environment<'_> {
         let scalar_scope = known_value.as_ref().map(|_| scope.clone());
         Ok(SourceValue {
             condition_failed: owner.condition_failed,
+            condition_pending: owner.condition_pending,
             symbolic: None,
             comparison: None,
             affine: None,

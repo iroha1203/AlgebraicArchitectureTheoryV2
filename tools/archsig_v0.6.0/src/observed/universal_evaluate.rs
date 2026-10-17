@@ -726,6 +726,7 @@ impl Evaluator<'_, '_> {
         }
         sort_reasons(&mut reasons);
         if analyzed.value.is_none()
+            && !analyzed.analysis.condition_pending
             && !reasons
                 .iter()
                 .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
@@ -1133,6 +1134,7 @@ impl Evaluator<'_, '_> {
             retained.merge(&analysis.scope);
             source = Some(SourceHandle {
                 condition_failed: analysis.condition_failed,
+                condition_pending: analysis.condition_pending,
                 expression,
                 scope: analysis.scope,
                 known_value: analysis.known_value,
@@ -1154,12 +1156,13 @@ impl Evaluator<'_, '_> {
         mut comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
         local_domain: Option<NodeRef>,
     ) -> Result<SymbolicEvaluation, Failure> {
-        let failed = children.iter().any(|a| {
-            a.evaluated
-                .reasons
-                .iter()
-                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-        });
+        let failed = source.condition_pending
+            || children.iter().any(|a| {
+                a.evaluated
+                    .reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            });
         if failed {
             comparison = None;
         }
@@ -1516,12 +1519,19 @@ impl Evaluator<'_, '_> {
                 } else {
                     vec![]
                 };
-                let checks = if arguments.iter().any(|a| {
-                    a.evaluated
-                        .reasons
-                        .iter()
-                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-                }) {
+                let mut pending = false;
+                for argument in &arguments {
+                    pending |= self
+                        .environment
+                        .evaluation_condition_pending(self.graph, argument.evaluated.evaluation)?;
+                }
+                let checks = if pending
+                    || arguments.iter().any(|a| {
+                        a.evaluated
+                            .reasons
+                            .iter()
+                            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                    }) {
                     super::super::environment::owned_call::Checks {
                         blocked: true,
                         ..Default::default()

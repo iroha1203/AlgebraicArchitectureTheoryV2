@@ -304,3 +304,104 @@ fn partial_owned_return_list_whole_keeps_call_body_and_universal_template_distin
     });
     completion_mutation(&r, whole, |ns| ns[whole].arguments.retain(|r| *r != source));
 }
+
+#[test]
+fn partial_owned_pending_calls_recheck_original_reasons_children_and_value_absence() {
+    let r = evaluate_observed_bytes(
+        partial_call_fixture::missing_reference_input(),
+        &[
+            "seed=evaluate(Reservations.seed)",
+            "first=evaluate(Reservations.pcPendingPlain,a=@v/B,e=@v/e,p=@v/r)",
+            "second=evaluate(Reservations.pcPendingPlain,a=@v/B,e=@v/e,p=@v/r)",
+            "whole=check(Reservations.pcPendingAffine,a=@v/B,e=@v/e)",
+        ],
+        &mut named_call_quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", r.issues);
+    let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let law = r.prepared.inputs().sources().law().bytes();
+    let sources: Vec<_> = r
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| match &n.payload {
+            Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) if &law[span.0..span.1] == b"pcIgnoreNumeric(read(a,e.to))" => Some(NodeRef(i)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(sources.len(), 2);
+    let targets:Vec<_>=sources.iter().map(|s|r.nodes.iter().position(|n|matches!(&n.payload,Some(Payload::Evaluation{expression,..})if expression==s)).unwrap()).collect();
+    let seed = r.answers[0].outputs["value"];
+    for (&source, &target) in sources.iter().zip(&targets) {
+        assert!(
+            !r.frames.iter().any(|f| f.source == source),
+            "未確定引数からcallee frameを作らない"
+        );
+        let Some(Payload::Evaluation { value, parts, .. }) = &r.nodes[target].payload else {
+            panic!("evaluation")
+        };
+        assert!(value.is_none());
+        assert_eq!(parts[0].children.len(), 1);
+        assert!(
+            r.nodes[target]
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Missing))
+        );
+        completion_mutation(&r, target, |ns| {
+            let Some(Payload::Evaluation { value, parts, .. }) = &mut ns[target].payload else {
+                panic!("evaluation")
+            };
+            *value = Some(seed);
+            parts[0].value = Some(seed);
+            ns[target].arguments.push(seed);
+        });
+        completion_mutation(&r, target, |ns| ns[target].reasons.clear());
+        completion_mutation(&r, target, |ns| {
+            let Some(Payload::Evaluation { parts, .. }) = &mut ns[target].payload else {
+                panic!("evaluation")
+            };
+            parts[0].children.clear();
+            ns[target].arguments.truncate(1);
+        });
+        let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+        let env = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
+        env.recheck_node(&g, &g.nodes[target], target).unwrap();
+        let original = g.nodes[target].clone();
+        g.nodes[target].reasons.clear();
+        assert!(matches!(
+            env.recheck_node(&g, &g.nodes[target], target),
+            Err(ValidationFailure::Internal(_))
+        ));
+        g.nodes[target] = original;
+        env.recheck_node(&g, &g.nodes[target], target).unwrap();
+    }
+    let first = targets[0];
+    let second = targets[1];
+    let Some(Payload::Evaluation { parts, .. }) = &r.nodes[first].payload else {
+        panic!("evaluation")
+    };
+    let foreign = parts[0].children[0];
+    completion_mutation(&r, second, |ns| {
+        let Some(Payload::Evaluation { parts, .. }) = &mut ns[second].payload else {
+            panic!("evaluation")
+        };
+        parts[0].children[0] = foreign;
+        ns[second].arguments[1] = foreign;
+    });
+    // structural wholeがMissingだけを認めても、元slot・bodyからの再検査は必須。
+    let whole = r.answers[3].outputs["evaluation"].0;
+    assert!(matches!(r.answers[3].status, Decision::Undetermined));
+    completion_mutation(&r, whole, |ns| ns[whole].reasons.clear());
+    let env = Environment::new(r.prepared.inputs(), &mut named_call_quiet()).unwrap();
+    for &target in &targets {
+        assert!(
+            env.evaluation_condition_pending(&graph, NodeRef(target))
+                .unwrap()
+        );
+    }
+}

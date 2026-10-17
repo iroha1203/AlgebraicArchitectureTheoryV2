@@ -133,6 +133,20 @@ impl Environment<'_> {
         ))
     }
 
+    pub(in crate::observed) fn evaluation_condition_pending(
+        &self,
+        graph: &Graph,
+        evaluation: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        let (source, bindings, value) = self.evaluation(graph, evaluation)?;
+        if value.is_some() {
+            return Ok(false);
+        }
+        Ok(self
+            .original_evaluation_source(graph, evaluation, source, bindings)?
+            .condition_pending)
+    }
+
     pub(super) fn owned_source_argument(
         known: &Option<Scalar>,
         symbolic: Option<&PartialValue>,
@@ -405,15 +419,17 @@ impl Environment<'_> {
             return Err("Owned callの元引数数・Source Contextが違う".into());
         }
         let mut inherited_failure = false;
+        let mut inherited_pending = false;
         for child in &children[..args.len()] {
             self.tick()?;
+            inherited_pending |= self.evaluation_condition_pending(graph, *child)?;
             inherited_failure |= graph
                 .get(*child)?
                 .reasons
                 .iter()
                 .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }));
         }
-        if !self.owns_call(id)? && !inherited_failure {
+        if !self.owns_call(id)? && !inherited_failure && !inherited_pending {
             return Ok(None);
         }
         self.validate_at(graph, graph.get(source)?, source.0)?;
@@ -437,7 +453,7 @@ impl Environment<'_> {
             scope.merge(&graph.get(child)?.scope);
             support.extend(graph.get(child)?.support.iter().cloned());
         }
-        let mut checks = if inherited_failure {
+        let mut checks = if inherited_failure || inherited_pending {
             Checks {
                 blocked: true,
                 ..Checks::default()

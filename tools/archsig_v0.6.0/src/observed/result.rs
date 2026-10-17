@@ -2797,6 +2797,7 @@ impl Graph {
                         &reason.kind,
                         ReasonKind::UnsupportedAlgorithm { .. }
                             | ReasonKind::ConditionFailed { .. }
+                            | ReasonKind::Missing
                     )
                 }) {
                     return Err("全域wholeに正確な差も元式の未確定理由もない".into());

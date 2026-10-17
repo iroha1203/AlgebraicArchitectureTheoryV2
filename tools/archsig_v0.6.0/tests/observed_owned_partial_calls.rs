@@ -451,3 +451,132 @@ fn partial_owned_known_mismatch_after_or_before_unknown_member_keeps_the_same_co
         );
     }
 }
+
+#[test]
+fn partial_owned_blocked_inner_numeric_call_cannot_be_discarded_by_tuple_boundary() {
+    let r = evaluate_observed_bytes(
+        fixture::missing_reference_input(),
+        &["wrapped=evaluate(Reservations.pcUnknownNumeric,a=@v/B,e=@v/e,p=@v/r)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let w = r.wire();
+    assert_ne!(r.status(), "error", "{:?}", get(&w, "issues"));
+    let a = answer(&w, "wrapped");
+    assert_eq!(
+        get(a, "status"),
+        &Json::str("undetermined"),
+        "未確定の内側所属条件を数値欠測として捨てない: {:?}",
+        get(a, "outputs")
+    );
+    let Json::Obj(o) = get(a, "outputs") else {
+        panic!("outputs")
+    };
+    assert!(!o.contains_key("value"));
+    assert!(
+        arr(get(a, "reasons"))
+            .iter()
+            .filter(|r| get(r, "code") == &Json::str("missing_observation"))
+            .flat_map(|r| arr(get(r, "missing")))
+            .any(|f| get(f, "field") == &Json::str("Reservations.Reserve.to"))
+    );
+}
+
+#[test]
+fn partial_owned_pending_conditions_survive_plain_calls_lexical_forms_and_quantification() {
+    let r = evaluate_observed_bytes(
+        fixture::missing_reference_input(),
+        &[
+            "plain=evaluate(Reservations.pcPendingPlain,a=@v/B,e=@v/e,p=@v/r)",
+            "binding=evaluate(Reservations.pcPendingLet,a=@v/B,e=@v/e)",
+            "branch=evaluate(Reservations.pcPendingIf,a=@v/B,e=@v/e)",
+            "projection=evaluate(Reservations.pcPendingProjection,a=@v/B,e=@v/e)",
+            "field=evaluate(Reservations.pcPendingField,a=@v/B,e=@v/e)",
+            "boolean=evaluate(Reservations.pcPendingBool,a=@v/B,e=@v/e)",
+            "quantified=evaluate(Reservations.pcPendingQuant,a=@v/B,e=@v/e)",
+            "affine=check(Reservations.pcPendingAffine,a=@v/B,e=@v/e)",
+            "universal=check(Reservations.pcPendingUniversal,a=@v/B,e=@v/e,p=@v/r)",
+            "later=evaluate(Reservations.seed)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let w = r.wire();
+    assert_eq!(r.status(), "partial", "{:?}", get(&w, "issues"));
+    for id in [
+        "plain",
+        "binding",
+        "branch",
+        "projection",
+        "field",
+        "boolean",
+        "quantified",
+        "affine",
+        "universal",
+    ] {
+        let a = answer(&w, id);
+        assert_eq!(get(a, "status"), &Json::str("undetermined"), "{id}");
+        let Json::Obj(o) = get(a, "outputs") else {
+            panic!("outputs")
+        };
+        assert!(!o.contains_key("value"), "{id}");
+        let reasons = arr(get(a, "reasons"));
+        assert!(
+            !reasons
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("condition_failed")),
+            "未確定条件を反証済みにしない: {id}"
+        );
+        assert!(
+            reasons
+                .iter()
+                .filter(|r| get(r, "code") == &Json::str("missing_observation"))
+                .flat_map(|r| arr(get(r, "missing")))
+                .any(|f| get(f, "field") == &Json::str("Reservations.Reserve.to")),
+            "元の欠測を残す: {id}"
+        );
+        assert!(
+            !reasons
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("not_implemented")),
+            "{id}"
+        );
+    }
+    assert_eq!(
+        get(answer(&w, "later"), "status"),
+        &Json::str("established")
+    );
+}
+
+#[test]
+fn partial_owned_pending_conditions_in_unselected_branches_allow_the_selected_result() {
+    let r = evaluate_observed_bytes(
+        fixture::missing_reference_input(),
+        &[
+            "branch=evaluate(Reservations.pcSkipIf,a=@v/B,e=@v/e)",
+            "boolean=evaluate(Reservations.pcSkipOr,a=@v/B,e=@v/e)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let w = r.wire();
+    assert_eq!(r.status(), "complete", "{:?}", get(&w, "issues"));
+    for id in ["branch", "boolean"] {
+        let a = answer(&w, id);
+        assert_eq!(get(a, "status"), &Json::str("established"));
+        assert_eq!(
+            get(node(&w, get(get(a, "outputs"), "value")), "value"),
+            &Json::Bool(true)
+        );
+        assert!(
+            arr(get(a, "reasons"))
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("missing_observation"))
+        );
+        assert!(
+            !arr(get(a, "reasons"))
+                .iter()
+                .any(|r| get(r, "code") == &Json::str("condition_failed"))
+        );
+    }
+}
