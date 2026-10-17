@@ -1073,6 +1073,7 @@ impl<'a> Environment<'a> {
                             | ExprKind::Int(_)
                             | ExprKind::Bool(_)
                             | ExprKind::Binary { .. }
+                            | ExprKind::Fn { .. }
                             | ExprKind::Tuple(_)
                             | ExprKind::ListLit { .. }
                             | ExprKind::SetLit { .. }
@@ -1399,6 +1400,7 @@ impl<'a> Environment<'a> {
                         | ExprKind::Bool(_)
                         | ExprKind::Unary { .. }
                         | ExprKind::Binary { .. }
+                        | ExprKind::Fn { .. }
                         | ExprKind::Tuple(_)
                         | ExprKind::ListLit { .. }
                         | ExprKind::SetLit { .. }
@@ -1447,6 +1449,7 @@ impl<'a> Environment<'a> {
                             | ExprKind::Bool(_)
                             | ExprKind::Unary { .. }
                             | ExprKind::Binary { .. }
+                            | ExprKind::Fn { .. }
                             | ExprKind::Tuple(_)
                             | ExprKind::ListLit { .. }
                             | ExprKind::SetLit { .. }
@@ -1555,7 +1558,8 @@ impl<'a> Environment<'a> {
                     }
                     Some(ExprKind::Field { base, .. }) => vec![self.inputs.law().exprs[*base].span],
                     Some(
-                        ExprKind::Tuple(_)
+                        ExprKind::Fn { .. }
+                        | ExprKind::Tuple(_)
                         | ExprKind::ListLit { .. }
                         | ExprKind::SetLit { .. }
                         | ExprKind::None(_)
@@ -1845,7 +1849,8 @@ impl<'a> Environment<'a> {
                         }
                     }
                     Some(
-                        ExprKind::Tuple(_)
+                        ExprKind::Fn { .. }
+                        | ExprKind::Tuple(_)
                         | ExprKind::ListLit { .. }
                         | ExprKind::SetLit { .. }
                         | ExprKind::None(_)
@@ -2360,7 +2365,8 @@ impl<'a> Environment<'a> {
                     operand,
                 } => vec![operand],
                 ExprKind::Binary { op, lhs, rhs } if !is_boolean_binary(op) => vec![lhs, rhs],
-                ExprKind::Tuple(_)
+                ExprKind::Fn { .. }
+                | ExprKind::Tuple(_)
                 | ExprKind::ListLit { .. }
                 | ExprKind::SetLit { .. }
                 | ExprKind::None(_)
@@ -3273,6 +3279,7 @@ impl<'a> Environment<'a> {
                             | ExprKind::Int(_)
                             | ExprKind::Bool(_)
                             | ExprKind::Binary { .. }
+                            | ExprKind::Fn { .. }
                             | ExprKind::Tuple(_)
                             | ExprKind::ListLit { .. }
                             | ExprKind::SetLit { .. }
@@ -3543,7 +3550,9 @@ impl<'a> Environment<'a> {
             return Ok(Some(args));
         }
         let children = match &law.exprs[id].kind {
-            ExprKind::Unit | ExprKind::Str(_) | ExprKind::None(_) => Some(vec![]),
+            ExprKind::Fn { .. } | ExprKind::Unit | ExprKind::Str(_) | ExprKind::None(_) => {
+                Some(vec![])
+            }
             ExprKind::Tuple(items)
             | ExprKind::ListLit { items, .. }
             | ExprKind::SetLit { items, .. } => Some(items.clone()),
@@ -3555,6 +3564,15 @@ impl<'a> Environment<'a> {
                     return Err("Map適用の元引数数が違う".into());
                 }
                 Some(vec![*callee, args[0]])
+            }
+            ExprKind::Call { callee, args }
+                if matches!(law.expr_type(*callee), Some(Type::Term(..))) =>
+            {
+                Some(
+                    std::iter::once(*callee)
+                        .chain(args.iter().copied())
+                        .collect(),
+                )
             }
             ExprKind::Call { args, .. } if self.builtin(id)?.is_some() => Some(args.clone()),
             _ => None,
@@ -3588,6 +3606,26 @@ impl<'a> Environment<'a> {
         {
             return data::map_apply(&values[0], &values[1], law, &self.control);
         }
+        if let ExprKind::Call { callee, .. } = &law.exprs[id].kind
+            && matches!(law.expr_type(*callee), Some(Type::Term(..)))
+        {
+            let Some(Scalar::Term(term)) = values.first() else {
+                return Err("Term適用calleeの元値が違う".into());
+            };
+            return Ok(Some(term.apply(&values[1..], law, &self.control).map_err(
+                |failure| match failure {
+                    ValidationFailure::UnsupportedExpression { feature, .. } => {
+                        ValidationFailure::UnsupportedExpression {
+                            location: Location::Law {
+                                span: law.exprs[id].span,
+                            },
+                            feature,
+                        }
+                    }
+                    other => other,
+                },
+            )?));
+        }
         let value = if let Some((constructor, _)) = data::expression(law, id, &self.control)? {
             let Type::Data(family) = law.expr_type(id).ok_or("Data構成型がない")? else {
                 return Err("Data構成型が違う".into());
@@ -3599,6 +3637,12 @@ impl<'a> Environment<'a> {
             }
         } else {
             match &law.exprs[id].kind {
+                ExprKind::Fn { .. } => Scalar::Term(Box::new(super::term::Term::from_law(
+                    law,
+                    self.inputs.sources().law().bytes(),
+                    id,
+                    &self.control,
+                )?)),
                 ExprKind::Unit => Scalar::Unit,
                 ExprKind::Str(text) => Scalar::Text(text.clone()),
                 ExprKind::Tuple(_) => Scalar::Tuple(values.to_vec()),
@@ -6433,7 +6477,8 @@ impl<'a> Environment<'a> {
                         support,
                     }
                 }
-                ExprKind::Tuple(_)
+                ExprKind::Fn { .. }
+                | ExprKind::Tuple(_)
                 | ExprKind::ListLit { .. }
                 | ExprKind::SetLit { .. }
                 | ExprKind::None(_)
@@ -6519,6 +6564,7 @@ impl<'a> Environment<'a> {
                     .law()
                     .expr_type(*lhs)
                     .ok_or("二項元式の型がない")?,
+                self.inputs.law(),
                 &self.control,
             )? {
                 return Err(ValidationFailure::UnsupportedExpression {
@@ -8560,8 +8606,12 @@ pub(crate) fn is_boolean_binary(op: BinOp) -> bool {
 pub(crate) fn supports_binary(
     op: BinOp,
     input: &Type,
+    law: &crate::law::CheckedLaw,
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
+    if super::term::contains(input, law, control)? {
+        return Ok(false);
+    }
     if matches!(op, BinOp::Eq | BinOp::Ne | BinOp::In) && data::primitive_type(input, control)? {
         return Ok(true);
     }

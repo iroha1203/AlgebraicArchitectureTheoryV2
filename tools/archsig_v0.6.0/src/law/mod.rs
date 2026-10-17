@@ -46,6 +46,8 @@ pub struct TermBody {
     pub exprs: Vec<Expr>,
     pub root: ExprId,
     pub types: Vec<Option<Type>>,
+    pub(crate) references: Vec<(ast::Span, String)>,
+    pub(crate) quantifier_types: Vec<Option<Type>>,
 }
 
 impl CheckedLaw {
@@ -132,6 +134,8 @@ pub(crate) fn check_definition_term_body_inner<E: InputError>(
         exprs: std::mem::take(&mut checker.parser.exprs),
         root,
         types,
+        references: std::mem::take(&mut checker.refs),
+        quantifier_types: std::mem::take(&mut checker.quantifier_types),
     })
 }
 

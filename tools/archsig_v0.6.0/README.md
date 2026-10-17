@@ -55,6 +55,10 @@
   Map適用は元表と実keyを照合して像を返し、元callee/引数の評価・支持・Scopeを保持する。
   域外の実keyはkey集合への追加前後の等値を反証し、検査可能な条件とcondition_failedを残して値を生成しない。
   欠測Map/参照は元missingを保持する。参照制約付きMap補完は未実装である。
+  原始Termと閉じたfnは、元body・parameter順・型付きASTと静的参照を保ち、既知引数へ適用する。
+  bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
+  元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。
+  未観測callee・必要な実引数は元missingを保持する。
   これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
   letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
   ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
@@ -119,6 +123,7 @@
   補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdataの評価、その他の式形・
+  Termの外延等値・全称/欠測アフィン式へのTerm適用の接続・
   上記以外の無限型・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、

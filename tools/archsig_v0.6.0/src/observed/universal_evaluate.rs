@@ -1525,7 +1525,8 @@ impl Evaluator<'_, '_> {
                 arguments.push(body);
                 arguments
             }
-            ExprKind::Tuple(_)
+            ExprKind::Fn { .. }
+            | ExprKind::Tuple(_)
             | ExprKind::ListLit { .. }
             | ExprKind::SetLit { .. }
             | ExprKind::None(_)

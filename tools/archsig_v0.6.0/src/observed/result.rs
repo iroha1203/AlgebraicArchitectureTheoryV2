@@ -75,6 +75,7 @@ impl NodeType {
     }
 }
 pub(crate) enum Scalar {
+    Term(Box<super::term::Term>),
     Unit,
     Text(String),
     Map {
@@ -116,6 +117,7 @@ pub(crate) enum Scalar {
 impl Scalar {
     pub(crate) fn ty(&self) -> Type {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Term(t) => t.ty(),
             Self::Unit => Type::Unit,
             Self::Text(_) => Type::Text,
             Self::Map {
@@ -135,6 +137,7 @@ impl Scalar {
     }
     fn wire(&self) -> Json {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Term(t) => t.wire(),
             Self::Unit => Json::Arr(vec![]),
             Self::Text(text) => Json::str(text),
             Self::Map { pairs, .. } => Json::Arr(
@@ -203,6 +206,7 @@ impl Drop for Scalar {
 impl std::fmt::Debug for Scalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Term(t) => f.debug_tuple("Term").field(t).finish(),
             Self::Unit => f.write_str("Unit"),
             Self::Text(text) => f.debug_tuple("Text").field(text).finish(),
             Self::Map {
@@ -265,6 +269,7 @@ impl std::fmt::Debug for Scalar {
 impl Clone for Scalar {
     fn clone(&self) -> Self {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Term(t) => Self::Term(t.clone()),
             Self::Unit => Self::Unit,
             Self::Text(text) => Self::Text(text.clone()),
             Self::Map {
@@ -320,6 +325,7 @@ impl Clone for Scalar {
 impl PartialEq for Scalar {
     fn eq(&self, other: &Self) -> bool {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
+            (Self::Term(a), Self::Term(b)) => a == b,
             (Self::Unit, Self::Unit) => true,
             (Self::Text(a), Self::Text(b)) => a == b,
             (

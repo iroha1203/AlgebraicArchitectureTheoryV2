@@ -52,7 +52,7 @@ pub(super) fn observe_actual(
     });
 }
 #[cfg(test)]
-fn observe_iteration(operation: &'static str, index: usize) {
+pub(super) fn observe_iteration(operation: &'static str, index: usize) {
     EVALUATION_CONTEXT.with(|current| {
         if let Some((span, context)) = current.get() {
             ITERATION_OBSERVER.with(|observer| {
@@ -99,6 +99,17 @@ pub(super) fn supported(
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(control)?;
             match ty {
+                Type::Term(args, ret) => {
+                    if !super::term::value_type(ty, control)? {
+                        return Ok(false);
+                    }
+                    for arg in args {
+                        if !visit(arg, law, control, active)? {
+                            return Ok(false);
+                        }
+                    }
+                    visit(ret, law, control, active)
+                }
                 Type::Unit | Type::Text | Type::Bool | Type::Ref(_) => Ok(true),
                 Type::Map(domain, codomain) => {
                     Ok(domain.ref_target().is_some() && codomain.ref_target().is_some())
@@ -227,6 +238,7 @@ pub(super) fn check(
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         match value {
+            Scalar::Term(t) => t.check(control),
             Scalar::Map { .. } => check_shape(value, control),
             Scalar::Data {
                 family,
@@ -379,6 +391,9 @@ pub(super) fn from_input(
                     args: values,
                 }
             }
+            (Value::Term(t), Type::Term(args, ret)) => Scalar::Term(Box::new(
+                super::term::Term::from_input(t, args, ret, control)?,
+            )),
             (Value::Bool(b), Type::Bool) => Scalar::Bool(*b),
             (Value::Ref { snapshot, subject }, Type::Ref(entity)) => Scalar::Subject {
                 snapshot: snapshot.clone(),
@@ -666,6 +681,7 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         match value {
+            Scalar::Term(t) => t.check(control),
             Scalar::Map {
                 domain,
                 codomain,
@@ -761,6 +777,7 @@ pub(super) fn primitive_type(ty: &Type, control: &Control) -> Result<bool, Valid
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         match ty {
+            Type::Term(..) => super::term::value_type(ty, control),
             Type::Unit
             | Type::Text
             | Type::Bool
