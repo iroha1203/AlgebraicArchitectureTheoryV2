@@ -77,6 +77,11 @@ impl NodeType {
 pub(crate) enum Scalar {
     Unit,
     Text(String),
+    Map {
+        domain: Type,
+        codomain: Type,
+        pairs: Vec<(Scalar, Scalar)>,
+    },
     List {
         element: Type,
         items: Vec<Scalar>,
@@ -113,6 +118,9 @@ impl Scalar {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Unit => Type::Unit,
             Self::Text(_) => Type::Text,
+            Self::Map {
+                domain, codomain, ..
+            } => Type::Map(Box::new(domain.clone()), Box::new(codomain.clone())),
             Self::List { element, .. } => Type::List(Box::new(element.clone())),
             Self::Set { element, .. } => Type::Set(Box::new(element.clone())),
             Self::Option { element, .. } => Type::Option(Box::new(element.clone())),
@@ -129,6 +137,12 @@ impl Scalar {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Unit => Json::Arr(vec![]),
             Self::Text(text) => Json::str(text),
+            Self::Map { pairs, .. } => Json::Arr(
+                pairs
+                    .iter()
+                    .map(|(key, value)| Json::Arr(vec![key.wire(), value.wire()]))
+                    .collect(),
+            ),
             Self::List { items, .. } | Self::Set { items, .. } => {
                 Json::Arr(items.iter().map(Scalar::wire).collect())
             }
@@ -161,6 +175,12 @@ impl Drop for Scalar {
     fn drop(&mut self) {
         fn take(value: &mut Scalar, pending: &mut Vec<Scalar>) {
             match value {
+                Scalar::Map { pairs, .. } => {
+                    for (key, value) in std::mem::take(pairs) {
+                        pending.push(key);
+                        pending.push(value);
+                    }
+                }
                 Scalar::Tuple(items)
                 | Scalar::Data { args: items, .. }
                 | Scalar::List { items, .. }
@@ -185,6 +205,16 @@ impl std::fmt::Debug for Scalar {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Unit => f.write_str("Unit"),
             Self::Text(text) => f.debug_tuple("Text").field(text).finish(),
+            Self::Map {
+                domain,
+                codomain,
+                pairs,
+            } => f
+                .debug_struct("Map")
+                .field("domain", domain)
+                .field("codomain", codomain)
+                .field("pairs", pairs)
+                .finish(),
             Self::List { element, items } => f
                 .debug_struct("List")
                 .field("element", element)
@@ -237,6 +267,15 @@ impl Clone for Scalar {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
             Self::Unit => Self::Unit,
             Self::Text(text) => Self::Text(text.clone()),
+            Self::Map {
+                domain,
+                codomain,
+                pairs,
+            } => Self::Map {
+                domain: domain.clone(),
+                codomain: codomain.clone(),
+                pairs: pairs.clone(),
+            },
             Self::List { element, items } => Self::List {
                 element: element.clone(),
                 items: items.clone(),
@@ -283,6 +322,18 @@ impl PartialEq for Scalar {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
             (Self::Unit, Self::Unit) => true,
             (Self::Text(a), Self::Text(b)) => a == b,
+            (
+                Self::Map {
+                    domain: a,
+                    codomain: b,
+                    pairs: c,
+                },
+                Self::Map {
+                    domain: d,
+                    codomain: e,
+                    pairs: f,
+                },
+            ) => a == d && b == e && c.len() == f.len() && c.iter().all(|pair| f.contains(pair)),
             (
                 Self::List {
                     element: a,

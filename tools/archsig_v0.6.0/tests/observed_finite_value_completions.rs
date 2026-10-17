@@ -1569,6 +1569,7 @@ fn finite_value_reference_selection_keeps_other_missing_and_excludes_unbounded_s
             "c=evaluate(Calc.refs_value,s=@v/item)",
             "d=evaluate(Calc.data_ref_value,s=@v/item)",
             "e=evaluate(Calc.tree_value,s=@v/item)",
+            "f=evaluate(Calc.map_value,s=@v/item)",
         ],
     );
     assert_eq!(f(&wire, "status"), &Json::str("partial"));
@@ -1584,6 +1585,7 @@ fn finite_value_reference_selection_keeps_other_missing_and_excludes_unbounded_s
         ("c", "refs"),
         ("d", "refdata"),
         ("e", "tree"),
+        ("f", "mapvalue"),
     ] {
         assert_eq!(f(answer(&wire, id), "status"), &Json::str("undetermined"));
         assert!(!obj(val(root(&wire, id))).contains_key("value"));
@@ -1597,7 +1599,6 @@ fn finite_value_reference_selection_keeps_other_missing_and_excludes_unbounded_s
             ])],
         );
     }
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
     let tree = ty("Data", Json::str("FiniteValues.Tree"));
     assert!(
         arr(f(&wire, "nodes"))
@@ -1609,34 +1610,18 @@ fn finite_value_reference_selection_keeps_other_missing_and_excludes_unbounded_s
         f(f(answer(&wire, "e"), "scope"), "domain"),
         &Json::str("all_completions")
     );
-    {
-        let name = "map_value";
-        let ask = format!("a=evaluate(Calc.{name},s=@v/item)");
-        let failure = match evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet()) {
-            Err(e) => e,
-            Ok(result) => panic!(
-                "未対応field {name}が結果化された: {:?}",
-                f(&result.wire(), "status")
-            ),
-        };
-        assert!(failure.wire().is_none());
-        let archsig::observed::EvaluationFailure::NotImplemented {
-            declaration,
-            location,
-            ..
-        } = failure
-        else {
-            panic!("専用NotImplemented")
-        };
-        assert_eq!(declaration, format!("Calc.{name}"));
-        let archsig::issue::Location::Law { span: at } = location else {
-            panic!("元Law位置")
-        };
-        assert_eq!(
-            at,
-            checked.law().exprs[declared_body(&checked, &format!("Calc.{name}"))].span
-        );
-    }
+    let sample = ty("Ref", Json::str("FiniteValues.Sample"));
+    let map = Json::Arr(vec![Json::str("Map"), sample.clone(), sample]);
+    assert!(
+        arr(f(&wire, "nodes"))
+            .iter()
+            .all(|n| f(n, "type") != &map || !obj(n).contains_key("value")),
+        "欠測Mapを空表へ補わない"
+    );
+    assert_eq!(
+        f(f(answer(&wire, "f"), "scope"), "domain"),
+        &Json::str("all_completions")
+    );
 }
 
 #[test]
