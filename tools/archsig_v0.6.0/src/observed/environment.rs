@@ -15,6 +15,8 @@ use crate::{
 };
 #[path = "completion.rs"]
 pub(super) mod completion;
+#[path = "dependent_family.rs"]
+pub(super) mod dependent_family;
 #[path = "family.rs"]
 pub(super) mod family;
 #[path = "universal.rs"]
@@ -3079,6 +3081,20 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.validation_session(|| {
             self.tick()?;
+            if answer.outputs.is_empty()
+                && let Some(plan) = self.family_plan(request)?
+                && plan.dependent
+            {
+                return self
+                    .validate_dependent_family_unknown(graph, request, answer, &plan)
+                    .and_then(|accepted| {
+                        if accepted {
+                            Ok(())
+                        } else {
+                            Err("依存族の未決Answerに元owner欠測がない".into())
+                        }
+                    });
+            }
             let evaluation = *answer
                 .outputs
                 .get("evaluation")

@@ -420,7 +420,7 @@ impl Environment<'_> {
                     .iter()
                     .any(|a| a.name == format!("bind.{}", p.name))
             })
-            .map(|p| (p.name.clone(), p.ty.clone()))
+            .map(|p| (p.name.clone(), p.ty.erase()))
             .collect();
         let fixed: Vec<_> = params
             .iter()
@@ -1465,7 +1465,7 @@ impl Environment<'_> {
                     .iter()
                     .any(|a| a.name == format!("bind.{}", p.name))
             })
-            .map(|p| (p.name.clone(), p.ty.clone()))
+            .map(|p| (p.name.clone(), p.ty.erase()))
             .collect();
         let fixed: Vec<_> = params
             .iter()

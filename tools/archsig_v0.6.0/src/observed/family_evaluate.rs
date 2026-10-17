@@ -13,11 +13,11 @@ impl Evaluator<'_, '_> {
                     .any(|a| a.name == format!("bind.{}", p.name))
             })
     }
-    fn family_observe(&self, _phase: &'static str, _index: usize) {
+    pub(super) fn family_observe(&self, _phase: &'static str, _index: usize) {
         #[cfg(test)]
         data::observe_actual(self.declaration.span, self.graph.active, _phase, _index);
     }
-    fn family_source(
+    pub(super) fn family_source(
         &mut self,
         id: usize,
         parameters: &[Param],
@@ -30,7 +30,7 @@ impl Evaluator<'_, '_> {
                 location: Location::Law { span },
                 parameters: parameters
                     .iter()
-                    .map(|p| (p.name.clone(), p.ty.clone()))
+                    .map(|p| (p.name.clone(), p.ty.erase()))
                     .collect(),
                 bindings: self.bindings.clone(),
             }),
@@ -86,6 +86,9 @@ impl Evaluator<'_, '_> {
             .environment
             .family_plan(self.request)?
             .ok_or_else(|| Failure::Internal("有限Law族の計画がない".into()))?;
+        if plan.dependent {
+            return self.dependent_family_answer(plan, guard, body, role);
+        }
         let fixed: Vec<_> = plan
             .parameters
             .iter()

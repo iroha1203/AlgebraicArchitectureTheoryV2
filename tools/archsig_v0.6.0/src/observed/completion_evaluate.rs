@@ -100,7 +100,7 @@ impl Evaluator<'_, '_> {
             let unbound: Vec<_> = params
                 .iter()
                 .filter(|p| !fixed.iter().any(|b| b.name == p.name))
-                .map(|p| (p.name.clone(), p.ty.clone()))
+                .map(|p| (p.name.clone(), p.ty.erase()))
                 .collect();
             let location = Location::Law {
                 span: self.environment.inputs.law().exprs[body].span,
