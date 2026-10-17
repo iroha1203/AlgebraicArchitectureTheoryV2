@@ -1238,7 +1238,7 @@ impl Evaluator<'_, '_> {
         domains: &[NodeRef],
         id: usize,
     ) -> Result<SymbolicEvaluation, Failure> {
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             self.universal_pointwise_inner(plan, template, domains, id)
         })
     }
@@ -1266,22 +1266,40 @@ impl Evaluator<'_, '_> {
         let mut local_domain = None;
         let children = match &expr.kind {
             ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
+            ExprKind::Dotted(_)
+                if data::expression(self.environment.inputs.law(), id, self.control)?.is_some() =>
+            {
+                vec![]
+            }
             ExprKind::Dotted(parts) => {
                 let first = parts
                     .first()
                     .ok_or_else(|| Failure::Internal("全域の空Dotted".into()))?;
                 if parts.len() == 1 {
-                    self.formal
-                        .get(&first.name)
-                        .or_else(|| self.lexical.get(&first.name))
-                        .cloned()
-                        .map(|evaluated| SymbolicEvaluation {
-                            evaluated,
+                    if let Some((input, _)) = self.environment.pattern_argument(
+                        self.graph,
+                        first.span,
+                        &first.name,
+                        &self.bindings,
+                    )? {
+                        vec![SymbolicEvaluation {
+                            evaluated: self.evaluated_reference(input)?,
                             comparison: None,
                             has_local_domains: false,
-                        })
-                        .into_iter()
-                        .collect()
+                        }]
+                    } else {
+                        self.formal
+                            .get(&first.name)
+                            .or_else(|| self.lexical.get(&first.name))
+                            .cloned()
+                            .map(|evaluated| SymbolicEvaluation {
+                                evaluated,
+                                comparison: None,
+                                has_local_domains: false,
+                            })
+                            .into_iter()
+                            .collect()
+                    }
                 } else if parts.len() == 2 {
                     let owner_ty = self
                         .bindings
@@ -1341,6 +1359,29 @@ impl Evaluator<'_, '_> {
                     ));
                 }
                 vec![left, right]
+            }
+            ExprKind::Match { scrutinee, arms } => {
+                let input = self.universal_pointwise(plan, template, domains, *scrutinee)?;
+                let selected = data::select(
+                    self.environment.inputs.law(),
+                    id,
+                    input
+                        .evaluated
+                        .value
+                        .map(|value| self.graph.scalar(value))
+                        .transpose()?,
+                    self.control,
+                )?;
+                let mut children = vec![input];
+                if let Some(arm) = selected {
+                    #[cfg(test)]
+                    data::observe_actual(expr.span, self.graph.active, "universal_match", arm);
+                    self.tick(Checkpoint::FiniteIteration)?;
+                    let body = self.universal_pointwise(plan, template, domains, arms[arm].body)?;
+                    comparison = body.comparison.clone();
+                    children.push(body);
+                }
+                children
             }
             ExprKind::Let {
                 name: binder,
@@ -1484,7 +1525,15 @@ impl Evaluator<'_, '_> {
                 arguments.push(body);
                 arguments
             }
-            ExprKind::Call { .. } => {
+            ExprKind::Tuple(_)
+            | ExprKind::ListLit { .. }
+            | ExprKind::SetLit { .. }
+            | ExprKind::None(_)
+            | ExprKind::Some(_)
+            | ExprKind::Unit
+            | ExprKind::Str(_)
+            | ExprKind::Index { .. }
+            | ExprKind::Call { .. } => {
                 let children = self
                     .environment
                     .composite_children(id)?

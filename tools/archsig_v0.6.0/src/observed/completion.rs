@@ -162,7 +162,7 @@ impl Environment<'_> {
         graph: &Graph,
         roots: &[NodeRef],
     ) -> Result<SlotCollection, ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
             let key = (
                 graph as *const Graph as usize,
@@ -337,7 +337,7 @@ impl Environment<'_> {
         graph: &Graph,
         reference: NodeRef,
     ) -> Result<Seed, ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
             let key = self.completion_memo_key(graph, reference.0);
             let cached = self.cache.borrow().completion_seeds.get(&key).cloned();
@@ -538,7 +538,7 @@ impl Environment<'_> {
         seed: &Seed,
         domain: NodeRef,
     ) -> Result<Vec<NodeRef>, ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
             let key = (
                 graph as *const Graph as usize,
@@ -620,21 +620,43 @@ impl Environment<'_> {
         graph: &Graph,
         case: usize,
     ) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
-        self.validation_session(|| {
+        self.validation_graph_session(graph, || {
             self.tick()?;
-            let key = self.completion_memo_key(graph, case);
-            let cached = self.cache.borrow().completion_cases.get(&key).cloned();
-            if let Some(value) = cached {
-                self.tick()?;
-                return Ok(value);
+            let record = graph.cases.get(case).ok_or("補完case索引がない")?;
+            let limit = self.cutoff.get().min(graph.nodes.len());
+            let prefix = std::iter::once(record.seed)
+                .chain([record.domain, record.member])
+                .chain(record.values.iter().copied())
+                .map(|r| r.0)
+                .max()
+                .ok_or("補完caseの元producerがない")?;
+            if prefix >= limit {
+                return Err("補完caseに未出producerがある".into());
             }
-            let value = self.completion_values_uncached(graph, case)?;
-            self.tick()?;
-            self.cache
-                .borrow_mut()
-                .completion_cases
-                .insert(key, value.clone());
-            Ok(value)
+            // assignmentの証拠はcase本体より前のcaller prefixだけに属する。
+            // 深いcalleeのContext/全称Planを元の欠測slotへ逆流させない。
+            let old_context = self.context.replace(Some(record.caller));
+            let old_limit = self.cutoff.replace(prefix + 1);
+            let old_universal = self.universal_context.replace(None);
+            let result = (|| {
+                let key = self.completion_memo_key(graph, case);
+                let cached = self.cache.borrow().completion_cases.get(&key).cloned();
+                if let Some(value) = cached {
+                    self.tick()?;
+                    return Ok(value);
+                }
+                let value = self.completion_values_uncached(graph, case)?;
+                self.tick()?;
+                self.cache
+                    .borrow_mut()
+                    .completion_cases
+                    .insert(key, value.clone());
+                Ok(value)
+            })();
+            self.universal_context.replace(old_universal);
+            self.cutoff.set(old_limit);
+            self.context.set(old_context);
+            result
         })
     }
     fn completion_values_uncached(

@@ -606,7 +606,7 @@ impl Scope {
         ])
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ReasonKind {
     Missing,
     ConditionFailed {
@@ -621,7 +621,7 @@ pub(crate) enum ReasonKind {
     Stop(StopReason),
     Internal(String),
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Reason {
     pub kind: ReasonKind,
     pub request: String,
@@ -757,7 +757,7 @@ fn bindings_wire(bs: &[Binding]) -> Json {
 fn refs(rs: &[NodeRef]) -> Json {
     Json::Arr(rs.iter().map(|r| r.wire()).collect())
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Rule {
     Input {
         kind: &'static str,
@@ -779,7 +779,7 @@ impl Rule {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Part {
     pub location: Location,
     pub value: Option<NodeRef>,
@@ -818,7 +818,7 @@ pub(crate) fn conditional_bool(guard: Option<bool>, body: Option<bool>) -> Optio
         _ => None,
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Payload {
     CompletionSeed {
         location: Location,
@@ -1143,13 +1143,13 @@ impl Payload {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Judgment {
     pub status: Decision,
     pub evidence: Vec<NodeRef>,
     pub reasons: Vec<Reason>,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Node {
     pub ty: NodeType,
     pub payload: Option<Payload>,
@@ -1263,7 +1263,7 @@ impl Answer {
 }
 
 /// 数値補完の証拠内case。型全域parameterの通常Bindingや観測Factではない。
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct UniversalWitness {
     pub caller: super::call::Context,
     pub template: NodeRef,
