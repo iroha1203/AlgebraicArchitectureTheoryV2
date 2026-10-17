@@ -30,6 +30,8 @@ mod dependent_family;
 mod family;
 #[path = "owned_family_evaluate.rs"]
 mod owned_family;
+#[path = "owned_type_evaluate.rs"]
+mod owned_type;
 #[path = "universal_evaluate.rs"]
 mod universal;
 
@@ -595,40 +597,40 @@ impl Evaluator<'_, '_> {
                             self.control,
                         )?;
                         if let Some(domain) = spec.domain {
-                            self.prepare_source(domain)?;
+                            self.prepare_source_child(domain)?;
                         }
                     }
                 }
                 ExprKind::SetComp { domain, .. } => {
-                    self.prepare_source(*domain)?;
+                    self.prepare_source_child(*domain)?;
                 }
                 ExprKind::Family { owner, .. } => {
-                    self.prepare_source(*owner)?;
+                    self.prepare_source_child(*owner)?;
                 }
                 ExprKind::Match { scrutinee, .. } => {
-                    self.prepare_source(*scrutinee)?;
+                    self.prepare_source_child(*scrutinee)?;
                 }
                 ExprKind::Group(child) => {
-                    self.prepare_source(*child)?;
+                    self.prepare_source_child(*child)?;
                 }
                 ExprKind::Let { value, body, .. } => {
-                    self.prepare_source(*value)?;
-                    self.prepare_source(*body)?;
+                    self.prepare_source_child(*value)?;
+                    self.prepare_source_child(*body)?;
                 }
                 ExprKind::If {
                     cond,
                     then_branch,
                     else_branch,
                 } => {
-                    self.prepare_source(*cond)?;
-                    self.prepare_source(*then_branch)?;
-                    self.prepare_source(*else_branch)?;
+                    self.prepare_source_child(*cond)?;
+                    self.prepare_source_child(*then_branch)?;
+                    self.prepare_source_child(*else_branch)?;
                 }
                 ExprKind::Unary { op, operand }
                     if (*op == UnOp::Neg && numeric::is_numeric_type(&ty, self.control)?)
                         || (*op == UnOp::Not && ty == Type::Bool) =>
                 {
-                    self.prepare_source(*operand)?;
+                    self.prepare_source_child(*operand)?;
                 }
                 ExprKind::Binary { op, lhs, rhs } => {
                     let input_ty = self
@@ -640,13 +642,13 @@ impl Evaluator<'_, '_> {
                     if !supports_binary(*op, input_ty, self.control)? {
                         return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                     }
-                    self.prepare_source(*lhs)?;
-                    self.prepare_source(*rhs)?;
+                    self.prepare_source_child(*lhs)?;
+                    self.prepare_source_child(*rhs)?;
                 }
                 ExprKind::Call { args, .. } if self.environment.named_view(id)?.is_some() => {
                     for &argument in args {
                         self.tick(Checkpoint::FiniteIteration)?;
-                        self.prepare_source(argument)?;
+                        self.prepare_source_child(argument)?;
                     }
                 }
                 ExprKind::Tuple(_)
@@ -664,7 +666,7 @@ impl Evaluator<'_, '_> {
                         .ok_or_else(|| self.unsupported(span, "数値組・射影・rat 以外の構成"))?;
                     for child in children {
                         self.tick(Checkpoint::FiniteIteration)?;
-                        self.prepare_source(child)?;
+                        self.prepare_source_child(child)?;
                         self.tick(Checkpoint::FiniteIteration)?;
                     }
                 }
@@ -1241,6 +1243,8 @@ impl Evaluator<'_, '_> {
             .map(|input| input.support.clone())
             .unwrap_or_default();
         let mut finite = None;
+        let mut owners = Vec::new();
+        let mut unresolved_reasons = Vec::new();
         let members = if let Some(input) = &input {
             input
                 .value
@@ -1260,15 +1264,28 @@ impl Evaluator<'_, '_> {
         } else {
             #[cfg(test)]
             let (span, context) = (spec.span, self.graph.active);
-            let enumeration =
-                self.environment
-                    .finite_values(&spec.element, &mut |_phase, _index| {
-                        #[cfg(test)]
-                        data::observe_actual(span, context, _phase, _index);
-                    })?;
+            let enumeration = self.environment.owned_type_domain(
+                self.graph,
+                id,
+                &self.bindings,
+                &mut |_phase, _index| {
+                    #[cfg(test)]
+                    data::observe_actual(span, context, _phase, _index);
+                },
+            )?;
+            owners = enumeration.owners;
             domain_support = enumeration.support;
             scope.merge(&enumeration.scope);
-            Some(enumeration.values)
+            if enumeration.values.is_none() {
+                unresolved_reasons = self.owned_type_reasons(
+                    source,
+                    &spec.element,
+                    enumeration.type_span,
+                    enumeration.missing,
+                );
+                self.retained_scope.merge(&scope);
+            }
+            enumeration.values
         };
         let member_scope = scope.clone();
         if let Some(items) = members {
@@ -1283,6 +1300,7 @@ impl Evaluator<'_, '_> {
                         Rule::Construction("domain"),
                         std::iter::once(source)
                             .chain(input.as_ref().map(|input| input.evaluation))
+                            .chain(owners.iter().copied())
                             .collect(),
                         domain_support.clone(),
                         member_scope.clone(),
@@ -1295,6 +1313,7 @@ impl Evaluator<'_, '_> {
             domain_scope.order_quantifiers_like(&self.graph.get(source)?.scope);
             let arguments = std::iter::once(source)
                 .chain(input.as_ref().map(|input| input.evaluation))
+                .chain(owners.iter().copied())
                 .chain(elements.iter().copied())
                 .collect();
             let domain = self.push(Node {
@@ -1480,7 +1499,7 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        self.finish(
+        self.finish_with_reasons(
             spec.span,
             Type::Bool,
             value,
@@ -1489,6 +1508,7 @@ impl Evaluator<'_, '_> {
             None,
             None,
             None,
+            unresolved_reasons,
         )
     }
     fn comprehension(
@@ -2477,6 +2497,7 @@ mod recheck_tests {
     include!("reservations_tests.rs");
     include!("dependent_family_tests.rs");
     include!("owned_family_tests.rs");
+    include!("owned_type_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =
@@ -10941,21 +10962,9 @@ reading Calc {{
             ),
         ] {
             let ask = format!("bad=evaluate(Calc.{name},root=@v/root)");
-            let failure =
-                evaluate_observed_bytes(sources.clone(), &[&ask], &mut named_call_quiet())
-                    .unwrap_err();
-            assert!(failure.wire().is_none());
-            let EvaluationFailure::NotImplemented {
-                declaration,
-                location: Location::Law { span },
-                feature,
-            } = failure
-            else {
-                panic!("Owned型量化をplain族の成功へ変えない")
-            };
-            assert_eq!(declaration, format!("Calc.{name}"));
-            assert_eq!(&law.as_bytes()[span.0..span.1], original.as_bytes());
-            assert_eq!(feature, "依存 owner 制約を持つ型全域量化");
+            let result =
+                evaluate_observed_bytes(sources.clone(), &[&ask], &mut named_call_quiet()).unwrap();
+            owned_type_private_old_missing(&result, &law, original);
         }
     }
     #[test]

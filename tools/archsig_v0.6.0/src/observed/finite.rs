@@ -14,6 +14,7 @@ pub(super) struct Enumeration {
     pub support: Vec<Fact>,
 }
 type Roster<'a> = dyn FnMut(&str) -> Result<Enumeration, ValidationFailure> + 'a;
+type OwnedRoster<'a> = dyn FnMut(&str, &str) -> Result<Enumeration, ValidationFailure> + 'a;
 
 fn tick(control: &Control) -> Result<(), ValidationFailure> {
     control
@@ -103,6 +104,24 @@ pub(super) fn values(
     roster: &mut Roster<'_>,
     visitor: &mut dyn FnMut(usize),
 ) -> Result<Enumeration, ValidationFailure> {
+    values_with_owned(
+        ty,
+        law,
+        control,
+        roster,
+        &mut |_, _| Err("有限全域でない型を列挙した".into()),
+        visitor,
+    )
+}
+
+pub(super) fn values_with_owned(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+    roster: &mut Roster<'_>,
+    owned: &mut OwnedRoster<'_>,
+    visitor: &mut dyn FnMut(usize),
+) -> Result<Enumeration, ValidationFailure> {
     fn emit(
         values: &mut Vec<Scalar>,
         value: Scalar,
@@ -119,12 +138,13 @@ pub(super) fn values(
         law: &CheckedLaw,
         control: &Control,
         roster: &mut Roster<'_>,
+        owned: &mut OwnedRoster<'_>,
         dependencies: &mut Enumeration,
     ) -> Result<Vec<Vec<Scalar>>, ValidationFailure> {
         let mut rows = vec![Vec::new()];
         for ty in types {
             tick(control)?;
-            let values = enumerate(ty, law, control, roster, dependencies, &mut |_| {})?;
+            let values = enumerate(ty, law, control, roster, owned, dependencies, &mut |_| {})?;
             let mut next = Vec::new();
             for row in &rows {
                 for value in &values {
@@ -144,14 +164,19 @@ pub(super) fn values(
         law: &CheckedLaw,
         control: &Control,
         roster: &mut Roster<'_>,
+        owned: &mut OwnedRoster<'_>,
         dependencies: &mut Enumeration,
         visitor: &mut dyn FnMut(usize),
     ) -> Result<Vec<Scalar>, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(control)?;
             let values = match ty {
-                Type::Ref(entity) => {
-                    let family = roster(entity)?;
+                Type::Ref(_) | Type::Owned(_, _) => {
+                    let family = match ty {
+                        Type::Ref(entity) => roster(entity)?,
+                        Type::Owned(entity, owner) => owned(entity, owner)?,
+                        _ => unreachable!(),
+                    };
                     dependencies.scope.merge(&family.scope);
                     dependencies.support.extend(family.support);
                     let mut values = Vec::new();
@@ -195,7 +220,7 @@ pub(super) fn values(
                 }
                 Type::Tuple(types) => {
                     let mut values = Vec::new();
-                    for row in product(types, law, control, roster, dependencies)? {
+                    for row in product(types, law, control, roster, owned, dependencies)? {
                         emit(&mut values, Scalar::Tuple(row), control, visitor)?;
                     }
                     values
@@ -205,19 +230,26 @@ pub(super) fn values(
                     emit(
                         &mut values,
                         Scalar::Option {
-                            element: (**element).clone(),
+                            element: (**element).erase(),
                             value: None,
                         },
                         control,
                         visitor,
                     )?;
-                    for item in enumerate(element, law, control, roster, dependencies, &mut |_| {})?
-                    {
+                    for item in enumerate(
+                        element,
+                        law,
+                        control,
+                        roster,
+                        owned,
+                        dependencies,
+                        &mut |_| {},
+                    )? {
                         tick(control)?;
                         emit(
                             &mut values,
                             Scalar::Option {
-                                element: (**element).clone(),
+                                element: (**element).erase(),
                                 value: Some(Box::new(item)),
                             },
                             control,
@@ -229,8 +261,15 @@ pub(super) fn values(
                 }
                 Type::Set(element) => {
                     let mut subsets: Vec<Vec<Scalar>> = vec![Vec::new()];
-                    for item in enumerate(element, law, control, roster, dependencies, &mut |_| {})?
-                    {
+                    for item in enumerate(
+                        element,
+                        law,
+                        control,
+                        roster,
+                        owned,
+                        dependencies,
+                        &mut |_| {},
+                    )? {
                         tick(control)?;
                         let count = subsets.len();
                         for index in 0..count {
@@ -246,7 +285,7 @@ pub(super) fn values(
                         tick(control)?;
                         emit(
                             &mut values,
-                            data::set((**element).clone(), &subset, control)?,
+                            data::set((**element).erase(), &subset, control)?,
                             control,
                             visitor,
                         )?;
@@ -257,7 +296,9 @@ pub(super) fn values(
                     let mut values = Vec::new();
                     for ctor in data::constructors(law, family)? {
                         tick(control)?;
-                        for args in product(&ctor.arguments, law, control, roster, dependencies)? {
+                        for args in
+                            product(&ctor.arguments, law, control, roster, owned, dependencies)?
+                        {
                             tick(control)?;
                             emit(
                                 &mut values,
@@ -281,7 +322,7 @@ pub(super) fn values(
         })
     }
     let mut enumeration = Enumeration::default();
-    enumeration.values = enumerate(ty, law, control, roster, &mut enumeration, visitor)?;
+    enumeration.values = enumerate(ty, law, control, roster, owned, &mut enumeration, visitor)?;
     enumeration.support.sort();
     enumeration.support.dedup();
     Ok(enumeration)
