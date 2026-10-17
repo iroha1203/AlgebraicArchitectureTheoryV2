@@ -19,6 +19,8 @@ pub(super) mod completion;
 pub(super) mod dependent_family;
 #[path = "family.rs"]
 pub(super) mod family;
+#[path = "owned_family.rs"]
+pub(super) mod owned_family;
 #[path = "universal.rs"]
 pub(super) mod universal;
 
@@ -791,6 +793,10 @@ impl<'a> Environment<'a> {
                         self.chain_field_source_analysis(graph, node, limit)?.0
                     } else if let Some(id) = id {
                         match &law.exprs[id].kind {
+                            ExprKind::Family { .. } => self
+                                .owned_family_scalar_analysis(graph, node, limit)?
+                                .known_value
+                                .ok_or("所属族の元集合が確定しない")?,
                             ExprKind::Quant { .. } => self
                                 .quant_scalar(graph, node, limit)?
                                 .known_value
@@ -1051,6 +1057,9 @@ impl<'a> Environment<'a> {
                     return Ok(());
                 }
                 if self.validate_call_evaluation(graph, node, limit)? {
+                    return Ok(());
+                }
+                if self.validate_owned_family_evaluation(graph, node, limit)? {
                     return Ok(());
                 }
                 let span = self.expression_span(graph, *expression)?;
@@ -2979,6 +2988,10 @@ impl<'a> Environment<'a> {
                         vec![self.chain_field_source_analysis(graph, node, limit)?.1]
                     } else if let Some(&id) = self.expressions.get(span) {
                         match self.inputs.law().exprs[id].kind {
+                            ExprKind::Family { .. } => {
+                                self.owned_family_scalar_analysis(graph, node, limit)?
+                                    .support
+                            }
                             ExprKind::Quant { .. } => {
                                 self.quant_scalar(graph, node, limit)?.support
                             }
@@ -5734,6 +5747,11 @@ impl<'a> Environment<'a> {
                     reading,
                     expression.span,
                 )?,
+                ExprKind::Family { owner, .. } => self.scoped_owned_family(
+                    id,
+                    self.scoped_ast(*owner, variables, base, reading)?,
+                    reading,
+                )?,
                 ExprKind::Group(child) => self.scoped_ast(*child, variables, base, reading)?,
                 ExprKind::Unary { op, operand } => {
                     let ty = self
@@ -6874,6 +6892,18 @@ impl<'a> Environment<'a> {
             self.validate_at(graph, node, reference.0)?;
             self.validate_at(graph, graph.get(*expression)?, expression.0)?;
             if self.universal_owned_evaluation(graph, reference)? {
+                continue;
+            }
+            if let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &graph.get(*expression)?.payload
+                && let Some(&id) = self.expressions.get(span)
+                && matches!(self.inputs.law().exprs[id].kind, ExprKind::Family { .. })
+            {
+                // 上のvalidate_atで元owner子とroster支持を独立検査済み。
+                // blockedな所属族も非所属の既知owner Factを支持に持つため、
+                // 値・子だけの支持和へ縮めない。
                 continue;
             }
             if node.arguments.first().is_some_and(|r| {
