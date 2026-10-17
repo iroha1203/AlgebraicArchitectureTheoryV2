@@ -30,6 +30,8 @@ mod completion;
 mod dependent_family;
 #[path = "family_evaluate.rs"]
 mod family;
+#[path = "owned_call_evaluate.rs"]
+mod owned_call;
 #[path = "owned_family_evaluate.rs"]
 mod owned_family;
 #[path = "owned_type_evaluate.rs"]
@@ -87,6 +89,7 @@ struct Evaluated {
 /// commit 済みの元式。未検査の分析結果とは区別し、通常値には使用しない。
 #[derive(Clone, Debug)]
 struct SourceHandle {
+    condition_failed: bool,
     expression: NodeRef,
     scope: Scope,
     known_value: Option<Scalar>,
@@ -428,6 +431,7 @@ impl Evaluator<'_, '_> {
         };
         self.environment.validate(self.graph, &node)?;
         let SourceAnalysis {
+            condition_failed,
             scope,
             known_value,
             missing,
@@ -454,6 +458,7 @@ impl Evaluator<'_, '_> {
             cache.insert(
                 span,
                 SourceHandle {
+                    condition_failed,
                     expression,
                     scope,
                     known_value,
@@ -558,7 +563,9 @@ impl Evaluator<'_, '_> {
                         .skip(1)
                     {
                         self.tick(Checkpoint::FiniteIteration)?;
-                        if !matches!(owner.known_value, Some(Scalar::Subject { .. })) {
+                        if !owner.condition_failed
+                            && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
+                        {
                             return Err(self.unsupported(prefix, "未確定の参照からの field 読取り"));
                         }
                         if !matches!(prefix_ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
@@ -578,7 +585,9 @@ impl Evaluator<'_, '_> {
                 }
                 ExprKind::Field { base, .. } => {
                     let owner = self.prepare_source(*base)?;
-                    if !matches!(owner.known_value, Some(Scalar::Subject { .. })) {
+                    if !owner.condition_failed
+                        && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
+                    {
                         return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
                     }
                     if !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
@@ -718,7 +727,35 @@ impl Evaluator<'_, '_> {
         missing: Option<Fact>,
         comparison: Option<(NodeRef, NodeRef)>,
         residual: Option<NodeRef>,
+        reasons: Vec<Reason>,
+    ) -> Result<Evaluated, Failure> {
+        self.finish_with_evidence(
+            span,
+            ty,
+            value,
+            children,
+            own_support,
+            missing,
+            comparison,
+            residual,
+            reasons,
+            vec![],
+        )
+    }
+    // 値が未生成でも、量化の正常instanceから既に得た反例を残す。
+    #[allow(clippy::too_many_arguments)]
+    fn finish_with_evidence(
+        &mut self,
+        span: (usize, usize),
+        ty: Type,
+        value: Option<NodeRef>,
+        children: Vec<Evaluated>,
+        own_support: Vec<Fact>,
+        missing: Option<Fact>,
+        comparison: Option<(NodeRef, NodeRef)>,
+        residual: Option<NodeRef>,
         mut reasons: Vec<Reason>,
+        partial_evidence: Vec<NodeRef>,
     ) -> Result<Evaluated, Failure> {
         let source = self
             .sources
@@ -761,9 +798,12 @@ impl Evaluator<'_, '_> {
         }
         sort_reasons(&mut reasons);
         let evidence = if let Some(value) = value {
+            if !partial_evidence.is_empty() {
+                return Err(Failure::Internal("確定値に部分証拠を重ねている".into()));
+            }
             self.graph.get(value)?.evidence.clone()
         } else {
-            vec![]
+            partial_evidence
         };
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
@@ -827,6 +867,18 @@ impl Evaluator<'_, '_> {
             let value = self.eval_inner(id)?;
             // post checkpoint が停止しても検査済みの値と Evaluation を保持する。
             self.completed.insert(id, value.clone());
+            #[cfg(test)]
+            if matches!(
+                self.environment.inputs.law().exprs[id].kind,
+                ExprKind::Call { .. }
+            ) {
+                data::observe_actual(
+                    self.environment.inputs.law().exprs[id].span,
+                    self.graph.active,
+                    "call_evaluation_complete",
+                    0,
+                );
+            }
             self.tick(Checkpoint::Expression)?;
             Ok(value)
         })
@@ -1088,6 +1140,13 @@ impl Evaluator<'_, '_> {
                     || (*op == UnOp::Not && ty == Type::Bool) =>
             {
                 let operand = self.eval(*operand)?;
+                if operand
+                    .reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                {
+                    return self.lexical_result(span, ty, None, vec![operand]);
+                }
                 let value = match operand.value {
                     Some(r) => Some(self.value(
                         unary(*op, self.graph.scalar(r)?, self.control)?,
@@ -1120,6 +1179,13 @@ impl Evaluator<'_, '_> {
                 }
                 let left = self.eval(*lhs)?;
                 let right = self.eval(*rhs)?;
+                if [&left, &right].iter().any(|a| {
+                    a.reasons
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                }) {
+                    return self.lexical_result(span, ty, None, vec![left, right]);
+                }
                 let mut scope = left.scope.clone();
                 scope.merge(&right.scope);
                 let mut support = left.support.clone();
@@ -1446,7 +1512,12 @@ impl Evaluator<'_, '_> {
             scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
             scope.order_quantifiers_like(&self.graph.get(source)?.scope);
         }
-        let known = if finite.is_some() {
+        let failed = children.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        });
+        let known = if finite.is_some() && !failed {
             super::quantifier::reduce(spec.kind, &results, self.control)?
         } else {
             None
@@ -1501,6 +1572,11 @@ impl Evaluator<'_, '_> {
                 reasons: vec![],
             })?);
         }
+        let partial_evidence = if known.is_none() {
+            evidence.clone()
+        } else {
+            vec![]
+        };
         let value = if let Some(known) = known {
             Some(
                 self.push(Node {
@@ -1525,7 +1601,7 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        self.finish_with_reasons(
+        self.finish_with_evidence(
             spec.span,
             Type::Bool,
             value,
@@ -1535,6 +1611,7 @@ impl Evaluator<'_, '_> {
             None,
             None,
             unresolved_reasons,
+            partial_evidence,
         )
     }
     fn comprehension(
@@ -1670,6 +1747,14 @@ impl Evaluator<'_, '_> {
         support.sort();
         support.dedup();
         let mut reasons = Vec::new();
+        let failed = evaluated.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        });
+        if failed {
+            return self.lexical_result(span, ty, None, evaluated);
+        }
         let value = if known {
             #[cfg(test)]
             let previous = data::evaluation_context(Some((span, self.graph.active)));
@@ -1797,13 +1882,56 @@ impl Evaluator<'_, '_> {
             .environment
             .named_view(id)?
             .ok_or_else(|| Failure::Internal("named view targetがない".into()))?;
-        let Signature::View { params, body, .. } = &declaration.signature else {
+        let Signature::View {
+            params,
+            body,
+            returns,
+        } = &declaration.signature
+        else {
             unreachable!()
         };
         let mut arguments = Vec::new();
         for &arg in args {
             self.tick(Checkpoint::FiniteIteration)?;
             arguments.push(self.eval(arg)?);
+        }
+        #[cfg(test)]
+        data::observe_actual(
+            span,
+            self.graph.active,
+            "call_arguments_complete",
+            arguments.len(),
+        );
+        let owned = matches!(returns, Type::Owned(..))
+            || params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
+        let values = if owned {
+            arguments
+                .iter()
+                .map(|a| a.value.map(|v| self.graph.scalar(v).cloned()).transpose())
+                .collect::<Result<Vec<_>, _>>()?
+        } else {
+            vec![]
+        };
+        let checks = if arguments.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        }) {
+            super::environment::owned_call::Checks {
+                blocked: true,
+                ..Default::default()
+            }
+        } else {
+            self.environment
+                .owned_call_checks(declaration, &values, None, span)?
+        };
+        if owned {
+            #[cfg(test)]
+            data::observe_actual(span, self.graph.active, "owned_call_parameter", 0);
+            self.tick(Checkpoint::FiniteIteration)?;
+        }
+        if checks.failure.is_some() || checks.blocked {
+            return self.owned_call_finish(span, ty, arguments, None, checks);
         }
         let source = self
             .sources
@@ -1857,8 +1985,15 @@ impl Evaluator<'_, '_> {
             .value
             .map(|v| self.graph.scalar(v).cloned())
             .transpose()?;
+        let checks =
+            self.environment
+                .owned_call_checks(declaration, &values, Some(known.as_ref()), span)?;
         arguments.push(body);
-        self.lexical_result(span, ty, known, arguments)
+        if owned {
+            self.owned_call_finish(span, ty, arguments, known, checks)
+        } else {
+            self.lexical_result(span, ty, known, arguments)
+        }
     }
     // let/if の新しい値は元の子 Evaluation から構成する。値がない子も保持し、
     // その Evaluation を通常 Scalar として消費しない。
@@ -1881,7 +2016,12 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
-        let value = if let Some(known) = known {
+        let failed = children.iter().any(|a| {
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        });
+        let value = if let Some(known) = known.filter(|_| !failed) {
             Some(self.value(
                 known,
                 Rule::Input {
@@ -1905,6 +2045,23 @@ impl Evaluator<'_, '_> {
         chain: bool,
     ) -> Result<Evaluated, Failure> {
         let Some(reference) = base.value else {
+            if base
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            {
+                let source = self
+                    .sources
+                    .get(&span)
+                    .ok_or_else(|| Failure::Internal("失敗fieldの元Sourceがない".into()))?;
+                let NodeType::Expression(ty) = &self.graph.get(source.expression)?.ty else {
+                    return Err(Failure::Internal("失敗fieldの元Source型がない".into()));
+                };
+                let ty = ty.clone();
+                #[cfg(test)]
+                data::observe_actual(span, self.graph.active, "failed_field", 0);
+                return self.lexical_result(span, ty, None, vec![base]);
+            }
             return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
         };
         let Scalar::Subject {
@@ -2629,6 +2786,7 @@ mod recheck_tests {
     include!("term_tests.rs");
     include!("term_equality_tests.rs");
     include!("affine_term_tests.rs");
+    include!("owned_call_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

@@ -726,6 +726,9 @@ impl Evaluator<'_, '_> {
         }
         sort_reasons(&mut reasons);
         if analyzed.value.is_none()
+            && !reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
             && (analyzed.classification.is_none()
                 || (plan.guard.is_some() && analyzed.guard_value.is_none()))
         {
@@ -1129,6 +1132,7 @@ impl Evaluator<'_, '_> {
             }
             retained.merge(&analysis.scope);
             source = Some(SourceHandle {
+                condition_failed: analysis.condition_failed,
                 expression,
                 scope: analysis.scope,
                 known_value: analysis.known_value,
@@ -1147,9 +1151,18 @@ impl Evaluator<'_, '_> {
         support: Vec<Fact>,
         ty: Type,
         children: Vec<SymbolicEvaluation>,
-        comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
+        mut comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
         local_domain: Option<NodeRef>,
     ) -> Result<SymbolicEvaluation, Failure> {
+        let failed = children.iter().any(|a| {
+            a.evaluated
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        });
+        if failed {
+            comparison = None;
+        }
         let expression = source.expression;
         let span = match &self.graph.get(expression)?.payload {
             Some(Payload::Expression {
@@ -1166,6 +1179,7 @@ impl Evaluator<'_, '_> {
         }
         let value = source
             .known_value
+            .filter(|_| !failed)
             .map(|known| {
                 self.value(
                     known,
@@ -1483,12 +1497,62 @@ impl Evaluator<'_, '_> {
                     .environment
                     .named_view(id)?
                     .ok_or_else(|| Failure::Internal("全域call targetがない".into()))?;
-                let Signature::View { params, body, .. } = &declaration.signature else {
+                let Signature::View {
+                    params,
+                    body,
+                    returns,
+                } = &declaration.signature
+                else {
                     unreachable!()
                 };
                 let mut arguments = Vec::new();
                 for argument in args {
                     arguments.push(self.universal_pointwise(plan, template, domains, *argument)?);
+                }
+                let owned = matches!(returns, Type::Owned(..))
+                    || params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
+                let values = if owned {
+                    arguments
+                        .iter()
+                        .map(|a| {
+                            a.evaluated
+                                .value
+                                .map(|r| self.graph.scalar(r).cloned())
+                                .transpose()
+                        })
+                        .collect::<Result<Vec<_>, _>>()?
+                } else {
+                    vec![]
+                };
+                let checks = if arguments.iter().any(|a| {
+                    a.evaluated
+                        .reasons
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+                }) {
+                    super::super::environment::owned_call::Checks {
+                        blocked: true,
+                        ..Default::default()
+                    }
+                } else {
+                    self.environment
+                        .owned_call_checks(declaration, &values, None, expr.span)?
+                };
+                if checks.failure.is_some() || checks.blocked {
+                    let has_local_domains = arguments.iter().any(|a| a.has_local_domains);
+                    let evaluated = self.owned_call_finish_at(
+                        source,
+                        expr.span,
+                        ty,
+                        arguments.into_iter().map(|a| a.evaluated).collect(),
+                        None,
+                        checks,
+                    )?;
+                    return Ok(SymbolicEvaluation {
+                        evaluated,
+                        comparison: None,
+                        has_local_domains,
+                    });
                 }
                 let caller = self.graph.active;
                 let frame = self.graph.frames.len();
@@ -1525,6 +1589,34 @@ impl Evaluator<'_, '_> {
                 self.formal = old_formal;
                 self.lexical = old_lexical;
                 let body = body_result?;
+                let known = body
+                    .evaluated
+                    .value
+                    .map(|r| self.graph.scalar(r))
+                    .transpose()?;
+                let checks = self.environment.owned_call_checks(
+                    declaration,
+                    &values,
+                    Some(known),
+                    expr.span,
+                )?;
+                if checks.failure.is_some() || checks.blocked {
+                    arguments.push(body);
+                    let has_local_domains = arguments.iter().any(|a| a.has_local_domains);
+                    let evaluated = self.owned_call_finish_at(
+                        source,
+                        expr.span,
+                        ty,
+                        arguments.into_iter().map(|a| a.evaluated).collect(),
+                        None,
+                        checks,
+                    )?;
+                    return Ok(SymbolicEvaluation {
+                        evaluated,
+                        comparison: None,
+                        has_local_domains,
+                    });
+                }
                 comparison = body.comparison.clone();
                 arguments.push(body);
                 arguments

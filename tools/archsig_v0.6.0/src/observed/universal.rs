@@ -423,6 +423,11 @@ impl Environment<'_> {
                 variables.insert(
                     parameter.name.clone(),
                     SourceValue {
+                        condition_failed: graph
+                            .get(*reference)?
+                            .reasons
+                            .iter()
+                            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. })),
                         symbolic: analysis.symbolic,
                         comparison: analysis.comparison,
                         affine: analysis.affine,
@@ -783,6 +788,7 @@ impl Environment<'_> {
                 feature: "call展開内で追加されるZ/Q全称binderの全域Plan".into(),
             })?;
         Ok(SourceValue {
+            condition_failed: false,
             symbolic: None,
             comparison: None,
             affine: affine::parameter(ty, parameter, &self.control)?.map(Box::new),

@@ -1725,6 +1725,9 @@ impl Environment<'_> {
         }
         sort_reasons(&mut reasons);
         if analysis.value.is_none()
+            && !reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
             && (analysis.classification.is_none()
                 || (plan.guard.is_some() && analysis.guard_value.is_none()))
         {

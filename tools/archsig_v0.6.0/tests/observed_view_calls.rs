@@ -1086,7 +1086,7 @@ fn invalid_callee_and_argument_types_are_rejected_from_bytes_at_original_locatio
 }
 
 #[test]
-fn injected_stops_after_arguments_inside_callee_and_before_caller_return_keep_prefixes() {
+fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
     let helpers = "view bump(x: Z): Z = x+1; view flag(x: Bool): Bool = x;";
     let caller = r#"
  view seed(s: Sample): Z = H.bump(s.z);
@@ -1115,8 +1115,8 @@ fn injected_stops_after_arguments_inside_callee_and_before_caller_return_keep_pr
         .wire();
     output(&prior, "seed", &Json::str("Z"), Json::str("4"));
     assert_missing(&prior, "missing", &["p"], &checked);
-    // current: let前、call前、引数前後、calleeの二項式前、x前後、1前後、body後、call後。
-    // 5は引数完了後、8はcallee内、11はcallee完了後でcallerのlet本体へ戻る前。
+    // Sourceの再分析にもExpression checkpointがある。ここでは固定3点の公開prefixを検査する。
+    // callの実段階はowned_call_tests.rsの通知駆動試験で別に確認する。
     for (offset, kind) in [(5, 0), (8, 1), (11, 2)] {
         let at = count.get() + offset;
         let expression_count = Rc::new(Cell::new(0));
@@ -1193,59 +1193,6 @@ fn injected_stops_after_arguments_inside_callee_and_before_caller_return_keep_pr
             assert_eq!(f(reason, "details"), &expected);
         }
         audit_dag(&result, &checked);
-        let ns = index(&result);
-        let current = &checked.law().declarations["Calc.current"];
-        let Signature::View { body, .. } = &current.signature else {
-            panic!("view")
-        };
-        let ExprKind::Let { value: call_id, .. } = &checked.law().exprs[*body].kind else {
-            panic!("let")
-        };
-        let ExprKind::Call { args, .. } = &checked.law().exprs[*call_id].kind else {
-            panic!("call")
-        };
-        let call_span = checked.law().exprs[*call_id].span;
-        let arg_span = checked.law().exprs[args[0]].span;
-        let call_source = arr(f(&result, "nodes"))
-            .iter()
-            .find(|n| {
-                f(n, "type") == &Json::str("Expression")
-                    && f(val(n), "kind") == &Json::str("source")
-                    && span(f(val(n), "location")) == call_span
-            })
-            .unwrap();
-        let argument = arr(f(&result, "nodes"))
-            .iter()
-            .find(|n| {
-                f(n, "type") == &Json::str("Evaluation") && evaluation_span(&ns, n) == arg_span
-            })
-            .unwrap();
-        assert_eq!(
-            val(target(&ns, f(val(argument), "value"), &Json::str("Z"))),
-            &Json::str("3")
-        );
-        let call_ref = Json::obj([("node", f(call_source, "id").clone())]);
-        let framed: Vec<_> = arr(f(&result, "nodes"))
-            .iter()
-            .filter(|n| {
-                f(n, "type") == &Json::str("Expression")
-                    && arr(f(n, "arguments")).contains(&call_ref)
-            })
-            .collect();
-        if offset == 5 {
-            assert!(framed.is_empty(), "callee開始前でも引数Evaluationは保持");
-        } else {
-            assert!(!framed.is_empty(), "親call未完成のprefixも元callへ戻れる");
-        }
-        if offset == 11 {
-            assert!(
-                arr(f(&result, "nodes"))
-                    .iter()
-                    .any(|n| f(n, "type") == &Json::str("Evaluation")
-                        && evaluation_span(&ns, n) == call_span),
-                "caller復帰前の完成calleeとcall Evaluationを保持"
-            );
-        }
         assert_eq!(expression_count.get(), at);
         assert_eq!(
             Some(probes.get()),
@@ -1309,7 +1256,7 @@ fn one_zero_argument_named_call_retains_original_body_and_typed_derivation() {
 }
 
 #[test]
-fn owned_callee_parameters_remain_not_implemented_without_membership_evidence() {
+fn owned_callee_parameters_use_membership_evidence_and_preserve_unknown_boundary() {
     use archsig::observed::{
         EvaluationFailure, PrepareFailure,
         request::{RequestIssueCode, ResolveFailure},
@@ -1434,7 +1381,6 @@ fn owned_callee_parameters_remain_not_implemented_without_membership_evidence() 
         &law.as_bytes()[return_span.0..return_span.1],
         b"claimed(system,s)"
     );
-    let mut unexpected = Vec::new();
     for (label, map, ask, at) in [
         (
             "known mismatch",
@@ -1469,6 +1415,7 @@ fn owned_callee_parameters_remain_not_implemented_without_membership_evidence() 
     ] {
         match evaluate_observed_bytes(sources(map), &[ask], &mut quiet()) {
             Err(failure) => {
+                assert_eq!(label, "missing owner", "既知所属はcall境界で検査する");
                 assert!(
                     failure.wire().is_none(),
                     "未確認所属をinvalidへ変えない: {label}"
@@ -1488,17 +1435,35 @@ fn owned_callee_parameters_remain_not_implemented_without_membership_evidence() 
                 );
             }
             Ok(result) => {
+                assert_ne!(label, "missing owner", "未観測ownerを確定しない");
                 let wire = result.wire();
-                unexpected.push(format!(
-                    "{label}: status={}, answer={:?}",
+                if label == "same owner named call" {
+                    assert_eq!(result.status(), "complete");
+                    output(&wire, "same", &Json::str("Z"), Json::str("4"));
+                    continue;
+                }
+                assert_eq!(
                     result.status(),
-                    f(&wire, "answers")
-                ));
+                    "partial",
+                    "{label}: {:?}",
+                    f(&wire, "issues")
+                );
+                let answer = &arr(f(&wire, "answers"))[0];
+                assert_eq!(f(answer, "status"), &Json::str("undetermined"));
+                assert!(!obj(f(answer, "outputs")).contains_key("value"));
+                let reason = arr(f(answer, "reasons"))
+                    .iter()
+                    .find(|r| f(r, "code") == &Json::str("condition_failed"))
+                    .unwrap();
+                assert_eq!(span(f(reason, "location")), at);
+                let ns = index(&wire);
+                let condition = target(
+                    &ns,
+                    f(f(reason, "details"), "condition"),
+                    &Json::str("Proposition"),
+                );
+                assert_eq!(f(f(condition, "judgment"), "status"), &Json::str("refuted"));
             }
         }
     }
-    assert!(
-        unexpected.is_empty(),
-        "Owned calleeの未確認所属から値/Law判断を確定しない: {unexpected:#?}"
-    );
 }

@@ -396,6 +396,7 @@ impl Environment<'_> {
             variables.insert(
                 p.name.clone(),
                 SourceValue {
+                    condition_failed: false,
                     symbolic: None,
                     comparison: None,
                     affine: super::super::affine::constant(&scalar, &self.control)?.map(Box::new),

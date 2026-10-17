@@ -900,6 +900,16 @@ pub(crate) enum Payload {
         left: NodeRef,
         right: NodeRef,
     },
+    OwnedCallCondition {
+        left: NodeRef,
+        right: NodeRef,
+    },
+    OwnedCallCounterexample {
+        bindings: Vec<Binding>,
+        left: NodeRef,
+        right: NodeRef,
+        facts: Vec<Fact>,
+    },
     EvaluationEvidence {
         instance: NodeRef,
         lhs: NodeRef,
@@ -1106,11 +1116,13 @@ impl Payload {
                 ("operands", refs(&[*instance])),
                 ("quantifiers", Json::Arr(vec![])),
             ]),
-            Self::MapDomainCondition { left, right } => Json::obj([
-                ("predicate", Json::str("equal")),
-                ("operands", refs(&[*left, *right])),
-                ("quantifiers", Json::Arr(vec![])),
-            ]),
+            Self::MapDomainCondition { left, right } | Self::OwnedCallCondition { left, right } => {
+                Json::obj([
+                    ("predicate", Json::str("equal")),
+                    ("operands", refs(&[*left, *right])),
+                    ("quantifiers", Json::Arr(vec![])),
+                ])
+            }
             Self::EvaluationEvidence {
                 instance,
                 lhs,
@@ -1144,6 +1156,12 @@ impl Payload {
                 ),
             ]),
             Self::TermCounterexample {
+                bindings,
+                left,
+                right,
+                facts,
+            }
+            | Self::OwnedCallCounterexample {
                 bindings,
                 left,
                 right,
@@ -1246,7 +1264,9 @@ impl Node {
             let mut value = payload.wire();
             if matches!(
                 payload,
-                Payload::Proposition { .. } | Payload::MapDomainCondition { .. }
+                Payload::Proposition { .. }
+                    | Payload::MapDomainCondition { .. }
+                    | Payload::OwnedCallCondition { .. }
             ) && let Json::Obj(fields) = &mut value
             {
                 fields.insert(
@@ -1558,7 +1578,9 @@ impl Graph {
                     || proposition.ty != NodeType::Proposition
                     || !matches!(
                         proposition.payload,
-                        Some(Payload::MapDomainCondition { .. })
+                        Some(
+                            Payload::MapDomainCondition { .. } | Payload::OwnedCallCondition { .. }
+                        )
                     )
                     || !proposition
                         .judgment
@@ -1604,11 +1626,93 @@ impl Graph {
         self.tick()?;
         Ok(())
     }
+    pub(super) fn owned_call_counterexample_shape(
+        &self,
+        node: &Node,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(Payload::OwnedCallCounterexample {
+            bindings,
+            left,
+            right,
+            facts,
+        }) = &node.payload
+        else {
+            return Ok(false);
+        };
+        self.bindings(bindings)?;
+        let n = node.arguments.len();
+        if node.ty != NodeType::Evidence
+            || n < 3
+            || node.arguments[n - 2..] != [*left, *right]
+            || !matches!(self.get(node.arguments[0])?.ty, NodeType::Expression(_))
+            || !matches!(self.scalar(*left)?.ty(), Type::Ref(_) | Type::Text)
+            || self.scalar(*left)?.ty() != self.scalar(*right)?.ty()
+            || self.scalar(*left)? == self.scalar(*right)?
+            || facts != &node.support
+            || !matches!(node.rule, Rule::Construction("evidence"))
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+            || node.judgment.is_some()
+        {
+            return Err("Owned call反例の元辺・参照型・実不等が違う".into());
+        }
+        for r in &node.arguments[1..n - 2] {
+            self.tick()?;
+            if !matches!(self.get(*r)?.ty, NodeType::Evaluation(_)) {
+                return Err("Owned call反例の実子がEvaluationでない".into());
+            }
+        }
+        for (r, rule) in [(*left, "evaluation"), (*right, "domain")] {
+            let value = self.get(r)?;
+            if value.arguments != node.arguments[..n - 2]
+                || value.rule != Rule::Construction(rule)
+                || value.support != node.support
+                || value.scope != node.scope
+                || !value.evidence.is_empty()
+                || !value.reasons.is_empty()
+                || value.judgment.is_some()
+            {
+                return Err("Owned call反例のowner値が元callに接続しない".into());
+            }
+        }
+        Ok(true)
+    }
     /// 添付する証拠は、同じ命題の元 LawInstance と適用評価を証明する。
     pub(crate) fn validate_proposition_evidence(
         &self,
         node: &Node,
     ) -> Result<(), ValidationFailure> {
+        if let Some(Payload::OwnedCallCondition { left, right }) = &node.payload {
+            let (evidence, edges) = node
+                .arguments
+                .split_last()
+                .ok_or("Owned条件に導出辺がない")?;
+            let proof = self.get(*evidence)?;
+            let Some(Payload::OwnedCallCounterexample {
+                left: l, right: r, ..
+            }) = &proof.payload
+            else {
+                return Err("Owned条件に元callの反例がない".into());
+            };
+            let judgment = node.judgment.as_ref().ok_or("Owned条件に判断がない")?;
+            if proof.ty != NodeType::Evidence
+                || left != l
+                || right != r
+                || proof.arguments != edges
+                || !self.owned_call_counterexample_shape(proof)?
+                || node.evidence != [*evidence]
+                || judgment.evidence != node.evidence
+                || judgment.status != Decision::Refuted
+                || !judgment.reasons.is_empty()
+                || !node.reasons.is_empty()
+                || !matches!(node.rule, Rule::Construction("proposition"))
+                || node.support != proof.support
+                || node.scope != proof.scope
+            {
+                return Err("Owned条件の反証・元辺・判断が違う".into());
+            }
+            return Ok(());
+        }
         if let Some(Payload::MapDomainCondition { left, right }) = &node.payload {
             let [source, map, key, actual, required, evidence] = node.arguments.as_slice() else {
                 return Err("Map域条件の元式・実子・反証がない".into());
@@ -2688,12 +2792,14 @@ impl Graph {
                     if expected.is_none() || expected != self.boolean(*value)? {
                         return Err("定数論理全域wholeの元body・guard・判断が違う".into());
                     }
-                } else if !node
-                    .reasons
-                    .iter()
-                    .any(|reason| matches!(&reason.kind, ReasonKind::UnsupportedAlgorithm { .. }))
-                {
-                    return Err("全域wholeに正確な差も元式の非対応算法理由もない".into());
+                } else if !node.reasons.iter().any(|reason| {
+                    matches!(
+                        &reason.kind,
+                        ReasonKind::UnsupportedAlgorithm { .. }
+                            | ReasonKind::ConditionFailed { .. }
+                    )
+                }) {
+                    return Err("全域wholeに正確な差も元式の未確定理由もない".into());
                 }
                 expected_step = None;
                 expected_arguments.push(*body);
@@ -3747,6 +3853,15 @@ impl Graph {
                     return Err("Map域条件の要素型が参照でない".into());
                 }
                 self.expect(*right, &self.get(*left)?.ty)?;
+            }
+            (NodeType::Proposition, Some(Payload::OwnedCallCondition { left, right })) => {
+                if !matches!(self.scalar(*left)?.ty(), Type::Ref(_) | Type::Text) {
+                    return Err("Owned条件がowner参照・snapshot値でない".into());
+                }
+                self.expect(*right, &self.get(*left)?.ty)?;
+            }
+            (NodeType::Evidence, Some(Payload::OwnedCallCounterexample { .. })) => {
+                self.owned_call_counterexample_shape(&node)?;
             }
             (
                 NodeType::Evidence,

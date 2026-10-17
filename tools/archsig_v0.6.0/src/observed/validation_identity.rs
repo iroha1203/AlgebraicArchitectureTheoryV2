@@ -148,6 +148,8 @@ fn payload(
                 | Payload::LawInstance { .. }
                 | Payload::Proposition { .. }
                 | Payload::MapDomainCondition { .. }
+                | Payload::OwnedCallCondition { .. }
+                | Payload::OwnedCallCounterexample { .. }
                 | Payload::EvaluationEvidence { .. }
                 | Payload::TermComparison { .. }
                 | Payload::TermCounterexample { .. }
