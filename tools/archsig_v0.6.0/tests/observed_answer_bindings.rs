@@ -278,20 +278,24 @@ fn answer_binding_static_errors_and_unprovided_outputs_do_not_become_values() {
             "consumer=evaluate(Applications.abDouble,x=$raw.evaluation.value)",
         ],
     ] {
-        let e = evaluate_observed_bytes(
+        let r = evaluate_observed_bytes(
             fixture::input_mode("stop", "r1"),
             &asks,
             &mut Control::new(Limits::default(), |_| Usage::default()),
         )
-        .unwrap_err();
-        assert!(
-            matches!(
-                e,
-                archsig::observed::EvaluationFailure::NotImplemented { .. }
-            ),
-            "{e:?}"
+        .unwrap();
+        assert_eq!(r.status(), "partial");
+        let w = r.wire();
+        assert_eq!(
+            get(answer(&w, "consumer"), "status"),
+            &Json::str("undetermined")
         );
-        assert!(e.wire().is_none());
+        assert_eq!(get(answer(&w, "consumer"), "outputs"), &Json::obj([]));
+        assert!(
+            arr(get(answer(&w, "consumer"), "reasons"))
+                .iter()
+                .any(|reason| get(reason, "code") == &Json::str("dependency_blocked"))
+        );
     }
 }
 #[test]

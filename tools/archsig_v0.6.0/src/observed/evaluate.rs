@@ -2692,13 +2692,32 @@ fn evaluate_observed_with_validator(
             };
             let result = (|| {
                 evaluator.tick(Checkpoint::FiniteIteration)?;
+                if let Some(answer) = evaluator
+                    .environment
+                    .unavailable_binding_answer(evaluator.graph, request)?
+                {
+                    evaluator
+                        .environment
+                        .validate_answer(evaluator.graph, request, &answer)?;
+                    evaluator.verified_observed = Some(answer.clone());
+                    return Ok(answer);
+                }
                 if evaluator.is_family(params) {
                     evaluator.family_answer(params, guard, body, role)
                 } else {
                     evaluator.answer(params, guard, body, role)
                 }
             })();
-            let result = evaluator.complete_answer(result, params, guard, body, role);
+            let result = if result.as_ref().is_ok_and(|answer| {
+                answer
+                    .reasons
+                    .iter()
+                    .any(|reason| matches!(reason.kind, ReasonKind::DependencyBlocked { .. }))
+            }) {
+                result
+            } else {
+                evaluator.complete_answer(result, params, guard, body, role)
+            };
             // Answer の検査は意味導出の完了前に行い、post 停止で完成済み Answer を捨てない。
             let result = result.and_then(|a| {
                 validate_answer(evaluator.environment, evaluator.graph, request, &a)?;
@@ -2825,6 +2844,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod answer_dependency_tests {
+        include!("answer_dependency_tests.rs");
+    }
     mod answer_binding_tests {
         include!("answer_binding_tests.rs");
     }

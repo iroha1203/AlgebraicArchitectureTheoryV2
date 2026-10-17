@@ -615,6 +615,9 @@ impl Scope {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ReasonKind {
     Missing,
+    DependencyBlocked {
+        request: String,
+    },
     ConditionFailed {
         condition: NodeRef,
         construction: &'static str,
@@ -657,6 +660,7 @@ impl Reason {
     pub(crate) fn code(&self) -> &str {
         match &self.kind {
             ReasonKind::Missing => "missing_observation",
+            ReasonKind::DependencyBlocked { .. } => "dependency_blocked",
             ReasonKind::ConditionFailed { .. } => "condition_failed",
             ReasonKind::UnsupportedAlgorithm { .. } => "unsupported_algorithm",
             ReasonKind::Stop(r) => r.code(),
@@ -666,6 +670,10 @@ impl Reason {
     pub(crate) fn wire(&self) -> Json {
         let (message, details) = match &self.kind {
             ReasonKind::Missing => ("原始 slot の観測が必要", Json::obj([])),
+            ReasonKind::DependencyBlocked { request } => (
+                "選択した依存出力が通常値を提供しない",
+                Json::obj([("request", Json::str(request))]),
+            ),
             ReasonKind::ConditionFailed {
                 condition,
                 construction,
