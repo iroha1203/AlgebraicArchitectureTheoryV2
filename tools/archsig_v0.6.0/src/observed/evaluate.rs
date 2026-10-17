@@ -385,7 +385,27 @@ impl Evaluator<'_, '_> {
                     });
                 }
                 Selector::Answer { .. } => {
-                    return Err(self.unsupported(p.span, "Answer 由来の束縛と公開射影の評価"));
+                    if p.ty != p.ty.erase()
+                        && self
+                            .request
+                            .constraints
+                            .iter()
+                            .any(|constraint| constraint.parameter == p.name && constraint.dynamic)
+                    {
+                        return Err(self.unsupported(p.span, "Answer束縛の動的owner制約"));
+                    }
+                    let value = self.environment.answer_binding_value(
+                        self.graph,
+                        &argument.value,
+                        p.span,
+                    )?;
+                    self.graph.expect(value, &NodeType::Value(p.ty.erase()))?;
+                    self.base.merge(&self.graph.get(value)?.scope);
+                    self.bindings.push(Binding {
+                        name: p.name.clone(),
+                        value,
+                        ty: p.ty.erase(),
+                    });
                 }
                 Selector::Declaration { .. } => {
                     return Err(Failure::Internal(
@@ -2597,7 +2617,9 @@ fn evaluate_observed_with_validator(
     let mut issues = Vec::new();
     let mut internal = false;
     {
-        let environment = Environment::new(prepared.inputs(), control).ok();
+        let environment =
+            Environment::with_requests(prepared.inputs(), prepared.requests().requests(), control)
+                .ok();
         for &index in prepared.requests().evaluation_order() {
             let request = &prepared.requests().requests()[index];
             let declaration = &prepared.inputs().law().declarations[request.declaration()];
@@ -2685,6 +2707,10 @@ fn evaluate_observed_with_validator(
             match result {
                 Ok(answer) => {
                     issues.extend(answer.reasons.iter().cloned());
+                    evaluator
+                        .graph
+                        .checked_answers
+                        .push((index, answer.clone()));
                     answers[index] = Some(answer);
                     if let Err(reason) = evaluator.tick(Checkpoint::FiniteIteration) {
                         let Failure::Stop(reason) = reason else {
@@ -2799,6 +2825,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod answer_binding_tests {
+        include!("answer_binding_tests.rs");
+    }
     include!("universal_tests.rs");
     include!("reservations_tests.rs");
     include!("dependent_family_tests.rs");
@@ -4848,10 +4877,15 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
         let mut control = Control::new(super::super::control::Limits::default(), |_| {
             super::super::control::Usage::default()
         });
-        let environment = Environment::new(result.prepared.inputs(), &mut control)
-            .map_err(ValidationFailure::from)?;
+        let environment = Environment::with_requests(
+            result.prepared.inputs(),
+            result.prepared.requests().requests(),
+            &mut control,
+        )
+        .map_err(ValidationFailure::from)?;
         let mut graph = Graph::new(&control);
         graph.requests = result.prepared.requests().requests().to_vec();
+        graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
         graph.frames = result.frames.clone();
         graph.iterations = result.iterations.clone();
         graph.instances = result.instances.clone();

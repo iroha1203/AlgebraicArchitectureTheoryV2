@@ -1298,7 +1298,7 @@ impl Node {
         Json::Obj(wire)
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Answer {
     pub id: String,
     pub status: Decision,
@@ -1424,6 +1424,7 @@ pub(crate) struct Graph {
     pub(super) universal_witnesses: Vec<UniversalWitness>,
     pub(super) active: super::call::Context,
     pub(super) requests: Vec<super::request::Request>,
+    pub(super) checked_answers: Vec<(usize, Answer)>,
     control: Control,
 }
 #[derive(Debug)]
@@ -1509,6 +1510,7 @@ impl Graph {
             universal_witnesses: vec![],
             active: super::call::Context::default(),
             requests: vec![],
+            checked_answers: vec![],
             control: control.clone(),
         }
     }

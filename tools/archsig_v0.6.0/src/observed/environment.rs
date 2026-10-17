@@ -13,6 +13,8 @@ use crate::{
     law::ast::{BinOp, ExprKind, UnOp},
     types::Type,
 };
+#[path = "answer_binding.rs"]
+mod answer_binding;
 #[path = "completion.rs"]
 pub(super) mod completion;
 #[path = "dependent_family.rs"]
@@ -151,6 +153,7 @@ struct ValidationSnapshot {
     cases: Vec<super::call::CompletionCase>,
     witnesses: Vec<super::result::UniversalWitness>,
     requests: Vec<Request>,
+    answers: Vec<(usize, Answer)>,
 }
 impl ValidationSnapshot {
     fn tick(control: &Control) -> Result<(), ValidationFailure> {
@@ -221,6 +224,7 @@ impl ValidationSnapshot {
             || !Self::same(&g.instances, &self.instances, control)?
             || !Self::same(&g.universal_witnesses, &self.witnesses, control)?
             || !Self::same(&g.requests, &self.requests, control)?
+            || !Self::same(&g.checked_answers, &self.answers, control)?
         {
             return Ok(false);
         }
@@ -265,6 +269,7 @@ impl ValidationSnapshot {
             cases: Self::copy(&g.cases, control)?,
             witnesses: Self::copy(&g.universal_witnesses, control)?,
             requests: Self::copy(&g.requests, control)?,
+            answers: Self::copy(&g.checked_answers, control)?,
         })
     }
 }
@@ -297,6 +302,7 @@ type NameTokenObserver = Box<dyn FnMut((usize, usize), super::call::Context)>;
 
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
+    original_requests: Option<&'a [Request]>,
     subjects: BTreeMap<(String, String), &'a Subject>,
     fields: BTreeMap<(String, String, String), &'a crate::archmap::Field>,
     atoms: BTreeMap<String, Fact>,
@@ -316,6 +322,7 @@ pub(crate) struct Environment<'a> {
     cutoff: Cell<usize>,
     cache: RefCell<ValidationCache>,
     validation_snapshot: RefCell<Option<ValidationSnapshot>>,
+    answer_rechecks: RefCell<BTreeSet<usize>>,
     universal_context: RefCell<Option<universal::AnalysisContext>>,
     #[cfg(test)]
     optional_name_context: Cell<Option<super::call::Context>>,
@@ -323,6 +330,16 @@ pub(crate) struct Environment<'a> {
     name_token_observer: RefCell<Option<NameTokenObserver>>,
 }
 impl<'a> Environment<'a> {
+    pub(in crate::observed) fn with_requests(
+        inputs: &'a CheckedInputs,
+        requests: &'a [Request],
+        control: &mut Control,
+    ) -> Result<Self, StopReason> {
+        let mut environment = Self::new(inputs, control)?;
+        environment.original_requests = Some(requests);
+        Ok(environment)
+    }
+
     pub fn new(inputs: &'a CheckedInputs, control: &mut Control) -> Result<Self, StopReason> {
         let mut subjects = BTreeMap::new();
         let mut fields = BTreeMap::new();
@@ -393,6 +410,7 @@ impl<'a> Environment<'a> {
             subjects,
             fields,
             atoms,
+            original_requests: None,
             modes,
             snapshot_origins,
             expressions,
@@ -407,6 +425,7 @@ impl<'a> Environment<'a> {
             cutoff: Cell::new(usize::MAX),
             cache: RefCell::new(ValidationCache::default()),
             validation_snapshot: RefCell::new(None),
+            answer_rechecks: RefCell::new(BTreeSet::new()),
             universal_context: RefCell::new(None),
             #[cfg(test)]
             optional_name_context: Cell::new(None),
@@ -3776,6 +3795,14 @@ impl<'a> Environment<'a> {
                 }
                 self.tick()?;
             }
+            if let Some(selector @ Selector::Answer { .. }) = selected {
+                let value = self.answer_binding_value(graph, selector, parameter.span)?;
+                if binding.value != value {
+                    return Err("Answer束縛が元出力の値Refでない".into());
+                }
+                self.tick()?;
+                continue;
+            }
             let Some(Selector::Subject { snapshot, subject }) = selected else {
                 return Err("完成Answerの元明示subject束縛がない".into());
             };
@@ -6076,6 +6103,41 @@ impl<'a> Environment<'a> {
                     return Err("評価範囲の元parameter署名が違う".into());
                 }
                 let value = graph.scalar(binding.value)?;
+                let selector = graph
+                    .requests
+                    .get(self.current_context(graph).request)
+                    .and_then(|request| {
+                        request
+                            .arguments
+                            .iter()
+                            .find(|a| a.name == format!("bind.{}", binding.name))
+                    })
+                    .map(|argument| &argument.value);
+                if let Some(selector @ Selector::Answer { .. }) = selector {
+                    if self.answer_binding_value(graph, selector, parameter.span)? != binding.value
+                        || value.ty() != binding.ty
+                    {
+                        return Err("元SourceのAnswer束縛のproducer・型が違う".into());
+                    }
+                    let original = graph.get(binding.value)?;
+                    base.merge(&original.scope);
+                    variables.insert(
+                        binding.name.clone(),
+                        SourceValue {
+                            condition_failed: false,
+                            condition_pending: false,
+                            symbolic: None,
+                            comparison: None,
+                            affine: None,
+                            scope: base.clone(),
+                            known_value: Some(value.clone()),
+                            support: original.support.clone(),
+                            scalar_scope: Some(original.scope.clone()),
+                        },
+                    );
+                    self.tick()?;
+                    continue;
+                }
                 let Scalar::Subject {
                     snapshot,
                     subject,
@@ -6121,6 +6183,9 @@ impl<'a> Environment<'a> {
                         .find(|a| a.name == format!("bind.{}", binding.name))
                         .ok_or("Requestの元束縛がない")?;
                     match (&arg.value, graph.scalar(binding.value)?) {
+                        (selector @ Selector::Answer { .. }, _)
+                            if self.answer_binding_value(graph, selector, span)?
+                                == binding.value => {}
                         (
                             Selector::Subject { snapshot, subject },
                             Scalar::Subject {

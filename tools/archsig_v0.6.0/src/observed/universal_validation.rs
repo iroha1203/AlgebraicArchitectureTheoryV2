@@ -765,6 +765,17 @@ impl Environment<'_> {
                 .iter()
                 .find(|argument| argument.name == format!("bind.{}", parameter.name))
                 .ok_or("全域固定selectorがない")?;
+            if matches!(selected.value, Selector::Answer { .. }) {
+                if binding.name != parameter.name
+                    || binding.ty != parameter.ty.erase()
+                    || self.answer_binding_value(graph, &selected.value, parameter.span)?
+                        != binding.value
+                {
+                    return Err("全域固定bindingが元Answer出力と違う".into());
+                }
+                graph.expect(binding.value, &NodeType::Value(binding.ty.clone()))?;
+                continue;
+            }
             let Selector::Subject { snapshot, subject } = &selected.value else {
                 return Err("全域固定selectorがsubjectでない".into());
             };
@@ -2693,6 +2704,15 @@ impl Environment<'_> {
                 .iter()
                 .find(|argument| argument.name == format!("bind.{}", parameter.name))
                 .ok_or("全域Answer固定selectorがない")?;
+            if matches!(argument.value, Selector::Answer { .. }) {
+                if self.answer_binding_value(graph, &argument.value, parameter.span)?
+                    != binding.value
+                {
+                    return Err("全域Answer固定bindingが元Answer出力と違う".into());
+                }
+                graph.expect(binding.value, &NodeType::Value(binding.ty.clone()))?;
+                continue;
+            }
             let Selector::Subject { snapshot, subject } = &argument.value else {
                 return Err("全域Answer固定selectorがsubjectでない".into());
             };
