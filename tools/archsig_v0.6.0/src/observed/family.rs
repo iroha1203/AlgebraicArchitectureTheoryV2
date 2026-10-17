@@ -131,6 +131,44 @@ impl Environment<'_> {
             matches!(&graph.get(r)?.payload,Some(Payload::Expression {parameters,..}) if !parameters.is_empty()),
         )
     }
+    /// 有限Law族の元whole Source。数値全域の各call出現とは区別する。
+    pub(in crate::observed) fn family_source_root(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        if !self.family_source_ref(graph, source)? {
+            return Ok(false);
+        }
+        let context = graph.context_at(source.0);
+        if context.frame.is_some() || context.iteration.is_some() || context.instance.is_some() {
+            return Ok(false);
+        }
+        let request = graph
+            .requests
+            .get(context.request)
+            .ok_or("族Sourceの元Requestがない")?;
+        let Some(plan) = self.family_plan(request)? else {
+            return Ok(false);
+        };
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            parameters,
+            ..
+        }) = &graph.get(source)?.payload
+        else {
+            return Ok(false);
+        };
+        Ok((*span == self.inputs.law().exprs[plan.body].span
+            || Some(*span) == plan.guard.map(|g| self.inputs.law().exprs[g].span))
+            && *parameters
+                == plan
+                    .free
+                    .iter()
+                    .map(|p| (p.name.clone(), p.ty.erase()))
+                    .collect::<Vec<_>>())
+    }
+
     pub(super) fn family_request<'g>(
         &self,
         graph: &'g Graph,

@@ -90,6 +90,8 @@
   これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
   view呼出し式のOwned参照と、それを含むTuple/List/Set/Optionの引数・返り型は、各実memberを
   元署名のownerと同snapshotの原始所属事実で検査する。none・空の値はmemberを生成せず保持する。
+  Map内部のOwnedも各key/imageを検査し、Owned始域は元の完全なowner族と実key集合を照合する。
+  空始域の空表は保ち、非空の期待族に対する不足key集合は型付きSet<Ref>不等の条件反証へ接続する。
   Tuple・有限List・Option・有限Set literal内で数値が未束縛/欠測でも、元Sourceの既知Owned成分を検査し、
   数値の全域軸・共有slot相関と、通常値が未生成であることを保つ。
   部分Setは元literalの出現順・重複を所属検査用に保持し、未知成分から件数・外延等値を確定しない。
@@ -164,7 +166,7 @@
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・Answer 由来の束縛・
-  OwnedをMap/Term内部に含むparameter・返り値を宣言したviewの呼出し・未観測ownerの所属条件・
+  未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
   `unsupported_algorithm` や未決回答へ変換しない。

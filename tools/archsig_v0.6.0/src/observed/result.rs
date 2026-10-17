@@ -1626,6 +1626,10 @@ impl Graph {
         self.tick()?;
         Ok(())
     }
+    fn owned_call_operand_type(ty: &Type) -> bool {
+        matches!(ty, Type::Ref(_) | Type::Text)
+            || matches!(ty, Type::Set(element) if matches!(element.as_ref(), Type::Ref(_)))
+    }
     pub(super) fn owned_call_counterexample_shape(
         &self,
         node: &Node,
@@ -1645,16 +1649,16 @@ impl Graph {
             || n < 3
             || node.arguments[n - 2..] != [*left, *right]
             || !matches!(self.get(node.arguments[0])?.ty, NodeType::Expression(_))
-            || !matches!(self.scalar(*left)?.ty(), Type::Ref(_) | Type::Text)
+            || !Self::owned_call_operand_type(&self.scalar(*left)?.ty())
             || self.scalar(*left)?.ty() != self.scalar(*right)?.ty()
-            || self.scalar(*left)? == self.scalar(*right)?
+            || super::data::equal(self.scalar(*left)?, self.scalar(*right)?, &self.control)?
             || facts != &node.support
             || !matches!(node.rule, Rule::Construction("evidence"))
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("Owned call反例の元辺・参照型・実不等が違う".into());
+            return Err("Owned call反例の元辺・所属条件型・実不等が違う".into());
         }
         for r in &node.arguments[1..n - 2] {
             self.tick()?;
@@ -3856,8 +3860,8 @@ impl Graph {
                 self.expect(*right, &self.get(*left)?.ty)?;
             }
             (NodeType::Proposition, Some(Payload::OwnedCallCondition { left, right })) => {
-                if !matches!(self.scalar(*left)?.ty(), Type::Ref(_) | Type::Text) {
-                    return Err("Owned条件がowner参照・snapshot値でない".into());
+                if !Self::owned_call_operand_type(&self.scalar(*left)?.ty()) {
+                    return Err("Owned条件がowner参照・snapshot・Map域でない".into());
                 }
                 self.expect(*right, &self.get(*left)?.ty)?;
             }
