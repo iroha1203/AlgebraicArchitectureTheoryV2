@@ -9,7 +9,19 @@ pub(in crate::observed) enum Value {
     Known(Scalar),
     Number(forms::Form),
     Tuple(Vec<Value>),
-    List { element: Type, items: Vec<Value> },
+    List {
+        element: Type,
+        items: Vec<Value>,
+    },
+    // Set literalの出現列。部分値のまま外延性・件数を確定しない。
+    SetLiteral {
+        element: Type,
+        items: Vec<Value>,
+    },
+    Option {
+        element: Type,
+        value: Option<Box<Value>>,
+    },
     Unsupported(Type),
 }
 impl Clone for Value {
@@ -21,6 +33,14 @@ impl Clone for Value {
             Self::List { element, items } => Self::List {
                 element: element.clone(),
                 items: items.clone(),
+            },
+            Self::SetLiteral { element, items } => Self::SetLiteral {
+                element: element.clone(),
+                items: items.clone(),
+            },
+            Self::Option { element, value } => Self::Option {
+                element: element.clone(),
+                value: value.clone(),
             },
             Self::Unsupported(t) => Self::Unsupported(t.clone()),
         })
@@ -42,6 +62,26 @@ impl PartialEq for Value {
                     items: y,
                 },
             ) => a == b && x == y,
+            (
+                Self::SetLiteral {
+                    element: a,
+                    items: x,
+                },
+                Self::SetLiteral {
+                    element: b,
+                    items: y,
+                },
+            ) => a == b && x == y,
+            (
+                Self::Option {
+                    element: a,
+                    value: x,
+                },
+                Self::Option {
+                    element: b,
+                    value: y,
+                },
+            ) => a == b && x == y,
             (Self::Unsupported(a), Self::Unsupported(b)) => a == b,
             _ => false,
         })
@@ -51,12 +91,22 @@ impl Eq for Value {}
 impl Drop for Value {
     fn drop(&mut self) {
         let mut pending = match self {
-            Self::Tuple(v) | Self::List { items: v, .. } => std::mem::take(v),
+            Self::Tuple(v) | Self::List { items: v, .. } | Self::SetLiteral { items: v, .. } => {
+                std::mem::take(v)
+            }
+            Self::Option { value, .. } => value.take().map(|v| vec![*v]).unwrap_or_default(),
             _ => return,
         };
         while let Some(mut value) = pending.pop() {
             match &mut value {
-                Self::Tuple(v) | Self::List { items: v, .. } => pending.append(v),
+                Self::Tuple(v)
+                | Self::List { items: v, .. }
+                | Self::SetLiteral { items: v, .. } => pending.append(v),
+                Self::Option { value, .. } => {
+                    if let Some(v) = value.take() {
+                        pending.push(*v);
+                    }
+                }
                 _ => {}
             }
         }
@@ -95,7 +145,9 @@ impl Value {
             tick(c)?;
             match self {
                 Self::Unsupported(_) => Ok(true),
-                Self::Tuple(v) | Self::List { items: v, .. } => {
+                Self::Tuple(v)
+                | Self::List { items: v, .. }
+                | Self::SetLiteral { items: v, .. } => {
                     for v in v {
                         if v.unsupported(c)? {
                             return Ok(true);
@@ -103,6 +155,7 @@ impl Value {
                     }
                     Ok(false)
                 }
+                Self::Option { value: Some(v), .. } => v.unsupported(c),
                 _ => Ok(false),
             }
         })
@@ -115,6 +168,8 @@ impl Value {
                 Self::Number(v) => v.ty(c)?,
                 Self::Tuple(v) => Type::Tuple(v.iter().map(|x| x.ty(c)).collect::<Result<_, _>>()?),
                 Self::List { element, .. } => Type::List(Box::new(element.clone())),
+                Self::SetLiteral { element, .. } => Type::Set(Box::new(element.clone())),
+                Self::Option { element, .. } => Type::Option(Box::new(element.clone())),
                 Self::Unsupported(t) => t.clone(),
             })
         })
@@ -151,6 +206,31 @@ impl Value {
                         items: values,
                     }))
                 }
+                Self::SetLiteral { element, items } => {
+                    let mut values = Vec::new();
+                    for v in items {
+                        let Some(v) = v.known(c)? else {
+                            return Ok(None);
+                        };
+                        values.push(v);
+                    }
+                    Ok(Some(super::data::set(element.clone(), &values, c)?))
+                }
+                Self::Option { element, value } => {
+                    let value = match value {
+                        Some(v) => {
+                            let Some(v) = v.known(c)? else {
+                                return Ok(None);
+                            };
+                            Some(Box::new(v))
+                        }
+                        None => None,
+                    };
+                    Ok(Some(Scalar::Option {
+                        element: element.clone(),
+                        value,
+                    }))
+                }
                 Self::Unsupported(_) => Ok(None),
             }
         })
@@ -185,6 +265,21 @@ impl Value {
                         .iter()
                         .map(|x| x.at(unit, c))
                         .collect::<Result<_, _>>()?,
+                }),
+                Self::SetLiteral { element, items } => super::data::set(
+                    element.clone(),
+                    &items
+                        .iter()
+                        .map(|v| v.at(unit, c))
+                        .collect::<Result<Vec<_>, _>>()?,
+                    c,
+                ),
+                Self::Option { element, value } => Ok(Scalar::Option {
+                    element: element.clone(),
+                    value: value
+                        .as_ref()
+                        .map(|v| v.at(unit, c).map(Box::new))
+                        .transpose()?,
                 }),
                 Self::Unsupported(_) => Err("未対応値をTerm反例点にできない".into()),
             }
@@ -515,6 +610,20 @@ impl Value {
                         .map(|v| v.normal_form(c))
                         .collect::<Result<_, _>>()?,
                 },
+                Self::SetLiteral { element, items } => Self::SetLiteral {
+                    element: element.clone(),
+                    items: items
+                        .iter()
+                        .map(|v| v.normal_form(c))
+                        .collect::<Result<_, _>>()?,
+                },
+                Self::Option { element, value } => Self::Option {
+                    element: element.clone(),
+                    value: value
+                        .as_ref()
+                        .map(|v| v.normal_form(c).map(Box::new))
+                        .transpose()?,
+                },
                 _ => self.clone(),
             };
             tick(c)?;
@@ -530,7 +639,8 @@ impl Value {
             tick(c)?;
             let same = match (self, other) {
                 (Self::Tuple(a), Self::Tuple(b))
-                | (Self::List { items: a, .. }, Self::List { items: b, .. }) => {
+                | (Self::List { items: a, .. }, Self::List { items: b, .. })
+                | (Self::SetLiteral { items: a, .. }, Self::SetLiteral { items: b, .. }) => {
                     if self.ty(c)? != other.ty(c)? || a.len() != b.len() {
                         return Ok(false);
                     }
@@ -540,6 +650,23 @@ impl Value {
                         }
                     }
                     true
+                }
+                (
+                    Self::Option {
+                        element: a,
+                        value: x,
+                    },
+                    Self::Option {
+                        element: b,
+                        value: y,
+                    },
+                ) => {
+                    a == b
+                        && match (x, y) {
+                            (None, None) => true,
+                            (Some(x), Some(y)) => x.identical(y, c)?,
+                            _ => false,
+                        }
                 }
                 _ => self == other,
             };
@@ -1094,6 +1221,8 @@ impl Value {
                         Type::Tuple(ts.iter().map(|t| element(t, c)).collect::<Result<_, _>>()?)
                     }
                     Type::List(t) => Type::List(Box::new(element(t, c)?)),
+                    Type::Set(t) => Type::Set(Box::new(element(t, c)?)),
+                    Type::Option(t) => Type::Option(Box::new(element(t, c)?)),
                     _ => ty.clone(),
                 })
             })
@@ -1114,6 +1243,21 @@ impl Value {
                         .iter()
                         .map(|v| v.presentation(axes, c))
                         .collect::<Result<_, _>>()?,
+                },
+                Self::SetLiteral { element: t, items } => super::data::set(
+                    element(t, c)?,
+                    &items
+                        .iter()
+                        .map(|v| v.presentation(axes, c))
+                        .collect::<Result<Vec<_>, _>>()?,
+                    c,
+                )?,
+                Self::Option { element: t, value } => Scalar::Option {
+                    element: element(t, c)?,
+                    value: value
+                        .as_ref()
+                        .map(|v| v.presentation(axes, c).map(Box::new))
+                        .transpose()?,
                 },
                 Self::Unsupported(_) => return Err("算法外値を正規形表示にできない".into()),
             })
