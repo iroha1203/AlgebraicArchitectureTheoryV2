@@ -28,6 +28,8 @@ mod completion;
 mod dependent_family;
 #[path = "family_evaluate.rs"]
 mod family;
+#[path = "owned_family_evaluate.rs"]
+mod owned_family;
 #[path = "universal_evaluate.rs"]
 mod universal;
 
@@ -600,6 +602,9 @@ impl Evaluator<'_, '_> {
                 ExprKind::SetComp { domain, .. } => {
                     self.prepare_source(*domain)?;
                 }
+                ExprKind::Family { owner, .. } => {
+                    self.prepare_source(*owner)?;
+                }
                 ExprKind::Match { scrutinee, .. } => {
                     self.prepare_source(*scrutinee)?;
                 }
@@ -684,6 +689,31 @@ impl Evaluator<'_, '_> {
         comparison: Option<(NodeRef, NodeRef)>,
         residual: Option<NodeRef>,
     ) -> Result<Evaluated, Failure> {
+        self.finish_with_reasons(
+            span,
+            ty,
+            value,
+            children,
+            own_support,
+            missing,
+            comparison,
+            residual,
+            vec![],
+        )
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn finish_with_reasons(
+        &mut self,
+        span: (usize, usize),
+        ty: Type,
+        value: Option<NodeRef>,
+        children: Vec<Evaluated>,
+        own_support: Vec<Fact>,
+        missing: Option<Fact>,
+        comparison: Option<(NodeRef, NodeRef)>,
+        residual: Option<NodeRef>,
+        mut reasons: Vec<Reason>,
+    ) -> Result<Evaluated, Failure> {
         let source = self
             .sources
             .get(&span)
@@ -705,7 +735,6 @@ impl Evaluator<'_, '_> {
         }
         let expression = source.expression;
         let mut support = own_support;
-        let mut reasons = Vec::new();
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
             support.extend(child.support.iter().cloned());
@@ -972,6 +1001,7 @@ impl Evaluator<'_, '_> {
                 let base = self.eval(*base)?;
                 self.field(base, &name.name, span, false)
             }
+            ExprKind::Family { owner, .. } => self.owned_family(id, *owner, span, ty),
             ExprKind::Quant { .. } => self.quantification(id),
             ExprKind::SetComp {
                 elem,
@@ -2446,6 +2476,7 @@ mod recheck_tests {
     include!("universal_tests.rs");
     include!("reservations_tests.rs");
     include!("dependent_family_tests.rs");
+    include!("owned_family_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

@@ -84,6 +84,9 @@
   既知ownerに依存する未束縛Law parameterは、先行束縛ごとに同snapshot・owner一致の参照族を使う。
   固定ownerと自由child、自由ownerと固定childを含め、各prefixの実Domain・元順の束縛と適合するrowを保持する。
   所属を判断したownerの原始事実を支持へ接続し、空fiberも範囲へ残す。
+  既知ownerの `State[a]` 式は、同snapshotでownerが一致するentity/arrowの登録族を
+  型付きSetとして返し、Set演算・内包・明示In量化へ接続する。
+  owner子式のEvaluation・束縛・実producerと所属の原始事実を保持する。
   ownerが未観測で族を確定できない場合は、全補完の範囲と元slotの欠測、
   unsupported_algorithmを未決回答に保持する。
   Law の guard が false なら非適用となり、元の guard/body から条件付き要求を判断する。
@@ -98,7 +101,7 @@
   補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
   元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
   上記以外のpayloadを持つdata・再帰dataの評価、その他の式形・
-  上記以外の無限型・依存ownerの明示型量化/式族・Answer 由来の束縛・
+  上記以外の無限型・依存ownerの明示型量化・Answer 由来の束縛・
   ownerに依存するparameter・返り値を宣言したviewの呼出し・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
