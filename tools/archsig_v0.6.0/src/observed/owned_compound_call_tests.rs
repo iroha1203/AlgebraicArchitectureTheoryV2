@@ -79,10 +79,7 @@ fn compound_calls_recheck_nested_return_members_types_order_support_and_scope() 
                     == "ccMap(a,m)"
         })
         .unwrap();
-    assert!(matches!(
-        e.named_view(call),
-        Err(ValidationFailure::UnsupportedExpression { .. })
-    ));
+    assert!(e.named_view(call).unwrap().is_some());
     e.recheck_node(&g, &g.nodes[target], target).unwrap();
 }
 

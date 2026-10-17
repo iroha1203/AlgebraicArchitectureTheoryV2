@@ -5148,7 +5148,7 @@ impl<'a> Environment<'a> {
         else {
             unreachable!()
         };
-        // 実containerを走査する。Map/Term内部の所属条件には別の経路が必要。
+        // 実containerとMapの所属条件を検査する。Term内の参照は型検査で拒否する。
         let mut pending = Vec::new();
         for ty in std::iter::once(returns).chain(params.iter().map(|p| &p.ty)) {
             self.tick()?;
@@ -5162,7 +5162,7 @@ impl<'a> Environment<'a> {
                         location: Location::Law {
                             span: law.exprs[id].span,
                         },
-                        feature: "Map/Term内部のowner制約を持つview呼出し".into(),
+                        feature: "Term内部のowner制約を持つview呼出し".into(),
                     });
                 }
                 Type::Tuple(items) => {
@@ -5175,8 +5175,8 @@ impl<'a> Environment<'a> {
                     pending.push((item, allowed))
                 }
                 Type::Map(from, to) => {
-                    pending.push((from, false));
-                    pending.push((to, false));
+                    pending.push((from, allowed));
+                    pending.push((to, allowed));
                 }
                 Type::Term(params, returns) => {
                     pending.push((returns, false));

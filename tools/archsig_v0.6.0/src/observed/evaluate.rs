@@ -2816,6 +2816,9 @@ mod recheck_tests {
     include!("owned_call_tests.rs");
     include!("owned_compound_call_tests.rs");
     include!("owned_partial_call_tests.rs");
+    mod owned_map_tests {
+        include!("owned_map_call_tests.rs");
+    }
     mod partial_container_tests {
         include!("owned_partial_container_tests.rs");
     }

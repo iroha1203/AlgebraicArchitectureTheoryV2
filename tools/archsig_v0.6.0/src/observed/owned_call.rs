@@ -20,7 +20,10 @@ impl Environment<'_> {
                 Type::Owned(..) => return Ok(true),
                 Type::Tuple(items) => pending.extend(items),
                 Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
-                // named_viewでMap/Term内部のOwnedは引き続き拒否する。
+                Type::Map(from, to) => {
+                    pending.push(from);
+                    pending.push(to);
+                }
                 _ => {}
             }
         }
@@ -39,6 +42,8 @@ impl Environment<'_> {
         enum Member<'a> {
             Known(&'a Scalar),
             Partial(&'a PartialValue),
+            // 各既知leafの検査後、空表も含め完全な期待始域へ照合する。
+            MapDomain(&'a [(Scalar, Scalar)]),
         }
         let mut pending = vec![(ty, Member::Partial(value))];
         while let Some((ty, member)) = pending.pop() {
@@ -53,6 +58,26 @@ impl Environment<'_> {
             match (ty, member) {
                 (Type::Owned(..), Member::Known(value)) => {
                     self.owned_reference_check(ty, Some(value), values, reading, span, checks)?;
+                }
+                (Type::Owned(..), Member::MapDomain(pairs)) => {
+                    self.owned_call_map_domain(ty, pairs, values, reading, span, checks)?;
+                }
+                (
+                    Type::Map(from, to),
+                    Member::Known(Scalar::Map {
+                        domain,
+                        codomain,
+                        pairs,
+                    }),
+                ) if *domain == from.erase() && *codomain == to.erase() => {
+                    if matches!(from.as_ref(), Type::Owned(..)) {
+                        pending.push((from, Member::MapDomain(pairs)));
+                    }
+                    for (key, image) in pairs.iter().rev() {
+                        self.tick()?;
+                        pending.push((to, Member::Known(image)));
+                        pending.push((from, Member::Known(key)));
+                    }
                 }
                 // 未生成memberを補わず、後続の既知不適合は引き続き探す。
                 (_, Member::Partial(PartialValue::Unsupported(_))) => checks.blocked = true,
@@ -111,6 +136,69 @@ impl Environment<'_> {
             }
             self.tick()?;
         }
+        Ok(())
+    }
+
+    fn owned_call_map_domain(
+        &self,
+        ty: &Type,
+        pairs: &[(Scalar, Scalar)],
+        values: &BTreeMap<&str, Option<&Scalar>>,
+        reading: &str,
+        span: (usize, usize),
+        checks: &mut Checks,
+    ) -> Result<(), ValidationFailure> {
+        let Type::Owned(entity, owner_name) = ty else {
+            return Err("Map所属域の元型がOwnedでない".into());
+        };
+        self.tick()?;
+        let unsupported = || ValidationFailure::UnsupportedExpression {
+            location: Location::Law { span },
+            feature: "未確定owner族を持つMap呼出しの全域条件".into(),
+        };
+        let owner = values
+            .get(owner_name.as_str())
+            .and_then(|v| *v)
+            .ok_or_else(|| unsupported())?;
+        let members =
+            self.owned_members(entity, owner, None, reading, &mut |operation, index| {
+                #[cfg(test)]
+                if operation == "dependent_subject" {
+                    data::observe_actual(
+                        span,
+                        self.context.get().unwrap_or_default(),
+                        "owned_call_map_domain_roster",
+                        index,
+                    );
+                }
+                #[cfg(not(test))]
+                let _ = (operation, index);
+            })?;
+        if !members.missing.is_empty() {
+            return Err(unsupported());
+        }
+        checks.scope.merge(&members.enumeration.scope);
+        checks.support.extend(members.enumeration.support);
+        let mut keys = Vec::new();
+        for (key, _) in pairs {
+            self.tick()?;
+            keys.push(key.clone());
+            self.tick()?;
+        }
+        let actual = data::set(ty.erase(), &keys, &self.control)?;
+        let required = data::set(ty.erase(), &members.enumeration.values, &self.control)?;
+        #[cfg(test)]
+        data::observe_actual(
+            span,
+            self.context.get().unwrap_or_default(),
+            "owned_call_map_domain",
+            0,
+        );
+        self.tick()?;
+        if !data::equal(&actual, &required, &self.control)? {
+            checks.failure = Some((actual, required));
+        }
+        self.tick()?;
         Ok(())
     }
 
@@ -529,10 +617,18 @@ impl Environment<'_> {
         let extra = match (&node.payload, &node.rule) {
             (Some(Payload::OwnedCallCondition { .. }), _) => 3,
             (Some(Payload::OwnedCallCounterexample { .. }), _) => 2,
-            (
-                Some(Payload::Scalar(Scalar::Subject { .. } | Scalar::Text(_))),
-                Rule::Construction("evaluation" | "domain"),
-            ) => 0,
+            (Some(Payload::Scalar(value)), Rule::Construction("evaluation" | "domain"))
+                if matches!(value, Scalar::Subject { .. } | Scalar::Text(_))
+                    || matches!(
+                        value,
+                        Scalar::Set {
+                            element: Type::Ref(_),
+                            ..
+                        }
+                    ) =>
+            {
+                0
+            }
             _ => return Ok(false),
         };
         let Some(n) = node.arguments.len().checked_sub(extra) else {
@@ -553,6 +649,12 @@ impl Environment<'_> {
                 return Ok(false);
             }
             return Err("Owned条件に元call Sourceがない".into());
+        }
+        if self.family_source_root(graph, source)? {
+            if extra == 0 {
+                return Ok(false);
+            }
+            return Err("whole族Sourceをcall所属条件に転用した".into());
         }
         let Some(checks) = self.owned_call_inputs(graph, source, &node.arguments[1..n], limit)?
         else {
@@ -687,9 +789,11 @@ impl Environment<'_> {
         ) {
             return Ok(false);
         }
-        // 全称wholeの単一body子を、一引数callの実引数と取り違えない。
+        // wholeのrow/body子を、元callの実引数と取り違えない。
         // 各出現のcall Sourceはtemplateを別の既出nodeとして指す。
-        if self.universal_source_root(graph, source)? == Some(source) {
+        if self.family_source_root(graph, source)?
+            || self.universal_source_root(graph, source)? == Some(source)
+        {
             return Ok(false);
         }
         let span = self.expression_span(graph, source)?;
