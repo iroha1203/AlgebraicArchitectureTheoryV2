@@ -61,7 +61,8 @@
   pattern束縛を元scrutineeのconstructor引数位置へ接続する。
   data以外の既知値もwildcard・名前patternで受ける。
   未観測dataのmatchは元missingを保ち、constructorやpattern束縛値を作らない。
-  ドット列は束縛変数と一つの field まで扱う。
+  ドット列は束縛変数から既知参照を順にたどり、各prefixの元span・型・実owner・支持を保持する。
+  Z/Q全域式内のドット列は一つのfieldまで扱う。
   Bool は false and x / true or x などを全補完で確定し、元の両子評価と欠測理由を保持する。
   Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
   Z/Qの欠測slotは同じ記号として係数をまとめ、加減算・負号・定数倍で係数が消えた式の値を確定する。

@@ -91,6 +91,16 @@ type FrameInputs = (Vec<Binding>, BTreeMap<String, SourceValue>, Scope);
 type NodeRefKey = (super::call::Context, usize);
 type IterationInputs = (NodeRef, Scalar, SourceAnalysis);
 type CompletionValues = Vec<(Fact, NodeRef, Scalar)>;
+type DottedPrefix = ((usize, usize), Type);
+type DottedOccurrence = (usize, usize);
+
+// 不変の検査済み入力だけから完全照合したtoken・型を共有する。
+// Graphの値・束縛・Scope・producerの照合成功は含めない。
+#[derive(Default)]
+struct DottedInputCache {
+    types: BTreeMap<usize, Vec<DottedPrefix>>,
+    occurrences: BTreeMap<(usize, usize), Option<DottedOccurrence>>,
+}
 
 // 一回の不変Graph借用に閉じた成功照合だけを共有する。呼出し終了時に破棄する。
 #[derive(Default)]
@@ -117,6 +127,8 @@ pub(crate) struct Environment<'a> {
     modes: BTreeMap<String, &'static str>,
     snapshot_origins: BTreeMap<String, String>,
     expressions: BTreeMap<(usize, usize), usize>,
+    dotted_candidates: BTreeMap<(usize, usize), Vec<DottedOccurrence>>,
+    dotted_inputs: RefCell<DottedInputCache>,
     control: Control,
     context: Cell<Option<super::call::Context>>,
     completion_values: RefCell<CompletionValues>,
@@ -138,6 +150,7 @@ impl<'a> Environment<'a> {
         let mut modes = BTreeMap::new();
         let mut snapshot_origins = BTreeMap::new();
         let mut expressions = BTreeMap::new();
+        let mut dotted_candidates: BTreeMap<_, Vec<_>> = BTreeMap::new();
         for origin in &inputs.archmap().origins {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             modes.insert(origin.id.clone(), origin.mode.wire());
@@ -147,6 +160,20 @@ impl<'a> Environment<'a> {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             if inputs.law().expr_type(id).is_some() {
                 expressions.insert(e.span, id);
+                // 元tokenの候補だけを索引化する。未使用のprefix型やconstructorの
+                // 判定はここで始めず、要求されたspanの照合時まで遅延する。
+                if let ExprKind::Dotted(parts) = &e.kind
+                    && let Some(first) = parts.first()
+                {
+                    for (index, part) in parts.iter().enumerate() {
+                        control.checkpoint(Checkpoint::FiniteIteration)?;
+                        dotted_candidates
+                            .entry((first.span.0, part.span.1))
+                            .or_default()
+                            .push((id, index + 1));
+                        control.checkpoint(Checkpoint::FiniteIteration)?;
+                    }
+                }
             }
             control.checkpoint(Checkpoint::FiniteIteration)?;
         }
@@ -189,6 +216,8 @@ impl<'a> Environment<'a> {
             modes,
             snapshot_origins,
             expressions,
+            dotted_candidates,
+            dotted_inputs: RefCell::new(DottedInputCache::default()),
             control: control.clone(),
             context: Cell::new(None),
             completion_values: RefCell::new(Vec::new()),
@@ -745,13 +774,7 @@ impl<'a> Environment<'a> {
                     if !found {
                         return Err("Atom 値が元 slot に合わない".into());
                     }
-                    if self.current_context(graph).frame.is_some()
-                        || self.current_context(graph).instance.is_some()
-                        || self.current_context(graph).iteration.is_some()
-                        || self.current_context(graph).case.is_some()
-                    {
-                        self.call_field_source(graph, node, limit)?;
-                    }
+                    self.call_field_source(graph, node, limit)?;
                 }
                 Rule::Input {
                     kind: "law",
@@ -762,7 +785,9 @@ impl<'a> Environment<'a> {
                     if id.is_some_and(|id| law.expr_type(id) != Some(&scalar.ty())) {
                         return Err("導出値が元式の型に合わない".into());
                     }
-                    let computed = if let Some(id) = id {
+                    let computed = if self.chain_field_occurrence(*span)?.is_some() {
+                        self.chain_field_source_analysis(graph, node, limit)?.0
+                    } else if let Some(id) = id {
                         match &law.exprs[id].kind {
                             ExprKind::Quant { .. } => self
                                 .quant_scalar(graph, node, limit)?
@@ -913,51 +938,12 @@ impl<'a> Environment<'a> {
                     return Err("Expression の型が元 AST に合わない".into());
                 }
             } else {
-                // fragment は型検査した実 Dotted の先頭 token だけである。
-                // body 内の同綴りfield名・コメント・部分文字列では代用しない。
-                let source = self.name_token(*span)?;
-                let Some(Payload::Expression { bindings, .. }) = &node.payload else {
-                    unreachable!()
-                };
-                let mut expected = None;
-                for binding in bindings {
-                    self.tick()?;
-                    if binding.name == source {
-                        expected = Some(binding.ty.clone());
-                    }
-                    self.tick()?;
-                }
-                if expected.is_none()
-                    && let Some(argument) = self.call_parameter(graph, source)?
-                    && let NodeType::Evaluation(ty) = &graph.get(argument)?.ty
+                let (id, count) = self.dotted_prefix(*span)?.ok_or("元ASTにない式prefix")?;
+                let prefixes = self.dotted_prefixes(id)?;
+                if prefixes[count - 1].0 != *span
+                    || node.ty != NodeType::Expression(prefixes[count - 1].1.clone())
                 {
-                    expected = Some(ty.clone());
-                }
-                if expected.is_none()
-                    && let Some((_, value)) =
-                        self.iteration_argument(graph, *span, source, bindings)?
-                {
-                    expected = Some(value.ty());
-                }
-                if expected.is_none()
-                    && let Some((_, value)) =
-                        self.type_iteration_argument(graph, *span, source, bindings)?
-                {
-                    expected = Some(value.ty());
-                }
-                if expected.is_none()
-                    && let Some((_, _, binder)) = self.pattern_binding(*span, source)?
-                {
-                    expected = Some(binder.ty);
-                }
-                if expected.is_none() {
-                    let rhs = self
-                        .lexical_rhs(*span, source)?
-                        .ok_or("元 AST にない式 fragment")?;
-                    expected = self.inputs.law().expr_type(rhs).cloned();
-                }
-                if node.ty != NodeType::Expression(expected.ok_or("fragment の元型がない")?) {
-                    return Err("fragment の型が元parameter/lexical右辺と違う".into());
+                    return Err("fragmentの型が元Dotted prefixと違う".into());
                 }
             }
         }
@@ -1177,7 +1163,12 @@ impl<'a> Environment<'a> {
                         | ExprKind::Call { .. },
                     ) => true,
                     None => {
-                        if let Some(name) = self.find_name_token(span)? {
+                        if self
+                            .dotted_prefix(span)?
+                            .is_some_and(|(_, count)| count > 1)
+                        {
+                            true
+                        } else if let Some(name) = self.find_name_token(span)? {
                             self.pattern_binding(span, name)?.is_some()
                                 || self
                                     .iteration_argument(graph, span, name, bindings)?
@@ -1233,7 +1224,7 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                 }
                 if generated_here
-                    && (ast.is_none()
+                    && ((ast.is_none() && self.find_name_token(span)?.is_some())
                         || matches!(ast.map(|e| &e.kind), Some(ExprKind::Dotted(parts)) if parts.len() == 1 || data::expression(self.inputs.law(), *self.expressions.get(&span).ok_or("名元ASTがない")?, &self.control)?.is_some()))
                     && let Some(value) = value
                     && !matches!(&graph.get(*value)?.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if *actual == span)
@@ -1337,22 +1328,31 @@ impl<'a> Environment<'a> {
                         vec![(parts[0].span.0, parts[parts.len() - 2].span.1)]
                     }
                     None => {
-                        let token = std::str::from_utf8(
-                            &self.inputs.sources().law().bytes()[span.0..span.1],
-                        )
-                        .map_err(|_| "lexical token がUTF8でない")?;
-                        if let Some((input, _)) =
-                            self.iteration_argument(graph, span, token, bindings)?
+                        if let Some((id, count)) = self.dotted_prefix(span)?
+                            && count > 1
                         {
-                            vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
-                        } else if let Some((input, _)) =
-                            self.pattern_argument(graph, span, token, bindings)?
-                        {
-                            vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
+                            let ExprKind::Dotted(parts) = &self.inputs.law().exprs[id].kind else {
+                                unreachable!()
+                            };
+                            vec![(parts[0].span.0, parts[count - 2].span.1)]
                         } else {
-                            self.lexical_rhs(span, token)?
-                                .map(|rhs| vec![self.inputs.law().exprs[rhs].span])
-                                .unwrap_or_default()
+                            let token = std::str::from_utf8(
+                                &self.inputs.sources().law().bytes()[span.0..span.1],
+                            )
+                            .map_err(|_| "lexical token がUTF8でない")?;
+                            if let Some((input, _)) =
+                                self.iteration_argument(graph, span, token, bindings)?
+                            {
+                                vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
+                            } else if let Some((input, _)) =
+                                self.pattern_argument(graph, span, token, bindings)?
+                            {
+                                vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
+                            } else {
+                                self.lexical_rhs(span, token)?
+                                    .map(|rhs| vec![self.inputs.law().exprs[rhs].span])
+                                    .unwrap_or_default()
+                            }
                         }
                     }
                     _ => vec![],
@@ -1689,6 +1689,7 @@ impl<'a> Environment<'a> {
                         } else {
                             self.check_field(
                                 graph,
+                                *expression,
                                 child_values[0],
                                 &parts[parts.len() - 1].name,
                                 *value,
@@ -1696,14 +1697,29 @@ impl<'a> Environment<'a> {
                         }
                     }
                     Some(ExprKind::Field { name, .. }) => {
-                        self.check_field(graph, child_values[0], &name.name, *value)?
+                        self.check_field(graph, *expression, child_values[0], &name.name, *value)?
                     }
                     None => {
-                        let source = std::str::from_utf8(
-                            &self.inputs.sources().law().bytes()[span.0..span.1],
-                        )
-                        .map_err(|_| "parameter token")?;
-                        self.check_name(graph, span, bindings, source, *value, &child_values)?;
+                        if let Some((id, count)) = self.dotted_prefix(span)?
+                            && count > 1
+                        {
+                            let ExprKind::Dotted(parts) = &self.inputs.law().exprs[id].kind else {
+                                unreachable!()
+                            };
+                            self.check_field(
+                                graph,
+                                *expression,
+                                child_values[0],
+                                &parts[count - 1].name,
+                                *value,
+                            )?;
+                        } else {
+                            let source = std::str::from_utf8(
+                                &self.inputs.sources().law().bytes()[span.0..span.1],
+                            )
+                            .map_err(|_| "parameter token")?;
+                            self.check_name(graph, span, bindings, source, *value, &child_values)?;
+                        }
                     }
                     _ => {}
                 }
@@ -2957,7 +2973,9 @@ impl<'a> Environment<'a> {
                     kind: "law",
                     location: Location::Law { span },
                 } => {
-                    if let Some(&id) = self.expressions.get(span) {
+                    if self.chain_field_occurrence(*span)?.is_some() {
+                        vec![self.chain_field_source_analysis(graph, node, limit)?.1]
+                    } else if let Some(&id) = self.expressions.get(span) {
                         match self.inputs.law().exprs[id].kind {
                             ExprKind::Quant { .. } => {
                                 self.quant_scalar(graph, node, limit)?.support
@@ -3364,6 +3382,184 @@ impl<'a> Environment<'a> {
         self.analyze_source(graph, span, bindings)
             .map(|analysis| analysis.scope)
     }
+    /// 型検査した実Dottedの各prefixを、元binderとfield署名から復元する。
+    pub(crate) fn dotted_prefixes(
+        &self,
+        id: usize,
+    ) -> Result<Vec<DottedPrefix>, ValidationFailure> {
+        self.tick()?;
+        if let Some(prefixes) = self.dotted_inputs.borrow().types.get(&id).cloned() {
+            self.tick()?;
+            return Ok(prefixes);
+        }
+        let prefixes = self.dotted_prefixes_uncached(id)?;
+        // 最終停止点まで成功した入力照合だけをcommitする。
+        self.tick()?;
+        self.dotted_inputs
+            .borrow_mut()
+            .types
+            .insert(id, prefixes.clone());
+        Ok(prefixes)
+    }
+    fn dotted_prefixes_uncached(&self, id: usize) -> Result<Vec<DottedPrefix>, ValidationFailure> {
+        self.tick()?;
+        let law = self.inputs.law();
+        let expression = law.exprs.get(id).ok_or("prefixの元ASTがない")?;
+        let ExprKind::Dotted(parts) = &expression.kind else {
+            return Err("prefixの元ASTがDottedでない".into());
+        };
+        let original_ty = law.expr_type(id).ok_or("prefixの元Dottedが未型検査")?;
+        let &indexed = self
+            .expressions
+            .get(&expression.span)
+            .ok_or("prefixの元出現がspan索引にない")?;
+        // 量化の区切り候補は同じ元token列を複数のarena IDへ構文解析する。
+        // 選択ASTのIDとspan索引の代表IDが違っても、name/span/tokを含む
+        // Dotted全体と型が完全一致するときだけ同じ元出現として扱う。
+        if law.exprs[indexed].kind != expression.kind || law.expr_type(indexed) != Some(original_ty)
+        {
+            return Err("prefixの型検査済み元token列・型がspan索引と違う".into());
+        }
+        let first = parts.first().ok_or("prefixの元Dottedが空")?;
+        let mut initial = None;
+        for declaration in law.declarations.values() {
+            self.tick()?;
+            if declaration.span.0 <= first.span.0 && first.span.1 <= declaration.span.1 {
+                let params = match &declaration.signature {
+                    crate::law::model::Signature::View { params, .. }
+                    | crate::law::model::Signature::Law { params, .. } => params,
+                    _ => continue,
+                };
+                for parameter in params {
+                    self.tick()?;
+                    if parameter.name == first.name
+                        && initial.replace(parameter.ty.erase()).is_some()
+                    {
+                        return Err("prefixの元parameterが一意でない".into());
+                    }
+                    self.tick()?;
+                }
+            }
+            self.tick()?;
+        }
+        for (name, origin) in self.lexical_context(first.span)? {
+            self.tick()?;
+            if name == first.name {
+                let ty = match origin {
+                    LexicalOrigin::Let(rhs) => law.expr_type(rhs).cloned(),
+                    LexicalOrigin::Universal(quantified) => {
+                        law.quantifier_types[quantified].clone()
+                    }
+                    LexicalOrigin::Iteration(iteration) => match &law.exprs[iteration].kind {
+                        ExprKind::Quant { .. } => law.quantifier_types[iteration].clone(),
+                        ExprKind::SetComp { domain, .. } => match law.expr_type(*domain) {
+                            Some(Type::List(element) | Type::Set(element)) => {
+                                Some((**element).clone())
+                            }
+                            _ => None,
+                        },
+                        _ => None,
+                    },
+                    LexicalOrigin::Pattern { binder, .. } => Some(binder.ty),
+                }
+                .ok_or("prefixの元lexical型がない")?;
+                if initial.replace(ty.erase()).is_some() {
+                    return Err("prefixの先頭束縛が一意でない".into());
+                }
+            }
+            self.tick()?;
+        }
+        let mut ty = initial.ok_or("prefixの先頭が元束縛でない")?;
+        let mut result = vec![(first.span, ty.clone())];
+        for part in parts.iter().skip(1) {
+            self.tick()?;
+            let Type::Ref(entity) = &ty else {
+                return Err("prefixのfield owner型がRefでない".into());
+            };
+            let (parameters, fields) = law
+                .definitions
+                .declarations
+                .get(entity)
+                .and_then(|declaration| declaration.signature.record_fields())
+                .ok_or("prefixの元owner署名がない")?;
+            let mut next = None;
+            for field in parameters.iter().chain(fields) {
+                self.tick()?;
+                if field.name == part.name && next.replace(field.ty.erase()).is_some() {
+                    return Err("prefixの元field署名が一意でない".into());
+                }
+                self.tick()?;
+            }
+            ty = next.ok_or("prefixの元field署名がない")?;
+            result.push(((first.span.0, part.span.1), ty.clone()));
+            self.tick()?;
+        }
+        if law.expr_type(id) != Some(&ty) {
+            return Err("prefixの最終型が元Dottedと違う".into());
+        }
+        self.tick()?;
+        Ok(result)
+    }
+    // byteの任意部分文字列ではなく、元token列の先頭から実token末尾までだけを採る。
+    fn dotted_prefix(
+        &self,
+        span: (usize, usize),
+    ) -> Result<Option<(usize, usize)>, ValidationFailure> {
+        self.tick()?;
+        if let Some(found) = self.dotted_inputs.borrow().occurrences.get(&span).copied() {
+            self.tick()?;
+            return Ok(found);
+        }
+        let found = self.dotted_prefix_uncached(span)?;
+        self.tick()?;
+        self.dotted_inputs
+            .borrow_mut()
+            .occurrences
+            .insert(span, found);
+        Ok(found)
+    }
+    fn dotted_prefix_uncached(
+        &self,
+        span: (usize, usize),
+    ) -> Result<Option<(usize, usize)>, ValidationFailure> {
+        let mut found: Option<(usize, usize)> = None;
+        for &(id, count) in self.dotted_candidates.get(&span).into_iter().flatten() {
+            self.tick()?;
+            let expression = &self.inputs.law().exprs[id];
+            if self.expressions.get(&expression.span) == Some(&id)
+                && let ExprKind::Dotted(parts) = &expression.kind
+                && let Some(first) = parts.first()
+                && first.span.0 == span.0
+                && parts
+                    .get(count - 1)
+                    .is_some_and(|part| part.span.1 == span.1)
+                && data::expression(self.inputs.law(), id, &self.control)?.is_none()
+            {
+                if let Some((previous, previous_count)) = found {
+                    let ExprKind::Dotted(previous_parts) = &self.inputs.law().exprs[previous].kind
+                    else {
+                        return Err("prefixの代表が元Dottedでない".into());
+                    };
+                    // 区切り候補の短いDottedと長いDottedが同じ先頭を
+                    // 共有しても、実token列と元型が一致するprefixだけを併合する。
+                    if previous_count != count
+                        || previous_parts[..count] != parts[..count]
+                        || self.dotted_prefixes(previous)?[count - 1].1
+                            != self.dotted_prefixes(id)?[count - 1].1
+                    {
+                        return Err("prefixの元token列・型が一意でない".into());
+                    }
+                    if previous_parts.len() < parts.len() {
+                        found = Some((id, count));
+                    }
+                } else {
+                    found = Some((id, count));
+                }
+            }
+            self.tick()?;
+        }
+        Ok(found)
+    }
     // 元byteの綴りだけでなく、採用・型検査済みDottedの実先頭出現へ戻る。
     // 単独名は全体のSource、field読みの先頭名だけがfragmentとして使える。
     fn name_token(&self, span: (usize, usize)) -> Result<&str, ValidationFailure> {
@@ -3769,7 +3965,200 @@ impl<'a> Environment<'a> {
         }
         Ok(None)
     }
-    // calleeのfield Scalarも、slot値の一致だけで別producerへ移せない。
+    fn chain_field_occurrence(
+        &self,
+        span: (usize, usize),
+    ) -> Result<Option<DottedOccurrence>, ValidationFailure> {
+        Ok(self.dotted_prefix(span)?.filter(|&(id, count)| {
+            count > 1
+                && matches!(&self.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
+        }))
+    }
+    // 完了済みの元Sourceは、その通常Evaluationが固定した既出producerへ戻る。
+    // 別の未挿入Scalarが同じSourceを借りて、別出現の値に成り替わらない。
+    fn field_source_producer_matches(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+        source: NodeRef,
+        bindings: &[Binding],
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        if source.0 >= limit {
+            return Err("fieldの元Sourceが既出でない".into());
+        }
+        let Some(Payload::Expression {
+            parameters,
+            bindings: source_bindings,
+            ..
+        }) = &graph.get(source)?.payload
+        else {
+            return Err("field producerの元SourceがExpressionでない".into());
+        };
+        if !parameters.is_empty() || source_bindings != bindings {
+            self.tick()?;
+            return Ok(false);
+        }
+        let context = self.current_context(graph);
+        for (index, completed) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            if graph.context_at(index) == context
+                && completed.arguments.first() == Some(&source)
+                && let Some(Payload::Evaluation {
+                    expression,
+                    bindings: actual_bindings,
+                    value: Some(producer),
+                    ..
+                }) = &completed.payload
+                && *expression == source
+                && actual_bindings == bindings
+            {
+                // 通常finishの第一辺はSource。LawInstance適用wrapperや
+                // parameterを残す族集約を、この元式の実producerと混ぜない。
+                self.recheck_evaluation(graph, NodeRef(index))?;
+                let original = graph.get(*producer)?;
+                self.tick()?;
+                if !std::ptr::eq(original, node) {
+                    return Ok(false);
+                }
+            }
+            self.tick()?;
+        }
+        self.tick()?;
+        Ok(true)
+    }
+    // 引数の本数ではなく、Scalar自身の元Law出現からchain fieldを照合する。
+    // Source辺を消した値も、原始Factの読取りへ読み替えない。
+    fn chain_field_source_analysis(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<(Scalar, Fact), ValidationFailure> {
+        self.tick()?;
+        let Rule::Input {
+            kind: "law",
+            location: Location::Law { span },
+        } = &node.rule
+        else {
+            return Err("chain field値に元Law出現がない".into());
+        };
+        let (id, count) = self
+            .chain_field_occurrence(*span)?
+            .ok_or("元chain field出現でない")?;
+        let prefixes = self.dotted_prefixes(id)?;
+        let [owner, own_source] = node.arguments.as_slice() else {
+            return Err("chain field値の実owner・own Source辺がない".into());
+        };
+        if owner.0 >= limit
+            || own_source.0 >= limit
+            || graph.context_at(own_source.0) != self.current_context(graph)
+        {
+            return Err("chain fieldのown Source・ownerが既出の実評価でない".into());
+        }
+        let source = graph.get(*own_source)?;
+        let Some(Payload::Expression {
+            location: Location::Law { span: actual },
+            parameters,
+            bindings,
+        }) = &source.payload
+        else {
+            return Err("chain fieldのown Sourceが元Expressionでない".into());
+        };
+        if actual != span
+            || prefixes[count - 1].0 != *span
+            || !parameters.is_empty()
+            || source.ty != NodeType::Expression(prefixes[count - 1].1.clone())
+            || node.ty != NodeType::Value(prefixes[count - 1].1.clone())
+            || source.arguments != self.source_arguments(graph, *span, bindings)?
+            || !node.evidence.is_empty()
+            || !node.reasons.is_empty()
+            || node.judgment.is_some()
+        {
+            return Err("chain fieldの元span・型・束縛・metadataが違う".into());
+        }
+        self.validate_at(graph, source, own_source.0)?;
+        if !self.field_source_producer_matches(graph, node, limit, *own_source, bindings)? {
+            return Err("chain fieldの元Sourceは別の実producerで評価済み".into());
+        }
+        self.validate_at(graph, graph.get(*owner)?, owner.0)?;
+        let owner_span = prefixes[count - 2].0;
+        let original_owner = self.analyze_source(graph, owner_span, bindings)?;
+        if original_owner.known_value.as_ref() != Some(graph.scalar(*owner)?) {
+            return Err("chain fieldの実owner値が元入力と違う".into());
+        }
+        let mut actual_owner = false;
+        for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            if graph.context_at(index) == self.current_context(graph)
+                && let Some(Payload::Evaluation {
+                    expression,
+                    bindings: owner_bindings,
+                    value,
+                    ..
+                }) = &candidate.payload
+                && *value == Some(*owner)
+                && owner_bindings == bindings
+                && self.expression_span(graph, *expression)? == owner_span
+            {
+                if candidate.ty != NodeType::Evaluation(prefixes[count - 2].1.clone()) {
+                    return Err("chain fieldの元owner Evaluation型が違う".into());
+                }
+                self.recheck_evaluation(graph, NodeRef(index))?;
+                actual_owner = true;
+                self.tick()?;
+                break;
+            }
+            self.tick()?;
+        }
+        if !actual_owner {
+            return Err("chain field値に元prefixの実owner Evaluationがない".into());
+        }
+        let Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        } = graph.scalar(*owner)?
+        else {
+            return Err("chain fieldの実ownerがRefでない".into());
+        };
+        let ExprKind::Dotted(parts) = &self.inputs.law().exprs[id].kind else {
+            return Err("chain fieldの元token列がDottedでない".into());
+        };
+        let field = self.field(
+            snapshot,
+            subject,
+            &format!("{entity}.{}", parts[count - 1].name),
+        )?;
+        let Slot::Known { value, atom, .. } = &field.slot else {
+            return Err("chain fieldの既知値が欠測slotを指す".into());
+        };
+        let expected = scalar_from(value, &field.ty, self.inputs.law(), &self.control)?
+            .ok_or("chain fieldの元slotに対応する値がない")?;
+        let fact = Fact {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: Some(field.name.clone()),
+            atom: Some(atom.clone()),
+        };
+        let analysis = self.resolve_analysis(
+            graph,
+            self.analyze_source(graph, *span, bindings)?,
+            &node.arguments,
+        )?;
+        if field.ty.erase() != prefixes[count - 1].1
+            || !matches!(&node.payload, Some(Payload::Scalar(value)) if value == &expected)
+            || analysis.known_value.as_ref() != Some(&expected)
+            || analysis.scalar_scope.as_ref() != Some(&node.scope)
+            || node.support != [fact.clone()]
+        {
+            return Err("chain field値の元slot・型・支持・Scopeが違う".into());
+        }
+        self.tick()?;
+        Ok((expected, fact))
+    }
+    // 全Contextの原始field Scalarを、元Sourceと実owner評価へ結ぶ。
     fn call_field_source(
         &self,
         graph: &Graph,
@@ -3782,6 +4171,19 @@ impl<'a> Environment<'a> {
         if node.arguments.len() != 1 {
             return Err("field owner数が違う".into());
         }
+        let Rule::Input {
+            kind: "atom",
+            location: Location::ArchMap { pointer, .. },
+        } = &node.rule
+        else {
+            return Err("fieldの原始値に元Atom位置がない".into());
+        };
+        let input_fact = self.atoms.get(pointer).ok_or("fieldの元Atom位置がない")?;
+        let input_field = input_fact
+            .field
+            .as_ref()
+            .ok_or("fieldの元Atomにfieldがない")?;
+        let input_owner = self.subject(&input_fact.snapshot, &input_fact.subject)?;
         for (source_index, source) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
             if graph.context_at(source_index) != self.current_context(graph) {
@@ -3795,19 +4197,49 @@ impl<'a> Environment<'a> {
             else {
                 continue;
             };
-            let Some(&id) = self.expressions.get(span) else {
+            let prefix = self.dotted_prefix(*span)?;
+            let Some(id) = self
+                .expressions
+                .get(span)
+                .copied()
+                .or(prefix.map(|(id, _)| id))
+            else {
                 continue;
             };
+            let chained = prefix.is_some_and(|(original, count)| {
+                count > 1
+                    && matches!(&self.inputs.law().exprs[original].kind, ExprKind::Dotted(parts) if parts.len() > 2)
+            });
+            if chained {
+                continue;
+            }
             let (owner_span, field_name) = match &self.inputs.law().exprs[id].kind {
-                ExprKind::Dotted(parts) if parts.len() > 1 => (
-                    (parts[0].span.0, parts[parts.len() - 2].span.1),
-                    parts.last().ok_or("元field名がない")?.name.as_str(),
-                ),
+                ExprKind::Dotted(parts) if prefix.is_some_and(|(_, count)| count > 1) => {
+                    let count = prefix.ok_or("callee fieldの元prefixがない")?.1;
+                    (
+                        (parts[0].span.0, parts[count - 2].span.1),
+                        parts[count - 1].name.as_str(),
+                    )
+                }
                 ExprKind::Field { base, name } => {
                     (self.inputs.law().exprs[*base].span, name.name.as_str())
                 }
                 _ => continue,
             };
+            // 提示supportではなく、元pointerの不変Factとchecked tokenで絞る。
+            // 実owner・値・Scopeの照合は、この候補選別の後にも全て行う。
+            if format!("{}.{field_name}", input_owner.ty) != *input_field {
+                continue;
+            }
+            if !self.field_source_producer_matches(
+                graph,
+                node,
+                limit,
+                NodeRef(source_index),
+                bindings,
+            )? {
+                continue;
+            }
             let analysis = self.resolve_analysis(
                 graph,
                 self.analyze_source(graph, *span, bindings)?,
@@ -3825,6 +4257,7 @@ impl<'a> Environment<'a> {
                 }
                 let Some(Payload::Evaluation {
                     expression,
+                    bindings: owner_bindings,
                     value: actual,
                     ..
                 }) = &candidate.payload
@@ -3833,6 +4266,7 @@ impl<'a> Environment<'a> {
                 };
                 if *actual != Some(node.arguments[0])
                     || self.expression_span(graph, *expression)? != owner_span
+                    || owner_bindings != bindings
                 {
                     continue;
                 }
@@ -5072,7 +5506,13 @@ impl<'a> Environment<'a> {
             }
             self.tick()?;
         }
-        if let Some(&id) = self.expressions.get(&span) {
+        let dotted = self.dotted_prefix(span)?;
+        if let Some(id) = self
+            .expressions
+            .get(&span)
+            .copied()
+            .or(dotted.map(|(id, _)| id))
+        {
             let SourceValue {
                 comparison,
                 scope,
@@ -5080,14 +5520,20 @@ impl<'a> Environment<'a> {
                 affine,
                 support,
                 scalar_scope,
-            } = self.scoped_ast(id, &variables, &base, &declaration.reading)?;
+            } = if let Some((_, count)) = dotted {
+                self.scoped_dotted(id, count, &variables, &base, &declaration.reading)?
+            } else {
+                self.scoped_ast(id, &variables, &base, &declaration.reading)?
+            };
             let direct_field = match &self.inputs.law().exprs[id].kind {
-                ExprKind::Dotted(parts) if parts.len() == 2 => Some((
-                    variables
-                        .get(&parts[0].name)
-                        .and_then(|v| v.known_value.clone()),
-                    parts[1].name.as_str(),
-                )),
+                ExprKind::Dotted(parts) if dotted.is_some_and(|(_, count)| count > 1) => {
+                    let count = dotted.ok_or("元prefixの長さがない")?.1;
+                    Some((
+                        self.scoped_dotted(id, count - 1, &variables, &base, &declaration.reading)?
+                            .known_value,
+                        parts[count - 1].name.as_str(),
+                    ))
+                }
                 ExprKind::Field { base: owner, name } => Some((
                     self.scoped_ast(*owner, &variables, &base, &declaration.reading)?
                         .known_value,
@@ -5129,24 +5575,7 @@ impl<'a> Environment<'a> {
                 scalar_scope,
             });
         }
-        // prefix の独立再分析も、Source validation と同じ実token照合を必須にする。
-        let name = self.name_token(span)?;
-        let value = variables
-            .get(name)
-            .ok_or("評価範囲に元束縛以外のfragmentがある")?;
-        Ok(SourceAnalysis {
-            comparison: value.comparison.clone(),
-            affine: value.affine.clone(),
-            scope: value.scope.clone(),
-            known_value: value.known_value.clone(),
-            missing: None,
-            support: value.support.clone(),
-            scalar_scope: if self.projects_lexical_binding(span, name)? {
-                value.known_value.as_ref().map(|_| value.scope.clone())
-            } else {
-                value.scalar_scope.clone()
-            },
-        })
+        Err("評価範囲に元AST/prefix以外のfragmentがある".into())
     }
     fn subject_support(&self, value: &Scalar) -> Result<Vec<Fact>, ValidationFailure> {
         let Scalar::Subject {
@@ -5191,6 +5620,44 @@ impl<'a> Environment<'a> {
         let result = self.scoped_ast(id, variables, base, reading);
         self.scoped_context.set(previous);
         result
+    }
+    fn scoped_dotted(
+        &self,
+        id: usize,
+        count: usize,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<SourceValue, ValidationFailure> {
+        self.tick()?;
+        let ExprKind::Dotted(parts) = &self.inputs.law().exprs[id].kind else {
+            return Err("範囲検査のprefixがDottedでない".into());
+        };
+        if count == 0 || count > parts.len() {
+            return Err("範囲検査のprefix長が違う".into());
+        }
+        let first = parts.first().ok_or("範囲検査の空Dotted")?;
+        let mut result = variables
+            .get(&first.name)
+            .ok_or("範囲検査の未知lexical名")?
+            .clone();
+        if self.projects_lexical_binding(first.span, &first.name)? {
+            result.scope.merge(base);
+            result.scalar_scope = result.known_value.as_ref().map(|_| result.scope.clone());
+        }
+        for part in parts.iter().take(count).skip(1) {
+            self.tick()?;
+            result = self.scoped_field(
+                result,
+                &part.name,
+                base,
+                reading,
+                (first.span.0, part.span.1),
+            )?;
+            self.tick()?;
+        }
+        self.tick()?;
+        Ok(result)
     }
     fn scoped_ast(
         &self,
@@ -5242,30 +5709,7 @@ impl<'a> Environment<'a> {
                     }
                 }
                 ExprKind::Dotted(parts) => {
-                    let first = parts.first().ok_or("範囲検査の空Dotted")?;
-                    let mut result = variables
-                        .get(&first.name)
-                        .ok_or("範囲検査の未知lexical名")?
-                        .clone();
-                    // pattern/反復binderは使用位置で射影Scalarを作る。let alias
-                    // は元RHS Scalarを参照するので、そのscalar_scopeを変えない。
-                    if self.projects_lexical_binding(first.span, &first.name)? {
-                        result.scope.merge(base);
-                        result.scalar_scope =
-                            result.known_value.as_ref().map(|_| result.scope.clone());
-                    }
-                    for part in parts.iter().skip(1) {
-                        self.tick()?;
-                        result = self.scoped_field(
-                            result,
-                            &part.name,
-                            base,
-                            reading,
-                            (first.span.0, part.span.1),
-                        )?;
-                        self.tick()?;
-                    }
-                    result
+                    self.scoped_dotted(id, parts.len(), variables, base, reading)?
                 }
                 ExprKind::Field { base: owner, name } => self.scoped_field(
                     self.scoped_ast(*owner, variables, base, reading)?,
@@ -6270,10 +6714,15 @@ impl<'a> Environment<'a> {
     fn check_field(
         &self,
         graph: &Graph,
+        expression: NodeRef,
         base: Option<NodeRef>,
         name: &str,
         value: Option<NodeRef>,
     ) -> Result<(), ValidationFailure> {
+        let span = self.expression_span(graph, expression)?;
+        let chained = self.dotted_prefix(span)?.is_some_and(|(id, count)| {
+            count > 1 && matches!(&self.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
+        });
         let base = base.ok_or("field の base が未確定")?;
         let Scalar::Subject {
             snapshot,
@@ -6297,6 +6746,7 @@ impl<'a> Environment<'a> {
                     .ok_or("元slotの補完代入がない")?;
                 let node = graph.get(actual)?;
                 if node.arguments.len() != 3
+                    || node.arguments[0] != expression
                     || node.arguments[1] != base
                     || node.arguments[2] != assigned
                     || graph.scalar(actual)? != graph.scalar(assigned)?
@@ -6315,7 +6765,15 @@ impl<'a> Environment<'a> {
                 Some(actual),
             ) if scalar_from(expected, &field.ty, self.inputs.law(), &self.control)?.as_ref()
                 == Some(graph.scalar(actual)?)
-                && graph.get(actual)?.arguments == [base] =>
+                && if chained {
+                    graph.get(actual)?.arguments == [base, expression]
+                        && matches!(&graph.get(actual)?.rule, Rule::Input {
+                            kind: "law",
+                            location: Location::Law { span: actual_span },
+                        } if *actual_span == span)
+                } else {
+                    graph.get(actual)?.arguments == [base]
+                } =>
             {
                 Ok(())
             }
