@@ -303,7 +303,7 @@ fn known_map_provenance_pairs_preserve_answers_and_current_sources() {
 }
 
 #[test]
-fn known_map_application_remains_unimplemented_after_finite_type_domains() {
+fn known_map_type_domains_and_application_return_concrete_values() {
     let input = sources("r1");
     let mut law = String::from_utf8(input.law().bytes().to_vec()).unwrap();
     let close = law.rfind('}').unwrap();
@@ -338,17 +338,21 @@ fn known_map_application_remains_unimplemented_after_finite_type_domains() {
         .collect();
     assert_eq!(domains.len(), 1);
     assert_eq!(array(get(get(domains[0], "value"), "elements")).len(), 4);
-    let failure = evaluate_observed_bytes(
+    let applied = evaluate_observed_bytes(
         input,
         &["apply=evaluate(Maps.apply,s=@v/s,x=@v/a)"],
         &mut quiet(),
     )
-    .unwrap_err();
-    assert!(failure.wire().is_none());
-    assert!(matches!(
-        failure,
-        archsig::observed::EvaluationFailure::NotImplemented { .. }
-    ));
+    .unwrap();
+    assert_eq!(applied.status(), "complete");
+    assert_eq!(
+        value(
+            &applied.wire(),
+            "apply",
+            Json::Arr(vec![Json::str("Ref"), Json::str("Maps.Item")])
+        ),
+        &Json::Arr(vec![Json::str("v"), Json::str("a")])
+    );
 }
 
 #[test]

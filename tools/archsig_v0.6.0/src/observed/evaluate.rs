@@ -1643,26 +1643,121 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
+        let mut reasons = Vec::new();
         let value = if known {
             #[cfg(test)]
             let previous = data::evaluation_context(Some((span, self.graph.active)));
             let constructed = self.environment.composite_value(id, &values);
             #[cfg(test)]
             data::evaluation_context(previous);
-            Some(self.value(
-                constructed?,
-                Rule::Input {
-                    kind: "law",
-                    location: Location::Law { span },
-                },
-                arguments,
-                support,
-                scope,
-            )?)
+            if let Some(value) = constructed? {
+                Some(self.value(
+                    value,
+                    Rule::Input {
+                        kind: "law",
+                        location: Location::Law { span },
+                    },
+                    arguments,
+                    support,
+                    scope,
+                )?)
+            } else {
+                #[cfg(test)]
+                data::observe_actual(span, self.graph.active, "map_condition", 0);
+                self.tick(Checkpoint::FiniteIteration)?;
+                let source = self
+                    .sources
+                    .get(&span)
+                    .ok_or_else(|| Failure::Internal("Map適用の元Sourceがない".into()))?
+                    .expression;
+                let children: Vec<_> = evaluated.iter().map(|e| e.evaluation).collect();
+                let condition = self
+                    .environment
+                    .map_condition(self.graph, source, &children, self.graph.nodes.len())?
+                    .ok_or_else(|| {
+                        Failure::Internal("値のない既知構成に反証済み条件がない".into())
+                    })?;
+                let edges = vec![source, children[0], children[1]];
+                let actual = self.value(
+                    condition.actual,
+                    Rule::Construction("evaluation"),
+                    edges.clone(),
+                    condition.support.clone(),
+                    condition.scope.clone(),
+                )?;
+                #[cfg(test)]
+                data::observe_actual(span, self.graph.active, "map_condition", 1);
+                self.tick(Checkpoint::FiniteIteration)?;
+                let required = self.value(
+                    condition.required,
+                    Rule::Construction("domain"),
+                    edges.clone(),
+                    condition.support.clone(),
+                    condition.scope.clone(),
+                )?;
+                let evidence = self.push(Node {
+                    ty: NodeType::Evidence,
+                    payload: Some(Payload::Counterexample {
+                        bindings: condition.bindings,
+                        left: actual,
+                        right: required,
+                        facts: condition.support.clone(),
+                    }),
+                    rule: Rule::Construction("evidence"),
+                    arguments: edges.iter().copied().chain([actual, required]).collect(),
+                    support: condition.support.clone(),
+                    scope: condition.scope.clone(),
+                    evidence: vec![],
+                    judgment: None,
+                    reasons: vec![],
+                })?;
+                let proposition = self.push(Node {
+                    ty: NodeType::Proposition,
+                    payload: Some(Payload::MapDomainCondition {
+                        left: actual,
+                        right: required,
+                    }),
+                    rule: Rule::Construction("proposition"),
+                    arguments: edges
+                        .into_iter()
+                        .chain([actual, required, evidence])
+                        .collect(),
+                    support: condition.support,
+                    scope: condition.scope,
+                    evidence: vec![evidence],
+                    judgment: Some(Judgment {
+                        status: Decision::Refuted,
+                        evidence: vec![evidence],
+                        reasons: vec![],
+                    }),
+                    reasons: vec![],
+                })?;
+                reasons.push(Reason {
+                    kind: ReasonKind::ConditionFailed {
+                        condition: proposition,
+                        construction: "evaluation",
+                    },
+                    request: self.request.id.clone(),
+                    dependencies: vec![source],
+                    missing: vec![],
+                    location: Some(Location::Law { span }),
+                });
+                None
+            }
         } else {
             None
         };
-        self.finish(span, ty, value, evaluated, vec![], None, None, None)
+        self.finish_with_reasons(
+            span,
+            ty,
+            value,
+            evaluated,
+            vec![],
+            None,
+            None,
+            None,
+            reasons,
+        )
     }
     fn call(
         &mut self,
@@ -2502,6 +2597,7 @@ mod recheck_tests {
     include!("known_map_tests.rs");
     include!("finite_map_tests.rs");
     include!("owned_compound_tests.rs");
+    include!("map_application_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

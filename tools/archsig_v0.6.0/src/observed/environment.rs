@@ -19,6 +19,8 @@ pub(super) mod completion;
 pub(super) mod dependent_family;
 #[path = "family.rs"]
 pub(super) mod family;
+#[path = "map_application.rs"]
+mod map_application;
 #[path = "owned_family.rs"]
 pub(super) mod owned_family;
 #[path = "owned_type.rs"]
@@ -520,6 +522,14 @@ impl<'a> Environment<'a> {
                 }),
             });
         }
+        if let Some(reason) = self.map_condition_reason(
+            graph,
+            expression,
+            children,
+            self.cutoff.get().min(graph.nodes.len()),
+        )? {
+            reasons.push(reason);
+        }
         sort_reasons(&mut reasons);
         if node.reasons.len() != reasons.len() {
             return Err("Evaluationの元欠測理由数が違う".into());
@@ -696,6 +706,9 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         if self.validate_universal_node(graph, node, limit)? {
+            return Ok(());
+        }
+        if self.validate_map_condition_node(graph, node, limit)? {
             return Ok(());
         }
         if self.validate_completion_node(graph, node, limit)? {
@@ -1633,12 +1646,14 @@ impl<'a> Environment<'a> {
                         }
                         match (known, *value) {
                             (true, Some(result)) => {
-                                if graph.scalar(result)? != &self.composite_value(id, &values)?
+                                if Some(graph.scalar(result)?)
+                                    != self.composite_value(id, &values)?.as_ref()
                                     || graph.get(result)?.arguments != arguments
                                 {
                                     return Err("数値構成の元子・結果値が違う".into());
                                 }
                             }
+                            (true, None) if self.composite_value(id, &values)?.is_none() => {}
                             (false, None) => {}
                             _ => return Err("未確定の数値構成から値を作っている".into()),
                         }
@@ -1684,7 +1699,7 @@ impl<'a> Environment<'a> {
                     {
                         let id = *self.expressions.get(&span).ok_or("constructor元式がない")?;
                         if value.map(|r| graph.scalar(r)).transpose()?
-                            != Some(&self.composite_value(id, &[])?)
+                            != self.composite_value(id, &[])?.as_ref()
                         {
                             return Err("零引数constructor値が違う".into());
                         }
@@ -3308,6 +3323,14 @@ impl<'a> Environment<'a> {
             | ExprKind::ListLit { items, .. }
             | ExprKind::SetLit { items, .. } => Some(items.clone()),
             ExprKind::Index { base, .. } | ExprKind::Some(base) => Some(vec![*base]),
+            ExprKind::Call { callee, args }
+                if matches!(law.expr_type(*callee), Some(Type::Map(..))) =>
+            {
+                if args.len() != 1 {
+                    return Err("Map適用の元引数数が違う".into());
+                }
+                Some(vec![*callee, args[0]])
+            }
             ExprKind::Call { args, .. } if self.builtin(id)?.is_some() => Some(args.clone()),
             _ => None,
         };
@@ -3318,7 +3341,7 @@ impl<'a> Environment<'a> {
         &self,
         id: usize,
         values: &[Scalar],
-    ) -> Result<Scalar, ValidationFailure> {
+    ) -> Result<Option<Scalar>, ValidationFailure> {
         self.tick()?;
         let law = self.inputs.law();
         let children = self
@@ -3334,6 +3357,11 @@ impl<'a> Environment<'a> {
             }
             data::check(value, law, &self.control)?;
             self.tick()?;
+        }
+        if let ExprKind::Call { callee, .. } = &law.exprs[id].kind
+            && matches!(law.expr_type(*callee), Some(Type::Map(..)))
+        {
+            return data::map_apply(&values[0], &values[1], law, &self.control);
         }
         let value = if let Some((constructor, _)) = data::expression(law, id, &self.control)? {
             let Type::Data(family) = law.expr_type(id).ok_or("Data構成型がない")? else {
@@ -3401,7 +3429,7 @@ impl<'a> Environment<'a> {
         }
         data::check(&value, law, &self.control)?;
         self.tick()?;
-        Ok(value)
+        Ok(Some(value))
     }
     // 自己申告の node.scope へ依存せず、元宣言・束縛と原始 slot から再構成する。
     fn source_scope(
@@ -5742,7 +5770,7 @@ impl<'a> Environment<'a> {
                         comparison: None,
                         affine: None,
                         scope: base.clone(),
-                        known_value: Some(self.composite_value(id, &[])?),
+                        known_value: self.composite_value(id, &[])?,
                         support: vec![],
                         scalar_scope: Some(base.clone()),
                     }
@@ -6118,7 +6146,7 @@ impl<'a> Environment<'a> {
                     support.sort();
                     support.dedup();
                     let known_value = if known {
-                        Some(self.composite_value(id, &values)?)
+                        self.composite_value(id, &values)?
                     } else {
                         None
                     };

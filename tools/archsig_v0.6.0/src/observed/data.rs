@@ -853,3 +853,41 @@ pub(super) fn aggregate(
     }
     Ok(result)
 }
+
+/// 元の全域表の実keyを照合する。域外は構成不成立であり、像を捏造しない。
+pub(super) fn map_apply(
+    map: &Scalar,
+    key: &Scalar,
+    law: &CheckedLaw,
+    control: &Control,
+) -> Result<Option<Scalar>, ValidationFailure> {
+    tick(control)?;
+    check(map, law, control)?;
+    check(key, law, control)?;
+    let Scalar::Map {
+        domain,
+        codomain,
+        pairs,
+    } = map
+    else {
+        return Err("Map適用のcalleeがMap値でない".into());
+    };
+    if key.ty() != *domain {
+        return Err("Map適用の実key型が始域型と違う".into());
+    }
+    let mut selected = None;
+    for (_index, (candidate, image)) in pairs.iter().enumerate() {
+        #[cfg(test)]
+        observe_iteration("map_lookup", _index);
+        tick(control)?;
+        if equal(candidate, key, control)? {
+            if selected.is_some() || image.ty() != *codomain {
+                return Err("Map適用の像が一意・型付きでない".into());
+            }
+            selected = Some(image.clone());
+        }
+        tick(control)?;
+    }
+    tick(control)?;
+    Ok(selected)
+}
