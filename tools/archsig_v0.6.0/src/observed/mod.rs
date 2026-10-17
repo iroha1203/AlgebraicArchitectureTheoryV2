@@ -10,6 +10,7 @@ mod finite;
 mod numeric;
 mod quantifier;
 pub mod result;
+mod term;
 pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
 pub use result::{EvaluationFailure, ObservedEvaluation};
 pub mod input;

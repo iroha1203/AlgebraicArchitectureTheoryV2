@@ -34,6 +34,7 @@ pub(super) fn scalar(a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, Valida
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(c)?;
         let same = match (a, b) {
+            (Scalar::Term(a), Scalar::Term(b)) => a == b,
             (Scalar::Unit, Scalar::Unit)
             | (Scalar::Text(_), Scalar::Text(_))
             | (Scalar::Z(_), Scalar::Z(_))

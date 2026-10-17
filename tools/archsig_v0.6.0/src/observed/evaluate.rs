@@ -639,7 +639,8 @@ impl Evaluator<'_, '_> {
                         .law()
                         .expr_type(*lhs)
                         .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
-                    if !supports_binary(*op, input_ty, self.control)? {
+                    if !supports_binary(*op, input_ty, self.environment.inputs.law(), self.control)?
+                    {
                         return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                     }
                     self.prepare_source_child(*lhs)?;
@@ -651,7 +652,8 @@ impl Evaluator<'_, '_> {
                         self.prepare_source_child(argument)?;
                     }
                 }
-                ExprKind::Tuple(_)
+                ExprKind::Fn { .. }
+                | ExprKind::Tuple(_)
                 | ExprKind::ListLit { .. }
                 | ExprKind::SetLit { .. }
                 | ExprKind::None(_)
@@ -1103,7 +1105,7 @@ impl Evaluator<'_, '_> {
                     .law()
                     .expr_type(*lhs)
                     .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
-                if !supports_binary(*op, input_ty, self.control)? {
+                if !supports_binary(*op, input_ty, self.environment.inputs.law(), self.control)? {
                     return Err(self.unsupported(span, "対応済み Z/Bool 二項演算以外"));
                 }
                 let left = self.eval(*lhs)?;
@@ -1192,7 +1194,8 @@ impl Evaluator<'_, '_> {
             ExprKind::Call { args, .. } if self.environment.named_view(id)?.is_some() => {
                 self.call(id, args, span, ty)
             }
-            ExprKind::Tuple(_)
+            ExprKind::Fn { .. }
+            | ExprKind::Tuple(_)
             | ExprKind::ListLit { .. }
             | ExprKind::SetLit { .. }
             | ExprKind::None(_)
@@ -2599,6 +2602,7 @@ mod recheck_tests {
     include!("owned_compound_tests.rs");
     include!("map_application_tests.rs");
     include!("engine_tests.rs");
+    include!("term_tests.rs");
     fn affine_private_fixture(body: &str) -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Affine","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Affine.Sample","meaning":"数値を観測する対象。","parameters":[],"fields":[{"name":"z","type":"Z","meaning":"整数。"},{"name":"k","type":"Z","meaning":"別整数。"},{"name":"q","type":"Q","meaning":"有理数。"},{"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
         let checked =

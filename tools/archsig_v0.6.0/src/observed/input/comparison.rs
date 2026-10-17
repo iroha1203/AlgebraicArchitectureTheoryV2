@@ -1492,6 +1492,8 @@ mod tests {
                 exprs: vec![],
                 root: 0,
                 types,
+                references: vec![],
+                quantifier_types: vec![],
             },
         };
         let a = term(vec![Some(Type::Bool)]);
