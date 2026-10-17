@@ -545,12 +545,53 @@ fn finite_map_empty_domain_still_rejects_an_ill_typed_body() {
 }
 
 #[test]
-fn finite_owned_map_unbound_parameters_keep_dedicated_unimplemented_failure() {
+fn finite_owned_map_unbound_parameters_have_concrete_finite_domains() {
+    for (ty, count) in [
+        ("Map<State[a],State[b]>", 4),
+        ("Option<Map<State[a],State[b]>>", 5),
+        ("(Unit,Map<State[a],State[b]>)", 4),
+        ("Set<Map<State[a],State[b]>>", 16),
+    ] {
+        let original = owned_sources(false);
+        let mut law = String::from_utf8(original.law().bytes().to_vec()).unwrap();
+        let pos = law.rfind('}').unwrap();
+        law.insert_str(
+            pos,
+            &format!("law required nested(a:System,b:System,f:{ty}):f=f;"),
+        );
+        let input = InputSources::from_bytes(
+            vec![maps::OWNED_DEFINITIONS.as_bytes().to_vec()],
+            law.into_bytes(),
+            original.archmap().bytes().to_vec(),
+        );
+        let result = evaluate_observed_bytes(
+            input,
+            &["c=check(Reservations.nested,a=@v/A,b=@v/B)"],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete");
+        let w = result.wire();
+        assert_eq!(get(answer(&w, "c"), "status"), &Json::str("established"));
+        let ds: Vec<_> = array(get(&w, "nodes"))
+            .iter()
+            .filter(|n| {
+                get(n, "type") == &Json::str("Domain")
+                    && array(get(get(n, "value"), "elements")).len() == count
+            })
+            .collect();
+        assert_eq!(ds.len(), 2);
+        audit(&result);
+    }
+}
+
+#[test]
+fn nonfinite_owned_map_unbound_parameters_keep_dedicated_unimplemented_failure() {
     for ty in [
-        "Map<State[a],State[b]>",
-        "Option<Map<State[a],State[b]>>",
-        "(Unit,Map<State[a],State[b]>)",
-        "Set<Map<State[a],State[b]>>",
+        "List<Map<State[a],State[b]>>",
+        "Option<List<Map<State[a],State[b]>>>",
+        "(Unit,List<Map<State[a],State[b]>>)",
+        "Set<List<Map<State[a],State[b]>>>",
     ] {
         let original = owned_sources(false);
         let mut law = String::from_utf8(original.law().bytes().to_vec()).unwrap();

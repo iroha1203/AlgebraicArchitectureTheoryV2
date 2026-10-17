@@ -54,7 +54,11 @@ impl Environment<'_> {
         if unbound.is_empty() {
             return Ok(None);
         }
-        let dependent = params.iter().any(|p| matches!(p.ty, Type::Owned(..)));
+        let mut dependent = false;
+        for p in params {
+            self.tick()?;
+            dependent |= p.ty != p.ty.erase();
+        }
         if dependent && let Some(p) = numeric.first() {
             return Err(ValidationFailure::UnsupportedExpression {
                 location: Location::Law { span: p.span },
@@ -63,10 +67,7 @@ impl Environment<'_> {
         }
         for p in params {
             self.tick()?;
-            let finite_type = match &p.ty {
-                Type::Owned(entity, _) => Type::Ref(entity.clone()),
-                ty => ty.clone(),
-            };
+            let finite_type = p.ty.erase();
             if unbound.iter().any(|u| u.name == p.name)
                 && !super::super::finite::supported(&finite_type, self.inputs.law(), &self.control)?
             {

@@ -112,7 +112,35 @@ impl Environment<'_> {
             });
             result.enumeration.values.push(value);
         } else {
-            result.enumeration = self.finite_values(&p.ty, observer)?;
+            // 元署名の複合型に含まれる各Owned leafも、現在の実prefixから
+            // ownerを読む。消去型の全登録族へ置き換えない。
+            let observer = RefCell::new(observer);
+            let missing = RefCell::new(Vec::new());
+            result.enumeration = super::super::finite::values_with_owned(
+                &p.ty,
+                self.inputs.law(),
+                &self.control,
+                &mut |entity| {
+                    self.reference_roster(entity, &mut |i| observer.borrow_mut()("ref_roster", i))
+                },
+                &mut |entity, owner_name| {
+                    self.tick()?;
+                    let owner = prefix
+                        .iter()
+                        .find(|(name, _)| name == owner_name)
+                        .map(|(_, value)| value.clone())
+                        .or(self.dependent_fixed_value(request, owner_name)?)
+                        .ok_or("複合依存parameterの先行ownerがない")?;
+                    let roster =
+                        self.owned_members(entity, &owner, None, reading, &mut |phase, i| {
+                            observer.borrow_mut()(phase, i)
+                        })?;
+                    missing.borrow_mut().extend(roster.missing);
+                    Ok(roster.enumeration)
+                },
+                &mut |i| observer.borrow_mut()("family_enum", i),
+            )?;
+            result.missing = missing.into_inner();
         }
         result.enumeration.support.sort();
         result.enumeration.support.dedup();
