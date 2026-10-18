@@ -1,13 +1,15 @@
 //! 元の公開selectorが実値に適合しない場合の構成条件。
+use super::owned_binding::ConditionInput;
 use super::*;
 
 #[derive(Clone, Debug)]
 pub(in crate::observed) struct ProjectionFailurePlan {
+    pub context: super::super::call::Context,
     pub parameter: String,
     pub root: NodeRef,
     pub producer: String,
     pub span: (usize, usize),
-    pub dependencies: Vec<NodeRef>,
+    pub inputs: Vec<ConditionInput>,
     pub scope: Scope,
     pub support: Vec<Fact>,
 }
@@ -105,11 +107,12 @@ impl Environment<'_> {
             if let Some(root) = root {
                 let original = graph.get(root)?;
                 plans.push(ProjectionFailurePlan {
+                    context: self.current_context(graph),
                     parameter: parameter.name.clone(),
                     root,
                     producer: id.clone(),
                     span: parameter.span,
-                    dependencies: vec![root],
+                    inputs: vec![ConditionInput::Reference(root)],
                     scope: original.scope.clone(),
                     support: original.support.clone(),
                 });
@@ -134,17 +137,67 @@ impl Environment<'_> {
                     .first()
                     .ok_or("所属条件の元Answerがない")?;
                 plans.push(ProjectionFailurePlan {
+                    context: self.current_context(graph),
                     parameter: parameter.name.clone(),
                     root,
                     producer: plan.producer,
                     span: parameter.span,
-                    dependencies: plan.dependencies,
+                    inputs: plan.condition_inputs,
                     scope: plan.checks.scope,
                     support: plan.checks.support,
                 });
             }
         }
         Ok(plans)
+    }
+
+    // 同Requestの既出leafだけを元subject selectorの型・値・支持・Scopeから復元する。
+    pub(in crate::observed) fn projection_subject_input(
+        &self,
+        graph: &Graph,
+        expected: &Node,
+        context: super::super::call::Context,
+    ) -> Result<Option<NodeRef>, ValidationFailure> {
+        for (index, node) in graph
+            .nodes
+            .iter()
+            .enumerate()
+            .take(self.cutoff.get().min(graph.nodes.len()))
+        {
+            self.tick()?;
+            if graph.context_at(index) == context && node == expected {
+                self.validate_at(graph, node, index)?;
+                self.tick()?;
+                return Ok(Some(NodeRef(index)));
+            }
+            self.tick()?;
+        }
+        Ok(None)
+    }
+
+    pub(in crate::observed) fn projection_failure_dependencies(
+        &self,
+        graph: &Graph,
+        plan: &ProjectionFailurePlan,
+    ) -> Result<Vec<NodeRef>, ValidationFailure> {
+        let mut dependencies = vec![];
+        for input in &plan.inputs {
+            self.tick()?;
+            let root = match input {
+                ConditionInput::Reference(root) => {
+                    graph.get(*root)?;
+                    *root
+                }
+                ConditionInput::Subject(node) => self
+                    .projection_subject_input(graph, node, plan.context)?
+                    .ok_or("所属条件の元subject入力がない")?,
+            };
+            if !dependencies.contains(&root) {
+                dependencies.push(root);
+            }
+            self.tick()?;
+        }
+        Ok(dependencies)
     }
 
     pub(in crate::observed) fn projection_failure_node(
@@ -155,9 +208,7 @@ impl Environment<'_> {
         prior: &[NodeRef],
     ) -> Result<Node, ValidationFailure> {
         self.tick()?;
-        for root in &plan.dependencies {
-            graph.get(*root)?;
-        }
+        let dependencies = self.projection_failure_dependencies(graph, plan)?;
         let mut node = Node {
             ty: NodeType::Value(Type::Text),
             payload: None,
@@ -165,7 +216,7 @@ impl Environment<'_> {
                 parameter: plan.parameter.clone(),
                 part,
             },
-            arguments: plan.dependencies.clone(),
+            arguments: dependencies.clone(),
             support: plan.support.clone(),
             scope: plan.scope.clone(),
             evidence: vec![],
@@ -193,7 +244,7 @@ impl Environment<'_> {
                 node.arguments.extend([*name, *evidence]);
                 node.payload = Some(Payload::ProjectionCondition {
                     name: *name,
-                    inputs: plan.dependencies.clone(),
+                    inputs: dependencies.clone(),
                 });
                 node.evidence = vec![*evidence];
                 node.judgment = Some(Judgment {
@@ -238,11 +289,12 @@ impl Environment<'_> {
         if plan.root.0 >= limit {
             return Err("射影条件のrootが未出".into());
         }
+        let dependencies = self.projection_failure_dependencies(graph, &plan)?;
         let prior = node
             .arguments
-            .strip_prefix(plan.dependencies.as_slice())
+            .strip_prefix(dependencies.as_slice())
             .ok_or("射影条件の元root・実依存辺が違う")?;
-        if plan.dependencies.iter().any(|r| r.0 >= limit) {
+        if dependencies.iter().any(|r| r.0 >= limit) {
             return Err("射影条件の依存辺が未出".into());
         }
         for &reference in prior {

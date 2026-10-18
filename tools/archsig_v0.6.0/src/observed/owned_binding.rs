@@ -6,7 +6,13 @@ pub(in crate::observed) struct OwnedBindingPlan {
     pub scalar: Scalar,
     pub checks: owned_call::Checks,
     pub dependencies: Vec<NodeRef>,
+    pub condition_inputs: Vec<ConditionInput>,
     pub producer: String,
+}
+#[derive(Clone, Debug)]
+pub(in crate::observed) enum ConditionInput {
+    Reference(NodeRef),
+    Subject(Box<Node>),
 }
 struct Selected {
     scalar: Scalar,
@@ -240,6 +246,40 @@ impl Environment<'_> {
         }
     }
 
+    fn owned_condition_input(
+        &self,
+        selected: &Selected,
+    ) -> Result<ConditionInput, ValidationFailure> {
+        self.tick()?;
+        if let Some(root) = selected.root {
+            return Ok(ConditionInput::Reference(root));
+        }
+        let Scalar::Subject {
+            snapshot, subject, ..
+        } = &selected.scalar
+        else {
+            return Err("所属条件の直接入力がsubjectでない".into());
+        };
+        let original = self.subject(snapshot, subject)?;
+        Ok(ConditionInput::Subject(Box::new(Node {
+            ty: NodeType::Value(selected.scalar.ty()),
+            payload: Some(Payload::Scalar(selected.scalar.clone())),
+            rule: Rule::Input {
+                kind: "subject",
+                location: Location::ArchMap {
+                    pointer: original.pointer.clone(),
+                    span: None,
+                },
+            },
+            arguments: vec![],
+            support: selected.support.clone(),
+            scope: selected.scope.clone(),
+            evidence: vec![],
+            judgment: None,
+            reasons: vec![],
+        })))
+    }
+
     pub(in crate::observed) fn owned_binding_plan(
         &self,
         graph: &Graph,
@@ -325,6 +365,7 @@ impl Environment<'_> {
             p.span,
             &mut checks,
         )?;
+        let mut condition_inputs = vec![self.owned_condition_input(&value)?];
         checks.scope.merge(&value.scope);
         checks.support.extend(value.support);
         let mut dependencies = Vec::new();
@@ -334,6 +375,7 @@ impl Environment<'_> {
         let mut producer = value.producer;
         for (_, owner) in owners {
             self.tick()?;
+            condition_inputs.push(self.owned_condition_input(&owner)?);
             checks.scope.merge(&owner.scope);
             checks.support.extend(owner.support);
             if let Some(root) = owner.root
@@ -353,6 +395,7 @@ impl Environment<'_> {
             scalar: value.scalar,
             checks,
             dependencies,
+            condition_inputs,
             producer,
         }))
     }

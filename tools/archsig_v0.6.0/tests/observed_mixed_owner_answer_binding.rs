@@ -573,3 +573,99 @@ fn mixed_keeps_three_inputs_dag_fixed_and_free_owner_facts_and_current_sources()
     assert_eq!(f(&w, "answers"), f(&moved, "answers"));
     assert_ne!(f(&w, "inputs"), f(&moved, "inputs"));
 }
+
+#[test]
+fn mixed_direct_subject_fixed_owner_failure_keeps_typed_operands_and_later_reasons() {
+    for (law, producer, fixed, snapshot, owner) in [
+        ("mxTuple", "mxAll,p=@v/p,q=@v/r", "a", "v", "B"),
+        ("mxOptionLaw", "mxOption,p=@v/p,q=@v/r", "a", "v", "B"),
+        ("mxListLaw", "mxList,p=@v/p,q=@v/r", "b", "v", "A"),
+        ("mxSetLaw", "mxSet,p=@v/p,q=@v/r", "a", "w", "A"),
+        ("fcNested", "cbNested,p=@v/p,q=@v/r", "a", "v", "B"),
+        ("fcMap", "cbMap,m=@v/m", "a", "v", "B"),
+        ("fcMapWrapped", "cbMapWrapped,m=@v/m", "b", "v", "A"),
+        (
+            "mxConflictLaw",
+            "mxConflict,p=@v/p,q=@v/r,r=@v/p",
+            "a",
+            "v",
+            "B",
+        ),
+    ] {
+        let take = format!("take=check(Applications.{law},{fixed}=@{snapshot}/{owner},x=$v.value)");
+        let v = format!("v=evaluate(Applications.{producer})");
+        let a = format!("a=evaluate(Applications.cbOwner,a=@{snapshot}/{owner})");
+        let r = run(
+            fixture::input("known", "r1"),
+            &[
+                "seed=evaluate(Applications.seed)",
+                "prior=check(Applications.prior)",
+                &a,
+                &v,
+                &take,
+                "later=check(Applications.fcBool,x=$take.evaluation.value)",
+            ],
+        );
+        assert_eq!(r.status(), "partial", "{:?}", f(&r.wire(), "issues"));
+        let w = r.wire();
+        let c = condition(&w, "take");
+        let inputs = arr(f(f(c, "value"), "operands"));
+        assert_eq!(
+            inputs.len(),
+            3,
+            "direct subject fixed owner operand is required"
+        );
+        assert_eq!(&inputs[1], f(f(answer(&w, "v"), "outputs"), "value"));
+        let direct = node(&w, &inputs[2]);
+        assert_eq!(
+            f(direct, "value"),
+            &Json::Arr(vec![Json::str(snapshot), Json::str(owner)])
+        );
+        let foreign = f(f(answer(&w, "a"), "outputs"), "value");
+        assert_ne!(&inputs[2], foreign);
+        assert_eq!(f(direct, "type"), f(node(&w, foreign), "type"));
+        assert_eq!(f(answer(&w, "take"), "status"), &Json::str("undetermined"));
+        assert_eq!(
+            f(answer(&w, "take"), "outputs"),
+            &Json::obj([] as [(&str, Json); 0])
+        );
+        assert!(rows(&w).is_empty());
+        for reason in arr(f(answer(&w, "take"), "reasons")) {
+            assert!(arr(f(answer(&w, "later"), "reasons")).contains(reason));
+        }
+        assert!(
+            arr(f(answer(&w, "later"), "reasons"))
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("dependency_blocked")
+                    && f(f(r, "details"), "request") == &Json::str("take"))
+        );
+        assert_eq!(f(answer(&w, "seed"), "status"), &Json::str("established"));
+        assert_eq!(f(answer(&w, "prior"), "status"), &Json::str("refuted"));
+        assert!(!arr(f(answer(&w, "prior"), "evidence")).is_empty());
+    }
+    // 全固定の逆順署名でも、Answer/直接subjectを署名のowner順へ戻す。
+    let r = run(
+        fixture::input("known", "r1"),
+        &[
+            "b=evaluate(Applications.cbOwner,a=@v/B)",
+            "v=evaluate(Applications.cbTuple,p=@v/p,q=@v/r)",
+            "take=evaluate(Applications.cbReverseUse,b=$b.value,a=@v/B,x=$v.value)",
+            "later=evaluate(Applications.cbTupleUse,a=@v/A,b=@v/B,x=$take.value)",
+        ],
+    );
+    assert_eq!(r.status(), "partial", "{:?}", f(&r.wire(), "issues"));
+    let w = r.wire();
+    let c = condition(&w, "take");
+    let inputs = arr(f(f(c, "value"), "operands"));
+    assert_eq!(inputs.len(), 4);
+    assert_eq!(&inputs[1], f(f(answer(&w, "v"), "outputs"), "value"));
+    assert_eq!(&inputs[2], f(f(answer(&w, "b"), "outputs"), "value"));
+    assert_ne!(inputs[2], inputs[3]);
+    assert_eq!(
+        f(node(&w, &inputs[3]), "value"),
+        &Json::Arr(vec![Json::str("v"), Json::str("B")])
+    );
+    for reason in arr(f(answer(&w, "take"), "reasons")) {
+        assert!(arr(f(answer(&w, "later"), "reasons")).contains(reason));
+    }
+}

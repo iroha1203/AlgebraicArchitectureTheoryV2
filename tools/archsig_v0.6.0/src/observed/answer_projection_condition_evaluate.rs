@@ -6,6 +6,20 @@ impl Evaluator<'_, '_> {
             .environment
             .projection_failure_plans(self.graph, self.request)?;
         for plan in plans {
+            // 元subjectも構成条件の型付きoperandとして、条件5部より先にcommitする。
+            for input in &plan.inputs {
+                self.tick(Checkpoint::Projection)?;
+                if let crate::observed::environment::owned_binding::ConditionInput::Subject(node) =
+                    input
+                    && self
+                        .environment
+                        .projection_subject_input(self.graph, node, plan.context)?
+                        .is_none()
+                {
+                    self.push((**node).clone())?;
+                }
+                self.tick(Checkpoint::Projection)?;
+            }
             use ProjectionCheckPart::*;
             self.tick(Checkpoint::Projection)?;
             let mut values = vec![];

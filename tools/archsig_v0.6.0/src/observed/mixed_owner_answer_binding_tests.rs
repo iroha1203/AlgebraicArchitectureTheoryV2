@@ -430,3 +430,140 @@ fn mixed_fixed_condition_parts_reject_equal_foreign_owner_value_support_scope_an
         env(&r).validate_answer(&g, req, original).unwrap();
     }
 }
+
+#[test]
+fn mixed_direct_subject_condition_rechecks_operands_after_shape_acceptance_same_and_fresh() {
+    let asks = [
+        "seed=evaluate(Applications.seed)",
+        "prior=check(Applications.prior)",
+        "foreign=evaluate(Applications.cbOwner,a=@v/B)",
+        "v=evaluate(Applications.mxAll,p=@v/p,q=@v/r)",
+        "take=check(Applications.mxTuple,a=@v/B,x=$v.value)",
+        "later=check(Applications.fcBool,x=$take.evaluation.value)",
+        "last=evaluate(Applications.seed)",
+    ];
+    let r = evaluate_observed_bytes(
+        fixture::input("known", "r1"),
+        &asks,
+        &mut named_call_quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", r.issues);
+    let all = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    for (request, answer) in r.prepared.requests().requests().iter().zip(&r.answers) {
+        env(&r).validate_answer(&all, request, answer).unwrap();
+    }
+    let parts: Vec<_> = r
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| {
+            (r.contexts[i].request == 4
+                && matches!(&n.rule,Rule::ProjectionCheck{parameter,..}if parameter=="x"))
+            .then_some(i)
+        })
+        .collect();
+    assert_eq!(parts.len(), 5);
+    let value = r.answers[3].outputs["value"];
+    let foreign = r.answers[2].outputs["value"];
+    let owner = r.nodes[parts[0]].arguments[1];
+    assert_ne!(owner, foreign);
+    assert_eq!(r.nodes[owner.0].payload, r.nodes[foreign.0].payload);
+    assert!(matches!(
+        &r.nodes[owner.0].rule,
+        Rule::Input {
+            kind: "subject",
+            ..
+        }
+    ));
+    assert_eq!(r.contexts[owner.0].request, 4);
+    assert_ne!(r.contexts[owner.0], r.contexts[foreign.0]);
+    for &part in &parts {
+        assert_eq!(r.nodes[part].arguments[..2], [value, owner]);
+    }
+    let Payload::ProjectionCondition { inputs, .. } =
+        r.nodes[*parts.last().unwrap()].payload.as_ref().unwrap()
+    else {
+        panic!()
+    };
+    assert_eq!(inputs, &[value, owner]);
+    let cutoff = r.contexts.iter().position(|c| c.request == 6).unwrap();
+    for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {
+        let mut g = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
+        let e = env(&r);
+        let request = &r.prepared.requests().requests()[4];
+        let answer = &r.answers[4];
+        e.validate_answer(&g, request, answer).unwrap();
+        let original_nodes = g.nodes.clone();
+        let original_contexts = g.contexts.clone();
+        let original_request = g.requests[4].clone();
+        for kind in 0..5 {
+            match kind {
+                0 | 1 => {
+                    for &part in &parts {
+                        assert_eq!(g.nodes[part].arguments[1], owner);
+                        if kind == 0 {
+                            g.nodes[part].arguments.remove(1);
+                        } else {
+                            g.nodes[part].arguments[1] = foreign;
+                        }
+                        if let Some(Payload::ProjectionCondition { inputs, .. }) =
+                            &mut g.nodes[part].payload
+                        {
+                            assert_eq!(inputs[1], owner);
+                            if kind == 0 {
+                                inputs.remove(1);
+                            } else {
+                                inputs[1] = foreign;
+                            }
+                        }
+                    }
+                    // 五部すべてを整合させても、shapeだけで元入力の資格を与えない。
+                    for &part in &parts {
+                        g.projection_check_shape(&g.nodes[part]).unwrap();
+                    }
+                }
+                2 => {
+                    g.contexts[owner.0] = r.contexts[foreign.0];
+                    assert_ne!(g.contexts[owner.0], original_contexts[owner.0]);
+                }
+                3 => {
+                    let arg = g.requests[4]
+                        .arguments
+                        .iter_mut()
+                        .find(|a| a.name == "bind.a")
+                        .unwrap();
+                    arg.value = Selector::Subject {
+                        snapshot: "v".into(),
+                        subject: "A".into(),
+                    };
+                    assert_ne!(g.requests[4], original_request);
+                }
+                4 => {
+                    assert!(!g.nodes[owner.0].support.is_empty());
+                    g.nodes[owner.0].support.clear();
+                }
+                _ => unreachable!(),
+            }
+            assert!(
+                matches!(
+                    e.validate_answer(&g, request, answer),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "same kind {kind}"
+            );
+            assert!(
+                matches!(
+                    env(&r).validate_answer(&g, request, answer),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "fresh kind {kind}"
+            );
+            g.nodes = original_nodes.clone();
+            g.contexts = original_contexts.clone();
+            g.requests[4] = original_request.clone();
+            e.validate_answer(&g, request, answer).unwrap();
+            env(&r).validate_answer(&g, request, answer).unwrap();
+        }
+    }
+}
