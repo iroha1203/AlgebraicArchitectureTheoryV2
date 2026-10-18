@@ -103,6 +103,20 @@ impl Environment<'_> {
         });
         Ok(())
     }
+    pub(in crate::observed) fn family_merge_scope(
+        &self,
+        plan: &Plan,
+        scope: &mut Scope,
+        domains: &[NodeRef],
+        context: super::super::call::Context,
+    ) -> Result<(), ValidationFailure> {
+        // 固定Answerの全域を残し、今回の自由parameterだけを実Domainへ更新する。
+        scope.merge_quantifiers(&Scope {
+            quantifiers: self.family_descriptors(plan, domains, context),
+            ..Scope::default()
+        });
+        self.family_order_scope(plan, scope)
+    }
     pub(in crate::observed) fn family_descriptors(
         &self,
         plan: &Plan,
@@ -252,27 +266,32 @@ impl Environment<'_> {
                 .iter()
                 .find(|a| a.name == format!("bind.{}", p.name))
                 .ok_or("固定selectorがない")?;
-            let Selector::Subject { snapshot, subject } = &selected.value else {
-                return Err("固定束縛が明示subjectでない".into());
-            };
-            let actual = self.subject(snapshot, subject)?;
-            if graph.scalar(b.value)?
-                != &(Scalar::Subject {
-                    snapshot: snapshot.clone(),
-                    subject: subject.clone(),
-                    entity: actual.ty.clone(),
-                })
-            {
-                return Err("固定subject identityが違う".into());
-            }
-            if graph.context_at(b.value.0) != context {
-                return Err("固定bindingが別Request producer".into());
+            match &selected.value {
+                selector @ Selector::Answer { .. } => {
+                    self.answer_binding_matches(graph, selector, b.value, p.span)?;
+                }
+                Selector::Subject { snapshot, subject } => {
+                    let actual = self.subject(snapshot, subject)?;
+                    if graph.scalar(b.value)?
+                        != &(Scalar::Subject {
+                            snapshot: snapshot.clone(),
+                            subject: subject.clone(),
+                            entity: actual.ty.clone(),
+                        })
+                    {
+                        return Err("固定subject identityが違う".into());
+                    }
+                    if graph.context_at(b.value.0) != context {
+                        return Err("固定bindingが別Request producer".into());
+                    }
+                }
+                _ => return Err("固定束縛が元subject/Answer selectorでない".into()),
             }
             self.validate_at(graph, graph.get(b.value)?, b.value.0)?;
             scope.merge(&graph.get(b.value)?.scope);
         }
-        scope.completions = context.case.is_some();
-        scope.quantifiers = self.family_descriptors(&plan, &[], context);
+        scope.completions |= context.case.is_some();
+        self.family_merge_scope(&plan, &mut scope, &[], context)?;
         if node.scope != scope {
             return Err("族SourceのScopeが元宣言と違う".into());
         }
@@ -317,7 +336,7 @@ impl Environment<'_> {
             self.validate_at(graph, node, domain.0)?;
             scope.merge(&node.scope);
         }
-        scope.quantifiers = self.family_descriptors(plan, domains, graph.context_at(source.0));
+        self.family_merge_scope(plan, &mut scope, domains, graph.context_at(source.0))?;
         Ok(scope)
     }
     fn family_domain_parts(

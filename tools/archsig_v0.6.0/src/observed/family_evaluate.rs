@@ -104,8 +104,9 @@ impl Evaluator<'_, '_> {
         let root = self.graph.active;
         let fixed_bindings = self.bindings.clone();
         let mut raw_scope = self.base.clone();
-        raw_scope.quantifiers = self.environment.family_descriptors(&plan, &[], root);
-        raw_scope.assignments = !plan.numeric.is_empty();
+        self.environment
+            .family_merge_scope(&plan, &mut raw_scope, &[], root)?;
+        raw_scope.assignments |= !plan.numeric.is_empty();
         let source = self.family_source(body, &plan.free, &raw_scope)?;
         let guard_source = guard
             .map(|g| self.family_source(g, &plan.free, &raw_scope))
@@ -164,7 +165,8 @@ impl Evaluator<'_, '_> {
             all_scope.merge(&scope);
             all_support.extend(enumeration.support);
         }
-        all_scope.quantifiers = self.environment.family_descriptors(&plan, &domains, root);
+        self.environment
+            .family_merge_scope(&plan, &mut all_scope, &domains, root)?;
         all_support.sort();
         all_support.dedup();
         self.retained_scope.merge(&all_scope);
