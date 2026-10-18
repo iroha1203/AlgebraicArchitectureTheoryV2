@@ -2887,6 +2887,9 @@ mod recheck_tests {
     mod owner_family_completion_tests {
         include!("owner_family_completion_tests.rs");
     }
+    mod dependent_owner_completion_tests {
+        include!("dependent_owner_completion_tests.rs");
+    }
     mod mixed_owner_answer_binding_tests {
         include!("mixed_owner_answer_binding_tests.rs");
     }

@@ -1283,35 +1283,28 @@ fn dependent_empty_fiber_still_rejects_statically_invalid_body_at_original_locat
 }
 
 #[test]
-fn dependent_unknown_owner_is_undetermined_and_keeps_algorithm_and_missing_reasons() {
+fn dependent_unknown_owner_completes_the_whole_and_keeps_original_missing_sources() {
     let ask = "all=check(Inspect.chain)";
     let result = run(
         fixture(CHAIN, [Some(true), Some(true)], false, true, false),
         ask,
     );
     let wire = result.wire();
-    assert_eq!(f(&wire, "status"), &Json::str("partial"));
+    assert_eq!(f(&wire, "status"), &Json::str("complete"));
     let answer = &arr(f(&wire, "answers"))[0];
-    assert_eq!(f(answer, "status"), &Json::str("undetermined"));
+    assert_eq!(f(answer, "status"), &Json::str("established"));
     assert_eq!(
         f(f(answer, "scope"), "domain"),
         &Json::str("all_completions")
     );
-    assert!(obj(f(answer, "outputs")).is_empty());
-    assert!(!obj(answer).contains_key("claim"));
-    assert!(arr(f(answer, "evidence")).is_empty());
+    assert!(obj(f(answer, "outputs")).contains_key("evaluation"));
+    assert!(obj(answer).contains_key("claim"));
+    assert!(!arr(f(answer, "evidence")).is_empty());
     let reasons = arr(f(answer, "reasons"));
-    let unsupported = reasons
-        .iter()
-        .find(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
-        .unwrap();
-    assert_eq!(
-        f(f(unsupported, "details"), "method"),
-        &Json::str("unresolved_dependent_owner")
-    );
-    assert_eq!(
-        f(f(unsupported, "details"), "operand_types"),
-        &Json::Arr(vec![ref_type("Child")])
+    assert!(
+        !reasons
+            .iter()
+            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
     );
     let missing = reasons
         .iter()
@@ -1333,7 +1326,7 @@ fn dependent_unknown_owner_is_undetermined_and_keeps_algorithm_and_missing_reaso
         panic!("Law")
     };
     let ns = index(&wire);
-    for reason in [missing, unsupported] {
+    for reason in [missing] {
         assert_eq!(span(f(reason, "location")), params[1].span);
         let dependencies = arr(f(reason, "dependencies"));
         let source = target(&ns, &dependencies[0], &Json::str("Expression"));
@@ -1342,12 +1335,36 @@ fn dependent_unknown_owner_is_undetermined_and_keeps_algorithm_and_missing_reaso
             checked.law().exprs[*body].span
         );
     }
-    assert!(
-        !arr(f(&wire, "nodes"))
-            .iter()
-            .any(|n| f(n, "type") == &Json::str("LawInstance")),
-        "未知所属を除いてwhole Lawを確定しない"
+    let instances: Vec<_> = arr(f(&wire, "nodes"))
+        .iter()
+        .filter(|n| {
+            f(n, "type") == &Json::str("LawInstance")
+                && arr(f(val(n), "bindings"))
+                    .iter()
+                    .any(|b| f(b, "name") == &Json::str("b"))
+                && arr(f(val(n), "bindings"))
+                    .iter()
+                    .any(|b| f(b, "name") == &Json::str("c"))
+        })
+        .collect();
+    assert_eq!(
+        instances.len(),
+        5,
+        "owner A/B/Zの整合補完は2/2/1の実rowを持つ"
     );
+    let actual: BTreeSet<_> = instances
+        .iter()
+        .map(|n| Json::Arr(binding_values(&ns, f(val(n), "bindings"), false)).canonical())
+        .collect();
+    let wanted: BTreeSet<_> = [
+        row("v", "A", "p", "l"),
+        row("v", "B", "p", "m"),
+        row("v", "B", "q", "m"),
+    ]
+    .iter()
+    .map(|v| Json::Arr(v.clone()).canonical())
+    .collect();
+    assert_eq!(actual, wanted);
     assert!(
         result.prepared().inputs().archmap().snapshots[0]
             .subjects
@@ -1655,18 +1672,27 @@ fn dependent_numeric_unknown_owner_nonlinear_and_current_provenance_keep_their_b
     );
     let wire = unknown.wire();
     let answer = &arr(f(&wire, "answers"))[0];
-    assert_eq!(f(answer, "status"), &Json::str("undetermined"));
-    assert!(obj(f(answer, "outputs")).is_empty());
+    assert_eq!(f(answer, "status"), &Json::str("established"));
+    assert!(obj(f(answer, "outputs")).contains_key("evaluation"));
     assert!(
         arr(f(answer, "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("missing_observation"))
     );
     assert!(
-        arr(f(answer, "reasons"))
+        !arr(f(answer, "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
     );
+    for (name, ty) in [("z", "Z"), ("q", "Q")] {
+        assert!(
+            arr(f(f(answer, "scope"), "quantifiers"))
+                .iter()
+                .any(|q| f(q, "name") == &Json::str(name)
+                    && f(q, "type") == &Json::str(ty)
+                    && f(q, "kind") == &Json::str("forall"))
+        );
+    }
     let nonlinear = "law required chain(a:Root,z:Z,b:Child[a],c:Leaf[a]):z*z=0;";
     let nonlinear = numeric_batch(
         fixture(nonlinear, [Some(true); 2], false, false, false),

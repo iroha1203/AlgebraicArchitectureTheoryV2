@@ -44,6 +44,12 @@ impl Evaluator<'_, '_> {
             Ok(answer) => {
                 roots.extend(answer.outputs.get("evaluation").copied());
                 roots.extend(answer.claim);
+                roots.extend(
+                    answer
+                        .reasons
+                        .iter()
+                        .flat_map(|r| r.dependencies.iter().copied()),
+                );
             }
             Err(Failure::NotImplemented { .. }) => {
                 roots.extend(
@@ -235,6 +241,12 @@ impl Evaluator<'_, '_> {
                     Ok(answer) => {
                         discovered_roots.extend(answer.outputs.get("evaluation").copied());
                         discovered_roots.extend(answer.claim);
+                        discovered_roots.extend(
+                            answer
+                                .reasons
+                                .iter()
+                                .flat_map(|r| r.dependencies.iter().copied()),
+                        );
                     }
                     Err(Failure::NotImplemented { .. }) => {
                         discovered_roots.extend(
@@ -259,7 +271,10 @@ impl Evaluator<'_, '_> {
                     break;
                 }
                 let answer = evaluated?;
-                let evaluation = answer.outputs["evaluation"];
+                let Some(&evaluation) = answer.outputs.get("evaluation") else {
+                    // 未対応のcaseを完成したwholeへ昇格せず、元の未決を返す。
+                    return observed;
+                };
                 all_scope.merge(&answer.scope);
                 all_support.extend(self.graph.get(evaluation)?.support.iter().cloned());
                 all_reasons.extend(self.graph.get(evaluation)?.reasons.iter().cloned());

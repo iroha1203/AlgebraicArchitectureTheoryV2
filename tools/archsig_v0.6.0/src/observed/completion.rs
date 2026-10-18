@@ -419,6 +419,7 @@ impl Environment<'_> {
             };
             let context = graph.context_at(reference.0);
             let previous = self.context.replace(Some(context));
+            let mut missing_span = *span;
             let analysis = (|| -> Result<Vec<Fact>, ValidationFailure> {
                 if parameters.is_empty() {
                     if let Some(fields) =
@@ -432,9 +433,14 @@ impl Environment<'_> {
                         .map(|missing| missing.fact)
                         .into_iter()
                         .collect())
+                } else if let Some((fields, location)) =
+                    self.dependent_source_missing_slots(graph, reference)?
+                {
+                    missing_span = location;
+                    Ok(fields)
                 } else {
                     // 数値全称軸を持つ実field Sourceは元template/Domainへ戻る。
-                    // 一般宣言族wholeの所属補完はここでは受け付けない。
+                    // 依存族の所属以外は、元数値Planのfield読取りへ戻る。
                     Ok(self
                         .universal_missing_source_analysis(graph, reference)?
                         .and_then(|analysis| analysis.missing)
@@ -481,7 +487,7 @@ impl Environment<'_> {
                     request: request.id.clone(),
                     dependencies: vec![reference],
                     missing: vec![fact.clone()],
-                    location: Some(Location::Law { span: *span }),
+                    location: Some(Location::Law { span: missing_span }),
                 });
                 if self.completion_type_supported(&field.ty)? {
                     slots
@@ -611,33 +617,7 @@ impl Environment<'_> {
         scope.readings.insert(declaration.reading.clone());
         let mut support = Vec::new();
         for (p, b) in fixed.iter().zip(bindings) {
-            self.tick()?;
-            if p.name != b.name
-                || p.ty.erase() != b.ty
-                || b.value.0 >= reference.0
-                || graph.context_at(b.value.0) != context
-            {
-                return Err("補完Seedの固定binding producerが違う".into());
-            }
-            let selected = request
-                .arguments
-                .iter()
-                .find(|a| a.name == format!("bind.{}", p.name))
-                .ok_or("固定selectorがない")?;
-            let Selector::Subject { snapshot, subject } = &selected.value else {
-                return Err("補完Seed固定bindingがsubjectでない".into());
-            };
-            let actual = self.subject(snapshot, subject)?;
-            if graph.scalar(b.value)?
-                != &(Scalar::Subject {
-                    snapshot: snapshot.clone(),
-                    subject: subject.clone(),
-                    entity: actual.ty.clone(),
-                })
-            {
-                return Err("補完Seed固定subjectが元Requestと違う".into());
-            }
-            self.validate_at(graph, graph.get(b.value)?, b.value.0)?;
+            self.completion_seed_binding(graph, request, p, b, context, reference.0)?;
             scope.merge(&graph.get(b.value)?.scope);
         }
         for root in roots {
@@ -942,7 +922,6 @@ impl Environment<'_> {
                 || observed.name != binding.name
                 || observed.ty != binding.ty
                 || binding.value.0 >= source.0
-                || graph.context_at(binding.value.0) != context
             {
                 return Err("補完case固定bindings署名/producerが違う".into());
             }
@@ -951,6 +930,16 @@ impl Environment<'_> {
                 .iter()
                 .find(|a| a.name == format!("bind.{}", parameter.name))
                 .ok_or("補完case固定selectorがない")?;
+            if matches!(&selected.value, Selector::Answer { .. }) {
+                if binding.value != observed.value {
+                    return Err("補完case固定Answerが元Seedのproducerでない".into());
+                }
+                self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
+                continue;
+            }
+            if graph.context_at(binding.value.0) != context {
+                return Err("補完case固定subjectが別producer".into());
+            }
             let Selector::Subject { snapshot, subject } = &selected.value else {
                 return Err("補完case固定selectorがsubjectでない".into());
             };
@@ -1569,6 +1558,52 @@ impl Environment<'_> {
         Ok(false)
     }
 
+    // Seedでも固定Answerは元の出力/射影へ戻り、値の一致だけでproducerを代用しない。
+    fn completion_seed_binding(
+        &self,
+        graph: &Graph,
+        request: &Request,
+        parameter: &crate::law::model::Param,
+        binding: &Binding,
+        context: super::super::call::Context,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        if parameter.name != binding.name
+            || parameter.ty.erase() != binding.ty
+            || binding.value.0 >= limit
+            || graph.scalar(binding.value)?.ty() != binding.ty
+        {
+            return Err("補完Seedの固定binding署名・型・prefixが違う".into());
+        }
+        let selected = request
+            .arguments
+            .iter()
+            .find(|a| a.name == format!("bind.{}", parameter.name))
+            .ok_or("Seed固定引数がない")?;
+        match &selected.value {
+            selector @ Selector::Answer { .. } => {
+                self.answer_binding_matches(graph, selector, binding.value, parameter.span)?;
+            }
+            Selector::Subject { snapshot, subject } => {
+                let actual = self.subject(snapshot, subject)?;
+                if graph.context_at(binding.value.0) != context
+                    || graph.scalar(binding.value)?
+                        != &(Scalar::Subject {
+                            snapshot: snapshot.clone(),
+                            subject: subject.clone(),
+                            entity: actual.ty.clone(),
+                        })
+                {
+                    return Err("補完Seed固定subjectが元Requestと違う".into());
+                }
+            }
+            _ => return Err("Seed固定引数が元subject/Answerでない".into()),
+        }
+        self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
+        Ok(())
+    }
+
     // 未挿入のSeedはpayloadを直接読む。参照先nodeの検査は同じ元入力照合を使う。
     fn completion_seed_node(
         &self,
@@ -1660,29 +1695,7 @@ impl Environment<'_> {
         let mut scope = Scope::default();
         scope.readings.insert(d.reading.clone());
         for (p, b) in fixed.iter().zip(bindings) {
-            self.tick()?;
-            let selected = request
-                .arguments
-                .iter()
-                .find(|a| a.name == format!("bind.{}", p.name))
-                .ok_or("Seed固定引数がない")?;
-            let Selector::Subject { snapshot, subject } = &selected.value else {
-                return Err("Seed固定引数がRefでない".into());
-            };
-            let actual = self.subject(snapshot, subject)?;
-            if p.name != b.name
-                || p.ty.erase() != b.ty
-                || graph.context_at(b.value.0) != context
-                || graph.scalar(b.value)?
-                    != &(Scalar::Subject {
-                        snapshot: snapshot.clone(),
-                        subject: subject.clone(),
-                        entity: actual.ty.clone(),
-                    })
-            {
-                return Err("Seed固定bindingsが実Requestと違う".into());
-            }
-            self.validate_at(graph, graph.get(b.value)?, b.value.0)?;
+            self.completion_seed_binding(graph, request, p, b, context, limit)?;
             scope.merge(&graph.get(b.value)?.scope);
         }
         for root in roots {

@@ -297,23 +297,87 @@ fn free_compound_unknown_owner_recheck_preserves_completion_scope_and_rejects_fi
     ] {
         let make = format!("v=evaluate(Applications.{producer})");
         let take = format!("take=check(Applications.{law},x=$v.value)");
+        let other = format!("other=evaluate(Applications.{producer})");
         let r = evaluate_observed_bytes(
             fixture::input("unknown_owner", "r1"),
-            &[&make, &take, "later=evaluate(Applications.seed)"],
+            &[&make, &other, &take, "later=evaluate(Applications.seed)"],
             &mut named_call_quiet(),
         )
         .unwrap();
-        assert_eq!(r.status(), "partial");
+        assert_eq!(r.status(), "complete", "{law}: {:?}", r.answers);
         assert_eq!(r.answers[0].status, Decision::Established);
-        let original = &r.answers[1];
+        let original = &r.answers[2];
         assert!(original.scope.completions);
-        assert_eq!(original.status, Decision::Undetermined);
-        assert!(original.outputs.is_empty());
-        let cutoff = r.contexts.iter().position(|c| c.request == 2).unwrap();
+        assert_eq!(original.status, Decision::Established);
+        assert!(original.outputs.contains_key("evaluation"));
+        assert!(original.claim.is_some());
+        assert!(!original.evidence.is_empty());
+        assert!(
+            original
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Missing)
+                    && r.missing.iter().any(|f| f.subject == "p"
+                        && f.field.as_deref() == Some("Reservations.State.owner")
+                        && f.atom.is_none()))
+        );
+        assert!(
+            !original
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+        );
+        let value = r.answers[0].outputs["value"];
+        let foreign = r.answers[1].outputs["value"];
+        assert_ne!(value, foreign);
+        assert_eq!(r.nodes[value.0].payload, r.nodes[foreign.0].payload);
+        let seed = r
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(i, n)| {
+                (r.contexts[i].request == 2
+                    && matches!(&n.payload, Some(Payload::CompletionSeed { .. })))
+                .then_some(i)
+            })
+            .unwrap();
+        completion_mutation(&r, seed, |nodes| {
+            let Some(Payload::CompletionSeed { bindings, .. }) = &mut nodes[seed].payload else {
+                panic!()
+            };
+            assert_eq!(bindings.len(), 1);
+            assert_eq!(bindings[0].value, value);
+            bindings[0].value = foreign;
+            for argument in &mut nodes[seed].arguments {
+                if *argument == value {
+                    *argument = foreign;
+                }
+            }
+        });
+        let case_source = r.nodes.iter().enumerate().find_map(|(i, n)| {
+            (r.contexts[i].request == 2 && r.contexts[i].case.is_some()
+                && matches!(&n.payload, Some(Payload::Expression { bindings, .. }) if bindings.iter().any(|b| b.value == value))).then_some(i)
+        }).unwrap();
+        completion_mutation(&r, case_source, |nodes| {
+            let Some(Payload::Expression { bindings, .. }) = &mut nodes[case_source].payload else {
+                panic!()
+            };
+            bindings
+                .iter_mut()
+                .find(|b| b.value == value)
+                .unwrap()
+                .value = foreign;
+            for argument in &mut nodes[case_source].arguments {
+                if *argument == value {
+                    *argument = foreign;
+                }
+            }
+        });
+        let cutoff = r.contexts.iter().position(|c| c.request == 3).unwrap();
         for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {
             let g = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
             let e = env(&r);
-            let req = &r.prepared.requests().requests()[1];
+            let req = &r.prepared.requests().requests()[2];
             e.validate_answer(&g, req, original).unwrap();
             let mut wrong = original.clone();
             wrong.scope.completions = false;

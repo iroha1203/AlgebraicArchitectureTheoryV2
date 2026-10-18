@@ -72,7 +72,7 @@ impl Evaluator<'_, '_> {
             self.tick(Checkpoint::FiniteIteration)?;
             #[cfg(test)]
             let (span, context) = (self.declaration.span, root);
-            let step = self.environment.dependent_family_step(
+            let step = self.environment.dependent_family_step_at(
                 self.graph,
                 self.request,
                 parameter_index,
@@ -118,26 +118,13 @@ impl Evaluator<'_, '_> {
                 let location = Some(Location::Law {
                     span: parameter.span,
                 });
-                let reasons = vec![
-                    Reason {
-                        kind: ReasonKind::Missing,
-                        request: self.request.id.clone(),
-                        dependencies: dependencies.clone(),
-                        missing: step.missing,
-                        location: location.clone(),
-                    },
-                    Reason {
-                        kind: ReasonKind::UnsupportedAlgorithm {
-                            question: QuestionKind::Check,
-                            operand_types: vec![parameter.ty.erase()],
-                            method: "unresolved_dependent_owner".into(),
-                        },
-                        request: self.request.id.clone(),
-                        dependencies,
-                        missing: vec![],
-                        location,
-                    },
-                ];
+                let reasons = vec![Reason {
+                    kind: ReasonKind::Missing,
+                    request: self.request.id.clone(),
+                    dependencies,
+                    missing: step.missing,
+                    location,
+                }];
                 self.reasons.extend(reasons.iter().cloned());
                 self.retained_scope.merge(&all_scope);
                 return Ok(Answer {
