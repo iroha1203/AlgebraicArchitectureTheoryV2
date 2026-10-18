@@ -779,10 +779,37 @@ pub(crate) enum Rule {
     },
     Construction(&'static str),
     Projection(Vec<super::projection::ProjectionStep>),
+    ProjectionCheck {
+        parameter: String,
+        part: ProjectionCheckPart,
+    },
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ProjectionCheckPart {
+    Name,
+    Actual,
+    Required,
+    Evidence,
+    Condition,
+}
+impl ProjectionCheckPart {
+    fn construction(self) -> &'static str {
+        match self {
+            Self::Name => "binding",
+            Self::Actual => "evaluation",
+            Self::Required => "domain",
+            Self::Evidence => "evidence",
+            Self::Condition => "proposition",
+        }
+    }
 }
 impl Rule {
     fn wire(&self) -> Json {
         match self {
+            Self::ProjectionCheck { part, .. } => Json::obj([
+                ("kind", Json::str("construction")),
+                ("name", Json::str(part.construction())),
+            ]),
             Self::Input { kind, location } => Json::obj([
                 ("kind", Json::str(*kind)),
                 ("location", location_wire(location)),
@@ -924,6 +951,15 @@ pub(crate) enum Payload {
     OwnedCallCondition {
         left: NodeRef,
         right: NodeRef,
+    },
+    ProjectionCondition {
+        name: NodeRef,
+        root: NodeRef,
+    },
+    ProjectionCounterexample {
+        left: NodeRef,
+        right: NodeRef,
+        facts: Vec<Fact>,
     },
     OwnedCallCounterexample {
         bindings: Vec<Binding>,
@@ -1144,6 +1180,24 @@ impl Payload {
                     ("quantifiers", Json::Arr(vec![])),
                 ])
             }
+            Self::ProjectionCondition { name, root } => Json::obj([
+                ("predicate", Json::str("constructible")),
+                ("operands", refs(&[*name, *root])),
+                ("quantifiers", Json::Arr(vec![])),
+            ]),
+            Self::ProjectionCounterexample { left, right, facts } => Json::obj([
+                ("kind", Json::str("counterexample")),
+                (
+                    "data",
+                    Json::obj([
+                        ("bindings", Json::Arr(vec![])),
+                        ("paths", refs(&[])),
+                        ("left", left.wire()),
+                        ("right", right.wire()),
+                        ("facts", Json::Arr(facts.iter().map(Fact::wire).collect())),
+                    ]),
+                ),
+            ]),
             Self::EvaluationEvidence {
                 instance,
                 lhs,
@@ -1288,6 +1342,7 @@ impl Node {
                 Payload::Proposition { .. }
                     | Payload::MapDomainCondition { .. }
                     | Payload::OwnedCallCondition { .. }
+                    | Payload::ProjectionCondition { .. }
             ) && let Json::Obj(fields) = &mut value
             {
                 fields.insert(
@@ -1597,6 +1652,21 @@ impl Graph {
             } = reason.kind
             {
                 let proposition = self.get(condition)?;
+                if construction == "projection" {
+                    self.projection_check_shape(proposition)?;
+                    if !matches!(
+                        proposition.payload,
+                        Some(Payload::ProjectionCondition { .. })
+                    ) || !proposition
+                        .arguments
+                        .first()
+                        .is_some_and(|root| reason.dependencies == [*root])
+                        || !reason.missing.is_empty()
+                    {
+                        return Err("射影条件失敗の元命題・依存が違う".into());
+                    }
+                    continue;
+                }
                 if construction != "evaluation"
                     || proposition.ty != NodeType::Proposition
                     || !matches!(
@@ -1709,6 +1779,9 @@ impl Graph {
         &self,
         node: &Node,
     ) -> Result<(), ValidationFailure> {
+        if matches!(node.payload, Some(Payload::ProjectionCondition { .. })) {
+            return self.projection_check_shape(node);
+        }
         if let Some(Payload::OwnedCallCondition { left, right }) = &node.payload {
             let (evidence, edges) = node
                 .arguments
@@ -3685,6 +3758,10 @@ impl Graph {
             }
         }
         match (&node.ty, &node.payload) {
+            (NodeType::Proposition, Some(Payload::ProjectionCondition { .. }))
+            | (NodeType::Evidence, Some(Payload::ProjectionCounterexample { .. })) => {
+                self.projection_check_shape(&node)?;
+            }
             (NodeType::Domain, Some(Payload::TypeDomain { ty })) => {
                 if !matches!(ty, Type::Z | Type::Q) || !node.scope.assignments {
                     return Err("型全域DomainがZ/Q全代入域でない".into());

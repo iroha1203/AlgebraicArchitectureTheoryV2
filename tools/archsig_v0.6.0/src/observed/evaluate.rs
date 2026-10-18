@@ -24,6 +24,8 @@ use crate::{
     types::Type,
 };
 use std::collections::BTreeMap;
+#[path = "answer_projection_condition_evaluate.rs"]
+mod answer_projection_condition;
 #[path = "completion_evaluate.rs"]
 mod completion;
 #[path = "dependent_family_evaluate.rs"]
@@ -402,6 +404,9 @@ impl Evaluator<'_, '_> {
                             self.graph.get(*value)?.ty.clone()
                         }
                         super::environment::AnswerBinding::Projection(node) => node.ty.clone(),
+                        super::environment::AnswerBinding::Inapplicable(_) => {
+                            return Err(self.unsupported(p.span, "自由族のAnswer射影条件"));
+                        }
                     };
                     if actual != NodeType::Value(p.ty.erase()) {
                         return Err(self.unsupported(p.span, "Answer構造成分の動的型不適合"));
@@ -409,6 +414,9 @@ impl Evaluator<'_, '_> {
                     let value = match plan {
                         super::environment::AnswerBinding::Reference(value) => value,
                         super::environment::AnswerBinding::Projection(node) => self.push(node)?,
+                        super::environment::AnswerBinding::Inapplicable(_) => {
+                            return Err(self.unsupported(p.span, "自由族のAnswer射影条件"));
+                        }
                     };
                     self.base.merge(&self.graph.get(value)?.scope);
                     self.bindings.push(Binding {
@@ -2702,6 +2710,7 @@ fn evaluate_observed_with_validator(
             };
             let result = (|| {
                 evaluator.tick(Checkpoint::FiniteIteration)?;
+                evaluator.projection_conditions()?;
                 if let Some(answer) = evaluator
                     .environment
                     .unavailable_binding_answer(evaluator.graph, request)?
@@ -2854,6 +2863,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod answer_projection_condition_tests {
+        include!("answer_projection_condition_tests.rs");
+    }
     mod answer_projection_tests {
         include!("answer_projection_tests.rs");
     }

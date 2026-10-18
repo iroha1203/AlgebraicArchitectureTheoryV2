@@ -110,6 +110,52 @@ impl Environment<'_> {
             });
             self.tick()?;
         }
+        for plan in self.projection_failure_plans(graph, request)? {
+            self.tick()?;
+            let mut selected = None;
+            for (index, node) in graph
+                .nodes
+                .iter()
+                .enumerate()
+                .take(self.cutoff.get().min(graph.nodes.len()))
+            {
+                self.tick()?;
+                if graph.context_at(index).request == current
+                    && matches!(&node.rule, Rule::ProjectionCheck { parameter, part: ProjectionCheckPart::Condition } if parameter == &plan.parameter)
+                {
+                    if selected.is_some() {
+                        return Err("同じ元射影条件が重複している".into());
+                    }
+                    self.validate_at(graph, node, index)?;
+                    selected = Some(NodeRef(index));
+                }
+            }
+            let condition = selected.ok_or("不適合な元射影の条件反証がない")?;
+            scope.merge(&graph.get(plan.root)?.scope);
+            reasons.push(Reason {
+                kind: ReasonKind::ConditionFailed {
+                    condition,
+                    construction: "projection",
+                },
+                request: request.id.clone(),
+                dependencies: vec![plan.root],
+                missing: vec![],
+                location: Some(Location::Law { span: plan.span }),
+            });
+            let mut dependencies = vec![plan.root, condition];
+            dependencies.extend(graph.get(condition)?.evidence.iter().copied());
+            dependencies.sort_by_key(|r| r.0);
+            dependencies.dedup();
+            reasons.push(Reason {
+                kind: ReasonKind::DependencyBlocked {
+                    request: plan.producer,
+                },
+                request: request.id.clone(),
+                dependencies,
+                missing: vec![],
+                location: Some(Location::Law { span: plan.span }),
+            });
+        }
         if reasons.is_empty() {
             return Ok(None);
         }

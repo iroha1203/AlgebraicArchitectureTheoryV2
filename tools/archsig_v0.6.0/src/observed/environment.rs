@@ -20,6 +20,8 @@ pub(in crate::observed) use answer_binding::AnswerBinding;
 mod answer_dependency;
 #[path = "answer_projection.rs"]
 mod answer_projection;
+#[path = "answer_projection_condition.rs"]
+mod answer_projection_condition;
 #[path = "completion.rs"]
 pub(super) mod completion;
 #[path = "dependent_family.rs"]
@@ -935,6 +937,9 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
+        if self.validate_projection_check(graph, node, limit)? {
+            return Ok(());
+        }
         // 保存済みnodeの再検査も、Graph.push時の表現検査を前提にしない。
         // 不正な重複Set/Mapを数学的等値で比較する前に形・型を確認する。
         if let Some(Payload::Scalar(value)) = &node.payload {

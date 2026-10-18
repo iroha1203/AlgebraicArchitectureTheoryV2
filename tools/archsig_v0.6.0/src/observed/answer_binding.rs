@@ -5,6 +5,7 @@ use crate::observed::projection::ProjectionStep;
 pub(in crate::observed) enum AnswerBinding {
     Reference(NodeRef),
     Projection(Node),
+    Inapplicable(NodeRef),
 }
 
 impl Environment<'_> {
