@@ -18,6 +18,93 @@ struct Layout {
 }
 
 impl Environment<'_> {
+    fn dependent_completion_context<T>(
+        &self,
+        graph: &Graph,
+        context: super::super::call::Context,
+        limit: usize,
+        run: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<T, ValidationFailure> {
+        self.validation_graph_session(graph, || {
+            let previous = self.context.replace(Some(context));
+            let old_cutoff = self.cutoff.replace(limit);
+            let previous_universal = self.universal_context.replace(None);
+            let previous_completion = self.completion_values.replace(Vec::new());
+            let result = (|| {
+                if let Some(case) = context.case {
+                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                }
+                run()
+            })();
+            self.completion_values.replace(previous_completion);
+            self.universal_context.replace(previous_universal);
+            self.cutoff.set(old_cutoff);
+            self.context.set(previous);
+            result
+        })
+    }
+
+    /// 実評価でも、元caseの共有assignmentから依存fiberを読む。
+    pub(in crate::observed) fn dependent_family_step_at(
+        &self,
+        graph: &Graph,
+        request: &Request,
+        parameter: usize,
+        prefix: &[(String, Scalar)],
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<DependentStep, ValidationFailure> {
+        if graph.active.case.is_none() {
+            return self.dependent_family_step(graph, request, parameter, prefix, observer);
+        }
+        self.dependent_completion_context(graph, graph.active, graph.nodes.len(), || {
+            self.dependent_family_step(graph, request, parameter, prefix, observer)
+        })
+    }
+
+    /// 元whole Sourceが中断した実prefixから、未解決の所属slotを再構成する。
+    pub(in crate::observed) fn dependent_source_missing_slots(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+    ) -> Result<Option<(Vec<Fact>, (usize, usize))>, ValidationFailure> {
+        if !self.family_source_root(graph, source)? {
+            return Ok(None);
+        }
+        let context = graph.context_at(source.0);
+        let request = graph
+            .requests
+            .get(context.request)
+            .ok_or("依存族の元Requestがない")?;
+        let Some(plan) = self.family_plan(request)? else {
+            return Ok(None);
+        };
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &graph.get(source)?.payload
+        else {
+            return Ok(None);
+        };
+        if !plan.dependent || *span != self.inputs.law().exprs[plan.body].span {
+            return Ok(None);
+        }
+        let limit = self.cutoff.get().min(graph.nodes.len());
+        self.dependent_completion_context(graph, context, limit, || {
+            self.family_request(graph, source)?;
+            self.validate_at(graph, graph.get(source)?, source.0)?;
+            let layout = self.dependent_layout(graph, source, &plan, limit, false)?;
+            let Some((parameter, path)) = layout.next else {
+                return Ok(None);
+            };
+            let step =
+                self.dependent_step_context(graph, source, &plan, parameter, &path, limit)?;
+            if step.missing.is_empty() {
+                return Ok(None);
+            }
+            Ok(Some((step.missing, plan.parameters[parameter].span)))
+        })
+    }
+
     fn dependent_fixed_value(
         &self,
         graph: &Graph,
@@ -760,7 +847,7 @@ impl Environment<'_> {
             || answer.status != Decision::Undetermined
             || answer.claim.is_some()
             || !answer.evidence.is_empty()
-            || answer.reasons.len() != 2
+            || answer.reasons.len() != 1
         {
             return Err("未決依存族が結論・証拠を持つか元Requestと違う".into());
         }
@@ -822,24 +909,13 @@ impl Environment<'_> {
                 missing: step.missing,
                 location: Some(Location::Law { span: *span }),
             };
-            let unsupported = Reason {
-                kind: ReasonKind::UnsupportedAlgorithm {
-                    question: QuestionKind::Check,
-                    operand_types: vec![plan.parameters[parameter].ty.erase()],
-                    method: "unresolved_dependent_owner".into(),
-                },
-                request: request.id.clone(),
-                dependencies: vec![source],
-                missing: vec![],
-                location: Some(Location::Law { span: *span }),
-            };
-            let mut reasons = vec![missing, unsupported];
+            let mut reasons = vec![missing];
             sort_reasons(&mut reasons);
             if answer.scope != scope
                 || answer.reasons.iter().map(Reason::wire).collect::<Vec<_>>()
                     != reasons.iter().map(Reason::wire).collect::<Vec<_>>()
             {
-                return Err("未決依存族の元欠測・未実装理由・Scopeが違う".into());
+                return Err("未決依存族の元欠測・Scopeが違う".into());
             }
             Ok(())
         })();

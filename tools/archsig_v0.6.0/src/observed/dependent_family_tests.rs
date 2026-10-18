@@ -324,23 +324,23 @@ fn dependent_family_missing_body_and_counterexample_remain_distinct_and_rechecke
 }
 
 #[test]
-fn dependent_family_unknown_owner_keeps_source_missing_and_unsupported_and_rechecks_answer() {
+fn dependent_family_unknown_owner_keeps_original_missing_and_rechecks_completed_answer() {
     let result = evaluate_observed_bytes(
         dependent_private_fixture(DEPENDENT_BODY, [Some(true), Some(true)], true),
         &["all=check(Inspect.chain)"],
         &mut named_call_quiet(),
     )
     .unwrap();
-    assert_eq!(result.status(), "partial", "{:?}", result.issues);
-    assert_eq!(result.answers[0].status, Decision::Undetermined);
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(result.answers[0].status, Decision::Established);
     assert!(result.answers[0].scope.completions);
     assert!(
-        result.answers[0].outputs.is_empty()
-            && result.answers[0].claim.is_none()
-            && result.answers[0].evidence.is_empty()
+        result.answers[0].outputs.contains_key("evaluation")
+            && result.answers[0].claim.is_some()
+            && !result.answers[0].evidence.is_empty()
     );
     assert!(
-        result.answers[0]
+        !result.answers[0]
             .reasons
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
@@ -388,13 +388,16 @@ fn dependent_family_unknown_owner_keeps_source_missing_and_unsupported_and_reche
         })
         .unwrap();
     assert!(!result.nodes[source].scope.completions);
-    assert!(
-        result
-            .nodes
-            .iter()
-            .filter(|node| matches!(node.payload, Some(Payload::Domain { .. })))
-            .all(|node| !node.scope.completions)
-    );
+    let original_domains: Vec<_> = result
+        .nodes
+        .iter()
+        .filter(|node| {
+            matches!(node.payload, Some(Payload::Domain { .. }))
+                && node.arguments.first() == Some(&NodeRef(source))
+        })
+        .collect();
+    assert!(!original_domains.is_empty());
+    assert!(original_domains.iter().all(|node| !node.scope.completions));
     completion_mutation(&result, source, |nodes| {
         let Some(Payload::Expression { parameters, .. }) = &mut nodes[source].payload else {
             unreachable!()

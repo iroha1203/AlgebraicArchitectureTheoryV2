@@ -137,7 +137,9 @@
   既知所属の族へ渡すowner式が原始Ref欠測なら、整合する各owner値の実集合から問いを評価する。
   式として読む族の候補subjectのowner欠測も、元slotの共有代入から所属を読み直す。
   族のcount・明示in量化で補完により変わる結果と、不変値・既知反例を区別して保持する。
-  参照container/Owned型field・Map自体の欠測列挙と、未束縛依存Law parameter全般の未知owner補完は後続に残る。
+  未束縛の依存Law parameterも元slotの共有代入を使い、各実fiberのwholeを判断してから補完を集約する。
+  Z/Q parameterを含む各fiberの全域と、元の依存署名・束縛・欠測・現在由来を保持する。
+  参照container/Owned型field・Map自体の欠測列挙は後続に残る。
   有限型slotの各補完でも先に全域のwholeを判断し、元の支持・欠測・量化を保って集約する。
   有限型のLaw parameterとZ/Q parameterの混在も、元宣言順の有限族の各instanceでZ/Q全域を判断する。
   既知ownerの依存族でも数値parameterを有限列挙から分け、元署名の実prefixごとの全Z/Q代入を評価する。

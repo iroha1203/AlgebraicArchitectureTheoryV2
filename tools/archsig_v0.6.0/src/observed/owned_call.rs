@@ -353,12 +353,50 @@ impl Environment<'_> {
         } = &self.field(snapshot, subject, &field)?.slot
         else {
             checks.scope.completions = true;
-            checks.missing.push(Fact {
+            let fact = Fact {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: Some(field),
                 atom: None,
-            });
+            };
+            if let Some((_, _, actual)) = self
+                .completion_values
+                .borrow()
+                .iter()
+                .find(|(f, _, _)| f == &fact)
+            {
+                let Scalar::Subject {
+                    snapshot: actual_snapshot,
+                    subject: actual_subject,
+                    entity,
+                } = actual
+                else {
+                    return Err("補完ownerがRefでない".into());
+                };
+                if entity != root || self.subject(actual_snapshot, actual_subject)?.ty != *root {
+                    return Err("補完owner型が元署名と違う".into());
+                }
+                checks.scope.merge(&self.scope(
+                    self.subject(actual_snapshot, actual_subject)?,
+                    reading,
+                    None,
+                )?);
+                checks.support.push(Fact {
+                    snapshot: actual_snapshot.clone(),
+                    subject: actual_subject.clone(),
+                    field: None,
+                    atom: None,
+                });
+                if snapshot != os {
+                    checks.failure =
+                        Some((Scalar::Text(snapshot.clone()), Scalar::Text(os.clone())));
+                } else if actual != expected {
+                    checks.failure = Some((actual.clone(), expected.clone()));
+                }
+                self.tick()?;
+                return Ok(());
+            }
+            checks.missing.push(fact);
             return Err(unsupported());
         };
         checks
