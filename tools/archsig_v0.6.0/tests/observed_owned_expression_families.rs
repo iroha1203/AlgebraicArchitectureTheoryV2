@@ -554,10 +554,13 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
                         children[0].clone()
                     ]
                 );
-                let wanted = members(text(&pair[0]), text(&pair[1]), entity);
-                let actual: BTreeSet<_> = arr(val(scalar)).iter().map(Json::canonical).collect();
-                assert_eq!(actual, wanted.iter().map(Json::canonical).collect());
-                assert_eq!(arr(val(scalar)).len(), wanted.len());
+                let mut wanted: BTreeSet<_> = members(text(&pair[0]), text(&pair[1]), entity)
+                    .iter()
+                    .map(Json::canonical)
+                    .collect();
+                let mut actual: BTreeSet<_> =
+                    arr(val(scalar)).iter().map(Json::canonical).collect();
+                assert_eq!(arr(val(scalar)).len(), actual.len());
                 let snapshot = checked
                     .archmap()
                     .snapshots
@@ -579,7 +582,26 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
                         .find(|f| f.name == format!("{entity}.owner"))
                         .unwrap();
                     let Slot::Known { atom, .. } = &field.slot else {
-                        panic!("欠測ownerを確定族へ使用しない")
+                        assert_eq!(field.slot, Slot::Missing);
+                        assert_eq!(
+                            f(f(scalar, "scope"), "domain"),
+                            &Json::str("all_completions")
+                        );
+                        // 元Missingを支持Atomへ偽装しない。所属が変わる実Set対は
+                        // unknown()で元owner slotと併せて照合する。
+                        let candidate_ref = reference(&snapshot.id, &candidate.id).canonical();
+                        wanted.remove(&candidate_ref);
+                        actual.remove(&candidate_ref);
+                        for node in [scalar, evaluation] {
+                            assert!(
+                                !arr(f(node, "support"))
+                                    .iter()
+                                    .any(|fact| obj(fact).get("subject")
+                                        == Some(&Json::str(&candidate.id))
+                                        && obj(fact).get("field") == Some(&Json::str(&field.name)))
+                            );
+                        }
+                        continue;
                     };
                     let fact = Json::obj([
                         ("snapshot", Json::str(&snapshot.id)),
@@ -593,6 +615,7 @@ fn audit_family_occurrences(wire: &Json, checked: &CheckedInputs) {
                     );
                     assert!(arr(f(evaluation, "support")).contains(&fact));
                 }
+                assert_eq!(actual, wanted);
             }
         }
         for fact in arr(f(owner_evaluation, "support")) {
@@ -755,6 +778,80 @@ fn owned_arrow_family_uses_declared_owner_and_current_snapshot() {
     output_set(&w, "v", "Owned.Hop", &members("v", "A", "Owned.Hop"));
     output_set(&w, "w", "Owned.Hop", &members("w", "A", "Owned.Hop"));
 }
+#[test]
+fn owned_arrow_missing_owner_uses_endpoint_constraints_and_keeps_original_missing() {
+    let r = run(
+        fixture(
+            "view hops(a:Root):Set<Hop> = Hop[a];",
+            Some("hA-owner"),
+            None,
+            false,
+            false,
+        ),
+        &["a=evaluate(Inspect.hops,a=@v/A)"],
+    );
+    let w = r.wire();
+    output_set(&w, "a", "Owned.Hop", &[reference("v", "hA")]);
+    assert_missing(&w, "a", "hA", "Owned.Hop.owner");
+    assert_eq!(
+        f(f(answer(&w, "a"), "scope"), "domain"),
+        &Json::str("all_completions")
+    );
+    let ns = index(&w);
+    let domains: Vec<_> = ns
+        .values()
+        .filter(|n| {
+            f(n, "type") == &Json::str("Domain")
+                && arr(f(n, "arguments")).first().is_some_and(|r| {
+                    let node = ns[text(f(r, "node"))];
+                    obj(node)
+                        .get("value")
+                        .is_some_and(|v| obj(v).get("kind") == Some(&Json::str("source")))
+                })
+        })
+        .collect();
+    assert!(!domains.is_empty());
+    for domain in domains {
+        assert_eq!(f(val(domain), "type"), &ty("Ref", Json::str("Owned.Root")));
+        let elements = arr(f(val(domain), "elements"));
+        assert_eq!(elements.len(), 1);
+        assert_eq!(
+            val(target(
+                &ns,
+                &elements[0],
+                &ty("Ref", Json::str("Owned.Root"))
+            )),
+            &reference("v", "A")
+        );
+        for atom in ["hA-from", "hA-to"] {
+            assert!(
+                arr(f(domain, "support"))
+                    .iter()
+                    .any(|fact| obj(fact).get("atom") == Some(&Json::str(atom)))
+            );
+        }
+    }
+    let candidate = &r.prepared().inputs().archmap().snapshots[0]
+        .subjects
+        .iter()
+        .find(|s| s.id == "hA")
+        .unwrap();
+    assert_eq!(
+        candidate
+            .fields
+            .iter()
+            .find(|f| f.name == "Owned.Hop.owner")
+            .unwrap()
+            .slot,
+        Slot::Missing
+    );
+    assert!(
+        !arr(f(answer(&w, "a"), "reasons"))
+            .iter()
+            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+    );
+}
+
 #[test]
 fn owned_family_count_and_numeric_comprehension_sum_keep_members() {
     let r = run(
@@ -1043,29 +1140,40 @@ fn owned_family_missing_body_before_known_counterexample_preserves_membership() 
 fn owned_family_missing_body_after_known_counterexample_preserves_membership() {
     missing_counterexample("r-ok", "p-ok", "r");
 }
-fn unknown(omit: &str, script: &str, ask: &str, subject: &str, field: &str) {
+fn unknown(omit: &str, script: &str, ask: &str, subject: &str, field: &str, unsupported: bool) {
     let r = run(fixture(script, Some(omit), None, false, false), &[ask]);
     let w = r.wire();
     assert_eq!(f(&w, "status"), &Json::str("partial"));
     assert_eq!(f(answer(&w, "u"), "status"), &Json::str("undetermined"));
     assert_missing(&w, "u", subject, field);
-    assert!(
-        arr(f(answer(&w, "u"), "reasons"))
+    let reasons = arr(f(answer(&w, "u"), "reasons"));
+    assert_eq!(
+        reasons
             .iter()
-            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm")),
+        unsupported
     );
-    let unsupported = arr(f(answer(&w, "u"), "reasons"))
+    let reason = reasons
         .iter()
-        .find(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+        .find(|r| {
+            f(r, "code")
+                == &Json::str(if unsupported {
+                    "unsupported_algorithm"
+                } else {
+                    "missing_observation"
+                })
+        })
         .unwrap();
-    assert_eq!(
-        f(f(unsupported, "details"), "method"),
-        &Json::str("unresolved_owned_expression_family")
-    );
-    assert_eq!(
-        f(f(unsupported, "details"), "operand_types"),
-        &Json::Arr(vec![ty("Set", ty("Ref", Json::str("Owned.State")))])
-    );
+    if unsupported {
+        assert_eq!(
+            f(f(reason, "details"), "method"),
+            &Json::str("unresolved_owned_expression_family")
+        );
+        assert_eq!(
+            f(f(reason, "details"), "operand_types"),
+            &Json::Arr(vec![ty("Set", ty("Ref", Json::str("Owned.State")))])
+        );
+    }
     let ns = index(&w);
     let checked = r.prepared().inputs();
     let family = checked
@@ -1074,13 +1182,55 @@ fn unknown(omit: &str, script: &str, ask: &str, subject: &str, field: &str) {
         .iter()
         .find(|e| matches!(e.kind, ExprKind::Family { .. }))
         .unwrap();
-    assert_eq!(span(f(unsupported, "location")), family.span);
-    let dependencies = arr(f(unsupported, "dependencies"));
+    assert_eq!(span(f(reason, "location")), family.span);
+    assert_eq!(
+        checked.law().expr_type(
+            checked
+                .law()
+                .exprs
+                .iter()
+                .position(|e| e.span == family.span)
+                .unwrap()
+        ),
+        Some(&Type::Set(Box::new(Type::Ref("Owned.State".into()))))
+    );
+    let dependencies = arr(f(reason, "dependencies"));
     assert_eq!(dependencies.len(), 1);
     let expression = target(&ns, &dependencies[0], &Json::str("Expression"));
     assert_eq!(span(f(val(expression), "location")), family.span);
     assert!(arr(f(expression, "reasons")).is_empty());
     assert!(!obj(f(answer(&w, "u"), "outputs")).contains_key("value"));
+    if !unsupported {
+        let pairs:Vec<_>=ns.values().filter(|n|obj(n).get("value").is_some_and(|v|if let Json::Obj(m)=v{m.get("kind")}else{None}==Some(&Json::str("completion_pair")))).collect();
+        assert!(!pairs.is_empty());
+        for pair in pairs {
+            let data = f(val(pair), "data");
+            let fields = arr(f(data, "fields"));
+            assert_eq!(fields.len(), 1);
+            assert_eq!(f(&fields[0], "subject"), &Json::str(subject));
+            assert_eq!(f(&fields[0], "field"), &Json::str(field));
+            let actual: BTreeSet<_> = ["first_result", "second_result"]
+                .iter()
+                .map(|k| {
+                    let evaluation = target(&ns, f(data, k), &Json::str("Evaluation"));
+                    val(target(
+                        &ns,
+                        f(val(evaluation), "value"),
+                        &ty("Set", ty("Ref", Json::str("Owned.State"))),
+                    ))
+                    .canonical()
+                })
+                .collect();
+            let wanted: BTreeSet<_> = [
+                Json::Arr(vec![reference("v", "p")]),
+                Json::Arr(vec![reference("v", "p"), reference("v", "r")]),
+            ]
+            .iter()
+            .map(Json::canonical)
+            .collect();
+            assert_eq!(actual, wanted);
+        }
+    }
 }
 #[test]
 fn owned_family_missing_owner_expression_keeps_source_type_and_all_completions() {
@@ -1090,6 +1240,7 @@ fn owned_family_missing_owner_expression_keeps_source_type_and_all_completions()
         "u=evaluate(Inspect.states,m=@v/m)",
         "m",
         "Owned.Move.from",
+        true,
     );
 }
 #[test]
@@ -1100,6 +1251,7 @@ fn owned_family_missing_candidate_owner_does_not_drop_subject_into_success() {
         "u=evaluate(Inspect.states,a=@v/A)",
         "r",
         "Owned.State.owner",
+        false,
     );
 }
 #[test]

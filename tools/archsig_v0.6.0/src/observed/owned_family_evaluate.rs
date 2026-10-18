@@ -19,12 +19,15 @@ impl Evaluator<'_, '_> {
             .transpose()?;
         #[cfg(test)]
         let context = self.graph.active;
-        let members =
-            self.environment
-                .owned_expression_members(id, known, &mut |_phase, _index| {
-                    #[cfg(test)]
-                    data::observe_actual(span, context, "owned_family_enum", _index);
-                })?;
+        let members = self.environment.owned_expression_members_at(
+            self.graph,
+            id,
+            known,
+            &mut |_phase, _index| {
+                #[cfg(test)]
+                data::observe_actual(span, context, "owned_family_enum", _index);
+            },
+        )?;
         let source = self
             .sources
             .get(&span)
@@ -49,7 +52,9 @@ impl Evaluator<'_, '_> {
                 location: Some(Location::Law { span }),
             });
         }
-        if unresolved {
+        // 候補のowner欠測には整合する有限補完算法がある。元Missingは残すが、
+        // その所属読取りを算法未対応とは報告しない。
+        if known.is_none() {
             reasons.push(Reason {
                 kind: ReasonKind::UnsupportedAlgorithm {
                     question: self.request.kind,

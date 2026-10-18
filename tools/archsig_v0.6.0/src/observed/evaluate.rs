@@ -2884,6 +2884,9 @@ mod recheck_tests {
     mod reference_completion_tests {
         include!("reference_completion_tests.rs");
     }
+    mod owner_family_completion_tests {
+        include!("owner_family_completion_tests.rs");
+    }
     mod mixed_owner_answer_binding_tests {
         include!("mixed_owner_answer_binding_tests.rs");
     }

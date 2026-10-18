@@ -107,12 +107,38 @@ impl Environment<'_> {
                     }
                     Slot::Missing => {
                         result.enumeration.scope.completions = true;
-                        result.missing.push(Fact {
+                        let fact = Fact {
                             snapshot: snapshot.id.clone(),
                             subject: subject.id.clone(),
                             field: Some(field_name.clone()),
                             atom: None,
-                        });
+                        };
+                        let completed = self
+                            .completion_values
+                            .borrow()
+                            .iter()
+                            .find(|(field, _, _)| field == &fact)
+                            .map(|(_, _, value)| value.clone());
+                        if let Some(completed) = completed {
+                            let Scalar::Subject {
+                                snapshot: target_snapshot,
+                                subject: target_subject,
+                                entity: target_entity,
+                            } = &completed
+                            else {
+                                return Err("所属補完の原始owner値がRefでない".into());
+                            };
+                            let target = self.subject(target_snapshot, target_subject)?;
+                            if target.ty != *target_entity || completed.ty() != field.ty {
+                                return Err("所属補完の原始owner型が元fieldと違う".into());
+                            }
+                            if target_snapshot == owner_snapshot && target_subject == owner_subject
+                            {
+                                result.enumeration.values.push(value);
+                            }
+                        } else {
+                            result.missing.push(fact);
+                        }
                     }
                     _ => return Err("元owner slotがRef型でない".into()),
                 }
@@ -223,6 +249,61 @@ impl Environment<'_> {
         result.missing.dedup();
         self.tick()?;
         Ok(result)
+    }
+
+    /// 実評価のcaseでも、検査と同じ元assignmentを復元して所属を読む。
+    pub(in crate::observed) fn owned_expression_members_at(
+        &self,
+        graph: &Graph,
+        id: usize,
+        owner: Option<&Scalar>,
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<OwnedMembers, ValidationFailure> {
+        if graph.active.case.is_none() {
+            return self.owned_expression_members(id, owner, observer);
+        }
+        self.validation_graph_session(graph, || {
+            let context = graph.active;
+            let previous = self.context.replace(Some(context));
+            let old_cutoff = self.cutoff.replace(graph.nodes.len());
+            let previous_universal = self.universal_context.replace(None);
+            let previous_completion = self.completion_values.replace(Vec::new());
+            let result = (|| {
+                if let Some(case) = context.case {
+                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                }
+                self.owned_expression_members(id, owner, observer)
+            })();
+            self.completion_values.replace(previous_completion);
+            self.universal_context.replace(previous_universal);
+            self.cutoff.set(old_cutoff);
+            self.context.set(previous);
+            result
+        })
+    }
+
+    /// 元Family式が実読取りする原始owner欠測。代入を観測へ上書きしない。
+    pub(in crate::observed) fn owned_expression_missing_slots(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
+        let Some(&id) = self.expressions.get(&span) else {
+            return Ok(None);
+        };
+        if !matches!(self.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {
+            return Ok(None);
+        }
+        let (_, owner) = self.owned_expression_spec(id)?;
+        let value = self.analyze_source(graph, self.inputs.law().exprs[owner].span, bindings)?;
+        // 元slotの読取りを収集する。現在caseの値で元Missing自体を消さない。
+        let previous = self.completion_values.replace(Vec::new());
+        let result = self
+            .owned_expression_members(id, value.known_value.as_ref(), &mut |_, _| {})
+            .map(|members| Some(members.missing));
+        self.completion_values.replace(previous);
+        result
     }
 
     pub(super) fn scoped_owned_family(
@@ -479,7 +560,7 @@ impl Environment<'_> {
                 location: Some(Location::Law { span }),
             });
         }
-        if owner_value.is_none() || !members.missing.is_empty() {
+        if owner_value.is_none() {
             reasons.push(Reason {
                 kind: ReasonKind::UnsupportedAlgorithm {
                     question: request.kind,

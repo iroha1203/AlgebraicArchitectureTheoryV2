@@ -135,7 +135,9 @@
   原始Ref fieldの欠測は登録subjectを候補とし、既知Map/ownerの入力制約に整合する全補完へ接続する。
   同じslotを共有し、元snapshot/型付きRef・支持・現在由来・全検査または補完対を保持する。
   既知所属の族へ渡すowner式が原始Ref欠測なら、整合する各owner値の実集合から問いを評価する。
-  参照container/Owned型field・Map自体の欠測列挙と、候補subjectの未観測所属による依存族の補完は後続に残る。
+  式として読む族の候補subjectのowner欠測も、元slotの共有代入から所属を読み直す。
+  族のcount・明示in量化で補完により変わる結果と、不変値・既知反例を区別して保持する。
+  参照container/Owned型field・Map自体の欠測列挙と、未束縛依存Law parameter全般の未知owner補完は後続に残る。
   有限型slotの各補完でも先に全域のwholeを判断し、元の支持・欠測・量化を保って集約する。
   有限型のLaw parameterとZ/Q parameterの混在も、元宣言順の有限族の各instanceでZ/Q全域を判断する。
   既知ownerの依存族でも数値parameterを有限列挙から分け、元署名の実prefixごとの全Z/Q代入を評価する。
