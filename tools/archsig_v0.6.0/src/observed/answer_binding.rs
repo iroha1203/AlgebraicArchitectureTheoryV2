@@ -5,6 +5,7 @@ use crate::observed::projection::ProjectionStep;
 pub(in crate::observed) enum AnswerBinding {
     Reference(NodeRef),
     Projection(Node),
+    Inapplicable(NodeRef),
 }
 
 impl Environment<'_> {
@@ -20,7 +21,12 @@ impl Environment<'_> {
         };
         let answer =
             self.answer_binding_source(graph, self.current_context(graph).request, id, span)?;
-        if answer.status == Decision::Undetermined {
+        // Evaluationの有無・省略fieldの条件は、評価値の未決とは別に検査する。
+        // 未決の通常値を消費する経路は引き続き許可しない。
+        let environment = matches!(path.as_slice(),
+            [ProjectionStep::Field(output), ProjectionStep::Field(field), ..]
+                if output == "evaluation" && field == "environment");
+        if answer.status == Decision::Undetermined && !environment {
             return Err(self.answer_projection_unprovided(span));
         }
         let Some(ProjectionStep::Field(output)) = path.first() else {

@@ -221,8 +221,31 @@ fn answer_projection_missing_roots_keep_original_reasons_through_component_paths
     }
 }
 
+fn assert_projection_condition(w: &Json) {
+    assert_eq!(f(w, "status"), &Json::str("partial"));
+    let a = answer(w, "take");
+    assert_eq!(f(a, "status"), &Json::str("undetermined"));
+    assert_eq!(f(a, "outputs"), &Json::obj([]));
+    let reasons = arr(f(a, "reasons"));
+    assert!(
+        reasons
+            .iter()
+            .any(|r| f(r, "code") == &Json::str("dependency_blocked"))
+    );
+    let reason = reasons
+        .iter()
+        .find(|r| f(r, "code") == &Json::str("condition_failed"))
+        .unwrap();
+    assert_eq!(
+        f(f(reason, "details"), "construction"),
+        &Json::str("projection")
+    );
+    let p = node(w, f(f(reason, "details"), "condition"));
+    assert_eq!(f(f(p, "judgment"), "status"), &Json::str("refuted"));
+    assert!(!arr(f(p, "evidence")).is_empty());
+}
 #[test]
-fn answer_projection_static_invalid_and_unprovided_dynamic_cases_stay_distinct() {
+fn answer_projection_static_invalid_and_dynamic_condition_failures_stay_distinct() {
     // 同じ動的射影でも、別の不適合parameterが先に記載されたことで内部失敗にしない。
     let mixed = evaluate_observed_bytes(
         fixture::tree_input(false, "r1"),
@@ -232,18 +255,8 @@ fn answer_projection_static_invalid_and_unprovided_dynamic_cases_stay_distinct()
         ],
         &mut quiet(),
     );
-    match mixed {
-        Err(archsig::observed::EvaluationFailure::NotImplemented { .. }) => {}
-        Err(other) => panic!(
-            "unexpected failure {:?}",
-            other.wire().as_ref().map(|w| f(w, "issues"))
-        ),
-        Ok(result) => panic!(
-            "dynamic boundary became {}: {:?}",
-            result.status(),
-            f(&result.wire(), "issues")
-        ),
-    }
+    let mixed = mixed.unwrap();
+    assert_projection_condition(&mixed.wire());
     for path in [
         "[6][0][0]",
         "[7][0]",
@@ -274,13 +287,9 @@ fn answer_projection_static_invalid_and_unprovided_dynamic_cases_stay_distinct()
             "empty=evaluate(Applications.apEmpty)",
         ],
     ] {
-        let e = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet())
-            .unwrap_err();
-        assert!(matches!(
-            e,
-            archsig::observed::EvaluationFailure::NotImplemented { .. }
-        ));
-        assert!(e.wire().is_none());
+        let e =
+            evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet()).unwrap();
+        assert_projection_condition(&e.wire());
     }
     for asks in [
         vec![
@@ -292,13 +301,9 @@ fn answer_projection_static_invalid_and_unprovided_dynamic_cases_stay_distinct()
             "raw=evaluate(Trees.raw,s=@v/sample)",
         ],
     ] {
-        let e = evaluate_observed_bytes(fixture::tree_input(false, "r1"), &asks, &mut quiet())
-            .unwrap_err();
-        assert!(matches!(
-            e,
-            archsig::observed::EvaluationFailure::NotImplemented { .. }
-        ));
-        assert!(e.wire().is_none());
+        let e =
+            evaluate_observed_bytes(fixture::tree_input(false, "r1"), &asks, &mut quiet()).unwrap();
+        assert_projection_condition(&e.wire());
     }
 }
 

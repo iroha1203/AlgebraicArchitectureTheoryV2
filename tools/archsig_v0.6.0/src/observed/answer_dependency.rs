@@ -47,13 +47,18 @@ impl Environment<'_> {
             let Selector::Answer { id, path } = &argument.value else {
                 continue;
             };
-            let evaluation = match path.as_slice() {
-                [ProjectionStep::Field(value), ..] if value == "value" => false,
+            let (evaluation, environment) = match path.as_slice() {
+                [ProjectionStep::Field(value), ..] if value == "value" => (false, false),
                 [
                     ProjectionStep::Field(root),
                     ProjectionStep::Field(value),
                     ..,
-                ] if root == "evaluation" && value == "value" => true,
+                ] if root == "evaluation" && value == "value" => (true, false),
+                [
+                    ProjectionStep::Field(root),
+                    ProjectionStep::Field(field),
+                    ..,
+                ] if root == "evaluation" && field == "environment" => (true, true),
                 _ => continue,
             };
             let parameter = params
@@ -64,6 +69,7 @@ impl Environment<'_> {
             scope.merge(&producer.scope);
             let value = if evaluation {
                 match producer.outputs.get("evaluation") {
+                    Some(root) if environment => Some(*root),
                     Some(root) => self.evaluation(graph, *root)?.2,
                     None => None,
                 }
@@ -109,6 +115,52 @@ impl Environment<'_> {
                 }),
             });
             self.tick()?;
+        }
+        for plan in self.projection_failure_plans(graph, request)? {
+            self.tick()?;
+            let mut selected = None;
+            for (index, node) in graph
+                .nodes
+                .iter()
+                .enumerate()
+                .take(self.cutoff.get().min(graph.nodes.len()))
+            {
+                self.tick()?;
+                if graph.context_at(index).request == current
+                    && matches!(&node.rule, Rule::ProjectionCheck { parameter, part: ProjectionCheckPart::Condition } if parameter == &plan.parameter)
+                {
+                    if selected.is_some() {
+                        return Err("同じ元射影条件が重複している".into());
+                    }
+                    self.validate_at(graph, node, index)?;
+                    selected = Some(NodeRef(index));
+                }
+            }
+            let condition = selected.ok_or("不適合な元射影の条件反証がない")?;
+            scope.merge(&graph.get(plan.root)?.scope);
+            reasons.push(Reason {
+                kind: ReasonKind::ConditionFailed {
+                    condition,
+                    construction: "projection",
+                },
+                request: request.id.clone(),
+                dependencies: vec![plan.root],
+                missing: vec![],
+                location: Some(Location::Law { span: plan.span }),
+            });
+            let mut dependencies = vec![plan.root, condition];
+            dependencies.extend(graph.get(condition)?.evidence.iter().copied());
+            dependencies.sort_by_key(|r| r.0);
+            dependencies.dedup();
+            reasons.push(Reason {
+                kind: ReasonKind::DependencyBlocked {
+                    request: plan.producer,
+                },
+                request: request.id.clone(),
+                dependencies,
+                missing: vec![],
+                location: Some(Location::Law { span: plan.span }),
+            });
         }
         if reasons.is_empty() {
             return Ok(None);

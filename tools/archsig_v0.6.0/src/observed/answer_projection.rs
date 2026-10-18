@@ -37,7 +37,7 @@ impl Environment<'_> {
             Ok(_) => {}
             Err(ProjectionFailure::Interrupted(stop)) => return Err(stop.into()),
             Err(ProjectionFailure::Invalid(_)) => {
-                return Err(self.answer_projection_unprovided(span));
+                return Ok(AnswerBinding::Inapplicable(root));
             }
         }
         let (value, steps) = if matches!(original.ty, NodeType::Evaluation(_)) {
@@ -45,7 +45,7 @@ impl Environment<'_> {
                 return Err(self.answer_projection_unprovided(span));
             };
             if field != "value" {
-                return Err(self.answer_projection_unprovided(span));
+                return Ok(AnswerBinding::Inapplicable(root));
             }
             let value = self
                 .evaluation(graph, root)?
@@ -64,23 +64,33 @@ impl Environment<'_> {
         }
         for (index, step) in steps.iter().enumerate() {
             self.tick()?;
+            #[cfg(test)]
+            data::observe_actual(
+                span,
+                self.current_context(graph),
+                "answer_projection_check_step",
+                index,
+            );
             scalar = match (scalar, step) {
                 (
                     Scalar::Tuple(items)
                     | Scalar::List { items, .. }
                     | Scalar::Data { args: items, .. },
                     ProjectionStep::Index(index),
-                ) => usize::try_from(*index)
+                ) => match usize::try_from(*index)
                     .ok()
                     .and_then(|index| items.get(index))
-                    .ok_or_else(|| self.answer_projection_unprovided(span))?,
+                {
+                    Some(value) => value,
+                    None => return Ok(AnswerBinding::Inapplicable(root)),
+                },
                 (
                     Scalar::Option {
                         value: Some(value), ..
                     },
                     ProjectionStep::Field(field),
                 ) if field == "some" => value,
-                _ => return Err(self.answer_projection_unprovided(span)),
+                _ => return Ok(AnswerBinding::Inapplicable(root)),
             };
             #[cfg(test)]
             data::observe_actual(
@@ -160,6 +170,7 @@ impl Environment<'_> {
             let expected = match self.answer_binding(graph, &argument.value, parameter.span) {
                 Ok(AnswerBinding::Projection(expected)) => expected,
                 Ok(AnswerBinding::Reference(_))
+                | Ok(AnswerBinding::Inapplicable(_))
                 | Err(ValidationFailure::UnsupportedExpression { .. }) => continue,
                 Err(failure) => return Err(failure),
             };
