@@ -5900,6 +5900,39 @@ impl<'a> Environment<'a> {
         bindings: &[Binding],
     ) -> Result<Vec<NodeRef>, ValidationFailure> {
         let mut arguments: Vec<_> = bindings.iter().map(|b| b.value).collect();
+        let context = self.current_context(graph);
+        if context.frame.is_none()
+            && context.iteration.is_none()
+            && context.instance.is_none()
+            && context.case.is_none()
+        {
+            let request = graph
+                .requests
+                .get(context.request)
+                .ok_or("Sourceの元Requestがない")?;
+            let Selector::Declaration { name } = &request.head else {
+                return Err("Sourceの元Request headが宣言でない".into());
+            };
+            let declaration = self
+                .inputs
+                .law()
+                .declarations
+                .get(name)
+                .ok_or("Sourceの元Request宣言がない")?;
+            let params = match &declaration.signature {
+                crate::law::model::Signature::View { params, .. }
+                | crate::law::model::Signature::Law { params, .. } => params,
+                _ => return Err("Sourceの元署名がない".into()),
+            };
+            for p in params {
+                if let Some(binding) = bindings.iter().find(|b| b.name == p.name)
+                    && let Some(check) =
+                        self.require_owned_binding(graph, request, p, binding.value)?
+                {
+                    arguments.push(check);
+                }
+            }
+        }
         if let Some(index) = self.current_context(graph).frame {
             let frame = graph.frames.get(index).ok_or("Sourceのcall frameがない")?;
             arguments.push(frame.source);
@@ -6137,7 +6170,12 @@ impl<'a> Environment<'a> {
                     .requests
                     .get(self.current_context(graph).request)
                     .ok_or("元束縛Requestがない")?;
-                self.require_owned_binding(graph, request, parameter, binding.value)?;
+                let check = self.require_owned_binding(graph, request, parameter, binding.value)?;
+                if let Some(check) = check {
+                    base.merge(&graph.get(check)?.scope);
+                }
+                // 所属の支持はSourceの検査辺に残す。再使用する値の支持・Scopeは
+                // 元producerのまま保ち、consumerの所属確認で書き換えない。
                 let selector = graph
                     .requests
                     .get(self.current_context(graph).request)
@@ -6184,15 +6222,7 @@ impl<'a> Environment<'a> {
                 if &actual.ty != entity || value.ty() != binding.ty {
                     return Err("評価範囲の束縛subject型が違う".into());
                 }
-                let owned = matches!(graph.get(binding.value)?.rule, Rule::OwnedBinding(_));
-                if owned {
-                    self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
-                }
-                let subject_scope = if owned {
-                    graph.get(binding.value)?.scope.clone()
-                } else {
-                    self.scope(actual, &declaration.reading, None)?
-                };
+                let subject_scope = self.scope(actual, &declaration.reading, None)?;
                 if graph.get(binding.value)?.scope != subject_scope {
                     return Err("束縛subject値の範囲が元宣言・subject由来と違う".into());
                 }
@@ -6207,11 +6237,7 @@ impl<'a> Environment<'a> {
                         affine: None,
                         scope: base.clone(),
                         known_value: Some(value.clone()),
-                        support: if owned {
-                            graph.get(binding.value)?.support.clone()
-                        } else {
-                            self.subject_support(value)?
-                        },
+                        support: self.subject_support(value)?,
                         scalar_scope: Some(subject_scope),
                     },
                 );

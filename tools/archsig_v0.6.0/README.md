@@ -181,7 +181,8 @@
   非依存Law族の自由parameterと併用し、正しい固定Answer引数を元Refへ束縛して有限全域・Z/Q全称評価へ渡す。
   既知ownerの固定Answer値・公開成分射影を依存Law族の実prefix域へ渡し、
   有限Owned参照・Tuple/Option/Set/Mapと独立した固定値を評価する。
-  ownerも固定された原始Owned参照のAnswer束縛は、原始owner事実から所属を検査して値を渡す。
+  ownerも固定された原始Owned参照のAnswer束縛は、元Refを束縛値として保持する。
+  原始owner事実から所属を別のBool導出で検査し、Sourceの証拠辺として渡す。
   実所属・snapshotの不適合は型付きprojection構成条件の反証と直接依存停止へ接続する。
   固定producerの補完・全称Scopeを継承し、今回の自由parameterの実Domainを追加して元入力から再検査する。
   上記以外のpayloadを持つdataの評価、その他の式形・

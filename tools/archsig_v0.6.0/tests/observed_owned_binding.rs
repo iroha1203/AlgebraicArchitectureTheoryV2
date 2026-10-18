@@ -97,7 +97,12 @@ fn fixed_owned_binding_preserves_original_refs_paths_order_and_finite_free_axes(
         let family = format!("family=check(Reservations.obFamily,a={owner},p={child})");
         let r = run(&[&value, &no, &family, &yes, producer]);
         let w = r.wire();
-        assert_eq!(r.status(), "complete");
+        assert_eq!(
+            r.status(),
+            "complete",
+            "{owner}/{child}: {:?}",
+            f(&w, "issues")
+        );
         assert_eq!(
             arr(f(&w, "answers"))
                 .iter()
@@ -119,11 +124,47 @@ fn fixed_owned_binding_preserves_original_refs_paths_order_and_finite_free_axes(
             .iter()
             .find(|b| f(b, "name") == &Json::str("p"))
             .unwrap();
-        let checked = node(&w, f(binding, "value"));
-        assert_eq!(f(f(checked, "rule"), "name"), &Json::str("binding"));
-        assert!(!arr(f(checked, "arguments")).is_empty());
-        let original = node(&w, &arr(f(checked, "arguments"))[0]);
-        assert_eq!(f(original, "value"), f(checked, "value"));
+        let original_ref = f(binding, "value");
+        assert_eq!(f(f(take, "outputs"), "value"), original_ref);
+        let original = node(&w, original_ref);
+        if child == "$child.value" || child == "$child.evaluation.value" {
+            assert_eq!(original_ref, f(f(a(&w, "child"), "outputs"), "value"));
+        } else if child.contains("[1]") {
+            assert_eq!(f(f(original, "rule"), "name"), &Json::str("projection"));
+            let mut path = vec![];
+            if child.contains(".evaluation") {
+                path.push(Json::str("value"));
+            }
+            path.push(Json::Nat(1));
+            assert_eq!(f(f(original, "rule"), "path"), &Json::Arr(path));
+            assert_eq!(
+                &arr(f(original, "arguments"))[0],
+                f(
+                    f(a(&w, "child"), "outputs"),
+                    if child.contains(".evaluation") {
+                        "evaluation"
+                    } else {
+                        "value"
+                    }
+                )
+            );
+        }
+        let checked = arr(f(&w, "nodes"))
+            .iter()
+            .find(|n| {
+                matches!(f(n, "rule"), Json::Obj(m) if m.get("name") == Some(&Json::str("binding")))
+                    && f(n, "value") == &Json::Bool(true)
+                    && arr(f(n, "arguments")).first() == Some(original_ref)
+            })
+            .unwrap();
+        assert_eq!(f(checked, "type"), &Json::str("Bool"));
+        assert_ne!(f(original, "id"), f(checked, "id"));
+        assert!(arr(f(&w, "nodes")).iter().any(|n| {
+            f(n, "type") == &Json::str("Expression")
+                && arr(f(n, "arguments"))
+                    .iter()
+                    .any(|r| f(r, "node") == f(checked, "id"))
+        }));
         assert!(arr(f(checked,"support")).iter().any(|fact| matches!(fact,Json::Obj(m) if m.get("field")==Some(&Json::str("Reservations.State.owner")))));
         assert!(arr(f(a(&w,"family"),"evidence")).iter().any(|r| {
             let n=node(&w,r); matches!(f(n,"value"),Json::Obj(m) if m.get("data").is_some_and(|d| matches!(d,Json::Obj(d) if d.get("checked")==Some(&Json::Nat(3)))))
@@ -500,6 +541,22 @@ fn fixed_owned_bindings_flow_through_nested_view_calls_and_successive_producers(
     for id in ["first", "next", "last", "raw"] {
         let answer = a(&w, id);
         assert_eq!(f(answer, "status"), &Json::str("established"));
+        let producer = match id {
+            "first" => "child",
+            "next" | "raw" => "first",
+            "last" => "next",
+            _ => unreachable!(),
+        };
+        let selected = f(f(a(&w, producer), "outputs"), "value");
+        let evaluation = node(&w, f(f(answer, "outputs"), "evaluation"));
+        let binding = arr(f(f(evaluation, "value"), "bindings"))
+            .iter()
+            .find(|b| f(b, "name") == &Json::str("p"))
+            .unwrap();
+        assert_eq!(f(binding, "value"), selected);
+        if id != "next" {
+            assert_eq!(f(f(answer, "outputs"), "value"), selected);
+        }
         assert_eq!(
             f(node(&w, f(f(answer, "outputs"), "value")), "value"),
             &Json::Arr(vec![Json::str("v"), Json::str("p")])

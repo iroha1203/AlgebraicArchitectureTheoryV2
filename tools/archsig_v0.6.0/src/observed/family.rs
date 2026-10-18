@@ -279,7 +279,9 @@ impl Environment<'_> {
         }
         for (p, b) in fixed.iter().zip(bindings) {
             self.tick()?;
-            self.require_owned_binding(graph, request, p, b.value)?;
+            if let Some(check) = self.require_owned_binding(graph, request, p, b.value)? {
+                scope.merge(&graph.get(check)?.scope);
+            }
             if p.name != b.name || p.ty.erase() != b.ty {
                 return Err("族Source固定署名が違う".into());
             }

@@ -381,16 +381,13 @@ impl Evaluator<'_, '_> {
                         }],
                         scope,
                     )?;
-                    let r = if let Some(node) =
+                    if let Some(node) =
                         self.environment
                             .owned_binding_node(self.graph, self.request, p, r)?
                     {
                         let value = self.push(node)?;
                         self.base.merge(&self.graph.get(value)?.scope);
-                        value
-                    } else {
-                        r
-                    };
+                    }
                     self.bindings.push(Binding {
                         name: p.name.clone(),
                         value: r,
@@ -430,14 +427,13 @@ impl Evaluator<'_, '_> {
                             return Err(self.unsupported(p.span, "自由族のAnswer射影条件"));
                         }
                     };
-                    let value = if let Some(node) =
+                    if let Some(node) =
                         self.environment
                             .owned_binding_node(self.graph, self.request, p, value)?
                     {
-                        self.push(node)?
-                    } else {
-                        value
-                    };
+                        let check = self.push(node)?;
+                        self.base.merge(&self.graph.get(check)?.scope);
+                    }
                     self.base.merge(&self.graph.get(value)?.scope);
                     self.bindings.push(Binding {
                         name: p.name.clone(),

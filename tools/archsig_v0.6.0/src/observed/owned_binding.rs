@@ -195,11 +195,6 @@ impl Environment<'_> {
             return Err("未確認・不適合Owned束縛を通常値へ消費した".into());
         }
         let input = graph.get(original)?;
-        if matches!(input.rule, Rule::OwnedBinding(_))
-            && graph.context_at(original.0).request == self.current_context(graph).request
-        {
-            return Err("所属束縛を別の所属束縛で包んだ".into());
-        }
         let argument = request
             .arguments
             .iter()
@@ -207,7 +202,7 @@ impl Environment<'_> {
             .ok_or("所属束縛の元引数がない")?;
         match &argument.value {
             selector @ Selector::Answer { .. } => {
-                self.answer_binding_original_matches(graph, selector, original, p.span)?
+                self.answer_binding_matches(graph, selector, original, p.span)?
             }
             Selector::Subject { snapshot, subject } => {
                 let s = self.subject(snapshot, subject)?;
@@ -238,8 +233,8 @@ impl Environment<'_> {
         }
         self.tick()?;
         Ok(Some(Node {
-            ty: NodeType::Value(p.ty.erase()),
-            payload: Some(Payload::Scalar(plan.scalar)),
+            ty: NodeType::Value(Type::Bool),
+            payload: Some(Payload::Scalar(Scalar::Bool(true))),
             rule: Rule::OwnedBinding(p.name.clone()),
             arguments,
             support: plan.checks.support,
@@ -303,15 +298,38 @@ impl Environment<'_> {
         request: &Request,
         p: &Param,
         value: NodeRef,
-    ) -> Result<(), ValidationFailure> {
-        if Self::fixed_owned_binding(request, p) {
-            if graph.get(value)?.rule != Rule::OwnedBinding(p.name.clone())
-                || graph.context_at(value.0).request != self.current_context(graph).request
-            {
-                return Err("元Owned制約の検査済み束縛がない".into());
-            }
-            self.validate_at(graph, graph.get(value)?, value.0)?;
+    ) -> Result<Option<NodeRef>, ValidationFailure> {
+        if !Self::fixed_owned_binding(request, p) {
+            return Ok(None);
         }
-        Ok(())
+        let context = self.current_context(graph);
+        let mut selected = None;
+        for (i, node) in graph
+            .nodes
+            .iter()
+            .enumerate()
+            .take(self.cutoff.get().min(graph.nodes.len()))
+        {
+            self.tick()?;
+            let at = graph.context_at(i);
+            if at.request == context.request
+                && at.frame.is_none()
+                && at.iteration.is_none()
+                && at.instance.is_none()
+                && at.case.is_none()
+                && node.rule == Rule::OwnedBinding(p.name.clone())
+            {
+                if selected.replace(NodeRef(i)).is_some() {
+                    return Err("元Owned制約の所属確認が重複".into());
+                }
+                if node.arguments.first() != Some(&value) {
+                    return Err("所属確認が元束縛値を指していない".into());
+                }
+                self.validate_at(graph, node, i)?;
+            }
+        }
+        selected
+            .map(Some)
+            .ok_or_else(|| "元Owned制約の所属確認がない".into())
     }
 }

@@ -21,7 +21,7 @@ const BAD: &[&str] = &[
     "later=evaluate(Reservations.seed)",
 ];
 #[test]
-fn owned_subject_binding_cannot_reuse_a_prior_requests_equal_checked_value() {
+fn owned_subject_binding_cannot_reuse_a_prior_requests_equal_membership_check() {
     let r = run(&[
         "owner=evaluate(Reservations.adUniversalOwner,a=@v/A)",
         "child=evaluate(Reservations.obChild,p=@v/p)",
@@ -30,8 +30,16 @@ fn owned_subject_binding_cannot_reuse_a_prior_requests_equal_checked_value() {
         "later=evaluate(Reservations.seed)",
     ]);
     assert_eq!(r.status(), "complete");
-    let prior = r.answers[2].outputs["value"];
-    assert!(matches!(r.nodes[prior.0].rule, Rule::OwnedBinding(_)));
+    let prior = r
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| {
+            (r.contexts[i].request == 2 && matches!(n.rule, Rule::OwnedBinding(_)))
+                .then_some(NodeRef(i))
+        })
+        .unwrap();
+    assert_eq!(r.answers[2].outputs["value"], r.answers[1].outputs["value"]);
     let own = r
         .nodes
         .iter()
@@ -53,10 +61,6 @@ fn owned_subject_binding_cannot_reuse_a_prior_requests_equal_checked_value() {
         })
         .unwrap();
     completion_mutation(&r, source, |ns| {
-        let Some(Payload::Expression { bindings, .. }) = &mut ns[source].payload else {
-            panic!()
-        };
-        bindings.iter_mut().find(|b| b.name == "p").unwrap().value = prior;
         for edge in &mut ns[source].arguments {
             if *edge == own {
                 *edge = prior;
@@ -115,22 +119,28 @@ fn owned_binding_recheck_rejects_changed_value_owner_support_scope_and_bypassed_
     completion_mutation(&r, i, |ns| ns[i].scope.quantifiers.clear());
     completion_mutation(&r, i, |ns| ns[i].scope.assignments = false);
     completion_mutation(&r, i, |ns| {
-        ns[i].payload = Some(Payload::Scalar(Scalar::Subject {
-            snapshot: "v".into(),
-            subject: "r".into(),
-            entity: "Reservations.State".into(),
-        }))
+        ns[i].payload = Some(Payload::Scalar(Scalar::Bool(false)))
     });
     completion_mutation(&r, i, |ns| ns[i].rule = Rule::OwnedBinding("a".into()));
     let source=r.nodes.iter().enumerate().find_map(|(j,n)|(r.contexts[j].request==4 && matches!(&n.payload,Some(Payload::Expression{parameters,..})if !parameters.is_empty())).then_some(j)).unwrap();
     completion_mutation(&r, source, |ns| {
-        let Some(Payload::Expression { bindings, .. }) = &mut ns[source].payload else {
-            panic!()
-        };
-        bindings.iter_mut().find(|b| b.name == "p").unwrap().value = original;
         for edge in &mut ns[source].arguments {
             if *edge == NodeRef(i) {
                 *edge = original;
+            }
+        }
+    });
+    completion_mutation(&r, source, |ns| {
+        ns[source].arguments.retain(|r| *r != NodeRef(i))
+    });
+    completion_mutation(&r, source, |ns| {
+        let Some(Payload::Expression { bindings, .. }) = &mut ns[source].payload else {
+            panic!()
+        };
+        bindings.iter_mut().find(|b| b.name == "p").unwrap().value = foreign;
+        for edge in &mut ns[source].arguments {
+            if *edge == original {
+                *edge = foreign;
             }
         }
     });
@@ -224,6 +234,42 @@ fn owned_binding_success_then_changed_request_registry_and_nodes_rejects_same_an
             ));
             g.nodes[target] = saved;
             e.validate_answer(&g, request, answer).unwrap();
+            if let Some((source, span, bindings)) = g.nodes.iter().enumerate().find_map(|(i, n)| {
+                if r.contexts[i].request != 4 {
+                    return None;
+                }
+                match &n.payload {
+                    Some(Payload::Expression {
+                        location: Location::Law { span },
+                        bindings,
+                        ..
+                    }) => Some((i, *span, bindings.clone())),
+                    _ => None,
+                }
+            }) {
+                let source_context = g.context_at(source);
+                let previous = std::mem::replace(&mut g.active, source_context);
+                e.source_arguments(&g, span, &bindings).unwrap();
+                for invalid in [
+                    Selector::Declaration {
+                        name: "Reservations.absent".into(),
+                    },
+                    Selector::Subject {
+                        snapshot: "v".into(),
+                        subject: "A".into(),
+                    },
+                ] {
+                    let original = std::mem::replace(&mut g.requests[4].head, invalid);
+                    assert!(matches!(
+                        e.source_arguments(&g, span, &bindings),
+                        Err(ValidationFailure::Internal(_))
+                    ));
+                    g.requests[4].head = original;
+                    e.source_arguments(&g, span, &bindings).unwrap();
+                }
+                g.active = previous;
+                e.validate_answer(&g, request, answer).unwrap();
+            }
             let saved = g.requests[4].clone();
             g.requests[4]
                 .arguments
@@ -293,17 +339,29 @@ fn stop(mode: usize) {
         "missing=evaluate(Reservations.adMissing,p=@v/p)",
         "owner=evaluate(Reservations.adUniversalOwner,a=@v/A)",
         child,
-        "take=evaluate(Reservations.obUse,a=$owner.value,p=$child.value)",
+        if mode == 2 {
+            "take=check(Reservations.obEq,a=$owner.value,p=$child.value)"
+        } else {
+            "take=evaluate(Reservations.obUse,a=$owner.value,p=$child.value)"
+        },
         "later=evaluate(Reservations.seed)",
     ];
     let input = fixture::input(false, false, "r1");
     let normal = run(&asks);
     assert_eq!(normal.status(), "partial");
-    let Signature::View { params, .. } =
-        &normal.prepared.inputs().law().declarations["Reservations.obUse"].signature
-    else {
-        panic!()
+    let declaration = if mode == 2 {
+        "Reservations.obEq"
+    } else {
+        "Reservations.obUse"
     };
+    let params = match &normal.prepared.inputs().law().declarations[declaration].signature {
+        Signature::View { params, .. } | Signature::Law { params, .. } => params,
+        _ => panic!(),
+    };
+    if mode == 2 {
+        assert!(normal.answers[5].claim.is_some());
+        assert!(!normal.answers[5].evidence.is_empty());
+    }
     let span = params[1].span;
     let (limits, usage, expected) = reservations_private_stop_usage(mode);
     let armed = Rc::new(Cell::new(false));
@@ -375,6 +433,8 @@ fn stop(mode: usize) {
     for (i, a) in stopped.answers.iter().enumerate().skip(5) {
         if mode == 2 && i == 5 {
             let original = &normal.answers[5];
+            assert!(a.claim.is_some());
+            assert!(!a.evidence.is_empty());
             assert_eq!(a.status, original.status);
             assert_eq!(a.outputs, original.outputs);
             assert_eq!(a.claim, original.claim);
