@@ -179,9 +179,11 @@
   condition_failedと直接依存先IDを持つdependency_blockedを返し、後続へ元理由と証拠Refを保持する。
   既知rootの不適合と未生成rootのmissing/unsupportedを混在させても、元producerと独立要求の値・反例を保持する。
   非依存Law族の自由parameterと併用し、正しい固定Answer引数を元Refへ束縛して有限全域・Z/Q全称評価へ渡す。
+  既知ownerの固定Answer値・公開成分射影を依存Law族の実prefix域へ渡し、
+  有限Owned参照・Tuple/Option/Set/Mapと独立した固定値を評価する。
   固定producerの補完・全称Scopeを継承し、今回の自由parameterの実Domainを追加して元入力から再検査する。
   上記以外のpayloadを持つdataの評価、その他の式形・
-  上記以外の無限型・Answer射影の動的owner/依存Law族との混合・
+  上記以外の無限型・Answer束縛の動的owner所属制約・依存Law族と無限自由数値parameterの混合・
   未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
