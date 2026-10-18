@@ -285,19 +285,30 @@ fn owned_map_missing_table_and_unknown_owner_keep_distinct_boundaries() {
             .flat_map(|r| arr(get(r, "missing")))
             .any(|f| get(f, "field") == &Json::str("Reservations.Migration.states"))
     );
-    let i = fixture::input("unknown_owner", "r1");
-    assert!(archsig::observed::input::check_inputs(i.clone(), &mut quiet()).is_ok());
-    let e = evaluate_observed_bytes(
-        i,
+}
+
+#[test]
+fn owned_map_unknown_owner_uses_known_input_constraints() {
+    let r = run_input(
+        fixture::input("unknown_owner", "r1"),
         &["x=evaluate(Applications.mcParameter,a=@v/A,b=@v/B,m=@v/m)"],
-        &mut quiet(),
-    )
-    .unwrap_err();
-    assert!(matches!(
-        e,
-        archsig::observed::EvaluationFailure::NotImplemented { .. }
-    ));
-    assert!(e.wire().is_none());
+    );
+    let w = r.wire();
+    let a = answer(&w, "x");
+    assert_eq!(get(a, "status"), &Json::str("established"));
+    assert_eq!(
+        get(node(&w, get(get(a, "outputs"), "value")), "value"),
+        &Json::Bool(true)
+    );
+    assert!(
+        arr(get(a, "reasons"))
+            .iter()
+            .filter(|r| get(r, "code") == &Json::str("missing_observation"))
+            .flat_map(|r| arr(get(r, "missing")))
+            .any(|f| get(f, "subject") == &Json::str("p")
+                && get(f, "field") == &Json::str("Reservations.State.owner"))
+    );
+    assert!(!codes(a).contains(&&Json::str("condition_failed")));
 }
 
 #[test]
