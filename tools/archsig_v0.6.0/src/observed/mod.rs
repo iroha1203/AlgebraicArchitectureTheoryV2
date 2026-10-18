@@ -8,6 +8,7 @@ mod environment;
 pub mod evaluate;
 mod finite;
 mod numeric;
+mod path_value;
 mod quantifier;
 pub mod result;
 mod term;

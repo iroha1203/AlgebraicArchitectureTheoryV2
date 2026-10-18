@@ -3892,7 +3892,10 @@ impl<'a> Environment<'a> {
         match &law.exprs[callee].kind {
             ExprKind::Dotted(parts)
                 if parts.len() == 1
-                    && matches!(parts[0].name.as_str(), "rat" | "count" | "sum") =>
+                    && matches!(
+                        parts[0].name.as_str(),
+                        "rat" | "count" | "sum" | "identity" | "source" | "target"
+                    ) =>
             {
                 Ok(Some(parts[0].name.as_str()))
             }
@@ -4048,6 +4051,24 @@ impl<'a> Environment<'a> {
                     items.get(*index).ok_or("数値射影位置の内部不整合")?.clone()
                 }
                 ExprKind::Call { .. } => match self.builtin(id)?.ok_or("固定演算がない")? {
+                    name @ ("identity" | "source" | "target") => {
+                        let span = law.exprs[id].span;
+                        let mut reading = None;
+                        for declaration in law.declarations.values() {
+                            self.tick()?;
+                            if declaration.span.0 <= span.0 && span.1 <= declaration.span.1 {
+                                if reading.replace(declaration.reading.as_str()).is_some() {
+                                    return Err("Path 演算の元宣言が一意でない".into());
+                                }
+                            }
+                        }
+                        super::path_value::construct(
+                            name,
+                            reading.ok_or("Path 演算の元 reading がない")?,
+                            values,
+                            &self.control,
+                        )?
+                    }
                     "rat" => {
                         if values.len() != 2 {
                             return Err("rat arityが違う".into());

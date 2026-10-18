@@ -911,7 +911,7 @@ fn injected_stops_keep_constructor_and_match_prefixes() {
     output(&prior, "seed", &Json::str("Z"), Json::str("3"));
     assert_missing(&prior, "missing", "missing", &checked);
     // eval前後のExpression checkpointだけを数える。4は最初のconstructor引数完了後、
-    // matchの4は選択body開始前、7は選択bodyのbinder完了後・literal開始前。
+    // matchの5はscrutineeのEvaluation完了後、12は選択bodyのbinder完了後・literal開始前。
     for (ask, offset, kind, done_text) in [
         (
             "current=evaluate(Calc.ctor,s=@v/sample)",
@@ -921,13 +921,13 @@ fn injected_stops_keep_constructor_and_match_prefixes() {
         ),
         (
             "current=evaluate(Calc.selected,s=@v/sample)",
-            4,
+            5,
             1,
             b"s.packet".as_slice(),
         ),
         (
             "current=evaluate(Calc.selected,s=@v/sample)",
-            7,
+            12,
             2,
             b"n".as_slice(),
         ),

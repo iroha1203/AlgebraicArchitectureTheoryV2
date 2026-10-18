@@ -75,6 +75,7 @@ impl NodeType {
     }
 }
 pub(crate) enum Scalar {
+    Path(Box<super::path_value::Identity>),
     Term(Box<super::term::Term>),
     Unit,
     Text(String),
@@ -117,6 +118,7 @@ pub(crate) enum Scalar {
 impl Scalar {
     pub(crate) fn ty(&self) -> Type {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Path(path) => Type::Path(path.entity.clone(), path.entity.clone()),
             Self::Term(t) => t.ty(),
             Self::Unit => Type::Unit,
             Self::Text(_) => Type::Text,
@@ -137,6 +139,7 @@ impl Scalar {
     }
     pub(super) fn wire(&self) -> Json {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Path(_) => unreachable!("Path の表示は既出の型付き node を用いる"),
             Self::Term(t) => t.wire(),
             Self::Unit => Json::Arr(vec![]),
             Self::Text(text) => Json::str(text),
@@ -206,6 +209,7 @@ impl Drop for Scalar {
 impl std::fmt::Debug for Scalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Path(path) => f.debug_tuple("Path").field(path).finish(),
             Self::Term(t) => f.debug_tuple("Term").field(t).finish(),
             Self::Unit => f.write_str("Unit"),
             Self::Text(text) => f.debug_tuple("Text").field(text).finish(),
@@ -269,6 +273,7 @@ impl std::fmt::Debug for Scalar {
 impl Clone for Scalar {
     fn clone(&self) -> Self {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
+            Self::Path(path) => Self::Path(path.clone()),
             Self::Term(t) => Self::Term(t.clone()),
             Self::Unit => Self::Unit,
             Self::Text(text) => Self::Text(text.clone()),
@@ -325,6 +330,7 @@ impl Clone for Scalar {
 impl PartialEq for Scalar {
     fn eq(&self, other: &Self) -> bool {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (self, other) {
+            (Self::Path(a), Self::Path(b)) => a == b,
             (Self::Term(a), Self::Term(b)) => a == b,
             (Self::Unit, Self::Unit) => true,
             (Self::Text(a), Self::Text(b)) => a == b,
@@ -1318,7 +1324,7 @@ pub(crate) struct Node {
     pub reasons: Vec<Reason>,
 }
 impl Node {
-    fn wire(&self, id: usize) -> Json {
+    fn wire(&self, id: usize, prior: &[Node]) -> Json {
         let mut wire = BTreeMap::from([
             ("id".into(), Json::str(format!("n{id}"))),
             ("type".into(), self.ty.wire()),
@@ -1345,7 +1351,18 @@ impl Node {
             ),
         ]);
         if let Some(payload) = &self.payload {
-            let mut value = payload.wire();
+            let mut value = match payload {
+                Payload::Scalar(value) => super::path_value::wire(
+                    value,
+                    prior,
+                    &self.arguments,
+                    &Control::new(super::control::Limits::default(), |_| {
+                        super::control::Usage::default()
+                    }),
+                )
+                .expect("挿入時に検査した値の既出 Ref 表示"),
+                other => other.wire(),
+            };
             if matches!(
                 payload,
                 Payload::Proposition { .. }
@@ -1485,7 +1502,7 @@ impl ObservedEvaluation {
                 self.nodes
                     .iter()
                     .enumerate()
-                    .map(|(i, n)| n.wire(i))
+                    .map(|(i, n)| n.wire(i, &self.nodes[..i]))
                     .collect(),
             ),
         );
@@ -3826,6 +3843,7 @@ impl Graph {
             }
             (NodeType::Value(t), Some(Payload::Scalar(s))) if t == &s.ty() => {
                 super::data::check_shape(s, &self.control)?;
+                super::path_value::check_refs(s, &self.nodes, &node.arguments, &self.control)?;
                 self.universal_witness_value_shape(&node)?;
                 self.universal_local_quantifier_value_shape(&node)?;
             }
