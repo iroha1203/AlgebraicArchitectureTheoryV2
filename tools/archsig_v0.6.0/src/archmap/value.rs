@@ -686,6 +686,28 @@ impl<E: InputError> Reader<'_, '_, E> {
     }
 }
 
+/// 内部の補完値も元fieldのencoding・型・登録参照で再検査する。
+/// 原始表やAtomを更新せず、補完制約の値として返す。
+pub(crate) fn check_assignment<E: InputError>(
+    value: &Json,
+    ty: &Type,
+    definitions: &CheckedDefinitions,
+    roster: &Roster<'_>,
+    namespace: &str,
+    control: &mut Control,
+) -> Result<Value, E> {
+    let encoded = value.canonical_controlled::<E>(control, Checkpoint::Completion)?;
+    let node = crate::json::parse_inner::<E>(encoded.as_bytes(), control, Checkpoint::Completion)?;
+    Reader::<E> {
+        control: control.clone(),
+        error: std::marker::PhantomData,
+        definitions,
+        roster,
+        namespace,
+    }
+    .read(&node, ty, "")
+}
+
 /// subject の宣言順の全 field と、Atom の値。
 pub(crate) fn check_snapshots<E: InputError>(
     raw: &[RawSnapshot<'_>],

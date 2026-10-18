@@ -7758,7 +7758,9 @@ impl<'a> Environment<'a> {
                     scalar_scope.completions = true;
                     (Some(assigned), Some(scalar_scope))
                 } else if let Some(assigned) = assigned {
-                    if !self.completion_type_supported(&field.ty)? || assigned.ty() != field.ty {
+                    if !self.completion_type_supported(&field.ty)?
+                        || assigned.ty() != field.ty.erase()
+                    {
                         return Err("補完slotの元有限型が違う".into());
                     }
                     let mut scalar_scope = request_base.clone();
@@ -9494,7 +9496,7 @@ pub(crate) fn scalar_from(
             subject: subject.clone(),
             entity: entity.into(),
         })),
-        _ => data::from_input(value, ty, law, control),
+        _ => data::from_input(value, &ty.erase(), law, control),
     }
 }
 pub(crate) fn is_comparison(op: BinOp) -> bool {

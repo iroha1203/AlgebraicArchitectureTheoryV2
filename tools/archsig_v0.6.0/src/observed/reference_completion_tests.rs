@@ -249,16 +249,15 @@ fn reference_completion_rejects_original_ref_assignment_domain_and_projection_ty
 }
 #[test]
 fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_and_known_slots() {
-    use crate::archmap::{ReferenceAssignment, check_completion_with_references};
+    use crate::archmap::{FieldAssignment, check_completion_with_values};
     use crate::observed::control::CheckFailure;
     let r = example(true);
     let i = r.prepared.inputs();
-    let pin = |field: &str, target: &str| ReferenceAssignment {
+    let pin = |field: &str, target: &str| FieldAssignment {
         snapshot: "v".into(),
         subject: "item".into(),
         field: field.into(),
-        target_snapshot: "v".into(),
-        target_subject: target.into(),
+        value: Json::Arr(vec![Json::str("v"), Json::str(target)]),
     };
     for pins in [
         vec![pin("Refs.Sample.left", "ghost")],
@@ -267,7 +266,7 @@ fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_an
         vec![pin("Refs.Sample.left", "A"), pin("Refs.Sample.left", "A")],
     ] {
         assert!(matches!(
-            check_completion_with_references::<CheckFailure<Box<crate::issue::Issue>>>(
+            check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
                 &i.archmap().snapshots,
                 &i.law().definitions,
                 &pins,
@@ -277,7 +276,7 @@ fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_an
         ));
     }
     for target in ["A", "B"] {
-        check_completion_with_references::<CheckFailure<Box<crate::issue::Issue>>>(
+        check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
             &i.archmap().snapshots,
             &i.law().definitions,
             &[pin("Refs.Sample.left", target)],

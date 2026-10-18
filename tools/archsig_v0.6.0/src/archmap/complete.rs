@@ -8,12 +8,11 @@ use super::*;
 use crate::json::InputError;
 use crate::observed::control::{Checkpoint, Control};
 
-pub(crate) struct ReferenceAssignment {
+pub(crate) struct FieldAssignment {
     pub snapshot: String,
     pub subject: String,
     pub field: String,
-    pub target_snapshot: String,
-    pub target_subject: String,
+    pub value: Json,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -72,7 +71,7 @@ struct Model<'a, E> {
     /// 欠測した参照 slot ごとの変数 (subject, field) と候補。
     vars: Vec<(usize, usize, Vec<usize>)>,
     var_index: HashMap<(usize, usize), usize>,
-    pinned: HashMap<(usize, usize), usize>,
+    pinned: HashMap<(usize, usize), Value>,
     data_inhabited: HashMap<String, bool>,
     definitions: &'a CheckedDefinitions,
     control: Control,
@@ -138,8 +137,12 @@ impl<'a, E: InputError> Model<'a, E> {
 
     fn slot_ref(&self, g: usize, f: usize) -> Result<Option<RefSrc>, E> {
         self.checkpoint()?;
-        if let Some(&target) = self.pinned.get(&(g, f)) {
-            return self.done(Some(RefSrc::Known(target)));
+        if let Some(value) = self.pinned.get(&(g, f)) {
+            return self.done(
+                value
+                    .as_ref()
+                    .map(|(snapshot, subject)| RefSrc::Known(self.index[&(snapshot, subject)])),
+            );
         }
         let out = match &self.subjects[g].fields[f].slot {
             Slot::Known { value, .. } => value
@@ -575,15 +578,15 @@ pub(crate) fn check_completion<E: InputError>(
     definitions: &CheckedDefinitions,
     control: &mut Control,
 ) -> Result<(), E> {
-    check_completion_with_references::<E>(snapshots, definitions, &[], control)
+    check_completion_with_values::<E>(snapshots, definitions, &[], control)
 }
 
-/// 元欠測slotに置いた参照が、既知Map/ownerを保つ補完へ拡張できるかを検査する。
+/// 元欠測slotへ置いた型付き値が、既知Map/ownerを保つ補完へ拡張できるかを検査する。
 /// 入力表やLawの真偽を変更せず、通常の存在検査と同じ制約を使う。
-pub(crate) fn check_completion_with_references<E: InputError>(
+pub(crate) fn check_completion_with_values<E: InputError>(
     snapshots: &[Snapshot],
     definitions: &CheckedDefinitions,
-    pinned: &[ReferenceAssignment],
+    pinned: &[FieldAssignment],
     control: &mut Control,
 ) -> Result<(), E> {
     E::checkpoint(control, Checkpoint::Completion)?;
@@ -605,6 +608,12 @@ pub(crate) fn check_completion_with_references<E: InputError>(
         by_type.entry(s.ty.as_str()).or_default().push(g);
         E::checkpoint(control, Checkpoint::Completion)?;
     }
+    let roster = value::Roster {
+        types: subjects
+            .iter()
+            .map(|s| ((s.snapshot.as_str(), s.id.as_str()), s.ty.as_str()))
+            .collect(),
+    };
     let mut owner_field = Vec::new();
     for s in &subjects {
         E::checkpoint(control, Checkpoint::Completion)?;
@@ -641,7 +650,7 @@ pub(crate) fn check_completion_with_references<E: InputError>(
     };
     for assignment in pinned {
         m.checkpoint()?;
-        let fail = || issue(Code::Reference, "", "補完参照が元の欠測slot/登録型と違う");
+        let fail = || issue(Code::Reference, "", "補完値が元の欠測slotと違う");
         let Some(&g) = m
             .index
             .get(&(assignment.snapshot.as_str(), assignment.subject.as_str()))
@@ -660,18 +669,22 @@ pub(crate) fn check_completion_with_references<E: InputError>(
         let Some((f, field)) = selected else {
             return Err(fail().into());
         };
-        let Some(&target) = m.index.get(&(
-            assignment.target_snapshot.as_str(),
-            assignment.target_subject.as_str(),
-        )) else {
-            return Err(fail().into());
-        };
-        if field.slot != Slot::Missing
-            || !matches!(&field.ty, Type::Ref(entity) if *entity == m.subjects[target].ty)
-            || m.pinned.insert((g, f), target).is_some()
-        {
+        if field.slot != Slot::Missing || m.pinned.contains_key(&(g, f)) {
             return Err(fail().into());
         }
+        let namespace = m.subjects[g]
+            .ty
+            .rsplit_once('.')
+            .map_or("", |(namespace, _)| namespace);
+        let value = value::check_assignment::<E>(
+            &assignment.value,
+            &field.ty,
+            definitions,
+            &roster,
+            namespace,
+            control,
+        )?;
+        m.pinned.insert((g, f), value);
         m.checkpoint()?;
     }
     for g in 0..m.subjects.len() {
@@ -696,6 +709,11 @@ pub(crate) fn check_completion_with_references<E: InputError>(
         let s = m.subjects[g];
         for (f, field) in s.fields.iter().enumerate() {
             m.checkpoint()?;
+            if let Some(value) = m.pinned.get(&(g, f)) {
+                collect_known(&m, g, &field.ty, value, &s.pointer, &mut cons)?;
+                m.checkpoint()?;
+                continue;
+            }
             match &field.slot {
                 Slot::Known { value, pointer, .. } => {
                     collect_known(&m, g, &field.ty, value, pointer, &mut cons)?
