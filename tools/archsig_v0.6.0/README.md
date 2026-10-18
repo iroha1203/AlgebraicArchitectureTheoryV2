@@ -51,10 +51,10 @@
   subject存在の支持を、型域・実binder・判断の導出へ保持する。
   数値等式には元左右と同じ型・形の残差を保持し、一般Boolには数値残差を付けない。
   検査済み既知Mapは元の参照pairと両端型を保ち、行順によらず同じ域上の値で等値を判定する。
-  空域の空表、Mapを含むTuple/List/Set/Optionも型を保つ。欠測Mapは元slotのまま通常値へ補わない。
+  空域の空表、Mapを含むTuple/List/Set/Optionも型を保つ。欠測Mapは元slotのMissingを保持し、共有補完から値を判断する。
   Map適用は元表と実keyを照合して像を返し、元callee/引数の評価・支持・Scopeを保持する。
   域外の実keyはkey集合への追加前後の等値を反証し、検査可能な条件とcondition_failedを残して値を生成しない。
-  欠測Map/参照は元missingを保持する。参照制約付きMap補完は未実装である。
+  欠測Map/参照は元missingを保持し、元入力の参照・owner・全域性制約に整合する共有補完を使う。
   原始Termと閉じたfnは、元body・parameter順・型付きASTと静的参照を保ち、既知引数へ適用する。
   bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
   元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。
@@ -142,7 +142,7 @@
   Owned型fieldと、参照を含む有限Tuple/Option/Set・非再帰dataの欠測も、元field型の入力制約へ戻る共有補完で読む。
   値DAGの消去型と原始fieldのOwned条件を分け、候補全値と未選択ownerの整合する拡張を検査する。
   空登録族のnone・空Setと、元Missing・実Source/prefix・現在由来を保持する。
-  Map自体の欠測列挙は後続に残る。無限List・Text・再帰dataを観測例から有限化しない。
+  無限List・Text・再帰dataを観測例から有限化しない。
   有限型slotの各補完でも先に全域のwholeを判断し、元の支持・欠測・量化を保って集約する。
   有限型のLaw parameterとZ/Q parameterの混在も、元宣言順の有限族の各instanceでZ/Q全域を判断する。
   既知ownerの依存族でも数値parameterを有限列挙から分け、元署名の実prefixごとの全Z/Q代入を評価する。
@@ -164,8 +164,8 @@
   明示 `forall s:State[a]` / `exists` と、owner添字を持つ参照を含む有限Tuple/Option/Setは、
   Mapの両端owner添字も含め、元型の添字と現在の実束縛に従う登録族を使い、
   実Domain・元binder・件数と所属の支持を保持する。
-  ownerが未観測で族を確定できない場合は、全補完の範囲と元slotの欠測、
-  unsupported_algorithmを未決回答に保持する。
+  未観測ownerの有限補完から各caseの族を再構成し、全補完の範囲と元slotの欠測を保持する。
+  補完内でもowner式が未解決の場合は、実caseのSourceに接続するunsupported_algorithmを未決回答に保持する。
   Law の guard が false なら非適用となり、元の guard/body から条件付き要求を判断する。
   明示 guard と元の body の評価・支持を条件付き Law の導出へ接続する。
   型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
