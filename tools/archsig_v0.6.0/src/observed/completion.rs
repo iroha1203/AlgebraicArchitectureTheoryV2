@@ -419,56 +419,80 @@ impl Environment<'_> {
             };
             let context = graph.context_at(reference.0);
             let previous = self.context.replace(Some(context));
-            let analysis = if parameters.is_empty() {
-                self.analyze_source(graph, *span, bindings).map(Some)
-            } else {
-                // 数値全称軸を持つ実field Sourceだけは、自身のtemplate/Domainと
-                // 元binderへ戻って分析する。一般族wholeは従来通り対象外とする。
-                self.universal_missing_source_analysis(graph, reference)
-            };
+            let analysis = (|| -> Result<Vec<Fact>, ValidationFailure> {
+                if parameters.is_empty() {
+                    if let Some(fields) =
+                        self.owned_expression_missing_slots(graph, *span, bindings)?
+                    {
+                        return Ok(fields);
+                    }
+                    Ok(self
+                        .analyze_source(graph, *span, bindings)?
+                        .missing
+                        .map(|missing| missing.fact)
+                        .into_iter()
+                        .collect())
+                } else {
+                    // 数値全称軸を持つ実field Sourceは元template/Domainへ戻る。
+                    // 一般宣言族wholeの所属補完はここでは受け付けない。
+                    Ok(self
+                        .universal_missing_source_analysis(graph, reference)?
+                        .and_then(|analysis| analysis.missing)
+                        .map(|missing| missing.fact)
+                        .into_iter()
+                        .collect())
+                }
+            })();
             self.context.set(previous);
-            let Some(analysis) = analysis? else {
+            let fields = analysis?;
+            if fields.is_empty() {
                 continue;
-            };
-            let Some(missing) = analysis.missing else {
-                continue;
-            };
-            let fact = missing.fact;
+            }
             if !direct_sources.contains(&index)
-                && !read_sources
-                    .get(&index)
-                    .is_some_and(|facts| facts.contains(&fact))
+                && read_sources.get(&index).is_none_or(|facts| {
+                    facts.is_empty() || facts.iter().any(|fact| !fields.contains(fact))
+                })
             {
                 return Err("欠測理由のslotが元実読取りSourceと違う".into());
             }
-            let field = self.field(
-                &fact.snapshot,
-                &fact.subject,
-                fact.field.as_deref().ok_or("欠測slotにfieldがない")?,
-            )?;
-            if field.slot != Slot::Missing || fact.atom.is_some() {
-                return Err("補完の元slotが現在の欠測でない".into());
-            }
-            let request = graph
-                .requests
-                .get(context.request)
-                .ok_or("欠測Sourceの元Requestがない")?;
-            reasons.push(Reason {
-                kind: ReasonKind::Missing,
-                request: request.id.clone(),
-                dependencies: vec![reference],
-                missing: vec![fact.clone()],
-                location: Some(Location::Law { span: *span }),
-            });
-            if self.completion_type_supported(&field.ty)? {
-                slots
-                    .entry(fact)
-                    .and_modify(|old| {
-                        if reference.0 < old.0 {
-                            *old = reference;
-                        }
-                    })
-                    .or_insert(reference);
+            for fact in fields {
+                self.tick()?;
+                if !direct_sources.contains(&index)
+                    && !read_sources
+                        .get(&index)
+                        .is_some_and(|facts| facts.contains(&fact))
+                {
+                    continue;
+                }
+                let field = self.field(
+                    &fact.snapshot,
+                    &fact.subject,
+                    fact.field.as_deref().ok_or("欠測slotにfieldがない")?,
+                )?;
+                if field.slot != Slot::Missing || fact.atom.is_some() {
+                    return Err("補完の元slotが現在の欠測でない".into());
+                }
+                let request = graph
+                    .requests
+                    .get(context.request)
+                    .ok_or("欠測Sourceの元Requestがない")?;
+                reasons.push(Reason {
+                    kind: ReasonKind::Missing,
+                    request: request.id.clone(),
+                    dependencies: vec![reference],
+                    missing: vec![fact.clone()],
+                    location: Some(Location::Law { span: *span }),
+                });
+                if self.completion_type_supported(&field.ty)? {
+                    slots
+                        .entry(fact)
+                        .and_modify(|old| {
+                            if reference.0 < old.0 {
+                                *old = reference;
+                            }
+                        })
+                        .or_insert(reference);
+                }
             }
         }
         canonical_reasons(&mut reasons, &self.control)?;
@@ -1788,9 +1812,24 @@ impl Environment<'_> {
             self.inputs.law(),
             &self.control,
         )?;
-        if !data::equal(value, &values[i], &self.control)?
-            || node.ty != NodeType::Value(seed.types[i].clone())
-        {
+        let mut matches = data::equal(value, &values[i], &self.control)?
+            && node.ty == NodeType::Value(seed.types[i].clone());
+        // 一つのFamily Sourceは複数subjectのowner slotを読む。単独の値nodeは
+        // このSourceが読むmember成分であることを示し、slotごとの対応は
+        // completion_values_uncachedがCase.valuesの元順で厳密に照合する。
+        if !matches {
+            for j in i + 1..seed.sources.len() {
+                self.tick()?;
+                if seed.sources[j] == *source
+                    && node.ty == NodeType::Value(seed.types[j].clone())
+                    && data::equal(value, &values[j], &self.control)?
+                {
+                    matches = true;
+                    break;
+                }
+            }
+        }
+        if !matches {
             return Err("補完projectionのslot値/型が違う".into());
         }
         Ok(())

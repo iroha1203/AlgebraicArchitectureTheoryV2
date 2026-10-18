@@ -359,11 +359,31 @@ fn owned_expression_family_unknown_owner_and_candidate_keep_missing_source_and_a
         "Reservations.State.owner",
     )] {
         let result = owned_private_example(body, &[ask], Some(omit), false);
-        assert_eq!(result.status(), "partial");
-        assert_eq!(result.answers[0].status, Decision::Undetermined);
-        assert!(!result.answers[0].outputs.contains_key("value"));
+        assert_eq!(result.status(), "complete");
+        assert_eq!(result.answers[0].status, Decision::Established);
+        let value = result.answers[0].outputs["value"];
+        let Some(Payload::Scalar(Scalar::Set { element, items })) = &result.nodes[value.0].payload
+        else {
+            panic!()
+        };
+        assert_eq!(element, &Type::Ref("Reservations.State".into()));
+        assert_eq!(
+            items,
+            &vec![
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: "p".into(),
+                    entity: "Reservations.State".into()
+                },
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: "q".into(),
+                    entity: "Reservations.State".into()
+                },
+            ]
+        );
         assert!(result.answers[0].scope.completions);
-        assert!(result.answers[0].reasons.iter().any(|r|matches!(&r.kind,ReasonKind::UnsupportedAlgorithm {method,..} if method=="unresolved_owned_expression_family")));
+        assert!(!result.answers[0].reasons.iter().any(|r|matches!(&r.kind,ReasonKind::UnsupportedAlgorithm {method,..} if method=="unresolved_owned_expression_family")));
         assert!(
             result.answers[0]
                 .reasons
