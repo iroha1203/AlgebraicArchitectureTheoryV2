@@ -60,7 +60,7 @@ impl Environment<'_> {
         for parameter in params {
             self.tick()?;
             if parameter.ty != parameter.ty.erase()
-                && !Self::fixed_owned_binding(request, parameter)
+                && !self.fixed_owned_binding(request, parameter)?
                 && request
                     .constraints
                     .iter()

@@ -333,10 +333,15 @@ fn stop(mode: usize) {
         assert!(!normal.answers[6].evidence.is_empty());
     }
     let span = params[if mode == 0 { 1 } else { 2 }].span;
-    let (limits, usage, expected) = reservations_private_stop_usage(mode.min(2));
+    let (limits, usage, expected) = reservations_private_stop_usage(match mode {
+        4 => 0,
+        5 => 1,
+        _ => mode.min(2),
+    });
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
+    let later_member = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
@@ -354,12 +359,27 @@ fn stop(mode: usize) {
     let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "v" {
-            let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
+            let (a, ph, s, member) = (
+                armed.clone(),
+                phase.clone(),
+                seen.clone(),
+                later_member.clone(),
+            );
             data::observe_iterations(move |at, ctx, operation, index| {
+                if mode >= 4
+                    && at == span
+                    && ctx.request == 6
+                    && s.get()
+                    && operation == "owned_call_constraint"
+                {
+                    member.set(true);
+                }
                 let target = match mode {
                     0 => operation == "owned_call_constraint",
                     1 => operation == "owned_call_map_domain_roster" && index == 1,
                     2 => operation == "answer_projection_condition" && index == 5,
+                    4 => operation == "owned_binding_type" && index == 1,
+                    5 => operation == "owned_binding_owner" && index == 1,
                     _ => operation == "owned_binding_checked" && ph.get(),
                 };
                 if at == span && ctx.request == 6 && target {
@@ -384,6 +404,7 @@ fn stop(mode: usize) {
     .unwrap();
     data::clear_iteration_observer();
     assert!(seen.get());
+    assert!(!later_member.get());
     assert_eq!(stopped.status(), "interrupted");
     assert_eq!(c.stop_reason(), Some(expected.clone()));
     assert_eq!(Some(probes.get()), frozen.get());
@@ -448,4 +469,13 @@ fn compound_owned_condition_stop_preserves_prior_results_and_probe_freeze() {
 #[test]
 fn compound_owned_fresh_recheck_stop_preserves_nonempty_claim_and_evidence() {
     stop(3)
+}
+
+#[test]
+fn compound_owned_type_walk_cancel_preserves_prior_results_and_stops_before_member_check() {
+    stop(4)
+}
+#[test]
+fn compound_owned_owner_selection_budget_preserves_prefix_and_probe_freeze() {
+    stop(5)
 }

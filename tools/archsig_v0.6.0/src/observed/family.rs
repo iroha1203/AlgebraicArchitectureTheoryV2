@@ -59,7 +59,7 @@ impl Environment<'_> {
             self.tick()?;
             dependent |= p.ty != p.ty.erase();
             if p.ty != p.ty.erase()
-                && !Self::fixed_owned_binding(request, p)
+                && !self.fixed_owned_binding(request, p)?
                 && request
                     .constraints
                     .iter()

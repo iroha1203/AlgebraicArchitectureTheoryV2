@@ -17,10 +17,27 @@ struct Selected {
 }
 
 impl Environment<'_> {
-    fn binding_owner_names(ty: &Type) -> BTreeSet<&str> {
+    fn binding_owner_names<'t>(
+        &self,
+        ty: &'t Type,
+        _span: (usize, usize),
+    ) -> Result<BTreeSet<&'t str>, ValidationFailure> {
         let mut owners = BTreeSet::new();
         let mut pending = vec![ty];
+        #[cfg(test)]
+        let mut index = 0;
         while let Some(ty) = pending.pop() {
+            self.tick()?;
+            #[cfg(test)]
+            {
+                data::observe_actual(
+                    _span,
+                    self.context.get().unwrap_or_default(),
+                    "owned_binding_type",
+                    index,
+                );
+                index += 1;
+            }
             match ty {
                 Type::Owned(_, owner) => {
                     owners.insert(owner.as_str());
@@ -33,14 +50,20 @@ impl Environment<'_> {
                 }
                 _ => {}
             }
+            self.tick()?;
         }
-        owners
+        Ok(owners)
     }
 
-    pub(in crate::observed) fn fixed_owned_binding(request: &Request, p: &Param) -> bool {
-        let owners = Self::binding_owner_names(&p.ty);
+    pub(in crate::observed) fn fixed_owned_binding(
+        &self,
+        request: &Request,
+        p: &Param,
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        let owners = self.binding_owner_names(&p.ty, p.span)?;
         if owners.is_empty() {
-            return false;
+            return Ok(false);
         }
         let selected = |name: &str| {
             request
@@ -49,20 +72,31 @@ impl Environment<'_> {
                 .find(|a| a.name == format!("bind.{name}"))
         };
         let Some(value) = selected(&p.name) else {
-            return false;
+            return Ok(false);
         };
         let mut answer = matches!(value.value, Selector::Answer { .. });
-        for owner in owners {
+        for (_index, owner) in owners.into_iter().enumerate() {
+            self.tick()?;
+            #[cfg(test)]
+            data::observe_actual(
+                p.span,
+                self.context.get().unwrap_or_default(),
+                "owned_binding_owner",
+                _index,
+            );
             let Some(owner) = selected(owner) else {
-                return false;
+                self.tick()?;
+                return Ok(false);
             };
             answer |= matches!(owner.value, Selector::Answer { .. });
+            self.tick()?;
         }
-        answer
+        self.tick()?;
+        Ok(answer
             && request
                 .constraints
                 .iter()
-                .any(|c| c.parameter == p.name && c.dynamic)
+                .any(|c| c.parameter == p.name && c.dynamic))
     }
 
     fn owned_selected(
@@ -126,7 +160,7 @@ impl Environment<'_> {
         request: &Request,
         p: &Param,
     ) -> Result<Option<OwnedBindingPlan>, ValidationFailure> {
-        if !Self::fixed_owned_binding(request, p) {
+        if !self.fixed_owned_binding(request, p)? {
             return Ok(None);
         }
         self.tick()?;
@@ -145,7 +179,7 @@ impl Environment<'_> {
         if !params.contains(p) {
             return Err("所属束縛の元parameterが違う".into());
         }
-        let owner_names = Self::binding_owner_names(&p.ty);
+        let owner_names = self.binding_owner_names(&p.ty, p.span)?;
         let selector = |name: &str| {
             request
                 .arguments
@@ -341,7 +375,7 @@ impl Environment<'_> {
         p: &Param,
         value: NodeRef,
     ) -> Result<Option<NodeRef>, ValidationFailure> {
-        if !Self::fixed_owned_binding(request, p) {
+        if !self.fixed_owned_binding(request, p)? {
             return Ok(None);
         }
         let context = self.current_context(graph);

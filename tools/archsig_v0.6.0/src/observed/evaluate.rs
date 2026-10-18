@@ -354,7 +354,7 @@ impl Evaluator<'_, '_> {
                         self.tick(Checkpoint::FiniteIteration)?;
                         if constraint.parameter == p.name
                             && constraint.dynamic
-                            && !Environment::fixed_owned_binding(self.request, p)
+                            && !self.environment.fixed_owned_binding(self.request, p)?
                             && !(defer_owned && matches!(p.ty, Type::Owned(..)))
                         {
                             return Err(self.unsupported(p.span, "動的 owner 制約の評価"));
@@ -396,7 +396,7 @@ impl Evaluator<'_, '_> {
                 }
                 Selector::Answer { .. } => {
                     if p.ty != p.ty.erase()
-                        && !Environment::fixed_owned_binding(self.request, p)
+                        && !self.environment.fixed_owned_binding(self.request, p)?
                         && self
                             .request
                             .constraints
