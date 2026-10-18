@@ -268,23 +268,50 @@ fn fixed_owned_mismatch_builds_typed_conditions_preserves_reasons_and_independen
             .find(|r| f(r, "code") == &Json::str("condition_failed"))
             .unwrap();
         let condition = node(&w, f(f(reason, "details"), "condition"));
-        let expected_roots = match (owner, child) {
-            ("@v/A", "$child.value") => vec![f(f(a(&w, "child"), "outputs"), "value").clone()],
-            ("$owner.value", "@v/r") => vec![f(f(a(&w, "owner"), "outputs"), "value").clone()],
-            ("$owner.value", "$child.evaluation.value") => vec![
-                f(f(a(&w, "child"), "outputs"), "value").clone(),
-                f(f(a(&w, "owner"), "outputs"), "value").clone(),
-            ],
-            ("$child.value[0]", "$child.evaluation.value[1]") => vec![
-                f(f(a(&w, "child"), "outputs"), "evaluation").clone(),
-                f(f(a(&w, "child"), "outputs"), "value").clone(),
-            ],
+        let operands = &arr(f(f(condition, "value"), "operands"))[1..];
+        match (owner, child) {
+            ("@v/A", "$child.value") => {
+                assert_eq!(operands.len(), 2);
+                assert_eq!(&operands[0], f(f(a(&w, "child"), "outputs"), "value"));
+                let direct = node(&w, &operands[1]);
+                assert_eq!(
+                    f(direct, "value"),
+                    &Json::Arr(vec![Json::str("v"), Json::str("A")])
+                );
+                assert_eq!(f(f(direct, "rule"), "kind"), &Json::str("subject"));
+                let foreign = f(f(a(&w, "owner"), "outputs"), "value");
+                assert_ne!(&operands[1], foreign);
+                assert_eq!(f(direct, "type"), f(node(&w, foreign), "type"));
+            }
+            ("$owner.value", "@v/r") => {
+                assert_eq!(operands.len(), 2);
+                assert_eq!(&operands[1], f(f(a(&w, "owner"), "outputs"), "value"));
+                let direct = node(&w, &operands[0]);
+                assert_eq!(
+                    f(direct, "value"),
+                    &Json::Arr(vec![Json::str("v"), Json::str("r")])
+                );
+                assert_eq!(f(f(direct, "rule"), "kind"), &Json::str("subject"));
+                let foreign = f(f(a(&w, "child"), "outputs"), "value");
+                assert_ne!(&operands[0], foreign);
+                assert_eq!(f(direct, "type"), f(node(&w, foreign), "type"));
+            }
+            ("$owner.value", "$child.evaluation.value") => assert_eq!(
+                operands,
+                &[
+                    f(f(a(&w, "child"), "outputs"), "value").clone(),
+                    f(f(a(&w, "owner"), "outputs"), "value").clone(),
+                ]
+            ),
+            ("$child.value[0]", "$child.evaluation.value[1]") => assert_eq!(
+                operands,
+                &[
+                    f(f(a(&w, "child"), "outputs"), "evaluation").clone(),
+                    f(f(a(&w, "child"), "outputs"), "value").clone(),
+                ]
+            ),
             _ => unreachable!(),
-        };
-        assert_eq!(
-            &arr(f(f(condition, "value"), "operands"))[1..],
-            expected_roots.as_slice()
-        );
+        }
         assert!(arr(f(&w,"nodes")).iter().filter(|n|f(n,"type")==&Json::str("Evidence")).any(|n|
             arr(f(n,"support")).iter().any(|fact|matches!(fact,Json::Obj(m)if m.get("field")==Some(&Json::str("Reservations.State.owner"))))));
         assert_eq!(f(a(&w, "seed"), "status"), &Json::str("established"));

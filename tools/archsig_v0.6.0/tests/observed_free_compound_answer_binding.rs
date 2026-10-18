@@ -203,7 +203,7 @@ fn free_compound_answer_empty_members_map_total_domain_and_counterexample_are_di
     assert!(!arr(f(answer(&w, "take"), "evidence")).is_empty());
 }
 #[test]
-fn free_compound_answer_unknown_unprovided_fixed_failure_and_mixed_boundary_are_preserved() {
+fn free_compound_answer_unknown_unprovided_fixed_failures_and_mixed_fibers_are_preserved() {
     for (producer, code) in [
         ("cbMissing,p=@v/p", "missing_observation"),
         ("cbOpaque,p=@v/p,q=@v/q", "unsupported_algorithm"),
@@ -271,17 +271,15 @@ fn free_compound_answer_unknown_unprovided_fixed_failure_and_mixed_boundary_are_
             .iter()
             .any(|r| f(r, "code") == &Json::str("condition_failed"))
     );
-    assert!(matches!(
-        evaluate_observed_bytes(
-            fixture::input("known", "r1"),
-            &[
-                "take=check(Applications.fcTuple,a=@v/A,x=$v.value)",
-                "v=evaluate(Applications.cbTuple,p=@v/p,q=@v/r)"
-            ],
-            &mut quiet()
-        ),
-        Err(archsig::observed::EvaluationFailure::NotImplemented { .. })
-    ));
+    let mixed = run(
+        fixture::input("known", "r1"),
+        &[
+            "take=check(Applications.fcTuple,a=@v/A,x=$v.value)",
+            "v=evaluate(Applications.cbTuple,p=@v/p,q=@v/r)",
+        ],
+    );
+    assert_eq!(mixed.status(), "complete");
+    assert_eq!(checked(&mixed.wire(), "take"), 2);
     let Err(error) = evaluate_observed_bytes(
         fixture::input("known", "r1"),
         &[

@@ -114,6 +114,7 @@ impl Environment<'_> {
         }
         for plan in self.projection_failure_plans(graph, request)? {
             self.tick()?;
+            let plan_dependencies = self.projection_failure_dependencies(graph, &plan)?;
             let mut selected = None;
             for (index, node) in graph
                 .nodes
@@ -140,11 +141,11 @@ impl Environment<'_> {
                     construction: "projection",
                 },
                 request: request.id.clone(),
-                dependencies: plan.dependencies.clone(),
+                dependencies: plan_dependencies.clone(),
                 missing: vec![],
                 location: Some(Location::Law { span: plan.span }),
             });
-            let mut dependencies = plan.dependencies;
+            let mut dependencies = plan_dependencies;
             dependencies.push(condition);
             dependencies.extend(graph.get(condition)?.evidence.iter().copied());
             dependencies.sort_by_key(|r| r.0);

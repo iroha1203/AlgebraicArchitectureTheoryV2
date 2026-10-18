@@ -1,4 +1,4 @@
-//! 全ownerが固定されたOwned束縛を、元selector・各member・原始owner事実から検査する。
+//! 固定ownerのOwned束縛を、元selector・各member・原始owner事実から検査する。
 use super::*;
 use crate::law::model::{Param, Signature};
 
@@ -6,7 +6,13 @@ pub(in crate::observed) struct OwnedBindingPlan {
     pub scalar: Scalar,
     pub checks: owned_call::Checks,
     pub dependencies: Vec<NodeRef>,
+    pub condition_inputs: Vec<ConditionInput>,
     pub producer: String,
+}
+#[derive(Clone, Debug)]
+pub(in crate::observed) enum ConditionInput {
+    Reference(NodeRef),
+    Subject(Box<Node>),
 }
 struct Selected {
     scalar: Scalar,
@@ -75,6 +81,7 @@ impl Environment<'_> {
             return Ok(false);
         };
         let mut answer = matches!(value.value, Selector::Answer { .. });
+        let mut fixed = 0;
         for (_index, owner) in owners.into_iter().enumerate() {
             self.tick()?;
             #[cfg(test)]
@@ -86,20 +93,22 @@ impl Environment<'_> {
             );
             let Some(owner) = selected(owner) else {
                 self.tick()?;
-                return Ok(false);
+                continue;
             };
+            fixed += 1;
             answer |= matches!(owner.value, Selector::Answer { .. });
             self.tick()?;
         }
         self.tick()?;
-        Ok(answer
+        Ok(fixed > 0
+            && answer
             && request
                 .constraints
                 .iter()
                 .any(|c| c.parameter == p.name && c.dynamic))
     }
 
-    // 型内の全ownerが自由な固定Answerを、実prefixごとの所属へ送る。
+    // 自由ownerを含む固定Answerを、実prefixごとの所属へ送る。
     pub(in crate::observed) fn deferred_owned_binding(
         &self,
         request: &Request,
@@ -114,7 +123,7 @@ impl Environment<'_> {
             return Ok(false);
         }
         let mut answer = false;
-        let mut fixed_owner = false;
+        let mut fixed_owners = BTreeSet::new();
         for (_index, argument) in request.arguments.iter().enumerate() {
             self.tick()?;
             #[cfg(test)]
@@ -129,7 +138,9 @@ impl Environment<'_> {
             }
             for owner in &owners {
                 self.tick()?;
-                fixed_owner |= argument.name == format!("bind.{owner}");
+                if argument.name == format!("bind.{owner}") {
+                    fixed_owners.insert(*owner);
+                }
                 self.tick()?;
             }
             self.tick()?;
@@ -141,7 +152,43 @@ impl Environment<'_> {
             self.tick()?;
         }
         self.tick()?;
-        Ok(answer && !fixed_owner && dynamic)
+        Ok(answer && fixed_owners.len() < owners.len() && dynamic)
+    }
+
+    // root条件では固定されたownerだけを検査し、自由ownerは実fiberへ残す。
+    // 値・元署名・公開型は変更せず、検査する所属制約だけを選ぶ。
+    fn binding_fixed_type(
+        &self,
+        ty: &Type,
+        fixed: &BTreeSet<&str>,
+    ) -> Result<Type, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            let ty = match ty {
+                Type::Owned(entity, owner) if !fixed.contains(owner.as_str()) => {
+                    Type::Ref(entity.clone())
+                }
+                Type::Tuple(items) => {
+                    let mut types = Vec::new();
+                    for item in items {
+                        self.tick()?;
+                        types.push(self.binding_fixed_type(item, fixed)?);
+                        self.tick()?;
+                    }
+                    Type::Tuple(types)
+                }
+                Type::Option(item) => Type::Option(Box::new(self.binding_fixed_type(item, fixed)?)),
+                Type::List(item) => Type::List(Box::new(self.binding_fixed_type(item, fixed)?)),
+                Type::Set(item) => Type::Set(Box::new(self.binding_fixed_type(item, fixed)?)),
+                Type::Map(from, to) => Type::Map(
+                    Box::new(self.binding_fixed_type(from, fixed)?),
+                    Box::new(self.binding_fixed_type(to, fixed)?),
+                ),
+                ty => ty.clone(),
+            };
+            self.tick()?;
+            Ok(ty)
+        })
     }
 
     fn owned_selected(
@@ -199,6 +246,40 @@ impl Environment<'_> {
         }
     }
 
+    fn owned_condition_input(
+        &self,
+        selected: &Selected,
+    ) -> Result<ConditionInput, ValidationFailure> {
+        self.tick()?;
+        if let Some(root) = selected.root {
+            return Ok(ConditionInput::Reference(root));
+        }
+        let Scalar::Subject {
+            snapshot, subject, ..
+        } = &selected.scalar
+        else {
+            return Err("所属条件の直接入力がsubjectでない".into());
+        };
+        let original = self.subject(snapshot, subject)?;
+        Ok(ConditionInput::Subject(Box::new(Node {
+            ty: NodeType::Value(selected.scalar.ty()),
+            payload: Some(Payload::Scalar(selected.scalar.clone())),
+            rule: Rule::Input {
+                kind: "subject",
+                location: Location::ArchMap {
+                    pointer: original.pointer.clone(),
+                    span: None,
+                },
+            },
+            arguments: vec![],
+            support: selected.support.clone(),
+            scope: selected.scope.clone(),
+            evidence: vec![],
+            judgment: None,
+            reasons: vec![],
+        })))
+    }
+
     pub(in crate::observed) fn owned_binding_plan(
         &self,
         graph: &Graph,
@@ -225,6 +306,16 @@ impl Environment<'_> {
             return Err("所属束縛の元parameterが違う".into());
         }
         let owner_names = self.binding_owner_names(&p.ty, p.span)?;
+        let mut selected_owners = BTreeSet::new();
+        for argument in &request.arguments {
+            self.tick()?;
+            if let Some(name) = argument.name.strip_prefix("bind.")
+                && owner_names.contains(name)
+            {
+                selected_owners.insert(name);
+            }
+            self.tick()?;
+        }
         let selector = |name: &str| {
             request
                 .arguments
@@ -241,7 +332,9 @@ impl Environment<'_> {
         let mut owners = Vec::new();
         for parameter in params {
             self.tick()?;
-            if owner_names.contains(parameter.name.as_str()) {
+            if owner_names.contains(parameter.name.as_str())
+                && selected_owners.contains(parameter.name.as_str())
+            {
                 let selected = self.owned_selected(
                     graph,
                     selector(&parameter.name)?,
@@ -254,22 +347,25 @@ impl Environment<'_> {
                 owners.push((parameter.name.as_str(), selected));
             }
         }
-        if owners.len() != owner_names.len() {
-            return Err("所属束縛の元owner parameterがない".into());
+        if owners.is_empty() || owners.len() != selected_owners.len() {
+            return Err("所属束縛の固定owner parameterがない".into());
         }
+        let fixed = owners.iter().map(|(name, _)| *name).collect();
+        let checked_type = self.binding_fixed_type(&p.ty, &fixed)?;
         let values = owners
             .iter()
             .map(|(name, owner)| (*name, Some(&owner.scalar)))
             .collect();
         let mut checks = owned_call::Checks::default();
         self.owned_call_value_check(
-            &p.ty,
+            &checked_type,
             &super::super::term::affine::Value::Known(value.scalar.clone()),
             &values,
             &d.reading,
             p.span,
             &mut checks,
         )?;
+        let mut condition_inputs = vec![self.owned_condition_input(&value)?];
         checks.scope.merge(&value.scope);
         checks.support.extend(value.support);
         let mut dependencies = Vec::new();
@@ -279,6 +375,7 @@ impl Environment<'_> {
         let mut producer = value.producer;
         for (_, owner) in owners {
             self.tick()?;
+            condition_inputs.push(self.owned_condition_input(&owner)?);
             checks.scope.merge(&owner.scope);
             checks.support.extend(owner.support);
             if let Some(root) = owner.root
@@ -298,6 +395,7 @@ impl Environment<'_> {
             scalar: value.scalar,
             checks,
             dependencies,
+            condition_inputs,
             producer,
         }))
     }
