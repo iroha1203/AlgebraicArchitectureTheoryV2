@@ -244,6 +244,10 @@ fn free_compound_answer_unknown_unprovided_fixed_failure_and_mixed_boundary_are_
         let r = run(fixture::input("unknown_owner", "r1"), &[&take, &make]);
         let w = r.wire();
         assert_eq!(r.status(), "partial");
+        assert_eq!(
+            f(f(answer(&w, "take"), "scope"), "domain"),
+            &Json::str("all_completions")
+        );
         let reasons = arr(f(answer(&w, "take"), "reasons"));
         for code in ["missing_observation", "unsupported_algorithm"] {
             assert!(reasons.iter().any(|r| f(r, "code") == &Json::str(code)));
@@ -295,7 +299,10 @@ fn free_compound_answer_unknown_unprovided_fixed_failure_and_mixed_boundary_are_
 }
 #[test]
 fn free_compound_answer_inherits_producer_completion_and_universal_scope() {
-    for producer in ["fcMapAll,m=@v/m", "fcMapCompletion,m=@v/m,p=@v/p"] {
+    for (producer, domain) in [
+        ("fcMapAll,m=@v/m", "all_assignments"),
+        ("fcMapCompletion,m=@v/m,p=@v/p", "all_completions"),
+    ] {
         let make = format!("v=evaluate(Applications.{producer})");
         let r = run(
             fixture::input("stop", "r1"),
@@ -306,7 +313,7 @@ fn free_compound_answer_inherits_producer_completion_and_universal_scope() {
         let original = f(answer(&w, "v"), "scope");
         let actual = f(answer(&w, "take"), "scope");
         assert_eq!(f(actual, "domain"), f(original, "domain"));
-        assert_ne!(f(original, "domain"), &Json::str("observed"));
+        assert_eq!(f(original, "domain"), &Json::str(domain));
         for q in arr(f(original, "quantifiers")) {
             assert!(arr(f(actual, "quantifiers")).contains(q));
         }
@@ -421,4 +428,84 @@ fn free_compound_answer_keeps_three_inputs_dag_map_owner_facts_and_current_sourc
     assert_eq!(f(&w, "nodes"), f(&moved, "nodes"));
     assert_eq!(f(&w, "answers"), f(&moved, "answers"));
     assert_ne!(f(&w, "inputs"), f(&moved, "inputs"));
+}
+
+#[test]
+fn free_compound_answer_dynamic_public_projection_failure_keeps_conditions_and_batch_results() {
+    for (law, binding, path, producer) in [
+        ("fcMap", "x", "$v.value.some[99]", "cbMapWrapped,m=@v/m"),
+        ("fcMap", "x", "$v.value.some", "fcMapNone"),
+        ("fcPrimitive", "p", "$v.value.some", "cbNone"),
+    ] {
+        let take = format!("take=check(Applications.{law},{binding}={path})");
+        let make = format!("v=evaluate(Applications.{producer})");
+        let r = match evaluate_observed_bytes(
+            fixture::input("known", "r1"),
+            &[
+                "seed=evaluate(Applications.seed)",
+                "prior=check(Applications.prior)",
+                &take,
+                &make,
+                "later=check(Applications.fcBool,x=$take.evaluation.value)",
+                "last=evaluate(Applications.seed)",
+            ],
+            &mut quiet(),
+        ) {
+            Ok(r) => r,
+            Err(archsig::observed::EvaluationFailure::NotImplemented { feature, .. }) => {
+                panic!("dynamic projection escaped typed condition: {feature}")
+            }
+            Err(e) => panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())),
+        };
+        assert_eq!(r.status(), "partial");
+        let w = r.wire();
+        for id in ["seed", "v", "last"] {
+            assert_eq!(f(answer(&w, id), "status"), &Json::str("established"));
+        }
+        assert_eq!(f(answer(&w, "prior"), "status"), &Json::str("refuted"));
+        assert!(!arr(f(answer(&w, "prior"), "evidence")).is_empty());
+        for id in ["take", "later"] {
+            assert_eq!(f(answer(&w, id), "status"), &Json::str("undetermined"));
+            assert_eq!(
+                f(answer(&w, id), "outputs"),
+                &Json::obj([] as [(&str, Json); 0])
+            );
+        }
+        let reasons = arr(f(answer(&w, "take"), "reasons"));
+        let reason = reasons
+            .iter()
+            .find(|r| f(r, "code") == &Json::str("condition_failed"))
+            .unwrap();
+        assert_eq!(
+            f(f(reason, "details"), "construction"),
+            &Json::str("projection")
+        );
+        let condition = node(&w, f(f(reason, "details"), "condition"));
+        assert_eq!(f(condition, "type"), &Json::str("Proposition"));
+        assert_eq!(f(f(condition, "judgment"), "status"), &Json::str("refuted"));
+        assert!(!arr(f(condition, "evidence")).is_empty());
+        assert!(arr(f(condition, "arguments")).contains(f(f(answer(&w, "v"), "outputs"), "value")));
+        assert!(
+            reasons
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("dependency_blocked")
+                    && f(f(r, "details"), "request") == &Json::str("v"))
+        );
+        for reason in reasons {
+            assert!(arr(f(answer(&w, "later"), "reasons")).contains(reason));
+        }
+        assert!(
+            arr(f(answer(&w, "later"), "reasons"))
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("dependency_blocked")
+                    && f(f(r, "details"), "request") == &Json::str("take"))
+        );
+        let request = &arr(f(&w, "requests"))[2];
+        assert_eq!(arr(f(request, "arguments")).len(), 1);
+        assert!(
+            arr(f(request, "defaults"))
+                .iter()
+                .any(|d| f(d, "rule") == &Json::str("universal_parameters"))
+        );
+    }
 }

@@ -288,3 +288,105 @@ fn free_compound_answer_map_domain_budget_keeps_values_refutation_missing_and_pr
 fn free_compound_answer_fresh_recheck_stop_keeps_nonempty_claim_evidence_and_probe_freeze() {
     stop(2)
 }
+
+#[test]
+fn free_compound_unknown_owner_recheck_preserves_completion_scope_and_rejects_finite_scope() {
+    for (law, producer) in [
+        ("fcList", "cbList,p=@v/p,q=@v/q"),
+        ("fcDomain", "cbMap,m=@v/m"),
+    ] {
+        let make = format!("v=evaluate(Applications.{producer})");
+        let take = format!("take=check(Applications.{law},x=$v.value)");
+        let r = evaluate_observed_bytes(
+            fixture::input("unknown_owner", "r1"),
+            &[&make, &take, "later=evaluate(Applications.seed)"],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(r.status(), "partial");
+        assert_eq!(r.answers[0].status, Decision::Established);
+        let original = &r.answers[1];
+        assert!(original.scope.completions);
+        assert_eq!(original.status, Decision::Undetermined);
+        assert!(original.outputs.is_empty());
+        let cutoff = r.contexts.iter().position(|c| c.request == 2).unwrap();
+        for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {
+            let g = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
+            let e = env(&r);
+            let req = &r.prepared.requests().requests()[1];
+            e.validate_answer(&g, req, original).unwrap();
+            let mut wrong = original.clone();
+            wrong.scope.completions = false;
+            assert_ne!(&wrong, original);
+            assert!(matches!(
+                e.validate_answer(&g, req, &wrong),
+                Err(ValidationFailure::Internal(_))
+            ));
+            assert!(matches!(
+                env(&r).validate_answer(&g, req, &wrong),
+                Err(ValidationFailure::Internal(_))
+            ));
+            e.validate_answer(&g, req, original).unwrap();
+            env(&r).validate_answer(&g, req, original).unwrap();
+        }
+    }
+}
+#[test]
+fn free_compound_dynamic_projection_conditions_recheck_original_root_scope_and_direct_reasons() {
+    let asks = [
+        "seed=evaluate(Applications.seed)",
+        "prior=check(Applications.prior)",
+        "missing=evaluate(Applications.cbMissing,p=@v/p)",
+        "v=evaluate(Applications.cbMapWrapped,m=@v/m)",
+        "other=evaluate(Applications.cbMapWrapped,m=@v/m)",
+        "take=check(Applications.fcMap,x=$v.value.some[99])",
+        "later=evaluate(Applications.seed)",
+    ];
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut named_call_quiet())
+        .unwrap();
+    assert_eq!(r.status(), "partial");
+    let original = r.answers[3].outputs["value"];
+    let foreign = r.answers[4].outputs["value"];
+    assert_ne!(original, foreign);
+    assert_eq!(r.nodes[original.0].payload, r.nodes[foreign.0].payload);
+    let parts: Vec<_> = r
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| {
+            (r.contexts[i].request == 5
+                && matches!(&n.rule,Rule::ProjectionCheck{parameter,..}if parameter=="x"))
+            .then_some(i)
+        })
+        .collect();
+    assert_eq!(parts.len(), 5);
+    for &i in &parts {
+        assert_eq!(r.nodes[i].arguments[0], original);
+        completion_mutation(&r, i, |ns| ns[i].arguments[0] = foreign);
+        completion_mutation(&r, i, |ns| ns[i].support.clear());
+        completion_mutation(&r, i, |ns| ns[i].scope.snapshots.clear());
+    }
+    let cutoff = r.contexts.iter().position(|c| c.request == 6).unwrap();
+    for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {
+        let g = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
+        let e = env(&r);
+        let req = &r.prepared.requests().requests()[5];
+        let original = &r.answers[5];
+        e.validate_answer(&g, req, original).unwrap();
+        let mut wrong = original.clone();
+        wrong
+            .reasons
+            .retain(|reason| !matches!(&reason.kind, ReasonKind::DependencyBlocked { .. }));
+        assert_ne!(&wrong, original);
+        assert!(matches!(
+            e.validate_answer(&g, req, &wrong),
+            Err(ValidationFailure::Internal(_))
+        ));
+        assert!(matches!(
+            env(&r).validate_answer(&g, req, &wrong),
+            Err(ValidationFailure::Internal(_))
+        ));
+        e.validate_answer(&g, req, original).unwrap();
+        env(&r).validate_answer(&g, req, original).unwrap();
+    }
+}

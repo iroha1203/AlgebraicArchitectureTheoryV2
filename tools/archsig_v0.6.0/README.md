@@ -191,7 +191,9 @@
   この自由owner族で原始所属が未観測なら、既存依存族のmissing_observationとunsupported_algorithmを保持する。
   型内の全ownerが自由な固定複合Answer値も、各実prefixで全owned memberとMapの完全始域を検査する。
   元Ref/公開pathとproducerのScopeを保持し、none・空containerと空Mapの全域条件を区別する。
-  未観測所属は欠測と未対応理由を保持し、固定/自由ownerの混在は未実装として残す。
+  未観測所属は欠測・未対応理由と全補完のScopeを保持する。
+  自由ownerの公開射影不適合も型付き構成条件の反証へ接続し、独立した回答と後続の直接依存理由を保持する。
+  固定/自由ownerの混在は未実装として残す。
   上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・固定/自由ownerが混在する複合Answer束縛の動的所属制約・
   依存Law族と無限自由数値parameterの混合・

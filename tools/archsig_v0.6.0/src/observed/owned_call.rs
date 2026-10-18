@@ -352,6 +352,7 @@ impl Environment<'_> {
             ..
         } = &self.field(snapshot, subject, &field)?.slot
         else {
+            checks.scope.completions = true;
             checks.missing.push(Fact {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),

@@ -8,6 +8,8 @@ mod base {
 pub const SCRIPT: &str = r#"
 view fcMapAll(m:Reservations.Migration):Map<Reservations.State,Reservations.State> =let k=forall z:Z.z=z in if k then m.states else m.states;
 view fcMapCompletion(m:Reservations.Migration,p:Reservations.State):Map<Reservations.State,Reservations.State> =if p.free-p.free=0 then m.states else m.states;
+view fcMapNone():Option<Map<Reservations.State,Reservations.State>> =none<Map<Reservations.State,Reservations.State>>;
+law required fcPrimitive(a:Reservations.System,p:Reservations.State[a]):true;
 law required fcDomain(a:Reservations.System,x:Map<Reservations.State[a],Reservations.State>):true;
 law required fcBool(x:Bool):x=x;
 law required fcOption(a:Reservations.System,x:Option<Reservations.State[a]>,flag:Bool):x=x or flag;
