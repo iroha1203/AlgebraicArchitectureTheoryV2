@@ -397,6 +397,8 @@ impl Evaluator<'_, '_> {
                 Selector::Answer { .. } => {
                     if p.ty != p.ty.erase()
                         && !self.environment.fixed_owned_binding(self.request, p)?
+                        && !(defer_owned
+                            && self.environment.deferred_owned_binding(self.request, p)?)
                         && self
                             .request
                             .constraints
@@ -2879,6 +2881,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod free_owner_answer_binding_tests {
+        include!("free_owner_answer_binding_tests.rs");
+    }
     mod compound_owned_binding_tests {
         include!("compound_owned_binding_tests.rs");
     }

@@ -186,10 +186,13 @@
   Mapは実key/imageの所属と期待Owned始域の全体を照合し、none・空containerと空Mapの全域条件を区別する。
   実所属・snapshotの不適合は型付きprojection構成条件の反証と直接依存停止へ接続する。
   固定producerの補完・全称Scopeを継承し、今回の自由parameterの実Domainを追加して元入力から再検査する。
+  自由ownerへの固定Answer原始参照は、元署名の各実prefixで原始owner族へ絞って依存Lawを評価する。
+  固定subjectと同じ実域・空fiberの全称判断を保ち、元Ref/pathとproducerのScopeを継承して再検査する。
+  この自由owner族で原始所属が未観測なら、既存依存族のmissing_observationとunsupported_algorithmを保持する。
   上記以外のpayloadを持つdataの評価、その他の式形・
-  上記以外の無限型・自由ownerへの固定Answer束縛の動的所属制約・
+  上記以外の無限型・自由ownerへの固定複合Answer束縛の動的所属制約・
   依存Law族と無限自由数値parameterの混合・
-  未観測ownerの所属条件・
+  上記以外の未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
   `unsupported_algorithm` や未決回答へ変換しない。
