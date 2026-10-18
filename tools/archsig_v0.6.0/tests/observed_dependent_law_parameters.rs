@@ -43,7 +43,9 @@ fn text(j: &Json) -> &str {
     v
 }
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
+    obj(j)
+        .get(key)
+        .unwrap_or_else(|| panic!("missing {key}; keys {:?}", obj(j).keys()))
 }
 fn val(j: &Json) -> &Json {
     assert_eq!(f(j, "state"), &Json::str("value"));
@@ -253,7 +255,10 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             assert!(position.0 < position.1 && position.1 <= checked.sources().law().bytes().len());
             assert_eq!(span(f(f(node, "rule"), "location")), position);
         }
-        if f(node, "type") == &Json::str("Domain") {
+        if f(node, "type") == &Json::str("Domain") && f(val(node), "kind") == &Json::str("type") {
+            assert!([Json::str("Z"), Json::str("Q")].contains(f(val(node), "type")));
+            assert!(!obj(val(node)).contains_key("elements"));
+        } else if f(node, "type") == &Json::str("Domain") {
             assert_eq!(f(val(node), "kind"), &Json::str("finite"));
             let elements = arr(f(val(node), "elements"));
             let mut seen = BTreeSet::new();
@@ -343,6 +348,13 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
         if let Some(claim) = obj(answer).get("claim") {
             let claim = target(&ns, claim, &Json::str("Proposition"));
             assert_eq!(f(f(claim, "judgment"), "status"), f(answer, "status"));
+        } else if f(answer, "status") == &Json::str("established") {
+            let request = arr(f(wire, "requests"))
+                .iter()
+                .find(|r| f(r, "id") == f(answer, "id"))
+                .unwrap();
+            assert_eq!(f(request, "kind"), &Json::str("evaluate"));
+            assert!(obj(f(answer, "outputs")).contains_key("value"));
         } else {
             assert_eq!(f(answer, "status"), &Json::str("undetermined"));
         }
@@ -1369,4 +1381,343 @@ fn dependent_provenance_relocation_keeps_rows_and_traces_current_owner_sources()
         b.archmap().snapshots,
         "原始参照/値/owner/subject/Atomを固定する"
     );
+}
+
+#[test]
+fn dependent_numeric_parameters_keep_each_actual_fiber_and_full_z_q_domain() {
+    for ty in ["Z", "Q"] {
+        for parameters in [
+            format!("z:{ty},a:Root,b:Child[a],c:Leaf[a]"),
+            format!("a:Root,z:{ty},b:Child[a],c:Leaf[a]"),
+            format!("a:Root,b:Child[a],z:{ty},c:Leaf[a]"),
+            format!("a:Root,b:Child[a],c:Leaf[a],z:{ty}"),
+        ] {
+            let script = format!("law required chain({parameters}):z+1=z+1;");
+            let result = run(
+                fixture(&script, [Some(true); 2], false, false, false),
+                "all=check(Inspect.chain)",
+            );
+            assert_eq!(
+                result.status(),
+                "complete",
+                "{:?}",
+                f(&result.wire(), "issues")
+            );
+            let wire = result.wire();
+            let ns = index(&wire);
+            let answer = &arr(f(&wire, "answers"))[0];
+            assert_eq!(f(answer, "status"), &Json::str("established"));
+            let aggregate = target(
+                &ns,
+                f(f(answer, "outputs"), "evaluation"),
+                &Json::str("Evaluation"),
+            );
+            let arguments = arr(f(aggregate, "arguments"));
+            let domain = target(&ns, &arguments[1], &Json::str("Domain"));
+            assert_eq!(arr(f(val(domain), "elements")).len(), 2);
+            assert_eq!(arguments.len(), 4);
+            let Signature::Law { params, .. } =
+                &result.prepared().inputs().law().declarations["Inspect.chain"].signature
+            else {
+                panic!()
+            };
+            let ordered: Vec<_> = arr(f(f(answer, "scope"), "quantifiers"))
+                .iter()
+                .map(|q| {
+                    params
+                        .iter()
+                        .position(|p| p.name == text(f(q, "name")))
+                        .unwrap()
+                })
+                .collect();
+            assert!(ordered.windows(2).all(|w| w[0] <= w[1]));
+            assert_eq!(
+                ordered.iter().copied().collect::<BTreeSet<_>>(),
+                (0..4).collect()
+            );
+            for (position, row_ref) in arguments[2..].iter().enumerate() {
+                let evaluation = target(&ns, row_ref, &Json::str("Evaluation"));
+                let bindings = f(val(evaluation), "bindings");
+                assert_eq!(
+                    binding_values(&ns, bindings, false),
+                    if position == 0 {
+                        row("v", "A", "p", "l")
+                    } else {
+                        row("v", "B", "q", "m")
+                    }
+                );
+                assert!(
+                    !arr(bindings)
+                        .iter()
+                        .any(|b| f(b, "name") == &Json::str("z"))
+                );
+                let row_args = arr(f(evaluation, "arguments"));
+                let numeric_domain = target(&ns, &row_args[1], &Json::str("Domain"));
+                assert_eq!(f(val(numeric_domain), "kind"), &Json::str("type"));
+                assert_eq!(f(val(numeric_domain), "type"), &Json::str(ty));
+                assert!(!obj(val(numeric_domain)).contains_key("elements"));
+                let value = target(&ns, f(val(evaluation), "value"), &Json::str("Bool"));
+                assert_eq!(val(value), &Json::Bool(true));
+            }
+        }
+    }
+}
+
+fn numeric_batch(inputs: InputSources, asks: &[&str]) -> ObservedEvaluation {
+    let checked = check_inputs(inputs.clone(), &mut quiet())
+        .unwrap_or_else(|e| panic!("input issues {:?}", e.issues()));
+    let result = evaluate_observed_bytes(inputs, asks, &mut quiet()).unwrap();
+    unchanged(&checked, result.prepared().inputs());
+    audit(&result.wire(), result.prepared().inputs());
+    assert_ne!(
+        result.status(),
+        "error",
+        "{:?}",
+        f(&result.wire(), "issues")
+    );
+    result
+}
+fn numeric_rows(result: &ObservedEvaluation, request_index: usize, expected: usize, status: &str) {
+    let wire = result.wire();
+    let ns = index(&wire);
+    let answer = &arr(f(&wire, "answers"))[request_index];
+    assert_eq!(f(answer, "status"), &Json::str(status));
+    let evaluation = target(
+        &ns,
+        f(f(answer, "outputs"), "evaluation"),
+        &Json::str("Evaluation"),
+    );
+    let args = arr(f(evaluation, "arguments"));
+    let domain = target(&ns, &args[1], &Json::str("Domain"));
+    assert_eq!(arr(f(val(domain), "elements")).len(), expected);
+    assert_eq!(args.len(), 2 + expected);
+}
+
+#[test]
+fn dependent_numeric_empty_fixed_and_compound_answer_fibers_keep_original_bindings() {
+    let script = r#"
+        view pick(b:Child):Option<Child> = some(b);
+        view number():Z=3;
+        view fraction():Q=rat(1,2);
+        law required chain(z:Z,a:Root,b:Child[a],q:Q,c:Leaf[a]):z+1=z+1 and q+rat(1,2)+rat(1,2)=q+1;
+        law required wrapped(z:Z,a:Root,b:Option<Child[a]>,q:Q,c:Leaf[a]):z+1=z+1 and q+1=q+1;
+    "#;
+    let result = numeric_batch(
+        fixture(script, [Some(true); 2], false, false, false),
+        &[
+            "free=check(Inspect.chain)",
+            "empty=check(Inspect.chain,a=@v/Z)",
+            "fixed=check(Inspect.chain,b=@v/p)",
+            "take=check(Inspect.wrapped,b=$pick.value)",
+            "pick=evaluate(Inspect.pick,b=@v/p)",
+            "wrapped=check(Inspect.wrapped)",
+            "fixedz=check(Inspect.chain,z=$number.value)",
+            "number=evaluate(Inspect.number)",
+            "fixedboth=check(Inspect.chain,z=$number.value,q=$fraction.value)",
+            "fraction=evaluate(Inspect.fraction)",
+        ],
+    );
+    assert_eq!(result.status(), "complete");
+    numeric_rows(&result, 0, 2, "established");
+    numeric_rows(&result, 1, 0, "established");
+    numeric_rows(&result, 2, 1, "established");
+    numeric_rows(&result, 3, 1, "established");
+    numeric_rows(&result, 5, 4, "established");
+    numeric_rows(&result, 6, 2, "established");
+    numeric_rows(&result, 8, 2, "established");
+    let wire = result.wire();
+    let ns = index(&wire);
+    let empty = &arr(f(&wire, "answers"))[1];
+    let proof = arr(f(empty, "evidence"))
+        .iter()
+        .map(|r| target(&ns, r, &Json::str("Evidence")))
+        .find(|n| obj(val(n)).get("kind") == Some(&Json::str("finite_exhaustion")))
+        .unwrap();
+    assert_eq!(f(f(val(proof), "data"), "checked"), &Json::Nat(0));
+    let take = &arr(f(&wire, "answers"))[3];
+    let pick = &arr(f(&wire, "answers"))[4];
+    let reach = reachable(&ns, take);
+    assert!(reach.contains(text(f(f(f(pick, "outputs"), "value"), "node"))));
+}
+
+#[test]
+fn dependent_numeric_known_counterexample_survives_missing_other_row_in_both_orders() {
+    for ty in ["Z", "Q"] {
+        for flags in [[None, Some(false)], [Some(false), None]] {
+            let script = format!(
+                "law required chain(a:Root,z:{ty},b:Child[a],c:Leaf[a]):if c.ok then z+1=z+1 else z+1=z+2;"
+            );
+            let result = numeric_batch(
+                fixture(&script, flags, false, false, false),
+                &["all=check(Inspect.chain)"],
+            );
+            let wire = result.wire();
+            let ns = index(&wire);
+            let answer = &arr(f(&wire, "answers"))[0];
+            assert_eq!(f(answer, "status"), &Json::str("refuted"));
+            let row_type = Type::Tuple(vec![
+                Type::Ref("Dep.Root".into()),
+                Type::Ref("Dep.Child".into()),
+                Type::Ref("Dep.Leaf".into()),
+            ])
+            .wire();
+            let actual_domains: Vec<_> = arr(f(&wire, "nodes"))
+                .iter()
+                .filter(|n| {
+                    f(n, "type") == &Json::str("Domain")
+                        && obj(val(n)).get("type") == Some(&row_type)
+                })
+                .collect();
+            assert!(!actual_domains.is_empty());
+            for d in actual_domains {
+                assert_eq!(arr(f(val(d), "elements")).len(), 2);
+            }
+            assert!(
+                arr(f(&wire, "nodes"))
+                    .iter()
+                    .any(|n| f(n, "type") == &Json::str("Domain")
+                        && obj(val(n)).get("kind") == Some(&Json::str("type"))
+                        && f(val(n), "type") == &Json::str(ty))
+            );
+            assert!(!arr(f(answer, "reasons")).is_empty());
+            let kept = reachable(&ns, answer);
+            let examples: Vec<_> = kept
+                .iter()
+                .map(|id| ns[id.as_str()])
+                .filter(|n| {
+                    f(n, "type") == &Json::str("Evidence")
+                        && f(val(n), "kind") == &Json::str("counterexample")
+                })
+                .collect();
+            assert!(!examples.is_empty());
+            let number = |n: &str| {
+                if ty == "Z" {
+                    Json::str(n)
+                } else {
+                    Json::Arr(vec![Json::str(n), Json::str("1")])
+                }
+            };
+            let numeric_examples: Vec<_> = examples
+                .iter()
+                .filter(|n| {
+                    arr(f(f(val(n), "data"), "bindings"))
+                        .iter()
+                        .any(|b| f(b, "name") == &Json::str("z"))
+                })
+                .collect();
+            assert!(!numeric_examples.is_empty());
+            for example in numeric_examples {
+                let data = f(val(example), "data");
+                let binding = arr(f(data, "bindings"))
+                    .iter()
+                    .find(|b| f(b, "name") == &Json::str("z"))
+                    .unwrap();
+                assert_eq!(
+                    val(target(&ns, f(binding, "value"), &Json::str(ty))),
+                    &number("0")
+                );
+                let left = target(&ns, f(data, "left"), &Json::str("Evaluation"));
+                let right = target(&ns, f(data, "right"), &Json::str("Evaluation"));
+                assert_eq!(
+                    val(target(&ns, f(val(left), "value"), &Json::str(ty))),
+                    &number("1")
+                );
+                assert_eq!(
+                    val(target(&ns, f(val(right), "value"), &Json::str(ty))),
+                    &number("2")
+                );
+            }
+            let reason = arr(f(answer, "reasons"))
+                .iter()
+                .find(|r| f(r, "code") == &Json::str("missing_observation"))
+                .unwrap();
+            assert_eq!(
+                f(reason, "missing"),
+                &Json::Arr(vec![Json::obj([
+                    ("snapshot", Json::str("v")),
+                    (
+                        "subject",
+                        Json::str(if flags[0].is_none() { "l" } else { "m" })
+                    ),
+                    ("field", Json::str("Dep.Leaf.ok"))
+                ])])
+            );
+        }
+    }
+}
+
+#[test]
+fn dependent_numeric_unknown_owner_nonlinear_and_current_provenance_keep_their_boundaries() {
+    let script = "law required chain(a:Root,z:Z,b:Child[a],q:Q,c:Leaf[a]):z+1=z+1 and q+1=q+1;";
+    let unknown = numeric_batch(
+        fixture(script, [Some(true); 2], false, true, false),
+        &["all=check(Inspect.chain)"],
+    );
+    let wire = unknown.wire();
+    let answer = &arr(f(&wire, "answers"))[0];
+    assert_eq!(f(answer, "status"), &Json::str("undetermined"));
+    assert!(obj(f(answer, "outputs")).is_empty());
+    assert!(
+        arr(f(answer, "reasons"))
+            .iter()
+            .any(|r| f(r, "code") == &Json::str("missing_observation"))
+    );
+    assert!(
+        arr(f(answer, "reasons"))
+            .iter()
+            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+    );
+    let nonlinear = "law required chain(a:Root,z:Z,b:Child[a],c:Leaf[a]):z*z=0;";
+    let nonlinear = numeric_batch(
+        fixture(nonlinear, [Some(true); 2], false, false, false),
+        &["all=check(Inspect.chain)"],
+    );
+    numeric_rows(&nonlinear, 0, 2, "undetermined");
+    assert!(
+        arr(f(&arr(f(&nonlinear.wire(), "answers"))[0], "reasons"))
+            .iter()
+            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+    );
+    let a = numeric_batch(
+        fixture(script, [Some(true); 2], true, false, false),
+        &["all=check(Inspect.chain)"],
+    );
+    let b = numeric_batch(
+        fixture(script, [Some(true); 2], true, false, true),
+        &["all=check(Inspect.chain)"],
+    );
+    for r in [&a, &b] {
+        numeric_rows(r, 0, 4, "established");
+    }
+    assert_eq!(
+        a.prepared().inputs().definitions(),
+        b.prepared().inputs().definitions()
+    );
+    assert_eq!(
+        a.prepared().inputs().archmap().snapshots,
+        b.prepared().inputs().archmap().snapshots
+    );
+    assert_ne!(
+        a.prepared().inputs().archmap().sources,
+        b.prepared().inputs().archmap().sources
+    );
+    let wire = b.wire();
+    let subject_tuples: Vec<_> = arr(f(&wire, "nodes"))
+        .iter()
+        .filter(|n| {
+            f(n, "type")
+                == &Type::Tuple(vec![
+                    Type::Ref("Dep.Root".into()),
+                    Type::Ref("Dep.Child".into()),
+                    Type::Ref("Dep.Leaf".into()),
+                ])
+                .wire()
+        })
+        .map(|n| val(n).clone())
+        .collect();
+    assert!(
+        subject_tuples
+            .iter()
+            .any(|t| t == &Json::Arr(row("w", "A", "q", "m")))
+    )
 }

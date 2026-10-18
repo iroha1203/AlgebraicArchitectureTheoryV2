@@ -81,12 +81,6 @@ impl Environment<'_> {
                 });
             }
         }
-        if dependent && let Some(p) = numeric.first() {
-            return Err(ValidationFailure::UnsupportedExpression {
-                location: Location::Law { span: p.span },
-                feature: "依存Law族と無限数値parameterの混合全称評価".into(),
-            });
-        }
         for p in params {
             self.tick()?;
             let finite_type = p.ty.erase();
