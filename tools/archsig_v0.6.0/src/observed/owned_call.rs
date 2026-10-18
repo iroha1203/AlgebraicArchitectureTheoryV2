@@ -30,7 +30,7 @@ impl Environment<'_> {
         Ok(false)
     }
 
-    fn owned_call_value_check(
+    pub(in crate::observed) fn owned_call_value_check(
         &self,
         ty: &Type,
         value: &PartialValue,

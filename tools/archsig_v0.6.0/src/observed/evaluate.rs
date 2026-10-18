@@ -2879,6 +2879,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod compound_owned_binding_tests {
+        include!("compound_owned_binding_tests.rs");
+    }
     mod owned_binding_tests {
         include!("owned_binding_tests.rs");
     }

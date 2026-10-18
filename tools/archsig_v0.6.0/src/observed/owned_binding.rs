@@ -1,4 +1,4 @@
-//! 固定された原始Owned束縛を、元selectorと原始owner事実から検査する。
+//! 全ownerが固定されたOwned束縛を、元selector・各member・原始owner事実から検査する。
 use super::*;
 use crate::law::model::{Param, Signature};
 
@@ -17,25 +17,52 @@ struct Selected {
 }
 
 impl Environment<'_> {
+    fn binding_owner_names(ty: &Type) -> BTreeSet<&str> {
+        let mut owners = BTreeSet::new();
+        let mut pending = vec![ty];
+        while let Some(ty) = pending.pop() {
+            match ty {
+                Type::Owned(_, owner) => {
+                    owners.insert(owner.as_str());
+                }
+                Type::Tuple(items) => pending.extend(items),
+                Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
+                Type::Map(from, to) => {
+                    pending.push(from);
+                    pending.push(to);
+                }
+                _ => {}
+            }
+        }
+        owners
+    }
+
     pub(in crate::observed) fn fixed_owned_binding(request: &Request, p: &Param) -> bool {
-        let Type::Owned(_, owner) = &p.ty else {
+        let owners = Self::binding_owner_names(&p.ty);
+        if owners.is_empty() {
             return false;
-        };
+        }
         let selected = |name: &str| {
             request
                 .arguments
                 .iter()
                 .find(|a| a.name == format!("bind.{name}"))
         };
-        let (Some(value), Some(owner)) = (selected(&p.name), selected(owner)) else {
+        let Some(value) = selected(&p.name) else {
             return false;
         };
-        request
-            .constraints
-            .iter()
-            .any(|c| c.parameter == p.name && c.dynamic)
-            && (matches!(value.value, Selector::Answer { .. })
-                || matches!(owner.value, Selector::Answer { .. }))
+        let mut answer = matches!(value.value, Selector::Answer { .. });
+        for owner in owners {
+            let Some(owner) = selected(owner) else {
+                return false;
+            };
+            answer |= matches!(owner.value, Selector::Answer { .. });
+        }
+        answer
+            && request
+                .constraints
+                .iter()
+                .any(|c| c.parameter == p.name && c.dynamic)
     }
 
     fn owned_selected(
@@ -118,13 +145,7 @@ impl Environment<'_> {
         if !params.contains(p) {
             return Err("所属束縛の元parameterが違う".into());
         }
-        let Type::Owned(_, owner_name) = &p.ty else {
-            unreachable!()
-        };
-        let owner_parameter = params
-            .iter()
-            .find(|a| &a.name == owner_name)
-            .ok_or("所属束縛の元owner parameterがない")?;
+        let owner_names = Self::binding_owner_names(&p.ty);
         let selector = |name: &str| {
             request
                 .arguments
@@ -134,42 +155,63 @@ impl Environment<'_> {
                 .ok_or_else(|| ValidationFailure::Internal("所属束縛の元selectorがない".into()))
         };
         let value = self.owned_selected(graph, selector(&p.name)?, &d.reading, p.span)?;
-        let owner = self.owned_selected(
-            graph,
-            selector(owner_name)?,
-            &d.reading,
-            owner_parameter.span,
-        )?;
-        if value.scalar.ty() != p.ty.erase() || owner.scalar.ty() != owner_parameter.ty.erase() {
+        if value.scalar.ty() != p.ty.erase() {
             return Err(self.answer_projection_unprovided(p.span));
         }
-        let values = BTreeMap::from([(owner_name.as_str(), Some(&owner.scalar))]);
+        // ownerは元署名の順。集合の列挙順から依存辺の意味を決めない。
+        let mut owners = Vec::new();
+        for parameter in params {
+            self.tick()?;
+            if owner_names.contains(parameter.name.as_str()) {
+                let selected = self.owned_selected(
+                    graph,
+                    selector(&parameter.name)?,
+                    &d.reading,
+                    parameter.span,
+                )?;
+                if selected.scalar.ty() != parameter.ty.erase() {
+                    return Err(self.answer_projection_unprovided(parameter.span));
+                }
+                owners.push((parameter.name.as_str(), selected));
+            }
+        }
+        if owners.len() != owner_names.len() {
+            return Err("所属束縛の元owner parameterがない".into());
+        }
+        let values = owners
+            .iter()
+            .map(|(name, owner)| (*name, Some(&owner.scalar)))
+            .collect();
         let mut checks = owned_call::Checks::default();
-        self.owned_reference_check(
+        self.owned_call_value_check(
             &p.ty,
-            Some(&value.scalar),
+            &super::super::term::affine::Value::Known(value.scalar.clone()),
             &values,
             &d.reading,
             p.span,
             &mut checks,
         )?;
         checks.scope.merge(&value.scope);
-        checks.scope.merge(&owner.scope);
         checks.support.extend(value.support);
-        checks.support.extend(owner.support);
+        let mut dependencies = Vec::new();
+        if let Some(root) = value.root {
+            dependencies.push(root);
+        }
+        let mut producer = value.producer;
+        for (_, owner) in owners {
+            self.tick()?;
+            checks.scope.merge(&owner.scope);
+            checks.support.extend(owner.support);
+            if let Some(root) = owner.root
+                && !dependencies.contains(&root)
+            {
+                dependencies.push(root);
+            }
+            producer = producer.or(owner.producer);
+        }
         checks.support.sort();
         checks.support.dedup();
-        let mut dependencies = Vec::new();
-        for r in value.root.into_iter().chain(owner.root) {
-            self.tick()?;
-            if !dependencies.contains(&r) {
-                dependencies.push(r);
-            }
-        }
-        let producer = value
-            .producer
-            .or(owner.producer)
-            .ok_or("所属束縛に元Answerがない")?;
+        let producer = producer.ok_or("所属束縛に元Answerがない")?;
         #[cfg(test)]
         data::observe_actual(p.span, context, "owned_binding_checked", 0);
         self.tick()?;
