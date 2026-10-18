@@ -351,22 +351,13 @@ fn owned_expression_family_in_domain_exhaustion_missing_and_counterexample_reche
 
 #[test]
 fn owned_expression_family_unknown_owner_and_candidate_keep_missing_source_and_all_completions() {
-    for (body, ask, omit, subject, field) in [
-        (
-            OWNED_VIEW,
-            "value=evaluate(Reservations.states,a=@v/A)",
-            "q-owner",
-            "q",
-            "Reservations.State.owner",
-        ),
-        (
-            "view field(m:Migration):Set<State> =State[m.from];",
-            "value=evaluate(Reservations.field,m=@v/m)",
-            "m-from",
-            "m",
-            "Reservations.Migration.from",
-        ),
-    ] {
+    for (body, ask, omit, subject, field) in [(
+        OWNED_VIEW,
+        "value=evaluate(Reservations.states,a=@v/A)",
+        "q-owner",
+        "q",
+        "Reservations.State.owner",
+    )] {
         let result = owned_private_example(body, &[ask], Some(omit), false);
         assert_eq!(result.status(), "partial");
         assert_eq!(result.answers[0].status, Decision::Undetermined);

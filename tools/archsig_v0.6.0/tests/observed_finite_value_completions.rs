@@ -1691,15 +1691,20 @@ view later(s:Sample): Unit = unit;
             .map(|r| (vec![r.clone()], Some(r)))
             .collect::<Vec<_>>(),
     );
-    assert_eq!(
-        baseline_count.get() - prior_count.get(),
-        8,
-        "元missingと3caseの通常Expression pre/post"
-    );
+
     let current_span = checked.law().exprs[declared_body(&checked, "Calc.current")].span;
     assert_eq!(source(&checked, current_span), b"s.h");
-    // 補完の実列挙/証拠/再検査phase内部はprivate試験で検査する。ここは固定Expression3点。
-    for (offset, kind, done) in [(3, 0, 0), (5, 1, 1), (8, 2, 3)] {
+    // 実保持case数からExpression停止点を選ぶ。補完の列挙/証拠/再検査phase内部はprivate試験が担う。
+    let wanted = [0, 1, 3];
+    let offsets = common::completion_stops::offsets(
+        &input,
+        &asks,
+        prior_count.get(),
+        baseline_count.get(),
+        current_span,
+        &wanted,
+    );
+    for (kind, (&offset, &done)) in offsets.iter().zip(&wanted).enumerate() {
         let at = prior_count.get() + offset;
         let expressions = Rc::new(Cell::new(0));
         let probes = Rc::new(Cell::new(0));

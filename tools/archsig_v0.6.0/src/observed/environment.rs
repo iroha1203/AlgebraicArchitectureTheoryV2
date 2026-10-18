@@ -7759,7 +7759,7 @@ impl<'a> Environment<'a> {
                     (Some(assigned), Some(scalar_scope))
                 } else if let Some(assigned) = assigned {
                     if !self.completion_type_supported(&field.ty)? || assigned.ty() != field.ty {
-                        return Err("補完slotの元参照なし有限型が違う".into());
+                        return Err("補完slotの元有限型が違う".into());
                     }
                     let mut scalar_scope = request_base.clone();
                     scalar_scope.merge(&owner_scope);

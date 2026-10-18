@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 pub mod cli;
+pub mod completion_stops;
 pub mod law_definitions;
 
 use archsig::archmap::{CheckedArchMap, Field, Slot};

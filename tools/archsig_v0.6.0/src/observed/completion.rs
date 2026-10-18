@@ -1,7 +1,7 @@
 //! 元の欠測 slot、補完代入、補完内の whole 評価を照合する。
 use super::*;
 use crate::law::{ast::Role, model::Signature};
-use crate::observed::value_equality;
+use crate::observed::{control::CheckFailure, value_equality};
 
 #[derive(Clone)]
 pub(super) struct Seed {
@@ -116,8 +116,11 @@ fn components(
     };
     for (value, ty) in values.iter().zip(types) {
         control.clone().checkpoint(Checkpoint::FiniteIteration)?;
-        if !super::super::finite::completion_supported(ty, law, control)? || value.ty() != *ty {
-            return Err("補完代入の成分型が元の参照なし有限slotと違う".into());
+        if !(matches!(ty, Type::Ref(_))
+            || super::super::finite::completion_supported(ty, law, control)?)
+            || value.ty() != *ty
+        {
+            return Err("補完代入の成分型が元の有限slotと違う".into());
         }
     }
     control.clone().checkpoint(Checkpoint::FiniteIteration)?;
@@ -129,7 +132,128 @@ impl Environment<'_> {
         &self,
         ty: &Type,
     ) -> Result<bool, ValidationFailure> {
+        if matches!(ty, Type::Ref(_)) {
+            self.tick()?;
+            return Ok(true);
+        }
         super::super::finite::completion_supported(ty, self.inputs.law(), &self.control)
+    }
+
+    /// 候補の列挙前に、元入力だけから補完の支持とScopeを構成する。
+    /// Sourceを先に残し、実列挙のobserverと検査用の静的読取りを分離する。
+    pub(in crate::observed) fn completion_assignment_context(
+        &self,
+        fields: &[Fact],
+    ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
+        let types = self.completion_slot_types(fields)?;
+        let mut all = super::super::finite::Enumeration::default();
+        if !types.iter().any(|ty| matches!(ty, Type::Ref(_))) {
+            return Ok(all);
+        }
+        // 参照候補の可否は選択したfield以外の既知Map/ownerにも依存する。
+        // その元登録族・原始事実と現在の由来を支持へ保持する。
+        for snapshot in &self.inputs.archmap().snapshots {
+            self.tick()?;
+            all.scope.snapshots.insert(snapshot.id.clone());
+            all.scope
+                .modes
+                .insert(self.origin_mode(&snapshot.origin)?.into());
+            for subject in &snapshot.subjects {
+                self.tick()?;
+                all.scope.merge(&self.scope(subject, "", None)?);
+                all.scope.readings.remove("");
+                all.support.push(Fact {
+                    snapshot: snapshot.id.clone(),
+                    subject: subject.id.clone(),
+                    field: None,
+                    atom: None,
+                });
+                for field in &subject.fields {
+                    self.tick()?;
+                    if let Slot::Known { atom, origin, .. } = &field.slot {
+                        all.scope.modes.insert(self.origin_mode(origin)?.into());
+                        all.support.push(Fact {
+                            snapshot: snapshot.id.clone(),
+                            subject: subject.id.clone(),
+                            field: Some(field.name.clone()),
+                            atom: Some(atom.clone()),
+                        });
+                    }
+                }
+            }
+        }
+        all.support.sort();
+        all.support.dedup();
+        self.tick()?;
+        Ok(all)
+    }
+
+    /// 元slot順の全候補を作り、元ArchMap制約へ拡張できる代入だけを残す。
+    pub(in crate::observed) fn completion_assignments(
+        &self,
+        fields: &[Fact],
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
+        let types = self.completion_slot_types(fields)?;
+        let ty = assignment_type(&types);
+        let mut all = self.finite_values(&ty, observer)?;
+        if !types.iter().any(|ty| matches!(ty, Type::Ref(_))) {
+            return Ok(all);
+        }
+        let context = self.completion_assignment_context(fields)?;
+        all.scope.merge(&context.scope);
+        all.support.extend(context.support);
+        let mut kept = Vec::new();
+        for (index, value) in all.values.into_iter().enumerate() {
+            self.tick()?;
+            let values = components(&value, &types, self.inputs.law(), &self.control)?;
+            let mut pinned = Vec::new();
+            for (fact, value) in fields.iter().zip(values) {
+                self.tick()?;
+                if let Scalar::Subject {
+                    snapshot, subject, ..
+                } = &value
+                {
+                    pinned.push(crate::archmap::ReferenceAssignment {
+                        snapshot: fact.snapshot.clone(),
+                        subject: fact.subject.clone(),
+                        field: fact.field.clone().ok_or("参照補完に元fieldがない")?,
+                        target_snapshot: snapshot.clone(),
+                        target_subject: subject.clone(),
+                    });
+                }
+            }
+            observer("reference_constraints", index);
+            self.tick()?;
+            match crate::archmap::check_completion_with_references::<
+                CheckFailure<Box<crate::issue::Issue>>,
+            >(
+                &self.inputs.archmap().snapshots,
+                &self.inputs.law().definitions,
+                &pinned,
+                &mut self.control.clone(),
+            ) {
+                Ok(()) => kept.push(value),
+                Err(CheckFailure::Input(issue))
+                    if issue.code == crate::issue::Code::InconsistentObservation => {}
+                Err(CheckFailure::Stopped(reason)) => return Err(ValidationFailure::Stop(reason)),
+                Err(CheckFailure::Input(issue)) => {
+                    return Err(ValidationFailure::Internal(format!(
+                        "参照補完候補の元入力検査: {}",
+                        issue.message
+                    )));
+                }
+            }
+            self.tick()?;
+        }
+        all.values = kept;
+        all.support.sort();
+        all.support.dedup();
+        if all.values.is_empty() {
+            return Err("検査済み入力の参照補完全域が空になった".into());
+        }
+        self.tick()?;
+        Ok(all)
     }
 
     fn completion_slot_types(&self, fields: &[Fact]) -> Result<Vec<Type>, ValidationFailure> {
@@ -149,7 +273,7 @@ impl Environment<'_> {
                 || field.slot != Slot::Missing
                 || !self.completion_type_supported(&field.ty)?
             {
-                return Err("補完slotが元の参照なし有限型の欠測fieldでない".into());
+                return Err("補完slotが元の有限型の欠測fieldでない".into());
             }
             types.push(field.ty.clone());
             self.tick()?;
@@ -506,6 +630,9 @@ impl Environment<'_> {
             return Err("補完Seedのslot identity/元field出現が違う".into());
         }
         let types = self.completion_slot_types(fields)?;
+        let assignments = self.completion_assignment_context(fields)?;
+        scope.merge(&assignments.scope);
+        support.extend(assignments.support);
         for source in sources {
             self.tick()?;
             if source.0 >= reference.0 {
@@ -606,7 +733,7 @@ impl Environment<'_> {
         {
             return Err("補完Domainの型/元Seed/Scope/支持が違う".into());
         }
-        let enumeration = self.finite_values(ty, &mut |_, _| {})?;
+        let enumeration = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
         if elements.is_empty() || elements.len() != enumeration.values.len() {
             return Err("補完Domainが空/全域件数と違う".into());
         }
@@ -1544,6 +1671,8 @@ impl Environment<'_> {
         }
         let (fs, ss, rs) = self.completion_slots(graph, roots)?;
         self.completion_slot_types(fields)?;
+        let assignments = self.completion_assignment_context(fields)?;
+        scope.merge(&assignments.scope);
         scope.completions = true;
         if *fields != fs
             || *sources != ss
@@ -1589,7 +1718,7 @@ impl Environment<'_> {
         {
             return Err("補完Domain元型/Context/支持が違う".into());
         }
-        let all = self.finite_values(ty, &mut |_, _| {})?;
+        let all = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
         if elements.is_empty() || elements.len() != all.values.len() {
             return Err("補完Domain全件数が違う".into());
         }
@@ -1626,6 +1755,12 @@ impl Environment<'_> {
         }
         if node.arguments == [seed.reference] {
             components(value, &seed.types, self.inputs.law(), &self.control)?;
+            if seed.types.iter().any(|ty| matches!(ty, Type::Ref(_))) {
+                let all = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
+                if !data::contains(&all.values, value, &self.control)? {
+                    return Err("参照補完memberが元入力に整合する全域にない".into());
+                }
+            }
             if node.ty != NodeType::Value(assignment_type(&seed.types)) {
                 return Err("補完member型が違う".into());
             }

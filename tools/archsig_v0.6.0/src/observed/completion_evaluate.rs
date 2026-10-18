@@ -1,4 +1,4 @@
-//! 元の参照なし有限slotの共有assignmentごとに選択した問い全体を評価する。
+//! 元の有限slotの共有assignmentごとに選択した問い全体を評価する。
 use super::*;
 use crate::observed::value_equality;
 impl Evaluator<'_, '_> {
@@ -88,9 +88,11 @@ impl Evaluator<'_, '_> {
             if fields.is_empty() {
                 return Err(Failure::Internal("既読の有限原始補完域が消えた".into()));
             }
+            let metadata = self.environment.completion_assignment_context(&fields)?;
             let mut scope = self.base.clone();
             scope.completions = true;
-            let mut support = Vec::new();
+            scope.merge(&metadata.scope);
+            let mut support = metadata.support;
             for &r in &roots {
                 scope.merge(&self.graph.get(r)?.scope);
                 support.extend(self.graph.get(r)?.support.iter().cloned());
@@ -141,10 +143,21 @@ impl Evaluator<'_, '_> {
             let ty = self.environment.completion_assignment_type(&fields)?;
             #[cfg(test)]
             let (span, context) = (self.declaration.span, root);
-            let assignments = self.environment.finite_values(&ty, &mut |_phase, _index| {
-                #[cfg(test)]
-                data::observe_actual(span, context, "completion_enum", _index);
-            })?;
+            let assignments =
+                self.environment
+                    .completion_assignments(&fields, &mut |_phase, _index| {
+                        #[cfg(test)]
+                        data::observe_actual(
+                            span,
+                            context,
+                            if _phase == "reference_constraints" {
+                                "completion_reference_constraints"
+                            } else {
+                                "completion_enum"
+                            },
+                            _index,
+                        );
+                    })?;
             let mut members = Vec::new();
             for value in assignments.values {
                 self.tick(Checkpoint::FiniteIteration)?;

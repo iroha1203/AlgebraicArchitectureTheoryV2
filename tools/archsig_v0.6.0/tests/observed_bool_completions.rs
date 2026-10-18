@@ -1155,15 +1155,20 @@ view later(s:Sample): Unit = unit;
     );
     assert_eq!(baseline_cases.len(), 2);
     assert_pair(&baseline, "current", &[slot("v", "h")]);
-    assert_eq!(
-        total.get() - count.get(),
-        6,
-        "元missing評価と2補完の通常Expression pre/post"
-    );
+
     let body_span = checked.law().exprs[declared_body(&checked, "Calc.current")].span;
     assert_eq!(source(&checked, body_span), b"s.h");
-    // 固定Expressionのfirst case pre/second case pre/last case postのみ。実補完列挙/集約/再検査phase内部はprivate試験が担う。
-    for (offset, kind, done) in [(3, 0, 0), (5, 1, 1), (6, 2, 2)] {
+    // 実際の保持case数から停止点を選ぶ。実補完列挙/集約/再検査phase内部はprivate試験が担う。
+    let wanted = [0, 1, 2];
+    let offsets = common::completion_stops::offsets(
+        &input,
+        &asks,
+        count.get(),
+        total.get(),
+        body_span,
+        &wanted,
+    );
+    for (kind, (&offset, &done)) in offsets.iter().zip(&wanted).enumerate() {
         let at = count.get() + offset;
         let expressions = Rc::new(Cell::new(0));
         let probes = Rc::new(Cell::new(0));

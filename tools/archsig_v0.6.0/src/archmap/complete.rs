@@ -8,6 +8,14 @@ use super::*;
 use crate::json::InputError;
 use crate::observed::control::{Checkpoint, Control};
 
+pub(crate) struct ReferenceAssignment {
+    pub snapshot: String,
+    pub subject: String,
+    pub field: String,
+    pub target_snapshot: String,
+    pub target_subject: String,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum RefSrc {
     Known(usize),
@@ -64,6 +72,7 @@ struct Model<'a, E> {
     /// 欠測した参照 slot ごとの変数 (subject, field) と候補。
     vars: Vec<(usize, usize, Vec<usize>)>,
     var_index: HashMap<(usize, usize), usize>,
+    pinned: HashMap<(usize, usize), usize>,
     data_inhabited: HashMap<String, bool>,
     definitions: &'a CheckedDefinitions,
     control: Control,
@@ -129,6 +138,9 @@ impl<'a, E: InputError> Model<'a, E> {
 
     fn slot_ref(&self, g: usize, f: usize) -> Result<Option<RefSrc>, E> {
         self.checkpoint()?;
+        if let Some(&target) = self.pinned.get(&(g, f)) {
+            return self.done(Some(RefSrc::Known(target)));
+        }
         let out = match &self.subjects[g].fields[f].slot {
             Slot::Known { value, .. } => value
                 .as_ref()
@@ -563,6 +575,17 @@ pub(crate) fn check_completion<E: InputError>(
     definitions: &CheckedDefinitions,
     control: &mut Control,
 ) -> Result<(), E> {
+    check_completion_with_references::<E>(snapshots, definitions, &[], control)
+}
+
+/// 元欠測slotに置いた参照が、既知Map/ownerを保つ補完へ拡張できるかを検査する。
+/// 入力表やLawの真偽を変更せず、通常の存在検査と同じ制約を使う。
+pub(crate) fn check_completion_with_references<E: InputError>(
+    snapshots: &[Snapshot],
+    definitions: &CheckedDefinitions,
+    pinned: &[ReferenceAssignment],
+    control: &mut Control,
+) -> Result<(), E> {
     E::checkpoint(control, Checkpoint::Completion)?;
     let mut subjects = Vec::new();
     for snapshot in snapshots {
@@ -610,16 +633,53 @@ pub(crate) fn check_completion<E: InputError>(
         owner_field,
         vars: Vec::new(),
         var_index: HashMap::new(),
+        pinned: HashMap::new(),
         data_inhabited,
         definitions,
         control: control.clone(),
         error: std::marker::PhantomData,
     };
+    for assignment in pinned {
+        m.checkpoint()?;
+        let fail = || issue(Code::Reference, "", "補完参照が元の欠測slot/登録型と違う");
+        let Some(&g) = m
+            .index
+            .get(&(assignment.snapshot.as_str(), assignment.subject.as_str()))
+        else {
+            return Err(fail().into());
+        };
+        let mut selected = None;
+        for (index, field) in m.subjects[g].fields.iter().enumerate() {
+            m.checkpoint()?;
+            if field.name == assignment.field {
+                selected = Some((index, field));
+                break;
+            }
+            m.checkpoint()?;
+        }
+        let Some((f, field)) = selected else {
+            return Err(fail().into());
+        };
+        let Some(&target) = m.index.get(&(
+            assignment.target_snapshot.as_str(),
+            assignment.target_subject.as_str(),
+        )) else {
+            return Err(fail().into());
+        };
+        if field.slot != Slot::Missing
+            || !matches!(&field.ty, Type::Ref(entity) if *entity == m.subjects[target].ty)
+            || m.pinned.insert((g, f), target).is_some()
+        {
+            return Err(fail().into());
+        }
+        m.checkpoint()?;
+    }
     for g in 0..m.subjects.len() {
         m.checkpoint()?;
         for (f, field) in m.subjects[g].fields.iter().enumerate() {
             m.checkpoint()?;
             if field.slot == Slot::Missing
+                && !m.pinned.contains_key(&(g, f))
                 && let Type::Ref(e) | Type::Owned(e, _) = &field.ty
             {
                 let domain = m.by_type.get(e.as_str()).cloned().unwrap_or_default();
