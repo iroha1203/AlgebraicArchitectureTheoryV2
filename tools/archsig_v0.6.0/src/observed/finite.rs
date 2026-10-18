@@ -27,7 +27,7 @@ pub(super) fn supported(
     law: &CheckedLaw,
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
-    supported_with_references(ty, law, control, true)
+    supported_with_references(ty, law, control, true, true)
 }
 
 /// 欠測fieldを入力の参照制約と独立に補完できる有限値型。
@@ -37,7 +37,16 @@ pub(super) fn completion_supported(
     law: &CheckedLaw,
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
-    supported_with_references(ty, law, control, false)
+    supported_with_references(ty, law, control, false, false)
+}
+
+/// 元入力の所属条件へ全値をpinする有限field。Mapの条件付き始域は別経路で扱う。
+pub(super) fn field_completion_supported(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+) -> Result<bool, ValidationFailure> {
+    supported_with_references(&ty.erase(), law, control, true, false)
 }
 
 fn supported_with_references(
@@ -45,6 +54,7 @@ fn supported_with_references(
     law: &CheckedLaw,
     control: &Control,
     references: bool,
+    maps: bool,
 ) -> Result<bool, ValidationFailure> {
     fn visit(
         ty: &Type,
@@ -52,6 +62,7 @@ fn supported_with_references(
         control: &Control,
         active: &mut Vec<String>,
         references: bool,
+        maps: bool,
     ) -> Result<bool, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(control)?;
@@ -62,19 +73,19 @@ fn supported_with_references(
                 // 列挙だけを、元の有限参照族上の全域関数として許可する。
                 // Ownedは実ownerを復元する依存経路が扱う。その入口は
                 // 消去型で本判定を行い、実列挙では元Owned型を保つ。
-                Type::Map(domain, codomain) => Ok(references
+                Type::Map(domain, codomain) => Ok(maps
                     && matches!(domain.as_ref(), Type::Ref(_))
                     && matches!(codomain.as_ref(), Type::Ref(_))),
                 Type::Tuple(types) => {
                     for ty in types {
-                        if !visit(ty, law, control, active, references)? {
+                        if !visit(ty, law, control, active, references, maps)? {
                             return Ok(false);
                         }
                     }
                     Ok(true)
                 }
                 Type::Option(element) | Type::Set(element) => {
-                    visit(element, law, control, active, references)
+                    visit(element, law, control, active, references, maps)
                 }
                 Type::Data(family) => {
                     if active.contains(family) {
@@ -85,7 +96,7 @@ fn supported_with_references(
                         for ctor in data::constructors(law, family)? {
                             tick(control)?;
                             for arg in &ctor.arguments {
-                                if !visit(arg, law, control, active, references)? {
+                                if !visit(arg, law, control, active, references, maps)? {
                                     return Ok(false);
                                 }
                             }
@@ -99,7 +110,7 @@ fn supported_with_references(
             }
         })
     }
-    visit(ty, law, control, &mut Vec::new(), references)
+    visit(ty, law, control, &mut Vec::new(), references, maps)
 }
 
 /// visitorは実評価時だけ渡す。Source再分析・再検査は同じ列挙とControlを使うが

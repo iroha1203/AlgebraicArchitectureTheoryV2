@@ -3,7 +3,7 @@
 
 mod canonical;
 mod complete;
-pub(crate) use complete::{ReferenceAssignment, check_completion_with_references};
+pub(crate) use complete::{FieldAssignment, check_completion_with_values};
 mod model;
 mod schema;
 pub mod value;

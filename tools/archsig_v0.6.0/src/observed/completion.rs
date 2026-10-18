@@ -116,9 +116,8 @@ fn components(
     };
     for (value, ty) in values.iter().zip(types) {
         control.clone().checkpoint(Checkpoint::FiniteIteration)?;
-        if !(matches!(ty, Type::Ref(_))
-            || super::super::finite::completion_supported(ty, law, control)?)
-            || value.ty() != *ty
+        if !super::super::finite::field_completion_supported(ty, law, control)?
+            || value.ty() != ty.erase()
         {
             return Err("補完代入の成分型が元の有限slotと違う".into());
         }
@@ -132,11 +131,28 @@ impl Environment<'_> {
         &self,
         ty: &Type,
     ) -> Result<bool, ValidationFailure> {
-        if matches!(ty, Type::Ref(_)) {
+        super::super::finite::field_completion_supported(ty, self.inputs.law(), &self.control)
+    }
+
+    fn completion_has_references(&self, types: &[Type]) -> Result<bool, ValidationFailure> {
+        let mut pending: Vec<_> = types.iter().collect();
+        let mut seen = BTreeSet::new();
+        while let Some(ty) = pending.pop() {
             self.tick()?;
-            return Ok(true);
+            match ty {
+                Type::Ref(_) | Type::Owned(..) | Type::Map(..) => return Ok(true),
+                Type::Tuple(items) => pending.extend(items),
+                Type::Option(item) | Type::Set(item) | Type::List(item) => pending.push(item),
+                Type::Data(family) if seen.insert(family.as_str()) => {
+                    for ctor in data::constructors(self.inputs.law(), family)? {
+                        self.tick()?;
+                        pending.extend(&ctor.arguments);
+                    }
+                }
+                _ => {}
+            }
         }
-        super::super::finite::completion_supported(ty, self.inputs.law(), &self.control)
+        Ok(false)
     }
 
     /// 候補の列挙前に、元入力だけから補完の支持とScopeを構成する。
@@ -147,7 +163,7 @@ impl Environment<'_> {
     ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
         let types = self.completion_slot_types(fields)?;
         let mut all = super::super::finite::Enumeration::default();
-        if !types.iter().any(|ty| matches!(ty, Type::Ref(_))) {
+        if !self.completion_has_references(&types)? {
             return Ok(all);
         }
         // 参照候補の可否は選択したfield以外の既知Map/ownerにも依存する。
@@ -197,7 +213,7 @@ impl Environment<'_> {
         let types = self.completion_slot_types(fields)?;
         let ty = assignment_type(&types);
         let mut all = self.finite_values(&ty, observer)?;
-        if !types.iter().any(|ty| matches!(ty, Type::Ref(_))) {
+        if !self.completion_has_references(&types)? {
             return Ok(all);
         }
         let context = self.completion_assignment_context(fields)?;
@@ -210,22 +226,16 @@ impl Environment<'_> {
             let mut pinned = Vec::new();
             for (fact, value) in fields.iter().zip(values) {
                 self.tick()?;
-                if let Scalar::Subject {
-                    snapshot, subject, ..
-                } = &value
-                {
-                    pinned.push(crate::archmap::ReferenceAssignment {
-                        snapshot: fact.snapshot.clone(),
-                        subject: fact.subject.clone(),
-                        field: fact.field.clone().ok_or("参照補完に元fieldがない")?,
-                        target_snapshot: snapshot.clone(),
-                        target_subject: subject.clone(),
-                    });
-                }
+                pinned.push(crate::archmap::FieldAssignment {
+                    snapshot: fact.snapshot.clone(),
+                    subject: fact.subject.clone(),
+                    field: fact.field.clone().ok_or("補完に元fieldがない")?,
+                    value: data::input_json(&value, &self.control)?,
+                });
             }
             observer("reference_constraints", index);
             self.tick()?;
-            match crate::archmap::check_completion_with_references::<
+            match crate::archmap::check_completion_with_values::<
                 CheckFailure<Box<crate::issue::Issue>>,
             >(
                 &self.inputs.archmap().snapshots,
@@ -275,7 +285,7 @@ impl Environment<'_> {
             {
                 return Err("補完slotが元の有限型の欠測fieldでない".into());
             }
-            types.push(field.ty.clone());
+            types.push(field.ty.erase());
             self.tick()?;
         }
         Ok(types)
@@ -1547,10 +1557,7 @@ impl Environment<'_> {
             (Rule::Input {kind:"law",location:Location::Law {span}},
              Some(Payload::Expression {location:Location::Law {span:source_span},parameters,..}))
             if span==source_span && parameters.is_empty()
-                && self.expressions.get(source_span).is_some_and(|&id| {
-                    matches!(&self.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 1)
-                        || matches!(&self.inputs.law().exprs[id].kind, ExprKind::Field { .. })
-                }))
+                && self.completion_field_owner_span(*source_span)?.is_some())
         {
             self.completion_field_node(graph, node, limit)?;
             return Ok(true);
@@ -1792,7 +1799,7 @@ impl Environment<'_> {
         }
         if node.arguments == [seed.reference] {
             components(value, &seed.types, self.inputs.law(), &self.control)?;
-            if seed.types.iter().any(|ty| matches!(ty, Type::Ref(_))) {
+            if self.completion_has_references(&seed.types)? {
                 let all = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
                 if !data::contains(&all.values, value, &self.control)? {
                     return Err("参照補完memberが元入力に整合する全域にない".into());
@@ -1847,6 +1854,32 @@ impl Environment<'_> {
         }
         Ok(())
     }
+    fn completion_field_owner_span(
+        &self,
+        span: (usize, usize),
+    ) -> Result<Option<(usize, usize)>, ValidationFailure> {
+        if let Some((id, count)) = self.chain_field_occurrence(span)? {
+            let prefixes = self.dotted_prefixes(id)?;
+            let previous = count.checked_sub(2).ok_or("補完fieldの元prefix数が違う")?;
+            return Ok(Some(
+                prefixes
+                    .get(previous)
+                    .ok_or("補完fieldの元owner prefixがない")?
+                    .0,
+            ));
+        }
+        let Some(&id) = self.expressions.get(&span) else {
+            return Ok(None);
+        };
+        Ok(match &self.inputs.law().exprs[id].kind {
+            ExprKind::Dotted(parts) if parts.len() > 1 => {
+                Some((parts[0].span.0, parts[parts.len() - 2].span.1))
+            }
+            ExprKind::Field { base, .. } => Some(self.inputs.law().exprs[*base].span),
+            _ => None,
+        })
+    }
+
     fn completion_field_node(
         &self,
         graph: &Graph,
@@ -1865,14 +1898,9 @@ impl Environment<'_> {
             return Err("補完fieldの元Sourceがない".into());
         };
         let a = self.analyze_source(graph, *span, bindings)?;
-        let id = *self.expressions.get(span).ok_or("補完fieldの元ASTがない")?;
-        let owner_span = match &self.inputs.law().exprs[id].kind {
-            ExprKind::Dotted(parts) if parts.len() > 1 => {
-                (parts[0].span.0, parts[parts.len() - 2].span.1)
-            }
-            ExprKind::Field { base, .. } => self.inputs.law().exprs[*base].span,
-            _ => return Err("補完field Sourceが元field構文でない".into()),
-        };
+        let owner_span = self
+            .completion_field_owner_span(*span)?
+            .ok_or("補完field Sourceが元field構文でない")?;
         let mut owner_evaluation = None;
         for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;

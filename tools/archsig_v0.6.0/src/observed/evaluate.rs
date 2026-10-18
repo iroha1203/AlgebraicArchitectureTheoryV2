@@ -2163,7 +2163,11 @@ impl Evaluator<'_, '_> {
         let fullname = format!("{entity}.{name}");
         let field = self.environment.field(&s.snapshot, &s.id, &fullname)?;
         if !matches!(field.ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
-            && !data::supported(&field.ty, self.environment.inputs.law(), self.control)?
+            && !data::supported(
+                &field.ty.erase(),
+                self.environment.inputs.law(),
+                self.control,
+            )?
         {
             return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
         }
@@ -2200,7 +2204,7 @@ impl Evaluator<'_, '_> {
             )?;
             return self.finish(
                 span,
-                field.ty.clone(),
+                field.ty.erase(),
                 Some(value),
                 vec![base],
                 vec![],
@@ -2886,6 +2890,9 @@ mod recheck_tests {
     }
     mod owner_family_completion_tests {
         include!("owner_family_completion_tests.rs");
+    }
+    mod finite_reference_field_tests {
+        include!("finite_reference_field_tests.rs");
     }
     mod dependent_owner_completion_tests {
         include!("dependent_owner_completion_tests.rs");

@@ -139,7 +139,10 @@
   族のcount・明示in量化で補完により変わる結果と、不変値・既知反例を区別して保持する。
   未束縛の依存Law parameterも元slotの共有代入を使い、各実fiberのwholeを判断してから補完を集約する。
   Z/Q parameterを含む各fiberの全域と、元の依存署名・束縛・欠測・現在由来を保持する。
-  参照container/Owned型field・Map自体の欠測列挙は後続に残る。
+  Owned型fieldと、参照を含む有限Tuple/Option/Set・非再帰dataの欠測も、元field型の入力制約へ戻る共有補完で読む。
+  値DAGの消去型と原始fieldのOwned条件を分け、候補全値と未選択ownerの整合する拡張を検査する。
+  空登録族のnone・空Setと、元Missing・実Source/prefix・現在由来を保持する。
+  Map自体の欠測列挙は後続に残る。無限List・Text・再帰dataを観測例から有限化しない。
   有限型slotの各補完でも先に全域のwholeを判断し、元の支持・欠測・量化を保って集約する。
   有限型のLaw parameterとZ/Q parameterの混在も、元宣言順の有限族の各instanceでZ/Q全域を判断する。
   既知ownerの依存族でも数値parameterを有限列挙から分け、元署名の実prefixごとの全Z/Q代入を評価する。

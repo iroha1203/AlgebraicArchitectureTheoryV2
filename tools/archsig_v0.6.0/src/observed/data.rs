@@ -286,6 +286,55 @@ pub(super) fn check(
         }
     })
 }
+/// 内部代入を原始fieldと同じencodingで検査へ渡す。各値を共有Controlで辿る。
+pub(super) fn input_json(
+    value: &Scalar,
+    control: &Control,
+) -> Result<crate::canonical::Json, ValidationFailure> {
+    use crate::canonical::Json;
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        tick(control)?;
+        let children = |items: &[Scalar]| -> Result<Vec<Json>, ValidationFailure> {
+            let mut out = Vec::new();
+            for item in items {
+                tick(control)?;
+                out.push(input_json(item, control)?);
+            }
+            Ok(out)
+        };
+        let json = match value {
+            Scalar::Unit => Json::Arr(vec![]),
+            Scalar::Bool(v) => Json::Bool(*v),
+            Scalar::Fp { value, .. } => Json::str(value.to_string()),
+            Scalar::Subject {
+                snapshot, subject, ..
+            } => Json::Arr(vec![Json::str(snapshot), Json::str(subject)]),
+            Scalar::Tuple(items) | Scalar::Set { items, .. } => Json::Arr(children(items)?),
+            Scalar::Option { value: None, .. } => Json::obj([("none", Json::Bool(true))]),
+            Scalar::Option {
+                value: Some(item), ..
+            } => Json::obj([("some", input_json(item, control)?)]),
+            Scalar::Data {
+                constructor, args, ..
+            } => Json::obj([
+                (
+                    "tag",
+                    Json::str(
+                        constructor
+                            .rsplit('.')
+                            .next()
+                            .ok_or("補完constructorがない")?,
+                    ),
+                ),
+                ("args", Json::Arr(children(args)?)),
+            ]),
+            _ => return Err("原始有限fieldの補完値でない".into()),
+        };
+        tick(control)?;
+        Ok(json)
+    })
+}
+
 pub(super) fn from_input(
     value: &Value,
     ty: &Type,
