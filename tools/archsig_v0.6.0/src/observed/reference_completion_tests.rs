@@ -146,6 +146,57 @@ fn mutate(kinds: &[usize], stable: bool) {
                 12 => {
                     g.nodes[first].payload = g.nodes[second].payload.clone();
                 }
+                13 => {
+                    let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut g.nodes[first].payload
+                    else {
+                        panic!()
+                    };
+                    assert_eq!(values[0].ty(), Type::Ref("Refs.Root".into()));
+                    values[0] = Scalar::Subject {
+                        snapshot: "v".into(),
+                        subject: "item".into(),
+                        entity: "Refs.Sample".into(),
+                    };
+                    g.nodes[first].ty = NodeType::Value(Type::Tuple(vec![
+                        Type::Ref("Refs.Sample".into()),
+                        Type::Ref("Refs.Root".into()),
+                    ]));
+                }
+                14 => {
+                    let Some(Payload::Domain { ty, .. }) = &mut g.nodes[domain].payload else {
+                        panic!()
+                    };
+                    assert_eq!(
+                        *ty,
+                        Type::Tuple(vec![
+                            Type::Ref("Refs.Root".into()),
+                            Type::Ref("Refs.Root".into()),
+                        ])
+                    );
+                    *ty = Type::Tuple(vec![
+                        Type::Ref("Refs.Sample".into()),
+                        Type::Ref("Refs.Root".into()),
+                    ]);
+                }
+                15 => {
+                    let projection = g
+                        .cases
+                        .iter()
+                        .find(|c| c.domain == NodeRef(domain))
+                        .unwrap()
+                        .values[0]
+                        .0;
+                    assert_eq!(
+                        g.nodes[projection].ty,
+                        NodeType::Value(Type::Ref("Refs.Root".into()))
+                    );
+                    g.nodes[projection].ty = NodeType::Value(Type::Ref("Refs.Sample".into()));
+                    g.nodes[projection].payload = Some(Payload::Scalar(Scalar::Subject {
+                        snapshot: "v".into(),
+                        subject: "item".into(),
+                        entity: "Refs.Sample".into(),
+                    }));
+                }
                 _ => panic!(),
             }
             assert!(
@@ -191,6 +242,10 @@ fn reference_completion_rechecks_original_support_scope_case_and_request_same_an
 #[test]
 fn reference_completion_whole_rejects_foreign_domain_coverage_and_duplicate_assignment() {
     mutate(&[10, 11, 12], true)
+}
+#[test]
+fn reference_completion_rejects_original_ref_assignment_domain_and_projection_type_mutations() {
+    mutate(&[13, 14, 15], false)
 }
 #[test]
 fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_and_known_slots() {
