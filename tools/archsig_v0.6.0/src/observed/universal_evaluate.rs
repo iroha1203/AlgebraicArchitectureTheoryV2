@@ -1156,13 +1156,18 @@ impl Evaluator<'_, '_> {
         mut comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
         local_domain: Option<NodeRef>,
     ) -> Result<SymbolicEvaluation, Failure> {
+        let child_reasons = self.environment.evaluation_child_reasons(
+            self.graph,
+            source.expression,
+            &children
+                .iter()
+                .map(|c| c.evaluated.evaluation)
+                .collect::<Vec<_>>(),
+        )?;
         let failed = source.condition_pending
-            || children.iter().any(|a| {
-                a.evaluated
-                    .reasons
-                    .iter()
-                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-            });
+            || child_reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }));
         if failed {
             comparison = None;
         }
@@ -1199,10 +1204,7 @@ impl Evaluator<'_, '_> {
                 )
             })
             .transpose()?;
-        let mut reasons = children
-            .iter()
-            .flat_map(|child| child.evaluated.reasons.iter().cloned())
-            .collect::<Vec<_>>();
+        let mut reasons = child_reasons;
         if let Some(reason) = source.missing {
             reasons.push(reason);
         }
@@ -1536,8 +1538,13 @@ impl Evaluator<'_, '_> {
                         ..Default::default()
                     }
                 } else {
-                    self.environment
-                        .owned_call_checks(declaration, &values, None, expr.span)?
+                    self.environment.owned_call_checks_at(
+                        self.graph,
+                        declaration,
+                        &values,
+                        None,
+                        expr.span,
+                    )?
                 };
                 checks.blocked |= pending;
                 if checks.failure.is_some() || checks.blocked {
@@ -1599,7 +1606,8 @@ impl Evaluator<'_, '_> {
                 } else {
                     None
                 };
-                let checks = self.environment.owned_call_checks(
+                let checks = self.environment.owned_call_checks_at(
+                    self.graph,
                     declaration,
                     &values,
                     partial.as_ref(),

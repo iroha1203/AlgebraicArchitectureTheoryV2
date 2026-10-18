@@ -111,22 +111,35 @@ fn wrong_owner_and_snapshot_calls_keep_refuted_conditions_without_a_value() {
 }
 #[test]
 fn unknown_owner_is_not_silently_accepted_at_a_view_call_boundary() {
-    let failure = evaluate_observed_bytes(
+    let r = evaluate_observed_bytes(
         fixture::input(true, false, "r1"),
         &["x=evaluate(Reservations.parameter,a=@v/A,s=@v/p)"],
         &mut quiet(),
     )
-    .unwrap_err();
-    assert!(matches!(
-        failure,
-        archsig::observed::EvaluationFailure::NotImplemented {
-            location: archsig::issue::Location::Law { .. },
-            ..
-        }
-    ));
+    .unwrap();
+    let w = r.wire();
+    let a = answer(&w, "x");
+    assert_eq!(r.status(), "partial");
+    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    let Json::Obj(outputs) = get(a, "outputs") else {
+        panic!("outputs")
+    };
+    assert!(!outputs.contains_key("value"));
+    assert!(arr(get(a, "reasons")).iter().any(|r| {
+        get(r, "code") == &Json::str("missing_observation")
+            && arr(get(r, "missing")).iter().any(|f| {
+                get(f, "subject") == &Json::str("p")
+                    && get(f, "field") == &Json::str("Reservations.State.owner")
+            })
+    }));
     assert!(
-        failure.wire().is_none(),
-        "未提供を算法理由や既知値へ変換しない"
+        arr(get(a, "reasons"))
+            .iter()
+            .any(|r| get(r, "code") == &Json::str("condition_failed"))
+    );
+    assert_eq!(
+        get(get(a, "scope"), "domain"),
+        &Json::str("all_completions")
     );
 }
 #[test]

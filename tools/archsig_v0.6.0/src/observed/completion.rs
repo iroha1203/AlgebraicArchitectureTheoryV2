@@ -443,6 +443,9 @@ impl Environment<'_> {
             let previous = self.context.replace(Some(context));
             let mut missing_span = *span;
             let analysis = (|| -> Result<Vec<Fact>, ValidationFailure> {
+                if let Some(fields) = self.owned_call_missing_slots(graph, reference)? {
+                    return Ok(fields);
+                }
                 if parameters.is_empty() {
                     if let Some(fields) =
                         self.owned_expression_missing_slots(graph, *span, bindings)?

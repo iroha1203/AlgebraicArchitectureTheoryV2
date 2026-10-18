@@ -40,7 +40,18 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
-        let mut reasons = Vec::new();
+        let mut reasons = checks
+            .missing
+            .iter()
+            .map(|fact| Reason {
+                kind: ReasonKind::Missing,
+                request: self.request.id.clone(),
+                dependencies: vec![source.expression],
+                missing: vec![fact.clone()],
+                location: Some(Location::Law { span }),
+            })
+            .collect::<Vec<_>>();
+        let committed_missing = reasons.clone();
         let value = if let Some((actual, required)) = checks.failure {
             #[cfg(test)]
             data::observe_actual(span, self.graph.active, "owned_call_condition", 0);
@@ -137,6 +148,10 @@ impl Evaluator<'_, '_> {
             self.sources.insert(span, previous);
         } else {
             self.sources.remove(&span);
+        }
+        if result.is_ok() {
+            // 実Evaluationを検査・commitできた後だけ、中断時の保持理由へ加える。
+            self.reasons.extend(committed_missing);
         }
         result
     }

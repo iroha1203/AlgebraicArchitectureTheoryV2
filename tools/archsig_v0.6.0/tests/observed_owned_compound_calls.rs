@@ -164,18 +164,37 @@ fn compound_owned_none_and_empty_values_keep_explicit_shape_and_no_fabricated_me
 }
 
 #[test]
-fn compound_owned_unknown_actual_owner_remains_unprovided() {
+fn compound_owned_unknown_actual_owner_keeps_completion_conditions() {
     let r = evaluate_observed_bytes(
         fixture::input(true, "r1"),
         &["p=evaluate(Reservations.ccSetEqual,a=@v/A,p=@v/p,q=@v/q)"],
         &mut quiet(),
     )
-    .unwrap_err();
-    assert!(matches!(
-        r,
-        archsig::observed::EvaluationFailure::NotImplemented { .. }
-    ));
-    assert!(r.wire().is_none());
+    .unwrap();
+    let w = r.wire();
+    let a = answer(&w, "p");
+    assert_eq!(r.status(), "partial");
+    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    let Json::Obj(outputs) = get(a, "outputs") else {
+        panic!("outputs")
+    };
+    assert!(!outputs.contains_key("value"));
+    assert!(arr(get(a, "reasons")).iter().any(|r| {
+        get(r, "code") == &Json::str("missing_observation")
+            && arr(get(r, "missing")).iter().any(|f| {
+                get(f, "subject") == &Json::str("p")
+                    && get(f, "field") == &Json::str("Reservations.State.owner")
+            })
+    }));
+    assert!(
+        arr(get(a, "reasons"))
+            .iter()
+            .any(|r| get(r, "code") == &Json::str("condition_failed"))
+    );
+    assert_eq!(
+        get(get(a, "scope"), "domain"),
+        &Json::str("all_completions")
+    );
 }
 
 #[test]
@@ -307,8 +326,9 @@ fn compound_owned_provenance_and_original_inputs_preserve_values_facts_and_curre
 
 #[test]
 fn compound_owned_missing_member_is_not_an_explicit_none_or_empty_value() {
+    let input = fixture::missing_member_input();
     let r = evaluate_observed_bytes(
-        fixture::missing_member_input(),
+        input.clone(),
         &[
             "unknown=evaluate(Reservations.ccUnknown,a=@v/A,e=@v/e)",
             "empty=evaluate(Reservations.ccEmpty,a=@v/A)",
@@ -316,14 +336,54 @@ fn compound_owned_missing_member_is_not_an_explicit_none_or_empty_value() {
         &mut quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
-    assert_eq!(r.status(), "partial");
+    assert_eq!(r.prepared().inputs().sources(), &input);
+    assert_eq!(r.status(), "complete");
     let w = r.wire();
     let a = answer(&w, "unknown");
-    assert_eq!(get(a, "status"), &Json::str("undetermined"));
-    let Json::Obj(outputs) = get(a, "outputs") else {
-        panic!("outputs")
-    };
-    assert!(!outputs.contains_key("value"));
+    assert_eq!(get(a, "status"), &Json::str("established"));
+    assert_eq!(
+        get(node(&w, get(get(a, "outputs"), "value")), "value"),
+        &Json::Bool(true)
+    );
+    let snapshot = r
+        .prepared()
+        .inputs()
+        .archmap()
+        .snapshots
+        .iter()
+        .find(|s| s.id == "v")
+        .unwrap();
+    let e = snapshot.subjects.iter().find(|s| s.id == "e").unwrap();
+    let owner = e
+        .fields
+        .iter()
+        .find(|f| f.name == "Reservations.Reserve.owner")
+        .unwrap();
+    assert!(
+        matches!(&owner.slot,archsig::archmap::Slot::Known{value:archsig::archmap::Value::Ref{snapshot,subject},..}if snapshot=="v"&&subject=="A")
+    );
+    let to = e
+        .fields
+        .iter()
+        .find(|f| f.name == "Reservations.Reserve.to")
+        .unwrap();
+    assert_eq!(
+        to.ty,
+        archsig::types::Type::Owned("Reservations.State".into(), "owner".into())
+    );
+    assert!(matches!(to.slot, archsig::archmap::Slot::Missing));
+    let evaluation = node(&w, get(get(a, "outputs"), "evaluation"));
+    let domain = node(&w, &arr(get(evaluation, "arguments"))[1]);
+    assert_eq!(get(domain, "type"), &Json::str("Domain"));
+    let actual: std::collections::BTreeSet<_> = arr(get(get(domain, "value"), "elements"))
+        .iter()
+        .map(|r| get(node(&w, r), "value").canonical())
+        .collect();
+    let expected: std::collections::BTreeSet<_> = ["p", "q"]
+        .into_iter()
+        .map(|s| Json::Arr(vec![Json::str("v"), Json::str(s)]).canonical())
+        .collect();
+    assert_eq!(actual, expected);
     let rs = arr(get(a, "reasons"));
     assert!(
         !rs.iter()

@@ -9,7 +9,7 @@ pub(in crate::observed) struct Checks {
     pub support: Vec<Fact>,
     pub failure: Option<(Scalar, Scalar)>,
     pub blocked: bool,
-    // 呼出しでは従来どおりUnsupportedを返す。依存fiberでは元欠測も保持する。
+    // 所属が未確定の実owner slot。値へ補わず、呼出しと補完の元Sourceへ残す。
     pub missing: Vec<Fact>,
 }
 
@@ -232,6 +232,63 @@ impl Environment<'_> {
         ))
     }
 
+    /// 未選択if枝と、左値で短絡した右辺の条件を外側の必要条件へ混ぜない。
+    /// 子の導出・支持・欠測は保持し、必要な子は実評価のBoolから選ぶ。
+    pub(in crate::observed) fn evaluation_child_reasons(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        children: &[NodeRef],
+    ) -> Result<Vec<super::super::result::Reason>, ValidationFailure> {
+        let span = self.expression_span(graph, source)?;
+        let kind = self
+            .expressions
+            .get(&span)
+            .map(|id| &self.inputs.law().exprs[*id].kind);
+        let mut required = vec![true; children.len()];
+        match kind {
+            Some(ExprKind::If { .. }) if children.len() == 3 => {
+                match graph.boolean(self.evaluation(graph, children[0])?.2)? {
+                    Some(true) => required[2] = false,
+                    Some(false) => required[1] = false,
+                    None => {}
+                }
+            }
+            Some(ExprKind::Binary { op, .. }) if children.len() == 2 => {
+                use crate::law::ast::BinOp;
+                if matches!(op, BinOp::And | BinOp::Or | BinOp::Implies) {
+                    let left = graph.boolean(self.evaluation(graph, children[0])?.2)?;
+                    if matches!(
+                        (op, left),
+                        (BinOp::And | BinOp::Implies, Some(false)) | (BinOp::Or, Some(true))
+                    ) {
+                        required[1] = false;
+                    }
+                }
+            }
+            _ => {}
+        }
+        let mut reasons = Vec::new();
+        for (child, required) in children.iter().zip(required) {
+            self.tick()?;
+            reasons.extend(
+                graph
+                    .get(*child)?
+                    .reasons
+                    .iter()
+                    .filter(|r| {
+                        required
+                            || !matches!(
+                                r.kind,
+                                super::super::result::ReasonKind::ConditionFailed { .. }
+                            )
+                    })
+                    .cloned(),
+            );
+        }
+        Ok(reasons)
+    }
+
     pub(in crate::observed) fn evaluation_condition_pending(
         &self,
         graph: &Graph,
@@ -266,17 +323,13 @@ impl Environment<'_> {
         value: Option<&Scalar>,
         values: &BTreeMap<&str, Option<&Scalar>>,
         reading: &str,
-        span: (usize, usize),
+        _span: (usize, usize),
         checks: &mut Checks,
     ) -> Result<(), ValidationFailure> {
         let Type::Owned(entity, owner_name) = ty else {
             return Ok(());
         };
         self.tick()?;
-        let unsupported = || ValidationFailure::UnsupportedExpression {
-            location: Location::Law { span },
-            feature: "未確定owner・実参照を持つview呼出しの所属条件".into(),
-        };
         let expected = values.get(owner_name.as_str()).copied().flatten();
         let (Some(value), Some(expected)) = (value, expected) else {
             checks.blocked = true;
@@ -397,7 +450,19 @@ impl Environment<'_> {
                 return Ok(());
             }
             checks.missing.push(fact);
-            return Err(unsupported());
+            checks.blocked = true;
+            #[cfg(test)]
+            data::observe_actual(
+                _span,
+                self.context
+                    .get()
+                    .or(self.scoped_context.get())
+                    .unwrap_or_default(),
+                "owned_call_missing",
+                0,
+            );
+            self.tick()?;
+            return Ok(());
         };
         checks
             .scope
@@ -431,7 +496,7 @@ impl Environment<'_> {
         }
         #[cfg(test)]
         data::observe_actual(
-            span,
+            _span,
             self.context.get().unwrap_or_default(),
             "owned_call_constraint",
             0,
@@ -506,7 +571,125 @@ impl Environment<'_> {
         }
         checks.support.sort();
         checks.support.dedup();
+        checks.missing.sort();
+        checks.missing.dedup();
         Ok(checks)
+    }
+
+    /// 実評価の呼出し境界も、再検査と同じ共有case代入で所属を判定する。
+    pub(in crate::observed) fn owned_call_checks_at(
+        &self,
+        graph: &Graph,
+        declaration: &Declaration,
+        arguments: &[PartialValue],
+        returned: Option<&PartialValue>,
+        span: (usize, usize),
+    ) -> Result<Checks, ValidationFailure> {
+        if graph.active.case.is_none() {
+            return self.owned_call_checks(declaration, arguments, returned, span);
+        }
+        self.validation_graph_session(graph, || {
+            let previous_context = self.context.replace(Some(graph.active));
+            let previous_cutoff = self.cutoff.replace(graph.nodes.len());
+            let previous_completion = self.completion_values.replace(Vec::new());
+            let result = (|| {
+                if let Some(case) = graph.active.case {
+                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                }
+                #[cfg(test)]
+                data::observe_actual(span, graph.active, "owned_call_case", 0);
+                self.tick()?;
+                self.owned_call_checks(declaration, arguments, returned, span)
+            })();
+            self.completion_values.replace(previous_completion);
+            self.cutoff.set(previous_cutoff);
+            self.context.set(previous_context);
+            result
+        })
+    }
+
+    /// 呼出しの実引数producerから、観測時点で欠けていた所属slotを再構成する。
+    /// caseの代入値を元観測へ上書きせず、元Missingを補完の共有軸にする。
+    pub(in crate::observed) fn owned_call_missing_slots(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+    ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
+        // wholeの集約Sourceを、そのspanと同じ元callの実引数へ読み替えない。
+        if self.family_source_root(graph, source)?
+            || self.universal_source_root(graph, source)? == Some(source)
+        {
+            return Ok(None);
+        }
+        let span = self.expression_span(graph, source)?;
+        let Some(&id) = self.expressions.get(&span) else {
+            return Ok(None);
+        };
+        if !self.owns_call(id)? {
+            return Ok(None);
+        }
+        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+            return Err("所属slotの元式がcallでない".into());
+        };
+        let bindings = self.expression_bindings(graph, source)?;
+        let limit = self.cutoff.get().min(graph.nodes.len());
+        let mut children = None;
+        for (index, node) in graph.nodes.iter().enumerate().take(limit) {
+            self.tick()?;
+            if graph.context_at(index) != self.current_context(graph) {
+                continue;
+            }
+            let Some(Payload::Evaluation {
+                expression,
+                bindings: actual,
+                parts,
+                ..
+            }) = &node.payload
+            else {
+                continue;
+            };
+            if *expression == source && actual == bindings {
+                if parts.len() != 1
+                    || parts[0].location != (Location::Law { span })
+                    || children.replace(parts[0].children.clone()).is_some()
+                {
+                    return Err("所属slotの元call実評価が一意でない".into());
+                }
+            }
+        }
+        let children = children.ok_or("所属slotの元call実評価がない")?;
+        // 現caseの実frame/bodyと引数を先に照合し、その後だけ元Missingへ戻る。
+        self.owned_call_inputs(graph, source, &children, limit)?
+            .ok_or("所属slotの元call検査がない")?;
+        let declaration = self.named_view(id)?.ok_or("所属slotの元viewがない")?;
+        let arguments = children[..args.len()]
+            .iter()
+            .map(|child| self.owned_call_argument(graph, *child))
+            .collect::<Result<Vec<_>, _>>()?;
+        let returned = children
+            .get(args.len())
+            .map(|body| self.owned_call_argument(graph, *body))
+            .transpose()?;
+        #[cfg(test)]
+        data::observe_actual(
+            span,
+            self.current_context(graph),
+            "owned_call_missing_source",
+            0,
+        );
+        self.tick()?;
+        let previous = self.completion_values.replace(Vec::new());
+        let result = self
+            .owned_call_checks(declaration, &arguments, returned.as_ref(), span)
+            .map(|checks| {
+                if checks.missing.is_empty() {
+                    None
+                } else {
+                    Some(checks.missing)
+                }
+            });
+        self.completion_values.replace(previous);
+        result
     }
 
     pub(in crate::observed) fn owns_call(&self, id: usize) -> Result<bool, ValidationFailure> {

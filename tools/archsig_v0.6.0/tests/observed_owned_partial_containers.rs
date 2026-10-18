@@ -336,7 +336,7 @@ fn partial_option_set_pending_and_missing_members_keep_independent_known_mismatc
     }
 }
 #[test]
-fn partial_option_missing_reference_resolves_known_owner_and_keeps_unknown_owner_call_gap() {
+fn partial_option_missing_reference_resolves_known_owner_and_quantified_unknown_owner() {
     let r = run_input(
         fixture::missing_reference_input(),
         &["x=evaluate(Reservations.ocUnknown,a=@v/A,e=@v/e,q=@v/q)"],
@@ -358,14 +358,27 @@ fn partial_option_missing_reference_resolves_known_owner_and_keeps_unknown_owner
         &["x=check(Reservations.ocSomeGood,a=@v/A,p=@v/p)"],
         &mut Control::new(Limits::default(), |_| Usage::default()),
     )
-    .unwrap_err();
-    assert!(matches!(
-        &unknown,
-        archsig::observed::EvaluationFailure::NotImplemented { declaration, feature, .. }
-            if declaration=="Reservations.ocSomeGood"
-                && feature=="未確定owner・実参照を持つview呼出しの所属条件"
-    ));
-    assert!(unknown.wire().is_none());
+    .unwrap();
+    let uw = unknown.wire();
+    let a = answer(&uw, "x");
+    assert_eq!(unknown.status(), "partial");
+    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    let Json::Obj(outputs) = get(a, "outputs") else {
+        panic!("outputs")
+    };
+    assert!(!outputs.contains_key("value"));
+    assert!(arr(get(a, "reasons")).iter().any(|r| {
+        get(r, "code") == &Json::str("missing_observation")
+            && arr(get(r, "missing")).iter().any(|f| {
+                get(f, "subject") == &Json::str("p")
+                    && get(f, "field") == &Json::str("Reservations.State.owner")
+            })
+    }));
+    assert!(
+        arr(get(a, "reasons"))
+            .iter()
+            .any(|r| get(r, "code") == &Json::str("condition_failed"))
+    );
 }
 
 #[test]
