@@ -32,14 +32,13 @@ impl Evaluator<'_, '_> {
             })
             .cloned()
             .collect();
-        // 元selectorのsubjectを保持する。動的Owned制約の放電は各実prefixで行う。
+        // 元selectorの固定値を保持する。動的Owned制約の放電は各実prefixで行う。
         self.bind_parameters(&fixed, true)?;
         let root = self.graph.active;
         let fixed_bindings = self.bindings.clone();
         let mut raw_scope = self.base.clone();
-        raw_scope.quantifiers = self
-            .environment
-            .dependent_family_descriptors(&plan, &[], root);
+        self.environment
+            .dependent_merge_scope(&plan, &mut raw_scope, &[], root)?;
         let source = self.family_source(body, &plan.free, &raw_scope)?;
         let guard_source = guard
             .map(|g| self.family_source(g, &plan.free, &raw_scope))
@@ -62,6 +61,7 @@ impl Evaluator<'_, '_> {
             #[cfg(test)]
             let (span, context) = (self.declaration.span, root);
             let step = self.environment.dependent_family_step(
+                self.graph,
                 self.request,
                 parameter_index,
                 &prefix.free,
@@ -79,8 +79,9 @@ impl Evaluator<'_, '_> {
                 support.extend(self.graph.get(selected)?.support.iter().cloned());
                 self.tick(Checkpoint::FiniteIteration)?;
             }
-            scope.quantifiers = self.environment.dependent_family_descriptors(
+            self.environment.dependent_merge_scope(
                 &plan,
+                &mut scope,
                 &prefix
                     .path
                     .iter()
@@ -88,14 +89,13 @@ impl Evaluator<'_, '_> {
                     .map(|(i, &(domain, _))| (i, domain))
                     .collect::<Vec<_>>(),
                 root,
-            );
+            )?;
             support.sort();
             support.dedup();
             if !step.missing.is_empty() {
                 all_scope.merge(&scope);
-                all_scope.quantifiers = self
-                    .environment
-                    .dependent_family_descriptors(&plan, &domains, root);
+                self.environment
+                    .dependent_merge_scope(&plan, &mut all_scope, &domains, root)?;
                 let dependencies = vec![source];
                 let location = Some(Location::Law {
                     span: parameter.span,
@@ -187,9 +187,8 @@ impl Evaluator<'_, '_> {
                 self.tick(Checkpoint::FiniteIteration)?;
             }
         }
-        all_scope.quantifiers = self
-            .environment
-            .dependent_family_descriptors(&plan, &domains, root);
+        self.environment
+            .dependent_merge_scope(&plan, &mut all_scope, &domains, root)?;
         all_support.sort();
         all_support.dedup();
         self.retained_scope.merge(&all_scope);

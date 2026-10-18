@@ -2863,6 +2863,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod answer_dependent_family_tests {
+        include!("answer_dependent_family_tests.rs");
+    }
     mod answer_family_condition_tests {
         include!("answer_family_condition_tests.rs");
     }

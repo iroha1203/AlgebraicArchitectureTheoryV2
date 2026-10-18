@@ -20,9 +20,10 @@ struct Layout {
 impl Environment<'_> {
     fn dependent_fixed_value(
         &self,
+        graph: &Graph,
         request: &Request,
         name: &str,
-    ) -> Result<Option<Scalar>, ValidationFailure> {
+    ) -> Result<Option<super::super::finite::Enumeration>, ValidationFailure> {
         let Some(argument) = request
             .arguments
             .iter()
@@ -30,24 +31,55 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let Selector::Subject { snapshot, subject } = &argument.value else {
-            return Err(ValidationFailure::UnsupportedExpression {
-                location: Location::Law {
-                    span: self.inputs.law().declarations[request.declaration()].span,
-                },
-                feature: "依存Law族の明示subject以外の固定束縛".into(),
-            });
-        };
-        let s = self.subject(snapshot, subject)?;
-        Ok(Some(Scalar::Subject {
-            snapshot: snapshot.clone(),
-            subject: subject.clone(),
-            entity: s.ty.clone(),
-        }))
+        let declaration = &self.inputs.law().declarations[request.declaration()];
+        let mut enumeration = super::super::finite::Enumeration::default();
+        match &argument.value {
+            Selector::Subject { snapshot, subject } => {
+                let s = self.subject(snapshot, subject)?;
+                enumeration.values.push(Scalar::Subject {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    entity: s.ty.clone(),
+                });
+                enumeration.scope = self.scope(s, &declaration.reading, None)?;
+                enumeration.support.push(Fact {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: None,
+                    atom: None,
+                });
+            }
+            selector @ Selector::Answer { .. } => {
+                let crate::law::model::Signature::Law { params, .. } = &declaration.signature
+                else {
+                    return Err("固定fiberの元Law署名がない".into());
+                };
+                let parameter = params
+                    .iter()
+                    .find(|p| p.name == name)
+                    .ok_or("固定fiberの元parameterがない")?;
+                let node = match self.answer_binding(graph, selector, parameter.span)? {
+                    AnswerBinding::Reference(r) => graph.get(r)?.clone(),
+                    AnswerBinding::Projection(node) => node,
+                    AnswerBinding::Inapplicable(_) => {
+                        return Err("不適合Answerが固定fiberに到達した".into());
+                    }
+                };
+                let Some(Payload::Scalar(value)) = node.payload else {
+                    return Err("固定fiberの元Answerが値でない".into());
+                };
+                enumeration.values.push(value);
+                enumeration.scope = node.scope;
+                enumeration.support = node.support;
+            }
+            _ => return Err("固定fiberが元subject/Answer selectorでない".into()),
+        }
+        Ok(Some(enumeration))
     }
 
     pub(in crate::observed) fn dependent_family_step(
         &self,
+        graph: &Graph,
         request: &Request,
         parameter: usize,
         prefix: &[(String, Scalar)],
@@ -76,7 +108,7 @@ impl Environment<'_> {
             }
             data::check(value, self.inputs.law(), &self.control)?;
         }
-        let fixed = self.dependent_fixed_value(request, &p.name)?;
+        let fixed = self.dependent_fixed_value(graph, request, &p.name)?;
         let reading = &self.inputs.law().declarations[request.declaration()].reading;
         let mut result = DependentStep {
             enumeration: super::super::finite::Enumeration::default(),
@@ -87,30 +119,24 @@ impl Environment<'_> {
                 .iter()
                 .find(|(name, _)| name == owner_name)
                 .map(|(_, value)| value.clone())
-                .or(self.dependent_fixed_value(request, owner_name)?)
+                .or(self
+                    .dependent_fixed_value(graph, request, owner_name)?
+                    .and_then(|mut e| e.values.pop()))
                 .ok_or("依存parameterの先行ownerがない")?;
-            let roster = self.owned_members(entity, &owner, fixed.as_ref(), reading, observer)?;
+            let roster = self.owned_members(
+                entity,
+                &owner,
+                fixed.as_ref().and_then(|e| e.values.first()),
+                reading,
+                observer,
+            )?;
             result.enumeration = roster.enumeration;
             result.missing = roster.missing;
-        } else if let Some(value) = fixed {
-            if value.ty() != p.ty.erase() {
+        } else if let Some(enumeration) = fixed {
+            if enumeration.values.len() != 1 || enumeration.values[0].ty() != p.ty.erase() {
                 return Err("固定fiber型が元署名と違う".into());
             }
-            let Scalar::Subject {
-                snapshot, subject, ..
-            } = &value
-            else {
-                return Err("固定fiberがRefでない".into());
-            };
-            let s = self.subject(snapshot, subject)?;
-            result.enumeration.scope = self.scope(s, reading, None)?;
-            result.enumeration.support.push(Fact {
-                snapshot: snapshot.clone(),
-                subject: subject.clone(),
-                field: None,
-                atom: None,
-            });
-            result.enumeration.values.push(value);
+            result.enumeration = enumeration;
         } else {
             // 元署名の複合型に含まれる各Owned leafも、現在の実prefixから
             // ownerを読む。消去型の全登録族へ置き換えない。
@@ -129,7 +155,9 @@ impl Environment<'_> {
                         .iter()
                         .find(|(name, _)| name == owner_name)
                         .map(|(_, value)| value.clone())
-                        .or(self.dependent_fixed_value(request, owner_name)?)
+                        .or(self
+                            .dependent_fixed_value(graph, request, owner_name)?
+                            .and_then(|mut e| e.values.pop()))
                         .ok_or("複合依存parameterの先行ownerがない")?;
                     let roster =
                         self.owned_members(entity, &owner, None, reading, &mut |phase, i| {
@@ -148,6 +176,20 @@ impl Environment<'_> {
         result.missing.dedup();
         self.tick()?;
         Ok(result)
+    }
+
+    pub(in crate::observed) fn dependent_merge_scope(
+        &self,
+        plan: &Plan,
+        scope: &mut Scope,
+        domains: &[(usize, NodeRef)],
+        context: super::super::call::Context,
+    ) -> Result<(), ValidationFailure> {
+        scope.merge_quantifiers(&Scope {
+            quantifiers: self.dependent_family_descriptors(plan, domains, context),
+            ..Scope::default()
+        });
+        self.family_order_scope(plan, scope)
     }
 
     pub(in crate::observed) fn dependent_family_descriptors(
@@ -259,7 +301,8 @@ impl Environment<'_> {
             .ok_or("fiberの実parameter位置がない")?;
         let prefix = self.dependent_path(graph, source, plan, path, count, limit)?;
         let request = &graph.requests[graph.context_at(source.0).request];
-        let mut step = self.dependent_family_step(request, parameter, &prefix, &mut |_, _| {})?;
+        let mut step =
+            self.dependent_family_step(graph, request, parameter, &prefix, &mut |_, _| {})?;
         step.enumeration.scope.merge(&graph.get(source)?.scope);
         let mut domains = Vec::new();
         for (position, pair) in path.chunks_exact(2).enumerate() {
@@ -270,8 +313,12 @@ impl Environment<'_> {
                 .extend(graph.get(pair[1])?.support.iter().cloned());
             domains.push((indices[position], pair[0]));
         }
-        step.enumeration.scope.quantifiers =
-            self.dependent_family_descriptors(plan, &domains, graph.context_at(source.0));
+        self.dependent_merge_scope(
+            plan,
+            &mut step.enumeration.scope,
+            &domains,
+            graph.context_at(source.0),
+        )?;
         step.enumeration.support.sort();
         step.enumeration.support.dedup();
         Ok(step)
@@ -366,8 +413,7 @@ impl Environment<'_> {
         if layout.domains != candidates {
             return Err("実prefixDomainの元順・coverageが違う".into());
         }
-        layout.scope.quantifiers =
-            self.dependent_family_descriptors(plan, &layout.domains, context);
+        self.dependent_merge_scope(plan, &mut layout.scope, &layout.domains, context)?;
         layout.support.sort();
         layout.support.dedup();
         Ok(layout)
@@ -718,7 +764,7 @@ impl Environment<'_> {
             }
             let mut scope = layout.scope;
             scope.merge(&step.enumeration.scope);
-            scope.quantifiers = self.dependent_family_descriptors(plan, &layout.domains, context);
+            self.dependent_merge_scope(plan, &mut scope, &layout.domains, context)?;
             let missing = Reason {
                 kind: ReasonKind::Missing,
                 request: request.id.clone(),
