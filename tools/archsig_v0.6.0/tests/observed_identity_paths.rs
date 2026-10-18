@@ -310,3 +310,83 @@ fn identity_math_equality_uses_endpoints_and_identity_action_across_readings() {
         std::collections::BTreeSet::from(["Other", "Walk"])
     );
 }
+
+#[test]
+fn direct_identity_comparisons_and_membership_keep_result_types_and_law_judgments() {
+    let inputs = fixture::cross_reading();
+    let mut asks = Vec::new();
+    let mut expected = Vec::new();
+    for view in [
+        "equal_path",
+        "unequal_path",
+        "equal_option",
+        "equal_list",
+        "equal_tuple",
+        "member_path",
+    ] {
+        for (suffix, target, same) in [
+            ("same", "v/a", true),
+            ("subject", "v/b", false),
+            ("snapshot", "w/a", false),
+        ] {
+            let id = format!("{view}_{suffix}");
+            asks.push(format!("{id}=evaluate(Other.{view},x=@v/a,y=@{target})"));
+            expected.push((id, if view == "unequal_path" { !same } else { same }));
+        }
+    }
+    asks.extend([
+        "empty=evaluate(Other.equal_absent)".into(),
+        "lawgood=check(Other.direct_law,x=@v/a,y=@v/a)".into(),
+        "lawbad=check(Other.direct_law,x=@v/a,y=@v/b)".into(),
+    ]);
+    expected.push(("empty".into(), true));
+    let request_text = asks.iter().map(String::as_str).collect::<Vec<_>>();
+    let r = evaluate_observed_bytes(inputs.clone(), &request_text, &mut quiet()).unwrap();
+    assert_eq!(r.status(), "complete");
+    assert_eq!(r.prepared().inputs().sources(), &inputs);
+    let j = r.wire();
+    assert_eq!(array(f(&j, "answers")).len(), asks.len());
+    for (id, value) in expected {
+        let n = output(&j, &id, &Json::str("Bool"));
+        assert_eq!(f(n, "value"), &Json::Bool(value), "{id}");
+    }
+    for (id, status) in [("lawgood", "established"), ("lawbad", "refuted")] {
+        let a = array(f(&j, "answers"))
+            .iter()
+            .find(|a| f(a, "id") == &Json::str(id))
+            .unwrap();
+        assert_eq!(f(a, "status"), &Json::str(status));
+        let claim = node(&j, f(a, "claim"), &Json::str("Proposition"));
+        assert_eq!(f(f(claim, "judgment"), "status"), &Json::str(status));
+        if status == "refuted" {
+            let proof = array(f(f(claim, "judgment"), "evidence"))
+                .iter()
+                .map(|r| node(&j, r, &Json::str("Evidence")))
+                .find(|p| object(f(p, "value")).get("kind") == Some(&Json::str("counterexample")))
+                .unwrap();
+            let data = f(f(proof, "value"), "data");
+            assert!(!array(f(data, "facts")).is_empty());
+            for (side, reading, subject) in [("left", "Walk", "a"), ("right", "Other", "b")] {
+                let p = node(&j, f(data, side), &path());
+                let value = f(p, "value");
+                assert_eq!(f(value, "reading"), &Json::str(reading));
+                assert!(array(f(value, "generators")).is_empty());
+                for endpoint in ["source", "target"] {
+                    assert_eq!(
+                        f(node(&j, f(value, endpoint), &reference()), "value"),
+                        &Json::Arr(vec![Json::str("v"), Json::str(subject)])
+                    );
+                }
+            }
+        }
+    }
+    for (index, n) in array(f(&j, "nodes")).iter().enumerate() {
+        let mut found = Vec::new();
+        refs(n, &mut found);
+        assert!(
+            found
+                .iter()
+                .all(|r| r.strip_prefix('n').unwrap().parse::<usize>().unwrap() < index)
+        );
+    }
+}

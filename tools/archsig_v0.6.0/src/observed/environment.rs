@@ -9573,7 +9573,9 @@ pub(crate) fn supports_binary(
         return Ok(matches!(op, BinOp::Eq | BinOp::Ne | BinOp::In)
             && super::value_equality::supported(input, law, control)?);
     }
-    if matches!(op, BinOp::Eq | BinOp::Ne | BinOp::In) && data::primitive_type(input, control)? {
+    if matches!(op, BinOp::Eq | BinOp::Ne | BinOp::In)
+        && super::path_value::result_type(input, control)?
+    {
         return Ok(true);
     }
     if input == &Type::Bool {

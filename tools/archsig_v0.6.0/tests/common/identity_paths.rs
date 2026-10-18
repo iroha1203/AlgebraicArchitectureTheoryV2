@@ -62,6 +62,14 @@ use Walk as O;
 view mixed(x:Node,y:Node):Bool=(O.id(x),fn(z:Z)=>z)=(identity(y),fn(z:Z)=>z);
 view nested(x:Node,y:Node):Bool=some(list<(Path<Node,Node>,Term<(Z)->Z>)>[(O.id(x),fn(z:Z)=>z)])=some(list<(Path<Node,Node>,Term<(Z)->Z>)>[(identity(y),fn(t:Z)=>t+0)]);
 view different_term(x:Node):Bool=(O.id(x),fn(z:Z)=>z)=(identity(x),fn(z:Z)=>z+1);
+view equal_path(x:Node,y:Node):Bool=O.id(x)=identity(y);
+view unequal_path(x:Node,y:Node):Bool=O.id(x)!=identity(y);
+view equal_option(x:Node,y:Node):Bool=some(O.id(x))=some(identity(y));
+view equal_list(x:Node,y:Node):Bool=list<Path<Node,Node>>[O.id(x),identity(y)]=list<Path<Node,Node>>[identity(y),O.id(x)];
+view equal_tuple(x:Node,y:Node):Bool=(false,O.id(x))=(false,identity(y));
+view member_path(x:Node,y:Node):Bool=O.id(x) in list<Path<Node,Node>>[identity(y)];
+view equal_absent():Bool=none<Path<Node,Node>> =none<Path<Node,Node>>;
+law required direct_law(x:Node,y:Node):O.id(x)=identity(y);
 }}
 "#
     ));
