@@ -1,4 +1,4 @@
-//! 全ownerが固定されたOwned束縛を、元selector・各member・原始owner事実から検査する。
+//! 固定ownerのOwned束縛を、元selector・各member・原始owner事実から検査する。
 use super::*;
 use crate::law::model::{Param, Signature};
 
@@ -75,6 +75,7 @@ impl Environment<'_> {
             return Ok(false);
         };
         let mut answer = matches!(value.value, Selector::Answer { .. });
+        let mut fixed = 0;
         for (_index, owner) in owners.into_iter().enumerate() {
             self.tick()?;
             #[cfg(test)]
@@ -86,20 +87,22 @@ impl Environment<'_> {
             );
             let Some(owner) = selected(owner) else {
                 self.tick()?;
-                return Ok(false);
+                continue;
             };
+            fixed += 1;
             answer |= matches!(owner.value, Selector::Answer { .. });
             self.tick()?;
         }
         self.tick()?;
-        Ok(answer
+        Ok(fixed > 0
+            && answer
             && request
                 .constraints
                 .iter()
                 .any(|c| c.parameter == p.name && c.dynamic))
     }
 
-    // 型内の全ownerが自由な固定Answerを、実prefixごとの所属へ送る。
+    // 自由ownerを含む固定Answerを、実prefixごとの所属へ送る。
     pub(in crate::observed) fn deferred_owned_binding(
         &self,
         request: &Request,
@@ -114,7 +117,7 @@ impl Environment<'_> {
             return Ok(false);
         }
         let mut answer = false;
-        let mut fixed_owner = false;
+        let mut fixed_owners = BTreeSet::new();
         for (_index, argument) in request.arguments.iter().enumerate() {
             self.tick()?;
             #[cfg(test)]
@@ -129,7 +132,9 @@ impl Environment<'_> {
             }
             for owner in &owners {
                 self.tick()?;
-                fixed_owner |= argument.name == format!("bind.{owner}");
+                if argument.name == format!("bind.{owner}") {
+                    fixed_owners.insert(*owner);
+                }
                 self.tick()?;
             }
             self.tick()?;
@@ -141,7 +146,43 @@ impl Environment<'_> {
             self.tick()?;
         }
         self.tick()?;
-        Ok(answer && !fixed_owner && dynamic)
+        Ok(answer && fixed_owners.len() < owners.len() && dynamic)
+    }
+
+    // root条件では固定されたownerだけを検査し、自由ownerは実fiberへ残す。
+    // 値・元署名・公開型は変更せず、検査する所属制約だけを選ぶ。
+    fn binding_fixed_type(
+        &self,
+        ty: &Type,
+        fixed: &BTreeSet<&str>,
+    ) -> Result<Type, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            self.tick()?;
+            let ty = match ty {
+                Type::Owned(entity, owner) if !fixed.contains(owner.as_str()) => {
+                    Type::Ref(entity.clone())
+                }
+                Type::Tuple(items) => {
+                    let mut types = Vec::new();
+                    for item in items {
+                        self.tick()?;
+                        types.push(self.binding_fixed_type(item, fixed)?);
+                        self.tick()?;
+                    }
+                    Type::Tuple(types)
+                }
+                Type::Option(item) => Type::Option(Box::new(self.binding_fixed_type(item, fixed)?)),
+                Type::List(item) => Type::List(Box::new(self.binding_fixed_type(item, fixed)?)),
+                Type::Set(item) => Type::Set(Box::new(self.binding_fixed_type(item, fixed)?)),
+                Type::Map(from, to) => Type::Map(
+                    Box::new(self.binding_fixed_type(from, fixed)?),
+                    Box::new(self.binding_fixed_type(to, fixed)?),
+                ),
+                ty => ty.clone(),
+            };
+            self.tick()?;
+            Ok(ty)
+        })
     }
 
     fn owned_selected(
@@ -225,6 +266,16 @@ impl Environment<'_> {
             return Err("所属束縛の元parameterが違う".into());
         }
         let owner_names = self.binding_owner_names(&p.ty, p.span)?;
+        let mut selected_owners = BTreeSet::new();
+        for argument in &request.arguments {
+            self.tick()?;
+            if let Some(name) = argument.name.strip_prefix("bind.")
+                && owner_names.contains(name)
+            {
+                selected_owners.insert(name);
+            }
+            self.tick()?;
+        }
         let selector = |name: &str| {
             request
                 .arguments
@@ -241,7 +292,9 @@ impl Environment<'_> {
         let mut owners = Vec::new();
         for parameter in params {
             self.tick()?;
-            if owner_names.contains(parameter.name.as_str()) {
+            if owner_names.contains(parameter.name.as_str())
+                && selected_owners.contains(parameter.name.as_str())
+            {
                 let selected = self.owned_selected(
                     graph,
                     selector(&parameter.name)?,
@@ -254,16 +307,18 @@ impl Environment<'_> {
                 owners.push((parameter.name.as_str(), selected));
             }
         }
-        if owners.len() != owner_names.len() {
-            return Err("所属束縛の元owner parameterがない".into());
+        if owners.is_empty() || owners.len() != selected_owners.len() {
+            return Err("所属束縛の固定owner parameterがない".into());
         }
+        let fixed = owners.iter().map(|(name, _)| *name).collect();
+        let checked_type = self.binding_fixed_type(&p.ty, &fixed)?;
         let values = owners
             .iter()
             .map(|(name, owner)| (*name, Some(&owner.scalar)))
             .collect();
         let mut checks = owned_call::Checks::default();
         self.owned_call_value_check(
-            &p.ty,
+            &checked_type,
             &super::super::term::affine::Value::Known(value.scalar.clone()),
             &values,
             &d.reading,

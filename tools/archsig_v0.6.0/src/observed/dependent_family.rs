@@ -139,7 +139,7 @@ impl Environment<'_> {
             result.enumeration = enumeration;
             if p.ty != p.ty.erase() {
                 // 固定複合値のleafも、元署名の現在の実prefixで検査する。
-                // 全固定ownerは従来のroot条件で放電し、混在は計画段階で拒否する。
+                // 固定ownerはroot条件でも確認し、自由ownerは現在の実prefixを使う。
                 let mut owners = BTreeMap::new();
                 for prior in &plan.parameters[..parameter] {
                     self.tick()?;
@@ -350,7 +350,10 @@ impl Environment<'_> {
         let request = &graph.requests[graph.context_at(source.0).request];
         let mut step =
             self.dependent_family_step(graph, request, parameter, &prefix, &mut |_, _| {})?;
-        step.enumeration.scope.merge(&graph.get(source)?.scope);
+        // 生成側と同じく元Sourceを先に置く。複数固定producerの量化順を保つ。
+        let mut scope = graph.get(source)?.scope.clone();
+        scope.merge(&step.enumeration.scope);
+        step.enumeration.scope = scope;
         let mut domains = Vec::new();
         for (position, pair) in path.chunks_exact(2).enumerate() {
             self.tick()?;
