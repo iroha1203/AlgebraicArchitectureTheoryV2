@@ -840,9 +840,14 @@ impl Evaluator<'_, '_> {
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
             support.extend(child.support.iter().cloned());
-            reasons.extend(child.reasons.iter().cloned());
+
             self.tick(Checkpoint::FiniteIteration)?;
         }
+        reasons.extend(self.environment.evaluation_child_reasons(
+            self.graph,
+            expression,
+            &children.iter().map(|c| c.evaluation).collect::<Vec<_>>(),
+        )?);
         support.sort();
         support.dedup();
         if let Some(reason) = source.missing {
@@ -1238,12 +1243,17 @@ impl Evaluator<'_, '_> {
                 }
                 let left = self.eval(*lhs)?;
                 let right = self.eval(*rhs)?;
-                if self.source(span, ty.clone())?.condition_pending
-                    || [&left, &right].iter().any(|a| {
-                        a.reasons
-                            .iter()
-                            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-                    })
+                let source = self.source(span, ty.clone())?;
+                if source.condition_pending
+                    || self
+                        .environment
+                        .evaluation_child_reasons(
+                            self.graph,
+                            source.expression,
+                            &[left.evaluation, right.evaluation],
+                        )?
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
                 {
                     return self.lexical_result(span, ty, None, vec![left, right]);
                 }
@@ -1993,7 +2003,7 @@ impl Evaluator<'_, '_> {
             }
         } else {
             self.environment
-                .owned_call_checks(declaration, &values, None, span)?
+                .owned_call_checks_at(self.graph, declaration, &values, None, span)?
         };
         checks.blocked |= pending;
         if owned {
@@ -2064,9 +2074,13 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        let checks =
-            self.environment
-                .owned_call_checks(declaration, &values, partial.as_ref(), span)?;
+        let checks = self.environment.owned_call_checks_at(
+            self.graph,
+            declaration,
+            &values,
+            partial.as_ref(),
+            span,
+        )?;
         arguments.push(body);
         if owned {
             self.owned_call_finish(span, ty, arguments, known, checks)
@@ -2095,12 +2109,17 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
-        let failed = self.source(span, ty.clone())?.condition_pending
-            || children.iter().any(|a| {
-                a.reasons
-                    .iter()
-                    .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-            });
+        let source = self.source(span, ty.clone())?;
+        let failed = source.condition_pending
+            || self
+                .environment
+                .evaluation_child_reasons(
+                    self.graph,
+                    source.expression,
+                    &children.iter().map(|c| c.evaluation).collect::<Vec<_>>(),
+                )?
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }));
         let value = if let Some(known) = known.filter(|_| !failed) {
             Some(self.value(
                 known,
@@ -2899,6 +2918,9 @@ mod recheck_tests {
     }
     mod identity_path_tests {
         include!("identity_path_tests.rs");
+    }
+    mod owned_universal_call_tests {
+        include!("owned_universal_call_tests.rs");
     }
     mod dependent_owner_completion_tests {
         include!("dependent_owner_completion_tests.rs");

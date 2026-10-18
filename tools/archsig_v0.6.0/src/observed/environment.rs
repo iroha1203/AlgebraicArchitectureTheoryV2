@@ -755,11 +755,7 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
         let mut reasons = Vec::new();
-        for child in children {
-            self.tick()?;
-            reasons.extend(graph.get(*child)?.reasons.iter().cloned());
-            self.tick()?;
-        }
+        reasons.extend(self.evaluation_child_reasons(graph, expression, children)?);
         if let Some(missing) = missing {
             let request = graph
                 .requests
@@ -793,6 +789,27 @@ impl<'a> Environment<'a> {
             self.cutoff.get().min(graph.nodes.len()),
         )? {
             reasons.push(reason);
+        }
+        if let Some(checks) = self.owned_call_inputs(
+            graph,
+            expression,
+            children,
+            self.cutoff.get().min(graph.nodes.len()),
+        )? {
+            let request = graph
+                .requests
+                .get(self.current_context(graph).request)
+                .ok_or("所属欠測の元Requestがない")?;
+            let span = self.expression_span(graph, expression)?;
+            for fact in checks.missing {
+                reasons.push(Reason {
+                    kind: ReasonKind::Missing,
+                    request: request.id.clone(),
+                    dependencies: vec![expression],
+                    missing: vec![fact],
+                    location: Some(Location::Law { span }),
+                });
+            }
         }
         sort_reasons(&mut reasons);
         if node.reasons.len() != reasons.len() {
@@ -1868,12 +1885,10 @@ impl<'a> Environment<'a> {
                     return Err("比較以外の式に残差がある".into());
                 }
                 let failed = analysis.condition_pending
-                    || children.iter().any(|r| {
-                        graph.nodes[r.0]
-                            .reasons
-                            .iter()
-                            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-                    });
+                    || self
+                        .evaluation_child_reasons(graph, *expression, children)?
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }));
                 if failed {
                     let NodeType::Expression(ty) = &graph.get(*expression)?.ty else {
                         return Err("不成立構成の元Source型が違う".into());
@@ -7066,8 +7081,11 @@ impl<'a> Environment<'a> {
                         _ => None,
                     };
                     let condition_failed = condition.condition_failed
-                        || left.condition_failed
-                        || right.condition_failed;
+                        || match condition.known_value.as_ref() {
+                            Some(Scalar::Bool(true)) => left.condition_failed,
+                            Some(Scalar::Bool(false)) => right.condition_failed,
+                            _ => left.condition_failed || right.condition_failed,
+                        };
                     let condition_pending = condition.condition_pending
                         || match condition.known_value.as_ref() {
                             Some(Scalar::Bool(true)) => left.condition_pending,
@@ -7503,7 +7521,12 @@ impl<'a> Environment<'a> {
             };
             let scalar_scope = known_value.as_ref().map(|_| scope.clone());
             SourceValue {
-                condition_failed: left_failed || right.condition_failed,
+                condition_failed: left_failed
+                    || match (op, left.as_ref()) {
+                        (BinOp::And | BinOp::Implies, Some(Scalar::Bool(false)))
+                        | (BinOp::Or, Some(Scalar::Bool(true))) => false,
+                        _ => right.condition_failed,
+                    },
                 condition_pending: left_pending
                     || match (op, left.as_ref()) {
                         (BinOp::And | BinOp::Implies, Some(Scalar::Bool(false)))
