@@ -236,8 +236,9 @@ fn projection_condition_same_environment_rechecks_selector_path_producer_context
     for n in &mut g.nodes {
         if matches!(n.rule, Rule::ProjectionCheck { .. }) {
             n.arguments[0] = r.answers[3].outputs["value"];
-            if let Some(Payload::ProjectionCondition { root, .. }) = &mut n.payload {
-                *root = r.answers[3].outputs["value"];
+            if let Some(Payload::ProjectionCondition { inputs, .. }) = &mut n.payload {
+                assert_eq!(inputs.len(), 1);
+                inputs[0] = r.answers[3].outputs["value"];
             }
         }
     }
@@ -299,8 +300,9 @@ fn projection_condition_undetermined_environment_rechecks_original_reasons_and_p
         if matches!(n.rule, Rule::ProjectionCheck { .. }) {
             assert_eq!(n.arguments[0], original);
             n.arguments[0] = foreign;
-            if let Some(Payload::ProjectionCondition { root, .. }) = &mut n.payload {
-                *root = foreign;
+            if let Some(Payload::ProjectionCondition { inputs, .. }) = &mut n.payload {
+                assert_eq!(inputs.len(), 1);
+                inputs[0] = foreign;
             }
         }
     }

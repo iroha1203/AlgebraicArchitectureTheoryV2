@@ -184,6 +184,44 @@ fn owned_binding_conditions_recheck_all_inputs_typed_parts_scope_support_and_rea
         ns[*condition].judgment.as_mut().unwrap().status = Decision::Established
     });
     completion_mutation(&r, *condition, |ns| ns[*condition].evidence.clear());
+    let Some(Payload::ProjectionCondition { inputs, .. }) = &r.nodes[*condition].payload else {
+        panic!()
+    };
+    assert_eq!(inputs.len(), 2);
+    assert_ne!(inputs[0], inputs[1]);
+    let foreign = r.answers[3].outputs["value"];
+    assert_ne!(inputs[0], foreign);
+    assert_eq!(r.nodes[inputs[0].0].payload, r.nodes[foreign.0].payload);
+    completion_mutation(&r, *condition, |ns| {
+        let Some(Payload::ProjectionCondition { inputs, .. }) = &mut ns[*condition].payload else {
+            panic!()
+        };
+        inputs.pop();
+    });
+    completion_mutation(&r, *condition, |ns| {
+        let Some(Payload::ProjectionCondition { inputs, .. }) = &mut ns[*condition].payload else {
+            panic!()
+        };
+        inputs.clear();
+    });
+    completion_mutation(&r, *condition, |ns| {
+        let Some(Payload::ProjectionCondition { inputs, .. }) = &mut ns[*condition].payload else {
+            panic!()
+        };
+        inputs.swap(0, 1);
+    });
+    completion_mutation(&r, *condition, |ns| {
+        let Some(Payload::ProjectionCondition { inputs, .. }) = &mut ns[*condition].payload else {
+            panic!()
+        };
+        inputs.push(inputs[0]);
+    });
+    completion_mutation(&r, *condition, |ns| {
+        let Some(Payload::ProjectionCondition { inputs, .. }) = &mut ns[*condition].payload else {
+            panic!()
+        };
+        inputs[0] = foreign;
+    });
     let mut answer = r.answers[4].clone();
     let e = env(&r);
     let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();

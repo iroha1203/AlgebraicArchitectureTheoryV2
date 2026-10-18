@@ -959,7 +959,7 @@ pub(crate) enum Payload {
     },
     ProjectionCondition {
         name: NodeRef,
-        root: NodeRef,
+        inputs: Vec<NodeRef>,
     },
     ProjectionCounterexample {
         left: NodeRef,
@@ -1185,11 +1185,15 @@ impl Payload {
                     ("quantifiers", Json::Arr(vec![])),
                 ])
             }
-            Self::ProjectionCondition { name, root } => Json::obj([
-                ("predicate", Json::str("constructible")),
-                ("operands", refs(&[*name, *root])),
-                ("quantifiers", Json::Arr(vec![])),
-            ]),
+            Self::ProjectionCondition { name, inputs } => {
+                let mut operands = vec![*name];
+                operands.extend(inputs.iter().copied());
+                Json::obj([
+                    ("predicate", Json::str("constructible")),
+                    ("operands", refs(&operands)),
+                    ("quantifiers", Json::Arr(vec![])),
+                ])
+            }
             Self::ProjectionCounterexample { left, right, facts } => Json::obj([
                 ("kind", Json::str("counterexample")),
                 (

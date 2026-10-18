@@ -189,6 +189,20 @@ fn blocked(w: &Json, id: &str, producer: &str) {
     let condition = node(w, f(f(reason, "details"), "condition"));
     assert_eq!(f(condition, "type"), &Json::str("Proposition"));
     assert_eq!(f(f(condition, "judgment"), "status"), &Json::str("refuted"));
+    assert_eq!(
+        f(f(condition, "value"), "predicate"),
+        &Json::str("constructible")
+    );
+    let arguments = arr(f(condition, "arguments"));
+    assert!(arguments.len() >= 3);
+    let expected: Vec<_> = std::iter::once(arguments[arguments.len() - 2].clone())
+        .chain(arguments[..arguments.len() - 2].iter().cloned())
+        .collect();
+    assert_eq!(f(f(condition, "value"), "operands"), &Json::Arr(expected));
+    assert_eq!(
+        f(node(w, &arguments[arguments.len() - 2]), "value"),
+        &Json::str("projection")
+    );
     assert_eq!(arr(f(condition, "evidence")).len(), 1);
     let evidence = node(w, &arr(f(condition, "evidence"))[0]);
     assert_eq!(f(evidence, "type"), &Json::str("Evidence"));
@@ -249,6 +263,28 @@ fn fixed_owned_mismatch_builds_typed_conditions_preserves_reasons_and_independen
             f(&w, "issues")
         );
         blocked(&w, "take", direct);
+        let reason = arr(f(a(&w, "take"), "reasons"))
+            .iter()
+            .find(|r| f(r, "code") == &Json::str("condition_failed"))
+            .unwrap();
+        let condition = node(&w, f(f(reason, "details"), "condition"));
+        let expected_roots = match (owner, child) {
+            ("@v/A", "$child.value") => vec![f(f(a(&w, "child"), "outputs"), "value").clone()],
+            ("$owner.value", "@v/r") => vec![f(f(a(&w, "owner"), "outputs"), "value").clone()],
+            ("$owner.value", "$child.evaluation.value") => vec![
+                f(f(a(&w, "child"), "outputs"), "value").clone(),
+                f(f(a(&w, "owner"), "outputs"), "value").clone(),
+            ],
+            ("$child.value[0]", "$child.evaluation.value[1]") => vec![
+                f(f(a(&w, "child"), "outputs"), "evaluation").clone(),
+                f(f(a(&w, "child"), "outputs"), "value").clone(),
+            ],
+            _ => unreachable!(),
+        };
+        assert_eq!(
+            &arr(f(f(condition, "value"), "operands"))[1..],
+            expected_roots.as_slice()
+        );
         assert!(arr(f(&w,"nodes")).iter().filter(|n|f(n,"type")==&Json::str("Evidence")).any(|n|
             arr(f(n,"support")).iter().any(|fact|matches!(fact,Json::Obj(m)if m.get("field")==Some(&Json::str("Reservations.State.owner"))))));
         assert_eq!(f(a(&w, "seed"), "status"), &Json::str("established"));

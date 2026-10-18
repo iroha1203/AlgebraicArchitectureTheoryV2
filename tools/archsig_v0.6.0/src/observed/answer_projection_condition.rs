@@ -192,7 +192,7 @@ impl Environment<'_> {
                 node.arguments.extend([*name, *evidence]);
                 node.payload = Some(Payload::ProjectionCondition {
                     name: *name,
-                    root: plan.root,
+                    inputs: plan.dependencies.clone(),
                 });
                 node.evidence = vec![*evidence];
                 node.judgment = Some(Judgment {
@@ -303,7 +303,6 @@ impl Graph {
             .filter(|n| *n > 0)
             .ok_or("射影条件に元rootがない")?;
         let (roots, prior) = node.arguments.split_at(count);
-        let original = roots[0];
         match (part, &node.payload, prior) {
             (Name, Some(Payload::Scalar(Scalar::Text(name))), []) if name == "projection" => {}
             (Actual | Required, Some(Payload::Scalar(Scalar::Bool(value))), [])
@@ -331,14 +330,14 @@ impl Graph {
             }
             (
                 Condition,
-                Some(Payload::ProjectionCondition { name, root }),
+                Some(Payload::ProjectionCondition { name, inputs }),
                 [construction, evidence],
             ) => {
                 expect_part(*construction, Name)?;
                 expect_part(*evidence, Evidence)?;
                 let proof = self.get(*evidence)?;
                 if name != construction
-                    || *root != original
+                    || inputs.as_slice() != roots
                     || node.ty != NodeType::Proposition
                     || proof.arguments.len() != roots.len() + 3
                     || proof.arguments[..roots.len()] != *roots
