@@ -67,7 +67,10 @@ impl Evaluator<'_, '_> {
                 &prefix.free,
                 &mut |_phase, _index| {
                     #[cfg(test)]
-                    data::observe_actual(span, context, "dependent_enum", _index);
+                    {
+                        data::observe_actual(span, context, "dependent_enum", _index);
+                        data::observe_actual(parameter.span, context, _phase, _index);
+                    }
                 },
             )?;
             let mut scope = raw_scope.clone();

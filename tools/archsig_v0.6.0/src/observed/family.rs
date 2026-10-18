@@ -60,6 +60,7 @@ impl Environment<'_> {
             dependent |= p.ty != p.ty.erase();
             if p.ty != p.ty.erase()
                 && !self.fixed_owned_binding(request, p)?
+                && !self.deferred_owned_binding(request, p)?
                 && request
                     .constraints
                     .iter()

@@ -99,6 +99,46 @@ impl Environment<'_> {
                 .any(|c| c.parameter == p.name && c.dynamic))
     }
 
+    // 自由ownerの実prefixごとの所属へ送る原始Answer参照。
+    pub(in crate::observed) fn deferred_owned_binding(
+        &self,
+        request: &Request,
+        p: &Param,
+    ) -> Result<bool, ValidationFailure> {
+        self.tick()?;
+        let Type::Owned(_, owner) = &p.ty else {
+            return Ok(false);
+        };
+        if request.kind != QuestionKind::Check {
+            return Ok(false);
+        }
+        let mut answer = false;
+        let mut fixed_owner = false;
+        for (_index, argument) in request.arguments.iter().enumerate() {
+            self.tick()?;
+            #[cfg(test)]
+            data::observe_actual(
+                p.span,
+                self.context.get().unwrap_or_default(),
+                "deferred_owned_binding",
+                _index,
+            );
+            if argument.name == format!("bind.{}", p.name) {
+                answer = matches!(argument.value, Selector::Answer { .. });
+            }
+            fixed_owner |= argument.name == format!("bind.{owner}");
+            self.tick()?;
+        }
+        let mut dynamic = false;
+        for constraint in &request.constraints {
+            self.tick()?;
+            dynamic |= constraint.parameter == p.name && constraint.dynamic;
+            self.tick()?;
+        }
+        self.tick()?;
+        Ok(answer && !fixed_owner && dynamic)
+    }
+
     fn owned_selected(
         &self,
         graph: &Graph,
