@@ -37,18 +37,19 @@ impl Evaluator<'_, '_> {
                 location: Some(Location::Law { span: type_span }),
             });
         }
-        reasons.push(Reason {
-            kind: ReasonKind::UnsupportedAlgorithm {
-                question: self.request.kind,
-                operand_types: vec![element.clone()],
-                method: "unresolved_owned_type_quantification".into(),
-            },
-            request: self.request.id.clone(),
-            dependencies: vec![source],
-            missing: vec![],
-            location: Some(Location::Law { span: type_span }),
-        });
-        self.reasons.extend(reasons.iter().cloned());
+        if reasons.is_empty() {
+            reasons.push(Reason {
+                kind: ReasonKind::UnsupportedAlgorithm {
+                    question: self.request.kind,
+                    operand_types: vec![element.clone()],
+                    method: "unresolved_owned_type_quantification".into(),
+                },
+                request: self.request.id.clone(),
+                dependencies: vec![source],
+                missing: vec![],
+                location: Some(Location::Law { span: type_span }),
+            });
+        }
         reasons
     }
 }

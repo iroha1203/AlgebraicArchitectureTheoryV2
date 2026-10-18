@@ -302,6 +302,86 @@ impl Environment<'_> {
         Ok(domain)
     }
 
+    /// 実量化も現在caseの共有代入から元Owned型域を構成する。
+    pub(in crate::observed) fn owned_type_domain_at(
+        &self,
+        graph: &Graph,
+        id: usize,
+        bindings: &[Binding],
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<TypeDomain, ValidationFailure> {
+        if graph.active.case.is_none() {
+            return self.owned_type_domain(graph, id, bindings, observer);
+        }
+        self.validation_graph_session(graph, || {
+            let previous_context = self.context.replace(Some(graph.active));
+            let previous_cutoff = self.cutoff.replace(graph.nodes.len());
+            let previous_completion = self.completion_values.replace(Vec::new());
+            let result = (|| {
+                if let Some(case) = graph.active.case {
+                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                }
+                #[cfg(test)]
+                data::observe_actual(
+                    self.inputs.law().exprs[id].span,
+                    graph.active,
+                    "owned_type_case",
+                    0,
+                );
+                self.tick()?;
+                self.owned_type_domain(graph, id, bindings, observer)
+            })();
+            self.completion_values.replace(previous_completion);
+            self.cutoff.set(previous_cutoff);
+            self.context.set(previous_context);
+            result
+        })
+    }
+
+    /// 元の型量化と実owner producerから、補完前の所属欠測を読む。
+    pub(in crate::observed) fn owned_type_missing_slots(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+    ) -> Result<Option<(Vec<Fact>, (usize, usize))>, ValidationFailure> {
+        let span = self.expression_span(graph, source)?;
+        let Some(&id) = self.expressions.get(&span) else {
+            return Ok(None);
+        };
+        let ExprKind::Quant {
+            split:
+                crate::law::ast::QuantSplit::Fixed {
+                    domain: crate::law::ast::QuantDomain::Type(original),
+                    ..
+                },
+            ..
+        } = &self.inputs.law().exprs[id].kind
+        else {
+            return Ok(None);
+        };
+        if !quantifier::has_owner(original, &self.control)? {
+            return Ok(None);
+        }
+        let bindings = self.expression_bindings(graph, source)?;
+        let previous = self.completion_values.replace(Vec::new());
+        let result = (|| {
+            let domain = self.owned_type_domain(graph, id, bindings, &mut |_, _| {})?;
+            #[cfg(test)]
+            data::observe_actual(
+                span,
+                self.current_context(graph),
+                "owned_type_missing_source",
+                0,
+            );
+            self.tick()?;
+            Ok::<_, ValidationFailure>(domain)
+        })();
+        self.completion_values.replace(previous);
+        result.map(|domain| {
+            (!domain.missing.is_empty()).then_some((domain.missing, domain.type_span))
+        })
+    }
+
     pub(super) fn owned_type_arguments(
         &self,
         graph: &Graph,
@@ -397,19 +477,21 @@ impl Environment<'_> {
                 }),
             });
         }
-        reasons.push(Reason {
-            kind: ReasonKind::UnsupportedAlgorithm {
-                question: request.kind,
-                operand_types: vec![spec.element],
-                method: "unresolved_owned_type_quantification".into(),
-            },
-            request: request.id.clone(),
-            dependencies: vec![*expression],
-            missing: vec![],
-            location: Some(Location::Law {
-                span: domain.type_span,
-            }),
-        });
+        if reasons.is_empty() {
+            reasons.push(Reason {
+                kind: ReasonKind::UnsupportedAlgorithm {
+                    question: request.kind,
+                    operand_types: vec![spec.element],
+                    method: "unresolved_owned_type_quantification".into(),
+                },
+                request: request.id.clone(),
+                dependencies: vec![*expression],
+                missing: vec![],
+                location: Some(Location::Law {
+                    span: domain.type_span,
+                }),
+            });
+        }
         sort_reasons(&mut reasons);
         if node.reasons.iter().map(Reason::wire).collect::<Vec<_>>()
             != reasons.iter().map(Reason::wire).collect::<Vec<_>>()

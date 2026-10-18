@@ -1060,80 +1060,122 @@ fn owned_type_missing_body_before_counterexample_keeps_domain_members() {
 fn owned_type_missing_body_after_counterexample_keeps_domain_members() {
     body_missing("r-ok", "p-ok", "r");
 }
-fn unknown(omit: &str, script: &str, ask: &str, subject: &str, field: &str) {
+fn completed_unknown(
+    omit: &str,
+    script: &str,
+    ask: &str,
+    subject: &str,
+    field: &str,
+    wanted: &[Vec<Json>],
+) {
     let r = run(fixture(script, Some(omit), None, false, false), &[ask]);
     let w = r.wire();
-    assert_eq!(f(&w, "status"), &Json::str("partial"));
-    assert_eq!(f(answer(&w, "out"), "status"), &Json::str("undetermined"));
+    output(&w, "out", Json::Bool(true));
     missing(&w, "out", subject, field);
-    assert!(!obj(f(answer(&w, "out"), "outputs")).contains_key("value"));
-    let reason = arr(f(answer(&w, "out"), "reasons"))
-        .iter()
-        .find(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
-        .unwrap();
     assert_eq!(
-        f(f(reason, "details"), "method"),
-        &Json::str("unresolved_owned_type_quantification")
+        f(f(answer(&w, "out"), "scope"), "domain"),
+        &Json::str("all_completions")
+    );
+    assert!(
+        !arr(f(answer(&w, "out"), "reasons"))
+            .iter()
+            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
     );
     let checked = r.prepared().inputs();
-    let original = checked
-        .law()
-        .exprs
-        .iter()
-        .find_map(|e| match &e.kind {
-            ExprKind::Quant {
-                split:
-                    QuantSplit::Fixed {
-                        domain: QuantDomain::Type(t),
-                        ..
-                    },
-                ..
-            } => Some(t),
-            _ => None,
-        })
-        .unwrap();
-    assert_eq!(span(f(reason, "location")), original.span());
-    assert_eq!(
-        f(f(reason, "details"), "operand_types"),
-        &Json::Arr(vec![erased(original, checked)])
-    );
-    let dependencies = arr(f(reason, "dependencies"));
-    assert_eq!(dependencies.len(), 1);
-    let ns = index(&w);
-    let source = target(&ns, &dependencies[0], &Json::str("Expression"));
     let quantifier = checked
         .law()
         .exprs
         .iter()
         .find(|e| matches!(e.kind, ExprKind::Quant { .. }))
         .unwrap();
-    assert_eq!(span(f(val(source), "location")), quantifier.span);
-    assert!(
-        !arr(f(&w, "nodes"))
+    let ExprKind::Quant {
+        split:
+            QuantSplit::Fixed {
+                domain: QuantDomain::Type(original),
+                ..
+            },
+        ..
+    } = &quantifier.kind
+    else {
+        unreachable!()
+    };
+    let ns = index(&w);
+    let t = erased(original, checked);
+    let mut actual = BTreeSet::new();
+    let mut count = 0;
+    for domain in arr(f(&w, "nodes"))
+        .iter()
+        .filter(|n| f(n, "type") == &Json::str("Domain") && f(val(n), "type") == &t)
+    {
+        let source = target(
+            &ns,
+            &arr(f(domain, "arguments"))[0],
+            &Json::str("Expression"),
+        );
+        if span(f(val(source), "location")) != quantifier.span {
+            continue;
+        }
+        assert!(arr(f(source, "reasons")).is_empty());
+        let mut values: Vec<_> = arr(f(val(domain), "elements"))
             .iter()
-            .any(|n| f(n, "type") == &Json::str("Domain")
-                && arr(f(n, "arguments")).first() == Some(&dependencies[0])),
-        "未知ownerの完全Domainを作らない"
-    );
+            .map(|r| normalized(&t, val(target(&ns, r, &t))).canonical())
+            .collect();
+        values.sort();
+        assert_eq!(values.len(), values.iter().collect::<BTreeSet<_>>().len());
+        actual.insert(values);
+        count += 1;
+    }
+    let expected: BTreeSet<_> = wanted
+        .iter()
+        .map(|vs| {
+            let mut vs: Vec<_> = vs.iter().map(|v| normalized(&t, v).canonical()).collect();
+            vs.sort();
+            vs
+        })
+        .collect();
+    assert_eq!(actual, expected);
+    assert_eq!(count, 3, "A/B/Zの元owner候補を全部評価する");
+    let reason = arr(f(answer(&w, "out"), "reasons"))
+        .iter()
+        .find(|r| {
+            f(r, "code") == &Json::str("missing_observation")
+                && span(f(r, "location")) == original.span()
+        })
+        .expect("元TypeAst位置の欠測理由");
+    assert_eq!(span(f(reason, "location")), original.span());
+    audit(&w, checked);
 }
 #[test]
-fn owned_type_missing_candidate_owner_keeps_exact_slot_and_no_complete_domain() {
-    unknown(
+fn owned_type_missing_candidate_owner_keeps_exact_slot_and_each_complete_domain() {
+    completed_unknown(
         "r-owner",
         "view test(a:Root):Bool=forall item:E[a] . true;",
         "out=evaluate(Inspect.test,a=@v/A)",
         "r",
         "T.E.owner",
+        &[
+            vec![reference("v", "p"), reference("v", "r")],
+            vec![reference("v", "p")],
+        ],
     );
 }
 #[test]
 fn owned_type_missing_lexical_owner_keeps_original_field_and_type_location() {
-    unknown(
+    completed_unknown(
         "m-from",
         "view test(m:Move):Bool=let a=m.from in forall item:Option<E[a]> . true;",
         "out=evaluate(Inspect.test,m=@v/m)",
         "m",
         "T.Move.from",
+        &[
+            vec![
+                option(None),
+                option(Some(reference("v", "p"))),
+                option(Some(reference("v", "r"))),
+            ],
+            vec![option(None), option(Some(reference("v", "q")))],
+            vec![option(None)],
+        ],
     );
 }
 #[test]
