@@ -2881,6 +2881,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod free_compound_answer_binding_tests {
+        include!("free_compound_answer_binding_tests.rs");
+    }
     mod free_owner_answer_binding_tests {
         include!("free_owner_answer_binding_tests.rs");
     }

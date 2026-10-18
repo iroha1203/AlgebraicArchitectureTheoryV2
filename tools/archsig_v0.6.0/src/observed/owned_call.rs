@@ -9,6 +9,8 @@ pub(in crate::observed) struct Checks {
     pub support: Vec<Fact>,
     pub failure: Option<(Scalar, Scalar)>,
     pub blocked: bool,
+    // 呼出しでは従来どおりUnsupportedを返す。依存fiberでは元欠測も保持する。
+    pub missing: Vec<Fact>,
 }
 
 impl Environment<'_> {
@@ -174,11 +176,12 @@ impl Environment<'_> {
                 #[cfg(not(test))]
                 let _ = (operation, index);
             })?;
-        if !members.missing.is_empty() {
-            return Err(unsupported());
-        }
         checks.scope.merge(&members.enumeration.scope);
         checks.support.extend(members.enumeration.support);
+        if !members.missing.is_empty() {
+            checks.missing.extend(members.missing);
+            return Err(unsupported());
+        }
         let mut keys = Vec::new();
         for (key, _) in pairs {
             self.tick()?;
@@ -349,6 +352,13 @@ impl Environment<'_> {
             ..
         } = &self.field(snapshot, subject, &field)?.slot
         else {
+            checks.scope.completions = true;
+            checks.missing.push(Fact {
+                snapshot: snapshot.clone(),
+                subject: subject.clone(),
+                field: Some(field),
+                atom: None,
+            });
             return Err(unsupported());
         };
         checks

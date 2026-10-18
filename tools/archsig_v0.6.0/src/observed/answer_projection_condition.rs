@@ -61,6 +61,7 @@ impl Environment<'_> {
             self.tick()?;
             if parameter.ty != parameter.ty.erase()
                 && !self.fixed_owned_binding(request, parameter)?
+                && !self.deferred_owned_binding(request, parameter)?
                 && request
                     .constraints
                     .iter()

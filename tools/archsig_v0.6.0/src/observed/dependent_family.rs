@@ -137,6 +137,53 @@ impl Environment<'_> {
                 return Err("固定fiber型が元署名と違う".into());
             }
             result.enumeration = enumeration;
+            if p.ty != p.ty.erase() {
+                // 固定複合値のleafも、元署名の現在の実prefixで検査する。
+                // 全固定ownerは従来のroot条件で放電し、混在は計画段階で拒否する。
+                let mut owners = BTreeMap::new();
+                for prior in &plan.parameters[..parameter] {
+                    self.tick()?;
+                    if matches!(prior.ty, Type::Ref(_)) {
+                        let value = prefix
+                            .iter()
+                            .find(|(name, _)| *name == prior.name)
+                            .map(|(_, value)| value.clone())
+                            .or(self
+                                .dependent_fixed_value(graph, request, &prior.name)?
+                                .and_then(|mut e| e.values.pop()))
+                            .ok_or("固定複合fiberの先行ownerがない")?;
+                        owners.insert(prior.name.as_str(), value);
+                    }
+                    self.tick()?;
+                }
+                let mut values = BTreeMap::new();
+                for (name, value) in &owners {
+                    self.tick()?;
+                    values.insert(*name, Some(value));
+                    self.tick()?;
+                }
+                let mut checks = owned_call::Checks::default();
+                let checked = self.owned_call_value_check(
+                    &p.ty,
+                    &super::super::term::affine::Value::Known(result.enumeration.values[0].clone()),
+                    &values,
+                    reading,
+                    p.span,
+                    &mut checks,
+                );
+                match checked {
+                    Ok(()) => {}
+                    Err(ValidationFailure::UnsupportedExpression { .. })
+                        if !checks.missing.is_empty() => {}
+                    Err(error) => return Err(error),
+                }
+                result.enumeration.scope.merge(&checks.scope);
+                result.enumeration.support.extend(checks.support);
+                result.missing = checks.missing;
+                if checks.failure.is_some() || checks.blocked || !result.missing.is_empty() {
+                    result.enumeration.values.clear();
+                }
+            }
         } else {
             // 元署名の複合型に含まれる各Owned leafも、現在の実prefixから
             // ownerを読む。消去型の全登録族へ置き換えない。

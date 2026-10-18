@@ -99,17 +99,18 @@ impl Environment<'_> {
                 .any(|c| c.parameter == p.name && c.dynamic))
     }
 
-    // 自由ownerの実prefixごとの所属へ送る原始Answer参照。
+    // 型内の全ownerが自由な固定Answerを、実prefixごとの所属へ送る。
     pub(in crate::observed) fn deferred_owned_binding(
         &self,
         request: &Request,
         p: &Param,
     ) -> Result<bool, ValidationFailure> {
         self.tick()?;
-        let Type::Owned(_, owner) = &p.ty else {
-            return Ok(false);
-        };
         if request.kind != QuestionKind::Check {
+            return Ok(false);
+        }
+        let owners = self.binding_owner_names(&p.ty, p.span)?;
+        if owners.is_empty() {
             return Ok(false);
         }
         let mut answer = false;
@@ -126,7 +127,11 @@ impl Environment<'_> {
             if argument.name == format!("bind.{}", p.name) {
                 answer = matches!(argument.value, Selector::Answer { .. });
             }
-            fixed_owner |= argument.name == format!("bind.{owner}");
+            for owner in &owners {
+                self.tick()?;
+                fixed_owner |= argument.name == format!("bind.{owner}");
+                self.tick()?;
+            }
             self.tick()?;
         }
         let mut dynamic = false;

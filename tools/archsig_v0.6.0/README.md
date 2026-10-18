@@ -189,8 +189,13 @@
   自由ownerへの固定Answer原始参照は、元署名の各実prefixで原始owner族へ絞って依存Lawを評価する。
   固定subjectと同じ実域・空fiberの全称判断を保ち、元Ref/pathとproducerのScopeを継承して再検査する。
   この自由owner族で原始所属が未観測なら、既存依存族のmissing_observationとunsupported_algorithmを保持する。
+  型内の全ownerが自由な固定複合Answer値も、各実prefixで全owned memberとMapの完全始域を検査する。
+  元Ref/公開pathとproducerのScopeを保持し、none・空containerと空Mapの全域条件を区別する。
+  未観測所属は欠測・未対応理由と全補完のScopeを保持する。
+  自由ownerの公開射影不適合も型付き構成条件の反証へ接続し、独立した回答と後続の直接依存理由を保持する。
+  固定/自由ownerの混在は未実装として残す。
   上記以外のpayloadを持つdataの評価、その他の式形・
-  上記以外の無限型・自由ownerへの固定複合Answer束縛の動的所属制約・
+  上記以外の無限型・固定/自由ownerが混在する複合Answer束縛の動的所属制約・
   依存Law族と無限自由数値parameterの混合・
   上記以外の未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
