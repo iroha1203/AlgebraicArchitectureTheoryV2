@@ -2894,6 +2894,9 @@ mod recheck_tests {
     mod finite_reference_field_tests {
         include!("finite_reference_field_tests.rs");
     }
+    mod map_field_completion_tests {
+        include!("map_field_completion_tests.rs");
+    }
     mod dependent_owner_completion_tests {
         include!("dependent_owner_completion_tests.rs");
     }

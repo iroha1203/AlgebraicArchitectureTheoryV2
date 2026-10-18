@@ -549,6 +549,8 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let mut pairs = Vec::new();
                 let mut keys = std::collections::HashSet::new();
                 for (i, n) in items.iter().enumerate() {
+                    #[cfg(test)]
+                    super::map_validation_iteration("map_reader", i);
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                     let ip = pointer_push(ptr, &i.to_string());
                     let JValue::Arr(kv) = &n.value else {

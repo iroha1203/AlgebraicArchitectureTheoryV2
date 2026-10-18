@@ -89,6 +89,7 @@ pub(in crate::observed) fn canonical_reasons(
     *reasons = canonical;
     Ok(())
 }
+
 fn clean(node: &Node, name: &str) -> bool {
     matches!(&node.rule, Rule::Construction(actual) if *actual == name)
         && node.evidence.is_empty()
@@ -212,7 +213,18 @@ impl Environment<'_> {
     ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
         let types = self.completion_slot_types(fields)?;
         let ty = assignment_type(&types);
-        let mut all = self.finite_values(&ty, observer)?;
+        let observer = RefCell::new(observer);
+        let mut all = super::super::finite::field_candidates(
+            &ty,
+            self.inputs.law(),
+            &self.control,
+            &mut |entity| {
+                self.reference_roster(entity, &mut |index| {
+                    observer.borrow_mut()("ref_roster", index)
+                })
+            },
+            &mut |index| observer.borrow_mut()("type_enum", index),
+        )?;
         if !self.completion_has_references(&types)? {
             return Ok(all);
         }
@@ -233,7 +245,7 @@ impl Environment<'_> {
                     value: data::input_json(&value, &self.control)?,
                 });
             }
-            observer("reference_constraints", index);
+            observer.borrow_mut()("reference_constraints", index);
             self.tick()?;
             match crate::archmap::check_completion_with_values::<
                 CheckFailure<Box<crate::issue::Issue>>,
@@ -510,6 +522,22 @@ impl Environment<'_> {
                         .or_insert(reference);
                 }
             }
+        }
+        if !slots.is_empty() {
+            // 探索前のowner未解決は各caseの元wholeで判定し直す。
+            // caseでも未解決なら、その実評価/再検査が同じ理由を再生成する。
+            // 元Missing/Sourceと他の算法理由はseedにも保持する。
+            let mut retained = Vec::new();
+            for reason in reasons {
+                self.tick()?;
+                if !matches!(&reason.kind,
+                    ReasonKind::UnsupportedAlgorithm { method, .. }
+                        if method == "unresolved_owned_expression_family")
+                {
+                    retained.push(reason);
+                }
+            }
+            reasons = retained;
         }
         canonical_reasons(&mut reasons, &self.control)?;
         let (fields, sources) = slots.into_iter().unzip();

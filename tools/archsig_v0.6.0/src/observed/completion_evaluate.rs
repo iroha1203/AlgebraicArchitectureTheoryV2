@@ -149,6 +149,8 @@ impl Evaluator<'_, '_> {
             let ty = self.environment.completion_assignment_type(&fields)?;
             #[cfg(test)]
             let (span, context) = (self.declaration.span, root);
+            #[cfg(test)]
+            let previous = data::evaluation_context(Some((span, context)));
             let assignments =
                 self.environment
                     .completion_assignments(&fields, &mut |_phase, _index| {
@@ -163,7 +165,10 @@ impl Evaluator<'_, '_> {
                             },
                             _index,
                         );
-                    })?;
+                    });
+            #[cfg(test)]
+            data::evaluation_context(previous);
+            let assignments = assignments?;
             let mut members = Vec::new();
             for value in assignments.values {
                 self.tick(Checkpoint::FiniteIteration)?;

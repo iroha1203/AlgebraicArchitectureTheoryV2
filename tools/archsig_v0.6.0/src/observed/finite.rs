@@ -40,13 +40,13 @@ pub(super) fn completion_supported(
     supported_with_references(ty, law, control, false, false)
 }
 
-/// 元入力の所属条件へ全値をpinする有限field。Mapの条件付き始域は別経路で扱う。
+/// 元入力の所属・Map全域性条件へ全値をpinする有限field。
 pub(super) fn field_completion_supported(
     ty: &Type,
     law: &CheckedLaw,
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
-    supported_with_references(&ty.erase(), law, control, true, false)
+    supported_with_references(&ty.erase(), law, control, true, true)
 }
 
 fn supported_with_references(
@@ -140,6 +140,38 @@ pub(super) fn values_with_owned(
     owned: &mut OwnedRoster<'_>,
     visitor: &mut dyn FnMut(usize),
 ) -> Result<Enumeration, ValidationFailure> {
+    enumerate_values(ty, law, control, roster, owned, visitor, false)
+}
+
+/// fieldの元型で全域性を検査する前の候補。Mapのkey集合はownerにより変わる。
+/// ここで構成した部分表は、入力制約へpinしてからだけ値DAGへ公開する。
+pub(super) fn field_candidates(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+    roster: &mut Roster<'_>,
+    visitor: &mut dyn FnMut(usize),
+) -> Result<Enumeration, ValidationFailure> {
+    enumerate_values(
+        ty,
+        law,
+        control,
+        roster,
+        &mut |_, _| Err("field候補の型が消去されていない".into()),
+        visitor,
+        true,
+    )
+}
+
+fn enumerate_values(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+    roster: &mut Roster<'_>,
+    owned: &mut OwnedRoster<'_>,
+    visitor: &mut dyn FnMut(usize),
+    partial_maps: bool,
+) -> Result<Enumeration, ValidationFailure> {
     fn emit(
         values: &mut Vec<Scalar>,
         value: Scalar,
@@ -158,11 +190,21 @@ pub(super) fn values_with_owned(
         roster: &mut Roster<'_>,
         owned: &mut OwnedRoster<'_>,
         dependencies: &mut Enumeration,
+        partial_maps: bool,
     ) -> Result<Vec<Vec<Scalar>>, ValidationFailure> {
         let mut rows = vec![Vec::new()];
         for ty in types {
             tick(control)?;
-            let values = enumerate(ty, law, control, roster, owned, dependencies, &mut |_| {})?;
+            let values = enumerate(
+                ty,
+                law,
+                control,
+                roster,
+                owned,
+                dependencies,
+                &mut |_| {},
+                partial_maps,
+            )?;
             let mut next = Vec::new();
             for row in &rows {
                 for value in &values {
@@ -185,6 +227,7 @@ pub(super) fn values_with_owned(
         owned: &mut OwnedRoster<'_>,
         dependencies: &mut Enumeration,
         visitor: &mut dyn FnMut(usize),
+        partial_maps: bool,
     ) -> Result<Vec<Scalar>, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(control)?;
@@ -212,6 +255,7 @@ pub(super) fn values_with_owned(
                         owned,
                         dependencies,
                         &mut |_| {},
+                        partial_maps,
                     )?;
                     let images = enumerate(
                         codomain,
@@ -221,13 +265,25 @@ pub(super) fn values_with_owned(
                         owned,
                         dependencies,
                         &mut |_| {},
+                        partial_maps,
                     )?;
-                    // 空始域は空表1個。非空始域・空値域は直積0個。
+                    // 型全域では空始域は空表1個、非空始域・空値域は0個。
+                    // field候補は各keyの不所属も残し、元型の全域性検査へ渡す。
                     let mut tables = vec![Vec::new()];
-                    for key in keys {
+                    for (_key_index, key) in keys.into_iter().enumerate() {
+                        #[cfg(test)]
+                        if partial_maps {
+                            super::data::observe_iteration("map_field_key", _key_index);
+                        }
                         tick(control)?;
                         let mut next = Vec::new();
                         for table in &tables {
+                            if partial_maps {
+                                // このkeyが元Owned始域に属さない可能性も残す。
+                                tick(control)?;
+                                next.push(table.clone());
+                                tick(control)?;
+                            }
                             for image in &images {
                                 tick(control)?;
                                 let mut table = table.clone();
@@ -240,7 +296,11 @@ pub(super) fn values_with_owned(
                         tick(control)?;
                     }
                     let mut values = Vec::new();
-                    for pairs in tables {
+                    for (_table_index, pairs) in tables.into_iter().enumerate() {
+                        #[cfg(test)]
+                        if partial_maps {
+                            super::data::observe_iteration("map_field_candidate", _table_index);
+                        }
                         tick(control)?;
                         emit(
                             &mut values,
@@ -291,7 +351,15 @@ pub(super) fn values_with_owned(
                 }
                 Type::Tuple(types) => {
                     let mut values = Vec::new();
-                    for row in product(types, law, control, roster, owned, dependencies)? {
+                    for row in product(
+                        types,
+                        law,
+                        control,
+                        roster,
+                        owned,
+                        dependencies,
+                        partial_maps,
+                    )? {
                         emit(&mut values, Scalar::Tuple(row), control, visitor)?;
                     }
                     values
@@ -315,6 +383,7 @@ pub(super) fn values_with_owned(
                         owned,
                         dependencies,
                         &mut |_| {},
+                        partial_maps,
                     )? {
                         tick(control)?;
                         emit(
@@ -340,6 +409,7 @@ pub(super) fn values_with_owned(
                         owned,
                         dependencies,
                         &mut |_| {},
+                        partial_maps,
                     )? {
                         tick(control)?;
                         let count = subsets.len();
@@ -367,9 +437,15 @@ pub(super) fn values_with_owned(
                     let mut values = Vec::new();
                     for ctor in data::constructors(law, family)? {
                         tick(control)?;
-                        for args in
-                            product(&ctor.arguments, law, control, roster, owned, dependencies)?
-                        {
+                        for args in product(
+                            &ctor.arguments,
+                            law,
+                            control,
+                            roster,
+                            owned,
+                            dependencies,
+                            partial_maps,
+                        )? {
                             tick(control)?;
                             emit(
                                 &mut values,
@@ -393,7 +469,16 @@ pub(super) fn values_with_owned(
         })
     }
     let mut enumeration = Enumeration::default();
-    enumeration.values = enumerate(ty, law, control, roster, owned, &mut enumeration, visitor)?;
+    enumeration.values = enumerate(
+        ty,
+        law,
+        control,
+        roster,
+        owned,
+        &mut enumeration,
+        visitor,
+        partial_maps,
+    )?;
     enumeration.support.sort();
     enumeration.support.dedup();
     Ok(enumeration)
