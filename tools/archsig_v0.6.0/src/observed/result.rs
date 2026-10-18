@@ -783,6 +783,7 @@ pub(crate) enum Rule {
         parameter: String,
         part: ProjectionCheckPart,
     },
+    OwnedBinding(String),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum ProjectionCheckPart {
@@ -806,6 +807,10 @@ impl ProjectionCheckPart {
 impl Rule {
     fn wire(&self) -> Json {
         match self {
+            Self::OwnedBinding(_) => Json::obj([
+                ("kind", Json::str("construction")),
+                ("name", Json::str("binding")),
+            ]),
             Self::ProjectionCheck { part, .. } => Json::obj([
                 ("kind", Json::str("construction")),
                 ("name", Json::str(part.construction())),
@@ -954,7 +959,7 @@ pub(crate) enum Payload {
     },
     ProjectionCondition {
         name: NodeRef,
-        root: NodeRef,
+        inputs: Vec<NodeRef>,
     },
     ProjectionCounterexample {
         left: NodeRef,
@@ -1180,11 +1185,15 @@ impl Payload {
                     ("quantifiers", Json::Arr(vec![])),
                 ])
             }
-            Self::ProjectionCondition { name, root } => Json::obj([
-                ("predicate", Json::str("constructible")),
-                ("operands", refs(&[*name, *root])),
-                ("quantifiers", Json::Arr(vec![])),
-            ]),
+            Self::ProjectionCondition { name, inputs } => {
+                let mut operands = vec![*name];
+                operands.extend(inputs.iter().copied());
+                Json::obj([
+                    ("predicate", Json::str("constructible")),
+                    ("operands", refs(&operands)),
+                    ("quantifiers", Json::Arr(vec![])),
+                ])
+            }
             Self::ProjectionCounterexample { left, right, facts } => Json::obj([
                 ("kind", Json::str("counterexample")),
                 (
@@ -1657,10 +1666,10 @@ impl Graph {
                     if !matches!(
                         proposition.payload,
                         Some(Payload::ProjectionCondition { .. })
-                    ) || !proposition
+                    ) || proposition
                         .arguments
-                        .first()
-                        .is_some_and(|root| reason.dependencies == [*root])
+                        .get(..proposition.arguments.len().saturating_sub(2))
+                        != Some(reason.dependencies.as_slice())
                         || !reason.missing.is_empty()
                     {
                         return Err("射影条件失敗の元命題・依存が違う".into());

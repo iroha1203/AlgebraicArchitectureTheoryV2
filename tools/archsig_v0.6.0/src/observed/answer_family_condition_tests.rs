@@ -190,8 +190,9 @@ fn answer_family_same_environment_rejects_request_partition_and_coherent_conditi
     for n in &mut g.nodes {
         if matches!(n.rule, Rule::ProjectionCheck { .. }) {
             n.arguments[0] = foreign;
-            if let Some(Payload::ProjectionCondition { root, .. }) = &mut n.payload {
-                *root = foreign;
+            if let Some(Payload::ProjectionCondition { inputs, .. }) = &mut n.payload {
+                assert_eq!(inputs.len(), 1);
+                inputs[0] = foreign;
             }
         }
     }

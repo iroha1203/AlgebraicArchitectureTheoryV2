@@ -7,6 +7,9 @@ pub(in crate::observed) struct ProjectionFailurePlan {
     pub root: NodeRef,
     pub producer: String,
     pub span: (usize, usize),
+    pub dependencies: Vec<NodeRef>,
+    pub scope: Scope,
+    pub support: Vec<Fact>,
 }
 impl Environment<'_> {
     pub(in crate::observed) fn projection_failure_plans(
@@ -57,6 +60,7 @@ impl Environment<'_> {
         for parameter in params {
             self.tick()?;
             if parameter.ty != parameter.ty.erase()
+                && !Self::fixed_owned_binding(request, parameter)
                 && request
                     .constraints
                     .iter()
@@ -98,14 +102,46 @@ impl Environment<'_> {
                 _ => None,
             };
             if let Some(root) = root {
+                let original = graph.get(root)?;
                 plans.push(ProjectionFailurePlan {
                     parameter: parameter.name.clone(),
                     root,
                     producer: id.clone(),
                     span: parameter.span,
+                    dependencies: vec![root],
+                    scope: original.scope.clone(),
+                    support: original.support.clone(),
                 });
             }
             self.tick()?;
+        }
+        for parameter in params {
+            self.tick()?;
+            if plans.iter().any(|p| p.parameter == parameter.name) {
+                continue;
+            }
+            let plan = match self.owned_binding_plan(graph, request, parameter) {
+                Ok(plan) => plan,
+                Err(ValidationFailure::UnsupportedExpression { .. }) => continue,
+                Err(error) => return Err(error),
+            };
+            if let Some(plan) = plan
+                && plan.checks.failure.is_some()
+            {
+                let root = *plan
+                    .dependencies
+                    .first()
+                    .ok_or("所属条件の元Answerがない")?;
+                plans.push(ProjectionFailurePlan {
+                    parameter: parameter.name.clone(),
+                    root,
+                    producer: plan.producer,
+                    span: parameter.span,
+                    dependencies: plan.dependencies,
+                    scope: plan.checks.scope,
+                    support: plan.checks.support,
+                });
+            }
         }
         Ok(plans)
     }
@@ -118,7 +154,9 @@ impl Environment<'_> {
         prior: &[NodeRef],
     ) -> Result<Node, ValidationFailure> {
         self.tick()?;
-        let root = graph.get(plan.root)?;
+        for root in &plan.dependencies {
+            graph.get(*root)?;
+        }
         let mut node = Node {
             ty: NodeType::Value(Type::Text),
             payload: None,
@@ -126,9 +164,9 @@ impl Environment<'_> {
                 parameter: plan.parameter.clone(),
                 part,
             },
-            arguments: vec![plan.root],
-            support: root.support.clone(),
-            scope: root.scope.clone(),
+            arguments: plan.dependencies.clone(),
+            support: plan.support.clone(),
+            scope: plan.scope.clone(),
             evidence: vec![],
             judgment: None,
             reasons: vec![],
@@ -146,7 +184,7 @@ impl Environment<'_> {
                 node.payload = Some(Payload::ProjectionCounterexample {
                     left: *actual,
                     right: *required,
-                    facts: root.support.clone(),
+                    facts: plan.support.clone(),
                 });
             }
             (Condition, [name, evidence]) => {
@@ -154,7 +192,7 @@ impl Environment<'_> {
                 node.arguments.extend([*name, *evidence]);
                 node.payload = Some(Payload::ProjectionCondition {
                     name: *name,
-                    root: plan.root,
+                    inputs: plan.dependencies.clone(),
                 });
                 node.evidence = vec![*evidence];
                 node.judgment = Some(Judgment {
@@ -199,11 +237,12 @@ impl Environment<'_> {
         if plan.root.0 >= limit {
             return Err("射影条件のrootが未出".into());
         }
-        let [root, prior @ ..] = node.arguments.as_slice() else {
-            return Err("射影条件のroot引数がない".into());
-        };
-        if *root != plan.root {
-            return Err("射影条件の元rootが違う".into());
+        let prior = node
+            .arguments
+            .strip_prefix(plan.dependencies.as_slice())
+            .ok_or("射影条件の元root・実依存辺が違う")?;
+        if plan.dependencies.iter().any(|r| r.0 >= limit) {
+            return Err("射影条件の依存辺が未出".into());
         }
         for &reference in prior {
             self.tick()?;
@@ -252,14 +291,26 @@ impl Graph {
             }
             Ok(())
         };
-        match (part, &node.payload, node.arguments.as_slice()) {
-            (Name, Some(Payload::Scalar(Scalar::Text(name))), [_]) if name == "projection" => {}
-            (Actual | Required, Some(Payload::Scalar(Scalar::Bool(value))), [_])
+        let extra = match part {
+            Name | Actual | Required => 0,
+            Evidence => 3,
+            Condition => 2,
+        };
+        let count = node
+            .arguments
+            .len()
+            .checked_sub(extra)
+            .filter(|n| *n > 0)
+            .ok_or("射影条件に元rootがない")?;
+        let (roots, prior) = node.arguments.split_at(count);
+        match (part, &node.payload, prior) {
+            (Name, Some(Payload::Scalar(Scalar::Text(name))), []) if name == "projection" => {}
+            (Actual | Required, Some(Payload::Scalar(Scalar::Bool(value))), [])
                 if *value == (*part == Required) => {}
             (
                 Evidence,
                 Some(Payload::ProjectionCounterexample { left, right, facts }),
-                [root, name, actual, required],
+                [name, actual, required],
             ) => {
                 expect_part(*name, Name)?;
                 expect_part(*actual, Actual)?;
@@ -268,9 +319,9 @@ impl Graph {
                     || right != required
                     || facts != &node.support
                     || node.ty != NodeType::Evidence
-                    || self.get(*name)?.arguments != [*root]
-                    || self.get(*actual)?.arguments != [*root]
-                    || self.get(*required)?.arguments != [*root]
+                    || self.get(*name)?.arguments != roots
+                    || self.get(*actual)?.arguments != roots
+                    || self.get(*required)?.arguments != roots
                     || self.scalar(*actual)? != &Scalar::Bool(false)
                     || self.scalar(*required)? != &Scalar::Bool(true)
                 {
@@ -279,17 +330,18 @@ impl Graph {
             }
             (
                 Condition,
-                Some(Payload::ProjectionCondition { name, root }),
-                [original, construction, evidence],
+                Some(Payload::ProjectionCondition { name, inputs }),
+                [construction, evidence],
             ) => {
                 expect_part(*construction, Name)?;
                 expect_part(*evidence, Evidence)?;
                 let proof = self.get(*evidence)?;
                 if name != construction
-                    || root != original
+                    || inputs.as_slice() != roots
                     || node.ty != NodeType::Proposition
-                    || proof.arguments.len() != 4
-                    || proof.arguments[..2] != [*root, *name]
+                    || proof.arguments.len() != roots.len() + 3
+                    || proof.arguments[..roots.len()] != *roots
+                    || proof.arguments[roots.len()] != *name
                     || node.evidence != [*evidence]
                     || node.judgment
                         != Some(Judgment {

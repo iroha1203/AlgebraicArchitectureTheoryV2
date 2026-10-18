@@ -32,6 +32,8 @@ pub(super) mod family;
 mod map_application;
 #[path = "numeric_slots.rs"]
 mod numeric_slots;
+#[path = "owned_binding.rs"]
+pub(super) mod owned_binding;
 #[path = "owned_call.rs"]
 pub(super) mod owned_call;
 #[path = "owned_family.rs"]
@@ -937,6 +939,9 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
+        if self.validate_owned_binding(graph, node, limit)? {
+            return Ok(());
+        }
         if self.validate_projection_check(graph, node, limit)? {
             return Ok(());
         }
@@ -3807,6 +3812,7 @@ impl<'a> Environment<'a> {
         }
         for (parameter, binding) in params.iter().zip(bindings) {
             self.tick()?;
+            self.require_owned_binding(graph, request, parameter, binding.value)?;
             if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
                 return Err("Requestのparameter署名がAnswerと違う".into());
             }
@@ -5894,6 +5900,39 @@ impl<'a> Environment<'a> {
         bindings: &[Binding],
     ) -> Result<Vec<NodeRef>, ValidationFailure> {
         let mut arguments: Vec<_> = bindings.iter().map(|b| b.value).collect();
+        let context = self.current_context(graph);
+        if context.frame.is_none()
+            && context.iteration.is_none()
+            && context.instance.is_none()
+            && context.case.is_none()
+        {
+            let request = graph
+                .requests
+                .get(context.request)
+                .ok_or("Sourceの元Requestがない")?;
+            let Selector::Declaration { name } = &request.head else {
+                return Err("Sourceの元Request headが宣言でない".into());
+            };
+            let declaration = self
+                .inputs
+                .law()
+                .declarations
+                .get(name)
+                .ok_or("Sourceの元Request宣言がない")?;
+            let params = match &declaration.signature {
+                crate::law::model::Signature::View { params, .. }
+                | crate::law::model::Signature::Law { params, .. } => params,
+                _ => return Err("Sourceの元署名がない".into()),
+            };
+            for p in params {
+                if let Some(binding) = bindings.iter().find(|b| b.name == p.name)
+                    && let Some(check) =
+                        self.require_owned_binding(graph, request, p, binding.value)?
+                {
+                    arguments.push(check);
+                }
+            }
+        }
         if let Some(index) = self.current_context(graph).frame {
             let frame = graph.frames.get(index).ok_or("Sourceのcall frameがない")?;
             arguments.push(frame.source);
@@ -6127,6 +6166,16 @@ impl<'a> Environment<'a> {
                     return Err("評価範囲の元parameter署名が違う".into());
                 }
                 let value = graph.scalar(binding.value)?;
+                let request = graph
+                    .requests
+                    .get(self.current_context(graph).request)
+                    .ok_or("元束縛Requestがない")?;
+                let check = self.require_owned_binding(graph, request, parameter, binding.value)?;
+                if let Some(check) = check {
+                    base.merge(&graph.get(check)?.scope);
+                }
+                // 所属の支持はSourceの検査辺に残す。再使用する値の支持・Scopeは
+                // 元producerのまま保ち、consumerの所属確認で書き換えない。
                 let selector = graph
                     .requests
                     .get(self.current_context(graph).request)
@@ -6207,7 +6256,16 @@ impl<'a> Environment<'a> {
                         .ok_or("Requestの元束縛がない")?;
                     match (&arg.value, graph.scalar(binding.value)?) {
                         (selector @ Selector::Answer { .. }, _) => {
-                            self.answer_binding_matches(graph, selector, binding.value, span)?;
+                            let parameter = params
+                                .iter()
+                                .find(|p| p.name == binding.name)
+                                .ok_or("元Source束縛のparameterがない")?;
+                            self.answer_binding_matches(
+                                graph,
+                                selector,
+                                binding.value,
+                                parameter.span,
+                            )?;
                         }
                         (
                             Selector::Subject { snapshot, subject },

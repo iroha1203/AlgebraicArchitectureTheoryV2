@@ -133,18 +133,19 @@ impl Environment<'_> {
                 }
             }
             let condition = selected.ok_or("不適合な元射影の条件反証がない")?;
-            scope.merge(&graph.get(plan.root)?.scope);
+            scope.merge(&plan.scope);
             reasons.push(Reason {
                 kind: ReasonKind::ConditionFailed {
                     condition,
                     construction: "projection",
                 },
                 request: request.id.clone(),
-                dependencies: vec![plan.root],
+                dependencies: plan.dependencies.clone(),
                 missing: vec![],
                 location: Some(Location::Law { span: plan.span }),
             });
-            let mut dependencies = vec![plan.root, condition];
+            let mut dependencies = plan.dependencies;
+            dependencies.push(condition);
             dependencies.extend(graph.get(condition)?.evidence.iter().copied());
             dependencies.sort_by_key(|r| r.0);
             dependencies.dedup();
