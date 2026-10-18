@@ -47,13 +47,18 @@ impl Environment<'_> {
             let Selector::Answer { id, path } = &argument.value else {
                 continue;
             };
-            let evaluation = match path.as_slice() {
-                [ProjectionStep::Field(value), ..] if value == "value" => false,
+            let (evaluation, environment) = match path.as_slice() {
+                [ProjectionStep::Field(value), ..] if value == "value" => (false, false),
                 [
                     ProjectionStep::Field(root),
                     ProjectionStep::Field(value),
                     ..,
-                ] if root == "evaluation" && value == "value" => true,
+                ] if root == "evaluation" && value == "value" => (true, false),
+                [
+                    ProjectionStep::Field(root),
+                    ProjectionStep::Field(field),
+                    ..,
+                ] if root == "evaluation" && field == "environment" => (true, true),
                 _ => continue,
             };
             let parameter = params
@@ -64,6 +69,7 @@ impl Environment<'_> {
             scope.merge(&producer.scope);
             let value = if evaluation {
                 match producer.outputs.get("evaluation") {
+                    Some(root) if environment => Some(*root),
                     Some(root) => self.evaluation(graph, *root)?.2,
                     None => None,
                 }

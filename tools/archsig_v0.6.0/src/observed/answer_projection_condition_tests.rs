@@ -248,6 +248,87 @@ fn projection_condition_same_environment_rechecks_selector_path_producer_context
     g.nodes = nodes;
     e.validate_answer(&g, request, answer).unwrap();
 }
+#[test]
+fn projection_condition_undetermined_environment_rechecks_original_reasons_and_producer() {
+    let asks = [
+        "seed=evaluate(Applications.abSeed)",
+        "prior=check(Applications.abPrior)",
+        "missing=evaluate(Applications.adMissing,p=@v/p)",
+        "other=evaluate(Applications.adMissing,p=@v/p)",
+        "take=evaluate(Applications.acRoot,a=$missing.evaluation.environment.root)",
+        "later=evaluate(Applications.abSeed)",
+    ];
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut named_call_quiet())
+        .unwrap();
+    assert_eq!(r.status(), "partial");
+    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let e = env(&r);
+    for (request, answer) in r.prepared.requests().requests().iter().zip(&r.answers) {
+        e.validate_answer(&g, request, answer).unwrap();
+    }
+    assert_eq!(r.answers[2].status, Decision::Undetermined);
+    assert!(r.answers[2].outputs.get("value").is_none());
+    assert!(r.answers[4].outputs.is_empty());
+    for reason in &r.answers[2].reasons {
+        assert!(r.answers[4].reasons.contains(reason));
+    }
+    reject_answer(&r, |a| {
+        a.reasons.retain(|r| !matches!(r.kind, ReasonKind::Missing))
+    });
+    reject_answer(&r, |a| {
+        a.reasons
+            .iter_mut()
+            .find(|r| matches!(r.kind, ReasonKind::Missing))
+            .unwrap()
+            .location = None;
+    });
+    reject_answer(&r, |a| {
+        a.reasons
+            .iter_mut()
+            .find(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            .unwrap()
+            .dependencies
+            .clear();
+    });
+    reject_answer(&r, |a| a.scope.readings.clear());
+    let original = r.answers[2].outputs["evaluation"];
+    let foreign = r.answers[3].outputs["evaluation"];
+    assert_ne!(original, foreign);
+    let saved = g.nodes.clone();
+    for n in &mut g.nodes {
+        if matches!(n.rule, Rule::ProjectionCheck { .. }) {
+            assert_eq!(n.arguments[0], original);
+            n.arguments[0] = foreign;
+            if let Some(Payload::ProjectionCondition { root, .. }) = &mut n.payload {
+                *root = foreign;
+            }
+        }
+    }
+    let request = &r.prepared.requests().requests()[4];
+    for environment in [e, env(&r)] {
+        assert!(matches!(
+            environment.validate_answer(&g, request, &r.answers[4]),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+    assert!(rebuild_for_origin_and_support_recheck(&r, &g.nodes).is_err());
+    g.nodes = saved;
+    let e = env(&r);
+    e.validate_answer(&g, request, &r.answers[4]).unwrap();
+    let position = g.checked_answers.iter().position(|(i, _)| *i == 2).unwrap();
+    let saved = g.checked_answers[position].1.clone();
+    g.checked_answers[position].1.outputs = r.answers[3].outputs.clone();
+    assert!(matches!(
+        e.validate_answer(&g, request, &r.answers[4]),
+        Err(ValidationFailure::Internal(_))
+    ));
+    assert!(matches!(
+        env(&r).validate_answer(&g, request, &r.answers[4]),
+        Err(ValidationFailure::Internal(_))
+    ));
+    g.checked_answers[position].1 = saved;
+    e.validate_answer(&g, request, &r.answers[4]).unwrap();
+}
 fn stop(mode: usize) {
     use std::{cell::Cell, rc::Rc};
     let asks = [
@@ -255,7 +336,11 @@ fn stop(mode: usize) {
         "prior=check(Applications.abPrior)",
         "missing=evaluate(Applications.adMissing,p=@v/p)",
         "empty=evaluate(Applications.acNestedNone)",
-        "take=evaluate(Applications.abIdentity,x=$empty.value[0].some[0])",
+        if mode >= 3 {
+            "take=evaluate(Applications.acRoot,a=$missing.evaluation.environment.root)"
+        } else {
+            "take=evaluate(Applications.abIdentity,x=$empty.value[0].some[0])"
+        },
         "later=evaluate(Applications.abSeed)",
     ];
     let normal =
@@ -270,12 +355,18 @@ fn stop(mode: usize) {
             .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
     );
     rebuild_for_origin_and_support_recheck(&normal, &normal.nodes).unwrap();
-    let span =
-        match &normal.prepared.inputs().law().declarations["Applications.abIdentity"].signature {
-            Signature::View { params, .. } => params[0].span,
-            _ => panic!(),
-        };
-    let (limits, usage, expected) = reservations_private_stop_usage(if mode == 2 { 2 } else { 0 });
+    let span = match &normal.prepared.inputs().law().declarations[if mode >= 3 {
+        "Applications.acRoot"
+    } else {
+        "Applications.abIdentity"
+    }]
+    .signature
+    {
+        Signature::View { params, .. } => params[0].span,
+        _ => panic!(),
+    };
+    let (limits, usage, expected) =
+        reservations_private_stop_usage(if mode == 2 || mode == 4 { 2 } else { 0 });
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -298,18 +389,24 @@ fn stop(mode: usize) {
         if request.id == "empty" {
             let (a, ph, s) = (armed.clone(), phase.clone(), seen.clone());
             data::observe_iterations(move |at, ctx, operation, index| {
-                let target = if mode == 1 {
+                let target = if mode == 4 {
+                    operation == "answer_binding_scan" && index == 2
+                } else if mode == 1 || mode == 3 {
                     operation == "answer_projection_condition" && index == 3
                 } else {
                     operation == "answer_projection_check_step" && index == 1
                 };
-                if at == span && ctx.request == 4 && target && (mode != 2 || ph.get()) {
+                if at == span
+                    && ctx.request == 4
+                    && target
+                    && (!(mode == 2 || mode == 4) || ph.get())
+                {
                     assert!(!s.replace(true));
                     a.set(true);
                 }
             });
         }
-        if request.id == "take" && mode == 2 {
+        if request.id == "take" && (mode == 2 || mode == 4) {
             let fresh = Environment::with_requests(
                 normal.prepared.inputs(),
                 normal.prepared.requests().requests(),
@@ -345,7 +442,7 @@ fn stop(mode: usize) {
     for (index, a) in stopped.answers.iter().enumerate().skip(4) {
         assert_eq!(a.status, Decision::Undetermined);
         assert!(a.outputs.is_empty());
-        if index == 4 && mode == 2 {
+        if index == 4 && (mode == 2 || mode == 4) {
             for reason in &normal.answers[4].reasons {
                 assert!(a.reasons.contains(reason));
             }
@@ -379,4 +476,14 @@ fn projection_condition_actual_construction_stop_keeps_checked_prefix_and_freeze
 #[test]
 fn projection_condition_fresh_recheck_stop_keeps_verified_blocked_answer_and_original_reasons() {
     stop(2)
+}
+
+#[test]
+fn projection_condition_missing_environment_actual_construction_stop_keeps_prefix_and_freezes() {
+    stop(3)
+}
+#[test]
+fn projection_condition_missing_environment_fresh_recheck_stop_preserves_original_reasons_and_scope()
+ {
+    stop(4)
 }

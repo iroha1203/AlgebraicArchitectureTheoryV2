@@ -10,6 +10,7 @@ pub fn input(mode: &str, revision: &str) -> InputSources {
     let law = String::from_utf8(i.law().bytes().to_vec()).unwrap();
     let extra = r#"
 view acRoot(a:Reservations.System):Reservations.System=a;
+view acMixedRoot(a:Reservations.System,x:Z,b:Bool):Z=if b then x else x;
 view acMix(x:Z,y:Z,b:Bool):Z=if b then x+y else x+y;
 view acNestedNone():List<Option<List<Z>>> =list<Option<List<Z>>>[none<List<Z>>];
 "#;

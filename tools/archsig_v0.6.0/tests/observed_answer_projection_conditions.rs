@@ -318,3 +318,106 @@ fn projection_conditions_keep_root_support_scope_original_inputs_dag_and_current
     assert_eq!(f(&runs[0], "answers"), f(&runs[1], "answers"));
     assert_ne!(f(&runs[0], "inputs"), f(&runs[1], "inputs"));
 }
+#[test]
+fn projection_conditions_keep_missing_unsupported_and_blocked_environment_sources_and_mixed_reasons()
+ {
+    for (index, source) in [
+        "source=evaluate(Applications.adMissing,p=@v/p)",
+        "source=evaluate(Applications.adOpaque)",
+        "source=evaluate(Applications.abIdentity,x=$empty.value[0])",
+    ]
+    .iter()
+    .enumerate()
+    {
+        let asks = [
+            "take=evaluate(Applications.acRoot,a=$source.evaluation.environment.root)",
+            source,
+            "empty=evaluate(Applications.apEmpty)",
+            "again=evaluate(Applications.acRoot,a=$take.evaluation.environment.root)",
+            "seed=evaluate(Applications.abSeed)",
+            "prior=check(Applications.abPrior)",
+        ];
+        let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet())
+            .unwrap_or_else(|e| match e {
+                archsig::observed::EvaluationFailure::NotImplemented { feature, .. } => {
+                    panic!("unexpected NotImplemented: {feature}")
+                }
+                e => panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))),
+            });
+        assert_eq!(r.status(), "partial");
+        let w = r.wire();
+        let take = answer(&w, "take");
+        for id in ["take", "again"] {
+            assert_eq!(f(answer(&w, id), "status"), &Json::str("undetermined"));
+            assert_eq!(f(answer(&w, id), "outputs"), &Json::obj([]));
+        }
+        assert!(
+            arr(f(take, "reasons"))
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("dependency_blocked")
+                    && f(f(r, "details"), "request") == &Json::str("source"))
+        );
+        for (consumer, producer) in [("take", "source"), ("again", "take")] {
+            for reason in arr(f(answer(&w, producer), "reasons")) {
+                assert!(arr(f(answer(&w, consumer), "reasons")).contains(reason));
+            }
+        }
+        let own_conditions: Vec<_> = arr(f(take, "reasons"))
+            .iter()
+            .filter(|r| {
+                f(r, "code") == &Json::str("condition_failed")
+                    && f(r, "request") == &Json::str("take")
+            })
+            .collect();
+        if index < 2 {
+            assert_eq!(own_conditions.len(), 1);
+            let condition = node(&w, f(f(own_conditions[0], "details"), "condition"));
+            assert_eq!(
+                &arr(f(condition, "arguments"))[0],
+                f(f(answer(&w, "source"), "outputs"), "evaluation")
+            );
+            assert_eq!(f(f(condition, "judgment"), "status"), &Json::str("refuted"));
+            assert!(!arr(f(condition, "evidence")).is_empty());
+            let code = if index == 0 {
+                "missing_observation"
+            } else {
+                "unsupported_algorithm"
+            };
+            assert!(
+                arr(f(take, "reasons"))
+                    .iter()
+                    .any(|r| f(r, "code") == &Json::str(code))
+            );
+        } else {
+            assert!(own_conditions.is_empty());
+            assert_eq!(f(answer(&w, "source"), "outputs"), &Json::obj([]));
+            blocked(&w, "take", "source");
+        }
+        assert_eq!(f(answer(&w, "seed"), "status"), &Json::str("established"));
+        assert_eq!(f(answer(&w, "prior"), "status"), &Json::str("refuted"));
+    }
+    let asks = [
+        "take=evaluate(Applications.acMixedRoot,a=$missing.evaluation.environment.root,x=$empty.value[0],b=$opaque.value)",
+        "missing=evaluate(Applications.adMissing,p=@v/p)",
+        "opaque=evaluate(Applications.adOpaque)",
+        "empty=evaluate(Applications.apEmpty)",
+        "seed=evaluate(Applications.abSeed)",
+    ];
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
+    assert_eq!(r.status(), "partial");
+    let w = r.wire();
+    let a = answer(&w, "take");
+    assert_eq!(
+        arr(f(a, "reasons"))
+            .iter()
+            .filter(|r| f(r, "code") == &Json::str("condition_failed"))
+            .count(),
+        2
+    );
+    for producer in ["missing", "opaque"] {
+        for reason in arr(f(answer(&w, producer), "reasons")) {
+            assert!(arr(f(a, "reasons")).contains(reason));
+        }
+    }
+    assert_eq!(f(answer(&w, "seed"), "status"), &Json::str("established"));
+}
