@@ -2897,6 +2897,9 @@ mod recheck_tests {
     mod map_field_completion_tests {
         include!("map_field_completion_tests.rs");
     }
+    mod identity_path_tests {
+        include!("identity_path_tests.rs");
+    }
     mod dependent_owner_completion_tests {
         include!("dependent_owner_completion_tests.rs");
     }

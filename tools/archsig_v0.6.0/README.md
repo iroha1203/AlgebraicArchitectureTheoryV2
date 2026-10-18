@@ -55,6 +55,12 @@
   Map適用は元表と実keyを照合して像を返し、元callee/引数の評価・支持・Scopeを保持する。
   域外の実keyはkey集合への追加前後の等値を反証し、検査可能な条件とcondition_failedを残して値を生成しない。
   欠測Map/参照は元missingを保持し、元入力の参照・owner・全域性制約に整合する共有補完を使う。
+  entity参照のidentityは、reading・同じ始終点・空の生成元列を持つPath値を返し、source/targetは元entity参照を返す。
+  恒等Pathの数学的等値は始終点と共通carrier上の恒等作用を比較し、readingは由来として保持・再検査する。
+  恒等Pathとそれを含むList/Tuple/Optionの等号・不等号、List所属は、結果型Tとして受け付ける。
+  Pathを含むList/Tuple/Optionは、入れ子の各成分を実argumentsから到達する型付き既出Refで表示する。
+  原始containerのinline表示を保ち、let/if/view呼出しでも元の式・束縛・支持・Scopeを再検査する。
+  生成射のPath構成・合成・それらの実作用比較は後続の実装単位で扱う。
   原始Termと閉じたfnは、元body・parameter順・型付きASTと静的参照を保ち、既知引数へ適用する。
   bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
   元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。

@@ -110,7 +110,7 @@ pub(super) fn supported(
                     }
                     visit(ret, law, control, active)
                 }
-                Type::Unit | Type::Text | Type::Bool | Type::Ref(_) => Ok(true),
+                Type::Unit | Type::Text | Type::Bool | Type::Ref(_) | Type::Path(..) => Ok(true),
                 Type::Map(domain, codomain) => {
                     Ok(domain.ref_target().is_some() && codomain.ref_target().is_some())
                 }
@@ -238,6 +238,7 @@ pub(super) fn check(
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         match value {
+            Scalar::Path(path) => path.check(control),
             Scalar::Term(t) => t.check(control),
             Scalar::Map { .. } => check_shape(value, control),
             Scalar::Data {
@@ -636,6 +637,7 @@ pub(super) fn equal(
             return Err("構造等値の元型が違う".into());
         }
         let equal = match (left, right) {
+            (Scalar::Path(a), Scalar::Path(b)) => a.same_action(b),
             // 同じ元programならifの両枝で同じ値を保持できる。
             // LawのTerm等値はsupports_binaryで別に判定する。
             (Scalar::Term(a), Scalar::Term(b)) => a == b,
@@ -745,6 +747,7 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         match value {
+            Scalar::Path(path) => path.check(control),
             Scalar::Term(t) => t.check(control),
             Scalar::Map {
                 domain,
@@ -782,7 +785,11 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 Ok(())
             }
             Scalar::List { element, items } | Scalar::Set { element, items } => {
-                if !primitive_type(element, control)? {
+                if !(if matches!(value, Scalar::Set { .. }) {
+                    primitive_type(element, control)?
+                } else {
+                    super::path_value::result_type(element, control)?
+                }) {
                     return Err("containerの要素型が原始対応型でない".into());
                 }
                 for (index, item) in items.iter().enumerate() {
@@ -800,7 +807,7 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 Ok(())
             }
             Scalar::Option { element, value } => {
-                if !primitive_type(element, control)? {
+                if !super::path_value::result_type(element, control)? {
                     return Err("Optionの要素型が原始対応型でない".into());
                 }
                 if let Some(value) = value {
@@ -826,6 +833,9 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 }
                 for arg in args {
                     tick(control)?;
+                    if super::path_value::contains_path(&arg.ty(), control)? {
+                        return Err("Dataのpayloadに非原始の結果型がある".into());
+                    }
                     check_shape(arg, control)?;
                     tick(control)?;
                 }

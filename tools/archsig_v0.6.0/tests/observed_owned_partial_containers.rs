@@ -30,6 +30,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
+    let original = i.clone();
     let r = evaluate_observed_bytes(
         i,
         asks,
@@ -37,6 +38,7 @@ fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvalu
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
+    assert_eq!(r.prepared().inputs().sources(), &original);
     r
 }
 fn quiet() -> Control {
@@ -65,6 +67,55 @@ fn assert_failed(w: &Json, id: &str) {
     let c = node(w, get(get(reason, "details"), "condition"));
     assert_eq!(get(get(c, "judgment"), "status"), &Json::str("refuted"));
     assert!(!arr(get(c, "support")).is_empty());
+}
+fn assert_original_arrow_owner(r: &archsig::observed::ObservedEvaluation) {
+    use archsig::{
+        archmap::{Slot, Value},
+        types::Type,
+    };
+    let snapshot = r
+        .prepared()
+        .inputs()
+        .archmap()
+        .snapshots
+        .iter()
+        .find(|s| s.id == "v")
+        .unwrap();
+    let e = snapshot.subjects.iter().find(|s| s.id == "e").unwrap();
+    let field = |name: &str| {
+        e.fields
+            .iter()
+            .find(|f| f.name == format!("Reservations.Reserve.{name}"))
+            .unwrap()
+    };
+    assert!(
+        matches!(&field("owner").slot,Slot::Known{value:Value::Ref{snapshot,subject},..} if snapshot=="v" && subject=="A")
+    );
+    assert_eq!(
+        field("to").ty,
+        Type::Owned("Reservations.State".into(), "owner".into())
+    );
+    assert!(matches!(field("to").slot, Slot::Missing));
+}
+fn assert_completion_domain(w: &Json, id: &str, kind: &str, entity: &str, expected: &[&str]) {
+    let evaluation = node(w, get(get(answer(w, id), "outputs"), "evaluation"));
+    let domain = node(w, &arr(get(evaluation, "arguments"))[1]);
+    assert_eq!(get(domain, "type"), &Json::str("Domain"));
+    let payload = get(domain, "value");
+    assert_eq!(get(payload, "kind"), &Json::str("finite"));
+    assert_eq!(
+        get(payload, "type"),
+        &Json::Arr(vec![Json::str(kind), Json::str(entity)])
+    );
+    let actual: std::collections::BTreeSet<_> = arr(get(payload, "elements"))
+        .iter()
+        .map(|r| get(node(w, r), "value").canonical())
+        .collect();
+    let expected: std::collections::BTreeSet<_> = expected
+        .iter()
+        .map(|s| Json::Arr(vec![Json::str("v"), Json::str(*s)]).canonical())
+        .collect();
+    assert_eq!(actual, expected);
 }
 #[test]
 fn partial_option_set_calls_keep_z_q_nested_members_and_return_boundaries() {
@@ -255,6 +306,7 @@ fn partial_option_set_pending_and_missing_members_keep_independent_known_mismatc
     let refs = asks.iter().map(String::as_str).collect::<Vec<_>>();
     let r = run_input(fixture::missing_reference_input(), &refs);
     assert_eq!(r.status(), "partial");
+    assert_original_arrow_owner(&r);
     let w = r.wire();
     for id in [
         "optionCase",
@@ -270,36 +322,50 @@ fn partial_option_set_pending_and_missing_members_keep_independent_known_mismatc
             assert_eq!(get(a, "status"), &Json::str("undetermined"));
             let cs = codes(a);
             assert!(cs.contains(&&Json::str("missing_observation")));
-            assert_eq!(cs.contains(&&Json::str("condition_failed")), s == "bad");
-            if s == "bad" {
-                assert_failed(&w, &name);
-            }
+            // e.owner=A と to:State[owner] により、欠測toの全補完はp/q。
+            // a=Bへのreadは両caseで失敗する。good/badは外側のpの所属だけを区別する。
+            assert_completion_domain(&w, &name, "Ref", "Reservations.State", &["p", "q"]);
+            assert_eq!(
+                cs.iter()
+                    .filter(|c| ***c == Json::str("condition_failed"))
+                    .count(),
+                if s == "bad" { 3 } else { 2 }
+            );
+            assert_failed(&w, &name);
         }
     }
 }
 #[test]
-fn partial_option_missing_reference_and_unknown_owner_keep_their_boundary() {
+fn partial_option_missing_reference_resolves_known_owner_and_keeps_unknown_owner_call_gap() {
     let r = run_input(
         fixture::missing_reference_input(),
         &["x=evaluate(Reservations.ocUnknown,a=@v/A,e=@v/e,q=@v/q)"],
     );
-    assert_eq!(r.status(), "partial");
+    assert_eq!(r.status(), "complete");
+    assert_original_arrow_owner(&r);
     let w = r.wire();
     let a = answer(&w, "x");
-    assert_eq!(get(a, "status"), &Json::str("undetermined"));
+    assert_eq!(get(a, "status"), &Json::str("established"));
+    assert_eq!(
+        get(node(&w, get(get(a, "outputs"), "value")), "value"),
+        &Json::Bool(true)
+    );
     assert!(codes(a).contains(&&Json::str("missing_observation")));
     assert!(!codes(a).contains(&&Json::str("condition_failed")));
-    let e = evaluate_observed_bytes(
+    assert_completion_domain(&w, "x", "Ref", "Reservations.State", &["p", "q"]);
+    let unknown = evaluate_observed_bytes(
         fixture::input(true, "r1"),
         &["x=check(Reservations.ocSomeGood,a=@v/A,p=@v/p)"],
         &mut Control::new(Limits::default(), |_| Usage::default()),
     )
     .unwrap_err();
     assert!(matches!(
-        e,
-        archsig::observed::EvaluationFailure::NotImplemented { .. }
+        &unknown,
+        archsig::observed::EvaluationFailure::NotImplemented { declaration, feature, .. }
+            if declaration=="Reservations.ocSomeGood"
+                && feature=="未確定owner・実参照を持つview呼出しの所属条件"
     ));
-    assert!(e.wire().is_none());
+    assert!(unknown.wire().is_none());
 }
 
 #[test]
