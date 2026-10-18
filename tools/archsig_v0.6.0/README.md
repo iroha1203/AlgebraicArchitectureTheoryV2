@@ -134,6 +134,8 @@
   補完で成否が変わる場合は型付き補完対を保持し、その値を観測に追加しない。
   有限型slotの各補完でも先に全域のwholeを判断し、元の支持・欠測・量化を保って集約する。
   有限型のLaw parameterとZ/Q parameterの混在も、元宣言順の有限族の各instanceでZ/Q全域を判断する。
+  既知ownerの依存族でも数値parameterを有限列挙から分け、元署名の実prefixごとの全Z/Q代入を評価する。
+  数値parameterが署名の途中にあっても有限fiberの順と型を保ち、空fiber・固定Answer・複合Owned値へ接続する。
   view内で追加されるZ/Q forallも、外側の自由parameterと区別して評価する。
   この全域評価で必須範囲外の式は、原式・型Domainとunsupported_algorithm理由を保持する。
   未束縛Law parameterのcheckは、plain参照族と上記の有限型を元宣言順に列挙し、
@@ -199,7 +201,6 @@
   固定ownerの所属・Map完全始域が未確定な場合は、既存の未実装の範囲に残る。
   上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・
-  依存Law族と無限自由数値parameterの混合・
   上記以外の未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の

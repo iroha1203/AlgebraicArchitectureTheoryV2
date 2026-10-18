@@ -36,9 +36,16 @@ impl Evaluator<'_, '_> {
         self.bind_parameters(&fixed, true)?;
         let root = self.graph.active;
         let fixed_bindings = self.bindings.clone();
+        let finite_parameters: Vec<_> = plan
+            .parameters
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| !plan.numeric.iter().any(|n| n.name == p.name))
+            .collect();
         let mut raw_scope = self.base.clone();
         self.environment
             .dependent_merge_scope(&plan, &mut raw_scope, &[], root)?;
+        raw_scope.assignments |= !plan.numeric.is_empty();
         let source = self.family_source(body, &plan.free, &raw_scope)?;
         let guard_source = guard
             .map(|g| self.family_source(g, &plan.free, &raw_scope))
@@ -56,6 +63,11 @@ impl Evaluator<'_, '_> {
                 continue;
             }
             let parameter = &plan.parameters[parameter_index];
+            // 無限数値parameterは各実rowの全域評価へ渡す。有限fiberにはしない。
+            if plan.numeric.iter().any(|p| p.name == parameter.name) {
+                pending.push((parameter_index + 1, prefix));
+                continue;
+            }
             self.family_observe("dependent_domain", domains.len());
             self.tick(Checkpoint::FiniteIteration)?;
             #[cfg(test)]
@@ -89,7 +101,10 @@ impl Evaluator<'_, '_> {
                     .path
                     .iter()
                     .enumerate()
-                    .map(|(i, &(domain, _))| (i, domain))
+                    .map(|(i, &(domain, _))| {
+                        let parameter = finite_parameters[i].0;
+                        (parameter, domain)
+                    })
                     .collect::<Vec<_>>(),
                 root,
             )?;
@@ -201,7 +216,7 @@ impl Evaluator<'_, '_> {
             self.family_observe("dependent_member", members.len());
             self.tick(Checkpoint::FiniteIteration)?;
             let mut values = Vec::new();
-            for (parameter, &(_, selected)) in plan.parameters.iter().zip(&path) {
+            for ((_, parameter), &(_, selected)) in finite_parameters.iter().zip(&path) {
                 self.tick(Checkpoint::FiniteIteration)?;
                 if plan.unbound.iter().any(|p| p.name == parameter.name) {
                     values.push(self.graph.scalar(selected)?.clone());
@@ -280,6 +295,9 @@ impl Evaluator<'_, '_> {
             let row_result = (|| -> Result<Answer, Failure> {
                 for parameter in &plan.parameters {
                     self.tick(Checkpoint::FiniteIteration)?;
+                    if plan.numeric.iter().any(|p| p.name == parameter.name) {
+                        continue;
+                    }
                     let value = if let Some(i) =
                         plan.unbound.iter().position(|p| p.name == parameter.name)
                     {

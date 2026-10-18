@@ -369,8 +369,18 @@ fn mixed_unknown_free_owner_rechecks_completion_scope_with_same_and_fresh_enviro
     }
 }
 #[test]
-fn mixed_fixed_condition_parts_reject_equal_foreign_owner_value_support_scope_and_direct_reason_changes()
- {
+fn mixed_fixed_condition_parts_reject_equal_foreign_owner_and_value_changes() {
+    mixed_fixed_condition_parts_check(&[0, 1]);
+}
+#[test]
+fn mixed_fixed_condition_parts_reject_support_and_scope_changes() {
+    mixed_fixed_condition_parts_check(&[2, 3]);
+}
+#[test]
+fn mixed_fixed_condition_direct_reason_changes_reject_same_and_fresh() {
+    mixed_fixed_condition_parts_check(&[]);
+}
+fn mixed_fixed_condition_parts_check(kinds: &[usize]) {
     let asks: Vec<_> = ASK
         .iter()
         .map(|s| s.replace("cbUniversalOwner,a=@v/A", "cbUniversalOwner,a=@v/B"))
@@ -400,11 +410,19 @@ fn mixed_fixed_condition_parts_reject_equal_foreign_owner_value_support_scope_an
     assert_eq!(parts.len(), 5);
     for i in parts {
         assert_eq!(r.nodes[i].arguments[..2], [value, owner]);
-        completion_mutation(&r, i, |ns| ns[i].arguments[0] = foreign_value);
-        completion_mutation(&r, i, |ns| ns[i].arguments[1] = foreign_owner);
-        completion_mutation(&r, i, |ns| ns[i].support.clear());
         assert!(r.nodes[i].scope.quantifiers.len() >= 2);
-        completion_mutation(&r, i, |ns| ns[i].scope.quantifiers.reverse());
+        for &kind in kinds {
+            completion_mutation(&r, i, |ns| match kind {
+                0 => ns[i].arguments[0] = foreign_value,
+                1 => ns[i].arguments[1] = foreign_owner,
+                2 => ns[i].support.clear(),
+                3 => ns[i].scope.quantifiers.reverse(),
+                _ => unreachable!(),
+            });
+        }
+    }
+    if !kinds.is_empty() {
+        return;
     }
     let cutoff = r.contexts.iter().position(|c| c.request == 8).unwrap();
     for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {

@@ -404,10 +404,18 @@ fn dependent_family_unknown_owner_keeps_source_missing_and_unsupported_and_reche
 }
 
 fn dependent_private_phase_stop(phase: &'static str, at: usize, kind: usize) {
+    dependent_private_body_phase_stop(DEPENDENT_BODY, phase, at, kind);
+}
+fn dependent_private_body_phase_stop(
+    declaration: &str,
+    phase: &'static str,
+    at: usize,
+    kind: usize,
+) {
     use super::super::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let body = format!(
-        "view seed():Unit=unit; law required prior():false; view hole(c:Leaf):Bool=c.ok; {DEPENDENT_BODY}"
+        "view seed():Unit=unit; law required prior():false; view hole(c:Leaf):Bool=c.ok; {declaration}"
     );
     let asks = [
         "seed=evaluate(Inspect.seed)",
@@ -682,4 +690,181 @@ fn dependent_family_recheck_stops_and_success_memo_are_session_local() {
             before
         );
     }
+}
+
+fn dependent_numeric_private_recheck(ty: Type) {
+    let type_name = if ty == Type::Z { "Z" } else { "Q" };
+    let body = format!(
+        "view seed():Unit=unit; law required chain(z:{type_name},a:Root,b:Child[a],c:Leaf[a]):z+1=z+1;"
+    );
+    let r = dependent_private_example(
+        &body,
+        &[
+            "first=check(Inspect.chain)",
+            "all=check(Inspect.chain)",
+            "last=evaluate(Inspect.seed)",
+        ],
+        [Some(true); 2],
+    );
+    assert_eq!(r.status(), "complete");
+    let (source, total, domains, rows) = dependent_private_domain(&r, 1);
+    assert_eq!(rows.len(), 2);
+    assert_eq!(domains.len(), 6);
+    let child=*domains.iter().find(|&&i|matches!(&r.nodes[i].payload,Some(Payload::Domain{ty:Type::Ref(n),elements})if n=="Dep.Child"&&!elements.is_empty())).unwrap();
+    let numeric = r
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| {
+            (r.contexts[i].request == 1
+                && matches!(&n.payload,Some(Payload::TypeDomain{ty:t})if *t==ty))
+            .then_some(i)
+        })
+        .unwrap();
+    let foreign = r
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| {
+            (r.contexts[i].request == 0
+                && matches!(&n.payload,Some(Payload::TypeDomain{ty:t})if *t==ty))
+            .then_some(i)
+        })
+        .unwrap();
+    let row_evaluation = r
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| {
+            (r.contexts[i] == r.contexts[numeric]
+                && matches!(&n.payload, Some(Payload::Evaluation { .. }))
+                && n.arguments.get(1) == Some(&NodeRef(numeric)))
+            .then_some(i)
+        })
+        .unwrap();
+    let proof = r.answers[1]
+        .evidence
+        .iter()
+        .find(|e| matches!(r.nodes[e.0].payload, Some(Payload::FiniteExhaustion { .. })))
+        .unwrap()
+        .0;
+    let cutoff = r.contexts.iter().position(|c| c.request == 2).unwrap();
+    let make = || {
+        Environment::with_requests(
+            r.prepared.inputs(),
+            r.prepared.requests().requests(),
+            &mut named_call_quiet(),
+        )
+        .unwrap()
+    };
+    for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {
+        let mut graph = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
+        let e = make();
+        let request = &r.prepared.requests().requests()[1];
+        let answer = &r.answers[1];
+        e.validate_answer(&graph, request, answer).unwrap();
+        assert!(
+            graph.nodes.len() > proof
+                && proof > row_evaluation
+                && row_evaluation > numeric
+                && numeric > total
+        );
+        let original_nodes = graph.nodes.clone();
+        let original_request = graph.requests[1].clone();
+        for kind in 0..8 {
+            match kind {
+                0 => {
+                    let Some(Payload::Expression { parameters, .. }) =
+                        &mut graph.nodes[source].payload
+                    else {
+                        panic!()
+                    };
+                    parameters.swap(0, 1);
+                }
+                1 => graph.nodes[source].scope.assignments = false,
+                2 => {
+                    let Some(Payload::Domain { elements, .. }) = &mut graph.nodes[child].payload
+                    else {
+                        panic!()
+                    };
+                    elements.clear();
+                    graph.nodes[child].arguments.pop();
+                }
+                3 => {
+                    let Some(Payload::Scalar(Scalar::Tuple(items))) =
+                        &mut graph.nodes[rows[0].0].payload
+                    else {
+                        panic!()
+                    };
+                    items.swap(0, 1);
+                }
+                4 => {
+                    graph.nodes[numeric].payload = Some(Payload::TypeDomain {
+                        ty: if ty == Type::Z { Type::Q } else { Type::Z },
+                    })
+                }
+                5 => {
+                    assert_ne!(numeric, foreign);
+                    graph.nodes[row_evaluation].arguments[1] = NodeRef(foreign);
+                }
+                6 => {
+                    let Some(Payload::FiniteExhaustion { checked, .. }) =
+                        &mut graph.nodes[proof].payload
+                    else {
+                        panic!()
+                    };
+                    *checked += 1;
+                }
+                7 => {
+                    graph.requests[1].defaults.clear();
+                }
+                _ => unreachable!(),
+            }
+            assert!(graph.nodes != original_nodes || graph.requests[1] != original_request);
+            assert!(
+                matches!(
+                    e.validate_answer(&graph, request, answer),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "same {type_name} kind {kind}"
+            );
+            assert!(
+                matches!(
+                    make().validate_answer(&graph, request, answer),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "fresh {type_name} kind {kind}"
+            );
+            graph.nodes = original_nodes.clone();
+            graph.requests[1] = original_request.clone();
+            e.validate_answer(&graph, request, answer).unwrap();
+            make().validate_answer(&graph, request, answer).unwrap();
+        }
+    }
+}
+#[test]
+fn dependent_z_family_rechecks_original_fiber_numeric_whole_same_and_fresh() {
+    dependent_numeric_private_recheck(Type::Z);
+}
+#[test]
+fn dependent_q_family_rechecks_original_fiber_numeric_whole_same_and_fresh() {
+    dependent_numeric_private_recheck(Type::Q);
+}
+const DEPENDENT_NUMERIC_BODY: &str = "law required chain(z:Z,a:Root,b:Child[a],q:Q,c:Leaf[a]):if c.ok then z+1=z+1 and q+1=q+1 else z+1=z+2;";
+#[test]
+fn dependent_numeric_family_domain_cancel_keeps_strict_prefix_and_prior_answers() {
+    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY, "dependent_domain_done", 1, 0);
+}
+#[test]
+fn dependent_numeric_family_row_time_stop_keeps_strict_prefix_and_prior_answers() {
+    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY, "dependent_row", 1, 1);
+}
+#[test]
+fn dependent_numeric_family_aggregate_memory_stop_keeps_rows_without_whole_claim() {
+    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY, "dependent_aggregate", 0, 2);
+}
+
+#[test]
+fn dependent_numeric_family_post_validation_cancel_keeps_verified_current_counterexample() {
+    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY, "answer", 0, 0);
 }

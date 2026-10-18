@@ -1933,6 +1933,17 @@ fn universal_view_partial_recheck_stop_does_not_reuse_success_memo() {
 }
 
 fn universal_fresh_recheck_stop(body: &str, request: &str, stop: super::super::affine::TestPoint) {
+    for reuse_checked in [false, true] {
+        universal_recheck_stop_mode(body, request, stop, reuse_checked);
+    }
+}
+
+fn universal_recheck_stop_mode(
+    body: &str,
+    request: &str,
+    stop: super::super::affine::TestPoint,
+    reuse_checked: bool,
+) {
     use super::super::{
         affine,
         control::{Limits, Usage},
@@ -1945,6 +1956,7 @@ fn universal_fresh_recheck_stop(body: &str, request: &str, stop: super::super::a
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=normalization]).unwrap();
     graph.active = result.contexts[normalization];
     let armed = Rc::new(Cell::new(false));
+    let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let (arm, count) = (armed.clone(), probes.clone());
     let mut control = Control::new(Limits::default(), move |point| {
@@ -1960,17 +1972,33 @@ fn universal_fresh_recheck_stop(body: &str, request: &str, stop: super::super::a
         }
     });
     let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-    environment
-        .recheck_node(&graph, &graph.nodes[normalization], normalization)
-        .unwrap();
+    if reuse_checked {
+        environment
+            .recheck_node(&graph, &graph.nodes[normalization], normalization)
+            .unwrap();
+    }
     let before = probes.get();
-    let stopped = affine::with_observer(
-        move |point| {
-            if point == stop {
-                armed.set(true)
-            }
-        },
-        || environment.recheck_node(&graph, &graph.nodes[normalization], normalization),
+    let stopped = if reuse_checked {
+        // 同じ検査済みGraphでは再分析の内部hookを発火条件にしない。
+        // キャッシュを読む入口にも共有Controlの取消を必須にする。
+        armed.set(true);
+        environment.recheck_node(&graph, &graph.nodes[normalization], normalization)
+    } else {
+        let observed = seen.clone();
+        affine::with_observer(
+            move |point| {
+                if point == stop {
+                    assert!(!observed.replace(true));
+                    armed.set(true)
+                }
+            },
+            || environment.recheck_node(&graph, &graph.nodes[normalization], normalization),
+        )
+    };
+    assert_eq!(
+        seen.get(),
+        !reuse_checked,
+        "fresh再分析の実停止点へ到達する"
     );
     assert!(matches!(
         stopped,
