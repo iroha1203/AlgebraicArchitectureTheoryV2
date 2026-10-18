@@ -35,10 +35,6 @@ impl Environment<'_> {
             | crate::law::model::Signature::Law { params, .. } => params,
             _ => return Err("依存停止の元宣言がview/Lawでない".into()),
         };
-        // 自由Law parameter族との混合は後続段階で扱う。
-        if params.len() != request.arguments.len() {
-            return Ok(None);
-        }
         let mut reasons = vec![];
         let mut scope = Scope::default();
         scope.readings.insert(declaration.reading.clone());

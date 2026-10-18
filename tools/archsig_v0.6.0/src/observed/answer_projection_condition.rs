@@ -53,9 +53,6 @@ impl Environment<'_> {
             | crate::law::model::Signature::Law { params, .. } => params,
             _ => return Err("射影条件の元宣言がview/Lawでない".into()),
         };
-        if params.len() != request.arguments.len() {
-            return Ok(vec![]);
-        }
         let mut plans = vec![];
         for parameter in params {
             self.tick()?;
@@ -67,11 +64,17 @@ impl Environment<'_> {
             {
                 continue;
             }
-            let argument = request
+            let Some(argument) = request
                 .arguments
                 .iter()
                 .find(|a| a.name == format!("bind.{}", parameter.name))
-                .ok_or("射影条件の元束縛がない")?;
+            else {
+                // Lawの自由parameterを構成条件の値入力へ補わない。
+                if request.kind != QuestionKind::Check {
+                    return Err("射影条件の元view束縛がない".into());
+                }
+                continue;
+            };
             let Selector::Answer { id, .. } = &argument.value else {
                 continue;
             };

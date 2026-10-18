@@ -171,15 +171,17 @@
   inline成分は元の型付き出力一つを引数とするprojection nodeにし、rule.pathに出力field名を除く全射影列を保つ。
   元出力の支持・Scopeを継承し、核は元Request/producerと公開規則・実型/値から再検査する。既出Refは再利用する。
   再検査中の停止でも、既に独立検査を終えた確定値・反例のclaim/evidenceを保持する。
-  全明示束縛の同2pathとその構造成分pathが未生成root値を参照すると、その要求は出力なしの未決Answerとなる。
+  明示束縛の同2pathとその構造成分pathが未生成root値を参照すると、その要求は出力なしの未決Answerとなる。
   dependency_blockedに直接の依存先IDと既出導出Refを持ち、元missing/unsupportedの位置・slot・型/方法を
   後続へ推移的に保持する。独立要求の確定値・反例は返し続ける。依存停止のAnswerも元Request/producerから再検査する。
-  全明示束縛で、実値のindex/constructor/Option/型不適合と省略Evaluation.environmentを読むと、
+  明示束縛で、実値のindex/constructor/Option/型不適合と省略Evaluation.environmentを読むと、
   元selectorの全path・要求型・元出力からprojectionの構成条件を再検査し、その反証と証拠を残す。
   condition_failedと直接依存先IDを持つdependency_blockedを返し、後続へ元理由と証拠Refを保持する。
   既知rootの不適合と未生成rootのmissing/unsupportedを混在させても、元producerと独立要求の値・反例を保持する。
+  非依存Law族の自由parameterと併用し、正しい固定Answer引数を元Refへ束縛して有限全域・Z/Q全称評価へ渡す。
+  固定producerの補完・全称Scopeを継承し、今回の自由parameterの実Domainを追加して元入力から再検査する。
   上記以外のpayloadを持つdataの評価、その他の式形・
-  上記以外の無限型・Answer射影の動的owner/自由Law族との混合・
+  上記以外の無限型・Answer射影の動的owner/依存Law族との混合・
   未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
