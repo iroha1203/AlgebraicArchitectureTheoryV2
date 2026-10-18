@@ -1574,12 +1574,12 @@ fn finite_value_reference_selection_keeps_other_missing_and_excludes_unbounded_s
     );
     assert_eq!(f(&wire, "status"), &Json::str("partial"));
     let field_nodes = index(&wire);
-    for id in ["a", "b", "e", "f"] {
+    for id in ["a", "b", "e"] {
         assert!(
             live(&field_nodes, root(&wire, id))
                 .iter()
                 .all(|n| f(n, "type") != &Json::str("Domain")),
-            "無限型/未対応Mapを有限例で置き換えない"
+            "無限型を有限例で置き換えない"
         );
     }
     for (id, field) in [
@@ -1592,13 +1592,13 @@ fn finite_value_reference_selection_keeps_other_missing_and_excludes_unbounded_s
     ] {
         assert_eq!(
             f(answer(&wire, id), "status"),
-            &Json::str(if id == "d" {
+            &Json::str(if matches!(id, "d" | "f") {
                 "established"
             } else {
                 "undetermined"
             })
         );
-        if matches!(id, "c" | "d") {
+        if matches!(id, "c" | "d" | "f") {
             let (ty, values) = if id == "c" {
                 (
                     ty("Option", ty("Ref", Json::str("FiniteValues.Sample"))),
@@ -1607,13 +1607,22 @@ fn finite_value_reference_selection_keeps_other_missing_and_excludes_unbounded_s
                         Json::obj([("some", reference("v", "item"))]),
                     ],
                 )
-            } else {
+            } else if id == "d" {
                 (
                     ty("Data", Json::str("FiniteValues.RefD")),
                     vec![Json::obj([
                         ("tag", Json::str("keep")),
                         ("args", Json::Arr(vec![reference("v", "item")])),
                     ])],
+                )
+            } else {
+                let sample = ty("Ref", Json::str("FiniteValues.Sample"));
+                (
+                    Json::Arr(vec![Json::str("Map"), sample.clone(), sample]),
+                    vec![Json::Arr(vec![Json::Arr(vec![
+                        reference("v", "item"),
+                        reference("v", "item"),
+                    ])])],
                 )
             };
             let slot = Slot {
@@ -1663,11 +1672,14 @@ fn finite_value_reference_selection_keeps_other_missing_and_excludes_unbounded_s
     );
     let sample = ty("Ref", Json::str("FiniteValues.Sample"));
     let map = Json::Arr(vec![Json::str("Map"), sample.clone(), sample]);
-    assert!(
-        arr(f(&wire, "nodes"))
-            .iter()
-            .all(|n| f(n, "type") != &map || !obj(n).contains_key("value")),
-        "欠測Mapを空表へ補わない"
+    output(
+        &wire,
+        "f",
+        &map,
+        Json::Arr(vec![Json::Arr(vec![
+            reference("v", "item"),
+            reference("v", "item"),
+        ])]),
     );
     assert_eq!(
         f(f(answer(&wire, "f"), "scope"), "domain"),

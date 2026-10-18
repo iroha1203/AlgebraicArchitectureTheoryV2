@@ -1140,40 +1140,30 @@ fn owned_family_missing_body_before_known_counterexample_preserves_membership() 
 fn owned_family_missing_body_after_known_counterexample_preserves_membership() {
     missing_counterexample("r-ok", "p-ok", "r");
 }
-fn unknown(omit: &str, script: &str, ask: &str, subject: &str, field: &str, unsupported: bool) {
+fn unknown(
+    omit: &str,
+    script: &str,
+    ask: &str,
+    subject: &str,
+    field: &str,
+    owner_expression: bool,
+) {
     let r = run(fixture(script, Some(omit), None, false, false), &[ask]);
     let w = r.wire();
     assert_eq!(f(&w, "status"), &Json::str("partial"));
-    assert_eq!(f(answer(&w, "u"), "status"), &Json::str("undetermined"));
+    let answer = answer(&w, "u");
+    assert_eq!(f(answer, "status"), &Json::str("undetermined"));
     assert_missing(&w, "u", subject, field);
-    let reasons = arr(f(answer(&w, "u"), "reasons"));
-    assert_eq!(
-        reasons
+    let reasons = arr(f(answer, "reasons"));
+    assert!(
+        !reasons
             .iter()
-            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm")),
-        unsupported
+            .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
     );
     let reason = reasons
         .iter()
-        .find(|r| {
-            f(r, "code")
-                == &Json::str(if unsupported {
-                    "unsupported_algorithm"
-                } else {
-                    "missing_observation"
-                })
-        })
+        .find(|r| f(r, "code") == &Json::str("missing_observation"))
         .unwrap();
-    if unsupported {
-        assert_eq!(
-            f(f(reason, "details"), "method"),
-            &Json::str("unresolved_owned_expression_family")
-        );
-        assert_eq!(
-            f(f(reason, "details"), "operand_types"),
-            &Json::Arr(vec![ty("Set", ty("Ref", Json::str("Owned.State")))])
-        );
-    }
     let ns = index(&w);
     let checked = r.prepared().inputs();
     let family = checked
@@ -1182,7 +1172,17 @@ fn unknown(omit: &str, script: &str, ask: &str, subject: &str, field: &str, unsu
         .iter()
         .find(|e| matches!(e.kind, ExprKind::Family { .. }))
         .unwrap();
-    assert_eq!(span(f(reason, "location")), family.span);
+    let wanted_span = if owner_expression {
+        let law = checked.sources().law().bytes();
+        let start = law
+            .windows(b"m.from".len())
+            .position(|b| b == b"m.from")
+            .unwrap();
+        (start, start + b"m.from".len())
+    } else {
+        family.span
+    };
+    assert_eq!(span(f(reason, "location")), wanted_span);
     assert_eq!(
         checked.law().expr_type(
             checked
@@ -1197,38 +1197,90 @@ fn unknown(omit: &str, script: &str, ask: &str, subject: &str, field: &str, unsu
     let dependencies = arr(f(reason, "dependencies"));
     assert_eq!(dependencies.len(), 1);
     let expression = target(&ns, &dependencies[0], &Json::str("Expression"));
-    assert_eq!(span(f(val(expression), "location")), family.span);
+    assert_eq!(span(f(val(expression), "location")), wanted_span);
     assert!(arr(f(expression, "reasons")).is_empty());
-    assert!(!obj(f(answer(&w, "u"), "outputs")).contains_key("value"));
-    if !unsupported {
-        let pairs:Vec<_>=ns.values().filter(|n|obj(n).get("value").is_some_and(|v|if let Json::Obj(m)=v{m.get("kind")}else{None}==Some(&Json::str("completion_pair")))).collect();
-        assert!(!pairs.is_empty());
-        for pair in pairs {
-            let data = f(val(pair), "data");
-            let fields = arr(f(data, "fields"));
-            assert_eq!(fields.len(), 1);
-            assert_eq!(f(&fields[0], "subject"), &Json::str(subject));
-            assert_eq!(f(&fields[0], "field"), &Json::str(field));
-            let actual: BTreeSet<_> = ["first_result", "second_result"]
-                .iter()
-                .map(|k| {
-                    let evaluation = target(&ns, f(data, k), &Json::str("Evaluation"));
-                    val(target(
-                        &ns,
-                        f(val(evaluation), "value"),
-                        &ty("Set", ty("Ref", Json::str("Owned.State"))),
-                    ))
-                    .canonical()
-                })
-                .collect();
-            let wanted: BTreeSet<_> = [
-                Json::Arr(vec![reference("v", "p")]),
-                Json::Arr(vec![reference("v", "p"), reference("v", "r")]),
-            ]
+    assert!(!obj(f(answer, "outputs")).contains_key("value"));
+    let evaluation = target(
+        &ns,
+        f(f(answer, "outputs"), "evaluation"),
+        &Json::str("Evaluation"),
+    );
+    let domain = target(
+        &ns,
+        &arr(f(evaluation, "arguments"))[1],
+        &Json::str("Domain"),
+    );
+    assert_eq!(f(val(domain), "type"), &ty("Ref", Json::str("Owned.Root")));
+    let domain_values: BTreeSet<_> = arr(f(val(domain), "elements"))
+        .iter()
+        .map(|r| val(target(&ns, r, &ty("Ref", Json::str("Owned.Root")))).canonical())
+        .collect();
+    assert_eq!(
+        domain_values,
+        ["A", "B", "Z"]
+            .map(|id| reference("v", id).canonical())
+            .into_iter()
+            .collect()
+    );
+    let wanted: BTreeSet<String> = if owner_expression {
+        [
+            Json::Arr(vec![]),
+            Json::Arr(vec![reference("v", "p"), reference("v", "r")]),
+            Json::Arr(vec![reference("v", "q")]),
+        ]
+        .iter()
+        .map(Json::canonical)
+        .collect()
+    } else {
+        [
+            Json::Arr(vec![reference("v", "p")]),
+            Json::Arr(vec![reference("v", "p"), reference("v", "r")]),
+        ]
+        .iter()
+        .map(Json::canonical)
+        .collect()
+    };
+    let parts = arr(f(val(evaluation), "parts"));
+    assert_eq!(parts.len(), 1);
+    let cases = arr(f(&parts[0], "children"));
+    assert_eq!(cases.len(), 3);
+    let actual: BTreeSet<_> = cases
+        .iter()
+        .map(|c| {
+            let e = target(&ns, c, &Json::str("Evaluation"));
+            val(target(
+                &ns,
+                f(val(e), "value"),
+                &ty("Set", ty("Ref", Json::str("Owned.State"))),
+            ))
+            .canonical()
+        })
+        .collect();
+    assert_eq!(actual, wanted);
+    let pairs:Vec<_>=arr(f(answer,"evidence")).iter().map(|r|ns[text(f(r,"node"))]).filter(|n|obj(n).get("value").is_some_and(|v|if let Json::Obj(m)=v{m.get("kind")}else{None}==Some(&Json::str("completion_pair")))).collect();
+    assert!(!pairs.is_empty());
+    for pair in pairs {
+        let data = f(val(pair), "data");
+        let fields = arr(f(data, "fields"));
+        assert_eq!(fields.len(), 1);
+        assert_eq!(f(&fields[0], "subject"), &Json::str(subject));
+        assert_eq!(f(&fields[0], "field"), &Json::str(field));
+        let values: BTreeSet<_> = ["first_result", "second_result"]
             .iter()
-            .map(Json::canonical)
+            .map(|key| {
+                let e = target(&ns, f(data, key), &Json::str("Evaluation"));
+                val(target(
+                    &ns,
+                    f(val(e), "value"),
+                    &ty("Set", ty("Ref", Json::str("Owned.State"))),
+                ))
+                .canonical()
+            })
             .collect();
-            assert_eq!(actual, wanted);
+        assert_eq!(values.len(), 2);
+        assert!(values.is_subset(&wanted));
+        if !owner_expression {
+            assert_eq!(values, wanted);
         }
     }
 }

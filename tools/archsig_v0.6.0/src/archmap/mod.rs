@@ -4,6 +4,26 @@
 mod canonical;
 mod complete;
 pub(crate) use complete::{FieldAssignment, check_completion_with_values};
+#[cfg(test)]
+thread_local! {
+    static MAP_VALIDATION_OBSERVER: std::cell::RefCell<Option<Box<dyn FnMut(&'static str, usize)>>> = const { std::cell::RefCell::new(None) };
+}
+#[cfg(test)]
+pub(crate) fn observe_map_validation(observer: impl FnMut(&'static str, usize) + 'static) {
+    MAP_VALIDATION_OBSERVER.with(|current| *current.borrow_mut() = Some(Box::new(observer)));
+}
+#[cfg(test)]
+pub(crate) fn clear_map_validation_observer() {
+    MAP_VALIDATION_OBSERVER.with(|current| *current.borrow_mut() = None);
+}
+#[cfg(test)]
+fn map_validation_iteration(operation: &'static str, index: usize) {
+    MAP_VALIDATION_OBSERVER.with(|current| {
+        if let Some(observer) = current.borrow_mut().as_mut() {
+            observer(operation, index);
+        }
+    });
+}
 mod model;
 mod schema;
 pub mod value;

@@ -173,6 +173,10 @@
   参照を含まない有限型の欠測slotはsnapshot・subject・fieldごとに共有し、元型の全補完域を列挙する。
   Unit/Bool/Fp、非再帰の有限Data、それらのTuple/Option/Setを扱い、各slotの型に従う直積を使う。
   単一Tuple fieldは全体を一slotとして保持し、Optionのnoneと空Setも型の値として区別する。
+  plain/Owned参照とMap、およびそれらを含む有限Tuple/Option/Set・非再帰Dataの欠測fieldも共有補完する。
+  Map候補は登録key/imageから作り、各候補を元の型・owner・既知Mapを含む入力全体の制約で検査する。
+  空始域は空表1個を持ち、未知ownerで変わる始域も同じownerの代入と共有する。
+  補完候補を原始Known Atomへ置き換えず、元slotのMissingとSourceを各caseへ接続する。
   各補完内で元の問い全体（未束縛Law parameterの全族を含む）を評価してから集約し、
   全caseで同じ既知値なら値を確定する。Lawは全case成立/全case違反を区別し、
   補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。

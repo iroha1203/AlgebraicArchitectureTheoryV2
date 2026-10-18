@@ -309,6 +309,18 @@ pub(super) fn input_json(
             Scalar::Subject {
                 snapshot, subject, ..
             } => Json::Arr(vec![Json::str(snapshot), Json::str(subject)]),
+            Scalar::Map { pairs, .. } => {
+                let mut rows = Vec::new();
+                for (key, image) in pairs {
+                    tick(control)?;
+                    rows.push(Json::Arr(vec![
+                        input_json(key, control)?,
+                        input_json(image, control)?,
+                    ]));
+                    tick(control)?;
+                }
+                Json::Arr(rows)
+            }
             Scalar::Tuple(items) | Scalar::Set { items, .. } => Json::Arr(children(items)?),
             Scalar::Option { value: None, .. } => Json::obj([("none", Json::Bool(true))]),
             Scalar::Option {

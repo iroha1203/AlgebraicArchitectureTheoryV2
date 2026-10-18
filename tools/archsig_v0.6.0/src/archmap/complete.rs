@@ -408,7 +408,9 @@ impl<'a, E: InputError> Model<'a, E> {
                 ..
             } => {
                 let mut out = Some(true);
-                for &k in keys {
+                for (_index, &k) in keys.iter().enumerate() {
+                    #[cfg(test)]
+                    super::map_validation_iteration("map_cover", _index);
                     self.checkpoint()?;
                     out = and3(out, self.member(k, *holder, family, assign)?);
                     if out == Some(false) {
