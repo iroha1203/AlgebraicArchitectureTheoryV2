@@ -147,27 +147,23 @@ impl Environment<'_> {
         pairs: &[(Scalar, Scalar)],
         values: &BTreeMap<&str, Option<&Scalar>>,
         reading: &str,
-        span: (usize, usize),
+        _span: (usize, usize),
         checks: &mut Checks,
     ) -> Result<(), ValidationFailure> {
         let Type::Owned(entity, owner_name) = ty else {
             return Err("Map所属域の元型がOwnedでない".into());
         };
         self.tick()?;
-        let unsupported = || ValidationFailure::UnsupportedExpression {
-            location: Location::Law { span },
-            feature: "未確定owner族を持つMap呼出しの全域条件".into(),
+        let Some(owner) = values.get(owner_name.as_str()).and_then(|v| *v) else {
+            checks.blocked = true;
+            return Ok(());
         };
-        let owner = values
-            .get(owner_name.as_str())
-            .and_then(|v| *v)
-            .ok_or_else(|| unsupported())?;
         let members =
             self.owned_members(entity, owner, None, reading, &mut |operation, index| {
                 #[cfg(test)]
                 if operation == "dependent_subject" {
                     data::observe_actual(
-                        span,
+                        _span,
                         self.context.get().unwrap_or_default(),
                         "owned_call_map_domain_roster",
                         index,
@@ -180,7 +176,16 @@ impl Environment<'_> {
         checks.support.extend(members.enumeration.support);
         if !members.missing.is_empty() {
             checks.missing.extend(members.missing);
-            return Err(unsupported());
+            checks.blocked = true;
+            #[cfg(test)]
+            data::observe_actual(
+                _span,
+                self.context.get().unwrap_or_default(),
+                "owned_call_map_domain_missing",
+                checks.missing.len(),
+            );
+            self.tick()?;
+            return Ok(());
         }
         let mut keys = Vec::new();
         for (key, _) in pairs {
@@ -192,7 +197,7 @@ impl Environment<'_> {
         let required = data::set(ty.erase(), &members.enumeration.values, &self.control)?;
         #[cfg(test)]
         data::observe_actual(
-            span,
+            _span,
             self.context.get().unwrap_or_default(),
             "owned_call_map_domain",
             0,

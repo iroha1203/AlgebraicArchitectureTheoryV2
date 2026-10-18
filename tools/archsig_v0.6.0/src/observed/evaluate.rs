@@ -2978,6 +2978,9 @@ mod recheck_tests {
     mod owned_map_tests {
         include!("owned_map_call_tests.rs");
     }
+    mod unknown_map_domain_tests {
+        include!("unknown_map_domain_tests.rs");
+    }
     mod partial_container_tests {
         include!("owned_partial_container_tests.rs");
     }

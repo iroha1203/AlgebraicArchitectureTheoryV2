@@ -98,6 +98,9 @@
   元署名のownerと同snapshotの原始所属事実で検査する。none・空の値はmemberを生成せず保持する。
   Map内部のOwnedも各key/imageを検査し、Owned始域は元の完全なowner族と実key集合を照合する。
   空始域の空表は保ち、非空の期待族に対する不足key集合は型付きSet<Ref>不等の条件反証へ接続する。
+  呼出しの完全始域に未知ownerがある場合も、keyに含まれないsubjectの元Missingを集め、整合する全補完で実rosterを読む。
+  既知Mapの入力制約がownerを決める場合は元Missingを保持した値を返し、補完ごとに全域条件が変わる場合は未決と条件を返す。
+  空Map、Mapを含むcontainer/返り値と自由Z/Qも同じ共有代入へ接続し、完全始域の未完成値を通常値として使わない。
   Tuple・有限List・Option・有限Set literal内で数値が未束縛/欠測でも、元Sourceの既知Owned成分を検査し、
   数値の全域軸・共有slot相関と、通常値が未生成であることを保つ。
   部分Setは元literalの出現順・重複を所属検査用に保持し、未知成分から件数・外延等値を確定しない。

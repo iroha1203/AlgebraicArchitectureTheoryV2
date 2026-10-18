@@ -556,15 +556,28 @@ fn small_owned_map_missing_table_keeps_all_four_tables_and_original_conditions()
         &mut Control::new(Limits::default(), |_| Usage::default()),
     )
     .unwrap();
-    let unprovided = evaluate_observed_bytes(
+    let w = run_input(
         i,
+        "r1",
         &["x=evaluate(Applications.mcParameter,a=@v/A,b=@v/B,m=@v/m)"],
-        &mut Control::new(Limits::default(), |_| Usage::default()),
-    )
-    .unwrap_err();
-    assert!(matches!(
-        unprovided,
-        archsig::observed::EvaluationFailure::NotImplemented { .. }
-    ));
-    assert!(unprovided.wire().is_none());
+    );
+    let a = answer(&w, "x");
+    assert_eq!(f(a, "status"), &Json::str("established"));
+    assert_eq!(
+        f(node(&w, f(f(a, "outputs"), "value")), "value"),
+        &Json::Bool(true)
+    );
+    assert!(
+        array(f(a, "reasons"))
+            .iter()
+            .filter(|r| f(r, "code") == &Json::str("missing_observation"))
+            .flat_map(|r| array(f(r, "missing")))
+            .any(|fct| f(fct, "subject") == &Json::str("p")
+                && f(fct, "field") == &Json::str("Reservations.State.owner"))
+    );
+    assert!(
+        array(f(a, "reasons"))
+            .iter()
+            .all(|r| f(r, "code") != &Json::str("condition_failed"))
+    );
 }
