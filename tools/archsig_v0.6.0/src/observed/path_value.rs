@@ -41,6 +41,12 @@ fn observed(stage: &'static str, index: usize) {
     });
 }
 impl Identity {
+    /// 空語の作用は共通 carrier 全体の恒等。reading は由来として別に照合する。
+    pub(super) fn same_action(&self, other: &Self) -> bool {
+        self.snapshot == other.snapshot
+            && self.subject == other.subject
+            && self.entity == other.entity
+    }
     pub(super) fn object(&self) -> Scalar {
         Scalar::Subject {
             snapshot: self.snapshot.clone(),

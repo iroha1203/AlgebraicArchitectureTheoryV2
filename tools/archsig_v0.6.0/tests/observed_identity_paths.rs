@@ -267,3 +267,46 @@ fn lexical_identity_and_current_provenance_preserve_the_same_math() {
         f(output(&b, "value", &path()), "scope")
     );
 }
+
+#[test]
+fn identity_math_equality_uses_endpoints_and_identity_action_across_readings() {
+    let inputs = fixture::cross_reading();
+    let r = evaluate_observed_bytes(
+        inputs.clone(),
+        &[
+            "same=evaluate(Other.mixed,x=@v/a,y=@v/a)",
+            "subject=evaluate(Other.mixed,x=@v/a,y=@v/b)",
+            "snapshot=evaluate(Other.mixed,x=@v/a,y=@w/a)",
+            "nested=evaluate(Other.nested,x=@v/a,y=@v/a)",
+            "different=evaluate(Other.different_term,x=@v/a)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete");
+    assert_eq!(r.prepared().inputs().sources(), &inputs);
+    let j = r.wire();
+    for (id, expected) in [
+        ("same", true),
+        ("subject", false),
+        ("snapshot", false),
+        ("nested", true),
+        ("different", false),
+    ] {
+        let n = output(&j, id, &Json::str("Bool"));
+        assert_eq!(f(n, "value"), &Json::Bool(expected), "{id}");
+        let readings = array(f(f(n, "scope"), "readings"));
+        for reading in ["Walk", "Other"] {
+            assert!(readings.contains(&Json::str(reading)), "{id} {reading}");
+        }
+    }
+    let readings: std::collections::BTreeSet<_> = array(f(&j, "nodes"))
+        .iter()
+        .filter(|n| f(n, "type") == &path())
+        .map(|n| text(f(f(n, "value"), "reading")))
+        .collect();
+    assert_eq!(
+        readings,
+        std::collections::BTreeSet::from(["Other", "Walk"])
+    );
+}

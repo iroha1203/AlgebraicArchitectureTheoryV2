@@ -44,3 +44,34 @@ pub fn custom(body: &str, moved: bool) -> InputSources {
         map.into_bytes(),
     )
 }
+
+/// 同じ定義と原始対象を使い、呼出し先と呼出し元の reading を分ける。
+pub fn cross_reading() -> InputSources {
+    let original = input(false);
+    let mut law = String::from_utf8(original.law().bytes().to_vec()).unwrap();
+    let import = law
+        .lines()
+        .find(|line| line.starts_with("use vocabulary "))
+        .unwrap()
+        .to_owned();
+    law.push_str(&format!(
+        r#"
+reading Other {{
+{import}
+use Walk as O;
+view mixed(x:Node,y:Node):Bool=(O.id(x),fn(z:Z)=>z)=(identity(y),fn(z:Z)=>z);
+view nested(x:Node,y:Node):Bool=some(list<(Path<Node,Node>,Term<(Z)->Z>)>[(O.id(x),fn(z:Z)=>z)])=some(list<(Path<Node,Node>,Term<(Z)->Z>)>[(identity(y),fn(t:Z)=>t+0)]);
+view different_term(x:Node):Bool=(O.id(x),fn(z:Z)=>z)=(identity(x),fn(z:Z)=>z+1);
+}}
+"#
+    ));
+    InputSources::from_bytes(
+        original
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        law.into_bytes(),
+        original.archmap().bytes().to_vec(),
+    )
+}

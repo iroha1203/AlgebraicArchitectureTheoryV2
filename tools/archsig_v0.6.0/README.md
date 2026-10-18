@@ -56,6 +56,7 @@
   域外の実keyはkey集合への追加前後の等値を反証し、検査可能な条件とcondition_failedを残して値を生成しない。
   欠測Map/参照は元missingを保持し、元入力の参照・owner・全域性制約に整合する共有補完を使う。
   entity参照のidentityは、reading・同じ始終点・空の生成元列を持つPath値を返し、source/targetは元entity参照を返す。
+  恒等Pathの数学的等値は始終点と共通carrier上の恒等作用を比較し、readingは由来として保持・再検査する。
   Pathを含むList/Tuple/Optionは、入れ子の各成分を実argumentsから到達する型付き既出Refで表示する。
   原始containerのinline表示を保ち、let/if/view呼出しでも元の式・束縛・支持・Scopeを再検査する。
   生成射のPath構成・合成・それらの実作用比較は後続の実装単位で扱う。

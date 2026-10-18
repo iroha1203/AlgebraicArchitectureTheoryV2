@@ -111,6 +111,53 @@ fn identity_path_recheck_rejects_missing_foreign_arguments_support_scope_and_typ
     mutated_path(&[4, 5, 6, 7, 8]);
 }
 #[test]
+fn identity_recheck_rejects_another_valid_reading_despite_same_action() {
+    let r = evaluate_observed_bytes(
+        fixture::cross_reading(),
+        &["same=evaluate(Other.mixed,x=@v/a,y=@v/a)"],
+        &mut named_call_quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete");
+    let index = r
+        .nodes
+        .iter()
+        .position(|n| {
+            matches!(
+                &n.payload, Some(Payload::Scalar(Scalar::Path(p))) if p.reading=="Walk"
+            )
+        })
+        .unwrap();
+    let original = &r.nodes[index];
+    let mut bad = original.clone();
+    path_mut(&mut bad).reading = "Other".into();
+    let (Some(Payload::Scalar(a)), Some(Payload::Scalar(b))) = (&original.payload, &bad.payload)
+    else {
+        panic!()
+    };
+    assert_ne!(a, b);
+    assert!(super::super::super::data::equal(a, b, &named_call_quiet()).unwrap());
+    let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes[..index]).unwrap();
+    graph.active = r.contexts[index];
+    let e = environment(&r);
+    e.validate(&graph, original).unwrap();
+    assert!(matches!(
+        e.validate(&graph, &bad),
+        Err(ValidationFailure::Internal(_))
+    ));
+    assert!(matches!(
+        environment(&r).validate(&graph, &bad),
+        Err(ValidationFailure::Internal(_))
+    ));
+    e.validate(&graph, original).unwrap();
+    let mut all = r.nodes.clone();
+    all[index] = bad;
+    assert!(matches!(
+        rebuild_for_origin_and_support_recheck(&r, &all),
+        Err(ValidationFailure::Internal(_))
+    ));
+}
+#[test]
 fn nonprimitive_container_requires_the_same_typed_prior_value() {
     let r = example();
     let index = r

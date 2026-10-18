@@ -637,7 +637,7 @@ pub(super) fn equal(
             return Err("構造等値の元型が違う".into());
         }
         let equal = match (left, right) {
-            (Scalar::Path(a), Scalar::Path(b)) => a == b,
+            (Scalar::Path(a), Scalar::Path(b)) => a.same_action(b),
             // 同じ元programならifの両枝で同じ値を保持できる。
             // LawのTerm等値はsupports_binaryで別に判定する。
             (Scalar::Term(a), Scalar::Term(b)) => a == b,
