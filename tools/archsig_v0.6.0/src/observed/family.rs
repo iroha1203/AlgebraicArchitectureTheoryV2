@@ -58,6 +58,26 @@ impl Environment<'_> {
         for p in params {
             self.tick()?;
             dependent |= p.ty != p.ty.erase();
+            if p.ty != p.ty.erase()
+                && request
+                    .constraints
+                    .iter()
+                    .any(|c| c.parameter == p.name && c.dynamic)
+                && request.arguments.iter().any(|argument| {
+                    argument.name == format!("bind.{}", p.name)
+                        && (matches!(argument.value, Selector::Answer { .. })
+                            || matches!(&p.ty, Type::Owned(_, owner)
+                                if request.arguments.iter().any(|owner_argument|
+                                    owner_argument.name == format!("bind.{owner}")
+                                    && matches!(owner_argument.value, Selector::Answer { .. }))))
+                })
+            {
+                // 固定値の所属不適合を空の全称域に変えない。元入力再検査も同じ境界を使う。
+                return Err(ValidationFailure::UnsupportedExpression {
+                    location: Location::Law { span: p.span },
+                    feature: "依存Law族の固定Owned束縛の動的所属制約".into(),
+                });
+            }
         }
         if dependent && let Some(p) = numeric.first() {
             return Err(ValidationFailure::UnsupportedExpression {

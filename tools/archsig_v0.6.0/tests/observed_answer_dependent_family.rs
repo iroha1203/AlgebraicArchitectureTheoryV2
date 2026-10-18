@@ -501,3 +501,65 @@ fn answer_owner_families_still_reject_static_invalid_bindings_before_nodes() {
         assert!(arr(f(&wire, "answers")).is_empty());
     }
 }
+
+#[test]
+fn answer_owner_fixed_owned_constraints_remain_not_implemented_instead_of_vacuous_truth() {
+    use archsig::{
+        issue::Location,
+        law::model::Signature,
+        observed::{EvaluationFailure, evaluate_observed, prepare_observed},
+    };
+    for selector in [
+        "$owner.value",
+        "$owner.evaluation.value",
+        "$owners.value[0]",
+        "$owners.evaluation.value[0]",
+    ] {
+        for child in ["r", "p"] {
+            let take = format!("take=check(Reservations.adFixedMember,a={selector},p=@v/{child})");
+            let asks = [
+                take.as_str(),
+                "owner=evaluate(Reservations.adOwner,a=@v/A)",
+                "owners=evaluate(Reservations.adOwners,a=@v/A,b=@v/B)",
+            ];
+            let mut control = quiet();
+            let prepared =
+                prepare_observed(fixture::input(false, false, "r1"), &asks, &mut control).unwrap();
+            assert!(
+                prepared.requests().requests()[0]
+                    .constraints
+                    .iter()
+                    .any(|c| c.parameter == "p" && c.dynamic)
+            );
+            let Signature::Law { params, .. } =
+                &prepared.inputs().law().declarations["Reservations.adFixedMember"].signature
+            else {
+                panic!()
+            };
+            let span = params.iter().find(|p| p.name == "p").unwrap().span;
+            match evaluate_observed(prepared, &mut control) {
+                Err(EvaluationFailure::NotImplemented {
+                    declaration,
+                    location,
+                    feature,
+                }) => {
+                    assert_eq!(declaration, "Reservations.adFixedMember");
+                    assert_eq!(location, Location::Law { span });
+                    assert_eq!(feature, "依存Law族の固定Owned束縛の動的所属制約");
+                }
+                Ok(result) => {
+                    let wire = result.wire();
+                    panic!(
+                        "unresolved fixed Owned binding {child} returned {} / {:?}",
+                        result.status(),
+                        f(answer(&wire, "take"), "status")
+                    );
+                }
+                Err(error) => panic!(
+                    "unexpected: {:?}",
+                    error.wire().as_ref().map(|w| f(w, "issues"))
+                ),
+            }
+        }
+    }
+}

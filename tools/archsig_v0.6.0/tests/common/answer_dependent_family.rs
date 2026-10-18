@@ -17,6 +17,7 @@ view adCompletionOwner(a:System,p:State):System=if p.free-p.free=0 then a else a
 view adUnknownOwner(p:State):System=p.owner;
 view adOpaque():Bool=(fn(z:Z)=>z*z)=(fn(z:Z)=>z*z+0);
 law required adOwned(a:System,p:State[a]):p=p;
+law required adFixedMember(a:System,p:State[a],flag:Bool):false;
 law required adFixed(a:System,flag:Bool,f:Option<State[a]>):if flag then f=f else false;
 law required adScalar(a:System,n:Z,f:Option<State[a]>):n=0;
 law required adBool(a:System,flag:Bool,f:Option<State[a]>):flag;
