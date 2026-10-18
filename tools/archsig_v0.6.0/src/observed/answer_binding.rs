@@ -49,6 +49,63 @@ impl Environment<'_> {
         if value.0 >= self.cutoff.get() {
             return Err("Answer束縛の値が既出prefixにない".into());
         }
+        if let Rule::OwnedBinding(parameter) = &graph.get(value)?.rule
+            && graph.context_at(value.0).request == self.current_context(graph).request
+        {
+            let request = self
+                .original_requests
+                .and_then(|rs| rs.get(self.current_context(graph).request))
+                .ok_or("所属束縛の元Requestがない")?;
+            let d = &self.inputs.law().declarations[request.declaration()];
+            let params = match &d.signature {
+                crate::law::model::Signature::View { params, .. }
+                | crate::law::model::Signature::Law { params, .. } => params,
+                _ => return Err("所属束縛の元署名がない".into()),
+            };
+            if !params
+                .iter()
+                .any(|p| &p.name == parameter && p.span == span)
+            {
+                return Err("所属束縛を別parameterへ転用した".into());
+            }
+            self.validate_at(graph, graph.get(value)?, value.0)?;
+            let original = *graph
+                .get(value)?
+                .arguments
+                .first()
+                .ok_or("所属束縛の元Refがない")?;
+            return self.answer_binding_original_matches(graph, selector, original, span);
+        }
+        if let Some(request) = self
+            .original_requests
+            .and_then(|r| r.get(self.current_context(graph).request))
+        {
+            let d = &self.inputs.law().declarations[request.declaration()];
+            let params = match &d.signature {
+                crate::law::model::Signature::View { params, .. }
+                | crate::law::model::Signature::Law { params, .. } => params,
+                _ => return Err("元束縛の署名がない".into()),
+            };
+            if params
+                .iter()
+                .any(|p| p.span == span && Self::fixed_owned_binding(request, p))
+            {
+                return Err("動的Ownedの所属検査済み束縛がない".into());
+            }
+        }
+        self.answer_binding_original_matches(graph, selector, value, span)
+    }
+
+    pub(in crate::observed) fn answer_binding_original_matches(
+        &self,
+        graph: &Graph,
+        selector: &Selector,
+        value: NodeRef,
+        span: (usize, usize),
+    ) -> Result<(), ValidationFailure> {
+        if value.0 >= self.cutoff.get() {
+            return Err("元Answer束縛の値が未出".into());
+        }
         match self.answer_binding(graph, selector, span)? {
             AnswerBinding::Reference(original) if original == value => {}
             AnswerBinding::Projection(expected) if graph.get(value)? == &expected => {

@@ -354,6 +354,7 @@ impl Evaluator<'_, '_> {
                         self.tick(Checkpoint::FiniteIteration)?;
                         if constraint.parameter == p.name
                             && constraint.dynamic
+                            && !Environment::fixed_owned_binding(self.request, p)
                             && !(defer_owned && matches!(p.ty, Type::Owned(..)))
                         {
                             return Err(self.unsupported(p.span, "動的 owner 制約の評価"));
@@ -380,6 +381,16 @@ impl Evaluator<'_, '_> {
                         }],
                         scope,
                     )?;
+                    let r = if let Some(node) =
+                        self.environment
+                            .owned_binding_node(self.graph, self.request, p, r)?
+                    {
+                        let value = self.push(node)?;
+                        self.base.merge(&self.graph.get(value)?.scope);
+                        value
+                    } else {
+                        r
+                    };
                     self.bindings.push(Binding {
                         name: p.name.clone(),
                         value: r,
@@ -388,6 +399,7 @@ impl Evaluator<'_, '_> {
                 }
                 Selector::Answer { .. } => {
                     if p.ty != p.ty.erase()
+                        && !Environment::fixed_owned_binding(self.request, p)
                         && self
                             .request
                             .constraints
@@ -417,6 +429,14 @@ impl Evaluator<'_, '_> {
                         super::environment::AnswerBinding::Inapplicable(_) => {
                             return Err(self.unsupported(p.span, "自由族のAnswer射影条件"));
                         }
+                    };
+                    let value = if let Some(node) =
+                        self.environment
+                            .owned_binding_node(self.graph, self.request, p, value)?
+                    {
+                        self.push(node)?
+                    } else {
+                        value
                     };
                     self.base.merge(&self.graph.get(value)?.scope);
                     self.bindings.push(Binding {
@@ -2863,6 +2883,9 @@ fn evaluate_observed_with_validator(
 mod recheck_tests {
     use super::*;
     use crate::canonical::Json;
+    mod owned_binding_tests {
+        include!("owned_binding_tests.rs");
+    }
     mod answer_dependent_family_tests {
         include!("answer_dependent_family_tests.rs");
     }

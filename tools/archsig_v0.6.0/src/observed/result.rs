@@ -783,6 +783,7 @@ pub(crate) enum Rule {
         parameter: String,
         part: ProjectionCheckPart,
     },
+    OwnedBinding(String),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum ProjectionCheckPart {
@@ -806,6 +807,10 @@ impl ProjectionCheckPart {
 impl Rule {
     fn wire(&self) -> Json {
         match self {
+            Self::OwnedBinding(_) => Json::obj([
+                ("kind", Json::str("construction")),
+                ("name", Json::str("binding")),
+            ]),
             Self::ProjectionCheck { part, .. } => Json::obj([
                 ("kind", Json::str("construction")),
                 ("name", Json::str(part.construction())),
@@ -1657,10 +1662,10 @@ impl Graph {
                     if !matches!(
                         proposition.payload,
                         Some(Payload::ProjectionCondition { .. })
-                    ) || !proposition
+                    ) || proposition
                         .arguments
-                        .first()
-                        .is_some_and(|root| reason.dependencies == [*root])
+                        .get(..proposition.arguments.len().saturating_sub(2))
+                        != Some(reason.dependencies.as_slice())
                         || !reason.missing.is_empty()
                     {
                         return Err("射影条件失敗の元命題・依存が違う".into());

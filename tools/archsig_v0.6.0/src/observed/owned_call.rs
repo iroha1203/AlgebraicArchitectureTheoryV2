@@ -257,7 +257,7 @@ impl Environment<'_> {
         }
     }
 
-    fn owned_reference_check(
+    pub(in crate::observed) fn owned_reference_check(
         &self,
         ty: &Type,
         value: Option<&Scalar>,

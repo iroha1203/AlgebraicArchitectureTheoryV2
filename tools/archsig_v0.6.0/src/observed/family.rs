@@ -59,6 +59,7 @@ impl Environment<'_> {
             self.tick()?;
             dependent |= p.ty != p.ty.erase();
             if p.ty != p.ty.erase()
+                && !Self::fixed_owned_binding(request, p)
                 && request
                     .constraints
                     .iter()
@@ -278,6 +279,7 @@ impl Environment<'_> {
         }
         for (p, b) in fixed.iter().zip(bindings) {
             self.tick()?;
+            self.require_owned_binding(graph, request, p, b.value)?;
             if p.name != b.name || p.ty.erase() != b.ty {
                 return Err("族Source固定署名が違う".into());
             }

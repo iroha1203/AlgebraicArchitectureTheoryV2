@@ -32,6 +32,8 @@ pub(super) mod family;
 mod map_application;
 #[path = "numeric_slots.rs"]
 mod numeric_slots;
+#[path = "owned_binding.rs"]
+pub(super) mod owned_binding;
 #[path = "owned_call.rs"]
 pub(super) mod owned_call;
 #[path = "owned_family.rs"]
@@ -937,6 +939,9 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
+        if self.validate_owned_binding(graph, node, limit)? {
+            return Ok(());
+        }
         if self.validate_projection_check(graph, node, limit)? {
             return Ok(());
         }
@@ -3807,6 +3812,7 @@ impl<'a> Environment<'a> {
         }
         for (parameter, binding) in params.iter().zip(bindings) {
             self.tick()?;
+            self.require_owned_binding(graph, request, parameter, binding.value)?;
             if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
                 return Err("Requestのparameter署名がAnswerと違う".into());
             }
@@ -6127,6 +6133,11 @@ impl<'a> Environment<'a> {
                     return Err("評価範囲の元parameter署名が違う".into());
                 }
                 let value = graph.scalar(binding.value)?;
+                let request = graph
+                    .requests
+                    .get(self.current_context(graph).request)
+                    .ok_or("元束縛Requestがない")?;
+                self.require_owned_binding(graph, request, parameter, binding.value)?;
                 let selector = graph
                     .requests
                     .get(self.current_context(graph).request)
@@ -6173,7 +6184,15 @@ impl<'a> Environment<'a> {
                 if &actual.ty != entity || value.ty() != binding.ty {
                     return Err("評価範囲の束縛subject型が違う".into());
                 }
-                let subject_scope = self.scope(actual, &declaration.reading, None)?;
+                let owned = matches!(graph.get(binding.value)?.rule, Rule::OwnedBinding(_));
+                if owned {
+                    self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
+                }
+                let subject_scope = if owned {
+                    graph.get(binding.value)?.scope.clone()
+                } else {
+                    self.scope(actual, &declaration.reading, None)?
+                };
                 if graph.get(binding.value)?.scope != subject_scope {
                     return Err("束縛subject値の範囲が元宣言・subject由来と違う".into());
                 }
@@ -6188,7 +6207,11 @@ impl<'a> Environment<'a> {
                         affine: None,
                         scope: base.clone(),
                         known_value: Some(value.clone()),
-                        support: self.subject_support(value)?,
+                        support: if owned {
+                            graph.get(binding.value)?.support.clone()
+                        } else {
+                            self.subject_support(value)?
+                        },
                         scalar_scope: Some(subject_scope),
                     },
                 );
@@ -6207,7 +6230,16 @@ impl<'a> Environment<'a> {
                         .ok_or("Requestの元束縛がない")?;
                     match (&arg.value, graph.scalar(binding.value)?) {
                         (selector @ Selector::Answer { .. }, _) => {
-                            self.answer_binding_matches(graph, selector, binding.value, span)?;
+                            let parameter = params
+                                .iter()
+                                .find(|p| p.name == binding.name)
+                                .ok_or("元Source束縛のparameterがない")?;
+                            self.answer_binding_matches(
+                                graph,
+                                selector,
+                                binding.value,
+                                parameter.span,
+                            )?;
                         }
                         (
                             Selector::Subject { snapshot, subject },
