@@ -3916,9 +3916,9 @@ impl Graph {
             | (NodeType::Evidence, Some(Payload::ProjectionCounterexample { .. })) => {
                 self.projection_check_shape(&node)?;
             }
-            (NodeType::Domain, Some(Payload::TypeDomain { ty })) => {
-                if !matches!(ty, Type::Z | Type::Q) || !node.scope.assignments {
-                    return Err("型全域DomainがZ/Q全代入域でない".into());
+            (NodeType::Domain, Some(Payload::TypeDomain { .. })) => {
+                if !node.scope.assignments {
+                    return Err("型全域Domainが元全代入域でない".into());
                 }
                 let [source] = node.arguments.as_slice() else {
                     return Err("型全域Domainに元Sourceがない".into());

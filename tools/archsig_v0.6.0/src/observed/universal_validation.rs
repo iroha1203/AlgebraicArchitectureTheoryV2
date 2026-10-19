@@ -20,7 +20,7 @@ struct LocalQuantifier {
     template: NodeRef,
     plan: UniversalPlan,
     domains: Vec<NodeRef>,
-    parameter: affine::Parameter,
+    parameter: UniversalParameter,
 }
 
 struct LocalEvaluation {
@@ -975,7 +975,7 @@ impl Environment<'_> {
                 }
             }
             if node.arguments != [template]
-                || *ty != local.parameter.kind.ty()
+                || *ty != local.parameter.ty.clone()
                 || self.current_context(graph) != local.parameter.context
                 || graph.context_at(template.0) != self.current_context(graph)
             {
@@ -1005,7 +1005,7 @@ impl Environment<'_> {
             .get(prior)
             .ok_or("全域型Domainに元binderがない")?;
         if node.arguments != [template]
-            || *ty != parameter.kind.ty()
+            || *ty != parameter.ty.clone()
             || self.current_context(graph) != parameter.context
         {
             return Err("全域型Domainの型・順序・binder・Contextが違う".into());
@@ -1747,7 +1747,7 @@ impl Environment<'_> {
             let mut operand_types = plan
                 .parameters
                 .iter()
-                .map(|parameter| parameter.kind.ty())
+                .map(|parameter| parameter.ty.clone())
                 .collect::<Vec<_>>();
             operand_types.dedup();
             let request = graph
@@ -2537,7 +2537,9 @@ impl Environment<'_> {
             && self
                 .expressions
                 .get(span)
-                .is_some_and(|id| self.universal_finite_syntax(*id))
+                .map(|id| self.universal_finite_syntax(*id))
+                .transpose()?
+                .unwrap_or(false)
             && self
                 .universal_source_root(graph, source)?
                 .is_some_and(|template| template != source)
@@ -2752,7 +2754,7 @@ impl Environment<'_> {
                 self.tick()?;
                 if self.expressions.get(&expression.span) == Some(&id)
                     && self.inputs.law().expr_type(id).is_some()
-                    && self.universal_finite_syntax(id)
+                    && self.universal_finite_syntax(id)?
                     && expression.span.0 <= span.0
                     && span.1 <= expression.span.1
                 {
@@ -2900,6 +2902,72 @@ impl Environment<'_> {
             return Ok(None);
         }
         self.universal_source_context(graph, source).map(Some)
+    }
+    pub(in crate::observed) fn universal_opaque_reason(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        children: &[NodeRef],
+        value: Option<NodeRef>,
+    ) -> Result<Option<Reason>, ValidationFailure> {
+        self.tick()?;
+        if value.is_some() {
+            return Ok(None);
+        }
+        let span = self.expression_span(graph, source)?;
+        let Some(&id) = self.expressions.get(&span) else {
+            return Ok(None);
+        };
+        let ExprKind::Quant {
+            split:
+                QuantSplit::Fixed {
+                    domain: QuantDomain::Type(_),
+                    ..
+                },
+            ..
+        } = &self.inputs.law().exprs[id].kind
+        else {
+            return Ok(None);
+        };
+        let ty = self.inputs.law().quantifier_types[id]
+            .as_ref()
+            .ok_or("無限型量化の元型がない")?;
+        if number(ty).is_some() || !self.universal_symbolic_type(ty)? {
+            return Ok(None);
+        }
+        let Some(template) = self.universal_source_root(graph, source)? else {
+            return Ok(None);
+        };
+        if template == source {
+            return Ok(None);
+        }
+        for child in children {
+            self.tick()?;
+            if graph
+                .get(*child)?
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+            {
+                return Ok(None);
+            }
+        }
+        // 値と各実子は呼び出し側が元Source分析へ照合する。ここは理由の帰属を作る。
+        let request = graph
+            .requests
+            .get(self.current_context(graph).request)
+            .ok_or("無限型量化の元Requestがない")?;
+        Ok(Some(Reason {
+            kind: ReasonKind::UnsupportedAlgorithm {
+                question: request.kind,
+                operand_types: vec![ty.clone()],
+                method: "non-numeric infinite quantified decision".into(),
+            },
+            request: request.id.clone(),
+            dependencies: vec![source],
+            missing: vec![],
+            location: Some(Location::Law { span }),
+        }))
     }
     pub(in crate::observed) fn universal_source_context(
         &self,
@@ -3051,7 +3119,7 @@ impl Environment<'_> {
             if !bindings
                 .iter()
                 .any(|binding| binding.name == parameter.name)
-                && !matches!(parameter.ty, Type::Z | Type::Q)
+                && !self.universal_symbolic_type(&parameter.ty.erase())?
             {
                 return Ok(true);
             }
@@ -3099,7 +3167,7 @@ impl Environment<'_> {
                     .any(|binding| binding.name == parameter.name)
                 {
                     unbound = true;
-                    all_numeric &= matches!(parameter.ty, Type::Z | Type::Q);
+                    all_numeric &= self.universal_symbolic_type(&parameter.ty.erase())?;
                 }
             }
             if unbound && all_numeric {
@@ -3648,7 +3716,7 @@ impl Environment<'_> {
         }
         for (_, ty) in parameters {
             self.tick()?;
-            if !matches!(ty, Type::Z | Type::Q) {
+            if !self.universal_symbolic_type(ty)? {
                 return Ok(None);
             }
         }

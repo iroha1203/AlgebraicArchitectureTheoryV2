@@ -8,7 +8,6 @@ use archsig::{
         model::Signature,
     },
     observed::{
-        EvaluationFailure,
         control::{Checkpoint, Control, Limits, Usage},
         evaluate_observed_bytes,
         input::{CheckedInputs, InputSources, check_inputs},
@@ -250,8 +249,45 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             );
         }
         if f(n, "type") == &Json::str("Expression") && f(val(n), "kind") == &Json::str("source") {
-            assert!(arr(f(val(n), "parameters")).is_empty());
             let at = span(f(val(n), "location"));
+            let mut lexical = vec![];
+            for expr in &checked.law().exprs {
+                let ExprKind::Quant {
+                    var,
+                    split:
+                        QuantSplit::Fixed {
+                            domain: QuantDomain::Type(_),
+                            body,
+                        },
+                    ..
+                } = &expr.kind
+                else {
+                    continue;
+                };
+                let body = checked.law().exprs[*body].span;
+                if body.0 <= at.0 && at.1 <= body.1 {
+                    if let Some(q) = arr(f(f(n, "scope"), "quantifiers")).iter().find(|q| {
+                        f(q, "name") == &Json::str(&var.name)
+                            && obj(q).get("domain").is_some_and(|d| {
+                                f(val(target(&ns, d, &Json::str("Domain"))), "kind")
+                                    == &Json::str("type")
+                            })
+                    }) {
+                        lexical.push((
+                            expr.span.0,
+                            Json::obj([
+                                ("name", Json::str(&var.name)),
+                                ("type", f(q, "type").clone()),
+                            ]),
+                        ));
+                    }
+                }
+            }
+            lexical.sort_by_key(|(start, _)| *start);
+            assert_eq!(
+                f(val(n), "parameters"),
+                &Json::Arr(lexical.into_iter().map(|(_, p)| p).collect())
+            );
             assert_eq!(span(f(f(n, "rule"), "location")), at);
             assert!(at.0 < at.1 && at.1 <= checked.sources().law().bytes().len());
         }
@@ -1035,7 +1071,7 @@ law required decisive_law(s: Sample): forall b:Bool . if b then false else s.fla
 }
 
 #[test]
-fn infinite_type_quantifiers_remain_not_implemented() {
+fn infinite_type_quantifiers_keep_constant_values_and_original_type_domains() {
     let script = r#"
 view integers(s: Sample): Bool = forall unused:Z . s.zero=0;
 view rationals(): Bool = forall unused:Q . true;
@@ -1223,25 +1259,39 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
             }
             continue;
         }
-        let error = evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet()).unwrap_err();
-        assert!(
-            error.wire().is_none(),
-            "{name}:対象外型全域を公開unsupported/未決へ変えない"
-        );
-        let EvaluationFailure::NotImplemented {
-            declaration,
-            location: archsig::issue::Location::Law { span },
-            feature,
-        } = error
-        else {
-            panic!("{name}:専用NotImplemented")
+        let wire = evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet())
+            .unwrap()
+            .wire();
+        audit(&wire, &checked);
+        assert_eq!(f(&wire, "status"), &Json::str("complete"));
+        output(&wire, "a", &Json::str("Bool"), Json::Bool(name != "texts"));
+        let ns = index(&wire);
+        let evaluation = root(&wire, "a");
+        let original = declared_body(&checked, &format!("Calc.{name}"));
+        let expected = match name {
+            "texts" => Json::str("Text"),
+            "lists" => ty("List", Json::str("Bool")),
+            "recursive" => ty("Data", Json::str("FiniteTypes.Tree")),
+            "infinite_payload" => ty("Data", Json::str("FiniteTypes.Infinite")),
+            _ => unreachable!(),
         };
-        assert_eq!(declaration, format!("Calc.{name}"));
+        let qs = arr(f(f(evaluation, "scope"), "quantifiers"));
+        assert_eq!(qs.len(), 1);
+        assert_eq!(f(&qs[0], "name"), &Json::str("unused"));
         assert_eq!(
-            span,
-            checked.law().exprs[declared_body(&checked, &declaration)].span
+            f(&qs[0], "kind"),
+            &Json::str(if name == "texts" { "exists" } else { "forall" })
         );
-        assert!(!feature.is_empty());
+        assert_eq!(f(&qs[0], "type"), &expected);
+        let domain = target(&ns, f(&qs[0], "domain"), &Json::str("Domain"));
+        assert_eq!(f(val(domain), "kind"), &Json::str("type"));
+        assert_eq!(f(val(domain), "type"), &expected);
+        assert!(!obj(val(domain)).contains_key("elements"));
+        assert_eq!(
+            span(f(val(expression(&ns, evaluation)), "location")),
+            checked.law().exprs[original].span
+        );
+        assert!(!arr(f(evaluation, "evidence")).is_empty());
     }
 }
 

@@ -2937,6 +2937,9 @@ fn evaluate_observed_with_validator(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    mod infinite_domain_tests {
+        include!("infinite_domain_tests.rs");
+    }
     mod infinite_quantifier_tests {
         include!("infinite_quantifier_tests.rs");
     }

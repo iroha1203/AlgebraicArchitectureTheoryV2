@@ -799,6 +799,17 @@ impl<'a> Environment<'a> {
         if let Some(reason) = self.term_algorithm_reason(graph, expression, children)? {
             reasons.push(reason);
         }
+        if let Some(reason) = self.universal_opaque_reason(
+            graph,
+            expression,
+            children,
+            match &node.payload {
+                Some(Payload::Evaluation { value, .. }) => *value,
+                _ => return Err("算法理由の対象がEvaluationでない".into()),
+            },
+        )? {
+            reasons.push(reason);
+        }
         if let Some(reason) = self.owned_call_condition_reason(
             graph,
             expression,
@@ -4578,17 +4589,20 @@ impl<'a> Environment<'a> {
                 && law.exprs[*body].span.0 <= span.0
                 && span.1 <= law.exprs[*body].span.1
             {
-                let symbolic =
-                    matches!(
-                        &expression.kind,
-                        ExprKind::Quant {
-                            split: crate::law::ast::QuantSplit::Fixed {
-                                domain: crate::law::ast::QuantDomain::Type(_),
-                                ..
-                            },
+                let symbolic = matches!(
+                    &expression.kind,
+                    ExprKind::Quant {
+                        split: crate::law::ast::QuantSplit::Fixed {
+                            domain: crate::law::ast::QuantDomain::Type(_),
                             ..
-                        }
-                    ) && matches!(law.quantifier_types[id].as_ref(), Some(Type::Z | Type::Q));
+                        },
+                        ..
+                    }
+                ) && self.universal_symbolic_type(
+                    law.quantifier_types[id]
+                        .as_ref()
+                        .ok_or("元量化binder型がない")?,
+                )?;
                 enclosing.push((
                     expression.span.0,
                     var.name.clone(),

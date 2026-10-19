@@ -10,12 +10,30 @@ mod finite_decision;
 #[path = "universal_validation.rs"]
 pub(super) mod validation;
 
+// 数値の係数軸と、列挙できない元型の量化軸を区別する。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct UniversalParameter {
+    pub binder: (usize, usize),
+    pub name: String,
+    pub context: super::super::call::Context,
+    pub ty: Type,
+}
+impl UniversalParameter {
+    fn affine_parameter(&self) -> Option<Parameter> {
+        Some(Parameter {
+            binder: self.binder,
+            name: self.name.clone(),
+            context: self.context,
+            kind: number(&self.ty)?,
+        })
+    }
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct UniversalPlan {
     pub template_span: (usize, usize),
     pub body: usize,
     pub guard: Option<usize>,
-    pub parameters: Vec<Parameter>,
+    pub parameters: Vec<UniversalParameter>,
     pub family: bool,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -34,7 +52,7 @@ pub(in crate::observed) struct AnalysisContext {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct LocalAxis {
-    pub parameter: Parameter,
+    pub parameter: UniversalParameter,
     pub domain: Option<NodeRef>,
     pub actual: bool,
 }
@@ -72,7 +90,7 @@ impl Environment<'_> {
     // Law自由parameterは全代入だが、明示existsを全称軸へ変えない。
     fn universal_parameter_quantifier_kind(
         &self,
-        parameter: &Parameter,
+        parameter: &UniversalParameter,
     ) -> Result<QuantKind, ValidationFailure> {
         for expression in &self.inputs.law().exprs {
             self.tick()?;
@@ -108,20 +126,32 @@ impl Environment<'_> {
         plan: &UniversalPlan,
         guard_value: Option<bool>,
     ) -> Result<&'static str, ValidationFailure> {
-        Ok(if self.universal_has_exists(plan)? {
-            "Z/Q existential quantified decision"
-        } else if plan.guard.is_some() && guard_value.is_none() {
-            "parameter-dependent conditional affine equality"
-        } else {
-            "non-affine universal equality"
-        })
+        Ok(
+            if plan
+                .parameters
+                .iter()
+                .any(|p| p.affine_parameter().is_none())
+            {
+                "non-numeric infinite quantified decision"
+            } else if self.universal_has_exists(plan)? {
+                "Z/Q existential quantified decision"
+            } else if plan.guard.is_some() && guard_value.is_none() {
+                "parameter-dependent conditional affine equality"
+            } else {
+                "non-affine universal equality"
+            },
+        )
     }
     fn universal_closed_parameters(
         &self,
         plan: &UniversalPlan,
         predicate: &AffinePredicate,
     ) -> Result<Vec<Parameter>, ValidationFailure> {
-        let mut parameters = plan.parameters.clone();
+        let mut parameters: Vec<Parameter> = plan
+            .parameters
+            .iter()
+            .filter_map(UniversalParameter::affine_parameter)
+            .collect();
         for bound in &predicate.bound_axes {
             self.tick()?;
             if !parameters.contains(bound) {
@@ -323,7 +353,9 @@ impl Environment<'_> {
         let ty = self.inputs.law().quantifier_types[id]
             .as_ref()
             .ok_or("局所全称型がない")?;
-        let kind = number(ty).ok_or("局所全称が数値型でない")?;
+        if !self.universal_symbolic_type(ty)? {
+            return Err("局所型Domainが有限型である".into());
+        }
         let context = graph.context_at(header.0);
         if graph.context_at(domain.0) != context
             || header.0 >= domain.0
@@ -339,11 +371,11 @@ impl Environment<'_> {
             return Err("局所全称Domainの元binder・型・実Contextが違う".into());
         }
         Ok(LocalAxis {
-            parameter: Parameter {
+            parameter: UniversalParameter {
                 binder: var.span,
                 name: var.name.clone(),
                 context,
-                kind,
+                ty: ty.clone(),
             },
             domain: Some(domain),
             actual: true,
@@ -437,7 +469,7 @@ impl Environment<'_> {
         template: NodeRef,
         domains: &[NodeRef],
         id: usize,
-    ) -> Result<Option<Parameter>, ValidationFailure> {
+    ) -> Result<Option<UniversalParameter>, ValidationFailure> {
         self.universal_check_domains(graph, template, domains, plan)?;
         let ExprKind::Quant {
             var,
@@ -451,22 +483,22 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let Some(kind) = self.inputs.law().quantifier_types[id]
+        let ty = self.inputs.law().quantifier_types[id]
             .as_ref()
-            .and_then(number)
-        else {
+            .ok_or("局所型がない")?;
+        if !self.universal_symbolic_type(ty)? {
             return Ok(None);
-        };
+        }
         let context = self.current_context(graph);
         Ok((!plan
             .parameters
             .iter()
             .any(|p| p.binder == var.span && p.context == context))
-        .then(|| Parameter {
+        .then(|| UniversalParameter {
             binder: var.span,
             name: var.name.clone(),
             context,
-            kind,
+            ty: ty.clone(),
         }))
     }
     pub(in crate::observed) fn universal_local_retains_comparison(
@@ -684,7 +716,7 @@ impl Environment<'_> {
         let ty = self.inputs.law().quantifier_types[id]
             .as_ref()
             .ok_or("全域binder型がない")?;
-        if number(ty).is_none() {
+        if !self.universal_symbolic_type(ty)? {
             return Ok(None);
         }
         if self.universal_context.borrow().is_none() {
@@ -720,7 +752,7 @@ impl Environment<'_> {
                             self.universal_parameter_value(
                                 parameter.binder,
                                 &parameter.name,
-                                &parameter.kind.ty(),
+                                &parameter.ty.clone(),
                                 &scope,
                             )?,
                         );
@@ -731,7 +763,11 @@ impl Environment<'_> {
                     value.known_value = match value.comparison.as_ref() {
                         Some(predicate)
                             if predicate.op == BinOp::Eq
-                                && !self.universal_has_exists(&plan)? =>
+                                && !self.universal_has_exists(&plan)?
+                                && plan
+                                    .parameters
+                                    .iter()
+                                    .all(|p| p.affine_parameter().is_some()) =>
                         {
                             affine::universal_equality(
                                 Some(&predicate.left),
@@ -744,6 +780,18 @@ impl Environment<'_> {
                         }
                         _ => value.known_value,
                     };
+                    for parameter in plan
+                        .parameters
+                        .iter()
+                        .rev()
+                        .filter(|p| p.affine_parameter().is_none())
+                    {
+                        value.known_value = self.universal_opaque_constant(
+                            self.universal_parameter_quantifier_kind(parameter)?,
+                            &parameter.ty,
+                            value.known_value.as_ref(),
+                        );
+                    }
                     value.affine = None;
                     value.comparison = None;
                     if actual_context.is_none() {
@@ -781,6 +829,13 @@ impl Environment<'_> {
             self.universal_parameter_value(var.span, &var.name, ty, base)?,
         );
         let mut value = self.scoped_ast(*body, &local, base, reading)?;
+        if number(ty).is_none() {
+            let ExprKind::Quant { kind, .. } = self.inputs.law().exprs[id].kind else {
+                unreachable!()
+            };
+            value.known_value =
+                self.universal_opaque_constant(kind, ty, value.known_value.as_ref());
+        }
         value.scalar_scope = value.known_value.as_ref().map(|_| value.scope.clone());
         value.affine = None;
         value.comparison = None;
@@ -818,11 +873,11 @@ impl Environment<'_> {
             .find(|axis| axis.parameter.binder == var.span && axis.parameter.context == origin)
             .cloned()
             .unwrap_or(LocalAxis {
-                parameter: Parameter {
+                parameter: UniversalParameter {
                     binder: var.span,
                     name: var.name.clone(),
                     context: origin,
-                    kind: number(ty).ok_or("局所全称が数値型でない")?,
+                    ty: ty.clone(),
                 },
                 domain: None,
                 actual: actual.is_some(),
@@ -857,24 +912,29 @@ impl Environment<'_> {
             let mut value = self.scoped_ast(*body, &local, &scope, reading)?;
             value.scope.merge(&scope);
             if *kind == QuantKind::Forall
+                && let Some(parameter) = axis.parameter.affine_parameter()
                 && let Some(predicate) = value.comparison.as_ref()
                 && predicate.op == BinOp::Eq
                 && let Some(partial) = affine::partial_forall(
                     Some(&predicate.left),
                     Some(&predicate.right),
-                    std::slice::from_ref(&axis.parameter),
+                    std::slice::from_ref(&parameter),
                     &self.control,
                 )?
             {
                 value.known_value = partial.value.map(Scalar::Bool).or(value.known_value);
             }
-            if *kind == QuantKind::Exists {
-                // 存在量化を全称等値の閉じた軸として流用しない。
+            if *kind == QuantKind::Exists || axis.parameter.affine_parameter().is_none() {
                 value.comparison = None;
             } else if let Some(predicate) = &mut value.comparison
-                && !predicate.bound_axes.contains(&axis.parameter)
+                && let Some(parameter) = axis.parameter.affine_parameter()
+                && !predicate.bound_axes.contains(&parameter)
             {
-                predicate.bound_axes.insert(0, axis.parameter.clone());
+                predicate.bound_axes.insert(0, parameter);
+            }
+            if axis.parameter.affine_parameter().is_none() {
+                value.known_value =
+                    self.universal_opaque_constant(*kind, ty, value.known_value.as_ref());
             }
             value.affine = None;
             value.scalar_scope = value.known_value.as_ref().map(|_| value.scope.clone());
@@ -908,7 +968,7 @@ impl Environment<'_> {
             .parameters
             .iter()
             .find(|parameter| {
-                parameter.binder == binder && parameter.name == name && parameter.kind.ty() == *ty
+                parameter.binder == binder && parameter.name == name && parameter.ty.clone() == *ty
             })
             .or_else(|| {
                 context
@@ -917,7 +977,7 @@ impl Environment<'_> {
                     .find(|axis| {
                         axis.parameter.binder == binder
                             && axis.parameter.name == name
-                            && axis.parameter.kind.ty() == *ty
+                            && axis.parameter.ty.clone() == *ty
                             && axis.parameter.context == origin
                     })
                     .map(|axis| &axis.parameter)
@@ -931,7 +991,12 @@ impl Environment<'_> {
             condition_pending: false,
             symbolic: None,
             comparison: None,
-            affine: affine::parameter(ty, parameter, &self.control)?.map(Box::new),
+            affine: parameter
+                .affine_parameter()
+                .map(|p| affine::parameter(ty, &p, &self.control))
+                .transpose()?
+                .flatten()
+                .map(Box::new),
             scope: base.clone(),
             known_value: None,
             support: Vec::new(),
@@ -950,7 +1015,7 @@ impl Environment<'_> {
                 scope.add_quantifier(Quantifier {
                     kind: self.universal_parameter_quantifier_kind(parameter)?,
                     name: parameter.name.clone(),
-                    ty: parameter.kind.ty(),
+                    ty: parameter.ty.clone(),
                     domain: context.domains.get(index).copied(),
                     occurrence: parameter.binder,
                     context: Some(parameter.context),
@@ -976,7 +1041,7 @@ impl Environment<'_> {
                 scope.add_quantifier(Quantifier {
                     kind: self.universal_parameter_quantifier_kind(&axis.parameter)?,
                     name: axis.parameter.name.clone(),
-                    ty: axis.parameter.kind.ty(),
+                    ty: axis.parameter.ty.clone(),
                     domain: axis.domain,
                     occurrence: axis.parameter.binder,
                     context: axis.actual.then_some(axis.parameter.context),
@@ -1016,14 +1081,14 @@ impl Environment<'_> {
             if bindings.iter().any(|binding| binding.name == param.name) {
                 continue;
             }
-            let Some(kind) = number(&param.ty) else {
+            if !self.universal_symbolic_type(&param.ty.erase())? {
                 return Ok(None);
-            };
-            parameters.push(Parameter {
+            }
+            parameters.push(UniversalParameter {
                 binder: param.span,
                 name: param.name.clone(),
                 context,
-                kind,
+                ty: param.ty.erase(),
             });
         }
         if parameters.is_empty() {
@@ -1097,14 +1162,14 @@ impl Environment<'_> {
                 .get(plan.body)
                 .and_then(Option::as_ref)
                 .ok_or("全域binderの元型がない")?;
-            let Some(kind) = number(ty) else {
+            if !self.universal_symbolic_type(ty)? {
                 break;
-            };
-            plan.parameters.push(Parameter {
+            }
+            plan.parameters.push(UniversalParameter {
                 binder: var.span,
                 name: var.name.clone(),
                 context,
-                kind,
+                ty: ty.clone(),
             });
             plan.body = *body;
         }
@@ -1131,8 +1196,37 @@ impl Environment<'_> {
         })
     }
     // 通常の有限評価へ渡す構文。型域の受付はquantifier::specで検査する。
-    pub(in crate::observed) fn universal_finite_syntax(&self, id: usize) -> bool {
-        match &self.inputs.law().exprs[id].kind {
+    pub(in crate::observed) fn universal_symbolic_type(
+        &self,
+        ty: &Type,
+    ) -> Result<bool, ValidationFailure> {
+        Ok(number(ty).is_some()
+            || !super::super::finite::supported(ty, self.inputs.law(), &self.control)?)
+    }
+    fn universal_opaque_constant(
+        &self,
+        kind: QuantKind,
+        ty: &Type,
+        value: Option<&Scalar>,
+    ) -> Option<Scalar> {
+        // 空文字列・空List/Set・noneは、これらの型を必ずinhabitedにする。
+        if matches!(
+            ty,
+            Type::Text | Type::List(_) | Type::Set(_) | Type::Option(_)
+        ) {
+            return value.cloned();
+        }
+        match (kind, value) {
+            (QuantKind::Forall, Some(Scalar::Bool(true))) => Some(Scalar::Bool(true)),
+            (QuantKind::Exists, Some(Scalar::Bool(false))) => Some(Scalar::Bool(false)),
+            _ => None,
+        }
+    }
+    pub(in crate::observed) fn universal_finite_syntax(
+        &self,
+        id: usize,
+    ) -> Result<bool, ValidationFailure> {
+        Ok(match &self.inputs.law().exprs[id].kind {
             ExprKind::SetComp { .. } => true,
             ExprKind::Quant {
                 split:
@@ -1142,11 +1236,13 @@ impl Environment<'_> {
                     },
                 ..
             } => true,
-            ExprKind::Quant { .. } => self.inputs.law().quantifier_types[id]
-                .as_ref()
-                .is_some_and(|ty| number(ty).is_none()),
+            ExprKind::Quant { .. } => !self.universal_symbolic_type(
+                self.inputs.law().quantifier_types[id]
+                    .as_ref()
+                    .ok_or("量化元型がない")?,
+            )?,
             _ => false,
-        }
+        })
     }
     pub(in crate::observed) fn universal_template_source_analysis(
         &self,
@@ -1214,7 +1310,7 @@ impl Environment<'_> {
         };
         for parameter in declared {
             self.tick()?;
-            if number(&parameter.ty).is_some()
+            if self.universal_symbolic_type(&parameter.ty.erase())?
                 && !bindings
                     .iter()
                     .any(|binding| binding.name == parameter.name)
@@ -1388,7 +1484,11 @@ impl Environment<'_> {
                     let classification = match predicate {
                         Some(predicate)
                             if predicate.op == BinOp::Eq
-                                && !self.universal_has_exists(&plan)? =>
+                                && !self.universal_has_exists(&plan)?
+                                && plan
+                                    .parameters
+                                    .iter()
+                                    .all(|p| p.affine_parameter().is_some()) =>
                         {
                             let parameters = self.universal_closed_parameters(&plan, predicate)?;
                             affine::universal_equality(
@@ -1424,6 +1524,26 @@ impl Environment<'_> {
                     )? {
                         self.recheck_evaluation(graph, actual)?;
                         analysis.scope.merge(&graph.get(actual)?.scope);
+                    }
+                    for parameter in plan
+                        .parameters
+                        .iter()
+                        .rev()
+                        .filter(|p| p.affine_parameter().is_none())
+                    {
+                        body_value = self
+                            .universal_opaque_constant(
+                                self.universal_parameter_quantifier_kind(parameter)?,
+                                &parameter.ty,
+                                body_value.map(Scalar::Bool).as_ref(),
+                            )
+                            .and_then(|v| {
+                                if let Scalar::Bool(b) = v {
+                                    Some(b)
+                                } else {
+                                    None
+                                }
+                            });
                     }
                     let mut finite_dependency = None;
                     if body_value.is_none()
@@ -1741,7 +1861,7 @@ impl Environment<'_> {
             if node.arguments != [template]
                 || graph.context_at(domain.0) != parameter.context
                 || !matches!(&node.rule, Rule::Input { kind: "law", location: Location::Law { span } } if *span == parameter.binder)
-                || !matches!(&node.payload, Some(Payload::TypeDomain {ty}) if *ty==parameter.kind.ty())
+                || !matches!(&node.payload, Some(Payload::TypeDomain {ty}) if *ty==parameter.ty.clone())
             {
                 return Err("全域型Domainの元binder・型・Contextが違う".into());
             }

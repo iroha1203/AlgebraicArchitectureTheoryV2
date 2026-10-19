@@ -65,11 +65,13 @@ impl Evaluator<'_, '_> {
                     .any(|argument| argument.name == format!("bind.{}", parameter.name))
             })
             .collect::<Vec<_>>();
-        if !numeric.is_empty()
-            && numeric
-                .iter()
-                .all(|parameter| matches!(parameter.ty, Type::Z | Type::Q))
-        {
+        let mut all_symbolic = !numeric.is_empty();
+        for parameter in &numeric {
+            all_symbolic &= self
+                .environment
+                .universal_symbolic_type(&parameter.ty.erase())?;
+        }
+        if all_symbolic {
             return self.universal_family_answer(_params, role);
         }
         self.finite_family_answer(guard, body, role)
