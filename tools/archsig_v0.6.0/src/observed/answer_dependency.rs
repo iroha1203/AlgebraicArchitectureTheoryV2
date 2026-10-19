@@ -160,6 +160,61 @@ impl Environment<'_> {
                 location: Some(Location::Law { span: plan.span }),
             });
         }
+        // producerの値が確定しても、そのOwned所属まで観測済みとは限らない。
+        // 未観測ownerを通常値の所属確認へ渡さず、元slotを保持して依存を止める。
+        for parameter in params {
+            self.tick()?;
+            let previous = self.context.replace(Some(super::super::call::Context {
+                request: current,
+                frame: None,
+                iteration: None,
+                instance: None,
+                case: None,
+            }));
+            let planned = self.owned_binding_plan(graph, request, parameter);
+            self.context.set(previous);
+            let plan = match planned {
+                Ok(plan) => plan,
+                Err(ValidationFailure::UnsupportedExpression { .. }) => continue,
+                Err(error) => return Err(error),
+            };
+            let Some(plan) = plan else { continue };
+            if !plan.checks.blocked || plan.checks.failure.is_some() {
+                continue;
+            }
+            scope.merge(&plan.checks.scope);
+            let producer =
+                self.answer_binding_source(graph, current, &plan.producer, parameter.span)?;
+            let evaluation = *producer
+                .outputs
+                .get("evaluation")
+                .ok_or("未確認所属の元producer評価がない")?;
+            let source = self.evaluation(graph, evaluation)?.0;
+            for fact in plan.checks.missing {
+                self.tick()?;
+                reasons.push(Reason {
+                    kind: ReasonKind::Missing,
+                    request: request.id.clone(),
+                    dependencies: vec![source],
+                    missing: vec![fact],
+                    location: Some(Location::Law {
+                        span: parameter.span,
+                    }),
+                });
+            }
+            reasons.push(Reason {
+                kind: ReasonKind::DependencyBlocked {
+                    request: plan.producer,
+                },
+                request: request.id.clone(),
+                dependencies: plan.dependencies,
+                missing: vec![],
+                location: Some(Location::Law {
+                    span: parameter.span,
+                }),
+            });
+            self.tick()?;
+        }
         if reasons.is_empty() {
             return Ok(None);
         }

@@ -17,6 +17,18 @@ impl Environment<'_> {
         reading: &str,
         observer: &mut dyn FnMut(&'static str, usize),
     ) -> Result<OwnedMembers, ValidationFailure> {
+        self.owned_members_assigned(entity, owner, fixed, reading, observer, None)
+    }
+
+    pub(super) fn owned_members_assigned(
+        &self,
+        entity: &str,
+        owner: &Scalar,
+        fixed: Option<&Scalar>,
+        reading: &str,
+        observer: &mut dyn FnMut(&'static str, usize),
+        assignment: Option<&BTreeMap<Fact, Scalar>>,
+    ) -> Result<OwnedMembers, ValidationFailure> {
         let mut result = OwnedMembers {
             enumeration: super::super::finite::Enumeration::default(),
             missing: vec![],
@@ -113,12 +125,16 @@ impl Environment<'_> {
                             field: Some(field_name.clone()),
                             atom: None,
                         };
-                        let completed = self
-                            .completion_values
-                            .borrow()
-                            .iter()
-                            .find(|(field, _, _)| field == &fact)
-                            .map(|(_, _, value)| value.clone());
+                        let completed = assignment
+                            .and_then(|values| values.get(&fact))
+                            .cloned()
+                            .or_else(|| {
+                                self.completion_values
+                                    .borrow()
+                                    .iter()
+                                    .find(|(field, _, _)| field == &fact)
+                                    .map(|(_, _, value)| value.clone())
+                            });
                         if let Some(completed) = completed {
                             let Scalar::Subject {
                                 snapshot: target_snapshot,

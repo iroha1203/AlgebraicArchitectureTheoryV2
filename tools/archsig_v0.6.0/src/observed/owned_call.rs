@@ -41,6 +41,19 @@ impl Environment<'_> {
         span: (usize, usize),
         checks: &mut Checks,
     ) -> Result<(), ValidationFailure> {
+        self.owned_call_value_check_assigned(ty, value, values, reading, span, checks, None)
+    }
+
+    pub(super) fn owned_call_value_check_assigned(
+        &self,
+        ty: &Type,
+        value: &PartialValue,
+        values: &BTreeMap<&str, Option<&Scalar>>,
+        reading: &str,
+        span: (usize, usize),
+        checks: &mut Checks,
+        assignment: Option<&BTreeMap<Fact, Scalar>>,
+    ) -> Result<(), ValidationFailure> {
         enum Member<'a> {
             Known(&'a Scalar),
             Partial(&'a PartialValue),
@@ -59,10 +72,20 @@ impl Environment<'_> {
             };
             match (ty, member) {
                 (Type::Owned(..), Member::Known(value)) => {
-                    self.owned_reference_check(ty, Some(value), values, reading, span, checks)?;
+                    self.owned_reference_check_assigned(
+                        ty,
+                        Some(value),
+                        values,
+                        reading,
+                        span,
+                        checks,
+                        assignment,
+                    )?;
                 }
                 (Type::Owned(..), Member::MapDomain(pairs)) => {
-                    self.owned_call_map_domain(ty, pairs, values, reading, span, checks)?;
+                    self.owned_call_map_domain(
+                        ty, pairs, values, reading, span, checks, assignment,
+                    )?;
                 }
                 (
                     Type::Map(from, to),
@@ -149,6 +172,7 @@ impl Environment<'_> {
         reading: &str,
         _span: (usize, usize),
         checks: &mut Checks,
+        assignment: Option<&BTreeMap<Fact, Scalar>>,
     ) -> Result<(), ValidationFailure> {
         let Type::Owned(entity, owner_name) = ty else {
             return Err("Map所属域の元型がOwnedでない".into());
@@ -158,8 +182,12 @@ impl Environment<'_> {
             checks.blocked = true;
             return Ok(());
         };
-        let members =
-            self.owned_members(entity, owner, None, reading, &mut |operation, index| {
+        let members = self.owned_members_assigned(
+            entity,
+            owner,
+            None,
+            reading,
+            &mut |operation, index| {
                 #[cfg(test)]
                 if operation == "dependent_subject" {
                     data::observe_actual(
@@ -171,7 +199,9 @@ impl Environment<'_> {
                 }
                 #[cfg(not(test))]
                 let _ = (operation, index);
-            })?;
+            },
+            assignment,
+        )?;
         checks.scope.merge(&members.enumeration.scope);
         checks.support.extend(members.enumeration.support);
         if !members.missing.is_empty() {
@@ -322,7 +352,7 @@ impl Environment<'_> {
         }
     }
 
-    pub(in crate::observed) fn owned_reference_check(
+    fn owned_reference_check_assigned(
         &self,
         ty: &Type,
         value: Option<&Scalar>,
@@ -330,6 +360,7 @@ impl Environment<'_> {
         reading: &str,
         _span: (usize, usize),
         checks: &mut Checks,
+        assignment: Option<&BTreeMap<Fact, Scalar>>,
     ) -> Result<(), ValidationFailure> {
         let Type::Owned(entity, owner_name) = ty else {
             return Ok(());
@@ -417,12 +448,17 @@ impl Environment<'_> {
                 field: Some(field),
                 atom: None,
             };
-            if let Some((_, _, actual)) = self
-                .completion_values
-                .borrow()
-                .iter()
-                .find(|(f, _, _)| f == &fact)
-            {
+            let completed = assignment
+                .and_then(|values| values.get(&fact))
+                .cloned()
+                .or_else(|| {
+                    self.completion_values
+                        .borrow()
+                        .iter()
+                        .find(|(f, _, _)| f == &fact)
+                        .map(|(_, _, v)| v.clone())
+                });
+            if let Some(actual) = completed.as_ref() {
                 let Scalar::Subject {
                     snapshot: actual_snapshot,
                     subject: actual_subject,

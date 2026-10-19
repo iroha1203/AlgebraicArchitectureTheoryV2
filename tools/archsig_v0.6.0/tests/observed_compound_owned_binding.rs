@@ -407,16 +407,37 @@ fn fixed_compound_owned_static_invalid_unprovided_unknown_and_cross_snapshot_rem
             }
         }
     }
+    // 既知Migration.statesの全域制約は、未観測p.ownerをAへ絞る。
+    let completed = run_input(
+        fixture::input("unknown_owner", "r1"),
+        &[
+            "take=evaluate(Applications.cbOptionUse,a=@v/A,x=$v.value)",
+            "v=evaluate(Applications.cbOption,p=@v/p)",
+        ],
+    );
+    assert_eq!(completed.status(), "complete");
+    let w = completed.wire();
+    assert_eq!(f(answer(&w, "take"), "status"), &Json::str("established"));
+    assert_eq!(
+        f(f(answer(&w, "take"), "outputs"), "value"),
+        f(f(answer(&w, "v"), "outputs"), "value")
+    );
+    assert_eq!(
+        f(f(answer(&w, "take"), "scope"), "domain"),
+        &Json::str("all_completions")
+    );
+    let p = completed.prepared().inputs().archmap().snapshots[0]
+        .subjects
+        .iter()
+        .find(|s| s.id == "p")
+        .unwrap();
     assert!(matches!(
-        evaluate_observed_bytes(
-            fixture::input("unknown_owner", "r1"),
-            &[
-                "take=evaluate(Applications.cbOptionUse,a=@v/A,x=$v.value)",
-                "v=evaluate(Applications.cbOption,p=@v/p)"
-            ],
-            &mut quiet()
-        ),
-        Err(archsig::observed::EvaluationFailure::NotImplemented { .. })
+        p.fields
+            .iter()
+            .find(|f| f.name == "Reservations.State.owner")
+            .unwrap()
+            .slot,
+        archsig::archmap::Slot::Missing
     ));
     let r = run(&[
         "take=evaluate(Applications.cbOptionUse,a=$a.value,x=$v.value)",

@@ -365,6 +365,66 @@ impl Environment<'_> {
             p.span,
             &mut checks,
         )?;
+        if checks.blocked && checks.failure.is_none() && !checks.missing.is_empty() {
+            // 固定値の所属も、元ArchMapへ拡張できる共有assignmentで判断する。
+            // 候補値は一時的な引数として渡し、観測表・DAGの原始値へ書き込まない。
+            let mut fields = checks.missing.clone();
+            fields.sort();
+            fields.dedup();
+            let assignments = self.completion_assignments(&fields, &mut |_phase, _index| {
+                #[cfg(test)]
+                data::observe_actual(p.span, context, "owned_binding_completion_enum", _index);
+            })?;
+            checks.scope.merge(&assignments.scope);
+            checks.support.extend(assignments.support);
+            let mut succeeded = false;
+            let mut failure = None;
+            let mut unresolved = false;
+            for (_index, assignment) in assignments.values.into_iter().enumerate() {
+                self.tick()?;
+                #[cfg(test)]
+                data::observe_actual(p.span, context, "owned_binding_completion_case", _index);
+                let members = if fields.len() == 1 {
+                    vec![assignment]
+                } else {
+                    let Scalar::Tuple(members) = &assignment else {
+                        return Err("所属補完の共有assignmentがTupleでない".into());
+                    };
+                    members.clone()
+                };
+                if members.len() != fields.len() {
+                    return Err("所属補完の元slot数が違う".into());
+                }
+                let assignment = fields.iter().cloned().zip(members).collect();
+                let mut case = owned_call::Checks::default();
+                self.owned_call_value_check_assigned(
+                    &checked_type,
+                    &super::super::term::affine::Value::Known(value.scalar.clone()),
+                    &values,
+                    &d.reading,
+                    p.span,
+                    &mut case,
+                    Some(&assignment),
+                )?;
+                checks.scope.merge(&case.scope);
+                checks.support.extend(case.support);
+                if let Some(pair) = case.failure {
+                    failure = failure.or(Some(pair));
+                } else if case.blocked {
+                    unresolved = true;
+                    checks.missing.extend(case.missing);
+                } else {
+                    succeeded = true;
+                }
+                self.tick()?;
+            }
+            checks.blocked = unresolved || (succeeded && failure.is_some());
+            checks.failure = if !succeeded && !unresolved {
+                failure
+            } else {
+                None
+            };
+        }
         let mut condition_inputs = vec![self.owned_condition_input(&value)?];
         checks.scope.merge(&value.scope);
         checks.support.extend(value.support);
