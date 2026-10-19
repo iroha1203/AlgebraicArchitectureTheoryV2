@@ -1297,56 +1297,21 @@ impl Evaluator<'_, '_> {
                 let first = parts
                     .first()
                     .ok_or_else(|| Failure::Internal("全域の空Dotted".into()))?;
-                if parts.len() == 1 {
-                    if let Some((input, _)) = self.environment.pattern_argument(
-                        self.graph,
-                        first.span,
-                        &first.name,
-                        &self.bindings,
-                    )? {
-                        vec![SymbolicEvaluation {
-                            evaluated: self.evaluated_reference(input)?,
-                            comparison: None,
-                            has_local_domains: false,
-                        }]
-                    } else {
-                        self.formal
-                            .get(&first.name)
-                            .or_else(|| self.lexical.get(&first.name))
-                            .cloned()
-                            .map(|evaluated| SymbolicEvaluation {
-                                evaluated,
-                                comparison: None,
-                                has_local_domains: false,
-                            })
-                            .into_iter()
-                            .collect()
-                    }
-                } else if parts.len() == 2 {
-                    let owner_ty = self
-                        .bindings
-                        .iter()
-                        .find(|binding| binding.name == first.name)
-                        .map(|binding| binding.ty.clone())
-                        .or_else(|| {
-                            self.formal.get(&first.name).and_then(|value| {
-                                match &self.graph.get(value.evaluation).ok()?.ty {
-                                    NodeType::Evaluation(ty) => Some(ty.clone()),
-                                    _ => None,
-                                }
-                            })
-                        })
-                        .ok_or_else(|| self.unsupported(expr.span, "全域式の未確定field owner"))?;
-                    let (owner, owner_support) = self.universal_source(
-                        plan,
-                        template,
-                        domains,
-                        first.span,
-                        owner_ty.clone(),
-                    )?;
-                    let args = self
-                        .formal
+                let first_children = if let Some((input, _)) = self.environment.pattern_argument(
+                    self.graph,
+                    first.span,
+                    &first.name,
+                    &self.bindings,
+                )? {
+                    vec![SymbolicEvaluation {
+                        evaluated: self.evaluated_reference(input)?,
+                        comparison: None,
+                        has_local_domains: false,
+                    }]
+                } else {
+                    self.formal
                         .get(&first.name)
+                        .or_else(|| self.lexical.get(&first.name))
                         .cloned()
                         .map(|evaluated| SymbolicEvaluation {
                             evaluated,
@@ -1354,10 +1319,58 @@ impl Evaluator<'_, '_> {
                             has_local_domains: false,
                         })
                         .into_iter()
-                        .collect();
-                    vec![self.universal_finish(owner, owner_support, owner_ty, args, None, None)?]
+                        .collect()
+                };
+                if parts.len() == 1 {
+                    first_children
                 } else {
-                    return Err(self.unsupported(expr.span, "全域式の複数fieldドット列"));
+                    let mut owner = None;
+                    // 最終出現の型を中間参照へ流用せず、元token列の各prefixを
+                    // その型・支持・実producerで順に導出する。
+                    for (_index, (span, prefix_ty)) in self
+                        .environment
+                        .dotted_prefixes(id)?
+                        .into_iter()
+                        .take(parts.len() - 1)
+                        .enumerate()
+                    {
+                        self.tick(Checkpoint::FiniteIteration)?;
+                        let (prefix, prefix_support) = self.universal_source(
+                            plan,
+                            template,
+                            domains,
+                            span,
+                            prefix_ty.clone(),
+                        )?;
+                        let children = if _index == 0 {
+                            first_children.clone()
+                        } else {
+                            vec![owner.take().ok_or_else(|| {
+                                Failure::Internal("全域fieldの前prefixがない".into())
+                            })?]
+                        };
+                        owner = Some(self.universal_finish(
+                            prefix,
+                            prefix_support,
+                            prefix_ty,
+                            children,
+                            None,
+                            None,
+                        )?);
+                        #[cfg(test)]
+                        data::observe_actual(
+                            expr.span,
+                            self.graph.active,
+                            "universal_field",
+                            _index,
+                        );
+                        self.tick(Checkpoint::FiniteIteration)?;
+                    }
+                    vec![
+                        owner.ok_or_else(|| {
+                            Failure::Internal("全域fieldのowner出現がない".into())
+                        })?,
+                    ]
                 }
             }
             ExprKind::Field { base, .. }

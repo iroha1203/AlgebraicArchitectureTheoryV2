@@ -2928,6 +2928,9 @@ mod recheck_tests {
     mod infinite_quantifier_tests {
         include!("infinite_quantifier_tests.rs");
     }
+    mod affine_field_chain_tests {
+        include!("affine_field_chain_tests.rs");
+    }
     use crate::canonical::Json;
     mod reference_completion_tests {
         include!("reference_completion_tests.rs");

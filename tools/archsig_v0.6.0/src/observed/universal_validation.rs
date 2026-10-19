@@ -3065,18 +3065,10 @@ impl Environment<'_> {
                 .cloned()
                 .ok_or("全域AST元型がない")?
         } else {
-            let name = self.name_token(*span)?;
-            bindings
-                .iter()
-                .find(|binding| binding.name == name)
-                .map(|binding| binding.ty.clone())
-                .or(self.call_parameter(graph, name)?.and_then(|reference| {
-                    match &graph.get(reference).ok()?.ty {
-                        NodeType::Evaluation(ty) => Some(ty.clone()),
-                        _ => None,
-                    }
-                }))
-                .ok_or("全域fragment元型がない")?
+            let (id, count) = self
+                .dotted_prefix(*span)?
+                .ok_or("全域fragmentの元prefixがない")?;
+            self.dotted_prefixes(id)?[count - 1].1.clone()
         };
         self.universal_input_metadata(
             node,
@@ -3206,9 +3198,46 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         let (span, bindings) = self.universal_source_fields(graph, source)?;
+        if let Some((id, count)) = self.dotted_prefix(span)?
+            && count > 1
+        {
+            let prefixes = self.dotted_prefixes(id)?;
+            let (owner_span, owner_ty) = &prefixes[count - 2];
+            if children.len() != 1 {
+                return Err("全域fieldの実owner子数が違う".into());
+            }
+            let child = children[0];
+            if child.0 >= limit || graph.context_at(child.0) != self.current_context(graph) {
+                return Err("全域fieldの実ownerが未出・別Context".into());
+            }
+            let (original, actual, _) = self.evaluation(graph, child)?;
+            if self.expression_span(graph, original)? != *owner_span
+                || actual != bindings
+                || graph.get(child)?.ty != NodeType::Evaluation(owner_ty.clone())
+            {
+                return Err("全域fieldの実owner出現・型・束縛が違う".into());
+            }
+            #[cfg(test)]
+            super::data::observe_actual(
+                span,
+                self.current_context(graph),
+                "universal_field_recheck",
+                count - 1,
+            );
+            self.tick()?;
+            self.recheck_evaluation(graph, child)?;
+            return Ok(());
+        }
         let Some(&id) = self.expressions.get(&span) else {
             let name = self.name_token(span)?;
-            let expected = self.call_parameter(graph, name)?;
+            let expected =
+                if let Some((argument, _)) = self.pattern_argument(graph, span, name, bindings)? {
+                    Some(argument)
+                } else if let Some(argument) = self.call_parameter(graph, name)? {
+                    Some(argument)
+                } else {
+                    self.lexical_argument(graph, span, name, bindings)?
+                };
             if children != expected.into_iter().collect::<Vec<_>>() {
                 return Err("全域fragmentの実producerが違う".into());
             }
@@ -3399,14 +3428,21 @@ impl Environment<'_> {
                 return Ok(None);
             }
         }
-        let Some(&id) = self.expressions.get(span) else {
+        let field_type = if let Some((id, count)) = self.dotted_prefix(*span)?
+            && count > 1
+        {
+            self.dotted_prefixes(id)?[count - 1].1.clone()
+        } else if let Some(&id) = self.expressions.get(span)
+            && matches!(&self.inputs.law().exprs[id].kind, ExprKind::Field { .. })
+        {
+            self.inputs
+                .law()
+                .expr_type(id)
+                .cloned()
+                .ok_or("全域missing Sourceの元field型がない")?
+        } else {
             return Ok(None);
         };
-        if !matches!(&self.inputs.law().exprs[id].kind, ExprKind::Field { .. })
-            && !matches!(&self.inputs.law().exprs[id].kind,ExprKind::Dotted(parts) if parts.len()>1)
-        {
-            return Ok(None);
-        }
         let Some(&template) = node.arguments.first() else {
             return Ok(None);
         };
@@ -3428,14 +3464,7 @@ impl Environment<'_> {
             self.universal_source_analysis(graph, *span, bindings, &plan, &domains, template)?;
         if parameters != &analyzed.parameters
             || node.scope != analyzed.analysis.scope
-            || node.ty
-                != NodeType::Expression(
-                    self.inputs
-                        .law()
-                        .expr_type(id)
-                        .cloned()
-                        .ok_or("全域missing Sourceの元field型がない")?,
-                )
+            || node.ty != NodeType::Expression(field_type)
         {
             return Err("全域missing Sourceの元自由parameter・Scope・field型が違う".into());
         }

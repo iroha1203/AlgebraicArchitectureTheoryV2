@@ -146,7 +146,8 @@
   未観測dataのmatchは元missingを保ち、constructorやpattern束縛値を作らない。
   Tuple/List/Optionを通る正の自己参照も個別の有限木として扱い、再帰型の全域を有限とは扱わない。
   ドット列は束縛変数から既知参照を順にたどり、各prefixの元span・型・実owner・支持を保持する。
-  Z/Q全域式内のドット列は一つのfieldまで扱う。
+  Z/Q全域式内でも各参照prefixの元型・span・実ownerを保持し、全代入の導出へ接続する。
+  中間の原始参照が欠測なら値や支持Atomを作らず、整合する有限参照補完ごとに元fieldを読み直す。
   Bool は false and x / true or x / false implies x などを全補完で確定し、元の両子評価と欠測理由を保持する。
   Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
   Z/Qの欠測slotは同じ記号として係数をまとめ、加減算・負号・定数倍で係数が消えた式の値を確定する。
