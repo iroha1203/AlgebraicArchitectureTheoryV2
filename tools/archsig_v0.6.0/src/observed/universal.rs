@@ -1,4 +1,4 @@
-//! 元のbinderと実producerを保つ、Z/Qの全称アフィン等値。
+//! 元の量化種別・binder・実producerを保つZ/Q全域表示と、全称アフィン等値。
 use super::*;
 use crate::law::{
     ast::{QuantDomain, QuantKind, QuantSplit},
@@ -44,6 +44,8 @@ pub(in crate::observed) struct UniversalSourceAnalysis {
 pub(in crate::observed) struct UniversalAnalysis {
     pub analysis: SourceAnalysis,
     pub classification: Option<affine::Universal>,
+    // 数値残差の正規形は量化の真偽判定とは独立する。
+    pub difference: Option<affine::Form>,
     pub comparison: Option<(usize, usize)>,
     pub comparison_expression: Option<usize>,
     pub value: Option<bool>,
@@ -58,6 +60,54 @@ fn number(ty: &Type) -> Option<NumberType> {
     }
 }
 impl Environment<'_> {
+    // Parameterの数値型と、元ASTのforall/existsは別の情報として保つ。
+    // Law自由parameterは全代入だが、明示existsを全称軸へ変えない。
+    fn universal_parameter_quantifier_kind(
+        &self,
+        parameter: &Parameter,
+    ) -> Result<QuantKind, ValidationFailure> {
+        for expression in &self.inputs.law().exprs {
+            self.tick()?;
+            if let ExprKind::Quant { kind, var, .. } = &expression.kind
+                && var.span == parameter.binder
+                && var.name == parameter.name
+            {
+                #[cfg(test)]
+                data::observe_actual(
+                    expression.span,
+                    self.scoped_context
+                        .get()
+                        .or(self.context.get())
+                        .unwrap_or_default(),
+                    "quantifier_kind",
+                    0,
+                );
+                return Ok(*kind);
+            }
+        }
+        Ok(QuantKind::Forall)
+    }
+    fn universal_has_exists(&self, plan: &UniversalPlan) -> Result<bool, ValidationFailure> {
+        for parameter in &plan.parameters {
+            if self.universal_parameter_quantifier_kind(parameter)? == QuantKind::Exists {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+    pub(in crate::observed) fn universal_unsupported_method(
+        &self,
+        plan: &UniversalPlan,
+        guard_value: Option<bool>,
+    ) -> Result<&'static str, ValidationFailure> {
+        Ok(if self.universal_has_exists(plan)? {
+            "Z/Q existential quantified decision"
+        } else if plan.guard.is_some() && guard_value.is_none() {
+            "parameter-dependent conditional affine equality"
+        } else {
+            "non-affine universal equality"
+        })
+    }
     fn universal_closed_parameters(
         &self,
         plan: &UniversalPlan,
@@ -197,13 +247,13 @@ impl Environment<'_> {
             .get(span)
             .ok_or("局所型Domainの元量化がない")?;
         let ExprKind::Quant {
-            kind: QuantKind::Forall,
             var,
             split:
                 QuantSplit::Fixed {
                     domain: QuantDomain::Type(_),
                     ..
                 },
+            ..
         } = &self.inputs.law().exprs[id].kind
         else {
             return Err("局所型Domainの元構文が型全称でない".into());
@@ -328,13 +378,13 @@ impl Environment<'_> {
     ) -> Result<Option<Parameter>, ValidationFailure> {
         self.universal_check_domains(graph, template, domains, plan)?;
         let ExprKind::Quant {
-            kind: QuantKind::Forall,
             var,
             split:
                 QuantSplit::Fixed {
                     domain: QuantDomain::Type(_),
                     ..
                 },
+            ..
         } = &self.inputs.law().exprs[id].kind
         else {
             return Ok(None);
@@ -558,13 +608,13 @@ impl Environment<'_> {
         reading: &str,
     ) -> Result<Option<SourceValue>, ValidationFailure> {
         let ExprKind::Quant {
-            kind: QuantKind::Forall,
             var,
             split:
                 QuantSplit::Fixed {
                     domain: QuantDomain::Type(_),
                     body,
                 },
+            ..
         } = &self.inputs.law().exprs[id].kind
         else {
             return Ok(None);
@@ -576,11 +626,10 @@ impl Environment<'_> {
             return Ok(None);
         }
         if self.universal_context.borrow().is_none() {
-            let context = self
-                .scoped_context
-                .get()
-                .or(self.context.get())
-                .unwrap_or_default();
+            // 未展開callの静的bodyは実Contextをまだ持たない。
+            // validationのcallerや既定request 0をcalleeの出現として記録しない。
+            let actual_context = self.scoped_context.get();
+            let context = actual_context.unwrap_or_default();
             let mut plan = UniversalPlan {
                 template_span: self.inputs.law().exprs[id].span,
                 body: id,
@@ -617,18 +666,36 @@ impl Environment<'_> {
                     // 全称軸は、bodyでその変数を使用しない場合も元量化に属する。
                     value.scope.merge(&scope);
                     value.known_value = match value.comparison.as_ref() {
-                        Some(predicate) if predicate.op == BinOp::Eq => affine::universal_equality(
-                            Some(&predicate.left),
-                            Some(&predicate.right),
-                            &self.universal_closed_parameters(&plan, predicate)?,
-                            &self.control,
-                        )?
-                        .and_then(|classification| classification.value)
-                        .map(Scalar::Bool),
+                        Some(predicate)
+                            if predicate.op == BinOp::Eq
+                                && !self.universal_has_exists(&plan)? =>
+                        {
+                            affine::universal_equality(
+                                Some(&predicate.left),
+                                Some(&predicate.right),
+                                &self.universal_closed_parameters(&plan, predicate)?,
+                                &self.control,
+                            )?
+                            .and_then(|classification| classification.value)
+                            .map(Scalar::Bool)
+                        }
                         _ => value.known_value,
                     };
                     value.affine = None;
                     value.comparison = None;
+                    if actual_context.is_none() {
+                        for quantifier in &mut value.scope.quantifiers {
+                            self.tick()?;
+                            if quantifier.domain.is_none()
+                                && plan.parameters.iter().any(|parameter| {
+                                    parameter.binder == quantifier.occurrence
+                                        && parameter.name == quantifier.name
+                                })
+                            {
+                                quantifier.context = None;
+                            }
+                        }
+                    }
                     value.scalar_scope = value.known_value.as_ref().map(|_| value.scope.clone());
                     Ok(Some(value))
                 },
@@ -664,6 +731,7 @@ impl Environment<'_> {
         reading: &str,
     ) -> Result<SourceValue, ValidationFailure> {
         let ExprKind::Quant {
+            kind,
             var,
             split: QuantSplit::Fixed { body, .. },
             ..
@@ -706,7 +774,7 @@ impl Environment<'_> {
         let mut scope = base.clone();
         scope.assignments = true;
         scope.add_quantifier(Quantifier {
-            kind: QuantKind::Forall,
+            kind: *kind,
             name: var.name.clone(),
             ty: ty.clone(),
             domain: axis.domain,
@@ -725,7 +793,8 @@ impl Environment<'_> {
             );
             let mut value = self.scoped_ast(*body, &local, &scope, reading)?;
             value.scope.merge(&scope);
-            if let Some(predicate) = value.comparison.as_ref()
+            if *kind == QuantKind::Forall
+                && let Some(predicate) = value.comparison.as_ref()
                 && predicate.op == BinOp::Eq
                 && let Some(partial) = affine::partial_forall(
                     Some(&predicate.left),
@@ -736,7 +805,10 @@ impl Environment<'_> {
             {
                 value.known_value = partial.value.map(Scalar::Bool).or(value.known_value);
             }
-            if let Some(predicate) = &mut value.comparison
+            if *kind == QuantKind::Exists {
+                // 存在量化を全称等値の閉じた軸として流用しない。
+                value.comparison = None;
+            } else if let Some(predicate) = &mut value.comparison
                 && !predicate.bound_axes.contains(&axis.parameter)
             {
                 predicate.bound_axes.insert(0, axis.parameter.clone());
@@ -810,7 +882,7 @@ impl Environment<'_> {
             for (index, parameter) in context.plan.parameters.iter().enumerate() {
                 self.tick()?;
                 scope.add_quantifier(Quantifier {
-                    kind: QuantKind::Forall,
+                    kind: self.universal_parameter_quantifier_kind(parameter)?,
                     name: parameter.name.clone(),
                     ty: parameter.kind.ty(),
                     domain: context.domains.get(index).copied(),
@@ -828,7 +900,7 @@ impl Environment<'_> {
                 self.tick()?;
                 if axis.parameter.context!=origin || !lexical.iter().any(|(_,binding)|matches!(binding,LexicalOrigin::Universal(id) if matches!(&self.inputs.law().exprs[*id].kind,ExprKind::Quant{var,..} if var.span==axis.parameter.binder))){continue;}
                 scope.add_quantifier(Quantifier {
-                    kind: QuantKind::Forall,
+                    kind: self.universal_parameter_quantifier_kind(&axis.parameter)?,
                     name: axis.parameter.name.clone(),
                     ty: axis.parameter.kind.ty(),
                     domain: axis.domain,
@@ -933,13 +1005,13 @@ impl Environment<'_> {
             self.tick()?;
             let expression = &self.inputs.law().exprs[plan.body];
             let ExprKind::Quant {
-                kind: QuantKind::Forall,
                 var,
                 split:
                     QuantSplit::Fixed {
                         domain: QuantDomain::Type(_),
                         body,
                     },
+                ..
             } = &expression.kind
             else {
                 break;
@@ -1197,6 +1269,7 @@ impl Environment<'_> {
                         return Ok(UniversalAnalysis {
                             analysis,
                             classification: None,
+                            difference: None,
                             comparison: None,
                             comparison_expression: None,
                             value: Some(true),
@@ -1209,8 +1282,20 @@ impl Environment<'_> {
                         bindings,
                     )?;
                     let predicate = analysis.comparison.as_ref();
+                    let difference = match predicate {
+                        Some(predicate) if predicate.op == BinOp::Eq => affine::binary(
+                            BinOp::Sub,
+                            Some(&predicate.left),
+                            Some(&predicate.right),
+                            &self.control,
+                        )?,
+                        _ => None,
+                    };
                     let classification = match predicate {
-                        Some(predicate) if predicate.op == BinOp::Eq => {
+                        Some(predicate)
+                            if predicate.op == BinOp::Eq
+                                && !self.universal_has_exists(&plan)? =>
+                        {
                             let parameters = self.universal_closed_parameters(&plan, predicate)?;
                             affine::universal_equality(
                                 Some(&predicate.left),
@@ -1251,6 +1336,7 @@ impl Environment<'_> {
                     Ok(UniversalAnalysis {
                         analysis,
                         classification,
+                        difference,
                         comparison,
                         comparison_expression,
                         value,

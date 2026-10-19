@@ -4581,7 +4581,6 @@ impl<'a> Environment<'a> {
                     matches!(
                         &expression.kind,
                         ExprKind::Quant {
-                            kind: crate::law::ast::QuantKind::Forall,
                             split: crate::law::ast::QuantSplit::Fixed {
                                 domain: crate::law::ast::QuantDomain::Type(_),
                                 ..

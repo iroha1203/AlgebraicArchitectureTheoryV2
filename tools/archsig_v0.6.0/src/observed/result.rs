@@ -2663,12 +2663,12 @@ impl Graph {
         let [descriptor] = descriptors.as_slice() else {
             return Err("局所数値量化の実型Domainに一つのbinder descriptorがない".into());
         };
-        if descriptor.kind != crate::law::ast::QuantKind::Forall
-            || descriptor.ty != *ty
+        // forall/existsの元種別はEnvironmentが元ASTと照合する。
+        if descriptor.ty != *ty
             || descriptor.occurrence != *binder
             || descriptor.context != Some(context)
         {
-            return Err("局所数値量化の元binder・型・全称・実Contextが違う".into());
+            return Err("局所数値量化の元binder・型・実Contextが違う".into());
         }
         let mut expected_scope = self.get(header)?.scope.clone();
         expected_scope.merge(&self.get(body)?.scope);
