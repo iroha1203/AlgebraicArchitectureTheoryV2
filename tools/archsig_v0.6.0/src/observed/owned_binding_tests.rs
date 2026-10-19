@@ -512,3 +512,224 @@ fn owned_binding_condition_generation_stop_preserves_prior_results_and_probe_fre
 fn owned_binding_fresh_recheck_stop_preserves_verified_claim_details_and_probe_freeze() {
     stop(2)
 }
+
+const COMPLETION_ASKS: &[&str] = &[
+    "seed=evaluate(Reservations.adZero)",
+    "prior=check(Reservations.prior)",
+    "child=evaluate(Reservations.obChild,p=@v/p)",
+    "take=check(Reservations.obEq,a=@v/A,p=$child.value)",
+    "again=check(Reservations.adBool,a=@v/A,flag=$take.evaluation.value)",
+    "later=evaluate(Reservations.adFlag)",
+];
+fn completion_run(mode: &str) -> ObservedEvaluation {
+    let r = evaluate_observed_bytes(
+        fixture::completion_input(mode, "r1"),
+        COMPLETION_ASKS,
+        &mut named_call_quiet(),
+    )
+    .unwrap();
+    assert_ne!(r.status(), "error");
+    let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let e = env(&r);
+    for (req, a) in r.prepared.requests().requests().iter().zip(&r.answers) {
+        e.validate_answer(&g, req, a).unwrap();
+    }
+    r
+}
+#[test]
+fn owned_binding_completion_visits_all_admissible_shared_assignments() {
+    use std::{cell::RefCell, rc::Rc};
+    for (mode, count) in [
+        ("ambiguous", 3),
+        ("single", 1),
+        ("forceA", 1),
+        ("forceB", 1),
+    ] {
+        let seen = Rc::new(RefCell::new(std::collections::BTreeSet::new()));
+        let recorded = seen.clone();
+        data::observe_iterations(move |_, context, operation, index| {
+            if context.request == 3 && operation == "owned_binding_completion_case" {
+                recorded.borrow_mut().insert(index);
+            }
+        });
+        let r = completion_run(mode);
+        data::clear_iteration_observer();
+        assert_eq!(*seen.borrow(), (0..count).collect());
+        assert_eq!(
+            r.answers[3].status,
+            if mode == "forceB" || mode == "ambiguous" {
+                Decision::Undetermined
+            } else {
+                Decision::Established
+            }
+        );
+        assert!(r.answers[3].scope.completions);
+        let p = r.prepared.inputs().archmap().snapshots[0]
+            .subjects
+            .iter()
+            .find(|s| s.id == "p")
+            .unwrap();
+        assert!(matches!(
+            p.fields
+                .iter()
+                .find(|f| f.name == "Reservations.State.owner")
+                .unwrap()
+                .slot,
+            crate::archmap::Slot::Missing
+        ));
+    }
+}
+#[test]
+fn owned_binding_completion_recheck_rejects_changed_missing_condition_and_success_after_cache() {
+    for mode in ["ambiguous", "single", "forceA", "forceB"] {
+        let r = completion_run(mode);
+        let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+        let e = env(&r);
+        let req = &r.prepared.requests().requests()[3];
+        let answer = &r.answers[3];
+        e.validate_answer(&g, req, answer).unwrap();
+        for case in 0..4 {
+            let mut changed = answer.clone();
+            match case {
+                0 => changed.scope.completions = false,
+                1 => {
+                    changed.status = if changed.status == Decision::Established {
+                        Decision::Refuted
+                    } else {
+                        Decision::Established
+                    }
+                }
+                2 => {
+                    if mode == "ambiguous" {
+                        changed
+                            .reasons
+                            .iter_mut()
+                            .find(|r| matches!(r.kind, ReasonKind::Missing))
+                            .unwrap()
+                            .missing[0]
+                            .subject = "q".into();
+                    } else {
+                        changed
+                            .outputs
+                            .insert("value".into(), r.answers[2].outputs["value"]);
+                    }
+                }
+                _ => {
+                    if mode == "ambiguous" {
+                        changed
+                            .reasons
+                            .retain(|r| !matches!(r.kind, ReasonKind::Missing));
+                    } else {
+                        changed.evidence.push(r.answers[2].outputs["value"]);
+                    }
+                }
+            }
+            assert!(matches!(
+                e.validate_answer(&g, req, &changed),
+                Err(ValidationFailure::Internal(_))
+            ));
+            assert!(matches!(
+                env(&r).validate_answer(&g, req, &changed),
+                Err(ValidationFailure::Internal(_))
+            ));
+            e.validate_answer(&g, req, answer).unwrap();
+        }
+        if let Some(index) = r.nodes.iter().enumerate().find_map(|(i, n)| {
+            (r.contexts[i].request == 3
+                && (matches!(n.rule, Rule::OwnedBinding(_))
+                    || matches!(
+                        n.rule,
+                        Rule::ProjectionCheck {
+                            part: ProjectionCheckPart::Condition,
+                            ..
+                        }
+                    )))
+            .then_some(i)
+        }) {
+            completion_mutation(&r, index, |ns| ns[index].scope.completions = false);
+            completion_mutation(&r, index, |ns| ns[index].support.clear());
+            completion_mutation(&r, index, |ns| {
+                ns[index].arguments.pop();
+            });
+        }
+    }
+}
+fn completion_stop(mode: usize) {
+    use std::{cell::Cell, rc::Rc};
+    let normal = completion_run("ambiguous");
+    let (limits, usage, expected) = reservations_private_stop_usage(mode);
+    let armed = Rc::new(Cell::new(false));
+    let seen = Rc::new(Cell::new(false));
+    let probes = Rc::new(Cell::new(0));
+    let frozen = Rc::new(Cell::new(None));
+    let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
+    let mut c = Control::new(limits, move |_| {
+        p.set(p.get() + 1);
+        if a.replace(false) {
+            assert!(f.replace(Some(p.get())).is_none());
+            usage
+        } else {
+            Default::default()
+        }
+    });
+    let prepared = prepare_observed(
+        fixture::completion_input("ambiguous", "r1"),
+        COMPLETION_ASKS,
+        &mut c,
+    )
+    .unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+        e.validate_answer(g, request, answer)?;
+        if request.id == "child" {
+            let (a, s) = (armed.clone(), seen.clone());
+            data::observe_iterations(move |_, ctx, operation, index| {
+                let target = if mode == 0 {
+                    operation == "owned_binding_completion_enum"
+                } else {
+                    operation == "owned_binding_completion_case"
+                };
+                if ctx.request == 3 && target && index == 1 && !s.replace(true) {
+                    a.set(true);
+                }
+            });
+        }
+        Ok(())
+    })
+    .unwrap();
+    data::clear_iteration_observer();
+    assert!(seen.get());
+    assert_eq!(stopped.status(), "interrupted");
+    assert_eq!(c.stop_reason(), Some(expected.clone()));
+    assert_eq!(Some(probes.get()), frozen.get());
+    assert_eq!(&stopped.answers[..3], &normal.answers[..3]);
+    assert_eq!(
+        format!("{:?}", stopped.nodes),
+        format!("{:?}", &normal.nodes[..stopped.nodes.len()])
+    );
+    assert_eq!(stopped.contexts, &normal.contexts[..stopped.contexts.len()]);
+    for answer in &stopped.answers[3..] {
+        assert_eq!(answer.status, Decision::Undetermined);
+        assert!(answer.outputs.is_empty());
+        assert!(
+            answer
+                .reasons
+                .iter()
+                .any(|r| matches!(&r.kind,ReasonKind::Stop(s)if s==&expected))
+        );
+    }
+    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+    assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
+    assert_eq!(Some(probes.get()), frozen.get());
+}
+#[test]
+fn owned_binding_completion_enumeration_cancel_preserves_prefix_and_independent_answers() {
+    completion_stop(0)
+}
+#[test]
+fn owned_binding_completion_case_time_stop_preserves_prefix_and_independent_answers() {
+    completion_stop(1)
+}
+#[test]
+fn owned_binding_completion_case_memory_stop_preserves_prefix_and_independent_answers() {
+    completion_stop(2)
+}

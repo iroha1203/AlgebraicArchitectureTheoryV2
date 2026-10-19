@@ -227,7 +227,7 @@
   既知ownerの固定Answer値・公開成分射影を依存Law族の実prefix域へ渡し、
   有限Owned参照・Tuple/Option/Set/Mapと独立した固定値を評価する。
   型内の全ownerが固定されたOwned参照・Tuple/List/Option/Set/MapのAnswer束縛は、元Refを束縛値として保持する。
-  各memberの原始owner事実から所属を別のBool導出で検査し、Sourceの証拠辺として渡す。
+  各memberの原始owner事実と、元ArchMapへ拡張できる共有有限補完から所属を別のBool導出で検査し、Sourceの証拠辺として渡す。
   Mapは実key/imageの所属と期待Owned始域の全体を照合し、none・空containerと空Mapの全域条件を区別する。
   実所属・snapshotの不適合は型付きprojection構成条件の反証と直接依存停止へ接続する。
   固定producerの補完・全称Scopeを継承し、今回の自由parameterの実Domainを追加して元入力から再検査する。
@@ -241,7 +241,9 @@
   固定/自由ownerが混在するときは、固定owner分を先に構成条件として検査し、自由部分を各実prefixで照合する。
   固定部分の不適合は条件反証へ接続し、自由部分に適合prefixがない空域と区別する。
   条件には元値と固定ownerの型付きRefを保持し、直接subjectのownerも同Requestの原始入力へ戻して再検査する。
-  固定ownerの所属・Map完全始域が未確定な場合は、既存の未実装の範囲に残る。
+  固定ownerの所属・Map完全始域は全候補で照合する。全候補で成立する場合は元値を消費し、
+  全候補で不適合なら型付き条件反証、成否が分かれる場合は元owner slotのmissing_observationと
+  直接producerのdependency_blockedを返す。後続依存へ元理由を保持し、補完値を観測Atomへ追加しない。
   上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・
   上記以外の未観測ownerの所属条件・

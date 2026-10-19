@@ -439,7 +439,7 @@ fn fixed_owned_unprovided_and_inapplicable_values_keep_original_reasons() {
     }
 }
 #[test]
-fn fixed_owned_binding_keeps_static_invalidity_and_unknown_membership_distinct() {
+fn fixed_owned_binding_keeps_static_invalidity() {
     for ask in [
         "take=evaluate(Reservations.obUse,a=@v/A,p=$flag.value)",
         "take=evaluate(Reservations.obUse,a=@v/A,p=$pair.value[2])",
@@ -466,18 +466,6 @@ fn fixed_owned_binding_keeps_static_invalidity_and_unknown_membership_distinct()
         assert!(arr(f(&w, "nodes")).is_empty());
         assert!(arr(f(&w, "answers")).is_empty());
     }
-    // 未観測の原始所属は「違う」と判断せず、未実装の全補完へ残す。
-    assert!(matches!(
-        evaluate_observed_bytes(
-            fixture::input(true, false, "r1"),
-            &[
-                "take=check(Reservations.obFalse,a=@v/A,p=$child.value)",
-                "child=evaluate(Reservations.obChild,p=@v/p)"
-            ],
-            &mut quiet()
-        ),
-        Err(archsig::observed::EvaluationFailure::NotImplemented { .. })
-    ));
 }
 fn refs(j: &Json, out: &mut Vec<String>) {
     match j {
@@ -627,4 +615,305 @@ fn fixed_owned_bindings_flow_through_nested_view_calls_and_successive_producers(
     }
     assert_eq!(f(a(&w, "finite"), "status"), &Json::str("refuted"));
     assert!(!arr(f(a(&w, "finite"), "evidence")).is_empty());
+}
+
+#[test]
+fn fixed_owned_binding_unknown_membership_keeps_missing_and_direct_dependency_chain() {
+    for path in ["value", "evaluation.value"] {
+        let take = format!("take=check(Reservations.obFalse,a=@v/A,p=$child.{path})");
+        let asks = [
+            "seed=evaluate(Reservations.adZero)",
+            "prior=check(Reservations.prior)",
+            "again=check(Reservations.adBool,a=@v/A,flag=$take.evaluation.value)",
+            &take,
+            "child=evaluate(Reservations.obChild,p=@v/p)",
+            "later=evaluate(Reservations.adFlag)",
+        ];
+        let input = fixture::completion_input("ambiguous", "r1");
+        let original = input.clone();
+        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        assert_eq!(r.status(), "partial");
+        assert_eq!(r.prepared().inputs().sources(), &original);
+        let w = r.wire();
+        assert_eq!(
+            arr(f(&w, "answers"))
+                .iter()
+                .map(|a| f(a, "id").clone())
+                .collect::<Vec<_>>(),
+            asks.iter()
+                .map(|s| Json::str(s.split('=').next().unwrap()))
+                .collect::<Vec<_>>()
+        );
+        for id in ["seed", "child", "later"] {
+            assert_eq!(f(a(&w, id), "status"), &Json::str("established"));
+        }
+        assert_eq!(f(a(&w, "prior"), "status"), &Json::str("refuted"));
+        assert!(!arr(f(a(&w, "prior"), "evidence")).is_empty());
+        assert_eq!(
+            f(node(&w, f(f(a(&w, "child"), "outputs"), "value")), "value"),
+            &Json::Arr(vec![Json::str("v"), Json::str("p")])
+        );
+        for (id, producer) in [("take", "child"), ("again", "take")] {
+            let answer = a(&w, id);
+            assert_eq!(f(answer, "status"), &Json::str("undetermined"));
+            assert_eq!(f(answer, "outputs"), &Json::obj([]));
+            assert_eq!(
+                f(f(answer, "scope"), "domain"),
+                &Json::str("all_completions")
+            );
+            assert!(
+                arr(f(answer, "reasons"))
+                    .iter()
+                    .any(|r| f(r, "code") == &Json::str("dependency_blocked")
+                        && f(f(r, "details"), "request") == &Json::str(producer))
+            );
+            let missing = arr(f(answer, "reasons"))
+                .iter()
+                .find(|r| f(r, "code") == &Json::str("missing_observation"))
+                .unwrap();
+            assert_eq!(
+                f(missing, "missing"),
+                &Json::Arr(vec![Json::obj([
+                    ("snapshot", Json::str("v")),
+                    ("subject", Json::str("p")),
+                    ("field", Json::str("Reservations.State.owner"))
+                ])])
+            );
+            for dependency in arr(f(missing, "dependencies")) {
+                assert_eq!(f(node(&w, dependency), "type"), &Json::str("Expression"));
+            }
+            assert!(
+                !arr(f(answer, "reasons"))
+                    .iter()
+                    .any(|r| f(r, "code") == &Json::str("internal")
+                        || f(r, "code") == &Json::str("condition_failed"))
+            );
+        }
+        for reason in arr(f(a(&w, "take"), "reasons")) {
+            assert!(arr(f(a(&w, "again"), "reasons")).contains(reason));
+        }
+        let p = &r.prepared().inputs().archmap().snapshots[0]
+            .subjects
+            .iter()
+            .find(|s| s.id == "p")
+            .unwrap();
+        assert!(matches!(
+            p.fields
+                .iter()
+                .find(|f| f.name == "Reservations.State.owner")
+                .unwrap()
+                .slot,
+            archsig::archmap::Slot::Missing
+        ));
+    }
+}
+
+#[test]
+fn fixed_owned_binding_completed_membership_uses_roster_and_known_map_constraints() {
+    for mode in ["single", "forceA", "forceB"] {
+        let asks = [
+            "take=check(Reservations.obFalse,a=@v/A,p=$child.value)",
+            "pack=evaluate(Reservations.obPackUse,a=@v/A,x=$packed.value)",
+            "child=evaluate(Reservations.obChild,p=@v/p)",
+            "packed=evaluate(Reservations.obPacked,p=@v/p)",
+            "later=evaluate(Reservations.adZero)",
+        ];
+        let input = fixture::completion_input(mode, "r1");
+        let original = input.clone();
+        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        let w = r.wire();
+        assert_eq!(r.prepared().inputs().sources(), &original);
+        assert_eq!(
+            r.status(),
+            if mode == "forceB" {
+                "partial"
+            } else {
+                "complete"
+            },
+            "{mode}: {:?}",
+            f(&w, "issues")
+        );
+        for id in ["take", "pack"] {
+            assert_eq!(
+                f(f(a(&w, id), "scope"), "domain"),
+                &Json::str("all_completions")
+            );
+            if mode == "forceB" {
+                blocked(&w, id, if id == "take" { "child" } else { "packed" });
+            } else {
+                assert_eq!(
+                    f(a(&w, id), "status"),
+                    &Json::str(if id == "take" {
+                        "refuted"
+                    } else {
+                        "established"
+                    })
+                );
+            }
+        }
+        assert_eq!(f(a(&w, "later"), "status"), &Json::str("established"));
+        assert_eq!(
+            f(node(&w, f(f(a(&w, "child"), "outputs"), "value")), "value"),
+            &Json::Arr(vec![Json::str("v"), Json::str("p")])
+        );
+        let p = r.prepared().inputs().archmap().snapshots[0]
+            .subjects
+            .iter()
+            .find(|s| s.id == "p")
+            .unwrap();
+        assert!(matches!(
+            p.fields
+                .iter()
+                .find(|f| f.name == "Reservations.State.owner")
+                .unwrap()
+                .slot,
+            archsig::archmap::Slot::Missing
+        ));
+    }
+}
+
+#[test]
+fn fixed_owned_binding_completed_map_keeps_full_domain_and_original_map_reference() {
+    let asks = [
+        "take=evaluate(Reservations.obMapUse,a=@v/A,b=@v/B,x=$table.value)",
+        "table=evaluate(Reservations.obTable,m=@v/m)",
+    ];
+    let r = evaluate_observed_bytes(
+        fixture::completion_input("forceA", "r1"),
+        &asks,
+        &mut quiet(),
+    )
+    .unwrap();
+    let w = r.wire();
+    assert_eq!(r.status(), "complete", "{:?}", f(&w, "issues"));
+    assert_eq!(f(a(&w, "take"), "status"), &Json::str("established"));
+    let evaluation = node(&w, f(f(a(&w, "take"), "outputs"), "evaluation"));
+    let binding = arr(f(f(evaluation, "value"), "bindings"))
+        .iter()
+        .find(|b| f(b, "name") == &Json::str("x"))
+        .unwrap();
+    assert_eq!(
+        f(binding, "value"),
+        f(f(a(&w, "table"), "outputs"), "value")
+    );
+    let map = node(&w, f(binding, "value"));
+    let r = |s| Json::Arr(vec![Json::str("v"), Json::str(s)]);
+    assert_eq!(
+        f(map, "value"),
+        &Json::Arr(vec![
+            Json::Arr(vec![r("p"), r("r")]),
+            Json::Arr(vec![r("q"), r("s")])
+        ])
+    );
+    assert_eq!(
+        f(f(a(&w, "take"), "scope"), "domain"),
+        &Json::str("all_completions")
+    );
+}
+
+#[test]
+fn fixed_owned_binding_completion_keeps_current_provenance_three_inputs_and_prior_refs() {
+    fn refs(j: &Json, out: &mut Vec<Json>) {
+        match j {
+            Json::Obj(m) if m.len() == 1 && m.contains_key("node") => out.push(j.clone()),
+            Json::Obj(m) => {
+                for value in m.values() {
+                    refs(value, out)
+                }
+            }
+            Json::Arr(xs) => {
+                for value in xs {
+                    refs(value, out)
+                }
+            }
+            _ => {}
+        }
+    }
+    for mode in ["ambiguous", "forceA", "forceB"] {
+        let mut wires = vec![];
+        for revision in ["r1", "r2"] {
+            let input = fixture::completion_input(mode, revision);
+            let original = input.clone();
+            let checked =
+                archsig::observed::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+            let r = evaluate_observed_bytes(
+                input,
+                &[
+                    "take=check(Reservations.obEq,a=@v/A,p=$child.value)",
+                    "child=evaluate(Reservations.obChild,p=@v/p)",
+                ],
+                &mut quiet(),
+            )
+            .unwrap();
+            assert_eq!(r.prepared().inputs().sources(), &original);
+            assert_eq!(r.prepared().inputs().definitions(), checked.definitions());
+            assert_eq!(
+                format!("{:?}", r.prepared().inputs().law()),
+                format!("{:?}", checked.law())
+            );
+            assert_eq!(
+                format!("{:?}", r.prepared().inputs().archmap()),
+                format!("{:?}", checked.archmap())
+            );
+            let w = r.wire();
+            let mut facts = 0;
+            for (index, n) in arr(f(&w, "nodes")).iter().enumerate() {
+                let mut all = vec![];
+                refs(n, &mut all);
+                for reference in all {
+                    assert!(arr(f(&w, "nodes"))[..index].contains(node(&w, &reference)));
+                }
+                for fact in arr(f(n, "support")) {
+                    let Json::Obj(fact) = fact else { panic!() };
+                    let Some(atom) = fact.get("atom") else {
+                        continue;
+                    };
+                    facts += 1;
+                    let map = r.prepared().inputs().archmap();
+                    let subject = map
+                        .snapshots
+                        .iter()
+                        .find(|s| Json::str(&s.id) == fact["snapshot"])
+                        .unwrap()
+                        .subjects
+                        .iter()
+                        .find(|s| Json::str(&s.id) == fact["subject"])
+                        .unwrap();
+                    let field = subject
+                        .fields
+                        .iter()
+                        .find(|f| Json::str(&f.name) == fact["field"])
+                        .unwrap();
+                    let archsig::archmap::Slot::Known {
+                        atom: actual,
+                        origin,
+                        ..
+                    } = &field.slot
+                    else {
+                        panic!()
+                    };
+                    assert_eq!(&Json::str(actual), atom);
+                    let origin = map.origins.iter().find(|o| &o.id == origin).unwrap();
+                    assert!(!origin.locations.is_empty());
+                    for at in &origin.locations {
+                        assert_eq!(
+                            map.sources
+                                .iter()
+                                .find(|s| s.id == at.source)
+                                .unwrap()
+                                .revision,
+                            revision
+                        );
+                    }
+                }
+            }
+            if mode != "ambiguous" {
+                assert!(facts > 0);
+            }
+            wires.push(w);
+        }
+        assert_eq!(f(&wires[0], "nodes"), f(&wires[1], "nodes"));
+        assert_eq!(f(&wires[0], "answers"), f(&wires[1], "answers"));
+        assert_ne!(f(&wires[0], "inputs"), f(&wires[1], "inputs"));
+    }
 }
