@@ -75,7 +75,7 @@ impl NodeType {
     }
 }
 pub(crate) enum Scalar {
-    Path(Box<super::path_value::Identity>),
+    Path(Box<super::path_value::PathValue>),
     Term(Box<super::term::Term>),
     Unit,
     Text(String),
@@ -118,7 +118,7 @@ pub(crate) enum Scalar {
 impl Scalar {
     pub(crate) fn ty(&self) -> Type {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match self {
-            Self::Path(path) => Type::Path(path.entity.clone(), path.entity.clone()),
+            Self::Path(path) => Type::Path(path.entity.clone(), path.target_entity()),
             Self::Term(t) => t.ty(),
             Self::Unit => Type::Unit,
             Self::Text(_) => Type::Text,
@@ -959,6 +959,16 @@ pub(crate) enum Payload {
         left: NodeRef,
         right: NodeRef,
     },
+    PathCondition {
+        left: NodeRef,
+        right: NodeRef,
+    },
+    PathCounterexample {
+        bindings: Vec<Binding>,
+        left: NodeRef,
+        right: NodeRef,
+        facts: Vec<Fact>,
+    },
     OwnedCallCondition {
         left: NodeRef,
         right: NodeRef,
@@ -1184,13 +1194,13 @@ impl Payload {
                 ("operands", refs(&[*instance])),
                 ("quantifiers", Json::Arr(vec![])),
             ]),
-            Self::MapDomainCondition { left, right } | Self::OwnedCallCondition { left, right } => {
-                Json::obj([
-                    ("predicate", Json::str("equal")),
-                    ("operands", refs(&[*left, *right])),
-                    ("quantifiers", Json::Arr(vec![])),
-                ])
-            }
+            Self::MapDomainCondition { left, right }
+            | Self::PathCondition { left, right }
+            | Self::OwnedCallCondition { left, right } => Json::obj([
+                ("predicate", Json::str("equal")),
+                ("operands", refs(&[*left, *right])),
+                ("quantifiers", Json::Arr(vec![])),
+            ]),
             Self::ProjectionCondition { name, inputs } => {
                 let mut operands = vec![*name];
                 operands.extend(inputs.iter().copied());
@@ -1246,6 +1256,12 @@ impl Payload {
                 ),
             ]),
             Self::TermCounterexample {
+                bindings,
+                left,
+                right,
+                facts,
+            }
+            | Self::PathCounterexample {
                 bindings,
                 left,
                 right,
@@ -1367,6 +1383,7 @@ impl Node {
                 payload,
                 Payload::Proposition { .. }
                     | Payload::MapDomainCondition { .. }
+                    | Payload::PathCondition { .. }
                     | Payload::OwnedCallCondition { .. }
                     | Payload::ProjectionCondition { .. }
             ) && let Json::Obj(fields) = &mut value
@@ -1698,7 +1715,9 @@ impl Graph {
                     || !matches!(
                         proposition.payload,
                         Some(
-                            Payload::MapDomainCondition { .. } | Payload::OwnedCallCondition { .. }
+                            Payload::MapDomainCondition { .. }
+                                | Payload::PathCondition { .. }
+                                | Payload::OwnedCallCondition { .. }
                         )
                     )
                     || !proposition
@@ -1836,6 +1855,31 @@ impl Graph {
                 || node.scope != proof.scope
             {
                 return Err("Owned条件の反証・元辺・判断が違う".into());
+            }
+            return Ok(());
+        }
+        if let Some(Payload::PathCondition { left, right }) = &node.payload {
+            let [source, child, actual, required, evidence] = node.arguments.as_slice() else {
+                return Err("Path条件の元式・実子・証拠がない".into());
+            };
+            let proof = self.get(*evidence)?;
+            let judgment = node.judgment.as_ref().ok_or("Path条件の判断がない")?;
+            if left != actual
+                || right != required
+                || node.evidence != [*evidence]
+                || judgment.status != Decision::Refuted
+                || judgment.evidence != node.evidence
+                || !judgment.reasons.is_empty()
+                || !node.reasons.is_empty()
+                || node.rule != Rule::Construction("proposition")
+                || proof.ty != NodeType::Evidence
+                || proof.arguments != [*source, *child, *actual, *required]
+                || proof.scope != node.scope
+                || proof.support != node.support
+                || !matches!(&proof.payload,Some(Payload::PathCounterexample{left:a,right:b,facts,..})if a==left&&b==right&&facts==&node.support)
+                || self.scalar(*left)? == self.scalar(*right)?
+            {
+                return Err("Path条件の反証・元辺・Scopeが違う".into());
             }
             return Ok(());
         }
@@ -3976,6 +4020,26 @@ impl Graph {
             }
             (NodeType::Proposition, Some(Payload::Proposition { instance })) => {
                 self.expect(*instance, &NodeType::LawInstance)?
+            }
+            (NodeType::Proposition, Some(Payload::PathCondition { left, right })) => {
+                self.value(*left, &Type::Text)?;
+                self.value(*right, &Type::Text)?;
+            }
+            (
+                NodeType::Evidence,
+                Some(Payload::PathCounterexample {
+                    bindings,
+                    left,
+                    right,
+                    ..
+                }),
+            ) => {
+                self.bindings(bindings)?;
+                self.value(*left, &Type::Text)?;
+                self.value(*right, &Type::Text)?;
+                if self.scalar(*left)? == self.scalar(*right)? {
+                    return Err("Path条件反例の両辺が等しい".into());
+                }
             }
             (NodeType::Proposition, Some(Payload::MapDomainCondition { left, right })) => {
                 let Type::Set(ref element) = self.scalar(*left)?.ty() else {

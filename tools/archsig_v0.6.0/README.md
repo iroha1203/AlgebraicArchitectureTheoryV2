@@ -60,7 +60,11 @@
   恒等Pathとそれを含むList/Tuple/Optionの等号・不等号、List所属は、結果型Tとして受け付ける。
   Pathを含むList/Tuple/Optionは、入れ子の各成分を実argumentsから到達する型付き既出Refで表示する。
   原始containerのinline表示を保ち、let/if/view呼出しでも元の式・束縛・支持・Scopeを再検査する。
-  生成射のPath構成・合成・それらの実作用比較は後続の実装単位で扱う。
+  内部arrowのpath(e)は原始生成元名1個と実from/toを保持し、全snapshotのsubject存在・既知field Atomの共通carrier U上に有限作用を構成する。
+  sourceの既知fieldをtargetの同名fieldへ、from参照leafをtoへ写し、Listの順序・重複と参照構造を照合する。Setは移送後の外延で照合し、量leafの一致は要求しない。
+  source部分Fの外では恒等とし、式内等値は端点と全U上の作用を比較する。同作用の別名生成元や、全U恒等の自己arrowと空語を数学的に等値とする一方、元reading・生成元名・実producerは由来として再検査する。
+  path(e)とsource/target、Option/List/Tuple包装・通常view/let/ifの値を既出の型付きRefで接続する。必要な端点・fieldの欠測は元slotを保持した未決、既知参照構造の不一致は元入力へ接続したcondition_failedを返す。
+  correspondenceの生成Pathとthenの一般合成は後続の実装単位に残る。
   原始Termと閉じたfnは、元body・parameter順・型付きASTと静的参照を保ち、既知引数へ適用する。
   bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
   元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。

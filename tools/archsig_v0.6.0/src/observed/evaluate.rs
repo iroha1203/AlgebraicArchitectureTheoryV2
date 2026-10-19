@@ -38,6 +38,8 @@ mod owned_call;
 mod owned_family;
 #[path = "owned_type_evaluate.rs"]
 mod owned_type;
+#[path = "path_evaluate.rs"]
+mod path;
 #[path = "universal_evaluate.rs"]
 mod universal;
 
@@ -1831,6 +1833,9 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
+        if self.environment.is_path(id)? {
+            return self.path_construct(id, span, ty, evaluated, values, known);
+        }
         let mut reasons = Vec::new();
         let failed = evaluated.iter().any(|a| {
             a.reasons
@@ -2926,6 +2931,9 @@ mod recheck_tests {
     }
     mod identity_path_tests {
         include!("identity_path_tests.rs");
+    }
+    mod internal_path_tests {
+        include!("internal_path_tests.rs");
     }
     mod owned_universal_call_tests {
         include!("owned_universal_call_tests.rs");
