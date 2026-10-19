@@ -18,6 +18,7 @@ pub(crate) struct PathValue {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Step {
     pub generator: Scalar,
+    pub word_tail: Vec<Scalar>,
     pub target: Scalar,
     pub carrier: Vec<super::result::Fact>,
     pub images: Vec<super::result::Fact>,
@@ -113,6 +114,16 @@ impl PathValue {
                         return Ok(false);
                     }
                 }
+                if a.word_tail.len() != b.word_tail.len() {
+                    return Ok(false);
+                }
+                for (x, y) in a.word_tail.iter().zip(&b.word_tail) {
+                    tick(control)?;
+                    if !matches!((x,y),(Scalar::Subject{snapshot:a,subject:b,entity:c},Scalar::Subject{snapshot:d,subject:e,entity:f})if a==d&&b==e&&c==f)
+                    {
+                        return Ok(false);
+                    }
+                }
                 for (a, b) in [(&a.carrier, &b.carrier), (&a.images, &b.images)] {
                     if a.len() != b.len() {
                         return Ok(false);
@@ -163,6 +174,13 @@ impl PathValue {
                 || !matches!(&step.target,Scalar::Subject{snapshot,subject,entity}if !snapshot.is_empty()&&!subject.is_empty()&&!entity.is_empty())
             {
                 return Err("生成Pathの原始参照が空・異型".into());
+            }
+            for generator in &step.word_tail {
+                tick(control)?;
+                if !matches!(generator,Scalar::Subject{snapshot,subject,entity}if !snapshot.is_empty()&&!subject.is_empty()&&!entity.is_empty())
+                {
+                    return Err("Path語の生成元が原始参照でない".into());
+                }
             }
             if step.carrier.len() != step.images.len() {
                 return Err("Pathのcarrierと全域像の件数が違う".into());
@@ -306,7 +324,12 @@ pub(super) fn wire(
             let object = reference(&identity.object(), prior, roots, control)?;
             let target = reference(&identity.target(), prior, roots, control)?;
             let generators = if let Some(step) = &identity.step {
-                vec![reference(&step.generator, prior, roots, control)?.wire()]
+                let mut word = Vec::new();
+                for generator in std::iter::once(&step.generator).chain(&step.word_tail) {
+                    tick(control)?;
+                    word.push(reference(generator, prior, roots, control)?.wire());
+                }
+                word
             } else {
                 vec![]
             };

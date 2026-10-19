@@ -22,38 +22,43 @@ impl Environment<'_> {
         if !self.is_path(id)? {
             return Ok(None);
         }
-        let [child] = children else {
-            return Err("Path条件の元実子数が違う".into());
-        };
-        if source.0 >= limit
-            || child.0 >= limit
-            || graph.context_at(source.0) != self.current_context(graph)
-            || graph.context_at(child.0) != self.current_context(graph)
-        {
-            return Err("Path条件のSource/実子のContext・既出性が違う".into());
-        }
-        let bindings = self.expression_bindings(graph, source)?;
         let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
             unreachable!()
         };
-        if *child != self.actual_evaluation(graph, args[0], bindings)? {
-            return Err("Path条件の実子が元引数でない".into());
+        if children.len() != args.len() {
+            return Err("Path条件の元実子数が違う".into());
         }
+        if source.0 >= limit || graph.context_at(source.0) != self.current_context(graph) {
+            return Err("Path条件Sourceの既出性・Contextが違う".into());
+        }
+        let bindings = self.expression_bindings(graph, source)?;
         self.validate_at(graph, graph.get(source)?, source.0)?;
-        self.validate_at(graph, graph.get(*child)?, child.0)?;
-        let Some(value) = self.evaluation(graph, *child)?.2 else {
-            return Ok(None);
-        };
-        let info = self.internal_path_at(graph, id, &[graph.scalar(value)?.clone()])?;
+        let mut values = Vec::new();
+        let mut support = Vec::new();
+        let mut scope = graph.get(source)?.scope.clone();
+        for (&arg, &child) in args.iter().zip(children) {
+            self.tick()?;
+            if child.0 >= limit
+                || graph.context_at(child.0) != self.current_context(graph)
+                || child != self.actual_evaluation(graph, arg, bindings)?
+            {
+                return Err("Path条件の実子が元引数でない".into());
+            }
+            self.validate_at(graph, graph.get(child)?, child.0)?;
+            let Some(value) = self.evaluation(graph, child)?.2 else {
+                return Ok(None);
+            };
+            values.push(graph.scalar(value)?.clone());
+            support.extend(graph.get(child)?.support.iter().cloned());
+            scope.merge(&graph.get(child)?.scope);
+        }
+        let info = self.internal_path_at(graph, id, &values)?;
         let Some((left, right)) = info.failure else {
             return Ok(None);
         };
-        let mut support = info.support;
-        support.extend(graph.get(*child)?.support.iter().cloned());
+        support.extend(info.support);
         support.sort();
         support.dedup();
-        let mut scope = graph.get(source)?.scope.clone();
-        scope.merge(&graph.get(*child)?.scope);
         scope.merge(&info.scope);
         Ok(Some(Condition {
             left,
@@ -76,10 +81,7 @@ impl Environment<'_> {
         let candidate = path_payload
             || matches!(
                 (&node.payload, &node.rule),
-                (
-                    Some(Payload::Scalar(Scalar::Text(_))),
-                    Rule::Construction("evaluation")
-                )
+                (Some(Payload::Scalar(_)), Rule::Construction("evaluation"))
             );
         if !candidate {
             return Ok(false);
@@ -91,17 +93,39 @@ impl Environment<'_> {
                 Ok(false)
             };
         };
-        if !matches!(graph.get(source)?.payload, Some(Payload::Expression { .. })) {
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &graph.get(source)?.payload
+        else {
             return if path_payload {
-                Err("Path条件の元Sourceが式でない".into())
+                Err("Path条件の元SourceがLaw式でない".into())
+            } else {
+                Ok(false)
+            };
+        };
+        let Some(&id) = self.expressions.get(span) else {
+            return if path_payload {
+                Err("Path条件の元式がない".into())
+            } else {
+                Ok(false)
+            };
+        };
+        if !self.is_path(id)? {
+            return if path_payload {
+                Err("Path条件がPath構成から生じていない".into())
             } else {
                 Ok(false)
             };
         }
-        let Some(child) = node.arguments.get(1).copied() else {
-            return Err("Path条件の実子辺がない".into());
+        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+            unreachable!()
         };
-        let Some(plan) = self.path_condition(graph, source, &[child], limit)? else {
+        let children = node
+            .arguments
+            .get(1..args.len() + 1)
+            .ok_or("Path条件の元実子辺がない")?;
+        let Some(plan) = self.path_condition(graph, source, children, limit)? else {
             return if path_payload {
                 Err("Path条件が元入力から生成されない".into())
             } else {
@@ -111,12 +135,14 @@ impl Environment<'_> {
         if node.support != plan.support || node.scope != plan.scope || !node.reasons.is_empty() {
             return Err("Path条件の元支持・Scope・理由が違う".into());
         }
-        let edges = vec![source, child];
+        let edges: Vec<_> = std::iter::once(source)
+            .chain(children.iter().copied())
+            .collect();
         match &node.payload {
             Some(Payload::Scalar(value)) => {
                 if value != &plan.left && value != &plan.right
                     || node.arguments != edges
-                    || node.ty != NodeType::Value(Type::Text)
+                    || node.ty != NodeType::Value(plan.left.ty())
                     || node.rule != Rule::Construction("evaluation")
                     || !node.evidence.is_empty()
                     || node.judgment.is_some()
@@ -209,7 +235,13 @@ impl Environment<'_> {
             self.tick()?;
             if graph.context_at(i) == self.current_context(graph)
                 && matches!(node.payload, Some(Payload::PathCondition { .. }))
-                && node.arguments.get(..2) == Some([source, children[0]].as_slice())
+                && node.arguments.get(..children.len() + 1)
+                    == Some(
+                        std::iter::once(source)
+                            .chain(children.iter().copied())
+                            .collect::<Vec<_>>()
+                            .as_slice(),
+                    )
             {
                 self.validate_at(graph, node, i)?;
                 if found.replace(NodeRef(i)).is_some() {

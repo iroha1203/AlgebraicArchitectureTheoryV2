@@ -1859,8 +1859,12 @@ impl Graph {
             return Ok(());
         }
         if let Some(Payload::PathCondition { left, right }) = &node.payload {
-            let [source, child, actual, required, evidence] = node.arguments.as_slice() else {
+            if node.arguments.len() < 5 {
                 return Err("Path条件の元式・実子・証拠がない".into());
+            }
+            let prefix = node.arguments.len() - 3;
+            let [actual, required, evidence] = &node.arguments[prefix..] else {
+                unreachable!()
             };
             let proof = self.get(*evidence)?;
             let judgment = node.judgment.as_ref().ok_or("Path条件の判断がない")?;
@@ -1873,7 +1877,7 @@ impl Graph {
                 || !node.reasons.is_empty()
                 || node.rule != Rule::Construction("proposition")
                 || proof.ty != NodeType::Evidence
-                || proof.arguments != [*source, *child, *actual, *required]
+                || proof.arguments != node.arguments[..node.arguments.len() - 1]
                 || proof.scope != node.scope
                 || proof.support != node.support
                 || !matches!(&proof.payload,Some(Payload::PathCounterexample{left:a,right:b,facts,..})if a==left&&b==right&&facts==&node.support)
@@ -4022,8 +4026,9 @@ impl Graph {
                 self.expect(*instance, &NodeType::LawInstance)?
             }
             (NodeType::Proposition, Some(Payload::PathCondition { left, right })) => {
-                self.value(*left, &Type::Text)?;
-                self.value(*right, &Type::Text)?;
+                let ty = self.scalar(*left)?.ty();
+                self.value(*left, &ty)?;
+                self.value(*right, &ty)?;
             }
             (
                 NodeType::Evidence,
@@ -4035,8 +4040,9 @@ impl Graph {
                 }),
             ) => {
                 self.bindings(bindings)?;
-                self.value(*left, &Type::Text)?;
-                self.value(*right, &Type::Text)?;
+                let ty = self.scalar(*left)?.ty();
+                self.value(*left, &ty)?;
+                self.value(*right, &ty)?;
                 if self.scalar(*left)? == self.scalar(*right)? {
                     return Err("Path条件反例の両辺が等しい".into());
                 }

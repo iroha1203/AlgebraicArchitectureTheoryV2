@@ -64,7 +64,10 @@
   sourceの既知fieldをtargetの同名fieldへ、from参照leafをtoへ写し、Listの順序・重複と参照構造を照合する。Setは移送後の外延で照合し、量leafの一致は要求しない。
   source部分Fの外では恒等とし、式内等値は端点と全U上の作用を比較する。同作用の別名生成元や、全U恒等の自己arrowと空語を数学的に等値とする一方、元reading・生成元名・実producerは由来として再検査する。
   path(e)とsource/target、Option/List/Tuple包装・通常view/let/ifの値を既出の型付きRefで接続する。必要な端点・fieldの欠測は元slotを保持した未決、既知参照構造の不一致は元入力へ接続したcondition_failedを返す。
-  correspondenceの生成Pathとthenの一般合成は後続の実装単位に残る。
+  then(p,q)は同じU上でq∘pを合成し、pの生成元列にqの列を順に連結する。空語左右単位・括り方による同作用を保ち、合成後にsource部分Fから全域化し直さない。
+  合成は元の左右実子・全作用・生成元順序と型付き既出Refを再検査する。実端点の不一致は型付き端点対の反証とcondition_failedを残し、依存先はdependency_blockedとなる。
+  未観測端点は元slotと共有補完を保持し、全補完で同じ右単位等式を確定する。Pathの結果値を同batchの後続viewへ束縛できる。
+  correspondenceの生成Pathは後続の実装単位に残る。
   原始Termと閉じたfnは、元body・parameter順・型付きASTと静的参照を保ち、既知引数へ適用する。
   bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
   元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。
