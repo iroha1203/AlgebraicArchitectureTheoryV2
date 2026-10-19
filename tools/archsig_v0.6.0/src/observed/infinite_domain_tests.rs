@@ -363,3 +363,143 @@ fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation
         rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     }
 }
+
+fn committed_reason_stop(kind: usize) {
+    use std::{cell::Cell, rc::Rc};
+    let inputs = fixture::input(SCRIPT, "Z", &[], "r1");
+    let phase = Rc::new(Cell::new(false));
+    let count = Rc::new(Cell::new(0));
+    let (p, c) = (phase.clone(), count.clone());
+    let mut control = Control::new(Default::default(), move |_| {
+        if p.get() {
+            c.set(c.get() + 1);
+        }
+        Default::default()
+    });
+    let prepared = prepare_observed(inputs.clone(), ASKS, &mut control).unwrap();
+    phase.set(true);
+    let normal = evaluate_observed(prepared, &mut control).unwrap();
+    assert_eq!(normal.status(), "partial");
+    let total = count.get();
+    let target = normal
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(i, n)| {
+            (normal.contexts[i].request == 2
+                && matches!(n.ty, NodeType::Evaluation(Type::Bool))
+                && n.reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. })))
+            .then_some(i)
+        })
+        .unwrap();
+    let original = normal.nodes[target]
+        .reasons
+        .iter()
+        .find(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+        .unwrap()
+        .clone();
+    assert!(
+        matches!(&original.kind, ReasonKind::UnsupportedAlgorithm{operand_types,..} if operand_types == &[Type::Text])
+    );
+    assert_eq!(original.request, "v");
+    assert!(matches!(original.location, Some(Location::Law { .. })));
+    assert_eq!(original.dependencies.len(), 1);
+    assert!(original.dependencies[0].0 < target);
+    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let run_at = |position| {
+        let phase = Rc::new(Cell::new(false));
+        let seen = Rc::new(Cell::new(0));
+        let probes = Rc::new(Cell::new(0));
+        let frozen = Rc::new(Cell::new(None));
+        let point = Rc::new(Cell::new(None));
+        let (ph, s, p, f, at) = (
+            phase.clone(),
+            seen.clone(),
+            probes.clone(),
+            frozen.clone(),
+            point.clone(),
+        );
+        let mut control = Control::new(limits, move |checkpoint| {
+            p.set(p.get() + 1);
+            if ph.get() {
+                s.set(s.get() + 1);
+                if s.get() == position {
+                    assert!(f.replace(Some(p.get())).is_none());
+                    at.set(Some(checkpoint));
+                    return usage;
+                }
+            }
+            Default::default()
+        });
+        let prepared = prepare_observed(inputs.clone(), ASKS, &mut control).unwrap();
+        phase.set(true);
+        let stopped = evaluate_observed(prepared, &mut control).unwrap();
+        assert_eq!(stopped.status(), "interrupted");
+        assert_eq!(seen.get(), position);
+        assert_eq!(control.stop_reason(), Some(expected.clone()));
+        assert_eq!(Some(probes.get()), frozen.get());
+        assert_eq!(
+            control.checkpoint(Checkpoint::Expression),
+            Err(expected.clone())
+        );
+        assert_eq!(Some(probes.get()), frozen.get());
+        (stopped, point.get().unwrap())
+    };
+    // Find the first checkpoint after this exact Evaluation was committed.
+    // No fixed checkpoint count or additional production observer is needed.
+    let (mut low, mut high) = (1, total);
+    assert!(run_at(high).0.nodes.len() > target);
+    while low < high {
+        let mid = low + (high - low) / 2;
+        if run_at(mid).0.nodes.len() > target {
+            high = mid;
+        } else {
+            low = mid + 1;
+        }
+    }
+    assert!(low > 1);
+    let before = run_at(low - 1).0;
+    assert!(before.nodes.len() <= target);
+    assert!(!before.answers[2].reasons.contains(&original));
+    assert!(!before.issues.contains(&original));
+    let (stopped, point) = run_at(low);
+    assert_eq!(point, Checkpoint::FiniteIteration);
+    assert_eq!(stopped.nodes.len(), target + 1);
+    assert_eq!(
+        format!("{:?}", stopped.nodes),
+        format!("{:?}", &normal.nodes[..=target])
+    );
+    assert_eq!(stopped.contexts, normal.contexts[..=target]);
+    assert_eq!(stopped.nodes[target].reasons, normal.nodes[target].reasons);
+    assert_eq!(&stopped.answers[..2], &normal.answers[..2]);
+    assert!(
+        stopped.answers[2].reasons.contains(&original),
+        "挿入後停止でも元算法理由をAnswerへ残す"
+    );
+    assert!(stopped.issues.contains(&original));
+    for a in &stopped.answers[2..] {
+        assert_eq!(a.status, Decision::Undetermined);
+        assert!(a.outputs.is_empty());
+        assert!(
+            a.reasons
+                .iter()
+                .any(|r| matches!(&r.kind, ReasonKind::Stop(reason) if reason == &expected))
+        );
+    }
+    assert_eq!(stopped.prepared.inputs().sources(), &inputs);
+    rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+}
+
+#[test]
+fn infinite_committed_evaluation_post_cancel_retains_original_algorithm_reason() {
+    committed_reason_stop(0)
+}
+
+#[test]
+fn infinite_committed_evaluation_post_budgets_retain_original_algorithm_reason() {
+    for kind in [1, 2] {
+        committed_reason_stop(kind);
+    }
+}
