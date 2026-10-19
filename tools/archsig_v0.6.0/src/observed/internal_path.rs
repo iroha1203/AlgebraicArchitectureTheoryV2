@@ -12,18 +12,18 @@ pub(in crate::observed) struct PathResult {
 }
 // 参照へ至る構造を平坦なtoken列へし、深い値の比較・破棄も再帰させない。
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-enum Token {
+pub(super) enum Token {
     Open(String),
     Close,
     Quantity,
     Reference(String, String),
 }
-type Shape = Vec<Token>;
+pub(super) type Shape = Vec<Token>;
 impl Environment<'_> {
-    fn path_shape(
+    pub(super) fn path_shape(
         &self,
         value: &Value,
-        moving: Option<((&str, &str), (&str, &str))>,
+        moving: Option<&BTreeMap<(String, String), (String, String)>>,
         references: &mut BTreeSet<Fact>,
     ) -> Result<Option<Shape>, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -36,15 +36,10 @@ impl Environment<'_> {
                     field: None,
                     atom: None,
                 });
-                let point = if let Some((from, to)) = moving {
-                    if from == (snapshot.as_str(), subject.as_str()) {
-                        to
-                    } else {
-                        (snapshot.as_str(), subject.as_str())
-                    }
-                } else {
-                    (snapshot.as_str(), subject.as_str())
-                };
+                let point = moving
+                    .and_then(|mapping| mapping.get(&(snapshot.clone(), subject.clone())))
+                    .cloned()
+                    .unwrap_or_else(|| (snapshot.clone(), subject.clone()));
                 return Ok(Some(vec![Token::Reference(point.0.into(), point.1.into())]));
             }
             let (name, mut shapes) = match value {
@@ -131,7 +126,7 @@ impl Environment<'_> {
             Ok(Some(out))
         })
     }
-    fn path_shape_same(
+    pub(super) fn path_shape_same(
         &self,
         a: &Option<Shape>,
         b: &Option<Shape>,
@@ -153,7 +148,10 @@ impl Environment<'_> {
             _ => Ok(false),
         }
     }
-    fn path_shape_text(&self, shape: &Option<Shape>) -> Result<String, ValidationFailure> {
+    pub(super) fn path_shape_text(
+        &self,
+        shape: &Option<Shape>,
+    ) -> Result<String, ValidationFailure> {
         let mut out = String::new();
         if let Some(shape) = shape {
             for token in shape {
@@ -180,7 +178,7 @@ impl Environment<'_> {
         }
         reading.ok_or_else(|| "Pathの元readingがない".into())
     }
-    fn path_slot(
+    pub(super) fn path_slot(
         &self,
         owner: &Subject,
         field: &crate::archmap::Field,
@@ -258,13 +256,14 @@ impl Environment<'_> {
             .declarations
             .get(entity)
             .ok_or("pathの原始宣言がない")?;
+        if matches!(
+            &declaration.signature,
+            PrimitiveSignature::Correspondence { .. }
+        ) {
+            return self.correspondence_path(id, generator, &declaration.signature);
+        }
         let PrimitiveSignature::Arrow { endpoint, .. } = &declaration.signature else {
-            return Err(ValidationFailure::UnsupportedExpression {
-                location: Location::Law {
-                    span: self.inputs.law().exprs[id].span,
-                },
-                feature: "correspondence生成Pathの実作用".into(),
-            });
+            return Err("pathの元宣言がarrow/correspondenceでない".into());
         };
         let arrow = self.subject(snapshot, subject)?;
         if arrow.ty != *entity {
@@ -387,7 +386,8 @@ impl Environment<'_> {
                 atom: Some(target_atom.clone()),
             };
             let mut refs = BTreeSet::new();
-            let expected = self.path_shape(value, Some(((fs, fp), (ts, tp))), &mut refs)?;
+            let moving = BTreeMap::from([((fs.clone(), fp.clone()), (ts.clone(), tp.clone()))]);
+            let expected = self.path_shape(value, Some(&moving), &mut refs)?;
             let actual = self.path_shape(target_value, None, &mut BTreeSet::new())?;
             if !self.path_shape_same(&expected, &actual)? {
                 out.failure = Some((

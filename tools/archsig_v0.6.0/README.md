@@ -67,7 +67,11 @@
   then(p,q)は同じU上でq∘pを合成し、pの生成元列にqの列を順に連結する。空語左右単位・括り方による同作用を保ち、合成後にsource部分Fから全域化し直さない。
   合成は元の左右実子・全作用・生成元順序と型付き既出Refを再検査する。実端点の不一致は型付き端点対の反証とcondition_failedを残し、依存先はdependency_blockedとなる。
   未観測端点は元slotと共有補完を保持し、全補完で同じ右単位等式を確定する。Pathの結果値を同batchの後続viewへ束縛できる。
-  correspondenceの生成Pathは後続の実装単位に残る。
+  correspondenceのpath(c)は元from/toと各Map、同名/align fieldからsource rootの全Fを写す。同じUのF外はtarget root存在Atomへ送り、外部参照先の存在は固定する。
+  参照leafの移送、Listの順序・重複、Tuple/Option/Setの参照構造、owner・arrow端点と実在target fieldを照合する。量leafの一致は要求しない。
+  source F上で恒等の自己correspondenceも、F外をrootへ送る全作用によって空語恒等と区別する。式内thenは元の全作用を合成する。
+  欠測Map・端点・ownerは元slotと入力制約を保つ共有補完を使い、同じ値を確認できれば欠測理由付きの値、それ以外は未決を返す。必要なtarget field Atomを補完値から作らない。
+  correspondenceの元生成元・端点・全作用・支持・Scope・元式/実producerを現在の三入力へ再検査し、既知構成不適合には元条件の反証とcondition_failedを返す。
   原始Termと閉じたfnは、元body・parameter順・型付きASTと静的参照を保ち、既知引数へ適用する。
   bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
   元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。
