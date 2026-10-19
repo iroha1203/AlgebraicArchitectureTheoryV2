@@ -24,6 +24,8 @@ mod answer_projection;
 mod answer_projection_condition;
 #[path = "completion.rs"]
 pub(super) mod completion;
+#[path = "correspondence_path.rs"]
+mod correspondence_path;
 #[path = "dependent_family.rs"]
 pub(super) mod dependent_family;
 #[path = "family.rs"]

@@ -2935,6 +2935,9 @@ mod recheck_tests {
     mod internal_path_tests {
         include!("internal_path_tests.rs");
     }
+    mod correspondence_path_tests {
+        include!("correspondence_path_tests.rs");
+    }
     mod composed_path_tests {
         include!("composed_path_tests.rs");
     }
