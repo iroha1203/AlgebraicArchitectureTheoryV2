@@ -49,11 +49,10 @@ impl Evaluator<'_, '_> {
                 .get(&span)
                 .ok_or_else(|| Failure::Internal("Path条件の元Sourceがない".into()))?
                 .expression;
-            let child = evaluated
-                .first()
-                .ok_or_else(|| Failure::Internal("Path条件の元実子がない".into()))?
-                .evaluation;
-            let edges = vec![source, child];
+            let children: Vec<_> = evaluated.iter().map(|e| e.evaluation).collect();
+            let edges: Vec<_> = std::iter::once(source)
+                .chain(children.iter().copied())
+                .collect();
             let mut scope = self.graph.get(source)?.scope.clone();
             for c in &evaluated {
                 scope.merge(&c.scope)
@@ -112,7 +111,7 @@ impl Evaluator<'_, '_> {
             })?;
             let reason = self
                 .environment
-                .path_condition_reason(self.graph, source, &[child], self.graph.nodes.len())?
+                .path_condition_reason(self.graph, source, &children, self.graph.nodes.len())?
                 .ok_or_else(|| Failure::Internal("Pathの条件失敗理由がない".into()))?;
             return self.finish_with_reasons(
                 span,
@@ -135,10 +134,15 @@ impl Evaluator<'_, '_> {
             } else {
                 self.path_subject(target, &path.reading)?
             };
-            let generator = evaluated
-                .first()
-                .and_then(|e| e.value)
-                .ok_or_else(|| Failure::Internal("Pathの元生成元値がない".into()))?;
+            let mut arguments = Vec::new();
+            for child in &evaluated {
+                arguments.push(
+                    child
+                        .value
+                        .ok_or_else(|| Failure::Internal("Pathの元実引数値がない".into()))?,
+                );
+            }
+            arguments.extend([from, to]);
             #[cfg(test)]
             data::observe_actual(span, self.graph.active, "path_endpoints", 0);
             self.tick(Checkpoint::FiniteIteration)?;
@@ -163,7 +167,7 @@ impl Evaluator<'_, '_> {
                     kind: "law",
                     location: Location::Law { span },
                 },
-                vec![generator, from, to],
+                arguments,
                 support,
                 scope,
             )?)

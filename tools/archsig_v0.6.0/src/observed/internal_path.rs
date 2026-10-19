@@ -449,6 +449,7 @@ impl Environment<'_> {
             entity: fe.clone(),
             step: Some(Box::new(Step {
                 generator: generator.clone(),
+                word_tail: vec![],
                 target: to,
                 carrier,
                 images: action,
@@ -463,7 +464,7 @@ impl Environment<'_> {
 
 impl Environment<'_> {
     pub(in crate::observed) fn is_path(&self, id: usize) -> Result<bool, ValidationFailure> {
-        Ok(self.builtin(id)? == Some("path"))
+        Ok(matches!(self.builtin(id)?, Some("path" | "then")))
     }
     pub(in crate::observed) fn internal_path_at(
         &self,
@@ -480,7 +481,7 @@ impl Environment<'_> {
                 if let Some(case) = actual_context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
-                self.internal_path(id, values)
+                self.path_operation(id, values)
             })();
             self.completion_values.replace(old);
             self.context.set(context);
@@ -508,7 +509,16 @@ impl Environment<'_> {
             return Ok(None);
         }
         #[cfg(test)]
-        data::observe_actual(*span, self.current_context(graph), "path_scalar_recheck", 0);
+        data::observe_actual(
+            *span,
+            self.current_context(graph),
+            if self.builtin(id)? == Some("then") {
+                "path_composition_recheck"
+            } else {
+                "path_scalar_recheck"
+            },
+            0,
+        );
         self.tick()?;
         let Some(Payload::Scalar(Scalar::Path(path))) = &node.payload else {
             return Err("元path式の結果値がPathでない".into());
@@ -521,15 +531,21 @@ impl Environment<'_> {
         {
             return Err("Pathの元型・証拠・理由が違う".into());
         }
-        let [generator, from, to] = node.arguments.as_slice() else {
-            return Err("Pathの元引数と既出端点が揃わない".into());
+        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+            unreachable!()
         };
-        // 元引数はcallerから再利用できる。callee内の実子Evaluationとの一致を下で検査する。
-        // 端点表示用RefはこのPathと同じContextで新しく構成される。
-        for r in [generator, from, to] {
+        if node.arguments.len() != args.len() + 2 {
+            return Err("Pathの元引数と既出端点が揃わない".into());
+        }
+        let (operands, endpoints) = node.arguments.split_at(args.len());
+        let [from, to] = endpoints else {
+            unreachable!()
+        };
+        // 元引数はcallerから再利用でき、callee内の各実子Evaluationと下で照合する。
+        for (i, r) in node.arguments.iter().enumerate() {
             self.tick()?;
             if r.0 >= limit
-                || (r != generator && graph.context_at(r.0) != self.current_context(graph))
+                || (i >= args.len() && graph.context_at(r.0) != self.current_context(graph))
             {
                 return Err("Pathの依存が既出・同Contextでない".into());
             }
@@ -538,9 +554,6 @@ impl Environment<'_> {
         if graph.scalar(*from)? != &path.object() || graph.scalar(*to)? != &path.target() {
             return Err("Pathの既出Refと実端点が違う".into());
         }
-        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
-            unreachable!()
-        };
         for (i, source) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
             let Some(Payload::Expression {
@@ -556,8 +569,10 @@ impl Environment<'_> {
             }
             let result = (|| {
                 self.validate_at(graph, source, i)?;
-                if !self.has_operand_evaluation(graph, limit, args[0], bindings, *generator)? {
-                    return Err("Pathの生成元が元実子の値でない".into());
+                for (&arg, &value) in args.iter().zip(operands) {
+                    if !self.has_operand_evaluation(graph, limit, arg, bindings, value)? {
+                        return Err("Pathの実引数が元実子の値でない".into());
+                    }
                 }
                 let analysis = self.analyze_source(graph, *span, bindings)?;
                 if analysis.known_value.as_ref() != Some(&Scalar::Path(path.clone()))
@@ -585,7 +600,7 @@ impl Environment<'_> {
         let Some(&id) = self.expressions.get(&span) else {
             return Ok(None);
         };
-        if !self.is_path(id)? {
+        if self.builtin(id)? != Some("path") {
             return Ok(None);
         }
         let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
@@ -624,25 +639,27 @@ impl Environment<'_> {
         if !self.is_path(id)? {
             return Ok(None);
         }
-        let [child] = children else {
-            return Err("Path支持の元実子数が違う".into());
-        };
         let previous = self.context.replace(Some(graph.context_at(source.0)));
         let result = (|| {
             let bindings = self.expression_bindings(graph, source)?;
             let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
                 unreachable!()
             };
-            if self.actual_evaluation(graph, args[0], bindings)? != *child {
-                return Err("Path支持の実子が元producerでない".into());
+            if children.len() != args.len() {
+                return Err("Path支持の元実子数が違う".into());
             }
-            let Some(value) = self.evaluation(graph, *child)?.2 else {
-                return Ok(Some(vec![]));
-            };
-            Ok(Some(
-                self.internal_path_at(graph, id, &[graph.scalar(value)?.clone()])?
-                    .support,
-            ))
+            let mut values = Vec::new();
+            for (&arg, &child) in args.iter().zip(children) {
+                self.tick()?;
+                if self.actual_evaluation(graph, arg, bindings)? != child {
+                    return Err("Path支持の実子が元producerでない".into());
+                }
+                let Some(value) = self.evaluation(graph, child)?.2 else {
+                    return Ok(Some(vec![]));
+                };
+                values.push(graph.scalar(value)?.clone());
+            }
+            Ok(Some(self.internal_path_at(graph, id, &values)?.support))
         })();
         self.context.set(previous);
         result

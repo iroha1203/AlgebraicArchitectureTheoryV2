@@ -42,6 +42,8 @@ pub(super) mod owned_call;
 pub(super) mod owned_family;
 #[path = "owned_type.rs"]
 pub(super) mod owned_type;
+#[path = "path_composition.rs"]
+mod path_composition;
 #[path = "path_condition.rs"]
 mod path_condition;
 #[path = "term_comparison_validation.rs"]
@@ -2152,7 +2154,7 @@ impl<'a> Environment<'a> {
                             self.tick()?;
                         }
                         match (known, *value) {
-                            (true, Some(result)) if self.builtin(id)? == Some("path") => {
+                            (true, Some(result)) if self.is_path(id)? => {
                                 let actual = self
                                     .path_scalar_analysis(graph, graph.get(result)?, result.0)?
                                     .ok_or("Path値の元入力検査がない")?;
@@ -3936,6 +3938,7 @@ impl<'a> Environment<'a> {
             callee = inner;
         }
         match &law.exprs[callee].kind {
+            ExprKind::ThenOp => Ok(Some("then")),
             ExprKind::Dotted(parts)
                 if parts.len() == 1
                     && matches!(
@@ -4097,8 +4100,8 @@ impl<'a> Environment<'a> {
                     items.get(*index).ok_or("数値射影位置の内部不整合")?.clone()
                 }
                 ExprKind::Call { .. } => match self.builtin(id)?.ok_or("固定演算がない")? {
-                    "path" => {
-                        return Ok(self.internal_path(id, values)?.value);
+                    "path" | "then" => {
+                        return Ok(self.path_operation(id, values)?.value);
                     }
                     name @ ("identity" | "source" | "target") => {
                         let span = law.exprs[id].span;
@@ -7307,8 +7310,8 @@ impl<'a> Environment<'a> {
                     }
                     support.sort();
                     support.dedup();
-                    let path = if known && self.builtin(id)? == Some("path") {
-                        Some(self.internal_path(id, &values)?)
+                    let path = if known && self.is_path(id)? {
+                        Some(self.path_operation(id, &values)?)
                     } else {
                         None
                     };
