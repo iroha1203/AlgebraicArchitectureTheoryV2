@@ -2983,6 +2983,9 @@ mod recheck_tests {
     mod answer_projection_tests {
         include!("answer_projection_tests.rs");
     }
+    mod path_answer_projection_tests {
+        include!("path_answer_projection_tests.rs");
+    }
     mod answer_dependency_tests {
         include!("answer_dependency_tests.rs");
     }

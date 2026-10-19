@@ -215,6 +215,9 @@
   既知出力からList/Tupleとdataのconstructor引数の[index]、Option.someを型に沿って多段に取り出す。
   inline成分は元の型付き出力一つを引数とするprojection nodeにし、rule.pathに出力field名を除く全射影列を保つ。
   元出力の支持・Scopeを継承し、核は元Request/producerと公開規則・実型/値から再検査する。既出Refは再利用する。
+  Pathのsource/targetとgenerators[index]は、表示と同じ既出の端点・生成元Refを後続へ渡す。
+  Pathを含むList/Tuple/Optionでも各親の成分Refを順に辿り、同値の別Refへの置換を拒否する。
+  生成元の順序を保ち、空語・実index/型/ownerの不適合を既存の型付き構成条件と依存停止へ接続する。
   再検査中の停止でも、既に独立検査を終えた確定値・反例のclaim/evidenceを保持する。
   明示束縛の同2pathとその構造成分pathが未生成root値を参照すると、その要求は出力なしの未決Answerとなる。
   dependency_blockedに直接の依存先IDと既出導出Refを持ち、元missing/unsupportedの位置・slot・型/方法を
