@@ -4679,10 +4679,53 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     }
     #[test]
     fn rejects_evidence_from_a_different_law_or_without_the_counterexample() {
+        // 両Lawがtrueを返す同じ入力で、先行aの証拠を後続bへ差し替える。
+        // 型・既出性・判断値を保ち、異なるLaw適用への帰属だけを壊す。
+        let result = example_with_count("2");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        for answer in &result.answers {
+            assert_eq!(answer.status, Decision::Established);
+            let Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) = &result.nodes[answer.outputs["evaluation"].0].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(graph.scalar(*value).unwrap(), &Scalar::Bool(true));
+        }
+        let claim = result.answers[1].claim.unwrap();
+        let foreign = result.answers[0].evidence[0];
+        assert!(foreign.0 < claim.0, "異Law証拠は対象より既出である");
+        assert_eq!(result.nodes[foreign.0].ty, NodeType::Evidence);
+        assert!(matches!(
+            result.nodes[foreign.0].payload,
+            Some(Payload::EvaluationEvidence { .. })
+        ));
+        assert!(!result.nodes[claim.0].evidence.contains(&foreign));
+        recheck_mutation(&result, |nodes| {
+            nodes[claim.0].evidence = vec![foreign];
+            nodes[claim.0].judgment.as_mut().unwrap().evidence = vec![foreign];
+        });
+        graph.validate_answer(&result.answers[1], true).unwrap();
+        let mut wrong = result.answers[1].clone();
+        wrong.evidence = vec![foreign];
+        assert!(matches!(
+            graph.validate_answer(&wrong, true),
+            Err(ValidationFailure::Internal(_))
+        ));
+        recheck_mutation(&result, |nodes| {
+            nodes[claim.0].judgment.as_mut().unwrap().evidence = vec![foreign]
+        });
+
+        // count=12の元反証から既出の評価証拠だけを残し、反例の必須性を検査する。
         let result = example();
+        assert_eq!(result.answers[0].status, Decision::Refuted);
         let claim = result.answers[0].claim.unwrap();
         let original = &result.nodes[claim.0];
-        let foreign = result.answers[1].evidence[0];
+        assert!(original.evidence.iter().any(|r| matches!(
+            result.nodes[r.0].payload,
+            Some(Payload::Counterexample { .. })
+        )));
         let evaluation_only = original
             .evidence
             .iter()
@@ -4694,27 +4737,10 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
                 )
             })
             .unwrap();
-        assert!(original.evidence.iter().any(|r| matches!(
-            result.nodes[r.0].payload,
-            Some(Payload::Counterexample { .. })
-        )));
-        assert!(!original.evidence.contains(&foreign));
-        for evidence in [vec![foreign], vec![evaluation_only]] {
-            recheck_mutation(&result, |nodes| {
-                nodes[claim.0].evidence = evidence.clone();
-                nodes[claim.0].judgment.as_mut().unwrap().evidence = evidence;
-            });
-        }
-        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-        graph.validate_answer(&result.answers[0], true).unwrap();
-        let mut wrong = result.answers[0].clone();
-        wrong.evidence = vec![foreign];
-        assert!(matches!(
-            graph.validate_answer(&wrong, true),
-            Err(ValidationFailure::Internal(_))
-        ));
+        assert!(evaluation_only.0 < claim.0);
         recheck_mutation(&result, |nodes| {
-            nodes[claim.0].judgment.as_mut().unwrap().evidence = vec![foreign]
+            nodes[claim.0].evidence = vec![evaluation_only];
+            nodes[claim.0].judgment.as_mut().unwrap().evidence = vec![evaluation_only];
         });
     }
     #[test]
@@ -4778,11 +4804,14 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
         }
     }
     fn example() -> ObservedEvaluation {
+        example_with_count("12")
+    }
+    fn example_with_count(count: &str) -> ObservedEvaluation {
         let sources = InputSources::from_bytes(
             vec![include_bytes!("../../tests/fixtures/counter.atoms.json").to_vec()],
             include_bytes!("../../tests/fixtures/counter.law").to_vec(),
             include_str!("../../tests/fixtures/counter.archmap.json")
-                .replace("\"value\": \"2\"", "\"value\": \"12\"")
+                .replace("\"value\": \"2\"", &format!("\"value\": \"{count}\""))
                 .into_bytes(),
         );
         evaluate_observed_bytes(
@@ -4940,8 +4969,26 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
             })
             .collect();
         assert_eq!(instances.len(), 2);
-        let (first, second) = (instances[0], instances[1]);
+        // 後続tへ先行sの同じtrue guardを入れ、未来Ref拒否を除外する。
+        let (first, second) = (instances[1], instances[0]);
         let other_guard = result.nodes[second].arguments[1];
+        assert!(other_guard.0 < first);
+        for guard in [result.nodes[first].arguments[1], other_guard] {
+            let Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) = &result.nodes[guard.0].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(
+                result.nodes[value.0].payload,
+                Some(Payload::Scalar(Scalar::Bool(true)))
+            );
+        }
+        assert_eq!(
+            result.nodes[result.nodes[first].arguments[1].0].ty,
+            result.nodes[other_guard.0].ty
+        );
         recheck_mutation(&result, |nodes| nodes[first].arguments[1] = other_guard);
         let field = "Counter.State.enabled";
         assert!(
@@ -4967,7 +5014,8 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
                 .support
                 .retain(|f| f.field.as_deref() != Some(field))
         });
-        let evaluation = result.answers[1].outputs["evaluation"];
+        let evaluation = result.answers[2].outputs["evaluation"];
+        assert!(other_guard.0 < evaluation.0);
         recheck_mutation(&result, |nodes| {
             nodes[evaluation.0].arguments[2] = other_guard
         });
