@@ -284,3 +284,82 @@ fn infinite_actual_type_answer_stop_retains_original_algorithm_reason_and_prior_
 fn infinite_fresh_recheck_stop_retains_verified_answer_and_freezes() {
     stop(true)
 }
+
+#[test]
+fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation() {
+    for (script, ask) in [
+        (
+            "view current():Bool=forall t:(Text,Unused).forall b:Bool.false;",
+            "v=evaluate(Walk.current)",
+        ),
+        (
+            "law required current(t:(Text,Unused)):forall b:Bool.false;",
+            "v=check(Walk.current)",
+        ),
+    ] {
+        let r = evaluate_observed_bytes(
+            fixture::input(script, "Z", &[], "r1"),
+            &[ask],
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        assert_eq!(r.status(), "partial");
+        assert_eq!(r.answers[0].status, Decision::Undetermined);
+        let at = r.answers[0].outputs["evaluation"].0;
+        let Some(Payload::Evaluation {
+            expression,
+            bindings,
+            value,
+            ..
+        }) = &r.nodes[at].payload
+        else {
+            panic!()
+        };
+        assert!(value.is_none());
+        let domain = r.nodes[at]
+            .scope
+            .quantifiers
+            .iter()
+            .find(|q| q.name == "t")
+            .unwrap()
+            .domain
+            .unwrap();
+        let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+        let env = Environment::with_requests(
+            r.prepared.inputs(),
+            r.prepared.requests().requests(),
+            &mut named_call_quiet(),
+        )
+        .unwrap();
+        for _ in 0..2 {
+            env.validate_answer(&graph, &r.prepared.requests().requests()[0], &r.answers[0])
+                .unwrap();
+            let analyzed = env
+                .universal_analysis(&graph, *expression, &[domain], bindings)
+                .unwrap();
+            assert_eq!(analyzed.value, None);
+            assert_eq!(analyzed.finite_dependency, None);
+        }
+        let false_value = r
+            .nodes
+            .iter()
+            .enumerate()
+            .find_map(|(i, n)| {
+                matches!(&n.payload, Some(Payload::Scalar(Scalar::Bool(false))))
+                    .then_some(NodeRef(i))
+            })
+            .unwrap();
+        let saved = graph.nodes[at].clone();
+        let Some(Payload::Evaluation { value, parts, .. }) = &mut graph.nodes[at].payload else {
+            panic!()
+        };
+        *value = Some(false_value);
+        parts[0].value = Some(false_value);
+        assert!(env.recheck_node(&graph, &graph.nodes[at], at).is_err());
+        graph.nodes[at] = saved;
+        env.recheck_node(&graph, &graph.nodes[at], at).unwrap();
+        env.validate_answer(&graph, &r.prepared.requests().requests()[0], &r.answers[0])
+            .unwrap();
+        rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    }
+}

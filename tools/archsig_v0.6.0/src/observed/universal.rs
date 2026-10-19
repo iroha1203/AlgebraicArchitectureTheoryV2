@@ -1525,6 +1525,20 @@ impl Environment<'_> {
                         self.recheck_evaluation(graph, actual)?;
                         analysis.scope.merge(&graph.get(actual)?.scope);
                     }
+                    let mut finite_dependency = None;
+                    if body_value.is_none()
+                        && !analysis.condition_failed
+                        && !analysis.condition_pending
+                        && !self.universal_has_exists(&plan)?
+                    {
+                        if let Some((decision, dependency)) =
+                            self.universal_finite_decision(graph, template, &plan, bindings)?
+                        {
+                            body_value = Some(decision);
+                            finite_dependency = Some(dependency);
+                        }
+                    }
+                    // 有限bodyの実caseによる判断も、元の外側型域を通してから使う。
                     for parameter in plan
                         .parameters
                         .iter()
@@ -1545,18 +1559,8 @@ impl Environment<'_> {
                                 }
                             });
                     }
-                    let mut finite_dependency = None;
-                    if body_value.is_none()
-                        && !analysis.condition_failed
-                        && !analysis.condition_pending
-                        && !self.universal_has_exists(&plan)?
-                    {
-                        if let Some((decision, dependency)) =
-                            self.universal_finite_decision(graph, template, &plan, bindings)?
-                        {
-                            body_value = Some(decision);
-                            finite_dependency = Some(dependency);
-                        }
+                    if body_value.is_none() {
+                        finite_dependency = None;
                     }
                     let value = if plan.guard.is_some() {
                         conditional_bool(guard_value, body_value)

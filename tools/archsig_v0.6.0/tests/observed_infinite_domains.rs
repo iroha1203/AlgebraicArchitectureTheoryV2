@@ -387,3 +387,83 @@ fn infinite_typed_frontiers_keep_literal_collection_and_match_source_expressions
         assert!(!array(field(field(answer, "scope"), "quantifiers")).is_empty());
     }
 }
+
+#[test]
+fn generic_outer_domains_do_not_inherit_inner_finite_counterexamples() {
+    // Unused has no registered subject. Text × Unused is empty; no false
+    // inner case can witness a member of this outer type domain.
+    let script = "view current():Bool=forall t:(Text,Unused).forall b:Bool.false; law required required_value():forall t:(Text,Unused).forall b:Bool.false; law required free(t:(Text,Unused)):forall b:Bool.false;";
+    let input = fixture::input(script, "Z", &[], "r1");
+    let result = evaluate_observed_bytes(
+        input.clone(),
+        &[
+            "v=evaluate(Walk.current)",
+            "c=check(Walk.required_value)",
+            "f=check(Walk.free)",
+        ],
+        &mut Control::new(Limits::default(), |_| Usage::default()),
+    )
+    .expect("元型の空性を保留した量化を有限bodyの反例で確定しない");
+    assert_eq!(result.prepared().inputs().sources(), &input);
+    let wire = result.wire();
+    audit(&wire);
+    let answers = array(field(&wire, "answers"));
+    if let Json::Obj(outputs) = field(&answers[0], "outputs") {
+        if let Some(value) = outputs.get("value") {
+            panic!(
+                "空になり得る外側型を未決へ保つべき: {:?}",
+                field(node(&wire, value), "value")
+            );
+        }
+    }
+    assert_eq!(result.status(), "partial");
+    assert_eq!(answers.len(), 3);
+    let expected_type = Json::Arr(vec![
+        Json::str("Tuple"),
+        Json::str("Text"),
+        Json::Arr(vec![Json::str("Ref"), Json::str("Paths.Unused")]),
+    ]);
+    for a in answers {
+        assert_eq!(field(a, "status"), &Json::str("undetermined"));
+        assert!(matches!(field(a,"outputs"), Json::Obj(o) if !o.contains_key("value")));
+        let q = array(field(field(a, "scope"), "quantifiers"))
+            .iter()
+            .find(|q| field(q, "name") == &Json::str("t"))
+            .unwrap();
+        assert_eq!(field(q, "type"), &expected_type);
+        let d = node(&wire, field(q, "domain"));
+        assert_eq!(field(field(d, "value"), "kind"), &Json::str("type"));
+        assert_eq!(field(field(d, "value"), "type"), &expected_type);
+        assert!(
+            array(field(a, "reasons"))
+                .iter()
+                .any(|r| field(r, "code") == &Json::str("unsupported_algorithm")
+                    && array(field(field(r, "details"), "operand_types")).contains(&expected_type))
+        );
+    }
+    // The inner finite counterexample remains valid for inhabited outer types.
+    for ty in ["Text", "List<Z>"] {
+        let script = format!(
+            "view current():Bool=forall t:{ty}.forall b:Bool.false; law required required_value():forall t:{ty}.forall b:Bool.false;"
+        );
+        let result = evaluate_observed_bytes(
+            fixture::input(&script, "Z", &[], "r1"),
+            &["v=evaluate(Walk.current)", "c=check(Walk.required_value)"],
+            &mut Control::new(Limits::default(), |_| Usage::default()),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete");
+        let wire = result.wire();
+        audit(&wire);
+        let answers = array(field(&wire, "answers"));
+        assert_eq!(field(&answers[0], "status"), &Json::str("established"));
+        assert_eq!(
+            field(
+                node(&wire, field(field(&answers[0], "outputs"), "value")),
+                "value"
+            ),
+            &Json::Bool(false)
+        );
+        assert_eq!(field(&answers[1], "status"), &Json::str("refuted"));
+    }
+}
