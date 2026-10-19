@@ -98,6 +98,10 @@ impl Evaluator<'_, '_> {
             let mut scope = self.base.clone();
             scope.completions = true;
             scope.merge(&metadata.scope);
+            for binding in &fixed {
+                self.tick(Checkpoint::FiniteIteration)?;
+                scope.merge(&self.graph.get(binding.value)?.scope);
+            }
             let mut support = metadata.support;
             for &r in &roots {
                 scope.merge(&self.graph.get(r)?.scope);

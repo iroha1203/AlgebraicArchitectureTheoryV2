@@ -426,7 +426,16 @@ impl Evaluator<'_, '_> {
                     }
                     let value = match plan {
                         super::environment::AnswerBinding::Reference(value) => value,
-                        super::environment::AnswerBinding::Projection(node) => self.push(node)?,
+                        super::environment::AnswerBinding::Projection(node) => {
+                            if let Some(value) = self
+                                .environment
+                                .completion_fixed_answer_binding(self.graph, p)?
+                            {
+                                value
+                            } else {
+                                self.push(node)?
+                            }
+                        }
                         super::environment::AnswerBinding::Inapplicable(_) => {
                             return Err(self.unsupported(p.span, "自由族のAnswer射影条件"));
                         }

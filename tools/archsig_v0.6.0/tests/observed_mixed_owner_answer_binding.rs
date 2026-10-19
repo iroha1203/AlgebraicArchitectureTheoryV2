@@ -328,7 +328,7 @@ fn mixed_empty_values_map_total_domain_no_admissible_fiber_and_counterexample_ar
     assert!(!arr(f(answer(&w, "take"), "evidence")).is_empty());
 }
 #[test]
-fn mixed_unknown_unprovided_projection_failures_keep_scope_reasons_and_independent_answers() {
+fn mixed_completed_owners_keep_fixed_producer_scope_and_actual_fibers() {
     for (law, producer, fixed, mode) in [
         (
             "mxTuple",
@@ -337,23 +337,116 @@ fn mixed_unknown_unprovided_projection_failures_keep_scope_reasons_and_independe
             "unknown_free_owner",
         ),
         ("fcMap", "cbMap,m=@v/m", "b=@v/B", "unknown_owner"),
+        ("fcMap", "fcMapAll,m=@v/m", "a=@v/A", "unknown_owner"),
     ] {
         let take = format!("take=check(Applications.{law},{fixed},x=$v.value)");
         let make = format!("v=evaluate(Applications.{producer})");
         let r = run(fixture::input(mode, "r1"), &[&take, &make]);
-        assert_eq!(r.status(), "partial");
+        assert_eq!(r.status(), "complete", "{:?}", f(&r.wire(), "issues"));
         let w = r.wire();
         let a = answer(&w, "take");
+        assert_eq!(f(a, "status"), &Json::str("established"));
         assert_eq!(f(f(a, "scope"), "domain"), &Json::str("all_completions"));
-        assert_eq!(f(a, "outputs"), &Json::obj([] as [(&str, Json); 0]));
-        for code in ["missing_observation", "unsupported_algorithm"] {
-            assert!(
-                arr(f(a, "reasons"))
-                    .iter()
-                    .any(|r| f(r, "code") == &Json::str(code))
+        let rr = rows(&w);
+        assert_eq!(rr.len(), 2);
+        let mut flags = std::collections::BTreeSet::new();
+        for row in rr {
+            let bs = arr(f(f(row, "value"), "bindings"));
+            assert_eq!(bs.len(), 4);
+            let free = if fixed.starts_with("a=") { "b" } else { "a" };
+            let expected = if free == "b" { "B" } else { "A" };
+            let owner = bs
+                .iter()
+                .find(|b| f(b, "name") == &Json::str(free))
+                .unwrap();
+            assert_eq!(
+                f(node(&w, f(owner, "value")), "value"),
+                &Json::Arr(vec![Json::str("v"), Json::str(expected)])
             );
+            let x = bs.iter().find(|b| f(b, "name") == &Json::str("x")).unwrap();
+            assert_eq!(f(x, "value"), f(f(answer(&w, "v"), "outputs"), "value"));
+            let flag = bs
+                .iter()
+                .find(|b| f(b, "name") == &Json::str("flag"))
+                .unwrap();
+            let Json::Bool(value) = f(node(&w, f(flag, "value")), "value") else {
+                panic!()
+            };
+            flags.insert(*value);
+        }
+        assert_eq!(flags, [false, true].into());
+        assert!(
+            arr(f(a, "reasons"))
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("missing_observation"))
+        );
+        assert!(
+            !arr(f(a, "reasons"))
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+        );
+        let producer_quantifiers = arr(f(f(answer(&w, "v"), "scope"), "quantifiers"));
+        for q in producer_quantifiers {
+            assert!(arr(f(f(a, "scope"), "quantifiers")).contains(q));
         }
     }
+}
+#[test]
+fn mixed_ambiguous_free_owner_keeps_actual_fibers_and_completion_pair() {
+    for (law, state, status) in [
+        ("mxTuple", "complete", "established"),
+        ("mxFalse", "partial", "undetermined"),
+    ] {
+        let take = format!("take=check(Applications.{law},a=@v/A,x=$v.value)");
+        let r = run(
+            fixture::input("ambiguous_free_owner", "r1"),
+            &[
+                "seed=evaluate(Applications.seed)",
+                &take,
+                "v=evaluate(Applications.mxAll,p=@v/p,q=@v/r)",
+            ],
+        );
+        assert_eq!(r.status(), state, "{:?}", f(&r.wire(), "issues"));
+        let w = r.wire();
+        let a = answer(&w, "take");
+        assert_eq!(f(a, "status"), &Json::str(status));
+        assert_eq!(f(f(a, "scope"), "domain"), &Json::str("all_completions"));
+        assert_eq!(f(answer(&w, "seed"), "status"), &Json::str("established"));
+        let rr = rows(&w);
+        assert_eq!(rr.len(), if law == "mxTuple" { 4 } else { 2 });
+        let mut owners = std::collections::BTreeSet::new();
+        for row in rr {
+            let bs = arr(f(f(row, "value"), "bindings"));
+            let b = bs.iter().find(|b| f(b, "name") == &Json::str("b")).unwrap();
+            let Json::Arr(owner) = f(node(&w, f(b, "value")), "value") else {
+                panic!()
+            };
+            assert_eq!(owner[0], Json::str("v"));
+            let Json::Str(owner) = &owner[1] else {
+                panic!()
+            };
+            owners.insert(owner.clone());
+            let x = bs.iter().find(|b| f(b, "name") == &Json::str("x")).unwrap();
+            assert_eq!(f(x, "value"), f(f(answer(&w, "v"), "outputs"), "value"));
+        }
+        if law == "mxFalse" {
+            assert!(arr(f(a, "evidence")).iter().any(|r| {
+                let evidence = node(&w, r);
+                f(f(evidence, "value"), "kind") == &Json::str("completion_pair")
+            }));
+        }
+        assert_eq!(owners, ["A".to_owned(), "B".to_owned()].into());
+        assert!(arr(f(a, "reasons")).iter().any(|r| {
+            f(r, "code") == &Json::str("missing_observation")
+                && arr(f(r, "missing"))
+                    .iter()
+                    .any(|m| f(m, "subject") == &Json::str("r"))
+                && !arr(f(r, "dependencies")).is_empty()
+        }));
+    }
+}
+#[test]
+fn mixed_unknown_unprovided_projection_failures_keep_scope_reasons_and_independent_answers() {
     for (producer, code) in [
         ("mxMissing", "missing_observation"),
         ("mxOpaque", "unsupported_algorithm"),
@@ -479,99 +572,101 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 fn mixed_keeps_three_inputs_dag_fixed_and_free_owner_facts_and_current_sources() {
     use archsig::observed::input::check_inputs;
     use std::collections::BTreeSet;
-    let asks = [
-        "take=check(Applications.fcMap,a=$a.value,x=$v.value)",
-        "v=evaluate(Applications.cbMap,m=@v/m)",
-        "a=evaluate(Applications.cbOwner,a=@v/A)",
-    ];
-    let i = fixture::input("known", "r1");
-    let original = i.clone();
-    let before = check_inputs(i.clone(), &mut quiet()).unwrap();
-    let r = run(i, &asks);
-    assert_eq!(r.status(), "complete");
-    let checked = r.prepared().inputs();
-    assert_eq!(checked.sources(), &original);
-    assert_eq!(checked.inputs(), before.inputs());
-    assert_eq!(checked.definitions(), before.definitions());
-    assert_eq!(checked.law().declarations, before.law().declarations);
-    assert_eq!(checked.law().exprs, before.law().exprs);
-    assert_eq!(checked.archmap().snapshots, before.archmap().snapshots);
-    let w = r.wire();
-    let mut seen = BTreeSet::new();
-    let mut atoms = BTreeSet::new();
-    for n in arr(f(&w, "nodes")) {
-        let mut rs = vec![];
-        refs(n, &mut rs);
-        assert!(rs.iter().all(|r| seen.contains(r)));
-        let Json::Str(id) = f(n, "id") else { panic!() };
-        assert!(seen.insert(id.clone()));
-        for fact in arr(f(n, "support")) {
-            let Json::Str(snap) = f(fact, "snapshot") else {
-                panic!()
-            };
-            let Json::Str(subject) = f(fact, "subject") else {
-                panic!()
-            };
-            let s = checked
-                .archmap()
-                .snapshots
-                .iter()
-                .find(|s| &s.id == snap)
-                .unwrap()
-                .subjects
-                .iter()
-                .find(|s| &s.id == subject)
-                .unwrap();
-            let origin = if let Json::Obj(m) = fact
-                && let Some(Json::Str(field)) = m.get("field")
-            {
-                let archsig::archmap::Slot::Known { atom, origin, .. } =
-                    &s.fields.iter().find(|f| &f.name == field).unwrap().slot
-                else {
+    for mode in ["known", "unknown_owner"] {
+        let asks = [
+            "take=check(Applications.fcMap,a=$a.value,x=$v.value)",
+            "v=evaluate(Applications.cbMap,m=@v/m)",
+            "a=evaluate(Applications.cbOwner,a=@v/A)",
+        ];
+        let i = fixture::input(mode, "r1");
+        let original = i.clone();
+        let before = check_inputs(i.clone(), &mut quiet()).unwrap();
+        let r = run(i, &asks);
+        assert_eq!(r.status(), "complete");
+        let checked = r.prepared().inputs();
+        assert_eq!(checked.sources(), &original);
+        assert_eq!(checked.inputs(), before.inputs());
+        assert_eq!(checked.definitions(), before.definitions());
+        assert_eq!(checked.law().declarations, before.law().declarations);
+        assert_eq!(checked.law().exprs, before.law().exprs);
+        assert_eq!(checked.archmap().snapshots, before.archmap().snapshots);
+        let w = r.wire();
+        let mut seen = BTreeSet::new();
+        let mut atoms = BTreeSet::new();
+        for n in arr(f(&w, "nodes")) {
+            let mut rs = vec![];
+            refs(n, &mut rs);
+            assert!(rs.iter().all(|r| seen.contains(r)));
+            let Json::Str(id) = f(n, "id") else { panic!() };
+            assert!(seen.insert(id.clone()));
+            for fact in arr(f(n, "support")) {
+                let Json::Str(snap) = f(fact, "snapshot") else {
                     panic!()
                 };
-                assert_eq!(f(fact, "atom"), &Json::str(atom));
-                atoms.insert(atom.clone());
-                origin
-            } else {
-                &s.origin
-            };
-            let origin = checked
-                .archmap()
-                .origins
-                .iter()
-                .find(|o| &o.id == origin)
-                .unwrap();
-            for loc in &origin.locations {
-                assert_eq!(
-                    checked
-                        .archmap()
-                        .sources
-                        .iter()
-                        .find(|s| s.id == loc.source)
-                        .unwrap()
-                        .revision,
-                    "r1"
-                );
+                let Json::Str(subject) = f(fact, "subject") else {
+                    panic!()
+                };
+                let s = checked
+                    .archmap()
+                    .snapshots
+                    .iter()
+                    .find(|s| &s.id == snap)
+                    .unwrap()
+                    .subjects
+                    .iter()
+                    .find(|s| &s.id == subject)
+                    .unwrap();
+                let origin = if let Json::Obj(m) = fact
+                    && let Some(Json::Str(field)) = m.get("field")
+                {
+                    let archsig::archmap::Slot::Known { atom, origin, .. } =
+                        &s.fields.iter().find(|f| &f.name == field).unwrap().slot
+                    else {
+                        panic!()
+                    };
+                    assert_eq!(f(fact, "atom"), &Json::str(atom));
+                    atoms.insert(atom.clone());
+                    origin
+                } else {
+                    &s.origin
+                };
+                let origin = checked
+                    .archmap()
+                    .origins
+                    .iter()
+                    .find(|o| &o.id == origin)
+                    .unwrap();
+                for loc in &origin.locations {
+                    assert_eq!(
+                        checked
+                            .archmap()
+                            .sources
+                            .iter()
+                            .find(|s| s.id == loc.source)
+                            .unwrap()
+                            .revision,
+                        "r1"
+                    );
+                }
             }
         }
+        assert_eq!(atoms.contains("p-owner"), mode == "known");
+        assert!(atoms.contains("r-owner"));
+        let relocated = run(fixture::input(mode, "r2"), &asks);
+        assert!(
+            relocated
+                .prepared()
+                .inputs()
+                .archmap()
+                .sources
+                .iter()
+                .all(|s| s.revision == "r2")
+        );
+        let moved = relocated.wire();
+        assert_eq!(f(&w, "nodes"), f(&moved, "nodes"));
+        assert_eq!(f(&w, "answers"), f(&moved, "answers"));
+        assert_ne!(f(&w, "inputs"), f(&moved, "inputs"));
     }
-    assert!(atoms.contains("p-owner"));
-    assert!(atoms.contains("r-owner"));
-    let relocated = run(fixture::input("known", "r2"), &asks);
-    assert!(
-        relocated
-            .prepared()
-            .inputs()
-            .archmap()
-            .sources
-            .iter()
-            .all(|s| s.revision == "r2")
-    );
-    let moved = relocated.wire();
-    assert_eq!(f(&w, "nodes"), f(&moved, "nodes"));
-    assert_eq!(f(&w, "answers"), f(&moved, "answers"));
-    assert_ne!(f(&w, "inputs"), f(&moved, "inputs"));
 }
 
 #[test]
@@ -667,5 +762,126 @@ fn mixed_direct_subject_fixed_owner_failure_keeps_typed_operands_and_later_reaso
     );
     for reason in arr(f(answer(&w, "take"), "reasons")) {
         assert!(arr(f(answer(&w, "later"), "reasons")).contains(reason));
+    }
+}
+
+#[test]
+fn mixed_completed_public_projections_keep_seed_refs_for_all_cases() {
+    for (law, producer, path, fixed, mode, output, steps) in [
+        (
+            "mxListLaw",
+            "mxWrapped,p=@v/p,q=@v/r",
+            "$v.value[1].some",
+            "a=@v/A",
+            "unknown_free_owner",
+            "value",
+            vec![Json::Nat(1), Json::str("some")],
+        ),
+        (
+            "mxListLaw",
+            "mxWrapped,p=@v/p,q=@v/r",
+            "$v.value[1].some",
+            "",
+            "unknown_free_owner",
+            "value",
+            vec![Json::Nat(1), Json::str("some")],
+        ),
+        (
+            "mxTuple",
+            "mxWrapped,p=@v/p,q=@v/r",
+            "$v.evaluation.value[1].some[0]",
+            "a=@v/A",
+            "unknown_free_owner",
+            "evaluation",
+            vec![
+                Json::str("value"),
+                Json::Nat(1),
+                Json::str("some"),
+                Json::Nat(0),
+            ],
+        ),
+        (
+            "fcMap",
+            "cbMapWrapped,m=@v/m",
+            "$v.value.some[1]",
+            "b=@v/B",
+            "unknown_owner",
+            "value",
+            vec![Json::str("some"), Json::Nat(1)],
+        ),
+    ] {
+        let bound = if fixed.is_empty() {
+            String::new()
+        } else {
+            format!("{fixed},")
+        };
+        let take = format!("take=check(Applications.{law},{bound}x={path})");
+        let make = format!("v=evaluate(Applications.{producer})");
+        let r = run(
+            fixture::input(mode, "r1"),
+            &[&take, &make, "later=evaluate(Applications.seed)"],
+        );
+        assert_eq!(r.status(), "complete", "{:?}", f(&r.wire(), "issues"));
+        let w = r.wire();
+        assert_eq!(f(answer(&w, "take"), "status"), &Json::str("established"));
+        assert_eq!(
+            f(f(answer(&w, "take"), "scope"), "domain"),
+            &Json::str("all_completions")
+        );
+        assert_eq!(f(answer(&w, "later"), "status"), &Json::str("established"));
+        assert!(
+            !arr(f(answer(&w, "take"), "reasons"))
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+        );
+        let evaluation = node(&w, f(f(answer(&w, "take"), "outputs"), "evaluation"));
+        let bs = arr(f(f(evaluation, "value"), "bindings"));
+        let x = f(
+            bs.iter().find(|b| f(b, "name") == &Json::str("x")).unwrap(),
+            "value",
+        );
+        let projected = node(&w, x);
+        assert_eq!(f(f(projected, "rule"), "path"), &Json::Arr(steps));
+        assert_eq!(
+            arr(f(projected, "arguments")),
+            &[f(f(answer(&w, "v"), "outputs"), output).clone()]
+        );
+        let rr = rows(&w);
+        assert_eq!(rr.len(), 2);
+        let mut flags = std::collections::BTreeSet::new();
+        for row in rr {
+            let bindings = arr(f(f(row, "value"), "bindings"));
+            assert_eq!(
+                f(
+                    bindings
+                        .iter()
+                        .find(|b| f(b, "name") == &Json::str("x"))
+                        .unwrap(),
+                    "value"
+                ),
+                x
+            );
+            let free = if fixed.starts_with("a=") { "b" } else { "a" };
+            let owner = bindings
+                .iter()
+                .find(|b| f(b, "name") == &Json::str(free))
+                .unwrap();
+            assert_eq!(
+                f(node(&w, f(owner, "value")), "value"),
+                &Json::Arr(vec![
+                    Json::str("v"),
+                    Json::str(if free == "b" { "B" } else { "A" })
+                ])
+            );
+            let flag = bindings
+                .iter()
+                .find(|b| f(b, "name") == &Json::str("flag"))
+                .unwrap();
+            let Json::Bool(flag) = f(node(&w, f(flag, "value")), "value") else {
+                panic!()
+            };
+            flags.insert(*flag);
+        }
+        assert_eq!(flags, [false, true].into());
     }
 }

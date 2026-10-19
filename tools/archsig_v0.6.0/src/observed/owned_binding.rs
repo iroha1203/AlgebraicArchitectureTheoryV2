@@ -357,13 +357,36 @@ impl Environment<'_> {
             .map(|(name, owner)| (*name, Some(&owner.scalar)))
             .collect();
         let mut checks = owned_call::Checks::default();
-        self.owned_call_value_check(
+        if let Some(case) = context.case {
+            let record = graph.cases.get(case).ok_or("所属束縛の補完caseがない")?;
+            if record.caller
+                != (super::super::call::Context {
+                    case: None,
+                    ..context
+                })
+            {
+                return Err("所属束縛の補完caseが元Request rootと違う".into());
+            }
+        }
+        let assignment = context
+            .case
+            .map(|case| {
+                self.completion_values(graph, case).map(|values| {
+                    values
+                        .into_iter()
+                        .map(|(fact, _, scalar)| (fact, scalar))
+                        .collect::<BTreeMap<_, _>>()
+                })
+            })
+            .transpose()?;
+        self.owned_call_value_check_assigned(
             &checked_type,
             &super::super::term::affine::Value::Known(value.scalar.clone()),
             &values,
             &d.reading,
             p.span,
             &mut checks,
+            assignment.as_ref(),
         )?;
         if checks.blocked && checks.failure.is_none() && !checks.missing.is_empty() {
             // 固定値の所属も、元ArchMapへ拡張できる共有assignmentで判断する。
@@ -535,11 +558,7 @@ impl Environment<'_> {
         };
         self.tick()?;
         let context = self.current_context(graph);
-        if context.frame.is_some()
-            || context.iteration.is_some()
-            || context.instance.is_some()
-            || context.case.is_some()
-        {
+        if context.frame.is_some() || context.iteration.is_some() || context.instance.is_some() {
             return Err("所属束縛が元Requestのrootにない".into());
         }
         let request = self
@@ -595,7 +614,7 @@ impl Environment<'_> {
                 && at.frame.is_none()
                 && at.iteration.is_none()
                 && at.instance.is_none()
-                && at.case.is_none()
+                && at.case == context.case
                 && node.rule == Rule::OwnedBinding(p.name.clone())
             {
                 if selected.replace(NodeRef(i)).is_some() {
