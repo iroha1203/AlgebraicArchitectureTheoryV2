@@ -915,7 +915,49 @@ impl Environment<'_> {
             .map(|(_, reference, _)| reference))
     }
 
-    /// Seedは観測rootの固定Refを持つ。各caseのbindが再生成したRefは、そのcaseの
+    /// 固定Answerの公開射影も、各caseで元Seedの束縛前Refを保持する。
+    pub(in crate::observed) fn completion_fixed_answer_binding(
+        &self,
+        graph: &Graph,
+        parameter: &crate::law::model::Param,
+    ) -> Result<Option<NodeRef>, ValidationFailure> {
+        let context = self.current_context(graph);
+        let Some(index) = context.case else {
+            return Ok(None);
+        };
+        self.tick()?;
+        let case = graph.cases.get(index).ok_or("固定Answerの補完caseがない")?;
+        let seed = self.completion_seed(graph, case.seed)?;
+        if case.caller != seed.context
+            || context
+                != (super::super::call::Context {
+                    case: Some(index),
+                    ..seed.context
+                })
+        {
+            return Err("固定Answerの補完caseが元Request rootと違う".into());
+        }
+        self.completion_values(graph, index)?;
+        let binding = seed
+            .bindings
+            .iter()
+            .find(|b| b.name == parameter.name && b.ty == parameter.ty.erase())
+            .ok_or("補完Seedに元固定Answer束縛がない")?;
+        let request = self
+            .original_requests
+            .and_then(|requests| requests.get(context.request))
+            .ok_or("補完固定Answerの元Requestがない")?;
+        let selected = request
+            .arguments
+            .iter()
+            .find(|a| a.name == format!("bind.{}", parameter.name))
+            .ok_or("補完固定Answerの元selectorがない")?;
+        self.answer_binding_matches(graph, &selected.value, binding.value, parameter.span)?;
+        self.tick()?;
+        Ok(Some(binding.value))
+    }
+
+    /// Seedは観測rootの固定Refを持つ。各caseのbindが再生成したsubject Refは、そのcaseの
     /// 元body Sourceへliteralに結び、元selector・署名・Input subject producerを照合する。
     fn completion_case_bindings(
         &self,

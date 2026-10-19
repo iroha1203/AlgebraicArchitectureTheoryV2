@@ -246,6 +246,7 @@
   直接producerのdependency_blockedを返す。後続依存へ元理由を保持し、補完値を観測Atomへ追加しない。
   固定/自由ownerの欠測を共有補完するときも、固定producerの量化Scopeと元RefをSeedへ引き継ぐ。
   補完caseごとに固定所属条件を元selectorから再検査し、同じcaseの条件辺と実fiberをSourceへ結ぶ。
+  公開構造成分の固定射影も元Seedの束縛前Refを保持し、同値でも別Requestの射影へ置換できない。
   既知Mapの入力制約で絞った全候補の結果と、候補間で結果が分かれるCompletionPairを保持する。
   上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・

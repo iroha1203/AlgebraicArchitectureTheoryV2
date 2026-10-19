@@ -340,12 +340,26 @@ fn mixed_unknown_free_owner_rechecks_completion_scope_with_same_and_fresh_enviro
             &mut named_call_quiet(),
         )
         .unwrap();
-        assert_eq!(r.status(), "partial");
+        assert_eq!(r.status(), "complete", "{:?}", r.issues);
         assert_eq!(r.answers[0].status, Decision::Established);
         let original = &r.answers[1];
         assert!(original.scope.completions);
-        assert_eq!(original.status, Decision::Undetermined);
-        assert!(original.outputs.is_empty());
+        assert_eq!(original.status, Decision::Established);
+        assert!(original.outputs.contains_key("evaluation"));
+        assert!(original.claim.is_some());
+        assert!(!original.evidence.is_empty());
+        assert!(
+            original
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Missing))
+        );
+        assert!(
+            !original
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+        );
         let cutoff = r.contexts.iter().position(|c| c.request == 2).unwrap();
         for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {
             let g = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
@@ -864,4 +878,111 @@ fn mixed_completion_membership_cannot_use_another_requests_valid_case() {
     g.contexts[check].case = Some(own);
     e.recheck_node(&g, &g.nodes[check], check).unwrap();
     env(&r).recheck_node(&g, &g.nodes[check], check).unwrap();
+}
+
+#[test]
+fn mixed_completed_projection_refs_reject_equal_foreign_request_and_case_context_after_cache() {
+    let asks = [
+        "v=evaluate(Applications.mxWrapped,p=@v/p,q=@v/r)",
+        "first=check(Applications.mxListLaw,a=@v/A,x=$v.value[1].some)",
+        "take=check(Applications.mxListLaw,a=@v/A,x=$v.value[1].some)",
+        "later=evaluate(Applications.seed)",
+    ];
+    let r = evaluate_observed_bytes(
+        fixture::input("unknown_free_owner", "r1"),
+        &asks,
+        &mut named_call_quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "complete", "{:?}", r.issues);
+    let binding = |request| {
+        r.nodes
+            .iter()
+            .enumerate()
+            .find_map(|(i, n)| {
+                if r.contexts[i].request != request {
+                    return None;
+                }
+                let Some(Payload::CompletionSeed { bindings, .. }) = &n.payload else {
+                    return None;
+                };
+                Some((i, bindings.iter().find(|b| b.name == "x").unwrap().value))
+            })
+            .unwrap()
+    };
+    let (_, foreign) = binding(1);
+    let (seed, original) = binding(2);
+    assert_ne!(original, foreign);
+    assert_eq!(r.nodes[original.0], r.nodes[foreign.0]);
+    assert_eq!(r.contexts[original.0].request, 2);
+    assert_eq!(r.contexts[original.0].case, None);
+    let mut sources = Vec::new();
+    for (i, n) in r.nodes.iter().enumerate() {
+        if r.contexts[i].request != 2
+            || r.contexts[i].case.is_none()
+            || r.contexts[i].instance.is_some()
+        {
+            continue;
+        }
+        if let Some(Payload::Expression {
+            parameters,
+            bindings,
+            ..
+        }) = &n.payload
+        {
+            if !parameters.is_empty() {
+                assert_eq!(
+                    bindings.iter().find(|b| b.name == "x").unwrap().value,
+                    original
+                );
+                sources.push(i);
+            }
+        }
+    }
+    assert!(!sources.is_empty());
+    completion_mutation(&r, seed, |nodes| {
+        let Some(Payload::CompletionSeed { bindings, .. }) = &mut nodes[seed].payload else {
+            panic!()
+        };
+        bindings.iter_mut().find(|b| b.name == "x").unwrap().value = foreign;
+        for edge in &mut nodes[seed].arguments {
+            if *edge == original {
+                *edge = foreign;
+            }
+        }
+    });
+    for source in sources {
+        completion_mutation(&r, source, |nodes| {
+            let Some(Payload::Expression { bindings, .. }) = &mut nodes[source].payload else {
+                panic!()
+            };
+            bindings.iter_mut().find(|b| b.name == "x").unwrap().value = foreign;
+            for edge in &mut nodes[source].arguments {
+                if *edge == original {
+                    *edge = foreign;
+                }
+            }
+        });
+    }
+    let cutoff = r.contexts.iter().position(|c| c.request == 3).unwrap();
+    let case = r.cases.iter().position(|c| c.caller.request == 2).unwrap();
+    for nodes in [&r.nodes[..cutoff], r.nodes.as_slice()] {
+        let mut g = rebuild_for_origin_and_support_recheck(&r, nodes).unwrap();
+        let e = env(&r);
+        let q = &r.prepared.requests().requests()[2];
+        let a = &r.answers[2];
+        e.validate_answer(&g, q, a).unwrap();
+        g.contexts[original.0].case = Some(case);
+        assert!(matches!(
+            e.validate_answer(&g, q, a),
+            Err(ValidationFailure::Internal(_))
+        ));
+        assert!(matches!(
+            env(&r).validate_answer(&g, q, a),
+            Err(ValidationFailure::Internal(_))
+        ));
+        g.contexts[original.0].case = None;
+        e.validate_answer(&g, q, a).unwrap();
+        env(&r).validate_answer(&g, q, a).unwrap();
+    }
 }

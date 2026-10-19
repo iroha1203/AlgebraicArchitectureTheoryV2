@@ -764,3 +764,124 @@ fn mixed_direct_subject_fixed_owner_failure_keeps_typed_operands_and_later_reaso
         assert!(arr(f(answer(&w, "later"), "reasons")).contains(reason));
     }
 }
+
+#[test]
+fn mixed_completed_public_projections_keep_seed_refs_for_all_cases() {
+    for (law, producer, path, fixed, mode, output, steps) in [
+        (
+            "mxListLaw",
+            "mxWrapped,p=@v/p,q=@v/r",
+            "$v.value[1].some",
+            "a=@v/A",
+            "unknown_free_owner",
+            "value",
+            vec![Json::Nat(1), Json::str("some")],
+        ),
+        (
+            "mxListLaw",
+            "mxWrapped,p=@v/p,q=@v/r",
+            "$v.value[1].some",
+            "",
+            "unknown_free_owner",
+            "value",
+            vec![Json::Nat(1), Json::str("some")],
+        ),
+        (
+            "mxTuple",
+            "mxWrapped,p=@v/p,q=@v/r",
+            "$v.evaluation.value[1].some[0]",
+            "a=@v/A",
+            "unknown_free_owner",
+            "evaluation",
+            vec![
+                Json::str("value"),
+                Json::Nat(1),
+                Json::str("some"),
+                Json::Nat(0),
+            ],
+        ),
+        (
+            "fcMap",
+            "cbMapWrapped,m=@v/m",
+            "$v.value.some[1]",
+            "b=@v/B",
+            "unknown_owner",
+            "value",
+            vec![Json::str("some"), Json::Nat(1)],
+        ),
+    ] {
+        let bound = if fixed.is_empty() {
+            String::new()
+        } else {
+            format!("{fixed},")
+        };
+        let take = format!("take=check(Applications.{law},{bound}x={path})");
+        let make = format!("v=evaluate(Applications.{producer})");
+        let r = run(
+            fixture::input(mode, "r1"),
+            &[&take, &make, "later=evaluate(Applications.seed)"],
+        );
+        assert_eq!(r.status(), "complete", "{:?}", f(&r.wire(), "issues"));
+        let w = r.wire();
+        assert_eq!(f(answer(&w, "take"), "status"), &Json::str("established"));
+        assert_eq!(
+            f(f(answer(&w, "take"), "scope"), "domain"),
+            &Json::str("all_completions")
+        );
+        assert_eq!(f(answer(&w, "later"), "status"), &Json::str("established"));
+        assert!(
+            !arr(f(answer(&w, "take"), "reasons"))
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
+        );
+        let evaluation = node(&w, f(f(answer(&w, "take"), "outputs"), "evaluation"));
+        let bs = arr(f(f(evaluation, "value"), "bindings"));
+        let x = f(
+            bs.iter().find(|b| f(b, "name") == &Json::str("x")).unwrap(),
+            "value",
+        );
+        let projected = node(&w, x);
+        assert_eq!(f(f(projected, "rule"), "path"), &Json::Arr(steps));
+        assert_eq!(
+            arr(f(projected, "arguments")),
+            &[f(f(answer(&w, "v"), "outputs"), output).clone()]
+        );
+        let rr = rows(&w);
+        assert_eq!(rr.len(), 2);
+        let mut flags = std::collections::BTreeSet::new();
+        for row in rr {
+            let bindings = arr(f(f(row, "value"), "bindings"));
+            assert_eq!(
+                f(
+                    bindings
+                        .iter()
+                        .find(|b| f(b, "name") == &Json::str("x"))
+                        .unwrap(),
+                    "value"
+                ),
+                x
+            );
+            let free = if fixed.starts_with("a=") { "b" } else { "a" };
+            let owner = bindings
+                .iter()
+                .find(|b| f(b, "name") == &Json::str(free))
+                .unwrap();
+            assert_eq!(
+                f(node(&w, f(owner, "value")), "value"),
+                &Json::Arr(vec![
+                    Json::str("v"),
+                    Json::str(if free == "b" { "B" } else { "A" })
+                ])
+            );
+            let flag = bindings
+                .iter()
+                .find(|b| f(b, "name") == &Json::str("flag"))
+                .unwrap();
+            let Json::Bool(flag) = f(node(&w, f(flag, "value")), "value") else {
+                panic!()
+            };
+            flags.insert(*flag);
+        }
+        assert_eq!(flags, [false, true].into());
+    }
+}
