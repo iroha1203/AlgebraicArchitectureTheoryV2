@@ -666,9 +666,9 @@ impl Evaluator<'_, '_> {
                 })?;
                 steps.push(difference);
                 let value = analyzed
-                    .classification
+                    .difference
                     .as_ref()
-                    .map(|classification| classification.difference.value(self.control))
+                    .map(|difference| difference.value(self.control))
                     .transpose()?
                     .flatten()
                     .map(|known| {
@@ -743,11 +743,10 @@ impl Evaluator<'_, '_> {
                 kind: ReasonKind::UnsupportedAlgorithm {
                     question: self.request.kind,
                     operand_types,
-                    method: if plan.guard.is_some() && analyzed.guard_value.is_none() {
-                        "parameter-dependent conditional affine equality".into()
-                    } else {
-                        "non-affine universal equality".into()
-                    },
+                    method: self
+                        .environment
+                        .universal_unsupported_method(&plan, analyzed.guard_value)?
+                        .into(),
                 },
                 request: self.request.id.clone(),
                 dependencies: vec![template],

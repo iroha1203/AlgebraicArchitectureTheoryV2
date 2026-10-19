@@ -2925,6 +2925,9 @@ fn evaluate_observed_with_validator(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    mod infinite_quantifier_tests {
+        include!("infinite_quantifier_tests.rs");
+    }
     use crate::canonical::Json;
     mod reference_completion_tests {
         include!("reference_completion_tests.rs");
@@ -9193,21 +9196,40 @@ reading Calc {{
 "#,
         );
         let law = sources.law().bytes().to_vec();
-        let failure = evaluate_observed_bytes(
+        let quantified = evaluate_observed_bytes(
             sources,
             &["v=evaluate(Calc.caller,s=@v/sample)"],
             &mut named_call_quiet(),
         )
-        .unwrap_err();
-        assert!(failure.wire().is_none());
-        let EvaluationFailure::NotImplemented {
-            location: Location::Law { span },
-            ..
-        } = failure
-        else {
-            panic!("範囲外のcallee式は専用未実装を保つ");
+        .unwrap();
+        assert_eq!(quantified.status(), "partial");
+        assert_eq!(quantified.answers[0].status, Decision::Undetermined);
+        assert!(!quantified.answers[0].outputs.contains_key("value"));
+        let reason = quantified.answers[0]
+            .reasons
+            .iter()
+            .find(|reason| {
+                matches!(&reason.kind, ReasonKind::UnsupportedAlgorithm {
+                question: QuestionKind::Evaluate, operand_types, ..
+            } if operand_types == &[Type::Z])
+            })
+            .unwrap();
+        let Some(Location::Law { span }) = reason.location else {
+            panic!()
         };
         assert_eq!(&law[span.0..span.1], b"exists item: Z. item=0");
+        let [source] = reason.dependencies.as_slice() else {
+            panic!()
+        };
+        assert_eq!(
+            quantified.nodes[source.0].ty,
+            NodeType::Expression(Type::Bool)
+        );
+        assert!(quantified.nodes.iter().any(|node| matches!(
+            &node.payload,
+            Some(Payload::TypeDomain { ty: Type::Z })
+        ) && node.arguments == [*source]));
+        rebuild_for_origin_and_support_recheck(&quantified, &quantified.nodes).unwrap();
     }
     #[test]
     fn named_calls_reject_equal_atom_from_another_field_at_scalar_prefix() {

@@ -1594,11 +1594,11 @@ impl Environment<'_> {
             .comparison_expression
             .ok_or("全域差評価の元Eqがない")?;
         let span = self.inputs.law().exprs[comparison].span;
-        let classification = analysis
-            .classification
+        let normal_form = analysis
+            .difference
             .as_ref()
             .ok_or("全域差評価の元アフィン正規形がない")?;
-        let known = classification.difference.value(&self.control)?;
+        let known = normal_form.value(&self.control)?;
         if bindings != self.universal_source_fields(graph, template)?.1
             || parts.len() != 1
             || parts[0].location != (Location::Law { span })
@@ -1754,12 +1754,9 @@ impl Environment<'_> {
                 kind: ReasonKind::UnsupportedAlgorithm {
                     question: request.kind,
                     operand_types,
-                    method: if plan.guard.is_some() && analysis.guard_value.is_none() {
-                        "parameter-dependent conditional affine equality"
-                    } else {
-                        "non-affine universal equality"
-                    }
-                    .into(),
+                    method: self
+                        .universal_unsupported_method(&plan, analysis.guard_value)?
+                        .into(),
                 },
                 request: request.id.clone(),
                 dependencies: vec![template],
@@ -2057,10 +2054,9 @@ impl Environment<'_> {
         self.validate_at(graph, difference, first.0)?;
         let (_, domains, analysis) = self.universal_reanalysis(graph, template, limit)?;
         let expected = analysis
-            .classification
+            .difference
             .as_ref()
             .ok_or("全域残差Scalarの元正規形がない")?
-            .difference
             .value(&self.control)?;
         if expected.as_ref() != Some(scalar)
             || node.arguments

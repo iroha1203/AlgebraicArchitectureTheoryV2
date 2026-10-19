@@ -251,6 +251,11 @@
   補完caseごとに固定所属条件を元selectorから再検査し、同じcaseの条件辺と実fiberをSourceへ結ぶ。
   公開構造成分の固定射影も元Seedの束縛前Refを保持し、同値でも別Requestの射影へ置換できない。
   既知Mapの入力制約で絞った全候補の結果と、候補間で結果が分かれるCompletionPairを保持する。
+  Z/Qの型全域量化は元のforall/exists・binder・TypeDomainと呼出しcontextを保持する。
+  未提供の存在量化判定や非線形判定は、元式・型・域と必要な判定を持つ
+  `unsupported_algorithm`の未決回答を返し、欠測も原因なら元slotの理由を併記する。
+  全称アフィン判定をexistsへ適用せず、数値残差は量化の判断と別に元の両辺から検査する。
+  有限評価・既知値・Bool短絡と既存アフィン全称判定は確定値・反例を保持する。
   上記以外のpayloadを持つdataの評価、その他の式形・
   上記以外の無限型・
   上記以外の未観測ownerの所属条件・
