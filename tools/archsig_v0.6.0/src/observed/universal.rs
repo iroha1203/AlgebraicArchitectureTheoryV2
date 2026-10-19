@@ -963,12 +963,15 @@ impl Environment<'_> {
                 .or(self.context.get())
                 .unwrap_or_default(),
         )?;
+        // 全域Planは消去型を持つ。元署名のOwned添字を含む型も、
+        // 同じbinder/nameの軸へ照合する際には同じ型表現で比較する。
+        let erased = ty.erase();
         let parameter = context
             .plan
             .parameters
             .iter()
             .find(|parameter| {
-                parameter.binder == binder && parameter.name == name && parameter.ty.clone() == *ty
+                parameter.binder == binder && parameter.name == name && parameter.ty == erased
             })
             .or_else(|| {
                 context
@@ -977,7 +980,7 @@ impl Environment<'_> {
                     .find(|axis| {
                         axis.parameter.binder == binder
                             && axis.parameter.name == name
-                            && axis.parameter.ty.clone() == *ty
+                            && axis.parameter.ty == erased
                             && axis.parameter.context == origin
                     })
                     .map(|axis| &axis.parameter)

@@ -8,7 +8,6 @@ use archsig::{
         model::Signature,
     },
     observed::{
-        EvaluationFailure,
         control::{Checkpoint, Control, Limits, Usage},
         evaluate_observed_bytes,
         input::{CheckedInputs, InputSources, check_inputs},
@@ -42,7 +41,7 @@ fn text(j: &Json) -> &str {
     v
 }
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
+    obj(j).get(key).unwrap_or_else(|| panic!("{key}: {j:?}"))
 }
 fn val(j: &Json) -> &Json {
     assert_eq!(f(j, "state"), &Json::str("value"));
@@ -1383,7 +1382,6 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
         ]
     );
     let input = fixture(script, Some(false), false, false);
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
     for (declaration, ask) in [
         ("Calc.owned", "d=evaluate(Calc.owned,root=@v/root)"),
         (
@@ -1397,27 +1395,17 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
     ] {
         let result = evaluate_observed_bytes(input.clone(), &[ask], &mut quiet()).unwrap();
         let wire = result.wire();
-        assert_eq!(f(&wire, "status"), &Json::str("partial"));
+        audit(&wire, result.prepared().inputs());
+        assert_eq!(f(&wire, "status"), &Json::str("complete"));
+        output(&wire, "d", &Json::str("Bool"), Json::Bool(true));
         let answer = answer(&wire, "d");
-        assert_eq!(f(answer, "status"), &Json::str("undetermined"));
-        assert!(!obj(f(answer, "outputs")).contains_key("value"));
-        assert_eq!(
-            f(f(answer, "scope"), "domain"),
-            &Json::str("all_completions")
-        );
-        let body = declared_body(&checked, declaration);
-        let ExprKind::Quant {
-            split:
-                QuantSplit::Fixed {
-                    domain: QuantDomain::Type(original),
-                    ..
-                },
-            ..
-        } = &checked.law().exprs[body].kind
-        else {
-            panic!("元Owned型量化")
-        };
         let reasons = arr(f(answer, "reasons"));
+        assert!(
+            !reasons
+                .iter()
+                .any(|r| f(r, "code") == &Json::str("unsupported_algorithm")),
+            "{reasons:?}"
+        );
         let missing = reasons
             .iter()
             .find(|r| f(r, "code") == &Json::str("missing_observation"))
@@ -1430,15 +1418,9 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
                 ("field", Json::str("Roster.E.owner")),
             ])])
         );
-        let unsupported = reasons
-            .iter()
-            .find(|r| f(r, "code") == &Json::str("unsupported_algorithm"))
-            .unwrap();
-        assert_eq!(span(f(unsupported, "location")), original.span());
-        let details = f(unsupported, "details");
         assert_eq!(
-            f(details, "method"),
-            &Json::str("unresolved_owned_type_quantification")
+            f(f(answer, "scope"), "domain"),
+            &Json::str("all_completions")
         );
         let expected = match declaration {
             "Calc.owned" => t.clone(),
@@ -1446,18 +1428,21 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
             "Calc.owned_tuple" => Json::Arr(vec![Json::str("Tuple"), t.clone(), Json::str("Bool")]),
             _ => unreachable!(),
         };
-        assert_eq!(f(details, "operand_types"), &Json::Arr(vec![expected]));
-        let ns = index(&wire);
-        for reason in [missing, unsupported] {
-            assert_eq!(arr(f(reason, "dependencies")).len(), 1);
-            for r in arr(f(reason, "dependencies")) {
-                let expression = target(&ns, r, &Json::str("Expression"));
-                assert_eq!(
-                    span(f(val(expression), "location")),
-                    checked.law().exprs[body].span
-                );
+        let qs = arr(f(f(answer, "scope"), "quantifiers"));
+        assert!(!qs.is_empty());
+        let mut domains = BTreeSet::new();
+        for q in qs.iter().filter(|q| f(q, "name") == &Json::str("r")) {
+            assert_eq!(f(q, "kind"), &Json::str("forall"));
+            assert_eq!(f(q, "type"), &expected);
+            if let Some(reference) = obj(q).get("domain") {
+                let ns = index(&wire);
+                let domain = target(&ns, reference, &Json::str("Domain"));
+                assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
+                assert_eq!(f(val(domain), "type"), &expected);
+                domains.insert(text(f(domain, "id")));
             }
         }
+        assert!(!domains.is_empty(), "各補完の実有限域を保持する");
         assert!(
             result
                 .prepared()
@@ -1473,33 +1458,27 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
         );
         assert_eq!(result.prepared().inputs().sources(), &input);
     }
-    for (declaration, ask) in [("Calc.unbounded_list", "d=evaluate(Calc.unbounded_list)")] {
-        let error = match evaluate_observed_bytes(input.clone(), &[ask], &mut quiet()) {
-            Err(error) => error,
-            Ok(result) => panic!(
-                "{declaration}: 専用NotImplementedの代わりにstatus={}",
-                result.status()
-            ),
-        };
-        assert!(
-            error.wire().is_none(),
-            "{declaration}: 公開wireへ変換しない"
-        );
-        let EvaluationFailure::NotImplemented {
-            declaration: found,
-            location: archsig::issue::Location::Law { span },
-            feature,
-        } = error
-        else {
-            panic!("{declaration}: 対象外専用NotImplemented")
-        };
-        assert_eq!(found, declaration);
-        assert_eq!(
-            span,
-            checked.law().exprs[declared_body(&checked, declaration)].span
-        );
-        assert!(!feature.is_empty());
-    }
+    let result = evaluate_observed_bytes(
+        input.clone(),
+        &["d=evaluate(Calc.unbounded_list)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let wire = result.wire();
+    audit(&wire, result.prepared().inputs());
+    assert_eq!(result.status(), "complete");
+    output(&wire, "d", &Json::str("Bool"), Json::Bool(true));
+    let q = arr(f(f(answer(&wire, "d"), "scope"), "quantifiers"))
+        .iter()
+        .find(|q| f(q, "name") == &Json::str("unused"))
+        .unwrap();
+    assert_eq!(f(q, "kind"), &Json::str("forall"));
+    assert_eq!(f(q, "type"), &ty("List", t.clone()));
+    let ns = index(&wire);
+    let domain = target(&ns, f(q, "domain"), &Json::str("Domain"));
+    assert_eq!(f(val(domain), "kind"), &Json::str("type"));
+    assert_eq!(f(val(domain), "type"), &ty("List", t));
+    assert_eq!(result.prepared().inputs().sources(), &input);
 }
 
 #[test]

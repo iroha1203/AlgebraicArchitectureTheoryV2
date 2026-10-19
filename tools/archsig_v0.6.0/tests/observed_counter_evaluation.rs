@@ -885,7 +885,7 @@ fn known_bool_wildcard_match_keeps_counter_value_and_original_children() {
 }
 
 #[test]
-fn finite_law_quantification_and_unimplemented_answer_dependencies_are_distinct() {
+fn finite_law_quantification_and_answer_dependencies_keep_typed_results() {
     let law = String::from_utf8(LAW.to_vec()).unwrap().replace(
         "view amount",
         "view conditional(s: State): Z = match true { _ => s.count; };\n  view same(s: State): State = s;\n  view amount",
@@ -910,7 +910,7 @@ fn finite_law_quantification_and_unimplemented_answer_dependencies_are_distinct(
         field(answer(&missing, "x"), "status"),
         &Json::str("undetermined")
     );
-    let failure = evaluate_observed_bytes(
+    let linked = evaluate_observed_bytes(
         sources(law.as_bytes(), MAP),
         &[
             "a=evaluate(CountCheck.same,s=@v/s)",
@@ -918,14 +918,26 @@ fn finite_law_quantification_and_unimplemented_answer_dependencies_are_distinct(
         ],
         &mut quiet_control(),
     )
-    .unwrap_err();
-    assert!(
-        matches!(&failure, EvaluationFailure::NotImplemented { .. }),
-        "{failure:?}"
+    .unwrap()
+    .wire();
+    audit_dag(&linked);
+    assert_eq!(field(&linked, "status"), &Json::str("complete"));
+    let ns = nodes(&linked);
+    let producer = field(field(answer(&linked, "a"), "outputs"), "value");
+    assert_eq!(
+        value(target(&ns, producer)),
+        &Json::Arr(vec![Json::str("v"), Json::str("s")])
     );
-    assert!(
-        failure.wire().is_none(),
-        "未実装を unsupported_algorithm/partial の結果へ変換しない"
+    let consumer = answer(&linked, "b");
+    assert_eq!(field(consumer, "status"), &Json::str("established"));
+    assert_eq!(
+        value(typed(&ns, field(field(consumer, "outputs"), "value"), "Z")),
+        &Json::str("2")
+    );
+    let evaluation = target(&ns, field(field(consumer, "outputs"), "evaluation"));
+    assert_eq!(
+        field(&arr(field(value(evaluation), "bindings"))[0], "value"),
+        producer
     );
 }
 

@@ -379,25 +379,77 @@ fn recursive_tree_provenance_pair_and_law_judgments_keep_current_sources() {
 }
 
 #[test]
-fn recursive_tree_infinite_domains_and_invalid_self_calls_remain_rejected() {
-    for extra in [
-        "view bad(s:Sample):Bool=forall t:Tree . true;",
-        "law required bad(t:Tree):true;",
-    ] {
-        let ask = if extra.starts_with("view") {
-            "a=evaluate(Trees.bad,s=@v/sample)"
-        } else {
-            "a=check(Trees.bad)"
-        };
-        let error =
-            evaluate_observed_bytes(sources(false, extra, "r1"), &[ask], &mut quiet()).unwrap_err();
-        assert!(
-            matches!(
-                error,
-                archsig::observed::EvaluationFailure::NotImplemented { .. }
-            ),
-            "{error:?}"
-        );
+fn recursive_tree_infinite_domains_keep_typed_results_and_invalid_self_calls_are_rejected() {
+    for predicate in ["true", "t=t"] {
+        for view in [true, false] {
+            let extra = if view {
+                format!("view bad(s:Sample):Bool=forall t:Tree . {predicate};")
+            } else {
+                format!("law required bad(t:Tree):{predicate};")
+            };
+            let ask = if view {
+                "a=evaluate(Trees.bad,s=@v/sample)"
+            } else {
+                "a=check(Trees.bad)"
+            };
+            let input = sources(false, &extra, "r1");
+            let result = evaluate_observed_bytes(input.clone(), &[ask], &mut quiet()).unwrap();
+            assert_eq!(result.prepared().inputs().sources(), &input);
+            audit(&result);
+            let wire = result.wire();
+            let a = answer(&wire, "a");
+            let decided = predicate == "true";
+            assert_eq!(
+                result.status(),
+                if decided { "complete" } else { "partial" }
+            );
+            assert_eq!(
+                get(a, "status"),
+                &Json::str(if decided {
+                    "established"
+                } else {
+                    "undetermined"
+                })
+            );
+            let qs = array(get(get(a, "scope"), "quantifiers"));
+            let q = qs
+                .iter()
+                .find(|q| get(q, "name") == &Json::str("t"))
+                .unwrap();
+            assert_eq!(get(q, "kind"), &Json::str("forall"));
+            assert_eq!(get(q, "type"), &tree_type());
+            let domain = array(get(&wire, "nodes"))
+                .iter()
+                .find(|n| get(n, "id") == get(get(q, "domain"), "node"))
+                .unwrap();
+            assert_eq!(get(domain, "type"), &Json::str("Domain"));
+            assert_eq!(get(get(domain, "value"), "kind"), &Json::str("type"));
+            assert_eq!(get(get(domain, "value"), "type"), &tree_type());
+            if view && decided {
+                assert_eq!(value(&wire, "a", Json::str("Bool")), &Json::Bool(true));
+            }
+            if !view {
+                let claim = array(get(&wire, "nodes"))
+                    .iter()
+                    .find(|n| get(n, "id") == get(get(a, "claim"), "node"))
+                    .unwrap();
+                assert_eq!(get(claim, "type"), &Json::str("Proposition"));
+                assert_eq!(get(get(claim, "judgment"), "status"), get(a, "status"));
+            }
+            if !decided {
+                assert!(!object(get(a, "outputs")).contains_key("value"));
+                let reason = array(get(a, "reasons"))
+                    .iter()
+                    .find(|r| get(r, "code") == &Json::str("unsupported_algorithm"))
+                    .unwrap();
+                assert!(array(get(get(reason, "details"), "operand_types")).contains(&tree_type()));
+                let span = array(get(get(reason, "location"), "span"));
+                let (Json::Nat(start), Json::Nat(end)) = (&span[0], &span[1]) else {
+                    panic!("Law span")
+                };
+                assert!(!input.law().bytes()[*start as usize..*end as usize].is_empty());
+            }
+        }
     }
     for extra in [
         "view bad(t:Tree):Z=bad(t);",
