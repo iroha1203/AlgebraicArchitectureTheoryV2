@@ -4536,28 +4536,20 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     fn rejects_literal_evaluation_value_substitution_and_omission() {
         let result = value_examples(false);
         assert_eq!(result.status(), "complete");
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-        let mut graph = Graph::new(&control);
-        graph.nodes = result.nodes.clone();
         for (answer, replacement) in [(1, 0), (3, 2)] {
             let evaluation = result.answers[answer].outputs["evaluation"];
             let replacement = result.answers[replacement].outputs["value"];
             assert!(replacement.0 < evaluation.0, "差替え先は既出の正しい値");
-            environment
-                .validate(&graph, &graph.nodes[evaluation.0])
-                .unwrap();
             for new_value in [Some(replacement), None] {
-                let mut wrong = graph.nodes[evaluation.0].clone();
-                let Some(Payload::Evaluation { value, parts, .. }) = &mut wrong.payload else {
-                    unreachable!()
-                };
-                *value = new_value;
-                parts[0].value = new_value;
-                assert!(matches!(
-                    environment.validate(&graph, &wrong),
-                    Err(ValidationFailure::Internal(_))
-                ));
+                recheck_mutation(&result, |nodes| {
+                    let Some(Payload::Evaluation { value, parts, .. }) =
+                        &mut nodes[evaluation.0].payload
+                    else {
+                        unreachable!()
+                    };
+                    *value = new_value;
+                    parts[0].value = new_value;
+                });
             }
         }
     }
@@ -4687,129 +4679,139 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     }
     #[test]
     fn rejects_evidence_from_a_different_law_or_without_the_counterexample() {
+        // 両Lawがtrueを返す同じ入力で、先行aの証拠を後続bへ差し替える。
+        // 型・既出性・判断値を保ち、異なるLaw適用への帰属だけを壊す。
+        let result = example_with_count("2");
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        for answer in &result.answers {
+            assert_eq!(answer.status, Decision::Established);
+            let Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) = &result.nodes[answer.outputs["evaluation"].0].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(graph.scalar(*value).unwrap(), &Scalar::Bool(true));
+        }
+        let claim = result.answers[1].claim.unwrap();
+        let foreign = result.answers[0].evidence[0];
+        assert!(foreign.0 < claim.0, "異Law証拠は対象より既出である");
+        assert_eq!(result.nodes[foreign.0].ty, NodeType::Evidence);
+        assert!(matches!(
+            result.nodes[foreign.0].payload,
+            Some(Payload::EvaluationEvidence { .. })
+        ));
+        assert!(!result.nodes[claim.0].evidence.contains(&foreign));
+        recheck_mutation(&result, |nodes| {
+            nodes[claim.0].evidence = vec![foreign];
+            nodes[claim.0].judgment.as_mut().unwrap().evidence = vec![foreign];
+        });
+        graph.validate_answer(&result.answers[1], true).unwrap();
+        let mut wrong = result.answers[1].clone();
+        wrong.evidence = vec![foreign];
+        assert!(matches!(
+            graph.validate_answer(&wrong, true),
+            Err(ValidationFailure::Internal(_))
+        ));
+        recheck_mutation(&result, |nodes| {
+            nodes[claim.0].judgment.as_mut().unwrap().evidence = vec![foreign]
+        });
+
+        // count=12の元反証から既出の評価証拠だけを残し、反例の必須性を検査する。
         let result = example();
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-        let mut graph = Graph::new(&control);
-        graph.nodes = result.nodes.clone();
-        let original = graph.nodes[result.answers[0].claim.unwrap().0].clone();
-        environment.validate(&graph, &original).unwrap();
-        let foreign = result.answers[1].evidence[0];
+        assert_eq!(result.answers[0].status, Decision::Refuted);
+        let claim = result.answers[0].claim.unwrap();
+        let original = &result.nodes[claim.0];
+        assert!(original.evidence.iter().any(|r| matches!(
+            result.nodes[r.0].payload,
+            Some(Payload::Counterexample { .. })
+        )));
         let evaluation_only = original
             .evidence
             .iter()
             .copied()
             .find(|r| {
                 matches!(
-                    graph.nodes[r.0].payload,
+                    result.nodes[r.0].payload,
                     Some(Payload::EvaluationEvidence { .. })
                 )
             })
             .unwrap();
-        for evidence in [vec![foreign], vec![evaluation_only]] {
-            let mut wrong = original.clone();
-            wrong.evidence = evidence.clone();
-            wrong.judgment.as_mut().unwrap().evidence = evidence;
-            assert!(matches!(
-                environment.validate(&graph, &wrong),
-                Err(ValidationFailure::Internal(_))
-            ));
-            assert!(matches!(
-                graph.push(wrong),
-                Err(ValidationFailure::Internal(_))
-            ));
-        }
-        let mut wrong = result.answers[0].clone();
-        wrong.evidence = vec![foreign];
-        assert!(matches!(
-            graph.validate_answer(&wrong, true),
-            Err(ValidationFailure::Internal(_))
-        ));
-        let mut wrong = original.clone();
-        wrong.judgment.as_mut().unwrap().evidence = vec![foreign];
-        assert!(matches!(
-            environment.validate(&graph, &wrong),
-            Err(ValidationFailure::Internal(_))
-        ));
+        assert!(evaluation_only.0 < claim.0);
+        recheck_mutation(&result, |nodes| {
+            nodes[claim.0].evidence = vec![evaluation_only];
+            nodes[claim.0].judgment.as_mut().unwrap().evidence = vec![evaluation_only];
+        });
     }
     #[test]
     fn rejects_evaluation_scope_changed_with_its_source_and_answer() {
         let result = value_examples(false);
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-        let mut graph = Graph::new(&control);
-        graph.nodes = result.nodes.clone();
         let reference = result.answers[0].outputs["evaluation"];
-        let original = graph.nodes[reference.0].clone();
-        environment.validate(&graph, &original).unwrap();
         for field in ["modes", "readings", "snapshots", "domain"] {
-            graph.nodes = result.nodes.clone();
-            let mut wrong = original.clone();
-            match field {
-                "modes" => wrong.scope.modes = ["observed".into()].into(),
-                "readings" => wrong.scope.readings = ["CountAudit".into()].into(),
-                "snapshots" => wrong.scope.snapshots = ["other".into()].into(),
-                _ => wrong.scope.completions = true,
-            }
-            let Some(Payload::Evaluation { expression, .. }) = &wrong.payload else {
-                unreachable!()
-            };
-            graph.nodes[expression.0].scope = wrong.scope.clone();
-            let mut answer = result.answers[0].clone();
-            answer.scope = wrong.scope.clone();
-            graph.nodes[reference.0] = wrong.clone();
-            graph.validate_answer(&answer, false).unwrap();
-            // source/evaluation/answer の相互同値だけでは元入力の代用にならない。
-            assert!(matches!(
-                environment.validate(&graph, &wrong),
-                Err(ValidationFailure::Internal(_))
-            ));
+            recheck_mutation(&result, |nodes| {
+                let scope = &mut nodes[reference.0].scope;
+                match field {
+                    "modes" => scope.modes = ["observed".into()].into(),
+                    "readings" => scope.readings = ["CountAudit".into()].into(),
+                    "snapshots" => scope.snapshots = ["other".into()].into(),
+                    _ => scope.completions = true,
+                }
+                let scope = nodes[reference.0].scope.clone();
+                let Some(Payload::Evaluation { expression, .. }) = &nodes[reference.0].payload
+                else {
+                    unreachable!()
+                };
+                let expression = *expression;
+                nodes[expression.0].scope = scope.clone();
+                let mut answer = result.answers[0].clone();
+                answer.scope = scope;
+                let mut graph = Graph::default();
+                graph.nodes = nodes.to_vec();
+                graph.validate_answer(&answer, false).unwrap();
+                // source/evaluation/answer の相互同値だけでは元入力の代用にならない。
+            });
         }
     }
     #[test]
     fn rejects_wrong_or_missing_integer_residual_and_residual_on_bool_equality() {
         let result = value_examples(false);
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-        let mut graph = Graph::new(&control);
-        graph.nodes = result.nodes.clone();
-        let original = &graph.nodes[result.answers[6].outputs["evaluation"].0];
-        environment.validate(&graph, original).unwrap();
-        let Some(Payload::Evaluation { parts, .. }) = &original.payload else {
+        let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let integer = result.answers[6].outputs["evaluation"];
+        let boolean = result.answers[7].outputs["evaluation"];
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[integer.0].payload else {
             unreachable!()
         };
         assert_eq!(
             graph.scalar(parts[0].residual.unwrap()).unwrap(),
             &Scalar::Z((-8).into())
         );
-        for residual in [Some(result.answers[0].outputs["value"]), None] {
-            let mut wrong = original.clone();
-            let Some(Payload::Evaluation { parts, .. }) = &mut wrong.payload else {
-                unreachable!()
-            };
-            parts[0].residual = residual;
-            assert!(matches!(
-                environment.validate(&graph, &wrong),
-                Err(ValidationFailure::Internal(_))
-            ));
-        }
-        let mut wrong = graph.nodes[result.answers[7].outputs["evaluation"].0].clone();
-        let Some(Payload::Evaluation { parts, .. }) = &mut wrong.payload else {
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[boolean.0].payload else {
             unreachable!()
         };
         assert!(parts[0].residual.is_none());
-        parts[0].residual = Some(result.answers[0].outputs["value"]);
-        assert!(matches!(
-            environment.validate(&graph, &wrong),
-            Err(ValidationFailure::Internal(_))
-        ));
+        for (reference, residual) in [
+            (integer, Some(result.answers[0].outputs["value"])),
+            (integer, None),
+            (boolean, Some(result.answers[0].outputs["value"])),
+        ] {
+            recheck_mutation(&result, |nodes| {
+                let Some(Payload::Evaluation { parts, .. }) = &mut nodes[reference.0].payload
+                else {
+                    unreachable!()
+                };
+                parts[0].residual = residual;
+            });
+        }
     }
     fn example() -> ObservedEvaluation {
+        example_with_count("12")
+    }
+    fn example_with_count(count: &str) -> ObservedEvaluation {
         let sources = InputSources::from_bytes(
             vec![include_bytes!("../../tests/fixtures/counter.atoms.json").to_vec()],
             include_bytes!("../../tests/fixtures/counter.law").to_vec(),
             include_str!("../../tests/fixtures/counter.archmap.json")
-                .replace("\"value\": \"2\"", "\"value\": \"12\"")
+                .replace("\"value\": \"2\"", &format!("\"value\": \"{count}\""))
                 .into_bytes(),
         );
         evaluate_observed_bytes(
@@ -4826,71 +4828,54 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     fn rejects_forged_arithmetic_and_wrong_counterexample_operands() {
         let result = example();
         assert_eq!(result.status(), "complete");
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-        let mut graph = Graph::new(&control);
-        graph.nodes = result.nodes.clone();
-        let mut arithmetic = graph
+        let arithmetic = result
             .nodes
             .iter()
-            .find(|n| matches!(&n.payload, Some(Payload::Scalar(Scalar::Bool(false)))))
-            .unwrap()
-            .clone();
-        arithmetic.payload = Some(Payload::Scalar(Scalar::Bool(true)));
-        assert!(matches!(
-            environment.validate(&graph, &arithmetic),
-            Err(ValidationFailure::Internal(_))
-        ));
+            .position(|n| matches!(&n.payload, Some(Payload::Scalar(Scalar::Bool(false)))))
+            .unwrap();
+        recheck_mutation(&result, |nodes| {
+            nodes[arithmetic].payload = Some(Payload::Scalar(Scalar::Bool(true)))
+        });
         let zero = NodeRef(
-            graph
+            result
                 .nodes
                 .iter()
                 .position(
-                    |n| matches!(&n.payload,Some(Payload::Scalar(Scalar::Z(n))) if n==&0.into()),
+                    |n| matches!(&n.payload, Some(Payload::Scalar(Scalar::Z(n))) if n == &0.into()),
                 )
                 .unwrap(),
         );
-        let mut counterexample = graph
+        let counterexample = result
             .nodes
             .iter()
-            .find(|n| matches!(n.payload, Some(Payload::Counterexample { .. })))
-            .unwrap()
-            .clone();
-        let Some(Payload::Counterexample { right, .. }) = &mut counterexample.payload else {
-            unreachable!()
-        };
-        *right = zero;
-        // 12 <= 0 も false だが、元 body の右辺 10 と違うため拒否する。
-        assert!(matches!(
-            environment.validate(&graph, &counterexample),
-            Err(ValidationFailure::Internal(_))
-        ));
+            .position(|n| matches!(n.payload, Some(Payload::Counterexample { .. })))
+            .unwrap();
+        recheck_mutation(&result, |nodes| {
+            let Some(Payload::Counterexample { right, .. }) = &mut nodes[counterexample].payload
+            else {
+                unreachable!()
+            };
+            *right = zero;
+            // 12 <= 0 も false だが、元 body の右辺 10 と違うため拒否する。
+        });
     }
     #[test]
     fn rejects_wrong_ast_child_evaluation_and_binding_identity() {
         let result = example();
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-        let mut graph = Graph::new(&control);
-        graph.nodes = result.nodes.clone();
-        let mut evaluation=graph.nodes.iter().find(|n|matches!(&n.payload,Some(Payload::Evaluation{parts,..}) if parts[0].children.len()==2)).unwrap().clone();
-        let Some(Payload::Evaluation { parts, .. }) = &mut evaluation.payload else {
-            unreachable!()
-        };
-        parts[0].children.swap(0, 1);
-        assert!(matches!(
-            environment.validate(&graph, &evaluation),
-            Err(ValidationFailure::Internal(_))
-        ));
-        let mut evaluation=graph.nodes.iter().find(|n|matches!(&n.payload,Some(Payload::Evaluation{bindings,..}) if !bindings.is_empty())).unwrap().clone();
-        let Some(Payload::Evaluation { bindings, .. }) = &mut evaluation.payload else {
-            unreachable!()
-        };
-        bindings[0].name = "other".into();
-        assert!(matches!(
-            environment.validate(&graph, &evaluation),
-            Err(ValidationFailure::Internal(_))
-        ));
+        let children = result.nodes.iter().position(|n| matches!(&n.payload, Some(Payload::Evaluation { parts, .. }) if parts[0].children.len() == 2)).unwrap();
+        recheck_mutation(&result, |nodes| {
+            let Some(Payload::Evaluation { parts, .. }) = &mut nodes[children].payload else {
+                unreachable!()
+            };
+            parts[0].children.swap(0, 1);
+        });
+        let binding = result.nodes.iter().position(|n| matches!(&n.payload, Some(Payload::Evaluation { bindings, .. }) if !bindings.is_empty())).unwrap();
+        recheck_mutation(&result, |nodes| {
+            let Some(Payload::Evaluation { bindings, .. }) = &mut nodes[binding].payload else {
+                unreachable!()
+            };
+            bindings[0].name = "other".into();
+        });
     }
     fn guarded_example() -> ObservedEvaluation {
         let definitions = include_str!("../../tests/fixtures/counter.atoms.json").replace(
@@ -4928,113 +4913,133 @@ view foreign(s:Sample):Z=s.z-s.z;"#,
     fn rejects_false_guard_value_and_unrelated_guard_occurrence() {
         let result = guarded_example();
         assert_eq!(result.status(), "complete");
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-        let mut graph = Graph::new(&control);
-        graph.nodes = result.nodes.clone();
-        let instance = graph
+        let instance = result
             .nodes
             .iter()
-            .find(|n| matches!(n.payload, Some(Payload::LawInstance { .. })))
-            .unwrap()
-            .clone();
-        let guard = instance.arguments[1];
+            .position(|n| matches!(n.payload, Some(Payload::LawInstance { .. })))
+            .unwrap();
+        let guard = result.nodes[instance].arguments[1];
         let Some(Payload::Evaluation {
             value: Some(value), ..
-        }) = &graph.nodes[guard.0].payload
+        }) = &result.nodes[guard.0].payload
         else {
             unreachable!()
         };
         let value = *value;
-        graph.nodes[value.0].payload = Some(Payload::Scalar(Scalar::Bool(false)));
-        assert!(matches!(
-            environment.validate(&graph, &instance),
-            Err(ValidationFailure::Internal(_))
-        ));
-        graph.nodes = result.nodes.clone();
+        recheck_mutation(&result, |nodes| {
+            nodes[value.0].payload = Some(Payload::Scalar(Scalar::Bool(false)))
+        });
         let unrelated = result.answers[0].outputs["evaluation"];
         let Some(Payload::Evaluation {
             value: Some(literal_true),
+            expression,
             ..
-        }) = &graph.nodes[unrelated.0].payload
+        }) = &result.nodes[unrelated.0].payload
         else {
             unreachable!()
         };
-        let literal_true = *literal_true;
-        let Some(Payload::Evaluation { value, parts, .. }) = &mut graph.nodes[guard.0].payload
-        else {
-            unreachable!()
-        };
-        *value = Some(literal_true);
-        parts[0].value = Some(literal_true);
-        // true の型・payload だけでは、元 enabled Atom の評価根拠を代用できない。
-        assert!(matches!(
-            environment.validate(&graph, &instance),
-            Err(ValidationFailure::Internal(_))
-        ));
-        graph.nodes = result.nodes.clone();
-        let mut wrong = instance.clone();
-        wrong.arguments[1] = unrelated;
-        assert!(matches!(
-            environment.validate(&graph, &wrong),
-            Err(ValidationFailure::Internal(_))
-        ));
-        // 同じ true でも Law に明記した guard とは異なる出現は使えない。
-        let Some(Payload::Evaluation { expression, .. }) = &graph.nodes[unrelated.0].payload else {
-            unreachable!()
-        };
-        let expression = *expression;
-        let Some(Payload::LawInstance { guard, .. }) = &mut wrong.payload else {
-            unreachable!()
-        };
-        *guard = Some(expression);
-        assert!(matches!(
-            environment.validate(&graph, &wrong),
-            Err(ValidationFailure::Internal(_))
-        ));
+        let (literal_true, expression) = (*literal_true, *expression);
+        recheck_mutation(&result, |nodes| {
+            let Some(Payload::Evaluation { value, parts, .. }) = &mut nodes[guard.0].payload else {
+                unreachable!()
+            };
+            *value = Some(literal_true);
+            parts[0].value = Some(literal_true);
+            // true の型・payload だけでは元 enabled Atom の根拠を代用できない。
+        });
+        recheck_mutation(&result, |nodes| nodes[instance].arguments[1] = unrelated);
+        recheck_mutation(&result, |nodes| {
+            nodes[instance].arguments[1] = unrelated;
+            let Some(Payload::LawInstance { guard, .. }) = &mut nodes[instance].payload else {
+                unreachable!()
+            };
+            *guard = Some(expression);
+            // 同じ true でも明記されたguardと異なる出現は使えない。
+        });
     }
     #[test]
     fn rejects_guard_binding_identity_and_missing_guard_support() {
         let result = guarded_example();
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
-        let mut graph = Graph::new(&control);
-        graph.nodes = result.nodes.clone();
-        let instances: Vec<_> = graph
+        let instances: Vec<_> = result
             .nodes
             .iter()
-            .filter(|n| matches!(n.payload, Some(Payload::LawInstance { .. })))
-            .cloned()
+            .enumerate()
+            .filter_map(|(i, n)| {
+                matches!(n.payload, Some(Payload::LawInstance { .. })).then_some(i)
+            })
             .collect();
-        let mut wrong = instances[0].clone();
-        wrong.arguments[1] = instances[1].arguments[1];
-        assert!(matches!(
-            environment.validate(&graph, &wrong),
-            Err(ValidationFailure::Internal(_))
-        ));
-        let mut wrong = instances[0].clone();
-        wrong
-            .support
-            .retain(|f| f.field.as_deref() != Some("Counter.State.enabled"));
-        assert!(matches!(
-            environment.validate(&graph, &wrong),
-            Err(ValidationFailure::Internal(_))
-        ));
-        let guard = instances[0].arguments[1];
-        graph.nodes[guard.0]
-            .support
-            .retain(|f| f.field.as_deref() != Some("Counter.State.enabled"));
-        assert!(matches!(
-            environment.validate(&graph, &instances[0]),
-            Err(ValidationFailure::Internal(_))
-        ));
-        graph.nodes = result.nodes.clone();
-        let mut evaluation = graph.nodes[result.answers[1].outputs["evaluation"].0].clone();
-        evaluation.arguments[2] = instances[1].arguments[1];
-        assert!(matches!(
-            environment.validate(&graph, &evaluation),
-            Err(ValidationFailure::Internal(_))
-        ));
+        assert_eq!(instances.len(), 2);
+        // 後続tへ先行sの同じtrue guardを入れ、未来Ref拒否を除外する。
+        let (first, second) = (instances[1], instances[0]);
+        let other_guard = result.nodes[second].arguments[1];
+        assert!(other_guard.0 < first);
+        for guard in [result.nodes[first].arguments[1], other_guard] {
+            let Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) = &result.nodes[guard.0].payload
+            else {
+                unreachable!()
+            };
+            assert_eq!(
+                result.nodes[value.0].payload,
+                Some(Payload::Scalar(Scalar::Bool(true)))
+            );
+        }
+        assert_eq!(
+            result.nodes[result.nodes[first].arguments[1].0].ty,
+            result.nodes[other_guard.0].ty
+        );
+        recheck_mutation(&result, |nodes| nodes[first].arguments[1] = other_guard);
+        let field = "Counter.State.enabled";
+        assert!(
+            result.nodes[first]
+                .support
+                .iter()
+                .any(|f| f.field.as_deref() == Some(field))
+        );
+        recheck_mutation(&result, |nodes| {
+            nodes[first]
+                .support
+                .retain(|f| f.field.as_deref() != Some(field))
+        });
+        let guard = result.nodes[first].arguments[1];
+        assert!(
+            result.nodes[guard.0]
+                .support
+                .iter()
+                .any(|f| f.field.as_deref() == Some(field))
+        );
+        recheck_mutation(&result, |nodes| {
+            nodes[guard.0]
+                .support
+                .retain(|f| f.field.as_deref() != Some(field))
+        });
+        let evaluation = result.answers[2].outputs["evaluation"];
+        assert!(other_guard.0 < evaluation.0);
+        recheck_mutation(&result, |nodes| {
+            nodes[evaluation.0].arguments[2] = other_guard
+        });
+    }
+
+    // 正常導出を全registry・元Request・context付きで先に再構築し、別の不足による
+    // 拒否を負例の成功に数えない。改変は実nodeへ適用し、復元も元順に再検査する。
+    fn recheck_mutation(result: &ObservedEvaluation, mutate: impl FnOnce(&mut [Node])) {
+        assert_eq!(result.contexts.len(), result.nodes.len());
+        assert!(!result.prepared.requests().requests().is_empty());
+        rebuild_for_origin_and_support_recheck(result, &result.nodes)
+            .expect("改変前の全導出は元Request/context付きで再検査できる");
+        let mut changed = result.nodes.clone();
+        mutate(&mut changed);
+        assert_ne!(changed, result.nodes, "負例は実際に導出を変更する");
+        assert!(
+            matches!(
+                rebuild_for_origin_and_support_recheck(result, &changed),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "正常導出との差で生じる改変を元入力再検査が拒否する"
+        );
+        rebuild_for_origin_and_support_recheck(result, &result.nodes)
+            .expect("復元後の全導出も再検査できる");
     }
 
     fn rebuild_for_origin_and_support_recheck(
