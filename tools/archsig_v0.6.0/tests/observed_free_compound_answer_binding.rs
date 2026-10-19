@@ -246,7 +246,15 @@ fn free_compound_answer_unknown_unprovided_fixed_failures_and_mixed_fibers_are_p
         let r = run(fixture::input("unknown_owner", "r1"), &[&take, &make]);
         let w = r.wire();
         assert_eq!(r.status(), "complete");
-        let (domain, _) = completion_evidence::established_cases(&w, "take", 1);
+        let (domain, cases) = completion_evidence::established_cases(&w, "take", 1);
+        let owner_type = Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.System")]);
+        assert_eq!(f(f(domain, "value"), "type"), &owner_type);
+        let member = node(&w, &arr(f(f(domain, "value"), "elements"))[0]);
+        assert_eq!(f(member, "type"), &owner_type);
+        assert_eq!(
+            f(member, "value"),
+            &Json::Arr(vec![Json::str("v"), Json::str("A")])
+        );
         completion_evidence::original_owner_is_missing(&r, "v");
         completion_evidence::original_owner_is_missing(&r, "w");
         assert!(
@@ -264,37 +272,82 @@ fn free_compound_answer_unknown_unprovided_fixed_failures_and_mixed_fibers_are_p
                 .any(|reason| f(reason, "code") == &Json::str("unsupported_algorithm"))
         );
         let producer = f(f(answer(&w, "v"), "outputs"), "value");
-        let instances = rows(&w);
-        assert_eq!(instances.len(), if law == "fcList" { 2 } else { 1 });
-        for instance in instances {
+        let parts = arr(f(f(cases[0], "value"), "parts"));
+        assert_eq!(parts.len(), 1);
+        let children = arr(f(&parts[0], "children"));
+        assert_eq!(children.len(), if law == "fcList" { 2 } else { 1 });
+        let mut actual_rows = std::collections::BTreeSet::new();
+        let mut actual_evaluations = std::collections::BTreeSet::new();
+        let mut flags = std::collections::BTreeSet::new();
+        let all_rows = rows(&w);
+        for child in children {
+            let evaluation = node(&w, child);
+            assert_eq!(f(evaluation, "type"), &Json::str("Evaluation"));
+            assert!(actual_evaluations.insert(child.canonical()));
+            let instances: Vec<_> = all_rows
+                .iter()
+                .copied()
+                .filter(|instance| &arr(f(instance, "arguments"))[0] == child)
+                .collect();
+            assert_eq!(instances.len(), 1);
+            let instance = instances[0];
+            assert_eq!(f(instance, "type"), &Json::str("LawInstance"));
+            assert_eq!(
+                f(f(instance, "value"), "name"),
+                &Json::str(format!("Applications.{law}"))
+            );
+            assert_eq!(
+                f(f(instance, "value"), "body"),
+                f(f(evaluation, "value"), "expression")
+            );
+            assert_eq!(
+                f(f(instance, "value"), "bindings"),
+                f(f(evaluation, "value"), "bindings")
+            );
+            let actual = node(&w, f(f(evaluation, "value"), "value"));
+            assert_eq!(f(actual, "type"), &Json::str("Bool"));
+            assert_eq!(f(actual, "value"), &Json::Bool(true));
+            assert!(actual_rows.insert(f(instance, "id").canonical()));
             let bindings = arr(f(f(instance, "value"), "bindings"));
-            assert_eq!(
-                f(
-                    node(
-                        &w,
-                        f(
-                            bindings
-                                .iter()
-                                .find(|b| f(b, "name") == &Json::str("a"))
-                                .unwrap(),
-                            "value"
-                        )
-                    ),
-                    "value"
-                ),
-                &Json::Arr(vec![Json::str("v"), Json::str("A")])
-            );
-            assert_eq!(
-                f(
-                    bindings
-                        .iter()
-                        .find(|b| f(b, "name") == &Json::str("x"))
-                        .unwrap(),
-                    "value"
-                ),
-                producer
-            );
+            let names: Vec<_> = bindings.iter().map(|binding| f(binding, "name")).collect();
+            let expected_names: Vec<_> = if law == "fcList" {
+                vec!["a", "x", "flag"]
+            } else {
+                vec!["a", "x"]
+            }
+            .into_iter()
+            .map(Json::str)
+            .collect();
+            assert_eq!(names, expected_names.iter().collect::<Vec<_>>());
+            let owner = node(&w, f(&bindings[0], "value"));
+            assert_eq!(f(owner, "type"), &owner_type);
+            assert_eq!(f(owner, "value"), f(member, "value"));
+            assert_eq!(f(&bindings[1], "value"), producer);
+            if law == "fcList" {
+                let flag = node(&w, f(&bindings[2], "value"));
+                assert_eq!(f(flag, "type"), &Json::str("Bool"));
+                let Json::Bool(value) = f(flag, "value") else {
+                    panic!("Bool binding")
+                };
+                assert!(flags.insert(*value));
+            }
         }
+        assert_eq!(all_rows.len(), children.len());
+        assert_eq!(
+            actual_rows,
+            all_rows
+                .iter()
+                .map(|row| f(row, "id").canonical())
+                .collect()
+        );
+        assert_eq!(
+            flags,
+            if law == "fcList" {
+                [false, true].into()
+            } else {
+                std::collections::BTreeSet::new()
+            }
+        );
     }
     let r = run(
         fixture::input("known", "r1"),
