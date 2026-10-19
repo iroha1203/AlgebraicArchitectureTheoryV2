@@ -503,7 +503,7 @@ fn owned_compound_unknown_membership_completes_each_consistent_fiber() {
                         .unwrap(),
                     "value",
                 );
-                assert!(actual.insert(get(node(&w, value), "value").canonical()));
+                assert!(actual.insert(fiber_value_key(name, get(node(&w, value), "value"))));
             }
             assert_eq!(actual, unknown_fiber_values(name, owner));
         }
@@ -575,7 +575,41 @@ fn unknown_fiber_values(name: &str, owner: &str) -> BTreeSet<String> {
         }),
         _ => unreachable!(),
     };
-    values.into_iter().map(|v| v.canonical()).collect()
+    values
+        .iter()
+        .map(|value| fiber_value_key(name, value))
+        .collect()
+}
+
+fn fiber_value_key(name: &str, value: &Json) -> String {
+    // Mapの行順とSetの要素順は数学的な候補の区別に使わない。
+    let map = |value: &Json| {
+        let mut rows = arr(value).to_vec();
+        rows.sort_by_key(Json::canonical);
+        Json::Arr(rows)
+    };
+    let normalized = match name {
+        "maps" => map(value),
+        "map_option" if obj(value).contains_key("some") => {
+            Json::obj([("some", map(get(value, "some")))])
+        }
+        "map_set" | "subset" => {
+            let mut items: Vec<_> = arr(value)
+                .iter()
+                .map(|item| {
+                    if name == "map_set" {
+                        map(item)
+                    } else {
+                        item.clone()
+                    }
+                })
+                .collect();
+            items.sort_by_key(Json::canonical);
+            Json::Arr(items)
+        }
+        _ => value.clone(),
+    };
+    normalized.canonical()
 }
 
 fn subsets(values: Vec<Json>) -> Vec<Json> {
