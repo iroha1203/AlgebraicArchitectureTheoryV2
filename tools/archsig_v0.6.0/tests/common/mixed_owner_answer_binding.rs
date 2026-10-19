@@ -40,7 +40,7 @@ pub fn input(mode: &str, revision: &str) -> InputSources {
         }
     }
     let i = base::input(
-        if mode == "unknown_free_owner" {
+        if matches!(mode, "unknown_free_owner" | "ambiguous_free_owner") {
             "known"
         } else {
             mode
@@ -50,7 +50,7 @@ pub fn input(mode: &str, revision: &str) -> InputSources {
     let law = String::from_utf8(i.law().bytes().to_vec()).unwrap();
     assert_eq!(law.matches(base::SCRIPT).count(), 1);
     let mut map = convert(&parse(i.archmap().bytes()).unwrap());
-    if mode == "unknown_free_owner" {
+    if matches!(mode, "unknown_free_owner" | "ambiguous_free_owner") {
         let Json::Obj(root) = &mut map else { panic!() };
         let Json::Arr(snapshots) = root.get_mut("snapshots").unwrap() else {
             panic!()
@@ -63,6 +63,13 @@ pub fn input(mode: &str, revision: &str) -> InputSources {
             let count = atoms.len();
             atoms.retain(|a| !matches!(a,Json::Obj(m)if m["id"]==Json::str("r-owner")));
             assert_eq!(atoms.len() + 1, count);
+            if mode == "ambiguous_free_owner" {
+                atoms.retain(|a| !matches!(a,Json::Obj(m)if ["m", "e", "f"].iter().any(|id| m["subject"] == Json::str(*id))));
+                let Json::Arr(subjects) = s.get_mut("subjects").unwrap() else {
+                    panic!()
+                };
+                subjects.retain(|subject| !matches!(subject, Json::Obj(m)if ["m", "e", "f"].iter().any(|id| m["id"] == Json::str(*id))));
+            }
         }
     }
     InputSources::from_bytes(

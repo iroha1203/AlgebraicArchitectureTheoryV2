@@ -5976,11 +5976,7 @@ impl<'a> Environment<'a> {
     ) -> Result<Vec<NodeRef>, ValidationFailure> {
         let mut arguments: Vec<_> = bindings.iter().map(|b| b.value).collect();
         let context = self.current_context(graph);
-        if context.frame.is_none()
-            && context.iteration.is_none()
-            && context.instance.is_none()
-            && context.case.is_none()
-        {
+        if context.frame.is_none() && context.iteration.is_none() && context.instance.is_none() {
             let request = graph
                 .requests
                 .get(context.request)
