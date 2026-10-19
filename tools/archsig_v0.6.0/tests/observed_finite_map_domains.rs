@@ -493,25 +493,28 @@ fn finite_owned_map_domains_use_each_actual_endpoint_owner_and_empty_fibers() {
     audit(&result);
 }
 #[test]
-fn finite_owned_map_unknown_membership_keeps_missing_and_no_complete_domain() {
+fn finite_owned_map_unknown_membership_keeps_all_input_constrained_domains() {
     let result = evaluate_observed_bytes(
         owned_sources(true),
         &["a=evaluate(Reservations.every,a=@v/A,b=@v/B)"],
         &mut quiet(),
     )
     .unwrap();
-    assert_eq!(result.status(), "partial");
+    assert_eq!(result.status(), "complete");
     let w = result.wire();
     let a = answer(&w, "a");
-    assert_eq!(get(a, "status"), &Json::str("undetermined"));
-    assert!(!object(get(a, "outputs")).contains_key("value"));
+    assert_eq!(get(a, "status"), &Json::str("established"));
+    assert_eq!(value(&w, "a", Json::str("Bool")), &Json::Bool(true));
     assert!(a.canonical().contains("Reservations.State.owner"));
     assert!(a.canonical().contains("all_completions"));
     assert!(
-        array(get(&w, "nodes"))
+        array(get(a, "reasons"))
             .iter()
-            .all(|n| get(n, "type") != &Json::str("Domain"))
+            .all(|r| get(r, "code") != &Json::str("unsupported_algorithm"))
     );
+    let state = Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.State")]);
+    let ty = Json::Arr(vec![Json::str("Map"), state.clone(), state]);
+    assert_eq!(members(&w, domain(&w, &ty)).len(), 4);
     audit(&result);
 }
 #[test]

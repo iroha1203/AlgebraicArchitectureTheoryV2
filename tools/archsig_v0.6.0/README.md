@@ -178,7 +178,10 @@
   明示 `forall s:State[a]` / `exists` と、owner添字を持つ参照を含む有限Tuple/Option/Setは、
   Mapの両端owner添字も含め、元型の添字と現在の実束縛に従う登録族を使い、
   実Domain・元binder・件数と所属の支持を保持する。
-  未観測ownerの有限補完から各caseの族を再構成し、全補完の範囲と元slotの欠測を保持する。
+  型域の候補subjectや実owner式の原始所属が未観測なら、入力制約に整合する全補完から各caseの族を再構成する。
+  Mapと有限Tuple/Option/Setの完全Domain・元bodyを各caseで評価し、全caseで不変の値を確定する。
+  全補完の範囲と元型位置の欠測、let・呼出し引数の実producerを保持する。
+  型欠測の生成・元Sourceの再検査・caseの型域再構成は共有Controlで停止し、検査を終えたprefixと先行回答を保持する。
   補完内でもowner式が未解決の場合は、実caseのSourceに接続するunsupported_algorithmを未決回答に保持する。
   Law の guard が false なら非適用となり、元の guard/body から条件付き要求を判断する。
   明示 guard と元の body の評価・支持を条件付き Law の導出へ接続する。

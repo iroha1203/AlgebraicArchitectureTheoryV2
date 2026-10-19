@@ -446,6 +446,10 @@ impl Environment<'_> {
                 if let Some(fields) = self.owned_call_missing_slots(graph, reference)? {
                     return Ok(fields);
                 }
+                if let Some((fields, location)) = self.owned_type_missing_slots(graph, reference)? {
+                    missing_span = location;
+                    return Ok(fields);
+                }
                 if parameters.is_empty() {
                     if let Some(fields) =
                         self.owned_expression_missing_slots(graph, *span, bindings)?

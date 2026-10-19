@@ -1427,7 +1427,7 @@ impl Evaluator<'_, '_> {
         } else {
             #[cfg(test)]
             let (span, context) = (spec.span, self.graph.active);
-            let enumeration = self.environment.owned_type_domain(
+            let enumeration = self.environment.owned_type_domain_at(
                 self.graph,
                 id,
                 &self.bindings,
@@ -1440,6 +1440,9 @@ impl Evaluator<'_, '_> {
             domain_support = enumeration.support;
             scope.merge(&enumeration.scope);
             if enumeration.values.is_none() {
+                #[cfg(test)]
+                data::observe_actual(spec.span, self.graph.active, "owned_type_missing", 0);
+                self.tick(Checkpoint::FiniteIteration)?;
                 unresolved_reasons = self.owned_type_reasons(
                     source,
                     &spec.element,
@@ -1678,7 +1681,8 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        self.finish_with_evidence(
+        let committed_reasons = unresolved_reasons.clone();
+        let result = self.finish_with_evidence(
             spec.span,
             Type::Bool,
             value,
@@ -1689,7 +1693,11 @@ impl Evaluator<'_, '_> {
             None,
             unresolved_reasons,
             partial_evidence,
-        )
+        );
+        if result.is_ok() {
+            self.reasons.extend(committed_reasons);
+        }
+        result
     }
     fn comprehension(
         &mut self,
@@ -2980,6 +2988,9 @@ mod recheck_tests {
     }
     mod unknown_map_domain_tests {
         include!("unknown_map_domain_tests.rs");
+    }
+    mod unknown_owned_type_tests {
+        include!("unknown_owned_type_tests.rs");
     }
     mod partial_container_tests {
         include!("owned_partial_container_tests.rs");
@@ -11465,7 +11476,7 @@ reading Calc {{
             let ask = format!("bad=evaluate(Calc.{name},root=@v/root)");
             let result =
                 evaluate_observed_bytes(sources.clone(), &[&ask], &mut named_call_quiet()).unwrap();
-            owned_type_private_old_missing(&result, &law, original);
+            owned_type_private_completed_missing(&result, &law, original);
         }
     }
     #[test]

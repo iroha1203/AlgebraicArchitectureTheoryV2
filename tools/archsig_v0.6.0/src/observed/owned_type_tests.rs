@@ -1,34 +1,12 @@
-fn owned_type_private_old_missing(result: &ObservedEvaluation, law: &str, original: &str) {
-    assert_eq!(result.status(), "partial", "{:?}", result.issues);
+fn owned_type_private_completed_missing(result: &ObservedEvaluation, law: &str, original: &str) {
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
     let answer = &result.answers[0];
-    assert_eq!(answer.status, Decision::Undetermined);
-    assert!(!answer.outputs.contains_key("value"));
+    let expected = original.starts_with("forall");
+    assert_eq!(
+        data_scalar_at(result, answer.outputs["value"].0),
+        &Scalar::Bool(expected)
+    );
     assert!(answer.scope.completions);
-    let evaluation = &result.nodes[answer.outputs["evaluation"].0];
-    assert_eq!(evaluation.ty, NodeType::Evaluation(Type::Bool));
-    let Some(Payload::Evaluation {
-        expression,
-        value,
-        parts,
-        ..
-    }) = &evaluation.payload
-    else {
-        panic!("unknown Owned quantifier")
-    };
-    assert!(value.is_none());
-    assert!(parts[0].children.is_empty());
-    let Some(Payload::Expression {
-        location: Location::Law { span },
-        ..
-    }) = &result.nodes[expression.0].payload
-    else {
-        panic!("source")
-    };
-    assert_eq!(&law.as_bytes()[span.0..span.1], original.as_bytes());
-    assert!(!result.nodes.iter().any(|n| matches!(
-        n.payload,
-        Some(Payload::Domain { .. } | Payload::FiniteExhaustion { .. })
-    )));
     assert!(
         answer
             .reasons
@@ -38,29 +16,88 @@ fn owned_type_private_old_missing(result: &ObservedEvaluation, law: &str, origin
                 && f.subject == "item"
                 && f.field.as_deref() == Some("Roster.E.owner"))
     );
-    let reason = answer.reasons.iter().find(|r| matches!(&r.kind, ReasonKind::UnsupportedAlgorithm { method, .. } if method == "unresolved_owned_type_quantification")).unwrap();
-    let ReasonKind::UnsupportedAlgorithm { operand_types, .. } = &reason.kind else {
-        unreachable!()
+    assert!(
+        !answer
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+    );
+    let domains: Vec<_> = result
+        .nodes
+        .iter()
+        .enumerate()
+        .filter_map(|(i, n)| {
+            let Some(Payload::Domain { elements, .. }) = &n.payload else {
+                return None;
+            };
+            let source = n.arguments.first()?;
+            let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &result.nodes[source.0].payload
+            else {
+                return None;
+            };
+            (result.contexts[i].case.is_some() && law.get(span.0..span.1) == Some(original))
+                .then_some(elements)
+        })
+        .collect();
+    assert_eq!(domains.len(), 2, "v/wの登録rootによる全補完");
+    let values: Vec<_> = domains[0]
+        .iter()
+        .map(|r| data_scalar_at(result, r.0).clone())
+        .collect();
+    let item = Scalar::Subject {
+        snapshot: "v".into(),
+        subject: "item".into(),
+        entity: "Roster.E".into(),
     };
-    let expected = if original.starts_with("forall") {
-        Type::Ref("Roster.E".into())
+    let wanted = if expected {
+        vec![item]
     } else {
-        Type::Tuple(vec![
-            Type::Unit,
-            Type::Option(Box::new(Type::Set(Box::new(Type::Ref("Roster.E".into()))))),
-        ])
+        let ref_ty = Type::Ref("Roster.E".into());
+        let set_ty = Type::Set(Box::new(ref_ty.clone()));
+        vec![
+            Scalar::Tuple(vec![
+                Scalar::Unit,
+                Scalar::Option {
+                    element: set_ty.clone(),
+                    value: None,
+                },
+            ]),
+            Scalar::Tuple(vec![
+                Scalar::Unit,
+                Scalar::Option {
+                    element: set_ty.clone(),
+                    value: Some(Box::new(Scalar::Set {
+                        element: ref_ty.clone(),
+                        items: vec![],
+                    })),
+                },
+            ]),
+            Scalar::Tuple(vec![
+                Scalar::Unit,
+                Scalar::Option {
+                    element: set_ty,
+                    value: Some(Box::new(Scalar::Set {
+                        element: ref_ty,
+                        items: vec![item],
+                    })),
+                },
+            ]),
+        ]
     };
-    assert_eq!(operand_types, &[expected]);
-    assert_eq!(reason.dependencies, vec![*expression]);
-    let Some(Location::Law { span }) = reason.location else {
-        panic!("original TypeAst")
-    };
-    let expected = if original.starts_with("forall") {
-        "E[root]"
+    assert_eq!(values, wanted);
+    let other: Vec<_> = domains[1]
+        .iter()
+        .map(|r| data_scalar_at(result, r.0).clone())
+        .collect();
+    let empty_fiber = if expected {
+        vec![]
     } else {
-        "(Unit,Option<Set<E[root]>>)"
+        wanted[..2].to_vec()
     };
-    assert_eq!(&law[span.0..span.1], expected);
+    assert_eq!(other, empty_fiber, "異なるsnapshotのownerは空fiber");
     rebuild_for_origin_and_support_recheck(result, &result.nodes).unwrap();
 }
 
@@ -388,9 +425,18 @@ fn owned_type_quantification_unknown_owner_keeps_type_location_missing_and_compl
         Some("m-from"),
         false,
     );
-    assert_eq!(result.status(), "partial");
+    assert_eq!(result.status(), "complete");
     assert!(result.answers[0].scope.completions);
-    assert!(!result.answers[0].outputs.contains_key("value"));
+    assert_eq!(
+        data_scalar_at(&result, result.answers[0].outputs["value"].0),
+        &Scalar::Bool(true)
+    );
+    assert!(
+        !result.answers[0]
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+    );
     assert!(owned_type_private_domains(&result, 0).is_empty());
     let evaluation = reservations_private_evaluations(&result, "forall s:State[a] . true")[0];
     let Some(Payload::Evaluation {
@@ -409,7 +455,11 @@ fn owned_type_quantification_unknown_owner_keeps_type_location_missing_and_compl
         result.nodes[owner.0].payload,
         Some(Payload::Evaluation { value: None, .. })
     ));
-    let reason=result.nodes[evaluation].reasons.iter().find(|r|matches!(&r.kind,ReasonKind::UnsupportedAlgorithm{method,..} if method=="unresolved_owned_type_quantification")).unwrap();
+    let reason = result.nodes[evaluation]
+        .reasons
+        .iter()
+        .find(|r| matches!(r.kind, ReasonKind::Missing))
+        .unwrap();
     let Some(Location::Law { span }) = reason.location else {
         unreachable!()
     };
@@ -434,13 +484,13 @@ fn owned_type_quantification_unknown_owner_keeps_type_location_missing_and_compl
     completion_mutation(&result, evaluation, |nodes| {
         nodes[evaluation]
             .reasons
-            .retain(|r| !matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }));
+            .retain(|r| !matches!(r.kind, ReasonKind::Missing));
     });
     completion_mutation(&result, evaluation, |nodes| {
         let reason = nodes[evaluation]
             .reasons
             .iter_mut()
-            .find(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+            .find(|r| matches!(r.kind, ReasonKind::Missing))
             .unwrap();
         reason.location = Some(Location::Law {
             span: (span.0 + 1, span.1),
