@@ -584,7 +584,7 @@ impl Evaluator<'_, '_> {
             domains.push(self.push(Node {
                 ty: NodeType::Domain,
                 payload: Some(Payload::TypeDomain {
-                    ty: parameter.kind.ty(),
+                    ty: parameter.ty.clone(),
                 }),
                 rule: Rule::Input {
                     kind: "law",
@@ -744,7 +744,7 @@ impl Evaluator<'_, '_> {
             let mut operand_types = plan
                 .parameters
                 .iter()
-                .map(|parameter| parameter.kind.ty())
+                .map(|parameter| parameter.ty.clone())
                 .collect::<Vec<_>>();
             operand_types.dedup();
             reasons.push(Reason {
@@ -1215,6 +1215,16 @@ impl Evaluator<'_, '_> {
         if let Some(reason) = source.missing {
             reasons.push(reason);
         }
+        let intrinsic_reason = self.environment.universal_opaque_reason(
+            self.graph,
+            expression,
+            &children
+                .iter()
+                .map(|c| c.evaluated.evaluation)
+                .collect::<Vec<_>>(),
+            value,
+        )?;
+        reasons.extend(intrinsic_reason.iter().cloned());
         sort_reasons(&mut reasons);
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
@@ -1245,6 +1255,8 @@ impl Evaluator<'_, '_> {
             scope: scope.clone(),
             reasons: reasons.clone(),
         })?;
+        // この子評価は元入力へ照合してcommit済み。以後の停止にも元算法理由を残す。
+        self.reasons.extend(intrinsic_reason);
         Ok(SymbolicEvaluation {
             evaluated: Evaluated {
                 expression,
@@ -1292,7 +1304,7 @@ impl Evaluator<'_, '_> {
             .clone();
         let (source, support) =
             self.universal_source(plan, template, domains, expr.span, ty.clone())?;
-        if self.environment.universal_finite_syntax(id) {
+        if self.environment.universal_finite_syntax(id)? {
             let active = FiniteUniversal {
                 plan: plan.clone(),
                 template,
@@ -1535,7 +1547,7 @@ impl Evaluator<'_, '_> {
                     let domain = self.push(Node {
                         ty: NodeType::Domain,
                         payload: Some(Payload::TypeDomain {
-                            ty: parameter.kind.ty(),
+                            ty: parameter.ty.clone(),
                         }),
                         rule: Rule::Input {
                             kind: "law",

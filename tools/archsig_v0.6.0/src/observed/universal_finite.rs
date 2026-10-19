@@ -45,7 +45,7 @@ impl Environment<'_> {
         plan: &UniversalPlan,
         bindings: &[Binding],
     ) -> Result<Option<(bool, NodeRef)>, ValidationFailure> {
-        if !self.universal_finite_syntax(plan.body)
+        if !self.universal_finite_syntax(plan.body)?
             || !matches!(
                 self.inputs.law().exprs[plan.body].kind,
                 ExprKind::Quant { .. }

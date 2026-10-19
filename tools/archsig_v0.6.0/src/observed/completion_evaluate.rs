@@ -48,6 +48,7 @@ impl Evaluator<'_, '_> {
                     answer
                         .reasons
                         .iter()
+                        .filter(|r| matches!(r.kind, ReasonKind::Missing))
                         .flat_map(|r| r.dependencies.iter().copied()),
                 );
             }

@@ -257,13 +257,19 @@
   補完caseごとに固定所属条件を元selectorから再検査し、同じcaseの条件辺と実fiberをSourceへ結ぶ。
   公開構造成分の固定射影も元Seedの束縛前Refを保持し、同値でも別Requestの射影へ置換できない。
   既知Mapの入力制約で絞った全候補の結果と、候補間で結果が分かれるCompletionPairを保持する。
-  Z/Qの型全域量化は元のforall/exists・binder・TypeDomainと呼出しcontextを保持する。
+  Z/QおよびText・無制限List・再帰data・無限payload等の型全域量化は、
+  元のforall/exists・binder型・TypeDomainと実呼出しcontextを保持する。
+  未束縛Law parameterも有限prefixと型全域を分け、元宣言順の域と未決claimを保持する。
+  非数値の無限域に必要な判定は元量化Sourceと型を持つunsupported_algorithmへ接続し、
+  let/view経由や外側数値軸の下でも元missing・独立回答・後続依存・現在由来を保持する。
+  子評価の検査済み算法理由は、node挿入直後の停止でもAnswerとissuesへ保持する。
+  定数論理と既存の有限/Z/Q判断は引き続き計算する。
+  有限子の判定にも元の外側型域を適用し、空性が未判定の型を非空と仮定した反例を作らない。
   未提供の存在量化判定や非線形判定は、元式・型・域と必要な判定を持つ
   `unsupported_algorithm`の未決回答を返し、欠測も原因なら元slotの理由を併記する。
   全称アフィン判定をexistsへ適用せず、数値残差は量化の判断と別に元の両辺から検査する。
   有限評価・既知値・Bool短絡と既存アフィン全称判定は確定値・反例を保持する。
   上記以外のpayloadを持つdataの評価、その他の式形・
-  上記以外の無限型・
   上記以外の未観測ownerの所属条件・
   有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
   専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の

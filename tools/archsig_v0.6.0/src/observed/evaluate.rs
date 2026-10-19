@@ -134,6 +134,11 @@ impl Evaluator<'_, '_> {
             // 挿入後の post checkpoint が停止しても、既存 node の範囲を記録する。
             // 既に検査・保持したデータの転記であり、新しい意味導出を行わない。
             self.retained_scope.merge(&scope);
+            if matches!(&result, Err(Failure::Stop(_))) {
+                // post停止では、実際に挿入済みのnodeから元理由も転記する。
+                self.reasons
+                    .extend(self.graph.nodes[previous_nodes].reasons.iter().cloned());
+            }
         }
         result
     }
@@ -2937,6 +2942,9 @@ fn evaluate_observed_with_validator(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    mod infinite_domain_tests {
+        include!("infinite_domain_tests.rs");
+    }
     mod infinite_quantifier_tests {
         include!("infinite_quantifier_tests.rs");
     }

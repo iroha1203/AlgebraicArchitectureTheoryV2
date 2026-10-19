@@ -47,10 +47,15 @@ impl Environment<'_> {
             })
             .cloned()
             .collect();
-        let (numeric, unbound): (Vec<_>, Vec<_>) = free
-            .iter()
-            .cloned()
-            .partition(|p| matches!(p.ty, Type::Z | Type::Q));
+        let (mut numeric, mut unbound) = (Vec::new(), Vec::new());
+        for p in &free {
+            self.tick()?;
+            if self.universal_symbolic_type(&p.ty.erase())? {
+                numeric.push(p.clone());
+            } else {
+                unbound.push(p.clone());
+            }
+        }
         if unbound.is_empty() {
             return Ok(None);
         }
