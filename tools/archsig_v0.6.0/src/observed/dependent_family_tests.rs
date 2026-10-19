@@ -35,7 +35,7 @@ fn dependent_private_fixture(body: &str, flags: [Option<bool>; 2], unknown: bool
         }
     }
     let map = format!(
-        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Dep","version":"1","digest":"{digest}"}}],"sources":[{{"id":"source","uri":"urn:fixture:dependent-private","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],"origins":[{{"id":"scan","mode":"observed","method":"有限な対象と所属の観測。","locations":[{{"source":"source","path":"dependent.model","span":[0,1]}}]}}],"snapshots":[{{"id":"v","origin":"scan","subjects":[{subjects}],"atoms":[{}]}}]}}"#,
+        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Dep","version":"1","digest":"{digest}"}}],"sources":[{{"id":"source","uri":"urn:fixture:dependent-extra","revision":"r1","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}],"origins":[{{"id":"scan","mode":"observed","method":"有限な対象と所属の観測。","locations":[{{"source":"source","path":"dependent.model","span":[0,1]}}]}}],"snapshots":[{{"id":"v","origin":"scan","subjects":[{subjects}],"atoms":[{}]}}]}}"#,
         atoms.join(",")
     );
     InputSources::from_bytes(

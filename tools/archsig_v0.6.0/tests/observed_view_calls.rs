@@ -1256,7 +1256,7 @@ fn one_zero_argument_named_call_retains_original_body_and_typed_derivation() {
 }
 
 #[test]
-fn owned_callee_parameters_use_membership_evidence_and_preserve_unknown_boundary() {
+fn owned_callee_parameters_use_membership_evidence_and_respect_map_constraints() {
     use archsig::observed::{
         EvaluationFailure, PrepareFailure,
         request::{RequestIssueCode, ResolveFailure},
@@ -1413,57 +1413,34 @@ fn owned_callee_parameters_use_membership_evidence_and_preserve_unknown_boundary
             return_span,
         ),
     ] {
-        match evaluate_observed_bytes(sources(map), &[ask], &mut quiet()) {
-            Err(failure) => {
-                assert_eq!(label, "missing owner", "既知所属はcall境界で検査する");
-                assert!(
-                    failure.wire().is_none(),
-                    "未確認所属をinvalidへ変えない: {label}"
-                );
-                let EvaluationFailure::NotImplemented {
-                    location: archsig::issue::Location::Law { span },
-                    feature,
-                    ..
-                } = failure
-                else {
-                    panic!("Owned calleeは専用未実装: {label}");
-                };
-                assert_eq!(span, at, "元call出現を保持: {label}");
-                assert!(
-                    feature.contains("owner"),
-                    "所属条件の未実装を示す: {feature}"
-                );
-            }
-            Ok(result) => {
-                assert_ne!(label, "missing owner", "未観測ownerを確定しない");
-                let wire = result.wire();
-                if label == "same owner named call" {
-                    assert_eq!(result.status(), "complete");
-                    output(&wire, "same", &Json::str("Z"), Json::str("4"));
-                    continue;
-                }
-                assert_eq!(
-                    result.status(),
-                    "partial",
-                    "{label}: {:?}",
-                    f(&wire, "issues")
-                );
-                let answer = &arr(f(&wire, "answers"))[0];
-                assert_eq!(f(answer, "status"), &Json::str("undetermined"));
-                assert!(!obj(f(answer, "outputs")).contains_key("value"));
-                let reason = arr(f(answer, "reasons"))
-                    .iter()
-                    .find(|r| f(r, "code") == &Json::str("condition_failed"))
-                    .unwrap();
-                assert_eq!(span(f(reason, "location")), at);
-                let ns = index(&wire);
-                let condition = target(
-                    &ns,
-                    f(f(reason, "details"), "condition"),
-                    &Json::str("Proposition"),
-                );
-                assert_eq!(f(f(condition, "judgment"), "status"), &Json::str("refuted"));
-            }
+        let result = evaluate_observed_bytes(sources(map), &[ask], &mut quiet()).unwrap();
+        let wire = result.wire();
+        if label == "same owner named call" {
+            assert_eq!(result.status(), "complete");
+            output(&wire, "same", &Json::str("Z"), Json::str("4"));
+            continue;
         }
+        assert_eq!(
+            result.status(),
+            "partial",
+            "{label}: {:?}",
+            f(&wire, "issues")
+        );
+        let answer = &arr(f(&wire, "answers"))[0];
+        assert_eq!(f(answer, "status"), &Json::str("undetermined"));
+        assert!(!obj(f(answer, "outputs")).contains_key("value"));
+        let reason = arr(f(answer, "reasons"))
+            .iter()
+            .find(|r| f(r, "code") == &Json::str("condition_failed"))
+            .unwrap();
+        assert_eq!(span(f(reason, "location")), at);
+        let ns = index(&wire);
+        let condition = target(
+            &ns,
+            f(f(reason, "details"), "condition"),
+            &Json::str("Proposition"),
+        );
+        assert_eq!(f(f(condition, "judgment"), "status"), &Json::str("refuted"));
+        assert_eq!(result.prepared().inputs().sources(), &sources(map));
     }
 }

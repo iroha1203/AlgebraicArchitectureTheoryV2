@@ -589,53 +589,92 @@ fn finite_owned_map_unbound_parameters_have_concrete_finite_domains() {
 }
 
 #[test]
-fn nonfinite_owned_map_unbound_parameters_keep_dedicated_unimplemented_failure() {
+fn nonfinite_owned_map_unbound_parameters_keep_original_typed_domains_and_claims() {
     for ty in [
         "List<Map<State[a],State[b]>>",
         "Option<List<Map<State[a],State[b]>>>",
         "(Unit,List<Map<State[a],State[b]>>)",
         "Set<List<Map<State[a],State[b]>>>",
     ] {
-        let original = owned_sources(false);
-        let mut law = String::from_utf8(original.law().bytes().to_vec()).unwrap();
-        let pos = law.rfind('}').unwrap();
-        law.insert_str(
-            pos,
-            &format!("law required nested(a:System,b:System,f:{ty}):true;"),
-        );
-        let input = InputSources::from_bytes(
-            vec![maps::OWNED_DEFINITIONS.as_bytes().to_vec()],
-            law.into_bytes(),
-            original.archmap().bytes().to_vec(),
-        );
-        let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
-        let archsig::law::model::Signature::Law { params, .. } =
-            &checked.law().declarations["Reservations.nested"].signature
-        else {
-            panic!("Law signature");
-        };
-        let expected = archsig::issue::Location::Law {
-            span: params[2].span,
-        };
-        let outcome = evaluate_observed_bytes(
-            input,
-            &["c=check(Reservations.nested,a=@v/A,b=@v/B)"],
-            &mut quiet(),
-        );
-        let Err(failure) = outcome else {
-            panic!("{ty}: unsupported parameter produced a result instead of dedicated failure");
-        };
-        assert!(failure.wire().is_none());
-        let archsig::observed::EvaluationFailure::NotImplemented {
-            declaration,
-            location,
-            feature,
-        } = failure
-        else {
-            panic!("{ty}: wrong failure");
-        };
-        assert_eq!(declaration, "Reservations.nested");
-        assert_eq!(location, expected);
-        assert!(feature.contains("parameter `f`"), "{feature}");
+        for predicate in ["true", "f=f"] {
+            let original = owned_sources(false);
+            let mut law = String::from_utf8(original.law().bytes().to_vec()).unwrap();
+            let pos = law.rfind('}').unwrap();
+            law.insert_str(
+                pos,
+                &format!("law required nested(a:System,b:System,f:{ty}):{predicate};"),
+            );
+            let input = InputSources::from_bytes(
+                vec![maps::OWNED_DEFINITIONS.as_bytes().to_vec()],
+                law.into_bytes(),
+                original.archmap().bytes().to_vec(),
+            );
+            let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+            let archsig::law::model::Signature::Law { params, body, .. } =
+                &checked.law().declarations["Reservations.nested"].signature
+            else {
+                panic!("Law signature");
+            };
+            let expected_type = params[2].ty.erase().wire();
+            let body_span = checked.law().exprs[*body].span;
+            let result = evaluate_observed_bytes(
+                input.clone(),
+                &["c=check(Reservations.nested,a=@v/A,b=@v/B)"],
+                &mut quiet(),
+            )
+            .unwrap();
+            audit(&result);
+            assert_eq!(result.prepared().inputs().sources(), &input);
+            let wire = result.wire();
+            let decided = predicate == "true";
+            assert_eq!(
+                result.status(),
+                if decided { "complete" } else { "partial" },
+                "{ty}: {wire:?}"
+            );
+            let a = answer(&wire, "c");
+            assert_eq!(
+                get(a, "status"),
+                &Json::str(if decided {
+                    "established"
+                } else {
+                    "undetermined"
+                })
+            );
+            let claim = node(&wire, get(a, "claim"));
+            assert_eq!(get(claim, "type"), &Json::str("Proposition"));
+            assert_eq!(get(get(claim, "judgment"), "status"), get(a, "status"));
+            let q = array(get(get(a, "scope"), "quantifiers"))
+                .iter()
+                .find(|q| get(q, "name") == &Json::str("f"))
+                .unwrap();
+            assert_eq!(get(q, "kind"), &Json::str("forall"));
+            assert_eq!(get(q, "type"), &expected_type);
+            let domain = node(&wire, get(q, "domain"));
+            assert_eq!(get(domain, "type"), &Json::str("Domain"));
+            assert_eq!(get(get(domain, "value"), "kind"), &Json::str("type"));
+            assert_eq!(get(get(domain, "value"), "type"), &expected_type);
+            if decided {
+                assert!(array(get(a, "reasons")).is_empty());
+            } else {
+                assert!(!object(get(a, "outputs")).contains_key("value"));
+                let reason = array(get(a, "reasons"))
+                    .iter()
+                    .find(|r| get(r, "code") == &Json::str("unsupported_algorithm"))
+                    .unwrap();
+                assert_eq!(
+                    get(get(reason, "details"), "operand_types"),
+                    &Json::Arr(vec![expected_type])
+                );
+                assert_eq!(
+                    get(get(reason, "location"), "span"),
+                    &Json::Arr(vec![
+                        Json::Nat(body_span.0 as u64),
+                        Json::Nat(body_span.1 as u64)
+                    ])
+                );
+                assert_eq!(&input.law().bytes()[body_span.0..body_span.1], b"f=f");
+            }
+        }
     }
 }
