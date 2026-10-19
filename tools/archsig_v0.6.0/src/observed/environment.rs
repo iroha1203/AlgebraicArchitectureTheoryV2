@@ -7791,9 +7791,19 @@ impl<'a> Environment<'a> {
             ..
         } = base;
         if known_value.is_none() {
-            return Err(ValidationFailure::UnsupportedExpression {
-                location: Location::Law { span },
-                feature: "未確定の参照からの field 読取り".into(),
+            // 元ownerが未確定な解析では値も支持Atomも追加しない。
+            // 実導出がownerのMissingを保持し、整合する有限参照補完ごとに
+            // このfieldを読み直すための未確定な解析結果を返す。
+            return Ok(SourceValue {
+                condition_failed: false,
+                condition_pending: false,
+                symbolic: None,
+                comparison: None,
+                affine: None,
+                known_value: None,
+                scalar_scope: None,
+                scope,
+                support,
             });
         }
         let Some(Scalar::Subject {
