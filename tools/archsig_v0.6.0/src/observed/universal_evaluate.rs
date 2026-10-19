@@ -3,10 +3,18 @@ use super::*;
 use crate::observed::{affine::CompletionPair, environment::universal::UniversalPlan};
 
 #[derive(Clone)]
-struct SymbolicEvaluation {
-    evaluated: Evaluated,
+pub(super) struct FiniteUniversal {
+    pub plan: UniversalPlan,
+    pub template: NodeRef,
+    pub domains: Vec<NodeRef>,
+    pub has_local_domains: bool,
+}
+
+#[derive(Clone)]
+pub(super) struct SymbolicEvaluation {
+    pub evaluated: Evaluated,
     comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
-    has_local_domains: bool,
+    pub has_local_domains: bool,
 }
 
 pub(super) struct UniversalEvaluation {
@@ -625,7 +633,7 @@ impl Evaluator<'_, '_> {
         let scope = analyzed.analysis.scope.clone();
         let support = analyzed.analysis.support.clone();
         self.retained_scope.merge(&scope);
-        let mut steps = Vec::new();
+        let mut steps = analyzed.finite_dependency.into_iter().collect::<Vec<_>>();
         let mut residual = None;
         if let Some(body) = &body {
             if let (Some(expected), Some((id, left, right, _))) =
@@ -1253,7 +1261,7 @@ impl Evaluator<'_, '_> {
         })
     }
 
-    fn universal_pointwise(
+    pub(super) fn universal_pointwise(
         &mut self,
         plan: &UniversalPlan,
         template: NodeRef,
@@ -1284,6 +1292,42 @@ impl Evaluator<'_, '_> {
             .clone();
         let (source, support) =
             self.universal_source(plan, template, domains, expr.span, ty.clone())?;
+        if self.environment.universal_finite_syntax(id) {
+            let active = FiniteUniversal {
+                plan: plan.clone(),
+                template,
+                domains: domains.to_vec(),
+                has_local_domains: false,
+            };
+            let old = self.finite_universal.replace(active);
+            let old_sources = std::mem::take(&mut self.sources);
+            self.sources.insert(expr.span, source.clone());
+            let environment = self.environment;
+            let result = (|| {
+                let context =
+                    environment.universal_source_context(self.graph, source.expression)?;
+                environment.with_universal(context, || match expr.kind {
+                    ExprKind::SetComp {
+                        domain,
+                        elem,
+                        filter,
+                        ..
+                    } => self.comprehension(domain, elem, filter, expr.span, ty),
+                    ExprKind::Quant { .. } => self.quantification(id),
+                    _ => unreachable!(),
+                })
+            })();
+            self.finite_universal.take();
+            // 元の有限反復の評価方式を、失敗・停止でも必ず戻す。
+            self.finite_universal = old;
+            self.sources = old_sources;
+            let evaluated = result?;
+            return Ok(SymbolicEvaluation {
+                evaluated,
+                comparison: None,
+                has_local_domains: true,
+            });
+        }
         let mut comparison = None;
         let mut local_domain = None;
         let children = match &expr.kind {
@@ -1297,7 +1341,25 @@ impl Evaluator<'_, '_> {
                 let first = parts
                     .first()
                     .ok_or_else(|| Failure::Internal("全域の空Dotted".into()))?;
-                let first_children = if let Some((input, _)) = self.environment.pattern_argument(
+                let iteration = self.environment.iteration_argument(
+                    self.graph,
+                    first.span,
+                    &first.name,
+                    &self.bindings,
+                )?;
+                let first_children = if let Some((input, _)) = iteration {
+                    vec![SymbolicEvaluation {
+                        evaluated: self.evaluated_reference(input)?,
+                        comparison: None,
+                        has_local_domains: false,
+                    }]
+                } else if self
+                    .environment
+                    .type_iteration_argument(self.graph, first.span, &first.name, &self.bindings)?
+                    .is_some()
+                {
+                    vec![]
+                } else if let Some((input, _)) = self.environment.pattern_argument(
                     self.graph,
                     first.span,
                     &first.name,

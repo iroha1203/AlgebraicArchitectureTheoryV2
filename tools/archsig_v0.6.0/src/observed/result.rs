@@ -2448,6 +2448,66 @@ impl Graph {
         Ok(())
     }
 
+    fn universal_finite_step_shape(
+        &self,
+        template: NodeRef,
+        source: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        let node = self.get(source)?;
+        if !matches!(node.payload, Some(Payload::Expression { .. }))
+            || node.ty != NodeType::Expression(Type::Bool)
+            || node.arguments.first() != Some(&template)
+            || self.context_at(source.0) != self.context_at(template.0)
+        {
+            return Ok(false);
+        }
+        for (index, domain) in self.nodes.iter().enumerate() {
+            self.tick()?;
+            if domain.arguments.first() == Some(&source)
+                && matches!(domain.payload, Some(Payload::Domain { .. }))
+                && source.0 < index
+                && self.context_at(index) == self.context_at(source.0)
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+    fn universal_finite_body_contains(
+        &self,
+        body: NodeRef,
+        source: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        let mut pending = vec![body];
+        let mut seen = BTreeSet::new();
+        while let Some(reference) = pending.pop() {
+            self.tick()?;
+            if !seen.insert(reference.0) {
+                continue;
+            }
+            let Some(Payload::Evaluation {
+                expression, parts, ..
+            }) = &self.get(reference)?.payload
+            else {
+                return Err("全域有限証拠のbody辺がEvaluationでない".into());
+            };
+            if expression.0 >= reference.0 {
+                return Err("全域有限証拠のSourceが既出でない".into());
+            }
+            if *expression == source {
+                return Ok(true);
+            }
+            for child in parts.iter().flat_map(|part| &part.children) {
+                self.tick()?;
+                if child.0 >= reference.0 {
+                    return Err("全域有限証拠のbody辺が既出でない".into());
+                }
+                pending.push(*child);
+            }
+        }
+        Ok(false)
+    }
+
     pub(super) fn universal_normalization_shape(
         &self,
         node: &Node,
@@ -2479,6 +2539,9 @@ impl Graph {
                 return Err("非適用全域正規化の含意がtrueでない".into());
             }
             expected_support = &source.support;
+        } else if steps.len() == 1 && self.universal_finite_step_shape(*before, steps[0])? {
+            // 全case・元binder・真偽の計算はEnvironmentが再検査する。
+            expected_support = &node.support;
         } else {
             let [difference, substitutions @ ..] = steps.as_slice() else {
                 return Err("全域正規化に元differenceがない".into());
@@ -2956,7 +3019,22 @@ impl Graph {
                 expected_step = Some(*difference);
                 expected_arguments.extend([*body, residual]);
             } else {
-                if value.is_some() {
+                let finite_step = if let [proof] = node.evidence.as_slice() {
+                    match &self.get(*proof)?.payload {
+                        Some(Payload::Normalization { before, steps, .. })
+                            if before == expression
+                                && steps.len() == 1
+                                && self.universal_finite_step_shape(*expression, steps[0])?
+                                && self.universal_finite_body_contains(*body, steps[0])? =>
+                        {
+                            Some(steps[0])
+                        }
+                        _ => None,
+                    }
+                } else {
+                    None
+                };
+                if value.is_some() && finite_step.is_none() {
                     let body_value = self.boolean(*body_value)?;
                     let expected = if guard_source.is_some() {
                         conditional_bool(guard_value, body_value)
@@ -2966,17 +3044,19 @@ impl Graph {
                     if expected.is_none() || expected != self.boolean(*value)? {
                         return Err("定数論理全域wholeの元body・guard・判断が違う".into());
                     }
-                } else if !node.reasons.iter().any(|reason| {
-                    matches!(
-                        &reason.kind,
-                        ReasonKind::UnsupportedAlgorithm { .. }
-                            | ReasonKind::ConditionFailed { .. }
-                            | ReasonKind::Missing
-                    )
-                }) {
+                } else if value.is_none()
+                    && !node.reasons.iter().any(|reason| {
+                        matches!(
+                            &reason.kind,
+                            ReasonKind::UnsupportedAlgorithm { .. }
+                                | ReasonKind::ConditionFailed { .. }
+                                | ReasonKind::Missing
+                        )
+                    })
+                {
                     return Err("全域wholeに正確な差も元式の未確定理由もない".into());
                 }
-                expected_step = None;
+                expected_step = finite_step;
                 expected_arguments.push(*body);
             }
         }

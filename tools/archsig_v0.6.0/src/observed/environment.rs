@@ -638,7 +638,11 @@ impl<'a> Environment<'a> {
                 if let Some(case) = context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
-                self.validate_in_context(graph, node, limit)
+                if let Some(active) = self.universal_node_context(graph, node, limit)? {
+                    self.with_universal(active, || self.validate_in_context(graph, node, limit))
+                } else {
+                    self.validate_in_context(graph, node, limit)
+                }
             })()
             .map_err(|failure| match failure {
                 ValidationFailure::UnsupportedExpression { feature, .. } => {
@@ -707,10 +711,7 @@ impl<'a> Environment<'a> {
             result
         })
     }
-    fn validation_session<T>(
-        &self,
-        run: impl FnOnce() -> Result<T, ValidationFailure>,
-    ) -> Result<T, ValidationFailure> {
+    fn validation_session<T, E>(&self, run: impl FnOnce() -> Result<T, E>) -> Result<T, E> {
         // Source/Frame の再分析と Evaluation の再検査は相互再入する。
         // Source・pattern・実引数復元の局所値を確保する前に十分な余白を取る。
         stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
@@ -5545,6 +5546,15 @@ impl<'a> Environment<'a> {
         let mut known = items.is_some();
         if let Some((items, is_list)) = items {
             for position in 0..items.len() {
+                #[cfg(test)]
+                if self.universal_source_root(graph, own)?.is_some() {
+                    data::observe_actual(
+                        span,
+                        self.current_context(graph),
+                        "universal_finite_recheck",
+                        position,
+                    );
+                }
                 self.tick()?;
                 let first = *children.get(cursor).ok_or("内包に反復漏れがある")?;
                 let context = graph.context_at(first.0);
@@ -9072,6 +9082,15 @@ impl<'a> Environment<'a> {
                     return Err("量化instance全coverageの件数が違う".into());
                 }
                 for body in &children[1..] {
+                    #[cfg(test)]
+                    if self.universal_source_root(graph, source)?.is_some() {
+                        data::observe_actual(
+                            span,
+                            self.current_context(graph),
+                            "universal_quant_recheck",
+                            seen.len(),
+                        );
+                    }
                     self.tick()?;
                     if body.0 >= limit {
                         return Err("量化bodyが未来を指す".into());
