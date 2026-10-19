@@ -257,7 +257,7 @@ pub(super) fn result_type(ty: &Type, control: &Control) -> Result<bool, Validati
 
 /// Ref は実 arguments の依存先にある同じ型・値の既出 node を指す。
 /// 別の問いや無関係な既出値を、payload の一致だけで借用しない。
-fn reference(
+pub(super) fn reference(
     value: &Scalar,
     prior: &[Node],
     roots: &[NodeRef],

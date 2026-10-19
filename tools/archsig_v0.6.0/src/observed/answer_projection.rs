@@ -59,6 +59,7 @@ impl Environment<'_> {
             return Err("射影の元値が既出prefixにない".into());
         }
         let mut scalar = graph.scalar(value)?;
+        let mut represented = Some(value);
         if steps.is_empty() {
             return Ok(AnswerBinding::Reference(value));
         }
@@ -71,6 +72,51 @@ impl Environment<'_> {
                 "answer_projection_check_step",
                 index,
             );
+            if let Scalar::Path(path_value) = scalar {
+                let component = match (step, &steps[index + 1..]) {
+                    (ProjectionStep::Field(field), []) if field == "source" => {
+                        Some(path_value.object())
+                    }
+                    (ProjectionStep::Field(field), []) if field == "target" => {
+                        Some(path_value.target())
+                    }
+                    (ProjectionStep::Field(field), [ProjectionStep::Index(position)])
+                        if field == "generators" =>
+                    {
+                        path_value.step.as_ref().and_then(|step| {
+                            match usize::try_from(*position) {
+                                Ok(0) => Some(&step.generator),
+                                Ok(index) => step.word_tail.get(index - 1),
+                                Err(_) => None,
+                            }
+                            .cloned()
+                        })
+                    }
+                    _ => None,
+                };
+                let Some(component) = component else {
+                    return Ok(AnswerBinding::Inapplicable(root));
+                };
+                // 成分表示の各段階で選ばれたPathの元Refから辿る。
+                let prior = &graph.nodes[..self.cutoff.get().min(graph.nodes.len())];
+                let path_reference = represented.ok_or("Pathの表示元Refがない")?;
+                let selected = super::super::path_value::reference(
+                    &component,
+                    prior,
+                    &graph.get(path_reference)?.arguments,
+                    &self.control,
+                )?;
+                #[cfg(test)]
+                data::observe_actual(
+                    span,
+                    self.current_context(graph),
+                    "answer_projection_step",
+                    index,
+                );
+                self.tick()?;
+                return Ok(AnswerBinding::Reference(selected));
+            }
+            let has_path = super::super::path_value::contains_path(&scalar.ty(), &self.control)?;
             scalar = match (scalar, step) {
                 (
                     Scalar::Tuple(items)
@@ -92,6 +138,19 @@ impl Environment<'_> {
                 ) if field == "some" => value,
                 _ => return Ok(AnswerBinding::Inapplicable(root)),
             };
+            represented = if has_path {
+                // Pathを含むTは成分をRefで表示する。各親と同じ選択を順に
+                // 復元し、同値なPathが複数あっても表示されたRefを保つ。
+                let parent = represented.ok_or("非原始成分の表示元Refがない")?;
+                Some(super::super::path_value::reference(
+                    scalar,
+                    &graph.nodes[..self.cutoff.get().min(graph.nodes.len())],
+                    &graph.get(parent)?.arguments,
+                    &self.control,
+                )?)
+            } else {
+                None
+            };
             #[cfg(test)]
             data::observe_actual(
                 span,
@@ -102,6 +161,9 @@ impl Environment<'_> {
             #[cfg(not(test))]
             let _ = index;
             self.tick()?;
+        }
+        if let Some(reference) = represented {
+            return Ok(AnswerBinding::Reference(reference));
         }
         data::check(scalar, self.inputs.law(), &self.control)?;
         let node = Node {
