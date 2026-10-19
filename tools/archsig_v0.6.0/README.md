@@ -148,6 +148,11 @@
   ドット列は束縛変数から既知参照を順にたどり、各prefixの元span・型・実owner・支持を保持する。
   Z/Q全域式内でも各参照prefixの元型・span・実ownerを保持し、全代入の導出へ接続する。
   中間の原始参照が欠測なら値や支持Atomを作らず、整合する有限参照補完ごとに元fieldを読み直す。
+  Z/Q全域式の子にある既知有限Set内包・明示In/有限型量化は、既存の有限評価器で読む。
+  元List/Setと各反復・filter・全要素・空域、型Domain・binder・全coverageを導出に保持する。
+  外側の数値binderの所属は元lexical scopeと実反復の親から読み、各子を元のPlanで再検査する。
+  全称の有限各caseが持つアフィン等値も外側の数値全代入で判断し、元有限Sourceを正規化stepへ残す。
+  有限existsは全代入で成立するcase、定数falseの全case、または単一caseの同値な判断を使う。
   Bool は false and x / true or x / false implies x などを全補完で確定し、元の両子評価と欠測理由を保持する。
   Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
   Z/Qの欠測slotは同じ記号として係数をまとめ、加減算・負号・定数倍で係数が消えた式の値を確定する。

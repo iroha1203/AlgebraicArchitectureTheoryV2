@@ -5,6 +5,8 @@ use crate::law::{
     model::Signature,
 };
 use crate::observed::affine::{self, NumberType, Parameter};
+#[path = "universal_finite.rs"]
+mod finite_decision;
 #[path = "universal_validation.rs"]
 pub(super) mod validation;
 
@@ -17,13 +19,18 @@ pub(in crate::observed) struct UniversalPlan {
     pub family: bool,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) struct AnalysisContext {
-    pub plan: UniversalPlan,
-    pub template: Option<NodeRef>,
-    pub domains: Vec<NodeRef>,
-    pub completions: Vec<(Fact, Scalar)>,
-    pub local_axes: Vec<LocalAxis>,
-    pub calls: Vec<ResolvedCall>,
+pub(in crate::observed) struct AnalysisContext {
+    pub(super) plan: UniversalPlan,
+    pub(super) template: Option<NodeRef>,
+    pub(super) domains: Vec<NodeRef>,
+    pub(super) completions: Vec<(Fact, Scalar)>,
+    pub(super) local_axes: Vec<LocalAxis>,
+    pub(super) calls: Vec<ResolvedCall>,
+    pub(super) iterations: Vec<(
+        super::super::call::Context,
+        super::super::call::Context,
+        (usize, usize),
+    )>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct LocalAxis {
@@ -50,6 +57,7 @@ pub(in crate::observed) struct UniversalAnalysis {
     pub comparison_expression: Option<usize>,
     pub value: Option<bool>,
     pub guard_value: Option<bool>,
+    pub finite_dependency: Option<NodeRef>,
 }
 type CounterexampleBinding = (String, Type, Scalar, (usize, usize));
 fn number(ty: &Type) -> Option<NumberType> {
@@ -154,6 +162,7 @@ impl Environment<'_> {
             completions,
             local_axes: Vec::new(),
             calls: Vec::new(),
+            iterations: Vec::new(),
         };
         let cutoff = self.cutoff.get().min(graph.nodes.len());
         for (index, frame) in graph.frames.iter().enumerate() {
@@ -192,6 +201,32 @@ impl Environment<'_> {
                 },
             });
         }
+        for (index, record) in graph.iterations.iter().enumerate() {
+            self.tick()?;
+            if record.source.0 >= cutoff || record.domain.0 >= cutoff {
+                continue;
+            }
+            if graph.get(record.source)?.arguments.first() != Some(&template) {
+                continue;
+            }
+            if record
+                .caller
+                .iteration
+                .is_some_and(|parent| parent >= index)
+                || graph.context_at(record.source.0) != record.caller
+                || graph.context_at(record.domain.0) != record.caller
+            {
+                return Err("全域有限反復の元producer・親Contextが違う".into());
+            }
+            result.iterations.push((
+                super::super::call::Context {
+                    iteration: Some(index),
+                    ..record.caller
+                },
+                record.caller,
+                self.expression_span(graph, record.source)?,
+            ));
+        }
         for (index, node) in graph.nodes.iter().enumerate().take(cutoff) {
             self.tick()?;
             if !matches!(node.payload, Some(Payload::TypeDomain { .. }))
@@ -221,6 +256,33 @@ impl Environment<'_> {
             result.local_axes.push(axis);
         }
         Ok(result)
+    }
+    fn universal_binder_context(
+        &self,
+        active: &AnalysisContext,
+        binder: (usize, usize),
+        mut origin: super::super::call::Context,
+    ) -> Result<super::super::call::Context, ValidationFailure> {
+        while let Some((_, caller, span)) = active
+            .iterations
+            .iter()
+            .find(|(context, _, _)| *context == origin)
+        {
+            self.tick()?;
+            // 外側binderの出現は親のまま。反復body内で新しく量化したbinderは
+            // 各実反復Contextに属するため、親へ移さない。
+            let inherited = self.lexical_context(*span)?.iter().any(|(_, binding)| {
+                match binding {
+                    LexicalOrigin::Universal(id) => matches!(&self.inputs.law().exprs[*id].kind, ExprKind::Quant { var, .. } if var.span == binder),
+                    _ => false,
+                }
+            });
+            if !inherited {
+                break;
+            }
+            origin = *caller;
+        }
+        Ok(origin)
     }
     fn universal_local_domain_axis(
         &self,
@@ -343,18 +405,18 @@ impl Environment<'_> {
                 let ExprKind::Quant { var, .. } = &self.inputs.law().exprs[id].kind else {
                     unreachable!()
                 };
-                if plan
-                    .parameters
-                    .iter()
-                    .any(|parameter| parameter.binder == var.span && parameter.context == context)
-                {
+                let binder_context = self.universal_binder_context(&registry, var.span, context)?;
+                if plan.parameters.iter().any(|parameter| {
+                    parameter.binder == var.span && parameter.context == binder_context
+                }) {
                     continue;
                 }
                 let axis = registry
                     .local_axes
                     .iter()
                     .find(|axis| {
-                        axis.parameter.binder == var.span && axis.parameter.context == context
+                        axis.parameter.binder == var.span
+                            && axis.parameter.context == binder_context
                     })
                     .ok_or("元lexical全称に先行する局所型Domainがない")?;
                 let domain = axis.domain.ok_or("実局所型Domainがない")?;
@@ -646,6 +708,7 @@ impl Environment<'_> {
                     completions: Vec::new(),
                     local_axes: Vec::new(),
                     calls: Vec::new(),
+                    iterations: Vec::new(),
                 },
                 || {
                     let mut scope = base.clone();
@@ -832,6 +895,14 @@ impl Environment<'_> {
                 location: Location::Law { span: binder },
                 feature: "Z/Q全域parameterの記号分析".into(),
             })?;
+        let origin = self.universal_binder_context(
+            context,
+            binder,
+            self.scoped_context
+                .get()
+                .or(self.context.get())
+                .unwrap_or_default(),
+        )?;
         let parameter = context
             .plan
             .parameters
@@ -847,12 +918,7 @@ impl Environment<'_> {
                         axis.parameter.binder == binder
                             && axis.parameter.name == name
                             && axis.parameter.kind.ty() == *ty
-                            && axis.parameter.context
-                                == self
-                                    .scoped_context
-                                    .get()
-                                    .or(self.context.get())
-                                    .unwrap_or_default()
+                            && axis.parameter.context == origin
                     })
                     .map(|axis| &axis.parameter)
             })
@@ -898,14 +964,22 @@ impl Environment<'_> {
             let lexical = self.lexical_context(span)?;
             for axis in &context.local_axes {
                 self.tick()?;
-                if axis.parameter.context!=origin || !lexical.iter().any(|(_,binding)|matches!(binding,LexicalOrigin::Universal(id) if matches!(&self.inputs.law().exprs[*id].kind,ExprKind::Quant{var,..} if var.span==axis.parameter.binder))){continue;}
+                let binder_context =
+                    self.universal_binder_context(context, axis.parameter.binder, origin)?;
+                let enclosed = lexical.iter().any(|(_, binding)| match binding {
+                    LexicalOrigin::Universal(id) => matches!(&self.inputs.law().exprs[*id].kind, ExprKind::Quant { var, .. } if var.span == axis.parameter.binder),
+                    _ => false,
+                });
+                if axis.parameter.context != binder_context || !enclosed {
+                    continue;
+                }
                 scope.add_quantifier(Quantifier {
                     kind: self.universal_parameter_quantifier_kind(&axis.parameter)?,
                     name: axis.parameter.name.clone(),
                     ty: axis.parameter.kind.ty(),
                     domain: axis.domain,
                     occurrence: axis.parameter.binder,
-                    context: axis.actual.then_some(origin),
+                    context: axis.actual.then_some(axis.parameter.context),
                 });
             }
         }
@@ -1044,17 +1118,35 @@ impl Environment<'_> {
     ) -> Result<T, ValidationFailure> {
         self.validation_graph_session(graph, || self.with_universal(context, run))
     }
-    fn with_universal<T>(
+    pub(in crate::observed) fn with_universal<T, E>(
         &self,
         context: AnalysisContext,
-        run: impl FnOnce() -> Result<T, ValidationFailure>,
-    ) -> Result<T, ValidationFailure> {
+        run: impl FnOnce() -> Result<T, E>,
+    ) -> Result<T, E> {
         self.validation_session(|| {
             let old = self.universal_context.replace(Some(context));
             let result = run();
             self.universal_context.replace(old);
             result
         })
+    }
+    // 通常の有限評価へ渡す構文。型域の受付はquantifier::specで検査する。
+    pub(in crate::observed) fn universal_finite_syntax(&self, id: usize) -> bool {
+        match &self.inputs.law().exprs[id].kind {
+            ExprKind::SetComp { .. } => true,
+            ExprKind::Quant {
+                split:
+                    QuantSplit::Fixed {
+                        domain: QuantDomain::In(_),
+                        ..
+                    },
+                ..
+            } => true,
+            ExprKind::Quant { .. } => self.inputs.law().quantifier_types[id]
+                .as_ref()
+                .is_some_and(|ty| number(ty).is_none()),
+            _ => false,
+        }
     }
     pub(in crate::observed) fn universal_template_source_analysis(
         &self,
@@ -1072,6 +1164,7 @@ impl Environment<'_> {
                 completions: Vec::new(),
                 local_axes: Vec::new(),
                 calls: Vec::new(),
+                iterations: Vec::new(),
             },
             || self.universal_analyze_at(graph, span, bindings),
         )
@@ -1274,6 +1367,7 @@ impl Environment<'_> {
                             comparison_expression: None,
                             value: Some(true),
                             guard_value,
+                            finite_dependency: None,
                         });
                     }
                     let mut analysis = self.universal_uncached_source(
@@ -1313,13 +1407,37 @@ impl Environment<'_> {
                             _ => None,
                         }
                     });
-                    let body_value = classification
+                    let mut body_value = classification
                         .as_ref()
                         .and_then(|classification| classification.value)
                         .or(match analysis.known_value.as_ref() {
                             Some(Scalar::Bool(value)) => Some(*value),
                             _ => None,
                         });
+                    // 実有限域の全caseは、元のpointwise導出が完成した後でだけ使う。
+                    // Sourceの静的分析から有限域のRefや実反復Contextを捏造しない。
+                    if let Some(actual) = self.universal_completed_pointwise(
+                        graph,
+                        template,
+                        plan.template_span,
+                        bindings,
+                    )? {
+                        self.recheck_evaluation(graph, actual)?;
+                        analysis.scope.merge(&graph.get(actual)?.scope);
+                    }
+                    let mut finite_dependency = None;
+                    if body_value.is_none()
+                        && !analysis.condition_failed
+                        && !analysis.condition_pending
+                        && !self.universal_has_exists(&plan)?
+                    {
+                        if let Some((decision, dependency)) =
+                            self.universal_finite_decision(graph, template, &plan, bindings)?
+                        {
+                            body_value = Some(decision);
+                            finite_dependency = Some(dependency);
+                        }
+                    }
                     let value = if plan.guard.is_some() {
                         conditional_bool(guard_value, body_value)
                     } else {
@@ -1341,6 +1459,7 @@ impl Environment<'_> {
                         comparison_expression,
                         value,
                         guard_value,
+                        finite_dependency,
                     })
                 },
             )

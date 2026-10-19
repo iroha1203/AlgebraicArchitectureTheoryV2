@@ -1,5 +1,7 @@
 //! 明示In量化を独立三入力から評価し、有限域・原出現・欠測・証拠と停止prefixを確認する。
 mod common;
+#[path = "common/expression_stops.rs"]
+mod expression_stops;
 use archsig::{
     canonical::Json,
     definition::check_definitions_controlled,
@@ -757,21 +759,6 @@ view later(s: Sample): Z = s.zero+9;
         "current=evaluate(Calc.current)",
         "later=evaluate(Calc.later,s=@v/sample)",
     ];
-    let count = Rc::new(Cell::new(0));
-    let c = count.clone();
-    let mut prior_control = Control::new(Limits::default(), move |point| {
-        if point == Checkpoint::Expression {
-            c.set(c.get() + 1);
-        }
-        Usage::default()
-    });
-    let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &mut prior_control)
-        .unwrap()
-        .wire();
-    audit(&prior, &checked);
-    output(&prior, "seed", &Json::str("Z"), Json::str("0"));
-    assert_missing(&prior, "absent", "flag", b"s.flag", &checked);
-    check_claim(&prior, "rejected", "refuted");
     let total = Rc::new(Cell::new(0));
     let c = total.clone();
     let mut baseline_control = Control::new(Limits::default(), move |point| {
@@ -780,16 +767,16 @@ view later(s: Sample): Z = s.zero+9;
         }
         Usage::default()
     });
-    let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &mut baseline_control)
-        .unwrap()
-        .wire();
+    let baseline_result =
+        evaluate_observed_bytes(input.clone(), &asks, &mut baseline_control).unwrap();
+    let total_expressions = total.get();
+    let baseline = baseline_result.wire();
+    let prior = &baseline;
+    output(prior, "seed", &Json::str("Z"), Json::str("0"));
+    assert_missing(prior, "absent", "flag", b"s.flag", &checked);
+    check_claim(prior, "rejected", "refuted");
     audit(&baseline, &checked);
     output(&baseline, "current", &Json::str("Bool"), Json::Bool(true));
-    assert_eq!(
-        total.get() - count.get(),
-        20,
-        "固定量化ASTのExpression pre/post"
-    );
     let original = declared_body(&checked, "Calc.current");
     let (collection, body) = quant_parts(&checked, original);
     let collection_span = checked.law().exprs[collection].span;
@@ -805,9 +792,24 @@ view later(s: Sample): Z = s.zero+9;
     assert_eq!(source(&checked, collection_span), b"list<Z>[1,2]");
     assert_eq!(source(&checked, body_span), b"n>0");
     assert!(!evidence(&ns, answer(&baseline, "current"), "finite_exhaustion").is_empty());
-    // domain post後/第2body pre/最終body postの固定点。実証拠構成loop内部はprivate試験が担う。
-    for (offset, kind, done) in [(8, 0, 0), (14, 1, 1), (19, 2, 2)] {
-        let at = count.get() + offset;
+    // 共有checkpointの総数へAST出現数を仮定せず、完成した元域/bodyから停止位置を選ぶ。
+    let positions = [
+        expression_stops::first_position(&input, &asks, total_expressions, |w| {
+            !evaluations_at(w, collection_span).is_empty()
+        }),
+        expression_stops::first_position(&input, &asks, total_expressions, |w| {
+            !evaluations_at(w, body_span).is_empty()
+        }),
+        expression_stops::first_position(&input, &asks, total_expressions, |w| {
+            evaluations_at(w, body_span).len() >= 2
+        }),
+    ];
+    assert!(positions[0] < positions[1] && positions[1] < positions[2]);
+    for (at, kind, done) in [
+        (positions[0], 0, 0),
+        (positions[1], 1, 1),
+        (positions[2], 2, 2),
+    ] {
         let expressions = Rc::new(Cell::new(0));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));

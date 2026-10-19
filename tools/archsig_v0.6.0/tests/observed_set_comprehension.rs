@@ -1,5 +1,7 @@
 //! 既知List/Set上の内包を独立三入力から評価し、元式・依存・支持・停止prefixを確認する。
 mod common;
+#[path = "common/expression_stops.rs"]
+mod expression_stops;
 use archsig::{
     canonical::Json,
     definition::check_definitions_controlled,
@@ -1002,19 +1004,6 @@ view later(s: Sample): Z = s.zero+9;
         "current=evaluate(Calc.current,s=@v/sample)",
         "later=evaluate(Calc.later,s=@v/sample)",
     ];
-    let prior_count = Rc::new(Cell::new(0));
-    let c = prior_count.clone();
-    let mut prior_control = Control::new(Limits::default(), move |point| {
-        if point == Checkpoint::Expression {
-            c.set(c.get() + 1);
-        }
-        Usage::default()
-    });
-    let prior = evaluate_observed_bytes(inputs.clone(), &asks[..2], &mut prior_control)
-        .unwrap()
-        .wire();
-    output(&prior, "seed", &Json::str("Z"), Json::str("0"));
-    assert_missing(&prior, "absent", "missing", &checked);
     let total_count = Rc::new(Cell::new(0));
     let c = total_count.clone();
     let mut baseline_control = Control::new(Limits::default(), move |point| {
@@ -1023,16 +1012,13 @@ view later(s: Sample): Z = s.zero+9;
         }
         Usage::default()
     });
-    let baseline = evaluate_observed_bytes(inputs.clone(), &asks[..3], &mut baseline_control)
-        .unwrap()
-        .wire();
+    let baseline_result =
+        evaluate_observed_bytes(inputs.clone(), &asks, &mut baseline_control).unwrap();
+    let total_expressions = total_count.get();
+    let baseline = baseline_result.wire();
+    let prior = &baseline;
     audit(&baseline, &checked);
     output_set(&baseline, "current", Json::str("Z"), &[Json::str("2")]);
-    assert_eq!(
-        total_count.get() - prior_count.get(),
-        22,
-        "固定した元ASTのExpression pre/post"
-    );
     let original = declared_body(&checked, "Calc.current");
     let ExprKind::SetComp {
         elem,
@@ -1057,10 +1043,25 @@ view later(s: Sample): Z = s.zero+9;
     assert_eq!(source(&checked, domain_span), b"list<Z>[2,1]");
     assert_eq!(source(&checked, filter_span), b"x>1");
     assert_eq!(source(&checked, elem_span), b"x");
-    // 公開Expressionの固定3箇所。実反復/Set構成loop内部への注入はprivate試験が担う。
-    // +8: domain post後のfilter pre、+14: true filter post後のelem pre、+21: false filter post。
-    for (offset, kind, filters, elements) in [(8, 0, 0, 0), (14, 1, 1, 0), (21, 2, 2, 1)] {
-        let at = prior_count.get() + offset;
+    // 元ASTの三段階を実出力prefixから特定する。型・Term検査などが共有する
+    // Expression checkpointの総数を、AST出現の個数へ読み替えない。
+    let positions = [
+        expression_stops::first_position(&inputs, &asks, total_expressions, |w| {
+            !evaluations_at(w, domain_span).is_empty()
+        }),
+        expression_stops::first_position(&inputs, &asks, total_expressions, |w| {
+            !evaluations_at(w, filter_span).is_empty()
+        }),
+        expression_stops::first_position(&inputs, &asks, total_expressions, |w| {
+            evaluations_at(w, filter_span).len() >= 2
+        }),
+    ];
+    assert!(positions[0] < positions[1] && positions[1] < positions[2]);
+    for (at, kind, filters, elements) in [
+        (positions[0], 0, 0, 0),
+        (positions[1], 1, 1, 0),
+        (positions[2], 2, 2, 1),
+    ] {
         let expressions = Rc::new(Cell::new(0));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));

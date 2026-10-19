@@ -118,6 +118,7 @@ struct Evaluator<'a, 'b> {
     // 補完開始前に元Controlで独立検査を終えた回答だけを、停止時に保持する。
     verified_observed: Option<Answer>,
     completing: bool,
+    finite_universal: Option<universal::FiniteUniversal>,
     sources: BTreeMap<(usize, usize), SourceHandle>,
 }
 impl Evaluator<'_, '_> {
@@ -919,6 +920,16 @@ impl Evaluator<'_, '_> {
     fn eval(&mut self, id: ExprId) -> Result<Evaluated, Failure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick(Checkpoint::Expression)?;
+            if let Some(active) = self.finite_universal.clone() {
+                let result =
+                    self.universal_pointwise(&active.plan, active.template, &active.domains, id)?;
+                if let Some(current) = &mut self.finite_universal {
+                    current.has_local_domains |= result.has_local_domains;
+                }
+                self.completed.insert(id, result.evaluated.clone());
+                self.tick(Checkpoint::Expression)?;
+                return Ok(result.evaluated);
+            }
             if matches!(
                 self.environment.inputs.law().exprs[id].kind,
                 ExprKind::Quant { .. }
@@ -2759,6 +2770,7 @@ fn evaluate_observed_with_validator(
                 answer_evaluation: None,
                 verified_observed: None,
                 completing: false,
+                finite_universal: None,
                 sources: BTreeMap::new(),
             };
             let (params, guard, body, role) = match &declaration.signature {
@@ -2930,6 +2942,9 @@ mod recheck_tests {
     }
     mod affine_field_chain_tests {
         include!("affine_field_chain_tests.rs");
+    }
+    mod affine_finite_tests {
+        include!("affine_finite_tests.rs");
     }
     use crate::canonical::Json;
     mod reference_completion_tests {

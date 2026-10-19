@@ -844,6 +844,10 @@ impl Environment<'_> {
             {
                 return Err("全域非適用の固定logic stepsが違う".into());
             }
+        } else if let Some(source) = analysis.finite_dependency {
+            if steps != [source] {
+                return Err("全域有限量化の元Source stepが違う".into());
+            }
         } else if analysis.comparison.is_some() {
             let difference = *steps.first().ok_or("全域正規化に元differenceがない")?;
             if !matches!(
@@ -2525,6 +2529,24 @@ impl Environment<'_> {
         if self.universal_validate_source(graph, node, limit)? {
             return Ok(true);
         }
+        if let Some(&source) = node.arguments.first()
+            && let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &graph.get(source)?.payload
+            && self
+                .expressions
+                .get(span)
+                .is_some_and(|id| self.universal_finite_syntax(*id))
+            && self
+                .universal_source_root(graph, source)?
+                .is_some_and(|template| template != source)
+        {
+            // 有限量化のDomain/member/全検査も、元の有限検査器で照合する。
+            // 自由数値parameterを持つSourceを未束縛Law族へ読み替えない。
+            self.validate_native_node(graph, node, limit)?;
+            return Ok(true);
+        }
         match &node.payload {
             Some(Payload::TypeDomain { ty }) => {
                 self.universal_validate_domain(graph, node, ty, limit)?;
@@ -2719,6 +2741,185 @@ impl Environment<'_> {
             self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
         }
         Ok(true)
+    }
+    fn universal_has_finite_context(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+    ) -> Result<bool, ValidationFailure> {
+        let enclosed = |span: (usize, usize)| -> Result<bool, ValidationFailure> {
+            for (id, expression) in self.inputs.law().exprs.iter().enumerate() {
+                self.tick()?;
+                if self.expressions.get(&expression.span) == Some(&id)
+                    && self.inputs.law().expr_type(id).is_some()
+                    && self.universal_finite_syntax(id)
+                    && expression.span.0 <= span.0
+                    && span.1 <= expression.span.1
+                {
+                    return Ok(true);
+                }
+            }
+            Ok(false)
+        };
+        if enclosed(span)? {
+            return Ok(true);
+        }
+        let mut context = self.current_context(graph);
+        loop {
+            self.tick()?;
+            if context.iteration.is_some() {
+                return Ok(true);
+            }
+            let Some(index) = context.frame else {
+                return Ok(false);
+            };
+            let frame = graph
+                .frames
+                .get(index)
+                .ok_or("有限全域の元call frameがない")?;
+            if frame.caller.frame.is_some_and(|parent| parent >= index)
+                || frame.source.0 >= self.cutoff.get().min(graph.nodes.len())
+            {
+                return Err("有限全域の元callが先行しない".into());
+            }
+            if enclosed(self.expression_span(graph, frame.source)?)? {
+                return Ok(true);
+            }
+            context = frame.caller;
+        }
+    }
+    pub(in crate::observed::environment) fn universal_node_context(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<Option<AnalysisContext>, ValidationFailure> {
+        if !matches!(
+            node.payload,
+            Some(
+                Payload::Expression { .. }
+                    | Payload::Evaluation { .. }
+                    | Payload::Scalar(_)
+                    | Payload::Domain { .. }
+                    | Payload::FiniteExhaustion { .. }
+                    | Payload::Counterexample { .. }
+            )
+        ) {
+            // 正規化・代入などの専用証拠は、自身の生産規則からPlanを復元する。
+            return Ok(None);
+        }
+        if let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &node.payload
+        {
+            if let Some(&template) = node.arguments.first() {
+                if template.0 >= limit {
+                    return Err("全域Sourceの元templateが未出".into());
+                }
+                if self.universal_is_template(graph, template)? {
+                    if !self.universal_has_finite_context(graph, *span)? {
+                        return Ok(None);
+                    }
+                    let (_, fixed) = self.universal_source_fields(graph, template)?;
+                    let plan = self.universal_plan_at(graph, template, fixed)?;
+                    let domains = self.universal_domains_from(graph, node, template, &plan)?;
+                    self.universal_check_domains(graph, template, &domains, &plan)?;
+                    return self
+                        .universal_graph_context(
+                            graph,
+                            &plan,
+                            template,
+                            &domains,
+                            self.universal_completions(template),
+                        )
+                        .map(Some);
+                }
+            }
+            return Ok(None);
+        }
+        let source = match &node.payload {
+            Some(Payload::Evaluation { expression, .. }) => Some(*expression),
+            Some(Payload::Expression { .. }) => None,
+            _ => {
+                let mut reference = node.arguments.first().copied();
+                let mut found = None;
+                while let Some(at) = reference {
+                    self.tick()?;
+                    if at.0 >= limit {
+                        return Err("有限全域の元producerが未出".into());
+                    }
+                    let original = graph.get(at)?;
+                    match &original.payload {
+                        Some(Payload::Expression { .. }) => {
+                            found = Some(at);
+                            break;
+                        }
+                        Some(Payload::Evaluation { expression, .. }) => {
+                            if expression.0 >= at.0 {
+                                return Err("全域子評価の元Sourceが先行しない".into());
+                            }
+                            found = Some(*expression);
+                            break;
+                        }
+                        Some(Payload::Domain { .. }) => {
+                            reference = original.arguments.first().copied();
+                            if reference.is_some_and(|next| next.0 >= at.0) {
+                                return Err("有限全域の元Domain辺が先行しない".into());
+                            }
+                        }
+                        _ => break,
+                    }
+                }
+                found
+            }
+        };
+        let Some(source) = source else {
+            return Ok(None);
+        };
+        if source.0 >= limit {
+            return Err("全域nodeの元Sourceが未出".into());
+        }
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &graph.get(source)?.payload
+        else {
+            return Ok(None);
+        };
+        let Some(&template) = graph.get(source)?.arguments.first() else {
+            return Ok(None);
+        };
+        if !self.universal_is_template(graph, template)? {
+            return Ok(None);
+        }
+        if !self.universal_has_finite_context(graph, *span)? {
+            return Ok(None);
+        }
+        if source == template {
+            return Ok(None);
+        }
+        self.universal_source_context(graph, source).map(Some)
+    }
+    pub(in crate::observed) fn universal_source_context(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+    ) -> Result<AnalysisContext, ValidationFailure> {
+        let template = self
+            .universal_source_root(graph, source)?
+            .ok_or("有限全域の元templateがない")?;
+        let (_, fixed) = self.universal_source_fields(graph, template)?;
+        let plan = self.universal_plan_at(graph, template, fixed)?;
+        let domains = self.universal_domains_from(graph, graph.get(source)?, template, &plan)?;
+        self.universal_check_domains(graph, template, &domains, &plan)?;
+        self.universal_graph_context(
+            graph,
+            &plan,
+            template,
+            &domains,
+            self.universal_completions(template),
+        )
     }
     fn universal_source_fields<'g>(
         &self,
@@ -3230,14 +3431,24 @@ impl Environment<'_> {
         }
         let Some(&id) = self.expressions.get(&span) else {
             let name = self.name_token(span)?;
-            let expected =
-                if let Some((argument, _)) = self.pattern_argument(graph, span, name, bindings)? {
-                    Some(argument)
-                } else if let Some(argument) = self.call_parameter(graph, name)? {
-                    Some(argument)
-                } else {
-                    self.lexical_argument(graph, span, name, bindings)?
-                };
+            let expected = if let Some((argument, _)) =
+                self.iteration_argument(graph, span, name, bindings)?
+            {
+                Some(argument)
+            } else if self
+                .type_iteration_argument(graph, span, name, bindings)?
+                .is_some()
+            {
+                None
+            } else if let Some((argument, _)) =
+                self.pattern_argument(graph, span, name, bindings)?
+            {
+                Some(argument)
+            } else if let Some(argument) = self.call_parameter(graph, name)? {
+                Some(argument)
+            } else {
+                self.lexical_argument(graph, span, name, bindings)?
+            };
             if children != expected.into_iter().collect::<Vec<_>>() {
                 return Err("全域fragmentの実producerが違う".into());
             }
@@ -3315,6 +3526,19 @@ impl Environment<'_> {
                 let first = parts.first().ok_or("全域Dottedが空")?;
                 if parts.len() == 1 {
                     if let Some((argument, _)) =
+                        self.iteration_argument(graph, span, &first.name, bindings)?
+                    {
+                        if children != [argument] {
+                            return Err("全域反復の元collection producerが違う".into());
+                        }
+                    } else if self
+                        .type_iteration_argument(graph, span, &first.name, bindings)?
+                        .is_some()
+                    {
+                        if !children.is_empty() {
+                            return Err("全域型binderの実子が余分".into());
+                        }
+                    } else if let Some((argument, _)) =
                         self.pattern_argument(graph, first.span, &first.name, bindings)?
                     {
                         if children != [argument] {
