@@ -1,4 +1,4 @@
-//! 恒等 Path の数学的な値と、結果型 T の既出 Ref 表示。
+//! Path の名前付き生成元・共通carrier上の作用と、結果型 T の既出Ref表示。
 //! 表示 node の番号は値の同一性に含めず、値の挿入前に既出の型付き値を照合する。
 use super::{
     control::{Checkpoint, Control},
@@ -8,11 +8,19 @@ use super::{
 use crate::{canonical::Json, types::Type};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct Identity {
+pub(crate) struct PathValue {
     pub reading: String,
     pub snapshot: String,
     pub subject: String,
     pub entity: String,
+    pub step: Option<Box<Step>>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct Step {
+    pub generator: Scalar,
+    pub target: Scalar,
+    pub carrier: Vec<super::result::Fact>,
+    pub images: Vec<super::result::Fact>,
 }
 fn tick(control: &Control) -> Result<(), ValidationFailure> {
     control.clone().checkpoint(Checkpoint::FiniteIteration)?;
@@ -40,12 +48,100 @@ fn observed(stage: &'static str, index: usize) {
         }
     });
 }
-impl Identity {
-    /// 空語の作用は共通 carrier 全体の恒等。reading は由来として別に照合する。
-    pub(super) fn same_action(&self, other: &Self) -> bool {
-        self.snapshot == other.snapshot
-            && self.subject == other.subject
-            && self.entity == other.entity
+impl PathValue {
+    /// 生成元名とreadingの由来は保持し、数学的比較は端点と実作用で行う。
+    pub(super) fn same_action(
+        &self,
+        other: &Self,
+        control: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        tick(control)?;
+        if self.object() != other.object() || self.target() != other.target() {
+            return Ok(false);
+        }
+        match (&self.step, &other.step) {
+            (None, None) => Ok(true),
+            (Some(a), Some(b)) => {
+                if a.carrier.len() != b.carrier.len() || a.images.len() != b.images.len() {
+                    return Ok(false);
+                }
+                for (x, y) in a.carrier.iter().zip(&b.carrier) {
+                    tick(control)?;
+                    if x != y {
+                        return Ok(false);
+                    }
+                }
+                for (x, y) in a.images.iter().zip(&b.images) {
+                    tick(control)?;
+                    if x != y {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+            (Some(step), None) | (None, Some(step)) => {
+                for (x, y) in step.carrier.iter().zip(&step.images) {
+                    tick(control)?;
+                    if x != y {
+                        return Ok(false);
+                    }
+                }
+                Ok(step.carrier.len() == step.images.len())
+            }
+        }
+    }
+    pub(super) fn same_program(
+        &self,
+        other: &Self,
+        control: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        tick(control)?;
+        if self.reading != other.reading
+            || self.snapshot != other.snapshot
+            || self.subject != other.subject
+            || self.entity != other.entity
+        {
+            return Ok(false);
+        }
+        match (&self.step, &other.step) {
+            (None, None) => Ok(true),
+            (Some(a), Some(b)) => {
+                for (x, y) in [(&a.generator, &b.generator), (&a.target, &b.target)] {
+                    tick(control)?;
+                    if !matches!((x,y),(Scalar::Subject{snapshot:a,subject:b,entity:c},Scalar::Subject{snapshot:d,subject:e,entity:f})if a==d&&b==e&&c==f)
+                    {
+                        return Ok(false);
+                    }
+                }
+                for (a, b) in [(&a.carrier, &b.carrier), (&a.images, &b.images)] {
+                    if a.len() != b.len() {
+                        return Ok(false);
+                    }
+                    for (x, y) in a.iter().zip(b) {
+                        tick(control)?;
+                        if x != y {
+                            return Ok(false);
+                        }
+                    }
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
+    }
+    pub(super) fn target(&self) -> Scalar {
+        self.step
+            .as_ref()
+            .map(|s| s.target.clone())
+            .unwrap_or_else(|| self.object())
+    }
+    pub(super) fn target_entity(&self) -> String {
+        match self.step.as_ref().map(|s| &s.target) {
+            None => self.entity.clone(),
+            Some(Scalar::Subject { entity, .. }) => entity.clone(),
+            // 型タグを読む段階でも変造値でpanicせず、checkが不正端点を拒否する。
+            Some(_) => String::new(),
+        }
     }
     pub(super) fn object(&self) -> Scalar {
         Scalar::Subject {
@@ -61,6 +157,28 @@ impl Identity {
             .any(|part| part.is_empty())
         {
             return Err("恒等 Path の reading・端点の名前が空".into());
+        }
+        if let Some(step) = &self.step {
+            if !matches!(&step.generator,Scalar::Subject{snapshot,subject,entity}if !snapshot.is_empty()&&!subject.is_empty()&&!entity.is_empty())
+                || !matches!(&step.target,Scalar::Subject{snapshot,subject,entity}if !snapshot.is_empty()&&!subject.is_empty()&&!entity.is_empty())
+            {
+                return Err("生成Pathの原始参照が空・異型".into());
+            }
+            if step.carrier.len() != step.images.len() {
+                return Err("Pathのcarrierと全域像の件数が違う".into());
+            }
+            for (i, x) in step.carrier.iter().enumerate() {
+                tick(control)?;
+                if i > 0 && step.carrier[i - 1] >= *x {
+                    return Err("Pathのcarrierが重複・未整列".into());
+                }
+            }
+            for image in &step.images {
+                tick(control)?;
+                if step.carrier.binary_search(image).is_err() {
+                    return Err("Pathの像が共通carrierにない".into());
+                }
+            }
         }
         tick(control)
     }
@@ -186,11 +304,17 @@ pub(super) fn wire(
             observed("identity", prior.len());
             identity.check(control)?;
             let object = reference(&identity.object(), prior, roots, control)?;
+            let target = reference(&identity.target(), prior, roots, control)?;
+            let generators = if let Some(step) = &identity.step {
+                vec![reference(&step.generator, prior, roots, control)?.wire()]
+            } else {
+                vec![]
+            };
             Json::obj([
                 ("reading", Json::str(&identity.reading)),
                 ("source", object.wire()),
-                ("target", object.wire()),
-                ("generators", Json::Arr(vec![])),
+                ("target", target.wire()),
+                ("generators", Json::Arr(generators)),
             ])
         }
         Scalar::Tuple(items) | Scalar::List { items, .. } => {
@@ -232,13 +356,15 @@ pub(super) fn construct(
                 subject,
                 entity,
             },
-        ) => Scalar::Path(Box::new(Identity {
+        ) => Scalar::Path(Box::new(PathValue {
             reading: reading.into(),
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             entity: entity.clone(),
+            step: None,
         })),
-        ("source" | "target", Scalar::Path(identity)) => identity.object(),
+        ("source", Scalar::Path(identity)) => identity.object(),
+        ("target", Scalar::Path(identity)) => identity.target(),
         _ => return Err("恒等 Path・端点演算の元の値型が違う".into()),
     };
     tick(control)?;

@@ -27,7 +27,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     )
     .unwrap()
 }
-fn path_mut(node: &mut Node) -> &mut super::super::super::path_value::Identity {
+fn path_mut(node: &mut Node) -> &mut super::super::super::path_value::PathValue {
     let Some(Payload::Scalar(Scalar::Path(path))) = &mut node.payload else {
         panic!("Path")
     };

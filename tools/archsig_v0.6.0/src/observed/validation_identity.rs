@@ -35,6 +35,7 @@ pub(super) fn scalar(a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, Valida
         tick(c)?;
         let same = match (a, b) {
             (Scalar::Term(a), Scalar::Term(b)) => a == b,
+            (Scalar::Path(a), Scalar::Path(b)) => a.same_program(b, c)?,
             (Scalar::Unit, Scalar::Unit)
             | (Scalar::Text(_), Scalar::Text(_))
             | (Scalar::Z(_), Scalar::Z(_))
@@ -147,6 +148,8 @@ fn payload(
                 | Payload::Evaluation { .. }
                 | Payload::LawInstance { .. }
                 | Payload::Proposition { .. }
+                | Payload::PathCondition { .. }
+                | Payload::PathCounterexample { .. }
                 | Payload::MapDomainCondition { .. }
                 | Payload::OwnedCallCondition { .. }
                 | Payload::OwnedCallCounterexample { .. }

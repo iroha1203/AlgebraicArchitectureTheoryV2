@@ -28,6 +28,8 @@ pub(super) mod completion;
 pub(super) mod dependent_family;
 #[path = "family.rs"]
 pub(super) mod family;
+#[path = "internal_path.rs"]
+mod internal_path;
 #[path = "map_application.rs"]
 mod map_application;
 #[path = "numeric_slots.rs"]
@@ -40,6 +42,8 @@ pub(super) mod owned_call;
 pub(super) mod owned_family;
 #[path = "owned_type.rs"]
 pub(super) mod owned_type;
+#[path = "path_condition.rs"]
+mod path_condition;
 #[path = "term_comparison_validation.rs"]
 mod term_comparison_validation;
 #[path = "universal.rs"]
@@ -779,6 +783,14 @@ impl<'a> Environment<'a> {
         )? {
             reasons.push(reason);
         }
+        if let Some(reason) = self.path_condition_reason(
+            graph,
+            expression,
+            children,
+            self.cutoff.get().min(graph.nodes.len()),
+        )? {
+            reasons.push(reason)
+        }
         if let Some(reason) = self.term_algorithm_reason(graph, expression, children)? {
             reasons.push(reason);
         }
@@ -1127,6 +1139,9 @@ impl<'a> Environment<'a> {
             return Ok(());
         }
         if self.validate_universal_node(graph, node, limit)? {
+            return Ok(());
+        }
+        if self.validate_path_condition_node(graph, node, limit)? {
             return Ok(());
         }
         if self.validate_map_condition_node(graph, node, limit)? {
@@ -1573,6 +1588,11 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                     used_support.extend(graph.get(child)?.support.iter().cloned());
                     self.tick()?;
+                }
+                if let Some(support) =
+                    self.path_used_support(graph, *expression, &parts[0].children)?
+                {
+                    used_support.extend(support)
                 }
                 used_support.sort();
                 used_support.dedup();
@@ -2132,6 +2152,14 @@ impl<'a> Environment<'a> {
                             self.tick()?;
                         }
                         match (known, *value) {
+                            (true, Some(result)) if self.builtin(id)? == Some("path") => {
+                                let actual = self
+                                    .path_scalar_analysis(graph, graph.get(result)?, result.0)?
+                                    .ok_or("Path値の元入力検査がない")?;
+                                if actual.known_value.as_ref() != Some(graph.scalar(result)?) {
+                                    return Err("Pathの実子・値が元入力と違う".into());
+                                }
+                            }
                             (true, Some(result)) => {
                                 if Some(graph.scalar(result)?)
                                     != self.composite_value(id, &values)?.as_ref()
@@ -2602,6 +2630,9 @@ impl<'a> Environment<'a> {
     ) -> Result<SourceAnalysis, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
+            if let Some(analysis) = self.path_scalar_analysis(graph, node, limit)? {
+                return Ok(analysis);
+            }
             let Rule::Input {
                 kind: "law",
                 location: Location::Law { span },
@@ -3909,7 +3940,7 @@ impl<'a> Environment<'a> {
                 if parts.len() == 1
                     && matches!(
                         parts[0].name.as_str(),
-                        "rat" | "count" | "sum" | "identity" | "source" | "target"
+                        "rat" | "count" | "sum" | "identity" | "source" | "target" | "path"
                     ) =>
             {
                 Ok(Some(parts[0].name.as_str()))
@@ -4066,6 +4097,9 @@ impl<'a> Environment<'a> {
                     items.get(*index).ok_or("数値射影位置の内部不整合")?.clone()
                 }
                 ExprKind::Call { .. } => match self.builtin(id)?.ok_or("固定演算がない")? {
+                    "path" => {
+                        return Ok(self.internal_path(id, values)?.value);
+                    }
                     name @ ("identity" | "source" | "target") => {
                         let span = law.exprs[id].span;
                         let mut reading = None;
@@ -6462,7 +6496,7 @@ impl<'a> Environment<'a> {
                 )),
                 _ => None,
             };
-            let missing = if let Some((
+            let mut missing = if let Some((
                 Some(Scalar::Subject {
                     ref snapshot,
                     ref subject,
@@ -6486,6 +6520,22 @@ impl<'a> Environment<'a> {
             } else {
                 None
             };
+            if missing.is_none() && self.builtin(id)? == Some("path") {
+                let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+                    unreachable!()
+                };
+                if let Some(value) = self
+                    .scoped_ast(args[0], &variables, &base, &declaration.reading)?
+                    .known_value
+                {
+                    missing = self
+                        .internal_path(id, &[value])?
+                        .missing
+                        .into_iter()
+                        .next()
+                        .map(|fact| PendingMissing { fact });
+                }
+            }
             return Ok(SourceAnalysis {
                 condition_failed,
                 condition_pending,
@@ -7257,6 +7307,19 @@ impl<'a> Environment<'a> {
                     }
                     support.sort();
                     support.dedup();
+                    let path = if known && self.builtin(id)? == Some("path") {
+                        Some(self.internal_path(id, &values)?)
+                    } else {
+                        None
+                    };
+                    if let Some(path) = &path {
+                        scope.merge(&path.scope);
+                        support.extend(path.support.iter().cloned());
+                        support.sort();
+                        support.dedup();
+                        condition_failed |= path.failure.is_some();
+                        condition_pending |= path.value.is_none() && path.failure.is_none();
+                    }
                     let symbolic = if matches!(&expression.kind,ExprKind::Call{callee,..} if matches!(self.inputs.law().expr_type(*callee),Some(Type::Term(..))))
                     {
                         Some(self.scoped_term_value(id, variables, base, reading)?)
@@ -7277,7 +7340,9 @@ impl<'a> Environment<'a> {
                     } else {
                         None
                     };
-                    let known_value = if let Some(v) = &symbolic {
+                    let known_value = if let Some(path) = &path {
+                        path.value.clone()
+                    } else if let Some(v) = &symbolic {
                         v.known(&self.control)?
                     } else if known {
                         self.composite_value(id, &values)?
@@ -8333,6 +8398,15 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                 }
                 self.tick()?;
+            }
+            let path_children: Vec<_> = parts
+                .iter()
+                .flat_map(|p| p.children.iter().copied())
+                .collect();
+            if let Some(path_support) =
+                self.path_used_support(graph, *expression, &path_children)?
+            {
+                support.extend(path_support)
             }
             support.sort();
             support.dedup();
