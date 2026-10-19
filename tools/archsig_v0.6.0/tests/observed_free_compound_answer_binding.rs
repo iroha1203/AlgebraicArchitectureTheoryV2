@@ -1,4 +1,6 @@
 //! 自由ownerの実prefixと固定複合Answer値を元三入力から検査する。
+#[path = "common/completion_evidence.rs"]
+mod completion_evidence;
 #[path = "common/free_compound_answer_binding.rs"]
 mod fixture;
 use archsig::{
@@ -243,19 +245,56 @@ fn free_compound_answer_unknown_unprovided_fixed_failures_and_mixed_fibers_are_p
         let take = format!("take=check(Applications.{law},x=$v.value)");
         let r = run(fixture::input("unknown_owner", "r1"), &[&take, &make]);
         let w = r.wire();
-        assert_eq!(r.status(), "partial");
+        assert_eq!(r.status(), "complete");
+        let (domain, _) = completion_evidence::established_cases(&w, "take", 1);
+        completion_evidence::original_owner_is_missing(&r, "v");
+        completion_evidence::original_owner_is_missing(&r, "w");
+        assert!(
+            arr(f(domain, "support"))
+                .iter()
+                .any(|fact| matches!(fact, Json::Obj(fields) if fields.get("atom") == Some(&Json::str("m-states"))))
+        );
         assert_eq!(
             f(f(answer(&w, "take"), "scope"), "domain"),
             &Json::str("all_completions")
         );
-        let reasons = arr(f(answer(&w, "take"), "reasons"));
-        for code in ["missing_observation", "unsupported_algorithm"] {
-            assert!(reasons.iter().any(|r| f(r, "code") == &Json::str(code)));
-        }
-        assert_eq!(
-            f(answer(&w, "take"), "outputs"),
-            &Json::obj([] as [(&str, Json); 0])
+        assert!(
+            !arr(f(answer(&w, "take"), "reasons"))
+                .iter()
+                .any(|reason| f(reason, "code") == &Json::str("unsupported_algorithm"))
         );
+        let producer = f(f(answer(&w, "v"), "outputs"), "value");
+        let instances = rows(&w);
+        assert_eq!(instances.len(), if law == "fcList" { 2 } else { 1 });
+        for instance in instances {
+            let bindings = arr(f(f(instance, "value"), "bindings"));
+            assert_eq!(
+                f(
+                    node(
+                        &w,
+                        f(
+                            bindings
+                                .iter()
+                                .find(|b| f(b, "name") == &Json::str("a"))
+                                .unwrap(),
+                            "value"
+                        )
+                    ),
+                    "value"
+                ),
+                &Json::Arr(vec![Json::str("v"), Json::str("A")])
+            );
+            assert_eq!(
+                f(
+                    bindings
+                        .iter()
+                        .find(|b| f(b, "name") == &Json::str("x"))
+                        .unwrap(),
+                    "value"
+                ),
+                producer
+            );
+        }
     }
     let r = run(
         fixture::input("known", "r1"),

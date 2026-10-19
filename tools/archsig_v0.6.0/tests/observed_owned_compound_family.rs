@@ -1,4 +1,6 @@
 //! 実prefixのownerに従う有限複合Law parameterの三入力接続。
+#[path = "common/completion_evidence.rs"]
+mod completion_evidence;
 #[path = "common/owned_compound_family.rs"]
 mod fixture;
 use archsig::{
@@ -462,33 +464,134 @@ fn owned_compound_cross_snapshot_prefix_keeps_missing_fields_and_original_inputs
     audit(&r);
 }
 #[test]
-fn owned_compound_unknown_membership_keeps_missing_without_complete_fiber() {
+fn owned_compound_unknown_membership_completes_each_consistent_fiber() {
     for name in ["maps", "map_option", "map_set", "option_values", "subset"] {
         let ask = if name == "option_values" || name == "subset" {
             format!("c=check(Reservations.{name},a=@v/A)")
         } else {
             format!("c=check(Reservations.{name},a=@v/A,b=@v/B)")
         };
-        let r = evaluate_observed_bytes(fixture::input(true, false, "r1"), &[&ask], &mut quiet())
-            .unwrap();
-        assert_eq!(r.status(), "partial");
+        let input = fixture::input(true, false, "r1");
+        let original = input.clone();
+        let r = evaluate_observed_bytes(input, &[&ask], &mut quiet()).unwrap();
+        assert_eq!(r.status(), "complete");
+        assert_eq!(r.prepared().inputs().sources(), &original);
+        completion_evidence::original_owner_is_missing(&r, "v");
         let w = r.wire();
-        assert_eq!(get(&answers(&w)[0], "status"), &Json::str("undetermined"));
+        let (domain, cases) = completion_evidence::established_cases(&w, "c", 3);
+        let owners: BTreeSet<_> = arr(get(get(domain, "value"), "elements"))
+            .iter()
+            .map(|r| get(node(&w, r), "value").canonical())
+            .collect();
+        assert_eq!(
+            owners,
+            ["A", "B", "Z"]
+                .map(|id| Json::Arr(vec![Json::str("v"), Json::str(id)]).canonical())
+                .into()
+        );
+        for (member, evaluation) in arr(get(get(domain, "value"), "elements")).iter().zip(cases) {
+            let owner = text(&arr(get(node(&w, member), "value"))[1]);
+            let parts = arr(get(get(evaluation, "value"), "parts"));
+            assert_eq!(parts.len(), 1);
+            let mut actual = BTreeSet::new();
+            for child in arr(get(&parts[0], "children")) {
+                let bindings = arr(get(get(node(&w, child), "value"), "bindings"));
+                let value = get(
+                    bindings
+                        .iter()
+                        .find(|b| get(b, "name") == &Json::str("f"))
+                        .unwrap(),
+                    "value",
+                );
+                assert!(actual.insert(get(node(&w, value), "value").canonical()));
+            }
+            assert_eq!(actual, unknown_fiber_values(name, owner));
+        }
         assert!(
             answers(&w)[0]
                 .canonical()
                 .contains("Reservations.State.owner")
         );
         assert!(answers(&w)[0].canonical().contains("all_completions"));
-        assert!(
-            arr(get(&w, "nodes"))
-                .iter()
-                .all(|n| get(n, "type") != &Json::str("Domain")
-                    || get(get(n, "value"), "type")
-                        == &Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.System")]))
-        );
+        // 各owner補完の実fiberを列挙した総数。全称のtrueを先に集約しない。
+        let count = match name {
+            "maps" => 9,
+            "map_option" => 12,
+            "map_set" => 28,
+            "option_values" => 7,
+            "subset" => 8,
+            _ => unreachable!(),
+        };
+        assert_eq!(concrete_rows(&w).len(), count);
         audit(&r);
     }
+}
+
+fn unknown_fiber_values(name: &str, owner: &str) -> BTreeSet<String> {
+    let subject = |id: &str| Json::Arr(vec![Json::str("v"), Json::str(id)]);
+    let tables: Vec<Vec<(&str, &str)>> = match owner {
+        "A" => vec![
+            vec![("p", "r"), ("q", "r")],
+            vec![("p", "r"), ("q", "s")],
+            vec![("p", "s"), ("q", "r")],
+            vec![("p", "s"), ("q", "s")],
+        ],
+        "B" => vec![vec![("q", "p")], vec![("q", "r")], vec![("q", "s")]],
+        "Z" => vec![vec![("q", "r")], vec![("q", "s")]],
+        _ => panic!("owner"),
+    };
+    let maps: Vec<_> = tables
+        .into_iter()
+        .map(|pairs| {
+            Json::Arr(
+                pairs
+                    .into_iter()
+                    .map(|(a, b)| Json::Arr(vec![subject(a), subject(b)]))
+                    .collect(),
+            )
+        })
+        .collect();
+    let values = match name {
+        "maps" => maps,
+        "map_option" => std::iter::once(Json::obj([("none", Json::Bool(true))]))
+            .chain(maps.into_iter().map(|m| Json::obj([("some", m)])))
+            .collect(),
+        "map_set" => subsets(maps),
+        "option_values" => std::iter::once(Json::obj([("none", Json::Bool(true))]))
+            .chain(
+                (if owner == "A" {
+                    vec![subject("p"), subject("q")]
+                } else {
+                    vec![subject("q")]
+                })
+                .into_iter()
+                .map(|s| Json::obj([("some", s)])),
+            )
+            .collect(),
+        "subset" => subsets(if owner == "A" {
+            vec![subject("p"), subject("q")]
+        } else {
+            vec![subject("q")]
+        }),
+        _ => unreachable!(),
+    };
+    values.into_iter().map(|v| v.canonical()).collect()
+}
+
+fn subsets(values: Vec<Json>) -> Vec<Json> {
+    let mut subsets = vec![vec![]];
+    for value in values {
+        let more: Vec<_> = subsets
+            .iter()
+            .map(|subset| {
+                let mut next = subset.clone();
+                next.push(value.clone());
+                next
+            })
+            .collect();
+        subsets.extend(more);
+    }
+    subsets.into_iter().map(Json::Arr).collect()
 }
 #[test]
 fn owned_compound_provenance_changes_keep_answers_and_current_sources() {

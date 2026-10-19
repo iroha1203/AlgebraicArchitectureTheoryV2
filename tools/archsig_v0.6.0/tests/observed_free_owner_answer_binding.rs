@@ -1,4 +1,6 @@
 //! 自由ownerの実prefixと固定Answer原始参照を元三入力から検査する。
+#[path = "common/completion_evidence.rs"]
+mod completion_evidence;
 #[path = "common/free_owner_answer_binding.rs"]
 mod fixture;
 use archsig::{
@@ -197,8 +199,64 @@ fn free_owner_fixed_answer_preserves_unknown_unprovided_static_invalid_and_fixed
         ],
     );
     let w = unknown.wire();
-    assert_eq!(unknown.status(), "partial");
-    assert_eq!(f(answer(&w, "take"), "status"), &Json::str("undetermined"));
+    assert_eq!(unknown.status(), "complete");
+    let (domain, cases) = completion_evidence::established_cases(&w, "take", 3);
+    completion_evidence::original_owner_is_missing(&unknown, "v");
+    let actual: std::collections::BTreeSet<_> = arr(f(f(domain, "value"), "elements"))
+        .iter()
+        .map(|r| f(node(&w, r), "value").canonical())
+        .collect();
+    assert_eq!(
+        actual,
+        ["A", "B", "Z"]
+            .map(|id| Json::Arr(vec![Json::str("v"), Json::str(id)]).canonical())
+            .into()
+    );
+    let producer = f(f(answer(&w, "v"), "outputs"), "value");
+    let mut owners = std::collections::BTreeSet::new();
+    for instance in arr(f(&w, "nodes"))
+        .iter()
+        .filter(|n| f(n, "type") == &Json::str("LawInstance"))
+    {
+        let bindings = arr(f(f(instance, "value"), "bindings"));
+        if let Some(owner) = bindings.iter().find(|b| f(b, "name") == &Json::str("a")) {
+            assert_eq!(
+                f(
+                    bindings
+                        .iter()
+                        .find(|b| f(b, "name") == &Json::str("p"))
+                        .unwrap(),
+                    "value"
+                ),
+                producer
+            );
+            assert!(owners.insert(f(node(&w, f(owner, "value")), "value").canonical()));
+        }
+    }
+    assert_eq!(owners, actual);
+    for (member, evaluation) in arr(f(f(domain, "value"), "elements")).iter().zip(cases) {
+        let children = arr(f(&arr(f(f(evaluation, "value"), "parts"))[0], "children"));
+        assert_eq!(children.len(), 1);
+        let bindings = arr(f(f(node(&w, &children[0]), "value"), "bindings"));
+        let owner = bindings
+            .iter()
+            .find(|b| f(b, "name") == &Json::str("a"))
+            .unwrap();
+        assert_eq!(
+            f(node(&w, f(owner, "value")), "value"),
+            f(node(&w, member), "value")
+        );
+        assert_eq!(
+            f(
+                bindings
+                    .iter()
+                    .find(|b| f(b, "name") == &Json::str("p"))
+                    .unwrap(),
+                "value"
+            ),
+            producer
+        );
+    }
     assert!(
         arr(f(answer(&w, "take"), "reasons"))
             .iter()
