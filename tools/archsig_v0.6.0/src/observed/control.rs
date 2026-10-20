@@ -41,6 +41,7 @@ pub enum Checkpoint {
     Reuse,
     ObservationPlan,
     Configuration,
+    ConfigurationMap,
     Expression,
     FiniteIteration,
 }

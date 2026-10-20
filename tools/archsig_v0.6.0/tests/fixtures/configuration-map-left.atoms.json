@@ -1,0 +1,51 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Left",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Left.Root",
+          "meaning": "対応の始終域。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "count",
+              "type": "Z",
+              "meaning": "対応の構造と数量を分けるfield。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Left.Child",
+          "meaning": "対応の始終域。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Left.Root"
+              ],
+              "meaning": "対応の構造と数量を分けるfield。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "count",
+              "type": "Z",
+              "meaning": "対応の構造と数量を分けるfield。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}
