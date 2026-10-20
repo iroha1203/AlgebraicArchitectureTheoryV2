@@ -1088,6 +1088,45 @@ fn check_correspondence<E: InputError>(
         }
         E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
+    // 根も同名の位置へ運ぶ。値がnone/空でも宣言の参照型は失われない。
+    // 存在しない位置は実際のmap構成で条件不成立とし、ここでは両側にある型を検査する。
+    let (sp, sf) = defs.declarations[&source]
+        .signature
+        .record_fields()
+        .expect("root record");
+    let (tp, tf) = defs.declarations[&target]
+        .signature
+        .record_fields()
+        .expect("root record");
+    for source_field in sp.iter().chain(sf) {
+        E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
+        let Some(target_field) = super::model::find_field_controlled::<E>(
+            tp.iter().chain(tf),
+            &source_field.name,
+            control,
+            Checkpoint::DefinitionSemantics,
+        )?
+        else {
+            continue;
+        };
+        if has_reference::<E>(&source_field.ty, props, control)?
+            || has_reference::<E>(&target_field.ty, props, control)?
+        {
+            let moved = transport::<E>(&source_field.ty, &mu, &BTreeMap::new(), control)?;
+            if moved != target_field.ty {
+                return mismatch(
+                    &child(&target_field.location, "name"),
+                    &moved,
+                    &target_field.ty,
+                    format!(
+                        "`{source}.{}` と `{target}.{}` の参照型が対応しない",
+                        source_field.name, target_field.name
+                    ),
+                    control,
+                );
+            }
+        }
+    }
     implicit.sort();
     let d = defs.declarations.get_mut(name).expect("登録済み");
     let PrimitiveSignature::Correspondence {

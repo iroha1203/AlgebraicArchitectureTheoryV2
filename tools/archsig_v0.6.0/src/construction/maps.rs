@@ -318,7 +318,12 @@ fn reference_shape(
                 if sort {
                     children.sort();
                 }
-                let mut out = format!("{}:{tag}:{n}:", tag.len());
+                // Setは像集合、Mapは同じkey/valueの像を一行として扱う。
+                // List/Tupleの位置・重複は縮約しない。
+                if tag == "set" || tag == "map" {
+                    children.dedup();
+                }
+                let mut out = format!("{}:{tag}:{}:", tag.len(), children.len());
                 for child in children {
                     check(control)?;
                     let child = child.unwrap_or_else(|| "quantity".into());
@@ -335,6 +340,133 @@ fn reference_shape(
         ));
     }
     Ok(values.pop().flatten())
+}
+// 像が未決のleafだけを変数として扱い、既知の参照構造を失わない。
+// 保存できる補完では各参照像がtarget値に現れるため、その有限族を全列挙すれば
+// 確定違反を検査できる。型/owner条件を緩めた族にも解がなければ全補完で反証される。
+fn reference_violation(
+    source: &Value,
+    target: &Value,
+    moved: &BTreeMap<SubjectKey, SubjectKey>,
+    unknown: &BTreeSet<SubjectKey>,
+    control: &mut Control,
+) -> Result<bool, ConstructionFailure> {
+    let mut variables = BTreeSet::new();
+    for (snapshot, id) in references(source, control)? {
+        check(control)?;
+        let k = (snapshot.to_owned(), id.to_owned());
+        if unknown.contains(&k) {
+            variables.insert(k);
+        }
+    }
+    let target_shape = reference_shape(target, &BTreeMap::new(), control)?;
+    if variables.is_empty() {
+        return Ok(reference_shape(source, moved, control)? != target_shape);
+    }
+    let mut trial = BTreeMap::new();
+    for (from, to) in moved {
+        check(control)?;
+        trial.insert(from.clone(), to.clone());
+    }
+    // 順序付きの位置から決まる像を先に解決する。Listの長さ違反などに
+    // 無用な補完全列挙をせず、同じ未知参照の反復にも同じ像を要求する。
+    let mut pairs = vec![(source, target)];
+    while let Some((a, b)) = pairs.pop() {
+        check(control)?;
+        if references(a, control)?.is_empty() && references(b, control)?.is_empty() {
+            continue;
+        }
+        match (a, b) {
+            (
+                Value::Ref { snapshot, subject },
+                Value::Ref {
+                    snapshot: ts,
+                    subject: ti,
+                },
+            ) => {
+                let k = (snapshot.clone(), subject.clone());
+                let target = (ts.clone(), ti.clone());
+                if unknown.contains(&k) {
+                    if let Some(previous) = trial.insert(k, target.clone()) {
+                        if previous != target {
+                            return Ok(true);
+                        }
+                    }
+                } else if trial.get(&k).unwrap_or(&k) != &target {
+                    return Ok(true);
+                }
+            }
+            (Value::List(a), Value::List(b)) | (Value::Tuple(a), Value::Tuple(b)) => {
+                if a.len() != b.len() {
+                    return Ok(true);
+                }
+                for pair in a.iter().zip(b) {
+                    check(control)?;
+                    pairs.push(pair);
+                }
+            }
+            (Value::Option(Some(a)), Value::Option(Some(b))) => pairs.push((a, b)),
+            (
+                Value::Data {
+                    constructor: a,
+                    args: aa,
+                },
+                Value::Data {
+                    constructor: b,
+                    args: ba,
+                },
+            ) => {
+                if a != b || aa.len() != ba.len() {
+                    return Ok(true);
+                }
+                for pair in aa.iter().zip(ba) {
+                    check(control)?;
+                    pairs.push(pair);
+                }
+            }
+            (Value::Map(_), Value::Map(_)) | (Value::Set(_), Value::Set(_)) => {}
+            _ => return Ok(true),
+        }
+    }
+    variables.retain(|k| !trial.contains_key(k));
+    if variables.is_empty() {
+        return Ok(reference_shape(source, &trial, control)? != target_shape);
+    }
+    let mut domain = BTreeSet::new();
+    for (snapshot, id) in references(target, control)? {
+        check(control)?;
+        domain.insert((snapshot.to_owned(), id.to_owned()));
+    }
+    if domain.is_empty() {
+        return Ok(true);
+    }
+    let domain: Vec<_> = domain.into_iter().collect();
+    let variables: Vec<_> = variables.into_iter().collect();
+    let mut positions = vec![0; variables.len()];
+    loop {
+        check(control)?;
+        for (variable, position) in variables.iter().zip(&positions) {
+            check(control)?;
+            trial.insert(variable.clone(), domain[*position].clone());
+        }
+        if reference_shape(source, &trial, control)? == target_shape {
+            return Ok(false);
+        }
+        let mut next = false;
+        for position in positions.iter_mut().rev() {
+            check(control)?;
+            if *position < domain.len() - 1 {
+                *position += 1;
+                next = true;
+                break;
+            }
+            *position = 0;
+        }
+        if !next {
+            check(control)?;
+            return Ok(true);
+        }
+    }
 }
 /// readingを推測せず、現在の原始correspondence instanceから全U上の作用と保存を検査する。
 pub fn correspondence(
@@ -542,16 +674,7 @@ pub fn correspondence(
                             "始域のAtom値がない".into(),
                         ));
                     };
-                    let mut known_references = true;
-                    for (snapshot, id) in references(source_value, control)? {
-                        check(control)?;
-                        if unknown_subjects.contains(&(snapshot.into(), id.into())) {
-                            known_references = false;
-                        }
-                    }
-                    if known_references
-                        && reference_shape(source_value, &moved, control)?
-                            != reference_shape(value, &BTreeMap::new(), control)?
+                    if reference_violation(source_value, value, &moved, &unknown_subjects, control)?
                     {
                         result
                             .counterexamples
@@ -643,6 +766,65 @@ pub fn correspondence(
 mod tests {
     use super::*;
     use crate::observed::input::{InputSources, check_inputs};
+    #[test]
+    fn reference_projection_checks_map_image_collisions_and_shared_unknown_leaves() {
+        let reference = |id: &str| Value::Ref {
+            snapshot: "v".into(),
+            subject: id.into(),
+        };
+        let moved = BTreeMap::from([
+            (("v".into(), "p".into()), ("v".into(), "r".into())),
+            (("v".into(), "q".into()), ("v".into(), "r".into())),
+        ]);
+        let source = Value::Map(vec![
+            (reference("p"), reference("x")),
+            (reference("q"), reference("x")),
+        ]);
+        let target = Value::Map(vec![(reference("r"), reference("x"))]);
+        assert!(
+            !reference_violation(
+                &source,
+                &target,
+                &moved,
+                &BTreeSet::new(),
+                &mut Control::unlimited()
+            )
+            .unwrap()
+        );
+        let conflicting = Value::Map(vec![
+            (reference("p"), reference("x")),
+            (reference("q"), reference("y")),
+        ]);
+        assert!(
+            reference_violation(
+                &conflicting,
+                &target,
+                &moved,
+                &BTreeSet::new(),
+                &mut Control::unlimited()
+            )
+            .unwrap()
+        );
+        let unknown = BTreeSet::from([("v".into(), "p".into())]);
+        let source = Value::Tuple(vec![
+            reference("p"),
+            Value::Option(Some(Box::new(reference("p")))),
+        ]);
+        let target = Value::Tuple(vec![
+            reference("r"),
+            Value::Option(Some(Box::new(reference("s")))),
+        ]);
+        assert!(
+            reference_violation(
+                &source,
+                &target,
+                &BTreeMap::new(),
+                &unknown,
+                &mut Control::unlimited()
+            )
+            .unwrap()
+        );
+    }
     fn inputs(bad: bool, missing: bool) -> CheckedInputs {
         let mut map = include_str!("../../tests/fixtures/reservations.archmap.json").to_owned();
         if bad {

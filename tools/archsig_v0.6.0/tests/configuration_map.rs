@@ -43,6 +43,48 @@ fn reference_inputs(map: &str) -> CheckedInputs {
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
+fn graph_inputs(
+    list: bool,
+    mapping: bool,
+    links_a: &str,
+    links_b: &str,
+    members_a: &str,
+    members_b: &str,
+) -> CheckedInputs {
+    let definition = include_str!("fixtures/configuration-map-graph.atoms.json");
+    let definition = if list {
+        definition.replace("\"Set\"", "\"List\"")
+    } else {
+        definition.into()
+    };
+    let definitions =
+        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+    let digest = &definitions.vocabularies["Graph"].digest;
+    let map = include_str!("fixtures/configuration-map-graph.archmap.json")
+        .replace("@DIGEST@", digest)
+        .replace(r#""@LINKS_A@""#, links_a)
+        .replace(r#""@LINKS_B@""#, links_b)
+        .replace(r#""@MEMBERS_A@""#, members_a)
+        .replace(r#""@MEMBERS_B@""#, members_b);
+    let map = if mapping {
+        map
+    } else {
+        map.lines()
+            .filter(|line| !line.contains("m-entries"))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    let law = include_str!("fixtures/configuration-map-graph.law").replace("@DIGEST@", digest);
+    check_inputs(
+        InputSources::from_bytes(
+            vec![definition.into_bytes()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ),
+        &mut Control::unlimited(),
+    )
+    .unwrap_or_else(|f| panic!("{:?}", f.issues()))
+}
 fn bridge_inputs(rename_root_field: bool) -> CheckedInputs {
     let left = include_bytes!("fixtures/configuration-map-left.atoms.json");
     let right = include_str!("fixtures/configuration-map-right.atoms.json");
@@ -208,6 +250,283 @@ fn reservations_has_the_independently_expected_total_action_without_quantity_equ
             &mut Control::unlimited(),
         )
         .unwrap();
+}
+
+#[test]
+fn noninjective_sets_use_the_image_set_while_lists_retain_duplicates() {
+    for list in [false, true] {
+        let inputs = graph_inputs(
+            list,
+            true,
+            "[]",
+            "[]",
+            r#"[["v","p"],["v","q"]]"#,
+            if list {
+                r#"[["v","r"],["v","r"]]"#
+            } else {
+                r#"[["v","r"]]"#
+            },
+        );
+        let result = correspondence(
+            &inputs,
+            "v",
+            "m",
+            "GraphRead",
+            None,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert!(result.missing().is_empty());
+        assert!(
+            result.counterexamples().is_empty(),
+            "{:?}",
+            result.counterexamples()
+        );
+        let map = result.map().expect("全域作用とF/R/Eと参照構造を保存する");
+        let c = map.candidate();
+        assert_eq!(
+            c.image(&FactPointer {
+                snapshot: "v".into(),
+                subject: "p".into(),
+                field: None,
+                atom: None
+            }),
+            c.image(&FactPointer {
+                snapshot: "v".into(),
+                subject: "q".into(),
+                field: None,
+                atom: None
+            })
+        );
+        for f in c.source_configuration().family() {
+            assert!(
+                c.target_configuration()
+                    .family()
+                    .contains(c.image(f).unwrap())
+            );
+        }
+        for (a, b) in c.source_configuration().relations() {
+            assert!(
+                c.target_configuration()
+                    .relations()
+                    .contains(&(c.image(a).unwrap().clone(), c.image(b).unwrap().clone()))
+            );
+        }
+        map.recheck(&inputs, &mut Control::unlimited()).unwrap();
+    }
+    let inputs = graph_inputs(
+        true,
+        true,
+        "[]",
+        "[]",
+        r#"[["v","p"],["v","q"]]"#,
+        r#"[["v","r"]]"#,
+    );
+    let result = correspondence(
+        &inputs,
+        "v",
+        "m",
+        "GraphRead",
+        None,
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert!(result.candidate().is_some());
+    assert!(result.map().is_none());
+    assert!(matches!(
+        result.counterexamples(),
+        [Counterexample::ReferenceStructure { .. }]
+    ));
+}
+
+#[test]
+fn missing_correspondence_keeps_fixed_list_and_set_violations_without_inventing_images() {
+    for (links_a, links_b, members_a, members_b, violated) in [
+        (
+            r#"[["v","p"]]"#,
+            r#"[["v","r"],["v","r"]]"#,
+            "[]",
+            "[]",
+            Some("links"),
+        ),
+        (r#"[["v","p"]]"#, r#"[["v","r"]]"#, "[]", "[]", None),
+        (
+            r#"[["v","p"],["v","p"]]"#,
+            r#"[["v","r"],["v","s"]]"#,
+            "[]",
+            "[]",
+            Some("links"),
+        ),
+        (
+            r#"[["v","p"],["v","p"]]"#,
+            r#"[["v","r"],["v","r"]]"#,
+            "[]",
+            "[]",
+            None,
+        ),
+        (
+            "[]",
+            "[]",
+            r#"[["v","p"]]"#,
+            r#"[["v","r"],["v","s"]]"#,
+            Some("members"),
+        ),
+        (
+            "[]",
+            "[]",
+            r#"[["v","p"],["v","q"]]"#,
+            r#"[["v","r"],["v","s"]]"#,
+            None,
+        ),
+        (
+            "[]",
+            "[]",
+            r#"[["v","p"],["v","q"]]"#,
+            r#"[["v","r"]]"#,
+            None,
+        ),
+    ] {
+        let inputs = graph_inputs(false, false, links_a, links_b, members_a, members_b);
+        let result = correspondence(
+            &inputs,
+            "v",
+            "m",
+            "GraphRead",
+            None,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert!(result.candidate().is_none());
+        assert!(result.map().is_none());
+        assert_eq!(
+            result.missing(),
+            &[FactPointer {
+                snapshot: "v".into(),
+                subject: "m".into(),
+                field: Some("Graph.Move.entries".into()),
+                atom: None
+            }]
+        );
+        match violated {
+            Some(field) => assert!(
+                matches!(result.counterexamples(), [Counterexample::ReferenceStructure {source, target}] if source.subject=="A" && target.subject=="B" && source.field.as_deref()==Some(format!("Graph.Root.{field}").as_str()))
+            ),
+            None => assert!(
+                result.counterexamples().is_empty(),
+                "{:?}",
+                result.counterexamples()
+            ),
+        }
+        result
+            .recheck(
+                &inputs,
+                "v",
+                "m",
+                "GraphRead",
+                None,
+                &mut Control::unlimited(),
+            )
+            .unwrap();
+    }
+}
+
+#[test]
+fn empty_root_values_cannot_bypass_reference_type_transport() {
+    for target_ref in ["Right.Root", "Right.Child"] {
+        let left = include_str!("fixtures/configuration-map-left.atoms.json").replacen(
+            "\"type\": \"Z\"",
+            r#""type": ["Option", ["Ref", "Left.Child"]]"#,
+            1,
+        );
+        let right = include_str!("fixtures/configuration-map-right.atoms.json").replacen(
+            "\"type\": \"Q\"",
+            &format!(r#""type": ["Option", ["Ref", "{target_ref}"]]"#),
+            1,
+        );
+        let defs = archsig::definition::check_definitions(&[
+            ("definition0", left.as_bytes()),
+            ("definition1", right.as_bytes()),
+        ])
+        .unwrap();
+        let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
+            .replace("@LEFT_DIGEST@", &defs.vocabularies["Left"].digest)
+            .replace("@RIGHT_DIGEST@", &defs.vocabularies["Right"].digest);
+        let result = archsig::definition::check_definitions(&[
+            ("definition0", left.as_bytes()),
+            ("definition1", right.as_bytes()),
+            ("definition2", bridge.as_bytes()),
+        ]);
+        if target_ref == "Right.Root" {
+            let failure = result.unwrap_err();
+            assert_eq!(failure.issue.code, archsig::issue::Code::Type);
+            assert!(failure.issue.message.contains("Left.Root.count"));
+            assert!(failure.issue.message.contains("Right.Root.count"));
+        } else {
+            let defs = result.expect("宣言の参照型が対応すれば空値も許す");
+            let law = include_str!("fixtures/configuration-map-bridge.law")
+                .replace("@LEFT_DIGEST@", &defs.vocabularies["Left"].digest)
+                .replace("@RIGHT_DIGEST@", &defs.vocabularies["Right"].digest);
+            let map = include_str!("fixtures/configuration-map-bridge.archmap.json")
+                .replace("@LEFT_DIGEST@", &defs.vocabularies["Left"].digest)
+                .replace("@RIGHT_DIGEST@", &defs.vocabularies["Right"].digest)
+                .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest)
+                .replacen("\"value\": \"2\"", r#""value": {"none":true}"#, 1)
+                .replacen(
+                    "\"value\": [\n            \"1\",\n            \"1\"\n          ]",
+                    r#""value": {"none":true}"#,
+                    1,
+                );
+            let inputs = check_inputs(
+                InputSources::from_bytes(
+                    vec![left.into_bytes(), right.into_bytes(), bridge.into_bytes()],
+                    law.into_bytes(),
+                    map.into_bytes(),
+                ),
+                &mut Control::unlimited(),
+            )
+            .unwrap();
+            let result = correspondence(
+                &inputs,
+                "v",
+                "m",
+                "LeftRead",
+                Some("RightRead"),
+                &mut Control::unlimited(),
+            )
+            .unwrap();
+            assert!(result.map().is_some());
+            assert!(result.counterexamples().is_empty());
+        }
+    }
+}
+#[test]
+fn quantity_only_root_options_do_not_require_equal_value_types() {
+    let left = include_str!("fixtures/configuration-map-left.atoms.json").replacen(
+        "\"type\": \"Z\"",
+        r#""type": ["Option", "Z"]"#,
+        1,
+    );
+    let right = include_str!("fixtures/configuration-map-right.atoms.json").replacen(
+        "\"type\": \"Q\"",
+        r#""type": ["Option", "Q"]"#,
+        1,
+    );
+    let defs = archsig::definition::check_definitions(&[
+        ("definition0", left.as_bytes()),
+        ("definition1", right.as_bytes()),
+    ])
+    .unwrap();
+    let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
+        .replace("@LEFT_DIGEST@", &defs.vocabularies["Left"].digest)
+        .replace("@RIGHT_DIGEST@", &defs.vocabularies["Right"].digest);
+    assert!(
+        archsig::definition::check_definitions(&[
+            ("definition0", left.as_bytes()),
+            ("definition1", right.as_bytes()),
+            ("definition2", bridge.as_bytes())
+        ])
+        .is_ok()
+    );
 }
 #[test]
 fn endpoint_failure_keeps_the_candidate_and_original_reference_and_relation_counterexamples() {

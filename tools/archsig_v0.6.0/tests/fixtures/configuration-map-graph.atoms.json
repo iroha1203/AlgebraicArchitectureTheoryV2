@@ -1,0 +1,105 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Graph",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Graph.Root",
+          "meaning": "参照の対応を観測する有限語彙。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "links",
+              "type": [
+                "List",
+                [
+                  "Ref",
+                  "Graph.Child"
+                ]
+              ],
+              "meaning": "参照構造の原始位置。"
+            },
+            {
+              "name": "members",
+              "type": [
+                "Set",
+                [
+                  "Ref",
+                  "Graph.Child"
+                ]
+              ],
+              "meaning": "参照構造の原始位置。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Graph.Child",
+          "meaning": "参照の対応を観測する有限語彙。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Graph.Root"
+              ],
+              "meaning": "参照構造の原始位置。"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "correspondence",
+          "name": "Graph.Move",
+          "meaning": "参照の対応を観測する有限語彙。",
+          "parameters": [
+            {
+              "name": "from",
+              "type": [
+                "Ref",
+                "Graph.Root"
+              ],
+              "meaning": "参照構造の原始位置。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Ref",
+                "Graph.Root"
+              ],
+              "meaning": "参照構造の原始位置。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "entries",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "Graph.Child",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "Graph.Child",
+                  "to"
+                ]
+              ],
+              "meaning": "参照構造の原始位置。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

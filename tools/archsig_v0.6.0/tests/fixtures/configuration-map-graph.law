@@ -1,0 +1,2 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading GraphRead {use vocabulary Graph version "1" digest "@DIGEST@";}
