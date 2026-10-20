@@ -22,7 +22,6 @@
   2. 完了判定ゲート: `target-theorem-loop`の完了判定 final `$math-lean-review`
      (completion candidateの固定packetに対して実行)と、`prd-completion-review`の
      最終達成条件レビュー。
-  3. `prd-loop`のエスカレーション規則が指定する強化ゲート(`$math-lean-review`の直接起動)。
 - Math / Lean は実装中、focused checkまたは必要な単一subagentの確認に限定する。
 - 正式レビューの各laneは、findingを`中心`(statement強度、premise放電、certificate
   provenance、proof-use、structure-field escape、route、nonvacuity、依存、axiom、claim scope
