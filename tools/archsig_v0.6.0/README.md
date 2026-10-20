@@ -155,6 +155,17 @@ correspondence由来のときだけ `Some` を返す。各結果の `recheck()` 
 操作とそのmapの `recheck()` は元入力から構成を再実行する。恒等・合成の候補は
 `subject()/correspondence()` を `None` とし、由来を操作の構成表に保持する。
 
+`construction::maps::configuration_transport(&checked, verified_map, &mut control)`
+は保存済みの原始correspondenceから、baseと全部分対象の対応、内部生成操作との全域自然性を検査する。
+`objects()` は対応する対象identity・Configuration・保存反例、`generators()` は原始arrowの対応と
+両端・自然性の結果を持つ。全対象成分は `action()` の同じ総写像を使う。
+自然性の反例には元位置と二つの合成像を保持する。`source()/target()` は未確認の内部arrowも含めた
+全検査結果を持ち、`all_preserved()` はこの構造側の全検査の成立を表す。
+実像が終域の対象・生成元の族に属さない場合は、構成条件の不成立として `condition_failure()` に元位置と像を保持する。
+対象行の `target()/target_configuration()` は該当対象を構成できたときに値を返す。
+追加検査が反証・未決でも `operation()` にconfiguration操作を保持する。
+Law・方程式・不変量等の運搬はそれぞれの追加読取りを要し、再照合は `recheck()` で行う。
+
 ## 仕様
 
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): 入力・問い・型付き結果の形式と意味。

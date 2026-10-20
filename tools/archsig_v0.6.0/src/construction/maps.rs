@@ -4,9 +4,14 @@ use crate::archmap::Field;
 
 mod internal;
 mod operations;
+mod transport;
 pub use internal::{InternalArrowResult, InternalArrows, internal_arrow, internal_arrows};
 pub use operations::{
     ActionDifference, ConfigurationOperation, IdentityConstruction, OperationStep, identity,
+};
+pub use transport::{
+    ConfigurationTransport, GeneratorTransport, Naturality, ObjectTransport,
+    TransportConditionFailure, configuration_transport,
 };
 
 type SubjectKey = (String, String);

@@ -1,0 +1,153 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Reservations",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "correspondence",
+          "name": "Reservations.Migration",
+          "meaning": "二つのシステム間の移行候補。",
+          "parameters": [
+            {
+              "name": "from",
+              "type": [
+                "Ref",
+                "Reservations.System"
+              ],
+              "meaning": "移行元のシステム。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Ref",
+                "Reservations.System"
+              ],
+              "meaning": "移行先のシステム。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "states",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "Reservations.State",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "Reservations.State",
+                  "to"
+                ]
+              ],
+              "meaning": "移行元の各状態に対応する移行先状態。"
+            },
+            {
+              "name": "reserves",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "Reservations.Reserve",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "Reservations.Reserve",
+                  "to"
+                ]
+              ],
+              "meaning": "移行元の各予約操作に対応する移行先操作。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "arrow",
+          "name": "Reservations.Reserve",
+          "meaning": "同じシステム内の予約操作。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Reservations.System"
+              ],
+              "meaning": "操作が所属するシステム。"
+            },
+            {
+              "name": "from",
+              "type": [
+                "Owned",
+                "Reservations.State",
+                "owner"
+              ],
+              "meaning": "操作前の状態。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Owned",
+                "Reservations.State",
+                "owner"
+              ],
+              "meaning": "操作後の状態。"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Reservations.State",
+          "meaning": "ある時点の空き数量と確保数量を持つ状態。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Reservations.System"
+              ],
+              "meaning": "状態が所属するシステム。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "free",
+              "type": "Z",
+              "meaning": "この状態の空き数量。"
+            },
+            {
+              "name": "held",
+              "type": "Z",
+              "meaning": "この状態の確保数量。"
+            },
+            {
+              "name": "friend",
+              "type": [
+                "Ref",
+                "Reservations.State"
+              ],
+              "meaning": "同じ操作で固定する原始参照。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Reservations.System",
+          "meaning": "予約状態と操作が所属する一つのシステム。",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}
