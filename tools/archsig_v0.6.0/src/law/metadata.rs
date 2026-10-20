@@ -6,7 +6,7 @@ use super::model::{DeclarationInfo, Param, Signature, SuppliedRule};
 use crate::json::InputError;
 use std::collections::BTreeSet;
 
-impl<E: InputError> Checker<E> {
+impl<E: InputError> Checker<'_, E> {
     pub fn declaration_infos(&self) -> Result<Vec<DeclarationInfo>, E> {
         let mut infos = Vec::new();
         for r in self.ast.iter() {

@@ -9,7 +9,7 @@ use crate::observed::control::{Checkpoint, Control};
 use crate::types::Type;
 use std::collections::{BTreeMap, BTreeSet};
 
-impl<E: InputError> Checker<E> {
+impl<E: InputError> Checker<'_, E> {
     pub(super) fn check_bodies_controlled(&mut self, control: &mut Control) -> Result<(), E> {
         let ast = self.ast.clone();
         // 先に全 view の署名を解決し、本体から呼べるようにする。

@@ -38,12 +38,12 @@ pub struct TypeCtx<'a> {
     pub validate: bool,
 }
 
-pub struct Checker<E = Box<Issue>> {
+pub struct Checker<'d, E = Box<Issue>> {
     pub parser: Parser<E>,
     pub(super) control: Control,
     pub(super) semantic_point: Checkpoint,
     /// Law の reading と分離した検査済み共通定義。
-    pub definitions: Rc<CheckedDefinitions>,
+    pub definitions: &'d CheckedDefinitions,
     pub imports: Vec<BTreeSet<String>>,
     /// 観測 Term は Law の reading ではなく定義元の scope で読む。
     pub term_namespace: Option<String>,
@@ -91,7 +91,7 @@ pub fn cycle<T, E: InputError>(span: Span, message: impl Into<String>) -> CResul
     Err(Box::new(Issue::law(Code::Cycle, span, message)).into())
 }
 
-impl<E: InputError> Checker<E> {
+impl<'d, E: InputError> Checker<'d, E> {
     pub(super) fn erase_type(&self, ty: &Type) -> CResult<Type, E> {
         ty.erase_controlled::<E>(&mut self.control.clone(), self.semantic_point)
     }
@@ -126,7 +126,7 @@ impl<E: InputError> Checker<E> {
     pub fn with_definitions(
         parser: Parser<E>,
         readings: Vec<Reading>,
-        definitions: &CheckedDefinitions,
+        definitions: &'d CheckedDefinitions,
         control: &mut Control,
         semantic_point: Checkpoint,
     ) -> CResult<Self, E> {
@@ -158,7 +158,7 @@ impl<E: InputError> Checker<E> {
             parser,
             control: control.clone(),
             semantic_point,
-            definitions: Rc::new(definitions.clone()),
+            definitions,
             imports: Vec::new(),
             term_namespace: None,
             ast: Rc::new(readings),
@@ -881,7 +881,7 @@ pub fn find_cycle<E: InputError>(
     Ok(None)
 }
 
-impl<E> std::fmt::Debug for Checker<E> {
+impl<E> std::fmt::Debug for Checker<'_, E> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Checker")
             .field("declarations", &self.decl_index.len())
