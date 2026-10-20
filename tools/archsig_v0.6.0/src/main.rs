@@ -74,11 +74,20 @@ impl ProcessSignals {
 
     fn observed_signal(first: &AtomicI32, int: &AtomicBool, term: &AtomicBool) -> Option<Signal> {
         use signal_hook::consts::{SIGINT, SIGTERM};
+        if first.load(Ordering::SeqCst) == 0 {
+            let observed = if int.load(Ordering::SeqCst) {
+                SIGINT
+            } else if term.load(Ordering::SeqCst) {
+                SIGTERM
+            } else {
+                return None;
+            };
+            // checkpointでも最初の捕捉順を共有し、後着signalで置き換えない。
+            let _ = first.compare_exchange(0, observed, Ordering::SeqCst, Ordering::SeqCst);
+        }
         match first.load(Ordering::SeqCst) {
             SIGINT => Some(Signal::Int),
             SIGTERM => Some(Signal::Term),
-            _ if int.load(Ordering::SeqCst) => Some(Signal::Int),
-            _ if term.load(Ordering::SeqCst) => Some(Signal::Term),
             _ => None,
         }
     }
@@ -182,6 +191,48 @@ mod tests {
         );
         assert_eq!(signals.frozen, None, "checkpointでfinalizeを開始しない");
         assert_eq!(signals.freeze(), Some(expected));
+    }
+
+    #[test]
+    fn observed_first_signal_survives_a_later_signal_before_finalize() {
+        for (first_signal, later_signal, expected) in [
+            (
+                signal_hook::consts::SIGTERM,
+                signal_hook::consts::SIGINT,
+                Signal::Term,
+            ),
+            (
+                signal_hook::consts::SIGINT,
+                signal_hook::consts::SIGTERM,
+                Signal::Int,
+            ),
+        ] {
+            let mut signals = ProcessSignals {
+                first: Arc::new(AtomicI32::new(0)),
+                int: Arc::new(AtomicBool::new(first_signal == signal_hook::consts::SIGINT)),
+                term: Arc::new(AtomicBool::new(
+                    first_signal == signal_hook::consts::SIGTERM,
+                )),
+                frozen: None,
+            };
+            let mut control = signals.control(Instant::now());
+            assert_eq!(
+                control.checkpoint(Checkpoint::LawSemantics),
+                Err(StopReason::Cancelled(expected))
+            );
+            if later_signal == signal_hook::consts::SIGINT {
+                signals.int.store(true, Ordering::SeqCst);
+            } else {
+                signals.term.store(true, Ordering::SeqCst);
+            }
+            // 監視threadの後処理も、既に捕捉したsignalを置き換えない。
+            let _ =
+                signals
+                    .first
+                    .compare_exchange(0, later_signal, Ordering::SeqCst, Ordering::SeqCst);
+            assert_eq!(signals.freeze(), Some(expected));
+            assert_eq!(signals.frozen, Some(Some(expected)));
+        }
     }
 
     #[test]

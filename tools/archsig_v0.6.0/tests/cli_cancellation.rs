@@ -32,11 +32,12 @@ impl Io for NoOutput {
 #[derive(Default)]
 struct Finalize {
     calls: usize,
+    late: Option<Signal>,
 }
 impl Signals for Finalize {
     fn freeze(&mut self) -> Option<Signal> {
         self.calls += 1;
-        None
+        self.late
     }
 }
 
@@ -173,4 +174,36 @@ fn controlled_budget_stop_is_preserved_without_a_signal() {
     assert_eq!(s(get(get(issue, "details"), "limit")), "1");
     assert_eq!(s(get(get(issue, "details"), "observed")), "1");
     assert!(!dir.join("out").exists());
+}
+
+#[test]
+fn earlier_checkpoint_signal_is_not_replaced_at_finalize() {
+    for (first, later, code) in [
+        (Signal::Term, Signal::Int, 143),
+        (Signal::Int, Signal::Term, 130),
+    ] {
+        let (dir, args) = inputs(&format!("signal-order-{code}"), true);
+        let mut control = Control::new(Limits::default(), move |point| Usage {
+            signal: (point == Checkpoint::LawSemantics).then_some(first),
+            ..Usage::default()
+        });
+        let mut signals = Finalize {
+            calls: 0,
+            late: Some(later),
+        };
+        let outcome = run_check(
+            &mut NoOutput,
+            &mut signals,
+            &args,
+            Instant::now(),
+            &mut control,
+        );
+        assert_eq!(outcome.exit_code, code);
+        assert_eq!(signals.calls, 1);
+        let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+        let issues = arr(get(&receipt, "issues"));
+        assert_eq!(issues.len(), 1);
+        assert_eq!(s(get(get(&issues[0], "details"), "signal")), first.wire());
+        assert!(!dir.join("out").exists());
+    }
 }
