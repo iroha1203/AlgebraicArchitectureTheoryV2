@@ -213,6 +213,8 @@ fn reservations_has_the_independently_expected_total_action_without_quantity_equ
     assert!(result.counterexamples().is_empty());
     assert!(result.map().is_some());
     let candidate = result.candidate().unwrap();
+    assert_eq!(candidate.subject(), &fact("m", None));
+    assert_eq!(candidate.correspondence(), Some(&fact("m", None)));
     assert_eq!(candidate.universe().len(), 31);
     assert_eq!(candidate.images().len(), 31);
     let mut expected = BTreeMap::new();

@@ -1,0 +1,185 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Flow",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Flow.Root",
+          "meaning": "内部対象族のroot。",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Flow.Node",
+          "meaning": "参照構造を持つ部分対象。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Flow.Root"
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "内部参照と数量を観測する原始位置。"
+            },
+            {
+              "name": "links",
+              "type": [
+                "List",
+                [
+                  "Ref",
+                  "Flow.Node"
+                ]
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            },
+            {
+              "name": "pair",
+              "type": [
+                "Tuple",
+                [
+                  "Ref",
+                  "Flow.Node"
+                ],
+                [
+                  "Option",
+                  [
+                    "Ref",
+                    "Flow.External"
+                  ]
+                ]
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            },
+            {
+              "name": "choice",
+              "type": [
+                "Option",
+                [
+                  "Ref",
+                  "Flow.Node"
+                ]
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            },
+            {
+              "name": "tagged",
+              "type": [
+                "Data",
+                "Flow.Link"
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            },
+            {
+              "name": "lookup",
+              "type": [
+                "Map",
+                [
+                  "Ref",
+                  "Flow.External"
+                ],
+                [
+                  "Ref",
+                  "Flow.Node"
+                ]
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            },
+            {
+              "name": "members",
+              "type": [
+                "Set",
+                [
+                  "Ref",
+                  "Flow.Node"
+                ]
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Flow.External",
+          "meaning": "部分対象の外部参照先。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "内部参照と数量を観測する原始位置。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "data",
+          "name": "Flow.Link",
+          "meaning": "参照を持つ名付き型。",
+          "constructors": [
+            {
+              "name": "Link",
+              "arguments": [
+                [
+                  "Ref",
+                  "Flow.Node"
+                ]
+              ],
+              "meaning": "参照を保持する。"
+            }
+          ]
+        },
+        {
+          "kind": "arrow",
+          "name": "Flow.Step",
+          "meaning": "同一rootの部分対象間の名前付きarrow。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Flow.Root"
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            },
+            {
+              "name": "from",
+              "type": [
+                "Owned",
+                "Flow.Node",
+                "owner"
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Owned",
+                "Flow.Node",
+                "owner"
+              ],
+              "meaning": "内部参照と数量を観測する原始位置。"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}
