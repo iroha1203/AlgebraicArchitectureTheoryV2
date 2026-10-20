@@ -2,6 +2,7 @@
 
 pub mod archmap;
 pub mod canonical;
+pub mod construction;
 pub mod definition;
 pub mod issue;
 pub mod json;

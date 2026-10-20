@@ -423,7 +423,8 @@ impl PartialEq for Scalar {
 }
 impl Eq for Scalar {}
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) struct Fact {
+/// 原始観測の位置。fieldだけを持つものはslot、atomも持つものは既知のfield Atom。
+pub struct Fact {
     pub snapshot: String,
     pub subject: String,
     pub field: Option<String>,

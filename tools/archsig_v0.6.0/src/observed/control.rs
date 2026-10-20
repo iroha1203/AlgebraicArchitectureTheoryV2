@@ -40,6 +40,7 @@ pub enum Checkpoint {
     Projection,
     Reuse,
     ObservationPlan,
+    Configuration,
     Expression,
     FiniteIteration,
 }

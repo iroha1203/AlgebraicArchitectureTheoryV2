@@ -105,6 +105,15 @@ view は全 parameter の束縛を必要とし、Law の未束縛 parameter は�
 計算は依存順、回答は指定順に返し、循環は要求 ID と依存グラフを保持して拒否する。
 `Control` は入力検査・要求解決・評価で共有し、呼出し側が予算と計測・取消通知を設定できる。
 
+検査済み三入力の対象構成を読むには
+`construction::construct(&checked, "CountCheck", "v", "s", &mut control)` を使う。
+`universe()` は全snapshotの存在事実と既知field Atom、`base()` と `components()` は
+選択rootとowned entityのConfiguration候補を返す。候補の `configuration()` は構成が
+確定した場合に値を返す。未観測の所属・参照がある場合は `known()` の断片と
+`blocking_slots()` を読み、未観測の数量slotは `requirements()` で確認する。
+`recheck()` は現在の検査済み入力と同じ選択から構成を再照合する。
+このRust APIのConfigurationと、LawやObjectAlgebraの成立は別の計算結果である。
+
 ## 仕様
 
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): 入力・問い・型付き結果の形式と意味。
