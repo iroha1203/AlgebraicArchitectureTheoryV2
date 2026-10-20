@@ -1,6 +1,7 @@
 //! AC7: 入力の読込み、出力の確定、確定時の中断状態。
 
 mod common;
+use archsig::observed::control::Control;
 use archsig::result::{Signal, Status};
 use archsig::run::{CheckArgs, Io, Signals, internal_outcome, run_check};
 use common::cli::*;
@@ -359,7 +360,13 @@ fn failures_before_publication_leave_the_output_untouched() {
             before: None,
             freezes: 0,
         };
-        let out = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
+        let out = run_check(
+            &mut io,
+            &mut signals,
+            &args(&dir),
+            Instant::now(),
+            &mut Control::unlimited(),
+        );
         assert_eq!((out.status, out.exit_code), (Status::Error, 74), "{fail}");
         assert!(out.result.is_none());
         assert!(
@@ -393,7 +400,13 @@ fn failures_before_publication_leave_the_output_untouched() {
         before: Some(Signal::Int),
         freezes: 0,
     };
-    let out = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
+    let out = run_check(
+        &mut io,
+        &mut signals,
+        &args(&dir),
+        Instant::now(),
+        &mut Control::unlimited(),
+    );
     assert_eq!((out.status, out.exit_code), (Status::Error, 74));
     assert!(out.result.is_none());
     // 確定時の競合では、相手が作った出力先を上書きしない。
@@ -406,7 +419,13 @@ fn failures_before_publication_leave_the_output_untouched() {
         before: None,
         freezes: 0,
     };
-    let out = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
+    let out = run_check(
+        &mut io,
+        &mut signals,
+        &args(&dir),
+        Instant::now(),
+        &mut Control::unlimited(),
+    );
     assert_eq!((out.status, out.exit_code), (Status::Error, 74));
     assert_eq!(
         std::fs::read_to_string(dir.join("o/theirs.txt")).unwrap(),
@@ -445,7 +464,13 @@ fn cleanup_preserves_unowned_paths_and_reports_remnants() {
             before: None,
             freezes: 0,
         };
-        let outcome = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
+        let outcome = run_check(
+            &mut io,
+            &mut signals,
+            &args(&dir),
+            Instant::now(),
+            &mut Control::unlimited(),
+        );
         assert_eq!((outcome.status, outcome.exit_code), (Status::Error, 74));
         assert!(!dir.join("o").exists());
         let temporary: Vec<_> = std::fs::read_dir(&dir)
@@ -487,7 +512,13 @@ fn signals_decide_the_status_once_at_finalize() {
             error: std::io::ErrorKind::Other,
         };
         let mut signals = FakeSignals { before, freezes: 0 };
-        let out = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
+        let out = run_check(
+            &mut io,
+            &mut signals,
+            &args(&dir),
+            Instant::now(),
+            &mut Control::unlimited(),
+        );
         assert_eq!(out.exit_code, code);
         assert_eq!(signals.freezes, 1);
         let res = archsig::json::parse(&std::fs::read(dir.join("o/result.json")).unwrap()).unwrap();

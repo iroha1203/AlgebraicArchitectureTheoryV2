@@ -62,6 +62,11 @@ pub enum ResultIssue {
         message: String,
     },
     Cancelled(Signal),
+    BudgetExhausted {
+        resource: crate::observed::control::Resource,
+        limit: u128,
+        observed: u128,
+    },
 }
 
 impl ResultIssue {
@@ -72,6 +77,7 @@ impl ResultIssue {
             ResultIssue::Io { .. } => "io",
             ResultIssue::Internal { .. } => "internal",
             ResultIssue::Cancelled(_) => "cancelled",
+            ResultIssue::BudgetExhausted { .. } => "budget_exhausted",
         }
     }
 
@@ -141,6 +147,18 @@ impl ResultIssue {
             ResultIssue::Internal { operation, message } => (
                 message.clone(),
                 Json::obj([("operation", Json::str(operation.clone()))]),
+            ),
+            ResultIssue::BudgetExhausted {
+                resource,
+                limit,
+                observed,
+            } => (
+                "計算予算を使い切った".to_owned(),
+                Json::obj([
+                    ("resource", Json::str(resource.wire())),
+                    ("limit", Json::str(limit.to_string())),
+                    ("observed", Json::str(observed.to_string())),
+                ]),
             ),
             ResultIssue::Cancelled(s) => (
                 "シグナルを受けて中断した".to_owned(),
@@ -494,7 +512,8 @@ pub fn exit_code(status: Status, signal: Option<Signal>, issues: &[ResultIssue])
     match status {
         Status::Interrupted => match signal {
             Some(Signal::Term) => 143,
-            _ => 130,
+            Some(Signal::Int) => 130,
+            None => 75,
         },
         Status::Error => {
             if issues.iter().any(|i| matches!(i, ResultIssue::Io { .. })) {

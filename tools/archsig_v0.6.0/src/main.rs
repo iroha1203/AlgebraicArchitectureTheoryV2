@@ -71,21 +71,46 @@ impl ProcessSignals {
             frozen: None,
         }
     }
+
+    fn observed_signal(first: &AtomicI32, int: &AtomicBool, term: &AtomicBool) -> Option<Signal> {
+        use signal_hook::consts::{SIGINT, SIGTERM};
+        if first.load(Ordering::SeqCst) == 0 {
+            let observed = if int.load(Ordering::SeqCst) {
+                SIGINT
+            } else if term.load(Ordering::SeqCst) {
+                SIGTERM
+            } else {
+                return None;
+            };
+            // checkpointでも最初の捕捉順を共有し、後着signalで置き換えない。
+            let _ = first.compare_exchange(0, observed, Ordering::SeqCst, Ordering::SeqCst);
+        }
+        match first.load(Ordering::SeqCst) {
+            SIGINT => Some(Signal::Int),
+            SIGTERM => Some(Signal::Term),
+            _ => None,
+        }
+    }
+
+    fn control(&self, started: Instant) -> archsig::observed::control::Control {
+        use archsig::observed::control::{Control, Limits, Usage};
+        let first = Arc::clone(&self.first);
+        let int = Arc::clone(&self.int);
+        let term = Arc::clone(&self.term);
+        Control::new(Limits::default(), move |_| Usage {
+            elapsed_ms: started.elapsed().as_millis(),
+            memory_mib: u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
+            signal: Self::observed_signal(&first, &int, &term),
+        })
+    }
 }
 
 impl Signals for ProcessSignals {
     fn freeze(&mut self) -> Option<Signal> {
-        use signal_hook::consts::{SIGINT, SIGTERM};
         if let Some(decided) = self.frozen {
             return decided;
         }
-        let decided = match self.first.load(Ordering::SeqCst) {
-            SIGINT => Some(Signal::Int),
-            SIGTERM => Some(Signal::Term),
-            _ if self.int.load(Ordering::SeqCst) => Some(Signal::Int),
-            _ if self.term.load(Ordering::SeqCst) => Some(Signal::Term),
-            _ => None,
-        };
+        let decided = Self::observed_signal(&self.first, &self.int, &self.term);
         self.frozen = Some(decided);
         decided
     }
@@ -130,8 +155,9 @@ fn execute(
     match parse_args(args) {
         Ok(Command::Version) => (None, VERSION_LINE),
         Ok(Command::Check(check)) => {
+            let mut control = signals.control(started);
             let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                run_check(&mut io, &mut *signals, &check, started)
+                run_check(&mut io, &mut *signals, &check, started, &mut control)
             }));
             match outcome {
                 Ok(o) => (Some(o), ""),
@@ -147,5 +173,75 @@ fn execute(
             }
         }
         Err(e) => (Some(usage_outcome(&mut io, signals, e, started)), ""),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use archsig::observed::control::{Checkpoint, StopReason};
+
+    fn signal_reaches_control(signal: i32, expected: Signal) {
+        let mut signals = ProcessSignals::new();
+        let mut control = signals.control(Instant::now());
+        signal_hook::low_level::raise(signal).unwrap();
+        assert_eq!(
+            control.checkpoint(Checkpoint::DefinitionSchema),
+            Err(StopReason::Cancelled(expected))
+        );
+        assert_eq!(signals.frozen, None, "checkpointでfinalizeを開始しない");
+        assert_eq!(signals.freeze(), Some(expected));
+    }
+
+    #[test]
+    fn observed_first_signal_survives_a_later_signal_before_finalize() {
+        for (first_signal, later_signal, expected) in [
+            (
+                signal_hook::consts::SIGTERM,
+                signal_hook::consts::SIGINT,
+                Signal::Term,
+            ),
+            (
+                signal_hook::consts::SIGINT,
+                signal_hook::consts::SIGTERM,
+                Signal::Int,
+            ),
+        ] {
+            let mut signals = ProcessSignals {
+                first: Arc::new(AtomicI32::new(0)),
+                int: Arc::new(AtomicBool::new(first_signal == signal_hook::consts::SIGINT)),
+                term: Arc::new(AtomicBool::new(
+                    first_signal == signal_hook::consts::SIGTERM,
+                )),
+                frozen: None,
+            };
+            let mut control = signals.control(Instant::now());
+            assert_eq!(
+                control.checkpoint(Checkpoint::LawSemantics),
+                Err(StopReason::Cancelled(expected))
+            );
+            if later_signal == signal_hook::consts::SIGINT {
+                signals.int.store(true, Ordering::SeqCst);
+            } else {
+                signals.term.store(true, Ordering::SeqCst);
+            }
+            // 監視threadの後処理も、既に捕捉したsignalを置き換えない。
+            let _ =
+                signals
+                    .first
+                    .compare_exchange(0, later_signal, Ordering::SeqCst, Ordering::SeqCst);
+            assert_eq!(signals.freeze(), Some(expected));
+            assert_eq!(signals.frozen, Some(Some(expected)));
+        }
+    }
+
+    #[test]
+    fn sigint_reaches_control_without_freezing() {
+        signal_reaches_control(signal_hook::consts::SIGINT, Signal::Int);
+    }
+
+    #[test]
+    fn sigterm_reaches_control_without_freezing() {
+        signal_reaches_control(signal_hook::consts::SIGTERM, Signal::Term);
     }
 }

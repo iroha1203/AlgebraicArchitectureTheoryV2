@@ -6,11 +6,12 @@ mod output;
 pub use args::parse_args;
 pub use output::peak_rss_bytes;
 
-use crate::archmap::check_archmap;
+use crate::archmap::check_archmap_controlled;
 use crate::canonical::{Json, sha256_digest};
-use crate::definition::check_definitions;
+use crate::definition::check_definitions_controlled;
 use crate::issue::Code;
-use crate::law::check_law;
+use crate::law::check_law_controlled;
+use crate::observed::control::{CheckFailure, Control, StopReason};
 use crate::result::*;
 use output::{finalize, out_ok, usage_without_result};
 use std::path::{Path, PathBuf};
@@ -145,6 +146,7 @@ pub fn run_check(
     signals: &mut dyn Signals,
     args: &CheckArgs,
     started: Instant,
+    control: &mut Control,
 ) -> Outcome {
     if args.atom_definitions.is_empty() {
         return usage_outcome(
@@ -215,23 +217,26 @@ pub fn run_check(
             .zip(&definition_bytes)
             .map(|(id, bytes)| (id.id.as_str(), bytes.as_deref().expect("読めた定義")))
             .collect();
-        let definitions = check_definitions(&files);
+        let definitions = check_definitions_controlled(&files, control);
         let identities = match &definitions {
             Ok(d) => &d.inputs,
-            Err(f) => &f.inputs,
+            Err(CheckFailure::Input(f)) => &f.inputs,
+            Err(CheckFailure::Stopped(reason)) => return stopped(signals, reason.clone()),
         };
         for (id, checked) in definition_ids.iter_mut().zip(identities) {
             id.model_digest = checked.model_digest.clone();
         }
         match definitions {
-            Err(f) => {
+            Err(CheckFailure::Stopped(reason)) => return stopped(signals, reason),
+            Err(CheckFailure::Input(f)) => {
                 status = input_failure_status(f.issue.code);
                 issues.push(ResultIssue::Input(f.issue));
             }
             Ok(definitions) => {
                 let law_bytes = law_bytes.as_ref().expect("読めた Law");
-                match check_law(law_bytes, &definitions) {
-                    Err(f) => {
+                match check_law_controlled(law_bytes, &definitions, control) {
+                    Err(CheckFailure::Stopped(reason)) => return stopped(signals, reason),
+                    Err(CheckFailure::Input(f)) => {
                         law_id.model_digest = f.model_digest.clone();
                         status = input_failure_status(f.issue.code);
                         issues.push(ResultIssue::Input(f.issue));
@@ -242,8 +247,11 @@ pub fn run_check(
                         primitives = definitions.declarations.values().cloned().collect();
                         vocabularies = definitions.vocabularies.values().cloned().collect();
                         if let Some(Some(bytes)) = &map_bytes {
-                            match check_archmap(bytes, &definitions) {
-                                Err(f) => {
+                            match check_archmap_controlled(bytes, &definitions, control) {
+                                Err(CheckFailure::Stopped(reason)) => {
+                                    return stopped(signals, reason);
+                                }
+                                Err(CheckFailure::Input(f)) => {
                                     status = input_failure_status(f.issue.code);
                                     issues.push(ResultIssue::Input(f.issue));
                                 }
@@ -308,4 +316,20 @@ fn input_failure_status(code: Code) -> Status {
         Code::UnsupportedVersion => Status::Unsupported,
         _ => Status::Invalid,
     }
+}
+
+fn stopped(signals: &mut dyn Signals, reason: StopReason) -> Outcome {
+    let issue = match reason {
+        StopReason::Cancelled(signal) => ResultIssue::Cancelled(signal),
+        StopReason::BudgetExhausted {
+            resource,
+            limit,
+            observed,
+        } => ResultIssue::BudgetExhausted {
+            resource,
+            limit,
+            observed,
+        },
+    };
+    output::without_result(signals, Status::Interrupted, vec![issue], Vec::new())
 }
