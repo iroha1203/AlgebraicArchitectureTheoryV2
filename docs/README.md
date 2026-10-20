@@ -6,6 +6,9 @@ Lean 形式化の定義・定理、tooling / empirical protocol を分けて管�
 website 側の説明は、ここに置いた研究上の claim discipline を参照してよいが、docs を website copy の
 source of truth として扱わない。
 
+文書のステートレス性と作業記録の置き場は
+[Workflow guideline「ドキュメントをステートレスに保つ規則」](workflow/guideline.md#ドキュメントをステートレスに保つ規則)に従う。
+
 ## 文書階層と拘束力
 
 このリポジトリの文書は、次のTier順に権威と拘束力を持つ。
@@ -44,8 +47,6 @@ source of truth として扱わない。
   **実行手順**(Codex は `.codex/skills` の SKILL と `_shared` の共有契約、Claude は `.claude/skills` の SKILL)。
 - 各 hard rule の正本はちょうど1箇所に置く。他の文書・SKILL は link で参照し、
   言い換えで再掲しない。
-- 文書のステートレス性と作業記録の置き場は
-  [Workflow guideline「ドキュメントをステートレスに保つ規則」](workflow/guideline.md#ドキュメントをステートレスに保つ規則)に従う。
 - SKILL は手順・判断基準・入出力契約だけを持つ。作業規律の本文は参照先 guideline を読む。
 
 ## 更新ルール
