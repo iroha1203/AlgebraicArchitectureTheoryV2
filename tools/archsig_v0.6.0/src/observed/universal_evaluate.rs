@@ -4,10 +4,14 @@ use crate::observed::{affine::CompletionPair, environment::universal::UniversalP
 
 #[derive(Clone)]
 pub(super) struct FiniteUniversal {
+    pub context: std::rc::Rc<FiniteUniversalContext>,
+    pub has_local_domains: bool,
+}
+
+pub(super) struct FiniteUniversalContext {
     pub plan: UniversalPlan,
     pub template: NodeRef,
     pub domains: Vec<NodeRef>,
-    pub has_local_domains: bool,
 }
 
 #[derive(Clone)]
@@ -1306,9 +1310,11 @@ impl Evaluator<'_, '_> {
             self.universal_source(plan, template, domains, expr.span, ty.clone())?;
         if self.environment.universal_finite_syntax(id)? {
             let active = FiniteUniversal {
-                plan: plan.clone(),
-                template,
-                domains: domains.to_vec(),
+                context: std::rc::Rc::new(FiniteUniversalContext {
+                    plan: plan.clone(),
+                    template,
+                    domains: domains.to_vec(),
+                }),
                 has_local_domains: false,
             };
             let old = self.finite_universal.replace(active);
