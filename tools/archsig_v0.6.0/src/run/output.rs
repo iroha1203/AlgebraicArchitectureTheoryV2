@@ -49,17 +49,27 @@ pub(super) fn usage_without_result(
     issue: ResultIssue,
     stderr: Vec<String>,
 ) -> Outcome {
+    without_result(signals, Status::Invalid, vec![issue], stderr)
+}
+
+/// 成果物のない実行失敗・中断を一度だけ確定する。
+pub(super) fn without_result(
+    signals: &mut dyn Signals,
+    mut status: Status,
+    mut issues: Vec<ResultIssue>,
+    stderr: Vec<String>,
+) -> Outcome {
     let signal = signals.freeze();
-    let status = if signal.is_some() {
-        Status::Interrupted
-    } else {
-        Status::Invalid
-    };
+    if let Some(signal) = signal {
+        status = Status::Interrupted;
+        issues.push(ResultIssue::Cancelled(signal));
+    }
     Outcome {
         status,
-        exit_code: exit_code(status, signal, &[issue]),
+        exit_code: exit_code(status, signal, &issues),
         result: None,
         stderr,
+        issues,
     }
 }
 
@@ -74,6 +84,9 @@ pub(super) fn finalize(
     started: Instant,
     mut stderr: Vec<String>,
 ) -> Outcome {
+    if result.status != Status::Complete {
+        return without_result(signals, result.status, result.issues, stderr);
+    }
     if let Some(signal) = signals.freeze() {
         result.status = Status::Interrupted;
         result.issues.push(ResultIssue::Cancelled(signal));
@@ -84,11 +97,13 @@ pub(super) fn finalize(
     result.elapsed_ms = started.elapsed().as_millis();
     result.peak_bytes = peak_rss_bytes();
     let tmp = temp_dir(out);
+    let mut created = false;
     let written = (|| -> Result<(), (&'static str, PathBuf, std::io::Error)> {
         let step = |op: &'static str, p: &Path, r: std::io::Result<()>| {
             r.map_err(|e| (op, p.to_path_buf(), e))
         };
         step("create", &tmp, io.create_dir(&tmp))?;
+        created = true;
         let inputs = tmp.join("inputs");
         step("create", &inputs, io.create_dir(&inputs))?;
         let definitions = inputs.join("definitions");
@@ -127,18 +142,31 @@ pub(super) fn finalize(
             exit_code: result.exit_code,
             result: Some(out.join("result.json")),
             stderr,
+            issues: result.issues,
         },
         Err((op, path, e)) => {
-            stderr.push(format!(
-                "archsig: 出力の{op}に失敗した({}): {e}。出力先は変更していない。一時 directory: {}",
-                path.display(),
-                tmp.display()
-            ));
+            let message = format!("出力の{op}に失敗した({}): {e}", path.display());
+            stderr.push(format!("archsig: {message}"));
+            if created {
+                if let Err(cleanup) = io.remove_dir_all(&tmp) {
+                    stderr.push(format!(
+                        "archsig: 未完成の一時 directory を片付けられない({}): {cleanup}",
+                        tmp.display()
+                    ));
+                }
+            }
+            let issue = ResultIssue::Io {
+                operation: op,
+                path: path.to_string_lossy().into_owned(),
+                message,
+            };
+
             Outcome {
                 status: Status::Error,
                 exit_code: 74,
                 result: None,
                 stderr,
+                issues: vec![issue],
             }
         }
     }

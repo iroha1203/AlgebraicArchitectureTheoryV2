@@ -1,4 +1,4 @@
-//! AC6: 拒否の code・位置・終了コードと、Law と ArchMap の失敗での表の保持。
+//! 拒否の stdout code・位置・終了コードと、失敗成果物の非生成。
 
 mod common;
 use common::cli::*;
@@ -51,12 +51,21 @@ fn check_map(name: &str, map: &[u8]) -> (archsig::json::JNode, Run) {
             "o",
         ],
     );
-    let res = result_json(&dir, &r);
+    let res = notified(
+        &dir,
+        &r,
+        if r.code == 69 {
+            "unsupported"
+        } else {
+            "invalid"
+        },
+        r.code,
+    );
     (res, r)
 }
 
 #[test]
-fn archmap_rejections_keep_the_law_tables() {
+fn archmap_rejections_report_locations_without_files() {
     let cases: Vec<(&str, Vec<u8>, &str, &str, i32)> = vec![
         (
             "dupkey",
@@ -114,15 +123,13 @@ fn archmap_rejections_keep_the_law_tables() {
         let (res, r) = check_map(name, &map);
         let status = if exit == 69 { "unsupported" } else { "invalid" };
         let dir = std::env::temp_dir().join(format!("archsig-cli-{}-{name}", std::process::id()));
-        consistent(&dir, &r, status, exit);
+        notified(&dir, &r, status, exit);
         let (c, input, at) = only_issue(&res);
         assert_eq!((c.as_str(), input.as_str()), (code, "archmap"), "{name}");
         if !pointer.is_empty() {
             assert_eq!(at, pointer, "{name}");
         }
-        // Law の検査は完了しているので、宣言と語彙の表を保持する。
-        assert!(!arr(get(&res, "declarations")).is_empty(), "{name}");
-        assert_eq!(arr(get(&res, "vocabularies")).len(), 1, "{name}");
+        assert!(!dir.join("o").exists());
     }
     // 構文エラーの位置は byte 区間の開始。
     let surrogate = MAP.replacen("二つのシステム", "\\udc00", 1);
@@ -149,11 +156,11 @@ fn archmap_rejections_keep_the_law_tables() {
         only_issue(&res),
         ("syntax".to_owned(), "archmap".to_owned(), at.to_string())
     );
-    assert!(!arr(get(&res, "declarations")).is_empty());
+    assert!(!has(&res, "result"));
 }
 
 #[test]
-fn law_rejections_empty_the_tables() {
+fn law_rejections_report_locations_without_files() {
     let cases: Vec<(&str, Vec<u8>, &str, &str, i32)> = vec![
         (
             "law-type",
@@ -211,7 +218,7 @@ fn law_rejections_empty_the_tables() {
             ],
         );
         let status = if exit == 69 { "unsupported" } else { "invalid" };
-        let res = consistent(&dir, &r, status, exit);
+        let res = notified(&dir, &r, status, exit);
         let (c, i, at) = only_issue(&res);
         assert_eq!((c.as_str(), i.as_str()), (code, input), "{name}");
         assert!(at.parse::<usize>().is_ok(), "Law の位置は span");
@@ -219,11 +226,7 @@ fn law_rejections_empty_the_tables() {
             let text = String::from_utf8(law.clone()).unwrap();
             assert_eq!(at, text.find("\\ud800").unwrap().to_string());
         }
-        assert!(arr(get(&res, "declarations")).is_empty(), "{name}");
-        assert!(arr(get(&res, "vocabularies")).is_empty(), "{name}");
-        // 読めた入力は同梱する。
-        assert_eq!(std::fs::read(dir.join("o/inputs/law.law")).unwrap(), law);
-        assert!(dir.join("o/inputs/archmap.json").exists());
+        assert!(!dir.join("o").exists());
     }
 }
 
@@ -258,11 +261,8 @@ fn cli_misuse_is_usage() {
         let r = run(&dir, &args);
         assert_eq!(r.code, 64, "{args:?}");
         assert_eq!(s(get(&r.receipt, "status")), "invalid");
-        if has(&r.receipt, "result") {
-            let res = consistent(&dir, &r, "invalid", 64);
-            assert_eq!(only_issue(&res).0, "usage");
-            assert!(arr(get(&res, "inputs")).is_empty());
-        }
+        let res = notified(&dir, &r, "invalid", 64);
+        assert_eq!(only_issue(&res).0, "usage");
     }
     // 定義は一つ以上必須。単数 flag の ArchMap 重複も usage。
     for (out, args) in [
@@ -288,9 +288,9 @@ fn cli_misuse_is_usage() {
         ),
     ] {
         let r = run(&dir, &args);
-        let res = consistent(&dir, &r, "invalid", 64);
+        let res = notified(&dir, &r, "invalid", 64);
         assert_eq!(only_issue(&res).0, "usage");
-        assert!(arr(get(&res, "inputs")).is_empty());
+        assert!(!has(&res, "result"));
         assert!(!dir.join(out).join("inputs/law.law").exists());
         assert!(!dir.join(out).join("inputs/definitions/0.json").exists());
     }
@@ -310,7 +310,7 @@ fn cli_misuse_is_usage() {
     assert_eq!(r.code, 64);
     assert!(!has(&r.receipt, "result"));
     assert!(!dir.join("o7").exists());
-    // 未知の flag の後の --out も出力先として読む。
+    // 未知の flag があれば、後の --out に失敗ファイルを保存しない。
     let r = run(
         &dir,
         &[
@@ -324,7 +324,7 @@ fn cli_misuse_is_usage() {
             "o10",
         ],
     );
-    consistent(&dir, &r, "invalid", 64);
+    notified(&dir, &r, "invalid", 64);
     // --out が二つあれば出力先を決めず、出力を作らない。
     let r = run(
         &dir,
@@ -343,7 +343,7 @@ fn cli_misuse_is_usage() {
     assert_eq!(r.code, 64);
     assert!(!has(&r.receipt, "result"));
     assert!(!dir.join("o8").exists() && !dir.join("o9").exists());
-    // 出力先を読めた CLI の不正は、usage の issue を result.json に残す。
+    // 出力先の指定があっても、usage は stdout の issue に返す。
     let r = run(
         &dir,
         &[
@@ -358,7 +358,7 @@ fn cli_misuse_is_usage() {
             "x",
         ],
     );
-    let res = consistent(&dir, &r, "invalid", 64);
+    let res = notified(&dir, &r, "invalid", 64);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(get(issue, "details"), "argument")), "--unknown");
 }
@@ -419,7 +419,7 @@ fn public_run_with_valid_counter_inputs_and_request_is_usage_without_delivery() 
 }
 
 #[test]
-fn definition_failure_precedes_law_and_archmap_and_empty_tables_keep_copies() {
+fn definition_failure_precedes_law_and_archmap_without_files() {
     let dir = workdir("definition-first");
     let definition = DEFINITION.replacen("\"version\": \"1\"", "\"version\": \"\"", 1);
     write(&dir, "d.json", definition.as_bytes());
@@ -439,7 +439,7 @@ fn definition_failure_precedes_law_and_archmap_and_empty_tables_keep_copies() {
             "o",
         ],
     );
-    let res = consistent(&dir, &r, "invalid", 65);
+    let res = notified(&dir, &r, "invalid", 65);
     assert_eq!(
         only_issue(&res),
         (
@@ -448,15 +448,7 @@ fn definition_failure_precedes_law_and_archmap_and_empty_tables_keep_copies() {
             "/vocabularies/0/version".into()
         )
     );
-    assert!(arr(get(&res, "declarations")).is_empty());
-    assert!(arr(get(&res, "vocabularies")).is_empty());
-    for (path, bytes) in [
-        ("inputs/definitions/0.json", definition.as_bytes()),
-        ("inputs/law.law", b"invalid law".as_slice()),
-        ("inputs/archmap.json", b"invalid JSON".as_slice()),
-    ] {
-        assert_eq!(std::fs::read(dir.join("o").join(path)).unwrap(), bytes);
-    }
+    assert!(!dir.join("o").exists());
 }
 
 #[test]
@@ -515,7 +507,7 @@ fn unsupported_json_versions_precede_unknown_fields() {
                     "o",
                 ],
             );
-            let res = consistent(&dir, &r, "unsupported", 69);
+            let res = notified(&dir, &r, "unsupported", 69);
             assert_eq!(
                 only_issue(&res),
                 (
@@ -524,14 +516,7 @@ fn unsupported_json_versions_precede_unknown_fields() {
                     expected_pointer.into()
                 )
             );
-            assert_eq!(
-                arr(get(&res, "declarations")).is_empty(),
-                kind == "definition0"
-            );
-            assert_eq!(
-                arr(get(&res, "vocabularies")).is_empty(),
-                kind == "definition0"
-            );
+            assert!(!dir.join("o").exists());
         }
     }
 }
@@ -571,7 +556,7 @@ fn law_header_version_precedes_lexer_and_primitive_declarations_are_rejected() {
                 "o",
             ],
         );
-        let res = consistent(
+        let res = notified(
             &dir,
             &r,
             if exit == 69 { "unsupported" } else { "invalid" },
@@ -580,7 +565,42 @@ fn law_header_version_precedes_lexer_and_primitive_declarations_are_rejected() {
         let issue = only_issue(&res);
         assert_eq!((issue.0.as_str(), issue.1.as_str()), (code, "law"));
         assert!(issue.2.parse::<usize>().is_ok());
-        assert!(arr(get(&res, "declarations")).is_empty());
-        assert!(arr(get(&res, "vocabularies")).is_empty());
+        assert!(!dir.join("o").exists());
+    }
+}
+
+#[test]
+fn invalid_arguments_do_not_read_inputs_or_recover_output_paths() {
+    let dir = workdir("invalid-argument-paths");
+    std::fs::write(dir.join("existing"), "keep").unwrap();
+    for out in [
+        None,
+        Some("fresh"),
+        Some("existing"),
+        Some("missing-parent/out"),
+        Some(""),
+    ] {
+        let mut args = vec![
+            "check",
+            "--atom-definition",
+            "unread-definition",
+            "--law",
+            "unread-law",
+            "--bogus",
+        ];
+        if let Some(out) = out {
+            args.extend(["--out", out]);
+        }
+        let r = run(&dir, &args);
+        let receipt = notified(&dir, &r, "invalid", 64);
+        let issue = &arr(get(&receipt, "issues"))[0];
+        assert_eq!(s(get(issue, "code")), "usage");
+        assert_eq!(s(get(get(issue, "details"), "argument")), "--bogus");
+        assert!(s(get(issue, "message")).contains("--bogus"));
+        assert_eq!(
+            std::fs::read_to_string(dir.join("existing")).unwrap(),
+            "keep"
+        );
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 1);
     }
 }

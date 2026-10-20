@@ -14,6 +14,10 @@ use std::time::Instant;
 struct FileIo;
 
 impl Io for FileIo {
+    fn remove_dir_all(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::remove_dir_all(path)
+    }
+
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
         std::fs::create_dir(path)
     }
