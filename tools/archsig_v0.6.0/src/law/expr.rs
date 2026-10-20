@@ -79,7 +79,7 @@ fn collection_elem(t: &Type) -> Option<Type> {
     }
 }
 
-impl<E: InputError> Checker<E> {
+impl<E: InputError> Checker<'_, E> {
     fn lookup<'a>(&self, env: &'a Env, name: &str) -> CResult<Lookup<'a>, E> {
         for (index, binding) in env.vars.iter().enumerate().rev() {
             self.cooperate()?;
@@ -1354,11 +1354,14 @@ mod semantic_finish_tests {
     };
     use std::{cell::Cell, rc::Rc};
     type Failure = CheckFailure<Box<Issue>>;
-    fn checker(control: &mut Control) -> Checker<Failure> {
+    static EMPTY_DEFINITIONS: std::sync::LazyLock<CheckedDefinitions> =
+        std::sync::LazyLock::new(CheckedDefinitions::default);
+
+    fn checker(control: &mut Control) -> Checker<'static, Failure> {
         Checker::with_definitions(
             Parser::with_error(Vec::new(), 4, control.clone()),
             Vec::new(),
-            &CheckedDefinitions::default(),
+            &EMPTY_DEFINITIONS,
             control,
             StopPoint::LawSemantics,
         )
@@ -1397,7 +1400,7 @@ mod semantic_finish_tests {
             term: false,
         }
     }
-    fn bool_mismatch(checker: &mut Checker<Failure>) -> CResult<Type, Failure> {
+    fn bool_mismatch(checker: &mut Checker<'_, Failure>) -> CResult<Type, Failure> {
         checker.parser.exprs.push(Expr {
             kind: ExprKind::Bool(true),
             span: (0, 4),
@@ -1407,7 +1410,7 @@ mod semantic_finish_tests {
     // Enter each expectation-reading branch directly. The small ASTs avoid
     // unrelated parsing/name-resolution work, so the recorded trace includes
     // the expected type's erasure rather than only its surrounding checks.
-    fn expected_branch(check: &mut Checker<Failure>, branch: usize) -> CResult<Type, Failure> {
+    fn expected_branch(check: &mut Checker<'_, Failure>, branch: usize) -> CResult<Type, Failure> {
         check.parser.exprs.push(Expr {
             kind: ExprKind::Bool(true),
             span: (0, 4),
@@ -1690,14 +1693,14 @@ mod semantic_finish_tests {
         typed: bool,
         valid: [bool; 2],
     ) -> (
-        Checker<super::super::parser::candidate_priority_tests::Failure>,
+        Checker<'static, super::super::parser::candidate_priority_tests::Failure>,
         ExprId,
     ) {
         use super::super::parser::candidate_priority_tests::Failure as CandidateFailure;
         let mut check = Checker::<CandidateFailure>::with_definitions(
             Parser::with_error(Vec::new(), 32, control.clone()),
             Vec::new(),
-            &CheckedDefinitions::default(),
+            &EMPTY_DEFINITIONS,
             control,
             StopPoint::LawSemantics,
         )
