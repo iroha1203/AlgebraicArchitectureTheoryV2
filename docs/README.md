@@ -1,10 +1,13 @@
 # docs 読み方
 
 このディレクトリは、AAT の数学理論、AAT / SFT interface、SFT の場の理論、
-Lean 形式化 status、tooling / empirical protocol を分けて管理する。
+Lean 形式化の定義・定理、tooling / empirical protocol を分けて管理する。
 公開 website の本文、読者導線、landing page 向け説明は、この研究 docs の責務ではない。
 website 側の説明は、ここに置いた研究上の claim discipline を参照してよいが、docs を website copy の
 source of truth として扱わない。
+
+文書のステートレス性と作業記録の置き場は
+[Workflow guideline「ドキュメントをステートレスに保つ規則」](workflow/guideline.md#ドキュメントをステートレスに保つ規則)に従う。
 
 ## 文書階層と拘束力
 
@@ -44,7 +47,6 @@ source of truth として扱わない。
   **実行手順**(Codex は `.codex/skills` の SKILL と `_shared` の共有契約、Claude は `.claude/skills` の SKILL)。
 - 各 hard rule の正本はちょうど1箇所に置く。他の文書・SKILL は link で参照し、
   言い換えで再掲しない。
-- 先例・事故の経緯はルール本文に書かず、GitHub Issue / PR に残す。
 - SKILL は手順・判断基準・入出力契約だけを持つ。作業規律の本文は参照先 guideline を読む。
 
 ## 更新ルール

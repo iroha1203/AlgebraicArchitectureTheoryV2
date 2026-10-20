@@ -11,7 +11,9 @@ PRD作業では本guidelineをhard ruleとして適用し、既存違反も例�
   task固有のtarget statement、non-goals、停止条件に限定する。
 - PRDに恒久的な規律、編集ルール、schema / artifact contract、status語彙、
   product/runtimeのFailure Contract、運用手順の正本を書いてはならない。これらはPRD着手前に
-  数学本文、guideline、仕様書、台帳、schema文書などの現行source of truthへ置き、PRDは参照だけを持つ。
+  数学本文、guideline、仕様書、schema文書などの現行source of truthへ置き、PRDは参照だけを持つ。
+  作業の状態・記録の置き場は [Workflow guideline](../workflow/guideline.md) の
+  「ドキュメントをステートレスに保つ規則」に従う。
 - target statementの一次仕様は、PRD、GOAL・候補カード、GitHub Issue、現行docs、数学本文、
   その他のtask artifactのいずれでもよい。実装開始前に一次仕様を1つ指定し、target claim、
   必要な結論、明示された仮定・受け入れ条件を実装者と査読者が作業中に参照できる状態を保つ。
@@ -31,7 +33,7 @@ PRDは次をすべて満たした後に削除する。
 
 1. acceptance criteriaがすべて充足されている。
 2. 必要な分野別review、test、CIが完了している。
-3. taskが要求する実装・docs・台帳・website等がmerge済み、または明示された納品状態にある。
+3. taskが要求する実装・docs・PR / Issueの記録・website等がmerge済み、または明示された納品状態にある。
 4. 成果物、恒久contract、恒久ルール、statusが現行source of truthへ反映されている。
 5. repository全体から、そのPRDへの参照がゼロである。
 
@@ -39,6 +41,9 @@ PRDは次をすべて満たした後に削除する。
 既存PRDや既存参照も例外扱いせず、上記条件を満たすまで文書整理の完了根拠に数えない。
 PRDがtask固有のtarget statementの一次仕様である場合も、履歴はGit commit historyとGitHub Issue / PR / reviewに残る。
 同じclaimやsignatureを完了後の現行docsへ移すことは削除条件にしない。
+
+PRD の現状診断や実装計画は作成時点の記述である。完了済み PRD の古い記述だけを根拠に
+現行仕様の不具合と判断しない。現行仕様、source、実行結果を確認して判断する。
 
 ## PRD参照の禁止
 

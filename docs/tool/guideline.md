@@ -6,6 +6,8 @@
 
 - ArchSig の製品像は [ArchSig v0.6.0 製品コンセプト](archsig_v0_6_0_concept.md) にある。
 - このガイドラインは作り方の規律だけを書く。コマンド、欄、計算の決まりはマニュアルに書く。
+- 文書と作業台帳の分担は [Workflow guideline](../workflow/guideline.md) の
+  「ドキュメントをステートレスに保つ規則」、PRD の lifecycle は [PRD guideline](../prd/guideline.md) に従う。
 - ArchView と FieldSig は ArchSig の結果を読む側にあり、ArchSig の結論を作らない。
 
 ## 責務範囲(入力トライアドの正本)
@@ -42,7 +44,11 @@
 
 - ツールのテストは、そのツールの計算と出力だけを確かめる。
   ArchSig のテストから ArchView、website、SKILL、docs を検査しない。
-- ArchSig のテストは、マニュアルの例を fixture にし、コマンドを実行して結果を確かめる。
+- README、マニュアル、website の文言、見出し、配置を製品テストで固定しない。
+  文書本文をテスト入力や期待値の保存先・取得元にせず、本文からそれらを読み込む・抽出する構成にしない。
+  文書編集で製品テストが落ちる依存を作らない。
+- ArchSig のテストは、マニュアルに説明された振る舞い・公開 contract を、文書から独立した
+  fixture、明示的な引数、期待値で検証する。例を基にテストを設計し、コマンドを実行して結果を確かめる。
 - 各ツールのテストは、そのツールのクレートで実行する。
 
 ```bash

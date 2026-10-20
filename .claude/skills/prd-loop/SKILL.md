@@ -9,7 +9,7 @@ PRD を完了まで実装する。1周は、ギャップ分析 → Issue → 実
 受け入れ要件がすべて満たされたように見えたら、独立した完了レビューで閉じる。
 
 作業規律は、触る領域の guideline([Tool guideline](../../../docs/tool/guideline.md) など)と
-[Workflow guideline](../../../docs/workflow/guideline.md) を読んで従う。
+[Workflow guideline](../../../docs/workflow/guideline.md)、[PRD guideline](../../../docs/prd/guideline.md) を読んで従う。
 
 ## 入力
 
@@ -53,7 +53,7 @@ PRD を完了まで実装する。1周は、ギャップ分析 → Issue → 実
 
 3. **実装して PR を出す。**
    - 専用のブランチで実装する。
-   - 実装中に、マニュアルや仕様が決めていない振る舞いを決めたら、同じ PR で仕様の文書に書く。PRD が書き戻しを後に回すと決めている振る舞いは、PRD の決めた置き場(穴の一覧など)に積む。
+   - 仕様の文書への反映は、領域の guideline(ツールなら「作り方」)に従う。
    - 領域の guideline の検証を実行する(ツールなら `cargo test`)。PR 前の共通確認を実行する。
    - PR を出す前に、自分の差分を Issue の受け入れ要件と突き合わせる。PR 本文に、差分にない主張を書かない。
    - PR は `.github/pull_request_template.md` に沿って日本語で書く。受け入れ要件をすべて満たしたときだけ `Closes #N` を書く。
@@ -74,7 +74,7 @@ PRD を完了まで実装する。1周は、ギャップ分析 → Issue → 実
      - PRD から受け入れ要件を1項目1行で取り出し、各項目をコード、テスト、実行結果の一次証拠で判定する(満たした / 未達 / 未確認)。tracking Issue、PR 本文、checklist は証拠にしない。
      - PRD の「## 問い」に、今の状態が答えているかを、受け入れ要件とは別に判定する。
      - ファイルは編集しない。
-   - すべて満たし、問いにも答えていれば、結果を tracking Issue にコメントして close し、終了する。
+   - すべて満たし、問いにも答えていれば、結果を tracking Issue にコメントする。[PRD guideline](../../../docs/prd/guideline.md) の「完了と削除」に従って整理し、tracking Issue を close して終了する。
    - 未達・未確認があれば、それをギャップとして手順2へ戻る。問いに答えていないときは、人の判断事項として止まる。
 
 ## 停止
