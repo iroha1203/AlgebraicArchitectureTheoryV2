@@ -926,8 +926,12 @@ impl Evaluator<'_, '_> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick(Checkpoint::Expression)?;
             if let Some(active) = self.finite_universal.clone() {
-                let result =
-                    self.universal_pointwise(&active.plan, active.template, &active.domains, id)?;
+                let result = self.universal_pointwise(
+                    &active.context.plan,
+                    active.context.template,
+                    &active.context.domains,
+                    id,
+                )?;
                 if let Some(current) = &mut self.finite_universal {
                     current.has_local_domains |= result.has_local_domains;
                 }
