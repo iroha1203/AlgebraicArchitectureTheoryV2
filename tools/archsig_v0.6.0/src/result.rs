@@ -76,7 +76,7 @@ impl ResultIssue {
     }
 
     /// issues の並び(結果仕様 §6): code、location.input、pointer または span 開始。
-    fn sort_key(&self) -> (String, String, String, usize) {
+    pub(crate) fn sort_key(&self) -> (String, String, String, usize) {
         let (input, pointer, start) = match self {
             ResultIssue::Input(i) => match &i.location {
                 Location::Law { span } => ("law".to_owned(), String::new(), span.0),

@@ -84,7 +84,7 @@ fn source_uris_and_law_references_are_not_read() {
             "o1",
         ],
     );
-    let res = consistent(&dir, &r, "invalid", 65);
+    let res = notified(&dir, &r, "invalid", 65);
     assert_eq!(s(get(&arr(get(&res, "issues"))[0], "code")), "reference");
     // 存在しない uri の source を指す observed の由来でも、ArchMap を検査できる。
     let observed = MAP
@@ -201,25 +201,12 @@ fn unreadable_inputs_are_io_errors() {
             "o",
         ],
     );
-    let res = consistent(&dir, &r, "error", 74);
+    let res = notified(&dir, &r, "error", 74);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "io");
     assert_eq!(s(get(get(issue, "details"), "operation")), "read");
     assert_eq!(s(get(get(issue, "details"), "path")), "adir");
-    let inputs = arr(get(&res, "inputs"));
-    let law = inputs.iter().find(|i| s(get(i, "kind")) == "law").unwrap();
-    assert_eq!(s(get(law, "state")), "unread");
-    assert!(!has(law, "bytes_digest") && !has(law, "path"));
-    let map = inputs
-        .iter()
-        .find(|i| s(get(i, "kind")) == "archmap")
-        .unwrap();
-    assert_eq!(s(get(map, "state")), "read");
-    assert!(!dir.join("o/inputs/law.law").exists());
-    assert_eq!(
-        std::fs::read(dir.join("o/inputs/archmap.json")).unwrap(),
-        MAP.as_bytes()
-    );
+    assert!(!dir.join("o").exists());
     let r = run(
         &dir,
         &[
@@ -232,7 +219,7 @@ fn unreadable_inputs_are_io_errors() {
             "o2",
         ],
     );
-    consistent(&dir, &r, "error", 74);
+    notified(&dir, &r, "error", 74);
     // ArchMap だけが読めなくても、検査を始めない。
     std::fs::write(dir.join("l.law"), LAW).unwrap();
     let r = run(
@@ -249,13 +236,9 @@ fn unreadable_inputs_are_io_errors() {
             "o4",
         ],
     );
-    let res = consistent(&dir, &r, "error", 74);
-    assert!(arr(get(&res, "declarations")).is_empty());
-    assert!(arr(get(&res, "vocabularies")).is_empty());
-    assert_eq!(
-        std::fs::read(dir.join("o4/inputs/law.law")).unwrap(),
-        LAW.as_bytes()
-    );
+    let res = notified(&dir, &r, "error", 74);
+    assert_eq!(s(get(&arr(get(&res, "issues"))[0], "code")), "io");
+    assert!(!dir.join("o4").exists());
     // UTF-8 でない path も path として扱い、読めなければ io とする。
     use std::os::unix::ffi::OsStrExt;
     let bad = std::ffi::OsStr::from_bytes(b"\xff.law");
@@ -271,7 +254,8 @@ fn unreadable_inputs_are_io_errors() {
     assert_eq!(out.status.code(), Some(74));
     let receipt = archsig::json::parse(&out.stdout).unwrap();
     assert_eq!(s(get(&receipt, "status")), "error");
-    assert!(dir.join("o3/result.json").exists());
+    assert!(!has(&receipt, "result"));
+    assert!(!dir.join("o3").exists());
 }
 
 /// 指定した操作で失敗するファイル操作。それ以外は実ファイルへ書く。
@@ -281,20 +265,38 @@ struct FaultyIo {
 }
 
 impl Io for FaultyIo {
+    fn remove_dir_all(&mut self, path: &Path) -> std::io::Result<()> {
+        assert_ne!(self.fail, "collision", "未所有 directory の削除は禁止");
+        if self.fail == "cleanup" {
+            return Err(std::io::ErrorKind::PermissionDenied.into());
+        }
+        std::fs::remove_dir_all(path)
+    }
+
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
-        if self.fail == "create" {
+        if self.fail == "collision" {
+            std::fs::create_dir(path)?;
+            std::fs::write(path.join("theirs.txt"), "theirs")?;
+            return Err(std::io::ErrorKind::AlreadyExists.into());
+        }
+        if self.fail == "create" || (self.fail == "create-inputs" && path.ends_with("inputs")) {
             return Err(self.error.into());
         }
         std::fs::create_dir(path)
     }
     fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()> {
-        if self.fail == "write" && path.ends_with("result.json") {
+        if (matches!(self.fail, "write" | "cleanup") && path.ends_with("result.json"))
+            || (self.fail == "write-input" && path.ends_with("law.law"))
+        {
             return Err(self.error.into());
         }
         std::fs::write(path, bytes)
     }
     fn flush(&mut self, path: &Path) -> std::io::Result<()> {
-        if self.fail == "flush" && path.ends_with("result.json") {
+        if (self.fail == "flush" && path.ends_with("result.json"))
+            || (self.fail == "flush-input" && path.ends_with("law.law"))
+            || (self.fail == "flush-directory" && path.ends_with("inputs"))
+        {
             return Err(self.error.into());
         }
         std::fs::File::open(path)?.sync_all()
@@ -338,7 +340,16 @@ fn args(dir: &Path) -> CheckArgs {
 
 #[test]
 fn failures_before_publication_leave_the_output_untouched() {
-    for fail in ["create", "write", "flush", "rename"] {
+    for fail in [
+        "create",
+        "create-inputs",
+        "write",
+        "write-input",
+        "flush",
+        "flush-input",
+        "flush-directory",
+        "rename",
+    ] {
         let dir = input_dir(&format!("fault-{fail}"));
         let mut io = FaultyIo {
             fail,
@@ -355,6 +366,17 @@ fn failures_before_publication_leave_the_output_untouched() {
             out.receipt().contains("\"exit_code\":74") && !out.receipt().contains("\"result\"")
         );
         assert!(!dir.join("o").exists(), "{fail}: 出力先を作らない");
+        assert!(std::fs::read_dir(&dir).unwrap().all(|e| {
+            !e.unwrap()
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".o.archsig-")
+        }));
+        let receipt = archsig::json::parse(out.receipt().as_bytes()).unwrap();
+        let issue = &arr(get(&receipt, "issues"))[0];
+        assert_eq!(s(get(issue, "code")), "io");
+        assert_eq!(s(get(get(issue, "details"), "operation")), fail_word(fail));
+        assert!(!s(get(issue, "message")).is_empty());
         assert!(
             out.stderr.iter().any(|m| m.contains(fail_word(fail))),
             "{fail}: {:?}",
@@ -391,31 +413,64 @@ fn failures_before_publication_leave_the_output_untouched() {
         "theirs"
     );
     assert!(!dir.join("o/result.json").exists());
-    // 一時 directory の path を stderr に示す。
-    let tmp: Vec<PathBuf> = std::fs::read_dir(&dir)
-        .unwrap()
-        .map(|e| e.unwrap().path())
-        .filter(|p| {
-            p.file_name()
-                .unwrap()
-                .to_string_lossy()
-                .starts_with(".o.archsig-")
-        })
-        .collect();
-    assert_eq!(tmp.len(), 1);
-    assert!(
-        out.stderr
-            .iter()
-            .any(|m| m.contains(&tmp[0].display().to_string()))
-    );
+    assert!(std::fs::read_dir(&dir).unwrap().all(|e| {
+        !e.unwrap()
+            .file_name()
+            .to_string_lossy()
+            .starts_with(".o.archsig-")
+    }));
 }
 
 fn fail_word(fail: &str) -> &'static str {
-    match fail {
-        "create" => "create",
-        "write" => "write",
-        "flush" => "flush",
-        _ => "rename",
+    if fail.starts_with("create") {
+        "create"
+    } else if fail.starts_with("write") {
+        "write"
+    } else if fail.starts_with("flush") {
+        "flush"
+    } else {
+        "rename"
+    }
+}
+
+#[test]
+fn cleanup_preserves_unowned_paths_and_reports_remnants() {
+    for fail in ["collision", "cleanup"] {
+        let dir = input_dir(fail);
+        let mut io = FaultyIo {
+            fail,
+            error: std::io::ErrorKind::PermissionDenied,
+        };
+        let mut signals = FakeSignals {
+            before: None,
+            freezes: 0,
+        };
+        let outcome = run_check(&mut io, &mut signals, &args(&dir), Instant::now());
+        assert_eq!((outcome.status, outcome.exit_code), (Status::Error, 74));
+        assert!(!dir.join("o").exists());
+        let temporary: Vec<_> = std::fs::read_dir(&dir)
+            .unwrap()
+            .map(|e| e.unwrap().path())
+            .filter(|p| {
+                p.file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .starts_with(".o.archsig-")
+            })
+            .collect();
+        assert_eq!(temporary.len(), 1);
+        if fail == "collision" {
+            assert_eq!(
+                std::fs::read_to_string(temporary[0].join("theirs.txt")).unwrap(),
+                "theirs"
+            );
+        } else {
+            assert!(
+                outcome.stderr.iter().any(|m| m.contains("片付けられない")
+                    && m.contains(&temporary[0].display().to_string()))
+            );
+        }
+        std::fs::remove_dir_all(&temporary[0]).unwrap();
     }
 }
 
@@ -450,7 +505,7 @@ fn signals_decide_the_status_once_at_finalize() {
 }
 
 #[test]
-fn unread_second_definition_keeps_all_read_input_bytes_without_checking() {
+fn unread_second_definition_reports_io_without_files() {
     let dir = input_dir("unread-second-definition");
     std::fs::write(dir.join("l.law"), b"invalid law").unwrap();
     std::fs::write(dir.join("a.json"), b"invalid JSON").unwrap();
@@ -470,47 +525,12 @@ fn unread_second_definition_keeps_all_read_input_bytes_without_checking() {
             "o",
         ],
     );
-    let res = consistent(&dir, &r, "error", 74);
+    let res = notified(&dir, &r, "error", 74);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "io");
     assert_eq!(s(get(get(issue, "details"), "operation")), "read");
     assert_eq!(s(get(get(issue, "details"), "path")), "missing.json");
-    assert!(arr(get(&res, "declarations")).is_empty());
-    assert!(arr(get(&res, "vocabularies")).is_empty());
-    let inputs = arr(get(&res, "inputs"));
-    assert_eq!(
-        inputs.iter().map(|i| s(get(i, "id"))).collect::<Vec<_>>(),
-        ["archmap", "definition0", "definition1", "law"]
-    );
-    let unread = inputs
-        .iter()
-        .find(|i| s(get(i, "id")) == "definition1")
-        .unwrap();
-    assert_eq!(s(get(unread, "kind")), "atom_definition");
-    assert_eq!(s(get(unread, "state")), "unread");
-    for key in ["path", "bytes_digest", "model_digest"] {
-        assert!(!has(unread, key));
-    }
-    assert!(!dir.join("o/inputs/definitions/1.json").exists());
-    for (id, path, bytes) in [
-        (
-            "definition0",
-            "inputs/definitions/0.json",
-            DEFINITION.as_bytes(),
-        ),
-        ("law", "inputs/law.law", b"invalid law".as_slice()),
-        ("archmap", "inputs/archmap.json", b"invalid JSON".as_slice()),
-    ] {
-        assert_eq!(std::fs::read(dir.join("o").join(path)).unwrap(), bytes);
-        let input = inputs.iter().find(|i| s(get(i, "id")) == id).unwrap();
-        assert_eq!(s(get(input, "state")), "read");
-        assert_eq!(s(get(input, "path")), path);
-        assert_eq!(
-            s(get(input, "bytes_digest")),
-            archsig::canonical::sha256_digest(bytes)
-        );
-        assert!(!has(input, "model_digest"));
-    }
+    assert!(!dir.join("o").exists());
 }
 
 #[test]
@@ -543,7 +563,7 @@ fn definition_dependencies_are_not_loaded_from_neighbor_files() {
             "o",
         ],
     );
-    let res = consistent(&dir, &r, "invalid", 65);
+    let res = notified(&dir, &r, "invalid", 65);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "reference");
     let location = get(issue, "location");
@@ -572,22 +592,6 @@ fn internal_failure_does_not_keep_any_inputs_or_copies() {
     let receipt = archsig::json::parse(out.receipt().as_bytes()).unwrap();
     assert_eq!(s(get(&receipt, "status")), "error");
     assert_eq!(num(get(&receipt, "exit_code")), 70);
-    let res = archsig::json::parse(&std::fs::read(dir.join("o/result.json")).unwrap()).unwrap();
-    assert_eq!(s(get(&res, "format")), "archsig.result/2");
-    assert_eq!(s(get(&res, "status")), "error");
-    assert_eq!(num(get(&res, "exit_code")), 70);
-    for key in [
-        "inputs",
-        "declarations",
-        "vocabularies",
-        "requests",
-        "answers",
-        "nodes",
-    ] {
-        assert!(arr(get(&res, key)).is_empty());
-    }
-    assert_eq!(s(get(&arr(get(&res, "issues"))[0], "code")), "internal");
-    if let Ok(mut entries) = std::fs::read_dir(dir.join("o/inputs")) {
-        assert!(entries.next().is_none(), "内部障害ではコピーを保持しない");
-    }
+    assert_eq!(s(get(&arr(get(&receipt, "issues"))[0], "code")), "internal");
+    assert!(!dir.join("o").exists());
 }

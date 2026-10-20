@@ -94,3 +94,31 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
     }
     res
 }
+
+/// 実行失敗は非空の stdout issues を返し、失敗成果物を作らない。
+pub fn notified(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
+    assert_eq!(r.code, code, "{}", r.stderr);
+    assert_eq!(s(get(&r.receipt, "format")), "archsig.receipt/1");
+    assert_eq!(s(get(&r.receipt, "status")), status);
+    assert_eq!(num(get(&r.receipt, "exit_code")), code as u64);
+    assert!(!has(&r.receipt, "result"));
+    let issues = arr(get(&r.receipt, "issues"));
+    assert!(!issues.is_empty());
+    for issue in issues {
+        assert!(!s(get(issue, "message")).is_empty());
+        assert!(arr(get(issue, "dependencies")).is_empty());
+        assert!(arr(get(issue, "missing")).is_empty());
+    }
+    for entry in std::fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        assert!(!path.join("result.json").exists());
+        assert!(
+            !path
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .contains(".archsig-")
+        );
+    }
+    parse(r.stdout.trim_end().as_bytes()).unwrap()
+}

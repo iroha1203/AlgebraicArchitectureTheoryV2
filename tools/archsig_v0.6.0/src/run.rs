@@ -27,6 +27,8 @@ pub trait Io {
     fn flush(&mut self, path: &Path) -> std::io::Result<()>;
     /// 既存の path を置き換えずに rename する。
     fn rename_noreplace(&mut self, from: &Path, to: &Path) -> std::io::Result<()>;
+    /// この実行が作成した未完成 directory だけを片付ける。
+    fn remove_dir_all(&mut self, path: &Path) -> std::io::Result<()>;
 }
 
 /// 実行の中で捕捉した signal。finalize の開始時に一度だけ確定する。
@@ -49,12 +51,11 @@ pub enum Command {
     Version,
 }
 
-/// CLI の不正。check の `--out` がちょうど一つ読めた場合は出力先として使う。
+/// CLI の不正。成果物を生成せず receipt へ返す。
 #[derive(Debug, PartialEq, Eq)]
 pub struct UsageError {
     pub argument: String,
     pub message: String,
-    pub out: Option<PathBuf>,
 }
 
 /// 実行の結果。stdout の receipt と終了コード、stderr の自然文。
@@ -64,6 +65,7 @@ pub struct Outcome {
     pub exit_code: u8,
     pub result: Option<PathBuf>,
     pub stderr: Vec<String>,
+    pub issues: Vec<ResultIssue>,
 }
 
 impl Outcome {
@@ -75,6 +77,14 @@ impl Outcome {
         ];
         if let Some(r) = &self.result {
             entries.push(("result", Json::str(r.to_string_lossy().into_owned())));
+        }
+        if !self.issues.is_empty() {
+            let mut issues: Vec<_> = self.issues.iter().collect();
+            issues.sort_by_key(|i| i.sort_key());
+            entries.push((
+                "issues",
+                Json::Arr(issues.into_iter().map(ResultIssue::wire).collect()),
+            ));
         }
         Json::Obj(
             entries
@@ -95,61 +105,38 @@ fn read_input(path: &Path) -> std::io::Result<Vec<u8>> {
 }
 
 pub fn usage_outcome(
-    io: &mut dyn Io,
+    _io: &mut dyn Io,
     signals: &mut dyn Signals,
     err: UsageError,
-    started: Instant,
+    _started: Instant,
 ) -> Outcome {
-    let issue = ResultIssue::Usage {
-        argument: err.argument.clone(),
-        message: err.message.clone(),
-    };
-    let mut stderr = vec![format!("archsig: {}: {}", err.argument, err.message)];
-    let Some(out) = err.out else {
-        return usage_without_result(signals, issue, stderr);
-    };
-    if let Err(m) = out_ok(&out) {
-        stderr.push(format!("archsig: {}: {m}", out.display()));
-        return usage_without_result(signals, issue, stderr);
-    }
-    let result = CheckResult {
-        status: Status::Invalid,
-        exit_code: 64,
-        inputs: Vec::new(),
-        declarations: Vec::new(),
-        primitives: Vec::new(),
-        vocabularies: Vec::new(),
-        issues: vec![issue],
-        elapsed_ms: 0,
-        peak_bytes: 0,
-    };
-    finalize(io, signals, &out, result, &[], started, stderr)
+    let stderr = vec![format!("archsig: {}: {}", err.argument, err.message)];
+    usage_without_result(
+        signals,
+        ResultIssue::Usage {
+            message: format!("{}: {}", err.argument, err.message),
+            argument: err.argument,
+        },
+        stderr,
+    )
 }
 
-/// 内部障害。出力先が使えれば error/70 の結果を残す。
+/// 内部障害を stdout へ返す。失敗記録ファイルは生成しない。
 pub fn internal_outcome(
-    io: &mut dyn Io,
+    _io: &mut dyn Io,
     signals: &mut dyn Signals,
-    args: &CheckArgs,
-    started: Instant,
+    _args: &CheckArgs,
+    _started: Instant,
 ) -> Outcome {
-    let issue = ResultIssue::Internal {
-        operation: "check".to_owned(),
-        message: "検査の途中で内部障害が起きた".to_owned(),
-    };
-    let stderr = vec!["archsig: 検査の途中で内部障害が起きた".to_owned()];
-    let result = CheckResult {
-        status: Status::Error,
-        exit_code: 70,
-        inputs: Vec::new(),
-        declarations: Vec::new(),
-        primitives: Vec::new(),
-        vocabularies: Vec::new(),
-        issues: vec![issue],
-        elapsed_ms: 0,
-        peak_bytes: 0,
-    };
-    finalize(io, signals, &args.out, result, &[], started, stderr)
+    output::without_result(
+        signals,
+        Status::Error,
+        vec![ResultIssue::Internal {
+            operation: "check".to_owned(),
+            message: "検査の途中で内部障害が起きた".to_owned(),
+        }],
+        vec!["archsig: 検査の途中で内部障害が起きた".to_owned()],
+    )
 }
 
 /// `check --atom-definition D [--atom-definition D ...] --law L [--archmap A] --out OUT`。
@@ -166,7 +153,6 @@ pub fn run_check(
             UsageError {
                 argument: "--atom-definition".to_owned(),
                 message: "--atom-definition が一つ以上必要".to_owned(),
-                out: Some(args.out.clone()),
             },
             started,
         );
@@ -175,7 +161,7 @@ pub fn run_check(
     if let Err(m) = out_ok(&args.out) {
         let issue = ResultIssue::Usage {
             argument: "--out".to_owned(),
-            message: m.clone(),
+            message: format!("{}: {m}", args.out.display()),
         };
         stderr.push(format!("archsig: {}: {m}", args.out.display()));
         return usage_without_result(signals, issue, stderr);
