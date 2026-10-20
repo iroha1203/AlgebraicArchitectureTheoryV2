@@ -36,9 +36,8 @@ impl Io for FileIo {
     }
 }
 
-/// SIGINT・SIGTERM の捕捉。監視の thread が受けた順に最初の signal を残し、handler は受信の
-/// 有無を flag に立てる。finalize の開始時に一度だけ読んで確定し、以後の signal は handler が
-/// 受けるだけで状態へ反映しない。受信順の分からない pending の signal は SIGINT を先とする。
+/// handlerで最初のSIGINT/SIGTERMを記録する。finalizeでは呼出しthreadをblockし、
+/// 捕捉済みとpendingを一度だけ含める。CLIはthreadを追加せず、終了までblockを保つ。
 struct ProcessSignals {
     first: Arc<AtomicI32>,
     int: Arc<AtomicBool>,
@@ -51,19 +50,19 @@ impl ProcessSignals {
         use signal_hook::consts::{SIGINT, SIGTERM};
         let int = Arc::new(AtomicBool::new(false));
         let term = Arc::new(AtomicBool::new(false));
-        signal_hook::flag::register(SIGINT, Arc::clone(&int))
-            .expect("SIGINT の handler を登録できる");
-        signal_hook::flag::register(SIGTERM, Arc::clone(&term))
-            .expect("SIGTERM の handler を登録できる");
         let first = Arc::new(AtomicI32::new(0));
-        let mut signals = signal_hook::iterator::Signals::new([SIGINT, SIGTERM])
-            .expect("SIGINT・SIGTERM の handler を登録できる");
-        let seen = Arc::clone(&first);
-        std::thread::spawn(move || {
-            for s in signals.forever() {
-                let _ = seen.compare_exchange(0, s, Ordering::SeqCst, Ordering::SeqCst);
+        for (signal, flag) in [(SIGINT, Arc::clone(&int)), (SIGTERM, Arc::clone(&term))] {
+            let seen = Arc::clone(&first);
+            // SAFETY: handlerは固定サイズのlock-free atomic操作だけを行う。
+            // allocation、lock、I/Oを行わず、参照先は登録closureのArcが保持する。
+            unsafe {
+                signal_hook::low_level::register(signal, move || {
+                    let _ = seen.compare_exchange(0, signal, Ordering::SeqCst, Ordering::SeqCst);
+                    flag.store(true, Ordering::SeqCst);
+                })
             }
-        });
+            .expect("SIGINT/SIGTERMのhandlerを登録できる");
+        }
         ProcessSignals {
             first,
             int,
@@ -114,6 +113,27 @@ impl Signals for ProcessSignals {
         if let Some(decided) = self.frozen {
             return decided;
         }
+        use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
+        let mut blocked = SigSet::empty();
+        blocked.add(OsSignal::SIGINT);
+        blocked.add(OsSignal::SIGTERM);
+        pthread_sigmask(SigmaskHow::SIG_BLOCK, Some(&blocked), None)
+            .expect("SIGINT/SIGTERMをblockできる");
+        // SAFETY: sigpendingは有効なsigset_tへの書込みだけを行い、成功後にだけ読む。
+        let pending = unsafe {
+            let mut pending = std::mem::MaybeUninit::<nix::libc::sigset_t>::uninit();
+            assert_eq!(nix::libc::sigpending(pending.as_mut_ptr()), 0);
+            pending.assume_init()
+        };
+        // SAFETY: pendingはsigpendingで初期化済み、signal番号はOS定数。
+        unsafe {
+            if nix::libc::sigismember(&pending, signal_hook::consts::SIGINT) == 1 {
+                self.int.store(true, Ordering::SeqCst);
+            }
+            if nix::libc::sigismember(&pending, signal_hook::consts::SIGTERM) == 1 {
+                self.term.store(true, Ordering::SeqCst);
+            }
+        }
         let decided = Self::observed_signal(&self.first, &self.int, &self.term);
         self.frozen = Some(decided);
         decided
@@ -130,6 +150,10 @@ fn main() {
     let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
     let mut signals = ProcessSignals::new();
     let (outcome, version) = execute(&args, &mut signals, started);
+    finish(outcome, version);
+}
+
+fn finish(outcome: Option<Outcome>, version: &str) -> ! {
     let mut stdout = std::io::stdout().lock();
     let line = match &outcome {
         Some(o) => o.receipt(),
@@ -246,7 +270,7 @@ mod tests {
             } else {
                 signals.term.store(true, Ordering::SeqCst);
             }
-            // 監視threadの後処理も、既に捕捉したsignalを置き換えない。
+            // 後着handlerも、既に捕捉したsignalを置き換えない。
             let _ =
                 signals
                     .first
@@ -264,5 +288,189 @@ mod tests {
     #[test]
     fn sigterm_reaches_control_without_freezing() {
         signal_reaches_control(signal_hook::consts::SIGTERM, Signal::Term);
+    }
+
+    #[test]
+    fn signal_handler_records_received_order_without_a_monitor_thread() {
+        let mut signals = ProcessSignals::new();
+        signal_hook::low_level::raise(signal_hook::consts::SIGTERM).unwrap();
+        signal_hook::low_level::raise(signal_hook::consts::SIGINT).unwrap();
+        assert_eq!(
+            signals.first.load(Ordering::SeqCst),
+            signal_hook::consts::SIGTERM
+        );
+        assert_eq!(signals.freeze(), Some(Signal::Term));
+    }
+
+    #[test]
+    fn finalize_includes_both_pending_signals_with_sigint_priority() {
+        use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
+        let mut signals = ProcessSignals::new();
+        let mut blocked = SigSet::empty();
+        blocked.add(OsSignal::SIGINT);
+        blocked.add(OsSignal::SIGTERM);
+        pthread_sigmask(SigmaskHow::SIG_BLOCK, Some(&blocked), None).unwrap();
+        signal_hook::low_level::raise(signal_hook::consts::SIGTERM).unwrap();
+        signal_hook::low_level::raise(signal_hook::consts::SIGINT).unwrap();
+        assert_eq!(signals.first.load(Ordering::SeqCst), 0);
+        assert_eq!(signals.freeze(), Some(Signal::Int));
+    }
+
+    #[test]
+    fn finalize_keeps_signals_blocked_and_ignores_later_pending_signals() {
+        use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
+        let mut signals = ProcessSignals::new();
+        assert_eq!(signals.freeze(), None);
+        let mut mask = SigSet::empty();
+        pthread_sigmask(SigmaskHow::SIG_BLOCK, None, Some(&mut mask)).unwrap();
+        assert!(mask.contains(OsSignal::SIGINT));
+        assert!(mask.contains(OsSignal::SIGTERM));
+        signal_hook::low_level::raise(signal_hook::consts::SIGTERM).unwrap();
+        signal_hook::low_level::raise(signal_hook::consts::SIGINT).unwrap();
+        assert_eq!(signals.first.load(Ordering::SeqCst), 0);
+        assert_eq!(signals.freeze(), None);
+    }
+
+    // 製品へ同期flag/環境変数を追加せず、同じparse/execute/finishをsubprocessで使う。
+    #[test]
+    #[ignore = "real_signals_cancel_cli_execution_before_artifactsがsubprocessとして起動する"]
+    fn signal_cli_child() {
+        use std::io::Read;
+        let kind = std::env::var("ARCHSIG_TEST_CHILD_KIND").unwrap();
+        let mut signals = ProcessSignals::new();
+        println!("\nARCHSIG_READY");
+        std::io::stdout().flush().unwrap();
+        std::io::stdin().read_exact(&mut [0]).unwrap();
+        let deadline = Instant::now() + std::time::Duration::from_secs(30);
+        while signals.first.load(Ordering::SeqCst) == 0 {
+            assert!(Instant::now() < deadline, "実signalを捕捉しなかった");
+            std::thread::yield_now();
+        }
+        let mut args = vec![
+            kind.as_str(),
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "out",
+        ];
+        if kind == "run" {
+            args.extend(["--ask", "n=evaluate(CountCheck.amount,s=@v/s)"]);
+        }
+        let args: Vec<_> = args.into_iter().map(std::ffi::OsString::from).collect();
+        let (outcome, version) = execute(&args, &mut signals, Instant::now());
+        finish(outcome, version);
+    }
+
+    #[test]
+    fn real_signals_cancel_cli_execution_before_artifacts() {
+        use archsig::json::{JNode, JValue, parse};
+        use nix::sys::signal::{Signal as OsSignal, kill};
+        use nix::unistd::Pid;
+        use std::io::{BufRead, BufReader, Read};
+        use std::process::{Child, Command, Stdio};
+        struct Running(Child);
+        impl Drop for Running {
+            fn drop(&mut self) {
+                let _ = self.0.kill();
+                let _ = self.0.wait();
+            }
+        }
+        fn field<'a>(node: &'a JNode, key: &str) -> &'a JNode {
+            let JValue::Obj(fields) = &node.value else {
+                panic!("object")
+            };
+            &fields.iter().find(|(name, _)| name == key).unwrap().1
+        }
+        fn text(node: &JNode) -> &str {
+            let JValue::Str(value) = &node.value else {
+                panic!("string")
+            };
+            value
+        }
+        for kind in ["check", "run"] {
+            for (signal, code, name) in [
+                (OsSignal::SIGINT, 130, "SIGINT"),
+                (OsSignal::SIGTERM, 143, "SIGTERM"),
+            ] {
+                let dir = std::env::temp_dir().join(format!(
+                    "archsig-signal-{}-{kind}-{name}",
+                    std::process::id()
+                ));
+                let _ = std::fs::remove_dir_all(&dir);
+                std::fs::create_dir(&dir).unwrap();
+                std::fs::write(
+                    dir.join("d.json"),
+                    include_bytes!("../tests/fixtures/counter.atoms.json"),
+                )
+                .unwrap();
+                std::fs::write(
+                    dir.join("l.law"),
+                    include_bytes!("../tests/fixtures/counter.law"),
+                )
+                .unwrap();
+                std::fs::write(
+                    dir.join("a.json"),
+                    include_bytes!("../tests/fixtures/counter.archmap.json"),
+                )
+                .unwrap();
+                let mut child = Running(
+                    Command::new(std::env::current_exe().unwrap())
+                        .current_dir(&dir)
+                        .args([
+                            "--ignored",
+                            "--exact",
+                            "tests::signal_cli_child",
+                            "--nocapture",
+                            "--test-threads=1",
+                        ])
+                        .env("ARCHSIG_TEST_CHILD_KIND", kind)
+                        .stdin(Stdio::piped())
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::piped())
+                        .spawn()
+                        .unwrap(),
+                );
+                let mut stdout = BufReader::new(child.0.stdout.take().unwrap());
+                loop {
+                    let mut line = String::new();
+                    assert!(stdout.read_line(&mut line).unwrap() > 0, "同期合図前に終了");
+                    if line.trim() == "ARCHSIG_READY" {
+                        break;
+                    }
+                }
+                kill(Pid::from_raw(child.0.id().try_into().unwrap()), signal).unwrap();
+                child.0.stdin.take().unwrap().write_all(b"x").unwrap();
+                let mut receipt = String::new();
+                stdout.read_to_string(&mut receipt).unwrap();
+                assert_eq!(child.0.wait().unwrap().code(), Some(code));
+                assert_eq!(receipt.matches('\n').count(), 1);
+                let receipt = parse(receipt.trim_end().as_bytes()).unwrap();
+                assert_eq!(text(field(&receipt, "status")), "interrupted");
+                assert_eq!(
+                    field(&receipt, "exit_code").value,
+                    JValue::Num(code.to_string())
+                );
+                let JValue::Arr(issues) = &field(&receipt, "issues").value else {
+                    panic!("issues")
+                };
+                assert!(issues.iter().any(|i| text(field(i, "code")) == "cancelled"
+                    && text(field(field(i, "details"), "signal")) == name));
+                let JValue::Obj(fields) = &receipt.value else {
+                    panic!("receipt")
+                };
+                assert!(!fields.iter().any(|(name, _)| name == "result"));
+                assert!(!dir.join("out").exists());
+                assert!(!std::fs::read_dir(&dir).unwrap().any(|e| {
+                    e.unwrap()
+                        .file_name()
+                        .to_string_lossy()
+                        .contains(".archsig-")
+                }));
+            }
+        }
     }
 }
