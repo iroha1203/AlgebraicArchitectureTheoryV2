@@ -2717,6 +2717,7 @@ fn evaluate_observed_with_validator(
     let mut answers: Vec<Option<Answer>> = vec![None; prepared.requests().requests().len()];
     let mut issues = Vec::new();
     let mut internal = false;
+    let mut not_implemented = None;
     {
         let environment =
             Environment::with_requests(prepared.inputs(), prepared.requests().requests(), control)
@@ -2826,6 +2827,13 @@ fn evaluate_observed_with_validator(
                 validate_answer(evaluator.environment, evaluator.graph, request, &a)?;
                 Ok(a)
             });
+            let result = match result {
+                Err(Failure::NotImplemented { location, feature }) => {
+                    not_implemented = Some((declaration.name.clone(), location, feature.clone()));
+                    Err(Failure::Internal(format!("未実装の評価経路: {feature}")))
+                }
+                result => result,
+            };
             match result {
                 Ok(answer) => {
                     issues.extend(answer.reasons.iter().cloned());
@@ -2840,13 +2848,6 @@ fn evaluate_observed_with_validator(
                         };
                         issues.push(Reason::stopped(&request.id, reason));
                     }
-                }
-                Err(Failure::NotImplemented { location, feature }) => {
-                    return Err(EvaluationFailure::NotImplemented {
-                        declaration: declaration.name.clone(),
-                        location,
-                        feature,
-                    });
                 }
                 Err(failure) => {
                     let stopped = matches!(&failure, Failure::Stop(_));
@@ -2922,7 +2923,7 @@ fn evaluate_observed_with_validator(
     } else {
         "complete"
     };
-    Ok(ObservedEvaluation {
+    let evaluation = ObservedEvaluation {
         prepared,
         nodes: graph.nodes,
         #[cfg(test)]
@@ -2940,7 +2941,17 @@ fn evaluate_observed_with_validator(
         answers,
         issues,
         status,
-    })
+    };
+    if let Some((declaration, location, feature)) = not_implemented {
+        Err(EvaluationFailure::NotImplemented {
+            declaration,
+            location,
+            feature,
+            partial: Box::new(evaluation),
+        })
+    } else {
+        Ok(evaluation)
+    }
 }
 
 #[cfg(test)]
@@ -9046,6 +9057,64 @@ reading Calc {{
             rejects_named_prefix(&result, &full);
         }
     }
+    #[test]
+    fn unimplemented_evaluation_retains_verified_prefix_and_stops_later_answers() {
+        use crate::observed::{input::InputSources, prepare_observed};
+        let sources = InputSources::from_bytes(
+            vec![include_bytes!("../../tests/fixtures/counter.atoms.json").to_vec()],
+            include_bytes!("../../tests/fixtures/counter.law").to_vec(),
+            include_bytes!("../../tests/fixtures/counter.archmap.json").to_vec(),
+        );
+        let mut control = named_call_quiet();
+        let prepared = prepare_observed(
+            sources,
+            &[
+                "n=evaluate(CountCheck.amount,s=@v/s)",
+                "fail=check(CountAudit.bounded,s=@v/s)",
+                "last=check(CountCheck.nonnegative,s=@v/s)",
+            ],
+            &mut control,
+        )
+        .unwrap();
+        let error = evaluate_observed_with_validator(
+            prepared,
+            &mut control,
+            |environment, graph, request, answer| {
+                if request.id == "fail" {
+                    Err(ValidationFailure::UnsupportedExpression {
+                        location: Location::Law { span: (0, 0) },
+                        feature: "注入した評価経路の欠落".into(),
+                    })
+                } else {
+                    environment.validate_answer(graph, request, answer)
+                }
+            },
+        )
+        .unwrap_err();
+        assert!(
+            error.wire().is_none(),
+            "既存APIの未実装と数学的未決を混ぜない"
+        );
+        let EvaluationFailure::NotImplemented { partial, .. } = error else {
+            panic!("未実装の内部失敗")
+        };
+        assert_eq!(partial.status(), "error");
+        assert_eq!(partial.answers[0].status, Decision::Established);
+        assert_eq!(
+            data_scalar_at(&partial, partial.answers[0].outputs["value"].0),
+            &Scalar::Z(num_bigint::BigInt::from(2))
+        );
+        for answer in &partial.answers[1..] {
+            assert_eq!(answer.status, Decision::Undetermined);
+            assert!(
+                answer
+                    .reasons
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+            );
+        }
+    }
+
     #[test]
     fn named_calls_keep_unimplemented_callee_forms_distinct_from_internal_failure() {
         let normal = evaluate_observed_bytes(

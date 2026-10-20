@@ -294,7 +294,7 @@ fn cli_misuse_is_usage() {
         assert!(!dir.join(out).join("inputs/law.law").exists());
         assert!(!dir.join(out).join("inputs/definitions/0.json").exists());
     }
-    // 提供しない run は、出力を作らない usage とする。
+    // 定義とArchMapの欠けるrunは、出力を作らないusageとする。
     let r = run(
         &dir,
         &[
@@ -361,61 +361,6 @@ fn cli_misuse_is_usage() {
     let res = notified(&dir, &r, "invalid", 64);
     let issue = &arr(get(&res, "issues"))[0];
     assert_eq!(s(get(get(issue, "details"), "argument")), "--unknown");
-}
-
-#[test]
-fn public_run_with_valid_counter_inputs_and_request_is_usage_without_delivery() {
-    use archsig::observed::{control::Control, input::InputSources, prepare_observed};
-
-    let dir = workdir("run-valid-counter-usage");
-    write(
-        &dir,
-        "counter.atoms.json",
-        include_bytes!("fixtures/counter.atoms.json"),
-    );
-    write(&dir, "counter.law", include_bytes!("fixtures/counter.law"));
-    write(
-        &dir,
-        "counter.archmap.json",
-        include_bytes!("fixtures/counter.archmap.json"),
-    );
-    let ask = "a=evaluate(CountCheck.amount,s=@v/s)";
-    // 公開 run の拒否を、入力や問いの不正による拒否と区別する。
-    let sources = InputSources::from_bytes(
-        vec![std::fs::read(dir.join("counter.atoms.json")).unwrap()],
-        std::fs::read(dir.join("counter.law")).unwrap(),
-        std::fs::read(dir.join("counter.archmap.json")).unwrap(),
-    );
-    let prepared = prepare_observed(sources, &[ask], &mut Control::unlimited()).unwrap();
-    assert_eq!(prepared.requests().requests().len(), 1);
-    assert_eq!(
-        prepared.requests().requests()[0].declaration(),
-        "CountCheck.amount"
-    );
-
-    let r = run(
-        &dir,
-        &[
-            "run",
-            "--atom-definition",
-            "counter.atoms.json",
-            "--law",
-            "counter.law",
-            "--archmap",
-            "counter.archmap.json",
-            "--ask",
-            ask,
-            "--out",
-            "run-output",
-        ],
-    );
-    assert_eq!(r.code, 64, "{}", r.stderr);
-    assert_eq!(s(get(&r.receipt, "format")), "archsig.receipt/1");
-    assert_eq!(s(get(&r.receipt, "status")), "invalid");
-    assert_eq!(num(get(&r.receipt, "exit_code")), 64);
-    // receipt に result がなく、配送先もないため回答や導出は生成されない。
-    assert!(!has(&r.receipt, "result"));
-    assert!(!dir.join("run-output").exists());
 }
 
 #[test]

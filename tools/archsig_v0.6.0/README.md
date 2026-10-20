@@ -4,7 +4,7 @@
 成立・反証・未決を、型と導出元を持つ結果として計算する Rust クレートである。
 旧版 [`tools/archsig`](../archsig/) とは独立している。
 
-## ビルドと入力検査
+## ビルドと利用
 
 リポジトリルートで実行する。Rust 2024 edition 対応のツールチェーンが必要であり、
 `--offline` は依存 crate がローカルに取得済みであることを前提とする。
@@ -15,7 +15,28 @@ export PATH="$PWD/tools/archsig_v0.6.0/target/debug:$PATH"
 archsig version
 ```
 
+三入力と問いを一回の run へ渡す。`--out` には存在しないディレクトリを指定する。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/counter.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/counter.archmap.json \
+  --ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
+  --ask 'ok=check(CountCheck.nonnegative,s=@v/s)' \
+  --ask 'audit=check(CountAudit.bounded,s=@v/s)' --out result-counter
+jq '.answers[] | {id, status}' result-counter/result.json
+jq -r '. as $r | .answers[] | select(.id == "n") | .outputs.value.node as $id
+  | $r.nodes[] | select(.id == $id) | .value' result-counter/result.json
+```
+
+回答は3件とも established、値は2で、終了コードは0となる。値を12へ変えるとboundedは
+refutedで終了コード1、count Atomを除くと不足位置付きundeterminedで終了コード2となる。
+型、導出、支持と入力コピーは同じresult.jsonから確認できる。
+
+### 入力だけの検査
+
 共通定義・Law・ArchMap を一回の check で検査する。
+
 `--out` には存在しないディレクトリを指定する（出力先が既に存在する場合は別の名前にする）。
 
 ```bash

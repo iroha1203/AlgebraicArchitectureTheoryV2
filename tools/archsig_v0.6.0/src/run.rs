@@ -1,7 +1,9 @@
-//! `check` と `version` の実行(実行仕様 §§1・5–7)。
+//! CLI の入力検査・要求評価・成果物配送(実行仕様 §§1・5–7)。
 
 mod args;
+mod evaluate;
 mod output;
+pub use evaluate::{run_internal_outcome, run_requests};
 
 pub use args::parse_args;
 pub use output::peak_rss_bytes;
@@ -47,8 +49,28 @@ pub struct CheckArgs {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+pub struct RunArgs {
+    pub inputs: CheckArgs,
+    pub asks: Vec<String>,
+    pub reuse: Option<PathBuf>,
+    pub time_ms: Option<String>,
+    pub memory_mib: Option<String>,
+}
+
+impl RunArgs {
+    pub fn limits(&self) -> crate::observed::control::Limits {
+        // 実測値はu128。これを超える正の予算を切り詰めず、到達不能な上限として扱う。
+        crate::observed::control::Limits {
+            time_ms: self.time_ms.as_ref().and_then(|s| s.parse().ok()),
+            memory_mib: self.memory_mib.as_ref().and_then(|s| s.parse().ok()),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum Command {
     Check(CheckArgs),
+    Run(RunArgs),
     Version,
 }
 
@@ -66,7 +88,7 @@ pub struct Outcome {
     pub exit_code: u8,
     pub result: Option<PathBuf>,
     pub stderr: Vec<String>,
-    pub issues: Vec<ResultIssue>,
+    pub issues: Vec<Json>,
 }
 
 impl Outcome {
@@ -80,12 +102,7 @@ impl Outcome {
             entries.push(("result", Json::str(r.to_string_lossy().into_owned())));
         }
         if !self.issues.is_empty() {
-            let mut issues: Vec<_> = self.issues.iter().collect();
-            issues.sort_by_key(|i| i.sort_key());
-            entries.push((
-                "issues",
-                Json::Arr(issues.into_iter().map(ResultIssue::wire).collect()),
-            ));
+            entries.push(("issues", Json::Arr(self.issues.clone())));
         }
         Json::Obj(
             entries

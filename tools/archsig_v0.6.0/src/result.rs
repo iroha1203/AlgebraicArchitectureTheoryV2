@@ -11,6 +11,7 @@ use std::collections::{BTreeMap, BTreeSet};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Status {
     Complete,
+    Partial,
     Invalid,
     Unsupported,
     Interrupted,
@@ -21,6 +22,7 @@ impl Status {
     pub fn wire(self) -> &'static str {
         match self {
             Status::Complete => "complete",
+            Status::Partial => "partial",
             Status::Invalid => "invalid",
             Status::Unsupported => "unsupported",
             Status::Interrupted => "interrupted",
@@ -473,7 +475,7 @@ pub struct InputIdentity {
 }
 
 impl InputIdentity {
-    fn wire(&self) -> Json {
+    pub(crate) fn wire(&self) -> Json {
         let mut m = BTreeMap::new();
         m.insert("id".to_owned(), Json::str(self.id.clone()));
         m.insert("kind".to_owned(), Json::str(self.kind));
@@ -534,6 +536,7 @@ pub fn exit_code(status: Status, signal: Option<Signal>, issues: &[ResultIssue])
         }
         Status::Unsupported => 69,
         Status::Complete => 0,
+        Status::Partial => 2,
     }
 }
 
