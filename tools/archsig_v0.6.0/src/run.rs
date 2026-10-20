@@ -3,6 +3,7 @@
 mod args;
 mod evaluate;
 mod output;
+mod reuse;
 pub use evaluate::{run_internal_outcome, run_requests};
 
 pub use args::parse_args;

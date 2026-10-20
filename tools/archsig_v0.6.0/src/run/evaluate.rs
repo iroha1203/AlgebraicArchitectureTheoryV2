@@ -163,9 +163,19 @@ pub fn run_requests(
             }
         },
     };
-    if args.reuse.is_some() {
-        return failure(signals, "reuse", "再利用候補の検査経路は未実装".into());
-    }
+    let rejected = match super::reuse::inspect(args.reuse.as_deref(), control) {
+        Ok(rejected) => rejected,
+        Err(reason) => {
+            return output::notify(
+                signals,
+                Status::Interrupted,
+                75,
+                prior_signal(control),
+                vec![reason.wire()],
+                Vec::new(),
+            );
+        }
+    };
     let evaluation = match evaluate_observed(prepared, control) {
         Ok(result) => result,
         Err(EvaluationFailure::NotImplemented { partial, .. }) => *partial,
@@ -177,7 +187,7 @@ pub fn run_requests(
             );
         }
     };
-    deliver(io, signals, args, evaluation, started, control)
+    deliver(io, signals, args, evaluation, rejected, started, control)
 }
 
 fn deliver(
@@ -185,6 +195,7 @@ fn deliver(
     signals: &mut dyn Signals,
     args: &RunArgs,
     evaluation: ObservedEvaluation,
+    rejected: Vec<Json>,
     started: Instant,
     control: &Control,
 ) -> Outcome {
@@ -278,10 +289,10 @@ fn deliver(
         (
             "reuse",
             Json::obj([
-                ("requested", Json::Bool(false)),
+                ("requested", Json::Bool(args.reuse.is_some())),
                 ("accepted_nodes", Json::Nat(0)),
                 ("recomputed_nodes", Json::Nat(evaluation.nodes.len() as u64)),
-                ("rejected", Json::Arr(Vec::new())),
+                ("rejected", Json::Arr(rejected)),
             ]),
         ),
         (

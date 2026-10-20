@@ -1,0 +1,301 @@
+//! 再利用候補を採用しない全再計算と、現在入力への帰属。
+mod common;
+use archsig::canonical::Json;
+use archsig::json::{JNode, JValue};
+use common::cli::*;
+use std::path::{Path, PathBuf};
+const D: &[u8] = include_bytes!("fixtures/counter.atoms.json");
+const L: &str = include_str!("fixtures/counter.law");
+const A: &str = include_str!("fixtures/counter.archmap.json");
+const ASKS: [&str; 2] = [
+    "n=evaluate(CountCheck.amount,s=@v/s)",
+    "audit=check(CountAudit.bounded,s=@v/s)",
+];
+fn setup(name: &str) -> PathBuf {
+    let dir = workdir(name);
+    for (name, bytes) in [
+        ("d.json", D),
+        ("l.law", L.as_bytes()),
+        ("a.json", A.as_bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    dir
+}
+fn execute(dir: &Path, out: &str, reuse: Option<&str>, asks: &[&str]) -> Run {
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--out",
+        out,
+    ];
+    if let Some(path) = reuse {
+        args.extend(["--reuse", path]);
+    }
+    for ask in asks {
+        args.extend(["--ask", ask]);
+    }
+    run(dir, &args)
+}
+fn checked(dir: &Path, r: &Run, code: i32, reused: bool) -> JNode {
+    assert_eq!(r.code, code, "{}", r.stdout);
+    let result = result_json(dir, r);
+    let reuse = get(&result, "reuse");
+    assert_eq!(get(reuse, "requested").value, JValue::Bool(reused));
+    assert_eq!(num(get(reuse, "accepted_nodes")), 0);
+    assert_eq!(
+        num(get(reuse, "recomputed_nodes")),
+        arr(get(&result, "nodes")).len() as u64
+    );
+    assert_eq!(num(get(&result, "exit_code")), code as u64);
+    assert!(!has(&r.receipt, "issues"), "候補の拒否は実行失敗にしない");
+    result
+}
+fn value(result: &JNode) -> &str {
+    let output = get(get(&arr(get(result, "answers"))[0], "outputs"), "value");
+    s(get(
+        arr(get(result, "nodes"))
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(output, "node")))
+            .unwrap(),
+        "value",
+    ))
+}
+// 候補の改変だけに用いる。期待値は手計算した2/12とLawの条件で明記する。
+fn owned(node: &JNode) -> Json {
+    match &node.value {
+        JValue::Bool(b) => Json::Bool(*b),
+        JValue::Num(n) => Json::Nat(n.parse().unwrap()),
+        JValue::Str(s) => Json::str(s),
+        JValue::Arr(values) => Json::Arr(values.iter().map(owned).collect()),
+        JValue::Obj(fields) => Json::Obj(
+            fields
+                .iter()
+                .map(|(key, value)| (key.clone(), owned(value)))
+                .collect(),
+        ),
+        JValue::Null => panic!("製品結果にnullはない"),
+    }
+}
+fn field_mut<'a>(json: &'a mut Json, name: &str) -> &'a mut Json {
+    let Json::Obj(fields) = json else {
+        panic!("object")
+    };
+    fields.get_mut(name).unwrap()
+}
+fn first_node(json: &mut Json) -> &mut Json {
+    let Json::Arr(nodes) = field_mut(json, "nodes") else {
+        panic!("nodes")
+    };
+    &mut nodes[0]
+}
+
+#[test]
+fn valid_reuse_recomputes_current_values_with_exact_counts() {
+    let dir = setup("valid-reuse");
+    let previous = execute(&dir, "previous", None, &ASKS);
+    let plain = checked(&dir, &previous, 0, false);
+    let bytes = std::fs::read(dir.join("previous/result.json")).unwrap();
+    let reused = execute(&dir, "out", Some("previous"), &ASKS);
+    let result = checked(&dir, &reused, 0, true);
+    assert_eq!(value(&result), "2");
+    assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    for field in [
+        "requests",
+        "answers",
+        "nodes",
+        "inputs",
+        "declarations",
+        "vocabularies",
+    ] {
+        assert_eq!(get(&plain, field), get(&result, field), "{field}");
+    }
+    assert_eq!(
+        std::fs::read(dir.join("previous/result.json")).unwrap(),
+        bytes
+    );
+}
+
+#[test]
+fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() {
+    let dir = setup("invalid-reuse");
+    let previous = execute(&dir, "previous", None, &ASKS);
+    let source = result_json(&dir, &previous);
+    for kind in [
+        "version",
+        "unknown_type",
+        "wrong_payload",
+        "forward",
+        "duplicate_id",
+        "unknown_field",
+        "null",
+        "syntax",
+        "duplicate_key",
+    ] {
+        let mut candidate = owned(&source);
+        let bytes = match kind {
+            "syntax" => b"{".to_vec(),
+            "duplicate_key" => {
+                b"{\"format\":\"archsig.result/2\",\"format\":\"archsig.result/2\"}".to_vec()
+            }
+            _ => {
+                match kind {
+                    "version" => {
+                        *field_mut(&mut candidate, "format") = Json::str("archsig.result/999")
+                    }
+                    "unknown_type" => {
+                        *field_mut(first_node(&mut candidate), "type") = Json::str("Invented")
+                    }
+                    "wrong_payload" => {
+                        *field_mut(first_node(&mut candidate), "type") = Json::str("Bool")
+                    }
+                    "forward" => {
+                        *field_mut(first_node(&mut candidate), "arguments") =
+                            Json::Arr(vec![Json::obj([("node", Json::str("future"))])])
+                    }
+                    "duplicate_id" => {
+                        let Json::Arr(nodes) = field_mut(&mut candidate, "nodes") else {
+                            panic!("nodes")
+                        };
+                        let id = field_mut(&mut nodes[0], "id").clone();
+                        *field_mut(&mut nodes[1], "id") = id;
+                    }
+                    "unknown_field" => {
+                        let Json::Obj(fields) = &mut candidate else {
+                            panic!("object")
+                        };
+                        fields.insert("extra".into(), Json::Bool(true));
+                    }
+                    "null" => {}
+                    _ => unreachable!(),
+                }
+                let text = candidate.canonical();
+                if kind == "null" {
+                    text.replacen("\"command\":\"run\"", "\"command\":null", 1)
+                        .into_bytes()
+                } else {
+                    text.into_bytes()
+                }
+            }
+        };
+        let name = format!("candidate-{kind}");
+        std::fs::create_dir(dir.join(&name)).unwrap();
+        std::fs::write(dir.join(&name).join("result.json"), &bytes).unwrap();
+        let out = format!("out-{kind}");
+        let run = execute(&dir, &out, Some(&name), &ASKS);
+        let result = checked(&dir, &run, 0, true);
+        assert_eq!(value(&result), "2");
+        let rejected = arr(get(get(&result, "reuse"), "rejected"));
+        assert!(!rejected.is_empty(), "{kind}");
+        assert_eq!(s(get(get(&rejected[0], "details"), "argument")), "--reuse");
+        assert!(!s(get(&rejected[0], "message")).is_empty());
+        assert_eq!(
+            std::fs::read(dir.join(&name).join("result.json")).unwrap(),
+            bytes
+        );
+    }
+}
+
+#[test]
+fn reuse_never_imports_old_values_bindings_laws_or_provenance() {
+    let dir = setup("changed-reuse");
+    let previous = execute(&dir, "previous", None, &ASKS);
+    checked(&dir, &previous, 0, false);
+    std::fs::write(
+        dir.join("a.json"),
+        A.replace("\"value\": \"2\"", "\"value\": \"12\"")
+            .replace("\"model\"", "\"changed-source\""),
+    )
+    .unwrap();
+    let run = execute(&dir, "changed", Some("previous"), &ASKS);
+    let result = checked(&dir, &run, 1, true);
+    assert_eq!(value(&result), "12");
+    let current_bytes = std::fs::read(dir.join("a.json")).unwrap();
+    let identity = arr(get(&result, "inputs"))
+        .iter()
+        .find(|i| s(get(i, "id")) == "archmap")
+        .unwrap();
+    assert_eq!(
+        s(get(identity, "bytes_digest")),
+        archsig::canonical::sha256_digest(&current_bytes)
+    );
+    assert_eq!(
+        s(get(&arr(get(&result, "answers"))[1], "status")),
+        "refuted"
+    );
+    assert_eq!(
+        std::fs::read(dir.join("changed/inputs/archmap.json")).unwrap(),
+        std::fs::read(dir.join("a.json")).unwrap()
+    );
+    std::fs::write(dir.join("l.law"), L.replace("<= 10", "<= 20")).unwrap();
+    let run = execute(&dir, "law-changed", Some("previous"), &ASKS);
+    let result = checked(&dir, &run, 0, true);
+    assert_eq!(value(&result), "12");
+    assert_eq!(
+        s(get(&arr(get(&result, "answers"))[1], "status")),
+        "established"
+    );
+    let renamed = A
+        .replace("\"id\": \"s\"", "\"id\": \"t\"")
+        .replace("\"subject\": \"s\"", "\"subject\": \"t\"");
+    std::fs::write(dir.join("a.json"), renamed).unwrap();
+    let asks = ["n=evaluate(CountCheck.amount,s=@v/t)"];
+    let run = execute(&dir, "binding-changed", Some("previous"), &asks);
+    let result = checked(&dir, &run, 0, true);
+    assert_eq!(value(&result), "2");
+    assert!(
+        arr(get(&result, "nodes"))
+            .iter()
+            .flat_map(|n| arr(get(n, "support")))
+            .all(|p| s(get(p, "subject")) == "t")
+    );
+}
+
+#[test]
+fn unavailable_and_linked_candidates_do_not_change_inputs_or_outputs() {
+    let dir = setup("unavailable-reuse");
+    std::fs::write(dir.join("not-directory"), b"sentinel").unwrap();
+    std::fs::create_dir(dir.join("empty")).unwrap();
+    for (index, candidate) in ["missing", "not-directory", "empty"].iter().enumerate() {
+        let r = execute(&dir, &format!("out-{index}"), Some(candidate), &ASKS);
+        let result = checked(&dir, &r, 0, true);
+        assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
+        assert_eq!(value(&result), "2");
+    }
+    #[cfg(unix)]
+    {
+        let prior = execute(&dir, "previous", None, &ASKS);
+        checked(&dir, &prior, 0, false);
+        std::os::unix::fs::symlink("previous", dir.join("linked-dir")).unwrap();
+        std::fs::create_dir(dir.join("linked-file")).unwrap();
+        std::os::unix::fs::symlink(
+            "../previous/result.json",
+            dir.join("linked-file/result.json"),
+        )
+        .unwrap();
+        for candidate in ["linked-dir", "linked-file"] {
+            let r = execute(&dir, &format!("out-{candidate}"), Some(candidate), &ASKS);
+            let result = checked(&dir, &r, 0, true);
+            assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
+        }
+    }
+    assert_eq!(
+        std::fs::read(dir.join("not-directory")).unwrap(),
+        b"sentinel"
+    );
+    std::fs::write(dir.join("d.json"), b"{").unwrap();
+    let r = execute(&dir, "invalid-input", Some("missing"), &ASKS);
+    assert_eq!(r.code, 65);
+    assert!(!has(&r.receipt, "result"));
+    assert!(!dir.join("invalid-input").exists());
+    assert!(
+        arr(get(&r.receipt, "issues"))
+            .iter()
+            .all(|i| s(get(i, "code")) != "usage")
+    );
+}
