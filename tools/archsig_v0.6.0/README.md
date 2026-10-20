@@ -105,6 +105,12 @@ view は全 parameter の束縛を必要とし、Law の未束縛 parameter は�
 計算は依存順、回答は指定順に返し、循環は要求 ID と依存グラフを保持して拒否する。
 `Control` は入力検査・要求解決・評価で共有し、呼出し側が予算と計測・取消通知を設定できる。
 
+複数の読取りで同じ検査済み三表を使う場合は、`PreparedObserved::shared_inputs()` の
+不変handleを `prepare_shared_observed(handle, &asks, &mut control)` に渡す。
+準備・評価結果・要求失敗は同じ入力を保持し、要求と回答・証拠graphはbatchごとに構成する。
+共有handleと要求失敗の `PrepareFailure::Requests.inputs` は `Arc<CheckedInputs>` を使う。
+既存の所有入力APIもこの入口を使い、入力の再読込み・表の複製を行わない。
+
 検査済み三入力の対象構成を読むには
 `construction::construct(&checked, "CountCheck", "v", "s", &mut control)` を使う。
 `universe()` は全snapshotの存在事実と既知field Atom、`base()` と `components()` は
