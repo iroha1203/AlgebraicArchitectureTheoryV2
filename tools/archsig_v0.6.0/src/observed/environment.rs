@@ -635,6 +635,28 @@ impl<'a> Environment<'a> {
             let previous_universal = self.universal_context.replace(None);
             let previous_completion = self.completion_values.replace(Vec::new());
             let result = (|| {
+                if node.ty == NodeType::ObservationPlan {
+                    super::needed::validate_node(graph, node, limit, &self.control)?;
+                    let request = graph
+                        .requests
+                        .get(context.request)
+                        .ok_or("planの元要求がない")?;
+                    if self
+                        .original_requests
+                        .is_some_and(|original| original.get(context.request) != Some(request))
+                    {
+                        return Err("planの要求が元の解決済み要求と違う".into());
+                    }
+                    for (index, answer) in super::needed::sources(graph, request, &self.control)? {
+                        if self.original_requests.is_some_and(|original| {
+                            original.get(index) != graph.requests.get(index)
+                        }) {
+                            return Err("planの依存要求が元の解決済み要求と違う".into());
+                        }
+                        self.validate_answer(graph, &graph.requests[index], answer)?;
+                    }
+                    return Ok(());
+                }
                 if let Some(case) = context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
@@ -3755,6 +3777,11 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
+            if request.kind == QuestionKind::Needed {
+                super::needed::validate_answer(graph, request, answer, &self.control)?;
+                let reference = answer.outputs["plan"];
+                return self.validate_at(graph, graph.get(reference)?, reference.0);
+            }
             if let Some(expected) = self.unavailable_binding_answer(graph, request)? {
                 graph.validate_answer(answer, request.kind == QuestionKind::Check)?;
                 if answer != &expected {
@@ -6202,7 +6229,7 @@ impl<'a> Environment<'a> {
                 .requests
                 .get(self.current_context(graph).request)
                 .ok_or("実instance元Requestがない")?;
-            if request.declaration() != declaration.name {
+            if request.declaration() != Some(declaration.name.as_str()) {
                 return Err("instance Sourceが別宣言".into());
             }
             let (expected, variables, base) = self.family_instance_inputs(graph, index)?;
@@ -6339,7 +6366,7 @@ impl<'a> Environment<'a> {
             }
 
             if let Some(request) = graph.requests.get(self.current_context(graph).request) {
-                if request.declaration() != declaration.name {
+                if request.declaration() != Some(declaration.name.as_str()) {
                     return Err("元SourceがRequest宣言と違う".into());
                 }
                 for binding in bindings {

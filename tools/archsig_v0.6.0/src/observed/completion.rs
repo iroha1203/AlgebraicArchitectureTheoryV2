@@ -606,7 +606,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("補完Seedの元宣言がない")?;
         let (params, body, guard, ty) = match &declaration.signature {
             Signature::View {
@@ -984,7 +984,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("補完caseの元宣言がない")?;
         let params = match &declaration.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
@@ -1092,7 +1092,8 @@ impl Environment<'_> {
             seen.push(case.member);
             self.recheck_evaluation(graph, evaluation)?;
             let (expression, bindings, v) = self.evaluation(graph, evaluation)?;
-            let declaration = &self.inputs.law().declarations[request.declaration()];
+            let declaration = &self.inputs.law().declarations
+                [request.declaration().ok_or("元要求に宣言がない")?];
             let body = match &declaration.signature {
                 Signature::View { body, .. } | Signature::Law { body, .. } => *body,
                 _ => return Err("補完の対象宣言が違う".into()),
@@ -1228,7 +1229,8 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<(Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
         let request = &graph.requests[seed.context.request];
-        let declaration = &self.inputs.law().declarations[request.declaration()];
+        let declaration =
+            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let body = match &declaration.signature {
             Signature::View { body, .. } | Signature::Law { body, .. } => *body,
             _ => return Err("補完producer宣言がない".into()),
@@ -1349,7 +1351,8 @@ impl Environment<'_> {
         {
             let seed = self.completion_seed(graph, *body)?;
             let request = &graph.requests[seed.context.request];
-            let d = &self.inputs.law().declarations[request.declaration()];
+            let d = &self.inputs.law().declarations
+                [request.declaration().ok_or("元要求に宣言がない")?];
             let Signature::Law {
                 role: r, guard: g, ..
             } = &d.signature
@@ -1724,7 +1727,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("Seed宣言がない")?;
         let (params, body, guard, ty) = match &d.signature {
             Signature::View {

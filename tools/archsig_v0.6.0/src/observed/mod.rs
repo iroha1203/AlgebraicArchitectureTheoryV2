@@ -7,6 +7,7 @@ mod data;
 mod environment;
 pub mod evaluate;
 mod finite;
+mod needed;
 mod numeric;
 mod path_value;
 mod quantifier;

@@ -51,7 +51,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("射影条件の元宣言がない")?;
         let params = match &declaration.signature {
             crate::law::model::Signature::View { params, .. }

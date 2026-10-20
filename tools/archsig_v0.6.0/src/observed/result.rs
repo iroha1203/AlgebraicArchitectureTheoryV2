@@ -61,6 +61,7 @@ pub(crate) enum NodeType {
     Proposition,
     Evidence,
     Domain,
+    ObservationPlan,
 }
 impl NodeType {
     fn wire(&self) -> Json {
@@ -72,6 +73,7 @@ impl NodeType {
             Self::Proposition => Json::str("Proposition"),
             Self::Evidence => Json::str("Evidence"),
             Self::Domain => Json::str("Domain"),
+            Self::ObservationPlan => Json::str("ObservationPlan"),
         }
     }
 }
@@ -891,6 +893,11 @@ pub(crate) fn conditional_bool(guard: Option<bool>, body: Option<bool>) -> Optio
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Payload {
+    ObservationPlan {
+        request: String,
+        requirements: Vec<super::needed::Requirement>,
+        blockers: Vec<Reason>,
+    },
     CompletionSeed {
         location: Location,
         parameters: Vec<(String, Type)>,
@@ -1029,6 +1036,26 @@ pub(crate) enum Payload {
 impl Payload {
     fn wire(&self) -> Json {
         match self {
+            Self::ObservationPlan {
+                request,
+                requirements,
+                blockers,
+            } => Json::obj([
+                ("request", Json::str(request)),
+                (
+                    "requirements",
+                    Json::Arr(
+                        requirements
+                            .iter()
+                            .map(super::needed::Requirement::wire)
+                            .collect(),
+                    ),
+                ),
+                (
+                    "blockers",
+                    Json::Arr(blockers.iter().map(Reason::wire).collect()),
+                ),
+            ]),
             Self::TypeDomain { ty } => {
                 Json::obj([("kind", Json::str("type")), ("type", ty.wire())])
             }
@@ -3942,6 +3969,9 @@ impl Graph {
             }
         }
         match (&node.ty, &node.payload) {
+            (NodeType::ObservationPlan, Some(Payload::ObservationPlan { .. })) => {
+                super::needed::validate_node(self, &node, self.nodes.len(), &self.control)?;
+            }
             (NodeType::Proposition, Some(Payload::ProjectionCondition { .. }))
             | (NodeType::Evidence, Some(Payload::ProjectionCounterexample { .. })) => {
                 self.projection_check_shape(&node)?;

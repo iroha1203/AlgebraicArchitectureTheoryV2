@@ -735,7 +735,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("全域元Requestの宣言がない")?;
         let parameters = match &declaration.signature {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
@@ -2380,7 +2380,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("全域LawInstance元宣言がない")?;
         let Signature::Law {
             body: original,
@@ -2688,7 +2688,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("全域Answer元宣言がない")?;
         let params = match &declaration.signature {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
@@ -3032,7 +3032,11 @@ impl Environment<'_> {
         if self.universal_finite_template(graph, request, *span, bindings)? {
             return Ok(false);
         }
-        if let Some(declaration) = self.inputs.law().declarations.get(request.declaration())
+        if let Some(declaration) = self
+            .inputs
+            .law()
+            .declarations
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             && let Signature::Law { body, .. } = &declaration.signature
             && self
                 .universal_quantifier_plan(graph, *body, bindings)?
@@ -3093,7 +3097,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("全域/有限族の元宣言がない")?;
         let Signature::Law {
             params,
@@ -3425,7 +3429,11 @@ impl Environment<'_> {
                 .transpose()?
                 .flatten());
         if plan.is_none()
-            && let Some(declaration) = self.inputs.law().declarations.get(request.declaration())
+            && let Some(declaration) = self
+                .inputs
+                .law()
+                .declarations
+                .get(request.declaration().ok_or("元要求に宣言がない")?)
             && let Signature::Law { body, .. } = &declaration.signature
         {
             plan = self
@@ -3441,7 +3449,7 @@ impl Environment<'_> {
                 .inputs
                 .law()
                 .declarations
-                .get(request.declaration())
+                .get(request.declaration().ok_or("元要求に宣言がない")?)
                 .ok_or("全域Source元宣言がない")?;
             if !(declaration.span.0 <= span.0 && span.1 <= declaration.span.1) {
                 return Err("全域Sourceの元ASTが別Request宣言に属す".into());

@@ -118,7 +118,8 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let declaration = &self.inputs.law().declarations[request.declaration()];
+        let declaration =
+            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let mut enumeration = super::super::finite::Enumeration::default();
         match &argument.value {
             Selector::Subject { snapshot, subject } => {
@@ -196,7 +197,9 @@ impl Environment<'_> {
             data::check(value, self.inputs.law(), &self.control)?;
         }
         let fixed = self.dependent_fixed_value(graph, request, &p.name)?;
-        let reading = &self.inputs.law().declarations[request.declaration()].reading;
+        let reading = &self.inputs.law().declarations
+            [request.declaration().ok_or("元要求に宣言がない")?]
+        .reading;
         let mut result = DependentStep {
             enumeration: super::super::finite::Enumeration::default(),
             missing: vec![],
@@ -645,8 +648,9 @@ impl Environment<'_> {
             return Ok(false);
         };
         self.validate_at(graph, graph.get(source)?, source.0)?;
-        let d = &self.inputs.law().declarations
-            [graph.requests[graph.context_at(source.0).request].declaration()];
+        let d = &self.inputs.law().declarations[graph.requests[graph.context_at(source.0).request]
+            .declaration()
+            .ok_or("元要求に宣言がない")?];
         let context = self.current_context(graph);
         if let Some(index) = context.instance {
             let record = graph
