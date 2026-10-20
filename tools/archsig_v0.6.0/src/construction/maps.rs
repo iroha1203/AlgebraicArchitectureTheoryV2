@@ -1,11 +1,40 @@
-//! 原始correspondenceの実作用とConfiguration保存を、現在の入力から検査する。
+//! 原始correspondenceと内部arrowの実作用・Configuration保存を現在の入力から検査する。
 use super::*;
 use crate::archmap::Field;
 
+mod internal;
+pub use internal::{InternalArrowResult, InternalArrows, internal_arrow, internal_arrows};
+
 type SubjectKey = (String, String);
 #[derive(Clone, Debug, PartialEq, Eq)]
+enum MapOrigin {
+    Correspondence(FactPointer),
+    InternalArrow {
+        root: FactPointer,
+        arrow: FactPointer,
+    },
+}
+/// 同じConfigurationでも、root・reading・subjectの異なる対象を同一視しない。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ObjectIdentity {
+    reading: String,
+    root: FactPointer,
+    subject: FactPointer,
+}
+impl ObjectIdentity {
+    pub fn reading(&self) -> &str {
+        &self.reading
+    }
+    pub fn root(&self) -> &FactPointer {
+        &self.root
+    }
+    pub fn subject(&self) -> &FactPointer {
+        &self.subject
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MapCandidate {
-    correspondence: FactPointer,
+    origin: MapOrigin,
     source_root: FactPointer,
     target_root: FactPointer,
     reading: String,
@@ -16,8 +45,37 @@ pub struct MapCandidate {
     images: Vec<FactPointer>,
 }
 impl MapCandidate {
-    pub fn correspondence(&self) -> &FactPointer {
-        &self.correspondence
+    pub fn subject(&self) -> &FactPointer {
+        match &self.origin {
+            MapOrigin::Correspondence(subject) => subject,
+            MapOrigin::InternalArrow { arrow, .. } => arrow,
+        }
+    }
+    pub fn correspondence(&self) -> Option<&FactPointer> {
+        match &self.origin {
+            MapOrigin::Correspondence(subject) => Some(subject),
+            MapOrigin::InternalArrow { .. } => None,
+        }
+    }
+    pub fn source_object(&self) -> ObjectIdentity {
+        ObjectIdentity {
+            reading: self.reading.clone(),
+            root: match &self.origin {
+                MapOrigin::Correspondence(_) => self.source_root.clone(),
+                MapOrigin::InternalArrow { root, .. } => root.clone(),
+            },
+            subject: self.source_root.clone(),
+        }
+    }
+    pub fn target_object(&self) -> ObjectIdentity {
+        ObjectIdentity {
+            reading: self.to_reading.clone(),
+            root: match &self.origin {
+                MapOrigin::Correspondence(_) => self.target_root.clone(),
+                MapOrigin::InternalArrow { root, .. } => root.clone(),
+            },
+            subject: self.target_root.clone(),
+        }
     }
     pub fn source_root(&self) -> &FactPointer {
         &self.source_root
@@ -43,20 +101,44 @@ impl MapCandidate {
         inputs: &CheckedInputs,
         control: &mut Control,
     ) -> Result<(), ConstructionFailure> {
-        let result = correspondence(
-            inputs,
-            &self.correspondence.snapshot,
-            &self.correspondence.subject,
-            &self.reading,
-            Some(&self.to_reading),
-            control,
-        )?;
-        if result.candidate.as_ref() != Some(self) {
+        let (candidate, _) = self.recompute(inputs, control)?;
+        if candidate.as_ref() != Some(self) {
             return Err(ConstructionFailure::Inconsistent(
                 "候補作用が現在の入力・readingと違う".into(),
             ));
         }
         check(control)
+    }
+    fn recompute(
+        &self,
+        inputs: &CheckedInputs,
+        control: &mut Control,
+    ) -> Result<(Option<MapCandidate>, Option<ConfigurationMap>), ConstructionFailure> {
+        match &self.origin {
+            MapOrigin::Correspondence(subject) => {
+                let result = correspondence(
+                    inputs,
+                    &subject.snapshot,
+                    &subject.subject,
+                    &self.reading,
+                    Some(&self.to_reading),
+                    control,
+                )?;
+                Ok((result.candidate, result.map))
+            }
+            MapOrigin::InternalArrow { root, arrow } => {
+                let result = internal_arrow(
+                    inputs,
+                    &self.reading,
+                    &root.snapshot,
+                    &root.subject,
+                    &arrow.snapshot,
+                    &arrow.subject,
+                    control,
+                )?;
+                Ok((result.candidate, result.map))
+            }
+        }
     }
     pub fn universe(&self) -> &[FactPointer] {
         &self.universe
@@ -85,16 +167,8 @@ impl ConfigurationMap {
         inputs: &CheckedInputs,
         control: &mut Control,
     ) -> Result<(), ConstructionFailure> {
-        let candidate = &self.candidate;
-        let result = correspondence(
-            inputs,
-            &candidate.correspondence.snapshot,
-            &candidate.correspondence.subject,
-            &candidate.reading,
-            Some(&candidate.to_reading),
-            control,
-        )?;
-        if result.map.as_ref() != Some(self) {
+        let (_, map) = self.candidate.recompute(inputs, control)?;
+        if map.as_ref() != Some(self) {
             return Err(ConstructionFailure::Inconsistent(
                 "保存済みmapが現在の入力・readingと違う".into(),
             ));
@@ -244,9 +318,8 @@ fn endpoint(
     missing: &mut BTreeSet<FactPointer>,
     control: &mut Control,
 ) -> Result<Option<SubjectKey>, ConstructionFailure> {
-    let f = field(holder, name, control)?.ok_or_else(|| {
-        ConstructionFailure::Inconsistent(format!("correspondenceの{name} slotがない"))
-    })?;
+    let f = field(holder, name, control)?
+        .ok_or_else(|| ConstructionFailure::Inconsistent(format!("原始候補の{name} slotがない")))?;
     match &f.slot {
         Slot::Known { value, .. } => Ok(Some(key(value)?)),
         Slot::Missing => {
@@ -758,6 +831,61 @@ fn typed_reference_constraints_violation(
         }
     }
 }
+fn preservation_counterexamples(
+    source_config: &Configuration,
+    target_config: &Configuration,
+    target_complete: bool,
+    action: &BTreeMap<FactPointer, FactPointer>,
+    control: &mut Control,
+) -> Result<Vec<Counterexample>, ConstructionFailure> {
+    let mut counterexamples = Vec::new();
+    let target_family: BTreeSet<_> = target_config.family().iter().collect();
+    let target_relations: BTreeSet<_> = target_config.relations().iter().collect();
+    let target_identifications: BTreeSet<_> = target_config.identifications().iter().collect();
+    for source in source_config.family() {
+        check(control)?;
+        let Some(image) = action.get(source).cloned() else {
+            continue;
+        };
+        if target_complete && !target_family.contains(&image) {
+            counterexamples.push(Counterexample::Family {
+                source: source.clone(),
+                image,
+            });
+        }
+    }
+    for (identifications, pairs) in [
+        (false, source_config.relations()),
+        (true, source_config.identifications()),
+    ] {
+        for pair in pairs {
+            check(control)?;
+            let (Some(left), Some(right)) = (action.get(&pair.0), action.get(&pair.1)) else {
+                continue;
+            };
+            let image = (left.clone(), right.clone());
+            let preserved = if identifications {
+                target_identifications.contains(&image)
+            } else {
+                target_relations.contains(&image)
+            };
+            if target_complete && !preserved {
+                counterexamples.push(if identifications {
+                    Counterexample::Identification {
+                        source: pair.clone(),
+                        image,
+                    }
+                } else {
+                    Counterexample::Relation {
+                        source: pair.clone(),
+                        image,
+                    }
+                });
+            }
+        }
+    }
+    Ok(counterexamples)
+}
 /// readingを推測せず、現在の原始correspondence instanceから全U上の作用と保存を検査する。
 pub fn correspondence(
     inputs: &CheckedInputs,
@@ -1043,54 +1171,16 @@ pub fn correspondence(
             });
     }
     result.missing = canonical_facts(missing, control)?;
-    let target_family: BTreeSet<_> = target_config.family().iter().collect();
-    let target_relations: BTreeSet<_> = target_config.relations().iter().collect();
-    let target_identifications: BTreeSet<_> = target_config.identifications().iter().collect();
-    for source in source_config.family() {
-        check(control)?;
-        let Some(image) = action.get(source).cloned() else {
-            continue;
-        };
-        if target_complete && !target_family.contains(&image) {
-            result.counterexamples.push(Counterexample::Family {
-                source: source.clone(),
-                image,
-            });
-        }
-    }
-    for (identifications, pairs) in [
-        (false, source_config.relations()),
-        (true, source_config.identifications()),
-    ] {
-        for pair in pairs {
-            check(control)?;
-            let (Some(left), Some(right)) = (action.get(&pair.0), action.get(&pair.1)) else {
-                continue;
-            };
-            let image = (left.clone(), right.clone());
-            let preserved = if identifications {
-                target_identifications.contains(&image)
-            } else {
-                target_relations.contains(&image)
-            };
-            if target_complete && !preserved {
-                result.counterexamples.push(if identifications {
-                    Counterexample::Identification {
-                        source: pair.clone(),
-                        image,
-                    }
-                } else {
-                    Counterexample::Relation {
-                        source: pair.clone(),
-                        image,
-                    }
-                });
-            }
-        }
-    }
+    result.counterexamples.extend(preservation_counterexamples(
+        source_config,
+        target_config,
+        target_complete,
+        &action,
+        control,
+    )?);
     if !absent && result.missing.is_empty() {
         let candidate = MapCandidate {
-            correspondence: exists(holder),
+            origin: MapOrigin::Correspondence(exists(holder)),
             source_root: source.root().clone(),
             target_root: target.root().clone(),
             reading: reading.into(),

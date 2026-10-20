@@ -123,6 +123,15 @@ Listの順序・重複と参照を含む値の構造を検査し、量leafの一
 候補と保存済み写像は、選んだreadingと検査対象のConfigurationを保持する。
 各値の `recheck(&checked, &mut control)` で、候補作用と保存の成立をそれぞれ再照合できる。
 
+`construction::maps::internal_arrows(&checked, "Reservations", "v", "A", &mut control)`
+は選択rootの全owned arrowを検査する。各 `arrows()` 行に候補・保存済みmap・反例・不足slotを
+保持し、ownerが未観測のarrowも候補行として残す。`all_preserved()` は全行の保存確認を表す。
+一つのarrowは `internal_arrow(&checked, "Reservations", "v", "A", "v", "e", &mut control)`
+で検査できる。作用はfromの部分Configurationをtoへ移し、そのF外では恒等となる。
+`candidate.subject()` で元arrow/correspondence、`source_object()/target_object()` で
+reading・root・部分対象のsubject identityを読める。`candidate.correspondence()` は
+correspondence由来のときだけ `Some` を返す。各結果の `recheck()` は現在入力から再計算する。
+
 ## 仕様
 
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): 入力・問い・型付き結果の形式と意味。
