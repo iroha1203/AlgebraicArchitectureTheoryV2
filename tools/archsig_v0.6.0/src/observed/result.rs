@@ -1499,6 +1499,15 @@ impl ObservedEvaluation {
         &self.prepared
     }
     pub fn wire(&self) -> Json {
+        self.wire_controlled(&mut Control::unlimited(), Checkpoint::Expression)
+            .expect("通常の表示は中断しない")
+    }
+    pub(crate) fn wire_controlled(
+        &self,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<Json, StopReason> {
+        control.checkpoint(point)?;
         let mut result = self.prepared.inputs().metadata_wire();
         let Json::Obj(wire) = &mut result else {
             unreachable!()
@@ -1511,13 +1520,24 @@ impl ObservedEvaluation {
                     .requests()
                     .requests()
                     .iter()
-                    .map(|r| r.wire())
-                    .collect(),
+                    .map(|r| {
+                        control.checkpoint(point)?;
+                        Ok(r.wire())
+                    })
+                    .collect::<Result<_, StopReason>>()?,
             ),
         );
         wire.insert(
             "answers".into(),
-            Json::Arr(self.answers.iter().map(Answer::wire).collect()),
+            Json::Arr(
+                self.answers
+                    .iter()
+                    .map(|a| {
+                        control.checkpoint(point)?;
+                        Ok(a.wire())
+                    })
+                    .collect::<Result<_, StopReason>>()?,
+            ),
         );
         wire.insert(
             "nodes".into(),
@@ -1525,15 +1545,19 @@ impl ObservedEvaluation {
                 self.nodes
                     .iter()
                     .enumerate()
-                    .map(|(i, n)| n.wire(i, &self.nodes[..i]))
-                    .collect(),
+                    .map(|(i, n)| {
+                        control.checkpoint(point)?;
+                        Ok(n.wire(i, &self.nodes[..i]))
+                    })
+                    .collect::<Result<_, StopReason>>()?,
             ),
         );
         wire.insert(
             "issues".into(),
             Json::Arr(self.issues.iter().map(Reason::wire).collect()),
         );
-        result
+        control.checkpoint(point)?;
+        Ok(result)
     }
 }
 

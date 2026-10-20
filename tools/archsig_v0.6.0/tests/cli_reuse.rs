@@ -7,9 +7,10 @@ use std::path::{Path, PathBuf};
 const D: &[u8] = include_bytes!("fixtures/counter.atoms.json");
 const L: &str = include_str!("fixtures/counter.law");
 const A: &str = include_str!("fixtures/counter.archmap.json");
-const ASKS: [&str; 2] = [
+const ASKS: [&str; 3] = [
     "n=evaluate(CountCheck.amount,s=@v/s)",
     "audit=check(CountAudit.bounded,s=@v/s)",
+    "u=check(CountAudit.bounded)",
 ];
 fn setup(name: &str) -> PathBuf {
     let dir = workdir(name);
@@ -94,6 +95,18 @@ fn first_node(json: &mut Json) -> &mut Json {
     };
     &mut nodes[0]
 }
+fn typed_node<'a>(json: &'a mut Json, ty: &str) -> &'a mut Json {
+    let Json::Arr(nodes) = field_mut(json, "nodes") else {
+        panic!("nodes")
+    };
+    nodes
+        .iter_mut()
+        .find(|node| match node {
+            Json::Obj(fields) => matches!(fields.get("type"),Some(Json::Str(name)) if name==ty),
+            _ => false,
+        })
+        .unwrap()
+}
 
 #[test]
 fn valid_reuse_recomputes_current_values_with_exact_counts() {
@@ -122,6 +135,49 @@ fn valid_reuse_recomputes_current_values_with_exact_counts() {
 }
 
 #[test]
+fn duplicate_verified_derivation_does_not_require_the_same_plan_or_node_count() {
+    let dir = setup("reuse-unshared-derivation");
+    let previous = execute(&dir, "previous", None, &ASKS);
+    let source = result_json(&dir, &previous);
+    let mut candidate = owned(&source);
+    let Json::Arr(nodes) = field_mut(&mut candidate, "nodes") else {
+        panic!("nodes")
+    };
+    let original_len = nodes.len();
+    let mut duplicate = nodes.last().unwrap().clone();
+    *field_mut(&mut duplicate, "id") = Json::str(format!("n{original_len}"));
+    nodes.push(duplicate);
+    *field_mut(field_mut(&mut candidate, "reuse"), "recomputed_nodes") =
+        Json::Nat((original_len + 1) as u64);
+    std::fs::write(dir.join("previous/result.json"), candidate.canonical()).unwrap();
+    let reused = execute(&dir, "out", Some("previous"), &ASKS);
+    let result = checked(&dir, &reused, 0, true);
+    assert_eq!(value(&result), "2");
+    assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert_eq!(arr(get(&result, "nodes")).len(), original_len);
+}
+
+#[test]
+fn missing_observations_remain_partial_with_a_valid_partial_candidate() {
+    let dir = setup("reuse-partial");
+    let missing = A.replace("{\"id\": \"count\", \"subject\": \"s\", \"field\": \"Counter.State.count\", \"value\": \"2\", \"origin\": \"model\"}", "");
+    std::fs::write(dir.join("a.json"), missing).unwrap();
+    let previous = execute(&dir, "previous", None, &ASKS);
+    let plain = checked(&dir, &previous, 2, false);
+    let reused = execute(&dir, "out", Some("previous"), &ASKS);
+    let result = checked(&dir, &reused, 2, true);
+    assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    for name in ["answers", "nodes", "issues"] {
+        assert_eq!(get(&plain, name), get(&result, name));
+    }
+    assert!(
+        arr(get(&result, "answers"))
+            .iter()
+            .all(|a| s(get(a, "status")) == "undetermined")
+    );
+}
+
+#[test]
 fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() {
     let dir = setup("invalid-reuse");
     let previous = execute(&dir, "previous", None, &ASKS);
@@ -136,6 +192,24 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
         "null",
         "syntax",
         "duplicate_key",
+        "Evaluation",
+        "Evidence",
+        "Expression",
+        "LawInstance",
+        "Proposition",
+        "Domain",
+        "judgment",
+        "rule",
+        "scope",
+        "support",
+        "reasons",
+        "rule_extra",
+        "inputs",
+        "requests",
+        "declarations",
+        "vocabularies",
+        "issues",
+        "ref_type",
     ] {
         let mut candidate = owned(&source);
         let bytes = match kind {
@@ -170,6 +244,42 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                             panic!("object")
                         };
                         fields.insert("extra".into(), Json::Bool(true));
+                    }
+                    "Evaluation" | "Evidence" | "Expression" | "LawInstance" | "Proposition"
+                    | "Domain" => {
+                        *field_mut(typed_node(&mut candidate, kind), "value") = Json::obj([]);
+                    }
+                    "judgment" => {
+                        let Json::Obj(fields) = typed_node(&mut candidate, "Proposition") else {
+                            panic!("node")
+                        };
+                        fields.remove("judgment");
+                    }
+                    "rule" | "scope" => {
+                        *field_mut(first_node(&mut candidate), kind) = Json::obj([])
+                    }
+                    "support" => {
+                        *field_mut(first_node(&mut candidate), kind) =
+                            Json::Arr(vec![Json::Bool(true)])
+                    }
+                    "reasons" => {
+                        *field_mut(first_node(&mut candidate), kind) =
+                            Json::Arr(vec![Json::obj([("code", Json::str("made_up"))])])
+                    }
+                    "rule_extra" => {
+                        let Json::Obj(fields) = field_mut(first_node(&mut candidate), "rule")
+                        else {
+                            panic!("rule")
+                        };
+                        fields.insert("extra".into(), Json::Bool(true));
+                    }
+                    "inputs" | "requests" | "declarations" | "vocabularies" | "issues" => {
+                        *field_mut(&mut candidate, kind) = Json::Arr(vec![Json::Bool(true)])
+                    }
+                    "ref_type" => {
+                        let node = typed_node(&mut candidate, "Z");
+                        *field_mut(node, "type") = Json::str("Bool");
+                        *field_mut(node, "value") = Json::Bool(true);
                     }
                     "null" => {}
                     _ => unreachable!(),
@@ -278,8 +388,17 @@ fn unavailable_and_linked_candidates_do_not_change_inputs_or_outputs() {
             dir.join("linked-file/result.json"),
         )
         .unwrap();
-        for candidate in ["linked-dir", "linked-file"] {
-            let r = execute(&dir, &format!("out-{candidate}"), Some(candidate), &ASKS);
+        for (index, candidate) in [
+            "linked-dir",
+            "linked-dir/",
+            "linked-dir/.",
+            "linked-dir/./",
+            "linked-file",
+        ]
+        .iter()
+        .enumerate()
+        {
+            let r = execute(&dir, &format!("out-linked-{index}"), Some(candidate), &ASKS);
             let result = checked(&dir, &r, 0, true);
             assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
         }

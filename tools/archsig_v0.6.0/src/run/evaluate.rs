@@ -163,7 +163,7 @@ pub fn run_requests(
             }
         },
     };
-    let rejected = match super::reuse::inspect(args.reuse.as_deref(), control) {
+    let candidate = match super::reuse::inspect(args.reuse.as_deref(), control) {
         Ok(rejected) => rejected,
         Err(reason) => {
             return output::notify(
@@ -187,7 +187,10 @@ pub fn run_requests(
             );
         }
     };
-    deliver(io, signals, args, evaluation, rejected, started, control)
+    let (rejected, reuse_stop) = candidate.verify(&evaluation, control);
+    deliver(
+        io, signals, args, evaluation, rejected, reuse_stop, started, control,
+    )
 }
 
 fn deliver(
@@ -196,6 +199,7 @@ fn deliver(
     args: &RunArgs,
     evaluation: ObservedEvaluation,
     rejected: Vec<Json>,
+    reuse_stop: Option<StopReason>,
     started: Instant,
     control: &Control,
 ) -> Outcome {
@@ -216,6 +220,13 @@ fn deliver(
         _ => (Status::Error, 70),
     };
     let mut issues: Vec<Json> = evaluation.issues.iter().map(|i| i.wire()).collect();
+    if let Some(reason) = reuse_stop {
+        if status != Status::Error || matches!(reason, StopReason::Cancelled(_)) {
+            status = Status::Interrupted;
+            code = 75;
+        }
+        issues.push(reason.wire());
+    }
     if matches!(status, Status::Interrupted | Status::Error) && evaluation.nodes.is_empty() {
         return output::notify(
             signals,

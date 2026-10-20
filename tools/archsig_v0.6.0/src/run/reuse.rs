@@ -1,78 +1,113 @@
-//! 再利用候補の構造検査。推論を採用せず、現在の三入力から常に全再計算する。
-
+//! 候補を現在の検査済み導出へ照合し、推論は採用せず全再計算する。
 use crate::canonical::Json;
 use crate::json::{JNode, JValue};
-use crate::observed::control::{CheckFailure, Checkpoint, Control, StopReason};
+use crate::observed::{
+    ObservedEvaluation,
+    control::{CheckFailure, Checkpoint, Control, StopReason},
+};
 use crate::result::ResultIssue;
-use num_integer::Integer;
-use std::collections::BTreeSet;
-use std::io::Read;
-use std::path::Path;
+use std::{
+    collections::BTreeMap,
+    io::Read,
+    path::{Path, PathBuf},
+};
 
-/// 候補はヒントなので、不正でも現在入力の評価を続ける。停止は同じControlへ伝播する。
-pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Vec<Json>, StopReason> {
-    let Some(path) = path else {
-        return Ok(Vec::new());
-    };
-    control.checkpoint(Checkpoint::Reuse)?;
-    let reject = |message: String| {
-        vec![
+pub(super) struct Candidate {
+    path: PathBuf,
+    document: Option<JNode>,
+    rejected: Vec<Json>,
+}
+impl Candidate {
+    fn reject(&mut self, message: String) {
+        self.rejected.push(
             ResultIssue::Usage {
                 argument: "--reuse".into(),
-                message: format!("再利用候補 {}: {message}", path.display()),
+                message: format!("再利用候補 {}: {message}", self.path.display()),
             }
             .wire(),
-        ]
+        );
+    }
+    /// JSONは照合だけに使う。候補の値・束縛を評価器へ渡さない。
+    pub(super) fn verify(
+        mut self,
+        evaluation: &ObservedEvaluation,
+        control: &mut Control,
+    ) -> (Vec<Json>, Option<StopReason>) {
+        if let Some(document) = &self.document {
+            if matches!(evaluation.status(), "complete" | "partial") {
+                match verify(document, evaluation, control) {
+                    Ok(()) => {}
+                    Err(Failure::Rejected(message)) => self.reject(message),
+                    Err(Failure::Stopped(reason)) => return (self.rejected, Some(reason)),
+                }
+            }
+        }
+        (self.rejected, None)
+    }
+}
+pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Candidate, StopReason> {
+    let mut candidate = Candidate {
+        path: path.unwrap_or_else(|| Path::new("")).to_owned(),
+        document: None,
+        rejected: Vec::new(),
     };
+    let Some(path) = path else {
+        return Ok(candidate);
+    };
+    control.checkpoint(Checkpoint::Reuse)?;
+    // componentsは末尾のslash/dotを除く。NOFOLLOWを意図した最終directoryへ適用する。
+    // 親pathのOS解決は通常の明示pathと同じであり、候補から追加pathを探索しない。
+    let normalized: PathBuf = path.components().collect();
     let read = || -> std::io::Result<Vec<u8>> {
         use rustix::fs::{Mode, OFlags, openat};
-        // directoryのhandleを固定し、metadata確認後のsymlink差替えも辿らない。
         let directory = openat(
             rustix::fs::CWD,
-            path,
+            &normalized,
             OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW,
             Mode::empty(),
         )?;
-        let input = openat(
+        let file = openat(
             &directory,
             "result.json",
             OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::NONBLOCK,
             Mode::empty(),
         )?;
-        let mut input = std::fs::File::from(input);
-        if !input.metadata()?.is_file() {
+        let mut file = std::fs::File::from(file);
+        if !file.metadata()?.is_file() {
             return Err(std::io::Error::other("result.jsonは通常ファイルではない"));
         }
         let mut bytes = Vec::new();
-        input.read_to_end(&mut bytes)?;
+        file.read_to_end(&mut bytes)?;
         Ok(bytes)
     };
-    let bytes = read();
+    let read = read();
     control.checkpoint(Checkpoint::Reuse)?;
-    let bytes = match bytes {
+    let bytes = match read {
         Ok(bytes) => bytes,
-        Err(error) => return Ok(reject(format!("result.jsonを読めない: {error}"))),
+        Err(error) => {
+            candidate.reject(format!("result.jsonを読めない: {error}"));
+            return Ok(candidate);
+        }
     };
-    let candidate = match crate::json::parse_inner::<CheckFailure<Box<crate::issue::Issue>>>(
+    let document = match crate::json::parse_inner::<CheckFailure<Box<crate::issue::Issue>>>(
         &bytes,
         control,
         Checkpoint::Reuse,
     ) {
-        Ok(candidate) => candidate,
+        Ok(document) => document,
         Err(CheckFailure::Stopped(reason)) => return Err(reason),
         Err(CheckFailure::Input(issue)) => {
-            return Ok(reject(format!("JSONが不正: {}", issue.message)));
+            candidate.reject(format!("JSONが不正: {}", issue.message));
+            return Ok(candidate);
         }
     };
-    let result = validate(&candidate, control);
-    control.checkpoint(Checkpoint::Reuse)?;
-    match result {
-        Ok(()) => Ok(Vec::new()),
-        Err(Failure::Rejected(message)) => Ok(reject(message)),
-        Err(Failure::Stopped(reason)) => Err(reason),
+    match header(&document, control) {
+        Ok(()) => candidate.document = Some(document),
+        Err(Failure::Rejected(message)) => candidate.reject(message),
+        Err(Failure::Stopped(reason)) => return Err(reason),
     }
+    Ok(candidate)
 }
-
 enum Failure {
     Rejected(String),
     Stopped(StopReason),
@@ -86,28 +121,28 @@ type Checked<T> = Result<T, Failure>;
 fn invalid(message: impl Into<String>) -> Failure {
     Failure::Rejected(message.into())
 }
-fn object(node: &JNode) -> Checked<&[(String, JNode)]> {
+fn fields(node: &JNode) -> Checked<&[(String, JNode)]> {
     match &node.value {
         JValue::Obj(fields) => Ok(fields),
         _ => Err(invalid("objectが必要")),
     }
 }
 fn field<'a>(node: &'a JNode, name: &str) -> Checked<&'a JNode> {
-    object(node)?
+    fields(node)?
         .iter()
         .find(|(key, _)| key == name)
-        .map(|(_, value)| value)
+        .map(|(_, v)| v)
         .ok_or_else(|| invalid(format!("{name}が必要")))
 }
 fn text(node: &JNode) -> Checked<&str> {
     match &node.value {
-        JValue::Str(value) => Ok(value),
+        JValue::Str(s) => Ok(s),
         _ => Err(invalid("文字列が必要")),
     }
 }
 fn array(node: &JNode) -> Checked<&[JNode]> {
     match &node.value {
-        JValue::Arr(values) => Ok(values),
+        JValue::Arr(a) => Ok(a),
         _ => Err(invalid("arrayが必要")),
     }
 }
@@ -115,23 +150,36 @@ fn record(node: &JNode, required: &[&str], optional: &[&str]) -> Checked<()> {
     for name in required {
         field(node, name)?;
     }
-    for (name, _) in object(node)? {
+    for (name, _) in fields(node)? {
         if !required.contains(&name.as_str()) && !optional.contains(&name.as_str()) {
             return Err(invalid(format!("未知の欄: {name}")));
         }
     }
     Ok(())
 }
-
-fn validate(candidate: &JNode, control: &mut Control) -> Checked<()> {
-    // 未知版の新しい欄を先にschemaエラーとしない。
-    if text(field(candidate, "format")?)? != "archsig.result/2"
-        || text(field(candidate, "semantics")?)? != crate::law::SEMANTICS
+fn decimal(node: &JNode) -> Checked<()> {
+    let s = text(node)?;
+    if s.is_empty() || !s.bytes().all(|b| b.is_ascii_digit()) || (s.len() > 1 && s.starts_with('0'))
+    {
+        return Err(invalid("DecimalNatが必要"));
+    }
+    Ok(())
+}
+fn nat(node: &JNode) -> Checked<()> {
+    match &node.value {
+        JValue::Num(s) if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) => Ok(()),
+        _ => Err(invalid("Natが必要")),
+    }
+}
+fn header(document: &JNode, control: &mut Control) -> Checked<()> {
+    control.checkpoint(Checkpoint::Reuse)?;
+    if text(field(document, "format")?)? != "archsig.result/2"
+        || text(field(document, "semantics")?)? != crate::law::SEMANTICS
     {
         return Err(invalid("format/semanticsが対応版と異なる"));
     }
     record(
-        candidate,
+        document,
         &[
             "format",
             "semantics",
@@ -152,40 +200,29 @@ fn validate(candidate: &JNode, control: &mut Control) -> Checked<()> {
         ],
         &[],
     )?;
-    for name in [
-        "inputs",
-        "declarations",
-        "vocabularies",
-        "requests",
-        "answers",
-        "issues",
-    ] {
-        array(field(candidate, name)?)?;
+    if text(field(document, "command")?)? != "run" && text(field(document, "command")?)? != "check"
+    {
+        return Err(invalid("commandが不正"));
     }
-    for (name, allowed) in [
-        ("command", &["check", "run"][..]),
-        (
-            "status",
-            &[
-                "complete",
-                "partial",
-                "invalid",
-                "unsupported",
-                "interrupted",
-                "error",
-            ][..],
-        ),
-    ] {
-        if !allowed.contains(&text(field(candidate, name)?)?) {
-            return Err(invalid(format!("{name}が不正")));
-        }
-    }
-    record(field(candidate, "producer")?, &["version", "build"], &[])?;
+    record(field(document, "producer")?, &["version", "build"], &[])?;
     for name in ["version", "build"] {
-        text(field(field(candidate, "producer")?, name)?)?;
+        text(field(field(document, "producer")?, name)?)?;
     }
     record(
-        field(candidate, "reuse")?,
+        field(document, "usage")?,
+        &["elapsed_ms", "peak_bytes"],
+        &[],
+    )?;
+    record(field(document, "limits")?, &[], &["time_ms", "memory_mib"])?;
+    for group in ["usage", "limits"] {
+        for (_, value) in fields(field(document, group)?)? {
+            control.checkpoint(Checkpoint::Reuse)?;
+            decimal(value)?;
+        }
+    }
+    let reuse = field(document, "reuse")?;
+    record(
+        reuse,
         &[
             "requested",
             "accepted_nodes",
@@ -194,310 +231,245 @@ fn validate(candidate: &JNode, control: &mut Control) -> Checked<()> {
         ],
         &[],
     )?;
-    if !matches!(
-        field(field(candidate, "reuse")?, "requested")?.value,
-        JValue::Bool(_)
-    ) {
+    if !matches!(field(reuse, "requested")?.value, JValue::Bool(_)) {
         return Err(invalid("reuse.requestedはBool"));
     }
-    array(field(field(candidate, "reuse")?, "rejected")?)?;
+    for name in ["accepted_nodes", "recomputed_nodes"] {
+        nat(field(reuse, name)?)?;
+    }
+    // 全再計算するため旧実行の性能や採用件数を証明には使わない。拒否理由の外形は検査する。
+    for issue in array(field(reuse, "rejected")?)? {
+        issue_shape(issue, control)?;
+    }
+    nat(field(document, "exit_code")?)?;
+    Ok(())
+}
+fn issue_shape(issue: &JNode, control: &mut Control) -> Checked<()> {
+    control.checkpoint(Checkpoint::Reuse)?;
     record(
-        field(candidate, "usage")?,
-        &["elapsed_ms", "peak_bytes"],
-        &[],
+        issue,
+        &["code", "message", "dependencies", "missing", "details"],
+        &["request", "location"],
     )?;
-    record(field(candidate, "limits")?, &[], &["time_ms", "memory_mib"])?;
-    for group in ["usage", "limits"] {
-        for (_, value) in object(field(candidate, group)?)? {
-            let value = text(value)?;
-            if value.is_empty()
-                || !value.bytes().all(|b| b.is_ascii_digit())
-                || (value.len() > 1 && value.starts_with('0'))
-            {
-                return Err(invalid(format!("{group}はDecimalNat")));
-            }
-        }
+    if text(field(issue, "message")?)?.is_empty() {
+        return Err(invalid("Issue.messageが空"));
     }
-    for value in [
-        field(candidate, "exit_code")?,
-        field(field(candidate, "reuse")?, "accepted_nodes")?,
-        field(field(candidate, "reuse")?, "recomputed_nodes")?,
-    ] {
-        if !matches!(value.value, JValue::Num(_)) {
-            return Err(invalid("exit_codeとnode数はNat"));
-        }
+    array(field(issue, "dependencies")?)?;
+    array(field(issue, "missing")?)?;
+    let details = field(issue, "details")?;
+    // 旧候補の補助通知は意味上の入力にしない。現行の候補拒否通知はusageだけを生成する。
+    // それ以外の旧通知を含む候補は採用対象へ広げず、全再計算する。
+    if text(field(issue, "code")?)? != "usage" {
+        return Err(invalid("候補の以前の拒否通知を照合できない"));
     }
-    let mut prior = BTreeSet::new();
-    for (index, node) in array(field(candidate, "nodes")?)?.iter().enumerate() {
-        control.checkpoint(Checkpoint::Reuse)?;
-        record(
-            node,
-            &[
-                "id",
-                "type",
-                "state",
-                "rule",
-                "arguments",
-                "support",
-                "conditions",
-                "evidence",
-                "scope",
-                "reasons",
-            ],
-            &["value", "partial", "judgment"],
-        )?;
-        for name in ["arguments", "conditions", "evidence"] {
-            for reference in array(field(node, name)?)? {
-                record(reference, &["node"], &[])?;
-                text(field(reference, "node")?)?;
-            }
-        }
-        for name in ["support", "reasons"] {
-            array(field(node, name)?)?;
-        }
-        object(field(node, "rule")?)?;
-        object(field(node, "scope")?)?;
-        let id = text(field(node, "id")?)?;
-        if id.is_empty() || prior.contains(id) {
-            return Err(invalid(format!("nodes[{index}]のidが空または重複: {id}")));
-        }
-        validate_type(field(node, "type")?, control)?;
-        let state = text(field(node, "state")?)?;
-        let value = object(node)?
-            .iter()
-            .find(|(name, _)| name == "value")
-            .map(|(_, v)| v);
-        match (state, value) {
-            ("value", Some(value)) => scalar_shape(field(node, "type")?, value, control)?,
-            ("blocked", None) => {}
-            _ => return Err(invalid(format!("nodes[{index}]のstate/valueが不整合"))),
-        }
-        // payload内の入れ子も含め、参照は検査済みの先行nodeだけに限る。
-        walk(node, &prior, control)?;
-        prior.insert(id.to_owned());
+    record(details, &["argument"], &[])?;
+    text(field(details, "argument")?)?;
+    if !array(field(issue, "dependencies")?)?.is_empty()
+        || !array(field(issue, "missing")?)?.is_empty()
+    {
+        return Err(invalid("候補usageの依存は空"));
     }
-    let mut answer_ids = BTreeSet::new();
-    for answer in array(field(candidate, "answers")?)? {
-        control.checkpoint(Checkpoint::Reuse)?;
-        record(
-            answer,
-            &["id", "status", "outputs", "evidence", "reasons", "scope"],
-            &["claim"],
-        )?;
-        let id = text(field(answer, "id")?)?;
-        if id.is_empty() || !answer_ids.insert(id) {
-            return Err(invalid("回答idが空または重複"));
-        }
-        if !["established", "refuted", "undetermined"].contains(&text(field(answer, "status")?)?) {
-            return Err(invalid("回答statusが不正"));
-        }
-        for (_, reference) in object(field(answer, "outputs")?)? {
-            record(reference, &["node"], &[])?;
-        }
-        array(field(answer, "evidence")?)?;
-        array(field(answer, "reasons")?)?;
-        object(field(answer, "scope")?)?;
-    }
-    for (name, value) in object(candidate)? {
-        if name != "nodes" {
-            walk(value, &prior, control)?;
-        }
+    if fields(issue)?
+        .iter()
+        .any(|(name, _)| name == "location" || name == "request")
+    {
+        return Err(invalid("候補usageの位置が不正"));
     }
     Ok(())
 }
-
-fn walk(root: &JNode, prior: &BTreeSet<String>, control: &mut Control) -> Checked<()> {
-    let mut pending = vec![root];
-    while let Some(node) = pending.pop() {
+fn wire_field<'a>(node: &'a Json, name: &str) -> Checked<&'a Json> {
+    match node {
+        Json::Obj(fields) => fields
+            .get(name)
+            .ok_or_else(|| invalid(format!("再計算した{name}がない"))),
+        _ => Err(invalid("再計算表示がobjectでない")),
+    }
+}
+fn normalized_candidate(
+    node: &JNode,
+    ids: &BTreeMap<String, String>,
+    control: &mut Control,
+) -> Checked<Json> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         control.checkpoint(Checkpoint::Reuse)?;
-        match &node.value {
+        Ok(match &node.value {
+            JValue::Bool(b) => Json::Bool(*b),
+            JValue::Num(s) => Json::Nat(s.parse().map_err(|_| invalid("再計算結果にないNat"))?),
+            JValue::Str(s) => Json::str(s),
+            JValue::Arr(items) => Json::Arr(
+                items
+                    .iter()
+                    .map(|n| normalized_candidate(n, ids, control))
+                    .collect::<Checked<_>>()?,
+            ),
+            JValue::Obj(items) if items.iter().any(|(key, _)| key == "node") => {
+                record(node, &["node"], &[])?;
+                let id = text(field(node, "node")?)?;
+                let key = ids
+                    .get(id)
+                    .ok_or_else(|| invalid(format!("未定義または先行していないRef: {id}")))?;
+                Json::obj([("node", Json::str(key))])
+            }
+            JValue::Obj(items) => Json::Obj(
+                items
+                    .iter()
+                    .map(|(key, value)| {
+                        Ok((key.clone(), normalized_candidate(value, ids, control)?))
+                    })
+                    .collect::<Checked<_>>()?,
+            ),
             JValue::Null => return Err(invalid("nullは使えない")),
-            JValue::Num(number) if !number.bytes().all(|b| b.is_ascii_digit()) => {
-                return Err(invalid("JSON numberはNatに限る"));
-            }
-            JValue::Obj(fields) if fields.iter().any(|(key, _)| key == "node") => {
-                if fields.len() != 1 {
-                    return Err(invalid("Refはnodeだけを持つ"));
-                }
-                let id = text(&fields[0].1)?;
-                if !prior.contains(id) {
-                    return Err(invalid(format!("未定義または先行していないRef: {id}")));
-                }
-            }
-            JValue::Obj(fields) => pending.extend(fields.iter().map(|(_, value)| value)),
-            JValue::Arr(values) => pending.extend(values),
-            _ => {}
-        }
-    }
-    Ok(())
-}
-
-fn validate_type(ty: &JNode, control: &mut Control) -> Checked<()> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        control.checkpoint(Checkpoint::Reuse)?;
-        match &ty.value {
-            JValue::Str(name)
-                if [
-                    "Unit",
-                    "Bool",
-                    "Z",
-                    "Q",
-                    "Text",
-                    "Expression",
-                    "Evaluation",
-                    "LawInstance",
-                    "Proposition",
-                    "Evidence",
-                    "Domain",
-                ]
-                .contains(&name.as_str()) =>
-            {
-                Ok(())
-            }
-            JValue::Arr(parts) => {
-                let tag = parts.first().ok_or_else(|| invalid("空の型"))?;
-                match (text(tag)?, parts.len()) {
-                    ("Fp", 2) => {
-                        let modulus = integer(&parts[1])?
-                            .to_biguint()
-                            .ok_or_else(|| invalid("Fpの法は正の素数"))?;
-                        match crate::prime::is_prime_controlled::<
-                            CheckFailure<Box<crate::issue::Issue>>,
-                        >(&modulus, control, Checkpoint::Reuse)
-                        {
-                            Ok(true) => {}
-                            Ok(false) => return Err(invalid("Fpの法は素数")),
-                            Err(CheckFailure::Stopped(reason)) => {
-                                return Err(Failure::Stopped(reason));
-                            }
-                            Err(CheckFailure::Input(issue)) => return Err(invalid(issue.message)),
-                        }
-                    }
-                    ("Ref" | "Data", 2) => {
-                        text(&parts[1])?;
-                    }
-                    ("Path", 3) => {
-                        text(&parts[1])?;
-                        text(&parts[2])?;
-                    }
-                    ("Tuple", _) => {
-                        for part in &parts[1..] {
-                            validate_type(part, control)?;
-                        }
-                    }
-                    ("List" | "Set" | "Option", 2) => validate_type(&parts[1], control)?,
-                    ("Map", 3) => {
-                        validate_type(&parts[1], control)?;
-                        validate_type(&parts[2], control)?;
-                    }
-                    ("Term", 3) => {
-                        for part in array(&parts[1])? {
-                            validate_type(part, control)?;
-                        }
-                        validate_type(&parts[2], control)?;
-                    }
-                    _ => return Err(invalid("型の構成が不正")),
-                }
-                Ok(())
-            }
-            _ => Err(invalid("未知または不正なnode型")),
-        }
+        })
     })
 }
-
-fn integer(node: &JNode) -> Checked<num_bigint::BigInt> {
-    let spelling = text(node)?;
-    let value = spelling
-        .parse::<num_bigint::BigInt>()
-        .map_err(|_| invalid("整数の綴りが不正"))?;
-    if value.to_string() != spelling {
-        return Err(invalid("整数は正規化した十進表記"));
-    }
-    Ok(value)
-}
-
-/// 候補の値の形だけを検査する。証拠の意味検査・推論採用は行わない。
-fn scalar_shape(ty: &JNode, value: &JNode, control: &mut Control) -> Checked<()> {
+fn normalized_wire(
+    node: &Json,
+    ids: &BTreeMap<String, String>,
+    control: &mut Control,
+) -> Checked<Json> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         control.checkpoint(Checkpoint::Reuse)?;
-        let valid = match &ty.value {
-            JValue::Str(name) => match name.as_str() {
-                "Bool" => matches!(value.value, JValue::Bool(_)),
-                "Z" => integer(value).is_ok(),
-                "Text" => matches!(value.value, JValue::Str(_)),
-                "Unit" => array(value)?.is_empty(),
-                "Q" => {
-                    let parts = array(value)?;
-                    if parts.len() != 2 {
-                        false
-                    } else {
-                        let n = integer(&parts[0])?;
-                        let d = integer(&parts[1])?;
-                        d > 0.into() && n.gcd(&d) == 1.into()
-                    }
-                }
-                _ => matches!(value.value, JValue::Obj(_)),
-            },
-            JValue::Arr(parts) => match text(&parts[0])? {
-                "Tuple" => {
-                    let values = array(value)?;
-                    if values.len() != parts.len() - 1 {
-                        false
-                    } else {
-                        for (ty, value) in parts[1..].iter().zip(values) {
-                            scalar_shape(ty, value, control)?;
-                        }
-                        true
-                    }
-                }
-                "List" | "Set" => {
-                    for value in array(value)? {
-                        scalar_shape(&parts[1], value, control)?;
-                    }
-                    true
-                }
-                "Ref" => {
-                    let values = array(value)?;
-                    values.len() == 2 && values.iter().all(|v| text(v).is_ok())
-                }
-                "Fp" => {
-                    let n = integer(value)?;
-                    n >= 0.into() && n < integer(&parts[1])?
-                }
-                "Map" => {
-                    for pair in array(value)? {
-                        let pair = array(pair)?;
-                        if pair.len() != 2 {
-                            return Err(invalid("Mapのpairが不正"));
-                        }
-                        scalar_shape(&parts[1], &pair[0], control)?;
-                        scalar_shape(&parts[2], &pair[1], control)?;
-                    }
-                    true
-                }
-                "Option" => {
-                    let fields = object(value)?;
-                    if fields.len() != 1 {
-                        false
-                    } else {
-                        match fields[0].0.as_str() {
-                            "none" => matches!(fields[0].1.value, JValue::Bool(true)),
-                            "some" => {
-                                scalar_shape(&parts[1], &fields[0].1, control)?;
-                                true
-                            }
-                            _ => false,
-                        }
-                    }
-                }
-                _ => matches!(value.value, JValue::Obj(_)),
-            },
-            _ => false,
+        Ok(match node {
+            Json::Bool(b) => Json::Bool(*b),
+            Json::Nat(n) => Json::Nat(*n),
+            Json::Str(s) => Json::str(s),
+            Json::Arr(items) => Json::Arr(
+                items
+                    .iter()
+                    .map(|n| normalized_wire(n, ids, control))
+                    .collect::<Checked<_>>()?,
+            ),
+            Json::Obj(items) if items.contains_key("node") => {
+                let Json::Str(id) = items
+                    .get("node")
+                    .ok_or_else(|| invalid("再計算Refがない"))?
+                else {
+                    return Err(invalid("再計算Refが文字列でない"));
+                };
+                let key = ids
+                    .get(id)
+                    .ok_or_else(|| invalid("再計算Refが先行していない"))?;
+                Json::obj([("node", Json::str(key))])
+            }
+            Json::Obj(items) => Json::Obj(
+                items
+                    .iter()
+                    .map(|(key, value)| Ok((key.clone(), normalized_wire(value, ids, control)?)))
+                    .collect::<Checked<_>>()?,
+            ),
+        })
+    })
+}
+fn encoding(json: &Json, control: &mut Control) -> Checked<String> {
+    match json
+        .canonical_controlled::<CheckFailure<Box<crate::issue::Issue>>>(control, Checkpoint::Reuse)
+    {
+        Ok(s) => Ok(s),
+        Err(CheckFailure::Stopped(reason)) => Err(Failure::Stopped(reason)),
+        Err(CheckFailure::Input(issue)) => Err(invalid(issue.message)),
+    }
+}
+fn node_content(mut node: Json, control: &mut Control) -> Checked<String> {
+    let Json::Obj(fields) = &mut node else {
+        return Err(invalid("nodeはobject"));
+    };
+    fields.remove("id");
+    encoding(&node, control)
+}
+fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Control) -> Checked<()> {
+    control.checkpoint(Checkpoint::Reuse)?;
+    let replay = evaluation.wire_controlled(control, Checkpoint::Reuse)?;
+    let empty = BTreeMap::new();
+    // 元byte列・全宣言・語彙・解決済み要求を現在の三表へ照合する。
+    // 候補が別の入力/問いのものでも、通常評価は既に現在入力から実行済みである。
+    let mut inputs = normalized_candidate(field(document, "inputs")?, &empty, control)?;
+    let Json::Arr(identities) = &mut inputs else {
+        return Err(invalid("inputsはarray"));
+    };
+    for identity in identities {
+        control.checkpoint(Checkpoint::Reuse)?;
+        let Json::Obj(fields) = identity else {
+            return Err(invalid("InputIdentityはobject"));
         };
-        if valid {
-            Ok(())
-        } else {
-            Err(invalid("node型とpayloadの形が一致しない"))
+        let Some(Json::Str(id)) = fields.get("id") else {
+            return Err(invalid("InputIdentity.idが必要"));
+        };
+        let expected = match id.as_str() {
+            "law" => "inputs/law.law".to_owned(),
+            "archmap" => "inputs/archmap.json".to_owned(),
+            id => format!(
+                "inputs/definitions/{}.json",
+                id.strip_prefix("definition")
+                    .ok_or_else(|| invalid("未知の入力id"))?
+            ),
+        };
+        if fields.get("path") != Some(&Json::str(expected)) {
+            return Err(invalid("入力copyの固定pathが不正"));
         }
-    })
+        fields.remove("path");
+    }
+    if inputs != *wire_field(&replay, "inputs")? {
+        return Err(invalid("現在の入力identityと一致しない"));
+    }
+    for name in ["declarations", "vocabularies", "requests", "status"] {
+        let candidate = normalized_candidate(field(document, name)?, &empty, control)?;
+        if candidate != *wire_field(&replay, name)? {
+            return Err(invalid(format!("{name}を現在の検査済み結果へ照合できない")));
+        }
+    }
+    let mut native_ids = BTreeMap::new();
+    let mut verified = BTreeMap::new();
+    let Json::Arr(nodes) = wire_field(&replay, "nodes")? else {
+        return Err(invalid("再計算nodesがない"));
+    };
+    for (index, node) in nodes.iter().enumerate() {
+        control.checkpoint(Checkpoint::Reuse)?;
+        let content = node_content(normalized_wire(node, &native_ids, control)?, control)?;
+        let next = format!("v{}", verified.len());
+        let key = verified.entry(content).or_insert(next).clone();
+        native_ids.insert(format!("n{index}"), key);
+    }
+    let mut candidate_ids = BTreeMap::new();
+    for (index, node) in array(field(document, "nodes")?)?.iter().enumerate() {
+        control.checkpoint(Checkpoint::Reuse)?;
+        let id = text(field(node, "id")?)?;
+        if id != format!("n{index}") {
+            return Err(invalid(format!("node.idはn{index}が必要")));
+        }
+        let content = node_content(
+            normalized_candidate(node, &candidate_ids, control)?,
+            control,
+        )?;
+        let key = verified.get(&content).ok_or_else(|| {
+            invalid(format!(
+                "nodes[{index}]の型・payload・由来・条件・証拠を現在の導出へ照合できない"
+            ))
+        })?;
+        candidate_ids.insert(id.to_owned(), key.clone());
+    }
+    // node番号・順序・共有を意味にしない。各Refを検査済みの導出内容へ正規化する。
+    // digest一致で済ませず、payload・型・全依存・元位置を含むcanonical全文を照合する。
+    let answers = normalized_candidate(field(document, "answers")?, &candidate_ids, control)?;
+    if answers != normalized_wire(wire_field(&replay, "answers")?, &native_ids, control)? {
+        return Err(invalid("回答を現在の検査済み導出へ照合できない"));
+    }
+    let issues = normalized_candidate(field(document, "issues")?, &candidate_ids, control)?;
+    if issues != normalized_wire(wire_field(&replay, "issues")?, &native_ids, control)? {
+        return Err(invalid("issuesを現在の検査済み導出へ照合できない"));
+    }
+    let code = match evaluation.status() {
+        "partial" => 2,
+        "complete" => u64::from(
+            evaluation
+                .answers
+                .iter()
+                .any(|a| a.status == crate::observed::result::Decision::Refuted),
+        ),
+        _ => return Err(invalid("確定していない候補照合")),
+    };
+    if field(document, "exit_code")?.value != JValue::Num(code.to_string()) {
+        return Err(invalid("exit_codeを計算結果へ照合できない"));
+    }
+    control.checkpoint(Checkpoint::Reuse)?;
+    Ok(())
 }

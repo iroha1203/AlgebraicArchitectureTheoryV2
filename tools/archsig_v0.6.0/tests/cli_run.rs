@@ -672,9 +672,14 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
     args.inputs.out = dir.join("measured");
     let seen = Rc::new(Cell::new(0usize));
     let count = Rc::clone(&seen);
+    let before_evaluation = Rc::new(Cell::new(None));
+    let split = Rc::clone(&before_evaluation);
     let mut control = Control::new(Limits::default(), move |point| {
         if point == Checkpoint::Reuse {
             count.set(count.get() + 1);
+        }
+        if point == Checkpoint::Expression && split.get().is_none() {
+            split.set(Some(count.get()));
         }
         Usage::default()
     });
@@ -687,7 +692,9 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
     );
     assert_eq!(outcome.exit_code, 0);
     let total = seen.get();
+    let before_evaluation = before_evaluation.get().unwrap();
     assert!(total > 10);
+    assert!(before_evaluation < total - 1);
     for at in [1, 2, 10, total - 1, total] {
         for (signal, code) in [
             (None, 75),
@@ -724,8 +731,33 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
             assert_eq!(outcome.exit_code, code);
             assert_eq!(seen.get(), at, "停止後にprobeしない");
             assert_eq!(signals.freezes, 1);
-            assert!(outcome.result.is_none());
-            assert!(!args.inputs.out.exists());
+            if at <= before_evaluation {
+                assert!(outcome.result.is_none());
+                assert!(!args.inputs.out.exists());
+            } else {
+                assert!(
+                    outcome.result.is_some(),
+                    "照合前に得た検査済み結果を保持する"
+                );
+                let res = archsig::json::parse(
+                    &std::fs::read(args.inputs.out.join("result.json")).unwrap(),
+                )
+                .unwrap();
+                assert_eq!(num(get(&res, "exit_code")), u64::from(code));
+                assert_eq!(s(get(&res, "status")), "interrupted");
+                assert_eq!(
+                    s(get(
+                        node(&res, get(get(answer(&res, "n"), "outputs"), "value")),
+                        "value"
+                    )),
+                    "2"
+                );
+                assert!(
+                    arr(get(&res, "answers"))
+                        .iter()
+                        .all(|a| s(get(a, "status")) == "established")
+                );
+            }
             let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
             assert!(!arr(get(&receipt, "issues")).is_empty());
             assert!(!std::fs::read_dir(&dir).unwrap().any(|e| {
