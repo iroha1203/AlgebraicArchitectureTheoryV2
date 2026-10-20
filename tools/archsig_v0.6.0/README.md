@@ -166,6 +166,15 @@ correspondence由来のときだけ `Some` を返す。各結果の `recheck()` 
 追加検査が反証・未決でも `operation()` にconfiguration操作を保持する。
 Law・方程式・不変量等の運搬はそれぞれの追加読取りを要し、再照合は `recheck()` で行う。
 
+`construction::maps::declaration_correspondence(&checked, verified_map, &mut control)`
+は保存済み原始correspondenceから、選択reading間の宣言候補と署名対応を構成する。
+`types()` は原始型の移送、`candidates()` はsourceの全Law/view/local/change/relationを持つ。
+各候補の `source()/target()` で元metadataと式・依存先の位置、`failures()` で名前・kind・
+parameter数・移送後の型の不適合を読める。位置によるowner名対応と複合型・view戻り型まで
+適合した場合だけ `pair()` を返す。別readingやaliasから候補を補わない。
+`all_signatures_compatible()` は署名照合の結果であり、role・guard・body・値の保存は追加検査を要する。
+不適合時も `operation()` を保持し、現在の入力での再照合には `recheck()` を使う。
+
 ## 仕様
 
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): 入力・問い・型付き結果の形式と意味。
