@@ -39,6 +39,9 @@ Lean要件を含むPRDでは
 
 1. 前提を確認する。
    - `git status --short --branch`
+   - 対象commitとPRDの内容hashを固定する。以後の証拠・検証は同じsnapshotに揃える。
+     作業ツリー差分を含む単独レビューでは、対象ファイルの内容hashも記録する。
+     監査中に対象が変わった場合、その結果を新しい状態の完了判定に流用しない。
    - PRD ファイル全体
    - PRD の Acceptance Criteria / 達成条件 / 完了条件 / Non-goals / Scope
    - 関連する Issue / PR / tracking checklist が明示されている場合はそれら
@@ -64,8 +67,8 @@ Lean要件を含むPRDでは
      旧構造・旧挙動・旧文言(型、フィールド、fail-fast 挙動、hardcode、docs 記述)を
      1 項目 1 行で抽出する。PRD が明示的に「別 PRD の管轄」「既知の残置」とした項目は
      除外し、除外理由を併記する。
-   - 親 Codex が条件リストと拘束条件リストを確定し、sub-agent には両方をレビュー対象として渡す。
-     ただし親リストは単一障害点になりうるため、手順4の独立抽出レーンで検算する。
+   - 親 Codex の抽出は統合時の照合用とし、laneへ渡さない。4本それぞれがPRD全文から
+     独立に同じ抽出を行い、親は手順5で差分を検算する。
 
 3. 証拠を集める。
    - `rg` と対象ディレクトリの読み取りで、各達成条件に対応するコード、Lean 定理、schema、fixtures、tests、docs、website surface を確認する。
@@ -86,15 +89,22 @@ Lean要件を含むPRDでは
    - 実行できない検証は、理由と判定への影響を明記する。
 
 4. subagentで複数観点レビューを行う。
-   - [references/reviewer-lanes.md](references/reviewer-lanes.md)の横断4観点と
-     独立抽出laneを、共有契約どおり利用可能枠まで並行する。
-   - 条件数ではなくcoverageで判断し、横断laneだけでは一次証拠を実読できない
-     条件群ごとに深掘りlaneを追加する。
+   - [references/reviewer-lanes.md](references/reviewer-lanes.md)の要件査読A/Bと
+     実装・検証査読A/Bの4本を、共有review protocolどおり新規・履歴なしで起動する。
+     4本は同じ合格基準を持つ重複独立査読とし、PRレビューの判定を再利用しない。
+   - 独立抽出と必要な深掘りは各lane内で行う。条件群が多い場合は同じlane内で順次読み、
+     抽出専用laneや深掘りlaneを追加しない。読めない範囲はcoverage不足として返す。
 
 5. 親 Codex が統合判定する。
    - sub-agent の指摘を PRD 条件単位に統合する。
    - 重複、矛盾、過剰 claim、PRD 外要求を整理する。
    - 各条件を `満たした`, `未達`, `未確認`, `PRD欠陥`, `範囲外` に分類する。
+   - 親と4本の条件抽出・判定・coverageを照合し、欠落と不一致を一次証拠で解消する。
+     4本すべての有資格な結果と親の再判定が揃い、全必須条件・拘束条件・must-not-remain・
+     問いの回答が確認できた場合だけ `達成済み` とする。未完了lane、未解消finding、
+     coverage不足は親の自己点検で埋めず、未達・未確認・PRD欠陥として報告する。
+   - findingは実装側へまとめて戻す。修正後はsnapshotを固定し直し、4本すべてを新規に
+     再実行する。完了判定にはfinding限定の直接対応を適用しない。
 
 ## Lean 反証チェックリスト
 

@@ -191,7 +191,7 @@ lane定義、追加出力、統合schemaは
 [references/reviewer-lanes.md](references/reviewer-lanes.md)を読む。
 
 起動時点は共有review protocolの「レビューバッチと修正後確認」が許可する時点(PR作成後の
-レビューゲート、`target-theorem-loop`の完了判定、`prd-loop`のエスカレーション)に限る。
+レビューゲート、`target-theorem-loop`の完了判定)に限る。
 実装中はfocused checkまたは必要な単一subagentの確認に限定する。PRレビューゲートの正式査読で
 findingが出た場合は、全laneのfindingをまとめて実装フェーズを再開し、修正後の確認は共有
 review protocolの「レビューバッチと修正後確認」に従う(直接対応の資格条件・確認subagentの
