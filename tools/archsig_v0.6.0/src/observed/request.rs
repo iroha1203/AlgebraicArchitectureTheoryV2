@@ -1120,7 +1120,21 @@ fn cycle_failure(requests: &[Request], cyclic: &[usize]) -> ResolveFailure {
                 RequestIssueCode::Cycle,
                 &requests[i].id,
                 &requests[i].id,
-                "問いの依存に循環がある",
+                &format!(
+                    "問いの依存に循環がある: {}。{} の依存辺: {}",
+                    cyclic
+                        .iter()
+                        .map(|&j| requests[j].id.as_str())
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                    requests[i].id,
+                    requests[i]
+                        .dependencies
+                        .iter()
+                        .map(|dep| format!("{} -> {dep}", requests[i].id))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
             ),
         );
     }

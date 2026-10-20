@@ -18,6 +18,7 @@ pub enum EvaluationFailure {
         declaration: String,
         location: Location,
         feature: String,
+        partial: Box<ObservedEvaluation>,
     },
 }
 impl EvaluationFailure {

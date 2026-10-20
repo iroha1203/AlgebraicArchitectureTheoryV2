@@ -1,4 +1,4 @@
-//! `archsig check` と `archsig version`。
+//! `archsig check`・`run`・`version`。
 
 use archsig::result::Signal;
 use archsig::run::{
@@ -92,12 +92,16 @@ impl ProcessSignals {
         }
     }
 
-    fn control(&self, started: Instant) -> archsig::observed::control::Control {
-        use archsig::observed::control::{Control, Limits, Usage};
+    fn control(
+        &self,
+        started: Instant,
+        limits: archsig::observed::control::Limits,
+    ) -> archsig::observed::control::Control {
+        use archsig::observed::control::{Control, Usage};
         let first = Arc::clone(&self.first);
         let int = Arc::clone(&self.int);
         let term = Arc::clone(&self.term);
-        Control::new(Limits::default(), move |_| Usage {
+        Control::new(limits, move |_| Usage {
             elapsed_ms: started.elapsed().as_millis(),
             memory_mib: u128::from(archsig::run::peak_rss_bytes()) / (1024 * 1024),
             signal: Self::observed_signal(&first, &int, &term),
@@ -155,7 +159,8 @@ fn execute(
     match parse_args(args) {
         Ok(Command::Version) => (None, VERSION_LINE),
         Ok(Command::Check(check)) => {
-            let mut control = signals.control(started);
+            let mut control =
+                signals.control(started, archsig::observed::control::Limits::default());
             let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 run_check(&mut io, &mut *signals, &check, started, &mut control)
             }));
@@ -172,6 +177,16 @@ fn execute(
                 ),
             }
         }
+        Ok(Command::Run(run)) => {
+            let mut control = signals.control(started, run.limits());
+            let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                archsig::run::run_requests(&mut io, &mut *signals, &run, started, &mut control)
+            }));
+            (
+                Some(outcome.unwrap_or_else(|_| archsig::run::run_internal_outcome(&mut *signals))),
+                "",
+            )
+        }
         Err(e) => (Some(usage_outcome(&mut io, signals, e, started)), ""),
     }
 }
@@ -183,7 +198,10 @@ mod tests {
 
     fn signal_reaches_control(signal: i32, expected: Signal) {
         let mut signals = ProcessSignals::new();
-        let mut control = signals.control(Instant::now());
+        let mut control = signals.control(
+            Instant::now(),
+            archsig::observed::control::Limits::default(),
+        );
         signal_hook::low_level::raise(signal).unwrap();
         assert_eq!(
             control.checkpoint(Checkpoint::DefinitionSchema),
@@ -215,7 +233,10 @@ mod tests {
                 )),
                 frozen: None,
             };
-            let mut control = signals.control(Instant::now());
+            let mut control = signals.control(
+                Instant::now(),
+                archsig::observed::control::Limits::default(),
+            );
             assert_eq!(
                 control.checkpoint(Checkpoint::LawSemantics),
                 Err(StopReason::Cancelled(expected))
