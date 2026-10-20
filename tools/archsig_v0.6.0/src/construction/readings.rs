@@ -1,6 +1,7 @@
 //! 標準対象域に適用されるLaw/viewの参照束縛と、未代入の全域値parameter。
 use super::*;
 use crate::law::model::{DeclarationInfo, Param, Signature};
+use crate::observed::input::InputBytes;
 use maps::ObjectIdentity;
 
 /// 同じ原始owner slotには同じ値を要求する。条件の成立はまだ観測していない。
@@ -77,6 +78,7 @@ impl ObjectInstance {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ObjectReadingInstances {
     construction: ConfigurationConstruction,
+    source_law: InputBytes,
     objects: Vec<ReadingObject>,
     declarations: Vec<DeclarationInfo>,
     instances: Vec<ObjectInstance>,
@@ -84,6 +86,10 @@ pub struct ObjectReadingInstances {
 impl ObjectReadingInstances {
     pub fn construction(&self) -> &ConfigurationConstruction {
         &self.construction
+    }
+    /// 式・guard・helperの元byte列。metadataのspanはこの入力内の出現を指す。
+    pub fn source_law(&self) -> &InputBytes {
+        &self.source_law
     }
     pub fn objects(&self) -> &[ReadingObject] {
         &self.objects
@@ -441,13 +447,15 @@ pub fn object_reading_instances(
             });
         }
     }
-    checkpoint(control)?;
-    Ok(ObjectReadingInstances {
+    let result = ObjectReadingInstances {
         construction: construction.clone(),
+        source_law: inputs.sources().law().clone(),
         objects,
         declarations,
         instances,
-    })
+    };
+    checkpoint(control)?;
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -475,7 +483,7 @@ mod tests {
         let c = construct(&i, "Selected", "v", "A", &mut Control::unlimited()).unwrap();
         let original = object_reading_instances(&i, &c, &mut Control::unlimited()).unwrap();
         original.recheck(&i, &mut Control::unlimited()).unwrap();
-        for mutation in 0..11 {
+        for mutation in 0..12 {
             let mut forged = original.clone();
             match mutation {
                 0 => {
@@ -556,6 +564,9 @@ mod tests {
                         panic!("sharing")
                     };
                     conditions[0].owner.subject = "A".into();
+                }
+                11 => {
+                    forged.source_law = InputBytes::new("law", b"changed source law".to_vec());
                 }
                 _ => unreachable!(),
             }

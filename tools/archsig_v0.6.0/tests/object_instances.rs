@@ -584,3 +584,40 @@ fn primitive_array_order_keeps_object_and_instance_identity_order() {
     assert_ne!(a, reversed);
     assert_eq!(r, instances(&inputs(L, &reversed)));
 }
+#[test]
+fn original_body_guard_and_helper_bytes_cannot_be_reattributed_by_equal_metadata() {
+    let original = inputs(L, A);
+    let r = instances(&original);
+    assert_eq!(r.source_law(), original.sources().law());
+    for (from, to) in [
+        ("c.quantity + delta >= 0", "c.quantity + delta <= 0"),
+        ("when delta >= 0", "when delta <= 0"),
+        ("= x.quantity;", "= -123456789;"),
+    ] {
+        assert_eq!(from.len(), to.len());
+        let changed = L.replacen(from, to, 1);
+        assert_ne!(changed, L);
+        let changed = inputs(&changed, A);
+        let fresh = instances(&changed);
+        assert_eq!(
+            r.instances(),
+            fresh.instances(),
+            "the original failure needs equal metadata/positions"
+        );
+        assert_eq!(r.objects(), fresh.objects());
+        assert_ne!(r.source_law(), fresh.source_law());
+        assert_ne!(r, fresh);
+        r.construction()
+            .recheck(&changed, "Selected", "v", "A", &mut Control::unlimited())
+            .unwrap();
+        assert!(
+            matches!(
+                r.recheck(&changed, &mut Control::unlimited()),
+                Err(ConstructionFailure::Inconsistent(_))
+            ),
+            "source change {from}"
+        );
+        fresh.recheck(&changed, &mut Control::unlimited()).unwrap();
+        assert_eq!(r.source_law(), original.sources().law());
+    }
+}

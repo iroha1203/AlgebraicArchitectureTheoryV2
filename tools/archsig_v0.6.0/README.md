@@ -182,7 +182,8 @@ parameter数・移送後の型の不適合を読める。位置によるowner名
 `parameters()` は残る値parameterの全型域、`applications()` は同じ対象順の適用条件を持つ。
 外部参照型の束縛は原始有限族を固定し、同じ未知slotに異なるownerを要求する組合せを除く。
 量fieldが未観測でもinstanceを保持する。元宣言・role・式・helper依存・位置は
-`declaration()` に保持し、`recheck()` は現在入力から構成を再実行する。
+`declaration()` に保持する。`source_law()` は式・guard・helperを含む元Lawのbyte列を持ち、
+metadataの位置をこの入力へ結び付ける。`recheck()` は現在入力から構成を再実行し、元Lawも照合する。
 このAPIは型付き実評価へ渡すinstanceを構成し、各式の評価にはその全域parameterと元入力を使う。
 
 ## 仕様
