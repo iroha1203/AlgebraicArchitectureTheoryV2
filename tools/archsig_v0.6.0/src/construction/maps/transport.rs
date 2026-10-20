@@ -1,33 +1,52 @@
 //! 同じ対応総写像による対象族の保存と、内部生成操作の全U自然性。
 use super::*;
 
+/// Configuration保存後に、実像がObjectAlgebraの該当する族へ属さない構成条件の不成立。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum TransportConditionFailure {
+    TargetObject {
+        source: FactPointer,
+        image: FactPointer,
+    },
+    TargetGenerator {
+        source: FactPointer,
+        image: FactPointer,
+    },
+}
 /// 全行で同じbase対応作用を使い、対象identityと各部分Configurationを保持する。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ObjectTransport {
     source: ObjectIdentity,
-    target: ObjectIdentity,
+    target: Option<ObjectIdentity>,
     source_configuration: Configuration,
-    target_configuration: Configuration,
+    target_configuration: Option<Configuration>,
     counterexamples: Vec<Counterexample>,
+    condition_failure: Option<TransportConditionFailure>,
 }
 impl ObjectTransport {
     pub fn source(&self) -> &ObjectIdentity {
         &self.source
     }
-    pub fn target(&self) -> &ObjectIdentity {
-        &self.target
+    pub fn target(&self) -> Option<&ObjectIdentity> {
+        self.target.as_ref()
     }
     pub fn source_configuration(&self) -> &Configuration {
         &self.source_configuration
     }
-    pub fn target_configuration(&self) -> &Configuration {
-        &self.target_configuration
+    pub fn target_configuration(&self) -> Option<&Configuration> {
+        self.target_configuration.as_ref()
     }
     pub fn counterexamples(&self) -> &[Counterexample] {
         &self.counterexamples
     }
     pub fn is_preserved(&self) -> bool {
-        self.counterexamples.is_empty()
+        self.target.is_some()
+            && self.target_configuration.is_some()
+            && self.condition_failure.is_none()
+            && self.counterexamples.is_empty()
+    }
+    pub fn condition_failure(&self) -> Option<&TransportConditionFailure> {
+        self.condition_failure.as_ref()
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -46,11 +65,13 @@ pub struct GeneratorTransport {
     target: FactPointer,
     endpoints_preserved: Option<bool>,
     naturality: Option<Naturality>,
+    condition_failure: Option<TransportConditionFailure>,
 }
 impl GeneratorTransport {
     pub fn source(&self) -> &FactPointer {
         &self.source
     }
+    /// 原始対応の像。生成元の族への所属はcondition_failure()で確認する。
     pub fn target(&self) -> &FactPointer {
         &self.target
     }
@@ -59,6 +80,9 @@ impl GeneratorTransport {
     }
     pub fn naturality(&self) -> Option<&Naturality> {
         self.naturality.as_ref()
+    }
+    pub fn condition_failure(&self) -> Option<&TransportConditionFailure> {
+        self.condition_failure.as_ref()
     }
 }
 /// Configurationの対象・内部生成操作に関する保存。Law等の追加読取りは別途検査する。
@@ -96,7 +120,9 @@ impl ConfigurationTransport {
             && self.target.all_preserved()
             && self.objects.iter().all(ObjectTransport::is_preserved)
             && self.generators.iter().all(|g| {
-                g.endpoints_preserved == Some(true) && g.naturality == Some(Naturality::Preserved)
+                g.condition_failure.is_none()
+                    && g.endpoints_preserved == Some(true)
+                    && g.naturality == Some(Naturality::Preserved)
             })
     }
     pub fn recheck(
@@ -243,21 +269,42 @@ pub fn configuration_transport(
                 break;
             }
         }
-        let target_config = selected.ok_or_else(|| {
-            ConstructionFailure::Inconsistent("保存済み対応の像が終域対象族にない".into())
-        })?;
+        let (target_object, target_configuration, counterexamples, condition_failure) =
+            if let Some(target_config) = selected {
+                (
+                    Some(ObjectIdentity::selected(
+                        c.to_reading(),
+                        c.target_root(),
+                        target_subject,
+                    )),
+                    Some(target_config.clone()),
+                    preservation_counterexamples(
+                        source_config,
+                        target_config,
+                        true,
+                        &action,
+                        control,
+                    )?,
+                    None,
+                )
+            } else {
+                (
+                    None,
+                    None,
+                    vec![],
+                    Some(TransportConditionFailure::TargetObject {
+                        source: source_subject.clone(),
+                        image: target_subject.clone(),
+                    }),
+                )
+            };
         object_rows.push(ObjectTransport {
             source: ObjectIdentity::selected(c.reading(), c.source_root(), source_subject),
-            target: ObjectIdentity::selected(c.to_reading(), c.target_root(), target_subject),
+            target: target_object,
             source_configuration: source_config.clone(),
-            target_configuration: target_config.clone(),
-            counterexamples: preservation_counterexamples(
-                source_config,
-                target_config,
-                true,
-                &action,
-                control,
-            )?,
+            target_configuration,
+            counterexamples,
+            condition_failure,
         });
     }
     let mut generators = Vec::new();
@@ -272,23 +319,30 @@ pub fn configuration_transport(
                 break;
             }
         }
-        let f = selected.ok_or_else(|| {
-            ConstructionFailure::Inconsistent("保存済み対応の像が終域内部arrowにない".into())
-        })?;
-        let (endpoints_preserved, naturality) = if let (Some(e), Some(f)) = (e.map(), f.map()) {
-            let e = e.candidate();
-            let f = f.candidate();
-            let endpoints = image(&action, e.source_root())? == f.source_root()
-                && image(&action, e.target_root())? == f.target_root();
-            (Some(endpoints), Some(naturality(c, e, f, control)?))
+        let condition_failure = if selected.is_none() {
+            Some(TransportConditionFailure::TargetGenerator {
+                source: e.arrow().clone(),
+                image: target_arrow.clone(),
+            })
         } else {
-            (None, None)
+            None
         };
+        let (endpoints_preserved, naturality) =
+            if let (Some(e), Some(f)) = (e.map(), selected.and_then(InternalArrowResult::map)) {
+                let e = e.candidate();
+                let f = f.candidate();
+                let endpoints = image(&action, e.source_root())? == f.source_root()
+                    && image(&action, e.target_root())? == f.target_root();
+                (Some(endpoints), Some(naturality(c, e, f, control)?))
+            } else {
+                (None, None)
+            };
         generators.push(GeneratorTransport {
             source: e.arrow().clone(),
             target: target_arrow,
             endpoints_preserved,
             naturality,
+            condition_failure,
         });
     }
     tick(control)?;
@@ -304,6 +358,24 @@ pub fn configuration_transport(
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn cross_kind_inputs() -> CheckedInputs {
+        let d = include_bytes!("../../../tests/fixtures/cross-kind-transport.atoms.json");
+        let definitions = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
+        let digest = &definitions.vocabularies["V"].digest;
+        crate::observed::input::check_inputs(
+            crate::observed::input::InputSources::from_bytes(
+                vec![d.to_vec()],
+                include_str!("../../../tests/fixtures/cross-kind-transport.law")
+                    .replace("@DIGEST@", digest)
+                    .into_bytes(),
+                include_str!("../../../tests/fixtures/cross-kind-transport.archmap.json")
+                    .replace("@DIGEST@", digest)
+                    .into_bytes(),
+            ),
+            &mut Control::unlimited(),
+        )
+        .unwrap()
+    }
     fn inputs(map: &str) -> CheckedInputs {
         crate::observed::input::check_inputs(
             crate::observed::input::InputSources::from_bytes(
@@ -347,7 +419,7 @@ mod tests {
                 }
                 4 => {
                     let source = forged.objects[1].source.subject().clone();
-                    let image = forged.objects[1].target.subject().clone();
+                    let image = forged.objects[1].target.as_ref().unwrap().subject().clone();
                     forged.objects[1]
                         .counterexamples
                         .push(Counterexample::Family { source, image });
@@ -398,5 +470,47 @@ mod tests {
         ));
         forged.generators[0].naturality = Some(Naturality::Preserved);
         assert!(forged.recheck(&bad, &mut Control::unlimited()).is_err());
+    }
+    #[test]
+    fn recheck_rejects_erased_condition_failures_and_fabricated_targets() {
+        let i = cross_kind_inputs();
+        let m = correspondence(&i, "v", "m", "Read", None, &mut Control::unlimited()).unwrap();
+        let original =
+            configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+        assert!(original.objects[2].condition_failure.is_some());
+        assert!(original.generators[0].condition_failure.is_some());
+        for kind in 0..5 {
+            let mut forged = original.clone();
+            match kind {
+                0 => {
+                    forged.objects[2].condition_failure = None;
+                }
+                1 => {
+                    forged.objects[2].target = forged.objects[1].target.clone();
+                    forged.objects[2].target_configuration =
+                        forged.objects[1].target_configuration.clone();
+                    forged.objects[2].condition_failure = None;
+                }
+                2 => {
+                    forged.generators[0].condition_failure = None;
+                    forged.generators[0].naturality = Some(Naturality::Preserved);
+                    forged.generators[0].endpoints_preserved = Some(true);
+                }
+                3 => {
+                    forged.generators.clear();
+                }
+                _ => {
+                    forged.objects[2].condition_failure =
+                        Some(TransportConditionFailure::TargetObject {
+                            source: forged.objects[1].source.subject().clone(),
+                            image: forged.objects[1].source.subject().clone(),
+                        });
+                }
+            }
+            assert!(
+                forged.recheck(&i, &mut Control::unlimited()).is_err(),
+                "{kind}"
+            );
+        }
     }
 }

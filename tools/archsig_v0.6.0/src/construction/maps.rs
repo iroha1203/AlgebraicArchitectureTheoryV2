@@ -11,7 +11,7 @@ pub use operations::{
 };
 pub use transport::{
     ConfigurationTransport, GeneratorTransport, Naturality, ObjectTransport,
-    configuration_transport,
+    TransportConditionFailure, configuration_transport,
 };
 
 type SubjectKey = (String, String);

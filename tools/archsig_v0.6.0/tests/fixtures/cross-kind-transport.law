@@ -1,0 +1,1 @@
+law "archsig.law/2" semantics "archsig/0.6.0"; reading Read { use vocabulary V version "1" digest "@DIGEST@"; }

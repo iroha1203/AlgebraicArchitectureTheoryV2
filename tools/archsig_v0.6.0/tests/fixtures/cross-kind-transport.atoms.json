@@ -1,0 +1,217 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "V",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "V.R",
+          "meaning": "root",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "V.P",
+          "meaning": "point",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "V.R"
+              ],
+              "meaning": "owner"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "V.S",
+          "meaning": "S",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "V.R"
+              ],
+              "meaning": "owner"
+            },
+            {
+              "name": "from",
+              "type": [
+                "Owned",
+                "V.P",
+                "owner"
+              ],
+              "meaning": "from"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Owned",
+                "V.P",
+                "owner"
+              ],
+              "meaning": "to"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "arrow",
+          "name": "V.E",
+          "meaning": "E",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "V.R"
+              ],
+              "meaning": "owner"
+            },
+            {
+              "name": "from",
+              "type": [
+                "Owned",
+                "V.P",
+                "owner"
+              ],
+              "meaning": "from"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Owned",
+                "V.P",
+                "owner"
+              ],
+              "meaning": "to"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "correspondence",
+          "name": "V.M",
+          "meaning": "migration",
+          "parameters": [
+            {
+              "name": "from",
+              "type": [
+                "Ref",
+                "V.R"
+              ],
+              "meaning": "from"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Ref",
+                "V.R"
+              ],
+              "meaning": "to"
+            }
+          ],
+          "fields": [
+            {
+              "name": "ps",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "V.P",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "V.P",
+                  "to"
+                ]
+              ],
+              "meaning": "ps"
+            },
+            {
+              "name": "ss",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "V.S",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "V.E",
+                  "to"
+                ]
+              ],
+              "meaning": "ss"
+            },
+            {
+              "name": "es",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "V.E",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "V.S",
+                  "to"
+                ]
+              ],
+              "meaning": "es"
+            }
+          ],
+          "alignments": [
+            {
+              "source": "V.S.owner",
+              "target": "V.E.owner",
+              "meaning": "owner"
+            },
+            {
+              "source": "V.S.from",
+              "target": "V.E.from",
+              "meaning": "from"
+            },
+            {
+              "source": "V.S.to",
+              "target": "V.E.to",
+              "meaning": "to"
+            },
+            {
+              "source": "V.E.owner",
+              "target": "V.S.owner",
+              "meaning": "owner"
+            },
+            {
+              "source": "V.E.from",
+              "target": "V.S.from",
+              "meaning": "from"
+            },
+            {
+              "source": "V.E.to",
+              "target": "V.S.to",
+              "meaning": "to"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

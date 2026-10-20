@@ -2,8 +2,8 @@ use archsig::{
     construction::{
         ConstructionFailure, FactPointer,
         maps::{
-            ConfigurationTransport, Naturality, configuration_transport, correspondence, identity,
-            internal_arrow,
+            ConfigurationTransport, Naturality, TransportConditionFailure, configuration_transport,
+            correspondence, identity, internal_arrow,
         },
     },
     observed::{
@@ -32,6 +32,24 @@ fn with_definition(d: &[u8], a: &str) -> CheckedInputs {
 }
 fn inputs(a: &str) -> CheckedInputs {
     with_definition(D, a)
+}
+fn cross_kind_inputs() -> CheckedInputs {
+    let d = include_bytes!("fixtures/cross-kind-transport.atoms.json");
+    let defs = archsig::definition::check_definitions(&[("definition0", d)]).unwrap();
+    let digest = &defs.vocabularies["V"].digest;
+    check_inputs(
+        InputSources::from_bytes(
+            vec![d.to_vec()],
+            include_str!("fixtures/cross-kind-transport.law")
+                .replace("@DIGEST@", digest)
+                .into_bytes(),
+            include_str!("fixtures/cross-kind-transport.archmap.json")
+                .replace("@DIGEST@", digest)
+                .into_bytes(),
+        ),
+        &mut Control::unlimited(),
+    )
+    .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
 fn fact(id: &str, f: Option<&str>) -> FactPointer {
     let ty = match id {
@@ -117,12 +135,17 @@ fn actual_objects_share_the_base_action_and_all_universe_naturality() {
         .zip([("A", "B"), ("p", "r"), ("q", "s"), ("u", "w")])
     {
         assert_eq!(row.source().subject(), &fact(a, None));
-        assert_eq!(row.target().subject(), &fact(b, None));
+        assert_eq!(row.target().unwrap().subject(), &fact(b, None));
         assert_eq!(row.source().root(), &fact("A", None));
-        assert_eq!(row.target().root(), &fact("B", None));
+        assert_eq!(row.target().unwrap().root(), &fact("B", None));
         assert!(row.is_preserved());
         for f in row.source_configuration().family() {
-            assert!(row.target_configuration().family().contains(&mu(f)));
+            assert!(
+                row.target_configuration()
+                    .unwrap()
+                    .family()
+                    .contains(&mu(f))
+            );
         }
     }
     assert_eq!(
@@ -131,7 +154,7 @@ fn actual_objects_share_the_base_action_and_all_universe_naturality() {
     );
     assert_eq!(
         r.objects()[0].target_configuration(),
-        r.action().target_configuration()
+        Some(r.action().target_configuration())
     );
     let [g] = r.generators() else {
         panic!("all generators")
@@ -272,7 +295,7 @@ fn all_named_generators_and_separate_readings_remain_in_transport() {
     assert!(r.all_preserved());
     for o in r.objects() {
         assert_eq!(o.source().reading(), "Reservations");
-        assert_eq!(o.target().reading(), "Alternative");
+        assert_eq!(o.target().unwrap().reading(), "Alternative");
     }
 }
 #[test]
@@ -328,54 +351,106 @@ fn current_raw_maps_and_universe_are_rechecked_but_quantities_do_not_define_stru
 }
 #[test]
 fn every_fixed_transport_stop_latches_without_new_probes() {
-    let i = inputs(A);
-    let r = result(&i);
-    let map = r.operation().map();
-    let count = Rc::new(Cell::new(0usize));
-    let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
-        if p == Checkpoint::ConfigurationTransport {
-            seen.set(seen.get() + 1);
-        }
-        Usage::default()
-    });
-    configuration_transport(&i, map, &mut c).unwrap();
-    let total = count.get();
-    assert!(total > 39);
-    for at in [1, total / 2, total] {
-        for mode in 0..4 {
-            let count = Rc::new(Cell::new(0usize));
-            let seen = count.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |p| {
-                    if p == Checkpoint::ConfigurationTransport {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
-            let f = configuration_transport(&i, map, &mut c).unwrap_err();
-            assert_eq!(f, ConstructionFailure::Stopped(c.stop_reason().unwrap()));
-            assert_eq!(count.get(), at);
-            assert_eq!(r.recheck(&i, &mut c).unwrap_err(), f);
-            assert_eq!(count.get(), at);
+    for (i, reading) in [(inputs(A), "Reservations"), (cross_kind_inputs(), "Read")] {
+        let m = correspondence(&i, "v", "m", reading, None, &mut Control::unlimited()).unwrap();
+        let r = configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+        let map = r.operation().map();
+        let count = Rc::new(Cell::new(0usize));
+        let seen = count.clone();
+        let mut c = Control::new(Limits::default(), move |p| {
+            if p == Checkpoint::ConfigurationTransport {
+                seen.set(seen.get() + 1);
+            }
+            Usage::default()
+        });
+        configuration_transport(&i, map, &mut c).unwrap();
+        let total = count.get();
+        assert!(total > 39);
+        for at in [1, total / 2, total] {
+            for mode in 0..4 {
+                let count = Rc::new(Cell::new(0usize));
+                let seen = count.clone();
+                let mut c = Control::new(
+                    Limits {
+                        time_ms: (mode == 0).then_some(1),
+                        memory_mib: (mode == 1).then_some(1),
+                    },
+                    move |p| {
+                        if p == Checkpoint::ConfigurationTransport {
+                            seen.set(seen.get() + 1);
+                        }
+                        let stop = seen.get() >= at;
+                        Usage {
+                            elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
+                            memory_mib: if stop && mode == 1 { 1 } else { 0 },
+                            signal: if stop {
+                                match mode {
+                                    2 => Some(Signal::Int),
+                                    3 => Some(Signal::Term),
+                                    _ => None,
+                                }
+                            } else {
+                                None
+                            },
+                        }
+                    },
+                );
+                let f = configuration_transport(&i, map, &mut c).unwrap_err();
+                assert_eq!(f, ConstructionFailure::Stopped(c.stop_reason().unwrap()));
+                assert_eq!(count.get(), at);
+                assert_eq!(r.recheck(&i, &mut c).unwrap_err(), f);
+                assert_eq!(count.get(), at);
+            }
         }
     }
+}
+#[test]
+fn cross_kind_configuration_maps_keep_object_and_generator_condition_failures_and_operation() {
+    let i = cross_kind_inputs();
+    let m = correspondence(&i, "v", "m", "Read", None, &mut Control::unlimited()).unwrap();
+    assert!(m.missing().is_empty());
+    assert!(m.counterexamples().is_empty());
+    let r = configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+    assert!(!r.all_preserved());
+    assert!(r.source().all_preserved());
+    assert!(r.target().all_preserved());
+    let f = |id: &str| FactPointer {
+        snapshot: "v".into(),
+        subject: id.into(),
+        field: None,
+        atom: None,
+    };
+    assert_eq!(r.objects().len(), 3);
+    assert!(r.objects()[0].is_preserved());
+    assert!(r.objects()[1].is_preserved());
+    let object = &r.objects()[2];
+    assert_eq!(object.source().subject(), &f("s"));
+    assert!(object.target().is_none());
+    assert!(object.target_configuration().is_none());
+    assert!(!object.is_preserved());
+    assert_eq!(
+        object.condition_failure(),
+        Some(&TransportConditionFailure::TargetObject {
+            source: f("s"),
+            image: f("f")
+        })
+    );
+    let [generator] = r.generators() else {
+        panic!("source generator retained")
+    };
+    assert_eq!(generator.source(), &f("e"));
+    assert_eq!(generator.target(), &f("t"));
+    assert_eq!(
+        generator.condition_failure(),
+        Some(&TransportConditionFailure::TargetGenerator {
+            source: f("e"),
+            image: f("t")
+        })
+    );
+    assert_eq!(generator.endpoints_preserved(), None);
+    assert_eq!(generator.naturality(), None);
+    r.operation()
+        .recheck(&i, &mut Control::unlimited())
+        .unwrap();
+    r.recheck(&i, &mut Control::unlimited()).unwrap();
 }
