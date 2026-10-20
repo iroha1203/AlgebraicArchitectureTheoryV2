@@ -143,6 +143,72 @@ fn established_false_refuted_and_inapplicable_results_need_no_invented_slots() {
 }
 
 #[test]
+fn known_results_under_missing_observations_do_not_request_unused_slots() {
+    let dir = setup("needed-known-missing", true);
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace(
+        "view no()",
+        "view branch(s: State): Z = if true then 7 else s.count;\n view zero(s: State): Z = s.count * 0;\n view same(s: State): Bool = s.count = s.count;\n view certain_false(s: State): Bool = false and s.count > 0;\n law optional impossible(s: State): s.count * 0 > 0;\n view no()",
+    );
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let asks = [
+        "b=evaluate(CountCheck.branch,s=@v/s)",
+        "z=evaluate(CountCheck.zero,s=@v/s)",
+        "i=evaluate(CountCheck.same,s=@v/s)",
+        "f=evaluate(CountCheck.certain_false,s=@v/s)",
+        "a=check(CountCheck.inactive,s=@v/s)",
+        "c=check(CountCheck.impossible,s=@v/s)",
+        "pb=needed($b)",
+        "pz=needed($z)",
+        "pi=needed($i)",
+        "pf=needed($f)",
+        "pa=needed($a)",
+        "pc=needed($c)",
+        "nested=needed($pb)",
+    ];
+    let run = execute(&dir, "out", None, &asks);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    for (id, value) in [("b", "7"), ("z", "0")] {
+        let a = answer(&result, id);
+        assert_eq!(s(get(a, "status")), "established");
+        assert_eq!(
+            s(get(node(&result, get(get(a, "outputs"), "value")), "value")),
+            value
+        );
+    }
+    assert_eq!(
+        get(
+            node(&result, get(get(answer(&result, "i"), "outputs"), "value")),
+            "value"
+        )
+        .value,
+        JValue::Bool(true)
+    );
+    assert_eq!(
+        get(
+            node(&result, get(get(answer(&result, "f"), "outputs"), "value")),
+            "value"
+        )
+        .value,
+        JValue::Bool(false)
+    );
+    assert_eq!(s(get(answer(&result, "c"), "status")), "refuted");
+    assert!(
+        arr(get(&result, "nodes"))
+            .iter()
+            .any(|n| arr(get(n, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "missing_observation")),
+        "元の欠測診断は消去しない"
+    );
+    for id in ["pb", "pz", "pi", "pf", "pa", "pc", "nested"] {
+        let p = plan(&result, id);
+        assert!(arr(get(p, "requirements")).is_empty(), "{id}");
+        assert!(arr(get(p, "blockers")).is_empty(), "{id}");
+    }
+}
+
+#[test]
 fn needed_preserves_algorithm_blockers_and_excludes_unrelated_missing_requests() {
     let dir = setup("needed-blockers", false);
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace(
@@ -181,6 +247,45 @@ fn needed_preserves_algorithm_blockers_and_excludes_unrelated_missing_requests()
     }
     assert!(arr(get(plan(&result, "pn"), "requirements")).is_empty());
     assert!(arr(get(plan(&result, "pn"), "blockers")).is_empty());
+}
+
+#[test]
+fn nested_plans_keep_the_original_slot_and_each_immediate_request() {
+    let dir = setup("needed-nested-chain", true);
+    let mut asks = vec!["n=evaluate(CountCheck.amount,s=@v/s)".to_owned()];
+    let mut target = "n".to_owned();
+    for index in 0..32 {
+        let id = format!("p{index}");
+        asks.push(format!("{id}=needed(${target})"));
+        target = id;
+    }
+    let run = execute(
+        &dir,
+        "out",
+        None,
+        &asks.iter().map(String::as_str).collect::<Vec<_>>(),
+    );
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    for index in 0..32 {
+        let p = plan(&result, &format!("p{index}"));
+        let target = if index == 0 {
+            "n".into()
+        } else {
+            format!("p{}", index - 1)
+        };
+        assert_eq!(s(get(p, "request")), target);
+        let requirements = arr(get(p, "requirements"));
+        assert_eq!(requirements.len(), 1);
+        assert_eq!(
+            s(get(get(&requirements[0], "field"), "field")),
+            "Counter.State.count"
+        );
+        assert_eq!(s(get(get(&requirements[0], "field"), "subject")), "s");
+        for reference in arr(get(&requirements[0], "dependents")) {
+            node(&result, reference);
+        }
+    }
 }
 
 #[test]

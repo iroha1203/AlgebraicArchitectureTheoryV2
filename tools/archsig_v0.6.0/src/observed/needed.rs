@@ -56,6 +56,20 @@ pub(super) fn sources<'a>(
     request: &Request,
     control: &Control,
 ) -> Result<Vec<(usize, &'a Answer)>, ValidationFailure> {
+    let mut requests = BTreeMap::new();
+    for (index, candidate) in graph.requests.iter().enumerate() {
+        tick(control)?;
+        if requests.insert(candidate.id.as_str(), index).is_some() {
+            return Err("ObservationPlanの元要求IDが重複する".into());
+        }
+    }
+    let mut answers = BTreeMap::new();
+    for (index, candidate) in &graph.checked_answers {
+        tick(control)?;
+        if answers.insert(*index, candidate).is_some() {
+            return Err("ObservationPlanの元回答IDが重複する".into());
+        }
+    }
     let mut pending = vec![target(request)?.to_owned()];
     let mut seen = BTreeSet::new();
     let mut result = BTreeMap::new();
@@ -67,22 +81,12 @@ pub(super) fn sources<'a>(
         if id == request.id {
             return Err("ObservationPlanの元要求が循環する".into());
         }
-        let mut index = None;
-        for (i, candidate) in graph.requests.iter().enumerate() {
-            tick(control)?;
-            if candidate.id == id && index.replace(i).is_some() {
-                return Err("ObservationPlanの元要求IDが重複する".into());
-            }
-        }
-        let index = index.ok_or("ObservationPlanの元要求がない")?;
-        let mut answer = None;
-        for (i, candidate) in &graph.checked_answers {
-            tick(control)?;
-            if *i == index && answer.replace(candidate).is_some() {
-                return Err("ObservationPlanの元回答IDが重複する".into());
-            }
-        }
-        let answer = answer.ok_or("ObservationPlanの元回答が未生成")?;
+        let index = *requests
+            .get(id.as_str())
+            .ok_or("ObservationPlanの元要求がない")?;
+        let answer = *answers
+            .get(&index)
+            .ok_or("ObservationPlanの元回答が未生成")?;
         if answer.id != id {
             return Err("ObservationPlanの元回答IDが不整合".into());
         }
@@ -123,7 +127,10 @@ fn expected(
             {
                 tick(control)?;
                 original_reasons.insert(reason.wire().canonical());
-                pending.push(reason.clone());
+                // 確定値・反証・適用外に保持された診断は、追加観測の要求にしない。
+                if answer.status == Decision::Undetermined {
+                    pending.push(reason.clone());
+                }
             }
         }
     }
@@ -156,7 +163,9 @@ fn expected(
             support.extend(node.support.iter().cloned());
             arguments.insert(reference.0);
         }
-        pending.extend(answer.reasons.iter().cloned());
+        if answer.status == Decision::Undetermined {
+            pending.extend(answer.reasons.iter().cloned());
+        }
     }
     let mut visited = BTreeSet::new();
     while let Some(reason) = pending.pop() {
@@ -258,6 +267,7 @@ pub(super) fn validate_node(
     }
     tick(control)
 }
+/// Answerの形を検査する。plan本体の意味検査はEnvironment::validate_atが行う。
 pub(super) fn validate_answer(
     graph: &Graph,
     request: &Request,
@@ -279,7 +289,10 @@ pub(super) fn validate_answer(
     {
         return Err("needed回答が元planと一致しない".into());
     }
-    validate_node(graph, node, reference.0, control)
+    if node.ty != NodeType::ObservationPlan {
+        return Err("neededの出力がObservationPlanでない".into());
+    }
+    tick(control)
 }
 pub(super) fn evaluate(
     graph: &mut Graph,
@@ -455,6 +468,15 @@ mod tests {
                 Err(ValidationFailure::Internal(_))
             ),
             "registryだけで不足理由を消せない"
+        );
+        let mut decided = graph(&result);
+        decided.checked_answers[1].1.status = Decision::Established;
+        assert!(
+            matches!(
+                environment.recheck_node(&decided, &omitted, index),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "registryの判定を偽造して追加観測を消せない"
         );
         let mut renamed = graph(&result);
         renamed.requests[0].id = "forged".into();
