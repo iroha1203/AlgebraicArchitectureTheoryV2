@@ -3,11 +3,16 @@ use super::*;
 use crate::archmap::Field;
 
 mod internal;
+mod operations;
 pub use internal::{InternalArrowResult, InternalArrows, internal_arrow, internal_arrows};
+pub use operations::{
+    ActionDifference, ConfigurationOperation, IdentityConstruction, OperationStep, identity,
+};
 
 type SubjectKey = (String, String);
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum MapOrigin {
+    Derived(operations::DerivedOrigin),
     Correspondence(FactPointer),
     InternalArrow {
         root: FactPointer,
@@ -45,35 +50,40 @@ pub struct MapCandidate {
     images: Vec<FactPointer>,
 }
 impl MapCandidate {
-    pub fn subject(&self) -> &FactPointer {
+    pub fn subject(&self) -> Option<&FactPointer> {
         match &self.origin {
-            MapOrigin::Correspondence(subject) => subject,
-            MapOrigin::InternalArrow { arrow, .. } => arrow,
+            MapOrigin::Correspondence(subject) => Some(subject),
+            MapOrigin::InternalArrow { arrow, .. } => Some(arrow),
+            MapOrigin::Derived(_) => None,
         }
     }
     pub fn correspondence(&self) -> Option<&FactPointer> {
         match &self.origin {
             MapOrigin::Correspondence(subject) => Some(subject),
-            MapOrigin::InternalArrow { .. } => None,
+            MapOrigin::InternalArrow { .. } | MapOrigin::Derived(_) => None,
         }
     }
     pub fn source_object(&self) -> ObjectIdentity {
+        let root = match &self.origin {
+            MapOrigin::Derived(origin) => return origin.source.clone(),
+            MapOrigin::Correspondence(_) => self.source_root.clone(),
+            MapOrigin::InternalArrow { root, .. } => root.clone(),
+        };
         ObjectIdentity {
             reading: self.reading.clone(),
-            root: match &self.origin {
-                MapOrigin::Correspondence(_) => self.source_root.clone(),
-                MapOrigin::InternalArrow { root, .. } => root.clone(),
-            },
+            root,
             subject: self.source_root.clone(),
         }
     }
     pub fn target_object(&self) -> ObjectIdentity {
+        let root = match &self.origin {
+            MapOrigin::Derived(origin) => return origin.target.clone(),
+            MapOrigin::Correspondence(_) => self.target_root.clone(),
+            MapOrigin::InternalArrow { root, .. } => root.clone(),
+        };
         ObjectIdentity {
             reading: self.to_reading.clone(),
-            root: match &self.origin {
-                MapOrigin::Correspondence(_) => self.target_root.clone(),
-                MapOrigin::InternalArrow { root, .. } => root.clone(),
-            },
+            root,
             subject: self.target_root.clone(),
         }
     }
@@ -115,6 +125,10 @@ impl MapCandidate {
         control: &mut Control,
     ) -> Result<(Option<MapCandidate>, Option<ConfigurationMap>), ConstructionFailure> {
         match &self.origin {
+            MapOrigin::Derived(origin) => {
+                let map = operations::recompute(inputs, &origin.steps, control)?;
+                Ok((Some(map.candidate.clone()), Some(map)))
+            }
             MapOrigin::Correspondence(subject) => {
                 let result = correspondence(
                     inputs,

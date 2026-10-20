@@ -43,6 +43,7 @@ pub enum Checkpoint {
     Configuration,
     ConfigurationMap,
     InternalArrow,
+    ConfigurationOperation,
     Expression,
     FiniteIteration,
 }

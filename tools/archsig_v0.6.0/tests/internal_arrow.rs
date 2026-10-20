@@ -91,7 +91,7 @@ fn internal_arrow_has_an_independent_total_action_and_fixed_complement() {
     assert!(r.missing().is_empty());
     assert!(r.counterexamples().is_empty());
     let c = r.candidate().unwrap();
-    assert_eq!(c.subject(), &fact("e", None));
+    assert_eq!(c.subject(), Some(&fact("e", None)));
     assert!(c.correspondence().is_none());
     assert_eq!(c.source_object().root(), &fact("A", None));
     assert_eq!(c.source_object().subject(), &fact("p", None));

@@ -128,9 +128,22 @@ Listの順序・重複と参照を含む値の構造を検査し、量leafの一
 保持し、ownerが未観測のarrowも候補行として残す。`all_preserved()` は全行の保存確認を表す。
 一つのarrowは `internal_arrow(&checked, "Reservations", "v", "A", "v", "e", &mut control)`
 で検査できる。作用はfromの部分Configurationをtoへ移し、そのF外では恒等となる。
-`candidate.subject()` で元arrow/correspondence、`source_object()/target_object()` で
+`candidate.subject()` の `Some` で元arrow/correspondence、`source_object()/target_object()` で
 reading・root・部分対象のsubject identityを読める。`candidate.correspondence()` は
 correspondence由来のときだけ `Some` を返す。各結果の `recheck()` は現在入力から再計算する。
+
+保存済みconfiguration操作は
+`ConfigurationOperation::from_map(&checked, verified_map, &mut control)` で構成する。
+`construction::maps::identity(&checked, "Reservations", "v", "A", None, &mut control)`
+はbaseの恒等を構成し、部分対象には第5引数へ `Some(("v", "p"))` を指定する。
+結果の `configuration()/missing()` で構成を読み、確定時の `operation()` を使う。
+恒等は共通Uの全元を固定し、`word()` は空となる。
+`f.compose(&checked, &g, &mut control)` は g∘f の総作用を作り、元操作を指す有限表を
+`derivation()` に残す。語は原始生成元名の順序列へ平坦化する。
+`word_equal()` と `action_difference()` は語と全域作用をそれぞれ比較し、作用の不一致では
+元位置と両像を返す。後者は同じ始終対象・readingを要求する。
+操作とそのmapの `recheck()` は元入力から構成を再実行する。恒等・合成の候補は
+`subject()/correspondence()` を `None` とし、由来を操作の構成表に保持する。
 
 ## 仕様
 
