@@ -114,7 +114,7 @@ vocabularies を namespace 順にした文書全体の canonical JSON の SHA-25
 
 検査は次の段階で行い、check/run が同じ手順を使う。利用者によるモード選択は増やさない。
 段階1・2は定義→Law→ArchMap の入力種別順に適用する。定義と Law の検査が完了した後の
-ArchMap の不正では、確認済みの manifest と宣言一覧を保持する。
+ArchMap の不正は[実行 §5](execution.md#5-ファイル操作と出力)のエラー通知で返す。
 
 1. 提示した全ファイルの構文・版・schema・名前の一意性を検査する。未知欄は syntax。
 2. 定義と Law の宣言の型・明示参照を解決し、ArchMap の binding・事実・補完の整合性を検査する。

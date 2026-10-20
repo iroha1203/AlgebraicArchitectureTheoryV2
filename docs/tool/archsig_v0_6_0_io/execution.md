@@ -26,8 +26,8 @@ Nは`[1-9][0-9]*`の整数。省略した予算に論理的上限を設けない
 [検査の段階](definitions.md#4-検査と責務)に従い、選択の外側も構文・schema・型・明示参照を検査する。
 未使用の定義・語彙・import・dependency・宣言は受理する。計算は選択した問いとその依存から進める。
 全 Atom 定義と Law 全体の静的検査が完了した場合だけ、宣言と語彙の全件を出力する。
-Atom 定義または Law の検査途中で不正・非対応・中断となった場合は、部分的な宣言一覧を返さず、入力と理由を残す。
-Atom 定義と Law の検査完了後にArchMapの検査が失敗しても、確認済みの宣言と語彙は保持する。
+指定された全入力の検査が不正・非対応・中断で終わった場合は、§5 の標準出力で理由を返す。
+検査途中の宣言一覧や入力コピーだけを、失敗記録のファイルとして保存しない。
 
 ## 2. 問いの構文と参照
 
@@ -66,7 +66,9 @@ Set、Map、意味上の集合表はindexで選べない。原始dataはAtom 定
 その他の問いでは出力fieldまで指定する。後方参照を許し、依存循環は`cycle`。
 問いの依存循環はCLI要求の不正としてexit64を返す。循環に属する各問いについて、
 Issue.requestにそのIDを入れ、Law/ArchMapのlocationを付けない。
-requestsには解決した依存グラフを保持し、意味計算前に停止してnodes/answersを空にする。
+標準出力のreceipt.issuesに各問いのcycleを返し、messageに循環する問いIDと依存辺を示す。
+解決した依存グラフは内部のrequestsに保持する。意味計算前に停止し、結果ファイルは生成しない。
+内部のnodes/answersも空とする。
 同じ優先度の問いは`--ask`の順で評価する。出力answersは指定順にする。
 存在しない問いID・公開されていない射影・宣言、静的に判明する範囲外index、引数不足、
 静的な型不一致は`usage`。
@@ -241,15 +243,22 @@ HTTP、ZIP、source uriや定義・Law参照からの追加読込みを行わな
 再利用directoryは通常のdirectoryと下記固定pathの通常ファイルだけを読み、リンク先の追加探索をしない。
 
 outは存在しないpath、親は既存directoryを要求する。満たさない場合は`usage`とし、出力を作らない。
-`check`の引数では、既知flagは次の語を値として取り、未知flagは値を取らないものとして読む。
-`check`で`--out`がちょうど一つ値とともに指定されたCLIの不正は、`usage`のissueを持つresult.jsonを残す。
-CLIの不正では入力を読まず、inputsを空にする。
+check/runの引数では、既知flagは次の語を値として取り、未知flagは値を取らないものとして読む。
+不正なコマンド引数は標準出力へusageを返し、入力を読まず、directory・result.json・入力コピーを作らない。
+出力先の指定を回復して失敗記録を保存する処理は行わない。
 入力が読めない、または通常ファイルでない場合は`io`(operation=read)とし、検査を始めない。
+入力の読込不能・構文や型の不正・非対応版、問いの不正、内部障害も標準出力へ具体的なエラーを返す。
+これらの失敗だけを記録するファイルは作らず、check/runで扱いを分けない。
 `check`は捕捉したsignalで検査を途中で止めず、finalizeの開始時に状態へ含める。
-内部障害では入力コピーとinputsを残さない。
+
+checkの検査成功結果、およびrunで得た値・命題・反例・診断・解集合・導出は依頼された成果物として保存する。
+数学的な反証・未決は、この計算結果に含める。予算・signal・内部障害で処理が止まっても、
+入力検査と要求解決を終えて既に得た検査済みの計算結果は保持し、未着手の問いへ停止理由を付ける。
+入力検査・要求解決中の停止や、計算結果が一つも得られていない停止はCLI通知のみとする。
+checkが検査を完了した後に捕捉signalを反映する場合は、確認済みの検査結果を成果物として保持する。
+保持する結果のための入力コピーと由来も同梱する。
 同じ親に一時directoryを作り、入力コピーと結果を書きflushした後、既存pathを置換しない
 renameで最終directoryを作る。競合してoutが作られた場合も上書きしない。
-捕捉した中断・不正入力・非対応版・反証も、出力を作れる場合は同じ形式で残す。
 書込み失敗時は元の出力先を変更せず、一時directoryのpathをstderrに示す。
 finalizeの状態確定と、その後の配送障害は次節に従う。
 
@@ -262,18 +271,30 @@ NEW_DIRECTORY/
   result.json            唯一の機械向け結果
 ```
 
-読めなかった入力コピーは省略し、inputsにstate=unreadを残す。
-result.jsonは[型付き結果](results.md)に従う。人向け表示はconsumerがこの結果から生成する。
+保存するresult.jsonは[型付き結果](results.md)に従う。人向けの計算結果表示はconsumerがこの結果から生成する。
 宣言の解決説明と導出は、この結果を読むための出力であり、新しいLawや実行計画の入力形式にしない。
 元の宣言は同梱した Atom 定義と Law の byte 列と Location で保持し、説明用の展開によって語彙manifestを変更しない。
 stdoutは完了時に一行だけ出力する。
 
 ```text
-{"format":"archsig.receipt/1","status":RunStatus,"exit_code":Nat,"result":String?}
+{"format":"archsig.receipt/1","status":RunStatus,"exit_code":Nat,"result":String?,"issues":Issue[]?}
 ```
 
 resultは作成したresult.jsonの呼出しcwdからのpath。作成できなければ欄を省略する。
-stderrは進捗と障害の自然文だけとし、プログラムはreceiptまたはresultのcodeで分岐する。
+実行失敗・中断の通知には非空のissuesを必須とする。Issueの型・並びは[型付き結果](results.md)を使う。
+messageには原因と、問題の引数または入力をその場で理解できる説明を入れる。
+位置を特定できる入力エラーはlocationに元入力のIDとpointer/spanを、usageはdetails.argumentを保持する。
+入力IDはlaw、archmap、指定順のdefinition0、definition1、…であり、ファイルコピーがなくてもCLIの指定と対応する。
+成果物のない通知のIssueはノード参照を持たず、dependencies/missingを空とする。
+成果物を伴う通知のノード参照は、そのresult.jsonを指す。正常な完了ではissuesを省略する。
+stderrは進捗と障害の補助説明に使い、エラーの具体的な内容をstderrだけへ隠さない。
+プログラムはreceiptのstatus/exit_codeとissuesのcode、または保存されたresultのcodeで分岐する。
+
+例えば、出力先を省略したcheckはファイルを作らず、次の一行と終了コード64を返す。
+
+```json
+{"format":"archsig.receipt/1","status":"invalid","exit_code":64,"issues":[{"code":"usage","message":"--out が必要","dependencies":[],"missing":[],"details":{"argument":"--out"}}]}
+```
 `version`は次の一行を出し0で終了する。
 
 ```json
@@ -299,16 +320,16 @@ RunStatusとexit codeは、下記のfinalize開始時の確定までに得た状
 io/internal併発時はio、複数signalは最初に捕捉したsignalを使う。
 finalize開始時にSIGINT/SIGTERMをblockし、受信済み・pendingのsignalを一度だけ判断へ含めて
 status/exit_codeを確定する。両方がpendingで受信順を取得できない場合はSIGINTを先とする。
-以後は両signalをblockしたままresultを書き、公開し、receiptをwrite/flushしてプロセスを終了する。
+以後は両signalをblockしたまま、保存する成果物があればresultを公開し、receiptをwrite/flushしてプロセスを終了する。
 確定後の新しいsignalはこの機械状態に反映せず、result、receipt、正常なプロセス終了codeは同じ確定値を使う。
 公開前のwrite/flush/rename失敗だけは配送失敗への退避とし、最終resultを公開せず、
-作成可能ならresult欄のないerror/74 receiptを出して74で終了する。
+作成可能ならresult欄のないerror/74 receiptへioのissuesを入れて出し、74で終了する。
 公開済みresultの後でreceiptのwrite/flushが失敗した場合は、確定済みresultと終了codeを変更せず、
 stderrへ可能な範囲で通知する。receiptを再出力せず、欠落または不完全なreceiptは配送未完了として扱う。
 receipt出力に伴うSIGPIPEもこのI/O失敗として捕捉し、確定済み終了codeをsignal既定動作で変更しない。
 全問いが算法非対応でもpartialである。確定反例は有効な結果であり、他の問いが未決でも保持する。
-不正入力・未対応版では数学計算を始めずnodes/answersを空にする。
-問いの選択を解決できた場合だけrequestsを埋める。
+不正入力・未対応版では数学計算を始めず、標準出力のissuesだけで理由を伝え、結果ファイルを作らない。
+保存する結果のrequestsは、問いの選択を解決できた場合だけ埋める。
 捕捉できないSIGKILL・停電で最終directoryが存在しなければ出力未確定とする。
 最終directoryと有効なresultが存在すれば計算結果は確定済みであり、receiptの欠落だけを配送未完了と読む。
 この場合はプロセスの正常終了を確認したことにはせず、確定済みのstatus/exit_codeを事後に変更しない。

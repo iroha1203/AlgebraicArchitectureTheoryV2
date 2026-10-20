@@ -2,6 +2,10 @@
 
 ## 1. result.json
 
+result.jsonは依頼された検査・計算の成果物を表す。実行失敗のエラーは
+[実行 §5](execution.md#5-ファイル操作と出力)の標準出力のreceiptへ返す。
+エラーを記録するためだけのresult.jsonは生成しない。反証・未決・検査済みの部分成果は計算結果として保持する。
+
 出力はUTF-8のJSON。未知欄、重複key、`null`を許さない。`?`は省略可能な欄、
 `T[]`は有限array、`Nat`・`Id`・`QName`・`Digest`・原始型`P`は[入力](inputs.md)に従う。
 Pは同文書のTypeの別名であり、宣言metadataではOwnedを許し、具体値では束縛後のRef型へ解決する。
@@ -91,9 +95,9 @@ declarations は完全名順、vocabularies は manifest.namespace 順。paramet
 dataのconstructorは完全名のDeclarationInfo（kind=data、parametersに引数型）にも列挙する。
 名前のないconstructor引数名は`arg0`からの位置名とする。
 全 Atom 定義と Law 全体の静的検査が完了した場合だけdeclarations/vocabulariesを全件返す。
-Atom 定義または Law の不正・非対応・検査中断時は両表を空にし、検査前の部分宣言を混ぜない。
-全 Atom 定義と Law の検査完了後の ArchMapの不正・非対応・中断では、両表を保持する。
-checkでは成功・失敗ともrequests/answers/nodesが空。checkでAを省略した場合、inputsにAの欄を作らない。
+指定された全入力の検査が不正・非対応・中断で終わった場合は、この結果ファイルを生成しない。
+runの部分成果を保存する場合は、確認済みの全宣言・語彙を保持し、検査前の部分宣言を混ぜない。
+保存するcheckの結果はrequests/answers/nodesが空。checkでAを省略した場合、inputsにAの欄を作らない。
 inputs.path は出力 directory からの固定相対 path で、読めた入力だけに付ける。
 InputIdentity.id は Law=`law`、ArchMap=`archmap`、定義ファイルは CLI の指定順に
 `definition0`、`definition1`、…とする。定義コピーの path は `inputs/definitions/0.json` 等。
@@ -760,7 +764,8 @@ caseで異なる既知結果を持つviewは未決となり、Lawの反証と混
 
 構成条件が未決なら、その条件のmissing/visibility/unsupported/dependency理由を伝播する。
 cycleがCLIの問いの依存による場合だけ、locationを省略し、循環に属する問いごとにrequestを必須とする。
-その依存辺はrequestsのdependenciesで表す。Atom 定義と Law の循環は該当入力の location を持つ。
+その依存辺は内部requestsのdependenciesで保持し、標準出力では[実行 §2](execution.md#2-問いの構文と参照)の説明を返す。
+Atom 定義と Law の循環は該当入力の location を持つ。
 数学の適用条件を作り検査する責務を外部の追加定理要求へ置き換えない。
 不正入力は意味計算前に拒否する。提示は正しいがLawが偽である場合は入力エラーにしない。
 型構成前でexpected/actualを表せない不正表記はsyntaxを使う。
