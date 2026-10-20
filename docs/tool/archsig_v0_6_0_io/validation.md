@@ -12,8 +12,7 @@
 CountCheck は非負、CountAudit は10以下という条件を持つ。原始型は一つのままである。
 [ArchMap](examples/counter.archmap.json) は同じ binding と、`@v/s` の存在、count=2 を記録する。
 
-このディレクトリを cwd として、run 一回で入力を検査し、値と Law の成立を計算する。
-この例は I/O 仕様の実装要件であり、現行 CLI の run はまだ未提供である。
+次は、このディレクトリを cwd として、run 一回で入力を検査し、値と Law の成立を計算する規範例である。
 
 ```sh
 archsig run --atom-definition examples/counter.atoms.json \
