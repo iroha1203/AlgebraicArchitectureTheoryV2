@@ -1201,9 +1201,7 @@ impl Environment<'_> {
                             return Err("whole値が別producer".into());
                         }
                     }
-                    if node.reasons.iter().map(Reason::wire).collect::<Vec<_>>()
-                        != a.reasons.iter().map(Reason::wire).collect::<Vec<_>>()
-                    {
+                    if !reasons_equal(&node.reasons, &a.reasons) {
                         return Err("wholeが既読missingを落とした".into());
                     }
                 }
@@ -1238,11 +1236,11 @@ impl Environment<'_> {
                     if node.ty != NodeType::Proposition
                         || !family_refs(&node.evidence, &node.evidence)
                         || !matches!(node.rule, Rule::Construction("proposition"))
-                        || !family_reasons(&node.reasons, &a.reasons)
+                        || !reasons_equal(&node.reasons, &a.reasons)
                         || !node
                             .judgment
                             .as_ref()
-                            .is_some_and(|j| family_reasons(&j.reasons, &a.reasons))
+                            .is_some_and(|j| reasons_equal(&j.reasons, &a.reasons))
                         || actual != &instance
                         || node.arguments != [instance, evaluation]
                         || node.judgment.as_ref().map(|j| j.status)
@@ -1390,12 +1388,9 @@ impl Environment<'_> {
                     self.recheck_evaluation(graph, eval)?;
                     if node.ty != NodeType::Proposition
                         || !matches!(node.rule, Rule::Construction("proposition"))
-                        || !family_reasons(&node.reasons, &graph.get(guard)?.reasons)
+                        || !reasons_equal(&node.reasons, &graph.get(guard)?.reasons)
                         || !node.judgment.as_ref().is_some_and(|j| {
-                            family_reasons(
-                                &j.reasons,
-                                &graph.get(guard).expect("既出guard").reasons,
-                            )
+                            reasons_equal(&j.reasons, &graph.get(guard).expect("既出guard").reasons)
                         })
                         || node.scope != graph.get(guard)?.scope
                         || node.support != graph.get(guard)?.support
@@ -1465,12 +1460,9 @@ fn family_refs(a: &[NodeRef], b: &[NodeRef]) -> bool {
             .all(|(i, r)| !a[..i].contains(r) && b.contains(r))
 }
 
-fn family_reasons(a: &[Reason], b: &[Reason]) -> bool {
-    a.iter().map(Reason::wire).collect::<Vec<_>>() == b.iter().map(Reason::wire).collect::<Vec<_>>()
-}
 fn family_clean(node: &Node, rule: &str, reasons: &[Reason]) -> bool {
     matches!(node.rule,Rule::Construction(name) if name==rule)
         && node.evidence.is_empty()
         && node.judgment.is_none()
-        && family_reasons(&node.reasons, reasons)
+        && reasons_equal(&node.reasons, reasons)
 }

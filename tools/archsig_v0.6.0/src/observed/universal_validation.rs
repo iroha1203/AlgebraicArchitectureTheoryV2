@@ -56,11 +56,6 @@ fn evaluation_payload(node: &Node) -> Result<EvaluationPayload<'_>, ValidationFa
     })
 }
 
-fn reasons_equal(left: &[Reason], right: &[Reason]) -> bool {
-    left.iter().map(Reason::wire).collect::<Vec<_>>()
-        == right.iter().map(Reason::wire).collect::<Vec<_>>()
-}
-
 impl Environment<'_> {
     fn universal_witness_reasons(
         &self,

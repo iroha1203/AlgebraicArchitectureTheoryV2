@@ -911,10 +911,7 @@ impl Environment<'_> {
             };
             let mut reasons = vec![missing];
             sort_reasons(&mut reasons);
-            if answer.scope != scope
-                || answer.reasons.iter().map(Reason::wire).collect::<Vec<_>>()
-                    != reasons.iter().map(Reason::wire).collect::<Vec<_>>()
-            {
+            if answer.scope != scope || !reasons_equal(&answer.reasons, &reasons) {
                 return Err("未決依存族の元欠測・Scopeが違う".into());
             }
             Ok(())

@@ -596,9 +596,7 @@ impl Environment<'_> {
             });
         }
         sort_reasons(&mut reasons);
-        if node.reasons.iter().map(Reason::wire).collect::<Vec<_>>()
-            != reasons.iter().map(Reason::wire).collect::<Vec<_>>()
-        {
+        if !reasons_equal(&node.reasons, &reasons) {
             return Err("Family評価が元owner欠測・未実装理由を保持しない".into());
         }
         Ok(true)
