@@ -17,7 +17,10 @@ Rust API の評価結果には CLI の出力配送・receipt・終了コード�
 [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md)は v0.6.0 全体の実装要件を定めており、
 このクレートはその全体の適合版ではない。
 
-## CLI の最小実行例
+## 現行 CLI で入力を検査する
+
+通常利用の入口は [run 一回から回答を読む例](../../docs/tool/archsig_v0_6_0_io/validation.md#最小の一周)にある。
+run は未提供のため、以下は現行 CLI で行える入力検査の例である。
 
 リポジトリルートで実行する。Rust 2024 edition 対応のツールチェーンが必要であり、
 `--offline` は依存 crate がローカルに取得済みであることを前提とする。
@@ -28,16 +31,14 @@ export PATH="$PWD/tools/archsig_v0.6.0/target/debug:$PATH"
 archsig version
 ```
 
-まず共通定義と Law を検査し、次に同じ定義を使う ArchMap も検査する。
-`--out` には存在しないディレクトリを指定する（再実行時は別の名前にする）。
+共通定義・Law・ArchMap を一回の check で検査する。
+`--out` には存在しないディレクトリを指定する（出力先が既に存在する場合は別の名前にする）。
 
 ```bash
-archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --out result-law
-archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --archmap tools/archsig_v0.6.0/tests/fixtures/reservations.archmap.json --out result-both
+archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --archmap tools/archsig_v0.6.0/tests/fixtures/reservations.archmap.json --out result-check
 ```
 
-両方とも `status=complete`、終了コード0となる。結果は `result-law/result.json` と
-`result-both/result.json` に保存し、stdout には各一行の receipt を出す。
+`status=complete`、終了コード0となる。結果は `result-check/result.json` に保存し、stdout には一行の receipt を出す。
 結果の形式は `archsig.result/2`。定義のコピーは `inputs/definitions/0.json` に置き、
 入力 ID `definition0` と JSON Pointer から元の定義位置を追える。
 
