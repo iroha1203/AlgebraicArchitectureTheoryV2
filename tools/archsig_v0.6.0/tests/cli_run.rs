@@ -488,77 +488,86 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
         input::InputSources,
     };
     use std::{cell::Cell, rc::Rc, time::Instant};
-    let map = A.replace("\"value\": \"2\"", "\"value\": \"12\"");
-    let count = Rc::new(Cell::new(0usize));
-    let seen = Rc::clone(&count);
-    let mut probe = Control::new(Limits::default(), move |point| {
-        if point == Checkpoint::Expression {
-            seen.set(seen.get() + 1);
-        }
-        Usage::default()
-    });
-    let first = [ASKS[0], ASKS[2]];
-    evaluate_observed_bytes(
-        InputSources::from_bytes(
-            vec![D.to_vec()],
-            L.as_bytes().to_vec(),
-            map.as_bytes().to_vec(),
-        ),
-        &first,
-        &mut probe,
-    )
-    .unwrap();
-    let before = count.get();
-    assert!(before > 0);
-    let seen = Rc::new(Cell::new(0usize));
-    let observed = Rc::clone(&seen);
-    let mut control = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: None,
-        },
-        move |point| {
+    for reused in [false, true] {
+        let map = A.replace("\"value\": \"2\"", "\"value\": \"12\"");
+        let count = Rc::new(Cell::new(0usize));
+        let seen = Rc::clone(&count);
+        let mut probe = Control::new(Limits::default(), move |point| {
             if point == Checkpoint::Expression {
-                observed.set(observed.get() + 1);
+                seen.set(seen.get() + 1);
             }
-            Usage {
-                elapsed_ms: u128::from(observed.get() > before),
-                ..Usage::default()
-            }
-        },
-    );
-    let dir = inputs("partial-run", Some("12"), L);
-    let mut args = run_args(&dir);
-    args.asks = [ASKS[0], ASKS[2], ASKS[1]]
-        .iter()
-        .map(|s| s.to_string())
-        .collect();
-    let mut signals = NoSignal::default();
-    let outcome = archsig::run::run_requests(
-        &mut TestIo,
-        &mut signals,
-        &args,
-        Instant::now(),
-        &mut control,
-    );
-    assert_eq!(outcome.exit_code, 75);
-    assert_eq!(signals.freezes, 1);
-    let res = archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
-    assert_eq!(s(get(answer(&res, "n"), "status")), "established");
-    assert_eq!(
-        s(get(
-            node(&res, get(get(answer(&res, "n"), "outputs"), "value")),
-            "value"
-        )),
-        "12"
-    );
-    assert_eq!(s(get(answer(&res, "audit"), "status")), "refuted");
-    assert_eq!(s(get(answer(&res, "ok"), "status")), "undetermined");
-    assert!(
-        arr(get(&res, "issues"))
+            Usage::default()
+        });
+        let first = [ASKS[0], ASKS[2]];
+        evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![D.to_vec()],
+                L.as_bytes().to_vec(),
+                map.as_bytes().to_vec(),
+            ),
+            &first,
+            &mut probe,
+        )
+        .unwrap();
+        let before = count.get();
+        assert!(before > 0);
+        let seen = Rc::new(Cell::new(0usize));
+        let observed = Rc::clone(&seen);
+        let mut control = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: None,
+            },
+            move |point| {
+                if point == Checkpoint::Expression {
+                    observed.set(observed.get() + 1);
+                }
+                Usage {
+                    elapsed_ms: u128::from(observed.get() > before),
+                    ..Usage::default()
+                }
+            },
+        );
+        let dir = inputs("partial-run", Some("12"), L);
+        let mut args = run_args(&dir);
+        if reused {
+            let full = requests(&dir, &ASKS);
+            assert_eq!(full.code, 1);
+            std::fs::rename(dir.join("out"), dir.join("previous")).unwrap();
+            args.reuse = Some(dir.join("previous"));
+        }
+        args.asks = [ASKS[0], ASKS[2], ASKS[1]]
             .iter()
-            .any(|i| s(get(i, "code")) == "budget_exhausted")
-    );
+            .map(|s| s.to_string())
+            .collect();
+        let mut signals = NoSignal::default();
+        let outcome = archsig::run::run_requests(
+            &mut TestIo,
+            &mut signals,
+            &args,
+            Instant::now(),
+            &mut control,
+        );
+        assert_eq!(outcome.exit_code, 75);
+        assert_eq!(signals.freezes, 1);
+        let res =
+            archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
+        assert_eq!(s(get(answer(&res, "n"), "status")), "established");
+        assert_eq!(
+            s(get(
+                node(&res, get(get(answer(&res, "n"), "outputs"), "value")),
+                "value"
+            )),
+            "12"
+        );
+        assert_eq!(s(get(answer(&res, "audit"), "status")), "refuted");
+        assert_eq!(s(get(answer(&res, "ok"), "status")), "undetermined");
+        assert!(
+            arr(get(&res, "issues"))
+                .iter()
+                .any(|i| s(get(i, "code")) == "budget_exhausted")
+        );
+    }
     let dir = inputs("empty-run-stop", Some("2"), L);
     let args = run_args(&dir);
     let mut control = Control::new(
@@ -646,6 +655,118 @@ fn repeated_definitions_and_required_run_flags_are_checked() {
             )),
             argument
         );
+    }
+}
+
+#[test]
+fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
+    use archsig::observed::control::{Checkpoint, Control, Limits, Usage};
+    use archsig::result::Signal;
+    use std::{cell::Cell, rc::Rc, time::Instant};
+    let dir = inputs("reuse-stop", Some("2"), L);
+    let initial = requests(&dir, &ASKS);
+    assert_eq!(initial.code, 0);
+    std::fs::rename(dir.join("out"), dir.join("previous")).unwrap();
+    let mut args = run_args(&dir);
+    args.reuse = Some(dir.join("previous"));
+    args.inputs.out = dir.join("measured");
+    let seen = Rc::new(Cell::new(0usize));
+    let count = Rc::clone(&seen);
+    let before_evaluation = Rc::new(Cell::new(None));
+    let split = Rc::clone(&before_evaluation);
+    let mut control = Control::new(Limits::default(), move |point| {
+        if point == Checkpoint::Reuse {
+            count.set(count.get() + 1);
+        }
+        if point == Checkpoint::Expression && split.get().is_none() {
+            split.set(Some(count.get()));
+        }
+        Usage::default()
+    });
+    let outcome = archsig::run::run_requests(
+        &mut TestIo,
+        &mut NoSignal::default(),
+        &args,
+        Instant::now(),
+        &mut control,
+    );
+    assert_eq!(outcome.exit_code, 0);
+    let total = seen.get();
+    let before_evaluation = before_evaluation.get().unwrap();
+    assert!(total > 10);
+    assert!(before_evaluation < total - 1);
+    for at in [1, 2, 10, total - 1, total] {
+        for (signal, code) in [
+            (None, 75),
+            (Some(Signal::Int), 130),
+            (Some(Signal::Term), 143),
+        ] {
+            args.inputs.out = dir.join(format!("stopped-{at}-{code}"));
+            let seen = Rc::new(Cell::new(0usize));
+            let count = Rc::clone(&seen);
+            let mut control = Control::new(
+                Limits {
+                    time_ms: Some(1),
+                    memory_mib: None,
+                },
+                move |point| {
+                    if point == Checkpoint::Reuse {
+                        count.set(count.get() + 1);
+                    }
+                    Usage {
+                        elapsed_ms: u128::from(count.get() >= at),
+                        signal: if count.get() >= at { signal } else { None },
+                        ..Usage::default()
+                    }
+                },
+            );
+            let mut signals = NoSignal::default();
+            let outcome = archsig::run::run_requests(
+                &mut TestIo,
+                &mut signals,
+                &args,
+                Instant::now(),
+                &mut control,
+            );
+            assert_eq!(outcome.exit_code, code);
+            assert_eq!(seen.get(), at, "停止後にprobeしない");
+            assert_eq!(signals.freezes, 1);
+            if at <= before_evaluation {
+                assert!(outcome.result.is_none());
+                assert!(!args.inputs.out.exists());
+            } else {
+                assert!(
+                    outcome.result.is_some(),
+                    "照合前に得た検査済み結果を保持する"
+                );
+                let res = archsig::json::parse(
+                    &std::fs::read(args.inputs.out.join("result.json")).unwrap(),
+                )
+                .unwrap();
+                assert_eq!(num(get(&res, "exit_code")), u64::from(code));
+                assert_eq!(s(get(&res, "status")), "interrupted");
+                assert_eq!(
+                    s(get(
+                        node(&res, get(get(answer(&res, "n"), "outputs"), "value")),
+                        "value"
+                    )),
+                    "2"
+                );
+                assert!(
+                    arr(get(&res, "answers"))
+                        .iter()
+                        .all(|a| s(get(a, "status")) == "established")
+                );
+            }
+            let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();
+            assert!(!arr(get(&receipt, "issues")).is_empty());
+            assert!(!std::fs::read_dir(&dir).unwrap().any(|e| {
+                e.unwrap()
+                    .file_name()
+                    .to_string_lossy()
+                    .contains(".archsig-")
+            }));
+        }
     }
 }
 

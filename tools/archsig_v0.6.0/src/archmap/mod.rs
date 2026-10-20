@@ -26,6 +26,7 @@ fn map_validation_iteration(operation: &'static str, index: usize) {
 }
 mod model;
 mod schema;
+pub(crate) use schema::nat_value;
 pub mod value;
 
 use crate::canonical::{Json, sha256_digest};

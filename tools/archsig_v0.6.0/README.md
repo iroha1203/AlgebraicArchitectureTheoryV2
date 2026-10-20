@@ -33,6 +33,11 @@ jq -r '. as $r | .answers[] | select(.id == "n") | .outputs.value.node as $id
 refutedで終了コード1、count Atomを除くと不足位置付きundeterminedで終了コード2となる。
 型、導出、支持と入力コピーは同じresult.jsonから確認できる。
 
+以前の出力directoryは `--reuse result-counter` で候補として指定できる。
+現在の三入力から全再計算し、検査済みの導出へ候補の型・内容・全依存・由来を照合する。
+node番号や共有方法の違いは吸収し、候補の推論は計算へ採用しない。
+照合できない候補も通常の評価を妨げず、理由は結果の `reuse.rejected` に残す。
+
 ### 入力だけの検査
 
 共通定義・Law・ArchMap を一回の check で検査する。

@@ -163,9 +163,19 @@ pub fn run_requests(
             }
         },
     };
-    if args.reuse.is_some() {
-        return failure(signals, "reuse", "再利用候補の検査経路は未実装".into());
-    }
+    let candidate = match super::reuse::inspect(args.reuse.as_deref(), control) {
+        Ok(rejected) => rejected,
+        Err(reason) => {
+            return output::notify(
+                signals,
+                Status::Interrupted,
+                75,
+                prior_signal(control),
+                vec![reason.wire()],
+                Vec::new(),
+            );
+        }
+    };
     let evaluation = match evaluate_observed(prepared, control) {
         Ok(result) => result,
         Err(EvaluationFailure::NotImplemented { partial, .. }) => *partial,
@@ -177,7 +187,10 @@ pub fn run_requests(
             );
         }
     };
-    deliver(io, signals, args, evaluation, started, control)
+    let (rejected, reuse_stop) = candidate.verify(&evaluation, control);
+    deliver(
+        io, signals, args, evaluation, rejected, reuse_stop, started, control,
+    )
 }
 
 fn deliver(
@@ -185,6 +198,8 @@ fn deliver(
     signals: &mut dyn Signals,
     args: &RunArgs,
     evaluation: ObservedEvaluation,
+    rejected: Vec<Json>,
+    reuse_stop: Option<StopReason>,
     started: Instant,
     control: &Control,
 ) -> Outcome {
@@ -205,6 +220,13 @@ fn deliver(
         _ => (Status::Error, 70),
     };
     let mut issues: Vec<Json> = evaluation.issues.iter().map(|i| i.wire()).collect();
+    if let Some(reason) = reuse_stop {
+        if status != Status::Error || matches!(reason, StopReason::Cancelled(_)) {
+            status = Status::Interrupted;
+            code = 75;
+        }
+        issues.push(reason.wire());
+    }
     if matches!(status, Status::Interrupted | Status::Error) && evaluation.nodes.is_empty() {
         return output::notify(
             signals,
@@ -278,10 +300,10 @@ fn deliver(
         (
             "reuse",
             Json::obj([
-                ("requested", Json::Bool(false)),
+                ("requested", Json::Bool(args.reuse.is_some())),
                 ("accepted_nodes", Json::Nat(0)),
                 ("recomputed_nodes", Json::Nat(evaluation.nodes.len() as u64)),
-                ("rejected", Json::Arr(Vec::new())),
+                ("rejected", Json::Arr(rejected)),
             ]),
         ),
         (

@@ -38,6 +38,7 @@ pub enum Checkpoint {
     RequestBinding,
     RequestDependency,
     Projection,
+    Reuse,
     Expression,
     FiniteIteration,
 }
