@@ -47,6 +47,7 @@ pub enum Checkpoint {
     ConfigurationProfile,
     ConfigurationTransport,
     DeclarationCorrespondence,
+    ObjectInstances,
     Expression,
     FiniteIteration,
 }

@@ -1,0 +1,52 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Instances",
+      "version": "1",
+      "digest": "@INSTANCES_DIGEST@"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "対象別の所属と数量。",
+      "locations": [],
+      "note": "参照束縛の独立fixture。"
+    }
+  ]
+,
+"snapshots":[{"id":"v","origin":"model",
+"subjects":[
+{"id":"A","type":"Instances.Root","origin":"model"},
+{"id":"B","type":"Instances.Root","origin":"model"},
+{"id":"p","type":"Instances.Part","origin":"model"},
+{"id":"r","type":"Instances.Part","origin":"model"},
+{"id":"q","type":"Instances.Part","origin":"model"},
+{"id":"e","type":"Instances.Link","origin":"model"},
+{"id":"x","type":"Instances.External","origin":"model"},
+{"id":"y","type":"Instances.External","origin":"model"},
+{"id":"g","type":"Instances.Group","origin":"model"},
+{"id":"h","type":"Instances.Group","origin":"model"},
+{"id":"u","type":"Instances.Member","origin":"model"}
+],
+"atoms":[
+{"id":"A-external","subject":"A","field":"Instances.Root.external","value":["v","x"],"origin":"model"},
+{"id":"B-external","subject":"B","field":"Instances.Root.external","value":["v","y"],"origin":"model"},
+{"id":"p-owner","subject":"p","field":"Instances.Part.owner","value":["v","A"],"origin":"model"},
+{"id":"p-quantity","subject":"p","field":"Instances.Part.quantity","value":"2","origin":"model"},
+{"id":"r-owner","subject":"r","field":"Instances.Part.owner","value":["v","A"],"origin":"model"},
+{"id":"r-quantity","subject":"r","field":"Instances.Part.quantity","value":"2","origin":"model"},
+{"id":"q-owner","subject":"q","field":"Instances.Part.owner","value":["v","B"],"origin":"model"},
+{"id":"q-quantity","subject":"q","field":"Instances.Part.quantity","value":"7","origin":"model"},
+{"id":"e-owner","subject":"e","field":"Instances.Link.owner","value":["v","A"],"origin":"model"},
+{"id":"e-from","subject":"e","field":"Instances.Link.from","value":["v","p"],"origin":"model"},
+{"id":"e-to","subject":"e","field":"Instances.Link.to","value":["v","r"],"origin":"model"},
+{"id":"x-quantity","subject":"x","field":"Instances.External.quantity","value":"11","origin":"model"},
+{"id":"y-quantity","subject":"y","field":"Instances.External.quantity","value":"13","origin":"model"}
+]
+}]
+}

@@ -1,0 +1,23 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Helper {
+  use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
+  view external(x: External): Z = x.quantity;
+}
+reading Selected {
+  use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
+  use Helper as H;
+  view amount(c: Part): Z = c.quantity;
+  view root(a: Root): Z = H.external(a.external);
+  view outside(x: External): Z = x.quantity;
+  view paired(c: Part, x: External): Z = c.quantity + H.external(x);
+  view link(e: Link): Bool = true;
+  view owner(a: Root, c: Part[a]): Bool = true;
+  view sharing(a: Root, g: Group, h: Group, c: Member[g], d: Member[h]): Bool = true;
+  view values(a: Root, n: Z, b: Bool, xs: List<Z>, f: Term<(Z) -> Z>, p: Path<Part, Part>, members: Set<Part[a]>): Bool = b;
+  law required bounded(c: Part, delta: Z) when delta >= 0: c.quantity + delta >= 0;
+  law optional owned(a: Root, c: Part[a]): c.quantity >= 0;
+}
+reading Other {
+  use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
+  view other(c: Part): Z = c.quantity;
+}

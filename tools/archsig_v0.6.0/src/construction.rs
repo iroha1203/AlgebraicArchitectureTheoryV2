@@ -13,6 +13,7 @@ use crate::{
 use std::collections::{BTreeMap, BTreeSet};
 pub mod maps;
 pub mod profiles;
+pub mod readings;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Configuration {

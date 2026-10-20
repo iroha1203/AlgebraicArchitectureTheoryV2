@@ -175,6 +175,17 @@ parameter数・移送後の型の不適合を読める。位置によるowner名
 `all_signatures_compatible()` は署名照合の結果であり、role・guard・body・値の保存は追加検査を要する。
 不適合時も `operation()` を保持し、現在の入力での再照合には `recheck()` を使う。
 
+`construction::readings::object_reading_instances(&checked, &configuration, &mut control)`
+は選択readingのLaw/viewを、標準対象域に適用する参照束縛instanceへ展開する。
+`objects()` はbaseとowned entityの部分対象をidentityで保持し、未知所属の候補には
+`conditions()` の原始owner slot条件を付ける。`instances()` の `bindings()` は参照束縛、
+`parameters()` は残る値parameterの全型域、`applications()` は同じ対象順の適用条件を持つ。
+外部参照型の束縛は原始有限族を固定し、同じ未知slotに異なるownerを要求する組合せを除く。
+量fieldが未観測でもinstanceを保持する。元宣言・role・式・helper依存・位置は
+`declaration()` に保持する。`source_law()` は式・guard・helperを含む元Lawのbyte列を持ち、
+metadataの位置をこの入力へ結び付ける。`recheck()` は現在入力から構成を再実行し、元Lawも照合する。
+このAPIは型付き実評価へ渡すinstanceを構成し、各式の評価にはその全域parameterと元入力を使う。
+
 ## 仕様
 
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): 入力・問い・型付き結果の形式と意味。
