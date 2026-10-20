@@ -167,8 +167,8 @@ fn decimal(node: &JNode) -> Checked<()> {
 }
 fn nat(node: &JNode) -> Checked<()> {
     match &node.value {
-        JValue::Num(s) if !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()) => Ok(()),
-        _ => Err(invalid("Natが必要")),
+        JValue::Num(s) if crate::archmap::nat_value(s).is_some() => Ok(()),
+        _ => Err(invalid("Natは0..9007199254740991の整数")),
     }
 }
 fn header(document: &JNode, control: &mut Control) -> Checked<()> {
@@ -203,6 +203,14 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
     if text(field(document, "command")?)? != "run" && text(field(document, "command")?)? != "check"
     {
         return Err(invalid("commandが不正"));
+    }
+    if text(field(document, "command")?)? == "check" {
+        for name in ["requests", "answers", "nodes"] {
+            control.checkpoint(Checkpoint::Reuse)?;
+            if !array(field(document, name)?)?.is_empty() {
+                return Err(invalid(format!("checkの{name}は空arrayが必要")));
+            }
+        }
     }
     record(field(document, "producer")?, &["version", "build"], &[])?;
     for name in ["version", "build"] {
@@ -294,7 +302,9 @@ fn normalized_candidate(
         control.checkpoint(Checkpoint::Reuse)?;
         Ok(match &node.value {
             JValue::Bool(b) => Json::Bool(*b),
-            JValue::Num(s) => Json::Nat(s.parse().map_err(|_| invalid("再計算結果にないNat"))?),
+            JValue::Num(s) => Json::Nat(
+                crate::archmap::nat_value(s).ok_or_else(|| invalid("Natの範囲外または非整数"))?,
+            ),
             JValue::Str(s) => Json::str(s),
             JValue::Arr(items) => Json::Arr(
                 items
@@ -467,7 +477,7 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
         ),
         _ => return Err(invalid("確定していない候補照合")),
     };
-    if field(document, "exit_code")?.value != JValue::Num(code.to_string()) {
+    if normalized_candidate(field(document, "exit_code")?, &empty, control)? != Json::Nat(code) {
         return Err(invalid("exit_codeを計算結果へ照合できない"));
     }
     control.checkpoint(Checkpoint::Reuse)?;

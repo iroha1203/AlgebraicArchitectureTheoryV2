@@ -132,6 +132,16 @@ fn valid_reuse_recomputes_current_values_with_exact_counts() {
         std::fs::read(dir.join("previous/result.json")).unwrap(),
         bytes
     );
+    // Natは綴りでなく値を検査する。整数を表す小数/指数のmetadataも同じ値である。
+    let notation = String::from_utf8(bytes)
+        .unwrap()
+        .replace("\"accepted_nodes\":0", "\"accepted_nodes\":0e0")
+        .replace("\"exit_code\":0", "\"exit_code\":0.0");
+    std::fs::write(dir.join("previous/result.json"), notation).unwrap();
+    let notation_run = execute(&dir, "out-notation", Some("previous"), &ASKS);
+    let notation_result = checked(&dir, &notation_run, 0, true);
+    assert_eq!(value(&notation_result), "2");
+    assert!(arr(get(get(&notation_result, "reuse"), "rejected")).is_empty());
 }
 
 #[test]
@@ -192,6 +202,10 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
         "null",
         "syntax",
         "duplicate_key",
+        "command_check",
+        "nat_accepted",
+        "nat_recomputed",
+        "nat_huge",
         "Evaluation",
         "Evidence",
         "Expression",
@@ -217,8 +231,27 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
             "duplicate_key" => {
                 b"{\"format\":\"archsig.result/2\",\"format\":\"archsig.result/2\"}".to_vec()
             }
+            "nat_huge" => owned(&source)
+                .canonical()
+                .replace(
+                    "\"accepted_nodes\":0",
+                    &format!("\"accepted_nodes\":1{}", "0".repeat(100)),
+                )
+                .into_bytes(),
             _ => {
                 match kind {
+                    "command_check" => {
+                        *field_mut(&mut candidate, "command") = Json::str("check");
+                    }
+                    "nat_accepted" | "nat_recomputed" => {
+                        let name = if kind == "nat_accepted" {
+                            "accepted_nodes"
+                        } else {
+                            "recomputed_nodes"
+                        };
+                        *field_mut(field_mut(&mut candidate, "reuse"), name) =
+                            Json::Nat(9_007_199_254_740_992);
+                    }
                     "version" => {
                         *field_mut(&mut candidate, "format") = Json::str("archsig.result/999")
                     }
