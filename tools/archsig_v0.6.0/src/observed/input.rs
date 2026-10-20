@@ -12,7 +12,7 @@ use crate::{
     issue::{Code, Details, Issue, Location},
     json::InputError,
     law::{CheckedLaw, check_law_controlled, model::DeclarationInfo},
-    result::{CheckResult, InputIdentity, ResultIssue, Status},
+    result::{InputIdentity, ResultIssue, metadata_wire},
 };
 
 /// 読込み済み入力。識別と元 byte 列は bundle 構成後に変更できない。
@@ -163,12 +163,12 @@ impl InputFailure {
 
     /// 内部段階の結果。CLI の command/exit_code/配送情報は含めない。
     pub fn wire(&self) -> Json {
-        let mut wire = metadata_wire(
+        let mut wire = Json::Obj(metadata_wire(
             &self.inputs,
             &self.declarations,
             &self.primitives,
             &self.vocabularies,
-        );
+        ));
         let Json::Obj(fields) = &mut wire else {
             unreachable!()
         };
@@ -245,22 +245,12 @@ impl CheckedInputs {
         &self.archmap
     }
     pub fn metadata_wire(&self) -> Json {
-        metadata_wire(
+        Json::Obj(metadata_wire(
             &self.inputs,
             &self.law.infos,
-            &self
-                .definitions
-                .declarations
-                .values()
-                .cloned()
-                .collect::<Vec<_>>(),
-            &self
-                .definitions
-                .vocabularies
-                .values()
-                .cloned()
-                .collect::<Vec<_>>(),
-        )
+            self.definitions.declarations.values(),
+            self.definitions.vocabularies.values(),
+        ))
     }
 
     fn into_failure(self, clear_law: bool) -> InputFailure {
@@ -329,32 +319,6 @@ impl CheckedInputs {
         // 公開 field を照合した後も、元 byte 列から得た表だけを採用する。
         Ok(verified)
     }
-}
-
-/// result/2 の既存 serializer と同じ宣言・語彙・識別表示を再利用する。
-fn metadata_wire(
-    inputs: &[InputIdentity],
-    declarations: &[DeclarationInfo],
-    primitives: &[PrimitiveDeclaration],
-    vocabularies: &[Vocabulary],
-) -> Json {
-    let result = CheckResult {
-        status: Status::Complete,
-        exit_code: 0,
-        inputs: inputs.to_vec(),
-        declarations: declarations.to_vec(),
-        primitives: primitives.to_vec(),
-        vocabularies: vocabularies.to_vec(),
-        issues: vec![],
-        elapsed_ms: 0,
-        peak_bytes: 0,
-    };
-    let mut wire = result.wire();
-    let Json::Obj(fields) = &mut wire else {
-        unreachable!()
-    };
-    fields.retain(|k, _| matches!(k.as_str(), "inputs" | "declarations" | "vocabularies"));
-    wire
 }
 
 type BundleError = CheckFailure<Box<Issue>>;

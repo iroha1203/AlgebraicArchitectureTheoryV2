@@ -518,85 +518,105 @@ pub fn exit_code(status: Status, signal: Option<Signal>, issues: &[ResultIssue])
     }
 }
 
+/// CLI と観測 API で共有する、識別・宣言・語彙の表示。
+pub(crate) fn metadata_wire<'a>(
+    inputs: &[InputIdentity],
+    declarations: &[DeclarationInfo],
+    primitives: impl IntoIterator<Item = &'a PrimitiveDeclaration>,
+    vocabularies: impl IntoIterator<Item = &'a Vocabulary>,
+) -> BTreeMap<String, Json> {
+    let mut inputs: Vec<&InputIdentity> = inputs.iter().collect();
+    inputs.sort_by(|a, b| a.id.cmp(&b.id));
+    let mut declaration_rows: Vec<Json> = primitives
+        .into_iter()
+        .flat_map(primitive_declarations_wire)
+        .collect();
+    declaration_rows.extend(declarations.iter().map(declaration_wire));
+    declaration_rows.sort_by(|a, b| declaration_name(a).cmp(declaration_name(b)));
+    let mut vocabularies: Vec<_> = vocabularies.into_iter().collect();
+    vocabularies.sort_by(|a, b| a.namespace.cmp(&b.namespace));
+    BTreeMap::from([
+        (
+            "inputs".into(),
+            Json::Arr(inputs.into_iter().map(InputIdentity::wire).collect()),
+        ),
+        ("declarations".into(), Json::Arr(declaration_rows)),
+        (
+            "vocabularies".into(),
+            Json::Arr(
+                vocabularies
+                    .into_iter()
+                    .map(|v| {
+                        Json::obj([
+                            ("manifest", v.manifest.clone()),
+                            ("digest", Json::str(v.digest.clone())),
+                            ("location", location_wire(&v.location)),
+                        ])
+                    })
+                    .collect(),
+            ),
+        ),
+    ])
+}
+
 impl CheckResult {
     pub fn wire(&self) -> Json {
-        let mut inputs: Vec<&InputIdentity> = self.inputs.iter().collect();
-        inputs.sort_by(|a, b| a.id.cmp(&b.id));
+        let mut fields = metadata_wire(
+            &self.inputs,
+            &self.declarations,
+            &self.primitives,
+            &self.vocabularies,
+        );
         let mut issues: Vec<&ResultIssue> = self.issues.iter().collect();
         issues.sort_by_key(|i| i.sort_key());
-        let mut declarations: Vec<Json> = self
-            .primitives
-            .iter()
-            .flat_map(primitive_declarations_wire)
-            .collect();
-        declarations.extend(self.declarations.iter().map(declaration_wire));
-        declarations.sort_by(|a, b| declaration_name(a).cmp(declaration_name(b)));
-        let mut vocabularies: Vec<_> = self.vocabularies.iter().collect();
-        vocabularies.sort_by(|a, b| a.namespace.cmp(&b.namespace));
-        Json::obj([
-            ("format", Json::str("archsig.result/2")),
-            ("semantics", Json::str(crate::law::SEMANTICS)),
-            (
-                "producer",
-                Json::obj([
-                    ("version", Json::str(env!("CARGO_PKG_VERSION"))),
-                    (
-                        "build",
-                        Json::str(concat!(
-                            env!("CARGO_PKG_NAME"),
-                            "-",
-                            env!("CARGO_PKG_VERSION")
-                        )),
-                    ),
-                ]),
-            ),
-            ("command", Json::str("check")),
-            ("status", Json::str(self.status.wire())),
-            ("exit_code", Json::Nat(u64::from(self.exit_code))),
-            (
-                "inputs",
-                Json::Arr(inputs.into_iter().map(InputIdentity::wire).collect()),
-            ),
-            ("declarations", Json::Arr(declarations)),
-            (
-                "vocabularies",
-                Json::Arr(
-                    vocabularies
-                        .into_iter()
-                        .map(|v| {
-                            Json::obj([
-                                ("manifest", v.manifest.clone()),
-                                ("digest", Json::str(v.digest.clone())),
-                                ("location", location_wire(&v.location)),
-                            ])
-                        })
-                        .collect(),
+        fields.extend(
+            [
+                ("format", Json::str("archsig.result/2")),
+                ("semantics", Json::str(crate::law::SEMANTICS)),
+                (
+                    "producer",
+                    Json::obj([
+                        ("version", Json::str(env!("CARGO_PKG_VERSION"))),
+                        (
+                            "build",
+                            Json::str(concat!(
+                                env!("CARGO_PKG_NAME"),
+                                "-",
+                                env!("CARGO_PKG_VERSION")
+                            )),
+                        ),
+                    ]),
                 ),
-            ),
-            ("requests", Json::Arr(vec![])),
-            ("answers", Json::Arr(vec![])),
-            ("nodes", Json::Arr(vec![])),
-            (
-                "issues",
-                Json::Arr(issues.into_iter().map(ResultIssue::wire).collect()),
-            ),
-            (
-                "reuse",
-                Json::obj([
-                    ("requested", Json::Bool(false)),
-                    ("accepted_nodes", Json::Nat(0)),
-                    ("recomputed_nodes", Json::Nat(0)),
-                    ("rejected", Json::Arr(vec![])),
-                ]),
-            ),
-            (
-                "usage",
-                Json::obj([
-                    ("elapsed_ms", Json::str(self.elapsed_ms.to_string())),
-                    ("peak_bytes", Json::str(self.peak_bytes.to_string())),
-                ]),
-            ),
-            ("limits", Json::Obj(BTreeMap::new())),
-        ])
+                ("command", Json::str("check")),
+                ("status", Json::str(self.status.wire())),
+                ("exit_code", Json::Nat(u64::from(self.exit_code))),
+                ("requests", Json::Arr(vec![])),
+                ("answers", Json::Arr(vec![])),
+                ("nodes", Json::Arr(vec![])),
+                (
+                    "issues",
+                    Json::Arr(issues.into_iter().map(ResultIssue::wire).collect()),
+                ),
+                (
+                    "reuse",
+                    Json::obj([
+                        ("requested", Json::Bool(false)),
+                        ("accepted_nodes", Json::Nat(0)),
+                        ("recomputed_nodes", Json::Nat(0)),
+                        ("rejected", Json::Arr(vec![])),
+                    ]),
+                ),
+                (
+                    "usage",
+                    Json::obj([
+                        ("elapsed_ms", Json::str(self.elapsed_ms.to_string())),
+                        ("peak_bytes", Json::str(self.peak_bytes.to_string())),
+                    ]),
+                ),
+                ("limits", Json::Obj(BTreeMap::new())),
+            ]
+            .map(|(name, value)| (name.to_owned(), value)),
+        );
+        Json::Obj(fields)
     }
 }
