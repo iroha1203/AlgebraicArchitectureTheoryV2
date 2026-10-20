@@ -1417,6 +1417,32 @@ impl Evaluator<'_, '_> {
             residual: None,
         })
     }
+    // 反復ごとの評価 cache と lexical/base を隔離し、失敗・停止でも呼出し元へ戻す。
+    // 生成済み graph・支持範囲・理由は保持し、巻き戻さない。
+    fn with_iteration_state<T>(
+        &mut self,
+        index: usize,
+        scope: Scope,
+        run: impl FnOnce(&mut Self) -> Result<T, Failure>,
+    ) -> Result<T, Failure> {
+        let caller = self.graph.active;
+        let old_sources = std::mem::take(&mut self.sources);
+        let old_completed = std::mem::take(&mut self.completed);
+        let old_lexical = self.lexical.clone();
+        let old_base = std::mem::replace(&mut self.base, scope);
+        self.graph.active = super::call::Context {
+            iteration: Some(index),
+            ..caller
+        };
+        let result = run(self);
+        self.graph.active = caller;
+        self.sources = old_sources;
+        self.completed = old_completed;
+        self.lexical = old_lexical;
+        self.base = old_base;
+        result
+    }
+
     fn quantification(&mut self, id: usize) -> Result<Evaluated, Failure> {
         let spec = super::quantifier::spec(self.environment.inputs.law(), id, self.control)?;
         let input = spec.domain.map(|domain| self.eval(domain)).transpose()?;
@@ -1548,43 +1574,35 @@ impl Evaluator<'_, '_> {
                     member: super::call::Member::SetElement(item.clone()),
                     finite,
                 });
-                let old_sources = std::mem::take(&mut self.sources);
-                let old_completed = std::mem::take(&mut self.completed);
-                let old_lexical = self.lexical.clone();
-                let old_base = std::mem::replace(&mut self.base, scope.clone());
-                self.graph.active = super::call::Context {
-                    iteration: Some(index),
-                    ..caller
-                };
-                let evaluated = (|| -> Result<Evaluated, Failure> {
-                    let body = self.eval(spec.body)?;
+                let evaluated = self.with_iteration_state(index, scope.clone(), |this| {
+                    let body = this.eval(spec.body)?;
                     if spec.kind == crate::law::ast::QuantKind::Forall
-                        && self.graph.boolean(body.value)? == Some(false)
+                        && this.graph.boolean(body.value)? == Some(false)
                     {
                         #[cfg(test)]
                         data::observe_actual(
                             spec.span,
-                            self.graph.active,
+                            this.graph.active,
                             "quant_counterexample",
                             position,
                         );
-                        self.tick(Checkpoint::FiniteIteration)?;
+                        this.tick(Checkpoint::FiniteIteration)?;
                         let arguments = vec![source, domain, body.evaluation];
-                        let right = self.value(
+                        let right = this.value(
                             Scalar::Bool(true),
                             Rule::Construction("evidence"),
                             arguments.clone(),
                             vec![],
                             body.scope.clone(),
                         )?;
-                        let bindings = self
+                        let bindings = this
                             .environment
-                            .quant_bindings(self.graph, self.graph.active)?;
+                            .quant_bindings(this.graph, this.graph.active)?;
                         let mut counter_support = domain_support.clone();
                         counter_support.extend(body.support.iter().cloned());
                         counter_support.sort();
                         counter_support.dedup();
-                        evidence.push(self.push(Node {
+                        evidence.push(this.push(Node {
                             ty: NodeType::Evidence,
                             payload: Some(Payload::Counterexample {
                                 bindings,
@@ -1602,12 +1620,7 @@ impl Evaluator<'_, '_> {
                         })?);
                     }
                     Ok(body)
-                })();
-                self.graph.active = caller;
-                self.sources = old_sources;
-                self.completed = old_completed;
-                self.lexical = old_lexical;
-                self.base = old_base;
+                });
                 let body = evaluated?;
                 results.push(self.graph.boolean(body.value)?);
                 children.push(body);
@@ -1773,18 +1786,10 @@ impl Evaluator<'_, '_> {
                     super::call::Member::SetElement(member.clone())
                 },
             });
-            let old_sources = std::mem::take(&mut self.sources);
-            let old_completed = std::mem::take(&mut self.completed);
-            let old_base = std::mem::replace(&mut self.base, input.scope.clone());
-            let old_lexical = self.lexical.clone();
-            self.graph.active = super::call::Context {
-                iteration: Some(index),
-                ..caller
-            };
-            let result = (|| -> Result<(), Failure> {
+            let result = self.with_iteration_state(index, input.scope.clone(), |this| {
                 let condition = if let Some(filter) = filter {
-                    let evaluated = self.eval(filter)?;
-                    let condition = self.graph.boolean(evaluated.value)?;
+                    let evaluated = this.eval(filter)?;
+                    let condition = this.graph.boolean(evaluated.value)?;
                     children.push(evaluated);
                     condition
                 } else {
@@ -1792,9 +1797,9 @@ impl Evaluator<'_, '_> {
                 };
                 match condition {
                     Some(true) => {
-                        let evaluated = self.eval(elem)?;
+                        let evaluated = this.eval(elem)?;
                         if let Some(value) = evaluated.value {
-                            values.push(self.graph.scalar(value)?.clone());
+                            values.push(this.graph.scalar(value)?.clone());
                         } else {
                             known = false;
                         }
@@ -1806,12 +1811,7 @@ impl Evaluator<'_, '_> {
                     }
                 }
                 Ok(())
-            })();
-            self.graph.active = caller;
-            self.sources = old_sources;
-            self.completed = old_completed;
-            self.base = old_base;
-            self.lexical = old_lexical;
+            });
             result?;
             self.tick(Checkpoint::FiniteIteration)?;
         }
