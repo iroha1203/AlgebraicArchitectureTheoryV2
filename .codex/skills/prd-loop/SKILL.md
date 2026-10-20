@@ -22,6 +22,7 @@ PRD の Acceptance Criteria / 完了条件を満たすまで、実装ループ�
 
 - PRD ファイルパスは必須。`$prd-loop docs/prd/<prd-file>.md` のように受け取る。
   見つからない場合だけ短く確認する。
+  PRD の lifecycle は [PRD guideline](../../../docs/prd/guideline.md) を読んで従う。
 - 任意入力:
   - `max-iterations <N>`: この実行で回す最大周回数。既定は無制限であり、
     完了または他の停止条件に達するまで回り続ける。明示指定された場合のみ
@@ -214,7 +215,9 @@ PRD の Acceptance Criteria / 完了条件を満たすまで、実装ループ�
      tracking Issue の checklist の check 状態を完了根拠として渡さない
      (番号は証拠検索の索引に留める。checklist・台帳はループの出力であり、
      最終レビューの監査対象であって証拠ではない)。
-   - **達成済み**: tracking Issue に最終レビュー結果をコメントし、tracking Issue を close して終了する。
+   - **達成済み**: tracking Issue に最終レビュー結果をコメントする。
+     [PRD guideline](../../../docs/prd/guideline.md) の「完了と削除」に従って整理し、
+     tracking Issue を close して終了する。
    - **未達あり / 未確認あり**: finding を PRD 条件単位のギャップとして台帳に戻す。
      既存 open Issue がなければ `$issue-creater` で Issue 化し、手順2以降を続ける。
    - **PRD欠陥あり**: tracking Issue に理由を記録し、`PRD 欠陥` 停止として報告する。

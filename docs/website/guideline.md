@@ -64,6 +64,8 @@
 
 ## preview / 検証
 
+製品テストと文書の分離は [Tool guideline](../tool/guideline.md) の「テスト責務と実行経路」に従う。
+
 ```bash
 cd website && npm install        # 初回のみ
 npx @11ty/eleventy --serve       # local preview(ビルド+watch)

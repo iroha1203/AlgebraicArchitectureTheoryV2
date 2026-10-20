@@ -22,6 +22,10 @@
 
 - 作業は原則として GitHub Issue 起点で進める。次タスクは `priority:blocking`、`status:ready`、
   milestone の依存順を優先する。
+- 進捗、未完了課題、受け入れ条件とその充足状況、実施記録の台帳は GitHub Issue に置く。
+  README やマニュアル等の文書を台帳にしない。
+- README やマニュアルは利用方法、現在の仕様、制約を説明する。
+  PRD の責務と完了後の扱いは [PRD guideline](../prd/guideline.md) に従う。
 - 個人開発リポジトリであり、常に最小差分を選ぶ必要はない。目的に対して自然に必要な設計、
   実装、docs、tests、website surface まで広げてよい。
   ただし、無関係な既存変更の巻き戻し、claim scope を越える主張、根拠のない互換性維持、
