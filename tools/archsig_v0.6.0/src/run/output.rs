@@ -59,10 +59,17 @@ pub(super) fn without_result(
     mut issues: Vec<ResultIssue>,
     stderr: Vec<String>,
 ) -> Outcome {
-    let signal = signals.freeze();
+    let signal = signals.freeze().or_else(|| {
+        issues.iter().find_map(|i| match i {
+            ResultIssue::Cancelled(signal) => Some(*signal),
+            _ => None,
+        })
+    });
     if let Some(signal) = signal {
         status = Status::Interrupted;
-        issues.push(ResultIssue::Cancelled(signal));
+        if !issues.contains(&ResultIssue::Cancelled(signal)) {
+            issues.push(ResultIssue::Cancelled(signal));
+        }
     }
     Outcome {
         status,
