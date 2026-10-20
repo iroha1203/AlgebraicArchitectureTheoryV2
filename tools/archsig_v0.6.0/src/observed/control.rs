@@ -39,6 +39,7 @@ pub enum Checkpoint {
     RequestDependency,
     Projection,
     Reuse,
+    ObservationPlan,
     Expression,
     FiniteIteration,
 }

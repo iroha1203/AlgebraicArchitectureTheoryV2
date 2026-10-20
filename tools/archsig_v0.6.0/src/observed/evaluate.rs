@@ -2724,9 +2724,13 @@ fn evaluate_observed_with_validator(
                 .ok();
         for &index in prepared.requests().evaluation_order() {
             let request = &prepared.requests().requests()[index];
-            let declaration = &prepared.inputs().law().declarations[request.declaration()];
+            let declaration = request
+                .declaration()
+                .map(|name| &prepared.inputs().law().declarations[name]);
             let mut base = Scope::default();
-            base.readings.insert(declaration.reading.clone());
+            if let Some(declaration) = declaration {
+                base.readings.insert(declaration.reading.clone());
+            }
             let stop = control.stop_reason();
             if let Some(reason) = stop {
                 let reason = Reason::stopped(&request.id, reason);
@@ -2764,6 +2768,41 @@ fn evaluate_observed_with_validator(
                 instance: None,
                 case: None,
             };
+            if request.kind == QuestionKind::Needed {
+                match super::needed::evaluate(&mut graph, environment, request, control) {
+                    Ok((answer, stopped)) => {
+                        graph.checked_answers.push((index, answer.clone()));
+                        answers[index] = Some(answer);
+                        if let Some(reason) = stopped {
+                            issues.push(Reason::stopped(&request.id, reason));
+                        }
+                    }
+                    Err(failure) => {
+                        let reason = match failure {
+                            ValidationFailure::Stop(reason) => Reason::stopped(&request.id, reason),
+                            other => {
+                                internal = true;
+                                Reason::internal(
+                                    &request.id,
+                                    format!("ObservationPlanの内部照合: {other:?}"),
+                                )
+                            }
+                        };
+                        issues.push(reason.clone());
+                        answers[index] = Some(Answer {
+                            id: request.id.clone(),
+                            status: Decision::Undetermined,
+                            outputs: BTreeMap::new(),
+                            claim: None,
+                            evidence: vec![],
+                            reasons: vec![reason],
+                            scope: base,
+                        });
+                    }
+                }
+                continue;
+            }
+            let declaration = declaration.expect("宣言を読む問い");
             let mut evaluator = Evaluator {
                 environment,
                 graph: &mut graph,
@@ -6020,7 +6059,7 @@ reading R {{
                     .requests()
                     .requests()
                     .iter()
-                    .all(|r| r.declaration() != foreign_name)
+                    .all(|r| r.declaration() != Some(foreign_name))
             );
             let foreign = &result.prepared.inputs().law().declarations[foreign_name];
             let Signature::View { body, returns, .. } = &foreign.signature else {
@@ -6214,7 +6253,7 @@ reading R {{
                     .requests()
                     .requests()
                     .iter()
-                    .all(|r| r.declaration() != foreign_name)
+                    .all(|r| r.declaration() != Some(foreign_name))
             );
             let foreign = &result.prepared.inputs().law().declarations[foreign_name];
             let Signature::View { body, returns, .. } = &foreign.signature else {
@@ -8349,7 +8388,9 @@ reading Calc {{
             .iter()
             .position(|answer| answer.id == id)
             .unwrap();
-        let declaration = result.prepared.requests().requests()[request].declaration();
+        let declaration = result.prepared.requests().requests()[request]
+            .declaration()
+            .unwrap();
         let Signature::View { body, .. } =
             &result.prepared.inputs().law().declarations[declaration].signature
         else {

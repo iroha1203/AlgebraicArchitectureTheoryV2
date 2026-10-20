@@ -1,4 +1,4 @@
-//! 観測環境の evaluate/check 要求。原文と束縛、依存順、動的な型・owner 制約を保持する。
+//! 観測環境のevaluate/checkと、依存理由を読むneeded要求。
 
 use super::{
     control::{Checkpoint, Control, StopReason},
@@ -19,12 +19,14 @@ use std::collections::{BTreeMap, BTreeSet};
 pub enum QuestionKind {
     Evaluate,
     Check,
+    Needed,
 }
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
         match self {
             Self::Evaluate => "evaluate",
             Self::Check => "check",
+            Self::Needed => "needed",
         }
     }
 }
@@ -144,10 +146,11 @@ pub struct Request {
     pub constraints: Vec<BindingConstraint>,
 }
 impl Request {
-    pub fn declaration(&self) -> &str {
+    /// 宣言をheadに持つ問いの名前。neededのheadは問いIDなのでNone。
+    pub fn declaration(&self) -> Option<&str> {
         match &self.head {
-            Selector::Declaration { name } => name,
-            _ => unreachable!("解決済み head"),
+            Selector::Declaration { name } => Some(name),
+            _ => None,
         }
     }
     pub fn wire(&self) -> Json {
@@ -302,7 +305,6 @@ fn resolve_inner(
                 | "repair"
                 | "solve"
                 | "quotient"
-                | "needed"
         ) {
             return Err(ResolveFailure::NotApplicable {
                 request: prefix.id,
@@ -323,6 +325,7 @@ fn resolve_inner(
         let kind = match raw.kind.as_str() {
             "evaluate" => QuestionKind::Evaluate,
             "check" => QuestionKind::Check,
+            "needed" => QuestionKind::Needed,
             _ => {
                 return Err(invalid(problem(
                     RequestIssueCode::Syntax,
@@ -332,6 +335,37 @@ fn resolve_inner(
                 )));
             }
         };
+        if kind == QuestionKind::Needed {
+            let Selector::Answer { id, path } = &raw.head else {
+                return Err(invalid(problem(
+                    RequestIssueCode::Reference,
+                    &raw.id,
+                    "head",
+                    "neededは問いIDを $Id で指定する",
+                )));
+            };
+            if !path.is_empty() || !raw.arguments.is_empty() {
+                return Err(invalid(problem(
+                    RequestIssueCode::Syntax,
+                    &raw.id,
+                    "head",
+                    "neededは出力fieldや追加引数を取らない",
+                )));
+            }
+            names.insert(raw.id.clone(), requests.len());
+            requests.push(Request {
+                id: raw.id,
+                text: (*text).into(),
+                kind,
+                dependencies: vec![id.clone()],
+                head: raw.head,
+                arguments: vec![],
+                defaults: vec![],
+                constraints: vec![],
+            });
+            phase(control, Checkpoint::RequestBinding)?;
+            continue;
+        }
         if checked_find(
             &raw.arguments,
             |(key, _)| key == "on",
@@ -483,7 +517,24 @@ fn resolve_inner(
         checkpoint(control)?;
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
-        let params = parameters(&law.declarations[req.declaration()].signature, req.kind).unwrap();
+        if req.kind == QuestionKind::Needed {
+            let id = &req.dependencies[0];
+            if !names.contains_key(id) {
+                return Err(invalid(problem(
+                    RequestIssueCode::Reference,
+                    &req.id,
+                    "head",
+                    "問いIDが存在しない",
+                )));
+            }
+            phase(control, Checkpoint::RequestDependency)?;
+            continue;
+        }
+        let params = parameters(
+            &law.declarations[req.declaration().expect("宣言headの問い")].signature,
+            req.kind,
+        )
+        .unwrap();
         let mut constraints = Vec::new();
         let expected_owners = owner_bindings(req, control)?;
         for param in params {
@@ -792,6 +843,12 @@ fn selector_type(
             let r = &requests[*names
                 .get(id)
                 .ok_or_else(|| failure(RequestIssueCode::Reference, "問い ID が存在しない"))?];
+            if r.kind == QuestionKind::Needed {
+                return Err(failure(
+                    RequestIssueCode::Projection,
+                    "ObservationPlanはLawへ束縛できる公開射影を持たない",
+                ));
+            }
             phase(control, Checkpoint::RequestDependency)?;
             let Some(ProjectionStep::Field(field)) = path.first() else {
                 return Err(failure(
@@ -802,7 +859,7 @@ fn selector_type(
             // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
             // 評価して参照値を推測しない。後方参照でも同じ有限な表を参照する。
             owners = owner_bindings(r, control)?;
-            let sig = &law.declarations[r.declaration()].signature;
+            let sig = &law.declarations[r.declaration().expect("宣言headの問い")].signature;
             let initial = match (r.kind, field.as_str()) {
                 (QuestionKind::Evaluate, "value") => {
                     let Signature::View { returns, .. } = sig else {

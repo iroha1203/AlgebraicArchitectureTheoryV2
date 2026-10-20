@@ -297,7 +297,8 @@ impl Environment<'_> {
         {
             return Err("所属束縛のRequestが元入力と違う".into());
         }
-        let d = &self.inputs.law().declarations[request.declaration()];
+        let d =
+            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let params = match &d.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
             _ => return Err("所属束縛の元宣言がview/Lawでない".into()),
@@ -565,7 +566,8 @@ impl Environment<'_> {
             .original_requests
             .and_then(|r| r.get(context.request))
             .ok_or("所属束縛の元Requestがない")?;
-        let d = &self.inputs.law().declarations[request.declaration()];
+        let d =
+            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let params = match &d.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
             _ => return Err("所属束縛の元署名がない".into()),

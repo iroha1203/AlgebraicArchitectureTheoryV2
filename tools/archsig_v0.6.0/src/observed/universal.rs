@@ -1066,7 +1066,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("全域の元Lawがない")?;
         let Signature::Law {
             params,
@@ -1123,7 +1123,11 @@ impl Environment<'_> {
         self.universal_strip_quantifiers(graph, &mut plan)?;
         if let Some(request) = graph.requests.get(self.current_context(graph).request)
             && request.kind == QuestionKind::Check
-            && let Some(declaration) = self.inputs.law().declarations.get(request.declaration())
+            && let Some(declaration) = self
+                .inputs
+                .law()
+                .declarations
+                .get(request.declaration().ok_or("元要求に宣言がない")?)
             && let Signature::Law { body, guard, .. } = &declaration.signature
             && *body == id
         {

@@ -26,7 +26,7 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations
-            .get(request.declaration())
+            .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("族の元Lawがない")?;
         let Signature::Law {
             params,
@@ -244,7 +244,8 @@ impl Environment<'_> {
         else {
             return Err("族の元Sourceがない".into());
         };
-        let d = &self.inputs.law().declarations[request.declaration()];
+        let d =
+            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         if context.frame.is_some()
             || context.iteration.is_some()
             || context.instance.is_some()
@@ -513,8 +514,10 @@ impl Environment<'_> {
         {
             let (_, plan) = self.family_request(graph, source)?;
             self.validate_at(graph, graph.get(source)?, source.0)?;
-            let d = &self.inputs.law().declarations
-                [graph.requests[graph.context_at(source.0).request].declaration()];
+            let d = &self.inputs.law().declarations[graph.requests
+                [graph.context_at(source.0).request]
+                .declaration()
+                .ok_or("元要求に宣言がない")?];
             let origin = match &node.rule {
                 Rule::Input {
                     kind: "law",
@@ -737,7 +740,8 @@ impl Environment<'_> {
             return Err("族LawInstanceがない".into());
         };
         let (request, plan) = self.family_request(graph, *body)?;
-        let d = &self.inputs.law().declarations[request.declaration()];
+        let d =
+            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let Signature::Law {
             role: expected_role,
             ..
@@ -1010,7 +1014,8 @@ impl Environment<'_> {
                 plan.guard.ok_or("非適用rowに元guardがない")?,
             )
         } else if context.case.is_some() && context.frame.is_none() && context.iteration.is_none() {
-            let declaration = &self.inputs.law().declarations[request.declaration()];
+            let declaration = &self.inputs.law().declarations
+                [request.declaration().ok_or("元要求に宣言がない")?];
             let Signature::Law {
                 params,
                 body,
@@ -1080,7 +1085,8 @@ impl Environment<'_> {
         {
             return Err("非適用rowが元guardfalse/実bindingsと違う".into());
         }
-        let d = &self.inputs.law().declarations[request.declaration()];
+        let d =
+            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
         let Some(Payload::LawInstance {
             name,
             role,

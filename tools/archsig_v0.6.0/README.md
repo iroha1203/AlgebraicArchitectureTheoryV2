@@ -33,6 +33,10 @@ jq -r '. as $r | .answers[] | select(.id == "n") | .outputs.value.node as $id
 refutedで終了コード1、count Atomを除くと不足位置付きundeterminedで終了コード2となる。
 型、導出、支持と入力コピーは同じresult.jsonから確認できる。
 
+同じrunへ `--ask 'need=needed($audit)'` を加えると、依存先の未観測位置を
+`need.outputs.plan` のObservationPlanで読める。`requirements` はslot・依存Ref・元位置、
+`blockers` は欠測以外の理由を保持する。この例のcount=12の反証には追加の観測要求はない。
+
 以前の出力directoryは `--reuse result-counter` で候補として指定できる。
 現在の三入力から全再計算し、検査済みの導出へ候補の型・内容・全依存・由来を照合する。
 node番号や共有方法の違いは吸収し、候補の推論は計算へ採用しない。

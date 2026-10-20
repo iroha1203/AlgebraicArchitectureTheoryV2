@@ -75,7 +75,7 @@ fn forward_backward_references_and_stable_order_keep_original_requests() {
     assert_eq!(resolved.evaluation_order(), &[1, 0, 2, 4, 3]);
     let r = &resolved.requests()[0];
     assert_eq!(r.text, texts[0]);
-    assert_eq!(r.declaration(), "R.plus");
+    assert_eq!(r.declaration(), Some("R.plus"));
     assert_eq!(r.dependencies, ["first"]);
     assert_eq!(r.arguments[0].name, "bind.x");
     assert_eq!(r.arguments[0].origin, ArgumentOrigin::Explicit);

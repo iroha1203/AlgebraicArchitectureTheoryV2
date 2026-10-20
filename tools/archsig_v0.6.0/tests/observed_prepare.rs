@@ -15,6 +15,26 @@ fn inputs() -> InputSources {
 }
 
 #[test]
+fn needed_has_a_request_head_and_no_declaration_in_the_checked_bundle() {
+    let prepared = prepare_observed(
+        inputs(),
+        &["p=needed($n)", "n=evaluate(CountCheck.amount,s=@v/s)"],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    let requests = prepared.requests().requests();
+    assert_eq!(requests[0].declaration(), None);
+    assert_eq!(requests[1].declaration(), Some("CountCheck.amount"));
+    assert_eq!(prepared.requests().evaluation_order(), [1, 0]);
+    assert_eq!(requests[0].dependencies, ["n"]);
+    assert!(requests[0].arguments.is_empty() && requests[0].defaults.is_empty());
+    assert!(
+        matches!(&requests[0].head, archsig::observed::request::Selector::Answer{id,path} if id=="n" && path.is_empty())
+    );
+    assert_eq!(prepared.inputs().sources(), &inputs());
+}
+
+#[test]
 fn byte_inputs_and_checked_inputs_resolve_the_same_requests() {
     let texts = [
         "a=evaluate(CountCheck.amount,s=@v/s)",
@@ -25,7 +45,7 @@ fn byte_inputs_and_checked_inputs_resolve_the_same_requests() {
     assert_eq!(prepared.requests().evaluation_order(), &[0, 1]);
     assert_eq!(
         prepared.requests().requests()[0].declaration(),
-        "CountCheck.amount"
+        Some("CountCheck.amount")
     );
     assert_eq!(prepared.inputs().sources(), &inputs());
     // 検査済み bundle を所有したまま、別の問いを再解決する入口も同じ元入力を使う。
