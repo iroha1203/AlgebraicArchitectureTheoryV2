@@ -12,6 +12,7 @@ use crate::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 pub mod maps;
+pub mod profiles;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Configuration {
@@ -86,6 +87,45 @@ impl ObjectComponent {
         &self.candidate
     }
 }
+/// このsubjectのowner slotが選択rootを指す、という所属条件。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ConditionalSubject {
+    subject: FactPointer,
+    owner_slot: FactPointer,
+    owner: FactPointer,
+    entity: bool,
+}
+impl ConditionalSubject {
+    pub fn subject(&self) -> &FactPointer {
+        &self.subject
+    }
+    pub fn owner_slot(&self) -> &FactPointer {
+        &self.owner_slot
+    }
+    pub fn owner(&self) -> &FactPointer {
+        &self.owner
+    }
+    pub fn is_entity(&self) -> bool {
+        self.entity
+    }
+}
+/// Fの外部参照先を含めず、原始所属から作る読取り適用域。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SubjectDomain {
+    known: Vec<FactPointer>,
+    conditional: Vec<ConditionalSubject>,
+}
+impl SubjectDomain {
+    pub fn known(&self) -> &[FactPointer] {
+        &self.known
+    }
+    pub fn conditional(&self) -> &[ConditionalSubject] {
+        &self.conditional
+    }
+    pub fn is_complete(&self) -> bool {
+        self.conditional.is_empty()
+    }
+}
 /// build/mapが共用する原始構成。LawやObjectAlgebraの成立を表す型とは区別する。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConfigurationConstruction {
@@ -94,6 +134,7 @@ pub struct ConfigurationConstruction {
     universe: Vec<FactPointer>,
     base: ConfigurationCandidate,
     components: Vec<ObjectComponent>,
+    local_domain: SubjectDomain,
 }
 impl ConfigurationConstruction {
     pub fn reading(&self) -> &str {
@@ -107,6 +148,9 @@ impl ConfigurationConstruction {
     }
     pub fn base(&self) -> &ConfigurationCandidate {
         &self.base
+    }
+    pub fn local_domain(&self) -> &SubjectDomain {
+        &self.local_domain
     }
     pub fn components(&self) -> &[ObjectComponent] {
         &self.components
@@ -418,6 +462,7 @@ pub fn construct(
     }
     let mut subjects = vec![selected];
     let mut parts = Vec::new();
+    let mut conditional = BTreeMap::new();
     let mut blocking = BTreeSet::new();
     for subject in index.values() {
         tick(control)?;
@@ -465,6 +510,15 @@ pub fn construct(
             }
             Slot::Missing => {
                 blocking.insert(slot(subject, &field.name));
+                conditional.insert(
+                    exists(subject),
+                    ConditionalSubject {
+                        subject: exists(subject),
+                        owner_slot: slot(subject, &field.name),
+                        owner: exists(selected),
+                        entity: is_entity,
+                    },
+                );
             }
             Slot::Known {
                 value: Value::Ref { .. },
@@ -477,6 +531,25 @@ pub fn construct(
             }
         }
     }
+    let mut known = BTreeSet::new();
+    for subject in &subjects {
+        tick(control)?;
+        known.insert(exists(subject));
+    }
+    let mut conditions = Vec::new();
+    let condition_order = canonical_facts(conditional.keys().cloned().collect(), control)?;
+    for subject in condition_order {
+        tick(control)?;
+        conditions.push(
+            conditional.remove(&subject).ok_or_else(|| {
+                ConstructionFailure::Inconsistent("所属条件のsubjectがない".into())
+            })?,
+        );
+    }
+    let local_domain = SubjectDomain {
+        known: canonical_facts(known, control)?,
+        conditional: conditions,
+    };
     let base = configuration(inputs, &subjects, &index, blocking, control)?;
     let mut components = Vec::new();
     for subject in parts {
@@ -493,6 +566,7 @@ pub fn construct(
         universe: canonical_facts(universe, control)?,
         base,
         components,
+        local_domain,
     };
     tick(control)?;
     Ok(result)
@@ -540,6 +614,7 @@ mod tests {
             "identifications",
             "universe",
             "component",
+            "domain",
             "reading",
             "root",
         ] {
@@ -562,6 +637,9 @@ mod tests {
                 }
                 "component" => {
                     forged.components[0].subject.subject = "q".into();
+                }
+                "domain" => {
+                    forged.local_domain.known.pop();
                 }
                 "reading" => {
                     forged.reading = "other".into();

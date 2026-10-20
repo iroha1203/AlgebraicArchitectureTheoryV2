@@ -27,6 +27,13 @@ pub struct ObjectIdentity {
     subject: FactPointer,
 }
 impl ObjectIdentity {
+    pub(super) fn selected(reading: &str, root: &FactPointer, subject: &FactPointer) -> Self {
+        Self {
+            reading: reading.into(),
+            root: root.clone(),
+            subject: subject.clone(),
+        }
+    }
     pub fn reading(&self) -> &str {
         &self.reading
     }

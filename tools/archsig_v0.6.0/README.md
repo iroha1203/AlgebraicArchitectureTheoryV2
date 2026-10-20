@@ -114,6 +114,16 @@ view は全 parameter の束縛を必要とし、Law の未束縛 parameter は�
 `recheck()` は現在の検査済み入力と同じ選択から構成を再照合する。
 このRust APIのConfigurationと、LawやObjectAlgebraの成立は別の計算結果である。
 
+`construction::profiles::construct_profiles(&checked, "CountCheck", "v", "s", &mut control)`
+はbaseと部分対象の読取り適用域とquery patternを構成する。
+`profiles()` の各行に対象identity、Configuration候補、`domain()`、`pattern()` を保持する。
+baseの適用域はrootとowned entity/arrow、部分対象の適用域はそのsubjectとなる。
+未知のownerは `domain().conditional()` と候補行の `membership()` で確認する。
+確定したpatternの `queries()` は共通Uのatom、全順序対のrelation、全順序対のidentificationの順で、
+各queryの真偽を返す。未決の行はpatternを確定せず、他の確定行は保持する。
+`known_classes()` は確定patternが等しい行の添字をまとめ、全行確定時には `classes()` を返す。
+各行のidentityと適用域は保たれる。Law・viewの読取りの互換性は、それぞれの条件と値の検査を要する。
+
 `construction::maps::correspondence(&checked, "v", "m", "Reservations", None, &mut control)`
 は原始correspondenceから共通U上の候補作用とConfiguration保存を計算する。
 別の終域の読みは第5引数へ `Some("TargetReading")` として指定する。
