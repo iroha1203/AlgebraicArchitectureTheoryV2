@@ -2,9 +2,14 @@
 use super::*;
 use crate::archmap::Field;
 
+mod declarations;
 mod internal;
 mod operations;
 mod transport;
+pub use declarations::{
+    DeclarationCandidate, DeclarationConditionFailure, DeclarationCorrespondence, DeclarationPair,
+    declaration_correspondence,
+};
 pub use internal::{InternalArrowResult, InternalArrows, internal_arrow, internal_arrows};
 pub use operations::{
     ActionDifference, ConfigurationOperation, IdentityConstruction, OperationStep, identity,

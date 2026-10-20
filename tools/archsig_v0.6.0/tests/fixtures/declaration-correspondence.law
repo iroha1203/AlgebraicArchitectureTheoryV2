@@ -1,0 +1,35 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Helper {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  view external(c: Child): Z = c.count;
+}
+reading Decoy {
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  view amount(c: Child): Z = 19;
+}
+reading Before {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use Helper as H;
+  view amount(c: Child): Z = H.external(c);
+  view owned(a: Root, b: Root, c: Child[a]): Bool = true;
+  view packed(a: Root, xs: List<Option<(Child[a], Z)>>, members: Set<Child[a]>, table: Map<Child[a], Child[a]>): Bool = true;
+  view procedure(a: Root, f: Term<(Z, Bool) -> Option<Z>>): Bool = true;
+  view paths(p: Path<Child, Child>): Path<Child, Child> = p;
+  law required bounded(a: Root, c: Child[a], delta: Z): c.count + delta >= 0;
+  local Amount(c: Child) reads c.count;
+  change bump(c: Child, delta: Z) = c with { count = c.count + delta };
+  relation again(p: Path<Child, Child>): p = p;
+}
+reading After {
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use Decoy as D;
+  view amount(k: Child): Z = 9;
+  view owned(x: Root, y: Root, k: Child[x]): Bool = true;
+  view packed(x: Root, values: List<Option<(Child[x], Z)>>, nodes: Set<Child[x]>, lookup: Map<Child[x], Child[x]>): Bool = true;
+  view procedure(x: Root, function: Term<(Z, Bool) -> Option<Z>>): Bool = true;
+  view paths(w: Path<Child, Child>): Path<Child, Child> = w;
+  law optional bounded(x: Root, k: Child[x], shift: Z) when false: false;
+  local Amount(k: Child) reads k.amount;
+  change bump(k: Child, shift: Z) = k with { amount = k.amount };
+  relation again(w: Path<Child, Child>): w = w;
+}
