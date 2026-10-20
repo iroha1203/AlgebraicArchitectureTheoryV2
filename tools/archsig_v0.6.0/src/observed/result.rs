@@ -736,6 +736,11 @@ impl Reason {
         Json::Obj(wire)
     }
 }
+/// 表示上の理由列の等値。列順と、各 kind の wire で表示する欄だけを比較する。
+pub(crate) fn reasons_equal(left: &[Reason], right: &[Reason]) -> bool {
+    left.len() == right.len() && left.iter().zip(right).all(|(a, b)| a.wire() == b.wire())
+}
+
 pub(crate) fn sort_reasons(reasons: &mut Vec<Reason>) {
     fn location_key(location: &Option<Location>) -> (String, String, usize) {
         match location {
@@ -4465,6 +4470,93 @@ impl Graph {
 #[cfg(test)]
 mod invariant_tests {
     use super::*;
+
+    #[test]
+    fn reason_comparison_preserves_wire_order_and_stop_omissions() {
+        use super::super::{control::Resource, request::QuestionKind};
+        use crate::result::Signal;
+        let reason = |kind| Reason {
+            kind,
+            request: "current".into(),
+            dependencies: vec![NodeRef(0), NodeRef(1)],
+            missing: vec![
+                Fact {
+                    snapshot: "v".into(),
+                    subject: "first".into(),
+                    field: Some("V.Item.value".into()),
+                    atom: None,
+                },
+                Fact {
+                    snapshot: "v".into(),
+                    subject: "second".into(),
+                    field: None,
+                    atom: None,
+                },
+            ],
+            location: Some(Location::Law { span: (2, 5) }),
+        };
+        let reasons = vec![
+            reason(ReasonKind::Missing),
+            reason(ReasonKind::DependencyBlocked {
+                request: "prior".into(),
+            }),
+            reason(ReasonKind::ConditionFailed {
+                condition: NodeRef(2),
+                construction: "domain",
+            }),
+            reason(ReasonKind::UnsupportedAlgorithm {
+                question: QuestionKind::Check,
+                operand_types: vec![Type::Z, Type::Bool],
+                method: "method".into(),
+            }),
+            reason(ReasonKind::Stop(StopReason::BudgetExhausted {
+                resource: Resource::TimeMs,
+                limit: 10,
+                observed: 12,
+            })),
+            reason(ReasonKind::Stop(StopReason::Cancelled(Signal::Term))),
+            reason(ReasonKind::Internal("recheck".into())),
+        ];
+        // The previous complete wire-array comparison is the differential oracle.
+        let old_equal = |a: &[Reason], b: &[Reason]| {
+            a.iter().map(Reason::wire).collect::<Vec<_>>()
+                == b.iter().map(Reason::wire).collect::<Vec<_>>()
+        };
+        for left in &reasons {
+            for right in &reasons {
+                assert_eq!(
+                    reasons_equal(std::slice::from_ref(left), std::slice::from_ref(right)),
+                    old_equal(std::slice::from_ref(left), std::slice::from_ref(right))
+                );
+            }
+            let mut changed = left.clone();
+            changed.missing.clear();
+            changed.location = None;
+            let expected = matches!(left.kind, ReasonKind::Stop(_));
+            assert_ne!(left, &changed);
+            assert_eq!(
+                reasons_equal(std::slice::from_ref(left), &[changed.clone()]),
+                expected
+            );
+            assert_eq!(old_equal(std::slice::from_ref(left), &[changed]), expected);
+        }
+        assert!(reasons_equal(&[], &[]));
+        assert!(reasons_equal(&reasons, &reasons));
+        assert!(!reasons_equal(&reasons, &reasons[..reasons.len() - 1]));
+        let mut reordered = reasons.clone();
+        reordered.swap(0, 1);
+        assert!(!reasons_equal(&reasons, &reordered));
+        let mut changed = reasons[0].clone();
+        changed.dependencies.reverse();
+        assert!(!reasons_equal(&reasons[..1], &[changed]));
+        let mut changed = reasons[0].clone();
+        changed.missing.reverse();
+        assert!(!reasons_equal(&reasons[..1], &[changed]));
+        let mut changed = reasons[5].clone();
+        changed.request = "other".into();
+        assert!(!reasons_equal(&reasons[5..6], &[changed]));
+    }
+
     fn integer() -> Node {
         Node {
             ty: NodeType::Value(Type::Z),

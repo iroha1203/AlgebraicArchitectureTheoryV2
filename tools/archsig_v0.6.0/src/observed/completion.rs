@@ -49,9 +49,6 @@ pub(in crate::observed) fn value_comparison_reason(
         location: Some(location.clone()),
     }
 }
-fn reasons_equal(a: &[Reason], b: &[Reason]) -> bool {
-    a.iter().map(Reason::wire).collect::<Vec<_>>() == b.iter().map(Reason::wire).collect::<Vec<_>>()
-}
 /// 原理由の依存Ref・slot・位置をすべて保つ集合和。既存の表示主順を維持し、
 /// 同じ位置に複数caseの理由がある場合も完全に同一な理由だけを一度にする。
 pub(in crate::observed) fn canonical_reasons(

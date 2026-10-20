@@ -493,9 +493,7 @@ impl Environment<'_> {
             });
         }
         sort_reasons(&mut reasons);
-        if node.reasons.iter().map(Reason::wire).collect::<Vec<_>>()
-            != reasons.iter().map(Reason::wire).collect::<Vec<_>>()
-        {
+        if !reasons_equal(&node.reasons, &reasons) {
             return Err("未知Owned型量化の元欠測・型付き未実装理由が違う".into());
         }
         Ok(true)
