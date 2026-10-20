@@ -1,319 +1,133 @@
 # ArchSig v0.6.0
 
-[v0.6.0 I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md)に従い、独立Atom定義と、
-その共通語彙を参照するLaw・ArchMapを検査する。
-旧版 `tools/archsig` とは独立したクレートである。
+共通の Atom 定義を参照する Law・ArchMap を検査し、観測環境の view の値と Law の
+成立・反証・未決を、型と導出元を持つ結果として計算する Rust クレートである。
+旧版 [`tools/archsig`](../archsig/) とは独立している。
 
-## 現在の範囲
+## 現在の提供形態
 
-- 独立 Atom 定義の API (`archsig::definition::check_definitions`): JSON schema・namespace・
-  依存 DAG・binding・原始型を検査し、meaning・入力位置・語彙 manifest と digest を保持する。
-- Law の静的検査: 構文・版・名前・型・依存型・構造再帰・純粋性。
-- 型付きの宣言と原式、出現位置、参照の解決、既定規則(`archsig::law::check_law`)。
-- Atom定義の語彙 manifest と digest、各定義ファイルとLawの `bytes_digest`・`model_digest`。
-- ArchMap の静的検査: 版・schema・ID・由来・語彙 binding・原始値の型と encoding・参照・
-  依存型の所属・Map の全域性・欠測 slot の補完の存在。既知値と欠測 slot を持つ内部表現と
-  `model_digest`(`archsig::archmap::check_archmap`)。
-- 観測環境の準備 API (`archsig::observed::prepare_observed`): 元 byte 列・入力識別・
-  digest と検査済み三表を保持し、`evaluate` / `check` の束縛・型・公開射影・
-  依存順を解決する。循環は該当する問いの ID と依存グラフを保持して拒否する。
-  検査済み bundle を再利用する入口と、検査・要求解決で共有する予算・取消制御を持つ。
-- 観測評価 API (`archsig::observed::evaluate_observed_bytes` / `evaluate_observed`):
-  明示束縛した原始参照、Z/Q/Fp/Bool/Unit/Text/一般Tuple/List/Set/Option の fieldと
-  型付きliteral、`rat`、Tupleの構成・射影、括弧を共通の AST 評価器で読む。
-  Z/Q/Fp と数値Tupleの加減乗算・負号・等値、Z/Q の順序、
-  Bool の等値と not/and/or/implies を計算する。
-  Q は正分母の既約形、Fp は宣言した法、数値Tuple は入れ子の成分型を保つ。
-  Listは順序と重複を保ち、Setの構成は重複を除いて外延的に比較する。
-  元literalの全要素評価・順序・支持を導出に保持し、空List/Setとnoneにも要素型を保つ。
-  `count`・数値要素の`sum`・`in`を評価し、空の和は元の数値型の零を返す。
-  一般Tupleを数値演算の対象にせず、none・空・零・欠測を区別する。
-  既知List/Setを域とするSet内包は、各要素の束縛でfilterと要素式を評価する。
-  反復の束縛を元域のEvaluationとList位置またはSet要素へ接続し、
-  入れ子内包・view呼出し・let/ifの親環境へ戻る。
-  falseのfilterでは要素式を実行せず、空域は元要素型の空Setを返す。
-  未観測の域・filter・必要な要素で結果が決まらない場合は、元missingと依存式を保つ。
-  既知List/Setの明示`forall/exists ... in ...`は、元collectionと型付きの有限Domain、
-  実binder・body評価・元順の量化Scopeを保持する。Domainは重複しない意味上の要素域とし、
-  元Listの順序・重複出現はcollection評価に残す。空域はforall=true・exists=falseとなる。
-  全域に依存する確定判断は全要素・bodyのcoverageを再検査したfinite_exhaustionへ接続し、
-  forallの既知false instanceは他instanceの欠測によらず反例として保持する。
-  existsは既知true instanceでtrueとなり、既読のmissing・支持を保持する。
-  `forall/exists x:T`はUnit/Bool/Fp・登録済みplain参照族と、それらからなる有限な非再帰Data・Tuple・Option・Setの
-  全値域を元型・宣言から列挙する。
-  有限Map型とそのTuple/Option/Setは元の両端参照族から全域単一値関数を全列挙し、
-  空始域は空表1個、非空始域・空値域は表0個を保持する。plain Mapの未束縛Law parameterも同じ全域を使う。
-  未使用binderも元の検査済み型を保持し、
-  型付きDomain・実要素・全coverage・反例へ接続する。型域にはcollection評価を作らず、
-  全列挙は同じ中断制御の下で行う。
-  plain参照族は全snapshotの完全型名が一致するsubjectを(snapshot,id)ごとに列挙し、
-  fieldやownerの欠測で除かない。空snapshotを含む範囲とsnapshot/subjectの由来mode、
-  subject存在の支持を、型域・実binder・判断の導出へ保持する。
-  数値等式には元左右と同じ型・形の残差を保持し、一般Boolには数値残差を付けない。
-  検査済み既知Mapは元の参照pairと両端型を保ち、行順によらず同じ域上の値で等値を判定する。
-  空域の空表、Mapを含むTuple/List/Set/Optionも型を保つ。欠測Mapは元slotのMissingを保持し、共有補完から値を判断する。
-  Map適用は元表と実keyを照合して像を返し、元callee/引数の評価・支持・Scopeを保持する。
-  域外の実keyはkey集合への追加前後の等値を反証し、検査可能な条件とcondition_failedを残して値を生成しない。
-  欠測Map/参照は元missingを保持し、元入力の参照・owner・全域性制約に整合する共有補完を使う。
-  entity参照のidentityは、reading・同じ始終点・空の生成元列を持つPath値を返し、source/targetは元entity参照を返す。
-  恒等Pathの数学的等値は始終点と共通carrier上の恒等作用を比較し、readingは由来として保持・再検査する。
-  恒等Pathとそれを含むList/Tuple/Optionの等号・不等号、List所属は、結果型Tとして受け付ける。
-  Pathを含むList/Tuple/Optionは、入れ子の各成分を実argumentsから到達する型付き既出Refで表示する。
-  原始containerのinline表示を保ち、let/if/view呼出しでも元の式・束縛・支持・Scopeを再検査する。
-  内部arrowのpath(e)は原始生成元名1個と実from/toを保持し、全snapshotのsubject存在・既知field Atomの共通carrier U上に有限作用を構成する。
-  sourceの既知fieldをtargetの同名fieldへ、from参照leafをtoへ写し、Listの順序・重複と参照構造を照合する。Setは移送後の外延で照合し、量leafの一致は要求しない。
-  source部分Fの外では恒等とし、式内等値は端点と全U上の作用を比較する。同作用の別名生成元や、全U恒等の自己arrowと空語を数学的に等値とする一方、元reading・生成元名・実producerは由来として再検査する。
-  path(e)とsource/target、Option/List/Tuple包装・通常view/let/ifの値を既出の型付きRefで接続する。必要な端点・fieldの欠測は元slotを保持した未決、既知参照構造の不一致は元入力へ接続したcondition_failedを返す。
-  then(p,q)は同じU上でq∘pを合成し、pの生成元列にqの列を順に連結する。空語左右単位・括り方による同作用を保ち、合成後にsource部分Fから全域化し直さない。
-  合成は元の左右実子・全作用・生成元順序と型付き既出Refを再検査する。実端点の不一致は型付き端点対の反証とcondition_failedを残し、依存先はdependency_blockedとなる。
-  未観測端点は元slotと共有補完を保持し、全補完で同じ右単位等式を確定する。Pathの結果値を同batchの後続viewへ束縛できる。
-  correspondenceのpath(c)は元from/toと各Map、同名/align fieldからsource rootの全Fを写す。同じUのF外はtarget root存在Atomへ送り、外部参照先の存在は固定する。
-  参照leafの移送、Listの順序・重複、Tuple/Option/Setの参照構造、owner・arrow端点と実在target fieldを照合する。量leafの一致は要求しない。
-  source F上で恒等の自己correspondenceも、F外をrootへ送る全作用によって空語恒等と区別する。式内thenは元の全作用を合成する。
-  欠測Map・端点・ownerは元slotと入力制約を保つ共有補完を使い、同じ値を確認できれば欠測理由付きの値、それ以外は未決を返す。必要なtarget field Atomを補完値から作らない。
-  correspondenceの元生成元・端点・全作用・支持・Scope・元式/実producerを現在の三入力へ再検査し、既知構成不適合には元条件の反証とcondition_failedを返す。
-  原始Termと閉じたfnは、元body・parameter順・型付きASTと静的参照を保ち、既知引数へ適用する。
-  bodyのlet/if/match・constructor・container・有限量化・正確な数値/論理演算を同じ中断制御で計算し、
-  元callee/実引数の評価・支持・Scopeから結果を再検査する。Termを含むTuple/List/Optionも元型を保つ。
-  body内のand/or/impliesは左辺で決まるとき右辺を評価せず、未観測条件の両枝で同じ元Termを保持する。
-  有限なUnit/Bool/Fp・非再帰Data・Tuple/Option/Setの全引数域からTermの外延等値を計算する。
-  0/複数引数と元順を保ち、異なるparameter名やbodyの同じ関数を等値とする。
-  Z/Qと数値TupleのアフィンTermは元bodyの正確な係数から比較し、相違点を零・単位点から作って元bodyへ再代入する。
-  有限引数と数値全域を分け、let・Tuple演算/射影・有限Listの和・有限量化を型付きで分析する。
-  Termの等号/不等号には、元左右・元出現と各有限caseの型付き係数正規形を導出に保持する。
-  外延が異なるときは元順の実引数と両bodyへ再代入した出力対をcounterexampleに残し、元入力から再検査する。
-  各Termのnormalizationはbeforeに元Term、afterに型付きListの正規形、stepsに元比較Expressionを参照する。
-  Listの各rowは有限caseの引数零点と出力正規形の組であり、0/1/複数引数はUnit/元値/Tupleで保持する。
-  数値出力の正規形は(定数項,全係数List)で、軸は元parameter順・Tuple成分順、他の数値型の軸には零係数を置く。
-  出力Tuple/Listでは同じ表示を成分へ適用し、元Termの型を表示の解釈に使う。
-  counterexampleのbindingsは元parameter名と型付き引数値、left/rightは元bodyへ再代入した値の既出参照である。
-  既知Termへの量化parameter/欠測数値の適用は元の記号へ接続し、相殺した値・等号を確定する。
-  view/let/有限補完でも元slotの相関・実引数producer・支持・Scopeを保持する。
-  未確定な数値Tupleも成分の記号を束縛後へ保持し、Tuple演算・入れ子の射影と外側等号を通じて同じslotの相関を使う。
-  単一の欠測Tuple fieldは元の一slotを保ち、成分pathだけを内部の相関に用いる。
-  その数値補完対は各成分を元のTuple型の値へ復元し、元FactPointer一個へ接続する。
-  外延比較や数値適用が算法外なら、元の型・式・必要な域/判定を持つunsupported_algorithmを返す。
-  比較で読み取ったcaseの成分に算法外値があれば、他成分・後続caseの相違だけで係数証拠を作らず未決へ戻す。
-  数値補完の係数から相殺したTuple slotも、元missingと元型の証拠値を保持する。
-  既知実値や有限全域の非線形計算も実計算し、未観測calleeを既定fnへ置き換えない。
-  Termを含むTuple/List/Option/DataとList所属、未知条件の両枝・全補完の比較にも同じ外延を使う。
-  元programの由来検査は原式を照合し、構文相違だけのcompletion_pairを作らない。
-  全域で判定できない補完値の比較は、元missingと型付きunsupported_algorithmを残す。
-  有限forallの反例・existsの証人を得た後は、不要な後続bodyを評価せず決定値を保持する。
-  未観測callee・必要な実引数は元missingを保持する。
-  これらの値型と原始参照について、letの入れ子・名前使用とifを評価する。
-  letの名前は元の右辺評価へ戻り、未観測右辺を通常値や全称parameterにしない。
-  ifは条件と両枝を保持し、未観測条件でも両枝が同じ既知値なら全補完で確定する。
-  これらの値型・検査済みの有限data木を引数・返り値に持ち、ownerに依存しない署名のview呼出しを評価する。
-  view呼出し式のOwned参照と、それを含むTuple/List/Set/Optionの引数・返り型は、各実memberを
-  元署名のownerと同snapshotの原始所属事実で検査する。none・空の値はmemberを生成せず保持する。
-  Map内部のOwnedも各key/imageを検査し、Owned始域は元の完全なowner族と実key集合を照合する。
-  空始域の空表は保ち、非空の期待族に対する不足key集合は型付きSet<Ref>不等の条件反証へ接続する。
-  呼出しの完全始域に未知ownerがある場合も、keyに含まれないsubjectの元Missingを集め、整合する全補完で実rosterを読む。
-  既知Mapの入力制約がownerを決める場合は元Missingを保持した値を返し、補完ごとに全域条件が変わる場合は未決と条件を返す。
-  空Map、Mapを含むcontainer/返り値と自由Z/Qも同じ共有代入へ接続し、完全始域の未完成値を通常値として使わない。
-  Tuple・有限List・Option・有限Set literal内で数値が未束縛/欠測でも、元Sourceの既知Owned成分を検査し、
-  数値の全域軸・共有slot相関と、通常値が未生成であることを保つ。
-  部分Setは元literalの出現順・重複を所属検査用に保持し、未知成分から件数・外延等値を確定しない。
-  全成分が既知となった通常Setは既存の外延規則で重複を除く。
-  entity/arrowの所属一致は成功値の支持・Scopeにも残し、既知不一致は元callと型付きowner不等、
-  snapshot不一致は実snapshotのText不等のcounterexampleに接続するcondition_failedを返す。
-  内側呼出しの構成条件が未確定なら、通常の数値欠測と区別し、外側の引数・let・射影・量化へ伝播する。
-  元の欠測理由を保持して通常値の構成を保留し、全域評価も元の理由から未決を返す。
-  独立に既知のOwned成分は所属検査を続け、未確定な数値子と同居する既知不一致も条件・証拠へ残す。
-  引数不適合ではcallee bodyへ入らず、内側callの構成条件が反証されて値が未生成なら、
-  非Owned引数でも元理由を保って外側へ通常値を返さない。
-  失敗した戻り参照のfield読取りも、元条件・支持・Scopeを保持し、通常値や未読slotの欠測を生成しない。
-  有限binder・fieldからの実ownerと、Z/Q全域式内の同じ呼出し境界も元の束縛を保つ。
-  原始ownerが欠測の呼出しは、元の実引数SourceとMissingを保持し、入力制約に整合する有限補完ごとに所属を読む。
-  自由Z/Qを持つ部分Tuple/List/Option/Setの引数・返り値も同じ共有代入を使い、数値の全域軸と区別する。
-  値の計算に必要な所属が反証・未確定のcaseでは通常値を生成せず、条件・支持・Scopeと元の欠測を保持する。
-  ifの選択枝とBool短絡に必要な条件を実子のBoolから読み、未選択の子の導出・支持・欠測も保持する。
-  所属Missingの検査済みEvaluationは中断後も理由の根として保持し、未完成の補完を成功へ昇格しない。
-  左端data parameterのmatchから得た直接subtermへの構造再帰も、各実引数とcall frameを保持して評価する。
-  既存Engineの有限ExprからIRへの変換を各viewへ接続し、全Z代入の保存をアフィン正規化で判定する。
-  addは成立、subtractは元式へ再代入できる反例、operator欠測は整合する補完対を持つ未決となる。
-  生成IR・実call・元のsource/operator事実と由来を保持し、未知のExpr型全域を有限標本へ置き換えない。
-  引数なし・複数引数・入れ子・import aliasを扱い、呼出しごとに元の引数評価・parameter束縛・
-  callee bodyの導出を保持し、呼出し元のlexical bindingへ戻る。
-  未観測の実引数は欠測理由を保ち、その引数を使わないbodyは既知値を返せる。
-  上記の値型・原始Refと有限data木を引数に持つdataについて、
-  観測field・constructorを評価し、data型・正規constructor・引数の型と順序を保つ。
-  これらのdata値をlet/if/viewで渡し、構造的な等値・不等値を計算する。
-  既知値のmatchはconstructor・wildcard・名前・入れ子patternを扱い、
-  pattern束縛を元scrutineeのconstructor引数位置へ接続する。
-  data以外の既知値もwildcard・名前patternで受ける。
-  未観測dataのmatchは元missingを保ち、constructorやpattern束縛値を作らない。
-  Tuple/List/Optionを通る正の自己参照も個別の有限木として扱い、再帰型の全域を有限とは扱わない。
-  ドット列は束縛変数から既知参照を順にたどり、各prefixの元span・型・実owner・支持を保持する。
-  Z/Q全域式内でも各参照prefixの元型・span・実ownerを保持し、全代入の導出へ接続する。
-  中間の原始参照が欠測なら値や支持Atomを作らず、整合する有限参照補完ごとに元fieldを読み直す。
-  Z/Q全域式の子にある既知有限Set内包・明示In/有限型量化は、既存の有限評価器で読む。
-  元List/Setと各反復・filter・全要素・空域、型Domain・binder・全coverageを導出に保持する。
-  外側の数値binderの所属は元lexical scopeと実反復の親から読み、各子を元のPlanで再検査する。
-  全称の有限各caseが持つアフィン等値も外側の数値全代入で判断し、元有限Sourceを正規化stepへ残す。
-  有限existsは全代入で成立するcase、定数falseの全case、または単一caseの同値な判断を使う。
-  Bool は false and x / true or x / false implies x などを全補完で確定し、元の両子評価と欠測理由を保持する。
-  Bool の view は false も評価値として確定し、Law は要求する Bool の成立を判断する。
-  Z/Qの欠測slotは同じ記号として係数をまとめ、加減算・負号・定数倍で係数が消えた式の値を確定する。
-  元fieldの欠測と全出現を保持し、`h-h`の零から`h-h=0/1`の通常比較・Law判断へ接続する。
-  左右に欠測が残るZ/Qの等値・不等値も、差の全係数が消えたときは定数残差から判断する。
-  元左右Evaluationと差のExpression・normalization証拠を保持し、未知の左右へ具体値を補わない。
-  未束縛Law parameterと明示forallのZ/Qアフィン等値は、型Domainと元binderを保ち全代入で判断する。
-  parameterと欠測slotの係数を分け、Zの整除条件とQの正確な解から、全補完での成否を判断する。
-  反証の具体代入は元式へ戻し、共通の代入が存在しない場合はwholeの正規化から反証する。
-  補完で成否が変わる場合は型付き補完対を保持し、その値を観測に追加しない。
-  原始Ref fieldの欠測は登録subjectを候補とし、既知Map/ownerの入力制約に整合する全補完へ接続する。
-  同じslotを共有し、元snapshot/型付きRef・支持・現在由来・全検査または補完対を保持する。
-  既知所属の族へ渡すowner式が原始Ref欠測なら、整合する各owner値の実集合から問いを評価する。
-  式として読む族の候補subjectのowner欠測も、元slotの共有代入から所属を読み直す。
-  族のcount・明示in量化で補完により変わる結果と、不変値・既知反例を区別して保持する。
-  未束縛の依存Law parameterも元slotの共有代入を使い、各実fiberのwholeを判断してから補完を集約する。
-  Z/Q parameterを含む各fiberの全域と、元の依存署名・束縛・欠測・現在由来を保持する。
-  Owned型fieldと、参照を含む有限Tuple/Option/Set・非再帰dataの欠測も、元field型の入力制約へ戻る共有補完で読む。
-  値DAGの消去型と原始fieldのOwned条件を分け、候補全値と未選択ownerの整合する拡張を検査する。
-  空登録族のnone・空Setと、元Missing・実Source/prefix・現在由来を保持する。
-  無限List・Text・再帰dataを観測例から有限化しない。
-  有限型slotの各補完でも先に全域のwholeを判断し、元の支持・欠測・量化を保って集約する。
-  有限型のLaw parameterとZ/Q parameterの混在も、元宣言順の有限族の各instanceでZ/Q全域を判断する。
-  既知ownerの依存族でも数値parameterを有限列挙から分け、元署名の実prefixごとの全Z/Q代入を評価する。
-  数値parameterが署名の途中にあっても有限fiberの順と型を保ち、空fiber・固定Answer・複合Owned値へ接続する。
-  view内で追加されるZ/Q forallも、外側の自由parameterと区別して評価する。
-  この全域評価で必須範囲外の式は、原式・型Domainとunsupported_algorithm理由を保持する。
-  未束縛Law parameterのcheckは、plain参照族と上記の有限型を元宣言順に列挙し、
-  明示Ref束縛を固定した実直積の各LawInstanceを検査する。自由parameter・型Domain・実bindingsと
-  全称命題を保ち、既知違反の実反例は他rowの欠測によらず残す。空直積は成立・全検査0件となる。
-  guard=falseのrowはbodyを評価せず非適用として残し、全非適用N件の族は成立・全検査N件となる。
-  既知ownerに依存する未束縛Law parameterは、先行束縛ごとに同snapshot・owner一致の参照族を使う。
-  固定ownerと自由child、自由ownerと固定childを含め、各prefixの実Domain・元順の束縛と適合するrowを保持する。
-  所属を判断したownerの原始事実を支持へ接続し、空fiberも範囲へ残す。
-  Ownedを含む有限Tuple/Option/Setと両端Owned Mapの未束縛parameterも、各実prefixの元owner族から全域を列挙する。
-  Option/Setは空fiberでもnone/空集合を保ち、Mapは空始域の空表1個と非空始域・空値域の表0個を区別する。
-  既知ownerの `State[a]` 式は、同snapshotでownerが一致するentity/arrowの登録族を
-  型付きSetとして返し、Set演算・内包・明示In量化へ接続する。
-  owner子式のEvaluation・束縛・実producerと所属の原始事実を保持する。
-  明示 `forall s:State[a]` / `exists` と、owner添字を持つ参照を含む有限Tuple/Option/Setは、
-  Mapの両端owner添字も含め、元型の添字と現在の実束縛に従う登録族を使い、
-  実Domain・元binder・件数と所属の支持を保持する。
-  型域の候補subjectや実owner式の原始所属が未観測なら、入力制約に整合する全補完から各caseの族を再構成する。
-  Mapと有限Tuple/Option/Setの完全Domain・元bodyを各caseで評価し、全caseで不変の値を確定する。
-  全補完の範囲と元型位置の欠測、let・呼出し引数の実producerを保持する。
-  型欠測の生成・元Sourceの再検査・caseの型域再構成は共有Controlで停止し、検査を終えたprefixと先行回答を保持する。
-  補完内でもowner式が未解決の場合は、実caseのSourceに接続するunsupported_algorithmを未決回答に保持する。
-  Law の guard が false なら非適用となり、元の guard/body から条件付き要求を判断する。
-  明示 guard と元の body の評価・支持を条件付き Law の導出へ接続する。
-  型付きの値・回答・原式の各出現・Law instance・判断・反証の証拠を導出 DAG に保持し、
-  欠測 slot と由来を元入力へ接続する。検査・要求解決と同じ制御で評価を中断できる。
-  参照を含まない有限型の欠測slotはsnapshot・subject・fieldごとに共有し、元型の全補完域を列挙する。
-  Unit/Bool/Fp、非再帰の有限Data、それらのTuple/Option/Setを扱い、各slotの型に従う直積を使う。
-  単一Tuple fieldは全体を一slotとして保持し、Optionのnoneと空Setも型の値として区別する。
-  plain/Owned参照とMap、およびそれらを含む有限Tuple/Option/Set・非再帰Dataの欠測fieldも共有補完する。
-  Map候補は登録key/imageから作り、各候補を元の型・owner・既知Mapを含む入力全体の制約で検査する。
-  空始域は空表1個を持ち、未知ownerで変わる始域も同じownerの代入と共有する。
-  補完候補を原始Known Atomへ置き換えず、元slotのMissingとSourceを各caseへ接続する。
-  各補完内で元の問い全体（未束縛Law parameterの全族を含む）を評価してから集約し、
-  全caseで同じ既知値なら値を確定する。Lawは全case成立/全case違反を区別し、
-  補完で結果が異なるときは元slot・実代入・whole評価に接続するcompletion_pairを保持する。
-  元の欠測理由・各caseの反例・全検査の証拠を残し、他型の欠測は根拠なく値に置き換えない。
-  同一batchの既知の`$id.value`・`$id.evaluation.value`を、全parameterが束縛されたview/Lawへ渡す。
-  元出力の既出Refを再利用し、数値・参照・container・有限data・Map/Termの型と値、支持・Scopeを保つ。
-  要求の依存順に計算し、Answerは指定順に返す。消費時には検査済みの元Request列と元出力を再検査する。
-  既知出力からList/Tupleとdataのconstructor引数の[index]、Option.someを型に沿って多段に取り出す。
-  inline成分は元の型付き出力一つを引数とするprojection nodeにし、rule.pathに出力field名を除く全射影列を保つ。
-  元出力の支持・Scopeを継承し、核は元Request/producerと公開規則・実型/値から再検査する。既出Refは再利用する。
-  Pathのsource/targetとgenerators[index]は、表示と同じ既出の端点・生成元Refを後続へ渡す。
-  Pathを含むList/Tuple/Optionでも各親の成分Refを順に辿り、同値の別Refへの置換を拒否する。
-  生成元の順序を保ち、空語・実index/型/ownerの不適合を既存の型付き構成条件と依存停止へ接続する。
-  再検査中の停止でも、既に独立検査を終えた確定値・反例のclaim/evidenceを保持する。
-  明示束縛の同2pathとその構造成分pathが未生成root値を参照すると、その要求は出力なしの未決Answerとなる。
-  dependency_blockedに直接の依存先IDと既出導出Refを持ち、元missing/unsupportedの位置・slot・型/方法を
-  後続へ推移的に保持する。独立要求の確定値・反例は返し続ける。依存停止のAnswerも元Request/producerから再検査する。
-  明示束縛で、実値のindex/constructor/Option/型不適合と省略Evaluation.environmentを読むと、
-  元selectorの全path・要求型・元出力からprojectionの構成条件を再検査し、その反証と証拠を残す。
-  condition_failedと直接依存先IDを持つdependency_blockedを返し、後続へ元理由と証拠Refを保持する。
-  既知rootの不適合と未生成rootのmissing/unsupportedを混在させても、元producerと独立要求の値・反例を保持する。
-  非依存Law族の自由parameterと併用し、正しい固定Answer引数を元Refへ束縛して有限全域・Z/Q全称評価へ渡す。
-  既知ownerの固定Answer値・公開成分射影を依存Law族の実prefix域へ渡し、
-  有限Owned参照・Tuple/Option/Set/Mapと独立した固定値を評価する。
-  型内の全ownerが固定されたOwned参照・Tuple/List/Option/Set/MapのAnswer束縛は、元Refを束縛値として保持する。
-  各memberの原始owner事実と、元ArchMapへ拡張できる共有有限補完から所属を別のBool導出で検査し、Sourceの証拠辺として渡す。
-  Mapは実key/imageの所属と期待Owned始域の全体を照合し、none・空containerと空Mapの全域条件を区別する。
-  実所属・snapshotの不適合は型付きprojection構成条件の反証と直接依存停止へ接続する。
-  固定producerの補完・全称Scopeを継承し、今回の自由parameterの実Domainを追加して元入力から再検査する。
-  自由ownerへの固定Answer原始参照は、元署名の各実prefixで原始owner族へ絞って依存Lawを評価する。
-  固定subjectと同じ実域・空fiberの全称判断を保ち、元Ref/pathとproducerのScopeを継承して再検査する。
-  この自由owner族で原始所属が未観測なら、既存依存族のmissing_observationとunsupported_algorithmを保持する。
-  自由ownerを含む固定複合Answer値も、各実prefixで全owned memberとMapの完全始域を検査する。
-  元Ref/公開pathとproducerのScopeを保持し、none・空containerと空Mapの全域条件を区別する。
-  自由部分の未観測所属は欠測・未対応理由と全補完のScopeを保持する。
-  自由ownerの公開射影不適合も型付き構成条件の反証へ接続し、独立した回答と後続の直接依存理由を保持する。
-  固定/自由ownerが混在するときは、固定owner分を先に構成条件として検査し、自由部分を各実prefixで照合する。
-  固定部分の不適合は条件反証へ接続し、自由部分に適合prefixがない空域と区別する。
-  条件には元値と固定ownerの型付きRefを保持し、直接subjectのownerも同Requestの原始入力へ戻して再検査する。
-  固定ownerの所属・Map完全始域は全候補で照合する。全候補で成立する場合は元値を消費し、
-  全候補で不適合なら型付き条件反証、成否が分かれる場合は元owner slotのmissing_observationと
-  直接producerのdependency_blockedを返す。後続依存へ元理由を保持し、補完値を観測Atomへ追加しない。
-  固定/自由ownerの欠測を共有補完するときも、固定producerの量化Scopeと元RefをSeedへ引き継ぐ。
-  補完caseごとに固定所属条件を元selectorから再検査し、同じcaseの条件辺と実fiberをSourceへ結ぶ。
-  公開構造成分の固定射影も元Seedの束縛前Refを保持し、同値でも別Requestの射影へ置換できない。
-  既知Mapの入力制約で絞った全候補の結果と、候補間で結果が分かれるCompletionPairを保持する。
-  Z/QおよびText・無制限List・再帰data・無限payload等の型全域量化は、
-  元のforall/exists・binder型・TypeDomainと実呼出しcontextを保持する。
-  未束縛Law parameterも有限prefixと型全域を分け、元宣言順の域と未決claimを保持する。
-  非数値の無限域に必要な判定は元量化Sourceと型を持つunsupported_algorithmへ接続し、
-  let/view経由や外側数値軸の下でも元missing・独立回答・後続依存・現在由来を保持する。
-  子評価の検査済み算法理由は、node挿入直後の停止でもAnswerとissuesへ保持する。
-  定数論理と既存の有限/Z/Q判断は引き続き計算する。
-  有限子の判定にも元の外側型域を適用し、空性が未判定の型を非空と仮定した反例を作らない。
-  未提供の存在量化判定や非線形判定は、元式・型・域と必要な判定を持つ
-  `unsupported_algorithm`の未決回答を返し、欠測も原因なら元slotの理由を併記する。
-  全称アフィン判定をexistsへ適用せず、数値残差は量化の判断と別に元の両辺から検査する。
-  有限評価・既知値・Bool短絡と既存アフィン全称判定は確定値・反例を保持する。
-  上記以外のpayloadを持つdataの評価、その他の式形・
-  上記以外の未観測ownerの所属条件・
-  有限型補完でも確定しない参照からのfield読取り・上記以外の動的 owner 制約の評価は未実装であり、
-  専用の内部 `EvaluationFailure::NotImplemented` を返す。この失敗を result/2 の
-  `unsupported_algorithm` や未決回答へ変換しない。
-- CLI の `archsig check` と `archsig version`。入力のコピー、`result.json`、stdout の receipt を
-  [実行仕様](../../docs/tool/archsig_v0_6_0_io/execution.md) §§5–7 に従って出す。
+| 入口 | 提供する操作 | 結果 |
+| --- | --- | --- |
+| CLI | `archsig check`、`archsig version` | 入力の静的検査、`result.json` と入力コピー、一行の receipt／版情報 |
+| Rust API | 三入力の検査、観測環境の `evaluate(View,B)`・`check(Law,B)` | 型付きの値・回答・導出 DAG、理由と元入力への参照 |
 
-提供するコマンドは `check` と `version` だけであり、v0.6.0 全体の適合版ではない。
-`run` は CLI の不正(`usage`)として拒否する。
+**CLI の `run` は未提供で、`usage`（終了コード64）として拒否する。**
+CLI の `check` は Law の成立を評価せず、`requests`・`answers`・`nodes` は空で返す。
+Rust API の評価結果には CLI の出力配送・receipt・終了コード・`--reuse` の連携は含まれない。
+[I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md)は v0.6.0 全体の実装要件を定めており、
+このクレートはその全体の適合版ではない。
 
-## テスト
+## CLI の最小実行例
 
-```bash
-cargo test --offline --manifest-path tools/archsig_v0.6.0/Cargo.toml -j 1 --test TARGET NAME -- --exact --test-threads=1
-```
-
-`tests/fixtures/` の規範例は [適合例](../../docs/tool/archsig_v0_6_0_io/validation.md) の
-`examples/` と同じ byte 列である。テストは docs を読み込まない。
-小さい試験名を個別に指定し、同時には一件だけ実行する。
-
-## 利用手順
+リポジトリルートで実行する。Rust 2024 edition 対応のツールチェーンが必要であり、
+`--offline` は依存 crate がローカルに取得済みであることを前提とする。
 
 ```bash
 cargo build --offline --manifest-path tools/archsig_v0.6.0/Cargo.toml -j 1
+export PATH="$PWD/tools/archsig_v0.6.0/target/debug:$PATH"
+archsig version
 ```
 
-以下の `archsig` は、作られた `tools/archsig_v0.6.0/target/debug/archsig` を指す。
-
-共通定義とLawを検査し、語彙manifest、型付き宣言と元の位置を得る。
+まず共通定義と Law を検査し、次に同じ定義を使う ArchMap も検査する。
+`--out` には存在しないディレクトリを指定する（再実行時は別の名前にする）。
 
 ```bash
 archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --out result-law
-```
-
-ArchMapを指定すると、同じ定義へのbindingと原始値・参照・由来・補完の整合性を検査する。
-
-```bash
 archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json --law tools/archsig_v0.6.0/tests/fixtures/reservations.law --archmap tools/archsig_v0.6.0/tests/fixtures/reservations.archmap.json --out result-both
 ```
 
-`--out` は存在しない path を指定する。結果は `result-law/result.json` などに書かれ、
-stdout には一行の receipt が出る。`archsig version` は版を一行で出す。
+両方とも `status=complete`、終了コード0となる。結果は `result-law/result.json` と
+`result-both/result.json` に保存し、stdout には各一行の receipt を出す。
+結果の形式は `archsig.result/2`。定義のコピーは `inputs/definitions/0.json` に置き、
+入力 ID `definition0` と JSON Pointer から元の定義位置を追える。
 
-定義ファイルを複数指定する場合は `--atom-definition` を指定順に繰り返す。
-読込みは明示したファイルだけで完結し、未使用の語彙・依存・importも検査して保持する。
-結果は `archsig.result/2`。定義コピーは `inputs/definitions/0.json` 等に保存し、
-入力ID `definition0` 等とJSON Pointerで元の定義位置を追える。
+複数の定義ファイルは `--atom-definition` を指定順に繰り返す。
+明示したファイルだけを読み込み、未使用の語彙・依存・import も検査して保持する。
+ファイル操作と終了コードの詳細は [実行仕様 §§5–7](../../docs/tool/archsig_v0_6_0_io/execution.md#5-ファイル操作と出力)を参照する。
+
+## Rust API で観測値を評価する
+
+呼出し側の crate から、このディレクトリを `archsig` の path dependency として指定する。
+次の例の実行時 cwd はリポジトリルートとする。三入力の byte 列を渡すと、入力検査と
+要求解決を経て Counter の値と二つの Law を評価できる。
+
+```rust
+use archsig::observed::{
+    control::{Control, Limits, Usage},
+    evaluate_observed_bytes,
+    input::InputSources,
+};
+
+fn main() -> std::io::Result<()> {
+    let fixtures = std::path::Path::new("tools/archsig_v0.6.0/tests/fixtures");
+    let sources = InputSources::from_bytes(
+        vec![std::fs::read(fixtures.join("counter.atoms.json"))?],
+        std::fs::read(fixtures.join("counter.law"))?,
+        std::fs::read(fixtures.join("counter.archmap.json"))?,
+    );
+    let asks = [
+        "n=evaluate(CountCheck.amount,s=@v/s)",
+        "ok=check(CountCheck.nonnegative,s=@v/s)",
+        "audit=check(CountAudit.bounded,s=@v/s)",
+    ];
+    // この小例は予算制限・取消通知を設定しない。
+    let mut control = Control::new(Limits::default(), |_| Usage::default());
+    let result = evaluate_observed_bytes(sources, &asks, &mut control)
+        .expect("対応範囲内の Counter 例");
+    println!("{}", result.wire().canonical());
+    Ok(())
+}
+```
+
+結果の `status` は `complete`、`n` の値は型 `Z`・payload `"2"`、`ok` と `audit` は
+`established` となる。Bool=false の view も値が確定すれば `established`、同じ false を
+要求する Law は `refuted` となる。`guard=false` の行は `not_applicable` として保持する。
+
+入力検査と要求解決を分ける場合は [`prepare_observed`](src/observed/mod.rs) と
+`evaluate_observed`、検査済み bundle を使う場合は `prepare_checked_observed` を使う。
+view は全 parameter の束縛を必要とし、Law の未束縛 parameter は型の全域で検査する。
+同じ batch の `$id.value`・`$id.evaluation.value` と公開成分射影を後続の束縛へ渡せる。
+計算は依存順、回答は指定順に返し、循環は要求 ID と依存グラフを保持して拒否する。
+`Control` は入力検査・要求解決・評価で共有し、呼出し側が予算と計測・取消通知を設定できる。
+
+## 機能別の概要
+
+| 機能 | 現在の計算・保持内容 | 参照先 |
+| --- | --- | --- |
+| 三入力の静的検査 | 定義の schema・namespace・依存 DAG、Law の構文・名前・型・依存型・構造再帰・純粋性、ArchMap の ID・binding・値・参照・所属・Map 全域性・補完の存在を検査する。原式・位置・meaning・語彙 manifest と digest を保持する | [定義](../../docs/tool/archsig_v0_6_0_io/definitions.md)、[Law](../../docs/tool/archsig_v0_6_0_io/law.md)、[ArchMap](../../docs/tool/archsig_v0_6_0_io/inputs.md) |
+| 値と式 | Z/Q/Fp/Bool/Unit/Text、参照、Tuple/List/Set/Option、対応する data 値を読む。正確な数値演算、比較、論理、let/if/match、view 呼出し、有限木の構造再帰、内包、count/sum/in を評価する。List の順序・重複、Set の外延、none・空・零・欠測を区別する | [式](../../docs/tool/archsig_v0_6_0_io/law.md#4-式束縛純粋性)、[評価器](src/observed/evaluate.rs) |
+| 量化と欠測 | 有限型・登録参照族・Map 全域、owner に依存する族を扱う。同じ欠測 slot を共有し、入力制約に整合する有限全補完の各問い全体から不変値・反例・補完対を判断する。欠測 subject を域から除かず、補完値を観測 Atom に追加しない | [量化・補完](src/observed/quantifier.rs)、[補完評価](src/observed/completion_evaluate.rs) |
+| 数値全域と Term | Z/Q の全代入に対するアフィン等値を係数から判断し、同じ未知 h の h−h の相殺と別 slot を区別する。既知 Map/Term の適用、有限域・アフィン Term の外延等値、Engine の生成 IR と保存判定を扱う | [数値全域](src/observed/universal.rs)、[Term](src/observed/term.rs)、[Engine 例](tests/observed_engine.rs) |
+| 式内の Path | entity の恒等、内部 arrow／correspondence の path、端点、生成元列、共通 carrier 上の全作用と then 合成を扱う。等値は端点と全作用から判断し、名前・順序・reading は由来として保つ。計算値を原始 Atom や保存済み Operation へ昇格しない | [Path](src/observed/path_value.rs)、[Path 評価](src/observed/path_evaluate.rs) |
+| 回答・導出・依存 | 型付き値、各原式の出現、束縛、Law instance、支持・Scope、数値残差・反証を導出 DAG に保持する。元入力・実 producer から再検査し、射影や所属の不適合は `condition_failed`、後続停止は `dependency_blocked` と元理由を保持する。中断時も検査済みの確定値・反例を残す | [結果仕様](../../docs/tool/archsig_v0_6_0_io/results.md)、[内部結果](src/observed/result.rs) |
+
+## 未決・算法非対応・未実装
+
+| 状態 | 扱い |
+| --- | --- |
+| 観測が足りず結果が決まらない | `undetermined` と `missing_observation`。元 slot と理由を保持する。全補完で不変の値は欠測があっても確定できる |
+| 受け付けた問いに必要な算法が対応範囲外 | `undetermined` と `unsupported_algorithm`。元式・型・量化域・必要な判定を保持する。一般の無限非線形判定、未提供の存在量化判定、非数値無限域の判定などが該当する |
+| 評価経路が未実装 | `EvaluationFailure::NotImplemented`。宣言・位置・機能名を返し、`wire()` は `None`。数学的な未決や `unsupported_algorithm` へ変換しない |
+| 内部 API の対象外の問い・環境 | 要求解決の `ResolveFailure::NotApplicable`。この観測評価 API は `on` を省略した `evaluate`／`check` を対象とする |
+| 入力や要求の不正／未知版／予算・取消 | それぞれ `invalid`／`unsupported`／`interrupted`。Law の反証や算法非対応と区別する |
+
+評価の未実装経路には、対応する値型以外の payload を持つ data、上記の計算で扱わない式形、
+補完後も確定しない参照からの field 読取り、対応範囲外の未観測 owner 所属・動的 owner 制約がある。
+受理する構文・型の範囲と、実際に値を評価できる範囲は異なる。
+また、`build` の ObjectAlgebra・equation realization、局所・大域診断、solve/repair 等の
+完成出力と公開 CLI 接続は未提供である。式内 Path の計算とは区別する。
+
+## テスト
+
+クレート内の小さい試験を exact 名で一件ずつ実行する。CLI の静的検査と
+上の Rust API 例に対応する試験は次のとおり。
+
+```bash
+cargo test --offline --manifest-path tools/archsig_v0.6.0/Cargo.toml -j 1 --test cli normative_examples_complete_both_checks -- --exact --test-threads=1
+cargo test --offline --manifest-path tools/archsig_v0.6.0/Cargo.toml -j 1 --test observed_counter_evaluation counter_two_has_typed_ordered_complete_answers -- --exact --test-threads=1
+```
+
+他の試験は `--test TARGET NAME -- --exact --test-threads=1` で対象を指定する。
+`tests/fixtures/` の規範例は [適合例](../../docs/tool/archsig_v0_6_0_io/validation.md)の
+`examples/` と同じ byte 列を保持し、テスト入力はクレート内の fixture を使う。
+全 suite の成否と、選択した試験の成否は区別する。

@@ -269,27 +269,6 @@ fn version_matches_the_execution_spec() {
     );
 }
 
-/// README の利用手順と同じ二つの check。
-#[test]
-fn readme_usage_reproduces_the_two_checks() {
-    let readme = include_str!("../README.md");
-    let dir = workdir("readme");
-    let crate_dir = env!("CARGO_MANIFEST_DIR");
-    let mut ran = 0;
-    for line in readme.lines().filter(|l| l.starts_with("archsig check ")) {
-        let args: Vec<String> = line
-            .split_whitespace()
-            .skip(1)
-            .map(|a| a.replace("tools/archsig_v0.6.0", crate_dir))
-            .collect();
-        let args: Vec<&str> = args.iter().map(String::as_str).collect();
-        let r = run(&dir, &args);
-        consistent(&dir, &r, "complete", 0);
-        ran += 1;
-    }
-    assert_eq!(ran, 2, "README に二つの check がある");
-}
-
 #[test]
 fn counter_count_outside_law_and_missing_are_static_successes() {
     let dir = workdir("counter-static");

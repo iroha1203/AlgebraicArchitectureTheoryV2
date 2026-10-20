@@ -7,8 +7,12 @@ AAT の数学的主張は定義せず、各toolが supplied artifact から何�
 ## 製品コンセプト
 
 - [ArchSig v0.6.0 製品コンセプト](archsig_v0_6_0_concept.md): AI Agent SKILLを通してAATの構造を解析する、AIネイティブなアーキテクチャ計算基盤の製品像と設計原則。
+- [ArchSig v0.6.0 実装と使い方](../../tools/archsig_v0.6.0/README.md): CLI の `check/version` と Rust 観測評価 API の提供範囲、最小例、制限、テスト手順。
+- [ArchSig v0.6.0 I/O 仕様](archsig_v0_6_0_io/README.md): 全体の入力・計算・CLI・結果の実装要件。
 
 ## Product map
+
+この表の ArchSig 入出力は旧版 `tools/archsig` のもの。v0.6.0 の入力と提供範囲は上の入口を参照する。
 
 | Product | Responsibility | Primary input / output |
 | --- | --- | --- |
@@ -43,7 +47,8 @@ direct evidence、boundary participant、candidate change point、validated repa
 | Tooling編集規律と検証経路 | [guideline.md](guideline.md) |
 | ArchMap input | `tools/archsig/src/schema/archmap.rs`、ArchSig validation、供給済み `archmap/v0.5.4` artifact |
 | LawPolicy authoring | [law_policy.md](law_policy.md) |
-| ArchSig runtime | `tools/archsig/src/`、schema catalog、CLI docs、runtime tests |
+| ArchSig v0.5.x runtime | `tools/archsig/src/`、schema catalog、CLI docs、runtime tests |
+| ArchSig v0.6.0 runtime | [実装 README](../../tools/archsig_v0.6.0/README.md)、`tools/archsig_v0.6.0/src/` と同クレートの tests |
 | ArchSig artifact reading | [Artifacts and boundaries](../../tools/archsig/docs/artifacts-and-boundaries.md) |
 | ArchView product・runtime・fidelity | [tools/archview/README.md](../../tools/archview/README.md)とUI / E2E tests |
 | FieldSig runtime | `tools/fieldsig/README.md`、serialized schema、tests |
