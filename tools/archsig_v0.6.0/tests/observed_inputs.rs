@@ -113,12 +113,18 @@ fn invalid_or_unsupported_law_keeps_declaration_and_vocabulary_tables_empty() {
 
 #[test]
 fn invalid_archmap_preserves_all_checked_declarations_and_vocabularies() {
+    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
     let src = InputSources::from_bytes(vec![DEFINITIONS.to_vec()], LAW.to_vec(), b"bad".to_vec());
     let failure = check_inputs(src, &mut Control::unlimited()).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert!(!failure.declarations().is_empty());
     assert!(!failure.primitives().is_empty());
     assert_eq!(failure.vocabularies().len(), 1);
+    let metadata = checked.metadata_wire();
+    let failed = failure.wire();
+    for key in ["declarations", "vocabularies"] {
+        assert_eq!(field(&failed, key), field(&metadata, key));
+    }
     for key in ["requests", "answers", "nodes"] {
         assert_eq!(array_len(field(&failure.wire(), key)), 0);
     }
@@ -126,10 +132,14 @@ fn invalid_archmap_preserves_all_checked_declarations_and_vocabularies() {
 
 #[test]
 fn cancellation_inside_each_checker_obeys_declaration_stage_rules() {
+    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let metadata = checked.metadata_wire();
     for (point, retained) in [
         (Checkpoint::BeforeDefinitions, false),
         (Checkpoint::DefinitionIteration, false),
         (Checkpoint::LawIteration, false),
+        (Checkpoint::AfterLaw, true),
+        (Checkpoint::BeforeArchMap, true),
         (Checkpoint::ArchMapIteration, true),
         (Checkpoint::AfterArchMap, true),
     ] {
@@ -137,6 +147,12 @@ fn cancellation_inside_each_checker_obeys_declaration_stage_rules() {
         assert_eq!(failure.status(), InputStatus::Interrupted, "{point:?}");
         assert_eq!(!failure.declarations().is_empty(), retained, "{point:?}");
         assert_eq!(!failure.vocabularies().is_empty(), retained, "{point:?}");
+        if retained {
+            let failed = failure.wire();
+            for key in ["declarations", "vocabularies"] {
+                assert_eq!(field(&failed, key), field(&metadata, key), "{point:?}");
+            }
+        }
         assert_eq!(field(&failure.issues()[0], "code"), &Json::str("cancelled"));
     }
 }

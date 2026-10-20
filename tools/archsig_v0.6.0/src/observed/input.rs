@@ -210,6 +210,13 @@ impl InputFailure {
         self.issues.push(reason.wire());
         self
     }
+    // Law 完了後の失敗表示にだけ、検査済みの表を所有権ごと移す。
+    fn with_checked_law(mut self, definitions: CheckedDefinitions, law: CheckedLaw) -> Self {
+        self.declarations = law.infos;
+        self.primitives = definitions.declarations.into_values().collect();
+        self.vocabularies = definitions.vocabularies.into_values().collect();
+        self
+    }
     // 検査で既に得た digest を失敗時の表示へ写す finalize。意味検査を開始しない。
     fn digest(&mut self, id: &str, digest: Option<String>) {
         if let Some(input) = self.inputs.iter_mut().find(|i| i.id == id) {
@@ -443,23 +450,26 @@ pub fn check_inputs(
         Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
     };
     failure.digest("law", Some(law.model_digest.clone()));
-    failure.declarations = law.infos.clone();
-    failure.primitives = definitions.declarations.values().cloned().collect();
-    failure.vocabularies = definitions.vocabularies.values().cloned().collect();
     for point in [Checkpoint::AfterLaw, Checkpoint::BeforeArchMap] {
         if let Err(reason) = control.checkpoint(point) {
-            return Err(failure.stopped(reason));
+            return Err(failure.with_checked_law(definitions, law).stopped(reason));
         }
     }
     let archmap =
         match check_archmap_controlled(failure.sources.archmap.bytes(), &definitions, control) {
             Ok(map) => map,
-            Err(CheckFailure::Input(f)) => return Err(failure.input_with_control(f.issue, control)),
-            Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
+            Err(CheckFailure::Input(f)) => {
+                return Err(failure
+                    .with_checked_law(definitions, law)
+                    .input_with_control(f.issue, control));
+            }
+            Err(CheckFailure::Stopped(reason)) => {
+                return Err(failure.with_checked_law(definitions, law).stopped(reason));
+            }
         };
     failure.digest("archmap", Some(archmap.model_digest.clone()));
     if let Err(reason) = control.checkpoint(Checkpoint::AfterArchMap) {
-        return Err(failure.stopped(reason));
+        return Err(failure.with_checked_law(definitions, law).stopped(reason));
     }
     Ok(CheckedInputs {
         sources: failure.sources,
