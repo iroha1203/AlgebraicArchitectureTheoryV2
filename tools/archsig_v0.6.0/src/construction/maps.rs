@@ -113,6 +113,13 @@ pub enum Counterexample {
         source: FactPointer,
         target: FactPointer,
     },
+    /// これらの位置を一つの型付き対応表で同時に保存する補完がない。
+    /// 各位置が単独でも不成立である、という主張とは区別する。
+    ReferenceConstraints {
+        fields: Vec<(FactPointer, FactPointer)>,
+        /// holderの像に依存する位置。終域位置を仮定せず、各型付き補完で検査する。
+        unresolved_fields: Vec<FactPointer>,
+    },
     Family {
         source: FactPointer,
         image: FactPointer,
@@ -351,17 +358,40 @@ fn reference_violation(
     unknown: &BTreeSet<SubjectKey>,
     control: &mut Control,
 ) -> Result<bool, ConstructionFailure> {
+    reference_constraints_violation(&[(source, target)], moved, unknown, control)
+}
+fn reference_constraints_violation(
+    fields: &[(&Value, &Value)],
+    moved: &BTreeMap<SubjectKey, SubjectKey>,
+    unknown: &BTreeSet<SubjectKey>,
+    control: &mut Control,
+) -> Result<bool, ConstructionFailure> {
     let mut variables = BTreeSet::new();
-    for (snapshot, id) in references(source, control)? {
+    let mut target_shapes = Vec::new();
+    for (source, target) in fields {
         check(control)?;
-        let k = (snapshot.to_owned(), id.to_owned());
-        if unknown.contains(&k) {
-            variables.insert(k);
+        for (snapshot, id) in references(source, control)? {
+            check(control)?;
+            let k = (snapshot.to_owned(), id.to_owned());
+            if unknown.contains(&k) {
+                variables.insert(k);
+            }
         }
+        target_shapes.push(reference_shape(target, &BTreeMap::new(), control)?);
     }
-    let target_shape = reference_shape(target, &BTreeMap::new(), control)?;
+    let matches = |trial: &BTreeMap<SubjectKey, SubjectKey>,
+                   control: &mut Control|
+     -> Result<bool, ConstructionFailure> {
+        for ((source, _), shape) in fields.iter().zip(&target_shapes) {
+            check(control)?;
+            if reference_shape(source, trial, control)? != *shape {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    };
     if variables.is_empty() {
-        return Ok(reference_shape(source, moved, control)? != target_shape);
+        return Ok(!matches(moved, control)?);
     }
     let mut trial = BTreeMap::new();
     for (from, to) in moved {
@@ -370,7 +400,11 @@ fn reference_violation(
     }
     // 順序付きの位置から決まる像を先に解決する。Listの長さ違反などに
     // 無用な補完全列挙をせず、同じ未知参照の反復にも同じ像を要求する。
-    let mut pairs = vec![(source, target)];
+    let mut pairs = Vec::new();
+    for pair in fields {
+        check(control)?;
+        pairs.push(*pair);
+    }
     while let Some((a, b)) = pairs.pop() {
         check(control)?;
         if references(a, control)?.is_empty() && references(b, control)?.is_empty() {
@@ -430,12 +464,15 @@ fn reference_violation(
     }
     variables.retain(|k| !trial.contains_key(k));
     if variables.is_empty() {
-        return Ok(reference_shape(source, &trial, control)? != target_shape);
+        return Ok(!matches(&trial, control)?);
     }
     let mut domain = BTreeSet::new();
-    for (snapshot, id) in references(target, control)? {
+    for (_, target) in fields {
         check(control)?;
-        domain.insert((snapshot.to_owned(), id.to_owned()));
+        for (snapshot, id) in references(target, control)? {
+            check(control)?;
+            domain.insert((snapshot.to_owned(), id.to_owned()));
+        }
     }
     if domain.is_empty() {
         return Ok(true);
@@ -449,13 +486,266 @@ fn reference_violation(
             check(control)?;
             trial.insert(variable.clone(), domain[*position].clone());
         }
-        if reference_shape(source, &trial, control)? == target_shape {
+        if matches(&trial, control)? {
             return Ok(false);
         }
         let mut next = false;
         for position in positions.iter_mut().rev() {
             check(control)?;
             if *position < domain.len() - 1 {
+                *position += 1;
+                next = true;
+                break;
+            }
+            *position = 0;
+        }
+        if !next {
+            check(control)?;
+            return Ok(true);
+        }
+    }
+}
+// 欠測Mapの各keyは、終域の型/ownerに適合する像か、始域外で固定する場合を持つ。
+// 完成候補のMap値は原始入力の補完仮説であり、結果JSONの逆取込みには使わない。
+struct MappingVariable {
+    source: SubjectKey,
+    field: String,
+    images: Vec<Option<SubjectKey>>,
+}
+fn typed_reference_constraints_violation(
+    inputs: &CheckedInputs,
+    holder: &Subject,
+    maps: &[(String, String, String)],
+    to: &SubjectKey,
+    moved: &BTreeMap<SubjectKey, SubjectKey>,
+    unknown: &BTreeSet<SubjectKey>,
+    fields: &[(&Value, &Value)],
+    unresolved_fields: &[FactPointer],
+    field_map: &BTreeMap<&str, &str>,
+    control: &mut Control,
+) -> Result<bool, ConstructionFailure> {
+    if reference_constraints_violation(fields, moved, unknown, control)? {
+        return Ok(true);
+    }
+    let mut variables = Vec::new();
+    for k in unknown {
+        check(control)?;
+        let source = subject(inputs, &k.0, &k.1, control)?;
+        let mut selected = None;
+        for (name, source_type, target_type) in maps {
+            check(control)?;
+            if source_type == &source.ty {
+                selected = Some((name, target_type));
+                break;
+            }
+        }
+        let (name, target_type) = selected
+            .ok_or_else(|| ConstructionFailure::Inconsistent("未決subjectの型対応がない".into()))?;
+        let map_field = field(holder, name, control)?
+            .ok_or_else(|| ConstructionFailure::Inconsistent("原始Map slotがない".into()))?;
+        let mut images = Vec::new();
+        if matches!(map_field.slot, Slot::Known { .. }) {
+            // 既知全域表のkeyにないsubjectは、ownerが未観測でも始域外。
+            images.push(None);
+        } else {
+            let owner = field(source, "owner", control)?
+                .ok_or_else(|| ConstructionFailure::Inconsistent("始域owner slotがない".into()))?;
+            if owner.slot == Slot::Missing {
+                images.push(None);
+            }
+            for snapshot in &inputs.archmap().snapshots {
+                check(control)?;
+                for target in &snapshot.subjects {
+                    check(control)?;
+                    if &target.ty != target_type {
+                        continue;
+                    }
+                    let owner = field(target, "owner", control)?.ok_or_else(|| {
+                        ConstructionFailure::Inconsistent("終域owner slotがない".into())
+                    })?;
+                    if matches!(&owner.slot, Slot::Known { value, .. } if &key(value)? != to) {
+                        continue;
+                    }
+                    images.push(Some((target.snapshot.clone(), target.id.clone())));
+                }
+            }
+        }
+        if images.is_empty() {
+            return Ok(true);
+        }
+        variables.push(MappingVariable {
+            source: k.clone(),
+            field: map_field.name.clone(),
+            images,
+        });
+    }
+    // 一つの像だけで既知の位置に違反する選択を先に除き、無関係なkeyの
+    // 組合せを列挙する前に型付きの確定違反を返す。
+    for variable in &mut variables {
+        check(control)?;
+        let mut remaining = BTreeSet::new();
+        for k in unknown {
+            check(control)?;
+            if k != &variable.source {
+                remaining.insert(k.clone());
+            }
+        }
+        let mut admissible = Vec::new();
+        for image in &variable.images {
+            check(control)?;
+            let mut trial = BTreeMap::new();
+            for (source, target) in moved {
+                check(control)?;
+                trial.insert(source.clone(), target.clone());
+            }
+            trial.insert(
+                variable.source.clone(),
+                image.as_ref().unwrap_or(&variable.source).clone(),
+            );
+            if !reference_constraints_violation(fields, &trial, &remaining, control)? {
+                admissible.push(image.clone());
+            }
+        }
+        if admissible.is_empty() {
+            return Ok(true);
+        }
+        variable.images = admissible;
+    }
+    let mut target_shapes = Vec::new();
+    for (_, target) in fields {
+        check(control)?;
+        target_shapes.push(reference_shape(target, &BTreeMap::new(), control)?);
+    }
+    let mut positions = vec![0; variables.len()];
+    loop {
+        check(control)?;
+        let mut trial = BTreeMap::new();
+        let mut inside = BTreeSet::new();
+        for (source, target) in moved {
+            check(control)?;
+            trial.insert(source.clone(), target.clone());
+        }
+        for (variable, position) in variables.iter().zip(&positions) {
+            check(control)?;
+            if variable.images[*position].is_some() {
+                inside.insert(variable.source.clone());
+            }
+            trial.insert(
+                variable.source.clone(),
+                variable.images[*position]
+                    .as_ref()
+                    .unwrap_or(&variable.source)
+                    .clone(),
+            );
+        }
+        let mut matches = true;
+        for ((source, _), target_shape) in fields.iter().zip(&target_shapes) {
+            check(control)?;
+            if reference_shape(source, &trial, control)? != *target_shape {
+                matches = false;
+                break;
+            }
+        }
+        if matches {
+            for fact in unresolved_fields {
+                check(control)?;
+                let k = (fact.snapshot.clone(), fact.subject.clone());
+                if !inside.contains(&k) {
+                    continue;
+                }
+                let source = subject(inputs, &k.0, &k.1, control)?;
+                let image = trial.get(&k).ok_or_else(|| {
+                    ConstructionFailure::Inconsistent("補完したholderの像がない".into())
+                })?;
+                let target = subject(inputs, &image.0, &image.1, control)?;
+                let source_field = fact.field.as_deref().ok_or_else(|| {
+                    ConstructionFailure::Inconsistent("参照条件にfieldがない".into())
+                })?;
+                let name = field_map
+                    .get(source_field)
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| {
+                        format!(
+                            "{}.{}",
+                            target.ty,
+                            source_field.rsplit('.').next().unwrap_or(source_field)
+                        )
+                    });
+                let Some(tf) = field(target, &name, control)? else {
+                    matches = false;
+                    break;
+                };
+                let Some(sf) = field(source, source_field, control)? else {
+                    return Err(ConstructionFailure::Inconsistent(
+                        "参照条件の元fieldがない".into(),
+                    ));
+                };
+                if let (Slot::Known { value: a, .. }, Slot::Known { value: b, .. }) =
+                    (&sf.slot, &tf.slot)
+                {
+                    if reference_shape(a, &trial, control)?
+                        != reference_shape(b, &BTreeMap::new(), control)?
+                    {
+                        matches = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if matches {
+            let mut assignments = Vec::new();
+            for (name, _, _) in maps {
+                check(control)?;
+                let map_field = field(holder, name, control)?.ok_or_else(|| {
+                    ConstructionFailure::Inconsistent("原始Map slotがない".into())
+                })?;
+                if map_field.slot != Slot::Missing {
+                    continue;
+                }
+                let mut rows = Vec::new();
+                for (variable, position) in variables.iter().zip(&positions) {
+                    check(control)?;
+                    if variable.field == map_field.name {
+                        if let Some(image) = &variable.images[*position] {
+                            rows.push(Json::Arr(vec![
+                                Json::Arr(vec![
+                                    Json::str(&variable.source.0),
+                                    Json::str(&variable.source.1),
+                                ]),
+                                Json::Arr(vec![Json::str(&image.0), Json::str(&image.1)]),
+                            ]));
+                        }
+                    }
+                }
+                assignments.push(crate::archmap::FieldAssignment {
+                    snapshot: holder.snapshot.clone(),
+                    subject: holder.id.clone(),
+                    field: map_field.name.clone(),
+                    value: Json::Arr(rows),
+                });
+            }
+            use crate::observed::control::CheckFailure;
+            match crate::archmap::check_completion_with_values::<
+                CheckFailure<Box<crate::issue::Issue>>,
+            >(
+                &inputs.archmap().snapshots,
+                inputs.definitions(),
+                &assignments,
+                control,
+            ) {
+                Ok(()) => return Ok(false),
+                Err(CheckFailure::Input(issue))
+                    if issue.code == crate::issue::Code::InconsistentObservation => {}
+                Err(CheckFailure::Input(issue)) => {
+                    return Err(ConstructionFailure::Inconsistent(issue.message));
+                }
+                Err(CheckFailure::Stopped(reason)) => return Err(reason.into()),
+            }
+        }
+        let mut next = false;
+        for (position, variable) in positions.iter_mut().zip(&variables).rev() {
+            check(control)?;
+            if *position < variable.images.len() - 1 {
                 *position += 1;
                 next = true;
                 break;
@@ -614,8 +904,30 @@ pub fn correspondence(
         check(control)?;
         field_map.insert(pair.source.as_str(), pair.target.as_str());
     }
+    let mut unresolved_fields = Vec::new();
+    let source_namespaces = namespaces(inputs, reading, control)?;
+    for k in &unknown_subjects {
+        check(control)?;
+        let source = subject(inputs, &k.0, &k.1, control)?;
+        if !visible(inputs, &source.ty, &source_namespaces) {
+            continue;
+        }
+        for f in &source.fields {
+            check(control)?;
+            if let Slot::Known { atom, value, .. } = &f.slot {
+                if !references(value, control)?.is_empty() {
+                    unresolved_fields.push(FactPointer {
+                        atom: Some(atom.clone()),
+                        ..slot(source, &f.name)
+                    });
+                }
+            }
+        }
+    }
     let mut images = Vec::new();
     let mut action = BTreeMap::new();
+    let mut reference_fields = Vec::new();
+    let mut reference_values = Vec::new();
     let mut absent = false;
     for fact in source.universe() {
         check(control)?;
@@ -683,6 +995,15 @@ pub fn correspondence(
                                 target: image.clone(),
                             });
                     }
+                    let mut unresolved = false;
+                    for (snapshot, id) in references(source_value, control)? {
+                        check(control)?;
+                        unresolved |= unknown_subjects.contains(&(snapshot.into(), id.into()));
+                    }
+                    if unresolved {
+                        reference_fields.push((fact.clone(), image.clone()));
+                        reference_values.push((source_value, value));
+                    }
                     action.insert(fact.clone(), image.clone());
                     images.push(image);
                 }
@@ -692,6 +1013,34 @@ pub fn correspondence(
             action.insert(fact.clone(), image.clone());
             images.push(image);
         }
+    }
+    if (!reference_values.is_empty() || !unresolved_fields.is_empty())
+        && !result
+            .counterexamples
+            .iter()
+            .any(|c| matches!(c, Counterexample::ReferenceStructure { .. }))
+        && typed_reference_constraints_violation(
+            inputs,
+            holder,
+            maps,
+            &(
+                target.root().snapshot.clone(),
+                target.root().subject.clone(),
+            ),
+            &moved,
+            &unknown_subjects,
+            &reference_values,
+            &unresolved_fields,
+            &field_map,
+            control,
+        )?
+    {
+        result
+            .counterexamples
+            .push(Counterexample::ReferenceConstraints {
+                fields: reference_fields,
+                unresolved_fields,
+            });
     }
     result.missing = canonical_facts(missing, control)?;
     let target_family: BTreeSet<_> = target_config.family().iter().collect();

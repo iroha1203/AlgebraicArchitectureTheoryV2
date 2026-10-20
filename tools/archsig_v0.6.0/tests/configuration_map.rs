@@ -51,6 +51,25 @@ fn graph_inputs(
     members_a: &str,
     members_b: &str,
 ) -> CheckedInputs {
+    graph_inputs_with_edit(
+        list,
+        mapping,
+        links_a,
+        links_b,
+        members_a,
+        members_b,
+        |map| map,
+    )
+}
+fn graph_inputs_with_edit(
+    list: bool,
+    mapping: bool,
+    links_a: &str,
+    links_b: &str,
+    members_a: &str,
+    members_b: &str,
+    edit: impl FnOnce(String) -> String,
+) -> CheckedInputs {
     let definition = include_str!("fixtures/configuration-map-graph.atoms.json");
     let definition = if list {
         definition.replace("\"Set\"", "\"List\"")
@@ -74,6 +93,7 @@ fn graph_inputs(
             .collect::<Vec<_>>()
             .join("\n")
     };
+    let map = edit(map);
     let law = include_str!("fixtures/configuration-map-graph.law").replace("@DIGEST@", digest);
     check_inputs(
         InputSources::from_bytes(
@@ -498,6 +518,231 @@ fn empty_root_values_cannot_bypass_reference_type_transport() {
             assert!(result.counterexamples().is_empty());
         }
     }
+}
+#[test]
+fn shared_missing_correspondence_is_checked_across_fields_and_with_its_owner_domain() {
+    let p = r#"[["v","p"]]"#;
+    let r = r#"[["v","r"]]"#;
+    let s = r#"[["v","s"]]"#;
+    for (links_b, members_b) in [(r, s), (p, p)] {
+        // 独立の全4対応表で、必ずどちらかのfieldが反証される。
+        for p_to in ["r", "s"] {
+            for q_to in ["r", "s"] {
+                let inputs = graph_inputs_with_edit(false, true, p, links_b, p, members_b, |map| {
+                    map.replace(
+                        r#"[[["v","p"],["v","r"]],[["v","q"],["v","r"]]]"#,
+                        &format!(r#"[[["v","p"],["v","{p_to}"]],[["v","q"],["v","{q_to}"]]]"#),
+                    )
+                });
+                let result = correspondence(
+                    &inputs,
+                    "v",
+                    "m",
+                    "GraphRead",
+                    None,
+                    &mut Control::unlimited(),
+                )
+                .unwrap();
+                assert!(result.map().is_none());
+                assert!(!result.counterexamples().is_empty());
+            }
+        }
+        let inputs = graph_inputs(false, false, p, links_b, p, members_b);
+        let result = correspondence(
+            &inputs,
+            "v",
+            "m",
+            "GraphRead",
+            None,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert!(result.candidate().is_none());
+        assert!(result.map().is_none());
+        assert_eq!(result.missing().len(), 1);
+        let [Counterexample::ReferenceConstraints { fields, .. }] = result.counterexamples() else {
+            panic!("{:?}", result.counterexamples())
+        };
+        assert_eq!(fields.len(), 2);
+        assert!(
+            fields
+                .iter()
+                .all(|(a, b)| a.subject == "A" && b.subject == "B" && a.field == b.field)
+        );
+        assert_eq!(
+            fields
+                .iter()
+                .map(|(a, _)| a.field.as_deref().unwrap())
+                .collect::<BTreeSet<_>>(),
+            BTreeSet::from(["Graph.Root.links", "Graph.Root.members"])
+        );
+        result
+            .recheck(
+                &inputs,
+                "v",
+                "m",
+                "GraphRead",
+                None,
+                &mut Control::unlimited(),
+            )
+            .unwrap();
+    }
+    let inputs = graph_inputs(false, false, p, r, p, r);
+    let result = correspondence(
+        &inputs,
+        "v",
+        "m",
+        "GraphRead",
+        None,
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert!(result.counterexamples().is_empty());
+    assert!(result.map().is_none());
+    assert_eq!(result.missing().len(), 1);
+}
+#[test]
+fn unobserved_owners_keep_only_consistent_whole_input_mapping_completions() {
+    let p = r#"[["v","p"]]"#;
+    let r = r#"[["v","r"]]"#;
+    for (missing, target) in [("p-owner", p), ("r-owner", r)] {
+        let inputs = graph_inputs_with_edit(false, false, p, target, p, target, |map| {
+            map.lines()
+                .filter(|line| !line.contains(&format!(r#""id":"{missing}""#)))
+                .collect::<Vec<_>>()
+                .join("\n")
+        });
+        let result = correspondence(
+            &inputs,
+            "v",
+            "m",
+            "GraphRead",
+            None,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert!(
+            result.counterexamples().is_empty(),
+            "{:?}",
+            result.counterexamples()
+        );
+        assert_eq!(result.missing().len(), 2);
+        assert!(result.candidate().is_none());
+        assert!(result.map().is_none());
+        result
+            .recheck(
+                &inputs,
+                "v",
+                "m",
+                "GraphRead",
+                None,
+                &mut Control::unlimited(),
+            )
+            .unwrap();
+    }
+}
+#[test]
+fn typed_mapping_completion_stops_latch_the_shared_control() {
+    let p = r#"[["v","p"]]"#;
+    let inputs = graph_inputs_with_edit(false, false, p, p, p, p, |map| {
+        map.lines()
+            .filter(|line| !line.contains(r#""id":"p-owner""#))
+            .collect::<Vec<_>>()
+            .join("\n")
+    });
+    let count = Rc::new(Cell::new(0usize));
+    let seen = count.clone();
+    let mut control = Control::new(Limits::default(), move |point| {
+        if point == Checkpoint::Completion {
+            seen.set(seen.get() + 1);
+        }
+        Usage::default()
+    });
+    let original = correspondence(&inputs, "v", "m", "GraphRead", None, &mut control).unwrap();
+    let total = count.get();
+    assert!(total > 20);
+    assert!(original.counterexamples().is_empty());
+    for at in [1, total / 2, total] {
+        for mode in 0..4 {
+            let count = Rc::new(Cell::new(0usize));
+            let seen = count.clone();
+            let mut control = Control::new(
+                Limits {
+                    time_ms: (mode == 0).then_some(1),
+                    memory_mib: (mode == 1).then_some(1),
+                },
+                move |point| {
+                    if point == Checkpoint::Completion {
+                        seen.set(seen.get() + 1);
+                    }
+                    let stop = seen.get() >= at;
+                    Usage {
+                        elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
+                        memory_mib: if stop && mode == 1 { 1 } else { 0 },
+                        signal: if stop {
+                            match mode {
+                                2 => Some(Signal::Int),
+                                3 => Some(Signal::Term),
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        },
+                    }
+                },
+            );
+            let failure =
+                correspondence(&inputs, "v", "m", "GraphRead", None, &mut control).unwrap_err();
+            assert_eq!(
+                failure,
+                ConstructionFailure::Stopped(control.stop_reason().unwrap())
+            );
+            assert_eq!(count.get(), at);
+            assert_eq!(
+                original
+                    .recheck(&inputs, "v", "m", "GraphRead", None, &mut control)
+                    .unwrap_err(),
+                failure
+            );
+            assert_eq!(count.get(), at);
+        }
+    }
+}
+#[test]
+fn missing_arrow_table_retains_endpoint_refutation_for_every_valid_image() {
+    let inputs = inputs(&remove(&bad_endpoints(), "m-reserves"));
+    let result = correspondence(
+        &inputs,
+        "v",
+        "m",
+        "Reservations",
+        None,
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert!(result.candidate().is_none());
+    assert!(result.map().is_none());
+    assert_eq!(result.missing(), &[slot("m", "reserves")]);
+    let [
+        Counterexample::ReferenceConstraints {
+            unresolved_fields, ..
+        },
+    ] = result.counterexamples()
+    else {
+        panic!("{:?}", result.counterexamples())
+    };
+    assert!(unresolved_fields.contains(&fact("e", Some("from"))));
+    assert!(unresolved_fields.contains(&fact("e", Some("to"))));
+    result
+        .recheck(
+            &inputs,
+            "v",
+            "m",
+            "Reservations",
+            None,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
 }
 #[test]
 fn quantity_only_root_options_do_not_require_equal_value_types() {
