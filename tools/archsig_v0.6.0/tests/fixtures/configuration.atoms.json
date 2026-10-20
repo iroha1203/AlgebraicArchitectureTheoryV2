@@ -1,0 +1,202 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Mesh",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Mesh.Root",
+          "meaning": "構成試験の対象。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "links",
+              "type": [
+                "List",
+                [
+                  "Ref",
+                  "Mesh.External"
+                ]
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "pair",
+              "type": [
+                "Tuple",
+                [
+                  "Ref",
+                  "Mesh.External"
+                ],
+                [
+                  "Option",
+                  [
+                    "Ref",
+                    "Mesh.External"
+                  ]
+                ]
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "choice",
+              "type": [
+                "Option",
+                [
+                  "Ref",
+                  "Mesh.External"
+                ]
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "tagged",
+              "type": [
+                "Data",
+                "Mesh.Link"
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "mapping",
+              "type": [
+                "Map",
+                [
+                  "Ref",
+                  "Mesh.Node"
+                ],
+                [
+                  "Ref",
+                  "Mesh.External"
+                ]
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "members",
+              "type": [
+                "Set",
+                [
+                  "Ref",
+                  "Mesh.External"
+                ]
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "標準構成を調べる原始field。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Mesh.Node",
+          "meaning": "構成試験の対象。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Mesh.Root"
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "標準構成を調べる原始field。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Mesh.External",
+          "meaning": "構成試験の対象。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "next",
+              "type": [
+                "Option",
+                [
+                  "Ref",
+                  "Mesh.External"
+                ]
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "標準構成を調べる原始field。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "arrow",
+          "name": "Mesh.Edge",
+          "meaning": "同じrootの二つのnodeを結ぶ。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Mesh.Root"
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "from",
+              "type": [
+                "Owned",
+                "Mesh.Node",
+                "owner"
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Owned",
+                "Mesh.Node",
+                "owner"
+              ],
+              "meaning": "標準構成を調べる原始field。"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "data",
+          "name": "Mesh.Link",
+          "meaning": "参照を持つ有限値。",
+          "constructors": [
+            {
+              "name": "Link",
+              "arguments": [
+                [
+                  "Ref",
+                  "Mesh.External"
+                ]
+              ],
+              "meaning": "一つの外部参照。"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
