@@ -1,0 +1,158 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Left",
+      "version": "1",
+      "digest": "@LEFT_DIGEST@"
+    },
+    {
+      "namespace": "Right",
+      "version": "1",
+      "digest": "@RIGHT_DIGEST@"
+    },
+    {
+      "namespace": "Bridge",
+      "version": "1",
+      "digest": "@BRIDGE_DIGEST@"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "始終域と対応表を提示する。",
+      "locations": [],
+      "note": "構造保存の比較に用いる原始観測。"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "model",
+      "subjects": [
+        {
+          "id": "a",
+          "type": "Left.Root",
+          "origin": "model"
+        },
+        {
+          "id": "p",
+          "type": "Left.Child",
+          "origin": "model"
+        },
+        {
+          "id": "b",
+          "type": "Right.Root",
+          "origin": "model"
+        },
+        {
+          "id": "q",
+          "type": "Right.Child",
+          "origin": "model"
+        },
+        {
+          "id": "m",
+          "type": "Bridge.Move",
+          "origin": "model"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a-count",
+          "subject": "a",
+          "field": "Left.Root.count",
+          "value": "2",
+          "origin": "model"
+        },
+        {
+          "id": "p-owner",
+          "subject": "p",
+          "field": "Left.Child.owner",
+          "value": [
+            "v",
+            "a"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "p-count",
+          "subject": "p",
+          "field": "Left.Child.count",
+          "value": "2",
+          "origin": "model"
+        },
+        {
+          "id": "b-count",
+          "subject": "b",
+          "field": "Right.Root.count",
+          "value": [
+            "1",
+            "1"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "q-owner",
+          "subject": "q",
+          "field": "Right.Child.owner",
+          "value": [
+            "v",
+            "b"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "q-amount",
+          "subject": "q",
+          "field": "Right.Child.amount",
+          "value": [
+            "9",
+            "2"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "m-from",
+          "subject": "m",
+          "field": "Bridge.Move.from",
+          "value": [
+            "v",
+            "a"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "m-to",
+          "subject": "m",
+          "field": "Bridge.Move.to",
+          "value": [
+            "v",
+            "b"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "m-entries",
+          "subject": "m",
+          "field": "Bridge.Move.entries",
+          "value": [
+            [
+              [
+                "v",
+                "p"
+              ],
+              [
+                "v",
+                "q"
+              ]
+            ]
+          ],
+          "origin": "model"
+        }
+      ]
+    }
+  ]
+}

@@ -114,6 +114,15 @@ view は全 parameter の束縛を必要とし、Law の未束縛 parameter は�
 `recheck()` は現在の検査済み入力と同じ選択から構成を再照合する。
 このRust APIのConfigurationと、LawやObjectAlgebraの成立は別の計算結果である。
 
+`construction::maps::correspondence(&checked, "v", "m", "Reservations", None, &mut control)`
+は原始correspondenceから共通U上の候補作用とConfiguration保存を計算する。
+別の終域の読みは第5引数へ `Some("TargetReading")` として指定する。
+`candidate()` は総作用、`map()` は保存確認済みの写像、`counterexamples()` は保存を破る
+原始位置、`missing()` は未観測slotを返す。欠測がある場合も確定した反例を保持する。
+Listの順序・重複と参照を含む値の構造を検査し、量leafの一致を保存条件へ加えない。
+候補と保存済み写像は、選んだreadingと検査対象のConfigurationを保持する。
+各値の `recheck(&checked, &mut control)` で、候補作用と保存の成立をそれぞれ再照合できる。
+
 ## 仕様
 
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): 入力・問い・型付き結果の形式と意味。

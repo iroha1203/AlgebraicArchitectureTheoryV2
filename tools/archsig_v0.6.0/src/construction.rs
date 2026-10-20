@@ -11,6 +11,7 @@ use crate::{
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
+pub mod maps;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Configuration {

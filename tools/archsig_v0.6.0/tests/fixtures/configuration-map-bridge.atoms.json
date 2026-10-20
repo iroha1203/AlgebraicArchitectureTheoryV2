@@ -1,0 +1,79 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Bridge",
+      "version": "1",
+      "dependencies": [
+        {
+          "namespace": "Left",
+          "version": "1",
+          "digest": "@LEFT_DIGEST@"
+        },
+        {
+          "namespace": "Right",
+          "version": "1",
+          "digest": "@RIGHT_DIGEST@"
+        }
+      ],
+      "declarations": [
+        {
+          "kind": "correspondence",
+          "name": "Bridge.Move",
+          "meaning": "二つの定義の間の原始対応。",
+          "parameters": [
+            {
+              "name": "from",
+              "type": [
+                "Ref",
+                "Left.Root"
+              ],
+              "meaning": "対応の構造と数量を分けるfield。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Ref",
+                "Right.Root"
+              ],
+              "meaning": "対応の構造と数量を分けるfield。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "entries",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "Left.Child",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "Right.Child",
+                  "to"
+                ]
+              ],
+              "meaning": "対応の構造と数量を分けるfield。"
+            }
+          ],
+          "alignments": [
+            {
+              "source": "Left.Child.owner",
+              "target": "Right.Child.owner",
+              "meaning": "所属先の対応。"
+            },
+            {
+              "source": "Left.Child.count",
+              "target": "Right.Child.amount",
+              "meaning": "数量位置の対応。"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
