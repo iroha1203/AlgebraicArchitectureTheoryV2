@@ -220,6 +220,25 @@ mod tests {
     use super::*;
     use archsig::observed::control::{Checkpoint, StopReason};
 
+    /// handler登録はprocess共有でmaskはthreadに残るため、各試験を別processで行う。
+    fn isolated_signal_test(name: &str) -> bool {
+        if std::env::var("ARCHSIG_TEST_SIGNAL_CASE").as_deref() == Ok(name) {
+            return true;
+        }
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", &format!("tests::{name}"), "--test-threads=1"])
+            .env("ARCHSIG_TEST_SIGNAL_CASE", name)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{name}: {}\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        false
+    }
+
     fn signal_reaches_control(signal: i32, expected: Signal) {
         let mut signals = ProcessSignals::new();
         let mut control = signals.control(
@@ -282,16 +301,25 @@ mod tests {
 
     #[test]
     fn sigint_reaches_control_without_freezing() {
+        if !isolated_signal_test("sigint_reaches_control_without_freezing") {
+            return;
+        }
         signal_reaches_control(signal_hook::consts::SIGINT, Signal::Int);
     }
 
     #[test]
     fn sigterm_reaches_control_without_freezing() {
+        if !isolated_signal_test("sigterm_reaches_control_without_freezing") {
+            return;
+        }
         signal_reaches_control(signal_hook::consts::SIGTERM, Signal::Term);
     }
 
     #[test]
     fn signal_handler_records_received_order_without_a_monitor_thread() {
+        if !isolated_signal_test("signal_handler_records_received_order_without_a_monitor_thread") {
+            return;
+        }
         let mut signals = ProcessSignals::new();
         signal_hook::low_level::raise(signal_hook::consts::SIGTERM).unwrap();
         signal_hook::low_level::raise(signal_hook::consts::SIGINT).unwrap();
@@ -304,6 +332,9 @@ mod tests {
 
     #[test]
     fn finalize_includes_both_pending_signals_with_sigint_priority() {
+        if !isolated_signal_test("finalize_includes_both_pending_signals_with_sigint_priority") {
+            return;
+        }
         use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
         let mut signals = ProcessSignals::new();
         let mut blocked = SigSet::empty();
@@ -318,6 +349,10 @@ mod tests {
 
     #[test]
     fn finalize_keeps_signals_blocked_and_ignores_later_pending_signals() {
+        if !isolated_signal_test("finalize_keeps_signals_blocked_and_ignores_later_pending_signals")
+        {
+            return;
+        }
         use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
         let mut signals = ProcessSignals::new();
         assert_eq!(signals.freeze(), None);
