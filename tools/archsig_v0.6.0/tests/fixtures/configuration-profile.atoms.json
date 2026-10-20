@@ -1,0 +1,59 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Profile",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Profile.Root",
+          "meaning": "有限対象族のroot。",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Profile.Part",
+          "meaning": "一つのrootに所属する部分対象。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Profile.Root"
+              ],
+              "meaning": "所有と数量を観測する原始位置。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "所有と数量を観測する原始位置。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Profile.External",
+          "meaning": "別の原始対象。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "所有と数量を観測する原始位置。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

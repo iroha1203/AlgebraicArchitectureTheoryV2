@@ -1,0 +1,3 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading ProfileRead { use vocabulary Profile version "1" digest "@PROFILE_DIGEST@"; view amount(p: Part): Z = p.quantity; view root(r: Root): Bool = true; }
+reading Alternative { use vocabulary Profile version "1" digest "@PROFILE_DIGEST@"; }
