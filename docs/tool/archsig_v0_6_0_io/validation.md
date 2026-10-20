@@ -12,13 +12,9 @@
 CountCheck は非負、CountAudit は10以下という条件を持つ。原始型は一つのままである。
 [ArchMap](examples/counter.archmap.json) は同じ binding と、`@v/s` の存在、count=2 を記録する。
 
-このディレクトリを cwd として、まず定義と Law を検査し、次に観測を検査する。
+次は、このディレクトリを cwd として、run 一回で入力を検査し、値と Law の成立を計算する規範例である。
 
 ```sh
-archsig check --atom-definition examples/counter.atoms.json \
-  --law examples/counter.law --out result-counter-definition
-archsig check --atom-definition examples/counter.atoms.json \
-  --law examples/counter.law --archmap examples/counter.archmap.json --out result-counter-check
 archsig run --atom-definition examples/counter.atoms.json \
   --law examples/counter.law --archmap examples/counter.archmap.json \
   --ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
@@ -26,18 +22,40 @@ archsig run --atom-definition examples/counter.atoms.json \
   --ask 'audit=check(CountAudit.bounded,s=@v/s)' --out result-counter-run
 ```
 
-check の結果は complete/0、requests/answers/nodes は空。
-inputs は definition0（inputs/definitions/0.json）と law、ArchMap 指定時は archmap も持つ。
-vocabularies は Counter 一件の manifest・上記 digest・定義への location を持つ。
-declarations の `Counter.State` の位置は definition0 の `/vocabularies/0/declarations/0`、
-`CountCheck.nonnegative` は law の元 span、parameter の型は `["Ref","Counter.State"]`。
-reading の定義参照は DeclarationInfo.vocabularies に保持する。
+標準出力の receipt は `result-counter-run/result.json` を指す。
+同じファイルから、例えば jq で各回答の状態と n の値を読む。
+
+```sh
+jq '.answers[] | {id, status}' result-counter-run/result.json
+jq -r '. as $r | .answers[] | select(.id == "n")
+  | .outputs.value.node as $id
+  | $r.nodes[] | select(.id == $id) | .value' result-counter-run/result.json
+```
+
+最初のコマンドは n・ok・audit の status がいずれも established と示し、次のコマンドは `2` を返す。
+値の node は元の型 Z と導出を保持し、表示のために別の計算を追加する必要はない。
 
 run は n の値を型 Z・payload `"2"`、ok と audit を established として返し、complete/0。
 元の定義・Law・観測位置に導出を持つ。count を `"12"` に変えれば ok は成立、audit は反証となる。
 このとき定義と binding は同じで、run は complete/1。count Atom を除けば subject は残り、
 n・ok・audit は missing_observation、missing は `(v,s,Counter.State.count)`、run は partial/2。
 共通定義を使っても、観測値を変更すれば観測結果とその評価は変わる。
+
+### 入力作者向けの検査
+
+入力だけを確認したい場合は check を使う。通常の run の前に実行する必要はない。
+
+```sh
+archsig check --atom-definition examples/counter.atoms.json \
+  --law examples/counter.law --out result-counter-definition
+```
+
+check の結果は complete/0、requests/answers/nodes は空。
+inputs は definition0（inputs/definitions/0.json）と law を持ち、ArchMap も検査したい場合は `--archmap` で指定する。
+vocabularies は Counter 一件の manifest・上記 digest・定義への location を持つ。
+declarations の `Counter.State` の位置は definition0 の `/vocabularies/0/declarations/0`、
+`CountCheck.nonnegative` は law の元 span、parameter の型は `["Ref","Counter.State"]`。
+reading の定義参照は DeclarationInfo.vocabularies に保持する。
 
 | 小さい不正例 | code / status / exit |
 | --- | --- |
