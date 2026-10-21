@@ -276,6 +276,7 @@ fn reading(
     let evaluation = match e.outcome() {
         ObjectEvaluationOutcome::NotApplicable => {
             r.application = LawApplication::OutsideObject;
+            r.conditional = Some(true);
             return Ok(r);
         }
         ObjectEvaluationOutcome::Conditional(conditions) => {

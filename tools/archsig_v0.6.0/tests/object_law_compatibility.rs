@@ -416,3 +416,79 @@ fn ordinary_law_requests_keep_the_original_symbolic_list_domain() {
         value.get("kind") == Some(&Json::str("type"))
     }));
 }
+
+#[test]
+fn outside_laws_keep_the_true_conditional_predicate_for_ground_and_finite_families() {
+    use archsig::construction::maps::LawApplication;
+    for body in [
+        "law required outside(a:Root):true;",
+        "law optional outside(a:Root,b:Bool):false;",
+    ] {
+        let i = inputs(body, fixture::A);
+        let r = run(Arc::clone(&i));
+        let e = r
+            .evaluations()
+            .iter()
+            .find(|e| e.evaluation().object().subject().subject == "p")
+            .unwrap();
+        let family = e.family();
+        assert!(family.is_complete());
+        let readings = family
+            .rows()
+            .iter()
+            .map(|row| row.reading())
+            .chain(family.uniform());
+        let mut count = 0;
+        for reading in readings {
+            count += 1;
+            assert_eq!(reading.application(), &LawApplication::OutsideObject);
+            assert_eq!(reading.body(), None);
+            assert_eq!(reading.conditional(), Some(true));
+            assert_eq!(reading.required(), body.contains("required"));
+        }
+        assert!(count > 0);
+        assert_eq!(r.outcome(), Some(&Outcome::Refuted(Failed::Applicability)));
+        for p in r.comparisons()[0].points() {
+            assert_eq!(p.target().conditional(), Some(true));
+            assert_eq!(p.target().body(), None);
+        }
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+#[test]
+fn empty_owner_list_domains_use_the_fixed_owner_and_keep_the_original_false_row() {
+    use archsig::canonical::Json;
+    let map=fixture::A.replace("{\"id\":\"root\",\"type\":\"Pattern.Root\",\"origin\":\"model\"}","{\"id\":\"root\",\"type\":\"Pattern.Root\",\"origin\":\"model\"},{\"id\":\"other\",\"type\":\"Pattern.Root\",\"origin\":\"model\"}").replace("\"value\":[\"v\",\"root\"]","\"value\":[\"v\",\"other\"]");
+    let i = inputs("law required empty(a:Root,x:List<Part[a]>):false;", &map);
+    let r = run(Arc::clone(&i));
+    assert!(r.is_complete());
+    assert_eq!(r.outcome(), Some(&Outcome::Compatible));
+    assert_eq!(r.evaluations().len(), 1);
+    assert!(r.comparisons().is_empty());
+    let family = r.evaluations()[0].family();
+    assert!(family.is_complete());
+    assert_eq!(family.domains().len(), 1);
+    assert_eq!(family.domains()[0].values().len(), 1);
+    assert_eq!(family.domains()[0].values()[0].wire(), Json::Arr(vec![]));
+    assert_eq!(family.rows().len(), 1);
+    let row = &family.rows()[0];
+    assert_eq!(row.bindings()[0].0, "x");
+    assert_eq!(row.bindings()[0].1.wire(), Json::Arr(vec![]));
+    assert_eq!(row.evaluations().len(), 1);
+    assert_eq!(row.reading().application().value(), Some(true));
+    assert_eq!(row.reading().body(), Some(false));
+    assert_eq!(row.reading().conditional(), Some(false));
+    assert!(row.reading().required());
+    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    // 同じ入力でもPartを持つownerのList全域は無限。空List一例で代用しない。
+    let failure = object_law_compatibility(i, "Selected", "v", "other", &mut quiet()).unwrap_err();
+    assert!(matches!(
+        failure.cause(),
+        archsig::construction::readings::ObjectEvaluationFailure::NotImplemented { .. }
+    ));
+    assert!(
+        failure
+            .partial()
+            .is_some_and(|p| !p.is_complete() && p.outcome().is_none())
+    );
+}

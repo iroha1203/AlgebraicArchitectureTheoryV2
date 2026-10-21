@@ -69,7 +69,7 @@ impl Evaluator<'_, '_> {
         for parameter in &numeric {
             all_symbolic &= self
                 .environment
-                .law_parameter_symbolic_type(&parameter.ty.erase())?;
+                .law_parameter_symbolic_type(parameter)?;
         }
         if all_symbolic {
             return self.universal_family_answer(_params, role);

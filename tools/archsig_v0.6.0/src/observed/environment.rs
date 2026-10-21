@@ -324,6 +324,7 @@ type NameTokenObserver = Box<dyn FnMut((usize, usize), super::call::Context)>;
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
     object: Option<std::sync::Arc<super::object_evaluate::ObjectDomain>>,
+    object_instance: Option<&'a crate::construction::readings::ObjectInstance>,
     object_values: Option<&'a super::object_view_family::FiniteViewAssignment>,
     architecture: RefCell<Option<architecture_environment::ArchitectureContext>>,
     original_requests: Option<&'a [Request]>,
@@ -364,6 +365,7 @@ impl<'a> Environment<'a> {
             .object
             .as_ref()
             .map(|o| std::sync::Arc::new(o.domain.clone()));
+        environment.object_instance = prepared.object.as_ref().map(|object| &object.instance);
         environment.object_values = prepared.object.as_ref().and_then(|object| object.values.as_deref());
         Ok(environment)
     }
@@ -445,6 +447,7 @@ impl<'a> Environment<'a> {
         Ok(Self {
             inputs,
             object: None,
+            object_instance: None,
             object_values: None,
             architecture: RefCell::new(None),
             subjects,

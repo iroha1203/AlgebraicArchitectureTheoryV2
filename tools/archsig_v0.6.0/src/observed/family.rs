@@ -15,22 +15,34 @@ pub(in crate::observed) struct Plan {
     pub guard: Option<usize>,
 }
 impl Environment<'_> {
-    // Law parameterの有限性は、空要素型を持つListなど元入力で決まる場合もある。
-    // 対象に結び付いた元Lawだけ同じ有限列挙器で判定する。通常の要求は元の型域を保つ。
+    // 元Law instanceのOwned型と固定owner束縛を、判定と実列挙で共有する。
+    pub(super) fn native_law_parameter_domain(
+        &self,
+        parameter: &Param,
+    ) -> Result<Option<(super::super::finite::Enumeration, Vec<Fact>)>, ValidationFailure> {
+        let Some(instance) = self
+            .object_instance
+            .filter(|i| i.declaration().kind == "law")
+        else {
+            return Ok(None);
+        };
+        self.object_view_domain(parameter, instance)
+    }
     pub(in crate::observed) fn law_parameter_symbolic_type(
         &self,
-        ty: &Type,
+        parameter: &Param,
     ) -> Result<bool, ValidationFailure> {
-        if self.object_domain().is_none() {
-            return self.universal_symbolic_type(ty);
+        let ty = parameter.ty.erase();
+        if self.object_instance.is_none() {
+            return self.universal_symbolic_type(&ty);
         }
-        if !self.universal_symbolic_type(ty)? {
+        if !self.universal_symbolic_type(&ty)? {
             return Ok(false);
         }
         if matches!(ty, Type::Z | Type::Q) {
             return Ok(true);
         }
-        Ok(self.dynamic_finite_values(ty, &mut |_, _| {})?.is_none())
+        Ok(self.native_law_parameter_domain(parameter)?.is_none())
     }
     pub(in crate::observed) fn family_plan(
         &self,
@@ -67,7 +79,7 @@ impl Environment<'_> {
         let (mut numeric, mut unbound) = (Vec::new(), Vec::new());
         for p in &free {
             self.tick()?;
-            if self.law_parameter_symbolic_type(&p.ty.erase())? {
+            if self.law_parameter_symbolic_type(p)? {
                 numeric.push(p.clone());
             } else {
                 unbound.push(p.clone());
@@ -105,10 +117,7 @@ impl Environment<'_> {
         }
         for p in params {
             self.tick()?;
-            let finite_type = p.ty.erase();
-            if unbound.iter().any(|u| u.name == p.name)
-                && self.law_parameter_symbolic_type(&finite_type)?
-            {
+            if unbound.iter().any(|u| u.name == p.name) && self.law_parameter_symbolic_type(p)? {
                 return Err(ValidationFailure::UnsupportedExpression {
                     location: Location::Law { span: p.span },
                     feature: format!("未束縛Law parameter `{}` の未対応有限型・依存owner", p.name),

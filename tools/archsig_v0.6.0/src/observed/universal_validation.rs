@@ -3120,7 +3120,7 @@ impl Environment<'_> {
             if !bindings
                 .iter()
                 .any(|binding| binding.name == parameter.name)
-                && !self.law_parameter_symbolic_type(&parameter.ty.erase())?
+                && !self.law_parameter_symbolic_type(parameter)?
             {
                 return Ok(true);
             }
@@ -3168,7 +3168,7 @@ impl Environment<'_> {
                     .any(|binding| binding.name == parameter.name)
                 {
                     unbound = true;
-                    all_numeric &= self.law_parameter_symbolic_type(&parameter.ty.erase())?;
+                    all_numeric &= self.law_parameter_symbolic_type(parameter)?;
                 }
             }
             if unbound && all_numeric {
