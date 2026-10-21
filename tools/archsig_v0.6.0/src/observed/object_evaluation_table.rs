@@ -32,11 +32,18 @@ impl ObjectEvaluationRow {
 /// 完了は全行の処理完了を表す。Law成立やObjectAlgebraの構成条件とは区別する。
 #[derive(Debug)]
 pub struct ObjectEvaluationTable {
+    inputs: Arc<CheckedInputs>,
     readings: ObjectReadingInstances,
     rows: Vec<ObjectEvaluationRow>,
     complete: bool,
 }
 impl ObjectEvaluationTable {
+    pub fn inputs(&self) -> &CheckedInputs {
+        &self.inputs
+    }
+    pub fn shared_inputs(&self) -> Arc<CheckedInputs> {
+        Arc::clone(&self.inputs)
+    }
     pub fn readings(&self) -> &ObjectReadingInstances {
         &self.readings
     }
@@ -65,7 +72,8 @@ impl ObjectEvaluationTable {
     ) -> Result<(), ObjectEvaluationTableFailure> {
         let expected = evaluate_object_table(inputs, &self.readings, control)?;
         let comparison = (|| -> Result<bool, ConstructionFailure> {
-            let mut equal = self.readings == expected.readings
+            let mut equal = self.inputs.sources() == expected.inputs.sources()
+                && self.readings == expected.readings
                 && self.complete == expected.complete
                 && self.rows.len() == expected.rows.len();
             for (a, b) in self.rows.iter().zip(&expected.rows) {
@@ -201,6 +209,7 @@ pub fn evaluate_object_table(
     tick(control)?;
     readings.recheck(&inputs, control)?;
     let mut result = ObjectEvaluationTable {
+        inputs: Arc::clone(&inputs),
         readings: readings.clone(),
         rows: vec![],
         complete: false,

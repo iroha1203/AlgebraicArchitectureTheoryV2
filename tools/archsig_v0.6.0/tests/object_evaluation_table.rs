@@ -364,3 +364,52 @@ fn recheck_stops_during_comparison_keep_the_recomputed_complete_table() {
         }
     }
 }
+
+#[test]
+fn empty_and_conditional_tables_reject_changed_values_and_origins() {
+    let empty = L
+        .lines()
+        .filter(|l| {
+            !l.contains("view ") && !l.contains("law required") && !l.contains("law optional")
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let conditional_law = L
+        .lines()
+        .filter(|l| {
+            !l.contains("view flag") && !l.contains("law required") && !l.contains("law optional")
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let conditional_map = remove(
+        &remove(&remove(&remove(A, "p-owner"), "r-owner"), "e-from"),
+        "e-to",
+    );
+    for (law, map) in [
+        (empty.as_str(), A),
+        (conditional_law.as_str(), conditional_map.as_str()),
+    ] {
+        let i = inputs(law, map);
+        let p = plan(&i);
+        let t = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
+        assert!(t.is_complete());
+        assert_eq!(t.inputs().sources(), i.sources());
+        assert!(Arc::ptr_eq(&t.shared_inputs(), &i));
+        assert!(t.rows().iter().all(|r| !matches!(
+            r.evaluation().outcome(),
+            ObjectEvaluationOutcome::Evaluated(_)
+        )));
+        for changed_map in [
+            map.replace("\"value\":\"2\"", "\"value\":\"3\""),
+            map.replace("参照束縛の独立fixture。", "入力の由来が異なる観測。"),
+        ] {
+            assert_ne!(changed_map, map);
+            let changed = inputs(law, &changed_map);
+            assert_ne!(i.sources(), changed.sources());
+            assert!(
+                t.recheck(changed, &mut quiet()).is_err(),
+                "original three inputs must be checked even without evaluated rows"
+            );
+        }
+    }
+}

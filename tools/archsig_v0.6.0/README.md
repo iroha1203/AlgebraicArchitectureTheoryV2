@@ -272,6 +272,7 @@ Lawの残るparameterは既存の有限・アフィン全域族として評価�
 `construction::readings::evaluate_object_table(shared, &instances, &mut control)` は
 objects順、instances順の全組を同じ評価器で評価する。`rows()` の各行は
 `position()` と元の `evaluation()` を持ち、適用外・所属条件付き・未決も保持する。
+`inputs()/shared_inputs()` は元の検査済み三入力とその共有参照を返し、空族でも保持する。
 `is_complete()` は全行の処理完了、`pending()` は次の行位置を返す。
 これはLawの成立や代数の構成成功とは別の完了状態である。
 `ObjectEvaluationTableFailure::cause()/position()` は原因と評価中の行、
