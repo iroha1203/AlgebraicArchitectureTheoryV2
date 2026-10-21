@@ -23,6 +23,8 @@ impl Environment<'_> {
             .arguments
             .iter()
             .any(|a| matches!(a.value, Selector::Answer { .. }))
+            && !(matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare)
+                && matches!(request.head, Selector::Answer { .. }))
         {
             return Ok(vec![]);
         }
@@ -47,22 +49,41 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<Vec<ProjectionFailurePlan>, ValidationFailure> {
         self.tick()?;
-        if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
+        if matches!(
+            request.kind,
+            QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
+        ) {
             let mut plans = vec![];
+            let value_comparison = request.kind == QuestionKind::Compare
+                && super::super::request::comparison::kind(request).ok() == Some("value");
+            let mut checked = BTreeSet::new();
             for constraint in &request.constraints {
+                self.tick()?;
+                if value_comparison && !checked.insert(&constraint.parameter) {
+                    continue;
+                }
+                let matches_type = |ty: &NodeType| -> Result<bool, ValidationFailure> {
+                    if value_comparison {
+                        for candidate in &request.constraints {
+                            self.tick()?;
+                            if candidate.parameter == constraint.parameter
+                                && *ty == NodeType::Value(candidate.expected.clone())
+                            {
+                                return Ok(true);
+                            }
+                        }
+                        Ok(false)
+                    } else {
+                        Ok(*ty == NodeType::Value(constraint.expected.clone()))
+                    }
+                };
                 let Selector::Answer { id, .. } = &constraint.selector else {
                     continue;
                 };
                 let root = match self.answer_binding(graph, &constraint.selector, (0, 0)) {
                     Ok(AnswerBinding::Inapplicable(root)) => Some(root),
-                    Ok(AnswerBinding::Reference(r))
-                        if graph.get(r)?.ty != NodeType::Value(constraint.expected.clone()) =>
-                    {
-                        Some(r)
-                    }
-                    Ok(AnswerBinding::Projection(node))
-                        if node.ty != NodeType::Value(constraint.expected.clone()) =>
-                    {
+                    Ok(AnswerBinding::Reference(r)) if !matches_type(&graph.get(r)?.ty)? => Some(r),
+                    Ok(AnswerBinding::Projection(node)) if !matches_type(&node.ty)? => {
                         node.arguments.first().copied()
                     }
                     Err(ValidationFailure::UnsupportedExpression { .. }) => None,
@@ -81,6 +102,11 @@ impl Environment<'_> {
                         scope: original.scope.clone(),
                         support: original.support.clone(),
                     });
+                }
+            }
+            if value_comparison && plans.is_empty() {
+                if let Some(plan) = self.value_comparison_type_failure(graph, request)? {
+                    plans.push(plan);
                 }
             }
             return Ok(plans);
@@ -191,6 +217,58 @@ impl Environment<'_> {
             }
         }
         Ok(plans)
+    }
+
+    fn value_comparison_type_failure(
+        &self,
+        graph: &Graph,
+        request: &Request,
+    ) -> Result<Option<ProjectionFailurePlan>, ValidationFailure> {
+        let to = &request
+            .arguments
+            .iter()
+            .find(|a| a.name == "to")
+            .ok_or("比較のtoがない")?
+            .value;
+        // 生subject側は静的に一つの型に定まる。複数の共通候補から異なる型が
+        // 実際に選ばれる場合だけ、両方の既出出力を構成条件の元入力とする。
+        let (Selector::Answer { id: producer, .. }, Selector::Answer { .. }) = (&request.head, to)
+        else {
+            return Ok(None);
+        };
+        let selected = |selector| -> Result<Option<(NodeType, NodeRef)>, ValidationFailure> {
+            Ok(match self.answer_binding(graph, selector, (0, 0)) {
+                Ok(AnswerBinding::Reference(r)) => Some((graph.get(r)?.ty.clone(), r)),
+                Ok(AnswerBinding::Projection(n)) => {
+                    Some((n.ty, *n.arguments.first().ok_or("型比較の射影元がない")?))
+                }
+                Ok(AnswerBinding::Inapplicable(_))
+                | Err(ValidationFailure::UnsupportedExpression { .. }) => None,
+                Err(e) => return Err(e),
+            })
+        };
+        let (Some((left, a)), Some((right, b))) = (selected(&request.head)?, selected(to)?) else {
+            return Ok(None);
+        };
+        if left == right {
+            return Ok(None);
+        }
+        let mut support = graph.get(a)?.support.clone();
+        support.extend(graph.get(b)?.support.iter().cloned());
+        support.sort();
+        support.dedup();
+        let mut scope = graph.get(a)?.scope.clone();
+        scope.merge(&graph.get(b)?.scope);
+        Ok(Some(ProjectionFailurePlan {
+            context: self.current_context(graph),
+            parameter: "head/to".into(),
+            root: a,
+            producer: producer.clone(),
+            location: None,
+            inputs: vec![ConditionInput::Reference(a), ConditionInput::Reference(b)],
+            scope,
+            support,
+        }))
     }
 
     pub(in crate::observed) fn projection_failure_reasons(

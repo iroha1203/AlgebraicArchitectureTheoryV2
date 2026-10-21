@@ -2,6 +2,8 @@
 mod common;
 #[path = "common/public_path_compose.rs"]
 mod fixture;
+#[path = "common/compare_values.rs"]
+mod primitive;
 use archsig::{
     observed::{
         control::{Checkpoint, Control, Limits, Usage},
@@ -24,9 +26,13 @@ const ASKS: [&str; 5] = [
     "d=evaluate(Walk.step,e=@v/different)",
     "a=compare($c.operation,to=$d.value,kind=action)",
 ];
-fn setup(name: &str) -> (PathBuf, RunArgs) {
+fn setup(name: &str, value: bool) -> (PathBuf, RunArgs) {
     let dir = workdir(name);
-    let input = fixture::input(false, "comparison-delivery");
+    let input = if value {
+        primitive::input(false, "")
+    } else {
+        fixture::input(false, "comparison-delivery")
+    };
     for (name, bytes) in [
         ("d.json", input.definitions()[0].bytes()),
         ("l.law", input.law().bytes()),
@@ -41,7 +47,11 @@ fn setup(name: &str) -> (PathBuf, RunArgs) {
             archmap: Some(dir.join("a.json")),
             out: dir.join("out"),
         },
-        asks: ASKS.iter().map(|s| (*s).into()).collect(),
+        asks: if value {
+            vec!["a=compare(@v/a,to=@v/b,kind=value)".into()]
+        } else {
+            ASKS.iter().map(|s| (*s).into()).collect()
+        },
         reuse: None,
         time_ms: None,
         memory_mib: None,
@@ -105,8 +115,15 @@ impl Io for Files {
 }
 #[test]
 fn comparison_request_resolution_stops_notify_without_starting_output() {
+    comparison_request_resolution_stops_notify_without_starting_output_case(false);
+}
+#[test]
+fn value_comparison_request_resolution_stops_notify_without_starting_output() {
+    comparison_request_resolution_stops_notify_without_starting_output_case(true);
+}
+fn comparison_request_resolution_stops_notify_without_starting_output_case(value: bool) {
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("comparison-resolver-stop-{mode}"));
+        let (dir, mut args) = setup(&format!("comparison-resolver-stop-{value}-{mode}"), value);
         args.time_ms = (mode == 0).then(|| "1".into());
         args.memory_mib = (mode == 1).then(|| "1".into());
         let mut control = Control::new(
@@ -156,6 +173,15 @@ fn comparison_request_resolution_stops_notify_without_starting_output() {
 }
 #[test]
 fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit() {
+    comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(false);
+}
+#[test]
+fn value_comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit() {
+    comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(true);
+}
+fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(
+    value: bool,
+) {
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
     let mut probe = Control::new(Limits::default(), move |p| {
@@ -165,16 +191,24 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
         Usage::default()
     });
     let original = evaluate_observed_bytes(
-        fixture::input(false, "comparison-delivery"),
-        &ASKS,
+        if value {
+            primitive::input(false, "")
+        } else {
+            fixture::input(false, "comparison-delivery")
+        },
+        if value {
+            &["a=compare(@v/a,to=@v/b,kind=value)"]
+        } else {
+            &ASKS
+        },
         &mut probe,
     )
     .unwrap();
     assert_eq!(original.status(), "complete");
     let total = count.get();
-    assert!(total >= 3);
+    assert!(total >= 2);
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("comparison-late-stop-{mode}"));
+        let (dir, mut args) = setup(&format!("comparison-late-stop-{value}-{mode}"), value);
         args.time_ms = (mode == 0).then(|| "1".into());
         args.memory_mib = (mode == 1).then(|| "1".into());
         let count = Rc::new(Cell::new(0usize));
@@ -222,7 +256,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
             archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
         assert_eq!(s(get(&result, "status")), "interrupted");
         assert_eq!(num(get(&result, "exit_code")), code as u64);
-        let answer = &arr(get(&result, "answers"))[4];
+        let answer = &arr(get(&result, "answers"))[if value { 0 } else { 4 }];
         assert_eq!(s(get(answer, "status")), "refuted");
         assert!(!has(get(answer, "outputs"), "map"));
         assert!(has(get(answer, "outputs"), "comparison"));
@@ -238,7 +272,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
                 .iter()
                 .map(|f| s(get(f, "subject")))
                 .collect::<Vec<_>>(),
-            ["q", "r", "q"]
+            if value { vec![] } else { vec!["q", "r", "q"] }
         );
         assert!(arr(get(&result, "nodes"))
             .iter()
@@ -254,8 +288,15 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
 }
 #[test]
 fn comparison_write_failures_remove_only_this_runs_temporary_directory() {
+    comparison_write_failures_remove_only_this_runs_temporary_directory_case(false);
+}
+#[test]
+fn value_comparison_write_failures_remove_only_this_runs_temporary_directory() {
+    comparison_write_failures_remove_only_this_runs_temporary_directory_case(true);
+}
+fn comparison_write_failures_remove_only_this_runs_temporary_directory_case(value: bool) {
     for race in [false, true] {
-        let (dir, args) = setup(&format!("comparison-write-failure-{race}"));
+        let (dir, args) = setup(&format!("comparison-write-failure-{value}-{race}"), value);
         let older = dir.join(".out.archsig-older");
         std::fs::create_dir(&older).unwrap();
         std::fs::write(older.join("keep"), b"older bytes").unwrap();

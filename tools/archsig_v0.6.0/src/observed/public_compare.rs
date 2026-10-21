@@ -1,4 +1,4 @@
-//! 検査済みOperation/Pathの語・全域作用比較を型付きの元Refへ接続する。
+//! 検査済み原始値・Operation/Pathの語・全域作用比較を型付きの元Refへ接続する。
 use super::{
     construction_result::{
         self as native, ConstructionData as D, ConstructionType as T, ConstructionValue, Witness,
@@ -11,7 +11,7 @@ use super::{
     result::*,
     PreparedObserved,
 };
-use crate::canonical::Json;
+use crate::{canonical::Json, issue::Location};
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]
 pub(crate) struct CompareWitness {
@@ -136,6 +136,8 @@ impl Part {
                     "predicate",
                     Json::str(if name.is_some() {
                         "constructible"
+                    } else if w.kind == "value" {
+                        "equal"
                     } else if w.kind == "word" {
                         "word_equal"
                     } else {
@@ -186,13 +188,52 @@ fn selector<'a>(r: &'a Request, key: &str) -> Result<&'a Selector, ValidationFai
             .ok_or_else(|| "比較のtoがない".into())
     }
 }
+fn subject_node(env: &Environment<'_>, s: &Selector) -> Result<Node, ValidationFailure> {
+    let Selector::Subject { snapshot, subject } = s else {
+        return Err("比較のsubjectでない".into());
+    };
+    let source = env.subject(snapshot, subject)?;
+    let scalar = Scalar::Subject {
+        snapshot: snapshot.clone(),
+        subject: subject.clone(),
+        entity: source.ty.clone(),
+    };
+    Ok(Node {
+        ty: NodeType::Value(scalar.ty()),
+        payload: Some(Payload::Scalar(scalar)),
+        rule: Rule::Input {
+            kind: "subject",
+            location: Location::ArchMap {
+                pointer: source.pointer.clone(),
+                span: None,
+            },
+        },
+        arguments: vec![],
+        support: vec![Fact {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: None,
+            atom: None,
+        }],
+        scope: env.subject_scope(source)?,
+        evidence: vec![],
+        judgment: None,
+        reasons: vec![],
+    })
+}
 fn selected(
     env: &Environment<'_>,
     graph: &mut Graph,
     r: &Request,
     key: &str,
 ) -> Result<NodeRef, ValidationFailure> {
-    match env.answer_binding(graph, selector(r, key)?, (0, 0))? {
+    let s = selector(r, key)?;
+    if matches!(s, Selector::Subject { .. }) {
+        let n = subject_node(env, s)?;
+        env.validate(graph, &n)?;
+        return graph.push(n);
+    }
+    match env.answer_binding(graph, s, (0, 0))? {
         AnswerBinding::Reference(r) => Ok(r),
         AnswerBinding::Projection(n) => {
             env.validate(graph, &n)?;
@@ -207,6 +248,10 @@ fn origin_ref(
     s: &Selector,
     r: NodeRef,
 ) -> Result<bool, ValidationFailure> {
+    if matches!(s, Selector::Subject { .. }) {
+        return Ok(graph.get(r)? == &subject_node(env, s)?
+            && graph.context_at(r.0) == env.current_context(graph));
+    }
     Ok(match env.answer_binding(graph, s, (0, 0))? {
         AnswerBinding::Reference(a) => a == r,
         AnswerBinding::Projection(n) => graph.get(r)? == &n,
@@ -593,7 +638,24 @@ pub(super) fn evaluate(
     let mut incompatible = None;
     let mut facts = vec![];
     let mut stopped = None;
-    let equal = if let Ok(Scalar::Path(a)) = graph.scalar(left) {
+    let equal = if kind == "value" {
+        if super::term::contains(&graph.scalar(left)?.ty(), prepared.inputs().law(), control)? {
+            return Err("Termの公開value比較の計算経路は未実装".into());
+        }
+        let mut retained = None;
+        let outcome =
+            super::data::equal_retained(graph.scalar(left)?, graph.scalar(right)?, control, |v| {
+                retained = Some(v)
+            });
+        Some(match (outcome, retained) {
+            (Ok(v), _) => v,
+            (Err(ValidationFailure::Stop(s)), Some(v)) => {
+                stopped = Some(s);
+                v
+            }
+            (Err(e), _) => return Err(e),
+        })
+    } else if let Ok(Scalar::Path(a)) = graph.scalar(left) {
         let Scalar::Path(b) = graph.scalar(right)? else {
             return Err("Path比較へ別型を渡した".into());
         };

@@ -1,4 +1,4 @@
-//! 固定compare署名と、語/作用を比較する元値の静的型を解決する。
+//! 固定compare署名と、値/語/作用を比較する元値の静的型を解決する。
 use super::composition::Shape;
 use super::*;
 fn error(r: &str, key: &str, message: &str) -> ResolveFailure {
@@ -98,6 +98,9 @@ pub(super) fn constraints(
     control: &mut Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let mode = kind(request)?;
+    if mode == "value" {
+        return value_constraints(law, map, requests, names, request, control);
+    }
     if !matches!(mode, "word" | "action") {
         return Err(ResolveFailure::NotApplicable {
             request: request.id.clone(),
@@ -189,4 +192,167 @@ pub(super) fn output_type(
         "proposition" => Ok(ProjectionType::Proposition),
         _ => Err(error(&request.id, field, "compareの非公開出力")),
     }
+}
+
+fn value_constraints(
+    law: &CheckedLaw,
+    map: &CheckedArchMap,
+    requests: &[Request],
+    names: &BTreeMap<String, usize>,
+    request: &Request,
+    control: &mut Control,
+) -> Result<Vec<BindingConstraint>, ResolveFailure> {
+    let to = &request
+        .arguments
+        .iter()
+        .find(|a| a.name == "to")
+        .ok_or_else(|| error(&request.id, "to", "toがない"))?
+        .value;
+    let mut selections = vec![];
+    for (key, selector) in [("head", &request.head), ("to", to)] {
+        let (plan, owners) = selector_type(
+            law,
+            map,
+            requests,
+            names,
+            selector,
+            control,
+            (&request.id, key),
+        )?;
+        let mut types = vec![];
+        value_types(&plan.ty, control, &mut types)?;
+        if types.is_empty() {
+            return Err(error(
+                &request.id,
+                key,
+                "value比較には同じ原始型Pの値が必要",
+            ));
+        }
+        selections.push((key, selector, plan, owners, types));
+    }
+    let mut common = vec![];
+    for left in &selections[0].4 {
+        for right in &selections[1].4 {
+            phase(control, Checkpoint::RequestBinding)?;
+            if left == right {
+                common.push(left.clone());
+                break;
+            }
+        }
+    }
+    if common.is_empty() {
+        return Err(error(&request.id, "to", "value比較の原始型Pが違う"));
+    }
+    let mut ground = false;
+    for ty in &common {
+        ground |= ground_type(ty, law, control, &mut BTreeSet::new())?;
+    }
+    if !ground {
+        return Err(ResolveFailure::NotApplicable {
+            request: request.id.clone(),
+            kind: "compare".into(),
+            architecture_environment: false,
+        });
+    }
+    let mut out = vec![];
+    for (key, selector, plan, owners, _) in selections {
+        // value比較には消費側parameter型がない。共通候補は同parameterの選択肢として
+        // 保ち、現在の射影値を選んだ後に一候補への適合と左右の同型を検査する。
+        for expected in &common {
+            phase(control, Checkpoint::RequestBinding)?;
+            out.push(BindingConstraint {
+                parameter: key.into(),
+                expected: expected.clone(),
+                selector: selector.clone(),
+                projection: plan.clone(),
+                owner: None,
+                projection_owners: owners.clone(),
+                expected_owners: BTreeMap::new(),
+                dynamic: plan.conditional || matches!(plan.ty, ProjectionType::Dynamic(_)),
+            });
+        }
+    }
+    Ok(out)
+}
+fn value_types(
+    projection: &ProjectionType,
+    control: &mut Control,
+    out: &mut Vec<Type>,
+) -> Result<(), ResolveFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        phase(control, Checkpoint::RequestBinding)?;
+        match projection {
+            ProjectionType::Dynamic(candidates) => {
+                for candidate in candidates {
+                    value_types(candidate, control, out)?;
+                }
+            }
+            ProjectionType::Law(ty) => {
+                let ty=ty.erase_controlled::<super::super::control::CheckFailure<Box<crate::issue::Issue>>>(control,Checkpoint::RequestBinding)
+                    .map_err(|e|match e {super::super::control::CheckFailure::Stopped(s)=>stopped(s),
+                        super::super::control::CheckFailure::Input(_)=>error("","type","原始型の解決に失敗した")})?;
+                if super::super::data::primitive_type(&ty, control).map_err(|e| match e {
+                    super::super::result::ValidationFailure::Stop(s) => stopped(s),
+                    _ => error("", "type", "原始型の定義が違う"),
+                })? {
+                    let mut duplicate = false;
+                    for existing in out.iter() {
+                        phase(control, Checkpoint::RequestBinding)?;
+                        duplicate |= existing == &ty;
+                    }
+                    if !duplicate {
+                        out.push(ty);
+                    }
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    })
+}
+
+fn ground_type(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &mut Control,
+    active: &mut BTreeSet<String>,
+) -> Result<bool, ResolveFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        phase(control, Checkpoint::RequestBinding)?;
+        Ok(match ty {
+            Type::Unit
+            | Type::Bool
+            | Type::Z
+            | Type::Q
+            | Type::Fp(_)
+            | Type::Text
+            | Type::Ref(_) => true,
+            Type::Tuple(v) => {
+                for t in v {
+                    if !ground_type(t, law, control, active)? {
+                        return Ok(false);
+                    }
+                }
+                true
+            }
+            Type::List(t) | Type::Set(t) | Type::Option(t) => ground_type(t, law, control, active)?,
+            Type::Map(a, b) => matches!((a.as_ref(), b.as_ref()), (Type::Ref(_), Type::Ref(_))),
+            Type::Data(family) => {
+                if !active.insert(family.clone()) {
+                    return Ok(true);
+                }
+                let ctors = super::super::data::constructors(law, family)
+                    .map_err(|_| error("", family, "Dataの定義がない"))?;
+                let mut ground = true;
+                for ctor in ctors {
+                    for t in &ctor.arguments {
+                        ground &= ground_type(t, law, control, active)?;
+                    }
+                }
+                active.remove(family);
+                ground
+            }
+            _ => false,
+        })
+    })
 }
