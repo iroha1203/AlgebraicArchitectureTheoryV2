@@ -26,6 +26,16 @@ pub(super) struct ObjectContext {
     conditional: Vec<(String, FactPointer, FactPointer)>,
 }
 impl ObjectContext {
+    pub(super) fn is_local(&self, ty: &Type) -> bool {
+        matches!(ty, Type::Ref(entity) | Type::Owned(entity, _) if self.local_types.contains(entity))
+    }
+
+    pub(super) fn membership_subject(&self, subject: &crate::archmap::Subject) -> bool {
+        self.local_types.contains(&subject.ty)
+            && (self.identity.subject() == self.identity.root()
+                || (subject.snapshot == self.identity.subject().snapshot
+                    && subject.id == self.identity.subject().subject))
+    }
     /// 直接の参照binderだけを対象域へ制限する。複合値域の参照leafは全型域のまま。
     pub(super) fn restrict(
         &self,
@@ -350,7 +360,7 @@ mod tests {
             .position(|n| matches!(n.payload, Some(Payload::Domain { .. })))
             .unwrap();
         let value = result.answers[0].outputs["value"].0;
-        for mutation in 0..5 {
+        for mutation in 0..6 {
             let mut nodes = result.nodes.clone();
             match mutation {
                 0 => {
@@ -367,13 +377,20 @@ mod tests {
                 3 => {
                     nodes[domain].scope.readings.insert("Foreign".into());
                 }
-                _ => {
+                4 => {
                     let Some(Payload::Domain { elements, .. }) = &mut nodes[domain].payload else {
                         unreachable!()
                     };
                     let first = elements[0];
                     elements.push(first);
                     nodes[domain].arguments.push(first);
+                }
+                _ => {
+                    let before = nodes[domain].support.len();
+                    nodes[domain]
+                        .support
+                        .retain(|fact| fact.atom.as_deref() != Some("p-owner"));
+                    assert!(nodes[domain].support.len() < before);
                 }
             }
             assert!(

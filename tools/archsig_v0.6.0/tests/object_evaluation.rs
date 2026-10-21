@@ -321,6 +321,75 @@ fn selected_vocabulary_closure_and_external_helper_reference_domains_remain_dist
 }
 
 #[test]
+fn membership_values_keep_included_and_excluded_owner_atoms_and_their_source_origins() {
+    const MAP: &str = include_str!("fixtures/object-evaluation-membership.archmap.json");
+    for owner in ["A", "B"] {
+        let map=MAP.replace("\"field\":\"Instances.Part.owner\",\"value\":[\"v\",\"A\"],\"origin\":\"ownerEvidence\"", &format!("\"field\":\"Instances.Part.owner\",\"value\":[\"v\",\"{owner}\"],\"origin\":\"ownerEvidence\""));
+        let i = inputs(L, &map);
+        for object in ["A", "p"] {
+            let result = run(Arc::clone(&i), object, "same", "p");
+            let w = wire(&result);
+            assert_eq!(scalar(&w), &Json::Bool(object == "p" || owner == "B"));
+            let answer = &arr(f(&w, "answers"))[0];
+            let evaluation = f(f(f(answer, "outputs"), "evaluation"), "node");
+            for node in arr(f(&w, "nodes"))
+                .iter()
+                .filter(|n| f(n, "type") == &Json::str("Domain") || f(n, "id") == evaluation)
+            {
+                let support = arr(f(node, "support"));
+                let has = |atom: &str| {
+                    support
+                        .iter()
+                        .any(|s| matches!(s,Json::Obj(m) if m.get("atom")==Some(&Json::str(atom))))
+                };
+                assert!(has("p-owner"), "selected member justification: {support:?}");
+                if object == "A" {
+                    assert!(
+                        has("r-owner") && has("q-owner"),
+                        "included/excluded membership: {support:?}"
+                    );
+                } else {
+                    assert!(!has("r-owner"), "other members do not choose this part");
+                }
+            }
+        }
+        // 支持Factは元のowner slotから別Origin/Sourceまで解決できる。
+        let subject = i.archmap().snapshots[0]
+            .subjects
+            .iter()
+            .find(|s| s.id == "r")
+            .unwrap();
+        let slot = &subject
+            .fields
+            .iter()
+            .find(|f| f.name == "Instances.Part.owner")
+            .unwrap()
+            .slot;
+        let archsig::archmap::Slot::Known { atom, origin, .. } = slot else {
+            panic!("known owner")
+        };
+        assert_eq!(atom, "r-owner");
+        assert_eq!(origin, "ownerEvidence");
+        let origin = i
+            .archmap()
+            .origins
+            .iter()
+            .find(|o| &o.id == origin)
+            .unwrap();
+        assert_eq!(origin.mode.wire(), "specification");
+        assert_eq!(origin.locations[0].source, "ownerSource");
+        let source = i
+            .archmap()
+            .sources
+            .iter()
+            .find(|s| s.id == origin.locations[0].source)
+            .unwrap();
+        assert_eq!(source.uri, "urn:fixture:membership-owner");
+        assert_eq!(source.revision, "owner-r1");
+    }
+}
+
+#[test]
 fn current_quantities_optional_law_counterexamples_and_external_binding_identity_are_evaluated() {
     let changed = A.replace(
         "\"subject\":\"p\",\"field\":\"Instances.Part.quantity\",\"value\":\"2\"",

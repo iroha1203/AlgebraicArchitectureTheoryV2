@@ -217,6 +217,7 @@ metadataの位置をこの入力へ結び付ける。`recheck()` は現在入力
 `ObjectEvaluation::outcome()` は適用外、原始slotの所属条件、型付き実評価を区別する。
 baseの参照binderはrootとowned、部分対象ではそのsubjectへ制限し、外部helperと
 複合scalarの参照leafは型全域を保つ。所属が補完されたcaseでは、その同じ代入で域を再構成する。
+量化域の所属判断に使う既知owner Atomは、除外された候補も含めて支持とorigin/sourceを保持する。
 実評価の `prepared().object_identity()/object_instance()` は対象identityと元の参照束縛を保持する。
 Lawの残るparameterは既存の有限・アフィン全域族として評価する。値parameterを残すviewの関数族は
 `ObjectEvaluationFailure::NotImplemented` に対象・元instance・全parameterを保持する。

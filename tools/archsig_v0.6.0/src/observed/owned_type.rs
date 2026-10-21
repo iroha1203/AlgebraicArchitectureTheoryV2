@@ -121,7 +121,9 @@ impl Environment<'_> {
         ty: &Type,
         domain: &mut TypeDomain,
     ) -> Result<(), ValidationFailure> {
-        if let Some(object) = self.object {
+        if let Some(object) = self.object
+            && object.is_local(ty)
+        {
             object.restrict(
                 ty,
                 &mut domain.values,
@@ -131,6 +133,53 @@ impl Environment<'_> {
                 &self.control,
                 &self.completion_values.borrow(),
             )?;
+            // 同じ対象域の所属を決める既知ownerを、除外された候補も含めて保持する。
+            // 部分対象ではそのsubjectを選んだownerだけが根拠となる。
+            for subject in self.subjects.values() {
+                self.control
+                    .clone()
+                    .checkpoint(Checkpoint::ObjectEvaluation)?;
+                if !object.membership_subject(subject) {
+                    continue;
+                }
+                use crate::definition::PrimitiveSignature;
+                if !matches!(
+                    self.inputs
+                        .definitions()
+                        .declarations
+                        .get(&subject.ty)
+                        .map(|d| &d.signature),
+                    Some(
+                        PrimitiveSignature::Entity { owner: Some(_), .. }
+                            | PrimitiveSignature::Arrow { .. }
+                    )
+                ) {
+                    continue;
+                }
+                for field in &subject.fields {
+                    self.control
+                        .clone()
+                        .checkpoint(Checkpoint::ObjectEvaluation)?;
+                    if field.name.rsplit('.').next() != Some("owner") {
+                        continue;
+                    }
+                    if let Slot::Known { atom, origin, .. } = &field.slot {
+                        domain.scope.merge(&self.scope(
+                            subject,
+                            object.identity.reading(),
+                            Some(origin),
+                        )?);
+                        domain.support.push(Fact {
+                            snapshot: subject.snapshot.clone(),
+                            subject: subject.id.clone(),
+                            field: Some(field.name.clone()),
+                            atom: Some(atom.clone()),
+                        });
+                    }
+                }
+            }
+            domain.support.sort();
+            domain.support.dedup();
         }
         Ok(())
     }
