@@ -11,6 +11,10 @@ pub use crate::observed::numeric_transport::{
     NumericTransportValue, NumericValueMap, NumericValueTransport,
     numeric_declaration_value_transport,
 };
+pub use crate::observed::object_law_transport::{
+    LawApplication, LawBooleanReading, LawConditionFailure, LawTransportOutcome,
+    ObjectLawTransport, ObjectLawTransportFailure, ObjectLawTransportPartial, object_law_transport,
+};
 pub use crate::observed::object_view_transport::{
     ObjectViewTransport, ObjectViewTransportFailure, ObjectViewTransportPartial,
     ViewConditionFailure, ViewTransportOutcome, ViewTransportValue, ViewValueEquivalence,
