@@ -516,6 +516,26 @@ impl<'a> Environment<'a> {
             &mut |index| observer.borrow_mut()("type_enum", index),
         )
     }
+    pub(super) fn dynamic_finite_values(
+        &self,
+        ty: &Type,
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<Option<super::finite::Enumeration>, ValidationFailure> {
+        let observer = RefCell::new(observer);
+        super::finite::values_if_finite_with_owned(
+            &ty.erase(),
+            self.inputs.law(),
+            &self.control,
+            &mut |entity| {
+                self.reference_roster(entity, &mut |index| {
+                    observer.borrow_mut()("ref_roster", index)
+                })
+            },
+            &mut |_, _| Err("消去型の有限域にOwnedが残った".into()),
+            &mut |index| observer.borrow_mut()("type_enum", index),
+        )
+        .map(|domain| domain.map(|domain| domain.enumeration))
+    }
     fn reference_roster(
         &self,
         entity: &str,

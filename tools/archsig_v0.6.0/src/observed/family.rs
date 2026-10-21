@@ -15,6 +15,23 @@ pub(in crate::observed) struct Plan {
     pub guard: Option<usize>,
 }
 impl Environment<'_> {
+    // Law parameterの有限性は、空要素型を持つListなど元入力で決まる場合もある。
+    // 対象に結び付いた元Lawだけ同じ有限列挙器で判定する。通常の要求は元の型域を保つ。
+    pub(in crate::observed) fn law_parameter_symbolic_type(
+        &self,
+        ty: &Type,
+    ) -> Result<bool, ValidationFailure> {
+        if self.object_domain().is_none() {
+            return self.universal_symbolic_type(ty);
+        }
+        if !self.universal_symbolic_type(ty)? {
+            return Ok(false);
+        }
+        if matches!(ty, Type::Z | Type::Q) {
+            return Ok(true);
+        }
+        Ok(self.dynamic_finite_values(ty, &mut |_, _| {})?.is_none())
+    }
     pub(in crate::observed) fn family_plan(
         &self,
         request: &Request,
@@ -50,7 +67,7 @@ impl Environment<'_> {
         let (mut numeric, mut unbound) = (Vec::new(), Vec::new());
         for p in &free {
             self.tick()?;
-            if self.universal_symbolic_type(&p.ty.erase())? {
+            if self.law_parameter_symbolic_type(&p.ty.erase())? {
                 numeric.push(p.clone());
             } else {
                 unbound.push(p.clone());
@@ -90,7 +107,7 @@ impl Environment<'_> {
             self.tick()?;
             let finite_type = p.ty.erase();
             if unbound.iter().any(|u| u.name == p.name)
-                && !super::super::finite::supported(&finite_type, self.inputs.law(), &self.control)?
+                && self.law_parameter_symbolic_type(&finite_type)?
             {
                 return Err(ValidationFailure::UnsupportedExpression {
                     location: Location::Law { span: p.span },
@@ -375,7 +392,13 @@ impl Environment<'_> {
         ty: &Type,
         observer: &mut dyn FnMut(&'static str, usize),
     ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
-        let enumeration = self.finite_values(ty, observer)?;
+        let enumeration = if super::super::finite::supported(ty, self.inputs.law(), &self.control)?
+        {
+            self.finite_values(ty, observer)?
+        } else {
+            self.dynamic_finite_values(ty, observer)?
+                .ok_or("Law parameter域が有限でない")?
+        };
         let mut domain = super::owned_type::TypeDomain {
             values: Some(enumeration.values),
             scope: enumeration.scope,

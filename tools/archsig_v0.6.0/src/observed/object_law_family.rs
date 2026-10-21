@@ -408,6 +408,198 @@ pub(super) fn compare_rows(
     Ok(())
 }
 
+/// 元Lawの全有限代入と、その読みを支える元DAG内の全case。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LawReadingRow {
+    pub(in crate::observed) bindings: Vec<(String, FiniteTransportValue)>,
+    pub(in crate::observed) evaluations: Vec<NodeRef>,
+    pub(in crate::observed) reading: LawBooleanReading,
+}
+impl LawReadingRow {
+    pub fn bindings(&self) -> &[(String, FiniteTransportValue)] {
+        &self.bindings
+    }
+    pub fn evaluations(&self) -> Vec<usize> {
+        self.evaluations.iter().map(|r| r.0).collect()
+    }
+    pub fn reading(&self) -> &LawBooleanReading {
+        &self.reading
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LawReadingDomain {
+    pub(in crate::observed) parameter: crate::law::model::Param,
+    pub(in crate::observed) values: Vec<FiniteTransportValue>,
+    pub(in crate::observed) scope: super::super::result::Scope,
+    pub(in crate::observed) support: Vec<super::super::result::Fact>,
+    pub(in crate::observed) missing: Vec<super::super::result::Fact>,
+}
+impl LawReadingDomain {
+    pub fn parameter(&self) -> &crate::law::model::Param {
+        &self.parameter
+    }
+    pub fn values(&self) -> &[FiniteTransportValue] {
+        &self.values
+    }
+    pub fn missing(&self) -> &[super::super::result::Fact] {
+        &self.missing
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
+pub struct LawReadingFamily {
+    pub(in crate::observed) domains: Vec<LawReadingDomain>,
+    pub(in crate::observed) rows: Vec<LawReadingRow>,
+    pub(in crate::observed) uniform: Option<LawBooleanReading>,
+    pub(in crate::observed) missing: Vec<super::super::result::Fact>,
+    pub(in crate::observed) complete: bool,
+}
+impl LawReadingFamily {
+    pub fn domains(&self) -> &[LawReadingDomain] {
+        &self.domains
+    }
+    pub fn rows(&self) -> &[LawReadingRow] {
+        &self.rows
+    }
+    pub fn uniform(&self) -> Option<&LawBooleanReading> {
+        self.uniform.as_ref()
+    }
+    pub fn missing(&self) -> &[super::super::result::Fact] {
+        &self.missing
+    }
+    pub fn is_complete(&self) -> bool {
+        self.complete
+    }
+    pub(in crate::observed) fn known(&self) -> bool {
+        fn known(r: &LawBooleanReading) -> bool {
+            match r.application.value() {
+                Some(false) => true,
+                Some(true) => r.body.is_some(),
+                None => false,
+            }
+        }
+        self.complete
+            && self.missing.is_empty()
+            && self
+                .uniform
+                .as_ref()
+                .map_or_else(|| self.rows.iter().all(|r| known(&r.reading)), known)
+    }
+}
+/// ObjectEvaluationの元評価を読む。対応表やOperationを作って読みを補わない。
+pub(in crate::observed) fn read_native_family(
+    inputs: &CheckedInputs,
+    e: &ObjectEvaluation,
+    result: &mut LawReadingFamily,
+    c: &mut Control,
+) -> Result<(), ObjectEvaluationFailure> {
+    tick(c)?;
+    if e.instance().declaration().kind != "law" {
+        return Err(inconsistent("元Law instanceでない").into());
+    }
+    if e.instance().parameters().is_empty() {
+        let value = reading(e, c)?;
+        let refs = match e.outcome() {
+            ObjectEvaluationOutcome::Evaluated(graph) => graph
+                .answers
+                .first()
+                .and_then(|a| a.outputs.get("evaluation"))
+                .copied()
+                .into_iter()
+                .collect(),
+            _ => vec![],
+        };
+        result.rows.push(LawReadingRow {
+            bindings: vec![],
+            evaluations: refs,
+            reading: value.clone(),
+        });
+        result.uniform = Some(value);
+        result.complete = true;
+        return tick(c).map_err(Into::into);
+    }
+    match e.outcome() {
+        ObjectEvaluationOutcome::NotApplicable | ObjectEvaluationOutcome::Conditional(_) => {
+            result.uniform = Some(reading(e, c)?);
+            result.complete = true;
+            return tick(c).map_err(Into::into);
+        }
+        ObjectEvaluationOutcome::FiniteView(_) => {
+            return Err(inconsistent("Lawにview関数族がある").into());
+        }
+        ObjectEvaluationOutcome::Evaluated(_) => {}
+    }
+    let env = crate::observed::environment::Environment::new(inputs, c)
+        .map_err(ConstructionFailure::from)?;
+    for p in e.instance().parameters() {
+        tick(c)?;
+        let Some((domain, missing)) = env
+            .object_view_domain(p, e.instance())
+            .map_err(validation)?
+        else {
+            return Err(ObjectEvaluationFailure::NotImplemented {
+                object: e.object().clone(),
+                instance: e.instance().clone(),
+            });
+        };
+        result.missing.extend(missing.iter().cloned());
+        result.domains.push(LawReadingDomain {
+            parameter: p.clone(),
+            values: domain
+                .values
+                .into_iter()
+                .map(FiniteTransportValue::observed)
+                .collect(),
+            scope: domain.scope,
+            support: domain.support,
+            missing,
+        });
+        tick(c)?;
+    }
+    result.missing.sort();
+    result.missing.dedup();
+    if !result.missing.is_empty() {
+        return Ok(());
+    }
+    let domains: Vec<_> = result.domains.iter().map(|d| d.values.as_slice()).collect();
+    let keys = coordinates(&domains.iter().map(|d| d.len()).collect::<Vec<_>>(), c)?;
+    let Some(rows) = root_rows(e, &domains, &keys, c)? else {
+        return Ok(());
+    };
+    for key in &keys {
+        tick(c)?;
+        let refs = rows
+            .get(key)
+            .ok_or_else(|| inconsistent("全Law代入の元行がない"))?
+            .clone();
+        let value = row_reading(e, &refs, c)?;
+        let bindings = e
+            .instance()
+            .parameters()
+            .iter()
+            .zip(key)
+            .zip(&domains)
+            .map(|((p, &index), domain)| (p.name.clone(), domain[index].clone()))
+            .collect();
+        result.rows.push(LawReadingRow {
+            bindings,
+            evaluations: refs,
+            reading: value,
+        });
+        if result.rows.len() == keys.len() {
+            result.complete = true;
+        }
+        tick(c)?;
+    }
+    result.complete = true;
+    tick(c).map_err(Into::into)
+}
+pub(in crate::observed) fn compare_native_readings(
+    a: &LawBooleanReading,
+    b: &LawBooleanReading,
+) -> LawTransportOutcome {
+    compare(a, b)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -16,6 +16,15 @@ pub use crate::observed::object_view_compatibility::{
 };
 use maps::ObjectIdentity;
 
+pub use crate::observed::object_law_compatibility::{
+    LawCompatibilityCondition, LawCompatibilityOutcome, LawCompatibilityPoint,
+    LawPatternComparison, LawReadingEvaluation, ObjectLawCompatibility,
+    ObjectLawCompatibilityFailure, object_law_compatibility,
+};
+pub use crate::observed::object_law_transport::{
+    LawReadingDomain, LawReadingFamily, LawReadingRow,
+};
+
 /// 同じ原始owner slotには同じ値を要求する。条件の成立はまだ観測していない。
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MembershipCondition {
