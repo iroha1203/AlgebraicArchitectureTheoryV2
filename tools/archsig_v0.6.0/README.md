@@ -189,6 +189,16 @@ source ConfigurationのF内は対応表で移し、F外の値は固定する。
 不成立時も `operation()` を保持する。現在入力での全域検査には `recheck()` を使う。
 Ownedの所属添字・複合値・式評価の可換性はそれぞれの追加検査で扱う。
 
+`construction::maps::finite_declaration_value_transport(&checked, &declarations, "Before.values",
+DeclarationValuePosition::Parameter(0), &mut control)` は署名対応済み宣言の有限な値型を選び、
+既存の有限域計算で全値を列挙する。view戻り型は `DeclarationValuePosition::Return` で選ぶ。
+`source()/target()/images()` は型付きの全値と構造による候補像を持つ。`wire()` で値を表示できる。
+`failures()` は終域外の像・衝突・未到達を列挙し、`bijection()` は両全域の順逆対応の添字を返す。
+Mapの全域性と一価性、Setの像集合を検査し、空の積・関数域も全体の値型で判定する。
+`support()/snapshots()/modes()` は参照域の由来、`operation()` は追加条件不成立時も保持する操作である。
+Unit/Bool/Fp/Refと有限なTuple/Option/Set/Map/dataを扱い、適用域の判定・列挙・等値は同じ核を使う。
+`recheck()` で現在入力から全域と順逆対応を再検査する。
+
 `construction::readings::object_reading_instances(&checked, &configuration, &mut control)`
 は選択readingのLaw/viewを、標準対象域に適用する参照束縛instanceへ展開する。
 `objects()` はbaseとowned entityの部分対象をidentityで保持し、未知所属の候補には

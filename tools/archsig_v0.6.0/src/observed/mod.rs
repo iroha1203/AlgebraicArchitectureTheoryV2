@@ -14,6 +14,7 @@ mod quantifier;
 pub mod result;
 mod term;
 mod value_equality;
+pub(crate) mod value_transport;
 pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
 pub use result::{EvaluationFailure, ObservedEvaluation};
 pub mod input;
