@@ -183,7 +183,8 @@ fn set_images_deduplicate_while_whole_value_domain_collisions_remain() {
     assert_eq!(
         r.failures(),
         [Failure::Collision {
-            target: 1,
+            image: r.images()[1].clone(),
+            target: Some(1),
             sources: vec![1, 2, 3]
         }]
     );
@@ -211,8 +212,9 @@ fn map_domain_is_the_complete_function_space_and_conflicting_keys_are_retained()
         r.failures(),
         [
             Failure::OutsideTarget { source: 1, .. },
-            Failure::OutsideTarget { source: 2, .. }
-        ]
+            Failure::OutsideTarget { source: 2, .. },
+            Failure::Collision { target: None, sources, .. }
+        ] if sources == &[1,2]
     ));
     assert!(r.bijection().is_none());
     r.operation()
@@ -590,5 +592,73 @@ fn nontrivial_reference_permutation_transports_maps_by_both_domain_and_codomain(
     for (a, b) in r.bijection().unwrap().forward().iter().enumerate() {
         assert_eq!(r.bijection().unwrap().inverse()[*b], a);
     }
+    r.recheck(&i, &mut Control::unlimited()).unwrap();
+}
+
+#[test]
+fn equal_outside_target_data_images_keep_their_complete_collision_fiber() {
+    let i = inputs(&many_to_one());
+    let r = result(&i, 10);
+    assert_eq!(
+        wires(r.source()),
+        [
+            "{\"args\":[[\"v\",\"p\"]],\"tag\":\"Put\"}",
+            "{\"args\":[[\"v\",\"r\"]],\"tag\":\"Put\"}"
+        ]
+    );
+    assert_eq!(
+        wires(r.images()),
+        [
+            "{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}",
+            "{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}"
+        ]
+    );
+    assert!(matches!(r.failures(),[
+        Failure::OutsideTarget{source:0,..},Failure::OutsideTarget{source:1,..},
+        Failure::Collision{target:None,sources,image},
+        Failure::Unreached{target:0},Failure::Unreached{target:1}
+    ] if sources == &[0,1] && image == &r.images()[0]));
+    assert!(r.bijection().is_none());
+    r.operation()
+        .recheck(&i, &mut Control::unlimited())
+        .unwrap();
+    r.recheck(&i, &mut Control::unlimited()).unwrap();
+}
+#[test]
+fn outside_target_data_set_images_are_sets_before_membership_and_collision_checks() {
+    let base = inputs(&many_to_one());
+    let s = base.sources();
+    let law = std::str::from_utf8(s.law().bytes())
+        .unwrap()
+        .replace("members: Set<Left.Child>", "members: Set<Left.Box>")
+        .replace("members: Set<Right.Child>", "members: Set<Left.Box>");
+    let i = check_inputs(
+        InputSources::from_bytes(
+            s.definitions().iter().map(|d| d.bytes().to_vec()).collect(),
+            law.into_bytes(),
+            s.archmap().bytes().to_vec(),
+        ),
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    let r = result(&i, 6);
+    assert_eq!(
+        wires(r.images()),
+        [
+            "[]",
+            "[{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}]",
+            "[{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}]",
+            "[{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}]"
+        ]
+    );
+    assert!(matches!(r.failures(),[
+        Failure::OutsideTarget{source:1,detail:a},Failure::OutsideTarget{source:2,detail:b},Failure::OutsideTarget{source:3,detail:c},
+        Failure::Collision{target:None,sources,image},
+        Failure::Unreached{target:1},Failure::Unreached{target:2},Failure::Unreached{target:3}
+    ] if sources == &[1,2,3] && image == &r.images()[1] && [a,b,c].iter().all(|s| s.contains("payload型") && !s.contains("重複"))));
+    assert!(r.bijection().is_none());
+    r.operation()
+        .recheck(&i, &mut Control::unlimited())
+        .unwrap();
     r.recheck(&i, &mut Control::unlimited()).unwrap();
 }

@@ -21,9 +21,15 @@ pub enum DeclarationValuePosition {
     Return,
 }
 /// 型付きの全域値または候補像。像の終域所属は結果の検査で判定する。
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq)]
 pub struct FiniteTransportValue {
     value: Scalar,
+}
+impl PartialEq for FiniteTransportValue {
+    fn eq(&self, other: &Self) -> bool {
+        // 型域外の候補にも用いる。重複を含む改変による一方向の包含を等値にしない。
+        self.value == other.value && other.value == self.value
+    }
 }
 impl FiniteTransportValue {
     pub fn ty(&self) -> Type {
@@ -35,9 +41,18 @@ impl FiniteTransportValue {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FiniteValueConditionFailure {
-    OutsideTarget { source: usize, detail: String },
-    Collision { target: usize, sources: Vec<usize> },
-    Unreached { target: usize },
+    OutsideTarget {
+        source: usize,
+        detail: String,
+    },
+    Collision {
+        image: FiniteTransportValue,
+        target: Option<usize>,
+        sources: Vec<usize>,
+    },
+    Unreached {
+        target: usize,
+    },
 }
 /// source/target の全値順に対応する添字。双方の合成を全域で検査済み。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -250,6 +265,15 @@ fn same(a: &Scalar, b: &Scalar, control: &mut Control) -> Result<bool, Construct
     }
     data::equal(a, b, control).map_err(failure)
 }
+fn same_candidate(
+    a: &Scalar,
+    b: &Scalar,
+    control: &mut Control,
+) -> Result<bool, ConstructionFailure> {
+    tick(control)?;
+    data::candidate_equal(a, b, control).map_err(failure)
+}
+
 /// 候補値の型検査の不成立を、計算自身の失敗と分ける。
 fn shape(
     value: &Scalar,
@@ -330,14 +354,11 @@ fn image(
                 for a in items {
                     let b = image(a, inputs, mu, action, control)?;
                     let mut duplicate = false;
-                    if shape(&b, inputs, control)?.is_none() {
-                        for prior in &moved {
-                            tick(control)?;
-                            if shape(prior, inputs, control)?.is_none() && same(prior, &b, control)?
-                            {
-                                duplicate = true;
-                                break;
-                            }
+                    for prior in &moved {
+                        tick(control)?;
+                        if same_candidate(prior, &b, control)? {
+                            duplicate = true;
+                            break;
                         }
                     }
                     if !duplicate {
@@ -361,7 +382,8 @@ fn image(
                     let mut duplicate = false;
                     for (key, value) in &moved {
                         tick(control)?;
-                        if same(key, &a, control)? && same(value, &b, control)? {
+                        if same_candidate(key, &a, control)? && same_candidate(value, &b, control)?
+                        {
                             duplicate = true;
                             break;
                         }
@@ -439,10 +461,11 @@ pub fn finite_declaration_value_transport(
             );
         }
     }
-    let mut images = Vec::new();
+    let mut images: Vec<FiniteTransportValue> = Vec::new();
     let mut failures = Vec::new();
     let mut forward = Vec::new();
     let mut fibers: Vec<Vec<usize>> = vec![Vec::new(); target.values.len()];
+    let mut candidate_fibers: Vec<(usize, Option<usize>, Vec<usize>)> = Vec::new();
     for (index, value) in source.values.iter().enumerate() {
         tick(control)?;
         let moved = image(value, inputs, &mu, &action, control)?;
@@ -466,18 +489,34 @@ pub fn finite_declaration_value_transport(
                 detail: invalid.unwrap_or_else(|| "候補像が終域の全値に含まれない".into()),
             });
         }
+        let mut found_fiber = false;
+        for (representative, _, sources) in &mut candidate_fibers {
+            tick(control)?;
+            if same_candidate(&images[*representative].value, &moved, control)? {
+                sources.push(index);
+                found_fiber = true;
+                break;
+            }
+        }
+        if !found_fiber {
+            candidate_fibers.push((index, found, vec![index]));
+        }
         images.push(FiniteTransportValue { value: moved });
+    }
+    for (representative, target, sources) in candidate_fibers {
+        tick(control)?;
+        if sources.len() > 1 {
+            failures.push(FiniteValueConditionFailure::Collision {
+                image: images[representative].clone(),
+                target,
+                sources,
+            });
+        }
     }
     for (j, sources) in fibers.iter().enumerate() {
         tick(control)?;
         if sources.is_empty() {
             failures.push(FiniteValueConditionFailure::Unreached { target: j });
-        }
-        if sources.len() > 1 {
-            failures.push(FiniteValueConditionFailure::Collision {
-                target: j,
-                sources: sources.clone(),
-            });
         }
     }
     let bijection = if failures.is_empty() {
@@ -664,5 +703,98 @@ mod tests {
         }
         r.recheck(&i, &mut Control::unlimited()).unwrap();
         failed.recheck(&i, &mut Control::unlimited()).unwrap();
+    }
+    #[test]
+    fn candidate_equality_keeps_partial_type_mismatches_and_conflicting_map_relations() {
+        let i = inputs(A);
+        let d = declarations(&i);
+        let r = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(10),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let invalid = &r.images[0].value;
+        let valid = &r.source[0].value;
+        assert!(data::candidate_equal(invalid, invalid, &Control::unlimited()).unwrap());
+        assert!(!data::candidate_equal(invalid, valid, &Control::unlimited()).unwrap());
+        assert!(matches!(
+            data::equal(invalid, valid, &Control::unlimited()),
+            Err(ValidationFailure::Internal(_))
+        ));
+        let value = |id: &str, ty: &str| Scalar::Subject {
+            snapshot: "v".into(),
+            subject: id.into(),
+            entity: ty.into(),
+        };
+        let map = |reverse: bool| {
+            let mut pairs = vec![
+                (value("q", "Right.Child"), value("p", "Left.Child")),
+                (value("q", "Right.Child"), value("r", "Left.Child")),
+            ];
+            if reverse {
+                pairs.reverse();
+            }
+            Scalar::Map {
+                domain: Type::Ref("Right.Child".into()),
+                codomain: Type::Ref("Left.Child".into()),
+                pairs,
+            }
+        };
+        let a = map(false);
+        let b = map(true);
+        assert!(data::candidate_equal(&a, &a, &Control::unlimited()).unwrap());
+        assert!(data::candidate_equal(&a, &b, &Control::unlimited()).unwrap());
+        assert!(data::candidate_equal(&b, &a, &Control::unlimited()).unwrap());
+        assert!(matches!(
+            data::check(&a, i.law(), &Control::unlimited()),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+    #[test]
+    fn duplicate_set_image_forgery_cannot_keep_an_established_bijection() {
+        let base = inputs(A);
+        let sources = base.sources();
+        let law = std::str::from_utf8(sources.law().bytes())
+            .unwrap()
+            .replace("members: Set<Left.Child>", "members: Set<Bool>")
+            .replace("members: Set<Right.Child>", "members: Set<Bool>");
+        let i = check_inputs(
+            InputSources::from_bytes(
+                sources
+                    .definitions()
+                    .iter()
+                    .map(|d| d.bytes().to_vec())
+                    .collect(),
+                law.into_bytes(),
+                sources.archmap().bytes().to_vec(),
+            ),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let d = declarations(&i);
+        let mut r = finite_declaration_value_transport(
+            &i,
+            &d,
+            "Before.axes",
+            DeclarationValuePosition::Parameter(6),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert!(r.bijection().is_some());
+        assert_eq!(r.images.len(), 4);
+        if let Scalar::Set { items, .. } = &mut r.images[3].value {
+            assert_eq!(items.len(), 2);
+            items[1] = items[0].clone();
+        } else {
+            panic!("Set fixture");
+        }
+        assert_ne!(r.images[3], r.target[3]);
+        assert!(matches!(
+            r.recheck(&i, &mut Control::unlimited()),
+            Err(ConstructionFailure::Inconsistent(_))
+        ));
     }
 }

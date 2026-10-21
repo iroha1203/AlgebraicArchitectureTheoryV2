@@ -194,6 +194,8 @@ DeclarationValuePosition::Parameter(0), &mut control)` は署名対応済み宣�
 既存の有限域計算で全値を列挙する。view戻り型は `DeclarationValuePosition::Return` で選ぶ。
 `source()/target()/images()` は型付きの全値と構造による候補像を持つ。`wire()` で値を表示できる。
 `failures()` は終域外の像・衝突・未到達を列挙し、`bijection()` は両全域の順逆対応の添字を返す。
+衝突は終域外の候補像も含めて検査する。`Collision.image` は具体的な像、`target` は
+終域の添字で、終域外なら `None` である。
 Mapの全域性と一価性、Setの像集合を検査し、空の積・関数域も全体の値型で判定する。
 `support()/snapshots()/modes()` は参照域の由来、`operation()` は追加条件不成立時も保持する操作である。
 Unit/Bool/Fp/Refと有限なTuple/Option/Set/Map/dataを扱い、適用域の判定・列挙・等値は同じ核を使う。
