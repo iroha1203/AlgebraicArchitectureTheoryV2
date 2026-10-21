@@ -11,6 +11,7 @@ use super::{
     object_view_family::FiniteViewValue,
     object_view_transport::scalar_evaluation,
     result::ValidationFailure,
+    value_equality,
 };
 use crate::construction::{
     ConstructionFailure,
@@ -43,6 +44,7 @@ pub enum ViewCompatibilityOutcome {
     Compatible,
     Refuted(ViewCompatibilityCondition),
     Undetermined,
+    UnsupportedAlgorithm,
 }
 #[derive(Debug)]
 pub struct ViewReadingEvaluation {
@@ -209,14 +211,18 @@ fn aggregate<'a>(
     outcomes: impl Iterator<Item = &'a ViewCompatibilityOutcome>,
 ) -> ViewCompatibilityOutcome {
     let mut unknown = false;
+    let mut unsupported = false;
     for outcome in outcomes {
         match outcome {
             ViewCompatibilityOutcome::Refuted(_) => return outcome.clone(),
             ViewCompatibilityOutcome::Undetermined => unknown = true,
+            ViewCompatibilityOutcome::UnsupportedAlgorithm => unsupported = true,
             ViewCompatibilityOutcome::Compatible => {}
         }
     }
-    if unknown {
+    if unsupported {
+        ViewCompatibilityOutcome::UnsupportedAlgorithm
+    } else if unknown {
         ViewCompatibilityOutcome::Undetermined
     } else {
         ViewCompatibilityOutcome::Compatible
@@ -313,16 +319,20 @@ fn compare_point(
 ) -> Result<(), ConstructionFailure> {
     let mut finished = false;
     let checked = match (&point.source, &point.target) {
-        (Some(a), Some(b)) => data::equal_retained(a.scalar(), b.scalar(), c, |equal| {
-            point.outcome = if equal {
-                ViewCompatibilityOutcome::Compatible
-            } else {
-                ViewCompatibilityOutcome::Refuted(ViewCompatibilityCondition::Value)
-            };
-            finished = true;
-        })
-        .map(|_| ())
-        .map_err(invalid),
+        (Some(a), Some(b)) => {
+            value_equality::equal_retained(a.scalar(), b.scalar(), r.inputs.law(), c, |equal| {
+                point.outcome = match equal {
+                    Some(true) => ViewCompatibilityOutcome::Compatible,
+                    Some(false) => {
+                        ViewCompatibilityOutcome::Refuted(ViewCompatibilityCondition::Value)
+                    }
+                    None => ViewCompatibilityOutcome::UnsupportedAlgorithm,
+                };
+                finished = true;
+            })
+            .map(|_| ())
+            .map_err(invalid)
+        }
         _ => {
             finished = true;
             Ok(())
@@ -874,10 +884,22 @@ mod tests {
             partial.comparisons[0].outcome = None;
             partial.comparisons[0].points.truncate(index);
             let point = full.comparisons[0].points[index].clone();
-            let (mut c, n) = stop(Checkpoint::FiniteIteration, 2, 2);
+            let count = Rc::new(Cell::new(0_usize));
+            let seen = Rc::clone(&count);
+            let mut measure = Control::new(Limits::default(), move |p| {
+                if p == Checkpoint::FiniteIteration {
+                    seen.set(seen.get() + 1);
+                }
+                Usage::default()
+            });
+            let mut measured = example().1;
+            compare_point(&mut measured, 0, point.clone(), false, &mut measure).unwrap();
+            let total = count.get();
+            assert!(total > 0);
+            let (mut c, n) = stop(Checkpoint::FiniteIteration, total, 2);
             let result = compare_point(&mut partial, 0, point, index == 1, &mut c);
             assert!(matches!(result, Err(ConstructionFailure::Stopped(_))));
-            assert_eq!(n.get(), 2);
+            assert_eq!(n.get(), total);
             assert_eq!(partial.comparisons[0].points.len(), index + 1);
             assert_eq!(partial.complete, index == 1);
             assert_eq!(
@@ -888,6 +910,93 @@ mod tests {
                     None
                 }
             );
+        }
+    }
+    #[test]
+    fn mathematical_equality_does_not_allow_replacing_the_original_term_program() {
+        let i = inputs(
+            "view functions(c:Part):Term<(Bool)->Bool> = if (forall a:Root . false) then (fn(x:Bool)=>x) else (fn(y:Bool)=>not not y);",
+        );
+        let mut r = object_view_compatibility(
+            Arc::clone(&i),
+            "Selected",
+            "v",
+            "root",
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert_eq!(r.outcome(), Some(&ViewCompatibilityOutcome::Compatible));
+        let p = &mut r.comparisons[0].points[0];
+        assert_ne!(
+            p.source.as_ref().unwrap().wire(),
+            p.target.as_ref().unwrap().wire()
+        );
+        p.source = p.target.clone();
+        assert!(r.recheck(i, &mut Control::unlimited()).is_err());
+    }
+    #[test]
+    fn final_nested_term_comparison_stop_retains_a_completed_mathematical_result() {
+        for (body, outcome) in [
+            (
+                "view functions(c:Part):Option<Term<(Bool)->Bool>> = if (forall a:Root . false) then some(fn(x:Bool)=>x) else some(fn(y:Bool)=>not not y);",
+                ViewCompatibilityOutcome::Compatible,
+            ),
+            (
+                "view functions(c:Part):List<Term<(Bool)->Bool>> = if (forall a:Root . false) then list<Term<(Bool)->Bool>>[fn(x:Bool)=>x] else list<Term<(Bool)->Bool>>[fn(y:Bool)=>not y];",
+                ViewCompatibilityOutcome::Refuted(ViewCompatibilityCondition::Value),
+            ),
+        ] {
+            let i = inputs(body);
+            let mut r = object_view_compatibility(
+                Arc::clone(&i),
+                "Selected",
+                "v",
+                "root",
+                &mut Control::unlimited(),
+            )
+            .unwrap();
+            let point = r.comparisons[0].points[0].clone();
+            let count = Rc::new(Cell::new(0_usize));
+            let seen = Rc::clone(&count);
+            let c = Control::new(Limits::default(), move |p| {
+                if p == Checkpoint::FiniteIteration {
+                    seen.set(seen.get() + 1);
+                }
+                Usage::default()
+            });
+            let mut published = None;
+            value_equality::equal_retained(
+                point.source.as_ref().unwrap().scalar(),
+                point.target.as_ref().unwrap().scalar(),
+                i.law(),
+                &c,
+                |_| {
+                    assert!(published.replace(count.get()).is_none());
+                },
+            )
+            .unwrap();
+            let total = count.get();
+            // 最初の完成通知直後と、外側の最後の停止確認の両方で保持する。
+            let first_after_completion = published.unwrap() + 1;
+            assert!(first_after_completion <= total);
+            for (at, mode) in [first_after_completion, total]
+                .into_iter()
+                .flat_map(|at| (0..4).map(move |mode| (at, mode)))
+            {
+                r.comparisons[0].points.clear();
+                r.comparisons[0].outcome = None;
+                r.complete = false;
+                r.outcome = None;
+                let (mut c, n) = stop(Checkpoint::FiniteIteration, at, mode);
+                assert!(matches!(
+                    compare_point(&mut r, 0, point.clone(), true, &mut c),
+                    Err(ConstructionFailure::Stopped(_))
+                ));
+                assert_eq!(n.get(), at);
+                assert_eq!(r.comparisons[0].points.len(), 1);
+                assert_eq!(r.outcome(), Some(&outcome));
+                assert!(r.is_complete());
+            }
         }
     }
     #[test]

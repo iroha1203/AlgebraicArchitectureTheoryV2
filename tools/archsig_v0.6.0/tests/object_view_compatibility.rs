@@ -288,3 +288,87 @@ fn external_helpers_are_called_from_the_original_view_without_becoming_extra_axe
     assert_eq!(r.outcome(), Some(&Outcome::Compatible));
     r.recheck(i, &mut quiet()).unwrap();
 }
+
+fn check_contextual_terms(body: &str, rows: usize) {
+    let i = inputs(body, A);
+    let r = run(Arc::clone(&i));
+    assert_eq!(r.profiles().classes().unwrap(), [vec![0, 1]]);
+    assert!(r.is_complete());
+    let comparison = &r.comparisons()[0];
+    assert_eq!(comparison.points().len(), rows);
+    for point in comparison.points() {
+        assert_ne!(
+            point.source().unwrap().wire(),
+            point.target().unwrap().wire()
+        );
+        assert_eq!(point.outcome(), &Outcome::Compatible);
+    }
+    assert_eq!(r.outcome(), Some(&Outcome::Compatible));
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn ground_boolean_terms_use_function_extensional_equality_instead_of_program_identity() {
+    check_contextual_terms(
+        "view functions(c:Part):Term<(Bool)->Bool> = if (forall a:Root . false) then (fn(x:Bool)=>x) else (fn(y:Bool)=>not not y);",
+        1,
+    );
+}
+#[test]
+fn ground_affine_terms_use_exact_normalization_instead_of_program_identity() {
+    check_contextual_terms(
+        "view functions(c:Part):Term<(Z)->Z> = if (forall a:Root . false) then (fn(x:Z)=>x+x) else (fn(y:Z)=>2*y);",
+        1,
+    );
+}
+#[test]
+fn finite_family_option_terms_use_function_extensional_equality_at_every_argument() {
+    check_contextual_terms(
+        "view functions(c:Part,b:Bool):Option<Term<(Bool)->Bool>> = if (forall a:Root . false) then some(fn(x:Bool)=>x) else some(fn(y:Bool)=>not not y);",
+        2,
+    );
+}
+
+#[test]
+fn nested_list_and_tuple_terms_use_mathematical_equality() {
+    check_contextual_terms(
+        "view functions(c:Part):List<(Term<(Bool)->Bool>,Z)> = if (forall a:Root . false) then list<(Term<(Bool)->Bool>,Z)>[((fn(x:Bool)=>x),3)] else list<(Term<(Bool)->Bool>,Z)>[((fn(y:Bool)=>not not y),3)];",
+        1,
+    );
+}
+
+#[test]
+fn unequal_term_functions_keep_a_real_value_counterexample() {
+    let i = inputs(
+        "view functions(c:Part):Term<(Bool)->Bool> = if (forall a:Root . false) then (fn(x:Bool)=>x) else (fn(y:Bool)=>not y);",
+        A,
+    );
+    let r = run(Arc::clone(&i));
+    let point = &r.comparisons()[0].points()[0];
+    assert!(point.source().is_some() && point.target().is_some());
+    assert_eq!(point.outcome(), &Outcome::Refuted(Failed::Value));
+    assert_eq!(r.outcome(), Some(&Outcome::Refuted(Failed::Value)));
+    r.recheck(i, &mut quiet()).unwrap();
+}
+
+#[test]
+fn nonlinear_unbounded_terms_are_unsupported_instead_of_refuted_or_missing() {
+    let i = inputs(
+        "view functions(c:Part):Term<(Z)->Z> = if (forall a:Root . false) then (fn(x:Z)=>x*x) else (fn(y:Z)=>y*y);",
+        A,
+    );
+    let r = run(Arc::clone(&i));
+    assert!(r.profiles().is_complete() && r.is_complete());
+    let point = &r.comparisons()[0].points()[0];
+    assert!(point.source().is_some() && point.target().is_some());
+    assert_ne!(
+        point.source().unwrap().wire(),
+        point.target().unwrap().wire()
+    );
+    assert_eq!(point.outcome(), &Outcome::UnsupportedAlgorithm);
+    assert_eq!(
+        r.comparisons()[0].outcome(),
+        Some(&Outcome::UnsupportedAlgorithm)
+    );
+    assert_eq!(r.outcome(), Some(&Outcome::UnsupportedAlgorithm));
+    r.recheck(i, &mut quiet()).unwrap();
+}
