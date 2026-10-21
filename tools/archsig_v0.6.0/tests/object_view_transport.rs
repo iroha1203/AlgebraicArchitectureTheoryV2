@@ -418,12 +418,24 @@ fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
                         }
                     },
                 );
-                let Error::Construction(f) =
-                    object_view_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err()
-                else {
-                    panic!()
+                let failure = object_view_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err();
+                let reason = match failure {
+                    Error::Construction(ConstructionFailure::Stopped(reason)) => reason,
+                    Error::Stopped {
+                        reason,
+                        operation,
+                        partial,
+                        ..
+                    } => {
+                        operation.recheck(&i, &mut quiet()).unwrap();
+                        if let Some(p) = partial {
+                            assert_eq!(p.operation(), operation.as_ref());
+                        }
+                        reason
+                    }
+                    failure => panic!("{failure:?}"),
                 };
-                assert_eq!(f, ConstructionFailure::Stopped(c.stop_reason().unwrap()));
+                assert_eq!(reason, c.stop_reason().unwrap());
                 assert_eq!(count.get(), at);
                 assert!(matches!(
                     object_view_transport(Arc::clone(&i), &d, o, n, &mut c),
@@ -433,6 +445,176 @@ fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
             }
         }
     }
+}
+
+#[test]
+fn stopped_transport_keeps_completed_evaluations_values_and_decisions_only() {
+    let i = inputs(L, A);
+    let d = declarations(&i);
+    for (subject, expected) in [
+        ("p", Outcome::Preserved),
+        ("r", Outcome::Refuted(Failed::Value)),
+    ] {
+        let (o, n) = indices(&i, subject, "amount", subject);
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let normal = object_view_transport(
+            Arc::clone(&i),
+            &d,
+            o,
+            n,
+            &mut Control::new(Limits::default(), move |p| {
+                if p == Checkpoint::ObjectViewTransport {
+                    seen.set(seen.get() + 1);
+                }
+                Usage::default()
+            }),
+        )
+        .unwrap();
+        let total = count.get();
+        assert!(total >= 6);
+        // source完了直後、target完了直後、比較完了直後でそれぞれ止める。
+        for at in [total - 2, total - 1, total] {
+            for mode in 0..4 {
+                let seen = Rc::new(Cell::new(0));
+                let count = seen.clone();
+                let mut control = Control::new(
+                    Limits {
+                        time_ms: Some(1),
+                        memory_mib: Some(1),
+                    },
+                    move |p| {
+                        if p == Checkpoint::ObjectViewTransport {
+                            count.set(count.get() + 1);
+                        }
+                        let stop = count.get() >= at;
+                        Usage {
+                            elapsed_ms: u128::from(stop && mode == 0),
+                            memory_mib: u128::from(stop && mode == 1),
+                            signal: if stop {
+                                match mode {
+                                    2 => Some(Signal::Int),
+                                    3 => Some(Signal::Term),
+                                    _ => None,
+                                }
+                            } else {
+                                None
+                            },
+                        }
+                    },
+                );
+                let Error::Stopped {
+                    reason,
+                    operation,
+                    partial: Some(partial),
+                    evaluation,
+                } = object_view_transport(Arc::clone(&i), &d, o, n, &mut control).unwrap_err()
+                else {
+                    panic!()
+                };
+                assert_eq!(reason, control.stop_reason().unwrap());
+                assert_eq!(seen.get(), at);
+                assert!(evaluation.is_none());
+                operation.recheck(&i, &mut quiet()).unwrap();
+                assert_eq!(partial.operation(), operation.as_ref());
+                assert_eq!(partial.object().subject().subject, subject);
+                assert_eq!(partial.instance().declaration().name, "Before.amount");
+                assert!(partial.equivalence().is_some());
+                let ObjectEvaluationOutcome::Evaluated(source) =
+                    partial.source().unwrap().outcome()
+                else {
+                    panic!()
+                };
+                assert_eq!(source.status(), "complete");
+                assert!(Arc::ptr_eq(&i, &source.prepared().shared_inputs()));
+                let ObjectEvaluationOutcome::Evaluated(original) =
+                    normal.source().unwrap().outcome()
+                else {
+                    panic!()
+                };
+                assert_eq!(source.wire(), original.wire());
+                let value = if subject == "p" { "\"2\"" } else { "\"3\"" };
+                assert_eq!(partial.source_value().unwrap().wire().canonical(), value);
+                if at == total - 2 {
+                    assert!(partial.target().is_none());
+                    assert!(partial.target_value().is_none());
+                } else {
+                    let ObjectEvaluationOutcome::Evaluated(target) =
+                        partial.target().unwrap().outcome()
+                    else {
+                        panic!()
+                    };
+                    assert_eq!(target.status(), "complete");
+                    assert!(Arc::ptr_eq(&i, &target.prepared().shared_inputs()));
+                    let ObjectEvaluationOutcome::Evaluated(original) =
+                        normal.target().unwrap().outcome()
+                    else {
+                        panic!()
+                    };
+                    assert_eq!(target.wire(), original.wire());
+                    assert_eq!(partial.target_value().unwrap().wire().canonical(), "\"2\"");
+                }
+                if at == total {
+                    assert_eq!(partial.image().unwrap().wire().canonical(), value);
+                    assert_eq!(partial.outcome(), Some(&expected));
+                } else {
+                    assert!(partial.image().is_none());
+                    assert!(partial.outcome().is_none());
+                }
+                assert!(matches!(
+                    object_view_transport(Arc::clone(&i), &d, o, n, &mut control),
+                    Err(Error::Construction(ConstructionFailure::Stopped(_)))
+                ));
+                assert_eq!(seen.get(), at);
+            }
+        }
+    }
+}
+
+#[test]
+fn target_expression_stop_keeps_source_and_target_partial_dag_without_a_decision() {
+    let i = inputs(L, A);
+    let d = declarations(&i);
+    let (o, n) = indices(&i, "p", "amount", "p");
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let mut control = Control::new(
+        Limits {
+            time_ms: Some(1),
+            memory_mib: None,
+        },
+        move |p| {
+            if p == Checkpoint::Expression {
+                seen.set(seen.get() + 1);
+            }
+            Usage {
+                elapsed_ms: u128::from(seen.get() >= 3),
+                ..Usage::default()
+            }
+        },
+    );
+    let Error::Stopped {
+        operation,
+        partial: Some(partial),
+        ..
+    } = object_view_transport(Arc::clone(&i), &d, o, n, &mut control).unwrap_err()
+    else {
+        panic!()
+    };
+    operation.recheck(&i, &mut quiet()).unwrap();
+    let ObjectEvaluationOutcome::Evaluated(source) = partial.source().unwrap().outcome() else {
+        panic!()
+    };
+    assert_eq!(source.status(), "complete");
+    assert_eq!(partial.source_value().unwrap().wire(), Json::str("2"));
+    let ObjectEvaluationOutcome::Evaluated(target) = partial.target().unwrap().outcome() else {
+        panic!()
+    };
+    assert_eq!(target.status(), "interrupted");
+    assert!(!arr(f(&target.wire(), "nodes")).is_empty());
+    assert!(partial.outcome().is_none());
+    assert!(partial.image().is_none());
+    assert_eq!(count.get(), 3);
 }
 
 #[test]

@@ -218,6 +218,8 @@ object_index, instance_index, &mut control)` は元の対象別view instanceの�
 `source_value()/image()/target_value()` の `ty()/wire()` で比較した型付き値を読む。
 両側の適用外、適用の不一致、条件付き所属、値の欠測をそれぞれ保持する。
 残parameter付きviewと値域対応の適用域外は、元対象・instance・型・操作を持つ `NotImplemented` を返す。
+宣言対応の再検査後の停止は `Stopped` に理由と確認済み操作を保持し、`partial` から停止前の評価・型対応・値を読める。
+部分結果の `outcome()` は比較が完了した場合だけ `Some` を返す。評価途中のDAGと未着手の比較を区別する。
 `recheck()` は現在入力の対象・宣言・束縛・実評価・可換性を再検査する。
 
 `construction::readings::object_reading_instances(&checked, &configuration, &mut control)`

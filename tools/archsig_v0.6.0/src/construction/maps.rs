@@ -12,8 +12,9 @@ pub use crate::observed::numeric_transport::{
     numeric_declaration_value_transport,
 };
 pub use crate::observed::object_view_transport::{
-    ObjectViewTransport, ObjectViewTransportFailure, ViewConditionFailure, ViewTransportOutcome,
-    ViewTransportValue, ViewValueEquivalence, object_view_transport,
+    ObjectViewTransport, ObjectViewTransportFailure, ObjectViewTransportPartial,
+    ViewConditionFailure, ViewTransportOutcome, ViewTransportValue, ViewValueEquivalence,
+    object_view_transport,
 };
 pub use crate::observed::value_transport::{
     DeclarationValuePosition, FiniteTransportValue, FiniteValueBijection,

@@ -1,6 +1,6 @@
 //! 対応する対象の全束縛viewを実評価し、型全域の値写像との可換性を検査する。
 use super::{
-    control::{Checkpoint, Control},
+    control::{Checkpoint, Control, StopReason},
     data, finite,
     input::CheckedInputs,
     numeric,
@@ -37,8 +37,15 @@ pub enum ObjectViewTransportFailure {
     },
     Evaluation {
         operation: Box<ConfigurationOperation>,
-        source: Option<Box<ObjectEvaluation>>,
+        partial: Option<Box<ObjectViewTransportPartial>>,
         failure: Box<ObjectEvaluationFailure>,
+    },
+    /// 停止理由と、停止前に検査・計算できた成果だけを返す。
+    Stopped {
+        reason: StopReason,
+        operation: Box<ConfigurationOperation>,
+        partial: Option<Box<ObjectViewTransportPartial>>,
+        evaluation: Option<Box<ObjectEvaluationFailure>>,
     },
 }
 impl From<ConstructionFailure> for ObjectViewTransportFailure {
@@ -119,6 +126,60 @@ pub struct ObjectViewTransport {
     image: Option<ViewTransportValue>,
     target_value: Option<ViewTransportValue>,
     outcome: ViewTransportOutcome,
+}
+/// 未着手の比較に結論を与えず、検査済みの構成・評価・値を保持する。
+#[derive(Debug)]
+pub struct ObjectViewTransportPartial {
+    state: ObjectViewTransport,
+    outcome: Option<ViewTransportOutcome>,
+}
+impl ObjectViewTransportPartial {
+    pub fn operation(&self) -> &ConfigurationOperation {
+        self.state.operation()
+    }
+    pub fn objects(&self) -> &ConfigurationTransport {
+        self.state.objects()
+    }
+    pub fn source_readings(&self) -> &ObjectReadingInstances {
+        self.state.source_readings()
+    }
+    pub fn target_readings(&self) -> &ObjectReadingInstances {
+        self.state.target_readings()
+    }
+    pub fn object(&self) -> &ObjectIdentity {
+        self.state.object()
+    }
+    pub fn instance(&self) -> &ObjectInstance {
+        self.state.instance()
+    }
+    pub fn target_object(&self) -> Option<&ObjectIdentity> {
+        self.state.target_object()
+    }
+    pub fn target_instance(&self) -> Option<&ObjectInstance> {
+        self.state.target_instance()
+    }
+    pub fn source(&self) -> Option<&ObjectEvaluation> {
+        self.state.source()
+    }
+    pub fn target(&self) -> Option<&ObjectEvaluation> {
+        self.state.target()
+    }
+    pub fn equivalence(&self) -> Option<&ViewValueEquivalence> {
+        self.state.equivalence()
+    }
+    pub fn source_value(&self) -> Option<&ViewTransportValue> {
+        self.state.source_value()
+    }
+    pub fn image(&self) -> Option<&ViewTransportValue> {
+        self.state.image()
+    }
+    pub fn target_value(&self) -> Option<&ViewTransportValue> {
+        self.state.target_value()
+    }
+    /// 比較を完了した場合だけ結論を返す。
+    pub fn outcome(&self) -> Option<&ViewTransportOutcome> {
+        self.outcome.as_ref()
+    }
 }
 impl ObjectViewTransport {
     pub fn operation(&self) -> &ConfigurationOperation {
@@ -288,6 +349,26 @@ pub fn object_view_transport(
 ) -> Result<ObjectViewTransport, ObjectViewTransportFailure> {
     tick(c)?;
     declarations.recheck(&inputs, c)?;
+    let operation = Box::new(declarations.operation().clone());
+    match checked_view_transport(inputs, declarations, object, instance, c) {
+        Err(ObjectViewTransportFailure::Construction(ConstructionFailure::Stopped(reason))) => {
+            Err(ObjectViewTransportFailure::Stopped {
+                reason,
+                operation,
+                partial: None,
+                evaluation: None,
+            })
+        }
+        result => result,
+    }
+}
+fn checked_view_transport(
+    inputs: Arc<CheckedInputs>,
+    declarations: &DeclarationCorrespondence,
+    object: usize,
+    instance: usize,
+    c: &mut Control,
+) -> Result<ObjectViewTransport, ObjectViewTransportFailure> {
     let objects = configuration_transport(&inputs, declarations.operation().map(), c)?;
     let source_readings = object_reading_instances(&inputs, objects.source().construction(), c)?;
     let target_readings = object_reading_instances(&inputs, objects.target().construction(), c)?;
@@ -319,182 +400,221 @@ pub fn object_view_transport(
         target_value: None,
         outcome: ViewTransportOutcome::Undetermined,
     };
-    if !r.instance().parameters().is_empty() {
-        return Err(not_implemented(&r)?);
-    }
-    let mapped = r
-        .objects
-        .objects()
-        .iter()
-        .find(|p| p.source() == r.object());
-    let Some(mapped) = mapped.filter(|p| p.is_preserved()) else {
-        r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::Object);
-        tick(c)?;
-        return Ok(r);
-    };
-    r.target_object = r
-        .target_readings
-        .objects()
-        .iter()
-        .position(|o| Some(o.identity()) == mapped.target());
-    let candidate = declarations
-        .candidates()
-        .iter()
-        .find(|p| p.source().name == r.instance().declaration().name);
-    let Some(pair) = candidate.and_then(|p| p.pair()) else {
-        r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::Declaration {
-            source: r.instance().declaration().name.clone(),
-        });
-        tick(c)?;
-        return Ok(r);
-    };
-    let mut bindings = Vec::new();
-    for b in r.instance().bindings() {
-        tick(c)?;
-        let target_parameter = pair
-            .parameters()
-            .iter()
-            .find(|(name, _)| name == &b.parameter().name)
-            .ok_or_else(|| ConstructionFailure::Inconsistent("対応parameterがない".into()))?;
-        let f = b.subject();
-        let image = if r
-            .objects
-            .action()
-            .source_configuration()
-            .family()
-            .contains(f)
-        {
-            r.objects
-                .action()
-                .image(f)
-                .ok_or_else(|| ConstructionFailure::Inconsistent("参照束縛の像がない".into()))?
-        } else {
-            f
-        };
-        bindings.push((target_parameter.1.clone(), image.clone()));
-    }
-    for (index, row) in r.target_readings.instances().iter().enumerate() {
-        tick(c)?;
-        if row.declaration().name == pair.target()
-            && row.bindings().len() == bindings.len()
-            && row.bindings().iter().all(|b| {
-                bindings
-                    .iter()
-                    .any(|(name, f)| name == &b.parameter().name && f == b.subject())
-            })
-        {
-            r.target_instance = Some(index);
-            break;
+    let mut decided = false;
+    let calculated = (|| -> Result<(), ObjectViewTransportFailure> {
+        if !r.instance().parameters().is_empty() {
+            return Err(not_implemented(&r)?);
         }
-    }
-    let (Some(to), Some(ti)) = (r.target_object, r.target_instance) else {
-        r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::TargetInstance {
-            declaration: pair.target().into(),
-            bindings,
+        let mapped = r
+            .objects
+            .objects()
+            .iter()
+            .find(|p| p.source() == r.object());
+        let Some(mapped) = mapped.filter(|p| p.is_preserved()) else {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::Object);
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        };
+        r.target_object = r
+            .target_readings
+            .objects()
+            .iter()
+            .position(|o| Some(o.identity()) == mapped.target());
+        let candidate = declarations
+            .candidates()
+            .iter()
+            .find(|p| p.source().name == r.instance().declaration().name);
+        let Some(pair) = candidate.and_then(|p| p.pair()) else {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::Declaration {
+                source: r.instance().declaration().name.clone(),
+            });
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        };
+        let mut bindings = Vec::new();
+        for b in r.instance().bindings() {
+            tick(c)?;
+            let target_parameter = pair
+                .parameters()
+                .iter()
+                .find(|(name, _)| name == &b.parameter().name)
+                .ok_or_else(|| ConstructionFailure::Inconsistent("対応parameterがない".into()))?;
+            let f = b.subject();
+            let image =
+                if r.objects
+                    .action()
+                    .source_configuration()
+                    .family()
+                    .contains(f)
+                {
+                    r.objects.action().image(f).ok_or_else(|| {
+                        ConstructionFailure::Inconsistent("参照束縛の像がない".into())
+                    })?
+                } else {
+                    f
+                };
+            bindings.push((target_parameter.1.clone(), image.clone()));
+        }
+        for (index, row) in r.target_readings.instances().iter().enumerate() {
+            tick(c)?;
+            if row.declaration().name == pair.target()
+                && row.bindings().len() == bindings.len()
+                && row.bindings().iter().all(|b| {
+                    bindings
+                        .iter()
+                        .any(|(name, f)| name == &b.parameter().name && f == b.subject())
+                })
+            {
+                r.target_instance = Some(index);
+                break;
+            }
+        }
+        let (Some(to), Some(ti)) = (r.target_object, r.target_instance) else {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::TargetInstance {
+                declaration: pair.target().into(),
+                bindings,
+            });
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        };
+        let returns = r
+            .instance()
+            .declaration()
+            .returns
+            .as_ref()
+            .ok_or_else(|| ConstructionFailure::Inconsistent("viewの戻り型がない".into()))?;
+        r.equivalence = Some(if numeric::is_numeric_type(returns, c).map_err(invalid)? {
+            ViewValueEquivalence::Numeric(Box::new(numeric_declaration_value_transport(
+                &inputs,
+                declarations,
+                &r.instance().declaration().name,
+                DeclarationValuePosition::Return,
+                c,
+            )?))
+        } else if finite::supported(returns, inputs.law(), c).map_err(invalid)? {
+            ViewValueEquivalence::Finite(Box::new(finite_declaration_value_transport(
+                &inputs,
+                declarations,
+                &r.instance().declaration().name,
+                DeclarationValuePosition::Return,
+                c,
+            )?))
+        } else {
+            return Err(not_implemented(&r)?);
         });
+        if !r
+            .equivalence
+            .as_ref()
+            .is_some_and(ViewValueEquivalence::complete)
+        {
+            r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::ValueType);
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        r.source = Some(
+            evaluate_object_instance(Arc::clone(&inputs), &r.source_readings, object, instance, c)
+                .map_err(|failure| ObjectViewTransportFailure::Evaluation {
+                    operation: Box::new(r.operation().clone()),
+                    partial: None,
+                    failure: Box::new(failure),
+                })?,
+        );
+        if let Some(source) = &r.source {
+            r.source_value = scalar(source)?.map(|value| ViewTransportValue { value });
+        }
         tick(c)?;
-        return Ok(r);
-    };
-    let returns = r
-        .instance()
-        .declaration()
-        .returns
-        .as_ref()
-        .ok_or_else(|| ConstructionFailure::Inconsistent("viewの戻り型がない".into()))?;
-    r.equivalence = Some(if numeric::is_numeric_type(returns, c).map_err(invalid)? {
-        ViewValueEquivalence::Numeric(Box::new(numeric_declaration_value_transport(
-            &inputs,
-            declarations,
-            &r.instance().declaration().name,
-            DeclarationValuePosition::Return,
-            c,
-        )?))
-    } else if finite::supported(returns, inputs.law(), c).map_err(invalid)? {
-        ViewValueEquivalence::Finite(Box::new(finite_declaration_value_transport(
-            &inputs,
-            declarations,
-            &r.instance().declaration().name,
-            DeclarationValuePosition::Return,
-            c,
-        )?))
-    } else {
-        return Err(not_implemented(&r)?);
-    });
-    if !r
-        .equivalence
-        .as_ref()
-        .is_some_and(ViewValueEquivalence::complete)
-    {
-        r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::ValueType);
-        tick(c)?;
-        return Ok(r);
-    }
-    r.source = Some(
-        evaluate_object_instance(Arc::clone(&inputs), &r.source_readings, object, instance, c)
-            .map_err(|failure| {
-                if let Some(stop) = c.stop_reason() {
-                    return ObjectViewTransportFailure::Construction(ConstructionFailure::Stopped(
-                        stop,
-                    ));
-                }
+        r.target = Some(
+            evaluate_object_instance(inputs, &r.target_readings, to, ti, c).map_err(|failure| {
                 ObjectViewTransportFailure::Evaluation {
                     operation: Box::new(r.operation().clone()),
-                    source: None,
+                    partial: None,
                     failure: Box::new(failure),
                 }
             })?,
-    );
-    r.target = Some(
-        evaluate_object_instance(inputs, &r.target_readings, to, ti, c).map_err(|failure| {
-            if let Some(stop) = c.stop_reason() {
-                return ObjectViewTransportFailure::Construction(ConstructionFailure::Stopped(
-                    stop,
-                ));
-            }
-            ObjectViewTransportFailure::Evaluation {
-                operation: Box::new(r.operation().clone()),
-                source: r.source.take().map(Box::new),
-                failure: Box::new(failure),
-            }
-        })?,
-    );
-    tick(c)?;
-    let (Some(source), Some(target)) = (&r.source, &r.target) else {
-        return Err(ConstructionFailure::Inconsistent("view実評価の行がない".into()).into());
-    };
-    let source_na = matches!(source.outcome(), ObjectEvaluationOutcome::NotApplicable);
-    let target_na = matches!(target.outcome(), ObjectEvaluationOutcome::NotApplicable);
-    let conditional = matches!(source.outcome(), ObjectEvaluationOutcome::Conditional(_))
-        || matches!(target.outcome(), ObjectEvaluationOutcome::Conditional(_));
-    if conditional {
+        );
+        if let Some(target) = &r.target {
+            r.target_value = scalar(target)?.map(|value| ViewTransportValue { value });
+        }
         tick(c)?;
-        return Ok(r);
-    }
-    if source_na || target_na {
-        r.outcome = if source_na == target_na {
-            ViewTransportOutcome::Preserved
-        } else {
-            ViewTransportOutcome::Refuted(ViewConditionFailure::Applicability)
+        let (Some(source), Some(target)) = (&r.source, &r.target) else {
+            return Err(ConstructionFailure::Inconsistent("view実評価の行がない".into()).into());
         };
+        let source_na = matches!(source.outcome(), ObjectEvaluationOutcome::NotApplicable);
+        let target_na = matches!(target.outcome(), ObjectEvaluationOutcome::NotApplicable);
+        let conditional = matches!(source.outcome(), ObjectEvaluationOutcome::Conditional(_))
+            || matches!(target.outcome(), ObjectEvaluationOutcome::Conditional(_));
+        if conditional {
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        if source_na || target_na {
+            r.outcome = if source_na == target_na {
+                ViewTransportOutcome::Preserved
+            } else {
+                ViewTransportOutcome::Refuted(ViewConditionFailure::Applicability)
+            };
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        if let (Some(source), Some(target), Some(equivalence)) =
+            (&r.source_value, &r.target_value, &r.equivalence)
+        {
+            let image = equivalence.image(&source.value, c)?;
+            r.image = Some(ViewTransportValue {
+                value: image.clone(),
+            });
+            let equal = data::equal(&image, &target.value, c).map_err(invalid)?;
+            r.outcome = if equal {
+                ViewTransportOutcome::Preserved
+            } else {
+                ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
+            };
+        }
+        decided = true;
         tick(c)?;
-        return Ok(r);
+        Ok(())
+    })();
+    match calculated {
+        Ok(()) => Ok(r),
+        Err(failure) => {
+            let operation = Box::new(r.operation().clone());
+            let outcome = decided.then(|| r.outcome.clone());
+            let partial = Some(Box::new(ObjectViewTransportPartial { state: r, outcome }));
+            match failure {
+                ObjectViewTransportFailure::Construction(ConstructionFailure::Stopped(reason)) => {
+                    Err(ObjectViewTransportFailure::Stopped {
+                        reason,
+                        operation,
+                        partial,
+                        evaluation: None,
+                    })
+                }
+                ObjectViewTransportFailure::Evaluation { failure, .. } => {
+                    if let Some(reason) = c.stop_reason() {
+                        Err(ObjectViewTransportFailure::Stopped {
+                            reason,
+                            operation,
+                            partial,
+                            evaluation: Some(failure),
+                        })
+                    } else {
+                        Err(ObjectViewTransportFailure::Evaluation {
+                            operation,
+                            partial,
+                            failure,
+                        })
+                    }
+                }
+                failure => Err(failure),
+            }
+        }
     }
-    r.source_value = scalar(source)?.map(|value| ViewTransportValue { value });
-    r.target_value = scalar(target)?.map(|value| ViewTransportValue { value });
-    if let (Some(source), Some(target), Some(equivalence)) =
-        (&r.source_value, &r.target_value, &r.equivalence)
-    {
-        let image = equivalence.image(&source.value, c)?;
-        let equal = data::equal(&image, &target.value, c).map_err(invalid)?;
-        r.image = Some(ViewTransportValue { value: image });
-        r.outcome = if equal {
-            ViewTransportOutcome::Preserved
-        } else {
-            ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
-        };
-    }
-    tick(c)?;
-    Ok(r)
 }
 
 #[cfg(test)]
