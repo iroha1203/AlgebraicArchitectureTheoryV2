@@ -61,7 +61,7 @@ fn reading(r: &Request, key: &str) -> Result<String, ResolveFailure> {
         _ => Err(error(&r.id, key, "mapの解決済みreadingがない")),
     }
 }
-fn selected(
+pub(super) fn selected(
     law: &CheckedLaw,
     map: &CheckedArchMap,
     requests: &[Request],

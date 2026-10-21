@@ -2766,9 +2766,11 @@ fn evaluate_observed_with_validator(
                 instance: None,
                 case: None,
             };
-            if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose) {
+            if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
                 let evaluate = if request.kind == QuestionKind::Compose {
                     super::public_compose::evaluate
+                } else if request.kind == QuestionKind::Compare {
+                    super::public_compare::evaluate
                 } else {
                     super::public_map::evaluate
                 };
@@ -3069,6 +3071,7 @@ fn evaluate_observed_with_validator(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    mod public_compare_tests { include!("public_compare_tests.rs"); }
     mod public_path_compose_tests { include!("public_path_compose_tests.rs"); }
     mod public_compose_tests {
         include!("public_compose_tests.rs");

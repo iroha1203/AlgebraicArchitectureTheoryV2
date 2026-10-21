@@ -23,6 +23,7 @@ pub enum ProjectionType {
     Law(Type),
     Evaluation(Type),
     Proposition,
+    Comparison,
     Architecture,
     ArchitectureRoot(String),
     MapCandidate(MapProjection),

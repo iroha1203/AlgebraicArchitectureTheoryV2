@@ -354,6 +354,7 @@ pub(super) fn validate_origin(
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
     if let Witness::PathCompose(c) = &value.witness { return super::public_path_compose::validate_origin(environment,graph,request,c); }
+    if let Witness::Compare(c) = &value.witness { return super::public_compare::validate_origin(environment,graph,request,c); }
     if let Witness::Compose(c) = &value.witness {
         return super::public_compose::validate_origin(environment, graph, request, c);
     }
@@ -385,7 +386,7 @@ pub(super) fn validate_origin(
         environment.answer_binding_matches(graph, &argument.value, reference, (0, 0))?;
     }
     match &value.witness {
-        Witness::Compose(_) | Witness::PathCompose(_) => unreachable!(),
+        Witness::Compose(_) | Witness::PathCompose(_) | Witness::Compare(_) => unreachable!(),
         Witness::Map(m) => {
             if m.subject() != &on
                 || m.result().reading() != native::reading_name(request, "reading")?
@@ -545,7 +546,7 @@ pub(super) fn unavailable(
         .arguments
         .iter()
         .map(|a| &a.value)
-        .chain((request.kind == QuestionKind::Compose).then_some(&request.head));
+        .chain(matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare).then_some(&request.head));
     for selector in selectors {
         let Selector::Answer { id, .. } = selector else {
             continue;
@@ -555,10 +556,10 @@ pub(super) fn unavailable(
             .iter()
             .position(|r| &r.id == id)
             .ok_or("依存元Requestがない")?;
-        if !matches!(request.kind, QuestionKind::Map | QuestionKind::Compose)
+        if !matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare)
             && !matches!(
                 graph.requests[producer_index].kind,
-                QuestionKind::Map | QuestionKind::Compose
+                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
             )
         {
             continue;
@@ -597,7 +598,7 @@ pub(super) fn unavailable(
             location: None,
         });
     }
-    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose) {
+    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
         let (projection_reasons, projection_scope) =
             environment.projection_failure_reasons(graph, request)?;
         reasons.extend(projection_reasons);
