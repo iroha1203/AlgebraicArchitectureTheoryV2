@@ -1,0 +1,13 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Reservations {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  view holdings(s: State): (Z, Z) = (s.free, s.held);
+  view absent(m: Migration): Option<Migration> = none<Migration>;
+  view sourceOf(m: Migration): System = m.from;
+  view route(e: Reserve): Path<State, State> = path(e);
+  view emptyPath(s: State): Path<State, State> = identity(s);
+  law required conserved(e: Reserve): e.to.free + e.to.held = e.from.free + e.from.held;
+}
+reading Alternative {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+}

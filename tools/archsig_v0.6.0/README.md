@@ -56,6 +56,22 @@ Operation を返す。両nodeの `conditions` は同じ保存確認命題を指�
 未観測の所属・対応は部分結果と必要 slot に残り、未生成の出力に依存する問いは元の理由を保持する。
 終域に対応する field 宣言がなければ、候補の既知部分・構成条件の反証・元の原始位置を返す。
 
+二つの確認済み Operation は `compose(f,then=g)` で g∘f に合成する。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/public-compose.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/configuration-operation.archmap.json \
+  --ask 'm=map(Reservations.Migration,on=@v/m,reading=Reservations)' \
+  --ask 'n=map(Reservations.Migration,on=@v/n,reading=Reservations)' \
+  --ask 'c=compose($m.operation,then=$n.operation)' --out result-compose
+jq '.answers[] | {id, status, outputs}' result-compose/result.json
+```
+
+`c` は成立し、`operation` と `map` が得られる。合成の名前は元の二つの Operation、
+`word` は原始生成元の順序列を保持する。作用は共通 U の全元で合成し、family 外の像を置き直さない。
+`$c.operation.word[1]` などを後続の問いへ渡せる。実際の中間対象が異なれば、構成条件と反例を返す。
+
 以前の出力directoryは `--reuse result-counter` で候補として指定できる。
 現在の三入力から全再計算し、検査済みの導出へ候補の型・内容・全依存・由来を照合する。
 node番号や共有方法の違いは吸収し、候補の推論は計算へ採用しない。

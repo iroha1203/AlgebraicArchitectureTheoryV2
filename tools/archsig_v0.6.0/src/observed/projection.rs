@@ -11,6 +11,14 @@ pub struct MapProjection {
     pub target: String,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OperationProjection {
+    pub source: String,
+    pub target: String,
+    pub reading: String,
+    pub to_reading: String,
+    pub word: Vec<String>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ProjectionType {
     Law(Type),
     Evaluation(Type),
@@ -23,6 +31,9 @@ pub enum ProjectionType {
     ObjectAlgebraRoot(String),
     ObjectComponentRoot(String),
     Operation(MapProjection),
+    ComposedOperation(OperationProjection),
+    ComposedCandidate(OperationProjection),
+    ComposedMap(OperationProjection),
     AtomMap,
     /// 実値の constructor や異種生成元によって決まる候補型。
     Dynamic(Vec<ProjectionType>),
@@ -163,6 +174,39 @@ fn project_inner(
         ))
     };
     match (ty, &path[0]) {
+        (ProjectionType::ComposedOperation(shape), Field(f)) => match f.as_str() {
+            "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
+            "target" => exact(ProjectionType::ArchitectureRoot(shape.target.clone())),
+            "candidate" => exact(ProjectionType::ComposedCandidate(shape.clone())),
+            "configuration_map" => exact(ProjectionType::ComposedMap(shape.clone())),
+            "action" => exact(ProjectionType::AtomMap),
+            "word" => {
+                let Some(Index(index)) = path.get(1) else {
+                    return Err("wordはindexまで指定する".into());
+                };
+                let item = usize::try_from(*index)
+                    .ok()
+                    .and_then(|i| shape.word.get(i))
+                    .ok_or("合成Operationのwordのindexが範囲外")?;
+                Ok((
+                    ProjectionPlan {
+                        ty: Law(Type::Ref(item.clone())),
+                        conditional: false,
+                    },
+                    2,
+                ))
+            }
+            _ => Err("合成Operationの非公開射影".into()),
+        },
+        (ProjectionType::ComposedCandidate(shape), Field(f)) => match f.as_str() {
+            "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
+            "target" => exact(ProjectionType::ArchitectureRoot(shape.target.clone())),
+            "action" => exact(ProjectionType::AtomMap),
+            _ => Err("合成MapCandidateの非公開射影".into()),
+        },
+        (ProjectionType::ComposedMap(shape), Field(f)) if f == "candidate" => {
+            exact(ProjectionType::ComposedCandidate(shape.clone()))
+        }
         (ProjectionType::ArchitectureRoot(root), Field(f)) if f == "root" => {
             exact(Law(Type::Ref(root.clone())))
         }
