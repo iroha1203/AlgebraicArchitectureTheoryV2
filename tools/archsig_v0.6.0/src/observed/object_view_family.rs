@@ -41,9 +41,6 @@ impl PartialEq for FiniteViewValue {
     }
 }
 impl FiniteViewValue {
-    pub(super) fn observed(value: Scalar) -> Self {
-        Self { value }
-    }
     pub(super) fn scalar(&self) -> &Scalar {
         &self.value
     }

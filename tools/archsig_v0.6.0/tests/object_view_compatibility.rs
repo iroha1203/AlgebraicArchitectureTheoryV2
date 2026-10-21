@@ -372,3 +372,87 @@ fn nonlinear_unbounded_terms_are_unsupported_instead_of_refuted_or_missing() {
     assert_eq!(r.outcome(), Some(&Outcome::UnsupportedAlgorithm));
     r.recheck(i, &mut quiet()).unwrap();
 }
+
+#[test]
+fn path_and_nested_path_comparison_values_have_safe_original_node_representations() {
+    fn field<'a>(j: &'a Json, key: &str) -> &'a Json {
+        let Json::Obj(fields) = j else {
+            panic!("object")
+        };
+        fields.get(key).unwrap()
+    }
+    fn find_node<'a>(nodes: &'a [Json], id: &Json) -> &'a Json {
+        nodes.iter().find(|node| field(node, "id") == id).unwrap()
+    }
+    fn check_path(j: &Json, nodes: &[Json]) -> usize {
+        match j {
+            Json::Obj(fields) if fields.contains_key("reading") => {
+                assert_eq!(field(j, "reading"), &Json::str("Selected"));
+                assert_eq!(field(j, "generators"), &Json::Arr(vec![]));
+                assert_eq!(field(j, "source"), field(j, "target"));
+                let source = find_node(nodes, field(field(j, "source"), "node"));
+                assert_eq!(
+                    field(source, "value"),
+                    &Json::Arr(vec![Json::str("v"), Json::str("p")])
+                );
+                1
+            }
+            Json::Obj(fields) if fields.contains_key("node") => {
+                check_path(field(find_node(nodes, field(j, "node")), "value"), nodes)
+            }
+            Json::Obj(fields) if fields.contains_key("some") => check_path(field(j, "some"), nodes),
+            Json::Arr(items) => items.iter().map(|j| check_path(j, nodes)).sum(),
+            Json::Bool(false) => 0,
+            _ => panic!("unexpected typed Path representation {j:?}"),
+        }
+    }
+    for body in [
+        "view route(c:Part):Path<Part,Part> = identity(c);",
+        "view route(c:Part):Option<Path<Part,Part>> = some(identity(c));",
+        "view route(c:Part):(Bool,Path<Part,Part>) = (false,identity(c));",
+        "view route(c:Part,b:Bool):List<Path<Part,Part>> = list<Path<Part,Part>>[identity(c)];",
+    ] {
+        let i = inputs(body, A);
+        let r = run(Arc::clone(&i));
+        assert_eq!(r.outcome(), Some(&Outcome::Compatible));
+        assert!(r.is_complete());
+        let comparison = &r.comparisons()[0];
+        for point in comparison.points() {
+            for (object, row, value) in [
+                (
+                    comparison.source_object(),
+                    point.source_row(),
+                    point.source().unwrap(),
+                ),
+                (
+                    comparison.target_object(),
+                    point.target_row().unwrap(),
+                    point.target().unwrap(),
+                ),
+            ] {
+                let e = r
+                    .evaluations()
+                    .iter()
+                    .find(|e| {
+                        e.position().object == object
+                            && e.position().instance == comparison.instance()
+                    })
+                    .unwrap();
+                let evaluation = match e.evaluation().outcome() {
+                    ObjectEvaluationOutcome::Evaluated(e) => e,
+                    ObjectEvaluationOutcome::FiniteView(f) => f.rows()[row].evaluation(),
+                    _ => panic!("original evaluated view"),
+                };
+                let graph = evaluation.wire();
+                let Json::Arr(nodes) = field(&graph, "nodes") else {
+                    panic!("nodes")
+                };
+                let producer = find_node(nodes, &Json::str(format!("n{}", value.producer())));
+                let wire = value.wire();
+                assert_eq!(&wire, field(producer, "value"));
+                assert_eq!(check_path(&wire, nodes), 1);
+            }
+        }
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}

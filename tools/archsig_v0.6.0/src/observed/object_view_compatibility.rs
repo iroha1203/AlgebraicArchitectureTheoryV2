@@ -2,6 +2,7 @@
 use super::{
     control::{Checkpoint, Control},
     data,
+    environment::same_scalar_identity,
     input::CheckedInputs,
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
@@ -10,7 +11,8 @@ use super::{
     object_transport::same_evaluation_controlled,
     object_view_family::FiniteViewValue,
     object_view_transport::scalar_evaluation,
-    result::ValidationFailure,
+    path_value,
+    result::{Scalar, ValidationFailure},
     value_equality,
 };
 use crate::construction::{
@@ -59,13 +61,42 @@ impl ViewReadingEvaluation {
         &self.evaluation
     }
 }
+/// 元評価のproducerに結び付いたview戻り値。Pathの表示は既出nodeのRefを使う。
+#[derive(Clone, Debug, Eq)]
+pub struct ViewReadingValue {
+    value: Scalar,
+    producer: usize,
+    path_wire: Option<crate::canonical::Json>,
+}
+impl PartialEq for ViewReadingValue {
+    fn eq(&self, other: &Self) -> bool {
+        self.producer == other.producer
+            && self.path_wire == other.path_wire
+            && self.value == other.value
+            && other.value == self.value
+    }
+}
+impl ViewReadingValue {
+    pub fn ty(&self) -> crate::types::Type {
+        self.value.ty()
+    }
+    pub fn producer(&self) -> usize {
+        self.producer
+    }
+    pub fn wire(&self) -> crate::canonical::Json {
+        self.path_wire.clone().unwrap_or_else(|| self.value.wire())
+    }
+    fn scalar(&self) -> &Scalar {
+        &self.value
+    }
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ViewCompatibilityPoint {
     arguments: Vec<FiniteViewValue>,
     source_row: usize,
     target_row: Option<usize>,
-    source: Option<FiniteViewValue>,
-    target: Option<FiniteViewValue>,
+    source: Option<ViewReadingValue>,
+    target: Option<ViewReadingValue>,
     outcome: ViewCompatibilityOutcome,
 }
 impl ViewCompatibilityPoint {
@@ -78,10 +109,10 @@ impl ViewCompatibilityPoint {
     pub fn target_row(&self) -> Option<usize> {
         self.target_row
     }
-    pub fn source(&self) -> Option<&FiniteViewValue> {
+    pub fn source(&self) -> Option<&ViewReadingValue> {
         self.source.as_ref()
     }
-    pub fn target(&self) -> Option<&FiniteViewValue> {
+    pub fn target(&self) -> Option<&ViewReadingValue> {
         self.target.as_ref()
     }
     pub fn outcome(&self) -> &ViewCompatibilityOutcome {
@@ -269,22 +300,46 @@ fn record(
 }
 fn scalar(
     e: &super::result::ObservedEvaluation,
-) -> Result<Option<FiniteViewValue>, ConstructionFailure> {
-    Ok(scalar_evaluation(e)?.map(FiniteViewValue::observed))
+    c: &Control,
+) -> Result<Option<ViewReadingValue>, ConstructionFailure> {
+    let Some(value) = scalar_evaluation(e)? else {
+        return Ok(None);
+    };
+    let producer = e
+        .answers
+        .first()
+        .and_then(|a| a.outputs.get("value"))
+        .ok_or_else(|| bad("view値の元producerがない"))?
+        .0;
+    let node = e
+        .nodes
+        .get(producer)
+        .ok_or_else(|| bad("view値の元nodeがない"))?;
+    let path_wire = if path_value::contains_path(&value.ty(), c).map_err(invalid)? {
+        Some(path_value::wire(&value, &e.nodes[..producer], &node.arguments, c).map_err(invalid)?)
+    } else {
+        None
+    };
+    Ok(Some(ViewReadingValue {
+        value,
+        producer,
+        path_wire,
+    }))
 }
+
 fn known(e: &ObjectEvaluation, c: &mut Control) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     match e.outcome() {
         ObjectEvaluationOutcome::NotApplicable => Ok(true),
         ObjectEvaluationOutcome::Conditional(_) => Ok(false),
-        ObjectEvaluationOutcome::Evaluated(e) => Ok(scalar(e)?.is_some()),
+        ObjectEvaluationOutcome::Evaluated(e) => Ok(scalar_evaluation(e)?.is_some()),
         ObjectEvaluationOutcome::FiniteView(f) => {
             if !f.is_complete() || !f.missing().is_empty() {
                 return Ok(false);
             }
             for row in f.rows() {
                 tick(c)?;
-                if scalar(row.evaluation())?.is_none() {
+                if scalar_evaluation(row.evaluation())?.is_none() {
                     return Ok(false);
                 }
             }
@@ -382,8 +437,8 @@ fn compare(
                 arguments: vec![],
                 source_row: 0,
                 target_row: Some(0),
-                source: scalar(a)?,
-                target: scalar(b)?,
+                source: scalar(a, c)?,
+                target: scalar(b, c)?,
                 outcome: ViewCompatibilityOutcome::Undetermined,
             };
             compare_point(r, index, point, true, c)?;
@@ -430,9 +485,9 @@ fn compare(
                         arguments: row.arguments().to_vec(),
                         source_row,
                         target_row,
-                        source: scalar(row.evaluation())?,
+                        source: scalar(row.evaluation(), c)?,
                         target: target_row
-                            .map(|j| scalar(b.rows()[j].evaluation()))
+                            .map(|j| scalar(b.rows()[j].evaluation(), c))
                             .transpose()?
                             .flatten(),
                         outcome: if target_row.is_some() {
@@ -651,7 +706,10 @@ fn same(
             for (a, b) in [(&a.source, &b.source), (&a.target, &b.target)] {
                 match (a, b) {
                     (Some(a), Some(b))
-                        if same_values(std::slice::from_ref(a), std::slice::from_ref(b), c)? => {}
+                        if a.producer == b.producer
+                            && a.path_wire == b.path_wire
+                            && same_scalar_identity(a.scalar(), b.scalar(), c)
+                                .map_err(invalid)? => {}
                     (None, None) => {}
                     _ => return Ok(false),
                 }
@@ -762,11 +820,10 @@ mod tests {
                 9 => r.comparisons[0].points.swap(0, 1),
                 10 => {
                     r.comparisons[0].points[0].arguments[0] =
-                        FiniteViewValue::observed(Scalar::Bool(true))
+                        r.comparisons[0].points[1].arguments[0].clone()
                 }
                 11 => {
-                    r.comparisons[0].points[0].source =
-                        Some(FiniteViewValue::observed(Scalar::Bool(true)))
+                    r.comparisons[0].points[0].source.as_mut().unwrap().value = Scalar::Bool(true)
                 }
                 12 => r.comparisons[0].points[0].target = None,
                 13 => r.comparisons[0].points[0].target_row = Some(1),
@@ -997,6 +1054,116 @@ mod tests {
                 assert_eq!(r.outcome(), Some(&outcome));
                 assert!(r.is_complete());
             }
+        }
+    }
+    #[test]
+    fn last_child_comparison_stop_keeps_non_term_values_and_refutations() {
+        for (body, outcome) in [
+            (
+                "view pair(c:Part):(Bool,Bool)=(false,false);",
+                ViewCompatibilityOutcome::Compatible,
+            ),
+            (
+                "view pair(c:Part):(Bool,Bool)=(false,forall a:Root . false);",
+                ViewCompatibilityOutcome::Refuted(ViewCompatibilityCondition::Value),
+            ),
+            (
+                "view pair(c:Part):Option<Bool> = some(false);",
+                ViewCompatibilityOutcome::Compatible,
+            ),
+            (
+                "view pair(c:Part):List<Bool> = list<Bool>[false,false];",
+                ViewCompatibilityOutcome::Compatible,
+            ),
+            (
+                "view pair(c:Part):Set<Bool> = set<Bool>{false,true};",
+                ViewCompatibilityOutcome::Compatible,
+            ),
+            (
+                "view pair(c:Part,m:Map<Part,Part>):Map<Part,Part> = m;",
+                ViewCompatibilityOutcome::Compatible,
+            ),
+            (
+                "view pair(c:Part):Z = 2;",
+                ViewCompatibilityOutcome::Compatible,
+            ),
+            (
+                "view pair(c:Part):Q = rat(1,2);",
+                ViewCompatibilityOutcome::Compatible,
+            ),
+        ] {
+            let i = inputs(body);
+            let mut r = object_view_compatibility(
+                Arc::clone(&i),
+                "Selected",
+                "v",
+                "root",
+                &mut Control::unlimited(),
+            )
+            .unwrap();
+            let point = r.comparisons[0].points[0].clone();
+            let count = Rc::new(Cell::new(0_usize));
+            let seen = Rc::clone(&count);
+            let mut c = Control::new(Limits::default(), move |p| {
+                if p == Checkpoint::FiniteIteration {
+                    seen.set(seen.get() + 1);
+                }
+                Usage::default()
+            });
+            compare_point(&mut r, 0, point.clone(), true, &mut c).unwrap();
+            let at = count.get()
+                - if body.contains(":Z") || body.contains(":Q") {
+                    2
+                } else {
+                    1
+                };
+            for mode in 0..4 {
+                r.comparisons[0].points.clear();
+                r.comparisons[0].outcome = None;
+                r.complete = false;
+                r.outcome = None;
+                let (mut c, n) = stop(Checkpoint::FiniteIteration, at, mode);
+                assert!(matches!(
+                    compare_point(&mut r, 0, point.clone(), true, &mut c),
+                    Err(ConstructionFailure::Stopped(_))
+                ));
+                assert_eq!(n.get(), at);
+                assert_eq!(r.comparisons[0].points.len(), 1, "{body}");
+                assert_eq!(r.outcome(), Some(&outcome), "{body}");
+                assert!(r.is_complete());
+                let before = n.get();
+                assert!(tick(&mut c).is_err());
+                assert_eq!(n.get(), before);
+            }
+        }
+    }
+    #[test]
+    fn recheck_rejects_path_display_producer_and_program_replacement() {
+        for mode in 0..3 {
+            let i = inputs("view route(c:Part):Path<Part,Part> = identity(c);");
+            let mut r = object_view_compatibility(
+                Arc::clone(&i),
+                "Selected",
+                "v",
+                "root",
+                &mut Control::unlimited(),
+            )
+            .unwrap();
+            let value = r.comparisons[0].points[0].source.as_mut().unwrap();
+            match mode {
+                0 => value.producer += 1,
+                1 => value.path_wire = None,
+                _ => {
+                    let Scalar::Path(path) = &mut value.value else {
+                        panic!("Path")
+                    };
+                    path.reading = "foreign".into();
+                }
+            }
+            assert!(
+                r.recheck(i, &mut Control::unlimited()).is_err(),
+                "mode={mode}"
+            );
         }
     }
     #[test]
