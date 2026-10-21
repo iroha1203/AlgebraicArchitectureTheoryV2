@@ -1378,6 +1378,12 @@ pub(crate) struct Node {
     pub reasons: Vec<Reason>,
 }
 impl Node {
+    pub(crate) fn conditions(&self) -> Vec<NodeRef> {
+        match &self.payload {
+            Some(Payload::Construction(value)) => value.conditions(),
+            _ => vec![],
+        }
+    }
     fn wire(&self, id: usize, prior: &[Node]) -> Json {
         let mut wire =
             BTreeMap::from([
@@ -1401,7 +1407,7 @@ impl Node {
                     "support".into(),
                     Json::Arr(self.support.iter().map(Fact::wire).collect()),
                 ),
-                ("conditions".into(), refs(&[])),
+                ("conditions".into(), refs(&self.conditions())),
                 ("evidence".into(), refs(&self.evidence)),
                 ("scope".into(), self.scope.wire()),
                 (

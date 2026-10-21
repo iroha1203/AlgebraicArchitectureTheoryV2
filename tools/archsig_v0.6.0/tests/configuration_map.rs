@@ -1283,3 +1283,84 @@ fn current_mapping_changes_are_rechecked_and_all_fixed_stops_latch() {
         }
     }
 }
+
+#[test]
+fn completed_relation_counterexamples_survive_stopping_inside_the_preservation_scan() {
+    use archsig::construction::maps::correspondence_retained;
+    let input = inputs(&bad_endpoints());
+    let count = Rc::new(Cell::new(0usize));
+    let seen = count.clone();
+    let mut normal = Control::new(Limits::default(), move |p| {
+        if p == Checkpoint::ConfigurationMap {
+            seen.set(seen.get() + 1);
+        }
+        Usage::default()
+    });
+    let result =
+        correspondence_retained(&input, "v", "m", "Reservations", None, &mut normal).unwrap();
+    let candidate = result.candidate().unwrap();
+    let source = candidate.source_configuration();
+    let expected = result
+        .counterexamples()
+        .iter()
+        .find(|c| matches!(c, Counterexample::Relation { .. }))
+        .unwrap()
+        .clone();
+    let Counterexample::Relation { source: pair, .. } = &expected else {
+        unreachable!()
+    };
+    let position = source.relations().iter().position(|p| p == pair).unwrap();
+    let total = source.family().len() + source.relations().len() + source.identifications().len();
+    let at = count.get() - total - 1 + source.family().len() + position + 2;
+    assert!(at < count.get());
+    for mode in 0..4 {
+        let count = Rc::new(Cell::new(0usize));
+        let seen = count.clone();
+        let mut control = Control::new(
+            Limits {
+                time_ms: (mode == 0).then_some(1),
+                memory_mib: (mode == 1).then_some(1),
+            },
+            move |p| {
+                if p == Checkpoint::ConfigurationMap {
+                    seen.set(seen.get() + 1);
+                }
+                let stop = seen.get() >= at;
+                Usage {
+                    elapsed_ms: u128::from(stop && mode == 0),
+                    memory_mib: u128::from(stop && mode == 1),
+                    signal: if stop {
+                        match mode {
+                            2 => Some(Signal::Int),
+                            3 => Some(Signal::Term),
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    },
+                }
+            },
+        );
+        let failure = correspondence_retained(&input, "v", "m", "Reservations", None, &mut control)
+            .unwrap_err();
+        assert!(matches!(failure.cause(), ConstructionFailure::Stopped(_)));
+        assert!(
+            failure
+                .partial()
+                .unwrap()
+                .counterexamples()
+                .contains(&expected),
+            "completed relation counterexample was lost: {:?}",
+            failure.partial().unwrap().counterexamples()
+        );
+        assert_eq!(count.get(), at);
+        let stopped = control.stop_reason().unwrap();
+        assert_eq!(
+            control
+                .checkpoint(Checkpoint::ConfigurationMap)
+                .unwrap_err(),
+            stopped
+        );
+        assert_eq!(count.get(), at);
+    }
+}

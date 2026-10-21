@@ -480,7 +480,7 @@ pub(super) fn validate_answer(
             continue;
         }
         match v.data {
-            D::ConfigurationMap { candidate: r } if r == candidate => {
+            D::ConfigurationMap { candidate: r, .. } if r == candidate => {
                 if map_ref.replace(NodeRef(i)).is_some() {
                     return Err("mapが重複している".into());
                 }
@@ -850,7 +850,15 @@ pub(super) fn evaluate(
         ("proposition".into(), claim),
     ]);
     if complete && m.result().map().is_some() {
-        let map = put(graph, &witness, D::ConfigurationMap { candidate }, vec![])?;
+        let map = put(
+            graph,
+            &witness,
+            D::ConfigurationMap {
+                candidate,
+                preservation: claim,
+            },
+            vec![],
+        )?;
         outputs.insert("map".into(), map);
         if m.operation().is_some() {
             let operation = put(
@@ -861,6 +869,7 @@ pub(super) fn evaluate(
                     target: target.unwrap().reference,
                     candidate,
                     configuration_map: map,
+                    preservation: claim,
                     action: action.unwrap(),
                     subject,
                 },

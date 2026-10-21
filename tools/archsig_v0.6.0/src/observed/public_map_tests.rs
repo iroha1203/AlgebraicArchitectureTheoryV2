@@ -129,6 +129,37 @@ fn native_map_prefixes_reject_forged_architecture_action_law_provenance_and_oper
             }
         },
     );
+    changed_native(
+        &result,
+        |d| matches!(d, D::ConfigurationMap { .. }),
+        |d| {
+            if let D::ConfigurationMap {
+                candidate,
+                preservation,
+            } = d
+            {
+                *preservation = *candidate;
+            }
+        },
+    );
+    changed_native(
+        &result,
+        |d| matches!(d, D::Operation { .. }),
+        |d| {
+            if let D::Operation {
+                configuration_map,
+                preservation,
+                ..
+            } = d
+            {
+                *preservation = *configuration_map;
+            }
+        },
+    );
+    let claim = result.answers[0].claim.unwrap().0;
+    completion_mutation(&result, claim, |nodes| {
+        nodes[claim].judgment.as_mut().unwrap().status = Decision::Refuted
+    });
     let i = result.answers[0].outputs["candidate"].0;
     for field in 0..3 {
         completion_mutation(&result, i, |nodes| match field {

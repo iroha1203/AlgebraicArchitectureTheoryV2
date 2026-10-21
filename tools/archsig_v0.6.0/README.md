@@ -48,7 +48,8 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.a
 
 `kind` の既定値は `configuration`、`to_reading` の既定値は `reading` と同じ読みである。
 候補は始終 Architecture と共通 U 上の総作用を持ち、保存を確認した場合だけ map と
-Operation を返す。数量の一致や Law の成立はこの保存条件に加えない。
+Operation を返す。両nodeの `conditions` は同じ保存確認命題を指す。
+数量の一致や Law の成立はこの保存条件に加えない。
 後続の問いでは `$m.candidate.subject`、`$m.operation.word[0]` などの公開参照を束縛できる。
 原始参照を含む Option・Tuple・List の意味上の成分も `on` に指定できる。
 動的に成分が存在しない場合は射影条件の反証を残し、後続へ元の理由を伝える。

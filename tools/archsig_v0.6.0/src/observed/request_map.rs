@@ -152,13 +152,6 @@ pub(super) fn resolve(
             "mapのkindはconfigurationまたはobject_algebra",
         ));
     }
-    if kind == "object_algebra" {
-        return Err(ResolveFailure::NotApplicable {
-            request: raw.id,
-            kind: "map".into(),
-            architecture_environment: false,
-        });
-    }
     let kind = kind.clone();
     let selected = args
         .get_mut("kind")
@@ -188,6 +181,14 @@ pub(super) fn output_type(
     let s = shape(law, name, &r.id, control)?;
     match field {
         "candidate" => Ok(ProjectionType::MapCandidate(s)),
+        "map"
+            if r.arguments.iter().any(|a| {
+                a.name == "kind"
+                    && matches!(&a.value,Selector::Enum {value} if value=="object_algebra")
+            }) =>
+        {
+            Ok(ProjectionType::ObjectAlgebraMap(s))
+        }
         "map" => Ok(ProjectionType::ConfigurationMap(s)),
         "operation" => Ok(ProjectionType::Operation(s)),
         "proposition" => Ok(ProjectionType::Proposition),

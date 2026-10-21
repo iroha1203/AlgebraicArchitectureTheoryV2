@@ -667,6 +667,21 @@ fn resolve_inner(
         );
     }
     phase(control, Checkpoint::RequestDependency)?;
+    // 共通の参照・型・公開射影・循環の検査を完了してから、未実装経路を通知する。
+    for request in &requests {
+        if request.kind == QuestionKind::Map
+            && request.arguments.iter().any(|a| {
+                a.name == "kind"
+                    && matches!(&a.value,Selector::Enum {value} if value=="object_algebra")
+            })
+        {
+            return Err(ResolveFailure::NotApplicable {
+                request: request.id.clone(),
+                kind: "map".into(),
+                architecture_environment: false,
+            });
+        }
+    }
     Ok(ResolvedRequests {
         requests,
         evaluation_order,

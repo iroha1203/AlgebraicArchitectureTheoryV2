@@ -161,12 +161,14 @@ pub(crate) enum ConstructionData {
     },
     ConfigurationMap {
         candidate: NodeRef,
+        preservation: NodeRef,
     },
     Operation {
         source: NodeRef,
         target: NodeRef,
         candidate: NodeRef,
         configuration_map: NodeRef,
+        preservation: NodeRef,
         action: NodeRef,
         subject: NodeRef,
     },
@@ -328,7 +330,9 @@ impl ConstructionValue {
                 action,
                 ..
             } => vec![*subject, *source, *target, *action],
-            D::ConfigurationMap { candidate } | D::Preservation { candidate } => vec![*candidate],
+            D::ConfigurationMap { candidate, .. } | D::Preservation { candidate } => {
+                vec![*candidate]
+            }
             D::Operation {
                 source,
                 target,
@@ -336,6 +340,7 @@ impl ConstructionValue {
                 configuration_map,
                 action,
                 subject,
+                ..
             } => vec![
                 *source,
                 *target,
@@ -362,6 +367,13 @@ impl ConstructionValue {
                 right,
                 ..
             } => vec![*subject, *left, *right],
+        }
+    }
+    pub fn conditions(&self) -> Vec<NodeRef> {
+        match &self.data {
+            ConstructionData::ConfigurationMap { preservation, .. }
+            | ConstructionData::Operation { preservation, .. } => vec![*preservation],
+            _ => vec![],
         }
     }
     pub fn construction(&self) -> &'static str {
@@ -436,9 +448,10 @@ impl ConstructionValue {
             (D::MapCandidate { source, .. } | D::Operation { source, .. }, "source") => *source,
             (D::MapCandidate { target, .. } | D::Operation { target, .. }, "target") => *target,
             (D::MapCandidate { action, .. } | D::Operation { action, .. }, "action") => *action,
-            (D::ConfigurationMap { candidate } | D::Operation { candidate, .. }, "candidate") => {
-                *candidate
-            }
+            (
+                D::ConfigurationMap { candidate, .. } | D::Operation { candidate, .. },
+                "candidate",
+            ) => *candidate,
             (
                 D::Operation {
                     configuration_map, ..
@@ -499,7 +512,7 @@ impl ConstructionValue {
                 ("target", target.wire()),
                 ("action", action.wire()),
             ]),
-            D::ConfigurationMap { candidate } => Json::obj([("candidate", candidate.wire())]),
+            D::ConfigurationMap { candidate, .. } => Json::obj([("candidate", candidate.wire())]),
             D::Operation {
                 source,
                 target,
@@ -507,6 +520,7 @@ impl ConstructionValue {
                 configuration_map,
                 action,
                 subject,
+                ..
             } => Json::obj([
                 ("source", source.wire()),
                 ("target", target.wire()),
@@ -1445,8 +1459,29 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     if node.support != support || node.scope != scope {
         return Err("native構成の原始支持・Scopeが元入力と違う".into());
     }
-    for r in node.arguments.iter().chain(&node.evidence) {
+    for r in node
+        .arguments
+        .iter()
+        .chain(&node.evidence)
+        .chain(v.conditions().iter())
+    {
         graph.get(*r)?;
+    }
+    for condition in v.conditions() {
+        let p = graph.get(condition)?;
+        let expected_candidate = match v.data {
+            D::ConfigurationMap { candidate, .. } | D::Operation { candidate, .. } => candidate,
+            _ => return Err("構成条件が写像・操作以外に付いた".into()),
+        };
+        if p.ty != NodeType::Proposition
+            || !matches!(&p.payload, Some(Payload::Construction(c)) if c.witness==v.witness && matches!(c.data,D::Preservation { candidate } if candidate==expected_candidate))
+            || !p
+                .judgment
+                .as_ref()
+                .is_some_and(|j| j.status == Decision::Established && j.reasons.is_empty())
+        {
+            return Err("写像・操作の保存条件が元候補の成立命題でない".into());
+        }
     }
     macro_rules! require {
         ($condition:expr,$message:literal) => {
@@ -1795,7 +1830,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 "候補の作用が違う"
             );
         }
-        (D::ConfigurationMap { candidate }, Witness::Map(m)) => {
+        (D::ConfigurationMap { candidate, .. }, Witness::Map(m)) => {
             require!(
                 m.result.map().is_some(),
                 "未決・反証候補をConfigurationMapへ昇格した"
@@ -1814,6 +1849,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 configuration_map,
                 action,
                 subject,
+                ..
             },
             Witness::Map(m),
         ) => {
@@ -1834,7 +1870,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             let map = value(graph, *configuration_map)?;
             require!(
                 map.witness == v.witness
-                    && matches!(map.data,D::ConfigurationMap{candidate:c} if c==*candidate),
+                    && matches!(map.data,D::ConfigurationMap{candidate:c,..} if c==*candidate),
                 "OperationのConfigurationMapが違う"
             );
         }

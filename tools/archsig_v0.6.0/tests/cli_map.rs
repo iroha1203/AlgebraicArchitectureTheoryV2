@@ -110,6 +110,19 @@ fn configuration_map_exports_complete_architectures_total_action_and_confirmed_o
             assert!(!has(image, "field"));
         }
     }
+    let preservation = get(outputs, "proposition");
+    for output in ["map", "operation"] {
+        let conditions = arr(get(node(&result, get(outputs, output)), "conditions"));
+        assert_eq!(conditions.len(), 1);
+        assert_eq!(s(get(&conditions[0], "node")), s(get(preservation, "node")));
+        assert_eq!(
+            s(get(
+                get(node(&result, &conditions[0]), "judgment"),
+                "status"
+            )),
+            "established"
+        );
+    }
     let map = value(&result, get(outputs, "map"));
     assert_eq!(
         s(get(get(map, "candidate"), "node")),
@@ -845,6 +858,113 @@ fn mixed_map_and_observed_blockers_preserve_both_producers_missing_positions() {
                 .iter()
                 .any(|r| s(get(r, "code")) == "dependency_blocked"
                     && s(get(get(r, "details"), "request")) == producer)
+        );
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn object_algebra_selection_checks_common_inputs_before_reporting_unimplemented() {
+    for (i, on) in ["@v/p", "@v/absent", "$absent.value", "$m.candidate.support"]
+        .iter()
+        .enumerate()
+    {
+        let dir = inputs(&format!("map-object-algebra-invalid-{i}"), A);
+        let ask = format!(
+            "bad=map(Reservations.Migration,on={on},reading=Reservations,kind=object_algebra)"
+        );
+        let receipt = notified(&dir, &asks(&dir, &[&ask, ASK]), "invalid", 64);
+        assert!(
+            arr(get(&receipt, "issues"))
+                .iter()
+                .all(|issue| s(get(issue, "code")) == "usage")
+        );
+        assert!(!dir.join("out").exists());
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+    let dir = inputs("map-object-algebra-cycle", A);
+    let receipt = notified(
+        &dir,
+        &asks(
+            &dir,
+            &[
+                "a=map(Reservations.Migration,on=$b.candidate.subject,reading=Reservations,kind=object_algebra)",
+                "b=map(Reservations.Migration,on=$a.candidate.subject,reading=Reservations)",
+            ],
+        ),
+        "invalid",
+        64,
+    );
+    assert!(
+        arr(get(&receipt, "issues"))
+            .iter()
+            .all(|issue| s(get(issue, "code")) == "cycle")
+    );
+    assert!(!dir.join("out").exists());
+    std::fs::remove_dir_all(dir).unwrap();
+}
+#[test]
+fn valid_unimplemented_map_dependencies_keep_their_declared_public_projection_types() {
+    for (i, requests) in [
+        vec!["copy=map(Reservations.Migration,on=$v.value.some,reading=Reservations,kind=object_algebra)","v=evaluate(Reservations.present,m=@v/m)"],
+        vec!["copy=map(Reservations.Migration,on=$m.map.configuration_map.candidate.subject,reading=Reservations)","m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"],
+    ].iter().enumerate() {
+        let dir=inputs(&format!("map-object-algebra-typed-{i}"),A);
+        std::fs::write(dir.join("l.law"),include_bytes!("fixtures/public-map-projections.law")).unwrap();
+        let receipt=notified(&dir,&asks(&dir,requests),"error",70);
+        assert!(arr(get(&receipt,"issues")).iter().all(|issue|s(get(issue,"code"))=="internal"));
+        assert!(!dir.join("out").exists());
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn map_reuse_rejects_saved_values_that_drop_preservation_conditions() {
+    let dir = inputs("map-reuse-missing-conditions", A);
+    let result = saved(&dir, &asks(&dir, &[ASK]), "complete", 0);
+    let condition = s(get(
+        get(get(answer(&result, "m"), "outputs"), "proposition"),
+        "node",
+    ));
+    let needle = format!(
+        "\"conditions\":[{{\"node\":{}}}]",
+        archsig::canonical::Json::str(condition).canonical()
+    );
+    let original = std::fs::read_to_string(dir.join("out/result.json")).unwrap();
+    assert_eq!(original.matches(&needle).count(), 2);
+    std::fs::write(
+        dir.join("out/result.json"),
+        original.replace(&needle, "\"conditions\":[]"),
+    )
+    .unwrap();
+    let rerun = run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "rechecked",
+            "--reuse",
+            "out",
+            "--ask",
+            ASK,
+        ],
+    );
+    let result = saved(&dir, &rerun, "complete", 0);
+    assert!(!arr(get(get(&result, "reuse"), "rejected")).is_empty());
+    assert_eq!(num(get(get(&result, "reuse"), "accepted_nodes")), 0);
+    let output = get(answer(&result, "m"), "outputs");
+    for key in ["map", "operation"] {
+        let conditions = arr(get(node(&result, get(output, key)), "conditions"));
+        assert_eq!(conditions.len(), 1);
+        assert_eq!(
+            s(get(&conditions[0], "node")),
+            s(get(get(output, "proposition"), "node"))
         );
     }
     std::fs::remove_dir_all(dir).unwrap();

@@ -921,6 +921,24 @@ fn preservation_counterexamples(
     control: &mut Control,
 ) -> Result<Vec<Counterexample>, ConstructionFailure> {
     let mut counterexamples = Vec::new();
+    append_preservation_counterexamples(
+        source_config,
+        target_config,
+        target_complete,
+        action,
+        &mut counterexamples,
+        control,
+    )?;
+    Ok(counterexamples)
+}
+fn append_preservation_counterexamples(
+    source_config: &Configuration,
+    target_config: &Configuration,
+    target_complete: bool,
+    action: &BTreeMap<FactPointer, FactPointer>,
+    counterexamples: &mut Vec<Counterexample>,
+    control: &mut Control,
+) -> Result<(), ConstructionFailure> {
     let target_family: BTreeSet<_> = target_config.family().iter().collect();
     let target_relations: BTreeSet<_> = target_config.relations().iter().collect();
     let target_identifications: BTreeSet<_> = target_config.identifications().iter().collect();
@@ -966,7 +984,7 @@ fn preservation_counterexamples(
             }
         }
     }
-    Ok(counterexamples)
+    Ok(())
 }
 /// readingを推測せず、現在の原始correspondence instanceから全U上の作用と保存を検査する。
 pub fn correspondence(
@@ -1275,13 +1293,14 @@ pub fn correspondence_retained(
                 });
         }
         result.missing = canonical_facts(missing.clone(), control)?;
-        result.counterexamples.extend(preservation_counterexamples(
+        append_preservation_counterexamples(
             source_config,
             target_config,
             target_complete,
             &action,
+            &mut result.counterexamples,
             control,
-        )?);
+        )?;
         if !absent && result.missing.is_empty() {
             let candidate = MapCandidate {
                 origin: MapOrigin::Correspondence(exists(holder)),

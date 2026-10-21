@@ -665,11 +665,17 @@ impl<'a> Environment<'a> {
                         return Err("native構成のRequestが元入力と違う".into());
                     }
                     super::public_map::validate_origin(self, graph, request, value)?;
-                    for r in node.arguments.iter().chain(&node.evidence).chain(
-                        node.reasons
-                            .iter()
-                            .flat_map(|reason| reason.dependencies.iter()),
-                    ) {
+                    for r in node
+                        .arguments
+                        .iter()
+                        .chain(&node.evidence)
+                        .chain(node.conditions().iter())
+                        .chain(
+                            node.reasons
+                                .iter()
+                                .flat_map(|reason| reason.dependencies.iter()),
+                        )
+                    {
                         if r.0 >= limit {
                             return Err("native構成が未出のnodeを参照した".into());
                         }
