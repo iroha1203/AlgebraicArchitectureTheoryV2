@@ -13,7 +13,6 @@ use crate::{
             InstanceApplication, MembershipCondition, ObjectInstance, ObjectReadingInstances,
         },
     },
-    definition::model::PrimitiveSignature,
     types::Type,
 };
 use std::{collections::BTreeSet, sync::Arc};
@@ -202,25 +201,7 @@ pub fn evaluate_object_instance(
             }
             let c = readings.construction();
             let root = c.root();
-            let root_ty = inputs
-                .archmap()
-                .snapshots
-                .iter()
-                .find(|s| s.id == root.snapshot)
-                .and_then(|s| s.subjects.iter().find(|s| s.id == root.subject))
-                .ok_or_else(|| ConstructionFailure::Inconsistent("元rootがない".into()))?
-                .ty
-                .clone();
-            let mut local_types = BTreeSet::from([root_ty.clone()]);
-            for d in inputs.definitions().declarations.values() {
-                control
-                    .checkpoint(Checkpoint::ObjectEvaluation)
-                    .map_err(ConstructionFailure::from)?;
-                if matches!(&d.signature, PrimitiveSignature::Entity { owner: Some(owner), .. } | PrimitiveSignature::Arrow { owner, .. } if owner == &root_ty)
-                {
-                    local_types.insert(d.name.clone());
-                }
-            }
+            let local_types = readings.local_types().clone();
             let base = selected.identity().subject() == root;
             let known = if base {
                 c.local_domain().known().to_vec()
@@ -263,7 +244,7 @@ pub fn evaluate_object_instance(
                     .checkpoint(Checkpoint::ObjectEvaluation)
                     .map_err(ConstructionFailure::from)?;
                 text.push_str(&format!(
-                    ",{}=@{}/{}",
+                    ",bind.{}=@{}/{}",
                     binding.parameter().name,
                     binding.subject().snapshot,
                     binding.subject().subject

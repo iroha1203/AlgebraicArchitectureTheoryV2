@@ -257,6 +257,70 @@ fn stale_inputs_and_invalid_indices_are_rejected_before_any_evaluation() {
 }
 
 #[test]
+fn fixed_argument_names_remain_explicit_parameter_bindings() {
+    let i = inputs(L, A);
+    for object in ["A", "p"] {
+        assert_eq!(
+            scalar(&wire(&run(Arc::clone(&i), object, "named", "p"))),
+            &Json::str("2")
+        );
+    }
+}
+
+fn foreign_inputs(import: bool) -> Arc<CheckedInputs> {
+    let checked = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
+    let digest = &checked.vocabularies["Instances"].digest;
+    let d = include_str!("fixtures/object-evaluation-foreign.atoms.json")
+        .replace("@INSTANCES_DIGEST@", digest);
+    let checked = archsig::definition::check_definitions(&[
+        ("definition0", D),
+        ("definition1", d.as_bytes()),
+    ])
+    .unwrap();
+    let foreign = &checked.vocabularies["Foreign"].digest;
+    let l = include_str!("fixtures/object-evaluation-foreign.law")
+        .replace(
+            "@SELECTED_FOREIGN@",
+            if import {
+                "use vocabulary Foreign version \"1\" digest \"@FOREIGN_DIGEST@\";"
+            } else {
+                ""
+            },
+        )
+        .replace("@INSTANCES_DIGEST@", digest)
+        .replace("@FOREIGN_DIGEST@", foreign);
+    let a = include_str!("fixtures/object-evaluation-foreign.archmap.json")
+        .replace("@INSTANCES_DIGEST@", digest)
+        .replace("@FOREIGN_DIGEST@", foreign);
+    Arc::new(
+        check_inputs(
+            InputSources::from_bytes(
+                vec![D.to_vec(), d.into_bytes()],
+                l.into_bytes(),
+                a.into_bytes(),
+            ),
+            &mut quiet(),
+        )
+        .unwrap(),
+    )
+}
+#[test]
+fn selected_vocabulary_closure_and_external_helper_reference_domains_remain_distinct() {
+    // helperではA/Bの両個体を読み、Selectedのimportへ加えた場合だけ対象域を使う。
+    for import in [false, true] {
+        let i = foreign_inputs(import);
+        for object in ["A", "p"] {
+            let expected = import;
+            assert_eq!(
+                scalar(&wire(&run(Arc::clone(&i), object, "probe", "p"))),
+                &Json::Bool(expected),
+                "import={import} object={object}"
+            );
+        }
+    }
+}
+
+#[test]
 fn current_quantities_optional_law_counterexamples_and_external_binding_identity_are_evaluated() {
     let changed = A.replace(
         "\"subject\":\"p\",\"field\":\"Instances.Part.quantity\",\"value\":\"2\"",

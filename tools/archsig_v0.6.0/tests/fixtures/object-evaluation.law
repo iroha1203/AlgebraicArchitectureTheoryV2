@@ -8,6 +8,7 @@ reading Selected {
   use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
   use Helper as H;
   view amount(c: Part): Z = c.quantity;
+  view named(on: Part): Z = on.quantity;
   view same(c: Part): Bool = forall x: Part . x = c;
   view viaHelper(c: Part): Bool = H.same(c);
   view tautology(c: Part): Bool = forall x: Part . x = x;

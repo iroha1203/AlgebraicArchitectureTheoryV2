@@ -82,11 +82,15 @@ impl ObjectInstance {
 pub struct ObjectReadingInstances {
     construction: ConfigurationConstruction,
     source_law: InputBytes,
+    local_types: BTreeSet<String>,
     objects: Vec<ReadingObject>,
     declarations: Vec<DeclarationInfo>,
     instances: Vec<ObjectInstance>,
 }
 impl ObjectReadingInstances {
+    pub(crate) fn local_types(&self) -> &BTreeSet<String> {
+        &self.local_types
+    }
     pub fn construction(&self) -> &ConfigurationConstruction {
         &self.construction
     }
@@ -275,10 +279,12 @@ pub fn object_reading_instances(
         control,
     )?;
     let root_ty = &subject(inputs, root, control)?.ty;
+    let visible_namespaces = namespaces(inputs, construction.reading(), control)?;
     let mut local_types = BTreeSet::from([root_ty.clone()]);
     for declaration in inputs.definitions().declarations.values() {
         checkpoint(control)?;
-        if matches!(&declaration.signature,
+        if visible(inputs, &declaration.name, &visible_namespaces)
+            && matches!(&declaration.signature,
             PrimitiveSignature::Entity { owner: Some(owner), .. } | PrimitiveSignature::Arrow { owner, .. }
             if owner == root_ty)
         {
@@ -453,6 +459,7 @@ pub fn object_reading_instances(
     let result = ObjectReadingInstances {
         construction: construction.clone(),
         source_law: inputs.sources().law().clone(),
+        local_types,
         objects,
         declarations,
         instances,
@@ -486,7 +493,7 @@ mod tests {
         let c = construct(&i, "Selected", "v", "A", &mut Control::unlimited()).unwrap();
         let original = object_reading_instances(&i, &c, &mut Control::unlimited()).unwrap();
         original.recheck(&i, &mut Control::unlimited()).unwrap();
-        for mutation in 0..12 {
+        for mutation in 0..13 {
             let mut forged = original.clone();
             match mutation {
                 0 => {
@@ -571,7 +578,7 @@ mod tests {
                 11 => {
                     forged.source_law = InputBytes::new("law", b"changed source law".to_vec());
                 }
-                _ => unreachable!(),
+                _ => forged.local_types.clear(),
             }
             assert_ne!(
                 forged, original,
