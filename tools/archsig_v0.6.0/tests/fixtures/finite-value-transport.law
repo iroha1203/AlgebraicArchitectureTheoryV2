@@ -1,0 +1,19 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  view axes(u: Unit, b: Bool, f: Fp(3), root: Left.Root, c: Left.Child, pair: (Option<Left.Child>, Bool), members: Set<Left.Child>, table: Map<Left.Child, Left.Child>, external: Map<Left.Child, Bridge.Move>, choice: Left.Choice, box: Left.Box, empty: Map<Left.Empty, Left.Child>, zero: (Left.Child, Left.Empty), sequenceValue: List<Left.Child>, owned: Left.Child[root], functionValue: Term<(Z) -> Z>, routeValue: Path<Left.Child, Left.Child>, z: Z): Bool = true;
+  view returned(value: Option<Left.Child>): Option<Left.Child> = value;
+  view recursive(value: Left.Tree): Left.Tree = value;
+  law required stated(value: Bool): value = value;
+}
+reading After {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  view axes(u: Unit, b: Bool, f: Fp(3), root: Right.Root, c: Right.Child, pair: (Option<Right.Child>, Bool), members: Set<Right.Child>, table: Map<Right.Child, Right.Child>, external: Map<Right.Child, Bridge.Move>, choice: Left.Choice, box: Left.Box, empty: Map<Left.Empty, Right.Child>, zero: (Right.Child, Left.Empty), sequenceValue: List<Right.Child>, owned: Right.Child[root], functionValue: Term<(Z) -> Z>, routeValue: Path<Right.Child, Right.Child>, z: Z): Bool = true;
+  view returned(value: Option<Right.Child>): Option<Right.Child> = value;
+  view recursive(value: Left.Tree): Left.Tree = value;
+  law required stated(value: Bool): value = value;
+}

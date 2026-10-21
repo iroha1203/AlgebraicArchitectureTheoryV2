@@ -631,10 +631,31 @@ pub(super) fn equal(
     right: &Scalar,
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
+    equal_with_candidates(left, right, control, false)
+}
+/// 型域への所属検査前の候補を比較する。型の異なる部分は不一致とし、
+/// 同じkeyに異なる像を含むMap候補も、全ての対を残した関係として比較する。
+pub(super) fn candidate_equal(
+    left: &Scalar,
+    right: &Scalar,
+    control: &Control,
+) -> Result<bool, ValidationFailure> {
+    equal_with_candidates(left, right, control, true)
+}
+fn equal_with_candidates(
+    left: &Scalar,
+    right: &Scalar,
+    control: &Control,
+    candidates: bool,
+) -> Result<bool, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         if left.ty() != right.ty() {
-            return Err("構造等値の元型が違う".into());
+            return if candidates {
+                Ok(false)
+            } else {
+                Err("構造等値の元型が違う".into())
+            };
         }
         let equal = match (left, right) {
             (Scalar::Path(a), Scalar::Path(b)) => a.same_action(b, control)?,
@@ -650,9 +671,11 @@ pub(super) fn equal(
                     let mut found = false;
                     for (other_key, other_value) in b {
                         tick(control)?;
-                        if equal(key, other_key, control)? {
-                            found = equal(value, other_value, control)?;
-                            break;
+                        if equal_with_candidates(key, other_key, control, candidates)? {
+                            found = equal_with_candidates(value, other_value, control, candidates)?;
+                            if found || !candidates {
+                                break;
+                            }
                         }
                     }
                     same &= found;
@@ -676,12 +699,16 @@ pub(super) fn equal(
                     false
                 } else {
                     if c.len() != f.len() {
-                        return Err("同constructorのarityが違う".into());
+                        return if candidates {
+                            Ok(false)
+                        } else {
+                            Err("同constructorのarityが違う".into())
+                        };
                     }
                     let mut same = true;
                     for (left, right) in c.iter().zip(f) {
                         tick(control)?;
-                        same &= equal(left, right, control)?;
+                        same &= equal_with_candidates(left, right, control, candidates)?;
                         tick(control)?;
                     }
                     same
@@ -697,7 +724,7 @@ pub(super) fn equal(
                     let mut same = true;
                     for (a, b) in a.iter().zip(b) {
                         tick(control)?;
-                        same &= equal(a, b, control)?;
+                        same &= equal_with_candidates(a, b, control, candidates)?;
                     }
                     same
                 }
@@ -709,14 +736,26 @@ pub(super) fn equal(
                     let mut same = true;
                     for item in a {
                         tick(control)?;
-                        same &= contains(b, item, control)?;
+                        if candidates {
+                            let mut found = false;
+                            for other in b {
+                                tick(control)?;
+                                if equal_with_candidates(item, other, control, true)? {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            same &= found;
+                        } else {
+                            same &= contains(b, item, control)?;
+                        }
                     }
                     same
                 }
             }
             (Scalar::Option { value: a, .. }, Scalar::Option { value: b, .. }) => match (a, b) {
                 (None, None) => true,
-                (Some(a), Some(b)) => equal(a, b, control)?,
+                (Some(a), Some(b)) => equal_with_candidates(a, b, control, candidates)?,
                 _ => false,
             },
             (Scalar::Bool(a), Scalar::Bool(b)) => a == b,

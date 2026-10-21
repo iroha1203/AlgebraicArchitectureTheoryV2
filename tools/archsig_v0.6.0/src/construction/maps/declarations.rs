@@ -101,7 +101,7 @@ fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
         .checkpoint(Checkpoint::DeclarationCorrespondence)
         .map_err(Into::into)
 }
-fn moved_type(
+pub(crate) fn moved_type(
     ty: &Type,
     mu: &BTreeMap<String, String>,
     alpha: &BTreeMap<String, String>,

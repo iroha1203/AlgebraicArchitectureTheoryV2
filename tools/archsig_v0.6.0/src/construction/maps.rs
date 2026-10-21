@@ -7,6 +7,11 @@ mod internal;
 mod operations;
 mod references;
 mod transport;
+pub use crate::observed::value_transport::{
+    DeclarationValuePosition, FiniteTransportValue, FiniteValueBijection,
+    FiniteValueConditionFailure, FiniteValueTransport, finite_declaration_value_transport,
+};
+pub(crate) use declarations::moved_type as moved_declaration_type;
 pub use declarations::{
     DeclarationCandidate, DeclarationConditionFailure, DeclarationCorrespondence, DeclarationPair,
     declaration_correspondence,
