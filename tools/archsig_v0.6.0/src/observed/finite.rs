@@ -7,12 +7,18 @@ use super::{
 use crate::{law::CheckedLaw, types::Type};
 use num_bigint::BigInt;
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(super) struct Enumeration {
     pub values: Vec<Scalar>,
     pub scope: Scope,
     pub support: Vec<Fact>,
 }
+#[derive(Clone, Default)]
+pub(super) struct FiniteDomain {
+    pub enumeration: Enumeration,
+    pub missing: Vec<Fact>,
+}
+type OwnedDomainRoster<'a> = dyn FnMut(&str, &str) -> Result<FiniteDomain, ValidationFailure> + 'a;
 type Roster<'a> = dyn FnMut(&str) -> Result<Enumeration, ValidationFailure> + 'a;
 type OwnedRoster<'a> = dyn FnMut(&str, &str) -> Result<Enumeration, ValidationFailure> + 'a;
 
@@ -163,6 +169,16 @@ pub(super) fn field_candidates(
     )
 }
 
+pub(super) fn values_if_finite_with_owned(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+    roster: &mut Roster<'_>,
+    owned: &mut OwnedDomainRoster<'_>,
+    visitor: &mut dyn FnMut(usize),
+) -> Result<Option<FiniteDomain>, ValidationFailure> {
+    enumerate_values_maybe(ty, law, control, roster, owned, visitor, false, true)
+}
 fn enumerate_values(
     ty: &Type,
     law: &CheckedLaw,
@@ -172,6 +188,40 @@ fn enumerate_values(
     visitor: &mut dyn FnMut(usize),
     partial_maps: bool,
 ) -> Result<Enumeration, ValidationFailure> {
+    let mut complete_owned = |entity: &str, owner: &str| {
+        owned(entity, owner).map(|enumeration| FiniteDomain {
+            enumeration,
+            missing: Vec::new(),
+        })
+    };
+    enumerate_values_maybe(
+        ty,
+        law,
+        control,
+        roster,
+        &mut complete_owned,
+        visitor,
+        partial_maps,
+        false,
+    )?
+    .map(|domain| domain.enumeration)
+    .ok_or_else(|| "有限全域でない型を列挙した".into())
+}
+fn enumerate_values_maybe(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+    roster: &mut Roster<'_>,
+    owned: &mut OwnedDomainRoster<'_>,
+    visitor: &mut dyn FnMut(usize),
+    partial_maps: bool,
+    allow_degenerate: bool,
+) -> Result<Option<FiniteDomain>, ValidationFailure> {
+    fn merge_domain(total: &mut FiniteDomain, domain: FiniteDomain) {
+        total.enumeration.scope.merge(&domain.enumeration.scope);
+        total.enumeration.support.extend(domain.enumeration.support);
+        total.missing.extend(domain.missing);
+    }
     fn emit(
         values: &mut Vec<Scalar>,
         value: Scalar,
@@ -188,14 +238,77 @@ fn enumerate_values(
         law: &CheckedLaw,
         control: &Control,
         roster: &mut Roster<'_>,
-        owned: &mut OwnedRoster<'_>,
-        dependencies: &mut Enumeration,
+        owned: &mut OwnedDomainRoster<'_>,
+        dependencies: &mut FiniteDomain,
         partial_maps: bool,
-    ) -> Result<Vec<Vec<Scalar>>, ValidationFailure> {
+        active: &mut Vec<String>,
+        allow_degenerate: bool,
+    ) -> Result<Option<Vec<Vec<Scalar>>>, ValidationFailure> {
+        if allow_degenerate {
+            tick(control)?;
+            let before = dependencies.clone();
+            let mut domains = Vec::new();
+            let mut empty = false;
+            let mut unavailable = false;
+            for ty in types {
+                tick(control)?;
+                let mut domain = FiniteDomain::default();
+                let values = enumerate(
+                    ty,
+                    law,
+                    control,
+                    roster,
+                    owned,
+                    &mut domain,
+                    &mut |_| {},
+                    partial_maps,
+                    active,
+                    true,
+                )?;
+                match values {
+                    Some(values) => {
+                        if values.is_empty() && domain.missing.is_empty() {
+                            *dependencies = before;
+                            merge_domain(dependencies, domain);
+                            return Ok(Some(Vec::new()));
+                        }
+                        empty |= values.is_empty();
+                        domains.push(values);
+                    }
+                    None => {
+                        unavailable = true;
+                        domains.push(Vec::new());
+                    }
+                }
+                merge_domain(dependencies, domain);
+            }
+            if empty {
+                return Ok(Some(Vec::new()));
+            }
+            if unavailable {
+                return Ok(None);
+            }
+            let mut rows = vec![Vec::new()];
+            for values in domains {
+                tick(control)?;
+                let mut next = Vec::new();
+                for row in &rows {
+                    for value in &values {
+                        tick(control)?;
+                        let mut item = row.clone();
+                        item.push(value.clone());
+                        next.push(item);
+                        tick(control)?;
+                    }
+                }
+                rows = next;
+            }
+            return Ok(Some(rows));
+        }
         let mut rows = vec![Vec::new()];
         for ty in types {
             tick(control)?;
-            let values = enumerate(
+            let Some(values) = enumerate(
                 ty,
                 law,
                 control,
@@ -204,7 +317,12 @@ fn enumerate_values(
                 dependencies,
                 &mut |_| {},
                 partial_maps,
-            )?;
+                active,
+                allow_degenerate,
+            )?
+            else {
+                return Ok(None);
+            };
             let mut next = Vec::new();
             for row in &rows {
                 for value in &values {
@@ -217,37 +335,50 @@ fn enumerate_values(
             }
             rows = next;
         }
-        Ok(rows)
+        Ok(Some(rows))
     }
     fn enumerate(
         ty: &Type,
         law: &CheckedLaw,
         control: &Control,
         roster: &mut Roster<'_>,
-        owned: &mut OwnedRoster<'_>,
-        dependencies: &mut Enumeration,
+        owned: &mut OwnedDomainRoster<'_>,
+        dependencies: &mut FiniteDomain,
         visitor: &mut dyn FnMut(usize),
         partial_maps: bool,
-    ) -> Result<Vec<Scalar>, ValidationFailure> {
+        active: &mut Vec<String>,
+        allow_degenerate: bool,
+    ) -> Result<Option<Vec<Scalar>>, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(control)?;
             let values = match ty {
                 Type::Ref(_) | Type::Owned(_, _) => {
                     let family = match ty {
-                        Type::Ref(entity) => roster(entity)?,
+                        Type::Ref(entity) => FiniteDomain {
+                            enumeration: roster(entity)?,
+                            missing: Vec::new(),
+                        },
                         Type::Owned(entity, owner) => owned(entity, owner)?,
                         _ => unreachable!(),
                     };
-                    dependencies.scope.merge(&family.scope);
-                    dependencies.support.extend(family.support);
+                    dependencies
+                        .enumeration
+                        .scope
+                        .merge(&family.enumeration.scope);
+                    dependencies
+                        .enumeration
+                        .support
+                        .extend(family.enumeration.support);
+                    dependencies.missing.extend(family.missing);
                     let mut values = Vec::new();
-                    for value in family.values {
+                    for value in family.enumeration.values {
                         emit(&mut values, value, control, visitor)?;
                     }
                     values
                 }
                 Type::Map(domain, codomain) => {
-                    let keys = enumerate(
+                    let missing_before_keys = dependencies.missing.len();
+                    let Some(keys) = enumerate(
                         domain,
                         law,
                         control,
@@ -256,17 +387,36 @@ fn enumerate_values(
                         dependencies,
                         &mut |_| {},
                         partial_maps,
-                    )?;
-                    let images = enumerate(
-                        codomain,
-                        law,
-                        control,
-                        roster,
-                        owned,
-                        dependencies,
-                        &mut |_| {},
-                        partial_maps,
-                    )?;
+                        active,
+                        allow_degenerate,
+                    )?
+                    else {
+                        return Ok(None);
+                    };
+                    let images = if allow_degenerate
+                        && keys.is_empty()
+                        && dependencies.missing.len() == missing_before_keys
+                    {
+                        Some(Vec::new())
+                    } else {
+                        enumerate(
+                            codomain,
+                            law,
+                            control,
+                            roster,
+                            owned,
+                            dependencies,
+                            &mut |_| {},
+                            partial_maps,
+                            active,
+                            allow_degenerate,
+                        )?
+                    };
+                    let images = match images {
+                        Some(images) => images,
+                        None if keys.is_empty() => Vec::new(),
+                        None => return Ok(None),
+                    };
                     // 型全域では空始域は空表1個、非空始域・空値域は0個。
                     // field候補は各keyの不所属も残し、元型の全域性検査へ渡す。
                     let mut tables = vec![Vec::new()];
@@ -351,7 +501,7 @@ fn enumerate_values(
                 }
                 Type::Tuple(types) => {
                     let mut values = Vec::new();
-                    for row in product(
+                    let Some(rows) = product(
                         types,
                         law,
                         control,
@@ -359,9 +509,46 @@ fn enumerate_values(
                         owned,
                         dependencies,
                         partial_maps,
-                    )? {
+                        active,
+                        allow_degenerate,
+                    )?
+                    else {
+                        return Ok(None);
+                    };
+                    for row in rows {
                         emit(&mut values, Scalar::Tuple(row), control, visitor)?;
                     }
+                    values
+                }
+                Type::List(element) if allow_degenerate => {
+                    let Some(items) = enumerate(
+                        element,
+                        law,
+                        control,
+                        roster,
+                        owned,
+                        dependencies,
+                        &mut |_| {},
+                        partial_maps,
+                        active,
+                        true,
+                    )?
+                    else {
+                        return Ok(None);
+                    };
+                    if !items.is_empty() {
+                        return Ok(None);
+                    }
+                    let mut values = Vec::new();
+                    emit(
+                        &mut values,
+                        Scalar::List {
+                            element: element.erase(),
+                            items: Vec::new(),
+                        },
+                        control,
+                        visitor,
+                    )?;
                     values
                 }
                 Type::Option(element) => {
@@ -375,7 +562,7 @@ fn enumerate_values(
                         control,
                         visitor,
                     )?;
-                    for item in enumerate(
+                    let Some(items) = enumerate(
                         element,
                         law,
                         control,
@@ -384,7 +571,13 @@ fn enumerate_values(
                         dependencies,
                         &mut |_| {},
                         partial_maps,
-                    )? {
+                        active,
+                        allow_degenerate,
+                    )?
+                    else {
+                        return Ok(None);
+                    };
+                    for item in items {
                         tick(control)?;
                         emit(
                             &mut values,
@@ -401,7 +594,7 @@ fn enumerate_values(
                 }
                 Type::Set(element) => {
                     let mut subsets: Vec<Vec<Scalar>> = vec![Vec::new()];
-                    for item in enumerate(
+                    let Some(items) = enumerate(
                         element,
                         law,
                         control,
@@ -410,7 +603,13 @@ fn enumerate_values(
                         dependencies,
                         &mut |_| {},
                         partial_maps,
-                    )? {
+                        active,
+                        allow_degenerate,
+                    )?
+                    else {
+                        return Ok(None);
+                    };
+                    for item in items {
                         tick(control)?;
                         let count = subsets.len();
                         for index in 0..count {
@@ -434,42 +633,64 @@ fn enumerate_values(
                     values
                 }
                 Type::Data(family) => {
-                    let mut values = Vec::new();
-                    for ctor in data::constructors(law, family)? {
-                        tick(control)?;
-                        for args in product(
-                            &ctor.arguments,
-                            law,
-                            control,
-                            roster,
-                            owned,
-                            dependencies,
-                            partial_maps,
-                        )? {
-                            tick(control)?;
-                            emit(
-                                &mut values,
-                                Scalar::Data {
-                                    family: family.clone(),
-                                    constructor: format!("{family}.{}", ctor.name),
-                                    args,
-                                },
-                                control,
-                                visitor,
-                            )?;
-                            tick(control)?;
-                        }
+                    if allow_degenerate && active.contains(family) {
+                        return Ok(None);
                     }
+                    if allow_degenerate {
+                        active.push(family.clone());
+                    }
+                    let result = (|| -> Result<Option<Vec<Scalar>>, ValidationFailure> {
+                        let mut values = Vec::new();
+                        for ctor in data::constructors(law, family)? {
+                            tick(control)?;
+                            let Some(rows) = product(
+                                &ctor.arguments,
+                                law,
+                                control,
+                                roster,
+                                owned,
+                                dependencies,
+                                partial_maps,
+                                active,
+                                allow_degenerate,
+                            )?
+                            else {
+                                return Ok(None);
+                            };
+                            for args in rows {
+                                tick(control)?;
+                                emit(
+                                    &mut values,
+                                    Scalar::Data {
+                                        family: family.clone(),
+                                        constructor: format!("{family}.{}", ctor.name),
+                                        args,
+                                    },
+                                    control,
+                                    visitor,
+                                )?;
+                                tick(control)?;
+                            }
+                        }
+                        Ok(Some(values))
+                    })();
+                    if allow_degenerate {
+                        active.pop();
+                    }
+                    let Some(values) = result? else {
+                        return Ok(None);
+                    };
                     values
                 }
+                _ if allow_degenerate => return Ok(None),
                 _ => return Err("有限全域でない型を列挙した".into()),
             };
             tick(control)?;
-            Ok(values)
+            Ok(Some(values))
         })
     }
-    let mut enumeration = Enumeration::default();
-    enumeration.values = enumerate(
+    let mut enumeration = FiniteDomain::default();
+    let Some(values) = enumerate(
         ty,
         law,
         control,
@@ -478,8 +699,16 @@ fn enumerate_values(
         &mut enumeration,
         visitor,
         partial_maps,
-    )?;
-    enumeration.support.sort();
-    enumeration.support.dedup();
-    Ok(enumeration)
+        &mut Vec::new(),
+        allow_degenerate,
+    )?
+    else {
+        return Ok(None);
+    };
+    enumeration.enumeration.values = values;
+    enumeration.enumeration.support.sort();
+    enumeration.enumeration.support.dedup();
+    enumeration.missing.sort();
+    enumeration.missing.dedup();
+    Ok(Some(enumeration))
 }

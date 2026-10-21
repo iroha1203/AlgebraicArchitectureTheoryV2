@@ -634,7 +634,7 @@ impl Environment<'_> {
         let expected_free: Vec<_> = params
             .iter()
             .filter(|p| {
-                !request
+                !self.object_view_is_bound(p) && !request
                     .arguments
                     .iter()
                     .any(|a| a.name == format!("bind.{}", p.name))
@@ -644,7 +644,7 @@ impl Environment<'_> {
         let fixed: Vec<_> = params
             .iter()
             .filter(|p| {
-                request
+                self.object_view_is_bound(p) || request
                     .arguments
                     .iter()
                     .any(|a| a.name == format!("bind.{}", p.name))
@@ -913,8 +913,8 @@ impl Environment<'_> {
             .map(|(_, reference, _)| reference))
     }
 
-    /// 固定Answerの公開射影も、各caseで元Seedの束縛前Refを保持する。
-    pub(in crate::observed) fn completion_fixed_answer_binding(
+    /// 公開射影と有限viewの固定引数は、各caseで元Seedのproducerを保持する。
+    pub(in crate::observed) fn completion_fixed_binding(
         &self,
         graph: &Graph,
         parameter: &crate::law::model::Param,
@@ -945,6 +945,13 @@ impl Environment<'_> {
             .original_requests
             .and_then(|requests| requests.get(context.request))
             .ok_or("補完固定Answerの元Requestがない")?;
+        if self.object_view_is_bound(parameter) {
+            self.object_view_binding_matches(graph, parameter, binding.value)?;
+            if graph.context_at(binding.value.0) != seed.context {
+                return Err("有限view固定値が元Seedのproducerでない".into());
+            }
+            return Ok(Some(binding.value));
+        }
         let selected = request
             .arguments
             .iter()
@@ -994,7 +1001,7 @@ impl Environment<'_> {
         let fixed: Vec<_> = params
             .iter()
             .filter(|p| {
-                request
+                self.object_view_is_bound(p) || request
                     .arguments
                     .iter()
                     .any(|a| a.name == format!("bind.{}", p.name))
@@ -1012,6 +1019,13 @@ impl Environment<'_> {
                 || binding.value.0 >= source.0
             {
                 return Err("補完case固定bindings署名/producerが違う".into());
+            }
+            if self.object_view_is_bound(parameter) {
+                if binding.value != observed.value {
+                    return Err("有限view補完caseが元Seedのparameter producerでない".into());
+                }
+                self.object_view_binding_matches(graph, parameter, binding.value)?;
+                continue;
             }
             let selected = request
                 .arguments
@@ -1665,6 +1679,12 @@ impl Environment<'_> {
         {
             return Err("補完Seedの固定binding署名・型・prefixが違う".into());
         }
+        if self.object_view_is_bound(parameter) {
+            if graph.context_at(binding.value.0) != context {
+                return Err("有限view Seed値が元root producerでない".into());
+            }
+            return self.object_view_binding_matches(graph, parameter, binding.value);
+        }
         let selected = request
             .arguments
             .iter()
@@ -1762,7 +1782,7 @@ impl Environment<'_> {
         let free: Vec<_> = params
             .iter()
             .filter(|p| {
-                !request
+                !self.object_view_is_bound(p) && !request
                     .arguments
                     .iter()
                     .any(|a| a.name == format!("bind.{}", p.name))
@@ -1772,7 +1792,7 @@ impl Environment<'_> {
         let fixed: Vec<_> = params
             .iter()
             .filter(|p| {
-                request
+                self.object_view_is_bound(p) || request
                     .arguments
                     .iter()
                     .any(|a| a.name == format!("bind.{}", p.name))

@@ -89,6 +89,9 @@ pub(super) fn same_evaluation(a: Option<&ObjectEvaluation>, b: Option<&ObjectEva
                         && a.prepared().object_identity() == b.prepared().object_identity()
                         && a.prepared().object_instance() == b.prepared().object_instance()
                 }
+                (ObjectEvaluationOutcome::FiniteView(a), ObjectEvaluationOutcome::FiniteView(b)) => {
+                    super::object_view_family::same_family(a, b)
+                }
                 _ => false,
             }
         }

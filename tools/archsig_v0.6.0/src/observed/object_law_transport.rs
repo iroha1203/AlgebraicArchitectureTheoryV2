@@ -279,6 +279,9 @@ fn reading(
             r.application = LawApplication::ConditionalMembership(conditions.clone());
             return Ok(r);
         }
+        ObjectEvaluationOutcome::FiniteView(_) => {
+            return Err(ConstructionFailure::Inconsistent("Law読取りにviewの関数族がある".into()));
+        }
         ObjectEvaluationOutcome::Evaluated(e) => e,
     };
     let a = evaluation

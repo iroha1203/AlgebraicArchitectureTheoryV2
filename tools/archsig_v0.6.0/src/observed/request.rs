@@ -296,7 +296,19 @@ pub fn resolve_observed_requests_controlled(
     texts: &[&str],
     control: &mut Control,
 ) -> Result<ResolvedRequests, ResolveFailure> {
-    let result = resolve_inner(law, map, texts, control);
+    let result = resolve_inner(law, map, texts, control, None);
+    finish_request(result, control, Checkpoint::Resolve)
+}
+
+// 対象別の有限関数族だけが使う経路。通常CLIの全束縛規則は変えない。
+pub(super) fn resolve_object_view_requests(
+    law: &CheckedLaw,
+    map: &CheckedArchMap,
+    texts: &[&str],
+    control: &mut Control,
+    instance: &crate::construction::readings::ObjectInstance,
+) -> Result<ResolvedRequests, ResolveFailure> {
+    let result = resolve_inner(law, map, texts, control, Some(instance));
     finish_request(result, control, Checkpoint::Resolve)
 }
 
@@ -305,6 +317,7 @@ fn resolve_inner(
     map: &CheckedArchMap,
     texts: &[&str],
     control: &mut Control,
+    object_view: Option<&crate::construction::readings::ObjectInstance>,
 ) -> Result<ResolvedRequests, ResolveFailure> {
     let mut requests = Vec::new();
     let mut names = BTreeMap::new();
@@ -522,7 +535,13 @@ fn resolve_inner(
         for param in params {
             phase(control, Checkpoint::RequestBinding)?;
             if !arguments.contains_key(&format!("bind.{}", param.name)) {
-                if kind == QuestionKind::Evaluate {
+                if kind == QuestionKind::Evaluate
+                    && !object_view.is_some_and(|instance| {
+                        instance.declaration().kind == "view"
+                            && instance.declaration().name == full
+                            && instance.parameters().iter().any(|p| p == param)
+                    })
+                {
                     return finish_request(
                         Err(invalid(problem(
                             RequestIssueCode::MissingBinding,
@@ -534,7 +553,9 @@ fn resolve_inner(
                         Checkpoint::RequestBinding,
                     );
                 }
-                unbound.push(param.name.clone());
+                if kind != QuestionKind::Evaluate {
+                    unbound.push(param.name.clone());
+                }
             }
             phase(control, Checkpoint::RequestBinding)?;
         }

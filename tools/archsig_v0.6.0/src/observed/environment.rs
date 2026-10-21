@@ -13,6 +13,8 @@ use crate::{
     law::ast::{BinOp, ExprKind, UnOp},
     types::Type,
 };
+#[path = "object_view_family_environment.rs"]
+mod object_view_family;
 #[path = "architecture_environment.rs"]
 pub(super) mod architecture_environment;
 #[path = "answer_binding.rs"]
@@ -322,6 +324,7 @@ type NameTokenObserver = Box<dyn FnMut((usize, usize), super::call::Context)>;
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
     object: Option<std::sync::Arc<super::object_evaluate::ObjectDomain>>,
+    object_values: Option<&'a super::object_view_family::FiniteViewAssignment>,
     architecture: RefCell<Option<architecture_environment::ArchitectureContext>>,
     original_requests: Option<&'a [Request]>,
     subjects: BTreeMap<(String, String), &'a Subject>,
@@ -361,6 +364,7 @@ impl<'a> Environment<'a> {
             .object
             .as_ref()
             .map(|o| std::sync::Arc::new(o.domain.clone()));
+        environment.object_values = prepared.object.as_ref().and_then(|object| object.values.as_deref());
         Ok(environment)
     }
     pub(in crate::observed) fn with_requests(
@@ -441,6 +445,7 @@ impl<'a> Environment<'a> {
         Ok(Self {
             inputs,
             object: None,
+            object_values: None,
             architecture: RefCell::new(None),
             subjects,
             fields,
@@ -1245,6 +1250,15 @@ impl<'a> Environment<'a> {
             return Ok(());
         }
         if self.validate_map_condition_node(graph, node, limit)? {
+            return Ok(());
+        }
+        if self.finite_view_input(graph, node)? {
+            let context = self.current_context(graph);
+            if context.frame.is_some() || context.iteration.is_some()
+                || context.instance.is_some() || context.case.is_some()
+            {
+                return Err("有限view parameter producerが元root Contextにない".into());
+            }
             return Ok(());
         }
         if self.validate_completion_node(graph, node, limit)? {
@@ -3663,6 +3677,9 @@ impl<'a> Environment<'a> {
             let Some(Payload::Scalar(value)) = &node.payload else {
                 return Err("支持の依存先が通常値でない".into());
             };
+            if self.finite_view_input(graph, node)? {
+                return Ok(node.support.clone());
+            }
             for reference in &node.arguments {
                 self.tick()?;
                 if reference.0 >= limit {
@@ -4024,7 +4041,7 @@ impl<'a> Environment<'a> {
                 .arguments
                 .iter()
                 .filter(|a| a.name.starts_with("bind."))
-                .count()
+                .count() + self.object_view_binding_count()
                 != params.len()
         {
             return Err("Requestの明示束縛数がAnswerと違う".into());
@@ -4034,6 +4051,10 @@ impl<'a> Environment<'a> {
             self.require_owned_binding(graph, request, parameter, binding.value)?;
             if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
                 return Err("Requestのparameter署名がAnswerと違う".into());
+            }
+            if self.object_view_binding(graph, parameter)?.is_some() {
+                self.object_view_binding_matches(graph, parameter, binding.value)?;
+                continue;
             }
             let key = format!("bind.{}", parameter.name);
             let mut selected = None;
@@ -6479,6 +6500,18 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                     continue;
                 }
+                if self.object_view_binding(graph, parameter)?.is_some() {
+                    self.object_view_binding_matches(graph, parameter, binding.value)?;
+                    let original = graph.get(binding.value)?;
+                    base.merge(&original.scope);
+                    variables.insert(binding.name.clone(), SourceValue {
+                        condition_failed: false, condition_pending: false, symbolic: None,
+                        comparison: None, affine: None, scope: base.clone(), known_value: Some(value.clone()),
+                        support: original.support.clone(), scalar_scope: Some(original.scope.clone()),
+                    });
+                    self.tick()?;
+                    continue;
+                }
                 let Scalar::Subject {
                     snapshot,
                     subject,
@@ -6518,6 +6551,12 @@ impl<'a> Environment<'a> {
                     return Err("元SourceがRequest宣言と違う".into());
                 }
                 for binding in bindings {
+                    let parameter = params.iter().find(|p| p.name == binding.name)
+                        .ok_or("元Sourceのparameterがない")?;
+                    if self.object_view_binding(graph, parameter)?.is_some() {
+                        self.object_view_binding_matches(graph, parameter, binding.value)?;
+                        continue;
+                    }
                     let arg = request
                         .arguments
                         .iter()

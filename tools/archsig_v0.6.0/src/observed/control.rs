@@ -58,6 +58,8 @@ pub enum Checkpoint {
     ObjectInstances,
     ObjectEvaluation,
     ObjectEvaluationTable,
+    ObjectViewFamily,
+    ObjectViewFamilyRow,
     ObjectViewTransport,
     ObjectLawTransport,
     ObjectLawFamily,

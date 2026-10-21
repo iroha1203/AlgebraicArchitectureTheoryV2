@@ -598,3 +598,7 @@ mod tests {
         }
     }
 }
+
+pub use crate::observed::object_view_family::{
+    FiniteObjectView, FiniteViewDomain, FiniteViewRow, FiniteViewValue,
+};

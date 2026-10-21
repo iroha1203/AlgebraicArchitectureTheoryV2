@@ -13,6 +13,7 @@ mod numeric;
 pub(crate) mod numeric_transport;
 pub(crate) mod object_evaluate;
 pub(crate) mod object_evaluation_table;
+pub(crate) mod object_view_family;
 pub(crate) mod object_law_transport;
 mod object_transport;
 pub(crate) mod object_view_transport;
