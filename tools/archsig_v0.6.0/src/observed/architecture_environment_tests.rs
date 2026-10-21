@@ -318,3 +318,51 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
         }
     }
 }
+
+#[test]
+fn unbound_owner_templates_recheck_the_actual_row_producers() {
+    let mut c = quiet();
+    let result = evaluate_observed_bytes(
+        fixture::input(
+            "law required nestedOwner(x:System):forall s:State[x] . s.free+s.held=2;",
+            None,
+        ),
+        &[
+            fixture::MAP,
+            "a=check(Reservations.nestedOwner,on=$m.candidate.source)",
+            "b=check(Reservations.nestedOwner,on=$m.candidate.target)",
+        ],
+        &mut c,
+    )
+    .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(result.answers[1].status, Decision::Established);
+    assert_eq!(result.answers[2].status, Decision::Refuted);
+    replay(&result, &result.nodes).unwrap();
+    let domains: Vec<_> = result
+        .nodes
+        .iter()
+        .enumerate()
+        .filter(|(index, node)| {
+            result.contexts[*index].instance.is_some()
+                && matches!(node.payload, Some(Payload::Domain { .. }))
+                && matches!(node.rule, Rule::Construction("domain"))
+        })
+        .map(|(index, _)| index)
+        .collect();
+    assert_eq!(domains.len(), 2);
+    let other_owner = result.nodes[domains[1]].arguments[1];
+    let mut nodes = result.nodes.clone();
+    assert_ne!(nodes[domains[0]].arguments[1], other_owner);
+    nodes[domains[0]].arguments[1] = other_owner;
+    assert!(matches!(
+        replay(&result, &nodes),
+        Err(ValidationFailure::Internal(_))
+    ));
+    let mut nodes = result.nodes.clone();
+    nodes[domains[0]].arguments.remove(1);
+    assert!(matches!(
+        replay(&result, &nodes),
+        Err(ValidationFailure::Internal(_))
+    ));
+}

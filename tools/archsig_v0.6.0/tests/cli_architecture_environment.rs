@@ -673,3 +673,164 @@ law required dependentScope(a:System,s:State[a]):true;
     assert!(arr(get(observed, "modes")).is_empty());
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn available_environment_root_binds_independently_of_the_producer_value() {
+    for (atom, supplied) in [("p-free", true), ("p-owner", false)] {
+        let map = fixture::remove_atom(atom);
+        let dir = inputs(
+            &format!("architecture-root-projection-{atom}"),
+            "view rootEq(a:System):Bool=a=a; law required boundRoot(a:System,b:Bool):a=a and b=b;",
+            Some(&map),
+        );
+        let r = asks(
+            &dir,
+            &[
+                fixture::MAP,
+                "a=evaluate(Reservations.smallStates,on=$m.candidate.source)",
+                "root=evaluate(Reservations.rootEq,a=$a.evaluation.environment.root)",
+                "scoped=evaluate(Reservations.rootEq,a=$a.evaluation.environment.root,on=$m.candidate.source)",
+                "family=check(Reservations.boundRoot,a=$a.evaluation.environment.root)",
+                "n=needed($root)",
+                "origin=evaluate(Reservations.no)",
+                "omitted=evaluate(Reservations.rootEq,a=$origin.evaluation.environment.root)",
+                "independent=evaluate(Reservations.no)",
+            ],
+        );
+        assert_eq!(r.code, 2, "{}", r.stdout);
+        let j = result_json(&dir, &r);
+        assert_eq!(s(get(answer(&j, "a"), "status")), "undetermined");
+        for id in ["root", "scoped", "family"] {
+            let a = answer(&j, id);
+            assert_eq!(
+                s(get(a, "status")),
+                if supplied {
+                    "established"
+                } else {
+                    "undetermined"
+                },
+                "{atom}/{id}"
+            );
+            if supplied {
+                assert!(arr(get(a, "reasons")).is_empty());
+                let evaluation = value(&j, get(get(a, "outputs"), "evaluation"));
+                assert_eq!(
+                    value(&j, get(evaluation, "value")),
+                    &archsig::json::parse(b"true").unwrap()
+                );
+                if id == "family" {
+                    assert_eq!(
+                        arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
+                        2
+                    );
+                }
+            } else {
+                let reasons = fixture::owned(get(a, "reasons")).canonical();
+                assert!(reasons.contains("dependency_blocked"));
+                assert!(reasons.contains("Reservations.State.owner"));
+            }
+        }
+        let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+        let serialized = fixture::owned(plan).canonical();
+        assert_eq!(serialized.contains("Reservations.State.owner"), !supplied);
+        // neededは元の依存先の未観測も列挙するが、確定rootのblockerは増やさない。
+        assert_eq!(serialized.contains("Reservations.State.free"), supplied);
+        assert_eq!(arr(get(plan, "blockers")).is_empty(), supplied);
+        let omitted = fixture::owned(get(answer(&j, "omitted"), "reasons")).canonical();
+        assert!(omitted.contains("condition_failed"));
+        assert_eq!(s(get(answer(&j, "independent"), "status")), "established");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn unbound_root_law_retains_internal_owned_quantification_and_partial_bindings() {
+    let dir = inputs(
+        "architecture-nested-owner-family",
+        r#"
+view yes():Bool=true;
+law required nestedOwner(x:System):forall s:State[x] . s.free+s.held=2;
+law required partiallyBound(x:System,b:Bool):forall s:State[x] . (s.free+s.held=2 and b);
+law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : true;
+"#,
+        None,
+    );
+    let r = asks(
+        &dir,
+        &[
+            fixture::MAP,
+            "source=check(Reservations.nestedOwner,on=$m.candidate.source)",
+            "target=check(Reservations.nestedOwner,on=$m.candidate.target)",
+            "observed=check(Reservations.nestedOwner)",
+            "truth=evaluate(Reservations.yes)",
+            "falsity=evaluate(Reservations.no)",
+            "partial=check(Reservations.partiallyBound,b=$truth.value,on=$m.candidate.source)",
+            "bad=check(Reservations.partiallyBound,b=$falsity.value,on=$m.candidate.source)",
+            "guard=check(Reservations.guardedOwner,on=$m.candidate.source)",
+            "external=check(Reservations.nestedOwner,x=@v/B,on=$m.candidate.source)",
+        ],
+    );
+    assert_eq!(r.code, 1, "{}", r.stdout);
+    let j = result_json(&dir, &r);
+    assert_eq!(s(get(&r.receipt, "status")), "complete");
+    for (id, status, rows) in [
+        ("source", "established", 1),
+        ("target", "refuted", 1),
+        ("observed", "refuted", 2),
+        ("partial", "established", 1),
+        ("bad", "refuted", 1),
+        ("guard", "established", 1),
+    ] {
+        let a = answer(&j, id);
+        assert_eq!(s(get(a, "status")), status, "{id}");
+        let evaluation = value(&j, get(get(a, "outputs"), "evaluation"));
+        assert_eq!(
+            arr(get(&arr(get(evaluation, "parts"))[0], "children")).len(),
+            rows,
+            "{id}"
+        );
+    }
+    assert_eq!(s(get(answer(&j, "external"), "status")), "refuted");
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn unbound_owned_quantification_preserves_missing_fields_and_independent_results() {
+    for (atom, field) in [
+        ("p-free", "Reservations.State.free"),
+        ("p-owner", "Reservations.State.owner"),
+    ] {
+        let map = fixture::remove_atom(atom);
+        let dir = inputs(
+            &format!("architecture-nested-owner-{atom}"),
+            "law required nestedOwner(x:System):forall s:State[x] . s.free+s.held=2;",
+            Some(&map),
+        );
+        let r = asks(
+            &dir,
+            &[
+                fixture::MAP,
+                "a=check(Reservations.nestedOwner,on=$m.candidate.source)",
+                "n=needed($a)",
+                "keep=evaluate(Reservations.no)",
+            ],
+        );
+        assert_eq!(r.code, 2, "{}", r.stdout);
+        let j = result_json(&dir, &r);
+        assert_eq!(s(get(answer(&j, "a"), "status")), "undetermined");
+        assert_eq!(s(get(answer(&j, "keep"), "status")), "established");
+        assert!(fixture::owned(&j).canonical().contains(field));
+        let plan = value(&j, get(get(answer(&j, "n"), "outputs"), "plan"));
+        assert!(
+            fixture::owned(get(plan, "requirements"))
+                .canonical()
+                .contains(field)
+        );
+        assert!(
+            !fixture::owned(get(&j, "issues"))
+                .canonical()
+                .contains("internal")
+        );
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}

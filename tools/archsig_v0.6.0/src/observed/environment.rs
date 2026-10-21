@@ -6236,10 +6236,25 @@ impl<'a> Environment<'a> {
             }
             arguments.push(input);
         }
+        // whole族の原式では未束縛ownerを選ばない。各実rowのSourceが
+        // 実際のparameter producerをOwned型域へ結び、その由来を再検査する。
         if let Some(&id) = self.expressions.get(&span)
             && matches!(self.inputs.law().exprs[id].kind, ExprKind::Quant { .. })
         {
-            arguments.extend(self.owned_type_arguments(graph, id, bindings)?);
+            let family_template = if context.frame.is_none()
+                && context.iteration.is_none()
+                && context.instance.is_none()
+            {
+                self.family_plan(&graph.requests[context.request])?.is_some_and(|plan| {
+                    span == self.inputs.law().exprs[plan.body].span
+                        || Some(span) == plan.guard.map(|guard| self.inputs.law().exprs[guard].span)
+                })
+            } else {
+                false
+            };
+            if !family_template {
+                arguments.extend(self.owned_type_arguments(graph, id, bindings)?);
+            }
         }
         Ok(arguments)
     }

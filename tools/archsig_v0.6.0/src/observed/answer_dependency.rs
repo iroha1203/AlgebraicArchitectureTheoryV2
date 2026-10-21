@@ -76,6 +76,18 @@ impl Environment<'_> {
                 .iter()
                 .find(|parameter| argument.name == format!("bind.{}", parameter.name))
                 .ok_or("依存停止の元parameterがない")?;
+            if environment {
+                // 元評価の値が未決でも、検査済み環境の公開fieldは独立に使える。
+                // 不適合fieldは後段の射影条件で説明し、未生成の場合だけ依存を止める。
+                let available = self.with_request_context(graph, request, || {
+                    self.answer_binding(graph, &argument.value, parameter.span)
+                });
+                match available {
+                    Ok(_) => continue,
+                    Err(ValidationFailure::UnsupportedExpression { .. }) => {}
+                    Err(error) => return Err(error),
+                }
+            }
             let producer = self.answer_binding_source(graph, current, id, parameter.span)?;
             scope.merge(&producer.scope);
             let value = if evaluation {
