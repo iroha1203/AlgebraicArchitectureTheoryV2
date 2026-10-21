@@ -1,5 +1,4 @@
 //! 対応する対象の全束縛viewを実評価し、型全域の値写像との可換性を検査する。
-use super::object_transport::same_evaluation;
 use super::{
     control::{Checkpoint, Control, StopReason},
     data, finite,
@@ -26,6 +25,12 @@ use crate::{
     types::Type,
 };
 use std::sync::Arc;
+#[path = "object_view_transport_family.rs"]
+mod family;
+pub use family::{
+    FamilyTypeFailure, FiniteViewTransport, FiniteViewTypeMap, ViewFamilyReturnMap,
+    ViewParameterComparison,
+};
 
 #[derive(Debug)]
 pub enum ObjectViewTransportFailure {
@@ -36,6 +41,7 @@ pub enum ObjectViewTransportFailure {
         object: ObjectIdentity,
         instance: Box<ObjectInstance>,
         returns: Type,
+        partial: Option<Box<ObjectViewTransportPartial>>,
     },
     Evaluation {
         operation: Box<ConfigurationOperation>,
@@ -67,6 +73,9 @@ pub enum ViewConditionFailure {
         bindings: Vec<(String, FactPointer)>,
     },
     ValueType,
+    ParameterType {
+        position: usize,
+    },
     Applicability,
     Value,
 }
@@ -129,6 +138,7 @@ pub struct ObjectViewTransport {
     image: Option<ViewTransportValue>,
     target_value: Option<ViewTransportValue>,
     outcome: ViewTransportOutcome,
+    family: Option<FiniteViewTransport>,
 }
 /// 未着手の比較に結論を与えず、検査済みの構成・評価・値を保持する。
 #[derive(Debug)]
@@ -137,6 +147,9 @@ pub struct ObjectViewTransportPartial {
     outcome: Option<ViewTransportOutcome>,
 }
 impl ObjectViewTransportPartial {
+    pub fn family(&self) -> Option<&FiniteViewTransport> {
+        self.state.family()
+    }
     pub fn operation(&self) -> &ConfigurationOperation {
         self.state.operation()
     }
@@ -185,6 +198,9 @@ impl ObjectViewTransportPartial {
     }
 }
 impl ObjectViewTransport {
+    pub fn family(&self) -> Option<&FiniteViewTransport> {
+        self.family.as_ref()
+    }
     pub fn operation(&self) -> &ConfigurationOperation {
         self.objects.operation()
     }
@@ -239,26 +255,54 @@ impl ObjectViewTransport {
     ) -> Result<(), ObjectViewTransportFailure> {
         tick(c)?;
         let r = object_view_transport(inputs, &self.declarations, self.object, self.instance, c)?;
-        if self.declarations != r.declarations
-            || self.objects != r.objects
-            || self.source_readings != r.source_readings
-            || self.target_readings != r.target_readings
-            || self.target_object != r.target_object
-            || self.target_instance != r.target_instance
-            || !same_evaluation(self.source.as_ref(), r.source.as_ref())
-            || !same_evaluation(self.target.as_ref(), r.target.as_ref())
-            || self.equivalence != r.equivalence
-            || self.source_value != r.source_value
-            || self.image != r.image
-            || self.target_value != r.target_value
-            || self.outcome != r.outcome
-        {
+        let comparison = (|| -> Result<bool, ConstructionFailure> {
+            let same = family::same(self.family.as_ref(), r.family.as_ref(), c)?;
+            let equal = same
+                && !(self.declarations != r.declarations
+                    || self.objects != r.objects
+                    || self.source_readings != r.source_readings
+                    || self.target_readings != r.target_readings
+                    || self.target_object != r.target_object
+                    || self.target_instance != r.target_instance
+                    || !super::object_transport::same_evaluation_controlled(
+                        self.source.as_ref(),
+                        r.source.as_ref(),
+                        c,
+                    )?
+                    || !super::object_transport::same_evaluation_controlled(
+                        self.target.as_ref(),
+                        r.target.as_ref(),
+                        c,
+                    )?
+                    || self.equivalence != r.equivalence
+                    || self.source_value != r.source_value
+                    || self.image != r.image
+                    || self.target_value != r.target_value
+                    || self.outcome != r.outcome);
+            tick(c)?;
+            Ok(equal)
+        })();
+        let equal = match comparison {
+            Ok(equal) => equal,
+            Err(ConstructionFailure::Stopped(reason)) => {
+                let operation = Box::new(r.operation().clone());
+                let outcome = Some(r.outcome.clone());
+                return Err(ObjectViewTransportFailure::Stopped {
+                    reason,
+                    operation,
+                    partial: Some(Box::new(ObjectViewTransportPartial { state: r, outcome })),
+                    evaluation: None,
+                    transport: None,
+                });
+            }
+            Err(failure) => return Err(failure.into()),
+        };
+        if !equal {
             return Err(ConstructionFailure::Inconsistent(
                 "対象viewの対応・実評価・値可換性が現在入力と違う".into(),
             )
             .into());
         }
-        tick(c)?;
         Ok(())
     }
 }
@@ -277,6 +321,11 @@ fn scalar(e: &ObjectEvaluation) -> Result<Option<Scalar>, ConstructionFailure> {
     let ObjectEvaluationOutcome::Evaluated(e) = e.outcome() else {
         return Ok(None);
     };
+    scalar_evaluation(e)
+}
+fn scalar_evaluation(
+    e: &super::result::ObservedEvaluation,
+) -> Result<Option<Scalar>, ConstructionFailure> {
     let a = e
         .answers
         .first()
@@ -298,6 +347,7 @@ fn not_implemented(
     r: &ObjectViewTransport,
 ) -> Result<ObjectViewTransportFailure, ConstructionFailure> {
     Ok(ObjectViewTransportFailure::NotImplemented {
+        partial: None,
         operation: Box::new(r.operation().clone()),
         object: r.object().clone(),
         instance: Box::new(r.instance().clone()),
@@ -402,12 +452,10 @@ fn checked_view_transport(
         image: None,
         target_value: None,
         outcome: ViewTransportOutcome::Undetermined,
+        family: None,
     };
     let mut decided = false;
     let calculated = (|| -> Result<(), ObjectViewTransportFailure> {
-        if !r.instance().parameters().is_empty() {
-            return Err(not_implemented(&r)?);
-        }
         let mapped = r
             .objects
             .objects()
@@ -455,6 +503,12 @@ fn checked_view_transport(
             tick(c)?;
             return Ok(());
         };
+        if !r.instance().parameters().is_empty() {
+            family::evaluate(Arc::clone(&inputs), &mut r, to, ti, c)?;
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
         let returns = r
             .instance()
             .declaration()
@@ -559,7 +613,8 @@ fn checked_view_transport(
         Ok(()) => Ok(r),
         Err(failure) => {
             let operation = Box::new(r.operation().clone());
-            let outcome = decided.then(|| r.outcome.clone());
+            let outcome = (decided || r.family.as_ref().is_some_and(|f| f.is_complete()))
+                .then(|| r.outcome.clone());
             let partial = Some(Box::new(ObjectViewTransportPartial { state: r, outcome }));
             match failure {
                 ObjectViewTransportFailure::Construction(ConstructionFailure::Stopped(reason)) => {
@@ -588,6 +643,19 @@ fn checked_view_transport(
                         })
                     }
                 }
+                ObjectViewTransportFailure::NotImplemented {
+                    operation,
+                    object,
+                    instance,
+                    returns,
+                    ..
+                } => Err(ObjectViewTransportFailure::NotImplemented {
+                    operation,
+                    object,
+                    instance,
+                    returns,
+                    partial,
+                }),
                 failure => Err(failure),
             }
         }
@@ -603,6 +671,9 @@ mod tests {
     };
     use crate::observed::input::{InputSources, check_inputs};
     fn example() -> (Arc<CheckedInputs>, ObjectViewTransport) {
+        example_named("Before.amount")
+    }
+    pub(super) fn example_named(name: &str) -> (Arc<CheckedInputs>, ObjectViewTransport) {
         let left = include_bytes!("../../tests/fixtures/object-view-transport.atoms.json");
         let right = include_bytes!("../../tests/fixtures/configuration-map-right.atoms.json");
         let ds = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
@@ -663,9 +734,7 @@ mod tests {
         let n = p
             .instances()
             .iter()
-            .position(|r| {
-                r.declaration().name == "Before.amount" && r.bindings()[0].subject().subject == "p"
-            })
+            .position(|r| r.declaration().name == name && r.bindings()[0].subject().subject == "p")
             .unwrap();
         let r = object_view_transport(Arc::clone(&i), &d, o, n, &mut Control::unlimited()).unwrap();
         (i, r)

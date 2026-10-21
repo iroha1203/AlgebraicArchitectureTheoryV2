@@ -41,6 +41,9 @@ impl PartialEq for FiniteViewValue {
     }
 }
 impl FiniteViewValue {
+    pub(super) fn scalar(&self) -> &Scalar {
+        &self.value
+    }
     pub fn ty(&self) -> crate::types::Type {
         self.value.ty()
     }
@@ -96,6 +99,10 @@ pub struct FiniteObjectView {
     complete: bool,
 }
 impl FiniteObjectView {
+    #[cfg(test)]
+    pub(super) fn row_evaluation_mut_for_test(&mut self, index: usize) -> Option<&mut ObservedEvaluation> {
+        self.rows.get_mut(index).map(|row| &mut row.evaluation)
+    }
     pub fn missing(&self) -> &[Fact] {
         &self.missing
     }

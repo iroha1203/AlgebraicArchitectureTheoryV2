@@ -278,9 +278,10 @@ fn domain(
 fn moved_type(
     ty: &Type,
     mu: &BTreeMap<String, String>,
+    alpha: &BTreeMap<String, String>,
     control: &mut Control,
 ) -> Result<Type, ConstructionFailure> {
-    crate::construction::maps::moved_declaration_type(ty, mu, &BTreeMap::new(), control)
+    crate::construction::maps::moved_declaration_type(ty, mu, alpha, control)
 }
 fn same(a: &Scalar, b: &Scalar, control: &mut Control) -> Result<bool, ConstructionFailure> {
     tick(control)?;
@@ -315,6 +316,7 @@ fn image(
     inputs: &CheckedInputs,
     mu: &BTreeMap<String, String>,
     action: &BTreeMap<Fact, Fact>,
+    alpha: &BTreeMap<String, String>,
     control: &mut Control,
 ) -> Result<Scalar, ConstructionFailure> {
     stacker::maybe_grow(64 * 1024, 4 * 1024 * 1024, || {
@@ -362,21 +364,31 @@ fn image(
             Scalar::Tuple(items) => {
                 let mut moved = Vec::new();
                 for a in items {
-                    moved.push(image(a, inputs, mu, action, control)?);
+                    moved.push(image(a, inputs, mu, action, alpha, control)?);
                 }
                 Scalar::Tuple(moved)
             }
+            Scalar::List { element, items } => {
+                let mut moved = Vec::new();
+                for item in items {
+                    moved.push(image(item, inputs, mu, action, alpha, control)?);
+                }
+                Scalar::List {
+                    element: moved_type(element, mu, alpha, control)?,
+                    items: moved,
+                }
+            }
             Scalar::Option { element, value } => Scalar::Option {
-                element: moved_type(element, mu, control)?,
+                element: moved_type(element, mu, alpha, control)?,
                 value: match value {
-                    Some(v) => Some(Box::new(image(v, inputs, mu, action, control)?)),
+                    Some(v) => Some(Box::new(image(v, inputs, mu, action, alpha, control)?)),
                     None => None,
                 },
             },
             Scalar::Set { element, items } => {
                 let mut moved = Vec::new();
                 for a in items {
-                    let b = image(a, inputs, mu, action, control)?;
+                    let b = image(a, inputs, mu, action, alpha, control)?;
                     let mut duplicate = false;
                     for prior in &moved {
                         tick(control)?;
@@ -390,7 +402,7 @@ fn image(
                     }
                 }
                 Scalar::Set {
-                    element: moved_type(element, mu, control)?,
+                    element: moved_type(element, mu, alpha, control)?,
                     items: moved,
                 }
             }
@@ -401,8 +413,8 @@ fn image(
             } => {
                 let mut moved: Vec<(Scalar, Scalar)> = Vec::new();
                 for (a, b) in pairs {
-                    let a = image(a, inputs, mu, action, control)?;
-                    let b = image(b, inputs, mu, action, control)?;
+                    let a = image(a, inputs, mu, action, alpha, control)?;
+                    let b = image(b, inputs, mu, action, alpha, control)?;
                     let mut duplicate = false;
                     for (key, value) in &moved {
                         tick(control)?;
@@ -418,8 +430,8 @@ fn image(
                     }
                 }
                 Scalar::Map {
-                    domain: moved_type(domain, mu, control)?,
-                    codomain: moved_type(codomain, mu, control)?,
+                    domain: moved_type(domain, mu, alpha, control)?,
+                    codomain: moved_type(codomain, mu, alpha, control)?,
                     pairs: moved,
                 }
             }
@@ -430,7 +442,7 @@ fn image(
             } => {
                 let mut moved = Vec::new();
                 for a in args {
-                    moved.push(image(a, inputs, mu, action, control)?);
+                    moved.push(image(a, inputs, mu, action, alpha, control)?);
                 }
                 Scalar::Data {
                     family: family.clone(),
@@ -446,6 +458,38 @@ fn image(
             }
         })
     })
+}
+pub(super) fn candidate_image(
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    declaration: &str,
+    value: &Scalar,
+    control: &mut Control,
+) -> Result<Scalar, ConstructionFailure> {
+    let mu = declarations.types().iter().cloned().collect();
+    let map = declarations.operation().map().candidate();
+    let mut action = BTreeMap::new();
+    for fact in map.source_configuration().family() {
+        tick(control)?;
+        if fact.field.is_none() {
+            action.insert(
+                fact.clone(),
+                map.image(fact)
+                    .ok_or_else(|| {
+                        ConstructionFailure::Inconsistent("参照の候補作用がない".into())
+                    })?
+                    .clone(),
+            );
+        }
+    }
+    let pair = declarations
+        .candidates()
+        .iter()
+        .find(|candidate| candidate.source().name == declaration)
+        .and_then(|candidate| candidate.pair())
+        .ok_or_else(|| ConstructionFailure::Inconsistent("元宣言の値対応がない".into()))?;
+    let alpha = pair.parameters().iter().cloned().collect();
+    image(value, inputs, &mu, &action, &alpha, control)
 }
 /// 対応済み宣言の有限な値型を、既存核で全列挙して順逆対応を検査する。
 /// 適用域外はこのnative有限APIの選択エラーであり、公開問いの算法判定ではない。
@@ -492,7 +536,7 @@ pub fn finite_declaration_value_transport(
     let mut candidate_fibers: Vec<(usize, Option<usize>, Vec<usize>)> = Vec::new();
     for (index, value) in source.values.iter().enumerate() {
         tick(control)?;
-        let moved = image(value, inputs, &mu, &action, control)?;
+        let moved = image(value, inputs, &mu, &action, &BTreeMap::new(), control)?;
         let mut found = None;
         let invalid = shape(&moved, inputs, control)?;
         if invalid.is_none() {

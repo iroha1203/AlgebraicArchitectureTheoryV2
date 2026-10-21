@@ -61,6 +61,8 @@ pub enum Checkpoint {
     ObjectViewFamily,
     ObjectViewFamilyRow,
     ObjectViewTransport,
+    ObjectViewTransportFamily,
+    ObjectViewTransportFamilyRow,
     ObjectLawTransport,
     ObjectLawFamily,
     Expression,
