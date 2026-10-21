@@ -391,3 +391,93 @@ fn comparison_computation_stops_keep_only_completed_decisions_and_never_probe_af
         }
     }
 }
+#[test]
+fn action_refutation_computation_stops_keep_the_point_and_both_images_together() {
+    let qs = [
+        E,
+        fixture::F,
+        fixture::C,
+        "d=evaluate(Walk.step,e=@v/different)",
+        "a=compare($c.operation,to=$d.value,kind=action)",
+    ];
+    let prefix = example(&qs[..4]);
+    let prepared = prepare_observed(
+        fixture::input(false, "compare-unit"),
+        &qs,
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
+    let graph = || {
+        let mut g = rebuild_for_origin_and_support_recheck(&prefix, &prefix.nodes).unwrap();
+        g.requests = prepared.requests().requests().to_vec();
+        g.active = crate::observed::call::Context {
+            request: 4,
+            frame: None,
+            iteration: None,
+            instance: None,
+            case: None,
+        };
+        g
+    };
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let mut probe = Control::new(Limits::default(), move |p| {
+        if p == Checkpoint::FiniteIteration {
+            seen.set(seen.get() + 1);
+        }
+        Usage::default()
+    });
+    let normal = crate::observed::public_compare::evaluate(
+        &prepared,
+        &env,
+        &mut graph(),
+        &prepared.requests().requests()[4],
+        &mut probe,
+    )
+    .unwrap();
+    assert_eq!(normal.status, Decision::Refuted);
+    let total = count.get();
+    assert!(total > 5);
+    for at in [1, total / 2, total - 1, total] {
+        for mode in 0..4 {
+            let (mut c, count) = stopping(at, mode, Checkpoint::FiniteIteration);
+            let mut g = graph();
+            let result = crate::observed::public_compare::evaluate(
+                &prepared,
+                &env,
+                &mut g,
+                &prepared.requests().requests()[4],
+                &mut c,
+            );
+            if at == total {
+                let a = result.unwrap();
+                assert_eq!(a.status, Decision::Refuted);
+                let Some(Payload::Construction(v)) = &g.get(a.evidence[0]).unwrap().payload else {
+                    panic!()
+                };
+                let D::Comparison(Part::Evidence { facts, .. }) = &v.data else {
+                    panic!()
+                };
+                assert_eq!(
+                    facts.iter().map(|f| f.subject.as_str()).collect::<Vec<_>>(),
+                    ["q", "r", "q"]
+                );
+                assert!(facts
+                    .iter()
+                    .all(|f| f.snapshot == "v" && f.field.is_none() && f.atom.is_none()));
+                env.validate_answer(&g, &prepared.requests().requests()[4], &a)
+                    .unwrap();
+            } else {
+                assert!(
+                    matches!(result, Err(ValidationFailure::Stop(_))),
+                    "反例未完成の停止では比較を確定しない: {result:?}"
+                );
+                assert!(g.nodes.iter().all(|n|!matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.witness,crate::observed::construction_result::Witness::Compare(_)))));
+            }
+            assert_eq!(count.get(), at);
+            assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
+            assert_eq!(count.get(), at);
+        }
+    }
+}

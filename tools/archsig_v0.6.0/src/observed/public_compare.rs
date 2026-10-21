@@ -317,6 +317,7 @@ pub(super) fn validate_node(
             if w.equal == Some(true)
                 || (*left, *right) != pair
                 || facts != &w.facts
+                || (w.equal == Some(false) && w.kind == "action" && facts.len() != 3)
                 || n.judgment.is_some()
                 || !n.evidence.is_empty()
             {
@@ -516,12 +517,21 @@ fn path_difference(
     a: &super::path_value::PathValue,
     b: &super::path_value::PathValue,
     control: &mut Control,
-) -> Result<Vec<Fact>, ValidationFailure> {
-    let step = a
-        .step
-        .as_ref()
-        .or(b.step.as_ref())
-        .ok_or("異なる作用に生成元がない")?;
+) -> Result<Option<Vec<Fact>>, ValidationFailure> {
+    let Some(step) = a.step.as_ref().or(b.step.as_ref()) else {
+        return Ok(None);
+    };
+    if let (Some(a), Some(b)) = (&a.step, &b.step) {
+        if a.carrier.len() != b.carrier.len() {
+            return Err("Path比較の共通carrierの件数が違う".into());
+        }
+        for (x, y) in a.carrier.iter().zip(&b.carrier) {
+            control.checkpoint(Checkpoint::FiniteIteration)?;
+            if x != y {
+                return Err("Path比較の共通carrierが違う".into());
+            }
+        }
+    }
     for (i, fact) in step.carrier.iter().enumerate() {
         control.checkpoint(Checkpoint::FiniteIteration)?;
         let left = match &a.step {
@@ -533,10 +543,10 @@ fn path_difference(
             None => fact,
         };
         if left != right {
-            return Ok(vec![fact.clone(), left.clone(), right.clone()]);
+            return Ok(Some(vec![fact.clone(), left.clone(), right.clone()]));
         }
     }
-    Err("作用の不一致位置がない".into())
+    Ok(None)
 }
 fn completed_operation<T>(
     outcome: Result<T, crate::construction::ConstructionFailure>,
@@ -615,15 +625,12 @@ pub(super) fn evaluate(
             }
             Some(same)
         } else {
-            let same = a.same_action(b, control)?;
-            if !same {
-                match path_difference(a, b, control) {
-                    Ok(f) => facts = f,
-                    Err(ValidationFailure::Stop(s)) => stopped = Some(s),
-                    Err(e) => return Err(e),
-                }
+            let difference = path_difference(a, b, control)?;
+            let equal = difference.is_none();
+            if let Some(f) = difference {
+                facts = f;
             }
-            Some(same)
+            Some(equal)
         }
     } else {
         let a = super::public_compose::op(graph, left)?;

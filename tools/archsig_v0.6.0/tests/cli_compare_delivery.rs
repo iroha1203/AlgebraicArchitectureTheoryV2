@@ -227,6 +227,19 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
         assert!(!has(get(answer, "outputs"), "map"));
         assert!(has(get(answer, "outputs"), "comparison"));
         assert_eq!(arr(get(answer, "evidence")).len(), 1);
+        let proof = &arr(get(answer, "evidence"))[0];
+        let evidence = arr(get(&result, "nodes"))
+            .iter()
+            .find(|n| get(n, "id") == get(proof, "node"))
+            .unwrap();
+        let facts = arr(get(get(get(evidence, "value"), "data"), "facts"));
+        assert_eq!(
+            facts
+                .iter()
+                .map(|f| s(get(f, "subject")))
+                .collect::<Vec<_>>(),
+            ["q", "r", "q"]
+        );
         assert!(arr(get(&result, "nodes"))
             .iter()
             .all(|n| s(get(n, "state")) == "value"));
