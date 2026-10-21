@@ -14,12 +14,15 @@ use crate::{
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
+#[path = "request_map.rs"]
+mod configuration_map;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum QuestionKind {
     Evaluate,
     Check,
     Needed,
+    Map,
 }
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
@@ -27,12 +30,16 @@ impl QuestionKind {
             Self::Evaluate => "evaluate",
             Self::Check => "check",
             Self::Needed => "needed",
+            Self::Map => "map",
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Selector {
+    Enum {
+        value: String,
+    },
     Declaration {
         name: String,
     },
@@ -48,6 +55,9 @@ pub enum Selector {
 impl Selector {
     pub fn wire(&self) -> Json {
         match self {
+            Self::Enum { value } => {
+                Json::obj([("kind", Json::str("enum")), ("value", Json::str(value))])
+            }
             Self::Declaration { name } => Json::obj([
                 ("kind", Json::str("declaration")),
                 ("name", Json::str(name)),
@@ -146,8 +156,11 @@ pub struct Request {
     pub constraints: Vec<BindingConstraint>,
 }
 impl Request {
-    /// 宣言をheadに持つ問いの名前。neededのheadは問いIDなのでNone。
+    /// Law/view宣言を選ぶ問いの名前。原始correspondenceと問いIDのheadは含めない。
     pub fn declaration(&self) -> Option<&str> {
+        if self.kind == QuestionKind::Map {
+            return None;
+        }
         match &self.head {
             Selector::Declaration { name } => Some(name),
             _ => None,
@@ -297,7 +310,6 @@ fn resolve_inner(
         if matches!(
             prefix_kind.as_str(),
             "build"
-                | "map"
                 | "compose"
                 | "compare"
                 | "localize"
@@ -326,6 +338,7 @@ fn resolve_inner(
             "evaluate" => QuestionKind::Evaluate,
             "check" => QuestionKind::Check,
             "needed" => QuestionKind::Needed,
+            "map" => QuestionKind::Map,
             _ => {
                 return Err(invalid(problem(
                     RequestIssueCode::Syntax,
@@ -335,6 +348,12 @@ fn resolve_inner(
                 )));
             }
         };
+        if kind == QuestionKind::Map {
+            let request = configuration_map::resolve(law, raw, text, control)?;
+            names.insert(request.id.clone(), requests.len());
+            requests.push(request);
+            continue;
+        }
         if kind == QuestionKind::Needed {
             let Selector::Answer { id, path } = &raw.head else {
                 return Err(invalid(problem(
@@ -517,6 +536,12 @@ fn resolve_inner(
         checkpoint(control)?;
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
+        if req.kind == QuestionKind::Map {
+            let constraints =
+                configuration_map::constraints(law, map, &requests, &names, req, control)?;
+            requests[i].constraints = constraints;
+            continue;
+        }
         if req.kind == QuestionKind::Needed {
             let id = &req.dependencies[0];
             if !names.contains_key(id) {
@@ -642,6 +667,21 @@ fn resolve_inner(
         );
     }
     phase(control, Checkpoint::RequestDependency)?;
+    // 共通の参照・型・公開射影・循環の検査を完了してから、未実装経路を通知する。
+    for request in &requests {
+        if request.kind == QuestionKind::Map
+            && request.arguments.iter().any(|a| {
+                a.name == "kind"
+                    && matches!(&a.value,Selector::Enum {value} if value=="object_algebra")
+            })
+        {
+            return Err(ResolveFailure::NotApplicable {
+                request: request.id.clone(),
+                kind: "map".into(),
+                architecture_environment: false,
+            });
+        }
+    }
     Ok(ResolvedRequests {
         requests,
         evaluation_order,
@@ -859,27 +899,31 @@ fn selector_type(
             // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
             // 評価して参照値を推測しない。後方参照でも同じ有限な表を参照する。
             owners = owner_bindings(r, control)?;
-            let sig = &law.declarations[r.declaration().expect("宣言headの問い")].signature;
-            let initial = match (r.kind, field.as_str()) {
-                (QuestionKind::Evaluate, "value") => {
-                    let Signature::View { returns, .. } = sig else {
-                        unreachable!()
-                    };
-                    ProjectionType::Law(returns.clone())
-                }
-                (QuestionKind::Evaluate, "evaluation") => {
-                    let Signature::View { returns, .. } = sig else {
-                        unreachable!()
-                    };
-                    ProjectionType::Evaluation(returns.clone())
-                }
-                (QuestionKind::Check, "proposition") => ProjectionType::Proposition,
-                (QuestionKind::Check, "evaluation") => ProjectionType::Evaluation(Type::Bool),
-                _ => {
-                    return Err(failure(
-                        RequestIssueCode::Projection,
-                        "この問いで公開されていない出力",
-                    ));
+            let initial = if r.kind == QuestionKind::Map {
+                configuration_map::output_type(law, r, field, control)?
+            } else {
+                let sig = &law.declarations[r.declaration().expect("宣言headの問い")].signature;
+                match (r.kind, field.as_str()) {
+                    (QuestionKind::Evaluate, "value") => {
+                        let Signature::View { returns, .. } = sig else {
+                            unreachable!()
+                        };
+                        ProjectionType::Law(returns.clone())
+                    }
+                    (QuestionKind::Evaluate, "evaluation") => {
+                        let Signature::View { returns, .. } = sig else {
+                            unreachable!()
+                        };
+                        ProjectionType::Evaluation(returns.clone())
+                    }
+                    (QuestionKind::Check, "proposition") => ProjectionType::Proposition,
+                    (QuestionKind::Check, "evaluation") => ProjectionType::Evaluation(Type::Bool),
+                    _ => {
+                        return Err(failure(
+                            RequestIssueCode::Projection,
+                            "この問いで公開されていない出力",
+                        ));
+                    }
                 }
             };
             match projection::resolve_projection_controlled(law, initial, &path[1..], control) {
@@ -906,7 +950,9 @@ fn owner_bindings(
     let mut bindings = BTreeMap::new();
     for argument in &request.arguments {
         phase(control, Checkpoint::RequestBinding)?;
-        let name = argument.name.strip_prefix("bind.").expect("正規化済み束縛");
+        let Some(name) = argument.name.strip_prefix("bind.") else {
+            continue;
+        };
         bindings.insert(name.to_owned(), clone_selector(&argument.value, control)?);
         phase(control, Checkpoint::RequestBinding)?;
     }
@@ -916,6 +962,9 @@ fn owner_bindings(
 fn clone_selector(selector: &Selector, control: &mut Control) -> Result<Selector, ResolveFailure> {
     phase(control, Checkpoint::RequestBinding)?;
     let selector = match selector {
+        Selector::Enum { value } => Selector::Enum {
+            value: value.clone(),
+        },
         Selector::Declaration { name } => Selector::Declaration { name: name.clone() },
         Selector::Subject { snapshot, subject } => Selector::Subject {
             snapshot: snapshot.clone(),

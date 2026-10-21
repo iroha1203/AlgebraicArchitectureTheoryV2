@@ -12,6 +12,12 @@ impl Environment<'_> {
         if request.dependencies.is_empty() {
             return Ok(None);
         }
+        let native = self.with_request_context(graph, request, || {
+            super::super::public_map::unavailable(self, graph, request)
+        })?;
+        if request.kind == QuestionKind::Map {
+            return Ok(native);
+        }
         self.tick()?;
         let originals = self
             .original_requests
@@ -35,8 +41,14 @@ impl Environment<'_> {
             | crate::law::model::Signature::Law { params, .. } => params,
             _ => return Err("依存停止の元宣言がview/Lawでない".into()),
         };
-        let mut reasons = vec![];
-        let mut scope = Scope::default();
+        let mut reasons = native
+            .as_ref()
+            .map(|answer| answer.reasons.clone())
+            .unwrap_or_default();
+        let mut scope = native
+            .as_ref()
+            .map(|answer| answer.scope.clone())
+            .unwrap_or_default();
         scope.readings.insert(declaration.reading.clone());
         for argument in &request.arguments {
             self.tick()?;
@@ -112,54 +124,10 @@ impl Environment<'_> {
             });
             self.tick()?;
         }
-        for plan in self.projection_failure_plans(graph, request)? {
-            self.tick()?;
-            let plan_dependencies = self.projection_failure_dependencies(graph, &plan)?;
-            let mut selected = None;
-            for (index, node) in graph
-                .nodes
-                .iter()
-                .enumerate()
-                .take(self.cutoff.get().min(graph.nodes.len()))
-            {
-                self.tick()?;
-                if graph.context_at(index).request == current
-                    && matches!(&node.rule, Rule::ProjectionCheck { parameter, part: ProjectionCheckPart::Condition } if parameter == &plan.parameter)
-                {
-                    if selected.is_some() {
-                        return Err("同じ元射影条件が重複している".into());
-                    }
-                    self.validate_at(graph, node, index)?;
-                    selected = Some(NodeRef(index));
-                }
-            }
-            let condition = selected.ok_or("不適合な元射影の条件反証がない")?;
-            scope.merge(&plan.scope);
-            reasons.push(Reason {
-                kind: ReasonKind::ConditionFailed {
-                    condition,
-                    construction: "projection",
-                },
-                request: request.id.clone(),
-                dependencies: plan_dependencies.clone(),
-                missing: vec![],
-                location: Some(Location::Law { span: plan.span }),
-            });
-            let mut dependencies = plan_dependencies;
-            dependencies.push(condition);
-            dependencies.extend(graph.get(condition)?.evidence.iter().copied());
-            dependencies.sort_by_key(|r| r.0);
-            dependencies.dedup();
-            reasons.push(Reason {
-                kind: ReasonKind::DependencyBlocked {
-                    request: plan.producer,
-                },
-                request: request.id.clone(),
-                dependencies,
-                missing: vec![],
-                location: Some(Location::Law { span: plan.span }),
-            });
-        }
+        let (projection_reasons, projection_scope) =
+            self.projection_failure_reasons(graph, request)?;
+        reasons.extend(projection_reasons);
+        scope.merge(&projection_scope);
         // producerの値が確定しても、そのOwned所属まで観測済みとは限らない。
         // 未観測ownerを通常値の所属確認へ渡さず、元slotを保持して依存を止める。
         for parameter in params {

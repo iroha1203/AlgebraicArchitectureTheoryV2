@@ -42,6 +42,7 @@ pub enum Checkpoint {
     ObservationPlan,
     Configuration,
     ConfigurationMap,
+    NativeResultNode,
     InternalArrow,
     InternalArrowRow,
     InternalArrowRoster,

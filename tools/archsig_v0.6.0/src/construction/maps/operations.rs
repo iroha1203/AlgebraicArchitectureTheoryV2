@@ -32,6 +32,30 @@ pub struct ConfigurationOperation {
     word: Vec<FactPointer>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OperationFailure {
+    cause: ConstructionFailure,
+    partial: Option<Box<ConfigurationOperation>>,
+}
+impl OperationFailure {
+    pub fn cause(&self) -> &ConstructionFailure {
+        &self.cause
+    }
+    pub fn partial(&self) -> Option<&ConfigurationOperation> {
+        self.partial.as_deref()
+    }
+    pub(crate) fn into_parts(self) -> (ConstructionFailure, Option<Box<ConfigurationOperation>>) {
+        (self.cause, self.partial)
+    }
+}
+impl From<ConstructionFailure> for OperationFailure {
+    fn from(cause: ConstructionFailure) -> Self {
+        Self {
+            cause,
+            partial: None,
+        }
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ActionDifference {
     fact: FactPointer,
     left: FactPointer,
@@ -55,9 +79,17 @@ impl ConfigurationOperation {
         map: &ConfigurationMap,
         control: &mut Control,
     ) -> Result<Self, ConstructionFailure> {
+        Self::from_map_retained(inputs, map, control).map_err(|failure| failure.cause)
+    }
+    /// 最後の停止確認で中断した場合も、検査済みの操作を保持する。
+    pub fn from_map_retained(
+        inputs: &CheckedInputs,
+        map: &ConfigurationMap,
+        control: &mut Control,
+    ) -> Result<Self, OperationFailure> {
         tick(control)?;
         map.recheck(inputs, control)?;
-        from_verified_map(map.clone(), control)
+        from_verified_map_retained(map.clone(), control)
     }
     pub fn map(&self) -> &ConfigurationMap {
         &self.map
@@ -238,6 +270,12 @@ fn from_verified_map(
     map: ConfigurationMap,
     control: &mut Control,
 ) -> Result<ConfigurationOperation, ConstructionFailure> {
+    from_verified_map_retained(map, control).map_err(|failure| failure.cause)
+}
+fn from_verified_map_retained(
+    map: ConfigurationMap,
+    control: &mut Control,
+) -> Result<ConfigurationOperation, OperationFailure> {
     tick(control)?;
     let steps = match &map.candidate.origin {
         MapOrigin::Derived(origin) => origin.steps.clone(),
@@ -247,8 +285,14 @@ fn from_verified_map(
         ],
     };
     let word = word(&steps, control)?;
-    tick(control)?;
-    Ok(ConfigurationOperation { map, steps, word })
+    let operation = ConfigurationOperation { map, steps, word };
+    match tick(control) {
+        Ok(()) => Ok(operation),
+        Err(cause) => Err(OperationFailure {
+            cause,
+            partial: Some(Box::new(operation)),
+        }),
+    }
 }
 fn validate_steps(
     steps: &[OperationStep],

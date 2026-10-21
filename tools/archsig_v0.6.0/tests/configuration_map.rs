@@ -1,3 +1,5 @@
+#[path = "common/map_scope.rs"]
+mod map_scope;
 use archsig::{
     construction::{
         ConstructionFailure, FactPointer,
@@ -1281,5 +1283,127 @@ fn current_mapping_changes_are_rechecked_and_all_fixed_stops_latch() {
             );
             assert_eq!(count.get(), at);
         }
+    }
+}
+
+#[test]
+fn completed_relation_counterexamples_survive_stopping_inside_the_preservation_scan() {
+    use archsig::construction::maps::correspondence_retained;
+    let input = inputs(&bad_endpoints());
+    let count = Rc::new(Cell::new(0usize));
+    let seen = count.clone();
+    let mut normal = Control::new(Limits::default(), move |p| {
+        if p == Checkpoint::ConfigurationMap {
+            seen.set(seen.get() + 1);
+        }
+        Usage::default()
+    });
+    let result =
+        correspondence_retained(&input, "v", "m", "Reservations", None, &mut normal).unwrap();
+    let candidate = result.candidate().unwrap();
+    let source = candidate.source_configuration();
+    let expected = result
+        .counterexamples()
+        .iter()
+        .find(|c| matches!(c, Counterexample::Relation { .. }))
+        .unwrap()
+        .clone();
+    let Counterexample::Relation { source: pair, .. } = &expected else {
+        unreachable!()
+    };
+    let position = source.relations().iter().position(|p| p == pair).unwrap();
+    let total = source.family().len() + source.relations().len() + source.identifications().len();
+    let at = count.get() - total - 1 + source.family().len() + position + 2;
+    assert!(at < count.get());
+    for mode in 0..4 {
+        let count = Rc::new(Cell::new(0usize));
+        let seen = count.clone();
+        let mut control = Control::new(
+            Limits {
+                time_ms: (mode == 0).then_some(1),
+                memory_mib: (mode == 1).then_some(1),
+            },
+            move |p| {
+                if p == Checkpoint::ConfigurationMap {
+                    seen.set(seen.get() + 1);
+                }
+                let stop = seen.get() >= at;
+                Usage {
+                    elapsed_ms: u128::from(stop && mode == 0),
+                    memory_mib: u128::from(stop && mode == 1),
+                    signal: if stop {
+                        match mode {
+                            2 => Some(Signal::Int),
+                            3 => Some(Signal::Term),
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    },
+                }
+            },
+        );
+        let failure = correspondence_retained(&input, "v", "m", "Reservations", None, &mut control)
+            .unwrap_err();
+        assert!(matches!(failure.cause(), ConstructionFailure::Stopped(_)));
+        assert!(
+            failure
+                .partial()
+                .unwrap()
+                .counterexamples()
+                .contains(&expected),
+            "completed relation counterexample was lost: {:?}",
+            failure.partial().unwrap().counterexamples()
+        );
+        assert_eq!(count.get(), at);
+        let stopped = control.stop_reason().unwrap();
+        assert_eq!(
+            control
+                .checkpoint(Checkpoint::ConfigurationMap)
+                .unwrap_err(),
+            stopped
+        );
+        assert_eq!(count.get(), at);
+    }
+}
+
+#[test]
+fn native_reference_counterexamples_retain_their_completion_quantification() {
+    for (entries, source, expected) in [
+        (None, r#"[["v","p"],["v","p"]]"#, true),
+        (Some(("r", "s")), r#"[["v","p"],["v","p"]]"#, false),
+        (None, "[]", false),
+    ] {
+        let (d, l, a) = map_scope::fixture(entries, source);
+        let input = check_inputs(
+            InputSources::from_bytes(vec![d], l, a),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let result = correspondence(
+            &input,
+            "v",
+            "m",
+            "GraphRead",
+            None,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert!(matches!(
+            result.counterexamples(),
+            [Counterexample::ReferenceStructure { .. }]
+        ));
+        assert_eq!(result.counterexample_uses_completions(0), Some(expected));
+        assert_eq!(result.counterexample_uses_completions(1), None);
+        result
+            .recheck(
+                &input,
+                "v",
+                "m",
+                "GraphRead",
+                None,
+                &mut Control::unlimited(),
+            )
+            .unwrap();
     }
 }

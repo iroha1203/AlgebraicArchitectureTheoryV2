@@ -1,0 +1,11 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading SourceReading {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  view root_id(a: System): System = a;
+  law required conserved(e: Reserve):
+    e.to.free + e.to.held = e.from.free + e.from.held;
+}
+reading TargetReading {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  law optional lower(s: State, n: Z): s.free >= n;
+}

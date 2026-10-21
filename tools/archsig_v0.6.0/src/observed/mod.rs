@@ -2,6 +2,7 @@
 
 mod affine;
 mod call;
+pub(crate) mod construction_result;
 pub mod control;
 mod data;
 mod environment;
@@ -16,6 +17,7 @@ pub(crate) mod object_law_transport;
 mod object_transport;
 pub(crate) mod object_view_transport;
 mod path_value;
+mod public_map;
 mod quantifier;
 pub mod result;
 mod term;

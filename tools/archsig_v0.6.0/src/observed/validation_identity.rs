@@ -136,7 +136,8 @@ fn payload(
         (Some(Payload::Scalar(a)), Some(Payload::Scalar(b))) => scalar(a, b, c)?,
         (
             Some(
-                Payload::CompletionSeed { .. }
+                Payload::Construction(_)
+                | Payload::CompletionSeed { .. }
                 | Payload::CompletionInstance { .. }
                 | Payload::CompletionPair { .. }
                 | Payload::TypeDomain { .. }

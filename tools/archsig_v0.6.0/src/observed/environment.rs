@@ -646,6 +646,43 @@ impl<'a> Environment<'a> {
             let previous_universal = self.universal_context.replace(None);
             let previous_completion = self.completion_values.replace(Vec::new());
             let result = (|| {
+                if let Some(Payload::Construction(value)) = &node.payload {
+                    if context.frame.is_some()
+                        || context.iteration.is_some()
+                        || context.instance.is_some()
+                        || context.case.is_some()
+                    {
+                        return Err("native構成が元Requestのroot contextでない".into());
+                    }
+                    let request = graph
+                        .requests
+                        .get(context.request)
+                        .ok_or("native構成の元Requestがない")?;
+                    if self
+                        .original_requests
+                        .is_none_or(|original| original.get(context.request) != Some(request))
+                    {
+                        return Err("native構成のRequestが元入力と違う".into());
+                    }
+                    super::public_map::validate_origin(self, graph, request, value)?;
+                    for r in node
+                        .arguments
+                        .iter()
+                        .chain(&node.evidence)
+                        .chain(node.conditions().iter())
+                        .chain(
+                            node.reasons
+                                .iter()
+                                .flat_map(|reason| reason.dependencies.iter()),
+                        )
+                    {
+                        if r.0 >= limit {
+                            return Err("native構成が未出のnodeを参照した".into());
+                        }
+                        self.validate_at(graph, graph.get(*r)?, r.0)?;
+                    }
+                    return super::construction_result::validate_shape(graph, node);
+                }
                 if node.ty == NodeType::ObservationPlan {
                     super::needed::validate_node(graph, node, limit, &self.control)?;
                     let request = graph
@@ -3788,6 +3825,20 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
+            if request.kind == QuestionKind::Map {
+                return self.with_request_context(graph, request, || {
+                    super::public_map::validate_answer(self, graph, request, answer)?;
+                    for r in answer
+                        .outputs
+                        .values()
+                        .chain(answer.claim.iter())
+                        .chain(&answer.evidence)
+                    {
+                        self.validate_at(graph, graph.get(*r)?, r.0)?;
+                    }
+                    Ok(())
+                });
+            }
             if request.kind == QuestionKind::Needed {
                 super::needed::validate_answer(graph, request, answer, &self.control)?;
                 let reference = answer.outputs["plan"];
@@ -3853,6 +3904,29 @@ impl<'a> Environment<'a> {
             self.context.set(previous);
             result
         })
+    }
+    pub(in crate::observed) fn with_request_context<T>(
+        &self,
+        graph: &Graph,
+        request: &Request,
+        run: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<T, ValidationFailure> {
+        let index = self
+            .original_requests
+            .and_then(|rs| rs.iter().position(|r| r == request))
+            .ok_or("元Request contextがない")?;
+        let previous = self.context.replace(Some(super::call::Context {
+            request: index,
+            frame: None,
+            iteration: None,
+            instance: None,
+            case: None,
+        }));
+        let old_cutoff = self.cutoff.replace(graph.nodes.len());
+        let result = run();
+        self.cutoff.set(old_cutoff);
+        self.context.set(previous);
+        result
     }
     fn validate_answer_in_context(
         &self,

@@ -8,7 +8,7 @@ pub(in crate::observed) struct ProjectionFailurePlan {
     pub parameter: String,
     pub root: NodeRef,
     pub producer: String,
-    pub span: (usize, usize),
+    pub location: Option<Location>,
     pub inputs: Vec<ConditionInput>,
     pub scope: Scope,
     pub support: Vec<Fact>,
@@ -47,6 +47,44 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<Vec<ProjectionFailurePlan>, ValidationFailure> {
         self.tick()?;
+        if request.kind == QuestionKind::Map {
+            let mut plans = vec![];
+            for constraint in &request.constraints {
+                let Selector::Answer { id, .. } = &constraint.selector else {
+                    continue;
+                };
+                let root = match self.answer_binding(graph, &constraint.selector, (0, 0)) {
+                    Ok(AnswerBinding::Inapplicable(root)) => Some(root),
+                    Ok(AnswerBinding::Reference(r))
+                        if graph.get(r)?.ty != NodeType::Value(constraint.expected.clone()) =>
+                    {
+                        Some(r)
+                    }
+                    Ok(AnswerBinding::Projection(node))
+                        if node.ty != NodeType::Value(constraint.expected.clone()) =>
+                    {
+                        node.arguments.first().copied()
+                    }
+                    Err(ValidationFailure::UnsupportedExpression { .. }) => None,
+                    Err(error) => return Err(error),
+                    _ => None,
+                };
+                if let Some(root) = root {
+                    let original = graph.get(root)?;
+                    plans.push(ProjectionFailurePlan {
+                        context: self.current_context(graph),
+                        parameter: constraint.parameter.clone(),
+                        root,
+                        producer: id.clone(),
+                        location: None,
+                        inputs: vec![ConditionInput::Reference(root)],
+                        scope: original.scope.clone(),
+                        support: original.support.clone(),
+                    });
+                }
+            }
+            return Ok(plans);
+        }
         let declaration = self
             .inputs
             .law()
@@ -111,7 +149,9 @@ impl Environment<'_> {
                     parameter: parameter.name.clone(),
                     root,
                     producer: id.clone(),
-                    span: parameter.span,
+                    location: Some(Location::Law {
+                        span: parameter.span,
+                    }),
                     inputs: vec![ConditionInput::Reference(root)],
                     scope: original.scope.clone(),
                     support: original.support.clone(),
@@ -141,7 +181,9 @@ impl Environment<'_> {
                     parameter: parameter.name.clone(),
                     root,
                     producer: plan.producer,
-                    span: parameter.span,
+                    location: Some(Location::Law {
+                        span: parameter.span,
+                    }),
                     inputs: plan.condition_inputs,
                     scope: plan.checks.scope,
                     support: plan.checks.support,
@@ -149,6 +191,91 @@ impl Environment<'_> {
             }
         }
         Ok(plans)
+    }
+
+    pub(in crate::observed) fn projection_failure_reasons(
+        &self,
+        graph: &Graph,
+        request: &Request,
+    ) -> Result<(Vec<Reason>, Scope), ValidationFailure> {
+        let current = self
+            .original_requests
+            .and_then(|rs| rs.iter().position(|r| r == request))
+            .ok_or("射影条件の元Requestがない")?;
+        let mut reasons = vec![];
+        let mut scope = Scope::default();
+        for plan in self.projection_failure_plans(graph, request)? {
+            self.tick()?;
+            let plan_dependencies = self.projection_failure_dependencies(graph, &plan)?;
+            let mut selected = None;
+            for (index, node) in graph
+                .nodes
+                .iter()
+                .enumerate()
+                .take(self.cutoff.get().min(graph.nodes.len()))
+            {
+                self.tick()?;
+                if graph.context_at(index).request == current
+                    && matches!(&node.rule, Rule::ProjectionCheck { parameter, part: ProjectionCheckPart::Condition } if parameter == &plan.parameter)
+                {
+                    if selected.is_some() {
+                        return Err("同じ元射影条件が重複している".into());
+                    }
+                    self.validate_at(graph, node, index)?;
+                    selected = Some(NodeRef(index));
+                }
+            }
+            let condition = selected.ok_or("不適合な元射影の条件反証がない")?;
+            scope.merge(&plan.scope);
+            reasons.push(Reason {
+                kind: ReasonKind::ConditionFailed {
+                    condition,
+                    construction: "projection",
+                },
+                request: request.id.clone(),
+                dependencies: plan_dependencies.clone(),
+                missing: vec![],
+                location: plan.location.clone(),
+            });
+            let mut dependencies = plan_dependencies;
+            dependencies.push(condition);
+            dependencies.extend(graph.get(condition)?.evidence.iter().copied());
+            dependencies.sort_by_key(|r| r.0);
+            dependencies.dedup();
+            reasons.push(Reason {
+                kind: ReasonKind::DependencyBlocked {
+                    request: plan.producer,
+                },
+                request: request.id.clone(),
+                dependencies,
+                missing: vec![],
+                location: plan.location.clone(),
+            });
+        }
+        Ok((reasons, scope))
+    }
+    pub(in crate::observed) fn commit_projection_conditions(
+        &self,
+        graph: &mut Graph,
+        request: &Request,
+    ) -> Result<(), ValidationFailure> {
+        for plan in self.projection_failure_plans(graph, request)? {
+            use ProjectionCheckPart::*;
+            let mut values = vec![];
+            for part in [Name, Actual, Required, Evidence, Condition] {
+                self.control.clone().checkpoint(Checkpoint::Projection)?;
+                let prior = match part {
+                    Name | Actual | Required => vec![],
+                    Evidence => values.clone(),
+                    Condition => vec![values[0], values[3]],
+                };
+                let node = self.projection_failure_node(graph, &plan, part, &prior)?;
+                self.validate(graph, &node)?;
+                values.push(graph.push(node)?);
+                self.control.clone().checkpoint(Checkpoint::Projection)?;
+            }
+        }
+        Ok(())
     }
 
     // 同Requestの既出leafだけを元subject selectorの型・値・支持・Scopeから復元する。

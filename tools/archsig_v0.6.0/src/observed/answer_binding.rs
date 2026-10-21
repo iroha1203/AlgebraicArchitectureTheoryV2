@@ -69,7 +69,7 @@ impl Environment<'_> {
     }
 
     /// 不変Requestと選択producerへ戻る。未決Answerも理由の元導出を検査する。
-    pub(super) fn answer_binding_source<'g>(
+    pub(in crate::observed) fn answer_binding_source<'g>(
         &self,
         graph: &'g Graph,
         current: usize,
