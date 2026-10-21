@@ -32,6 +32,9 @@ impl PartialEq for FiniteTransportValue {
     }
 }
 impl FiniteTransportValue {
+    pub(super) fn scalar(&self) -> &Scalar {
+        &self.value
+    }
     pub fn ty(&self) -> Type {
         self.value.ty()
     }

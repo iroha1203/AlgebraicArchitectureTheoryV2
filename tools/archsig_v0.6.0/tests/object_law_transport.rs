@@ -473,7 +473,7 @@ fn fixed_external_reference_bindings_and_original_support_are_retained() {
 }
 
 #[test]
-fn incomplete_signatures_and_scalar_families_are_not_used_as_pointwise_evidence() {
+fn incomplete_signatures_and_infinite_families_are_not_used_as_pointwise_evidence() {
     let changed = L.replace("law required bounded(d:", "law required other(d:");
     let i = inputs(&changed, A);
     let r = run(Arc::clone(&i), "p", "bounded", "p");
@@ -482,7 +482,10 @@ fn incomplete_signatures_and_scalar_families_are_not_used_as_pointwise_evidence(
         Outcome::Refuted(Failed::Declaration { .. })
     ));
     r.operation().recheck(&i, &mut quiet()).unwrap();
-    let i = inputs(L, A);
+    let infinite = L
+        .replace("b: Bool): b", "b: Z): b = 0")
+        .replace("q: Bool): q", "q: Z): q = 0");
+    let i = inputs(&infinite, A);
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "family", "p");
     let Error::NotImplemented {

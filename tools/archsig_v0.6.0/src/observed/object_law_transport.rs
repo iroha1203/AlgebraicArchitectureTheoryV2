@@ -24,6 +24,10 @@ use crate::{
 };
 use std::sync::Arc;
 
+#[path = "object_law_family.rs"]
+mod family;
+pub use family::{FiniteLawFamily, LawParameterComparison};
+
 #[derive(Debug)]
 pub enum ObjectLawTransportFailure {
     Construction(ConstructionFailure),
@@ -65,6 +69,9 @@ pub enum LawConditionFailure {
     },
     Applicability,
     Holds,
+    ParameterType {
+        position: usize,
+    },
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum LawTransportOutcome {
@@ -123,6 +130,7 @@ pub struct ObjectLawTransport {
     target: Option<ObjectEvaluation>,
     source_reading: Option<LawBooleanReading>,
     target_reading: Option<LawBooleanReading>,
+    family: Option<FiniteLawFamily>,
     outcome: LawTransportOutcome,
 }
 #[derive(Debug)]
@@ -290,7 +298,7 @@ fn reading(
     Ok(r)
 }
 
-/// 残scalar parameterのない単一Law instanceの保存を計算する。
+/// 対応するLawの実評価から、単一または有限parameter全域の保存を計算する。
 pub fn object_law_transport(
     inputs: Arc<CheckedInputs>,
     declarations: &DeclarationCorrespondence,
@@ -347,17 +355,11 @@ fn checked_transport(
         target: None,
         source_reading: None,
         target_reading: None,
+        family: None,
         outcome: LawTransportOutcome::Undetermined,
     };
     let mut decided = false;
     let calculated = (|| -> Result<(), ObjectLawTransportFailure> {
-        if !r.instance().parameters().is_empty() {
-            return Err(ObjectLawTransportFailure::NotImplemented {
-                operation: Box::new(r.operation().clone()),
-                object: r.object().clone(),
-                instance: Box::new(r.instance().clone()),
-            });
-        }
         let mapped = r
             .objects
             .objects()
@@ -415,6 +417,14 @@ fn checked_transport(
             tick(c)?;
             return Ok(());
         }
+        if !r.instance().parameters().is_empty() {
+            family::prepare(&inputs, &mut r, c)?;
+            if matches!(r.outcome, LawTransportOutcome::Refuted(_)) {
+                decided = true;
+                tick(c)?;
+                return Ok(());
+            }
+        }
         r.source = Some(
             evaluate_object_instance(Arc::clone(&inputs), &r.source_readings, object, instance, c)
                 .map_err(|failure| ObjectLawTransportFailure::Evaluation {
@@ -423,7 +433,7 @@ fn checked_transport(
                     failure: Box::new(failure),
                 })?,
         );
-        if c.stop_reason().is_none() {
+        if c.stop_reason().is_none() && family::is_ground_reading(r.source.as_ref()) {
             r.source_reading = r.source.as_ref().map(|e| reading(e, c)).transpose()?;
         }
         tick(c)?;
@@ -436,23 +446,14 @@ fn checked_transport(
                 }
             })?,
         );
-        if c.stop_reason().is_none() {
+        if c.stop_reason().is_none() && family::is_ground_reading(r.target.as_ref()) {
             r.target_reading = r.target.as_ref().map(|e| reading(e, c)).transpose()?;
         }
         tick(c)?;
         if let (Some(source), Some(target)) = (&r.source_reading, &r.target_reading) {
-            r.outcome = match (source.application.value(), target.application.value()) {
-                (Some(a), Some(b)) if a != b => {
-                    LawTransportOutcome::Refuted(LawConditionFailure::Applicability)
-                }
-                (Some(false), Some(false)) => LawTransportOutcome::Preserved,
-                (Some(true), Some(true)) => match (source.body, target.body) {
-                    (Some(a), Some(b)) if a == b => LawTransportOutcome::Preserved,
-                    (Some(_), Some(_)) => LawTransportOutcome::Refuted(LawConditionFailure::Holds),
-                    _ => LawTransportOutcome::Undetermined,
-                },
-                _ => LawTransportOutcome::Undetermined,
-            };
+            r.outcome = family::compare(source, target);
+        } else if r.family.is_some() {
+            family::compare_rows(&mut r, c)?;
         }
         decided = true;
         tick(c)?;
@@ -534,6 +535,9 @@ impl ObjectLawTransport {
     pub fn outcome(&self) -> &LawTransportOutcome {
         &self.outcome
     }
+    pub fn family(&self) -> Option<&FiniteLawFamily> {
+        self.family.as_ref()
+    }
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
@@ -551,6 +555,7 @@ impl ObjectLawTransport {
             || !same_evaluation(self.target.as_ref(), r.target.as_ref())
             || self.source_reading != r.source_reading
             || self.target_reading != r.target_reading
+            || self.family != r.family
             || self.outcome != r.outcome
         {
             return Err(inconsistent("対象Lawの対応・実評価・適用・成立が現在入力と違う").into());
@@ -596,6 +601,9 @@ impl ObjectLawTransportPartial {
     pub fn target_reading(&self) -> Option<&LawBooleanReading> {
         self.state.target_reading()
     }
+    pub fn family(&self) -> Option<&FiniteLawFamily> {
+        self.state.family()
+    }
     pub fn outcome(&self) -> Option<&LawTransportOutcome> {
         self.outcome.as_ref()
     }
@@ -609,7 +617,7 @@ mod tests {
         maps::{correspondence, declaration_correspondence},
     };
     use crate::observed::input::{InputSources, check_inputs};
-    fn example() -> (Arc<CheckedInputs>, ObjectLawTransport) {
+    pub(super) fn example(name: &str) -> (Arc<CheckedInputs>, ObjectLawTransport) {
         let left = include_bytes!("../../tests/fixtures/object-law-transport.atoms.json");
         let right = include_bytes!("../../tests/fixtures/object-law-transport-right.atoms.json");
         let ds = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
@@ -671,7 +679,8 @@ mod tests {
             .instances()
             .iter()
             .position(|r| {
-                r.declaration().name == "Before.bounded" && r.bindings()[0].subject().subject == "p"
+                r.declaration().name == format!("Before.{name}")
+                    && r.bindings()[0].subject().subject == "p"
             })
             .unwrap();
         let r = object_law_transport(Arc::clone(&i), &d, o, n, &mut Control::unlimited()).unwrap();
@@ -681,7 +690,7 @@ mod tests {
     #[test]
     fn recheck_rejects_forged_role_guard_body_decision_target_and_dag_support() {
         for mode in 0..8 {
-            let (i, mut r) = example();
+            let (i, mut r) = example("bounded");
             match mode {
                 0 => r.outcome = LawTransportOutcome::Refuted(LawConditionFailure::Holds),
                 1 => r.source_reading.as_mut().unwrap().required = false,

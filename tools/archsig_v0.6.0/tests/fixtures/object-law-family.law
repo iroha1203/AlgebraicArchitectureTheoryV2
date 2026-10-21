@@ -1,0 +1,39 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  law required conditional(c: Left.Child, a: Left.ExternalRoot, e: Left.ExternalChild[a], b: Bool): b;
+  law required boolean(c: Left.Child, b: Bool): b;
+  law required field(c: Left.Child, b: Bool): c.count = 2;
+  law required guarded(c: Left.Child, b: Bool) when b: b;
+  law required missing(c: Left.Child, b: Bool): c.flag;
+  law required fp(c: Left.Child, b: Fp(3)): b = 0;
+  law required unitAxis(c: Left.Child, b: Unit): b = b;
+  law required tupleAxis(c: Left.Child, b: (Bool, Option<Bool>)): b = b;
+  law required optionAxis(c: Left.Child, b: Option<Bool>): b = b;
+  law required setAxis(c: Left.Child, b: Set<Bool>): b = b;
+  law required dataAxis(c: Left.Child, b: Left.Choice): b = b;
+  law required emptyAxis(c: Left.Child, b: (Bool, Left.Empty)): b = b;
+  law required product(c: Left.Child, b: Bool, n: Fp(3)): b and n = 0;
+  law required references(c: Left.Child, b: Option<Left.Child>): b = b;
+}
+reading After {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  law required conditional(d: Right.Child, z: Left.ExternalRoot, w: Left.ExternalChild[z], q: Bool): q;
+  law required boolean(d: Right.Child, q: Bool): q;
+  law required field(d: Right.Child, q: Bool): 2 = 2;
+  law required guarded(d: Right.Child, q: Bool) when q: q;
+  law required missing(d: Right.Child, q: Bool): d.flag;
+  law required fp(d: Right.Child, q: Fp(3)): q = 0;
+  law required unitAxis(d: Right.Child, q: Unit): q = q;
+  law required tupleAxis(d: Right.Child, q: (Bool, Option<Bool>)): q = q;
+  law required optionAxis(d: Right.Child, q: Option<Bool>): q = q;
+  law required setAxis(d: Right.Child, q: Set<Bool>): q = q;
+  law required dataAxis(d: Right.Child, q: Left.Choice): q = q;
+  law required emptyAxis(d: Right.Child, q: (Bool, Left.Empty)): q = q;
+  law required product(d: Right.Child, q: Bool, n: Fp(3)): q and n = 0;
+  law required references(d: Right.Child, q: Option<Right.Child>): q = q;
+}

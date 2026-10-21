@@ -218,9 +218,15 @@ required status・適用条件・適用時の原式成立の保存を計算す�
 有限補完では各caseの元guardとbodyを読み、条件付き命題全体の真偽と分けて保持する。
 `outcome()` の成立はLawの読取りの保存を表す。両側の元Lawが反証されても、同じ真偽を保てる。
 `source()/target()` は元の評価DAG・支持・Scopeを保持し、`operation()` は確認済み操作を返す。
-残scalar parameterのあるinstanceは対象・元instance・Operationを持つ `NotImplemented` になる。
+有限の残scalar parameterには `family()` が全型域の順逆対応 `parameters()` と各代入の比較 `rows()` を持つ。
+各行の `source_bindings()/target_bindings()` は位置対応した名前と型付き値、
+`source()/target()` は元guard・body・条件付き命題の読取り、`outcome()` はその点での保存結果を返す。
+`source_evaluations()/target_evaluations()` は対応する側の元評価DAGのnodes配列添字であり、
+有限欠測補完では全caseの行を保持する。全称checkの集約真偽とは分けて全直積の各行を比較する。
+族を比較する場合の `source_reading()/target_reading()` は `None` で、読取りは各行から得る。
+この有限native APIの型域に接続していないparameterは、対象・元instance・Operationを持つ `NotImplemented` になる。
 再検査後の停止では `Stopped` がOperationと部分結果を保持し、部分結果の `outcome()` は比較完了時だけ `Some` になる。
-`recheck()` は現在入力からrole・適用・原式の評価と保存条件を再検査する。
+`recheck()` は現在入力からrole・適用・原式の評価・全parameter域と各行の保存条件を再検査する。
 
 `construction::maps::object_view_transport(Arc::clone(&checked), &declarations,
 object_index, instance_index, &mut control)` は元の対象別view instanceの参照束縛を運び、
