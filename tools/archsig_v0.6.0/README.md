@@ -269,6 +269,16 @@ Lawの残るparameterは既存の有限・アフィン全域族として評価�
 `ObjectEvaluationFailure::NotImplemented` に対象・元instance・全parameterを保持する。
 これは実装経路の失敗であり、成立・反証・数学的未決とは区別する。
 
+`construction::readings::evaluate_object_table(shared, &instances, &mut control)` は
+objects順、instances順の全組を同じ評価器で評価する。`rows()` の各行は
+`position()` と元の `evaluation()` を持ち、適用外・所属条件付き・未決も保持する。
+`is_complete()` は全行の処理完了、`pending()` は次の行位置を返す。
+これはLawの成立や代数の構成成功とは別の完了状態である。
+`ObjectEvaluationTableFailure::cause()/position()` は原因と評価中の行、
+`partial()` は以前の完成行、`active()` は停止中の行の既存DAGを返す。
+単一行の失敗が部分DAGを持つ場合は `cause()` 内の元の失敗に保持する。
+最後の停止は全完成行を保持し、`recheck()` は現在入力から表全体を再計算して照合する。
+
 ## 仕様
 
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): 入力・問い・型付き結果の形式と意味。
