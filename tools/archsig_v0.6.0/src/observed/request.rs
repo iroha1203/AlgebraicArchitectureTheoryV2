@@ -568,7 +568,7 @@ fn resolve_inner(
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
         if req.kind == QuestionKind::Compose {
-            composition::shape(law, map, &requests, &names, req, control)?;
+            requests[i].constraints = composition::constraints(law, map, &requests, &names, req, control)?;
             continue;
         }
         if req.kind == QuestionKind::Map {
@@ -709,18 +709,6 @@ fn resolve_inner(
     phase(control, Checkpoint::RequestDependency)?;
     // 共通の参照・型・公開射影・循環の検査を完了してから、未実装経路を通知する。
     for request in &requests {
-        if request.kind == QuestionKind::Compose
-            && matches!(
-                composition::shape(law, map, &requests, &names, request, control)?,
-                composition::Shape::Path(_, _)
-            )
-        {
-            return Err(ResolveFailure::NotApplicable {
-                request: request.id.clone(),
-                kind: "compose".into(),
-                architecture_environment: false,
-            });
-        }
         if request.kind == QuestionKind::Map
             && request.arguments.iter().any(|a| {
                 a.name == "kind"

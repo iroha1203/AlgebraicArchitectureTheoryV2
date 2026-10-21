@@ -274,10 +274,12 @@ pub(super) fn reference(
             continue;
         }
         let node = prior.get(index).ok_or("値表示の依存 Ref が既出でない")?;
-        if node.ty == NodeType::Value(value.ty())
-            && let Some(Payload::Scalar(actual)) = &node.payload
-            && actual == value
-        {
+        let actual = match &node.payload {
+            Some(Payload::Scalar(actual)) => Some(actual),
+            Some(Payload::Construction(value)) => value.scalar(),
+            _ => None,
+        };
+        if node.ty == NodeType::Value(value.ty()) && actual == Some(value) {
             tick(control)?;
             return Ok(NodeRef(index));
         }

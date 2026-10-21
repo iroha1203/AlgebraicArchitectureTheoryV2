@@ -353,6 +353,7 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
+    if let Witness::PathCompose(c) = &value.witness { return super::public_path_compose::validate_origin(environment,graph,request,c); }
     if let Witness::Compose(c) = &value.witness {
         return super::public_compose::validate_origin(environment, graph, request, c);
     }
@@ -384,7 +385,7 @@ pub(super) fn validate_origin(
         environment.answer_binding_matches(graph, &argument.value, reference, (0, 0))?;
     }
     match &value.witness {
-        Witness::Compose(_) => unreachable!(),
+        Witness::Compose(_) | Witness::PathCompose(_) => unreachable!(),
         Witness::Map(m) => {
             if m.subject() != &on
                 || m.result().reading() != native::reading_name(request, "reading")?
@@ -596,7 +597,7 @@ pub(super) fn unavailable(
             location: None,
         });
     }
-    if request.kind == QuestionKind::Map {
+    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose) {
         let (projection_reasons, projection_scope) =
             environment.projection_failure_reasons(graph, request)?;
         reasons.extend(projection_reasons);
