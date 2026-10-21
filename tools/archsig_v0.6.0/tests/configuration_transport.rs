@@ -326,7 +326,7 @@ fn internal_identity_and_composite_maps_are_not_raw_correspondences() {
     let composed = id.compose(&i, &id, &mut Control::unlimited()).unwrap();
     for map in [e.map().unwrap(), id.map(), composed.map()] {
         assert!(
-            matches!(configuration_transport(&i,map,&mut Control::unlimited()),Err(ConstructionFailure::InvalidSelection(message))if !message.is_empty())
+            matches!(configuration_transport(&i,map,&mut Control::unlimited()).unwrap_err().cause(),ConstructionFailure::InvalidSelection(message) if !message.is_empty())
         );
     }
 }
@@ -396,9 +396,12 @@ fn every_fixed_transport_stop_latches_without_new_probes() {
                     },
                 );
                 let f = configuration_transport(&i, map, &mut c).unwrap_err();
-                assert_eq!(f, ConstructionFailure::Stopped(c.stop_reason().unwrap()));
+                assert_eq!(
+                    f.cause(),
+                    &ConstructionFailure::Stopped(c.stop_reason().unwrap())
+                );
                 assert_eq!(count.get(), at);
-                assert_eq!(r.recheck(&i, &mut c).unwrap_err(), f);
+                assert_eq!(&r.recheck(&i, &mut c).unwrap_err(), f.cause());
                 assert_eq!(count.get(), at);
             }
         }
@@ -453,4 +456,126 @@ fn cross_kind_configuration_maps_keep_object_and_generator_condition_failures_an
         .recheck(&i, &mut Control::unlimited())
         .unwrap();
     r.recheck(&i, &mut Control::unlimited()).unwrap();
+}
+
+fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let c = Control::new(
+        Limits {
+            time_ms: Some(1),
+            memory_mib: Some(1),
+        },
+        move |p| {
+            if p == point {
+                seen.set(seen.get() + 1);
+            }
+            let stop = seen.get() >= at;
+            Usage {
+                elapsed_ms: u128::from(stop && mode == 0),
+                memory_mib: u128::from(stop && mode == 1),
+                signal: if stop {
+                    match mode {
+                        2 => Some(Signal::Int),
+                        3 => Some(Signal::Term),
+                        _ => None,
+                    }
+                } else {
+                    None
+                },
+            }
+        },
+    );
+    (c, count)
+}
+
+#[test]
+fn stopped_configuration_transport_retains_operation_tables_and_completed_rows() {
+    for i in [inputs(A), cross_kind_inputs()] {
+        let reading = if i.definitions().vocabularies.contains_key("V") {
+            "Read"
+        } else {
+            "Reservations"
+        };
+        let m = correspondence(&i, "v", "m", reading, None, &mut Control::unlimited()).unwrap();
+        let full =
+            configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+        let total = Rc::new(Cell::new(0));
+        let seen = total.clone();
+        configuration_transport(
+            &i,
+            m.map().unwrap(),
+            &mut Control::new(Limits::default(), move |p| {
+                if p == Checkpoint::ConfigurationTransport {
+                    seen.set(seen.get() + 1);
+                }
+                Usage::default()
+            }),
+        )
+        .unwrap();
+        for (point, at) in [
+            (Checkpoint::InternalArrowRow, 1),
+            (Checkpoint::InternalArrowRow, 2),
+            (Checkpoint::ConfigurationTransportObject, 1),
+            (
+                Checkpoint::ConfigurationTransportObject,
+                full.objects().len(),
+            ),
+            (Checkpoint::ConfigurationTransportGenerator, 1),
+            (Checkpoint::ConfigurationTransport, total.get()),
+        ] {
+            for mode in 0..4 {
+                let (mut c, probes) = stop_at(point, at, mode);
+                let f = configuration_transport(&i, m.map().unwrap(), &mut c).unwrap_err();
+                assert_eq!(
+                    f.cause(),
+                    &ConstructionFailure::Stopped(c.stop_reason().unwrap())
+                );
+                let p = f.partial().unwrap();
+                assert_eq!(p.operation(), full.operation());
+                p.operation()
+                    .recheck(&i, &mut Control::unlimited())
+                    .unwrap();
+                assert_eq!(p.objects(), &full.objects()[..p.objects().len()]);
+                assert_eq!(p.generators(), &full.generators()[..p.generators().len()]);
+                if point == Checkpoint::InternalArrowRow {
+                    let table = if at == 1 {
+                        assert!(p.target().is_none());
+                        p.source().unwrap()
+                    } else {
+                        assert_eq!(p.source(), Some(full.source()));
+                        p.target().unwrap()
+                    };
+                    assert_eq!(table.arrows().len(), 1);
+                    assert!(!table.is_complete());
+                    assert!(p.objects().is_empty());
+                } else {
+                    assert_eq!(p.source(), Some(full.source()));
+                    assert_eq!(p.target(), Some(full.target()));
+                    if point == Checkpoint::ConfigurationTransportObject {
+                        assert_eq!(p.objects().len(), at);
+                        assert!(p.generators().is_empty());
+                    } else {
+                        assert_eq!(p.objects(), full.objects());
+                        assert_eq!(p.generators().len(), 1);
+                    }
+                }
+                assert_eq!(
+                    p.outcome(),
+                    if point == Checkpoint::ConfigurationTransport {
+                        Some(full.all_preserved())
+                    } else {
+                        None
+                    }
+                );
+                assert!(
+                    configuration_transport(&i, m.map().unwrap(), &mut c)
+                        .unwrap_err()
+                        .partial()
+                        .is_none()
+                );
+                assert_eq!(probes.get(), at);
+            }
+        }
+    }
 }

@@ -548,11 +548,18 @@ fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
             );
             let failure = internal_arrows(&i, "FlowRead", "v", "A", &mut control).unwrap_err();
             assert_eq!(
-                failure,
-                ConstructionFailure::Stopped(control.stop_reason().unwrap())
+                failure.cause(),
+                &ConstructionFailure::Stopped(control.stop_reason().unwrap())
             );
+            if at == total {
+                assert_eq!(failure.partial(), Some(&original));
+                assert!(failure.partial().unwrap().is_complete());
+            }
             assert_eq!(count.get(), at);
-            assert_eq!(original.recheck(&i, &mut control).unwrap_err(), failure);
+            assert_eq!(
+                &original.recheck(&i, &mut control).unwrap_err(),
+                failure.cause()
+            );
             assert_eq!(count.get(), at);
             assert_eq!(
                 original.arrows()[0]
@@ -560,9 +567,97 @@ fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
                     .unwrap()
                     .recheck(&i, &mut control)
                     .unwrap_err(),
-                failure
+                *failure.cause()
             );
             assert_eq!(count.get(), at);
+        }
+    }
+}
+
+fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let c = Control::new(
+        Limits {
+            time_ms: Some(1),
+            memory_mib: Some(1),
+        },
+        move |p| {
+            if p == point {
+                seen.set(seen.get() + 1);
+            }
+            let stop = seen.get() >= at;
+            Usage {
+                elapsed_ms: u128::from(stop && mode == 0),
+                memory_mib: u128::from(stop && mode == 1),
+                signal: if stop {
+                    match mode {
+                        2 => Some(Signal::Int),
+                        3 => Some(Signal::Term),
+                        _ => None,
+                    }
+                } else {
+                    None
+                },
+            }
+        },
+    );
+    (c, count)
+}
+
+#[test]
+fn stopped_internal_arrow_batches_keep_roster_status_and_completed_rows() {
+    let bad = edit(
+        A,
+        "q-links",
+        r#"[["v","q"],["v","r"],["v","q"]]"#,
+        r#"[["v","r"],["v","q"],["v","q"]]"#,
+    );
+    for input in [A.to_string(), remove(&bad, "g-owner")] {
+        let i = inputs(&input);
+        let full = internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
+        assert!(full.is_complete());
+        assert_eq!(full.pending(), Some([].as_slice()));
+        for mode in 0..4 {
+            let (mut c, probes) = stop_at(Checkpoint::InternalArrowRoster, 1, mode);
+            let f = internal_arrows(&i, "FlowRead", "v", "A", &mut c).unwrap_err();
+            let p = f.partial().unwrap();
+            assert_eq!(p.construction(), full.construction());
+            assert_eq!(p.pending(), None);
+            assert!(p.arrows().is_empty());
+            assert!(!p.all_preserved());
+            assert!(!p.is_complete());
+            assert!(
+                internal_arrows(&i, "FlowRead", "v", "A", &mut c)
+                    .unwrap_err()
+                    .partial()
+                    .is_none()
+            );
+            assert_eq!(probes.get(), 1);
+            for at in 1..=full.arrows().len() {
+                let (mut c, probes) = stop_at(Checkpoint::InternalArrowRow, at, mode);
+                let f = internal_arrows(&i, "FlowRead", "v", "A", &mut c).unwrap_err();
+                assert_eq!(
+                    f.cause(),
+                    &ConstructionFailure::Stopped(c.stop_reason().unwrap())
+                );
+                let p = f.partial().unwrap();
+                assert_eq!(p.arrows(), &full.arrows()[..at]);
+                let pending = full.arrows()[at..]
+                    .iter()
+                    .map(|r| r.arrow().clone())
+                    .collect::<Vec<_>>();
+                assert_eq!(p.pending(), Some(pending.as_slice()));
+                assert!(!p.is_complete());
+                assert!(!p.all_preserved());
+                assert!(
+                    internal_arrows(&i, "FlowRead", "v", "A", &mut c)
+                        .unwrap_err()
+                        .partial()
+                        .is_none()
+                );
+                assert_eq!(probes.get(), at);
+            }
         }
     }
 }

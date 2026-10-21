@@ -16,10 +16,10 @@ use crate::{
     construction::{
         ConstructionFailure, FactPointer,
         maps::{
-            ConfigurationOperation, ConfigurationTransport, DeclarationCorrespondence,
-            DeclarationValuePosition, FiniteValueTransport, NumericValueTransport, ObjectIdentity,
-            configuration_transport, finite_declaration_value_transport,
-            numeric_declaration_value_transport,
+            ConfigurationOperation, ConfigurationTransport, ConfigurationTransportFailure,
+            ConfigurationTransportPartial, DeclarationCorrespondence, DeclarationValuePosition,
+            FiniteValueTransport, NumericValueTransport, ObjectIdentity, configuration_transport,
+            finite_declaration_value_transport, numeric_declaration_value_transport,
         },
         readings::{ObjectInstance, ObjectReadingInstances, object_reading_instances},
     },
@@ -30,6 +30,7 @@ use std::sync::Arc;
 #[derive(Debug)]
 pub enum ObjectViewTransportFailure {
     Construction(ConstructionFailure),
+    Transport(Box<ConfigurationTransportFailure>),
     NotImplemented {
         operation: Box<ConfigurationOperation>,
         object: ObjectIdentity,
@@ -47,6 +48,7 @@ pub enum ObjectViewTransportFailure {
         operation: Box<ConfigurationOperation>,
         partial: Option<Box<ObjectViewTransportPartial>>,
         evaluation: Option<Box<ObjectEvaluationFailure>>,
+        transport: Option<Box<ConfigurationTransportPartial>>,
     },
 }
 impl From<ConstructionFailure> for ObjectViewTransportFailure {
@@ -325,6 +327,7 @@ pub fn object_view_transport(
                 operation,
                 partial: None,
                 evaluation: None,
+                transport: None,
             })
         }
         result => result,
@@ -337,9 +340,41 @@ fn checked_view_transport(
     instance: usize,
     c: &mut Control,
 ) -> Result<ObjectViewTransport, ObjectViewTransportFailure> {
-    let objects = configuration_transport(&inputs, declarations.operation().map(), c)?;
-    let source_readings = object_reading_instances(&inputs, objects.source().construction(), c)?;
-    let target_readings = object_reading_instances(&inputs, objects.target().construction(), c)?;
+    let objects =
+        configuration_transport(&inputs, declarations.operation().map(), c).map_err(|failure| {
+            match failure.cause() {
+                ConstructionFailure::Stopped(reason) => {
+                    let reason = reason.clone();
+                    let (_, transport) = failure.into_parts();
+                    ObjectViewTransportFailure::Stopped {
+                        reason,
+                        operation: Box::new(declarations.operation().clone()),
+                        partial: None,
+                        evaluation: None,
+                        transport,
+                    }
+                }
+                _ => ObjectViewTransportFailure::Transport(Box::new(failure)),
+            }
+        })?;
+    let readings = (|| -> Result<_, ConstructionFailure> {
+        let source = object_reading_instances(&inputs, objects.source().construction(), c)?;
+        let target = object_reading_instances(&inputs, objects.target().construction(), c)?;
+        Ok((source, target))
+    })();
+    let (source_readings, target_readings) = match readings {
+        Ok(readings) => readings,
+        Err(ConstructionFailure::Stopped(reason)) => {
+            return Err(ObjectViewTransportFailure::Stopped {
+                reason,
+                operation: Box::new(objects.operation().clone()),
+                partial: None,
+                evaluation: None,
+                transport: Some(Box::new(objects.into_partial())),
+            });
+        }
+        Err(failure) => return Err(failure.into()),
+    };
     if source_readings.objects().get(object).is_none()
         || source_readings.instances().get(instance).is_none()
     {
@@ -533,6 +568,7 @@ fn checked_view_transport(
                         operation,
                         partial,
                         evaluation: None,
+                        transport: None,
                     })
                 }
                 ObjectViewTransportFailure::Evaluation { failure, .. } => {
@@ -542,6 +578,7 @@ fn checked_view_transport(
                             operation,
                             partial,
                             evaluation: Some(failure),
+                            transport: None,
                         })
                     } else {
                         Err(ObjectViewTransportFailure::Evaluation {

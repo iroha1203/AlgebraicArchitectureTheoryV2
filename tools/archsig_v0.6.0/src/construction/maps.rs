@@ -30,7 +30,9 @@ pub use declarations::{
     DeclarationCandidate, DeclarationConditionFailure, DeclarationCorrespondence, DeclarationPair,
     declaration_correspondence,
 };
-pub use internal::{InternalArrowResult, InternalArrows, internal_arrow, internal_arrows};
+pub use internal::{
+    InternalArrowResult, InternalArrows, InternalArrowsFailure, internal_arrow, internal_arrows,
+};
 pub use operations::{
     ActionDifference, ConfigurationOperation, IdentityConstruction, OperationStep, identity,
 };
@@ -38,8 +40,9 @@ pub use references::{
     ReferenceBijection, ReferenceConditionFailure, ReferenceTypeTransport, reference_type_transport,
 };
 pub use transport::{
-    ConfigurationTransport, GeneratorTransport, Naturality, ObjectTransport,
-    TransportConditionFailure, configuration_transport,
+    ConfigurationTransport, ConfigurationTransportFailure, ConfigurationTransportPartial,
+    GeneratorTransport, Naturality, ObjectTransport, TransportConditionFailure,
+    configuration_transport,
 };
 
 type SubjectKey = (String, String);
