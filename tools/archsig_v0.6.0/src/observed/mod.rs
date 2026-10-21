@@ -24,17 +24,23 @@ use crate::canonical::Json;
 use control::Control;
 use input::{CheckedInputs, InputFailure, InputSources, check_inputs};
 use request::{ResolveFailure, ResolvedRequests, resolve_observed_requests_controlled};
+use std::sync::Arc;
 
 /// 同じ検査済み三表に対して解決した、観測環境の問い。
 #[derive(Debug)]
 pub struct PreparedObserved {
-    inputs: CheckedInputs,
+    inputs: Arc<CheckedInputs>,
     requests: ResolvedRequests,
 }
 
 impl PreparedObserved {
     pub fn inputs(&self) -> &CheckedInputs {
         &self.inputs
+    }
+
+    /// 同じ不変三表を別の要求batchへ渡す。要求・回答・評価graphは共有しない。
+    pub fn shared_inputs(&self) -> Arc<CheckedInputs> {
+        Arc::clone(&self.inputs)
     }
 
     pub fn requests(&self) -> &ResolvedRequests {
@@ -47,7 +53,7 @@ impl PreparedObserved {
 pub enum PrepareFailure {
     Inputs(Box<InputFailure>),
     Requests {
-        inputs: Box<CheckedInputs>,
+        inputs: Arc<CheckedInputs>,
         failure: ResolveFailure,
     },
 }
@@ -113,11 +119,17 @@ pub fn prepare_checked_observed(
     texts: &[&str],
     control: &mut Control,
 ) -> Result<PreparedObserved, PrepareFailure> {
+    prepare_shared_observed(Arc::new(inputs), texts, control)
+}
+
+/// 同じ検査済み三表を共有し、byte列の再検査・表の複製なしに別batchを解決する。
+pub fn prepare_shared_observed(
+    inputs: Arc<CheckedInputs>,
+    texts: &[&str],
+    control: &mut Control,
+) -> Result<PreparedObserved, PrepareFailure> {
     match resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), texts, control) {
         Ok(requests) => Ok(PreparedObserved { inputs, requests }),
-        Err(failure) => Err(PrepareFailure::Requests {
-            inputs: Box::new(inputs),
-            failure,
-        }),
+        Err(failure) => Err(PrepareFailure::Requests { inputs, failure }),
     }
 }
