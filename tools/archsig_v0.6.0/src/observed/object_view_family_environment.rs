@@ -108,15 +108,14 @@ impl Environment<'_> {
         &self,
         parameter: &crate::law::model::Param,
         instance: &crate::construction::readings::ObjectInstance,
-    ) -> Result<(super::super::finite::Enumeration, Vec<Fact>), ValidationFailure> {
+    ) -> Result<Option<(super::super::finite::Enumeration, Vec<Fact>)>, ValidationFailure> {
         let declaration = self
             .inputs
             .law()
             .declarations
             .get(&instance.declaration().name)
             .ok_or("有限view域の元宣言がない")?;
-        let missing = RefCell::new(Vec::new());
-        let enumeration = super::super::finite::values_with_owned(
+        let enumeration = super::super::finite::values_if_finite_with_owned(
             &parameter.ty,
             self.inputs.law(),
             &self.control,
@@ -136,14 +135,13 @@ impl Environment<'_> {
                 };
                 let members =
                     self.owned_members(entity, &owner, None, &declaration.reading, &mut |_, _| {})?;
-                missing.borrow_mut().extend(members.missing);
-                Ok(members.enumeration)
+                Ok(super::super::finite::FiniteDomain {
+                    enumeration: members.enumeration,
+                    missing: members.missing,
+                })
             },
             &mut |_| {},
         )?;
-        let mut missing = missing.into_inner();
-        missing.sort();
-        missing.dedup();
-        Ok((enumeration, missing))
+        Ok(enumeration.map(|domain| (domain.enumeration, domain.missing)))
     }
 }
