@@ -221,20 +221,26 @@ fn finite_and_affine_remaining_parameters_use_the_existing_whole_family() {
 }
 
 #[test]
-fn unbound_view_family_is_an_explicit_implementation_failure_with_its_full_parameters() {
+fn finite_view_family_retains_both_boolean_assignments_and_their_evaluations() {
     let i = inputs(L, A);
     let p = plan(&i);
     let (o, r) = indices(&p, "p", "flag", "p");
-    let Err(ObjectEvaluationFailure::NotImplemented { object, instance }) =
-        evaluate_object_instance(i, &p, o, r, &mut quiet())
-    else {
-        panic!("未実装のview族を入力不正・成立・数学的未決にしない")
+    let e = evaluate_object_instance(Arc::clone(&i), &p, o, r, &mut quiet()).unwrap();
+    let ObjectEvaluationOutcome::FiniteView(f) = e.outcome() else {
+        panic!("finite view")
     };
-    assert_eq!(object.subject().subject, "p");
-    assert_eq!(instance.parameters().len(), 1);
-    assert_eq!(instance.parameters()[0].name, "b");
-    assert_eq!(instance.parameters()[0].ty, archsig::types::Type::Bool);
+    assert!(f.is_complete());
+    assert_eq!(f.domains()[0].parameter().name, "b");
+    assert_eq!(f.domains()[0].values().len(), 2);
+    assert_eq!(f.rows().len(), 2);
+    for (row, value) in f.rows().iter().zip(["false", "true"]) {
+        assert_eq!(row.arguments()[0].wire().canonical(), value);
+        assert_eq!(scalar(&row.evaluation().wire()).canonical(), value);
+        assert_eq!(row.evaluation().status(), "complete");
+    }
+    f.recheck(i, &mut quiet()).unwrap();
 }
+
 #[test]
 fn stale_inputs_and_invalid_indices_are_rejected_before_any_evaluation() {
     let i = inputs(L, A);

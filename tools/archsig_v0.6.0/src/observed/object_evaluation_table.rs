@@ -78,8 +78,16 @@ impl ObjectEvaluationTable {
                 && self.rows.len() == expected.rows.len();
             for (a, b) in self.rows.iter().zip(&expected.rows) {
                 tick(control)?;
-                equal &= a.position == b.position
-                    && same_evaluation(Some(&a.evaluation), Some(&b.evaluation));
+                let same = match (a.evaluation.outcome(), b.evaluation.outcome()) {
+                    (ObjectEvaluationOutcome::FiniteView(a), ObjectEvaluationOutcome::FiniteView(b)) => {
+                        super::object_view_family::same_family_checked(a, b, control).map_err(|f| match f {
+                            super::result::ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
+                            other => ConstructionFailure::Inconsistent(format!("有限view表の再照合: {other:?}")),
+                        })?
+                    }
+                    _ => same_evaluation(Some(&a.evaluation), Some(&b.evaluation)),
+                };
+                equal &= a.position == b.position && same;
             }
             tick(control)?;
             Ok(equal)

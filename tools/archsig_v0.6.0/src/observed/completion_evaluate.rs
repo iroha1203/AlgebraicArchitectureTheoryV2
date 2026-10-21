@@ -78,11 +78,11 @@ impl Evaluator<'_, '_> {
                     .iter()
                     .find(|b| {
                         b.name == p.name
-                            && self
+                            && (self.environment.object_view_is_bound(p) || self
                                 .request
                                 .arguments
                                 .iter()
-                                .any(|a| a.name == format!("bind.{}", p.name))
+                                .any(|a| a.name == format!("bind.{}", p.name)))
                     })
                     .cloned()
             })

@@ -226,10 +226,10 @@ fn empty_instance_family_is_a_complete_empty_evaluation_table() {
     assert_eq!(t.pending(), None);
 }
 #[test]
-fn unimplemented_view_families_keep_the_cause_position_and_completed_prefix() {
+fn infinite_view_families_keep_the_cause_position_and_completed_prefix() {
     let l = L.replace(
         "view flag(c: Part): Bool = false;",
-        "view flag(c: Part, b: Bool): Bool = b;",
+        "view flag(c: Part, b: Z): Bool = b=0;",
     );
     let i = inputs(&l, A);
     let p = plan(&i);
@@ -412,4 +412,39 @@ fn empty_and_conditional_tables_reject_changed_values_and_origins() {
             );
         }
     }
+}
+
+#[test]
+fn finite_view_functions_complete_the_table_without_changing_applicability() {
+    let l = L.replace(
+        "view flag(c: Part): Bool = false;",
+        "view flag(c: Part, b: Bool): Bool = b;",
+    );
+    let i = inputs(&l, A);
+    let p = plan(&i);
+    let t = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
+    assert!(t.is_complete());
+    assert_eq!(t.rows().len(), 36);
+    let mut functions = 0;
+    for row in t.rows() {
+        if let ObjectEvaluationOutcome::FiniteView(f) = row.evaluation().outcome() {
+            functions += 1;
+            assert!(f.is_complete());
+            assert_eq!(f.rows().len(), 2);
+            for (row, expected) in f.rows().iter().zip([false, true]) {
+                assert_eq!(row.arguments()[0].wire(), Json::Bool(expected));
+                assert_eq!(row.evaluation().status(), "complete");
+                let output = row.evaluation().wire();
+                let a = &array(field(&output, "answers"))[0];
+                let reference = field(field(field(a, "outputs"), "value"), "node");
+                let node = array(field(&output, "nodes"))
+                    .iter()
+                    .find(|n| field(n, "id") == reference)
+                    .unwrap();
+                assert_eq!(field(node, "value"), &Json::Bool(expected));
+            }
+        }
+    }
+    assert_eq!(functions, 4);
+    t.recheck(i, &mut quiet()).unwrap();
 }

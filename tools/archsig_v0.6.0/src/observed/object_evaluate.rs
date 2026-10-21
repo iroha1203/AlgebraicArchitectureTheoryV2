@@ -21,6 +21,7 @@ use std::{collections::BTreeSet, sync::Arc};
 pub(super) struct ObjectContext {
     pub domain: ObjectDomain,
     pub instance: ObjectInstance,
+    pub values: Option<std::sync::Arc<super::object_view_family::FiniteViewAssignment>>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ObjectDomain {
@@ -183,6 +184,10 @@ impl ObjectDomain {
 #[derive(Debug)]
 pub enum ObjectEvaluationFailure {
     Construction(ConstructionFailure),
+    FiniteView {
+        cause: Box<ObjectEvaluationFailure>,
+        partial: Box<super::object_view_family::FiniteObjectView>,
+    },
     Evaluation(Box<EvaluationFailure>),
     /// 通常のview要求が全束縛を要することを、入力不正や数学的未決へ読み替えない。
     NotImplemented {
@@ -200,6 +205,7 @@ pub enum ObjectEvaluationOutcome {
     NotApplicable,
     Conditional(Vec<MembershipCondition>),
     Evaluated(Box<ObservedEvaluation>),
+    FiniteView(Box<super::object_view_family::FiniteObjectView>),
 }
 /// 適用状態と、その対象の元宣言・束縛・型付き評価。全域延長の成立とは区別する。
 #[derive(Debug)]
@@ -239,7 +245,7 @@ pub fn evaluate_object_instance(
         .checkpoint(Checkpoint::ObjectEvaluation)
         .map_err(ConstructionFailure::from)?;
     readings.recheck(&inputs, control)?;
-    let selected = readings
+    let _selected = readings
         .objects()
         .get(object)
         .ok_or_else(|| ConstructionFailure::InvalidSelection("対象の添字がない".into()))?;
@@ -258,9 +264,12 @@ pub fn evaluate_object_instance(
         }
         InstanceApplication::Applicable { .. } => {
             if row.declaration().kind == "view" && !row.parameters().is_empty() {
-                return Err(ObjectEvaluationFailure::NotImplemented {
-                    object: selected.identity().clone(),
-                    instance: row.clone(),
+                let family = super::object_view_family::evaluate_finite_view(
+                    inputs, readings, object, instance, control,
+                )?;
+                return Ok(ObjectEvaluation {
+                    readings: readings.clone(), object, instance,
+                    outcome: ObjectEvaluationOutcome::FiniteView(Box::new(family)),
                 });
             }
             let kind = match row.declaration().kind {
@@ -296,6 +305,7 @@ pub fn evaluate_object_instance(
                         other => ConstructionFailure::Inconsistent(format!("{other:?}")),
                     })?,
                 instance: row.clone(),
+                values: None,
             });
             ObjectEvaluationOutcome::Evaluated(Box::new(
                 evaluate_observed(prepared, control)

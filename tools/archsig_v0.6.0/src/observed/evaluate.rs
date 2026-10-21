@@ -342,6 +342,18 @@ impl Evaluator<'_, '_> {
                 self.tick(Checkpoint::FiniteIteration)?;
             }
             let Some(argument) = found else {
+                if let Some(node) = self.environment.object_view_binding(self.graph, p)? {
+                    self.base.merge(&node.scope);
+                    let value = if let Some(value) = self.environment.completion_fixed_binding(self.graph, p)? {
+                        value
+                    } else {
+                        self.push(node)?
+                    };
+                    self.bindings.push(Binding {
+                        name: p.name.clone(), value, ty: p.ty.erase(),
+                    });
+                    continue;
+                }
                 return Err(
                     self.unsupported(p.span, format!("未束縛 parameter `{}` の全称評価", p.name))
                 );
@@ -435,7 +447,7 @@ impl Evaluator<'_, '_> {
                         super::environment::AnswerBinding::Projection(node) => {
                             if let Some(value) = self
                                 .environment
-                                .completion_fixed_answer_binding(self.graph, p)?
+                                .completion_fixed_binding(self.graph, p)?
                             {
                                 value
                             } else {
