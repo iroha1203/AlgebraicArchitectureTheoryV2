@@ -1803,6 +1803,10 @@ impl Graph {
             } = reason.kind
             {
                 let proposition = self.get(condition)?;
+                if construction == "composition" {
+                    super::public_compose::validate_failure(self,reason)?;
+                    continue;
+                }
                 if construction == "projection" {
                     self.projection_check_shape(proposition)?;
                     if !matches!(

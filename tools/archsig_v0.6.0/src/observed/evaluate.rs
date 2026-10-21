@@ -2766,14 +2766,13 @@ fn evaluate_observed_with_validator(
                 instance: None,
                 case: None,
             };
-            if request.kind == QuestionKind::Map {
-                match super::public_map::evaluate(
-                    &prepared,
-                    environment,
-                    &mut graph,
-                    request,
-                    control,
-                ) {
+            if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose) {
+                let evaluate = if request.kind == QuestionKind::Compose {
+                    super::public_compose::evaluate
+                } else {
+                    super::public_map::evaluate
+                };
+                match evaluate(&prepared, environment, &mut graph, request, control) {
                     Ok(answer) => {
                         if control.stop_reason().is_none() {
                             if let Err(failure) =
@@ -3070,6 +3069,9 @@ fn evaluate_observed_with_validator(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    mod public_compose_tests {
+        include!("public_compose_tests.rs");
+    }
     mod public_map_tests {
         include!("public_map_tests.rs");
     }

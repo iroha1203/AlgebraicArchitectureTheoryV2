@@ -3825,9 +3825,13 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
-            if request.kind == QuestionKind::Map {
+            if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose) {
                 return self.with_request_context(graph, request, || {
-                    super::public_map::validate_answer(self, graph, request, answer)?;
+                    if request.kind == QuestionKind::Compose {
+                        super::public_compose::validate_answer(self, graph, request, answer)?;
+                    } else {
+                        super::public_map::validate_answer(self, graph, request, answer)?;
+                    }
                     for r in answer
                         .outputs
                         .values()

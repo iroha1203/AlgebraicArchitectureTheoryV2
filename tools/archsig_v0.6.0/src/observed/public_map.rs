@@ -353,6 +353,9 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
+    if let Witness::Compose(c) = &value.witness {
+        return super::public_compose::validate_origin(environment, graph, request, c);
+    }
     if request.kind != QuestionKind::Map
         || value.witness.request() != request
         || value.witness.inputs().sources() != environment.inputs.sources()
@@ -381,6 +384,7 @@ pub(super) fn validate_origin(
         environment.answer_binding_matches(graph, &argument.value, reference, (0, 0))?;
     }
     match &value.witness {
+        Witness::Compose(_) => unreachable!(),
         Witness::Map(m) => {
             if m.subject() != &on
                 || m.result().reading() != native::reading_name(request, "reading")?
@@ -536,8 +540,13 @@ pub(super) fn unavailable(
             .readings
             .insert(environment.inputs.law().declarations[name].reading.clone());
     }
-    for argument in &request.arguments {
-        let Selector::Answer { id, .. } = &argument.value else {
+    let selectors = request
+        .arguments
+        .iter()
+        .map(|a| &a.value)
+        .chain((request.kind == QuestionKind::Compose).then_some(&request.head));
+    for selector in selectors {
+        let Selector::Answer { id, .. } = selector else {
             continue;
         };
         let producer_index = graph
@@ -545,13 +554,16 @@ pub(super) fn unavailable(
             .iter()
             .position(|r| &r.id == id)
             .ok_or("依存元Requestがない")?;
-        if request.kind != QuestionKind::Map
-            && graph.requests[producer_index].kind != QuestionKind::Map
+        if !matches!(request.kind, QuestionKind::Map | QuestionKind::Compose)
+            && !matches!(
+                graph.requests[producer_index].kind,
+                QuestionKind::Map | QuestionKind::Compose
+            )
         {
             continue;
         }
         let producer = environment.answer_binding_source(graph, current, id, (0, 0))?;
-        let available = match environment.answer_binding(graph, &argument.value, (0, 0)) {
+        let available = match environment.answer_binding(graph, selector, (0, 0)) {
             Ok(AnswerBinding::Reference(r)) => {
                 !matches!(&graph.get(r)?.payload,Some(Payload::Construction(v)) if v.is_blocked())
             }

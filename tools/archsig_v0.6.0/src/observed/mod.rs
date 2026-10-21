@@ -18,6 +18,7 @@ mod object_transport;
 pub(crate) mod object_view_transport;
 mod path_value;
 mod public_map;
+mod public_compose;
 mod quantifier;
 pub mod result;
 mod term;
