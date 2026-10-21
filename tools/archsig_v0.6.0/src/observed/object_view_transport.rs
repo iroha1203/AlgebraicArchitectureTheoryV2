@@ -323,7 +323,7 @@ fn scalar(e: &ObjectEvaluation) -> Result<Option<Scalar>, ConstructionFailure> {
     };
     scalar_evaluation(e)
 }
-fn scalar_evaluation(
+pub(super) fn scalar_evaluation(
     e: &super::result::ObservedEvaluation,
 ) -> Result<Option<Scalar>, ConstructionFailure> {
     let a = e
