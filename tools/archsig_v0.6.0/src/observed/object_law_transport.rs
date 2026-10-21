@@ -27,7 +27,10 @@ use std::sync::Arc;
 
 #[path = "object_law_family.rs"]
 mod family;
-pub use family::{FiniteLawFamily, LawParameterComparison};
+pub use family::{
+    FiniteLawFamily, LawParameterComparison, LawReadingDomain, LawReadingFamily, LawReadingRow,
+};
+pub(super) use family::{compare_native_readings, read_native_family};
 
 #[derive(Debug)]
 pub enum ObjectLawTransportFailure {
@@ -273,6 +276,7 @@ fn reading(
     let evaluation = match e.outcome() {
         ObjectEvaluationOutcome::NotApplicable => {
             r.application = LawApplication::OutsideObject;
+            r.conditional = Some(true);
             return Ok(r);
         }
         ObjectEvaluationOutcome::Conditional(conditions) => {
@@ -280,7 +284,9 @@ fn reading(
             return Ok(r);
         }
         ObjectEvaluationOutcome::FiniteView(_) => {
-            return Err(ConstructionFailure::Inconsistent("Law読取りにviewの関数族がある".into()));
+            return Err(ConstructionFailure::Inconsistent(
+                "Law読取りにviewの関数族がある".into(),
+            ));
         }
         ObjectEvaluationOutcome::Evaluated(e) => e,
     };

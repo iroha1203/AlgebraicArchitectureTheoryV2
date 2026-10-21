@@ -274,6 +274,15 @@ impl Environment<'_> {
                     result.enumeration.values.clear();
                 }
             }
+        } else if let Some((enumeration, missing)) = if self.object_instance.is_some()
+            && !super::super::finite::supported(&p.ty.erase(), self.inputs.law(), &self.control)?
+        {
+            self.native_law_parameter_domain(p)?
+        } else {
+            None
+        } {
+            result.enumeration = enumeration;
+            result.missing = missing;
         } else if p.ty == p.ty.erase() {
             result.enumeration = self.family_values(&p.ty, observer)?;
         } else {

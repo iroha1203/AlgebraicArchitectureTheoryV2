@@ -1084,7 +1084,7 @@ impl Environment<'_> {
             if bindings.iter().any(|binding| binding.name == param.name) {
                 continue;
             }
-            if !self.universal_symbolic_type(&param.ty.erase())? {
+            if !self.law_parameter_symbolic_type(param)? {
                 return Ok(None);
             }
             parameters.push(UniversalParameter {
@@ -1317,10 +1317,13 @@ impl Environment<'_> {
         };
         for parameter in declared {
             self.tick()?;
-            if self.universal_symbolic_type(&parameter.ty.erase())?
-                && !bindings
-                    .iter()
-                    .any(|binding| binding.name == parameter.name)
+            if (if matches!(&declaration.signature, Signature::Law { .. }) {
+                self.law_parameter_symbolic_type(parameter)?
+            } else {
+                self.universal_symbolic_type(&parameter.ty.erase())?
+            }) && !bindings
+                .iter()
+                .any(|binding| binding.name == parameter.name)
             {
                 parameters.push((parameter.name.clone(), parameter.ty.erase()));
             }

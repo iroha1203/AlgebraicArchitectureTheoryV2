@@ -324,6 +324,7 @@ type NameTokenObserver = Box<dyn FnMut((usize, usize), super::call::Context)>;
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
     object: Option<std::sync::Arc<super::object_evaluate::ObjectDomain>>,
+    object_instance: Option<&'a crate::construction::readings::ObjectInstance>,
     object_values: Option<&'a super::object_view_family::FiniteViewAssignment>,
     architecture: RefCell<Option<architecture_environment::ArchitectureContext>>,
     original_requests: Option<&'a [Request]>,
@@ -364,6 +365,7 @@ impl<'a> Environment<'a> {
             .object
             .as_ref()
             .map(|o| std::sync::Arc::new(o.domain.clone()));
+        environment.object_instance = prepared.object.as_ref().map(|object| &object.instance);
         environment.object_values = prepared.object.as_ref().and_then(|object| object.values.as_deref());
         Ok(environment)
     }
@@ -445,6 +447,7 @@ impl<'a> Environment<'a> {
         Ok(Self {
             inputs,
             object: None,
+            object_instance: None,
             object_values: None,
             architecture: RefCell::new(None),
             subjects,
@@ -515,6 +518,26 @@ impl<'a> Environment<'a> {
             },
             &mut |index| observer.borrow_mut()("type_enum", index),
         )
+    }
+    pub(super) fn dynamic_finite_values(
+        &self,
+        ty: &Type,
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<Option<super::finite::Enumeration>, ValidationFailure> {
+        let observer = RefCell::new(observer);
+        super::finite::values_if_finite_with_owned(
+            &ty.erase(),
+            self.inputs.law(),
+            &self.control,
+            &mut |entity| {
+                self.reference_roster(entity, &mut |index| {
+                    observer.borrow_mut()("ref_roster", index)
+                })
+            },
+            &mut |_, _| Err("消去型の有限域にOwnedが残った".into()),
+            &mut |index| observer.borrow_mut()("type_enum", index),
+        )
+        .map(|domain| domain.map(|domain| domain.enumeration))
     }
     fn reference_roster(
         &self,

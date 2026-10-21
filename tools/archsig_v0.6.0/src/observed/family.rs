@@ -15,6 +15,35 @@ pub(in crate::observed) struct Plan {
     pub guard: Option<usize>,
 }
 impl Environment<'_> {
+    // 元Law instanceのOwned型と固定owner束縛を、判定と実列挙で共有する。
+    pub(super) fn native_law_parameter_domain(
+        &self,
+        parameter: &Param,
+    ) -> Result<Option<(super::super::finite::Enumeration, Vec<Fact>)>, ValidationFailure> {
+        let Some(instance) = self
+            .object_instance
+            .filter(|i| i.declaration().kind == "law")
+        else {
+            return Ok(None);
+        };
+        self.object_view_domain(parameter, instance)
+    }
+    pub(in crate::observed) fn law_parameter_symbolic_type(
+        &self,
+        parameter: &Param,
+    ) -> Result<bool, ValidationFailure> {
+        let ty = parameter.ty.erase();
+        if self.object_instance.is_none() {
+            return self.universal_symbolic_type(&ty);
+        }
+        if !self.universal_symbolic_type(&ty)? {
+            return Ok(false);
+        }
+        if matches!(ty, Type::Z | Type::Q) {
+            return Ok(true);
+        }
+        Ok(self.native_law_parameter_domain(parameter)?.is_none())
+    }
     pub(in crate::observed) fn family_plan(
         &self,
         request: &Request,
@@ -50,7 +79,7 @@ impl Environment<'_> {
         let (mut numeric, mut unbound) = (Vec::new(), Vec::new());
         for p in &free {
             self.tick()?;
-            if self.universal_symbolic_type(&p.ty.erase())? {
+            if self.law_parameter_symbolic_type(p)? {
                 numeric.push(p.clone());
             } else {
                 unbound.push(p.clone());
@@ -88,10 +117,7 @@ impl Environment<'_> {
         }
         for p in params {
             self.tick()?;
-            let finite_type = p.ty.erase();
-            if unbound.iter().any(|u| u.name == p.name)
-                && !super::super::finite::supported(&finite_type, self.inputs.law(), &self.control)?
-            {
+            if unbound.iter().any(|u| u.name == p.name) && self.law_parameter_symbolic_type(p)? {
                 return Err(ValidationFailure::UnsupportedExpression {
                     location: Location::Law { span: p.span },
                     feature: format!("未束縛Law parameter `{}` の未対応有限型・依存owner", p.name),
@@ -375,7 +401,13 @@ impl Environment<'_> {
         ty: &Type,
         observer: &mut dyn FnMut(&'static str, usize),
     ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
-        let enumeration = self.finite_values(ty, observer)?;
+        let enumeration = if super::super::finite::supported(ty, self.inputs.law(), &self.control)?
+        {
+            self.finite_values(ty, observer)?
+        } else {
+            self.dynamic_finite_values(ty, observer)?
+                .ok_or("Law parameter域が有限でない")?
+        };
         let mut domain = super::owned_type::TypeDomain {
             values: Some(enumeration.values),
             scope: enumeration.scope,
