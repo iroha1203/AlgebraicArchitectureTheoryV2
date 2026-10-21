@@ -49,6 +49,7 @@ pub enum Checkpoint {
     DeclarationCorrespondence,
     ReferenceTypeTransport,
     FiniteValueTransport,
+    NumericValueTransport,
     ObjectInstances,
     ObjectEvaluation,
     Expression,

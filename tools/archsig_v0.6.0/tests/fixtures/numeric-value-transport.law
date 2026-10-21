@@ -1,0 +1,19 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  view axes(c: Left.Child, z: Z, q: Q, f: Fp(3), nested: (Z, (Q, Fp(3))), b: Bool, sequenceValue: List<Z>): Bool = true;
+  view returned(n: (Z, (Q, Fp(3)))): (Z, (Q, Fp(3))) = n;
+  view changed(z: Z): Z = z;
+  view mismatch(z: Z): Z = z;
+}
+reading After {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  view axes(c: Right.Child, z: Z, q: Q, f: Fp(3), nested: (Z, (Q, Fp(3))), b: Bool, sequenceValue: List<Z>): Bool = false;
+  view returned(value: (Z, (Q, Fp(3)))): (Z, (Q, Fp(3))) = value;
+  view changed(z: Z): Z = z + 1;
+  view mismatch(z: Q): Q = z;
+}

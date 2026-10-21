@@ -7,6 +7,10 @@ mod internal;
 mod operations;
 mod references;
 mod transport;
+pub use crate::observed::numeric_transport::{
+    NumericTransportValue, NumericValueMap, NumericValueTransport,
+    numeric_declaration_value_transport,
+};
 pub use crate::observed::value_transport::{
     DeclarationValuePosition, FiniteTransportValue, FiniteValueBijection,
     FiniteValueConditionFailure, FiniteValueTransport, finite_declaration_value_transport,

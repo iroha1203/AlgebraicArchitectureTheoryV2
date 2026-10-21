@@ -9,6 +9,7 @@ pub mod evaluate;
 mod finite;
 mod needed;
 mod numeric;
+pub(crate) mod numeric_transport;
 pub(crate) mod object_evaluate;
 mod path_value;
 mod quantifier;
