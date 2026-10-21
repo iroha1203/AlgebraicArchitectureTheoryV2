@@ -669,6 +669,7 @@ impl<'a> Environment<'a> {
                         return Err("native構成のRequestが元入力と違う".into());
                     }
                     super::public_map::validate_origin(self, graph, request, value)?;
+                    super::public_compare::validate_position(value, limit)?;
                     for r in node
                         .arguments
                         .iter()

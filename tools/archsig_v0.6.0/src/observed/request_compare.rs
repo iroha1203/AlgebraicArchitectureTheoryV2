@@ -243,17 +243,6 @@ fn value_constraints(
     if common.is_empty() {
         return Err(error(&request.id, "to", "value比較の原始型Pが違う"));
     }
-    let mut ground = false;
-    for ty in &common {
-        ground |= ground_type(ty, law, control, &mut BTreeSet::new())?;
-    }
-    if !ground {
-        return Err(ResolveFailure::NotApplicable {
-            request: request.id.clone(),
-            kind: "compare".into(),
-            architecture_environment: false,
-        });
-    }
     let mut out = vec![];
     for (key, selector, plan, owners, _) in selections {
         // value比較には消費側parameter型がない。共通候補は同parameterの選択肢として
@@ -308,51 +297,5 @@ fn value_types(
             _ => {}
         }
         Ok(())
-    })
-}
-
-fn ground_type(
-    ty: &Type,
-    law: &CheckedLaw,
-    control: &mut Control,
-    active: &mut BTreeSet<String>,
-) -> Result<bool, ResolveFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        phase(control, Checkpoint::RequestBinding)?;
-        Ok(match ty {
-            Type::Unit
-            | Type::Bool
-            | Type::Z
-            | Type::Q
-            | Type::Fp(_)
-            | Type::Text
-            | Type::Ref(_) => true,
-            Type::Tuple(v) => {
-                for t in v {
-                    if !ground_type(t, law, control, active)? {
-                        return Ok(false);
-                    }
-                }
-                true
-            }
-            Type::List(t) | Type::Set(t) | Type::Option(t) => ground_type(t, law, control, active)?,
-            Type::Map(a, b) => matches!((a.as_ref(), b.as_ref()), (Type::Ref(_), Type::Ref(_))),
-            Type::Data(family) => {
-                if !active.insert(family.clone()) {
-                    return Ok(true);
-                }
-                let ctors = super::super::data::constructors(law, family)
-                    .map_err(|_| error("", family, "Dataの定義がない"))?;
-                let mut ground = true;
-                for ctor in ctors {
-                    for t in &ctor.arguments {
-                        ground &= ground_type(t, law, control, active)?;
-                    }
-                }
-                active.remove(family);
-                ground
-            }
-            _ => false,
-        })
     })
 }
