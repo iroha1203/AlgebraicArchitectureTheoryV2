@@ -118,17 +118,27 @@ impl FiniteObjectView {
     ) -> Result<(), ObjectEvaluationFailure> {
         self.readings.recheck(&inputs, c)?;
         let expected = evaluate_finite_view(inputs, &self.readings, self.object, self.instance, c)?;
-        if !same_family_checked(self, &expected, c).map_err(invalid)? {
-            return Err(ConstructionFailure::Inconsistent(
+        let comparison = (|| -> Result<bool, ObjectEvaluationFailure> {
+            let equal = same_family_checked(self, &expected, c).map_err(invalid)?;
+            tick(c)?;
+            Ok(equal)
+        })();
+        match comparison {
+            Ok(true) => Ok(()),
+            Ok(false) => Err(ConstructionFailure::Inconsistent(
                 "有限view族が現在の元入力・型全域・実評価と違う".into(),
             )
-            .into());
+            .into()),
+            Err(cause) => Err(ObjectEvaluationFailure::FiniteView {
+                cause: Box::new(cause),
+                partial: Box::new(expected),
+            }),
         }
-        tick(c)
     }
 }
 fn same_result(a: &ObservedEvaluation, b: &ObservedEvaluation) -> bool {
     a.nodes == b.nodes
+        && b.nodes == a.nodes
         && a.answers == b.answers
         && a.issues == b.issues
         && a.status() == b.status()
@@ -306,6 +316,22 @@ pub(super) fn evaluate_finite_view(
             "未束縛値parameterを持つviewを選択する".into(),
         )
         .into());
+    }
+    match row.applications().get(object) {
+        Some(crate::construction::readings::InstanceApplication::Applicable { conditions })
+            if conditions.is_empty() => {}
+        Some(_) => {
+            return Err(ConstructionFailure::InvalidSelection(
+                "有限view族は条件なしに適用される対象だけを選択する".into(),
+            )
+            .into());
+        }
+        None => {
+            return Err(ConstructionFailure::Inconsistent(
+                "有限view族の対象別適用の行がない".into(),
+            )
+            .into());
+        }
     }
     for p in row.parameters() {
         tick(c)?;
@@ -1024,6 +1050,189 @@ mod owner_missing_tests {
                     .map_or(0, |step| 1 + step.word_tail.len()),
                 index
             );
+        }
+    }
+}
+
+#[cfg(test)]
+mod recheck_regression_tests {
+    use super::super::{
+        control::{Limits, Usage},
+        object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance},
+        result::Payload,
+    };
+    use super::tests::{fixture, quiet};
+    use super::*;
+    use crate::construction::{construct, readings::object_reading_instances};
+    use std::{cell::Cell, rc::Rc};
+
+    #[test]
+    fn recheck_rejects_duplicate_set_and_map_outputs_in_original_typed_rows() {
+        let i = fixture(
+            "view sets(c:Part,bits:Set<Bool>):(Bool,Set<Bool>)=(true,bits); view maps(c:Part,m:Map<Part,Part>):Map<Part,Part> = m;",
+        );
+        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        for name in ["Selected.sets", "Selected.maps"] {
+            let n = p
+                .instances()
+                .iter()
+                .position(|n| {
+                    n.declaration().name == name
+                        && n.bindings().iter().any(|b| b.subject().subject == "p")
+                })
+                .unwrap();
+            let mut f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+            let expected = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+            f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+            let mut changed = false;
+            for row in &mut f.rows {
+                let output = row.evaluation.answers[0].outputs["value"].0;
+                let Some(Payload::Scalar(value)) = &mut row.evaluation.nodes[output].payload else {
+                    panic!("typed output")
+                };
+                match value {
+                    Scalar::Tuple(values) => {
+                        let Scalar::Set { items, .. } = &mut values[1] else {
+                            panic!("set")
+                        };
+                        if items.len() != 2 {
+                            continue;
+                        }
+                        assert_ne!(items[0], items[1]);
+                        items[1] = items[0].clone();
+                    }
+                    Scalar::Map { pairs, .. } => {
+                        assert!(pairs.len() > 1);
+                        assert_ne!(pairs[0], pairs[1]);
+                        pairs[1] = pairs[0].clone();
+                    }
+                    _ => panic!("collection output"),
+                }
+                changed = true;
+                break;
+            }
+            assert!(changed);
+            assert!(
+                !same_family_checked(&f, &expected, &quiet()).unwrap(),
+                "{name}"
+            );
+            assert!(f.recheck(Arc::clone(&i), &mut quiet()).is_err(), "{name}");
+        }
+    }
+
+    #[test]
+    fn empty_families_cannot_be_rechecked_as_an_inapplicable_object() {
+        let i = fixture("view empty(c:Part,e:(Empty,Bool)):Bool=false;");
+        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let n = p
+            .instances()
+            .iter()
+            .position(|n| n.bindings().iter().any(|b| b.subject().subject == "p"))
+            .unwrap();
+        let wrong = p.instances()[n]
+            .applications()
+            .iter()
+            .position(|a| {
+                matches!(
+                    a,
+                    crate::construction::readings::InstanceApplication::NotApplicable
+                )
+            })
+            .unwrap();
+        let normal = evaluate_object_instance(Arc::clone(&i), &p, wrong, n, &mut quiet()).unwrap();
+        assert!(matches!(
+            normal.outcome(),
+            ObjectEvaluationOutcome::NotApplicable
+        ));
+        let mut f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+        assert!(f.is_complete());
+        assert!(f.rows().is_empty());
+        f.object = wrong;
+        assert!(f.recheck(i, &mut quiet()).is_err());
+    }
+
+    #[test]
+    fn recheck_comparison_stops_keep_current_input_completed_rows_and_latch_probe() {
+        let i =
+            fixture("view family(c:Part,b:Bool,k:Bool):(Z,Bool)=(if b then c.quantity else 0,k);");
+        let construction = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
+        let p = object_reading_instances(&i, &construction, &mut quiet()).unwrap();
+        let n = p
+            .instances()
+            .iter()
+            .position(|n| n.bindings().iter().any(|b| b.subject().subject == "p"))
+            .unwrap();
+        for phase in [
+            Checkpoint::ObjectViewFamily,
+            Checkpoint::ObjectViewFamilyRow,
+        ] {
+            let count = Rc::new(Cell::new(0));
+            let seen = count.clone();
+            let mut c = Control::new(Limits::default(), move |point| {
+                if point == phase {
+                    seen.set(seen.get() + 1);
+                }
+                Usage::default()
+            });
+            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut c).unwrap();
+            let before_comparison = count.get();
+            count.set(0);
+            f.recheck(Arc::clone(&i), &mut c).unwrap();
+            let total = count.get();
+            assert!(total > before_comparison);
+            for at in [
+                before_comparison + 1,
+                (before_comparison + total) / 2,
+                total,
+            ] {
+                for mode in 0..4 {
+                    let count = Rc::new(Cell::new(0));
+                    let seen = count.clone();
+                    let mut c = Control::new(
+                        Limits {
+                            time_ms: Some(1),
+                            memory_mib: Some(1),
+                        },
+                        move |point| {
+                            if point == phase {
+                                seen.set(seen.get() + 1);
+                            }
+                            let stop = seen.get() >= at;
+                            Usage {
+                                elapsed_ms: u128::from(stop && mode == 0),
+                                memory_mib: u128::from(stop && mode == 1),
+                                signal: if stop {
+                                    match mode {
+                                        2 => Some(crate::result::Signal::Int),
+                                        3 => Some(crate::result::Signal::Term),
+                                        _ => None,
+                                    }
+                                } else {
+                                    None
+                                },
+                            }
+                        },
+                    );
+                    let error = f.recheck(Arc::clone(&i), &mut c).unwrap_err();
+                    let ObjectEvaluationFailure::FiniteView { cause, partial } = error else {
+                        panic!(
+                            "comparison stop must keep current input rows: phase={phase:?} at={at} mode={mode}"
+                        )
+                    };
+                    assert!(matches!(
+                        *cause,
+                        ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(_))
+                    ));
+                    assert!(partial.is_complete());
+                    assert_eq!(partial.rows().len(), 4);
+                    assert!(same_family(&f, &partial));
+                    let before = count.get();
+                    assert!(c.checkpoint(phase).is_err());
+                    assert_eq!(before, count.get());
+                }
+            }
         }
     }
 }
