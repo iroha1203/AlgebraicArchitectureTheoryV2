@@ -228,7 +228,7 @@ impl Environment<'_> {
             .original_requests
             .and_then(|requests| requests.get(context.request))
             .ok_or("射影の元Requestがない")?;
-        if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose) {
+        if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
             for constraint in &request.constraints {
                 if !matches!(constraint.selector, Selector::Answer { .. }) {
                     continue;

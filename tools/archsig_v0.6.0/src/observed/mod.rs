@@ -20,6 +20,7 @@ mod path_value;
 mod path_compose;
 mod public_map;
 mod public_compose;
+mod public_compare;
 mod public_path_compose;
 mod quantifier;
 pub mod result;

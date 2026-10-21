@@ -32,6 +32,7 @@ pub(crate) enum ConstructionType {
     MapCandidate,
     ConfigurationMap,
     Operation,
+    Comparison,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -43,6 +44,7 @@ impl ConstructionType {
             Self::MapCandidate => "MapCandidate",
             Self::ConfigurationMap => "ConfigurationMap",
             Self::Operation => "Operation",
+            Self::Comparison => "Comparison",
         }
     }
 }
@@ -99,6 +101,7 @@ pub(crate) enum Witness {
     Map(Arc<MapWitness>),
     Compose(Arc<super::public_compose::ComposeWitness>),
     PathCompose(Arc<super::public_path_compose::PathWitness>),
+    Compare(Arc<super::public_compare::CompareWitness>),
 }
 #[derive(Clone, Debug)]
 pub(crate) struct AtomWitness {
@@ -120,6 +123,7 @@ impl Eq for AtomWitness {}
 pub(crate) enum ConstructionData {
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
+    Comparison(super::public_compare::Part),
     Atom(Arc<AtomWitness>),
     ConstructionLabel(Scalar),
     CandidateCondition {
@@ -222,6 +226,7 @@ impl ConstructionValue {
     pub fn scalar(&self) -> Option<&Scalar> {
         match &self.data {
             ConstructionData::PathComposition(part) => part.scalar(),
+            ConstructionData::Comparison(part) => part.scalar(),
             ConstructionData::Subject { value, .. }
             | ConstructionData::ConstructionLabel(value) => Some(value),
             ConstructionData::Atom(a) => Some(&a.value),
@@ -283,6 +288,7 @@ impl ConstructionValue {
         let ty = match &self.data {
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
+            D::Comparison(part) => return part.ty(),
             D::Subject { value, .. } => return NodeType::Value(value.ty()),
             D::Atom(a) => return NodeType::Value(a.value.ty()),
             D::ConstructionLabel(_) => return NodeType::Value(Type::Text),
@@ -309,6 +315,7 @@ impl ConstructionValue {
         match &self.data {
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
+            D::Comparison(part) => part.arguments(),
             D::Subject { .. } | D::Atom(_) | D::ConstructionLabel(_) => vec![],
             D::CandidateCondition {
                 name,
@@ -382,6 +389,7 @@ impl ConstructionValue {
         match &self.data {
             ConstructionData::Composition(part) => part.conditions(),
             ConstructionData::PathComposition(part) => part.conditions(),
+            ConstructionData::Comparison(part) => part.conditions(),
             ConstructionData::ConfigurationMap { preservation, .. }
             | ConstructionData::Operation { preservation, .. } => vec![*preservation],
             _ => vec![],
@@ -392,6 +400,7 @@ impl ConstructionValue {
         match self.data {
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
+            D::Comparison(ref part) => part.construction(),
             D::ConstructionLabel(_) => "binding",
             D::CandidateCondition { .. } => "proposition",
             D::Subject { .. } => "binding",
@@ -404,6 +413,7 @@ impl ConstructionValue {
                 ConstructionType::MapCandidate => "map_candidate",
                 ConstructionType::ConfigurationMap => "configuration_map",
                 ConstructionType::Operation => "operation",
+                ConstructionType::Comparison => "comparison",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -425,6 +435,7 @@ impl ConstructionValue {
         match (&self.data, &self.witness) {
             (D::Composition(part), Witness::Compose(c)) => part.projection_type(c),
             (D::PathComposition(part), Witness::PathCompose(_)) => part.projection_type(),
+            (D::Comparison(part), Witness::Compare(_)) => part.projection_type(),
             (D::Architecture { .. }, Witness::Architecture(a)) => {
                 Some(ProjectionType::ArchitectureRoot(
                     a.inputs
@@ -456,6 +467,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         if let D::Composition(part) = &self.data { return part.project(path); }
         if let D::PathComposition(part) = &self.data { return part.project(path); }
+        if let D::Comparison(part) = &self.data { return part.project(path); }
         let ProjectionStep::Field(field) = path.first()? else {
             return None;
         };
@@ -489,6 +501,7 @@ impl ConstructionValue {
         match &self.data {
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
+            D::Comparison(part) => match &self.witness { Witness::Compare(w) => part.wire(w), _ => unreachable!("比較は元検査を持つ") },
             D::Subject { value, .. } => value.wire(),
             D::Atom(a) => a.value.wire(),
             D::Pending { .. } | D::PendingPreservation { .. } | D::PendingLawInstance { .. } => {
@@ -705,6 +718,7 @@ impl Witness {
             Self::Map(m) => m.inputs.clone(),
             Self::Compose(c) => c.inputs.clone(),
             Self::PathCompose(c) => c.inputs.clone(),
+            Self::Compare(c) => c.inputs.clone(),
         }
     }
     pub fn inputs(&self) -> &CheckedInputs {
@@ -713,6 +727,7 @@ impl Witness {
             Self::Map(m) => &m.inputs,
             Self::Compose(c) => &c.inputs,
             Self::PathCompose(c) => &c.inputs,
+            Self::Compare(c) => &c.inputs,
         }
     }
     pub fn request(&self) -> &Request {
@@ -721,6 +736,7 @@ impl Witness {
             Self::Map(m) => &m.request,
             Self::Compose(c) => &c.request,
             Self::PathCompose(c) => &c.request,
+            Self::Compare(c) => &c.request,
         }
     }
 }
@@ -1062,6 +1078,7 @@ pub fn atom_value(
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     if let Witness::PathCompose(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
+    if let Witness::Compare(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
     if let Witness::Compose(c) = &value.witness {
         return Ok((c.support.clone(), c.scope.clone()));
     }
@@ -1099,7 +1116,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
             }
             facts
         }
-        (_, Witness::Compose(_) | Witness::PathCompose(_)) => unreachable!(),
+        (_, Witness::Compose(_) | Witness::PathCompose(_) | Witness::Compare(_)) => unreachable!(),
     };
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
@@ -1129,7 +1146,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
                 scope.readings.insert(m.result.reading().into());
                 scope.readings.insert(m.result.to_reading().into());
             }
-            Witness::Compose(_) | Witness::PathCompose(_) => unreachable!(),
+            Witness::Compose(_) | Witness::PathCompose(_) | Witness::Compare(_) => unreachable!(),
         }
     }
     for fact in &support {
@@ -1478,6 +1495,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     };
     if let Witness::Compose(c) = &v.witness { return super::public_compose::validate_node(graph,node,c); }
     if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_node(graph,node,c); }
+    if let Witness::Compare(c) = &v.witness { return super::public_compare::validate_node(graph,node,c); }
     if node.ty != v.ty() || node.rule != v.rule() || node.arguments != v.arguments() {
         return Err("native構成の型・規則・既出引数が違う".into());
     }

@@ -175,17 +175,30 @@ impl ConfigurationOperation {
         other: &Self,
         control: &mut Control,
     ) -> Result<bool, ConstructionFailure> {
+        self.word_equal_retained(inputs, other, control, |_| {})
+    }
+    /// 完全に検査した判断を、最後の停止確認より前に呼出元へ渡す。
+    pub(crate) fn word_equal_retained(
+        &self,
+        inputs: &CheckedInputs,
+        other: &Self,
+        control: &mut Control,
+        mut retain: impl FnMut(bool),
+    ) -> Result<bool, ConstructionFailure> {
         self.recheck(inputs, control)?;
         other.recheck(inputs, control)?;
         if self.word.len() != other.word.len() {
+            retain(false);
             return Ok(false);
         }
         for (a, b) in self.word.iter().zip(&other.word) {
             tick(control)?;
             if a != b {
+                retain(false);
                 return Ok(false);
             }
         }
+        retain(true);
         tick(control)?;
         Ok(true)
     }
@@ -195,6 +208,16 @@ impl ConfigurationOperation {
         inputs: &CheckedInputs,
         other: &Self,
         control: &mut Control,
+    ) -> Result<Option<ActionDifference>, ConstructionFailure> {
+        self.action_difference_retained(inputs, other, control, |_| {})
+    }
+    /// 検査済みの全域作用比較と反例を、最後の停止確認でも保持する。
+    pub(crate) fn action_difference_retained(
+        &self,
+        inputs: &CheckedInputs,
+        other: &Self,
+        control: &mut Control,
+        mut retain: impl FnMut(Option<&ActionDifference>),
     ) -> Result<Option<ActionDifference>, ConstructionFailure> {
         self.recheck(inputs, control)?;
         other.recheck(inputs, control)?;
@@ -211,13 +234,16 @@ impl ConfigurationOperation {
         for ((fact, left), right) in a.universe.iter().zip(&a.images).zip(&b.images) {
             tick(control)?;
             if left != right {
-                return Ok(Some(ActionDifference {
+                let difference = ActionDifference {
                     fact: fact.clone(),
                     left: left.clone(),
                     right: right.clone(),
-                }));
+                };
+                retain(Some(&difference));
+                return Ok(Some(difference));
             }
         }
+        retain(None);
         tick(control)?;
         Ok(None)
     }

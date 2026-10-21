@@ -14,6 +14,8 @@ use crate::{
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};
+#[path = "request_compare.rs"]
+pub(super) mod comparison;
 #[path = "request_compose.rs"]
 pub(super) mod composition;
 #[path = "request_map.rs"]
@@ -26,6 +28,7 @@ pub enum QuestionKind {
     Needed,
     Map,
     Compose,
+    Compare,
 }
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
@@ -35,6 +38,7 @@ impl QuestionKind {
             Self::Needed => "needed",
             Self::Map => "map",
             Self::Compose => "compose",
+            Self::Compare => "compare",
         }
     }
 }
@@ -313,7 +317,7 @@ fn resolve_inner(
         prefix.expect(b'(')?;
         if matches!(
             prefix_kind.as_str(),
-            "build" | "compare" | "localize" | "diagnose" | "repair" | "solve" | "quotient"
+            "build" | "localize" | "diagnose" | "repair" | "solve" | "quotient"
         ) {
             return Err(ResolveFailure::NotApplicable {
                 request: prefix.id,
@@ -337,6 +341,7 @@ fn resolve_inner(
             "needed" => QuestionKind::Needed,
             "map" => QuestionKind::Map,
             "compose" => QuestionKind::Compose,
+            "compare" => QuestionKind::Compare,
             _ => {
                 return Err(invalid(problem(
                     RequestIssueCode::Syntax,
@@ -348,6 +353,12 @@ fn resolve_inner(
         };
         if kind == QuestionKind::Map {
             let request = configuration_map::resolve(law, raw, text, control)?;
+            names.insert(request.id.clone(), requests.len());
+            requests.push(request);
+            continue;
+        }
+        if kind == QuestionKind::Compare {
+            let request = comparison::resolve(raw, text, control)?;
             names.insert(request.id.clone(), requests.len());
             requests.push(request);
             continue;
@@ -537,7 +548,10 @@ fn resolve_inner(
         checkpoint(control)?;
     }
     // 合成の出力型は元Operationの型へ再帰するため、先に依存を検査する。
-    let composition_order = if requests.iter().any(|r| r.kind == QuestionKind::Compose) {
+    let composition_order = if requests
+        .iter()
+        .any(|r| matches!(r.kind, QuestionKind::Compose | QuestionKind::Compare))
+    {
         for request in &requests {
             for dependency in &request.dependencies {
                 phase(control, Checkpoint::RequestDependency)?;
@@ -567,8 +581,14 @@ fn resolve_inner(
         checkpoint(control)?;
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
+        if req.kind == QuestionKind::Compare {
+            requests[i].constraints =
+                comparison::constraints(law, map, &requests, &names, req, control)?;
+            continue;
+        }
         if req.kind == QuestionKind::Compose {
-            requests[i].constraints = composition::constraints(law, map, &requests, &names, req, control)?;
+            requests[i].constraints =
+                composition::constraints(law, map, &requests, &names, req, control)?;
             continue;
         }
         if req.kind == QuestionKind::Map {
@@ -939,7 +959,9 @@ fn selector_type(
             // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
             // 評価して参照値を推測しない。後方参照でも同じ有限な表を参照する。
             owners = owner_bindings(r, control)?;
-            let initial = if r.kind == QuestionKind::Compose {
+            let initial = if r.kind == QuestionKind::Compare {
+                comparison::output_type(r, field)?
+            } else if r.kind == QuestionKind::Compose {
                 composition::output_type(law, map, requests, names, r, field, control)?
             } else if r.kind == QuestionKind::Map {
                 configuration_map::output_type(law, r, field, control)?

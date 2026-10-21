@@ -581,7 +581,7 @@ pub(super) fn validate_answer(
     }
     Ok(())
 }
-fn reference(
+pub(super) fn reference(
     graph: &Graph,
     roots: &[NodeRef],
     value: &Scalar,

@@ -293,7 +293,7 @@ fn value(graph: &Graph, r: NodeRef) -> Result<&ConstructionValue, ValidationFail
         _ => Err("合成の元値がnative構成でない".into()),
     }
 }
-fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, ValidationFailure> {
+pub(super) fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, ValidationFailure> {
     let v = value(graph, r)?;
     match (&v.data, &v.witness) {
         (D::Operation { .. }, Witness::Map(m)) => {
@@ -305,7 +305,7 @@ fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, ValidationFa
         _ => Err("未確認候補・PathをOperationへ昇格した".into()),
     }
 }
-fn components(
+pub(super) fn components(
     graph: &Graph,
     r: NodeRef,
 ) -> Result<(NodeRef, NodeRef, NodeRef, Vec<NodeRef>), ValidationFailure> {
