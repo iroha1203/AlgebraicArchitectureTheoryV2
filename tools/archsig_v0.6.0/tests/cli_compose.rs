@@ -218,7 +218,7 @@ fn static_compose_errors_are_usage_without_artifacts() {
     }
 }
 #[test]
-fn valid_paths_are_distinguished_from_unimplemented_execution_and_cycles_keep_edges() {
+fn valid_paths_compose_without_operation_promotion_and_cycles_keep_edges() {
     let dir = inputs("compose-path", A);
     let r = asks(
         &dir,
@@ -227,7 +227,11 @@ fn valid_paths_are_distinguished_from_unimplemented_execution_and_cycles_keep_ed
             "c=compose($p.value,then=$p.value)",
         ],
     );
-    notified(&dir, &r, "error", 70);
+    let j = saved(&dir, &r, "complete", 0);
+    let outputs = get(answer(&j, "c"), "outputs");
+    assert!(!has(outputs, "map"));
+    assert_eq!(s(&arr(get(node(&j, get(outputs, "operation")), "type"))[0]), "Path");
+    assert!(arr(get(value(&j, get(outputs, "operation")), "generators")).is_empty());
     std::fs::remove_dir_all(dir).unwrap();
     let dir = inputs("compose-cycle", A);
     let r = asks(

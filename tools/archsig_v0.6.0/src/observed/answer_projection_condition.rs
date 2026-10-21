@@ -47,7 +47,7 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<Vec<ProjectionFailurePlan>, ValidationFailure> {
         self.tick()?;
-        if request.kind == QuestionKind::Map {
+        if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose) {
             let mut plans = vec![];
             for constraint in &request.constraints {
                 let Selector::Answer { id, .. } = &constraint.selector else {
