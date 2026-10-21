@@ -50,6 +50,7 @@ pub enum Checkpoint {
     ReferenceTypeTransport,
     FiniteValueTransport,
     ObjectInstances,
+    ObjectEvaluation,
     Expression,
     FiniteIteration,
 }

@@ -212,6 +212,16 @@ Unit/Bool/Fp/Refと有限なTuple/Option/Set/Map/dataを扱い、適用域の判
 metadataの位置をこの入力へ結び付ける。`recheck()` は現在入力から構成を再実行し、元Lawも照合する。
 このAPIは型付き実評価へ渡すinstanceを構成し、各式の評価にはその全域parameterと元入力を使う。
 
+`construction::readings::evaluate_object_instance(shared, &instances, object_index, instance_index, &mut control)`
+は現在の三入力でinstanceを再検査し、選択対象のLaw/viewを同じ型付き評価器で読む。
+`ObjectEvaluation::outcome()` は適用外、原始slotの所属条件、型付き実評価を区別する。
+baseの参照binderはrootとowned、部分対象ではそのsubjectへ制限し、外部helperと
+複合scalarの参照leafは型全域を保つ。所属が補完されたcaseでは、その同じ代入で域を再構成する。
+実評価の `prepared().object_identity()/object_instance()` は対象identityと元の参照束縛を保持する。
+Lawの残るparameterは既存の有限・アフィン全域族として評価する。値parameterを残すviewの関数族は
+`ObjectEvaluationFailure::NotImplemented` に対象・元instance・全parameterを保持する。
+これは実装経路の失敗であり、成立・反証・数学的未決とは区別する。
+
 ## 仕様
 
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): 入力・問い・型付き結果の形式と意味。

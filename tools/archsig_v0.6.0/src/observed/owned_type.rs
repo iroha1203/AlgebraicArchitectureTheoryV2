@@ -21,14 +21,16 @@ impl Environment<'_> {
     ) -> Result<TypeDomain, ValidationFailure> {
         if spec.owners.is_empty() {
             let e = self.finite_values(&spec.element, observer)?;
-            return Ok(TypeDomain {
+            let mut domain = TypeDomain {
                 values: Some(e.values),
                 scope: e.scope,
                 support: e.support,
                 missing: vec![],
                 owners: vec![],
                 type_span: spec.type_span.unwrap_or(spec.span),
-            });
+            };
+            self.restrict_object_domain(&spec.domain_type, &mut domain)?;
+            return Ok(domain);
         }
         let mut scope = Scope::default();
         let mut support = Vec::new();
@@ -94,19 +96,43 @@ impl Environment<'_> {
         let mut missing = missing.into_inner();
         missing.sort();
         missing.dedup();
-        let values = if unresolved.get() || !missing.is_empty() {
+        let values = if unresolved.get() {
             None
         } else {
             Some(enumeration.values)
         };
-        Ok(TypeDomain {
+        let mut domain = TypeDomain {
             values,
             scope,
             support,
             missing,
             owners: vec![],
             type_span: spec.type_span.ok_or("元Owned型位置がない")?,
-        })
+        };
+        self.restrict_object_domain(&spec.domain_type, &mut domain)?;
+        if !domain.missing.is_empty() {
+            domain.values = None;
+        }
+        Ok(domain)
+    }
+
+    fn restrict_object_domain(
+        &self,
+        ty: &Type,
+        domain: &mut TypeDomain,
+    ) -> Result<(), ValidationFailure> {
+        if let Some(object) = self.object {
+            object.restrict(
+                ty,
+                &mut domain.values,
+                &mut domain.missing,
+                &mut domain.support,
+                &mut domain.scope,
+                &self.control,
+                &self.completion_values.borrow(),
+            )?;
+        }
+        Ok(())
     }
 
     fn owned_type_producers(
@@ -359,7 +385,7 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        if !quantifier::has_owner(original, &self.control)? {
+        if !quantifier::has_owner(original, &self.control)? && self.object.is_none() {
             return Ok(None);
         }
         let bindings = self.expression_bindings(graph, source)?;
