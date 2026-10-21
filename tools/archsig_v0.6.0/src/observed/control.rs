@@ -54,6 +54,7 @@ pub enum Checkpoint {
     ObjectEvaluation,
     ObjectViewTransport,
     ObjectLawTransport,
+    ObjectLawFamily,
     Expression,
     FiniteIteration,
 }
