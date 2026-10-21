@@ -660,6 +660,7 @@ impl Environment<'_> {
         }
         let mut scope = Scope::default();
         scope.readings.insert(declaration.reading.clone());
+        scope.merge(&self.architecture_scope());
         let mut support = Vec::new();
         for (p, b) in fixed.iter().zip(bindings) {
             self.completion_seed_binding(graph, request, p, b, context, reference.0)?;
@@ -1527,6 +1528,7 @@ impl Environment<'_> {
                 parts,
                 value,
                 applicability,
+                ..
             }) = &node.payload
             else {
                 unreachable!()
@@ -1781,6 +1783,7 @@ impl Environment<'_> {
         }
         let mut scope = Scope::default();
         scope.readings.insert(d.reading.clone());
+        scope.merge(&self.architecture_scope());
         for (p, b) in fixed.iter().zip(bindings) {
             self.completion_seed_binding(graph, request, p, b, context, limit)?;
             scope.merge(&graph.get(b.value)?.scope);

@@ -172,6 +172,7 @@ impl Evaluator<'_, '_> {
             let evaluation = self.push(Node {
                 ty: NodeType::Evaluation(Type::Bool),
                 payload: Some(Payload::Evaluation {
+                    environment: self.environment.architecture_ref(),
                     expression: anchor,
                     bindings: self.bindings.clone(),
                     parts: vec![Part {
@@ -297,6 +298,7 @@ impl Evaluator<'_, '_> {
         self.push(Node {
             ty: NodeType::Evaluation(ty.clone()),
             payload: Some(Payload::Evaluation {
+                environment: self.environment.architecture_ref(),
                 expression,
                 bindings: bindings.to_vec(),
                 parts: vec![Part {
@@ -701,6 +703,7 @@ impl Evaluator<'_, '_> {
                     self.push(Node {
                         ty: NodeType::Evaluation(ty),
                         payload: Some(Payload::Evaluation {
+                            environment: self.environment.architecture_ref(),
                             expression: difference,
                             bindings: self.bindings.clone(),
                             parts: vec![Part {
@@ -893,6 +896,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(Type::Bool),
             payload: Some(Payload::Evaluation {
+                environment: self.environment.architecture_ref(),
                 expression: template,
                 bindings: self.bindings.clone(),
                 parts,
@@ -1233,6 +1237,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
             payload: Some(Payload::Evaluation {
+                environment: self.environment.architecture_ref(),
                 expression,
                 bindings: self.bindings.clone(),
                 parts: vec![Part {

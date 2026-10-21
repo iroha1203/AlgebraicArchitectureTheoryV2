@@ -426,6 +426,7 @@ impl Evaluator<'_, '_> {
                         .clone(),
                 ),
                 payload: Some(Payload::Evaluation {
+                    environment: self.environment.architecture_ref(),
                     expression: seed,
                     bindings: fixed.clone(),
                     parts: vec![Part {

@@ -19,13 +19,63 @@ use std::{collections::BTreeSet, sync::Arc};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ObjectContext {
-    pub identity: ObjectIdentity,
+    pub domain: ObjectDomain,
     pub instance: ObjectInstance,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct ObjectDomain {
+    pub identity: ObjectIdentity,
     local_types: BTreeSet<String>,
     known: Vec<FactPointer>,
     conditional: Vec<(String, FactPointer, FactPointer)>,
 }
-impl ObjectContext {
+impl ObjectDomain {
+    pub(super) fn from_readings(
+        inputs: &CheckedInputs,
+        readings: &ObjectReadingInstances,
+        object: usize,
+        control: &Control,
+    ) -> Result<Self, ValidationFailure> {
+        let selected = readings.objects().get(object).ok_or("対象の添字がない")?;
+        let c = readings.construction();
+        let base = selected.identity().subject() == c.root();
+        let mut known = Vec::new();
+        if base {
+            for fact in c.local_domain().known() {
+                control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+                known.push(fact.clone());
+            }
+        } else {
+            known.push(selected.identity().subject().clone());
+        }
+        let mut local_types = BTreeSet::new();
+        for ty in readings.local_types() {
+            control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+            local_types.insert(ty.clone());
+        }
+        let mut conditional = Vec::new();
+        if base {
+            for member in c.local_domain().conditional() {
+                control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+                let ty = inputs
+                    .archmap()
+                    .snapshots
+                    .iter()
+                    .find(|s| s.id == member.subject().snapshot)
+                    .and_then(|s| s.subjects.iter().find(|s| s.id == member.subject().subject))
+                    .ok_or("条件付きsubjectがない")?
+                    .ty
+                    .clone();
+                conditional.push((ty, member.subject().clone(), member.owner_slot().clone()));
+            }
+        }
+        Ok(Self {
+            identity: selected.identity().clone(),
+            local_types,
+            known,
+            conditional,
+        })
+    }
     pub(super) fn is_local(&self, ty: &Type) -> bool {
         matches!(ty, Type::Ref(entity) | Type::Owned(entity, _) if self.local_types.contains(entity))
     }
@@ -213,35 +263,6 @@ pub fn evaluate_object_instance(
                     instance: row.clone(),
                 });
             }
-            let c = readings.construction();
-            let root = c.root();
-            let local_types = readings.local_types().clone();
-            let base = selected.identity().subject() == root;
-            let known = if base {
-                c.local_domain().known().to_vec()
-            } else {
-                vec![selected.identity().subject().clone()]
-            };
-            let mut conditional = Vec::new();
-            if base {
-                for member in c.local_domain().conditional() {
-                    control
-                        .checkpoint(Checkpoint::ObjectEvaluation)
-                        .map_err(ConstructionFailure::from)?;
-                    let ty = inputs
-                        .archmap()
-                        .snapshots
-                        .iter()
-                        .find(|s| s.id == member.subject().snapshot)
-                        .and_then(|s| s.subjects.iter().find(|s| s.id == member.subject().subject))
-                        .ok_or_else(|| {
-                            ConstructionFailure::Inconsistent("条件付きsubjectがない".into())
-                        })?
-                        .ty
-                        .clone();
-                    conditional.push((ty, member.subject().clone(), member.owner_slot().clone()));
-                }
-            }
             let kind = match row.declaration().kind {
                 "view" => "evaluate",
                 "law" => "check",
@@ -269,11 +290,12 @@ pub fn evaluate_object_instance(
                 ObjectEvaluationFailure::Evaluation(Box::new(EvaluationFailure::Prepare(f)))
             })?;
             prepared.object = Some(ObjectContext {
-                identity: selected.identity().clone(),
+                domain: ObjectDomain::from_readings(&prepared.inputs, readings, object, control)
+                    .map_err(|f| match f {
+                        ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
+                        other => ConstructionFailure::Inconsistent(format!("{other:?}")),
+                    })?,
                 instance: row.clone(),
-                local_types,
-                known,
-                conditional,
             });
             ObjectEvaluationOutcome::Evaluated(Box::new(
                 evaluate_observed(prepared, control)

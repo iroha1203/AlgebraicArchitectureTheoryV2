@@ -556,7 +556,14 @@ pub(super) fn unavailable(
             .iter()
             .position(|r| &r.id == id)
             .ok_or("依存元Requestがない")?;
-        if !matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare)
+        if !request
+            .arguments
+            .iter()
+            .any(|a| a.name == "on" && &a.value == selector)
+            && !matches!(
+                request.kind,
+                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
+            )
             && !matches!(
                 graph.requests[producer_index].kind,
                 QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare

@@ -123,7 +123,7 @@ impl Evaluator<'_, '_> {
             let (span, context) = (self.declaration.span, root);
             let enumeration = self
                 .environment
-                .finite_values(&p.ty, &mut |_phase, _index| {
+                .family_values(&p.ty, &mut |_phase, _index| {
                     #[cfg(test)]
                     data::observe_actual(span, context, "family_enum", _index);
                 })?;
@@ -387,6 +387,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push_law_evaluation(Node {
             ty: NodeType::Evaluation(Type::Bool),
             payload: Some(Payload::Evaluation {
+                environment: self.environment.architecture_ref(),
                 expression: source,
                 bindings: fixed_bindings,
                 parts: vec![Part {
@@ -509,6 +510,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push_law_evaluation(Node {
             ty: NodeType::Evaluation(Type::Bool),
             payload: Some(Payload::Evaluation {
+                environment: self.environment.architecture_ref(),
                 expression: body.expression,
                 bindings: self.bindings.clone(),
                 parts: vec![
