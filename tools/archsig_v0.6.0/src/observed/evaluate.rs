@@ -3069,6 +3069,7 @@ fn evaluate_observed_with_validator(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    mod public_path_compose_tests { include!("public_path_compose_tests.rs"); }
     mod public_compose_tests {
         include!("public_compose_tests.rs");
     }

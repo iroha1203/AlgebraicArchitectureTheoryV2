@@ -72,6 +72,22 @@ jq '.answers[] | {id, status, outputs}' result-compose/result.json
 `word` は原始生成元の順序列を保持する。作用は共通 U の全元で合成し、family 外の像を置き直さない。
 `$c.operation.word[1]` などを後続の問いへ渡せる。実際の中間対象が異なれば、構成条件と反例を返す。
 
+Path 同士も同じ `compose(f,then=g)` で合成する。空経路は恒等として扱い、
+生成元の名前付き列を `generators` に保持する。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/public-compose.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/configuration-operation.archmap.json \
+  --ask 'p=evaluate(Reservations.route,e=@v/e)' \
+  --ask 'i=evaluate(Reservations.emptyPath,s=@v/q)' \
+  --ask 'c=compose($p.value,then=$i.value)' --out result-path
+jq '.answers[] | {id, status, outputs}' result-path/result.json
+```
+
+`c.outputs.operation` は Path 型の Ref で、端点と原始生成元を公開射影で参照できる。
+元 Path の由来を保持し、実中間端点が違う場合は具体的な端点反例を返す。
+
 以前の出力directoryは `--reuse result-counter` で候補として指定できる。
 現在の三入力から全再計算し、検査済みの導出へ候補の型・内容・全依存・由来を照合する。
 node番号や共有方法の違いは吸収し、候補の推論は計算へ採用しない。

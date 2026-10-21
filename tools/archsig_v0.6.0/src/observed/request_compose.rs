@@ -177,3 +177,50 @@ pub(super) fn output_type(
         _ => Err(error(&request.id, field, "composeの非公開出力")),
     }
 }
+
+pub(super) fn constraints(
+    law: &CheckedLaw,
+    map: &CheckedArchMap,
+    requests: &[Request],
+    names: &BTreeMap<String, usize>,
+    request: &Request,
+    control: &mut Control,
+) -> Result<Vec<BindingConstraint>, ResolveFailure> {
+    if !matches!(
+        shape(law, map, requests, names, request, control)?,
+        Shape::Path(..)
+    ) {
+        return Ok(vec![]);
+    }
+    let then = request
+        .arguments
+        .iter()
+        .find(|a| a.name == "then")
+        .ok_or_else(|| error(&request.id, "then", "thenがない"))?;
+    let mut out = vec![];
+    for (key, selector) in [("head", &request.head), ("then", &then.value)] {
+        let (plan, owners) = selector_type(
+            law,
+            map,
+            requests,
+            names,
+            selector,
+            control,
+            (&request.id, key),
+        )?;
+        let ProjectionType::Law(expected @ Type::Path(..)) = &plan.ty else {
+            return Err(error(&request.id, key, "Pathの参照型がない"));
+        };
+        out.push(BindingConstraint {
+            parameter: key.into(),
+            expected: expected.clone(),
+            selector: selector.clone(),
+            projection: plan.clone(),
+            owner: None,
+            projection_owners: owners,
+            expected_owners: BTreeMap::new(),
+            dynamic: plan.conditional,
+        });
+    }
+    Ok(out)
+}
