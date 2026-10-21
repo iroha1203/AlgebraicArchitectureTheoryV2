@@ -633,6 +633,15 @@ pub(super) fn equal(
 ) -> Result<bool, ValidationFailure> {
     equal_with_candidates(left, right, control, false)
 }
+/// 公開比較の全計算が完成した時点を、最後の停止検査より先に通知する。
+pub(super) fn equal_retained(
+    left: &Scalar,
+    right: &Scalar,
+    control: &Control,
+    mut retain: impl FnMut(bool),
+) -> Result<bool, ValidationFailure> {
+    equal_with_retained(left, right, control, false, Some(&mut retain))
+}
 /// 型域への所属検査前の候補を比較する。型の異なる部分は不一致とし、
 /// 同じkeyに異なる像を含むMap候補も、全ての対を残した関係として比較する。
 pub(super) fn candidate_equal(
@@ -647,6 +656,15 @@ fn equal_with_candidates(
     right: &Scalar,
     control: &Control,
     candidates: bool,
+) -> Result<bool, ValidationFailure> {
+    equal_with_retained(left, right, control, candidates, None)
+}
+fn equal_with_retained(
+    left: &Scalar,
+    right: &Scalar,
+    control: &Control,
+    candidates: bool,
+    mut retain: Option<&mut dyn FnMut(bool)>,
 ) -> Result<bool, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
@@ -776,6 +794,9 @@ fn equal_with_candidates(
                     == Scalar::Bool(true)
             }
         };
+        if let Some(retain) = &mut retain {
+            retain(equal);
+        }
         tick(control)?;
         Ok(equal)
     })

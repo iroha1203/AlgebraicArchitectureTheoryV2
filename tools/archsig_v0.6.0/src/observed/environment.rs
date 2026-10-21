@@ -571,8 +571,15 @@ impl<'a> Environment<'a> {
         reading: &str,
         atom_origin: Option<&str>,
     ) -> Result<Scope, String> {
-        let mut scope = Scope::default();
+        let mut scope = self.subject_scope(s)?;
         scope.readings.insert(reading.into());
+        if let Some(origin) = atom_origin {
+            scope.modes.insert(self.origin_mode(origin)?.into());
+        }
+        Ok(scope)
+    }
+    pub(super) fn subject_scope(&self, s: &Subject) -> Result<Scope, String> {
+        let mut scope = Scope::default();
         scope.snapshots.insert(s.snapshot.clone());
         scope.modes.insert(self.origin_mode(&s.origin)?.into());
         let origin = self
@@ -580,9 +587,6 @@ impl<'a> Environment<'a> {
             .get(&s.snapshot)
             .ok_or("snapshot がない")?;
         scope.modes.insert(self.origin_mode(origin)?.into());
-        if let Some(origin) = atom_origin {
-            scope.modes.insert(self.origin_mode(origin)?.into());
-        }
         Ok(scope)
     }
     pub fn fact(&self, f: &Fact) -> Result<(), String> {
@@ -1044,7 +1048,7 @@ impl<'a> Environment<'a> {
             _ => Err("反復元が内包/In量化でない".into()),
         }
     }
-    fn current_context(&self, graph: &Graph) -> super::call::Context {
+    pub(super) fn current_context(&self, graph: &Graph) -> super::call::Context {
         self.context.get().unwrap_or(graph.active)
     }
     fn validate_in_context(

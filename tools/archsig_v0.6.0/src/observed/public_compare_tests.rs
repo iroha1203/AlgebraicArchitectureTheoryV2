@@ -481,3 +481,271 @@ fn action_refutation_computation_stops_keep_the_point_and_both_images_together()
         }
     }
 }
+mod primitive {
+    use crate as archsig;
+    include!("../../tests/common/compare_values.rs");
+}
+fn primitive_example(qs: &[&str]) -> ObservedEvaluation {
+    let r = evaluate_observed_bytes(primitive::input(false, ""), qs, &mut Control::unlimited())
+        .unwrap();
+    assert_eq!(r.status(), "complete", "{:?}", r.issues);
+    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    r
+}
+#[test]
+fn value_comparison_recheck_rejects_source_values_raw_scope_refs_and_false_proofs() {
+    let r = primitive_example(&[
+        "n=evaluate(Values.vinteger,s=@v/a)",
+        "m=evaluate(Values.vpair,s=@v/a)",
+        "a=compare($n.value,to=$m.value[0],kind=value)",
+        "raw=compare(@v/a,to=@v/a,kind=value)",
+    ]);
+    let record = r.answers[2].outputs["comparison"].0;
+    let claim = r.answers[2].claim.unwrap().0;
+    let evidence = r.answers[2].evidence[0].0;
+    let raw = r.answers[3].outputs["comparison"].0;
+    let Some(Payload::Construction(v)) = &r.nodes[raw].payload else {
+        panic!()
+    };
+    let D::Comparison(Part::Comparison { left, .. }) = v.data else {
+        panic!()
+    };
+    for case in 0..10 {
+        let target = match case {
+            0 => r.answers[0].outputs["value"].0,
+            1..=3 => record,
+            4..=5 => claim,
+            6 => evidence,
+            _ => raw,
+        };
+        completion_mutation(&r, target, |nodes| {
+            let target = if case >= 7 { left.0 } else { target };
+            match case {
+                0 => nodes[target].payload = Some(Payload::Scalar(Scalar::Z(0.into()))),
+                1 => nodes[target].support.clear(),
+                2 => nodes[target].scope.snapshots.clear(),
+                3 => {
+                    let Some(Payload::Construction(v)) = &mut nodes[target].payload else {
+                        panic!()
+                    };
+                    let D::Comparison(Part::Comparison { kind, .. }) = &mut v.data else {
+                        panic!()
+                    };
+                    *kind = "word".into();
+                }
+                4 => nodes[target].judgment.as_mut().unwrap().status = Decision::Established,
+                5 => nodes[target].evidence.clear(),
+                6 => {
+                    let Some(Payload::Construction(v)) = &mut nodes[target].payload else {
+                        panic!()
+                    };
+                    let D::Comparison(Part::Evidence { left, right, .. }) = &mut v.data else {
+                        panic!()
+                    };
+                    *left = *right;
+                }
+                7 => {
+                    nodes[target].scope.readings.insert("Values".into());
+                }
+                8 => nodes[target].support.clear(),
+                _ => {
+                    nodes[target].payload = Some(Payload::Scalar(Scalar::Subject {
+                        snapshot: "w".into(),
+                        subject: "a".into(),
+                        entity: "Values.Sample".into(),
+                    }))
+                }
+            }
+        });
+    }
+    let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let changed = primitive::input(false, "");
+    let bytes = String::from_utf8(changed.archmap().bytes().to_vec())
+        .unwrap()
+        .replace("有限モデル", "変更モデル");
+    let changed = InputSources::from_bytes(
+        vec![changed.definitions()[0].bytes().to_vec()],
+        changed.law().bytes().to_vec(),
+        bytes.into_bytes(),
+    );
+    let qs = [
+        "n=evaluate(Values.vinteger,s=@v/a)",
+        "m=evaluate(Values.vpair,s=@v/a)",
+        "a=compare($n.value,to=$m.value[0],kind=value)",
+        "raw=compare(@v/a,to=@v/a,kind=value)",
+    ];
+    let prepared = prepare_observed(changed, &qs, &mut Control::unlimited()).unwrap();
+    let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
+    assert!(env.recheck_node(&graph, &r.nodes[record], record).is_err());
+    let mut wrong = r.prepared().requests().requests()[3].clone();
+    wrong.head = Selector::Subject {
+        snapshot: "v".into(),
+        subject: "b".into(),
+    };
+    let env = Environment::with_prepared(r.prepared(), &mut Control::unlimited()).unwrap();
+    assert!(env.validate_answer(&graph, &wrong, &r.answers[3]).is_err());
+}
+#[test]
+fn ground_value_computation_stops_keep_only_complete_equalities_and_counterexamples() {
+    for (right, decision) in [("@v/a", Decision::Established), ("@v/b", Decision::Refuted)] {
+        let q = format!("a=compare(@v/a,to={right},kind=value)");
+        let prefix = primitive_example(&[]);
+        let prepared = prepare_observed(
+            primitive::input(false, ""),
+            &[q.as_str()],
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
+        let graph = || {
+            let mut g = rebuild_for_origin_and_support_recheck(&prefix, &prefix.nodes).unwrap();
+            g.requests = prepared.requests().requests().to_vec();
+            g
+        };
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let mut probe = Control::new(Limits::default(), move |p| {
+            if p == Checkpoint::FiniteIteration {
+                seen.set(seen.get() + 1);
+            }
+            Usage::default()
+        });
+        let a = crate::observed::public_compare::evaluate(
+            &prepared,
+            &env,
+            &mut graph(),
+            &prepared.requests().requests()[0],
+            &mut probe,
+        )
+        .unwrap();
+        assert_eq!(a.status, decision);
+        let total = count.get();
+        assert!(total >= 4);
+        for at in [1, total / 2, total - 1, total] {
+            for mode in 0..4 {
+                let (mut c, count) = stopping(at, mode, Checkpoint::FiniteIteration);
+                let mut g = graph();
+                let outcome = crate::observed::public_compare::evaluate(
+                    &prepared,
+                    &env,
+                    &mut g,
+                    &prepared.requests().requests()[0],
+                    &mut c,
+                );
+                if at >= total - 1 {
+                    let a = outcome.unwrap();
+                    assert_eq!(a.status, decision);
+                    assert!(a.outputs.contains_key("comparison"));
+                    assert_eq!(a.evidence.len(), usize::from(decision == Decision::Refuted));
+                    env.validate_answer(&g, &prepared.requests().requests()[0], &a)
+                        .unwrap();
+                } else {
+                    assert!(matches!(outcome, Err(ValidationFailure::Stop(_))));
+                    assert!(g.nodes.iter().all(|n|!matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.witness,crate::observed::construction_result::Witness::Compare(_)))));
+                }
+                assert_eq!(count.get(), at);
+                assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
+                assert_eq!(count.get(), at);
+            }
+        }
+    }
+}
+#[test]
+fn ground_value_transfer_stops_keep_the_complete_original_evidence() {
+    for (to, decision) in [("@v/a", Decision::Established), ("@v/b", Decision::Refuted)] {
+        let q = format!("a=compare(@v/a,to={to},kind=value)");
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let mut probe = Control::new(Limits::default(), move |p| {
+            if p == Checkpoint::NativeResultNode {
+                seen.set(seen.get() + 1);
+            }
+            Usage::default()
+        });
+        evaluate_observed_bytes(primitive::input(false, ""), &[q.as_str()], &mut probe).unwrap();
+        let total = count.get();
+        assert!(total >= 2);
+        for at in [1, total] {
+            for mode in 0..4 {
+                let (mut c, count) = stopping(at, mode, Checkpoint::NativeResultNode);
+                let r = evaluate_observed_bytes(primitive::input(false, ""), &[q.as_str()], &mut c)
+                    .unwrap();
+                assert_eq!(r.status(), "interrupted", "{:?}", r.issues);
+                assert_eq!(r.answers[0].status, decision);
+                assert!(r.answers[0].outputs.contains_key("comparison"));
+                assert_eq!(
+                    r.answers[0].evidence.len(),
+                    usize::from(decision == Decision::Refuted)
+                );
+                rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+                assert_eq!(count.get(), at);
+            }
+        }
+    }
+}
+#[test]
+fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_final_stop() {
+    let value = |last| Scalar::List {
+        element: Type::Tuple(vec![Type::Bool, Type::Z]),
+        items: (0..8)
+            .map(|i| {
+                Scalar::Tuple(vec![
+                    Scalar::Bool(false),
+                    Scalar::Z((if i == 7 { last } else { i }).into()),
+                ])
+            })
+            .collect(),
+    };
+    for (right, expected) in [(7, true), (9, false)] {
+        let left = value(7);
+        let right = value(right);
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let probe = Control::new(Limits::default(), move |p| {
+            if p == Checkpoint::FiniteIteration {
+                seen.set(seen.get() + 1);
+            }
+            Usage::default()
+        });
+        assert_eq!(
+            crate::observed::data::equal(&left, &right, &probe).unwrap(),
+            expected
+        );
+        let total = count.get();
+        assert!(total > 20);
+        for at in [1, total / 2, total - 1, total] {
+            for mode in 0..4 {
+                let (c, count) = stopping(at, mode, Checkpoint::FiniteIteration);
+                let mut retained = None;
+                let outcome = crate::observed::data::equal_retained(&left, &right, &c, |v| {
+                    retained = Some(v)
+                });
+                assert!(matches!(outcome, Err(ValidationFailure::Stop(_))));
+                assert_eq!(retained, if at == total { Some(expected) } else { None });
+                assert_eq!(count.get(), at);
+                assert!(c.clone().checkpoint(Checkpoint::FiniteIteration).is_err());
+                assert_eq!(count.get(), at);
+            }
+        }
+    }
+}
+#[test]
+fn raw_subject_comparison_rechecks_its_request_context_even_for_an_identical_value() {
+    let mut r = primitive_example(&[
+        "prior=compare(@v/a,to=@v/a,kind=value)",
+        "current=compare(@v/a,to=@v/a,kind=value)",
+    ]);
+    let record = r.answers[1].outputs["comparison"].0;
+    let Some(Payload::Construction(v)) = &r.nodes[record].payload else {
+        panic!()
+    };
+    let D::Comparison(Part::Comparison { left, .. }) = v.data else {
+        panic!()
+    };
+    assert_eq!(r.contexts[left.0].request, 1);
+    r.contexts[left.0].request = 0;
+    assert!(matches!(
+        rebuild_for_origin_and_support_recheck(&r, &r.nodes),
+        Err(ValidationFailure::Internal(_))
+    ));
+}
