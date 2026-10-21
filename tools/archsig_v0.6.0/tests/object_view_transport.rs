@@ -923,16 +923,117 @@ fn finite_view_parameter_collision_is_a_type_condition_with_its_whole_domains() 
     assert_eq!(map.images().len(), 3);
     assert!(map.forward().is_none());
     assert!(map.inverse().is_none());
-    assert!(
-        map.failures()
-            .iter()
-            .any(|f| matches!(f,FamilyTypeFailure::Collision { sources,.. } if sources==&[1,2]))
-    );
+    assert!(map.failures().iter().any(
+        |f| matches!(f,FamilyTypeFailure::Collision { target: Some(1), sources, image }
+                if sources==&[1,2] && image == &map.images()[1])
+    ));
     assert!(
         map.failures()
             .iter()
             .any(|f| matches!(f, FamilyTypeFailure::Unreached { target: 2 }))
     );
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(i, &mut quiet()).unwrap();
+}
+
+fn outside_box_inputs(source: &str, target: &str) -> Arc<CheckedInputs> {
+    let extra = r#",{"kind":"data","name":"Left.Box","meaning":"有限値。","constructors":[{"name":"Put","meaning":"参照値。","arguments":[["Ref","Left.Child"]]}]}"#;
+    let left = String::from_utf8(D.to_vec()).unwrap();
+    assert_eq!(left.matches("  ]}]").count(), 1);
+    let left = left.replace("  ]}]", &format!("{extra}\n  ]}}]"));
+    let law = family_law(source, target);
+    let map = edit(
+        A,
+        "m-entries",
+        "[[\"v\",\"r\"],[\"v\",\"s\"]]",
+        "[[\"v\",\"r\"],[\"v\",\"q\"]]",
+    );
+    inputs_with_left(left.as_bytes(), &law, &map)
+}
+
+#[test]
+fn finite_view_parameter_retains_the_collision_of_equal_outside_target_images() {
+    use archsig::construction::maps::FamilyTypeFailure;
+    let i = outside_box_inputs(
+        "view family(c:Left.Child,x:Left.Box):Bool=true;",
+        "view family(d:Right.Child,y:Left.Box):Bool=true;",
+    );
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(
+        r.outcome(),
+        &Outcome::Refuted(Failed::ParameterType { position: 1 })
+    );
+    let map = &r.family().unwrap().parameters()[0];
+    assert_eq!(map.source().len(), 2);
+    assert_eq!(map.target().len(), 2);
+    assert_eq!(map.images().len(), 2);
+    assert_eq!(map.images()[0], map.images()[1]);
+    assert_eq!(
+        map.images()[0].wire().canonical(),
+        "{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}"
+    );
+    assert!(matches!(map.failures(), [
+        FamilyTypeFailure::OutsideTarget { source: 0 },
+        FamilyTypeFailure::OutsideTarget { source: 1 },
+        FamilyTypeFailure::Collision { target: None, sources, image },
+        FamilyTypeFailure::Unreached { target: 0 },
+        FamilyTypeFailure::Unreached { target: 1 },
+    ] if sources == &[0, 1] && image == &map.images()[0]));
+    assert!(map.forward().is_none());
+    assert!(map.inverse().is_none());
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(i, &mut quiet()).unwrap();
+}
+
+#[test]
+fn finite_view_return_retains_the_collision_of_equal_outside_target_images() {
+    use archsig::construction::maps::{FamilyTypeFailure, ViewFamilyReturnMap};
+    let i = outside_box_inputs(
+        "view family(c:Left.Child,b:Bool):Option<Left.Box> = none<Left.Box>;",
+        "view family(d:Right.Child,q:Bool):Option<Left.Box> = none<Left.Box>;",
+    );
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Refuted(Failed::ValueType));
+    let Some(ViewFamilyReturnMap::Finite(map)) = r.family().unwrap().returns() else {
+        panic!("{:?}", r.family())
+    };
+    assert_eq!(map.source().len(), 3);
+    assert_eq!(map.target().len(), 3);
+    assert_eq!(map.images().len(), 3);
+    assert_eq!(map.images()[1], map.images()[2]);
+    assert_eq!(map.images()[0].wire().canonical(), "{\"none\":true}");
+    assert_eq!(
+        map.images()[1].wire().canonical(),
+        "{\"some\":{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}}"
+    );
+    assert!(matches!(map.failures(), [
+        FamilyTypeFailure::OutsideTarget { source: 1 },
+        FamilyTypeFailure::OutsideTarget { source: 2 },
+        FamilyTypeFailure::Collision { target: None, sources, image },
+        FamilyTypeFailure::Unreached { target: 1 },
+        FamilyTypeFailure::Unreached { target: 2 },
+    ] if sources == &[1, 2] && image == &map.images()[1]));
+    assert!(map.forward().is_none());
+    assert!(map.inverse().is_none());
+    assert!(r.family().unwrap().rows().is_empty());
+    assert!(!r.family().unwrap().is_complete());
+    for e in [r.source().unwrap(), r.target().unwrap()] {
+        let ObjectEvaluationOutcome::FiniteView(family) = e.outcome() else {
+            panic!("{e:?}")
+        };
+        assert!(family.is_complete());
+        assert_eq!(family.rows().len(), 2);
+        for row in family.rows() {
+            let wire = row.evaluation().wire();
+            let output = f(&arr(f(&wire, "answers"))[0], "outputs");
+            let id = f(f(output, "value"), "node");
+            let node = arr(f(&wire, "nodes"))
+                .iter()
+                .find(|node| f(node, "id") == id)
+                .unwrap();
+            assert_eq!(f(node, "value").canonical(), "{\"none\":true}");
+        }
+    }
     r.operation().recheck(&i, &mut quiet()).unwrap();
     r.recheck(i, &mut quiet()).unwrap();
 }

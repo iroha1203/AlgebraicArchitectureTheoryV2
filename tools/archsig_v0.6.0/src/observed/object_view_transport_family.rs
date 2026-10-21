@@ -17,9 +17,17 @@ fn bad(message: &str) -> ConstructionFailure {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FamilyTypeFailure {
-    OutsideTarget { source: usize },
-    Collision { target: usize, sources: Vec<usize> },
-    Unreached { target: usize },
+    OutsideTarget {
+        source: usize,
+    },
+    Collision {
+        image: ViewTransportValue,
+        target: Option<usize>,
+        sources: Vec<usize>,
+    },
+    Unreached {
+        target: usize,
+    },
 }
 /// 対応する元instanceの固定束縛から列挙した全型域。表の各添字はこの順序を使う。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -228,6 +236,7 @@ fn type_map(
     }
     let mut forward = Vec::new();
     let mut fibers = vec![vec![]; r.target.len()];
+    let mut candidate_fibers: Vec<(usize, Option<usize>, Vec<usize>)> = Vec::new();
     for (index, source) in r.source.iter().enumerate() {
         tick(c)?;
         let image = value_transport::candidate_image(
@@ -259,17 +268,36 @@ fn type_map(
             r.failures
                 .push(FamilyTypeFailure::OutsideTarget { source: index });
         }
+        let mut found_fiber = false;
+        for (representative, _, sources) in &mut candidate_fibers {
+            tick(c)?;
+            if data::candidate_equal(&r.images[*representative].value, &image, c)
+                .map_err(invalid)?
+            {
+                sources.push(index);
+                found_fiber = true;
+                break;
+            }
+        }
+        if !found_fiber {
+            candidate_fibers.push((index, target_index, vec![index]));
+        }
         r.images.push(ViewTransportValue { value: image });
+    }
+    for (representative, target, sources) in candidate_fibers {
+        tick(c)?;
+        if sources.len() > 1 {
+            r.failures.push(FamilyTypeFailure::Collision {
+                image: r.images[representative].clone(),
+                target,
+                sources,
+            });
+        }
     }
     for (target, sources) in fibers.iter().enumerate() {
         tick(c)?;
         if sources.is_empty() {
             r.failures.push(FamilyTypeFailure::Unreached { target });
-        } else if sources.len() > 1 {
-            r.failures.push(FamilyTypeFailure::Collision {
-                target,
-                sources: sources.clone(),
-            });
         }
     }
     if r.failures.is_empty() {
@@ -670,8 +698,41 @@ fn same_type_map(
     }
     for (a, b) in a.failures.iter().zip(&b.failures) {
         tick(c)?;
-        if a != b {
-            return Ok(false);
+        match (a, b) {
+            (
+                FamilyTypeFailure::OutsideTarget { source: a },
+                FamilyTypeFailure::OutsideTarget { source: b },
+            ) if a == b => {}
+            (
+                FamilyTypeFailure::Unreached { target: a },
+                FamilyTypeFailure::Unreached { target: b },
+            ) if a == b => {}
+            (
+                FamilyTypeFailure::Collision {
+                    image: ai,
+                    target: at,
+                    sources: a,
+                },
+                FamilyTypeFailure::Collision {
+                    image: bi,
+                    target: bt,
+                    sources: b,
+                },
+            ) => {
+                if at != bt
+                    || a.len() != b.len()
+                    || !same_values(std::slice::from_ref(ai), std::slice::from_ref(bi), c)?
+                {
+                    return Ok(false);
+                }
+                for (a, b) in a.iter().zip(b) {
+                    tick(c)?;
+                    if a != b {
+                        return Ok(false);
+                    }
+                }
+            }
+            _ => return Ok(false),
         }
     }
     Ok(true)
@@ -851,6 +912,50 @@ mod tests {
                 "mode={mode}"
             );
         }
+    }
+    #[test]
+    fn collision_evidence_recheck_compares_the_image_target_and_entire_source_fiber() {
+        let (_, r) = example();
+        let mut a = r.family.unwrap().parameters.remove(0);
+        a.failures = vec![FamilyTypeFailure::Collision {
+            image: a.images[0].clone(),
+            target: None,
+            sources: vec![0, 1],
+        }];
+        assert!(same_type_map(&a, &a, &mut Control::unlimited()).unwrap());
+        for mode in 0..7 {
+            let mut b = a.clone();
+            let FamilyTypeFailure::Collision {
+                image,
+                target,
+                sources,
+            } = &mut b.failures[0]
+            else {
+                unreachable!()
+            };
+            match mode {
+                0 => image.value = Scalar::Bool(true),
+                1 => *target = Some(0),
+                2 => {
+                    sources.pop();
+                }
+                3 => sources.push(2),
+                4 => sources.swap(0, 1),
+                5 => sources[1] = 2,
+                _ => b.failures.clear(),
+            }
+            assert!(
+                !same_type_map(&a, &b, &mut Control::unlimited()).unwrap(),
+                "mode={mode}"
+            );
+        }
+        let (mut c, probes) = stop_at(Checkpoint::ObjectViewTransportFamily, 1, 2);
+        assert!(matches!(
+            same_type_map(&a, &a, &mut c),
+            Err(ConstructionFailure::Stopped(_))
+        ));
+        assert!(same_type_map(&a, &a, &mut c).is_err());
+        assert_eq!(probes.get(), 1);
     }
     #[test]
     fn family_fixed_stops_keep_evaluations_and_completed_comparisons_without_new_probes() {
