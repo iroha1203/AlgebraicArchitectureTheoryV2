@@ -1803,7 +1803,7 @@ impl Graph {
             } = reason.kind
             {
                 let proposition = self.get(condition)?;
-                if construction == "compose" {
+                if construction == "composition" {
                     super::public_compose::validate_failure(self,reason)?;
                     continue;
                 }

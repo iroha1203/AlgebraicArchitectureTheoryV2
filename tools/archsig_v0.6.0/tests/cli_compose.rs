@@ -407,3 +407,52 @@ fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[test]
+fn composition_claims_and_failure_reasons_use_the_closed_construction_name() {
+    let dir = inputs("composition-construction-name", A);
+    let r = asks(
+        &dir,
+        &[
+            M,
+            N,
+            C,
+            "bad=compose($m.operation,then=$m.operation)",
+            "blocked=compose($bad.operation,then=$m.operation)",
+            "plan=needed($blocked)",
+        ],
+    );
+    let j = saved(&dir, &r, "partial", 2);
+    for id in ["c", "bad"] {
+        let claim = value(&j, get(get(answer(&j, id), "outputs"), "proposition"));
+        assert_eq!(s(get(claim, "predicate")), "constructible");
+        assert_eq!(s(value(&j, &arr(get(claim, "operands"))[0])), "composition");
+    }
+    let bad = answer(&j, "bad");
+    assert_eq!(s(get(bad, "status")), "refuted");
+    for reasons in [
+        get(bad, "reasons"),
+        get(answer(&j, "blocked"), "reasons"),
+        get(
+            get(
+                node(&j, get(get(bad, "outputs"), "proposition")),
+                "judgment",
+            ),
+            "reasons",
+        ),
+        get(
+            value(&j, get(get(answer(&j, "plan"), "outputs"), "plan")),
+            "blockers",
+        ),
+    ] {
+        let failed = arr(reasons)
+            .iter()
+            .find(|r| s(get(r, "code")) == "condition_failed")
+            .unwrap();
+        assert_eq!(
+            s(get(get(failed, "details"), "construction")),
+            "composition"
+        );
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}

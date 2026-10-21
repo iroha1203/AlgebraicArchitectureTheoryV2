@@ -424,7 +424,7 @@ pub(super) fn validate_node(
     let fail =
         || ValidationFailure::Internal("合成の値・由来・保存条件が現在の検査結果と違う".into());
     if let D::ConstructionLabel(label) = &v.data {
-        return if label == &Scalar::Text("compose".into())
+        return if label == &Scalar::Text("composition".into())
             && node.judgment.is_none()
             && node.evidence.is_empty()
         {
@@ -471,7 +471,7 @@ pub(super) fn validate_node(
             condition,
         } => {
             if (*left, *right) != (c.left, c.right)
-                || graph.scalar(*name)? != &Scalar::Text("compose".into())
+                || graph.scalar(*name)? != &Scalar::Text("composition".into())
             {
                 return Err(fail());
             }
@@ -628,7 +628,7 @@ fn failed_reason(request: &Request, condition: NodeRef) -> Reason {
     Reason {
         kind: ReasonKind::ConditionFailed {
             condition,
-            construction: "compose",
+            construction: "composition",
         },
         request: request.id.clone(),
         dependencies: vec![condition],
@@ -639,7 +639,7 @@ fn failed_reason(request: &Request, condition: NodeRef) -> Reason {
 pub(super) fn validate_failure(graph: &Graph, reason: &Reason) -> Result<(), ValidationFailure> {
     let ReasonKind::ConditionFailed {
         condition,
-        construction: "compose",
+        construction: "composition",
     } = reason.kind
     else {
         return Err("合成条件の理由でない".into());
@@ -794,7 +794,7 @@ pub(super) fn evaluate(
     let name = put(
         graph,
         &c,
-        D::ConstructionLabel(Scalar::Text("compose".into())),
+        D::ConstructionLabel(Scalar::Text("composition".into())),
         vec![],
         None,
     )?;

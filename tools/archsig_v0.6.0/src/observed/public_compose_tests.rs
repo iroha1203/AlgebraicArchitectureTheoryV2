@@ -82,6 +82,13 @@ fn composed_dag_rejects_forged_actions_words_names_endpoints_conditions_and_scop
             }
         });
     }
+    let label = r.nodes.iter().position(|n| matches!(&n.payload,
+        Some(Payload::Construction(v)) if matches!(&v.witness, Witness::Compose(_))
+            && matches!(v.data, D::ConstructionLabel(_)))).unwrap();
+    completion_mutation(&r, label, |nodes| {
+        let Some(Payload::Construction(v)) = &mut nodes[label].payload else { panic!() };
+        v.data = D::ConstructionLabel(Scalar::Text("compose".into()));
+    });
     let mut control = Control::unlimited();
     let env = Environment::with_prepared(r.prepared(), &mut control).unwrap();
     let graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
@@ -133,6 +140,12 @@ fn composition_rechecks_actual_inputs_requests_and_refutation_proof() {
         "plan=needed($blocked)",
     ]);
     assert_eq!(bad.answers[1].status, Decision::Refuted);
+    let claim = bad.answers[1].outputs["proposition"].0;
+    completion_mutation(&bad, claim, |nodes| {
+        let reason = &mut nodes[claim].judgment.as_mut().unwrap().reasons[0];
+        let ReasonKind::ConditionFailed { construction, .. } = &mut reason.kind else { panic!() };
+        *construction = "compose";
+    });
     let proof = bad.answers[1].evidence[0].0;
     completion_mutation(&bad, proof, |nodes| {
         let Some(Payload::Construction(v)) = &mut nodes[proof].payload else {
