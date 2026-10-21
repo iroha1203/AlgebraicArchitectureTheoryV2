@@ -182,6 +182,8 @@ correspondence由来のときだけ `Some` を返す。各結果の `recheck()` 
 恒等は共通Uの全元を固定し、`word()` は空となる。
 `f.compose(&checked, &g, &mut control)` は g∘f の総作用を作り、元操作を指す有限表を
 `derivation()` に残す。語は原始生成元名の順序列へ平坦化する。
+`f.compose_retained(&checked, &g, &mut control)` は同じ合成を行い、最後の停止確認で中断した場合も
+失敗の `partial()` へ完成済み操作を保持する。構成途中の停止では `partial()` は `None` となる。
 `word_equal()` と `action_difference()` は語と全域作用をそれぞれ比較し、作用の不一致では
 元位置と両像を返す。後者は同じ始終対象・readingを要求する。
 操作とそのmapの `recheck()` は元入力から構成を再実行する。恒等・合成の候補は

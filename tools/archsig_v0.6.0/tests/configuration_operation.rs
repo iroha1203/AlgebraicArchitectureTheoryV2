@@ -472,3 +472,149 @@ fn every_fixed_operation_stop_latches_without_new_probes() {
         }
     }
 }
+
+#[test]
+fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
+    let i = inputs(A);
+    let e = arrow(&i, "e");
+    let h = arrow(&i, "h");
+    let m = migration(&i, "m");
+    let n = migration(&i, "n");
+    for (kind, (first, then)) in [(&e, &h), (&m, &n)].into_iter().enumerate() {
+        let operations = Rc::new(Cell::new(0usize));
+        let seen = operations.clone();
+        let mut counting = Control::new(Limits::default(), move |point| {
+            if point == Checkpoint::ConfigurationOperation {
+                seen.set(seen.get() + 1);
+            }
+            Usage::default()
+        });
+        let normal = first.compose_retained(&i, then, &mut counting).unwrap();
+        let legacy = first.compose(&i, then, &mut Control::unlimited()).unwrap();
+        assert_eq!(normal, legacy);
+        let total = operations.get();
+        assert!(total > 5);
+        for at in [1, total / 2, total - 2, total - 1, total] {
+            for mode in 0..4 {
+                let probes = Rc::new(Cell::new(0usize));
+                let operations = Rc::new(Cell::new(0usize));
+                let calls = probes.clone();
+                let seen = operations.clone();
+                let mut control = Control::new(
+                    Limits {
+                        time_ms: (mode == 0).then_some(1),
+                        memory_mib: (mode == 1).then_some(1),
+                    },
+                    move |point| {
+                        calls.set(calls.get() + 1);
+                        if point == Checkpoint::ConfigurationOperation {
+                            seen.set(seen.get() + 1);
+                        }
+                        let stop = seen.get() >= at;
+                        Usage {
+                            elapsed_ms: u128::from(stop && mode == 0),
+                            memory_mib: u128::from(stop && mode == 1),
+                            signal: match (stop, mode) {
+                                (true, 2) => Some(Signal::Int),
+                                (true, 3) => Some(Signal::Term),
+                                _ => None,
+                            },
+                        }
+                    },
+                );
+                let failure = first.compose_retained(&i, then, &mut control).unwrap_err();
+                let stop = ConstructionFailure::Stopped(control.stop_reason().unwrap());
+                assert_eq!(failure.cause(), &stop, "{at}/{mode}");
+                assert_eq!(operations.get(), at);
+                let frozen = probes.get();
+                if at == total {
+                    let retained = failure.partial().expect("最後の確認では操作が完成済み");
+                    assert_eq!(retained, &normal);
+                    retained.recheck(&i, &mut Control::unlimited()).unwrap();
+                    let candidate = retained.map().candidate();
+                    let names = if kind == 0 { ["e", "h"] } else { ["m", "n"] };
+                    assert_eq!(retained.word(), &names.map(|name| fact(name, None)));
+                    for atom in candidate.universe() {
+                        let expected = if kind == 0 {
+                            let mut image = atom.clone();
+                            if atom.subject == "q" {
+                                image.subject = "p".into();
+                                image.atom = image.atom.map(|a| a.replacen("q-", "p-", 1));
+                            }
+                            image
+                        } else if ["A", "p", "q", "e", "h", "k"].contains(&atom.subject.as_str()) {
+                            atom.clone()
+                        } else {
+                            fact("A", None)
+                        };
+                        assert_eq!(candidate.image(atom), Some(&expected), "{kind}/{atom:?}");
+                    }
+                    assert_eq!(retained.recheck(&i, &mut control).unwrap_err(), stop);
+                } else {
+                    assert!(
+                        failure.partial().is_none(),
+                        "{at}/{mode}: 未完成操作を保持した"
+                    );
+                }
+                assert_eq!(first.compose(&i, then, &mut control).unwrap_err(), stop);
+                assert_eq!(probes.get(), frozen, "停止後に新しいprobeを実行した");
+                assert_eq!(operations.get(), at);
+            }
+        }
+    }
+}
+
+#[test]
+fn retained_composition_rejects_changed_inputs_and_incompatible_endpoints_without_partial() {
+    let i = inputs(A);
+    let e = arrow(&i, "e");
+    let h = arrow(&i, "h");
+    let m = migration(&i, "m");
+    let alternate = internal_arrow(
+        &i,
+        "Alternative",
+        "v",
+        "A",
+        "v",
+        "h",
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    let alternate =
+        ConfigurationOperation::from_map(&i, alternate.map().unwrap(), &mut Control::unlimited())
+            .unwrap();
+    for (first, then) in [
+        (&e, &e),
+        (&e, &m),
+        (&e, &alternate),
+        (&m, &ident(&i, "A", None)),
+    ] {
+        let failure = first
+            .compose_retained(&i, then, &mut Control::unlimited())
+            .unwrap_err();
+        assert!(
+            matches!(failure.cause(), ConstructionFailure::InvalidSelection(message) if !message.is_empty())
+        );
+        assert!(failure.partial().is_none());
+        assert_eq!(
+            &first
+                .compose(&i, then, &mut Control::unlimited())
+                .unwrap_err(),
+            failure.cause()
+        );
+    }
+    let changed = inputs(&edit(A, "e-to", "[\"v\",\"q\"]", "[\"v\",\"p\"]"));
+    for (first, then) in [(&e, &h), (&h, &e)] {
+        let failure = first
+            .compose_retained(&changed, then, &mut Control::unlimited())
+            .unwrap_err();
+        assert!(!matches!(failure.cause(), ConstructionFailure::Stopped(_)));
+        assert!(failure.partial().is_none());
+        assert_eq!(
+            &first
+                .compose(&changed, then, &mut Control::unlimited())
+                .unwrap_err(),
+            failure.cause()
+        );
+    }
+}

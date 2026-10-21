@@ -128,6 +128,16 @@ impl ConfigurationOperation {
         then: &Self,
         control: &mut Control,
     ) -> Result<Self, ConstructionFailure> {
+        self.compose_retained(inputs, then, control)
+            .map_err(|failure| failure.cause)
+    }
+    /// 同じ合成を検査し、最後の停止確認でも完成済みの操作を保持する。
+    pub fn compose_retained(
+        &self,
+        inputs: &CheckedInputs,
+        then: &Self,
+        control: &mut Control,
+    ) -> Result<Self, OperationFailure> {
         tick(control)?;
         self.recheck(inputs, control)?;
         then.recheck(inputs, control)?;
@@ -156,7 +166,7 @@ impl ConfigurationOperation {
         let then = steps.len() - 1;
         steps.push(OperationStep::Compose { first, then });
         let map = derived_map(data, steps);
-        from_verified_map(map, control)
+        from_verified_map_retained(map, control)
     }
     /// 恒等を除き平坦化した生成元名・順序を比較する。
     pub fn word_equal(
