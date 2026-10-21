@@ -210,6 +210,16 @@ DeclarationValuePosition::Parameter(0), &mut control)` は署名対応済み宣�
 `operation()` は元操作、`declaration()/position()` は選択位置を保持する。
 `recheck()` は現在入力の宣言対応と数値型から順逆写像を再構成する。式の値の可換性は追加検査で扱う。
 
+`construction::maps::object_view_transport(Arc::clone(&checked), &declarations,
+object_index, instance_index, &mut control)` は元の対象別view instanceの参照束縛を運び、
+同じ三表と対象別評価器による実評価と、戻り型全域の値写像との可換性を検査する。
+`outcome()` は成立・追加条件の不成立・未決を区別し、`operation()` は確認済み操作を保持する。
+`source()/target()` は両側の適用状態と評価DAG、`equivalence()` は有限または数値型の全域対応を持つ。
+`source_value()/image()/target_value()` の `ty()/wire()` で比較した型付き値を読む。
+両側の適用外、適用の不一致、条件付き所属、値の欠測をそれぞれ保持する。
+残parameter付きviewと値域対応の適用域外は、元対象・instance・型・操作を持つ `NotImplemented` を返す。
+`recheck()` は現在入力の対象・宣言・束縛・実評価・可換性を再検査する。
+
 `construction::readings::object_reading_instances(&checked, &configuration, &mut control)`
 は選択readingのLaw/viewを、標準対象域に適用する参照束縛instanceへ展開する。
 `objects()` はbaseとowned entityの部分対象をidentityで保持し、未知所属の候補には

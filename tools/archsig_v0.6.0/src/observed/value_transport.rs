@@ -85,6 +85,27 @@ pub struct FiniteValueTransport {
     bijection: Option<FiniteValueBijection>,
 }
 impl FiniteValueTransport {
+    pub(super) fn transport_scalar(
+        &self,
+        value: &Scalar,
+        control: &mut Control,
+    ) -> Result<Scalar, ConstructionFailure> {
+        tick(control)?;
+        if self.bijection.is_none() {
+            return Err(ConstructionFailure::Inconsistent(
+                "値の順逆対応が未確認".into(),
+            ));
+        }
+        for (source, image) in self.source.iter().zip(&self.images) {
+            tick(control)?;
+            if same(&source.value, value, control)? {
+                return Ok(image.value.clone());
+            }
+        }
+        Err(ConstructionFailure::Inconsistent(
+            "実評価値が確認済みの全source域にない".into(),
+        ))
+    }
     pub fn operation(&self) -> &ConfigurationOperation {
         self.declarations.operation()
     }
