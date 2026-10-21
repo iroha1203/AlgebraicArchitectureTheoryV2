@@ -94,7 +94,77 @@ pub struct ConfigurationTransport {
     objects: Vec<ObjectTransport>,
     generators: Vec<GeneratorTransport>,
 }
+/// 完成済みの行と元Operation。全体の成立はoutcome()がSomeのときだけ読める。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ConfigurationTransportPartial {
+    operation: ConfigurationOperation,
+    source: Option<InternalArrows>,
+    target: Option<InternalArrows>,
+    objects: Vec<ObjectTransport>,
+    generators: Vec<GeneratorTransport>,
+    outcome: Option<bool>,
+}
+impl ConfigurationTransportPartial {
+    pub fn operation(&self) -> &ConfigurationOperation {
+        &self.operation
+    }
+    pub fn source(&self) -> Option<&InternalArrows> {
+        self.source.as_ref()
+    }
+    pub fn target(&self) -> Option<&InternalArrows> {
+        self.target.as_ref()
+    }
+    pub fn objects(&self) -> &[ObjectTransport] {
+        &self.objects
+    }
+    pub fn generators(&self) -> &[GeneratorTransport] {
+        &self.generators
+    }
+    pub fn outcome(&self) -> Option<bool> {
+        self.outcome
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ConfigurationTransportFailure {
+    cause: ConstructionFailure,
+    partial: Option<Box<ConfigurationTransportPartial>>,
+}
+impl ConfigurationTransportFailure {
+    pub fn cause(&self) -> &ConstructionFailure {
+        &self.cause
+    }
+    pub fn partial(&self) -> Option<&ConfigurationTransportPartial> {
+        self.partial.as_deref()
+    }
+    pub(crate) fn into_parts(
+        self,
+    ) -> (
+        ConstructionFailure,
+        Option<Box<ConfigurationTransportPartial>>,
+    ) {
+        (self.cause, self.partial)
+    }
+}
+impl From<ConstructionFailure> for ConfigurationTransportFailure {
+    fn from(cause: ConstructionFailure) -> Self {
+        Self {
+            cause,
+            partial: None,
+        }
+    }
+}
 impl ConfigurationTransport {
+    pub(crate) fn into_partial(self) -> ConfigurationTransportPartial {
+        let outcome = Some(self.all_preserved());
+        ConfigurationTransportPartial {
+            operation: self.operation,
+            source: Some(self.source),
+            target: Some(self.target),
+            objects: self.objects,
+            generators: self.generators,
+            outcome,
+        }
+    }
     /// 追加構造が反証・未決でも、確認済みconfiguration操作を保持する。
     pub fn operation(&self) -> &ConfigurationOperation {
         &self.operation
@@ -130,7 +200,10 @@ impl ConfigurationTransport {
         inputs: &CheckedInputs,
         control: &mut Control,
     ) -> Result<(), ConstructionFailure> {
-        if self != &configuration_transport(inputs, self.operation.map(), control)? {
+        if self
+            != &configuration_transport(inputs, self.operation.map(), control)
+                .map_err(|failure| failure.cause)?
+        {
             return Err(ConstructionFailure::Inconsistent(
                 "対象対応・内部操作の自然性が現在入力と違う".into(),
             ));
@@ -227,132 +300,199 @@ pub fn configuration_transport(
     inputs: &CheckedInputs,
     map: &ConfigurationMap,
     control: &mut Control,
-) -> Result<ConfigurationTransport, ConstructionFailure> {
+) -> Result<ConfigurationTransport, ConfigurationTransportFailure> {
     tick(control)?;
     if !matches!(map.candidate.origin, MapOrigin::Correspondence(_)) {
         return Err(ConstructionFailure::InvalidSelection(
             "対象族の対応は原始correspondenceの保存済みmapを要求する".into(),
-        ));
+        )
+        .into());
     }
     let operation = ConfigurationOperation::from_map(inputs, map, control)?;
-    let c = map.candidate();
-    let source = internal_arrows(
-        inputs,
-        c.reading(),
-        &c.source_root().snapshot,
-        &c.source_root().subject,
-        control,
-    )?;
-    let target = internal_arrows(
-        inputs,
-        c.to_reading(),
-        &c.target_root().snapshot,
-        &c.target_root().subject,
-        control,
-    )?;
-    let source_objects = objects(source.construction(), control)?;
-    let target_objects = objects(target.construction(), control)?;
-    let mut action = BTreeMap::new();
-    for (a, b) in c.universe().iter().zip(c.images()) {
-        tick(control)?;
-        action.insert(a.clone(), b.clone());
-    }
-    let mut object_rows = Vec::new();
-    for (source_subject, source_config) in source_objects {
-        tick(control)?;
-        let target_subject = image(&action, source_subject)?;
-        let mut selected = None;
-        for (subject, config) in &target_objects {
-            tick(control)?;
-            if *subject == target_subject {
-                selected = Some(*config);
-                break;
-            }
-        }
-        let (target_object, target_configuration, counterexamples, condition_failure) =
-            if let Some(target_config) = selected {
-                (
-                    Some(ObjectIdentity::selected(
-                        c.to_reading(),
-                        c.target_root(),
-                        target_subject,
-                    )),
-                    Some(target_config.clone()),
-                    preservation_counterexamples(
-                        source_config,
-                        target_config,
-                        true,
-                        &action,
-                        control,
-                    )?,
-                    None,
-                )
-            } else {
-                (
-                    None,
-                    None,
-                    vec![],
-                    Some(TransportConditionFailure::TargetObject {
-                        source: source_subject.clone(),
-                        image: target_subject.clone(),
-                    }),
-                )
-            };
-        object_rows.push(ObjectTransport {
-            source: ObjectIdentity::selected(c.reading(), c.source_root(), source_subject),
-            target: target_object,
-            source_configuration: source_config.clone(),
-            target_configuration,
-            counterexamples,
-            condition_failure,
-        });
-    }
-    let mut generators = Vec::new();
-    for e in source.arrows() {
-        tick(control)?;
-        let target_arrow = image(&action, e.arrow())?.clone();
-        let mut selected = None;
-        for f in target.arrows() {
-            tick(control)?;
-            if f.arrow() == &target_arrow {
-                selected = Some(f);
-                break;
-            }
-        }
-        let condition_failure = if selected.is_none() {
-            Some(TransportConditionFailure::TargetGenerator {
-                source: e.arrow().clone(),
-                image: target_arrow.clone(),
-            })
-        } else {
-            None
-        };
-        let (endpoints_preserved, naturality) =
-            if let (Some(e), Some(f)) = (e.map(), selected.and_then(InternalArrowResult::map)) {
-                let e = e.candidate();
-                let f = f.candidate();
-                let endpoints = image(&action, e.source_root())? == f.source_root()
-                    && image(&action, e.target_root())? == f.target_root();
-                (Some(endpoints), Some(naturality(c, e, f, control)?))
-            } else {
-                (None, None)
-            };
-        generators.push(GeneratorTransport {
-            source: e.arrow().clone(),
-            target: target_arrow,
-            endpoints_preserved,
-            naturality,
-            condition_failure,
-        });
-    }
-    tick(control)?;
-    Ok(ConfigurationTransport {
+    let mut result = ConfigurationTransportPartial {
         operation,
-        source,
-        target,
-        objects: object_rows,
-        generators,
-    })
+        source: None,
+        target: None,
+        objects: vec![],
+        generators: vec![],
+        outcome: None,
+    };
+    let computed =
+        (|| -> Result<(), ConstructionFailure> {
+            let c = map.candidate();
+            result.source = Some(
+                match internal_arrows(
+                    inputs,
+                    c.reading(),
+                    &c.source_root().snapshot,
+                    &c.source_root().subject,
+                    control,
+                ) {
+                    Ok(source) => source,
+                    Err(failure) => {
+                        let (cause, partial) = failure.into_parts();
+                        result.source = partial.map(|r| *r);
+                        return Err(cause);
+                    }
+                },
+            );
+            result.target = Some(
+                match internal_arrows(
+                    inputs,
+                    c.to_reading(),
+                    &c.target_root().snapshot,
+                    &c.target_root().subject,
+                    control,
+                ) {
+                    Ok(target) => target,
+                    Err(failure) => {
+                        let (cause, partial) = failure.into_parts();
+                        result.target = partial.map(|r| *r);
+                        return Err(cause);
+                    }
+                },
+            );
+            let source = result.source.as_ref().ok_or_else(|| {
+                ConstructionFailure::Inconsistent("対象写像のsource表がない".into())
+            })?;
+            let target = result.target.as_ref().ok_or_else(|| {
+                ConstructionFailure::Inconsistent("対象写像のtarget表がない".into())
+            })?;
+            let source_objects = objects(source.construction(), control)?;
+            let target_objects = objects(target.construction(), control)?;
+            let mut action = BTreeMap::new();
+            for (a, b) in c.universe().iter().zip(c.images()) {
+                tick(control)?;
+                action.insert(a.clone(), b.clone());
+            }
+            for (source_subject, source_config) in source_objects {
+                tick(control)?;
+                let target_subject = image(&action, source_subject)?;
+                let mut selected = None;
+                for (subject, config) in &target_objects {
+                    tick(control)?;
+                    if *subject == target_subject {
+                        selected = Some(*config);
+                        break;
+                    }
+                }
+                let (target_object, target_configuration, counterexamples, condition_failure) =
+                    if let Some(target_config) = selected {
+                        (
+                            Some(ObjectIdentity::selected(
+                                c.to_reading(),
+                                c.target_root(),
+                                target_subject,
+                            )),
+                            Some(target_config.clone()),
+                            preservation_counterexamples(
+                                source_config,
+                                target_config,
+                                true,
+                                &action,
+                                control,
+                            )?,
+                            None,
+                        )
+                    } else {
+                        (
+                            None,
+                            None,
+                            vec![],
+                            Some(TransportConditionFailure::TargetObject {
+                                source: source_subject.clone(),
+                                image: target_subject.clone(),
+                            }),
+                        )
+                    };
+                result.objects.push(ObjectTransport {
+                    source: ObjectIdentity::selected(c.reading(), c.source_root(), source_subject),
+                    target: target_object,
+                    source_configuration: source_config.clone(),
+                    target_configuration,
+                    counterexamples,
+                    condition_failure,
+                });
+                control.checkpoint(Checkpoint::ConfigurationTransportObject)?;
+            }
+            for e in source.arrows() {
+                tick(control)?;
+                let target_arrow = image(&action, e.arrow())?.clone();
+                let mut selected = None;
+                for f in target.arrows() {
+                    tick(control)?;
+                    if f.arrow() == &target_arrow {
+                        selected = Some(f);
+                        break;
+                    }
+                }
+                let condition_failure = if selected.is_none() {
+                    Some(TransportConditionFailure::TargetGenerator {
+                        source: e.arrow().clone(),
+                        image: target_arrow.clone(),
+                    })
+                } else {
+                    None
+                };
+                let (endpoints_preserved, naturality) = if let (Some(e), Some(f)) =
+                    (e.map(), selected.and_then(InternalArrowResult::map))
+                {
+                    let e = e.candidate();
+                    let f = f.candidate();
+                    let endpoints = image(&action, e.source_root())? == f.source_root()
+                        && image(&action, e.target_root())? == f.target_root();
+                    (Some(endpoints), Some(naturality(c, e, f, control)?))
+                } else {
+                    (None, None)
+                };
+                result.generators.push(GeneratorTransport {
+                    source: e.arrow().clone(),
+                    target: target_arrow,
+                    endpoints_preserved,
+                    naturality,
+                    condition_failure,
+                });
+                control.checkpoint(Checkpoint::ConfigurationTransportGenerator)?;
+            }
+            result.outcome = Some(
+                source.all_preserved()
+                    && target.all_preserved()
+                    && result.objects.iter().all(ObjectTransport::is_preserved)
+                    && result.generators.iter().all(|g| {
+                        g.condition_failure.is_none()
+                            && g.endpoints_preserved == Some(true)
+                            && g.naturality == Some(Naturality::Preserved)
+                    }),
+            );
+            tick(control)?;
+            Ok(())
+        })();
+    match computed {
+        Ok(()) => match result {
+            ConfigurationTransportPartial {
+                operation,
+                source: Some(source),
+                target: Some(target),
+                objects,
+                generators,
+                outcome: Some(_),
+            } => Ok(ConfigurationTransport {
+                operation,
+                source,
+                target,
+                objects,
+                generators,
+            }),
+            partial => Err(ConfigurationTransportFailure {
+                cause: ConstructionFailure::Inconsistent("対象写像の完成結果が揃っていない".into()),
+                partial: Some(Box::new(partial)),
+            }),
+        },
+        Err(cause) => Err(ConfigurationTransportFailure {
+            cause,
+            partial: Some(Box::new(result)),
+        }),
+    }
 }
 
 #[cfg(test)]

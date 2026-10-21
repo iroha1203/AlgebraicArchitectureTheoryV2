@@ -13,8 +13,9 @@ use crate::{
     construction::{
         ConstructionFailure, FactPointer,
         maps::{
-            ConfigurationOperation, ConfigurationTransport, DeclarationCorrespondence,
-            ObjectIdentity, configuration_transport,
+            ConfigurationOperation, ConfigurationTransport, ConfigurationTransportFailure,
+            ConfigurationTransportPartial, DeclarationCorrespondence, ObjectIdentity,
+            configuration_transport,
         },
         readings::{
             MembershipCondition, ObjectInstance, ObjectReadingInstances, object_reading_instances,
@@ -31,6 +32,7 @@ pub use family::{FiniteLawFamily, LawParameterComparison};
 #[derive(Debug)]
 pub enum ObjectLawTransportFailure {
     Construction(ConstructionFailure),
+    Transport(Box<ConfigurationTransportFailure>),
     NotImplemented {
         operation: Box<ConfigurationOperation>,
         object: ObjectIdentity,
@@ -46,6 +48,7 @@ pub enum ObjectLawTransportFailure {
         operation: Box<ConfigurationOperation>,
         partial: Option<Box<ObjectLawTransportPartial>>,
         evaluation: Option<Box<ObjectEvaluationFailure>>,
+        transport: Option<Box<ConfigurationTransportPartial>>,
     },
 }
 impl From<ConstructionFailure> for ObjectLawTransportFailure {
@@ -316,6 +319,7 @@ pub fn object_law_transport(
                 operation,
                 partial: None,
                 evaluation: None,
+                transport: None,
             })
         }
         result => result,
@@ -328,9 +332,41 @@ fn checked_transport(
     instance: usize,
     c: &mut Control,
 ) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
-    let objects = configuration_transport(&inputs, declarations.operation().map(), c)?;
-    let source_readings = object_reading_instances(&inputs, objects.source().construction(), c)?;
-    let target_readings = object_reading_instances(&inputs, objects.target().construction(), c)?;
+    let objects =
+        configuration_transport(&inputs, declarations.operation().map(), c).map_err(|failure| {
+            match failure.cause() {
+                ConstructionFailure::Stopped(reason) => {
+                    let reason = reason.clone();
+                    let (_, transport) = failure.into_parts();
+                    ObjectLawTransportFailure::Stopped {
+                        reason,
+                        operation: Box::new(declarations.operation().clone()),
+                        partial: None,
+                        evaluation: None,
+                        transport,
+                    }
+                }
+                _ => ObjectLawTransportFailure::Transport(Box::new(failure)),
+            }
+        })?;
+    let readings = (|| -> Result<_, ConstructionFailure> {
+        let source = object_reading_instances(&inputs, objects.source().construction(), c)?;
+        let target = object_reading_instances(&inputs, objects.target().construction(), c)?;
+        Ok((source, target))
+    })();
+    let (source_readings, target_readings) = match readings {
+        Ok(readings) => readings,
+        Err(ConstructionFailure::Stopped(reason)) => {
+            return Err(ObjectLawTransportFailure::Stopped {
+                reason,
+                operation: Box::new(objects.operation().clone()),
+                partial: None,
+                evaluation: None,
+                transport: Some(Box::new(objects.into_partial())),
+            });
+        }
+        Err(failure) => return Err(failure.into()),
+    };
     if source_readings.objects().get(object).is_none()
         || source_readings.instances().get(instance).is_none()
     {
@@ -472,6 +508,7 @@ fn checked_transport(
                         operation,
                         partial,
                         evaluation: None,
+                        transport: None,
                     })
                 }
                 ObjectLawTransportFailure::Evaluation { failure, .. } => match c.stop_reason() {
@@ -480,6 +517,7 @@ fn checked_transport(
                         operation,
                         partial,
                         evaluation: Some(failure),
+                        transport: None,
                     }),
                     None => Err(ObjectLawTransportFailure::Evaluation {
                         operation,

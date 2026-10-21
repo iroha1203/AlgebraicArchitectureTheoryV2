@@ -68,6 +68,32 @@ impl InternalArrowResult {
 pub struct InternalArrows {
     construction: ConfigurationConstruction,
     arrows: Vec<InternalArrowResult>,
+    selected: Option<Vec<FactPointer>>,
+    complete: bool,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct InternalArrowsFailure {
+    cause: ConstructionFailure,
+    partial: Option<Box<InternalArrows>>,
+}
+impl InternalArrowsFailure {
+    pub fn cause(&self) -> &ConstructionFailure {
+        &self.cause
+    }
+    pub fn partial(&self) -> Option<&InternalArrows> {
+        self.partial.as_deref()
+    }
+    pub(crate) fn into_parts(self) -> (ConstructionFailure, Option<Box<InternalArrows>>) {
+        (self.cause, self.partial)
+    }
+}
+impl From<ConstructionFailure> for InternalArrowsFailure {
+    fn from(cause: ConstructionFailure) -> Self {
+        Self {
+            cause,
+            partial: None,
+        }
+    }
 }
 impl InternalArrows {
     pub fn construction(&self) -> &ConfigurationConstruction {
@@ -78,7 +104,16 @@ impl InternalArrows {
     }
     /// 所属未決・保存未決・反証のarrowが一つでもあればfalse。
     pub fn all_preserved(&self) -> bool {
-        self.arrows.iter().all(|a| a.map.is_some())
+        self.complete && self.arrows.iter().all(|a| a.map.is_some())
+    }
+    pub fn is_complete(&self) -> bool {
+        self.complete
+    }
+    /// Noneは候補の列挙自体が未完了。Someは未処理のcanonicalな候補列。
+    pub fn pending(&self) -> Option<&[FactPointer]> {
+        self.selected
+            .as_deref()
+            .map(|rows| &rows[self.arrows.len()..])
     }
     pub fn recheck(
         &self,
@@ -91,7 +126,8 @@ impl InternalArrows {
             &self.construction.root().snapshot,
             &self.construction.root().subject,
             control,
-        )?;
+        )
+        .map_err(|failure| failure.cause)?;
         if self != &expected {
             return Err(ConstructionFailure::Inconsistent(
                 "内部arrow全件の構成が現在入力と違う".into(),
@@ -152,7 +188,9 @@ pub fn internal_arrow(
 ) -> Result<InternalArrowResult, ConstructionFailure> {
     tick(control)?;
     let construction = construct(inputs, reading, root_snapshot, root_id, control)?;
-    internal_arrow_checked(inputs, &construction, arrow_snapshot, arrow_id, control)
+    let result = internal_arrow_checked(inputs, &construction, arrow_snapshot, arrow_id, control)?;
+    tick(control)?;
+    Ok(result)
 }
 fn internal_arrow_checked(
     inputs: &CheckedInputs,
@@ -247,7 +285,6 @@ fn internal_arrow_checked(
         (&from, &to, &result.source, &result.target)
     else {
         result.missing = canonical_facts(missing, control)?;
-        tick(control)?;
         return Ok(result);
     };
     let moved = BTreeMap::from([(from.clone(), to.clone())]);
@@ -357,7 +394,6 @@ fn internal_arrow_checked(
         }
         result.candidate = Some(candidate);
     }
-    tick(control)?;
     Ok(result)
 }
 /// rootの全owned arrowをcanonical順で検査する。owner欠測の候補も結果表に残す。
@@ -367,59 +403,76 @@ pub fn internal_arrows(
     root_snapshot: &str,
     root_id: &str,
     control: &mut Control,
-) -> Result<InternalArrows, ConstructionFailure> {
+) -> Result<InternalArrows, InternalArrowsFailure> {
     tick(control)?;
     let construction = construct(inputs, reading, root_snapshot, root_id, control)?;
-    let root = subject(inputs, root_snapshot, root_id, control)?;
-    let namespaces = namespaces(inputs, reading, control)?;
-    let mut arrows = Vec::new();
-    for snapshot in &inputs.archmap().snapshots {
-        tick(control)?;
-        for holder in &snapshot.subjects {
+    let mut result = InternalArrows {
+        construction,
+        arrows: vec![],
+        selected: None,
+        complete: false,
+    };
+    let computed = (|| -> Result<(), ConstructionFailure> {
+        control.checkpoint(Checkpoint::InternalArrowRoster)?;
+        let root = subject(inputs, root_snapshot, root_id, control)?;
+        let namespaces = namespaces(inputs, reading, control)?;
+        let mut arrows = Vec::new();
+        for snapshot in &inputs.archmap().snapshots {
             tick(control)?;
-            if !visible(inputs, &holder.ty, &namespaces) {
-                continue;
-            }
-            let Some(PrimitiveSignature::Arrow { owner, .. }) = inputs
-                .definitions()
-                .declarations
-                .get(&holder.ty)
-                .map(|d| &d.signature)
-            else {
-                continue;
-            };
-            if owner != &root.ty {
-                continue;
-            }
-            let f = field(holder, "owner", control)?.ok_or_else(|| {
-                ConstructionFailure::Inconsistent("内部arrowのowner slotがない".into())
-            })?;
-            let selected = match &f.slot {
-                Slot::Missing => true,
-                Slot::Known { value, .. } => key(value)? == (root_snapshot.into(), root_id.into()),
-            };
-            if selected {
-                arrows.push(exists(holder));
+            for holder in &snapshot.subjects {
+                tick(control)?;
+                if !visible(inputs, &holder.ty, &namespaces) {
+                    continue;
+                }
+                let Some(PrimitiveSignature::Arrow { owner, .. }) = inputs
+                    .definitions()
+                    .declarations
+                    .get(&holder.ty)
+                    .map(|d| &d.signature)
+                else {
+                    continue;
+                };
+                if owner != &root.ty {
+                    continue;
+                }
+                let f = field(holder, "owner", control)?.ok_or_else(|| {
+                    ConstructionFailure::Inconsistent("内部arrowのowner slotがない".into())
+                })?;
+                let selected = match &f.slot {
+                    Slot::Missing => true,
+                    Slot::Known { value, .. } => {
+                        key(value)? == (root_snapshot.into(), root_id.into())
+                    }
+                };
+                if selected {
+                    arrows.push(exists(holder));
+                }
             }
         }
-    }
-    let arrows = canonical_facts(arrows.into_iter().collect(), control)?;
-    let mut results = Vec::new();
-    for arrow in arrows {
+        result.selected = Some(canonical_facts(arrows.into_iter().collect(), control)?);
+        while let Some(arrow) = result.pending().and_then(|rows| rows.first()).cloned() {
+            tick(control)?;
+            let row = internal_arrow_checked(
+                inputs,
+                &result.construction,
+                &arrow.snapshot,
+                &arrow.subject,
+                control,
+            )?;
+            result.arrows.push(row);
+            control.checkpoint(Checkpoint::InternalArrowRow)?;
+        }
+        result.complete = true;
         tick(control)?;
-        results.push(internal_arrow_checked(
-            inputs,
-            &construction,
-            &arrow.snapshot,
-            &arrow.subject,
-            control,
-        )?);
+        Ok(())
+    })();
+    match computed {
+        Ok(()) => Ok(result),
+        Err(cause) => Err(InternalArrowsFailure {
+            cause,
+            partial: Some(Box::new(result)),
+        }),
     }
-    tick(control)?;
-    Ok(InternalArrows {
-        construction,
-        arrows: results,
-    })
 }
 
 #[cfg(test)]
@@ -451,6 +504,8 @@ mod tests {
             internal_arrows(&inputs, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
         for kind in [
             "drop",
+            "selected",
+            "complete",
             "arrow",
             "root",
             "reading",
@@ -465,6 +520,8 @@ mod tests {
                 "drop" => {
                     forged.arrows.pop();
                 }
+                "selected" => forged.selected = None,
+                "complete" => forged.complete = false,
                 "arrow" => forged.arrows[0].arrow.subject = "f".into(),
                 "root" => forged.arrows[0].root.subject = "B".into(),
                 "reading" => forged.arrows[0].reading = "OtherRead".into(),

@@ -775,6 +775,7 @@ fn stopped_law_transport_retains_completed_dags_truth_and_only_completed_decisio
                     operation,
                     partial: Some(p),
                     evaluation,
+                    transport: None,
                 } = object_law_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err()
                 else {
                     panic!()
@@ -906,4 +907,85 @@ fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
             .any(|(name, f)| name == "y" && f.subject == "u")
     );
     r.operation().recheck(&i, &mut quiet()).unwrap();
+}
+
+fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let c = Control::new(
+        Limits {
+            time_ms: Some(1),
+            memory_mib: Some(1),
+        },
+        move |p| {
+            if p == point {
+                seen.set(seen.get() + 1);
+            }
+            let stop = seen.get() >= at;
+            Usage {
+                elapsed_ms: u128::from(stop && mode == 0),
+                memory_mib: u128::from(stop && mode == 1),
+                signal: if stop {
+                    match mode {
+                        2 => Some(Signal::Int),
+                        3 => Some(Signal::Term),
+                        _ => None,
+                    }
+                } else {
+                    None
+                },
+            }
+        },
+    );
+    (c, count)
+}
+
+#[test]
+fn stopped_structure_transport_reaches_the_law_caller() {
+    let i = inputs(L, A);
+    let d = declarations(&i);
+    let (o, n) = indices(&i, "p", "bounded", "p");
+    for point in [
+        Checkpoint::InternalArrowRoster,
+        Checkpoint::ConfigurationTransportObject,
+        Checkpoint::ObjectInstances,
+    ] {
+        for mode in 0..4 {
+            let (mut c, probes) = stop_at(point, 1, mode);
+            let Error::Stopped {
+                reason,
+                operation,
+                partial,
+                evaluation,
+                transport: Some(p),
+            } = object_law_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err()
+            else {
+                panic!("構造側の部分結果が必要")
+            };
+            assert_eq!(reason, c.stop_reason().unwrap());
+            assert_eq!(operation.as_ref(), p.operation());
+            operation.recheck(&i, &mut quiet()).unwrap();
+            assert!(partial.is_none());
+            assert!(evaluation.is_none());
+            assert_eq!(
+                p.outcome(),
+                (point == Checkpoint::ObjectInstances).then_some(true)
+            );
+            assert!(p.source().is_some());
+            if point == Checkpoint::InternalArrowRoster {
+                assert_eq!(p.source().unwrap().pending(), None);
+                assert!(p.source().unwrap().arrows().is_empty());
+                assert!(p.target().is_none());
+            } else if point == Checkpoint::ObjectInstances {
+                assert!(p.source().unwrap().is_complete());
+                assert!(p.target().unwrap().is_complete());
+                assert_eq!(p.objects().len(), 3);
+            } else {
+                assert_eq!(p.objects().len(), 1);
+                assert!(p.target().is_some());
+            }
+            assert!(object_law_transport(Arc::clone(&i), &d, o, n, &mut c).is_err());
+            assert_eq!(probes.get(), 1);
+        }
+    }
 }

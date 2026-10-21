@@ -141,7 +141,10 @@ Listの順序・重複と参照を含む値の構造を検査し、量leafの一
 
 `construction::maps::internal_arrows(&checked, "Reservations", "v", "A", &mut control)`
 は選択rootの全owned arrowを検査する。各 `arrows()` 行に候補・保存済みmap・反例・不足slotを
-保持し、ownerが未観測のarrowも候補行として残す。`all_preserved()` は全行の保存確認を表す。
+保持し、ownerが未観測のarrowも候補行として残す。`all_preserved()` は全件完了かつ全行の保存確認を表す。
+停止等の失敗は `InternalArrowsFailure::cause()/partial()` で原因と構成済み表を返す。
+表の `pending()` は列挙中なら `None`、列挙後なら未処理arrowの列を返し、
+`is_complete()` で全件の処理完了を確認する。完成した反例・不足行も `arrows()` に保持する。
 一つのarrowは `internal_arrow(&checked, "Reservations", "v", "A", "v", "e", &mut control)`
 で検査できる。作用はfromの部分Configurationをtoへ移し、そのF外では恒等となる。
 `candidate.subject()` の `Some` で元arrow/correspondence、`source_object()/target_object()` で
@@ -170,6 +173,10 @@ correspondence由来のときだけ `Some` を返す。各結果の `recheck()` 
 実像が終域の対象・生成元の族に属さない場合は、構成条件の不成立として `condition_failure()` に元位置と像を保持する。
 対象行の `target()/target_configuration()` は該当対象を構成できたときに値を返す。
 追加検査が反証・未決でも `operation()` にconfiguration操作を保持する。
+`ConfigurationTransportFailure::cause()/partial()` は原因と、検査済みOperation以降の部分結果を返す。
+部分結果の `source()/target()` は構成できた表、`objects()/generators()` は完成した行を持ち、
+`outcome()` は全比較の完了後だけ `Some` となる。Law/view運搬の停止結果も
+`transport` にこの構造側の部分結果を保持する。
 Law・方程式・不変量等の運搬はそれぞれの追加読取りを要し、再照合は `recheck()` で行う。
 
 `construction::maps::declaration_correspondence(&checked, verified_map, &mut control)`
