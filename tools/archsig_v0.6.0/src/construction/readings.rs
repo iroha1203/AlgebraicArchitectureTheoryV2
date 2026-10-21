@@ -9,6 +9,11 @@ pub use crate::observed::object_evaluation_table::{
     ObjectEvaluationPosition, ObjectEvaluationRow, ObjectEvaluationTable,
     ObjectEvaluationTableFailure, evaluate_object_table,
 };
+pub use crate::observed::object_view_compatibility::{
+    ObjectViewCompatibility, ObjectViewCompatibilityFailure, ViewCompatibilityCondition,
+    ViewCompatibilityOutcome, ViewCompatibilityPoint, ViewPatternComparison, ViewReadingEvaluation,
+    ViewReadingValue, object_view_compatibility,
+};
 use maps::ObjectIdentity;
 
 /// 同じ原始owner slotには同じ値を要求する。条件の成立はまだ観測していない。

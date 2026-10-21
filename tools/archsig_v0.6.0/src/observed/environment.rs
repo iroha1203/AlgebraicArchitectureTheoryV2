@@ -10054,3 +10054,12 @@ pub(crate) fn binary(
     }
     numeric::binary(op, left, right, control)
 }
+
+/// 元producerの保存値を、数学的な外延等値とは分けて照合する。
+pub(super) fn same_scalar_identity(
+    a: &Scalar,
+    b: &Scalar,
+    control: &Control,
+) -> Result<bool, ValidationFailure> {
+    validation_identity::scalar(a, b, control)
+}

@@ -659,6 +659,60 @@ fn equal_with_candidates(
 ) -> Result<bool, ValidationFailure> {
     equal_with_retained(left, right, control, candidates, None)
 }
+fn publish_equal(retain: &mut Option<&mut dyn FnMut(bool)>, answer: bool) {
+    if let Some(retain) = retain.take() {
+        retain(answer);
+    }
+}
+fn equal_sequence(
+    a: &[Scalar],
+    b: &[Scalar],
+    control: &Control,
+    candidates: bool,
+    retain: &mut Option<&mut dyn FnMut(bool)>,
+    trailing_tick: bool,
+) -> Result<bool, ValidationFailure> {
+    let mut same = true;
+    for (index, (left, right)) in a.iter().zip(b).enumerate() {
+        tick(control)?;
+        let retaining = retain.is_some();
+        let mut completed = |answer: bool| {
+            if !answer || index + 1 == a.len() {
+                publish_equal(retain, same && answer);
+            }
+        };
+        same &= if retaining {
+            equal_with_retained(left, right, control, candidates, Some(&mut completed))?
+        } else {
+            equal_with_candidates(left, right, control, candidates)?
+        };
+        if trailing_tick {
+            tick(control)?;
+        }
+    }
+    Ok(same)
+}
+fn contains_retained(
+    items: &[Scalar],
+    item: &Scalar,
+    control: &Control,
+    retain: &mut Option<&mut dyn FnMut(bool)>,
+) -> Result<bool, ValidationFailure> {
+    for (index, candidate) in items.iter().enumerate() {
+        tick(control)?;
+        let mut completed = |answer: bool| {
+            if answer || index + 1 == items.len() {
+                publish_equal(retain, answer);
+            }
+        };
+        if equal_with_retained(candidate, item, control, false, Some(&mut completed))? {
+            return Ok(true);
+        }
+    }
+    publish_equal(retain, false);
+    Ok(false)
+}
+
 fn equal_with_retained(
     left: &Scalar,
     right: &Scalar,
@@ -687,10 +741,39 @@ fn equal_with_retained(
                     observe_iteration("map_equal", _index);
                     tick(control)?;
                     let mut found = false;
-                    for (other_key, other_value) in b {
+                    for (j, (other_key, other_value)) in b.iter().enumerate() {
                         tick(control)?;
-                        if equal_with_candidates(key, other_key, control, candidates)? {
-                            found = equal_with_candidates(value, other_value, control, candidates)?;
+                        let key_equal = if retain.is_some() && !candidates && j + 1 == b.len() {
+                            equal_with_retained(
+                                key,
+                                other_key,
+                                control,
+                                candidates,
+                                Some(&mut |answer: bool| {
+                                    if !answer {
+                                        publish_equal(&mut retain, false);
+                                    }
+                                }),
+                            )?
+                        } else {
+                            equal_with_candidates(key, other_key, control, candidates)?
+                        };
+                        if key_equal {
+                            found = if retain.is_some() && !candidates {
+                                equal_with_retained(
+                                    value,
+                                    other_value,
+                                    control,
+                                    candidates,
+                                    Some(&mut |answer: bool| {
+                                        if !answer || _index + 1 == a.len() {
+                                            publish_equal(&mut retain, same && answer);
+                                        }
+                                    }),
+                                )?
+                            } else {
+                                equal_with_candidates(value, other_value, control, candidates)?
+                            };
                             if found || !candidates {
                                 break;
                             }
@@ -723,13 +806,7 @@ fn equal_with_retained(
                             Err("同constructorのarityが違う".into())
                         };
                     }
-                    let mut same = true;
-                    for (left, right) in c.iter().zip(f) {
-                        tick(control)?;
-                        same &= equal_with_candidates(left, right, control, candidates)?;
-                        tick(control)?;
-                    }
-                    same
+                    equal_sequence(c, f, control, candidates, &mut retain, true)?
                 }
             }
             (Scalar::Unit, Scalar::Unit) => true,
@@ -739,12 +816,7 @@ fn equal_with_retained(
                 if a.len() != b.len() {
                     false
                 } else {
-                    let mut same = true;
-                    for (a, b) in a.iter().zip(b) {
-                        tick(control)?;
-                        same &= equal_with_candidates(a, b, control, candidates)?;
-                    }
-                    same
+                    equal_sequence(a, b, control, candidates, &mut retain, false)?
                 }
             }
             (Scalar::Set { items: a, .. }, Scalar::Set { items: b, .. }) => {
@@ -752,7 +824,7 @@ fn equal_with_retained(
                     false
                 } else {
                     let mut same = true;
-                    for item in a {
+                    for (index, item) in a.iter().enumerate() {
                         tick(control)?;
                         if candidates {
                             let mut found = false;
@@ -764,6 +836,17 @@ fn equal_with_retained(
                                 }
                             }
                             same &= found;
+                        } else if retain.is_some() {
+                            same &= contains_retained(
+                                b,
+                                item,
+                                control,
+                                &mut Some(&mut |answer: bool| {
+                                    if !answer || index + 1 == a.len() {
+                                        publish_equal(&mut retain, same && answer);
+                                    }
+                                }),
+                            )?;
                         } else {
                             same &= contains(b, item, control)?;
                         }
@@ -773,7 +856,9 @@ fn equal_with_retained(
             }
             (Scalar::Option { value: a, .. }, Scalar::Option { value: b, .. }) => match (a, b) {
                 (None, None) => true,
-                (Some(a), Some(b)) => equal_with_candidates(a, b, control, candidates)?,
+                (Some(a), Some(b)) => {
+                    equal_with_retained(a, b, control, candidates, retain.take())?
+                }
                 _ => false,
             },
             (Scalar::Bool(a), Scalar::Bool(b)) => a == b,
@@ -790,13 +875,25 @@ fn equal_with_retained(
                 },
             ) => a == d && b == e && c == f,
             _ => {
-                numeric::binary(crate::law::ast::BinOp::Eq, left, right, control)?
-                    == Scalar::Bool(true)
+                let answer = if retain.is_some() {
+                    numeric::binary_retained(
+                        crate::law::ast::BinOp::Eq,
+                        left,
+                        right,
+                        control,
+                        |value| {
+                            if let Scalar::Bool(answer) = value {
+                                publish_equal(&mut retain, *answer);
+                            }
+                        },
+                    )?
+                } else {
+                    numeric::binary(crate::law::ast::BinOp::Eq, left, right, control)?
+                };
+                answer == Scalar::Bool(true)
             }
         };
-        if let Some(retain) = &mut retain {
-            retain(equal);
-        }
+        publish_equal(&mut retain, equal);
         tick(control)?;
         Ok(equal)
     })

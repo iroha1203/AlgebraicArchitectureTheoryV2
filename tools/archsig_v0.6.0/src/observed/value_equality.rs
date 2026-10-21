@@ -18,19 +18,39 @@ pub(super) fn supported(
 ) -> Result<bool, ValidationFailure> {
     data::supported(ty, law, c)
 }
+fn publish(retain: &mut Option<&mut dyn FnMut(Option<bool>)>, answer: Option<bool>) {
+    if let Some(retain) = retain.take() {
+        retain(answer);
+    }
+}
 fn sequence(
     a: &[Scalar],
     b: &[Scalar],
     law: &CheckedLaw,
     c: &Control,
+    retain: &mut Option<&mut dyn FnMut(Option<bool>)>,
 ) -> Result<Option<bool>, ValidationFailure> {
     if a.len() != b.len() {
+        publish(retain, Some(false));
         return Ok(Some(false));
     }
     let mut known = true;
-    for (a, b) in a.iter().zip(b) {
+    for (index, (left, right)) in a.iter().zip(b).enumerate() {
         tick(c)?;
-        match equal(a, b, law, c)? {
+        let retaining = retain.is_some();
+        let mut completed = |answer| {
+            if answer == Some(false) {
+                publish(retain, Some(false));
+            } else if index + 1 == a.len() {
+                publish(retain, (known && answer == Some(true)).then_some(true));
+            }
+        };
+        let answer = if retaining {
+            equal_retained(left, right, law, c, &mut completed)?
+        } else {
+            equal(left, right, law, c)?
+        };
+        match answer {
             Some(false) => return Ok(Some(false)),
             None => known = false,
             _ => {}
@@ -45,13 +65,36 @@ pub(super) fn equal(
     law: &CheckedLaw,
     c: &Control,
 ) -> Result<Option<bool>, ValidationFailure> {
+    equal_with_retained(a, b, law, c, None)
+}
+/// 完成した数学的比較を、末尾の停止確認より先に保持する。
+pub(super) fn equal_retained(
+    a: &Scalar,
+    b: &Scalar,
+    law: &CheckedLaw,
+    c: &Control,
+    mut retain: impl FnMut(Option<bool>),
+) -> Result<Option<bool>, ValidationFailure> {
+    equal_with_retained(a, b, law, c, Some(&mut retain))
+}
+fn equal_with_retained(
+    a: &Scalar,
+    b: &Scalar,
+    law: &CheckedLaw,
+    c: &Control,
+    mut retain: Option<&mut dyn FnMut(Option<bool>)>,
+) -> Result<Option<bool>, ValidationFailure> {
     stacker::maybe_grow(128 * 1024, 1024 * 1024, || {
         tick(c)?;
         if a.ty() != b.ty() {
             return Err("数学的等値の左右型が違う".into());
         }
         if !term::contains(&a.ty(), law, c)? {
-            return Ok(Some(data::equal(a, b, c)?));
+            return if let Some(retain) = retain.take() {
+                data::equal_retained(a, b, c, |answer| retain(Some(answer))).map(Some)
+            } else {
+                data::equal(a, b, c).map(Some)
+            };
         }
         let answer = match (a, b) {
             (Scalar::Term(a), Scalar::Term(b)) => {
@@ -62,7 +105,9 @@ pub(super) fn equal(
                         // 非有限域はZ/Q係数から比較し、算法外の同じ元programは保持する。
                         tick(c)?;
                         let compared = term::affine::equal(a, b, law, c)?;
-                        return Ok(compared.or_else(|| (a == b).then_some(true)));
+                        let answer = compared.or_else(|| (a == b).then_some(true));
+                        publish(&mut retain, answer);
+                        return Ok(answer);
                     }
                 }
                 let mut rows = vec![Vec::new()];
@@ -106,11 +151,29 @@ pub(super) fn equal(
                     };
                     match left
                         .zip(right)
-                        .map(|(a, b)| equal(&a, &b, law, c))
+                        .map(|(a, b)| {
+                            if retain.is_some() {
+                                equal_retained(&a, &b, law, c, |answer| {
+                                    if answer == Some(false) {
+                                        publish(&mut retain, Some(false));
+                                    } else if _index + 1 == rows.len() {
+                                        publish(
+                                            &mut retain,
+                                            (known && answer == Some(true)).then_some(true),
+                                        );
+                                    }
+                                })
+                            } else {
+                                equal(&a, &b, law, c)
+                            }
+                        })
                         .transpose()?
                         .flatten()
                     {
-                        Some(false) => return Ok(Some(false)),
+                        Some(false) => {
+                            publish(&mut retain, Some(false));
+                            return Ok(Some(false));
+                        }
                         None => known = false,
                         _ => {}
                     }
@@ -120,11 +183,11 @@ pub(super) fn equal(
             }
             (Scalar::Tuple(a), Scalar::Tuple(b))
             | (Scalar::List { items: a, .. }, Scalar::List { items: b, .. }) => {
-                sequence(a, b, law, c)?
+                sequence(a, b, law, c, &mut retain)?
             }
             (Scalar::Option { value: a, .. }, Scalar::Option { value: b, .. }) => match (a, b) {
                 (None, None) => Some(true),
-                (Some(a), Some(b)) => equal(a, b, law, c)?,
+                (Some(a), Some(b)) => equal_with_retained(a, b, law, c, retain.take())?,
                 _ => Some(false),
             },
             (
@@ -142,11 +205,12 @@ pub(super) fn equal(
                 if a != b {
                     Some(false)
                 } else {
-                    sequence(x, y, law, c)?
+                    sequence(x, y, law, c, &mut retain)?
                 }
             }
             _ => return Err("Termを含む等値の値形が違う".into()),
         };
+        publish(&mut retain, answer);
         tick(c)?;
         Ok(answer)
     })

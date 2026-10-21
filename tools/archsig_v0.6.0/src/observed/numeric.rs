@@ -24,9 +24,19 @@ fn controlled<T>(
     control: &Control,
     work: impl FnOnce() -> Result<T, ValidationFailure>,
 ) -> Result<T, ValidationFailure> {
+    controlled_retained(control, None, work)
+}
+fn controlled_retained<T>(
+    control: &Control,
+    mut retain: Option<&mut dyn FnMut(&T)>,
+    work: impl FnOnce() -> Result<T, ValidationFailure>,
+) -> Result<T, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         let value = work()?;
+        if let Some(retain) = &mut retain {
+            retain(&value);
+        }
         tick(control)?;
         Ok(value)
     })
@@ -232,13 +242,37 @@ pub(crate) fn binary(
     })
 }
 
+/// 数値比較の完成を末尾の停止確認より先に通知する。
+pub(super) fn binary_retained(
+    op: BinOp,
+    left: &Scalar,
+    right: &Scalar,
+    control: &Control,
+    mut retain: impl FnMut(&Scalar),
+) -> Result<Scalar, ValidationFailure> {
+    controlled(control, || {
+        numeric_check(left, control)?;
+        numeric_check(right, control)?;
+        binary_inner_retained(op, left, right, control, Some(&mut retain))
+    })
+}
+
 fn binary_inner(
     op: BinOp,
     left: &Scalar,
     right: &Scalar,
     control: &Control,
 ) -> Result<Scalar, ValidationFailure> {
-    controlled(control, || match (left, right) {
+    binary_inner_retained(op, left, right, control, None)
+}
+fn binary_inner_retained(
+    op: BinOp,
+    left: &Scalar,
+    right: &Scalar,
+    control: &Control,
+    retain: Option<&mut dyn FnMut(&Scalar)>,
+) -> Result<Scalar, ValidationFailure> {
+    controlled_retained(control, retain, || match (left, right) {
         (Scalar::Z(a), Scalar::Z(b)) => match op {
             BinOp::Add => Ok(Scalar::Z(a + b)),
             BinOp::Sub => Ok(Scalar::Z(a - b)),
