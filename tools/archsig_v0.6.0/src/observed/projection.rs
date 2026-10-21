@@ -5,11 +5,22 @@ use crate::{canonical::Json, definition::PrimitiveSignature, law::CheckedLaw, ty
 
 /// Law の型と、計算結果だけに存在する record 型を区別する。
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MapProjection {
+    pub declaration: String,
+    pub source: String,
+    pub target: String,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ProjectionType {
     Law(Type),
     Evaluation(Type),
     Proposition,
     Architecture,
+    ArchitectureRoot(String),
+    MapCandidate(MapProjection),
+    ConfigurationMap(MapProjection),
+    Operation(MapProjection),
+    AtomMap,
     /// 実値の constructor や異種生成元によって決まる候補型。
     Dynamic(Vec<ProjectionType>),
 }
@@ -149,6 +160,42 @@ fn project_inner(
         ))
     };
     match (ty, &path[0]) {
+        (ProjectionType::ArchitectureRoot(root), Field(f)) if f == "root" => {
+            exact(Law(Type::Ref(root.clone())))
+        }
+        (ProjectionType::MapCandidate(shape), Field(f)) => match f.as_str() {
+            "subject" => exact(Law(Type::Ref(shape.declaration.clone()))),
+            "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
+            "target" => exact(ProjectionType::ArchitectureRoot(shape.target.clone())),
+            "action" => exact(ProjectionType::AtomMap),
+            _ => Err("MapCandidateの非公開射影".into()),
+        },
+        (ProjectionType::ConfigurationMap(shape), Field(f)) if f == "candidate" => {
+            exact(ProjectionType::MapCandidate(shape.clone()))
+        }
+        (ProjectionType::Operation(shape), Field(f)) => match f.as_str() {
+            "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
+            "target" => exact(ProjectionType::ArchitectureRoot(shape.target.clone())),
+            "candidate" => exact(ProjectionType::MapCandidate(shape.clone())),
+            "configuration_map" => exact(ProjectionType::ConfigurationMap(shape.clone())),
+            "action" => exact(ProjectionType::AtomMap),
+            "word" => {
+                let Some(Index(index)) = path.get(1) else {
+                    return Err("wordはindexまで指定する".into());
+                };
+                if *index != 0 {
+                    return Err("原始mapのwordのindexが範囲外".into());
+                }
+                Ok((
+                    ProjectionPlan {
+                        ty: Law(Type::Ref(shape.declaration.clone())),
+                        conditional: false,
+                    },
+                    2,
+                ))
+            }
+            _ => Err("Operationの非公開射影".into()),
+        },
         (Evaluation(t), Field(f)) if f == "value" => conditional(Law(t.clone())),
         (Evaluation(_), Field(f)) if f == "environment" => conditional(Architecture),
         (Architecture, Field(f)) if f == "root" => {

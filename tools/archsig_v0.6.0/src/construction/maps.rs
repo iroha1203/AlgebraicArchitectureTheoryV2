@@ -34,7 +34,8 @@ pub use internal::{
     InternalArrowResult, InternalArrows, InternalArrowsFailure, internal_arrow, internal_arrows,
 };
 pub use operations::{
-    ActionDifference, ConfigurationOperation, IdentityConstruction, OperationStep, identity,
+    ActionDifference, ConfigurationOperation, IdentityConstruction, OperationFailure,
+    OperationStep, identity,
 };
 pub use references::{
     ReferenceBijection, ReferenceConditionFailure, ReferenceTypeTransport, reference_type_transport,
@@ -263,6 +264,30 @@ pub enum Counterexample {
         source: (FactPointer, FactPointer),
         image: (FactPointer, FactPointer),
     },
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CorrespondenceFailure {
+    cause: ConstructionFailure,
+    partial: Option<Box<CorrespondenceResult>>,
+}
+impl CorrespondenceFailure {
+    pub fn cause(&self) -> &ConstructionFailure {
+        &self.cause
+    }
+    pub fn partial(&self) -> Option<&CorrespondenceResult> {
+        self.partial.as_deref()
+    }
+    pub(crate) fn into_parts(self) -> (ConstructionFailure, Option<Box<CorrespondenceResult>>) {
+        (self.cause, self.partial)
+    }
+}
+impl From<ConstructionFailure> for CorrespondenceFailure {
+    fn from(cause: ConstructionFailure) -> Self {
+        Self {
+            cause,
+            partial: None,
+        }
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CorrespondenceResult {
@@ -952,6 +977,18 @@ pub fn correspondence(
     to_reading: Option<&str>,
     control: &mut Control,
 ) -> Result<CorrespondenceResult, ConstructionFailure> {
+    correspondence_retained(inputs, snapshot, id, reading, to_reading, control)
+        .map_err(|failure| failure.cause)
+}
+/// 停止時にも、この呼出しで検査済みの候補・保存結果・反例を保持する。
+pub fn correspondence_retained(
+    inputs: &CheckedInputs,
+    snapshot: &str,
+    id: &str,
+    reading: &str,
+    to_reading: Option<&str>,
+    control: &mut Control,
+) -> Result<CorrespondenceResult, CorrespondenceFailure> {
     check(control)?;
     let holder = subject(inputs, snapshot, id, control)?;
     let declaration = inputs
@@ -970,7 +1007,8 @@ pub fn correspondence(
     else {
         return Err(ConstructionFailure::InvalidSelection(
             "mapは原始correspondence instanceを要求する".into(),
-        ));
+        )
+        .into());
     };
     let to_reading = to_reading.unwrap_or(reading);
     for (reading, ty) in [(reading, from), (to_reading, to)] {
@@ -978,12 +1016,10 @@ pub fn correspondence(
         if !visible(inputs, ty, &namespaces) {
             return Err(ConstructionFailure::InvalidSelection(format!(
                 "根型 `{ty}` はreading `{reading}` の定義にない"
-            )));
+            ))
+            .into());
         }
     }
-    let mut missing = BTreeSet::new();
-    let from = endpoint(holder, "from", &mut missing, control)?;
-    let to = endpoint(holder, "to", &mut missing, control)?;
     let mut result = CorrespondenceResult {
         correspondence: exists(holder),
         reading: reading.into(),
@@ -995,267 +1031,291 @@ pub fn correspondence(
         missing: vec![],
         counterexamples: vec![],
     };
-    if let Some((s, id)) = &from {
-        result.source = Some(construct(inputs, reading, s, id, control)?);
-    }
-    if let Some((s, id)) = &to {
-        result.target = Some(construct(inputs, to_reading, s, id, control)?);
-    }
-    let mut moved = BTreeMap::new();
-    if let (Some(from), Some(to)) = (&from, &to) {
-        moved.insert(from.clone(), to.clone());
-    }
-    for (name, _, _) in maps {
-        check(control)?;
-        let f = field(holder, name, control)?
-            .ok_or_else(|| ConstructionFailure::Inconsistent("対応表slotがない".into()))?;
-        match &f.slot {
-            Slot::Missing => {
-                missing.insert(slot(holder, &f.name));
-            }
-            Slot::Known {
-                value: Value::Map(pairs),
-                ..
-            } => {
-                for (source, target) in pairs {
-                    check(control)?;
-                    moved.insert(key(source)?, key(target)?);
-                }
-            }
-            _ => {
-                return Err(ConstructionFailure::Inconsistent(
-                    "原始対応表の型がMapでない".into(),
-                ));
-            }
+    let mut missing = BTreeSet::new();
+    let computed = (|| -> Result<(), ConstructionFailure> {
+        let from = endpoint(holder, "from", &mut missing, control)?;
+        let to = endpoint(holder, "to", &mut missing, control)?;
+
+        if let Some((s, id)) = &from {
+            result.source = Some(construct(inputs, reading, s, id, control)?);
         }
-    }
-    for construction in [&result.source, &result.target].into_iter().flatten() {
-        for f in construction.base().blocking_slots() {
-            check(control)?;
-            missing.insert(f.clone());
+        if let Some((s, id)) = &to {
+            result.target = Some(construct(inputs, to_reading, s, id, control)?);
         }
-    }
-    let (Some(source), Some(target)) = (&result.source, &result.target) else {
-        result.missing = canonical_facts(missing, control)?;
-        check(control)?;
-        return Ok(result);
-    };
-    if source.universe() != target.universe() {
-        return Err(ConstructionFailure::Inconsistent(
-            "始終域の共通Uが違う".into(),
-        ));
-    }
-    let source_config = source.base().known();
-    let target_config = target.base().known();
-    let target_complete = target.base().configuration().is_some();
-    // 表の欠測や未観測ownerを「対象外だから固定」と読み替えない。
-    let mut unknown_subjects = BTreeSet::new();
-    for snapshot in &inputs.archmap().snapshots {
-        check(control)?;
-        for s in &snapshot.subjects {
+        let mut moved = BTreeMap::new();
+        if let (Some(from), Some(to)) = (&from, &to) {
+            moved.insert(from.clone(), to.clone());
+        }
+        for (name, _, _) in maps {
             check(control)?;
-            let k = (s.snapshot.clone(), s.id.clone());
-            if moved.contains_key(&k) {
-                continue;
-            }
-            let mut in_domain = false;
-            for (_, ty, _) in maps {
-                check(control)?;
-                in_domain |= ty == &s.ty;
-            }
-            if !in_domain {
-                continue;
-            }
-            let owner = field(s, "owner", control)?
-                .ok_or_else(|| ConstructionFailure::Inconsistent("対応域のownerがない".into()))?;
-            match &owner.slot {
+            let f = field(holder, name, control)?
+                .ok_or_else(|| ConstructionFailure::Inconsistent("対応表slotがない".into()))?;
+            match &f.slot {
                 Slot::Missing => {
-                    unknown_subjects.insert(k);
+                    missing.insert(slot(holder, &f.name));
                 }
-                Slot::Known { value, .. } if Some(key(value)?) == from => {
-                    unknown_subjects.insert(k);
+                Slot::Known {
+                    value: Value::Map(pairs),
+                    ..
+                } => {
+                    for (source, target) in pairs {
+                        check(control)?;
+                        moved.insert(key(source)?, key(target)?);
+                    }
                 }
-                _ => {}
+                _ => {
+                    return Err(ConstructionFailure::Inconsistent(
+                        "原始対応表の型がMapでない".into(),
+                    ));
+                }
             }
         }
-    }
-    let family: BTreeSet<_> = source_config.family().iter().cloned().collect();
-    let mut field_map = BTreeMap::new();
-    for (s, t) in implicit {
-        check(control)?;
-        field_map.insert(s.as_str(), t.as_str());
-    }
-    for pair in alignments {
-        check(control)?;
-        field_map.insert(pair.source.as_str(), pair.target.as_str());
-    }
-    let mut unresolved_fields = Vec::new();
-    let source_namespaces = namespaces(inputs, reading, control)?;
-    for k in &unknown_subjects {
-        check(control)?;
-        let source = subject(inputs, &k.0, &k.1, control)?;
-        if !visible(inputs, &source.ty, &source_namespaces) {
-            continue;
+        for construction in [&result.source, &result.target].into_iter().flatten() {
+            for f in construction.base().blocking_slots() {
+                check(control)?;
+                missing.insert(f.clone());
+            }
         }
-        for f in &source.fields {
+        let (Some(source), Some(target)) = (&result.source, &result.target) else {
+            result.missing = canonical_facts(missing.clone(), control)?;
             check(control)?;
-            if let Slot::Known { atom, value, .. } = &f.slot {
-                if !references(value, control)?.is_empty() {
-                    unresolved_fields.push(FactPointer {
-                        atom: Some(atom.clone()),
-                        ..slot(source, &f.name)
-                    });
+            return Ok(());
+        };
+        if source.universe() != target.universe() {
+            return Err(ConstructionFailure::Inconsistent(
+                "始終域の共通Uが違う".into(),
+            ));
+        }
+        let source_config = source.base().known();
+        let target_config = target.base().known();
+        let target_complete = target.base().configuration().is_some();
+        // 表の欠測や未観測ownerを「対象外だから固定」と読み替えない。
+        let mut unknown_subjects = BTreeSet::new();
+        for snapshot in &inputs.archmap().snapshots {
+            check(control)?;
+            for s in &snapshot.subjects {
+                check(control)?;
+                let k = (s.snapshot.clone(), s.id.clone());
+                if moved.contains_key(&k) {
+                    continue;
+                }
+                let mut in_domain = false;
+                for (_, ty, _) in maps {
+                    check(control)?;
+                    in_domain |= ty == &s.ty;
+                }
+                if !in_domain {
+                    continue;
+                }
+                let owner = field(s, "owner", control)?.ok_or_else(|| {
+                    ConstructionFailure::Inconsistent("対応域のownerがない".into())
+                })?;
+                match &owner.slot {
+                    Slot::Missing => {
+                        unknown_subjects.insert(k);
+                    }
+                    Slot::Known { value, .. } if Some(key(value)?) == from => {
+                        unknown_subjects.insert(k);
+                    }
+                    _ => {}
                 }
             }
         }
-    }
-    let mut images = Vec::new();
-    let mut action = BTreeMap::new();
-    let mut reference_fields = Vec::new();
-    let mut reference_values = Vec::new();
-    let mut absent = false;
-    for fact in source.universe() {
-        check(control)?;
-        if !family.contains(fact) {
-            images.push(target.root().clone());
-            action.insert(fact.clone(), target.root().clone());
-            continue;
+        let family: BTreeSet<_> = source_config.family().iter().cloned().collect();
+        let mut field_map = BTreeMap::new();
+        for (s, t) in implicit {
+            check(control)?;
+            field_map.insert(s.as_str(), t.as_str());
         }
-        let original = subject(inputs, &fact.snapshot, &fact.subject, control)?;
-        let k = (fact.snapshot.clone(), fact.subject.clone());
-        if unknown_subjects.contains(&k) {
-            absent = true;
-            continue;
+        for pair in alignments {
+            check(control)?;
+            field_map.insert(pair.source.as_str(), pair.target.as_str());
         }
-        let image_key = moved.get(&k).unwrap_or(&k);
-        let image_subject = subject(inputs, &image_key.0, &image_key.1, control)?;
-        if let Some(source_field) = &fact.field {
-            let target_field = field_map
-                .get(source_field.as_str())
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| {
-                    format!(
-                        "{}.{}",
-                        image_subject.ty,
-                        source_field.rsplit('.').next().unwrap_or(source_field)
-                    )
-                });
-            let Some(tf) = field(image_subject, &target_field, control)? else {
-                result.counterexamples.push(Counterexample::Field {
-                    source: fact.clone(),
-                    target_subject: exists(image_subject),
-                    target_field,
-                });
+        let mut unresolved_fields = Vec::new();
+        let source_namespaces = namespaces(inputs, reading, control)?;
+        for k in &unknown_subjects {
+            check(control)?;
+            let source = subject(inputs, &k.0, &k.1, control)?;
+            if !visible(inputs, &source.ty, &source_namespaces) {
+                continue;
+            }
+            for f in &source.fields {
+                check(control)?;
+                if let Slot::Known { atom, value, .. } = &f.slot {
+                    if !references(value, control)?.is_empty() {
+                        unresolved_fields.push(FactPointer {
+                            atom: Some(atom.clone()),
+                            ..slot(source, &f.name)
+                        });
+                    }
+                }
+            }
+        }
+        let mut images = Vec::new();
+        let mut action = BTreeMap::new();
+        let mut reference_fields = Vec::new();
+        let mut reference_values = Vec::new();
+        let mut absent = false;
+        for fact in source.universe() {
+            check(control)?;
+            if !family.contains(fact) {
+                images.push(target.root().clone());
+                action.insert(fact.clone(), target.root().clone());
+                continue;
+            }
+            let original = subject(inputs, &fact.snapshot, &fact.subject, control)?;
+            let k = (fact.snapshot.clone(), fact.subject.clone());
+            if unknown_subjects.contains(&k) {
                 absent = true;
                 continue;
-            };
-            match &tf.slot {
-                Slot::Missing => {
-                    missing.insert(slot(image_subject, &tf.name));
-                    absent = true;
-                }
-                Slot::Known { atom, value, .. } => {
-                    let image = FactPointer {
-                        atom: Some(atom.clone()),
-                        ..slot(image_subject, &tf.name)
-                    };
-                    let sf = field(original, source_field, control)?.ok_or_else(|| {
-                        ConstructionFailure::Inconsistent("始域のfieldがない".into())
-                    })?;
-                    let Slot::Known {
-                        value: source_value,
-                        ..
-                    } = &sf.slot
-                    else {
-                        return Err(ConstructionFailure::Inconsistent(
-                            "始域のAtom値がない".into(),
-                        ));
-                    };
-                    if reference_violation(source_value, value, &moved, &unknown_subjects, control)?
-                    {
-                        result
-                            .counterexamples
-                            .push(Counterexample::ReferenceStructure {
-                                source: fact.clone(),
-                                target: image.clone(),
-                            });
-                    }
-                    let mut unresolved = false;
-                    for (snapshot, id) in references(source_value, control)? {
-                        check(control)?;
-                        unresolved |= unknown_subjects.contains(&(snapshot.into(), id.into()));
-                    }
-                    if unresolved {
-                        reference_fields.push((fact.clone(), image.clone()));
-                        reference_values.push((source_value, value));
-                    }
-                    action.insert(fact.clone(), image.clone());
-                    images.push(image);
-                }
             }
-        } else {
-            let image = exists(image_subject);
-            action.insert(fact.clone(), image.clone());
-            images.push(image);
+            let image_key = moved.get(&k).unwrap_or(&k);
+            let image_subject = subject(inputs, &image_key.0, &image_key.1, control)?;
+            if let Some(source_field) = &fact.field {
+                let target_field = field_map
+                    .get(source_field.as_str())
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| {
+                        format!(
+                            "{}.{}",
+                            image_subject.ty,
+                            source_field.rsplit('.').next().unwrap_or(source_field)
+                        )
+                    });
+                let Some(tf) = field(image_subject, &target_field, control)? else {
+                    result.counterexamples.push(Counterexample::Field {
+                        source: fact.clone(),
+                        target_subject: exists(image_subject),
+                        target_field,
+                    });
+                    absent = true;
+                    continue;
+                };
+                match &tf.slot {
+                    Slot::Missing => {
+                        missing.insert(slot(image_subject, &tf.name));
+                        absent = true;
+                    }
+                    Slot::Known { atom, value, .. } => {
+                        let image = FactPointer {
+                            atom: Some(atom.clone()),
+                            ..slot(image_subject, &tf.name)
+                        };
+                        let sf = field(original, source_field, control)?.ok_or_else(|| {
+                            ConstructionFailure::Inconsistent("始域のfieldがない".into())
+                        })?;
+                        let Slot::Known {
+                            value: source_value,
+                            ..
+                        } = &sf.slot
+                        else {
+                            return Err(ConstructionFailure::Inconsistent(
+                                "始域のAtom値がない".into(),
+                            ));
+                        };
+                        if reference_violation(
+                            source_value,
+                            value,
+                            &moved,
+                            &unknown_subjects,
+                            control,
+                        )? {
+                            result
+                                .counterexamples
+                                .push(Counterexample::ReferenceStructure {
+                                    source: fact.clone(),
+                                    target: image.clone(),
+                                });
+                        }
+                        let mut unresolved = false;
+                        for (snapshot, id) in references(source_value, control)? {
+                            check(control)?;
+                            unresolved |= unknown_subjects.contains(&(snapshot.into(), id.into()));
+                        }
+                        if unresolved {
+                            reference_fields.push((fact.clone(), image.clone()));
+                            reference_values.push((source_value, value));
+                        }
+                        action.insert(fact.clone(), image.clone());
+                        images.push(image);
+                    }
+                }
+            } else {
+                let image = exists(image_subject);
+                action.insert(fact.clone(), image.clone());
+                images.push(image);
+            }
         }
-    }
-    if (!reference_values.is_empty() || !unresolved_fields.is_empty())
-        && !result
-            .counterexamples
-            .iter()
-            .any(|c| matches!(c, Counterexample::ReferenceStructure { .. }))
-        && typed_reference_constraints_violation(
-            inputs,
-            holder,
-            maps,
-            &(
-                target.root().snapshot.clone(),
-                target.root().subject.clone(),
-            ),
-            &moved,
-            &unknown_subjects,
-            &reference_values,
-            &unresolved_fields,
-            &field_map,
+        if (!reference_values.is_empty() || !unresolved_fields.is_empty())
+            && !result
+                .counterexamples
+                .iter()
+                .any(|c| matches!(c, Counterexample::ReferenceStructure { .. }))
+            && typed_reference_constraints_violation(
+                inputs,
+                holder,
+                maps,
+                &(
+                    target.root().snapshot.clone(),
+                    target.root().subject.clone(),
+                ),
+                &moved,
+                &unknown_subjects,
+                &reference_values,
+                &unresolved_fields,
+                &field_map,
+                control,
+            )?
+        {
+            result
+                .counterexamples
+                .push(Counterexample::ReferenceConstraints {
+                    fields: reference_fields,
+                    unresolved_fields,
+                });
+        }
+        result.missing = canonical_facts(missing.clone(), control)?;
+        result.counterexamples.extend(preservation_counterexamples(
+            source_config,
+            target_config,
+            target_complete,
+            &action,
             control,
-        )?
-    {
-        result
-            .counterexamples
-            .push(Counterexample::ReferenceConstraints {
-                fields: reference_fields,
-                unresolved_fields,
-            });
-    }
-    result.missing = canonical_facts(missing, control)?;
-    result.counterexamples.extend(preservation_counterexamples(
-        source_config,
-        target_config,
-        target_complete,
-        &action,
-        control,
-    )?);
-    if !absent && result.missing.is_empty() {
-        let candidate = MapCandidate {
-            origin: MapOrigin::Correspondence(exists(holder)),
-            source_root: source.root().clone(),
-            target_root: target.root().clone(),
-            reading: reading.into(),
-            to_reading: to_reading.into(),
-            source_configuration: source_config.clone(),
-            target_configuration: target_config.clone(),
-            universe: source.universe().to_vec(),
-            images,
-        };
-        if result.counterexamples.is_empty() {
-            result.map = Some(ConfigurationMap {
-                candidate: candidate.clone(),
-            });
+        )?);
+        if !absent && result.missing.is_empty() {
+            let candidate = MapCandidate {
+                origin: MapOrigin::Correspondence(exists(holder)),
+                source_root: source.root().clone(),
+                target_root: target.root().clone(),
+                reading: reading.into(),
+                to_reading: to_reading.into(),
+                source_configuration: source_config.clone(),
+                target_configuration: target_config.clone(),
+                universe: source.universe().to_vec(),
+                images,
+            };
+            if result.counterexamples.is_empty() {
+                result.map = Some(ConfigurationMap {
+                    candidate: candidate.clone(),
+                });
+            }
+            result.candidate = Some(candidate);
         }
-        result.candidate = Some(candidate);
+        check(control)?;
+        Ok(())
+    })();
+    match computed {
+        Ok(()) => Ok(result),
+        Err(cause) => {
+            if result.missing.is_empty() {
+                result.missing = missing.into_iter().collect();
+            }
+            Err(CorrespondenceFailure {
+                cause,
+                partial: Some(Box::new(result)),
+            })
+        }
     }
-    check(control)?;
-    Ok(result)
 }
 
 #[cfg(test)]

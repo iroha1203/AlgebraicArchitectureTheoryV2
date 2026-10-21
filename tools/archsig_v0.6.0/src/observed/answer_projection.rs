@@ -23,9 +23,17 @@ impl Environment<'_> {
             return Err("射影の元出力が既出prefixにない".into());
         }
         let original = graph.get(root)?;
-        let initial = match &original.ty {
-            NodeType::Value(t) => ProjectionType::Law(t.clone()),
-            NodeType::Evaluation(t) => ProjectionType::Evaluation(t.clone()),
+        if matches!(&original.payload,Some(Payload::Construction(v)) if v.is_blocked()) {
+            return Err(self.answer_projection_unprovided(span));
+        }
+        let native_type = match &original.payload {
+            Some(Payload::Construction(v)) => v.projection_type(),
+            _ => None,
+        };
+        let initial = match (&original.ty, native_type) {
+            (_, Some(ty)) => ty,
+            (NodeType::Value(t), None) => ProjectionType::Law(t.clone()),
+            (NodeType::Evaluation(t), None) => ProjectionType::Evaluation(t.clone()),
             _ => return Err(self.answer_projection_unprovided(span)),
         };
         match resolve_projection_controlled(
@@ -39,6 +47,17 @@ impl Environment<'_> {
             Err(ProjectionFailure::Invalid(_)) => {
                 return Ok(AnswerBinding::Inapplicable(root));
             }
+        }
+        if path.is_empty() {
+            return Ok(AnswerBinding::Reference(root));
+        }
+        if let Some(Payload::Construction(v)) = &original.payload
+            && v.projection_type().is_some()
+        {
+            let Some((selected, used)) = v.project(path) else {
+                return Ok(AnswerBinding::Inapplicable(root));
+            };
+            return self.answer_projection(graph, selected, &path[used..], span);
         }
         let (value, steps) = if matches!(original.ty, NodeType::Evaluation(_)) {
             let Some((ProjectionStep::Field(field), rest)) = path.split_first() else {

@@ -37,6 +37,21 @@ refutedで終了コード1、count Atomを除くと不足位置付きundetermine
 `need.outputs.plan` のObservationPlanで読める。`requirements` はslot・依存Ref・元位置、
 `blockers` は欠測以外の理由を保持する。この例のcount=12の反証には追加の観測要求はない。
 
+原始 correspondence の configuration 保存は次のように問い合わせる。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/reservations.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/reservations.archmap.json \
+  --ask 'm=map(Reservations.Migration,on=@v/m,reading=Reservations)' --out result-map
+```
+
+`kind` の既定値は `configuration`、`to_reading` の既定値は `reading` と同じ読みである。
+候補は始終 Architecture と共通 U 上の総作用を持ち、保存を確認した場合だけ map と
+Operation を返す。数量の一致や Law の成立はこの保存条件に加えない。
+後続の問いでは `$m.candidate.subject`、`$m.operation.word[0]` などの公開参照を束縛できる。
+未観測の所属・対応は部分結果と必要 slot に残り、未生成の出力に依存する問いは元の理由を保持する。
+
 以前の出力directoryは `--reuse result-counter` で候補として指定できる。
 現在の三入力から全再計算し、検査済みの導出へ候補の型・内容・全依存・由来を照合する。
 node番号や共有方法の違いは吸収し、候補の推論は計算へ採用しない。
@@ -132,6 +147,7 @@ baseの適用域はrootとowned entity/arrow、部分対象の適用域はその
 
 `construction::maps::correspondence(&checked, "v", "m", "Reservations", None, &mut control)`
 は原始correspondenceから共通U上の候補作用とConfiguration保存を計算する。
+`correspondence_retained` は失敗の `cause()` と、停止までに検査済みの `partial()` も返す。
 別の終域の読みは第5引数へ `Some("TargetReading")` として指定する。
 `candidate()` は総作用、`map()` は保存確認済みの写像、`counterexamples()` は保存を破る
 原始位置、`missing()` は未観測slotを返す。欠測がある場合も確定した反例を保持する。
@@ -153,6 +169,7 @@ correspondence由来のときだけ `Some` を返す。各結果の `recheck()` 
 
 保存済みconfiguration操作は
 `ConfigurationOperation::from_map(&checked, verified_map, &mut control)` で構成する。
+`from_map_retained` の失敗は `cause()/partial()` から停止理由と完成済み操作を読める。
 `construction::maps::identity(&checked, "Reservations", "v", "A", None, &mut control)`
 はbaseの恒等を構成し、部分対象には第5引数へ `Some(("v", "p"))` を指定する。
 結果の `configuration()/missing()` で構成を読み、確定時の `operation()` を使う。

@@ -12,6 +12,14 @@ impl Environment<'_> {
         if request.dependencies.is_empty() {
             return Ok(None);
         }
+        if let Some(answer) = self.with_request_context(graph, request, || {
+            super::super::public_map::unavailable(self, graph, request)
+        })? {
+            return Ok(Some(answer));
+        }
+        if request.kind == QuestionKind::Map {
+            return Ok(None);
+        }
         self.tick()?;
         let originals = self
             .original_requests

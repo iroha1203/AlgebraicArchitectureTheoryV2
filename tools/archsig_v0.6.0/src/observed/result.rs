@@ -54,6 +54,7 @@ impl NodeRef {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum NodeType {
+    Construction(super::construction_result::ConstructionType),
     Value(Type),
     Expression(Type),
     Evaluation(Type),
@@ -66,6 +67,7 @@ pub(crate) enum NodeType {
 impl NodeType {
     fn wire(&self) -> Json {
         match self {
+            Self::Construction(ty) => Json::str(ty.name()),
             Self::Value(t) => t.wire(),
             Self::Expression(_) => Json::str("Expression"),
             Self::Evaluation(_) => Json::str("Evaluation"),
@@ -894,6 +896,7 @@ pub(crate) fn conditional_bool(guard: Option<bool>, body: Option<bool>) -> Optio
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Payload {
+    Construction(Box<super::construction_result::ConstructionValue>),
     ObservationPlan {
         request: String,
         requirements: Vec<super::needed::Requirement>,
@@ -1037,6 +1040,7 @@ pub(crate) enum Payload {
 impl Payload {
     fn wire(&self) -> Json {
         match self {
+            Self::Construction(value) => value.wire(),
             Self::ObservationPlan {
                 request,
                 requirements,
@@ -1375,32 +1379,44 @@ pub(crate) struct Node {
 }
 impl Node {
     fn wire(&self, id: usize, prior: &[Node]) -> Json {
-        let mut wire = BTreeMap::from([
-            ("id".into(), Json::str(format!("n{id}"))),
-            ("type".into(), self.ty.wire()),
-            (
-                "state".into(),
-                Json::str(if self.payload.is_some() {
-                    "value"
-                } else {
-                    "blocked"
-                }),
-            ),
-            ("rule".into(), self.rule.wire()),
-            ("arguments".into(), refs(&self.arguments)),
-            (
-                "support".into(),
-                Json::Arr(self.support.iter().map(Fact::wire).collect()),
-            ),
-            ("conditions".into(), refs(&[])),
-            ("evidence".into(), refs(&self.evidence)),
-            ("scope".into(), self.scope.wire()),
-            (
-                "reasons".into(),
-                Json::Arr(self.reasons.iter().map(Reason::wire).collect()),
-            ),
-        ]);
-        if let Some(payload) = &self.payload {
+        let mut wire =
+            BTreeMap::from([
+                ("id".into(), Json::str(format!("n{id}"))),
+                ("type".into(), self.ty.wire()),
+                (
+                    "state".into(),
+                    Json::str(
+                        if self.payload.as_ref().is_some_and(
+                            |p| !matches!(p, Payload::Construction(v) if v.is_blocked()),
+                        ) {
+                            "value"
+                        } else {
+                            "blocked"
+                        },
+                    ),
+                ),
+                ("rule".into(), self.rule.wire()),
+                ("arguments".into(), refs(&self.arguments)),
+                (
+                    "support".into(),
+                    Json::Arr(self.support.iter().map(Fact::wire).collect()),
+                ),
+                ("conditions".into(), refs(&[])),
+                ("evidence".into(), refs(&self.evidence)),
+                ("scope".into(), self.scope.wire()),
+                (
+                    "reasons".into(),
+                    Json::Arr(self.reasons.iter().map(Reason::wire).collect()),
+                ),
+            ]);
+        if let Some(Payload::Construction(v)) = &self.payload
+            && let Some(partial) = v.partial(&self.reasons)
+        {
+            wire.insert("partial".into(), partial);
+        }
+        if let Some(payload) = &self.payload
+            && !matches!(payload, Payload::Construction(v) if v.is_blocked())
+        {
             let mut value = match payload {
                 Payload::Scalar(value) => super::path_value::wire(
                     value,
@@ -1630,6 +1646,31 @@ impl From<StopReason> for ValidationFailure {
     }
 }
 impl Graph {
+    /// 封印されたnative結果の表示への転記。停止したControlで計算を再開しない。
+    /// 任意のScalarや通常の推論nodeを挿入する経路には使えない。
+    pub(super) fn retain_native(&mut self, node: Node) -> Result<NodeRef, ValidationFailure> {
+        if !matches!(node.payload, Some(Payload::Construction(_))) {
+            return Err("native転記へ通常の導出を渡した".into());
+        }
+        // 資源・signalはここでも凍結する。完成済みnative値の転記だけは
+        // 最後まで保持し、凍結後に通常の推論を再開する権限を与えない。
+        let _ = self
+            .control
+            .clone()
+            .checkpoint(Checkpoint::NativeResultNode);
+        super::construction_result::validate_shape(self, &node)?;
+        for r in &node.evidence {
+            self.expect(*r, &NodeType::Evidence)?;
+        }
+        let r = NodeRef(self.nodes.len());
+        self.nodes.push(node);
+        self.contexts.push(self.active);
+        let _ = self
+            .control
+            .clone()
+            .checkpoint(Checkpoint::NativeResultNode);
+        Ok(r)
+    }
     pub(super) fn map_domain_counterexample_shape(
         &self,
         node: &Node,
@@ -1713,6 +1754,9 @@ impl Graph {
     pub fn scalar(&self, r: NodeRef) -> Result<&Scalar, String> {
         match &self.get(r)?.payload {
             Some(Payload::Scalar(v)) => Ok(v),
+            Some(Payload::Construction(v)) => v
+                .scalar()
+                .ok_or_else(|| "通常値でないnative構成の消費".into()),
             _ => Err("通常値でない node の消費".into()),
         }
     }
@@ -1813,7 +1857,11 @@ impl Graph {
                     ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. }
                 ) && !matches!(node.ty, NodeType::Expression(_))
                 {
-                    return Err("欠測・非対応算法理由の依存先が元式でない".into());
+                    let native_missing = matches!(reason.kind, ReasonKind::Missing)
+                        && matches!(&node.payload,Some(Payload::Construction(v)) if matches!(&v.data,super::construction_result::ConstructionData::Subject { value:Scalar::Subject {snapshot,subject,..},.. } if reason.missing.iter().any(|f|&f.snapshot==snapshot && &f.subject==subject)));
+                    if !native_missing {
+                        return Err("欠測・非対応算法理由の依存先が元式・native原始根でない".into());
+                    }
                 }
                 self.tick()?;
             }
@@ -3970,6 +4018,9 @@ impl Graph {
             }
         }
         match (&node.ty, &node.payload) {
+            (_, Some(Payload::Construction(_))) => {
+                super::construction_result::validate_shape(self, &node)?;
+            }
             (NodeType::ObservationPlan, Some(Payload::ObservationPlan { .. })) => {
                 super::needed::validate_node(self, &node, self.nodes.len(), &self.control)?;
             }
@@ -4406,7 +4457,9 @@ impl Graph {
                 return Err("反証の証拠がない".into());
             }
         }
-        if node.ty == NodeType::Proposition {
+        if node.ty == NodeType::Proposition
+            && !matches!(node.payload, Some(Payload::Construction(_)))
+        {
             self.validate_proposition_evidence(&node)?;
         }
         let r = NodeRef(self.nodes.len());

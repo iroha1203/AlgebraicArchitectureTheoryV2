@@ -460,7 +460,7 @@ impl Evaluator<'_, '_> {
                         ty: p.ty.erase(),
                     });
                 }
-                Selector::Declaration { .. } => {
+                Selector::Declaration { .. } | Selector::Enum { .. } => {
                     return Err(Failure::Internal(
                         "parameter に宣言 selector が残っている".into(),
                     ));
@@ -2766,6 +2766,82 @@ fn evaluate_observed_with_validator(
                 instance: None,
                 case: None,
             };
+            if request.kind == QuestionKind::Map {
+                match super::public_map::evaluate(
+                    &prepared,
+                    environment,
+                    &mut graph,
+                    request,
+                    control,
+                ) {
+                    Ok(answer) => {
+                        if control.stop_reason().is_none() {
+                            if let Err(failure) =
+                                validate_answer(environment, &graph, request, &answer)
+                            {
+                                let reason = match failure {
+                                    ValidationFailure::Stop(stop) => {
+                                        Reason::stopped(&request.id, stop)
+                                    }
+                                    other => {
+                                        internal = true;
+                                        Reason::internal(
+                                            &request.id,
+                                            format!("map回答の内部照合: {other:?}"),
+                                        )
+                                    }
+                                };
+                                issues.push(reason.clone());
+                                if internal {
+                                    answers[index] = Some(Answer {
+                                        id: request.id.clone(),
+                                        status: Decision::Undetermined,
+                                        outputs: BTreeMap::new(),
+                                        claim: None,
+                                        evidence: vec![],
+                                        reasons: vec![reason],
+                                        scope: base,
+                                    });
+                                } else {
+                                    let mut answer = answer;
+                                    answer.reasons.push(reason);
+                                    answers[index] = Some(answer);
+                                }
+                                continue;
+                            }
+                        }
+                        issues.extend(answer.reasons.iter().cloned());
+                        if let Some(stop) = control.stop_reason() {
+                            issues.push(Reason::stopped(&request.id, stop));
+                        }
+                        graph.checked_answers.push((index, answer.clone()));
+                        answers[index] = Some(answer);
+                    }
+                    Err(failure) => {
+                        let reason = match failure {
+                            ValidationFailure::Stop(stop) => Reason::stopped(&request.id, stop),
+                            other => {
+                                internal = true;
+                                Reason::internal(
+                                    &request.id,
+                                    format!("map構成の内部照合: {other:?}"),
+                                )
+                            }
+                        };
+                        issues.push(reason.clone());
+                        answers[index] = Some(Answer {
+                            id: request.id.clone(),
+                            status: Decision::Undetermined,
+                            outputs: BTreeMap::new(),
+                            claim: None,
+                            evidence: vec![],
+                            reasons: vec![reason],
+                            scope: base,
+                        });
+                    }
+                }
+                continue;
+            }
             if request.kind == QuestionKind::Needed {
                 match super::needed::evaluate(&mut graph, environment, request, control) {
                     Ok((answer, stopped)) => {
@@ -2994,6 +3070,9 @@ fn evaluate_observed_with_validator(
 #[cfg(test)]
 mod recheck_tests {
     use super::*;
+    mod public_map_tests {
+        include!("public_map_tests.rs");
+    }
     mod infinite_domain_tests {
         include!("infinite_domain_tests.rs");
     }

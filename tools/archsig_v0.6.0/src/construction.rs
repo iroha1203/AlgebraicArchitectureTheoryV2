@@ -235,8 +235,15 @@ fn namespaces(
     reading: &str,
     control: &mut Control,
 ) -> Result<BTreeSet<String>, ConstructionFailure> {
+    reading_namespaces(inputs.law(), reading, control)
+}
+pub(crate) fn reading_namespaces(
+    law: &crate::law::CheckedLaw,
+    reading: &str,
+    control: &mut Control,
+) -> Result<BTreeSet<String>, ConstructionFailure> {
     let mut selected = None;
-    for info in &inputs.law().infos {
+    for info in &law.infos {
         tick(control)?;
         if info.kind == "reading" && info.name == reading {
             selected = Some(info);
@@ -256,13 +263,9 @@ fn namespaces(
         if !seen.insert(name.clone()) {
             continue;
         }
-        let vocabulary = inputs
-            .definitions()
-            .vocabularies
-            .get(&name)
-            .ok_or_else(|| {
-                ConstructionFailure::Inconsistent(format!("検査済み定義 `{name}` がない"))
-            })?;
+        let vocabulary = law.definitions.vocabularies.get(&name).ok_or_else(|| {
+            ConstructionFailure::Inconsistent(format!("検査済み定義 `{name}` がない"))
+        })?;
         for dependency in &vocabulary.dependencies {
             tick(control)?;
             pending.push(dependency.namespace.clone());
