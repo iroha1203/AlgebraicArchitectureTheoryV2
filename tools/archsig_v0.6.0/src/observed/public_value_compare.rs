@@ -200,7 +200,6 @@ impl Data {
                                     .map(|b| {
                                         Json::obj([
                                             ("name", Json::str(&b.name)),
-                                            ("type", b.ty.wire()),
                                             ("value", b.value.wire()),
                                         ])
                                     })

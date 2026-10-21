@@ -119,6 +119,28 @@ fn term_evidence_retains_the_finite_domain_normal_forms_and_reapplied_zero_unit_
     );
     assert_eq!(r.code, 1, "{}", r.stdout);
     let j = result_json(&dir, &r);
+    for n in arr(get(&j, "nodes")) {
+        if !has(n, "value")
+            || !has(get(n, "value"), "kind")
+            || s(get(get(n, "value"), "kind")) != "counterexample"
+        {
+            continue;
+        }
+        let data = get(get(n, "value"), "data");
+        for binding in arr(get(data, "bindings")) {
+            let archsig::json::JValue::Obj(fields) = &binding.value else {
+                panic!("Binding is a record")
+            };
+            assert_eq!(
+                fields
+                    .iter()
+                    .map(|(name, _)| name.as_str())
+                    .collect::<Vec<_>>(),
+                ["name", "value"]
+            );
+            assert!(has(node(&j, get(binding, "value")), "type"));
+        }
+    }
     let ex = evidence(&j, "finite_equal", "finite_exhaustion");
     assert_eq!(ex.len(), 1);
     let data = get(get(ex[0], "value"), "data");
@@ -159,7 +181,7 @@ fn term_evidence_retains_the_finite_domain_normal_forms_and_reapplied_zero_unit_
         assert_eq!(bindings.len(), 2);
         for (binding, value) in bindings.iter().zip(expected_bindings) {
             assert_eq!(s(get(node(&j, get(binding, "value")), "value")), value);
-            assert_eq!(s(get(binding, "type")), "Z");
+            assert_eq!(s(get(node(&j, get(binding, "value")), "type")), "Z");
         }
         assert_eq!(s(get(node(&j, get(data, "left")), "value")), left);
         assert_eq!(s(get(node(&j, get(data, "right")), "value")), right);
