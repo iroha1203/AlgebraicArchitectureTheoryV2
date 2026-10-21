@@ -58,16 +58,30 @@ impl NumericValueMap {
         value: &NumericTransportValue,
         control: &mut Control,
     ) -> Result<NumericTransportValue, ConstructionFailure> {
+        self.apply_scalar(&value.value, control)
+    }
+    pub(super) fn apply_scalar(
+        &self,
+        value: &Scalar,
+        control: &mut Control,
+    ) -> Result<NumericTransportValue, ConstructionFailure> {
         tick(control)?;
         if value.ty() != self.ty {
             return Err(ConstructionFailure::InvalidSelection(
                 "数値写像の引数型が違う".into(),
             ));
         }
-        numeric::check(&value.value, control).map_err(invalid_value)?;
-        let value = value.clone();
+        numeric::check(value, control).map_err(invalid_value)?;
+        let value = NumericTransportValue {
+            value: value.clone(),
+        };
         tick(control)?;
         Ok(value)
+    }
+}
+impl NumericTransportValue {
+    pub(super) fn scalar(&self) -> &Scalar {
+        &self.value
     }
 }
 

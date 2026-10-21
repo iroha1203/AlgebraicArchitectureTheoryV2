@@ -172,6 +172,10 @@ impl ObjectEvaluation {
     pub fn outcome(&self) -> &ObjectEvaluationOutcome {
         &self.outcome
     }
+    #[cfg(test)]
+    pub(super) fn outcome_mut_for_test(&mut self) -> &mut ObjectEvaluationOutcome {
+        &mut self.outcome
+    }
 }
 
 pub fn evaluate_object_instance(

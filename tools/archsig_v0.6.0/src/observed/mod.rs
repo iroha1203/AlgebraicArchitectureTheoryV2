@@ -11,6 +11,7 @@ mod needed;
 mod numeric;
 pub(crate) mod numeric_transport;
 pub(crate) mod object_evaluate;
+pub(crate) mod object_view_transport;
 mod path_value;
 mod quantifier;
 pub mod result;

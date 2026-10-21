@@ -1,0 +1,31 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  view amount(c: Left.Child): Z = c.count;
+  view ratio(c: Left.Child): Q = rat(1,2);
+  view ref(c: Left.Child): Left.Child = c;
+  view packed(c: Left.Child): (Option<Left.Child>, Bool) = (some(c), false);
+  view flag(c: Left.Child): Bool = false;
+  view external(c: Left.Child, x: Bridge.Move): Bridge.Move = x;
+  view boundary(c: Left.Child, x: Right.Child): Bool = false;
+  view conditional(c: Left.Child, a: Left.ExternalRoot, e: Left.ExternalChild[a]): Bool = true;
+  view family(c: Left.Child, b: Bool): Bool = b;
+  view sequence(c: Left.Child): List<Z> = list<Z>[c.count];
+}
+reading After {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  view amount(d: Right.Child): Z = 2;
+  view ratio(d: Right.Child): Q = rat(1,2);
+  view ref(d: Right.Child): Right.Child = d;
+  view packed(d: Right.Child): (Option<Right.Child>, Bool) = (some(d), false);
+  view flag(d: Right.Child): Bool = false;
+  view external(d: Right.Child, z: Bridge.Move): Bridge.Move = z;
+  view boundary(d: Right.Child, y: Right.Child): Bool = false;
+  view conditional(d: Right.Child, z: Left.ExternalRoot, w: Left.ExternalChild[z]): Bool = true;
+  view family(d: Right.Child, q: Bool): Bool = q;
+  view sequence(d: Right.Child): List<Z> = list<Z>[2];
+}
