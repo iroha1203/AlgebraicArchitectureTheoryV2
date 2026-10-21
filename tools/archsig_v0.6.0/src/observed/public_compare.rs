@@ -12,6 +12,8 @@ use super::{
     PreparedObserved,
 };
 use crate::{canonical::Json, issue::Location};
+#[path = "public_value_compare.rs"]
+pub(super) mod values;
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]
 pub(crate) struct CompareWitness {
@@ -26,9 +28,13 @@ pub(crate) struct CompareWitness {
     incompatible: Option<(NodeRef, NodeRef)>,
     facts: Vec<Fact>,
     stopped: Option<StopReason>,
+    value_plan: Option<values::Plan>,
 }
 impl PartialEq for CompareWitness {
     fn eq(&self, b: &Self) -> bool {
+        if std::ptr::eq(self, b) {
+            return true;
+        }
         self.inputs.sources() == b.inputs.sources()
             && self.request == b.request
             && self.support == b.support
@@ -39,11 +45,16 @@ impl PartialEq for CompareWitness {
             && self.incompatible == b.incompatible
             && self.facts == b.facts
             && self.stopped == b.stopped
+            && self.value_plan == b.value_plan
     }
 }
 impl Eq for CompareWitness {}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Part {
+    Derived {
+        index: usize,
+        data: Box<values::Data>,
+    },
     Comparison {
         kind: String,
         left: NodeRef,
@@ -71,10 +82,14 @@ fn refs(v: &[NodeRef]) -> Json {
 }
 impl Part {
     pub fn scalar(&self) -> Option<&Scalar> {
-        None
+        match self {
+            Self::Derived { data, .. } => data.scalar(),
+            _ => None,
+        }
     }
     pub fn ty(&self) -> NodeType {
         match self {
+            Self::Derived { data, .. } => data.ty(),
             Self::Comparison { .. } => NodeType::Construction(T::Comparison),
             Self::Evidence { .. } => NodeType::Evidence,
             _ => NodeType::Proposition,
@@ -82,6 +97,7 @@ impl Part {
     }
     pub fn construction(&self) -> &'static str {
         match self {
+            Self::Derived { data, .. } => data.construction(),
             Self::Comparison { .. } => "comparison",
             Self::Evidence { .. } => "evidence",
             _ => "proposition",
@@ -89,6 +105,7 @@ impl Part {
     }
     pub fn arguments(&self) -> Vec<NodeRef> {
         match self {
+            Self::Derived { data, .. } => data.arguments(),
             Self::Claim {
                 left,
                 right,
@@ -124,6 +141,7 @@ impl Part {
     }
     pub fn wire(&self, w: &CompareWitness) -> Json {
         match self {
+            Self::Derived { data, .. } => data.wire(),
             Self::Comparison { kind, left, right } => Json::obj([
                 ("kind", Json::str(kind)),
                 ("left", left.wire()),
@@ -306,6 +324,20 @@ pub(super) fn validate_origin(
     }
     Ok(())
 }
+pub(super) fn validate_position(
+    value: &ConstructionValue,
+    position: usize,
+) -> Result<(), ValidationFailure> {
+    if let (Witness::Compare(w), D::Comparison(Part::Derived { index, .. })) =
+        (&value.witness, &value.data)
+    {
+        let base = w.value_plan.as_ref().ok_or("比較の導出元がない")?.base;
+        if base.checked_add(*index) != Some(position) {
+            return Err("比較の導出が元の生成位置と違う".into());
+        }
+    }
+    Ok(())
+}
 pub(super) fn validate_node(
     graph: &Graph,
     n: &Node,
@@ -347,8 +379,21 @@ pub(super) fn validate_node(
         return Err(fail());
     };
     match p {
+        Part::Derived { index, data } => {
+            let expected = w
+                .value_plan
+                .as_ref()
+                .and_then(|p| p.nodes.get(*index))
+                .ok_or_else(fail)?;
+            if data.as_ref() != expected
+                || n.judgment != expected.judgment()
+                || n.evidence != expected.evidence()
+            {
+                return Err(fail());
+            }
+        }
         Part::Comparison { kind, left, right } => {
-            if w.equal.is_none()
+            if (w.equal.is_none() && w.value_plan.is_none())
                 || kind != &w.kind
                 || (*left, *right) != (w.left, w.right)
                 || n.judgment.is_some()
@@ -396,6 +441,31 @@ pub(super) fn validate_node(
         } => {
             if (*left, *right) != (w.left, w.right) {
                 return Err(fail());
+            }
+            if let Some(plan) = &w.value_plan {
+                let valid_comparison = match (plan.finished, comparison) {
+                    (true, Some(c)) => matches!(part(graph, *c, w)?, Part::Comparison { .. }),
+                    (false, None) => true,
+                    _ => false,
+                };
+                if name.is_some()
+                    || condition.is_some()
+                    || !valid_comparison
+                    || n.evidence != plan.result.evidence
+                    || n.judgment
+                        != Some(Judgment {
+                            status: match plan.result.equal {
+                                Some(true) => Decision::Established,
+                                Some(false) => Decision::Refuted,
+                                None => Decision::Undetermined,
+                            },
+                            evidence: plan.result.evidence.clone(),
+                            reasons: plan.result.reasons.clone(),
+                        })
+                {
+                    return Err(fail());
+                }
+                return Ok(());
             }
             let mut reasons = vec![];
             let evidence = if w.equal == Some(true) {
@@ -638,10 +708,26 @@ pub(super) fn evaluate(
     let mut incompatible = None;
     let mut facts = vec![];
     let mut stopped = None;
-    let equal = if kind == "value" {
-        if super::term::contains(&graph.scalar(left)?.ty(), prepared.inputs().law(), control)? {
-            return Err("Termの公開value比較の計算経路は未実装".into());
-        }
+    let mut value_plan = None;
+    let equal = if kind == "value"
+        && super::term::contains(&graph.scalar(left)?.ty(), prepared.inputs().law(), control)?
+    {
+        let plan = values::evaluate(
+            graph.scalar(left)?,
+            graph.scalar(right)?,
+            left,
+            right,
+            graph.nodes.len(),
+            prepared.inputs().law(),
+            &r.id,
+            &support,
+            control,
+        )?;
+        let equal = plan.result.equal;
+        stopped = plan.stopped.clone();
+        value_plan = Some(plan);
+        equal
+    } else if kind == "value" {
         let mut retained = None;
         let outcome =
             super::data::equal_retained(graph.scalar(left)?, graph.scalar(right)?, control, |v| {
@@ -740,9 +826,35 @@ pub(super) fn evaluate(
         incompatible,
         facts,
         stopped,
+        value_plan,
     });
-    let mut evidence = vec![];
-    let mut reasons = vec![];
+    if let Some(plan) = &w.value_plan {
+        for (index, data) in plan.nodes.iter().enumerate() {
+            let reference = node(
+                graph,
+                &w,
+                Part::Derived {
+                    index,
+                    data: Box::new(data.clone()),
+                },
+                data.evidence(),
+                data.judgment(),
+            )?;
+            if reference.0 != plan.base + index {
+                return Err("値比較の完成証拠の転記順が違う".into());
+            }
+        }
+    }
+    let mut evidence = w
+        .value_plan
+        .as_ref()
+        .map(|p| p.result.evidence.clone())
+        .unwrap_or_default();
+    let mut reasons = w
+        .value_plan
+        .as_ref()
+        .map(|p| p.result.reasons.clone())
+        .unwrap_or_default();
     let mut name = None;
     let mut condition = None;
     if let Some((a, b)) = w.incompatible {
@@ -778,7 +890,7 @@ pub(super) fn evaluate(
         )?;
         reasons.push(failed(r, c));
         condition = Some(c);
-    } else if w.equal == Some(false) {
+    } else if w.equal == Some(false) && w.value_plan.is_none() {
         let e = node(
             graph,
             &w,
@@ -792,7 +904,7 @@ pub(super) fn evaluate(
         )?;
         evidence.push(e);
     }
-    let comparison = if w.equal.is_some() {
+    let comparison = if w.equal.is_some() || w.value_plan.as_ref().is_some_and(|p| p.finished) {
         Some(node(
             graph,
             &w,
@@ -807,10 +919,11 @@ pub(super) fn evaluate(
     } else {
         None
     };
-    let status = if w.equal == Some(true) {
-        Decision::Established
-    } else {
-        Decision::Refuted
+    let status = match w.equal {
+        Some(true) => Decision::Established,
+        Some(false) => Decision::Refuted,
+        None if w.value_plan.is_some() => Decision::Undetermined,
+        None => Decision::Refuted,
     };
     let claim = node(
         graph,

@@ -4,6 +4,13 @@ mod common;
 mod fixture;
 #[path = "common/compare_values.rs"]
 mod primitive;
+#[path = "common/public_term_compare.rs"]
+mod term_fixture;
+const TERM_ASKS: [&str; 3] = [
+    "l=evaluate(Terms.read,s=@v/s)",
+    "r=evaluate(Terms.affineSlope)",
+    "a=compare($l.value,to=$r.value,kind=value)",
+];
 use archsig::{
     observed::{
         control::{Checkpoint, Control, Limits, Usage},
@@ -26,9 +33,11 @@ const ASKS: [&str; 5] = [
     "d=evaluate(Walk.step,e=@v/different)",
     "a=compare($c.operation,to=$d.value,kind=action)",
 ];
-fn setup(name: &str, value: bool) -> (PathBuf, RunArgs) {
+fn setup(name: &str, kind: usize) -> (PathBuf, RunArgs) {
     let dir = workdir(name);
-    let input = if value {
+    let input = if kind == 2 {
+        term_fixture::input("", false, "term-delivery")
+    } else if kind == 1 {
         primitive::input(false, "")
     } else {
         fixture::input(false, "comparison-delivery")
@@ -47,7 +56,9 @@ fn setup(name: &str, value: bool) -> (PathBuf, RunArgs) {
             archmap: Some(dir.join("a.json")),
             out: dir.join("out"),
         },
-        asks: if value {
+        asks: if kind == 2 {
+            TERM_ASKS.iter().map(|s| (*s).into()).collect()
+        } else if kind == 1 {
             vec!["a=compare(@v/a,to=@v/b,kind=value)".into()]
         } else {
             ASKS.iter().map(|s| (*s).into()).collect()
@@ -115,15 +126,16 @@ impl Io for Files {
 }
 #[test]
 fn comparison_request_resolution_stops_notify_without_starting_output() {
-    comparison_request_resolution_stops_notify_without_starting_output_case(false);
+    comparison_request_resolution_stops_notify_without_starting_output_case(0);
 }
 #[test]
 fn value_comparison_request_resolution_stops_notify_without_starting_output() {
-    comparison_request_resolution_stops_notify_without_starting_output_case(true);
+    comparison_request_resolution_stops_notify_without_starting_output_case(1);
 }
-fn comparison_request_resolution_stops_notify_without_starting_output_case(value: bool) {
+fn comparison_request_resolution_stops_notify_without_starting_output_case(kind: usize) {
+    let value = kind != 0;
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("comparison-resolver-stop-{value}-{mode}"), value);
+        let (dir, mut args) = setup(&format!("comparison-resolver-stop-{value}-{mode}"), kind);
         args.time_ms = (mode == 0).then(|| "1".into());
         args.memory_mib = (mode == 1).then(|| "1".into());
         let mut control = Control::new(
@@ -173,15 +185,16 @@ fn comparison_request_resolution_stops_notify_without_starting_output_case(value
 }
 #[test]
 fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit() {
-    comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(false);
+    comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(0);
 }
 #[test]
 fn value_comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit() {
-    comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(true);
+    comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(1);
 }
 fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(
-    value: bool,
+    kind: usize,
 ) {
+    let value = kind != 0;
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
     let mut probe = Control::new(Limits::default(), move |p| {
@@ -191,12 +204,16 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
         Usage::default()
     });
     let original = evaluate_observed_bytes(
-        if value {
+        if kind == 2 {
+            term_fixture::input("", false, "term-delivery")
+        } else if value {
             primitive::input(false, "")
         } else {
             fixture::input(false, "comparison-delivery")
         },
-        if value {
+        if kind == 2 {
+            &TERM_ASKS
+        } else if value {
             &["a=compare(@v/a,to=@v/b,kind=value)"]
         } else {
             &ASKS
@@ -208,7 +225,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
     let total = count.get();
     assert!(total >= 2);
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("comparison-late-stop-{value}-{mode}"), value);
+        let (dir, mut args) = setup(&format!("comparison-late-stop-{value}-{mode}"), kind);
         args.time_ms = (mode == 0).then(|| "1".into());
         args.memory_mib = (mode == 1).then(|| "1".into());
         let count = Rc::new(Cell::new(0usize));
@@ -256,12 +273,21 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
             archsig::json::parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
         assert_eq!(s(get(&result, "status")), "interrupted");
         assert_eq!(num(get(&result, "exit_code")), code as u64);
-        let answer = &arr(get(&result, "answers"))[if value { 0 } else { 4 }];
+        let answer = &arr(get(&result, "answers"))[if kind == 2 {
+            2
+        } else if value {
+            0
+        } else {
+            4
+        }];
         assert_eq!(s(get(answer, "status")), "refuted");
         assert!(!has(get(answer, "outputs"), "map"));
         assert!(has(get(answer, "outputs"), "comparison"));
-        assert_eq!(arr(get(answer, "evidence")).len(), 1);
-        let proof = &arr(get(answer, "evidence"))[0];
+        assert_eq!(
+            arr(get(answer, "evidence")).len(),
+            if kind == 2 { 3 } else { 1 }
+        );
+        let proof = arr(get(answer, "evidence")).last().unwrap();
         let evidence = arr(get(&result, "nodes"))
             .iter()
             .find(|n| get(n, "id") == get(proof, "node"))
@@ -272,7 +298,13 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
                 .iter()
                 .map(|f| s(get(f, "subject")))
                 .collect::<Vec<_>>(),
-            if value { vec![] } else { vec!["q", "r", "q"] }
+            if kind == 2 {
+                vec!["s"]
+            } else if value {
+                vec![]
+            } else {
+                vec!["q", "r", "q"]
+            }
         );
         assert!(arr(get(&result, "nodes"))
             .iter()
@@ -288,15 +320,16 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
 }
 #[test]
 fn comparison_write_failures_remove_only_this_runs_temporary_directory() {
-    comparison_write_failures_remove_only_this_runs_temporary_directory_case(false);
+    comparison_write_failures_remove_only_this_runs_temporary_directory_case(0);
 }
 #[test]
 fn value_comparison_write_failures_remove_only_this_runs_temporary_directory() {
-    comparison_write_failures_remove_only_this_runs_temporary_directory_case(true);
+    comparison_write_failures_remove_only_this_runs_temporary_directory_case(1);
 }
-fn comparison_write_failures_remove_only_this_runs_temporary_directory_case(value: bool) {
+fn comparison_write_failures_remove_only_this_runs_temporary_directory_case(kind: usize) {
+    let value = kind != 0;
     for race in [false, true] {
-        let (dir, args) = setup(&format!("comparison-write-failure-{value}-{race}"), value);
+        let (dir, args) = setup(&format!("comparison-write-failure-{value}-{race}"), kind);
         let older = dir.join(".out.archsig-older");
         std::fs::create_dir(&older).unwrap();
         std::fs::write(older.join("keep"), b"older bytes").unwrap();
@@ -340,4 +373,19 @@ fn comparison_write_failures_remove_only_this_runs_temporary_directory_case(valu
         assert_eq!(s(get(&arr(get(&receipt, "issues"))[0], "code")), "io");
         std::fs::remove_dir_all(dir).unwrap();
     }
+}
+
+#[test]
+fn term_comparison_request_resolution_stops_notify_without_starting_output() {
+    comparison_request_resolution_stops_notify_without_starting_output_case(2);
+}
+
+#[test]
+fn term_comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit() {
+    comparison_late_stops_publish_only_checked_values_with_consistent_status_and_exit_case(2);
+}
+
+#[test]
+fn term_comparison_write_failures_remove_only_this_runs_temporary_directory() {
+    comparison_write_failures_remove_only_this_runs_temporary_directory_case(2);
 }
