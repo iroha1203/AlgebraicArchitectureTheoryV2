@@ -1527,6 +1527,7 @@ impl Environment<'_> {
                 parts,
                 value,
                 applicability,
+                ..
             }) = &node.payload
             else {
                 unreachable!()

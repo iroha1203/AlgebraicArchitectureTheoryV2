@@ -63,7 +63,7 @@ impl PreparedObserved {
 
     /// native対象読取りのcontext。通常の観測環境ではNone。
     pub fn object_identity(&self) -> Option<&crate::construction::maps::ObjectIdentity> {
-        self.object.as_ref().map(|object| &object.identity)
+        self.object.as_ref().map(|object| &object.domain.identity)
     }
 
     pub fn object_instance(&self) -> Option<&crate::construction::readings::ObjectInstance> {

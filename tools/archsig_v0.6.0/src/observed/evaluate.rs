@@ -889,6 +889,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
             payload: Some(Payload::Evaluation {
+                environment: self.environment.architecture_ref(),
                 expression,
                 bindings: self.bindings.clone(),
                 parts: vec![Part {
@@ -2561,6 +2562,7 @@ impl Evaluator<'_, '_> {
             self.push_law_evaluation(Node {
                 ty: NodeType::Evaluation(Type::Bool),
                 payload: Some(Payload::Evaluation {
+                    environment: self.environment.architecture_ref(),
                     expression: law_expression,
                     bindings: self.bindings.clone(),
                     parts: vec![
@@ -2878,6 +2880,11 @@ fn evaluate_observed_with_validator(
                 continue;
             }
             let declaration = declaration.expect("宣言を読む問い");
+            let (_architecture, architecture_failure) = match environment.enter_architecture(&graph)
+            {
+                Ok(guard) => (Some(guard), None),
+                Err(failure) => (None, Some(failure)),
+            };
             let mut evaluator = Evaluator {
                 environment,
                 graph: &mut graph,
@@ -2908,6 +2915,9 @@ fn evaluate_observed_with_validator(
                 _ => unreachable!("要求解決済みの view/Law"),
             };
             let result = (|| {
+                if let Some(failure) = architecture_failure {
+                    return Err(failure.into());
+                }
                 evaluator.tick(Checkpoint::FiniteIteration)?;
                 evaluator.projection_conditions()?;
                 if let Some(answer) = evaluator

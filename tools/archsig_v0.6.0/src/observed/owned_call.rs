@@ -1093,6 +1093,7 @@ impl Environment<'_> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);

@@ -274,6 +274,8 @@ impl Environment<'_> {
                     result.enumeration.values.clear();
                 }
             }
+        } else if p.ty == p.ty.erase() {
+            result.enumeration = self.family_values(&p.ty, observer)?;
         } else {
             // 元署名の複合型に含まれる各Owned leafも、現在の実prefixから
             // ownerを読む。消去型の全登録族へ置き換えない。

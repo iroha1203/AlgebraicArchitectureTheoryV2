@@ -123,6 +123,38 @@ impl Environment<'_> {
             _ => return Err("射影条件の元宣言がview/Lawでない".into()),
         };
         let mut plans = vec![];
+        if let Some(argument) = request.arguments.iter().find(|a| a.name == "on") {
+            let Selector::Answer { id, .. } = &argument.value else {
+                return Err("onの元Handleがない".into());
+            };
+            let selected = match self.answer_binding(graph, &argument.value, (0, 0)) {
+                Ok(AnswerBinding::Inapplicable(r)) => Some(r),
+                Ok(AnswerBinding::Reference(r))
+                    if graph.get(r)?.ty
+                        != NodeType::Construction(
+                            super::super::construction_result::ConstructionType::Architecture,
+                        ) =>
+                {
+                    Some(r)
+                }
+                Ok(AnswerBinding::Projection(n)) => n.arguments.first().copied(),
+                Ok(_) | Err(ValidationFailure::UnsupportedExpression { .. }) => None,
+                Err(e) => return Err(e),
+            };
+            if let Some(root) = selected {
+                let original = graph.get(root)?;
+                plans.push(ProjectionFailurePlan {
+                    context: self.current_context(graph),
+                    parameter: "on".into(),
+                    root,
+                    producer: id.clone(),
+                    location: None,
+                    inputs: vec![ConditionInput::Reference(root)],
+                    scope: original.scope.clone(),
+                    support: original.support.clone(),
+                });
+            }
+        }
         for parameter in params {
             self.tick()?;
             if parameter.ty != parameter.ty.erase()

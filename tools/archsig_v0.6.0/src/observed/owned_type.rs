@@ -109,19 +109,22 @@ impl Environment<'_> {
             owners: vec![],
             type_span: spec.type_span.ok_or("元Owned型位置がない")?,
         };
-        self.restrict_object_domain(&spec.domain_type, &mut domain)?;
+        // 明示されたownerは固定参照。公開環境の別rootの族へ交差しない。
+        if self.architecture_ref().is_none() {
+            self.restrict_object_domain(&spec.domain_type, &mut domain)?;
+        }
         if !domain.missing.is_empty() {
             domain.values = None;
         }
         Ok(domain)
     }
 
-    fn restrict_object_domain(
+    pub(super) fn restrict_object_domain(
         &self,
         ty: &Type,
         domain: &mut TypeDomain,
     ) -> Result<(), ValidationFailure> {
-        if let Some(object) = self.object
+        if let Some(object) = self.object_domain()
             && object.is_local(ty)
         {
             object.restrict(
@@ -434,7 +437,7 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        if !quantifier::has_owner(original, &self.control)? && self.object.is_none() {
+        if !quantifier::has_owner(original, &self.control)? && self.object_domain().is_none() {
             return Ok(None);
         }
         let bindings = self.expression_bindings(graph, source)?;
@@ -494,6 +497,7 @@ impl Environment<'_> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);

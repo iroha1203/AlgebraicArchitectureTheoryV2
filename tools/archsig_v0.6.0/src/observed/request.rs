@@ -400,20 +400,6 @@ fn resolve_inner(
             phase(control, Checkpoint::RequestBinding)?;
             continue;
         }
-        if checked_find(
-            &raw.arguments,
-            |(key, _)| key == "on",
-            control,
-            Checkpoint::RequestBinding,
-        )?
-        .is_some()
-        {
-            return Err(ResolveFailure::NotApplicable {
-                request: raw.id,
-                kind: raw.kind,
-                architecture_environment: true,
-            });
-        }
         let Selector::Declaration { name } = &raw.head else {
             return Err(invalid(problem(
                 RequestIssueCode::Reference,
@@ -435,6 +421,44 @@ fn resolve_inner(
         let mut dependencies = BTreeSet::new();
         for (key, value) in raw.arguments {
             phase(control, Checkpoint::RequestBinding)?;
+            if key == "on" {
+                let Selector::Answer { id, path } = &value else {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Type,
+                        &raw.id,
+                        "on",
+                        "onはArchitectureの公開Handleを指定する",
+                    )));
+                };
+                if path.is_empty() {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Projection,
+                        &raw.id,
+                        "on",
+                        "onはArchitectureの出力fieldまで指定する",
+                    )));
+                }
+                dependencies.insert(id.clone());
+                if arguments
+                    .insert(
+                        "on".into(),
+                        RequestArgument {
+                            name: "on".into(),
+                            value,
+                            origin: ArgumentOrigin::Explicit,
+                        },
+                    )
+                    .is_some()
+                {
+                    return Err(invalid(problem(
+                        RequestIssueCode::DuplicateArgument,
+                        &raw.id,
+                        "on",
+                        "onが重複している",
+                    )));
+                }
+                continue;
+            }
             let name = key.strip_prefix("bind.").unwrap_or(&key);
             checked_require(
                 params,
@@ -514,7 +538,11 @@ fn resolve_inner(
             }
             phase(control, Checkpoint::RequestBinding)?;
         }
-        let mut defaults = vec![RequestDefault::ObservedEnvironment];
+        let mut defaults = if arguments.contains_key("on") {
+            vec![]
+        } else {
+            vec![RequestDefault::ObservedEnvironment]
+        };
         if !unbound.is_empty() {
             defaults.push(RequestDefault::UniversalParameters {
                 declaration: full.clone(),
@@ -615,6 +643,45 @@ fn resolve_inner(
             req.kind,
         )
         .unwrap();
+        if let Some(on) = checked_find(
+            &req.arguments,
+            |a| a.name == "on",
+            control,
+            Checkpoint::RequestBinding,
+        )? {
+            let (plan, _) = selector_type(
+                law,
+                map,
+                &requests,
+                &names,
+                &on.value,
+                control,
+                (&req.id, "on"),
+            )?;
+            fn architecture(ty: &ProjectionType, c: &mut Control) -> Result<bool, ResolveFailure> {
+                phase(c, Checkpoint::RequestBinding)?;
+                match ty {
+                    ProjectionType::Architecture | ProjectionType::ArchitectureRoot(_) => Ok(true),
+                    ProjectionType::Dynamic(options) => {
+                        for option in options {
+                            if architecture(option, c)? {
+                                return Ok(true);
+                            }
+                        }
+                        Ok(false)
+                    }
+                    _ => Ok(false),
+                }
+            }
+            if !architecture(&plan.ty, control)? {
+                return Err(invalid(problem(
+                    RequestIssueCode::Type,
+                    &req.id,
+                    "on",
+                    "onのHandleはArchitectureである必要がある",
+                )));
+            }
+        }
         let mut constraints = Vec::new();
         let expected_owners = owner_bindings(req, control)?;
         for param in params {

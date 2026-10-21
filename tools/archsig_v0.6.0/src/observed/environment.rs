@@ -13,6 +13,8 @@ use crate::{
     law::ast::{BinOp, ExprKind, UnOp},
     types::Type,
 };
+#[path = "architecture_environment.rs"]
+pub(super) mod architecture_environment;
 #[path = "answer_binding.rs"]
 mod answer_binding;
 pub(in crate::observed) use answer_binding::AnswerBinding;
@@ -319,7 +321,8 @@ type NameTokenObserver = Box<dyn FnMut((usize, usize), super::call::Context)>;
 
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
-    object: Option<&'a super::object_evaluate::ObjectContext>,
+    object: Option<std::sync::Arc<super::object_evaluate::ObjectDomain>>,
+    architecture: RefCell<Option<architecture_environment::ArchitectureContext>>,
     original_requests: Option<&'a [Request]>,
     subjects: BTreeMap<(String, String), &'a Subject>,
     fields: BTreeMap<(String, String, String), &'a crate::archmap::Field>,
@@ -354,7 +357,10 @@ impl<'a> Environment<'a> {
     ) -> Result<Self, StopReason> {
         let mut environment =
             Self::with_requests(prepared.inputs(), prepared.requests().requests(), control)?;
-        environment.object = prepared.object.as_ref();
+        environment.object = prepared
+            .object
+            .as_ref()
+            .map(|o| std::sync::Arc::new(o.domain.clone()));
         Ok(environment)
     }
     pub(in crate::observed) fn with_requests(
@@ -435,6 +441,7 @@ impl<'a> Environment<'a> {
         Ok(Self {
             inputs,
             object: None,
+            architecture: RefCell::new(None),
             subjects,
             fields,
             atoms,
@@ -650,6 +657,7 @@ impl<'a> Environment<'a> {
             let previous_universal = self.universal_context.replace(None);
             let previous_completion = self.completion_values.replace(Vec::new());
             let result = (|| {
+                let _architecture = self.enter_architecture(graph)?;
                 if let Some(Payload::Construction(value)) = &node.payload {
                     if context.frame.is_some()
                         || context.iteration.is_some()
@@ -710,6 +718,7 @@ impl<'a> Environment<'a> {
                     }
                     return Ok(());
                 }
+                self.validate_evaluation_environment(graph, node, limit)?;
                 if let Some(case) = context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
@@ -1584,6 +1593,7 @@ impl<'a> Environment<'a> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         {
             let application = node
@@ -3828,6 +3838,21 @@ impl<'a> Environment<'a> {
         request: &Request,
         answer: &Answer,
     ) -> Result<(), ValidationFailure> {
+        if self.original_requests.is_some() {
+            self.with_request_context(graph, request, || {
+                let _architecture = self.enter_architecture(graph)?;
+                self.validate_answer_current(graph, request, answer)
+            })
+        } else {
+            self.validate_answer_current(graph, request, answer)
+        }
+    }
+    fn validate_answer_current(
+        &self,
+        graph: &Graph,
+        request: &Request,
+        answer: &Answer,
+    ) -> Result<(), ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
             if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
@@ -3901,8 +3926,10 @@ impl<'a> Environment<'a> {
             }
             let previous = self.context.replace(Some(context));
             let old_cutoff = self.cutoff.replace(graph.nodes.len());
-            let result = self
-                .validate_answer_in_context(graph, request, answer)
+            let result = (|| {
+                let _architecture = self.enter_architecture(graph)?;
+                self.validate_answer_in_context(graph, request, answer)
+            })()
                 .map_err(|failure| match failure {
                     ValidationFailure::UnsupportedExpression { feature, .. } => {
                         ValidationFailure::Internal(format!(
@@ -3992,7 +4019,14 @@ impl<'a> Environment<'a> {
         };
         self.source_matches(graph, source, body)?;
         self.recheck_evaluation(graph, evaluation)?;
-        if bindings.len() != params.len() || request.arguments.len() != params.len() {
+        if bindings.len() != params.len()
+            || request
+                .arguments
+                .iter()
+                .filter(|a| a.name.starts_with("bind."))
+                .count()
+                != params.len()
+        {
             return Err("Requestの明示束縛数がAnswerと違う".into());
         }
         for (parameter, binding) in params.iter().zip(bindings) {
@@ -5299,6 +5333,7 @@ impl<'a> Environment<'a> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);
@@ -5809,6 +5844,7 @@ impl<'a> Environment<'a> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);
@@ -8518,7 +8554,8 @@ impl<'a> Environment<'a> {
                         },
                     ..
                 } = &self.inputs.law().exprs[id].kind
-                && (quantifier::has_owner(original, &self.control)? || self.object.is_some())
+                && (quantifier::has_owner(original, &self.control)?
+                    || self.object_domain().is_some())
             {
                 // validate_quant_evaluationが元owner・域または欠測を検査した。
                 // 未知域も型の所属判断に使った支持を保持し、値/子だけへ縮めない。
@@ -8703,6 +8740,7 @@ impl<'a> Environment<'a> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Err("適用評価でない".into());
@@ -8865,6 +8903,7 @@ impl<'a> Environment<'a> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);
@@ -9390,6 +9429,7 @@ impl<'a> Environment<'a> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);
@@ -9412,7 +9452,7 @@ impl<'a> Environment<'a> {
         }
         let spec = quantifier::spec(self.inputs.law(), *id, &self.control)?;
         if spec.domain.is_none()
-            && (!spec.owners.is_empty() || self.object.is_some())
+            && (!spec.owners.is_empty() || self.object_domain().is_some())
             && self.validate_owned_type_unknown(graph, node, *id, limit)?
         {
             return Ok(true);

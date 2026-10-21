@@ -63,6 +63,16 @@ impl Environment<'_> {
             let Some((ProjectionStep::Field(field), rest)) = path.split_first() else {
                 return Err(self.answer_projection_unprovided(span));
             };
+            if field == "environment" {
+                let Some(Payload::Evaluation {
+                    environment: Some(reference),
+                    ..
+                }) = &original.payload
+                else {
+                    return Ok(AnswerBinding::Inapplicable(root));
+                };
+                return self.answer_projection(graph, *reference, rest, span);
+            }
             if field != "value" {
                 return Ok(AnswerBinding::Inapplicable(root));
             }
@@ -257,6 +267,9 @@ impl Environment<'_> {
         for argument in &request.arguments {
             self.tick()?;
             if !matches!(argument.value, Selector::Answer { .. }) {
+                continue;
+            }
+            if argument.name == "on" {
                 continue;
             }
             let parameter = params

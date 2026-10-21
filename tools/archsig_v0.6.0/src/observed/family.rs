@@ -327,15 +327,70 @@ impl Environment<'_> {
         types: &[Type],
         observer: &mut dyn FnMut(&'static str, usize),
     ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
-        self.finite_values(
-            &if types.len() == 1 {
-                types[0].clone()
-            } else {
-                Type::Tuple(types.to_vec())
-            },
-            observer,
-        )
+        if self.object_domain().is_none() {
+            return self.finite_values(
+                &if types.len() == 1 {
+                    types[0].clone()
+                } else {
+                    Type::Tuple(types.to_vec())
+                },
+                observer,
+            );
+        }
+        let mut result = super::super::finite::Enumeration::default();
+        let mut rows: Vec<Vec<Scalar>> = vec![vec![]];
+        for ty in types {
+            let family = self.family_values(ty, observer)?;
+            result.scope.merge(&family.scope);
+            result.support.extend(family.support);
+            let mut next = vec![];
+            for row in rows {
+                for value in &family.values {
+                    self.tick()?;
+                    observer("type_enum", next.len());
+                    let mut row = row.clone();
+                    row.push(value.clone());
+                    next.push(row);
+                }
+            }
+            rows = next;
+        }
+        result.values = rows
+            .into_iter()
+            .map(|mut row| {
+                if types.len() == 1 {
+                    row.remove(0)
+                } else {
+                    Scalar::Tuple(row)
+                }
+            })
+            .collect();
+        result.support.sort();
+        result.support.dedup();
+        Ok(result)
     }
+    pub(in crate::observed) fn family_values(
+        &self,
+        ty: &Type,
+        observer: &mut dyn FnMut(&'static str, usize),
+    ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
+        let enumeration = self.finite_values(ty, observer)?;
+        let mut domain = super::owned_type::TypeDomain {
+            values: Some(enumeration.values),
+            scope: enumeration.scope,
+            support: enumeration.support,
+            missing: vec![],
+            owners: vec![],
+            type_span: (0, 0),
+        };
+        self.restrict_object_domain(ty, &mut domain)?;
+        Ok(super::super::finite::Enumeration {
+            values: domain.values.ok_or("完成対象のparameter域が未確定")?,
+            scope: domain.scope,
+            support: domain.support,
+        })
+    }
+
     fn family_domains(
         &self,
         graph: &Graph,
@@ -535,7 +590,7 @@ impl Environment<'_> {
             if let Some(Payload::Scalar(value)) = &node.payload {
                 let p = plan.unbound.iter().position(|p| Some(p.span) == origin);
                 let (expected_values, scope, support) = if let Some(p) = p {
-                    let enumeration = self.finite_values(&plan.unbound[p].ty, &mut |_, _| {})?;
+                    let enumeration = self.family_values(&plan.unbound[p].ty, &mut |_, _| {})?;
                     let mut scope = graph.get(source)?.scope.clone();
                     scope.merge(&enumeration.scope);
                     if node.arguments.len() == 1 {
@@ -601,7 +656,7 @@ impl Environment<'_> {
                         if ty != &p.ty {
                             return Err("parameter Domain型が違う".into());
                         }
-                        let e = self.finite_values(&p.ty, &mut |_, _| {})?;
+                        let e = self.family_values(&p.ty, &mut |_, _| {})?;
                         let mut scope = graph.get(source)?.scope.clone();
                         scope.merge(&e.scope);
                         (e, scope, 1)
@@ -1025,7 +1080,14 @@ impl Environment<'_> {
             else {
                 return Err("補完非適用の元Law/guardがない".into());
             };
-            if params.len() != bindings.len() || request.arguments.len() != params.len() {
+            if params.len() != bindings.len()
+                || request
+                    .arguments
+                    .iter()
+                    .filter(|a| a.name.starts_with("bind."))
+                    .count()
+                    != params.len()
+            {
                 return Err("補完非適用の明示束縛数が違う".into());
             }
             for (parameter, binding) in params.iter().zip(bindings) {
@@ -1174,6 +1236,7 @@ impl Environment<'_> {
                     parts,
                     value,
                     applicability,
+                    ..
                 }) => {
                     let expected_args = std::iter::once(instance)
                         .chain(std::iter::once(a.domain))
@@ -1319,6 +1382,7 @@ impl Environment<'_> {
                     parts,
                     value,
                     applicability,
+                    ..
                 }) => {
                     let (_, bs, _) = self.evaluation(graph, guard)?;
                     let guard_node = graph.get(guard)?;

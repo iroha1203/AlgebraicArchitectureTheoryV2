@@ -955,6 +955,7 @@ pub(crate) enum Payload {
         bindings: Vec<Binding>,
     },
     Evaluation {
+        environment: Option<NodeRef>,
         expression: NodeRef,
         bindings: Vec<Binding>,
         parts: Vec<Part>,
@@ -1162,6 +1163,7 @@ impl Payload {
                 ("bindings", bindings_wire(bindings)),
             ]),
             Self::Evaluation {
+                environment,
                 expression,
                 bindings,
                 parts,
@@ -1196,6 +1198,9 @@ impl Payload {
                 ]);
                 if let Some(v) = value {
                     wire.insert("value".into(), v.wire());
+                }
+                if let Some(environment) = environment {
+                    wire.insert("environment".into(), environment.wire());
                 }
                 Json::Obj(wire)
             }
@@ -2917,6 +2922,7 @@ impl Graph {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);
@@ -2980,6 +2986,7 @@ impl Graph {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);
@@ -3352,6 +3359,7 @@ impl Graph {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
         else {
             return Ok(false);
@@ -4019,6 +4027,16 @@ impl Graph {
         committed: impl FnOnce(NodeRef),
     ) -> Result<NodeRef, ValidationFailure> {
         self.tick()?;
+        if let Some(Payload::Evaluation {
+            environment: Some(r),
+            ..
+        }) = &node.payload
+        {
+            self.expect(
+                *r,
+                &NodeType::Construction(super::construction_result::ConstructionType::Architecture),
+            )?;
+        }
         for &r in &node.arguments {
             self.tick()?;
             self.get(r)?;
@@ -4163,6 +4181,7 @@ impl Graph {
                     parts,
                     value,
                     applicability,
+                    ..
                 }),
             ) => {
                 self.expect(*expression, &NodeType::Expression(t.clone()))?;

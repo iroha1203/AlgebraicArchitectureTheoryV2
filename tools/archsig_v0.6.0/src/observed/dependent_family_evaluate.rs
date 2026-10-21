@@ -407,6 +407,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push_law_evaluation(Node {
             ty: NodeType::Evaluation(Type::Bool),
             payload: Some(Payload::Evaluation {
+                environment: self.environment.architecture_ref(),
                 expression: source,
                 bindings: fixed_bindings,
                 parts: vec![Part {

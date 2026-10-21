@@ -52,6 +52,9 @@ impl Environment<'_> {
         scope.readings.insert(declaration.reading.clone());
         for argument in &request.arguments {
             self.tick()?;
+            if argument.name == "on" {
+                continue;
+            }
             let Selector::Answer { id, path } = &argument.value else {
                 continue;
             };

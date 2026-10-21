@@ -199,18 +199,22 @@ fn projection_table_rejects_metadata_and_static_bounds_but_keeps_dynamic_conditi
 }
 
 #[test]
-fn architecture_and_other_kinds_have_a_dedicated_applicability_result() {
+fn architecture_on_is_checked_as_a_handle_while_other_kinds_remain_unimplemented() {
     let (law, map) = inputs();
-    for (text, environment) in [
-        ("a=build(R,on=@v/s)", false),
-        ("a=diagnose($d.system,degree=1)", false),
-        ("a=evaluate(R.number,on=$b.object,s=@v/s)", true),
-        ("a=evaluate(R.named,on=@v/s)", true),
-    ] {
-        assert!(
-            matches!(resolve_observed_requests(&law,&map,&[text]),Err(ResolveFailure::NotApplicable { architecture_environment,.. }) if architecture_environment == environment)
-        );
+    for text in ["a=build(R,on=@v/s)", "a=diagnose($d.system,degree=1)"] {
+        assert!(matches!(
+            resolve_observed_requests(&law, &map, &[text]),
+            Err(ResolveFailure::NotApplicable {
+                architecture_environment: false,
+                ..
+            })
+        ));
     }
+    rejects(
+        &["a=evaluate(R.number,on=$b.object,s=@v/s)"],
+        RequestIssueCode::Reference,
+    );
+    rejects(&["a=evaluate(R.named,on=@v/s)"], RequestIssueCode::Type);
     assert!(resolve_observed_requests(&law, &map, &["a=evaluate(R.named,bind.on=@v/s)"]).is_ok());
 }
 

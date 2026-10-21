@@ -43,6 +43,7 @@ fn evaluation_payload(node: &Node) -> Result<EvaluationPayload<'_>, ValidationFa
         parts,
         value,
         applicability,
+        ..
     }) = &node.payload
     else {
         return Err("全域評価のpayloadがEvaluationでない".into());
@@ -455,6 +456,7 @@ impl Environment<'_> {
             parts,
             value,
             applicability,
+            ..
         }) = &node.payload
             && let Some(record) = self.universal_witness_record(graph, *expression)?
         {
