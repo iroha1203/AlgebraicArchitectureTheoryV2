@@ -1,0 +1,12 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Helper {
+  use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
+  use vocabulary Foreign version "1" digest "@FOREIGN_DIGEST@";
+  view outside(a: Instances.Root): Bool = forall w: Foreign.Part . w.owner = a;
+}
+reading Selected {
+  use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
+  @SELECTED_FOREIGN@
+  use Helper as H;
+  view probe(c: Instances.Part): Bool = H.outside(c.owner);
+}

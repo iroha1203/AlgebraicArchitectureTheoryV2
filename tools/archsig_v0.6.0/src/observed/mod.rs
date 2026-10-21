@@ -9,6 +9,7 @@ pub mod evaluate;
 mod finite;
 mod needed;
 mod numeric;
+pub(crate) mod object_evaluate;
 mod path_value;
 mod quantifier;
 pub mod result;
@@ -32,6 +33,7 @@ use std::sync::Arc;
 pub struct PreparedObserved {
     inputs: Arc<CheckedInputs>,
     requests: ResolvedRequests,
+    object: Option<object_evaluate::ObjectContext>,
 }
 
 impl PreparedObserved {
@@ -46,6 +48,15 @@ impl PreparedObserved {
 
     pub fn requests(&self) -> &ResolvedRequests {
         &self.requests
+    }
+
+    /// native対象読取りのcontext。通常の観測環境ではNone。
+    pub fn object_identity(&self) -> Option<&crate::construction::maps::ObjectIdentity> {
+        self.object.as_ref().map(|object| &object.identity)
+    }
+
+    pub fn object_instance(&self) -> Option<&crate::construction::readings::ObjectInstance> {
+        self.object.as_ref().map(|object| &object.instance)
     }
 }
 
@@ -130,7 +141,11 @@ pub fn prepare_shared_observed(
     control: &mut Control,
 ) -> Result<PreparedObserved, PrepareFailure> {
     match resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), texts, control) {
-        Ok(requests) => Ok(PreparedObserved { inputs, requests }),
+        Ok(requests) => Ok(PreparedObserved {
+            inputs,
+            requests,
+            object: None,
+        }),
         Err(failure) => Err(PrepareFailure::Requests { inputs, failure }),
     }
 }

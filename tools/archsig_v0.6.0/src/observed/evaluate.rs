@@ -2719,9 +2719,7 @@ fn evaluate_observed_with_validator(
     let mut internal = false;
     let mut not_implemented = None;
     {
-        let environment =
-            Environment::with_requests(prepared.inputs(), prepared.requests().requests(), control)
-                .ok();
+        let environment = Environment::with_prepared(&prepared, control).ok();
         for &index in prepared.requests().evaluation_order() {
             let request = &prepared.requests().requests()[index];
             let declaration = request

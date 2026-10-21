@@ -319,6 +319,7 @@ type NameTokenObserver = Box<dyn FnMut((usize, usize), super::call::Context)>;
 
 pub(crate) struct Environment<'a> {
     pub inputs: &'a CheckedInputs,
+    object: Option<&'a super::object_evaluate::ObjectContext>,
     original_requests: Option<&'a [Request]>,
     subjects: BTreeMap<(String, String), &'a Subject>,
     fields: BTreeMap<(String, String, String), &'a crate::archmap::Field>,
@@ -347,6 +348,15 @@ pub(crate) struct Environment<'a> {
     name_token_observer: RefCell<Option<NameTokenObserver>>,
 }
 impl<'a> Environment<'a> {
+    pub(in crate::observed) fn with_prepared(
+        prepared: &'a super::PreparedObserved,
+        control: &mut Control,
+    ) -> Result<Self, StopReason> {
+        let mut environment =
+            Self::with_requests(prepared.inputs(), prepared.requests().requests(), control)?;
+        environment.object = prepared.object.as_ref();
+        Ok(environment)
+    }
     pub(in crate::observed) fn with_requests(
         inputs: &'a CheckedInputs,
         requests: &'a [Request],
@@ -424,6 +434,7 @@ impl<'a> Environment<'a> {
         control.checkpoint(Checkpoint::FiniteIteration)?;
         Ok(Self {
             inputs,
+            object: None,
             subjects,
             fields,
             atoms,
@@ -8422,7 +8433,7 @@ impl<'a> Environment<'a> {
                         },
                     ..
                 } = &self.inputs.law().exprs[id].kind
-                && quantifier::has_owner(original, &self.control)?
+                && (quantifier::has_owner(original, &self.control)? || self.object.is_some())
             {
                 // validate_quant_evaluationが元owner・域または欠測を検査した。
                 // 未知域も型の所属判断に使った支持を保持し、値/子だけへ縮めない。
@@ -9315,7 +9326,10 @@ impl<'a> Environment<'a> {
             return Err("量化Evaluationの元part/束縛が違う".into());
         }
         let spec = quantifier::spec(self.inputs.law(), *id, &self.control)?;
-        if !spec.owners.is_empty() && self.validate_owned_type_unknown(graph, node, *id, limit)? {
+        if spec.domain.is_none()
+            && (!spec.owners.is_empty() || self.object.is_some())
+            && self.validate_owned_type_unknown(graph, node, *id, limit)?
+        {
             return Ok(true);
         }
         let mut children = parts[0].children.clone();

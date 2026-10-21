@@ -1,0 +1,15 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{
+    "semantics": "archsig/0.6.0",
+    "namespace": "Foreign",
+    "version": "1",
+    "dependencies": [{"namespace":"Instances","version":"1","digest":"@INSTANCES_DIGEST@"}],
+    "declarations": [{
+      "kind":"entity","name":"Foreign.Part","meaning":"helperが参照する別語彙の個体。",
+      "parameters":[{"name":"owner","type":["Ref","Instances.Root"],"meaning":"元語彙のrootを参照する。"}],
+      "fields":[],"alignments":[]
+    }]
+  }]
+}

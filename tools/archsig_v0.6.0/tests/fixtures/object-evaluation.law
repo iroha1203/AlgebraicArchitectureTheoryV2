@@ -1,0 +1,25 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Helper {
+  use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
+  view external(x: External): Z = x.quantity;
+  view same(c: Part): Bool = forall x: Part . x = c;
+}
+reading Selected {
+  use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
+  use Helper as H;
+  view amount(c: Part): Z = c.quantity;
+  view named(on: Part): Z = on.quantity;
+  view same(c: Part): Bool = forall x: Part . x = c;
+  view viaHelper(c: Part): Bool = H.same(c);
+  view tautology(c: Part): Bool = forall x: Part . x = x;
+  view root(a: Root): Bool = forall x: Root . x = a;
+  view external(c: Part, x: External): Z = H.external(x);
+  view allExternal(c: Part): Bool = forall x: External . x.quantity <= 11;
+  view composite(c: Part): Bool = forall xs: Set<Part> . forall x in xs . x.quantity <= 2;
+  view owned(a: Root): Bool = forall x: Part[a] . x.quantity <= 2;
+  view empty(c: Part): Bool = forall a: Root . false;
+  view flag(c: Part, b: Bool): Bool = b;
+  law required bounded(c: Part, delta: Z): c.quantity + delta = delta + 2;
+  law optional guarded(c: Part, b: Bool) when b: false;
+  law optional exact(c: Part): c.quantity = 2;
+}
