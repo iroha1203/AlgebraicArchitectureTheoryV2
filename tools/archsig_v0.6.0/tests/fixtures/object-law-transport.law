@@ -1,0 +1,37 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  law required bounded(c: Left.Child): c.count = 2;
+  law required no(c: Left.Child): false;
+  law optional advisory(c: Left.Child): false;
+  law required role(c: Left.Child): true;
+  law required guarded(c: Left.Child) when c.count = 2: false;
+  law required vacuous(c: Left.Child) when false: false;
+  law required unknownGuard(c: Left.Child) when c.count = 2: true;
+  law required external(c: Left.Child, x: Bridge.Move): x = x;
+  law required boundary(c: Left.Child, x: Right.Child): true;
+  law required conditional(c: Left.Child, a: Left.ExternalRoot, e: Left.ExternalChild[a]): true;
+  law required family(c: Left.Child, b: Bool): b;
+  law required whole(c: Left.Child) when true: forall k: Z. k = 0;
+  law required nested(c: Left.Child): forall k: Z. k = k;
+}
+reading After {
+  use vocabulary Left version "1" digest "@LEFT_DIGEST@";
+  use vocabulary Right version "1" digest "@RIGHT_DIGEST@";
+  use vocabulary Bridge version "1" digest "@BRIDGE_DIGEST@";
+  law required bounded(d: Right.Child): 2 = 2;
+  law required no(d: Right.Child): false;
+  law optional advisory(d: Right.Child): false;
+  law optional role(d: Right.Child): true;
+  law required guarded(d: Right.Child) when true: false;
+  law required vacuous(d: Right.Child) when false: true;
+  law required unknownGuard(d: Right.Child) when true: true;
+  law required external(d: Right.Child, z: Bridge.Move): z = z;
+  law required boundary(d: Right.Child, y: Right.Child): true;
+  law required conditional(d: Right.Child, z: Left.ExternalRoot, w: Left.ExternalChild[z]): true;
+  law required family(d: Right.Child, q: Bool): q;
+  law required whole(d: Right.Child) when true: forall n: Z. n = 0;
+  law required nested(d: Right.Child): forall n: Z. n = n;
+}

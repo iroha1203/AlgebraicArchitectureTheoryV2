@@ -1,4 +1,5 @@
 //! 対応する対象の全束縛viewを実評価し、型全域の値写像との可換性を検査する。
+use super::object_transport::same_evaluation;
 use super::{
     control::{Checkpoint, Control, StopReason},
     data, finite,
@@ -259,40 +260,7 @@ impl ObjectViewTransport {
         Ok(())
     }
 }
-fn same_evaluation(a: Option<&ObjectEvaluation>, b: Option<&ObjectEvaluation>) -> bool {
-    match (a, b) {
-        (None, None) => true,
-        (Some(a), Some(b))
-            if a.readings() == b.readings()
-                && a.object() == b.object()
-                && a.instance() == b.instance() =>
-        {
-            match (a.outcome(), b.outcome()) {
-                (
-                    ObjectEvaluationOutcome::NotApplicable,
-                    ObjectEvaluationOutcome::NotApplicable,
-                ) => true,
-                (
-                    ObjectEvaluationOutcome::Conditional(a),
-                    ObjectEvaluationOutcome::Conditional(b),
-                ) => a == b,
-                (ObjectEvaluationOutcome::Evaluated(a), ObjectEvaluationOutcome::Evaluated(b)) => {
-                    a.nodes == b.nodes
-                        && b.nodes == a.nodes
-                        && a.answers == b.answers
-                        && a.issues == b.issues
-                        && a.status == b.status
-                        && a.prepared().inputs().sources() == b.prepared().inputs().sources()
-                        && a.prepared().requests().requests() == b.prepared().requests().requests()
-                        && a.prepared().object_identity() == b.prepared().object_identity()
-                        && a.prepared().object_instance() == b.prepared().object_instance()
-                }
-                _ => false,
-            }
-        }
-        _ => false,
-    }
-}
+
 fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectViewTransport)
         .map_err(Into::into)
@@ -433,44 +401,16 @@ fn checked_view_transport(
             tick(c)?;
             return Ok(());
         };
-        let mut bindings = Vec::new();
-        for b in r.instance().bindings() {
-            tick(c)?;
-            let target_parameter = pair
-                .parameters()
-                .iter()
-                .find(|(name, _)| name == &b.parameter().name)
-                .ok_or_else(|| ConstructionFailure::Inconsistent("対応parameterがない".into()))?;
-            let f = b.subject();
-            let image =
-                if r.objects
-                    .action()
-                    .source_configuration()
-                    .family()
-                    .contains(f)
-                {
-                    r.objects.action().image(f).ok_or_else(|| {
-                        ConstructionFailure::Inconsistent("参照束縛の像がない".into())
-                    })?
-                } else {
-                    f
-                };
-            bindings.push((target_parameter.1.clone(), image.clone()));
-        }
-        for (index, row) in r.target_readings.instances().iter().enumerate() {
-            tick(c)?;
-            if row.declaration().name == pair.target()
-                && row.bindings().len() == bindings.len()
-                && row.bindings().iter().all(|b| {
-                    bindings
-                        .iter()
-                        .any(|(name, f)| name == &b.parameter().name && f == b.subject())
-                })
-            {
-                r.target_instance = Some(index);
-                break;
-            }
-        }
+        let mapped = super::object_transport::mapped_instance(
+            &r.objects,
+            r.instance(),
+            pair,
+            &r.target_readings,
+            c,
+            Checkpoint::ObjectViewTransport,
+        )?;
+        r.target_instance = mapped.index;
+        let bindings = mapped.bindings;
         let (Some(to), Some(ti)) = (r.target_object, r.target_instance) else {
             r.outcome = ViewTransportOutcome::Refuted(ViewConditionFailure::TargetInstance {
                 declaration: pair.target().into(),

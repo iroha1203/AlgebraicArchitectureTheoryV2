@@ -210,6 +210,17 @@ DeclarationValuePosition::Parameter(0), &mut control)` は署名対応済み宣�
 `operation()` は元操作、`declaration()/position()` は選択位置を保持する。
 `recheck()` は現在入力の宣言対応と数値型から順逆写像を再構成する。式の値の可換性は追加検査で扱う。
 
+`construction::maps::object_law_transport(Arc::clone(&checked), &declarations,
+object_index, instance_index, &mut control)` は対応する参照束縛済みLawを同じ対象別評価器で読み、
+required status・適用条件・適用時の原式成立の保存を計算する。
+`source_reading()/target_reading()` は `required()/application()/body()/conditional()` を持ち、
+対象への非適用、所属条件、guardの真偽、元bodyとguard付き命題の真偽を区別する。
+`outcome()` の成立はLawの読取りの保存を表す。両側の元Lawが反証されても、同じ真偽を保てる。
+`source()/target()` は元の評価DAG・支持・Scopeを保持し、`operation()` は確認済み操作を返す。
+残scalar parameterのあるinstanceは対象・元instance・Operationを持つ `NotImplemented` になる。
+再検査後の停止では `Stopped` がOperationと部分結果を保持し、部分結果の `outcome()` は比較完了時だけ `Some` になる。
+`recheck()` は現在入力からrole・適用・原式の評価と保存条件を再検査する。
+
 `construction::maps::object_view_transport(Arc::clone(&checked), &declarations,
 object_index, instance_index, &mut control)` は元の対象別view instanceの参照束縛を運び、
 同じ三表と対象別評価器による実評価と、戻り型全域の値写像との可換性を検査する。
