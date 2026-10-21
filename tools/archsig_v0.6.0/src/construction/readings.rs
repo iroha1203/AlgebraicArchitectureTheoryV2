@@ -5,6 +5,10 @@ use crate::observed::input::InputBytes;
 pub use crate::observed::object_evaluate::{
     ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome, evaluate_object_instance,
 };
+pub use crate::observed::object_evaluation_table::{
+    ObjectEvaluationPosition, ObjectEvaluationRow, ObjectEvaluationTable,
+    ObjectEvaluationTableFailure, evaluate_object_table,
+};
 use maps::ObjectIdentity;
 
 /// 同じ原始owner slotには同じ値を要求する。条件の成立はまだ観測していない。

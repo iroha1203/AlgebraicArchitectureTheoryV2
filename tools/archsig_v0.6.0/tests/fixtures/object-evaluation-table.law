@@ -1,0 +1,10 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Selected {
+  use vocabulary Instances version "1" digest "@INSTANCES_DIGEST@";
+  view amount(c: Part): Z = c.quantity;
+  view flag(c: Part): Bool = false;
+  law required exact(c: Part): c.quantity = 2;
+  law optional guarded(c: Part) when false: false;
+  law required affine(c: Part, d: Z): c.quantity + d = d + 2;
+  law optional finite(c: Part, b: Bool) when b: false;
+}
