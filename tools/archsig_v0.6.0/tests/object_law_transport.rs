@@ -16,18 +16,18 @@ use archsig::{
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
-const D: &[u8] = include_bytes!("fixtures/object-view-transport.atoms.json");
+const D: &[u8] = include_bytes!("fixtures/object-law-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-law-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
 fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
-    let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
+    let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
     let defs = archsig::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();
     let ld = &defs.vocabularies["Left"].digest;
     let rd = &defs.vocabularies["Right"].digest;
-    let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
+    let bridge = include_str!("fixtures/object-law-transport-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
     let defs = archsig::definition::check_definitions(&[
@@ -242,6 +242,166 @@ fn missing_guard_body_and_object_membership_are_distinct_and_not_false() {
         &LawApplication::OutsideObject
     );
     assert_eq!(r.source_reading().unwrap().body(), None);
+}
+
+#[test]
+fn finite_completions_keep_original_guard_and_body_separate_from_the_implication() {
+    let i = inputs(L, A);
+    for name in ["finiteGuard", "finiteBody", "finiteWhole"] {
+        let r = run(Arc::clone(&i), "p", name, "p");
+        assert_eq!(r.outcome(), &Outcome::Undetermined);
+        let source = r.source_reading().unwrap();
+        assert_eq!(source.application(), &LawApplication::Guard(None));
+        assert_eq!(source.body(), None);
+        assert_eq!(source.conditional(), Some(true));
+        let target = r.target_reading().unwrap();
+        assert_eq!(target.application(), &LawApplication::Guard(Some(true)));
+        assert_eq!(target.body(), Some(true));
+        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        let ObjectEvaluationOutcome::Evaluated(e) = r.source().unwrap().outcome() else {
+            panic!()
+        };
+        let wire = e.wire().canonical();
+        assert!(wire.contains("all_completions"));
+        assert!(wire.contains("not_applicable"));
+        assert!(wire.contains("Left.Child.flag"));
+    }
+    let r = run(Arc::clone(&i), "p", "falseGuard", "p");
+    assert_eq!(r.outcome(), &Outcome::Refuted(Failed::Applicability));
+    let source = r.source_reading().unwrap();
+    assert_eq!(source.application(), &LawApplication::Guard(Some(false)));
+    assert_eq!(source.body(), None);
+    assert_eq!(source.conditional(), Some(true));
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    for name in ["falseBoth", "finiteRead"] {
+        let r = run(Arc::clone(&i), "p", name, "p");
+        assert_eq!(r.outcome(), &Outcome::Preserved);
+        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    }
+}
+
+#[test]
+fn finite_owner_completions_do_not_turn_a_false_or_unknown_guard_into_true() {
+    let map = A.replace(
+        "\"subjects\":[",
+        "\"subjects\":[\n{\"id\":\"z\",\"type\":\"Left.ExternalRoot\",\"origin\":\"model\"},",
+    );
+    let i = inputs(L, &map);
+    let r = run(Arc::clone(&i), "p", "refGuard", "p");
+    assert_eq!(r.outcome(), &Outcome::Undetermined);
+    assert_eq!(
+        r.source_reading().unwrap().application(),
+        &LawApplication::Guard(None)
+    );
+    assert_eq!(r.source_reading().unwrap().conditional(), Some(true));
+    assert!(
+        r.instance()
+            .bindings()
+            .iter()
+            .any(|b| b.parameter().name == "x" && b.subject().subject == "x")
+    );
+    assert!(
+        r.instance()
+            .bindings()
+            .iter()
+            .any(|b| b.parameter().name == "e" && b.subject().subject == "y")
+    );
+    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    let r = run(Arc::clone(&i), "p", "falseRef", "p");
+    assert_eq!(r.outcome(), &Outcome::Refuted(Failed::Applicability));
+    assert_eq!(
+        r.source_reading().unwrap().application(),
+        &LawApplication::Guard(Some(false))
+    );
+    assert_eq!(r.source_reading().unwrap().body(), None);
+    assert_eq!(r.source_reading().unwrap().conditional(), Some(true));
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+}
+
+#[test]
+fn stopped_completion_reading_keeps_the_complete_source_dag_without_a_partial_guard() {
+    let i = inputs(L, A);
+    let d = declarations(&i);
+    let (o, n) = indices(&i, "p", "finiteGuard", "p");
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let normal = object_law_transport(
+        Arc::clone(&i),
+        &d,
+        o,
+        n,
+        &mut Control::new(Limits::default(), move |p| {
+            if p == Checkpoint::ObjectLawTransport {
+                seen.set(seen.get() + 1);
+            }
+            Usage::default()
+        }),
+    )
+    .unwrap();
+    let total = count.get();
+    assert!(total >= 8);
+    // 両補完caseの読取り。後続はsource後・target後・比較後の三checkpoint。
+    for at in [total - 4, total - 3] {
+        for mode in 0..4 {
+            let count = Rc::new(Cell::new(0));
+            let seen = count.clone();
+            let mut c = Control::new(
+                Limits {
+                    time_ms: Some(1),
+                    memory_mib: Some(1),
+                },
+                move |p| {
+                    if p == Checkpoint::ObjectLawTransport {
+                        seen.set(seen.get() + 1);
+                    }
+                    let stop = seen.get() >= at;
+                    Usage {
+                        elapsed_ms: u128::from(stop && mode == 0),
+                        memory_mib: u128::from(stop && mode == 1),
+                        signal: if stop {
+                            match mode {
+                                2 => Some(Signal::Int),
+                                3 => Some(Signal::Term),
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        },
+                    }
+                },
+            );
+            let Error::Stopped {
+                reason,
+                operation,
+                partial: Some(p),
+                ..
+            } = object_law_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err()
+            else {
+                panic!()
+            };
+            assert_eq!(reason, c.stop_reason().unwrap());
+            operation.recheck(&i, &mut quiet()).unwrap();
+            let ObjectEvaluationOutcome::Evaluated(e) = p.source().unwrap().outcome() else {
+                panic!()
+            };
+            let ObjectEvaluationOutcome::Evaluated(original) = normal.source().unwrap().outcome()
+            else {
+                panic!()
+            };
+            assert_eq!(e.wire(), original.wire());
+            assert!(p.source_reading().is_none());
+            assert!(p.target().is_none());
+            assert!(p.target_reading().is_none());
+            assert!(p.outcome().is_none());
+            assert_eq!(count.get(), at);
+            assert!(matches!(
+                object_law_transport(Arc::clone(&i), &d, o, n, &mut c),
+                Err(Error::Construction(ConstructionFailure::Stopped(_)))
+            ));
+            assert_eq!(count.get(), at);
+        }
+    }
 }
 
 #[test]

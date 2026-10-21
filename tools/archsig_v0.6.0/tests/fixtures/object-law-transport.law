@@ -14,6 +14,14 @@ reading Before {
   law required boundary(c: Left.Child, x: Right.Child): true;
   law required conditional(c: Left.Child, a: Left.ExternalRoot, e: Left.ExternalChild[a]): true;
   law required family(c: Left.Child, b: Bool): b;
+  law required finiteGuard(c: Left.Child) when c.flag: true;
+  law required finiteBody(c: Left.Child) when c.flag: c.flag;
+  law required finiteWhole(c: Left.Child) when c.flag: forall k: Z. k = k;
+  law required falseGuard(c: Left.Child) when false: c.flag;
+  law required falseBoth(c: Left.Child) when false: c.flag;
+  law required finiteRead(c: Left.Child): c.flag = c.flag;
+  law required refGuard(c: Left.Child, x: Left.ExternalRoot, e: Left.ExternalChild) when e.owner = x: true;
+  law required falseRef(c: Left.Child, x: Left.ExternalRoot, e: Left.ExternalChild) when false: e.owner = x;
   law required whole(c: Left.Child) when true: forall k: Z. k = 0;
   law required nested(c: Left.Child): forall k: Z. k = k;
 }
@@ -32,6 +40,14 @@ reading After {
   law required boundary(d: Right.Child, y: Right.Child): true;
   law required conditional(d: Right.Child, z: Left.ExternalRoot, w: Left.ExternalChild[z]): true;
   law required family(d: Right.Child, q: Bool): q;
+  law required finiteGuard(d: Right.Child) when true: true;
+  law required finiteBody(d: Right.Child) when true: true;
+  law required finiteWhole(d: Right.Child) when true: forall n: Z. n = n;
+  law required falseGuard(d: Right.Child) when true: true;
+  law required falseBoth(d: Right.Child) when false: false;
+  law required finiteRead(d: Right.Child): true;
+  law required refGuard(d: Right.Child, z: Left.ExternalRoot, w: Left.ExternalChild) when true: true;
+  law required falseRef(d: Right.Child, z: Left.ExternalRoot, w: Left.ExternalChild) when true: true;
   law required whole(d: Right.Child) when true: forall n: Z. n = 0;
   law required nested(d: Right.Child): forall n: Z. n = n;
 }

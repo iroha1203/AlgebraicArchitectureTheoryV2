@@ -215,6 +215,7 @@ object_index, instance_index, &mut control)` は対応する参照束縛済みLa
 required status・適用条件・適用時の原式成立の保存を計算する。
 `source_reading()/target_reading()` は `required()/application()/body()/conditional()` を持ち、
 対象への非適用、所属条件、guardの真偽、元bodyとguard付き命題の真偽を区別する。
+有限補完では各caseの元guardとbodyを読み、条件付き命題全体の真偽と分けて保持する。
 `outcome()` の成立はLawの読取りの保存を表す。両側の元Lawが反証されても、同じ真偽を保てる。
 `source()/target()` は元の評価DAG・支持・Scopeを保持し、`operation()` は確認済み操作を返す。
 残scalar parameterのあるinstanceは対象・元instance・Operationを持つ `NotImplemented` になる。

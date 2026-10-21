@@ -157,7 +157,102 @@ fn boolean(
         },
     }
 }
-fn reading(e: &ObjectEvaluation) -> Result<LawBooleanReading, ConstructionFailure> {
+struct LawTruth {
+    application: Option<bool>,
+    body: Option<bool>,
+    conditional: Option<bool>,
+}
+fn truth_at(
+    e: &ObservedEvaluation,
+    reference: NodeRef,
+    explicit_guard: bool,
+    c: &mut Control,
+) -> Result<LawTruth, ConstructionFailure> {
+    stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        let node = e
+            .nodes
+            .get(reference.0)
+            .ok_or_else(|| inconsistent("Lawの評価参照がない"))?;
+        let Some(Payload::Evaluation {
+            expression,
+            value,
+            parts,
+            applicability,
+            ..
+        }) = &node.payload
+        else {
+            return Err(inconsistent("Lawの適用評価がない"));
+        };
+        let conditional = boolean(e, *value)?;
+        if matches!(
+            e.nodes.get(expression.0).and_then(|n| n.payload.as_ref()),
+            Some(Payload::CompletionSeed { .. })
+        ) {
+            // wholeのapplicabilityは補完族全体の評価を指す。元guardは各caseから読む。
+            let [part] = parts.as_slice() else {
+                return Err(inconsistent("補完集約のcaseがない"));
+            };
+            if part.children.is_empty() {
+                return Err(inconsistent("空の補完族をLaw成立へ使わない"));
+            }
+            let mut applications = Vec::new();
+            let mut bodies = Vec::new();
+            for &child in &part.children {
+                tick(c)?;
+                if child.0 >= reference.0 {
+                    return Err(inconsistent("補完caseの参照が導出順でない"));
+                }
+                let row = truth_at(e, child, explicit_guard, c)?;
+                applications.push(row.application);
+                bodies.push(row.body);
+            }
+            let same = |values: &[Option<bool>]| {
+                values
+                    .first()
+                    .copied()
+                    .flatten()
+                    .filter(|v| values.iter().all(|row| row == &Some(*v)))
+            };
+            let application = same(&applications);
+            let body = if application == Some(true) {
+                conditional
+            } else {
+                same(&bodies)
+            };
+            return Ok(LawTruth {
+                application,
+                body,
+                conditional,
+            });
+        }
+        let application = match *applicability {
+            "applicable" => Some(true),
+            "not_applicable" => Some(false),
+            "undetermined" => None,
+            _ => return Err(inconsistent("Lawの適用状態が不正")),
+        };
+        let raw = if application == Some(true) {
+            // guardが成立するときは、全称評価を含む元Law全体の確定値がbodyの値である。
+            *value
+        } else if explicit_guard {
+            parts
+                .get(1)
+                .ok_or_else(|| inconsistent("Lawの元body評価がない"))?
+                .value
+        } else {
+            *value
+        };
+        Ok(LawTruth {
+            application,
+            body: boolean(e, raw)?,
+            conditional,
+        })
+    })
+}
+fn reading(
+    e: &ObjectEvaluation,
+    c: &mut Control,
+) -> Result<LawBooleanReading, ConstructionFailure> {
     let mut r = LawBooleanReading {
         required: required(e.instance())?,
         application: LawApplication::Guard(None),
@@ -179,47 +274,19 @@ fn reading(e: &ObjectEvaluation) -> Result<LawBooleanReading, ConstructionFailur
         .answers
         .first()
         .ok_or_else(|| inconsistent("Law評価の回答がない"))?;
-    let Some(node) = a
-        .outputs
-        .get("evaluation")
-        .and_then(|r| evaluation.nodes.get(r.0))
-    else {
+    let Some(&root) = a.outputs.get("evaluation") else {
         return Ok(r);
     };
-    let Some(Payload::Evaluation {
-        value,
-        parts,
-        applicability,
-        ..
-    }) = &node.payload
-    else {
-        return Err(inconsistent("Lawの適用評価がない"));
-    };
-    r.application = LawApplication::Guard(match *applicability {
-        "applicable" => Some(true),
-        "not_applicable" => Some(false),
-        "undetermined" => None,
-        _ => return Err(inconsistent("Lawの適用状態が不正")),
-    });
-    r.conditional = boolean(evaluation, *value)?;
     let explicit_guard = e
         .instance()
         .declaration()
         .expressions
         .iter()
         .any(|x| x.kind == ExpressionKind::Guard);
-    let raw = if r.application.value() == Some(true) {
-        // guardが成立するときは、全称評価を含む元Law全体の確定値がbodyの値である。
-        *value
-    } else if explicit_guard {
-        parts
-            .get(1)
-            .ok_or_else(|| inconsistent("Lawの元body評価がない"))?
-            .value
-    } else {
-        *value
-    };
-    r.body = boolean(evaluation, raw)?;
+    let truth = truth_at(evaluation, root, explicit_guard, c)?;
+    r.application = LawApplication::Guard(truth.application);
+    r.body = truth.body;
+    r.conditional = truth.conditional;
     Ok(r)
 }
 
@@ -357,7 +424,7 @@ fn checked_transport(
                 })?,
         );
         if c.stop_reason().is_none() {
-            r.source_reading = r.source.as_ref().map(reading).transpose()?;
+            r.source_reading = r.source.as_ref().map(|e| reading(e, c)).transpose()?;
         }
         tick(c)?;
         r.target = Some(
@@ -370,7 +437,7 @@ fn checked_transport(
             })?,
         );
         if c.stop_reason().is_none() {
-            r.target_reading = r.target.as_ref().map(reading).transpose()?;
+            r.target_reading = r.target.as_ref().map(|e| reading(e, c)).transpose()?;
         }
         tick(c)?;
         if let (Some(source), Some(target)) = (&r.source_reading, &r.target_reading) {
@@ -543,12 +610,12 @@ mod tests {
     };
     use crate::observed::input::{InputSources, check_inputs};
     fn example() -> (Arc<CheckedInputs>, ObjectLawTransport) {
-        let left = include_bytes!("../../tests/fixtures/object-view-transport.atoms.json");
-        let right = include_bytes!("../../tests/fixtures/configuration-map-right.atoms.json");
+        let left = include_bytes!("../../tests/fixtures/object-law-transport.atoms.json");
+        let right = include_bytes!("../../tests/fixtures/object-law-transport-right.atoms.json");
         let ds = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
         let ld = &ds.vocabularies["Left"].digest;
         let rd = &ds.vocabularies["Right"].digest;
-        let bridge = include_str!("../../tests/fixtures/configuration-map-bridge.atoms.json")
+        let bridge = include_str!("../../tests/fixtures/object-law-transport-bridge.atoms.json")
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd);
         let ds = crate::definition::check_definitions(&[
