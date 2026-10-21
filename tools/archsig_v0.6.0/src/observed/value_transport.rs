@@ -156,7 +156,7 @@ fn failure(f: ValidationFailure) -> ConstructionFailure {
         f => ConstructionFailure::Inconsistent(format!("有限値計算の不整合: {f:?}")),
     }
 }
-fn selected_types(
+pub(super) fn selected_types(
     declarations: &DeclarationCorrespondence,
     name: &str,
     position: DeclarationValuePosition,

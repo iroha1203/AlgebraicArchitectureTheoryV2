@@ -201,6 +201,15 @@ Mapの全域性と一価性、Setの像集合を検査し、空の積・関数�
 Unit/Bool/Fp/Refと有限なTuple/Option/Set/Map/dataを扱い、適用域の判定・列挙・等値は同じ核を使う。
 `recheck()` で現在入力から全域と順逆対応を再検査する。
 
+`construction::maps::numeric_declaration_value_transport(&checked, &declarations, "Before.values",
+DeclarationValuePosition::Parameter(0), &mut control)` は署名対応済み宣言のZ/Q/Fpと数値Tuple型に、
+各数値とTuple位置を固定する順逆写像を生成する。戻り型は `DeclarationValuePosition::Return` で選ぶ。
+順逆とも恒等写像なので、有限の値の試行によらず型の全域で互いに逆になる。
+`forward()/inverse()` の `apply(&primitive_value, &mut control)` は同じ数値核で正規値を検査し、
+`apply_value(&typed_value, &mut control)` は型付きの出力を消費する。出力の `ty()/wire()` で型と値を読む。
+`operation()` は元操作、`declaration()/position()` は選択位置を保持する。
+`recheck()` は現在入力の宣言対応と数値型から順逆写像を再構成する。式の値の可換性は追加検査で扱う。
+
 `construction::readings::object_reading_instances(&checked, &configuration, &mut control)`
 は選択readingのLaw/viewを、標準対象域に適用する参照束縛instanceへ展開する。
 `objects()` はbaseとowned entityの部分対象をidentityで保持し、未知所属の候補には
