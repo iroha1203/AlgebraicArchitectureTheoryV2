@@ -45,6 +45,7 @@ pub(super) fn resolve(
             origin: ArgumentOrigin::Explicit,
         });
     }
+    arguments.sort_by(|a, b| a.name.cmp(&b.name));
     let request = Request {
         id: raw.id,
         text: text.into(),

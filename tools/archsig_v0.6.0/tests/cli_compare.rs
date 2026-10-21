@@ -478,3 +478,41 @@ fn comparison_dynamic_index_failure_keeps_original_condition_and_needed() {
     assert_eq!(s(get(answer(&j, "plan"), "status")), "established");
     std::fs::remove_dir_all(dir).unwrap();
 }
+#[test]
+fn comparison_arguments_are_sorted_by_name_while_preserving_original_text() {
+    for kind in ["word", "action"] {
+        let mut outputs: Option<JNode> = None;
+        for reverse in [false, true] {
+            let dir = inputs(&format!("compare-argument-order-{kind}-{reverse}"));
+            let q = if reverse {
+                format!("a=compare($e.value,kind={kind},to=$alias.value)")
+            } else {
+                format!("a=compare($e.value,to=$alias.value,kind={kind})")
+            };
+            let r = asks(
+                &dir,
+                &[fixture::E, "alias=evaluate(Walk.step,e=@v/alias)", &q],
+            );
+            let j = saved(&dir, &r, "complete", if kind == "word" { 1 } else { 0 });
+            let request = &arr(get(&j, "requests"))[2];
+            assert_eq!(s(get(request, "text")), q);
+            assert_eq!(
+                arr(get(request, "arguments"))
+                    .iter()
+                    .map(|a| s(get(a, "name")))
+                    .collect::<Vec<_>>(),
+                ["kind", "to"]
+            );
+            for arg in arr(get(request, "arguments")) {
+                assert_eq!(s(get(arg, "origin")), "explicit");
+            }
+            if let Some(previous) = &outputs {
+                assert_eq!(get(previous, "nodes"), get(&j, "nodes"));
+                assert_eq!(get(previous, "answers"), get(&j, "answers"));
+            } else {
+                outputs = Some(j);
+            }
+            std::fs::remove_dir_all(dir).unwrap();
+        }
+    }
+}
