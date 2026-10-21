@@ -310,6 +310,25 @@ fn reading(
     Ok(r)
 }
 
+/// 補完族の集約ではなく、元DAGの指定caseの適用と述語を読む。
+pub(super) fn native_case_reading(
+    e: &ObjectEvaluation,
+    reference: NodeRef,
+    explicit_guard: bool,
+    c: &mut Control,
+) -> Result<LawBooleanReading, ConstructionFailure> {
+    let ObjectEvaluationOutcome::Evaluated(graph) = e.outcome() else {
+        return reading(e, c);
+    };
+    let truth = truth_at(graph, reference, explicit_guard, c)?;
+    Ok(LawBooleanReading {
+        required: required(e.instance())?,
+        application: LawApplication::Guard(truth.application),
+        body: truth.body,
+        conditional: truth.conditional,
+    })
+}
+
 /// 対応するLawの実評価から、単一または有限parameter全域の保存を計算する。
 pub fn object_law_transport(
     inputs: Arc<CheckedInputs>,

@@ -69,6 +69,9 @@ pub enum Checkpoint {
     ObjectLawFamily,
     ObjectLawCompatibility,
     ObjectLawCompatibilityPoint,
+    ObjectLawResiduals,
+    ObjectLawResidualCase,
+    ObjectLawResidualPoint,
     Expression,
     FiniteIteration,
 }

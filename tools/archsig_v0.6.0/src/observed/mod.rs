@@ -17,6 +17,7 @@ pub(crate) mod object_view_family;
 pub(crate) mod object_view_compatibility;
 pub(crate) mod object_law_transport;
 pub(crate) mod object_law_compatibility;
+pub(crate) mod object_law_residuals;
 mod object_transport;
 pub(crate) mod object_view_transport;
 mod path_value;
