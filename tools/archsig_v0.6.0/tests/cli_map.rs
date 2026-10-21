@@ -969,3 +969,103 @@ fn map_reuse_rejects_saved_values_that_drop_preservation_conditions() {
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+fn graph_scope_run(name: &str, entries: Option<(&str, &str)>, source: &str) -> (PathBuf, Run) {
+    let dir = workdir(name);
+    let (d, l, a) = common::map_scope::fixture(entries, source);
+    for (name, bytes) in [("d.json", d), ("l.law", l), ("a.json", a)] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    let run = asks(&dir, &["m=map(Graph.Move,on=@v/m,reading=GraphRead)"]);
+    (dir, run)
+}
+#[test]
+fn repeated_unknown_reference_refutations_keep_their_all_completions_scope() {
+    let (dir, run) = graph_scope_run(
+        "map-repeated-unknown-scope",
+        None,
+        r#"[["v","p"],["v","p"]]"#,
+    );
+    let result = saved(&dir, &run, "partial", 2);
+    let a = answer(&result, "m");
+    assert_eq!(s(get(get(a, "scope"), "domain")), "all_completions");
+    assert_eq!(
+        s(get(
+            get(
+                node(&result, get(get(a, "outputs"), "proposition")),
+                "scope"
+            ),
+            "domain"
+        )),
+        "all_completions"
+    );
+    let evidence = arr(get(a, "evidence"));
+    assert_eq!(evidence.len(), 1);
+    assert_eq!(
+        s(get(get(node(&result, &evidence[0]), "scope"), "domain")),
+        "all_completions"
+    );
+    let facts = arr(get(get(value(&result, &evidence[0]), "data"), "facts"));
+    for (subject, field) in [("A", "Graph.Root.links"), ("B", "Graph.Root.links")] {
+        assert!(
+            facts
+                .iter()
+                .any(|f| s(get(f, "subject")) == subject && s(get(f, "field")) == field)
+        );
+    }
+    assert!(arr(get(a, "reasons")).iter().any(|r| {
+        s(get(r, "code")) == "missing_observation"
+            && arr(get(r, "missing"))
+                .iter()
+                .any(|f| s(get(f, "field")) == "Graph.Move.entries")
+    }));
+    assert!(!has(get(a, "outputs"), "map") && !has(get(a, "outputs"), "operation"));
+    std::fs::remove_dir_all(dir).unwrap();
+    // pの像はr/sのどちらかであり、同じpの二出現へ異なる像は代入できない。
+    for p in ["r", "s"] {
+        for q in ["r", "s"] {
+            let (dir, run) = graph_scope_run(
+                &format!("map-repeated-completion-{p}-{q}"),
+                Some((p, q)),
+                r#"[["v","p"],["v","p"]]"#,
+            );
+            let result = saved(&dir, &run, "complete", 1);
+            let a = answer(&result, "m");
+            assert_eq!(s(get(a, "status")), "refuted");
+            assert!(!arr(get(a, "evidence")).is_empty());
+            assert_eq!(s(get(get(a, "scope"), "domain")), "finite_model");
+            assert!(!has(get(a, "outputs"), "operation"));
+            std::fs::remove_dir_all(dir).unwrap();
+        }
+    }
+}
+#[test]
+fn fixed_reference_shape_refutations_do_not_acquire_an_unrelated_completion_scope() {
+    for (name, entries, source, code) in [
+        (
+            "map-known-reference-scope",
+            Some(("r", "s")),
+            r#"[["v","p"],["v","p"]]"#,
+            1,
+        ),
+        ("map-constant-shape-scope", None, "[]", 2),
+    ] {
+        let (dir, run) = graph_scope_run(name, entries, source);
+        let result = saved(
+            &dir,
+            &run,
+            if code == 1 { "complete" } else { "partial" },
+            code,
+        );
+        let a = answer(&result, "m");
+        for e in arr(get(a, "evidence")) {
+            assert_eq!(
+                s(get(get(node(&result, e), "scope"), "domain")),
+                "finite_model"
+            );
+        }
+        assert!(!arr(get(a, "evidence")).is_empty());
+        assert_eq!(s(get(get(a, "scope"), "domain")), "finite_model");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}

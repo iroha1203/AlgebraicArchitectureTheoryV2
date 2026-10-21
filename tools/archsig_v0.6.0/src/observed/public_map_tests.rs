@@ -610,3 +610,43 @@ fn failed_candidate_conditions_recheck_original_counterexample_and_construction_
         *condition = NodeRef(0);
     });
 }
+
+#[test]
+fn completion_reference_evidence_and_claims_reject_dropped_or_forged_scope() {
+    let definition = include_bytes!("../../tests/fixtures/configuration-map-graph.atoms.json");
+    let checked = crate::definition::check_definitions(&[("definition0", definition)]).unwrap();
+    let digest = &checked.vocabularies["Graph"].digest;
+    let law = include_str!("../../tests/fixtures/configuration-map-graph.law")
+        .replace("@DIGEST@", digest);
+    let map = include_str!("../../tests/fixtures/configuration-map-graph.archmap.json")
+        .replace("@DIGEST@", digest)
+        .replace(r#""@LINKS_A@""#, r#"[["v","p"],["v","p"]]"#)
+        .replace(r#""@LINKS_B@""#, r#"[["v","r"],["v","s"]]"#)
+        .replace(r#""@MEMBERS_A@""#, "[]")
+        .replace(r#""@MEMBERS_B@""#, "[]")
+        .lines()
+        .filter(|line| !line.contains("m-entries"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let result = evaluate_observed_bytes(
+        InputSources::from_bytes(
+            vec![definition.to_vec()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ),
+        &["m=map(Graph.Move,on=@v/m,reading=GraphRead)"],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    let a = &result.answers[0];
+    assert_eq!(a.status, Decision::Undetermined);
+    assert!(a.scope.completions);
+    assert_eq!(a.evidence.len(), 1);
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    for index in [a.evidence[0].0, a.claim.unwrap().0] {
+        assert!(result.nodes[index].scope.completions);
+        completion_mutation(&result, index, |nodes| {
+            nodes[index].scope.completions = false
+        });
+    }
+}

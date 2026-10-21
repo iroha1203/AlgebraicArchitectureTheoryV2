@@ -1075,20 +1075,13 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
     support.dedup();
     let mut scope = Scope::default();
     if let Witness::Map(m) = &value.witness {
-        let universal = |c: &crate::construction::maps::Counterexample| {
-            matches!(
-                c,
-                crate::construction::maps::Counterexample::ReferenceConstraints { .. }
-            )
-        };
         scope.completions = match value.data {
             ConstructionData::Counterexample { index, .. } => {
-                m.result.counterexamples().get(index).is_some_and(universal)
+                m.result.counterexample_uses_completions(index) == Some(true)
             }
             ConstructionData::Preservation { .. }
-            | ConstructionData::PendingPreservation { .. } => {
-                m.result.counterexamples().iter().any(universal)
-            }
+            | ConstructionData::PendingPreservation { .. } => (0..m.result.counterexamples().len())
+                .any(|index| m.result.counterexample_uses_completions(index) == Some(true)),
             _ => false,
         };
     }

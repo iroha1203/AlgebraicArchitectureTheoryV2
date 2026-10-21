@@ -300,6 +300,7 @@ pub struct CorrespondenceResult {
     map: Option<ConfigurationMap>,
     missing: Vec<FactPointer>,
     counterexamples: Vec<Counterexample>,
+    completion_counterexamples: BTreeSet<usize>,
 }
 impl CorrespondenceResult {
     pub fn correspondence(&self) -> &FactPointer {
@@ -322,6 +323,13 @@ impl CorrespondenceResult {
     }
     pub fn counterexamples(&self) -> &[Counterexample] {
         &self.counterexamples
+    }
+    /// 反例が未知対応の補完を量化して得られたかを、そのnative導出から読む。
+    pub fn counterexample_uses_completions(&self, index: usize) -> Option<bool> {
+        self.counterexamples.get(index).map(|counterexample| {
+            self.completion_counterexamples.contains(&index)
+                || matches!(counterexample, Counterexample::ReferenceConstraints { .. })
+        })
     }
     pub fn reading(&self) -> &str {
         &self.reading
@@ -1048,6 +1056,7 @@ pub fn correspondence_retained(
         map: None,
         missing: vec![],
         counterexamples: vec![],
+        completion_counterexamples: BTreeSet::new(),
     };
     let mut missing = BTreeSet::new();
     let computed = (|| -> Result<(), ConstructionFailure> {
@@ -1231,6 +1240,11 @@ pub fn correspondence_retained(
                                 "始域のAtom値がない".into(),
                             ));
                         };
+                        let mut unresolved = false;
+                        for (snapshot, id) in references(source_value, control)? {
+                            check(control)?;
+                            unresolved |= unknown_subjects.contains(&(snapshot.into(), id.into()));
+                        }
                         if reference_violation(
                             source_value,
                             value,
@@ -1238,17 +1252,17 @@ pub fn correspondence_retained(
                             &unknown_subjects,
                             control,
                         )? {
+                            if unresolved {
+                                result
+                                    .completion_counterexamples
+                                    .insert(result.counterexamples.len());
+                            }
                             result
                                 .counterexamples
                                 .push(Counterexample::ReferenceStructure {
                                     source: fact.clone(),
                                     target: image.clone(),
                                 });
-                        }
-                        let mut unresolved = false;
-                        for (snapshot, id) in references(source_value, control)? {
-                            check(control)?;
-                            unresolved |= unknown_subjects.contains(&(snapshot.into(), id.into()));
                         }
                         if unresolved {
                             reference_fields.push((fact.clone(), image.clone()));

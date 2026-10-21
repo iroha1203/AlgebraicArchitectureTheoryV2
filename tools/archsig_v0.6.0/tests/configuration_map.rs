@@ -1,3 +1,5 @@
+#[path = "common/map_scope.rs"]
+mod map_scope;
 use archsig::{
     construction::{
         ConstructionFailure, FactPointer,
@@ -1362,5 +1364,46 @@ fn completed_relation_counterexamples_survive_stopping_inside_the_preservation_s
             stopped
         );
         assert_eq!(count.get(), at);
+    }
+}
+
+#[test]
+fn native_reference_counterexamples_retain_their_completion_quantification() {
+    for (entries, source, expected) in [
+        (None, r#"[["v","p"],["v","p"]]"#, true),
+        (Some(("r", "s")), r#"[["v","p"],["v","p"]]"#, false),
+        (None, "[]", false),
+    ] {
+        let (d, l, a) = map_scope::fixture(entries, source);
+        let input = check_inputs(
+            InputSources::from_bytes(vec![d], l, a),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let result = correspondence(
+            &input,
+            "v",
+            "m",
+            "GraphRead",
+            None,
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        assert!(matches!(
+            result.counterexamples(),
+            [Counterexample::ReferenceStructure { .. }]
+        ));
+        assert_eq!(result.counterexample_uses_completions(0), Some(expected));
+        assert_eq!(result.counterexample_uses_completions(1), None);
+        result
+            .recheck(
+                &input,
+                "v",
+                "m",
+                "GraphRead",
+                None,
+                &mut Control::unlimited(),
+            )
+            .unwrap();
     }
 }
