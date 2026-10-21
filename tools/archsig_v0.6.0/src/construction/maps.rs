@@ -5,6 +5,7 @@ use crate::archmap::Field;
 mod declarations;
 mod internal;
 mod operations;
+mod references;
 mod transport;
 pub use declarations::{
     DeclarationCandidate, DeclarationConditionFailure, DeclarationCorrespondence, DeclarationPair,
@@ -13,6 +14,9 @@ pub use declarations::{
 pub use internal::{InternalArrowResult, InternalArrows, internal_arrow, internal_arrows};
 pub use operations::{
     ActionDifference, ConfigurationOperation, IdentityConstruction, OperationStep, identity,
+};
+pub use references::{
+    ReferenceBijection, ReferenceConditionFailure, ReferenceTypeTransport, reference_type_transport,
 };
 pub use transport::{
     ConfigurationTransport, GeneratorTransport, Naturality, ObjectTransport,
