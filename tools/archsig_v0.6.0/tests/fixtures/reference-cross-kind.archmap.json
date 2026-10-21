@@ -1,0 +1,209 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "V",
+      "version": "1",
+      "digest": "@DIGEST@"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "counterexample",
+      "locations": [],
+      "note": "cross kind mapping"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "model",
+      "subjects": [
+        {
+          "id": "A",
+          "type": "V.R",
+          "origin": "model"
+        },
+        {
+          "id": "B",
+          "type": "V.R",
+          "origin": "model"
+        },
+        {
+          "id": "p",
+          "type": "V.P",
+          "origin": "model"
+        },
+        {
+          "id": "r",
+          "type": "V.P",
+          "origin": "model"
+        },
+        {
+          "id": "s",
+          "type": "V.S",
+          "origin": "model"
+        },
+        {
+          "id": "f",
+          "type": "V.E",
+          "origin": "model"
+        },
+        {
+          "id": "m",
+          "type": "V.M",
+          "origin": "model"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "p-owner",
+          "subject": "p",
+          "field": "V.P.owner",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "r-owner",
+          "subject": "r",
+          "field": "V.P.owner",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "s-owner",
+          "subject": "s",
+          "field": "V.S.owner",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "s-from",
+          "subject": "s",
+          "field": "V.S.from",
+          "value": [
+            "v",
+            "p"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "s-to",
+          "subject": "s",
+          "field": "V.S.to",
+          "value": [
+            "v",
+            "p"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "f-owner",
+          "subject": "f",
+          "field": "V.E.owner",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "f-from",
+          "subject": "f",
+          "field": "V.E.from",
+          "value": [
+            "v",
+            "r"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "f-to",
+          "subject": "f",
+          "field": "V.E.to",
+          "value": [
+            "v",
+            "r"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "m-from",
+          "subject": "m",
+          "field": "V.M.from",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "m-to",
+          "subject": "m",
+          "field": "V.M.to",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "m-ps",
+          "subject": "m",
+          "field": "V.M.ps",
+          "value": [
+            [
+              [
+                "v",
+                "p"
+              ],
+              [
+                "v",
+                "r"
+              ]
+            ]
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "m-ss",
+          "subject": "m",
+          "field": "V.M.ss",
+          "value": [
+            [
+              [
+                "v",
+                "s"
+              ],
+              [
+                "v",
+                "f"
+              ]
+            ]
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "m-es",
+          "subject": "m",
+          "field": "V.M.es",
+          "value": [],
+          "origin": "model"
+        }
+      ]
+    }
+  ]
+}

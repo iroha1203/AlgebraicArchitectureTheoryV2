@@ -181,6 +181,14 @@ parameter数・移送後の型の不適合を読める。位置によるowner名
 `all_signatures_compatible()` は署名照合の結果であり、role・guard・body・値の保存は追加検査を要する。
 不適合時も `operation()` を保持し、現在の入力での再照合には `recheck()` を使う。
 
+`construction::maps::reference_type_transport(&checked, &declarations, "Left.Child", &mut control)`
+は宣言対応からplain Ref型の全snapshotのsubject域と候補像を構成する。
+source ConfigurationのF内は対応表で移し、F外の値は固定する。
+`source()/target()/images()` は全候補、`failures()` は型違い・衝突・未到達の具体的な参照を持つ。
+全域で順逆合成が恒等のときだけ `bijection()` の `forward()/inverse()` を返し、
+不成立時も `operation()` を保持する。現在入力での全域検査には `recheck()` を使う。
+Ownedの所属添字・複合値・式評価の可換性はそれぞれの追加検査で扱う。
+
 `construction::readings::object_reading_instances(&checked, &configuration, &mut control)`
 は選択readingのLaw/viewを、標準対象域に適用する参照束縛instanceへ展開する。
 `objects()` はbaseとowned entityの部分対象をidentityで保持し、未知所属の候補には
