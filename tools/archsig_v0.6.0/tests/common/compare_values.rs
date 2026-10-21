@@ -46,7 +46,7 @@ pub fn input(missing: bool, extra: &str) -> InputSources {
         .collect::<Vec<_>>()
         .join(",");
     let d = format!(
-        r#"{{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{{"semantics":"archsig/0.6.0","namespace":"Values","version":"1","dependencies":[],"declarations":[{{"kind":"entity","name":"Values.Sample","meaning":"対象","parameters":[],"fields":[{fields}],"alignments":[]}},{{"kind":"data","name":"Values.Packet","meaning":"constructorの区別","constructors":[{{"name":"Empty","arguments":[],"meaning":"空"}},{{"name":"Full","arguments":["Z"],"meaning":"値"}}]}}]}}]}}"#
+        r#"{{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{{"semantics":"archsig/0.6.0","namespace":"Values","version":"1","dependencies":[],"declarations":[{{"kind":"entity","name":"Values.Sample","meaning":"対象","parameters":[],"fields":[{fields}],"alignments":[]}},{{"kind":"data","name":"Values.Packet","meaning":"constructorの区別","constructors":[{{"name":"Empty","arguments":[],"meaning":"空"}},{{"name":"Full","arguments":["Z"],"meaning":"値"}},{{"name":"Flag","arguments":["Bool"],"meaning":"型が異なる値"}}]}}]}}]}}"#
     );
     let checked = check_definitions(&[("definition0", d.as_bytes())]).unwrap();
     let digest = &checked.vocabularies["Values"].digest;

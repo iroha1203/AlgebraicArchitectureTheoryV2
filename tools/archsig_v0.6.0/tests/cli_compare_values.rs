@@ -404,3 +404,120 @@ fn value_comparison_rejects_paths_instead_of_equating_their_display_or_action() 
     assert!(!dir.join("out").exists());
     std::fs::remove_dir_all(dir).unwrap();
 }
+#[test]
+fn dynamic_primitive_projection_types_are_checked_after_selecting_constructor_values() {
+    let dir=structured_inputs("compare-values-dynamic-types",false,"view flagged():Packet=Flag(false); view empty():Packet=Empty; view seven():Z=7; view no():Bool=false;");
+    let r = asks(
+        &dir,
+        &[
+            "full=evaluate(Values.vpacket,s=@v/a)",
+            "flagged=evaluate(Values.flagged)",
+            "empty=evaluate(Values.empty)",
+            "z=evaluate(Values.seven)",
+            "b=evaluate(Values.no)",
+            "left=compare($full.value[0],to=$z.value,kind=value)",
+            "right=compare($z.value,to=$full.value[0],kind=value)",
+            "both=compare($full.value[0],to=$full.value[0],kind=value)",
+            "false_value=compare($flagged.value[0],to=$b.value,kind=value)",
+            "false_pair=compare($flagged.value[0],to=$flagged.value[0],kind=value)",
+            "mismatch=compare($full.value[0],to=$flagged.value[0],kind=value)",
+            "wrong_branch=compare($full.value[0],to=$b.value,kind=value)",
+            "no_argument=compare($empty.value[0],to=$z.value,kind=value)",
+            "plan=needed($mismatch)",
+            "branch_plan=needed($wrong_branch)",
+            "empty_plan=needed($no_argument)",
+        ],
+    );
+    let j = saved(&dir, &r, "partial", 2);
+    for id in [
+        "left",
+        "right",
+        "both",
+        "false_value",
+        "false_pair",
+        "plan",
+        "branch_plan",
+        "empty_plan",
+    ] {
+        assert_eq!(s(get(answer(&j, id), "status")), "established", "{id}");
+    }
+    for id in ["mismatch", "wrong_branch", "no_argument"] {
+        let a = answer(&j, id);
+        assert_eq!(s(get(a, "status")), "undetermined", "{id}");
+        assert!(!has(get(a, "outputs"), "comparison"));
+        let reasons = arr(get(a, "reasons"));
+        assert!(reasons
+            .iter()
+            .any(|x| s(get(x, "code")) == "condition_failed"));
+        assert!(reasons
+            .iter()
+            .any(|x| s(get(x, "code")) == "dependency_blocked"));
+    }
+    let p = node(&j, get(get(answer(&j, "left"), "outputs"), "comparison"));
+    let selected = node(&j, get(get(p, "value"), "left"));
+    assert_eq!(s(get(selected, "type")), "Z");
+    assert_eq!(s(get(selected, "value")), "7");
+    std::fs::remove_dir_all(dir).unwrap();
+}
+#[test]
+fn head_only_inapplicable_projection_keeps_partial_reasons_needed_and_known_results() {
+    for (view, head) in [("absent", "$x.value.some"), ("emptyrefs", "$x.value[0]")] {
+        for reverse in [false, true] {
+            let dir=structured_inputs("compare-values-head-projection",false,"view absent():Option<Sample> = none<Sample>; view emptyrefs():List<Sample> = list<Sample>[];");
+            let x = format!("x=evaluate(Values.{view})");
+            let q = if reverse {
+                format!("c=compare(@v/a,to={head},kind=value)")
+            } else {
+                format!("c=compare({head},to=@v/a,kind=value)")
+            };
+            let r = asks(
+                &dir,
+                &[
+                    &x,
+                    &q,
+                    "known=compare(@v/a,to=@v/a,kind=value)",
+                    "plan=needed($c)",
+                ],
+            );
+            let j = saved(&dir, &r, "partial", 2);
+            let a = answer(&j, "c");
+            assert_eq!(s(get(a, "status")), "undetermined");
+            assert!(!has(get(a, "outputs"), "comparison"));
+            for kind in ["condition_failed", "dependency_blocked"] {
+                assert!(arr(get(a, "reasons"))
+                    .iter()
+                    .any(|r| s(get(r, "code")) == kind));
+            }
+            for id in ["known", "plan"] {
+                assert_eq!(s(get(answer(&j, id), "status")), "established");
+            }
+            std::fs::remove_dir_all(dir).unwrap();
+        }
+    }
+}
+#[test]
+fn dynamic_path_generator_projection_is_a_primitive_reference_value() {
+    let dir = workdir("compare-values-path-generator");
+    let i = paths::input(false, "value-generator");
+    for (name, bytes) in [
+        ("d.json", i.definitions()[0].bytes()),
+        ("l.law", i.law().bytes()),
+        ("a.json", i.archmap().bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    let r = asks(
+        &dir,
+        &[
+            paths::E,
+            "a=compare($e.value.generators[0],to=@v/e,kind=value)",
+            "b=compare(@v/e,to=$e.value.generators[0],kind=value)",
+            "c=compare($e.value.generators[0],to=$e.value.generators[0],kind=value)",
+        ],
+    );
+    let j = saved(&dir, &r, "complete", 0);
+    for id in ["a", "b", "c"] {
+        assert_eq!(s(get(answer(&j, id), "status")), "established");
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}

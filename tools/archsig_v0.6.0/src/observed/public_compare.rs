@@ -639,6 +639,9 @@ pub(super) fn evaluate(
     let mut facts = vec![];
     let mut stopped = None;
     let equal = if kind == "value" {
+        if super::term::contains(&graph.scalar(left)?.ty(), prepared.inputs().law(), control)? {
+            return Err("Termの公開value比較の計算経路は未実装".into());
+        }
         let mut retained = None;
         let outcome =
             super::data::equal_retained(graph.scalar(left)?, graph.scalar(right)?, control, |v| {

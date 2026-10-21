@@ -208,7 +208,7 @@ fn value_constraints(
         .find(|a| a.name == "to")
         .ok_or_else(|| error(&request.id, "to", "toがない"))?
         .value;
-    let mut out = vec![];
+    let mut selections = vec![];
     for (key, selector) in [("head", &request.head), ("to", to)] {
         let (plan, owners) = selector_type(
             law,
@@ -219,64 +219,98 @@ fn value_constraints(
             control,
             (&request.id, key),
         )?;
-        let ProjectionType::Law(ty) = &plan.ty else {
+        let mut types = vec![];
+        value_types(&plan.ty, control, &mut types)?;
+        if types.is_empty() {
             return Err(error(
                 &request.id,
                 key,
                 "value比較には同じ原始型Pの値が必要",
             ));
-        };
-        let expected = ty
-            .erase_controlled::<super::super::control::CheckFailure<Box<crate::issue::Issue>>>(
-                control,
-                Checkpoint::RequestBinding,
-            )
-            .map_err(|e| match e {
-                super::super::control::CheckFailure::Stopped(s) => stopped(s),
-                super::super::control::CheckFailure::Input(_) => {
-                    error(&request.id, key, "原始型の解決に失敗した")
-                }
-            })?;
-        if out
-            .first()
-            .is_some_and(|c: &BindingConstraint| c.expected != expected)
-        {
-            return Err(error(&request.id, key, "value比較の原始型Pが違う"));
         }
-        out.push(BindingConstraint {
-            parameter: key.into(),
-            expected,
-            selector: selector.clone(),
-            projection: plan.clone(),
-            owner: None,
-            projection_owners: owners,
-            expected_owners: BTreeMap::new(),
-            dynamic: plan.conditional,
+        selections.push((key, selector, plan, owners, types));
+    }
+    let mut common = vec![];
+    for left in &selections[0].4 {
+        for right in &selections[1].4 {
+            phase(control, Checkpoint::RequestBinding)?;
+            if left == right {
+                common.push(left.clone());
+                break;
+            }
+        }
+    }
+    if common.is_empty() {
+        return Err(error(&request.id, "to", "value比較の原始型Pが違う"));
+    }
+    let mut ground = false;
+    for ty in &common {
+        ground |= ground_type(ty, law, control, &mut BTreeSet::new())?;
+    }
+    if !ground {
+        return Err(ResolveFailure::NotApplicable {
+            request: request.id.clone(),
+            kind: "compare".into(),
+            architecture_environment: false,
         });
     }
-    for constraint in &out {
-        if !ground_type(&constraint.expected, law, control, &mut BTreeSet::new())? {
-            if super::super::term::contains(&constraint.expected, law, control).map_err(
-                |e| match e {
-                    super::super::result::ValidationFailure::Stop(s) => stopped(s),
-                    _ => error(&request.id, &constraint.parameter, "原始型の定義が違う"),
-                },
-            )? {
-                return Err(ResolveFailure::NotApplicable {
-                    request: request.id.clone(),
-                    kind: "compare".into(),
-                    architecture_environment: false,
-                });
-            }
-            return Err(error(
-                &request.id,
-                &constraint.parameter,
-                "value比較には原始型Pの値が必要",
-            ));
+    let mut out = vec![];
+    for (key, selector, plan, owners, _) in selections {
+        // value比較には消費側parameter型がない。共通候補は同parameterの選択肢として
+        // 保ち、現在の射影値を選んだ後に一候補への適合と左右の同型を検査する。
+        for expected in &common {
+            phase(control, Checkpoint::RequestBinding)?;
+            out.push(BindingConstraint {
+                parameter: key.into(),
+                expected: expected.clone(),
+                selector: selector.clone(),
+                projection: plan.clone(),
+                owner: None,
+                projection_owners: owners.clone(),
+                expected_owners: BTreeMap::new(),
+                dynamic: plan.conditional || matches!(plan.ty, ProjectionType::Dynamic(_)),
+            });
         }
     }
     Ok(out)
 }
+fn value_types(
+    projection: &ProjectionType,
+    control: &mut Control,
+    out: &mut Vec<Type>,
+) -> Result<(), ResolveFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        phase(control, Checkpoint::RequestBinding)?;
+        match projection {
+            ProjectionType::Dynamic(candidates) => {
+                for candidate in candidates {
+                    value_types(candidate, control, out)?;
+                }
+            }
+            ProjectionType::Law(ty) => {
+                let ty=ty.erase_controlled::<super::super::control::CheckFailure<Box<crate::issue::Issue>>>(control,Checkpoint::RequestBinding)
+                    .map_err(|e|match e {super::super::control::CheckFailure::Stopped(s)=>stopped(s),
+                        super::super::control::CheckFailure::Input(_)=>error("","type","原始型の解決に失敗した")})?;
+                if super::super::data::primitive_type(&ty, control).map_err(|e| match e {
+                    super::super::result::ValidationFailure::Stop(s) => stopped(s),
+                    _ => error("", "type", "原始型の定義が違う"),
+                })? {
+                    let mut duplicate = false;
+                    for existing in out.iter() {
+                        phase(control, Checkpoint::RequestBinding)?;
+                        duplicate |= existing == &ty;
+                    }
+                    if !duplicate {
+                        out.push(ty);
+                    }
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    })
+}
+
 fn ground_type(
     ty: &Type,
     law: &CheckedLaw,

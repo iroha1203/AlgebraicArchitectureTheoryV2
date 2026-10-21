@@ -749,3 +749,76 @@ fn raw_subject_comparison_rechecks_its_request_context_even_for_an_identical_val
         Err(ValidationFailure::Internal(_))
     ));
 }
+#[test]
+fn dynamic_value_type_conditions_recheck_both_original_producers_and_their_evidence() {
+    let r = evaluate_observed_bytes(
+        primitive::input(false, "view flagged():Packet=Flag(false);"),
+        &[
+            "full=evaluate(Values.vpacket,s=@v/a)",
+            "flag=evaluate(Values.flagged)",
+            "c=compare($full.value[0],to=$flag.value[0],kind=value)",
+            "plan=needed($c)",
+        ],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(r.status(), "partial", "{:?}", r.issues);
+    assert_eq!(r.answers[2].status, Decision::Undetermined);
+    assert_eq!(r.answers[3].status, Decision::Established);
+    rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    let condition=r.nodes.iter().position(|n|matches!(&n.rule,Rule::ProjectionCheck{parameter,part:ProjectionCheckPart::Condition} if parameter=="head/to")).unwrap();
+    assert_eq!(r.nodes[condition].evidence.len(), 1);
+    for case in 0..4 {
+        completion_mutation(&r, condition, |nodes| {
+            let n = &mut nodes[condition];
+            match case {
+                0 => n.judgment.as_mut().unwrap().status = Decision::Established,
+                1 => n.evidence.clear(),
+                2 => n.support.clear(),
+                _ => {
+                    let Rule::ProjectionCheck { parameter, .. } = &mut n.rule else {
+                        panic!()
+                    };
+                    *parameter = "head".into();
+                }
+            }
+        });
+    }
+}
+#[test]
+fn dynamic_value_type_condition_stops_never_publish_an_unchecked_comparison() {
+    let input = || primitive::input(false, "view flagged():Packet=Flag(false);");
+    let qs = [
+        "full=evaluate(Values.vpacket,s=@v/a)",
+        "flag=evaluate(Values.flagged)",
+        "c=compare($full.value[0],to=$flag.value[0],kind=value)",
+        "plan=needed($c)",
+    ];
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let mut probe = Control::new(Limits::default(), move |p| {
+        if p == Checkpoint::Projection {
+            seen.set(seen.get() + 1);
+        }
+        Usage::default()
+    });
+    let prepared=||prepare_observed(input(),&qs,&mut Control::unlimited()).unwrap();
+    let normal = evaluate_observed(prepared(), &mut probe).unwrap();
+    assert_eq!(normal.status(), "partial");
+    let total = count.get();
+    assert!(total > 5);
+    for at in [1, total / 2, total] {
+        for mode in 0..4 {
+            let (mut c, count) = stopping(at, mode, Checkpoint::Projection);
+            let r = evaluate_observed(prepared(), &mut c).unwrap();
+            assert_eq!(r.status(), "interrupted", "{:?}", r.issues);
+            assert!(!r.answers[2].outputs.contains_key("comparison"));
+            assert_ne!(r.answers[2].status, Decision::Established);
+            assert_ne!(r.answers[2].status, Decision::Refuted);
+            rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+            assert_eq!(count.get(), at);
+            assert!(c.checkpoint(Checkpoint::Projection).is_err());
+            assert_eq!(count.get(), at);
+        }
+    }
+}
