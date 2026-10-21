@@ -199,6 +199,24 @@ fn project_inner(
             _ => Err("合成Operationの非公開射影".into()),
         },
         (ProjectionType::ComposedCandidate(shape), Field(f)) => match f.as_str() {
+            "subject" => {
+                // Public but omitted for a composed candidate. Keep the
+                // primitive reference constraint; runtime projection records
+                // the absent field without inventing an original subject.
+                let mut candidates = Vec::new();
+                for d in law.definitions.declarations.values() {
+                    tick(control)?;
+                    if matches!(
+                        &d.signature,
+                        PrimitiveSignature::Arrow { .. }
+                            | PrimitiveSignature::Correspondence { .. }
+                    ) {
+                        candidates.push(Law(Type::Ref(d.name.clone())));
+                    }
+                    tick(control)?;
+                }
+                conditional(Dynamic(candidates))
+            }
             "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
             "target" => exact(ProjectionType::ArchitectureRoot(shape.target.clone())),
             "action" => exact(ProjectionType::AtomMap),

@@ -198,11 +198,6 @@ fn static_compose_errors_are_usage_without_artifacts() {
         vec![M, "c=compose($m.operation.name,then=$m.operation)"],
         vec![
             M,
-            C,
-            "bad=evaluate(Reservations.sourceOf,m=$c.map.candidate.subject)",
-        ],
-        vec![
-            M,
             "p=evaluate(Reservations.emptyPath,s=@v/p)",
             "c=compose($m.operation,then=$p.value)",
         ],
@@ -354,4 +349,61 @@ fn dynamic_producer_projection_failure_survives_composition_and_needed() {
             .any(|r| s(get(r, "code")) == "condition_failed")
     );
     std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
+    for (i, path) in ["operation.candidate.subject", "map.candidate.subject"]
+        .into_iter()
+        .enumerate()
+    {
+        let dir = inputs(&format!("compose-omitted-subject-{i}"), A);
+        let read = format!("read=evaluate(Reservations.sourceOf,m=$c.{path})");
+        let mapped =
+            format!("mapped=map(Reservations.Migration,on=$c.{path},reading=Reservations)");
+        let r = asks(
+            &dir,
+            &[
+                M,
+                N,
+                C,
+                &read,
+                &mapped,
+                "readPlan=needed($read)",
+                "mapPlan=needed($mapped)",
+            ],
+        );
+        let j = saved(&dir, &r, "partial", 2);
+        for id in ["m", "n", "c"] {
+            let a = answer(&j, id);
+            assert_eq!(s(get(a, "status")), "established");
+            assert!(has(get(a, "outputs"), "operation"));
+        }
+        for (id, plan_id) in [("read", "readPlan"), ("mapped", "mapPlan")] {
+            let a = answer(&j, id);
+            assert_eq!(s(get(a, "status")), "undetermined");
+            let reasons = arr(get(a, "reasons"));
+            let condition = reasons
+                .iter()
+                .find(|r| s(get(r, "code")) == "condition_failed")
+                .unwrap();
+            let details = get(condition, "details");
+            assert_eq!(s(get(details, "construction")), "projection");
+            let proposition = node(&j, get(details, "condition"));
+            assert_eq!(s(get(get(proposition, "judgment"), "status")), "refuted");
+            assert!(reasons
+                .iter()
+                .any(|r| s(get(r, "code")) == "dependency_blocked"));
+            let plan_answer = answer(&j, plan_id);
+            assert_eq!(s(get(plan_answer, "status")), "established");
+            let plan = value(&j, get(get(plan_answer, "outputs"), "plan"));
+            assert!(arr(get(plan, "blockers"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "condition_failed"));
+            assert!(!has(get(a, "outputs"), "operation"));
+        }
+        let op = value(&j, get(get(answer(&j, "c"), "outputs"), "operation"));
+        assert!(!has(value(&j, get(op, "candidate")), "subject"));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 }
