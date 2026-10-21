@@ -321,11 +321,7 @@ fn row_reading(
         required: required(e.instance())?,
         application: LawApplication::Guard(consensus(truths.iter().map(|t| t.application))),
         body: consensus(truths.iter().map(|t| t.body)),
-        conditional: if truths.iter().any(|t| t.conditional == Some(false)) {
-            Some(false)
-        } else {
-            consensus(truths.iter().map(|t| t.conditional))
-        },
+        conditional: consensus(truths.iter().map(|t| t.conditional)),
     })
 }
 pub(super) fn compare_rows(

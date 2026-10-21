@@ -262,6 +262,8 @@ fn missing_body_and_finite_completion_do_not_turn_into_truth() {
     for row in rows {
         assert_eq!(row.source().application().value(), Some(true));
         assert_eq!(row.source().body(), None);
+        assert_eq!(row.source().conditional(), None);
+        assert_eq!(row.target().conditional(), None);
         assert_eq!(row.source_evaluations().len(), 2);
         assert_eq!(row.target_evaluations().len(), 2);
     }
@@ -292,6 +294,53 @@ fn missing_body_and_finite_completion_do_not_turn_into_truth() {
             .iter()
             .all(|r| r.source().body().is_none())
     );
+}
+
+#[test]
+fn completion_conditionals_require_agreement_for_true_false_and_unknown_cases() {
+    for (expression, value) in [
+        ("c.flag or not c.flag", true),
+        ("c.flag and not c.flag", false),
+    ] {
+        let law = L
+            .replace(
+                "law required missing(c: Left.Child, b: Bool): c.flag;",
+                &format!("law required missing(c: Left.Child, b: Bool): {expression};"),
+            )
+            .replace(
+                "law required missing(d: Right.Child, q: Bool): d.flag;",
+                &format!("law required missing(d: Right.Child, q: Bool): {value};"),
+            );
+        let i = inputs(&law, A);
+        let r = run(Arc::clone(&i), "p", "missing", "p");
+        assert_eq!(r.outcome(), &Outcome::Preserved);
+        for row in r.family().unwrap().rows() {
+            assert_eq!(row.source().body(), Some(value));
+            assert_eq!(row.source().conditional(), Some(value));
+            assert_eq!(row.target().conditional(), Some(value));
+        }
+        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    }
+    let law = L
+        .replace(
+            "law required missing(c: Left.Child, b: Bool): c.flag;",
+            "law required missing(c: Left.Child, b: Bool): if c.flag then false else c.count = 0;",
+        )
+        .replace(
+            "law required missing(d: Right.Child, q: Bool): d.flag;",
+            "law required missing(d: Right.Child, q: Bool): true;",
+        );
+    let i = inputs(&law, &remove(A, "p-count"));
+    let r = run(Arc::clone(&i), "p", "missing", "p");
+    assert_eq!(r.outcome(), &Outcome::Undetermined);
+    assert_eq!(r.family().unwrap().rows().len(), 2);
+    for row in r.family().unwrap().rows() {
+        assert_eq!(row.source().conditional(), None);
+        assert_eq!(row.source().body(), None);
+        assert_eq!(row.target().conditional(), Some(true));
+        assert_eq!(row.source_evaluations().len(), 2);
+    }
+    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
 }
 
 #[test]
