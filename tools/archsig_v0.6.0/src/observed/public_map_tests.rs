@@ -321,3 +321,261 @@ fn native_map_stops_latch_without_discarding_checked_maps_or_resuming_computatio
         }
     }
 }
+
+#[test]
+fn projected_map_rechecks_original_projection_value_edges_scope_and_dynamic_conditions() {
+    let sources = || {
+        InputSources::from_bytes(
+            vec![D_BYTES.to_vec()],
+            include_bytes!("../../tests/fixtures/public-map-projections.law").to_vec(),
+            A_BYTES.as_bytes().to_vec(),
+        )
+    };
+    let result = evaluate_observed_bytes(
+        sources(),
+        &[
+            "copy=map(Reservations.Migration,on=$v.value.some,reading=Reservations)",
+            "v=evaluate(Reservations.present,m=@v/m)",
+        ],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(result.answers[0].status, Decision::Established);
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let projection = result
+        .nodes
+        .iter()
+        .position(|n| matches!(n.rule, Rule::Projection(_)))
+        .unwrap();
+    for variant in 0..4 {
+        completion_mutation(&result, projection, |nodes| match variant {
+            0 => {
+                nodes[projection].payload = Some(Payload::Scalar(Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: "e".into(),
+                    entity: "Reservations.Reserve".into(),
+                }))
+            }
+            1 => nodes[projection].arguments.clear(),
+            2 => nodes[projection].support.clear(),
+            _ => nodes[projection].scope.readings.clear(),
+        });
+    }
+    changed_native(
+        &result,
+        |d| matches!(d, D::MapCandidate { .. }),
+        |d| {
+            if let D::MapCandidate {
+                subject, source, ..
+            } = d
+            {
+                *subject = *source;
+            }
+        },
+    );
+    let result = evaluate_observed_bytes(
+        sources(),
+        &[
+            "bad=map(Reservations.Migration,on=$v.value.some,reading=Reservations)",
+            "v=evaluate(Reservations.absent,m=@v/m)",
+        ],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(result.answers[0].status, Decision::Undetermined);
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let condition = result
+        .nodes
+        .iter()
+        .position(|n| {
+            matches!(
+                n.rule,
+                Rule::ProjectionCheck {
+                    part: ProjectionCheckPart::Condition,
+                    ..
+                }
+            )
+        })
+        .unwrap();
+    completion_mutation(&result, condition, |nodes| {
+        nodes[condition].evidence.clear()
+    });
+    completion_mutation(&result, condition, |nodes| {
+        nodes[condition].judgment.as_mut().unwrap().status = Decision::Established
+    });
+}
+#[test]
+fn dynamic_map_projection_stops_preserve_checked_prefix_without_resuming_derivation() {
+    use std::{cell::Cell, rc::Rc};
+    let sources = || {
+        InputSources::from_bytes(
+            vec![D_BYTES.to_vec()],
+            include_bytes!("../../tests/fixtures/public-map-projections.law").to_vec(),
+            A_BYTES.as_bytes().to_vec(),
+        )
+    };
+    let asks = [
+        "bad=map(Reservations.Migration,on=$v.value.some,reading=Reservations)",
+        "v=evaluate(Reservations.absent,m=@v/m)",
+    ];
+    let count = Rc::new(Cell::new(0usize));
+    let seen = count.clone();
+    let mut control = Control::new(Limits::default(), move |p| {
+        if p == Checkpoint::Projection {
+            seen.set(seen.get() + 1);
+        }
+        Usage::default()
+    });
+    let prepared = prepare_observed(sources(), &asks, &mut Control::unlimited()).unwrap();
+    let complete = evaluate_observed(prepared, &mut control).unwrap();
+    assert_eq!(complete.answers[0].status, Decision::Undetermined);
+    let total = count.get();
+    assert!(total > 0);
+    for at in [1, (total / 2).max(1), total] {
+        for mode in 0..4 {
+            let count = Rc::new(Cell::new(0usize));
+            let seen = count.clone();
+            let mut control = Control::new(
+                Limits {
+                    time_ms: (mode == 0).then_some(1),
+                    memory_mib: (mode == 1).then_some(1),
+                },
+                move |p| {
+                    if p == Checkpoint::Projection {
+                        seen.set(seen.get() + 1);
+                    }
+                    let stop = seen.get() >= at;
+                    Usage {
+                        elapsed_ms: u128::from(stop && mode == 0),
+                        memory_mib: u128::from(stop && mode == 1),
+                        signal: if stop {
+                            match mode {
+                                2 => Some(crate::result::Signal::Int),
+                                3 => Some(crate::result::Signal::Term),
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        },
+                    }
+                },
+            );
+            let prepared = prepare_observed(sources(), &asks, &mut Control::unlimited()).unwrap();
+            let result = evaluate_observed(prepared, &mut control).unwrap();
+            assert_eq!(
+                result.status(),
+                "interrupted",
+                "{at}/{mode}: {:?}",
+                result.issues
+            );
+            assert!(
+                !result
+                    .issues
+                    .iter()
+                    .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+            );
+            assert_eq!(count.get(), at);
+            let stop = control.stop_reason().unwrap();
+            assert_eq!(
+                control.checkpoint(Checkpoint::Expression).unwrap_err(),
+                stop
+            );
+            assert_eq!(count.get(), at);
+            assert!(result.answers[1].outputs.contains_key("value"));
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        }
+    }
+}
+
+#[test]
+fn failed_candidate_conditions_recheck_original_counterexample_and_construction_inputs() {
+    let left: &[u8] = include_bytes!("../../tests/fixtures/configuration-map-left.atoms.json");
+    let right = include_str!("../../tests/fixtures/configuration-map-right.atoms.json").replacen(
+        "\"name\": \"count\"",
+        "\"name\": \"other\"",
+        1,
+    );
+    let definitions = crate::definition::check_definitions(&[
+        ("definition0", left),
+        ("definition1", right.as_bytes()),
+    ])
+    .unwrap();
+    let ld = &definitions.vocabularies["Left"].digest;
+    let rd = &definitions.vocabularies["Right"].digest;
+    let bridge = include_str!("../../tests/fixtures/configuration-map-bridge.atoms.json")
+        .replace("@LEFT_DIGEST@", ld)
+        .replace("@RIGHT_DIGEST@", rd);
+    let definitions = crate::definition::check_definitions(&[
+        ("definition0", left),
+        ("definition1", right.as_bytes()),
+        ("definition2", bridge.as_bytes()),
+    ])
+    .unwrap();
+    let law = include_str!("../../tests/fixtures/configuration-map-bridge.law")
+        .replace("@LEFT_DIGEST@", ld)
+        .replace("@RIGHT_DIGEST@", rd);
+    let map = include_str!("../../tests/fixtures/configuration-map-bridge.archmap.json")
+        .replace("@LEFT_DIGEST@", ld)
+        .replace("@RIGHT_DIGEST@", rd)
+        .replace(
+            "@BRIDGE_DIGEST@",
+            &definitions.vocabularies["Bridge"].digest,
+        )
+        .replace("Right.Root.count", "Right.Root.other");
+    let result = evaluate_observed_bytes(
+        InputSources::from_bytes(
+            vec![left.to_vec(), right.into_bytes(), bridge.into_bytes()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ),
+        &["m=map(Bridge.Move,on=@v/m,reading=LeftRead,to_reading=RightRead)"],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(result.answers[0].status, Decision::Refuted);
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    changed_native(
+        &result,
+        |d| matches!(d, D::ConstructionLabel(_)),
+        |d| {
+            if let D::ConstructionLabel(label) = d {
+                *label = Scalar::Text("configuration_map".into());
+            }
+        },
+    );
+    changed_native(
+        &result,
+        |d| matches!(d, D::CandidateCondition { .. }),
+        |d| {
+            if let D::CandidateCondition { source, target, .. } = d {
+                std::mem::swap(source, target);
+            }
+        },
+    );
+    changed_native(
+        &result,
+        |d| matches!(d, D::Counterexample { .. }),
+        |d| {
+            if let D::Counterexample { facts, .. } = d {
+                facts.clear();
+            }
+        },
+    );
+    let claim = result.answers[0].claim.unwrap().0;
+    completion_mutation(&result, claim, |nodes| {
+        nodes[claim].evidence.clear();
+        nodes[claim].judgment.as_mut().unwrap().evidence.clear();
+    });
+    completion_mutation(&result, claim, |nodes| {
+        nodes[claim].judgment.as_mut().unwrap().status = Decision::Established
+    });
+    let candidate = result.answers[0].outputs["candidate"].0;
+    completion_mutation(&result, candidate, |nodes| nodes[candidate].reasons.clear());
+    completion_mutation(&result, candidate, |nodes| {
+        let ReasonKind::ConditionFailed { condition, .. } = &mut nodes[candidate].reasons[0].kind
+        else {
+            panic!("元構成の反証理由");
+        };
+        *condition = NodeRef(0);
+    });
+}

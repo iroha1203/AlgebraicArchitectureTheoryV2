@@ -1812,6 +1812,21 @@ impl Graph {
                     }
                     continue;
                 }
+                if construction == "map_candidate" {
+                    if proposition.ty != NodeType::Proposition
+                        || !matches!(&proposition.payload, Some(Payload::Construction(v)) if matches!(v.data, super::construction_result::ConstructionData::CandidateCondition { .. }) && v.witness.request().id == reason.request)
+                        || !proposition
+                            .judgment
+                            .as_ref()
+                            .is_some_and(|j| j.status == Decision::Refuted)
+                        || reason.dependencies != [condition]
+                        || !reason.missing.is_empty()
+                    {
+                        return Err("候補構成失敗の元命題・要求・依存が違う".into());
+                    }
+                    super::construction_result::validate_shape(self, proposition)?;
+                    continue;
+                }
                 if construction != "evaluation"
                     || proposition.ty != NodeType::Proposition
                     || !matches!(

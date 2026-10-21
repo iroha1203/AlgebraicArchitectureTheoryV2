@@ -228,6 +228,21 @@ impl Environment<'_> {
             .original_requests
             .and_then(|requests| requests.get(context.request))
             .ok_or("射影の元Requestがない")?;
+        if request.kind == QuestionKind::Map {
+            for constraint in &request.constraints {
+                if !matches!(constraint.selector, Selector::Answer { .. }) {
+                    continue;
+                }
+                if let AnswerBinding::Projection(expected) =
+                    self.answer_binding(graph, &constraint.selector, (0, 0))?
+                    && expected == *node
+                    && node.ty == NodeType::Value(constraint.expected.clone())
+                {
+                    return Ok(());
+                }
+            }
+            return Err("map射影nodeが元on・型・値・支持・Scopeと違う".into());
+        }
         let declaration = self
             .inputs
             .law()

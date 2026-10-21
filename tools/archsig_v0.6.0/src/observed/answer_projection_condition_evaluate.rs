@@ -36,7 +36,10 @@ impl Evaluator<'_, '_> {
                 values.push(self.push(node)?);
                 #[cfg(test)]
                 data::observe_actual(
-                    plan.span,
+                    match plan.location {
+                        Some(Location::Law { span }) => span,
+                        _ => (0, 0),
+                    },
                     self.graph.active,
                     "answer_projection_condition",
                     values.len(),

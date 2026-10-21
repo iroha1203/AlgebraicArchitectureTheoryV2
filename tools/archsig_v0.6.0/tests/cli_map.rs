@@ -608,3 +608,244 @@ fn architecture_scope_retains_the_owner_fact_used_to_exclude_another_roots_subje
         && s(get(f, "field")) == "Reservations.State.free"));
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn map_consumes_option_tuple_and_list_subject_projections_from_checked_producers() {
+    for (i, (view, path)) in [
+        ("present", "$v.value.some"),
+        ("packed", "$v.value[0]"),
+        ("migrations", "$v.value[0]"),
+        ("migrations", "$v.evaluation.value[0]"),
+    ]
+    .iter()
+    .enumerate()
+    {
+        let dir = inputs(&format!("map-structure-projection-{i}"), A);
+        std::fs::write(
+            dir.join("l.law"),
+            include_bytes!("fixtures/public-map-projections.law"),
+        )
+        .unwrap();
+        let ask = format!("copy=map(Reservations.Migration,on={path},reading=Reservations)");
+        let producer = format!("v=evaluate(Reservations.{view},m=@v/m)");
+        let result = saved(&dir, &asks(&dir, &[&ask, &producer]), "complete", 0);
+        let a = answer(&result, "copy");
+        assert_eq!(s(get(a, "status")), "established");
+        let candidate = value(&result, get(get(a, "outputs"), "candidate"));
+        assert_eq!(s(&arr(value(&result, get(candidate, "subject")))[1]), "m");
+        let selected = node(&result, get(candidate, "subject"));
+        assert_eq!(s(get(get(selected, "rule"), "name")), "projection");
+        assert!(!arr(get(selected, "arguments")).is_empty());
+        assert_eq!(s(get(&arr(get(&result, "answers"))[0], "id")), "copy");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+#[test]
+fn map_dynamic_projection_failures_keep_refuted_conditions_and_propagate_original_reasons() {
+    for (i, (view, path)) in [("absent", "$v.value.some"), ("migrations", "$v.value[1]")]
+        .iter()
+        .enumerate()
+    {
+        let dir = inputs(&format!("map-dynamic-projection-{i}"), A);
+        std::fs::write(
+            dir.join("l.law"),
+            include_bytes!("fixtures/public-map-projections.law"),
+        )
+        .unwrap();
+        let ask = format!("bad=map(Reservations.Migration,on={path},reading=Reservations)");
+        let producer = format!("v=evaluate(Reservations.{view},m=@v/m)");
+        let result = saved(
+            &dir,
+            &asks(
+                &dir,
+                &[
+                    "plan=needed($copy)",
+                    "copy=map(Reservations.Migration,on=$bad.operation.word[0],reading=Reservations)",
+                    &ask,
+                    &producer,
+                ],
+            ),
+            "partial",
+            2,
+        );
+        assert_eq!(s(get(answer(&result, "v"), "status")), "established");
+        let mut original_condition = None;
+        for id in ["bad", "copy"] {
+            let a = answer(&result, id);
+            assert_eq!(s(get(a, "status")), "undetermined");
+            assert!(!has(get(a, "outputs"), "operation"));
+            let reasons = arr(get(a, "reasons"));
+            let failure = reasons
+                .iter()
+                .find(|r| s(get(r, "code")) == "condition_failed")
+                .unwrap();
+            assert_eq!(s(get(failure, "request")), "bad");
+            let details = get(failure, "details");
+            assert_eq!(s(get(details, "construction")), "projection");
+            let condition = get(details, "condition");
+            let n = node(&result, condition);
+            assert_eq!(s(get(get(n, "judgment"), "status")), "refuted");
+            assert!(!arr(get(n, "evidence")).is_empty());
+            if let Some(expected) = original_condition {
+                assert_eq!(s(get(condition, "node")), expected);
+            }
+            original_condition = Some(s(get(condition, "node")));
+            assert!(
+                reasons
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "dependency_blocked")
+            );
+        }
+        let plan = value(
+            &result,
+            get(get(answer(&result, "plan"), "outputs"), "plan"),
+        );
+        assert!(format!("{plan:?}").contains("condition_failed"));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+#[test]
+fn absent_target_field_is_a_checked_refutation_with_candidate_partial_and_no_missing_slot() {
+    let left: &[u8] = include_bytes!("fixtures/configuration-map-left.atoms.json");
+    let right = include_str!("fixtures/configuration-map-right.atoms.json").replacen(
+        "\"name\": \"count\"",
+        "\"name\": \"other\"",
+        1,
+    );
+    let definitions = archsig::definition::check_definitions(&[
+        ("definition0", left),
+        ("definition1", right.as_bytes()),
+    ])
+    .unwrap();
+    let ld = &definitions.vocabularies["Left"].digest;
+    let rd = &definitions.vocabularies["Right"].digest;
+    let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
+        .replace("@LEFT_DIGEST@", ld)
+        .replace("@RIGHT_DIGEST@", rd);
+    let definitions = archsig::definition::check_definitions(&[
+        ("definition0", left),
+        ("definition1", right.as_bytes()),
+        ("definition2", bridge.as_bytes()),
+    ])
+    .unwrap();
+    let law = include_str!("fixtures/configuration-map-bridge.law")
+        .replace("@LEFT_DIGEST@", ld)
+        .replace("@RIGHT_DIGEST@", rd);
+    let map = include_str!("fixtures/configuration-map-bridge.archmap.json")
+        .replace("@LEFT_DIGEST@", ld)
+        .replace("@RIGHT_DIGEST@", rd)
+        .replace(
+            "@BRIDGE_DIGEST@",
+            &definitions.vocabularies["Bridge"].digest,
+        )
+        .replace("Right.Root.count", "Right.Root.other");
+    let dir = workdir("map-absent-target-field");
+    for (name, bytes) in [
+        ("left.json", left),
+        ("right.json", right.as_bytes()),
+        ("bridge.json", bridge.as_bytes()),
+        ("l.law", law.as_bytes()),
+        ("a.json", map.as_bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    let run = run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "left.json",
+            "--atom-definition",
+            "right.json",
+            "--atom-definition",
+            "bridge.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "out",
+            "--ask",
+            "m=map(Bridge.Move,on=@v/m,reading=LeftRead,to_reading=RightRead)",
+        ],
+    );
+    let result = saved(&dir, &run, "complete", 1);
+    let a = answer(&result, "m");
+    assert_eq!(s(get(a, "status")), "refuted");
+    let output = get(a, "outputs");
+    assert!(has(output, "candidate"));
+    let candidate = node(&result, get(output, "candidate"));
+    assert_eq!(s(get(candidate, "state")), "blocked");
+    assert!(has(candidate, "partial"));
+    assert!(!has(candidate, "value"));
+    assert!(!has(output, "map") && !has(output, "operation"));
+    assert!(!arr(get(a, "evidence")).is_empty());
+    let condition = node(&result, get(output, "proposition"));
+    assert_eq!(s(get(get(condition, "judgment"), "status")), "refuted");
+    assert!(
+        arr(get(candidate, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "condition_failed")
+    );
+    assert!(
+        !arr(get(a, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "missing_observation" || s(get(r, "code")) == "internal")
+    );
+    let facts = arr(get(
+        get(value(&result, &arr(get(a, "evidence"))[0]), "data"),
+        "facts",
+    ));
+    assert!(
+        facts
+            .iter()
+            .any(|f| has(f, "field") && s(get(f, "field")) == "Left.Root.count")
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn mixed_map_and_observed_blockers_preserve_both_producers_missing_positions() {
+    let map = remove(&remove(A, "m-states"), "p-free");
+    let dir = inputs("map-mixed-blockers", &map);
+    std::fs::write(
+        dir.join("l.law"),
+        include_bytes!("fixtures/public-map-projections.law"),
+    )
+    .unwrap();
+    let result = saved(
+        &dir,
+        &asks(
+            &dir,
+            &[
+                "audit=evaluate(Reservations.consume,m=$m.candidate.subject,n=$q.value)",
+                "q=evaluate(Reservations.quantity,s=@v/p)",
+                ASK,
+            ],
+        ),
+        "partial",
+        2,
+    );
+    let a = answer(&result, "audit");
+    assert_eq!(s(get(a, "status")), "undetermined");
+    let reasons = arr(get(a, "reasons"));
+    for (producer, field) in [
+        ("m", "Reservations.Migration.states"),
+        ("q", "Reservations.State.free"),
+    ] {
+        assert!(reasons.iter().any(|r| {
+            s(get(r, "code")) == "missing_observation"
+                && s(get(r, "request")) == producer
+                && arr(get(r, "missing"))
+                    .iter()
+                    .any(|f| s(get(f, "field")) == field)
+        }));
+        assert!(
+            reasons
+                .iter()
+                .any(|r| s(get(r, "code")) == "dependency_blocked"
+                    && s(get(get(r, "details"), "request")) == producer)
+        );
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}

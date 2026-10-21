@@ -1,0 +1,23 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading Reservations {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+
+  view present(m: Migration): Option<Migration> = some(m);
+  view packed(m: Migration): (Migration, Bool) = (m, true);
+  view migrations(m: Migration): List<Migration> = list<Migration>[m];
+  view absent(m: Migration): Option<Migration> = none<Migration>;
+  view quantity(s: State): Z = s.free;
+  view consume(m: Migration, n: Z): Z = n;
+  view holdings(s: State): (Z, Z) = (s.free, s.held);
+  law required conserved(e: Reserve):
+    e.to.free + e.to.held = e.from.free + e.from.held;
+  law required retained(m: Migration):
+    forall s in State[m.from] . holdings(m.states(s)) = holdings(s);
+
+  local Stock(s: State) reads s.free;
+  local Held(s: State) reads s.held;
+  local Transfer(e: Reserve) reads holdings(e.from), holdings(e.to);
+  change rebalance(s: State, d: Z) =
+    s with { free = s.free - d, held = s.held + d };
+}

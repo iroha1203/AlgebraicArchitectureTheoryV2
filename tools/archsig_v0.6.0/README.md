@@ -50,7 +50,10 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/reservations.a
 候補は始終 Architecture と共通 U 上の総作用を持ち、保存を確認した場合だけ map と
 Operation を返す。数量の一致や Law の成立はこの保存条件に加えない。
 後続の問いでは `$m.candidate.subject`、`$m.operation.word[0]` などの公開参照を束縛できる。
+原始参照を含む Option・Tuple・List の意味上の成分も `on` に指定できる。
+動的に成分が存在しない場合は射影条件の反証を残し、後続へ元の理由を伝える。
 未観測の所属・対応は部分結果と必要 slot に残り、未生成の出力に依存する問いは元の理由を保持する。
+終域に対応する field 宣言がなければ、候補の既知部分・構成条件の反証・元の原始位置を返す。
 
 以前の出力directoryは `--reuse result-counter` で候補として指定できる。
 現在の三入力から全再計算し、検査済みの導出へ候補の型・内容・全依存・由来を照合する。

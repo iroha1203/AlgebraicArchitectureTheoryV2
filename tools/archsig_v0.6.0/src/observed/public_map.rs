@@ -97,9 +97,16 @@ pub(super) fn selected(
     let (snapshot, subject) = match selector {
         Selector::Subject { snapshot, subject } => (snapshot.clone(), subject.clone()),
         Selector::Answer { .. } => {
-            let value = match environment.answer_binding(graph, selector, (0, 0))? {
-                AnswerBinding::Reference(r) => graph.scalar(r)?,
-                AnswerBinding::Projection(_) | AnswerBinding::Inapplicable(_) => {
+            let binding = environment.answer_binding(graph, selector, (0, 0))?;
+            let value = match &binding {
+                AnswerBinding::Reference(r) => graph.scalar(*r)?,
+                AnswerBinding::Projection(node) => {
+                    let Some(Payload::Scalar(value)) = &node.payload else {
+                        return Err("mapのonの射影が原始値でない".into());
+                    };
+                    value
+                }
+                AnswerBinding::Inapplicable(_) => {
                     return Err("mapのonが原始correspondence参照を提供しない".into());
                 }
             };
@@ -353,6 +360,26 @@ pub(super) fn validate_origin(
         return Err("native構成が現在の三入力・map要求に属さない".into());
     }
     let on = selected(environment, graph, request)?;
+    let selected_ref = match &value.data {
+        D::MapCandidate { subject, .. }
+        | D::Operation { subject, .. }
+        | D::Counterexample { subject, .. }
+        | D::CandidateCondition { subject, .. } => Some(*subject),
+        D::Pending {
+            ty: T::MapCandidate,
+            parts,
+        } => parts
+            .iter()
+            .find(|(p, _)| p == &field("subject"))
+            .map(|(_, r)| *r),
+        _ => None,
+    };
+    if let Some(reference) = selected_ref
+        && let Some(argument) = request.arguments.iter().find(|a| a.name == "on")
+        && matches!(argument.value, Selector::Answer { .. })
+    {
+        environment.answer_binding_matches(graph, &argument.value, reference, (0, 0))?;
+    }
     match &value.witness {
         Witness::Map(m) => {
             if m.subject() != &on
@@ -427,6 +454,8 @@ pub(super) fn validate_answer(
     let linked = match &p.data {
         D::Preservation { candidate: r } => *r == candidate,
         D::PendingPreservation { parts } => parts == &vec![(field("candidate"), candidate)],
+        D::CandidateCondition { .. } => m.failed_candidate()
+            && graph.get(candidate)?.reasons.iter().any(|reason| matches!(reason.kind, ReasonKind::ConditionFailed { condition, construction: "map_candidate" } if condition==claim)),
         _ => false,
     };
     if !linked || p.witness != c.witness || answer.claim != Some(claim) {
@@ -527,8 +556,8 @@ pub(super) fn unavailable(
                 !matches!(&graph.get(r)?.payload,Some(Payload::Construction(v)) if v.is_blocked())
             }
             Ok(AnswerBinding::Projection(_)) => true,
-            Ok(AnswerBinding::Inapplicable(_))
-            | Err(ValidationFailure::UnsupportedExpression { .. }) => false,
+            Ok(AnswerBinding::Inapplicable(_)) => continue,
+            Err(ValidationFailure::UnsupportedExpression { .. }) => false,
             Err(other) => return Err(other),
         };
         if available {
@@ -555,6 +584,12 @@ pub(super) fn unavailable(
             location: None,
         });
     }
+    if request.kind == QuestionKind::Map {
+        let (projection_reasons, projection_scope) =
+            environment.projection_failure_reasons(graph, request)?;
+        reasons.extend(projection_reasons);
+        scope.merge(&projection_scope);
+    }
     if reasons.is_empty() {
         return Ok(None);
     }
@@ -572,9 +607,27 @@ pub(super) fn evaluate(
     control: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
     tick(control)?;
+    environment.commit_projection_conditions(graph, request)?;
     if let Some(answer) = unavailable(environment, graph, request)? {
         return Ok(answer);
     }
+    let selected_reference = if let Some(argument) =
+        request.arguments.iter().find(|a| a.name == "on")
+        && matches!(argument.value, Selector::Answer { .. })
+    {
+        match environment.answer_binding(graph, &argument.value, (0, 0))? {
+            AnswerBinding::Reference(r) => Some(r),
+            AnswerBinding::Projection(node) => {
+                environment.validate(graph, &node)?;
+                Some(graph.push(node)?)
+            }
+            AnswerBinding::Inapplicable(_) => {
+                return Err("不適合なmap射影を通常計算へ渡した".into());
+            }
+        }
+    } else {
+        None
+    };
     let on = selected(environment, graph, request)?;
     let holder = subject(environment, &on)?;
     let mut architectures = [None, None];
@@ -622,7 +675,10 @@ pub(super) fn evaluate(
     )
     .map_err(failure)?;
     let witness = Witness::Map(m.clone());
-    let subject = raw(graph, &witness, &on)?;
+    let subject = match selected_reference {
+        Some(reference) => reference,
+        None => raw(graph, &witness, &on)?,
+    };
     let mut reasons = native::missing(request, m.result().missing().to_vec());
     for a in architectures.iter().flatten() {
         reasons.extend(a.reasons.iter().cloned());
@@ -643,6 +699,64 @@ pub(super) fn evaluate(
             },
             vec![],
         )?)
+    } else {
+        None
+    };
+    let mut evidence = vec![];
+    for (index, counterexample) in m.result().counterexamples().iter().enumerate() {
+        let left = source.ok_or("反例の元Architectureがない")?.root;
+        let right = target.ok_or("反例の先Architectureがない")?.root;
+        evidence.push(put(
+            graph,
+            &witness,
+            D::Counterexample {
+                index,
+                subject,
+                left,
+                right,
+                facts: native::counterexample_facts(counterexample),
+            },
+            vec![],
+        )?);
+    }
+    let failed_condition = if m.failed_candidate() {
+        let name = put(
+            graph,
+            &witness,
+            D::ConstructionLabel(Scalar::Text("map_candidate".into())),
+            vec![],
+        )?;
+        let condition = native::retain(
+            graph,
+            ConstructionValue {
+                witness: witness.clone(),
+                data: D::CandidateCondition {
+                    name,
+                    subject,
+                    source: source.ok_or("構成反証の元Architectureがない")?.reference,
+                    target: target.ok_or("構成反証の先Architectureがない")?.reference,
+                },
+            },
+            vec![],
+            evidence.clone(),
+            Some(Judgment {
+                status: Decision::Refuted,
+                evidence: evidence.clone(),
+                reasons: vec![],
+            }),
+        )?;
+        reasons.push(Reason {
+            kind: ReasonKind::ConditionFailed {
+                condition,
+                construction: "map_candidate",
+            },
+            request: request.id.clone(),
+            dependencies: vec![condition],
+            missing: vec![],
+            location: None,
+        });
+        sort_reasons(&mut reasons);
+        Some(condition)
     } else {
         None
     };
@@ -691,24 +805,9 @@ pub(super) fn evaluate(
     } else {
         graph.get(candidate)?.reasons.clone()
     };
-    let mut evidence = vec![];
-    for (index, counterexample) in m.result().counterexamples().iter().enumerate() {
-        let left = source.ok_or("反例の元Architectureがない")?.root;
-        let right = target.ok_or("反例の先Architectureがない")?.root;
-        evidence.push(put(
-            graph,
-            &witness,
-            D::Counterexample {
-                index,
-                subject,
-                left,
-                right,
-                facts: native::counterexample_facts(counterexample),
-            },
-            vec![],
-        )?);
-    }
-    let status = if !complete {
+    let status = if failed_condition.is_some() {
+        Decision::Refuted
+    } else if !complete {
         Decision::Undetermined
     } else if m.result().map().is_some() {
         Decision::Established
@@ -724,24 +823,28 @@ pub(super) fn evaluate(
             parts: vec![(field("candidate"), candidate)],
         }
     };
-    let claim = native::retain(
-        graph,
-        ConstructionValue {
-            witness: witness.clone(),
-            data,
-        },
-        if complete { vec![] } else { reasons.clone() },
-        evidence.clone(),
-        Some(Judgment {
-            status,
-            evidence: evidence.clone(),
-            reasons: if status == Decision::Undetermined {
-                reasons.clone()
-            } else {
-                vec![]
+    let claim = if let Some(condition) = failed_condition {
+        condition
+    } else {
+        native::retain(
+            graph,
+            ConstructionValue {
+                witness: witness.clone(),
+                data,
             },
-        }),
-    )?;
+            if complete { vec![] } else { reasons.clone() },
+            evidence.clone(),
+            Some(Judgment {
+                status,
+                evidence: evidence.clone(),
+                reasons: if status == Decision::Undetermined {
+                    reasons.clone()
+                } else {
+                    vec![]
+                },
+            }),
+        )?
+    };
     let mut outputs = BTreeMap::from([
         ("candidate".into(), candidate),
         ("proposition".into(), claim),

@@ -117,6 +117,13 @@ impl Eq for AtomWitness {}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ConstructionData {
     Atom(Arc<AtomWitness>),
+    ConstructionLabel(Scalar),
+    CandidateCondition {
+        name: NodeRef,
+        subject: NodeRef,
+        source: NodeRef,
+        target: NodeRef,
+    },
     Subject {
         value: Scalar,
         location: Location,
@@ -208,7 +215,8 @@ fn bindings(bs: &[Binding]) -> Json {
 impl ConstructionValue {
     pub fn scalar(&self) -> Option<&Scalar> {
         match &self.data {
-            ConstructionData::Subject { value, .. } => Some(value),
+            ConstructionData::Subject { value, .. }
+            | ConstructionData::ConstructionLabel(value) => Some(value),
             ConstructionData::Atom(a) => Some(&a.value),
             _ => None,
         }
@@ -268,6 +276,8 @@ impl ConstructionValue {
         let ty = match &self.data {
             D::Subject { value, .. } => return NodeType::Value(value.ty()),
             D::Atom(a) => return NodeType::Value(a.value.ty()),
+            D::ConstructionLabel(_) => return NodeType::Value(Type::Text),
+            D::CandidateCondition { .. } => return NodeType::Proposition,
             D::Pending { ty, .. } => *ty,
             D::PendingPreservation { .. } => return NodeType::Proposition,
             D::PendingLawInstance { .. } => return NodeType::LawInstance,
@@ -288,7 +298,13 @@ impl ConstructionValue {
     pub fn arguments(&self) -> Vec<NodeRef> {
         use ConstructionData as D;
         match &self.data {
-            D::Subject { .. } | D::Atom(_) => vec![],
+            D::Subject { .. } | D::Atom(_) | D::ConstructionLabel(_) => vec![],
+            D::CandidateCondition {
+                name,
+                subject,
+                source,
+                target,
+            } => vec![*name, *subject, *source, *target],
             D::Pending { parts, .. }
             | D::PendingPreservation { parts }
             | D::PendingLawInstance { parts, .. } => parts.iter().map(|(_, r)| *r).collect(),
@@ -351,6 +367,8 @@ impl ConstructionValue {
     pub fn construction(&self) -> &'static str {
         use ConstructionData as D;
         match self.data {
+            D::ConstructionLabel(_) => "binding",
+            D::CandidateCondition { .. } => "proposition",
             D::Subject { .. } => "binding",
             D::Atom(_) => "binding",
             D::Pending { ty, .. } => match ty {
@@ -552,6 +570,17 @@ impl ConstructionValue {
                 }
                 j
             }
+            D::ConstructionLabel(label) => label.wire(),
+            D::CandidateCondition {
+                name,
+                subject,
+                source,
+                target,
+            } => Json::obj([
+                ("predicate", Json::str("constructible")),
+                ("operands", refs(&[*name, *subject, *source, *target])),
+                ("quantifiers", Json::Arr(vec![])),
+            ]),
             D::Preservation { candidate } => Json::obj([
                 ("predicate", Json::str("configuration_preserved")),
                 ("operands", refs(&[*candidate])),
@@ -864,6 +893,12 @@ impl MapWitness {
     }
     pub fn subject(&self) -> &Fact {
         &self.subject
+    }
+    pub fn failed_candidate(&self) -> bool {
+        self.result.candidate().is_none()
+            && self.result.missing().is_empty()
+            && self.stopped.is_none()
+            && !self.result.counterexamples().is_empty()
     }
     pub fn reasons(&self) -> Vec<Reason> {
         let mut reasons = missing(&self.request, self.result.missing().to_vec());
@@ -1367,6 +1402,28 @@ fn validate_partial(
                     return Err("完成候補を未決にした".into());
                 }
             }
+            if m.failed_candidate() {
+                let mut condition = None;
+                for (index, node) in graph.nodes.iter().enumerate() {
+                    if matches!(&node.payload, Some(Payload::Construction(c)) if c.witness == v.witness && matches!(c.data, D::CandidateCondition { .. }))
+                    {
+                        if condition.replace(NodeRef(index)).is_some() {
+                            return Err("候補構成条件が重複した".into());
+                        }
+                    }
+                }
+                let condition = condition.ok_or("元候補の構成条件反証がない")?;
+                reasons.push(Reason {
+                    kind: ReasonKind::ConditionFailed {
+                        condition,
+                        construction: "map_candidate",
+                    },
+                    request: m.request.id.clone(),
+                    dependencies: vec![condition],
+                    missing: vec![],
+                    location: None,
+                });
+            }
             super::result::sort_reasons(&mut reasons);
             reasons
         }
@@ -1406,6 +1463,59 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
         return Err("完成native構成へ別の未決理由を付けた".into());
     }
     match (&v.data, &v.witness) {
+        (D::ConstructionLabel(label), Witness::Map(m)) => require!(
+            m.failed_candidate() && label == &Scalar::Text("map_candidate".into()),
+            "候補構成の名前・元反証が違う"
+        ),
+        (
+            D::CandidateCondition {
+                name,
+                subject,
+                source,
+                target,
+            },
+            Witness::Map(m),
+        ) => {
+            require!(m.failed_candidate(), "未確認候補を構成不成立にした");
+            let label = value(graph, *name)?;
+            require!(
+                label.witness == v.witness
+                    && matches!(&label.data, D::ConstructionLabel(Scalar::Text(n)) if n == "map_candidate"),
+                "候補構成の元名前が違う"
+            );
+            require!(
+                subject_fact(graph, *subject)? == m.subject,
+                "構成不成立の元対応が違う"
+            );
+            for (r, expected) in [(*source, m.result.source()), (*target, m.result.target())] {
+                let a = value(graph, r)?;
+                require!(
+                    matches!(&a.witness,Witness::Architecture(a) if Some(&a.construction)==expected),
+                    "構成不成立の元始終域が違う"
+                );
+            }
+            require!(
+                node.evidence.len() == m.result.counterexamples().len(),
+                "候補構成条件の反例を落とした"
+            );
+            for (index, e) in node.evidence.iter().enumerate() {
+                let e = value(graph, *e)?;
+                require!(
+                    e.witness == v.witness
+                        && matches!(&e.data,D::Counterexample { index:i,.. } if *i==index),
+                    "候補構成条件の元反例が違う"
+                );
+            }
+            require!(
+                node.judgment
+                    == Some(Judgment {
+                        status: Decision::Refuted,
+                        evidence: node.evidence.clone(),
+                        reasons: vec![]
+                    }),
+                "候補構成条件の反証判断が違う"
+            );
+        }
         (D::Atom(a), _) => require!(
             a.inputs.sources() == v.witness.inputs().sources(),
             "別入力のAtomを転記した"
@@ -1466,7 +1576,8 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                     "部分構成のpathが空または重複"
                 );
                 require!(
-                    matches!(&graph.get(*r)?.payload,Some(Payload::Construction(c)) if c.witness.request()==v.witness.request() && c.witness.inputs().sources()==v.witness.inputs().sources()),
+                    matches!(&graph.get(*r)?.payload,Some(Payload::Construction(c)) if c.witness.request()==v.witness.request() && c.witness.inputs().sources()==v.witness.inputs().sources())
+                        || matches!((&v.witness, ty, path.as_slice()), (Witness::Map(m), ConstructionType::MapCandidate, [ProjectionStep::Field(field)]) if field=="subject" && subject_fact(graph,*r).is_ok_and(|f| f==m.subject)),
                     "部分構成が別入力・要求を参照した"
                 );
             }
