@@ -269,6 +269,7 @@ impl Environment<'_> {
         }
         let mut scope = Scope::default();
         scope.readings.insert(d.reading.clone());
+        scope.merge(&self.architecture_scope());
         scope.assignments = !plan.numeric.is_empty();
         let fixed: Vec<_> = plan
             .parameters

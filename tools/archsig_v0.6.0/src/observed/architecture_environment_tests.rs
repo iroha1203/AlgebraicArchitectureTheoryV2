@@ -71,6 +71,21 @@ fn architecture_environment_edges_sources_domains_and_equal_but_foreign_producer
     };
     assert_ne!(source, alias);
     let eval = result.answers[4].outputs["evaluation"].0;
+    assert!(result.nodes[eval].scope.snapshots.contains("v"));
+    assert!(result.nodes[eval].scope.modes.contains("specification"));
+    for part in 0..2 {
+        let mut nodes = result.nodes.clone();
+        if part == 0 {
+            nodes[eval].scope.snapshots.clear();
+        } else {
+            nodes[eval].scope.modes.clear();
+        }
+        assert!(matches!(
+            replay(&result, &nodes),
+            Err(ValidationFailure::Internal(_))
+        ));
+    }
+
     for replacement in [
         None,
         Some(target),
@@ -128,7 +143,16 @@ fn architecture_environment_edges_sources_domains_and_equal_but_foreign_producer
         "target=evaluate(Reservations.smallStates,on=$m.candidate.target)",
         "constant=evaluate(Reservations.no,on=$m.candidate.target)",
     ];
-    changed.prepared = prepare_observed(fixture::input("", None), &qs, &mut quiet()).unwrap();
+    let original = std::mem::replace(
+        &mut changed.prepared,
+        prepare_observed(fixture::input("", None), &qs, &mut quiet()).unwrap(),
+    );
+    assert!(matches!(
+        replay(&changed, &changed.nodes),
+        Err(ValidationFailure::Internal(_))
+    ));
+    changed.prepared = original;
+    changed.answers[4].scope.snapshots.clear();
     assert!(matches!(
         replay(&changed, &changed.nodes),
         Err(ValidationFailure::Internal(_))

@@ -602,3 +602,74 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[test]
+fn explicit_architecture_scope_is_retained_for_constants_calls_universal_and_family_evaluations() {
+    let dir = inputs(
+        "architecture-scope",
+        r#"
+view nested():Bool=no();
+view universal():Bool=forall z:Z . z=z;
+law required numeric(z:Z):z=z;
+law required finite(s:State):true;
+law required dependentScope(a:System,s:State[a]):true;
+"#,
+        None,
+    );
+    let qs = [
+        "m=map(Reservations.Migration,on=@v/m,reading=Reservations,to_reading=Alternative)",
+        "constant=evaluate(Reservations.no,on=$m.candidate.target)",
+        "nested=evaluate(Reservations.nested,on=$m.candidate.target)",
+        "universal=evaluate(Reservations.universal,on=$m.candidate.target)",
+        "numeric=check(Reservations.numeric,on=$m.candidate.target)",
+        "finite=check(Reservations.finite,on=$m.candidate.target)",
+        "dependent=check(Reservations.dependentScope,on=$m.candidate.target)",
+        "bound=evaluate(Reservations.holdings,s=@v/p,on=$m.candidate.target)",
+        "observed=evaluate(Reservations.no)",
+    ];
+    let r = asks(&dir, &qs);
+    assert_eq!(r.code, 0, "{}", r.stdout);
+    let j = result_json(&dir, &r);
+    let assert_scope = |scope: &JNode| {
+        assert!(
+            arr(get(scope, "snapshots")).iter().any(|x| s(x) == "v"),
+            "{scope:?}"
+        );
+        assert!(
+            arr(get(scope, "modes"))
+                .iter()
+                .any(|x| s(x) == "specification"),
+            "{scope:?}"
+        );
+        for reading in ["Reservations", "Alternative"] {
+            assert!(
+                arr(get(scope, "readings")).iter().any(|x| s(x) == reading),
+                "{reading}: {scope:?}"
+            );
+        }
+    };
+    for id in [
+        "constant",
+        "nested",
+        "universal",
+        "numeric",
+        "finite",
+        "dependent",
+        "bound",
+    ] {
+        let a = answer(&j, id);
+        assert_scope(get(a, "scope"));
+        assert_scope(get(node(&j, get(get(a, "outputs"), "evaluation")), "scope"));
+    }
+    let constant = node(
+        &j,
+        get(get(answer(&j, "constant"), "outputs"), "evaluation"),
+    );
+    assert!(arr(get(constant, "support")).is_empty());
+    let primitive = node(&j, get(get(answer(&j, "constant"), "outputs"), "value"));
+    assert!(arr(get(primitive, "support")).is_empty());
+    let observed = get(answer(&j, "observed"), "scope");
+    assert!(arr(get(observed, "snapshots")).is_empty());
+    assert!(arr(get(observed, "modes")).is_empty());
+    std::fs::remove_dir_all(dir).unwrap();
+}

@@ -10,6 +10,7 @@ use std::sync::Arc;
 pub(super) struct ArchitectureContext {
     reference: NodeRef,
     domain: Arc<ObjectDomain>,
+    scope: Scope,
 }
 /// 依存producerの再検査中に別の根を選んでも、呼出し側の環境を復元する。
 pub(in crate::observed) struct ArchitectureGuard<'e, 'i> {
@@ -24,6 +25,13 @@ impl Drop for ArchitectureGuard<'_, '_> {
 impl<'i> Environment<'i> {
     pub(in crate::observed) fn architecture_ref(&self) -> Option<NodeRef> {
         self.architecture.borrow().as_ref().map(|c| c.reference)
+    }
+    pub(in crate::observed) fn architecture_scope(&self) -> Scope {
+        self.architecture
+            .borrow()
+            .as_ref()
+            .map(|c| c.scope.clone())
+            .unwrap_or_default()
     }
     pub(super) fn object_domain(&self) -> Option<Arc<ObjectDomain>> {
         self.architecture
@@ -90,6 +98,7 @@ impl<'i> Environment<'i> {
             Ok(Some(ArchitectureContext {
                 reference,
                 domain: Arc::new(domain),
+                scope: node.scope.clone(),
             }))
         })()?;
         Ok(ArchitectureGuard {

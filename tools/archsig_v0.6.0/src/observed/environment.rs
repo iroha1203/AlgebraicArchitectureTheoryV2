@@ -6399,6 +6399,7 @@ impl<'a> Environment<'a> {
             }
             let mut base = Scope::default();
             base.readings.insert(declaration.reading.clone());
+            base.merge(&self.architecture_scope());
             let mut variables = BTreeMap::new();
             for parameter in params {
                 self.tick()?;
@@ -6534,6 +6535,7 @@ impl<'a> Environment<'a> {
             }
             (base, variables)
         };
+        base.merge(&self.architecture_scope());
         if self.current_context(graph).case.is_some() {
             base.completions = true;
         }
