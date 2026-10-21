@@ -78,7 +78,8 @@ impl ObjectEvaluationTable {
                 && self.rows.len() == expected.rows.len();
             for (a, b) in self.rows.iter().zip(&expected.rows) {
                 tick(control)?;
-                let same = match (a.evaluation.outcome(), b.evaluation.outcome()) {
+                let same = a.evaluation.same_origin(&b.evaluation)
+                    && match (a.evaluation.outcome(), b.evaluation.outcome()) {
                     (ObjectEvaluationOutcome::FiniteView(a), ObjectEvaluationOutcome::FiniteView(b)) => {
                         super::object_view_family::same_family_checked(a, b, control).map_err(|f| match f {
                             super::result::ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
@@ -121,6 +122,103 @@ mod tests {
     fn quiet() -> Control {
         Control::new(Limits::default(), |_| Usage::default())
     }
+
+
+    #[test]
+    fn finite_view_rows_reject_foreign_outer_readings_objects_and_instances() {
+        let d = include_bytes!("../../tests/fixtures/object-instances.atoms.json");
+        let defs = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
+        let digest = &defs.vocabularies["Instances"].digest;
+        let law = format!(
+            "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Instances version \"1\" digest \"{digest}\"; view family(c:Part,b:Bool):Bool=b; view other(c:Part,b:Bool):Bool=not b; }}"
+        );
+        let inputs = Arc::new(
+            check_inputs(
+                InputSources::from_bytes(
+                    vec![d.to_vec()],
+                    law.into_bytes(),
+                    include_str!("../../tests/fixtures/object-instances.archmap.json")
+                        .replace("@INSTANCES_DIGEST@", digest)
+                        .into_bytes(),
+                ),
+                &mut quiet(),
+            )
+            .unwrap(),
+        );
+        let c = construct(&inputs, "Selected", "v", "A", &mut quiet()).unwrap();
+        let readings = object_reading_instances(&inputs, &c, &mut quiet()).unwrap();
+        let foreign = construct(&inputs, "Selected", "v", "B", &mut quiet()).unwrap();
+        let foreign_readings = object_reading_instances(&inputs, &foreign, &mut quiet()).unwrap();
+        for kind in 0..3 {
+            let mut table =
+                evaluate_object_table(Arc::clone(&inputs), &readings, &mut quiet()).unwrap();
+            table.recheck(Arc::clone(&inputs), &mut quiet()).unwrap();
+            let index = table
+                .rows
+                .iter()
+                .position(|row| {
+                    row.evaluation.object().subject().subject == "A"
+                        && row.evaluation.instance().declaration().name == "Selected.family"
+                        && row
+                            .evaluation
+                            .instance()
+                            .bindings()
+                            .iter()
+                            .any(|b| b.subject().subject == "p")
+                        && matches!(
+                            row.evaluation.outcome(),
+                            ObjectEvaluationOutcome::FiniteView(_)
+                        )
+                })
+                .unwrap();
+            let position = table.rows[index].position;
+            let replacement = match kind {
+                0 => evaluate_object_instance(
+                    Arc::clone(&inputs),
+                    &readings,
+                    (position.object + 1) % readings.objects().len(),
+                    position.instance,
+                    &mut quiet(),
+                )
+                .unwrap(),
+                1 => evaluate_object_instance(
+                    Arc::clone(&inputs),
+                    &readings,
+                    position.object,
+                    (position.instance + 1) % readings.instances().len(),
+                    &mut quiet(),
+                )
+                .unwrap(),
+                _ => {
+                    evaluate_object_instance(Arc::clone(&inputs), &foreign_readings, 0, 0, &mut quiet())
+                        .unwrap()
+                }
+            };
+            let mut original = std::mem::replace(&mut table.rows[index].evaluation, replacement);
+            let original_family = std::mem::replace(
+                original.outcome_mut_for_test(),
+                ObjectEvaluationOutcome::NotApplicable,
+            );
+            *table.rows[index].evaluation.outcome_mut_for_test() = original_family;
+            assert_eq!(table.rows[index].position, position);
+            assert!(matches!(
+                table.rows[index].evaluation.outcome(),
+                ObjectEvaluationOutcome::FiniteView(_)
+            ));
+            let Err(failure) = table.recheck(Arc::clone(&inputs), &mut quiet()) else {
+                panic!("foreign outer origin accepted: kind={kind}")
+            };
+            assert!(matches!(
+                failure.cause(),
+                ObjectEvaluationFailure::Construction(ConstructionFailure::Inconsistent(_))
+            ));
+            let partial = failure.partial().unwrap();
+            assert!(partial.is_complete());
+            assert_eq!(partial.rows().len(), table.rows.len());
+            assert_eq!(partial.pending(), None);
+        }
+    }
+
     #[test]
     fn current_inputs_reject_dropped_reordered_forged_and_incomplete_table_rows() {
         let d = include_bytes!("../../tests/fixtures/object-instances.atoms.json");

@@ -216,6 +216,11 @@ pub struct ObjectEvaluation {
     outcome: ObjectEvaluationOutcome,
 }
 impl ObjectEvaluation {
+    pub(super) fn same_origin(&self, other: &Self) -> bool {
+        self.readings == other.readings
+            && self.object == other.object
+            && self.instance == other.instance
+    }
     pub fn readings(&self) -> &ObjectReadingInstances {
         &self.readings
     }
