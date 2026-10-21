@@ -23,15 +23,18 @@ fn quiet() -> Control {
     Control::new(Limits::default(), |_| Usage::default())
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
+    inputs_with_left(D, law, map)
+}
+fn inputs_with_left(left: &[u8], law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/configuration-map-right.atoms.json");
-    let defs = archsig::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();
+    let defs = archsig::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
     let ld = &defs.vocabularies["Left"].digest;
     let rd = &defs.vocabularies["Right"].digest;
     let bridge = include_str!("fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
     let defs = archsig::definition::check_definitions(&[
-        ("left", D),
+        ("left", left),
         ("right", right),
         ("bridge", bridge.as_bytes()),
     ])
@@ -45,7 +48,7 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     Arc::new(
         check_inputs(
             InputSources::from_bytes(
-                vec![D.to_vec(), right.to_vec(), bridge.into_bytes()],
+                vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
                 expand(law),
                 expand(map),
             ),
@@ -115,6 +118,34 @@ fn remove(map: &str, id: &str) -> String {
         .collect::<Vec<_>>()
         .join("\n")
         .replace(",\n]", "\n]")
+}
+#[test]
+fn finite_view_family_is_preserved_at_every_boolean_argument() {
+    let i = inputs(L, A);
+    let d = declarations(&i);
+    let (o, r) = indices(&i, "p", "family", "p");
+    let result = object_view_transport(Arc::clone(&i), &d, o, r, &mut quiet())
+        .expect("Bool parameter の全域でviewの保存を検査する");
+    assert_eq!(result.outcome(), &Outcome::Preserved);
+    let family = result.family().unwrap();
+    assert!(family.is_complete());
+    assert_eq!(family.parameters().len(), 1);
+    assert_eq!(
+        family.parameters()[0].position(),
+        archsig::construction::maps::DeclarationValuePosition::Parameter(1)
+    );
+    assert_eq!(family.parameters()[0].forward(), Some([0, 1].as_slice()));
+    assert_eq!(family.rows().len(), 2);
+    for (row, expected) in family.rows().iter().zip([false, true]) {
+        assert_eq!(row.source_arguments()[0].wire(), Json::Bool(expected));
+        assert_eq!(row.target_arguments()[0].wire(), Json::Bool(expected));
+        assert_eq!(row.source().unwrap().wire(), Json::Bool(expected));
+        assert_eq!(row.image().unwrap().wire(), Json::Bool(expected));
+        assert_eq!(row.target().unwrap().wire(), Json::Bool(expected));
+        assert_eq!(row.outcome(), &Outcome::Preserved);
+    }
+    result.operation().recheck(&i, &mut quiet()).unwrap();
+    result.recheck(i, &mut quiet()).unwrap();
 }
 #[test]
 fn actual_numeric_values_commute_and_false_is_an_ordinary_value() {
@@ -303,13 +334,14 @@ fn missing_declaration_and_unimplemented_families_keep_verified_operation() {
     r.operation().recheck(&i, &mut quiet()).unwrap();
     let i = inputs(L, A);
     let d = declarations(&i);
-    for view in ["family", "sequence"] {
+    for view in ["sequence"] {
         let (o, r) = indices(&i, "p", view, "p");
         let Error::NotImplemented {
             operation,
             object,
             instance,
             returns,
+            ..
         } = object_view_transport(Arc::clone(&i), &d, o, r, &mut quiet()).unwrap_err()
         else {
             panic!()
@@ -782,4 +814,540 @@ fn stopped_structure_transport_reaches_the_view_caller() {
             assert_eq!(probes.get(), 1);
         }
     }
+}
+
+fn family_law(source: &str, target: &str) -> String {
+    L.replace("view family(c: Left.Child, b: Bool): Bool = b;", source)
+        .replace("view family(d: Right.Child, q: Bool): Bool = q;", target)
+}
+#[test]
+fn finite_view_family_keeps_each_refuted_or_unknown_point_and_the_operation() {
+    let law = family_law(
+        "view family(c: Left.Child,b:Bool):Bool=b;",
+        "view family(d:Right.Child,q:Bool):Bool=false;",
+    );
+    let i = inputs(&law, A);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Refuted(Failed::Value));
+    let f = r.family().unwrap();
+    assert!(f.is_complete());
+    assert_eq!(f.rows().len(), 2);
+    assert_eq!(f.rows()[0].outcome(), &Outcome::Preserved);
+    assert_eq!(f.rows()[1].outcome(), &Outcome::Refuted(Failed::Value));
+    assert_eq!(f.rows()[1].source().unwrap().wire(), Json::Bool(true));
+    assert_eq!(f.rows()[1].target().unwrap().wire(), Json::Bool(false));
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    let law = family_law(
+        "view family(c:Left.Child,b:Bool):Bool=if b then c.count=0 else true;",
+        "view family(d:Right.Child,q:Bool):Bool=true;",
+    );
+    let i = inputs(&law, &remove(A, "p-count"));
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Undetermined);
+    let f = r.family().unwrap();
+    assert!(f.is_complete());
+    assert_eq!(f.rows().len(), 2);
+    assert_eq!(f.rows()[0].outcome(), &Outcome::Preserved);
+    assert_eq!(f.rows()[1].outcome(), &Outcome::Undetermined);
+    assert!(f.rows()[1].source().is_none());
+    assert!(f.rows()[1].image().is_none());
+    assert_eq!(f.rows()[1].target().unwrap().wire(), Json::Bool(true));
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn finite_view_family_follows_reference_images_instead_of_matching_row_numbers() {
+    let law = family_law(
+        "view family(c:Left.Child,x:(Left.Child,Bool)):(Left.Child,Bool)=x;",
+        "view family(d:Right.Child,y:(Right.Child,Bool)):(Right.Child,Bool)=y;",
+    );
+    let map = edit(
+        A,
+        "m-entries",
+        "[[[\"v\",\"p\"],[\"v\",\"q\"]],[[\"v\",\"r\"],[\"v\",\"s\"]]]",
+        "[[[\"v\",\"p\"],[\"v\",\"s\"]],[[\"v\",\"r\"],[\"v\",\"q\"]]]",
+    );
+    let i = inputs(&law, &map);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Preserved);
+    let f = r.family().unwrap();
+    assert!(f.is_complete());
+    assert_eq!(f.rows().len(), 4);
+    assert_eq!(f.parameters()[0].forward(), Some([2, 3, 0, 1].as_slice()));
+    assert_eq!(f.parameters()[0].inverse(), Some([2, 3, 0, 1].as_slice()));
+    for (row, (source, target, expected_index, flag)) in f.rows().iter().zip([
+        ("p", "s", 2, false),
+        ("p", "s", 3, true),
+        ("r", "q", 0, false),
+        ("r", "q", 1, true),
+    ]) {
+        let value = |id: &str| {
+            Json::Arr(vec![
+                Json::Arr(vec![Json::str("v"), Json::str(id)]),
+                Json::Bool(flag),
+            ])
+        };
+        assert_eq!(row.target_row(), expected_index);
+        assert_eq!(row.source().unwrap().wire(), value(source));
+        assert_eq!(row.image().unwrap().wire(), value(target));
+        assert_eq!(row.target().unwrap().wire(), value(target));
+    }
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn finite_view_parameter_collision_is_a_type_condition_with_its_whole_domains() {
+    use archsig::construction::maps::FamilyTypeFailure;
+    let law = family_law(
+        "view family(c:Left.Child,x:Option<Left.Child>):Bool=true;",
+        "view family(d:Right.Child,y:Option<Right.Child>):Bool=true;",
+    );
+    let map = edit(
+        A,
+        "m-entries",
+        "[[\"v\",\"r\"],[\"v\",\"s\"]]",
+        "[[\"v\",\"r\"],[\"v\",\"q\"]]",
+    );
+    let i = inputs(&law, &map);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(
+        r.outcome(),
+        &Outcome::Refuted(Failed::ParameterType { position: 1 })
+    );
+    let f = r.family().unwrap();
+    assert!(!f.is_complete());
+    assert!(f.rows().is_empty());
+    let map = &f.parameters()[0];
+    assert_eq!(map.source().len(), 3);
+    assert_eq!(map.target().len(), 3);
+    assert_eq!(map.images().len(), 3);
+    assert!(map.forward().is_none());
+    assert!(map.inverse().is_none());
+    assert!(map.failures().iter().any(
+        |f| matches!(f,FamilyTypeFailure::Collision { target: Some(1), sources, image }
+                if sources==&[1,2] && image == &map.images()[1])
+    ));
+    assert!(
+        map.failures()
+            .iter()
+            .any(|f| matches!(f, FamilyTypeFailure::Unreached { target: 2 }))
+    );
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(i, &mut quiet()).unwrap();
+}
+
+fn outside_box_inputs(source: &str, target: &str) -> Arc<CheckedInputs> {
+    let extra = r#",{"kind":"data","name":"Left.Box","meaning":"有限値。","constructors":[{"name":"Put","meaning":"参照値。","arguments":[["Ref","Left.Child"]]}]}"#;
+    let left = String::from_utf8(D.to_vec()).unwrap();
+    assert_eq!(left.matches("  ]}]").count(), 1);
+    let left = left.replace("  ]}]", &format!("{extra}\n  ]}}]"));
+    let law = family_law(source, target);
+    let map = edit(
+        A,
+        "m-entries",
+        "[[\"v\",\"r\"],[\"v\",\"s\"]]",
+        "[[\"v\",\"r\"],[\"v\",\"q\"]]",
+    );
+    inputs_with_left(left.as_bytes(), &law, &map)
+}
+
+#[test]
+fn finite_view_parameter_retains_the_collision_of_equal_outside_target_images() {
+    use archsig::construction::maps::FamilyTypeFailure;
+    let i = outside_box_inputs(
+        "view family(c:Left.Child,x:Left.Box):Bool=true;",
+        "view family(d:Right.Child,y:Left.Box):Bool=true;",
+    );
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(
+        r.outcome(),
+        &Outcome::Refuted(Failed::ParameterType { position: 1 })
+    );
+    let map = &r.family().unwrap().parameters()[0];
+    assert_eq!(map.source().len(), 2);
+    assert_eq!(map.target().len(), 2);
+    assert_eq!(map.images().len(), 2);
+    assert_eq!(map.images()[0], map.images()[1]);
+    assert_eq!(
+        map.images()[0].wire().canonical(),
+        "{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}"
+    );
+    assert!(matches!(map.failures(), [
+        FamilyTypeFailure::OutsideTarget { source: 0 },
+        FamilyTypeFailure::OutsideTarget { source: 1 },
+        FamilyTypeFailure::Collision { target: None, sources, image },
+        FamilyTypeFailure::Unreached { target: 0 },
+        FamilyTypeFailure::Unreached { target: 1 },
+    ] if sources == &[0, 1] && image == &map.images()[0]));
+    assert!(map.forward().is_none());
+    assert!(map.inverse().is_none());
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(i, &mut quiet()).unwrap();
+}
+
+#[test]
+fn finite_view_return_retains_the_collision_of_equal_outside_target_images() {
+    use archsig::construction::maps::{FamilyTypeFailure, ViewFamilyReturnMap};
+    let i = outside_box_inputs(
+        "view family(c:Left.Child,b:Bool):Option<Left.Box> = none<Left.Box>;",
+        "view family(d:Right.Child,q:Bool):Option<Left.Box> = none<Left.Box>;",
+    );
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Refuted(Failed::ValueType));
+    let Some(ViewFamilyReturnMap::Finite(map)) = r.family().unwrap().returns() else {
+        panic!("{:?}", r.family())
+    };
+    assert_eq!(map.source().len(), 3);
+    assert_eq!(map.target().len(), 3);
+    assert_eq!(map.images().len(), 3);
+    assert_eq!(map.images()[1], map.images()[2]);
+    assert_eq!(map.images()[0].wire().canonical(), "{\"none\":true}");
+    assert_eq!(
+        map.images()[1].wire().canonical(),
+        "{\"some\":{\"args\":[[\"v\",\"q\"]],\"tag\":\"Put\"}}"
+    );
+    assert!(matches!(map.failures(), [
+        FamilyTypeFailure::OutsideTarget { source: 1 },
+        FamilyTypeFailure::OutsideTarget { source: 2 },
+        FamilyTypeFailure::Collision { target: None, sources, image },
+        FamilyTypeFailure::Unreached { target: 1 },
+        FamilyTypeFailure::Unreached { target: 2 },
+    ] if sources == &[1, 2] && image == &map.images()[1]));
+    assert!(map.forward().is_none());
+    assert!(map.inverse().is_none());
+    assert!(r.family().unwrap().rows().is_empty());
+    assert!(!r.family().unwrap().is_complete());
+    for e in [r.source().unwrap(), r.target().unwrap()] {
+        let ObjectEvaluationOutcome::FiniteView(family) = e.outcome() else {
+            panic!("{e:?}")
+        };
+        assert!(family.is_complete());
+        assert_eq!(family.rows().len(), 2);
+        for row in family.rows() {
+            let wire = row.evaluation().wire();
+            let output = f(&arr(f(&wire, "answers"))[0], "outputs");
+            let id = f(f(output, "value"), "node");
+            let node = arr(f(&wire, "nodes"))
+                .iter()
+                .find(|node| f(node, "id") == id)
+                .unwrap();
+            assert_eq!(f(node, "value").canonical(), "{\"none\":true}");
+        }
+    }
+    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn finite_view_family_keeps_non_applicability_separate_from_membership_conditions() {
+    let i = inputs(L, A);
+    let r = run(Arc::clone(&i), "p", "family", "r");
+    assert_eq!(r.outcome(), &Outcome::Preserved);
+    assert!(r.family().unwrap().rows().is_empty());
+    assert!(matches!(
+        r.source().unwrap().outcome(),
+        ObjectEvaluationOutcome::NotApplicable
+    ));
+    assert!(matches!(
+        r.target().unwrap().outcome(),
+        ObjectEvaluationOutcome::NotApplicable
+    ));
+    let law = family_law(
+        "view family(c:Left.Child,a:Left.ExternalRoot,e:Left.ExternalChild[a],b:Bool):Bool=b;",
+        "view family(d:Right.Child,z:Left.ExternalRoot,w:Left.ExternalChild[z],q:Bool):Bool=q;",
+    );
+    let i = inputs(&law, A);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Undetermined);
+    assert!(!r.family().unwrap().is_complete());
+    assert!(matches!(
+        r.source().unwrap().outcome(),
+        ObjectEvaluationOutcome::Conditional(_)
+    ));
+    assert!(matches!(
+        r.target().unwrap().outcome(),
+        ObjectEvaluationOutcome::Conditional(_)
+    ));
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn finite_view_family_uses_fixed_owner_fibers_and_retains_needed_owner_slots() {
+    let law = family_law(
+        "view family(c:Left.Root,x:(Left.Child[c],Bool)):Bool=true;",
+        "view family(d:Right.Root,y:(Right.Child[d],Bool)):Bool=true;",
+    );
+    let i = inputs(&law, A);
+    let r = run(Arc::clone(&i), "a", "family", "a");
+    assert_eq!(r.outcome(), &Outcome::Preserved);
+    assert_eq!(r.family().unwrap().rows().len(), 4);
+    assert_eq!(r.family().unwrap().parameters()[0].source().len(), 4);
+    r.recheck(i, &mut quiet()).unwrap();
+    let law = family_law(
+        "view family(c:Left.Child,a:Left.ExternalRoot,x:Option<Left.ExternalChild[a]>):Bool=true;",
+        "view family(d:Right.Child,z:Left.ExternalRoot,y:Option<Left.ExternalChild[z]>):Bool=true;",
+    );
+    let i = inputs(&law, A);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Undetermined);
+    let f = r.family().unwrap();
+    assert!(!f.is_complete());
+    assert!(f.rows().is_empty());
+    assert!(f.parameters()[0].missing().iter().any(
+        |fact| fact.subject == "y" && fact.field.as_deref() == Some("Left.ExternalChild.owner")
+    ));
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn finite_view_family_distinguishes_empty_domain_from_the_single_empty_list() {
+    let map = A
+        .lines()
+        .filter(|line| !line.contains("\"id\":\"y\""))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .replace(",\n]", "\n]");
+    for (ty, body, rows) in [
+        ("(Left.ExternalChild,Bool)", "true", 0),
+        ("List<Left.ExternalChild>", "true", 1),
+    ] {
+        let law = family_law(
+            &format!("view family(c:Left.Child,x:{ty}):Bool={body};"),
+            &format!("view family(d:Right.Child,y:{ty}):Bool={body};"),
+        );
+        let i = inputs(&law, &map);
+        let r = run(Arc::clone(&i), "p", "family", "p");
+        assert_eq!(r.outcome(), &Outcome::Preserved);
+        let f = r.family().unwrap();
+        assert!(f.is_complete());
+        assert_eq!(f.rows().len(), rows);
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+    let law = family_law(
+        "view family(c:Left.Child,x:List<Left.ExternalChild>):List<Left.ExternalChild> =x;",
+        "view family(d:Right.Child,y:List<Left.ExternalChild>):List<Left.ExternalChild> =y;",
+    );
+    let i = inputs(&law, &map);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Preserved);
+    let f = r.family().unwrap();
+    assert_eq!(f.rows().len(), 1);
+    assert_eq!(f.rows()[0].target().unwrap().wire(), Json::Arr(vec![]));
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn finite_view_family_keeps_all_data_option_set_and_boolean_product_values() {
+    let extra = r#",{"kind":"data","name":"Left.Choice","meaning":"有限和。","constructors":[{"name":"No","meaning":"引数なし。","arguments":[]},{"name":"Yes","meaning":"Boolを保持。","arguments":["Bool"]}]}"#;
+    let left = String::from_utf8(D.to_vec())
+        .unwrap()
+        .replace("  ]}]", &format!("{extra}\n  ]}}]"));
+    let law = family_law(
+        "view family(c:Left.Child,x:Left.Choice,b:(Set<Bool>,Option<Bool>)):(Left.Choice,(Set<Bool>,Option<Bool>))=(x,b);",
+        "view family(d:Right.Child,u:Left.Choice,v:(Set<Bool>,Option<Bool>)):(Left.Choice,(Set<Bool>,Option<Bool>))=(u,v);",
+    );
+    let i = inputs_with_left(left.as_bytes(), &law, A);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Preserved);
+    let f = r.family().unwrap();
+    assert!(f.is_complete());
+    assert_eq!(f.rows().len(), 36);
+    let mut expected = Vec::new();
+    for choice in [
+        Json::obj([("tag", Json::str("No")), ("args", Json::Arr(vec![]))]),
+        Json::obj([
+            ("tag", Json::str("Yes")),
+            ("args", Json::Arr(vec![Json::Bool(false)])),
+        ]),
+        Json::obj([
+            ("tag", Json::str("Yes")),
+            ("args", Json::Arr(vec![Json::Bool(true)])),
+        ]),
+    ] {
+        for set in [
+            vec![],
+            vec![Json::Bool(false)],
+            vec![Json::Bool(true)],
+            vec![Json::Bool(false), Json::Bool(true)],
+        ] {
+            for option in [
+                Json::obj([("none", Json::Bool(true))]),
+                Json::obj([("some", Json::Bool(false))]),
+                Json::obj([("some", Json::Bool(true))]),
+            ] {
+                expected.push(Json::Arr(vec![
+                    choice.clone(),
+                    Json::Arr(vec![Json::Arr(set.clone()), option]),
+                ]));
+            }
+        }
+    }
+    assert_eq!(
+        f.rows()
+            .iter()
+            .map(|r| r.source().unwrap().wire())
+            .collect::<Vec<_>>(),
+        expected
+    );
+    for row in f.rows() {
+        assert_eq!(row.source().unwrap().wire(), row.target().unwrap().wire());
+        assert_eq!(row.outcome(), &Outcome::Preserved);
+    }
+    r.recheck(i, &mut quiet()).unwrap();
+}
+
+#[test]
+fn finite_view_family_preserves_numeric_product_return_maps_without_sampling_the_type() {
+    use archsig::construction::maps::ViewFamilyReturnMap;
+    let law = family_law(
+        "view family(c:Left.Child,b:Bool):(Z,Q)=(if b then c.count+1 else c.count,rat(1,2));",
+        "view family(d:Right.Child,q:Bool):(Z,Q)=(if q then 3 else 2,rat(1,2));",
+    );
+    let i = inputs(&law, A);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    assert_eq!(r.outcome(), &Outcome::Preserved);
+    let f = r.family().unwrap();
+    assert!(matches!(f.returns(), Some(ViewFamilyReturnMap::Numeric(_))));
+    for (row, n) in f.rows().iter().zip(["2", "3"]) {
+        let expected = Json::Arr(vec![
+            Json::str(n),
+            Json::Arr(vec![Json::str("1"), Json::str("2")]),
+        ]);
+        assert_eq!(row.source().unwrap().wire(), expected);
+        assert_eq!(row.image().unwrap().wire(), expected);
+        assert_eq!(row.target().unwrap().wire(), expected);
+    }
+    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    let r = run(Arc::clone(&i), "r", "family", "r");
+    assert_eq!(r.outcome(), &Outcome::Refuted(Failed::Value));
+    assert_eq!(r.family().unwrap().rows().len(), 2);
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn finite_view_family_moves_owned_container_types_with_the_original_owner_parameter_names() {
+    let law = family_law(
+        "view family(c:Left.Root,x:Set<Left.Child[c]>):Bool=true;",
+        "view family(d:Right.Root,y:Set<Right.Child[d]>):Bool=true;",
+    );
+    let i = inputs(&law, A);
+    let r = run(Arc::clone(&i), "a", "family", "a");
+    assert_eq!(r.outcome(), &Outcome::Preserved);
+    let f = r.family().unwrap();
+    assert_eq!(f.rows().len(), 4);
+    let map = &f.parameters()[0];
+    assert_eq!(map.forward(), Some([0, 1, 2, 3].as_slice()));
+    assert_eq!(map.source_parameter().name, "x");
+    assert_eq!(map.target_parameter().name, "y");
+    assert_eq!(
+        map.source_type(),
+        &archsig::types::Type::Set(Box::new(archsig::types::Type::Owned(
+            "Left.Child".into(),
+            "c".into()
+        )))
+    );
+    assert_eq!(
+        map.target_type(),
+        &archsig::types::Type::Set(Box::new(archsig::types::Type::Owned(
+            "Right.Child".into(),
+            "d".into()
+        )))
+    );
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn finite_view_family_recheck_rejects_changed_input_bytes_body_and_unused_provenance() {
+    let i = inputs(L, A);
+    let r = run(Arc::clone(&i), "p", "family", "p");
+    for changed in [
+        inputs(&L.replace("Bool = q;", "Bool = not q;"), A),
+        inputs(L, &edit(A, "p-count", "\"2\"", "\"9\"")),
+        inputs(L, &A.replace("amount-r1", "amount-r2")),
+    ] {
+        assert!(r.recheck(changed, &mut quiet()).is_err());
+    }
+    r.recheck(i, &mut quiet()).unwrap();
+}
+
+#[test]
+fn finite_view_parameter_outside_target_is_rejected_even_for_two_absent_axes() {
+    use archsig::construction::maps::FamilyTypeFailure;
+    let law = family_law(
+        "view family(c:Left.Child,x:Option<Left.Child>):Bool=true;",
+        "view family(d:Right.Child,y:Option<Right.Child>):Bool=true;",
+    );
+    let map=A.replace("{\"id\":\"m\",\"type\":\"Bridge.Move\",\"origin\":\"model\"},", "{\"id\":\"a2\",\"type\":\"Left.Root\",\"origin\":\"model\"},{\"id\":\"t\",\"type\":\"Left.Child\",\"origin\":\"model\"},{\"id\":\"m\",\"type\":\"Bridge.Move\",\"origin\":\"model\"},")
+        .replace("{\"id\":\"m-from\"", "{\"id\":\"t-owner\",\"subject\":\"t\",\"field\":\"Left.Child.owner\",\"value\":[\"v\",\"a2\"],\"origin\":\"model\"},{\"id\":\"m-from\"");
+    let i = inputs(&law, &map);
+    for subject in ["p", "r"] {
+        let r = run(Arc::clone(&i), "p", "family", subject);
+        assert_eq!(
+            r.outcome(),
+            &Outcome::Refuted(Failed::ParameterType { position: 1 })
+        );
+        let f = r.family().unwrap();
+        let map = &f.parameters()[0];
+        assert_eq!(map.source().len(), 4);
+        assert_eq!(map.target().len(), 3);
+        assert!(
+            map.failures()
+                .contains(&FamilyTypeFailure::OutsideTarget { source: 3 })
+        );
+        if subject == "r" {
+            assert!(matches!(
+                r.source().unwrap().outcome(),
+                ObjectEvaluationOutcome::NotApplicable
+            ));
+            assert!(matches!(
+                r.target().unwrap().outcome(),
+                ObjectEvaluationOutcome::NotApplicable
+            ));
+        }
+        r.operation().recheck(&i, &mut quiet()).unwrap();
+        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    }
+}
+
+#[test]
+fn unsupported_family_return_transport_keeps_the_already_computed_view_values() {
+    let law = family_law(
+        "view family(c:Left.Child,b:Bool):List<Z> = list<Z>[if b then c.count+1 else c.count];",
+        "view family(d:Right.Child,q:Bool):List<Z> = list<Z>[if q then 3 else 2];",
+    );
+    let i = inputs(&law, A);
+    let d = declarations(&i);
+    let (o, n) = indices(&i, "p", "family", "p");
+    let Err(Error::NotImplemented {
+        operation,
+        returns,
+        partial: Some(p),
+        ..
+    }) = object_view_transport(Arc::clone(&i), &d, o, n, &mut quiet())
+    else {
+        panic!("unsupported type transport");
+    };
+    assert_eq!(
+        returns,
+        archsig::types::Type::List(Box::new(archsig::types::Type::Z))
+    );
+    assert!(p.outcome().is_none());
+    assert!(!p.family().unwrap().is_complete());
+    assert!(p.family().unwrap().rows().is_empty());
+    assert_eq!(
+        p.family().unwrap().parameters()[0].forward(),
+        Some([0, 1].as_slice())
+    );
+    for evaluation in [p.source().unwrap(), p.target().unwrap()] {
+        let ObjectEvaluationOutcome::FiniteView(family) = evaluation.outcome() else {
+            panic!("retained finite family");
+        };
+        assert!(family.is_complete());
+        assert_eq!(family.rows().len(), 2);
+        for (row, expected) in family.rows().iter().zip(["2", "3"]) {
+            let wire = row.evaluation().wire();
+            let output = f(&arr(f(&wire, "answers"))[0], "outputs");
+            let id = f(f(output, "value"), "node");
+            let node = arr(f(&wire, "nodes"))
+                .iter()
+                .find(|node| f(node, "id") == id)
+                .unwrap();
+            assert_eq!(f(node, "value"), &Json::Arr(vec![Json::str(expected)]));
+        }
+    }
+    operation.recheck(&i, &mut quiet()).unwrap();
 }

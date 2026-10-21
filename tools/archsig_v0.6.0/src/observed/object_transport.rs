@@ -89,12 +89,39 @@ pub(super) fn same_evaluation(a: Option<&ObjectEvaluation>, b: Option<&ObjectEva
                         && a.prepared().object_identity() == b.prepared().object_identity()
                         && a.prepared().object_instance() == b.prepared().object_instance()
                 }
-                (ObjectEvaluationOutcome::FiniteView(a), ObjectEvaluationOutcome::FiniteView(b)) => {
-                    super::object_view_family::same_family(a, b)
-                }
+                (
+                    ObjectEvaluationOutcome::FiniteView(a),
+                    ObjectEvaluationOutcome::FiniteView(b),
+                ) => super::object_view_family::same_family(a, b),
                 _ => false,
             }
         }
         _ => false,
+    }
+}
+
+pub(super) fn same_evaluation_controlled(
+    a: Option<&ObjectEvaluation>,
+    b: Option<&ObjectEvaluation>,
+    c: &mut Control,
+) -> Result<bool, ConstructionFailure> {
+    c.checkpoint(Checkpoint::ObjectViewTransportFamily)?;
+    match (a, b) {
+        (Some(a), Some(b)) if a.same_origin(b) => match (a.outcome(), b.outcome()) {
+            (ObjectEvaluationOutcome::FiniteView(a), ObjectEvaluationOutcome::FiniteView(b)) => {
+                super::object_view_family::same_family_checked(a, b, c).map_err(|failure| {
+                    match failure {
+                        super::result::ValidationFailure::Stop(reason) => {
+                            ConstructionFailure::Stopped(reason)
+                        }
+                        other => {
+                            ConstructionFailure::Inconsistent(format!("view族の再照合: {other:?}"))
+                        }
+                    }
+                })
+            }
+            _ => Ok(same_evaluation(Some(a), Some(b))),
+        },
+        _ => Ok(same_evaluation(a, b)),
     }
 }
