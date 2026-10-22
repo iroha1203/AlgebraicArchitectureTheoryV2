@@ -519,7 +519,7 @@ fn finite_path_law_evaluates_all_seventy_two_original_primitive_assignments() {
         crate::definition::check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
     let digest = &checked_defs.vocabularies["Paths"].digest;
     let law = format!(
-        "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Walk{{use vocabulary Paths version \"1\" digest \"{digest}\";view step(e:Hop):Path<Node,Node> =path(e);law required exact(e:Hop):path(e)=path(e);}}"
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Walk{{use vocabulary Paths version \"1\" digest \"{digest}\";view step(e:Hop):Path<Node,Node> =path(e);law required exact(e:Hop) when (forall n:Node . n.mark=n.mark):path(e)=path(e);}}"
     );
     let mut map = map_fixture::convert(&parse(original.archmap().bytes()).unwrap());
     let Json::Obj(root) = &mut map else { panic!() };
@@ -631,3 +631,6 @@ fn finite_path_law_evaluates_all_seventy_two_original_primitive_assignments() {
     r.recheck(&i, &mut quiet()).unwrap();
     assert_eq!(i.sources(), &bytes);
 }
+
+#[path = "path_structure_tests.rs"]
+mod structure;
