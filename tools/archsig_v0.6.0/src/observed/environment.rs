@@ -56,6 +56,8 @@ mod path_condition;
 mod primitive_valuation;
 #[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
+#[path = "relation_instances.rs"]
+pub(super) mod relation_instances;
 #[path = "term_comparison_validation.rs"]
 mod term_comparison_validation;
 #[path = "universal.rs"]
@@ -342,7 +344,7 @@ pub(crate) struct Environment<'a> {
     dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
-    scoped_values: RefCell<Vec<(ScopedKey, SourceValue)>>,
+    scoped_values: RefCell<Vec<(ScopedKey, SourceValue, BTreeSet<Fact>)>>,
     control: Control,
     context: Cell<Option<super::call::Context>>,
     completion_values: RefCell<CompletionValues>,
@@ -350,6 +352,7 @@ pub(crate) struct Environment<'a> {
     primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
     primitive_input_valuation: Option<BTreeMap<Fact, Value>>,
     primitive_reads: RefCell<Option<BTreeSet<Fact>>>,
+    missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
     scoped_context: Cell<Option<super::call::Context>>,
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
@@ -474,6 +477,7 @@ impl<'a> Environment<'a> {
             primitive_valuation: None,
             primitive_input_valuation: None,
             primitive_reads: RefCell::new(None),
+            missing_slot_reads: RefCell::new(None),
             scoped_context: Cell::new(None),
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
@@ -510,6 +514,16 @@ impl<'a> Environment<'a> {
             .get(&(snapshot.into(), subject.into(), name.into()))
             .copied()
             .ok_or_else(|| String::from("field がない"))?;
+        if matches!(field.slot, Slot::Missing) {
+            if let Some(reads) = self.missing_slot_reads.borrow_mut().as_mut() {
+                reads.insert(Fact {
+                    snapshot: snapshot.into(),
+                    subject: subject.into(),
+                    field: Some(field.name.clone()),
+                    atom: None,
+                });
+            }
+        }
         if let Some(reads) = self.primitive_reads.borrow_mut().as_mut() {
             reads.insert(Fact {
                 snapshot: snapshot.into(),
@@ -7015,21 +7029,35 @@ impl<'a> Environment<'a> {
             let cached = {
                 let values = self.scoped_values.borrow();
                 let mut found = None;
-                for (candidate, value) in values.iter() {
+                for (candidate, value, missing) in values.iter() {
                     if validation_identity::key(candidate, &key, &self.control)? {
-                        found = Some(value.clone());
+                        found = Some((value.clone(), missing.clone()));
                         break;
                     }
                 }
                 found
             };
-            if let Some(value) = cached {
+            if let Some((value, missing)) = cached {
+                if let Some(reads) = self.missing_slot_reads.borrow_mut().as_mut() {
+                    reads.extend(missing);
+                }
                 self.tick()?;
                 return Ok(value);
             }
-            let value = self.scoped_ast_uncached(id, variables, base, reading)?;
+            let outer = self.missing_slot_reads.replace(Some(BTreeSet::new()));
+            let value = self.scoped_ast_uncached(id, variables, base, reading);
+            let missing = self
+                .missing_slot_reads
+                .replace(outer)
+                .ok_or("評価の不足位置収集がない")?;
+            if let Some(reads) = self.missing_slot_reads.borrow_mut().as_mut() {
+                reads.extend(missing.iter().cloned());
+            }
+            let value = value?;
             self.tick()?;
-            self.scoped_values.borrow_mut().push((key, value.clone()));
+            self.scoped_values
+                .borrow_mut()
+                .push((key, value.clone(), missing));
             Ok(value)
         })
     }
