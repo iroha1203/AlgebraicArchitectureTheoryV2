@@ -1112,3 +1112,141 @@ fn composite_candidate_encoding_stops_without_returning_an_environment() {
         }
     }
 }
+
+#[test]
+fn original_law_term_candidates_ignore_source_positions_and_keep_program_identity() {
+    let i = fixture::inputs();
+    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let candidate = expression(&normal, "literal", false).known_value.unwrap();
+    let e = Environment::with_primitive_valuation(
+        &i,
+        &[(slot("p", "program"), candidate.clone())],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(
+        expression(&e, "applied", false).known_value,
+        Some(fp("2", 1))
+    );
+    let value = expression(&e, "program", false);
+    assert!(value.scope.assignments);
+    assert_eq!(value.support, vec![slot("p", "program")]);
+    let Scalar::Term(t) = &candidate else {
+        panic!()
+    };
+    let mut forged = (**t).clone();
+    let id = forged.root;
+    let crate::law::ast::ExprKind::Binary { op, .. } = &mut forged.nodes.get_mut(&id).unwrap().kind
+    else {
+        panic!()
+    };
+    *op = crate::law::ast::BinOp::Mul;
+    let forged = Scalar::Term(Box::new(forged));
+    data::check(&forged, i.law(), &quiet()).unwrap();
+    assert!(
+        Environment::with_primitive_valuation(&i, &[(slot("p", "program"), forged)], &mut quiet())
+            .is_err()
+    );
+}
+
+#[test]
+fn original_complex_and_nested_term_candidates_recheck_resolved_constructors_and_branches() {
+    let i = fixture::inputs();
+    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let a = expression(&normal, "literal", false).known_value.unwrap();
+    let b = expression(&normal, "complex", false).known_value.unwrap();
+    let list = Scalar::List {
+        element: a.ty(),
+        items: vec![a, b.clone()],
+    };
+    let e = Environment::with_primitive_valuation(
+        &i,
+        &[
+            (slot("p", "program"), b),
+            (slot("p", "programs"), list.clone()),
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(
+        expression(&e, "applied", false).known_value,
+        Some(fp("2", 1))
+    );
+    let actual = expression(&e, "programs", false);
+    assert!(actual.scope.assignments);
+    assert_eq!(actual.support, vec![slot("p", "programs")]);
+    assert!(
+        !validation_identity::scalar(&list, actual.known_value.as_ref().unwrap(), &quiet())
+            .unwrap(),
+        "観測Graphの保存状態比較は位置違いを同一視しない"
+    );
+    let Some(Scalar::List { items, .. }) = &actual.known_value else {
+        panic!()
+    };
+    for (index, v) in items.iter().enumerate() {
+        let Scalar::Term(t) = v else { panic!() };
+        assert_eq!(
+            t.apply(&[fp("2", 0)], i.law(), &quiet()).unwrap(),
+            fp("2", 1)
+        );
+        assert_eq!(
+            t.apply(&[fp("2", 1)], i.law(), &quiet()).unwrap(),
+            fp("2", if index == 0 { 0 } else { 1 })
+        );
+    }
+    let mut invalid = list;
+    let Scalar::List { items, .. } = &mut invalid else {
+        panic!()
+    };
+    let Scalar::Term(t) = &mut items[1] else {
+        panic!()
+    };
+    assert!(!t.references.is_empty());
+    t.references[0].1 = "Pattern.Token.Other".into();
+    assert!(
+        Environment::with_primitive_valuation(
+            &i,
+            &[(slot("p", "programs"), invalid)],
+            &mut quiet()
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn original_term_candidate_program_recheck_stops_and_freezes_the_probe() {
+    let i = fixture::inputs();
+    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let candidate = expression(&normal, "complex", false).known_value.unwrap();
+    let values = [(slot("p", "program"), candidate)];
+    let (mut c, count, _) = stopping(Checkpoint::Expression, usize::MAX, None, false);
+    Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+    let last = count.get();
+    assert!(last > 1);
+    for at in [1, last] {
+        for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+            let (mut c, count, _) = stopping(Checkpoint::Expression, at, Some(kind), false);
+            let error = Environment::with_primitive_valuation(&i, &values, &mut c)
+                .err()
+                .expect("元Termの再検査途中を成功にしない");
+            let expected = match kind {
+                Stop::Time => StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 1,
+                    observed: 1,
+                },
+                Stop::Memory => StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 1,
+                    observed: 1,
+                },
+                Stop::Int => StopReason::Cancelled(Signal::Int),
+                Stop::Term => StopReason::Cancelled(Signal::Term),
+            };
+            assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
+            assert_eq!(count.get(), at);
+            assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));
+            assert_eq!(count.get(), at);
+        }
+    }
+}

@@ -294,6 +294,225 @@ impl Term {
             c,
         )
     }
+    /// 原始bodyの再検査結果と、実行するAST・型・参照を照合する。
+    /// arena番号と元sourceの位置は、同じ閉じた原始値でも生成元により異なる。
+    pub(super) fn same_input_program(
+        &self,
+        other: &Self,
+        c: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        self.check(c)?;
+        other.check(c)?;
+        if self.params != other.params
+            || self.returns != other.returns
+            || self.body != other.body
+            || self.nodes.len() != other.nodes.len()
+            || self.types.len() != other.types.len()
+            || self.quantifier_types.len() != other.quantifier_types.len()
+        {
+            return Ok(false);
+        }
+        fn span(t: &Term, s: Span) -> Option<Span> {
+            let start = s.0.checked_sub(t.offset)?;
+            let end = s.1.checked_sub(t.offset)?;
+            (start <= end && end <= t.body.len()).then_some((start, end))
+        }
+        fn references(
+            t: &Term,
+            c: &Control,
+        ) -> Result<Option<Vec<(Span, String)>>, ValidationFailure> {
+            let mut result = Vec::new();
+            for (s, n) in &t.references {
+                tick(c)?;
+                let Some(s) = span(t, *s) else {
+                    return Ok(None);
+                };
+                result.push((s, n.clone()));
+            }
+            result.sort();
+            Ok(Some(result))
+        }
+        if references(self, c)? != references(other, c)? {
+            return Ok(false);
+        }
+        fn pattern(
+            a: &Term,
+            p: &Pattern,
+            b: &Term,
+            q: &Pattern,
+            c: &Control,
+        ) -> Result<bool, ValidationFailure> {
+            stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+                tick(c)?;
+                if span(a, p.span()) != span(b, q.span()) {
+                    return Ok(false);
+                }
+                Ok(match (p, q) {
+                    (Pattern::Wild(_), Pattern::Wild(_)) => true,
+                    (Pattern::Name(p), Pattern::Name(q)) => p.name == q.name,
+                    (
+                        Pattern::Ctor {
+                            name: p, args: pa, ..
+                        },
+                        Pattern::Ctor {
+                            name: q, args: qa, ..
+                        },
+                    ) => {
+                        if p.text() != q.text() || pa.len() != qa.len() {
+                            return Ok(false);
+                        }
+                        for (p, q) in pa.iter().zip(qa) {
+                            if !pattern(a, p, b, q, c)? {
+                                return Ok(false);
+                            }
+                        }
+                        true
+                    }
+                    _ => false,
+                })
+            })
+        }
+        fn visit(
+            a: &Term,
+            i: usize,
+            b: &Term,
+            j: usize,
+            seen: &mut BTreeMap<usize, usize>,
+            targets: &mut BTreeSet<usize>,
+            c: &Control,
+        ) -> Result<bool, ValidationFailure> {
+            stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+                tick(c)?;
+                if let Some(old) = seen.get(&i) {
+                    return Ok(*old == j);
+                }
+                if !targets.insert(j) {
+                    return Ok(false);
+                }
+                seen.insert(i, j);
+                let x = a.nodes.get(&i).ok_or("候補TermのASTがない")?;
+                let y = b.nodes.get(&j).ok_or("原始TermのASTがない")?;
+                if span(a, x.span) != span(b, y.span)
+                    || a.types.get(&i) != b.types.get(&j)
+                    || a.quantifier_types.get(&i) != b.quantifier_types.get(&j)
+                {
+                    return Ok(false);
+                }
+                let local = match (&x.kind, &y.kind) {
+                    (ExprKind::Let { name: p, .. }, ExprKind::Let { name: q, .. }) => {
+                        p.name == q.name
+                    }
+                    (ExprKind::If { .. }, ExprKind::If { .. }) => true,
+                    (ExprKind::Match { arms: p, .. }, ExprKind::Match { arms: q, .. }) => {
+                        if p.len() != q.len() {
+                            return Ok(false);
+                        }
+                        for (p, q) in p.iter().zip(q) {
+                            if !pattern(a, &p.pattern, b, &q.pattern, c)? {
+                                return Ok(false);
+                            }
+                        }
+                        true
+                    }
+                    (
+                        ExprKind::Quant {
+                            kind: p,
+                            var: pv,
+                            split: ps,
+                        },
+                        ExprKind::Quant {
+                            kind: q,
+                            var: qv,
+                            split: qs,
+                        },
+                    ) => {
+                        p == q
+                            && pv.name == qv.name
+                            && matches!(
+                                (ps, qs),
+                                (
+                                    QuantSplit::Fixed {
+                                        domain: QuantDomain::In(_),
+                                        ..
+                                    },
+                                    QuantSplit::Fixed {
+                                        domain: QuantDomain::In(_),
+                                        ..
+                                    }
+                                ) | (
+                                    QuantSplit::Fixed {
+                                        domain: QuantDomain::Type(_),
+                                        ..
+                                    },
+                                    QuantSplit::Fixed {
+                                        domain: QuantDomain::Type(_),
+                                        ..
+                                    }
+                                )
+                            )
+                    }
+                    (ExprKind::Binary { op: p, .. }, ExprKind::Binary { op: q, .. }) => p == q,
+                    (ExprKind::Unary { op: p, .. }, ExprKind::Unary { op: q, .. }) => p == q,
+                    (ExprKind::Dotted(p), ExprKind::Dotted(q)) => {
+                        p.iter().map(|n| &n.name).eq(q.iter().map(|n| &n.name))
+                    }
+                    (ExprKind::Index { index: p, .. }, ExprKind::Index { index: q, .. }) => p == q,
+                    (ExprKind::Call { .. }, ExprKind::Call { .. }) => true,
+                    (ExprKind::Int(p), ExprKind::Int(q)) | (ExprKind::Str(p), ExprKind::Str(q)) => {
+                        p == q
+                    }
+                    (ExprKind::Bool(p), ExprKind::Bool(q)) => p == q,
+                    (ExprKind::Unit, ExprKind::Unit)
+                    | (ExprKind::Group(_), ExprKind::Group(_))
+                    | (ExprKind::Tuple(_), ExprKind::Tuple(_))
+                    | (ExprKind::ListLit { .. }, ExprKind::ListLit { .. })
+                    | (ExprKind::SetLit { .. }, ExprKind::SetLit { .. })
+                    | (ExprKind::None(_), ExprKind::None(_))
+                    | (ExprKind::Some(_), ExprKind::Some(_)) => true,
+                    (
+                        ExprKind::SetComp {
+                            var: p, filter: pf, ..
+                        },
+                        ExprKind::SetComp {
+                            var: q, filter: qf, ..
+                        },
+                    ) => p.name == q.name && pf.is_some() == qf.is_some(),
+                    (ExprKind::Fn { params: p, .. }, ExprKind::Fn { params: q, .. }) => p
+                        .iter()
+                        .map(|p| &p.name.name)
+                        .eq(q.iter().map(|q| &q.name.name)),
+                    _ => false,
+                };
+                if !local {
+                    return Ok(false);
+                }
+                let p = children(x)?;
+                let q = children(y)?;
+                if p.len() != q.len() {
+                    return Ok(false);
+                }
+                for (i, j) in p.into_iter().zip(q) {
+                    if !visit(a, i, b, j, seen, targets, c)? {
+                        return Ok(false);
+                    }
+                }
+                tick(c)?;
+                Ok(true)
+            })
+        }
+        let mut seen = BTreeMap::new();
+        let same = visit(
+            self,
+            self.root,
+            other,
+            other.root,
+            &mut seen,
+            &mut BTreeSet::new(),
+            c,
+        )?;
+        tick(c)?;
+        Ok(same && seen.len() == self.nodes.len())
+    }
     pub(super) fn wire(&self) -> Json {
         Json::obj([
             (

@@ -62,7 +62,7 @@ impl<'a> Environment<'a> {
                 })?;
             let checked = scalar_from(&original, &field.ty, inputs.law(), control)?
                 .ok_or("候補代入の原始値を読めない")?;
-            if !validation_identity::scalar(value, &checked, control)? {
+            if !same_primitive_value(value, &checked, control)? {
                 return Err("候補代入が元encodingの正規値と違う".into());
             }
             pinned.push(crate::archmap::FieldAssignment {
@@ -91,6 +91,78 @@ impl<'a> Environment<'a> {
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         Ok(environment)
     }
+}
+
+// Graphの保存状態比較は変更せず、原始値の往復だけでTermのsource位置を除く。
+fn same_primitive_value(a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        c.clone().checkpoint(Checkpoint::PrimitiveValuation)?;
+        fn items(a: &[Scalar], b: &[Scalar], c: &Control) -> Result<bool, ValidationFailure> {
+            if a.len() != b.len() {
+                return Ok(false);
+            }
+            for (a, b) in a.iter().zip(b) {
+                if !same_primitive_value(a, b, c)? {
+                    return Ok(false);
+                }
+            }
+            Ok(true)
+        }
+        Ok(match (a, b) {
+            (Scalar::Term(a), Scalar::Term(b)) => a.same_input_program(b, c)?,
+            (Scalar::Tuple(a), Scalar::Tuple(b)) => items(a, b, c)?,
+            (
+                Scalar::List {
+                    element: a,
+                    items: p,
+                },
+                Scalar::List {
+                    element: b,
+                    items: q,
+                },
+            )
+            | (
+                Scalar::Set {
+                    element: a,
+                    items: p,
+                },
+                Scalar::Set {
+                    element: b,
+                    items: q,
+                },
+            ) => a == b && items(p, q, c)?,
+            (
+                Scalar::Option {
+                    element: a,
+                    value: p,
+                },
+                Scalar::Option {
+                    element: b,
+                    value: q,
+                },
+            ) => {
+                a == b
+                    && match (p, q) {
+                        (None, None) => true,
+                        (Some(a), Some(b)) => same_primitive_value(a, b, c)?,
+                        _ => false,
+                    }
+            }
+            (
+                Scalar::Data {
+                    family: a,
+                    constructor: k,
+                    args: p,
+                },
+                Scalar::Data {
+                    family: b,
+                    constructor: l,
+                    args: q,
+                },
+            ) => a == b && k == l && items(p, q, c)?,
+            _ => validation_identity::scalar(a, b, c)?,
+        })
+    })
 }
 
 #[cfg(test)]
