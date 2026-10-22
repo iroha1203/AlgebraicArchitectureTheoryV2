@@ -20,9 +20,12 @@ pub(super) mod comparison;
 pub(super) mod composition;
 #[path = "request_map.rs"]
 mod configuration_map;
+#[path = "request_build.rs"]
+mod build;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum QuestionKind {
+    Build,
     Evaluate,
     Check,
     Needed,
@@ -33,6 +36,7 @@ pub enum QuestionKind {
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
         match self {
+            Self::Build => "build",
             Self::Evaluate => "evaluate",
             Self::Check => "check",
             Self::Needed => "needed",
@@ -164,9 +168,9 @@ pub struct Request {
     pub constraints: Vec<BindingConstraint>,
 }
 impl Request {
-    /// Law/view宣言を選ぶ問いの名前。原始correspondenceと問いIDのheadは含めない。
+    /// Law/view宣言を選ぶ問いの名前。reading・原始correspondence・問いIDは含めない。
     pub fn declaration(&self) -> Option<&str> {
-        if self.kind == QuestionKind::Map {
+        if matches!(self.kind, QuestionKind::Map | QuestionKind::Build) {
             return None;
         }
         match &self.head {
@@ -296,7 +300,8 @@ pub fn resolve_observed_requests_controlled(
     texts: &[&str],
     control: &mut Control,
 ) -> Result<ResolvedRequests, ResolveFailure> {
-    let result = resolve_inner(law, map, texts, control, None);
+    let result = resolve_inner(law, map, texts, control, None)
+        .and_then(|resolved| available(resolved, control));
     finish_request(result, control, Checkpoint::Resolve)
 }
 
@@ -308,7 +313,8 @@ pub(super) fn resolve_object_view_requests(
     control: &mut Control,
     instance: &crate::construction::readings::ObjectInstance,
 ) -> Result<ResolvedRequests, ResolveFailure> {
-    let result = resolve_inner(law, map, texts, control, Some(instance));
+    let result = resolve_inner(law, map, texts, control, Some(instance))
+        .and_then(|resolved| available(resolved, control));
     finish_request(result, control, Checkpoint::Resolve)
 }
 
@@ -330,7 +336,7 @@ fn resolve_inner(
         prefix.expect(b'(')?;
         if matches!(
             prefix_kind.as_str(),
-            "build" | "localize" | "diagnose" | "repair" | "solve" | "quotient"
+            "localize" | "diagnose" | "repair" | "solve" | "quotient"
         ) {
             return Err(ResolveFailure::NotApplicable {
                 request: prefix.id,
@@ -349,6 +355,7 @@ fn resolve_inner(
             )));
         }
         let kind = match raw.kind.as_str() {
+            "build" => QuestionKind::Build,
             "evaluate" => QuestionKind::Evaluate,
             "check" => QuestionKind::Check,
             "needed" => QuestionKind::Needed,
@@ -364,6 +371,12 @@ fn resolve_inner(
                 )));
             }
         };
+        if kind == QuestionKind::Build {
+            let request = build::resolve(law, raw, text, control)?;
+            names.insert(request.id.clone(), requests.len());
+            requests.push(request);
+            continue;
+        }
         if kind == QuestionKind::Map {
             let request = configuration_map::resolve(law, raw, text, control)?;
             names.insert(request.id.clone(), requests.len());
@@ -599,7 +612,12 @@ fn resolve_inner(
     // 合成の出力型は元Operationの型へ再帰するため、先に依存を検査する。
     let composition_order = if requests
         .iter()
-        .any(|r| matches!(r.kind, QuestionKind::Compose | QuestionKind::Compare))
+        .any(|r| {
+            matches!(
+                r.kind,
+                QuestionKind::Build | QuestionKind::Compose | QuestionKind::Compare
+            )
+        })
     {
         for request in &requests {
             for dependency in &request.dependencies {
@@ -630,6 +648,10 @@ fn resolve_inner(
         checkpoint(control)?;
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
+        if req.kind == QuestionKind::Build {
+            build::check_on(law, map, &requests, &names, req, control)?;
+            continue;
+        }
         if req.kind == QuestionKind::Compare {
             requests[i].constraints =
                 comparison::constraints(law, map, &requests, &names, req, control)?;
@@ -815,25 +837,34 @@ fn resolve_inner(
         evaluation_order
     };
     phase(control, Checkpoint::RequestDependency)?;
-    // 共通の参照・型・公開射影・循環の検査を完了してから、未実装経路を通知する。
-    for request in &requests {
-        if request.kind == QuestionKind::Map
-            && request.arguments.iter().any(|a| {
-                a.name == "kind"
-                    && matches!(&a.value,Selector::Enum {value} if value=="object_algebra")
-            })
-        {
-            return Err(ResolveFailure::NotApplicable {
-                request: request.id.clone(),
-                kind: "map".into(),
-                architecture_environment: false,
-            });
-        }
-    }
     Ok(ResolvedRequests {
         requests,
         evaluation_order,
     })
+}
+
+// 構文・依存・型の検査後に評価器の対応を判定する。未実装を不正入力へ変えない。
+fn available(
+    resolved: ResolvedRequests,
+    control: &mut Control,
+) -> Result<ResolvedRequests, ResolveFailure> {
+    for request in &resolved.requests {
+        phase(control, Checkpoint::RequestDependency)?;
+        if request.kind == QuestionKind::Build
+            || (request.kind == QuestionKind::Map
+                && request.arguments.iter().any(|a| {
+                    a.name == "kind"
+                        && matches!(&a.value, Selector::Enum { value } if value == "object_algebra")
+                }))
+        {
+            return Err(ResolveFailure::NotApplicable {
+                request: request.id.clone(),
+                kind: request.kind.wire().into(),
+                architecture_environment: false,
+            });
+        }
+    }
+    Ok(resolved)
 }
 
 fn stopped(reason: StopReason) -> ResolveFailure {
@@ -1047,7 +1078,9 @@ fn selector_type(
             // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
             // 評価して参照値を推測しない。後方参照でも同じ有限な表を参照する。
             owners = owner_bindings(r, control)?;
-            let initial = if r.kind == QuestionKind::Compare {
+            let initial = if r.kind == QuestionKind::Build {
+                build::output_type(law, map, requests, names, r, field, control)?
+            } else if r.kind == QuestionKind::Compare {
                 comparison::output_type(r, field)?
             } else if r.kind == QuestionKind::Compose {
                 composition::output_type(law, map, requests, names, r, field, control)?
