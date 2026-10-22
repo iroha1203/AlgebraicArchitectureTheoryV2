@@ -14,12 +14,22 @@ pub(in crate::observed) enum FiniteLawState {
     ConditionFailed,
     Unavailable { location: Location, feature: String },
 }
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct FiniteLawComponent {
+    pub path: Vec<usize>,
+    pub ty: Type,
+    pub left: Option<Scalar>,
+    pub right: Option<Scalar>,
+    pub equal: Option<bool>,
+    pub indicator: Option<BigInt>,
+}
 #[derive(Clone, PartialEq, Eq)]
 pub(in crate::observed) struct FiniteLawRow {
     pub point: usize,
     pub guard: Option<bool>,
     pub predicate: Option<bool>,
     pub operands: Option<(Type, Option<Scalar>, Option<Scalar>)>,
+    pub components: Option<Vec<FiniteLawComponent>>,
     pub indicator: Option<BigInt>,
     pub condition_failed: bool,
     pub support: Vec<Fact>,
@@ -738,6 +748,77 @@ fn domains(
     }
     Ok(Some((types, product)))
 }
+fn components(
+    e: &Environment<'_>,
+    ty: &Type,
+    left: &Option<Scalar>,
+    right: &Option<Scalar>,
+    guard: Option<bool>,
+    condition_failed: bool,
+) -> Result<Vec<FiniteLawComponent>, ValidationFailure> {
+    let mut pending = vec![(vec![], ty.clone(), left.clone(), right.clone())];
+    let mut result = vec![];
+    while let Some((path, ty, left, right)) = pending.pop() {
+        e.control
+            .clone()
+            .checkpoint(Checkpoint::FiniteLawComponent)?;
+        for value in left.iter().chain(&right) {
+            if value.ty() != ty.erase() {
+                return Err("元等式の成分値と型が違う".into());
+            }
+        }
+        if let Type::Tuple(items) = &ty {
+            let project = |value: &Option<Scalar>,
+                           index: usize|
+             -> Result<Option<Scalar>, ValidationFailure> {
+                match value {
+                    None => Ok(None),
+                    Some(Scalar::Tuple(values)) if values.len() == items.len() => {
+                        Ok(Some(values[index].clone()))
+                    }
+                    _ => Err("元等式の積の成分数が違う".into()),
+                }
+            };
+            for (index, item) in items.iter().enumerate().rev() {
+                e.control
+                    .clone()
+                    .checkpoint(Checkpoint::FiniteLawComponent)?;
+                let mut next = path.clone();
+                next.push(index);
+                pending.push((
+                    next,
+                    item.clone(),
+                    project(&left, index)?,
+                    project(&right, index)?,
+                ));
+            }
+        } else {
+            let equal = match (&left, &right) {
+                (Some(a), Some(b)) => {
+                    crate::observed::value_equality::equal(a, b, e.inputs.law(), &e.control)?
+                }
+                _ => None,
+            };
+            let indicator = if condition_failed {
+                None
+            } else {
+                guard.zip(equal).map(|(g, p)| BigInt::from((g && !p) as u8))
+            };
+            result.push(FiniteLawComponent {
+                path,
+                ty,
+                left,
+                right,
+                equal,
+                indicator,
+            });
+        }
+        e.control
+            .clone()
+            .checkpoint(Checkpoint::FiniteLawComponent)?;
+    }
+    Ok(result)
+}
 struct Probe {
     row: FiniteLawRow,
     admissible: bool,
@@ -781,6 +862,7 @@ fn probe(
         guard: None,
         predicate: None,
         operands: None,
+        components: None,
         indicator: None,
         condition_failed: false,
         support: checks.support,
@@ -852,6 +934,23 @@ fn probe(
         if let (Some(g), Some(p)) = (row.guard, row.predicate) {
             row.indicator = Some(BigInt::from((g && !p) as u8));
         }
+    }
+    if let Some((ty, a, b)) = &row.operands {
+        let leaves = components(e, ty, a, b, row.guard, row.condition_failed)?;
+        if let Some(whole) = &row.indicator {
+            if leaves.iter().all(|p| p.indicator.is_some()) {
+                let any = BigInt::from(
+                    leaves
+                        .iter()
+                        .any(|p| p.indicator.as_ref() == Some(&BigInt::from(1)))
+                        as u8,
+                );
+                if whole != &any {
+                    return Err("元等式全体と成分の零性が違う".into());
+                }
+            }
+        }
+        row.components = Some(leaves);
     }
     Ok(Probe {
         row,
@@ -1047,11 +1146,28 @@ fn populate_family(
         .any(|q| q.rows.iter().any(|p| p.condition_failed))
     {
         FiniteLawState::ConditionFailed
-    } else if let Some(q) = r
-        .columns
-        .iter()
-        .find(|q| q.rows.iter().any(|p| p.indicator.is_none()))
-    {
+    } else if let Some(q) = r.columns.iter().find(|q| {
+        q.rows.iter().any(|row| {
+            row.components.as_ref().is_some_and(|cs| {
+                cs.iter()
+                    .any(|p| p.left.is_some() && p.right.is_some() && p.equal.is_none())
+            })
+        })
+    }) {
+        FiniteLawState::Unavailable {
+            location: Location::Law {
+                span: q.declaration.span,
+            },
+            feature: "元等式の成分外延比較に必要な算法".into(),
+        }
+    } else if let Some(q) = r.columns.iter().find(|q| {
+        q.rows.iter().any(|p| {
+            p.indicator.is_none()
+                || p.components
+                    .as_ref()
+                    .is_some_and(|cs| cs.iter().any(|p| p.indicator.is_none()))
+        })
+    }) {
         FiniteLawState::Undetermined {
             location: Location::Law {
                 span: q.declaration.span,
@@ -1070,7 +1186,13 @@ fn populate_family(
             for q in &r.columns {
                 c.checkpoint(Checkpoint::FiniteLawRequired)?;
                 if q.required() {
-                    holds &= q.rows[point].indicator.as_ref() == Some(&BigInt::from(0));
+                    let row = &q.rows[point];
+                    holds &= match &row.components {
+                        Some(cs) => cs
+                            .iter()
+                            .all(|p| p.indicator.as_ref() == Some(&BigInt::from(0))),
+                        None => row.indicator.as_ref() == Some(&BigInt::from(0)),
+                    };
                 }
             }
             if holds {
