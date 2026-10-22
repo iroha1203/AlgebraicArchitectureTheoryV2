@@ -54,6 +54,8 @@ mod path_composition;
 mod path_condition;
 #[path = "primitive_valuation.rs"]
 mod primitive_valuation;
+#[path = "finite_law_valuations.rs"]
+pub(super) mod finite_law_valuations;
 #[path = "term_comparison_validation.rs"]
 mod term_comparison_validation;
 #[path = "universal.rs"]
@@ -346,6 +348,7 @@ pub(crate) struct Environment<'a> {
     completion_values: RefCell<CompletionValues>,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
     primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
+    primitive_reads: RefCell<Option<BTreeSet<Fact>>>,
     scoped_context: Cell<Option<super::call::Context>>,
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
@@ -468,6 +471,7 @@ impl<'a> Environment<'a> {
             context: Cell::new(None),
             completion_values: RefCell::new(Vec::new()),
             primitive_valuation: None,
+            primitive_reads: RefCell::new(None),
             scoped_context: Cell::new(None),
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
@@ -499,10 +503,20 @@ impl<'a> Environment<'a> {
         subject: &str,
         name: &str,
     ) -> Result<&'a crate::archmap::Field, String> {
-        self.fields
+        let field = self
+            .fields
             .get(&(snapshot.into(), subject.into(), name.into()))
             .copied()
-            .ok_or_else(|| "field がない".into())
+            .ok_or_else(|| String::from("field がない"))?;
+        if let Some(reads) = self.primitive_reads.borrow_mut().as_mut() {
+            reads.insert(Fact {
+                snapshot: snapshot.into(),
+                subject: subject.into(),
+                field: Some(field.name.clone()),
+                atom: None,
+            });
+        }
+        Ok(field)
     }
     pub(super) fn finite_values(
         &self,

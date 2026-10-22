@@ -169,6 +169,25 @@ pub(super) fn field_candidates(
     )
 }
 
+/// 原始field候補は部分Mapを含め、全域性・所属は全代入を同時に検査する。
+pub(super) fn field_candidates_if_finite(
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+    roster: &mut Roster<'_>,
+) -> Result<Option<FiniteDomain>, ValidationFailure> {
+    enumerate_values_maybe(
+        ty,
+        law,
+        control,
+        roster,
+        &mut |_, _| Err("field候補に消去前のOwned型がある".into()),
+        &mut |_| {},
+        true,
+        true,
+    )
+}
+
 pub(super) fn values_if_finite_with_owned(
     ty: &Type,
     law: &CheckedLaw,

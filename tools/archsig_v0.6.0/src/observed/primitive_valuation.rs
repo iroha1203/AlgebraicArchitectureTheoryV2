@@ -10,6 +10,36 @@ impl<'a> Environment<'a> {
         assignments: &[(Fact, Scalar)],
         control: &mut Control,
     ) -> Result<Self, ValidationFailure> {
+        Self::try_primitive_valuation(inputs, assignments, control)?
+            .ok_or_else(|| "候補代入が原始型・所属・Map全域性を満たさない".into())
+    }
+
+    /// 型の正しい候補のうち、原始制約に適合する点だけを返す。停止/不正値は黙殺しない。
+    pub(in crate::observed) fn try_primitive_valuation(
+        inputs: &'a CheckedInputs,
+        assignments: &[(Fact, Scalar)],
+        control: &mut Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        Self::primitive_valuation_checked(inputs, assignments, control, true)
+    }
+
+    /// 依存位置の発見中は、まだ固定されている別fieldとの制約で枝を刈らない。
+    /// 元型・値の正規性は検査する。完成候補には必ずtry_primitive_valuationを使う。
+    pub(super) fn primitive_dependency_probe(
+        inputs: &'a CheckedInputs,
+        assignments: &[(Fact, Scalar)],
+        control: &mut Control,
+    ) -> Result<Self, ValidationFailure> {
+        Self::primitive_valuation_checked(inputs, assignments, control, false)?
+            .ok_or_else(|| "依存発見用の型付き候補が失われた".into())
+    }
+
+    fn primitive_valuation_checked(
+        inputs: &'a CheckedInputs,
+        assignments: &[(Fact, Scalar)],
+        control: &mut Control,
+        constraints: bool,
+    ) -> Result<Option<Self>, ValidationFailure> {
         let mut environment = Self::new(inputs, control)?;
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         let mut types = std::collections::HashMap::new();
@@ -74,22 +104,33 @@ impl<'a> Environment<'a> {
             values.insert(position.clone(), checked);
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
         }
-        crate::archmap::check_valuation_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-            &inputs.archmap().snapshots,
-            inputs.definitions(),
-            &pinned,
-            control,
-        )
-        .map_err(|failure| match failure {
-            CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-            CheckFailure::Input(issue) => ValidationFailure::Internal(format!(
-                "候補代入が原始型・所属・Map全域性を満たさない: {}",
-                issue.message
-            )),
-        })?;
+        if constraints {
+            match crate::archmap::check_valuation_with_values::<
+                CheckFailure<Box<crate::issue::Issue>>,
+            >(
+                &inputs.archmap().snapshots,
+                inputs.definitions(),
+                &pinned,
+                control,
+            ) {
+                Ok(()) => {}
+                Err(CheckFailure::Stopped(stop)) => return Err(ValidationFailure::Stop(stop)),
+                Err(CheckFailure::Input(issue))
+                    if issue.code == crate::issue::Code::InconsistentObservation =>
+                {
+                    return Ok(None);
+                }
+                Err(CheckFailure::Input(issue)) => {
+                    return Err(ValidationFailure::Internal(format!(
+                        "候補の原始制約検査: {}",
+                        issue.message
+                    )));
+                }
+            }
+        }
         environment.primitive_valuation = Some(values);
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
-        Ok(environment)
+        Ok(Some(environment))
     }
 }
 

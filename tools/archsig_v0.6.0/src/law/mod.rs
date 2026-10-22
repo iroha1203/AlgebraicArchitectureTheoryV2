@@ -139,6 +139,72 @@ pub(crate) fn check_definition_term_body_inner<E: InputError>(
     })
 }
 
+/// 閉じた値の本文を、元Lawのreadingが持つ共通定義のscopeで再検査する。
+/// parser/checkerは通常のLawと同じものを使い、捕捉したLaw宣言の呼出しは許さない。
+pub(crate) fn check_reading_term_body<E: InputError>(
+    raw_law: &[u8],
+    definitions: &CheckedDefinitions,
+    reading: &str,
+    params: &[(String, Type)],
+    ret: &Type,
+    body: &str,
+    control: &mut Control,
+) -> Result<TermBody, E> {
+    let point = Checkpoint::ArchMapTerm;
+    let tokens = lexer::lex_inner::<E>(raw_law, usize::MAX, control, point)?;
+    let mut original = parser::Parser::<E>::with_error(tokens, raw_law.len(), control.clone())
+        .at_checkpoint(point);
+    original.header()?;
+    let readings = original.readings()?;
+    let mut checker = Checker::with_definitions(original, readings, definitions, control, point)?;
+    checker.collect_names_controlled(control)?;
+    let index = *checker.reading_index.get(reading).ok_or_else(|| {
+        E::from(Box::new(Issue::law(
+            Code::Reference,
+            (0, body.len()),
+            "Termの元readingがない",
+        )))
+    })?;
+    let tokens = lexer::lex_inner::<E>(body.as_bytes(), usize::MAX, control, point)?;
+    let mut parser =
+        parser::Parser::<E>::with_error(tokens, body.len(), control.clone()).at_checkpoint(point);
+    let root = parser.parse_expr(ast::Flags::default())?;
+    parser.expect_end()?;
+    checker.parser = parser;
+    checker.current_reading = index;
+    checker.expr_types.clear();
+    checker.quantifier_types.clear();
+    checker.refs.clear();
+    let mut env = expr::Env::default();
+    for (name, ty) in params {
+        E::checkpoint(control, point)?;
+        let id = ast::Ident {
+            name: name.clone(),
+            span: (0, 0),
+            tok: 0,
+        };
+        checker.bind(&mut env, &id, ty.clone(), expr::Origin::Other)?;
+    }
+    let ctx = expr::Ctx {
+        reading: index,
+        decl: String::new(),
+        is_view: false,
+        rec: None,
+        term: true,
+    };
+    checker.check(root, Some(ret), &mut env, &ctx)?;
+    let mut types = std::mem::take(&mut checker.expr_types);
+    types.resize(checker.parser.exprs.len(), None);
+    E::checkpoint(control, point)?;
+    Ok(TermBody {
+        exprs: std::mem::take(&mut checker.parser.exprs),
+        root,
+        types,
+        references: std::mem::take(&mut checker.refs),
+        quantifier_types: std::mem::take(&mut checker.quantifier_types),
+    })
+}
+
 /// 検査の失敗。読めた byte 列の digest と、字句列が得られた場合の model_digest を持つ。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LawFailure {

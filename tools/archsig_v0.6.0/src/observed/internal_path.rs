@@ -231,6 +231,15 @@ impl Environment<'_> {
         values: &[Scalar],
     ) -> Result<PathResult, ValidationFailure> {
         self.tick()?;
+        // Pathのcarrierは元Atomであり、候補値を元の作用の保存証拠へ流用しない。
+        if self.primitive_valuation.is_some() {
+            return Err(ValidationFailure::UnsupportedExpression {
+                location: Location::Law {
+                    span: self.inputs.law().exprs[id].span,
+                },
+                feature: "原始候補に対するPath作用の構成".into(),
+            });
+        }
         let reading = self.path_reading(id)?;
         let mut out = PathResult {
             value: None,

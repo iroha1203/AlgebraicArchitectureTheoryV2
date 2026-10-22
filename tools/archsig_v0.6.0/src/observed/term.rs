@@ -536,6 +536,18 @@ impl Term {
         let mut names = BTreeSet::new();
         for (n, t) in &self.params {
             tick(c)?;
+            if !n.starts_with(|ch: char| ch.is_ascii_alphabetic())
+                || crate::names::is_reserved(n)
+                || crate::names::BUILTIN_OPS.contains(&n.as_str())
+            {
+                return Err("Term parameter名が識別子でない・予約されている".into());
+            }
+            for ch in n.chars() {
+                tick(c)?;
+                if !ch.is_ascii_alphanumeric() && ch != '_' {
+                    return Err("Term parameter名に使えない文字がある".into());
+                }
+            }
             if !names.insert(n) || !value_type(t, c)? {
                 return Err("Term parameterが重複・参照型".into());
             }
