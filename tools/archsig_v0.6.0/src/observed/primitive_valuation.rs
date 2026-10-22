@@ -25,6 +25,7 @@ impl<'a> Environment<'a> {
         }
         let roster = crate::archmap::value::Roster { types };
         let mut values = BTreeMap::new();
+        let mut pinned = Vec::new();
         for (position, value) in assignments {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
             if position.atom.is_some() || position.field.is_none() || values.contains_key(position)
@@ -64,9 +65,28 @@ impl<'a> Environment<'a> {
             if !validation_identity::scalar(value, &checked, control)? {
                 return Err("候補代入が元encodingの正規値と違う".into());
             }
+            pinned.push(crate::archmap::FieldAssignment {
+                snapshot: position.snapshot.clone(),
+                subject: position.subject.clone(),
+                field: field.name.clone(),
+                value: encoded,
+            });
             values.insert(position.clone(), checked);
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
         }
+        crate::archmap::check_valuation_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
+            &inputs.archmap().snapshots,
+            inputs.definitions(),
+            &pinned,
+            control,
+        )
+        .map_err(|failure| match failure {
+            CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+            CheckFailure::Input(issue) => ValidationFailure::Internal(format!(
+                "候補代入が原始型・所属・Map全域性を満たさない: {}",
+                issue.message
+            )),
+        })?;
         environment.primitive_valuation = Some(values);
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         Ok(environment)

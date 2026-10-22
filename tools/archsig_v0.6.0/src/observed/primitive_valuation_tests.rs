@@ -448,6 +448,7 @@ fn fixed_stops_reject_unfinished_valuations_and_values_and_freeze_probes() {
     for (point, evaluate_only) in [
         (Checkpoint::PrimitiveValuation, false),
         (Checkpoint::ArchMapSchema, false),
+        (Checkpoint::Completion, false),
         (Checkpoint::FiniteIteration, true),
     ] {
         let (mut c, count, stage) = stopping(point, usize::MAX, None, evaluate_only);
@@ -491,6 +492,254 @@ fn fixed_stops_reject_unfinished_valuations_and_values_and_freeze_probes() {
                 assert_eq!(c.checkpoint(point), Err(expected));
                 assert_eq!(count.get(), frozen);
             }
+        }
+    }
+}
+
+fn subject_value(name: &str, entity: &str) -> Scalar {
+    Scalar::Subject {
+        snapshot: "v".into(),
+        subject: name.into(),
+        entity: format!("Pattern.{entity}"),
+    }
+}
+fn family(e: &Environment<'_>, owner: &str) -> Result<SourceValue, ValidationFailure> {
+    let Signature::View { body, .. } = e.inputs.law().declarations["Selected.family"].signature
+    else {
+        panic!()
+    };
+    e.scoped_ast(
+        body,
+        &BTreeMap::from([("r".into(), source(subject_value(owner, "Root")))]),
+        &Scope::default(),
+        "Selected",
+    )
+}
+fn members(v: &SourceValue) -> Vec<String> {
+    let Some(Scalar::Set { items, .. }) = &v.known_value else {
+        panic!("族が未確定")
+    };
+    items
+        .iter()
+        .map(|v| {
+            let Scalar::Subject { subject, .. } = v else {
+                panic!()
+            };
+            subject.clone()
+        })
+        .collect()
+}
+#[test]
+fn owner_candidates_move_known_members_and_replace_observation_support_in_family() {
+    let i = fixture::inputs();
+    let e = Environment::with_primitive_valuation(
+        &i,
+        &[(slot("p", "owner"), subject_value("r2", "Root"))],
+        &mut quiet(),
+    )
+    .unwrap();
+    for (owner, expected) in [("root", vec!["q"]), ("r2", vec!["p"])] {
+        let v = family(&e, owner).unwrap();
+        assert_eq!(members(&v), expected);
+        assert!(v.scope.assignments);
+        assert!(!v.scope.completions);
+        assert!(v.support.contains(&slot("p", "owner")));
+        assert!(!v.support.iter().any(|f| f.atom.as_deref() == Some("op")));
+        assert!(v.support.iter().any(|f| f.atom.as_deref() == Some("oq")));
+    }
+    let original = Environment::new(&i, &mut quiet()).unwrap();
+    assert_eq!(members(&family(&original, "root").unwrap()), ["p", "q"]);
+    assert!(members(&family(&original, "r2").unwrap()).is_empty());
+}
+#[test]
+fn owner_candidate_resolves_a_missing_family_member_without_creating_an_observation() {
+    let map=fixture::MAP.replace(r#"{"id":"op","subject":"p","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#, "");
+    let i = fixture::with_map(&map);
+    let original = Environment::new(&i, &mut quiet()).unwrap();
+    assert!(family(&original, "root").unwrap().known_value.is_none());
+    let e = Environment::with_primitive_valuation(
+        &i,
+        &[(slot("p", "owner"), subject_value("r2", "Root"))],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(members(&family(&e, "root").unwrap()), ["q"]);
+    let v = family(&e, "r2").unwrap();
+    assert_eq!(members(&v), ["p"]);
+    assert!(v.scope.assignments && !v.scope.completions);
+    assert!(v.support.contains(&slot("p", "owner")));
+    assert!(!v.support.iter().any(|f| f.atom.as_deref() == Some("op")));
+    assert!(family(&original, "root").unwrap().known_value.is_none());
+}
+fn table(domain: &str, pairs: &[(&str, &str)]) -> Scalar {
+    Scalar::Map {
+        domain: Type::Ref(format!("Pattern.{domain}")),
+        codomain: Type::Ref("Pattern.Part".into()),
+        pairs: pairs
+            .iter()
+            .map(|(a, b)| (subject_value(a, "Part"), subject_value(b, "Part")))
+            .collect(),
+    }
+}
+#[test]
+fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domains() {
+    let i = fixture::inputs();
+    for v in [table("Part", &[]), table("Part", &[("p", "p")])] {
+        assert!(
+            Environment::with_primitive_valuation(&i, &[(slot("p", "table"), v)], &mut quiet())
+                .is_err(),
+            "登録Partの欠落keyを受理しない"
+        );
+    }
+    assert!(
+        Environment::with_primitive_valuation(
+            &i,
+            &[(
+                slot("p", "nested"),
+                Scalar::Tuple(vec![Scalar::Unit, table("Part", &[])])
+            )],
+            &mut quiet()
+        )
+        .is_err()
+    );
+    assert!(
+        Environment::with_primitive_valuation(
+            &i,
+            &[(slot("p", "table"), table("Part", &[("p", "q"), ("q", "p")]))],
+            &mut quiet()
+        )
+        .is_ok()
+    );
+    assert!(
+        Environment::with_primitive_valuation(
+            &i,
+            &[(slot("p", "emptytable"), table("Vacant", &[]))],
+            &mut quiet()
+        )
+        .is_ok()
+    );
+    let owner = (slot("p", "owner"), subject_value("r2", "Root"));
+    assert!(
+        Environment::with_primitive_valuation(
+            &i,
+            &[
+                owner.clone(),
+                (slot("p", "ownedtable"), table("Part", &[("p", "p")]))
+            ],
+            &mut quiet()
+        )
+        .is_ok()
+    );
+    assert!(
+        Environment::with_primitive_valuation(
+            &i,
+            &[
+                owner.clone(),
+                (
+                    slot("p", "ownedtable"),
+                    table("Part", &[("p", "p"), ("q", "q")])
+                )
+            ],
+            &mut quiet()
+        )
+        .is_err()
+    );
+    let atom = r#",{"id":"tp","subject":"p","field":"Pattern.Part.ownedtable","value":[[["v","p"],["v","p"]],[["v","q"],["v","q"]]],"origin":"model"}"#;
+    let mut map = fixture::MAP.to_owned();
+    let end = map.rfind("]}]}").unwrap();
+    map.insert_str(end, atom);
+    let known = fixture::with_map(&map);
+    assert!(Environment::with_primitive_valuation(&known, &[owner.clone()], &mut quiet()).is_err());
+    assert!(
+        Environment::with_primitive_valuation(
+            &known,
+            &[
+                owner,
+                (slot("p", "ownedtable"), table("Part", &[("p", "p")]))
+            ],
+            &mut quiet()
+        )
+        .is_ok()
+    );
+}
+
+#[test]
+fn ordinary_completion_keeps_rejecting_known_slot_replacements() {
+    let i = fixture::inputs();
+    let pin = crate::archmap::FieldAssignment {
+        snapshot: "v".into(),
+        subject: "p".into(),
+        field: "Pattern.Part.owner".into(),
+        value: crate::canonical::Json::Arr(vec![
+            crate::canonical::Json::str("v"),
+            crate::canonical::Json::str("r2"),
+        ]),
+    };
+    assert!(
+        crate::archmap::check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
+            &i.archmap().snapshots,
+            i.definitions(),
+            &[pin],
+            &mut quiet()
+        )
+        .is_err()
+    );
+    let map=fixture::MAP.replace(r#"{"id":"op","subject":"p","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#," ");
+    let missing = fixture::with_map(&map);
+    let pin = crate::archmap::FieldAssignment {
+        snapshot: "v".into(),
+        subject: "p".into(),
+        field: "Pattern.Part.owner".into(),
+        value: crate::canonical::Json::Arr(vec![
+            crate::canonical::Json::str("v"),
+            crate::canonical::Json::str("r2"),
+        ]),
+    };
+    assert!(
+        crate::archmap::check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
+            &missing.archmap().snapshots,
+            missing.definitions(),
+            &[pin],
+            &mut quiet()
+        )
+        .is_ok()
+    );
+}
+#[test]
+fn fixed_owner_family_stops_keep_candidates_out_of_observation_evidence() {
+    let i = fixture::inputs();
+    let values = [(slot("p", "owner"), subject_value("r2", "Root"))];
+    let (mut c, count, active) = stopping(Checkpoint::FiniteIteration, usize::MAX, None, true);
+    let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+    active.set(true);
+    assert_eq!(members(&family(&e, "root").unwrap()), ["q"]);
+    let last = count.get();
+    assert!(last > 1);
+    for at in [1, last] {
+        for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+            let (mut c, count, active) =
+                stopping(Checkpoint::FiniteIteration, at, Some(kind), true);
+            let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+            active.set(true);
+            let error = family(&e, "root").err().expect("族の途中値を返さない");
+            let expected = match kind {
+                Stop::Time => StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 1,
+                    observed: 1,
+                },
+                Stop::Memory => StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 1,
+                    observed: 1,
+                },
+                Stop::Int => StopReason::Cancelled(Signal::Int),
+                Stop::Term => StopReason::Cancelled(Signal::Term),
+            };
+            assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
+            assert_eq!(count.get(), at);
+            assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(expected));
+            assert_eq!(count.get(), at);
         }
     }
 }

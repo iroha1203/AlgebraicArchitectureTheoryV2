@@ -3,7 +3,9 @@
 
 mod canonical;
 mod complete;
-pub(crate) use complete::{FieldAssignment, check_completion_with_values};
+pub(crate) use complete::{
+    FieldAssignment, check_completion_with_values, check_valuation_with_values,
+};
 #[cfg(test)]
 thread_local! {
     static MAP_VALIDATION_OBSERVER: std::cell::RefCell<Option<Box<dyn FnMut(&'static str, usize)>>> = const { std::cell::RefCell::new(None) };

@@ -591,6 +591,27 @@ pub(crate) fn check_completion_with_values<E: InputError>(
     pinned: &[FieldAssignment],
     control: &mut Control,
 ) -> Result<(), E> {
+    check_valuation_inner::<E>(snapshots, definitions, pinned, false, control)
+}
+
+/// 既知slotを含む内部候補も、同じ原始型・所属・Map全域性で検査する。
+/// 観測表は不変とし、未代入の欠測が整合する補完を持つことを要求する。
+pub(crate) fn check_valuation_with_values<E: InputError>(
+    snapshots: &[Snapshot],
+    definitions: &CheckedDefinitions,
+    pinned: &[FieldAssignment],
+    control: &mut Control,
+) -> Result<(), E> {
+    check_valuation_inner::<E>(snapshots, definitions, pinned, true, control)
+}
+
+fn check_valuation_inner<E: InputError>(
+    snapshots: &[Snapshot],
+    definitions: &CheckedDefinitions,
+    pinned: &[FieldAssignment],
+    replace_known: bool,
+    control: &mut Control,
+) -> Result<(), E> {
     E::checkpoint(control, Checkpoint::Completion)?;
     let mut subjects = Vec::new();
     for snapshot in snapshots {
@@ -671,7 +692,7 @@ pub(crate) fn check_completion_with_values<E: InputError>(
         let Some((f, field)) = selected else {
             return Err(fail().into());
         };
-        if field.slot != Slot::Missing || m.pinned.contains_key(&(g, f)) {
+        if (!replace_known && field.slot != Slot::Missing) || m.pinned.contains_key(&(g, f)) {
             return Err(fail().into());
         }
         let namespace = m.subjects[g]
