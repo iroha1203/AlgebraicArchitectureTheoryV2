@@ -80,7 +80,7 @@ pub(in super::super) fn zero_indicator(
     row.application_missing.dedup();
     Ok(())
 }
-fn initial(
+pub(super) fn initial(
     e: &Environment<'_>,
     object: &Selection,
     original: &ObjectInstance,
