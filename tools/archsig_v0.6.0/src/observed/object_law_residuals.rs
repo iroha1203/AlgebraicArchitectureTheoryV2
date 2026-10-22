@@ -195,9 +195,12 @@ fn shape(
         return Err(bad("元Law署名がない"));
     };
     let mut eq = body;
-    while let ExprKind::Group(child) = inputs.law().exprs[eq].kind {
+    loop {
         tick(c)?;
-        eq = child;
+        match inputs.law().exprs[eq].kind {
+            ExprKind::Group(child) | ExprKind::Let { body: child, .. } => eq = child,
+            _ => break,
+        }
     }
     if let ExprKind::Binary {
         op: BinOp::Eq,
@@ -386,13 +389,15 @@ fn read_case(
             let mut expression = *body;
             while expression != *equality {
                 tick(c)?;
-                let ExprKind::Group(child) = inputs.law().exprs[expression].kind else {
-                    return Err(bad("元数値等式のGroupが違う"));
+                let (child, index) = match inputs.law().exprs[expression].kind {
+                    ExprKind::Group(child) => (child, 0),
+                    ExprKind::Let { body: child, .. } => (child, 1),
+                    _ => return Err(bad("元数値等式の外側導出が違う")),
                 };
                 at = *eval_parts(g, at)?
                     .first()
-                    .and_then(|p| p.children.first())
-                    .ok_or_else(|| bad("元Group評価の子がない"))?;
+                    .and_then(|p| p.children.get(index))
+                    .ok_or_else(|| bad("元数値等式の外側評価の子がない"))?;
                 expression = child;
             }
             r.body_evaluation = Some(at.0);
