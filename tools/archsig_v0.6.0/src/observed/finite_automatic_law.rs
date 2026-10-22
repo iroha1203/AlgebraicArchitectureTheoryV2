@@ -422,3 +422,6 @@ impl AutomaticLawQuotient<'_> {
 #[cfg(test)]
 #[path = "finite_automatic_law_tests.rs"]
 mod tests;
+
+#[path = "finite_law_object_evaluation.rs"]
+pub(in crate::observed) mod object_evaluation;
