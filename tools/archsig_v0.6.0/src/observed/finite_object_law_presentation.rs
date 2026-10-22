@@ -1,4 +1,5 @@
 //! 選択対象の元Law全列を、同じ共有Z^Dの表示と対象評価へ接続する。
+use super::observation::{FiniteLawObservation, ObservedInteger};
 use super::*;
 use num_traits::Zero;
 
@@ -41,6 +42,7 @@ impl FiniteObjectEquation {
 }
 pub(in crate::observed) struct FiniteObjectLawPresentation<'a> {
     family: &'a AutomaticLawValuations,
+    observation: FiniteLawObservation<'a>,
     object: usize,
     columns: Vec<usize>,
     equations: Vec<FiniteObjectEquation>,
@@ -81,11 +83,12 @@ fn components(
     Ok(result)
 }
 impl AutomaticLawValuations {
-    pub fn object_presentation(
-        &self,
+    pub fn object_presentation<'a>(
+        &'a self,
+        inputs: &'a CheckedInputs,
         object: usize,
         c: &mut Control,
-    ) -> Result<Option<FiniteObjectLawPresentation<'_>>, ValidationFailure> {
+    ) -> Result<Option<FiniteObjectLawPresentation<'a>>, ValidationFailure> {
         checkpoint(c)?;
         let selected = self
             .readings
@@ -95,7 +98,9 @@ impl AutomaticLawValuations {
         if !self.is_complete() || !self.domain_complete() {
             return Ok(None);
         }
-        let evaluation = self.object_evaluation(c)?;
+        let observation = self
+            .observation(inputs, c)?
+            .ok_or("有限方程式表示の元観測域が未完成")?;
         let mut columns = vec![];
         let mut equations = vec![];
         for (index, column) in self.columns().iter().enumerate() {
@@ -116,9 +121,15 @@ impl AutomaticLawValuations {
             for (component, ty) in components(column.equation_type.as_ref(), c)? {
                 checkpoint(c)?;
                 let nu = self.integer_function(index, component.as_deref(), c)?;
-                let (epsilon, constant) = match &evaluation {
-                    Some(ev) => (Some(ev.apply(&nu, c)?), Some(ev.constant_image(&nu, c)?)),
-                    None => (None, None),
+                let (epsilon, constant) = match observation.evaluate(&nu, c)? {
+                    ObservedInteger::Determined(value) => {
+                        let constant = self
+                            .integer_ring(c)?
+                            .constant(value.clone(), c)
+                            .map_err(ring_failure)?;
+                        (Some(value), Some(constant))
+                    }
+                    ObservedInteger::Varying { .. } | ObservedInteger::Empty => (None, None),
                 };
                 equations.push(FiniteObjectEquation {
                     column: index,
@@ -152,6 +163,7 @@ impl AutomaticLawValuations {
         checkpoint(c)?;
         Ok(Some(FiniteObjectLawPresentation {
             family: self,
+            observation,
             object,
             columns,
             equations,
@@ -176,8 +188,11 @@ impl FiniteObjectLawPresentation<'_> {
     pub fn required_zero(&self) -> &[usize] {
         &self.required_zero
     }
+    pub fn observation(&self) -> &FiniteLawObservation<'_> {
+        &self.observation
+    }
     pub fn evaluated(&self) -> bool {
-        self.family.observed_point().is_some()
+        !self.observation.points().is_empty() && self.equations.iter().all(|q| q.epsilon.is_some())
     }
     pub fn recheck(
         &self,
@@ -191,9 +206,10 @@ impl FiniteObjectLawPresentation<'_> {
         if !std::ptr::eq(self.family, expected_family) || self.object != expected_object {
             return Err("有限方程式表示が消費先の族・対象と違う".into());
         }
-        expected_family.recheck(inputs, readings, c)?;
+        self.observation
+            .recheck(expected_family, inputs, readings, c)?;
         let expected = expected_family
-            .object_presentation(expected_object, c)?
+            .object_presentation(inputs, expected_object, c)?
             .ok_or("有限方程式表示の元族が未完成")?;
         if self.columns != expected.columns
             || self.required_zero != expected.required_zero
