@@ -11,7 +11,7 @@ use super::{
         object_equation_presentation,
     },
 };
-use crate::{construction::ConstructionFailure, law::ast::BinOp, types::Type};
+use crate::{construction::ConstructionFailure, types::Type};
 use num_bigint::BigInt;
 use num_traits::{One, Zero};
 use std::sync::Arc;
@@ -56,16 +56,8 @@ impl FiniteEquationAssignment {
         &self.values
     }
 }
-#[derive(Clone, Debug)]
-pub struct FiniteIntegerFunction {
-    owner: Arc<()>,
-    values: Vec<BigInt>,
-}
-impl FiniteIntegerFunction {
-    pub fn values(&self) -> &[BigInt] {
-        &self.values
-    }
-}
+pub use super::finite_integer_function::FiniteIntegerFunction;
+use super::finite_integer_function::FiniteIntegerRing;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FinitePolynomialTableKind {
     Evaluated,
@@ -123,90 +115,45 @@ impl FinitePolynomialEvaluation {
     pub fn is_complete(&self) -> bool {
         self.complete
     }
-    fn ring(&self, c: &mut Control) -> Result<(), ConstructionFailure> {
+    fn ring(&self, c: &mut Control) -> Result<FiniteIntegerRing<'_>, ConstructionFailure> {
         tick(c)?;
         if !self.domain_complete {
             return Err(ConstructionFailure::InvalidSelection(
                 "有限代入Dが未完成".into(),
             ));
         }
-        Ok(())
+        Ok(FiniteIntegerRing::new(
+            &self.owner,
+            self.domain.len(),
+            Checkpoint::FinitePolynomialEvaluation,
+        ))
     }
     fn member(
         &self,
         v: &FiniteIntegerFunction,
         c: &mut Control,
     ) -> Result<(), ConstructionFailure> {
-        self.ring(c)?;
-        if !Arc::ptr_eq(&self.owner, &v.owner) || v.values.len() != self.domain.len() {
-            return Err(ConstructionFailure::InvalidSelection(
-                "整数値関数がこのD上の要素でない".into(),
-            ));
-        }
-        Ok(())
+        self.ring(c)?.member(v, c)
     }
     pub fn constant(
         &self,
         value: BigInt,
         c: &mut Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
-        self.ring(c)?;
-        let mut values = Vec::new();
-        for _ in &self.domain {
-            tick(c)?;
-            values.push(value.clone());
-        }
-        Ok(FiniteIntegerFunction {
-            owner: Arc::clone(&self.owner),
-            values,
-        })
+        self.ring(c)?.constant(value, c)
     }
     pub fn zero(&self, c: &mut Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
-        self.constant(BigInt::zero(), c)
+        self.ring(c)?.zero(c)
     }
     pub fn one(&self, c: &mut Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
-        self.constant(BigInt::one(), c)
+        self.ring(c)?.one(c)
     }
     pub fn basis(
         &self,
         point: usize,
         c: &mut Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
-        self.ring(c)?;
-        if point >= self.domain.len() {
-            return Err(ConstructionFailure::InvalidSelection(
-                "有限代入の点が範囲外".into(),
-            ));
-        }
-        let mut v = self.zero(c)?;
-        v.values[point] = BigInt::one();
-        tick(c)?;
-        Ok(v)
-    }
-    fn binary(
-        &self,
-        a: &FiniteIntegerFunction,
-        b: &FiniteIntegerFunction,
-        op: BinOp,
-        c: &mut Control,
-    ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
-        self.member(a, c)?;
-        self.member(b, c)?;
-        let mut values = Vec::new();
-        for (a, b) in a.values.iter().zip(&b.values) {
-            tick(c)?;
-            values.push(match op {
-                BinOp::Add => a + b,
-                BinOp::Sub => a - b,
-                BinOp::Mul => a * b,
-                _ => return Err(bad("整数値関数の演算が加減乗でない")),
-            });
-        }
-        tick(c)?;
-        Ok(FiniteIntegerFunction {
-            owner: Arc::clone(&self.owner),
-            values,
-        })
+        self.ring(c)?.basis(point, c)
     }
     pub fn add(
         &self,
@@ -214,7 +161,7 @@ impl FinitePolynomialEvaluation {
         b: &FiniteIntegerFunction,
         c: &mut Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
-        self.binary(a, b, BinOp::Add, c)
+        self.ring(c)?.add(a, b, c)
     }
     pub fn sub(
         &self,
@@ -222,7 +169,7 @@ impl FinitePolynomialEvaluation {
         b: &FiniteIntegerFunction,
         c: &mut Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
-        self.binary(a, b, BinOp::Sub, c)
+        self.ring(c)?.sub(a, b, c)
     }
     pub fn mul(
         &self,
@@ -230,7 +177,7 @@ impl FinitePolynomialEvaluation {
         b: &FiniteIntegerFunction,
         c: &mut Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
-        self.binary(a, b, BinOp::Mul, c)
+        self.ring(c)?.mul(a, b, c)
     }
     pub fn equal(
         &self,
@@ -238,31 +185,14 @@ impl FinitePolynomialEvaluation {
         b: &FiniteIntegerFunction,
         c: &mut Control,
     ) -> Result<bool, ConstructionFailure> {
-        self.member(a, c)?;
-        self.member(b, c)?;
-        for (a, b) in a.values.iter().zip(&b.values) {
-            tick(c)?;
-            if a != b {
-                return Ok(false);
-            }
-        }
-        tick(c)?;
-        Ok(true)
+        self.ring(c)?.equal(a, b, c)
     }
     pub fn is_zero(
         &self,
         a: &FiniteIntegerFunction,
         c: &mut Control,
     ) -> Result<bool, ConstructionFailure> {
-        self.member(a, c)?;
-        for a in &a.values {
-            tick(c)?;
-            if !a.is_zero() {
-                return Ok(false);
-            }
-        }
-        tick(c)?;
-        Ok(true)
+        self.ring(c)?.is_zero(a, c)
     }
     pub fn at(
         &self,
@@ -270,11 +200,7 @@ impl FinitePolynomialEvaluation {
         point: usize,
         c: &mut Control,
     ) -> Result<BigInt, ConstructionFailure> {
-        self.member(a, c)?;
-        a.values
-            .get(point)
-            .cloned()
-            .ok_or_else(|| ConstructionFailure::InvalidSelection("有限代入の点が範囲外".into()))
+        self.ring(c)?.at(a, point, c)
     }
     pub fn recheck(
         &self,

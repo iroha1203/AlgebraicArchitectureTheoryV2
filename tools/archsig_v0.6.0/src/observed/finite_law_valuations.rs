@@ -211,6 +211,7 @@ fn single(mut r: FiniteLawFamilyValuations) -> FiniteLawValuations {
 #[derive(Clone)]
 pub(in crate::observed) struct FiniteLawColumn {
     declaration: Declaration,
+    equation_type: Option<Type>,
     bindings: Vec<(String, Scalar)>,
     rows: Vec<FiniteLawRow>,
 }
@@ -238,6 +239,7 @@ pub(in crate::observed) struct FiniteLawFamilyValuations {
     sources: InputSources,
     selection: Vec<Arc<Selection>>,
     columns: Vec<FiniteLawColumn>,
+    owner: Arc<()>,
     positions: Vec<Fact>,
     types: Vec<Type>,
     domain: Vec<Vec<Scalar>>,
@@ -331,6 +333,7 @@ impl FiniteLawFamilyValuations {
             for (a, b) in self.columns.iter().zip(&expected.columns) {
                 tick(c)?;
                 if a.declaration != b.declaration
+                    || a.equation_type != b.equation_type
                     || a.bindings.len() != b.bindings.len()
                     || a.rows != b.rows
                 {
@@ -384,8 +387,40 @@ pub(in crate::observed) fn finite_law_family_valuations(
                 partial: None,
             });
         }
+        let Signature::Law { body, .. } = decl.signature else {
+            return Err(FiniteLawFamilyFailure {
+                cause: "元Lawがない".into(),
+                partial: None,
+            });
+        };
+        let mut expression = body;
+        while let ExprKind::Group(child) = inputs.law().exprs[expression].kind {
+            tick(c).map_err(|cause| FiniteLawFamilyFailure {
+                cause,
+                partial: None,
+            })?;
+            expression = child;
+        }
+        let equation_type = if let ExprKind::Binary {
+            op: BinOp::Eq, lhs, ..
+        } = inputs.law().exprs[expression].kind
+        {
+            Some(
+                inputs
+                    .law()
+                    .expr_type(lhs)
+                    .ok_or_else(|| FiniteLawFamilyFailure {
+                        cause: "元等式の型がない".into(),
+                        partial: None,
+                    })?
+                    .clone(),
+            )
+        } else {
+            None
+        };
         columns.push(FiniteLawColumn {
             declaration: decl.clone(),
+            equation_type,
             bindings: vec![],
             rows: vec![],
         });
@@ -398,6 +433,7 @@ pub(in crate::observed) fn finite_law_family_valuations(
         sources: inputs.sources().clone(),
         selection,
         columns,
+        owner: Arc::new(()),
         positions: vec![],
         types: vec![],
         domain: vec![],
@@ -1209,3 +1245,6 @@ fn populate_family(
 #[cfg(test)]
 #[path = "finite_law_valuations_tests.rs"]
 mod tests;
+
+#[path = "finite_law_quotient.rs"]
+pub(in crate::observed) mod quotient;

@@ -91,6 +91,8 @@ pub enum Checkpoint {
     FiniteLawEvaluation,
     FiniteLawRequired,
     FiniteLawComponent,
+    FiniteLawFunction,
+    FiniteLawQuotient,
     Expression,
     FiniteIteration,
 }
