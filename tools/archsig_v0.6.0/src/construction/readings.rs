@@ -622,3 +622,8 @@ mod tests {
 pub use crate::observed::object_view_family::{
     FiniteObjectView, FiniteViewDomain, FiniteViewRow, FiniteViewValue,
 };
+
+pub use crate::observed::object_law_circuits::{
+    LawCircuit, LawCircuitDetector, LawCircuitPoint, LawCircuitWitness, LawCircuitsCondition,
+    ObjectLawCircuits, ObjectLawCircuitsFailure, object_law_circuits,
+};
