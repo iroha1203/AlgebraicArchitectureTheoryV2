@@ -55,6 +55,7 @@ impl<'a> Environment<'a> {
         }
         let roster = crate::archmap::value::Roster { types };
         let mut values = BTreeMap::new();
+        let mut original_values = BTreeMap::new();
         let mut pinned = Vec::new();
         for (position, value) in assignments {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
@@ -101,6 +102,7 @@ impl<'a> Environment<'a> {
                 field: field.name.clone(),
                 value: encoded,
             });
+            original_values.insert(position.clone(), original);
             values.insert(position.clone(), checked);
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
         }
@@ -129,6 +131,7 @@ impl<'a> Environment<'a> {
             }
         }
         environment.primitive_valuation = Some(values);
+        environment.primitive_input_valuation = Some(original_values);
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         Ok(Some(environment))
     }
@@ -209,3 +212,7 @@ fn same_primitive_value(a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, Val
 #[cfg(test)]
 #[path = "primitive_valuation_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "candidate_path_tests.rs"]
+mod candidate_path_tests;

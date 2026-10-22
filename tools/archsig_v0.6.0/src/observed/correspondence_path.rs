@@ -43,6 +43,7 @@ impl Environment<'_> {
             failure: None,
         };
         out.scope.readings.insert(reading.into());
+        out.scope.assignments = self.primitive_valuation.is_some();
         let from = self.path_slot(
             original,
             self.field(snapshot, subject, &format!("{entity}.from"))?,
@@ -152,7 +153,8 @@ impl Environment<'_> {
                 }
             }
         }
-        out.support.extend(universe.iter().cloned());
+        out.support
+            .extend(universe.iter().map(|fact| self.path_atom_support(fact)));
         if unavailable {
             out.support.sort();
             out.support.dedup();
@@ -231,12 +233,13 @@ impl Environment<'_> {
                     unavailable = true;
                     continue;
                 };
-                // Scalar補完を原始Atomに昇格しない。構造は元の既知Valueから読む。
-                let (Slot::Known { value: a, .. }, Slot::Known { value: b, .. }) =
-                    (&f.slot, &target_field.slot)
-                else {
-                    unreachable!()
-                };
+                // 像Atomの実在を確認後、候補の参照構造を同じ原始位置で再検査する。
+                let a = self
+                    .path_input_value(s, f)?
+                    .ok_or("元correspondence field値がない")?;
+                let b = self
+                    .path_input_value(t, target_field)?
+                    .ok_or("correspondenceの像field値がない")?;
                 let _ = (source_value, target_value);
                 let mut refs = BTreeSet::new();
                 let expected = self.path_shape(a, Some(&moving), &mut refs)?;
