@@ -20,6 +20,26 @@ impl<'a> Environment<'a> {
         assignments: &[(Fact, Scalar)],
         control: &mut Control,
     ) -> Result<Option<Self>, ValidationFailure> {
+        Self::primitive_valuation_checked(inputs, assignments, control, true)
+    }
+
+    /// 依存位置の発見中は、まだ固定されている別fieldとの制約で枝を刈らない。
+    /// 元型・値の正規性は検査する。完成候補には必ずtry_primitive_valuationを使う。
+    pub(super) fn primitive_dependency_probe(
+        inputs: &'a CheckedInputs,
+        assignments: &[(Fact, Scalar)],
+        control: &mut Control,
+    ) -> Result<Self, ValidationFailure> {
+        Self::primitive_valuation_checked(inputs, assignments, control, false)?
+            .ok_or_else(|| "依存発見用の型付き候補が失われた".into())
+    }
+
+    fn primitive_valuation_checked(
+        inputs: &'a CheckedInputs,
+        assignments: &[(Fact, Scalar)],
+        control: &mut Control,
+        constraints: bool,
+    ) -> Result<Option<Self>, ValidationFailure> {
         let mut environment = Self::new(inputs, control)?;
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         let mut types = std::collections::HashMap::new();
@@ -84,24 +104,28 @@ impl<'a> Environment<'a> {
             values.insert(position.clone(), checked);
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
         }
-        match crate::archmap::check_valuation_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-            &inputs.archmap().snapshots,
-            inputs.definitions(),
-            &pinned,
-            control,
-        ) {
-            Ok(()) => {}
-            Err(CheckFailure::Stopped(stop)) => return Err(ValidationFailure::Stop(stop)),
-            Err(CheckFailure::Input(issue))
-                if issue.code == crate::issue::Code::InconsistentObservation =>
-            {
-                return Ok(None);
-            }
-            Err(CheckFailure::Input(issue)) => {
-                return Err(ValidationFailure::Internal(format!(
-                    "候補の原始制約検査: {}",
-                    issue.message
-                )));
+        if constraints {
+            match crate::archmap::check_valuation_with_values::<
+                CheckFailure<Box<crate::issue::Issue>>,
+            >(
+                &inputs.archmap().snapshots,
+                inputs.definitions(),
+                &pinned,
+                control,
+            ) {
+                Ok(()) => {}
+                Err(CheckFailure::Stopped(stop)) => return Err(ValidationFailure::Stop(stop)),
+                Err(CheckFailure::Input(issue))
+                    if issue.code == crate::issue::Code::InconsistentObservation =>
+                {
+                    return Ok(None);
+                }
+                Err(CheckFailure::Input(issue)) => {
+                    return Err(ValidationFailure::Internal(format!(
+                        "候補の原始制約検査: {}",
+                        issue.message
+                    )));
+                }
             }
         }
         environment.primitive_valuation = Some(values);

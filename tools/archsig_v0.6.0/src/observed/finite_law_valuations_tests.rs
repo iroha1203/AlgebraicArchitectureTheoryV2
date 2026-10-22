@@ -487,3 +487,384 @@ fn fixed_stops_leave_only_completed_rows_and_freeze_the_probe() {
         }
     }
 }
+
+#[test]
+fn incomplete_non_owned_map_binding_must_be_rejected() {
+    let i = fixture::with_body(fixture::MAP, "law required fixed(t:Map<Part,Part>):true;");
+    let v = Scalar::Map {
+        domain: Type::Ref("Pattern.Part".into()),
+        codomain: Type::Ref("Pattern.Part".into()),
+        pairs: vec![],
+    };
+    let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &mut quiet());
+    assert!(
+        r.is_err(),
+        "two registered Part subjects require two Map keys"
+    );
+}
+#[test]
+fn unregistered_path_binding_must_be_rejected() {
+    let i = fixture::with_body(fixture::MAP, "law required fixed(p:Path<Part,Part>):true;");
+    let v = Scalar::Path(Box::new(crate::observed::path_value::PathValue {
+        reading: "Selected".into(),
+        snapshot: "v".into(),
+        subject: "absent".into(),
+        entity: "Pattern.Part".into(),
+        step: None,
+    }));
+    let r = finite_law_valuations(&i, "Selected.fixed", &[("p".into(), v)], &mut quiet());
+    assert!(
+        r.is_err(),
+        "unregistered Path source cannot be a typed fixed binding"
+    );
+}
+
+#[test]
+fn single_key_map_binding_must_be_rejected() {
+    let i = fixture::with_body(fixture::MAP, "law required fixed(t:Map<Part,Part>):t=t;");
+    let v = Scalar::Map {
+        domain: Type::Ref("Pattern.Part".into()),
+        codomain: Type::Ref("Pattern.Part".into()),
+        pairs: vec![(subject("p"), subject("q"))],
+    };
+    assert!(finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &mut quiet()).is_err());
+}
+#[test]
+fn total_map_binding_is_accepted() {
+    let i = fixture::with_body(fixture::MAP, "law required fixed(t:Map<Part,Part>):t=t;");
+    let v = Scalar::Map {
+        domain: Type::Ref("Pattern.Part".into()),
+        codomain: Type::Ref("Pattern.Part".into()),
+        pairs: vec![(subject("p"), subject("q")), (subject("q"), subject("p"))],
+    };
+    let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &mut quiet()).unwrap();
+    assert!(r.is_complete());
+    assert_eq!(r.rows()[0].indicator, Some(0.into()));
+}
+#[test]
+fn later_comprehension_dependencies_must_not_be_pruned_by_stale_constraints() {
+    let map=fixture::MAP.replace("\"atoms\":[",r#""atoms":[{"id":"table-p","subject":"p","field":"Pattern.Part.ownedtable","value":[[["v","p"],["v","p"]],[["v","q"],["v","q"]]],"origin":"model"},"#);
+    let i = fixture::with_body(
+        &map,
+        "law required branched(r:Root,c:Part):count(set{c.ownedtable | x in list<Part>[c] where c.owner!=r})=0;",
+    );
+    let r = finite_law_valuations(
+        &i,
+        "Selected.branched",
+        &[("r".into(), subject("root")), ("c".into(), subject("p"))],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(
+        r.positions(),
+        &[
+            position("p", "ownedtable"),
+            position("p", "owner"),
+            position("q", "owner")
+        ]
+    );
+    assert_eq!(r.domain().len(), 10);
+    assert!(r.is_complete());
+    for (point, row) in r.domain().iter().zip(r.rows()) {
+        assert_eq!(
+            row.indicator,
+            Some(BigInt::from((point[1] != subject("root")) as u8))
+        );
+    }
+}
+
+#[test]
+fn forged_term_body_binding_must_be_rejected() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "view make():Term<(Fp(2))->Fp(2)> =fn(n:Fp(2))=>n+1;law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;",
+    );
+    let Signature::View { body, .. } = &i.law().declarations["Selected.make"].signature else {
+        panic!()
+    };
+    let mut term =
+        crate::observed::term::Term::from_law(i.law(), i.sources().law().bytes(), *body, &quiet())
+            .unwrap();
+    term.body = "n+0".into();
+    let r = finite_law_valuations(
+        &i,
+        "Selected.fixed",
+        &[("t".into(), Scalar::Term(Box::new(term)))],
+        &mut quiet(),
+    );
+    assert!(
+        r.is_err(),
+        "Term text and executable AST must agree in fixed bindings"
+    );
+}
+
+#[test]
+fn nested_maps_keep_their_original_full_domain_check() {
+    for (ty, wrap) in [
+        ("Map<Part,Part>", 0),
+        ("(Unit,Map<Part,Part>)", 1),
+        ("List<Map<Part,Part>>", 2),
+        ("Option<Map<Part,Part>>", 3),
+    ] {
+        let i = fixture::with_body(fixture::MAP, &format!("law required fixed(m:{ty}):true;"));
+        for full in [false, true] {
+            let map = Scalar::Map {
+                domain: Type::Ref("Pattern.Part".into()),
+                codomain: Type::Ref("Pattern.Part".into()),
+                pairs: if full {
+                    vec![(subject("p"), subject("p")), (subject("q"), subject("q"))]
+                } else {
+                    vec![]
+                },
+            };
+            let value = match wrap {
+                0 => map.clone(),
+                1 => Scalar::Tuple(vec![Scalar::Unit, map.clone()]),
+                2 => Scalar::List {
+                    element: map.ty(),
+                    items: vec![map.clone()],
+                },
+                _ => Scalar::Option {
+                    element: map.ty(),
+                    value: Some(Box::new(map.clone())),
+                },
+            };
+            let result =
+                finite_law_valuations(&i, "Selected.fixed", &[("m".into(), value)], &mut quiet());
+            assert_eq!(result.is_ok(), full, "{ty}, full={full}");
+        }
+    }
+}
+
+fn literal_term(i: &CheckedInputs, name: &str) -> Scalar {
+    let Signature::View { body, .. } = &i.law().declarations[name].signature else {
+        panic!()
+    };
+    Scalar::Term(Box::new(
+        crate::observed::term::Term::from_law(i.law(), i.sources().law().bytes(), *body, &quiet())
+            .unwrap(),
+    ))
+}
+#[test]
+fn checked_term_bindings_reparse_in_the_original_reading_and_nested_containers() {
+    let body = format!(
+        "{}law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;law required nested(ts:List<Term<(Fp(2))->Fp(2)>>):true;",
+        fixture::BODY
+    );
+    let i = fixture::with_body(fixture::MAP, &body);
+    for name in ["Selected.literal", "Selected.complex"] {
+        let value = literal_term(&i, name);
+        let r = finite_law_valuations(
+            &i,
+            "Selected.fixed",
+            &[("t".into(), value.clone())],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert!(r.is_complete());
+        assert_eq!(r.rows()[0].indicator, Some(0.into()));
+        let list = Scalar::List {
+            element: value.ty(),
+            items: vec![value.clone()],
+        };
+        assert!(
+            finite_law_valuations(&i, "Selected.nested", &[("ts".into(), list)], &mut quiet())
+                .unwrap()
+                .is_complete()
+        );
+        let Scalar::Term(term) = &value else { panic!() };
+        let mut changed = (**term).clone();
+        changed.body = "make()".into();
+        let bad = Scalar::List {
+            element: value.ty(),
+            items: vec![Scalar::Term(Box::new(changed))],
+        };
+        assert!(
+            finite_law_valuations(&i, "Selected.nested", &[("ts".into(), bad)], &mut quiet())
+                .is_err()
+        );
+    }
+}
+
+#[test]
+fn closed_term_keeps_its_checked_meaning_across_readings() {
+    let body = format!(
+        "{}}}reading Closed{{law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;",
+        fixture::BODY
+    );
+    let i = fixture::with_body(fixture::MAP, &body);
+    let value = literal_term(&i, "Selected.complex");
+    let r =
+        finite_law_valuations(&i, "Closed.fixed", &[("t".into(), value)], &mut quiet()).unwrap();
+    assert!(r.is_complete());
+    assert_eq!(r.rows()[0].indicator, Some(0.into()));
+}
+
+#[test]
+fn definition_term_binding_remains_valid_without_a_law_vocabulary_import() {
+    use crate::observed::input::{InputSources, check_inputs};
+    let donor = fixture::inputs();
+    let value = literal_term(&donor, "Selected.complex");
+    let i=check_inputs(InputSources::from_bytes(donor.sources().definitions().iter().map(|d|d.bytes().to_vec()).collect(),b"law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Closed{law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;}".to_vec(),donor.sources().archmap().bytes().to_vec()),&mut quiet()).unwrap();
+    let r =
+        finite_law_valuations(&i, "Closed.fixed", &[("t".into(), value)], &mut quiet()).unwrap();
+    assert!(r.is_complete());
+    assert_eq!(r.rows()[0].indicator, Some(0.into()));
+}
+
+#[test]
+fn term_binding_reparse_stops_before_publishing_and_freezes_the_probe() {
+    use crate::{
+        observed::control::{Resource, StopReason},
+        result::Signal,
+    };
+    use std::{cell::Cell, rc::Rc};
+    fn controlled(at: usize, kind: u8) -> (Control, Rc<Cell<usize>>, Rc<Cell<usize>>) {
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let calls = Rc::new(Cell::new(0));
+        let all = calls.clone();
+        (
+            Control::new(
+                Limits {
+                    time_ms: Some(1),
+                    memory_mib: Some(1),
+                },
+                move |point| {
+                    all.set(all.get() + 1);
+                    if point == Checkpoint::ArchMapTerm {
+                        seen.set(seen.get() + 1);
+                    }
+                    let stop = seen.get() >= at;
+                    Usage {
+                        elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
+                        memory_mib: if stop && kind == 1 { 1 } else { 0 },
+                        signal: if stop {
+                            match kind {
+                                2 => Some(Signal::Int),
+                                3 => Some(Signal::Term),
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        },
+                    }
+                },
+            ),
+            count,
+            calls,
+        )
+    }
+    let i = fixture::with_body(
+        fixture::MAP,
+        "view make():Term<(Fp(2))->Fp(2)> =fn(n:Fp(2))=>n+1;law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;",
+    );
+    let bindings = vec![("t".into(), literal_term(&i, "Selected.make"))];
+    let (mut c, count, _) = controlled(usize::MAX, 4);
+    assert!(
+        finite_law_valuations(&i, "Selected.fixed", &bindings, &mut c)
+            .unwrap()
+            .is_complete()
+    );
+    let total = count.get();
+    assert!(total > 1);
+    for at in [1, total] {
+        for kind in 0..4 {
+            let (mut c, _, calls) = controlled(at, kind);
+            let failure = match finite_law_valuations(&i, "Selected.fixed", &bindings, &mut c) {
+                Err(f) => f,
+                Ok(_) => panic!("中断後に完成表を返した"),
+            };
+            let expected = match kind {
+                0 => StopReason::BudgetExhausted {
+                    resource: Resource::TimeMs,
+                    limit: 1,
+                    observed: 1,
+                },
+                1 => StopReason::BudgetExhausted {
+                    resource: Resource::MemoryMib,
+                    limit: 1,
+                    observed: 1,
+                },
+                2 => StopReason::Cancelled(Signal::Int),
+                _ => StopReason::Cancelled(Signal::Term),
+            };
+            assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
+            let partial = failure.partial.unwrap();
+            assert!(!partial.is_complete());
+            assert!(partial.rows().is_empty());
+            let before = calls.get();
+            assert_eq!(c.checkpoint(Checkpoint::ArchMapTerm), Err(expected));
+            assert_eq!(calls.get(), before);
+        }
+    }
+}
+
+#[test]
+fn registered_identity_and_reconstructed_path_bindings_are_accepted_but_forged_actions_are_not() {
+    mod paths {
+        use crate as archsig;
+        include!("../../tests/common/internal_paths.rs");
+    }
+    use crate::observed::input::{InputSources, check_inputs};
+    let original = paths::input("normal", "fixed-path");
+    let law = String::from_utf8(original.law().bytes().to_vec())
+        .unwrap()
+        .replace(
+            "law required prior():false;",
+            "law required prior(p:Path<Node,Node>):p=p;",
+        );
+    let inputs = check_inputs(
+        InputSources::from_bytes(
+            original
+                .definitions()
+                .iter()
+                .map(|d| d.bytes().to_vec())
+                .collect(),
+            law.into_bytes(),
+            original.archmap().bytes().to_vec(),
+        ),
+        &mut quiet(),
+    )
+    .unwrap();
+    let e = Environment::new(&inputs, &mut quiet()).unwrap();
+    let Signature::View { body, .. } = &inputs.law().declarations["Walk.step"].signature else {
+        panic!()
+    };
+    let generator = Scalar::Subject {
+        snapshot: "v".into(),
+        subject: "e".into(),
+        entity: "Paths.Hop".into(),
+    };
+    let value = e.internal_path(*body, &[generator]).unwrap().value.unwrap();
+    let identity = Scalar::Path(Box::new(crate::observed::path_value::PathValue {
+        reading: "Walk".into(),
+        snapshot: "v".into(),
+        subject: "p".into(),
+        entity: "Paths.Node".into(),
+        step: None,
+    }));
+    for value in [identity, value.clone()] {
+        let r = finite_law_valuations(&inputs, "Walk.prior", &[("p".into(), value)], &mut quiet())
+            .unwrap();
+        assert!(r.is_complete());
+        assert_eq!(r.rows()[0].indicator, Some(0.into()));
+    }
+    let Scalar::Path(path) = &value else { panic!() };
+    let mut forged = (**path).clone();
+    let step = forged.step.as_mut().unwrap();
+    step.images[0] = step.carrier[0].clone();
+    // 元と違う全域作用を、同じ生成語の値として渡さない。
+    if step.images == path.step.as_ref().unwrap().images {
+        step.images[0] = step.carrier[1].clone();
+    }
+    assert!(
+        finite_law_valuations(
+            &inputs,
+            "Walk.prior",
+            &[("p".into(), Scalar::Path(Box::new(forged)))],
+            &mut quiet()
+        )
+        .is_err()
+    );
+}

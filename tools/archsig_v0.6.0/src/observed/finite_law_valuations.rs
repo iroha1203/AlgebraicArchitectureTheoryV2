@@ -237,38 +237,206 @@ fn validate_bindings(
             return Err("有限Lawの束縛型が元parameterと違う".into());
         }
         data::check(value, e.inputs.law(), &e.control)?;
-        let mut pending = vec![value];
-        while let Some(v) = pending.pop() {
-            tick(&e.control)?;
-            match v {
-                Scalar::Subject {
-                    snapshot,
-                    subject,
-                    entity,
-                } => {
-                    if e.subject(snapshot, subject)?.ty != *entity {
-                        return Err("有限Lawの参照束縛が登録型と違う".into());
-                    }
-                }
-                Scalar::Tuple(v)
-                | Scalar::List { items: v, .. }
-                | Scalar::Set { items: v, .. }
-                | Scalar::Data { args: v, .. } => pending.extend(v),
-                Scalar::Option { value: Some(v), .. } => pending.push(v),
-                Scalar::Map { pairs, .. } => {
-                    for (a, b) in pairs {
-                        pending.extend([a, b]);
-                    }
-                }
-                _ => {}
-            }
-        }
+        validate_binding_value(e, decl, &p.ty, value)?;
         result.push((p.name.clone(), value.clone()));
     }
     if !named.is_empty() {
         return Err("有限Lawに未知の束縛がある".into());
     }
     Ok(result)
+}
+fn validate_binding_value(
+    e: &Environment<'_>,
+    decl: &Declaration,
+    ty: &Type,
+    value: &Scalar,
+) -> Result<(), ValidationFailure> {
+    let mut pending = vec![(ty, value)];
+    while let Some((ty, v)) = pending.pop() {
+        tick(&e.control)?;
+        match (ty, v) {
+            (
+                _,
+                Scalar::Subject {
+                    snapshot,
+                    subject,
+                    entity,
+                },
+            ) => {
+                if e.subject(snapshot, subject)?.ty != *entity {
+                    return Err("有限Lawの参照束縛が登録型と違う".into());
+                }
+            }
+            (Type::Tuple(types), Scalar::Tuple(values)) => pending.extend(types.iter().zip(values)),
+            (Type::List(ty), Scalar::List { items, .. })
+            | (Type::Set(ty), Scalar::Set { items, .. }) => {
+                pending.extend(items.iter().map(|v| (ty.as_ref(), v)));
+            }
+            (Type::Option(ty), Scalar::Option { value: Some(v), .. }) => {
+                pending.push((ty.as_ref(), v))
+            }
+            (
+                Type::Data(family),
+                Scalar::Data {
+                    constructor, args, ..
+                },
+            ) => {
+                let ctor = data::constructor(e.inputs.law(), family, constructor, &e.control)?;
+                pending.extend(ctor.arguments.iter().zip(args));
+            }
+            (Type::Map(from, to), Scalar::Map { pairs, .. }) => {
+                if let Type::Ref(entity) = from.as_ref() {
+                    let mut keys = vec![];
+                    let mut expected = vec![];
+                    for (key, _) in pairs {
+                        tick(&e.control)?;
+                        keys.push(key.clone());
+                    }
+                    for subject in e.subjects.values().filter(|s| s.ty == *entity) {
+                        tick(&e.control)?;
+                        expected.push(Scalar::Subject {
+                            snapshot: subject.snapshot.clone(),
+                            subject: subject.id.clone(),
+                            entity: subject.ty.clone(),
+                        });
+                    }
+                    let actual = data::set(from.erase(), &keys, &e.control)?;
+                    let required = data::set(from.erase(), &expected, &e.control)?;
+                    if !data::equal(&actual, &required, &e.control)? {
+                        return Err("有限LawのMap束縛が元の登録始域を覆わない".into());
+                    }
+                }
+                for (key, image) in pairs {
+                    tick(&e.control)?;
+                    pending.extend([(from.as_ref(), key), (to.as_ref(), image)]);
+                }
+            }
+            (_, Scalar::Path(path)) => validate_binding_path(e, decl, path)?,
+            (_, Scalar::Term(term)) => validate_binding_term(e, term)?,
+            _ => {}
+        }
+    }
+    Ok(())
+}
+fn validate_binding_term(
+    e: &Environment<'_>,
+    term: &crate::observed::term::Term,
+) -> Result<(), ValidationFailure> {
+    use crate::observed::control::CheckFailure;
+    // 閉じた値は、選択Law以外のreadingや原始fieldからも来る。
+    // 現在入力のscopeで本文を再検査し、保持した全実行情報と一致するものを要求する。
+    let mut readings = BTreeSet::new();
+    for d in e.inputs.law().declarations.values() {
+        tick(&e.control)?;
+        readings.insert(d.reading.clone());
+    }
+    let scopes = readings.into_iter().map(|n| (false, n)).chain(
+        e.inputs
+            .definitions()
+            .vocabularies
+            .keys()
+            .cloned()
+            .map(|n| (true, n)),
+    );
+    for (definition, name) in scopes {
+        tick(&e.control)?;
+        let checked = if definition {
+            crate::law::check_definition_term_body_inner::<CheckFailure<Box<crate::issue::Issue>>>(
+                e.inputs.definitions(),
+                &name,
+                &term.params,
+                &term.returns,
+                &term.body,
+                &mut e.control.clone(),
+            )
+        } else {
+            crate::law::check_reading_term_body::<CheckFailure<Box<crate::issue::Issue>>>(
+                e.inputs.sources().law().bytes(),
+                e.inputs.definitions(),
+                &name,
+                &term.params,
+                &term.returns,
+                &term.body,
+                &mut e.control.clone(),
+            )
+        };
+        let checked = match checked {
+            Ok(v) => v,
+            Err(CheckFailure::Stopped(s)) => return Err(ValidationFailure::Stop(s)),
+            Err(CheckFailure::Input(_)) => continue,
+        };
+        let original = crate::archmap::value::TermValue {
+            params: term.params.iter().map(|(n, _)| n.clone()).collect(),
+            body: term.body.clone(),
+            checked,
+        };
+        let args = term
+            .params
+            .iter()
+            .map(|(_, t)| t.clone())
+            .collect::<Vec<_>>();
+        let reparsed =
+            crate::observed::term::Term::from_input(&original, &args, &term.returns, &e.control)?;
+        if term.same_input_program(&reparsed, &e.control)? {
+            return Ok(());
+        }
+    }
+    Err("有限LawのTerm束縛の本文・型・実行ASTが現在入力のscopeで一致しない".into())
+}
+fn validate_binding_path(
+    e: &Environment<'_>,
+    decl: &Declaration,
+    path: &crate::observed::path_value::PathValue,
+) -> Result<(), ValidationFailure> {
+    let source = e.subject(&path.snapshot, &path.subject)?;
+    if source.ty != path.entity {
+        return Err("有限LawのPath束縛の端点型が違う".into());
+    }
+    if !e
+        .inputs
+        .law()
+        .declarations
+        .values()
+        .any(|d| d.reading == path.reading)
+    {
+        return Err("有限LawのPath束縛の元readingがない".into());
+    }
+    let Some(step) = &path.step else {
+        return Ok(());
+    };
+    let Signature::Law { body, .. } = &decl.signature else {
+        return Err("元Lawがない".into());
+    };
+    let mut rebuilt = None;
+    for generator in std::iter::once(&step.generator).chain(&step.word_tail) {
+        tick(&e.control)?;
+        let result = e.internal_path(*body, std::slice::from_ref(generator))?;
+        if result.failure.is_some() {
+            return Err("有限LawのPath束縛の生成作用が元入力で成立しない".into());
+        }
+        let Some(Scalar::Path(actual)) = &result.value else {
+            return Err("有限LawのPath束縛の元作用が未確定".into());
+        };
+        rebuilt = Some(match rebuilt {
+            None => (**actual).clone(),
+            Some(left) => crate::observed::path_compose::compose_retained(
+                &left,
+                &actual,
+                &path.reading,
+                &e.control,
+                |_, _| {},
+            )
+            .map_err(|f| f.cause)?
+            .value
+            .ok_or("有限LawのPath束縛の生成語が合成できない")?,
+        });
+    }
+    let mut rebuilt = rebuilt.ok_or("有限LawのPath束縛に元生成語がない")?;
+    rebuilt.reading = path.reading.clone();
+    if !path.same_program(&rebuilt, &e.control)? {
+        return Err("有限LawのPath束縛が元入力の生成語・作用と違う".into());
+    }
+    Ok(())
 }
 fn type_dependencies(
     e: &Environment<'_>,
@@ -545,6 +713,7 @@ fn populate(
         let mut discovered = positions.clone();
         let mut admissible = vec![];
         let mut blocked = false;
+        let mut failure = None;
         for candidate in candidates {
             tick(c)?;
             let values = r
@@ -553,13 +722,16 @@ fn populate(
                 .cloned()
                 .zip(candidate.iter().cloned())
                 .collect::<Vec<_>>();
-            let Some(e) = Environment::try_primitive_valuation(inputs, &values, c)? else {
-                continue;
-            };
+            let e = Environment::primitive_dependency_probe(inputs, &values, c)?;
             *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
             let result = probe(&e, &r.declaration, &r.bindings, 0);
             if let Some(reads) = e.primitive_reads.borrow().as_ref() {
                 discovered.extend(reads.iter().cloned());
+            }
+            // 候補が古い別fieldと矛盾しても、その枝が読む位置は先に集める。
+            // 新位置が見つかったpassの判定は捨て、閉包後に原始制約を採用する。
+            if Environment::try_primitive_valuation(inputs, &values, c)?.is_none() {
+                continue;
             }
             match result {
                 Ok(p) => {
@@ -568,17 +740,27 @@ fn populate(
                         admissible.push(candidate)
                     }
                 }
-                Err(ValidationFailure::UnsupportedExpression { location, feature }) => {
-                    r.state = FiniteLawState::Unavailable { location, feature };
-                    return Ok(());
+                Err(ValidationFailure::Stop(stop)) => return Err(ValidationFailure::Stop(stop)),
+                Err(f) => {
+                    if failure.is_none() {
+                        failure = Some(f);
+                    }
                 }
-                Err(f) => return Err(f),
             }
             tick(c)?;
         }
         if discovered != positions {
             positions = discovered;
             continue;
+        }
+        if let Some(failure) = failure {
+            match failure {
+                ValidationFailure::UnsupportedExpression { location, feature } => {
+                    r.state = FiniteLawState::Unavailable { location, feature };
+                    return Ok(());
+                }
+                f => return Err(f),
+            }
         }
         if blocked {
             r.state = FiniteLawState::Undetermined {
