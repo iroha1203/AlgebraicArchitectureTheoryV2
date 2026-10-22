@@ -72,6 +72,9 @@ pub enum Checkpoint {
     ObjectLawResiduals,
     ObjectLawResidualCase,
     ObjectLawResidualPoint,
+    ObjectLawCircuits,
+    ObjectLawCircuitPoint,
+    ObjectLawCircuit,
     Expression,
     FiniteIteration,
 }
