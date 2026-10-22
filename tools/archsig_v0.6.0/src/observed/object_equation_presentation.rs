@@ -411,6 +411,39 @@ impl Compiler<'_> {
         }
         self.field(r, name, path, c)
     }
+    fn fixed_field_reference(
+        &self,
+        r: NodeRef,
+        name: &str,
+        c: &mut Control,
+    ) -> Result<bool, ConstructionFailure> {
+        let p = part(self.g, r)?;
+        let [base] = p.children.as_slice() else {
+            return Ok(false);
+        };
+        let reference = value(self.g, *base, &[]);
+        let Some(Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        }) = reference.as_ref()
+        else {
+            return Ok(false);
+        };
+        let field = format!("{entity}.{name}");
+        // 補完caseのSubject値は観測済みの参照Atomではない。
+        let mut observed = false;
+        for fact in &self.g.nodes[r.0].support {
+            tick(c)?;
+            if fact.snapshot == *snapshot
+                && fact.subject == *subject
+                && fact.field.as_ref() == Some(&field)
+            {
+                observed |= fact.atom.is_some();
+            }
+        }
+        Ok(observed && self.fixed_reference(*base, &[], c)?)
+    }
     // Refの実値だけでなく、その選択導出が数値記号に依存しないことを確認する。
     fn fixed_reference(
         &self,
@@ -440,10 +473,7 @@ impl Compiler<'_> {
                                     _ => Ok(false),
                                 }
                             } else {
-                                match p.children.as_slice() {
-                                    [base] => self.fixed_reference(*base, &[], c),
-                                    _ => Ok(false),
-                                }
+                                self.fixed_field_reference(r, &names[index].name, c)
                             };
                         }
                     }
@@ -458,8 +488,8 @@ impl Compiler<'_> {
                     ExprKind::Let { .. } if p.children.len() == 2 => {
                         self.fixed_reference(p.children[1], path, c)
                     }
-                    ExprKind::Field { .. } if p.children.len() == 1 => {
-                        self.fixed_reference(p.children[0], &[], c)
+                    ExprKind::Field { name, .. } if p.children.len() == 1 => {
+                        self.fixed_field_reference(r, &name.name, c)
                     }
                     ExprKind::Tuple(_) if !path.is_empty() => match p.children.get(path[0]) {
                         Some(&child) => self.fixed_reference(child, &path[1..], c),
@@ -500,6 +530,188 @@ impl Compiler<'_> {
                 };
             }
             Ok(false)
+        })
+    }
+    // 元導出の論理則と同じ共有slotの多項式正規化で、全域確定だけを証明する。
+    // 観測したBoolを状態全域の値へ昇格させず、証明できない場合はNoneを返す。
+    fn constant_boolean(
+        &mut self,
+        r: NodeRef,
+        path: &[usize],
+        c: &mut Control,
+    ) -> Result<Option<bool>, ConstructionFailure> {
+        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+            tick(c)?;
+            if !has_fields(self.g, r, c)? {
+                return Ok(match value(self.g, r, path) {
+                    Some(Scalar::Bool(b)) => Some(b),
+                    _ => None,
+                });
+            }
+            let p = part(self.g, r)?.clone();
+            let Location::Law { span } = p.location else {
+                return Ok(None);
+            };
+            let mut expression = None;
+            for e in &self.inputs.law().exprs {
+                tick(c)?;
+                if e.span == span {
+                    expression = Some(e);
+                    break;
+                }
+            }
+            let Some(expression) = expression else {
+                return Ok(None);
+            };
+            match &expression.kind {
+                ExprKind::Group(_) | ExprKind::Dotted(_) if p.children.len() == 1 => {
+                    // fieldの子は参照でありBoolではないので、原始Bool値を定数化しない。
+                    self.constant_boolean(p.children[0], path, c)
+                }
+                ExprKind::Let { .. } if p.children.len() == 2 => {
+                    self.constant_boolean(p.children[1], path, c)
+                }
+                ExprKind::Tuple(_) if !path.is_empty() => match p.children.get(path[0]) {
+                    Some(&child) => self.constant_boolean(child, &path[1..], c),
+                    None => Ok(None),
+                },
+                ExprKind::Index { index, .. } if p.children.len() == 1 => {
+                    let mut nested = vec![*index];
+                    nested.extend_from_slice(path);
+                    self.constant_boolean(p.children[0], &nested, c)
+                }
+                ExprKind::Unary { op: UnOp::Not, .. }
+                    if p.children.len() == 1 && path.is_empty() =>
+                {
+                    Ok(self.constant_boolean(p.children[0], &[], c)?.map(|b| !b))
+                }
+                ExprKind::Binary { op, .. } if p.children.len() == 2 && path.is_empty() => {
+                    let [left, right] = [p.children[0], p.children[1]];
+                    if matches!(op, BinOp::And | BinOp::Or | BinOp::Implies) {
+                        let a = self.constant_boolean(left, &[], c)?;
+                        let b = self.constant_boolean(right, &[], c)?;
+                        return Ok(match (op, a, b) {
+                            (BinOp::And, Some(false), _) | (BinOp::And, _, Some(false)) => {
+                                Some(false)
+                            }
+                            (BinOp::And, Some(true), Some(true)) => Some(true),
+                            (BinOp::Or, Some(true), _) | (BinOp::Or, _, Some(true)) => Some(true),
+                            (BinOp::Or, Some(false), Some(false)) => Some(false),
+                            (BinOp::Implies, Some(false), _) | (BinOp::Implies, _, Some(true)) => {
+                                Some(true)
+                            }
+                            (BinOp::Implies, Some(true), Some(false)) => Some(false),
+                            _ => None,
+                        });
+                    }
+                    if matches!(
+                        op,
+                        BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
+                    ) {
+                        let super::result::NodeType::Evaluation(ty) = &self.g.nodes[left.0].ty
+                        else {
+                            return Ok(None);
+                        };
+                        if *ty == Type::Bool && matches!(op, BinOp::Eq | BinOp::Ne) {
+                            return Ok(self
+                                .constant_boolean(left, &[], c)?
+                                .zip(self.constant_boolean(right, &[], c)?)
+                                .map(|(a, b)| if *op == BinOp::Eq { a == b } else { a != b }));
+                        }
+                        return self.constant_comparison(*op, left, right, ty, &[], c);
+                    }
+                    Ok(None)
+                }
+                ExprKind::If { .. } if p.children.len() == 3 => {
+                    match self.constant_boolean(p.children[0], &[], c)? {
+                        Some(b) => {
+                            self.constant_boolean(p.children[if b { 1 } else { 2 }], path, c)
+                        }
+                        None => {
+                            let a = self.constant_boolean(p.children[1], path, c)?;
+                            let b = self.constant_boolean(p.children[2], path, c)?;
+                            Ok(a.filter(|_| a == b))
+                        }
+                    }
+                }
+                ExprKind::Call { callee, args }
+                    if p.children.len() == args.len() + 1 && self.is_helper(*callee, c)? =>
+                {
+                    self.constant_boolean(p.children[p.children.len() - 1], path, c)
+                }
+                ExprKind::Match { .. }
+                    if p.children.len() == 2 && !has_fields(self.g, p.children[0], c)? =>
+                {
+                    self.constant_boolean(p.children[1], path, c)
+                }
+                _ => Ok(None),
+            }
+        })
+    }
+    fn constant_comparison(
+        &self,
+        op: BinOp,
+        left: NodeRef,
+        right: NodeRef,
+        ty: &Type,
+        path: &[usize],
+        c: &mut Control,
+    ) -> Result<Option<bool>, ConstructionFailure> {
+        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+            tick(c)?;
+            if let Type::Tuple(items) = ty {
+                if !matches!(op, BinOp::Eq | BinOp::Ne) {
+                    return Ok(None);
+                }
+                let mut equal = Some(true);
+                for (i, item) in items.iter().enumerate() {
+                    let mut component = path.to_vec();
+                    component.push(i);
+                    match self.constant_comparison(BinOp::Eq, left, right, item, &component, c)? {
+                        Some(false) => return Ok(Some(op == BinOp::Ne)),
+                        None => equal = None,
+                        _ => (),
+                    }
+                }
+                return Ok(equal.map(|b| if op == BinOp::Eq { b } else { !b }));
+            }
+            if !matches!(ty, Type::Z | Type::Q | Type::Fp(_)) {
+                return Ok(None);
+            }
+            let mut ring = EquationRing {
+                ty: ty.clone(),
+                symbols: vec![],
+                evaluation_images: Some(vec![]),
+                required_generators: vec![],
+            };
+            let mut compiler = Compiler {
+                inputs: self.inputs,
+                g: self.g,
+                ring: &mut ring,
+                position: self.position,
+                row: self.row,
+                case: self.case,
+                steps: vec![],
+            };
+            let a = compiler.compile(left, path, c)?;
+            let b = compiler.compile(right, path, c)?;
+            let Some((a, b)) = a.zip(b) else {
+                return Ok(None);
+            };
+            let difference = a.binary(BinOp::Sub, &b, c)?;
+            if difference.terms.iter().any(|t| !t.variables.is_empty()) {
+                return Ok(None);
+            }
+            let zero = numeric::zero(ty, c).map_err(invalid)?;
+            let constant = difference
+                .terms
+                .first()
+                .map(|t| t.coefficient.scalar())
+                .unwrap_or(&zero);
+            match numeric::binary(op, constant, &zero, c).map_err(invalid)? {
+                Scalar::Bool(b) => Ok(Some(b)),
+                _ => Err(bad("guard比較の戻り値がBoolでない")),
+            }
         })
     }
     // 値の正規化で不要になるlet/helper引数/Tuple位置も、元読取りとして収集する。
@@ -697,6 +909,10 @@ impl Compiler<'_> {
     }
 }
 fn guard(
+    inputs: &CheckedInputs,
+    position: ObjectEvaluationPosition,
+    row: Option<usize>,
+    case_index: usize,
     g: Option<&ObservedEvaluation>,
     case: &LawResidualCase,
     explicit: bool,
@@ -706,7 +922,6 @@ fn guard(
     match case.reading.application() {
         LawApplication::OutsideObject => return Ok(EquationGuard::OutsideObject),
         LawApplication::ConditionalMembership(_) => return Ok(EquationGuard::Undetermined),
-        LawApplication::Guard(None) => return Ok(EquationGuard::Undetermined),
         _ => (),
     }
     if !explicit {
@@ -723,6 +938,31 @@ fn guard(
     let Some(&child) = parts.first().and_then(|p| p.children.first()) else {
         return Err(bad("元guard子がない"));
     };
+    let mut ring = EquationRing {
+        ty: Type::Z,
+        symbols: vec![],
+        evaluation_images: Some(vec![]),
+        required_generators: vec![],
+    };
+    let mut compiler = Compiler {
+        inputs,
+        g,
+        ring: &mut ring,
+        position,
+        row,
+        case: case_index,
+        steps: vec![],
+    };
+    if let Some(b) = compiler.constant_boolean(child, &[], c)? {
+        return Ok(if b {
+            EquationGuard::AlwaysTrue
+        } else {
+            EquationGuard::AlwaysFalse
+        });
+    }
+    if case.reading.application().value().is_none() {
+        return Ok(EquationGuard::Undetermined);
+    }
     if has_fields(g, child, c)? {
         return Ok(EquationGuard::StateDependent);
     }
@@ -791,7 +1031,7 @@ fn populate(
             LawNumericShape::Equality { explicit_guard, .. }
             | LawNumericShape::Unsupported { explicit_guard, .. } => explicit_guard,
         };
-        let guard = guard(g, q, explicit, c)?;
+        let guard = guard(inputs, e.position, row, case, g, q, explicit, c)?;
         let items: Vec<_> = if q.components.is_empty() {
             vec![None]
         } else {

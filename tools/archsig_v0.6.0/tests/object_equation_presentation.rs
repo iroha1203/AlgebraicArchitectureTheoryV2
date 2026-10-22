@@ -338,7 +338,7 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
     };
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
-        "law required first(c:Part):c.quantity=0;law required second(c:Part):c.quantity*c.quantity=1;",
+        "law required first(c:Part) when true or c.quantity>0:c.quantity=0;law required second(c:Part) when c.quantity-c.quantity=0:c.quantity*c.quantity=1;",
     );
     let baseline = run(i.clone());
     for recheck in [false, true] {
@@ -851,4 +851,264 @@ fn unused_state_dependent_reference_keeps_each_reading_without_symbolizing_its_v
         }
         r.recheck(i, &mut quiet()).unwrap();
     }
+}
+
+#[test]
+fn missing_reference_completion_is_not_a_fixed_polynomial_slot() {
+    let d=fixture::D.replace("\"meaning\":\"数量。\"}","\"meaning\":\"数量。\"},{\"name\":\"peer\",\"type\":[\"Ref\",\"Pattern.Part\"],\"meaning\":\"参照。\"}");
+    for law in [
+        "law required select(c:Part):c.peer.quantity=0;",
+        "law required select(c:Part):(c.peer).quantity=0;",
+        "law required select(c:Part):let r=c.peer in r.quantity=0;",
+        "view carryRef(a:Part):Part=a;law required select(c:Part):carryRef(c.peer).quantity=0;",
+        "law required select(c:Part):(c.peer,c).0.quantity=0;",
+    ] {
+        let i = inputs_with(&d, law, &two_subjects());
+        let r = run(i.clone());
+        assert_eq!(r.status(), S::UnsupportedAlgorithm);
+        assert!(r.occurrences().len() >= 4);
+        for q in r.occurrences() {
+            assert_eq!(q.status, S::UnsupportedAlgorithm);
+            assert!(q.nu.is_none());
+            assert!(q.evaluation.is_some());
+            assert!(q.epsilon.is_some());
+            assert!(r.rings()[q.ring.unwrap()].required_generators.is_empty());
+        }
+        let values: std::collections::BTreeSet<_> = r
+            .occurrences()
+            .iter()
+            .filter_map(|q| number(&q.epsilon))
+            .collect();
+        assert_eq!(
+            values,
+            std::collections::BTreeSet::from(["\"2\"".into(), "\"3\"".into()])
+        );
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+#[test]
+fn logical_and_normalized_numeric_guard_constants_keep_required_ideals_and_support() {
+    for (prefix, expression, truth) in [
+        ("", "true or c.quantity>0", true),
+        ("", "c.quantity>0 or true", true),
+        ("", "false and c.quantity>0", false),
+        ("", "c.quantity>0 and false", false),
+        ("", "false implies c.quantity>0", true),
+        ("", "c.quantity>0 implies true", true),
+        ("", "not (false and c.quantity>0)", true),
+        ("", "let ignored=c.quantity in true", true),
+        ("", "(true,c.quantity>0).0", true),
+        ("", "if c.quantity>0 then true else true", true),
+        ("view on(a:Part):Bool=true or a.quantity>0;", "on(c)", true),
+        ("", "c.quantity-c.quantity=0", true),
+        ("", "c.quantity-c.quantity=1", false),
+        ("", "c.quantity+1>c.quantity", true),
+        ("", "c.quantity*c.quantity-c.quantity*c.quantity<=0", true),
+        (
+            "",
+            "(c.quantity,c.quantity+1)=(c.quantity,c.quantity+2)",
+            false,
+        ),
+    ] {
+        let body = format!("{prefix}law required guarded(c:Part) when {expression}:c.quantity=0;");
+        let i = inputs(&body);
+        let r = run(i.clone());
+        assert_eq!(r.status(), S::Ready, "{expression}");
+        let q = &r.occurrences()[0];
+        assert_eq!(
+            q.guard,
+            if truth { G::AlwaysTrue } else { G::AlwaysFalse },
+            "{expression}"
+        );
+        assert_eq!(
+            q.status,
+            if truth { S::Ready } else { S::NotApplicable },
+            "{expression}"
+        );
+        assert_eq!(number(&q.epsilon), Some("\"2\"".into()));
+        assert_eq!(
+            number(&q.residual),
+            Some(if truth { "\"2\"" } else { "\"0\"" }.into())
+        );
+        assert_eq!(
+            r.rings()[0].required_generators,
+            if truth { vec![0] } else { vec![] }
+        );
+        assert_eq!(r.rings()[0].symbols.len(), 1);
+        assert!(!r.rings()[0].symbols[0].readings.is_empty());
+        assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![0], "\"1\"".into())]);
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+#[test]
+fn current_guard_truth_and_distinct_slots_do_not_prove_a_global_constant() {
+    for guard in [
+        "c.quantity>0",
+        "c.quantity-c.quantity=0 and c.quantity>0",
+        "c.quantity=d.quantity",
+        "c.quantity+1=d.quantity+1",
+    ] {
+        let i = inputs_with(
+            fixture::D,
+            &format!("law required guarded(c:Part,d:Part) when {guard}:c.quantity=0;"),
+            &two_subjects(),
+        );
+        let r = run(i.clone());
+        for q in r.occurrences() {
+            let same = binding(&r, q, "c") == binding(&r, q, "d");
+            let tautology = guard.contains("d.quantity") && same;
+            assert_eq!(
+                q.guard,
+                if tautology {
+                    G::AlwaysTrue
+                } else {
+                    G::StateDependent
+                },
+                "{guard}"
+            );
+            assert_eq!(
+                q.status,
+                if tautology {
+                    S::Ready
+                } else {
+                    S::UnsupportedAlgorithm
+                }
+            );
+        }
+        let expected: Vec<_> = r
+            .occurrences()
+            .iter()
+            .enumerate()
+            .filter(|(_, q)| q.guard == G::AlwaysTrue)
+            .map(|(i, _)| i)
+            .collect();
+        assert_eq!(r.rings()[0].required_generators, expected);
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+
+#[test]
+fn missing_boolean_guard_constants_keep_each_completion_and_original_support() {
+    let d = fixture::D.replace(
+        "\"meaning\":\"数量。\"}",
+        "\"meaning\":\"数量。\"},{\"name\":\"enabled\",\"type\":\"Bool\",\"meaning\":\"選択。\"}",
+    );
+    for (guard, truth) in [("true or c.enabled", true), ("false and c.enabled", false)] {
+        let i = inputs_with(
+            &d,
+            &format!("law required guarded(c:Part) when {guard}:c.quantity=0;"),
+            fixture::A,
+        );
+        let r = run(i.clone());
+        assert_eq!(r.status(), S::Ready);
+        assert_eq!(r.occurrences().len(), 2);
+        assert_eq!(
+            r.rings()[0].required_generators,
+            if truth { vec![0, 1] } else { vec![] }
+        );
+        for q in r.occurrences() {
+            assert_eq!(q.guard, if truth { G::AlwaysTrue } else { G::AlwaysFalse });
+            assert_eq!(q.status, if truth { S::Ready } else { S::NotApplicable });
+            assert_eq!(
+                number(&q.epsilon),
+                if truth { Some("\"2\"".into()) } else { None }
+            );
+            if !truth {
+                assert!(q.operands.is_empty());
+                assert!(q.nu.is_none());
+                assert!(q.component_holds.is_none());
+            }
+            assert_eq!(
+                number(&q.residual),
+                Some(if truth { "\"2\"" } else { "\"0\"" }.into())
+            );
+            let evaluation = r.base().base().evaluations()[q.position.instance].evaluation();
+            let archsig::construction::readings::ObjectEvaluationOutcome::Evaluated(g) =
+                evaluation.outcome()
+            else {
+                panic!("original evaluation")
+            };
+            use archsig::canonical::Json;
+            fn missing_fact(j: &Json) -> bool {
+                match j {
+                    Json::Obj(o) => {
+                        (o.get("field") == Some(&Json::str("Pattern.Part.enabled"))
+                            && !o.contains_key("atom"))
+                            || o.values().any(missing_fact)
+                    }
+                    Json::Arr(items) => items.iter().any(missing_fact),
+                    _ => false,
+                }
+            }
+            let wire = g.wire();
+            let Json::Obj(object) = &wire else {
+                panic!("original graph object")
+            };
+            let Some(Json::Arr(nodes)) = object.get("nodes") else {
+                panic!("original graph nodes")
+            };
+            assert!(missing_fact(&nodes[q.evaluation.unwrap()]));
+        }
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+#[test]
+fn rational_and_prime_field_guard_normalization_uses_the_original_coefficient_ring() {
+    for (ty, value, epsilon) in [
+        (r#""Q""#, r#"["2","3"]"#, r#"["2","3"]"#),
+        (r#"["Fp","5"]"#, r#""2""#, r#""2""#),
+    ] {
+        let d = fixture::D.replace(r#""type":"Z""#, &format!("\"type\":{ty}"));
+        let map = fixture::A.replace(r#""value":"2""#, &format!("\"value\":{value}"));
+        let i = inputs_with(
+            &d,
+            "law required on(c:Part) when c.quantity-c.quantity=0:c.quantity=0;law required off(c:Part) when c.quantity-c.quantity!=0:c.quantity=0;",
+            &map,
+        );
+        let r = run(i.clone());
+        assert_eq!(r.status(), S::Ready);
+        assert_eq!(r.rings().len(), 1);
+        let find = |guard| {
+            r.occurrences()
+                .iter()
+                .enumerate()
+                .find(|(_, q)| q.guard == guard)
+                .unwrap()
+        };
+        let (on, q) = find(G::AlwaysTrue);
+        assert_eq!(q.status, S::Ready);
+        assert_eq!(number(&q.epsilon), Some(epsilon.into()));
+        assert_eq!(r.rings()[0].required_generators, [on]);
+        let (_, q) = find(G::AlwaysFalse);
+        assert_eq!(q.status, S::NotApplicable);
+        assert_eq!(number(&q.epsilon), Some(epsilon.into()));
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+
+#[test]
+fn missing_integer_guard_cancellation_proves_truth_without_inventing_an_observation() {
+    let map = fixture::A
+        .lines()
+        .filter(|l| !l.contains("\"quantity-p\""))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .replace(",\n]", "\n]");
+    let i = inputs_with(
+        fixture::D,
+        "law required cancellation(c:Part) when c.quantity-c.quantity=0:2=2;",
+        &map,
+    );
+    let r = run(i.clone());
+    let q = &r.occurrences()[0];
+    assert_eq!(q.guard, G::AlwaysTrue);
+    assert_eq!(q.status, S::Undetermined);
+    assert_eq!(q.component_holds, Some(true));
+    assert_eq!(number(&q.epsilon), Some("\"0\"".into()));
+    assert!(q.nu.as_ref().unwrap().terms.is_empty());
+    assert_eq!(r.rings()[0].required_generators, [0]);
+    assert!(r.rings()[0].evaluation_images.is_none());
+    assert!(r.rings()[0].symbols[0].value.is_none());
+    assert!(r.rings()[0].symbols[0].readings[0].fact.atom.is_none());
+    r.recheck(i, &mut quiet()).unwrap();
 }
