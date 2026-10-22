@@ -430,6 +430,49 @@ impl Environment<'_> {
             },
         ]);
         let field = format!("{entity}.owner");
+        let position = Fact {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: Some(field.clone()),
+            atom: None,
+        };
+        if let Some(actual) = self
+            .primitive_valuation
+            .as_ref()
+            .and_then(|values| values.get(&position))
+        {
+            let Scalar::Subject {
+                snapshot: actual_snapshot,
+                subject: actual_subject,
+                entity: actual_root,
+            } = actual
+            else {
+                return Err("候補ownerがRefでない".into());
+            };
+            if actual_root != root || self.subject(actual_snapshot, actual_subject)?.ty != *root {
+                return Err("候補owner型が元署名と違う".into());
+            }
+            checks.scope.assignments = true;
+            checks.scope.merge(&self.scope(
+                self.subject(actual_snapshot, actual_subject)?,
+                reading,
+                None,
+            )?);
+            checks.support.push(position);
+            checks.support.push(Fact {
+                snapshot: actual_snapshot.clone(),
+                subject: actual_subject.clone(),
+                field: None,
+                atom: None,
+            });
+            if snapshot != os {
+                checks.failure = Some((Scalar::Text(snapshot.clone()), Scalar::Text(os.clone())));
+            } else if actual != expected {
+                checks.failure = Some((actual.clone(), expected.clone()));
+            }
+            self.tick()?;
+            return Ok(());
+        }
         let Slot::Known {
             value:
                 Value::Ref {

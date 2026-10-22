@@ -91,6 +91,33 @@ impl Environment<'_> {
                     atom: None,
                 });
                 let field = self.field(&snapshot.id, &subject.id, &field_name)?;
+                let position = Fact {
+                    snapshot: snapshot.id.clone(),
+                    subject: subject.id.clone(),
+                    field: Some(field_name.clone()),
+                    atom: None,
+                };
+                if let Some(assigned) = self
+                    .primitive_valuation
+                    .as_ref()
+                    .and_then(|values| values.get(&position))
+                {
+                    let Scalar::Subject {
+                        snapshot: target_snapshot,
+                        subject: target_subject,
+                        ..
+                    } = assigned
+                    else {
+                        return Err("候補の原始owner値がRefでない".into());
+                    };
+                    result.enumeration.scope.assignments = true;
+                    result.enumeration.support.push(position);
+                    if target_snapshot == owner_snapshot && target_subject == owner_subject {
+                        result.enumeration.values.push(value);
+                    }
+                    self.tick()?;
+                    continue;
+                }
                 match &field.slot {
                     Slot::Known {
                         value:
