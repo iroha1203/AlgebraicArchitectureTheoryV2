@@ -373,7 +373,7 @@ fn missing_observed_values_do_not_become_zero_observations() {
     r.recheck(&i, &mut quiet()).unwrap();
 }
 #[test]
-fn an_unresolved_body_membership_keeps_its_source_and_never_becomes_a_zero_function() {
+fn conditional_body_membership_is_read_at_each_primitive_assignment_without_zero_filling() {
     let map=fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,"");
     let i = fixture::with_body(
         &map,
@@ -382,22 +382,37 @@ fn an_unresolved_body_membership_keeps_its_source_and_never_becomes_a_zero_funct
     let a = readings(&i);
     let selected = vec![(object(&a, "root"), instance(&a, "all", "p"), bindings("p"))];
     let r = finite_instance_law_family_valuations(&i, &a, &selected, &mut quiet()).unwrap();
-    assert!(matches!(r.state(), FiniteLawState::Undetermined { .. }));
-    assert!(!r.domain_complete());
+    assert!(r.is_complete());
+    assert!(r.domain_complete());
+    assert_eq!(r.domain().len(), 8);
+    assert_eq!(r.observed_point(), None);
+    assert_eq!(
+        r.positions()
+            .iter()
+            .map(|p| (p.subject.as_str(), p.field.as_deref()))
+            .collect::<Vec<_>>(),
+        [
+            ("p", Some("Pattern.Part.quantity")),
+            ("q", Some("Pattern.Part.owner")),
+            ("q", Some("Pattern.Part.quantity")),
+        ]
+    );
+    assert_eq!(indicators(&r, 0), ["0", "0", "0", "1", "1", "1", "1", "1"]);
+    assert_eq!(r.required_zero().unwrap(), &[0, 1, 2]);
     assert!(
         r.column_reference_domain_conditions(0)
             .unwrap()
             .iter()
-            .any(|f| f.subject == "q" && f.field.as_deref() == Some("Pattern.Part.owner"))
+            .any(|p| p.subject == "q" && p.field.as_deref() == Some("Pattern.Part.owner"))
     );
-    assert!(
-        r.columns()[0]
-            .rows()
-            .iter()
-            .any(|r| r.indicator.is_none() && r.scope.completions)
-    );
-    assert!(r.integer_ring(&mut quiet()).is_err());
-    assert!(r.required_quotient(&mut quiet()).is_err());
+    for row in r.columns()[0].rows() {
+        assert!(row.scope.assignments);
+        assert!(row.support.iter().any(|p| p.subject == "q"
+            && p.field.as_deref() == Some("Pattern.Part.owner")
+            && p.atom.is_none()));
+    }
+    assert_eq!(r.integer_ring(&mut quiet()).unwrap().dimension(), 8);
+    assert!(r.required_quotient(&mut quiet()).is_ok());
     r.recheck(&i, &mut quiet()).unwrap();
 }
 #[test]
@@ -689,3 +704,6 @@ fn all_parameter_rows_and_not_applicable_objects_share_the_same_original_instanc
     )
     .unwrap();
 }
+
+#[path = "finite_conditional_object_tests.rs"]
+mod conditional_objects;

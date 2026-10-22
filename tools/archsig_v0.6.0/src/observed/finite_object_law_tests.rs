@@ -388,7 +388,7 @@ fn a_nonfinite_field_keeps_its_original_position_and_type_without_a_total_functi
 }
 
 #[test]
-fn an_unknown_owned_membership_is_not_a_zero_or_an_empty_quantifier_domain() {
+fn finite_body_membership_is_exhausted_without_turning_missing_observation_into_zero() {
     let inputs=fixture::with_body(&fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,""),ALL);
     let a = readings(&inputs, "root");
     let r = finite_object_law_family_valuations(
@@ -399,26 +399,25 @@ fn an_unknown_owned_membership_is_not_a_zero_or_an_empty_quantifier_domain() {
         &mut quiet(),
     )
     .unwrap();
-    assert!(
-        !r.is_complete(),
-        "missing owner is not a completed zero function"
-    );
-    assert!(!r.domain_complete());
-    assert!(r.integer_ring(&mut quiet()).is_err());
-    assert!(r.integer_function(0, None, &mut quiet()).is_err());
-    assert!(r.required_quotient(&mut quiet()).is_err());
-    assert!(matches!(r.state(), FiniteLawState::Undetermined { .. }));
+    assert!(r.is_complete());
+    assert!(r.domain_complete());
+    assert_eq!(r.domain().len(), 8);
+    assert_eq!(r.observed_point(), None);
+    assert_eq!(indicators(&r, 0), ["0", "0", "0", "1", "1", "1", "1", "1"]);
+    assert_eq!(r.required_zero(), Some([0, 1, 2].as_slice()));
     assert!(
         r.reference_domain_conditions()
             .iter()
             .any(|f| f.subject == "q" && f.field.as_deref() == Some("Pattern.Part.owner"))
     );
-    assert!(
-        r.columns()[0]
-            .rows()
-            .iter()
-            .any(|row| row.scope.completions && row.indicator.is_none())
-    );
+    for row in r.columns()[0].rows() {
+        assert!(row.scope.assignments);
+        assert!(row.support.iter().any(|f| f.subject == "q"
+            && f.field.as_deref() == Some("Pattern.Part.owner")
+            && f.atom.is_none()));
+    }
+    assert_eq!(r.integer_ring(&mut quiet()).unwrap().dimension(), 8);
+    assert!(r.required_quotient(&mut quiet()).is_ok());
     r.recheck(&inputs, &mut quiet()).unwrap();
 }
 

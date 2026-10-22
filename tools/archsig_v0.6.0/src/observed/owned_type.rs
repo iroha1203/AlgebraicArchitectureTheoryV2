@@ -136,6 +136,14 @@ impl Environment<'_> {
         if let Some(object) = self.object_domain()
             && object.is_local(ty)
         {
+            // 所属条件だけが読むfieldも、同じ原始Dの依存位置へ入れる。
+            for slot in object.conditional_positions(ty, &self.control)? {
+                self.field(
+                    &slot.snapshot,
+                    &slot.subject,
+                    slot.field.as_deref().ok_or("対象所属条件のfieldがない")?,
+                )?;
+            }
             object.restrict(
                 ty,
                 &mut domain.values,
@@ -144,6 +152,7 @@ impl Environment<'_> {
                 &mut domain.scope,
                 &self.control,
                 &self.completion_values.borrow(),
+                self.primitive_valuation.as_ref(),
             )?;
             // 同じ対象域の所属を決める既知ownerを、除外された候補も含めて保持する。
             // 部分対象ではそのsubjectを選んだownerだけが根拠となる。

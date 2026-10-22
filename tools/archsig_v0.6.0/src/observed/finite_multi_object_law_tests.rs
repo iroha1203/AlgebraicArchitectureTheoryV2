@@ -273,7 +273,7 @@ fn nonfinite_position_is_not_a_completed_shared_ring() {
     r.recheck(&i, &mut quiet()).unwrap();
 }
 #[test]
-fn unknown_membership_retains_per_column_conditions_and_blocks_an_unconditional_ring() {
+fn body_membership_is_exhausted_while_unresolved_partial_objects_keep_their_conditions() {
     let map=fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,"");
     let i = fixture::with_body(&map, ALL);
     let a = readings(&i, "root");
@@ -283,17 +283,29 @@ fn unknown_membership_retains_per_column_conditions_and_blocks_an_unconditional_
     ] {
         let selected = choices(&a, &pairs);
         let r = finite_multi_object_law_family_valuations(&i, &a, &selected, &mut quiet()).unwrap();
-        assert!(matches!(r.state(), FiniteLawState::Undetermined { .. }));
-        assert!(!r.domain_complete());
         assert!(
             r.column_reference_domain_conditions(1)
                 .unwrap()
                 .iter()
                 .any(|f| f.subject == "q" && f.field.as_deref() == Some("Pattern.Part.owner"))
         );
-        assert!(r.integer_ring(&mut quiet()).is_err());
-        assert!(r.integer_function(0, None, &mut quiet()).is_err());
-        assert!(r.required_quotient(&mut quiet()).is_err());
+        if pairs[1].0 == "root" {
+            assert!(r.is_complete());
+            assert!(r.domain_complete());
+            assert_eq!(r.domain().len(), 8);
+            assert_eq!(r.observed_point(), None);
+            assert_eq!(indicators(&r, 0), [0, 0, 0, 0, 1, 1, 1, 1]);
+            assert_eq!(indicators(&r, 1), [0, 0, 0, 1, 1, 1, 1, 1]);
+            assert_eq!(r.required_zero(), Some([0, 1, 2].as_slice()));
+            assert_eq!(r.integer_ring(&mut quiet()).unwrap().dimension(), 8);
+            assert!(r.required_quotient(&mut quiet()).is_ok());
+        } else {
+            assert!(matches!(r.state(), FiniteLawState::Undetermined { .. }));
+            assert!(!r.domain_complete());
+            assert!(r.integer_ring(&mut quiet()).is_err());
+            assert!(r.integer_function(0, None, &mut quiet()).is_err());
+            assert!(r.required_quotient(&mut quiet()).is_err());
+        }
         r.recheck_on_objects(
             &i,
             &a,
