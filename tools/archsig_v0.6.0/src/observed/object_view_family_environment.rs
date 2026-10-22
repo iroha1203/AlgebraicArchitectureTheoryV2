@@ -1,5 +1,23 @@
 //! 有限view族の元parameter位置とnative行から、値producerを照合する。
 use super::*;
+use crate::observed::finite::{Enumeration, FiniteDomain};
+
+pub(in crate::observed) struct ParameterDomainReading {
+    pub values: Option<Vec<Scalar>>,
+    pub missing: Vec<Fact>,
+    pub support: Vec<Fact>,
+    pub scope: Scope,
+}
+fn record_domain_reads(reads: &RefCell<FiniteDomain>, enumeration: &Enumeration, missing: &[Fact]) {
+    let mut reads = reads.borrow_mut();
+    reads.enumeration.scope.merge(&enumeration.scope);
+    reads
+        .enumeration
+        .support
+        .extend(enumeration.support.iter().cloned());
+    reads.missing.extend(missing.iter().cloned());
+}
+
 impl Environment<'_> {
     pub(in crate::observed) fn object_view_binding(
         &self,
@@ -109,17 +127,40 @@ impl Environment<'_> {
         parameter: &crate::law::model::Param,
         instance: &crate::construction::readings::ObjectInstance,
     ) -> Result<Option<(super::super::finite::Enumeration, Vec<Fact>)>, ValidationFailure> {
+        let domain = self.object_parameter_domain(parameter, instance)?;
+        Ok(domain.values.map(|values| {
+            (
+                Enumeration {
+                    values,
+                    scope: domain.scope,
+                    support: domain.support,
+                },
+                domain.missing,
+            )
+        }))
+    }
+    /// 列挙できる値域と、型を読む過程の依存情報を別々に保持する。
+    pub(in crate::observed) fn object_parameter_domain(
+        &self,
+        parameter: &crate::law::model::Param,
+        instance: &crate::construction::readings::ObjectInstance,
+    ) -> Result<ParameterDomainReading, ValidationFailure> {
         let declaration = self
             .inputs
             .law()
             .declarations
             .get(&instance.declaration().name)
             .ok_or("有限view域の元宣言がない")?;
+        let reads = RefCell::new(FiniteDomain::default());
         let enumeration = super::super::finite::values_if_finite_with_owned(
             &parameter.ty,
             self.inputs.law(),
             &self.control,
-            &mut |entity| self.reference_roster(entity, &mut |_| {}),
+            &mut |entity| {
+                let domain = self.reference_roster(entity, &mut |_| {})?;
+                record_domain_reads(&reads, &domain, &[]);
+                Ok(domain)
+            },
             &mut |entity, owner| {
                 let binding = instance
                     .bindings()
@@ -135,6 +176,7 @@ impl Environment<'_> {
                 };
                 let members =
                     self.owned_members(entity, &owner, None, &declaration.reading, &mut |_, _| {})?;
+                record_domain_reads(&reads, &members.enumeration, &members.missing);
                 Ok(super::super::finite::FiniteDomain {
                     enumeration: members.enumeration,
                     missing: members.missing,
@@ -142,6 +184,21 @@ impl Environment<'_> {
             },
             &mut |_| {},
         )?;
-        Ok(enumeration.map(|domain| (domain.enumeration, domain.missing)))
+        // 完成した空型の証明など、列挙器が選んだ依存はそのまま使う。
+        // 非有限で値列がない場合も、既に読んだ所属・参照の情報は失わない。
+        let (values, mut domain) = match enumeration {
+            Some(mut domain) => (Some(std::mem::take(&mut domain.enumeration.values)), domain),
+            None => (None, reads.into_inner()),
+        };
+        domain.enumeration.support.sort();
+        domain.enumeration.support.dedup();
+        domain.missing.sort();
+        domain.missing.dedup();
+        Ok(ParameterDomainReading {
+            values,
+            missing: domain.missing,
+            support: domain.enumeration.support,
+            scope: domain.enumeration.scope,
+        })
     }
 }

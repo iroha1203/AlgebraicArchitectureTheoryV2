@@ -140,3 +140,6 @@ pub(in crate::observed) fn finite_object_law_family_valuations(
 #[cfg(test)]
 #[path = "finite_object_law_tests.rs"]
 mod tests;
+
+#[path = "finite_object_law_instances.rs"]
+pub(in crate::observed) mod instances;
