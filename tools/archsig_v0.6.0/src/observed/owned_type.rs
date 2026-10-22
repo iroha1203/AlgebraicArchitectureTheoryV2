@@ -109,8 +109,17 @@ impl Environment<'_> {
             owners: vec![],
             type_span: spec.type_span.ok_or("元Owned型位置がない")?,
         };
-        // 明示されたownerは固定参照。公開環境の別rootの族へ交差しない。
-        if self.architecture_ref().is_none() {
+        // 明示された外部ownerの族は選択対象へ交差しない。
+        // 同じrootを添字に持つ直接量化だけを、その対象の域へ制限する。
+        let external_owner = self.object_domain().is_some_and(|object| {
+            let root = object.identity.root();
+            spec.owners.iter().any(|leaf| {
+                matches!(variables.get(&leaf.name).and_then(|v| v.known_value.as_ref()),
+                    Some(Scalar::Subject { snapshot, subject, .. })
+                    if snapshot != &root.snapshot || subject != &root.subject)
+            })
+        });
+        if self.architecture_ref().is_none() && !external_owner {
             self.restrict_object_domain(&spec.domain_type, &mut domain)?;
         }
         if !domain.missing.is_empty() {

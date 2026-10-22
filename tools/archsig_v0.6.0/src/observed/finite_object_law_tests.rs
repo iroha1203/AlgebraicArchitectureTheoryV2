@@ -587,3 +587,126 @@ fn unread_membership_missing_does_not_block_a_constant_law_on_a_known_root() {
     );
     r.recheck(&inputs, &mut quiet()).unwrap();
 }
+
+fn owner_choice(owner: &str) -> Vec<(String, Vec<(String, Scalar)>)> {
+    vec![(
+        "Selected.external".into(),
+        vec![
+            ("c".into(), reference("p")),
+            (
+                "ext".into(),
+                Scalar::Subject {
+                    snapshot: "v".into(),
+                    subject: owner.into(),
+                    entity: "Pattern.Root".into(),
+                },
+            ),
+        ],
+    )]
+}
+fn observed_indicator(r: &FiniteLawFamilyValuations) -> String {
+    indicators(r, 0)[r.observed_point().unwrap()].clone()
+}
+#[test]
+fn explicit_external_owner_quantification_keeps_its_family() {
+    let inputs = input("law required external(c:Part,ext:Root):forall x:Part[ext] . x.quantity=0;");
+    let a = readings(&inputs, "root");
+    let choice = owner_choice("r2");
+    let original = inputs.sources().clone();
+    let global = finite_law_family_valuations(&inputs, &choice, &mut quiet()).unwrap();
+    let local =
+        finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choice, &mut quiet())
+            .unwrap();
+    // owner位置も原始候補の軸。観測したr.owner=r2とr.quantity=1で原式は偽。
+    assert_eq!(observed_indicator(&global), "1");
+    assert_eq!(observed_indicator(&local), "1");
+    assert!(
+        local
+            .positions()
+            .iter()
+            .any(|p| p.subject == "r" && p.field.as_deref() == Some("Pattern.Part.quantity"))
+    );
+    assert_eq!(local.positions(), global.positions());
+    assert_eq!(local.domain(), global.domain());
+    assert_eq!(indicators(&local, 0), indicators(&global, 0));
+    assert_eq!(local.columns()[0].bindings(), choice[0].1);
+    local
+        .recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+        .unwrap();
+    assert_eq!(inputs.sources(), &original);
+}
+#[test]
+fn explicit_same_root_owner_quantification_remains_local() {
+    let inputs = input("law required external(c:Part,ext:Root):forall x:Part[ext] . x.quantity=0;");
+    let a = readings(&inputs, "root");
+    let choice = owner_choice("root");
+    let global = finite_law_family_valuations(&inputs, &choice, &mut quiet()).unwrap();
+    let local =
+        finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choice, &mut quiet())
+            .unwrap();
+    // root族のq.quantity=1でglobalは偽、部分対象pではp.quantity=0で真。
+    assert_eq!(observed_indicator(&global), "1");
+    assert_eq!(observed_indicator(&local), "0");
+    assert!(
+        local
+            .positions()
+            .iter()
+            .any(|p| p.subject == "p" && p.field.as_deref() == Some("Pattern.Part.quantity"))
+    );
+    assert!(
+        !local
+            .positions()
+            .iter()
+            .any(|p| p.subject == "q" && p.field.as_deref() == Some("Pattern.Part.quantity"))
+    );
+    assert!(
+        !local
+            .positions()
+            .iter()
+            .any(|p| p.subject == "r" && p.field.as_deref() == Some("Pattern.Part.quantity"))
+    );
+    local
+        .recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+        .unwrap();
+}
+
+#[test]
+fn missing_external_owner_keeps_finite_candidates_without_an_observed_point() {
+    let body = "law required external(c:Part,ext:Root):forall x:Part[ext] . x.quantity=0;";
+    let missing = fixture::MAP.replace(r#""subjects":["#, r#""subjects":[{"id":"r","type":"Pattern.Part","origin":"model"},"#)
+        .replace(r#""atoms":["#, r#""atoms":[{"id":"xr","subject":"r","field":"Pattern.Part.quantity","value":"1","origin":"model"},"#);
+    let inputs = fixture::with_body(&missing, body);
+    let a = readings(&inputs, "root");
+    let local = finite_object_law_family_valuations(
+        &inputs,
+        &a,
+        index(&a, "p"),
+        &owner_choice("r2"),
+        &mut quiet(),
+    )
+    .unwrap();
+    let global = finite_law_family_valuations(&inputs, &owner_choice("r2"), &mut quiet()).unwrap();
+    // 三subjectのowner二候補とquantity二候補で64点。未観測ownerは観測点へ埋めない。
+    assert!(local.is_complete());
+    assert!(local.domain_complete());
+    assert_eq!(local.domain().len(), 64);
+    assert_eq!(local.observed_point(), None);
+    assert!(
+        local
+            .positions()
+            .iter()
+            .any(|p| p.subject == "r" && p.field.as_deref() == Some("Pattern.Part.owner"))
+    );
+    assert!(
+        local
+            .positions()
+            .iter()
+            .any(|p| p.subject == "r" && p.field.as_deref() == Some("Pattern.Part.quantity"))
+    );
+    assert_eq!(local.positions(), global.positions());
+    assert_eq!(local.domain(), global.domain());
+    assert_eq!(indicators(&local, 0), indicators(&global, 0));
+    local
+        .recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+        .unwrap();
+}
