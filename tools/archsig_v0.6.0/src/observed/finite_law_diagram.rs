@@ -14,7 +14,14 @@ use super::{
     input::CheckedInputs,
     result::*,
 };
-use crate::{archmap::Slot, canonical::Json, types::Type};
+use crate::{
+    archmap::Slot,
+    canonical::Json,
+    issue::Location,
+    law::{ast::Role, model::Signature},
+    result::location_wire,
+    types::Type,
+};
 use std::sync::Arc;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
@@ -24,9 +31,42 @@ fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
 fn refs(values: &[NodeRef]) -> Json {
     Json::Arr(values.iter().map(|r| r.wire()).collect())
 }
+fn binding_values(bindings: &[Binding]) -> Json {
+    Json::Arr(
+        bindings
+            .iter()
+            .map(|b| Json::obj([("name", Json::str(&b.name)), ("value", b.value.wire())]))
+            .collect(),
+    )
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Original {
+    pub column: usize,
+    pub instance: usize,
+    pub bindings: Vec<Binding>,
+    pub body: NodeRef,
+    pub guard: Option<NodeRef>,
+    pub row: NodeRef,
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
     Scalar(Scalar),
+    Source {
+        column: usize,
+        expression: usize,
+        location: Location,
+        bindings: Vec<Binding>,
+    },
+    LawInstance {
+        column: usize,
+        original: usize,
+        name: String,
+        role: Role,
+        occurrence: Location,
+        bindings: Vec<Binding>,
+        guard: Option<NodeRef>,
+        body: NodeRef,
+    },
     Domain {
         ty: Type,
         elements: Vec<NodeRef>,
@@ -54,6 +94,8 @@ impl Part {
     fn ty(&self) -> NodeType {
         match self {
             Self::Scalar(v) => NodeType::Value(v.ty()),
+            Self::Source { .. } => NodeType::Expression(Type::Bool),
+            Self::LawInstance { .. } => NodeType::LawInstance,
             Self::Domain { .. } => NodeType::Domain,
             Self::IntegerRing | Self::FunctionRing { .. } => NodeType::Construction(T::Ring),
             Self::Function { .. } => NodeType::Construction(T::FiniteFunction),
@@ -64,6 +106,18 @@ impl Part {
     fn arguments(&self) -> Vec<NodeRef> {
         match self {
             Self::Scalar(_) | Self::IntegerRing => vec![],
+            Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
+            Self::LawInstance {
+                bindings,
+                guard,
+                body,
+                ..
+            } => bindings
+                .iter()
+                .map(|b| b.value)
+                .chain(guard.iter().copied())
+                .chain(std::iter::once(*body))
+                .collect(),
             Self::Domain { elements, .. } => elements.clone(),
             Self::FunctionRing { domain } => vec![*domain],
             Self::Function { ring, values }
@@ -87,6 +141,8 @@ impl Part {
     fn construction(&self) -> &'static str {
         match self {
             Self::Scalar(_) => "binding",
+            Self::Source { .. } => "expression",
+            Self::LawInstance { .. } => "law_instance",
             Self::Domain { .. } => "domain",
             Self::IntegerRing | Self::FunctionRing { .. } => "ring",
             Self::Function { .. } => "finite_function",
@@ -97,6 +153,41 @@ impl Part {
     fn wire(&self) -> Json {
         match self {
             Self::Scalar(v) => v.wire(),
+            Self::Source {
+                location, bindings, ..
+            } => Json::obj([
+                ("kind", Json::str("source")),
+                ("location", location_wire(location)),
+                ("parameters", Json::Arr(vec![])),
+                ("bindings", binding_values(bindings)),
+            ]),
+            Self::LawInstance {
+                name,
+                role,
+                occurrence,
+                bindings,
+                guard,
+                body,
+                ..
+            } => {
+                let mut value = Json::obj([
+                    ("name", Json::str(name)),
+                    (
+                        "role",
+                        Json::str(match role {
+                            Role::Required => "required",
+                            Role::Optional => "optional",
+                        }),
+                    ),
+                    ("occurrence", location_wire(occurrence)),
+                    ("bindings", binding_values(bindings)),
+                    ("body", body.wire()),
+                ]);
+                if let (Some(guard), Json::Obj(fields)) = (guard, &mut value) {
+                    fields.insert("guard".into(), guard.wire());
+                }
+                value
+            }
             Self::Domain { ty, elements } => Json::obj([
                 ("kind", Json::str("finite")),
                 ("type", ty.wire()),
@@ -139,6 +230,7 @@ impl Part {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
+    pub originals: Vec<Original>,
     pub points: Vec<usize>,
     pub domain: NodeRef,
     pub ring: NodeRef,
@@ -322,6 +414,113 @@ fn canonical_value(value: &Scalar, c: &mut Control) -> Result<Scalar, Validation
     visit(&mut result, c)?;
     Ok(result)
 }
+fn original_rows(
+    f: &AutomaticLawValuations,
+    inputs: &CheckedInputs,
+    columns: &[usize],
+    parts: &mut Vec<Part>,
+    base: usize,
+    c: &mut Control,
+) -> Result<Vec<Original>, ValidationFailure> {
+    let mut originals = Vec::new();
+    for &column in columns {
+        tick(c)?;
+        let source = f.columns().get(column).ok_or("有限Lawの元columnがない")?;
+        let instance = source
+            .source_instance()
+            .ok_or("有限Lawの元instanceがない")?;
+        let declaration = source.declaration();
+        let Signature::Law {
+            role,
+            params,
+            guard,
+            body,
+        } = &declaration.signature
+        else {
+            return Err("有限Lawの元宣言がLawでない".into());
+        };
+        if source.bindings().len() != params.len() {
+            return Err("有限Lawの全parameter束縛が揃わない".into());
+        }
+        let mut bindings = Vec::new();
+        for parameter in params {
+            tick(c)?;
+            let mut found = source
+                .bindings()
+                .iter()
+                .filter(|(name, _)| name == &parameter.name);
+            let (_, value) = found.next().ok_or("有限Lawの元parameter束縛がない")?;
+            let ty = parameter
+                .ty
+                .erase_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
+                    c,
+                    Checkpoint::FiniteLawFunction,
+                )
+                .map_err(|e| match e {
+                    super::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+                    super::control::CheckFailure::Input(_) => {
+                        ValidationFailure::Internal("有限Lawのparameterの原始型がない".into())
+                    }
+                })?;
+            if found.next().is_some() || value.ty() != ty {
+                return Err("有限Lawの元parameterが重複または型違い".into());
+            }
+            let value = canonical_value(value, c)?;
+            let reference = push(parts, base, Part::Scalar(value))?;
+            bindings.push(Binding {
+                name: parameter.name.clone(),
+                ty,
+                value: reference,
+            });
+        }
+        let mut expression = |id: usize| -> Result<NodeRef, ValidationFailure> {
+            tick(c)?;
+            if inputs.law().expr_type(id) != Some(&Type::Bool) {
+                return Err("有限Lawの元body/guardがBoolでない".into());
+            }
+            let ast = inputs.law().exprs.get(id).ok_or("有限Lawの元式がない")?;
+            push(
+                parts,
+                base,
+                Part::Source {
+                    column,
+                    expression: id,
+                    location: Location::Law { span: ast.span },
+                    bindings: bindings.clone(),
+                },
+            )
+        };
+        // 全bodyを指し、let/match内の自由変数を持つ部分式へ置き換えない。
+        let body = expression(*body)?;
+        let guard = guard.map(&mut expression).transpose()?;
+        let row = push(
+            parts,
+            base,
+            Part::LawInstance {
+                column,
+                original: instance,
+                name: declaration.name.clone(),
+                role: *role,
+                occurrence: Location::Law {
+                    span: declaration.span,
+                },
+                bindings: bindings.clone(),
+                guard,
+                body,
+            },
+        )?;
+        originals.push(Original {
+            column,
+            instance,
+            bindings,
+            body,
+            guard,
+            row,
+        });
+    }
+    tick(c)?;
+    Ok(originals)
+}
 fn plan(
     f: &AutomaticLawValuations,
     inputs: &CheckedInputs,
@@ -457,10 +656,12 @@ fn plan(
             required: true,
         },
     )?;
+    let originals = original_rows(f, inputs, p.columns(), &mut parts, base, c)?;
     tick(c)?;
     Ok((
         parts,
         Diagram {
+            originals,
             points,
             domain,
             ring,

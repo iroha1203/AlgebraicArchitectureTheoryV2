@@ -1005,3 +1005,292 @@ fn nested_primitive_containers_canonicalize_sets_and_maps_but_preserve_sequences
         }
     }
 }
+
+#[test]
+fn full_parameter_rows_keep_original_roles_sources_and_all_four_scalar_assignments() {
+    let body = "law required grid(c:Part,n:Fp(2),b:Bool) when b:let x=c.quantity in x=n;";
+    let e = example(false, body);
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.originals.len(), 4);
+    let mut assignments = std::collections::BTreeSet::new();
+    for original in &d.originals {
+        assert_eq!(
+            original
+                .bindings
+                .iter()
+                .map(|b| b.name.as_str())
+                .collect::<Vec<_>>(),
+            ["c", "n", "b"]
+        );
+        assert!(
+            matches!(g.scalar(original.bindings[0].value).unwrap(), Scalar::Subject { snapshot, subject, entity } if snapshot=="v" && subject=="p" && entity=="Finite.Part")
+        );
+        let Scalar::Fp { value: n, .. } = g.scalar(original.bindings[1].value).unwrap() else {
+            panic!("n")
+        };
+        let Scalar::Bool(b) = g.scalar(original.bindings[2].value).unwrap() else {
+            panic!("b")
+        };
+        assignments.insert((n.to_string(), *b));
+        let Part::LawInstance {
+            column,
+            original: instance,
+            name,
+            role,
+            bindings,
+            guard,
+            body,
+            ..
+        } = data(&g, original.row).part()
+        else {
+            panic!("row")
+        };
+        assert_eq!(*column, original.column);
+        assert_eq!(*instance, original.instance);
+        assert_eq!(name, "Chosen.grid");
+        assert_eq!(*role, Role::Required);
+        assert_eq!(bindings, &original.bindings);
+        assert_eq!(*body, original.body);
+        assert_eq!(*guard, original.guard);
+        assert!(guard.is_some());
+        for r in [original.body, original.guard.unwrap()] {
+            assert_eq!(g.get(r).unwrap().ty, NodeType::Expression(Type::Bool));
+            assert_eq!(property(&g, r, "parameters"), Json::Arr(vec![]));
+            assert_eq!(
+                property(&g, r, "bindings"),
+                property(&g, original.row, "bindings")
+            );
+            assert!(original.bindings.iter().all(|b| b.value.0 < r.0));
+        }
+        assert!(original.body.0 < original.row.0 && original.guard.unwrap().0 < original.row.0);
+    }
+    assert_eq!(
+        assignments,
+        [
+            ("0".into(), false),
+            ("0".into(), true),
+            ("1".into(), false),
+            ("1".into(), true)
+        ]
+        .into_iter()
+        .collect()
+    );
+    // 元のArchitectureには未束縛のn,bが残り、有限rowで置き換えない。
+    let origin = &data(&g, d.ring).source.architecture;
+    let instance = &origin.readings().instances()[d.originals[0].instance];
+    assert_eq!(
+        instance
+            .parameters()
+            .iter()
+            .map(|p| p.name.as_str())
+            .collect::<Vec<_>>(),
+        ["n", "b"]
+    );
+    assert!(
+        d.originals
+            .iter()
+            .all(|r| r.instance == d.originals[0].instance)
+    );
+    assert_eq!(
+        d.originals
+            .iter()
+            .map(|r| r.column)
+            .collect::<std::collections::BTreeSet<_>>()
+            .len(),
+        4
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn source_locations_keep_whole_let_match_and_guard_occurrences() {
+    for source_body in ["let x=c.quantity in x=0", "match c.quantity{x=>x=0;}"] {
+        let text = format!("law optional lexical(c:Part) when c.quantity=1:{source_body};");
+        let e = example(false, &text);
+        let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
+        let mut g = graph(&e);
+        let a = architecture(&g, "a");
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+            .unwrap()
+            .unwrap();
+        assert_eq!(d.originals.len(), 1);
+        let row = &d.originals[0];
+        let start = raw.find(source_body).unwrap();
+        assert_eq!(
+            property(&g, row.body, "location"),
+            location_wire(&Location::Law {
+                span: (start, start + source_body.len())
+            })
+        );
+        let guard_start = raw.find("c.quantity=1").unwrap();
+        assert_eq!(
+            property(&g, row.guard.unwrap(), "location"),
+            location_wire(&Location::Law {
+                span: (guard_start, guard_start + "c.quantity=1".len())
+            })
+        );
+        assert_eq!(property(&g, row.row, "role"), Json::str("optional"));
+        assert_eq!(property(&g, row.row, "body"), row.body.wire());
+        assert_eq!(property(&g, row.row, "guard"), row.guard.unwrap().wire());
+        let declaration_start = raw.find("law optional lexical").unwrap();
+        assert_eq!(
+            property(&g, row.row, "occurrence"),
+            location_wire(&Location::Law {
+                span: (declaration_start, declaration_start + text.len())
+            })
+        );
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}
+
+#[test]
+fn original_source_rows_survive_missing_observation_and_preserve_unconditional_omission() {
+    let e = example(true, BODY);
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.originals.len(), 2);
+    assert!(d.evaluation.is_none());
+    assert!(d.epsilon.iter().all(Option::is_none));
+    let mut roles = vec![];
+    for row in &d.originals {
+        assert!(row.guard.is_none());
+        assert!(!matches!(wire(&g, row.row),Json::Obj(ref o) if o.contains_key("guard")));
+        assert_eq!(property(&g, row.body, "kind"), Json::str("source"));
+        assert!(
+            matches!(g.scalar(row.bindings[0].value).unwrap(), Scalar::Subject { subject, .. } if subject=="q")
+        );
+        roles.push((property(&g, row.row, "name"), property(&g, row.row, "role")));
+    }
+    assert_eq!(
+        roles,
+        vec![
+            (Json::str("Chosen.one"), Json::str("optional")),
+            (Json::str("Chosen.zero"), Json::str("required"))
+        ]
+    );
+    let Part::Domain { elements, .. } = data(&g, d.domain).part() else {
+        panic!("D")
+    };
+    assert_eq!(elements.len(), 2);
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn full_law_rows_reject_original_column_bindings_role_expression_and_output_tampering() {
+    let e = example(
+        false,
+        "law required grid(c:Part,n:Fp(2),b:Bool) when b:c.quantity=n;",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    let source = data(&g, d.ring).source.clone();
+    let first = &d.originals[0];
+    for mode in 0..10 {
+        let mut changed = (*source).clone();
+        match mode {
+            0 => changed.outputs.originals.reverse(),
+            1 => {
+                if let Part::Source { column, .. } = &mut changed.parts[first.body.0 - source.base]
+                {
+                    *column = usize::MAX;
+                }
+            }
+            2 => {
+                if let Part::Source { expression, .. } =
+                    &mut changed.parts[first.body.0 - source.base]
+                {
+                    *expression = usize::MAX;
+                }
+            }
+            3 => {
+                if let Part::Source { location, .. } =
+                    &mut changed.parts[first.body.0 - source.base]
+                {
+                    *location = Location::Law { span: (0, 1) };
+                }
+            }
+            4 => {
+                if let Part::Source { bindings, .. } =
+                    &mut changed.parts[first.body.0 - source.base]
+                {
+                    bindings.swap(0, 1);
+                }
+            }
+            5 => {
+                if let Part::LawInstance { role, .. } =
+                    &mut changed.parts[first.row.0 - source.base]
+                {
+                    *role = Role::Optional;
+                }
+            }
+            6 => {
+                if let Part::LawInstance { name, .. } =
+                    &mut changed.parts[first.row.0 - source.base]
+                {
+                    *name = "Chosen.other".into();
+                }
+            }
+            7 => {
+                if let Part::LawInstance { body, guard, .. } =
+                    &mut changed.parts[first.row.0 - source.base]
+                {
+                    *body = guard.unwrap();
+                }
+            }
+            9 => {
+                if let Part::LawInstance { original, .. } =
+                    &mut changed.parts[first.row.0 - source.base]
+                {
+                    *original = usize::MAX;
+                }
+            }
+            _ => {
+                if let Part::Scalar(Scalar::Fp { value, .. }) =
+                    &mut changed.parts[first.bindings[1].value.0 - source.base]
+                {
+                    *value = if *value == 0.into() {
+                        1.into()
+                    } else {
+                        0.into()
+                    };
+                }
+            }
+        }
+        assert!(
+            changed
+                .recheck(e.prepared.inputs(), &source.architecture, 0, &mut quiet())
+                .is_err(),
+            "mode {mode}"
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn empty_law_family_keeps_no_fabricated_original_source_rows() {
+    let e = example(false, "");
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert!(d.originals.is_empty());
+    assert!(
+        !data(&g, d.ring)
+            .source
+            .parts
+            .iter()
+            .any(|p| matches!(p, Part::Source { .. } | Part::LawInstance { .. }))
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
