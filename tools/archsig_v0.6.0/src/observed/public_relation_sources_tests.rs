@@ -545,6 +545,94 @@ fn an_independent_nonfinite_domain_does_not_hide_a_known_path_construction_failu
     );
 }
 
+fn partial_domain_keeps_known_failure(outside: bool, body: &str, construction: &str) {
+    let snapshot = if outside { "v" } else { "w" };
+    let one = format!("one=evaluate(Reservations.route,e=@{snapshot}/e)");
+    let two = format!("two=evaluate(Reservations.route,e=@{snapshot}/k)");
+    let result = evaluate_observed_bytes(
+        relation_fixture::partial_domain_input(outside, body),
+        &[
+            &one,
+            &two,
+            "compared=compare($one.value,to=$two.value,kind=relation)",
+        ],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(result.answers[0].status, Decision::Established);
+    assert_eq!(result.answers[1].status, Decision::Established);
+    let answer = &result.answers[2];
+    assert_eq!(answer.status, Decision::Refuted, "{:?}", result.issues);
+    assert!(!answer.outputs.contains_key("comparison"));
+    assert!(!answer.evidence.is_empty());
+    assert!(answer.reasons.iter().any(|reason| matches!(reason.kind,
+        ReasonKind::ConditionFailed { construction: actual, .. } if actual == construction)));
+    assert!(
+        result.issues.iter().all(|reason| matches!(
+            reason.kind,
+            ReasonKind::ConditionFailed { .. } | ReasonKind::Missing
+        )),
+        "{:?}",
+        result.issues
+    );
+    if !outside {
+        assert!(
+            answer.reasons.iter().any(|reason| reason
+                .missing
+                .iter()
+                .any(|fact| fact.snapshot == "v"
+                    && fact.subject == "e"
+                    && fact.field.as_deref() == Some("Reservations.Reserve.owner")))
+        );
+    }
+    let (index, _) = result.nodes.iter().enumerate().find(|(_, node)| matches!(
+        &node.payload, Some(Payload::Construction(value)) if matches!(
+            &value.data, D::Comparison(Part::RelationSource(data)) if matches!(
+                &data.kind, relation_sources::Kind::Domain { finite: false, members, .. } if !members.is_empty())))).unwrap();
+    let Payload::Construction(value) = result.nodes[index].payload.as_ref().unwrap() else {
+        panic!()
+    };
+    let Witness::Compare(witness) = &value.witness else {
+        panic!()
+    };
+    let D::Comparison(part) = &value.data else {
+        panic!()
+    };
+    assert!(part.wire(witness).canonical().contains("\"kind\":\"type\""));
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let mut forged = result.nodes.clone();
+    let Some(Payload::Construction(value)) = &mut forged[index].payload else {
+        panic!()
+    };
+    let D::Comparison(Part::RelationSource(data)) = &mut value.data else {
+        panic!()
+    };
+    let relation_sources::Kind::Domain { finite, .. } = &mut data.kind else {
+        panic!()
+    };
+    *finite = true;
+    assert!(rebuild_for_origin_and_support_recheck(&result, &forged).is_err());
+}
+
+#[test]
+fn a_finite_prefix_keeps_its_refutation_when_other_prefixes_have_nonfinite_domains() {
+    partial_domain_keeps_known_failure(true, "path(e)=identity(source(path(e)))", "comparison");
+}
+
+#[test]
+fn a_complete_snapshot_keeps_its_refutation_when_another_owned_domain_is_missing() {
+    partial_domain_keeps_known_failure(false, "path(e)=identity(source(path(e)))", "comparison");
+}
+
+#[test]
+fn a_complete_snapshot_keeps_its_path_failure_when_another_owned_domain_is_missing() {
+    partial_domain_keeps_known_failure(
+        false,
+        "then(path(e),path(e))=then(path(e),path(e))",
+        "evaluation",
+    );
+}
+
 #[test]
 fn actual_endpoint_and_reading_mismatches_are_comparison_conditions() {
     let endpoint = evaluate_observed_bytes(

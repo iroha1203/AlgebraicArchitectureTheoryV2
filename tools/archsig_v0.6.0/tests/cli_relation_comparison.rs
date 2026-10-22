@@ -8,12 +8,72 @@ use archsig::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};
 fn files(name: &str, script: &str, missing: bool) -> PathBuf {
+    input_files(name, fixture::input(script, missing))
+}
+fn input_files(name: &str, input: archsig::observed::input::InputSources) -> PathBuf {
     let dir = workdir(name);
-    let input = fixture::input(script, missing);
     std::fs::write(dir.join("d.json"), input.definitions()[0].bytes()).unwrap();
     std::fs::write(dir.join("l.law"), input.law().bytes()).unwrap();
     std::fs::write(dir.join("a.json"), input.archmap().bytes()).unwrap();
     dir
+}
+
+fn partial_domain_case(outside: bool) {
+    let dir = input_files(
+        if outside {
+            "relation-prefix-nonfinite"
+        } else {
+            "relation-prefix-missing"
+        },
+        fixture::partial_domain_input(outside, "path(e)=identity(source(path(e)))"),
+    );
+    let snapshot = if outside { "v" } else { "w" };
+    let one = format!("one=evaluate(Reservations.route,e=@{snapshot}/e)");
+    let two = format!("two=evaluate(Reservations.route,e=@{snapshot}/k)");
+    let run = asks(
+        &dir,
+        &[
+            &one,
+            &two,
+            "compared=compare($one.value,to=$two.value,kind=relation)",
+        ],
+    );
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = saved(&dir, &run, "complete", 1);
+    assert_eq!(s(get(answer(&result, "one"), "status")), "established");
+    assert_eq!(s(get(answer(&result, "two"), "status")), "established");
+    let compared = answer(&result, "compared");
+    assert_eq!(s(get(compared, "status")), "refuted");
+    assert!(!has(get(compared, "outputs"), "comparison"));
+    assert!(!arr(get(compared, "evidence")).is_empty());
+    assert!(
+        arr(get(compared, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "condition_failed")
+    );
+    assert!(arr(get(&result, "issues")).iter().all(|r| matches!(
+        s(get(r, "code")),
+        "condition_failed" | "missing_observation"
+    )));
+    let claim = node(&result, get(compared, "claim"));
+    assert_eq!(s(get(get(claim, "value"), "predicate")), "constructible");
+    if !outside {
+        assert!(
+            arr(get(compared, "reasons"))
+                .iter()
+                .any(|r| s(get(r, "code")) == "missing_observation")
+        );
+    }
+}
+
+#[test]
+fn a_known_relation_refutation_survives_nonfinite_prefixes_of_the_same_declaration() {
+    partial_domain_case(true);
+}
+
+#[test]
+fn a_known_relation_refutation_survives_missing_owned_prefixes_of_the_same_declaration() {
+    partial_domain_case(false);
 }
 fn asks(dir: &Path, texts: &[&str]) -> Run {
     let mut args = vec![

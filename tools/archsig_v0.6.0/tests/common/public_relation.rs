@@ -27,6 +27,65 @@ pub fn input(extra: &str, missing: bool) -> InputSources {
         sources
     }
 }
+
+pub fn partial_domain_input(outside: bool, body: &str) -> InputSources {
+    use fixture_archsig::canonical::Json;
+    let original = base::visibility_input();
+    let mut map = fixture_json(&fixture_archsig::json::parse(original.archmap().bytes()).unwrap());
+    let Json::Arr(snapshots) = field_mut(&mut map, "snapshots") else {
+        panic!()
+    };
+    if outside {
+        let Json::Arr(subjects) = field_mut(&mut snapshots[0], "subjects") else {
+            panic!()
+        };
+        subjects.push(Json::obj([
+            ("id", Json::str("C")),
+            ("type", Json::str("Reservations.System")),
+            ("origin", Json::str("model")),
+        ]));
+    } else {
+        fn to_w(value: &mut Json) {
+            match value {
+                Json::Str(text) if text == "v" => *text = "w".into(),
+                Json::Arr(values) => values.iter_mut().for_each(to_w),
+                Json::Obj(fields) => fields.values_mut().for_each(to_w),
+                _ => {}
+            }
+        }
+        let mut w = snapshots[0].clone();
+        to_w(&mut w);
+        let Json::Arr(atoms) = field_mut(&mut snapshots[0], "atoms") else {
+            panic!()
+        };
+        atoms.retain(|atom| {
+            let Json::Obj(fields) = atom else { panic!() };
+            fields["id"] != Json::str("e-owner")
+        });
+        snapshots.push(w);
+    }
+    let parameters = if outside {
+        "root:System,xs:List<State[root]>,e:Reserve"
+    } else {
+        "root:System,e:Reserve[root]"
+    };
+    let law = String::from_utf8(original.law().bytes().to_vec())
+        .unwrap()
+        .replacen(
+            "view route(e:Reserve)",
+            &format!("relation mixed({parameters}):{body};\nview route(e:Reserve)"),
+            1,
+        );
+    InputSources::from_bytes(
+        original
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        law.into_bytes(),
+        map.canonical().into_bytes(),
+    )
+}
 fn fixture_json(node: &fixture_archsig::json::JNode) -> fixture_archsig::canonical::Json {
     use fixture_archsig::{canonical::Json, json::JValue};
     match &node.value {

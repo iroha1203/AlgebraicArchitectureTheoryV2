@@ -824,15 +824,20 @@ pub(in crate::observed) fn recheck(
             return Err("元relation templateの順序が違う".into());
         }
         let complete = relation_sources::complete_domain(table, &table.declarations[index].name);
+        let available = complete
+            || table
+                .instances
+                .iter()
+                .any(|row| row.declaration == table.declarations[index].name);
         match plan.domain_refs[index] {
-            Some(r) if complete => {
-                if !matches!(&relation_sources::source_data(graph,r,w)?.kind,relation_sources::Kind::Domain{declaration,source,..} if *declaration==index && *source==plan.source_refs[index])
+            Some(r) if available => {
+                if !matches!(&relation_sources::source_data(graph,r,w)?.kind,relation_sources::Kind::Domain{declaration,source,finite,..} if *declaration==index && *source==plan.source_refs[index] && *finite==complete)
                 {
                     return Err("元relation全域の順序が違う".into());
                 }
                 dependencies.push(r);
             }
-            None if !complete => {}
+            None if !available => {}
             _ => return Err("元relation域の完成状態が違う".into()),
         }
     }
@@ -841,10 +846,7 @@ pub(in crate::observed) fn recheck(
         .instances
         .iter()
         .enumerate()
-        .filter(|(_, r)| {
-            r.state != RelationState::OutsideDomain
-                && relation_sources::complete_domain(table, &r.declaration)
-        })
+        .filter(|(_, r)| r.state != RelationState::OutsideDomain)
         .collect::<Vec<_>>();
     if plan.rows.len() != originals.len() {
         return Err("元relationの全rowが保持されていない".into());

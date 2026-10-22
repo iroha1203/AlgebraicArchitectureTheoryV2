@@ -47,6 +47,7 @@ pub(crate) enum Kind {
         source: NodeRef,
         members: Vec<NodeRef>,
         ty: Type,
+        finite: bool,
     },
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -117,7 +118,15 @@ impl Data {
                 ),
                 ("bindings", Json::Arr(vec![])),
             ]),
-            Kind::Domain { ty, members, .. } => Json::obj([
+            Kind::Domain {
+                ty, finite: false, ..
+            } => Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
+            Kind::Domain {
+                ty,
+                members,
+                finite: true,
+                ..
+            } => Json::obj([
                 ("kind", Json::str("finite")),
                 ("type", ty.wire()),
                 ("elements", refs(members)),
@@ -434,11 +443,12 @@ pub(in crate::observed) fn validate_node(
             source,
             members,
             ty,
+            finite,
         } => {
             let d = declaration(w, *index)?;
             template(graph, *source, w, *index)?;
-            if !complete_domain(&f.table, &d.name) {
-                return Err("未完成のrelation域を有限全域として表示した".into());
+            if *finite != complete_domain(&f.table, &d.name) {
+                return Err("relationの型域と完成した有限域を取り違えた".into());
             }
             let ps = params(d)?;
             let expected = match ps {
@@ -731,7 +741,16 @@ pub(in crate::observed) fn domains(
             },
         )?;
         result.sources.push(source);
-        if !complete_domain(&f.table, &d.name) {
+        let finite = complete_domain(&f.table, &d.name);
+        // 全域を尽くしていなくても、得られた元束縛は型域のmemberとして
+        // 再評価できる。有限全域の証拠は、完成した域にだけ付ける。
+        if !finite
+            && !f
+                .table
+                .instances
+                .iter()
+                .any(|row| row.declaration == d.name)
+        {
             result.domains.push(None);
             continue;
         }
@@ -782,6 +801,7 @@ pub(in crate::observed) fn domains(
                 source,
                 members: members.clone(),
                 ty,
+                finite,
             },
         )?;
         result.domains.push(Some(domain));
