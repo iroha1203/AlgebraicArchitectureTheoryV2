@@ -280,6 +280,8 @@ fn role_failure_and_unknown_operand_keep_original_condition_and_operation() {
         Outcome::Original(LawTransportOutcome::Refuted(_))
     ));
     assert!(r.points().is_empty());
+    assert!(r.source().unwrap().is_complete());
+    assert!(r.target().unwrap().is_complete());
     r.base().operation().recheck(&i, &mut quiet()).unwrap();
     let missing = A
         .lines()
@@ -648,4 +650,213 @@ fn option_reference_arguments_are_mapped_by_the_actual_operation_not_compared_as
         );
     }
     r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn original_holds_refutation_keeps_both_generated_numeric_circuits_and_the_operation() {
+    use archsig::construction::readings::LawCircuitDetector as Detector;
+    let i = ground("2=0", "0=0");
+    let r = run(i.clone());
+    assert!(r.is_complete());
+    assert!(matches!(
+        r.outcome(),
+        Outcome::Original(LawTransportOutcome::Refuted(
+            archsig::construction::maps::LawConditionFailure::Holds
+        ))
+    ));
+    assert_eq!(r.base().source_reading().unwrap().body(), Some(false));
+    assert_eq!(r.base().target_reading().unwrap().body(), Some(true));
+    for (side, object, instance, when, detector) in [
+        (
+            r.source().unwrap(),
+            r.base().object(),
+            r.base().instance(),
+            true,
+            Detector::Any,
+        ),
+        (
+            r.target().unwrap(),
+            r.base().target_object().unwrap(),
+            r.base().target_instance().unwrap(),
+            false,
+            Detector::Reject,
+        ),
+    ] {
+        assert!(side.is_complete());
+        let readings = side.base().base().readings();
+        let circuit = side
+            .circuits()
+            .iter()
+            .find(|c| {
+                readings.objects()[c.position.object].identity() == object
+                    && &readings.instances()[c.position.instance] == instance
+            })
+            .unwrap();
+        assert!(circuit.pattern.is_some());
+        assert_eq!(circuit.detector, Some(detector));
+        assert_eq!(circuit.points[0].when, Some(when));
+        assert!(
+            circuit.points[0]
+                .witnesses
+                .iter()
+                .all(|w| w.original_evaluation.is_some() && w.epsilon_producer.is_some())
+        );
+    }
+    assert!(r.points().is_empty());
+    r.base().operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence() {
+    use archsig::construction::readings::{
+        LawCircuitDetector as Detector, LawCircuitsCondition as Condition,
+    };
+    let missing = A
+        .lines()
+        .filter(|l| !l.contains("\"id\":\"p-count\""))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let i = inputs(
+        "law required measure(c:Left.Child):c.count=0;",
+        "law required measure(d:Right.Child):5=0;",
+        &missing,
+    );
+    let r = run(i.clone());
+    assert!(r.is_complete());
+    assert_eq!(
+        r.outcome(),
+        &Outcome::Original(LawTransportOutcome::Undetermined)
+    );
+    let source = r.source().unwrap();
+    let target = r.target().unwrap();
+    assert!(source.is_complete() && target.is_complete());
+    assert_eq!(source.condition(), &Condition::Undetermined);
+    assert_eq!(target.condition(), &Condition::Ready);
+    assert!(source.circuits().iter().all(|c| c.detector.is_none()));
+    assert!(
+        source
+            .circuits()
+            .iter()
+            .flat_map(|c| &c.points)
+            .any(|p| p.when.is_none())
+    );
+    assert!(
+        target
+            .circuits()
+            .iter()
+            .any(|c| c.detector == Some(Detector::Any))
+    );
+    assert!(
+        target
+            .circuits()
+            .iter()
+            .flat_map(|c| &c.points)
+            .flat_map(|p| &p.witnesses)
+            .any(|w| w.epsilon_producer.is_some())
+    );
+    assert!(r.points().is_empty());
+    r.base().operation().recheck(&i, &mut quiet()).unwrap();
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn side_construction_stops_retain_the_already_refuted_original_condition() {
+    use archsig::{
+        observed::control::{Checkpoint as C, Resource, StopReason},
+        result::Signal,
+    };
+    use std::{cell::Cell, rc::Rc};
+    let i = ground("2=0", "0=0");
+    let d = declarations(&i);
+    let (o, n) = indices(&i, "p", "measure", "p");
+    let baseline = run(i.clone());
+    for checkpoint in [C::ObjectLawCircuitTransport, C::ObjectLawCircuits] {
+        let hits = Rc::new(Cell::new(0));
+        let h = hits.clone();
+        let mut traced = Control::new(Limits::default(), move |p| {
+            if p == checkpoint {
+                h.set(h.get() + 1);
+            }
+            Usage::default()
+        });
+        object_law_circuit_transport(i.clone(), &d, o, n, &mut traced).unwrap();
+        let count = hits.get();
+        assert!(count > 1);
+        for nth in [1, count] {
+            for mode in 0..4 {
+                let hits = Rc::new(Cell::new(0));
+                let h = hits.clone();
+                let probes = Rc::new(Cell::new(0));
+                let p = probes.clone();
+                let expected = match mode {
+                    0 => StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    1 => StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    2 => StopReason::Cancelled(Signal::Int),
+                    _ => StopReason::Cancelled(Signal::Term),
+                };
+                let mut c = Control::new(
+                    Limits {
+                        time_ms: (mode == 0).then_some(1),
+                        memory_mib: (mode == 1).then_some(1),
+                    },
+                    move |at| {
+                        p.set(p.get() + 1);
+                        if at == checkpoint {
+                            h.set(h.get() + 1);
+                        }
+                        if at == checkpoint && h.get() == nth {
+                            Usage {
+                                elapsed_ms: if mode == 0 { 1 } else { 0 },
+                                memory_mib: if mode == 1 { 1 } else { 0 },
+                                signal: match mode {
+                                    2 => Some(Signal::Int),
+                                    3 => Some(Signal::Term),
+                                    _ => None,
+                                },
+                            }
+                        } else {
+                            Usage::default()
+                        }
+                    },
+                );
+                let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut c).unwrap_err();
+                let ObjectLawCircuitTransportFailure::Reading { cause, partial } = f else {
+                    panic!("generation stop")
+                };
+                assert_eq!(partial.outcome(), baseline.outcome());
+                assert!(partial.points().is_empty());
+                assert_eq!(c.stop_reason(), Some(expected.clone()));
+                let complete = checkpoint == C::ObjectLawCircuitTransport && nth == count;
+                assert_eq!(partial.is_complete(), complete);
+                if checkpoint == C::ObjectLawCircuitTransport {
+                    assert!(
+                        matches!(cause,LawCircuitTransportFailureCause::Construction(ConstructionFailure::Stopped(reason)) if reason==expected)
+                    );
+                    if complete {
+                        assert!(partial.source().unwrap().is_complete());
+                        assert!(partial.target().unwrap().is_complete());
+                    }
+                } else if nth == 1 {
+                    assert!(matches!(cause, LawCircuitTransportFailureCause::Source(_)));
+                } else {
+                    assert!(matches!(cause, LawCircuitTransportFailureCause::Target(_)));
+                    assert!(partial.source().unwrap().is_complete());
+                }
+                partial
+                    .base()
+                    .operation()
+                    .recheck(&i, &mut quiet())
+                    .unwrap();
+                let before = probes.get();
+                assert!(c.checkpoint(C::Expression).is_err());
+                assert_eq!(probes.get(), before);
+            }
+        }
+    }
 }

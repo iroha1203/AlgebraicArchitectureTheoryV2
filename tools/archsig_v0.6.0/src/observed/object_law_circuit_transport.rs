@@ -302,12 +302,6 @@ fn populate(
     c: &mut Control,
 ) -> Result<(), LawCircuitTransportFailureCause> {
     tick(c)?;
-    if out.base.outcome() != &LawTransportOutcome::Preserved {
-        out.outcome = LawCircuitTransportOutcome::Original(out.base.outcome().clone());
-        out.complete = true;
-        tick(c)?;
-        return Ok(());
-    }
     let s = out.base.source_readings().construction();
     out.source = Some(
         object_law_circuits(
@@ -330,6 +324,11 @@ fn populate(
         )
         .map_err(LawCircuitTransportFailureCause::Target)?,
     );
+    if out.base.outcome() != &LawTransportOutcome::Preserved {
+        out.complete = true;
+        tick(c)?;
+        return Ok(());
+    }
     let source = out
         .source
         .as_ref()
@@ -494,6 +493,12 @@ pub fn object_law_circuit_transport(
 ) -> Result<ObjectLawCircuitTransport, ObjectLawCircuitTransportFailure> {
     let base = object_law_transport(inputs.clone(), declarations, object, instance, c)
         .map_err(ObjectLawCircuitTransportFailure::Original)?;
+    // 最初の構成checkpointより前に、確定済みの元条件を保持する。
+    let outcome = if base.outcome() == &LawTransportOutcome::Preserved {
+        LawCircuitTransportOutcome::Undetermined
+    } else {
+        LawCircuitTransportOutcome::Original(base.outcome().clone())
+    };
     let mut out = ObjectLawCircuitTransport {
         declarations: declarations.clone(),
         position: ObjectEvaluationPosition { object, instance },
@@ -501,7 +506,7 @@ pub fn object_law_circuit_transport(
         source: None,
         target: None,
         points: vec![],
-        outcome: LawCircuitTransportOutcome::Undetermined,
+        outcome,
         complete: false,
     };
     match populate(&mut out, inputs, c) {
