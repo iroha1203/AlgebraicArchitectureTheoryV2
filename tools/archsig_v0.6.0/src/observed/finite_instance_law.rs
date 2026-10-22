@@ -240,6 +240,39 @@ pub(super) fn initial(
     row.application_missing.dedup();
     Ok(row)
 }
+pub(in super::super) fn probe_instance(
+    e: &Environment<'_>,
+    object: &Selection,
+    original: &ObjectInstance,
+    declaration: &Declaration,
+    bindings: &[(String, Scalar)],
+    point: usize,
+) -> Result<Probe, ValidationFailure> {
+    let mut row = initial(e, object, original, point)?;
+    if row.application == Some(true) {
+        let mut evaluated = probe_mode(e, declaration, bindings, point, true)?;
+        evaluated.row.scope.merge(&row.scope);
+        evaluated.row.support.extend(row.support);
+        evaluated
+            .row
+            .application_missing
+            .extend(row.application_missing);
+        row = evaluated.row;
+    }
+    if row.application == Some(false) {
+        zero_indicator(e, declaration, &mut row)?;
+    }
+    row.support.sort();
+    row.support.dedup();
+    row.application_missing.sort();
+    row.application_missing.dedup();
+    // 型条件はこの列の適用条件。別の列と共通のDから代入を削除しない。
+    Ok(Probe {
+        row,
+        admissible: true,
+        blocked: false,
+    })
+}
 impl FiniteLawFamilyValuations {
     pub(in super::super) fn probe_column(
         &self,
@@ -261,31 +294,14 @@ impl FiniteLawFamilyValuations {
             .instances()
             .get(instance)
             .ok_or("元Law instanceがない")?;
-        let mut row = initial(e, object, original, point)?;
-        if row.application == Some(true) {
-            let mut evaluated =
-                probe_mode(e, &selected.declaration, &selected.bindings, point, true)?;
-            evaluated.row.scope.merge(&row.scope);
-            evaluated.row.support.extend(row.support);
-            evaluated
-                .row
-                .application_missing
-                .extend(row.application_missing);
-            row = evaluated.row;
-        }
-        if row.application == Some(false) {
-            zero_indicator(e, &selected.declaration, &mut row)?;
-        }
-        row.support.sort();
-        row.support.dedup();
-        row.application_missing.sort();
-        row.application_missing.dedup();
-        // 型条件はこの列の適用条件。別の列と共通のDから代入を削除しない。
-        Ok(Probe {
-            row,
-            admissible: true,
-            blocked: false,
-        })
+        probe_instance(
+            e,
+            object,
+            original,
+            &selected.declaration,
+            &selected.bindings,
+            point,
+        )
     }
     pub(in crate::observed) fn instance_source(
         &self,

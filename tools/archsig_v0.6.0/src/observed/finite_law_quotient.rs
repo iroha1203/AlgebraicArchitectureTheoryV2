@@ -182,6 +182,9 @@ impl FiniteLawFamilyValuations {
     }
 }
 impl FiniteLawQuotient<'_> {
+    pub(super) fn belongs_to(&self, family: &FiniteLawFamilyValuations) -> bool {
+        std::ptr::eq(self.base, family)
+    }
     pub fn points(&self) -> &[usize] {
         &self.points
     }
@@ -231,6 +234,9 @@ impl FiniteLawQuotient<'_> {
         c: &mut Control,
     ) -> Result<(), ValidationFailure> {
         self.base.recheck(inputs, c).map_err(|f| f.cause)?;
+        self.recheck_projection(c)
+    }
+    pub(super) fn recheck_projection(&self, c: &mut Control) -> Result<(), ValidationFailure> {
         self.check(c)?;
         let ring = self.integer_ring(c)?;
         for g in self.base.required_generators(c)? {
@@ -323,6 +329,14 @@ impl FiniteLawQuotient<'_> {
         c: &mut Control,
     ) -> Result<(), ValidationFailure> {
         self.recheck(inputs, c)?;
+        self.recheck_membership_value(f, membership, c)
+    }
+    pub(super) fn recheck_membership_value(
+        &self,
+        f: &FiniteIntegerFunction,
+        membership: &FiniteIdealMembership,
+        c: &mut Control,
+    ) -> Result<(), ValidationFailure> {
         match membership {
             FiniteIdealMembership::Member(w) => self.verify_witness(f, w, c),
             FiniteIdealMembership::NonMember { projection } => {

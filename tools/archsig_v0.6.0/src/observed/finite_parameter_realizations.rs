@@ -18,6 +18,7 @@ pub(in crate::observed) struct ParameterRealization {
 pub(in crate::observed) struct FiniteParameterRealizations {
     sources: InputSources,
     readings: ObjectReadingInstances,
+    law_dependencies: bool,
     pub positions: Vec<Fact>,
     pub types: Vec<Type>,
     pub domain: Vec<Vec<Scalar>>,
@@ -57,7 +58,7 @@ impl FiniteParameterRealizations {
                 partial: None,
             });
         }
-        let expected = finite_parameter_realizations(inputs, readings, c)?;
+        let expected = compute(inputs, readings, self.law_dependencies, c)?;
         if self != &expected {
             return Err(ParameterRealizationFailure {
                 cause: "parameter代入族が元対象・instance・型域・直積と違う".into(),
@@ -143,9 +144,18 @@ fn populate_realizations(
                 .cloned()
                 .zip(candidate.iter().cloned())
                 .collect();
-            let e = Environment::primitive_dependency_probe(inputs, &values, c)?;
+            let mut e = Environment::primitive_dependency_probe(inputs, &values, c)?;
             *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
-            let evaluated = evaluated_objects(inputs, selections, &values, &e, c);
+            let mut evaluated = evaluated_objects(inputs, selections, &values, &e, c);
+            if result.law_dependencies {
+                if let Ok(objects) = &evaluated {
+                    if let Err(cause) =
+                        automatic::discover_law_reads(inputs, selections, objects, &mut e, c)
+                    {
+                        evaluated = Err(cause);
+                    }
+                }
+            }
             if let Some(reads) = e.primitive_reads.borrow().as_ref() {
                 discovered.extend(reads.iter().cloned());
             }
@@ -232,6 +242,14 @@ pub(in crate::observed) fn finite_parameter_realizations(
     readings: &ObjectReadingInstances,
     c: &mut Control,
 ) -> Result<FiniteParameterRealizations, ParameterRealizationFailure> {
+    compute(inputs, readings, false, c)
+}
+fn compute(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    law_dependencies: bool,
+    c: &mut Control,
+) -> Result<FiniteParameterRealizations, ParameterRealizationFailure> {
     let fail = |cause| ParameterRealizationFailure {
         cause,
         partial: None,
@@ -246,6 +264,7 @@ pub(in crate::observed) fn finite_parameter_realizations(
     let mut result = FiniteParameterRealizations {
         sources: inputs.sources().clone(),
         readings: readings.clone(),
+        law_dependencies,
         positions: vec![],
         types: vec![],
         domain: vec![],
@@ -265,3 +284,6 @@ pub(in crate::observed) fn finite_parameter_realizations(
 #[cfg(test)]
 #[path = "finite_parameter_realizations_tests.rs"]
 mod tests;
+
+#[path = "finite_automatic_law.rs"]
+pub(in crate::observed) mod automatic;

@@ -333,12 +333,24 @@ impl FiniteLawFamilyValuations {
             None
         };
         let expected = family_with_instances(
-            inputs, &selected, self.object.clone(),
-            self.column_objects.clone(), instances, c,
+            inputs,
+            &selected,
+            self.object.clone(),
+            self.column_objects.clone(),
+            instances,
+            c,
         )?;
+        self.check_expected(expected, c)
+    }
+    fn check_expected(
+        &self,
+        expected: Self,
+        c: &mut Control,
+    ) -> Result<(), FiniteLawFamilyFailure> {
         let result = (|| -> Result<bool, ValidationFailure> {
             tick(c)?;
-            if self.object != expected.object
+            if self.sources != expected.sources
+                || self.object != expected.object
                 || self.column_objects != expected.column_objects
                 || self.instance_mode != expected.instance_mode
                 || self.positions != expected.positions
@@ -349,6 +361,7 @@ impl FiniteLawFamilyValuations {
                 || self.required_zero != expected.required_zero
                 || self.domain.len() != expected.domain.len()
                 || self.columns.len() != expected.columns.len()
+                || self.selection.len() != expected.selection.len()
             {
                 return Ok(false);
             }
@@ -359,6 +372,17 @@ impl FiniteLawFamilyValuations {
                 }
                 for (a, b) in a.iter().zip(b) {
                     if !validation_identity::scalar(a, b, c)? {
+                        return Ok(false);
+                    }
+                }
+            }
+            for (a, b) in self.selection.iter().zip(&expected.selection) {
+                tick(c)?;
+                if a.law != b.law || a.bindings.len() != b.bindings.len() {
+                    return Ok(false);
+                }
+                for ((name, a), (other, b)) in a.bindings.iter().zip(&b.bindings) {
+                    if name != other || !validation_identity::scalar(a, b, c)? {
                         return Ok(false);
                     }
                 }
@@ -424,6 +448,25 @@ fn family_with_instances(
     object: Option<Arc<object::Selection>>,
     column_objects: Option<object::Columns>,
     instance_indices: Option<Vec<usize>>,
+    c: &mut Control,
+) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    family_with_instance_domain(
+        inputs,
+        selected,
+        object,
+        column_objects,
+        instance_indices,
+        &[],
+        c,
+    )
+}
+fn family_with_instance_domain(
+    inputs: &CheckedInputs,
+    selected: &[(String, Vec<(String, Scalar)>)],
+    object: Option<Arc<object::Selection>>,
+    column_objects: Option<object::Columns>,
+    instance_indices: Option<Vec<usize>>,
+    positions: &[Fact],
     c: &mut Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     if instance_indices.as_ref()
@@ -554,7 +597,7 @@ fn family_with_instances(
         state: FiniteLawState::Pending,
         required_zero: None,
     };
-    match populate_family(inputs, &mut result, c) {
+    match populate_family(inputs, &mut result, positions, c) {
         Ok(()) => Ok(result),
         Err(cause) => Err(FiniteLawFamilyFailure {
             cause,
@@ -1217,6 +1260,7 @@ fn probe_mode(
 fn populate_family(
     inputs: &CheckedInputs,
     r: &mut FiniteLawFamilyValuations,
+    seed_positions: &[Fact],
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
     tick(c)?;
@@ -1241,7 +1285,7 @@ fn populate_family(
         };
         return Ok(());
     }
-    let mut positions: BTreeSet<Fact> = BTreeSet::new();
+    let mut positions: BTreeSet<Fact> = seed_positions.iter().cloned().collect();
     loop {
         tick(c)?;
         loop {
