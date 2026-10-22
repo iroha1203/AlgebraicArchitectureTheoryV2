@@ -306,7 +306,8 @@ pub(super) fn input_json(
         let json = match value {
             Scalar::Unit => Json::Arr(vec![]),
             Scalar::Bool(v) => Json::Bool(*v),
-            Scalar::Fp { value, .. } => Json::str(value.to_string()),
+            Scalar::Z(value) | Scalar::Fp { value, .. } => Json::str(value.to_string()),
+            Scalar::Q(n, d) => Json::Arr(vec![Json::str(n.to_string()), Json::str(d.to_string())]),
             Scalar::Subject {
                 snapshot, subject, ..
             } => Json::Arr(vec![Json::str(snapshot), Json::str(subject)]),

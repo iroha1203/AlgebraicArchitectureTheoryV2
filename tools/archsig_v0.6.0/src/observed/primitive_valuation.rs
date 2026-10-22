@@ -1,0 +1,78 @@
+//! 元の原始表を保った、内部数学計算の型付き候補代入。
+use super::*;
+use crate::observed::control::CheckFailure;
+
+impl<'a> Environment<'a> {
+    /// 全候補の生成器が選んだ値を検査し、独立した式評価環境を作る。
+    /// 通常のGraph/観測評価への登録や、Law成立の証拠の供給は行わない。
+    pub(in crate::observed) fn with_primitive_valuation(
+        inputs: &'a CheckedInputs,
+        assignments: &[(Fact, Scalar)],
+        control: &mut Control,
+    ) -> Result<Self, ValidationFailure> {
+        let mut environment = Self::new(inputs, control)?;
+        control.checkpoint(Checkpoint::PrimitiveValuation)?;
+        let mut types = std::collections::HashMap::new();
+        for snapshot in &inputs.archmap().snapshots {
+            control.checkpoint(Checkpoint::PrimitiveValuation)?;
+            for subject in &snapshot.subjects {
+                control.checkpoint(Checkpoint::PrimitiveValuation)?;
+                types.insert(
+                    (subject.snapshot.as_str(), subject.id.as_str()),
+                    subject.ty.as_str(),
+                );
+            }
+        }
+        let roster = crate::archmap::value::Roster { types };
+        let mut values = BTreeMap::new();
+        for (position, value) in assignments {
+            control.checkpoint(Checkpoint::PrimitiveValuation)?;
+            if position.atom.is_some() || position.field.is_none() || values.contains_key(position)
+            {
+                return Err("候補代入の位置が重複・fieldなし・観測Atom付きである".into());
+            }
+            let subject = environment.subject(&position.snapshot, &position.subject)?;
+            let field = environment.field(
+                &position.snapshot,
+                &position.subject,
+                position.field.as_deref().ok_or("候補代入のfieldがない")?,
+            )?;
+            if value.ty() != field.ty.erase() {
+                return Err("候補代入の値と元fieldの型が違う".into());
+            }
+            data::check(value, inputs.law(), control)?;
+            let encoded = data::input_json(value, control)?;
+            let namespace = subject.ty.rsplit_once('.').map_or("", |(ns, _)| ns);
+            let original =
+                crate::archmap::value::check_assignment::<CheckFailure<Box<crate::issue::Issue>>>(
+                    &encoded,
+                    &field.ty,
+                    inputs.definitions(),
+                    &roster,
+                    namespace,
+                    control,
+                )
+                .map_err(|failure| match failure {
+                    CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+                    CheckFailure::Input(issue) => ValidationFailure::Internal(format!(
+                        "候補代入が元fieldの条件を満たさない: {}",
+                        issue.message
+                    )),
+                })?;
+            let checked = scalar_from(&original, &field.ty, inputs.law(), control)?
+                .ok_or("候補代入の原始値を読めない")?;
+            if !validation_identity::scalar(value, &checked, control)? {
+                return Err("候補代入が元encodingの正規値と違う".into());
+            }
+            values.insert(position.clone(), checked);
+            control.checkpoint(Checkpoint::PrimitiveValuation)?;
+        }
+        environment.primitive_valuation = Some(values);
+        control.checkpoint(Checkpoint::PrimitiveValuation)?;
+        Ok(environment)
+    }
+}
+
+#[cfg(test)]
+#[path = "primitive_valuation_tests.rs"]
+mod tests;

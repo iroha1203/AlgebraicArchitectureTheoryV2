@@ -52,6 +52,8 @@ pub(super) mod owned_type;
 mod path_composition;
 #[path = "path_condition.rs"]
 mod path_condition;
+#[path = "primitive_valuation.rs"]
+mod primitive_valuation;
 #[path = "term_comparison_validation.rs"]
 mod term_comparison_validation;
 #[path = "universal.rs"]
@@ -342,6 +344,8 @@ pub(crate) struct Environment<'a> {
     control: Control,
     context: Cell<Option<super::call::Context>>,
     completion_values: RefCell<CompletionValues>,
+    // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
+    primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
     scoped_context: Cell<Option<super::call::Context>>,
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
@@ -463,6 +467,7 @@ impl<'a> Environment<'a> {
             control: control.clone(),
             context: Cell::new(None),
             completion_values: RefCell::new(Vec::new()),
+            primitive_valuation: None,
             scoped_context: Cell::new(None),
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
@@ -666,6 +671,9 @@ impl<'a> Environment<'a> {
         node: &Node,
         limit: usize,
     ) -> Result<(), ValidationFailure> {
+        if self.primitive_valuation.is_some() {
+            return Err("候補代入の環境を観測Graphの検査へ使えない".into());
+        }
         self.validation_graph_session(graph, || {
             self.tick()?;
             let context = graph.context_at(limit);
@@ -8082,74 +8090,96 @@ impl<'a> Environment<'a> {
             return Err("範囲検査のfield owner型不一致".into());
         }
         let field = self.field(&snapshot, &subject, &format!("{entity}.{name}"))?;
-        let (known_value, scalar_scope) = match &field.slot {
-            Slot::Known {
-                atom,
-                origin,
-                value,
-                ..
-            } => {
-                let owner_scope = self.scope(owner, reading, Some(origin))?;
-                scope.merge(&owner_scope);
-                let mut scalar_scope = request_base.clone();
-                scalar_scope.merge(&owner_scope);
-                support.push(Fact {
-                    snapshot: snapshot.clone(),
-                    subject: subject.clone(),
-                    field: Some(field.name.clone()),
-                    atom: Some(atom.clone()),
-                });
-                (
-                    Some(
-                        scalar_from(value, &field.ty, self.inputs.law(), &self.control)?
-                            .ok_or_else(|| ValidationFailure::UnsupportedExpression {
-                                location: Location::Law { span },
-                                feature: "Z/Bool/Ref 以外の原始値読取り".into(),
-                            })?,
-                    ),
-                    Some(scalar_scope),
-                )
-            }
-            Slot::Missing => {
-                let owner_scope = self.scope(owner, reading, None)?;
-                scope.merge(&owner_scope);
-                scope.completions = true;
-                let numeric_assigned = self.universal_missing_value(
-                    &Fact {
+        let position = Fact {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: Some(field.name.clone()),
+            atom: None,
+        };
+        let assigned = self
+            .primitive_valuation
+            .as_ref()
+            .and_then(|values| values.get(&position));
+        let (known_value, scalar_scope) = if let Some(value) = assigned {
+            let owner_scope = self.scope(owner, reading, None)?;
+            scope.merge(&owner_scope);
+            scope.assignments = true;
+            let mut scalar_scope = request_base.clone();
+            scalar_scope.merge(&owner_scope);
+            scalar_scope.assignments = true;
+            // 同じslotの元Atomがあっても、別の候補値の観測証拠に使わない。
+            support.push(position);
+            (Some(value.clone()), Some(scalar_scope))
+        } else {
+            match &field.slot {
+                Slot::Known {
+                    atom,
+                    origin,
+                    value,
+                    ..
+                } => {
+                    let owner_scope = self.scope(owner, reading, Some(origin))?;
+                    scope.merge(&owner_scope);
+                    let mut scalar_scope = request_base.clone();
+                    scalar_scope.merge(&owner_scope);
+                    support.push(Fact {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
                         field: Some(field.name.clone()),
-                        atom: None,
-                    },
-                    &field.ty,
-                )?;
-                let assigned = self
-                    .completion_values
-                    .borrow()
-                    .iter()
-                    .find(|(fact, _, _)| {
-                        fact.snapshot == snapshot
-                            && fact.subject == subject
-                            && fact.field.as_deref() == Some(field.name.as_str())
-                    })
-                    .map(|(_, _, value)| value.clone());
-                if let Some(assigned) = numeric_assigned {
-                    let mut scalar_scope = request_base.clone();
-                    scalar_scope.merge(&owner_scope);
-                    scalar_scope.completions = true;
-                    (Some(assigned), Some(scalar_scope))
-                } else if let Some(assigned) = assigned {
-                    if !self.completion_type_supported(&field.ty)?
-                        || assigned.ty() != field.ty.erase()
-                    {
-                        return Err("補完slotの元有限型が違う".into());
+                        atom: Some(atom.clone()),
+                    });
+                    (
+                        Some(
+                            scalar_from(value, &field.ty, self.inputs.law(), &self.control)?
+                                .ok_or_else(|| ValidationFailure::UnsupportedExpression {
+                                    location: Location::Law { span },
+                                    feature: "Z/Bool/Ref 以外の原始値読取り".into(),
+                                })?,
+                        ),
+                        Some(scalar_scope),
+                    )
+                }
+                Slot::Missing => {
+                    let owner_scope = self.scope(owner, reading, None)?;
+                    scope.merge(&owner_scope);
+                    scope.completions = true;
+                    let numeric_assigned = self.universal_missing_value(
+                        &Fact {
+                            snapshot: snapshot.clone(),
+                            subject: subject.clone(),
+                            field: Some(field.name.clone()),
+                            atom: None,
+                        },
+                        &field.ty,
+                    )?;
+                    let assigned = self
+                        .completion_values
+                        .borrow()
+                        .iter()
+                        .find(|(fact, _, _)| {
+                            fact.snapshot == snapshot
+                                && fact.subject == subject
+                                && fact.field.as_deref() == Some(field.name.as_str())
+                        })
+                        .map(|(_, _, value)| value.clone());
+                    if let Some(assigned) = numeric_assigned {
+                        let mut scalar_scope = request_base.clone();
+                        scalar_scope.merge(&owner_scope);
+                        scalar_scope.completions = true;
+                        (Some(assigned), Some(scalar_scope))
+                    } else if let Some(assigned) = assigned {
+                        if !self.completion_type_supported(&field.ty)?
+                            || assigned.ty() != field.ty.erase()
+                        {
+                            return Err("補完slotの元有限型が違う".into());
+                        }
+                        let mut scalar_scope = request_base.clone();
+                        scalar_scope.merge(&owner_scope);
+                        scalar_scope.completions = true;
+                        (Some(assigned), Some(scalar_scope))
+                    } else {
+                        (None, None)
                     }
-                    let mut scalar_scope = request_base.clone();
-                    scalar_scope.merge(&owner_scope);
-                    scalar_scope.completions = true;
-                    (Some(assigned), Some(scalar_scope))
-                } else {
-                    (None, None)
                 }
             }
         };
