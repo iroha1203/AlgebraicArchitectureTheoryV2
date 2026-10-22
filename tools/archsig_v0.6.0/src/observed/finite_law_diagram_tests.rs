@@ -350,6 +350,13 @@ fn diagram_recheck_rejects_plan_values_generators_scope_provenance_and_consumer_
             .is_err()
     );
     let mut changed = (*source).clone();
+    changed.outputs.points.reverse();
+    assert!(
+        changed
+            .recheck(e.prepared.inputs(), &a, 0, &mut quiet())
+            .is_err()
+    );
+    let mut changed = (*source).clone();
     let index = d.required.0 - source.base;
     if let Part::Ideal { generators, .. } = &mut changed.parts[index] {
         generators.push(d.nu[0]);
@@ -705,7 +712,8 @@ fn owned_reference_domain_keeps_original_membership_conditions_with_primitive_va
     assert_eq!(elements.len(), expected.len());
     assert!(elements.len() > 1);
     let env = Environment::new(e.prepared.inputs(), &mut quiet()).unwrap();
-    for (reference, point) in elements.iter().zip(&expected) {
+    for (reference, index) in elements.iter().zip(&d.points) {
+        let point = &expected[*index];
         let raw = match point.as_slice() {
             [] => Scalar::Unit,
             [v] => v.clone(),
@@ -812,5 +820,60 @@ fn parameter_columns_and_equal_functions_keep_every_original_index_and_required_
             .len(),
         4
     );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn fp11_public_domain_permutation_also_orders_nu_epsilon_and_evaluation_basis() {
+    let definition = DEFINITION.replace(r#"["Fp","2"]"#, r#"["Fp","11"]"#);
+    let map = MAP.replace(r#""value":"0""#, r#""value":"10""#);
+    let e = evaluate_observed_bytes(
+        custom_sources(&definition, &map, "law required two(c:Part):c.quantity=2;"),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    let Part::Domain { elements, .. } = data(&g, d.domain).part() else {
+        panic!("D")
+    };
+    let values = elements
+        .iter()
+        .map(|r| match g.scalar(*r).unwrap() {
+            Scalar::Fp { value, .. } => value.to_string(),
+            _ => panic!("Fp11"),
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        values,
+        ["0", "1", "10", "2", "3", "4", "5", "6", "7", "8", "9"]
+    );
+    assert_eq!(d.points, [0, 1, 10, 2, 3, 4, 5, 6, 7, 8, 9]);
+    assert_eq!(
+        coordinates(&g, d.nu[0]),
+        ["1", "1", "1", "0", "1", "1", "1", "1", "1", "1", "1"]
+    );
+    assert_eq!(coordinates(&g, d.epsilon[0].unwrap()), vec!["1"; 11]);
+    let Part::Evaluation { basis_images, .. } = data(&g, d.evaluation.unwrap()).part() else {
+        panic!("evaluation")
+    };
+    assert_eq!(
+        basis_images
+            .iter()
+            .map(|r| match g.scalar(*r).unwrap() {
+                Scalar::Z(n) => n.to_string(),
+                _ => panic!("Z"),
+            })
+            .collect::<Vec<_>>(),
+        ["0", "0", "1", "0", "0", "0", "0", "0", "0", "0", "0"]
+    );
+    let Part::Ideal { generators, .. } = data(&g, d.required).part() else {
+        panic!("ideal")
+    };
+    assert_eq!(generators, &d.nu);
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }

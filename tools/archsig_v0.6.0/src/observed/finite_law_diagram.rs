@@ -139,6 +139,7 @@ impl Part {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
+    pub points: Vec<usize>,
     pub domain: NodeRef,
     pub ring: NodeRef,
     pub target: NodeRef,
@@ -230,11 +231,16 @@ fn function(
     base: usize,
     ring: NodeRef,
     values: &[num_bigint::BigInt],
+    points: &[usize],
     c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut elements = vec![];
-    for v in values {
+    if points.len() != values.len() {
+        return Err("有限Lawの公開順と関数の次元が違う".into());
+    }
+    for point in points {
         tick(c)?;
+        let v = values.get(*point).ok_or("有限Lawの元関数座標が範囲外")?;
         elements.push(push(parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
     }
     push(
@@ -279,11 +285,10 @@ fn plan(
         [ty] => ty.clone(),
         items => Type::Tuple(items.to_vec()),
     };
-    let mut parts = vec![];
-    let mut elements = vec![];
-    for point in f.domain() {
+    let mut ordered = vec![];
+    for (point, values) in f.domain().iter().enumerate() {
         tick(c)?;
-        let value = match point.as_slice() {
+        let value = match values.as_slice() {
             [] => Scalar::Unit,
             [v] => v.clone(),
             items => Scalar::Tuple(items.to_vec()),
@@ -291,6 +296,35 @@ fn plan(
         if value.ty() != ty {
             return Err("有限Lawの全Dの型が違う".into());
         }
+        let key = value
+            .wire()
+            .canonical_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
+                c,
+                Checkpoint::FiniteLawFunction,
+            )
+            .map_err(|e| match e {
+                super::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+                super::control::CheckFailure::Input(_) => {
+                    ValidationFailure::Internal("有限Lawのcanonical値が構成できない".into())
+                }
+            })?;
+        ordered.push((key, point, value));
+    }
+    // 内部の数値/直積順を変えず、公開集合表のUTF-8 byte辞書順と対応させる。
+    ordered.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
+    tick(c)?;
+    for pair in ordered.windows(2) {
+        tick(c)?;
+        if pair[0].0 == pair[1].0 {
+            return Err("有限Lawの公開Dに重複した値がある".into());
+        }
+    }
+    let mut points = vec![];
+    let mut parts = vec![];
+    let mut elements = vec![];
+    for (_, point, value) in ordered {
+        tick(c)?;
+        points.push(point);
         elements.push(push(&mut parts, base, Part::Scalar(value))?);
     }
     let domain = push(&mut parts, base, Part::Domain { ty, elements })?;
@@ -298,8 +332,12 @@ fn plan(
     let target = push(&mut parts, base, Part::IntegerRing)?;
     let evaluation = if let Some(ev) = f.object_evaluation(c)? {
         let mut images = vec![];
-        for v in ev.basis_images() {
+        for point in &points {
             tick(c)?;
+            let v = ev
+                .basis_images()
+                .get(*point)
+                .ok_or("有限Lawの元評価座標が範囲外")?;
             images.push(push(&mut parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
         }
         Some(push(
@@ -323,11 +361,11 @@ fn plan(
         tick(c)?;
         columns.push(eq.column());
         components.push((eq.instance(), eq.component().map(<[usize]>::to_vec)));
-        let symbol = function(&mut parts, base, ring, eq.nu().values(), c)?;
+        let symbol = function(&mut parts, base, ring, eq.nu().values(), &points, c)?;
         nu.push(symbol);
         epsilon.push(
             eq.constant()
-                .map(|value| function(&mut parts, base, ring, value.values(), c))
+                .map(|value| function(&mut parts, base, ring, value.values(), &points, c))
                 .transpose()?,
         );
         let ideal = p.witness_ideal(index, c)?;
@@ -363,6 +401,7 @@ fn plan(
     Ok((
         parts,
         Diagram {
+            points,
             domain,
             ring,
             target,
