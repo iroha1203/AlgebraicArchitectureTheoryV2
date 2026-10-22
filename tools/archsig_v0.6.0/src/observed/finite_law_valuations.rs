@@ -1,5 +1,6 @@
 //! 固定した元Lawと束縛を、共有原始位置の有限候補上で読む。
 use super::*;
+use crate::construction::readings::ObjectReadingInstances;
 use crate::law::model::{Declaration, Signature};
 use crate::observed::{finite, input::InputSources};
 use num_bigint::BigInt;
@@ -247,6 +248,7 @@ pub(in crate::observed) struct FiniteLawFamilyValuations {
     object: Option<Arc<object::Selection>>,
     column_objects: Option<object::Columns>,
     instance_mode: bool,
+    automatic_readings: Option<Arc<ObjectReadingInstances>>,
     sources: InputSources,
     selection: Vec<Arc<Selection>>,
     columns: Vec<FiniteLawColumn>,
@@ -332,15 +334,33 @@ impl FiniteLawFamilyValuations {
             }
             None
         };
-        let expected = family_with_instances(
-            inputs, &selected, self.object.clone(),
-            self.column_objects.clone(), instances, c,
-        )?;
+        let expected = if let Some(readings) = &self.automatic_readings {
+            object::instances::realizations::automatic::finite_automatic_law_family(inputs, readings, c)
+                .map_err(|failure| FiniteLawFamilyFailure {
+                    cause: failure.cause,
+                    partial: None,
+                })?
+                .into_family()
+                .ok_or_else(|| FiniteLawFamilyFailure {
+                    cause: "自動Law族の元parameter域が未完成".into(),
+                    partial: None,
+                })?
+        } else {
+            family_with_instances(
+                inputs,
+                &selected,
+                self.object.clone(),
+                self.column_objects.clone(),
+                instances,
+                c,
+            )?
+        };
         let result = (|| -> Result<bool, ValidationFailure> {
             tick(c)?;
             if self.object != expected.object
                 || self.column_objects != expected.column_objects
                 || self.instance_mode != expected.instance_mode
+                || self.automatic_readings != expected.automatic_readings
                 || self.positions != expected.positions
                 || self.types != expected.types
                 || self.domain_complete != expected.domain_complete
@@ -349,6 +369,7 @@ impl FiniteLawFamilyValuations {
                 || self.required_zero != expected.required_zero
                 || self.domain.len() != expected.domain.len()
                 || self.columns.len() != expected.columns.len()
+                || self.selection.len() != expected.selection.len()
             {
                 return Ok(false);
             }
@@ -359,6 +380,17 @@ impl FiniteLawFamilyValuations {
                 }
                 for (a, b) in a.iter().zip(b) {
                     if !validation_identity::scalar(a, b, c)? {
+                        return Ok(false);
+                    }
+                }
+            }
+            for (a, b) in self.selection.iter().zip(&expected.selection) {
+                tick(c)?;
+                if a.law != b.law || a.bindings.len() != b.bindings.len() {
+                    return Ok(false);
+                }
+                for ((name, a), (other, b)) in a.bindings.iter().zip(&b.bindings) {
+                    if name != other || !validation_identity::scalar(a, b, c)? {
                         return Ok(false);
                     }
                 }
@@ -424,6 +456,27 @@ fn family_with_instances(
     object: Option<Arc<object::Selection>>,
     column_objects: Option<object::Columns>,
     instance_indices: Option<Vec<usize>>,
+    c: &mut Control,
+) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    family_with_instance_domain(
+        inputs,
+        selected,
+        object,
+        column_objects,
+        instance_indices,
+        &[],
+        None,
+        c,
+    )
+}
+fn family_with_instance_domain(
+    inputs: &CheckedInputs,
+    selected: &[(String, Vec<(String, Scalar)>)],
+    object: Option<Arc<object::Selection>>,
+    column_objects: Option<object::Columns>,
+    instance_indices: Option<Vec<usize>>,
+    positions: &[Fact],
+    automatic_readings: Option<Arc<ObjectReadingInstances>>,
     c: &mut Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     if instance_indices.as_ref()
@@ -542,6 +595,7 @@ fn family_with_instances(
         object,
         column_objects,
         instance_mode: instance_indices.is_some(),
+        automatic_readings,
         sources: inputs.sources().clone(),
         selection,
         columns,
@@ -554,7 +608,7 @@ fn family_with_instances(
         state: FiniteLawState::Pending,
         required_zero: None,
     };
-    match populate_family(inputs, &mut result, c) {
+    match populate_family(inputs, &mut result, positions, c) {
         Ok(()) => Ok(result),
         Err(cause) => Err(FiniteLawFamilyFailure {
             cause,
@@ -1217,6 +1271,7 @@ fn probe_mode(
 fn populate_family(
     inputs: &CheckedInputs,
     r: &mut FiniteLawFamilyValuations,
+    seed_positions: &[Fact],
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
     tick(c)?;
@@ -1241,7 +1296,7 @@ fn populate_family(
         };
         return Ok(());
     }
-    let mut positions: BTreeSet<Fact> = BTreeSet::new();
+    let mut positions: BTreeSet<Fact> = seed_positions.iter().cloned().collect();
     loop {
         tick(c)?;
         loop {
