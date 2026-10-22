@@ -71,6 +71,20 @@ fn saved(d: &Path, r: &Run, code: i32) -> JNode {
     assert_eq!(s(get(&w, "status")), s(get(&r.receipt, "status")));
     w
 }
+fn no_artifacts(d: &Path) {
+    let names: std::collections::BTreeSet<_> = std::fs::read_dir(d)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .collect();
+    assert_eq!(
+        names,
+        ["a.json", "d.json", "l.law"]
+            .into_iter()
+            .map(std::ffi::OsString::from)
+            .collect()
+    );
+    assert!(!d.join("out").exists());
+}
 fn ids(w: &JNode, key: &str) -> Vec<String> {
     arr(get(w, key))
         .iter()
@@ -148,12 +162,24 @@ fn partial_binding_quantifies_every_remaining_root_and_keeps_explicit_and_defaul
         assert_eq!(s(get(answer(&w, "partial"), "status")), "refuted");
         assert_eq!(s(get(answer(&w, "full"), "status")), "established");
         let req = &arr(get(&w, "requests"))[0];
+        for (request, count) in arr(get(&w, "requests")).iter().zip([2, 1]) {
+            let defaults = arr(get(request, "defaults"));
+            assert_eq!(defaults.len(), count);
+            assert_eq!(
+                defaults
+                    .iter()
+                    .filter(|d| s(get(d, "rule")) == "observed_environment")
+                    .count(),
+                1
+            );
+        }
         assert_eq!(arr(get(req, "arguments")).len(), 1);
         assert_eq!(s(get(&arr(get(req, "arguments"))[0], "origin")), "explicit");
         let default = arr(get(req, "defaults"))
             .iter()
             .find(|d| s(get(d, "rule")) == "universal_parameters")
             .unwrap();
+        assert_eq!(s(get(default, "declaration")), "R.same");
         assert_eq!(
             arr(get(default, "parameters"))
                 .iter()
@@ -247,6 +273,7 @@ fn static_duplicates_unknown_names_types_owners_indices_and_private_fields_are_u
         let d = files(&format!("request-static-{i}"));
         let r = asks(&d, &ts);
         let w = notified(&d, &r, "invalid", 64);
+        no_artifacts(&d);
         assert!(
             arr(get(&w, "issues"))
                 .iter()
@@ -294,6 +321,7 @@ fn multiple_cycles_preserve_the_whole_internal_graph_and_report_only_cyclic_memb
     let d = files("request-cycles");
     let r = asks(&d, &ts);
     let cli = notified(&d, &r, "invalid", 64);
+    no_artifacts(&d);
     for w in [w, cli] {
         let issues = arr(get(&w, "issues"));
         assert_eq!(issues.len(), 5);
