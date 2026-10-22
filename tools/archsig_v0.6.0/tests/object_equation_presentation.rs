@@ -338,7 +338,7 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
     };
     use std::{cell::RefCell, rc::Rc};
     let i = inputs(
-        "law required first(c:Part) when true or c.quantity>0:c.quantity=0;law required second(c:Part) when c.quantity-c.quantity=0:c.quantity*c.quantity=1;",
+        "law required first(c:Part) when true or c.quantity>0:(match c { d=>d.quantity; })=0;law required second(c:Part) when c.quantity-c.quantity=0:(match c.quantity { x=>x*x; })=1;",
     );
     let baseline = run(i.clone());
     for recheck in [false, true] {
@@ -1207,4 +1207,106 @@ fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_
         );
         assert_eq!(partial.occurrences()[0].component_holds, Some(false));
     }
+}
+
+#[test]
+fn match_bindings_keep_original_field_polynomials_through_helpers_and_projections() {
+    for law in [
+        "law required t(c:Part):match c { d=>d.quantity=0; };",
+        "law required t(c:Part):match c.quantity { n=>n=0; };",
+        "view alias(c:Part):Z=match c { d => d.quantity; };law required t(c:Part):alias(c)=0;",
+        "law required t(c:Part):(match c { d=>d.quantity; })=0;",
+        "view alias(n:Z):Z=match n { a=>a; };law required t(c:Part):alias(c.quantity)=0;",
+        "law required t(c:Part):(match c.quantity { _=>c.quantity; })=0;",
+        "law required t(c:Part):(match true { _=>c.quantity; })=0;",
+        "law required t(c:Part):(match c { d=>(d.quantity,1); }).0=0;",
+        "law required t(c:Part):(match c { d=>d; }).quantity=0;",
+    ] {
+        let i = inputs(law);
+        let r = run(i.clone());
+        assert_eq!(r.status(), S::Ready, "{law}");
+        let q = &r.occurrences()[0];
+        assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![0], "\"1\"".into())]);
+        assert_eq!(number(&q.epsilon), Some("\"2\"".into()));
+        assert_eq!(q.component_holds, Some(false));
+        assert_eq!(q.status, S::Ready);
+        assert_eq!(r.rings()[0].required_generators, [0]);
+        assert_eq!(r.rings()[0].symbols.len(), 1);
+        assert_eq!(r.rings()[0].symbols[0].slot.field, "Pattern.Part.quantity");
+        assert!(!r.rings()[0].symbols[0].readings.is_empty());
+        assert!(q.steps.len() > 1);
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+#[test]
+fn match_bindings_prove_guard_constants_without_discarding_primitive_support() {
+    for guard in [
+        "match c { d=>true or d.quantity>0; }",
+        "match c.quantity { a=>a-a=0; }",
+        "match c.quantity { _=>true; }",
+    ] {
+        let i = inputs(&format!(
+            "law required t(c:Part) when ({guard}):c.quantity=0;"
+        ));
+        let r = run(i.clone());
+        assert_eq!(r.status(), S::Ready);
+        assert_eq!(r.occurrences()[0].guard, G::AlwaysTrue);
+        assert_eq!(r.rings()[0].required_generators, [0]);
+        assert_eq!(r.rings()[0].symbols.len(), 1);
+        assert_eq!(number(&r.occurrences()[0].epsilon), Some("\"2\"".into()));
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+
+#[test]
+fn constructor_selection_from_a_primitive_field_is_not_its_observed_branch_polynomial() {
+    let d=fixture::D.replace("\"declarations\":[",r#""declarations":[{"kind":"data","name":"Pattern.Choice","meaning":"選択肢。","constructors":[{"name":"Left","arguments":[],"meaning":"左。"},{"name":"Right","arguments":[],"meaning":"右。"}]},"#)
+        .replace("\"meaning\":\"数量。\"}","\"meaning\":\"数量。\"},{\"name\":\"choice\",\"type\":[\"Data\",\"Pattern.Choice\"],\"meaning\":\"選択。\"}");
+    for (tag, epsilon) in [("Left", "\"2\""), ("Right", "\"4\"")] {
+        let map=fixture::A.replace("\"atoms\":[",&format!("\"atoms\":[{{\"id\":\"choice-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.choice\",\"value\":{{\"tag\":\"{tag}\",\"args\":[]}},\"origin\":\"model\"}},"));
+        let i = inputs_with(
+            &d,
+            "view selected(c:Part):Z=match c.choice {Left=>c.quantity;Right=>2*c.quantity;};law required t(c:Part):selected(c)=0;",
+            &map,
+        );
+        let r = run(i.clone());
+        assert_eq!(r.status(), S::UnsupportedAlgorithm);
+        let q = &r.occurrences()[0];
+        assert!(q.nu.is_none());
+        assert_eq!(number(&q.epsilon), Some(epsilon.into()));
+        assert!(r.rings()[0].required_generators.is_empty());
+        assert!(q.evaluation.is_some());
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+
+#[test]
+fn unobserved_outer_match_keeps_its_slot_without_executing_a_missing_body() {
+    let map = fixture::A
+        .lines()
+        .filter(|l| !l.contains("\"quantity-p\""))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .replace(",\n]", "\n]");
+    let i = inputs_with(
+        fixture::D,
+        "law required t(c:Part):match c.quantity { n=>n=0; };",
+        &map,
+    );
+    let r = run(i.clone());
+    assert_eq!(r.status(), S::Undetermined);
+    assert_eq!(r.occurrences().len(), 1);
+    let q = &r.occurrences()[0];
+    assert!(q.nu.is_none());
+    assert!(q.epsilon.is_none());
+    assert!(q.operands.is_empty());
+    assert!(q.component_holds.is_none());
+    assert_eq!(q.status, S::Undetermined);
+    assert_eq!(r.rings()[0].symbols.len(), 1);
+    assert_eq!(r.rings()[0].symbols[0].slot.field, "Pattern.Part.quantity");
+    assert!(r.rings()[0].symbols[0].value.is_none());
+    assert!(r.rings()[0].symbols[0].readings[0].fact.atom.is_none());
+    assert!(r.rings()[0].evaluation_images.is_none());
+    assert!(r.rings()[0].required_generators.is_empty());
+    r.recheck(i, &mut quiet()).unwrap();
 }

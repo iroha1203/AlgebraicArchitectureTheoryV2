@@ -179,6 +179,27 @@ impl ObjectLawResidualsFailure {
         }
     }
 }
+pub(super) fn binding_match_body(
+    inputs: &CheckedInputs,
+    scrutinee: usize,
+    arms: &[crate::law::ast::Arm],
+    c: &mut Control,
+) -> Result<Option<usize>, ConstructionFailure> {
+    let [arm] = arms else { return Ok(None) };
+    match &arm.pattern {
+        crate::law::ast::Pattern::Wild(_) => Ok(Some(arm.body)),
+        crate::law::ast::Pattern::Name(_) => {
+            let ty = inputs
+                .law()
+                .expr_type(scrutinee)
+                .ok_or_else(|| bad("match元型がない"))?;
+            let bindings =
+                super::data::binders(&arm.pattern, ty, inputs.law(), c).map_err(invalid)?;
+            Ok((bindings.len() == 1 && bindings[0].path.is_empty()).then_some(arm.body))
+        }
+        _ => Ok(None),
+    }
+}
 fn shape(
     inputs: &CheckedInputs,
     name: &str,
@@ -197,8 +218,14 @@ fn shape(
     let mut eq = body;
     loop {
         tick(c)?;
-        match inputs.law().exprs[eq].kind {
-            ExprKind::Group(child) | ExprKind::Let { body: child, .. } => eq = child,
+        match &inputs.law().exprs[eq].kind {
+            ExprKind::Group(child) | ExprKind::Let { body: child, .. } => eq = *child,
+            ExprKind::Match { scrutinee, arms } => {
+                match binding_match_body(inputs, *scrutinee, arms, c)? {
+                    Some(child) => eq = child,
+                    None => break,
+                }
+            }
             _ => break,
         }
     }
@@ -387,46 +414,65 @@ fn read_case(
         }
         if let Some(mut at) = at {
             let mut expression = *body;
+            let mut evaluated = true;
             while expression != *equality {
                 tick(c)?;
-                let (child, index) = match inputs.law().exprs[expression].kind {
-                    ExprKind::Group(child) => (child, 0),
-                    ExprKind::Let { body: child, .. } => (child, 1),
+                let (child, index) = match &inputs.law().exprs[expression].kind {
+                    ExprKind::Group(child) => (*child, 0),
+                    ExprKind::Let { body: child, .. } => (*child, 1),
+                    ExprKind::Match { scrutinee, arms } => (
+                        binding_match_body(inputs, *scrutinee, arms, c)?
+                            .ok_or_else(|| bad("元数値等式のmatchが全体束縛でない"))?,
+                        1,
+                    ),
                     _ => return Err(bad("元数値等式の外側導出が違う")),
                 };
-                at = *eval_parts(g, at)?
+                let p = eval_parts(g, at)?
                     .first()
-                    .and_then(|p| p.children.get(index))
-                    .ok_or_else(|| bad("元数値等式の外側評価の子がない"))?;
+                    .ok_or_else(|| bad("元数値等式の外側partがない"))?;
+                if let Some(&next) = p.children.get(index) {
+                    at = next;
+                } else if matches!(inputs.law().exprs[expression].kind, ExprKind::Match { .. })
+                    && p.children.len() == 1
+                    && p.value.is_none()
+                {
+                    // 未観測scrutineeでは元Evaluatorがbodyを実行しない。式・支持を残し値は作らない。
+                    evaluated = false;
+                    break;
+                } else {
+                    return Err(bad("元数値等式の外側評価の子がない"));
+                }
                 expression = child;
             }
-            r.body_evaluation = Some(at.0);
-            let [part] = eval_parts(g, at)? else {
-                return Err(bad("元数値等式partが違う"));
-            };
-            let [l, rr] = part.children.as_slice() else {
-                return Err(bad("元数値等式の左右評価がない"));
-            };
-            r.operand_evaluations = vec![l.0, rr.0];
-            for operand in [l, rr] {
-                let Some(Payload::Evaluation { value, .. }) =
-                    g.nodes.get(operand.0).and_then(|n| n.payload.as_ref())
-                else {
-                    return Err(bad("元operand評価がない"));
+            if evaluated {
+                r.body_evaluation = Some(at.0);
+                let [part] = eval_parts(g, at)? else {
+                    return Err(bad("元数値等式partが違う"));
                 };
-                r.operand_values.push(value.map(|v| v.0));
-            }
-            lhs = scalar(g, Some(*l), c)?;
-            rhs = scalar(g, Some(*rr), c)?;
-            r.epsilon_producer = part.residual.map(|v| v.0);
-            epsilon = scalar(g, part.residual, c)?;
-            // 元producerは保つが、未観測operandを定数零の生差へ読み替えない。
-            if lhs.is_none() || rhs.is_none() {
-                epsilon = None;
-            }
-            for value in [&lhs, &rhs, &epsilon].into_iter().flatten() {
-                if &value.ty() != ty {
-                    return Err(bad("元数値等式の値/差の型が違う"));
+                let [l, rr] = part.children.as_slice() else {
+                    return Err(bad("元数値等式の左右評価がない"));
+                };
+                r.operand_evaluations = vec![l.0, rr.0];
+                for operand in [l, rr] {
+                    let Some(Payload::Evaluation { value, .. }) =
+                        g.nodes.get(operand.0).and_then(|n| n.payload.as_ref())
+                    else {
+                        return Err(bad("元operand評価がない"));
+                    };
+                    r.operand_values.push(value.map(|v| v.0));
+                }
+                lhs = scalar(g, Some(*l), c)?;
+                rhs = scalar(g, Some(*rr), c)?;
+                r.epsilon_producer = part.residual.map(|v| v.0);
+                epsilon = scalar(g, part.residual, c)?;
+                // 元producerは保つが、未観測operandを定数零の生差へ読み替えない。
+                if lhs.is_none() || rhs.is_none() {
+                    epsilon = None;
+                }
+                for value in [&lhs, &rhs, &epsilon].into_iter().flatten() {
+                    if &value.ty() != ty {
+                        return Err(bad("元数値等式の値/差の型が違う"));
+                    }
                 }
             }
         }

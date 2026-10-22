@@ -444,6 +444,25 @@ impl Compiler<'_> {
         }
         Ok(observed && self.fixed_reference(*base, &[], c)?)
     }
+    fn fixed_match(
+        &self,
+        r: NodeRef,
+        scrutinee: usize,
+        arms: &[crate::law::ast::Arm],
+        c: &mut Control,
+    ) -> Result<bool, ConstructionFailure> {
+        let p = part(self.g, r)?;
+        if p.children.len() != 2 {
+            return Ok(false);
+        }
+        if !has_fields(self.g, p.children[0], c)? {
+            return Ok(true);
+        }
+        Ok(
+            super::object_law_residuals::binding_match_body(self.inputs, scrutinee, arms, c)?
+                .is_some(),
+        )
+    }
     // Refの実値だけでなく、その選択導出が数値記号に依存しないことを確認する。
     fn fixed_reference(
         &self,
@@ -521,8 +540,8 @@ impl Compiler<'_> {
                     {
                         self.fixed_reference(p.children[p.children.len() - 1], path, c)
                     }
-                    ExprKind::Match { .. }
-                        if p.children.len() == 2 && !has_fields(self.g, p.children[0], c)? =>
+                    ExprKind::Match { scrutinee, arms }
+                        if self.fixed_match(r, *scrutinee, arms, c)? =>
                     {
                         self.fixed_reference(p.children[1], path, c)
                     }
@@ -639,8 +658,8 @@ impl Compiler<'_> {
                 {
                     self.constant_boolean(p.children[p.children.len() - 1], path, c)
                 }
-                ExprKind::Match { .. }
-                    if p.children.len() == 2 && !has_fields(self.g, p.children[0], c)? =>
+                ExprKind::Match { scrutinee, arms }
+                    if self.fixed_match(r, *scrutinee, arms, c)? =>
                 {
                     self.constant_boolean(p.children[1], path, c)
                 }
@@ -865,6 +884,11 @@ impl Compiler<'_> {
                         .transpose()?
                 }
                 ExprKind::Let { .. } if p.children.len() == 2 => {
+                    self.compile(p.children[1], path, c)?
+                }
+                ExprKind::Match { scrutinee, arms }
+                    if self.fixed_match(r, *scrutinee, arms, c)? =>
+                {
                     self.compile(p.children[1], path, c)?
                 }
                 ExprKind::If { .. }
@@ -1158,6 +1182,18 @@ fn populate(
                         }
                     }
                 } else {
+                    if let (Some(g), Some(root)) = (g, q.evaluation) {
+                        Compiler {
+                            inputs,
+                            g,
+                            ring: &mut r.rings[index],
+                            position: e.position,
+                            row,
+                            case,
+                            steps: vec![],
+                        }
+                        .collect_support(NodeRef(root), c)?;
+                    }
                     occurrence.status = if guard == EquationGuard::AlwaysFalse {
                         EquationPresentationStatus::NotApplicable
                     } else if guard == EquationGuard::StateDependent {
