@@ -635,6 +635,11 @@ pub use crate::observed::object_equation_presentation::{
     EquationSymbolReading, object_equation_presentation,
 };
 
+pub use crate::observed::finite_polynomial_evaluation::{
+    FiniteEquationAssignment, FiniteEquationSymbol, FiniteIntegerFunction,
+    FinitePolynomialEvaluation, FinitePolynomialFailure, FinitePolynomialTable,
+    FinitePolynomialTableKind, finite_polynomial_evaluation,
+};
 pub use crate::observed::object_polynomial_observable::{
     ObjectPolynomialObservable, PolynomialObservableCoordinate, PolynomialObservableFailure,
     PolynomialObservableReading, PolynomialObservableValue, object_polynomial_observable,
