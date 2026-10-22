@@ -1566,3 +1566,9 @@ mod tests {
         );
     }
 }
+
+pub use crate::observed::object_law_circuit_transport::{
+    LawCircuitTransportFailureCause, LawCircuitTransportOutcome, LawCircuitTransportPoint,
+    LawCircuitTransportRefutation, ObjectLawCircuitTransport, ObjectLawCircuitTransportFailure,
+    object_law_circuit_transport,
+};

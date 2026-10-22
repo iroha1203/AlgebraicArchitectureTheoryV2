@@ -19,6 +19,7 @@ pub(crate) mod object_law_transport;
 pub(crate) mod object_law_compatibility;
 pub(crate) mod object_law_residuals;
 pub(crate) mod object_law_circuits;
+pub(crate) mod object_law_circuit_transport;
 mod object_transport;
 pub(crate) mod object_view_transport;
 mod path_value;
