@@ -11,10 +11,10 @@ fn subject(name: &str) -> Scalar {
     Scalar::Subject {
         snapshot: "v".into(),
         subject: name.into(),
-        entity: if name == "p" || name == "q" {
-            "Pattern.Part"
-        } else {
+        entity: if name == "root" || name == "r2" {
             "Pattern.Root"
+        } else {
+            "Pattern.Part"
         }
         .into(),
     }
@@ -905,4 +905,450 @@ fn registered_identity_and_reconstructed_path_bindings_are_accepted_but_forged_a
         )
         .is_err()
     );
+}
+
+fn family_selection(
+    items: &[(&str, Vec<(String, Scalar)>)],
+) -> Vec<(String, Vec<(String, Scalar)>)> {
+    items
+        .iter()
+        .map(|(n, b)| (format!("Selected.{n}"), b.clone()))
+        .collect()
+}
+fn family_indicators(r: &FiniteLawFamilyValuations, column: usize) -> Vec<i32> {
+    r.columns()[column]
+        .rows()
+        .iter()
+        .map(|p| {
+            if p.indicator == Some(0.into()) {
+                0
+            } else if p.indicator == Some(1.into()) {
+                1
+            } else {
+                panic!("未確定の指示関数")
+            }
+        })
+        .collect()
+}
+#[test]
+fn family_shares_one_coordinate_and_keeps_contradictory_required_laws() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law required zero(c:Part):c.quantity=0;law required one(c:Part):c.quantity=1;",
+    );
+    let selected = family_selection(&[("zero", bound()), ("one", bound())]);
+    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    assert!(r.is_complete());
+    assert_eq!(r.positions(), &[position("p", "quantity")]);
+    assert_eq!(r.types(), &[Type::Fp("2".into())]);
+    assert_eq!(r.domain(), &[vec![fp(0)], vec![fp(1)]]);
+    assert_eq!(r.observed_point(), Some(0));
+    assert_eq!(family_indicators(&r, 0), vec![0, 1]);
+    assert_eq!(family_indicators(&r, 1), vec![1, 0]);
+    assert_eq!(r.required_zero(), Some([].as_slice()));
+    assert!(r.columns().iter().all(|q| q.required()));
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn family_guard_and_optional_law_use_integer_functions_on_the_same_four_points() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law required guarded(c:Part) when c.flag:c.quantity=0;law optional other(c:Part):c.quantity=1;",
+    );
+    let selected = family_selection(&[("guarded", bound()), ("other", bound())]);
+    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    assert!(r.is_complete());
+    assert_eq!(
+        r.domain(),
+        &[
+            vec![Scalar::Bool(false), fp(0)],
+            vec![Scalar::Bool(false), fp(1)],
+            vec![Scalar::Bool(true), fp(0)],
+            vec![Scalar::Bool(true), fp(1)]
+        ]
+    );
+    assert_eq!(family_indicators(&r, 0), vec![0, 0, 0, 1]);
+    assert_eq!(family_indicators(&r, 1), vec![1, 0, 1, 0]);
+    assert!(r.columns()[0].required());
+    assert!(!r.columns()[1].required());
+    assert_eq!(r.required_zero(), Some([0, 1, 2].as_slice()));
+    assert_eq!(r.observed_point(), Some(2));
+    for q in r.columns() {
+        assert_eq!(q.bindings(), bound());
+        for (point, row) in q.rows().iter().enumerate() {
+            assert_eq!(row.point, point);
+            let (ty, a, b) = row.operands.as_ref().unwrap();
+            assert_eq!(ty, &Type::Fp("2".into()));
+            assert_eq!(a.as_ref(), Some(&r.domain()[point][1]));
+            assert!(b.is_some());
+            assert!(row.scope.assignments);
+            assert!(row.support.iter().all(|f| f.atom.is_none()));
+        }
+    }
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn family_independent_fields_form_one_product_and_same_law_bindings_stay_distinct() {
+    let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=0;");
+    let selected = family_selection(&[
+        ("zero", bound()),
+        ("zero", vec![("c".into(), subject("q"))]),
+    ]);
+    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    assert_eq!(
+        r.positions(),
+        &[position("p", "quantity"), position("q", "quantity")]
+    );
+    assert_eq!(
+        r.domain(),
+        &[
+            vec![fp(0), fp(0)],
+            vec![fp(0), fp(1)],
+            vec![fp(1), fp(0)],
+            vec![fp(1), fp(1)]
+        ]
+    );
+    assert_eq!(family_indicators(&r, 0), vec![0, 0, 1, 1]);
+    assert_eq!(family_indicators(&r, 1), vec![0, 1, 0, 1]);
+    assert_eq!(r.required_zero(), Some([0].as_slice()));
+    assert_eq!(r.observed_point(), Some(1));
+    assert_ne!(r.columns()[0].bindings(), r.columns()[1].bindings());
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn family_empty_selection_and_optional_false_keep_the_empty_assignment() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law required no():false;law optional optionalNo():false;",
+    );
+    let empty = finite_law_family_valuations(&i, &[], &mut quiet()).unwrap();
+    assert!(empty.is_complete());
+    assert!(empty.domain_complete());
+    assert!(empty.columns().is_empty());
+    assert!(empty.positions().is_empty());
+    assert_eq!(empty.domain(), &[Vec::<Scalar>::new()]);
+    assert_eq!(empty.observed_point(), Some(0));
+    assert_eq!(empty.required_zero(), Some([0].as_slice()));
+    empty.recheck(&i, &mut quiet()).unwrap();
+    let optional = finite_law_family_valuations(
+        &i,
+        &family_selection(&[("optionalNo", vec![])]),
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(family_indicators(&optional, 0), vec![1]);
+    assert_eq!(optional.required_zero(), Some([0].as_slice()));
+    let required =
+        finite_law_family_valuations(&i, &family_selection(&[("no", vec![])]), &mut quiet())
+            .unwrap();
+    assert_eq!(required.domain(), &[Vec::<Scalar>::new()]);
+    assert_eq!(family_indicators(&required, 0), vec![1]);
+    assert_eq!(required.required_zero(), Some([].as_slice()));
+}
+#[test]
+fn family_incompatible_fixed_owned_bindings_produce_empty_d_without_faking_a_point() {
+    let i = fixture::with_body(fixture::MAP, "law required typed(r:Root,c:Part[r]):true;");
+    let selected = family_selection(&[
+        (
+            "typed",
+            vec![("r".into(), subject("root")), ("c".into(), subject("p"))],
+        ),
+        (
+            "typed",
+            vec![("r".into(), subject("r2")), ("c".into(), subject("p"))],
+        ),
+    ]);
+    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    assert!(r.is_complete());
+    assert!(r.domain_complete());
+    assert_eq!(r.positions(), &[position("p", "owner")]);
+    assert!(r.domain().is_empty());
+    assert!(r.columns().iter().all(|q| q.rows().is_empty()));
+    assert_eq!(r.observed_point(), None);
+    assert_eq!(r.required_zero(), Some([].as_slice()));
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn family_missing_field_has_candidates_but_no_observed_point() {
+    let map=fixture::MAP.replace(r#"{"id":"xp","subject":"p","field":"Pattern.Part.quantity","value":"0","origin":"model"},"#,"");
+    let i = fixture::with_body(
+        &map,
+        "law required zero(c:Part):c.quantity=0;law optional flag(c:Part):c.flag;",
+    );
+    let r = finite_law_family_valuations(
+        &i,
+        &family_selection(&[("zero", bound()), ("flag", bound())]),
+        &mut quiet(),
+    )
+    .unwrap();
+    assert!(r.is_complete());
+    assert_eq!(r.domain().len(), 4);
+    assert_eq!(r.observed_point(), None);
+    assert_eq!(r.required_zero(), Some([0, 2].as_slice()));
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn family_joint_discovery_keeps_delayed_reads_and_other_law_positions() {
+    let map=fixture::MAP.replace("\"atoms\":[",r#""atoms":[{"id":"table-p","subject":"p","field":"Pattern.Part.ownedtable","value":[[["v","p"],["v","p"]],[["v","q"],["v","q"]]],"origin":"model"},"#);
+    let i = fixture::with_body(
+        &map,
+        "law required branched(r:Root,c:Part):count(set{c.ownedtable | x in list<Part>[c] where c.owner!=r})=0;law optional other(c:Part):c.quantity=0;",
+    );
+    let r = finite_law_family_valuations(
+        &i,
+        &family_selection(&[
+            (
+                "branched",
+                vec![("r".into(), subject("root")), ("c".into(), subject("p"))],
+            ),
+            ("other", bound()),
+        ]),
+        &mut quiet(),
+    )
+    .unwrap();
+    assert!(r.is_complete());
+    assert_eq!(
+        r.positions(),
+        &[
+            position("p", "ownedtable"),
+            position("p", "owner"),
+            position("p", "quantity"),
+            position("q", "owner")
+        ]
+    );
+    assert_eq!(r.domain().len(), 20);
+    assert_eq!(r.columns()[0].rows().len(), 20);
+    assert_eq!(r.columns()[1].rows().len(), 20);
+    for (point, values) in r.domain().iter().enumerate() {
+        assert_eq!(
+            r.columns()[0].rows()[point].predicate,
+            Some(values[1] == subject("root"))
+        );
+        assert_eq!(
+            r.columns()[1].rows()[point].predicate,
+            Some(values[2] == fp(0))
+        );
+    }
+    let expected = r
+        .domain()
+        .iter()
+        .enumerate()
+        .filter_map(|(p, v)| (v[1] == subject("root")).then_some(p))
+        .collect::<Vec<_>>();
+    assert_eq!(r.required_zero(), Some(expected.as_slice()));
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn family_preserves_selection_order_and_duplicate_occurrences() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law optional one(c:Part):c.quantity=1;law required zero(c:Part):c.quantity=0;",
+    );
+    let selected = family_selection(&[("one", bound()), ("zero", bound()), ("one", bound())]);
+    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    assert_eq!(r.columns().len(), 3);
+    assert_eq!(r.columns()[0].declaration(), r.columns()[2].declaration());
+    assert_ne!(r.columns()[0].declaration(), r.columns()[1].declaration());
+    assert_eq!(family_indicators(&r, 0), vec![1, 0]);
+    assert_eq!(family_indicators(&r, 1), vec![0, 1]);
+    assert_eq!(family_indicators(&r, 2), vec![1, 0]);
+    assert_eq!(r.required_zero(), Some([0].as_slice()));
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn family_rejects_bad_declarations_bindings_and_unregistered_references() {
+    let i = fixture::inputs();
+    for name in ["Selected.absent", "Selected.value"] {
+        assert!(finite_law_family_valuations(&i, &[(name.into(), bound())], &mut quiet()).is_err());
+    }
+    for bindings in [
+        vec![],
+        vec![("c".into(), subject("p")), ("c".into(), subject("q"))],
+        vec![("x".into(), subject("p"))],
+        vec![("c".into(), Scalar::Bool(false))],
+        vec![("c".into(), subject("absent"))],
+    ] {
+        let selected = vec![
+            ("Selected.guarded".into(), bound()),
+            ("Selected.guarded".into(), bindings),
+        ];
+        assert!(finite_law_family_valuations(&i, &selected, &mut quiet()).is_err());
+    }
+}
+#[test]
+fn family_outside_finite_and_condition_failure_never_supply_zero_coordinates() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law required infinite(c:Part):c.integer=0;law required finite(c:Part):c.quantity=0;",
+    );
+    let r = finite_law_family_valuations(
+        &i,
+        &family_selection(&[("infinite", bound()), ("finite", bound())]),
+        &mut quiet(),
+    )
+    .unwrap();
+    assert!(
+        matches!(r.state(),FiniteLawState::OutsideFinite{position:p,ty:Type::Z} if p==&position("p","integer"))
+    );
+    assert!(!r.domain_complete());
+    assert!(!r.is_complete());
+    assert_eq!(r.required_zero(), None);
+    assert!(r.columns().iter().all(|q| q.rows().is_empty()));
+    r.recheck(&i, &mut quiet()).unwrap();
+    let i = fixture::with_body(
+        fixture::MAP,
+        "view narrow(r:Root,x:Part):Part[r]=x;law required broken(r:Root,c:Part):narrow(r,c)=c;law required finite(c:Part):c.quantity=0;",
+    );
+    let r = finite_law_family_valuations(
+        &i,
+        &family_selection(&[
+            (
+                "broken",
+                vec![("r".into(), subject("root")), ("c".into(), subject("p"))],
+            ),
+            ("finite", bound()),
+        ]),
+        &mut quiet(),
+    )
+    .unwrap();
+    assert_eq!(r.state(), &FiniteLawState::ConditionFailed);
+    assert!(r.domain_complete());
+    assert_eq!(r.required_zero(), None);
+    assert!(r.columns()[0].rows().iter().any(|r| r.condition_failed));
+    assert!(r.columns()[1].rows().iter().all(|r| r.indicator.is_some()));
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn family_recheck_rebuilds_all_columns_domain_and_required_zero() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;",
+    );
+    let selected = family_selection(&[("zero", bound()), ("one", bound())]);
+    for change in 0..14 {
+        let mut r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+        match change {
+            0 => r.positions.clear(),
+            1 => r.types[0] = Type::Bool,
+            2 => r.domain.pop().map(|_| ()).unwrap(),
+            3 => r.domain[0][0] = fp(1),
+            4 => r.domain_complete = false,
+            5 => r.observed_point = Some(1),
+            6 => r.state = FiniteLawState::Pending,
+            7 => r.required_zero = Some(vec![1]),
+            8 => r.columns.swap(0, 1),
+            9 => r.columns[0].bindings[0].1 = subject("q"),
+            10 => r.columns[0].rows[0].indicator = Some(1.into()),
+            11 => r.columns[1].rows[0].point = 1,
+            12 => r.columns[1].rows.pop().map(|_| ()).unwrap(),
+            _ => r.columns[0].declaration = r.columns[1].declaration.clone(),
+        }
+        assert!(r.recheck(&i, &mut quiet()).is_err(), "change={change}");
+    }
+    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let other = fixture::with_body(
+        fixture::MAP,
+        "law required zero(c:Part):c.quantity=1;law optional one(c:Part):c.quantity=1;",
+    );
+    assert!(r.recheck(&other, &mut quiet()).is_err());
+}
+#[test]
+fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
+    use crate::{
+        observed::control::{Resource, StopReason},
+        result::Signal,
+    };
+    use std::{cell::Cell, rc::Rc};
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;",
+    );
+    let selected = family_selection(&[("zero", bound()), ("one", bound())]);
+    for point in [
+        Checkpoint::FiniteLawSelection,
+        Checkpoint::FiniteLawDomain,
+        Checkpoint::FiniteLawEvaluation,
+        Checkpoint::FiniteLawRequired,
+    ] {
+        let run = |at: usize, kind: u8| {
+            let seen = Rc::new(Cell::new(0));
+            let visits = seen.clone();
+            let calls = Rc::new(Cell::new(0));
+            let sampled = calls.clone();
+            (
+                Control::new(
+                    Limits {
+                        time_ms: Some(1),
+                        memory_mib: Some(1),
+                    },
+                    move |p| {
+                        sampled.set(sampled.get() + 1);
+                        if p == point {
+                            visits.set(visits.get() + 1);
+                        }
+                        let stop = visits.get() >= at;
+                        Usage {
+                            elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
+                            memory_mib: if stop && kind == 1 { 1 } else { 0 },
+                            signal: if stop {
+                                match kind {
+                                    2 => Some(Signal::Int),
+                                    3 => Some(Signal::Term),
+                                    _ => None,
+                                }
+                            } else {
+                                None
+                            },
+                        }
+                    },
+                ),
+                seen,
+                calls,
+            )
+        };
+        let (mut c, count, _) = run(usize::MAX, 4);
+        finite_law_family_valuations(&i, &selected, &mut c).unwrap();
+        let total = count.get();
+        assert!(total > 1);
+        for at in [1, total / 2, total] {
+            for kind in 0..4 {
+                let (mut c, _, calls) = run(at, kind);
+                let failure = match finite_law_family_valuations(&i, &selected, &mut c) {
+                    Err(f) => f,
+                    Ok(_) => panic!("停止が成功"),
+                };
+                let expected = match kind {
+                    0 => StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    1 => StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    2 => StopReason::Cancelled(Signal::Int),
+                    _ => StopReason::Cancelled(Signal::Term),
+                };
+                assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
+                if let Some(partial) = failure.partial {
+                    assert!(!partial.is_complete());
+                    assert_eq!(partial.required_zero(), None);
+                    for q in partial.columns() {
+                        if !partial.domain_complete() {
+                            assert!(q.rows().is_empty());
+                        }
+                        for (p, row) in q.rows().iter().enumerate() {
+                            assert_eq!(row.point, p);
+                            assert!(row.indicator.is_some());
+                        }
+                    }
+                }
+                let before = calls.get();
+                assert_eq!(c.checkpoint(point), Err(expected));
+                assert_eq!(calls.get(), before);
+            }
+        }
+    }
 }
