@@ -15,7 +15,10 @@ use crate::{
     },
     types::Type,
 };
-use std::{collections::BTreeSet, sync::Arc};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    sync::Arc,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ObjectContext {
@@ -87,6 +90,25 @@ impl ObjectDomain {
                 || (subject.snapshot == self.identity.subject().snapshot
                     && subject.id == self.identity.subject().subject))
     }
+    pub(super) fn conditional_positions(
+        &self,
+        ty: &Type,
+        control: &Control,
+    ) -> Result<Vec<Fact>, ValidationFailure> {
+        let (Type::Ref(entity) | Type::Owned(entity, _)) = ty else {
+            return Ok(vec![]);
+        };
+        let mut positions = vec![];
+        if self.local_types.contains(entity) {
+            for (actual, _, slot) in &self.conditional {
+                control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+                if actual == entity {
+                    positions.push(slot.clone());
+                }
+            }
+        }
+        Ok(positions)
+    }
     /// 直接の参照binderだけを対象域へ制限する。複合値域の参照leafは全型域のまま。
     pub(super) fn restrict(
         &self,
@@ -97,6 +119,7 @@ impl ObjectDomain {
         scope: &mut Scope,
         control: &Control,
         completions: &[(Fact, NodeRef, Scalar)],
+        assignments: Option<&BTreeMap<Fact, Scalar>>,
     ) -> Result<(), ValidationFailure> {
         let (Type::Ref(entity) | Type::Owned(entity, _)) = ty else {
             return Ok(());
@@ -111,7 +134,18 @@ impl ObjectDomain {
             if actual != entity {
                 continue;
             }
-            if let Some((_, _, value)) = completions.iter().find(|(f, _, _)| f == slot) {
+            let assigned = assignments.and_then(|values| values.get(slot));
+            let completed = completions
+                .iter()
+                .find(|(f, _, _)| f == slot)
+                .map(|(_, _, v)| v);
+            if let Some(value) = assigned.or(completed) {
+                if assigned.is_some() {
+                    scope.assignments = true;
+                    support.push(slot.clone());
+                } else {
+                    scope.completions = true;
+                }
                 let Scalar::Subject {
                     snapshot,
                     subject: owner,
