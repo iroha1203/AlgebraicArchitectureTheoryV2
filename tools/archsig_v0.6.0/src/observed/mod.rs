@@ -169,3 +169,5 @@ pub fn prepare_shared_observed(
 
 pub(crate) mod equation_polynomial;
 pub(crate) mod object_equation_presentation;
+
+pub(crate) mod object_polynomial_observable;
