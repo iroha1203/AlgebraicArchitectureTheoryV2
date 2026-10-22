@@ -495,3 +495,6 @@ pub(in crate::observed) fn relation_instances(
 #[cfg(test)]
 #[path = "relation_instances_tests.rs"]
 mod tests;
+
+#[path = "relation_congruence.rs"]
+pub(super) mod congruence;
