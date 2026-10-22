@@ -533,3 +533,114 @@ fn a_fiber_with_no_known_members_and_missing_owners_is_not_a_known_empty_factor(
     assert_eq!(e.domains[1].values, None);
     f.recheck(&i, &mut quiet()).unwrap();
 }
+
+fn mixed_missing_input(extra: &str) -> Arc<CheckedInputs> {
+    let map=fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,"");
+    fixture::with_body(
+        &map,
+        &format!("law required mixed(r:Root,c:Part,x:(Z,Option<Part[r]>){extra}):true;"),
+    )
+}
+fn assert_mixed_missing(domain: &ParameterDomain) {
+    assert_eq!(
+        domain.parameter.ty,
+        Type::Tuple(vec![
+            Type::Z,
+            Type::Option(Box::new(Type::Owned("Pattern.Part".into(), "r".into())))
+        ])
+    );
+    assert_eq!(domain.values, None);
+    assert!(
+        domain
+            .missing
+            .iter()
+            .any(|p| p.subject == "q" && p.field.as_deref() == Some("Pattern.Part.owner"))
+    );
+    assert!(domain.scope.completions);
+    assert!(domain.scope.snapshots.contains("v"));
+    assert!(
+        domain
+            .support
+            .iter()
+            .any(|p| p.subject == "q" && p.field.is_none())
+    );
+    assert!(domain.support.iter().any(|p| p.subject == "p"
+        && p.field.as_deref() == Some("Pattern.Part.owner")
+        && p.atom.as_deref() == Some("op")));
+}
+#[test]
+fn nonfinite_composite_parameters_keep_owner_missing_support_and_scope() {
+    let i = mixed_missing_input("");
+    let r = reading(&i);
+    let f = family(&i, &r, "root");
+    let e = entry(&f, "mixed", "p");
+    assert_mixed_missing(&e.domains[0]);
+    assert_eq!(e.state, ParameterFamilyState::Undetermined);
+    assert!(e.rows.is_empty());
+    assert!(!f.is_complete());
+    f.recheck(&i, &mut quiet()).unwrap();
+    for mutation in 0..3 {
+        let mut bad = f.clone();
+        let d = &mut bad.entries[0].domains[0];
+        match mutation {
+            0 => d.missing.clear(),
+            1 => d.support.clear(),
+            _ => d.scope.completions = false,
+        };
+        assert!(bad.recheck(&i, &mut quiet()).is_err());
+    }
+}
+#[test]
+fn a_separate_empty_factor_keeps_nonfinite_composite_missing_evidence() {
+    let i = mixed_missing_input(",void:Map<Root,Vacant>");
+    let r = reading(&i);
+    let f = family(&i, &r, "root");
+    let e = entry(&f, "mixed", "p");
+    assert_mixed_missing(&e.domains[0]);
+    assert_eq!(e.state, ParameterFamilyState::Ready);
+    assert!(e.rows.is_empty());
+    assert!(f.is_complete());
+    assert_eq!(e.domains[1].values.as_deref(), Some([].as_slice()));
+    assert!(e.domains[1].missing.is_empty());
+    f.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn nonfinite_composite_parameters_keep_the_known_reference_roster_without_missing_facts() {
+    let i = input("law optional mixed(c:Part,x:(Z,Set<Part>)):true;");
+    let r = reading(&i);
+    let f = family(&i, &r, "p");
+    let e = entry(&f, "mixed", "p");
+    let d = &e.domains[0];
+    assert_eq!(e.state, ParameterFamilyState::OutsideFinite);
+    assert_eq!(d.values, None);
+    assert!(d.missing.is_empty());
+    assert!(!d.scope.completions);
+    assert!(d.scope.snapshots.contains("v"));
+    for name in ["p", "q"] {
+        assert!(
+            d.support
+                .iter()
+                .any(|p| p.subject == name && p.field.is_none())
+        );
+    }
+    f.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn a_completed_empty_composite_keeps_the_original_enumerators_independent_empty_proof() {
+    let map=fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,"");
+    let i = fixture::with_body(
+        &map,
+        "law required empty(r:Root,c:Part,x:(Z,Option<Part[r]>,Map<Root,Vacant>)):false;",
+    );
+    let r = reading(&i);
+    let f = family(&i, &r, "root");
+    let e = entry(&f, "empty", "p");
+    let d = &e.domains[0];
+    assert_eq!(e.state, ParameterFamilyState::Ready);
+    assert_eq!(d.values.as_deref(), Some([].as_slice()));
+    assert!(d.missing.is_empty());
+    assert!(!d.scope.completions);
+    assert!(e.rows.is_empty());
+    assert!(f.is_complete());
+    f.recheck(&i, &mut quiet()).unwrap();
+}

@@ -156,7 +156,7 @@ fn populate(
         }
         for p in original.parameters() {
             c.checkpoint(Checkpoint::FiniteLawDomain)?;
-            let domain = env.object_view_domain(p, original)?;
+            let domain = env.object_parameter_domain(p, original)?;
             let mut scope = Scope::default();
             scope
                 .readings
@@ -169,13 +169,10 @@ fn populate(
                 occurrence: p.span,
                 context: None,
             });
-            let (values, mut missing, mut support) = match domain {
-                Some((d, missing)) => {
-                    scope.merge(&d.scope);
-                    (Some(d.values), missing, d.support)
-                }
-                None => (None, vec![], vec![]),
-            };
+            scope.merge(&domain.scope);
+            let values = domain.values;
+            let mut missing = domain.missing;
+            let mut support = domain.support;
             missing.sort();
             missing.dedup();
             support.sort();
