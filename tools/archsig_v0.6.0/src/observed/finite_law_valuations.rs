@@ -393,31 +393,22 @@ pub(in crate::observed) fn finite_law_family_valuations(
                 partial: None,
             });
         };
-        let mut expression = body;
-        while let ExprKind::Group(child) = inputs.law().exprs[expression].kind {
-            tick(c).map_err(|cause| FiniteLawFamilyFailure {
+        let equation_type = equation(inputs, body, c)
+            .and_then(|eq| {
+                eq.map(|id| match inputs.law().exprs[id].kind {
+                    ExprKind::Binary { lhs, .. } => inputs
+                        .law()
+                        .expr_type(lhs)
+                        .cloned()
+                        .ok_or_else(|| "元等式の型がない".into()),
+                    _ => Err("元等式の出現が違う".into()),
+                })
+                .transpose()
+            })
+            .map_err(|cause| FiniteLawFamilyFailure {
                 cause,
                 partial: None,
             })?;
-            expression = child;
-        }
-        let equation_type = if let ExprKind::Binary {
-            op: BinOp::Eq, lhs, ..
-        } = inputs.law().exprs[expression].kind
-        {
-            Some(
-                inputs
-                    .law()
-                    .expr_type(lhs)
-                    .ok_or_else(|| FiniteLawFamilyFailure {
-                        cause: "元等式の型がない".into(),
-                        partial: None,
-                    })?
-                    .clone(),
-            )
-        } else {
-            None
-        };
         columns.push(FiniteLawColumn {
             declaration: decl.clone(),
             equation_type,
@@ -790,7 +781,7 @@ fn components(
     left: &Option<Scalar>,
     right: &Option<Scalar>,
     guard: Option<bool>,
-    condition_failed: bool,
+    blocked: bool,
 ) -> Result<Vec<FiniteLawComponent>, ValidationFailure> {
     let mut pending = vec![(vec![], ty.clone(), left.clone(), right.clone())];
     let mut result = vec![];
@@ -835,7 +826,7 @@ fn components(
                 }
                 _ => None,
             };
-            let indicator = if condition_failed {
+            let indicator = if blocked {
                 None
             } else {
                 guard.zip(equal).map(|(g, p)| BigInt::from((g && !p) as u8))
@@ -854,6 +845,96 @@ fn components(
             .checkpoint(Checkpoint::FiniteLawComponent)?;
     }
     Ok(result)
+}
+/// 元等式の出現を保ったまま、値を選ばないlexical wrapperだけをたどる。
+fn equation(
+    inputs: &CheckedInputs,
+    mut id: usize,
+    c: &mut Control,
+) -> Result<Option<usize>, ValidationFailure> {
+    loop {
+        c.checkpoint(Checkpoint::FiniteLawOperand)?;
+        match &inputs.law().exprs[id].kind {
+            ExprKind::Group(child) | ExprKind::Let { body: child, .. } => id = *child,
+            ExprKind::Match { scrutinee, arms } => {
+                let child = crate::observed::object_law_residuals::binding_match_body(
+                    inputs, *scrutinee, arms, c,
+                )
+                .map_err(|f| match f {
+                    crate::construction::ConstructionFailure::Stopped(s) => {
+                        ValidationFailure::Stop(s)
+                    }
+                    f => ValidationFailure::Internal(format!("元等式の束縛match: {f:?}")),
+                })?;
+                match child {
+                    Some(child) => id = child,
+                    None => return Ok(None),
+                }
+            }
+            ExprKind::Binary { op: BinOp::Eq, .. } => return Ok(Some(id)),
+            _ => return Ok(None),
+        }
+    }
+}
+fn operands(
+    e: &Environment<'_>,
+    body: usize,
+    variables: &BTreeMap<String, SourceValue>,
+    scope: &Scope,
+    reading: &str,
+) -> Result<Option<(Type, Option<Scalar>, Option<Scalar>)>, ValidationFailure> {
+    let Some(eq) = equation(e.inputs, body, &mut e.control.clone())? else {
+        return Ok(None);
+    };
+    let ExprKind::Binary { lhs, rhs, .. } = e.inputs.law().exprs[eq].kind else {
+        return Err("元等式の出現が違う".into());
+    };
+    let ty = e
+        .inputs
+        .law()
+        .expr_type(lhs)
+        .ok_or("元等式の型がない")?
+        .clone();
+    let mut local = e.copy_variables(variables)?;
+    let mut id = body;
+    while id != eq {
+        e.control.clone().checkpoint(Checkpoint::FiniteLawOperand)?;
+        match &e.inputs.law().exprs[id].kind {
+            ExprKind::Group(child) => id = *child,
+            ExprKind::Let { name, value, body } => {
+                let rhs = e.scoped_ast(*value, &local, scope, reading)?;
+                if local.insert(name.name.clone(), rhs).is_some() {
+                    return Err("元等式のlet名が重複する".into());
+                }
+                id = *body;
+            }
+            ExprKind::Match { scrutinee, arms } => {
+                let input = e.scoped_ast(*scrutinee, &local, scope, reading)?;
+                let Some(arm) =
+                    data::select(e.inputs.law(), id, input.known_value.as_ref(), &e.control)?
+                else {
+                    return Ok(Some((ty, None, None)));
+                };
+                let input_value = input.known_value.as_ref().ok_or("元matchの値がない")?;
+                for (name, value) in
+                    data::bindings(e.inputs.law(), id, arm, input_value, &e.control)?
+                {
+                    let mut bound = source(value);
+                    bound.scope = input.scope.clone();
+                    bound.scalar_scope = Some(input.scope.clone());
+                    bound.support = input.support.clone();
+                    if local.insert(name, bound).is_some() {
+                        return Err("元等式のpattern名が重複する".into());
+                    }
+                }
+                id = arms[arm].body;
+            }
+            _ => return Err("元等式のlexical経路が違う".into()),
+        }
+    }
+    let left = e.scoped_ast(lhs, &local, scope, reading)?;
+    let right = e.scoped_ast(rhs, &local, scope, reading)?;
+    Ok(Some((ty, left.known_value, right.known_value)))
 }
 struct Probe {
     row: FiniteLawRow,
@@ -931,33 +1012,11 @@ fn probe(
         None => None,
         _ => return Err("元Law述語がBoolでない".into()),
     };
-    let mut equality = *body;
-    while let ExprKind::Group(child) = e.inputs.law().exprs[equality].kind {
-        tick(&e.control)?;
-        equality = child;
-    }
-    if let ExprKind::Binary {
-        op: BinOp::Eq,
-        lhs,
-        rhs,
-    } = &e.inputs.law().exprs[equality].kind
-    {
-        let a = e.scoped_ast(*lhs, &vars, &scope, &decl.reading)?;
-        let b = e.scoped_ast(*rhs, &vars, &scope, &decl.reading)?;
-        row.operands = Some((
-            e.inputs
-                .law()
-                .expr_type(*lhs)
-                .ok_or("元等式の型がない")?
-                .clone(),
-            a.known_value,
-            b.known_value,
-        ));
-        row.support.extend(a.support);
-        row.support.extend(b.support);
-        row.scope.merge(&a.scope);
-        row.scope.merge(&b.scope);
-        row.condition_failed |= a.condition_failed || b.condition_failed;
+    row.operands = operands(e, *body, &vars, &scope, &decl.reading)?;
+    if let Some((_, a, b)) = &row.operands {
+        for value in a.iter().chain(b) {
+            data::check(value, e.inputs.law(), &e.control)?;
+        }
     }
     for v in g.iter().chain(std::iter::once(&b)) {
         row.support.extend(v.support.iter().cloned());
@@ -971,8 +1030,17 @@ fn probe(
             row.indicator = Some(BigInt::from((g && !p) as u8));
         }
     }
+    let b_body_pending = b.condition_pending;
     if let Some((ty, a, b)) = &row.operands {
-        let leaves = components(e, ty, a, b, row.guard, row.condition_failed)?;
+        // lexical wrapperの所属が未決なら、等値な成分も確定residualにしない。
+        let leaves = components(
+            e,
+            ty,
+            a,
+            b,
+            row.guard,
+            row.condition_failed || b_body_pending,
+        )?;
         if let Some(whole) = &row.indicator {
             if leaves.iter().all(|p| p.indicator.is_some()) {
                 let any = BigInt::from(
@@ -1248,3 +1316,7 @@ mod tests;
 
 #[path = "finite_law_quotient.rs"]
 pub(in crate::observed) mod quotient;
+
+#[cfg(test)]
+#[path = "finite_law_lexical_tests.rs"]
+mod lexical_tests;
