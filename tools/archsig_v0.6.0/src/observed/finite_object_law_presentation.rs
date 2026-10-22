@@ -251,3 +251,6 @@ impl FiniteObjectLawPresentation<'_> {
 #[cfg(test)]
 #[path = "finite_object_law_presentation_tests.rs"]
 mod tests;
+
+#[path = "finite_object_law_ideal.rs"]
+pub(in crate::observed) mod ideal;
