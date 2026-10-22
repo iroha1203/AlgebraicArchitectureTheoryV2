@@ -25,6 +25,12 @@ pub use crate::observed::object_law_transport::{
     LawReadingDomain, LawReadingFamily, LawReadingRow,
 };
 
+pub use crate::observed::object_law_residuals::{
+    LawNumericShape, LawResidualCase, LawResidualComponent, LawResidualComparison,
+    LawResidualEvaluation, LawResidualOutcome, LawResidualPoint, LawResidualRow,
+    ObjectLawResiduals, ObjectLawResidualsFailure, object_law_residuals,
+};
+
 /// 同じ原始owner slotには同じ値を要求する。条件の成立はまだ観測していない。
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MembershipCondition {
