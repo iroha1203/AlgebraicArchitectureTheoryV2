@@ -79,6 +79,8 @@ pub enum Checkpoint {
     ObjectLawCircuitTransportPoint,
     EquationPresentation,
     EquationPresentationRow,
+    PolynomialObservable,
+    PolynomialObservableCoordinate,
     Expression,
     FiniteIteration,
 }

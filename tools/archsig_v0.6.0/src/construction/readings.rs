@@ -26,7 +26,7 @@ pub use crate::observed::object_law_transport::{
 };
 
 pub use crate::observed::object_law_residuals::{
-    LawNumericShape, LawResidualCase, LawResidualComponent, LawResidualComparison,
+    LawNumericShape, LawResidualCase, LawResidualComparison, LawResidualComponent,
     LawResidualEvaluation, LawResidualOutcome, LawResidualPoint, LawResidualRow,
     ObjectLawResiduals, ObjectLawResidualsFailure, object_law_residuals,
 };
@@ -628,9 +628,14 @@ pub use crate::observed::object_law_circuits::{
     ObjectLawCircuits, ObjectLawCircuitsFailure, object_law_circuits,
 };
 
+pub use crate::observed::equation_polynomial::{EquationMonomial, EquationPolynomial};
 pub use crate::observed::object_equation_presentation::{
     EquationGuard, EquationOccurrence, EquationPresentation, EquationPresentationFailure,
     EquationPresentationStatus, EquationRing, EquationSlot, EquationStep, EquationSymbol,
     EquationSymbolReading, object_equation_presentation,
 };
-pub use crate::observed::equation_polynomial::{EquationMonomial, EquationPolynomial};
+
+pub use crate::observed::object_polynomial_observable::{
+    ObjectPolynomialObservable, PolynomialObservableCoordinate, PolynomialObservableFailure,
+    PolynomialObservableReading, PolynomialObservableValue, object_polynomial_observable,
+};
