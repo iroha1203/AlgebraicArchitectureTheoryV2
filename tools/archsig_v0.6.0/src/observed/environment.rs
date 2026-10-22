@@ -343,11 +343,12 @@ pub(crate) struct Environment<'a> {
     dotted_candidates: BTreeMap<(usize, usize), Vec<DottedOccurrence>>,
     // 元三入力にのみ依存する不変族。Arcを保持し、同一性の再利用を防ぐ。
     verified_relation_families: RefCell<Vec<std::sync::Arc<crate::observed::public_compare::relation_sources::Family>>>,
+    pub(super) verified_finite_law_diagrams: RefCell<Vec<std::sync::Arc<super::finite_law_diagram::Source>>>,
     dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
     scoped_values: RefCell<Vec<(ScopedKey, SourceValue, BTreeSet<Fact>)>>,
-    control: Control,
+    pub(super) control: Control,
     context: Cell<Option<super::call::Context>>,
     completion_values: RefCell<CompletionValues>,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
@@ -472,6 +473,7 @@ impl<'a> Environment<'a> {
             expressions,
             dotted_candidates,
             verified_relation_families: RefCell::new(vec![]),
+            verified_finite_law_diagrams: RefCell::new(vec![]),
             dotted_inputs: RefCell::new(DottedInputCache::default()),
             scoped_values: RefCell::new(Vec::new()),
             control: control.clone(),
@@ -747,6 +749,8 @@ impl<'a> Environment<'a> {
                     }
                     super::public_map::validate_origin(self, graph, request, value)?;
                     super::public_compare::validate_position(value, limit)?;
+                    if let super::construction_result::ConstructionData::FiniteLaw(data) = &value.data { data.position(limit)?; }
+                    self.recheck_finite_law_diagram(graph, value)?;
                     for r in node
                         .arguments
                         .iter()
