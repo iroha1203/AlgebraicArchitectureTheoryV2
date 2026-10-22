@@ -358,7 +358,10 @@ impl Term {
                             name: q, args: qa, ..
                         },
                     ) => {
-                        if p.text() != q.text() || pa.len() != qa.len() {
+                        if p.text() != q.text()
+                            || pa.len() != qa.len()
+                            || span(a, p.span()) != span(b, q.span())
+                        {
                             return Ok(false);
                         }
                         for (p, q) in pa.iter().zip(qa) {

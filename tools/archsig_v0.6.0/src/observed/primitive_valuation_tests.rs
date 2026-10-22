@@ -1250,3 +1250,46 @@ fn original_term_candidate_program_recheck_stops_and_freezes_the_probe() {
         }
     }
 }
+
+#[test]
+fn moved_constructor_name_span_rejects_a_different_executable_candidate() {
+    let i = fixture::inputs();
+    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let v = expression(&normal, "complex", false).known_value.unwrap();
+    let Scalar::Term(t) = &v else { panic!() };
+    let mut t = (**t).clone();
+    let crate::law::ast::ExprKind::Match { arms, .. } = &mut t
+        .nodes
+        .values_mut()
+        .find(|e| matches!(e.kind, crate::law::ast::ExprKind::Match { .. }))
+        .unwrap()
+        .kind
+    else {
+        panic!()
+    };
+    let crate::law::ast::Pattern::Ctor { name: right, .. } = &arms[1].pattern else {
+        panic!()
+    };
+    let right = right.clone();
+    let crate::law::ast::Pattern::Ctor { name: left, .. } = &mut arms[0].pattern else {
+        panic!()
+    };
+    for (a, b) in left.parts.iter_mut().zip(&right.parts) {
+        a.span = b.span;
+    }
+    let candidate = Scalar::Term(Box::new(t));
+    data::check(&candidate, i.law(), &quiet()).unwrap();
+    let Scalar::Term(t) = &candidate else {
+        panic!()
+    };
+    assert!(t.apply(&[fp("2", 0)], i.law(), &quiet()).is_err());
+    assert!(
+        Environment::with_primitive_valuation(
+            &i,
+            &[(slot("p", "program"), candidate)],
+            &mut quiet()
+        )
+        .is_err(),
+        "実行先が変わるconstructor参照位置の改変を拒否する"
+    );
+}
