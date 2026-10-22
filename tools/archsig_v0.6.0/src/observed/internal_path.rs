@@ -178,6 +178,44 @@ impl Environment<'_> {
         }
         reading.ok_or_else(|| "Pathの元readingがない".into())
     }
+    // 元型で検査した候補のdecoded値を、同じ位置の参照構造検査へ渡す。
+    pub(super) fn path_input_value<'b>(
+        &'b self,
+        owner: &Subject,
+        field: &'b crate::archmap::Field,
+    ) -> Result<Option<&'b Value>, ValidationFailure> {
+        self.field(&owner.snapshot, &owner.id, &field.name)?;
+        let position = Fact {
+            snapshot: owner.snapshot.clone(),
+            subject: owner.id.clone(),
+            field: Some(field.name.clone()),
+            atom: None,
+        };
+        if let Some(value) = self
+            .primitive_input_valuation
+            .as_ref()
+            .and_then(|v| v.get(&position))
+        {
+            return Ok(Some(value));
+        }
+        Ok(match &field.slot {
+            Slot::Known { value, .. } => Some(value),
+            Slot::Missing => None,
+        })
+    }
+    pub(super) fn path_atom_support(&self, fact: &Fact) -> Fact {
+        let mut position = fact.clone();
+        position.atom = None;
+        if self
+            .primitive_valuation
+            .as_ref()
+            .is_some_and(|v| v.contains_key(&position))
+        {
+            position
+        } else {
+            fact.clone()
+        }
+    }
     pub(super) fn path_slot(
         &self,
         owner: &Subject,
@@ -186,6 +224,27 @@ impl Environment<'_> {
         out: &mut PathResult,
     ) -> Result<Option<Scalar>, ValidationFailure> {
         self.tick()?;
+        self.field(&owner.snapshot, &owner.id, &field.name)?;
+        let position = Fact {
+            snapshot: owner.snapshot.clone(),
+            subject: owner.id.clone(),
+            field: Some(field.name.clone()),
+            atom: None,
+        };
+        if let Some(value) = self
+            .primitive_valuation
+            .as_ref()
+            .and_then(|v| v.get(&position))
+        {
+            out.scope.merge(&self.scope(owner, reading, None)?);
+            out.scope.assignments = true;
+            out.support.push(position.clone());
+            if matches!(field.slot, Slot::Missing) {
+                out.scope.completions = true;
+                out.missing.push(position);
+            }
+            return Ok(Some(value.clone()));
+        }
         match &field.slot {
             Slot::Known {
                 atom,
@@ -231,15 +290,6 @@ impl Environment<'_> {
         values: &[Scalar],
     ) -> Result<PathResult, ValidationFailure> {
         self.tick()?;
-        // Pathのcarrierは元Atomであり、候補値を元の作用の保存証拠へ流用しない。
-        if self.primitive_valuation.is_some() {
-            return Err(ValidationFailure::UnsupportedExpression {
-                location: Location::Law {
-                    span: self.inputs.law().exprs[id].span,
-                },
-                feature: "原始候補に対するPath作用の構成".into(),
-            });
-        }
         let reading = self.path_reading(id)?;
         let mut out = PathResult {
             value: None,
@@ -249,6 +299,7 @@ impl Environment<'_> {
             failure: None,
         };
         out.scope.readings.insert(reading.into());
+        out.scope.assignments = self.primitive_valuation.is_some();
         let [
             generator @ Scalar::Subject {
                 snapshot,
@@ -365,7 +416,7 @@ impl Environment<'_> {
         let mut missing_field = false;
         for field in &source.fields {
             self.tick()?;
-            let Slot::Known { atom, value, .. } = &field.slot else {
+            let Slot::Known { atom, .. } = &field.slot else {
                 self.path_slot(source, field, reading, &mut out)?;
                 missing_field = true;
                 continue;
@@ -373,9 +424,7 @@ impl Environment<'_> {
             let target_field = self.field(ts, tp, &field.name)?;
             let got = self.path_slot(target, target_field, reading, &mut out)?;
             let Slot::Known {
-                atom: target_atom,
-                value: target_value,
-                ..
+                atom: target_atom, ..
             } = &target_field.slot
             else {
                 let _ = got;
@@ -396,6 +445,12 @@ impl Environment<'_> {
             };
             let mut refs = BTreeSet::new();
             let moving = BTreeMap::from([((fs.clone(), fp.clone()), (ts.clone(), tp.clone()))]);
+            let value = self
+                .path_input_value(source, field)?
+                .ok_or("元Pathのfield値がない")?;
+            let target_value = self
+                .path_input_value(target, target_field)?
+                .ok_or("Pathの像field値がない")?;
             let expected = self.path_shape(value, Some(&moving), &mut refs)?;
             let actual = self.path_shape(target_value, None, &mut BTreeSet::new())?;
             if !self.path_shape_same(&expected, &actual)? {
@@ -408,7 +463,8 @@ impl Environment<'_> {
             family.extend(refs);
             images.insert(fact, image);
         }
-        out.support.extend(universe.iter().cloned());
+        out.support
+            .extend(universe.iter().map(|fact| self.path_atom_support(fact)));
         out.support.sort();
         out.support.dedup();
         out.missing.sort();

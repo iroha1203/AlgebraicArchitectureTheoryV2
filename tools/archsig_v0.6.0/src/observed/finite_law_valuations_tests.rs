@@ -236,7 +236,7 @@ fn helper_condition_failure_keeps_the_candidate_without_zero_filling() {
 }
 
 #[test]
-fn unsupported_candidate_path_does_not_reuse_observed_action_as_a_completed_table() {
+fn candidate_path_dependency_discovery_retains_original_nonfinite_list_position() {
     mod paths {
         use crate as archsig;
         include!("../../tests/common/internal_paths.rs");
@@ -274,9 +274,10 @@ fn unsupported_candidate_path_does_not_reuse_observed_action_as_a_completed_tabl
         &mut quiet(),
     )
     .unwrap();
-    assert!(
-        matches!(r.state(),FiniteLawState::Unavailable{location:Location::Law{..},feature} if feature=="原始候補に対するPath作用の構成")
-    );
+    assert_eq!(r.state(), &FiniteLawState::OutsideFinite {
+        position: Fact { snapshot: "v".into(), subject: "p".into(), field: Some("Paths.Node.links".into()), atom: None },
+        ty: Type::List(Box::new(Type::Ref("Paths.Node".into()))),
+    });
     assert!(!r.is_complete());
     assert!(!r.domain_complete());
     assert!(r.domain().is_empty());

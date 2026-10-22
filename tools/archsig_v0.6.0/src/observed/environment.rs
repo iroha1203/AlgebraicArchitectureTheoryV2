@@ -348,6 +348,7 @@ pub(crate) struct Environment<'a> {
     completion_values: RefCell<CompletionValues>,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
     primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
+    primitive_input_valuation: Option<BTreeMap<Fact, Value>>,
     primitive_reads: RefCell<Option<BTreeSet<Fact>>>,
     scoped_context: Cell<Option<super::call::Context>>,
     validation_depth: Cell<usize>,
@@ -471,6 +472,7 @@ impl<'a> Environment<'a> {
             context: Cell::new(None),
             completion_values: RefCell::new(Vec::new()),
             primitive_valuation: None,
+            primitive_input_valuation: None,
             primitive_reads: RefCell::new(None),
             scoped_context: Cell::new(None),
             validation_depth: Cell::new(0),
