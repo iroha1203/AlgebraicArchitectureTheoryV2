@@ -619,3 +619,164 @@ fn two_distinct_symbols_commute_and_cancel_with_original_support_retained() {
     );
     r.recheck(i, &mut quiet()).unwrap();
 }
+fn two_subjects() -> String {
+    fixture::A.replace("{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}","{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"},{\"id\":\"q\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}")
+        .replace("\"atoms\":[","\"atoms\":[{\"id\":\"owner-q\",\"subject\":\"q\",\"field\":\"Pattern.Part.owner\",\"value\":[\"v\",\"root\"],\"origin\":\"model\"},{\"id\":\"quantity-q\",\"subject\":\"q\",\"field\":\"Pattern.Part.quantity\",\"value\":\"3\",\"origin\":\"model\"},")
+}
+fn binding(
+    r: &EquationPresentation,
+    q: &archsig::construction::readings::EquationOccurrence,
+    name: &str,
+) -> String {
+    r.base().base().readings().instances()[q.position.instance]
+        .bindings()
+        .iter()
+        .find(|b| b.parameter().name == name)
+        .unwrap()
+        .subject()
+        .subject
+        .clone()
+}
+#[test]
+fn state_dependent_reference_base_is_not_observed_slot_even_through_alias_helper_and_projection() {
+    for law in [
+        "law required select(c:Part,d:Part):(if c.quantity>0 then c else d).quantity=0;",
+        "law required select(c:Part,d:Part):let r=(if c.quantity>0 then c else d) in r.quantity=0;",
+        "view choose(a:Part,b:Part):Part=if a.quantity>0 then a else b;law required select(c:Part,d:Part):choose(c,d).quantity=0;",
+        "law required select(c:Part,d:Part):((if c.quantity>0 then c else d),c).0.quantity=0;",
+        "view carryRef(a:Part):Part=a;law required select(c:Part,d:Part):carryRef(if c.quantity>0 then c else d).quantity=0;",
+    ] {
+        let i = inputs_with(fixture::D, law, &two_subjects());
+        let r = run(i.clone());
+        assert_eq!(r.occurrences().len(), 4);
+        assert_eq!(r.status(), S::UnsupportedAlgorithm);
+        for (index, q) in r.occurrences().iter().enumerate() {
+            let same = binding(&r, q, "c") == binding(&r, q, "d");
+            assert_eq!(
+                q.status,
+                if same {
+                    S::Ready
+                } else {
+                    S::UnsupportedAlgorithm
+                }
+            );
+            assert_eq!(q.nu.is_some(), same);
+            assert_eq!(
+                r.rings()[q.ring.unwrap()]
+                    .required_generators
+                    .contains(&index),
+                same
+            );
+            assert!(q.evaluation.is_some());
+            assert!(q.epsilon.is_some());
+        }
+        r.recheck(i, &mut quiet()).unwrap();
+        let changed = inputs_with(
+            fixture::D,
+            law,
+            &two_subjects().replace("\"value\":\"2\"", "\"value\":\"0\""),
+        );
+        let fresh = run(changed);
+        let q = fresh
+            .occurrences()
+            .iter()
+            .find(|q| binding(&fresh, q, "c") == "p" && binding(&fresh, q, "d") == "q")
+            .unwrap();
+        assert_eq!(q.status, S::UnsupportedAlgorithm);
+        assert!(q.nu.is_none());
+        assert_eq!(number(&q.epsilon), Some("\"3\"".into()));
+    }
+}
+#[test]
+fn fixed_reference_binders_helpers_and_primitive_chains_keep_polynomial_fields() {
+    let d=fixture::D.replace("\"meaning\":\"数量。\"}","\"meaning\":\"数量。\"},{\"name\":\"peer\",\"type\":[\"Ref\",\"Pattern.Part\"],\"meaning\":\"固定参照。\"}");
+    let map=fixture::A.replace("\"atoms\":[","\"atoms\":[{\"id\":\"peer-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.peer\",\"value\":[\"v\",\"p\"],\"origin\":\"model\"},");
+    for law in [
+        "law required fixed(c:Part):(let r=c in r).quantity=0;",
+        "view carryRef(a:Part):Part=a;law required fixed(c:Part):carryRef(c).quantity=0;",
+        "law required fixed(c:Part):c.peer.quantity=0;",
+        "law required fixed(c:Part):(c,c).0.quantity=0;",
+    ] {
+        let i = inputs_with(&d, law, &map);
+        let r = run(i.clone());
+        let q = &r.occurrences()[0];
+        assert_eq!(q.status, S::Ready);
+        assert_eq!(r.rings()[0].symbols.len(), 1);
+        assert_eq!(r.rings()[0].symbols[0].slot.subject, "p");
+        assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![0], "\"1\"".into())]);
+        assert_eq!(number(&q.epsilon), Some("\"2\"".into()));
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}
+#[test]
+fn unused_bindings_arguments_and_projected_positions_keep_full_shared_support() {
+    let i = inputs(
+        "view ignore(x:Z):Z=2;law required outside(c:Part):let unused=c.quantity in 2=2;law required inside(c:Part):(let unused=c.quantity in 2)=2;law optional helper(c:Part):ignore(c.quantity)=2;law optional projection(c:Part):(2,c.quantity).0=2;",
+    );
+    let r = run(i.clone());
+    assert_eq!(r.status(), S::Ready);
+    assert_eq!(r.occurrences().len(), 4);
+    assert_eq!(r.rings()[0].symbols.len(), 1);
+    let symbol = &r.rings()[0].symbols[0];
+    assert_eq!(symbol.slot.subject, "p");
+    assert_eq!(symbol.readings.len(), 4);
+    assert_eq!(number(&symbol.value), Some("\"2\"".into()));
+    for q in r.occurrences() {
+        assert!(q.nu.as_ref().unwrap().terms.is_empty());
+        assert_eq!(q.component_holds, Some(true));
+        assert_eq!(number(&q.epsilon), Some("\"0\"".into()));
+        assert!(
+            symbol
+                .readings
+                .iter()
+                .any(|v| v.position == q.position && v.row == q.row && v.case == q.case)
+        );
+    }
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn missing_unused_support_remains_unknown_even_when_the_constant_equation_holds() {
+    let map = fixture::A
+        .lines()
+        .filter(|l| !l.contains("\"quantity-p\""))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .replace(",\n]", "\n]");
+    let i = inputs_with(
+        fixture::D,
+        "law required unused(c:Part):(let x=c.quantity in 2)=2;",
+        &map,
+    );
+    let r = run(i.clone());
+    assert_eq!(r.status(), S::Undetermined);
+    assert_eq!(r.rings()[0].symbols.len(), 1);
+    assert!(r.rings()[0].symbols[0].value.is_none());
+    assert!(r.rings()[0].evaluation_images.is_none());
+    assert!(r.rings()[0].symbols[0].readings[0].fact.atom.is_none());
+    let q = &r.occurrences()[0];
+    assert!(q.nu.as_ref().unwrap().terms.is_empty());
+    assert_eq!(q.component_holds, Some(true));
+    assert_eq!(number(&q.epsilon), Some("\"0\"".into()));
+    assert_eq!(q.status, S::Undetermined);
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn nonnumeric_false_guard_and_outside_object_are_not_applicable() {
+    let i = inputs("law required off(c:Part) when false:c.quantity>0;");
+    let r = run(i.clone());
+    assert_eq!(r.status(), S::Ready);
+    assert_eq!(r.occurrences()[0].status, S::NotApplicable);
+    assert_eq!(r.occurrences()[0].guard, G::AlwaysFalse);
+    assert!(r.occurrences()[0].nu.is_none());
+    assert!(r.rings().is_empty());
+    r.recheck(i, &mut quiet()).unwrap();
+    let i = inputs("law required rootOnly(a:Root):false;");
+    let r =
+        object_equation_presentation(i.clone(), "Selected", "v", "root", 1, &mut quiet()).unwrap();
+    assert_eq!(r.status(), S::Ready);
+    assert_eq!(r.occurrences()[0].status, S::NotApplicable);
+    assert_eq!(r.occurrences()[0].guard, G::OutsideObject);
+    assert!(r.occurrences()[0].nu.is_none());
+    assert!(r.rings().is_empty());
+    r.recheck(i, &mut quiet()).unwrap();
+}

@@ -301,6 +301,9 @@ impl Compiler<'_> {
         let Some(&base) = p.children.first() else {
             return Ok(None);
         };
+        if !self.fixed_reference(base, &[], c)? {
+            return Ok(None);
+        }
         let reference = value(self.g, base, &[]);
         let Some(Scalar::Subject {
             snapshot,
@@ -394,6 +397,172 @@ impl Compiler<'_> {
             }
         }
         Ok(false)
+    }
+    // Refの実値だけでなく、その選択導出が数値記号に依存しないことを確認する。
+    fn fixed_reference(
+        &self,
+        r: NodeRef,
+        path: &[usize],
+        c: &mut Control,
+    ) -> Result<bool, ConstructionFailure> {
+        stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+            tick(c)?;
+            if !matches!(value(self.g, r, path), Some(Scalar::Subject { .. })) {
+                return Ok(false);
+            }
+            let p = part(self.g, r)?;
+            let Location::Law { span } = p.location else {
+                return Ok(false);
+            };
+            // dottedの中間prefixも元token位置を用いる。架空のASTを作らない。
+            for expression in &self.inputs.law().exprs {
+                tick(c)?;
+                if let ExprKind::Dotted(names) = &expression.kind {
+                    if names.first().is_some_and(|n| n.span.0 == span.0) {
+                        if let Some(index) = names.iter().position(|n| n.span.1 == span.1) {
+                            return if index == 0 {
+                                match p.children.as_slice() {
+                                    [child] => self.fixed_reference(*child, path, c),
+                                    [] => Ok(!has_fields(self.g, r, c)?),
+                                    _ => Ok(false),
+                                }
+                            } else {
+                                match p.children.as_slice() {
+                                    [base] => self.fixed_reference(*base, &[], c),
+                                    _ => Ok(false),
+                                }
+                            };
+                        }
+                    }
+                }
+                if expression.span != span {
+                    continue;
+                }
+                return match &expression.kind {
+                    ExprKind::Group(_) if p.children.len() == 1 => {
+                        self.fixed_reference(p.children[0], path, c)
+                    }
+                    ExprKind::Let { .. } if p.children.len() == 2 => {
+                        self.fixed_reference(p.children[1], path, c)
+                    }
+                    ExprKind::Field { .. } if p.children.len() == 1 => {
+                        self.fixed_reference(p.children[0], &[], c)
+                    }
+                    ExprKind::Tuple(_) if !path.is_empty() => match p.children.get(path[0]) {
+                        Some(&child) => self.fixed_reference(child, &path[1..], c),
+                        None => Ok(false),
+                    },
+                    ExprKind::Index { index, .. } if p.children.len() == 1 => {
+                        let mut nested = vec![*index];
+                        nested.extend_from_slice(path);
+                        self.fixed_reference(p.children[0], &nested, c)
+                    }
+                    ExprKind::If { .. } if p.children.len() == 3 => {
+                        if !has_fields(self.g, p.children[0], c)? {
+                            match value(self.g, p.children[0], &[]) {
+                                Some(Scalar::Bool(b)) => {
+                                    self.fixed_reference(p.children[if b { 1 } else { 2 }], path, c)
+                                }
+                                _ => Ok(false),
+                            }
+                        } else {
+                            // 両枝が同じ固定参照なら、条件の値によらず同じ位置を読む。
+                            Ok(self.fixed_reference(p.children[1], path, c)?
+                                && self.fixed_reference(p.children[2], path, c)?
+                                && value(self.g, p.children[1], path)
+                                    == value(self.g, p.children[2], path))
+                        }
+                    }
+                    ExprKind::Call { callee, args }
+                        if p.children.len() == args.len() + 1 && self.is_helper(*callee, c)? =>
+                    {
+                        self.fixed_reference(p.children[p.children.len() - 1], path, c)
+                    }
+                    ExprKind::Match { .. }
+                        if p.children.len() == 2 && !has_fields(self.g, p.children[0], c)? =>
+                    {
+                        self.fixed_reference(p.children[1], path, c)
+                    }
+                    _ => Ok(false),
+                };
+            }
+            Ok(false)
+        })
+    }
+    // 値の正規化で不要になるlet/helper引数/Tuple位置も、元読取りとして収集する。
+    fn collect_support(
+        &mut self,
+        root: NodeRef,
+        c: &mut Control,
+    ) -> Result<(), ConstructionFailure> {
+        let mut pending = vec![root];
+        let mut seen = std::collections::BTreeSet::new();
+        while let Some(r) = pending.pop() {
+            tick(c)?;
+            if !seen.insert(r.0) {
+                continue;
+            }
+            let n = self
+                .g
+                .nodes
+                .get(r.0)
+                .ok_or_else(|| bad("支持収集の元nodeがない"))?;
+            let Some(Payload::Evaluation { parts, .. }) = &n.payload else {
+                return Err(bad("支持収集の元nodeが評価でない"));
+            };
+            for p in parts.iter().rev() {
+                for &child in p.children.iter().rev() {
+                    tick(c)?;
+                    if child.0 >= r.0 {
+                        return Err(bad("支持収集が元導出順でない"));
+                    }
+                    pending.push(child);
+                }
+            }
+            if parts.len() != 1 {
+                continue;
+            }
+            let Location::Law { span } = parts[0].location else {
+                continue;
+            };
+            let mut field = None;
+            for e in &self.inputs.law().exprs {
+                tick(c)?;
+                if e.span == span {
+                    field = match &e.kind {
+                        ExprKind::Field { name, .. } => Some(name.name.clone()),
+                        ExprKind::Dotted(names) if names.len() > 1 => {
+                            Some(names[names.len() - 1].name.clone())
+                        }
+                        _ => None,
+                    };
+                    break;
+                }
+            }
+            let Some(name) = field else { continue };
+            let super::result::NodeType::Evaluation(ty) = &n.ty else {
+                return Err(bad("支持収集の元型がない"));
+            };
+            let mut paths = vec![];
+            let mut stack = vec![(ty, vec![])];
+            while let Some((ty, path)) = stack.pop() {
+                tick(c)?;
+                if ty == &self.ring.ty {
+                    paths.push(path);
+                } else if let Type::Tuple(items) = ty {
+                    for (i, ty) in items.iter().enumerate().rev() {
+                        tick(c)?;
+                        let mut path = path.clone();
+                        path.push(i);
+                        stack.push((ty, path));
+                    }
+                }
+            }
+            for path in paths {
+                self.field(r, &name, &path, c)?;
+            }
+        }
+        Ok(())
     }
     fn compile(
         &mut self,
@@ -652,7 +821,13 @@ fn populate(
                     .transpose()?,
                 component_holds: None,
                 steps: vec![],
-                status: EquationPresentationStatus::UnsupportedAlgorithm,
+                status: match guard {
+                    EquationGuard::OutsideObject | EquationGuard::AlwaysFalse => {
+                        EquationPresentationStatus::NotApplicable
+                    }
+                    EquationGuard::Undetermined => EquationPresentationStatus::Undetermined,
+                    _ => EquationPresentationStatus::UnsupportedAlgorithm,
+                },
             };
             if component.is_some() {
                 let index = ring(&mut r.rings, &ty, c)?;
@@ -669,6 +844,9 @@ fn populate(
                         case,
                         steps: vec![],
                     };
+                    if let Some(root) = q.evaluation {
+                        compiler.collect_support(NodeRef(root), c)?;
+                    }
                     occurrence.left = compiler.compile(NodeRef(*l), &path, c)?;
                     occurrence.right = compiler.compile(NodeRef(*rhs), &path, c)?;
                     occurrence.steps = compiler.steps;
@@ -801,7 +979,7 @@ mod tests {
     #[test]
     fn recheck_rejects_forged_symbols_polynomials_ideal_substitution_origin_and_status() {
         let i = inputs();
-        for mode in 0..27 {
+        for mode in 0..28 {
             let mut r = object_equation_presentation(
                 i.clone(),
                 "Selected",
@@ -841,7 +1019,8 @@ mod tests {
                 23 => r.occurrences[0].nu.as_mut().unwrap().ty = Type::Q,
                 24 => r.rings[0].evaluation_images = None,
                 25 => r.occurrences[0].epsilon_constant = None,
-                _ => r.occurrences[0].residual_constant = None,
+                26 => r.occurrences[0].residual_constant = None,
+                _ => r.rings[0].symbols[0].readings.clear(),
             }
             assert!(
                 matches!(
