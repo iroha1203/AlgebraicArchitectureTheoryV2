@@ -112,6 +112,18 @@ fn optional_values_survive_the_same_required_quotient_and_other_rings_are_reject
         quotient.project(&value, &mut quiet()).unwrap().values(),
         &[BigInt::from(1)]
     );
+    let membership = quotient.ideal_membership(&value, &mut quiet()).unwrap();
+    quotient
+        .recheck_membership(&i, &a, &value, &membership, &mut quiet())
+        .unwrap();
+    let projected = quotient.project(&value, &mut quiet()).unwrap();
+    assert!(
+        !quotient
+            .integer_ring(&mut quiet())
+            .unwrap()
+            .is_zero(&projected, &mut quiet())
+            .unwrap()
+    );
     let other = run(&i, &a);
     let foreign = other
         .family()
@@ -425,31 +437,32 @@ fn automatic_selection_domain_values_and_source_are_rebuilt_before_consumption()
         match mutation {
             0 => bad.parameters.law_dependencies = false,
             1 => {
-                bad.family.as_mut().unwrap().columns.pop();
+                bad.family.as_mut().unwrap().value.columns.pop();
             }
             2 => {
-                bad.family.as_mut().unwrap().selection.pop();
+                bad.family.as_mut().unwrap().value.selection.pop();
             }
             3 => {
-                Arc::make_mut(&mut bad.family.as_mut().unwrap().selection[0])
+                Arc::make_mut(&mut bad.family.as_mut().unwrap().value.selection[0])
                     .bindings
                     .pop();
             }
-            4 => bad.family.as_mut().unwrap().columns[0].source_instance = Some(usize::MAX),
-            5 => bad.family.as_mut().unwrap().columns[0].bindings[2].1 = Scalar::Bool(true),
-            6 => bad.family.as_mut().unwrap().domain.swap(0, 1),
-            7 => bad.family.as_mut().unwrap().columns[0].rows[0].indicator = Some(2.into()),
-            8 => bad.family.as_mut().unwrap().columns[0].rows[0].application = None,
-            9 => bad.family.as_mut().unwrap().automatic_readings = None,
+            4 => bad.family.as_mut().unwrap().value.columns[0].source_instance = Some(usize::MAX),
+            5 => bad.family.as_mut().unwrap().value.columns[0].bindings[2].1 = Scalar::Bool(true),
+            6 => bad.family.as_mut().unwrap().value.domain.swap(0, 1),
+            7 => bad.family.as_mut().unwrap().value.columns[0].rows[0].indicator = Some(2.into()),
+            8 => bad.family.as_mut().unwrap().value.columns[0].rows[0].application = None,
+            9 => bad.family.as_mut().unwrap().readings = reading(&i, "r2"),
             10 => {
                 bad.parameters.rows.pop();
             }
             11 => bad.parameters.domain.swap(0, 1),
-            12 => bad.family.as_mut().unwrap().required_zero = Some(vec![9]),
+            12 => bad.family.as_mut().unwrap().value.required_zero = Some(vec![9]),
             _ => bad
                 .family
                 .as_mut()
                 .unwrap()
+                .value
                 .column_objects
                 .as_mut()
                 .unwrap()
@@ -699,42 +712,86 @@ fn real_tuple_components_keep_their_original_types_values_and_twelve_generators(
 }
 
 #[test]
-fn extracted_automatic_family_and_quotient_reject_missing_origin_even_without_columns() {
+fn extracted_automatic_family_and_quotient_keep_required_consumer_readings_after_all_inner_state_is_replaced()
+ {
     let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):true;");
     let a = reading(&i, "root");
-    let valid = run(&i, &a).into_family().unwrap();
-    assert!(valid.automatic_mode);
+    let valid: AutomaticLawValuations = run(&i, &a).into_family().unwrap();
     assert_eq!(valid.columns().len(), 6);
     assert_eq!(valid.required_zero(), Some([0].as_slice()));
-    valid.recheck(&i, &mut quiet()).unwrap();
-    valid
-        .required_quotient(&mut quiet())
-        .unwrap()
-        .recheck(&i, &mut quiet())
-        .unwrap();
-    for remove_columns in [false, true] {
+    valid.recheck(&i, &a, &mut quiet()).unwrap();
+    let quotient: AutomaticLawQuotient<'_> = valid.required_quotient(&mut quiet()).unwrap();
+    quotient.recheck(&i, &a, &mut quiet()).unwrap();
+    let other = reading(&i, "r2");
+    assert!(valid.recheck(&i, &other, &mut quiet()).is_err());
+    assert!(quotient.recheck(&i, &other, &mut quiet()).is_err());
+    let independent = run(&i, &a).into_family().unwrap();
+    let mut wrong_quotient = valid.required_quotient(&mut quiet()).unwrap();
+    wrong_quotient.value = independent.value.required_quotient(&mut quiet()).unwrap();
+    assert!(wrong_quotient.recheck(&i, &a, &mut quiet()).is_err());
+    for mutation in 0..3 {
         let mut bad = run(&i, &a).into_family().unwrap();
-        bad.automatic_readings = None;
-        if remove_columns {
-            bad.columns.clear();
-            bad.selection.clear();
-            bad.column_objects.as_mut().unwrap().columns.clear();
+        if mutation == 1 {
+            // 明示入口で正当に作った空族を、全ての内部metadataごと差し替える。
+            let (objects, selected) =
+                super::super::super::super::multi_selection(&i, &a, &[], &mut quiet()).unwrap();
+            let explicit = super::super::super::super::family_with_instances(
+                &i,
+                &selected,
+                None,
+                Some(objects),
+                Some(vec![]),
+                &mut quiet(),
+            )
+            .unwrap();
+            assert!(explicit.columns().is_empty());
+            explicit.recheck(&i, &mut quiet()).unwrap();
+            bad.value = explicit;
+        } else {
+            bad.value.columns.clear();
+            bad.value.selection.clear();
+            bad.value.column_objects.as_mut().unwrap().columns.clear();
+            if mutation == 2 {
+                bad.readings = other.clone();
+            }
         }
-        assert!(bad.recheck(&i, &mut quiet()).is_err());
+        assert!(
+            bad.recheck(&i, &a, &mut quiet()).is_err(),
+            "family mutation {mutation}"
+        );
         assert!(
             bad.required_quotient(&mut quiet())
                 .unwrap()
-                .recheck(&i, &mut quiet())
-                .is_err()
+                .recheck(&i, &a, &mut quiet())
+                .is_err(),
+            "quotient mutation {mutation}"
         );
     }
-    let mut bad = run(&i, &a).into_family().unwrap();
-    bad.automatic_mode = false;
-    assert!(bad.recheck(&i, &mut quiet()).is_err());
-    assert!(
-        bad.required_quotient(&mut quiet())
-            .unwrap()
-            .recheck(&i, &mut quiet())
-            .is_err()
+}
+
+#[test]
+fn empty_parameter_products_keep_the_parameter_only_shared_domain_in_quotient_rechecks() {
+    let i = fixture::with_body(
+        &missing_map(),
+        "law required empty(r:Root,c:Part,x:Option<Part[r]>,void:Map<Root,Vacant>):false;",
     );
+    let a = reading(&i, "root");
+    let result = run(&i, &a);
+    assert!(result.is_complete());
+    let f = result.family().unwrap();
+    assert!(f.columns().is_empty());
+    assert_eq!(f.positions().len(), 2);
+    assert!(
+        f.positions()
+            .iter()
+            .all(|p| p.field.as_deref() == Some("Pattern.Part.owner"))
+    );
+    assert_eq!(f.domain().len(), 4);
+    assert_eq!(f.observed_point(), None);
+    assert_eq!(f.required_zero(), Some([0, 1, 2, 3].as_slice()));
+    f.recheck(&i, &a, &mut quiet()).unwrap();
+    let q = f.required_quotient(&mut quiet()).unwrap();
+    assert_eq!(q.points(), [0, 1, 2, 3]);
+    assert_eq!(q.integer_ring(&mut quiet()).unwrap().dimension(), 4);
+    q.recheck(&i, &a, &mut quiet()).unwrap();
 }

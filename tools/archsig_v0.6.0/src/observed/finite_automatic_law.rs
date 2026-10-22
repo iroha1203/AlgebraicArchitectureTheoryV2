@@ -1,9 +1,19 @@
 //! 元parameter族の依存とbodyの依存を閉じ、共有Law列を自動構成する。
 use super::*;
+use crate::construction::{
+    maps::ObjectIdentity,
+    readings::{InstanceApplication, ObjectInstance},
+};
+use crate::observed::{
+    environment::finite_law_valuations::quotient::{
+        FiniteIdealMembership, FiniteLawGenerator, FiniteLawQuotient,
+    },
+    finite_integer_function::{FiniteIntegerFunction, FiniteIntegerRing},
+};
 
 pub(in crate::observed) struct FiniteAutomaticLawFamily {
     parameters: FiniteParameterRealizations,
-    family: Option<FiniteLawFamilyValuations>,
+    family: Option<AutomaticLawValuations>,
 }
 pub(in crate::observed) struct AutomaticLawFailure {
     pub cause: ValidationFailure,
@@ -21,10 +31,10 @@ impl FiniteAutomaticLawFamily {
     pub(in crate::observed) fn parameters(&self) -> &FiniteParameterRealizations {
         &self.parameters
     }
-    pub(in crate::observed) fn family(&self) -> Option<&FiniteLawFamilyValuations> {
+    pub(in crate::observed) fn family(&self) -> Option<&AutomaticLawValuations> {
         self.family.as_ref()
     }
-    pub(in crate::observed) fn into_family(self) -> Option<FiniteLawFamilyValuations> {
+    pub(in crate::observed) fn into_family(self) -> Option<AutomaticLawValuations> {
         self.family
     }
     pub(in crate::observed) fn is_complete(&self) -> bool {
@@ -32,7 +42,7 @@ impl FiniteAutomaticLawFamily {
             && self
                 .family
                 .as_ref()
-                .is_some_and(FiniteLawFamilyValuations::is_complete)
+                .is_some_and(AutomaticLawValuations::is_complete)
     }
     pub(in crate::observed) fn recheck(
         &self,
@@ -56,10 +66,7 @@ impl FiniteAutomaticLawFamily {
             ));
         }
         if let Some(family) = &self.family {
-            if family.automatic_readings.as_deref() != Some(readings) {
-                return Err(fail("自動Law族が消費先readingsに由来しない".into()));
-            }
-            family.recheck(inputs, c).map_err(|e| fail(e.cause))?;
+            family.recheck(inputs, readings, c).map_err(fail)?;
         }
         Ok(())
     }
@@ -231,12 +238,15 @@ pub(in crate::observed) fn finite_automatic_law_family(
             Some(objects),
             Some(instances),
             &result.parameters.positions,
-            Some(Arc::new(readings.clone())),
             c,
         )
     })();
     match built {
-        Ok(family) => {
+        Ok(value) => {
+            let family = AutomaticLawValuations {
+                readings: readings.clone(),
+                value,
+            };
             if family.domain_complete()
                 && (family.positions() != result.parameters.positions
                     || family.types() != result.parameters.types
@@ -253,7 +263,10 @@ pub(in crate::observed) fn finite_automatic_law_family(
             Ok(result)
         }
         Err(error) => {
-            result.family = error.partial.map(|p| *p);
+            result.family = error.partial.map(|p| AutomaticLawValuations {
+                readings: readings.clone(),
+                value: *p,
+            });
             Err(AutomaticLawFailure {
                 cause: error.cause,
                 partial: Some(Box::new(result)),
@@ -261,6 +274,151 @@ pub(in crate::observed) fn finite_automatic_law_family(
         }
     }
 }
+/// 自動全列の消費では、この型と元readingsを保持する。明示選択族へは変換しない。
+pub(in crate::observed) struct AutomaticLawValuations {
+    readings: ObjectReadingInstances,
+    value: FiniteLawFamilyValuations,
+}
+pub(in crate::observed) struct AutomaticLawQuotient<'a> {
+    family: &'a AutomaticLawValuations,
+    value: FiniteLawQuotient<'a>,
+}
+impl AutomaticLawValuations {
+    pub(in crate::observed) fn columns(&self) -> &[FiniteLawColumn] {
+        self.value.columns()
+    }
+    pub(in crate::observed) fn positions(&self) -> &[Fact] {
+        self.value.positions()
+    }
+    pub(in crate::observed) fn types(&self) -> &[Type] {
+        self.value.types()
+    }
+    pub(in crate::observed) fn domain(&self) -> &[Vec<Scalar>] {
+        self.value.domain()
+    }
+    pub(in crate::observed) fn domain_complete(&self) -> bool {
+        self.value.domain_complete()
+    }
+    pub(in crate::observed) fn observed_point(&self) -> Option<usize> {
+        self.value.observed_point()
+    }
+    pub(in crate::observed) fn state(&self) -> &FiniteLawState {
+        self.value.state()
+    }
+    pub(in crate::observed) fn is_complete(&self) -> bool {
+        self.value.is_complete()
+    }
+    pub(in crate::observed) fn required_zero(&self) -> Option<&[usize]> {
+        self.value.required_zero()
+    }
+    pub(in crate::observed) fn column_object_identity(
+        &self,
+        column: usize,
+    ) -> Option<&ObjectIdentity> {
+        self.value.column_object_identity(column)
+    }
+    pub(in crate::observed) fn instance_source(
+        &self,
+        column: usize,
+    ) -> Option<(&ObjectInstance, &InstanceApplication)> {
+        self.value.instance_source(column)
+    }
+    pub(in crate::observed) fn integer_ring(
+        &self,
+        c: &mut Control,
+    ) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
+        self.value.integer_ring(c)
+    }
+    pub(in crate::observed) fn integer_function(
+        &self,
+        column: usize,
+        component: Option<&[usize]>,
+        c: &mut Control,
+    ) -> Result<FiniteIntegerFunction, ValidationFailure> {
+        self.value.integer_function(column, component, c)
+    }
+    pub(in crate::observed) fn required_generators(
+        &self,
+        c: &mut Control,
+    ) -> Result<Vec<FiniteLawGenerator>, ValidationFailure> {
+        self.value.required_generators(c)
+    }
+    pub(in crate::observed) fn required_quotient(
+        &self,
+        c: &mut Control,
+    ) -> Result<AutomaticLawQuotient<'_>, ValidationFailure> {
+        Ok(AutomaticLawQuotient {
+            family: self,
+            value: self.value.required_quotient(c)?,
+        })
+    }
+    pub(in crate::observed) fn recheck(
+        &self,
+        inputs: &CheckedInputs,
+        readings: &ObjectReadingInstances,
+        c: &mut Control,
+    ) -> Result<(), ValidationFailure> {
+        if &self.readings != readings {
+            return Err("自動Law族が消費先の元readingsに由来しない".into());
+        }
+        let expected = finite_automatic_law_family(inputs, readings, c)
+            .map_err(|failure| failure.cause)?
+            .into_family()
+            .ok_or("自動Law族の元parameter域が未完成")?;
+        self.value
+            .check_expected(expected.value, c)
+            .map_err(|failure| failure.cause)
+    }
+}
+impl AutomaticLawQuotient<'_> {
+    pub(in crate::observed) fn points(&self) -> &[usize] {
+        self.value.points()
+    }
+    pub(in crate::observed) fn integer_ring(
+        &self,
+        c: &mut Control,
+    ) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
+        self.value.integer_ring(c)
+    }
+    pub(in crate::observed) fn project(
+        &self,
+        f: &FiniteIntegerFunction,
+        c: &mut Control,
+    ) -> Result<FiniteIntegerFunction, ValidationFailure> {
+        self.value.project(f, c)
+    }
+    pub(in crate::observed) fn recheck(
+        &self,
+        inputs: &CheckedInputs,
+        readings: &ObjectReadingInstances,
+        c: &mut Control,
+    ) -> Result<(), ValidationFailure> {
+        if !self.value.belongs_to(&self.family.value) {
+            return Err("required商がこの自動Law族に由来しない".into());
+        }
+        self.family.recheck(inputs, readings, c)?;
+        self.value.recheck_projection(c)
+    }
+    pub(in crate::observed) fn ideal_membership(
+        &self,
+        f: &FiniteIntegerFunction,
+        c: &mut Control,
+    ) -> Result<FiniteIdealMembership, ValidationFailure> {
+        self.value.ideal_membership(f, c)
+    }
+    pub(in crate::observed) fn recheck_membership(
+        &self,
+        inputs: &CheckedInputs,
+        readings: &ObjectReadingInstances,
+        f: &FiniteIntegerFunction,
+        membership: &FiniteIdealMembership,
+        c: &mut Control,
+    ) -> Result<(), ValidationFailure> {
+        self.recheck(inputs, readings, c)?;
+        self.value.recheck_membership_value(f, membership, c)
+    }
+}
+
 #[cfg(test)]
 #[path = "finite_automatic_law_tests.rs"]
 mod tests;
