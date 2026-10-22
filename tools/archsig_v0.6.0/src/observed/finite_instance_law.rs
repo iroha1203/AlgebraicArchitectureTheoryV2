@@ -181,6 +181,59 @@ pub(super) fn initial(
             };
         }
     }
+    // 元観測で既知だったOwned binderも、原始代入では所属が変わり得る。
+    // 元instanceの適用条件を保存したまま、固定参照の型を同じ既存核で検査する。
+    if row.application != Some(false) {
+        let declaration = e
+            .inputs
+            .law()
+            .declarations
+            .get(&original.declaration().name)
+            .ok_or("元instanceの署名がない")?;
+        let mut fixed = BTreeMap::new();
+        for binding in original.bindings() {
+            tick(&e.control)?;
+            let fact = binding.subject();
+            let subject = e.subject(&fact.snapshot, &fact.subject)?;
+            fixed.insert(
+                binding.parameter().name.as_str(),
+                Scalar::Subject {
+                    snapshot: fact.snapshot.clone(),
+                    subject: fact.subject.clone(),
+                    entity: subject.ty.clone(),
+                },
+            );
+        }
+        let values = fixed
+            .iter()
+            .map(|(name, value)| (*name, Some(value)))
+            .collect();
+        let mut checks = owned_call::Checks::default();
+        for binding in original.bindings() {
+            tick(&e.control)?;
+            let value = fixed
+                .get(binding.parameter().name.as_str())
+                .ok_or("元instanceの固定参照がない")?;
+            e.owned_call_value_check(
+                &binding.parameter().ty,
+                &crate::observed::term::affine::Value::Known(value.clone()),
+                &values,
+                &declaration.reading,
+                declaration.span,
+                &mut checks,
+            )?;
+        }
+        row.application = if checks.failure.is_some() {
+            Some(false)
+        } else if checks.blocked || row.application.is_none() {
+            None
+        } else {
+            Some(true)
+        };
+        row.scope.merge(&checks.scope);
+        row.support.extend(checks.support);
+        row.application_missing.extend(checks.missing);
+    }
     row.support.sort();
     row.support.dedup();
     row.application_missing.sort();

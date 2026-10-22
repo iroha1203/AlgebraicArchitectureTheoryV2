@@ -510,3 +510,100 @@ fn domain_interrupt_keeps_source_and_never_claims_a_finished_empty_domain() {
     assert!(partial.rows.is_empty());
     assert!(partial.recheck(&i, &r, &mut quiet()).is_err());
 }
+#[test]
+fn fixed_owned_reference_binder_is_rechecked_even_when_original_conditions_were_empty() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law required owned(r:Root,c:Part[r],x:Option<Part[r]>):true;",
+    );
+    let r = reading(&i, "root");
+    let f = result(&i, &r);
+    assert!(f.is_complete());
+    assert_eq!(f.domain.len(), 4);
+    let root = object(&r, "root");
+    for (point, row) in f.rows.iter().enumerate() {
+        for subject in ["p", "q"] {
+            let e = entry(&row.objects[root], "owned", subject);
+            assert!(
+                matches!(&e.application, InstanceApplication::Applicable {conditions} if conditions.is_empty())
+            );
+            let position = f
+                .positions
+                .iter()
+                .position(|p| p.subject == subject)
+                .unwrap();
+            let applicable = matches!(&f.domain[point][position], Scalar::Subject {subject,..} if subject=="root");
+            assert_eq!(
+                e.application_value,
+                Some(Some(applicable)),
+                "point {point}, subject {subject}"
+            );
+            assert_eq!(
+                e.rows.len(),
+                if applicable {
+                    1 + root_members(&f, point)
+                } else {
+                    0
+                }
+            );
+            assert_eq!(
+                e.state,
+                if applicable {
+                    ParameterFamilyState::Ready
+                } else {
+                    ParameterFamilyState::NotApplicable
+                }
+            );
+            assert!(e.scope.assignments);
+            assert!(e.support.iter().any(|p| p.subject == subject
+                && p.field.as_deref() == Some("Pattern.Part.owner")
+                && p.atom.is_none()));
+        }
+    }
+}
+#[test]
+fn owned_binder_alone_discovers_owner_axes_without_a_dependent_value_parameter() {
+    for missing in [false, true] {
+        let map = if missing {
+            fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#, "")
+        } else {
+            fixture::MAP.to_string()
+        };
+        let i = fixture::with_body(&map, "law required binders(r:Root,c:Part[r],b:Bool):true;");
+        let r = reading(&i, "root");
+        let f = result(&i, &r);
+        assert!(f.is_complete());
+        assert_eq!(
+            f.positions
+                .iter()
+                .map(|p| p.subject.as_str())
+                .collect::<Vec<_>>(),
+            ["p", "q"]
+        );
+        assert_eq!(f.domain.len(), 4);
+        assert_eq!(f.observed_point, if missing { None } else { Some(3) });
+        let root = object(&r, "root");
+        for (point, row) in f.rows.iter().enumerate() {
+            for subject in ["p", "q"] {
+                let e = entry(&row.objects[root], "binders", subject);
+                let position = f
+                    .positions
+                    .iter()
+                    .position(|p| p.subject == subject)
+                    .unwrap();
+                let applicable = matches!(&f.domain[point][position], Scalar::Subject {subject,..} if subject=="root");
+                assert_eq!(e.application_value, Some(Some(applicable)));
+                assert_eq!(e.rows.len(), if applicable { 2 } else { 0 });
+                if applicable {
+                    assert_eq!(e.rows[0].bindings[2].1, Scalar::Bool(false));
+                    assert_eq!(e.rows[1].bindings[2].1, Scalar::Bool(true));
+                    assert_eq!(e.rows[0].coordinates, [0]);
+                    assert_eq!(e.rows[1].coordinates, [1]);
+                } else {
+                    assert_eq!(e.state, ParameterFamilyState::NotApplicable);
+                }
+            }
+        }
+        f.recheck(&i, &r, &mut quiet()).unwrap();
+    }
+}
