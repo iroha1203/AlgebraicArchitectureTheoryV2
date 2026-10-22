@@ -305,6 +305,7 @@ pub(super) fn input_json(
         };
         let json = match value {
             Scalar::Unit => Json::Arr(vec![]),
+            Scalar::Text(value) => Json::str(value),
             Scalar::Bool(v) => Json::Bool(*v),
             Scalar::Z(value) | Scalar::Fp { value, .. } => Json::str(value.to_string()),
             Scalar::Q(n, d) => Json::Arr(vec![Json::str(n.to_string()), Json::str(d.to_string())]),
@@ -323,7 +324,9 @@ pub(super) fn input_json(
                 }
                 Json::Arr(rows)
             }
-            Scalar::Tuple(items) | Scalar::Set { items, .. } => Json::Arr(children(items)?),
+            Scalar::Tuple(items) | Scalar::List { items, .. } | Scalar::Set { items, .. } => {
+                Json::Arr(children(items)?)
+            }
             Scalar::Option { value: None, .. } => Json::obj([("none", Json::Bool(true))]),
             Scalar::Option {
                 value: Some(item), ..
@@ -342,7 +345,11 @@ pub(super) fn input_json(
                 ),
                 ("args", Json::Arr(children(args)?)),
             ]),
-            _ => return Err("原始有限fieldの補完値でない".into()),
+            Scalar::Term(term) => {
+                term.check(control)?;
+                term.wire()
+            }
+            Scalar::Path(_) => return Err("原始fieldの値でない".into()),
         };
         tick(control)?;
         Ok(json)

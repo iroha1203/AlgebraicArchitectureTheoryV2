@@ -862,3 +862,253 @@ fn fixed_owned_helper_stops_reject_unfinished_argument_and_return_checks() {
         }
     }
 }
+
+#[test]
+fn finite_empty_list_candidates_from_the_existing_domain_reach_original_fields() {
+    let i = fixture::inputs();
+    let domain = crate::observed::finite::values_if_finite_with_owned(
+        &Type::List(Box::new(Type::Ref("Pattern.Vacant".into()))),
+        i.law(),
+        &quiet(),
+        &mut |_| Ok(crate::observed::finite::Enumeration::default()),
+        &mut |_, _| Ok(crate::observed::finite::FiniteDomain::default()),
+        &mut |_| {},
+    )
+    .unwrap()
+    .unwrap()
+    .enumeration;
+    assert_eq!(
+        domain.values,
+        vec![Scalar::List {
+            element: Type::Ref("Pattern.Vacant".into()),
+            items: vec![]
+        }]
+    );
+    for known in [false, true] {
+        let map = if known {
+            fixture::MAP.replace("\"atoms\":[", "\"atoms\":[{\"id\":\"empty-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.empty\",\"value\":[],\"origin\":\"model\"},")
+        } else {
+            fixture::MAP.into()
+        };
+        let i = fixture::with_map(&map);
+        let original = i.sources().clone();
+        let e = Environment::with_primitive_valuation(
+            &i,
+            &[(slot("p", "empty"), domain.values[0].clone())],
+            &mut quiet(),
+        )
+        .unwrap();
+        let v = expression(&e, "empty", false);
+        assert_eq!(v.known_value, Some(domain.values[0].clone()));
+        assert!(v.scope.assignments);
+        assert_eq!(v.support, vec![slot("p", "empty")]);
+        assert_eq!(i.sources(), &original);
+        let normal = expression(&Environment::new(&i, &mut quiet()).unwrap(), "empty", false);
+        if known {
+            assert_eq!(normal.known_value, Some(domain.values[0].clone()));
+            assert!(
+                normal
+                    .support
+                    .iter()
+                    .any(|f| f.atom.as_deref() == Some("empty-p"))
+            );
+        } else {
+            assert_eq!(normal.known_value, None);
+        }
+    }
+}
+
+#[test]
+fn text_lists_and_nested_candidates_preserve_contents_order_and_observation_separation() {
+    let map = fixture::MAP.replace("\"atoms\":[", "\"atoms\":[{\"id\":\"text-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.text\",\"value\":\"old\",\"origin\":\"model\"},{\"id\":\"sequence-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.sequence\",\"value\":[false],\"origin\":\"model\"},");
+    let i = fixture::with_map(&map);
+    let original = i.sources().clone();
+    let list = Scalar::List {
+        element: Type::Bool,
+        items: vec![Scalar::Bool(true), Scalar::Bool(false), Scalar::Bool(true)],
+    };
+    let text = Scalar::Text("new \n雪\t\"".into());
+    let bundle = Scalar::Tuple(vec![
+        list.clone(),
+        Scalar::Option {
+            element: Type::Text,
+            value: Some(Box::new(text.clone())),
+        },
+    ]);
+    let packet = Scalar::Data {
+        family: "Pattern.Packet".into(),
+        constructor: "Pattern.Packet.Wrap".into(),
+        args: vec![list.clone(), text.clone()],
+    };
+    for input in [&i, &fixture::inputs()] {
+        let values = [
+            (slot("p", "sequence"), list.clone()),
+            (slot("p", "text"), text.clone()),
+            (slot("p", "bundle"), bundle.clone()),
+            (slot("p", "packet"), packet.clone()),
+        ];
+        let e = Environment::with_primitive_valuation(input, &values, &mut quiet()).unwrap();
+        for (name, expected) in [
+            ("sequence", &list),
+            ("text", &text),
+            ("bundle", &bundle),
+            ("packet", &packet),
+        ] {
+            let v = expression(&e, name, false);
+            assert_eq!(v.known_value.as_ref(), Some(expected));
+            assert!(v.scope.assignments);
+            assert_eq!(v.support, vec![slot("p", name)]);
+        }
+    }
+    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    assert_eq!(
+        expression(&normal, "text", false).known_value,
+        Some(Scalar::Text("old".into()))
+    );
+    assert_eq!(
+        expression(&normal, "sequence", false).known_value,
+        Some(Scalar::List {
+            element: Type::Bool,
+            items: vec![Scalar::Bool(false)]
+        })
+    );
+    assert_eq!(i.sources(), &original);
+    for invalid in [
+        Scalar::List {
+            element: Type::Bool,
+            items: vec![Scalar::Unit],
+        },
+        Scalar::Tuple(vec![
+            list,
+            Scalar::Option {
+                element: Type::Text,
+                value: Some(Box::new(Scalar::Bool(true))),
+            },
+        ]),
+    ] {
+        let field = if matches!(invalid, Scalar::Tuple(_)) {
+            "bundle"
+        } else {
+            "sequence"
+        };
+        assert!(
+            Environment::with_primitive_valuation(&i, &[(slot("p", field), invalid)], &mut quiet())
+                .is_err()
+        );
+    }
+}
+
+#[test]
+fn checked_term_candidates_reapply_the_original_body_and_reject_forged_metadata() {
+    let map = fixture::MAP.replace("\"atoms\":[", "\"atoms\":[{\"id\":\"program-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.program\",\"value\":{\"params\":[\"n\"],\"body\":\"n+1\"},\"origin\":\"model\"},");
+    let donor = fixture::with_map(&map);
+    let normal = Environment::new(&donor, &mut quiet()).unwrap();
+    let candidate = expression(&normal, "program", false).known_value.unwrap();
+    for i in [fixture::inputs(), donor.clone()] {
+        let e = Environment::with_primitive_valuation(
+            &i,
+            &[(slot("p", "program"), candidate.clone())],
+            &mut quiet(),
+        )
+        .unwrap();
+        let v = expression(&e, "applied", false);
+        assert_eq!(v.known_value, Some(fp("2", 1)));
+        assert!(v.scope.assignments);
+        assert_eq!(v.support, vec![slot("p", "program")]);
+        let Scalar::Term(t) = &candidate else {
+            panic!()
+        };
+        let mut changed = (**t).clone();
+        changed.body = "n+0".into();
+        assert!(
+            Environment::with_primitive_valuation(
+                &i,
+                &[(slot("p", "program"), Scalar::Term(Box::new(changed)))],
+                &mut quiet()
+            )
+            .is_err()
+        );
+        let mut changed = (**t).clone();
+        changed.root = usize::MAX;
+        assert!(
+            Environment::with_primitive_valuation(
+                &i,
+                &[(slot("p", "program"), Scalar::Term(Box::new(changed)))],
+                &mut quiet()
+            )
+            .is_err()
+        );
+    }
+}
+
+#[test]
+fn composite_candidate_encoding_stops_without_returning_an_environment() {
+    let i = fixture::inputs();
+    let text = Scalar::Text("候補".into());
+    let list = Scalar::List {
+        element: Type::Bool,
+        items: vec![Scalar::Bool(true), Scalar::Bool(false)],
+    };
+    let values = vec![
+        (slot("p", "text"), text.clone()),
+        (slot("p", "sequence"), list.clone()),
+        (
+            slot("p", "packet"),
+            Scalar::Data {
+                family: "Pattern.Packet".into(),
+                constructor: "Pattern.Packet.Wrap".into(),
+                args: vec![list.clone(), text.clone()],
+            },
+        ),
+        (
+            slot("p", "bundle"),
+            Scalar::Tuple(vec![
+                list,
+                Scalar::Option {
+                    element: Type::Text,
+                    value: Some(Box::new(text)),
+                },
+            ]),
+        ),
+    ];
+    for point in [
+        Checkpoint::PrimitiveValuation,
+        Checkpoint::ArchMapSchema,
+        Checkpoint::FiniteIteration,
+    ] {
+        let (mut c, count, _) = stopping(point, usize::MAX, None, false);
+        let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+        assert!(expression(&e, "packet", false).known_value.is_some());
+        // Count constructor checkpoints only, before any expression is evaluated.
+        let (mut c, count_constructor, _) = stopping(point, usize::MAX, None, false);
+        Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+        let last = count_constructor.get();
+        assert!(last > 1 && count.get() >= last);
+        for at in [1, last] {
+            for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+                let (mut c, count, _) = stopping(point, at, Some(kind), false);
+                let error = Environment::with_primitive_valuation(&i, &values, &mut c)
+                    .err()
+                    .expect("入れ子候補の途中環境を返さない");
+                let expected = match kind {
+                    Stop::Time => StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    Stop::Memory => StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    Stop::Int => StopReason::Cancelled(Signal::Int),
+                    Stop::Term => StopReason::Cancelled(Signal::Term),
+                };
+                assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
+                assert_eq!(count.get(), at);
+                assert_eq!(c.checkpoint(point), Err(expected));
+                assert_eq!(count.get(), at);
+            }
+        }
+    }
+}
