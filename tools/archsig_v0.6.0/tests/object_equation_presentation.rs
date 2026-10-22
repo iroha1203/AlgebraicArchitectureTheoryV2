@@ -780,3 +780,75 @@ fn nonnumeric_false_guard_and_outside_object_are_not_applicable() {
     assert!(r.rings().is_empty());
     r.recheck(i, &mut quiet()).unwrap();
 }
+#[test]
+fn unused_state_dependent_reference_keeps_each_reading_without_symbolizing_its_value() {
+    let boolean_definition = fixture::D.replace(
+        "\"meaning\":\"数量。\"}",
+        "\"meaning\":\"数量。\"},{\"name\":\"enabled\",\"type\":\"Bool\",\"meaning\":\"選択。\"}",
+    );
+    let boolean_map=two_subjects().replace("\"atoms\":[","\"atoms\":[{\"id\":\"enabled-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.enabled\",\"value\":false,\"origin\":\"model\"},{\"id\":\"enabled-q\",\"subject\":\"q\",\"field\":\"Pattern.Part.enabled\",\"value\":true,\"origin\":\"model\"},");
+    for (definition, map, condition) in [
+        (
+            fixture::D,
+            two_subjects().replace("\"value\":\"2\"", "\"value\":\"0\""),
+            "c.quantity>0",
+        ),
+        (boolean_definition.as_str(), boolean_map, "c.enabled"),
+    ] {
+        for template in [
+            "law required select(c:Part,d:Part):let unused=(if <COND> then c else d).quantity in 2=2;",
+            "law required select(c:Part,d:Part):(let unused=(if <COND> then c else d).quantity in 2)=2;",
+            "view ignore(x:Z):Z=2;law required select(c:Part,d:Part):ignore((if <COND> then c else d).quantity)=2;",
+            "law required select(c:Part,d:Part):(2,(if <COND> then c else d).quantity).0=2;",
+        ] {
+            let i = inputs_with(definition, &template.replace("<COND>", condition), &map);
+            let r = run(i.clone());
+            assert_eq!(r.status(), S::Ready);
+            assert_eq!(r.occurrences().len(), 4);
+            assert_eq!(r.rings()[0].symbols.len(), 2);
+            assert_eq!(r.rings()[0].required_generators.len(), 4);
+            for q in r.occurrences() {
+                let subject = if binding(&r, q, "c") == "p" {
+                    binding(&r, q, "d")
+                } else {
+                    binding(&r, q, "c")
+                };
+                let symbol = r.rings()[q.ring.unwrap()]
+                    .symbols
+                    .iter()
+                    .find(|s| s.slot.subject == subject)
+                    .unwrap();
+                assert!(
+                    symbol
+                        .readings
+                        .iter()
+                        .any(|read| read.position == q.position
+                            && read.row == q.row
+                            && read.case == q.case
+                            && read.fact.subject == subject
+                            && read.fact.field.as_deref() == Some("Pattern.Part.quantity"))
+                );
+                assert!(q.nu.as_ref().unwrap().terms.is_empty());
+                assert_eq!(q.component_holds, Some(true));
+                assert_eq!(number(&q.epsilon), Some("\"0\"".into()));
+            }
+            r.recheck(i, &mut quiet()).unwrap();
+        }
+        // 支持の記録だけでは、実際に使う状態依存fieldを単一記号へ置換しない。
+        let i = inputs_with(
+            definition,
+            &format!(
+                "law required select(c:Part,d:Part):(if {condition} then c else d).quantity=0;"
+            ),
+            &map,
+        );
+        let r = run(i.clone());
+        for q in r.occurrences() {
+            if binding(&r, q, "c") != binding(&r, q, "d") {
+                assert_eq!(q.status, S::UnsupportedAlgorithm);
+                assert!(q.nu.is_none());
+            }
+        }
+        r.recheck(i, &mut quiet()).unwrap();
+    }
+}

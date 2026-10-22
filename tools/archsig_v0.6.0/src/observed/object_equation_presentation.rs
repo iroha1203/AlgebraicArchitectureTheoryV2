@@ -301,9 +301,6 @@ impl Compiler<'_> {
         let Some(&base) = p.children.first() else {
             return Ok(None);
         };
-        if !self.fixed_reference(base, &[], c)? {
-            return Ok(None);
-        }
         let reference = value(self.g, base, &[]);
         let Some(Scalar::Subject {
             snapshot,
@@ -397,6 +394,22 @@ impl Compiler<'_> {
             }
         }
         Ok(false)
+    }
+    // 元の実読取りはfieldで保持し、νに使うときだけ位置の固定性を要求する。
+    fn polynomial_field(
+        &mut self,
+        r: NodeRef,
+        name: &str,
+        path: &[usize],
+        c: &mut Control,
+    ) -> Result<Option<EquationPolynomial>, ConstructionFailure> {
+        let Some(&base) = part(self.g, r)?.children.first() else {
+            return Ok(None);
+        };
+        if !self.fixed_reference(base, &[], c)? {
+            return Ok(None);
+        }
+        self.field(r, name, path, c)
     }
     // Refの実値だけでなく、その選択導出が数値記号に依存しないことを確認する。
     fn fixed_reference(
@@ -626,9 +639,9 @@ impl Compiler<'_> {
                         _ => None,
                     }
                 }
-                ExprKind::Field { name, .. } => self.field(r, &name.name, path, c)?,
+                ExprKind::Field { name, .. } => self.polynomial_field(r, &name.name, path, c)?,
                 ExprKind::Dotted(names) if names.len() > 1 => {
-                    self.field(r, &names[names.len() - 1].name, path, c)?
+                    self.polynomial_field(r, &names[names.len() - 1].name, path, c)?
                 }
                 ExprKind::Dotted(_) if p.children.len() == 1 => {
                     self.compile(p.children[0], path, c)?
