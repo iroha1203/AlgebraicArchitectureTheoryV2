@@ -607,3 +607,122 @@ fn reconstructed_relations_reject_forged_actions_differences_domains_and_express
         assert!(forged.recheck(&i, &mut quiet()).is_err(), "{mode}");
     }
 }
+
+#[test]
+fn shared_guard_view_keeps_missing_for_every_relation() {
+    for helper in [
+        "view read_mark(n:Node):Z=n.mark;",
+        "view positive(n:Node):Bool=n.mark>0;",
+    ] {
+        let guard = if helper.contains(":Z") {
+            "read_mark(n)>0"
+        } else {
+            "positive(n)"
+        };
+        let i = inputs(
+            "missing_source",
+            &format!(
+                "{helper}relation first(n:Node) when {guard}:identity(n)=identity(n);relation second(n:Node) when {guard}:identity(n)=identity(n);"
+            ),
+        );
+        let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+        for row in r
+            .instances
+            .iter()
+            .filter(|row| row.state != RelationState::Pending)
+        {
+            assert!(row.missing.is_empty());
+        }
+        let pending: Vec<_> = r
+            .instances
+            .iter()
+            .filter(|row| row.state == RelationState::Pending)
+            .collect();
+        assert_eq!(pending.len(), 2);
+        for row in pending {
+            assert_eq!(row.guard, None);
+            assert_eq!(
+                row.missing,
+                vec![slot("Paths.Node", "p", "mark")],
+                "{}",
+                row.declaration
+            );
+            assert_eq!(subject(&row.bindings[0].1), "p");
+        }
+        r.recheck(&i, &mut quiet()).unwrap();
+    }
+}
+#[test]
+fn shared_guard_view_keeps_missing_across_unused_relation_bindings() {
+    let i = inputs(
+        "missing_source",
+        "view mark(n:Node):Z=n.mark;relation guarded(b:Bool,n:Node) when mark(n)>0:identity(n)=identity(n);",
+    );
+    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let pending: Vec<_> = r
+        .instances
+        .iter()
+        .filter(|row| row.state == RelationState::Pending)
+        .collect();
+    assert_eq!(pending.len(), 2);
+    let mut bindings = BTreeSet::new();
+    for row in pending {
+        assert_eq!(row.guard, None);
+        assert_eq!(row.missing, vec![slot("Paths.Node", "p", "mark")]);
+        let Scalar::Bool(b) = row.bindings[0].1 else {
+            panic!()
+        };
+        bindings.insert(b);
+    }
+    assert_eq!(bindings, BTreeSet::from([false, true]));
+    r.recheck(&i, &mut quiet()).unwrap();
+}
+
+#[test]
+fn cached_guard_replays_only_its_own_missing_after_an_untraced_initial_call() {
+    let i = inputs(
+        "missing_source",
+        "view mark(n:Node):Z=n.mark;relation guarded(n:Node) when mark(n)>0:identity(n)=identity(n);",
+    );
+    let rows = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let source = rows
+        .instances
+        .iter()
+        .find(|r| r.state == RelationState::Pending)
+        .unwrap();
+    let d = &rows.declarations[0];
+    let Signature::Relation {
+        guard: Some(guard), ..
+    } = d.signature
+    else {
+        panic!()
+    };
+    let e = Environment::new(&i, &mut quiet()).unwrap();
+    let variables = source
+        .bindings
+        .iter()
+        .map(|(name, value)| (name.clone(), known(&e, value.clone(), "Walk").unwrap()))
+        .collect::<BTreeMap<_, _>>();
+    let base = source.scope.clone();
+    assert!(
+        e.scoped_ast(guard, &variables, &base, "Walk")
+            .unwrap()
+            .known_value
+            .is_none()
+    );
+    assert!(e.missing_slot_reads.borrow().is_none());
+    let original = slot("Paths.Node", "p", "mark");
+    let unrelated = slot("Paths.Node", "q", "mark");
+    *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::from([unrelated.clone()]));
+    e.scoped_ast(guard, &variables, &base, "Walk").unwrap();
+    assert_eq!(
+        e.missing_slot_reads.borrow().as_ref().unwrap(),
+        &BTreeSet::from([original.clone(), unrelated])
+    );
+    *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
+    e.scoped_ast(guard, &variables, &base, "Walk").unwrap();
+    assert_eq!(
+        e.missing_slot_reads.borrow().as_ref().unwrap(),
+        &BTreeSet::from([original])
+    );
+}
