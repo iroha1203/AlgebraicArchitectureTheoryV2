@@ -26,6 +26,10 @@ pub(in crate::observed) struct FiniteLawComponent {
 #[derive(Clone, PartialEq, Eq)]
 pub(in crate::observed) struct FiniteLawRow {
     pub point: usize,
+    /// 元instanceの適用と束縛の型条件。元Lawのguardとは別。
+    pub application: Option<bool>,
+    /// instanceとOwned束縛の適用を読む未観測位置。
+    pub application_missing: Vec<Fact>,
     pub guard: Option<bool>,
     pub predicate: Option<bool>,
     pub operands: Option<(Type, Option<Scalar>, Option<Scalar>)>,
@@ -211,6 +215,7 @@ fn single(mut r: FiniteLawFamilyValuations) -> FiniteLawValuations {
 #[derive(Clone)]
 pub(in crate::observed) struct FiniteLawColumn {
     declaration: Declaration,
+    source_instance: Option<usize>,
     equation_type: Option<Type>,
     bindings: Vec<(String, Scalar)>,
     rows: Vec<FiniteLawRow>,
@@ -218,6 +223,9 @@ pub(in crate::observed) struct FiniteLawColumn {
 impl FiniteLawColumn {
     pub fn declaration(&self) -> &Declaration {
         &self.declaration
+    }
+    pub fn source_instance(&self) -> Option<usize> {
+        self.source_instance
     }
     pub fn bindings(&self) -> &[(String, Scalar)] {
         &self.bindings
@@ -238,6 +246,7 @@ impl FiniteLawColumn {
 pub(in crate::observed) struct FiniteLawFamilyValuations {
     object: Option<Arc<object::Selection>>,
     column_objects: Option<object::Columns>,
+    instance_mode: bool,
     sources: InputSources,
     selection: Vec<Arc<Selection>>,
     columns: Vec<FiniteLawColumn>,
@@ -307,17 +316,31 @@ impl FiniteLawFamilyValuations {
             .iter()
             .map(|s| (s.law.clone(), s.bindings.clone()))
             .collect::<Vec<_>>();
-        let expected = family_with_column_objects(
-            inputs,
-            &selected,
-            self.object.clone(),
-            self.column_objects.clone(),
-            c,
+        let instances = if self.instance_mode {
+            Some(self.columns.iter().map(|column| {
+                column.source_instance.ok_or_else(|| FiniteLawFamilyFailure {
+                    cause: "元Law列にinstance位置がない".into(),
+                    partial: None,
+                })
+            }).collect::<Result<Vec<_>, _>>()?)
+        } else {
+            if self.columns.iter().any(|column| column.source_instance.is_some()) {
+                return Err(FiniteLawFamilyFailure {
+                    cause: "通常のLaw列へ元instanceを追加した".into(),
+                    partial: None,
+                });
+            }
+            None
+        };
+        let expected = family_with_instances(
+            inputs, &selected, self.object.clone(),
+            self.column_objects.clone(), instances, c,
         )?;
         let result = (|| -> Result<bool, ValidationFailure> {
             tick(c)?;
             if self.object != expected.object
                 || self.column_objects != expected.column_objects
+                || self.instance_mode != expected.instance_mode
                 || self.positions != expected.positions
                 || self.types != expected.types
                 || self.domain_complete != expected.domain_complete
@@ -343,6 +366,7 @@ impl FiniteLawFamilyValuations {
             for (a, b) in self.columns.iter().zip(&expected.columns) {
                 tick(c)?;
                 if a.declaration != b.declaration
+                    || a.source_instance != b.source_instance
                     || a.equation_type != b.equation_type
                     || a.bindings.len() != b.bindings.len()
                     || a.rows != b.rows
@@ -392,6 +416,24 @@ fn family_with_column_objects(
     column_objects: Option<object::Columns>,
     c: &mut Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    family_with_instances(inputs, selected, object, column_objects, None, c)
+}
+fn family_with_instances(
+    inputs: &CheckedInputs,
+    selected: &[(String, Vec<(String, Scalar)>)],
+    object: Option<Arc<object::Selection>>,
+    column_objects: Option<object::Columns>,
+    instance_indices: Option<Vec<usize>>,
+    c: &mut Control,
+) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    if instance_indices.as_ref()
+        .is_some_and(|indices| indices.len() != selected.len() || column_objects.is_none())
+    {
+        return Err(FiniteLawFamilyFailure {
+            cause: "元instanceとLaw列の対応が違う".into(),
+            partial: None,
+        });
+    }
     if column_objects.as_ref()
         .is_some_and(|objects| objects.columns.len() != selected.len())
         || (object.is_some() && column_objects.is_some())
@@ -453,6 +495,15 @@ fn family_with_column_objects(
                 partial: None,
             });
         }
+        if let Some(indices) = &instance_indices {
+            let objects = column_objects.as_ref().ok_or_else(|| FiniteLawFamilyFailure {
+                cause: "元instanceの対象族がない".into(),
+                partial: None,
+            })?;
+            object::instance::validate_selection(
+                inputs, objects, index, indices[index], law, bindings, c,
+            ).map_err(|cause| FiniteLawFamilyFailure { cause, partial: None })?;
+        }
         let Signature::Law { body, .. } = decl.signature else {
             return Err(FiniteLawFamilyFailure {
                 cause: "元Lawがない".into(),
@@ -477,6 +528,7 @@ fn family_with_column_objects(
             })?;
         columns.push(FiniteLawColumn {
             declaration: decl.clone(),
+            source_instance: instance_indices.as_ref().map(|indices| indices[index]),
             equation_type,
             bindings: vec![],
             rows: vec![],
@@ -489,6 +541,7 @@ fn family_with_column_objects(
     let mut result = FiniteLawFamilyValuations {
         object,
         column_objects,
+        instance_mode: instance_indices.is_some(),
         sources: inputs.sources().clone(),
         selection,
         columns,
@@ -1015,6 +1068,15 @@ fn probe(
     bindings: &[(String, Scalar)],
     point: usize,
 ) -> Result<Probe, ValidationFailure> {
+    probe_mode(e, decl, bindings, point, false)
+}
+fn probe_mode(
+    e: &Environment<'_>,
+    decl: &Declaration,
+    bindings: &[(String, Scalar)],
+    point: usize,
+    conditional: bool,
+) -> Result<Probe, ValidationFailure> {
     let Signature::Law {
         params,
         guard,
@@ -1044,6 +1106,14 @@ fn probe(
     }
     let mut row = FiniteLawRow {
         point,
+        application: if checks.failure.is_some() {
+            Some(false)
+        } else if checks.blocked {
+            None
+        } else {
+            Some(true)
+        },
+        application_missing: checks.missing,
         guard: None,
         predicate: None,
         operands: None,
@@ -1066,7 +1136,6 @@ fn probe(
         Some(id) => Some(e.scoped_ast(*id, &vars, &scope, &decl.reading)?),
         None => None,
     };
-    let b = e.scoped_ast(*body, &vars, &scope, &decl.reading)?;
     row.guard = match &g {
         None => Some(true),
         Some(g) => match &g.known_value {
@@ -1075,6 +1144,21 @@ fn probe(
             _ => return Err("元Law guardがBoolでない".into()),
         },
     };
+    if conditional && row.guard == Some(false)
+        && g.as_ref().is_none_or(|g| !g.condition_failed && !g.condition_pending)
+    {
+        if let Some(g) = g {
+            row.support.extend(g.support);
+            row.scope.merge(&g.scope);
+        }
+        object::instance::zero_indicator(e, decl, &mut row)?;
+        return Ok(Probe {
+            row,
+            admissible: true,
+            blocked: false,
+        });
+    }
+    let b = e.scoped_ast(*body, &vars, &scope, &decl.reading)?;
     row.predicate = match &b.known_value {
         Some(Scalar::Bool(v)) => Some(*v),
         None => None,
@@ -1148,6 +1232,7 @@ fn populate_family(
     template = r.in_object(template);
     if let Some(location) = r.object.iter()
         .chain(r.column_objects.iter().flat_map(|objects| objects.columns.iter()))
+        .filter(|_| !r.instance_mode)
         .find_map(|object| object.pending_membership())
     {
         r.state = FiniteLawState::Undetermined {
@@ -1210,10 +1295,10 @@ fn populate_family(
             let mut candidate_admissible = true;
             let mut candidate_blocked = false;
             let mut candidate_failure = None;
-            for (index, column) in r.columns.iter().enumerate() {
+            for index in 0..r.columns.len() {
                 tick(c)?;
                 r.select_column_object(&mut e, index)?;
-                match probe(&e, &column.declaration, &column.bindings, 0) {
+                match r.probe_column(&e, index, 0) {
                     Ok(p) => {
                         candidate_admissible &= p.admissible;
                         candidate_blocked |= p.blocked;
@@ -1321,12 +1406,11 @@ fn populate_family(
         for index in 0..r.columns.len() {
             c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
             r.select_column_object(&mut e, index)?;
-            let column = &mut r.columns[index];
-            let p = probe(&e, &column.declaration, &column.bindings, point)?;
+            let p = r.probe_column(&e, index, point)?;
             if !p.admissible || p.blocked {
                 return Err("完成Dの元束縛条件が変わった".into());
             }
-            column.rows.push(p.row);
+            r.columns[index].rows.push(p.row);
             c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
         }
     }

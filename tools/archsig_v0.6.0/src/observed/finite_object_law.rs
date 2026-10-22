@@ -236,6 +236,15 @@ pub(in crate::observed) fn finite_multi_object_law_family_valuations(
     selected: &[(usize, String, Vec<(String, Scalar)>)],
     c: &mut Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    let (columns, laws) = multi_selection(inputs, readings, selected, c)?;
+    family_with_column_objects(inputs, &laws, None, Some(columns), c)
+}
+fn multi_selection(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    selected: &[(usize, String, Vec<(String, Scalar)>)],
+    c: &mut Control,
+) -> Result<(Columns, Vec<(String, Vec<(String, Scalar)>)>), FiniteLawFamilyFailure> {
     readings
         .recheck(inputs, c)
         .map_err(|cause| FiniteLawFamilyFailure {
@@ -268,18 +277,18 @@ pub(in crate::observed) fn finite_multi_object_law_family_valuations(
         })?));
         laws.push((law.clone(), bindings.clone()));
     }
-    family_with_column_objects(
-        inputs,
-        &laws,
-        None,
-        Some(Columns {
+    Ok((
+        Columns {
             readings: readings.clone(),
             columns,
-        }),
-        c,
-    )
+        },
+        laws,
+    ))
 }
 
 #[cfg(test)]
 #[path = "finite_multi_object_law_tests.rs"]
 mod multi_tests;
+
+#[path = "finite_instance_law.rs"]
+pub(in crate::observed) mod instance;
