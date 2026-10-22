@@ -75,6 +75,8 @@ pub enum Checkpoint {
     ObjectLawCircuits,
     ObjectLawCircuitPoint,
     ObjectLawCircuit,
+    ObjectLawCircuitTransport,
+    ObjectLawCircuitTransportPoint,
     Expression,
     FiniteIteration,
 }
