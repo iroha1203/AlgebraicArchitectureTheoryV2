@@ -599,6 +599,44 @@ fn forged_term_body_binding_must_be_rejected() {
 }
 
 #[test]
+fn unused_term_parameters_keep_the_original_identifier_rules() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "view make():Term<(Fp(2))->Fp(2)> =fn(n:Fp(2))=>1;law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;",
+    );
+    let value = literal_term(&i, "Selected.make");
+    let Scalar::Term(original) = &value else {
+        panic!()
+    };
+    for name in [
+        "if", "bad-name", "", "1name", "_name", "x.y", "count", "名前",
+    ] {
+        let mut term = (**original).clone();
+        term.params[0].0 = name.into();
+        assert!(term.check(&quiet()).is_err(), "{name:?}");
+        let bindings = vec![("t".into(), Scalar::Term(Box::new(term)))];
+        assert!(
+            finite_law_valuations(&i, "Selected.fixed", &bindings, &mut quiet()).is_err(),
+            "{name:?}"
+        );
+    }
+    for name in ["n", "unused_2", "N"] {
+        let mut term = (**original).clone();
+        term.params[0].0 = name.into();
+        term.check(&quiet()).unwrap();
+        let r = finite_law_valuations(
+            &i,
+            "Selected.fixed",
+            &[("t".into(), Scalar::Term(Box::new(term)))],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert!(r.is_complete());
+        assert_eq!(r.rows()[0].indicator, Some(0.into()));
+    }
+}
+
+#[test]
 fn nested_maps_keep_their_original_full_domain_check() {
     for (ty, wrap) in [
         ("Map<Part,Part>", 0),
