@@ -195,7 +195,7 @@ impl Environment<'_> {
             images.insert(fact, image);
             for f in &s.fields {
                 self.tick()?;
-                let source_value = self.path_slot(s, f, reading, &mut out)?;
+                self.path_structure_slot(s, f, reading, &mut out)?;
                 if matches!(f.slot, Slot::Missing) {
                     continue;
                 }
@@ -226,7 +226,7 @@ impl Environment<'_> {
                     ));
                     continue;
                 };
-                let target_value = self.path_slot(t, target_field, reading, &mut out)?;
+                self.path_structure_slot(t, target_field, reading, &mut out)?;
                 let (Slot::Known { atom, .. }, Slot::Known { atom: ta, .. }) =
                     (&f.slot, &target_field.slot)
                 else {
@@ -240,7 +240,6 @@ impl Environment<'_> {
                 let b = self
                     .path_input_value(t, target_field)?
                     .ok_or("correspondenceの像field値がない")?;
-                let _ = (source_value, target_value);
                 let mut refs = BTreeSet::new();
                 let expected = self.path_shape(a, Some(&moving), &mut refs)?;
                 let actual = self.path_shape(b, None, &mut BTreeSet::new())?;

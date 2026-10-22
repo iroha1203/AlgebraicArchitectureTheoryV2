@@ -178,13 +178,83 @@ impl Environment<'_> {
         }
         reading.ok_or_else(|| "Pathの元readingがない".into())
     }
+    // 観測値がnone/空であっても、元型が参照を含み得るなら値依存を残す。
+    fn path_reads_value(&self, ty: &Type) -> Result<bool, ValidationFailure> {
+        let mut pending = vec![ty];
+        let mut seen = BTreeSet::new();
+        while let Some(ty) = pending.pop() {
+            self.tick()?;
+            match ty {
+                Type::Ref(_) | Type::Owned(..) | Type::Path(..) => return Ok(true),
+                Type::Tuple(items) => pending.extend(items),
+                Type::List(item) | Type::Set(item) | Type::Option(item) => pending.push(item),
+                Type::Map(a, b) => pending.extend([a.as_ref(), b.as_ref()]),
+                Type::Data(name) if seen.insert(name.as_str()) => {
+                    for constructor in data::constructors(self.inputs.law(), name)? {
+                        self.tick()?;
+                        pending.extend(&constructor.arguments);
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(false)
+    }
+    // 型・slot・Atomの所在だけのlookupは、field値を候補記号へ加えない。
+    fn path_structure_field(
+        &self,
+        owner: &Subject,
+        name: &str,
+    ) -> Result<&crate::archmap::Field, ValidationFailure> {
+        self.tick()?;
+        self.fields
+            .get(&(owner.snapshot.clone(), owner.id.clone(), name.to_owned()))
+            .copied()
+            .ok_or_else(|| "Path構造の元fieldがない".into())
+    }
+    pub(super) fn path_structure_slot(
+        &self,
+        owner: &Subject,
+        field: &crate::archmap::Field,
+        reading: &str,
+        out: &mut PathResult,
+    ) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        if self.path_reads_value(&field.ty)? {
+            self.path_slot(owner, field, reading, out)?;
+            return Ok(());
+        }
+        let position = Fact {
+            snapshot: owner.snapshot.clone(),
+            subject: owner.id.clone(),
+            field: Some(field.name.clone()),
+            atom: None,
+        };
+        match &field.slot {
+            Slot::Known { atom, origin, .. } => {
+                out.scope.merge(&self.scope(owner, reading, Some(origin))?);
+                let mut fact = position;
+                fact.atom = Some(atom.clone());
+                out.support.push(self.path_atom_support(&fact));
+            }
+            Slot::Missing => {
+                out.scope.merge(&self.scope(owner, reading, None)?);
+                out.scope.completions = true;
+                out.missing.push(position);
+            }
+        }
+        self.tick()?;
+        Ok(())
+    }
     // 元型で検査した候補のdecoded値を、同じ位置の参照構造検査へ渡す。
     pub(super) fn path_input_value<'b>(
         &'b self,
         owner: &Subject,
         field: &'b crate::archmap::Field,
     ) -> Result<Option<&'b Value>, ValidationFailure> {
-        self.field(&owner.snapshot, &owner.id, &field.name)?;
+        if self.path_reads_value(&field.ty)? {
+            self.field(&owner.snapshot, &owner.id, &field.name)?;
+        }
         let position = Fact {
             snapshot: owner.snapshot.clone(),
             subject: owner.id.clone(),
@@ -417,17 +487,16 @@ impl Environment<'_> {
         for field in &source.fields {
             self.tick()?;
             let Slot::Known { atom, .. } = &field.slot else {
-                self.path_slot(source, field, reading, &mut out)?;
+                self.path_structure_slot(source, field, reading, &mut out)?;
                 missing_field = true;
                 continue;
             };
-            let target_field = self.field(ts, tp, &field.name)?;
-            let got = self.path_slot(target, target_field, reading, &mut out)?;
+            let target_field = self.path_structure_field(target, &field.name)?;
+            self.path_structure_slot(target, target_field, reading, &mut out)?;
             let Slot::Known {
                 atom: target_atom, ..
             } = &target_field.slot
             else {
-                let _ = got;
                 missing_field = true;
                 continue;
             };
