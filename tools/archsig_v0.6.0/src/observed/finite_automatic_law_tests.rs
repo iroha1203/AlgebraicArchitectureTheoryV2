@@ -697,3 +697,44 @@ fn real_tuple_components_keep_their_original_types_values_and_twelve_generators(
     }
     result.recheck(&i, &a, &mut quiet()).unwrap();
 }
+
+#[test]
+fn extracted_automatic_family_and_quotient_reject_missing_origin_even_without_columns() {
+    let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):true;");
+    let a = reading(&i, "root");
+    let valid = run(&i, &a).into_family().unwrap();
+    assert!(valid.automatic_mode);
+    assert_eq!(valid.columns().len(), 6);
+    assert_eq!(valid.required_zero(), Some([0].as_slice()));
+    valid.recheck(&i, &mut quiet()).unwrap();
+    valid
+        .required_quotient(&mut quiet())
+        .unwrap()
+        .recheck(&i, &mut quiet())
+        .unwrap();
+    for remove_columns in [false, true] {
+        let mut bad = run(&i, &a).into_family().unwrap();
+        bad.automatic_readings = None;
+        if remove_columns {
+            bad.columns.clear();
+            bad.selection.clear();
+            bad.column_objects.as_mut().unwrap().columns.clear();
+        }
+        assert!(bad.recheck(&i, &mut quiet()).is_err());
+        assert!(
+            bad.required_quotient(&mut quiet())
+                .unwrap()
+                .recheck(&i, &mut quiet())
+                .is_err()
+        );
+    }
+    let mut bad = run(&i, &a).into_family().unwrap();
+    bad.automatic_mode = false;
+    assert!(bad.recheck(&i, &mut quiet()).is_err());
+    assert!(
+        bad.required_quotient(&mut quiet())
+            .unwrap()
+            .recheck(&i, &mut quiet())
+            .is_err()
+    );
+}

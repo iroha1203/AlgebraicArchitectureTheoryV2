@@ -248,6 +248,7 @@ pub(in crate::observed) struct FiniteLawFamilyValuations {
     object: Option<Arc<object::Selection>>,
     column_objects: Option<object::Columns>,
     instance_mode: bool,
+    automatic_mode: bool,
     automatic_readings: Option<Arc<ObjectReadingInstances>>,
     sources: InputSources,
     selection: Vec<Arc<Selection>>,
@@ -313,6 +314,12 @@ impl FiniteLawFamilyValuations {
                 partial: None,
             });
         }
+        if self.automatic_mode != self.automatic_readings.is_some() {
+            return Err(FiniteLawFamilyFailure {
+                cause: "自動Law族の由来が欠落または明示族へ混入した".into(),
+                partial: None,
+            });
+        }
         let selected = self
             .selection
             .iter()
@@ -360,6 +367,7 @@ impl FiniteLawFamilyValuations {
             if self.object != expected.object
                 || self.column_objects != expected.column_objects
                 || self.instance_mode != expected.instance_mode
+                || self.automatic_mode != expected.automatic_mode
                 || self.automatic_readings != expected.automatic_readings
                 || self.positions != expected.positions
                 || self.types != expected.types
@@ -595,6 +603,7 @@ fn family_with_instance_domain(
         object,
         column_objects,
         instance_mode: instance_indices.is_some(),
+        automatic_mode: automatic_readings.is_some(),
         automatic_readings,
         sources: inputs.sources().clone(),
         selection,
