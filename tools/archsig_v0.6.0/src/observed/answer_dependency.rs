@@ -83,8 +83,9 @@ impl Environment<'_> {
                     self.answer_binding(graph, &argument.value, parameter.span)
                 });
                 match available {
-                    Ok(_) => continue,
-                    Err(ValidationFailure::UnsupportedExpression { .. }) => {}
+                    Ok(AnswerBinding::Reference(_) | AnswerBinding::Projection(_)) => continue,
+                    Ok(AnswerBinding::Inapplicable(_))
+                    | Err(ValidationFailure::UnsupportedExpression { .. }) => {}
                     Err(error) => return Err(error),
                 }
             }
