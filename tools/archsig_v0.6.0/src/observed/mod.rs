@@ -9,6 +9,7 @@ mod environment;
 pub mod evaluate;
 mod finite;
 mod finite_integer_function;
+mod finite_law_diagram;
 mod needed;
 mod numeric;
 pub(crate) mod numeric_transport;

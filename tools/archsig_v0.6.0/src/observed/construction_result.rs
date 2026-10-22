@@ -33,6 +33,10 @@ pub(crate) enum ConstructionType {
     ConfigurationMap,
     Operation,
     Comparison,
+    Ring,
+    FiniteFunction,
+    RingMap,
+    Ideal,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -45,6 +49,10 @@ impl ConstructionType {
             Self::ConfigurationMap => "ConfigurationMap",
             Self::Operation => "Operation",
             Self::Comparison => "Comparison",
+            Self::Ring => "Ring",
+            Self::FiniteFunction => "FiniteFunction",
+            Self::RingMap => "RingMap",
+            Self::Ideal => "Ideal",
         }
     }
 }
@@ -121,6 +129,7 @@ impl PartialEq for AtomWitness {
 impl Eq for AtomWitness {}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ConstructionData {
+    FiniteLaw(super::finite_law_diagram::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -225,6 +234,7 @@ fn bindings(bs: &[Binding]) -> Json {
 impl ConstructionValue {
     pub fn scalar(&self) -> Option<&Scalar> {
         match &self.data {
+            ConstructionData::FiniteLaw(data) => data.scalar(),
             ConstructionData::PathComposition(part) => part.scalar(),
             ConstructionData::Comparison(part) => part.scalar(),
             ConstructionData::Subject { value, .. }
@@ -286,6 +296,7 @@ impl ConstructionValue {
     pub fn ty(&self) -> NodeType {
         use ConstructionData as D;
         let ty = match &self.data {
+            D::FiniteLaw(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
             D::Comparison(part) => return part.ty(),
@@ -313,6 +324,7 @@ impl ConstructionValue {
     pub fn arguments(&self) -> Vec<NodeRef> {
         use ConstructionData as D;
         match &self.data {
+            D::FiniteLaw(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
             D::Comparison(part) => {
@@ -406,6 +418,7 @@ impl ConstructionValue {
     pub fn construction(&self) -> &'static str {
         use ConstructionData as D;
         match self.data {
+            D::FiniteLaw(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
             D::Comparison(ref part) => part.construction(),
@@ -422,6 +435,10 @@ impl ConstructionValue {
                 ConstructionType::ConfigurationMap => "configuration_map",
                 ConstructionType::Operation => "operation",
                 ConstructionType::Comparison => "comparison",
+                ConstructionType::Ring => "ring",
+                ConstructionType::FiniteFunction => "finite_function",
+                ConstructionType::RingMap => "ring_map",
+                ConstructionType::Ideal => "ideal",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -507,6 +524,7 @@ impl ConstructionValue {
     pub fn wire(&self) -> Json {
         use ConstructionData as D;
         match &self.data {
+            D::FiniteLaw(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
             D::Comparison(part) => match &self.witness { Witness::Compare(w) => part.wire(w), _ => unreachable!("比較は元検査を持つ") },
@@ -1085,6 +1103,7 @@ pub fn atom_value(
     })
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    if let ConstructionData::FiniteLaw(data) = &value.data { return Ok(data.metadata()); }
     if let Witness::PathCompose(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
     if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationSource(data))) = (&value.witness, &value.data) {
         let _ = w;
@@ -1509,6 +1528,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     let Some(Payload::Construction(v)) = &node.payload else {
         return Err("native構成のpayloadがない".into());
     };
+    if let ConstructionData::FiniteLaw(data) = &v.data { return super::finite_law_diagram::validate_node(graph,node,data); }
     if let Witness::Compose(c) = &v.witness { return super::public_compose::validate_node(graph,node,c); }
     if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_node(graph,node,c); }
     if let Witness::Compare(c) = &v.witness { return super::public_compare::validate_node(graph,node,c); }
