@@ -979,11 +979,14 @@ fn populate(
 ) -> Result<(), ConstructionFailure> {
     // work列は元行への添字のみ。出現/係数を事前に供給しない。
     let mut work = vec![];
+    let mut families_complete = true;
     for (i, e) in r.base.evaluations().iter().enumerate() {
         tick(c)?;
         if e.position.object != r.object {
             continue;
         }
+        // 未確定のparameter域は、出現行が零でも完成した空族ではない。
+        families_complete &= e.complete;
         for (row, v) in e.rows.iter().enumerate() {
             for (case, _) in v.cases.iter().enumerate() {
                 tick(c)?;
@@ -1166,13 +1169,13 @@ fn populate(
             }
             r.occurrences.push(occurrence);
             if r.occurrences.len() == count {
-                r.complete = true;
+                r.complete = families_complete;
             }
             c.checkpoint(Checkpoint::EquationPresentationRow)
                 .map_err(ConstructionFailure::from)?;
         }
     }
-    r.complete = true;
+    r.complete = families_complete;
     tick(c)
 }
 pub fn object_equation_presentation(

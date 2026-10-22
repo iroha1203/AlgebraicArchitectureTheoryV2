@@ -1112,3 +1112,99 @@ fn missing_integer_guard_cancellation_proves_truth_without_inventing_an_observat
     assert!(r.rings()[0].symbols[0].readings[0].fact.atom.is_none());
     r.recheck(i, &mut quiet()).unwrap();
 }
+
+fn missing_owner_map() -> String {
+    fixture::A
+        .lines()
+        .filter(|l| !l.contains("\"owner-p\""))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+#[test]
+fn unknown_finite_parameter_domain_is_not_a_completed_empty_equation_family() {
+    let i = inputs_with(
+        fixture::D,
+        "law required ownerDomain(a:Root,x:Option<Part[a]>):1=0;",
+        &missing_owner_map(),
+    );
+    let r = run(i.clone());
+    assert_eq!(r.status(), S::Undetermined);
+    assert!(!r.is_complete());
+    assert!(r.occurrences().is_empty());
+    assert!(r.rings().is_empty());
+    assert!(
+        r.base()
+            .evaluations()
+            .iter()
+            .any(|e| !e.complete && e.rows.is_empty() && e.uniform.is_none())
+    );
+    assert!(r.base().base().evaluations().iter().any(|e| {
+        !e.family().is_complete()
+            && e.family()
+                .missing()
+                .iter()
+                .any(|f| f.subject == "p" && f.field.as_deref() == Some("Pattern.Part.owner"))
+    }));
+    r.recheck(i, &mut quiet()).unwrap();
+}
+#[test]
+fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_row_complete() {
+    use archsig::observed::control::{Checkpoint, Resource, StopReason};
+    let i = inputs_with(
+        fixture::D,
+        "law required known(a:Root):1=0;law required ownerDomain(a:Root,x:Option<Part[a]>):1=0;",
+        &missing_owner_map(),
+    );
+    let r = run(i.clone());
+    assert_eq!(r.status(), S::Undetermined);
+    assert!(!r.is_complete());
+    assert_eq!(r.occurrences().len(), 1);
+    let q = &r.occurrences()[0];
+    assert_eq!(q.status, S::Ready);
+    assert_eq!(q.component_holds, Some(false));
+    assert_eq!(number(&q.epsilon), Some("\"1\"".into()));
+    assert_eq!(r.rings()[0].required_generators, [0]);
+    assert!(r.base().evaluations().iter().any(|e| !e.complete));
+    r.recheck(i.clone(), &mut quiet()).unwrap();
+    for recheck in [false, true] {
+        let mut control = Control::new(
+            Limits {
+                time_ms: Some(1),
+                memory_mib: None,
+            },
+            |p| Usage {
+                elapsed_ms: if p == Checkpoint::EquationPresentationRow {
+                    1
+                } else {
+                    0
+                },
+                ..Usage::default()
+            },
+        );
+        let failure = if recheck {
+            r.recheck(i.clone(), &mut control).unwrap_err()
+        } else {
+            object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut control)
+                .unwrap_err()
+        };
+        let EquationPresentationFailure::Reading { cause, partial } = failure else {
+            panic!("new row stop")
+        };
+        assert_eq!(
+            cause,
+            archsig::construction::ConstructionFailure::Stopped(StopReason::BudgetExhausted {
+                resource: Resource::TimeMs,
+                limit: 1,
+                observed: 1
+            })
+        );
+        assert!(!partial.is_complete());
+        assert_eq!(partial.status(), S::Undetermined);
+        assert_eq!(partial.occurrences().len(), 1);
+        assert_eq!(
+            number(&partial.occurrences()[0].epsilon),
+            Some("\"1\"".into())
+        );
+        assert_eq!(partial.occurrences()[0].component_holds, Some(false));
+    }
+}
