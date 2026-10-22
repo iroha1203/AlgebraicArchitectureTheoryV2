@@ -166,3 +166,6 @@ pub fn prepare_shared_observed(
         Err(failure) => Err(PrepareFailure::Requests { inputs, failure }),
     }
 }
+
+pub(crate) mod equation_polynomial;
+pub(crate) mod object_equation_presentation;

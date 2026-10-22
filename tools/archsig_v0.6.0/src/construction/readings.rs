@@ -627,3 +627,10 @@ pub use crate::observed::object_law_circuits::{
     LawCircuit, LawCircuitDetector, LawCircuitPoint, LawCircuitWitness, LawCircuitsCondition,
     ObjectLawCircuits, ObjectLawCircuitsFailure, object_law_circuits,
 };
+
+pub use crate::observed::object_equation_presentation::{
+    EquationGuard, EquationOccurrence, EquationPresentation, EquationPresentationFailure,
+    EquationPresentationStatus, EquationRing, EquationSlot, EquationStep, EquationSymbol,
+    EquationSymbolReading, object_equation_presentation,
+};
+pub use crate::observed::equation_polynomial::{EquationMonomial, EquationPolynomial};
