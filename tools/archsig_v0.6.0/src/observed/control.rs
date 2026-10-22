@@ -86,6 +86,8 @@ pub enum Checkpoint {
     FinitePolynomialTable,
     FinitePolynomialRecheck,
     PrimitiveValuation,
+    FiniteLawDomain,
+    FiniteLawEvaluation,
     Expression,
     FiniteIteration,
 }
