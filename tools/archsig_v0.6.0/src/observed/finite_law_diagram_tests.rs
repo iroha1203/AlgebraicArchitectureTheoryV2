@@ -877,3 +877,131 @@ fn fp11_public_domain_permutation_also_orders_nu_epsilon_and_evaluation_basis() 
     assert_eq!(generators, &d.nu);
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
+
+#[test]
+fn set_fp11_domain_uses_recursive_canonical_values_and_keeps_point_evaluation() {
+    let definition = DEFINITION.replace(r#"["Fp","2"]"#, r#"["Set",["Fp","11"]]"#);
+    let map = MAP
+        .replace(r#""value":"0""#, r#""value":["3","10"]"#)
+        .replace(r#""value":"1""#, r#""value":["2"]"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            &definition,
+            &map,
+            "law required reflexive(c:Part):c.quantity=c.quantity;",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    let Part::Domain { elements, .. } = data(&g, d.domain).part() else {
+        panic!("D")
+    };
+    assert_eq!(elements.len(), 2048);
+    // 独立した11 bitの集合入力から、原始encodingのUTF-8順を作る。
+    let mut expected = (0..2048u16)
+        .map(|mask| {
+            let mut items = (0..11)
+                .filter(|i| mask & (1 << i) != 0)
+                .map(|i| format!("\"{i}\""))
+                .collect::<Vec<_>>();
+            items.sort();
+            format!("[{}]", items.join(","))
+        })
+        .collect::<Vec<_>>();
+    expected.sort();
+    let actual = elements
+        .iter()
+        .map(|r| g.scalar(*r).unwrap().wire().canonical())
+        .collect::<Vec<_>>();
+    assert_eq!(actual, expected);
+    let pair = actual.iter().position(|v| v == r#"["10","3"]"#).unwrap();
+    let singleton = actual.iter().position(|v| v == r#"["2"]"#).unwrap();
+    assert!(pair < singleton);
+    assert_eq!(coordinates(&g, d.nu[0]), vec!["0"; 2048]);
+    assert_eq!(coordinates(&g, d.epsilon[0].unwrap()), vec!["0"; 2048]);
+    let Part::Evaluation { basis_images, .. } = data(&g, d.evaluation.unwrap()).part() else {
+        panic!("evaluation")
+    };
+    for (point, r) in basis_images.iter().enumerate() {
+        assert!(
+            matches!(g.scalar(*r).unwrap(), Scalar::Z(n) if n == &if point == pair { 1.into() } else { 0.into() })
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn nested_primitive_containers_canonicalize_sets_and_maps_but_preserve_sequences() {
+    let fp = Type::Fp("11".into());
+    let set = || Scalar::Set {
+        element: fp.clone(),
+        items: [3, 10]
+            .into_iter()
+            .map(|n| Scalar::Fp {
+                modulus: "11".into(),
+                value: n.into(),
+            })
+            .collect(),
+    };
+    let subject = |id: &str| Scalar::Subject {
+        snapshot: "v".into(),
+        subject: id.into(),
+        entity: "Finite.Root".into(),
+    };
+    let value = Scalar::Tuple(vec![
+        Scalar::List {
+            element: Type::Set(Box::new(fp.clone())),
+            items: vec![
+                set(),
+                Scalar::Set {
+                    element: fp.clone(),
+                    items: vec![Scalar::Fp {
+                        modulus: "11".into(),
+                        value: 2.into(),
+                    }],
+                },
+            ],
+        },
+        Scalar::Option {
+            element: Type::Set(Box::new(fp.clone())),
+            value: Some(Box::new(set())),
+        },
+        Scalar::Data {
+            family: "Finite.Container".into(),
+            constructor: "Finite.Container.Pack".into(),
+            args: vec![set()],
+        },
+        Scalar::Map {
+            domain: Type::Ref("Finite.Root".into()),
+            codomain: Type::Ref("Finite.Root".into()),
+            pairs: vec![(subject("b"), subject("a")), (subject("a"), subject("b"))],
+        },
+    ]);
+    let original = value.wire().canonical();
+    let normalized = canonical_value(&value, &mut quiet()).unwrap();
+    assert_eq!(normalized.ty(), value.ty());
+    assert_eq!(
+        normalized.wire().canonical(),
+        r#"[[["10","3"],["2"]],{"some":["10","3"]},{"args":[["10","3"]],"tag":"Pack"},[[["v","a"],["v","b"]],[["v","b"],["v","a"]]]]"#
+    );
+    assert_eq!(value.wire().canonical(), original);
+    assert_eq!(
+        canonical_value(&normalized, &mut quiet()).unwrap(),
+        normalized
+    );
+    for mode in 0..4 {
+        for at in [1, 5, 10] {
+            assert!(matches!(
+                canonical_value(&value, &mut stopping(mode, at)),
+                Err(ValidationFailure::Stop(_))
+            ));
+            assert_eq!(value.wire().canonical(), original);
+        }
+    }
+}

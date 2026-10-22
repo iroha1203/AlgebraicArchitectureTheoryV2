@@ -252,6 +252,76 @@ fn function(
         },
     )
 }
+fn value_key(value: &Scalar, c: &mut Control) -> Result<String, ValidationFailure> {
+    super::data::input_json(value, c)?
+        .canonical_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
+            c,
+            Checkpoint::FiniteLawFunction,
+        )
+        .map_err(|e| match e {
+            super::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+            super::control::CheckFailure::Input(_) => {
+                ValidationFailure::Internal("有限Lawのcanonical値が構成できない".into())
+            }
+        })
+}
+// JSONのarray順ではなく、元型のSet/Mapの意味に沿って再帰的に並べる。
+// 元のDの値・所属条件は保ち、公開する値の表示順だけを変える。
+fn canonical_value(value: &Scalar, c: &mut Control) -> Result<Scalar, ValidationFailure> {
+    fn visit(value: &mut Scalar, c: &mut Control) -> Result<(), ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            tick(c)?;
+            match value {
+                Scalar::Set { items, .. } => {
+                    let mut ordered = Vec::new();
+                    for mut item in std::mem::take(items) {
+                        visit(&mut item, c)?;
+                        ordered.push((value_key(&item, c)?, item));
+                    }
+                    ordered.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
+                    tick(c)?;
+                    for (_, item) in ordered {
+                        tick(c)?;
+                        items.push(item);
+                    }
+                }
+                Scalar::Map { pairs, .. } => {
+                    let mut ordered = Vec::new();
+                    for (mut key, mut image) in std::mem::take(pairs) {
+                        visit(&mut key, c)?;
+                        visit(&mut image, c)?;
+                        ordered.push((value_key(&key, c)?, (key, image)));
+                    }
+                    ordered.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
+                    tick(c)?;
+                    for (_, pair) in ordered {
+                        tick(c)?;
+                        pairs.push(pair);
+                    }
+                }
+                Scalar::Tuple(items)
+                | Scalar::List { items, .. }
+                | Scalar::Data { args: items, .. } => {
+                    for item in items {
+                        visit(item, c)?;
+                    }
+                }
+                Scalar::Option {
+                    value: Some(item), ..
+                } => visit(item, c)?,
+                Scalar::Path(_) | Scalar::Term(_) => {
+                    return Err("有限LawのDに原始値でない値がある".into());
+                }
+                _ => {}
+            }
+            tick(c)
+        })
+    }
+    tick(c)?;
+    let mut result = value.clone();
+    visit(&mut result, c)?;
+    Ok(result)
+}
 fn plan(
     f: &AutomaticLawValuations,
     inputs: &CheckedInputs,
@@ -296,18 +366,8 @@ fn plan(
         if value.ty() != ty {
             return Err("有限Lawの全Dの型が違う".into());
         }
-        let key = value
-            .wire()
-            .canonical_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
-                c,
-                Checkpoint::FiniteLawFunction,
-            )
-            .map_err(|e| match e {
-                super::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-                super::control::CheckFailure::Input(_) => {
-                    ValidationFailure::Internal("有限Lawのcanonical値が構成できない".into())
-                }
-            })?;
+        let value = canonical_value(&value, c)?;
+        let key = value_key(&value, c)?;
         ordered.push((key, point, value));
     }
     // 内部の数値/直積順を変えず、公開集合表のUTF-8 byte辞書順と対応させる。
