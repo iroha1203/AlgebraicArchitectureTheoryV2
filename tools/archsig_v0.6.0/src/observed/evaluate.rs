@@ -90,6 +90,43 @@ struct Evaluated {
     comparison: Option<(NodeRef, NodeRef)>,
     residual: Option<NodeRef>,
 }
+/// 公開relationの元instanceに対する、通常Evaluatorの完成済み部分。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct RelationSide {
+    pub expression: NodeRef,
+    pub evaluation: NodeRef,
+    pub value: Option<NodeRef>,
+    pub support: Vec<Fact>,
+    pub scope: Scope,
+    pub reasons: Vec<Reason>,
+}
+pub(in crate::observed) fn relation_side<'a>(
+    environment: &'a Environment<'a>, graph: &mut Graph, control: &mut Control,
+    request: &'a Request, declaration: &'a Declaration, instance: usize, expression: usize,
+) -> Result<RelationSide, ValidationFailure> {
+    let previous = graph.active;
+    let record = graph.instances.get(instance).ok_or("relation評価の元instanceがない")?;
+    graph.active = super::call::Context { instance: Some(instance), ..record.caller };
+    let result = (|| {
+        let (bindings, base) = environment.relation_evaluation_bindings(graph, instance)?;
+        let mut evaluator = Evaluator {
+            environment, graph, control, request, declaration, bindings,
+            lexical: BTreeMap::new(), formal: BTreeMap::new(), base,
+            retained_scope: Scope::default(), reasons: vec![], completed: BTreeMap::new(),
+            answer_evaluation: None, verified_observed: None, completing: false,
+            finite_universal: None, sources: BTreeMap::new(),
+        };
+        match evaluator.eval(expression) {
+            Ok(value) => Ok(RelationSide { expression: value.expression, evaluation: value.evaluation, value: value.value, support: value.support, scope: value.scope, reasons: value.reasons }),
+            Err(Failure::Stop(s)) => Err(ValidationFailure::Stop(s)),
+            Err(Failure::Internal(s)) => Err(ValidationFailure::Internal(s)),
+            Err(Failure::NotImplemented { location, feature }) => Err(ValidationFailure::UnsupportedExpression { location, feature }),
+        }
+    })();
+    graph.active = previous;
+    result
+}
+
 /// commit 済みの元式。未検査の分析結果とは区別し、通常値には使用しない。
 #[derive(Clone, Debug)]
 struct SourceHandle {

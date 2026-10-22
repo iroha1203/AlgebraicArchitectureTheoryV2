@@ -72,6 +72,7 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
     Ok(())
 }
 impl RelationInstances {
+    pub fn reading(&self) -> &str { &self.reading }
     pub fn enumeration_complete(&self) -> bool {
         self.enumeration_complete
     }
@@ -497,4 +498,7 @@ pub(in crate::observed) fn relation_instances(
 mod tests;
 
 #[path = "relation_congruence.rs"]
-pub(super) mod congruence;
+pub(in crate::observed) mod congruence;
+
+#[path = "relation_source_frames.rs"]
+mod source_frames;

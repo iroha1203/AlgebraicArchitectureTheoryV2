@@ -824,3 +824,6 @@ fn dynamic_value_type_condition_stops_never_publish_an_unchecked_comparison() {
 }
 #[path = "public_term_compare_tests.rs"]
 mod term_cases;
+
+#[path = "public_relation_sources_tests.rs"]
+mod relation_sources_tests;

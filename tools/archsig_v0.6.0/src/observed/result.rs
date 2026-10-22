@@ -4057,6 +4057,13 @@ impl Graph {
                 self.expect(domain, &NodeType::Domain)?;
                 let domain_type = match &self.get(domain)?.payload {
                     Some(Payload::TypeDomain { ty }) | Some(Payload::Domain { ty, .. }) => ty,
+                    Some(Payload::Construction(value)) => match &value.data {
+                        super::construction_result::ConstructionData::Comparison(super::public_compare::Part::RelationDerived { data, .. }) => match data.as_ref() {
+                            super::public_compare::relations::Data::Domain { ty, .. } => ty,
+                            _ => return Err("Scopeのnative参照が有限Domainでない".into()),
+                        },
+                        _ => return Err("Scopeのnative量化Domainが違う".into()),
+                    },
                     _ => return Err("Scopeが未生成の量化Domainを消費した".into()),
                 };
                 if domain_type != &quantifier.ty {

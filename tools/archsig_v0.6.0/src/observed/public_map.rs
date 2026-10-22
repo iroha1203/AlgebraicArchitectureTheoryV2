@@ -354,7 +354,14 @@ pub(super) fn validate_origin(
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
     if let Witness::PathCompose(c) = &value.witness { return super::public_path_compose::validate_origin(environment,graph,request,c); }
-    if let Witness::Compare(c) = &value.witness { return super::public_compare::validate_origin(environment,graph,request,c); }
+    if let Witness::Compare(c) = &value.witness {
+        if let D::Comparison(super::public_compare::Part::RelationSource(data)) = &value.data {
+            let family = c.relation_family.as_ref().ok_or("relation Sourceの元族がない")?;
+            environment.recheck_relation_source(family, data.scalar())?;
+        }
+        if c.relation_plan.is_some() { environment.recheck_relation_comparison(graph, c)?; }
+        return super::public_compare::validate_origin(environment,graph,request,c);
+    }
     if let Witness::Compose(c) = &value.witness {
         return super::public_compose::validate_origin(environment, graph, request, c);
     }

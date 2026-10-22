@@ -3034,11 +3034,7 @@ impl Environment<'_> {
         if self.universal_finite_template(graph, request, *span, bindings)? {
             return Ok(false);
         }
-        if let Some(declaration) = self
-            .inputs
-            .law()
-            .declarations
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
+        if let Some(declaration) = request.declaration().and_then(|name| self.inputs.law().declarations.get(name))
             && let Signature::Law { body, .. } = &declaration.signature
             && self
                 .universal_quantifier_plan(graph, *body, bindings)?
@@ -3431,11 +3427,7 @@ impl Environment<'_> {
                 .transpose()?
                 .flatten());
         if plan.is_none()
-            && let Some(declaration) = self
-                .inputs
-                .law()
-                .declarations
-                .get(request.declaration().ok_or("元要求に宣言がない")?)
+            && let Some(declaration) = request.declaration().and_then(|name| self.inputs.law().declarations.get(name))
             && let Signature::Law { body, .. } = &declaration.signature
         {
             plan = self
@@ -3447,12 +3439,13 @@ impl Environment<'_> {
         };
         if self.current_context(graph).frame.is_none() {
             self.universal_fixed_bindings(graph, request, bindings)?;
-            let declaration = self
-                .inputs
-                .law()
-                .declarations
-                .get(request.declaration().ok_or("元要求に宣言がない")?)
-                .ok_or("全域Source元宣言がない")?;
+            let name = match request.declaration() {
+                Some(name) => name.to_owned(),
+                None => self.current_context(graph).instance
+                    .map(|index| self.relation_source_declaration(graph, index)).transpose()?.flatten()
+                    .ok_or("全域Sourceの元要求・relation宣言がない")?,
+            };
+            let declaration = self.inputs.law().declarations.get(&name).ok_or("全域Source元宣言がない")?;
             if !(declaration.span.0 <= span.0 && span.1 <= declaration.span.1) {
                 return Err("全域Sourceの元ASTが別Request宣言に属す".into());
             }

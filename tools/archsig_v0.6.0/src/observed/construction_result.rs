@@ -315,7 +315,15 @@ impl ConstructionValue {
         match &self.data {
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
-            D::Comparison(part) => part.arguments(),
+            D::Comparison(part) => {
+                let mut arguments = part.arguments();
+                if matches!(part, super::public_compare::Part::Comparison { .. } | super::public_compare::Part::Claim { .. })
+                    && let Witness::Compare(w) = &self.witness
+                    && let Some(plan) = &w.relation_plan {
+                    arguments.extend(plan.dependencies.iter().copied());
+                }
+                arguments
+            },
             D::Subject { .. } | D::Atom(_) | D::ConstructionLabel(_) => vec![],
             D::CandidateCondition {
                 name,
@@ -1078,6 +1086,14 @@ pub fn atom_value(
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     if let Witness::PathCompose(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
+    if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationSource(data))) = (&value.witness, &value.data) {
+        let _ = w;
+        return Ok((data.support.clone(), data.scope.clone()));
+    }
+    if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationDerived { index, .. })) = (&value.witness, &value.data) {
+        let plan = w.relation_plan.as_ref().ok_or("relationの元証拠がない")?;
+        return Ok((w.support.clone(), super::public_compare::relations::scope_at(plan, Some(plan.base+index))));
+    }
     if let Witness::Compare(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
     if let Witness::Compose(c) = &value.witness {
         return Ok((c.support.clone(), c.scope.clone()));

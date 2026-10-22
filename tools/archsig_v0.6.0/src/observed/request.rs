@@ -1726,7 +1726,13 @@ impl<'a> Parser<'a> {
             };
             finish_request(result, &mut self.control, Checkpoint::RequestSyntax)?;
             self.expect(b'=')?;
-            arguments.push((key, self.selector()?));
+            let value = if kind == "compare" && key == "kind" {
+                // relationはLawの予約語でも、ここでは比較kindの固定語である。
+                Selector::Declaration { name: self.name(false)? }
+            } else {
+                self.selector()?
+            };
+            arguments.push((key, value));
             self.tick()?;
         }
         self.expect(b')')?;
