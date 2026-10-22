@@ -33,6 +33,8 @@ pub(in crate::observed) struct InstanceParameters {
     pub instance: usize,
     pub source: ObjectInstance,
     pub application: InstanceApplication,
+    /// Noneは観測入口、Someはこの原始代入で検査した適用値。
+    pub application_value: Option<Option<bool>>,
     pub domains: Vec<ParameterDomain>,
     pub support: Vec<Fact>,
     pub scope: Scope,
@@ -44,6 +46,7 @@ pub(in crate::observed) struct InstanceParameters {
 pub(in crate::observed) struct ObjectLawInstances {
     sources: InputSources,
     selection: Selection,
+    valuation: Option<Vec<(Fact, Scalar)>>,
     entries: Vec<InstanceParameters>,
     complete: bool,
 }
@@ -78,9 +81,19 @@ impl ObjectLawInstances {
         if inputs.sources() != &self.sources {
             return Err("Law instance添字族の元三入力が違う".into());
         }
-        let expected =
-            finite_object_law_instances(inputs, &self.selection.readings, self.selection.object, c)
-                .map_err(|f| f.cause)?;
+        self.selection.recheck(inputs, c)?;
+        let mut expected = ObjectLawInstances {
+            sources: inputs.sources().clone(),
+            selection: self.selection.clone(),
+            valuation: self.valuation.clone(),
+            entries: vec![],
+            complete: false,
+        };
+        let env = match &self.valuation {
+            Some(values) => Environment::with_primitive_valuation(inputs, values, c)?,
+            None => Environment::new(inputs, c)?,
+        };
+        populate_with_environment(inputs, &mut expected, c, &env)?;
         if self != &expected {
             return Err("Law instance添字族が元宣言・参照束縛・parameter域と違う".into());
         }
@@ -110,6 +123,14 @@ fn populate(
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
     let env = Environment::new(inputs, c)?;
+    populate_with_environment(inputs, result, c, &env)
+}
+fn populate_with_environment(
+    inputs: &CheckedInputs,
+    result: &mut ObjectLawInstances,
+    c: &mut Control,
+    env: &Environment<'_>,
+) -> Result<(), ValidationFailure> {
     for (index, original) in result.selection.readings.instances().iter().enumerate() {
         tick(c)?;
         if original.declaration().kind != "law" {
@@ -124,6 +145,7 @@ fn populate(
             instance: index,
             source: original.clone(),
             application,
+            application_value: None,
             domains: vec![],
             support: vec![],
             scope: Scope::default(),
@@ -150,7 +172,18 @@ fn populate(
         entry.support.sort();
         entry.support.dedup();
         entry.scope.completions = matches!(&entry.application,InstanceApplication::Applicable{conditions} if !conditions.is_empty());
-        if matches!(entry.application, InstanceApplication::NotApplicable) {
+        if result.valuation.is_some() {
+            let evaluated = super::instance::initial(env, &result.selection, original, 0)?;
+            entry.application_value = Some(evaluated.application);
+            entry.scope.merge(&evaluated.scope);
+            entry.support.extend(evaluated.support);
+            entry.support.sort();
+            entry.support.dedup();
+        }
+        if matches!(entry.application_value, Some(Some(false)))
+            || (entry.application_value.is_none()
+                && matches!(entry.application, InstanceApplication::NotApplicable))
+        {
             entry.state = ParameterFamilyState::NotApplicable;
             continue;
         }
@@ -199,7 +232,9 @@ fn populate(
             entry.state = ParameterFamilyState::Ready;
             continue;
         }
-        if matches!(&entry.application, InstanceApplication::Applicable {conditions} if !conditions.is_empty())
+        if matches!(entry.application_value, Some(None))
+            || (entry.application_value.is_none()
+                && matches!(&entry.application, InstanceApplication::Applicable {conditions} if !conditions.is_empty()))
             || entry.domains.iter().any(|d| !d.missing.is_empty())
         {
             entry.state = ParameterFamilyState::Undetermined;
@@ -288,6 +323,7 @@ pub(in crate::observed) fn finite_object_law_instances(
     let mut result = ObjectLawInstances {
         sources: inputs.sources().clone(),
         selection,
+        valuation: None,
         entries: vec![],
         complete: false,
     };
@@ -302,3 +338,6 @@ pub(in crate::observed) fn finite_object_law_instances(
 #[cfg(test)]
 #[path = "finite_object_law_instances_tests.rs"]
 mod tests;
+
+#[path = "finite_parameter_realizations.rs"]
+pub(in crate::observed) mod realizations;
