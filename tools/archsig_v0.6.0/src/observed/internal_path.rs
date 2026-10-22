@@ -240,6 +240,9 @@ impl Environment<'_> {
             Slot::Missing => {
                 out.scope.merge(&self.scope(owner, reading, None)?);
                 out.scope.completions = true;
+                if let Some(reads) = self.missing_slot_reads.borrow_mut().as_mut() {
+                    reads.insert(position.clone());
+                }
                 out.missing.push(position);
             }
         }
