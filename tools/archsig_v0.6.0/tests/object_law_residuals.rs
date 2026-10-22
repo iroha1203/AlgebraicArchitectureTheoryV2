@@ -482,28 +482,75 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
     r.recheck(i.clone(), &mut trace).unwrap();
     let nth = *count.borrow();
     assert!(nth > 0);
-    let calls = Rc::new(RefCell::new(0));
-    let calls0 = calls.clone();
-    let mut c = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: None,
-        },
-        move |p| {
-            if p == C::ObjectLawResiduals {
-                *calls0.borrow_mut() += 1
-            }
-            Usage {
-                elapsed_ms: if *calls0.borrow() == nth { 1 } else { 0 },
-                ..Usage::default()
-            }
-        },
-    );
-    let f = r.recheck(i, &mut c).unwrap_err();
-    assert!(f.partial().unwrap().is_complete());
-    let n = *calls.borrow();
-    assert!(c.checkpoint(C::ObjectLawResiduals).is_err());
-    assert_eq!(n, *calls.borrow());
+    use archsig::{
+        construction::ConstructionFailure,
+        observed::control::{Resource, StopReason},
+        result::Signal,
+    };
+    for mode in 0..4 {
+        let calls = Rc::new(RefCell::new(0));
+        let calls0 = calls.clone();
+        let probes = Rc::new(RefCell::new(0));
+        let probes0 = probes.clone();
+        let mut c = Control::new(
+            Limits {
+                time_ms: (mode == 0).then_some(1),
+                memory_mib: (mode == 1).then_some(1),
+            },
+            move |p| {
+                *probes0.borrow_mut() += 1;
+                if p == C::ObjectLawResiduals {
+                    *calls0.borrow_mut() += 1
+                }
+                if *calls0.borrow() != nth {
+                    return Usage::default();
+                }
+                Usage {
+                    elapsed_ms: if mode == 0 { 1 } else { 0 },
+                    memory_mib: if mode == 1 { 1 } else { 0 },
+                    signal: match mode {
+                        2 => Some(Signal::Int),
+                        3 => Some(Signal::Term),
+                        _ => None,
+                    },
+                }
+            },
+        );
+        let expected = match mode {
+            0 => StopReason::BudgetExhausted {
+                resource: Resource::TimeMs,
+                limit: 1,
+                observed: 1,
+            },
+            1 => StopReason::BudgetExhausted {
+                resource: Resource::MemoryMib,
+                limit: 1,
+                observed: 1,
+            },
+            2 => StopReason::Cancelled(Signal::Int),
+            _ => StopReason::Cancelled(Signal::Term),
+        };
+        let failure = r.recheck(i.clone(), &mut c).unwrap_err();
+        let ObjectLawResidualsFailure::Reading {
+            cause: ConstructionFailure::Stopped(reason),
+            partial,
+        } = failure
+        else {
+            panic!("recheck must retain the completed numeric result: mode={mode}");
+        };
+        assert_eq!(reason, expected);
+        assert_eq!(c.stop_reason(), Some(expected));
+        assert!(partial.is_complete());
+        assert_eq!(partial.outcome(), Some(&Outcome::Compatible));
+        assert!(partial.evaluations().iter().all(|e| e.complete));
+        let n = *calls.borrow();
+        let observed = *probes.borrow();
+        assert_eq!(n, nth);
+        assert!(c.checkpoint(C::ObjectLawResiduals).is_err());
+        assert!(c.checkpoint(C::Expression).is_err());
+        assert_eq!(n, *calls.borrow());
+        assert_eq!(observed, *probes.borrow());
+    }
 }
 #[test]
 fn each_actual_fp_argument_keeps_its_own_scalar_residual_without_changing_the_integer_ring() {
