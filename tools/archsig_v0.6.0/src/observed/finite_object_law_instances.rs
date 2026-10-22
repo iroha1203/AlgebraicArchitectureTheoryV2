@@ -39,7 +39,7 @@ pub(in crate::observed) struct InstanceParameters {
     pub rows: Vec<BoundInstance>,
     pub state: ParameterFamilyState,
 }
-/// 候補原始代入上の適用条件付き関数をまだ構成しない、元instanceの添字族。
+/// 元Law instanceの適用条件と残parameterの完全束縛族。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ObjectLawInstances {
     sources: InputSources,
@@ -66,7 +66,7 @@ impl ObjectLawInstances {
     pub(in crate::observed) fn entries(&self) -> &[InstanceParameters] {
         &self.entries
     }
-    /// 全適用instanceのparameter域・直積が有限かつ確定している。
+    /// 全適用instanceの完全束縛族が有限かつ確定している。
     pub(in crate::observed) fn is_complete(&self) -> bool {
         self.complete
     }
@@ -191,6 +191,16 @@ fn populate(
                 support,
                 scope,
             });
+        }
+        // 独立した一因子が既知空なら、非有限・未観測の他因子を含む直積も空。
+        // 各因子の元型域・missingと元適用条件は保持する。
+        if entry
+            .domains
+            .iter()
+            .any(|d| d.missing.is_empty() && d.values.as_ref().is_some_and(|v| v.is_empty()))
+        {
+            entry.state = ParameterFamilyState::Ready;
+            continue;
         }
         if matches!(&entry.application, InstanceApplication::Applicable {conditions} if !conditions.is_empty())
             || entry.domains.iter().any(|d| !d.missing.is_empty())

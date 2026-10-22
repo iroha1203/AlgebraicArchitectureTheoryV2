@@ -466,3 +466,70 @@ fn an_empty_factor_makes_a_composite_domain_empty_even_with_an_infinite_factor()
         ])
     );
 }
+
+#[test]
+fn separate_infinite_and_empty_parameters_have_an_empty_complete_product_in_either_order() {
+    for body in [
+        "law required empty(c:Part,n:Z,x:Map<Root,Vacant>):false;",
+        "law required empty(c:Part,x:Map<Root,Vacant>,n:Z):false;",
+    ] {
+        let i = input(body);
+        let r = reading(&i);
+        let f = family(&i, &r, "p");
+        let e = entry(&f, "empty", "p");
+        let n = e.domains.iter().find(|d| d.parameter.name == "n").unwrap();
+        let x = e.domains.iter().find(|d| d.parameter.name == "x").unwrap();
+        assert_eq!(n.parameter.ty, Type::Z);
+        assert_eq!(n.values, None);
+        assert_eq!(x.values.as_deref(), Some([].as_slice()));
+        assert!(x.missing.is_empty());
+        assert_eq!(e.state, ParameterFamilyState::Ready);
+        assert!(e.rows.is_empty());
+        assert!(f.is_complete());
+        assert_eq!(e.scope.quantifiers.len(), 2);
+        f.recheck(&i, &mut quiet()).unwrap();
+    }
+}
+#[test]
+fn an_independent_empty_factor_keeps_unknown_fiber_and_application_evidence_without_rows() {
+    let map=fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,"");
+    let i = fixture::with_body(
+        &map,
+        "law required empty(r:Root,c:Part,x:Option<Part[r]>,void:Map<Root,Vacant>):false;",
+    );
+    let r = reading(&i);
+    let f = family(&i, &r, "root");
+    assert!(f.is_complete());
+    assert_eq!(f.entries().len(), 2);
+    for e in f.entries() {
+        assert_eq!(e.state, ParameterFamilyState::Ready);
+        assert!(e.rows.is_empty());
+        assert!(e.domains[0].missing.iter().any(|p| p.subject == "q"));
+        assert_eq!(e.domains[1].values.as_deref(), Some([].as_slice()));
+        assert!(e.domains[1].missing.is_empty());
+        assert!(e.scope.completions);
+    }
+    assert!(
+        matches!(&entry(&f,"empty","q").application,InstanceApplication::Applicable{conditions} if conditions.len()==1)
+    );
+    f.recheck(&i, &mut quiet()).unwrap();
+}
+#[test]
+fn a_fiber_with_no_known_members_and_missing_owners_is_not_a_known_empty_factor() {
+    let map=fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,"");
+    let i = fixture::with_body(
+        &map,
+        "law required unknown(c:Root,x:Map<Root,Part[c]>,n:Z):false;",
+    );
+    let construction = construct(&i, "Selected", "v", "r2", &mut quiet()).unwrap();
+    let r = object_reading_instances(&i, &construction, &mut quiet()).unwrap();
+    let f = family(&i, &r, "r2");
+    let e = entry(&f, "unknown", "r2");
+    assert_eq!(e.state, ParameterFamilyState::Undetermined);
+    assert!(!f.is_complete());
+    assert!(e.rows.is_empty());
+    assert_eq!(e.domains[0].values.as_deref(), Some([].as_slice()));
+    assert!(e.domains[0].missing.iter().any(|p| p.subject == "q"));
+    assert_eq!(e.domains[1].values, None);
+    f.recheck(&i, &mut quiet()).unwrap();
+}
