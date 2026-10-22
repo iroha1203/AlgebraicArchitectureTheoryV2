@@ -428,3 +428,6 @@ pub(in crate::observed) mod object_evaluation;
 
 #[path = "finite_object_law_presentation.rs"]
 pub(in crate::observed) mod presentation;
+
+#[path = "finite_law_observation.rs"]
+pub(in crate::observed) mod observation;
