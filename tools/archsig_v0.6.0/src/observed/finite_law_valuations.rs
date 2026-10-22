@@ -236,6 +236,7 @@ impl FiniteLawColumn {
     }
 }
 pub(in crate::observed) struct FiniteLawFamilyValuations {
+    object: Option<Arc<object::Selection>>,
     sources: InputSources,
     selection: Vec<Arc<Selection>>,
     columns: Vec<FiniteLawColumn>,
@@ -305,10 +306,11 @@ impl FiniteLawFamilyValuations {
             .iter()
             .map(|s| (s.law.clone(), s.bindings.clone()))
             .collect::<Vec<_>>();
-        let expected = finite_law_family_valuations(inputs, &selected, c)?;
+        let expected = family_with_object(inputs, &selected, self.object.clone(), c)?;
         let result = (|| -> Result<bool, ValidationFailure> {
             tick(c)?;
-            if self.positions != expected.positions
+            if self.object != expected.object
+                || self.positions != expected.positions
                 || self.types != expected.types
                 || self.domain_complete != expected.domain_complete
                 || self.observed_point != expected.observed_point
@@ -365,6 +367,20 @@ pub(in crate::observed) fn finite_law_family_valuations(
     selected: &[(String, Vec<(String, Scalar)>)],
     c: &mut Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    family_with_object(inputs, selected, None, c)
+}
+fn family_with_object(
+    inputs: &CheckedInputs,
+    selected: &[(String, Vec<(String, Scalar)>)],
+    object: Option<Arc<object::Selection>>,
+    c: &mut Control,
+) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    if let Some(object) = &object {
+        object.recheck(inputs, c).map_err(|cause| FiniteLawFamilyFailure {
+            cause,
+            partial: None,
+        })?;
+    }
     let mut columns = vec![];
     let mut selection = vec![];
     for (law, bindings) in selected {
@@ -384,6 +400,15 @@ pub(in crate::observed) fn finite_law_family_valuations(
         if !matches!(decl.signature, Signature::Law { .. }) {
             return Err(FiniteLawFamilyFailure {
                 cause: "有限Lawの選択がLawでない".into(),
+                partial: None,
+            });
+        }
+        if object
+            .as_ref()
+            .is_some_and(|o| o.identity().reading() != decl.reading)
+        {
+            return Err(FiniteLawFamilyFailure {
+                cause: "有限Lawのreadingが選択対象と違う".into(),
                 partial: None,
             });
         }
@@ -421,6 +446,7 @@ pub(in crate::observed) fn finite_law_family_valuations(
         }));
     }
     let mut result = FiniteLawFamilyValuations {
+        object,
         sources: inputs.sources().clone(),
         selection,
         columns,
@@ -1068,9 +1094,16 @@ fn populate_family(
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
     tick(c)?;
-    let template = Environment::new(inputs, c)?;
+    let template = r.in_object(Environment::new(inputs, c)?);
     for (column, selected) in r.columns.iter_mut().zip(&r.selection) {
         column.bindings = validate_bindings(&template, &column.declaration, &selected.bindings)?;
+    }
+    if let Some(location) = r.object.as_ref().and_then(|object| object.pending_membership()) {
+        r.state = FiniteLawState::Undetermined {
+            location,
+            reason: "選択部分対象の所属が未観測".into(),
+        };
+        return Ok(());
     }
     let mut positions: BTreeSet<Fact> = BTreeSet::new();
     loop {
@@ -1121,7 +1154,7 @@ fn populate_family(
                 .cloned()
                 .zip(candidate.iter().cloned())
                 .collect::<Vec<_>>();
-            let e = Environment::primitive_dependency_probe(inputs, &values, c)?;
+            let e = r.in_object(Environment::primitive_dependency_probe(inputs, &values, c)?);
             *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
             let mut candidate_admissible = true;
             let mut candidate_blocked = false;
@@ -1232,7 +1265,7 @@ fn populate_family(
             .cloned()
             .zip(candidate.iter().cloned())
             .collect::<Vec<_>>();
-        let e = Environment::with_primitive_valuation(inputs, &values, c)?;
+        let e = r.in_object(Environment::with_primitive_valuation(inputs, &values, c)?);
         for column in &mut r.columns {
             c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
             let p = probe(&e, &column.declaration, &column.bindings, point)?;
@@ -1281,6 +1314,14 @@ fn populate_family(
     } else {
         FiniteLawState::Ready
     };
+    // 参照域の所属未決で読取り位置を尽くせないとき、既知の候補列を全Dとしない。
+    if !r.reference_domain_conditions().is_empty()
+        && r.columns.iter().any(|column| {
+            column.rows.iter().any(|row| row.scope.completions && row.indicator.is_none())
+        })
+    {
+        r.domain_complete = false;
+    }
     if r.is_complete() {
         r.state = FiniteLawState::Pending;
         let mut zero = vec![];
@@ -1320,3 +1361,6 @@ pub(in crate::observed) mod quotient;
 #[cfg(test)]
 #[path = "finite_law_lexical_tests.rs"]
 mod lexical_tests;
+
+#[path = "finite_object_law.rs"]
+pub(in crate::observed) mod object;
