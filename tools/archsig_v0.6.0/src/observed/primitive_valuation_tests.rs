@@ -743,3 +743,122 @@ fn fixed_owner_family_stops_keep_candidates_out_of_observation_evidence() {
         }
     }
 }
+
+fn owned_helper(
+    e: &Environment<'_>,
+    name: &str,
+    owner: &str,
+) -> Result<SourceValue, ValidationFailure> {
+    let Signature::View { body, .. } =
+        e.inputs.law().declarations[&format!("Selected.{name}")].signature
+    else {
+        panic!()
+    };
+    e.scoped_ast(
+        body,
+        &BTreeMap::from([
+            ("c".into(), source(root())),
+            ("r".into(), source(subject_value(owner, "Root"))),
+        ]),
+        &Scope::default(),
+        "Selected",
+    )
+}
+#[test]
+fn candidate_owner_controls_owned_helper_arguments_and_returns_for_known_and_missing_slots() {
+    for missing in [false, true] {
+        let map = if missing {
+            fixture::MAP.replace(r#"{"id":"op","subject":"p","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#," ")
+        } else {
+            fixture::MAP.into()
+        };
+        let i = fixture::with_map(&map);
+        let e = Environment::with_primitive_valuation(
+            &i,
+            &[(slot("p", "owner"), subject_value("r2", "Root"))],
+            &mut quiet(),
+        )
+        .unwrap();
+        for name in ["argument", "returned"] {
+            let old = owned_helper(&e, name, "root").unwrap();
+            assert!(
+                old.condition_failed,
+                "候補ownerと異なる引数/戻り値のOwned条件を反証する"
+            );
+            assert!(!old.condition_pending && old.known_value.is_none());
+            let current = owned_helper(&e, name, "r2").unwrap();
+            assert!(!current.condition_failed && !current.condition_pending);
+            assert_eq!(
+                current.known_value,
+                Some(if name == "argument" {
+                    Scalar::Bool(true)
+                } else {
+                    root()
+                })
+            );
+            assert!(current.scope.assignments && !current.scope.completions);
+            assert!(current.support.contains(&slot("p", "owner")));
+            assert!(
+                !current
+                    .support
+                    .iter()
+                    .any(|f| f.atom.as_deref() == Some("op"))
+            );
+        }
+        let original = Environment::new(&i, &mut quiet()).unwrap();
+        let old = owned_helper(&original, "argument", "root").unwrap();
+        assert_eq!(old.condition_pending, missing);
+        assert_eq!(
+            old.known_value,
+            if missing {
+                None
+            } else {
+                Some(Scalar::Bool(true))
+            }
+        );
+    }
+}
+
+#[test]
+fn fixed_owned_helper_stops_reject_unfinished_argument_and_return_checks() {
+    let i = fixture::inputs();
+    let values = [(slot("p", "owner"), subject_value("r2", "Root"))];
+    for name in ["argument", "returned"] {
+        let (mut c, count, active) = stopping(Checkpoint::FiniteIteration, usize::MAX, None, true);
+        let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+        active.set(true);
+        let full = owned_helper(&e, name, "r2").unwrap();
+        assert!(full.known_value.is_some() && !full.condition_failed && !full.condition_pending);
+        let last = count.get();
+        assert!(last > 1);
+        for at in [1, last] {
+            for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+                let (mut c, count, active) =
+                    stopping(Checkpoint::FiniteIteration, at, Some(kind), true);
+                let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+                active.set(true);
+                let error = owned_helper(&e, name, "r2")
+                    .err()
+                    .expect("Owned検査の途中値を返さない");
+                let expected = match kind {
+                    Stop::Time => StopReason::BudgetExhausted {
+                        resource: Resource::TimeMs,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    Stop::Memory => StopReason::BudgetExhausted {
+                        resource: Resource::MemoryMib,
+                        limit: 1,
+                        observed: 1,
+                    },
+                    Stop::Int => StopReason::Cancelled(Signal::Int),
+                    Stop::Term => StopReason::Cancelled(Signal::Term),
+                };
+                assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
+                assert_eq!(count.get(), at);
+                assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(expected));
+                assert_eq!(count.get(), at);
+            }
+        }
+    }
+}
