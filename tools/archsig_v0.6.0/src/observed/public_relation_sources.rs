@@ -801,11 +801,12 @@ pub(in crate::observed) fn domains(
 }
 
 pub(super) fn complete_domain(table: &RelationInstances, declaration: &str) -> bool {
-    table.enumeration_complete()
-        && !table
-            .outside_finite
-            .iter()
-            .any(|d| d.declaration == declaration)
+    // 検査済み表は全宣言を走査済み。別宣言の未完了域で、この宣言の
+    // 完成した域と元反証を失わない。
+    !table
+        .outside_finite
+        .iter()
+        .any(|d| d.declaration == declaration)
         && !table
             .pending_domains
             .iter()

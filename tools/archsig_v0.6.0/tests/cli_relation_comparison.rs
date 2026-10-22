@@ -152,15 +152,23 @@ fn missing_relation_guard_is_a_partial_result_with_a_plan_for_the_original_field
 #[test]
 fn malformed_relation_comparison_notifies_stdout_and_preserves_existing_files() {
     let dir = files("relation-invalid-selector", "", false);
+    let texts = [
+        fixture::E,
+        "compared=compare($e.value,to=$e.value,kind=relation,along=$e.value)",
+    ];
+    let invalid = asks(&dir, &texts);
+    assert_eq!(invalid.code, 64);
+    assert!(invalid.stderr.is_empty());
+    assert!(!has(&invalid.receipt, "result"));
+    assert!(
+        arr(get(&invalid.receipt, "issues"))
+            .iter()
+            .any(|issue| { s(get(issue, "message")).contains("along") })
+    );
+    assert!(!dir.join("out").exists());
     std::fs::create_dir(dir.join("out")).unwrap();
     std::fs::write(dir.join("out/keep"), b"existing").unwrap();
-    let run = asks(
-        &dir,
-        &[
-            fixture::E,
-            "compared=compare($e.value,to=$e.value,kind=relation,along=$e.value)",
-        ],
-    );
+    let run = asks(&dir, &texts);
     assert_eq!(run.code, 64);
     assert!(!has(&run.receipt, "result"));
     assert!(!arr(get(&run.receipt, "issues")).is_empty());

@@ -483,6 +483,68 @@ fn a_noncomposable_relation_body_retains_the_original_path_failure() {
     assert!(inactive.answers[2].reasons.is_empty());
 }
 
+fn known_failure_with_an_independent_nonfinite_relation(invalid: &str, expected: &str) {
+    let script = format!("{invalid} relation unbounded(n:Z,e:Hop):path(e)=path(e);");
+    let result = evaluate_observed_bytes(
+        inputs(&script),
+        &[
+            E,
+            ALIAS,
+            "compared=compare($e.value,to=$alias.value,kind=relation)",
+        ],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    let answer = &result.answers[2];
+    assert_eq!(answer.status, Decision::Refuted, "{:?}", result.issues);
+    assert!(!answer.outputs.contains_key("comparison"));
+    assert!(!answer.evidence.is_empty());
+    assert!(
+        answer.reasons.iter().any(|reason| matches!(
+            reason.kind,
+            ReasonKind::ConditionFailed { construction, .. } if construction == expected
+        )),
+        "{:?}",
+        answer.reasons
+    );
+    assert!(
+        result
+            .issues
+            .iter()
+            .all(|reason| matches!(reason.kind, ReasonKind::ConditionFailed { .. })),
+        "{:?}",
+        result.issues
+    );
+    let claim = answer.claim.unwrap();
+    let Payload::Construction(value) = result.nodes[claim.0].payload.as_ref().unwrap() else {
+        panic!()
+    };
+    let Witness::Compare(witness) = &value.witness else {
+        panic!()
+    };
+    let D::Comparison(part) = &value.data else {
+        panic!()
+    };
+    assert!(part.wire(witness).canonical().contains("constructible"));
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+}
+
+#[test]
+fn an_independent_nonfinite_domain_does_not_hide_a_known_relation_refutation() {
+    known_failure_with_an_independent_nonfinite_relation(
+        "relation invalid(e:Hop):path(e)=identity(source(path(e)));",
+        "comparison",
+    );
+}
+
+#[test]
+fn an_independent_nonfinite_domain_does_not_hide_a_known_path_construction_failure() {
+    known_failure_with_an_independent_nonfinite_relation(
+        "relation invalid(e:Hop):then(path(e),path(e))=then(path(e),path(e));",
+        "evaluation",
+    );
+}
+
 #[test]
 fn actual_endpoint_and_reading_mismatches_are_comparison_conditions() {
     let endpoint = evaluate_observed_bytes(
