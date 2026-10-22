@@ -560,3 +560,101 @@ fn noncomposable_original_paths_remain_condition_failed() {
     assert_eq!(r.equivalent(0, 0, &mut quiet()).unwrap(), None);
     r.recheck(&i, &mut quiet()).unwrap();
 }
+
+fn query_path(r: &Congruence, generator: &str) -> QueryPath {
+    let row = r.relations.as_ref().unwrap().instances.iter().find(|row| {
+        matches!(&row.left, Some(Scalar::Path(p)) if p.step.as_ref().is_some_and(|s| matches!(&s.generator, Scalar::Subject {subject,..} if subject==generator)))
+    }).unwrap();
+    let Some(Scalar::Path(path)) = &row.left else {
+        panic!()
+    };
+    QueryPath {
+        path: (**path).clone(),
+        support: row.support.clone(),
+        scope: row.scope.clone(),
+    }
+}
+fn twice(query: &QueryPath) -> QueryPath {
+    let result = crate::observed::path_compose::compose_retained(
+        &query.path,
+        &query.path,
+        "Walk",
+        &quiet(),
+        |_, _| {},
+    )
+    .unwrap_or_else(|_| panic!());
+    QueryPath {
+        path: result.value.unwrap(),
+        support: query.support.clone(),
+        scope: query.scope.clone(),
+    }
+}
+#[test]
+fn current_query_paths_add_unrepresented_words_and_keep_their_provenance() {
+    let i = inputs(&format!("{SEED}{ADJACENT}"), "normal");
+    let base = congruence(&i, "Walk", &mut quiet()).unwrap();
+    assert_eq!(base.words.len(), 5);
+    let queries = [
+        twice(&query_path(&base, "a")),
+        twice(&query_path(&base, "d")),
+    ];
+    let r = with_queries(&i, "Walk", &queries, &mut quiet()).unwrap();
+    assert!(r.complete());
+    assert_eq!(r.words.len(), 21);
+    assert_eq!(r.classes.iter().copied().collect::<BTreeSet<_>>().len(), 3);
+    let [a, b] = r.query_ids.as_slice() else {
+        panic!()
+    };
+    assert_eq!(
+        r.words[*a]
+            .generators
+            .iter()
+            .map(|g| g.1.as_str())
+            .collect::<Vec<_>>(),
+        ["a", "a"]
+    );
+    assert_eq!(
+        r.words[*b]
+            .generators
+            .iter()
+            .map(|g| g.1.as_str())
+            .collect::<Vec<_>>(),
+        ["d", "d"]
+    );
+    assert_eq!(r.equivalent(*a, *b, &mut quiet()).unwrap(), Some(true));
+    let proof = r.derivation(*a, *b, &mut quiet()).unwrap().unwrap();
+    check_proof(&r, *a, *b, &proof);
+    r.recheck_queries(&i, &queries, &mut quiet()).unwrap();
+    assert!(r.recheck(&i, &mut quiet()).is_err());
+    for kind in 0..5 {
+        let mut fresh = queries.clone();
+        match kind {
+            0 => fresh[0].path.step.as_mut().unwrap().images.swap(0, 1),
+            1 => fresh[0].path.subject = "q".into(),
+            2 => fresh[0].support.clear(),
+            3 => fresh[0].scope.readings.clear(),
+            _ => fresh.swap(0, 1),
+        }
+        assert!(fresh != queries);
+        assert!(
+            r.recheck_queries(&i, &fresh, &mut quiet()).is_err(),
+            "{kind}"
+        );
+    }
+}
+#[test]
+fn a_query_empty_word_is_not_identified_by_its_identity_action() {
+    let i = inputs(&format!("{SEED}{ADJACENT}"), "normal");
+    let base = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let a = query_path(&base, "a");
+    let mut identity = a.clone();
+    identity.path.step = None;
+    assert!(a.path.same_action(&identity.path, &quiet()).unwrap());
+    let queries = [a, identity];
+    let r = with_queries(&i, "Walk", &queries, &mut quiet()).unwrap();
+    let [a, b] = r.query_ids.as_slice() else {
+        panic!()
+    };
+    assert_eq!(r.equivalent(*a, *b, &mut quiet()).unwrap(), Some(false));
+    r.recheck_queries(&i, &queries, &mut quiet()).unwrap();
+}

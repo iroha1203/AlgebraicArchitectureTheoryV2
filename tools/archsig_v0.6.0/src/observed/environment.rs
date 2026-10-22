@@ -341,6 +341,8 @@ pub(crate) struct Environment<'a> {
     snapshot_origins: BTreeMap<String, String>,
     expressions: BTreeMap<(usize, usize), usize>,
     dotted_candidates: BTreeMap<(usize, usize), Vec<DottedOccurrence>>,
+    // 元三入力にのみ依存する不変族。Arcを保持し、同一性の再利用を防ぐ。
+    verified_relation_families: RefCell<Vec<std::sync::Arc<crate::observed::public_compare::relation_sources::Family>>>,
     dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
@@ -469,6 +471,7 @@ impl<'a> Environment<'a> {
             snapshot_origins,
             expressions,
             dotted_candidates,
+            verified_relation_families: RefCell::new(vec![]),
             dotted_inputs: RefCell::new(DottedInputCache::default()),
             scoped_values: RefCell::new(Vec::new()),
             control: control.clone(),
@@ -749,6 +752,7 @@ impl<'a> Environment<'a> {
                         .iter()
                         .chain(&node.evidence)
                         .chain(node.conditions().iter())
+                        .chain(node.scope.quantifiers.iter().filter_map(|q| q.domain.as_ref()))
                         .chain(
                             node.reasons
                                 .iter()
@@ -4451,7 +4455,8 @@ impl<'a> Environment<'a> {
             if declaration.span.0 <= first.span.0 && first.span.1 <= declaration.span.1 {
                 let params = match &declaration.signature {
                     crate::law::model::Signature::View { params, .. }
-                    | crate::law::model::Signature::Law { params, .. } => params,
+                    | crate::law::model::Signature::Law { params, .. }
+                    | crate::law::model::Signature::Relation { params, .. } => params,
                     _ => continue,
                 };
                 for parameter in params {
@@ -6429,9 +6434,17 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         let declaration = declaration.ok_or("原式を所有する宣言がない")?;
+        if matches!(declaration.signature, crate::law::model::Signature::Relation { .. }) {
+            let index = self.current_context(graph).instance.ok_or("元relation instanceがない")?;
+            if !crate::observed::public_compare::relation_sources::source_allowed(graph, index, span)? {
+                return Err("未成立guardのrelation bodyは評価できない".into());
+            }
+        }
         let params = match &declaration.signature {
             crate::law::model::Signature::View { params, .. }
             | crate::law::model::Signature::Law { params, .. } => params,
+            crate::law::model::Signature::Relation { params, .. }
+                if self.current_context(graph).instance.map(|index| self.relation_source_declaration(graph, index)).transpose()?.flatten().as_deref() == Some(declaration.name.as_str()) => params,
             _ => return Err("評価範囲の元宣言が view/Law でない".into()),
         };
         let (mut base, mut variables) = if let Some(index) = self.current_context(graph).frame {
@@ -6458,7 +6471,8 @@ impl<'a> Environment<'a> {
                 .requests
                 .get(self.current_context(graph).request)
                 .ok_or("実instance元Requestがない")?;
-            if request.declaration() != Some(declaration.name.as_str()) {
+            if request.declaration() != Some(declaration.name.as_str())
+                && self.relation_source_declaration(graph, index)?.as_deref() != Some(declaration.name.as_str()) {
                 return Err("instance Sourceが別宣言".into());
             }
             let (expected, variables, base) = self.family_instance_inputs(graph, index)?;

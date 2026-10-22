@@ -28,10 +28,19 @@ pub(in crate::observed) struct ProofStep {
     pub edge: usize,
     pub backwards: bool,
 }
+// 呼出し側が現在の元Nodeを検査して取り出す、追加の計算operand。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(in crate::observed) struct QueryPath {
+    pub path: PathValue,
+    pub support: Vec<Fact>,
+    pub scope: Scope,
+}
 #[derive(Clone, PartialEq, Eq)]
 pub(in crate::observed) struct Congruence {
     sources: InputSources,
     reading: String,
+    queries: Vec<QueryPath>,
+    pub query_ids: Vec<usize>,
     pub relations: Option<RelationInstances>,
     pub words: Vec<Word>,
     pub seeds: Vec<Seed>,
@@ -172,13 +181,21 @@ impl Congruence {
         inputs: &CheckedInputs,
         c: &mut Control,
     ) -> Result<(), CongruenceFailure> {
+        self.recheck_queries(inputs, &[], c)
+    }
+    pub fn recheck_queries(
+        &self,
+        inputs: &CheckedInputs,
+        queries: &[QueryPath],
+        c: &mut Control,
+    ) -> Result<(), CongruenceFailure> {
         if &self.sources != inputs.sources() {
             return Err(CongruenceFailure {
                 cause: "合同成分の元三入力が違う".into(),
                 partial: Box::new(self.clone()),
             });
         }
-        let expected = congruence(inputs, &self.reading, c)?;
+        let expected = with_queries(inputs, &self.reading, queries, c)?;
         let result = (|| {
             tick(c)?;
             if self != &expected {
@@ -250,6 +267,19 @@ fn closure(out: &mut Congruence, c: &mut Control) -> Result<(), ValidationFailur
             out.unbalanced.push(rule.instance);
         }
     }
+    for query in out.queries.clone() {
+        tick(c)?;
+        if query.path.reading != out.reading {
+            return Err("追加Pathのreadingが元関係と違う".into());
+        }
+        let word = Word::from_path(&query.path, c)?;
+        let at = out.insert(word, &mut index, c)?;
+        out.query_ids.push(at);
+        out.support.extend(query.support);
+        out.scope.merge(&query.scope);
+    }
+    out.support.sort();
+    out.support.dedup();
     if !verified || !out.unbalanced.is_empty() {
         return Ok(());
     }
@@ -321,9 +351,19 @@ pub(in crate::observed) fn congruence(
     reading: &str,
     c: &mut Control,
 ) -> Result<Congruence, CongruenceFailure> {
+    with_queries(inputs, reading, &[], c)
+}
+pub(in crate::observed) fn with_queries(
+    inputs: &CheckedInputs,
+    reading: &str,
+    queries: &[QueryPath],
+    c: &mut Control,
+) -> Result<Congruence, CongruenceFailure> {
     let mut out = Congruence {
         sources: inputs.sources().clone(),
         reading: reading.into(),
+        queries: queries.to_vec(),
+        query_ids: vec![],
         relations: None,
         words: vec![],
         seeds: vec![],

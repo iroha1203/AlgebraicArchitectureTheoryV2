@@ -480,6 +480,9 @@ impl Environment<'_> {
         graph: &Graph,
         index: usize,
     ) -> Result<FrameInputs, ValidationFailure> {
+        if let Some(inputs) = self.relation_source_inputs(graph, index)? {
+            return Ok(inputs);
+        }
         let record = graph.instances.get(index).ok_or("実instanceがない")?;
         if record.caller.instance.is_some()
             || record.caller.frame.is_some()

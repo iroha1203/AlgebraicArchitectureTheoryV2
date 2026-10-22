@@ -14,6 +14,10 @@ use super::{
 use crate::{canonical::Json, issue::Location};
 #[path = "public_value_compare.rs"]
 pub(super) mod values;
+#[path = "public_relation_sources.rs"]
+pub(in crate::observed) mod relation_sources;
+#[path = "public_relation_compare.rs"]
+pub(in crate::observed) mod relations;
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]
 pub(crate) struct CompareWitness {
@@ -29,6 +33,8 @@ pub(crate) struct CompareWitness {
     facts: Vec<Fact>,
     stopped: Option<StopReason>,
     value_plan: Option<values::Plan>,
+    pub(in crate::observed) relation_family: Option<Arc<relation_sources::Family>>,
+    pub(in crate::observed) relation_plan: Option<Arc<relations::Plan>>,
 }
 impl PartialEq for CompareWitness {
     fn eq(&self, b: &Self) -> bool {
@@ -46,11 +52,16 @@ impl PartialEq for CompareWitness {
             && self.facts == b.facts
             && self.stopped == b.stopped
             && self.value_plan == b.value_plan
+            && self.relation_family == b.relation_family
+            && self.relation_plan == b.relation_plan
     }
 }
 impl Eq for CompareWitness {}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Part {
+    RelationSource(relation_sources::Data),
+    Reading { path: NodeRef, value: Scalar },
+    RelationDerived { index: usize, data: Box<relations::Data> },
     Derived {
         index: usize,
         data: Box<values::Data>,
@@ -83,12 +94,18 @@ fn refs(v: &[NodeRef]) -> Json {
 impl Part {
     pub fn scalar(&self) -> Option<&Scalar> {
         match self {
+            Self::RelationSource(data) => data.scalar(),
+            Self::Reading { value, .. } => Some(value),
+            Self::RelationDerived { data, .. } => data.scalar(),
             Self::Derived { data, .. } => data.scalar(),
             _ => None,
         }
     }
     pub fn ty(&self) -> NodeType {
         match self {
+            Self::RelationSource(data) => data.ty(),
+            Self::Reading { .. } => NodeType::Value(crate::types::Type::Text),
+            Self::RelationDerived { data, .. } => data.ty(),
             Self::Derived { data, .. } => data.ty(),
             Self::Comparison { .. } => NodeType::Construction(T::Comparison),
             Self::Evidence { .. } => NodeType::Evidence,
@@ -97,6 +114,9 @@ impl Part {
     }
     pub fn construction(&self) -> &'static str {
         match self {
+            Self::RelationSource(data) => data.construction(),
+            Self::Reading { .. } => "evaluation",
+            Self::RelationDerived { data, .. } => data.construction(),
             Self::Derived { data, .. } => data.construction(),
             Self::Comparison { .. } => "comparison",
             Self::Evidence { .. } => "evidence",
@@ -105,6 +125,9 @@ impl Part {
     }
     pub fn arguments(&self) -> Vec<NodeRef> {
         match self {
+            Self::RelationSource(data) => data.arguments(),
+            Self::Reading { path, .. } => vec![*path],
+            Self::RelationDerived { data, .. } => data.arguments(),
             Self::Derived { data, .. } => data.arguments(),
             Self::Claim {
                 left,
@@ -141,6 +164,9 @@ impl Part {
     }
     pub fn wire(&self, w: &CompareWitness) -> Json {
         match self {
+            Self::RelationSource(data) => data.wire(),
+            Self::Reading { value, .. } => value.wire(),
+            Self::RelationDerived { data, .. } => data.wire(),
             Self::Derived { data, .. } => data.wire(),
             Self::Comparison { kind, left, right } => Json::obj([
                 ("kind", Json::str(kind)),
@@ -158,6 +184,8 @@ impl Part {
                         "equal"
                     } else if w.kind == "word" {
                         "word_equal"
+                    } else if w.kind == "relation" {
+                        "relation_equal"
                     } else {
                         "action_equal"
                     }),
@@ -314,7 +342,8 @@ pub(super) fn validate_origin(
     r: &Request,
     w: &CompareWitness,
 ) -> Result<(), ValidationFailure> {
-    if r.kind != QuestionKind::Compare
+    let kind = super::request::comparison::kind(r).map_err(|error|ValidationFailure::Internal(format!("元比較kind: {error:?}")))?;
+    if kind != w.kind || r.kind != QuestionKind::Compare
         || r != &w.request
         || env.inputs.sources() != w.inputs.sources()
         || !origin_ref(env, graph, selector(r, "head")?, w.left)?
@@ -322,12 +351,19 @@ pub(super) fn validate_origin(
     {
         return Err("比較が現在の三入力・要求・元Refと違う".into());
     }
+    if w.kind=="relation" && w.relation_plan.is_none() && w.relation_family.is_none() {
+        relations::validate_incompatible(graph,w)?;
+    }
     Ok(())
 }
 pub(super) fn validate_position(
     value: &ConstructionValue,
     position: usize,
 ) -> Result<(), ValidationFailure> {
+    if let (Witness::Compare(w), D::Comparison(Part::RelationDerived { index, .. })) = (&value.witness, &value.data) {
+        let base = w.relation_plan.as_ref().ok_or("元relation導出がない")?.base;
+        if base.checked_add(*index) != Some(position) { return Err("元relation導出の生成位置が違う".into()); }
+    }
     if let (Witness::Compare(w), D::Comparison(Part::Derived { index, .. })) =
         (&value.witness, &value.data)
     {
@@ -346,6 +382,11 @@ pub(super) fn validate_node(
     let Some(Payload::Construction(v)) = &n.payload else {
         return Err("比較のpayloadがない".into());
     };
+    if let D::Comparison(Part::RelationSource(data)) = &v.data {
+        return relation_sources::validate_node(graph, n, w, data);
+    }
+    if w.relation_plan.is_some() { return relations::validate_node(graph,n,w); }
+    if w.kind=="relation" && w.relation_family.is_some() { return Err("元relation Sourceを比較の結論として使えない".into()); }
     if n.ty != v.ty()
         || n.rule != v.rule()
         || n.arguments != v.arguments()
@@ -379,6 +420,11 @@ pub(super) fn validate_node(
         return Err(fail());
     };
     match p {
+        Part::RelationSource(_) | Part::RelationDerived { .. } => return Err(fail()),
+        Part::Reading { path, value } => {
+            let Scalar::Path(actual)=graph.scalar(*path)? else { return Err(fail()); };
+            if w.kind!="relation" || ![w.left,w.right].contains(path) || value!=&Scalar::Text(actual.reading.clone()) || w.equal.is_some() || w.incompatible.is_none() || n.judgment.is_some() || !n.evidence.is_empty() { return Err(fail()); }
+        }
         Part::Derived { index, data } => {
             let expected = w
                 .value_plan
@@ -533,6 +579,7 @@ pub(super) fn validate_failure(graph: &Graph, r: &Reason) -> Result<(), Validati
     let Witness::Compare(w) = &v.witness else {
         return Err("比較の元検査がない".into());
     };
+    if w.relation_plan.is_some() { return relations::validate_failure(graph,r,condition,w); }
     if w.incompatible.is_none()
         || r != &failed(&w.request, condition)
         || !matches!(part(graph, condition, w)?, Part::Endpoints { .. })
@@ -699,6 +746,12 @@ pub(super) fn evaluate(
     let kind = super::request::comparison::kind(r)
         .map_err(|e| ValidationFailure::Internal(format!("比較kind: {e:?}")))?
         .to_owned();
+    if kind == "relation" {
+        let (Scalar::Path(a),Scalar::Path(b))=(graph.scalar(left)?,graph.scalar(right)?) else { return Err("relationの元Pathがない".into()); };
+        if a.reading==b.reading && a.object()==b.object() && a.target()==b.target() {
+            return relations::evaluate(prepared,env,graph,r,left,right,control);
+        }
+    }
     let mut support = graph.get(left)?.support.clone();
     support.extend(graph.get(right)?.support.iter().cloned());
     support.sort();
@@ -706,6 +759,7 @@ pub(super) fn evaluate(
     let mut scope = graph.get(left)?.scope.clone();
     scope.merge(&graph.get(right)?.scope);
     let mut incompatible = None;
+    let mut incompatible_readings = None;
     let mut facts = vec![];
     let mut stopped = None;
     let mut value_plan = None;
@@ -747,7 +801,11 @@ pub(super) fn evaluate(
         };
         a.check(control)?;
         b.check(control)?;
-        if kind == "action" && (a.object() != b.object() || a.target() != b.target()) {
+        if kind == "relation" && a.reading != b.reading && a.object()==b.object() && a.target()==b.target() {
+            incompatible = Some((NodeRef(graph.nodes.len()),NodeRef(graph.nodes.len()+1)));
+            incompatible_readings = Some((a.reading.clone(),b.reading.clone()));
+            None
+        } else if matches!(kind.as_str(), "action" | "relation") && (a.object() != b.object() || a.target() != b.target()) {
             let (x, y) = if a.object() != b.object() {
                 (a.object(), b.object())
             } else {
@@ -827,7 +885,14 @@ pub(super) fn evaluate(
         facts,
         stopped,
         value_plan,
+        relation_family: None,
+        relation_plan: None,
     });
+    if let Some((a,b))=incompatible_readings {
+        let x=node(graph,&w,Part::Reading{path:left,value:Scalar::Text(a)},vec![],None)?;
+        let y=node(graph,&w,Part::Reading{path:right,value:Scalar::Text(b)},vec![],None)?;
+        if w.incompatible!=Some((x,y)) { return Err("reading条件の転記位置が違う".into()); }
+    }
     if let Some(plan) = &w.value_plan {
         for (index, data) in plan.nodes.iter().enumerate() {
             let reference = node(

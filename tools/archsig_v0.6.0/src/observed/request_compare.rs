@@ -101,7 +101,7 @@ pub(super) fn constraints(
     if mode == "value" {
         return value_constraints(law, map, requests, names, request, control);
     }
-    if !matches!(mode, "word" | "action") {
+    if !matches!(mode, "word" | "action" | "relation") {
         return Err(ResolveFailure::NotApplicable {
             request: request.id.clone(),
             kind: "compare".into(),
@@ -127,11 +127,14 @@ pub(super) fn constraints(
     let right = composition::selected(law, map, requests, names, to, request, "to", control)?;
     match (&left, &right) {
         (Shape::Path(a, b), Shape::Path(c, d)) => {
-            if mode == "action" && (a != c || b != d) {
+            if matches!(mode, "action" | "relation") && (a != c || b != d) {
                 return Err(error(&request.id, "to", "作用比較のPathの始終型が違う"));
             }
         }
         (Shape::Operation(a), Shape::Operation(b)) => {
+            if mode == "relation" {
+                return Err(ResolveFailure::NotApplicable { request: request.id.clone(), kind: "compare".into(), architecture_environment: false });
+            }
             if mode == "action"
                 && (a.source != b.source
                     || a.target != b.target
