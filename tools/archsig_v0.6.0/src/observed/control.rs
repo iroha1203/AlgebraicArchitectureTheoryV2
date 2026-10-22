@@ -81,6 +81,10 @@ pub enum Checkpoint {
     EquationPresentationRow,
     PolynomialObservable,
     PolynomialObservableCoordinate,
+    FinitePolynomialEvaluation,
+    FinitePolynomialPoint,
+    FinitePolynomialTable,
+    FinitePolynomialRecheck,
     Expression,
     FiniteIteration,
 }
