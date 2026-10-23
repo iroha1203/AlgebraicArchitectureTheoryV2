@@ -14,8 +14,17 @@ use super::{
     },
     result::*,
 };
-use crate::{canonical::Json, types::Type};
+use crate::{
+    canonical::Json,
+    issue::Location,
+    law::{ast::Role, model::Signature},
+    result::location_wire,
+    types::Type,
+};
 use std::sync::Arc;
+
+#[path = "polynomial_law_sources.rs"]
+mod sources;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;
@@ -23,6 +32,14 @@ fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
 }
 fn refs(values: &[NodeRef]) -> Json {
     Json::Arr(values.iter().map(|r| r.wire()).collect())
+}
+fn binding_values(bindings: &[Binding]) -> Json {
+    Json::Arr(
+        bindings
+            .iter()
+            .map(|b| Json::obj([("name", Json::str(&b.name)), ("value", b.value.wire())]))
+            .collect(),
+    )
 }
 fn indices(values: &[usize]) -> Json {
     Json::Arr(values.iter().map(|n| Json::Nat(*n as u64)).collect())
@@ -49,8 +66,51 @@ impl Variable {
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+enum Transform {
+    Substitute,
+    Project,
+    Equal,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Original {
+    pub instance: usize,
+    pub row: Option<usize>,
+    pub bindings: Vec<Binding>,
+    pub parameters: Vec<(String, Type)>,
+    pub body: NodeRef,
+    pub guard: Option<NodeRef>,
+    pub reference: NodeRef,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
     Scalar(Scalar),
+    Source {
+        instance: usize,
+        row: Option<usize>,
+        expression: usize,
+        location: Location,
+        ty: Type,
+        parameters: Vec<(String, Type)>,
+        bindings: Vec<Binding>,
+    },
+    Transform {
+        operation: Transform,
+        parameters: Vec<(String, Type)>,
+        ty: Type,
+        operands: Vec<NodeRef>,
+        bindings: Vec<Binding>,
+        position: Option<usize>,
+    },
+    LawInstance {
+        instance: usize,
+        row: Option<usize>,
+        name: String,
+        role: Role,
+        occurrence: Location,
+        bindings: Vec<Binding>,
+        guard: Option<NodeRef>,
+        body: NodeRef,
+    },
     Base(Type),
     Ring {
         base: NodeRef,
@@ -75,6 +135,10 @@ impl Part {
     fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
             Self::Scalar(s) => return NodeType::Value(s.ty()),
+            Self::Source { ty, .. } | Self::Transform { ty, .. } => {
+                return NodeType::Expression(ty.clone());
+            }
+            Self::LawInstance { .. } => return NodeType::LawInstance,
             Self::Base(_) | Self::Ring { .. } => T::Ring,
             Self::Polynomial { .. } => T::Polynomial,
             Self::Ideal { .. } => T::Ideal,
@@ -84,6 +148,26 @@ impl Part {
     fn arguments(&self) -> Vec<NodeRef> {
         match self {
             Self::Scalar(_) | Self::Base(_) => vec![],
+            Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
+            Self::Transform {
+                operands, bindings, ..
+            } => operands
+                .iter()
+                .copied()
+                .chain(bindings.iter().map(|b| b.value))
+                .collect(),
+            Self::LawInstance {
+                bindings,
+                guard,
+                body,
+                ..
+            } => bindings
+                .iter()
+                .map(|b| b.value)
+                .chain(guard.iter().copied())
+                .chain(std::iter::once(*body))
+                .collect(),
+
             Self::Ring { base, .. } => vec![*base],
             Self::Polynomial { ring, terms } => std::iter::once(*ring)
                 .chain(terms.iter().map(|t| t.0))
@@ -106,6 +190,8 @@ impl Part {
     fn construction(&self) -> &'static str {
         match self {
             Self::Scalar(_) => "binding",
+            Self::Source { .. } | Self::Transform { .. } => "expression",
+            Self::LawInstance { .. } => "law_instance",
             Self::Base(_) | Self::Ring { .. } => "ring",
             Self::Polynomial { .. } => "polynomial",
             Self::Ideal { .. } => "ideal",
@@ -115,6 +201,92 @@ impl Part {
     fn wire(&self) -> Json {
         match self {
             Self::Scalar(v) => v.wire(),
+            Self::Source {
+                location,
+                bindings,
+                parameters,
+                ..
+            } => Json::obj([
+                ("kind", Json::str("source")),
+                ("location", location_wire(location)),
+                (
+                    "parameters",
+                    Json::Arr(
+                        parameters
+                            .iter()
+                            .map(|(name, ty)| {
+                                Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+                            })
+                            .collect(),
+                    ),
+                ),
+                ("bindings", binding_values(bindings)),
+            ]),
+            Self::Transform {
+                operation,
+                parameters,
+                operands,
+                bindings,
+                position,
+                ..
+            } => {
+                let mut value = Json::obj([
+                    ("kind", Json::str("transform")),
+                    (
+                        "operation",
+                        Json::str(match operation {
+                            Transform::Substitute => "substitute",
+                            Transform::Project => "project",
+                            Transform::Equal => "equal",
+                        }),
+                    ),
+                    ("operands", refs(operands)),
+                    (
+                        "parameters",
+                        Json::Arr(
+                            parameters
+                                .iter()
+                                .map(|(name, ty)| {
+                                    Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+                                })
+                                .collect(),
+                        ),
+                    ),
+                    ("bindings", binding_values(bindings)),
+                ]);
+                if let (Some(position), Json::Obj(fields)) = (position, &mut value) {
+                    fields.insert("position".into(), Json::Nat(*position as u64));
+                }
+                value
+            }
+            Self::LawInstance {
+                name,
+                role,
+                occurrence,
+                bindings,
+                guard,
+                body,
+                ..
+            } => {
+                let mut value = Json::obj([
+                    ("name", Json::str(name)),
+                    (
+                        "role",
+                        Json::str(match role {
+                            Role::Required => "required",
+                            Role::Optional => "optional",
+                        }),
+                    ),
+                    ("occurrence", location_wire(occurrence)),
+                    ("bindings", binding_values(bindings)),
+                    ("body", body.wire()),
+                ]);
+                if let (Some(guard), Json::Obj(fields)) = (guard, &mut value) {
+                    fields.insert("guard".into(), guard.wire());
+                }
+                value
+            }
+
             Self::Base(ty) => Json::obj([("kind", Json::str("scalar")), ("scalar", ty.wire())]),
             Self::Ring { base, variables } => Json::obj([
                 ("kind", Json::str("polynomial")),
@@ -169,6 +341,9 @@ impl Part {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Coordinate {
     pub occurrence: usize,
+    pub instance: NodeRef,
+    pub lhs: NodeRef,
+    pub rhs: NodeRef,
     pub position: crate::construction::readings::ObjectEvaluationPosition,
     pub row: Option<usize>,
     pub case: usize,
@@ -187,6 +362,7 @@ pub(super) struct Coordinate {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
+    pub originals: Vec<Original>,
     pub rings: Vec<NodeRef>,
     pub bases: Vec<NodeRef>,
     pub required: Vec<NodeRef>,
@@ -330,12 +506,15 @@ fn polynomial(
 }
 fn plan(
     core: &EquationPresentation,
+    inputs: &CheckedInputs,
     base: usize,
     c: &mut Control,
 ) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
     tick(c)?;
     let mut parts = vec![];
+    let (originals, expressions) = sources::append(core, inputs, &mut parts, base, c)?;
     let mut out = Diagram {
+        originals,
         rings: vec![],
         bases: vec![],
         required: vec![],
@@ -405,6 +584,9 @@ fn plan(
         tick(c)?;
         let mut coordinate = Coordinate {
             occurrence: index,
+            instance: expressions[index].0,
+            lhs: expressions[index].1,
+            rhs: expressions[index].2,
             position: q.position,
             row: q.row,
             case: q.case,
@@ -621,7 +803,7 @@ impl Source {
         if core.base().base().readings() != a.readings() {
             return Err("多項式が元対象族・readingと違う".into());
         }
-        let (parts, outputs) = plan(&core, base, c)?;
+        let (parts, outputs) = plan(&core, &inputs, base, c)?;
         let (support, scope) = metadata(&inputs, &a, &core, c)?;
         tick(c)?;
         Ok(Self {
@@ -654,7 +836,7 @@ impl Source {
         self.core
             .recheck(self.inputs.clone(), c)
             .map_err(|e| failed(e, c))?;
-        let (parts, outputs) = plan(&self.core, self.base, c)?;
+        let (parts, outputs) = plan(&self.core, inputs, self.base, c)?;
         let (support, scope) = metadata(inputs, a, &self.core, c)?;
         if parts != self.parts
             || outputs != self.outputs

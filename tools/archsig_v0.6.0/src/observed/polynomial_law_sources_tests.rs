@@ -1,0 +1,407 @@
+use super::*;
+fn source_text(e: &ObservedEvaluation, g: &Graph, r: NodeRef) -> String {
+    let Part::Source {
+        location: crate::issue::Location::Law { span },
+        ..
+    } = data(g, r).part()
+    else {
+        panic!("source")
+    };
+    let bytes = &e.prepared.inputs().sources().law().bytes();
+    std::str::from_utf8(&bytes[span.0..span.1]).unwrap().into()
+}
+#[test]
+fn original_law_rows_keep_role_whole_source_exact_spans_bindings_and_typed_sides() {
+    let e = example(false, BODY);
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert!(!d.originals.is_empty());
+    for o in &d.originals {
+        let Part::LawInstance {
+            name,
+            role,
+            occurrence,
+            bindings,
+            body,
+            guard,
+            ..
+        } = data(&g, o.reference).part()
+        else {
+            panic!("law")
+        };
+        let suffix = if name == "Chosen.zero" {
+            assert_eq!(*role, Role::Required);
+            "0"
+        } else {
+            assert_eq!(name, "Chosen.one");
+            assert_eq!(*role, Role::Optional);
+            "1"
+        };
+        assert_eq!(source_text(&e, &g, *body), format!("c.quantity={suffix}"));
+        assert!(guard.is_none());
+        assert!(o.parameters.is_empty());
+        assert_eq!(bindings.len(), 1);
+        assert_eq!(bindings[0].name, "c");
+        assert_eq!(
+            g.scalar(bindings[0].value).unwrap(),
+            &Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "p".into(),
+                entity: "Finite.Part".into()
+            }
+        );
+        let crate::issue::Location::Law { span } = occurrence else {
+            panic!("occurrence")
+        };
+        let text =
+            std::str::from_utf8(&e.prepared.inputs().sources().law().bytes()[span.0..span.1])
+                .unwrap();
+        assert_eq!(
+            text,
+            if suffix == "0" {
+                "law required zero(c:Part):c.quantity=0;"
+            } else {
+                "law optional one(c:Part):c.quantity=1;"
+            }
+        );
+    }
+    for q in &d.coordinates {
+        let o = d
+            .originals
+            .iter()
+            .find(|o| o.reference == q.instance)
+            .unwrap();
+        assert_eq!((o.instance, o.row), (q.position.instance, q.row));
+        assert_eq!(source_text(&e, &g, q.lhs), "c.quantity");
+        assert!(matches!(source_text(&e, &g, q.rhs).as_str(), "0" | "1"));
+        assert_eq!(g.nodes[q.lhs.0].ty, NodeType::Expression(Type::Z));
+        assert_eq!(g.nodes[q.rhs.0].ty, NodeType::Expression(Type::Z));
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn lexical_let_and_match_are_closed_by_typed_substitution_before_tuple_projection() {
+    let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Tuple","Z","Q"]"#);
+    let map = MAP
+        .replace(r#""value":"0""#, r#""value":["0",["0","1"]]"#)
+        .replace(r#""value":"1""#, r#""value":["1",["1","1"]]"#);
+    let body = "law required pair(c:Part):let x=c.quantity in match x { y => y=(0,0); };";
+    let e = evaluate_observed_bytes(
+        custom_sources(&definition, &map, body),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert_eq!(d.coordinates.len(), 2);
+    for (q, ty) in d.coordinates.iter().zip([Type::Z, Type::Q]) {
+        let Part::Transform {
+            operation: Transform::Project,
+            operands,
+            position,
+            ..
+        } = data(&g, q.lhs).part()
+        else {
+            panic!("project")
+        };
+        assert_eq!(*position, Some(q.component[0]));
+        assert_eq!(g.nodes[q.lhs.0].ty, NodeType::Expression(ty.clone()));
+        let Part::Transform {
+            operation: Transform::Substitute,
+            operands: source,
+            bindings,
+            ..
+        } = data(&g, operands[0]).part()
+        else {
+            panic!("substitute")
+        };
+        assert_eq!(source_text(&e, &g, source[0]), "y");
+        assert_eq!(
+            bindings.iter().map(|b| b.name.as_str()).collect::<Vec<_>>(),
+            ["x", "y"]
+        );
+        assert_eq!(source_text(&e, &g, bindings[0].value), "c.quantity");
+        let Part::Transform {
+            operation: Transform::Substitute,
+            operands,
+            ..
+        } = data(&g, bindings[1].value).part()
+        else {
+            panic!("lexical y")
+        };
+        assert_eq!(source_text(&e, &g, operands[0]), "x");
+        let original = d
+            .originals
+            .iter()
+            .find(|o| o.reference == q.instance)
+            .unwrap();
+        assert_eq!(
+            source_text(&e, &g, original.body),
+            "let x=c.quantity in match x { y => y=(0,0); }"
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn finite_parameter_rows_keep_actual_values_and_symbolic_instance_without_fake_empty_row() {
+    let e = example(
+        false,
+        "law required parameter(c:Part,b:Bool):c.quantity=(if b then 0 else 1);",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let symbolic = d
+        .originals
+        .iter()
+        .filter(|o| o.row.is_none())
+        .collect::<Vec<_>>();
+    assert_eq!(symbolic.len(), 1);
+    assert_eq!(symbolic[0].parameters, [("b".into(), Type::Bool)]);
+    assert_eq!(symbolic[0].bindings.len(), 1);
+    let rows = d
+        .originals
+        .iter()
+        .filter(|o| o.row.is_some())
+        .collect::<Vec<_>>();
+    assert_eq!(rows.len(), 2);
+    let mut values = vec![];
+    for o in rows {
+        assert!(o.parameters.is_empty());
+        assert_eq!(
+            o.bindings
+                .iter()
+                .map(|b| b.name.as_str())
+                .collect::<Vec<_>>(),
+            ["c", "b"]
+        );
+        values.push(g.scalar(o.bindings[1].value).unwrap().wire().canonical());
+    }
+    values.sort();
+    assert_eq!(values, ["false", "true"]);
+    assert_eq!(d.coordinates.len(), 2);
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+    let definition=DEFINITION.replace("\"declarations\":[",r#""declarations":[{"kind":"entity","name":"Finite.Empty","meaning":"空の型域。","parameters":[],"fields":[],"alignments":[]},"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            &definition,
+            MAP,
+            "law required empty(c:Part,x:(Empty,Bool)):c.quantity=0;",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert!(d.coordinates.is_empty());
+    assert_eq!(d.originals.len(), 1);
+    assert_eq!(d.originals[0].row, None);
+    assert_eq!(
+        d.originals[0].parameters,
+        [(
+            "x".into(),
+            Type::Tuple(vec![Type::Ref("Finite.Empty".into()), Type::Bool])
+        )]
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn missing_outside_false_guard_and_unsupported_keep_original_sources_without_fabricated_evaluation()
+{
+    let body = "law required off(c:Part) when false:c.quantity=1;law required unsupported(c:Part):c.quantity>0;";
+    let e = example(true, body);
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    for q in &d.coordinates {
+        let o = d
+            .originals
+            .iter()
+            .find(|o| o.reference == q.instance)
+            .unwrap();
+        assert_eq!(
+            g.scalar(o.bindings[0].value).unwrap(),
+            &Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "q".into(),
+                entity: "Finite.Part".into()
+            }
+        );
+        assert!(matches!(
+            source_text(&e, &g, o.body).as_str(),
+            "c.quantity=1" | "c.quantity>0"
+        ));
+        if let Some(guard) = o.guard {
+            assert_eq!(source_text(&e, &g, guard), "false");
+        }
+        assert!(q.epsilon.is_none());
+        assert!(d.evaluations.iter().all(Option::is_none));
+        assert!(matches!(data(&g, q.lhs).part(), Part::Source { .. }));
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+    let e = two_owned_example(BODY);
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let objects = crate::observed::object_component_diagram::retain(
+        &mut g,
+        e.prepared.shared_inputs(),
+        a,
+        &mut quiet(),
+    )
+    .unwrap()
+    .unwrap();
+    let owned = *objects.architectures.last().unwrap();
+    let d = retain(
+        &mut g,
+        e.prepared.shared_inputs(),
+        owned,
+        objects.architectures.len() - 1,
+        &mut quiet(),
+    )
+    .unwrap();
+    assert!(
+        d.coordinates
+            .iter()
+            .any(|q| q.guard == EquationGuard::OutsideObject)
+    );
+    for q in &d.coordinates {
+        assert!(d.originals.iter().any(|o| o.reference == q.instance));
+        if q.guard == EquationGuard::OutsideObject {
+            assert!(q.nu.is_none() && q.epsilon.is_none());
+            assert!(q.residual.is_some());
+            assert_eq!(source_text(&e, &g, q.lhs), "c.quantity");
+        }
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn altered_law_source_bindings_parameters_spans_transforms_and_coordinate_links_are_rejected() {
+    let e = example(
+        false,
+        "law required original(c:Part,b:Bool) when b:let x=c.quantity in x=0;",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let source = data(&g, d.originals[0].reference).source.clone();
+    let original = &d.originals[0];
+    let body = original.body.0 - source.base;
+    let law = original.reference.0 - source.base;
+    let transform = source
+        .parts
+        .iter()
+        .position(|p| {
+            matches!(
+                p,
+                Part::Transform {
+                    operation: Transform::Substitute,
+                    ..
+                }
+            )
+        })
+        .unwrap();
+    for mode in 0..23 {
+        let mut changed = (*source).clone();
+        match mode {
+            0 => {
+                if let Part::Source { instance, .. } = &mut changed.parts[body] {
+                    *instance = usize::MAX;
+                }
+            }
+            1 => {
+                if let Part::Source { row, .. } = &mut changed.parts[body] {
+                    *row = Some(usize::MAX);
+                }
+            }
+            2 => {
+                if let Part::Source { expression, .. } = &mut changed.parts[body] {
+                    *expression = usize::MAX;
+                }
+            }
+            3 => {
+                if let Part::Source { location, .. } = &mut changed.parts[body] {
+                    *location = crate::issue::Location::Law { span: (0, 1) };
+                }
+            }
+            4 => {
+                if let Part::Source { ty, .. } = &mut changed.parts[body] {
+                    *ty = Type::Z;
+                }
+            }
+            5 => {
+                if let Part::Source { bindings, .. } = &mut changed.parts[body] {
+                    bindings.clear();
+                }
+            }
+            6 => {
+                if let Part::Source { parameters, .. } = &mut changed.parts[body] {
+                    parameters.clear();
+                }
+            }
+            7 => {
+                if let Part::LawInstance { name, .. } = &mut changed.parts[law] {
+                    *name = "Chosen.other".into();
+                }
+            }
+            8 => {
+                if let Part::LawInstance { role, .. } = &mut changed.parts[law] {
+                    *role = Role::Optional;
+                }
+            }
+            9 => {
+                if let Part::LawInstance { occurrence, .. } = &mut changed.parts[law] {
+                    *occurrence = crate::issue::Location::Law { span: (0, 1) };
+                }
+            }
+            10 => {
+                if let Part::LawInstance { bindings, .. } = &mut changed.parts[law] {
+                    bindings[0].name = "other".into();
+                }
+            }
+            11 => {
+                if let Part::LawInstance { body, .. } = &mut changed.parts[law] {
+                    *body = NodeRef(0);
+                }
+            }
+            12 => {
+                if let Part::LawInstance { guard, .. } = &mut changed.parts[law] {
+                    *guard = None;
+                }
+            }
+            13 => {
+                if let Part::Transform { operands, .. } = &mut changed.parts[transform] {
+                    operands[0] = NodeRef(0);
+                }
+            }
+            14 => {
+                if let Part::Transform { bindings, .. } = &mut changed.parts[transform] {
+                    bindings.clear();
+                }
+            }
+            15 => {
+                if let Part::Transform { parameters, .. } = &mut changed.parts[transform] {
+                    parameters.push(("bad".into(), Type::Z));
+                }
+            }
+            16 => changed.outputs.originals[0].row = Some(100),
+            17 => changed.outputs.originals[0].parameters.clear(),
+            18 => changed.outputs.coordinates[0].instance = NodeRef(0),
+            19 => changed.outputs.coordinates[0].lhs = changed.outputs.coordinates[0].rhs,
+            20 => changed.outputs.coordinates[0].rhs = changed.outputs.coordinates[0].lhs,
+            21 => changed.outputs.coordinates[0].row = Some(usize::MAX),
+            _ => changed.outputs.coordinates[0].case = usize::MAX,
+        }
+        assert!(
+            changed
+                .recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+                .is_err(),
+            "mode {mode}"
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}

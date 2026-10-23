@@ -722,11 +722,12 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
         let a = architecture(&g, "a");
         let before = g.nodes.len();
         let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
-        assert_eq!(g.nodes.len(), before);
         assert!(d.rings.is_empty());
         assert!(d.evaluations.is_empty());
         assert!(d.required.is_empty());
         if body.is_empty() {
+            assert_eq!(g.nodes.len(), before);
+            assert!(d.originals.is_empty());
             assert!(d.coordinates.is_empty());
             assert_eq!(d.status, EquationPresentationStatus::Ready);
         } else {
@@ -736,6 +737,25 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
             assert_eq!(q.ty, Type::Bool);
             assert!(q.nu.is_none() && q.epsilon.is_none() && q.residual.is_none());
             assert!(q.required);
+            assert!(!d.originals.is_empty());
+            for node in &g.nodes[before..] {
+                let Some(Payload::Construction(value)) = &node.payload else {
+                    panic!("original source")
+                };
+                let D::PolynomialLaw(data) = &value.data else {
+                    panic!("polynomial source")
+                };
+                assert!(matches!(
+                    data.part(),
+                    Part::Source { .. }
+                        | Part::LawInstance { .. }
+                        | Part::Transform {
+                            operation: Transform::Equal,
+                            ..
+                        }
+                        | Part::Scalar(Scalar::Unit | Scalar::Subject { .. })
+                ));
+            }
         }
         replay(&e, &g.nodes, &g.contexts).unwrap();
     }
@@ -781,3 +801,6 @@ fn wrong_object_indices_and_nonarchitecture_consumers_fail_before_appending_nati
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
+
+#[path = "polynomial_law_sources_tests.rs"]
+mod sources;
