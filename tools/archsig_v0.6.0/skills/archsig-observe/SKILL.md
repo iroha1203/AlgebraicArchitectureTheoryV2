@@ -21,7 +21,8 @@ description: Read a repository's implementation and requirement sources to creat
 操作は「入力・状態の条件／作用と呼出しの順／正常・例外・何もしない出口」を一単位にする。
 共有文脈は「初期値・既定値・名前の binding／公開する値と変更手段／それを使う場所」、
 要求は「求める関係／適用範囲／根拠」を読む。同じ箇所の複数の役割は対応を残す。
-呼出し元の値の使い方や継承先の実体まで追い、途中の失敗でどこまで変化するかも確かめる。
+呼出しへ渡す値・参照と戻り値の使い方を対応づけ、binding・継承先を経た作用を同じ対象についてつなぐ。
+途中の失敗でどの作用まで到達するかも確かめる。
 この単位は読解の整理であり、新しい schema や必須レポートではない。
 条件・対象・順序が異なる意味を潰さず、同じ意味を件数のために分割しない。
 実装に記述された I/O の役割・順序・状態変化も対象にする。
@@ -110,10 +111,11 @@ Declaration = {kind:"entity"|"arrow"|"correspondence", name:QName, meaning:Strin
 Field = {name:Name,type:Type,meaning:String}
 ```
 
-`version` と `meaning` は非空。宣言名は完全名、field と constructor の name は短名。
+`version` と `meaning` は非空。宣言名は `N.E`、Atom の field 参照は `N.E.f`、field と constructor の name は短名。
 parameters は後続 field の依存型が参照する。根 entity は owner を持たず、所属する entity の
-owner は根 entity への参照。所属を多段化しない。arrow は `owner:R, from:E[owner], to:E[owner]`
-を持ち、名前付き操作を保存する。原始の Path 型は作らない。
+owner は根 entity への参照。所属を多段化しない。arrow は名前付き操作を保存し、
+`owner:R` を parameters の Field、`from:E[owner], to:E[owner]` を fields の Field として持つ。
+JSON ではそれぞれ `["Ref","N.R"]` と `["Owned","N.E","owner"]` を使う。原始の Path 型は作らない。
 correspondence は根間の `from:R,to:S` と owned 型間の全域 Map を持つ。
 異なる型間の field 対応は alignments で明記する。対応候補の保存判定は計算に渡す。
 
@@ -188,8 +190,8 @@ change は許可された値変更を表す。change で owner・参照・Map・
 `relation name(parameters): pathExpression = pathExpression;` は同じ始終型の名前付き操作列の同効果を要求する。
 Path は `path(e)`, `identity(x)`, `then(p,q)` で構成する。
 宣言の parameter 型は `N.E`, `N.E[owner]`, `List<T>`, `Set<T>`, `Option<T>`,
-`Map<E,F>`, `Term<(T,...)->U>`, `Path<E,F>` 等。
-式は field 射影、型付き等値、算術、`and/or/not/implies`、`if/then/else`、
+`Map<E,F>`, `Term<(T,...)->U>`, `Path<E,F>`、Tuple は `(T,U)` 等。
+式は field 射影、型付き等値 `= / !=`、算術、`and/or/not/implies`、`if/then/else`、
 `let x = e in body`、`forall x in xs . body` 等を使う。subject ID や観測値を Law の定数として貼り込まない。
 local がなければ支持による reading が構成される。原式の出現や局所の読取りを消す書換えは、
 値が同じでも診断が同じとは限らない。
