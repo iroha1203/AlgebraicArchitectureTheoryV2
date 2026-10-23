@@ -1099,12 +1099,14 @@ impl Environment<'_> {
             .ok_or("非適用rowのRequestがない")?;
         let (expected_bindings, body_id, id) = if let Some(index) = context.instance {
             let expected = self.family_instance_inputs(graph, index)?;
-            let plan = self.family_plan(request)?.ok_or("非適用rowの族がない")?;
-            (
-                expected.0,
-                plan.body,
-                plan.guard.ok_or("非適用rowに元guardがない")?,
-            )
+            if let Some(inputs)=crate::observed::law_evaluation::instance_inputs(graph,index,self.cutoff.get().min(graph.nodes.len()))? {
+                let declaration=self.inputs.law().declarations.get(&inputs.origin.declaration).ok_or("元native Law宣言がない")?;
+                let Signature::Law {body,guard:Some(guard),..}=&declaration.signature else{return Err("元native Law/guardがない".into())};
+                (expected.0,*body,*guard)
+            } else {
+                let plan = self.family_plan(request)?.ok_or("非適用rowの族がない")?;
+                (expected.0,plan.body,plan.guard.ok_or("非適用rowに元guardがない")?)
+            }
         } else if context.case.is_some() && context.frame.is_none() && context.iteration.is_none() {
             let declaration = &self.inputs.law().declarations
                 [request.declaration().ok_or("元要求に宣言がない")?];
@@ -1184,8 +1186,9 @@ impl Environment<'_> {
         {
             return Err("非適用rowが元guardfalse/実bindingsと違う".into());
         }
-        let d =
-            &self.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+        let declaration=context.instance.map(|index|self.instance_source_declaration(graph,index)).transpose()?.flatten()
+            .or_else(||request.declaration().map(str::to_owned)).ok_or("元要求に宣言がない")?;
+        let d=self.inputs.law().declarations.get(&declaration).ok_or("元Law宣言がない")?;
         let Some(Payload::LawInstance {
             name,
             role,

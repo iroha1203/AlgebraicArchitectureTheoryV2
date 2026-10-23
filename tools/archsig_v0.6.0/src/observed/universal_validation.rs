@@ -2364,6 +2364,11 @@ impl Environment<'_> {
         };
         let (name, role, bindings, guard, body) =
             (name.as_str(), *role, bindings.as_slice(), *guard, *body);
+        // 通常のguard適用wrapperは、元bodyとguardを別々の実評価辺に持つ。
+        // そちらの厳密照合は通常Lawのapplication経路で行う。
+        if guard.is_some() && node.arguments.len()==bindings.len()+2 {
+            return Ok(false);
+        }
         let Some(&evaluation) = node.arguments.first() else {
             return Ok(false);
         };
@@ -2378,11 +2383,10 @@ impl Environment<'_> {
             .requests
             .get(self.current_context(graph).request)
             .ok_or("全域LawInstance元Requestがない")?;
-        let declaration = self
-            .inputs
-            .law()
-            .declarations
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
+        let declaration_name=self.current_context(graph).instance
+            .map(|index|self.instance_source_declaration(graph,index)).transpose()?.flatten()
+            .or_else(||request.declaration().map(str::to_owned)).ok_or("全域LawInstanceの元宣言名がない")?;
+        let declaration=self.inputs.law().declarations.get(&declaration_name)
             .ok_or("全域LawInstance元宣言がない")?;
         let Signature::Law {
             body: original,
@@ -2440,6 +2444,9 @@ impl Environment<'_> {
         let Some(&evaluation) = instance_node.arguments.first() else {
             return Ok(false);
         };
+        if node.arguments.get(1)!=Some(&evaluation) {
+            return Ok(false);
+        }
         let Ok((template, _, value)) = self.evaluation(graph, evaluation) else {
             return Ok(false);
         };
@@ -2519,6 +2526,21 @@ impl Environment<'_> {
         node: &Node,
         limit: usize,
     ) -> Result<bool, ValidationFailure> {
+        if matches!(node.payload,Some(Payload::Evaluation {..})) {
+            if let Some(instance)=node.arguments.first() {
+                if matches!(&graph.get(*instance)?.payload,Some(Payload::LawInstance {guard:Some(_),..})) {
+                    // Lawの適用wrapperは、通常のguard/body接続を検査する。
+                    return Ok(false);
+                }
+            }
+        }
+        if let Some(Payload::Expression {location:Location::Law {span},bindings,..})=&node.payload {
+            if let Some(index)=self.current_context(graph).instance {
+                if self.native_law_skipped_source(graph,index,*span,bindings)?.is_some() {
+                    return Ok(false);
+                }
+            }
+        }
         self.tick()?;
         if self.universal_validate_witness_node(graph, node, limit)? {
             return Ok(true);

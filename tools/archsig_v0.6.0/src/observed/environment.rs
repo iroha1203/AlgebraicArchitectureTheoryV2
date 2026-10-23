@@ -1327,6 +1327,18 @@ impl<'a> Environment<'a> {
         {
             return Ok(());
         }
+        if let Some(Payload::Evaluation {expression,..})=&node.payload {
+            let application=node.arguments.first().is_some_and(|r|matches!(graph.get(*r).map(|n|&n.ty),Ok(NodeType::LawInstance)));
+            if !application {
+                if let Some(Payload::Expression {location:Location::Law {span},..})=&graph.get(*expression)?.payload {
+                    if let Some(index)=self.current_context(graph).instance {
+                        if !self.native_law_source_allowed(graph,index,*span)? {
+                            return Err("非適用native Lawのbodyを通常/全域評価へ昇格できない".into());
+                        }
+                    }
+                }
+            }
+        }
         if self.validate_universal_node(graph, node, limit)? {
             return Ok(());
         }
@@ -1702,6 +1714,12 @@ impl<'a> Environment<'a> {
             if let Some(instance) = application {
                 self.validate_law_evaluation(graph, node, instance)?;
             } else {
+                if let Some(index)=self.current_context(graph).instance {
+                    let span=self.expression_span(graph,*expression)?;
+                    if !self.native_law_source_allowed(graph,index,span)? {
+                        return Err("未成立guardのnative Law body評価を保持できない".into());
+                    }
+                }
                 if *applicability != "applicable" {
                     return Err("通常式の評価に Law の適用判定を付けている".into());
                 }
@@ -2520,7 +2538,12 @@ impl<'a> Environment<'a> {
                     unreachable!()
                 };
                 let expression = self.evaluation(graph, evaluation)?.0;
-                let expected = if matches!(
+                let body=self.instance_evaluation(graph,*instance,evaluation)?;
+                let body_expression=self.evaluation(graph,body)?.0;
+                let span=self.expression_span(graph,body_expression)?;
+                let comparison=self.expressions.get(&span).is_some_and(|id|
+                    matches!(self.inputs.law().exprs[*id].kind,ExprKind::Binary {op,..} if is_comparison(op)));
+                let expected = if !comparison || matches!(
                     &graph.get(expression)?.payload,
                     Some(Payload::Transform { .. })
                 ) {
@@ -6455,6 +6478,9 @@ impl<'a> Environment<'a> {
         let declaration = declaration.ok_or("原式を所有する宣言がない")?;
         if let Some(index) = self.current_context(graph).instance {
             if !self.native_law_source_allowed(graph,index,span)? {
+                if let Some(source)=self.native_law_skipped_source(graph,index,span,bindings)? {
+                    return Ok(source);
+                }
                 return Err("未成立guardのnative Law bodyは評価できない".into());
             }
         }

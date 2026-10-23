@@ -13,6 +13,7 @@ mod finite_integer_function;
 mod finite_law_diagram;
 mod polynomial_law_diagram;
 mod law_evaluation;
+mod law_proposition;
 mod object_component_diagram;
 mod internal_arrow_diagram;
 mod needed;
