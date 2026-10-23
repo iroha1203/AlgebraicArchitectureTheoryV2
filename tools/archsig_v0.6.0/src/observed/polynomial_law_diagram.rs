@@ -736,6 +736,40 @@ fn plan(
     tick(c)?;
     Ok((parts, out))
 }
+/// 元Evaluatorの全読取りを使う。数値環に記号化できるslotだけに射影しない。
+fn original_positions(
+    core: &EquationPresentation,
+    instance: Option<usize>,
+    c: &mut Control,
+) -> Result<Vec<Fact>, ValidationFailure> {
+    let mut positions = std::collections::BTreeSet::new();
+    for source in core.base().base().evaluations().iter().filter(|e| {
+        e.position().object == core.object() && instance.is_none_or(|i| e.position().instance == i)
+    }) {
+        tick(c)?;
+        if let super::object_evaluate::ObjectEvaluationOutcome::Evaluated(g) =
+            source.evaluation().outcome()
+        {
+            for n in &g.nodes {
+                tick(c)?;
+                for f in n
+                    .support
+                    .iter()
+                    .chain(n.reasons.iter().flat_map(|r| &r.missing))
+                {
+                    tick(c)?;
+                    if f.field.is_some() {
+                        positions.insert(Fact {
+                            atom: None,
+                            ..f.clone()
+                        });
+                    }
+                }
+            }
+        }
+    }
+    Ok(positions.into_iter().collect())
+}
 fn append_presentations(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
@@ -747,17 +781,7 @@ fn append_presentations(
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
     use super::equation_presentation_node::{self as common, Coordinate as C, Part as E};
-    let positions = core
-        .rings()
-        .iter()
-        .flat_map(|r| r.symbols.iter())
-        .map(|s| Fact {
-            snapshot: s.slot.snapshot.clone(),
-            subject: s.slot.subject.clone(),
-            field: Some(s.slot.field.clone()),
-            atom: None,
-        })
-        .collect::<Vec<_>>();
+    let positions = original_positions(core, None, c)?;
     // pushは同じControlを使うため、依存subjectの値だけを先に集めてから計画へ追加する。
     let dependencies = common::dependencies(inputs, &positions, c, |v| {
         let at = base
@@ -787,7 +811,7 @@ fn append_presentations(
         Part::Equation(E::Context {
             base: reference,
             carrier: common::carrier(a, c)?,
-            dependencies,
+            dependencies: dependencies.slots.clone(),
             laws,
             quantifiers,
         }),
@@ -800,6 +824,7 @@ fn append_presentations(
         let mut instances = vec![];
         let mut witnesses = vec![];
         let mut quantifiers = vec![];
+        let mut omitted_positions = vec![];
         let mut ready = true;
         for q in out.coordinates.iter().filter(|q| q.ring == Some(*ring)) {
             tick(c)?;
@@ -820,6 +845,9 @@ fn append_presentations(
                     quantifiers.push(scope.clone());
                 }
             }
+            if q.epsilon.is_none() {
+                omitted_positions.extend(original_positions(core, Some(original.instance), c)?);
+            }
             coordinates.push(C {
                 instance: q.instance,
                 component: q.component.clone(),
@@ -831,6 +859,28 @@ fn append_presentations(
             witnesses.push(witness);
         }
         let presentation = if ready {
+            if out.evaluations.get(index).is_some_and(Option::is_none) {
+                for symbol in &core.rings()[index].symbols {
+                    tick(c)?;
+                    omitted_positions.push(Fact {
+                        snapshot: symbol.slot.snapshot.clone(),
+                        subject: symbol.slot.subject.clone(),
+                        field: Some(symbol.slot.field.clone()),
+                        atom: None,
+                    });
+                }
+            }
+            let omissions = dependencies.missing_reasons(
+                inputs,
+                &omitted_positions,
+                &out.originals
+                    .iter()
+                    .filter(|o| instances.contains(&o.reference))
+                    .flat_map(|o| std::iter::once(o.body).chain(o.guard))
+                    .collect::<Vec<_>>(),
+                Witness::Architecture(a.clone()).request(),
+                c,
+            )?;
             Some(push(
                 parts,
                 base,
@@ -847,6 +897,7 @@ fn append_presentations(
                     evaluation: *out.evaluations.get(index).ok_or("型別表示の評価欄がない")?,
                     context,
                     quantifiers,
+                    omissions,
                 }),
                 c,
             )?)
@@ -1195,13 +1246,17 @@ pub(super) fn retain(
             index,
         };
         data.position(graph.nodes.len())?;
+        let reasons = match data.part() {
+            Part::Equation(v) => v.reasons(),
+            _ => vec![],
+        };
         native::retain(
             graph,
             ConstructionValue {
                 witness: Witness::Architecture(source.architecture.clone()),
                 data: D::PolynomialLaw(data),
             },
-            vec![],
+            reasons,
             vec![],
             None,
         )?;
@@ -1231,7 +1286,11 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         || n.arguments != data.arguments()
         || n.support != support
         || n.scope != scope
-        || !n.reasons.is_empty()
+        || n.reasons
+            != match part {
+                Part::Equation(v) => v.reasons(),
+                _ => vec![],
+            }
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {

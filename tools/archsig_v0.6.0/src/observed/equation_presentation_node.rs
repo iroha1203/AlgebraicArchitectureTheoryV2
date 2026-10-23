@@ -44,9 +44,16 @@ pub(super) enum Part {
         evaluation: Option<NodeRef>,
         context: NodeRef,
         quantifiers: Vec<Quantifier>,
+        omissions: Vec<Reason>,
     },
 }
 impl Part {
+    pub fn reasons(&self) -> Vec<Reason> {
+        match self {
+            Self::Presentation { omissions, .. } => omissions.clone(),
+            Self::Context { .. } => vec![],
+        }
+    }
     pub fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
             Self::Context { .. } => T::Context,
@@ -235,12 +242,61 @@ pub(super) fn global_metadata(
     Ok(())
 }
 
+pub(super) struct Dependencies {
+    pub slots: Vec<(NodeRef, String)>,
+}
+impl Dependencies {
+    /// 値として構成できる表示と、その表示で省略した実対象の評価を区別する。
+    /// 理由は元LawのExpressionに結び、転記中の追加nodeで計画をずらさない。
+    pub fn missing_reasons(
+        &self,
+        inputs: &super::input::CheckedInputs,
+        positions: &[Fact],
+        expressions: &[NodeRef],
+        request: &super::request::Request,
+        c: &mut Control,
+    ) -> Result<Vec<Reason>, ValidationFailure> {
+        let env = super::environment::Environment::new(inputs, c)?;
+        let mut missing = vec![];
+        for f in positions {
+            tick(c)?;
+            let field = f.field.as_deref().ok_or("評価省略の元fieldがない")?;
+            if matches!(
+                env.field(&f.snapshot, &f.subject, field)?.slot,
+                crate::archmap::Slot::Missing
+            ) {
+                missing.push(Fact {
+                    atom: None,
+                    ..f.clone()
+                });
+            }
+        }
+        if missing.is_empty() {
+            return Ok(vec![]);
+        }
+        missing.sort_by_key(|f| f.wire().canonical());
+        missing.dedup();
+        let mut dependencies = expressions.to_vec();
+        dependencies.sort_by_key(|r| r.0);
+        dependencies.dedup();
+        if dependencies.is_empty() {
+            return Err("評価省略の元Expressionがない".into());
+        }
+        Ok(vec![Reason {
+            kind: ReasonKind::Missing,
+            request: request.id.clone(),
+            dependencies,
+            missing,
+            location: None,
+        }])
+    }
+}
 pub(super) fn dependencies(
     inputs: &super::input::CheckedInputs,
     positions: &[Fact],
     c: &mut Control,
     mut retain: impl FnMut(Scalar) -> Result<NodeRef, ValidationFailure>,
-) -> Result<Vec<(NodeRef, String)>, ValidationFailure> {
+) -> Result<Dependencies, ValidationFailure> {
     let mut subjects = std::collections::BTreeMap::new();
     let mut slots = std::collections::BTreeMap::new();
     for f in positions {
@@ -271,5 +327,7 @@ pub(super) fn dependencies(
         slots.insert((key.0, key.1, field.clone()), (reference, field.clone()));
     }
     tick(c)?;
-    Ok(slots.into_values().collect())
+    Ok(Dependencies {
+        slots: slots.into_values().collect(),
+    })
 }

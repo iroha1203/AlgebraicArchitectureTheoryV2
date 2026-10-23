@@ -1841,6 +1841,45 @@ fn finite_presentation_does_not_invent_evaluation_and_rejects_context_and_coordi
         panic!("presentation");
     };
     assert!(evaluation.is_none());
+    let reasons = &g.nodes[r.0].reasons;
+    assert_eq!(reasons.len(), 1);
+    assert_eq!(reasons[0].kind, ReasonKind::Missing);
+    assert_eq!(reasons[0].request, "m");
+    assert_eq!(
+        reasons[0].missing,
+        vec![Fact {
+            snapshot: "v".into(),
+            subject: "q".into(),
+            field: Some("Finite.Part.quantity".into()),
+            atom: None
+        }]
+    );
+    let mut expected = d
+        .originals
+        .iter()
+        .flat_map(|o| std::iter::once(o.body).chain(o.guard))
+        .collect::<Vec<_>>();
+    expected.sort_by_key(|r| r.0);
+    expected.dedup();
+    assert_eq!(reasons[0].dependencies, expected);
+    assert!(
+        reasons[0]
+            .dependencies
+            .iter()
+            .all(|r| matches!(g.nodes[r.0].ty, NodeType::Expression(_)))
+    );
+    for kind in 0..3 {
+        let mut nodes = g.nodes.clone();
+        match kind {
+            0 => nodes[r.0].reasons.clear(),
+            1 => nodes[r.0].reasons[0].missing[0].field = Some("Finite.Part.owner".into()),
+            _ => nodes[r.0].reasons[0].dependencies = vec![a],
+        }
+        assert!(
+            replay(&e, &nodes, &g.contexts).is_err(),
+            "missing reason change {kind}"
+        );
+    }
     for kind in 0..7 {
         let at = if kind < 3 { d.context.unwrap() } else { r };
         let mut nodes = g.nodes.clone();

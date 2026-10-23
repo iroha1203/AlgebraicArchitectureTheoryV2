@@ -789,7 +789,7 @@ fn append_presentation(
         Part::Equation(E::Context {
             base: reference,
             carrier: common::carrier(a, c)?,
-            dependencies,
+            dependencies: dependencies.slots.clone(),
             laws: instances.clone(),
             quantifiers: vec![],
         }),
@@ -831,6 +831,20 @@ fn append_presentation(
             evaluation: out.evaluation,
             context,
             quantifiers: vec![],
+            omissions: if out.evaluation.is_none() || out.epsilon.iter().any(Option::is_none) {
+                dependencies.missing_reasons(
+                    inputs,
+                    f.positions(),
+                    &out.originals
+                        .iter()
+                        .flat_map(|o| std::iter::once(o.body).chain(o.guard))
+                        .collect::<Vec<_>>(),
+                    Witness::Architecture(a.clone()).request(),
+                    c,
+                )?
+            } else {
+                vec![]
+            },
         }),
     )?;
     out.context = Some(context);
@@ -1009,13 +1023,17 @@ pub(super) fn retain(
             index,
         };
         data.position(graph.nodes.len())?;
+        let reasons = match data.part() {
+            Part::Equation(v) => v.reasons(),
+            _ => vec![],
+        };
         native::retain(
             graph,
             ConstructionValue {
                 witness: Witness::Architecture(source.architecture.clone()),
                 data: D::FiniteLaw(data),
             },
-            vec![],
+            reasons,
             vec![],
             None,
         )?;
@@ -1042,7 +1060,11 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         || n.arguments != data.arguments()
         || n.support != data.source.support
         || n.scope != data.source.scope
-        || !n.reasons.is_empty()
+        || n.reasons
+            != match part {
+                Part::Equation(v) => v.reasons(),
+                _ => vec![],
+            }
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {
