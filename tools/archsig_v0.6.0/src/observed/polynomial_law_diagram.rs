@@ -25,6 +25,8 @@ use std::sync::Arc;
 
 #[path = "polynomial_law_family.rs"]
 mod family;
+#[path = "polynomial_law_reading.rs"]
+mod reading;
 #[path = "polynomial_law_sources.rs"]
 mod sources;
 
@@ -89,6 +91,22 @@ pub(super) struct Original {
 enum Part {
     Equation(super::equation_presentation_node::Part),
     Scalar(Scalar),
+    ReadingValue {
+        value: Scalar,
+        arguments: Vec<NodeRef>,
+        wire: Json,
+    },
+    ReadingDomain {
+        ty: Type,
+        elements: Option<Vec<NodeRef>>,
+    },
+    ObservedBoolean {
+        origin: NodeRef,
+        body: bool,
+        value: Scalar,
+        support: Vec<Fact>,
+        scope: Scope,
+    },
     Source {
         quantifiers: Vec<Quantifier>,
         instance: usize,
@@ -156,12 +174,16 @@ impl Part {
     fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
             Self::Equation(v) => return v.ty(),
-            Self::Scalar(s) => return NodeType::Value(s.ty()),
+            Self::Scalar(s)
+            | Self::ReadingValue { value: s, .. }
+            | Self::ObservedBoolean { value: s, .. } => {
+                return NodeType::Value(s.ty());
+            }
             Self::Source { ty, .. } | Self::Transform { ty, .. } => {
                 return NodeType::Expression(ty.clone());
             }
             Self::LawInstance { .. } => return NodeType::LawInstance,
-            Self::Domain { .. } => return NodeType::Domain,
+            Self::Domain { .. } | Self::ReadingDomain { .. } => return NodeType::Domain,
             Self::Base(_) | Self::Ring { .. } => T::Ring,
             Self::Polynomial { .. } => T::Polynomial,
             Self::Ideal { .. } => T::Ideal,
@@ -172,6 +194,9 @@ impl Part {
         match self {
             Self::Equation(v) => v.arguments(),
             Self::Scalar(_) | Self::Base(_) => vec![],
+            Self::ReadingValue { arguments, .. } => arguments.clone(),
+            Self::ObservedBoolean { origin, .. } => vec![*origin],
+            Self::ReadingDomain { elements, .. } => elements.iter().flatten().copied().collect(),
             Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
             Self::Transform {
                 operands, bindings, ..
@@ -215,10 +240,10 @@ impl Part {
     fn construction(&self) -> &'static str {
         match self {
             Self::Equation(v) => v.construction(),
-            Self::Scalar(_) => "binding",
+            Self::Scalar(_) | Self::ReadingValue { .. } | Self::ObservedBoolean { .. } => "binding",
             Self::Source { .. } | Self::Transform { .. } => "expression",
             Self::LawInstance { .. } => "law_instance",
-            Self::Domain { .. } => "domain",
+            Self::Domain { .. } | Self::ReadingDomain { .. } => "domain",
             Self::Base(_) | Self::Ring { .. } => "ring",
             Self::Polynomial { .. } => "polynomial",
             Self::Ideal { .. } => "ideal",
@@ -228,7 +253,8 @@ impl Part {
     fn wire(&self) -> Json {
         match self {
             Self::Equation(v) => v.wire(),
-            Self::Scalar(v) => v.wire(),
+            Self::Scalar(v) | Self::ObservedBoolean { value: v, .. } => v.wire(),
+            Self::ReadingValue { wire, .. } => wire.clone(),
             Self::Source {
                 location,
                 bindings,
@@ -315,6 +341,14 @@ impl Part {
                 value
             }
 
+            Self::ReadingDomain { ty, elements } => match elements {
+                Some(elements) => Json::obj([
+                    ("kind", Json::str("finite")),
+                    ("type", ty.wire()),
+                    ("elements", refs(elements)),
+                ]),
+                None => Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
+            },
             Self::Domain { ty, .. } => {
                 Json::obj([("kind", Json::str("type")), ("type", ty.wire())])
             }
@@ -408,6 +442,7 @@ pub(super) struct Diagram {
     pub required: Vec<NodeRef>,
     pub evaluations: Vec<Option<NodeRef>>,
     pub coordinates: Vec<Coordinate>,
+    pub readings: Vec<reading::Reading>,
     pub status: EquationPresentationStatus,
 }
 #[derive(Clone)]
@@ -450,7 +485,17 @@ impl Data {
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         match self.source.parts.get(self.index) {
-            Some(Part::Scalar(s)) => Some(s),
+            Some(
+                Part::Scalar(s)
+                | Part::ReadingValue { value: s, .. }
+                | Part::ObservedBoolean { value: s, .. },
+            ) => Some(s),
+            _ => None,
+        }
+    }
+    pub(super) fn scope_domain_type(&self) -> Option<&Type> {
+        match self.source.parts.get(self.index) {
+            Some(Part::ReadingDomain { ty, .. }) => Some(ty),
             _ => None,
         }
     }
@@ -469,6 +514,9 @@ impl Data {
         self.part().wire()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        if let Part::ObservedBoolean { support, scope, .. } = self.part() {
+            return (support.clone(), scope.clone());
+        }
         let mut scope = self.source.scope.clone();
         scope
             .quantifiers
@@ -580,6 +628,7 @@ fn object_plan(
         required: vec![],
         evaluations: vec![],
         coordinates: vec![],
+        readings: vec![],
         status: core.status(),
     };
     for ring in core.rings() {
@@ -799,6 +848,7 @@ fn append_presentations(
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
     use super::equation_presentation_node::{self as common, Coordinate as C, Part as E};
+    reading::append(a, core, parts, out, base, c)?;
     let mut positions = original_positions(core, None, c)?;
     if let Some(shared) = shared {
         for basis in shared {
@@ -1221,6 +1271,7 @@ fn symbolic_plan(
             required: vec![],
             evaluations: vec![],
             coordinates: vec![],
+            readings: vec![],
             status: EquationPresentationStatus::Undetermined,
         },
     ))
@@ -1515,3 +1566,7 @@ mod tests;
 #[cfg(test)]
 #[path = "polynomial_law_family_tests.rs"]
 mod family_tests;
+
+#[cfg(test)]
+#[path = "polynomial_law_reading_tests.rs"]
+mod reading_tests;

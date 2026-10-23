@@ -766,6 +766,15 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
             assert!(q.nu.is_none() && q.epsilon.is_none() && q.residual.is_none());
             assert!(q.required);
             assert!(!d.originals.is_empty());
+            assert_eq!(d.readings.len(), 1);
+            assert_eq!(
+                g.scalar(d.readings[0].body.unwrap()).unwrap(),
+                &Scalar::Bool(true)
+            );
+            assert_eq!(
+                g.scalar(d.readings[0].holds.unwrap()).unwrap(),
+                &Scalar::Bool(true)
+            );
             for node in &g.nodes[before..] {
                 let Some(Payload::Construction(value)) = &node.payload else {
                     panic!("original source")
@@ -782,6 +791,7 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
                             ..
                         }
                         | Part::Scalar(Scalar::Unit | Scalar::Subject { .. })
+                        | Part::ObservedBoolean { value: Scalar::Bool(true), .. }
                         | Part::Equation(
                             crate::observed::equation_presentation_node::Part::Context { .. }
                         )
