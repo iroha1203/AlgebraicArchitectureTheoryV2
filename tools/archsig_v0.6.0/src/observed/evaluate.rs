@@ -2520,7 +2520,7 @@ impl Evaluator<'_, '_> {
             return self.universal_law_answer(plan, role);
         }
         if self.request.kind == QuestionKind::Check
-            && guard.is_none()
+            && (guard.is_none() || self.graph.active.instance.is_none())
             && matches!(
                 self.environment.inputs.law().exprs[body].kind,
                 ExprKind::Quant { .. }
