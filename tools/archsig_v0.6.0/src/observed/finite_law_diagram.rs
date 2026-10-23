@@ -8,7 +8,7 @@ use super::{
     environment::{
         Environment,
         finite_law_valuations::object::instances::realizations::automatic::{
-            AutomaticLawValuations, finite_automatic_law_family,
+            AutomaticLawValuations, ObservedLawReading, finite_automatic_law_family,
         },
     },
     input::CheckedInputs,
@@ -61,6 +61,13 @@ enum Transform {
 enum Part {
     Equation(super::equation_presentation_node::Part),
     Scalar(Scalar),
+    ObservedBoolean {
+        origin: NodeRef,
+        body: bool,
+        value: Scalar,
+        support: Vec<Fact>,
+        scope: Scope,
+    },
     Source {
         column: usize,
         expression: usize,
@@ -113,7 +120,7 @@ impl Part {
     fn ty(&self) -> NodeType {
         match self {
             Self::Equation(v) => v.ty(),
-            Self::Scalar(v) => NodeType::Value(v.ty()),
+            Self::Scalar(v) | Self::ObservedBoolean { value: v, .. } => NodeType::Value(v.ty()),
             Self::Source { ty, .. } | Self::Transform { ty, .. } => {
                 NodeType::Expression(ty.clone())
             }
@@ -129,6 +136,7 @@ impl Part {
         match self {
             Self::Equation(v) => v.arguments(),
             Self::Scalar(_) | Self::IntegerRing => vec![],
+            Self::ObservedBoolean { origin, .. } => vec![*origin],
             Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
             Self::Transform {
                 operands, bindings, ..
@@ -171,7 +179,7 @@ impl Part {
     fn construction(&self) -> &'static str {
         match self {
             Self::Equation(v) => v.construction(),
-            Self::Scalar(_) => "binding",
+            Self::Scalar(_) | Self::ObservedBoolean { .. } => "binding",
             Self::Source { .. } | Self::Transform { .. } => "expression",
             Self::LawInstance { .. } => "law_instance",
             Self::Domain { .. } => "domain",
@@ -184,7 +192,7 @@ impl Part {
     fn wire(&self) -> Json {
         match self {
             Self::Equation(v) => v.wire(),
-            Self::Scalar(v) => v.wire(),
+            Self::Scalar(v) | Self::ObservedBoolean { value: v, .. } => v.wire(),
             Self::Source {
                 location,
                 bindings,
@@ -302,6 +310,7 @@ impl Part {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
     pub originals: Vec<Original>,
+    pub readings: Vec<LawReading>,
     pub context: Option<NodeRef>,
     pub presentation: Option<NodeRef>,
     pub operands: Vec<(NodeRef, NodeRef)>,
@@ -316,6 +325,14 @@ pub(super) struct Diagram {
     pub epsilon: Vec<Option<NodeRef>>,
     pub witnesses: Vec<NodeRef>,
     pub required: NodeRef,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct LawReading {
+    pub column: usize,
+    pub instance: NodeRef,
+    pub reading: ObservedLawReading,
+    pub body: Option<NodeRef>,
+    pub holds: Option<NodeRef>,
 }
 #[derive(Clone)]
 pub(super) struct Source {
@@ -356,7 +373,7 @@ impl Data {
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         match self.source.parts.get(self.index) {
-            Some(Part::Scalar(v)) => Some(v),
+            Some(Part::Scalar(v)) | Some(Part::ObservedBoolean { value: v, .. }) => Some(v),
             _ => None,
         }
     }
@@ -375,7 +392,11 @@ impl Data {
         self.part().wire()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.source.support.clone(), self.source.scope.clone())
+        if let Part::ObservedBoolean { support, scope, .. } = self.part() {
+            (support.clone(), scope.clone())
+        } else {
+            (self.source.support.clone(), self.source.scope.clone())
+        }
     }
     pub(super) fn position(&self, position: usize) -> Result<(), ValidationFailure> {
         if self.index >= self.source.parts.len()
@@ -771,6 +792,7 @@ fn object_plan(
     let operands = operands::append(f, inputs, &originals, &columns, &components, parts, base, c)?;
     tick(c)?;
     Ok(Diagram {
+        readings: vec![],
         context: None,
         presentation: None,
         originals,
@@ -787,6 +809,59 @@ fn object_plan(
         witnesses,
         required,
     })
+}
+fn append_readings(
+    inputs: &CheckedInputs,
+    architecture: &Arc<ArchitectureWitness>,
+    family: &AutomaticLawValuations,
+    parts: &mut Vec<Part>,
+    out: &mut Diagram,
+    base: usize,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    let (base_support, base_scope) = native::metadata(&ConstructionValue {
+        witness: Witness::Architecture(architecture.clone()),
+        data: D::ConstructionLabel(Scalar::Text("observed_law".into())),
+    })?;
+    for original in &out.originals {
+        tick(c)?;
+        let reading = family.observed_law(inputs, original.column, c)?;
+        let mut support = base_support.clone();
+        support.extend_from_slice(&reading.support);
+        support.sort();
+        support.dedup();
+        let mut scope = base_scope.clone();
+        scope.merge(&reading.scope);
+        let mut retain =
+            |body: bool, value: Option<bool>| -> Result<Option<NodeRef>, ValidationFailure> {
+                tick(c)?;
+                value
+                    .map(|v| {
+                        push(
+                            parts,
+                            base,
+                            Part::ObservedBoolean {
+                                origin: original.row,
+                                body,
+                                value: Scalar::Bool(v),
+                                support: support.clone(),
+                                scope: scope.clone(),
+                            },
+                        )
+                    })
+                    .transpose()
+            };
+        let body = retain(true, reading.body)?;
+        let holds = retain(false, reading.holds)?;
+        out.readings.push(LawReading {
+            column: original.column,
+            instance: original.row,
+            reading,
+            body,
+            holds,
+        });
+    }
+    tick(c)
 }
 fn append_presentation(
     inputs: &CheckedInputs,
@@ -1009,6 +1084,7 @@ impl Source {
         let mut parts = vec![];
         let shared = basis(f, base, &mut parts, c)?;
         let mut outputs = object_plan(f, &inputs, object, base, &mut parts, &shared, c)?;
+        append_readings(&inputs, &architecture, f, &mut parts, &mut outputs, base, c)?;
         append_presentation(
             &inputs,
             &architecture,
@@ -1024,6 +1100,7 @@ impl Source {
             for object in 1..architecture.readings().objects().len() {
                 tick(c)?;
                 let mut output = object_plan(f, &inputs, object, base, &mut parts, &shared, c)?;
+                append_readings(&inputs, &architecture, f, &mut parts, &mut output, base, c)?;
                 append_presentation(
                     &inputs,
                     &architecture,
@@ -1211,11 +1288,12 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
         return Err("有限Lawの元Architecture参照が違う".into());
     }
+    let (support, scope) = data.metadata();
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support != data.source.support
-        || n.scope != data.source.scope
+        || n.support != support
+        || n.scope != scope
         || n.reasons
             != match part {
                 Part::Equation(v) => v.reasons(),
@@ -1298,3 +1376,7 @@ mod owned_tests;
 #[cfg(test)]
 #[path = "finite_law_family_tests.rs"]
 mod family_tests;
+
+#[cfg(test)]
+#[path = "finite_law_reading_tests.rs"]
+mod reading_tests;

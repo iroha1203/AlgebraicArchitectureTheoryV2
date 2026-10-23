@@ -190,7 +190,9 @@ fn finite_native_diagram_keeps_wire_values_original_nu_epsilon_and_ideal_generat
     assert_eq!(property(&g, ev, "kind"), Json::str("finite_functions"));
     for (i, n) in g.nodes.iter().enumerate().skip(start) {
         assert!(n.arguments.iter().all(|r| r.0 < i));
-        assert!(n.scope.assignments);
+        // 原始代入上の表示と、補完せず実際に読んだBool値を区別する。
+        let observed = matches!(data(&g, NodeRef(i)).part(), Part::ObservedBoolean { .. });
+        assert_eq!(n.scope.assignments, !observed);
         assert!(!n.scope.completions);
         assert!(n.scope.readings.contains("Chosen"));
         assert!(n.support.iter().any(|f| f.atom.as_deref() == Some("px")));

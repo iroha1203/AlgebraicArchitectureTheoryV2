@@ -96,6 +96,7 @@ pub(super) fn initial(
         components: None,
         indicator: None,
         condition_failed: false,
+        condition_pending: false,
         support: vec![],
         scope: Scope::default(),
     };
