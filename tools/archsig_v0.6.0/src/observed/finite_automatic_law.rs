@@ -323,6 +323,60 @@ impl AutomaticLawValuations {
     ) -> Option<(&ObjectInstance, &InstanceApplication)> {
         self.value.instance_source(column)
     }
+    /// 補完代入を入れず、同じ元列のoperandとその読取りを現在の観測から得る。
+    pub(in crate::observed) fn observed_indicator(
+        &self,
+        inputs: &CheckedInputs,
+        column: usize,
+        component: Option<&[usize]>,
+        c: &mut Control,
+    ) -> Result<(Option<BigInt>, Vec<Fact>), ValidationFailure> {
+        tick(c)?;
+        if &self.value.sources != inputs.sources() {
+            return Err("有限Lawの実評価と元三入力が違う".into());
+        }
+        let mut e = Environment::new(inputs, c)?;
+        *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+        self.value.select_column_object(&mut e, column)?;
+        let reads = || -> Result<Vec<Fact>, ValidationFailure> {
+            let tracked = e.primitive_reads.borrow();
+            let mut positions = vec![];
+            for position in tracked.as_ref().ok_or("有限Law実評価の読取り記録がない")?
+            {
+                tick(&mut e.control.clone())?;
+                positions.push(position.clone());
+            }
+            Ok(positions)
+        };
+        let applied = self.value.probe_column(&e, column, 0)?;
+        if applied.row.application != Some(true) || applied.row.condition_failed {
+            return Ok((None, reads()?));
+        }
+        let selected = self
+            .columns()
+            .get(column)
+            .ok_or("有限Lawの実評価列がない")?;
+        // 条件付き指示値が零でも、元operandの欠測を恒値で置き換えない。
+        let actual = probe(&e, selected.declaration(), selected.bindings(), 0)?.row;
+        if actual.condition_failed || actual.guard.is_none() {
+            return Ok((None, reads()?));
+        }
+        tick(c)?;
+        let value = match component {
+            Some(path) => {
+                let mut value = None;
+                for leaf in actual.components.as_deref().unwrap_or(&[]) {
+                    tick(c)?;
+                    if leaf.path == path && leaf.left.is_some() && leaf.right.is_some() {
+                        value = leaf.indicator.clone();
+                    }
+                }
+                value
+            }
+            None => actual.indicator,
+        };
+        Ok((value, reads()?))
+    }
     pub(in crate::observed) fn integer_ring(
         &self,
         c: &mut Control,

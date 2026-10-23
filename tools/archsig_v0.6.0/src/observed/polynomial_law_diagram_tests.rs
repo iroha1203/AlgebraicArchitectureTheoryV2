@@ -737,12 +737,29 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
         assert!(d.evaluations.is_empty());
         assert!(d.required.is_empty());
         if body.is_empty() {
-            assert_eq!(g.nodes.len(), before);
+            assert_eq!(g.nodes.len(), before + 1);
+            assert_eq!(d.context, Some(NodeRef(before)));
+            let Part::Equation(crate::observed::equation_presentation_node::Part::Context {
+                base,
+                carrier,
+                dependencies,
+                laws,
+                ..
+            }) = data(&g, NodeRef(before)).part()
+            else {
+                panic!("global Context only");
+            };
+            assert_eq!(*base, a);
+            assert_eq!(carrier.len(), 12);
+            assert!(dependencies.is_empty() && laws.is_empty());
+            assert!(d.presentations.is_empty());
             assert!(d.originals.is_empty());
             assert!(d.coordinates.is_empty());
             assert_eq!(d.status, EquationPresentationStatus::Ready);
         } else {
             assert_eq!(d.status, EquationPresentationStatus::UnsupportedAlgorithm);
+            assert!(d.presentations.is_empty());
+            assert!(d.context.is_some());
             assert_eq!(d.coordinates.len(), 1);
             let q = &d.coordinates[0];
             assert_eq!(q.ty, Type::Bool);
@@ -765,6 +782,9 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
                             ..
                         }
                         | Part::Scalar(Scalar::Unit | Scalar::Subject { .. })
+                        | Part::Equation(
+                            crate::observed::equation_presentation_node::Part::Context { .. }
+                        )
                 ));
             }
         }
@@ -964,6 +984,668 @@ fn assignment_domain_type_ring_reference_and_output_alignment_changes_are_reject
             _ => n.rule = Rule::Construction("ring"),
         }
         assert!(replay(&e, &nodes, &g.contexts).is_err(), "native {mode}");
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn polynomial_presentations_preserve_shared_ring_raw_epsilon_and_original_component_expressions() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(
+        false,
+        "law required pair(c:Part):(c.quantity,c.quantity)=(0,1);",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert_eq!(d.presentations.len(), 1);
+    let r = d.presentations[0].unwrap();
+    let Part::Equation(E::Presentation {
+        instances,
+        domain,
+        ring,
+        coordinates,
+        witnesses,
+        required,
+        evaluation,
+        context,
+        ..
+    }) = data(&g, r).part()
+    else {
+        panic!("presentation");
+    };
+    assert_eq!(
+        (*domain, *ring, *required, *evaluation, *context),
+        (
+            d.domains[0],
+            d.rings[0],
+            d.required[0],
+            d.evaluations[0],
+            d.context.unwrap()
+        )
+    );
+    let original = d.originals.iter().find(|o| o.row == Some(0)).unwrap();
+    assert_eq!(instances, &vec![original.reference]);
+    assert!(original.bindings.iter().any(|b| b.name == "c"
+        && matches!(g.scalar(b.value).unwrap(),Scalar::Subject{subject,..} if subject=="p")));
+    assert_eq!(coordinates.len(), 2);
+    assert_eq!(
+        coordinates
+            .iter()
+            .map(|q| q.component.clone())
+            .collect::<Vec<_>>(),
+        [vec![0], vec![1]]
+    );
+    for (i, q) in coordinates.iter().enumerate() {
+        let original = &d.coordinates[i];
+        assert_eq!(
+            (q.instance, q.lhs, q.rhs, q.nu, q.epsilon),
+            (
+                original.instance,
+                original.lhs,
+                original.rhs,
+                original.nu.unwrap(),
+                original.epsilon
+            )
+        );
+        assert_eq!(witnesses[i], original.witness.unwrap());
+    }
+    let Part::Equation(E::Context {
+        base,
+        carrier,
+        laws,
+        ..
+    }) = data(&g, d.context.unwrap()).part()
+    else {
+        panic!("context");
+    };
+    assert_eq!(*base, a);
+    assert_eq!(carrier.len(), 12);
+    assert_eq!(laws, &vec![original.reference]);
+    assert_ne!(coordinates[0].lhs, coordinates[0].rhs);
+    assert_eq!(terms(&g, coordinates[0].epsilon.unwrap()), vec![]);
+    assert_eq!(
+        terms(&g, coordinates[1].epsilon.unwrap()),
+        vec![(Json::str("-1"), vec![0])]
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn missing_polynomial_values_keep_formal_presentation_without_fabricating_epsilon_or_evaluation() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(true, BODY);
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let r = d.presentations[0].unwrap();
+    let Part::Equation(E::Presentation {
+        coordinates,
+        evaluation,
+        ..
+    }) = data(&g, r).part()
+    else {
+        panic!("presentation");
+    };
+    assert!(evaluation.is_none());
+    assert_eq!(coordinates.len(), 2);
+    assert!(coordinates.iter().all(|q| q.epsilon.is_none()));
+    for q in coordinates {
+        assert!(matches!(data(&g, q.nu).part(), Part::Polynomial { .. }));
+    }
+    let reasons = &g.nodes[r.0].reasons;
+    assert_eq!(reasons.len(), 1);
+    assert_eq!(reasons[0].kind, ReasonKind::Missing);
+    assert_eq!(reasons[0].request, "m");
+    assert_eq!(
+        reasons[0].missing,
+        vec![Fact {
+            snapshot: "v".into(),
+            subject: "q".into(),
+            field: Some("Finite.Part.quantity".into()),
+            atom: None
+        }]
+    );
+    let mut expected = d
+        .originals
+        .iter()
+        .filter(|o| o.row == Some(0))
+        .flat_map(|o| std::iter::once(o.body).chain(o.guard))
+        .collect::<Vec<_>>();
+    expected.sort_by_key(|r| r.0);
+    expected.dedup();
+    assert_eq!(reasons[0].dependencies, expected);
+    assert!(
+        reasons[0]
+            .dependencies
+            .iter()
+            .all(|r| matches!(g.nodes[r.0].ty, NodeType::Expression(_)))
+    );
+    for mutation in 0..3 {
+        let mut nodes = g.nodes.clone();
+        match mutation {
+            0 => nodes[r.0].reasons.clear(),
+            1 => nodes[r.0].reasons[0].missing[0].field = Some("Finite.Part.owner".into()),
+            _ => nodes[r.0].reasons[0].dependencies = vec![b],
+        }
+        assert!(
+            replay(&e, &nodes, &g.contexts).is_err(),
+            "omission reason mutation {mutation}"
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn context_keeps_general_condition_and_discarded_reference_reads_outside_numeric_symbols() {
+    use crate::observed::equation_presentation_node::Part as E;
+    for (body, expected) in [
+        (
+            "law required positive(c:Part):c.quantity>0;",
+            vec!["Finite.Part.quantity"],
+        ),
+        (
+            "law required used(c:Part):let discarded=c.owner in c.quantity=0;",
+            vec!["Finite.Part.owner", "Finite.Part.quantity"],
+        ),
+    ] {
+        let e = example(false, body);
+        let mut g = graph(&e);
+        let a = architecture(&g, "a");
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+        let Part::Equation(E::Context { dependencies, .. }) = data(&g, d.context.unwrap()).part()
+        else {
+            panic!("context")
+        };
+        for field in expected {
+            assert!(dependencies.iter().any(|(r,f)| f==field && matches!(g.scalar(*r).unwrap(), Scalar::Subject {snapshot, subject,..} if snapshot=="v" && subject=="p")), "{body}: {field} missing from {dependencies:?}");
+        }
+        assert!(!dependencies.iter().any(
+            |(r, _)| matches!(g.scalar(*r).unwrap(), Scalar::Subject {subject,..} if subject=="q")
+        ));
+        if body.contains("positive") {
+            assert_eq!(d.status, EquationPresentationStatus::UnsupportedAlgorithm);
+            assert!(d.rings.is_empty() && d.presentations.is_empty());
+        } else {
+            assert_eq!(d.rings.len(), 1);
+            let Part::Ring { variables, .. } = data(&g, d.rings[0]).part() else {
+                panic!("ring")
+            };
+            assert!(
+                variables
+                    .iter()
+                    .all(|v| v.field.field.as_deref() == Some("Finite.Part.quantity"))
+            );
+        }
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}
+
+#[test]
+fn context_keeps_bool_guard_reads_without_turning_them_into_numeric_variables() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let definition = DEFINITION.replace(r#""fields":[{"name":"quantity""#,r#""fields":[{"name":"enabled","type":"Bool","meaning":"条件の元観測。"},{"name":"quantity""#);
+    let map = MAP.replace(r#""atoms":["#, r#""atoms":[{"id":"pe","subject":"p","field":"Finite.Part.enabled","value":true,"origin":"model"},{"id":"qe","subject":"q","field":"Finite.Part.enabled","value":false,"origin":"model"},"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            &definition,
+            &map,
+            "law required gated(c:Part) when c.enabled:c.quantity=0;",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let Part::Equation(E::Context { dependencies, .. }) = data(&g, d.context.unwrap()).part()
+    else {
+        panic!("context")
+    };
+    for field in ["Finite.Part.enabled", "Finite.Part.quantity"] {
+        assert!(
+            dependencies.iter().any(|(r, f)| f == field
+                && matches!(g.scalar(*r).unwrap(),Scalar::Subject {subject,..} if subject=="p")),
+            "{field}: {dependencies:?}"
+        );
+    }
+    let Part::Ring { variables, .. } = data(&g, d.rings[0]).part() else {
+        panic!("ring")
+    };
+    assert!(
+        variables
+            .iter()
+            .all(|v| v.field.field.as_deref() == Some("Finite.Part.quantity"))
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn finite_missing_completions_keep_one_formal_coordinate_and_never_supply_actual_epsilon() {
+    use crate::observed::equation_presentation_node::Part as E;
+    for missing in [false, true] {
+        let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Fp","2"]"#);
+        let map = if missing {
+            MAP.replace(r#",{"id":"qx","subject":"q","field":"Finite.Part.quantity","value":"1","origin":"model"}"#,"")
+        } else {
+            MAP.into()
+        };
+        let e = evaluate_observed_bytes(
+            custom_sources(&definition, &map, BODY),
+            &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+            &mut quiet(),
+        )
+        .unwrap();
+        let mut g = graph(&e);
+        let b = architecture(&g, "b");
+        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+        assert_eq!(d.coordinates.len(), if missing { 4 } else { 2 });
+        if missing {
+            for instance in [0, 1] {
+                assert_eq!(
+                    d.coordinates
+                        .iter()
+                        .filter(|q| q.position.instance == instance)
+                        .map(|q| q.case)
+                        .collect::<Vec<_>>(),
+                    vec![0, 1]
+                );
+            }
+        }
+        let p = d.presentations[0].unwrap();
+        let Part::Equation(E::Presentation {
+            coordinates,
+            evaluation,
+            ..
+        }) = data(&g, p).part()
+        else {
+            panic!("presentation")
+        };
+        assert_eq!(coordinates.len(), 2);
+        assert_eq!(
+            coordinates
+                .iter()
+                .map(|q| (q.instance.0, q.component.clone()))
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            2
+        );
+        assert_eq!(evaluation.is_none(), missing);
+        for q in coordinates {
+            assert_eq!(q.epsilon.is_none(), missing);
+            if !missing {
+                let original = d
+                    .originals
+                    .iter()
+                    .find(|o| o.reference == q.instance)
+                    .unwrap();
+                let name = &data(&g, p).source.architecture.readings().instances()
+                    [original.instance]
+                    .declaration()
+                    .name;
+                let expected = if name == "Chosen.zero" {
+                    vec![(Json::str("1"), vec![0])]
+                } else {
+                    assert_eq!(name, "Chosen.one");
+                    vec![]
+                };
+                assert_eq!(terms(&g, q.epsilon.unwrap()), expected);
+            }
+        }
+        assert_eq!(g.nodes[p.0].reasons.is_empty(), !missing);
+        if missing {
+            assert_eq!(
+                g.nodes[p.0].reasons[0].missing[0].field.as_deref(),
+                Some("Finite.Part.quantity")
+            );
+        }
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}
+
+#[test]
+fn missing_bool_completions_keep_original_cases_and_do_not_promote_branch_values() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let definition=DEFINITION.replace(r#""fields":[{"name":"quantity""#,r#""fields":[{"name":"enabled","type":"Bool","meaning":"条件の元観測。"},{"name":"quantity""#);
+    let map=MAP.replace(r#""atoms":["#,r#""atoms":[{"id":"pe","subject":"p","field":"Finite.Part.enabled","value":true,"origin":"model"},"#);
+    for (body, uniform) in [
+        (
+            "law required used(c:Part):let discarded=c.enabled in c.quantity=0;",
+            true,
+        ),
+        (
+            "law required choose(c:Part):c.quantity=(if c.enabled then 0 else 1);",
+            false,
+        ),
+    ] {
+        let e = evaluate_observed_bytes(
+            custom_sources(&definition, &map, body),
+            &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+            &mut quiet(),
+        )
+        .unwrap();
+        let mut g = graph(&e);
+        let b = architecture(&g, "b");
+        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+        assert_eq!(d.coordinates.len(), 2);
+        assert_eq!(
+            d.coordinates.iter().map(|q| q.case).collect::<Vec<_>>(),
+            vec![0, 1]
+        );
+        assert_eq!(
+            d.status,
+            if uniform {
+                EquationPresentationStatus::Ready
+            } else {
+                EquationPresentationStatus::UnsupportedAlgorithm
+            }
+        );
+        let core = data(&g, d.context.unwrap()).source.core.as_ref().unwrap();
+        assert!(core.occurrences().iter().all(|q| q.nu.is_some() == uniform));
+        if uniform {
+            assert_eq!(core.occurrences()[0].nu, core.occurrences()[1].nu);
+        }
+        if uniform {
+            let p = d.presentations[0].unwrap();
+            let Part::Equation(E::Presentation {
+                coordinates,
+                evaluation,
+                ..
+            }) = data(&g, p).part()
+            else {
+                panic!("presentation")
+            };
+            assert_eq!(coordinates.len(), 1);
+            assert_eq!(
+                terms(
+                    &g,
+                    coordinates[0]
+                        .epsilon
+                        .expect("original observed body is already known")
+                ),
+                vec![(Json::str("1"), vec![0])]
+            );
+            assert!(
+                evaluation.is_some(),
+                "numeric symbols are observed independently of the Bool read"
+            );
+            assert!(g.nodes[p.0].reasons.is_empty());
+            let Part::Equation(E::Context { dependencies, .. }) =
+                data(&g, d.context.unwrap()).part()
+            else {
+                panic!("context")
+            };
+            assert!(
+                dependencies
+                    .iter()
+                    .any(|(_, field)| field == "Finite.Part.enabled")
+            );
+        } else {
+            assert_eq!(d.presentations, vec![None]);
+        }
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}
+
+#[test]
+fn a_missing_parameter_row_does_not_erase_another_rows_observed_epsilon() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Fp","2"]"#);
+    let map = MAP.replace(
+        r#",{"id":"qx","subject":"q","field":"Finite.Part.quantity","value":"1","origin":"model"}"#,
+        "",
+    );
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            &definition,
+            &map,
+            "law required choose(c:Part,b:Bool):0=(if b then c.quantity else 0);",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let p = d.presentations[0].unwrap();
+    let Part::Equation(E::Presentation {
+        coordinates,
+        evaluation,
+        ..
+    }) = data(&g, p).part()
+    else {
+        panic!("presentation")
+    };
+    assert!(evaluation.is_none());
+    assert_eq!(coordinates.len(), 2);
+    for q in coordinates {
+        let original = d
+            .originals
+            .iter()
+            .find(|o| o.reference == q.instance)
+            .unwrap();
+        let parameter = original.bindings.iter().find(|b| b.name == "b").unwrap();
+        match g.scalar(parameter.value).unwrap() {
+            Scalar::Bool(false) => {
+                assert!(terms(&g, q.epsilon.expect("known false row epsilon")).is_empty())
+            }
+            Scalar::Bool(true) => assert!(q.epsilon.is_none()),
+            _ => panic!("Bool parameter"),
+        }
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn global_equation_context_keeps_same_subject_ids_in_different_snapshots_and_their_modes() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let map=format!(r#"{},{{"id":"w","origin":"external","subjects":[{{"id":"a","type":"Finite.Root","origin":"external"}}],"atoms":[]}}]}}"#,MAP.strip_suffix("]}").unwrap()).replace(r#""origins":["#,r#""origins":[{"id":"external","mode":"proposed","method":"独立の原始参照。","locations":[],"note":"別snapshotの同名subject。"},"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(DEFINITION, &map, BODY),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let ctx = d.context.unwrap();
+    let Part::Equation(E::Context { carrier, .. }) = data(&g, ctx).part() else {
+        panic!("context");
+    };
+    assert_eq!(carrier.len(), 13);
+    for snapshot in ["v", "w"] {
+        assert!(carrier.iter().any(|v|matches!(v,Scalar::Tuple(xs) if matches!((&xs[0],&xs[1],&xs[2],&xs[3]),(Scalar::Text(s),Scalar::Text(id),Scalar::Option{value:None,..},Scalar::Option{value:None,..}) if s==snapshot&&id=="a"))));
+    }
+    for reference in [ctx, d.presentations[0].unwrap()] {
+        let node = g.get(reference).unwrap();
+        assert!(node.scope.snapshots.contains("w"));
+        assert!(node.scope.modes.contains("proposed"));
+        assert!(
+            node.support
+                .iter()
+                .any(|f| f.snapshot == "w" && f.subject == "a" && f.field.is_none())
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn source_only_unimplemented_parameter_keeps_original_scope_without_fake_context_or_presentation() {
+    let e = example(false, "law required parameter(c:Part,k:Z):c.quantity=k;");
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert_eq!(d.status, EquationPresentationStatus::Undetermined);
+    assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
+    assert!(d.context.is_none());
+    assert!(d.presentations.is_empty());
+    let original = d.originals.iter().find(|o| o.row.is_none()).unwrap();
+    let qs = &g.get(original.reference).unwrap().scope.quantifiers;
+    assert!(
+        qs.iter().any(|q| q.name == "k"
+            && q.ty == Type::Z
+            && q.kind == crate::law::ast::QuantKind::Forall)
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn finite_parameter_rows_are_distinct_presentation_instances_without_requantifying_the_template() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(
+        false,
+        "law required parameter(c:Part,b:Bool):c.quantity=(if b then 0 else 1);",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let r = d.presentations[0].unwrap();
+    let Part::Equation(E::Presentation {
+        instances,
+        coordinates,
+        ..
+    }) = data(&g, r).part()
+    else {
+        panic!("presentation");
+    };
+    assert_eq!(instances.len(), 2);
+    assert_eq!(coordinates.len(), 2);
+    assert_ne!(instances[0], instances[1]);
+    let mut booleans = vec![];
+    for reference in instances {
+        let original = d
+            .originals
+            .iter()
+            .find(|o| o.reference == *reference)
+            .unwrap();
+        assert!(original.row.is_some());
+        let binding = original.bindings.iter().find(|b| b.name == "b").unwrap();
+        let Scalar::Bool(value) = g.scalar(binding.value).unwrap() else {
+            panic!("boolean parameter");
+        };
+        booleans.push(*value);
+        assert!(g.get(*reference).unwrap().scope.quantifiers.is_empty());
+    }
+    booleans.sort();
+    assert_eq!(booleans, [false, true]);
+    let template = d.originals.iter().find(|o| o.row.is_none()).unwrap();
+    assert!(!instances.contains(&template.reference));
+    assert!(
+        g.get(template.reference)
+            .unwrap()
+            .scope
+            .quantifiers
+            .iter()
+            .any(|q| q.name == "b" && q.ty == Type::Bool)
+    );
+    let Part::Equation(E::Context { laws, .. }) = data(&g, d.context.unwrap()).part() else {
+        panic!("context");
+    };
+    assert_eq!(laws, instances);
+    assert!(g.get(r).unwrap().scope.quantifiers.is_empty());
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn polynomial_presentation_recheck_rejects_derived_coordinate_ring_ideal_and_context_changes() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(false, BODY);
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let r = d.presentations[0].unwrap();
+    for kind in 0..8 {
+        let at = if kind < 2 { d.context.unwrap() } else { r };
+        let mut nodes = g.nodes.clone();
+        let Some(Payload::Construction(value)) = &mut nodes[at.0].payload else {
+            panic!("native");
+        };
+        let D::PolynomialLaw(value) = &mut value.data else {
+            panic!("polynomial");
+        };
+        let mut source = (*value.source).clone();
+        let Part::Equation(part) = &mut source.parts[value.index] else {
+            panic!("equation");
+        };
+        match part {
+            E::Context {
+                carrier,
+                dependencies,
+                ..
+            } => {
+                if kind == 0 {
+                    carrier.pop();
+                } else {
+                    dependencies.clear();
+                }
+            }
+            E::Presentation {
+                coordinates,
+                ring,
+                required,
+                evaluation,
+                context,
+                ..
+            } => match kind {
+                2 => *ring = d.bases[0],
+                3 => *required = d.coordinates[0].witness.unwrap(),
+                4 => coordinates[0].epsilon = Some(coordinates[0].nu),
+                5 => {
+                    let q = &mut coordinates[0];
+                    std::mem::swap(&mut q.lhs, &mut q.rhs)
+                }
+                6 => *evaluation = None,
+                _ => *context = d.domains[0],
+            },
+        }
+        value.source = Arc::new(source);
+        assert!(replay(&e, &nodes, &g.contexts).is_err(), "change {kind}");
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn progressive_missing_match_discovery_keeps_observed_roots_separate_from_cases() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Fp","2"]"#).replace(r#""fields":[{"name":"quantity""#, r#""fields":[{"name":"enabled","type":"Bool","meaning":"条件の元観測。"},{"name":"quantity""#);
+    let map = MAP.replace(r#""atoms":["#, r#""atoms":[{"id":"pe","subject":"p","field":"Finite.Part.enabled","value":true,"origin":"model"},"#).replace(
+        r#",{"id":"qx","subject":"q","field":"Finite.Part.quantity","value":"1","origin":"model"}"#,
+        "",
+    );
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            &definition,
+            &map,
+            "law required linked(c:Part):match c.enabled { ignored => c.quantity=0; };",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    assert!(!d.coordinates.is_empty());
+    assert_eq!(d.status, EquationPresentationStatus::Undetermined);
+    let core = data(&g, d.context.unwrap()).source.core.as_ref().unwrap();
+    let source = core
+        .base()
+        .base()
+        .evaluations()
+        .iter()
+        .find(|s| s.position().object == 0)
+        .unwrap();
+    let crate::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(original) =
+        source.evaluation().outcome()
+    else {
+        panic!("evaluation")
+    };
+    assert!(original.nodes.iter().any(|n| matches!(&n.payload,Some(Payload::CompletionSeed{roots,..}) if roots.iter().filter(|r|matches!(original.nodes[r.0].ty,NodeType::Evaluation(Type::Bool))).count()>1)),"fixture must discover another slot during a completion case");
+    for p in d.presentations.iter().flatten() {
+        let Part::Equation(E::Presentation { coordinates, .. }) = data(&g, *p).part() else {
+            panic!("presentation")
+        };
+        assert!(coordinates.iter().all(|q| q.epsilon.is_none()));
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }

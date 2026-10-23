@@ -85,6 +85,7 @@ pub(super) struct Original {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
+    Equation(super::equation_presentation_node::Part),
     Scalar(Scalar),
     Source {
         quantifiers: Vec<Quantifier>,
@@ -146,11 +147,13 @@ impl Part {
             Self::Source { quantifiers, .. }
             | Self::Transform { quantifiers, .. }
             | Self::LawInstance { quantifiers, .. } => quantifiers,
+            Self::Equation(v) => v.quantifiers(),
             _ => &[],
         }
     }
     fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
+            Self::Equation(v) => return v.ty(),
             Self::Scalar(s) => return NodeType::Value(s.ty()),
             Self::Source { ty, .. } | Self::Transform { ty, .. } => {
                 return NodeType::Expression(ty.clone());
@@ -165,6 +168,7 @@ impl Part {
     }
     fn arguments(&self) -> Vec<NodeRef> {
         match self {
+            Self::Equation(v) => v.arguments(),
             Self::Scalar(_) | Self::Base(_) => vec![],
             Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
             Self::Transform {
@@ -208,6 +212,7 @@ impl Part {
     }
     fn construction(&self) -> &'static str {
         match self {
+            Self::Equation(v) => v.construction(),
             Self::Scalar(_) => "binding",
             Self::Source { .. } | Self::Transform { .. } => "expression",
             Self::LawInstance { .. } => "law_instance",
@@ -220,6 +225,7 @@ impl Part {
     }
     fn wire(&self) -> Json {
         match self {
+            Self::Equation(v) => v.wire(),
             Self::Scalar(v) => v.wire(),
             Self::Source {
                 location,
@@ -391,6 +397,8 @@ pub(super) struct Unavailable {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
     pub unavailable: Option<Unavailable>,
+    pub context: Option<NodeRef>,
+    pub presentations: Vec<Option<NodeRef>>,
     pub originals: Vec<Original>,
     pub rings: Vec<NodeRef>,
     pub domains: Vec<NodeRef>,
@@ -549,6 +557,8 @@ fn plan(
     let (originals, expressions) = sources::append(core, inputs, &mut parts, base, c)?;
     let mut out = Diagram {
         unavailable: None,
+        context: None,
+        presentations: vec![],
         originals,
         rings: vec![],
         domains: vec![],
@@ -726,6 +736,247 @@ fn plan(
     tick(c)?;
     Ok((parts, out))
 }
+/// 元Evaluatorの全読取りを使う。数値環に記号化できるslotだけに射影しない。
+fn original_positions(
+    core: &EquationPresentation,
+    instance: Option<usize>,
+    c: &mut Control,
+) -> Result<Vec<Fact>, ValidationFailure> {
+    let mut positions = std::collections::BTreeSet::new();
+    for source in core.base().base().evaluations().iter().filter(|e| {
+        e.position().object == core.object() && instance.is_none_or(|i| e.position().instance == i)
+    }) {
+        tick(c)?;
+        if let super::object_evaluate::ObjectEvaluationOutcome::Evaluated(g) =
+            source.evaluation().outcome()
+        {
+            for n in &g.nodes {
+                tick(c)?;
+                for f in n
+                    .support
+                    .iter()
+                    .chain(n.reasons.iter().flat_map(|r| &r.missing))
+                {
+                    tick(c)?;
+                    if f.field.is_some() {
+                        positions.insert(Fact {
+                            atom: None,
+                            ..f.clone()
+                        });
+                    }
+                }
+            }
+        }
+    }
+    Ok(positions.into_iter().collect())
+}
+fn append_presentations(
+    inputs: &CheckedInputs,
+    a: &Arc<ArchitectureWitness>,
+    reference: NodeRef,
+    core: &EquationPresentation,
+    parts: &mut Vec<Part>,
+    out: &mut Diagram,
+    base: usize,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    use super::equation_presentation_node::{self as common, Coordinate as C, Part as E};
+    let positions = original_positions(core, None, c)?;
+    // pushは同じControlを使うため、依存subjectの値だけを先に集めてから計画へ追加する。
+    let dependencies = common::dependencies(inputs, &positions, c, |v| {
+        let at = base
+            .checked_add(parts.len())
+            .ok_or("global Contextの生成番号が範囲外")?;
+        parts.push(Part::Scalar(v));
+        Ok(NodeRef(at))
+    })?;
+    let mut laws = vec![];
+    for q in &out.coordinates {
+        tick(c)?;
+        if !laws.contains(&q.instance) {
+            laws.push(q.instance);
+        }
+    }
+    let mut quantifiers = vec![];
+    for original in out.originals.iter().filter(|o| laws.contains(&o.reference)) {
+        for q in &original.quantifiers {
+            if !quantifiers.contains(q) {
+                quantifiers.push(q.clone());
+            }
+        }
+    }
+    let context = push(
+        parts,
+        base,
+        Part::Equation(E::Context {
+            base: reference,
+            carrier: common::carrier(a, c)?,
+            dependencies: dependencies.slots.clone(),
+            laws,
+            quantifiers,
+        }),
+        c,
+    )?;
+    out.context = Some(context);
+    let mut actual_values = std::collections::BTreeMap::<
+        _,
+        Option<super::numeric_transport::NumericTransportValue>,
+    >::new();
+    for (index, ring) in out.rings.iter().enumerate() {
+        tick(c)?;
+        let mut coordinates = Vec::<C>::new();
+        let mut instances = vec![];
+        let mut witnesses = vec![];
+        let mut quantifiers = vec![];
+        let mut omitted_positions = vec![];
+        let mut seen = std::collections::BTreeMap::<_, (usize, usize)>::new();
+        let mut ready = true;
+        for q in out.coordinates.iter().filter(|q| q.ring == Some(*ring)) {
+            tick(c)?;
+            let (Some(nu), Some(witness)) = (q.nu, q.witness) else {
+                ready = false;
+                break;
+            };
+            if !instances.contains(&q.instance) {
+                instances.push(q.instance);
+            }
+            let original = out
+                .originals
+                .iter()
+                .find(|o| o.reference == q.instance)
+                .ok_or("型別表示の元Law出現がない")?;
+            let current = core
+                .occurrences()
+                .get(q.occurrence)
+                .ok_or("表示の補完座標がない")?;
+            let actual_key = (q.position.instance, q.row, q.component.clone());
+            let actual = if let Some(value) = actual_values.get(&actual_key) {
+                value.clone()
+            } else {
+                let source = core
+                    .base()
+                    .base()
+                    .evaluations()
+                    .iter()
+                    .find(|e| e.position() == q.position)
+                    .ok_or("表示の元Law評価がない")?;
+                let residual = core
+                    .base()
+                    .evaluations()
+                    .iter()
+                    .find(|e| e.position == q.position)
+                    .ok_or("表示の元Law成分がない")?;
+                let value = super::object_law_residuals::observed_epsilon(
+                    inputs,
+                    source,
+                    &residual.shape,
+                    q.row,
+                    &q.component,
+                    c,
+                )
+                .map_err(|e| construction_failure(&e))?;
+                actual_values.insert(actual_key, value.clone());
+                value
+            };
+            if actual.is_some() && current.epsilon.is_some() && actual != current.epsilon {
+                return Err("補完の生差が元実評価と違う".into());
+            }
+            if actual.is_none() {
+                omitted_positions.extend(original_positions(core, Some(original.instance), c)?);
+                if out.status == EquationPresentationStatus::Ready {
+                    out.status = EquationPresentationStatus::Undetermined;
+                }
+            }
+            let key = (q.instance.0, q.component.clone());
+            if let Some((previous, at)) = seen.get(&key).copied() {
+                let previous = core
+                    .occurrences()
+                    .get(previous)
+                    .ok_or("表示の元補完座標がない")?;
+                // 補完caseを新しいLaw出現にしない。同じ原式のνがcaseで変わるなら
+                // 単一の多項式表示ではなく、既存diagramのcaseと原式を保持する。
+                if previous.nu != current.nu
+                    || previous.left != current.left
+                    || previous.right != current.right
+                {
+                    ready = false;
+                    if out.status == EquationPresentationStatus::Ready {
+                        out.status = EquationPresentationStatus::Undetermined;
+                    }
+                    break;
+                }
+                if actual.is_none() || previous.epsilon != current.epsilon {
+                    coordinates[at].epsilon = None;
+                }
+                continue;
+            }
+            seen.insert(key, (q.occurrence, coordinates.len()));
+            for scope in &original.quantifiers {
+                if !quantifiers.contains(scope) {
+                    quantifiers.push(scope.clone());
+                }
+            }
+            coordinates.push(C {
+                instance: q.instance,
+                component: q.component.clone(),
+                lhs: q.lhs,
+                rhs: q.rhs,
+                nu,
+                // 補完caseの値ではなく、補完前の同じ元rowのoperandが実εを供給する。
+                epsilon: if actual.is_some() { q.epsilon } else { None },
+            });
+            witnesses.push(witness);
+        }
+        let presentation = if ready {
+            if out.evaluations.get(index).is_some_and(Option::is_none) {
+                for symbol in &core.rings()[index].symbols {
+                    tick(c)?;
+                    omitted_positions.push(Fact {
+                        snapshot: symbol.slot.snapshot.clone(),
+                        subject: symbol.slot.subject.clone(),
+                        field: Some(symbol.slot.field.clone()),
+                        atom: None,
+                    });
+                }
+            }
+            let omissions = dependencies.missing_reasons(
+                inputs,
+                &omitted_positions,
+                &out.originals
+                    .iter()
+                    .filter(|o| instances.contains(&o.reference))
+                    .flat_map(|o| std::iter::once(o.body).chain(o.guard))
+                    .collect::<Vec<_>>(),
+                Witness::Architecture(a.clone()).request(),
+                c,
+            )?;
+            Some(push(
+                parts,
+                base,
+                Part::Equation(E::Presentation {
+                    instances,
+                    domain: *out.domains.get(index).ok_or("型別表示のDomainがない")?,
+                    ring: *ring,
+                    coordinates,
+                    witnesses,
+                    required: *out
+                        .required
+                        .get(index)
+                        .ok_or("型別表示のrequired idealがない")?,
+                    evaluation: *out.evaluations.get(index).ok_or("型別表示の評価欄がない")?,
+                    context,
+                    quantifiers,
+                    omissions,
+                }),
+                c,
+            )?)
+        } else {
+            None
+        };
+        out.presentations.push(presentation);
+    }
+    tick(c)
+}
 fn metadata(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
@@ -787,6 +1038,9 @@ fn metadata(
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     scope.assignments = true;
+    if core.is_some() {
+        super::equation_presentation_node::global_metadata(a, &mut support, &mut scope)?;
+    }
     tick(c)?;
     Ok((support, scope))
 }
@@ -918,6 +1172,8 @@ fn symbolic_plan(
         parts,
         Diagram {
             unavailable: Some(reason),
+            context: None,
+            presentations: vec![],
             originals,
             rings: vec![],
             domains: vec![],
@@ -943,11 +1199,23 @@ impl Source {
             return Err("多項式の元三入力とArchitectureが違う".into());
         }
         let (core, reason) = calculate(inputs.clone(), &a, object, c)?;
-        let (parts, outputs) = match (&core, reason) {
+        let (mut parts, mut outputs) = match (&core, reason) {
             (Some(core), None) => plan(core, &inputs, base, c)?,
             (None, Some(reason)) => symbolic_plan(&inputs, &a, reason, base, c)?,
             _ => return Err("多項式の計算状態が不正".into()),
         };
+        if let Some(core) = &core {
+            append_presentations(
+                &inputs,
+                &a,
+                reference,
+                core,
+                &mut parts,
+                &mut outputs,
+                base,
+                c,
+            )?;
+        }
         let (support, scope) = metadata(&inputs, &a, core.as_deref(), c)?;
         tick(c)?;
         Ok(Self {
@@ -973,7 +1241,7 @@ impl Source {
         if !Arc::ptr_eq(a, &self.architecture) || inputs.sources() != self.inputs.sources() {
             return Err("多項式の消費先・元三入力・対象・readingが違う".into());
         }
-        let (parts, outputs) = if let Some(core) = &self.core {
+        let (mut parts, mut outputs) = if let Some(core) = &self.core {
             if core.object() != self.object || core.base().base().readings() != a.readings() {
                 return Err("多項式の元計算が対象・readingと違う".into());
             }
@@ -993,6 +1261,18 @@ impl Source {
                 c,
             )?
         };
+        if let Some(core) = &self.core {
+            append_presentations(
+                inputs,
+                a,
+                self.reference,
+                core,
+                &mut parts,
+                &mut outputs,
+                self.base,
+                c,
+            )?;
+        }
         let (support, scope) = metadata(inputs, a, self.core.as_deref(), c)?;
         if parts != self.parts
             || outputs != self.outputs
@@ -1035,13 +1315,17 @@ pub(super) fn retain(
             index,
         };
         data.position(graph.nodes.len())?;
+        let reasons = match data.part() {
+            Part::Equation(v) => v.reasons(),
+            _ => vec![],
+        };
         native::retain(
             graph,
             ConstructionValue {
                 witness: Witness::Architecture(source.architecture.clone()),
                 data: D::PolynomialLaw(data),
             },
-            vec![],
+            reasons,
             vec![],
             None,
         )?;
@@ -1071,7 +1355,11 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         || n.arguments != data.arguments()
         || n.support != support
         || n.scope != scope
-        || !n.reasons.is_empty()
+        || n.reasons
+            != match part {
+                Part::Equation(v) => v.reasons(),
+                _ => vec![],
+            }
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {

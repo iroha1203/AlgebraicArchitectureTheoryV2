@@ -59,6 +59,7 @@ enum Transform {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
+    Equation(super::equation_presentation_node::Part),
     Scalar(Scalar),
     Source {
         column: usize,
@@ -111,6 +112,7 @@ enum Part {
 impl Part {
     fn ty(&self) -> NodeType {
         match self {
+            Self::Equation(v) => v.ty(),
             Self::Scalar(v) => NodeType::Value(v.ty()),
             Self::Source { ty, .. } | Self::Transform { ty, .. } => {
                 NodeType::Expression(ty.clone())
@@ -125,6 +127,7 @@ impl Part {
     }
     fn arguments(&self) -> Vec<NodeRef> {
         match self {
+            Self::Equation(v) => v.arguments(),
             Self::Scalar(_) | Self::IntegerRing => vec![],
             Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
             Self::Transform {
@@ -167,6 +170,7 @@ impl Part {
     }
     fn construction(&self) -> &'static str {
         match self {
+            Self::Equation(v) => v.construction(),
             Self::Scalar(_) => "binding",
             Self::Source { .. } | Self::Transform { .. } => "expression",
             Self::LawInstance { .. } => "law_instance",
@@ -179,6 +183,7 @@ impl Part {
     }
     fn wire(&self) -> Json {
         match self {
+            Self::Equation(v) => v.wire(),
             Self::Scalar(v) => v.wire(),
             Self::Source {
                 location,
@@ -297,6 +302,8 @@ impl Part {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
     pub originals: Vec<Original>,
+    pub context: Option<NodeRef>,
+    pub presentation: Option<NodeRef>,
     pub operands: Vec<(NodeRef, NodeRef)>,
     pub points: Vec<usize>,
     pub domain: NodeRef,
@@ -426,7 +433,10 @@ fn value_key(value: &Scalar, c: &mut Control) -> Result<String, ValidationFailur
 }
 // JSONのarray順ではなく、元型のSet/Mapの意味に沿って再帰的に並べる。
 // 元のDの値・所属条件は保ち、公開する値の表示順だけを変える。
-pub(super) fn canonical_value(value: &Scalar, c: &mut Control) -> Result<Scalar, ValidationFailure> {
+pub(super) fn canonical_value(
+    value: &Scalar,
+    c: &mut Control,
+) -> Result<Scalar, ValidationFailure> {
     fn visit(value: &mut Scalar, c: &mut Control) -> Result<(), ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
@@ -740,6 +750,8 @@ fn plan(
     Ok((
         parts,
         Diagram {
+            context: None,
+            presentation: None,
             originals,
             operands,
             points,
@@ -755,6 +767,138 @@ fn plan(
             required,
         },
     ))
+}
+fn append_presentation(
+    inputs: &CheckedInputs,
+    a: &Arc<ArchitectureWitness>,
+    reference: NodeRef,
+    f: &AutomaticLawValuations,
+    parts: &mut Vec<Part>,
+    out: &mut Diagram,
+    base: usize,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    use super::equation_presentation_node::{self as common, Coordinate, Part as E};
+    let mut observed = vec![];
+    let mut positions = f.positions().to_vec();
+    for i in 0..out.nu.len() {
+        tick(c)?;
+        let column = *out.columns.get(i).ok_or("有限表示の元columnがない")?;
+        let (_, component) = out.components.get(i).ok_or("有限表示の元成分がない")?;
+        let (value, support) = f.observed_indicator(inputs, column, component.as_deref(), c)?;
+        observed.push(value);
+        for mut fact in support {
+            tick(c)?;
+            if fact.field.is_some() {
+                fact.atom = None;
+                positions.push(fact);
+            }
+        }
+    }
+    positions.sort();
+    positions.dedup();
+    let dependencies = common::dependencies(inputs, &positions, c, |v| {
+        push(parts, base, Part::Scalar(v))
+    })?;
+    let instances = out.originals.iter().map(|o| o.row).collect::<Vec<_>>();
+    let context = push(
+        parts,
+        base,
+        Part::Equation(E::Context {
+            base: reference,
+            carrier: common::carrier(a, c)?,
+            dependencies: dependencies.slots.clone(),
+            laws: instances.clone(),
+            quantifiers: vec![],
+        }),
+    )?;
+    let mut coordinates = vec![];
+    for i in 0..out.nu.len() {
+        tick(c)?;
+        let column = *out.columns.get(i).ok_or("有限表示の元columnがない")?;
+        let (instance, component) = out.components.get(i).ok_or("有限表示の元成分がない")?;
+        let row = out
+            .originals
+            .iter()
+            .find(|o| o.column == column && o.instance == *instance)
+            .ok_or("有限表示の元Law出現がない")?;
+        let (lhs, rhs) = *out.operands.get(i).ok_or("有限表示の左右式がない")?;
+        let epsilon = match observed.get(i).ok_or("有限表示の元operand評価がない")? {
+            None => None,
+            Some(value) => {
+                let reference = out
+                    .epsilon
+                    .get(i)
+                    .copied()
+                    .flatten()
+                    .ok_or("有限表示の実評価に対応するεがない")?;
+                let Part::Function { values, .. } = parts
+                    .get(reference.0.checked_sub(base).ok_or("有限εの位置が範囲外")?)
+                    .ok_or("有限εの元関数がない")?
+                else {
+                    return Err("有限εが元関数でない".into());
+                };
+                for scalar in values {
+                    tick(c)?;
+                    if !matches!(parts.get(scalar.0.checked_sub(base).ok_or("有限ε値の位置が範囲外")?), Some(Part::Scalar(Scalar::Z(v))) if v == value)
+                    {
+                        return Err("有限εの恒値と元operandの実評価が違う".into());
+                    }
+                }
+                Some(reference)
+            }
+        };
+        coordinates.push(Coordinate {
+            instance: row.row,
+            component: match component {
+                Some(path) => path.clone(),
+                None => vec![],
+            },
+            lhs,
+            rhs,
+            nu: out.nu[i],
+            epsilon,
+        });
+    }
+    tick(c)?;
+    let evaluation = if coordinates.iter().all(|q| q.epsilon.is_some()) {
+        out.evaluation
+    } else {
+        None
+    };
+    let incomplete = evaluation.is_none();
+    let presentation = push(
+        parts,
+        base,
+        Part::Equation(E::Presentation {
+            instances,
+            domain: out.domain,
+            ring: out.ring,
+            coordinates,
+            witnesses: out.witnesses.clone(),
+            required: out.required,
+            evaluation,
+            context,
+            quantifiers: vec![],
+            omissions: if incomplete {
+                dependencies.missing_reasons(
+                    inputs,
+                    &positions,
+                    &out.originals
+                        .iter()
+                        .flat_map(|o| std::iter::once(o.body).chain(o.guard))
+                        .collect::<Vec<_>>(),
+                    Witness::Architecture(a.clone()).request(),
+                    c,
+                )?
+            } else {
+                vec![]
+            },
+        }),
+    )?;
+    out.context = Some(context);
+    out.presentation = Some(presentation);
+    tick(c)
 }
 fn metadata(
     inputs: &CheckedInputs,
@@ -794,6 +938,7 @@ fn metadata(
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     scope.assignments = true;
+    super::equation_presentation_node::global_metadata(a, &mut support, &mut scope)?;
     tick(c)?;
     Ok((support, scope))
 }
@@ -827,7 +972,17 @@ impl Source {
         if !f.is_complete() || !f.domain_complete() {
             return Ok(None);
         }
-        let (parts, outputs) = plan(f, &inputs, object, base, c)?;
+        let (mut parts, mut outputs) = plan(f, &inputs, object, base, c)?;
+        append_presentation(
+            &inputs,
+            &architecture,
+            reference,
+            f,
+            &mut parts,
+            &mut outputs,
+            base,
+            c,
+        )?;
         let (support, scope) = metadata(&inputs, &architecture, f, c)?;
         tick(c)?;
         Ok(Some(Self {
@@ -917,13 +1072,17 @@ pub(super) fn retain(
             index,
         };
         data.position(graph.nodes.len())?;
+        let reasons = match data.part() {
+            Part::Equation(v) => v.reasons(),
+            _ => vec![],
+        };
         native::retain(
             graph,
             ConstructionValue {
                 witness: Witness::Architecture(source.architecture.clone()),
                 data: D::FiniteLaw(data),
             },
-            vec![],
+            reasons,
             vec![],
             None,
         )?;
@@ -950,7 +1109,11 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         || n.arguments != data.arguments()
         || n.support != data.source.support
         || n.scope != data.source.scope
-        || !n.reasons.is_empty()
+        || n.reasons
+            != match part {
+                Part::Equation(v) => v.reasons(),
+                _ => vec![],
+            }
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {

@@ -334,6 +334,47 @@ fn scalar(
     }
     Ok(None)
 }
+/// 同じ元Evaluatorの補完前のoperandからだけ実εを読む。caseの合意値で代用しない。
+pub(in crate::observed) fn observed_epsilon(
+    inputs: &CheckedInputs,
+    source: &super::object_law_compatibility::LawReadingEvaluation,
+    shape: &LawNumericShape,
+    row: Option<usize>,
+    component: &[usize],
+    c: &mut Control,
+) -> Result<Option<NumericTransportValue>, ConstructionFailure> {
+    let refs = source
+        .family()
+        .observed_row_evaluations(source.evaluation(), row, c)?;
+    let [reference] = refs.as_slice() else {
+        return if refs.is_empty() {
+            Ok(None)
+        } else {
+            Err(bad("元観測のLaw行が一意でない"))
+        };
+    };
+    let explicit = match shape {
+        LawNumericShape::Equality { explicit_guard, .. }
+        | LawNumericShape::Unsupported { explicit_guard, .. } => *explicit_guard,
+    };
+    let reading = native_case_reading(source.evaluation(), *reference, explicit, c)?;
+    let mut value = LawResidualCase {
+        evaluation: Some(reference.0),
+        body_evaluation: None,
+        operand_evaluations: vec![],
+        operand_values: vec![],
+        epsilon_producer: None,
+        reading,
+        components: vec![],
+        complete: false,
+    };
+    read_case(&mut value, shape, inputs, graph(source.evaluation()), c)?;
+    Ok(value
+        .components
+        .iter()
+        .find(|v| v.path == component)
+        .and_then(|v| v.epsilon.clone()))
+}
 fn leaves(
     ty: &Type,
     path: &mut Vec<usize>,
