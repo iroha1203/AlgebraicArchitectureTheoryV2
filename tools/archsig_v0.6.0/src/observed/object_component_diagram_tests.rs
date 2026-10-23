@@ -163,7 +163,11 @@ fn base_and_owned_keep_equal_configurations_as_distinct_objects_and_applicable_l
     for (index, node) in g.nodes.iter().enumerate().skip(start) {
         assert!(node.arguments.iter().all(|r| r.0 < index));
         assert_eq!(node.support, g.get(a).unwrap().support);
-        assert_eq!(node.scope, g.get(a).unwrap().scope);
+        let mut expected_scope = g.get(a).unwrap().scope.clone();
+        if let Part::Reading { quantifiers, .. } = data(&g, NodeRef(index)).part() {
+            expected_scope.quantifiers.extend_from_slice(quantifiers);
+        }
+        assert_eq!(node.scope, expected_scope);
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
@@ -424,7 +428,16 @@ fn a_root_without_owned_entities_keeps_exactly_its_base_component() {
         .unwrap();
     assert_eq!(d.objects, [d.base]);
     assert_eq!(d.architectures, [a]);
-    assert_eq!(data(&g, d.base).source.parts.len(), 1);
+    assert_eq!(
+        data(&g, d.base)
+            .source
+            .parts
+            .iter()
+            .filter(|p| matches!(p, Part::Component { .. }))
+            .count(),
+        1
+    );
+    assert_eq!(d.readings.len(), 1);
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
 #[test]
@@ -723,5 +736,296 @@ fn an_equal_configuration_from_another_reading_keeps_a_distinct_origin_and_cache
         sa.recheck(&g, e.prepared.inputs(), &sb.architecture, &mut quiet())
             .is_err()
     );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn all_objects_keep_original_law_and_view_reading_expressions_bindings_types_and_full_parameters() {
+    let e = example(
+        "view quantity(c:Part,n:Z):Fp(2)=c.quantity;law required bounded(c:Part,b:Bool):c.quantity=c.quantity;law optional fixed():true;",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.objects.len(), 2);
+    assert_eq!(d.readings.len(), 4);
+    let mut pairs = std::collections::BTreeSet::new();
+    for r in &d.readings {
+        assert!(pairs.insert((r.object, r.instance)));
+        let Part::Reading {
+            object,
+            declaration,
+            parameters,
+            bindings,
+            returns,
+            quantifiers,
+        } = data(&g, r.expression).part()
+        else {
+            panic!("reading")
+        };
+        assert_eq!(*object, d.objects[r.object]);
+        let (ty, params) = match declaration.as_str() {
+            "Chosen.quantity" => (
+                Type::Option(Box::new(Type::Fp("2".into()))),
+                vec![("n".into(), Type::Z)],
+            ),
+            "Chosen.bounded" => (Type::Bool, vec![("b".into(), Type::Bool)]),
+            _ => panic!("unexpected declaration"),
+        };
+        assert_eq!(returns, &ty);
+        assert_eq!(parameters, &params);
+        assert_eq!(g.nodes[r.expression.0].ty, NodeType::Expression(ty));
+        assert_eq!(quantifiers.len(), params.len());
+        assert_eq!(bindings.len(), 1);
+        assert_eq!(bindings[0].name, "c");
+        assert_eq!(bindings[0].ty, Type::Ref("Finite.Part".into()));
+        assert_eq!(
+            g.scalar(bindings[0].value).unwrap(),
+            &Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "p".into(),
+                entity: "Finite.Part".into()
+            }
+        );
+        let Json::Obj(ref wire) = data(&g, r.expression).wire() else {
+            panic!("wire")
+        };
+        assert_eq!(wire["kind"], Json::str("object_reading"));
+        assert_eq!(wire["object"], object.wire());
+        assert_eq!(wire["declaration"], Json::str(declaration));
+        assert_eq!(wire.len(), 6);
+        assert!(g.nodes[r.expression.0].judgment.is_none());
+        assert!(g.nodes[r.expression.0].reasons.is_empty());
+    }
+    let source = &data(&g, d.base).source;
+    let view = source
+        .architecture
+        .readings()
+        .instances()
+        .iter()
+        .position(|i| i.declaration().name == "Chosen.quantity")
+        .unwrap();
+    assert!(matches!(
+        source.architecture.readings().instances()[view].applications()[0],
+        InstanceApplication::Applicable { .. }
+    ));
+    assert!(matches!(
+        source.architecture.readings().instances()[view].applications()[1],
+        InstanceApplication::Applicable { .. }
+    ));
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn missing_and_outside_readings_remain_expressions_without_fabricating_none_true_or_evaluation() {
+    let map = MAP.replace(
+        r#",{"id":"px","subject":"p","field":"Finite.Part.quantity","value":"0","origin":"model"}"#,
+        "",
+    );
+    assert_ne!(map, MAP);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            DEFINITION,
+            &map,
+            "view quantity(c:Part):Fp(2)=c.quantity;view marker(a:Root):Bool=true;law required root(a:Root):true;",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let before = g.nodes.len();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.readings.len(), 6);
+    let source = &data(&g, d.base).source;
+    let index = source
+        .architecture
+        .readings()
+        .instances()
+        .iter()
+        .position(|i| i.declaration().name == "Chosen.root")
+        .unwrap();
+    assert!(matches!(
+        source.architecture.readings().instances()[index].applications()[1],
+        InstanceApplication::NotApplicable
+    ));
+    assert!(
+        d.readings
+            .iter()
+            .any(|r| r.object == 1 && r.instance == index)
+    );
+    let marker = source
+        .architecture
+        .readings()
+        .instances()
+        .iter()
+        .position(|i| i.declaration().name == "Chosen.marker")
+        .unwrap();
+    assert!(matches!(
+        source.architecture.readings().instances()[marker].applications()[1],
+        InstanceApplication::NotApplicable
+    ));
+    let outside = d
+        .readings
+        .iter()
+        .find(|r| r.object == 1 && r.instance == marker)
+        .unwrap();
+    assert!(matches!(
+        g.nodes[outside.expression.0].ty,
+        NodeType::Expression(Type::Option(_))
+    ));
+    for n in &g.nodes[before..] {
+        let Some(Payload::Construction(v)) = &n.payload else {
+            panic!("native")
+        };
+        let D::ObjectComponents(data) = &v.data else {
+            panic!("objects")
+        };
+        assert!(!matches!(
+            data.part(),
+            Part::Subject(Scalar::Bool(_) | Scalar::Option { .. } | Scalar::Fp { .. })
+        ));
+    }
+    for r in &d.readings {
+        assert!(matches!(
+            data(&g, r.expression).part(),
+            Part::Reading { .. }
+        ));
+        assert!(
+            !g.nodes[r.expression.0]
+                .support
+                .iter()
+                .any(|f| f.atom.as_deref() == Some("px"))
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn symbolic_reading_quantifiers_and_all_source_fields_and_output_links_are_rechecked() {
+    let e = example("law required symbolic(c:Part,k:Z):c.quantity=0;");
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.readings.len(), 2);
+    let expression = d.readings[0].expression;
+    let source = data(&g, expression).source.clone();
+    let at = data(&g, expression).index;
+    let Part::Reading { quantifiers, .. } = data(&g, expression).part() else {
+        panic!("reading")
+    };
+    assert_eq!(quantifiers.len(), 1);
+    let q = &quantifiers[0];
+    assert_eq!(q.kind, crate::law::ast::QuantKind::Forall);
+    assert_eq!((&q.name, &q.ty), (&"k".to_string(), &Type::Z));
+    let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
+    assert_eq!(&raw[q.occurrence.0..q.occurrence.1], "k");
+    assert!(q.domain.is_none() && q.context.is_none());
+    for r in &d.readings {
+        assert_eq!(
+            g.nodes[r.expression.0].scope.quantifiers,
+            quantifiers.clone()
+        );
+    }
+    for mode in 0..11 {
+        let mut changed = (*source).clone();
+        match mode {
+            0 => {
+                if let Part::Reading { object, .. } = &mut changed.parts[at] {
+                    *object = d.objects[1];
+                }
+            }
+            1 => {
+                if let Part::Reading { declaration, .. } = &mut changed.parts[at] {
+                    *declaration = "Chosen.other".into();
+                }
+            }
+            2 => {
+                if let Part::Reading { parameters, .. } = &mut changed.parts[at] {
+                    parameters.clear();
+                }
+            }
+            3 => {
+                if let Part::Reading { bindings, .. } = &mut changed.parts[at] {
+                    bindings[0].value = a;
+                }
+            }
+            4 => {
+                if let Part::Reading { returns, .. } = &mut changed.parts[at] {
+                    *returns = Type::Z;
+                }
+            }
+            5 => {
+                if let Part::Reading { quantifiers, .. } = &mut changed.parts[at] {
+                    quantifiers.clear();
+                }
+            }
+            6 => changed.outputs.readings.swap(0, 1),
+            7 => changed.outputs.readings[0].object = 1,
+            8 => changed.outputs.readings[0].instance = usize::MAX,
+            9 => changed.outputs.readings[0].expression = a,
+            _ => changed.outputs.readings.clear(),
+        }
+        assert!(
+            changed
+                .recheck(&g, e.prepared.inputs(), &source.architecture, &mut quiet())
+                .is_err(),
+            "mode {mode}"
+        );
+    }
+    let mut nodes = g.nodes.clone();
+    nodes[expression.0].scope.quantifiers.clear();
+    assert!(replay(&e, &nodes, &g.contexts).is_err());
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn reading_parameter_domains_preserve_external_snapshot_subject_support_and_scope() {
+    let map=format!(r#"{},{{"id":"w","origin":"external","subjects":[{{"id":"z","type":"Finite.Root","origin":"external"}}],"atoms":[]}}]}}"#,MAP.strip_suffix("]}").unwrap()).replace(r#""origins":["#,r#""origins":[{"id":"external","mode":"proposed","method":"独立の外部参照。","locations":[],"note":"型付きparameter域。"},"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            DEFINITION,
+            &map,
+            "view roots(c:Part,x:(Root,Bool)):Bool=true;",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.readings.len(), 2);
+    for r in &d.readings {
+        let n = &g.nodes[r.expression.0];
+        assert!(
+            n.support
+                .iter()
+                .any(|f| f.snapshot == "w" && f.subject == "z" && f.field.is_none())
+        );
+        assert!(n.scope.snapshots.contains("w"));
+        assert!(n.scope.modes.contains("proposed"));
+        assert!(matches!(n.ty, NodeType::Expression(Type::Option(_))));
+    }
+    let source = data(&g, d.base).source.clone();
+    let mut changed = (*source).clone();
+    changed.support.retain(|f| f.snapshot != "w");
+    assert!(
+        changed
+            .recheck(&g, e.prepared.inputs(), &source.architecture, &mut quiet())
+            .is_err()
+    );
+    let mut nodes = g.nodes.clone();
+    nodes[d.readings[0].expression.0]
+        .scope
+        .snapshots
+        .remove("w");
+    assert!(replay(&e, &nodes, &g.contexts).is_err());
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
