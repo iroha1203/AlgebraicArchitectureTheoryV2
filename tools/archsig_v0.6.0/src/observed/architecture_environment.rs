@@ -73,38 +73,51 @@ impl<'i> Environment<'i> {
                 Ok(AnswerBinding::Projection(_)) => return Ok(None),
                 Err(failure) => return Err(failure),
             };
-            if reference.0 >= self.cutoff.get() {
-                return Err("環境が未出のArchitectureを参照した".into());
-            }
-            let node = graph.get(reference)?;
-            let Some(Payload::Construction(value)) = &node.payload else {
-                return Ok(None);
-            };
-            if value.is_blocked() {
-                return Ok(None);
-            }
-            if !matches!(value.data, ConstructionData::Architecture { .. })
-                || node.ty != NodeType::Construction(ConstructionType::Architecture)
-            {
-                return Ok(None);
-            }
-            self.validate_at(graph, node, reference.0)?;
-            let Witness::Architecture(witness) = &value.witness else {
-                return Err("環境Architectureの元構成がない".into());
-            };
-            let domain =
-                ObjectDomain::from_readings(self.inputs, witness.readings(), 0, &self.control)?;
-            self.tick()?;
-            Ok(Some(ArchitectureContext {
-                reference,
-                domain: Arc::new(domain),
-                scope: node.scope.clone(),
-            }))
+            self.select_architecture(graph, reference)
         })()?;
         Ok(ArchitectureGuard {
             environment: self,
             previous: self.architecture.replace(selected),
         })
+    }
+    pub(super) fn select_architecture(
+        &self,
+        graph: &Graph,
+        reference: NodeRef,
+    ) -> Result<Option<ArchitectureContext>, ValidationFailure> {
+        if reference.0 >= self.cutoff.get() {
+            return Err("環境が未出のArchitectureを参照した".into());
+        }
+        let node = graph.get(reference)?;
+        let Some(Payload::Construction(value)) = &node.payload else {
+            return Ok(None);
+        };
+        if value.is_blocked() || node.ty != NodeType::Construction(ConstructionType::Architecture) {
+            return Ok(None);
+        }
+        if !matches!(
+            value.data,
+            ConstructionData::Architecture { .. } | ConstructionData::ObjectComponents(_)
+        ) {
+            return Ok(None);
+        }
+        self.validate_at(graph, node, reference.0)?;
+        let Witness::Architecture(witness) = &value.witness else {
+            return Err("環境Architectureの元構成がない".into());
+        };
+        let object = match &value.data {
+            ConstructionData::Architecture { .. } => 0,
+            ConstructionData::ObjectComponents(data) => data.architecture_object(reference)?,
+            _ => return Err("環境Architectureの構成が違う".into()),
+        };
+        let domain =
+            ObjectDomain::from_readings(self.inputs, witness.readings(), object, &self.control)?;
+        self.tick()?;
+        Ok(Some(ArchitectureContext {
+            reference,
+            domain: Arc::new(domain),
+            scope: node.scope.clone(),
+        }))
     }
     pub(super) fn validate_evaluation_environment(
         &self,
