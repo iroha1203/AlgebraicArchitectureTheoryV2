@@ -1,0 +1,7 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading OperationReading {
+  use vocabulary OperationModel version "1" digest "sha256:fc02a5a046b59dcaff7db445220e4e09f021aa65e6aadec1d2e4fb641bce9c53";
+  view normalExit(branch: Branch): Bool = branch.returnsNormally;
+  law required guardedUpdate(branch: Branch) when not branch.conditionHolds: not branch.updateReached;
+  law optional rejectedReturnsNormally(branch: Branch): not branch.conditionHolds implies branch.returnsNormally;
+}

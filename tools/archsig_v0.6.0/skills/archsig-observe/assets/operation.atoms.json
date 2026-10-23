@@ -1,0 +1,38 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "OperationModel",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "OperationModel.Branch",
+          "meaning": "入力条件で分けた、操作の静的な制御経路。実行された呼出しではない。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "conditionHolds",
+              "type": "Bool",
+              "meaning": "この条件付き経路で入力条件が成立するか。"
+            },
+            {
+              "name": "updateReached",
+              "type": "Bool",
+              "meaning": "この経路の制御が更新文へ到達するか。更新の実施記録ではない。"
+            },
+            {
+              "name": "returnsNormally",
+              "type": "Bool",
+              "meaning": "この経路が正常returnで終わるか。例では出口をreturnとthrowに限定する。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

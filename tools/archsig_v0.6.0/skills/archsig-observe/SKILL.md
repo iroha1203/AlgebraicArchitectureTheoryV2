@@ -74,8 +74,9 @@ Law は要求・読取り・許可する変更を記述する。由来を次の�
 - 規約: 明示された設計判断が要求する依存・責務・操作の関係。
 - ふるまい: 実装や仕様に記述された作用・条件・状態変化・順序・対応。
 
-観測した反復パターンはまず事実や問いとして示す。ふるまい由来の関係を required にする際も、
-要求根拠との対応、または利用者の採用判断を得る。未採用の仮説は候補として説明する。
+現在の操作の関係を view や optional な式で読み、将来も保つ義務への採用は別に判断する。
+required にする関係は要求根拠と対応づけるか、利用者の採用判断を得る。要求が未採用でも、
+原始値から具体的な関係を評価することはできる。反復パターンを無条件の義務へ昇格させない。
 Law の妥当性と ArchMap の忠実性を別々に照合し、Law に合うように観測を変更しない。
 Law は根拠が求める関係を、操作・文脈の原始 field から読む式にする。
 要求文、適用条件、式が読む値、式の結果を対応づける。宣言数や非空の説明、由来ラベルで代用しない。
@@ -84,8 +85,11 @@ Law は根拠が求める関係を、操作・文脈の原始 field から読む
 
 ## 三入力の書き方
 
-最小の動く形は [Atom 定義](assets/counter.atoms.json)、[Law](assets/counter.law)、
-[ArchMap](assets/counter.archmap.json)。これは件数2の仕様モデルであり、実 OSS の観測結果ではない。
+最小の動く形は [Atom 定義](assets/operation.atoms.json)、[Law](assets/operation.law)、
+[ArchMap](assets/operation.archmap.json)。架空の仕様「入力条件が不成立なら更新に到達しない」を、
+二つの静的経路で読む。提示モデルは成立側で更新して return、不成立側で更新せず throw する。
+要求は満たす一方、追加仮説「拒否側も正常 return する」は反証される。実 OSS の観測や実行の実測ではない。
+条件、作用、出口を別の原始値にし、要求への適合判定は Law に残す。例の二分岐で足りなければ必要な区別を追加する。
 例の名前・meaning・field・origin は対象に合わせて設計し、binding の digest も更新する。
 
 共通の semantics は `archsig/0.6.0`。JSON は UTF-8、BOM・重複 key・未知欄・null を使わない。
@@ -152,7 +156,7 @@ snapshot と所属 subject/atom の mode を一致させ、候補や仕様を別
 同一 snapshot の subject/field は一度だけ記録する。宣言済み subject の未記録 field は未知、
 存在しない subject を勝手に補完しない。cover、行列、判定、保存証拠は原始 Atom に入力しない。
 
-根拠を読み返すときは、選んだ Atom の既存参照を展開できる。
+根拠を読み返すときは、保存した Atom の既存参照を展開して内容 digest と位置を照合する。
 
 ```sh
 python3 scripts/evidence.py observation.json --atom snapshot/atom \
@@ -162,7 +166,8 @@ python3 scripts/evidence.py observation.json --atom snapshot/atom \
 `--atom` と `--source` は繰り返せる。source の digest 単位が一つのファイルである場合に使い、
 source ID と実ファイルを対応させる。値・共通 origin・実 bytes の抜粋を一緒に読み、
 Law の読取りと照合する。補助は既存参照、digest、UTF-8 位置を照合するだけで、必要な依存先を
-推測したり意味支持を判定したりしない。根拠が足りなければ該当する文脈へ読解を戻す。
+推測したり意味支持を判定したりしない。各 source へ到達する Atom を選び、未到達の登録 source は
+別途実内容の hash と照合する。根拠が足りなければ該当する文脈へ読解を戻す。
 
 Law の最小文法:
 
@@ -205,14 +210,17 @@ Law と ArchMap に binding を設定し、三入力を再検査する。
 利用できる対象版の `archsig version` を確かめ、入力を検査する。
 
 ```sh
-archsig check --atom-definition atoms.json --law reading.law --archmap observation.json --out check-new
-archsig run --atom-definition atoms.json --law reading.law --archmap observation.json \
-  --ask 'c=check(R.positive)' --ask 'n=needed($c)' --out run-new
+archsig check --atom-definition assets/operation.atoms.json --law assets/operation.law --archmap assets/operation.archmap.json --out check-new
+archsig run --atom-definition assets/operation.atoms.json --law assets/operation.law --archmap assets/operation.archmap.json \
+  --ask 'v=evaluate(OperationReading.normalExit,bind.branch=@v/rejected)' \
+  --ask 'c=check(OperationReading.guardedUpdate,bind.branch=@v/rejected)' --ask 'n=needed($c)' --out run-new
 ```
 
-出力先は新しいディレクトリ。宣言名と問いは実際の入力に合わせる。
-`build(R,on=@snapshot/root)`、`evaluate(R.value,x=@snapshot/entity)`、
-`map(N.C,on=@snapshot/candidate,reading=R)` などを問いに応じて選ぶ。
+出力先は新しいディレクトリ。同梱例では `branch` が宣言の parameter、`v` が snapshot、
+`rejected` が subject の ID。実入力ではこれらをその宣言と登録 ID に合わせる。
+`@snapshot/subject` の二つの ID と `bind.parameter` を使い、`on` は Architecture の環境指定として分ける。
+この例は出口の値 false と要求成立を別の出力で返す。`check(OperationReading.rejectedReturnsNormally)` は追加仮説を反証する。
+`build(Reading,on=@snapshot/root)` や `map(N.C,on=@snapshot/candidate,reading=Reading)` は問いに応じて選ぶ。
 `needed` の不足 slot は元の subject/field/source に戻って読み、その他の未決理由と分ける。
 CLI が未提供・非対応なら三入力とソース照合を進め、接続は未検証と報告する。
 例示結果を実計算の証拠にしない。
