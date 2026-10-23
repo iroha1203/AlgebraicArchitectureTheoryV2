@@ -18,6 +18,7 @@ mod law_inapplicable;
 mod law_instantiation;
 mod law_family;
 mod law_table;
+mod polynomial_observable;
 mod object_component_diagram;
 mod internal_arrow_diagram;
 mod needed;
