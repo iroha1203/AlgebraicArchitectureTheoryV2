@@ -508,6 +508,74 @@ fn absent_or_wrong_components_and_foreign_inputs_never_produce_a_fake_table() {
     assert_eq!(g.nodes, old.nodes);
 }
 #[test]
+fn finished_patterns_recheck_after_a_later_request_without_allowing_foreign_creation() {
+    let inputs = inputs(MAP);
+    let requests = resolve_native_for_test(
+        inputs.law(),
+        inputs.archmap(),
+        &[
+            "b=build(ProfileRead,on=@v/A)",
+            "later=build(ProfileRead,on=@v/B)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    let p = PreparedObserved {
+        inputs,
+        requests,
+        object: None,
+    };
+    let (mut g, a, o) = start(&p);
+    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let d = retain(&env, &mut g, p.shared_inputs(), a, o, &mut quiet())
+        .unwrap()
+        .unwrap();
+    let original_contexts = g.contexts.clone();
+    assert_eq!(d.rows.len(), 2);
+    g.active.request = 1;
+    let later = crate::observed::architecture_result::build(
+        p.shared_inputs(),
+        &env,
+        &mut g,
+        &p.requests().requests()[1],
+        &mut quiet(),
+    )
+    .unwrap();
+    assert!(later.complete);
+    assert_eq!(g.context_at(later.reference.0).request, 1);
+    let active = g.active;
+    for row in &d.rows {
+        assert_eq!(g.context_at(row.pattern.0).request, 0);
+        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let checked = fresh.recheck_node(&g, g.get(row.pattern).unwrap(), row.pattern.0);
+        assert!(checked.is_ok(), "{checked:?}");
+        assert_eq!(g.active, active);
+    }
+    assert_eq!(&g.contexts[..original_contexts.len()], &original_contexts);
+    let before = copy(&g, &quiet());
+    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    assert!(retain(&fresh, &mut g, p.shared_inputs(), a, o, &mut quiet()).is_err());
+    assert_eq!(g.nodes, before.nodes);
+    assert_eq!(g.contexts, before.contexts);
+    assert_eq!(g.active, active);
+    for mode in 0..3 {
+        let mut changed = copy(&g, &quiet());
+        match mode {
+            0 => changed.requests[0].id = "forged".into(),
+            1 => changed.contexts[a.0].request = 1,
+            2 => changed.contexts[d.rows[0].pattern.0].request = 1,
+            _ => unreachable!(),
+        }
+        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let r = d.rows[0].pattern;
+        assert!(
+            fresh
+                .recheck_node(&changed, changed.get(r).unwrap(), r.0)
+                .is_err()
+        );
+    }
+}
+#[test]
 fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix() {
     use std::{cell::Cell, rc::Rc};
     let p = prepared(inputs(MAP), "ProfileRead");

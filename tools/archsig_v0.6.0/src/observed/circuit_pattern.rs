@@ -164,7 +164,7 @@ fn original(
     }
     let node = g.get(reference)?;
     env.recheck_node(g, node, reference.0)?;
-    if node.ty != NodeType::Construction(T::Architecture) || g.active != g.context_at(reference.0) {
+    if node.ty != NodeType::Construction(T::Architecture) {
         return Err("query patternの元Architecture/Requestが違う".into());
     }
     let Some(Payload::Construction(value)) = &node.payload else {
@@ -366,6 +366,10 @@ pub(super) fn retain(
     components: Option<NodeRef>,
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
+    tick(c)?;
+    if g.active != g.context_at(reference.0) {
+        return Err("query patternの生成が元ArchitectureのRequestでない".into());
+    }
     let Some((a, components, objects, universe, support, scope)) =
         original(env, g, &inputs, reference, components, c)?
     else {
