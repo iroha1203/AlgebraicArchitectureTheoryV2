@@ -882,34 +882,6 @@ impl Source {
         tick(c)
     }
 }
-fn origin(
-    graph: &Graph,
-    reference: NodeRef,
-    object: usize,
-) -> Result<&Arc<ArchitectureWitness>, ValidationFailure> {
-    let Some(Payload::Construction(v)) = &graph.get(reference)?.payload else {
-        return Err("有限Lawの元Architectureがない".into());
-    };
-    match (&v.witness, &v.data) {
-        (Witness::Architecture(a), D::Architecture { .. }) => {
-            let context = graph.context_at(reference.0);
-            if context.frame.is_some()
-                || context.iteration.is_some()
-                || context.instance.is_some()
-                || context.case.is_some()
-                || graph.requests.get(context.request)
-                    != Some(Witness::Architecture(a.clone()).request())
-            {
-                return Err("有限Law導出が元Architectureのroot Requestでない".into());
-            }
-            Ok(a)
-        }
-        (_, D::ObjectComponents(_)) => {
-            super::object_component_diagram::architecture_origin(graph, reference, object)
-        }
-        _ => Err("有限Lawの元参照が完成Architectureでない".into()),
-    }
-}
 pub(super) fn retain(
     graph: &mut Graph,
     inputs: Arc<CheckedInputs>,
@@ -921,7 +893,7 @@ pub(super) fn retain(
     if graph.active != graph.context_at(architecture.0) {
         return Err("有限Law導出が消費先ArchitectureのRequestでない".into());
     }
-    let a = origin(graph, architecture, object)?.clone();
+    let a = native::architecture_origin(graph, architecture, object)?.clone();
     let Some(Payload::Construction(consumer)) = &graph.get(architecture)?.payload else {
         return Err("有限Lawの消費先Architectureがない".into());
     };
@@ -969,7 +941,7 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     let Witness::Architecture(a) = &v.witness else {
         return Err("有限Lawの元Architectureがない".into());
     };
-    let current = origin(graph, data.source.reference, data.source.object)?;
+    let current = native::architecture_origin(graph, data.source.reference, data.source.object)?;
     if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
         return Err("有限Lawの元Architecture参照が違う".into());
     }
@@ -1014,7 +986,8 @@ impl Environment<'_> {
         let Witness::Architecture(a) = &value.witness else {
             return Err("有限Law導出の元Architectureがない".into());
         };
-        let current = origin(graph, data.source.reference, data.source.object)?;
+        let current =
+            native::architecture_origin(graph, data.source.reference, data.source.object)?;
         if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
             return Err("有限Lawの消費先Architectureが違う".into());
         }

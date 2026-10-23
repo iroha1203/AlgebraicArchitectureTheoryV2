@@ -1,0 +1,799 @@
+//! 元の共有K[X]と原式の評価を、型付きnative DAGへ保持する。
+use super::{
+    construction_result::{
+        self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
+        ConstructionValue, Witness,
+    },
+    control::{Checkpoint, Control},
+    environment::Environment,
+    equation_polynomial::EquationPolynomial,
+    input::CheckedInputs,
+    object_equation_presentation::{
+        EquationGuard, EquationPresentation, EquationPresentationFailure,
+        EquationPresentationStatus, object_equation_presentation,
+    },
+    result::*,
+};
+use crate::{canonical::Json, types::Type};
+use std::sync::Arc;
+
+fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+    c.checkpoint(Checkpoint::EquationPresentation)?;
+    Ok(())
+}
+fn refs(values: &[NodeRef]) -> Json {
+    Json::Arr(values.iter().map(|r| r.wire()).collect())
+}
+fn indices(values: &[usize]) -> Json {
+    Json::Arr(values.iter().map(|n| Json::Nat(*n as u64)).collect())
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct Variable {
+    field: Fact,
+    component: Vec<usize>,
+    ty: Type,
+}
+impl Variable {
+    fn wire(&self) -> Json {
+        Json::obj([
+            (
+                "position",
+                Json::obj([
+                    ("kind", Json::str("observation")),
+                    ("field", self.field.wire()),
+                    ("component", indices(&self.component)),
+                ]),
+            ),
+            ("type", self.ty.wire()),
+        ])
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum Part {
+    Scalar(Scalar),
+    Base(Type),
+    Ring {
+        base: NodeRef,
+        variables: Vec<Variable>,
+    },
+    Polynomial {
+        ring: NodeRef,
+        terms: Vec<(NodeRef, Vec<usize>)>,
+    },
+    Ideal {
+        ring: NodeRef,
+        generators: Vec<NodeRef>,
+        required: bool,
+    },
+    Evaluation {
+        source: NodeRef,
+        target: NodeRef,
+        images: Vec<NodeRef>,
+    },
+}
+impl Part {
+    fn ty(&self) -> NodeType {
+        NodeType::Construction(match self {
+            Self::Scalar(s) => return NodeType::Value(s.ty()),
+            Self::Base(_) | Self::Ring { .. } => T::Ring,
+            Self::Polynomial { .. } => T::Polynomial,
+            Self::Ideal { .. } => T::Ideal,
+            Self::Evaluation { .. } => T::RingMap,
+        })
+    }
+    fn arguments(&self) -> Vec<NodeRef> {
+        match self {
+            Self::Scalar(_) | Self::Base(_) => vec![],
+            Self::Ring { base, .. } => vec![*base],
+            Self::Polynomial { ring, terms } => std::iter::once(*ring)
+                .chain(terms.iter().map(|t| t.0))
+                .collect(),
+            Self::Ideal {
+                ring, generators, ..
+            } => std::iter::once(*ring)
+                .chain(generators.iter().copied())
+                .collect(),
+            Self::Evaluation {
+                source,
+                target,
+                images,
+            } => [*source, *target]
+                .into_iter()
+                .chain(images.iter().copied())
+                .collect(),
+        }
+    }
+    fn construction(&self) -> &'static str {
+        match self {
+            Self::Scalar(_) => "binding",
+            Self::Base(_) | Self::Ring { .. } => "ring",
+            Self::Polynomial { .. } => "polynomial",
+            Self::Ideal { .. } => "ideal",
+            Self::Evaluation { .. } => "ring_map",
+        }
+    }
+    fn wire(&self) -> Json {
+        match self {
+            Self::Scalar(v) => v.wire(),
+            Self::Base(ty) => Json::obj([("kind", Json::str("scalar")), ("scalar", ty.wire())]),
+            Self::Ring { base, variables } => Json::obj([
+                ("kind", Json::str("polynomial")),
+                ("base", base.wire()),
+                (
+                    "variables",
+                    Json::Arr(variables.iter().map(Variable::wire).collect()),
+                ),
+            ]),
+            Self::Polynomial { ring, terms } => Json::obj([
+                ("ring", ring.wire()),
+                (
+                    "terms",
+                    Json::Arr(
+                        terms
+                            .iter()
+                            .map(|(coefficient, powers)| {
+                                Json::obj([
+                                    ("coefficient", coefficient.wire()),
+                                    ("powers", indices(powers)),
+                                ])
+                            })
+                            .collect(),
+                    ),
+                ),
+            ]),
+            Self::Ideal {
+                ring,
+                generators,
+                required,
+            } => Json::obj([
+                ("ring", ring.wire()),
+                ("generators", refs(generators)),
+                (
+                    "kind",
+                    Json::str(if *required { "obstruction" } else { "witness" }),
+                ),
+            ]),
+            Self::Evaluation {
+                source,
+                target,
+                images,
+            } => Json::obj([
+                ("kind", Json::str("polynomial")),
+                ("source", source.wire()),
+                ("target", target.wire()),
+                ("images", refs(images)),
+            ]),
+        }
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Coordinate {
+    pub occurrence: usize,
+    pub position: crate::construction::readings::ObjectEvaluationPosition,
+    pub row: Option<usize>,
+    pub case: usize,
+    pub component: Vec<usize>,
+    pub ty: Type,
+    pub required: bool,
+    pub ring: Option<NodeRef>,
+    pub left: Option<NodeRef>,
+    pub right: Option<NodeRef>,
+    pub nu: Option<NodeRef>,
+    pub epsilon: Option<NodeRef>,
+    pub residual: Option<NodeRef>,
+    pub witness: Option<NodeRef>,
+    pub guard: EquationGuard,
+    pub status: EquationPresentationStatus,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Diagram {
+    pub rings: Vec<NodeRef>,
+    pub bases: Vec<NodeRef>,
+    pub required: Vec<NodeRef>,
+    pub evaluations: Vec<Option<NodeRef>>,
+    pub coordinates: Vec<Coordinate>,
+    pub status: EquationPresentationStatus,
+}
+#[derive(Clone)]
+pub(super) struct Source {
+    inputs: Arc<CheckedInputs>,
+    architecture: Arc<ArchitectureWitness>,
+    reference: NodeRef,
+    object: usize,
+    core: Arc<EquationPresentation>,
+    base: usize,
+    parts: Vec<Part>,
+    outputs: Diagram,
+    support: Vec<Fact>,
+    scope: Scope,
+}
+impl std::fmt::Debug for Source {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PolynomialLawSource")
+            .field("reference", &self.reference)
+            .field("object", &self.object)
+            .field("base", &self.base)
+            .finish()
+    }
+}
+#[derive(Clone, Debug)]
+pub(crate) struct Data {
+    source: Arc<Source>,
+    index: usize,
+}
+impl PartialEq for Data {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.source, &other.source) && self.index == other.index
+    }
+}
+impl Eq for Data {}
+impl Data {
+    fn part(&self) -> &Part {
+        &self.source.parts[self.index]
+    }
+    pub(super) fn scalar(&self) -> Option<&Scalar> {
+        match self.source.parts.get(self.index) {
+            Some(Part::Scalar(s)) => Some(s),
+            _ => None,
+        }
+    }
+    pub(super) fn ty(&self) -> NodeType {
+        self.part().ty()
+    }
+    pub(super) fn arguments(&self) -> Vec<NodeRef> {
+        std::iter::once(self.source.reference)
+            .chain(self.part().arguments())
+            .collect()
+    }
+    pub(super) fn construction(&self) -> &'static str {
+        self.part().construction()
+    }
+    pub(super) fn wire(&self) -> Json {
+        self.part().wire()
+    }
+    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        (self.source.support.clone(), self.source.scope.clone())
+    }
+    pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
+        if self.index >= self.source.parts.len()
+            || self.source.base.checked_add(self.index) != Some(at)
+        {
+            return Err("多項式の生成位置が元計画と違う".into());
+        }
+        Ok(())
+    }
+}
+fn push(
+    parts: &mut Vec<Part>,
+    base: usize,
+    part: Part,
+    c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    tick(c)?;
+    let index = base
+        .checked_add(parts.len())
+        .ok_or("多項式の生成番号が範囲外")?;
+    parts.push(part);
+    Ok(NodeRef(index))
+}
+fn polynomial(
+    parts: &mut Vec<Part>,
+    base: usize,
+    p: &EquationPolynomial,
+    ring: NodeRef,
+    ty: &Type,
+    variables: usize,
+    c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    tick(c)?;
+    if &p.ty != ty {
+        return Err("多項式の係数型が元環と違う".into());
+    }
+    let zero = super::numeric::zero(ty, c)?;
+    let mut terms = vec![];
+    for term in &p.terms {
+        tick(c)?;
+        if term.coefficient.ty() != *ty || term.coefficient.scalar() == &zero {
+            return Err("多項式に別型または零係数がある".into());
+        }
+        let mut powers = vec![0usize; variables];
+        for variable in &term.variables {
+            tick(c)?;
+            let power = powers.get_mut(*variable).ok_or("多項式の元記号が範囲外")?;
+            *power = power.checked_add(1).ok_or("多項式の冪が範囲外")?;
+        }
+        terms.push((powers, term.coefficient.scalar().clone()));
+    }
+    // 元計算核のsparse記号列順から、公開payloadのdense powers辞書順へ変換する。
+    terms.sort_by(|a, b| a.0.cmp(&b.0));
+    for pair in terms.windows(2) {
+        tick(c)?;
+        if pair[0].0 == pair[1].0 {
+            return Err("多項式の同冪項が未集約".into());
+        }
+    }
+    let mut values = vec![];
+    for (powers, coefficient) in terms {
+        tick(c)?;
+        let coefficient = push(parts, base, Part::Scalar(coefficient), c)?;
+        values.push((coefficient, powers));
+    }
+    push(
+        parts,
+        base,
+        Part::Polynomial {
+            ring,
+            terms: values,
+        },
+        c,
+    )
+}
+fn plan(
+    core: &EquationPresentation,
+    base: usize,
+    c: &mut Control,
+) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
+    tick(c)?;
+    let mut parts = vec![];
+    let mut out = Diagram {
+        rings: vec![],
+        bases: vec![],
+        required: vec![],
+        evaluations: vec![],
+        coordinates: vec![],
+        status: core.status(),
+    };
+    for ring in core.rings() {
+        tick(c)?;
+        if !matches!(ring.ty, Type::Z | Type::Q | Type::Fp(_)) {
+            return Err("多項式の元係数環がscalarでない".into());
+        }
+        let scalar = push(&mut parts, base, Part::Base(ring.ty.clone()), c)?;
+        let variables = ring
+            .symbols
+            .iter()
+            .map(|s| {
+                tick(c)?;
+                Ok(Variable {
+                    field: Fact {
+                        snapshot: s.slot.snapshot.clone(),
+                        subject: s.slot.subject.clone(),
+                        field: Some(s.slot.field.clone()),
+                        atom: None,
+                    },
+                    component: s.slot.component.clone(),
+                    ty: ring.ty.clone(),
+                })
+            })
+            .collect::<Result<Vec<_>, ValidationFailure>>()?;
+        let r = push(
+            &mut parts,
+            base,
+            Part::Ring {
+                base: scalar,
+                variables,
+            },
+            c,
+        )?;
+        out.bases.push(scalar);
+        out.rings.push(r);
+        let evaluation = if let Some(images) = &ring.evaluation_images {
+            if images.len() != ring.symbols.len() {
+                return Err("多項式の評価像が全記号と違う".into());
+            }
+            let mut values = vec![];
+            for image in images {
+                tick(c)?;
+                values.push(polynomial(&mut parts, base, image, scalar, &ring.ty, 0, c)?);
+            }
+            Some(push(
+                &mut parts,
+                base,
+                Part::Evaluation {
+                    source: r,
+                    target: scalar,
+                    images: values,
+                },
+                c,
+            )?)
+        } else {
+            None
+        };
+        out.evaluations.push(evaluation);
+    }
+    for (index, q) in core.occurrences().iter().enumerate() {
+        tick(c)?;
+        let mut coordinate = Coordinate {
+            occurrence: index,
+            position: q.position,
+            row: q.row,
+            case: q.case,
+            component: q.component.clone(),
+            ty: q.ty.clone(),
+            required: q.required,
+            ring: None,
+            left: None,
+            right: None,
+            nu: None,
+            epsilon: None,
+            residual: None,
+            witness: None,
+            guard: q.guard.clone(),
+            status: q.status.clone(),
+        };
+        if let Some(index) = q.ring {
+            let original = core.rings().get(index).ok_or("多項式の元環添字がない")?;
+            let ring = *out.rings.get(index).ok_or("多項式の環参照がない")?;
+            coordinate.ring = Some(ring);
+            let mut make = |p: &Option<EquationPolynomial>| {
+                p.as_ref()
+                    .map(|p| {
+                        polynomial(
+                            &mut parts,
+                            base,
+                            p,
+                            ring,
+                            &original.ty,
+                            original.symbols.len(),
+                            c,
+                        )
+                    })
+                    .transpose()
+            };
+            coordinate.left = make(&q.left)?;
+            coordinate.right = make(&q.right)?;
+            coordinate.nu = make(&q.nu)?;
+            coordinate.epsilon = make(&q.epsilon_constant)?;
+            coordinate.residual = make(&q.residual_constant)?;
+            if let Some(nu) = coordinate.nu {
+                coordinate.witness = Some(push(
+                    &mut parts,
+                    base,
+                    Part::Ideal {
+                        ring,
+                        generators: vec![nu],
+                        required: false,
+                    },
+                    c,
+                )?);
+            }
+        } else if q.left.is_some()
+            || q.right.is_some()
+            || q.nu.is_some()
+            || q.epsilon_constant.is_some()
+            || q.residual_constant.is_some()
+        {
+            return Err("多項式の元式に係数環がない".into());
+        }
+        out.coordinates.push(coordinate);
+    }
+    for (index, ring) in core.rings().iter().enumerate() {
+        tick(c)?;
+        let r = out.rings[index];
+        let mut generators = vec![];
+        for occurrence in &ring.required_generators {
+            tick(c)?;
+            let q = out
+                .coordinates
+                .get(*occurrence)
+                .ok_or("required多項式の元出現がない")?;
+            if q.ring != Some(r) {
+                return Err("required多項式が別の環に属する".into());
+            }
+            generators.push(q.nu.ok_or("required多項式の元νがない")?);
+        }
+        out.required.push(push(
+            &mut parts,
+            base,
+            Part::Ideal {
+                ring: r,
+                generators,
+                required: true,
+            },
+            c,
+        )?);
+    }
+    tick(c)?;
+    Ok((parts, out))
+}
+fn metadata(
+    inputs: &CheckedInputs,
+    a: &Arc<ArchitectureWitness>,
+    core: &EquationPresentation,
+    c: &mut Control,
+) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    let (mut support, mut scope) = native::metadata(&ConstructionValue {
+        witness: Witness::Architecture(a.clone()),
+        data: D::ConstructionLabel(Scalar::Text("polynomial_law".into())),
+    })?;
+    let env = Environment::new(inputs, c)?;
+    for ring in core.rings() {
+        for symbol in &ring.symbols {
+            tick(c)?;
+            let slot = env.field(
+                &symbol.slot.snapshot,
+                &symbol.slot.subject,
+                &symbol.slot.field,
+            )?;
+            let fact = Fact {
+                snapshot: symbol.slot.snapshot.clone(),
+                subject: symbol.slot.subject.clone(),
+                field: Some(symbol.slot.field.clone()),
+                atom: match &slot.slot {
+                    crate::archmap::Slot::Known { atom, .. } => Some(atom.clone()),
+                    _ => None,
+                },
+            };
+            let value = if fact.atom.is_some() {
+                native::atom_value(Witness::Architecture(a.clone()), &fact, c)?
+            } else {
+                native::subject_value(
+                    Witness::Architecture(a.clone()),
+                    &Fact {
+                        field: None,
+                        atom: None,
+                        ..fact
+                    },
+                )?
+            };
+            let (facts, s) = native::metadata(&value)?;
+            support.extend(facts);
+            scope.merge(&s);
+        }
+    }
+    support.sort_by_key(|f| f.wire().canonical());
+    support.dedup();
+    scope.assignments = true;
+    tick(c)?;
+    Ok((support, scope))
+}
+fn construction_failure(e: &crate::construction::ConstructionFailure) -> ValidationFailure {
+    match e {
+        crate::construction::ConstructionFailure::Stopped(stop) => {
+            ValidationFailure::Stop(stop.clone())
+        }
+        crate::construction::ConstructionFailure::InvalidSelection(message)
+        | crate::construction::ConstructionFailure::Inconsistent(message) => {
+            format!("元多項式: {message}").into()
+        }
+    }
+}
+fn evaluation_failure(e: &super::object_evaluate::ObjectEvaluationFailure) -> ValidationFailure {
+    use super::object_evaluate::ObjectEvaluationFailure as E;
+    match e {
+        E::Construction(e) => construction_failure(e),
+        E::FiniteView { cause, .. } => evaluation_failure(cause),
+        E::Evaluation(e) => match e.as_ref() {
+            EvaluationFailure::NotImplemented {
+                declaration,
+                feature,
+                ..
+            } => format!("元Law `{declaration}` の評価: {feature}").into(),
+            EvaluationFailure::Prepare(_) => "元Lawの評価要求の検査に失敗した".into(),
+        },
+        E::NotImplemented { instance, .. } => format!(
+            "元Law `{}` の値parameterを評価できない",
+            instance.declaration().name
+        )
+        .into(),
+    }
+}
+fn failed(e: EquationPresentationFailure, c: &Control) -> ValidationFailure {
+    if let Some(stop) = c.stop_reason() {
+        return ValidationFailure::Stop(stop);
+    }
+    match e {
+        EquationPresentationFailure::Selection(cause)
+        | EquationPresentationFailure::Reading { cause, .. } => construction_failure(&cause),
+        EquationPresentationFailure::Original(e) => match e {
+            super::object_law_residuals::ObjectLawResidualsFailure::Reading { cause, .. } => {
+                construction_failure(&cause)
+            }
+            super::object_law_residuals::ObjectLawResidualsFailure::Original(e) => {
+                evaluation_failure(e.cause())
+            }
+        },
+    }
+}
+impl Source {
+    fn compute(
+        inputs: Arc<CheckedInputs>,
+        a: Arc<ArchitectureWitness>,
+        reference: NodeRef,
+        object: usize,
+        base: usize,
+        c: &mut Control,
+    ) -> Result<Self, ValidationFailure> {
+        tick(c)?;
+        if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
+            return Err("多項式の元三入力とArchitectureが違う".into());
+        }
+        let root = a.construction().root();
+        let core = object_equation_presentation(
+            inputs.clone(),
+            a.construction().reading(),
+            &root.snapshot,
+            &root.subject,
+            object,
+            c,
+        )
+        .map_err(|e| failed(e, c))?;
+        if core.base().base().readings() != a.readings() {
+            return Err("多項式が元対象族・readingと違う".into());
+        }
+        let (parts, outputs) = plan(&core, base, c)?;
+        let (support, scope) = metadata(&inputs, &a, &core, c)?;
+        tick(c)?;
+        Ok(Self {
+            inputs,
+            architecture: a,
+            reference,
+            object,
+            core: Arc::new(core),
+            base,
+            parts,
+            outputs,
+            support,
+            scope,
+        })
+    }
+    fn recheck(
+        &self,
+        inputs: &CheckedInputs,
+        a: &Arc<ArchitectureWitness>,
+        c: &mut Control,
+    ) -> Result<(), ValidationFailure> {
+        tick(c)?;
+        if !Arc::ptr_eq(a, &self.architecture)
+            || inputs.sources() != self.inputs.sources()
+            || self.core.object() != self.object
+            || self.core.base().base().readings() != a.readings()
+        {
+            return Err("多項式の消費先・元三入力・対象・readingが違う".into());
+        }
+        self.core
+            .recheck(self.inputs.clone(), c)
+            .map_err(|e| failed(e, c))?;
+        let (parts, outputs) = plan(&self.core, self.base, c)?;
+        let (support, scope) = metadata(inputs, a, &self.core, c)?;
+        if parts != self.parts
+            || outputs != self.outputs
+            || support != self.support
+            || scope != self.scope
+        {
+            return Err("多項式が元共有環・全計画・支持・Scopeと違う".into());
+        }
+        tick(c)
+    }
+}
+pub(super) fn retain(
+    graph: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    reference: NodeRef,
+    object: usize,
+    c: &mut Control,
+) -> Result<Diagram, ValidationFailure> {
+    tick(c)?;
+    if graph.active != graph.context_at(reference.0) {
+        return Err("多項式の生成が元ArchitectureのRequestでない".into());
+    }
+    let a = native::architecture_origin(graph, reference, object)?.clone();
+    let Some(Payload::Construction(consumer)) = &graph.get(reference)?.payload else {
+        return Err("多項式の元Architectureがない".into());
+    };
+    Environment::new(&inputs, c)?.recheck_object_components(graph, consumer)?;
+    let source = Arc::new(Source::compute(
+        inputs,
+        a,
+        reference,
+        object,
+        graph.nodes.len(),
+        c,
+    )?);
+    for index in 0..source.parts.len() {
+        tick(c)?;
+        let data = Data {
+            source: source.clone(),
+            index,
+        };
+        data.position(graph.nodes.len())?;
+        native::retain(
+            graph,
+            ConstructionValue {
+                witness: Witness::Architecture(source.architecture.clone()),
+                data: D::PolynomialLaw(data),
+            },
+            vec![],
+            vec![],
+            None,
+        )?;
+    }
+    tick(c)?;
+    Ok(source.outputs.clone())
+}
+pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
+    let part = data
+        .source
+        .parts
+        .get(data.index)
+        .ok_or("多項式の元計画添字がない")?;
+    let Some(Payload::Construction(v)) = &n.payload else {
+        return Err("多項式のpayloadがない".into());
+    };
+    let Witness::Architecture(a) = &v.witness else {
+        return Err("多項式の元Architectureがない".into());
+    };
+    let current = native::architecture_origin(graph, data.source.reference, data.source.object)?;
+    if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
+        return Err("多項式の元Architecture参照が違う".into());
+    }
+    if n.ty != part.ty()
+        || n.rule != Rule::Construction(part.construction())
+        || n.arguments != data.arguments()
+        || n.support != data.source.support
+        || n.scope != data.source.scope
+        || !n.reasons.is_empty()
+        || !n.evidence.is_empty()
+        || n.judgment.is_some()
+    {
+        return Err("多項式の型・導出・支持・Scopeが違う".into());
+    }
+    for reference in part.arguments() {
+        let Some(Payload::Construction(v)) = &graph.get(reference)?.payload else {
+            return Err("多項式の引数がnativeでない".into());
+        };
+        let D::PolynomialLaw(other) = &v.data else {
+            return Err("多項式の引数が別由来".into());
+        };
+        if !Arc::ptr_eq(&data.source, &other.source)
+            || other.index >= data.index
+            || data.source.base.checked_add(other.index) != Some(reference.0)
+        {
+            return Err("多項式の引数が元計画の既出値でない".into());
+        }
+    }
+    Ok(())
+}
+impl Environment<'_> {
+    pub(super) fn recheck_polynomial_law_diagram(
+        &self,
+        graph: &Graph,
+        value: &ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        let D::PolynomialLaw(data) = &value.data else {
+            return Ok(());
+        };
+        tick(&mut self.control.clone())?;
+        let Witness::Architecture(a) = &value.witness else {
+            return Err("多項式導出の元Architectureがない".into());
+        };
+        let current =
+            native::architecture_origin(graph, data.source.reference, data.source.object)?;
+        if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
+            return Err("多項式の消費先Architectureが違う".into());
+        }
+        let Some(Payload::Construction(consumer)) = &graph.get(data.source.reference)?.payload
+        else {
+            return Err("多項式の元参照がない".into());
+        };
+        self.recheck_object_components(graph, consumer)?;
+        if self
+            .verified_polynomial_law_diagrams
+            .borrow()
+            .iter()
+            .any(|s| Arc::ptr_eq(s, &data.source))
+        {
+            return Ok(());
+        }
+        data.source
+            .recheck(self.inputs, a, &mut self.control.clone())?;
+        self.verified_polynomial_law_diagrams
+            .borrow_mut()
+            .push(data.source.clone());
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+#[path = "polynomial_law_diagram_tests.rs"]
+mod tests;
