@@ -37,6 +37,7 @@ pub(crate) enum ConstructionType {
     FiniteFunction,
     RingMap,
     Ideal,
+    ObjectComponent,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -53,6 +54,7 @@ impl ConstructionType {
             Self::FiniteFunction => "FiniteFunction",
             Self::RingMap => "RingMap",
             Self::Ideal => "Ideal",
+            Self::ObjectComponent => "ObjectComponent",
         }
     }
 }
@@ -130,6 +132,7 @@ impl Eq for AtomWitness {}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ConstructionData {
     FiniteLaw(super::finite_law_diagram::Data),
+    ObjectComponents(super::object_component_diagram::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -235,6 +238,7 @@ impl ConstructionValue {
     pub fn scalar(&self) -> Option<&Scalar> {
         match &self.data {
             ConstructionData::FiniteLaw(data) => data.scalar(),
+            ConstructionData::ObjectComponents(data) => data.scalar(),
             ConstructionData::PathComposition(part) => part.scalar(),
             ConstructionData::Comparison(part) => part.scalar(),
             ConstructionData::Subject { value, .. }
@@ -297,6 +301,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         let ty = match &self.data {
             D::FiniteLaw(data) => return data.ty(),
+            D::ObjectComponents(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
             D::Comparison(part) => return part.ty(),
@@ -325,6 +330,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         match &self.data {
             D::FiniteLaw(data) => data.arguments(),
+            D::ObjectComponents(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
             D::Comparison(part) => {
@@ -419,6 +425,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         match self.data {
             D::FiniteLaw(ref data) => data.construction(),
+            D::ObjectComponents(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
             D::Comparison(ref part) => part.construction(),
@@ -439,6 +446,7 @@ impl ConstructionValue {
                 ConstructionType::FiniteFunction => "finite_function",
                 ConstructionType::RingMap => "ring_map",
                 ConstructionType::Ideal => "ideal",
+                ConstructionType::ObjectComponent => "object_component",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -525,6 +533,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         match &self.data {
             D::FiniteLaw(data) => data.wire(),
+            D::ObjectComponents(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
             D::Comparison(part) => match &self.witness { Witness::Compare(w) => part.wire(w), _ => unreachable!("比較は元検査を持つ") },
@@ -1104,6 +1113,7 @@ pub fn atom_value(
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     if let ConstructionData::FiniteLaw(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::ObjectComponents(data) = &value.data { return Ok(data.metadata()); }
     if let Witness::PathCompose(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
     if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationSource(data))) = (&value.witness, &value.data) {
         let _ = w;
@@ -1529,6 +1539,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
         return Err("native構成のpayloadがない".into());
     };
     if let ConstructionData::FiniteLaw(data) = &v.data { return super::finite_law_diagram::validate_node(graph,node,data); }
+    if let ConstructionData::ObjectComponents(data) = &v.data { return super::object_component_diagram::validate_node(graph,node,data); }
     if let Witness::Compose(c) = &v.witness { return super::public_compose::validate_node(graph,node,c); }
     if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_node(graph,node,c); }
     if let Witness::Compare(c) = &v.witness { return super::public_compare::validate_node(graph,node,c); }
