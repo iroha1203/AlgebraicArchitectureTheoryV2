@@ -819,7 +819,7 @@ fn unavailable(e: &super::object_evaluate::ObjectEvaluationFailure) -> Option<Un
     match e {
         E::NotImplemented { instance, .. } => Some(Unavailable {
             declaration: instance.declaration().name.clone(),
-            feature: "値parameterの全域計算が未対応".into(),
+            feature: "値parameterの全域計算が未実装".into(),
         }),
         E::FiniteView { cause, .. } => unavailable(cause),
         E::Evaluation(e) => match e.as_ref() {
@@ -829,7 +829,7 @@ fn unavailable(e: &super::object_evaluate::ObjectEvaluationFailure) -> Option<Un
                 ..
             } => Some(Unavailable {
                 declaration: declaration.clone(),
-                feature: feature.clone(),
+                feature: format!("未実装: {feature}"),
             }),
             _ => None,
         },
@@ -900,7 +900,7 @@ fn symbolic_plan(
             required: vec![],
             evaluations: vec![],
             coordinates: vec![],
-            status: EquationPresentationStatus::UnsupportedAlgorithm,
+            status: EquationPresentationStatus::Undetermined,
         },
     ))
 }

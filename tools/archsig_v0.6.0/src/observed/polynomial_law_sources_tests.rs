@@ -411,10 +411,10 @@ fn unbounded_parameter_keeps_symbolic_law_typed_sides_and_explicit_unavailable_w
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
-    assert_eq!(d.status, EquationPresentationStatus::UnsupportedAlgorithm);
+    assert_eq!(d.status, EquationPresentationStatus::Undetermined);
     let reason = d.unavailable.as_ref().unwrap();
     assert_eq!(reason.declaration, "Chosen.parameter");
-    assert!(!reason.feature.is_empty());
+    assert_eq!(reason.feature, "値parameterの全域計算が未実装");
     assert!(
         d.rings.is_empty()
             && d.coordinates.is_empty()
@@ -438,12 +438,13 @@ fn unbounded_parameter_keeps_symbolic_law_typed_sides_and_explicit_unavailable_w
     }
     let source = data(&g, original.reference).source.clone();
     assert!(source.core.is_none());
-    for mode in 0..4 {
+    for mode in 0..5 {
         let mut bad = (*source).clone();
         match mode {
             0 => bad.outputs.unavailable = None,
             1 => bad.outputs.unavailable.as_mut().unwrap().declaration = "Chosen.other".into(),
             2 => bad.outputs.status = EquationPresentationStatus::Ready,
+            3 => bad.outputs.status = EquationPresentationStatus::UnsupportedAlgorithm,
             _ => bad.outputs.originals[0].parameters.clear(),
         }
         assert!(
