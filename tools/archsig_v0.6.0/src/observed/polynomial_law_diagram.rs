@@ -91,6 +91,11 @@ pub(super) struct Original {
 enum Part {
     Equation(super::equation_presentation_node::Part),
     Scalar(Scalar),
+    ReadingValue {
+        value: Scalar,
+        arguments: Vec<NodeRef>,
+        wire: Json,
+    },
     ReadingDomain {
         ty: Type,
         elements: Option<Vec<NodeRef>>,
@@ -169,7 +174,9 @@ impl Part {
     fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
             Self::Equation(v) => return v.ty(),
-            Self::Scalar(s) | Self::ObservedBoolean { value: s, .. } => {
+            Self::Scalar(s)
+            | Self::ReadingValue { value: s, .. }
+            | Self::ObservedBoolean { value: s, .. } => {
                 return NodeType::Value(s.ty());
             }
             Self::Source { ty, .. } | Self::Transform { ty, .. } => {
@@ -187,6 +194,7 @@ impl Part {
         match self {
             Self::Equation(v) => v.arguments(),
             Self::Scalar(_) | Self::Base(_) => vec![],
+            Self::ReadingValue { arguments, .. } => arguments.clone(),
             Self::ObservedBoolean { origin, .. } => vec![*origin],
             Self::ReadingDomain { elements, .. } => elements.iter().flatten().copied().collect(),
             Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
@@ -232,7 +240,7 @@ impl Part {
     fn construction(&self) -> &'static str {
         match self {
             Self::Equation(v) => v.construction(),
-            Self::Scalar(_) | Self::ObservedBoolean { .. } => "binding",
+            Self::Scalar(_) | Self::ReadingValue { .. } | Self::ObservedBoolean { .. } => "binding",
             Self::Source { .. } | Self::Transform { .. } => "expression",
             Self::LawInstance { .. } => "law_instance",
             Self::Domain { .. } | Self::ReadingDomain { .. } => "domain",
@@ -246,6 +254,7 @@ impl Part {
         match self {
             Self::Equation(v) => v.wire(),
             Self::Scalar(v) | Self::ObservedBoolean { value: v, .. } => v.wire(),
+            Self::ReadingValue { wire, .. } => wire.clone(),
             Self::Source {
                 location,
                 bindings,
@@ -476,7 +485,11 @@ impl Data {
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         match self.source.parts.get(self.index) {
-            Some(Part::Scalar(s) | Part::ObservedBoolean { value: s, .. }) => Some(s),
+            Some(
+                Part::Scalar(s)
+                | Part::ReadingValue { value: s, .. }
+                | Part::ObservedBoolean { value: s, .. },
+            ) => Some(s),
             _ => None,
         }
     }

@@ -21,6 +21,78 @@ fn consensus(values: &[Option<bool>]) -> Option<bool> {
         .flatten()
         .filter(|v| values.iter().all(|x| x == &Some(*v)))
 }
+/// 元の閉じた値を保持し、Pathを含む値の表示依存だけを同じnative計画へ移す。
+fn domain_value(
+    value: &Scalar,
+    parts: &mut Vec<Part>,
+    base: usize,
+    c: &mut Control,
+) -> Result<NodeRef, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        tick(c)?;
+        for (index, part) in parts.iter().enumerate().rev() {
+            tick(c)?;
+            if matches!(part, Part::Scalar(s) | Part::ReadingValue { value: s, .. } if s == value) {
+                return Ok(NodeRef(
+                    base.checked_add(index).ok_or("元量化値の番号が範囲外")?,
+                ));
+            }
+        }
+        if !crate::observed::path_value::contains_path(&value.ty(), c)? {
+            // 元Evaluatorの検査済みTerm・複合値を、原始有限型へ制限しない。
+            return push(parts, base, Part::Scalar(value.clone()), c);
+        }
+        let mut arguments = vec![];
+        let wire = match value {
+            Scalar::Path(path) => {
+                path.check(c)?;
+                let source = domain_value(&path.object(), parts, base, c)?;
+                let target = domain_value(&path.target(), parts, base, c)?;
+                arguments.extend([source, target]);
+                let mut generators = vec![];
+                if let Some(step) = &path.step {
+                    for generator in std::iter::once(&step.generator).chain(&step.word_tail) {
+                        tick(c)?;
+                        let reference = domain_value(generator, parts, base, c)?;
+                        arguments.push(reference);
+                        generators.push(reference.wire());
+                    }
+                }
+                Json::obj([
+                    ("reading", Json::str(&path.reading)),
+                    ("source", source.wire()),
+                    ("target", target.wire()),
+                    ("generators", Json::Arr(generators)),
+                ])
+            }
+            Scalar::Tuple(items) | Scalar::List { items, .. } => {
+                for item in items {
+                    arguments.push(domain_value(item, parts, base, c)?);
+                }
+                refs(&arguments)
+            }
+            Scalar::Option { value: None, .. } => Json::obj([("none", Json::Bool(true))]),
+            Scalar::Option {
+                value: Some(item), ..
+            } => {
+                let reference = domain_value(item, parts, base, c)?;
+                arguments.push(reference);
+                Json::obj([("some", reference.wire())])
+            }
+            _ => return Err("元量化域のPathを含む結果型が違う".into()),
+        };
+        push(
+            parts,
+            base,
+            Part::ReadingValue {
+                value: value.clone(),
+                arguments,
+                wire,
+            },
+            c,
+        )
+    })
+}
 /// 独立EvaluatorのScope中のDomain参照を、同じ値を持つnativeの既出Domainへ移す。
 fn scope(
     value: &Scope,
@@ -62,14 +134,7 @@ fn scope(
                         if scalar.ty() != *ty {
                             return Err("元量化域の型が違う".into());
                         }
-                        values.push(push(
-                            parts,
-                            base,
-                            Part::Scalar(super::super::finite_law_diagram::canonical_value(
-                                scalar, c,
-                            )?),
-                            c,
-                        )?);
+                        values.push(domain_value(scalar, parts, base, c)?);
                     }
                     (ty.clone(), Some(values))
                 }
