@@ -56,12 +56,28 @@ impl Data {
         }
         a
     }
+    pub fn position(&self, limit: usize) -> Result<(), ValidationFailure> {
+        if self.arguments().iter().any(|r| r.0 >= limit) {
+            return Err("対象外Lawの由来・依存が既出Refでない".into());
+        }
+        Ok(())
+    }
     pub fn wire(&self) -> Json {
         match &self.kind {
             Kind::Value(v) => v.wire(),
             Kind::Proposition { .. } => Json::obj([
                 ("predicate", Json::str("law_holds")),
-                ("instance", self.origin.wire()),
+                ("operands", Json::Arr(vec![self.origin.wire()])),
+                (
+                    "quantifiers",
+                    Json::Arr(
+                        self.scope
+                            .quantifiers
+                            .iter()
+                            .map(Quantifier::wire)
+                            .collect(),
+                    ),
+                ),
             ]),
             Kind::Evaluation { value } => Json::obj([
                 ("environment", self.architecture.wire()),

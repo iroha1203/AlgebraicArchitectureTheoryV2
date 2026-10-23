@@ -112,6 +112,23 @@ fn assert_outside(g: &Graph, a: &Answer, origin: NodeRef, architecture: NodeRef)
         g.nodes[q.0].judgment.as_ref().unwrap().status,
         Decision::Established
     );
+    let wire = g.nodes[q.0].wire(q.0, &g.nodes[..q.0]);
+    let Json::Obj(ref node) = wire else {
+        panic!("node record")
+    };
+    let Json::Obj(ref payload) = node["value"] else {
+        panic!("proposition record")
+    };
+    assert_eq!(
+        payload.keys().map(String::as_str).collect::<Vec<_>>(),
+        vec!["operands", "predicate", "quantifiers"]
+    );
+    assert_eq!(payload["predicate"], Json::str("law_holds"));
+    assert_eq!(payload["operands"], Json::Arr(vec![origin.wire()]));
+    let Json::Obj(ref scope) = node["scope"] else {
+        panic!("scope record")
+    };
+    assert_eq!(payload["quantifiers"], scope["quantifiers"]);
 }
 #[test]
 fn polynomial_outside_law_keeps_original_rows_roles_and_unread_body_in_every_object() {
@@ -445,4 +462,98 @@ fn outside_law_four_stops_keep_exact_completed_prefix_and_final_proposition() {
         }
     }
     assert!(final_retained);
+}
+
+#[test]
+fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
+    use std::{cell::Cell, rc::Rc};
+    let p = prepared(fixture::inputs(
+        false,
+        false,
+        "law required zero(c:Part):c.quantity=0;",
+    ));
+    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let (mut g, origin, objects, _, _) = outside(&p);
+    let answer = check(&env, &mut g, origin, objects[1], &mut quiet())
+        .unwrap()
+        .unwrap();
+    let e = answer.outputs["evaluation"];
+    let mut results = vec![];
+    for mode in 0..4 {
+        let armed = Rc::new(Cell::new(false));
+        let arm = armed.clone();
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut control = Control::new(Limits::default(), move |point| {
+            if arm.get() && point == Checkpoint::FiniteIteration {
+                count.set(count.get() + 1)
+            }
+            Usage {
+                elapsed_ms: 0,
+                memory_mib: 0,
+                signal: (arm.get() && count.get() >= 200).then_some(crate::result::Signal::Int),
+            }
+        });
+        let mut bad = copy_graph(&g, &control);
+        let Some(Payload::Construction(v)) = &mut bad.nodes[e.0].payload else {
+            panic!()
+        };
+        let D::OutsideLaw(d) = &mut v.data else {
+            panic!()
+        };
+        match mode {
+            0 => d.origin = e,
+            1 => d.architecture = e,
+            2 => d.origin = NodeRef(e.0 + 1),
+            _ => d.architecture = NodeRef(e.0 + 1),
+        };
+        let args = d.arguments();
+        bad.nodes[e.0].arguments = args;
+        let env = Environment::with_prepared(&p, &mut control).unwrap();
+        armed.set(true);
+        let result = env.recheck_node(&bad, &bad.nodes[e.0], e.0);
+        eprintln!("mode {mode}: checkpoints={} result={result:?}", seen.get());
+        results.push(result);
+    }
+    for (mode, result) in results.iter().enumerate() {
+        assert!(
+            matches!(result, Err(ValidationFailure::Internal(_))),
+            "mode {mode}: should reject invalid Ref, got {result:?}"
+        );
+    }
+}
+
+#[test]
+fn unbound_integer_parameter_does_not_become_a_finite_outside_proposition() {
+    let p = prepared(fixture::inputs(
+        false,
+        false,
+        "law required unbounded(c:Part,k:Z):c.quantity=k;",
+    ));
+    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let (mut g, a, objects) = start(&p);
+    let ds = crate::observed::polynomial_law_diagram::retain_family(
+        &mut g,
+        p.shared_inputs(),
+        a,
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut original_count = 0;
+    for (object, d) in ds.iter().enumerate() {
+        assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
+        for o in &d.originals {
+            assert!(o.parameters.iter().any(|(n, t)| n == "k" && t == &Type::Z));
+            let before = g.nodes.len();
+            assert!(
+                check(&env, &mut g, o.reference, objects[object], &mut quiet())
+                    .unwrap()
+                    .is_none()
+            );
+            assert_eq!(g.nodes.len(), before);
+            original_count += 1;
+        }
+    }
+    assert!(original_count > 0);
+    replay(&p, &g).unwrap();
 }

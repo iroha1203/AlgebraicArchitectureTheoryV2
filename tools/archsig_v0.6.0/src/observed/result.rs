@@ -499,7 +499,7 @@ pub(crate) struct Quantifier {
     pub(super) context: Option<super::call::Context>,
 }
 impl Quantifier {
-    fn wire(&self) -> Json {
+    pub(super) fn wire(&self) -> Json {
         let mut fields = BTreeMap::from([
             (
                 "kind".into(),
@@ -1389,7 +1389,7 @@ impl Node {
             _ => vec![],
         }
     }
-    fn wire(&self, id: usize, prior: &[Node]) -> Json {
+    pub(super) fn wire(&self, id: usize, prior: &[Node]) -> Json {
         let mut wire =
             BTreeMap::from([
                 ("id".into(), Json::str(format!("n{id}"))),
