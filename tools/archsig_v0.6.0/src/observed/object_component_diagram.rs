@@ -12,6 +12,8 @@ use super::{
 use crate::{
     canonical::Json,
     construction::{Configuration, readings::InstanceApplication},
+    law::model::Signature,
+    types::Type,
 };
 use std::sync::Arc;
 
@@ -24,6 +26,14 @@ fn refs(values: &[NodeRef]) -> Json {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
+    Reading {
+        object: NodeRef,
+        declaration: String,
+        parameters: Vec<(String, Type)>,
+        bindings: Vec<Binding>,
+        returns: Type,
+        quantifiers: Vec<Quantifier>,
+    },
     Subject(Scalar),
     Configuration(Configuration),
     Architecture {
@@ -42,6 +52,7 @@ impl Part {
     fn ty(&self) -> NodeType {
         match self {
             Self::Subject(v) => NodeType::Value(v.ty()),
+            Self::Reading { returns, .. } => NodeType::Expression(returns.clone()),
             Self::Configuration(_) => NodeType::Construction(T::Configuration),
             Self::Architecture { .. } => NodeType::Construction(T::Architecture),
             Self::Component { .. } => NodeType::Construction(T::ObjectComponent),
@@ -50,6 +61,11 @@ impl Part {
     fn arguments(&self) -> Vec<NodeRef> {
         match self {
             Self::Subject(_) | Self::Configuration(_) => vec![],
+            Self::Reading {
+                object, bindings, ..
+            } => std::iter::once(*object)
+                .chain(bindings.iter().map(|b| b.value))
+                .collect(),
             Self::Architecture {
                 root,
                 configuration,
@@ -67,6 +83,7 @@ impl Part {
     fn construction(&self) -> &'static str {
         match self {
             Self::Subject(_) => "binding",
+            Self::Reading { .. } => "expression",
             Self::Configuration(_) => "configuration",
             Self::Architecture { .. } => "architecture",
             Self::Component { .. } => "object_component",
@@ -75,6 +92,41 @@ impl Part {
     fn wire(&self) -> Json {
         match self {
             Self::Subject(v) => v.wire(),
+            Self::Reading {
+                object,
+                declaration,
+                parameters,
+                bindings,
+                returns,
+                ..
+            } => Json::obj([
+                ("kind", Json::str("object_reading")),
+                ("object", object.wire()),
+                ("declaration", Json::str(declaration)),
+                (
+                    "parameters",
+                    Json::Arr(
+                        parameters
+                            .iter()
+                            .map(|(name, ty)| {
+                                Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+                            })
+                            .collect(),
+                    ),
+                ),
+                (
+                    "bindings",
+                    Json::Arr(
+                        bindings
+                            .iter()
+                            .map(|b| {
+                                Json::obj([("name", Json::str(&b.name)), ("value", b.value.wire())])
+                            })
+                            .collect(),
+                    ),
+                ),
+                ("returns", returns.wire()),
+            ]),
             Self::Configuration(v) => v.wire(),
             Self::Architecture {
                 reading,
@@ -107,6 +159,13 @@ pub(super) struct Diagram {
     pub objects: Vec<NodeRef>,
     pub architectures: Vec<NodeRef>,
     pub base: NodeRef,
+    pub readings: Vec<Reading>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Reading {
+    pub object: usize,
+    pub instance: usize,
+    pub expression: NodeRef,
 }
 #[derive(Clone)]
 pub(super) struct Source {
@@ -165,7 +224,11 @@ impl Data {
         self.part().wire()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.source.support.clone(), self.source.scope.clone())
+        let mut scope = self.source.scope.clone();
+        if let Part::Reading { quantifiers, .. } = self.part() {
+            scope.quantifiers.extend_from_slice(quantifiers);
+        }
+        (self.source.support.clone(), scope)
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         if self.index >= self.source.parts.len()
@@ -314,6 +377,7 @@ fn plan(
         objects.push(object);
         architectures.push(architecture);
     }
+    let reading_expressions = reading_plan(inputs, a, &objects, &mut parts, base, c)?;
     let base = *objects.first().ok_or("対象族にbaseがない")?;
     tick(c)?;
     Ok(Some((
@@ -322,8 +386,152 @@ fn plan(
             objects,
             architectures,
             base,
+            readings: reading_expressions,
         },
     )))
+}
+fn primitive(ty: &Type, c: &mut Control) -> Result<Type, ValidationFailure> {
+    ty.erase_controlled::<super::control::CheckFailure<Box<crate::issue::Issue>>>(
+        c,
+        Checkpoint::ObjectInstances,
+    )
+    .map_err(|e| match e {
+        super::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
+        super::control::CheckFailure::Input(_) => "対象読取りの原始型がない".into(),
+    })
+}
+fn reading_plan(
+    inputs: &CheckedInputs,
+    a: &ArchitectureWitness,
+    objects: &[NodeRef],
+    parts: &mut Vec<Part>,
+    base: usize,
+    c: &mut Control,
+) -> Result<Vec<Reading>, ValidationFailure> {
+    let mut outputs = vec![];
+    for (instance, row) in a.readings().instances().iter().enumerate() {
+        tick(c)?;
+        let declaration = inputs
+            .law()
+            .declarations
+            .get(&row.declaration().name)
+            .ok_or("対象読取りの元宣言がない")?;
+        let (params, returns) = match &declaration.signature {
+            Signature::Law { params, .. } => (params, Type::Bool),
+            Signature::View {
+                params, returns, ..
+            } => (params, Type::Option(Box::new(primitive(returns, c)?))),
+            _ => return Err("対象読取りの元宣言がLaw/viewでない".into()),
+        };
+        let mut bindings = vec![];
+        let mut parameters = vec![];
+        let mut quantifiers = vec![];
+        for parameter in params {
+            tick(c)?;
+            let bound = row
+                .bindings()
+                .iter()
+                .filter(|b| b.parameter().name == parameter.name)
+                .collect::<Vec<_>>();
+            match bound.as_slice() {
+                [binding] => {
+                    let entity = match &parameter.ty {
+                        Type::Ref(t) | Type::Owned(t, _) => t.clone(),
+                        _ => return Err("対象読取りの参照束縛型が違う".into()),
+                    };
+                    let subject = binding.subject();
+                    let value = push(
+                        parts,
+                        base,
+                        Part::Subject(Scalar::Subject {
+                            snapshot: subject.snapshot.clone(),
+                            subject: subject.subject.clone(),
+                            entity: entity.clone(),
+                        }),
+                        c,
+                    )?;
+                    bindings.push(Binding {
+                        name: parameter.name.clone(),
+                        ty: Type::Ref(entity),
+                        value,
+                    });
+                }
+                [] => {
+                    let original = row
+                        .parameters()
+                        .iter()
+                        .find(|p| p.name == parameter.name)
+                        .ok_or("対象読取りの全域parameterがない")?;
+                    parameters.push((original.name.clone(), primitive(&original.ty, c)?));
+                    quantifiers.push(Quantifier {
+                        kind: crate::law::ast::QuantKind::Forall,
+                        name: original.name.clone(),
+                        ty: original.ty.clone(),
+                        occurrence: original.span,
+                        domain: None,
+                        context: None,
+                    });
+                }
+                _ => return Err("対象読取りの参照束縛が重複する".into()),
+            }
+        }
+        for (object, reference) in objects.iter().enumerate() {
+            tick(c)?;
+            if row.applications().get(object).is_none() {
+                return Err("対象読取りの元適用行がない".into());
+            }
+            let expression = push(
+                parts,
+                base,
+                Part::Reading {
+                    object: *reference,
+                    declaration: declaration.name.clone(),
+                    parameters: parameters.clone(),
+                    bindings: bindings.clone(),
+                    returns: returns.clone(),
+                    quantifiers: quantifiers.clone(),
+                },
+                c,
+            )?;
+            outputs.push(Reading {
+                object,
+                instance,
+                expression,
+            });
+        }
+    }
+    tick(c)?;
+    Ok(outputs)
+}
+fn reading_metadata(
+    inputs: &CheckedInputs,
+    a: &Arc<ArchitectureWitness>,
+    source: &Node,
+    c: &mut Control,
+) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    let mut support = source.support.clone();
+    let mut scope = source.scope.clone();
+    let env = Environment::new(inputs, c)?;
+    for row in a.readings().instances() {
+        for binding in row.bindings() {
+            tick(c)?;
+            let subject =
+                native::subject_value(Witness::Architecture(a.clone()), binding.subject())?;
+            let (facts, s) = native::metadata(&subject)?;
+            support.extend(facts);
+            scope.merge(&s);
+        }
+        for parameter in row.parameters() {
+            tick(c)?;
+            let domain = env.object_parameter_domain(parameter, row)?;
+            support.extend(domain.support);
+            scope.merge(&domain.scope);
+        }
+    }
+    support.sort_by_key(|f| f.wire().canonical());
+    support.dedup();
+    tick(c)?;
+    Ok((support, scope))
 }
 fn origin<'a>(
     graph: &'a Graph,
@@ -412,10 +620,11 @@ impl Source {
         let (parts, outputs) = plan(inputs, a, self.reference, root, laws, self.base, c)?
             .ok_or("対象族の元構成が未完成")?;
         let source = graph.get(self.reference)?;
+        let (support, scope) = reading_metadata(inputs, a, source, c)?;
         if self.parts != parts
             || self.outputs != outputs
-            || self.support != source.support
-            || self.scope != source.scope
+            || self.support != support
+            || self.scope != scope
         {
             return Err("対象族が元対象・構成・Law・全計画・支持・scopeと違う".into());
         }
@@ -438,6 +647,7 @@ pub(super) fn retain(
         return Ok(None);
     };
     let n = graph.get(reference)?;
+    let (support, scope) = reading_metadata(&inputs, a, n, c)?;
     let source = Arc::new(Source {
         inputs,
         architecture: a.clone(),
@@ -447,8 +657,8 @@ pub(super) fn retain(
         base: graph.nodes.len(),
         parts,
         outputs,
-        support: n.support.clone(),
-        scope: n.scope.clone(),
+        support,
+        scope,
     });
     source.recheck(graph, &source.inputs, &source.architecture, c)?;
     for index in 0..source.parts.len() {
@@ -492,11 +702,12 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     {
         return Err("対象族の元Architecture参照が違う".into());
     }
+    let (support, scope) = data.metadata();
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support != data.source.support
-        || n.scope != data.source.scope
+        || n.support != support
+        || n.scope != scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()
         || n.judgment.is_some()
