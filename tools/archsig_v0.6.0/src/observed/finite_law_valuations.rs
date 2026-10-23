@@ -1011,7 +1011,7 @@ fn components(
     Ok(result)
 }
 /// 元等式の出現を保ったまま、値を選ばないlexical wrapperだけをたどる。
-fn equation(
+pub(in crate::observed) fn equation(
     inputs: &CheckedInputs,
     mut id: usize,
     c: &mut Control,
