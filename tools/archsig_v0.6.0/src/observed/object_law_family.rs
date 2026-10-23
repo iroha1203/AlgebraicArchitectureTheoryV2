@@ -2,12 +2,13 @@
 use super::*;
 use crate::observed::{
     data, finite,
-    result::ValidationFailure,
+    result::{NodeType, ValidationFailure},
     value_transport::{
         DeclarationValuePosition, FiniteTransportValue, FiniteValueTransport,
         finite_declaration_value_transport,
     },
 };
+use crate::types::Type;
 use std::collections::BTreeMap;
 
 fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
@@ -289,6 +290,106 @@ fn root_rows(
         )
     })
     .transpose()
+}
+/// 補完で上書きされた最終answerではなく、同じEvaluatorが先に保持した実観測の行。
+impl LawReadingFamily {
+    pub(in crate::observed) fn observed_row_evaluations(
+        &self,
+        e: &ObjectEvaluation,
+        row: Option<usize>,
+        c: &mut Control,
+    ) -> Result<Vec<NodeRef>, ConstructionFailure> {
+        let (ObjectEvaluationOutcome::Evaluated(g), Some(row)) = (e.outcome(), row) else {
+            return Ok(vec![]);
+        };
+        let Some(mut root) = g
+            .answers
+            .first()
+            .and_then(|a| a.outputs.get("evaluation"))
+            .copied()
+        else {
+            return Ok(vec![]);
+        };
+        loop {
+            tick(c)?;
+            let Some(Payload::Evaluation { expression, .. }) =
+                g.nodes.get(root.0).and_then(|n| n.payload.as_ref())
+            else {
+                return Err(inconsistent("元観測のLaw評価がない"));
+            };
+            let Some(Payload::CompletionSeed {
+                location,
+                parameters,
+                bindings,
+                ..
+            }) = g.nodes.get(expression.0).and_then(|n| n.payload.as_ref())
+            else {
+                break;
+            };
+            // 欠測の追加発見後のseedにはcaseの根も増える。同じSourceの最初のseedは
+            // それらを生成する前の既出根を保持する。Scopeは数学的な読取り域であり、
+            // 実観測かcaseかの実行索引として使わない。
+            let mut roots = None;
+            for n in g.nodes.iter().take(expression.0 + 1) {
+                tick(c)?;
+                if let Some(Payload::CompletionSeed {
+                    location: l,
+                    parameters: p,
+                    bindings: b,
+                    roots: r,
+                    ..
+                }) = &n.payload
+                {
+                    if l == location && p == parameters && b == bindings {
+                        roots = Some(r);
+                        break;
+                    }
+                }
+            }
+            let roots = roots.ok_or_else(|| inconsistent("元観測の最初の補完Sourceがない"))?;
+            let mut original = None;
+            for &r in roots {
+                tick(c)?;
+                let n = g
+                    .nodes
+                    .get(r.0)
+                    .ok_or_else(|| inconsistent("元観測の根参照がない"))?;
+                if matches!(n.ty, NodeType::Evaluation(Type::Bool)) {
+                    if original.replace(r).is_some() {
+                        // 元のwholeを生成できず部分式だけが残った場合、実εは未生成。
+                        return Ok(vec![]);
+                    }
+                }
+            }
+            let Some(original) = original else {
+                return Ok(vec![]);
+            };
+            if original.0 >= root.0 {
+                return Err(inconsistent("元観測のLaw評価根が導出順でない"));
+            }
+            root = original;
+        }
+        if e.instance().parameters().is_empty() {
+            return if row == 0 {
+                Ok(vec![root])
+            } else {
+                Err(inconsistent("元観測のLaw行が域外"))
+            };
+        }
+        let domains = self
+            .domains
+            .iter()
+            .map(|d| d.values.as_slice())
+            .collect::<Vec<_>>();
+        let keys = coordinates(&domains.iter().map(|d| d.len()).collect::<Vec<_>>(), c)?;
+        let key = keys
+            .get(row)
+            .ok_or_else(|| inconsistent("元観測のparameter行が域外"))?;
+        let rows = collect(g, root, e.instance().parameters(), &domains, &keys, c)?;
+        rows.get(key)
+            .cloned()
+            .ok_or_else(|| inconsistent("元観測のparameter行がない"))
+    }
 }
 fn consensus(values: impl Iterator<Item = Option<bool>>) -> Option<bool> {
     let mut values = values;

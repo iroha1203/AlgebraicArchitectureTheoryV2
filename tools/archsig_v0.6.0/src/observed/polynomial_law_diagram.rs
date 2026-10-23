@@ -818,13 +818,18 @@ fn append_presentations(
         c,
     )?;
     out.context = Some(context);
+    let mut actual_values = std::collections::BTreeMap::<
+        _,
+        Option<super::numeric_transport::NumericTransportValue>,
+    >::new();
     for (index, ring) in out.rings.iter().enumerate() {
         tick(c)?;
-        let mut coordinates = vec![];
+        let mut coordinates = Vec::<C>::new();
         let mut instances = vec![];
         let mut witnesses = vec![];
         let mut quantifiers = vec![];
         let mut omitted_positions = vec![];
+        let mut seen = std::collections::BTreeMap::<_, (usize, usize)>::new();
         let mut ready = true;
         for q in out.coordinates.iter().filter(|q| q.ring == Some(*ring)) {
             tick(c)?;
@@ -840,13 +845,76 @@ fn append_presentations(
                 .iter()
                 .find(|o| o.reference == q.instance)
                 .ok_or("型別表示の元Law出現がない")?;
+            let current = core
+                .occurrences()
+                .get(q.occurrence)
+                .ok_or("表示の補完座標がない")?;
+            let actual_key = (q.position.instance, q.row, q.component.clone());
+            let actual = if let Some(value) = actual_values.get(&actual_key) {
+                value.clone()
+            } else {
+                let source = core
+                    .base()
+                    .base()
+                    .evaluations()
+                    .iter()
+                    .find(|e| e.position() == q.position)
+                    .ok_or("表示の元Law評価がない")?;
+                let residual = core
+                    .base()
+                    .evaluations()
+                    .iter()
+                    .find(|e| e.position == q.position)
+                    .ok_or("表示の元Law成分がない")?;
+                let value = super::object_law_residuals::observed_epsilon(
+                    inputs,
+                    source,
+                    &residual.shape,
+                    q.row,
+                    &q.component,
+                    c,
+                )
+                .map_err(|e| construction_failure(&e))?;
+                actual_values.insert(actual_key, value.clone());
+                value
+            };
+            if actual.is_some() && current.epsilon.is_some() && actual != current.epsilon {
+                return Err("補完の生差が元実評価と違う".into());
+            }
+            if actual.is_none() {
+                omitted_positions.extend(original_positions(core, Some(original.instance), c)?);
+                if out.status == EquationPresentationStatus::Ready {
+                    out.status = EquationPresentationStatus::Undetermined;
+                }
+            }
+            let key = (q.instance.0, q.component.clone());
+            if let Some((previous, at)) = seen.get(&key).copied() {
+                let previous = core
+                    .occurrences()
+                    .get(previous)
+                    .ok_or("表示の元補完座標がない")?;
+                // 補完caseを新しいLaw出現にしない。同じ原式のνがcaseで変わるなら
+                // 単一の多項式表示ではなく、既存diagramのcaseと原式を保持する。
+                if previous.nu != current.nu
+                    || previous.left != current.left
+                    || previous.right != current.right
+                {
+                    ready = false;
+                    if out.status == EquationPresentationStatus::Ready {
+                        out.status = EquationPresentationStatus::Undetermined;
+                    }
+                    break;
+                }
+                if actual.is_none() || previous.epsilon != current.epsilon {
+                    coordinates[at].epsilon = None;
+                }
+                continue;
+            }
+            seen.insert(key, (q.occurrence, coordinates.len()));
             for scope in &original.quantifiers {
                 if !quantifiers.contains(scope) {
                     quantifiers.push(scope.clone());
                 }
-            }
-            if q.epsilon.is_none() {
-                omitted_positions.extend(original_positions(core, Some(original.instance), c)?);
             }
             coordinates.push(C {
                 instance: q.instance,
@@ -854,7 +922,8 @@ fn append_presentations(
                 lhs: q.lhs,
                 rhs: q.rhs,
                 nu,
-                epsilon: q.epsilon,
+                // 補完caseの値ではなく、補完前の同じ元rowのoperandが実εを供給する。
+                epsilon: if actual.is_some() { q.epsilon } else { None },
             });
             witnesses.push(witness);
         }
