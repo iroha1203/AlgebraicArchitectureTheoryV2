@@ -209,6 +209,25 @@ impl Data {
             _ => None,
         }
     }
+    /// 呼出し側は元nodeの検査を先に行う。対象番号は元計画の対応表からだけ復元する。
+    pub(super) fn architecture_object(
+        &self,
+        reference: NodeRef,
+    ) -> Result<usize, ValidationFailure> {
+        self.position(reference.0)?;
+        if !matches!(
+            self.source.parts.get(self.index),
+            Some(Part::Architecture { .. })
+        ) {
+            return Err("評価環境が標準対象族のArchitectureでない".into());
+        }
+        self.source
+            .outputs
+            .architectures
+            .iter()
+            .position(|r| *r == reference)
+            .ok_or_else(|| "評価環境のArchitectureが元の対象表にない".into())
+    }
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty()
     }
@@ -546,8 +565,7 @@ fn origin<'a>(
         return Err("対象族の元参照が完成Architectureでない".into());
     };
     let context = graph.context_at(reference.0);
-    if graph.active != context
-        || context.frame.is_some()
+    if context.frame.is_some()
         || context.iteration.is_some()
         || context.instance.is_some()
         || context.case.is_some()
@@ -638,6 +656,9 @@ pub(super) fn retain(
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
     tick(c)?;
+    if graph.active != graph.context_at(reference.0) {
+        return Err("対象族の生成が元ArchitectureのRequestでない".into());
+    }
     let (a, root, laws) = origin(graph, reference)?;
     if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
         return Err("対象族の元三入力が違う".into());

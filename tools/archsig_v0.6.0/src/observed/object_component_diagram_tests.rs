@@ -1029,3 +1029,37 @@ fn reading_parameter_domains_preserve_external_snapshot_subject_support_and_scop
     assert!(replay(&e, &nodes, &g.contexts).is_err());
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
+
+#[test]
+fn a_finished_object_producer_rechecks_from_another_request_without_allowing_foreign_creation() {
+    let body = format!("{BODY} view no():Bool=false;");
+    let e = evaluate_observed_bytes(
+        custom_sources(DEFINITION, MAP, &body),
+        &[
+            "m=map(Finite.Migration,on=@v/m,reading=Chosen)",
+            "idle=evaluate(Chosen.no)",
+        ],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    g.active = g.context_at(a.0);
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+        .unwrap()
+        .unwrap();
+    g.active = *e.contexts.last().unwrap();
+    assert_eq!(g.active.request, 1);
+    let env = Environment::with_requests(
+        e.prepared.inputs(),
+        e.prepared.requests().requests(),
+        &mut quiet(),
+    )
+    .unwrap();
+    let old = g.get(d.architectures[1]).unwrap().clone();
+    let checked = env.recheck_node(&g, &old, d.architectures[1].0);
+    assert!(checked.is_ok(), "{checked:?}");
+    let before = g.nodes.clone();
+    assert!(retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet()).is_err());
+    assert_eq!(g.nodes, before);
+}
