@@ -220,6 +220,16 @@ fn q_and_fp_keep_their_original_coefficient_rings_and_exact_constant_encoding() 
         let a = architecture(&g, "a");
         let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
         assert_eq!(d.rings.len(), 1);
+        assert_eq!(d.domains.len(), 1);
+        let domain_type = if ty == "Q" {
+            Type::Q
+        } else {
+            Type::Fp("2".into())
+        };
+        assert_eq!(
+            wire(&g, d.domains[0]),
+            Json::obj([("kind", Json::str("type")), ("type", domain_type.wire())])
+        );
         let source = &data(&g, d.rings[0]).source;
         for q in &d.coordinates {
             let original = &source.core.as_ref().unwrap().occurrences()[q.occurrence];
@@ -723,6 +733,7 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
         let before = g.nodes.len();
         let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
         assert!(d.rings.is_empty());
+        assert!(d.domains.is_empty());
         assert!(d.evaluations.is_empty());
         assert!(d.required.is_empty());
         if body.is_empty() {
@@ -804,3 +815,155 @@ fn wrong_object_indices_and_nonarchitecture_consumers_fail_before_appending_nati
 
 #[path = "polynomial_law_sources_tests.rs"]
 mod sources;
+
+#[test]
+fn assignment_domains_keep_all_variable_types_and_zero_variable_unit_without_observation_enumeration()
+ {
+    for (body, expected, subjects, two_owned) in [
+        (
+            "law required constant(c:Part):0=0;",
+            Type::Unit,
+            vec![],
+            false,
+        ),
+        (
+            "law required single(c:Part):c.quantity=0;",
+            Type::Z,
+            vec!["p"],
+            false,
+        ),
+        (
+            "law required pair(x:Part,y:Part):x.quantity+y.quantity=0;",
+            Type::Tuple(vec![Type::Z, Type::Z]),
+            vec!["p", "q"],
+            true,
+        ),
+    ] {
+        let e = if two_owned {
+            two_owned_example(body)
+        } else {
+            example(false, body)
+        };
+        let mut g = graph(&e);
+        let a = architecture(&g, "a");
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+        assert_eq!(d.rings.len(), 1);
+        assert_eq!(d.domains.len(), 1);
+        let domain = d.domains[0];
+        assert_eq!(g.nodes[domain.0].ty, NodeType::Domain);
+        assert_eq!(g.nodes[domain.0].rule, Rule::Construction("domain"));
+        assert_eq!(
+            wire(&g, domain),
+            Json::obj([("kind", Json::str("type")), ("type", expected.wire())])
+        );
+        let Part::Domain { ring, ty } = data(&g, domain).part() else {
+            panic!("domain")
+        };
+        assert_eq!((*ring, ty), (d.rings[0], &expected));
+        assert_eq!(g.nodes[domain.0].arguments, vec![a, d.rings[0]]);
+        let Part::Ring { variables, .. } = data(&g, *ring).part() else {
+            panic!("ring")
+        };
+        assert_eq!(
+            variables
+                .iter()
+                .map(|v| v.field.subject.as_str())
+                .collect::<Vec<_>>(),
+            subjects
+        );
+        assert!(
+            variables
+                .iter()
+                .all(|v| v.ty == Type::Z && v.component.is_empty())
+        );
+        assert_eq!(g.nodes[domain.0].support, g.nodes[ring.0].support);
+        assert_eq!(g.nodes[domain.0].scope, g.nodes[ring.0].scope);
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}
+#[test]
+fn missing_observation_keeps_full_assignment_type_without_total_evaluation() {
+    let e = example(true, BODY);
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    assert_eq!(d.status, EquationPresentationStatus::Undetermined);
+    assert_eq!(d.domains.len(), 1);
+    assert_eq!(
+        wire(&g, d.domains[0]),
+        Json::obj([("kind", Json::str("type")), ("type", Json::str("Z"))])
+    );
+    assert!(d.evaluations[0].is_none());
+    assert!(d.coordinates.iter().all(|q| q.epsilon.is_none()));
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn assignment_domain_type_ring_reference_and_output_alignment_changes_are_rejected() {
+    let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Tuple","Z","Q"]"#);
+    let map = MAP
+        .replace(r#""value":"0""#, r#""value":["0",["0","1"]]"#)
+        .replace(r#""value":"1""#, r#""value":["1",["1","1"]]"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            &definition,
+            &map,
+            "law required split(c:Part):c.quantity=(0,0);",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert_eq!((d.domains.len(), d.rings.len()), (2, 2));
+    let source = data(&g, d.domains[0]).source.clone();
+    for ((domain, ring), ty) in d.domains.iter().zip(&d.rings).zip([Type::Z, Type::Q]) {
+        assert_eq!(
+            wire(&g, *domain),
+            Json::obj([("kind", Json::str("type")), ("type", ty.wire())])
+        );
+        assert!(matches!(data(&g,*domain).part(), Part::Domain{ring: r,..} if r==ring));
+    }
+    let index = data(&g, d.domains[0]).index;
+    for mode in 0..6 {
+        let mut changed = (*source).clone();
+        match mode {
+            0 => {
+                if let Part::Domain { ty, .. } = &mut changed.parts[index] {
+                    *ty = Type::Unit;
+                }
+            }
+            1 => {
+                if let Part::Domain { ring, .. } = &mut changed.parts[index] {
+                    *ring = d.rings[1];
+                }
+            }
+            2 => changed.outputs.domains.swap(0, 1),
+            3 => changed.outputs.domains.clear(),
+            4 => changed.outputs.domains[0] = d.rings[0],
+            _ => {
+                if let Part::Domain { ring, .. } = &mut changed.parts[index] {
+                    *ring = d.domains[0];
+                }
+            }
+        }
+        assert!(
+            changed
+                .recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+                .is_err(),
+            "mode {mode}"
+        );
+    }
+    for mode in 0..3 {
+        let mut nodes = g.nodes.clone();
+        let n = &mut nodes[d.domains[0].0];
+        match mode {
+            0 => n.arguments[1] = d.rings[1],
+            1 => n.ty = NodeType::Value(Type::Z),
+            _ => n.rule = Rule::Construction("ring"),
+        }
+        assert!(replay(&e, &nodes, &g.contexts).is_err(), "native {mode}");
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
