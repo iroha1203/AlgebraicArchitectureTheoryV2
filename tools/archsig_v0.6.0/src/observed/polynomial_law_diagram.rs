@@ -116,6 +116,10 @@ enum Part {
         guard: Option<NodeRef>,
         body: NodeRef,
     },
+    Domain {
+        ring: NodeRef,
+        ty: Type,
+    },
     Base(Type),
     Ring {
         base: NodeRef,
@@ -152,6 +156,7 @@ impl Part {
                 return NodeType::Expression(ty.clone());
             }
             Self::LawInstance { .. } => return NodeType::LawInstance,
+            Self::Domain { .. } => return NodeType::Domain,
             Self::Base(_) | Self::Ring { .. } => T::Ring,
             Self::Polynomial { .. } => T::Polynomial,
             Self::Ideal { .. } => T::Ideal,
@@ -181,6 +186,7 @@ impl Part {
                 .chain(std::iter::once(*body))
                 .collect(),
 
+            Self::Domain { ring, .. } => vec![*ring],
             Self::Ring { base, .. } => vec![*base],
             Self::Polynomial { ring, terms } => std::iter::once(*ring)
                 .chain(terms.iter().map(|t| t.0))
@@ -205,6 +211,7 @@ impl Part {
             Self::Scalar(_) => "binding",
             Self::Source { .. } | Self::Transform { .. } => "expression",
             Self::LawInstance { .. } => "law_instance",
+            Self::Domain { .. } => "domain",
             Self::Base(_) | Self::Ring { .. } => "ring",
             Self::Polynomial { .. } => "polynomial",
             Self::Ideal { .. } => "ideal",
@@ -300,6 +307,9 @@ impl Part {
                 value
             }
 
+            Self::Domain { ty, .. } => {
+                Json::obj([("kind", Json::str("type")), ("type", ty.wire())])
+            }
             Self::Base(ty) => Json::obj([("kind", Json::str("scalar")), ("scalar", ty.wire())]),
             Self::Ring { base, variables } => Json::obj([
                 ("kind", Json::str("polynomial")),
@@ -383,6 +393,7 @@ pub(super) struct Diagram {
     pub unavailable: Option<Unavailable>,
     pub originals: Vec<Original>,
     pub rings: Vec<NodeRef>,
+    pub domains: Vec<NodeRef>,
     pub bases: Vec<NodeRef>,
     pub required: Vec<NodeRef>,
     pub evaluations: Vec<Option<NodeRef>>,
@@ -540,6 +551,7 @@ fn plan(
         unavailable: None,
         originals,
         rings: vec![],
+        domains: vec![],
         bases: vec![],
         required: vec![],
         evaluations: vec![],
@@ -578,8 +590,20 @@ fn plan(
             },
             c,
         )?;
+        let mut types = vec![];
+        for _ in &ring.symbols {
+            tick(c)?;
+            types.push(ring.ty.clone());
+        }
+        let ty = match types.as_slice() {
+            [] => Type::Unit,
+            [ty] => ty.clone(),
+            _ => Type::Tuple(types),
+        };
+        let domain = push(&mut parts, base, Part::Domain { ring: r, ty }, c)?;
         out.bases.push(scalar);
         out.rings.push(r);
+        out.domains.push(domain);
         let evaluation = if let Some(images) = &ring.evaluation_images {
             if images.len() != ring.symbols.len() {
                 return Err("多項式の評価像が全記号と違う".into());
@@ -896,6 +920,7 @@ fn symbolic_plan(
             unavailable: Some(reason),
             originals,
             rings: vec![],
+            domains: vec![],
             bases: vec![],
             required: vec![],
             evaluations: vec![],

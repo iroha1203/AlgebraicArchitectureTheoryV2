@@ -417,6 +417,7 @@ fn unbounded_parameter_keeps_symbolic_law_typed_sides_and_explicit_unavailable_w
     assert_eq!(reason.feature, "値parameterの全域計算が未実装");
     assert!(
         d.rings.is_empty()
+            && d.domains.is_empty()
             && d.coordinates.is_empty()
             && d.required.is_empty()
             && d.evaluations.is_empty()
