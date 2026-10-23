@@ -349,6 +349,30 @@ fn origin<'a>(
     }
     Ok((a, *root, laws))
 }
+/// 実際に保持した部分Architectureだけを元対象へ対応させる。
+pub(super) fn architecture_origin(
+    graph: &Graph,
+    reference: NodeRef,
+    object: usize,
+) -> Result<&Arc<ArchitectureWitness>, ValidationFailure> {
+    let node = graph.get(reference)?;
+    let Some(Payload::Construction(value)) = &node.payload else {
+        return Err("有限Lawの部分Architectureがない".into());
+    };
+    let D::ObjectComponents(data) = &value.data else {
+        return Err("有限Lawの参照が標準対象族でない".into());
+    };
+    data.position(reference.0)?;
+    if !matches!(
+        data.source.parts.get(data.index),
+        Some(Part::Architecture { .. })
+    ) || data.source.outputs.architectures.get(object) != Some(&reference)
+    {
+        return Err("有限Lawの部分Architectureと元対象の対応が違う".into());
+    }
+    validate_node(graph, node, data)?;
+    Ok(&data.source.architecture)
+}
 impl Source {
     fn recheck(
         &self,
