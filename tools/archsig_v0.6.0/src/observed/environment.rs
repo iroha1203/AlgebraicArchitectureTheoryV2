@@ -785,6 +785,8 @@ impl<'a> Environment<'a> {
                     self.recheck_object_components(graph, value)?;
                     if let super::construction_result::ConstructionData::InternalArrows(data) = &value.data { data.position(limit)?; }
                     self.recheck_internal_arrows(graph, value)?;
+                    if let super::construction_result::ConstructionData::EquationFamily(data) = &value.data { data.position(limit)?; }
+                    self.recheck_equation_family(graph, value)?;
                     for r in node
                         .arguments
                         .iter()

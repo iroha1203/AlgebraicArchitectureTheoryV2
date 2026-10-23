@@ -41,6 +41,7 @@ pub(crate) enum ConstructionType {
     Polynomial,
     Context,
     EquationPresentation,
+    EquationFamily,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -61,6 +62,7 @@ impl ConstructionType {
             Self::Polynomial => "Polynomial",
             Self::Context => "Context",
             Self::EquationPresentation => "EquationPresentation",
+            Self::EquationFamily => "EquationFamily",
         }
     }
 }
@@ -145,6 +147,7 @@ pub(crate) enum ConstructionData {
     LawFamily(super::law_family::Data),
     ObjectComponents(super::object_component_diagram::Data),
     InternalArrows(super::internal_arrow_diagram::Data),
+    EquationFamily(super::equation_family::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -326,6 +329,7 @@ impl ConstructionValue {
             D::LawFamily(data) => return data.ty(),
             D::ObjectComponents(data) => return data.ty(),
             D::InternalArrows(data) => return data.ty(),
+            D::EquationFamily(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
             D::Comparison(part) => return part.ty(),
@@ -361,6 +365,7 @@ impl ConstructionValue {
             D::LawFamily(data) => data.arguments(),
             D::ObjectComponents(data) => data.arguments(),
             D::InternalArrows(data) => data.arguments(),
+            D::EquationFamily(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
             D::Comparison(part) => {
@@ -462,6 +467,7 @@ impl ConstructionValue {
             D::LawFamily(ref data) => data.construction(),
             D::ObjectComponents(ref data) => data.construction(),
             D::InternalArrows(ref data) => data.construction(),
+            D::EquationFamily(_) => "equation_family",
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
             D::Comparison(ref part) => part.construction(),
@@ -486,6 +492,7 @@ impl ConstructionValue {
                 ConstructionType::Polynomial => "polynomial",
                 ConstructionType::Context => "context",
                 ConstructionType::EquationPresentation => "equation_presentation",
+                ConstructionType::EquationFamily => "equation_family",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -585,6 +592,7 @@ impl ConstructionValue {
             D::LawFamily(data) => data.wire(),
             D::ObjectComponents(data) => data.wire(),
             D::InternalArrows(data) => data.wire(),
+            D::EquationFamily(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
             D::Comparison(part) => match &self.witness { Witness::Compare(w) => part.wire(w), _ => unreachable!("比較は元検査を持つ") },
@@ -1171,6 +1179,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
     if let ConstructionData::PolynomialLaw(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::ObjectComponents(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::InternalArrows(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::EquationFamily(data) = &value.data { return Ok(data.metadata()); }
     if let Witness::PathCompose(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
     if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationSource(data))) = (&value.witness, &value.data) {
         let _ = w;
@@ -1631,6 +1640,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     if let ConstructionData::PolynomialLaw(data) = &v.data { return super::polynomial_law_diagram::validate_node(graph,node,data); }
     if let ConstructionData::ObjectComponents(data) = &v.data { return super::object_component_diagram::validate_node(graph,node,data); }
     if let ConstructionData::InternalArrows(data) = &v.data { return super::internal_arrow_diagram::validate_node(graph,node,data); }
+    if let ConstructionData::EquationFamily(data) = &v.data { return super::equation_family::validate_node(graph,node,data); }
     if let Witness::Compose(c) = &v.witness { return super::public_compose::validate_node(graph,node,c); }
     if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_node(graph,node,c); }
     if let Witness::Compare(c) = &v.witness { return super::public_compare::validate_node(graph,node,c); }

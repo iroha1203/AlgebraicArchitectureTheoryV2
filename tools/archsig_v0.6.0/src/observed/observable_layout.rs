@@ -339,6 +339,9 @@ fn compute(
 #[path = "observable_layout_finite.rs"]
 mod finite;
 impl Layout {
+    pub(super) fn law_table(&self) -> &Table {
+        &self.table
+    }
     pub(super) fn recheck(
         &self,
         env: &Environment<'_>,

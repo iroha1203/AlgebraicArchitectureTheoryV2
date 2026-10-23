@@ -19,6 +19,7 @@ mod law_instantiation;
 mod law_family;
 mod law_table;
 mod observable_layout;
+mod equation_family;
 mod object_component_diagram;
 mod internal_arrow_diagram;
 mod needed;
