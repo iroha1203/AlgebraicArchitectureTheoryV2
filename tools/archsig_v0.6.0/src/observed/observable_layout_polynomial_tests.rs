@@ -192,15 +192,15 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
         assert_eq!(row.architecture, t.objects[object].architecture);
         assert_eq!(row.coordinates.len(), 12);
         for (i, q) in row.coordinates.iter().enumerate() {
-            let expected = match q.source.ty {
+            let expected = match q.polynomial().unwrap().ty {
                 crate::types::Type::Z => 0,
                 crate::types::Type::Q => 1,
                 crate::types::Type::Fp(_) => 2,
                 _ => panic!(),
             };
-            assert_eq!(q.source.component, [expected]);
+            assert_eq!(q.polynomial().unwrap().component, [expected]);
             assert_eq!(q.factor, Some(expected));
-            assert_eq!(q.source.ring, Some(l.data.factors[expected]));
+            assert_eq!(q.polynomial().unwrap().ring, Some(l.data.factors[expected]));
             for factor in 0..3 {
                 for atom in checked.atoms {
                     let v = checked
@@ -211,7 +211,7 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
                             panic!()
                         };
                         assert_eq!(ring, l.data.factors[expected]);
-                        assert_eq!(Some(reference), q.source.residual);
+                        assert_eq!(Some(reference), q.polynomial().unwrap().residual);
                         assert!(polynomial(&g, reference).is_empty());
                     } else {
                         assert_eq!(
@@ -279,9 +279,12 @@ fn non_applicable_rows_keep_raw_epsilon_absent_and_real_residual_zero() {
     let mut outside = 0;
     for (object, row) in l.data.objects.iter().enumerate() {
         for (i, q) in row.coordinates.iter().enumerate() {
-            if q.source.guard == EquationGuard::OutsideObject {
+            if q.polynomial().unwrap().guard == EquationGuard::OutsideObject {
                 outside += 1;
-                assert!(q.source.nu.is_none() && q.source.epsilon.is_none());
+                assert!(
+                    q.polynomial().unwrap().nu.is_none()
+                        && q.polynomial().unwrap().epsilon.is_none()
+                );
                 for reading in [Reading::Nu, Reading::Epsilon] {
                     assert_eq!(
                         checked
@@ -345,7 +348,7 @@ fn missing_quantities_and_unavailable_presentations_retain_every_position_withou
             let q = l.data.objects[0]
                 .coordinates
                 .iter()
-                .position(|q| subject(&g, q.source.instance, "c") == "q")
+                .position(|q| subject(&g, q.polynomial().unwrap().instance, "c") == "q")
                 .unwrap();
             assert_eq!(
                 checked
@@ -376,16 +379,16 @@ fn finite_parameter_rows_keep_bindings_cases_and_symbolic_global_indices() {
     for (object, row) in l.data.objects.iter().enumerate() {
         assert_eq!(row.coordinates.len(), ds[object].coordinates.len());
         for (q, source) in row.coordinates.iter().zip(&ds[object].coordinates) {
-            assert_eq!(&q.source, source);
+            assert_eq!(q.polynomial().unwrap(), source);
             assert!(l.data.indices.contains(&q.index));
             if object == 0 {
-                let o = super::super::law_evaluation::origin(&g, q.source.instance)
+                let o = super::super::law_evaluation::origin(&g, q.polynomial().unwrap().instance)
                     .unwrap()
                     .unwrap();
                 let b = o.bindings.iter().find(|b| b.name == "b").unwrap();
                 assert_eq!(
                     g.scalar(b.value).unwrap(),
-                    &Scalar::Bool(q.source.row == Some(1))
+                    &Scalar::Bool(q.polynomial().unwrap().row == Some(1))
                 );
             }
         }
@@ -456,20 +459,51 @@ fn layout_and_underlying_table_tampering_is_rejected() {
             }
             11 => b.data.objects[0].coordinates[0].factor = Some(1),
             12 => b.data.objects[0].coordinates[0].factor = Some(20),
-            13 => b.data.objects[0].coordinates[0].source.component = vec![1],
-            14 => b.data.objects[0].coordinates[0].source.row = Some(20),
-            15 => b.data.objects[0].coordinates[0].source.case = 20,
-            16 => b.data.objects[0].coordinates[0].source.nu = Some(NodeRef(g.nodes.len())),
+            13 => {
+                b.data.objects[0].coordinates[0]
+                    .polynomial_mut()
+                    .unwrap()
+                    .component = vec![1]
+            }
+            14 => {
+                b.data.objects[0].coordinates[0]
+                    .polynomial_mut()
+                    .unwrap()
+                    .row = Some(20)
+            }
+            15 => {
+                b.data.objects[0].coordinates[0]
+                    .polynomial_mut()
+                    .unwrap()
+                    .case = 20
+            }
+            16 => {
+                b.data.objects[0].coordinates[0]
+                    .polynomial_mut()
+                    .unwrap()
+                    .nu = Some(NodeRef(g.nodes.len()))
+            }
             17 => b.data.objects[0].coordinates[0].index = b.data.indices[1],
             18 => b.data.support.clear(),
             19 => b.data.scope.snapshots.clear(),
             20 => b.data.complete = true,
             21 => b.data.objects[0].presentations.clear(),
             22 => b.data.objects[0].architecture = b.data.objects[1].architecture,
-            23 => b.data.objects[0].coordinates[0].source.position.object = 1,
+            23 => {
+                b.data.objects[0].coordinates[0]
+                    .polynomial_mut()
+                    .unwrap()
+                    .position
+                    .object = 1
+            }
             24 => {
-                b.data.objects[0].coordinates[0].source.epsilon =
-                    b.data.objects[0].coordinates[0].source.residual
+                b.data.objects[0].coordinates[0]
+                    .polynomial_mut()
+                    .unwrap()
+                    .epsilon = b.data.objects[0].coordinates[0]
+                    .polynomial_mut()
+                    .unwrap()
+                    .residual
             }
             25 => {
                 let mut t = (*table).clone();
@@ -480,7 +514,10 @@ fn layout_and_underlying_table_tampering_is_rejected() {
         }
         // epsilonとresidualが同じRefである場合は、他Lawの評価へ明示的に差し替える。
         if mode == 24 {
-            b.data.objects[0].coordinates[0].source.epsilon = Some(table.objects[0].holds[0]);
+            b.data.objects[0].coordinates[0]
+                .polynomial_mut()
+                .unwrap()
+                .epsilon = Some(table.objects[0].holds[0]);
         }
         assert!(b.recheck(&env, &g, &mut quiet()).is_err(), "mode {mode}");
     }
