@@ -54,6 +54,7 @@ pub(super) fn origin(graph: &Graph, r: NodeRef) -> Result<Option<Origin>, Valida
     match &v.data {
         D::FiniteLaw(d) => d.evaluation_origin(r),
         D::PolynomialLaw(d) => d.evaluation_origin(r),
+        D::LawInstantiation(d) => super::law_instantiation::evaluation_origin(graph, d),
         _ => Ok(None),
     }
 }
