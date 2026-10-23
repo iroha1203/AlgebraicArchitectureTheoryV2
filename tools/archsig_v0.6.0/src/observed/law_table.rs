@@ -191,6 +191,9 @@ fn cell(
     Ok(())
 }
 impl Table {
+    pub(super) fn diagrams(&self) -> Result<Vec<Diagram>, ValidationFailure> {
+        self.plan.diagrams()
+    }
     pub(super) fn recheck(
         &self,
         env: &Environment<'_>,
