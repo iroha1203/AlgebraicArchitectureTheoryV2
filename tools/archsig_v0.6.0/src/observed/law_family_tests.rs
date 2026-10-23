@@ -128,6 +128,31 @@ fn family_data(g: &Graph, r: NodeRef) -> &Data {
     let D::LawFamily(d) = &v.data else { panic!() };
     d
 }
+fn assert_exhaustion_wire(g: &Graph, proof: NodeRef, domain: NodeRef, rows: &[Row]) {
+    // 独立した公開形式の期待値を、実際のNode出力まで照合する。
+    let expected = Json::obj([
+        ("kind", Json::str("finite_exhaustion")),
+        (
+            "data",
+            Json::obj([
+                ("domain", domain.wire()),
+                ("checked", Json::Nat(rows.len() as u64)),
+                (
+                    "instances",
+                    ref_array(&rows.iter().map(|r| r.evaluation).collect::<Vec<_>>()),
+                ),
+            ]),
+        ),
+    ]);
+    assert_eq!(family_data(g, proof).wire, expected);
+    let node = g.get(proof).unwrap();
+    assert_eq!(node.ty, NodeType::Evidence);
+    let Json::Obj(ref wire) = node.wire(proof.0, &g.nodes[..proof.0]) else {
+        panic!()
+    };
+    assert_eq!(wire["type"], Json::str("Evidence"));
+    assert_eq!(wire["value"], expected);
+}
 fn assert_upstream(p: &PreparedObserved) {
     let upstream = crate::observed::object_law_compatibility::object_law_compatibility(
         p.shared_inputs(),
@@ -242,14 +267,7 @@ fn finite_boolean_family_uses_real_rows_every_object_and_full_exhaustion() {
             if established {
                 let proof = family_data(&g, *answer.evidence.last().unwrap());
                 assert!(matches!(proof.kind,Kind::Exhaustion{evaluation} if evaluation==eval));
-                let Json::Obj(ref wire) = proof.wire else {
-                    panic!()
-                };
-                assert_eq!(wire["checked"], Json::Nat(2));
-                assert_eq!(
-                    wire["instances"],
-                    ref_array(&rows.iter().map(|r| r.evaluation).collect::<Vec<_>>())
-                );
+                assert_exhaustion_wire(&g, *answer.evidence.last().unwrap(), *domain, rows);
             }
             assert!(d.scope.assignments);
             assert!(
@@ -369,12 +387,7 @@ fn empty_parameter_product_has_zero_real_rows_and_does_not_evaluate_body() {
             assert!(
                 matches!(&family_data(&g,*domain).kind,Kind::Domain{members} if members.is_empty())
             );
-            let proof = family_data(&g, *a.evidence.last().unwrap());
-            let Json::Obj(ref wire) = proof.wire else {
-                panic!()
-            };
-            assert_eq!(wire["checked"], Json::Nat(0));
-            assert_eq!(wire["instances"], Json::Arr(vec![]));
+            assert_exhaustion_wire(&g, *a.evidence.last().unwrap(), *domain, rows);
             assert!(
                 g.nodes[before..]
                     .iter()
@@ -439,7 +452,7 @@ fn all_false_guards_keep_unbounded_body_unread_and_count_every_row() {
                 .unwrap();
             assert_eq!(a.status, Decision::Established);
             let eval = family_data(&g, a.outputs["evaluation"]);
-            let Kind::Evaluation { rows, .. } = &eval.kind else {
+            let Kind::Evaluation { domain, rows, .. } = &eval.kind else {
                 panic!()
             };
             assert_eq!(rows.len(), 2);
@@ -451,11 +464,7 @@ fn all_false_guards_keep_unbounded_body_unread_and_count_every_row() {
                     assert!(body.children.is_empty());
                 }
             }
-            let proof = family_data(&g, *a.evidence.last().unwrap());
-            let Json::Obj(ref wire) = proof.wire else {
-                panic!()
-            };
-            assert_eq!(wire["checked"], Json::Nat(2));
+            assert_exhaustion_wire(&g, *a.evidence.last().unwrap(), *domain, rows);
         }
     }
     replay(&p, &g).unwrap();
@@ -510,11 +519,11 @@ fn whole_family_rejects_coverage_order_environment_wire_scope_and_judgment_forge
     let Kind::Domain { members } = family_data(&g, domain).kind.clone() else {
         panic!()
     };
-    for mode in 0..18 {
+    for mode in 0..19 {
         let mut bad = copy_graph(&g, &quiet());
         let r = match mode {
             11 => q,
-            12 => proof,
+            12 | 18 => proof,
             13 | 14 => domain_ref,
             15 | 16 => members[0],
             _ => e,
@@ -570,7 +579,10 @@ fn whole_family_rejects_coverage_order_environment_wire_scope_and_judgment_forge
             }
             12 => {
                 let Json::Obj(w) = &mut d.wire else { panic!() };
-                w.insert("checked".into(), Json::Nat(1));
+                let Some(Json::Obj(data)) = w.get_mut("data") else {
+                    panic!()
+                };
+                data.insert("checked".into(), Json::Nat(1));
             }
             13 => {
                 let Kind::Domain { members } = &mut d.kind else {
@@ -599,6 +611,13 @@ fn whole_family_rejects_coverage_order_environment_wire_scope_and_judgment_forge
                 d.wire = Json::Bool(true);
             }
             17 => d.architecture = objects[1],
+            18 => {
+                let Json::Obj(w) = &mut d.wire else { panic!() };
+                let Some(Json::Obj(ref data)) = w.remove("data") else {
+                    panic!()
+                };
+                w.extend(data.clone());
+            }
             _ => unreachable!(),
         });
         assert!(replay(&p, &bad).is_err(), "mode {mode}");

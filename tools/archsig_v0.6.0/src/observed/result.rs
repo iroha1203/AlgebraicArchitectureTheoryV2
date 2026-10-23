@@ -1039,7 +1039,7 @@ pub(crate) enum Payload {
     },
 }
 impl Payload {
-    fn wire(&self) -> Json {
+    pub(super) fn wire(&self) -> Json {
         match self {
             Self::Construction(value) => value.wire(),
             Self::ObservationPlan {

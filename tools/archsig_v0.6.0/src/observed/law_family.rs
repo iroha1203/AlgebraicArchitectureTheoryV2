@@ -580,15 +580,12 @@ fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), Val
             }
             out.support = a.support;
             out.scope = a.scope;
-            Json::obj([
-                ("kind", Json::str("finite_exhaustion")),
-                ("domain", domain.wire()),
-                ("checked", Json::Nat(rs.len() as u64)),
-                (
-                    "instances",
-                    ref_array(&rs.iter().map(|r| r.evaluation).collect::<Vec<_>>()),
-                ),
-            ])
+            Payload::FiniteExhaustion {
+                domain: *domain,
+                checked: rs.len(),
+                instances: rs.iter().map(|r| r.evaluation).collect(),
+            }
+            .wire()
         }
         Kind::Proposition {
             evaluation,
