@@ -349,6 +349,7 @@ pub(crate) struct Environment<'a> {
     pub(super) verified_polynomial_law_diagrams: RefCell<Vec<std::sync::Arc<super::polynomial_law_diagram::Source>>>,
     pub(super) verified_object_components: RefCell<Vec<std::sync::Arc<super::object_component_diagram::Source>>>,
     pub(super) verified_internal_arrows: RefCell<Vec<std::sync::Arc<super::internal_arrow_diagram::Source>>>,
+    pub(super) verified_circuit_patterns: RefCell<Vec<std::sync::Arc<super::circuit_pattern::Source>>>,
     dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
@@ -482,6 +483,7 @@ impl<'a> Environment<'a> {
             verified_polynomial_law_diagrams: RefCell::new(vec![]),
             verified_object_components: RefCell::new(vec![]),
             verified_internal_arrows: RefCell::new(vec![]),
+            verified_circuit_patterns: RefCell::new(vec![]),
             dotted_inputs: RefCell::new(DottedInputCache::default()),
             scoped_values: RefCell::new(Vec::new()),
             control: control.clone(),
@@ -787,6 +789,8 @@ impl<'a> Environment<'a> {
                     self.recheck_internal_arrows(graph, value)?;
                     if let super::construction_result::ConstructionData::EquationFamily(data) = &value.data { data.position(limit)?; }
                     self.recheck_equation_family(graph, value)?;
+                    if let super::construction_result::ConstructionData::CircuitPattern(data) = &value.data { data.position(limit)?; }
+                    self.recheck_circuit_pattern(graph, value)?;
                     for r in node
                         .arguments
                         .iter()
