@@ -100,7 +100,7 @@ pub(in crate::observed) struct RelationSide {
     pub scope: Scope,
     pub reasons: Vec<Reason>,
 }
-pub(in crate::observed) fn relation_side<'a>(
+pub(in crate::observed) fn instance_expression<'a>(
     environment: &'a Environment<'a>, graph: &mut Graph, control: &mut Control,
     request: &'a Request, declaration: &'a Declaration, instance: usize, expression: usize,
 ) -> Result<RelationSide, ValidationFailure> {
@@ -108,7 +108,8 @@ pub(in crate::observed) fn relation_side<'a>(
     let record = graph.instances.get(instance).ok_or("relation評価の元instanceがない")?;
     graph.active = super::call::Context { instance: Some(instance), ..record.caller };
     let result = (|| {
-        let (bindings, base) = environment.relation_evaluation_bindings(graph, instance)?;
+        let _architecture=environment.enter_architecture(graph)?;
+        let (bindings, base) = environment.instance_evaluation_bindings(graph, instance)?;
         let mut evaluator = Evaluator {
             environment, graph, control, request, declaration, bindings,
             lexical: BTreeMap::new(), formal: BTreeMap::new(), base,
@@ -125,6 +126,13 @@ pub(in crate::observed) fn relation_side<'a>(
     })();
     graph.active = previous;
     result
+}
+
+pub(in crate::observed) fn relation_side<'a>(
+    environment: &'a Environment<'a>, graph: &mut Graph, control: &mut Control,
+    request: &'a Request, declaration: &'a Declaration, instance: usize, expression: usize,
+) -> Result<RelationSide, ValidationFailure> {
+    instance_expression(environment,graph,control,request,declaration,instance,expression)
 }
 
 /// commit 済みの元式。未検査の分析結果とは区別し、通常値には使用しない。

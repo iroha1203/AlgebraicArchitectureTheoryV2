@@ -15,6 +15,8 @@ use crate::{
 };
 #[path = "object_view_family_environment.rs"]
 mod object_view_family;
+#[path = "law_evaluation_environment.rs"]
+mod law_evaluation;
 #[path = "architecture_environment.rs"]
 pub(super) mod architecture_environment;
 #[path = "answer_binding.rs"]
@@ -759,6 +761,7 @@ impl<'a> Environment<'a> {
                     self.recheck_finite_law_diagram(graph, value)?;
                     if let super::construction_result::ConstructionData::PolynomialLaw(data) = &value.data { data.position(limit)?; }
                     self.recheck_polynomial_law_diagram(graph, value)?;
+                    self.recheck_law_frame(graph, value)?;
                     if let super::construction_result::ConstructionData::ObjectComponents(data) = &value.data { data.position(limit)?; }
                     self.recheck_object_components(graph, value)?;
                     if let super::construction_result::ConstructionData::InternalArrows(data) = &value.data { data.position(limit)?; }
@@ -6450,6 +6453,11 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         let declaration = declaration.ok_or("原式を所有する宣言がない")?;
+        if let Some(index) = self.current_context(graph).instance {
+            if !self.native_law_source_allowed(graph,index,span)? {
+                return Err("未成立guardのnative Law bodyは評価できない".into());
+            }
+        }
         if matches!(declaration.signature, crate::law::model::Signature::Relation { .. }) {
             let index = self.current_context(graph).instance.ok_or("元relation instanceがない")?;
             if !crate::observed::public_compare::relation_sources::source_allowed(graph, index, span)? {
@@ -6460,7 +6468,7 @@ impl<'a> Environment<'a> {
             crate::law::model::Signature::View { params, .. }
             | crate::law::model::Signature::Law { params, .. } => params,
             crate::law::model::Signature::Relation { params, .. }
-                if self.current_context(graph).instance.map(|index| self.relation_source_declaration(graph, index)).transpose()?.flatten().as_deref() == Some(declaration.name.as_str()) => params,
+                if self.current_context(graph).instance.map(|index| self.instance_source_declaration(graph, index)).transpose()?.flatten().as_deref() == Some(declaration.name.as_str()) => params,
             _ => return Err("評価範囲の元宣言が view/Law でない".into()),
         };
         let (mut base, mut variables) = if let Some(index) = self.current_context(graph).frame {
@@ -6488,7 +6496,7 @@ impl<'a> Environment<'a> {
                 .get(self.current_context(graph).request)
                 .ok_or("実instance元Requestがない")?;
             if request.declaration() != Some(declaration.name.as_str())
-                && self.relation_source_declaration(graph, index)?.as_deref() != Some(declaration.name.as_str()) {
+                && self.instance_source_declaration(graph, index)?.as_deref() != Some(declaration.name.as_str()) {
                 return Err("instance Sourceが別宣言".into());
             }
             let (expected, variables, base) = self.family_instance_inputs(graph, index)?;

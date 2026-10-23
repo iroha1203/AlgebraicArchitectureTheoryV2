@@ -139,6 +139,7 @@ impl Eq for AtomWitness {}
 pub(crate) enum ConstructionData {
     FiniteLaw(super::finite_law_diagram::Data),
     PolynomialLaw(super::polynomial_law_diagram::Data),
+    LawFrame(super::law_evaluation::Data),
     ObjectComponents(super::object_component_diagram::Data),
     InternalArrows(super::internal_arrow_diagram::Data),
     Composition(super::public_compose::Part),
@@ -247,6 +248,7 @@ impl ConstructionValue {
         match &self.data {
             ConstructionData::FiniteLaw(data) => data.scalar(),
             ConstructionData::PolynomialLaw(data) => data.scalar(),
+            ConstructionData::LawFrame(data) => data.scalar(),
             ConstructionData::ObjectComponents(data) => data.scalar(),
             ConstructionData::InternalArrows(data) => data.scalar(),
             ConstructionData::PathComposition(part) => part.scalar(),
@@ -312,6 +314,7 @@ impl ConstructionValue {
         let ty = match &self.data {
             D::FiniteLaw(data) => return data.ty(),
             D::PolynomialLaw(data) => return data.ty(),
+            D::LawFrame(data) => return data.ty(),
             D::ObjectComponents(data) => return data.ty(),
             D::InternalArrows(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
@@ -343,6 +346,7 @@ impl ConstructionValue {
         match &self.data {
             D::FiniteLaw(data) => data.arguments(),
             D::PolynomialLaw(data) => data.arguments(),
+            D::LawFrame(data) => data.arguments(),
             D::ObjectComponents(data) => data.arguments(),
             D::InternalArrows(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
@@ -440,6 +444,7 @@ impl ConstructionValue {
         match self.data {
             D::FiniteLaw(ref data) => data.construction(),
             D::PolynomialLaw(ref data) => data.construction(),
+            D::LawFrame(_) => "domain",
             D::ObjectComponents(ref data) => data.construction(),
             D::InternalArrows(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
@@ -559,6 +564,7 @@ impl ConstructionValue {
         match &self.data {
             D::FiniteLaw(data) => data.wire(),
             D::PolynomialLaw(data) => data.wire(),
+            D::LawFrame(data) => data.wire(),
             D::ObjectComponents(data) => data.wire(),
             D::InternalArrows(data) => data.wire(),
             D::Composition(part) => part.wire(),
@@ -1139,6 +1145,7 @@ pub fn atom_value(
     })
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    if let ConstructionData::LawFrame(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
     if let ConstructionData::FiniteLaw(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::PolynomialLaw(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::ObjectComponents(data) = &value.data { return Ok(data.metadata()); }
@@ -1595,6 +1602,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     let Some(Payload::Construction(v)) = &node.payload else {
         return Err("native構成のpayloadがない".into());
     };
+    if let ConstructionData::LawFrame(data) = &v.data { return super::law_evaluation::validate_node(graph,node,v,data); }
     if let ConstructionData::FiniteLaw(data) = &v.data { return super::finite_law_diagram::validate_node(graph,node,data); }
     if let ConstructionData::PolynomialLaw(data) = &v.data { return super::polynomial_law_diagram::validate_node(graph,node,data); }
     if let ConstructionData::ObjectComponents(data) = &v.data { return super::object_component_diagram::validate_node(graph,node,data); }

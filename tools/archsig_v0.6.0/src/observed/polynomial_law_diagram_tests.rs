@@ -791,7 +791,10 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
                             ..
                         }
                         | Part::Scalar(Scalar::Unit | Scalar::Subject { .. })
-                        | Part::ObservedBoolean { value: Scalar::Bool(true), .. }
+                        | Part::ObservedBoolean {
+                            value: Scalar::Bool(true),
+                            ..
+                        }
                         | Part::Equation(
                             crate::observed::equation_presentation_node::Part::Context { .. }
                         )
@@ -1658,4 +1661,77 @@ fn progressive_missing_match_discovery_keeps_observed_roots_separate_from_cases(
         assert!(coordinates.iter().all(|q| q.epsilon.is_none()));
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn native_law_expression_frames_reject_corrupted_original_body_and_guard_ids_without_panicking() {
+    let e = example(false, "law required zero(c:Part) when true:c.quantity=0;");
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let diagram = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let origin = diagram.readings[0].instance;
+    let env = Environment::with_requests(
+        e.prepared.inputs(),
+        e.prepared.requests().requests(),
+        &mut quiet(),
+    )
+    .unwrap();
+    let evaluated =
+        crate::observed::law_evaluation::evaluate(&env, &mut g, origin, a, &mut quiet()).unwrap();
+    let index = evaluated.instance.unwrap();
+    let body = evaluated.body.unwrap();
+    let Some(Payload::Evaluation { expression, .. }) = &g.nodes[body.0].payload else {
+        panic!("Evaluation")
+    };
+    let Some(Payload::Expression {
+        location: crate::issue::Location::Law { span },
+        ..
+    }) = &g.nodes[expression.0].payload
+    else {
+        panic!("Source")
+    };
+    let span = *span;
+    let original = data(&g, origin).source.clone();
+    for guard in [false, true] {
+        let mut changed = (*original).clone();
+        let Part::LawInstance {
+            body: source_body,
+            guard: condition,
+            ..
+        } = &changed.parts[origin.0 - changed.base]
+        else {
+            panic!("LawInstance")
+        };
+        let r = if guard {
+            condition.unwrap()
+        } else {
+            *source_body
+        };
+        let Part::Source { expression, .. } = &mut changed.parts[r.0 - changed.base] else {
+            panic!("Source")
+        };
+        *expression = usize::MAX;
+        let mut bad = Graph::new(&quiet());
+        bad.nodes = g.nodes.clone();
+        bad.contexts = g.contexts.clone();
+        bad.requests = g.requests.clone();
+        bad.checked_answers = g.checked_answers.clone();
+        bad.frames = g.frames.clone();
+        bad.iterations = g.iterations.clone();
+        bad.instances = g.instances.clone();
+        bad.cases = g.cases.clone();
+        bad.universal_witnesses = g.universal_witnesses.clone();
+        let Some(Payload::Construction(v)) = &mut bad.nodes[origin.0].payload else {
+            panic!("native")
+        };
+        let D::PolynomialLaw(d) = &mut v.data else {
+            panic!("polynomial")
+        };
+        d.source = Arc::new(changed);
+        assert!(
+            crate::observed::law_evaluation::body_guard(&bad, index, span, bad.nodes.len())
+                .is_err()
+        );
+        assert!(env.recheck_node(&bad, &bad.nodes[body.0], body.0).is_err());
+    }
 }

@@ -368,6 +368,65 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn evaluation_origin(
+        &self,
+        reference: NodeRef,
+    ) -> Result<Option<super::law_evaluation::Origin>, ValidationFailure> {
+        self.position(reference.0)?;
+        let Some(Part::LawInstance {
+            name,
+            bindings,
+            body,
+            guard,
+            ..
+        }) = self.source.parts.get(self.index)
+        else {
+            return Ok(None);
+        };
+        let outputs: Vec<_> = std::iter::once((self.source.object, &self.source.outputs))
+            .chain(
+                self.source
+                    .owned_outputs
+                    .iter()
+                    .flatten()
+                    .enumerate()
+                    .map(|(i, d)| (i + 1, d)),
+            )
+            .collect();
+        let (object, diagram) = outputs
+            .into_iter()
+            .find(|(_, d)| d.originals.iter().any(|o| o.row == reference))
+            .ok_or("元有限Law行が出力表にない")?;
+        let reading = diagram
+            .readings
+            .iter()
+            .find(|r| r.instance == reference)
+            .ok_or("元有限Law行の実読取りがない")?;
+        let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
+            match self
+                .source
+                .parts
+                .get(r.0.checked_sub(self.source.base).ok_or("元式が計画外")?)
+            {
+                Some(Part::Source { expression, .. }) => Ok(*expression),
+                _ => Err("元Law式がSourceでない".into()),
+            }
+        };
+        Ok(Some(super::law_evaluation::Origin {
+            architecture: self.source.architecture.clone(),
+            object,
+            declaration: name.clone(),
+            bindings: bindings.clone(),
+            body: expr(*body)?,
+            guard: guard.map(expr).transpose()?,
+            ready: reading.reading.application == Some(true)
+                && !reading.reading.condition_failed
+                && !reading.reading.condition_pending,
+            body_allowed: reading.reading.guard != Some(false),
+            scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,
+        }))
+    }
+
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
