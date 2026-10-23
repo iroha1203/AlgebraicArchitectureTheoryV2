@@ -22,7 +22,7 @@ fn consensus(values: &[Option<bool>]) -> Option<bool> {
         .filter(|v| values.iter().all(|x| x == &Some(*v)))
 }
 /// 元の閉じた値を保持し、Pathを含む値の表示依存だけを同じnative計画へ移す。
-fn domain_value(
+pub(super) fn domain_value(
     value: &Scalar,
     parts: &mut Vec<Part>,
     base: usize,

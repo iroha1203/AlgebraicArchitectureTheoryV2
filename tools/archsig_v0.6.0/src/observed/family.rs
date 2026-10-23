@@ -1576,3 +1576,145 @@ fn family_clean(node: &Node, rule: &str, reasons: &[Reason]) -> bool {
         && node.judgment.is_none()
         && reasons_equal(&node.reasons, reasons)
 }
+
+impl Environment<'_> {
+    pub(super) fn finite_family_guard_source(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+    ) -> Result<bool, ValidationFailure> {
+        let context = self.current_context(graph);
+        let Some(index) = context.instance else {
+            return Ok(false);
+        };
+        let record = graph
+            .instances
+            .get(index)
+            .ok_or("有限Lawの実instanceがない")?;
+        if context
+            != (super::super::call::Context {
+                instance: Some(index),
+                ..record.caller
+            })
+            || !self.family_source_root(graph, record.source)?
+        {
+            return Ok(false);
+        }
+        let (_, plan) = self.family_request(graph, record.source)?;
+        Ok(plan.numeric.is_empty()
+            && plan
+                .guard
+                .is_some_and(|guard| self.inputs.law().exprs[guard].span == span))
+    }
+    // 完全束縛の有限族rowについて、bodyより先の実guardを照合する。
+    fn finite_family_body_guard(
+        &self,
+        graph: &Graph,
+        index: usize,
+        span: (usize, usize),
+    ) -> Result<Option<(NodeRef, (usize, usize), super::super::call::Context)>, ValidationFailure>
+    {
+        let record = graph
+            .instances
+            .get(index)
+            .ok_or("有限Lawの実instanceがない")?;
+        if !self.family_source_root(graph, record.source)? {
+            return Ok(None);
+        }
+        let (_, plan) = self.family_request(graph, record.source)?;
+        if !plan.numeric.is_empty() {
+            return Ok(None);
+        }
+        let body = self.inputs.law().exprs[plan.body].span;
+        if !(body.0 <= span.0 && span.1 <= body.1) {
+            return Ok(None);
+        }
+        let Some(guard) = plan.guard else {
+            return Ok(None);
+        };
+        let guard = self.inputs.law().exprs[guard].span;
+        let producer = super::super::call::Context {
+            instance: Some(index),
+            ..record.caller
+        };
+        let mut found = None;
+        for (at, node) in graph
+            .nodes
+            .iter()
+            .enumerate()
+            .take(self.cutoff.get().min(graph.nodes.len()))
+        {
+            self.tick()?;
+            if graph.context_at(at) != producer {
+                continue;
+            }
+            let Some(Payload::Evaluation { expression, .. }) = &node.payload else {
+                continue;
+            };
+            if matches!(&graph.get(*expression)?.payload,Some(Payload::Expression{location:Location::Law{span},..}) if *span==guard)
+            {
+                if found.replace(NodeRef(at)).is_some() {
+                    return Err("有限Lawの実guard評価が重複".into());
+                }
+            }
+        }
+        let guard = found.ok_or("有限Lawのbodyより先の実guard評価がない")?;
+        self.validate_at(graph, graph.get(guard)?, guard.0)?;
+        Ok(Some((guard, body, producer)))
+    }
+    pub(super) fn finite_family_skipped_source_ref(
+        &self,
+        graph: &Graph,
+        reference: NodeRef,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(Payload::Expression {
+            location: Location::Law { span },
+            ..
+        }) = &graph.get(reference)?.payload
+        else {
+            return Ok(false);
+        };
+        let Some(index) = graph.context_at(reference.0).instance else {
+            return Ok(false);
+        };
+        let Some((guard, _, _)) = self.finite_family_body_guard(graph, index, *span)? else {
+            return Ok(false);
+        };
+        Ok(graph.boolean(self.evaluation(graph, guard)?.2)? == Some(false))
+    }
+    pub(super) fn finite_family_skipped_source(
+        &self,
+        graph: &Graph,
+        index: usize,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Result<Option<SourceAnalysis>, ValidationFailure> {
+        let Some((guard, body, producer)) = self.finite_family_body_guard(graph, index, span)?
+        else {
+            return Ok(None);
+        };
+        if graph.boolean(self.evaluation(graph, guard)?.2)? != Some(false) {
+            return Ok(None);
+        }
+        let (expected, _, scope) = self.family_instance_inputs(graph, index)?;
+        if self.current_context(graph) != producer
+            || span != body
+            || bindings != expected
+            || self.evaluation(graph, guard)?.1 != bindings
+        {
+            return Err("非適用有限Lawのbody出現/束縛/Contextが違う".into());
+        }
+        Ok(Some(SourceAnalysis {
+            condition_failed: false,
+            condition_pending: false,
+            symbolic: None,
+            comparison: None,
+            scope,
+            known_value: None,
+            affine: None,
+            missing: None,
+            support: vec![],
+            scalar_scope: None,
+        }))
+    }
+}

@@ -2536,7 +2536,8 @@ impl Environment<'_> {
         }
         if let Some(Payload::Expression {location:Location::Law {span},bindings,..})=&node.payload {
             if let Some(index)=self.current_context(graph).instance {
-                if self.native_law_skipped_source(graph,index,*span,bindings)?.is_some() {
+                if self.native_law_skipped_source(graph,index,*span,bindings)?.is_some()
+                    || self.finite_family_skipped_source(graph,index,*span,bindings)?.is_some() {
                     return Ok(false);
                 }
             }
@@ -3033,6 +3034,9 @@ impl Environment<'_> {
         reference: NodeRef,
     ) -> Result<bool, ValidationFailure> {
         let node = graph.get(reference)?;
+        // 有限Law族のroot Sourceは、消費側が実instanceでも同じ族に属する。
+        if self.family_source_root(graph,reference)? || self.finite_family_skipped_source_ref(graph,reference)? { return Ok(false); }
+
         let Some(Payload::Expression {
             location: Location::Law { span },
             bindings,
@@ -3047,6 +3051,7 @@ impl Environment<'_> {
                 })
             ));
         };
+        if self.finite_family_guard_source(graph,*span)? {return Ok(false)}
         let Some(&id) = self.expressions.get(span) else {
             return Ok(false);
         };
@@ -3428,6 +3433,7 @@ impl Environment<'_> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Option<SourceExpectation>, ValidationFailure> {
+        if self.finite_family_guard_source(graph,span)? {return Ok(None)}
         let Some(request) = self.universal_source_request(graph, span, bindings)? else {
             return Ok(None);
         };

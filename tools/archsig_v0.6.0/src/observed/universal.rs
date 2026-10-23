@@ -1131,7 +1131,12 @@ impl Environment<'_> {
             && let Signature::Law { body, guard, .. } = &declaration.signature
             && *body == id
         {
-            plan.guard = *guard;
+            // 有限族の実rowは、通常の適用wrapperがguardを先に評価する。
+            // 内側bodyの全称評価へ同じguardを取り込み直さない。
+            plan.guard = match guard {
+                Some(g) if self.finite_family_guard_source(graph,self.inputs.law().exprs[*g].span)? => None,
+                _ => *guard,
+            };
         }
         Ok((!plan.parameters.is_empty()).then_some(plan))
     }
