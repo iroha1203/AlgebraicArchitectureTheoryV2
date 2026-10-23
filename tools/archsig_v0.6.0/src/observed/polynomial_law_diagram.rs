@@ -81,11 +81,13 @@ pub(super) struct Original {
     pub guard: Option<NodeRef>,
     pub reference: NodeRef,
     pub operands: Option<((NodeRef, Type), (NodeRef, Type))>,
+    pub quantifiers: Vec<Quantifier>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
     Scalar(Scalar),
     Source {
+        quantifiers: Vec<Quantifier>,
         instance: usize,
         row: Option<usize>,
         expression: usize,
@@ -95,6 +97,7 @@ enum Part {
         bindings: Vec<Binding>,
     },
     Transform {
+        quantifiers: Vec<Quantifier>,
         operation: Transform,
         parameters: Vec<(String, Type)>,
         ty: Type,
@@ -103,6 +106,7 @@ enum Part {
         position: Option<usize>,
     },
     LawInstance {
+        quantifiers: Vec<Quantifier>,
         instance: usize,
         row: Option<usize>,
         name: String,
@@ -133,6 +137,14 @@ enum Part {
     },
 }
 impl Part {
+    fn quantifiers(&self) -> &[Quantifier] {
+        match self {
+            Self::Source { quantifiers, .. }
+            | Self::Transform { quantifiers, .. }
+            | Self::LawInstance { quantifiers, .. } => quantifiers,
+            _ => &[],
+        }
+    }
     fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
             Self::Scalar(s) => return NodeType::Value(s.ty()),
@@ -435,7 +447,11 @@ impl Data {
         self.part().wire()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.source.support.clone(), self.source.scope.clone())
+        let mut scope = self.source.scope.clone();
+        scope
+            .quantifiers
+            .extend_from_slice(self.part().quantifiers());
+        (self.source.support.clone(), scope)
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         if self.index >= self.source.parts.len()
@@ -1024,11 +1040,12 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
         return Err("多項式の元Architecture参照が違う".into());
     }
+    let (support, scope) = data.metadata();
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support != data.source.support
-        || n.scope != data.source.scope
+        || n.support != support
+        || n.scope != scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()
         || n.judgment.is_some()

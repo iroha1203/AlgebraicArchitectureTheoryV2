@@ -45,6 +45,7 @@ impl Builder<'_> {
             .ok_or("多項式operandの元式がない")?
             .span;
         let source = self.put(Part::Source {
+            quantifiers: self.original.quantifiers.clone(),
             instance: self.original.instance,
             row: self.original.row,
             expression,
@@ -63,6 +64,7 @@ impl Builder<'_> {
             return Ok((source, ty));
         }
         let result = self.put(Part::Transform {
+            quantifiers: self.original.quantifiers.clone(),
             operation: Transform::Substitute,
             parameters: self.original.parameters.clone(),
             ty: ty.clone(),
@@ -109,6 +111,7 @@ impl Builder<'_> {
             // 一般条件の原bodyを保持し、恒真は固定のUnit等値として構成する。
             let unit = self.put(Part::Scalar(Scalar::Unit))?;
             let truth = self.put(Part::Transform {
+                quantifiers: self.original.quantifiers.clone(),
                 operation: Transform::Equal,
                 parameters: self.original.parameters.clone(),
                 ty: Type::Bool,
@@ -192,6 +195,7 @@ impl Builder<'_> {
                 .ok_or("多項式operandの成分が範囲外")?
                 .clone();
             value = self.put(Part::Transform {
+                quantifiers: self.original.quantifiers.clone(),
                 operation: Transform::Project,
                 parameters: self.original.parameters.clone(),
                 ty: target.clone(),
@@ -304,6 +308,20 @@ fn original(
             parameters.push((parameter.name.clone(), ty));
         }
     }
+    let mut quantifiers = vec![];
+    if row.is_none() {
+        for parameter in original.parameters() {
+            tick(c)?;
+            quantifiers.push(Quantifier {
+                kind: crate::law::ast::QuantKind::Forall,
+                name: parameter.name.clone(),
+                ty: parameter.ty.clone(),
+                domain: None,
+                occurrence: parameter.span,
+                context: None,
+            });
+        }
+    }
     let mut source = |expression: usize| -> Result<NodeRef, ValidationFailure> {
         tick(c)?;
         if inputs.law().expr_type(expression) != Some(&Type::Bool) {
@@ -318,6 +336,7 @@ fn original(
             parts,
             base,
             Part::Source {
+                quantifiers: quantifiers.clone(),
                 instance,
                 row,
                 expression,
@@ -335,6 +354,7 @@ fn original(
         parts,
         base,
         Part::LawInstance {
+            quantifiers: quantifiers.clone(),
             instance,
             row,
             name: declaration.name.clone(),
@@ -357,6 +377,7 @@ fn original(
         guard,
         reference,
         operands: None,
+        quantifiers,
     };
     let mut builder = Builder {
         inputs,

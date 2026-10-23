@@ -555,3 +555,85 @@ fn source_only_unavailable_path_preserves_four_stops_without_returning_incomplet
     assert!(nonempty);
     replay(&e, &complete.nodes, &complete.contexts).unwrap();
 }
+#[test]
+fn symbolic_parameter_scope_keeps_forall_name_type_source_span_and_bound_rows_do_not_requantify() {
+    for (body, name, ty) in [
+        (
+            "law required parameter(c:Part,k:Z):let x=c.quantity in x=k;",
+            "k",
+            Type::Z,
+        ),
+        (
+            "law required parameter(c:Part,b:Bool):c.quantity=(if b then 0 else 1);",
+            "b",
+            Type::Bool,
+        ),
+    ] {
+        let e = example(false, body);
+        let mut g = graph(&e);
+        let a = architecture(&g, "a");
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+        let original = d.originals.iter().find(|o| o.row.is_none()).unwrap();
+        let (left, right) = original.operands.as_ref().unwrap();
+        let source = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
+        let binder = format!("{name}:{}", if name == "k" { "Z" } else { "Bool" });
+        let at = source.find(&binder).unwrap();
+        for r in [original.reference, original.body, left.0, right.0] {
+            let qs = &g.nodes[r.0].scope.quantifiers;
+            assert_eq!(qs.len(), 1);
+            let q = &qs[0];
+            assert_eq!(q.kind, crate::law::ast::QuantKind::Forall);
+            assert_eq!(q.name, name);
+            assert_eq!(q.ty, ty);
+            assert_eq!(q.occurrence, (at, at + name.len()));
+            assert!(q.domain.is_none() && q.context.is_none());
+        }
+        for row in d.originals.iter().filter(|o| o.row.is_some()) {
+            let (left, right) = row.operands.as_ref().unwrap();
+            for r in [row.reference, row.body, left.0, right.0] {
+                assert!(g.nodes[r.0].scope.quantifiers.is_empty());
+            }
+        }
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}
+#[test]
+fn symbolic_quantifier_removal_name_type_kind_span_domain_and_native_scope_changes_are_rejected() {
+    let e = example(false, "law required parameter(c:Part,k:Z):c.quantity=k;");
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let original = &d.originals[0];
+    let source = data(&g, original.reference).source.clone();
+    let body = original.body.0 - source.base;
+    for mode in 0..8 {
+        let mut bad = (*source).clone();
+        if mode == 7 {
+            bad.outputs.originals[0].quantifiers.clear();
+        } else {
+            let Part::Source { quantifiers, .. } = &mut bad.parts[body] else {
+                panic!("source")
+            };
+            match mode {
+                0 => quantifiers.clear(),
+                1 => quantifiers[0].kind = crate::law::ast::QuantKind::Exists,
+                2 => quantifiers[0].name = "other".into(),
+                3 => quantifiers[0].ty = Type::Q,
+                4 => quantifiers[0].occurrence = (0, 1),
+                5 => quantifiers[0].domain = Some(NodeRef(0)),
+                _ => quantifiers[0].context = Some(g.contexts[original.body.0]),
+            }
+        }
+        assert!(
+            bad.recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+                .is_err(),
+            "mode {mode}"
+        );
+    }
+    for r in [original.body, original.reference] {
+        let mut nodes = g.nodes.clone();
+        nodes[r.0].scope.quantifiers.clear();
+        assert!(replay(&e, &nodes, &g.contexts).is_err());
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
