@@ -85,6 +85,7 @@ pub(super) struct Original {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
+    Equation(super::equation_presentation_node::Part),
     Scalar(Scalar),
     Source {
         quantifiers: Vec<Quantifier>,
@@ -146,11 +147,13 @@ impl Part {
             Self::Source { quantifiers, .. }
             | Self::Transform { quantifiers, .. }
             | Self::LawInstance { quantifiers, .. } => quantifiers,
+            Self::Equation(v) => v.quantifiers(),
             _ => &[],
         }
     }
     fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
+            Self::Equation(v) => return v.ty(),
             Self::Scalar(s) => return NodeType::Value(s.ty()),
             Self::Source { ty, .. } | Self::Transform { ty, .. } => {
                 return NodeType::Expression(ty.clone());
@@ -165,6 +168,7 @@ impl Part {
     }
     fn arguments(&self) -> Vec<NodeRef> {
         match self {
+            Self::Equation(v) => v.arguments(),
             Self::Scalar(_) | Self::Base(_) => vec![],
             Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
             Self::Transform {
@@ -208,6 +212,7 @@ impl Part {
     }
     fn construction(&self) -> &'static str {
         match self {
+            Self::Equation(v) => v.construction(),
             Self::Scalar(_) => "binding",
             Self::Source { .. } | Self::Transform { .. } => "expression",
             Self::LawInstance { .. } => "law_instance",
@@ -220,6 +225,7 @@ impl Part {
     }
     fn wire(&self) -> Json {
         match self {
+            Self::Equation(v) => v.wire(),
             Self::Scalar(v) => v.wire(),
             Self::Source {
                 location,
@@ -391,6 +397,8 @@ pub(super) struct Unavailable {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
     pub unavailable: Option<Unavailable>,
+    pub context: Option<NodeRef>,
+    pub presentations: Vec<Option<NodeRef>>,
     pub originals: Vec<Original>,
     pub rings: Vec<NodeRef>,
     pub domains: Vec<NodeRef>,
@@ -549,6 +557,8 @@ fn plan(
     let (originals, expressions) = sources::append(core, inputs, &mut parts, base, c)?;
     let mut out = Diagram {
         unavailable: None,
+        context: None,
+        presentations: vec![],
         originals,
         rings: vec![],
         domains: vec![],
@@ -726,6 +736,127 @@ fn plan(
     tick(c)?;
     Ok((parts, out))
 }
+fn append_presentations(
+    inputs: &CheckedInputs,
+    a: &Arc<ArchitectureWitness>,
+    reference: NodeRef,
+    core: &EquationPresentation,
+    parts: &mut Vec<Part>,
+    out: &mut Diagram,
+    base: usize,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    use super::equation_presentation_node::{self as common, Coordinate as C, Part as E};
+    let positions = core
+        .rings()
+        .iter()
+        .flat_map(|r| r.symbols.iter())
+        .map(|s| Fact {
+            snapshot: s.slot.snapshot.clone(),
+            subject: s.slot.subject.clone(),
+            field: Some(s.slot.field.clone()),
+            atom: None,
+        })
+        .collect::<Vec<_>>();
+    // pushは同じControlを使うため、依存subjectの値だけを先に集めてから計画へ追加する。
+    let dependencies = common::dependencies(inputs, &positions, c, |v| {
+        let at = base
+            .checked_add(parts.len())
+            .ok_or("global Contextの生成番号が範囲外")?;
+        parts.push(Part::Scalar(v));
+        Ok(NodeRef(at))
+    })?;
+    let mut laws = vec![];
+    for q in &out.coordinates {
+        tick(c)?;
+        if !laws.contains(&q.instance) {
+            laws.push(q.instance);
+        }
+    }
+    let mut quantifiers = vec![];
+    for original in out.originals.iter().filter(|o| laws.contains(&o.reference)) {
+        for q in &original.quantifiers {
+            if !quantifiers.contains(q) {
+                quantifiers.push(q.clone());
+            }
+        }
+    }
+    let context = push(
+        parts,
+        base,
+        Part::Equation(E::Context {
+            base: reference,
+            carrier: common::carrier(a, c)?,
+            dependencies,
+            laws,
+            quantifiers,
+        }),
+        c,
+    )?;
+    out.context = Some(context);
+    for (index, ring) in out.rings.iter().enumerate() {
+        tick(c)?;
+        let mut coordinates = vec![];
+        let mut instances = vec![];
+        let mut witnesses = vec![];
+        let mut quantifiers = vec![];
+        let mut ready = true;
+        for q in out.coordinates.iter().filter(|q| q.ring == Some(*ring)) {
+            tick(c)?;
+            let (Some(nu), Some(witness)) = (q.nu, q.witness) else {
+                ready = false;
+                break;
+            };
+            if !instances.contains(&q.instance) {
+                instances.push(q.instance);
+            }
+            let original = out
+                .originals
+                .iter()
+                .find(|o| o.reference == q.instance)
+                .ok_or("型別表示の元Law出現がない")?;
+            for scope in &original.quantifiers {
+                if !quantifiers.contains(scope) {
+                    quantifiers.push(scope.clone());
+                }
+            }
+            coordinates.push(C {
+                instance: q.instance,
+                component: q.component.clone(),
+                lhs: q.lhs,
+                rhs: q.rhs,
+                nu,
+                epsilon: q.epsilon,
+            });
+            witnesses.push(witness);
+        }
+        let presentation = if ready {
+            Some(push(
+                parts,
+                base,
+                Part::Equation(E::Presentation {
+                    instances,
+                    domain: *out.domains.get(index).ok_or("型別表示のDomainがない")?,
+                    ring: *ring,
+                    coordinates,
+                    witnesses,
+                    required: *out
+                        .required
+                        .get(index)
+                        .ok_or("型別表示のrequired idealがない")?,
+                    evaluation: *out.evaluations.get(index).ok_or("型別表示の評価欄がない")?,
+                    context,
+                    quantifiers,
+                }),
+                c,
+            )?)
+        } else {
+            None
+        };
+        out.presentations.push(presentation);
+    }
+    tick(c)
+}
 fn metadata(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
@@ -787,6 +918,9 @@ fn metadata(
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     scope.assignments = true;
+    if core.is_some() {
+        super::equation_presentation_node::global_metadata(a, &mut support, &mut scope)?;
+    }
     tick(c)?;
     Ok((support, scope))
 }
@@ -918,6 +1052,8 @@ fn symbolic_plan(
         parts,
         Diagram {
             unavailable: Some(reason),
+            context: None,
+            presentations: vec![],
             originals,
             rings: vec![],
             domains: vec![],
@@ -943,11 +1079,23 @@ impl Source {
             return Err("多項式の元三入力とArchitectureが違う".into());
         }
         let (core, reason) = calculate(inputs.clone(), &a, object, c)?;
-        let (parts, outputs) = match (&core, reason) {
+        let (mut parts, mut outputs) = match (&core, reason) {
             (Some(core), None) => plan(core, &inputs, base, c)?,
             (None, Some(reason)) => symbolic_plan(&inputs, &a, reason, base, c)?,
             _ => return Err("多項式の計算状態が不正".into()),
         };
+        if let Some(core) = &core {
+            append_presentations(
+                &inputs,
+                &a,
+                reference,
+                core,
+                &mut parts,
+                &mut outputs,
+                base,
+                c,
+            )?;
+        }
         let (support, scope) = metadata(&inputs, &a, core.as_deref(), c)?;
         tick(c)?;
         Ok(Self {
@@ -973,7 +1121,7 @@ impl Source {
         if !Arc::ptr_eq(a, &self.architecture) || inputs.sources() != self.inputs.sources() {
             return Err("多項式の消費先・元三入力・対象・readingが違う".into());
         }
-        let (parts, outputs) = if let Some(core) = &self.core {
+        let (mut parts, mut outputs) = if let Some(core) = &self.core {
             if core.object() != self.object || core.base().base().readings() != a.readings() {
                 return Err("多項式の元計算が対象・readingと違う".into());
             }
@@ -993,6 +1141,18 @@ impl Source {
                 c,
             )?
         };
+        if let Some(core) = &self.core {
+            append_presentations(
+                inputs,
+                a,
+                self.reference,
+                core,
+                &mut parts,
+                &mut outputs,
+                self.base,
+                c,
+            )?;
+        }
         let (support, scope) = metadata(inputs, a, self.core.as_deref(), c)?;
         if parts != self.parts
             || outputs != self.outputs

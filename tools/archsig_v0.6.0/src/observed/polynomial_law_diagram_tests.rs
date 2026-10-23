@@ -737,12 +737,29 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
         assert!(d.evaluations.is_empty());
         assert!(d.required.is_empty());
         if body.is_empty() {
-            assert_eq!(g.nodes.len(), before);
+            assert_eq!(g.nodes.len(), before + 1);
+            assert_eq!(d.context, Some(NodeRef(before)));
+            let Part::Equation(crate::observed::equation_presentation_node::Part::Context {
+                base,
+                carrier,
+                dependencies,
+                laws,
+                ..
+            }) = data(&g, NodeRef(before)).part()
+            else {
+                panic!("global Context only");
+            };
+            assert_eq!(*base, a);
+            assert_eq!(carrier.len(), 12);
+            assert!(dependencies.is_empty() && laws.is_empty());
+            assert!(d.presentations.is_empty());
             assert!(d.originals.is_empty());
             assert!(d.coordinates.is_empty());
             assert_eq!(d.status, EquationPresentationStatus::Ready);
         } else {
             assert_eq!(d.status, EquationPresentationStatus::UnsupportedAlgorithm);
+            assert!(d.presentations.is_empty());
+            assert!(d.context.is_some());
             assert_eq!(d.coordinates.len(), 1);
             let q = &d.coordinates[0];
             assert_eq!(q.ty, Type::Bool);
@@ -765,6 +782,9 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
                             ..
                         }
                         | Part::Scalar(Scalar::Unit | Scalar::Subject { .. })
+                        | Part::Equation(
+                            crate::observed::equation_presentation_node::Part::Context { .. }
+                        )
                 ));
             }
         }
@@ -964,6 +984,280 @@ fn assignment_domain_type_ring_reference_and_output_alignment_changes_are_reject
             _ => n.rule = Rule::Construction("ring"),
         }
         assert!(replay(&e, &nodes, &g.contexts).is_err(), "native {mode}");
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn polynomial_presentations_preserve_shared_ring_raw_epsilon_and_original_component_expressions() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(
+        false,
+        "law required pair(c:Part):(c.quantity,c.quantity)=(0,1);",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert_eq!(d.presentations.len(), 1);
+    let r = d.presentations[0].unwrap();
+    let Part::Equation(E::Presentation {
+        instances,
+        domain,
+        ring,
+        coordinates,
+        witnesses,
+        required,
+        evaluation,
+        context,
+        ..
+    }) = data(&g, r).part()
+    else {
+        panic!("presentation");
+    };
+    assert_eq!(
+        (*domain, *ring, *required, *evaluation, *context),
+        (
+            d.domains[0],
+            d.rings[0],
+            d.required[0],
+            d.evaluations[0],
+            d.context.unwrap()
+        )
+    );
+    let original = d.originals.iter().find(|o| o.row == Some(0)).unwrap();
+    assert_eq!(instances, &vec![original.reference]);
+    assert!(original.bindings.iter().any(|b| b.name == "c"
+        && matches!(g.scalar(b.value).unwrap(),Scalar::Subject{subject,..} if subject=="p")));
+    assert_eq!(coordinates.len(), 2);
+    assert_eq!(
+        coordinates
+            .iter()
+            .map(|q| q.component.clone())
+            .collect::<Vec<_>>(),
+        [vec![0], vec![1]]
+    );
+    for (i, q) in coordinates.iter().enumerate() {
+        let original = &d.coordinates[i];
+        assert_eq!(
+            (q.instance, q.lhs, q.rhs, q.nu, q.epsilon),
+            (
+                original.instance,
+                original.lhs,
+                original.rhs,
+                original.nu.unwrap(),
+                original.epsilon
+            )
+        );
+        assert_eq!(witnesses[i], original.witness.unwrap());
+    }
+    let Part::Equation(E::Context {
+        base,
+        carrier,
+        laws,
+        ..
+    }) = data(&g, d.context.unwrap()).part()
+    else {
+        panic!("context");
+    };
+    assert_eq!(*base, a);
+    assert_eq!(carrier.len(), 12);
+    assert_eq!(laws, &vec![original.reference]);
+    assert_ne!(coordinates[0].lhs, coordinates[0].rhs);
+    assert_eq!(terms(&g, coordinates[0].epsilon.unwrap()), vec![]);
+    assert_eq!(
+        terms(&g, coordinates[1].epsilon.unwrap()),
+        vec![(Json::str("-1"), vec![0])]
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn missing_polynomial_values_keep_formal_presentation_without_fabricating_epsilon_or_evaluation() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(true, BODY);
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let r = d.presentations[0].unwrap();
+    let Part::Equation(E::Presentation {
+        coordinates,
+        evaluation,
+        ..
+    }) = data(&g, r).part()
+    else {
+        panic!("presentation");
+    };
+    assert!(evaluation.is_none());
+    assert_eq!(coordinates.len(), 2);
+    assert!(coordinates.iter().all(|q| q.epsilon.is_none()));
+    for q in coordinates {
+        assert!(matches!(data(&g, q.nu).part(), Part::Polynomial { .. }));
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn global_equation_context_keeps_same_subject_ids_in_different_snapshots_and_their_modes() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let map=format!(r#"{},{{"id":"w","origin":"external","subjects":[{{"id":"a","type":"Finite.Root","origin":"external"}}],"atoms":[]}}]}}"#,MAP.strip_suffix("]}").unwrap()).replace(r#""origins":["#,r#""origins":[{"id":"external","mode":"proposed","method":"独立の原始参照。","locations":[],"note":"別snapshotの同名subject。"},"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(DEFINITION, &map, BODY),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let ctx = d.context.unwrap();
+    let Part::Equation(E::Context { carrier, .. }) = data(&g, ctx).part() else {
+        panic!("context");
+    };
+    assert_eq!(carrier.len(), 13);
+    for snapshot in ["v", "w"] {
+        assert!(carrier.iter().any(|v|matches!(v,Scalar::Tuple(xs) if matches!((&xs[0],&xs[1],&xs[2],&xs[3]),(Scalar::Text(s),Scalar::Text(id),Scalar::Option{value:None,..},Scalar::Option{value:None,..}) if s==snapshot&&id=="a"))));
+    }
+    for reference in [ctx, d.presentations[0].unwrap()] {
+        let node = g.get(reference).unwrap();
+        assert!(node.scope.snapshots.contains("w"));
+        assert!(node.scope.modes.contains("proposed"));
+        assert!(
+            node.support
+                .iter()
+                .any(|f| f.snapshot == "w" && f.subject == "a" && f.field.is_none())
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn source_only_unimplemented_parameter_keeps_original_scope_without_fake_context_or_presentation() {
+    let e = example(false, "law required parameter(c:Part,k:Z):c.quantity=k;");
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert_eq!(d.status, EquationPresentationStatus::Undetermined);
+    assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
+    assert!(d.context.is_none());
+    assert!(d.presentations.is_empty());
+    let original = d.originals.iter().find(|o| o.row.is_none()).unwrap();
+    let qs = &g.get(original.reference).unwrap().scope.quantifiers;
+    assert!(
+        qs.iter().any(|q| q.name == "k"
+            && q.ty == Type::Z
+            && q.kind == crate::law::ast::QuantKind::Forall)
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn finite_parameter_rows_are_distinct_presentation_instances_without_requantifying_the_template() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(
+        false,
+        "law required parameter(c:Part,b:Bool):c.quantity=(if b then 0 else 1);",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let r = d.presentations[0].unwrap();
+    let Part::Equation(E::Presentation {
+        instances,
+        coordinates,
+        ..
+    }) = data(&g, r).part()
+    else {
+        panic!("presentation");
+    };
+    assert_eq!(instances.len(), 2);
+    assert_eq!(coordinates.len(), 2);
+    assert_ne!(instances[0], instances[1]);
+    let mut booleans = vec![];
+    for reference in instances {
+        let original = d
+            .originals
+            .iter()
+            .find(|o| o.reference == *reference)
+            .unwrap();
+        assert!(original.row.is_some());
+        let binding = original.bindings.iter().find(|b| b.name == "b").unwrap();
+        let Scalar::Bool(value) = g.scalar(binding.value).unwrap() else {
+            panic!("boolean parameter");
+        };
+        booleans.push(*value);
+        assert!(g.get(*reference).unwrap().scope.quantifiers.is_empty());
+    }
+    booleans.sort();
+    assert_eq!(booleans, [false, true]);
+    let template = d.originals.iter().find(|o| o.row.is_none()).unwrap();
+    assert!(!instances.contains(&template.reference));
+    assert!(
+        g.get(template.reference)
+            .unwrap()
+            .scope
+            .quantifiers
+            .iter()
+            .any(|q| q.name == "b" && q.ty == Type::Bool)
+    );
+    let Part::Equation(E::Context { laws, .. }) = data(&g, d.context.unwrap()).part() else {
+        panic!("context");
+    };
+    assert_eq!(laws, instances);
+    assert!(g.get(r).unwrap().scope.quantifiers.is_empty());
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn polynomial_presentation_recheck_rejects_derived_coordinate_ring_ideal_and_context_changes() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(false, BODY);
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let r = d.presentations[0].unwrap();
+    for kind in 0..8 {
+        let at = if kind < 2 { d.context.unwrap() } else { r };
+        let mut nodes = g.nodes.clone();
+        let Some(Payload::Construction(value)) = &mut nodes[at.0].payload else {
+            panic!("native");
+        };
+        let D::PolynomialLaw(value) = &mut value.data else {
+            panic!("polynomial");
+        };
+        let mut source = (*value.source).clone();
+        let Part::Equation(part) = &mut source.parts[value.index] else {
+            panic!("equation");
+        };
+        match part {
+            E::Context {
+                carrier,
+                dependencies,
+                ..
+            } => {
+                if kind == 0 {
+                    carrier.pop();
+                } else {
+                    dependencies.clear();
+                }
+            }
+            E::Presentation {
+                coordinates,
+                ring,
+                required,
+                evaluation,
+                context,
+                ..
+            } => match kind {
+                2 => *ring = d.bases[0],
+                3 => *required = d.coordinates[0].witness.unwrap(),
+                4 => coordinates[0].epsilon = Some(coordinates[0].nu),
+                5 => {
+                    let q = &mut coordinates[0];
+                    std::mem::swap(&mut q.lhs, &mut q.rhs)
+                }
+                6 => *evaluation = None,
+                _ => *context = d.domains[0],
+            },
+        }
+        value.source = Arc::new(source);
+        assert!(replay(&e, &nodes, &g.contexts).is_err(), "change {kind}");
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }

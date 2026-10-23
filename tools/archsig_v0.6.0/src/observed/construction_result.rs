@@ -39,6 +39,8 @@ pub(crate) enum ConstructionType {
     Ideal,
     ObjectComponent,
     Polynomial,
+    Context,
+    EquationPresentation,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -57,6 +59,8 @@ impl ConstructionType {
             Self::Ideal => "Ideal",
             Self::ObjectComponent => "ObjectComponent",
             Self::Polynomial => "Polynomial",
+            Self::Context => "Context",
+            Self::EquationPresentation => "EquationPresentation",
         }
     }
 }
@@ -460,6 +464,8 @@ impl ConstructionValue {
                 ConstructionType::Ideal => "ideal",
                 ConstructionType::ObjectComponent => "object_component",
                 ConstructionType::Polynomial => "polynomial",
+                ConstructionType::Context => "context",
+                ConstructionType::EquationPresentation => "equation_presentation",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",

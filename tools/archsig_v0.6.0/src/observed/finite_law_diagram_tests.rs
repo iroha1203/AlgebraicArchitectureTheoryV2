@@ -1732,3 +1732,278 @@ fn missing_operand_values_keep_closed_source_expressions_without_fabricated_scal
     assert_eq!(coordinates(&g, d.nu[1]), ["0", "1"]);
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
+
+#[test]
+fn finite_equation_presentation_connects_original_rows_operands_ideals_and_full_context() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(false, BODY);
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    let ctx = d.context.unwrap();
+    let presentation = d.presentation.unwrap();
+    let Part::Equation(E::Context {
+        base,
+        carrier,
+        dependencies,
+        laws,
+        ..
+    }) = data(&g, ctx).part()
+    else {
+        panic!("context");
+    };
+    assert_eq!(*base, a);
+    assert_eq!(carrier.len(), 12);
+    let decoded = carrier
+        .iter()
+        .map(|v| {
+            let Scalar::Tuple(xs) = v else {
+                panic!("identity");
+            };
+            assert_eq!(xs.len(), 4);
+            let (
+                Scalar::Text(s),
+                Scalar::Text(id),
+                Scalar::Option { value: field, .. },
+                Scalar::Option { value: atom, .. },
+            ) = (&xs[0], &xs[1], &xs[2], &xs[3])
+            else {
+                panic!("identity fields");
+            };
+            (
+                s.clone(),
+                id.clone(),
+                field.as_ref().map(|f| f.wire().canonical()),
+                atom.as_ref().map(|a| a.wire().canonical()),
+            )
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(decoded.len(), 12);
+    for id in ["a", "b", "p", "q", "m"] {
+        assert!(decoded.contains(&("v".into(), id.into(), None, None)));
+    }
+    assert!(decoded.contains(&(
+        "v".into(),
+        "p".into(),
+        Some(Json::str("Finite.Part.quantity").canonical()),
+        Some(Json::str("px").canonical())
+    )));
+    assert!(dependencies.iter().any(|(r,f)|f=="Finite.Part.quantity" && matches!(g.scalar(*r).unwrap(),Scalar::Subject{snapshot,subject,..} if snapshot=="v"&&subject=="p")));
+    assert_eq!(laws, &d.originals.iter().map(|o| o.row).collect::<Vec<_>>());
+    let Part::Equation(E::Presentation {
+        instances,
+        domain,
+        ring,
+        coordinates,
+        witnesses,
+        required,
+        evaluation,
+        context,
+        ..
+    }) = data(&g, presentation).part()
+    else {
+        panic!("presentation");
+    };
+    assert_eq!(instances, laws);
+    assert_eq!(
+        (*domain, *ring, *required, *evaluation, *context),
+        (d.domain, d.ring, d.required, d.evaluation, ctx)
+    );
+    assert_eq!(witnesses, &d.witnesses);
+    assert_eq!(coordinates.len(), d.nu.len());
+    for (i, q) in coordinates.iter().enumerate() {
+        assert_eq!(q.nu, d.nu[i]);
+        assert_eq!(q.epsilon, d.epsilon[i]);
+        assert_eq!((q.lhs, q.rhs), d.operands[i]);
+        assert!(instances.contains(&q.instance));
+        assert!(q.component.is_empty());
+    }
+    assert_eq!(g.get(ctx).unwrap().ty, NodeType::Construction(T::Context));
+    assert_eq!(
+        g.get(presentation).unwrap().ty,
+        NodeType::Construction(T::EquationPresentation)
+    );
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn finite_presentation_does_not_invent_evaluation_and_rejects_context_and_coordinate_changes() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(true, BODY);
+    let mut g = graph(&e);
+    let a = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    let r = d.presentation.unwrap();
+    let Part::Equation(E::Presentation { evaluation, .. }) = data(&g, r).part() else {
+        panic!("presentation");
+    };
+    assert!(evaluation.is_none());
+    for kind in 0..7 {
+        let at = if kind < 3 { d.context.unwrap() } else { r };
+        let mut nodes = g.nodes.clone();
+        let Some(Payload::Construction(v)) = &mut nodes[at.0].payload else {
+            panic!("native");
+        };
+        let D::FiniteLaw(value) = &mut v.data else {
+            panic!("finite");
+        };
+        let mut source = (*value.source).clone();
+        let Part::Equation(part) = &mut source.parts[value.index] else {
+            panic!("equation");
+        };
+        match part {
+            E::Context {
+                base,
+                carrier,
+                laws,
+                ..
+            } => match kind {
+                0 => {
+                    carrier.pop();
+                }
+                1 => *base = d.domain,
+                _ => laws.clear(),
+            },
+            E::Presentation {
+                coordinates,
+                ring,
+                required,
+                context,
+                ..
+            } => match kind {
+                3 => coordinates[0].component = vec![1],
+                4 => *ring = *required,
+                5 => {
+                    let q = &mut coordinates[0];
+                    std::mem::swap(&mut q.lhs, &mut q.rhs)
+                }
+                _ => *context = a,
+            },
+        }
+        value.source = Arc::new(source);
+        assert!(replay(&e, &nodes, &g.contexts).is_err(), "change {kind}");
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four_reasons() {
+    let e = example(false, BODY);
+    let mut complete = graph(&e);
+    let a = architecture(&complete, "a");
+    let before = complete.nodes.len();
+    let d = retain(
+        &mut complete,
+        e.prepared.shared_inputs(),
+        a,
+        0,
+        &mut quiet(),
+    )
+    .unwrap()
+    .unwrap();
+    let context = d.context.unwrap();
+    let presentation = d.presentation.unwrap();
+    for mode in 0..4 {
+        for at in [
+            2 * (context.0 - before) + 1,
+            2 * (context.0 - before + 1),
+            2 * (presentation.0 - before + 1),
+        ] {
+            let seen = std::rc::Rc::new(std::cell::Cell::new(0));
+            let count = seen.clone();
+            let mut control = Control::new(
+                Limits {
+                    time_ms: (mode == 0).then_some(1),
+                    memory_mib: (mode == 1).then_some(1),
+                },
+                move |point| {
+                    if point == Checkpoint::NativeResultNode {
+                        count.set(count.get() + 1);
+                    }
+                    let stop = count.get() >= at;
+                    Usage {
+                        elapsed_ms: u128::from(stop && mode == 0),
+                        memory_mib: u128::from(stop && mode == 1),
+                        signal: if stop && mode >= 2 {
+                            Some(if mode == 2 {
+                                crate::result::Signal::Int
+                            } else {
+                                crate::result::Signal::Term
+                            })
+                        } else {
+                            None
+                        },
+                    }
+                },
+            );
+            let old = graph(&e);
+            let mut g = Graph::new(&control);
+            g.nodes = old.nodes;
+            g.contexts = old.contexts;
+            g.frames = old.frames;
+            g.iterations = old.iterations;
+            g.instances = old.instances;
+            g.cases = old.cases;
+            g.universal_witnesses = old.universal_witnesses;
+            g.active = old.active;
+            g.requests = old.requests;
+            g.checked_answers = old.checked_answers;
+            assert!(matches!(
+                retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut control),
+                Err(ValidationFailure::Stop(_))
+            ));
+            assert!(control.stop_reason().is_some());
+            // 保持前checkpointで停止しても、計算済みnative nodeの転記は完了する。
+            let expected = before + at.div_ceil(2);
+            assert_eq!(g.nodes.len(), expected);
+            assert_eq!(g.nodes.len(), g.contexts.len());
+            for (current, normal) in g.nodes.iter().zip(&complete.nodes) {
+                assert_eq!(
+                    (
+                        &current.ty,
+                        &current.rule,
+                        &current.arguments,
+                        &current.support,
+                        &current.scope,
+                        &current.reasons,
+                        &current.evidence,
+                        &current.judgment
+                    ),
+                    (
+                        &normal.ty,
+                        &normal.rule,
+                        &normal.arguments,
+                        &normal.support,
+                        &normal.scope,
+                        &normal.reasons,
+                        &normal.evidence,
+                        &normal.judgment
+                    )
+                );
+                match (&current.payload, &normal.payload) {
+                    (Some(Payload::Construction(a)), Some(Payload::Construction(b))) => {
+                        assert_eq!(a.wire(), b.wire())
+                    }
+                    _ => assert_eq!(current, normal),
+                }
+            }
+            if at == 2 * (context.0 - before + 1) {
+                assert_eq!(
+                    g.get(context).unwrap().ty,
+                    NodeType::Construction(T::Context)
+                );
+                assert!(g.get(presentation).is_err());
+            }
+            if at == 2 * (presentation.0 - before + 1) {
+                assert_eq!(
+                    g.get(presentation).unwrap().ty,
+                    NodeType::Construction(T::EquationPresentation)
+                );
+            }
+            replay(&e, &g.nodes, &g.contexts).unwrap();
+        }
+    }
+}
