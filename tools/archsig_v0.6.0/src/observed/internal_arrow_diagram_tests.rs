@@ -369,24 +369,42 @@ fn changed_inputs_requests_plans_metadata_and_edges_are_rejected() {
 #[test]
 fn all_stop_reasons_keep_exact_completed_prefix_and_never_publish_unfinished_generators() {
     let p = prepared(MAP, &["b=build(FlowRead,on=@v/A)"]);
-    let mut g = empty(&p);
-    let a = build(&p, &mut g);
-    let o = family(&p, &mut g, &a);
-    let start = g.nodes.len();
-    retain(
-        &mut g,
+    let measured = Rc::new(Cell::new(0));
+    let measured_count = measured.clone();
+    let armed_measurement = Rc::new(Cell::new(false));
+    let active_measurement = armed_measurement.clone();
+    let mut measure = Control::new(Limits::default(), move |point| {
+        if active_measurement.get() && point == Checkpoint::NativeResultNode {
+            measured_count.set(measured_count.get() + 1);
+        }
+        Usage::default()
+    });
+    let mut normal = Graph::new(&measure);
+    normal.requests = p.requests().requests().to_vec();
+    let a = build(&p, &mut normal);
+    let o = family(&p, &mut normal, &a);
+    let start = normal.nodes.len();
+    armed_measurement.set(true);
+    let diagram = retain(
+        &mut normal,
         p.shared_inputs(),
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &mut measure,
     )
     .unwrap();
-    let completed = g.nodes.len() - start;
-    assert_eq!(completed, 10);
-    let normal = g;
+    let total = measured.get();
+    assert!(total > 2);
+    let last_operation = diagram.rows.last().unwrap().operation.unwrap();
+    assert_eq!(last_operation.0 + 1, normal.nodes.len());
     for mode in 0..4 {
-        for at in [1, completed / 2, completed] {
+        for (at, final_tick) in [
+            (1, false),
+            (total / 2, false),
+            (total, false),
+            (total, true),
+        ] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
             let armed = Rc::new(Cell::new(false));
@@ -399,7 +417,7 @@ fn all_stop_reasons_keep_exact_completed_prefix_and_never_publish_unfinished_gen
                 if active.get() && point == Checkpoint::NativeResultNode {
                     count.set(count.get() + 1);
                 }
-                if count.get() < at {
+                if count.get() < at || (final_tick && point != Checkpoint::InternalArrow) {
                     return Usage::default();
                 }
                 Usage {
@@ -432,6 +450,13 @@ fn all_stop_reasons_keep_exact_completed_prefix_and_never_publish_unfinished_gen
             assert!(c.stop_reason().is_some());
             assert_eq!(&g.nodes[..start], prefix);
             assert!(g.nodes.len() <= normal.nodes.len());
+            if at == total {
+                assert_eq!(g.nodes.len(), normal.nodes.len());
+                assert_eq!(
+                    g.get(last_operation).unwrap().ty,
+                    NodeType::Construction(T::Operation)
+                );
+            }
             for (actual, expected) in g
                 .nodes
                 .iter()
@@ -724,4 +749,82 @@ fn shared_universe_keeps_external_snapshot_and_mode_in_every_generated_scope() {
         .modes
         .remove("proposed");
     assert!(replay(&p, &g, &changed).is_err());
+}
+
+#[test]
+fn unfinished_object_family_prefixes_are_rejected_before_appending_any_arrow_nodes() {
+    let p = prepared(MAP, &["b=build(FlowRead,on=@v/A)"]);
+    for phase in 0..3 {
+        let mut g = empty(&p);
+        let a = build(&p, &mut g);
+        let o = family(&p, &mut g, &a);
+        let cut = match phase {
+            0 => o.base.0 + 1,
+            1 => o.objects.last().unwrap().0,
+            _ => g.nodes.len() - 1,
+        };
+        g.nodes.truncate(cut);
+        g.contexts.truncate(cut);
+        let before = g.nodes.clone();
+        let contexts = g.contexts.clone();
+        replay(&p, &g, &g.nodes).unwrap();
+        assert!(
+            objects::original_family(&g, o.base).is_err(),
+            "unfinished phase {phase}"
+        );
+        assert!(
+            retain(
+                &mut g,
+                p.shared_inputs(),
+                a.reference,
+                &o,
+                a.universe,
+                &mut quiet()
+            )
+            .is_err()
+        );
+        assert_eq!(g.nodes, before);
+        assert_eq!(g.contexts, contexts);
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}
+#[test]
+fn replaced_object_components_readings_and_foreign_contexts_are_rejected_before_generation() {
+    let p = prepared(
+        MAP,
+        &["b=build(FlowRead,on=@v/A)", "idle=build(OtherRead,on=@v/A)"],
+    );
+    for mode in 0..4 {
+        let mut g = empty(&p);
+        let a = build(&p, &mut g);
+        let o = family(&p, &mut g, &a);
+        let last = g.nodes.len() - 1;
+        match mode {
+            0 => g.nodes[o.objects.last().unwrap().0] = g.nodes[a.root.0].clone(),
+            1 => g.nodes[last].scope.readings.clear(),
+            2 => {
+                g.contexts.pop();
+            }
+            _ => g.contexts[last].request = 1,
+        }
+        let before = g.nodes.clone();
+        let contexts = g.contexts.clone();
+        assert!(
+            objects::original_family(&g, o.base).is_err(),
+            "corrupt mode {mode}"
+        );
+        assert!(
+            retain(
+                &mut g,
+                p.shared_inputs(),
+                a.reference,
+                &o,
+                a.universe,
+                &mut quiet()
+            )
+            .is_err()
+        );
+        assert_eq!(g.nodes, before);
+        assert_eq!(g.contexts, contexts);
+    }
 }
