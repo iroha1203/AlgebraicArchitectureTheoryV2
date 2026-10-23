@@ -38,6 +38,7 @@ impl Environment<'_> {
         graph: &Graph,
         index: usize,
     ) -> Result<Option<String>, ValidationFailure> {
+        if let Some(declaration)=crate::observed::object_reading_evaluation::declaration(graph,index)? { return Ok(Some(declaration)); }
         if let Some(declaration)=crate::observed::law_evaluation::declaration(graph,index)? { return Ok(Some(declaration)); }
         relation_sources::instance_declaration(graph, index)
     }

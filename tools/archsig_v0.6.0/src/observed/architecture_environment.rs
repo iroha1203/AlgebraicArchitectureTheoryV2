@@ -47,6 +47,9 @@ impl<'i> Environment<'i> {
         let context = self.current_context(graph);
         let selected = (|| {
             if let Some(index) = context.instance {
+                if let Some(reference)=crate::observed::object_reading_evaluation::architecture(graph,index,self.cutoff.get().min(graph.nodes.len()))? {
+                    return self.select_architecture(graph,reference);
+                }
                 if let Some(reference)=crate::observed::law_evaluation::architecture(graph,index,self.cutoff.get().min(graph.nodes.len()))? {
                     return self.select_architecture(graph,reference);
                 }

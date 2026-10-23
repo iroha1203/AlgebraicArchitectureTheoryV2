@@ -13,6 +13,7 @@ mod finite_integer_function;
 mod finite_law_diagram;
 mod polynomial_law_diagram;
 mod law_evaluation;
+mod object_reading_evaluation;
 mod law_proposition;
 mod law_inapplicable;
 mod law_instantiation;

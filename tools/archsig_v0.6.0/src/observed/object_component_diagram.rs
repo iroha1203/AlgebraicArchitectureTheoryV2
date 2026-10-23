@@ -167,6 +167,18 @@ pub(super) struct Reading {
     pub instance: usize,
     pub expression: NodeRef,
 }
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct ViewOrigin {
+    pub expression: NodeRef,
+    pub component: NodeRef,
+    pub architecture: NodeRef,
+    pub declaration: String,
+    pub bindings: Vec<Binding>,
+    pub parameters: Vec<(String, Type)>,
+    pub returns: Type,
+    pub body: usize,
+    pub application: InstanceApplication,
+}
 #[derive(Clone)]
 pub(super) struct Source {
     inputs: Arc<CheckedInputs>,
@@ -200,6 +212,75 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn view_origin(
+        &self,
+        reference: NodeRef,
+    ) -> Result<Option<(Arc<ArchitectureWitness>, ViewOrigin)>, ValidationFailure> {
+        self.position(reference.0)?;
+        let Part::Reading {
+            object,
+            declaration,
+            parameters,
+            bindings,
+            returns,
+            ..
+        } = self.part()
+        else {
+            return Ok(None);
+        };
+        let reading = self
+            .source
+            .outputs
+            .readings
+            .iter()
+            .find(|r| r.expression == reference)
+            .ok_or("view式が元対象表にない")?;
+        let a = &self.source.architecture;
+        let row = a
+            .readings()
+            .instances()
+            .get(reading.instance)
+            .ok_or("viewの元instanceがない")?;
+        let input = Witness::Architecture(a.clone());
+        let original = input
+            .inputs()
+            .law()
+            .declarations
+            .get(declaration)
+            .ok_or("元view宣言がない")?;
+        let Signature::View { body, .. } = &original.signature else {
+            return Ok(None);
+        };
+        let architecture = *self
+            .source
+            .outputs
+            .architectures
+            .get(reading.object)
+            .ok_or("viewの対象Architectureがない")?;
+        if self.source.outputs.objects.get(reading.object) != Some(object)
+            || row.declaration().name != *declaration
+        {
+            return Err("viewの元対象/宣言対応が違う".into());
+        }
+        Ok(Some((
+            a.clone(),
+            ViewOrigin {
+                expression: reference,
+                component: *object,
+                architecture,
+                declaration: declaration.clone(),
+                bindings: bindings.clone(),
+                parameters: parameters.clone(),
+                returns: returns.clone(),
+                body: *body,
+                application: row
+                    .applications()
+                    .get(reading.object)
+                    .ok_or("viewの対象別適用がない")?
+                    .clone(),
+            },
+        )))
+    }
     pub(super) fn retained_components(&self) -> (Arc<ArchitectureWitness>, NodeRef, Diagram) {
         (
             self.source.architecture.clone(),
