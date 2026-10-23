@@ -153,6 +153,7 @@ fn generators_use_actual_owned_architectures_and_total_actions_with_fixed_comple
             candidate,
             map,
             action,
+            ..
         } = data(&g, row.operation.unwrap()).part()
         else {
             panic!("op")
@@ -827,4 +828,270 @@ fn replaced_object_components_readings_and_foreign_contexts_are_rejected_before_
         assert_eq!(g.nodes, before);
         assert_eq!(g.contexts, contexts);
     }
+}
+
+#[test]
+fn native_generators_are_consumed_with_actual_owned_endpoints_and_public_projections() {
+    use crate::observed::{
+        projection::{ProjectionStep as P, ProjectionType as PT},
+        public_compose as consumer,
+    };
+    let p = prepared(MAP, &["b=build(FlowRead,on=@v/A)"]);
+    let mut g = empty(&p);
+    let a = build(&p, &mut g);
+    let o = family(&p, &mut g, &a);
+    let d = retain(
+        &mut g,
+        p.shared_inputs(),
+        a.reference,
+        &o,
+        a.universe,
+        &mut quiet(),
+    )
+    .unwrap();
+    for (i, row) in d.rows.iter().enumerate() {
+        let r = row.operation.unwrap();
+        let kernel = consumer::op(&g, r).unwrap();
+        let (from, to, action, word) = consumer::components(&g, r).unwrap();
+        let (fi, ti) = if i == 0 { (1, 2) } else { (2, 1) };
+        assert_eq!((from, to), (o.architectures[fi], o.architectures[ti]));
+        assert_eq!(
+            kernel.source().subject().subject,
+            if i == 0 { "p" } else { "q" }
+        );
+        assert_eq!(
+            kernel.target().subject().subject,
+            if i == 0 { "q" } else { "p" }
+        );
+        assert_eq!(consumer::root_type(&g, from).unwrap(), "Flow.Node");
+        assert_eq!(consumer::root_type(&g, to).unwrap(), "Flow.Node");
+        assert_eq!(consumer::universe(&g, action).unwrap(), a.universe);
+        assert_eq!(word, vec![row.subject]);
+        assert_eq!(
+            kernel.word(),
+            &[crate::construction::FactPointer {
+                snapshot: "v".into(),
+                subject: if i == 0 { "e" } else { "f" }.into(),
+                field: None,
+                atom: None
+            }]
+        );
+        let Some(Payload::Construction(value)) = &g.get(r).unwrap().payload else {
+            panic!("operation");
+        };
+        assert!(
+            matches!(value.projection_type(), Some(PT::Operation(shape)) if shape.declaration == "Flow.Step" && shape.source == "Flow.Node" && shape.target == "Flow.Node")
+        );
+        for (name, expected) in [
+            ("source", from),
+            ("target", to),
+            ("candidate", row.candidate.unwrap()),
+            ("action", action),
+        ] {
+            assert_eq!(value.project(&[P::Field(name.into())]), Some((expected, 1)));
+        }
+        let (map, used) = value
+            .project(&[P::Field("configuration_map".into())])
+            .unwrap();
+        assert_eq!(used, 1);
+        let Some(Payload::Construction(map_value)) = &g.get(map).unwrap().payload else {
+            panic!("map");
+        };
+        assert!(matches!(
+            map_value.projection_type(),
+            Some(PT::ConfigurationMap(_))
+        ));
+        assert_eq!(
+            map_value.project(&[P::Field("candidate".into())]),
+            Some((row.candidate.unwrap(), 1))
+        );
+        assert_eq!(
+            value.project(&[P::Field("word".into()), P::Index(0)]),
+            Some((row.subject, 2))
+        );
+        for path in [
+            vec![P::Field("word".into()), P::Index(1)],
+            vec![P::Field("name".into())],
+            vec![P::Field("kernel".into())],
+        ] {
+            assert_eq!(value.project(&path), None);
+        }
+        let Some(Payload::Construction(endpoint)) = &g.get(to).unwrap().payload else {
+            panic!("endpoint");
+        };
+        assert_eq!(
+            endpoint.projection_type(),
+            Some(PT::ArchitectureRoot("Flow.Node".into()))
+        );
+        let (root, used) = endpoint.project(&[P::Field("root".into())]).unwrap();
+        assert_eq!(used, 1);
+        assert_eq!(scalar(&g, root), if i == 0 { "q" } else { "p" });
+    }
+    replay(&p, &g, &g.nodes).unwrap();
+}
+#[test]
+fn generator_consumer_composition_keeps_total_action_and_distinguishes_repeated_words() {
+    use crate::observed::public_compose as consumer;
+    let p = prepared(MAP, &["b=build(FlowRead,on=@v/A)"]);
+    let mut g = empty(&p);
+    let a = build(&p, &mut g);
+    let o = family(&p, &mut g, &a);
+    let d = retain(
+        &mut g,
+        p.shared_inputs(),
+        a.reference,
+        &o,
+        a.universe,
+        &mut quiet(),
+    )
+    .unwrap();
+    let e = consumer::op(&g, d.rows[0].operation.unwrap()).unwrap();
+    let f = consumer::op(&g, d.rows[1].operation.unwrap()).unwrap();
+    let ef = e.compose(p.inputs(), f, &mut quiet()).unwrap();
+    let fe = f.compose(p.inputs(), e, &mut quiet()).unwrap();
+    assert_eq!(ef.source().subject().subject, "p");
+    assert_eq!(ef.target().subject().subject, "p");
+    assert_eq!(fe.source().subject().subject, "q");
+    assert_eq!(fe.target().subject().subject, "q");
+    for (u, image) in a
+        .witness
+        .construction()
+        .universe()
+        .iter()
+        .zip(ef.map().candidate().images())
+    {
+        let mut expected = u.clone();
+        if u.subject == "q"
+            && (u.field.is_none()
+                || u.field
+                    .as_deref()
+                    .is_some_and(|f| f.starts_with("Flow.Node.")))
+        {
+            expected.subject = "p".into();
+            expected.atom = u.atom.as_ref().map(|s| s.replacen("q-", "p-", 1));
+        }
+        assert_eq!(image, &expected, "ef at {u:?}");
+    }
+    for (u, image) in a
+        .witness
+        .construction()
+        .universe()
+        .iter()
+        .zip(fe.map().candidate().images())
+    {
+        let mut expected = u.clone();
+        if u.subject == "p"
+            && (u.field.is_none()
+                || u.field
+                    .as_deref()
+                    .is_some_and(|f| f.starts_with("Flow.Node.")))
+        {
+            expected.subject = "q".into();
+            expected.atom = u.atom.as_ref().map(|s| s.replacen("p-", "q-", 1));
+        }
+        assert_eq!(image, &expected, "fe at {u:?}");
+    }
+    let twice = ef.compose(p.inputs(), &ef, &mut quiet()).unwrap();
+    assert_eq!(
+        ef.word()
+            .iter()
+            .map(|f| f.subject.as_str())
+            .collect::<Vec<_>>(),
+        ["e", "f"]
+    );
+    assert_eq!(
+        twice
+            .word()
+            .iter()
+            .map(|f| f.subject.as_str())
+            .collect::<Vec<_>>(),
+        ["e", "f", "e", "f"]
+    );
+    assert!(!ef.word_equal(p.inputs(), &twice, &mut quiet()).unwrap());
+    assert!(
+        ef.action_difference(p.inputs(), &twice, &mut quiet())
+            .unwrap()
+            .is_none()
+    );
+    assert!(e.compose(p.inputs(), e, &mut quiet()).is_err());
+    assert_eq!(g.nodes.len(), g.contexts.len());
+    replay(&p, &g, &g.nodes).unwrap();
+}
+#[test]
+fn native_generator_consumers_reject_candidates_refuted_and_missing_rows() {
+    use crate::observed::public_compose as consumer;
+    for map in [
+        edit(
+            MAP,
+            "q-links",
+            r#"[["v","q"],["v","r"],["v","q"]]"#,
+            r#"[["v","r"],["v","q"],["v","q"]]"#,
+        ),
+        remove(MAP, "q-quantity"),
+    ] {
+        let p = prepared(&map, &["b=build(FlowRead,on=@v/A)"]);
+        let mut g = empty(&p);
+        let a = build(&p, &mut g);
+        let o = family(&p, &mut g, &a);
+        let d = retain(
+            &mut g,
+            p.shared_inputs(),
+            a.reference,
+            &o,
+            a.universe,
+            &mut quiet(),
+        )
+        .unwrap();
+        assert!(!d.all_preserved);
+        assert!(d.rows[0].operation.is_none());
+        for r in d
+            .rows
+            .iter()
+            .flat_map(|row| [Some(row.subject), row.candidate])
+            .flatten()
+        {
+            assert!(consumer::op(&g, r).is_err());
+            assert!(consumer::components(&g, r).is_err());
+        }
+        if let Some(r) = d.rows[1].operation {
+            assert!(consumer::op(&g, r).is_ok());
+        }
+        replay(&p, &g, &g.nodes).unwrap();
+    }
+}
+#[test]
+fn retained_generator_kernel_cannot_be_replaced_by_another_arrow_operation() {
+    let p = prepared(MAP, &["b=build(FlowRead,on=@v/A)"]);
+    let mut g = empty(&p);
+    let a = build(&p, &mut g);
+    let o = family(&p, &mut g, &a);
+    let d = retain(
+        &mut g,
+        p.shared_inputs(),
+        a.reference,
+        &o,
+        a.universe,
+        &mut quiet(),
+    )
+    .unwrap();
+    let first = d.rows[0].operation.unwrap();
+    let other = data(&g, d.rows[1].operation.unwrap())
+        .operation()
+        .unwrap()
+        .clone();
+    let mut nodes = g.nodes.clone();
+    let Some(Payload::Construction(v)) = &mut nodes[first.0].payload else {
+        panic!("native");
+    };
+    let D::InternalArrows(data) = &mut v.data else {
+        panic!("arrow");
+    };
+    let mut source = (*data.source).clone();
+    let Part::Operation { kernel, .. } = &mut source.parts[data.index] else {
+        panic!("operation");
+    };
+    *kernel = Box::new(other);
+    data.source = Arc::new(source);
+    assert!(replay(&p, &g, &nodes).is_err());
+    replay(&p, &g, &g.nodes).unwrap();
 }

@@ -209,6 +209,19 @@ impl Data {
             _ => None,
         }
     }
+    pub(super) fn root_type(&self) -> Option<String> {
+        let root = self.root()?;
+        let Part::Subject(Scalar::Subject { entity, .. }) = self.source.parts.get(root.0.checked_sub(self.source.base)?)? else {
+            return None;
+        };
+        Some(entity.clone())
+    }
+    pub(super) fn root(&self) -> Option<NodeRef> {
+        match self.source.parts.get(self.index)? {
+            Part::Architecture { root, .. } => Some(*root),
+            _ => None,
+        }
+    }
     /// 呼出し側は元nodeの検査を先に行う。対象番号は元計画の対応表からだけ復元する。
     pub(super) fn architecture_object(
         &self,
