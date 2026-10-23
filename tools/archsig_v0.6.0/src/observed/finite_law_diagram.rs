@@ -430,6 +430,12 @@ impl Data {
         }))
     }
 
+    pub(super) fn equation_part(&self) -> Option<&super::equation_presentation_node::Part> {
+        match self.part() {
+            Part::Equation(part) => Some(part),
+            _ => None,
+        }
+    }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
@@ -1247,6 +1253,45 @@ pub(super) fn retain(
         retain_source(graph, inputs, architecture, object, false, c)?
             .map(|source| source.outputs.clone()),
     )
+}
+#[derive(Clone, Debug)]
+pub(super) struct FamilyPlan(Arc<Source>);
+impl FamilyPlan {
+    pub(super) fn diagrams(&self) -> Result<Vec<Diagram>, ValidationFailure> {
+        let mut outputs = vec![self.0.outputs.clone()];
+        outputs.extend(
+            self.0
+                .owned_outputs
+                .as_ref()
+                .ok_or("有限配置の全対象計画がない")?
+                .iter()
+                .cloned(),
+        );
+        Ok(outputs)
+    }
+    pub(super) fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        reference: NodeRef,
+        c: &mut Control,
+    ) -> Result<Arc<ArchitectureWitness>, ValidationFailure> {
+        tick(c)?;
+        if self.0.reference != reference || self.0.object != 0 || self.0.owned_outputs.is_none() {
+            return Err("有限配置の元Architecture/全対象計画が違う".into());
+        }
+        let a = native::architecture_origin(graph, reference, 0)?;
+        self.0.recheck(env.inputs, a, 0, c)?;
+        Ok(a.clone())
+    }
+}
+pub(super) fn retain_layout_plan(
+    graph: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    reference: NodeRef,
+    c: &mut Control,
+) -> Result<Option<FamilyPlan>, ValidationFailure> {
+    Ok(retain_source(graph, inputs, reference, 0, true, c)?.map(FamilyPlan))
 }
 /// 全標準対象を、同じ元D・環・評価から一度に保持する。
 pub(super) fn retain_family(

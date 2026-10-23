@@ -1,8 +1,10 @@
-//! 型別の共有多項式を、共通Uとroot存在Atom上のblock座標へ配置する。
+//! 型別の共有表示を、共通Uとroot存在Atom上のblock座標へ配置する。
 use super::{
     construction_result::{self as native, ConstructionData as D, ConstructionType as T},
     control::{Checkpoint, Control},
     environment::Environment,
+    finite_law_diagram,
+    input::CheckedInputs,
     law_table::Table,
     object_equation_presentation::{EquationGuard, EquationPresentationStatus},
     polynomial_law_diagram::{Coordinate as SourceCoordinate, Unavailable},
@@ -13,7 +15,55 @@ use std::sync::Arc;
 pub(super) struct Coordinate {
     pub index: NodeRef,
     pub factor: Option<usize>,
-    pub source: SourceCoordinate,
+    pub source: Source,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct FiniteCoordinate {
+    pub object: usize,
+    pub original: finite_law_diagram::Original,
+    pub value: super::equation_presentation_node::Coordinate,
+    pub witness: NodeRef,
+    pub epsilon: Option<NodeRef>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) enum Source {
+    Polynomial(SourceCoordinate),
+    Finite(FiniteCoordinate),
+}
+impl Coordinate {
+    #[cfg(test)]
+    fn polynomial(&self) -> Result<&SourceCoordinate, ValidationFailure> {
+        match &self.source {
+            Source::Polynomial(q) => Ok(q),
+            _ => Err("多項式座標でない".into()),
+        }
+    }
+    #[cfg(test)]
+    fn polynomial_mut(&mut self) -> Result<&mut SourceCoordinate, ValidationFailure> {
+        match &mut self.source {
+            Source::Polynomial(q) => Ok(q),
+            _ => Err("多項式座標でない".into()),
+        }
+    }
+    fn value(&self, reading: Reading) -> Option<NodeRef> {
+        match &self.source {
+            Source::Polynomial(q) => match reading {
+                Reading::Nu => q.nu,
+                Reading::Epsilon => q.epsilon,
+                Reading::Residual => q.residual,
+            },
+            // Z^Dではν自体がguardを含むindicator。その代入εが条件付きresidualである。
+            Source::Finite(q) => match reading {
+                Reading::Nu => Some(q.value.nu),
+                Reading::Epsilon | Reading::Residual => q.epsilon,
+            },
+        }
+    }
+}
+#[derive(Clone, Debug)]
+enum Plan {
+    Polynomial,
+    Finite(finite_law_diagram::FamilyPlan),
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Object {
@@ -42,6 +92,7 @@ pub(super) struct Data {
 pub(super) struct Layout {
     pub data: Data,
     table: Arc<Table>,
+    plan: Plan,
 }
 #[derive(Clone, Copy, Debug)]
 pub(super) enum Reading {
@@ -105,7 +156,7 @@ fn universe(g: &Graph, architecture: NodeRef) -> Result<(NodeRef, Fact), Validat
     }
     Ok((r, anchor))
 }
-fn compute(
+fn compute_polynomial(
     env: &Environment<'_>,
     g: &Graph,
     table: &Table,
@@ -234,7 +285,7 @@ fn compute(
             coordinates.push(Coordinate {
                 index: index.reference,
                 factor,
-                source: q.clone(),
+                source: Source::Polynomial(q.clone()),
             });
         }
         if let Some(base_keys) = &keys {
@@ -273,6 +324,20 @@ fn compute(
         complete,
     })
 }
+fn compute(
+    env: &Environment<'_>,
+    g: &Graph,
+    table: &Table,
+    plan: &Plan,
+    c: &mut Control,
+) -> Result<Data, ValidationFailure> {
+    match plan {
+        Plan::Polynomial => compute_polynomial(env, g, table, c),
+        Plan::Finite(plan) => finite::compute(env, g, table, plan, c),
+    }
+}
+#[path = "observable_layout_finite.rs"]
+mod finite;
 impl Layout {
     pub(super) fn recheck(
         &self,
@@ -280,7 +345,7 @@ impl Layout {
         g: &Graph,
         c: &mut Control,
     ) -> Result<(), ValidationFailure> {
-        if self.data != compute(env, g, &self.table, c)? {
+        if self.data != compute(env, g, &self.table, &self.plan, c)? {
             return Err("Observableのfactor/全座標/由来/支持/Scope/完成状態が元計画と違う".into());
         }
         tick(c)
@@ -339,11 +404,7 @@ impl Checked<'_> {
         if atom != &self.data.anchor || q.factor.is_some_and(|f| f != factor) {
             return Ok(Placed::Zero { ring });
         }
-        let value = match reading {
-            Reading::Nu => q.source.nu,
-            Reading::Epsilon => q.source.epsilon,
-            Reading::Residual => q.source.residual,
-        };
+        let value = q.value(reading);
         Ok(match (q.factor, value) {
             (Some(_), Some(reference)) => Placed::Value { ring, reference },
             _ => Placed::Uncomputed { ring },
@@ -356,10 +417,43 @@ pub(super) fn retain(
     table: Arc<Table>,
     c: &mut Control,
 ) -> Result<Layout, ValidationFailure> {
-    let data = compute(env, g, &table, c)?;
+    let data = compute_polynomial(env, g, &table, c)?;
     tick(c)?;
-    Ok(Layout { data, table })
+    Ok(Layout {
+        data,
+        table,
+        plan: Plan::Polynomial,
+    })
 }
 #[cfg(test)]
-#[path = "polynomial_observable_tests.rs"]
-mod tests;
+#[path = "observable_layout_polynomial_tests.rs"]
+mod polynomial_tests;
+
+pub(super) fn retain_finite(
+    env: &Environment<'_>,
+    g: &mut Graph,
+    table: Arc<Table>,
+    inputs: Arc<CheckedInputs>,
+    c: &mut Control,
+) -> Result<Option<Layout>, ValidationFailure> {
+    tick(c)?;
+    table.recheck(env, g, c)?;
+    if table.indices.is_empty() {
+        // 空族のObservableは空積。未使用のZ^Dをfactorへ追加しない。
+        return retain(env, g, table, c).map(Some);
+    }
+    let Some(plan) = finite_law_diagram::retain_layout_plan(g, inputs, table.architecture, c)?
+    else {
+        return Ok(None);
+    };
+    let data = finite::compute(env, g, &table, &plan, c)?;
+    tick(c)?;
+    Ok(Some(Layout {
+        data,
+        table,
+        plan: Plan::Finite(plan),
+    }))
+}
+#[cfg(test)]
+#[path = "observable_layout_finite_tests.rs"]
+mod finite_tests;
