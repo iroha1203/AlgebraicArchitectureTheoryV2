@@ -812,3 +812,252 @@ fn build_generation_rejects_foreign_request_context_and_invalid_root_selectors_b
     );
     assert!(g.nodes.is_empty());
 }
+fn prior_roots(
+    p: &PreparedObserved,
+    previous: &crate::observed::ObservedEvaluation,
+    env: &Environment<'_>,
+    c: &Control,
+) -> Graph {
+    let mut g = empty(p, c);
+    g.checked_answers = previous.answers.iter().cloned().enumerate().collect();
+    g.frames = previous.frames.clone();
+    g.iterations = previous.iterations.clone();
+    g.instances = previous.instances.clone();
+    g.cases = previous.cases.clone();
+    g.universal_witnesses = previous.universal_witnesses.clone();
+    for (index, node) in previous.nodes.iter().enumerate() {
+        g.active = previous.contexts[index];
+        env.validate(&g, node).unwrap();
+        g.push(node.clone()).unwrap();
+    }
+    g
+}
+fn replace_partial_reference(node: &mut Node, name: &str, replacement: NodeRef) {
+    let Some(Payload::Construction(v)) = &mut node.payload else {
+        panic!("native")
+    };
+    let D::Pending {
+        ty: T::Architecture,
+        parts,
+    } = &mut v.data
+    else {
+        panic!("partial Architecture")
+    };
+    let old = parts
+        .iter_mut()
+        .find(|(path, _)| path == &field(name))
+        .unwrap();
+    let previous = old.1;
+    old.1 = replacement;
+    let arg = node.arguments.iter_mut().find(|r| **r == previous).unwrap();
+    *arg = replacement;
+}
+#[test]
+fn missing_membership_with_direct_and_projected_root_handles_keeps_partial_architecture() {
+    let map = reservations::remove_atom("q-owner");
+    let extra = "view box(a:System):(System,Z)=(a,7);";
+    for (producer, selector, projection) in [
+        (
+            "e=evaluate(Reservations.sourceOf,m=@v/m)",
+            "$e.value",
+            false,
+        ),
+        ("e=evaluate(Reservations.box,a=@v/A)", "$e.value[0]", true),
+    ] {
+        let ask = format!("b=build(Reservations,on={selector})");
+        let p = prepared(reservations::input(extra, Some(&map)), &[producer, &ask]);
+        let previous = crate::observed::evaluate_observed_bytes(
+            reservations::input(extra, Some(&map)),
+            &[producer],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert_eq!(previous.status(), "complete");
+        let mut c = quiet();
+        let env = Environment::with_prepared(&p, &mut c).unwrap();
+        let mut g = prior_roots(&p, &previous, &env, &c);
+        let before = g.nodes.clone();
+        g.active = crate::observed::call::Context {
+            request: 1,
+            frame: None,
+            iteration: None,
+            instance: None,
+            case: None,
+        };
+        let a = build(
+            p.shared_inputs(),
+            &env,
+            &mut g,
+            &p.requests().requests()[1],
+            &mut c,
+        )
+        .expect("合法なroot Handleと欠測は部分構成へ保持する");
+        assert!(!a.complete);
+        assert!(value(&g, a.reference).is_blocked());
+        assert_eq!(g.nodes[..before.len()], before);
+        assert!(
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Missing)
+                    && r.missing.iter().any(|f| f.subject == "q"
+                        && f.field.as_deref() == Some("Reservations.State.owner")
+                        && f.atom.is_none()))
+        );
+        if projection {
+            assert_eq!(a.root.0, before.len());
+            assert!(!matches!(
+                g.nodes[a.root.0].payload,
+                Some(Payload::Construction(_))
+            ));
+        } else {
+            assert_eq!(a.root, previous.answers[0].outputs["value"]);
+        }
+        let D::Pending {
+            ty: T::Architecture,
+            parts,
+        } = &value(&g, a.reference).data
+        else {
+            panic!("partial Architecture")
+        };
+        assert_eq!(
+            parts
+                .iter()
+                .find(|(path, _)| path == &field("root"))
+                .unwrap()
+                .1,
+            a.root
+        );
+        assert!(g.nodes.iter().all(|n|!matches!(&n.payload,Some(Payload::Construction(v))if matches!(v.data,D::Architecture{..}))));
+        replay(&p, &g, &g.nodes).unwrap();
+        let before = g.nodes.clone();
+        assert!(
+            crate::observed::object_component_diagram::retain(
+                &mut g,
+                p.shared_inputs(),
+                a.reference,
+                &mut c
+            )
+            .is_err()
+        );
+        assert_eq!(g.nodes, before);
+        for mode in 0..3 {
+            let mut nodes = g.nodes.clone();
+            let n = &mut nodes[a.reference.0];
+            match mode {
+                0 => n.support.clear(),
+                1 => {
+                    n.scope.readings.insert("Foreign".into());
+                }
+                _ => n.reasons.clear(),
+            }
+            assert!(
+                replay(&p, &g, &nodes).is_err(),
+                "partial metadata mode {mode}"
+            );
+        }
+        let mut foreign = empty(&p, &c);
+        foreign.requests = g.requests.clone();
+        foreign.requests[1].text.push(' ');
+        foreign.contexts = g.contexts.clone();
+        foreign.checked_answers = g.checked_answers.clone();
+        foreign.frames = g.frames.clone();
+        foreign.instances = g.instances.clone();
+        foreign.iterations = g.iterations.clone();
+        foreign.cases = g.cases.clone();
+        foreign.universal_witnesses = g.universal_witnesses.clone();
+        assert!(replay(&p, &foreign, &g.nodes).is_err());
+    }
+}
+#[test]
+fn partial_root_handle_exception_rejects_aliases_foreign_parts_and_raw_root_substitution() {
+    let map = reservations::remove_atom("q-owner");
+    let producers = [
+        "e=evaluate(Reservations.sourceOf,m=@v/m)",
+        "alias=evaluate(Reservations.sourceOf,m=@v/m)",
+    ];
+    let p = prepared(
+        reservations::input("", Some(&map)),
+        &[
+            producers[0],
+            producers[1],
+            "b=build(Reservations,on=$e.value)",
+            "c=build(Reservations,on=$e.value)",
+            "raw=build(Reservations,on=@v/A)",
+        ],
+    );
+    let previous = crate::observed::evaluate_observed_bytes(
+        reservations::input("", Some(&map)),
+        &producers,
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut c = quiet();
+    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let mut g = prior_roots(&p, &previous, &env, &c);
+    g.active = crate::observed::call::Context {
+        request: 2,
+        frame: None,
+        iteration: None,
+        instance: None,
+        case: None,
+    };
+    let a = build(
+        p.shared_inputs(),
+        &env,
+        &mut g,
+        &p.requests().requests()[2],
+        &mut c,
+    )
+    .unwrap();
+    g.active.request = 3;
+    let other = build(
+        p.shared_inputs(),
+        &env,
+        &mut g,
+        &p.requests().requests()[3],
+        &mut c,
+    )
+    .unwrap();
+    g.active.request = 4;
+    let raw = build(
+        p.shared_inputs(),
+        &env,
+        &mut g,
+        &p.requests().requests()[4],
+        &mut c,
+    )
+    .unwrap();
+    assert!(!a.complete && !other.complete && !raw.complete);
+    let alias = previous.answers[1].outputs["value"];
+    assert_ne!(a.root, alias);
+    assert_eq!(g.scalar(a.root).unwrap(), g.scalar(alias).unwrap());
+    replay(&p, &g, &g.nodes).unwrap();
+    let mut nodes = g.nodes.clone();
+    replace_partial_reference(&mut nodes[a.reference.0], "root", alias);
+    assert!(
+        replay(&p, &g, &nodes).is_err(),
+        "同値の別producerは元Handleの代わりにならない"
+    );
+    let D::Pending { parts, .. } = &value(&g, other.reference).data else {
+        panic!("partial")
+    };
+    let config = parts
+        .iter()
+        .find(|(path, _)| path == &field("configuration"))
+        .unwrap()
+        .1;
+    let mut nodes = g.nodes.clone();
+    replace_partial_reference(&mut nodes[a.reference.0], "configuration", config);
+    assert!(
+        native::validate_shape(&g, &nodes[a.reference.0]).is_err(),
+        "root以外の別Request部分は許さない"
+    );
+    assert!(replay(&p, &g, &nodes).is_err());
+    let mut nodes = g.nodes.clone();
+    replace_partial_reference(&mut nodes[raw.reference.0], "root", a.root);
+    assert!(
+        native::validate_shape(&g, &nodes[raw.reference.0]).is_err(),
+        "原始root指定へ外部producerの例外を適用しない"
+    );
+    assert!(replay(&p, &g, &nodes).is_err());
+}

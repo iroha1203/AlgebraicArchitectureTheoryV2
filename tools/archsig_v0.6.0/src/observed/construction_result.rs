@@ -1742,7 +1742,11 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 );
                 require!(
                     matches!(&graph.get(*r)?.payload,Some(Payload::Construction(c)) if c.witness.request()==v.witness.request() && c.witness.inputs().sources()==v.witness.inputs().sources())
-                        || matches!((&v.witness, ty, path.as_slice()), (Witness::Map(m), ConstructionType::MapCandidate, [ProjectionStep::Field(field)]) if field=="subject" && subject_fact(graph,*r).is_ok_and(|f| f==m.subject)),
+                        || matches!((&v.witness, ty, path.as_slice()), (Witness::Map(m), ConstructionType::MapCandidate, [ProjectionStep::Field(field)]) if field=="subject" && subject_fact(graph,*r).is_ok_and(|f| f==m.subject))
+                        || matches!((&v.witness, ty, path.as_slice()), (Witness::Architecture(a), ConstructionType::Architecture, [ProjectionStep::Field(field)])
+                            if field=="root" && a.request.kind==super::request::QuestionKind::Build
+                                && a.request.arguments.iter().any(|arg| arg.name=="on" && matches!(arg.value,super::request::Selector::Answer { .. }))
+                                && subject_fact(graph,*r).is_ok_and(|f| &f==a.construction.root())),
                     "部分構成が別入力・要求を参照した"
                 );
             }
