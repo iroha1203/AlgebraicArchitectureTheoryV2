@@ -76,11 +76,30 @@ enum Transform {
     Equal,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct ParameterDomain {
+    pub name: String,
+    pub ty: Type,
+    pub occurrence: (usize, usize),
+    pub reference: NodeRef,
+    pub values: Vec<NodeRef>,
+}
+#[derive(Clone)]
+pub(super) struct FamilyInputs {
+    pub architecture: Arc<ArchitectureWitness>,
+    pub object: usize,
+    pub template: Original,
+    pub base: Original,
+    pub parameters: Vec<ParameterDomain>,
+    pub base_rows: Vec<NodeRef>,
+    pub target_rows: Vec<NodeRef>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Original {
     pub instance: usize,
     pub row: Option<usize>,
     pub bindings: Vec<Binding>,
     pub parameters: Vec<(String, Type)>,
+    pub parameter_domains: Option<Vec<ParameterDomain>>,
     pub body: NodeRef,
     pub guard: Option<NodeRef>,
     pub reference: NodeRef,
@@ -480,6 +499,83 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn family_inputs(
+        &self,
+        reference: NodeRef,
+    ) -> Result<Option<FamilyInputs>, ValidationFailure> {
+        self.position(reference.0)?;
+        if self.source.object != 0 {
+            return Ok(None);
+        }
+        let outputs = std::iter::once((0, &self.source.outputs)).chain(
+            self.source
+                .owned_outputs
+                .iter()
+                .flatten()
+                .enumerate()
+                .map(|(i, d)| (i + 1, d)),
+        );
+        let Some((object, output, original)) = outputs
+            .filter_map(|(i, d)| {
+                d.originals
+                    .iter()
+                    .find(|o| o.reference == reference && o.row.is_none())
+                    .map(|o| (i, d, o))
+            })
+            .next()
+        else {
+            return Ok(None);
+        };
+        let Some(base) = self
+            .source
+            .outputs
+            .originals
+            .iter()
+            .find(|o| o.instance == original.instance && o.row.is_none())
+        else {
+            return Err("元Law族のbase templateがない".into());
+        };
+        let Some(parameters) = &base.parameter_domains else {
+            return Ok(None);
+        };
+        if parameters.is_empty() || base.parameters.len() != parameters.len() {
+            return Ok(None);
+        }
+        let Some(core) = &self.source.core else {
+            return Ok(None);
+        };
+        let target = core
+            .base()
+            .base()
+            .evaluations()
+            .iter()
+            .find(|e| e.position().object == object && e.position().instance == original.instance)
+            .ok_or("元Law族の対象読取りがない")?;
+        if !target.family().is_complete() || !target.family().missing().is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(FamilyInputs {
+            architecture: self.source.architecture.clone(),
+            object,
+            template: original.clone(),
+            base: base.clone(),
+            parameters: parameters.clone(),
+            base_rows: self
+                .source
+                .outputs
+                .originals
+                .iter()
+                .filter(|o| o.instance == original.instance && o.row.is_some())
+                .map(|o| o.reference)
+                .collect(),
+            target_rows: output
+                .originals
+                .iter()
+                .filter(|o| o.instance == original.instance && o.row.is_some())
+                .map(|o| o.reference)
+                .collect(),
+        }))
+    }
     pub(super) fn evaluation_origin(
         &self,
         reference: NodeRef,

@@ -762,6 +762,12 @@ impl<'a> Environment<'a> {
                     if let super::construction_result::ConstructionData::PolynomialLaw(data) = &value.data { data.position(limit)?; }
                     self.recheck_polynomial_law_diagram(graph, value)?;
                     self.recheck_law_frame(graph, value)?;
+                    if let super::construction_result::ConstructionData::LawFamily(data) = &value.data {
+                        data.position(limit)?;
+                        graph.expect(data.template, &NodeType::LawInstance)?;
+                        graph.expect(data.architecture, &NodeType::Construction(super::construction_result::ConstructionType::Architecture))?;
+                        self.recheck_law_evaluation_inputs(graph, data.template, data.architecture)?;
+                    }
                     if let super::construction_result::ConstructionData::LawInstantiation(data) = &value.data {
                         data.position(limit)?;
                         graph.expect(data.base, &NodeType::LawInstance)?;
@@ -1346,7 +1352,8 @@ impl<'a> Environment<'a> {
             if !application {
                 if let Some(Payload::Expression {location:Location::Law {span},..})=&graph.get(*expression)?.payload {
                     if let Some(index)=self.current_context(graph).instance {
-                        if !self.native_law_source_allowed(graph,index,*span)? {
+                        if !self.native_law_source_allowed(graph,index,*span)?
+                            || self.finite_family_skipped_source_ref(graph,*expression)? {
                             return Err("非適用native Lawのbodyを通常/全域評価へ昇格できない".into());
                         }
                     }
@@ -6497,6 +6504,9 @@ impl<'a> Environment<'a> {
                 }
                 return Err("未成立guardのnative Law bodyは評価できない".into());
             }
+        }
+        if let Some(index)=self.current_context(graph).instance {
+            if let Some(source)=self.finite_family_skipped_source(graph,index,span,bindings)? {return Ok(source)}
         }
         if matches!(declaration.signature, crate::law::model::Signature::Relation { .. }) {
             let index = self.current_context(graph).instance.ok_or("元relation instanceがない")?;

@@ -4020,6 +4020,13 @@ impl Graph {
         Ok(())
     }
 
+    pub(super) fn scalar_wire(
+        &self,
+        value: &Scalar,
+        roots: &[NodeRef],
+    ) -> Result<Json, ValidationFailure> {
+        super::path_value::wire(value, &self.nodes, roots, &self.control)
+    }
     pub fn push(&mut self, node: Node) -> Result<NodeRef, ValidationFailure> {
         self.push_with_metadata(node, |_| {})
     }

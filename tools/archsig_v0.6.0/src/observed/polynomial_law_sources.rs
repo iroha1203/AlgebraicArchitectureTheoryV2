@@ -373,6 +373,7 @@ fn original(
         row,
         bindings,
         parameters,
+        parameter_domains: None,
         body,
         guard,
         reference,
@@ -415,7 +416,7 @@ pub(super) fn append(
     {
         tick(c)?;
         let instance = e.position().instance;
-        originals.push(original(
+        let mut template = original(
             core.base().base().readings(),
             inputs,
             None,
@@ -424,7 +425,48 @@ pub(super) fn append(
             parts,
             base,
             c,
-        )?);
+        )?;
+        if e.family().is_complete()
+            && e.family().missing().is_empty()
+            && e.family().domains().len() == template.parameters.len()
+        {
+            let mut domains = vec![];
+            for (expected, domain) in template.parameters.iter().zip(e.family().domains()) {
+                tick(c)?;
+                let parameter = domain.parameter();
+                let ty = erased(&parameter.ty, c)?;
+                if expected != &(parameter.name.clone(), ty.clone()) || !domain.missing().is_empty() {
+                    return Err("元Law族のparameter型域が違う".into());
+                }
+                let mut values = vec![];
+                for value in domain.values() {
+                    values.push(super::reading::domain_value(
+                        value.scalar(),
+                        parts,
+                        base,
+                        c,
+                    )?);
+                }
+                let reference = push(
+                    parts,
+                    base,
+                    Part::ReadingDomain {
+                        ty: ty.clone(),
+                        elements: Some(values.clone()),
+                    },
+                    c,
+                )?;
+                domains.push(ParameterDomain {
+                    name: parameter.name.clone(),
+                    ty,
+                    occurrence: parameter.span,
+                    reference,
+                    values,
+                });
+            }
+            template.parameter_domains = Some(domains);
+        }
+        originals.push(template);
         for row in 0..e.family().rows().len() {
             originals.push(original(
                 core.base().base().readings(),

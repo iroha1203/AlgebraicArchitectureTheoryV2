@@ -16,6 +16,7 @@ mod law_evaluation;
 mod law_proposition;
 mod law_inapplicable;
 mod law_instantiation;
+mod law_family;
 mod object_component_diagram;
 mod internal_arrow_diagram;
 mod needed;
