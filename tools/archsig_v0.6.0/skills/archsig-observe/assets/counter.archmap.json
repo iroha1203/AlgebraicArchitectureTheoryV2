@@ -1,0 +1,13 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{"namespace": "Counter", "version": "1", "digest": "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11"}],
+  "sources": [],
+  "origins": [{"id": "model", "mode": "specification", "method": "一つの状態と件数を提示する。",
+               "locations": [], "note": "件数が2である仕様モデル。"}],
+  "snapshots": [{
+    "id": "v", "origin": "model",
+    "subjects": [{"id": "s", "type": "Counter.State", "origin": "model"}],
+    "atoms": [{"id": "count", "subject": "s", "field": "Counter.State.count", "value": "2", "origin": "model"}]
+  }]
+}
