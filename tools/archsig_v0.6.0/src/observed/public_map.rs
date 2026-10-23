@@ -1,6 +1,7 @@
 //! 原始correspondenceのnative検査と公開DAGの接続。
 use super::{
     PreparedObserved,
+    architecture_result::architecture,
     construction_result::{
         self as native, ArchitectureWitness, ConstructionData as D, ConstructionType as T,
         ConstructionValue, MapWitness, Witness,
@@ -14,10 +15,8 @@ use super::{
 use crate::{
     archmap::{Slot, Value},
     construction::ConstructionFailure,
-    issue::Location,
-    law::model::ExpressionKind,
 };
-use std::{collections::BTreeMap, sync::Arc};
+use std::collections::BTreeMap;
 
 fn tick(control: &mut Control) -> Result<(), ValidationFailure> {
     control.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -31,9 +30,6 @@ fn failure(cause: ConstructionFailure) -> ValidationFailure {
 }
 fn field(name: &str) -> Vec<P> {
     vec![P::Field(name.into())]
-}
-fn indexed(name: &str, i: usize) -> Vec<P> {
-    vec![P::Field(name.into()), P::Index(i as u64)]
 }
 fn put(
     graph: &mut Graph,
@@ -56,20 +52,6 @@ fn raw(graph: &mut Graph, witness: &Witness, fact: &Fact) -> Result<NodeRef, Val
     native::retain(
         graph,
         native::subject_value(witness.clone(), fact)?,
-        vec![],
-        vec![],
-        None,
-    )
-}
-fn known_atom(
-    graph: &mut Graph,
-    witness: &Witness,
-    fact: &Fact,
-    control: &Control,
-) -> Result<NodeRef, ValidationFailure> {
-    native::retain(
-        graph,
-        native::atom_value(witness.clone(), fact, control)?,
         vec![],
         vec![],
         None,
@@ -136,206 +118,6 @@ pub(super) fn selected(
     Ok(fact)
 }
 
-struct Architecture {
-    witness: Arc<ArchitectureWitness>,
-    reference: NodeRef,
-    root: NodeRef,
-    universe: NodeRef,
-    complete: bool,
-    reasons: Vec<Reason>,
-}
-fn architecture(
-    graph: &mut Graph,
-    witness: Arc<ArchitectureWitness>,
-    control: &mut Control,
-) -> Result<Architecture, ValidationFailure> {
-    tick(control)?;
-    let a = witness.clone();
-    let witness = Witness::Architecture(witness);
-    let construction = a.construction();
-    let root = raw(graph, &witness, construction.root())?;
-    let universe = if let Some((i,_)) = graph.nodes.iter().enumerate().find(|(_,n)|matches!(&n.payload,Some(Payload::Construction(v)) if matches!(&v.data,D::AtomUniverse(atoms) if atoms==construction.universe()))) {
-        NodeRef(i)
-    } else { put(graph,&witness,D::AtomUniverse(construction.universe().to_vec()),vec![])? };
-    let mut reasons = native::missing(
-        witness.request(),
-        construction.base().blocking_slots().to_vec(),
-    );
-    let configuration = if let Some(c) = construction.base().configuration() {
-        put(graph, &witness, D::Configuration(c.clone()), vec![])?
-    } else {
-        let known = construction.base().known();
-        let mut parts = vec![];
-        for (i, fact) in known.family().iter().enumerate() {
-            tick(control)?;
-            parts.push((
-                indexed("family", i),
-                known_atom(graph, &witness, fact, control)?,
-            ));
-        }
-        for (name, pairs) in [
-            ("relations", known.relations()),
-            ("identifications", known.identifications()),
-        ] {
-            for (i, (left, right)) in pairs.iter().enumerate() {
-                tick(control)?;
-                for (j, fact) in [left, right].into_iter().enumerate() {
-                    let mut path = indexed(name, i);
-                    path.push(P::Index(j as u64));
-                    parts.push((path, known_atom(graph, &witness, fact, control)?));
-                }
-            }
-        }
-        put(
-            graph,
-            &witness,
-            D::Pending {
-                ty: T::Configuration,
-                parts,
-            },
-            reasons.clone(),
-        )?
-    };
-    let mut laws = vec![];
-    let mut laws_complete = true;
-    for (instance, row) in a
-        .readings()
-        .instances()
-        .iter()
-        .enumerate()
-        .filter(|(_, r)| r.declaration().kind == "law")
-    {
-        tick(control)?;
-        let mut bindings = vec![];
-        for b in row.bindings() {
-            tick(control)?;
-            bindings.push(Binding {
-                name: b.parameter().name.clone(),
-                ty: b.parameter().ty.erase(),
-                value: raw(graph, &witness, b.subject())?,
-            });
-        }
-        let parameters = row
-            .parameters()
-            .iter()
-            .map(|p| (p.name.clone(), p.ty.clone()))
-            .collect::<Vec<_>>();
-        let mut body = None;
-        let mut guard = None;
-        for expression in &row.declaration().expressions {
-            let is_guard = match expression.kind {
-                ExpressionKind::Guard => true,
-                ExpressionKind::Body => false,
-                _ => continue,
-            };
-            tick(control)?;
-            let r = put(
-                graph,
-                &witness,
-                D::Source {
-                    instance,
-                    guard: is_guard,
-                    location: Location::Law {
-                        span: expression.span,
-                    },
-                    bindings: bindings.clone(),
-                    parameters: parameters.clone(),
-                },
-                vec![],
-            )?;
-            if is_guard {
-                guard = Some(r);
-            } else {
-                body = Some(r);
-            }
-        }
-        let body = body.ok_or("Law instanceの元bodyがない")?;
-        let pending = native::missing(witness.request(), native::instance_missing(row));
-        let law = if pending.is_empty() {
-            put(
-                graph,
-                &witness,
-                D::LawInstance {
-                    instance,
-                    name: row.declaration().name.clone(),
-                    role: row.declaration().role.ok_or("Lawのroleがない")?,
-                    occurrence: Location::Law {
-                        span: row.declaration().span,
-                    },
-                    bindings,
-                    guard,
-                    body,
-                },
-                vec![],
-            )?
-        } else {
-            laws_complete = false;
-            reasons.extend(pending.iter().cloned());
-            let mut parts = vec![(field("body"), body)];
-            if let Some(guard) = guard {
-                parts.push((field("guard"), guard));
-            }
-            for (i, b) in bindings.iter().enumerate() {
-                parts.push((indexed("bindings", i), b.value));
-            }
-            put(
-                graph,
-                &witness,
-                D::PendingLawInstance { instance, parts },
-                pending,
-            )?
-        };
-        laws.push(law);
-    }
-    let mut arrows = vec![];
-    for fact in a.arrows() {
-        tick(control)?;
-        arrows.push(raw(graph, &witness, fact)?);
-    }
-    sort_reasons(&mut reasons);
-    let complete = construction.base().configuration().is_some() && laws_complete;
-    let data = if complete {
-        D::Architecture {
-            reading: construction.reading().into(),
-            root,
-            configuration,
-            laws,
-            arrows,
-        }
-    } else {
-        let mut parts = vec![
-            (field("root"), root),
-            (field("configuration"), configuration),
-        ];
-        parts.extend(
-            laws.into_iter()
-                .enumerate()
-                .map(|(i, r)| (indexed("laws", i), r)),
-        );
-        parts.extend(
-            arrows
-                .into_iter()
-                .enumerate()
-                .map(|(i, r)| (indexed("internal_arrows", i), r)),
-        );
-        D::Pending {
-            ty: T::Architecture,
-            parts,
-        }
-    };
-    let reference = put(graph, &witness, data, reasons.clone())?;
-    let reasons = graph.get(reference)?.reasons.clone();
-    tick(control)?;
-    Ok(Architecture {
-        witness: a,
-        reference,
-        root,
-        universe,
-        complete,
-        reasons,
-    })
-}
-
 fn empty(request: &Request, reasons: Vec<Reason>) -> Answer {
     Answer {
         id: request.id.clone(),
@@ -353,6 +135,9 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
+    if request.kind == QuestionKind::Build {
+        return super::architecture_result::validate_build_origin(environment, graph, request, value);
+    }
     if let Witness::PathCompose(c) = &value.witness { return super::public_path_compose::validate_origin(environment,graph,request,c); }
     if let Witness::Compare(c) = &value.witness {
         if let D::Comparison(super::public_compare::Part::RelationSource(data)) = &value.data {
