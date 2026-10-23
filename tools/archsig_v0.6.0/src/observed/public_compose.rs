@@ -296,6 +296,9 @@ fn value(graph: &Graph, r: NodeRef) -> Result<&ConstructionValue, ValidationFail
 pub(super) fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, ValidationFailure> {
     let v = value(graph, r)?;
     match (&v.data, &v.witness) {
+        (D::InternalArrows(data), Witness::Architecture(_)) => {
+            data.operation().ok_or("内部arrowが保存確認済みOperationでない".into())
+        }
         (D::Operation { .. }, Witness::Map(m)) => {
             m.operation().ok_or("元mapのOperationがない".into())
         }
@@ -310,6 +313,7 @@ pub(super) fn components(
     r: NodeRef,
 ) -> Result<(NodeRef, NodeRef, NodeRef, Vec<NodeRef>), ValidationFailure> {
     match &value(graph, r)?.data {
+        D::InternalArrows(data) => data.components().ok_or("内部arrowのOperation実体がない".into()),
         D::Operation {
             source,
             target,
@@ -327,13 +331,25 @@ pub(super) fn components(
         _ => Err("Operationの実体がない".into()),
     }
 }
-fn universe(graph: &Graph, r: NodeRef) -> Result<NodeRef, ValidationFailure> {
+pub(super) fn universe(graph: &Graph, r: NodeRef) -> Result<NodeRef, ValidationFailure> {
     match &value(graph, r)?.data {
+        D::InternalArrows(data) => data.universe().ok_or("内部arrowの総作用の元Uがない".into()),
         D::AtomMap { universe, .. } | D::Composition(Part::Action { universe, .. }) => {
             Ok(*universe)
         }
         _ => Err("総作用の元Uがない".into()),
     }
+}
+pub(super) fn root_type(graph: &Graph, r: NodeRef) -> Result<String, ValidationFailure> {
+    let root = match &value(graph, r)?.data {
+        D::Architecture { root, .. } => *root,
+        D::ObjectComponents(data) => data.root().ok_or("Operationの端点が実Architectureでない")?,
+        _ => return Err("Operationの端点がArchitectureでない".into()),
+    };
+    let Scalar::Subject { entity, .. } = graph.scalar(root)? else {
+        return Err("Architecture rootが原始参照でない".into());
+    };
+    Ok(entity.clone())
 }
 fn selector<'a>(request: &'a Request, key: &str) -> Result<&'a Selector, ValidationFailure> {
     if key == "head" {
@@ -748,18 +764,9 @@ pub(super) fn evaluate(
         };
         types.push(entity.clone());
     }
-    let root_type = |r: NodeRef| -> Result<String, ValidationFailure> {
-        let D::Architecture { root, .. } = value(graph, r)?.data else {
-            return Err("Operationの端点がArchitectureでない".into());
-        };
-        let Scalar::Subject { entity, .. } = graph.scalar(root)? else {
-            return Err("Architecture rootが原始参照でない".into());
-        };
-        Ok(entity.clone())
-    };
     let shape = OperationProjection {
-        source: root_type(source)?,
-        target: root_type(target)?,
+        source: root_type(graph, source)?,
+        target: root_type(graph, target)?,
         reading: first.source().reading().into(),
         to_reading: then.target().reading().into(),
         word: types,

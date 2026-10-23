@@ -479,6 +479,8 @@ impl ConstructionValue {
     pub fn projection_type(&self) -> Option<ProjectionType> {
         use ConstructionData as D;
         match (&self.data, &self.witness) {
+            (D::InternalArrows(data), Witness::Architecture(_)) => data.projection_type(),
+            (D::ObjectComponents(data), Witness::Architecture(_)) => data.root_type().map(ProjectionType::ArchitectureRoot),
             (D::Composition(part), Witness::Compose(c)) => part.projection_type(c),
             (D::PathComposition(part), Witness::PathCompose(_)) => part.projection_type(),
             (D::Comparison(part), Witness::Compare(_)) => part.projection_type(),
@@ -511,6 +513,10 @@ impl ConstructionValue {
     }
     pub fn project(&self, path: &[ProjectionStep]) -> Option<(NodeRef, usize)> {
         use ConstructionData as D;
+        if let D::InternalArrows(data) = &self.data { return data.project(path); }
+        if let D::ObjectComponents(data) = &self.data {
+            return match path.first()? { ProjectionStep::Field(f) if f == "root" => data.root().map(|r| (r, 1)), _ => None };
+        }
         if let D::Composition(part) = &self.data { return part.project(path); }
         if let D::PathComposition(part) = &self.data { return part.project(path); }
         if let D::Comparison(part) = &self.data { return part.project(path); }

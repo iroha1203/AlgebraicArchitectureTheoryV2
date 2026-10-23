@@ -55,6 +55,7 @@ enum Part {
         candidate: NodeRef,
     },
     Operation {
+        kernel: Box<ConfigurationOperation>,
         subject: NodeRef,
         source: NodeRef,
         target: NodeRef,
@@ -109,6 +110,7 @@ impl Part {
                 candidate,
                 map,
                 action,
+                ..
             } => vec![*subject, *source, *target, *candidate, *map, *action],
         }
     }
@@ -164,6 +166,7 @@ impl Part {
                 candidate,
                 map,
                 action,
+                ..
             } => Json::obj([
                 ("source", source.wire()),
                 ("target", target.wire()),
@@ -231,6 +234,120 @@ impl Eq for Data {}
 impl Data {
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
+    }
+    pub(super) fn projection_type(&self) -> Option<super::projection::ProjectionType> {
+        use super::projection::{MapProjection, ProjectionType as P};
+        let part = self.source.parts.get(self.index)?;
+        if matches!(part, Part::Action { .. }) {
+            return Some(P::AtomMap);
+        }
+        let candidate = match part {
+            Part::Candidate { .. } => part,
+            Part::Map { candidate } | Part::Operation { candidate, .. } => self
+                .source
+                .parts
+                .get(candidate.0.checked_sub(self.source.base)?)?,
+            _ => return None,
+        };
+        let Part::Candidate {
+            declaration,
+            source,
+            target,
+            ..
+        } = candidate
+        else {
+            return None;
+        };
+        let entity = |reference: NodeRef| -> Option<String> {
+            let index = self
+                .source
+                .objects
+                .architectures
+                .iter()
+                .position(|r| *r == reference)?;
+            let identity = self
+                .source
+                .architecture
+                .readings()
+                .objects()
+                .get(index)?
+                .identity()
+                .subject();
+            Some(
+                self.source
+                    .inputs
+                    .archmap()
+                    .snapshots
+                    .iter()
+                    .find(|s| s.id == identity.snapshot)?
+                    .subjects
+                    .iter()
+                    .find(|s| s.id == identity.subject)?
+                    .ty
+                    .clone(),
+            )
+        };
+        let shape = MapProjection {
+            declaration: declaration.clone(),
+            source: entity(*source)?,
+            target: entity(*target)?,
+        };
+        Some(match part {
+            Part::Candidate { .. } => P::MapCandidate(shape),
+            Part::Map { .. } => P::ConfigurationMap(shape),
+            Part::Operation { .. } => P::Operation(shape),
+            _ => return None,
+        })
+    }
+    /// 既出nodeの再検査後に、保持した同じ核のOperationを消費する。
+    pub(super) fn operation(&self) -> Option<&ConfigurationOperation> {
+        match self.source.parts.get(self.index)? {
+            Part::Operation { kernel, .. } => Some(kernel),
+            _ => None,
+        }
+    }
+    pub(super) fn components(&self) -> Option<(NodeRef, NodeRef, NodeRef, Vec<NodeRef>)> {
+        match self.source.parts.get(self.index)? {
+            Part::Operation {
+                subject,
+                source,
+                target,
+                action,
+                ..
+            } => Some((*source, *target, *action, vec![*subject])),
+            _ => None,
+        }
+    }
+    pub(super) fn universe(&self) -> Option<NodeRef> {
+        match self.source.parts.get(self.index)? {
+            Part::Action { universe, .. } => Some(*universe),
+            _ => None,
+        }
+    }
+    pub(super) fn project(
+        &self,
+        path: &[super::projection::ProjectionStep],
+    ) -> Option<(NodeRef, usize)> {
+        use super::projection::ProjectionStep as P;
+        let P::Field(field) = path.first()? else {
+            return None;
+        };
+        let part = self.source.parts.get(self.index)?;
+        let reference = match (part, field.as_str()) {
+            (Part::Candidate { subject, .. }, "subject") => *subject,
+            (Part::Candidate { source, .. } | Part::Operation { source, .. }, "source") => *source,
+            (Part::Candidate { target, .. } | Part::Operation { target, .. }, "target") => *target,
+            (Part::Candidate { action, .. } | Part::Operation { action, .. }, "action") => *action,
+            (Part::Map { candidate } | Part::Operation { candidate, .. }, "candidate") => {
+                *candidate
+            }
+            (Part::Operation { map, .. }, "configuration_map") => *map,
+            (Part::Operation { subject, .. }, "word") if path.get(1) == Some(&P::Index(0)) => {
+                return Some((*subject, 2));
+            }
+            _ => return None,
+        };
+        Some((reference, 1))
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         match self.source.parts.get(self.index) {
@@ -407,6 +524,7 @@ fn plan(
                     &mut parts,
                     base,
                     Part::Operation {
+                        kernel: Box::new(op),
                         subject,
                         source,
                         target,
