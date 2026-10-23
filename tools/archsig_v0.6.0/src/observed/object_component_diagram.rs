@@ -599,6 +599,26 @@ pub(super) fn architecture_origin(
     validate_node(graph, node, data)?;
     Ok(&data.source.architecture)
 }
+/// 元のbase成分から、保持済みの対象表だけを取り出す。
+pub(super) fn original_family(
+    graph: &Graph,
+    base: NodeRef,
+) -> Result<(NodeRef, Diagram), ValidationFailure> {
+    let node = graph.get(base)?;
+    let Some(Payload::Construction(value)) = &node.payload else {
+        return Err("内部arrowの対象表がnativeでない".into());
+    };
+    let D::ObjectComponents(data) = &value.data else {
+        return Err("内部arrowの対象表が標準対象族でない".into());
+    };
+    data.position(base.0)?;
+    if data.source.outputs.base != base {
+        return Err("内部arrowの対象表のbaseが違う".into());
+    }
+    validate_node(graph, node, data)?;
+    Ok((data.source.reference, data.source.outputs.clone()))
+}
+
 impl Source {
     fn recheck(
         &self,

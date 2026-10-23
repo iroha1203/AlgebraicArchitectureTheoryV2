@@ -346,6 +346,7 @@ pub(crate) struct Environment<'a> {
     pub(super) verified_finite_law_diagrams: RefCell<Vec<std::sync::Arc<super::finite_law_diagram::Source>>>,
     pub(super) verified_polynomial_law_diagrams: RefCell<Vec<std::sync::Arc<super::polynomial_law_diagram::Source>>>,
     pub(super) verified_object_components: RefCell<Vec<std::sync::Arc<super::object_component_diagram::Source>>>,
+    pub(super) verified_internal_arrows: RefCell<Vec<std::sync::Arc<super::internal_arrow_diagram::Source>>>,
     dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
@@ -478,6 +479,7 @@ impl<'a> Environment<'a> {
             verified_finite_law_diagrams: RefCell::new(vec![]),
             verified_polynomial_law_diagrams: RefCell::new(vec![]),
             verified_object_components: RefCell::new(vec![]),
+            verified_internal_arrows: RefCell::new(vec![]),
             dotted_inputs: RefCell::new(DottedInputCache::default()),
             scoped_values: RefCell::new(Vec::new()),
             control: control.clone(),
@@ -759,6 +761,8 @@ impl<'a> Environment<'a> {
                     self.recheck_polynomial_law_diagram(graph, value)?;
                     if let super::construction_result::ConstructionData::ObjectComponents(data) = &value.data { data.position(limit)?; }
                     self.recheck_object_components(graph, value)?;
+                    if let super::construction_result::ConstructionData::InternalArrows(data) = &value.data { data.position(limit)?; }
+                    self.recheck_internal_arrows(graph, value)?;
                     for r in node
                         .arguments
                         .iter()

@@ -136,6 +136,7 @@ pub(crate) enum ConstructionData {
     FiniteLaw(super::finite_law_diagram::Data),
     PolynomialLaw(super::polynomial_law_diagram::Data),
     ObjectComponents(super::object_component_diagram::Data),
+    InternalArrows(super::internal_arrow_diagram::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -243,6 +244,7 @@ impl ConstructionValue {
             ConstructionData::FiniteLaw(data) => data.scalar(),
             ConstructionData::PolynomialLaw(data) => data.scalar(),
             ConstructionData::ObjectComponents(data) => data.scalar(),
+            ConstructionData::InternalArrows(data) => data.scalar(),
             ConstructionData::PathComposition(part) => part.scalar(),
             ConstructionData::Comparison(part) => part.scalar(),
             ConstructionData::Subject { value, .. }
@@ -307,6 +309,7 @@ impl ConstructionValue {
             D::FiniteLaw(data) => return data.ty(),
             D::PolynomialLaw(data) => return data.ty(),
             D::ObjectComponents(data) => return data.ty(),
+            D::InternalArrows(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
             D::Comparison(part) => return part.ty(),
@@ -337,6 +340,7 @@ impl ConstructionValue {
             D::FiniteLaw(data) => data.arguments(),
             D::PolynomialLaw(data) => data.arguments(),
             D::ObjectComponents(data) => data.arguments(),
+            D::InternalArrows(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
             D::Comparison(part) => {
@@ -433,6 +437,7 @@ impl ConstructionValue {
             D::FiniteLaw(ref data) => data.construction(),
             D::PolynomialLaw(ref data) => data.construction(),
             D::ObjectComponents(ref data) => data.construction(),
+            D::InternalArrows(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
             D::Comparison(ref part) => part.construction(),
@@ -543,6 +548,7 @@ impl ConstructionValue {
             D::FiniteLaw(data) => data.wire(),
             D::PolynomialLaw(data) => data.wire(),
             D::ObjectComponents(data) => data.wire(),
+            D::InternalArrows(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
             D::Comparison(part) => match &self.witness { Witness::Compare(w) => part.wire(w), _ => unreachable!("比較は元検査を持つ") },
@@ -1124,6 +1130,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
     if let ConstructionData::FiniteLaw(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::PolynomialLaw(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::ObjectComponents(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::InternalArrows(data) = &value.data { return Ok(data.metadata()); }
     if let Witness::PathCompose(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
     if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationSource(data))) = (&value.witness, &value.data) {
         let _ = w;
@@ -1579,6 +1586,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     if let ConstructionData::FiniteLaw(data) = &v.data { return super::finite_law_diagram::validate_node(graph,node,data); }
     if let ConstructionData::PolynomialLaw(data) = &v.data { return super::polynomial_law_diagram::validate_node(graph,node,data); }
     if let ConstructionData::ObjectComponents(data) = &v.data { return super::object_component_diagram::validate_node(graph,node,data); }
+    if let ConstructionData::InternalArrows(data) = &v.data { return super::internal_arrow_diagram::validate_node(graph,node,data); }
     if let Witness::Compose(c) = &v.witness { return super::public_compose::validate_node(graph,node,c); }
     if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_node(graph,node,c); }
     if let Witness::Compare(c) = &v.witness { return super::public_compare::validate_node(graph,node,c); }
