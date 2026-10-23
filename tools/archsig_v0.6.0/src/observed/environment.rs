@@ -762,6 +762,9 @@ impl<'a> Environment<'a> {
                     if let super::construction_result::ConstructionData::PolynomialLaw(data) = &value.data { data.position(limit)?; }
                     self.recheck_polynomial_law_diagram(graph, value)?;
                     self.recheck_law_frame(graph, value)?;
+                    if let super::construction_result::ConstructionData::OutsideLaw(data) = &value.data {
+                        self.recheck_law_evaluation_inputs(graph, data.origin, data.architecture)?;
+                    }
                     if let super::construction_result::ConstructionData::ObjectComponents(data) = &value.data { data.position(limit)?; }
                     self.recheck_object_components(graph, value)?;
                     if let super::construction_result::ConstructionData::InternalArrows(data) = &value.data { data.position(limit)?; }

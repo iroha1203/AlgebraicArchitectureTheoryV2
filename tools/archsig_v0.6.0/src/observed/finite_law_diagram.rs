@@ -418,11 +418,14 @@ impl Data {
             declaration: name.clone(),
             bindings: bindings.clone(),
             body: expr(*body)?,
+            body_reference: *body,
             guard: guard.map(expr).transpose()?,
             ready: reading.reading.application == Some(true)
                 && !reading.reading.condition_failed
                 && !reading.reading.condition_pending,
             body_allowed: reading.reading.guard != Some(false),
+            outside: reading.reading.application == Some(false)
+                && !reading.reading.condition_failed && !reading.reading.condition_pending,
             scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,
         }))
     }
