@@ -23,6 +23,8 @@ use crate::{
 };
 use std::sync::Arc;
 
+#[path = "polynomial_law_family.rs"]
+mod family;
 #[path = "polynomial_law_sources.rs"]
 mod sources;
 
@@ -418,6 +420,7 @@ pub(super) struct Source {
     base: usize,
     parts: Vec<Part>,
     outputs: Diagram,
+    owned_outputs: Option<Vec<Diagram>>,
     support: Vec<Fact>,
     scope: Scope,
 }
@@ -552,9 +555,20 @@ fn plan(
     base: usize,
     c: &mut Control,
 ) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
-    tick(c)?;
     let mut parts = vec![];
-    let (originals, expressions) = sources::append(core, inputs, &mut parts, base, c)?;
+    let out = object_plan(core, inputs, base, &mut parts, None, c)?;
+    Ok((parts, out))
+}
+fn object_plan(
+    core: &EquationPresentation,
+    inputs: &CheckedInputs,
+    base: usize,
+    parts: &mut Vec<Part>,
+    shared: Option<&[family::Basis]>,
+    c: &mut Control,
+) -> Result<Diagram, ValidationFailure> {
+    tick(c)?;
+    let (originals, expressions) = sources::append(core, inputs, parts, base, c)?;
     let mut out = Diagram {
         unavailable: None,
         context: None,
@@ -573,7 +587,18 @@ fn plan(
         if !matches!(ring.ty, Type::Z | Type::Q | Type::Fp(_)) {
             return Err("多項式の元係数環がscalarでない".into());
         }
-        let scalar = push(&mut parts, base, Part::Base(ring.ty.clone()), c)?;
+        if let Some(shared) = shared {
+            let basis = shared
+                .iter()
+                .find(|b| b.ty == ring.ty)
+                .ok_or("共有係数環がない")?;
+            out.bases.push(basis.scalar);
+            out.rings.push(basis.ring);
+            out.domains.push(basis.domain);
+            out.evaluations.push(basis.evaluation);
+            continue;
+        }
+        let scalar = push(parts, base, Part::Base(ring.ty.clone()), c)?;
         let variables = ring
             .symbols
             .iter()
@@ -592,7 +617,7 @@ fn plan(
             })
             .collect::<Result<Vec<_>, ValidationFailure>>()?;
         let r = push(
-            &mut parts,
+            parts,
             base,
             Part::Ring {
                 base: scalar,
@@ -610,7 +635,7 @@ fn plan(
             [ty] => ty.clone(),
             _ => Type::Tuple(types),
         };
-        let domain = push(&mut parts, base, Part::Domain { ring: r, ty }, c)?;
+        let domain = push(parts, base, Part::Domain { ring: r, ty }, c)?;
         out.bases.push(scalar);
         out.rings.push(r);
         out.domains.push(domain);
@@ -621,10 +646,10 @@ fn plan(
             let mut values = vec![];
             for image in images {
                 tick(c)?;
-                values.push(polynomial(&mut parts, base, image, scalar, &ring.ty, 0, c)?);
+                values.push(polynomial(parts, base, image, scalar, &ring.ty, 0, c)?);
             }
             Some(push(
-                &mut parts,
+                parts,
                 base,
                 Part::Evaluation {
                     source: r,
@@ -668,15 +693,7 @@ fn plan(
             let mut make = |p: &Option<EquationPolynomial>| {
                 p.as_ref()
                     .map(|p| {
-                        polynomial(
-                            &mut parts,
-                            base,
-                            p,
-                            ring,
-                            &original.ty,
-                            original.symbols.len(),
-                            c,
-                        )
+                        family::polynomial(parts, base, p, ring, &original.ty, original, shared, c)
                     })
                     .transpose()
             };
@@ -687,7 +704,7 @@ fn plan(
             coordinate.residual = make(&q.residual_constant)?;
             if let Some(nu) = coordinate.nu {
                 coordinate.witness = Some(push(
-                    &mut parts,
+                    parts,
                     base,
                     Part::Ideal {
                         ring,
@@ -723,7 +740,7 @@ fn plan(
             generators.push(q.nu.ok_or("required多項式の元νがない")?);
         }
         out.required.push(push(
-            &mut parts,
+            parts,
             base,
             Part::Ideal {
                 ring: r,
@@ -734,7 +751,7 @@ fn plan(
         )?);
     }
     tick(c)?;
-    Ok((parts, out))
+    Ok(out)
 }
 /// 元Evaluatorの全読取りを使う。数値環に記号化できるslotだけに射影しない。
 fn original_positions(
@@ -778,10 +795,21 @@ fn append_presentations(
     parts: &mut Vec<Part>,
     out: &mut Diagram,
     base: usize,
+    shared: Option<&[family::Basis]>,
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
     use super::equation_presentation_node::{self as common, Coordinate as C, Part as E};
-    let positions = original_positions(core, None, c)?;
+    let mut positions = original_positions(core, None, c)?;
+    if let Some(shared) = shared {
+        for basis in shared {
+            for v in &basis.variables {
+                tick(c)?;
+                positions.push(v.field.clone());
+            }
+        }
+    }
+    positions.sort();
+    positions.dedup();
     // pushは同じControlを使うため、依存subjectの値だけを先に集めてから計画へ追加する。
     let dependencies = common::dependencies(inputs, &positions, c, |v| {
         let at = base
@@ -937,6 +965,18 @@ fn append_presentations(
                         field: Some(symbol.slot.field.clone()),
                         atom: None,
                     });
+                }
+            }
+            if out.evaluations.get(index).is_some_and(Option::is_none) {
+                if let Some(shared) = shared {
+                    let basis = shared
+                        .iter()
+                        .find(|b| b.ring == *ring)
+                        .ok_or("表示の共有環がない")?;
+                    for v in &basis.variables {
+                        tick(c)?;
+                        omitted_positions.push(v.field.clone());
+                    }
                 }
             }
             let omissions = dependencies.missing_reasons(
@@ -1213,6 +1253,7 @@ impl Source {
                 &mut parts,
                 &mut outputs,
                 base,
+                None,
                 c,
             )?;
         }
@@ -1227,6 +1268,7 @@ impl Source {
             base,
             parts,
             outputs,
+            owned_outputs: None,
             support,
             scope,
         })
@@ -1240,6 +1282,22 @@ impl Source {
         tick(c)?;
         if !Arc::ptr_eq(a, &self.architecture) || inputs.sources() != self.inputs.sources() {
             return Err("多項式の消費先・元三入力・対象・readingが違う".into());
+        }
+        if self.owned_outputs.is_some() {
+            if self.object != 0 {
+                return Err("共有多項式族のbase対象が違う".into());
+            }
+            let expected =
+                Self::compute_family(self.inputs.clone(), a.clone(), self.reference, self.base, c)?;
+            if self.parts != expected.parts
+                || self.outputs != expected.outputs
+                || self.owned_outputs != expected.owned_outputs
+                || self.support != expected.support
+                || self.scope != expected.scope
+            {
+                return Err("共有多項式族が元全対象・環・記号・計画と違う".into());
+            }
+            return tick(c);
         }
         let (mut parts, mut outputs) = if let Some(core) = &self.core {
             if core.object() != self.object || core.base().base().readings() != a.readings() {
@@ -1270,6 +1328,7 @@ impl Source {
                 &mut parts,
                 &mut outputs,
                 self.base,
+                None,
                 c,
             )?;
         }
@@ -1291,6 +1350,37 @@ pub(super) fn retain(
     object: usize,
     c: &mut Control,
 ) -> Result<Diagram, ValidationFailure> {
+    Ok(retain_source(graph, inputs, reference, object, false, c)?
+        .outputs
+        .clone())
+}
+pub(super) fn retain_family(
+    graph: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    reference: NodeRef,
+    c: &mut Control,
+) -> Result<Vec<Diagram>, ValidationFailure> {
+    let source = retain_source(graph, inputs, reference, 0, true, c)?;
+    let mut outputs = vec![source.outputs.clone()];
+    outputs.extend(
+        source
+            .owned_outputs
+            .as_ref()
+            .ok_or("共有多項式族の全対象がない")?
+            .iter()
+            .cloned(),
+    );
+    tick(c)?;
+    Ok(outputs)
+}
+fn retain_source(
+    graph: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    reference: NodeRef,
+    object: usize,
+    all_objects: bool,
+    c: &mut Control,
+) -> Result<Arc<Source>, ValidationFailure> {
     tick(c)?;
     if graph.active != graph.context_at(reference.0) {
         return Err("多項式の生成が元ArchitectureのRequestでない".into());
@@ -1300,14 +1390,11 @@ pub(super) fn retain(
         return Err("多項式の元Architectureがない".into());
     };
     Environment::new(&inputs, c)?.recheck_object_components(graph, consumer)?;
-    let source = Arc::new(Source::compute(
-        inputs,
-        a,
-        reference,
-        object,
-        graph.nodes.len(),
-        c,
-    )?);
+    let source = Arc::new(if all_objects {
+        Source::compute_family(inputs, a, reference, graph.nodes.len(), c)?
+    } else {
+        Source::compute(inputs, a, reference, object, graph.nodes.len(), c)?
+    });
     for index in 0..source.parts.len() {
         tick(c)?;
         let data = Data {
@@ -1331,7 +1418,7 @@ pub(super) fn retain(
         )?;
     }
     tick(c)?;
-    Ok(source.outputs.clone())
+    Ok(source)
 }
 pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let part = data
@@ -1424,3 +1511,7 @@ impl Environment<'_> {
 #[cfg(test)]
 #[path = "polynomial_law_diagram_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "polynomial_law_family_tests.rs"]
+mod family_tests;
