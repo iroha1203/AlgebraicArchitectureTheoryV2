@@ -46,6 +46,11 @@ impl<'i> Environment<'i> {
     ) -> Result<ArchitectureGuard<'_, 'i>, ValidationFailure> {
         let context = self.current_context(graph);
         let selected = (|| {
+            if let Some(index) = context.instance {
+                if let Some(reference)=crate::observed::law_evaluation::architecture(graph,index,self.cutoff.get().min(graph.nodes.len()))? {
+                    return self.select_architecture(graph,reference);
+                }
+            }
             let Some(request) = self
                 .original_requests
                 .and_then(|rs| rs.get(context.request))

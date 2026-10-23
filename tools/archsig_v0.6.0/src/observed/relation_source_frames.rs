@@ -33,21 +33,12 @@ impl Environment<'_> {
             .push(family.clone());
         Ok(())
     }
-    pub(in crate::observed) fn relation_evaluation_bindings(
-        &self,
-        graph: &Graph,
-        index: usize,
-    ) -> Result<(Vec<Binding>, Scope), ValidationFailure> {
-        let (bindings, _, scope) = self
-            .relation_source_inputs(graph, index)?
-            .ok_or("元relationの評価instanceがない")?;
-        Ok((bindings, scope))
-    }
-    pub(in crate::observed::environment) fn relation_source_declaration(
+    pub(in crate::observed::environment) fn instance_source_declaration(
         &self,
         graph: &Graph,
         index: usize,
     ) -> Result<Option<String>, ValidationFailure> {
+        if let Some(declaration)=crate::observed::law_evaluation::declaration(graph,index)? { return Ok(Some(declaration)); }
         relation_sources::instance_declaration(graph, index)
     }
     pub(in crate::observed::environment) fn relation_source_inputs(

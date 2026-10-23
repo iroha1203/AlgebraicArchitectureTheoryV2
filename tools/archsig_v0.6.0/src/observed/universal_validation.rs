@@ -3442,7 +3442,7 @@ impl Environment<'_> {
             let name = match request.declaration() {
                 Some(name) => name.to_owned(),
                 None => self.current_context(graph).instance
-                    .map(|index| self.relation_source_declaration(graph, index)).transpose()?.flatten()
+                    .map(|index| self.instance_source_declaration(graph, index)).transpose()?.flatten()
                     .ok_or("全域Sourceの元要求・relation宣言がない")?,
             };
             let declaration = self.inputs.law().declarations.get(&name).ok_or("全域Source元宣言がない")?;
