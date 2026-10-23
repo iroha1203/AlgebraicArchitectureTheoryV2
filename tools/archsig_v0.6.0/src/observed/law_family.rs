@@ -156,7 +156,7 @@ fn plan(
     }
 
     let context = g.context_at(template.0);
-    if context != g.active || context != g.context_at(architecture.0) {
+    if context != g.context_at(architecture.0) {
         return Err("元Law族のRequest Contextが違う".into());
     }
     Ok(Some(p))
@@ -319,7 +319,7 @@ fn rows(
                     .ok_or("元Law族の通常命題に実instanceがない")?;
                 let record = g.instances.get(index).ok_or("元Law族の実instanceがない")?;
                 if record.source != row.law
-                    || record.caller != g.active
+                    || record.caller != g.context_at(d.architecture.0)
                     || g.context_at(row.evaluation.0) != context
                     || prop.arguments.get(1) != Some(&row.evaluation)
                 {
@@ -697,6 +697,9 @@ pub(super) fn check(
     c: &mut Control,
 ) -> Result<Option<Answer>, ValidationFailure> {
     tick(c)?;
+    if g.active != g.context_at(template.0) {
+        return Err("元Law族の生成が元Request Contextでない".into());
+    }
     env.recheck_law_evaluation_inputs(g, template, architecture)?;
     let Some(p) = plan(g, template, architecture)? else {
         return Ok(None);

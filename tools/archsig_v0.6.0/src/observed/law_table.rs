@@ -201,9 +201,6 @@ impl Table {
         c: &mut Control,
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
-        if g.context_at(self.architecture.0) != g.active {
-            return Err("全Law表のRequestが元Architectureと違う".into());
-        }
         refs(env, g, [self.architecture, self.component_source], c)?;
         let (a, objects) = components(g, self.component_source, self.architecture)?;
         let planned = self.plan.recheck(env, g, self.architecture, c)?;
@@ -291,6 +288,9 @@ pub(super) fn retain(
     c: &mut Control,
 ) -> Result<Option<Table>, ValidationFailure> {
     tick(c)?;
+    if g.active != g.context_at(architecture.0) {
+        return Err("全Law表の生成が元ArchitectureのRequestでない".into());
+    }
     refs(env, g, [architecture], c)?;
     let Some(objects) =
         super::object_component_diagram::retain(g, inputs.clone(), architecture, c)?

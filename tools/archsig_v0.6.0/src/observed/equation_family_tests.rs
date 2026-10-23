@@ -639,6 +639,237 @@ fn tuple_integer_rational_components_keep_distinct_factors_and_original_field_sl
 }
 
 #[test]
+fn finished_families_recheck_after_later_requests_and_reject_foreign_generation() {
+    for mode in 0..4 {
+        let (inputs, root, finite) = match mode {
+            0 => (
+                fixture::inputs(false, "law required zero(c:Part):c.quantity=0;"),
+                "root",
+                true,
+            ),
+            1 => (
+                polynomial_fixture::inputs(
+                    false,
+                    false,
+                    "law required yes(c:Root):0=0;law optional no(c:Root):0=1;",
+                ),
+                "r2",
+                false,
+            ),
+            2 => (fixture::inputs(false, ""), "root", true),
+            _ => (
+                fixture::inputs(
+                    false,
+                    "law required bit(c:Part,b:Bool) when b:c.quantity=0;",
+                ),
+                "root",
+                true,
+            ),
+        };
+        let ask = format!("b=build(Selected,on=@v/{root})");
+        let requests = resolve_native_for_test(
+            inputs.law(),
+            inputs.archmap(),
+            &[&ask, "later=build(Selected,on=@v/root)"],
+            &mut quiet(),
+        )
+        .unwrap();
+        let p = PreparedObserved {
+            inputs,
+            requests,
+            object: None,
+        };
+        let (mut g, layout) = start(&p, finite);
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let r = retain(&env, &mut g, layout.clone(), &mut quiet())
+            .unwrap()
+            .unwrap();
+        let old_family = g.get(r).unwrap().clone();
+        let original_contexts = g.contexts.clone();
+        let a = layout.data.architecture;
+        assert_eq!(g.context_at(r.0).request, 0);
+        if mode == 2 {
+            assert!(data(&g, r).output.indices.is_empty());
+            assert_eq!(data(&g, r).output.objects.len(), 3);
+        } else {
+            assert!(!data(&g, r).output.coordinates.is_empty());
+            assert!(
+                data(&g, r)
+                    .output
+                    .objects
+                    .iter()
+                    .any(|o| o.holds.iter().any(|h| g
+                        .get(*h)
+                        .unwrap()
+                        .judgment
+                        .as_ref()
+                        .unwrap()
+                        .status
+                        == Decision::Refuted))
+            );
+        }
+        g.active.request = 1;
+        let later = crate::observed::architecture_result::build(
+            p.shared_inputs(),
+            &env,
+            &mut g,
+            &p.requests().requests()[1],
+            &mut quiet(),
+        )
+        .unwrap();
+        assert!(later.complete);
+        assert_eq!(g.context_at(later.reference.0).request, 1);
+        let before = copy(&g, &quiet());
+        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let checked = fresh.recheck_node(&g, g.get(r).unwrap(), r.0);
+        assert!(checked.is_ok(), "mode {mode}: {checked:?}");
+        layout
+            .law_table()
+            .recheck(&fresh, &g, &mut quiet())
+            .unwrap();
+        layout.recheck(&fresh, &g, &mut quiet()).unwrap();
+        assert!(
+            layout
+                .checked(&fresh, &g, &mut quiet())
+                .unwrap()
+                .is_complete()
+        );
+        let table = Arc::new(layout.law_table().clone());
+        if !finite || mode == 2 {
+            let rebuilt =
+                observable_layout::retain(&fresh, &g, table.clone(), &mut quiet()).unwrap();
+            rebuilt.recheck(&fresh, &g, &mut quiet()).unwrap();
+            assert_eq!(rebuilt.data, layout.data);
+        }
+        assert_eq!(g.get(r).unwrap(), &old_family);
+        assert_eq!(&g.contexts[..original_contexts.len()], &original_contexts);
+        assert!(retain(&fresh, &mut g, layout.clone(), &mut quiet()).is_err());
+        assert_eq!(g.nodes, before.nodes);
+        assert_eq!(g.contexts, before.contexts);
+        assert_eq!(g.active, before.active);
+        assert!(law_table::retain(&fresh, &mut g, p.shared_inputs(), a, &mut quiet()).is_err());
+        if mode != 2 {
+            assert!(
+                observable_layout::retain_finite(
+                    &fresh,
+                    &mut g,
+                    table,
+                    p.shared_inputs(),
+                    &mut quiet()
+                )
+                .is_err()
+            );
+        }
+        assert_eq!(g.nodes, before.nodes);
+        assert_eq!(g.contexts, before.contexts);
+        assert_eq!(g.active, before.active);
+        let outside = g.nodes[..r.0].iter().enumerate().find_map(|(i, n)| {
+            let Some(Payload::Construction(v)) = &n.payload else {
+                return None;
+            };
+            let D::OutsideLaw(d) = &v.data else {
+                return None;
+            };
+            Some((NodeRef(i), d.origin, d.architecture))
+        });
+        if let Some((reference, origin, architecture)) = outside {
+            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            fresh
+                .recheck_node(&g, g.get(reference).unwrap(), reference.0)
+                .unwrap();
+            assert!(
+                crate::observed::law_inapplicable::check(
+                    &fresh,
+                    &mut g,
+                    origin,
+                    architecture,
+                    &mut quiet()
+                )
+                .is_err()
+            );
+        }
+        let specialized = g.nodes[..r.0].iter().enumerate().find_map(|(i, n)| {
+            let Some(Payload::Construction(v)) = &n.payload else {
+                return None;
+            };
+            let D::LawInstantiation(d) = &v.data else {
+                return None;
+            };
+            Some((NodeRef(i), d.base, d.template, d.architecture))
+        });
+        if let Some((reference, base, template, architecture)) = specialized {
+            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            fresh
+                .recheck_node(&g, g.get(reference).unwrap(), reference.0)
+                .unwrap();
+            assert!(
+                crate::observed::law_instantiation::instantiate(
+                    &fresh,
+                    &mut g,
+                    base,
+                    template,
+                    architecture,
+                    &mut quiet()
+                )
+                .is_err()
+            );
+        }
+        let family = g.nodes[..r.0].iter().enumerate().find_map(|(i, n)| {
+            let Some(Payload::Construction(v)) = &n.payload else {
+                return None;
+            };
+            let D::LawFamily(d) = &v.data else {
+                return None;
+            };
+            Some((NodeRef(i), d.template, d.architecture))
+        });
+        if let Some((reference, template, architecture)) = family {
+            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            fresh
+                .recheck_node(&g, g.get(reference).unwrap(), reference.0)
+                .unwrap();
+            assert!(
+                crate::observed::law_family::check(
+                    &fresh,
+                    &mut g,
+                    template,
+                    architecture,
+                    &mut quiet()
+                )
+                .is_err()
+            );
+        }
+        if mode == 3 {
+            assert!(outside.is_some() && specialized.is_some() && family.is_some());
+            assert!(
+                g.get(r)
+                    .unwrap()
+                    .scope
+                    .quantifiers
+                    .iter()
+                    .any(|q| q.name == "b")
+            );
+        }
+        assert_eq!(g.nodes, before.nodes);
+        assert_eq!(g.contexts, before.contexts);
+        assert_eq!(g.active, before.active);
+        for forgery in 0..3 {
+            let mut changed = copy(&g, &quiet());
+            match forgery {
+                0 => changed.requests[0].id = "forged".into(),
+                1 => changed.contexts[a.0].request = 1,
+                _ => changed.contexts[r.0].request = 1,
+            }
+            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            assert!(
+                fresh
+                    .recheck_node(&changed, changed.get(r).unwrap(), r.0)
+                    .is_err()
+            );
+        }
+    }
+}
+#[test]
 fn family_recheck_rejects_equal_architecture_clones_and_altered_requests_or_contexts() {
     let p = prepared(
         fixture::inputs(false, "law required zero(c:Part):c.quantity=0;"),

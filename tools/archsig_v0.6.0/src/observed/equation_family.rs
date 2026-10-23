@@ -214,6 +214,9 @@ pub(super) fn retain(
     c: &mut Control,
 ) -> Result<Option<NodeRef>, ValidationFailure> {
     tick(c)?;
+    if g.active != g.context_at(layout.data.architecture.0) {
+        return Err("EquationFamilyの生成が元ArchitectureのRequestでない".into());
+    }
     layout.recheck(env, g, c)?;
     let Some(output) = output(&layout, c)? else {
         return Ok(None);

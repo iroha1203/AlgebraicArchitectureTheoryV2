@@ -82,10 +82,7 @@ fn expected(
     }
     frames::check_architecture(graph, architecture, &target)?;
     let context = graph.context_at(base.0);
-    if context != graph.active
-        || graph.context_at(template.0) != context
-        || graph.context_at(architecture.0) != context
-    {
+    if graph.context_at(template.0) != context || graph.context_at(architecture.0) != context {
         return Err("元Law特殊化のRequest Contextが違う".into());
     }
     for fixed in &target.bindings {
@@ -169,6 +166,9 @@ pub(super) fn instantiate(
     c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
     tick(c)?;
+    if graph.active != graph.context_at(base.0) {
+        return Err("元Law特殊化の生成が元Request Contextでない".into());
+    }
     env.recheck_law_evaluation_inputs(graph, base, architecture)?;
     env.recheck_law_evaluation_inputs(graph, template, architecture)?;
     let (row, d) = expected(graph, base, template, architecture)?;
