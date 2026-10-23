@@ -690,7 +690,6 @@ impl<'a> Environment<'a> {
     pub fn validate(&self, graph: &Graph, node: &Node) -> Result<(), ValidationFailure> {
         self.validate_at(graph, node, graph.nodes.len())
     }
-    #[cfg(test)]
     pub(super) fn recheck_node(
         &self,
         graph: &Graph,

@@ -200,6 +200,13 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn retained_components(&self) -> (Arc<ArchitectureWitness>, NodeRef, Diagram) {
+        (
+            self.source.architecture.clone(),
+            self.source.reference,
+            self.source.outputs.clone(),
+        )
+    }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }

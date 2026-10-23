@@ -1562,6 +1562,50 @@ pub(super) fn retain(
         .outputs
         .clone())
 }
+#[derive(Clone, Debug)]
+pub(super) struct FamilyPlan(Arc<Source>);
+impl FamilyPlan {
+    pub(super) fn diagrams(&self) -> Result<Vec<Diagram>, ValidationFailure> {
+        let mut outputs = vec![self.0.outputs.clone()];
+        outputs.extend(
+            self.0
+                .owned_outputs
+                .as_ref()
+                .ok_or("全Law表の元対象計画がない")?
+                .iter()
+                .cloned(),
+        );
+        Ok(outputs)
+    }
+    pub(super) fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        reference: NodeRef,
+        c: &mut Control,
+    ) -> Result<Arc<ArchitectureWitness>, ValidationFailure> {
+        tick(c)?;
+        if reference != self.0.reference || self.0.object != 0 || self.0.owned_outputs.is_none() {
+            return Err("全Law表の元Architecture/共有計画が違う".into());
+        }
+        let a = native::architecture_origin(graph, reference, 0)?;
+        if !Arc::ptr_eq(a, &self.0.architecture) {
+            return Err("全Law表の元Architectureが別由来".into());
+        }
+        self.0.recheck(env.inputs, a, c)?;
+        Ok(a.clone())
+    }
+}
+pub(super) fn retain_table_plan(
+    graph: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    reference: NodeRef,
+    c: &mut Control,
+) -> Result<FamilyPlan, ValidationFailure> {
+    Ok(FamilyPlan(retain_source(
+        graph, inputs, reference, 0, true, c,
+    )?))
+}
 pub(super) fn retain_family(
     graph: &mut Graph,
     inputs: Arc<CheckedInputs>,
