@@ -2980,6 +2980,9 @@ impl Graph {
     }
 
     fn universal_evaluation_shape(&self, node: &Node) -> Result<bool, ValidationFailure> {
+        if node.arguments.first().is_some_and(|r|matches!(self.get(*r).map(|n|&n.payload),Ok(Some(Payload::LawInstance {..})))) {
+            return Ok(false);
+        }
         let Some(Payload::Evaluation {
             expression,
             bindings,

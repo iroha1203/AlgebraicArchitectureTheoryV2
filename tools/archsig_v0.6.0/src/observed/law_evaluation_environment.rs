@@ -43,6 +43,79 @@ impl Environment<'_> {
         }
         Ok(allowed)
     }
+    pub(in crate::observed) fn require_native_law_expression(
+        &self,
+        graph: &Graph,
+        expression: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let Some(index) = self.current_context(graph).instance {
+            let span = self
+                .inputs
+                .law()
+                .exprs
+                .get(expression)
+                .ok_or("元Law式IDがない")?
+                .span;
+            if !self.native_law_source_allowed(graph, index, span)? {
+                return Err("非適用native Lawのbodyは評価できない".into());
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn native_law_skipped_source(
+        &self,
+        graph: &Graph,
+        index: usize,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Result<Option<SourceAnalysis>, ValidationFailure> {
+        let Some(inputs) =
+            frames::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
+        else {
+            return Ok(None);
+        };
+        let context = self.current_context(graph);
+        if context.frame.is_some()
+            || context.iteration.is_some()
+            || context.case.is_some()
+            || inputs.bindings != bindings
+            || inputs.origin.body_allowed
+            || self
+                .inputs
+                .law()
+                .exprs
+                .get(inputs.origin.body)
+                .ok_or("元body式IDがない")?
+                .span
+                != span
+        {
+            return Ok(None);
+        }
+        let (allowed, guard) =
+            frames::body_guard(graph, index, span, self.cutoff.get().min(graph.nodes.len()))?;
+        let guard = guard.ok_or("未評価bodyの前に実guardがない")?;
+        self.validate_at(graph, graph.get(guard)?, guard.0)?;
+        let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
+            return Err("実guardが評価でない".into());
+        };
+        if allowed || graph.boolean(*value)? != Some(false) {
+            return Err("未評価bodyの実guardがfalseでない".into());
+        }
+        let mut scope = inputs.origin.scope;
+        scope.merge(&self.architecture_scope());
+        Ok(Some(SourceAnalysis {
+            condition_failed: false,
+            condition_pending: false,
+            symbolic: None,
+            comparison: None,
+            scope,
+            known_value: None,
+            affine: None,
+            missing: None,
+            support: vec![],
+            scalar_scope: None,
+        }))
+    }
     pub(super) fn recheck_law_frame(
         &self,
         graph: &Graph,

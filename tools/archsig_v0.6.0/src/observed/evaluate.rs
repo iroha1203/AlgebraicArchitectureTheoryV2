@@ -117,6 +117,7 @@ pub(in crate::observed) fn instance_expression<'a>(
             answer_evaluation: None, verified_observed: None, completing: false,
             finite_universal: None, sources: BTreeMap::new(),
         };
+        evaluator.environment.require_native_law_expression(evaluator.graph,expression)?;
         match evaluator.eval(expression) {
             Ok(value) => Ok(RelationSide { expression: value.expression, evaluation: value.evaluation, value: value.value, support: value.support, scope: value.scope, reasons: value.reasons }),
             Err(Failure::Stop(s)) => Err(ValidationFailure::Stop(s)),
@@ -125,6 +126,42 @@ pub(in crate::observed) fn instance_expression<'a>(
         }
     })();
     graph.active = previous;
+    result
+}
+
+pub(in crate::observed) fn instance_law<'a>(
+    environment: &'a Environment<'a>, graph: &mut Graph, control: &mut Control,
+    request: &'a Request, declaration: &'a Declaration, instance: usize,
+) -> Result<Answer, ValidationFailure> {
+    let previous = graph.active;
+    let record=graph.instances.get(instance).ok_or("Law判断の元instanceがない")?;
+    graph.active=super::call::Context {instance:Some(instance),..record.caller};
+    let result=(|| {
+        let Signature::Law {params,guard,body,role}=&declaration.signature else {
+            return Err("Law判断の元宣言がLawでない".into());
+        };
+        let _architecture=environment.enter_architecture(graph)?;
+        let (bindings,base)=environment.instance_evaluation_bindings(graph,instance)?;
+        let mut evaluator=Evaluator {
+            environment,graph,control,request,declaration,bindings,
+            lexical:BTreeMap::new(),formal:BTreeMap::new(),base,
+            retained_scope:Scope::default(),reasons:vec![],completed:BTreeMap::new(),
+            answer_evaluation:None,verified_observed:None,completing:false,
+            finite_universal:None,sources:BTreeMap::new(),
+        };
+        let plan=if guard.is_none() && matches!(environment.inputs.law().exprs[*body].kind,ExprKind::Quant {..}) {
+            environment.universal_quantifier_plan(evaluator.graph,*body,&evaluator.bindings)?
+        } else {None};
+        let answer=if let Some(plan)=plan {evaluator.universal_law_answer(plan,Some(*role))}
+            else {evaluator.answer_regular(params,*guard,*body,Some(*role))};
+        match answer {
+            Ok(value)=>Ok(value),
+            Err(Failure::Stop(s))=>Err(ValidationFailure::Stop(s)),
+            Err(Failure::Internal(s))=>Err(ValidationFailure::Internal(s)),
+            Err(Failure::NotImplemented {location,feature})=>Err(ValidationFailure::UnsupportedExpression {location,feature}),
+        }
+    })();
+    graph.active=previous;
     result
 }
 
@@ -2685,7 +2722,7 @@ impl Evaluator<'_, '_> {
                     instance,
                     lhs: left,
                     rhs: right,
-                    residual: if conditional { None } else { body.residual },
+                    residual: if conditional || body.comparison.is_none() { None } else { body.residual },
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments: vec![instance, evaluation],

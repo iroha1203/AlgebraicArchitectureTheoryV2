@@ -357,9 +357,6 @@ pub(super) fn body_guard(
     if !(body.0 <= span.0 && span.1 <= body.1) {
         return Ok((true, None));
     }
-    if !i.origin.body_allowed {
-        return Ok((false, None));
-    }
     let Some(guard) = i.origin.guard else {
         return Ok((true, None));
     };
@@ -395,7 +392,7 @@ pub(super) fn body_guard(
         }
     }
     Ok((
-        true,
+        i.origin.body_allowed,
         Some(found.ok_or("元Law bodyより先のguard評価がない")?),
     ))
 }
@@ -432,13 +429,13 @@ pub(super) struct Evaluations {
     pub body: Option<NodeRef>,
     pub instance: Option<usize>,
 }
-pub(super) fn evaluate(
+pub(super) fn prepare_instance(
     env: &Environment<'_>,
     graph: &mut Graph,
     origin: NodeRef,
     architecture: NodeRef,
     c: &mut Control,
-) -> Result<Evaluations, ValidationFailure> {
+) -> Result<Option<(Origin, usize)>, ValidationFailure> {
     tick(c)?;
     env.recheck_law_evaluation_inputs(graph, origin, architecture)?;
     let Some(row) = self::origin(graph, origin)? else {
@@ -450,12 +447,7 @@ pub(super) fn evaluate(
         return Err("Law評価の元Request Contextが違う".into());
     }
     if !row.ready {
-        return Ok(Evaluations {
-            origin,
-            guard: None,
-            body: None,
-            instance: None,
-        });
+        return Ok(None);
     }
     let mut bindings = vec![];
     for (position, b) in row.bindings.iter().enumerate() {
@@ -490,6 +482,24 @@ pub(super) fn evaluate(
         domain,
         member,
     });
+    Ok(Some((row, instance)))
+}
+pub(super) fn evaluate(
+    env: &Environment<'_>,
+    graph: &mut Graph,
+    origin: NodeRef,
+    architecture: NodeRef,
+    c: &mut Control,
+) -> Result<Evaluations, ValidationFailure> {
+    let Some((row, instance)) = prepare_instance(env, graph, origin, architecture, c)? else {
+        return Ok(Evaluations {
+            origin,
+            guard: None,
+            body: None,
+            instance: None,
+        });
+    };
+    let caller = graph.instances[instance].caller;
     let request = graph
         .requests
         .get(caller.request)
