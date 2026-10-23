@@ -326,6 +326,7 @@ pub(super) struct Source {
     base: usize,
     parts: Vec<Part>,
     outputs: Diagram,
+    owned_outputs: Option<Vec<Diagram>>,
     support: Vec<Fact>,
     scope: Scope,
 }
@@ -600,17 +601,21 @@ fn original_rows(
     tick(c)?;
     Ok(originals)
 }
-fn plan(
+#[derive(Clone)]
+struct Basis {
+    points: Vec<usize>,
+    domain: NodeRef,
+    ring: NodeRef,
+    target: NodeRef,
+    evaluation: Option<NodeRef>,
+}
+fn basis(
     f: &AutomaticLawValuations,
-    inputs: &CheckedInputs,
-    object: usize,
     base: usize,
+    parts: &mut Vec<Part>,
     c: &mut Control,
-) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
+) -> Result<Basis, ValidationFailure> {
     tick(c)?;
-    let p = f
-        .object_presentation(inputs, object, c)?
-        .ok_or("有限Lawの元表示が未完成")?;
     // 元の所属条件を満たすDは変えず、原始値のencodingだけをRefへ表す。
     let mut value_types = vec![];
     for ty in f.types() {
@@ -658,16 +663,15 @@ fn plan(
         }
     }
     let mut points = vec![];
-    let mut parts = vec![];
     let mut elements = vec![];
     for (_, point, value) in ordered {
         tick(c)?;
         points.push(point);
-        elements.push(push(&mut parts, base, Part::Scalar(value))?);
+        elements.push(push(parts, base, Part::Scalar(value))?);
     }
-    let domain = push(&mut parts, base, Part::Domain { ty, elements })?;
-    let ring = push(&mut parts, base, Part::FunctionRing { domain })?;
-    let target = push(&mut parts, base, Part::IntegerRing)?;
+    let domain = push(parts, base, Part::Domain { ty, elements })?;
+    let ring = push(parts, base, Part::FunctionRing { domain })?;
+    let target = push(parts, base, Part::IntegerRing)?;
     let evaluation = if let Some(ev) = f.object_evaluation(c)? {
         let mut images = vec![];
         for point in &points {
@@ -676,10 +680,10 @@ fn plan(
                 .basis_images()
                 .get(*point)
                 .ok_or("有限Lawの元評価座標が範囲外")?;
-            images.push(push(&mut parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
+            images.push(push(parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
         }
         Some(push(
-            &mut parts,
+            parts,
             base,
             Part::Evaluation {
                 source: ring,
@@ -690,6 +694,34 @@ fn plan(
     } else {
         None
     };
+    Ok(Basis {
+        points,
+        domain,
+        ring,
+        target,
+        evaluation,
+    })
+}
+fn object_plan(
+    f: &AutomaticLawValuations,
+    inputs: &CheckedInputs,
+    object: usize,
+    base: usize,
+    parts: &mut Vec<Part>,
+    shared: &Basis,
+    c: &mut Control,
+) -> Result<Diagram, ValidationFailure> {
+    tick(c)?;
+    let p = f
+        .object_presentation(inputs, object, c)?
+        .ok_or("有限Lawの元表示が未完成")?;
+    let Basis {
+        points,
+        domain,
+        ring,
+        target,
+        evaluation,
+    } = shared.clone();
     let mut columns = vec![];
     let mut components = vec![];
     let mut nu = vec![];
@@ -699,11 +731,11 @@ fn plan(
         tick(c)?;
         columns.push(eq.column());
         components.push((eq.instance(), eq.component().map(<[usize]>::to_vec)));
-        let symbol = function(&mut parts, base, ring, eq.nu().values(), &points, c)?;
+        let symbol = function(parts, base, ring, eq.nu().values(), &points, c)?;
         nu.push(symbol);
         epsilon.push(
             eq.constant()
-                .map(|value| function(&mut parts, base, ring, value.values(), &points, c))
+                .map(|value| function(parts, base, ring, value.values(), &points, c))
                 .transpose()?,
         );
         let ideal = p.witness_ideal(index, c)?;
@@ -711,7 +743,7 @@ fn plan(
             return Err("有限witnessの元成分が違う".into());
         }
         witnesses.push(push(
-            &mut parts,
+            parts,
             base,
             Part::Ideal {
                 ring,
@@ -727,7 +759,7 @@ fn plan(
         generators.push(*nu.get(*index).ok_or("requiredの元νがない")?);
     }
     let required = push(
-        &mut parts,
+        parts,
         base,
         Part::Ideal {
             ring,
@@ -735,38 +767,26 @@ fn plan(
             required: true,
         },
     )?;
-    let originals = original_rows(f, inputs, p.columns(), &mut parts, base, c)?;
-    let operands = operands::append(
-        f,
-        inputs,
-        &originals,
-        &columns,
-        &components,
-        &mut parts,
-        base,
-        c,
-    )?;
+    let originals = original_rows(f, inputs, p.columns(), parts, base, c)?;
+    let operands = operands::append(f, inputs, &originals, &columns, &components, parts, base, c)?;
     tick(c)?;
-    Ok((
-        parts,
-        Diagram {
-            context: None,
-            presentation: None,
-            originals,
-            operands,
-            points,
-            domain,
-            ring,
-            target,
-            evaluation,
-            columns,
-            components,
-            nu,
-            epsilon,
-            witnesses,
-            required,
-        },
-    ))
+    Ok(Diagram {
+        context: None,
+        presentation: None,
+        originals,
+        operands,
+        points,
+        domain,
+        ring,
+        target,
+        evaluation,
+        columns,
+        components,
+        nu,
+        epsilon,
+        witnesses,
+        required,
+    })
 }
 fn append_presentation(
     inputs: &CheckedInputs,
@@ -951,6 +971,20 @@ impl Source {
         base: usize,
         c: &mut Control,
     ) -> Result<Option<Self>, ValidationFailure> {
+        Self::compute_plan(inputs, architecture, reference, object, base, false, c)
+    }
+    fn compute_plan(
+        inputs: Arc<CheckedInputs>,
+        architecture: Arc<ArchitectureWitness>,
+        reference: NodeRef,
+        object: usize,
+        base: usize,
+        all_objects: bool,
+        c: &mut Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        if all_objects && object != 0 {
+            return Err("共有有限Lawの先頭がbase対象でない".into());
+        }
         tick(c)?;
         if Witness::Architecture(architecture.clone())
             .inputs()
@@ -972,7 +1006,9 @@ impl Source {
         if !f.is_complete() || !f.domain_complete() {
             return Ok(None);
         }
-        let (mut parts, mut outputs) = plan(f, &inputs, object, base, c)?;
+        let mut parts = vec![];
+        let shared = basis(f, base, &mut parts, c)?;
+        let mut outputs = object_plan(f, &inputs, object, base, &mut parts, &shared, c)?;
         append_presentation(
             &inputs,
             &architecture,
@@ -983,6 +1019,27 @@ impl Source {
             base,
             c,
         )?;
+        let owned_outputs = if all_objects {
+            let mut owned = vec![];
+            for object in 1..architecture.readings().objects().len() {
+                tick(c)?;
+                let mut output = object_plan(f, &inputs, object, base, &mut parts, &shared, c)?;
+                append_presentation(
+                    &inputs,
+                    &architecture,
+                    reference,
+                    f,
+                    &mut parts,
+                    &mut output,
+                    base,
+                    c,
+                )?;
+                owned.push(output);
+            }
+            Some(owned)
+        } else {
+            None
+        };
         let (support, scope) = metadata(&inputs, &architecture, f, c)?;
         tick(c)?;
         Ok(Some(Self {
@@ -993,6 +1050,7 @@ impl Source {
             base,
             parts,
             outputs,
+            owned_outputs,
             support,
             scope,
         }))
@@ -1018,17 +1076,19 @@ impl Source {
                 crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
                 other => format!("有限Lawの元reading: {other:?}").into(),
             })?;
-        let other = Self::compute(
+        let other = Self::compute_plan(
             self.inputs.clone(),
             architecture.clone(),
             self.reference,
             object,
             self.base,
+            self.owned_outputs.is_some(),
             c,
         )?
         .ok_or("有限Law導出の元族が未完成")?;
         if self.parts != other.parts
             || self.outputs != other.outputs
+            || self.owned_outputs != other.owned_outputs
             || self.support != other.support
             || self.scope != other.scope
         {
@@ -1044,6 +1104,41 @@ pub(super) fn retain(
     object: usize,
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
+    Ok(
+        retain_source(graph, inputs, architecture, object, false, c)?
+            .map(|source| source.outputs.clone()),
+    )
+}
+/// 全標準対象を、同じ元D・環・評価から一度に保持する。
+pub(super) fn retain_family(
+    graph: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    architecture: NodeRef,
+    c: &mut Control,
+) -> Result<Option<Vec<Diagram>>, ValidationFailure> {
+    let Some(source) = retain_source(graph, inputs, architecture, 0, true, c)? else {
+        return Ok(None);
+    };
+    let owned = source
+        .owned_outputs
+        .as_ref()
+        .ok_or("共有有限Lawの対象表がない")?;
+    let mut outputs = vec![source.outputs.clone()];
+    for output in owned {
+        tick(c)?;
+        outputs.push(output.clone());
+    }
+    tick(c)?;
+    Ok(Some(outputs))
+}
+fn retain_source(
+    graph: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    architecture: NodeRef,
+    object: usize,
+    all_objects: bool,
+    c: &mut Control,
+) -> Result<Option<Arc<Source>>, ValidationFailure> {
     tick(c)?;
     if graph.active != graph.context_at(architecture.0) {
         return Err("有限Law導出が消費先ArchitectureのRequestでない".into());
@@ -1053,15 +1148,27 @@ pub(super) fn retain(
         return Err("有限Lawの消費先Architectureがない".into());
     };
     Environment::new(&inputs, c)?.recheck_object_components(graph, consumer)?;
-    let Some(source) = Source::compute(
-        inputs,
-        a.clone(),
-        architecture,
-        object,
-        graph.nodes.len(),
-        c,
-    )?
-    else {
+    let source = if all_objects {
+        Source::compute_plan(
+            inputs,
+            a.clone(),
+            architecture,
+            object,
+            graph.nodes.len(),
+            true,
+            c,
+        )?
+    } else {
+        Source::compute(
+            inputs,
+            a.clone(),
+            architecture,
+            object,
+            graph.nodes.len(),
+            c,
+        )?
+    };
+    let Some(source) = source else {
         return Ok(None);
     };
     let source = Arc::new(source);
@@ -1088,7 +1195,7 @@ pub(super) fn retain(
         )?;
     }
     tick(c)?;
-    Ok(Some(source.outputs.clone()))
+    Ok(Some(source))
 }
 pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(part) = data.source.parts.get(data.index) else {
@@ -1187,3 +1294,7 @@ mod tests;
 #[cfg(test)]
 #[path = "finite_law_owned_tests.rs"]
 mod owned_tests;
+
+#[cfg(test)]
+#[path = "finite_law_family_tests.rs"]
+mod family_tests;
