@@ -4058,6 +4058,9 @@ impl Graph {
                 let domain_type = match &self.get(domain)?.payload {
                     Some(Payload::TypeDomain { ty }) | Some(Payload::Domain { ty, .. }) => ty,
                     Some(Payload::Construction(value)) => match &value.data {
+                        super::construction_result::ConstructionData::PolynomialLaw(data) => {
+                            data.scope_domain_type().ok_or("Scopeの多項式読取り参照がDomainでない")?
+                        },
                         super::construction_result::ConstructionData::Comparison(super::public_compare::Part::RelationDerived { data, .. }) => match data.as_ref() {
                             super::public_compare::relations::Data::Domain { ty, .. } => ty,
                             _ => return Err("Scopeのnative参照が有限Domainでない".into()),
