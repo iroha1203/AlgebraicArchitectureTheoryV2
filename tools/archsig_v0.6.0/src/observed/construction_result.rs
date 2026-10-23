@@ -38,6 +38,7 @@ pub(crate) enum ConstructionType {
     RingMap,
     Ideal,
     ObjectComponent,
+    Polynomial,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -55,6 +56,7 @@ impl ConstructionType {
             Self::RingMap => "RingMap",
             Self::Ideal => "Ideal",
             Self::ObjectComponent => "ObjectComponent",
+            Self::Polynomial => "Polynomial",
         }
     }
 }
@@ -132,6 +134,7 @@ impl Eq for AtomWitness {}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ConstructionData {
     FiniteLaw(super::finite_law_diagram::Data),
+    PolynomialLaw(super::polynomial_law_diagram::Data),
     ObjectComponents(super::object_component_diagram::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
@@ -238,6 +241,7 @@ impl ConstructionValue {
     pub fn scalar(&self) -> Option<&Scalar> {
         match &self.data {
             ConstructionData::FiniteLaw(data) => data.scalar(),
+            ConstructionData::PolynomialLaw(data) => data.scalar(),
             ConstructionData::ObjectComponents(data) => data.scalar(),
             ConstructionData::PathComposition(part) => part.scalar(),
             ConstructionData::Comparison(part) => part.scalar(),
@@ -301,6 +305,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         let ty = match &self.data {
             D::FiniteLaw(data) => return data.ty(),
+            D::PolynomialLaw(data) => return data.ty(),
             D::ObjectComponents(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
@@ -330,6 +335,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         match &self.data {
             D::FiniteLaw(data) => data.arguments(),
+            D::PolynomialLaw(data) => data.arguments(),
             D::ObjectComponents(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
@@ -425,6 +431,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         match self.data {
             D::FiniteLaw(ref data) => data.construction(),
+            D::PolynomialLaw(ref data) => data.construction(),
             D::ObjectComponents(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
@@ -447,6 +454,7 @@ impl ConstructionValue {
                 ConstructionType::RingMap => "ring_map",
                 ConstructionType::Ideal => "ideal",
                 ConstructionType::ObjectComponent => "object_component",
+                ConstructionType::Polynomial => "polynomial",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -533,6 +541,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         match &self.data {
             D::FiniteLaw(data) => data.wire(),
+            D::PolynomialLaw(data) => data.wire(),
             D::ObjectComponents(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
@@ -1113,6 +1122,7 @@ pub fn atom_value(
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     if let ConstructionData::FiniteLaw(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::PolynomialLaw(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::ObjectComponents(data) = &value.data { return Ok(data.metadata()); }
     if let Witness::PathCompose(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
     if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationSource(data))) = (&value.witness, &value.data) {
@@ -1221,6 +1231,34 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
     Ok((support, scope))
 }
 /// native計算を終えた不変値だけを転記する。凍結後にも新しい計算は行わない。
+pub(super) fn architecture_origin(
+    graph: &Graph,
+    reference: NodeRef,
+    object: usize,
+) -> Result<&Arc<ArchitectureWitness>, ValidationFailure> {
+    let Some(Payload::Construction(v)) = &graph.get(reference)?.payload else {
+        return Err("有限Lawの元Architectureがない".into());
+    };
+    match (&v.witness, &v.data) {
+        (Witness::Architecture(a), ConstructionData::Architecture { .. }) => {
+            let context = graph.context_at(reference.0);
+            if context.frame.is_some()
+                || context.iteration.is_some()
+                || context.instance.is_some()
+                || context.case.is_some()
+                || graph.requests.get(context.request)
+                    != Some(Witness::Architecture(a.clone()).request())
+            {
+                return Err("有限Law導出が元Architectureのroot Requestでない".into());
+            }
+            Ok(a)
+        }
+        (_, ConstructionData::ObjectComponents(_)) => {
+            super::object_component_diagram::architecture_origin(graph, reference, object)
+        }
+        _ => Err("有限Lawの元参照が完成Architectureでない".into()),
+    }
+}
 pub fn retain(
     graph: &mut Graph,
     value: ConstructionValue,
@@ -1539,6 +1577,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
         return Err("native構成のpayloadがない".into());
     };
     if let ConstructionData::FiniteLaw(data) = &v.data { return super::finite_law_diagram::validate_node(graph,node,data); }
+    if let ConstructionData::PolynomialLaw(data) = &v.data { return super::polynomial_law_diagram::validate_node(graph,node,data); }
     if let ConstructionData::ObjectComponents(data) = &v.data { return super::object_component_diagram::validate_node(graph,node,data); }
     if let Witness::Compose(c) = &v.witness { return super::public_compose::validate_node(graph,node,c); }
     if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_node(graph,node,c); }

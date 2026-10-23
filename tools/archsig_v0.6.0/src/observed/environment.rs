@@ -344,6 +344,7 @@ pub(crate) struct Environment<'a> {
     // 元三入力にのみ依存する不変族。Arcを保持し、同一性の再利用を防ぐ。
     verified_relation_families: RefCell<Vec<std::sync::Arc<crate::observed::public_compare::relation_sources::Family>>>,
     pub(super) verified_finite_law_diagrams: RefCell<Vec<std::sync::Arc<super::finite_law_diagram::Source>>>,
+    pub(super) verified_polynomial_law_diagrams: RefCell<Vec<std::sync::Arc<super::polynomial_law_diagram::Source>>>,
     pub(super) verified_object_components: RefCell<Vec<std::sync::Arc<super::object_component_diagram::Source>>>,
     dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
@@ -475,6 +476,7 @@ impl<'a> Environment<'a> {
             dotted_candidates,
             verified_relation_families: RefCell::new(vec![]),
             verified_finite_law_diagrams: RefCell::new(vec![]),
+            verified_polynomial_law_diagrams: RefCell::new(vec![]),
             verified_object_components: RefCell::new(vec![]),
             dotted_inputs: RefCell::new(DottedInputCache::default()),
             scoped_values: RefCell::new(Vec::new()),
@@ -753,6 +755,8 @@ impl<'a> Environment<'a> {
                     super::public_compare::validate_position(value, limit)?;
                     if let super::construction_result::ConstructionData::FiniteLaw(data) = &value.data { data.position(limit)?; }
                     self.recheck_finite_law_diagram(graph, value)?;
+                    if let super::construction_result::ConstructionData::PolynomialLaw(data) = &value.data { data.position(limit)?; }
+                    self.recheck_polynomial_law_diagram(graph, value)?;
                     if let super::construction_result::ConstructionData::ObjectComponents(data) = &value.data { data.position(limit)?; }
                     self.recheck_object_components(graph, value)?;
                     for r in node
