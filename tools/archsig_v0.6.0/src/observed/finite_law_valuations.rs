@@ -36,6 +36,7 @@ pub(in crate::observed) struct FiniteLawRow {
     pub components: Option<Vec<FiniteLawComponent>>,
     pub indicator: Option<BigInt>,
     pub condition_failed: bool,
+    pub condition_pending: bool,
     pub support: Vec<Fact>,
     pub scope: Scope,
 }
@@ -1163,6 +1164,7 @@ fn probe_mode(
         components: None,
         indicator: None,
         condition_failed: false,
+        condition_pending: false,
         support: checks.support,
         scope: checks.scope,
     };
@@ -1217,6 +1219,7 @@ fn probe_mode(
         row.support.extend(v.support.iter().cloned());
         row.scope.merge(&v.scope);
         row.condition_failed |= v.condition_failed;
+        row.condition_pending |= v.condition_pending;
     }
     row.support.sort();
     row.support.dedup();

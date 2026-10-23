@@ -485,3 +485,7 @@ pub(in crate::observed) mod presentation;
 
 #[path = "finite_law_observation.rs"]
 pub(in crate::observed) mod observation;
+
+#[path = "finite_law_reading.rs"]
+mod reading;
+pub(in crate::observed) use reading::ObservedLawReading;
