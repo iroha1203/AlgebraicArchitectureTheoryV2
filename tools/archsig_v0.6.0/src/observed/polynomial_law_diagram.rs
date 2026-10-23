@@ -14,8 +14,17 @@ use super::{
     },
     result::*,
 };
-use crate::{canonical::Json, types::Type};
+use crate::{
+    canonical::Json,
+    issue::Location,
+    law::{ast::Role, model::Signature},
+    result::location_wire,
+    types::Type,
+};
 use std::sync::Arc;
+
+#[path = "polynomial_law_sources.rs"]
+mod sources;
 
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;
@@ -23,6 +32,14 @@ fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
 }
 fn refs(values: &[NodeRef]) -> Json {
     Json::Arr(values.iter().map(|r| r.wire()).collect())
+}
+fn binding_values(bindings: &[Binding]) -> Json {
+    Json::Arr(
+        bindings
+            .iter()
+            .map(|b| Json::obj([("name", Json::str(&b.name)), ("value", b.value.wire())]))
+            .collect(),
+    )
 }
 fn indices(values: &[usize]) -> Json {
     Json::Arr(values.iter().map(|n| Json::Nat(*n as u64)).collect())
@@ -49,8 +66,56 @@ impl Variable {
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+enum Transform {
+    Substitute,
+    Project,
+    Equal,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Original {
+    pub instance: usize,
+    pub row: Option<usize>,
+    pub bindings: Vec<Binding>,
+    pub parameters: Vec<(String, Type)>,
+    pub body: NodeRef,
+    pub guard: Option<NodeRef>,
+    pub reference: NodeRef,
+    pub operands: Option<((NodeRef, Type), (NodeRef, Type))>,
+    pub quantifiers: Vec<Quantifier>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
     Scalar(Scalar),
+    Source {
+        quantifiers: Vec<Quantifier>,
+        instance: usize,
+        row: Option<usize>,
+        expression: usize,
+        location: Location,
+        ty: Type,
+        parameters: Vec<(String, Type)>,
+        bindings: Vec<Binding>,
+    },
+    Transform {
+        quantifiers: Vec<Quantifier>,
+        operation: Transform,
+        parameters: Vec<(String, Type)>,
+        ty: Type,
+        operands: Vec<NodeRef>,
+        bindings: Vec<Binding>,
+        position: Option<usize>,
+    },
+    LawInstance {
+        quantifiers: Vec<Quantifier>,
+        instance: usize,
+        row: Option<usize>,
+        name: String,
+        role: Role,
+        occurrence: Location,
+        bindings: Vec<Binding>,
+        guard: Option<NodeRef>,
+        body: NodeRef,
+    },
     Base(Type),
     Ring {
         base: NodeRef,
@@ -72,9 +137,21 @@ enum Part {
     },
 }
 impl Part {
+    fn quantifiers(&self) -> &[Quantifier] {
+        match self {
+            Self::Source { quantifiers, .. }
+            | Self::Transform { quantifiers, .. }
+            | Self::LawInstance { quantifiers, .. } => quantifiers,
+            _ => &[],
+        }
+    }
     fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
             Self::Scalar(s) => return NodeType::Value(s.ty()),
+            Self::Source { ty, .. } | Self::Transform { ty, .. } => {
+                return NodeType::Expression(ty.clone());
+            }
+            Self::LawInstance { .. } => return NodeType::LawInstance,
             Self::Base(_) | Self::Ring { .. } => T::Ring,
             Self::Polynomial { .. } => T::Polynomial,
             Self::Ideal { .. } => T::Ideal,
@@ -84,6 +161,26 @@ impl Part {
     fn arguments(&self) -> Vec<NodeRef> {
         match self {
             Self::Scalar(_) | Self::Base(_) => vec![],
+            Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
+            Self::Transform {
+                operands, bindings, ..
+            } => operands
+                .iter()
+                .copied()
+                .chain(bindings.iter().map(|b| b.value))
+                .collect(),
+            Self::LawInstance {
+                bindings,
+                guard,
+                body,
+                ..
+            } => bindings
+                .iter()
+                .map(|b| b.value)
+                .chain(guard.iter().copied())
+                .chain(std::iter::once(*body))
+                .collect(),
+
             Self::Ring { base, .. } => vec![*base],
             Self::Polynomial { ring, terms } => std::iter::once(*ring)
                 .chain(terms.iter().map(|t| t.0))
@@ -106,6 +203,8 @@ impl Part {
     fn construction(&self) -> &'static str {
         match self {
             Self::Scalar(_) => "binding",
+            Self::Source { .. } | Self::Transform { .. } => "expression",
+            Self::LawInstance { .. } => "law_instance",
             Self::Base(_) | Self::Ring { .. } => "ring",
             Self::Polynomial { .. } => "polynomial",
             Self::Ideal { .. } => "ideal",
@@ -115,6 +214,92 @@ impl Part {
     fn wire(&self) -> Json {
         match self {
             Self::Scalar(v) => v.wire(),
+            Self::Source {
+                location,
+                bindings,
+                parameters,
+                ..
+            } => Json::obj([
+                ("kind", Json::str("source")),
+                ("location", location_wire(location)),
+                (
+                    "parameters",
+                    Json::Arr(
+                        parameters
+                            .iter()
+                            .map(|(name, ty)| {
+                                Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+                            })
+                            .collect(),
+                    ),
+                ),
+                ("bindings", binding_values(bindings)),
+            ]),
+            Self::Transform {
+                operation,
+                parameters,
+                operands,
+                bindings,
+                position,
+                ..
+            } => {
+                let mut value = Json::obj([
+                    ("kind", Json::str("transform")),
+                    (
+                        "operation",
+                        Json::str(match operation {
+                            Transform::Substitute => "substitute",
+                            Transform::Project => "project",
+                            Transform::Equal => "equal",
+                        }),
+                    ),
+                    ("operands", refs(operands)),
+                    (
+                        "parameters",
+                        Json::Arr(
+                            parameters
+                                .iter()
+                                .map(|(name, ty)| {
+                                    Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+                                })
+                                .collect(),
+                        ),
+                    ),
+                    ("bindings", binding_values(bindings)),
+                ]);
+                if let (Some(position), Json::Obj(fields)) = (position, &mut value) {
+                    fields.insert("position".into(), Json::Nat(*position as u64));
+                }
+                value
+            }
+            Self::LawInstance {
+                name,
+                role,
+                occurrence,
+                bindings,
+                guard,
+                body,
+                ..
+            } => {
+                let mut value = Json::obj([
+                    ("name", Json::str(name)),
+                    (
+                        "role",
+                        Json::str(match role {
+                            Role::Required => "required",
+                            Role::Optional => "optional",
+                        }),
+                    ),
+                    ("occurrence", location_wire(occurrence)),
+                    ("bindings", binding_values(bindings)),
+                    ("body", body.wire()),
+                ]);
+                if let (Some(guard), Json::Obj(fields)) = (guard, &mut value) {
+                    fields.insert("guard".into(), guard.wire());
+                }
+                value
+            }
+
             Self::Base(ty) => Json::obj([("kind", Json::str("scalar")), ("scalar", ty.wire())]),
             Self::Ring { base, variables } => Json::obj([
                 ("kind", Json::str("polynomial")),
@@ -169,6 +354,9 @@ impl Part {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Coordinate {
     pub occurrence: usize,
+    pub instance: NodeRef,
+    pub lhs: NodeRef,
+    pub rhs: NodeRef,
     pub position: crate::construction::readings::ObjectEvaluationPosition,
     pub row: Option<usize>,
     pub case: usize,
@@ -186,7 +374,14 @@ pub(super) struct Coordinate {
     pub status: EquationPresentationStatus,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Unavailable {
+    pub declaration: String,
+    pub feature: String,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
+    pub unavailable: Option<Unavailable>,
+    pub originals: Vec<Original>,
     pub rings: Vec<NodeRef>,
     pub bases: Vec<NodeRef>,
     pub required: Vec<NodeRef>,
@@ -200,7 +395,7 @@ pub(super) struct Source {
     architecture: Arc<ArchitectureWitness>,
     reference: NodeRef,
     object: usize,
-    core: Arc<EquationPresentation>,
+    core: Option<Arc<EquationPresentation>>,
     base: usize,
     parts: Vec<Part>,
     outputs: Diagram,
@@ -252,7 +447,11 @@ impl Data {
         self.part().wire()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.source.support.clone(), self.source.scope.clone())
+        let mut scope = self.source.scope.clone();
+        scope
+            .quantifiers
+            .extend_from_slice(self.part().quantifiers());
+        (self.source.support.clone(), scope)
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         if self.index >= self.source.parts.len()
@@ -330,12 +529,16 @@ fn polynomial(
 }
 fn plan(
     core: &EquationPresentation,
+    inputs: &CheckedInputs,
     base: usize,
     c: &mut Control,
 ) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
     tick(c)?;
     let mut parts = vec![];
+    let (originals, expressions) = sources::append(core, inputs, &mut parts, base, c)?;
     let mut out = Diagram {
+        unavailable: None,
+        originals,
         rings: vec![],
         bases: vec![],
         required: vec![],
@@ -405,6 +608,9 @@ fn plan(
         tick(c)?;
         let mut coordinate = Coordinate {
             occurrence: index,
+            instance: expressions[index].0,
+            lhs: expressions[index].1,
+            rhs: expressions[index].2,
             position: q.position,
             row: q.row,
             case: q.case,
@@ -499,7 +705,7 @@ fn plan(
 fn metadata(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
-    core: &EquationPresentation,
+    core: Option<&EquationPresentation>,
     c: &mut Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     let (mut support, mut scope) = native::metadata(&ConstructionValue {
@@ -507,7 +713,7 @@ fn metadata(
         data: D::ConstructionLabel(Scalar::Text("polynomial_law".into())),
     })?;
     let env = Environment::new(inputs, c)?;
-    for ring in core.rings() {
+    for ring in core.into_iter().flat_map(|core| core.rings()) {
         for symbol in &ring.symbols {
             tick(c)?;
             let slot = env.field(
@@ -539,6 +745,19 @@ fn metadata(
             let (facts, s) = native::metadata(&value)?;
             support.extend(facts);
             scope.merge(&s);
+        }
+    }
+    for instance in a
+        .readings()
+        .instances()
+        .iter()
+        .filter(|i| i.declaration().kind == "law")
+    {
+        for parameter in instance.parameters() {
+            tick(c)?;
+            let domain = env.object_parameter_domain(parameter, instance)?;
+            support.extend(domain.support);
+            scope.merge(&domain.scope);
         }
     }
     support.sort_by_key(|f| f.wire().canonical());
@@ -595,6 +814,96 @@ fn failed(e: EquationPresentationFailure, c: &Control) -> ValidationFailure {
         },
     }
 }
+fn unavailable(e: &super::object_evaluate::ObjectEvaluationFailure) -> Option<Unavailable> {
+    use super::object_evaluate::ObjectEvaluationFailure as E;
+    match e {
+        E::NotImplemented { instance, .. } => Some(Unavailable {
+            declaration: instance.declaration().name.clone(),
+            feature: "値parameterの全域計算が未実装".into(),
+        }),
+        E::FiniteView { cause, .. } => unavailable(cause),
+        E::Evaluation(e) => match e.as_ref() {
+            EvaluationFailure::NotImplemented {
+                declaration,
+                feature,
+                ..
+            } => Some(Unavailable {
+                declaration: declaration.clone(),
+                feature: format!("未実装: {feature}"),
+            }),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+fn calculate(
+    inputs: Arc<CheckedInputs>,
+    a: &Arc<ArchitectureWitness>,
+    object: usize,
+    c: &mut Control,
+) -> Result<(Option<Arc<EquationPresentation>>, Option<Unavailable>), ValidationFailure> {
+    tick(c)?;
+    if object >= a.readings().objects().len() {
+        return Err("多項式の対象添字が域外".into());
+    }
+    let root = a.construction().root();
+    match object_equation_presentation(
+        inputs,
+        a.construction().reading(),
+        &root.snapshot,
+        &root.subject,
+        object,
+        c,
+    ) {
+        Ok(core) => {
+            if core.base().base().readings() != a.readings() {
+                return Err("多項式が元対象族・readingと違う".into());
+            }
+            Ok((Some(Arc::new(core)), None))
+        }
+        Err(e) => {
+            if let Some(stop) = c.stop_reason() {
+                return Err(ValidationFailure::Stop(stop));
+            }
+            let reason = match &e {
+                EquationPresentationFailure::Original(
+                    super::object_law_residuals::ObjectLawResidualsFailure::Original(e),
+                ) => unavailable(e.cause()),
+                _ => None,
+            };
+            if let Some(reason) = reason {
+                Ok((None, Some(reason)))
+            } else {
+                Err(failed(e, c))
+            }
+        }
+    }
+}
+fn symbolic_plan(
+    inputs: &CheckedInputs,
+    a: &Arc<ArchitectureWitness>,
+    reason: Unavailable,
+    base: usize,
+    c: &mut Control,
+) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
+    tick(c)?;
+    let mut parts = vec![];
+    let originals = sources::symbolic(inputs, a.readings(), &mut parts, base, c)?;
+    tick(c)?;
+    Ok((
+        parts,
+        Diagram {
+            unavailable: Some(reason),
+            originals,
+            rings: vec![],
+            bases: vec![],
+            required: vec![],
+            evaluations: vec![],
+            coordinates: vec![],
+            status: EquationPresentationStatus::Undetermined,
+        },
+    ))
+}
 impl Source {
     fn compute(
         inputs: Arc<CheckedInputs>,
@@ -608,28 +917,20 @@ impl Source {
         if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
             return Err("多項式の元三入力とArchitectureが違う".into());
         }
-        let root = a.construction().root();
-        let core = object_equation_presentation(
-            inputs.clone(),
-            a.construction().reading(),
-            &root.snapshot,
-            &root.subject,
-            object,
-            c,
-        )
-        .map_err(|e| failed(e, c))?;
-        if core.base().base().readings() != a.readings() {
-            return Err("多項式が元対象族・readingと違う".into());
-        }
-        let (parts, outputs) = plan(&core, base, c)?;
-        let (support, scope) = metadata(&inputs, &a, &core, c)?;
+        let (core, reason) = calculate(inputs.clone(), &a, object, c)?;
+        let (parts, outputs) = match (&core, reason) {
+            (Some(core), None) => plan(core, &inputs, base, c)?,
+            (None, Some(reason)) => symbolic_plan(&inputs, &a, reason, base, c)?,
+            _ => return Err("多項式の計算状態が不正".into()),
+        };
+        let (support, scope) = metadata(&inputs, &a, core.as_deref(), c)?;
         tick(c)?;
         Ok(Self {
             inputs,
             architecture: a,
             reference,
             object,
-            core: Arc::new(core),
+            core,
             base,
             parts,
             outputs,
@@ -644,18 +945,30 @@ impl Source {
         c: &mut Control,
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
-        if !Arc::ptr_eq(a, &self.architecture)
-            || inputs.sources() != self.inputs.sources()
-            || self.core.object() != self.object
-            || self.core.base().base().readings() != a.readings()
-        {
+        if !Arc::ptr_eq(a, &self.architecture) || inputs.sources() != self.inputs.sources() {
             return Err("多項式の消費先・元三入力・対象・readingが違う".into());
         }
-        self.core
-            .recheck(self.inputs.clone(), c)
-            .map_err(|e| failed(e, c))?;
-        let (parts, outputs) = plan(&self.core, self.base, c)?;
-        let (support, scope) = metadata(inputs, a, &self.core, c)?;
+        let (parts, outputs) = if let Some(core) = &self.core {
+            if core.object() != self.object || core.base().base().readings() != a.readings() {
+                return Err("多項式の元計算が対象・readingと違う".into());
+            }
+            core.recheck(self.inputs.clone(), c)
+                .map_err(|e| failed(e, c))?;
+            plan(core, inputs, self.base, c)?
+        } else {
+            let (core, reason) = calculate(self.inputs.clone(), a, self.object, c)?;
+            if core.is_some() {
+                return Err("計算可能な多項式を未対応扱いした".into());
+            }
+            symbolic_plan(
+                inputs,
+                a,
+                reason.ok_or("多項式の未対応理由がない")?,
+                self.base,
+                c,
+            )?
+        };
+        let (support, scope) = metadata(inputs, a, self.core.as_deref(), c)?;
         if parts != self.parts
             || outputs != self.outputs
             || support != self.support
@@ -727,11 +1040,12 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
         return Err("多項式の元Architecture参照が違う".into());
     }
+    let (support, scope) = data.metadata();
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support != data.source.support
-        || n.scope != data.source.scope
+        || n.support != support
+        || n.scope != scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()
         || n.judgment.is_some()

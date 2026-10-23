@@ -426,7 +426,7 @@ fn value_key(value: &Scalar, c: &mut Control) -> Result<String, ValidationFailur
 }
 // JSONのarray順ではなく、元型のSet/Mapの意味に沿って再帰的に並べる。
 // 元のDの値・所属条件は保ち、公開する値の表示順だけを変える。
-fn canonical_value(value: &Scalar, c: &mut Control) -> Result<Scalar, ValidationFailure> {
+pub(super) fn canonical_value(value: &Scalar, c: &mut Control) -> Result<Scalar, ValidationFailure> {
     fn visit(value: &mut Scalar, c: &mut Control) -> Result<(), ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;

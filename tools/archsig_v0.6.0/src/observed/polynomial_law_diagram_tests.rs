@@ -117,9 +117,9 @@ fn z_polynomial_diagram_keeps_shared_symbols_raw_epsilon_ideals_and_evaluation_i
     );
     assert_eq!(variables[0].component, []);
     let source = &data(&g, d.rings[0]).source;
-    assert_eq!(source.core.rings().len(), 1);
+    assert_eq!(source.core.as_ref().unwrap().rings().len(), 1);
     for q in &d.coordinates {
-        let original = &source.core.occurrences()[q.occurrence];
+        let original = &source.core.as_ref().unwrap().occurrences()[q.occurrence];
         let declaration = &source.architecture.readings().instances()[original.position.instance]
             .declaration()
             .name;
@@ -222,7 +222,7 @@ fn q_and_fp_keep_their_original_coefficient_rings_and_exact_constant_encoding() 
         assert_eq!(d.rings.len(), 1);
         let source = &data(&g, d.rings[0]).source;
         for q in &d.coordinates {
-            let original = &source.core.occurrences()[q.occurrence];
+            let original = &source.core.as_ref().unwrap().occurrences()[q.occurrence];
             let name = &source.architecture.readings().instances()[original.position.instance]
                 .declaration()
                 .name;
@@ -455,12 +455,12 @@ fn recheck_rejects_changed_coefficients_powers_symbols_ideals_maps_and_coordinat
     let a = architecture(&g, "a");
     let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
     let source = data(&g, d.rings[0]).source.clone();
-    let scalar = source
-        .parts
-        .iter()
-        .position(|p| matches!(p, Part::Scalar(_)))
-        .unwrap();
     let poly = d.coordinates[0].nu.unwrap().0 - source.base;
+    let Part::Polynomial { terms, .. } = &source.parts[poly] else {
+        panic!("nu polynomial")
+    };
+    let scalar = terms[0].0.0 - source.base;
+    assert!(matches!(&source.parts[scalar], Part::Scalar(Scalar::Z(_))));
     for mode in 0..13 {
         let mut changed = (*source).clone();
         match mode {
@@ -722,11 +722,12 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
         let a = architecture(&g, "a");
         let before = g.nodes.len();
         let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
-        assert_eq!(g.nodes.len(), before);
         assert!(d.rings.is_empty());
         assert!(d.evaluations.is_empty());
         assert!(d.required.is_empty());
         if body.is_empty() {
+            assert_eq!(g.nodes.len(), before);
+            assert!(d.originals.is_empty());
             assert!(d.coordinates.is_empty());
             assert_eq!(d.status, EquationPresentationStatus::Ready);
         } else {
@@ -736,6 +737,25 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
             assert_eq!(q.ty, Type::Bool);
             assert!(q.nu.is_none() && q.epsilon.is_none() && q.residual.is_none());
             assert!(q.required);
+            assert!(!d.originals.is_empty());
+            for node in &g.nodes[before..] {
+                let Some(Payload::Construction(value)) = &node.payload else {
+                    panic!("original source")
+                };
+                let D::PolynomialLaw(data) = &value.data else {
+                    panic!("polynomial source")
+                };
+                assert!(matches!(
+                    data.part(),
+                    Part::Source { .. }
+                        | Part::LawInstance { .. }
+                        | Part::Transform {
+                            operation: Transform::Equal,
+                            ..
+                        }
+                        | Part::Scalar(Scalar::Unit | Scalar::Subject { .. })
+                ));
+            }
         }
         replay(&e, &g.nodes, &g.contexts).unwrap();
     }
@@ -781,3 +801,6 @@ fn wrong_object_indices_and_nonarchitecture_consumers_fail_before_appending_nati
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
+
+#[path = "polynomial_law_sources_tests.rs"]
+mod sources;
