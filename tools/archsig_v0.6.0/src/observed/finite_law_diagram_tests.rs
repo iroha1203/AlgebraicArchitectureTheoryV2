@@ -2046,3 +2046,142 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
         }
     }
 }
+
+#[test]
+fn missing_self_equality_keeps_fiber_constant_without_presenting_an_observed_epsilon() {
+    use crate::observed::equation_presentation_node::Part as E;
+    let e = example(
+        true,
+        "law required self_equal(c:Part):c.quantity=c.quantity;",
+    );
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert!(d.evaluation.is_none());
+    assert_eq!(d.epsilon.len(), 1);
+    assert_eq!(coordinates(&g, d.nu[0]), ["0", "0"]);
+    assert_eq!(coordinates(&g, d.epsilon[0].unwrap()), ["0", "0"]);
+    let at = d.presentation.unwrap();
+    let Part::Equation(E::Presentation {
+        coordinates: qs,
+        evaluation,
+        ..
+    }) = data(&g, at).part()
+    else {
+        panic!("presentation")
+    };
+    assert!(evaluation.is_none());
+    assert_eq!(qs.len(), 1);
+    assert!(qs[0].epsilon.is_none());
+    assert_eq!(qs[0].nu, d.nu[0]);
+    assert_eq!((qs[0].lhs, qs[0].rhs), d.operands[0]);
+    let reasons = &g.nodes[at.0].reasons;
+    assert_eq!(reasons.len(), 1);
+    assert_eq!(reasons[0].kind, ReasonKind::Missing);
+    assert_eq!(reasons[0].missing[0].subject, "q");
+    assert_eq!(
+        reasons[0].missing[0].field.as_deref(),
+        Some("Finite.Part.quantity")
+    );
+    assert!(reasons[0].missing[0].atom.is_none());
+    let mut nodes = g.nodes.clone();
+    let Some(Payload::Construction(v)) = &mut nodes[at.0].payload else {
+        panic!("native")
+    };
+    let D::FiniteLaw(value) = &mut v.data else {
+        panic!("finite")
+    };
+    let mut source = (*value.source).clone();
+    let Part::Equation(E::Presentation { coordinates, .. }) = &mut source.parts[value.index] else {
+        panic!("presentation")
+    };
+    coordinates[0].epsilon = d.epsilon[0];
+    value.source = Arc::new(source);
+    assert!(replay(&e, &nodes, &g.contexts).is_err());
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn an_unrelated_missing_finite_row_does_not_erase_an_observed_constant_row() {
+    use crate::observed::equation_presentation_node::Part as E;
+    for missing in [false, true] {
+        let e = example(
+            missing,
+            "law required self_equal(c:Part):c.quantity=c.quantity;law required constant(c:Part):0=0;",
+        );
+        let mut g = graph(&e);
+        let b = architecture(&g, "b");
+        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+            .unwrap()
+            .unwrap();
+        let Part::Equation(E::Presentation {
+            coordinates: qs,
+            evaluation,
+            ..
+        }) = data(&g, d.presentation.unwrap()).part()
+        else {
+            panic!("presentation")
+        };
+        assert_eq!(evaluation.is_none(), missing);
+        assert_eq!(qs.len(), 2);
+        for (i, q) in qs.iter().enumerate() {
+            let Part::LawInstance { name, .. } = data(&g, q.instance).part() else {
+                panic!("instance")
+            };
+            assert_eq!(q.epsilon.is_some(), !missing || name == "Chosen.constant");
+            assert_eq!(q.nu, d.nu[i]);
+            if let Some(epsilon) = q.epsilon {
+                assert_eq!(Some(epsilon), d.epsilon[i]);
+                assert_eq!(coordinates(&g, epsilon), ["0", "0"]);
+            }
+        }
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}
+
+#[test]
+fn a_false_finite_guard_does_not_turn_missing_operands_into_observations() {
+    use crate::observed::equation_presentation_node::Part as E;
+    for missing in [false, true] {
+        let e = example(
+            missing,
+            "law required guarded(c:Part) when false:c.quantity=c.quantity;",
+        );
+        let mut g = graph(&e);
+        let b = architecture(&g, "b");
+        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+            .unwrap()
+            .unwrap();
+        assert!(d.epsilon.iter().all(Option::is_some));
+        let Part::Equation(E::Presentation {
+            coordinates: qs,
+            evaluation,
+            ..
+        }) = data(&g, d.presentation.unwrap()).part()
+        else {
+            panic!("presentation")
+        };
+        assert_eq!(qs.len(), 1);
+        assert_eq!(qs[0].epsilon.is_none(), missing);
+        assert_eq!(evaluation.is_none(), missing);
+        assert!(d.evaluation.is_some());
+        assert_eq!(coordinates(&g, d.nu[0]), ["0"]);
+        if missing {
+            assert!(
+                g.nodes[d.presentation.unwrap().0]
+                    .reasons
+                    .iter()
+                    .any(|r| r.kind == ReasonKind::Missing
+                        && r.missing.iter().any(|f| f.subject == "q"
+                            && f.field.as_deref() == Some("Finite.Part.quantity")
+                            && f.atom.is_none()))
+            );
+        }
+        if let Some(epsilon) = qs[0].epsilon {
+            assert!(coordinates(&g, epsilon).iter().all(|v| v == "0"));
+        }
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}

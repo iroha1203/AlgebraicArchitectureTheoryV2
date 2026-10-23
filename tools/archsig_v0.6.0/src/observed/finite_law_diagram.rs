@@ -779,7 +779,25 @@ fn append_presentation(
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
     use super::equation_presentation_node::{self as common, Coordinate, Part as E};
-    let dependencies = common::dependencies(inputs, f.positions(), c, |v| {
+    let mut observed = vec![];
+    let mut positions = f.positions().to_vec();
+    for i in 0..out.nu.len() {
+        tick(c)?;
+        let column = *out.columns.get(i).ok_or("有限表示の元columnがない")?;
+        let (_, component) = out.components.get(i).ok_or("有限表示の元成分がない")?;
+        let (value, support) = f.observed_indicator(inputs, column, component.as_deref(), c)?;
+        observed.push(value);
+        for mut fact in support {
+            tick(c)?;
+            if fact.field.is_some() {
+                fact.atom = None;
+                positions.push(fact);
+            }
+        }
+    }
+    positions.sort();
+    positions.dedup();
+    let dependencies = common::dependencies(inputs, &positions, c, |v| {
         push(parts, base, Part::Scalar(v))
     })?;
     let instances = out.originals.iter().map(|o| o.row).collect::<Vec<_>>();
@@ -805,6 +823,31 @@ fn append_presentation(
             .find(|o| o.column == column && o.instance == *instance)
             .ok_or("有限表示の元Law出現がない")?;
         let (lhs, rhs) = *out.operands.get(i).ok_or("有限表示の左右式がない")?;
+        let epsilon = match observed.get(i).ok_or("有限表示の元operand評価がない")? {
+            None => None,
+            Some(value) => {
+                let reference = out
+                    .epsilon
+                    .get(i)
+                    .copied()
+                    .flatten()
+                    .ok_or("有限表示の実評価に対応するεがない")?;
+                let Part::Function { values, .. } = parts
+                    .get(reference.0.checked_sub(base).ok_or("有限εの位置が範囲外")?)
+                    .ok_or("有限εの元関数がない")?
+                else {
+                    return Err("有限εが元関数でない".into());
+                };
+                for scalar in values {
+                    tick(c)?;
+                    if !matches!(parts.get(scalar.0.checked_sub(base).ok_or("有限ε値の位置が範囲外")?), Some(Part::Scalar(Scalar::Z(v))) if v == value)
+                    {
+                        return Err("有限εの恒値と元operandの実評価が違う".into());
+                    }
+                }
+                Some(reference)
+            }
+        };
         coordinates.push(Coordinate {
             instance: row.row,
             component: match component {
@@ -814,10 +857,16 @@ fn append_presentation(
             lhs,
             rhs,
             nu: out.nu[i],
-            epsilon: *out.epsilon.get(i).ok_or("有限表示の元ε行がない")?,
+            epsilon,
         });
     }
     tick(c)?;
+    let evaluation = if coordinates.iter().all(|q| q.epsilon.is_some()) {
+        out.evaluation
+    } else {
+        None
+    };
+    let incomplete = evaluation.is_none();
     let presentation = push(
         parts,
         base,
@@ -828,13 +877,13 @@ fn append_presentation(
             coordinates,
             witnesses: out.witnesses.clone(),
             required: out.required,
-            evaluation: out.evaluation,
+            evaluation,
             context,
             quantifiers: vec![],
-            omissions: if out.evaluation.is_none() || out.epsilon.iter().any(Option::is_none) {
+            omissions: if incomplete {
                 dependencies.missing_reasons(
                     inputs,
-                    f.positions(),
+                    &positions,
                     &out.originals
                         .iter()
                         .flat_map(|o| std::iter::once(o.body).chain(o.guard))
