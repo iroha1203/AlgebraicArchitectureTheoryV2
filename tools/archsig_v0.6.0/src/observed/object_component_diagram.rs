@@ -599,6 +599,51 @@ pub(super) fn architecture_origin(
     validate_node(graph, node, data)?;
     Ok(&data.source.architecture)
 }
+/// 元のbase成分から、保持済みの対象表だけを取り出す。
+pub(super) fn original_family(
+    graph: &Graph,
+    base: NodeRef,
+) -> Result<(NodeRef, Diagram), ValidationFailure> {
+    let node = graph.get(base)?;
+    let Some(Payload::Construction(value)) = &node.payload else {
+        return Err("内部arrowの対象表がnativeでない".into());
+    };
+    let D::ObjectComponents(data) = &value.data else {
+        return Err("内部arrowの対象表が標準対象族でない".into());
+    };
+    data.position(base.0)?;
+    if data.source.outputs.base != base {
+        return Err("内部arrowの対象表のbaseが違う".into());
+    }
+    let source = &data.source;
+    let end = source.base.checked_add(source.parts.len())
+        .ok_or("内部arrowの対象表の完了位置が範囲外")?;
+    if graph.nodes.len() < end {
+        return Err("内部arrowの標準対象族が保持途中".into());
+    }
+    let context = *graph.contexts.get(source.reference.0)
+        .ok_or("内部arrowの元Architectureのcontextがない")?;
+    for index in 0..source.parts.len() {
+        let at = source.base.checked_add(index)
+            .ok_or("内部arrowの対象表の位置が範囲外")?;
+        let node = graph.get(NodeRef(at))?;
+        let Some(Payload::Construction(value)) = &node.payload else {
+            return Err("内部arrowの対象表が別の保持結果に置換された".into());
+        };
+        let D::ObjectComponents(current) = &value.data else {
+            return Err("内部arrowの対象表が別由来に置換された".into());
+        };
+        current.position(at)?;
+        if !Arc::ptr_eq(source, &current.source) || current.index != index
+            || graph.contexts.get(at) != Some(&context)
+        {
+            return Err("内部arrowの対象表の位置・由来・contextが違う".into());
+        }
+        validate_node(graph, node, current)?;
+    }
+    Ok((source.reference, source.outputs.clone()))
+}
+
 impl Source {
     fn recheck(
         &self,
