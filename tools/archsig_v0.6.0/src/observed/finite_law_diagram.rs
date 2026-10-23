@@ -24,6 +24,9 @@ use crate::{
 };
 use std::sync::Arc;
 
+#[path = "finite_law_operands.rs"]
+mod operands;
+
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawFunction)?;
     Ok(())
@@ -49,13 +52,28 @@ pub(super) struct Original {
     pub row: NodeRef,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+enum Transform {
+    Substitute,
+    Project,
+    Equal,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
     Scalar(Scalar),
     Source {
         column: usize,
         expression: usize,
         location: Location,
+        ty: Type,
+        parameters: Vec<(String, Type)>,
         bindings: Vec<Binding>,
+    },
+    Transform {
+        operation: Transform,
+        ty: Type,
+        operands: Vec<NodeRef>,
+        bindings: Vec<Binding>,
+        position: Option<usize>,
     },
     LawInstance {
         column: usize,
@@ -94,7 +112,9 @@ impl Part {
     fn ty(&self) -> NodeType {
         match self {
             Self::Scalar(v) => NodeType::Value(v.ty()),
-            Self::Source { .. } => NodeType::Expression(Type::Bool),
+            Self::Source { ty, .. } | Self::Transform { ty, .. } => {
+                NodeType::Expression(ty.clone())
+            }
             Self::LawInstance { .. } => NodeType::LawInstance,
             Self::Domain { .. } => NodeType::Domain,
             Self::IntegerRing | Self::FunctionRing { .. } => NodeType::Construction(T::Ring),
@@ -107,6 +127,13 @@ impl Part {
         match self {
             Self::Scalar(_) | Self::IntegerRing => vec![],
             Self::Source { bindings, .. } => bindings.iter().map(|b| b.value).collect(),
+            Self::Transform {
+                operands, bindings, ..
+            } => operands
+                .iter()
+                .copied()
+                .chain(bindings.iter().map(|b| b.value))
+                .collect(),
             Self::LawInstance {
                 bindings,
                 guard,
@@ -141,7 +168,7 @@ impl Part {
     fn construction(&self) -> &'static str {
         match self {
             Self::Scalar(_) => "binding",
-            Self::Source { .. } => "expression",
+            Self::Source { .. } | Self::Transform { .. } => "expression",
             Self::LawInstance { .. } => "law_instance",
             Self::Domain { .. } => "domain",
             Self::IntegerRing | Self::FunctionRing { .. } => "ring",
@@ -154,13 +181,52 @@ impl Part {
         match self {
             Self::Scalar(v) => v.wire(),
             Self::Source {
-                location, bindings, ..
+                location,
+                bindings,
+                parameters,
+                ..
             } => Json::obj([
                 ("kind", Json::str("source")),
                 ("location", location_wire(location)),
-                ("parameters", Json::Arr(vec![])),
+                (
+                    "parameters",
+                    Json::Arr(
+                        parameters
+                            .iter()
+                            .map(|(name, ty)| {
+                                Json::obj([("name", Json::str(name)), ("type", ty.wire())])
+                            })
+                            .collect(),
+                    ),
+                ),
                 ("bindings", binding_values(bindings)),
             ]),
+            Self::Transform {
+                operation,
+                operands,
+                bindings,
+                position,
+                ..
+            } => {
+                let mut value = Json::obj([
+                    ("kind", Json::str("transform")),
+                    (
+                        "operation",
+                        Json::str(match operation {
+                            Transform::Substitute => "substitute",
+                            Transform::Project => "project",
+                            Transform::Equal => "equal",
+                        }),
+                    ),
+                    ("operands", refs(operands)),
+                    ("parameters", Json::Arr(vec![])),
+                    ("bindings", binding_values(bindings)),
+                ]);
+                if let (Some(position), Json::Obj(fields)) = (position, &mut value) {
+                    fields.insert("position".into(), Json::Nat(*position as u64));
+                }
+                value
+            }
             Self::LawInstance {
                 name,
                 role,
@@ -231,6 +297,7 @@ impl Part {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Diagram {
     pub originals: Vec<Original>,
+    pub operands: Vec<(NodeRef, NodeRef)>,
     pub points: Vec<usize>,
     pub domain: NodeRef,
     pub ring: NodeRef,
@@ -486,6 +553,8 @@ fn original_rows(
                     column,
                     expression: id,
                     location: Location::Law { span: ast.span },
+                    ty: Type::Bool,
+                    parameters: vec![],
                     bindings: bindings.clone(),
                 },
             )
@@ -657,11 +726,22 @@ fn plan(
         },
     )?;
     let originals = original_rows(f, inputs, p.columns(), &mut parts, base, c)?;
+    let operands = operands::append(
+        f,
+        inputs,
+        &originals,
+        &columns,
+        &components,
+        &mut parts,
+        base,
+        c,
+    )?;
     tick(c)?;
     Ok((
         parts,
         Diagram {
             originals,
+            operands,
             points,
             domain,
             ring,

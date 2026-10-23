@@ -1294,3 +1294,441 @@ fn empty_law_family_keeps_no_fabricated_original_source_rows() {
     );
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
+
+fn expression_free_parameters(g: &Graph, r: NodeRef) -> std::collections::BTreeSet<String> {
+    match data(g, r).part() {
+        Part::Source { parameters, .. } => parameters.iter().map(|p| p.0.clone()).collect(),
+        Part::Transform {
+            operation: Transform::Substitute,
+            operands,
+            bindings,
+            ..
+        } => {
+            let mut free = expression_free_parameters(g, operands[0]);
+            for b in bindings {
+                assert!(free.remove(&b.name));
+                assert_eq!(
+                    g.get(b.value).unwrap().ty,
+                    NodeType::Expression(b.ty.clone())
+                );
+                free.extend(expression_free_parameters(g, b.value));
+            }
+            free
+        }
+        Part::Transform { operands, .. } => operands
+            .iter()
+            .flat_map(|r| expression_free_parameters(g, *r))
+            .collect(),
+        Part::Scalar(_) => Default::default(),
+        _ => panic!("expression"),
+    }
+}
+fn operand_source_texts(g: &Graph, r: NodeRef, law: &str) -> Vec<String> {
+    let mut result = vec![];
+    let mut pending = vec![r];
+    while let Some(r) = pending.pop() {
+        if let Part::Source {
+            location: Location::Law { span },
+            ..
+        } = data(g, r).part()
+        {
+            result.push(law[span.0..span.1].to_owned());
+        }
+        pending.extend(data(g, r).part().arguments());
+    }
+    result
+}
+#[test]
+fn direct_equation_operands_keep_original_types_locations_and_coordinate_order() {
+    let e = example(false, BODY);
+    let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.operands.len(), 2);
+    for (index, (left, right)) in d.operands.iter().enumerate() {
+        assert_eq!(
+            g.get(*left).unwrap().ty,
+            NodeType::Expression(Type::Fp("2".into()))
+        );
+        assert_eq!(
+            g.get(*right).unwrap().ty,
+            NodeType::Expression(Type::Fp("2".into()))
+        );
+        assert_eq!(operand_source_texts(&g, *left, raw), ["c.quantity"]);
+        assert_eq!(
+            operand_source_texts(&g, *right, raw),
+            [if index == 0 { "1" } else { "0" }]
+        );
+        assert!(expression_free_parameters(&g, *left).is_empty());
+        assert!(expression_free_parameters(&g, *right).is_empty());
+        assert_eq!(property(&g, *left, "parameters"), Json::Arr(vec![]));
+        assert_eq!(
+            property(&g, *left, "bindings"),
+            property(&g, d.originals[index].body, "bindings")
+        );
+        assert_eq!(d.columns[index], d.originals[index].column);
+        assert_eq!(d.components[index].0, d.originals[index].instance);
+    }
+    assert_eq!(coordinates(&g, d.nu[0]), ["1", "0"]);
+    assert_eq!(coordinates(&g, d.nu[1]), ["0", "1"]);
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn lexical_operand_substitution_closes_nested_let_match_and_keeps_discarded_reads() {
+    for (body, names, nu) in [
+        (
+            "let x=c.quantity in let y=x+1 in y=0",
+            vec!["x", "y"],
+            vec!["1", "0"],
+        ),
+        (
+            "match c.quantity{x=>let y=x+1 in y=0;}",
+            vec!["x", "y"],
+            vec!["1", "0"],
+        ),
+        (
+            "let unused=c.quantity in c.quantity=0",
+            vec!["unused"],
+            vec!["0", "1"],
+        ),
+        ("match c.quantity{_=>c.quantity=0;}", vec![], vec!["0", "1"]),
+        (
+            "let unused=c.quantity in 0=0",
+            vec!["unused"],
+            vec!["0", "0"],
+        ),
+        ("match c.quantity{_=>0=0;}", vec![], vec!["0", "0"]),
+    ] {
+        let e = example(false, &format!("law required lexical(c:Part):{body};"));
+        let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
+        let mut g = graph(&e);
+        let a = architecture(&g, "a");
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+            .unwrap()
+            .unwrap();
+        let (left, right) = d.operands[0];
+        assert!(expression_free_parameters(&g, left).is_empty());
+        assert!(expression_free_parameters(&g, right).is_empty());
+        assert_eq!(coordinates(&g, d.nu[0]), nu);
+        assert!(
+            g.get(left)
+                .unwrap()
+                .support
+                .iter()
+                .any(|f| f.atom.as_deref() == Some("px"))
+        );
+        let texts = operand_source_texts(&g, left, raw);
+        if body != "match c.quantity{_=>0=0;}" {
+            assert!(texts.iter().any(|s| s == "c.quantity"));
+        } else {
+            assert_eq!(texts, ["0"]);
+        }
+        let Part::Domain { elements, .. } = data(&g, d.domain).part() else {
+            panic!("D")
+        };
+        assert_eq!(elements.len(), 2);
+        if !names.is_empty() {
+            let Part::Transform {
+                operation: Transform::Substitute,
+                bindings,
+                operands,
+                ..
+            } = data(&g, left).part()
+            else {
+                panic!("closed")
+            };
+            assert_eq!(
+                bindings.iter().map(|b| b.name.as_str()).collect::<Vec<_>>(),
+                names
+            );
+            assert_eq!(property(&g, left, "operation"), Json::str("substitute"));
+            assert_eq!(property(&g, left, "operands"), refs(operands));
+            let Part::Source { parameters, .. } = data(&g, operands[0]).part() else {
+                panic!("source")
+            };
+            assert_eq!(
+                parameters.iter().map(|p| p.0.as_str()).collect::<Vec<_>>(),
+                names
+            );
+        }
+        if names == ["x", "y"] {
+            assert!(texts.iter().any(|s| s == "x+1"));
+            assert!(texts.iter().any(|s| s == "y"));
+        }
+        let start = raw.find(body).unwrap();
+        assert_eq!(
+            property(&g, d.originals[0].body, "location"),
+            location_wire(&Location::Law {
+                span: (start, start + body.len())
+            })
+        );
+        replay(&e, &g.nodes, &g.contexts).unwrap();
+    }
+}
+#[test]
+fn tuple_operand_components_project_closed_sources_with_matching_types_and_values() {
+    let definition = DEFINITION.replace(r#"["Fp","2"]"#, r#"["Tuple",["Fp","2"],"Bool"]"#);
+    let map = MAP
+        .replace(r#""value":"0""#, r#""value":["0",true]"#)
+        .replace(r#""value":"1""#, r#""value":["1",false]"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            &definition,
+            &map,
+            "law required pair(c:Part):let t=c.quantity in t=(0,true);",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.operands.len(), 2);
+    for (component, (left, right)) in d.operands.iter().enumerate() {
+        let expected = if component == 0 {
+            Type::Fp("2".into())
+        } else {
+            Type::Bool
+        };
+        for r in [left, right] {
+            assert_eq!(
+                g.get(*r).unwrap().ty,
+                NodeType::Expression(expected.clone())
+            );
+            assert_eq!(property(&g, *r, "operation"), Json::str("project"));
+            assert_eq!(property(&g, *r, "position"), Json::Nat(component as u64));
+            assert!(expression_free_parameters(&g, *r).is_empty());
+            let Part::Transform { operands, .. } = data(&g, *r).part() else {
+                panic!("project")
+            };
+            assert_eq!(
+                property(&g, operands[0], "operation"),
+                Json::str("substitute")
+            );
+        }
+        assert_eq!(d.components[component].1, Some(vec![component]));
+    }
+    assert_eq!(coordinates(&g, d.nu[0]), ["0", "0", "1", "1"]);
+    assert_eq!(coordinates(&g, d.nu[1]), ["1", "0", "1", "0"]);
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn general_boolean_conditions_keep_the_body_and_fixed_unit_equality_truth() {
+    let e = example(
+        false,
+        "law required no(c:Part):false;law optional yes(c:Part):true;",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(d.operands.len(), 2);
+    for (index, (left, right)) in d.operands.iter().enumerate() {
+        assert_eq!(*left, d.originals[index].body);
+        assert_eq!(g.get(*left).unwrap().ty, NodeType::Expression(Type::Bool));
+        assert_eq!(g.get(*right).unwrap().ty, NodeType::Expression(Type::Bool));
+        let Part::Transform {
+            operation: Transform::Equal,
+            operands,
+            bindings,
+            position,
+            ..
+        } = data(&g, *right).part()
+        else {
+            panic!("truth")
+        };
+        assert!(bindings.is_empty() && position.is_none());
+        assert_eq!(operands.len(), 2);
+        assert_eq!(operands[0], operands[1]);
+        assert!(matches!(g.scalar(operands[0]).unwrap(), Scalar::Unit));
+        assert_eq!(property(&g, *right, "operation"), Json::str("equal"));
+        assert!(expression_free_parameters(&g, *right).is_empty());
+        assert_eq!(d.components[index].1, None);
+    }
+    assert_eq!(coordinates(&g, d.nu[0]), ["1"]);
+    assert_eq!(coordinates(&g, d.nu[1]), ["0"]);
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn operand_plans_reject_free_parameter_substitution_type_projection_and_output_changes() {
+    let definition = DEFINITION.replace(r#"["Fp","2"]"#, r#"["Tuple",["Fp","2"],"Bool"]"#);
+    let map = MAP
+        .replace(r#""value":"0""#, r#""value":["0",true]"#)
+        .replace(r#""value":"1""#, r#""value":["1",false]"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            &definition,
+            &map,
+            "law required pair(c:Part):let t=c.quantity in t=(0,true);",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    let source = data(&g, d.ring).source.clone();
+    let project = d.operands[0].0.0 - source.base;
+    let Part::Transform { operands, .. } = &source.parts[project] else {
+        panic!("project")
+    };
+    let substitute = operands[0].0 - source.base;
+    let Part::Transform { operands, .. } = &source.parts[substitute] else {
+        panic!("substitute")
+    };
+    let open = operands[0].0 - source.base;
+    for mode in 0..6 {
+        let mut changed = (*source).clone();
+        match mode {
+            0 => changed.outputs.operands.reverse(),
+            1 => {
+                if let Part::Transform { position, .. } = &mut changed.parts[project] {
+                    *position = Some(usize::MAX);
+                }
+            }
+            2 => {
+                if let Part::Transform { ty, .. } = &mut changed.parts[project] {
+                    *ty = Type::Unit;
+                }
+            }
+            3 => {
+                if let Part::Transform { bindings, .. } = &mut changed.parts[substitute] {
+                    bindings.clear();
+                }
+            }
+            4 => {
+                if let Part::Transform { bindings, .. } = &mut changed.parts[substitute] {
+                    bindings[0].name = "other".into();
+                }
+            }
+            _ => {
+                if let Part::Source { parameters, .. } = &mut changed.parts[open] {
+                    parameters.clear();
+                }
+            }
+        }
+        assert!(
+            changed
+                .recheck(e.prepared.inputs(), &source.architecture, 0, &mut quiet())
+                .is_err(),
+            "mode {mode}"
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_unchanged() {
+    let e = example(
+        false,
+        "law required lexical(c:Part):let x=c.quantity in let y=x+1 in y=0;",
+    );
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    let source = data(&g, d.ring).source.clone();
+    let full = finite_automatic_law_family(
+        e.prepared.inputs(),
+        source.architecture.readings(),
+        &mut quiet(),
+    )
+    .unwrap();
+    let f = full.family().unwrap();
+    let count = std::rc::Rc::new(std::cell::Cell::new(0));
+    let seen = count.clone();
+    let mut control = Control::new(Limits::default(), move |p| {
+        if p == Checkpoint::FiniteLawFunction {
+            seen.set(seen.get() + 1);
+        }
+        Usage::default()
+    });
+    let mut parts = source.parts.clone();
+    operands::append(
+        f,
+        e.prepared.inputs(),
+        &d.originals,
+        &d.columns,
+        &d.components,
+        &mut parts,
+        source.base,
+        &mut control,
+    )
+    .unwrap();
+    let total = count.get();
+    assert!(total > 10);
+    let before = g.nodes.len();
+    for mode in 0..4 {
+        for at in [1, 5, total / 2, total] {
+            let mut parts = source.parts.clone();
+            assert!(matches!(
+                operands::append(
+                    f,
+                    e.prepared.inputs(),
+                    &d.originals,
+                    &d.columns,
+                    &d.components,
+                    &mut parts,
+                    source.base,
+                    &mut stopping(mode, at)
+                ),
+                Err(ValidationFailure::Stop(_))
+            ));
+            assert_eq!(g.nodes.len(), before);
+            assert_eq!(data(&g, d.ring).source.parts, source.parts);
+        }
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+
+#[test]
+fn missing_operand_values_keep_closed_source_expressions_without_fabricated_scalar_results() {
+    let e = example(true, BODY);
+    let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
+    let mut g = graph(&e);
+    let b = architecture(&g, "b");
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+        .unwrap()
+        .unwrap();
+    assert!(d.evaluation.is_none() && d.epsilon.iter().all(Option::is_none));
+    assert_eq!(d.operands.len(), 2);
+    for (left, right) in &d.operands {
+        assert_eq!(
+            g.get(*left).unwrap().ty,
+            NodeType::Expression(Type::Fp("2".into()))
+        );
+        assert_eq!(
+            g.get(*right).unwrap().ty,
+            NodeType::Expression(Type::Fp("2".into()))
+        );
+        assert!(g.scalar(*left).is_err() && g.scalar(*right).is_err());
+        assert!(expression_free_parameters(&g, *left).is_empty());
+        assert_eq!(operand_source_texts(&g, *left, raw), ["c.quantity"]);
+        assert!(
+            !g.get(*left)
+                .unwrap()
+                .support
+                .iter()
+                .any(|f| f.atom.as_deref() == Some("qx"))
+        );
+        let Part::Source { bindings, .. } = data(&g, *left).part() else {
+            panic!("source")
+        };
+        assert!(
+            matches!(g.scalar(bindings[0].value).unwrap(),Scalar::Subject{subject,..}if subject=="q")
+        );
+    }
+    assert_eq!(coordinates(&g, d.nu[0]), ["1", "0"]);
+    assert_eq!(coordinates(&g, d.nu[1]), ["0", "1"]);
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
