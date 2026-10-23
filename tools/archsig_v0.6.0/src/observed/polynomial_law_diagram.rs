@@ -526,6 +526,7 @@ impl Data {
             declaration: name.clone(),
             bindings: bindings.clone(),
             body: expr(*body)?,
+            body_reference: *body,
             guard: guard.map(expr).transpose()?,
             ready: reading.is_some_and(|r| {
                 matches!(
@@ -533,6 +534,7 @@ impl Data {
                     Some(super::object_law_transport::LawApplication::Guard(_))
                 )
             }),
+            outside: reading.is_some_and(|r| matches!(r.application, Some(super::object_law_transport::LawApplication::OutsideObject))),
             body_allowed: reading
                 .is_some_and(|r| r.application.as_ref().and_then(|a| a.value()) != Some(false)),
             scope: super::law_evaluation::base_scope(&self.source.architecture, name)?,

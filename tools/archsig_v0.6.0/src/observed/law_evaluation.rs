@@ -17,9 +17,11 @@ pub(super) struct Origin {
     pub declaration: String,
     pub bindings: Vec<Binding>,
     pub body: usize,
+    pub body_reference: NodeRef,
     pub guard: Option<usize>,
     pub ready: bool,
     pub body_allowed: bool,
+    pub outside: bool,
     pub scope: Scope,
 }
 pub(super) fn base_scope(
@@ -124,7 +126,7 @@ fn frame_value(
     };
     Ok((v, d))
 }
-fn check_architecture(
+pub(super) fn check_architecture(
     graph: &Graph,
     reference: NodeRef,
     row: &Origin,
