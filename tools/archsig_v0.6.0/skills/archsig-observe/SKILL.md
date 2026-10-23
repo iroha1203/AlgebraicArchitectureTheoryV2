@@ -7,9 +7,35 @@ description: Read a repository's implementation and requirement sources to creat
 
 対象リポジトリと「理解したいこと・実現したい変更」から、使用文脈を読んだ三入力を作る。
 利用者が指定した出力先に、Atom 定義 JSON、Law DSL、ArchMap JSON を渡す。
-研究リポジトリの checkout は不要。このファイルと同梱 assets/scripts を使う。
-観測の根拠・不足・検証結果は利用者の会話または指定された Issue に説明し、
-依頼されていないレポートや repo 内の実験ログを増やさない。
+観測の根拠・不足・検証結果は利用者の会話または指定された出力先へ返す。
+
+## バンドルを使う
+
+展開したバンドルから、利用者が指定した CLI と、本ファイルを含む SKILL ディレクトリの
+本体・assets・scripts を使う。
+補助には Python 3.9 以降と標準ライブラリが必要。CLI は利用環境の OS/CPU に対応した
+0.6.0 の実行可能ファイルを使う。対象ソースと生成物の保存先はバンドルとは別に指定する。
+
+本ファイルの実際の配置から skill ディレクトリを特定する。以下は CLI を `bin/archsig`、
+SKILL を `skills/archsig-observe` に置いたバンドルの POSIX shell 例。`bundle` と `work` を
+実際の絶対パスに置き換える。配布配置が異なる場合は `skill` と `cli` を指定された場所へ設定する。
+`work` は生成物用の書込み可能なディレクトリで、対象ソースの場所とは区別する。
+
+```sh
+bundle='/path/to/extracted-bundle'
+work='/path/to/observation-output'
+skill="$bundle/skills/archsig-observe"
+cli="$bundle/bin/archsig"
+"$cli" version
+```
+
+返る `product` が `archsig`、`version` が `0.6.0`、`semantics` が
+`archsig/0.6.0` を含むことを確かめる。Windows では同じ絶対パスの引数で `archsig.exe` を呼ぶ。
+SKILL だけを別の場所へインストールした場合は、元バンドルの場所を利用者から受け取り、
+`skill` はインストール先、`cli` はそのバンドルの実行ファイルへ明示的に設定する。
+利用者が PATH 上のコマンドを指定した場合も、その解決先と版を確認して使用する。
+バイナリ不在・非対応なら接続を未検証とし、ビルドや別のインストールの自動探索で補わない。
+以下の相対リンクは本ファイル基準、コマンドの資産参照は `skill` 基準なので、cwd は任意。
 
 ## 問いから読解へ
 
@@ -161,8 +187,8 @@ snapshot と所属 subject/atom の mode を一致させ、候補や仕様を別
 根拠を読み返すときは、保存した Atom の既存参照を展開して内容 digest と位置を照合する。
 
 ```sh
-python3 scripts/evidence.py observation.json --atom snapshot/atom \
-  --source code=source-file
+python3 "$skill/scripts/evidence.py" "$work/observation.json" --atom snapshot/atom \
+  --source "code=/path/to/target/source-file"
 ```
 
 `--atom` と `--source` は繰り返せる。source の digest 単位が一つのファイルである場合に使い、
@@ -193,6 +219,38 @@ Path は `path(e)`, `identity(x)`, `then(p,q)` で構成する。
 `Map<E,F>`, `Term<(T,...)->U>`, `Path<E,F>`、Tuple は `(T,U)` 等。
 式は field 射影、型付き等値 `= / !=`、算術、`and/or/not/implies`、`if/then/else`、
 `let x = e in body`、`forall x in xs . body` 等を使う。subject ID や観測値を Law の定数として貼り込まない。
+文字列は JSON string、コメントは `//` から改行まで。型名と次の語は宣言・束縛名に使わない。
+
+```text
+law semantics reading use vocabulary version digest as entity arrow correspondence align data
+view required optional local reads change relation when let in if then else match forall exists
+not implies or and with true false unit list set where none some fn
+```
+
+`owner/from/to` は field 名に使える。`use Other as O;` は同じ Law ファイル内の reading を参照する。
+再利用する reading も同梱し、直接使う原始 namespace を各 reading で import する。
+短名が衝突するときは完全名を使う。束縛の shadowing、reading 間の循環を作らない。
+
+| 式 | 型・意味 |
+| --- | --- |
+| `(a,b)`、`x.0` | Tuple と0始まりの成分射影 |
+| `list<T>[a,b]`、`set<T>{a,b}` | 同型の有限 List / Set。空でも型を記す |
+| `set { e \| x in xs where p }` | 有限族の各要素から作る集合。where は省略可 |
+| `none<T>`、`some(e)` | Option の不在 / 存在 |
+| `D.Ctor(a,b)`、`match e { D.Ctor(x,y) => body; _ => fallback; }` | data の構築 / 分岐。constructor 全て又は末尾 `_` で全域を覆う |
+| `forall x in xs . p`、`exists x: T . p` | 有限 List/Set の要素、又は型の全域で量化。未束縛 Law 引数も型の全域で全称化 |
+| `count(xs)`、`sum(xs)`、`x in xs` | 有限 List/Set の件数（Z）、数値和、所属 |
+| `rat(n,d)` | 整数 literal n,d、d>0 の有理数。数値型間の暗黙変換なし |
+| `m(x)`、`t(x)`、`fn(x: Z) => x + 1` | Map / Term の適用、閉じた Term の構築 |
+| `source(p)`、`target(p)` | Path の端点 |
+
+二項演算の優先度は弱い順に `implies`、`or`、`and`、`= != < <= > >= in`、`+ -`、`*`。
+`implies` は右結合、比較の連鎖は禁止。順序比較は Z/Q、算術は同じ Z/Q/Fp 型で行う。
+`count/sum/rat/path/identity/then/source/target` も宣言・束縛名に使わない。
+if の両枝と match の各枝の結果型を揃える。view の自己再帰は左端の data 引数の match で
+得た直接の再帰 subterm に限る。Term は参照・field・観測族・view を捕獲しない。
+空の有限域の forall は true、exists は false。未知 slot の読取りは同じ未知を保持し、
+Law が成立する値で補完しない。型や参照条件を保つ全補完で確定できる値・命題だけを確定する。
 local がなければ支持による reading が構成される。原式の出現や局所の読取りを消す書換えは、
 値が同じでも診断が同じとは限らない。
 
@@ -203,22 +261,36 @@ declarations を完全名順、dependencies を namespace 順、alignments を (
 parameters/fields/constructors/arguments の順序を保持する。object key は Unicode scalar 順、
 空白なし、非 ASCII は UTF-8、制御文字は小文字4桁の `\u00xx`、`/` は escape しない。
 meaning も含める。定義を変えたら新しい version と digest を使い、依存 binding も更新する。
-CLI が利用できれば、最初は import のない reading で `check` し manifest/digest を得てから
-Law と ArchMap に binding を設定し、三入力を再検査する。
+CLI が利用できれば、作成した定義 `definitions.json` に対して、次だけを含む
+一時的な `bootstrap.law` を `work` に作る。
+
+```text
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Bootstrap {}
+```
+
+```sh
+"$cli" check --atom-definition "$work/definitions.json" --law "$work/bootstrap.law" --out "$work/binding-new"
+```
+
+標準出力 receipt の `result` が指す JSON の `vocabularies` 配列を読む。
+各要素の `manifest.namespace`、`manifest.version`、`digest` を、そのまま本来の Law の
+`use vocabulary` と ArchMap の binding に設定して三入力を再検査する。
+複数の定義ファイルは依存分も `--atom-definition` を繰り返して明示指定する。
 形式エラーを直した後も、修正前後の定義・Law・観測を照合し、宣言や要求が消えていないことを確認する。
 
 ## 計算へ渡し、更新する
 
-利用できる対象版の `archsig version` を確かめ、入力を検査する。
+バンドルの CLI で入力を検査する。まず同梱例を確認できる。
 
 ```sh
-archsig check --atom-definition assets/operation.atoms.json --law assets/operation.law --archmap assets/operation.archmap.json --out check-new
-archsig run --atom-definition assets/operation.atoms.json --law assets/operation.law --archmap assets/operation.archmap.json \
+"$cli" check --atom-definition "$skill/assets/operation.atoms.json" --law "$skill/assets/operation.law" --archmap "$skill/assets/operation.archmap.json" --out "$work/check-new"
+"$cli" run --atom-definition "$skill/assets/operation.atoms.json" --law "$skill/assets/operation.law" --archmap "$skill/assets/operation.archmap.json" \
   --ask 'v=evaluate(OperationReading.normalExit,bind.branch=@v/rejected)' \
-  --ask 'c=check(OperationReading.guardedUpdate,bind.branch=@v/rejected)' --ask 'n=needed($c)' --out run-new
+  --ask 'c=check(OperationReading.guardedUpdate,bind.branch=@v/rejected)' --ask 'n=needed($c)' --out "$work/run-new"
 ```
 
-出力先は新しいディレクトリ。同梱例では `branch` が宣言の parameter、`v` が snapshot、
+出力先は毎回未存在のディレクトリ。実入力では3つのファイルパスも作成した絶対パスへ置き換える。同梱例では `branch` が宣言の parameter、`v` が snapshot、
 `rejected` が subject の ID。実入力ではこれらをその宣言と登録 ID に合わせる。
 `@snapshot/subject` の二つの ID と `bind.parameter` を使い、`on` は Architecture の環境指定として分ける。
 この例は出口の値 false と要求成立を別の出力で返す。`check(OperationReading.rejectedReturnsNormally)` は追加仮説を反証する。
@@ -226,6 +298,14 @@ archsig run --atom-definition assets/operation.atoms.json --law assets/operation
 `needed` の不足 slot は元の subject/field/source に戻って読み、その他の未決理由と分ける。
 CLI が未提供・非対応なら三入力とソース照合を進め、接続は未検証と報告する。
 例示結果を実計算の証拠にしない。
+標準出力は receipt JSON。`result` は呼出し cwd からのパスで、結果が作られなければ省略される。
+保存結果の `answers` を問い ID で対応させ、`status`、`outputs` と依存先の `nodes`、`issues` を読む。
+評価値 false と命題 refuted を区別する。`needed` は欠測 slot と他の未決理由を返す。
+終了0は検査成功又は全問い確定・反証なし、1は全問い確定・反証あり、2は未決を含む。
+64は使い方、65は入力、69は版非対応、70/74はinternal/io、75は予算、130/143は中断。
+終了コードだけで意味を判定せず、receipt と保存結果の理由・位置を確認する。
+予算は `run` の `--time-ms N` / `--memory-mib N`（正整数）、再利用は `--reuse OLD_DIRECTORY`。
+再利用先も利用者の保存結果を明示し、旧入力を新しい観測へ読み替えない。
 
 コード変更は該当する使用箇所と、その値を使う呼出し元・呼出し先を再読解する。
 Law の変更は新たな読取りに必要な slot と十分性を確認する。語彙変更は意味・版・全参照を再照合する。
@@ -252,7 +332,7 @@ view 値の十分性はその読取りについて述べ、別の Law の成立�
  "v":{"a":{"preserves":"yes"},"b":{"preserves":"no"}}}
 ```
 
-`python3 scripts/law_fibers.py table.json` は全 q fiber の全対を検査し、
+`python3 "$skill/scripts/law_fibers.py" "$work/table.json"` は全 q fiber の全対を検査し、
 反例対、全 Law 値による partition、十分なら q 上への descent を返す。
 終了コードは十分=0、反例あり=1、不正/不完全な表=2。空族の空虚性も出力する。
 q と v の値は**等号を保つと確認した非空文字列 token**。未知を `"unknown"` 等の token にせず、
@@ -260,20 +340,18 @@ q と v の値は**等号を保つと確認した非空文字列 token**。未�
 この表は補助計算の入力であり、ArchSig の三入力や計算結果の代用にはしない。
 
 計算する条件は `q(s)=q(t) ⇒ ∀law, v(s,law)=v(t,law)`。
-q の標的を像に取れば全射であり、`FiniteLawFamily.adequate_iff_kernel` の条件に対応する。
-全 Law 値の partition は `computedClass_eq_iff` / `computed_adequate` /
-`computed_kernelEquivalent_jointKernel` が扱う有限計算に対応し、
-`jointKernel_universal` はこれが Law 値を保つ最も粗い reading であることを述べる。
-補助 Python 自体の正しさは同梱テストで検査し、Lean 検証済みプログラムとは表示しない。
+この有限表では同じ q 値の要素をまとめ、各 Law 値がその中で一定なら、その値を
+q の像上へ一意に降ろせる。全 Law 値の tuple による partition は、指定した全 Law 値を
+保つ最も粗い区別になる。これは列挙した族と確定した値の等号を前提とする。
+補助は全対比較でこの条件を検査する。表に置いた値のソース忠実性は別に照合する。
 反例対があれば元の使用箇所へ戻り、失われた意味を読解単位・三入力・q に反映して再検査する。
 対だけのモデルを別に作る場合も元入力との保持・置換を示す。Law の追加・S や v の変更でも再検査する。
 指定 v の十分性と、元の範囲の意味回収は別々に確認する。
 
 報告はソース忠実性、経験的精度、指定表上の Law 十分性、診断保存を分ける。
 診断保存には実際の被覆・係数・複体・比較写像と対象類を確認する。
-`generatedComparisonH1Map_bijective` の適用では両 reading の十分性と実 nerve 比較の条件 C を確認する。
-C0–C6 の十分条件や固定比較の核・余核検査は、必要な主張に合うものを選ぶ。
-有限表の十分性だけから H¹ 保存を結論しない。
+有限表が返すのは指定 Law 値の保存までである。診断の比較を実計算し、対象と比較写像・
+検査条件を確認できない場合、診断保存は未検証として扱う。有限表から H¹ 保存を結論しない。
 
 ## 精度を測るとき
 
@@ -290,5 +368,5 @@ recall = 確定参照の正しい回収数 / 確定参照数。棄権も未回�
 棄権、出力未判定、参照未判定、未読範囲は別に数え、回答率の母数も明記する。
 母数0の率は未定義。Law の根拠と DSL の対応は観測 precision から分け、三つの由来ごとに確認する。
 判断が割れた事例は根拠とともに人間へ返す。
-予備評価後に許容誤観測・見逃し・回答率を一度提案し、合意した水準で最終評価する。
-改善を主張する比較は同じ範囲・予算・参照で行う。結果と代表的な誤りは指定された Issue に残す。
+利用者が精度の評価を求めた場合、対象と採用水準を評価前に合意する。
+改善を主張する比較は同じ範囲・予算・参照で行う。結果と代表的な誤りを利用者の指定先へ返す。
