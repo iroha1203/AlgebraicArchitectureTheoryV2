@@ -29,6 +29,7 @@ pub(crate) mod object_view_transport;
 mod path_value;
 mod path_compose;
 mod public_map;
+mod architecture_result;
 mod public_compose;
 mod public_compare;
 mod public_path_compose;

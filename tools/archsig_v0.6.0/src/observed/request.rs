@@ -318,6 +318,16 @@ pub(super) fn resolve_object_view_requests(
     finish_request(result, control, Checkpoint::Resolve)
 }
 
+#[cfg(test)]
+pub(super) fn resolve_native_for_test(
+    law: &CheckedLaw,
+    map: &CheckedArchMap,
+    texts: &[&str],
+    control: &mut Control,
+) -> Result<ResolvedRequests, ResolveFailure> {
+    resolve_inner(law, map, texts, control, None)
+}
+
 fn resolve_inner(
     law: &CheckedLaw,
     map: &CheckedArchMap,

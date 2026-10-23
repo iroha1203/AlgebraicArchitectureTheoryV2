@@ -238,6 +238,16 @@ impl Environment<'_> {
             .original_requests
             .and_then(|requests| requests.get(context.request))
             .ok_or("射影の元Requestがない")?;
+        if request.kind == QuestionKind::Build {
+            super::super::architecture_result::selected_build(self, graph, request)?;
+            let selector = &request.arguments.iter().find(|a| a.name == "on")
+                .ok_or("build射影の元onがない")?.value;
+            if let AnswerBinding::Projection(expected) = self.answer_binding(graph, selector, (0, 0))?
+                && expected == *node {
+                return Ok(());
+            }
+            return Err("buildのroot射影が元Handle・値・型・支持・Scopeと違う".into());
+        }
         if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
             for constraint in &request.constraints {
                 if !matches!(constraint.selector, Selector::Answer { .. }) {
