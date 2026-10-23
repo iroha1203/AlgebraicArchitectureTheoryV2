@@ -117,9 +117,9 @@ fn z_polynomial_diagram_keeps_shared_symbols_raw_epsilon_ideals_and_evaluation_i
     );
     assert_eq!(variables[0].component, []);
     let source = &data(&g, d.rings[0]).source;
-    assert_eq!(source.core.rings().len(), 1);
+    assert_eq!(source.core.as_ref().unwrap().rings().len(), 1);
     for q in &d.coordinates {
-        let original = &source.core.occurrences()[q.occurrence];
+        let original = &source.core.as_ref().unwrap().occurrences()[q.occurrence];
         let declaration = &source.architecture.readings().instances()[original.position.instance]
             .declaration()
             .name;
@@ -222,7 +222,7 @@ fn q_and_fp_keep_their_original_coefficient_rings_and_exact_constant_encoding() 
         assert_eq!(d.rings.len(), 1);
         let source = &data(&g, d.rings[0]).source;
         for q in &d.coordinates {
-            let original = &source.core.occurrences()[q.occurrence];
+            let original = &source.core.as_ref().unwrap().occurrences()[q.occurrence];
             let name = &source.architecture.readings().instances()[original.position.instance]
                 .declaration()
                 .name;
@@ -455,12 +455,12 @@ fn recheck_rejects_changed_coefficients_powers_symbols_ideals_maps_and_coordinat
     let a = architecture(&g, "a");
     let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
     let source = data(&g, d.rings[0]).source.clone();
-    let scalar = source
-        .parts
-        .iter()
-        .position(|p| matches!(p, Part::Scalar(_)))
-        .unwrap();
     let poly = d.coordinates[0].nu.unwrap().0 - source.base;
+    let Part::Polynomial { terms, .. } = &source.parts[poly] else {
+        panic!("nu polynomial")
+    };
+    let scalar = terms[0].0.0 - source.base;
+    assert!(matches!(&source.parts[scalar], Part::Scalar(Scalar::Z(_))));
     for mode in 0..13 {
         let mut changed = (*source).clone();
         match mode {

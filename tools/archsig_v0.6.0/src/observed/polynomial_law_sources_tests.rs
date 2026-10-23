@@ -405,3 +405,153 @@ fn altered_law_source_bindings_parameters_spans_transforms_and_coordinate_links_
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
+#[test]
+fn unbounded_parameter_keeps_symbolic_law_typed_sides_and_explicit_unavailable_without_values() {
+    let e = example(false, "law required parameter(c:Part,k:Z):c.quantity=k;");
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert_eq!(d.status, EquationPresentationStatus::UnsupportedAlgorithm);
+    let reason = d.unavailable.as_ref().unwrap();
+    assert_eq!(reason.declaration, "Chosen.parameter");
+    assert!(!reason.feature.is_empty());
+    assert!(
+        d.rings.is_empty()
+            && d.coordinates.is_empty()
+            && d.required.is_empty()
+            && d.evaluations.is_empty()
+    );
+    assert_eq!(d.originals.len(), 1);
+    let original = &d.originals[0];
+    assert_eq!(original.row, None);
+    assert_eq!(original.parameters, [("k".into(), Type::Z)]);
+    assert_eq!(source_text(&e, &g, original.body), "c.quantity=k");
+    let (left, right) = original.operands.as_ref().unwrap();
+    assert_eq!(source_text(&e, &g, left.0), "c.quantity");
+    assert_eq!(source_text(&e, &g, right.0), "k");
+    assert_eq!((&left.1, &right.1), (&Type::Z, &Type::Z));
+    for r in [left.0, right.0] {
+        let Part::Source { parameters, .. } = data(&g, r).part() else {
+            panic!("source")
+        };
+        assert_eq!(parameters, &vec![("k".into(), Type::Z)]);
+    }
+    let source = data(&g, original.reference).source.clone();
+    assert!(source.core.is_none());
+    for mode in 0..4 {
+        let mut bad = (*source).clone();
+        match mode {
+            0 => bad.outputs.unavailable = None,
+            1 => bad.outputs.unavailable.as_mut().unwrap().declaration = "Chosen.other".into(),
+            2 => bad.outputs.status = EquationPresentationStatus::Ready,
+            _ => bad.outputs.originals[0].parameters.clear(),
+        }
+        assert!(
+            bad.recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+                .is_err()
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn compound_parameter_domain_keeps_external_snapshot_support_scope_and_rejects_omissions() {
+    let map=format!(r#"{},{{"id":"w","origin":"external","subjects":[{{"id":"z","type":"Finite.Root","origin":"external"}}],"atoms":[]}}]}}"#,MAP.strip_suffix("]}").unwrap()).replace(r#""origins":["#,r#""origins":[{"id":"external","mode":"proposed","method":"独立の外部参照。","locations":[],"note":"型付きparameter域。"},"#);
+    let e = evaluate_observed_bytes(
+        custom_sources(
+            DEFINITION,
+            &map,
+            "law required parameter(c:Part,x:(Root,Bool)):c.quantity=0;",
+        ),
+        &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
+        &mut quiet(),
+    )
+    .unwrap();
+    let mut g = graph(&e);
+    let a = architecture(&g, "a");
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    assert!(d.unavailable.is_none());
+    let mut external = 0;
+    for original in &d.originals {
+        let Some(binding) = original.bindings.iter().find(|b| b.name == "x") else {
+            continue;
+        };
+        let Scalar::Tuple(items) = g.scalar(binding.value).unwrap() else {
+            panic!("tuple")
+        };
+        if matches!(&items[0],Scalar::Subject{snapshot,subject,..}if snapshot=="w"&&subject=="z") {
+            external += 1;
+            for r in [binding.value, original.body, original.reference] {
+                let node = &g.nodes[r.0];
+                assert!(node.support.iter().any(|f| f.snapshot == "w"
+                    && f.subject == "z"
+                    && f.field.is_none()
+                    && f.atom.is_none()));
+                assert!(node.scope.snapshots.contains("w"));
+                assert!(node.scope.modes.contains("proposed"));
+                assert!(node.scope.modes.contains("specification"));
+            }
+        }
+    }
+    assert_eq!(external, 2);
+    let source = data(&g, d.originals[0].reference).source.clone();
+    for mode in 0..3 {
+        let mut bad = (*source).clone();
+        match mode {
+            0 => bad.support.retain(|f| f.snapshot != "w"),
+            1 => {
+                bad.scope.snapshots.remove("w");
+            }
+            _ => {
+                bad.scope.modes.remove("proposed");
+            }
+        }
+        assert!(
+            bad.recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+                .is_err()
+        );
+    }
+    replay(&e, &g.nodes, &g.contexts).unwrap();
+}
+#[test]
+fn source_only_unavailable_path_preserves_four_stops_without_returning_incomplete_diagram() {
+    let e = example(false, "law required parameter(c:Part,k:Z):c.quantity=k;");
+    let mut complete = graph(&e);
+    let a = architecture(&complete, "a");
+    let before = complete.nodes.len();
+    let seen = std::rc::Rc::new(std::cell::Cell::new(0));
+    let count = seen.clone();
+    let mut c = Control::new(Limits::default(), move |p| {
+        if p == Checkpoint::EquationPresentation {
+            count.set(count.get() + 1);
+        }
+        Usage::default()
+    });
+    retain(&mut complete, e.prepared.shared_inputs(), a, 0, &mut c).unwrap();
+    let total = seen.get();
+    assert!(total > 20);
+    let mut nonempty = false;
+    for mode in 0..4 {
+        for at in [1, 5, total / 2, total - 1, total] {
+            let mut g = graph(&e);
+            assert!(
+                matches!(
+                    retain(
+                        &mut g,
+                        e.prepared.shared_inputs(),
+                        a,
+                        0,
+                        &mut stopping(mode, at)
+                    ),
+                    Err(ValidationFailure::Stop(_))
+                ),
+                "mode {mode}/{at}"
+            );
+            assert_eq!(&g.nodes[..before], &e.nodes[..]);
+            assert_eq!(&g.contexts[..before], &e.contexts[..]);
+            nonempty |= g.nodes.len() > before;
+            replay(&e, &g.nodes, &g.contexts).unwrap();
+        }
+    }
+    assert!(nonempty);
+    replay(&e, &complete.nodes, &complete.contexts).unwrap();
+}

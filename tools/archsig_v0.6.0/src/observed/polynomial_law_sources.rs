@@ -215,8 +215,9 @@ fn erased(ty: &Type, c: &mut Control) -> Result<Type, ValidationFailure> {
     })
 }
 fn original(
-    core: &EquationPresentation,
+    readings: &crate::construction::readings::ObjectReadingInstances,
     inputs: &CheckedInputs,
+    actual: Option<&super::super::object_law_transport::LawReadingRow>,
     instance: usize,
     row: Option<usize>,
     parts: &mut Vec<Part>,
@@ -224,10 +225,7 @@ fn original(
     c: &mut Control,
 ) -> Result<Original, ValidationFailure> {
     tick(c)?;
-    let original = core
-        .base()
-        .base()
-        .readings()
+    let original = readings
         .instances()
         .get(instance)
         .ok_or("多項式Lawの元instanceがない")?;
@@ -245,22 +243,6 @@ fn original(
     else {
         return Err("多項式の元宣言がLawでない".into());
     };
-    let evaluation = core
-        .base()
-        .base()
-        .evaluations()
-        .iter()
-        .find(|e| e.position().object == core.object() && e.position().instance == instance)
-        .ok_or("多項式Lawの元対象評価がない")?;
-    let actual = row
-        .map(|r| {
-            evaluation
-                .family()
-                .rows()
-                .get(r)
-                .ok_or("多項式Lawの実parameter行がない")
-        })
-        .transpose()?;
     let mut bindings = vec![];
     let mut parameters = vec![];
     for parameter in params {
@@ -366,7 +348,7 @@ fn original(
         },
         c,
     )?;
-    Ok(Original {
+    let mut result = Original {
         instance,
         row,
         bindings,
@@ -374,7 +356,25 @@ fn original(
         body,
         guard,
         reference,
-    })
+        operands: None,
+    };
+    let mut builder = Builder {
+        inputs,
+        original: &result,
+        parts,
+        base,
+        control: c,
+    };
+    let Signature::Law {
+        body: body_expression,
+        ..
+    } = declaration.signature
+    else {
+        return Err("多項式Lawの元bodyがない".into());
+    };
+    let pair = builder.pair(body_expression)?;
+    result.operands = Some(pair);
+    Ok(result)
 }
 pub(super) fn append(
     core: &EquationPresentation,
@@ -394,15 +394,29 @@ pub(super) fn append(
     {
         tick(c)?;
         let instance = e.position().instance;
-        originals.push(original(core, inputs, instance, None, parts, base, c)?);
+        originals.push(original(
+            core.base().base().readings(),
+            inputs,
+            None,
+            instance,
+            None,
+            parts,
+            base,
+            c,
+        )?);
         for row in 0..e.family().rows().len() {
-            originals.push(original(core, inputs, instance, Some(row), parts, base, c)?);
+            originals.push(original(
+                core.base().base().readings(),
+                inputs,
+                e.family().rows().get(row),
+                instance,
+                Some(row),
+                parts,
+                base,
+                c,
+            )?);
         }
     }
-    let mut pairs: std::collections::BTreeMap<
-        (usize, Option<usize>),
-        ((NodeRef, Type), (NodeRef, Type)),
-    > = std::collections::BTreeMap::new();
     let mut result = vec![];
     for q in core.occurrences() {
         tick(c)?;
@@ -411,18 +425,7 @@ pub(super) fn append(
             .iter()
             .find(|o| (o.instance, o.row) == key)
             .ok_or("多項式座標の元Law行がない")?;
-        let declaration = inputs
-            .law()
-            .declarations
-            .get(
-                &core.base().base().readings().instances()[q.position.instance]
-                    .declaration()
-                    .name,
-            )
-            .ok_or("多項式座標の元宣言がない")?;
-        let Signature::Law { body, .. } = declaration.signature else {
-            return Err("多項式座標の元Lawがない".into());
-        };
+        let (left, right) = original.operands.clone().ok_or("多項式の元左右式がない")?;
         let mut b = Builder {
             inputs,
             original,
@@ -430,17 +433,30 @@ pub(super) fn append(
             base,
             control: c,
         };
-        let (left, right) = if let Some(pair) = pairs.get(&key) {
-            pair.clone()
-        } else {
-            let pair = b.pair(body)?;
-            pairs.insert(key, pair.clone());
-            pair
-        };
         let lhs = b.project(left.0, left.1, &q.component)?;
         let rhs = b.project(right.0, right.1, &q.component)?;
         result.push((original.reference, lhs, rhs));
     }
     tick(c)?;
     Ok((originals, result))
+}
+
+pub(super) fn symbolic(
+    inputs: &CheckedInputs,
+    readings: &crate::construction::readings::ObjectReadingInstances,
+    parts: &mut Vec<Part>,
+    base: usize,
+    c: &mut Control,
+) -> Result<Vec<Original>, ValidationFailure> {
+    let mut result = vec![];
+    for (instance, row) in readings.instances().iter().enumerate() {
+        tick(c)?;
+        if row.declaration().kind == "law" {
+            result.push(original(
+                readings, inputs, None, instance, None, parts, base, c,
+            )?);
+        }
+    }
+    tick(c)?;
+    Ok(result)
 }
