@@ -124,7 +124,7 @@ fn expected(
     if !row.outside || row.ready {
         return Err("元Law行の対象外適用が確認されていない".into());
     }
-    if graph.active != graph.context_at(d.origin.0) {
+    if graph.context_at(d.origin.0) != graph.context_at(d.architecture.0) {
         return Err("対象外Lawの元Request Contextが違う".into());
     }
     if d.body != original_body(graph, d.origin)? || d.bindings != row.bindings {
