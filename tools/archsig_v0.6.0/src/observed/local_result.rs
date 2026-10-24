@@ -304,79 +304,91 @@ fn compute(
                 _ => vec![*body],
             };
             reading_roots.extend(*guard);
-            let mut bindings = vec![];
+            let mut assignments = vec![vec![]];
             let mut universal = vec![];
-            let mut missing = vec![];
+            let mut domain_missing = vec![];
             for p in params {
-                let value = if let Some(a) = request
+                let values = if let Some(a) = request
                     .arguments
                     .iter()
                     .find(|a| a.name == format!("bind.{}", p.name))
                 {
-                    change_search::selector(env, g, &a.value)?
+                    vec![change_search::selector(env, g, &a.value)?]
                 } else {
-                    let Some(mut values) =
-                        change_search::domain(&fixed, &p.ty, p.span, &mut missing)?
+                    let Some(values) =
+                        change_search::domain(&fixed, &p.ty, p.span, &mut domain_missing)?
                     else {
                         return Err(unsupported("局所Lawのparameter域が未確定"));
                     };
-                    if values.len() != 1 {
-                        return Err(unsupported("複数instanceの局所系は未実装"));
+                    if values.is_empty() {
+                        return Err(unsupported("空のinstance族の局所系は未実装"));
                     }
-                    universal.push(p);
-                    values.remove(0)
+                    universal.push((p, values.clone()));
+                    values
                 };
-                bindings.push((p.name.clone(), value));
-            }
-            let mut carrier = bindings
-                .iter()
-                .filter(|(_, v)| matches!(v, Scalar::Subject { .. }))
-                .map(|(_, v)| Json::obj([("type", v.ty().wire()), ("value", v.wire())]))
-                .collect::<Vec<_>>();
-            let (row, read_missing, evaluated) = fixed.local_point(declaration, &bindings)?;
-            for fact in &row.support {
-                let subject = env.subject(&fact.snapshot, &fact.subject)?;
-                let v = Scalar::Subject {
-                    snapshot: fact.snapshot.clone(),
-                    subject: fact.subject.clone(),
-                    entity: subject.ty.clone(),
-                };
-                carrier.push(Json::obj([("type", v.ty().wire()), ("value", v.wire())]));
-            }
-            for read in &evaluated {
-                if let Some(value @ Scalar::Subject { .. }) = &read.value {
-                    carrier.push(Json::obj([
-                        ("type", value.ty().wire()),
-                        ("value", value.wire()),
-                    ]));
+                let mut next = vec![];
+                for bindings in assignments {
+                    for value in &values {
+                        c.checkpoint(super::control::Checkpoint::Localize)?;
+                        let mut row = bindings.clone();
+                        row.push((p.name.clone(), value.clone()));
+                        next.push(row);
+                    }
                 }
+                assignments = next;
             }
-            carrier.sort_by_key(Json::canonical);
-            carrier.dedup();
+            for bindings in assignments {
+                let mut missing = domain_missing.clone();
+                let mut carrier = bindings
+                    .iter()
+                    .filter(|(_, v)| matches!(v, Scalar::Subject { .. }))
+                    .map(|(_, v)| Json::obj([("type", v.ty().wire()), ("value", v.wire())]))
+                    .collect::<Vec<_>>();
+                let (row, read_missing, evaluated) = fixed.local_point(declaration, &bindings)?;
+                for fact in &row.support {
+                    let subject = env.subject(&fact.snapshot, &fact.subject)?;
+                    let v = Scalar::Subject {
+                        snapshot: fact.snapshot.clone(),
+                        subject: fact.subject.clone(),
+                        entity: subject.ty.clone(),
+                    };
+                    carrier.push(Json::obj([("type", v.ty().wire()), ("value", v.wire())]));
+                }
+                for read in &evaluated {
+                    if let Some(value @ Scalar::Subject { .. }) = &read.value {
+                        carrier.push(Json::obj([
+                            ("type", value.ty().wire()),
+                            ("value", value.wire()),
+                        ]));
+                    }
+                }
+                carrier.sort_by_key(Json::canonical);
+                carrier.dedup();
 
-            missing.extend(read_missing);
-            let mut positions = row
-                .support
-                .iter()
-                .filter(|f| f.field.is_some())
-                .map(|f| Fact {
-                    atom: None,
-                    ..f.clone()
-                })
-                .collect::<Vec<_>>();
-            positions.sort();
-            positions.dedup();
-            evaluations.push((
-                declaration,
-                bindings,
-                universal,
-                row,
-                missing,
-                evaluated,
-                carrier,
-                positions,
-                reading_roots,
-            ));
+                missing.extend(read_missing);
+                let mut positions = row
+                    .support
+                    .iter()
+                    .filter(|f| f.field.is_some())
+                    .map(|f| Fact {
+                        atom: None,
+                        ..f.clone()
+                    })
+                    .collect::<Vec<_>>();
+                positions.sort();
+                positions.dedup();
+                evaluations.push((
+                    declaration,
+                    bindings,
+                    universal.clone(),
+                    row,
+                    missing,
+                    evaluated,
+                    carrier,
+                    positions,
+                    reading_roots.clone(),
+                ));
+            }
         }
         let mut b = Builder {
             g,
@@ -384,6 +396,7 @@ fn compute(
             parts: vec![],
         };
         let mut scope_domains = vec![];
+        let mut parameter_domains = BTreeMap::new();
         let mut laws = vec![];
         let mut expressions = vec![];
         let mut reasons = vec![];
@@ -422,14 +435,20 @@ fn compute(
                 .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
                 .collect::<Result<Vec<_>, ValidationFailure>>()?;
             let mut quantifiers = vec![];
-            for p in universal {
-                let value = bindings
-                    .iter()
-                    .find(|(n, _)| n == &p.name)
-                    .ok_or("局所量化の束縛がない")?
-                    .1;
-                let domain = domain(&mut b, &p.ty.erase(), &[value])?;
-                scope_domains.push((domain, p.ty.erase()));
+            for (p, values) in universal {
+                let key = (declaration.name.clone(), p.name.clone());
+                let domain = if let Some(reference) = parameter_domains.get(&key) {
+                    *reference
+                } else {
+                    let items = values
+                        .iter()
+                        .map(|v| change_result::value(&mut b, v))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    let reference = domain(&mut b, &p.ty.erase(), &items)?;
+                    scope_domains.push((reference, p.ty.erase()));
+                    parameter_domains.insert(key, reference);
+                    reference
+                };
                 quantifiers.push(Quantifier {
                     kind: crate::law::ast::QuantKind::Forall,
                     name: p.name.clone(),

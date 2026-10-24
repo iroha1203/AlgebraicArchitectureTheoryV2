@@ -992,3 +992,202 @@ fn shared_support_law_family_reuses_each_original_requirement() {
         archsig::json::JValue::Bool(true)
     );
 }
+
+#[test]
+fn finite_law_parameters_are_universal_and_keep_each_binding() {
+    for value in [Some(true), Some(false), None] {
+        let dir = input("local-finite-instances", value);
+        let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+        std::fs::write(
+            dir.join("l.law"),
+            law.replace(
+                "law required valid(s:State):s.flag=true;",
+                "law required valid(s:State,p:Bool) when p:s.flag;",
+            ),
+        )
+        .unwrap();
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+                "n=needed($l)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            match value {
+                Some(true) => 0,
+                Some(false) => 1,
+                None => 2,
+            },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let result = result_json(&dir, &r);
+        let answers = arr(get(&result, "answers"));
+        if let Some(value) = value {
+            let system = get(output(&result, 1, "system"), "value");
+            let laws = arr(get(system, "laws"));
+            assert_eq!(laws.len(), 2);
+            let mut seen = vec![];
+            for reference in laws {
+                let law = get(node(&result, reference), "value");
+                assert_eq!(s(get(law, "name")), "Fixed.valid");
+                let binding = arr(get(law, "bindings"))
+                    .iter()
+                    .find(|b| s(get(b, "name")) == "p")
+                    .unwrap();
+                seen.push(
+                    match &get(node(&result, get(binding, "value")), "value").value {
+                        archsig::json::JValue::Bool(v) => *v,
+                        _ => panic!("Bool binding"),
+                    },
+                );
+            }
+            assert!(seen.contains(&false));
+            assert!(seen.contains(&true));
+            for index in [2, 3] {
+                assert_eq!(
+                    s(get(&answers[index], "status")),
+                    if value { "established" } else { "refuted" }
+                );
+                let diagnostic = get(output(&result, index, "diagnostic"), "value");
+                let global = get(node(&result, get(diagnostic, "global")), "value");
+                assert_eq!(
+                    arr(get(get(global, "representation"), "values")).len(),
+                    usize::from(value)
+                );
+            }
+            let scope = get(&answers[1], "scope");
+            let quantifiers = arr(get(scope, "quantifiers"));
+            let p = quantifiers
+                .iter()
+                .find(|q| s(get(q, "name")) == "p")
+                .unwrap();
+            let domain = get(node(&result, get(p, "domain")), "value");
+            assert_eq!(arr(get(domain, "elements")).len(), 2);
+        } else {
+            assert_eq!(s(get(&answers[1], "status")), "undetermined");
+            assert!(!has(get(&answers[1], "outputs"), "system"));
+            assert_eq!(arr(get(&answers[1], "reasons")).len(), 2);
+            assert_eq!(s(get(&answers[4], "status")), "established");
+        }
+    }
+}
+
+#[test]
+fn binding_a_boolean_answer_selects_one_law_instance_without_changing_the_universal_family() {
+    let dir = input("local-finite-binding", Some(false));
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    std::fs::write(
+        dir.join("l.law"),
+        law.replace(
+            "law required valid(s:State):s.flag=true;",
+            "law required valid(s:State,p:Bool) when p:s.flag;",
+        ),
+    )
+    .unwrap();
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "a=build(Fixed,on=@fixed/s)",
+            "v=evaluate(Fixed.current,s=@fixed/s)",
+            "all=localize($a.object,law=Fixed.valid,s=@fixed/s)",
+            "one=localize($a.object,law=Fixed.valid,s=@fixed/s,p=$v.value)",
+            "da=diagnose($all.system)",
+            "do=diagnose($one.system)",
+        ],
+    );
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(
+        arr(get(get(output(&result, 2, "system"), "value"), "laws")).len(),
+        2
+    );
+    assert_eq!(
+        arr(get(get(output(&result, 3, "system"), "value"), "laws")).len(),
+        1
+    );
+    assert_eq!(s(get(&answers[4], "status")), "refuted");
+    assert_eq!(s(get(&answers[5], "status")), "established");
+}
+
+#[test]
+fn finite_parameter_product_and_saved_reuse_keep_all_four_instances() {
+    let dir = input("local-finite-product", Some(false));
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    std::fs::write(
+        dir.join("l.law"),
+        law.replace(
+            "law required valid(s:State):s.flag=true;",
+            "law required valid(s:State,p:Bool,q:Bool) when p and q:s.flag;",
+        ),
+    )
+    .unwrap();
+    let asks = [
+        "a=build(Fixed,on=@fixed/s)",
+        "l=localize($a.object)",
+        "d=diagnose($l.system)",
+    ];
+    let r = execute(&dir, "out", &asks);
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    let before = result_json(&dir, &r);
+    let system = get(output(&before, 1, "system"), "value");
+    let laws = arr(get(system, "laws"));
+    assert_eq!(laws.len(), 4);
+    let pairs = laws
+        .iter()
+        .map(|r| {
+            let instance = get(node(&before, r), "value");
+            let value = |name| {
+                let b = arr(get(instance, "bindings"))
+                    .iter()
+                    .find(|b| s(get(b, "name")) == name)
+                    .unwrap();
+                match get(node(&before, get(b, "value")), "value").value {
+                    archsig::json::JValue::Bool(v) => v,
+                    _ => panic!("Bool binding"),
+                }
+            };
+            (value("p"), value("q"))
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        pairs,
+        std::collections::BTreeSet::from([
+            (false, false),
+            (false, true),
+            (true, false),
+            (true, true)
+        ])
+    );
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+    ];
+    for ask in asks {
+        args.extend(["--ask", ask]);
+    }
+    let r = run(&dir, &args);
+    assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
+    let after = result_json(&dir, &r);
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&before, field).value, get(&after, field).value);
+    }
+}
