@@ -91,15 +91,19 @@ fn build_cycle_stdout_identifies_requests_and_dependency_edges() {
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
-fn valid_build_keeps_explicit_unimplemented_error_and_no_failure_artifacts() {
-    let dir = files("build-not-implemented");
+fn valid_build_constructs_the_empty_reading_algebra() {
+    let dir = files("build-empty-reading");
+    let law = std::fs::read_to_string(dir.join("l.law"))
+        .unwrap()
+        .replace(fixture::BODY, "");
+    std::fs::write(dir.join("l.law"), law).unwrap();
     let run = ask(&dir, &["b=build(R,on=@v/A)"]);
-    notified(&dir, &run, "error", 70);
-    assert!(run.stdout.contains("未実装"));
-    assert!(run.stdout.contains("`b`"));
-    assert!(run.stdout.contains("`build`"));
-    assert!(!run.stdout.contains("unsupported_algorithm"));
-    no_artifacts(&dir);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let answer = &arr(get(&result, "answers"))[0];
+    assert_eq!(s(get(answer, "status")), "established");
+    assert!(has(get(answer, "outputs"), "object"));
+    assert!(has(get(answer, "outputs"), "algebra"));
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]

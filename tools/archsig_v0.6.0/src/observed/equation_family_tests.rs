@@ -354,7 +354,7 @@ fn missing_and_unfinished_presentations_do_not_publish_a_completed_family() {
         let inputs = if finite {
             fixture::inputs(true, "law required zero(c:Part):c.quantity=0;")
         } else {
-            polynomial_fixture::inputs(false, false, "law required zero(c:Part):c.quantity=0;")
+            polynomial_fixture::inputs(true, false, "law required zero(c:Part):c.quantity=0;")
         };
         let p = prepared(inputs, "root");
         let (mut g, l) = start(&p, finite);

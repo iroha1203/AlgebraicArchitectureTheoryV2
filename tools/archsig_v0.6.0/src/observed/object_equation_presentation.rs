@@ -20,6 +20,8 @@ use crate::{
     types::Type,
 };
 use std::sync::Arc;
+#[path = "equation_source_polynomial.rs"]
+mod source_polynomial;
 fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(s.into())
 }
@@ -1113,6 +1115,23 @@ fn populate(
                 let index = ring(&mut r.rings, &ty, c)?;
                 occurrence.ring = Some(index);
                 if guard == EquationGuard::OutsideObject {
+                    // 適用外でも原式の記号表示は残す。通常評価を実行したことにはせず、
+                    // 生差εは未生成のまま、適用条件付きresidualの零と区別する。
+                    if let LawNumericShape::Equality { left, right, .. } = e.shape
+                        && let Some((lhs, rhs)) = source_polynomial::operands(
+                            inputs,
+                            original.instance(),
+                            left,
+                            right,
+                            &path,
+                            &mut r.rings[index],
+                            c,
+                        )?
+                    {
+                        occurrence.nu = Some(lhs.binary(BinOp::Sub, &rhs, c)?);
+                        occurrence.left = Some(lhs);
+                        occurrence.right = Some(rhs);
+                    }
                     occurrence.status = EquationPresentationStatus::NotApplicable;
                 } else if let (Some(g), [l, rhs]) = (g, q.operand_evaluations.as_slice()) {
                     let mut compiler = Compiler {

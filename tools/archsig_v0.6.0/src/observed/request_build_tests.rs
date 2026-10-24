@@ -76,18 +76,16 @@ fn root_returned_by_a_view_is_accepted_without_evaluating_its_body() {
     assert_eq!(result.requests()[0].dependencies, ["a"]);
 }
 #[test]
-fn valid_build_is_unimplemented_not_mathematical_undetermined_or_usage() {
+fn valid_build_reaches_execution_after_static_resolution() {
     let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
-    let failure = resolve_observed_requests_controlled(
+    let resolved = resolve_observed_requests_controlled(
         inputs.law(),
         inputs.archmap(),
         &["b=build(R,on=@v/A)"],
         &mut quiet(),
     )
-    .unwrap_err();
-    assert!(
-        matches!(failure, ResolveFailure::NotApplicable { request, kind, architecture_environment: false } if request == "b" && kind == "build")
-    );
+    .unwrap();
+    assert_eq!(resolved.requests()[0].kind, QuestionKind::Build);
 }
 #[test]
 fn build_rejects_missing_unknown_and_duplicate_arguments_and_names() {

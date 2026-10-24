@@ -499,6 +499,12 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn polynomial(&self) -> Option<(NodeRef, &[(NodeRef, Vec<usize>)])> {
+        match self.source.parts.get(self.index) {
+            Some(Part::Polynomial { ring, terms }) => Some((*ring, terms)),
+            _ => None,
+        }
+    }
     pub(super) fn family_inputs(
         &self,
         reference: NodeRef,
@@ -1116,7 +1122,12 @@ fn append_presentations(
             if actual.is_some() && current.epsilon.is_some() && actual != current.epsilon {
                 return Err("補完の生差が元実評価と違う".into());
             }
-            if actual.is_none() {
+            if actual.is_none()
+                && !matches!(
+                    q.guard,
+                    EquationGuard::OutsideObject | EquationGuard::AlwaysFalse
+                )
+            {
                 omitted_positions.extend(original_positions(core, Some(original.instance), c)?);
                 if out.status == EquationPresentationStatus::Ready {
                     out.status = EquationPresentationStatus::Undetermined;

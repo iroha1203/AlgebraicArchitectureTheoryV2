@@ -45,7 +45,7 @@ impl Coordinate {
             _ => Err("多項式座標でない".into()),
         }
     }
-    fn value(&self, reading: Reading) -> Option<NodeRef> {
+    pub(super) fn value(&self, reading: Reading) -> Option<NodeRef> {
         match &self.source {
             Source::Polynomial(q) => match reading {
                 Reading::Nu => q.nu,
@@ -251,10 +251,15 @@ fn compute_polynomial(
                     types.push((q.ty.clone(), ring));
                 }
             }
-            // 未生成の原式値を、対象外の既知residual零で埋めない。
+            // 全域AAT読取りに要る条件付きresidualと、原式差εの計算を区別する。
+            // 非適用のεは未生成のまま残し、νの表示と既知residual零で接続する。
             complete &= factor.is_some()
                 && q.nu.is_some()
-                && q.epsilon.is_some()
+                && (q.epsilon.is_some()
+                    || matches!(
+                        q.guard,
+                        EquationGuard::OutsideObject | EquationGuard::AlwaysFalse
+                    ))
                 && q.residual.is_some()
                 && q.witness.is_some()
                 && matches!(

@@ -327,6 +327,9 @@ fn compute(
     )))
 }
 impl Data {
+    pub(super) fn same_pattern(&self, other: &Self) -> bool {
+        self.output == other.output
+    }
     pub(super) fn ty(&self) -> NodeType {
         NodeType::Construction(T::CircuitPattern)
     }

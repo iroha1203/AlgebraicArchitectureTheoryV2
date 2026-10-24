@@ -184,7 +184,7 @@ fn cycles_keep_the_graph_and_leave_computation_outputs_empty() {
 fn outside_operations_have_no_evaluation_result() {
     let failure = prepare_observed(
         inputs(),
-        &["b=build(CountCheck,on=@v/s)"],
+        &["d=diagnose($b.system,degree=1)"],
         &mut Control::unlimited(),
     )
     .unwrap_err();
@@ -196,4 +196,20 @@ fn outside_operations_have_no_evaluation_result() {
             ..
         }
     ));
+}
+
+#[test]
+fn public_build_is_prepared_with_its_checked_inputs() {
+    let p = prepare_observed(
+        inputs(),
+        &["b=build(CountCheck,on=@v/s)"],
+        &mut Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(p.requests().requests().len(), 1);
+    assert_eq!(
+        p.requests().requests()[0].kind,
+        archsig::observed::request::QuestionKind::Build
+    );
+    assert_eq!(p.requests().evaluation_order(), &[0]);
 }

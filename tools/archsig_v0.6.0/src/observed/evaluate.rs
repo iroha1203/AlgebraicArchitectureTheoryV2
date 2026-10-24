@@ -105,8 +105,14 @@ pub(in crate::observed) fn instance_expression<'a>(
     request: &'a Request, declaration: &'a Declaration, instance: usize, expression: usize,
 ) -> Result<RelationSide, ValidationFailure> {
     let previous = graph.active;
-    let record = graph.instances.get(instance).ok_or("relation評価の元instanceがない")?;
-    graph.active = super::call::Context { instance: Some(instance), ..record.caller };
+    let record = graph
+        .instances
+        .get(instance)
+        .ok_or("relation評価の元instanceがない")?;
+    graph.active = super::call::Context {
+        instance: Some(instance),
+        ..record.caller
+    };
     let result = (|| {
         let _architecture=environment.enter_architecture(graph)?;
         let (bindings, base) = environment.instance_evaluation_bindings(graph, instance)?;
@@ -117,7 +123,9 @@ pub(in crate::observed) fn instance_expression<'a>(
             answer_evaluation: None, verified_observed: None, completing: false,
             finite_universal: None, sources: BTreeMap::new(),
         };
-        evaluator.environment.require_native_law_expression(evaluator.graph,expression)?;
+        evaluator
+            .environment
+            .require_native_law_expression(evaluator.graph, expression)?;
         match evaluator.eval(expression) {
             Ok(value) => Ok(RelationSide { expression: value.expression, evaluation: value.evaluation, value: value.value, support: value.support, scope: value.scope, reasons: value.reasons }),
             Err(Failure::Stop(s)) => Err(ValidationFailure::Stop(s)),
@@ -149,11 +157,20 @@ pub(in crate::observed) fn instance_law<'a>(
             answer_evaluation:None,verified_observed:None,completing:false,
             finite_universal:None,sources:BTreeMap::new(),
         };
-        let plan=if guard.is_none() && matches!(environment.inputs.law().exprs[*body].kind,ExprKind::Quant {..}) {
-            environment.universal_quantifier_plan(evaluator.graph,*body,&evaluator.bindings)?
-        } else {None};
-        let answer=if let Some(plan)=plan {evaluator.universal_law_answer(plan,Some(*role))}
-            else {evaluator.answer_regular(params,*guard,*body,Some(*role))};
+        let plan = if guard.is_none()
+            && matches!(
+                environment.inputs.law().exprs[*body].kind,
+                ExprKind::Quant { .. }
+            ) {
+            environment.universal_quantifier_plan(evaluator.graph, *body, &evaluator.bindings)?
+        } else {
+            None
+        };
+        let answer = if let Some(plan) = plan {
+            evaluator.universal_law_answer(plan, Some(*role))
+        } else {
+            evaluator.answer_regular(params, *guard, *body, Some(*role))
+        };
         match answer {
             Ok(value)=>Ok(value),
             Err(Failure::Stop(s))=>Err(ValidationFailure::Stop(s)),
@@ -161,13 +178,18 @@ pub(in crate::observed) fn instance_law<'a>(
             Err(Failure::NotImplemented {location,feature})=>Err(ValidationFailure::UnsupportedExpression {location,feature}),
         }
     })();
-    graph.active=previous;
+    graph.active = previous;
     result
 }
 
 pub(in crate::observed) fn relation_side<'a>(
-    environment: &'a Environment<'a>, graph: &mut Graph, control: &mut Control,
-    request: &'a Request, declaration: &'a Declaration, instance: usize, expression: usize,
+    environment: &'a Environment<'a>,
+    graph: &mut Graph,
+    control: &mut Control,
+    request: &'a Request,
+    declaration: &'a Declaration,
+    instance: usize,
+    expression: usize,
 ) -> Result<RelationSide, ValidationFailure> {
     instance_expression(environment,graph,control,request,declaration,instance,expression)
 }
@@ -2863,8 +2885,16 @@ fn evaluate_observed_with_validator(
                 instance: None,
                 case: None,
             };
-            if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
-                let evaluate = if request.kind == QuestionKind::Compose {
+            if matches!(
+                request.kind,
+                QuestionKind::Build
+                    | QuestionKind::Map
+                    | QuestionKind::Compose
+                    | QuestionKind::Compare
+            ) {
+                let evaluate = if request.kind == QuestionKind::Build {
+                    super::build_result::evaluate
+                } else if request.kind == QuestionKind::Compose {
                     super::public_compose::evaluate
                 } else if request.kind == QuestionKind::Compare {
                     super::public_compare::evaluate
