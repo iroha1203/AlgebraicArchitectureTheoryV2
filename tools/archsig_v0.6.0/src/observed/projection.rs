@@ -36,6 +36,13 @@ pub enum ProjectionType {
     ComposedCandidate(OperationProjection),
     ComposedMap(OperationProjection),
     AtomMap,
+    Repair(String),
+    Assignment(String),
+    CandidateSpace(String),
+    SolutionSet(String),
+    StateSpace(String),
+    StateMap,
+    Domain,
     /// 実値の constructor や異種生成元によって決まる候補型。
     Dynamic(Vec<ProjectionType>),
 }
@@ -175,6 +182,19 @@ fn project_inner(
         ))
     };
     match (ty, &path[0]) {
+        (ProjectionType::Repair(root),Field(f))=>match f.as_str(){"domain"=>exact(ProjectionType::CandidateSpace(root.clone())),"solutions"=>exact(ProjectionType::SolutionSet(root.clone())),"parameters"=>exact(ProjectionType::Assignment(root.clone())),"object"=>exact(ProjectionType::ArchitectureRoot(root.clone())),_=>Err("Repairの非公開射影".into())},
+        (ProjectionType::Assignment(root),Field(f)) if f=="domain"=>exact(ProjectionType::CandidateSpace(root.clone())),
+        (ProjectionType::CandidateSpace(root),Field(f)) => match f.as_str() {
+            "base"=>exact(ProjectionType::ArchitectureRoot(root.clone())),
+            "parameters"=>exact(ProjectionType::Domain),
+            "states"=>exact(ProjectionType::StateSpace(root.clone())),
+            "action"=>exact(ProjectionType::StateMap),
+            _=>Err("CandidateSpaceの非公開射影".into()),
+        },
+        (ProjectionType::SolutionSet(root),Field(f)) if f=="domain"=>exact(ProjectionType::CandidateSpace(root.clone())),
+        (ProjectionType::StateSpace(root),Field(f)) if f=="base"=>exact(ProjectionType::ArchitectureRoot(root.clone())),
+        (ProjectionType::StateMap,Field(f)) if matches!(f.as_str(),"source"|"target")=>exact(ProjectionType::Domain),
+
         (ProjectionType::ComposedOperation(shape), Field(f)) => match f.as_str() {
             "source" => exact(ProjectionType::ArchitectureRoot(shape.source.clone())),
             "target" => exact(ProjectionType::ArchitectureRoot(shape.target.clone())),

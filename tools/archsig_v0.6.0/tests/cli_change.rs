@@ -1,0 +1,341 @@
+//! 元changeのparameter全域を公開solveで解く。
+#[allow(dead_code)]
+#[path = "common/cli.rs"]
+mod cli;
+#[allow(dead_code)]
+#[path = "common/object_view_compatibility_data.rs"]
+mod fixture;
+fn input() -> std::sync::Arc<observed::input::CheckedInputs> {
+    let definitions = fixture::D.replace(
+        r#"{"name":"quantity","type":"Z","meaning":"数量。"}"#,
+        r#"{"name":"flag","type":"Bool","meaning":"条件。"}"#,
+    );
+    let checked =
+        definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+    let digest = &checked.vocabularies["Pattern"].digest;
+    let map=r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Pattern","version":"1","digest":"@DIGEST@"}],"sources":[],"origins":[{"id":"model","mode":"specification","method":"有限変更の試験。","locations":[],"note":"公開有限変更の正常系。"}],"snapshots":[{"id":"v","origin":"model","subjects":[{"id":"root","type":"Pattern.Root","origin":"model"},{"id":"p","type":"Pattern.Part","origin":"model"},{"id":"q","type":"Pattern.Part","origin":"model"}],"atoms":[{"id":"op","subject":"p","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},{"id":"fp","subject":"p","field":"Pattern.Part.flag","value":true,"origin":"model"},{"id":"fq","subject":"q","field":"Pattern.Part.flag","value":false,"origin":"model"}]}]}"#.replace("@DIGEST@",digest);
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";change choose(c:Part,b:Bool)=c with {{flag=b}};law required valid(c:Part):c.flag;view flag(c:Part):Bool=c.flag;}}"
+    );
+    let sources = observed::input::InputSources::from_bytes(
+        vec![definitions.into_bytes()],
+        law.into_bytes(),
+        map.into_bytes(),
+    );
+    std::sync::Arc::new(
+        observed::input::check_inputs(
+            sources,
+            &mut observed::control::Control::new(observed::control::Limits::default(), |_| {
+                observed::control::Usage::default()
+            }),
+        )
+        .unwrap(),
+    )
+}
+pub use archsig::{definition, observed};
+use cli::*;
+
+#[test]
+fn finite_solve_returns_original_assignments_for_all_local_subjects() {
+    let input = input();
+    let dir = workdir("finite-change");
+    for (name, data) in [
+        ("d.json", input.sources().definitions()[0].bytes()),
+        ("a.json", input.sources().archmap().bytes()),
+        ("l.law", input.sources().law().bytes()),
+    ] {
+        std::fs::write(dir.join(name), data).unwrap();
+    }
+    let run = run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "out",
+            "--time-ms",
+            "120000",
+            "--ask",
+            "s=solve(Selected.valid,on=@v/root,using=Selected.choose)",
+        ],
+    );
+    assert!(
+        has(&run.receipt, "result"),
+        "{}\n{}",
+        run.stdout,
+        run.stderr
+    );
+    let result = result_json(&dir, &run);
+    assert_eq!(run.code, 0, "{}\n{:?}", run.stdout, result);
+    let answer = &arr(get(&result, "answers"))[0];
+    assert_eq!(s(get(answer, "status")), "established");
+    let reference = get(get(answer, "outputs"), "solutions");
+    let node = arr(get(&result, "nodes"))
+        .iter()
+        .find(|n| s(get(n, "id")) == s(get(reference, "node")))
+        .unwrap();
+    let representation = get(get(node, "value"), "representation");
+    assert_eq!(s(get(representation, "kind")), "finite");
+    assert_eq!(arr(get(representation, "values")).len(), 1);
+}
+
+#[test]
+fn unique_repair_is_consumed_by_evaluate_and_check() {
+    let input = input();
+    let dir = workdir("finite-repair");
+    for (name, data) in [
+        ("d.json", input.sources().definitions()[0].bytes()),
+        ("a.json", input.sources().archmap().bytes()),
+        ("l.law", input.sources().law().bytes()),
+    ] {
+        std::fs::write(dir.join(name), data).unwrap();
+    }
+    let run = run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "out",
+            "--time-ms",
+            "120000",
+            "--ask",
+            "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+            "--ask",
+            "e=evaluate(Selected.flag,on=$r.object,c=@v/q)",
+            "--ask",
+            "c=check(Selected.valid,on=$r.object)",
+        ],
+    );
+    assert!(
+        has(&run.receipt, "result"),
+        "{}\n{}",
+        run.stdout,
+        run.stderr
+    );
+    let result = result_json(&dir, &run);
+    assert_eq!(run.code, 0, "{}\n{:?}", run.stdout, result);
+    for answer in arr(get(&result, "answers")) {
+        assert_eq!(s(get(answer, "status")), "established");
+    }
+}
+
+fn case(
+    name: &str,
+    effect: &str,
+    asks: &[&str],
+) -> (std::path::PathBuf, Run, archsig::json::JNode) {
+    let input = input();
+    let dir = workdir(name);
+    let law = String::from_utf8(input.sources().law().bytes().to_vec())
+        .unwrap()
+        .replace("flag=b", &format!("flag={effect}"))
+        .replace(
+            "view flag",
+            "change keep(c:Part)=c with {flag=c.flag};view flag",
+        );
+    for (name, data) in [
+        ("d.json", input.sources().definitions()[0].bytes()),
+        ("a.json", input.sources().archmap().bytes()),
+        ("l.law", law.as_bytes()),
+    ] {
+        std::fs::write(dir.join(name), data).unwrap();
+    }
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "out",
+        "--time-ms",
+        "120000",
+    ];
+    for ask in asks {
+        args.extend(["--ask", ask]);
+    }
+    let run = run(&dir, &args);
+    assert!(has(&run.receipt, "result"), "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    (dir, run, result)
+}
+fn answer<'a>(result: &'a archsig::json::JNode, id: &str) -> &'a archsig::json::JNode {
+    arr(get(result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == id)
+        .unwrap()
+}
+fn node<'a>(
+    result: &'a archsig::json::JNode,
+    r: &archsig::json::JNode,
+) -> &'a archsig::json::JNode {
+    arr(get(result, "nodes"))
+        .iter()
+        .find(|n| s(get(n, "id")) == s(get(r, "node")))
+        .unwrap()
+}
+#[test]
+fn empty_and_nonunique_repairs_keep_existence_separate_and_do_not_choose_an_assignment() {
+    for (effect, existence) in [("false", "refuted"), ("true", "established")] {
+        let (_dir, run, result) = case(
+            &format!("finite-repair-{effect}"),
+            effect,
+            &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
+        );
+        assert_eq!(run.code, 1, "{}", run.stdout);
+        let a = answer(&result, "r");
+        assert_eq!(s(get(a, "status")), "refuted");
+        let outputs = get(a, "outputs");
+        assert!(!has(outputs, "object"));
+        assert!(!has(outputs, "repair"));
+        assert_eq!(
+            s(get(
+                get(node(&result, get(outputs, "existence")), "judgment"),
+                "status"
+            )),
+            existence
+        );
+        let representation = get(
+            get(node(&result, get(outputs, "solutions")), "value"),
+            "representation",
+        );
+        if effect == "true" {
+            assert_eq!(arr(get(representation, "values")).len(), 4);
+            assert!(arr(get(&result,"nodes")).iter().filter(|n|matches!(&get(n,"type").value,archsig::json::JValue::Str(t) if t=="Assignment")).count()>=2);
+        } else {
+            assert_eq!(s(get(representation, "kind")), "empty");
+        }
+    }
+}
+#[test]
+fn repeated_repair_reads_previous_overrides_and_leaves_original_observations_fixed() {
+    let (_dir, run, result) = case(
+        "finite-repair-chain",
+        "b",
+        &[
+            "before=evaluate(Selected.flag,c=@v/q)",
+            "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+            "again=repair(Selected.valid,on=$r.object,using=Selected.keep)",
+            "e=evaluate(Selected.flag,on=$again.object,c=@v/q)",
+            "c=check(Selected.valid,on=$again.object)",
+            "after=evaluate(Selected.flag,c=@v/q)",
+        ],
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    for id in ["before", "after", "e"] {
+        let v = get(
+            node(&result, get(get(answer(&result, id), "outputs"), "value")),
+            "value",
+        );
+        assert_eq!(v.value, archsig::json::JValue::Bool(id == "e"));
+    }
+    for id in ["r", "again", "c"] {
+        assert_eq!(s(get(answer(&result, id), "status")), "established");
+    }
+}
+#[test]
+fn public_build_object_and_candidate_base_projection_connect_to_solve() {
+    let (_dir, run, result) = case(
+        "finite-build-solve",
+        "b",
+        &[
+            "b=build(Selected,on=@v/root)",
+            "s=solve(Selected.valid,on=$b.object,using=Selected.choose)",
+            "r=repair(Selected.valid,on=$s.domain.base,using=Selected.choose)",
+            "e=evaluate(Selected.flag,on=$r.object,c=@v/q)",
+        ],
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    for id in ["b", "s", "r", "e"] {
+        assert_eq!(s(get(answer(&result, id), "status")), "established");
+    }
+}
+
+#[test]
+fn explicit_law_binding_keeps_unconstrained_change_parameters_in_the_solution_set() {
+    let (_dir, run, result) = case(
+        "finite-bound-law",
+        "b",
+        &["s=solve(Selected.valid,on=@v/root,using=Selected.choose,c=@v/p)"],
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let outputs = get(answer(&result, "s"), "outputs");
+    let domain = get(node(&result, get(outputs, "domain")), "value");
+    assert_eq!(arr(get(domain, "bindings")).len(), 1);
+    assert_eq!(s(get(&arr(get(domain, "bindings"))[0], "name")), "c");
+    let solutions = get(node(&result, get(outputs, "solutions")), "value");
+    assert_eq!(
+        arr(get(get(solutions, "representation"), "values")).len(),
+        2
+    );
+}
+#[test]
+fn saved_finite_repair_is_rechecked_with_its_followup_request() {
+    let asks = [
+        "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+        "e=evaluate(Selected.flag,on=$r.object,c=@v/q)",
+    ];
+    let (dir, first, original) = case("finite-repair-reuse", "b", &asks);
+    assert_eq!(first.code, 0, "{}", first.stdout);
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "out2",
+        "--reuse",
+        "out",
+        "--time-ms",
+        "120000",
+    ];
+    for ask in &asks {
+        args.extend(["--ask", ask]);
+    }
+    let repeated = run(&dir, &args);
+    assert_eq!(repeated.code, 0, "{}", repeated.stdout);
+    let result = result_json(&dir, &repeated);
+    assert_eq!(
+        get(get(&result, "reuse"), "requested").value,
+        archsig::json::JValue::Bool(true)
+    );
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&result, field).value, get(&original, field).value);
+    }
+}
+
+#[test]
+fn nonunique_repair_blocks_only_consumption_of_its_uncreated_object() {
+    let (_dir, run, result) = case(
+        "finite-repair-blocked",
+        "true",
+        &[
+            "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+            "e=evaluate(Selected.flag,on=$r.object,c=@v/q)",
+        ],
+    );
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    assert_eq!(s(get(answer(&result, "r"), "status")), "refuted");
+    assert_eq!(s(get(answer(&result, "e"), "status")), "undetermined");
+    assert!(
+        arr(get(answer(&result, "e"), "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "dependency_blocked")
+    );
+}

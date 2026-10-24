@@ -2355,6 +2355,9 @@ impl Evaluator<'_, '_> {
             field: Some(fullname),
             atom: None,
         };
+        if let Some((assigned,_))=self.environment.architecture_value(&fact) {
+            return self.finish(span,field.ty.erase(),Some(assigned),vec![base],vec![],None,None,None);
+        }
         if self.environment.completion_type_supported(&field.ty)?
             && matches!(field.slot, Slot::Missing)
             && let Some(assigned) = self.environment.completion_slot(self.graph, &fact)?
@@ -2888,12 +2891,15 @@ fn evaluate_observed_with_validator(
             if matches!(
                 request.kind,
                 QuestionKind::Build
+                    | QuestionKind::Solve | QuestionKind::Repair
                     | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
             ) {
                 let evaluate = if request.kind == QuestionKind::Build {
                     super::build_result::evaluate
+                } else if matches!(request.kind,QuestionKind::Solve|QuestionKind::Repair) {
+                    super::change_result::evaluate
                 } else if request.kind == QuestionKind::Compose {
                     super::public_compose::evaluate
                 } else if request.kind == QuestionKind::Compare {
