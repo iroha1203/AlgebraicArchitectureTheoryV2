@@ -2,7 +2,7 @@
 #[allow(dead_code)]
 #[path = "common/cli.rs"]
 mod cli;
-use archsig::{definition, json::JNode};
+use archsig::{definition, json::{JNode, JValue}};
 use cli::*;
 fn input(name: &str) -> std::path::PathBuf {
     let d = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの条件。","parameters":[],"fields":[{"name":"x","type":"Bool","meaning":"第一条件。"},{"name":"y","type":"Bool","meaning":"第二条件。"}],"alignments":[]}]}]}"#;
@@ -77,6 +77,43 @@ fn fiber_sizes(result: &JNode, index: usize) -> Vec<usize> {
     sizes.sort();
     sizes
 }
+fn pair(value: &JNode) -> (bool, bool) {
+    let values=arr(value);
+    assert_eq!(values.len(),2);
+    let boolean=|v:&JNode| match &v.value { JValue::Bool(b)=>*b, _=>panic!("expected Bool") };
+    (boolean(&values[0]),boolean(&values[1]))
+}
+fn members(value: &JNode) -> Vec<(bool,bool)> {
+    let mut values=arr(value).iter().map(pair).collect::<Vec<_>>();
+    values.sort();values
+}
+fn exact_fibers(result: &JNode, index: usize, mut expected: Vec<Vec<(bool,bool)>>) {
+    for class in &mut expected {class.sort();}
+    expected.sort();
+    let q=quotient(result,index);
+    let class_domain=node(result,get(q,"classes"));
+    let mut actual=arr(get(get(class_domain,"value"),"elements")).iter()
+        .map(|r|members(get(node(result,r),"value"))).collect::<Vec<_>>();
+    actual.sort();assert_eq!(actual,expected);
+    let mut fibers=vec![];
+    for fiber in arr(get(get(q,"representation"),"fibers")) {
+        let class=members(get(node(result,get(fiber,"image")),"value"));
+        let preimage=node(result,get(fiber,"preimage"));
+        let mut points=arr(get(get(preimage,"value"),"elements")).iter()
+            .map(|r|pair(get(node(result,r),"value"))).collect::<Vec<_>>();
+        points.sort();assert_eq!(points,class);
+        fibers.push(class);
+    }
+    fibers.sort();assert_eq!(fibers,expected);
+    let projection=node(result,get(q,"projection"));
+    let mut pairs=arr(get(get(projection,"value"),"pairs")).iter().map(|p| {
+        let p=arr(p);assert_eq!(p.len(),2);
+        (pair(get(node(result,&p[0]),"value")),members(get(node(result,&p[1]),"value")))
+    }).collect::<Vec<_>>();
+    let mut expected_pairs=expected.iter().flat_map(|class|
+        class.iter().map(|point|(*point,class.clone()))).collect::<Vec<_>>();
+    pairs.sort();expected_pairs.sort();assert_eq!(pairs,expected_pairs);
+}
 #[test]
 fn finite_quotient_distinguishes_all_candidates_from_solutions_and_reuses() {
     let dir = input("quotient-domains");
@@ -95,6 +132,8 @@ fn finite_quotient_distinguishes_all_candidates_from_solutions_and_reuses() {
     }
     assert_eq!(fiber_sizes(&original, 0), vec![2, 2]);
     assert_eq!(fiber_sizes(&original, 1), vec![1, 1]);
+    exact_fibers(&original,0,vec![vec![(false,false),(true,false)],vec![(false,true),(true,true)]]);
+    exact_fibers(&original,1,vec![vec![(true,false)],vec![(true,true)]]);
     let repeated = execute(&dir, "out2", &asks, Some("out"));
     assert_eq!(repeated.code, 0, "{} {}", repeated.stdout, repeated.stderr);
     let reused = result_json(&dir, &repeated);
