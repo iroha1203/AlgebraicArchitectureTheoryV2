@@ -533,3 +533,72 @@ fn unused_let_cannot_erase_an_invalid_path_condition() {
     // 条件不成立候補の公開配送は未実装。一意な成立修復へは昇格しない。
     assert_eq!(result.code, 70, "{}", result.stdout);
 }
+
+#[test]
+fn explicitly_bound_external_owner_keeps_its_dependent_law_family() {
+    let input = input();
+    let map = String::from_utf8(input.sources().archmap().bytes().to_vec())
+        .unwrap()
+        .replace(
+            r#""subjects":["#,
+            r#""subjects":[{"id":"r2","type":"Pattern.Root","origin":"model"},"#,
+        )
+        .replace(
+            r#""id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"]"#,
+            r#""id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","r2"]"#,
+        );
+    let law = String::from_utf8(input.sources().law().bytes().to_vec())
+        .unwrap()
+        .replace(
+            "change choose(c:Part,b:Bool)=c with {flag=b};",
+            "change choose(c:Part)=c with {flag=c.flag};",
+        )
+        .replace("valid(c:Part):c.flag", "valid(r:Root,c:Part[r]):c.flag");
+    let dir = workdir("change-external-owner");
+    std::fs::write(dir.join("d.json"), input.sources().definitions()[0].bytes()).unwrap();
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    for (index, ask, code) in [
+        (
+            0,
+            "s=solve(Selected.valid,on=@v/root,using=Selected.choose,r=@v/r2)",
+            1,
+        ),
+        (
+            1,
+            "s=solve(Selected.valid,on=@v/root,using=Selected.choose,r=@v/root)",
+            0,
+        ),
+        (
+            2,
+            "s=solve(Selected.valid,on=@v/root,using=Selected.choose)",
+            1,
+        ),
+    ] {
+        let out = format!("out{index}");
+        let result = run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--archmap",
+                "a.json",
+                "--law",
+                "l.law",
+                "--out",
+                &out,
+                "--time-ms",
+                "120000",
+                "--ask",
+                ask,
+            ],
+        );
+        assert_eq!(result.code, code, "{}", result.stdout);
+        let result = result_json(&dir, &result);
+        assert_eq!(
+            s(get(answer(&result, "s"), "status")),
+            if code == 0 { "established" } else { "refuted" }
+        );
+    }
+}

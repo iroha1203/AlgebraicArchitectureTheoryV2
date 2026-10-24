@@ -133,7 +133,24 @@ fn domain(
     }
     let enumeration = environment.finite_values(&ty.erase(), &mut |_, _| {})?;
     let mut values = Some(enumeration.values);
-    if let Some(object) = environment.object_domain() {
+    // 依存型は各Law行のowner束縛で適合を検査する。onへの事前交差は
+    // 明示された外部ownerの族を消す。ownerを持たないroot型も全登録族を使う。
+    let directly_owned = match ty {
+        Type::Ref(entity) => environment
+            .inputs
+            .definitions()
+            .declarations
+            .get(entity)
+            .is_some_and(|d| {
+                matches!(
+                    d.signature,
+                    crate::definition::model::PrimitiveSignature::Entity { owner: Some(_), .. }
+                        | crate::definition::model::PrimitiveSignature::Arrow { .. }
+                )
+            }),
+        _ => false,
+    };
+    if directly_owned && let Some(object) = environment.object_domain() {
         object.restrict(
             ty,
             &mut values,
