@@ -191,6 +191,7 @@ fn cell(
     Ok(())
 }
 impl Table {
+    pub(super) fn component_source(&self) -> NodeRef { self.component_source }
     pub(super) fn diagrams(&self) -> Result<Vec<Diagram>, ValidationFailure> {
         self.plan.diagrams()
     }
