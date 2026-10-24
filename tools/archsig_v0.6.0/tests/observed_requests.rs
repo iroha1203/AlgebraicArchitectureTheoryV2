@@ -199,18 +199,10 @@ fn projection_table_rejects_metadata_and_static_bounds_but_keeps_dynamic_conditi
 }
 
 #[test]
-fn architecture_on_is_checked_as_a_handle_while_other_kinds_remain_unimplemented() {
+fn architecture_and_local_system_selectors_require_existing_handles() {
     let (law, map) = inputs();
     assert!(resolve_observed_requests(&law, &map, &["a=build(R,on=@v/s)"]).is_ok());
-    for text in ["a=diagnose($d.system,degree=1)"] {
-        assert!(matches!(
-            resolve_observed_requests(&law, &map, &[text]),
-            Err(ResolveFailure::NotApplicable {
-                architecture_environment: false,
-                ..
-            })
-        ));
-    }
+    rejects(&["a=diagnose($d.system,degree=1)"], RequestIssueCode::Reference);
     rejects(
         &["a=evaluate(R.number,on=$b.object,s=@v/s)"],
         RequestIssueCode::Reference,

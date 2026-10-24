@@ -181,18 +181,18 @@ fn cycles_keep_the_graph_and_leave_computation_outputs_empty() {
 }
 
 #[test]
-fn outside_operations_have_no_evaluation_result() {
+fn diagnose_missing_handle_is_a_static_request_failure() {
     let failure = prepare_observed(
         inputs(),
         &["d=diagnose($b.system,degree=1)"],
         &mut Control::unlimited(),
     )
     .unwrap_err();
-    assert!(failure.wire().is_none());
+    assert!(failure.wire().is_some());
     assert!(matches!(
         failure,
         PrepareFailure::Requests {
-            failure: ResolveFailure::NotApplicable { .. },
+            failure: ResolveFailure::Invalid { .. },
             ..
         }
     ));

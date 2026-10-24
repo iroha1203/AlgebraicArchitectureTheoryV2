@@ -23,7 +23,7 @@ impl Environment<'_> {
             .arguments
             .iter()
             .any(|a| matches!(a.value, Selector::Answer { .. }))
-            && !(matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare)
+            && !(matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Localize | QuestionKind::Diagnose)
                 && matches!(request.head, Selector::Answer { .. }))
         {
             return Ok(vec![]);
@@ -51,7 +51,7 @@ impl Environment<'_> {
         self.tick()?;
         if matches!(
             request.kind,
-            QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
+            QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Localize | QuestionKind::Diagnose
         ) {
             let mut plans = vec![];
             let value_comparison = request.kind == QuestionKind::Compare

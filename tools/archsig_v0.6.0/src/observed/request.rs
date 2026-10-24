@@ -22,6 +22,8 @@ pub(super) mod composition;
 mod configuration_map;
 #[path = "request_build.rs"]
 mod build;
+#[path = "request_local.rs"]
+mod local;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum QuestionKind {
@@ -35,6 +37,8 @@ pub enum QuestionKind {
     Solve,
     Repair,
     Quotient,
+    Localize,
+    Diagnose,
 }
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
@@ -49,12 +53,15 @@ impl QuestionKind {
             Self::Solve => "solve",
             Self::Repair => "repair",
             Self::Quotient => "quotient",
+            Self::Localize => "localize",
+            Self::Diagnose => "diagnose",
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Selector {
+    Degree { value: u64 },
     Enum {
         value: String,
     },
@@ -73,6 +80,7 @@ pub enum Selector {
 impl Selector {
     pub fn wire(&self) -> Json {
         match self {
+            Self::Degree { value } => Json::obj([("kind",Json::str("degree")),("value",Json::Nat(*value))]),
             Self::Enum { value } => {
                 Json::obj([("kind", Json::str("enum")), ("value", Json::str(value))])
             }
@@ -121,6 +129,8 @@ pub struct RequestArgument {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RequestDefault {
     NoLawCheck,
+    RequiredLaws,
+    IdentityChange,
     ObservedEnvironment,
     UniversalParameters {
         declaration: String,
@@ -130,6 +140,8 @@ pub enum RequestDefault {
 impl RequestDefault {
     pub fn wire(&self) -> Json {
         match self {
+            Self::RequiredLaws => Json::obj([("rule",Json::str("required_laws"))]),
+            Self::IdentityChange => Json::obj([("rule",Json::str("identity_change"))]),
             Self::NoLawCheck => Json::obj([("rule", Json::str("no_law_check"))]),
             Self::ObservedEnvironment => Json::obj([("rule", Json::str("observed_environment"))]),
             Self::UniversalParameters {
@@ -347,21 +359,6 @@ fn resolve_inner(
     let mut names = BTreeMap::new();
     for text in texts {
         checkpoint(control)?;
-        let mut prefix = Parser::new(text, control);
-        prefix.id = prefix.user_name()?;
-        prefix.expect(b'=')?;
-        let prefix_kind = prefix.name(false)?;
-        prefix.expect(b'(')?;
-        if matches!(
-            prefix_kind.as_str(),
-            "localize" | "diagnose"
-        ) {
-            return Err(ResolveFailure::NotApplicable {
-                request: prefix.id,
-                kind: prefix_kind,
-                architecture_environment: false,
-            });
-        }
         let raw = Parser::new(text, control).parse()?;
         phase(control, Checkpoint::RequestBinding)?;
         if names.contains_key(&raw.id) {
@@ -377,6 +374,8 @@ fn resolve_inner(
             "solve" => QuestionKind::Solve,
             "repair" => QuestionKind::Repair,
             "quotient" => QuestionKind::Quotient,
+            "localize" => QuestionKind::Localize,
+            "diagnose" => QuestionKind::Diagnose,
             "evaluate" => QuestionKind::Evaluate,
             "check" => QuestionKind::Check,
             "needed" => QuestionKind::Needed,
@@ -392,6 +391,12 @@ fn resolve_inner(
                 )));
             }
         };
+        if matches!(kind, QuestionKind::Localize | QuestionKind::Diagnose) {
+            let request = local::resolve(law, raw, text, control)?;
+            names.insert(request.id.clone(), requests.len());
+            requests.push(request);
+            continue;
+        }
         if kind == QuestionKind::Build {
             let request = build::resolve(law, raw, text, control)?;
             names.insert(request.id.clone(), requests.len());
@@ -695,7 +700,7 @@ fn resolve_inner(
             matches!(
                 r.kind,
                 QuestionKind::Build | QuestionKind::Compose | QuestionKind::Compare
-                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient
+                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose
             )
         })
     {
@@ -728,6 +733,10 @@ fn resolve_inner(
         checkpoint(control)?;
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
+        if matches!(req.kind, QuestionKind::Localize | QuestionKind::Diagnose) {
+            local::check(law, map, &requests, &names, req, control)?;
+            continue;
+        }
         if req.kind == QuestionKind::Build {
             build::check_on(law, map, &requests, &names, req, control)?;
             continue;
@@ -1193,6 +1202,8 @@ fn selector_type(
                 let (plan,_)=selector_type(law,map,requests,names,on,control,(request,"on"))?;
                 ProjectionType::Quotient(Box::new(plan.ty))
                 }
+            } else if matches!(r.kind, QuestionKind::Localize | QuestionKind::Diagnose) {
+                local::output_type(r, field)?
             } else if r.kind == QuestionKind::Compare {
                 comparison::output_type(r, field)?
             } else if r.kind == QuestionKind::Compose {
@@ -1260,6 +1271,7 @@ fn owner_bindings(
 fn clone_selector(selector: &Selector, control: &mut Control) -> Result<Selector, ResolveFailure> {
     phase(control, Checkpoint::RequestBinding)?;
     let selector = match selector {
+        Selector::Degree { value } => Selector::Degree { value: *value },
         Selector::Enum { value } => Selector::Enum {
             value: value.clone(),
         },
@@ -1840,6 +1852,19 @@ impl<'a> Parser<'a> {
         self.tick()?;
         Ok(Selector::Declaration { name })
     }
+    fn degree(&mut self) -> Result<u64, ResolveFailure> {
+        self.ws()?;
+        let start = self.at;
+        let mut value = 0u64;
+        while let Some(digit) = self.src.as_bytes().get(self.at).copied().filter(u8::is_ascii_digit) {
+            self.tick()?;
+            value = value.checked_mul(10).and_then(|n| n.checked_add(u64::from(digit-b'0')))
+                .filter(|n| *n <= 9_007_199_254_740_991).ok_or_else(||self.error("degreeがNatの上限を超える"))?;
+            self.at += 1;
+        }
+        if start == self.at || (self.at-start>1 && self.src.as_bytes()[start]==b'0') {return Err(self.error("degreeは正規化した非負整数"));}
+        Ok(value)
+    }
     fn parse(mut self) -> Result<RawRequest, ResolveFailure> {
         self.tick()?;
         self.id = self.user_name()?;
@@ -1872,7 +1897,11 @@ impl<'a> Parser<'a> {
             };
             finish_request(result, &mut self.control, Checkpoint::RequestSyntax)?;
             self.expect(b'=')?;
-            let value = if kind == "compare" && key == "kind" {
+            let value = if kind == "diagnose" && key == "degree" {
+                Selector::Degree { value: self.degree()? }
+            } else if kind == "diagnose" && key == "side" {
+                Selector::Enum { value: self.name(false)? }
+            } else if kind == "compare" && key == "kind" {
                 // relationはLawの予約語でも、ここでは比較kindの固定語である。
                 Selector::Declaration { name: self.name(false)? }
             } else {
