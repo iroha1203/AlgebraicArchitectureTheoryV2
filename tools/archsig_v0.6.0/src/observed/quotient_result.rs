@@ -179,13 +179,23 @@ fn compute(
         expression_part.scope.merge(&g.get(reference)?.scope);
         expression_part.scope.merge(&table.scope);
         expression_part.scope.readings.insert(declaration.reading.clone());
+        let law_expression = if let Some((name, _, _, _)) = &table.law {
+            let Signature::Law {params, body, ..} = &env.inputs.law().declarations[name].signature else {unreachable!()};
+            let selected = bindings.iter().filter(|(name,_)|params.iter().any(|p| &p.name==name)).cloned().collect::<Vec<_>>();
+            let parameters = params.iter().filter(|p|!selected.iter().any(|(n,_)|n==&p.name)).map(|p|(p.name.clone(),p.ty.clone())).collect::<Vec<_>>();
+            let law_expression=change_result::source_expression(&mut b,env,*body,&selected,&parameters)?;
+            let part=&mut b.parts[law_expression.0-base];
+            part.arguments.push(reference); part.arguments.sort_by_key(|r|r.0); part.arguments.dedup();
+            part.scope.merge(&table.scope); part.scope.merge(&g.get(reference)?.scope);
+            Some(law_expression)
+        } else {None};
         if !table.missing.is_empty() {
             let reason = Reason {
                 kind: ReasonKind::Missing,
                 request: request.id.clone(),
-                dependencies: vec![expression],
+                dependencies: std::iter::once(expression).chain(law_expression).collect(),
                 missing: table.missing,
-                location: Some(Location::Law { span: declaration.span }),
+                location: table.law.as_ref().map(|(name,_,_,_)|Location::Law {span:env.inputs.law().declarations[name].span}).or(Some(Location::Law { span: declaration.span })),
             };
             b.parts[expression.0 - base].reasons.push(reason.clone());
             let scope = b.parts[expression.0 - base].scope.clone();
@@ -307,10 +317,12 @@ fn compute(
         )?;
         arguments.push(projection);
         arguments.extend(&evaluations);
+        arguments.extend(law_expression);
         let descent = if let Some((name, ty, _, _)) = &table.law {
             if separating.is_none() {
                 family_values.sort_by_key(|r|r.0); family_values.dedup();
-                let target = domain(&mut b, &law_result::family_type(env, name, ty)?, &family_values, &[reference, expression])?;
+                let mut dependencies=vec![reference,expression]; dependencies.extend(law_expression); dependencies.extend(&evaluations);
+                let target = domain(&mut b, &law_result::family_type(env, name, ty)?, &family_values, &dependencies)?;
                 let mut args = vec![classes_domain, target]; args.extend(&family_values);
                 let map = b.push(NodeType::Construction(T::StateMap), "state_map", Json::obj([
                     ("source",classes_domain.wire()),("target",target.wire()),("kind",Json::str("finite")),("pairs",Json::Arr(descent_pairs)),
