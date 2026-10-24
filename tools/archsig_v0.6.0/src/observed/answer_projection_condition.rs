@@ -49,9 +49,10 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<Vec<ProjectionFailurePlan>, ValidationFailure> {
         self.tick()?;
+        if request.kind==QuestionKind::Diagnose || (request.kind==QuestionKind::Localize && request.declaration().is_none()) {return Ok(vec![]);}
         if matches!(
             request.kind,
-            QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Localize | QuestionKind::Diagnose
+            QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
         ) {
             let mut plans = vec![];
             let value_comparison = request.kind == QuestionKind::Compare
@@ -177,7 +178,7 @@ impl Environment<'_> {
                 .find(|a| a.name == format!("bind.{}", parameter.name))
             else {
                 // Lawの自由parameterを構成条件の値入力へ補わない。
-                if request.kind != QuestionKind::Check {
+                if !matches!(request.kind, QuestionKind::Check | QuestionKind::Localize) {
                     return Err("射影条件の元view束縛がない".into());
                 }
                 continue;
@@ -374,6 +375,15 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<(), ValidationFailure> {
         for plan in self.projection_failure_plans(graph, request)? {
+            for input in &plan.inputs {
+                self.control.clone().checkpoint(Checkpoint::Projection)?;
+                if let ConditionInput::Subject(node) = input
+                    && self.projection_subject_input(graph, node, plan.context)?.is_none()
+                {
+                    self.validate(graph, node)?;
+                    graph.push((**node).clone())?;
+                }
+            }
             use ProjectionCheckPart::*;
             let mut values = vec![];
             for part in [Name, Actual, Required, Evidence, Condition] {

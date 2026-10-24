@@ -4,6 +4,8 @@
 mod cli;
 use archsig::{definition, json::JNode};
 use cli::*;
+#[path = "common/mod.rs"]
+mod common;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Fixed","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Fixed.State","meaning":"固定状態。","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"観測値。"}],"alignments":[]}]}]}"#;
 fn input(name: &str, value: Option<bool>) -> std::path::PathBuf {
     let definitions = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
@@ -70,6 +72,8 @@ fn fixed_state_diagnostic_keeps_empty_solutions_separate_from_identity_gluing() 
                 "s=diagnose($l.system,side=semantic)",
                 "z=diagnose($l.system,degree=0)",
                 "v=evaluate(Fixed.current,on=$l.system.base,s=@fixed/s)",
+                "equationBase=evaluate(Fixed.current,on=$e.diagnostic.global.domain.base,s=@fixed/s)",
+                "semanticBase=evaluate(Fixed.current,on=$s.diagnostic.global.domain.base,s=@fixed/s)",
             ],
         );
         assert_eq!(
@@ -88,6 +92,16 @@ fn fixed_state_diagnostic_keeps_empty_solutions_separate_from_identity_gluing() 
             s(get(&arr(get(&json, "answers"))[4], "status")),
             "established"
         );
+        let zero = &arr(get(&json, "answers"))[4];
+        assert!(!has(zero, "claim"));
+        assert!(!has(get(zero, "outputs"), "proposition"));
+        assert!(has(get(zero, "outputs"), "diagnostic"));
+        for index in [5, 6, 7] {
+            assert_eq!(
+                get(output(&json, index, "value"), "value").value,
+                archsig::json::JValue::Bool(value)
+            );
+        }
         let system = get(output(&json, 1, "system"), "value");
         assert_eq!(arr(get(system, "contexts")).len(), 1);
         let context = get(node(&json, &arr(get(system, "contexts"))[0]), "value");
@@ -105,6 +119,23 @@ fn fixed_state_diagnostic_keeps_empty_solutions_separate_from_identity_gluing() 
                 s(get(&arr(get(&json, "answers"))[i], "status")),
                 if value { "established" } else { "refuted" }
             );
+            if !value {
+                let answer = &arr(get(&json, "answers"))[i];
+                let claim = node(&json, get(answer, "claim"));
+                let evidence = arr(get(get(claim, "judgment"), "evidence"));
+                assert_eq!(evidence.len(), 1);
+                assert_eq!(
+                    get(answer, "evidence").value,
+                    get(get(claim, "judgment"), "evidence").value
+                );
+                let certificate = get(node(&json, &evidence[0]), "value");
+                assert_eq!(s(get(certificate, "kind")), "finite_exhaustion");
+                let data = get(certificate, "data");
+                assert_eq!(num(get(data, "checked")), 1);
+                assert_eq!(arr(get(data, "instances")).len(), 1);
+                let domain = get(node(&json, get(data, "domain")), "value");
+                assert_eq!(arr(get(domain, "elements")).len(), 1);
+            }
             let diagnostic = get(output(&json, i, "diagnostic"), "value");
             assert_eq!(s(get(diagnostic, "kind")), "finite_matching");
             let matching = get(node(&json, get(diagnostic, "matching")), "value");
@@ -129,6 +160,7 @@ fn localize_defaults_select_required_law_and_fixed_unit_candidate() {
             "a=build(Fixed,on=@fixed/s)",
             "l=localize($a.object)",
             "d=diagnose($l.system,degree=1,side=equation)",
+            "explicit=localize($a.object,law=Fixed.valid)",
         ],
     );
     assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
@@ -343,4 +375,60 @@ fn implicit_context_exposes_the_primitive_read_as_well_as_the_equation_value() {
     }
     assert!(values.contains(&"3"));
     assert!(values.contains(&"6"));
+}
+#[test]
+fn localize_checks_answer_bound_owners_before_using_the_values() {
+    let root = common::entity_json("W.Root", "[]", "[]");
+    let owner = common::field_json("owner", r#"["Ref","W.Root"]"#);
+    let item = common::entity_json("W.Item", &format!("[{owner}]"), "[]");
+    let definition = common::definition_json(&format!(
+        "[{}]",
+        common::vocabulary_json("W", &format!("[{root},{item}]"), "[]")
+    ));
+    let definitions = common::definitions_ok(&[&definition]);
+    let digest = &definitions.vocabularies["W"].digest;
+    let law = format!(
+        "{}reading R {{use vocabulary W version \"1\" digest \"{digest}\";view echo(a:Root):Root=a;law optional present(a:Root,b:Item[a]):true=true;}}",
+        common::HEADER
+    );
+    let map = format!(
+        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"W","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"o","mode":"specification","method":"所属の独立試験。","locations":[],"note":"固定owner。"}}],"snapshots":[{{"id":"v","origin":"o","subjects":[{{"id":"A","type":"W.Root","origin":"o"}},{{"id":"B","type":"W.Root","origin":"o"}},{{"id":"i","type":"W.Item","origin":"o"}}],"atoms":[{{"id":"owner","subject":"i","field":"W.Item.owner","value":["v","A"],"origin":"o"}}]}}]}}"#
+    );
+    let dir = workdir("local-owned");
+    for (name, value) in [("d.json", definition), ("l.law", law), ("a.json", map)] {
+        std::fs::write(dir.join(name), value).unwrap();
+    }
+    for (name, selection, code) in [
+        ("valid", "owner=evaluate(R.echo,a=@v/A)", 1),
+        ("invalid", "owner=evaluate(R.echo,a=@v/B)", 2),
+    ] {
+        let r = execute(
+            &dir,
+            name,
+            &[
+                "a=build(R,on=@v/A)",
+                selection,
+                "l=localize($a.object,law=R.present,a=$owner.value,b=@v/i)",
+                "d=diagnose($l.system)",
+            ],
+        );
+        assert_eq!(r.code, code, "{} {}", r.stdout, r.stderr);
+        let json = result_json(&dir, &r);
+        if name == "valid" {
+            assert_eq!(s(get(&arr(get(&json, "answers"))[2], "status")), "established");
+            assert_eq!(s(get(&arr(get(&json, "answers"))[3], "status")), "established");
+            assert!(has(
+                get(&arr(get(&json, "answers"))[2], "outputs"),
+                "system"
+            ));
+        } else {
+            let answer = &arr(get(&json, "answers"))[2];
+            assert!(!has(get(answer, "outputs"), "system"));
+            assert!(
+                arr(get(answer, "reasons"))
+                    .iter()
+                    .any(|r| s(get(r, "code")) == "condition_failed")
+            );
+        }
+    }
 }

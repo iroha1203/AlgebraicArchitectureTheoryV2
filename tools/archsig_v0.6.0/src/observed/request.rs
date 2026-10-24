@@ -190,6 +190,9 @@ pub struct Request {
 impl Request {
     /// Law/view宣言を選ぶ問いの名前。reading・原始correspondence・問いIDは含めない。
     pub fn declaration(&self) -> Option<&str> {
+        if self.kind==QuestionKind::Localize {
+            return self.arguments.iter().find(|a|a.name=="law").and_then(|a|match &a.value{Selector::Declaration{name}=>Some(name.as_str()),_=>None});
+        }
         if matches!(self.kind, QuestionKind::Map | QuestionKind::Build) {
             return None;
         }
@@ -734,7 +737,7 @@ fn resolve_inner(
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
         if matches!(req.kind, QuestionKind::Localize | QuestionKind::Diagnose) {
-            local::check(law, map, &requests, &names, req, control)?;
+            requests[i].constraints=local::check(law, map, &requests, &names, req, control)?;
             continue;
         }
         if req.kind == QuestionKind::Build {
@@ -837,101 +840,7 @@ fn resolve_inner(
                 )));
             }
         }
-        let mut constraints = Vec::new();
-        let expected_owners = owner_bindings(req, control)?;
-        for param in params {
-            checkpoint(control)?;
-            phase(control, Checkpoint::RequestBinding)?;
-            let key = format!("bind.{}", param.name);
-            let Some(arg) = checked_find(
-                &req.arguments,
-                |a| a.name == key,
-                control,
-                Checkpoint::RequestBinding,
-            )?
-            else {
-                continue;
-            };
-            let (plan, projection_owners) = selector_type(
-                law,
-                map,
-                &requests,
-                &names,
-                &arg.value,
-                control,
-                (&req.id, &arg.name),
-            )?;
-            if !projection::can_bind_controlled(&plan.ty, &param.ty, control).map_err(stopped)? {
-                return Err(invalid(problem(
-                    RequestIssueCode::Type,
-                    &req.id,
-                    &arg.name,
-                    "Handle の型が parameter 型と合わない",
-                )));
-            }
-            let owner = match &param.ty {
-                Type::Owned(_, p) => {
-                    let key = format!("bind.{p}");
-                    checked_find(
-                        &req.arguments,
-                        |a| a.name == key,
-                        control,
-                        Checkpoint::RequestBinding,
-                    )?
-                    .map(|a| a.value.clone())
-                }
-                _ => None,
-            };
-            let owner_dynamic = if matches!(arg.value, Selector::Answer { .. }) {
-                let relation = projection_owner_check(
-                    &plan.ty,
-                    &projection_owners,
-                    &param.ty,
-                    &expected_owners,
-                    control,
-                )?;
-                match relation {
-                    Some(dynamic) => dynamic,
-                    None => {
-                        return finish_request(
-                            Err(invalid(problem(
-                                RequestIssueCode::Type,
-                                &req.id,
-                                &arg.name,
-                                "依存 parameter の owner が合わない",
-                            ))),
-                            control,
-                            Checkpoint::RequestBinding,
-                        );
-                    }
-                }
-            } else {
-                owner_check(
-                    map,
-                    &arg.value,
-                    &param.ty,
-                    owner.as_ref(),
-                    control,
-                    &req.id,
-                    &arg.name,
-                )?
-            };
-            let dynamic =
-                plan.conditional || matches!(plan.ty, ProjectionType::Dynamic(_)) || owner_dynamic;
-            constraints.push(BindingConstraint {
-                parameter: param.name.clone(),
-                expected: param.ty.clone(),
-                selector: arg.value.clone(),
-                projection: plan,
-                owner,
-                projection_owners,
-                expected_owners: owner_bindings(req, control)?,
-                dynamic,
-            });
-            phase(control, Checkpoint::RequestBinding)?;
-            checkpoint(control)?;
-        }
-        requests[i].constraints = constraints;
+        requests[i].constraints = binding_constraints(law,map,&requests,&names,req,params,control)?;
         phase(control, Checkpoint::RequestBinding)?;
         checkpoint(control)?;
     }
@@ -1094,6 +1003,104 @@ fn declaration(
     }
     finish_request(Err(missing()), control, Checkpoint::RequestBinding)
 }
+fn binding_constraints(law:&CheckedLaw,map:&CheckedArchMap,requests:&[Request],names:&BTreeMap<String,usize>,req:&Request,params:&[Param],control:&mut Control)->Result<Vec<BindingConstraint>,ResolveFailure>{
+    let mut constraints = Vec::new();
+    let expected_owners = owner_bindings(req, control)?;
+    for param in params {
+        checkpoint(control)?;
+        phase(control, Checkpoint::RequestBinding)?;
+        let key = format!("bind.{}", param.name);
+        let Some(arg) = checked_find(
+            &req.arguments,
+            |a| a.name == key,
+            control,
+            Checkpoint::RequestBinding,
+        )?
+        else {
+            continue;
+        };
+        let (plan, projection_owners) = selector_type(
+            law,
+            map,
+            &requests,
+            &names,
+            &arg.value,
+            control,
+            (&req.id, &arg.name),
+        )?;
+        if !projection::can_bind_controlled(&plan.ty, &param.ty, control).map_err(stopped)? {
+            return Err(invalid(problem(
+                RequestIssueCode::Type,
+                &req.id,
+                &arg.name,
+                "Handle の型が parameter 型と合わない",
+            )));
+        }
+        let owner = match &param.ty {
+            Type::Owned(_, p) => {
+                let key = format!("bind.{p}");
+                checked_find(
+                    &req.arguments,
+                    |a| a.name == key,
+                    control,
+                    Checkpoint::RequestBinding,
+                )?
+                .map(|a| a.value.clone())
+            }
+            _ => None,
+        };
+        let owner_dynamic = if matches!(arg.value, Selector::Answer { .. }) {
+            let relation = projection_owner_check(
+                &plan.ty,
+                &projection_owners,
+                &param.ty,
+                &expected_owners,
+                control,
+            )?;
+            match relation {
+                Some(dynamic) => dynamic,
+                None => {
+                    return finish_request(
+                        Err(invalid(problem(
+                            RequestIssueCode::Type,
+                            &req.id,
+                            &arg.name,
+                            "依存 parameter の owner が合わない",
+                        ))),
+                        control,
+                        Checkpoint::RequestBinding,
+                    );
+                }
+            }
+        } else {
+            owner_check(
+                map,
+                &arg.value,
+                &param.ty,
+                owner.as_ref(),
+                control,
+                &req.id,
+                &arg.name,
+            )?
+        };
+        let dynamic =
+            plan.conditional || matches!(plan.ty, ProjectionType::Dynamic(_)) || owner_dynamic;
+        constraints.push(BindingConstraint {
+            parameter: param.name.clone(),
+            expected: param.ty.clone(),
+            selector: arg.value.clone(),
+            projection: plan,
+            owner,
+            projection_owners,
+            expected_owners: owner_bindings(req, control)?,
+            dynamic,
+        });
+        phase(control, Checkpoint::RequestBinding)?;
+        checkpoint(control)?;
+    }
+    Ok(constraints)
+}
+
 fn parameters(sig: &Signature, kind: QuestionKind) -> Option<&[Param]> {
     match (sig, kind) {
         (Signature::View { params, .. }, QuestionKind::Evaluate | QuestionKind::Quotient)

@@ -468,3 +468,14 @@ fn path_endpoints_keep_reference_types_and_generator_lists_are_not_exposed() {
         RequestIssueCode::Projection,
     );
 }
+
+#[test]
+fn localize_checks_owned_bindings_and_keeps_dynamic_constraints() {
+    let (law,map)=dependent_inputs(true);
+    let error=resolve_observed_requests(&law,&map,&["x=build(R,on=@v/B)","l=localize($x.object,law=R.present,a=@v/B,b=@v/i)"]).unwrap_err();
+    assert!(matches!(error,ResolveFailure::Invalid{issues,..} if issues[0].code==RequestIssueCode::Type));
+    let (law,map)=dependent_inputs(false);
+    let result=resolve_observed_requests(&law,&map,&["x=build(R,on=@v/A)","l=localize($x.object,law=R.present,a=@v/A,b=@v/i)"]).unwrap();
+    let constraint=result.requests()[1].constraints.iter().find(|c|c.parameter=="b").unwrap();
+    assert!(constraint.dynamic);assert!(constraint.owner.is_some());
+}

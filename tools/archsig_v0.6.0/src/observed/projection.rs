@@ -45,6 +45,9 @@ pub enum ProjectionType {
     Domain,
     LocalSystem,
     FixedSolutionSet,
+    FixedCandidateSpace,
+    FixedStateSpace,
+    EquationSpace,
     EquationSolutionSet,
     Diagnostic,
     Cover,
@@ -189,6 +192,11 @@ fn project_inner(
         ))
     };
     match (ty, &path[0]) {
+        (ProjectionType::FixedSolutionSet,Field(f)) if f=="domain"=>exact(ProjectionType::FixedCandidateSpace),
+        (ProjectionType::EquationSolutionSet,Field(f)) if f=="domain"=>exact(ProjectionType::EquationSpace),
+        (ProjectionType::FixedCandidateSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),"states"=>exact(ProjectionType::FixedStateSpace),"action"=>exact(ProjectionType::StateMap),_=>Err("CandidateSpaceの非公開射影".into())},
+        (ProjectionType::EquationSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),_=>Err("EquationSpaceの非公開射影".into())},
+        (ProjectionType::FixedStateSpace,Field(f)) if f=="base"=>exact(ProjectionType::Architecture),
         (ProjectionType::LocalSystem,Field(f)) => match f.as_str() {
             "base"=>exact(ProjectionType::Architecture), "cover"=>exact(ProjectionType::Cover), "topology"=>exact(ProjectionType::Topology),_=>Err("LocalSystemの非公開射影".into()),
         },

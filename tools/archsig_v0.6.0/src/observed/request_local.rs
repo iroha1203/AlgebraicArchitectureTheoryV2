@@ -150,7 +150,7 @@ pub(super) fn check(
     names: &BTreeMap<String, usize>,
     r: &Request,
     c: &mut Control,
-) -> Result<(), ResolveFailure> {
+) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let (head, _) = selector_type(law, map, requests, names, &r.head, c, (&r.id, "head"))?;
     if !matches!(
         (r.kind, &head.ty),
@@ -169,27 +169,22 @@ pub(super) fn check(
         let Signature::Law { params, .. } = &law.declarations[name].signature else {
             unreachable!()
         };
-        for p in params {
-            if let Some(a) = r
-                .arguments
-                .iter()
-                .find(|a| a.name == format!("bind.{}", p.name))
-            {
-                let (actual, _) =
-                    selector_type(law, map, requests, names, &a.value, c, (&r.id, &a.name))?;
-                if actual.ty != ProjectionType::Law(p.ty.erase()) {
-                    return Err(err(&r.id, &a.name, "Law parameterの型が違う"));
-                }
-            }
-        }
+        return binding_constraints(law, map, requests, names, r, params, c);
     }
-    Ok(())
+    Ok(vec![])
 }
 pub(super) fn output_type(r: &Request, field: &str) -> Result<ProjectionType, ResolveFailure> {
     match (r.kind, field) {
         (QuestionKind::Localize, "system") => Ok(ProjectionType::LocalSystem),
         (QuestionKind::Diagnose, "diagnostic") => Ok(ProjectionType::Diagnostic),
-        (_, "proposition") => Ok(ProjectionType::Proposition),
+        (QuestionKind::Localize, "proposition") => Ok(ProjectionType::Proposition),
+        (QuestionKind::Diagnose, "proposition")
+            if r.arguments
+                .iter()
+                .any(|a| a.name == "degree" && a.value == Selector::Degree { value: 1 }) =>
+        {
+            Ok(ProjectionType::Proposition)
+        }
         _ => Err(err(&r.id, field, "局所化・診断の非公開出力")),
     }
 }

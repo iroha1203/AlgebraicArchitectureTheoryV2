@@ -34,6 +34,8 @@ pub(super) struct Source {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct System {
+    parameters: NodeRef,
+    law: NodeRef,
     expression: NodeRef,
     semantic: NodeRef,
     equation: NodeRef,
@@ -83,6 +85,9 @@ impl Data {
             NodeType::Construction(T::Cover) => Some(ProjectionType::Cover),
             NodeType::Construction(T::Topology) => Some(ProjectionType::Topology),
             NodeType::Construction(T::StateMap) => Some(ProjectionType::StateMap),
+            NodeType::Construction(T::CandidateSpace) => Some(ProjectionType::FixedCandidateSpace),
+            NodeType::Construction(T::StateSpace) => Some(ProjectionType::FixedStateSpace),
+            NodeType::Construction(T::EquationSpace) => Some(ProjectionType::EquationSpace),
             NodeType::Domain => Some(ProjectionType::Domain),
             NodeType::Construction(T::SolutionSet) => Some(ProjectionType::FixedSolutionSet),
             NodeType::Construction(T::EquationSolutionSet) => {
@@ -97,6 +102,14 @@ impl Data {
             return None;
         };
         let allowed = match self.ty() {
+            NodeType::Construction(T::SolutionSet | T::EquationSolutionSet) => field == "domain",
+            NodeType::Construction(T::CandidateSpace) => {
+                matches!(field.as_str(), "base" | "parameters" | "states" | "action")
+            }
+            NodeType::Construction(T::EquationSpace) => {
+                matches!(field.as_str(), "base" | "parameters")
+            }
+            NodeType::Construction(T::StateSpace) => field == "base",
             NodeType::Construction(T::LocalSystem) => {
                 matches!(field.as_str(), "base" | "cover" | "topology")
             }
@@ -783,6 +796,8 @@ fn compute(
             request: request.clone(),
             witness: witness.clone(),
             system: Some(System {
+                parameters: point,
+                law,
                 expression,
                 semantic,
                 equation,
@@ -932,30 +947,58 @@ fn diagnose(
         None,
         None,
     )?;
+    let mut evidence = vec![];
+    if degree == 1 && !system.inhabited {
+        evidence.push(b.push(
+            NodeType::Evidence,
+            "evidence",
+            Json::obj([
+                ("kind", Json::str("finite_exhaustion")),
+                (
+                    "data",
+                    Json::obj([
+                        ("domain", system.parameters.wire()),
+                        ("checked", Json::Nat(1)),
+                        ("instances", refs(&[system.law])),
+                    ]),
+                ),
+            ]),
+            vec![system.parameters, system.law, global],
+            None,
+            None,
+        )?);
+    }
     let status = if degree == 0 || system.inhabited {
         Decision::Established
     } else {
         Decision::Refuted
     };
-    let proposition = b.proposition(
-        if degree == 0 {
-            "sheaf_condition"
-        } else {
-            "inhabited"
-        },
-        vec![if degree == 0 { diagnostic } else { global }],
-        vec![diagnostic],
-        status,
-    )?;
+    let mut outputs = BTreeMap::from([("diagnostic".into(), diagnostic)]);
+    let claim = if degree == 1 {
+        let proposition = b.proposition(
+            "inhabited",
+            vec![global],
+            std::iter::once(diagnostic)
+                .chain(evidence.iter().copied())
+                .collect(),
+            status,
+        )?;
+        b.parts[proposition.0 - base]
+            .judgment
+            .as_mut()
+            .ok_or("診断の判断がない")?
+            .evidence = evidence.clone();
+        outputs.insert("proposition".into(), proposition);
+        Some(proposition)
+    } else {
+        None
+    };
     let answer = Answer {
         id: request.id.clone(),
         status,
-        outputs: BTreeMap::from([
-            ("diagnostic".into(), diagnostic),
-            ("proposition".into(), proposition),
-        ]),
-        claim: Some(proposition),
-        evidence: vec![],
+        outputs,
+        claim,
+        evidence,
         reasons: vec![],
         scope: b.parts[diagnostic.0 - base].scope.clone(),
     };
