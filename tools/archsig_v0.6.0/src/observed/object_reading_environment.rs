@@ -70,3 +70,64 @@ impl Environment<'_> {
         Ok(Some((i.bindings, variables, scope)))
     }
 }
+
+impl Environment<'_> {
+    pub(super) fn validate_object_reading_result(
+        &self,
+        g: &Graph,
+        n: &Node,
+        at: usize,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(expression) = super::super::object_reading_result::source(g, n)? else {
+            return Ok(false);
+        };
+        let context = self.current_context(g);
+        if context != g.context_at(expression.0)
+            || context.frame.is_some()
+            || context.instance.is_some()
+            || context.iteration.is_some()
+            || context.case.is_some()
+        {
+            return Err("view全体評価の元Request Contextが違う".into());
+        }
+        let request = g
+            .requests
+            .get(context.request)
+            .ok_or("view全体評価の元Requestがない")?;
+        if self
+            .original_requests
+            .is_none_or(|rs| rs.get(context.request) != Some(request))
+        {
+            return Err("view全体評価の元Requestが現在の入力と違う".into());
+        }
+        for r in super::super::object_reading_result::dependencies(g, n)? {
+            self.tick()?;
+            if r.0 >= at {
+                return Err("view全体評価の依存が既出でない".into());
+            }
+            self.validate_at(g, g.get(r)?, r.0)?;
+        }
+        super::super::object_reading_result::validate(g, n, at)?;
+        Ok(true)
+    }
+}
+
+#[cfg(test)]
+impl Environment<'_> {
+    pub(in crate::observed) fn object_reading_projection_for_test(
+        &self,
+        g: &Graph,
+        r: NodeRef,
+        path: &[crate::observed::projection::ProjectionStep],
+        span: (usize, usize),
+    ) -> Result<AnswerBinding, ValidationFailure> {
+        self.answer_projection(g, r, path, span)
+    }
+    pub(in crate::observed) fn object_reading_recheck_evaluation_for_test(
+        &self,
+        g: &Graph,
+        r: NodeRef,
+    ) -> Result<(), ValidationFailure> {
+        self.recheck_evaluation(g, r)
+    }
+}
