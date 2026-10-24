@@ -145,6 +145,7 @@ pub(crate) enum ConstructionData {
     PolynomialLaw(super::polynomial_law_diagram::Data),
     LawFrame(super::law_evaluation::Data),
     ObjectReadingFrame(super::object_reading_evaluation::Data),
+    ViewFamily(super::view_family::Data),
     OutsideLaw(super::law_inapplicable::Data),
     LawInstantiation(super::law_instantiation::Data),
     LawFamily(super::law_family::Data),
@@ -260,6 +261,7 @@ impl ConstructionValue {
             ConstructionData::PolynomialLaw(data) => data.scalar(),
             ConstructionData::LawFrame(data) => data.scalar(),
             ConstructionData::ObjectReadingFrame(data) => data.scalar(),
+            ConstructionData::ViewFamily(data) => data.scalar(),
             ConstructionData::OutsideLaw(data) => data.scalar(),
             ConstructionData::LawInstantiation(data) => data.scalar(),
             ConstructionData::LawFamily(data) => data.scalar(),
@@ -330,6 +332,7 @@ impl ConstructionValue {
             D::PolynomialLaw(data) => return data.ty(),
             D::LawFrame(data) => return data.ty(),
             D::ObjectReadingFrame(data) => return data.ty(),
+            D::ViewFamily(data) => return data.ty(),
             D::OutsideLaw(data) => return data.ty(),
             D::LawInstantiation(data) => return data.ty(),
             D::LawFamily(data) => return data.ty(),
@@ -368,6 +371,7 @@ impl ConstructionValue {
             D::PolynomialLaw(data) => data.arguments(),
             D::LawFrame(data) => data.arguments(),
             D::ObjectReadingFrame(data) => data.arguments(),
+            D::ViewFamily(data) => data.arguments(),
             D::OutsideLaw(data) => data.arguments(),
             D::LawInstantiation(data) => data.arguments(),
             D::LawFamily(data) => data.arguments(),
@@ -472,6 +476,7 @@ impl ConstructionValue {
             D::PolynomialLaw(ref data) => data.construction(),
             D::LawFrame(_) => "domain",
             D::ObjectReadingFrame(ref data) => data.construction(),
+            D::ViewFamily(ref data) => data.construction(),
             D::OutsideLaw(ref data) => data.construction(),
             D::LawInstantiation(ref data) => data.construction(),
             D::LawFamily(ref data) => data.construction(),
@@ -600,6 +605,7 @@ impl ConstructionValue {
             D::PolynomialLaw(data) => data.wire(),
             D::LawFrame(data) => data.wire(),
             D::ObjectReadingFrame(data) => data.wire(),
+            D::ViewFamily(data) => data.wire(),
             D::OutsideLaw(data) => data.wire(),
             D::LawInstantiation(data) => data.wire(),
             D::LawFamily(data) => data.wire(),
@@ -1189,6 +1195,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
     if let ConstructionData::LawInstantiation(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
     if let ConstructionData::OutsideLaw(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
     if let ConstructionData::ObjectReadingFrame(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::ViewFamily(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::LawFrame(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
     if let ConstructionData::FiniteLaw(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::PolynomialLaw(data) = &value.data { return Ok(data.metadata()); }
@@ -1652,6 +1659,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     if let ConstructionData::LawInstantiation(data) = &v.data { return super::law_instantiation::validate_node(graph,node,v,data); }
     if let ConstructionData::OutsideLaw(data) = &v.data { return super::law_inapplicable::validate_node(graph,node,v,data); }
     if let ConstructionData::ObjectReadingFrame(data) = &v.data { return super::object_reading_evaluation::validate_node(graph,node,v,data); }
+    if let ConstructionData::ViewFamily(data) = &v.data { return super::view_family::validate_node(graph,node,v,data); }
     if let ConstructionData::LawFrame(data) = &v.data { return super::law_evaluation::validate_node(graph,node,v,data); }
     if let ConstructionData::FiniteLaw(data) = &v.data { return super::finite_law_diagram::validate_node(graph,node,data); }
     if let ConstructionData::PolynomialLaw(data) = &v.data { return super::polynomial_law_diagram::validate_node(graph,node,data); }

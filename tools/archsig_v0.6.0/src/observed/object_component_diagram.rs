@@ -169,6 +169,8 @@ pub(super) struct Reading {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct ViewOrigin {
+    pub object_index: usize,
+    pub instance_index: usize,
     pub expression: NodeRef,
     pub component: NodeRef,
     pub architecture: NodeRef,
@@ -265,6 +267,8 @@ impl Data {
         Ok(Some((
             a.clone(),
             ViewOrigin {
+                object_index: reading.object,
+                instance_index: reading.instance,
                 expression: reference,
                 component: *object,
                 architecture,

@@ -15,6 +15,7 @@ mod polynomial_law_diagram;
 mod law_evaluation;
 mod object_reading_evaluation;
 mod object_reading_result;
+mod view_family;
 mod law_proposition;
 mod law_inapplicable;
 mod law_instantiation;

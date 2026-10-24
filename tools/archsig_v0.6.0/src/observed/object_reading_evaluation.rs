@@ -25,6 +25,9 @@ pub(super) fn origin(
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
         return Err("元view式がnativeでない".into());
     };
+    if let D::ViewFamily(d) = &v.data {
+        return d.view_origin(r)?.ok_or_else(|| "有限view行が元読取り式でない".into());
+    }
     let D::ObjectComponents(d) = &v.data else {
         return Err("元view式が元対象表にない".into());
     };
