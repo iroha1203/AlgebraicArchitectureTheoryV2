@@ -433,6 +433,19 @@ fn outside_laws_keep_the_true_conditional_predicate_for_ground_and_finite_famili
             .unwrap();
         let family = e.family();
         assert!(family.is_complete());
+        if body.contains("b:Bool") {
+            assert!(family.uniform().is_none());
+            assert_eq!(family.domains().len(), 1);
+            assert_eq!(family.rows().len(), 2);
+            for (index, row) in family.rows().iter().enumerate() {
+                assert!(row.evaluations().is_empty());
+                assert_eq!(row.bindings()[0].0, "b");
+                assert_eq!(
+                    row.bindings()[0].1.wire(),
+                    archsig::canonical::Json::Bool(index == 1)
+                );
+            }
+        }
         let readings = family
             .rows()
             .iter()

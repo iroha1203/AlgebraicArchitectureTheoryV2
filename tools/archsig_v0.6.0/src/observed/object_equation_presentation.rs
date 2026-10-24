@@ -1114,8 +1114,11 @@ fn populate(
             if component.is_some() {
                 let index = ring(&mut r.rings, &ty, c)?;
                 occurrence.ring = Some(index);
-                if guard == EquationGuard::OutsideObject {
-                    // 適用外でも原式の記号表示は残す。通常評価を実行したことにはせず、
+                if matches!(
+                    guard,
+                    EquationGuard::OutsideObject | EquationGuard::AlwaysFalse
+                ) {
+                    // 適用外/guard偽でも原式の記号表示は残す。通常評価を実行したことにはせず、
                     // 生差εは未生成のまま、適用条件付きresidualの零と区別する。
                     if let LawNumericShape::Equality { left, right, .. } = e.shape
                         && let Some((lhs, rhs)) = source_polynomial::operands(

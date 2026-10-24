@@ -589,3 +589,43 @@ fn mixed_tuple_public_cases_at(name: &str, expressions: &[(&str, &str)], q: &str
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[test]
+fn integer_fields_keep_all_finite_guard_rows_and_feed_later_checks() {
+    let dir = files(
+        "public-build-integer-finite-guard",
+        "view enabled():Bool=true;view disabled():Bool=false;view amount(c:Part):Z=c.quantity;law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
+        false,
+    );
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "n=evaluate(R.amount,on=$b.object,c=@v/q)",
+            "flag=evaluate(R.enabled,on=$b.object)",
+            "bad=check(R.bit,on=$b.object,c=@v/q,b=$flag.value)",
+            "good=check(R.bit,on=$b.object,c=@v/p,b=$flag.value)",
+            "off=evaluate(R.disabled,on=$b.object)",
+            "inactive=check(R.bit,on=$b.object,c=@v/q,b=$off.value)",
+        ],
+    );
+    let result = saved(&dir, &run, "complete", 1);
+    assert_eq!(s(get(answer(&result, "b"), "status")), "established");
+    assert_eq!(s(get(answer(&result, "bad"), "status")), "refuted");
+    assert_eq!(s(get(answer(&result, "good"), "status")), "established");
+    assert_eq!(s(get(answer(&result, "inactive"), "status")), "established");
+    assert_eq!(
+        s(value(
+            &result,
+            get(get(answer(&result, "n"), "outputs"), "value")
+        )),
+        "1"
+    );
+    let algebra = value(
+        &result,
+        get(get(answer(&result, "b"), "outputs"), "algebra"),
+    );
+    assert_eq!(arr(get(algebra, "objects")).len(), 3);
+    assert_eq!(arr(get(algebra, "circuits")).len(), 4);
+    std::fs::remove_dir_all(dir).unwrap();
+}

@@ -227,13 +227,21 @@ pub(super) fn append(
                 }
             }
             ObjectEvaluationOutcome::NotApplicable | ObjectEvaluationOutcome::Conditional(_) => {
-                let row = e
-                    .family()
-                    .uniform()
-                    .ok_or("対象非適用Lawの元読取りがない")?;
-                applications.push(row.application().clone());
-                bodies.push(row.body());
-                holds.push(row.conditional());
+                let row = original
+                    .row
+                    .and_then(|row| e.family().rows().get(row).map(|row| row.reading()))
+                    .or_else(|| e.family().uniform());
+                if let Some(row) = row {
+                    applications.push(row.application().clone());
+                    bodies.push(row.body());
+                    holds.push(row.conditional());
+                } else if original.row.is_some()
+                    || !e.family().is_complete()
+                    || !e.family().domains().iter().any(|d| d.values().is_empty())
+                {
+                    return Err("対象非適用Lawの元読取りがない".into());
+                }
+                // 既知の空parameter域には具体的な読取り行を作らない。
             }
             ObjectEvaluationOutcome::FiniteView(_) => {
                 return Err("Law読取りがview族になった".into());
