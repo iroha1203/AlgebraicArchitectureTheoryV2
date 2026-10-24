@@ -43,6 +43,8 @@ pub(crate) enum ConstructionType {
     EquationPresentation,
     EquationFamily,
     CircuitPattern,
+    Invariant,
+    SignatureAxis,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -65,6 +67,8 @@ impl ConstructionType {
             Self::EquationPresentation => "EquationPresentation",
             Self::EquationFamily => "EquationFamily",
             Self::CircuitPattern => "CircuitPattern",
+            Self::Invariant => "Invariant",
+            Self::SignatureAxis => "SignatureAxis",
         }
     }
 }
@@ -146,6 +150,7 @@ pub(crate) enum ConstructionData {
     LawFrame(super::law_evaluation::Data),
     ObjectReadingFrame(super::object_reading_evaluation::Data),
     ViewFamily(super::view_family::Data),
+    ViewInvariant(super::view_invariant::Data),
     OutsideLaw(super::law_inapplicable::Data),
     LawInstantiation(super::law_instantiation::Data),
     LawFamily(super::law_family::Data),
@@ -333,6 +338,7 @@ impl ConstructionValue {
             D::LawFrame(data) => return data.ty(),
             D::ObjectReadingFrame(data) => return data.ty(),
             D::ViewFamily(data) => return data.ty(),
+            D::ViewInvariant(data) => return data.ty(),
             D::OutsideLaw(data) => return data.ty(),
             D::LawInstantiation(data) => return data.ty(),
             D::LawFamily(data) => return data.ty(),
@@ -372,6 +378,7 @@ impl ConstructionValue {
             D::LawFrame(data) => data.arguments(),
             D::ObjectReadingFrame(data) => data.arguments(),
             D::ViewFamily(data) => data.arguments(),
+            D::ViewInvariant(data) => data.arguments(),
             D::OutsideLaw(data) => data.arguments(),
             D::LawInstantiation(data) => data.arguments(),
             D::LawFamily(data) => data.arguments(),
@@ -477,6 +484,7 @@ impl ConstructionValue {
             D::LawFrame(_) => "domain",
             D::ObjectReadingFrame(ref data) => data.construction(),
             D::ViewFamily(ref data) => data.construction(),
+            D::ViewInvariant(ref data) => data.construction(),
             D::OutsideLaw(ref data) => data.construction(),
             D::LawInstantiation(ref data) => data.construction(),
             D::LawFamily(ref data) => data.construction(),
@@ -510,6 +518,8 @@ impl ConstructionValue {
                 ConstructionType::EquationPresentation => "equation_presentation",
                 ConstructionType::EquationFamily => "equation_family",
                 ConstructionType::CircuitPattern => "circuit_pattern",
+                ConstructionType::Invariant => "invariant",
+                ConstructionType::SignatureAxis => "signature_axis",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -606,6 +616,7 @@ impl ConstructionValue {
             D::LawFrame(data) => data.wire(),
             D::ObjectReadingFrame(data) => data.wire(),
             D::ViewFamily(data) => data.wire(),
+            D::ViewInvariant(data) => data.wire(),
             D::OutsideLaw(data) => data.wire(),
             D::LawInstantiation(data) => data.wire(),
             D::LawFamily(data) => data.wire(),
@@ -1196,6 +1207,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
     if let ConstructionData::OutsideLaw(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
     if let ConstructionData::ObjectReadingFrame(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::ViewFamily(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::ViewInvariant(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::LawFrame(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
     if let ConstructionData::FiniteLaw(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::PolynomialLaw(data) = &value.data { return Ok(data.metadata()); }
@@ -1660,6 +1672,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     if let ConstructionData::OutsideLaw(data) = &v.data { return super::law_inapplicable::validate_node(graph,node,v,data); }
     if let ConstructionData::ObjectReadingFrame(data) = &v.data { return super::object_reading_evaluation::validate_node(graph,node,v,data); }
     if let ConstructionData::ViewFamily(data) = &v.data { return super::view_family::validate_node(graph,node,v,data); }
+    if let ConstructionData::ViewInvariant(data) = &v.data { return super::view_invariant::validate_node(graph,node,v,data); }
     if let ConstructionData::LawFrame(data) = &v.data { return super::law_evaluation::validate_node(graph,node,v,data); }
     if let ConstructionData::FiniteLaw(data) = &v.data { return super::finite_law_diagram::validate_node(graph,node,data); }
     if let ConstructionData::PolynomialLaw(data) = &v.data { return super::polynomial_law_diagram::validate_node(graph,node,data); }

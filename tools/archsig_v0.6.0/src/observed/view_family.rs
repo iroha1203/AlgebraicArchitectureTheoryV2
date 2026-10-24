@@ -82,6 +82,14 @@ fn parameters(
     }
     Ok((a, o, out))
 }
+pub(super) fn parameter_readings(
+    env: &Environment<'_>,
+    g: &Graph,
+    expression: NodeRef,
+    c: &mut Control,
+) -> Result<Vec<Parameter>, ValidationFailure> {
+    Ok(parameters(env, g, expression, c)?.2)
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Part {
     Value {
