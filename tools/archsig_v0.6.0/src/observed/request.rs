@@ -494,7 +494,7 @@ fn resolve_inner(
                         RequestIssueCode::Type,
                         &raw.id,
                         "on",
-                        "onはArchitectureの公開Handleを指定する",
+                        if kind == QuestionKind::Quotient { "onはCandidateSpace/SolutionSetの公開Handleを指定する" } else { "onはArchitectureの公開Handleを指定する" },
                     )));
                 };
                 if path.is_empty() {
@@ -502,7 +502,7 @@ fn resolve_inner(
                         RequestIssueCode::Projection,
                         &raw.id,
                         "on",
-                        "onはArchitectureの出力fieldまで指定する",
+                        if kind == QuestionKind::Quotient { "onはCandidateSpace/SolutionSetの出力fieldまで指定する" } else { "onはArchitectureの出力fieldまで指定する" },
                     )));
                 }
                 dependencies.insert(id.clone());
