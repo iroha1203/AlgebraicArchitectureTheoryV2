@@ -528,6 +528,44 @@ fn engine_snapshot_comparison_stops_freeze_the_shared_control_without_cached_aut
 }
 
 #[test]
+fn engine_snapshot_extension_rechecks_both_original_and_appended_inputs() {
+    let r = known_map_private_result(&[
+        "a=evaluate(Maps.read,s=@v/s)",
+        "b=evaluate(Maps.read,s=@v/s)",
+    ]);
+    let first = r.answers[0].outputs["evaluation"].0;
+    let last = r.answers[1].outputs["evaluation"].0;
+    let before = known_map_private_atom(&r);
+    let after = r.nodes.iter().enumerate().skip(first + 1).find_map(|(i, n)| {
+        matches!((&n.payload, &n.rule),
+            (Some(Payload::Scalar(Scalar::Map { pairs, .. })), Rule::Input { kind: "atom", .. })
+            if !pairs.is_empty()).then_some(i)
+    }).unwrap();
+    let mut c = named_call_quiet();
+    let e = Environment::new(r.prepared.inputs(), &mut c).unwrap();
+    for end in [first, after, last] {
+        let g = rebuild_for_origin_and_support_recheck(&r, &r.nodes[..=end]).unwrap();
+        e.recheck_node(&g, &g.nodes[end], end).unwrap();
+    }
+    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    for (changed, consumer) in [(before, first), (after, last)] {
+        let original = g.nodes[changed].clone();
+        let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut g.nodes[changed].payload else {
+            panic!("map");
+        };
+        pairs[1] = pairs[0].clone();
+        // 外延比較では等しくても、元入力と異なる重複pairは保存済み成功にしない。
+        assert_eq!(g.nodes[changed], original);
+        assert!(matches!(
+            e.recheck_node(&g, &g.nodes[consumer], consumer),
+            Err(ValidationFailure::Internal(_))
+        ));
+        g.nodes[changed] = original;
+        e.recheck_node(&g, &g.nodes[consumer], consumer).unwrap();
+    }
+}
+
+#[test]
 fn engine_snapshot_rejects_duplicate_map_pairs_after_normal_validation() {
     let r = known_map_private_result(&["a=evaluate(Maps.read,s=@v/s)"]);
     let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();

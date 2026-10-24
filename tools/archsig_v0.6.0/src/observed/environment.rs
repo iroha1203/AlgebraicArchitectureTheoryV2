@@ -314,6 +314,23 @@ impl ValidationSnapshot {
             answers: Self::copy(&g.checked_answers, control)?,
         })
     }
+    // matches成功後の同じ不変Graph借用でだけ呼ぶ。全既存内容の照合は省略しない。
+    // 変更できた表は末尾追加だけなので、既存nodeを毎回複製し直す必要はない。
+    fn extend_matching(&mut self, g: &Graph, control: &Control) -> Result<(), ValidationFailure> {
+        Self::tick(control)?;
+        self.nodes
+            .extend(Self::copy(&g.nodes[self.nodes.len()..], control)?);
+        self.contexts
+            .extend(Self::copy(&g.contexts[self.contexts.len()..], control)?);
+        self.frames
+            .extend(Self::copy(&g.frames[self.frames.len()..], control)?);
+        self.instances
+            .extend(Self::copy(&g.instances[self.instances.len()..], control)?);
+        self.cases
+            .extend(Self::copy(&g.cases[self.cases.len()..], control)?);
+        // iterations/witnesses/requests/answersはmatchesで長さと全内容が一致済み。
+        Self::tick(control)
+    }
 }
 
 #[derive(Default)]
@@ -969,15 +986,20 @@ impl<'a> Environment<'a> {
             let result = self.validation_session(run);
             self.validation_depth.set(0);
             if result.is_ok() {
-                match ValidationSnapshot::from_graph(graph, &self.control) {
-                    Ok(snapshot) => {
-                        *self.validation_snapshot.borrow_mut() = Some(snapshot);
+                let saved = (|| {
+                    let mut snapshot = self.validation_snapshot.borrow_mut();
+                    if same {
+                        if let Some(previous) = snapshot.as_mut() {
+                            return previous.extend_matching(graph, &self.control);
+                        }
                     }
-                    Err(failure) => {
-                        *self.cache.borrow_mut() = ValidationCache::default();
-                        self.validation_snapshot.replace(None);
-                        return Err(failure);
-                    }
+                    *snapshot = Some(ValidationSnapshot::from_graph(graph, &self.control)?);
+                    Ok(())
+                })();
+                if let Err(failure) = saved {
+                    *self.cache.borrow_mut() = ValidationCache::default();
+                    self.validation_snapshot.replace(None);
+                    return Err(failure);
                 }
             } else {
                 *self.cache.borrow_mut() = ValidationCache::default();
