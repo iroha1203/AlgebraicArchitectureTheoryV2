@@ -307,10 +307,10 @@ pub(in crate::observed) fn search(
         if change_params.iter().skip(1).any(|p| p.ty==Type::Z) {
             let linear=change_affine::compute(&environment,change,&subjects,&result.requirements)?;
             let mut points=vec![];
-            if let Some(particular)=&linear.fiber.particular {
+            if let Some(particular)=&linear.particular {
                 points.push(particular.clone());
-                if linear.fiber.rank < particular.len() {
-                    points.push(particular.iter().zip(&linear.fiber.kernel).map(|(p,k)|p+&k[0]).collect());
+                if linear.fiber.rank < linear.fiber.right.len() {
+                    points.push(particular.iter().zip(&linear.kernel).map(|(p,k)|p+&k[0]).collect());
                 }
             }
             let mut candidates=Candidates { parameter_types: vec![Type::Z;subjects.len()*(change_params.len()-1)],subjects,rows:vec![],complete:true };

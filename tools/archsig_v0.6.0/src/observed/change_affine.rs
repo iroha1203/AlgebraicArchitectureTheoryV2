@@ -9,7 +9,17 @@ use num_bigint::BigInt as Z;
 use num_traits::{One, Zero};
 
 #[derive(Clone, Debug)]
+pub(in crate::observed) struct Guard {
+    pub equations: Matrix,
+    pub rhs: Vec<Z>,
+    pub fiber: Fiber,
+}
+#[derive(Clone, Debug)]
 pub(in crate::observed) struct Linear {
+    pub parameter_count: usize,
+    pub guard: Option<Guard>,
+    pub particular: Option<Vec<Z>>,
+    pub kernel: Matrix,
     pub slots: Vec<Fact>,
     pub action: Matrix,
     pub offset: Vec<Z>,
@@ -156,6 +166,8 @@ pub(in crate::observed) fn compute(
         }
     }
     let mut updates = BTreeMap::<Fact, Form>::new();
+    let mut guard_matrix = vec![];
+    let mut guard_rhs = vec![];
     for (i, subject) in subjects.iter().enumerate() {
         let mut vars = BTreeMap::from([(params[0].name.clone(), value(env, subject.clone())?)]);
         for (p, axis) in params[1..]
@@ -170,15 +182,15 @@ pub(in crate::observed) fn compute(
             vars.insert(p.name.clone(), v);
         }
         if let Some(guard) = guard {
-            let v = env.scoped_ast(*guard, &vars, &Scope::default(), &change.reading)?;
-            usable(env, *guard, &v)?;
-            if v.known_value != Some(Scalar::Bool(true)) {
-                return Err(unsupported(
-                    env,
-                    *guard,
-                    "整数changeのguard fiberへの再parameter化は未実装",
-                ));
-            }
+            equations(
+                env,
+                *guard,
+                &vars,
+                &change.reading,
+                &axes,
+                &mut guard_matrix,
+                &mut guard_rhs,
+            )?;
         }
         let mut current = *body;
         loop {
@@ -265,6 +277,30 @@ pub(in crate::observed) fn compute(
         action.push(row);
         offset.push(constant);
     }
+    let guard = if !guard_matrix.is_empty() {
+        let fiber = integer_fiber::solve(&guard_matrix, axes.len(), &guard_rhs, &env.control)?;
+        if fiber.particular.is_none() {
+            return Ok(Linear {
+                parameter_count: axes.len(),
+                guard: None,
+                particular: None,
+                kernel: fiber.kernel.clone(),
+                slots,
+                action,
+                offset,
+                equations: guard_matrix,
+                rhs: guard_rhs,
+                fiber,
+            });
+        }
+        Some(Guard {
+            equations: guard_matrix,
+            rhs: guard_rhs,
+            fiber,
+        })
+    } else {
+        None
+    };
     let assignments = env
         .primitive_valuation
         .as_ref()
@@ -342,8 +378,50 @@ pub(in crate::observed) fn compute(
             &mut rhs,
         )?;
     }
-    let fiber = integer_fiber::solve(&matrix, axes.len(), &rhs, &env.control)?;
+    let free_count = guard
+        .as_ref()
+        .map_or(axes.len(), |g| axes.len() - g.fiber.rank);
+    if let Some(g) = &guard {
+        let origin = g.fiber.particular.as_ref().ok_or("guardの特解がない")?;
+        let shift = apply(&matrix, origin, &env.control)?;
+        for (value, shift) in rhs.iter_mut().zip(shift) {
+            *value -= shift;
+        }
+        matrix = compose(&matrix, &g.fiber.kernel, free_count, &env.control)?;
+    }
+    let fiber = integer_fiber::solve(&matrix, free_count, &rhs, &env.control)?;
+    let (particular, kernel) = if let Some(g) = &guard {
+        let particular = fiber
+            .particular
+            .as_ref()
+            .map(|point| {
+                let mut restored = apply(&g.fiber.kernel, point, &env.control)?;
+                for (value, offset) in restored
+                    .iter_mut()
+                    .zip(g.fiber.particular.as_ref().ok_or("guardの特解がない")?)
+                {
+                    *value += offset;
+                }
+                Ok::<_, ValidationFailure>(restored)
+            })
+            .transpose()?;
+        (
+            particular,
+            compose(
+                &g.fiber.kernel,
+                &fiber.kernel,
+                free_count - fiber.rank,
+                &env.control,
+            )?,
+        )
+    } else {
+        (fiber.particular.clone(), fiber.kernel.clone())
+    };
     Ok(Linear {
+        parameter_count: axes.len(),
+        guard,
+        particular,
+        kernel,
         slots,
         action,
         offset,
@@ -351,4 +429,44 @@ pub(in crate::observed) fn compute(
         rhs,
         fiber,
     })
+}
+
+fn apply(matrix: &Matrix, point: &[Z], c: &Control) -> Result<Vec<Z>, ValidationFailure> {
+    matrix
+        .iter()
+        .map(|row| {
+            if row.len() != point.len() {
+                return Err("復元写像の寸法が違う".into());
+            }
+            let mut value = Z::zero();
+            for (a, b) in row.iter().zip(point) {
+                c.clone().checkpoint(Checkpoint::PrimitiveValuation)?;
+                value += a * b;
+            }
+            Ok(value)
+        })
+        .collect()
+}
+fn compose(
+    left: &Matrix,
+    right: &Matrix,
+    cols: usize,
+    c: &Control,
+) -> Result<Matrix, ValidationFailure> {
+    let mut result = vec![vec![Z::zero(); cols]; left.len()];
+    for (i, row) in left.iter().enumerate() {
+        if row.len() != right.len() {
+            return Err("整数写像の合成寸法が違う".into());
+        }
+        for (k, a) in row.iter().enumerate() {
+            if right[k].len() != cols {
+                return Err("整数写像の列数が違う".into());
+            }
+            for j in 0..cols {
+                c.clone().checkpoint(Checkpoint::PrimitiveValuation)?;
+                result[i][j] += a * &right[k][j];
+            }
+        }
+    }
+    Ok(result)
 }

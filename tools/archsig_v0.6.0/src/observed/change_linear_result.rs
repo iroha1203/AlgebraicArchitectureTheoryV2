@@ -72,7 +72,7 @@ fn map(
         columns.push(refs(&column));
     }
     b.push(
-        NodeType::ModuleMap(source,target),
+        NodeType::ModuleMap(source, target),
         "module_map",
         Json::obj([
             ("source", source.wire()),
@@ -126,7 +126,6 @@ pub(super) fn build(
     c: &mut Control,
 ) -> Result<Parts, ValidationFailure> {
     let n = linear.fiber.right.len();
-    let m = linear.equations.len();
     let ring = b.push(
         NodeType::Construction(T::Ring),
         "ring",
@@ -135,12 +134,18 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let parameter_module = module(b, ring, n, "free", vec![])?;
+    let parameter_module = module(b, ring, linear.parameter_count, "free", vec![])?;
     let state_module = module(b, ring, linear.slots.len(), "free", vec![])?;
-    let equation_module = module(b, ring, m, "free", vec![])?;
     let parameters = domain(b, parameter_module)?;
     let states = domain(b, state_module)?;
-    let action_linear = map(b, parameter_module, state_module, &linear.action, n, c)?;
+    let action_linear = map(
+        b,
+        parameter_module,
+        state_module,
+        &linear.action,
+        linear.parameter_count,
+        c,
+    )?;
     let offset = vector(b, state_module, &linear.offset, c)?;
     let action = b.push(
         NodeType::Construction(T::StateMap),
@@ -156,99 +161,53 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let equations = map(
+    let mut dependencies = requirements.to_vec();
+    let equation_parameters = if let Some(guard) = &linear.guard {
+        let (guard_map, guard_certificate) = smith(
+            b,
+            ring,
+            parameter_module,
+            &guard.equations,
+            &guard.rhs,
+            &guard.fiber,
+            &[],
+            c,
+        )?;
+        let free = module(b, ring, n, "kernel", vec![guard_map])?;
+        let recovery = map(b, free, parameter_module, &guard.fiber.kernel, n, c)?;
+        let origin = vector(
+            b,
+            parameter_module,
+            guard
+                .fiber
+                .particular
+                .as_ref()
+                .ok_or("guardの復元原点がない")?,
+            c,
+        )?;
+        dependencies.extend([guard_certificate, recovery, origin]);
+        free
+    } else {
+        parameter_module
+    };
+    let (equations, certificate) = smith(
         b,
-        parameter_module,
-        equation_module,
+        ring,
+        equation_parameters,
         &linear.equations,
-        n,
+        &linear.rhs,
+        &linear.fiber,
+        &dependencies,
         c,
     )?;
-    let left = map(
-        b,
-        equation_module,
-        equation_module,
-        &linear.fiber.left,
-        m,
-        c,
-    )?;
-    let right = map(
-        b,
-        parameter_module,
-        parameter_module,
-        &linear.fiber.right,
-        n,
-        c,
-    )?;
-    let diagonal = map(
-        b,
-        parameter_module,
-        equation_module,
-        &linear.fiber.diagonal,
-        n,
-        c,
-    )?;
-    let rhs = vector(b, equation_module, &linear.rhs, c)?;
-    let transformed = vector(b, equation_module, &linear.fiber.transformed_rhs, c)?;
-    let mut divisibility = vec![];
-    for i in 0..m {
-        c.checkpoint(Checkpoint::PrimitiveValuation)?;
-        let divisor = if i < linear.fiber.rank {
-            linear.fiber.diagonal[i][i].clone()
-        } else {
-            Z::zero()
-        };
-        let dividend = &linear.fiber.transformed_rhs[i];
-        let holds = if divisor.is_zero() {
-            dividend.is_zero()
-        } else {
-            (dividend % &divisor).is_zero()
-        };
-        let a = value(b, &Scalar::Z(divisor))?;
-        let d = value(b, &Scalar::Z(dividend.clone()))?;
-        divisibility.push(b.proposition(
-            "divides",
-            vec![a, d],
-            vec![equations, left, right, diagonal, rhs],
-            if holds {
-                Decision::Established
-            } else {
-                Decision::Refuted
-            },
-        )?);
-    }
-    let mut args = vec![equations, left, right, diagonal, rhs, transformed];
-    args.extend(&divisibility);
-    args.extend(requirements);
-    let certificate = b.push(
-        NodeType::Evidence,
-        "evidence",
-        Json::obj([
-            ("kind", Json::str("smith")),
-            (
-                "data",
-                Json::obj([
-                    ("map", equations.wire()),
-                    ("left", left.wire()),
-                    ("right", right.wire()),
-                    ("diagonal", diagonal.wire()),
-                    ("transformed_rhs", transformed.wire()),
-                    ("divisibility", refs(&divisibility)),
-                ]),
-            ),
-        ]),
-        args,
-        None,
-        None,
-    )?;
-    let (representation, representation_args) = if let Some(p) = &linear.fiber.particular {
+    let (representation, representation_args) = if let Some(p) = &linear.particular {
         let particular = vector(b, parameter_module, p, c)?;
         let directions = module(b, ring, n - linear.fiber.rank, "kernel", vec![equations])?;
         let embedding = map(
             b,
             directions,
             parameter_module,
-            &linear.fiber.kernel,
+            &linear.kernel,
             n - linear.fiber.rank,
             c,
         )?;
@@ -278,4 +237,77 @@ pub(super) fn build(
         representation,
         representation_args,
     })
+}
+
+fn smith(
+    b: &mut Builder<'_>,
+    ring: NodeRef,
+    parameter_module: NodeRef,
+    matrix: &Matrix,
+    rhs_values: &[Z],
+    fiber: &crate::observed::integer_fiber::Fiber,
+    dependencies: &[NodeRef],
+    c: &mut Control,
+) -> Result<(NodeRef, NodeRef), ValidationFailure> {
+    let n = fiber.right.len();
+    let m = matrix.len();
+    let equation_module = module(b, ring, m, "free", vec![])?;
+    let equations = map(b, parameter_module, equation_module, matrix, n, c)?;
+    let left = map(b, equation_module, equation_module, &fiber.left, m, c)?;
+    let right = map(b, parameter_module, parameter_module, &fiber.right, n, c)?;
+    let diagonal = map(b, parameter_module, equation_module, &fiber.diagonal, n, c)?;
+    let rhs = vector(b, equation_module, rhs_values, c)?;
+    let transformed = vector(b, equation_module, &fiber.transformed_rhs, c)?;
+    let mut divisibility = vec![];
+    for i in 0..m {
+        c.checkpoint(Checkpoint::PrimitiveValuation)?;
+        let divisor = if i < fiber.rank {
+            fiber.diagonal[i][i].clone()
+        } else {
+            Z::zero()
+        };
+        let dividend = &fiber.transformed_rhs[i];
+        let holds = if divisor.is_zero() {
+            dividend.is_zero()
+        } else {
+            (dividend % &divisor).is_zero()
+        };
+        let a = value(b, &Scalar::Z(divisor))?;
+        let d = value(b, &Scalar::Z(dividend.clone()))?;
+        divisibility.push(b.proposition(
+            "divides",
+            vec![a, d],
+            vec![equations, left, right, diagonal, rhs],
+            if holds {
+                Decision::Established
+            } else {
+                Decision::Refuted
+            },
+        )?);
+    }
+    let mut args = vec![equations, left, right, diagonal, rhs, transformed];
+    args.extend(&divisibility);
+    args.extend(dependencies);
+    let certificate = b.push(
+        NodeType::Evidence,
+        "evidence",
+        Json::obj([
+            ("kind", Json::str("smith")),
+            (
+                "data",
+                Json::obj([
+                    ("map", equations.wire()),
+                    ("left", left.wire()),
+                    ("right", right.wire()),
+                    ("diagonal", diagonal.wire()),
+                    ("transformed_rhs", transformed.wire()),
+                    ("divisibility", refs(&divisibility)),
+                ]),
+            ),
+        ]),
+        args,
+        None,
+        None,
+    )?;
+    Ok((equations, certificate))
 }
