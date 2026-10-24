@@ -7267,11 +7267,18 @@ impl<'a> Environment<'a> {
         let capture = capture.as_mut().ok_or("評価出現収集が消えた")?;
         let children = capture.stack.pop().ok_or("評価出現の親がない")?;
         if let Ok(value) = &result {
+            let residual = if let ExprKind::Binary {op:BinOp::Eq,lhs,rhs} = self.inputs.law().exprs[id].kind {
+                let ty = self.inputs.law().expr_type(lhs).ok_or("残差の元型がない")?;
+                if numeric::is_numeric_type(ty,&self.control)? {
+                    let child_value = |id| children.iter().map(|i|&capture.nodes[*i]).find(|n|n.expression==id).and_then(|n|n.value.as_ref());
+                    child_value(lhs).zip(child_value(rhs)).map(|(left,right)|numeric::binary(BinOp::Sub,left,right,&self.control)).transpose()?
+                } else {None}
+            } else {None};
             let index = capture.nodes.len();
             capture.nodes.push(quotient_evaluation::EvaluationNode {
                 expression:id,
                 bindings:variables.iter().filter_map(|(name,v)|v.known_value.as_ref().map(|v|(name.clone(),v.clone()))).collect(),
-                value:value.known_value.clone(),scope:value.scope.clone(),children,
+                value:value.known_value.clone(),residual,scope:value.scope.clone(),children,
             });
             if let Some(parent) = capture.stack.last_mut() { parent.push(index); } else { capture.roots.push(index); }
         }

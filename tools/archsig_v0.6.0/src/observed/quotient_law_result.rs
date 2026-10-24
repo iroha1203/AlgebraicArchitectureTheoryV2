@@ -17,6 +17,7 @@ fn evaluation(
     bindings: &[(String, NodeRef)],
     architecture: NodeRef,
     value: Option<&Scalar>,
+    residual: Option<&Scalar>,
     children: &[NodeRef],
     applicable: bool,
 ) -> Result<NodeRef, ValidationFailure> {
@@ -51,6 +52,18 @@ fn evaluation(
             }),
         ),
     ]);
+    if let Some(residual) = residual {
+        let residual = b.push(
+            NodeType::Value(residual.ty()),
+            "evaluation",
+            residual.wire(),
+            children.to_vec(),
+            Some(residual.clone()),
+            None,
+        )?;
+        part.insert("residual".into(), residual.wire());
+        arguments.push(residual);
+    }
     if let Some(value) = value {
         let value = change_result::value(b, value)?;
         arguments.push(value);
@@ -172,6 +185,7 @@ pub(super) fn row(
                 &local,
                 architecture,
                 captured.value.as_ref(),
+                captured.residual.as_ref(),
                 &children,
                 true,
             )?;
@@ -190,7 +204,7 @@ pub(super) fn row(
             let index = body_evaluation.ok_or("通常Law body評価がない")?;
             *nodes.get(index).ok_or("通常Law body評価の位置が違う")?
         } else {
-            evaluation(b, env, *body, &bindings, architecture, None, &[], false)?
+            evaluation(b, env, *body, &bindings, architecture, None, None, &[], false)?
         };
         if let (Some(guard), Some(guard_evaluation)) = (guard, guard_evaluation) {
             let guard_value = guard_value.ok_or("商のguard値がない")?;

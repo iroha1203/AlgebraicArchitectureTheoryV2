@@ -187,12 +187,13 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
     use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},input::InputSources,evaluate::evaluate_observed_bytes};
     use std::{cell::Cell,rc::Rc};
     let dir=law_input("quotient-stop","law optional same(s:State,b:Bool):s.x=b;");
-    for case in 0..6 {
+    for case in 0..7 {
         let mode=case%3;
         let seen=Rc::new(Cell::new(0));let count=seen.clone();
         let mut c=Control::new(Limits{time_ms:Some(1),memory_mib:Some(1)},move|point|{
             if point==Checkpoint::Quotient {count.set(count.get()+1);}
-            if count.get()==2 {match mode {
+            let stop=if case==6 {count.get()>=2 && point==Checkpoint::FiniteLawOperand} else {count.get()==2};
+            if stop {match mode {
                 0=>Usage{elapsed_ms:2,..Usage::default()},1=>Usage{memory_mib:2,..Usage::default()},
                 _=>Usage{signal:Some(archsig::result::Signal::Term),..Usage::default()},
             }}else{Usage::default()}
@@ -200,7 +201,7 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
         let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
         let quotient=if case<3 {"q=quotient(Pair.last,on=$s.domain,s=@v/s)"} else {"q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.same)"};
         let result=evaluate_observed_bytes(sources,&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",quotient,"later=evaluate(Pair.last,s=@v/s)"],&mut c).unwrap();
-        assert_eq!(seen.get(),2);
+        if case==6 {assert!(seen.get()>=2);} else {assert_eq!(seen.get(),2);}
         let wire=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();let answers=arr(get(&wire,"answers"));
         assert_eq!(s(get(&answers[0],"status")),"established");assert!(has(get(&answers[0],"outputs"),"solutions"));
         assert!(!has(get(&answers[1],"outputs"),"quotient"));
@@ -529,4 +530,24 @@ fn quotient_law_preserves_composite_operand_and_guard_evaluation_children() {
     assert_eq!(reused.code,1,"{} {}",reused.stdout,reused.stderr);
     let reused=result_json(&dir,&reused);
     for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
+}
+#[test]
+fn quotient_numeric_law_retains_typed_residual_and_false_values_under_true_descent() {
+    let dir=law_input("quotient-law-numeric","law optional numeric(s:State):1=2;law optional tuple(s:State):(1,2)=(3,1);view rational():Q=rat(1,2);view modular():Fp(3)=1;law optional ratio(s:State):rational()=1;law optional prime(s:State):modular()=2;");
+    let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.numeric)","t=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.tuple)","qrat=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.ratio)","qfp=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.prime)"],None);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let result=result_json(&dir,&r);
+    for index in 1..=4 {
+        assert_eq!(s(get(&arr(get(&result,"answers"))[index],"status")),"established");
+        for reference in arr(get(quotient(&result,index),"evaluations")) {
+            let evaluation=get(node(&result,reference),"value");
+            assert_eq!(get(node(&result,get(evaluation,"value")),"value").value,JValue::Bool(false));
+            let residual=get(node(&result,get(&arr(get(evaluation,"parts"))[0],"residual")),"value");
+            match index {
+                1=>assert_eq!(s(residual),"-1"),
+                2=>{let values=arr(residual);assert_eq!(s(&values[0]),"-2");assert_eq!(s(&values[1]),"1");},
+                3=>{let values=arr(residual);assert_eq!(s(&values[0]),"-1");assert_eq!(s(&values[1]),"2");},
+                4=>assert_eq!(s(residual),"2"),_=>unreachable!(),
+            }
+        }
+    }
 }

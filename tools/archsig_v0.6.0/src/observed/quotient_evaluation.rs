@@ -15,6 +15,7 @@ pub(in crate::observed) struct EvaluationNode {
     pub expression: usize,
     pub bindings: Vec<(String, Scalar)>,
     pub value: Option<Scalar>,
+    pub residual: Option<Scalar>,
     pub scope: Scope,
     pub children: Vec<usize>,
 }
@@ -138,7 +139,7 @@ pub(in crate::observed) fn compute(
             }
         }
     }
-    for (index, candidate) in candidates.rows.iter().enumerate() {
+    'candidates: for (index, candidate) in candidates.rows.iter().enumerate() {
         c.checkpoint(Checkpoint::Quotient)?;
         if candidate.update.state == change_evaluation::State::Excluded {
             continue;
@@ -227,7 +228,10 @@ pub(in crate::observed) fn compute(
                     let mut absent = vec![];
                     let values = change_search::domain(&env, &param.ty, param.span, &mut absent)?;
                     missing.extend(absent);
-                    let Some(values) = values else { return Err(unsupported(request, "商のLaw parameter域が未確定")); };
+                    let Some(values) = values else {
+                        if !missing.is_empty() { break 'candidates; }
+                        return Err(unsupported(request, "商のLaw parameter域が未確定"));
+                    };
                     values
                 };
                 let mut next = vec![];
