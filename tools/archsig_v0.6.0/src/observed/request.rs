@@ -858,20 +858,8 @@ fn available(
     resolved: ResolvedRequests,
     control: &mut Control,
 ) -> Result<ResolvedRequests, ResolveFailure> {
-    for request in &resolved.requests {
+    for _request in &resolved.requests {
         phase(control, Checkpoint::RequestDependency)?;
-        if request.kind == QuestionKind::Map
-            && request.arguments.iter().any(|a| {
-                a.name == "kind"
-                    && matches!(&a.value, Selector::Enum { value } if value == "object_algebra")
-            })
-        {
-            return Err(ResolveFailure::NotApplicable {
-                request: request.id.clone(),
-                kind: request.kind.wire().into(),
-                architecture_environment: false,
-            });
-        }
     }
     Ok(resolved)
 }

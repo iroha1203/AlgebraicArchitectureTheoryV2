@@ -32,17 +32,17 @@ fn bindings(v: &[Binding]) -> Json {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-struct Part {
-    ty: NodeType,
-    construction: &'static str,
-    wire: Json,
-    arguments: Vec<NodeRef>,
-    support: Vec<Fact>,
-    scope: Scope,
-    reasons: Vec<Reason>,
-    judgment: Option<Judgment>,
-    evidence: Vec<NodeRef>,
-    scalar: Option<Scalar>,
+pub(super) struct Part {
+    pub(super) ty: NodeType,
+    pub(super) construction: &'static str,
+    pub(super) wire: Json,
+    pub(super) arguments: Vec<NodeRef>,
+    pub(super) support: Vec<Fact>,
+    pub(super) scope: Scope,
+    pub(super) reasons: Vec<Reason>,
+    pub(super) judgment: Option<Judgment>,
+    pub(super) evidence: Vec<NodeRef>,
+    pub(super) scalar: Option<Scalar>,
 }
 #[derive(Debug)]
 pub(super) struct Source {
@@ -84,6 +84,9 @@ impl Data {
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         self.part().scalar.as_ref()
     }
+    pub(super) fn plan(&self) -> &Plan {
+        &self.source.plan
+    }
     pub(super) fn algebra_base(&self) -> Option<NodeRef> {
         (self.ty() == NodeType::Construction(T::ObjectAlgebra))
             .then(|| self.source.plan.objects.as_ref().map(|o| o.base))
@@ -100,13 +103,13 @@ impl Data {
     }
 }
 
-struct Builder<'a> {
-    g: &'a Graph,
-    base: usize,
-    parts: Vec<Part>,
+pub(super) struct Builder<'a> {
+    pub(super) g: &'a Graph,
+    pub(super) base: usize,
+    pub(super) parts: Vec<Part>,
 }
 impl Builder<'_> {
-    fn push(
+    pub(super) fn push(
         &mut self,
         ty: NodeType,
         construction: &'static str,
@@ -182,7 +185,7 @@ impl Builder<'_> {
             None,
         )
     }
-    fn proposition(
+    pub(super) fn proposition(
         &mut self,
         predicate: &str,
         operands: Vec<NodeRef>,
@@ -631,6 +634,16 @@ fn evaluate_inner(
         return Ok(answer);
     }
     let plan = build_plan::prepare(env, g, prepared.shared_inputs(), request, c)?;
+    retain_plan(env, g, plan, request, c)
+}
+
+pub(super) fn retain_plan(
+    env: &Environment<'_>,
+    g: &mut Graph,
+    plan: Plan,
+    request: &Request,
+    c: &mut Control,
+) -> Result<Answer, ValidationFailure> {
     let base = g.nodes.len();
     let (parts, answer) = compute(env, g, &plan, base, request, c)?;
     let source = Arc::new(Source {

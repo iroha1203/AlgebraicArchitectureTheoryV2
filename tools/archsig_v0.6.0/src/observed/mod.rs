@@ -200,4 +200,5 @@ mod build_circuit_plan;
 mod build_compare;
 mod build_plan;
 mod build_result;
+mod object_map_result;
 mod native_source;

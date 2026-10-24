@@ -65,6 +65,17 @@ pub(super) fn prepare(
 ) -> Result<Plan, ValidationFailure> {
     tick(c)?;
     let architecture = architecture_result::build(inputs.clone(), env, g, request, c)?;
+    prepare_architecture(env, g, inputs, architecture, c)
+}
+
+pub(super) fn prepare_architecture(
+    env: &Environment<'_>,
+    g: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    architecture: Architecture,
+    c: &mut Control,
+) -> Result<Plan, ValidationFailure> {
+    tick(c)?;
     let reference = architecture.reference;
     let mut objects = None;
     let mut patterns = None;
