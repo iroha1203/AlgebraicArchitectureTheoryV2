@@ -153,6 +153,7 @@ fn evaluation_parts(
 }
 
 fn compute(
+    env: &Environment<'_>,
     g: &Graph,
     a: &Arc<ArchitectureWitness>,
     t: &Table,
@@ -222,6 +223,7 @@ fn compute(
                 return Err("述語不変量の対象の元object_readingが一つでない".into());
             };
             let n = g.get(source.expression)?;
+            env.recheck_node(g, n, source.expression.0)?;
             g.expect(source.expression, &NodeType::Expression(Type::Bool))?;
             let origin = frames::origin(g, cells.origins[column])?
                 .ok_or("述語不変量の元Law評価由来がない")?;
@@ -420,7 +422,7 @@ pub(super) fn retain(
     t.recheck(env, g, c)?;
     let (a, components, objects) = components(g, &t)?;
     let base = g.nodes.len();
-    let (parts, outputs) = compute(g, &a, &t, components, &objects, base, c)?;
+    let (parts, outputs) = compute(env, g, &a, &t, components, &objects, base, c)?;
     let source = Arc::new(Source {
         architecture: a,
         table: t,
@@ -486,6 +488,7 @@ impl Environment<'_> {
             return Err("述語不変量の元入力/対象表が違う".into());
         }
         let (parts, outputs) = compute(
+            self,
             g,
             &a,
             &d.source.table,

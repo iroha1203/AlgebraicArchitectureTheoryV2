@@ -553,3 +553,66 @@ fn four_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefixes()
     }
     assert!(partial);
 }
+#[test]
+fn changed_original_reading_nodes_are_rejected_before_any_native_transfer() {
+    let p = prepared(
+        fixture::inputs(
+            false,
+            false,
+            "law required first(c:Part):c.quantity=0;law optional second(c:Part):c.quantity=0;",
+        ),
+        "root",
+    );
+    let (initial, t) = table(&p);
+    let (_, _, objects) = components(&initial, &t).unwrap();
+    let original = objects
+        .readings
+        .iter()
+        .filter(|r| r.object == 0)
+        .collect::<Vec<_>>();
+    assert_eq!(original.len(), 4);
+    let expression = original[0].expression;
+    let other = original[2].expression;
+    assert_eq!(
+        initial.get(expression).unwrap().ty,
+        initial.get(other).unwrap().ty
+    );
+    for mode in 0..10 {
+        let mut g = copy_graph(&initial, &quiet());
+        let alternative = g.get(other).unwrap().payload.clone();
+        let n = &mut g.nodes[expression.0];
+        match mode {
+            0 => n.rule = Rule::Construction("binding"),
+            1 => {
+                n.arguments.pop();
+            }
+            2 => n.support.clear(),
+            3 => n.scope = Scope::default(),
+            4 => {
+                n.judgment = Some(Judgment {
+                    status: Decision::Established,
+                    evidence: vec![],
+                    reasons: vec![],
+                })
+            }
+            5 => n.payload = alternative,
+            6 => g.contexts[expression.0].request = 1,
+            7 => g.contexts[expression.0].frame = Some(0),
+            8 => n.evidence.push(NodeRef(0)),
+            9 => n.ty = NodeType::Value(Type::Bool),
+            _ => unreachable!(),
+        }
+        let before = copy_graph(&g, &quiet());
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let result = retain(&env, &mut g, t.clone(), &mut quiet());
+        assert!(result.is_err(), "mode{mode}: {result:?}");
+        assert_eq!(g.nodes, before.nodes);
+        assert_eq!(g.contexts, before.contexts);
+        assert_eq!(g.instances, before.instances);
+        assert_eq!(g.frames, before.frames);
+        assert_eq!(g.iterations, before.iterations);
+        assert_eq!(g.cases, before.cases);
+        assert_eq!(g.active, before.active);
+        assert!(env.architecture_ref().is_none());
+    }
+}
