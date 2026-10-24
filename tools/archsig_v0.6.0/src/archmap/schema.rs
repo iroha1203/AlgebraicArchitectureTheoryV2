@@ -6,7 +6,10 @@ use crate::json::InputError;
 use crate::json::{JNode, JValue, pointer_push};
 use crate::observed::control::{Checkpoint, Control};
 use std::collections::HashSet;
+#[path = "delta.rs"]
+mod delta;
 
+#[derive(Clone)]
 pub struct RawSubject {
     pub id: String,
     pub ty: String,
@@ -14,15 +17,18 @@ pub struct RawSubject {
     pub pointer: String,
 }
 
+#[derive(Clone)]
 pub struct RawAtom<'a> {
     pub id: String,
     pub subject: String,
     pub field: String,
     pub value: &'a JNode,
+    pub rebases: Vec<(String, String)>,
     pub origin: String,
     pub pointer: String,
 }
 
+#[derive(Clone)]
 pub struct RawSnapshot<'a> {
     pub id: String,
     pub origin: String,
@@ -539,96 +545,7 @@ fn read_document_inner<'a, E: InputError>(
     }
 
     let (items, ptr) = top.array("snapshots")?;
-    let mut snapshots = Vec::new();
-    let mut ids = HashSet::new();
-    for (i, v) in items.iter().enumerate() {
-        E::checkpoint(control, Checkpoint::ArchMapIteration)?;
-        let p = format!("{ptr}/{i}");
-        let o = Obj::<E>::new(v, &p, &["id", "origin", "subjects", "atoms"], &[], control)?;
-        let id = o.id("id")?;
-        if !ids.insert(id.clone()) {
-            return Err((issue(
-                Code::DuplicateId,
-                &format!("{p}/id"),
-                format!("snapshot `{id}` が重複している"),
-            ))
-            .into());
-        }
-        let origin = o.id("origin")?;
-        let (subs, sptr) = o.array("subjects")?;
-        let mut subjects = Vec::new();
-        let mut sub_ids = HashSet::new();
-        for (j, s) in subs.iter().enumerate() {
-            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
-            let sp = format!("{sptr}/{j}");
-            let so = Obj::<E>::new(s, &sp, &["id", "type", "origin"], &[], control)?;
-            let sid = so.id("id")?;
-            if !sub_ids.insert(sid.clone()) {
-                return Err((issue(
-                    Code::DuplicateId,
-                    &format!("{sp}/id"),
-                    format!("subject `{sid}` が重複している"),
-                ))
-                .into());
-            }
-            let ty = so.string("type")?;
-            qname::<E>(
-                &ty,
-                control,
-                Some(&|| syntax(&format!("{sp}/type"), "type は宣言の完全名")),
-            )?;
-            subjects.push(RawSubject {
-                id: sid,
-                ty,
-                origin: so.id("origin")?,
-                pointer: sp,
-            });
-        }
-        let (ats, aptr) = o.array("atoms")?;
-        let mut atoms = Vec::new();
-        let mut atom_ids = HashSet::new();
-        for (j, a) in ats.iter().enumerate() {
-            E::checkpoint(control, Checkpoint::ArchMapIteration)?;
-            let ap = format!("{aptr}/{j}");
-            let ao = Obj::<E>::new(
-                a,
-                &ap,
-                &["id", "subject", "field", "value", "origin"],
-                &[],
-                control,
-            )?;
-            let aid = ao.id("id")?;
-            if !atom_ids.insert(aid.clone()) {
-                return Err((issue(
-                    Code::DuplicateId,
-                    &format!("{ap}/id"),
-                    format!("Atom `{aid}` が重複している"),
-                ))
-                .into());
-            }
-            let field = ao.string("field")?;
-            qname::<E>(
-                &field,
-                control,
-                Some(&|| syntax(&format!("{ap}/field"), "field は完全名")),
-            )?;
-            atoms.push(RawAtom {
-                id: aid,
-                subject: ao.id("subject")?,
-                field,
-                value: ao.req("value")?.0,
-                origin: ao.id("origin")?,
-                pointer: ap,
-            });
-        }
-        snapshots.push(RawSnapshot {
-            id,
-            origin,
-            pointer: p,
-            subjects,
-            atoms,
-        });
-    }
+    let snapshots = delta::read_snapshots::<E>(items, &ptr, control)?;
     Ok(RawDocument {
         vocabularies,
         sources,
