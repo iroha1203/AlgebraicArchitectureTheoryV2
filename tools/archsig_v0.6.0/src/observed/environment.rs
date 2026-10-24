@@ -359,6 +359,7 @@ pub(crate) struct Environment<'a> {
     expressions: BTreeMap<(usize, usize), usize>,
     dotted_candidates: BTreeMap<(usize, usize), Vec<DottedOccurrence>>,
     // 元三入力にのみ依存する不変族。Arcを保持し、同一性の再利用を防ぐ。
+    pub(super) verified_view_transports: RefCell<Vec<super::object_view_map::KernelCacheEntry>>,
     pub(super) verified_law_transports: RefCell<Vec<super::object_law_map::KernelCacheEntry>>,
     verified_relation_families: RefCell<Vec<std::sync::Arc<crate::observed::public_compare::relation_sources::Family>>>,
     pub(super) verified_finite_law_diagrams: RefCell<Vec<std::sync::Arc<super::finite_law_diagram::Source>>>,
@@ -517,6 +518,7 @@ impl<'a> Environment<'a> {
             snapshot_origins,
             expressions,
             dotted_candidates,
+            verified_view_transports: RefCell::new(vec![]),
             verified_law_transports: RefCell::new(vec![]),
             verified_relation_families: RefCell::new(vec![]),
             verified_finite_law_diagrams: RefCell::new(vec![]),

@@ -412,6 +412,14 @@ reading After {{{uses} law required zero(s:State):s.free=4;}}"#
     let outputs = get(answer(&result, "m"), "outputs");
     assert!(has(outputs, "operation"));
     assert!(!has(outputs, "map"));
+    // Lawの反証条件は、独立に成立する空SignatureMapの成立条件ではない。
+    for n in arr(get(&result, "nodes")) {
+        if matches!(&get(n, "type").value, archsig::json::JValue::Str(t) if t == "SignatureMap") {
+            if has(n, "conditions") {
+                assert!(arr(get(n, "conditions")).is_empty());
+            }
+        }
+    }
     let predicates = arr(get(&result, "nodes"))
         .iter()
         .filter(|n| matches!(&get(n, "type").value, archsig::json::JValue::Str(t) if t == "Proposition"))
@@ -555,4 +563,137 @@ reading After {{{uses} law {role} zero(s:State):{body};}}"#
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
         std::fs::remove_dir_all(dir).unwrap();
     }
+}
+
+#[test]
+fn closed_view_map_preserves_option_values_all_axes_and_following_queries() {
+    let dir = inputs("public-closed-view-map");
+    // sourceの三つの異なる実観測値を、対応先でも保存する入力。
+    // 元fixtureの数量が変わる移送は次の負系でそのまま検査する。
+    let archmap = include_str!("fixtures/object-configuration-map.archmap.json")
+        .replace(r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"4""#,
+                 r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"2""#)
+        .replace(r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"3""#,
+                 r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"1""#);
+    std::fs::write(dir.join("a.json"), archmap).unwrap();
+    std::fs::write(dir.join("l.law"), r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Alternative {
+use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+view holdings(s: State): (Z, Z) = (s.free, s.held);
+view enabled(s: State): Bool = s.free >= 0;
+law required conserved(e: Reserve): e.to.free+e.to.held=e.from.free+e.from.held;
+}"#).unwrap();
+    let run = asks_with_limit(&dir, &[
+        "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
+        "b=build(Alternative,on=$m.map.target.base.subject)",
+        "n=evaluate(Alternative.holdings,on=$b.object,s=@v/r)",
+        "flag=evaluate(Alternative.enabled,on=$b.object,s=@v/r)",
+        "ok=check(Alternative.conserved,on=$b.object,e=@v/f)",
+    ], "360000");
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(&result, "status")), "complete");
+    for id in ["m", "b", "n", "flag", "ok"] {
+        assert_eq!(s(get(answer(&result, id), "status")), "established");
+    }
+    assert_eq!(arr(value(&result, get(get(answer(&result, "n"), "outputs"), "value"))).iter().map(s).collect::<Vec<_>>(), vec!["2", "0"]);
+    let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+    assert_eq!(arr(get(map, "invariants")).len(), 7);
+    let signature = value(&result, get(map, "signature"));
+    let axes = arr(get(signature, "axes"));
+    assert_eq!(axes.len(), 6);
+    for axis in axes {
+        let arguments = arr(get(node(&result, get(map, "signature")), "arguments"));
+        for name in ["source", "target", "coordinates", "selected"] {
+            assert!(arguments.iter().any(|r| s(get(r, "node")) == s(get(get(axis, name), "node"))));
+        }
+        assert_eq!(arr(get(axis, "checks")).len(), 4);
+        assert_eq!(s(get(get(node(&result, get(axis, "selected")), "judgment"), "status")), "established");
+        let equivalence = value(&result, get(axis, "coordinates"));
+        for direction in ["forward", "inverse"] {
+            let map = value(&result, get(equivalence, direction));
+            for domain in ["source", "target"] {
+                let domain = value(&result, get(map, domain));
+                assert_eq!(s(get(domain, "kind")), "type");
+                assert_eq!(s(&arr(get(domain, "type"))[0]), "Option");
+            }
+            assert!(arr(get(map, "subjects")).is_empty());
+            assert!(arr(get(map, "generators")).is_empty());
+        }
+        for inverse in ["left_inverse", "right_inverse"] {
+            let proof = value(&result, get(equivalence, inverse));
+            assert_eq!(s(get(proof, "predicate")), "inverse_maps");
+            assert!(!arr(get(proof, "quantifiers")).is_empty());
+        }
+        for row in arr(get(axis, "checks")) {
+            assert_eq!(s(get(value(&result, get(row, "commutes")), "predicate")), "signature_transport");
+        }
+    }
+    for r in arr(get(map, "invariants")) {
+        let invariant = value(&result, r);
+        if s(get(invariant, "kind")) == "function" {
+            assert_eq!(arr(get(invariant, "checks")).len(), 4);
+            for row in arr(get(invariant, "checks")) {
+                assert_eq!(s(get(value(&result, get(row, "commutes")), "predicate")), "invariant_transport");
+            }
+        }
+    }
+}
+
+#[test]
+fn closed_view_map_refutes_changed_values_and_keeps_configuration_operation() {
+    let dir = inputs("public-closed-view-changes");
+    std::fs::write(dir.join("a.json"), include_bytes!("fixtures/object-configuration-map.archmap.json")).unwrap();
+    std::fs::write(dir.join("l.law"), r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Alternative {
+use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+view holdings(s: State): (Z, Z) = (s.free,s.held);
+}"#).unwrap();
+    let run = asks_with_limit(&dir, &[
+        "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
+        "base=map(Reservations.Migration,on=@v/m,reading=Alternative)",
+        "same=compare($m.operation,to=$base.operation,kind=action)",
+    ], "360000");
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let m = answer(&result, "m");
+    assert_eq!(s(get(m, "status")), "refuted");
+    assert!(!has(get(m, "outputs"), "map"));
+    assert!(has(get(m, "outputs"), "operation"));
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+    assert!(!arr(get(&result, "nodes")).iter().any(|n| {
+        matches!(&get(n, "type").value, archsig::json::JValue::Str(t) if t == "SignatureMap")
+    }));
+    for name in ["invariant_transport", "signature_transport"] {
+        assert!(arr(get(&result, "nodes")).iter().any(|n| {
+            has(n, "value") && has(get(n, "value"), "predicate")
+                && s(get(get(n, "value"), "predicate")) == name
+                && s(get(get(n, "judgment"), "status")) == "refuted"
+        }));
+    }
+}
+
+#[test]
+fn closed_view_transport_stop_retains_only_the_checked_operation() {
+    use archsig::observed::{control::{Checkpoint, Control, Limits, Usage}, evaluate_observed_bytes, input::InputSources};
+    let mut control = Control::new(Limits { time_ms: None, memory_mib: None }, |point| Usage {
+        elapsed_ms: 0, memory_mib: 0,
+        signal: (point == Checkpoint::ObjectViewTransport).then_some(archsig::result::Signal::Term),
+    });
+    let law = br#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Alternative {
+use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+view holdings(s: State): (Z,Z) = (s.free,s.held);
+}"#;
+    let result = evaluate_observed_bytes(InputSources::from_bytes(
+        vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()], law.to_vec(),
+        include_bytes!("fixtures/object-configuration-map.archmap.json").to_vec(),
+    ), &["m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)"], &mut control).unwrap();
+    assert_eq!(result.status(), "interrupted");
+    let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let m = answer(&wire, "m");
+    assert_eq!(s(get(m, "status")), "undetermined");
+    assert!(has(get(m, "outputs"), "operation"));
+    assert!(!has(get(m, "outputs"), "map"));
+    assert!(!has(get(m, "outputs"), "proposition"));
 }

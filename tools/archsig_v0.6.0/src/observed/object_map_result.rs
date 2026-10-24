@@ -80,6 +80,7 @@ impl Data {
                     | T::CircuitMap
                     | T::InvariantMap
                     | T::SignatureMap
+                    | T::ValueEquivalence
             )
         ) {
             return vec![];
@@ -189,12 +190,12 @@ pub(super) fn extend(
     )
     .map_err(failure)?;
     let algebras = if declarations.all_signatures_compatible() {
-        // Law以外の読取りには値・signature・句の移送配送も必要。
+        // local/change/relationには句の移送配送も必要。
         // 未対応の宣言を空の表へ置換しない。
         if declarations
             .candidates()
             .iter()
-            .any(|d| d.source().kind != "law")
+            .any(|d| !matches!(d.source().kind, "law" | "view"))
         {
             return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
         }
@@ -310,7 +311,7 @@ fn compute_inner(
         if declarations
             .candidates()
             .iter()
-            .any(|d| d.source().kind != "law")
+            .any(|d| !matches!(d.source().kind, "law" | "view"))
         {
             return Err("ObjectAlgebra mapの読取り宣言配送は未実装".into());
         }
@@ -552,14 +553,25 @@ fn compute_inner(
                     None,
                 )?);
             }
-            signature = Some(b.push(
-                NodeType::Construction(T::SignatureMap),
-                "signature_map",
-                Json::obj([("axes", Json::Arr(vec![]))]),
-                vec![left, right],
-                None,
-                None,
-            )?);
+            let views = super::object_view_map::retain(
+                env, &mut b, &origin.shared_inputs(), &declarations, [a, z], c,
+            )?;
+            preserved &= views.preserved;
+            let mut signature_dependencies = views.conditions.clone();
+            signature_dependencies.extend(views.axis_dependencies);
+            invariant_maps.extend(views.invariants);
+            dependencies.extend(views.conditions);
+            dependencies.extend(invariant_maps.iter().copied());
+            if views.preserved {
+                signature = Some(b.push(
+                    NodeType::Construction(T::SignatureMap),
+                    "signature_map",
+                    Json::obj([("axes", Json::Arr(views.axes))]),
+                    signature_dependencies.into_iter().chain([left, right]).collect(),
+                    None,
+                    None,
+                )?);
+            }
             dependencies.extend(equation_map);
             dependencies.extend(signature);
         }
