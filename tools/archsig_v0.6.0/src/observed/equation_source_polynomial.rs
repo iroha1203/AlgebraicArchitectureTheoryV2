@@ -300,6 +300,32 @@ pub(super) fn operands(
         ring: &mut candidate,
         variables,
     };
+    // shapeは外側のletを除いた左右を指す。元bodyから同じlexical束縛を
+    // 順に復元してから翻訳し、局所名を未束縛の原始変数に変えない。
+    let Signature::Law { body, .. } = &inputs
+        .law()
+        .declarations
+        .get(&instance.declaration().name)
+        .ok_or_else(|| bad("原式のLaw宣言がない"))?
+        .signature
+    else {
+        return Err(bad("原式の宣言がLawでない"));
+    };
+    let mut cursor = *body;
+    loop {
+        tick(c)?;
+        match &inputs.law().exprs[cursor].kind {
+            ExprKind::Group(child) => cursor = *child,
+            ExprKind::Let { name, value, body } => {
+                let Some(value) = compiler.expression(*value, &[], c)? else {
+                    return Ok(None);
+                };
+                compiler.variables.insert(name.name.clone(), value);
+                cursor = *body;
+            }
+            _ => break,
+        }
+    }
     let Some(Binding::Polynomial(left)) = compiler.expression(left, path, c)? else {
         return Ok(None);
     };

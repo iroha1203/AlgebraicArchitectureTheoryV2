@@ -201,7 +201,8 @@ fn projection_table_rejects_metadata_and_static_bounds_but_keeps_dynamic_conditi
 #[test]
 fn architecture_on_is_checked_as_a_handle_while_other_kinds_remain_unimplemented() {
     let (law, map) = inputs();
-    for text in ["a=build(R,on=@v/s)", "a=diagnose($d.system,degree=1)"] {
+    assert!(resolve_observed_requests(&law, &map, &["a=build(R,on=@v/s)"]).is_ok());
+    for text in ["a=diagnose($d.system,degree=1)"] {
         assert!(matches!(
             resolve_observed_requests(&law, &map, &[text]),
             Err(ResolveFailure::NotApplicable {

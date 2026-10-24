@@ -378,3 +378,22 @@ fn incompatible_extension_keeps_counterexample_and_reusable_object() {
     );
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn lexical_law_bindings_survive_outside_rows_and_public_consumption() {
+    for (index, body) in [
+        "view amount(c:Part):Z=c.quantity;law required zero(c:Part):let x=c.quantity in x=0;",
+        "view amount(c:Part):Z=c.quantity;law required zero(c:Part):let x=c.quantity in let y=x+1 in y=1;",
+        "view amount(c:Part):Z=c.quantity;law required zero(c:Part):let x=(c.quantity,0) in x=(0,0);",
+    ].iter().enumerate() {
+        let dir = files(&format!("public-build-lexical-{index}"), body, false);
+        let run = asks(&dir, &["b=build(R,on=@v/root)", "n=evaluate(R.amount,on=$b.object,c=@v/q)", "bad=check(R.zero,on=$b.object,c=@v/q)"]);
+        let result = saved(&dir, &run, "complete", 1);
+        assert_eq!(s(get(answer(&result, "b"), "status")), "established");
+        assert_eq!(s(get(answer(&result, "bad"), "status")), "refuted");
+        assert_eq!(s(value(&result, get(get(answer(&result, "n"), "outputs"), "value"))), "1");
+        let algebra = value(&result, get(get(answer(&result, "b"), "outputs"), "algebra"));
+        assert_eq!(arr(get(algebra, "circuits")).len(), if index == 2 { 4 } else { 2 });
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
