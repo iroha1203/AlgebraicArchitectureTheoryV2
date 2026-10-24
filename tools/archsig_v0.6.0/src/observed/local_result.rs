@@ -36,7 +36,7 @@ pub(super) struct Source {
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct System {
     parameters: NodeRef,
-    law: NodeRef,
+    laws: Vec<NodeRef>,
     expression: NodeRef,
     semantic: NodeRef,
     equation: NodeRef,
@@ -266,31 +266,9 @@ fn compute(
                 .map(|d| d.name.clone())
                 .collect()
         };
-        if names.len() != 1 {
-            return Err(unsupported("複数または空のLaw族の局所系は未実装"));
+        if names.is_empty() {
+            return Err(unsupported("空のLaw族の局所系は未実装"));
         }
-        let declaration = &env.inputs.law().declarations[&names[0]];
-        if declaration.reading != reading {
-            return Err(unsupported("対象Architectureと局所Lawのreadingが異なる"));
-        }
-        let Signature::Law {
-            role,
-            params,
-            guard,
-            body,
-        } = &declaration.signature
-        else {
-            return Err("局所系の指定宣言がLawでない".into());
-        };
-        let mut reading_roots = match env.inputs.law().exprs[*body].kind {
-            ExprKind::Binary {
-                op: BinOp::Eq,
-                lhs,
-                rhs,
-            } => vec![lhs, rhs],
-            _ => vec![*body],
-        };
-        reading_roots.extend(*guard);
         let assignments = match &original.data {
             D::Change(d) => d.overrides(g)?,
             D::Quotient(d) => d.overrides(g)?,
@@ -302,132 +280,311 @@ fn compute(
         let mut fixed = Environment::try_primitive_valuation(env.inputs, &assignments, c)?
             .ok_or("固定Architectureの値が不適合")?;
         fixed.select_local_object(witness, c)?;
-        let mut bindings = vec![];
-        let mut universal = vec![];
-        let mut missing = vec![];
-        for p in params {
-            let value = if let Some(a) = request
-                .arguments
-                .iter()
-                .find(|a| a.name == format!("bind.{}", p.name))
-            {
-                change_search::selector(env, g, &a.value)?
-            } else {
-                let Some(mut values) = change_search::domain(&fixed, &p.ty, p.span, &mut missing)?
-                else {
-                    return Err(unsupported("局所Lawのparameter域が未確定"));
-                };
-                if values.len() != 1 {
-                    return Err(unsupported("複数instanceの局所系は未実装"));
-                }
-                universal.push(p);
-                values.remove(0)
-            };
-            bindings.push((p.name.clone(), value));
-        }
-        let mut carrier = bindings
-            .iter()
-            .filter(|(_, v)| matches!(v, Scalar::Subject { .. }))
-            .map(|(_, v)| Json::obj([("type", v.ty().wire()), ("value", v.wire())]))
-            .collect::<Vec<_>>();
-        let (row, read_missing, evaluated) = fixed.local_point(declaration, &bindings)?;
-        for fact in &row.support {
-            let subject = env.subject(&fact.snapshot, &fact.subject)?;
-            let v = Scalar::Subject {
-                snapshot: fact.snapshot.clone(),
-                subject: fact.subject.clone(),
-                entity: subject.ty.clone(),
-            };
-            carrier.push(Json::obj([("type", v.ty().wire()), ("value", v.wire())]));
-        }
-        for read in &evaluated {
-            if let Some(value @ Scalar::Subject { .. }) = &read.value {
-                carrier.push(Json::obj([
-                    ("type", value.ty().wire()),
-                    ("value", value.wire()),
-                ]));
+        let mut evaluations = vec![];
+        for name in &names {
+            let declaration = &env.inputs.law().declarations[name];
+            if declaration.reading != reading {
+                return Err(unsupported("対象Architectureと局所Lawのreadingが異なる"));
             }
+            let Signature::Law {
+                params,
+                guard,
+                body,
+                ..
+            } = &declaration.signature
+            else {
+                return Err("局所系の指定宣言がLawでない".into());
+            };
+            let mut reading_roots = match env.inputs.law().exprs[*body].kind {
+                ExprKind::Binary {
+                    op: BinOp::Eq,
+                    lhs,
+                    rhs,
+                } => vec![lhs, rhs],
+                _ => vec![*body],
+            };
+            reading_roots.extend(*guard);
+            let mut bindings = vec![];
+            let mut universal = vec![];
+            let mut missing = vec![];
+            for p in params {
+                let value = if let Some(a) = request
+                    .arguments
+                    .iter()
+                    .find(|a| a.name == format!("bind.{}", p.name))
+                {
+                    change_search::selector(env, g, &a.value)?
+                } else {
+                    let Some(mut values) =
+                        change_search::domain(&fixed, &p.ty, p.span, &mut missing)?
+                    else {
+                        return Err(unsupported("局所Lawのparameter域が未確定"));
+                    };
+                    if values.len() != 1 {
+                        return Err(unsupported("複数instanceの局所系は未実装"));
+                    }
+                    universal.push(p);
+                    values.remove(0)
+                };
+                bindings.push((p.name.clone(), value));
+            }
+            let mut carrier = bindings
+                .iter()
+                .filter(|(_, v)| matches!(v, Scalar::Subject { .. }))
+                .map(|(_, v)| Json::obj([("type", v.ty().wire()), ("value", v.wire())]))
+                .collect::<Vec<_>>();
+            let (row, read_missing, evaluated) = fixed.local_point(declaration, &bindings)?;
+            for fact in &row.support {
+                let subject = env.subject(&fact.snapshot, &fact.subject)?;
+                let v = Scalar::Subject {
+                    snapshot: fact.snapshot.clone(),
+                    subject: fact.subject.clone(),
+                    entity: subject.ty.clone(),
+                };
+                carrier.push(Json::obj([("type", v.ty().wire()), ("value", v.wire())]));
+            }
+            for read in &evaluated {
+                if let Some(value @ Scalar::Subject { .. }) = &read.value {
+                    carrier.push(Json::obj([
+                        ("type", value.ty().wire()),
+                        ("value", value.wire()),
+                    ]));
+                }
+            }
+            carrier.sort_by_key(Json::canonical);
+            carrier.dedup();
+
+            missing.extend(read_missing);
+            let mut positions = row
+                .support
+                .iter()
+                .filter(|f| f.field.is_some())
+                .map(|f| Fact {
+                    atom: None,
+                    ..f.clone()
+                })
+                .collect::<Vec<_>>();
+            positions.sort();
+            positions.dedup();
+            evaluations.push((
+                declaration,
+                bindings,
+                universal,
+                row,
+                missing,
+                evaluated,
+                carrier,
+                positions,
+                reading_roots,
+            ));
         }
-        carrier.sort_by_key(Json::canonical);
-        carrier.dedup();
-        let carrier_size = carrier.len();
-        missing.extend(read_missing);
         let mut b = Builder {
             g,
             base,
             parts: vec![],
         };
-        let bindings = bindings
-            .iter()
-            .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
-            .collect::<Result<Vec<_>, ValidationFailure>>()?;
-        let mut quantifiers = vec![];
         let mut scope_domains = vec![];
-        for p in universal {
-            let value = bindings
-                .iter()
-                .find(|(n, _)| n == &p.name)
-                .ok_or("局所量化の束縛がない")?
-                .1;
-            let domain = domain(&mut b, &p.ty.erase(), &[value])?;
-            scope_domains.push((domain, p.ty.erase()));
-            quantifiers.push(Quantifier {
-                kind: crate::law::ast::QuantKind::Forall,
-                name: p.name.clone(),
-                ty: p.ty.erase(),
-                domain: Some(domain),
-                occurrence: p.span,
-                context: Some(env.current_context(g)),
-            });
-        }
-        let guard_expression = guard
-            .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &[]))
-            .transpose()?;
-        let expression = change_result::source_expression(&mut b, env, *body, &bindings, &[])?;
-        b.parts[expression.0 - base]
-            .arguments
-            .extend(quantifiers.iter().filter_map(|q| q.domain));
-        b.parts[expression.0 - base]
-            .scope
-            .quantifiers
-            .extend(quantifiers);
-        b.parts[expression.0 - base].arguments.push(target);
-        b.parts[expression.0 - base]
-            .scope
-            .merge(&g.get(target)?.scope);
-        b.parts[expression.0 - base].scope.merge(&row.scope);
-        if let Some(reference) = guard_expression {
-            b.parts[expression.0 - base].arguments.push(reference);
-        }
-        let known = row.application == Some(true)
-            && !row.condition_failed
-            && !row.condition_pending
-            && (row.guard == Some(false) || (row.guard == Some(true) && row.predicate.is_some()))
-            && missing.is_empty();
-        if !known {
-            missing.extend(row.application_missing);
-            missing.extend(
-                row.support
-                    .iter()
-                    .filter(|f| f.field.is_some() && f.atom.is_none())
-                    .cloned(),
-            );
-            missing.sort();
-            missing.dedup();
-            if missing.is_empty() {
-                return Err(unsupported("局所Lawの適用条件または値が未確定"));
-            }
-            let reason = Reason {
-                kind: ReasonKind::Missing,
-                request: request.id.clone(),
-                dependencies: vec![expression],
-                missing,
-                location: Some(Location::Law {
-                    span: declaration.span,
-                }),
+        let mut laws = vec![];
+        let mut expressions = vec![];
+        let mut reasons = vec![];
+        let mut inhabited = true;
+        let mut common = None;
+        let mut readings = vec![];
+        let mut reading_refs = vec![];
+        let mut retained = std::collections::BTreeSet::new();
+        for (
+            declaration,
+            bindings,
+            universal,
+            row,
+            mut missing,
+            evaluated,
+            carrier,
+            positions,
+            reading_roots,
+        ) in evaluations
+        {
+            let Signature::Law {
+                role, body, guard, ..
+            } = &declaration.signature
+            else {
+                return Err("局所系の指定宣言がLawでない".into());
             };
-            b.parts[expression.0 - base].reasons.push(reason.clone());
-            let scope = b.parts[expression.0 - base].scope.clone();
+            if let Some((prior_carrier, prior_positions)) = &common {
+                if prior_carrier != &carrier || prior_positions != &positions {
+                    return Err(unsupported("異なる支持contextのLaw族の局所系は未実装"));
+                }
+            } else {
+                common = Some((carrier, positions));
+            }
+            let bindings = bindings
+                .iter()
+                .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
+                .collect::<Result<Vec<_>, ValidationFailure>>()?;
+            let mut quantifiers = vec![];
+            for p in universal {
+                let value = bindings
+                    .iter()
+                    .find(|(n, _)| n == &p.name)
+                    .ok_or("局所量化の束縛がない")?
+                    .1;
+                let domain = domain(&mut b, &p.ty.erase(), &[value])?;
+                scope_domains.push((domain, p.ty.erase()));
+                quantifiers.push(Quantifier {
+                    kind: crate::law::ast::QuantKind::Forall,
+                    name: p.name.clone(),
+                    ty: p.ty.erase(),
+                    domain: Some(domain),
+                    occurrence: p.span,
+                    context: Some(env.current_context(g)),
+                });
+            }
+            let guard_expression = guard
+                .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &[]))
+                .transpose()?;
+            let expression = change_result::source_expression(&mut b, env, *body, &bindings, &[])?;
+            b.parts[expression.0 - base]
+                .arguments
+                .extend(quantifiers.iter().filter_map(|q| q.domain));
+            b.parts[expression.0 - base]
+                .scope
+                .quantifiers
+                .extend(quantifiers);
+            b.parts[expression.0 - base].arguments.push(target);
+            b.parts[expression.0 - base]
+                .scope
+                .merge(&g.get(target)?.scope);
+            b.parts[expression.0 - base].scope.merge(&row.scope);
+            if let Some(reference) = guard_expression {
+                b.parts[expression.0 - base].arguments.push(reference);
+            }
+            let known = row.application == Some(true)
+                && !row.condition_failed
+                && !row.condition_pending
+                && (row.guard == Some(false)
+                    || (row.guard == Some(true) && row.predicate.is_some()))
+                && missing.is_empty();
+            if !known {
+                missing.extend(row.application_missing);
+                missing.extend(
+                    row.support
+                        .iter()
+                        .filter(|f| f.field.is_some() && f.atom.is_none())
+                        .cloned(),
+                );
+                missing.sort();
+                missing.dedup();
+                if missing.is_empty() {
+                    return Err(unsupported("局所Lawの適用条件または値が未確定"));
+                }
+                let reason = Reason {
+                    kind: ReasonKind::Missing,
+                    request: request.id.clone(),
+                    dependencies: vec![expression],
+                    missing,
+                    location: Some(Location::Law {
+                        span: declaration.span,
+                    }),
+                };
+                b.parts[expression.0 - base].reasons.push(reason.clone());
+                reasons.push(reason);
+                expressions.push(expression);
+                continue;
+            }
+            inhabited &= row.guard == Some(false) || row.predicate == Some(true);
+            let law = b.push(
+                NodeType::LawInstance,
+                "law_instance",
+                Json::obj([
+                    ("name", Json::str(&declaration.name)),
+                    (
+                        "role",
+                        Json::str(if *role == crate::law::ast::Role::Required {
+                            "required"
+                        } else {
+                            "optional"
+                        }),
+                    ),
+                    (
+                        "occurrence",
+                        crate::result::location_wire(&Location::Law {
+                            span: declaration.span,
+                        }),
+                    ),
+                    (
+                        "bindings",
+                        Json::Arr(
+                            bindings
+                                .iter()
+                                .map(|(n, r)| {
+                                    Json::obj([("name", Json::str(n)), ("value", r.wire())])
+                                })
+                                .collect(),
+                        ),
+                    ),
+                    ("body", expression.wire()),
+                ]),
+                std::iter::once(expression)
+                    .chain(bindings.iter().map(|(_, r)| *r))
+                    .collect(),
+                None,
+                None,
+            )?;
+            if let Some(guard) = guard_expression {
+                let part = &mut b.parts[law.0 - base];
+                if let Json::Obj(wire) = &mut part.wire {
+                    wire.insert("guard".into(), guard.wire());
+                }
+                part.arguments.push(guard);
+            }
+            laws.push(law);
+            expressions.push(expression);
+            for read in evaluated.into_iter().filter(|n| {
+                reading_roots.contains(&n.expression)
+                    || match &env.inputs.law().exprs[n.expression].kind {
+                        ExprKind::Field { .. } => true,
+                        ExprKind::Dotted(parts) => {
+                            parts.len() > 1
+                                && n.bindings.iter().any(|(name, _)| *name == parts[0].name)
+                        }
+                        _ => false,
+                    }
+            }) {
+                let Some(value) = read.value else {
+                    return Err("確定した局所読取りの値がない".into());
+                };
+                let key = (
+                    read.expression,
+                    read.bindings
+                        .iter()
+                        .map(|(n, v)| (n.clone(), v.wire().canonical()))
+                        .collect::<Vec<_>>(),
+                );
+                if !retained.insert(key) {
+                    continue;
+                }
+                let bs = read
+                    .bindings
+                    .iter()
+                    .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
+                    .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                let expr =
+                    change_result::source_expression(&mut b, env, read.expression, &bs, &[])?;
+                let actual = change_result::value(&mut b, &value)?;
+                let image = domain(&mut b, &value.ty(), &[actual])?;
+                readings.push(Json::obj([
+                    ("expression", expr.wire()),
+                    ("type", value.ty().wire()),
+                    ("domain", image.wire()),
+                ]));
+                reading_refs.extend([expr, image]);
+            }
+        }
+        if !reasons.is_empty() {
+            let mut scope = Scope::default();
+            for expression in &expressions {
+                scope.merge(&b.parts[expression.0 - base].scope);
+            }
             return Ok(Source {
                 base,
                 parts: b.parts,
@@ -438,7 +595,7 @@ fn compute(
                     outputs: BTreeMap::new(),
                     claim: None,
                     evidence: vec![],
-                    reasons: vec![reason],
+                    reasons,
                     scope,
                 },
                 request: request.clone(),
@@ -446,61 +603,9 @@ fn compute(
                 system: None,
             });
         }
-        let inhabited = row.guard == Some(false) || row.predicate == Some(true);
-        let law = b.push(
-            NodeType::LawInstance,
-            "law_instance",
-            Json::obj([
-                ("name", Json::str(&declaration.name)),
-                (
-                    "role",
-                    Json::str(if *role == crate::law::ast::Role::Required {
-                        "required"
-                    } else {
-                        "optional"
-                    }),
-                ),
-                (
-                    "occurrence",
-                    crate::result::location_wire(&Location::Law {
-                        span: declaration.span,
-                    }),
-                ),
-                (
-                    "bindings",
-                    Json::Arr(
-                        bindings
-                            .iter()
-                            .map(|(n, r)| Json::obj([("name", Json::str(n)), ("value", r.wire())]))
-                            .collect(),
-                    ),
-                ),
-                ("body", expression.wire()),
-            ]),
-            std::iter::once(expression)
-                .chain(bindings.iter().map(|(_, r)| *r))
-                .collect(),
-            None,
-            None,
-        )?;
-        if let Some(guard) = guard_expression {
-            let part = &mut b.parts[law.0 - base];
-            if let Json::Obj(wire) = &mut part.wire {
-                wire.insert("guard".into(), guard.wire());
-            }
-            part.arguments.push(guard);
-        }
-        let mut positions = row
-            .support
-            .iter()
-            .filter(|f| f.field.is_some())
-            .map(|f| Fact {
-                atom: None,
-                ..f.clone()
-            })
-            .collect::<Vec<_>>();
-        positions.sort();
-        positions.dedup();
+        let (carrier, positions) = common.ok_or("局所系の支持がない")?;
+        let carrier_size = carrier.len();
+        let expression = *expressions.first().ok_or("局所Lawの原式がない")?;
         let mut slot_values = vec![];
         let mut slot_subjects = vec![];
         for position in &positions {
@@ -553,9 +658,12 @@ fn compute(
                 ("action", action.wire()),
                 ("instances", Json::Arr(vec![])),
                 ("guards", Json::Arr(vec![])),
-                ("requirements", refs(&[law])),
+                ("requirements", refs(&laws)),
             ]),
-            vec![target, point, space, action, law],
+            [target, point, space, action]
+                .into_iter()
+                .chain(laws.iter().copied())
+                .collect(),
             None,
             None,
         )?;
@@ -566,10 +674,13 @@ fn compute(
             "solution_set",
             Json::obj([
                 ("domain", candidates.wire()),
-                ("requirements", refs(&[law])),
+                ("requirements", refs(&laws)),
                 ("representation", representation.clone()),
             ]),
-            vec![candidates, law, states],
+            [candidates, states]
+                .into_iter()
+                .chain(laws.iter().copied())
+                .collect(),
             None,
             None,
         )?;
@@ -581,10 +692,11 @@ fn compute(
                 ("variables", Json::Arr(vec![])),
                 ("fixed", slots.clone()),
                 ("parameters", point.wire()),
-                ("requirements", refs(&[law])),
+                ("requirements", refs(&laws)),
             ]),
-            [target, point, law]
+            [target, point]
                 .into_iter()
+                .chain(laws.iter().copied())
                 .chain(slot_subjects.iter().copied())
                 .collect(),
             None,
@@ -601,47 +713,6 @@ fn compute(
             None,
             None,
         )?;
-        let mut readings = vec![];
-        let mut reading_refs = vec![];
-        let mut retained = std::collections::BTreeSet::new();
-        for read in evaluated.into_iter().filter(|n| {
-            reading_roots.contains(&n.expression)
-                || match &env.inputs.law().exprs[n.expression].kind {
-                    ExprKind::Field { .. } => true,
-                    ExprKind::Dotted(parts) => {
-                        parts.len() > 1 && n.bindings.iter().any(|(name, _)| *name == parts[0].name)
-                    }
-                    _ => false,
-                }
-        }) {
-            let Some(value) = read.value else {
-                return Err("確定した局所読取りの値がない".into());
-            };
-            let key = (
-                read.expression,
-                read.bindings
-                    .iter()
-                    .map(|(n, v)| (n.clone(), v.wire().canonical()))
-                    .collect::<Vec<_>>(),
-            );
-            if !retained.insert(key) {
-                continue;
-            }
-            let bs = read
-                .bindings
-                .iter()
-                .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
-                .collect::<Result<Vec<_>, ValidationFailure>>()?;
-            let expr = change_result::source_expression(&mut b, env, read.expression, &bs, &[])?;
-            let actual = change_result::value(&mut b, &value)?;
-            let image = domain(&mut b, &value.ty(), &[actual])?;
-            readings.push(Json::obj([
-                ("expression", expr.wire()),
-                ("type", value.ty().wire()),
-                ("domain", image.wire()),
-            ]));
-            reading_refs.extend([expr, image]);
-        }
         let context = b.push(
             NodeType::Construction(T::Context),
             "context",
@@ -651,10 +722,10 @@ fn compute(
                 ("carrier", Json::Arr(carrier)),
                 ("dependencies", slots),
                 ("readings", Json::Arr(readings)),
-                ("law_coordinates", refs(&[law])),
+                ("law_coordinates", refs(&laws)),
             ]),
             std::iter::once(target)
-                .chain([law])
+                .chain(laws.iter().copied())
                 .chain(reading_refs)
                 .chain(slot_subjects)
                 .collect(),
@@ -759,7 +830,7 @@ fn compute(
         }
         let mut fields = BTreeMap::from([
             ("base".into(), target.wire()),
-            ("laws".into(), refs(&[law])),
+            ("laws".into(), refs(&laws)),
             ("contexts".into(), refs(&[context])),
             ("maps".into(), refs(&[arrow])),
             ("cover".into(), cover.wire()),
@@ -811,10 +882,11 @@ fn compute(
             "local_system",
             Json::Obj(fields),
             [
-                target, law, context, arrow, cover, topology, semantic, states, equations,
-                equation, identity,
+                target, context, arrow, cover, topology, semantic, states, equations, equation,
+                identity,
             ]
             .into_iter()
+            .chain(laws.iter().copied())
             .chain(checks.iter().map(|(r, _)| *r))
             .collect(),
             None,
@@ -850,7 +922,7 @@ fn compute(
             witness: witness.clone(),
             system: Some(System {
                 parameters: point,
-                law,
+                laws,
                 expression,
                 semantic,
                 equation,
@@ -1003,24 +1075,29 @@ fn diagnose(
     )?;
     let mut evidence = vec![];
     if degree == 1 && !system.inhabited {
-        evidence.push(b.push(
-            NodeType::Evidence,
-            "evidence",
-            Json::obj([
-                ("kind", Json::str("finite_exhaustion")),
-                (
-                    "data",
-                    Json::obj([
-                        ("domain", system.parameters.wire()),
-                        ("checked", Json::Nat(1)),
-                        ("instances", refs(&[system.law])),
-                    ]),
-                ),
-            ]),
-            vec![system.parameters, system.law, global],
-            None,
-            None,
-        )?);
+        evidence.push(
+            b.push(
+                NodeType::Evidence,
+                "evidence",
+                Json::obj([
+                    ("kind", Json::str("finite_exhaustion")),
+                    (
+                        "data",
+                        Json::obj([
+                            ("domain", system.parameters.wire()),
+                            ("checked", Json::Nat(1)),
+                            ("instances", refs(&system.laws)),
+                        ]),
+                    ),
+                ]),
+                [system.parameters, global]
+                    .into_iter()
+                    .chain(system.laws.iter().copied())
+                    .collect(),
+                None,
+                None,
+            )?,
+        );
     }
     let status = if degree == 0 || system.inhabited {
         Decision::Established

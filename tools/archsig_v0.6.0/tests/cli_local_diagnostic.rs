@@ -828,3 +828,167 @@ fn conditional_local_system_saved_reuse_keeps_guarded_instance() {
         archsig::json::JValue::Bool(false)
     );
 }
+
+#[test]
+fn required_laws_on_the_same_support_are_all_retained_and_checked() {
+    for (second, value, truth) in [
+        ("s.flag=s.flag", Some(true), Some(true)),
+        ("s.flag=s.flag", Some(false), Some(false)),
+        ("not s.flag", Some(true), Some(false)),
+        ("s.flag=s.flag", None, None),
+    ] {
+        let dir = input("local-law-family", value);
+        let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+        std::fs::write(
+            dir.join("l.law"),
+            law.replace(
+                "view current",
+                &format!(
+                    "law required also(t:State):{}; view current",
+                    second.replace("s.flag", "t.flag")
+                ),
+            ),
+        )
+        .unwrap();
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+                "s=diagnose($l.system,side=semantic)",
+                "n=needed($l)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            match truth {
+                Some(true) => 0,
+                Some(false) => 1,
+                None => 2,
+            },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        let result = result_json(&dir, &r);
+        let answers = arr(get(&result, "answers"));
+        if let Some(truth) = truth {
+            assert_eq!(s(get(&answers[1], "status")), "established");
+            let system = get(output(&result, 1, "system"), "value");
+            let laws = arr(get(system, "laws"));
+            assert_eq!(laws.len(), 2);
+            let names = laws
+                .iter()
+                .map(|r| s(get(get(node(&result, r), "value"), "name")))
+                .collect::<Vec<_>>();
+            assert_eq!(names, vec!["Fixed.also", "Fixed.valid"]);
+            let context = get(node(&result, &arr(get(system, "contexts"))[0]), "value");
+            assert_eq!(arr(get(context, "law_coordinates")).len(), 2);
+            assert_eq!(arr(get(context, "dependencies")).len(), 1);
+            for index in [2, 3] {
+                assert_eq!(
+                    s(get(&answers[index], "status")),
+                    if truth { "established" } else { "refuted" }
+                );
+                let diagnostic = get(output(&result, index, "diagnostic"), "value");
+                let global = get(node(&result, get(diagnostic, "global")), "value");
+                assert_eq!(
+                    arr(get(get(global, "representation"), "values")).len(),
+                    usize::from(truth)
+                );
+                if !truth {
+                    let claim = node(&result, get(&answers[index], "claim"));
+                    let certificate = get(
+                        node(&result, &arr(get(get(claim, "judgment"), "evidence"))[0]),
+                        "value",
+                    );
+                    assert_eq!(arr(get(get(certificate, "data"), "instances")).len(), 2);
+                }
+            }
+        } else {
+            assert_eq!(s(get(&answers[1], "status")), "undetermined");
+            assert!(!has(get(&answers[1], "outputs"), "system"));
+            assert_eq!(arr(get(&answers[1], "reasons")).len(), 2);
+            assert_eq!(s(get(&answers[4], "status")), "established");
+        }
+    }
+}
+
+#[test]
+fn distinct_law_supports_are_not_replaced_by_an_added_full_patch() {
+    let dir = input("local-distinct-support", Some(true));
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    std::fs::write(
+        dir.join("l.law"),
+        law.replace(
+            "view current",
+            "law required separate(s:State):true; view current",
+        ),
+    )
+    .unwrap();
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "a=build(Fixed,on=@fixed/s)",
+            "v=evaluate(Fixed.current,s=@fixed/s)",
+            "l=localize($a.object)",
+        ],
+    );
+    assert_ne!(r.code, 0);
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    assert!(!has(get(&answers[2], "outputs"), "system"));
+    assert_eq!(
+        get(output(&result, 1, "value"), "value").value,
+        archsig::json::JValue::Bool(true)
+    );
+}
+
+#[test]
+fn shared_support_law_family_reuses_each_original_requirement() {
+    let dir = input("local-family-reuse", Some(true));
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    std::fs::write(dir.join("l.law"),law.replace("view current","law required other(t:State):t.flag=t.flag; law optional ignored(s:State):not s.flag; view current")).unwrap();
+    let asks = [
+        "a=build(Fixed,on=@fixed/s)",
+        "l=localize($a.object)",
+        "d=diagnose($l.system)",
+        "v=evaluate(Fixed.current,on=$d.diagnostic.global.domain.base,s=@fixed/s)",
+    ];
+    let first = execute(&dir, "out", &asks);
+    assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
+    let before = result_json(&dir, &first);
+    assert_eq!(
+        arr(get(get(output(&before, 1, "system"), "value"), "laws")).len(),
+        2
+    );
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+    ];
+    for ask in asks {
+        args.extend(["--ask", ask]);
+    }
+    let second = run(&dir, &args);
+    assert_eq!(second.code, 0, "{} {}", second.stdout, second.stderr);
+    let after = result_json(&dir, &second);
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&before, field).value, get(&after, field).value);
+    }
+    assert_eq!(
+        get(output(&after, 3, "value"), "value").value,
+        archsig::json::JValue::Bool(true)
+    );
+}
