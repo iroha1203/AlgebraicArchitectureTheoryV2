@@ -18,7 +18,7 @@ fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
-fn origin(
+pub(super) fn origin(
     g: &Graph,
     r: NodeRef,
 ) -> Result<(Arc<ArchitectureWitness>, ViewOrigin), ValidationFailure> {

@@ -835,6 +835,9 @@ impl<'a> Environment<'a> {
                     }
                     return Ok(());
                 }
+                if self.validate_object_reading_result(graph, node, limit)? {
+                    return Ok(());
+                }
                 self.validate_evaluation_environment(graph, node, limit)?;
                 if let Some(case) = context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
@@ -8764,6 +8767,10 @@ impl<'a> Environment<'a> {
             }
             self.validate_at(graph, node, reference.0)?;
             self.validate_at(graph, graph.get(*expression)?, expression.0)?;
+            if super::object_reading_result::source(graph, node)?.is_some() {
+                // 元viewの全体読取りは、専用検査が元対象と実bodyを再検査した。
+                continue;
+            }
             if self.universal_owned_evaluation(graph, reference)? {
                 continue;
             }
