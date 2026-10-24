@@ -478,7 +478,45 @@ fn helper_arguments_keep_caller_bindings_and_mixed_tuple_components() {
     );
 }
 
+#[test]
+fn binding_matches_and_rational_constants_preserve_the_public_equation() {
+    mixed_tuple_public_cases(
+        "match-rational",
+        &[
+            ("", "match c.quantity {n=>n=(0,0);}"),
+            ("", "match c.quantity {_=>c.quantity=(0,0);}"),
+            (
+                "view passPair(x:(Z,Q)):(Z,Q)=match x {n=>n;};",
+                "passPair(c.quantity)=(0,0)",
+            ),
+            ("", "c.quantity=(0,rat(0,1))"),
+            ("", "let x=c.quantity in x=(0,rat(0,2))"),
+        ],
+    );
+}
+
+#[test]
+fn rational_coefficients_use_the_declared_exact_value() {
+    mixed_tuple_public_cases_at(
+        "positive-rational",
+        &[
+            ("", "c.quantity=(0,rat(1,2))"),
+            ("", "c.quantity=(0,rat(2,4))"),
+        ],
+        r#"["1","2"]"#,
+    );
+    mixed_tuple_public_cases_at(
+        "negative-rational",
+        &[("", "c.quantity=(0,-rat(1,2))")],
+        r#"["-1","2"]"#,
+    );
+}
+
 fn mixed_tuple_public_cases(name: &str, expressions: &[(&str, &str)]) {
+    mixed_tuple_public_cases_at(name, expressions, r#"["0","1"]"#);
+}
+
+fn mixed_tuple_public_cases_at(name: &str, expressions: &[(&str, &str)], q: &str) {
     for (index, (helpers, expression)) in expressions.iter().enumerate() {
         let body = format!(
             "{helpers}view amount(c:Part):Z=c.quantity.0;law required pair(c:Part):{expression};"
@@ -501,8 +539,8 @@ fn mixed_tuple_public_cases(name: &str, expressions: &[(&str, &str)]) {
                     &old.vocabularies["Build"].digest,
                     &new.vocabularies["Build"].digest,
                 )
-                .replace(r#""value":"0""#, r#""value":["0",["0","1"]]"#)
-                .replace(r#""value":"1""#, r#""value":["1",["0","1"]]"#);
+                .replace(r#""value":"0""#, &format!(r#""value":["0",{q}]"#))
+                .replace(r#""value":"1""#, &format!(r#""value":["1",{q}]"#));
             std::fs::write(dir.join(name), text).unwrap();
         }
         let run = asks(

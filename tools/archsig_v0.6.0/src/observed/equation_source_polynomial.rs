@@ -30,6 +30,34 @@ impl Compiler<'_> {
             variables: Arc::new(self.variables.clone()),
         }
     }
+    fn bind_match(
+        &mut self,
+        scrutinee: usize,
+        arms: &[crate::law::ast::Arm],
+        c: &mut Control,
+    ) -> Result<Option<usize>, ConstructionFailure> {
+        let Some(body) = super::super::object_law_residuals::binding_match_body(
+            self.inputs,
+            scrutinee,
+            arms,
+            c,
+        )?
+        else {
+            return Ok(None);
+        };
+        if let crate::law::ast::Pattern::Name(name) = &arms[0].pattern {
+            let value = self.lexical(scrutinee);
+            self.variables.insert(name.name.clone(), value);
+        }
+        Ok(Some(body))
+    }
+    // Lawのratは整数literal二つだけを許す。既存の正確な数値構成を再利用する。
+    fn integer_literal(&self, id: usize, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
+        let ExprKind::Int(value) = &self.inputs.law().exprs[id].kind else {
+            return Err(bad("型検査済みratの引数が整数literalでない"));
+        };
+        numeric::literal(value, &Type::Z, c).map_err(invalid)
+    }
     fn binding(
         &mut self,
         value: Binding,
@@ -250,6 +278,15 @@ impl Compiler<'_> {
                     };
                     Some(Binding::Polynomial(left.binary(*op, &right, c)?))
                 }
+                ExprKind::Match { scrutinee, arms } => {
+                    let previous = self.variables.clone();
+                    let Some(body) = self.bind_match(*scrutinee, arms, c)? else {
+                        return Ok(None);
+                    };
+                    let result = self.expression(body, path, c);
+                    self.variables = previous;
+                    result?
+                }
                 ExprKind::Let { name, value, body } => {
                     let value = self.lexical(*value);
                     let previous = self.variables.insert(name.name.clone(), value);
@@ -266,6 +303,21 @@ impl Compiler<'_> {
                     while let ExprKind::Group(inner) = self.inputs.law().exprs[callee].kind {
                         tick(c)?;
                         callee = inner;
+                    }
+                    if let ExprKind::Dotted(names) = &self.inputs.law().exprs[callee].kind
+                        && names.len() == 1
+                        && names[0].name == "rat"
+                    {
+                        if self.ring.ty != Type::Q || !path.is_empty() || args.len() != 2 {
+                            return Ok(None);
+                        }
+                        let numerator = self.integer_literal(args[0], c)?;
+                        let denominator = self.integer_literal(args[1], c)?;
+                        let value =
+                            numeric::rational(&numerator, &denominator, c).map_err(invalid)?;
+                        return Ok(Some(Binding::Polynomial(EquationPolynomial::constant(
+                            value, c,
+                        )?)));
                     }
                     let span = self.inputs.law().exprs[callee].span;
                     let target = self.inputs.law().infos.iter().find_map(|info| {
@@ -333,7 +385,7 @@ pub(super) fn operands(
         ring: &mut candidate,
         variables,
     };
-    // shapeは外側のletを除いた左右を指す。元bodyから同じlexical束縛を
+    // shapeは外側のlet/matchを除いた左右を指す。元bodyから同じlexical束縛を
     // 順に復元してから翻訳し、局所名を未束縛の原始変数に変えない。
     let Signature::Law { body, .. } = &inputs
         .law()
@@ -353,6 +405,12 @@ pub(super) fn operands(
                 let value = compiler.lexical(*value);
                 compiler.variables.insert(name.name.clone(), value);
                 cursor = *body;
+            }
+            ExprKind::Match { scrutinee, arms } => {
+                let Some(body) = compiler.bind_match(*scrutinee, arms, c)? else {
+                    return Ok(None);
+                };
+                cursor = body;
             }
             _ => break,
         }
