@@ -12,7 +12,7 @@ pub(super) struct Parts {
     pub representation: Json,
     pub representation_args: Vec<NodeRef>,
 }
-fn module(
+pub(in crate::observed) fn module(
     b: &mut Builder<'_>,
     ring: NodeRef,
     n: usize,
@@ -52,7 +52,7 @@ fn module(
         None,
     )
 }
-fn map(
+pub(in crate::observed) fn map(
     b: &mut Builder<'_>,
     source: NodeRef,
     target: NodeRef,
@@ -84,7 +84,7 @@ fn map(
         None,
     )
 }
-fn vector(
+pub(in crate::observed) fn vector(
     b: &mut Builder<'_>,
     module: NodeRef,
     items: &[Z],
@@ -109,7 +109,7 @@ fn vector(
         None,
     )
 }
-fn domain(b: &mut Builder<'_>, module: NodeRef) -> Result<NodeRef, ValidationFailure> {
+pub(in crate::observed) fn domain(b: &mut Builder<'_>, module: NodeRef) -> Result<NodeRef, ValidationFailure> {
     b.push(
         NodeType::Domain,
         "domain",

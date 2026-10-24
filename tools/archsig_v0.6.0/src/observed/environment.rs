@@ -64,6 +64,8 @@ pub(super) mod change_evaluation;
 pub(super) mod change_search;
 #[path = "change_affine.rs"]
 pub(super) mod change_affine;
+#[path = "quotient_affine.rs"]
+pub(super) mod quotient_affine;
 #[path = "quotient_evaluation.rs"]
 pub(super) mod quotient_evaluation;
 #[path = "finite_law_valuations.rs"]

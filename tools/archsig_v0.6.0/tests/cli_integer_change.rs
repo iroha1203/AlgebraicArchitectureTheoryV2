@@ -495,3 +495,101 @@ fn guarded_integer_repair_reuse_preserves_restored_solution_and_followup() {
     let reused = result_json(&dir, &repeated);
     for field in ["answers", "nodes"] { assert_eq!(get(&original, field).value, get(&reused, field).value); }
 }
+
+fn quotient_representation(result: &JNode,index:usize)->&JNode {
+    get(get(output(result,index,"quotient"),"value"),"representation")
+}
+fn integer_columns(result:&JNode,map:&JNode)->Vec<Vec<i64>> {
+    arr(get(get(node(result,map),"value"),"columns")).iter().map(|column|
+        arr(column).iter().map(|v|s(get(node(result,v),"value")).parse().unwrap()).collect()).collect()
+}
+#[test]
+fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
+    let dir=input("integer-quotient-image","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view combined(s:State):Z=s.x+s.y;");
+    let asks=["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
+        "all=quotient(Pair.first,on=$s.domain,s=@pair/s)",
+        "good=quotient(Pair.combined,on=$s.solutions,s=@pair/s)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);assert_module_owners(&result);
+    let all=quotient_representation(&result,1);
+    assert_eq!(s(get(all,"kind")),"affine");
+    assert_eq!(integer_columns(&result,get(all,"map")),vec![vec![2],vec![0]]);
+    assert_eq!(coordinates(&result,get(all,"offset")),vec![1]);
+    for (field,rank) in [("image",1),("kernel",1)] {assert_eq!(num(get(get(node(&result,get(all,field)),"value"),"free_rank")),rank);}
+    let image_module=get(node(&result,get(all,"image")),"value");
+    assert_eq!(s(get(&arr(get(image_module,"generators"))[0],"value")).parse::<i64>().unwrap().abs(),2);
+    let classes=node(&result,get(get(output(&result,1,"quotient"),"value"),"classes"));
+    assert_eq!(s(get(get(classes,"value"),"kind")),"image");
+    let actual_map=node(&result,get(get(classes,"value"),"map"));
+    assert_eq!(get(get(actual_map,"value"),"linear").value,get(all,"map").value);
+    assert_eq!(get(get(actual_map,"value"),"offset").value,get(all,"offset").value);
+    let good=quotient_representation(&result,2);
+    assert_eq!(integer_columns(&result,get(good,"map")),vec![vec![0]]);
+    assert_eq!(coordinates(&result,get(good,"offset")),vec![1]);
+    assert_eq!(num(get(get(node(&result,get(good,"image")),"value"),"free_rank")),0);
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+    for ask in &asks {args.extend(["--ask",ask]);}
+    let repeat=run(&dir,&args);assert_eq!(repeat.code,0,"{} {}",repeat.stdout,repeat.stderr);
+    let reused=result_json(&dir,&repeat);for field in ["answers","nodes"] {assert_eq!(get(&result,field).value,get(&reused,field).value);}
+}
+#[test]
+fn integer_quotient_distinguishes_empty_solutions_from_one_class() {
+    for (label,law,empty) in [("empty","Pair.pinned",true),("nonempty","Pair.total",false)] {
+        let dir=input(&format!("integer-quotient-{label}"),"change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view constant(s:State):Z=7;");
+        let solve=format!("s=solve({law},on=@pair/s,using=Pair.setpair,s=@pair/s)");
+        let r=execute(&dir,"out",&[&solve,"q=quotient(Pair.constant,on=$s.solutions,s=@pair/s)"]);
+        assert_eq!(r.code,if empty {1}else{0},"{} {}",r.stdout,r.stderr);
+        let result=result_json(&dir,&r);let rep=quotient_representation(&result,1);
+        if empty {
+            assert_eq!(s(get(rep,"kind")),"finite");assert!(arr(get(rep,"fibers")).is_empty());
+            let q=get(output(&result,1,"quotient"),"value");let classes=get(node(&result,get(q,"classes")),"value");
+            assert!(arr(get(classes,"elements")).is_empty());assert!(has(classes,"type"));
+        } else {
+            assert_eq!(s(get(rep,"kind")),"affine");assert_eq!(coordinates(&result,get(rep,"offset")),vec![7]);
+            assert_eq!(num(get(get(node(&result,get(rep,"image")),"value"),"free_rank")),0);
+        }
+    }
+}
+#[test]
+fn integer_quotient_respects_guard_fiber_and_empty_candidate_domain() {
+    for (label,guard,empty) in [("line","a=b",false),("empty","2*a=1",true)] {
+        let dir=input(&format!("integer-quotient-guard-{label}"),&format!("change setpair(s:State,a:Z,b:Z) when {guard}=s with{{x=a,y=b}};view combined(s:State):Z=s.x+s.y;"));
+        let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.combined,on=$s.domain,s=@pair/s)"]);
+        assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let result=result_json(&dir,&r);let rep=quotient_representation(&result,1);
+        if empty {assert_eq!(s(get(rep,"kind")),"finite");assert!(arr(get(rep,"fibers")).is_empty());}
+        else {let columns=integer_columns(&result,get(rep,"map"));assert_eq!(columns.len(),1);assert_eq!(columns[0][0].abs(),2);assert_eq!(coordinates(&result,get(rep,"offset")),vec![0]);}
+    }
+}
+
+#[test]
+fn integer_quotient_keeps_repaired_architecture_offset() {
+    let dir=input("integer-quotient-repaired","change setpair(s:State,a:Z,b:Z)=s with{x=s.x+a,y=s.y+b};view combined(s:State):Z=s.x+s.y;");
+    let r=execute(&dir,"out",&[
+        "r=repair(Pair.pinned,on=@pair/s,using=Pair.setpair,s=@pair/s)",
+        "s=solve(Pair.total,on=$r.object,using=Pair.setpair,s=@pair/s)",
+        "q=quotient(Pair.combined,on=$s.domain,s=@pair/s)"]);
+    assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let result=result_json(&dir,&r);
+    let rep=quotient_representation(&result,2);
+    assert_eq!(coordinates(&result,get(rep,"offset")),vec![1]);
+    assert_eq!(integer_columns(&result,get(rep,"map")),vec![vec![1],vec![1]]);
+}
+#[test]
+fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
+    use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},input::InputSources,evaluate::evaluate_observed_bytes};
+    use std::{cell::Cell,rc::Rc};
+    let dir=input("integer-quotient-stop","change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};");
+    for mode in 0..3 {
+        let seen=Rc::new(Cell::new(0));let count=seen.clone();
+        let mut c=Control::new(Limits {time_ms:Some(1),memory_mib:Some(1)},move|point| {
+            if point==Checkpoint::Quotient {count.set(count.get()+1);}
+            if count.get()==2 {match mode {0=>Usage {elapsed_ms:2,..Usage::default()},1=>Usage {memory_mib:2,..Usage::default()},_=>Usage {signal:Some(archsig::result::Signal::Term),..Usage::default()}}}else{Usage::default()}
+        });
+        let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
+        let result=evaluate_observed_bytes(sources,&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.first,on=$s.domain,s=@pair/s)"],&mut c).unwrap();
+        let wire=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();let answers=arr(get(&wire,"answers"));
+        assert_eq!(seen.get(),2);assert_eq!(s(get(&answers[0],"status")),"established");
+        assert!(has(get(&answers[0],"outputs"),"solutions"));assert!(!has(get(&answers[1],"outputs"),"quotient"));
+        assert_eq!(s(get(&answers[1],"status")),"undetermined");
+        assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))==if mode==2 {"cancelled"}else{"budget_exhausted"}));
+    }
+}
