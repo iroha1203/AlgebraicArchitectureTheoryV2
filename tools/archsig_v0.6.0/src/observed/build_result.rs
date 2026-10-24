@@ -228,6 +228,12 @@ fn compute(
     let mut dependencies = plan.boundary.inputs().to_vec();
     let mut status = Decision::Established;
     let mut reasons = plan.architecture.reasons.clone();
+    // 必要な読取りの欠測は、Lawが同じslotを読むか・同pattern対があるかに
+    // 依存しない。viewや操作も含む全入力の理由を、成立判定より前に集める。
+    for dependency in &dependencies {
+        tick(c)?;
+        reasons.extend(g.get(*dependency)?.reasons.iter().cloned());
+    }
     if let Some(table) = &plan.laws {
         reasons.extend(table.reasons.iter().cloned());
     }

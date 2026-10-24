@@ -397,3 +397,48 @@ fn lexical_law_bindings_survive_outside_rows_and_public_consumption() {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[test]
+fn missing_views_block_algebra_without_relying_on_laws_or_matching_patterns() {
+    for variant in 0..3 {
+        let body = if variant == 1 {
+            "view amount(c:Part):Z=c.quantity;law required constant(c:Part):0=0;"
+        } else {
+            "view amount(c:Part):Z=c.quantity;"
+        };
+        let dir = files(&format!("public-build-view-missing-{variant}"), body, true);
+        let subject = if variant == 2 {
+            // baseと唯一の部分対象は同じpatternだが、必要viewは両方で欠測。
+            let mut map = std::fs::read_to_string(dir.join("a.json")).unwrap();
+            for row in [
+                r#",{"id":"q","type":"Build.Part","origin":"model"}"#,
+                r#",{"id":"oq","subject":"q","field":"Build.Part.owner","value":["v","root"],"origin":"model"}"#,
+                r#",{"id":"xp","subject":"p","field":"Build.Part.quantity","value":"0","origin":"model"}"#,
+            ] {
+                assert!(map.contains(row));
+                map = map.replace(row, "");
+            }
+            std::fs::write(dir.join("a.json"), map).unwrap();
+            "p"
+        } else {
+            "q"
+        };
+        let query = format!("n=evaluate(R.amount,on=$b.object,c=@v/{subject})");
+        let run = asks(&dir, &["b=build(R,on=@v/root)", &query, "plan=needed($b)"]);
+        let result = saved(&dir, &run, "partial", 2);
+        let b = answer(&result, "b");
+        assert_eq!(s(get(b, "status")), "undetermined");
+        assert!(has(get(b, "outputs"), "object"));
+        assert!(!has(get(b, "outputs"), "algebra"));
+        assert!(arr(get(b, "reasons")).iter().any(|reason| {
+            s(get(reason, "code")) == "missing_observation"
+                && arr(get(reason, "missing")).iter().any(|slot| {
+                    s(get(slot, "subject")) == subject
+                        && s(get(slot, "field")) == "Build.Part.quantity"
+                })
+        }));
+        assert_eq!(s(get(answer(&result, "n"), "status")), "undetermined");
+        assert!(has(get(answer(&result, "plan"), "outputs"), "plan"));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
