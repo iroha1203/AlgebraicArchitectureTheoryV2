@@ -442,3 +442,82 @@ fn missing_views_block_algebra_without_relying_on_laws_or_matching_patterns() {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[test]
+fn mixed_tuple_fields_and_lexical_aliases_preserve_each_scalar_component() {
+    for (index, expression) in [
+        "c.quantity=(0,0)",
+        "let x=c.quantity in x=(0,0)",
+        "let x=c.quantity in let y=x in y=(0,0)",
+        "let x=(c.quantity.0,c.quantity.1) in x=(0,0)",
+        "let x=c in let y=x.quantity in y=(0,0)",
+    ]
+    .iter()
+    .enumerate()
+    {
+        let body =
+            format!("view amount(c:Part):Z=c.quantity.0;law required pair(c:Part):{expression};");
+        let dir = files(&format!("public-build-mixed-tuple-{index}"), &body, false);
+        let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Tuple","Z","Q"]"#);
+        let old = archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())])
+            .unwrap();
+        let new = archsig::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
+        std::fs::write(dir.join("d.json"), definition).unwrap();
+        for name in ["l.law", "a.json"] {
+            let text = std::fs::read_to_string(dir.join(name))
+                .unwrap()
+                .replace(
+                    &old.vocabularies["Build"].digest,
+                    &new.vocabularies["Build"].digest,
+                )
+                .replace(r#""value":"0""#, r#""value":["0",["0","1"]]"#)
+                .replace(r#""value":"1""#, r#""value":["1",["0","1"]]"#);
+            std::fs::write(dir.join(name), text).unwrap();
+        }
+        let run = asks(
+            &dir,
+            &[
+                "b=build(R,on=@v/root)",
+                "n=evaluate(R.amount,on=$b.object,c=@v/q)",
+                "bad=check(R.pair,on=$b.object,c=@v/q)",
+                "good=check(R.pair,on=$b.object,c=@v/p)",
+            ],
+        );
+        let result = saved(&dir, &run, "complete", 1);
+        assert_eq!(s(get(answer(&result, "b"), "status")), "established");
+        assert_eq!(s(get(answer(&result, "bad"), "status")), "refuted");
+        assert_eq!(s(get(answer(&result, "good"), "status")), "established");
+        assert_eq!(
+            s(value(
+                &result,
+                get(get(answer(&result, "n"), "outputs"), "value")
+            )),
+            "1"
+        );
+        let algebra = value(
+            &result,
+            get(get(answer(&result, "b"), "outputs"), "algebra"),
+        );
+        let detectors = arr(get(algebra, "circuits"));
+        assert_eq!(detectors.len(), 4);
+        let mut refuted_first = false;
+        for detector in detectors {
+            let detector = value(&result, detector);
+            let component = arr(get(detector, "component"));
+            assert_eq!(component.len(), 1);
+            for case in arr(get(detector, "cases")) {
+                let case = value(&result, case);
+                let evaluation = value(&result, get(case, "refutation"));
+                let decision = &value(&result, get(evaluation, "value")).value;
+                if num(&component[0]) == 1 {
+                    assert!(matches!(decision, archsig::json::JValue::Bool(false)));
+                } else if matches!(decision, archsig::json::JValue::Bool(true)) {
+                    refuted_first = true;
+                }
+            }
+        }
+        assert!(refuted_first);
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}

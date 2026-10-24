@@ -1,13 +1,20 @@
 //! 未実行の原式を同じ型付きASTから多項式へ翻訳する。原式の評価値は生成しない。
 use super::*;
 use crate::{archmap::Slot, construction::readings::ObjectInstance, law::model::Signature};
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, sync::Arc};
 
 #[derive(Clone)]
 enum Binding {
-    Reference { snapshot: String, subject: String },
+    Reference {
+        snapshot: String,
+        subject: String,
+    },
     Polynomial(EquationPolynomial),
     Tuple(Vec<Binding>),
+    Lexical {
+        expression: usize,
+        variables: Arc<BTreeMap<String, Binding>>,
+    },
 }
 struct Compiler<'a> {
     inputs: &'a CheckedInputs,
@@ -15,6 +22,42 @@ struct Compiler<'a> {
     variables: BTreeMap<String, Binding>,
 }
 impl Compiler<'_> {
+    // Scalar環への翻訳は使用箇所のcomponent pathが判明してから行う。
+    // initializerの環境を保存し、後続letやhelperの局所名を捕獲しない。
+    fn lexical(&self, expression: usize) -> Binding {
+        Binding::Lexical {
+            expression,
+            variables: Arc::new(self.variables.clone()),
+        }
+    }
+    fn binding(
+        &mut self,
+        value: Binding,
+        path: &[usize],
+        c: &mut Control,
+    ) -> Result<Option<Binding>, ConstructionFailure> {
+        tick(c)?;
+        match value {
+            Binding::Lexical {
+                expression,
+                variables,
+            } => {
+                let previous = std::mem::replace(&mut self.variables, (*variables).clone());
+                let result = self.expression(expression, path, c);
+                self.variables = previous;
+                result
+            }
+            Binding::Tuple(items) if !path.is_empty() => {
+                let item = items
+                    .get(path[0])
+                    .cloned()
+                    .ok_or_else(|| bad("原式のtuple束縛が範囲外"))?;
+                self.binding(item, &path[1..], c)
+            }
+            value if path.is_empty() => Ok(Some(value)),
+            _ => Ok(None),
+        }
+    }
     fn field(
         &mut self,
         reference: Binding,
@@ -133,7 +176,13 @@ impl Compiler<'_> {
                     let Some(first) = names.first() else {
                         return Ok(None);
                     };
-                    let Some(mut value) = self.variables.get(&first.name).cloned() else {
+                    let Some(value) = self.variables.get(&first.name).cloned() else {
+                        return Ok(None);
+                    };
+                    if names.len() == 1 {
+                        return self.binding(value, path, c);
+                    }
+                    let Some(mut value) = self.binding(value, &[], c)? else {
                         return Ok(None);
                     };
                     for (i, name) in names.iter().enumerate().skip(1) {
@@ -142,17 +191,6 @@ impl Compiler<'_> {
                             return Ok(None);
                         };
                         value = next;
-                    }
-                    if names.len() == 1 {
-                        for &i in path {
-                            let Binding::Tuple(items) = value else {
-                                return Ok(None);
-                            };
-                            value = items
-                                .get(i)
-                                .cloned()
-                                .ok_or_else(|| bad("原式のtuple束縛が範囲外"))?;
-                        }
                     }
                     Some(value)
                 }
@@ -213,9 +251,7 @@ impl Compiler<'_> {
                     Some(Binding::Polynomial(left.binary(*op, &right, c)?))
                 }
                 ExprKind::Let { name, value, body } => {
-                    let Some(value) = self.expression(*value, &[], c)? else {
-                        return Ok(None);
-                    };
+                    let value = self.lexical(*value);
                     let previous = self.variables.insert(name.name.clone(), value);
                     let result = self.expression(*body, path, c);
                     if let Some(previous) = previous {
@@ -317,9 +353,7 @@ pub(super) fn operands(
         match &inputs.law().exprs[cursor].kind {
             ExprKind::Group(child) => cursor = *child,
             ExprKind::Let { name, value, body } => {
-                let Some(value) = compiler.expression(*value, &[], c)? else {
-                    return Ok(None);
-                };
+                let value = compiler.lexical(*value);
                 compiler.variables.insert(name.name.clone(), value);
                 cursor = *body;
             }
