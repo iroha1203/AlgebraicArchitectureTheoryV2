@@ -43,6 +43,7 @@ pub enum ProjectionType {
     StateSpace(String),
     StateMap,
     Domain,
+    Quotient(Box<ProjectionType>),
     /// 実値の constructor や異種生成元によって決まる候補型。
     Dynamic(Vec<ProjectionType>),
 }
@@ -182,6 +183,12 @@ fn project_inner(
         ))
     };
     match (ty, &path[0]) {
+        (ProjectionType::Quotient(domain),Field(f)) => match f.as_str() {
+            "domain"=>exact((**domain).clone()),
+            "classes"=>exact(ProjectionType::Domain),
+            "projection"|"descent"=>exact(ProjectionType::StateMap),
+            _=>Err("Quotientの非公開射影".into()),
+        },
         (ProjectionType::Repair(root),Field(f))=>match f.as_str(){"domain"=>exact(ProjectionType::CandidateSpace(root.clone())),"solutions"=>exact(ProjectionType::SolutionSet(root.clone())),"parameters"=>exact(ProjectionType::Assignment(root.clone())),"object"=>exact(ProjectionType::ArchitectureRoot(root.clone())),_=>Err("Repairの非公開射影".into())},
         (ProjectionType::Assignment(root),Field(f)) if f=="domain"=>exact(ProjectionType::CandidateSpace(root.clone())),
         (ProjectionType::CandidateSpace(root),Field(f)) => match f.as_str() {

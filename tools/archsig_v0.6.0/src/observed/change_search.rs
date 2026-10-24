@@ -165,7 +165,7 @@ fn domain(
     }
     Ok(values)
 }
-fn selector(
+pub(in crate::observed) fn selector(
     environment: &Environment<'_>,
     graph: &Graph,
     value: &Selector,

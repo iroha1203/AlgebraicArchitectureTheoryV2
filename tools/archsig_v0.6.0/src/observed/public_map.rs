@@ -135,6 +135,7 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
+    if request.kind == QuestionKind::Quotient {return super::quotient_result::validate_origin(environment,request,value);}
     if matches!(request.kind,QuestionKind::Build|QuestionKind::Solve|QuestionKind::Repair) {
         return super::architecture_result::validate_build_origin(
             environment,

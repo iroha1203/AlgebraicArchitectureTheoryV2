@@ -62,6 +62,7 @@ pub(crate) enum ConstructionType {
     Assignment,
     Repair,
     Module,
+    Quotient,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -103,6 +104,7 @@ impl ConstructionType {
             Self::Assignment => "Assignment",
             Self::Repair => "Repair",
             Self::Module => "Module",
+            Self::Quotient => "Quotient",
         }
     }
 }
@@ -196,6 +198,7 @@ pub(crate) enum ConstructionData {
     Build(super::build_result::Data),
     ObjectMap(super::object_map_result::Data),
     Change(super::change_result::Data),
+    Quotient(super::quotient_result::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -307,6 +310,7 @@ impl ConstructionValue {
             ConstructionData::ViewFamily(data) => data.scalar(),
             ConstructionData::Build(data) => data.scalar(),
             ConstructionData::Change(data) => data.scalar(),
+            ConstructionData::Quotient(data) => data.scalar(),
             ConstructionData::ObjectMap(data) => data.scalar(),
             ConstructionData::OutsideLaw(data) => data.scalar(),
             ConstructionData::LawInstantiation(data) => data.scalar(),
@@ -390,6 +394,7 @@ impl ConstructionValue {
             D::CircuitPattern(data) => return data.ty(),
             D::Build(data) => return data.ty(),
             D::Change(data) => return data.ty(),
+            D::Quotient(data) => return data.ty(),
             D::ObjectMap(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
@@ -434,6 +439,7 @@ impl ConstructionValue {
             D::CircuitPattern(data) => data.arguments(),
             D::Build(data) => data.arguments(),
             D::Change(data) => data.arguments(),
+            D::Quotient(data) => data.arguments(),
             D::ObjectMap(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
@@ -518,6 +524,7 @@ impl ConstructionValue {
     pub fn conditions(&self) -> Vec<NodeRef> {
         match &self.data {
             ConstructionData::Change(data) => data.conditions(),
+            ConstructionData::Quotient(data) => data.conditions(),
             ConstructionData::ObjectMap(data) => data.conditions(),
             ConstructionData::Composition(part) => part.conditions(),
             ConstructionData::PathComposition(part) => part.conditions(),
@@ -546,6 +553,7 @@ impl ConstructionValue {
             D::CircuitPattern(_) => "circuit_pattern",
             D::Build(ref data) => data.construction(),
             D::Change(ref data) => data.construction(),
+            D::Quotient(ref data) => data.construction(),
             D::ObjectMap(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
@@ -592,6 +600,7 @@ impl ConstructionValue {
                 ConstructionType::Assignment => "assignment",
                 ConstructionType::Repair => "repair",
                 ConstructionType::Module => "module",
+                ConstructionType::Quotient => "quotient",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -612,6 +621,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         match (&self.data, &self.witness) {
             (D::Change(data), _) => data.projection_type(),
+            (D::Quotient(data), _) => data.projection_type(),
             (D::ObjectMap(data), _) => data.projection_type(),
             (D::Build(data), Witness::Architecture(a)) if data.algebra_base().is_some() => {
                 Some(ProjectionType::ObjectAlgebraRoot(
@@ -680,6 +690,7 @@ impl ConstructionValue {
     pub fn project(&self, path: &[ProjectionStep]) -> Option<(NodeRef, usize)> {
         use ConstructionData as D;
         if let D::Change(data) = &self.data { return data.project(path); }
+        if let D::Quotient(data) = &self.data { return data.project(path); }
         if let D::ObjectMap(data) = &self.data { return data.project(path); }
         if let D::Build(data) = &self.data {
             return match path.first()? {
@@ -755,6 +766,7 @@ impl ConstructionValue {
             D::CircuitPattern(data) => data.wire(),
             D::Build(data) => data.wire(),
             D::Change(data) => data.wire(),
+            D::Quotient(data) => data.wire(),
             D::ObjectMap(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
@@ -1335,6 +1347,7 @@ pub fn atom_value(
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     if let ConstructionData::Change(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::Quotient(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::ObjectMap(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::Build(data) = &value.data {
         return Ok(data.metadata());
@@ -1886,6 +1899,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
         return super::circuit_pattern::validate_node(graph, node, data);
     }
     if let ConstructionData::Change(data) = &v.data { return super::change_result::validate_node(graph, node, v, data); }
+    if let ConstructionData::Quotient(data) = &v.data { return super::quotient_result::validate_node(graph, node, v, data); }
     if let ConstructionData::ObjectMap(data) = &v.data { return super::object_map_result::validate_node(graph, node, v, data); }
     if let ConstructionData::Build(data) = &v.data {
         return super::build_result::validate_node(graph, node, v, data);

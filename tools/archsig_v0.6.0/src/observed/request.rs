@@ -34,6 +34,7 @@ pub enum QuestionKind {
     Compare,
     Solve,
     Repair,
+    Quotient,
 }
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
@@ -47,6 +48,7 @@ impl QuestionKind {
             Self::Compare => "compare",
             Self::Solve => "solve",
             Self::Repair => "repair",
+            Self::Quotient => "quotient",
         }
     }
 }
@@ -350,7 +352,7 @@ fn resolve_inner(
         prefix.expect(b'(')?;
         if matches!(
             prefix_kind.as_str(),
-            "localize" | "diagnose" | "quotient"
+            "localize" | "diagnose"
         ) {
             return Err(ResolveFailure::NotApplicable {
                 request: prefix.id,
@@ -372,6 +374,7 @@ fn resolve_inner(
             "build" => QuestionKind::Build,
             "solve" => QuestionKind::Solve,
             "repair" => QuestionKind::Repair,
+            "quotient" => QuestionKind::Quotient,
             "evaluate" => QuestionKind::Evaluate,
             "check" => QuestionKind::Check,
             "needed" => QuestionKind::Needed,
@@ -441,6 +444,9 @@ fn resolve_inner(
             });
             phase(control, Checkpoint::RequestBinding)?;
             continue;
+        }
+        if kind == QuestionKind::Quotient && raw.arguments.iter().any(|(key,_)|key=="law") {
+            return Err(ResolveFailure::NotApplicable {request:raw.id,kind:raw.kind,architecture_environment:false});
         }
         let Selector::Declaration { name } = &raw.head else {
             return Err(invalid(problem(
@@ -581,11 +587,14 @@ fn resolve_inner(
             && (!arguments.contains_key("on") || !arguments.contains_key("using")) {
             return Err(invalid(problem(RequestIssueCode::MissingBinding, &raw.id, "on/using", "solve/repairはonとusingを指定する")));
         }
+        if kind == QuestionKind::Quotient && !arguments.contains_key("on") {
+            return Err(invalid(problem(RequestIssueCode::MissingBinding,&raw.id,"on","quotientはonを指定する")));
+        }
         let mut unbound = Vec::new();
         for param in params {
             phase(control, Checkpoint::RequestBinding)?;
             if !arguments.contains_key(&format!("bind.{}", param.name)) {
-                if kind == QuestionKind::Evaluate
+                if (kind == QuestionKind::Quotient || kind == QuestionKind::Evaluate)
                     && !object_view.is_some_and(|instance| {
                         instance.declaration().kind == "view"
                             && instance.declaration().name == full
@@ -653,7 +662,7 @@ fn resolve_inner(
             matches!(
                 r.kind,
                 QuestionKind::Build | QuestionKind::Compose | QuestionKind::Compare
-                    | QuestionKind::Solve | QuestionKind::Repair
+                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient
             )
         })
     {
@@ -762,7 +771,11 @@ fn resolve_inner(
                 build::check_on(law,map,&requests,&names,&root_request,control)?;
                 true
             } else {false};
-            if !change_root && !architecture(&plan.ty, control)? {
+            let quotient = req.kind == QuestionKind::Quotient;
+            if quotient && !matches!(plan.ty, ProjectionType::CandidateSpace(_) | ProjectionType::SolutionSet(_)) {
+                return Err(invalid(problem(RequestIssueCode::Type,&req.id,"on","quotientのonはCandidateSpaceまたはSolutionSet")));
+            }
+            if !quotient && !change_root && !architecture(&plan.ty, control)? {
                 return Err(invalid(problem(
                     RequestIssueCode::Type,
                     &req.id,
@@ -1030,7 +1043,7 @@ fn declaration(
 }
 fn parameters(sig: &Signature, kind: QuestionKind) -> Option<&[Param]> {
     match (sig, kind) {
-        (Signature::View { params, .. }, QuestionKind::Evaluate)
+        (Signature::View { params, .. }, QuestionKind::Evaluate | QuestionKind::Quotient)
         | (Signature::Law { params, .. }, QuestionKind::Check | QuestionKind::Solve | QuestionKind::Repair) => Some(params),
         _ => None,
     }
@@ -1127,6 +1140,11 @@ fn selector_type(
                     }).collect::<Result<Vec<_>,_>>()?;
                     if types.len()==1 {types.into_iter().next().expect("一件")}else{ProjectionType::Dynamic(types)}
                 }
+            } else if r.kind == QuestionKind::Quotient {
+                if field != "quotient" { return Err(failure(RequestIssueCode::Projection,"quotientの非公開出力")); }
+                let on=&r.arguments.iter().find(|a|a.name=="on").ok_or_else(||failure(RequestIssueCode::MissingBinding,"quotientのonがない"))?.value;
+                let (plan,_)=selector_type(law,map,requests,names,on,control,(request,"on"))?;
+                ProjectionType::Quotient(Box::new(plan.ty))
             } else if r.kind == QuestionKind::Compare {
                 comparison::output_type(r, field)?
             } else if r.kind == QuestionKind::Compose {

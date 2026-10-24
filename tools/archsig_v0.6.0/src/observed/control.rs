@@ -87,6 +87,7 @@ pub enum Checkpoint {
     FinitePolynomialRecheck,
     PrimitiveValuation,
     ChangeWitness,
+    Quotient,
     FiniteLawSelection,
     FiniteLawAutomatic,
     FiniteLawDomain,
