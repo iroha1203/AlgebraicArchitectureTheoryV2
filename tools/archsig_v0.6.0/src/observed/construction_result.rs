@@ -46,6 +46,9 @@ pub(crate) enum ConstructionType {
     CircuitCase,
     CircuitDetector,
     ObjectAlgebra,
+    ObjectAlgebraMap,
+    EquationMap,
+    SignatureMap,
     Invariant,
     SignatureAxis,
 }
@@ -73,6 +76,9 @@ impl ConstructionType {
             Self::CircuitCase => "CircuitCase",
             Self::CircuitDetector => "CircuitDetector",
             Self::ObjectAlgebra => "ObjectAlgebra",
+            Self::ObjectAlgebraMap => "ObjectAlgebraMap",
+            Self::EquationMap => "EquationMap",
+            Self::SignatureMap => "SignatureMap",
             Self::Invariant => "Invariant",
             Self::SignatureAxis => "SignatureAxis",
         }
@@ -166,6 +172,7 @@ pub(crate) enum ConstructionData {
     EquationFamily(super::equation_family::Data),
     CircuitPattern(super::circuit_pattern::Data),
     Build(super::build_result::Data),
+    ObjectMap(super::object_map_result::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -276,6 +283,7 @@ impl ConstructionValue {
             ConstructionData::ObjectReadingFrame(data) => data.scalar(),
             ConstructionData::ViewFamily(data) => data.scalar(),
             ConstructionData::Build(data) => data.scalar(),
+            ConstructionData::ObjectMap(data) => data.scalar(),
             ConstructionData::OutsideLaw(data) => data.scalar(),
             ConstructionData::LawInstantiation(data) => data.scalar(),
             ConstructionData::LawFamily(data) => data.scalar(),
@@ -357,6 +365,7 @@ impl ConstructionValue {
             D::EquationFamily(data) => return data.ty(),
             D::CircuitPattern(data) => return data.ty(),
             D::Build(data) => return data.ty(),
+            D::ObjectMap(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
             D::Comparison(part) => return part.ty(),
@@ -399,6 +408,7 @@ impl ConstructionValue {
             D::EquationFamily(data) => data.arguments(),
             D::CircuitPattern(data) => data.arguments(),
             D::Build(data) => data.arguments(),
+            D::ObjectMap(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
             D::Comparison(part) => {
@@ -481,6 +491,7 @@ impl ConstructionValue {
     }
     pub fn conditions(&self) -> Vec<NodeRef> {
         match &self.data {
+            ConstructionData::ObjectMap(data) => data.conditions(),
             ConstructionData::Composition(part) => part.conditions(),
             ConstructionData::PathComposition(part) => part.conditions(),
             ConstructionData::Comparison(part) => part.conditions(),
@@ -507,6 +518,7 @@ impl ConstructionValue {
             D::EquationFamily(_) => "equation_family",
             D::CircuitPattern(_) => "circuit_pattern",
             D::Build(ref data) => data.construction(),
+            D::ObjectMap(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
             D::Comparison(ref part) => part.construction(),
@@ -536,6 +548,9 @@ impl ConstructionValue {
                 ConstructionType::CircuitCase => "circuit_case",
                 ConstructionType::CircuitDetector => "circuit_detector",
                 ConstructionType::ObjectAlgebra => "object_algebra",
+                ConstructionType::ObjectAlgebraMap => "object_algebra_map",
+                ConstructionType::EquationMap => "equation_map",
+                ConstructionType::SignatureMap => "signature_map",
                 ConstructionType::Invariant => "invariant",
                 ConstructionType::SignatureAxis => "signature_axis",
             },
@@ -557,6 +572,7 @@ impl ConstructionValue {
     pub fn projection_type(&self) -> Option<ProjectionType> {
         use ConstructionData as D;
         match (&self.data, &self.witness) {
+            (D::ObjectMap(data), _) => data.projection_type(),
             (D::Build(data), Witness::Architecture(a)) if data.algebra_base().is_some() => {
                 Some(ProjectionType::ObjectAlgebraRoot(
                     a.inputs
@@ -623,6 +639,7 @@ impl ConstructionValue {
     }
     pub fn project(&self, path: &[ProjectionStep]) -> Option<(NodeRef, usize)> {
         use ConstructionData as D;
+        if let D::ObjectMap(data) = &self.data { return data.project(path); }
         if let D::Build(data) = &self.data {
             return match path.first()? {
                 ProjectionStep::Field(f) if f == "base" => data.algebra_base().map(|r| (r, 1)),
@@ -696,6 +713,7 @@ impl ConstructionValue {
             D::EquationFamily(data) => data.wire(),
             D::CircuitPattern(data) => data.wire(),
             D::Build(data) => data.wire(),
+            D::ObjectMap(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
             D::Comparison(part) => match &self.witness { Witness::Compare(w) => part.wire(w), _ => unreachable!("比較は元検査を持つ") },
@@ -1274,6 +1292,7 @@ pub fn atom_value(
     })
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    if let ConstructionData::ObjectMap(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::Build(data) = &value.data {
         return Ok(data.metadata());
     }
@@ -1822,6 +1841,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     if let ConstructionData::CircuitPattern(data) = &v.data {
         return super::circuit_pattern::validate_node(graph, node, data);
     }
+    if let ConstructionData::ObjectMap(data) = &v.data { return super::object_map_result::validate_node(graph, node, v, data); }
     if let ConstructionData::Build(data) = &v.data {
         return super::build_result::validate_node(graph, node, v, data);
     }

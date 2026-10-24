@@ -221,7 +221,7 @@ pub(super) fn validate_origin(
     }
     Ok(())
 }
-pub(super) fn validate_answer(
+pub(super) fn validate_configuration_answer(
     environment: &Environment<'_>,
     graph: &Graph,
     request: &Request,
@@ -422,7 +422,7 @@ pub(super) fn unavailable(
     Ok(Some(answer))
 }
 
-pub(super) fn evaluate(
+pub(super) fn evaluate_configuration(
     prepared: &PreparedObserved,
     environment: &Environment<'_>,
     graph: &mut Graph,
@@ -711,4 +711,55 @@ pub(super) fn evaluate(
         reasons,
         scope,
     })
+}
+
+fn object_algebra(request: &Request) -> bool {
+    request.arguments.iter().any(|a| {
+        a.name == "kind"
+            && matches!(&a.value, Selector::Enum { value } if value == "object_algebra")
+    })
+}
+pub(super) fn evaluate(
+    prepared: &PreparedObserved,
+    environment: &Environment<'_>,
+    graph: &mut Graph,
+    request: &Request,
+    control: &mut Control,
+) -> Result<Answer, ValidationFailure> {
+    let answer = evaluate_configuration(prepared, environment, graph, request, control)?;
+    if object_algebra(request) && answer.outputs.contains_key("operation") {
+        match super::object_map_result::extend(
+            prepared,
+            environment,
+            graph,
+            request,
+            answer.clone(),
+            control,
+        ) {
+            Err(ValidationFailure::Stop(stop)) => {
+                let mut partial = answer;
+                partial.outputs.remove("map");
+                partial.outputs.remove("proposition");
+                partial.claim = None;
+                partial.status = Decision::Undetermined;
+                partial.reasons.push(Reason::stopped(&request.id, stop));
+                Ok(partial)
+            }
+            result => result,
+        }
+    } else {
+        Ok(answer)
+    }
+}
+pub(super) fn validate_answer(
+    environment: &Environment<'_>,
+    graph: &Graph,
+    request: &Request,
+    answer: &Answer,
+) -> Result<(), ValidationFailure> {
+    if object_algebra(request) && answer.outputs.contains_key("operation") {
+        super::object_map_result::validate_answer(environment, graph, request, answer)
+    } else {
+        validate_configuration_answer(environment, graph, request, answer)
+    }
 }

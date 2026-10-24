@@ -430,13 +430,14 @@ fn valid_object_algebra_kind_reports_internal_unimplemented_instead_of_math_unce
         &dir,
         &["m=map(Reservations.Migration,on=@v/m,reading=Reservations,kind=object_algebra)"],
     );
-    let receipt = notified(&dir, &r, "error", 70);
+    let _result = saved(&dir, &r, "error", 70);
+    let receipt = &r.receipt;
     assert!(
         arr(get(&receipt, "issues"))
             .iter()
             .all(|i| s(get(i, "code")) == "internal")
     );
-    assert!(!dir.join("out").exists());
+    assert!(dir.join("out/result.json").exists());
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
@@ -911,9 +912,11 @@ fn valid_unimplemented_map_dependencies_keep_their_declared_public_projection_ty
     ].iter().enumerate() {
         let dir=inputs(&format!("map-object-algebra-typed-{i}"),A);
         std::fs::write(dir.join("l.law"),include_bytes!("fixtures/public-map-projections.law")).unwrap();
-        let receipt=notified(&dir,&asks(&dir,requests),"error",70);
+        let run=asks(&dir,requests);
+        let _result=saved(&dir,&run,"error",70);
+        let receipt=&run.receipt;
         assert!(arr(get(&receipt,"issues")).iter().all(|issue|s(get(issue,"code"))=="internal"));
-        assert!(!dir.join("out").exists());
+        assert!(dir.join("out/result.json").exists());
         std::fs::remove_dir_all(dir).unwrap();
     }
 }

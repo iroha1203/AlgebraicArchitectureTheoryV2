@@ -307,6 +307,7 @@ impl ValidationSnapshot {
 
 #[derive(Default)]
 struct ValidationCache {
+    object_maps: Vec<std::sync::Arc<super::object_map_result::Source>>,
     builds: Vec<std::sync::Arc<super::build_result::Source>>,
     checked: BTreeSet<NodeRefKey>,
     rechecked: BTreeSet<NodeRefKey>,
@@ -378,6 +379,13 @@ pub(crate) struct Environment<'a> {
     name_token_observer: RefCell<Option<NameTokenObserver>>,
 }
 impl<'a> Environment<'a> {
+    pub(super) fn object_map_source_checked(&self, source: &std::sync::Arc<super::object_map_result::Source>) -> bool {
+        self.cache.borrow().object_maps.iter().any(|s| std::sync::Arc::ptr_eq(s,source))
+    }
+    pub(super) fn remember_object_map_source(&self, source: std::sync::Arc<super::object_map_result::Source>) {
+        self.cache.borrow_mut().object_maps.push(source);
+    }
+
     pub(super) fn build_source_checked(
         &self,
         source: &std::sync::Arc<super::build_result::Source>,
@@ -838,6 +846,7 @@ impl<'a> Environment<'a> {
                     }
                     self.recheck_circuit_pattern(graph, value)?;
                     self.recheck_build(graph, value, limit)?;
+                    self.recheck_object_map(graph, value, limit)?;
                     self.recheck_view_invariant(graph, value, limit)?;
                     self.recheck_predicate_invariant(graph, value, limit)?;
                     for r in node
