@@ -70,6 +70,7 @@ fn known_atom(
         None,
     )
 }
+#[derive(Debug)]
 pub(super) struct Architecture {
     pub(super) witness: Arc<ArchitectureWitness>,
     pub(super) reference: NodeRef,

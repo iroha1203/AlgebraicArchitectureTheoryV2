@@ -177,7 +177,7 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
     assert_eq!(l.data.objects.len(), 3);
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let checked = l.checked(&env, &g, &mut quiet()).unwrap();
-    assert!(!checked.is_complete()); // 対象外の原式値/表示は未生成のまま残る。
+    assert!(checked.is_complete()); // 対象外の生差は未評価のまま、記号表示と条件付き零を保持。
     assert_eq!(
         l.data.anchor,
         Fact {
@@ -282,19 +282,23 @@ fn non_applicable_rows_keep_raw_epsilon_absent_and_real_residual_zero() {
             if q.polynomial().unwrap().guard == EquationGuard::OutsideObject {
                 outside += 1;
                 assert!(
-                    q.polynomial().unwrap().nu.is_none()
+                    q.polynomial().unwrap().nu.is_some()
                         && q.polynomial().unwrap().epsilon.is_none()
                 );
-                for reading in [Reading::Nu, Reading::Epsilon] {
-                    assert_eq!(
-                        checked
-                            .at(object, i, reading, 0, &l.data.anchor, &mut quiet())
-                            .unwrap(),
-                        Placed::Uncomputed {
-                            ring: l.data.factors[0]
-                        }
-                    );
-                }
+                assert!(matches!(
+                    checked
+                        .at(object, i, Reading::Nu, 0, &l.data.anchor, &mut quiet())
+                        .unwrap(),
+                    Placed::Value { .. }
+                ));
+                assert_eq!(
+                    checked
+                        .at(object, i, Reading::Epsilon, 0, &l.data.anchor, &mut quiet())
+                        .unwrap(),
+                    Placed::Uncomputed {
+                        ring: l.data.factors[0]
+                    }
+                );
                 let Placed::Value { reference, .. } = checked
                     .at(
                         object,
@@ -313,7 +317,7 @@ fn non_applicable_rows_keep_raw_epsilon_absent_and_real_residual_zero() {
         }
     }
     assert_eq!(outside, 2);
-    assert!(!checked.is_complete());
+    assert!(checked.is_complete());
     replay(&p, &g).unwrap();
 }
 #[test]
@@ -486,7 +490,7 @@ fn layout_and_underlying_table_tampering_is_rejected() {
             17 => b.data.objects[0].coordinates[0].index = b.data.indices[1],
             18 => b.data.support.clear(),
             19 => b.data.scope.snapshots.clear(),
-            20 => b.data.complete = true,
+            20 => b.data.complete = !b.data.complete,
             21 => b.data.objects[0].presentations.clear(),
             22 => b.data.objects[0].architecture = b.data.objects[1].architecture,
             23 => {

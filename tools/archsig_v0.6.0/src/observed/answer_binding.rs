@@ -26,7 +26,19 @@ impl Environment<'_> {
         let environment = matches!(path.as_slice(),
             [ProjectionStep::Field(output), ProjectionStep::Field(field), ..]
                 if output == "evaluation" && field == "environment");
-        if answer.status == Decision::Undetermined && !environment {
+        let built_object = matches!(path.first(), Some(ProjectionStep::Field(output)) if output == "object")
+            && graph
+                .requests
+                .iter()
+                .any(|r| r.id == *id && r.kind == QuestionKind::Build)
+            && answer.outputs.get("object").is_some_and(|r| {
+                matches!(
+                    graph.get(*r).ok().and_then(|n| n.payload.as_ref()),
+                    Some(Payload::Construction(v)) if matches!(v.data,
+                        crate::observed::construction_result::ConstructionData::Architecture { .. })
+                )
+            });
+        if answer.status == Decision::Undetermined && !environment && !built_object {
             return Err(self.answer_projection_unprovided(span));
         }
         let Some(ProjectionStep::Field(output)) = path.first() else {

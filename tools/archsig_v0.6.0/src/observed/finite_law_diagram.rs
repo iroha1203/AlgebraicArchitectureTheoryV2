@@ -368,6 +368,12 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn function_values(&self) -> Option<(NodeRef, &[NodeRef])> {
+        match self.source.parts.get(self.index) {
+            Some(Part::Function { ring, values }) => Some((*ring, values)),
+            _ => None,
+        }
+    }
     pub(super) fn evaluation_origin(
         &self,
         reference: NodeRef,

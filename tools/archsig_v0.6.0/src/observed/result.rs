@@ -1808,8 +1808,12 @@ impl Graph {
             } = reason.kind
             {
                 let proposition = self.get(condition)?;
+                if construction == "object_algebra" {
+                    super::build_result::validate_failure(self, reason)?;
+                    continue;
+                }
                 if construction == "composition" {
-                    super::public_compose::validate_failure(self,reason)?;
+                    super::public_compose::validate_failure(self, reason)?;
                     continue;
                 }
                 if construction == "comparison" {

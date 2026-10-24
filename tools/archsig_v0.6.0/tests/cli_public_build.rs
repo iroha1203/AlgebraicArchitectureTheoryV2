@@ -1,0 +1,380 @@
+//! 公開buildから後続の実評価までを、独立した三入力で検査する。
+#[allow(dead_code)]
+#[path = "common/cli.rs"]
+mod cli;
+use archsig::json::JNode;
+use cli::*;
+use std::path::{Path, PathBuf};
+
+const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Build","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Build.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Build.Part","meaning":"部分。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"}],"fields":[{"name":"quantity","type":"Z","meaning":"数量。"}],"alignments":[]}]}]}"#;
+const BODY: &str = "view amount(c:Part):Z=c.quantity;law required zero(c:Part):c.quantity=0;";
+fn files(name: &str, body: &str, missing: bool) -> PathBuf {
+    let dir = workdir(name);
+    let defs =
+        archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
+    let digest = &defs.vocabularies["Build"].digest;
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading R{{use vocabulary Build version \"1\" digest \"{digest}\";{body}}}"
+    );
+    let quantity = if missing {
+        ""
+    } else {
+        r#",{"id":"xq","subject":"q","field":"Build.Part.quantity","value":"1","origin":"model"}"#
+    };
+    let map = format!(
+        r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Build","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"独立の公開構成入力。","locations":[],"note":"p=0、q=1。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"root","type":"Build.Root","origin":"model"}},{{"id":"p","type":"Build.Part","origin":"model"}},{{"id":"q","type":"Build.Part","origin":"model"}}],"atoms":[{{"id":"op","subject":"p","field":"Build.Part.owner","value":["v","root"],"origin":"model"}},{{"id":"oq","subject":"q","field":"Build.Part.owner","value":["v","root"],"origin":"model"}},{{"id":"xp","subject":"p","field":"Build.Part.quantity","value":"0","origin":"model"}}{quantity}]}}]}}"#
+    );
+    for (name, bytes) in [
+        ("d.json", DEFINITION.as_bytes()),
+        ("l.law", law.as_bytes()),
+        ("a.json", map.as_bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    dir
+}
+fn asks(dir: &Path, requests: &[&str]) -> Run {
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--out",
+        "out",
+        "--time-ms",
+        "120000",
+    ];
+    for request in requests {
+        args.extend(["--ask", request]);
+    }
+    run(dir, &args)
+}
+fn answer<'a>(r: &'a JNode, id: &str) -> &'a JNode {
+    arr(get(r, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == id)
+        .unwrap()
+}
+fn node<'a>(r: &'a JNode, reference: &JNode) -> &'a JNode {
+    arr(get(r, "nodes"))
+        .iter()
+        .find(|n| s(get(n, "id")) == s(get(reference, "node")))
+        .unwrap()
+}
+fn value<'a>(r: &'a JNode, reference: &JNode) -> &'a JNode {
+    get(node(r, reference), "value")
+}
+fn saved(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
+    assert_eq!(run.code, code, "{}", run.stdout);
+    assert_eq!(s(get(&run.receipt, "status")), status);
+    assert_eq!(num(get(&run.receipt, "exit_code")), code as u64);
+    let result = result_json(dir, run);
+    assert_eq!(s(get(&result, "command")), "run");
+    assert_eq!(s(get(&result, "status")), status);
+    assert_eq!(num(get(&result, "exit_code")), code as u64);
+    for (src, dst) in [
+        ("d.json", "inputs/definitions/0.json"),
+        ("l.law", "inputs/law.law"),
+        ("a.json", "inputs/archmap.json"),
+    ] {
+        assert_eq!(
+            std::fs::read(dir.join(src)).unwrap(),
+            std::fs::read(dir.join("out").join(dst)).unwrap()
+        );
+    }
+    result
+}
+
+#[test]
+fn build_publishes_the_complete_algebra_and_its_object_drives_later_evaluation() {
+    let dir = files("public-build-algebra", BODY, false);
+    // 指定順と依存順を別にし、同じ完成Architectureを後続で消費する。
+    let run = asks(
+        &dir,
+        &[
+            "n=evaluate(R.amount,on=$b.object,c=@v/q)",
+            "b=build(R,on=@v/root)",
+            "ok=check(R.zero,on=$b.object,c=@v/q)",
+        ],
+    );
+    let result = saved(&dir, &run, "complete", 1);
+    let b = answer(&result, "b");
+    assert_eq!(s(get(b, "status")), "established");
+    let outputs = get(b, "outputs");
+    for key in ["proposition", "object", "algebra"] {
+        get(outputs, key);
+    }
+    let object = value(&result, get(outputs, "object"));
+    assert_eq!(s(get(object, "reading")), "R");
+    let algebra = value(&result, get(outputs, "algebra"));
+    assert_eq!(arr(get(algebra, "objects")).len(), 3);
+    let extension = get(algebra, "extension");
+    assert_eq!(s(get(extension, "kind")), "finite_pattern");
+    assert_eq!(arr(get(extension, "profiles")).len(), 3);
+    get(extension, "compatibility");
+    let equations = value(&result, get(algebra, "equations"));
+    assert_eq!(arr(get(equations, "indices")).len(), 2);
+    assert_eq!(arr(get(equations, "objects")).len(), 3);
+    assert!(!arr(get(algebra, "circuits")).is_empty());
+    assert_eq!(arr(get(algebra, "invariants")).len(), 4);
+    assert_eq!(arr(get(algebra, "signature")).len(), 2);
+    assert_eq!(
+        s(get(get(algebra, "operations"), "kind")),
+        "typed_free_words"
+    );
+    let n = answer(&result, "n");
+    assert_eq!(s(get(n, "status")), "established");
+    assert_eq!(s(value(&result, get(get(n, "outputs"), "value"))), "1");
+    assert_eq!(s(get(answer(&result, "ok"), "status")), "refuted");
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn missing_readings_keep_the_constructed_object_and_the_actual_needed_slot() {
+    let dir = files("public-build-missing", BODY, true);
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "n=evaluate(R.amount,on=$b.object,c=@v/q)",
+            "plan=needed($b)",
+        ],
+    );
+    let result = saved(&dir, &run, "partial", 2);
+    let b = answer(&result, "b");
+    assert_eq!(s(get(b, "status")), "undetermined");
+    assert!(has(get(b, "outputs"), "object"));
+    assert!(!has(get(b, "outputs"), "algebra"));
+    let n = answer(&result, "n");
+    assert_eq!(s(get(n, "status")), "undetermined");
+    assert!(arr(get(n, "reasons")).iter().any(|r| {
+        s(get(r, "code")) == "missing_observation"
+            && arr(get(r, "missing"))
+                .iter()
+                .any(|p| s(get(p, "subject")) == "q" && s(get(p, "field")) == "Build.Part.quantity")
+    }));
+    assert!(has(get(answer(&result, "plan"), "outputs"), "plan"));
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn algebra_base_supplies_a_public_root_handle_and_architecture() {
+    let dir = files("public-build-handle", BODY, false);
+    let run = asks(
+        &dir,
+        &[
+            "a=build(R,on=$b.algebra.base.subject)",
+            "b=build(R,on=@v/root)",
+            "n=evaluate(R.amount,on=$a.algebra.base.object,c=@v/q)",
+        ],
+    );
+    let result = saved(&dir, &run, "complete", 0);
+    for id in ["a", "b", "n"] {
+        assert_eq!(s(get(answer(&result, id), "status")), "established");
+    }
+    assert_eq!(
+        s(value(
+            &result,
+            get(get(answer(&result, "n"), "outputs"), "value")
+        )),
+        "1"
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn finite_guarded_law_and_value_parameters_flow_through_public_build() {
+    let dir = files(
+        "public-build-finite",
+        "view enabled():Bool=true;view amount(c:Part):Fp(2)=c.quantity;law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
+        false,
+    );
+    let old =
+        archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
+    let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Fp","2"]"#);
+    let new =
+        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+    std::fs::write(dir.join("d.json"), definition).unwrap();
+    for name in ["l.law", "a.json"] {
+        let text = std::fs::read_to_string(dir.join(name)).unwrap().replace(
+            &old.vocabularies["Build"].digest,
+            &new.vocabularies["Build"].digest,
+        );
+        std::fs::write(dir.join(name), text).unwrap();
+    }
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "n=evaluate(R.amount,on=$b.object,c=@v/q)",
+            "flag=evaluate(R.enabled,on=$b.object)",
+            "bad=check(R.bit,on=$b.object,c=@v/q,b=$flag.value)",
+            "good=check(R.bit,on=$b.object,c=@v/p,b=$flag.value)",
+        ],
+    );
+    let result = saved(&dir, &run, "complete", 1);
+    assert_eq!(s(get(answer(&result, "b"), "status")), "established");
+    let algebra = value(
+        &result,
+        get(get(answer(&result, "b"), "outputs"), "algebra"),
+    );
+    assert_eq!(arr(get(algebra, "circuits")).len(), 4);
+    assert_eq!(
+        s(value(
+            &result,
+            get(get(answer(&result, "n"), "outputs"), "value")
+        )),
+        "1"
+    );
+    assert_eq!(s(get(answer(&result, "bad"), "status")), "refuted");
+    assert_eq!(s(get(answer(&result, "good"), "status")), "established");
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn tuple_equations_keep_zero_components_out_of_refutation() {
+    let dir = files(
+        "public-build-tuple",
+        "law required pair(c:Part):(c.quantity,0)=(0,0);",
+        false,
+    );
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "bad=check(R.pair,on=$b.object,c=@v/q)",
+        ],
+    );
+    let result = saved(&dir, &run, "complete", 1);
+    let algebra = value(
+        &result,
+        get(get(answer(&result, "b"), "outputs"), "algebra"),
+    );
+    let detectors = arr(get(algebra, "circuits"));
+    assert_eq!(detectors.len(), 4);
+    let mut refuted_first = false;
+    for detector in detectors {
+        let detector = value(&result, detector);
+        let component = arr(get(detector, "component"));
+        assert_eq!(component.len(), 1);
+        for case in arr(get(detector, "cases")) {
+            let case = value(&result, case);
+            let evaluation = value(&result, get(case, "refutation"));
+            let decision = &value(&result, get(evaluation, "value")).value;
+            if num(&component[0]) == 1 {
+                assert!(matches!(decision, archsig::json::JValue::Bool(false)));
+            } else if matches!(decision, archsig::json::JValue::Bool(true)) {
+                refuted_first = true;
+            }
+        }
+    }
+    assert!(refuted_first);
+    assert_eq!(s(get(answer(&result, "bad"), "status")), "refuted");
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn owned_arrow_is_published_as_a_checked_generator() {
+    let dir = files("public-build-arrow", BODY, false);
+    let arrow = r#"{"kind":"arrow","name":"Build.Step","meaning":"部分間の操作。","parameters":[{"name":"owner","type":["Ref","Build.Root"],"meaning":"所属。"},{"name":"from","type":["Owned","Build.Part","owner"],"meaning":"始点。"},{"name":"to","type":["Owned","Build.Part","owner"],"meaning":"終点。"}],"fields":[],"alignments":[]}"#;
+    let definition = format!(
+        "{},{}]}}]}}",
+        DEFINITION.strip_suffix("]}]}").unwrap(),
+        arrow
+    );
+    let old =
+        archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
+    let new =
+        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+    std::fs::write(dir.join("d.json"), definition).unwrap();
+    for name in ["l.law", "a.json"] {
+        let text = std::fs::read_to_string(dir.join(name)).unwrap().replace(
+            &old.vocabularies["Build"].digest,
+            &new.vocabularies["Build"].digest,
+        );
+        std::fs::write(dir.join(name), text).unwrap();
+    }
+    let map = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .replace(
+            r#"{"id":"q","type""#,
+            r#"{"id":"e","type":"Build.Step","origin":"model"},{"id":"q","type""#,
+        );
+    let atoms = r#"{"id":"oe","subject":"e","field":"Build.Step.owner","value":["v","root"],"origin":"model"},{"id":"ef","subject":"e","field":"Build.Step.from","value":["v","p"],"origin":"model"},{"id":"et","subject":"e","field":"Build.Step.to","value":["v","q"],"origin":"model"}"#;
+    let map = format!("{},{}]}}]}}", map.strip_suffix("]}]}").unwrap(), atoms);
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "n=evaluate(R.amount,on=$b.object,c=@v/q)",
+        ],
+    );
+    let result = saved(&dir, &run, "complete", 0);
+    let algebra = value(
+        &result,
+        get(get(answer(&result, "b"), "outputs"), "algebra"),
+    );
+    let generators = arr(get(get(algebra, "operations"), "generators"));
+    assert_eq!(generators.len(), 1);
+    let operation = value(&result, &generators[0]);
+    get(operation, "configuration_map");
+    get(operation, "action");
+    assert_eq!(arr(get(algebra, "objects")).len(), 3);
+    assert_eq!(
+        s(value(
+            &result,
+            get(get(answer(&result, "n"), "outputs"), "value")
+        )),
+        "1"
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn incompatible_extension_keeps_counterexample_and_reusable_object() {
+    let dir = files(
+        "public-build-incompatible",
+        "view amount(c:Root):Z=0;law required zero(c:Part):c.quantity=0;",
+        false,
+    );
+    let mut map = std::fs::read_to_string(dir.join("a.json")).unwrap();
+    for row in [
+        r#",{"id":"q","type":"Build.Part","origin":"model"}"#,
+        r#",{"id":"oq","subject":"q","field":"Build.Part.owner","value":["v","root"],"origin":"model"}"#,
+        r#",{"id":"xq","subject":"q","field":"Build.Part.quantity","value":"1","origin":"model"}"#,
+    ] {
+        assert!(map.contains(row));
+        map = map.replace(row, "");
+    }
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "n=evaluate(R.amount,on=$b.object,c=@v/root)",
+        ],
+    );
+    let result = saved(&dir, &run, "complete", 1);
+    let b = answer(&result, "b");
+    assert_eq!(s(get(b, "status")), "refuted");
+    assert!(has(get(b, "outputs"), "object"));
+    assert!(!has(get(b, "outputs"), "algebra"));
+    let evidence = arr(get(b, "evidence"));
+    assert!(!evidence.is_empty());
+    for proof in evidence {
+        assert_eq!(s(get(value(&result, proof), "kind")), "counterexample");
+    }
+    assert_eq!(s(get(answer(&result, "n"), "status")), "established");
+    assert_eq!(
+        s(value(
+            &result,
+            get(get(answer(&result, "n"), "outputs"), "value")
+        )),
+        "0"
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}

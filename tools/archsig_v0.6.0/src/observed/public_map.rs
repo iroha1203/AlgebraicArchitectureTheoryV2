@@ -136,7 +136,12 @@ pub(super) fn validate_origin(
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
     if request.kind == QuestionKind::Build {
-        return super::architecture_result::validate_build_origin(environment, graph, request, value);
+        return super::architecture_result::validate_build_origin(
+            environment,
+            graph,
+            request,
+            value,
+        );
     }
     if let Witness::PathCompose(c) = &value.witness { return super::public_path_compose::validate_origin(environment,graph,request,c); }
     if let Witness::Compare(c) = &value.witness {
@@ -330,15 +335,20 @@ pub(super) fn unavailable(
     let mut reasons = vec![];
     let mut scope = Scope::default();
     if let Some(name) = request.declaration() {
-        scope
-            .readings
-            .insert(environment.inputs.law().declarations[name].reading.clone());
+        scope.readings.insert(
+            environment
+                .inputs
+                .law()
+                .declarations
+                .get(name)
+                .map(|d| d.reading.clone())
+                .unwrap_or_else(|| name.to_owned()),
+        );
     }
-    let selectors = request
-        .arguments
-        .iter()
-        .map(|a| &a.value)
-        .chain(matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare).then_some(&request.head));
+    let selectors = request.arguments.iter().map(|a| &a.value).chain(
+        matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare)
+            .then_some(&request.head),
+    );
     for selector in selectors {
         let Selector::Answer { id, .. } = selector else {
             continue;

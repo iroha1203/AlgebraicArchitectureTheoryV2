@@ -43,6 +43,9 @@ pub(crate) enum ConstructionType {
     EquationPresentation,
     EquationFamily,
     CircuitPattern,
+    CircuitCase,
+    CircuitDetector,
+    ObjectAlgebra,
     Invariant,
     SignatureAxis,
 }
@@ -67,6 +70,9 @@ impl ConstructionType {
             Self::EquationPresentation => "EquationPresentation",
             Self::EquationFamily => "EquationFamily",
             Self::CircuitPattern => "CircuitPattern",
+            Self::CircuitCase => "CircuitCase",
+            Self::CircuitDetector => "CircuitDetector",
+            Self::ObjectAlgebra => "ObjectAlgebra",
             Self::Invariant => "Invariant",
             Self::SignatureAxis => "SignatureAxis",
         }
@@ -159,6 +165,7 @@ pub(crate) enum ConstructionData {
     InternalArrows(super::internal_arrow_diagram::Data),
     EquationFamily(super::equation_family::Data),
     CircuitPattern(super::circuit_pattern::Data),
+    Build(super::build_result::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -268,6 +275,7 @@ impl ConstructionValue {
             ConstructionData::LawFrame(data) => data.scalar(),
             ConstructionData::ObjectReadingFrame(data) => data.scalar(),
             ConstructionData::ViewFamily(data) => data.scalar(),
+            ConstructionData::Build(data) => data.scalar(),
             ConstructionData::OutsideLaw(data) => data.scalar(),
             ConstructionData::LawInstantiation(data) => data.scalar(),
             ConstructionData::LawFamily(data) => data.scalar(),
@@ -348,6 +356,7 @@ impl ConstructionValue {
             D::InternalArrows(data) => return data.ty(),
             D::EquationFamily(data) => return data.ty(),
             D::CircuitPattern(data) => return data.ty(),
+            D::Build(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
             D::Comparison(part) => return part.ty(),
@@ -389,6 +398,7 @@ impl ConstructionValue {
             D::InternalArrows(data) => data.arguments(),
             D::EquationFamily(data) => data.arguments(),
             D::CircuitPattern(data) => data.arguments(),
+            D::Build(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
             D::Comparison(part) => {
@@ -496,6 +506,7 @@ impl ConstructionValue {
             D::InternalArrows(ref data) => data.construction(),
             D::EquationFamily(_) => "equation_family",
             D::CircuitPattern(_) => "circuit_pattern",
+            D::Build(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
             D::Comparison(ref part) => part.construction(),
@@ -522,6 +533,9 @@ impl ConstructionValue {
                 ConstructionType::EquationPresentation => "equation_presentation",
                 ConstructionType::EquationFamily => "equation_family",
                 ConstructionType::CircuitPattern => "circuit_pattern",
+                ConstructionType::CircuitCase => "circuit_case",
+                ConstructionType::CircuitDetector => "circuit_detector",
+                ConstructionType::ObjectAlgebra => "object_algebra",
                 ConstructionType::Invariant => "invariant",
                 ConstructionType::SignatureAxis => "signature_axis",
             },
@@ -543,8 +557,40 @@ impl ConstructionValue {
     pub fn projection_type(&self) -> Option<ProjectionType> {
         use ConstructionData as D;
         match (&self.data, &self.witness) {
+            (D::Build(data), Witness::Architecture(a)) if data.algebra_base().is_some() => {
+                Some(ProjectionType::ObjectAlgebraRoot(
+                    a.inputs
+                        .archmap()
+                        .snapshots
+                        .iter()
+                        .find(|s| s.id == a.construction.root().snapshot)?
+                        .subjects
+                        .iter()
+                        .find(|s| s.id == a.construction.root().subject)?
+                        .ty
+                        .clone(),
+                ))
+            }
+            (D::ObjectComponents(data), Witness::Architecture(a))
+                if data.base_component().is_some() =>
+            {
+                Some(ProjectionType::ObjectComponentRoot(
+                    a.inputs
+                        .archmap()
+                        .snapshots
+                        .iter()
+                        .find(|s| s.id == a.construction.root().snapshot)?
+                        .subjects
+                        .iter()
+                        .find(|s| s.id == a.construction.root().subject)?
+                        .ty
+                        .clone(),
+                ))
+            }
             (D::InternalArrows(data), Witness::Architecture(_)) => data.projection_type(),
-            (D::ObjectComponents(data), Witness::Architecture(_)) => data.root_type().map(ProjectionType::ArchitectureRoot),
+            (D::ObjectComponents(data), Witness::Architecture(_)) => {
+                data.root_type().map(ProjectionType::ArchitectureRoot)
+            }
             (D::Composition(part), Witness::Compose(c)) => part.projection_type(c),
             (D::PathComposition(part), Witness::PathCompose(_)) => part.projection_type(),
             (D::Comparison(part), Witness::Compare(_)) => part.projection_type(),
@@ -577,9 +623,29 @@ impl ConstructionValue {
     }
     pub fn project(&self, path: &[ProjectionStep]) -> Option<(NodeRef, usize)> {
         use ConstructionData as D;
-        if let D::InternalArrows(data) = &self.data { return data.project(path); }
+        if let D::Build(data) = &self.data {
+            return match path.first()? {
+                ProjectionStep::Field(f) if f == "base" => data.algebra_base().map(|r| (r, 1)),
+                _ => None,
+            };
+        }
+        if let D::ObjectComponents(data) = &self.data
+            && let Some((subject, object)) = data.base_component()
+        {
+            return match path.first()? {
+                ProjectionStep::Field(f) if f == "subject" => Some((subject, 1)),
+                ProjectionStep::Field(f) if f == "object" => Some((object, 1)),
+                _ => None,
+            };
+        }
+        if let D::InternalArrows(data) = &self.data {
+            return data.project(path);
+        }
         if let D::ObjectComponents(data) = &self.data {
-            return match path.first()? { ProjectionStep::Field(f) if f == "root" => data.root().map(|r| (r, 1)), _ => None };
+            return match path.first()? {
+                ProjectionStep::Field(f) if f == "root" => data.root().map(|r| (r, 1)),
+                _ => None,
+            };
         }
         if let D::Composition(part) = &self.data { return part.project(path); }
         if let D::PathComposition(part) = &self.data { return part.project(path); }
@@ -629,6 +695,7 @@ impl ConstructionValue {
             D::InternalArrows(data) => data.wire(),
             D::EquationFamily(data) => data.wire(),
             D::CircuitPattern(data) => data.wire(),
+            D::Build(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
             D::Comparison(part) => match &self.witness { Witness::Compare(w) => part.wire(w), _ => unreachable!("比較は元検査を持つ") },
@@ -1207,28 +1274,68 @@ pub fn atom_value(
     })
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-    if let ConstructionData::LawFamily(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
-    if let ConstructionData::LawInstantiation(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
-    if let ConstructionData::OutsideLaw(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
-    if let ConstructionData::ObjectReadingFrame(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::ViewFamily(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::ViewInvariant(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::PredicateInvariant(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::LawFrame(data) = &value.data { return Ok((data.support.clone(),data.scope.clone())); }
-    if let ConstructionData::FiniteLaw(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::PolynomialLaw(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::ObjectComponents(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::InternalArrows(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::EquationFamily(data) = &value.data { return Ok(data.metadata()); }
-    if let ConstructionData::CircuitPattern(data) = &value.data { return Ok(data.metadata()); }
-    if let Witness::PathCompose(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
-    if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationSource(data))) = (&value.witness, &value.data) {
+    if let ConstructionData::Build(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::LawFamily(data) = &value.data {
+        return Ok((data.support.clone(), data.scope.clone()));
+    }
+    if let ConstructionData::LawInstantiation(data) = &value.data {
+        return Ok((data.support.clone(), data.scope.clone()));
+    }
+    if let ConstructionData::OutsideLaw(data) = &value.data {
+        return Ok((data.support.clone(), data.scope.clone()));
+    }
+    if let ConstructionData::ObjectReadingFrame(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::ViewFamily(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::ViewInvariant(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::PredicateInvariant(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::LawFrame(data) = &value.data {
+        return Ok((data.support.clone(), data.scope.clone()));
+    }
+    if let ConstructionData::FiniteLaw(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::PolynomialLaw(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::ObjectComponents(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::InternalArrows(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::EquationFamily(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let ConstructionData::CircuitPattern(data) = &value.data {
+        return Ok(data.metadata());
+    }
+    if let Witness::PathCompose(c) = &value.witness {
+        return Ok((c.support.clone(), c.scope.clone()));
+    }
+    if let (
+        Witness::Compare(w),
+        ConstructionData::Comparison(super::public_compare::Part::RelationSource(data)),
+    ) = (&value.witness, &value.data)
+    {
         let _ = w;
         return Ok((data.support.clone(), data.scope.clone()));
     }
     if let (Witness::Compare(w), ConstructionData::Comparison(super::public_compare::Part::RelationDerived { index, .. })) = (&value.witness, &value.data) {
         let plan = w.relation_plan.as_ref().ok_or("relationの元証拠がない")?;
-        return Ok((w.support.clone(), super::public_compare::relations::scope_at(plan, Some(plan.base+index))));
+        return Ok((
+            w.support.clone(),
+            super::public_compare::relations::scope_at(plan, Some(plan.base + index)),
+        ));
     }
     if let Witness::Compare(c) = &value.witness { return Ok((c.support.clone(), c.scope.clone())); }
     if let Witness::Compose(c) = &value.witness {
@@ -1673,23 +1780,60 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     let Some(Payload::Construction(v)) = &node.payload else {
         return Err("native構成のpayloadがない".into());
     };
-    if let ConstructionData::LawFamily(data) = &v.data { return super::law_family::validate_node(graph,node,v,data); }
-    if let ConstructionData::LawInstantiation(data) = &v.data { return super::law_instantiation::validate_node(graph,node,v,data); }
-    if let ConstructionData::OutsideLaw(data) = &v.data { return super::law_inapplicable::validate_node(graph,node,v,data); }
-    if let ConstructionData::ObjectReadingFrame(data) = &v.data { return super::object_reading_evaluation::validate_node(graph,node,v,data); }
-    if let ConstructionData::ViewFamily(data) = &v.data { return super::view_family::validate_node(graph,node,v,data); }
-    if let ConstructionData::ViewInvariant(data) = &v.data { return super::view_invariant::validate_node(graph,node,v,data); }
-    if let ConstructionData::PredicateInvariant(data) = &v.data { return super::predicate_invariant::validate_node(graph,node,v,data); }
-    if let ConstructionData::LawFrame(data) = &v.data { return super::law_evaluation::validate_node(graph,node,v,data); }
-    if let ConstructionData::FiniteLaw(data) = &v.data { return super::finite_law_diagram::validate_node(graph,node,data); }
-    if let ConstructionData::PolynomialLaw(data) = &v.data { return super::polynomial_law_diagram::validate_node(graph,node,data); }
-    if let ConstructionData::ObjectComponents(data) = &v.data { return super::object_component_diagram::validate_node(graph,node,data); }
-    if let ConstructionData::InternalArrows(data) = &v.data { return super::internal_arrow_diagram::validate_node(graph,node,data); }
-    if let ConstructionData::EquationFamily(data) = &v.data { return super::equation_family::validate_node(graph,node,data); }
-    if let ConstructionData::CircuitPattern(data) = &v.data { return super::circuit_pattern::validate_node(graph,node,data); }
-    if let Witness::Compose(c) = &v.witness { return super::public_compose::validate_node(graph,node,c); }
-    if let Witness::PathCompose(c) = &v.witness { return super::public_path_compose::validate_node(graph,node,c); }
-    if let Witness::Compare(c) = &v.witness { return super::public_compare::validate_node(graph,node,c); }
+    if let ConstructionData::LawFamily(data) = &v.data {
+        return super::law_family::validate_node(graph, node, v, data);
+    }
+    if let ConstructionData::LawInstantiation(data) = &v.data {
+        return super::law_instantiation::validate_node(graph, node, v, data);
+    }
+    if let ConstructionData::OutsideLaw(data) = &v.data {
+        return super::law_inapplicable::validate_node(graph, node, v, data);
+    }
+    if let ConstructionData::ObjectReadingFrame(data) = &v.data {
+        return super::object_reading_evaluation::validate_node(graph, node, v, data);
+    }
+    if let ConstructionData::ViewFamily(data) = &v.data {
+        return super::view_family::validate_node(graph, node, v, data);
+    }
+    if let ConstructionData::ViewInvariant(data) = &v.data {
+        return super::view_invariant::validate_node(graph, node, v, data);
+    }
+    if let ConstructionData::PredicateInvariant(data) = &v.data {
+        return super::predicate_invariant::validate_node(graph, node, v, data);
+    }
+    if let ConstructionData::LawFrame(data) = &v.data {
+        return super::law_evaluation::validate_node(graph, node, v, data);
+    }
+    if let ConstructionData::FiniteLaw(data) = &v.data {
+        return super::finite_law_diagram::validate_node(graph, node, data);
+    }
+    if let ConstructionData::PolynomialLaw(data) = &v.data {
+        return super::polynomial_law_diagram::validate_node(graph, node, data);
+    }
+    if let ConstructionData::ObjectComponents(data) = &v.data {
+        return super::object_component_diagram::validate_node(graph, node, data);
+    }
+    if let ConstructionData::InternalArrows(data) = &v.data {
+        return super::internal_arrow_diagram::validate_node(graph, node, data);
+    }
+    if let ConstructionData::EquationFamily(data) = &v.data {
+        return super::equation_family::validate_node(graph, node, data);
+    }
+    if let ConstructionData::CircuitPattern(data) = &v.data {
+        return super::circuit_pattern::validate_node(graph, node, data);
+    }
+    if let ConstructionData::Build(data) = &v.data {
+        return super::build_result::validate_node(graph, node, v, data);
+    }
+    if let Witness::Compose(c) = &v.witness {
+        return super::public_compose::validate_node(graph, node, c);
+    }
+    if let Witness::PathCompose(c) = &v.witness {
+        return super::public_path_compose::validate_node(graph, node, c);
+    }
+    if let Witness::Compare(c) = &v.witness {
+        return super::public_compare::validate_node(graph, node, c);
+    }
     if node.ty != v.ty() || node.rule != v.rule() || node.arguments != v.arguments() {
         return Err("native構成の型・規則・既出引数が違う".into());
     }

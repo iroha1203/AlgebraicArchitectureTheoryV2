@@ -314,6 +314,16 @@ impl Data {
             _ => None,
         }
     }
+    pub(super) fn base_component(&self) -> Option<(NodeRef, NodeRef)> {
+        match self.source.parts.get(self.index)? {
+            Part::Component {
+                base: true,
+                subject,
+                object,
+            } => Some((*subject, *object)),
+            _ => None,
+        }
+    }
     /// 呼出し側は元nodeの検査を先に行う。対象番号は元計画の対応表からだけ復元する。
     pub(super) fn architecture_object(
         &self,

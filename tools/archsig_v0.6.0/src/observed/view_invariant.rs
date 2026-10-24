@@ -205,6 +205,9 @@ fn compute(
     })
 }
 impl Data {
+    pub(super) fn evaluations(&self) -> &[NodeRef] {
+        &self.source.evaluations
+    }
     pub(super) fn ty(&self) -> NodeType {
         NodeType::Construction(if self.axis {
             T::SignatureAxis

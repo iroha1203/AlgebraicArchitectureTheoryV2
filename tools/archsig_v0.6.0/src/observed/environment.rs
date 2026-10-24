@@ -307,6 +307,7 @@ impl ValidationSnapshot {
 
 #[derive(Default)]
 struct ValidationCache {
+    builds: Vec<std::sync::Arc<super::build_result::Source>>,
     checked: BTreeSet<NodeRefKey>,
     rechecked: BTreeSet<NodeRefKey>,
     sources: Vec<SourceCacheEntry>,
@@ -377,6 +378,22 @@ pub(crate) struct Environment<'a> {
     name_token_observer: RefCell<Option<NameTokenObserver>>,
 }
 impl<'a> Environment<'a> {
+    pub(super) fn build_source_checked(
+        &self,
+        source: &std::sync::Arc<super::build_result::Source>,
+    ) -> bool {
+        self.cache
+            .borrow()
+            .builds
+            .iter()
+            .any(|s| std::sync::Arc::ptr_eq(s, source))
+    }
+    pub(super) fn remember_build_source(
+        &self,
+        source: std::sync::Arc<super::build_result::Source>,
+    ) {
+        self.cache.borrow_mut().builds.push(source);
+    }
     pub(in crate::observed) fn with_prepared(
         prepared: &'a super::PreparedObserved,
         control: &mut Control,
@@ -760,7 +777,11 @@ impl<'a> Environment<'a> {
                     }
                     super::public_map::validate_origin(self, graph, request, value)?;
                     super::public_compare::validate_position(value, limit)?;
-                    if let super::construction_result::ConstructionData::FiniteLaw(data) = &value.data { data.position(limit)?; }
+                    if let super::construction_result::ConstructionData::FiniteLaw(data) =
+                        &value.data
+                    {
+                        data.position(limit)?;
+                    }
                     self.recheck_finite_law_diagram(graph, value)?;
                     if let super::construction_result::ConstructionData::PolynomialLaw(data) = &value.data { data.position(limit)?; }
                     self.recheck_polynomial_law_diagram(graph, value)?;
@@ -770,8 +791,17 @@ impl<'a> Environment<'a> {
                     if let super::construction_result::ConstructionData::LawFamily(data) = &value.data {
                         data.position(limit)?;
                         graph.expect(data.template, &NodeType::LawInstance)?;
-                        graph.expect(data.architecture, &NodeType::Construction(super::construction_result::ConstructionType::Architecture))?;
-                        self.recheck_law_evaluation_inputs(graph, data.template, data.architecture)?;
+                        graph.expect(
+                            data.architecture,
+                            &NodeType::Construction(
+                                super::construction_result::ConstructionType::Architecture,
+                            ),
+                        )?;
+                        self.recheck_law_evaluation_inputs(
+                            graph,
+                            data.template,
+                            data.architecture,
+                        )?;
                     }
                     if let super::construction_result::ConstructionData::LawInstantiation(data) = &value.data {
                         data.position(limit)?;
@@ -779,7 +809,11 @@ impl<'a> Environment<'a> {
                         graph.expect(data.template, &NodeType::LawInstance)?;
                         graph.expect(data.architecture, &NodeType::Construction(super::construction_result::ConstructionType::Architecture))?;
                         self.recheck_law_evaluation_inputs(graph, data.base, data.architecture)?;
-                        self.recheck_law_evaluation_inputs(graph, data.template, data.architecture)?;
+                        self.recheck_law_evaluation_inputs(
+                            graph,
+                            data.template,
+                            data.architecture,
+                        )?;
                     }
                     if let super::construction_result::ConstructionData::OutsideLaw(data) = &value.data {
                         data.position(limit)?;
@@ -789,12 +823,21 @@ impl<'a> Environment<'a> {
                     }
                     if let super::construction_result::ConstructionData::ObjectComponents(data) = &value.data { data.position(limit)?; }
                     self.recheck_object_components(graph, value)?;
-                    if let super::construction_result::ConstructionData::InternalArrows(data) = &value.data { data.position(limit)?; }
+                    if let super::construction_result::ConstructionData::InternalArrows(data) =
+                        &value.data
+                    {
+                        data.position(limit)?;
+                    }
                     self.recheck_internal_arrows(graph, value)?;
                     if let super::construction_result::ConstructionData::EquationFamily(data) = &value.data { data.position(limit)?; }
                     self.recheck_equation_family(graph, value)?;
-                    if let super::construction_result::ConstructionData::CircuitPattern(data) = &value.data { data.position(limit)?; }
+                    if let super::construction_result::ConstructionData::CircuitPattern(data) =
+                        &value.data
+                    {
+                        data.position(limit)?;
+                    }
                     self.recheck_circuit_pattern(graph, value)?;
+                    self.recheck_build(graph, value, limit)?;
                     self.recheck_view_invariant(graph, value, limit)?;
                     self.recheck_predicate_invariant(graph, value, limit)?;
                     for r in node
@@ -1362,8 +1405,11 @@ impl<'a> Environment<'a> {
         {
             return Ok(());
         }
-        if let Some(Payload::Evaluation {expression,..})=&node.payload {
-            let application=node.arguments.first().is_some_and(|r|matches!(graph.get(*r).map(|n|&n.ty),Ok(NodeType::LawInstance)));
+        if let Some(Payload::Evaluation { expression, .. }) = &node.payload {
+            let application = node
+                .arguments
+                .first()
+                .is_some_and(|r| matches!(graph.get(*r).map(|n| &n.ty), Ok(NodeType::LawInstance)));
             if !application {
                 if let Some(Payload::Expression {location:Location::Law {span},..})=&graph.get(*expression)?.payload {
                     if let Some(index)=self.current_context(graph).instance {
@@ -4015,9 +4061,17 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
-            if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
+            if matches!(
+                request.kind,
+                QuestionKind::Build
+                    | QuestionKind::Map
+                    | QuestionKind::Compose
+                    | QuestionKind::Compare
+            ) {
                 return self.with_request_context(graph, request, || {
-                    if request.kind == QuestionKind::Compose {
+                    if request.kind == QuestionKind::Build {
+                        super::build_result::validate_answer(self, graph, request, answer)?;
+                    } else if request.kind == QuestionKind::Compose {
                         super::public_compose::validate_answer(self, graph, request, answer)?;
                     } else if request.kind == QuestionKind::Compare {
                         super::public_compare::validate_answer(self, graph, request, answer)?;
@@ -6520,8 +6574,10 @@ impl<'a> Environment<'a> {
                 return Err("未成立guardのnative Law bodyは評価できない".into());
             }
         }
-        if let Some(index)=self.current_context(graph).instance {
-            if let Some(source)=self.finite_family_skipped_source(graph,index,span,bindings)? {return Ok(source)}
+        if let Some(index) = self.current_context(graph).instance {
+            if let Some(source) = self.finite_family_skipped_source(graph, index, span, bindings)? {
+                return Ok(source);
+            }
         }
         if matches!(declaration.signature, crate::law::model::Signature::Relation { .. }) {
             let index = self.current_context(graph).instance.ok_or("元relation instanceがない")?;
@@ -6668,11 +6724,20 @@ impl<'a> Environment<'a> {
                     self.object_view_binding_matches(graph, parameter, binding.value)?;
                     let original = graph.get(binding.value)?;
                     base.merge(&original.scope);
-                    variables.insert(binding.name.clone(), SourceValue {
-                        condition_failed: false, condition_pending: false, symbolic: None,
-                        comparison: None, affine: None, scope: base.clone(), known_value: Some(value.clone()),
-                        support: original.support.clone(), scalar_scope: Some(original.scope.clone()),
-                    });
+                    variables.insert(
+                        binding.name.clone(),
+                        SourceValue {
+                            condition_failed: false,
+                            condition_pending: false,
+                            symbolic: None,
+                            comparison: None,
+                            affine: None,
+                            scope: base.clone(),
+                            known_value: Some(value.clone()),
+                            support: original.support.clone(),
+                            scalar_scope: Some(original.scope.clone()),
+                        },
+                    );
                     self.tick()?;
                     continue;
                 }
