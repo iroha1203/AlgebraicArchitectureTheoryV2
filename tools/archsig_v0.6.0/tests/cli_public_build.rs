@@ -445,19 +445,49 @@ fn missing_views_block_algebra_without_relying_on_laws_or_matching_patterns() {
 
 #[test]
 fn mixed_tuple_fields_and_lexical_aliases_preserve_each_scalar_component() {
-    for (index, expression) in [
-        "c.quantity=(0,0)",
-        "let x=c.quantity in x=(0,0)",
-        "let x=c.quantity in let y=x in y=(0,0)",
-        "let x=(c.quantity.0,c.quantity.1) in x=(0,0)",
-        "let x=c in let y=x.quantity in y=(0,0)",
-    ]
-    .iter()
-    .enumerate()
-    {
-        let body =
-            format!("view amount(c:Part):Z=c.quantity.0;law required pair(c:Part):{expression};");
-        let dir = files(&format!("public-build-mixed-tuple-{index}"), &body, false);
+    mixed_tuple_public_cases(
+        "lexical",
+        &[
+            ("", "c.quantity=(0,0)"),
+            ("", "let x=c.quantity in x=(0,0)"),
+            ("", "let x=c.quantity in let y=x in y=(0,0)"),
+            ("", "let x=(c.quantity.0,c.quantity.1) in x=(0,0)"),
+            ("", "let x=c in let y=x.quantity in y=(0,0)"),
+        ],
+    );
+}
+
+#[test]
+fn helper_arguments_keep_caller_bindings_and_mixed_tuple_components() {
+    mixed_tuple_public_cases(
+        "helper",
+        &[
+            (
+                "view first(x:(Z,Q)):Z=x.0;",
+                "(first(c.quantity),c.quantity.1)=(0,0)",
+            ),
+            (
+                "view passPair(x:(Z,Q)):(Z,Q)=x;",
+                "passPair(c.quantity)=(0,0)",
+            ),
+            (
+                "view first(x:(Z,Q)):Z=x.0;view keep(x:(Z,Q)):(Z,Q)=(first(x),x.1);",
+                "let x=c.quantity in keep(x)=(0,0)",
+            ),
+        ],
+    );
+}
+
+fn mixed_tuple_public_cases(name: &str, expressions: &[(&str, &str)]) {
+    for (index, (helpers, expression)) in expressions.iter().enumerate() {
+        let body = format!(
+            "{helpers}view amount(c:Part):Z=c.quantity.0;law required pair(c:Part):{expression};"
+        );
+        let dir = files(
+            &format!("public-build-mixed-tuple-{name}-{index}"),
+            &body,
+            false,
+        );
         let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["Tuple","Z","Q"]"#);
         let old = archsig::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())])
             .unwrap();

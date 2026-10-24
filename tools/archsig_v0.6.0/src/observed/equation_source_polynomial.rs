@@ -292,10 +292,7 @@ impl Compiler<'_> {
                     }
                     let mut bindings = BTreeMap::new();
                     for (parameter, argument) in params.iter().zip(args) {
-                        let Some(value) = self.expression(*argument, &[], c)? else {
-                            return Ok(None);
-                        };
-                        bindings.insert(parameter.name.clone(), value);
+                        bindings.insert(parameter.name.clone(), self.lexical(*argument));
                     }
                     let previous = std::mem::replace(&mut self.variables, bindings);
                     let result = self.expression(*body, path, c);
