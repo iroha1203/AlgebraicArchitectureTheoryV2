@@ -111,6 +111,7 @@ impl PrimitiveValueIdentity {
         &self.ty
     }
     fn checked(
+        inputs: &CheckedInputs,
         declarations: &DeclarationCorrespondence,
         declaration: &str,
         c: &mut Control,
@@ -124,15 +125,9 @@ impl PrimitiveValueIdentity {
         if source != target {
             return Ok(None);
         }
-        let mut todo = vec![&source];
-        while let Some(ty) = todo.pop() {
-            tick(c)?;
-            match ty {
-                Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text | Type::Fp(_) => {}
-                Type::Tuple(ts) => todo.extend(ts),
-                Type::List(t) | Type::Set(t) | Type::Option(t) => todo.push(t),
-                _ => return Ok(None),
-            }
+        if super::value_transport::identity_declarations(&source, inputs.law(), c)
+            .map_err(invalid)?.is_none() {
+            return Ok(None);
         }
         Ok(Some(Self { ty: source }))
     }
@@ -143,7 +138,7 @@ impl PrimitiveValueIdentity {
                 "原始値の恒等写像と実値の型が違う".into(),
             ));
         }
-        // 原始値とその型構造。型の全元を固定するので順逆とも恒等となる。
+        // 参照を含まない値とconstructorの型構造。型の全元を順逆とも固定する。
         Ok(value.clone())
     }
 }
@@ -580,6 +575,7 @@ fn checked_view_transport(
                 c,
             )?))
         } else if let Some(identity) = PrimitiveValueIdentity::checked(
+            &inputs,
             declarations,
             &r.instance().declaration().name,
             c,
