@@ -131,3 +131,66 @@ impl Environment<'_> {
         self.recheck_evaluation(g, r)
     }
 }
+impl Environment<'_> {
+    pub(super) fn recheck_view_family(
+        &self,
+        g: &Graph,
+        v: &ConstructionValue,
+        at: usize,
+    ) -> Result<(), ValidationFailure> {
+        let D::ViewFamily(d) = &v.data else {
+            return Ok(());
+        };
+        d.position(at)?;
+        d.recheck(self, g, &mut self.control.clone())?;
+        for r in d.arguments() {
+            self.tick()?;
+            if r.0 >= at {
+                return Err("有限view族の依存が既出でない".into());
+            }
+            self.validate_at(g, g.get(r)?, r.0)?;
+        }
+        Ok(())
+    }
+    pub(super) fn validate_view_family_evaluation(
+        &self,
+        g: &Graph,
+        n: &Node,
+        at: usize,
+    ) -> Result<bool, ValidationFailure> {
+        let Some(rs) = super::super::view_family::family_dependencies(g, n)? else {
+            return Ok(false);
+        };
+        let Some(Payload::Evaluation { expression, .. }) = &n.payload else {
+            return Err("全view族のpayloadが違う".into());
+        };
+        let context = self.current_context(g);
+        if context != g.context_at(expression.0)
+            || context.frame.is_some()
+            || context.instance.is_some()
+            || context.iteration.is_some()
+            || context.case.is_some()
+        {
+            return Err("全view族の元Request Contextが違う".into());
+        }
+        let request = g
+            .requests
+            .get(context.request)
+            .ok_or("全view族の元Requestがない")?;
+        if self
+            .original_requests
+            .is_none_or(|ps| ps.get(context.request) != Some(request))
+        {
+            return Err("全view族の元Requestが現在の入力と違う".into());
+        }
+        for r in rs {
+            self.tick()?;
+            if r.0 >= at {
+                return Err("全view族の依存が既出でない".into());
+            }
+            self.validate_at(g, g.get(r)?, r.0)?;
+        }
+        super::super::view_family::validate_family(g, n, at)?;
+        Ok(true)
+    }
+}

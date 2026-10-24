@@ -25,10 +25,11 @@ pub(super) fn source(g: &Graph, n: &Node) -> Result<Option<NodeRef>, ValidationF
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
         return Ok(None);
     };
-    let D::ObjectComponents(d) = &v.data else {
-        return Ok(None);
-    };
-    Ok(d.view_origin(r)?.map(|_| r))
+    match &v.data {
+        D::ObjectComponents(d) => Ok(d.view_origin(r)?.map(|_| r)),
+        D::ViewFamily(d) => Ok(d.view_origin(r)?.map(|_| r)),
+        _ => Ok(None),
+    }
 }
 struct Plan {
     origin: ViewOrigin,

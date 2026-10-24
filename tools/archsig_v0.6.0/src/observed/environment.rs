@@ -766,6 +766,7 @@ impl<'a> Environment<'a> {
                     self.recheck_polynomial_law_diagram(graph, value)?;
                     self.recheck_law_frame(graph, value)?;
                     self.recheck_object_reading_frame(graph, value, limit)?;
+                    self.recheck_view_family(graph, value, limit)?;
                     if let super::construction_result::ConstructionData::LawFamily(data) = &value.data {
                         data.position(limit)?;
                         graph.expect(data.template, &NodeType::LawInstance)?;
@@ -835,6 +836,7 @@ impl<'a> Environment<'a> {
                     }
                     return Ok(());
                 }
+                if self.validate_view_family_evaluation(graph,node,limit)? { return Ok(()); }
                 if self.validate_object_reading_result(graph, node, limit)? {
                     return Ok(());
                 }
