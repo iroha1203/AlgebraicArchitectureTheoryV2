@@ -88,6 +88,11 @@ fn finite_quotient_distinguishes_all_candidates_from_solutions_and_reuses() {
     let first = execute(&dir, "out", &asks, None);
     assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
     let original = result_json(&dir, &first);
+    for request in &arr(get(&original, "requests"))[..2] {
+        let defaults=arr(get(request,"defaults"));
+        assert_eq!(defaults.len(),1);
+        assert_eq!(s(get(&defaults[0],"rule")),"no_law_check");
+    }
     assert_eq!(fiber_sizes(&original, 0), vec![2, 2]);
     assert_eq!(fiber_sizes(&original, 1), vec![1, 1]);
     let repeated = execute(&dir, "out2", &asks, Some("out"));
@@ -174,4 +179,33 @@ fn quotient_of_new_solutions_reads_the_previous_repaired_state() {
         "q=quotient(Pair.last,on=$s.solutions,s=@v/s)"],None);
     assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
     let result=result_json(&dir,&r);assert_eq!(fiber_sizes(&result,2),vec![1,1]);
+}
+
+#[test]
+fn missing_view_keeps_quotient_undetermined_and_independent_followup_available() {
+    let dir=input("quotient-missing");
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap()
+        .replace("x=a,y=b","x=a").replace("Bool=s.y","Bool=s.x and s.y");
+    std::fs::write(dir.join("l.law"),law).unwrap();
+    let map=std::fs::read_to_string(dir.join("a.json")).unwrap()
+        .replace(",{\"id\":\"y\",\"subject\":\"s\",\"field\":\"Pair.State.y\",\"value\":false,\"origin\":\"o\"}","");
+    std::fs::write(dir.join("a.json"),map).unwrap();
+    let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "q=quotient(Pair.last,on=$s.domain,s=@v/s)","later=check(Pair.empty,s=@v/s)"];
+    let first=execute(&dir,"out",&asks,None);
+    assert_eq!(first.code,2,"{} {}",first.stdout,first.stderr);
+    let result=result_json(&dir,&first);let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[0],"status")),"established");
+    assert_eq!(s(get(&answers[1],"status")),"undetermined");
+    assert!(!has(get(&answers[1],"outputs"),"quotient"));
+    assert_eq!(s(get(&answers[2],"status")),"refuted");
+    let reason=arr(get(&answers[1],"reasons")).iter().find(|r|s(get(r,"code"))=="missing_observation").unwrap();
+    assert!(!arr(get(reason,"dependencies")).is_empty());
+    assert!(arr(get(reason,"missing")).iter().any(|f|s(get(f,"field"))=="Pair.State.y"));
+    let defaults=arr(get(&arr(get(&result,"requests"))[1],"defaults"));
+    assert_eq!(defaults.len(),1);assert_eq!(s(get(&defaults[0],"rule")),"no_law_check");
+    let second=execute(&dir,"out2",&asks,Some("out"));
+    assert_eq!(second.code,2,"{} {}",second.stdout,second.stderr);
+    let reused=result_json(&dir,&second);
+    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
 }

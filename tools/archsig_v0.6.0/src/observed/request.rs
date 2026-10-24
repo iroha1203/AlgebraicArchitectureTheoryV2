@@ -120,6 +120,7 @@ pub struct RequestArgument {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RequestDefault {
+    NoLawCheck,
     ObservedEnvironment,
     UniversalParameters {
         declaration: String,
@@ -129,6 +130,7 @@ pub enum RequestDefault {
 impl RequestDefault {
     pub fn wire(&self) -> Json {
         match self {
+            Self::NoLawCheck => Json::obj([("rule", Json::str("no_law_check"))]),
             Self::ObservedEnvironment => Json::obj([("rule", Json::str("observed_environment"))]),
             Self::UniversalParameters {
                 declaration,
@@ -618,7 +620,9 @@ fn resolve_inner(
             }
             phase(control, Checkpoint::RequestBinding)?;
         }
-        let mut defaults = if arguments.contains_key("on") {
+        let mut defaults = if kind == QuestionKind::Quotient {
+            vec![RequestDefault::NoLawCheck]
+        } else if arguments.contains_key("on") {
             vec![]
         } else {
             vec![RequestDefault::ObservedEnvironment]

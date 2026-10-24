@@ -13,7 +13,7 @@ use super::{
     request::Request,
     result::*,
 };
-use crate::{canonical::Json, law::model::Signature, types::Type};
+use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Debug)]
 pub(super) struct Source {
@@ -153,6 +153,28 @@ fn compute(
             .scope
             .readings
             .insert(declaration.reading.clone());
+        if !table.missing.is_empty() {
+            let reason = Reason {
+                kind: ReasonKind::Missing,
+                request: request.id.clone(),
+                dependencies: vec![expression],
+                missing: table.missing,
+                location: Some(Location::Law { span: declaration.span }),
+            };
+            b.parts[expression.0 - base].reasons.push(reason.clone());
+            let scope = b.parts[expression.0 - base].scope.clone();
+            return Ok(Source {
+                base,
+                parts: b.parts,
+                answer: Answer {
+                    id: request.id.clone(), status: Decision::Undetermined,
+                    outputs: BTreeMap::new(), claim: None, evidence: vec![],
+                    reasons: vec![reason], scope,
+                },
+                request: request.clone(), witness: input.witness,
+                domain_type: input.domain_type,
+            });
+        }
         let mut fibers = BTreeMap::<String, Vec<Scalar>>::new();
         for row in table.rows {
             g.tick()?;
@@ -385,7 +407,10 @@ pub(super) fn validate_answer(
             Err("商の依存停止が違う".into())
         };
     }
-    let r = answer.outputs.get("quotient").ok_or("商の出力がない")?;
+    let r = answer.outputs.get("quotient").or_else(|| {
+        answer.reasons.iter().find(|r| matches!(r.kind, ReasonKind::Missing))
+            .and_then(|r| r.dependencies.first())
+    }).ok_or("商の出力・不足の元式がない")?;
     let Some(Payload::Construction(v)) = &g.get(*r)?.payload else {
         return Err("商がnativeでない".into());
     };

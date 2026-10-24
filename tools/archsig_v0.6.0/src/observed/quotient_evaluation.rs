@@ -11,6 +11,7 @@ pub(in crate::observed) struct Row {
 }
 pub(in crate::observed) struct Table {
     pub rows: Vec<Row>,
+    pub missing: Vec<Fact>,
     pub parameter_type: Type,
     pub bindings: Vec<(String, Scalar)>,
 }
@@ -85,6 +86,7 @@ pub(in crate::observed) fn compute(
         c,
     )?);
     let mut rows = vec![];
+    let mut missing = BTreeSet::new();
     for (index, candidate) in candidates.rows.iter().enumerate() {
         c.checkpoint(Checkpoint::Quotient)?;
         if candidate.update.state == change_evaluation::State::Excluded {
@@ -116,6 +118,7 @@ pub(in crate::observed) fn compute(
         let mut env = Environment::try_primitive_valuation(original.inputs, &assignments, c)?
             .ok_or("商の候補代入が不適合")?;
         env.object = Some(domain.clone());
+        env.missing_slot_reads.replace(Some(BTreeSet::new()));
         let mut checked = BTreeMap::new();
         let mut checks = owned_call::Checks::default();
         let mut vars = BTreeMap::new();
@@ -145,21 +148,29 @@ pub(in crate::observed) fn compute(
             );
         }
         if checks.failure.is_some() || checks.blocked {
-            return Err(unsupported(request, "候補上のview適用条件が未成立"));
+            if !checks.missing.is_empty() {
+                missing.extend(checks.missing);
+                continue;
+            }
+            return Err(unsupported(request, "候補上のview適用条件の公開配送は未実装"));
         }
         let value = env.scoped_ast(*body, &vars, &Scope::default(), &declaration.reading)?;
-        if value.condition_failed || value.condition_pending {
-            return Err(unsupported(request, "候補上のview構成条件が未成立"));
+        if value.condition_failed || value.condition_pending || value.known_value.is_none() {
+            let reads = env.missing_slot_reads.replace(None).ok_or("商の不足位置収集がない")?;
+            if !reads.is_empty() {
+                missing.extend(reads);
+                continue;
+            }
+            return Err(unsupported(request, "候補上のview構成条件・記号値の商は未実装"));
         }
         rows.push(Row {
             parameters: Scalar::Tuple(candidate.parameters.clone()),
-            image: value
-                .known_value
-                .ok_or_else(|| unsupported(request, "候補上のview値が未確定"))?,
+            image: value.known_value.ok_or("検査済みview値がない")?,
         });
     }
     Ok(Table {
         rows,
+        missing: missing.into_iter().collect(),
         parameter_type: Type::Tuple(candidates.parameter_types.clone()),
         bindings,
     })
