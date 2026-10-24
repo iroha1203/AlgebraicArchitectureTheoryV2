@@ -10,7 +10,7 @@ use super::{
     control::Control,
     environment::{AnswerBinding, Environment, quotient_evaluation},
     projection::{ProjectionStep, ProjectionType},
-    request::Request,
+    request::{Request, Selector},
     result::*,
 };
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
@@ -146,13 +146,28 @@ fn compute(
         let bindings = table
             .bindings
             .iter()
-            .map(|(name, v)| Ok((name.clone(), change_result::value(&mut b, v)?)))
+            .map(|(name, v)| {
+                let selector = &request.arguments.iter().find(|a| a.name == format!("bind.{name}"))
+                    .ok_or("商の元束縛がない")?.value;
+                let reference = if matches!(selector, Selector::Answer { .. }) {
+                    match env.answer_binding(g, selector, (0, 0))? {
+                        AnswerBinding::Reference(r) => r,
+                        AnswerBinding::Projection(node) => g.nodes.iter().position(|n| *n == node)
+                            .map(NodeRef).ok_or("商の公開射影が保持されていない")?,
+                        AnswerBinding::Inapplicable(_) => return Err(ValidationFailure::from("商の束縛射影が不適合")),
+                    }
+                } else { change_result::value(&mut b, v)? };
+                Ok((name.clone(), reference))
+            })
             .collect::<Result<Vec<_>, ValidationFailure>>()?;
         let expression = change_result::source_expression(&mut b, env, *body, &bindings, &[])?;
-        b.parts[expression.0 - base]
-            .scope
-            .readings
-            .insert(declaration.reading.clone());
+        let expression_part = &mut b.parts[expression.0 - base];
+        expression_part.arguments.push(reference);
+        expression_part.arguments.sort_by_key(|r| r.0);
+        expression_part.arguments.dedup();
+        expression_part.scope.merge(&g.get(reference)?.scope);
+        expression_part.scope.merge(&table.scope);
+        expression_part.scope.readings.insert(declaration.reading.clone());
         if !table.missing.is_empty() {
             let reason = Reason {
                 kind: ReasonKind::Missing,
@@ -308,8 +323,17 @@ pub(super) fn evaluate(
     request: &Request,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
+    env.commit_projection_conditions(g, request)?;
     if let Some(answer) = super::public_map::unavailable(env, g, request)? {
         return Ok(answer);
+    }
+    for argument in &request.arguments {
+        if argument.name.starts_with("bind.") && matches!(argument.value, Selector::Answer { .. }) {
+            if let AnswerBinding::Projection(node) = env.answer_binding(g, &argument.value, (0, 0))? {
+                env.validate(g, &node)?;
+                g.push(node)?;
+            }
+        }
     }
     let source = Arc::new(compute(env, g, request, g.nodes.len(), c)?);
     for (index, part) in source.parts.iter().enumerate() {

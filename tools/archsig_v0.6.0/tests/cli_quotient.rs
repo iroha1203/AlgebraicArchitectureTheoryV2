@@ -200,6 +200,9 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
         let wire=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();let answers=arr(get(&wire,"answers"));
         assert_eq!(s(get(&answers[0],"status")),"established");assert!(has(get(&answers[0],"outputs"),"solutions"));
         assert!(!has(get(&answers[1],"outputs"),"quotient"));
+    for key in ["snapshots","modes"] {
+        assert_eq!(get(get(&answers[1],"scope"),key).value,get(get(&answers[0],"scope"),key).value);
+    }
         for answer in &answers[1..] {
             assert_eq!(s(get(answer,"status")),"undetermined");
             assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))==if mode==2 {"cancelled"}else{"budget_exhausted"}));
@@ -237,6 +240,9 @@ fn missing_view_keeps_quotient_undetermined_and_independent_followup_available()
     assert_eq!(s(get(&answers[0],"status")),"established");
     assert_eq!(s(get(&answers[1],"status")),"undetermined");
     assert!(!has(get(&answers[1],"outputs"),"quotient"));
+    for key in ["snapshots","modes"] {
+        assert_eq!(get(get(&answers[1],"scope"),key).value,get(get(&answers[0],"scope"),key).value);
+    }
     assert_eq!(s(get(&answers[2],"status")),"refuted");
     let reason=arr(get(&answers[1],"reasons")).iter().find(|r|s(get(r,"code"))=="missing_observation").unwrap();
     assert!(!arr(get(reason,"dependencies")).is_empty());
@@ -283,4 +289,60 @@ fn unavailable_view_binding_blocks_quotient_without_breaking_independent_request
     let complete=result_json(&dir,&available);
     assert_eq!(s(get(&arr(get(&complete,"answers"))[2],"status")),"established");
     exact_fibers(&complete,2,vec![vec![(false,false),(false,true),(true,false),(true,true)]]);
+}
+
+#[test]
+fn quotient_keeps_view_quantifiers_and_binding_producer_scope() {
+    let dir=input("quotient-scope");
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap();
+    let vocabulary=law.split("reading Pair{").nth(1).unwrap().split(';').next().unwrap();
+    let extra=format!("reading Other{{{vocabulary};view flag(s:State):Bool=s.x;}}");
+    let law=law.replace("view last", "view all(s:State):Bool=forall b:Bool . b or not b;view echo(b:Bool):Bool=b;view last")+&extra;
+    std::fs::write(dir.join("l.law"),law).unwrap();
+    let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "v=evaluate(Other.flag,s=@v/s)","q=quotient(Pair.echo,on=$s.domain,b=$v.value)",
+        "all=quotient(Pair.all,on=$s.domain,s=@v/s)","ev=evaluate(Pair.all,s=@v/s)"],None);
+    let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
+    assert_eq!(r.code,0,"{} {} {answers:?}",r.stdout,r.stderr);
+    assert!(arr(get(get(&answers[2],"scope"),"readings")).iter().any(|x|s(x)=="Other"));
+    let producer=s(get(get(get(&answers[1],"outputs"),"value"),"node"));
+    let mut pending=vec![get(get(&answers[2],"outputs"),"quotient")];let mut seen=std::collections::BTreeSet::new();
+    while let Some(reference)=pending.pop(){
+        if seen.insert(s(get(reference,"node"))) {pending.extend(arr(get(node(&result,reference),"arguments")));}
+    }
+    assert!(seen.contains(producer));
+    let ordinary=arr(get(get(&answers[4],"scope"),"quantifiers"));assert!(!ordinary.is_empty());
+    let quotient_scope=arr(get(get(&answers[3],"scope"),"quantifiers"));
+    for q in ordinary {assert!(quotient_scope.iter().any(|actual|
+        ["kind","name","type"].iter().all(|key|get(actual,key).value==get(q,key).value)));}
+}
+
+#[test]
+fn inapplicable_view_binding_preserves_projection_condition_and_followup() {
+    let dir=input("quotient-inapplicable");
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap()
+        .replace("view last", "view no():Option<Bool> = none<Bool>;view echo(b:Bool):Bool=b;view last");
+    std::fs::write(dir.join("l.law"),law).unwrap();
+    let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "v=evaluate(Pair.no)","q=quotient(Pair.echo,on=$s.domain,b=$v.value.some)",
+        "later=check(Pair.empty,s=@v/s)"],None);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[2],"status")),"undetermined");assert!(!has(get(&answers[2],"outputs"),"quotient"));
+    assert_eq!(s(get(&answers[3],"status")),"refuted");
+    for code in ["condition_failed","dependency_blocked"] {
+        assert!(arr(get(&answers[2],"reasons")).iter().any(|r|s(get(r,"code"))==code));
+    }
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap().replace("none<Bool>","some(true)");
+    std::fs::write(dir.join("l.law"),law).unwrap();
+    let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "v=evaluate(Pair.no)","q=quotient(Pair.echo,on=$s.domain,b=$v.value.some)"];
+    let available=execute(&dir,"known",&asks,None);
+    assert_eq!(available.code,0,"{} {}",available.stdout,available.stderr);
+    let complete=result_json(&dir,&available);
+    exact_fibers(&complete,2,vec![vec![(false,false),(false,true),(true,false),(true,true)]]);
+    let reused=execute(&dir,"known2",&asks,Some("known"));
+    assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
+    let repeated=result_json(&dir,&reused);
+    for key in ["answers","nodes"] {assert_eq!(get(&complete,key).value,get(&repeated,key).value);}
 }

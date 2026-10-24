@@ -408,7 +408,7 @@ pub(super) fn unavailable(
             location: None,
         });
     }
-    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
+    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient) {
         let (projection_reasons, projection_scope) =
             environment.projection_failure_reasons(graph, request)?;
         reasons.extend(projection_reasons);

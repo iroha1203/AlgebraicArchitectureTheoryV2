@@ -12,6 +12,7 @@ pub(in crate::observed) struct Row {
 pub(in crate::observed) struct Table {
     pub rows: Vec<Row>,
     pub missing: Vec<Fact>,
+    pub scope: Scope,
     pub parameter_type: Type,
     pub bindings: Vec<(String, Scalar)>,
 }
@@ -87,6 +88,7 @@ pub(in crate::observed) fn compute(
     )?);
     let mut rows = vec![];
     let mut missing = BTreeSet::new();
+    let mut scope = Scope::default();
     for (index, candidate) in candidates.rows.iter().enumerate() {
         c.checkpoint(Checkpoint::Quotient)?;
         if candidate.update.state == change_evaluation::State::Excluded {
@@ -147,6 +149,7 @@ pub(in crate::observed) fn compute(
                 },
             );
         }
+        scope.merge(&checks.scope);
         if checks.failure.is_some() || checks.blocked {
             if !checks.missing.is_empty() {
                 missing.extend(checks.missing);
@@ -155,6 +158,7 @@ pub(in crate::observed) fn compute(
             return Err(unsupported(request, "候補上のview適用条件の公開配送は未実装"));
         }
         let value = env.scoped_ast(*body, &vars, &Scope::default(), &declaration.reading)?;
+        scope.merge(&value.scope);
         if value.condition_failed || value.condition_pending || value.known_value.is_none() {
             let reads = env.missing_slot_reads.replace(None).ok_or("商の不足位置収集がない")?;
             if !reads.is_empty() {
@@ -171,6 +175,7 @@ pub(in crate::observed) fn compute(
     Ok(Table {
         rows,
         missing: missing.into_iter().collect(),
+        scope,
         parameter_type: Type::Tuple(candidates.parameter_types.clone()),
         bindings,
     })

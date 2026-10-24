@@ -130,10 +130,14 @@ impl Environment<'_> {
             let selected = match self.answer_binding(graph, &argument.value, (0, 0)) {
                 Ok(AnswerBinding::Inapplicable(r)) => Some(r),
                 Ok(AnswerBinding::Reference(r))
-                    if graph.get(r)?.ty
-                        != NodeType::Construction(
-                            super::super::construction_result::ConstructionType::Architecture,
-                        ) =>
+                    if if request.kind == QuestionKind::Quotient {
+                        !matches!(graph.get(r)?.ty, NodeType::Construction(
+                            super::super::construction_result::ConstructionType::CandidateSpace |
+                            super::super::construction_result::ConstructionType::SolutionSet))
+                    } else {
+                        graph.get(r)?.ty != NodeType::Construction(
+                            super::super::construction_result::ConstructionType::Architecture)
+                    } =>
                 {
                     Some(r)
                 }
