@@ -191,3 +191,5 @@ pub(crate) mod object_equation_presentation;
 
 pub(crate) mod object_polynomial_observable;
 pub(crate) mod finite_polynomial_evaluation;
+
+mod view_invariant;

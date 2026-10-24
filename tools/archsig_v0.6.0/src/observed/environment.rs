@@ -795,6 +795,7 @@ impl<'a> Environment<'a> {
                     self.recheck_equation_family(graph, value)?;
                     if let super::construction_result::ConstructionData::CircuitPattern(data) = &value.data { data.position(limit)?; }
                     self.recheck_circuit_pattern(graph, value)?;
+                    self.recheck_view_invariant(graph, value, limit)?;
                     for r in node
                         .arguments
                         .iter()
