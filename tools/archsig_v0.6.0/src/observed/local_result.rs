@@ -384,7 +384,8 @@ fn compute(
         let known = row.application == Some(true)
             && !row.condition_failed
             && !row.condition_pending
-            && row.predicate.is_some();
+            && row.predicate.is_some()
+            && missing.is_empty();
         if !known {
             missing.extend(row.application_missing);
             missing.extend(

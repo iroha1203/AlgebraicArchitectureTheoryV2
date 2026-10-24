@@ -469,3 +469,63 @@ fn localize_checks_answer_bound_owners_before_using_the_values() {
         }
     }
 }
+
+#[test]
+fn short_circuit_truth_keeps_missing_local_reads_and_needed_slots() {
+    for (index, expression) in ["(s.flag and false)=false", "(s.flag or true)=true"]
+        .iter()
+        .enumerate()
+    {
+        for value in [None, Some(false), Some(true)] {
+            let dir = input(&format!("local-short-{index}-{value:?}"), value);
+            let path = dir.join("l.law");
+            let law = std::fs::read_to_string(&path)
+                .unwrap()
+                .replace("s.flag=true", expression);
+            std::fs::write(path, law).unwrap();
+            let r = execute(
+                &dir,
+                "out",
+                &[
+                    "a=build(Fixed,on=@fixed/s)",
+                    "l=localize($a.object,law=Fixed.valid,s=@fixed/s)",
+                    "d=diagnose($l.system)",
+                    "n=needed($l)",
+                ],
+            );
+            assert_eq!(
+                r.code,
+                if value.is_some() { 0 } else { 2 },
+                "{} {}",
+                r.stdout,
+                r.stderr
+            );
+            let result = result_json(&dir, &r);
+            let answers = arr(get(&result, "answers"));
+            if value.is_none() {
+                assert!(!has(get(&answers[1], "outputs"), "system"));
+                assert!(!has(get(&answers[2], "outputs"), "diagnostic"));
+                for answer in &answers[1..3] {
+                    assert_eq!(s(get(answer, "status")), "undetermined");
+                    assert!(
+                        arr(get(answer, "reasons"))
+                            .iter()
+                            .any(|reason| s(get(reason, "code")) == "missing_observation")
+                    );
+                }
+                assert_eq!(s(get(&answers[3], "status")), "established");
+                let plan = get(output(&result, 3, "plan"), "value");
+                assert!(arr(get(plan, "requirements")).iter().any(|requirement| {
+                    let field = get(requirement, "field");
+                    s(get(field, "snapshot")) == "fixed"
+                        && s(get(field, "subject")) == "s"
+                        && s(get(field, "field")) == "Fixed.State.flag"
+                }));
+            } else {
+                assert_eq!(s(get(&answers[1], "status")), "established");
+                assert_eq!(s(get(&answers[2], "status")), "established");
+                assert!(has(get(&answers[1], "outputs"), "system"));
+            }
+        }
+    }
+}
