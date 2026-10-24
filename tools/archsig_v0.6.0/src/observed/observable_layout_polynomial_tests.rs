@@ -376,7 +376,7 @@ fn finite_parameter_rows_keep_bindings_cases_and_symbolic_global_indices() {
     );
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let checked = l.checked(&env, &g, &mut quiet()).unwrap();
-    assert!(!checked.is_complete());
+    assert!(checked.is_complete());
     assert_eq!(l.data.indices.len(), 2);
     assert_eq!(l.data.objects[0].coordinates.len(), 4);
     let ds = t.diagrams().unwrap();

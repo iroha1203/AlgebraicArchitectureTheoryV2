@@ -586,6 +586,73 @@ impl LawReadingFamily {
                 .map_or_else(|| self.rows.iter().all(|r| known(&r.reading)), known)
     }
 }
+// 対象外の一様な読取りを、既知の有限型域の全代入へ制限する。
+// bindingsは型域由来であり、未実行のbodyの評価参照を作らない。
+fn finite_outside_rows(
+    inputs: &CheckedInputs,
+    e: &ObjectEvaluation,
+    result: &mut LawReadingFamily,
+    c: &mut Control,
+) -> Result<(), ObjectEvaluationFailure> {
+    for p in e.instance().parameters() {
+        tick(c)?;
+        if !finite::supported(&p.ty, inputs.law(), c).map_err(validation)? {
+            return tick(c).map_err(Into::into);
+        }
+    }
+    let env = crate::observed::environment::Environment::new(inputs, c)
+        .map_err(ConstructionFailure::from)?;
+    let mut domains = vec![];
+    for p in e.instance().parameters() {
+        tick(c)?;
+        let Some((domain, missing)) = env
+            .object_view_domain(p, e.instance())
+            .map_err(validation)?
+        else {
+            return tick(c).map_err(Into::into);
+        };
+        if !missing.is_empty() {
+            return tick(c).map_err(Into::into);
+        }
+        domains.push(LawReadingDomain {
+            parameter: p.clone(),
+            values: domain
+                .values
+                .into_iter()
+                .map(FiniteTransportValue::observed)
+                .collect(),
+            scope: domain.scope,
+            support: domain.support,
+            missing,
+        });
+    }
+    let keys = coordinates(
+        &domains.iter().map(|d| d.values.len()).collect::<Vec<_>>(),
+        c,
+    )?;
+    let reading = result
+        .uniform
+        .take()
+        .ok_or_else(|| inconsistent("対象外の一様読取りがない"))?;
+    result.complete = false;
+    result.domains = domains;
+    for key in keys {
+        tick(c)?;
+        let bindings = result
+            .domains
+            .iter()
+            .zip(key)
+            .map(|(domain, index)| (domain.parameter.name.clone(), domain.values[index].clone()))
+            .collect();
+        result.rows.push(LawReadingRow {
+            bindings,
+            evaluations: vec![],
+            reading: reading.clone(),
+        });
+    }
+    result.complete = true;
+    tick(c).map_err(Into::into)
+}
 /// ObjectEvaluationの元評価を読む。対応表やOperationを作って読みを補わない。
 pub(in crate::observed) fn read_native_family(
     inputs: &CheckedInputs,
@@ -619,7 +686,12 @@ pub(in crate::observed) fn read_native_family(
         return tick(c).map_err(Into::into);
     }
     match e.outcome() {
-        ObjectEvaluationOutcome::NotApplicable | ObjectEvaluationOutcome::Conditional(_) => {
+        ObjectEvaluationOutcome::NotApplicable => {
+            result.uniform = Some(reading(e, c)?);
+            result.complete = true;
+            return finite_outside_rows(inputs, e, result, c);
+        }
+        ObjectEvaluationOutcome::Conditional(_) => {
             result.uniform = Some(reading(e, c)?);
             result.complete = true;
             return tick(c).map_err(Into::into);

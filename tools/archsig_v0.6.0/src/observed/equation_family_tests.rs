@@ -840,7 +840,9 @@ fn finished_families_recheck_after_later_requests_and_reject_foreign_generation(
             );
         }
         if mode == 3 {
-            assert!(outside.is_some() && specialized.is_some() && family.is_some());
+            // 有限outside行は全て元三入力から存在し、特殊化による行の補完を要しない。
+            assert!(outside.is_some() && family.is_some());
+            assert!(specialized.is_none());
             assert!(
                 g.get(r)
                     .unwrap()
