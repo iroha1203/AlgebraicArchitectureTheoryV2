@@ -65,11 +65,33 @@ pub(super) fn compute(
     part.scope.merge(&g.get(reference)?.scope);
     part.scope.merge(&image.scope);
     part.scope.readings.insert(declaration.reading.clone());
+    let law_expression = if let Some(law) = &image.law {
+        let declaration = &env.inputs.law().declarations[&law.name];
+        let Signature::Law { body, .. } = &declaration.signature else {
+            return Err("整数商のLaw署名がない".into());
+        };
+        let bindings = bindings
+            .iter()
+            .filter(|(name, _)| law.bindings.iter().any(|(n, _)| n == name))
+            .cloned()
+            .collect::<Vec<_>>();
+        let r = change_result::source_expression(&mut b, env, *body, &bindings, &[])?;
+        let part = &mut b.parts[r.0 - base];
+        part.arguments.push(reference);
+        part.arguments.sort_by_key(|r| r.0);
+        part.arguments.dedup();
+        part.scope.merge(&image.scope);
+        part.scope.merge(&g.get(reference)?.scope);
+        part.scope.readings.insert(declaration.reading.clone());
+        Some(r)
+    } else {
+        None
+    };
     if !image.missing.is_empty() {
         let reason = Reason {
             kind: ReasonKind::Missing,
             request: request.id.clone(),
-            dependencies: vec![expression],
+            dependencies: std::iter::once(expression).chain(law_expression).collect(),
             missing: image.missing,
             location: Some(Location::Law {
                 span: declaration.span,
@@ -112,6 +134,9 @@ pub(super) fn compute(
         None,
         None,
     )?;
+    let mut descent = None;
+    let mut evidence = vec![];
+    let mut evaluations = vec![];
     let (classes, projection, representation) = if image.empty {
         let parameter_type = Type::Tuple(vec![
             Type::Z;
@@ -141,6 +166,27 @@ pub(super) fn compute(
             None,
             None,
         )?;
+        if let Some(law) = &image.law {
+            let target = domain(
+                &mut b,
+                &law_result::family_type(env, &law.name, &Type::Z)?,
+                &[],
+                &[reference, law_expression.ok_or("整数商のLaw式がない")?],
+            )?;
+            descent = Some(b.push(
+                NodeType::Construction(T::StateMap),
+                "state_map",
+                Json::obj([
+                    ("source", classes.wire()),
+                    ("target", target.wire()),
+                    ("kind", Json::str("finite")),
+                    ("pairs", Json::Arr(vec![])),
+                ]),
+                vec![classes, target],
+                None,
+                None,
+            )?);
+        }
         (
             classes,
             projection,
@@ -251,6 +297,22 @@ pub(super) fn compute(
             None,
             None,
         )?;
+        if image.law.is_some() {
+            (descent, evidence, evaluations) = law_descent(
+                &mut b,
+                env,
+                &input,
+                &image,
+                reference,
+                request,
+                law_expression.ok_or("整数商のLaw式がない")?,
+                ring,
+                actual_image,
+                classes,
+                &fiber,
+                c,
+            )?;
+        }
         (
             classes,
             projection,
@@ -290,22 +352,46 @@ pub(super) fn compute(
             ("classes", classes.wire()),
             ("projection", projection.wire()),
             ("representation", representation),
-            ("evaluations", Json::Arr(vec![])),
+            ("evaluations", refs(&evaluations)),
         ]),
         args,
         None,
         None,
     )?;
+    let mut status = Decision::Established;
+    let mut outputs = BTreeMap::from([("quotient".into(), quotient)]);
+    let mut claim = None;
+    if let Some(law) = &image.law {
+        let Json::Obj(wire) = &mut b.parts[quotient.0 - base].wire else {
+            return Err("整数商のrecordがない".into());
+        };
+        wire.insert("law".into(), Json::str(&law.name));
+        if let Some(descent) = descent {
+            wire.insert("descent".into(), descent.wire());
+        }
+        if !evidence.is_empty() {
+            status = Decision::Refuted;
+        }
+        let proposition = b.proposition("sufficient", vec![quotient], evidence.clone(), status)?;
+        let part = &mut b.parts[proposition.0 - base];
+        part.evidence = evidence.clone();
+        part.judgment
+            .as_mut()
+            .ok_or("整数商の十分性判断がない")?
+            .evidence = evidence.clone();
+        outputs.insert("proposition".into(), proposition);
+        claim = Some(proposition);
+    }
     let scope = b.parts[quotient.0 - base].scope.clone();
     Ok(Source {
         base,
         parts: b.parts,
         answer: Answer {
             id: request.id.clone(),
-            status: Decision::Established,
-            outputs: BTreeMap::from([("quotient".into(), quotient)]),
-            claim: None,
-            evidence: vec![],
+            status,
+            outputs,
+            claim,
+            evidence,
             reasons: vec![],
             scope,
         },
@@ -313,4 +399,110 @@ pub(super) fn compute(
         witness: input.witness,
         domain_type: input.domain_type,
     })
+}
+
+fn law_descent(
+    b: &mut Builder<'_>,
+    env: &Environment<'_>,
+    input: &CandidateInput,
+    image: &quotient_affine::Image,
+    reference: NodeRef,
+    request: &Request,
+    expression: NodeRef,
+    ring: NodeRef,
+    actual_image: NodeRef,
+    classes: NodeRef,
+    fiber: &integer_fiber::Fiber,
+    c: &mut Control,
+) -> Result<(Option<NodeRef>, Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
+    let law = image.law.as_ref().ok_or("整数商のLawがない")?;
+    let free = image.dimensions - fiber.rank;
+    let differences = integer_fiber::multiply(&law.matrix, &fiber.kernel, free, c)?;
+    if let Some(j) = (0..free).find(|j| differences.iter().any(|row| !row[*j].is_zero())) {
+        let points = [
+            vec![Z::zero(); image.dimensions],
+            fiber.kernel.iter().map(|row| row[j].clone()).collect(),
+        ];
+        let mut candidates = vec![];
+        let mut values = vec![];
+        let mut views = vec![];
+        let mut evaluations = vec![];
+        for point in &points {
+            let row = quotient_affine::point(env, input, image, point, request, c)?;
+            candidates.push(change_result::value(b, &row.parameters)?);
+            views.push(change_result::value(b, &row.image)?);
+            let (family, checked) =
+                law_result::row(b, env, input, &row, &law.name, &Type::Z, expression)?;
+            values.push(change_result::value(b, &family)?);
+            evaluations.extend(checked);
+        }
+        let evidence = b.push(
+            NodeType::Evidence,
+            "evidence",
+            Json::obj([
+                ("kind", Json::str("separating_pair")),
+                (
+                    "data",
+                    Json::obj([
+                        ("domain", reference.wire()),
+                        ("first", candidates[0].wire()),
+                        ("second", candidates[1].wire()),
+                        ("view_values", refs(&views)),
+                        ("law_values", refs(&values)),
+                    ]),
+                ),
+            ]),
+            std::iter::once(reference)
+                .chain(candidates)
+                .chain(views)
+                .chain(values)
+                .chain(evaluations.iter().copied())
+                .collect(),
+            None,
+            None,
+        )?;
+        return Ok((None, vec![evidence], evaluations));
+    }
+    // 固定したinstance keyの左右値を座標とするZ加群。成立Boolや残差には縮めない。
+    let family = linear::module(b, ring, 2, "free", vec![expression])?;
+    let key = Scalar::Tuple(
+        law.bindings
+            .iter()
+            .map(|(_, value)| value.clone())
+            .collect(),
+    );
+    let generators = ["lhs", "rhs"]
+        .iter()
+        .map(|side| {
+            let label = Scalar::Tuple(vec![key.clone(), Scalar::Text((*side).into())]);
+            Json::obj([("type", label.ty().wire()), ("value", label.wire())])
+        })
+        .collect();
+    let Json::Obj(wire) = &mut b.parts[family.0 - b.base].wire else {
+        return Err("整数商の評価族加群がrecordでない".into());
+    };
+    wire.insert("generators".into(), Json::Arr(generators));
+    let transformed = integer_fiber::multiply(&law.matrix, &fiber.right, image.dimensions, c)?;
+    let matrix = transformed
+        .iter()
+        .map(|row| row[..fiber.rank].to_vec())
+        .collect();
+    let linear = linear::map(b, actual_image, family, &matrix, fiber.rank, c)?;
+    let offset = linear::vector(b, family, &law.offset, c)?;
+    let target = linear::domain(b, family)?;
+    let descent = b.push(
+        NodeType::Construction(T::StateMap),
+        "state_map",
+        Json::obj([
+            ("source", classes.wire()),
+            ("target", target.wire()),
+            ("kind", Json::str("affine")),
+            ("linear", linear.wire()),
+            ("offset", offset.wire()),
+        ]),
+        vec![classes, target, linear, offset, expression],
+        None,
+        None,
+    )?;
+    Ok((Some(descent), vec![], vec![]))
 }
