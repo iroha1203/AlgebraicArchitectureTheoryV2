@@ -683,3 +683,88 @@ fn saved_context_is_required_and_uninserted_candidates_keep_their_producer_conte
         assert_eq!(g.active, before.active);
     }
 }
+#[test]
+fn saved_table_self_and_later_references_fail_before_recursive_or_budgeted_validation() {
+    use std::{cell::Cell, rc::Rc};
+    let p = prepared(
+        fixture::inputs(
+            false,
+            false,
+            "law required first(c:Part):c.quantity=0;law optional second(c:Part):c.quantity=0;",
+        ),
+        "root",
+    );
+    let (mut g, t) = table(&p);
+    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let out = retain(&env, &mut g, t.clone(), &mut quiet()).unwrap();
+    let first = out[0].evaluations[0];
+    let last = out.last().unwrap();
+    for target in [first, last.invariant] {
+        for mode in 0..9 {
+            let mut bad = copy_graph(&g, &quiet());
+            let Some(Payload::Construction(v)) = &mut bad.nodes[target.0].payload else {
+                panic!()
+            };
+            let D::PredicateInvariant(d) = &mut v.data else {
+                panic!()
+            };
+            let s = Arc::make_mut(&mut d.source);
+            let t = Arc::make_mut(&mut s.table);
+            let r = match mode {
+                0..=5 => target,
+                6 => last.invariant,
+                7 => NodeRef(g.nodes.len() + 1),
+                8 => first,
+                _ => unreachable!(),
+            };
+            match mode {
+                0 | 6 | 7 | 8 => t.objects[0].evaluations[0] = r,
+                1 => t.objects[0].holds[0] = r,
+                2 => t.objects[0].origins[0] = r,
+                3 => t.objects[0].architecture = r,
+                4 => t.objects[0].object = r,
+                5 => t.indices[0] = r,
+                _ => unreachable!(),
+            }
+            let calls = Rc::new(Cell::new(0));
+            let seen = calls.clone();
+            let mut control = Control::new(
+                Limits {
+                    time_ms: Some(1),
+                    memory_mib: None,
+                },
+                move |_| {
+                    seen.set(seen.get() + 1);
+                    Usage {
+                        elapsed_ms: u128::from(seen.get() >= 10_000),
+                        ..Usage::default()
+                    }
+                },
+            );
+            let fresh = Environment::with_prepared(&p, &mut control).unwrap();
+            let result = fresh.recheck_node(&bad, bad.get(target).unwrap(), target.0);
+            assert!(
+                matches!(result, Err(ValidationFailure::Internal(_))),
+                "target{target:?}/mode{mode}: {result:?}"
+            );
+            assert!(
+                calls.get() < 10_000,
+                "rejected by metadata, not budget stop"
+            );
+        }
+    }
+    for r in [NodeRef(g.nodes.len()), NodeRef(g.nodes.len() + 1)] {
+        let mut t = (*t).clone();
+        t.objects[0].evaluations[0] = r;
+        let before = copy_graph(&g, &quiet());
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        assert!(matches!(
+            retain(&env, &mut g, Arc::new(t), &mut quiet()),
+            Err(ValidationFailure::Internal(_))
+        ));
+        assert_eq!(g.nodes, before.nodes);
+        assert_eq!(g.contexts, before.contexts);
+        assert_eq!(g.active, before.active);
+    }
+    replay(&p, &g).unwrap();
+}

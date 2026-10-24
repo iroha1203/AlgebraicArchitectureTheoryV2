@@ -86,6 +86,29 @@ fn components(
     }
     Ok((a, r, objects))
 }
+fn earlier_table_references(
+    t: &Table,
+    base: usize,
+    c: &mut Control,
+) -> Result<(), ValidationFailure> {
+    let references = [t.architecture, t.component_source()]
+        .into_iter()
+        .chain(t.indices.iter().copied())
+        .chain(t.objects.iter().flat_map(|o| {
+            [o.object, o.architecture]
+                .into_iter()
+                .chain(o.origins.iter().copied())
+                .chain(o.evaluations.iter().copied())
+                .chain(o.holds.iter().copied())
+        }));
+    for r in references {
+        tick(c)?;
+        if r.0 >= base {
+            return Err("述語不変量の元表参照が構成開始より前でない".into());
+        }
+    }
+    Ok(())
+}
 fn metadata(
     g: &Graph,
     arguments: &[NodeRef],
@@ -451,9 +474,10 @@ pub(super) fn retain(
     if g.active != saved_context(g, t.architecture)? {
         return Err("述語不変量の生成が元Request Contextでない".into());
     }
+    let base = g.nodes.len();
+    earlier_table_references(&t, base, c)?;
     t.recheck(env, g, c)?;
     let (a, components, objects) = components(g, &t)?;
-    let base = g.nodes.len();
     let (parts, outputs) = compute(env, g, &a, &t, components, &objects, base, c)?;
     let source = Arc::new(Source {
         architecture: a,
@@ -513,6 +537,7 @@ impl Environment<'_> {
         d.position(at)?;
         d.context(g)?;
         let mut c = self.control.clone();
+        earlier_table_references(&d.source.table, d.source.base, &mut c)?;
         d.source.table.recheck(self, g, &mut c)?;
         let (a, components, objects) = components(g, &d.source.table)?;
         if !Arc::ptr_eq(&a, &d.source.architecture)
