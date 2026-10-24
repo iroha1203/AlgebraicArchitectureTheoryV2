@@ -4119,6 +4119,9 @@ impl Graph {
                         super::construction_result::ConstructionData::ViewFamily(data) => {
                             data.scope_domain_type().ok_or("Scopeの有限view参照がDomainでない")?
                         },
+                        super::construction_result::ConstructionData::Local(data) => {
+                            data.scope_domain_type().ok_or("Scopeの局所参照が量化Domainでない")?
+                        },
                         super::construction_result::ConstructionData::Comparison(super::public_compare::Part::RelationDerived { data, .. }) => match data.as_ref() {
                             super::public_compare::relations::Data::Domain { ty, .. } => ty,
                             _ => return Err("Scopeのnative参照が有限Domainでない".into()),
