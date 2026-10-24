@@ -489,3 +489,44 @@ fn quotient_law_rejects_wrong_kind_and_shared_parameter_type() {
         assert_eq!(r.code,64,"{} {}",r.stdout,r.stderr);
     }
 }
+#[test]
+fn quotient_law_preserves_composite_operand_and_guard_evaluation_children() {
+    let dir=law_input("quotient-law-children","law optional composite(s:State) when s.x or s.y:(s.x and s.y)=s.y;");
+    let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.composite)"],None);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap();
+    let check_children=|children:&[JNode],expected:&[bool]| {
+        assert_eq!(children.len(),2);
+        for ((child,source),expected) in children.iter().zip(["s.x","s.y"]).zip(expected) {
+            let evaluation=get(node(&result,child),"value");
+            assert_eq!(get(node(&result,get(evaluation,"value")),"value").value,JValue::Bool(*expected));
+            let expression=get(node(&result,get(evaluation,"expression")),"value");
+            let span=arr(get(get(expression,"location"),"span"));
+            assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize],source);
+        }
+    };
+    for reference in arr(get(quotient(&result,1),"evaluations")) {
+        let evaluation=get(node(&result,reference),"value");
+        let environment=get(node(&result,get(evaluation,"environment")),"value");
+        let mut values=std::collections::BTreeMap::new();
+        for row in arr(get(environment,"overrides")) {
+            values.insert(s(get(get(row,"slot"),"field")),matches!(get(node(&result,get(row,"value")),"value").value,JValue::Bool(true)));
+        }
+        let expected=[values["Pair.State.x"],values["Pair.State.y"]];
+        let parts=arr(get(evaluation,"parts"));
+        let guard=get(node(&result,&arr(get(&parts[0],"children"))[0]),"value");
+        check_children(arr(get(&arr(get(guard,"parts"))[0],"children")),&expected);
+        if s(get(evaluation,"applicability"))=="applicable" {
+            let body=arr(get(&parts[1],"children"));assert_eq!(body.len(),2);
+            let group=get(node(&result,&body[0]),"value");
+            let and=get(node(&result,&arr(get(&arr(get(group,"parts"))[0],"children"))[0]),"value");
+            check_children(arr(get(&arr(get(and,"parts"))[0],"children")),&expected);
+            assert_eq!(get(node(&result,get(and,"value")),"value").value,JValue::Bool(expected[0]&&expected[1]));
+        }
+    }
+    let reused=execute(&dir,"reused",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.composite)"],Some("out"));
+    assert_eq!(reused.code,1,"{} {}",reused.stdout,reused.stderr);
+    let reused=result_json(&dir,&reused);
+    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
+}

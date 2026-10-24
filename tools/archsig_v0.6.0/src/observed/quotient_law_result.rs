@@ -87,8 +87,6 @@ pub(super) fn row(
     candidate: &Row,
     name: &str,
     ty: &Type,
-    lhs: usize,
-    rhs: usize,
     dependency: NodeRef,
 ) -> Result<(Scalar, Vec<NodeRef>), ValidationFailure> {
     let Some(Payload::Construction(original)) = &b.g.get(input.architecture)?.payload else {
@@ -146,67 +144,54 @@ pub(super) fn row(
         guard: applicable,
         values,
         scope,
+        evaluations: captured,
+        body_evaluation,
+        guard_evaluation,
     } in &candidate.laws
     {
         let bindings = bindings
             .iter()
             .map(|(n, v)| Ok((n.clone(), change_result::value(b, v)?)))
             .collect::<Result<Vec<_>, ValidationFailure>>()?;
-        let mut children = vec![];
-        let guard_evaluation = guard
-            .map(|guard| {
-                evaluation(
-                    b,
-                    env,
-                    guard,
-                    &bindings,
-                    architecture,
-                    Some(&Scalar::Bool(*applicable)),
-                    &[],
-                    true,
-                )
-            })
+        let mut nodes = Vec::<NodeRef>::new();
+        for captured in captured {
+            let children = captured
+                .children
+                .iter()
+                .map(|i| nodes.get(*i).copied().ok_or("通常評価の子が先行していない"))
+                .collect::<Result<Vec<_>, _>>()?;
+            let local = captured
+                .bindings
+                .iter()
+                .map(|(n, v)| Ok((n.clone(), change_result::value(b, v)?)))
+                .collect::<Result<Vec<_>, ValidationFailure>>()?;
+            let node = evaluation(
+                b,
+                env,
+                captured.expression,
+                &local,
+                architecture,
+                captured.value.as_ref(),
+                &children,
+                true,
+            )?;
+            b.parts[node.0 - b.base].scope.merge(&captured.scope);
+            nodes.push(node);
+        }
+        let guard_evaluation = guard_evaluation
+            .map(|i| nodes.get(i).copied().ok_or("通常guard評価がない"))
             .transpose()?;
-        let result = if let Some((left, right)) = values {
-            children.push(evaluation(
-                b,
-                env,
-                lhs,
-                &bindings,
-                architecture,
-                Some(left),
-                &[],
-                true,
-            )?);
-            children.push(evaluation(
-                b,
-                env,
-                rhs,
-                &bindings,
-                architecture,
-                Some(right),
-                &[],
-                true,
-            )?);
-            Some(Scalar::Bool(left == right))
-        } else {
-            None
-        };
         let guard_value = if guard.is_some() {
             Some(change_result::value(b, &Scalar::Bool(*applicable))?)
         } else {
             None
         };
-        let evaluated = evaluation(
-            b,
-            env,
-            *body,
-            &bindings,
-            architecture,
-            result.as_ref(),
-            &children,
-            *applicable,
-        )?;
+        let evaluated = if *applicable {
+            let index = body_evaluation.ok_or("通常Law body評価がない")?;
+            *nodes.get(index).ok_or("通常Law body評価の位置が違う")?
+        } else {
+            evaluation(b, env, *body, &bindings, architecture, None, &[], false)?
+        };
         if let (Some(guard), Some(guard_evaluation)) = (guard, guard_evaluation) {
             let guard_value = guard_value.ok_or("商のguard値がない")?;
             let part = &mut b.parts[evaluated.0 - b.base];

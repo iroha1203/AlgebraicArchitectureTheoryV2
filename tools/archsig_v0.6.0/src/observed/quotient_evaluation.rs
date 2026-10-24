@@ -11,7 +11,24 @@ pub(in crate::observed) struct Row {
     pub assignments: Vec<(Fact, Scalar)>,
     pub laws: Vec<LawRow>,
 }
+pub(in crate::observed) struct EvaluationNode {
+    pub expression: usize,
+    pub bindings: Vec<(String, Scalar)>,
+    pub value: Option<Scalar>,
+    pub scope: Scope,
+    pub children: Vec<usize>,
+}
+/// 通常評価で実際に読んだ子出現だけを、子が先になる順序で受け取る。
+pub(super) struct EvaluationCapture {
+    pub selected: Vec<usize>,
+    pub nodes: Vec<EvaluationNode>,
+    pub roots: Vec<usize>,
+    pub stack: Vec<Vec<usize>>,
+}
 pub(in crate::observed) struct LawRow {
+    pub evaluations: Vec<EvaluationNode>,
+    pub body_evaluation: Option<usize>,
+    pub guard_evaluation: Option<usize>,
     pub bindings: Vec<(String, Scalar)>,
     pub guard: bool,
     pub values: Option<(Scalar, Scalar)>,
@@ -202,7 +219,7 @@ pub(in crate::observed) fn compute(
         let mut laws = vec![];
         if let Some((name, _, _, _)) = &law {
             let law_decl = &original.inputs.law().declarations[name];
-            let Signature::Law { params, .. } = &law_decl.signature else { unreachable!() };
+            let Signature::Law { params, body, guard, .. } = &law_decl.signature else { unreachable!() };
             let mut instances = vec![vec![]];
             for param in params {
                 let argument = request.arguments.iter().find(|a| a.name == format!("bind.{}", param.name));
@@ -223,7 +240,12 @@ pub(in crate::observed) fn compute(
                 instances = next;
             }
             for bindings in instances {
-                let evaluated = finite_law_valuations::evaluate_point(&env, law_decl, &bindings, index)?;
+                env.evaluation_capture.replace(Some(EvaluationCapture {
+                    selected:std::iter::once(*body).chain(*guard).collect(),nodes:vec![],roots:vec![],stack:vec![],
+                }));
+                let evaluated = finite_law_valuations::evaluate_point(&env, law_decl, &bindings, index);
+                let capture = env.evaluation_capture.replace(None).ok_or("商の通常評価出現がない")?;
+                let evaluated = evaluated?;
                 scope.merge(&evaluated.scope);
                 if evaluated.application == Some(false) { continue; }
                 let values = if evaluated.guard == Some(false) { None } else {
@@ -243,7 +265,10 @@ pub(in crate::observed) fn compute(
                     if missing.is_empty() { return Err(unsupported(request, "商のLaw適用条件が未確定")); }
                     continue;
                 }
-                laws.push(LawRow { bindings, guard: evaluated.guard == Some(true), values, scope: evaluated.scope });
+                let body_evaluation = capture.roots.iter().copied().find(|i| capture.nodes[*i].expression == *body);
+                let guard_evaluation = guard.and_then(|id|capture.roots.iter().copied().find(|i|capture.nodes[*i].expression == id));
+                laws.push(LawRow { bindings, guard: evaluated.guard == Some(true), values, scope: evaluated.scope,
+                    evaluations:capture.nodes,body_evaluation,guard_evaluation });
             }
         }
         rows.push(Row {

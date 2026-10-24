@@ -214,9 +214,9 @@ fn compute(
         let mut evaluations = vec![];
         let mut families = BTreeMap::new();
         let mut images = BTreeMap::new();
-        if let Some((name, ty, lhs, rhs)) = &table.law {
+        if let Some((name, ty, _, _)) = &table.law {
             for row in &table.rows {
-                let (family, rows) = law_result::row(&mut b, env, &input, row, name, ty, *lhs, *rhs, expression)?;
+                let (family, rows) = law_result::row(&mut b, env, &input, row, name, ty, expression)?;
                 evaluations.extend(rows);
                 families.insert(row.parameters.wire().canonical(), family);
                 images.insert(row.parameters.wire().canonical(), row.image.clone());
