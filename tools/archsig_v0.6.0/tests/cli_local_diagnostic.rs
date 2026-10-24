@@ -529,3 +529,39 @@ fn short_circuit_truth_keeps_missing_local_reads_and_needed_slots() {
         }
     }
 }
+
+#[test]
+fn missing_parameter_owner_domain_reaches_needed_without_becoming_unimplemented() {
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    let map = fixture::remove_atom("p-owner");
+    let input = fixture::input("law optional localValid(s:State):true=true;", Some(&map));
+    let dir = workdir("local-owner-domain");
+    for (name, bytes) in [
+        ("d.json", input.definitions()[0].bytes()),
+        ("l.law", input.law().bytes()),
+        ("a.json", input.archmap().bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            fixture::MAP,
+            "l=localize($m.candidate.source,law=Reservations.localValid)",
+            "n=needed($l)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{} {}", r.stdout, r.stderr);
+    let result = result_json(&dir, &r);
+    let answers = arr(get(&result, "answers"));
+    assert!(!has(get(&answers[1], "outputs"), "system"));
+    assert_eq!(s(get(&answers[1], "status")), "undetermined");
+    assert_eq!(s(get(&answers[2], "status")), "established");
+    let plan = get(output(&result, 2, "plan"), "value");
+    assert!(arr(get(plan, "requirements")).iter().any(|requirement| {
+        let field = get(requirement, "field");
+        s(get(field, "subject")) == "p" && s(get(field, "field")) == "Reservations.State.owner"
+    }));
+}
