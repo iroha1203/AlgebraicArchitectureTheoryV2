@@ -27,6 +27,7 @@ use std::{collections::BTreeMap, sync::Arc};
 pub(super) struct Source {
     base: usize,
     parts: Vec<Part>,
+    scope_domains: Vec<(NodeRef, Type)>,
     answer: Answer,
     request: Request,
     witness: Arc<ArchitectureWitness>,
@@ -56,6 +57,14 @@ impl Eq for Data {}
 impl Data {
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
+    }
+    pub(super) fn scope_domain_type(&self) -> Option<&Type> {
+        let reference = NodeRef(self.source.base + self.index);
+        self.source
+            .scope_domains
+            .iter()
+            .find(|(r, _)| *r == reference)
+            .map(|(_, ty)| ty)
     }
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty.clone()
@@ -273,13 +282,13 @@ fn compute(
         else {
             return Err(unsupported("条件付きLawの局所系は未実装"));
         };
-        let ExprKind::Binary {
-            op: BinOp::Eq,
-            lhs,
-            rhs,
-        } = env.inputs.law().exprs[*body].kind
-        else {
-            return Err(unsupported("等式以外の局所Lawは未実装"));
+        let reading_roots = match env.inputs.law().exprs[*body].kind {
+            ExprKind::Binary {
+                op: BinOp::Eq,
+                lhs,
+                rhs,
+            } => vec![lhs, rhs],
+            _ => vec![*body],
         };
         let assignments = match &original.data {
             D::Change(d) => d.overrides(g)?,
@@ -352,6 +361,7 @@ fn compute(
             .map(|(n, v)| Ok((n.clone(), change_result::value(&mut b, v)?)))
             .collect::<Result<Vec<_>, ValidationFailure>>()?;
         let mut quantifiers = vec![];
+        let mut scope_domains = vec![];
         for p in universal {
             let value = bindings
                 .iter()
@@ -359,10 +369,11 @@ fn compute(
                 .ok_or("局所量化の束縛がない")?
                 .1;
             let domain = domain(&mut b, &p.ty.erase(), &[value])?;
+            scope_domains.push((domain, p.ty.erase()));
             quantifiers.push(Quantifier {
                 kind: crate::law::ast::QuantKind::Forall,
                 name: p.name.clone(),
-                ty: p.ty.clone(),
+                ty: p.ty.erase(),
                 domain: Some(domain),
                 occurrence: p.span,
                 context: Some(env.current_context(g)),
@@ -413,6 +424,7 @@ fn compute(
             return Ok(Source {
                 base,
                 parts: b.parts,
+                scope_domains,
                 answer: Answer {
                     id: request.id.clone(),
                     status: Decision::Undetermined,
@@ -579,8 +591,7 @@ fn compute(
         let mut reading_refs = vec![];
         let mut retained = std::collections::BTreeSet::new();
         for read in evaluated.into_iter().filter(|n| {
-            n.expression == lhs
-                || n.expression == rhs
+            reading_roots.contains(&n.expression)
                 || match &env.inputs.law().exprs[n.expression].kind {
                     ExprKind::Field { .. } => true,
                     ExprKind::Dotted(parts) => {
@@ -819,6 +830,7 @@ fn compute(
         Ok(Source {
             base,
             parts: b.parts,
+            scope_domains,
             answer,
             request: request.clone(),
             witness: witness.clone(),
@@ -900,6 +912,7 @@ fn diagnose(
         return Ok(Source {
             base,
             parts: b.parts,
+            scope_domains: vec![],
             answer,
             request: request.clone(),
             witness,
@@ -1032,6 +1045,7 @@ fn diagnose(
     Ok(Source {
         base,
         parts: b.parts,
+        scope_domains: vec![],
         answer,
         request: request.clone(),
         witness,
@@ -1133,7 +1147,8 @@ impl Environment<'_> {
                 &mut self.control.clone(),
             )
         })?;
-        if rebuilt.parts != d.source.parts
+        if rebuilt.scope_domains != d.source.scope_domains
+            || rebuilt.parts != d.source.parts
             || rebuilt.answer != d.source.answer
             || rebuilt.system != d.source.system
         {

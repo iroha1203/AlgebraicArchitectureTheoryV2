@@ -565,3 +565,113 @@ fn missing_parameter_owner_domain_reaches_needed_without_becoming_unimplemented(
         s(get(field, "subject")) == "p" && s(get(field, "field")) == "Reservations.State.owner"
     }));
 }
+
+#[test]
+fn boolean_law_forms_localize_with_their_actual_truth_and_missing_reads() {
+    for (index, body) in ["s.flag", "not s.flag", "s.flag and true"]
+        .iter()
+        .enumerate()
+    {
+        for value in [Some(false), Some(true), None] {
+            let dir = input(&format!("local-bool-{index}-{value:?}"), value);
+            let path = dir.join("l.law");
+            let law = std::fs::read_to_string(&path)
+                .unwrap()
+                .replace("s.flag=true", body);
+            std::fs::write(path, law).unwrap();
+            let mut asks = vec![
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system,side=equation)",
+                "s=diagnose($l.system,side=semantic)",
+            ];
+            asks.push("n=needed($l)");
+            let r = execute(&dir, "out", &asks);
+            let truth = value.map(|v| if index == 1 { !v } else { v });
+            assert_eq!(
+                r.code,
+                match truth {
+                    None => 2,
+                    Some(false) => 1,
+                    Some(true) => 0,
+                },
+                "{} {}",
+                r.stdout,
+                r.stderr
+            );
+            let result = result_json(&dir, &r);
+            let answers = arr(get(&result, "answers"));
+            assert_eq!(s(get(&answers[4], "status")), "established");
+            if let Some(truth) = truth {
+                assert_eq!(s(get(&answers[1], "status")), "established");
+                for answer in &answers[2..4] {
+                    assert_eq!(
+                        s(get(answer, "status")),
+                        if truth { "established" } else { "refuted" }
+                    );
+                }
+                let system = get(output(&result, 1, "system"), "value");
+                let context = get(node(&result, &arr(get(system, "contexts"))[0]), "value");
+                assert!(!arr(get(context, "readings")).is_empty());
+            } else {
+                assert!(!has(get(&answers[1], "outputs"), "system"));
+                assert_eq!(s(get(&answers[4], "status")), "established");
+                let plan = get(output(&result, 4, "plan"), "value");
+                assert!(
+                    arr(get(plan, "requirements"))
+                        .iter()
+                        .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.flag")
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn fixed_integer_comparison_is_a_finite_local_condition() {
+    #[path = "common/architecture_environment.rs"]
+    mod fixture;
+    for (index, condition, expected) in [(0, "s.free<3", true), (1, "s.free>3", false)] {
+        let input = fixture::input(
+            &format!("law optional localCompare(s:State):{condition};"),
+            None,
+        );
+        let dir = workdir(&format!("local-inequality-{index}"));
+        for (name, bytes) in [
+            ("d.json", input.definitions()[0].bytes()),
+            ("l.law", input.law().bytes()),
+            ("a.json", input.archmap().bytes()),
+        ] {
+            std::fs::write(dir.join(name), bytes).unwrap();
+        }
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                fixture::MAP,
+                "l=localize($m.candidate.source,law=Reservations.localCompare,s=@v/p)",
+                "d=diagnose($l.system)",
+            ],
+        );
+        let result = result_json(&dir, &r);
+        let answers = arr(get(&result, "answers"));
+        assert_eq!(
+            s(get(&answers[1], "status")),
+            "established",
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        assert_eq!(
+            s(get(&answers[2], "status")),
+            if expected { "established" } else { "refuted" },
+            "{} {}",
+            r.stdout,
+            r.stderr
+        );
+        assert_eq!(r.code, if expected { 0 } else { 1 });
+        let system = get(output(&result, 1, "system"), "value");
+        let context = get(node(&result, &arr(get(system, "contexts"))[0]), "value");
+        assert!(!arr(get(context, "readings")).is_empty());
+    }
+}
