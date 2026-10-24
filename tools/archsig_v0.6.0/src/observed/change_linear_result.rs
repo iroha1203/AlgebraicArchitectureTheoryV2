@@ -72,7 +72,7 @@ fn map(
         columns.push(refs(&column));
     }
     b.push(
-        NodeType::Construction(T::ModuleMap),
+        NodeType::ModuleMap(source,target),
         "module_map",
         Json::obj([
             ("source", source.wire()),
@@ -98,7 +98,7 @@ fn vector(
     let mut args = vec![module];
     args.extend(&coordinates);
     b.push(
-        NodeType::Construction(T::Vector),
+        NodeType::Vector(module),
         "vector",
         Json::obj([
             ("module", module.wire()),

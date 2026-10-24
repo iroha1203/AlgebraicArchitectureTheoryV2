@@ -272,7 +272,7 @@ fn compute(
     base: usize,
     request: &Request,
     c: &mut Control,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     env.validation_graph_session(g, || compute_inner(env, g, architecture, base, request, c))
 }
 fn compute_inner(
@@ -282,7 +282,7 @@ fn compute_inner(
     base: usize,
     request: &Request,
     c: &mut Control,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     if !architecture.complete {
         return Err(ValidationFailure::UnsupportedExpression {
             location: Location::Law { span: (0, 0) },
@@ -973,6 +973,7 @@ fn compute_inner(
             reasons,
             scope,
         },
+        search.linear.is_some().then_some(search),
     ))
 }
 pub(super) fn evaluate(
@@ -994,7 +995,7 @@ pub(super) fn evaluate(
     }
     let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
     let base = g.nodes.len();
-    let (parts, answer) = compute(env, g, &architecture, base, request, c)?;
+    let (parts, answer, verification) = compute(env, g, &architecture, base, request, c)?;
     let source = Arc::new(Source {
         architecture,
         boundary,
@@ -1002,8 +1003,18 @@ pub(super) fn evaluate(
         parts,
         answer,
     });
+    let points = verification.as_ref().and_then(|s| s.candidates.as_ref())
+        .map_or(0, |table| table.rows.len());
+    if points > 0 {
+        change_search::verify_point(env, &source.architecture.witness,
+            verification.as_ref().unwrap(), 0, c)?;
+    }
+    let existence = source.answer.outputs.get("existence")
+        .or_else(|| source.answer.outputs.get("proposition"))
+        .copied().ok_or("changeの存在命題がない")?;
     for index in 0..source.parts.len() {
-        c.checkpoint(Checkpoint::PrimitiveValuation)?;
+        // 完了済みnative構成の転送だけを行う。停止後に新しい導出はしない。
+
         let part = &source.parts[index];
         native::retain(
             g,
@@ -1018,6 +1029,24 @@ pub(super) fn evaluate(
             part.evidence.clone(),
             part.judgment.clone(),
         )?;
+        if base + index == existence.0 && points > 1 {
+            for point in 1..points {
+                if let Err(failure) = change_search::verify_point(env,
+                    &source.architecture.witness, verification.as_ref().unwrap(), point, c) {
+                    let ValidationFailure::Stop(reason) = failure else {return Err(failure)};
+                    let mut answer = source.answer.clone();
+                    if request.kind == QuestionKind::Repair {
+                        answer.status = Decision::Undetermined;
+                        answer.claim = None;
+                        answer.outputs.retain(|key, _| matches!(key.as_str(), "domain" | "solutions" | "existence"));
+                        answer.reasons.clear();
+                        answer.scope = source.parts[existence.0 - base].scope.clone();
+                    }
+                    answer.reasons.push(Reason::stopped(&request.id, reason));
+                    return Ok(answer);
+                }
+            }
+        }
     }
     Ok(source.answer.clone())
 }
@@ -1071,7 +1100,7 @@ impl Environment<'_> {
         }
         let origin = Witness::Architecture(d.source.architecture.witness.clone());
         let request = origin.request();
-        let (parts, answer) = compute(
+        let (parts, answer, verification) = compute(
             self,
             g,
             &d.source.architecture,
@@ -1079,6 +1108,11 @@ impl Environment<'_> {
             request,
             &mut c,
         )?;
+        if let Some(search) = verification {
+            for point in 0..search.candidates.as_ref().map_or(0, |table| table.rows.len()) {
+                change_search::verify_point(self, &d.source.architecture.witness, &search, point, &mut c)?;
+            }
+        }
         if parts != d.source.parts || answer != d.source.answer {
             return Err("changeの再構成が違う".into());
         }

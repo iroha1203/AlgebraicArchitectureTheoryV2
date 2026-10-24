@@ -55,6 +55,8 @@ impl NodeRef {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum NodeType {
     Construction(super::construction_result::ConstructionType),
+    Vector(NodeRef),
+    ModuleMap(NodeRef, NodeRef),
     Value(Type),
     Expression(Type),
     Evaluation(Type),
@@ -68,6 +70,8 @@ impl NodeType {
     fn wire(&self) -> Json {
         match self {
             Self::Construction(ty) => Json::str(ty.name()),
+            Self::Vector(module) => Json::Arr(vec![Json::str("Vector"),module.wire()]),
+            Self::ModuleMap(source,target) => Json::Arr(vec![Json::str("ModuleMap"),source.wire(),target.wire()]),
             Self::Value(t) => t.wire(),
             Self::Expression(_) => Json::str("Expression"),
             Self::Evaluation(_) => Json::str("Evaluation"),

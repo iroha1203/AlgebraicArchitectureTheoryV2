@@ -69,6 +69,7 @@ fn integer_total_and_pinned_keep_full_fibers_and_only_unique_repair_objects() {
     );
     assert_eq!(r.code, 1, "{} {}", r.stdout, r.stderr);
     let total = result_json(&dir, &r);
+    assert_module_owners(&total);
     let answers = arr(get(&total, "answers"));
     assert!(!has(get(&answers[0], "outputs"), "object"));
     let representation = get(
@@ -105,6 +106,7 @@ fn integer_total_and_pinned_keep_full_fibers_and_only_unique_repair_objects() {
     );
     assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
     let pinned = result_json(&dir, &r);
+    assert_module_owners(&pinned);
     assert_eq!(s(get(output(&pinned, 1, "value"), "value")), "0");
     let representation = get(
         get(output(&pinned, 0, "solutions"), "value"),
@@ -305,4 +307,69 @@ fn repeated_integer_repair_uses_the_previous_state_in_its_affine_offset() {
     let parameters = arr(get(&arr(get(assignment, "entries"))[0], "parameters"));
     assert_eq!(s(get(node(&result, &parameters[0]), "value")), "2");
     assert_eq!(s(get(node(&result, &parameters[1]), "value")), "0");
+}
+
+fn assert_module_owners(result: &JNode) {
+    let mut maps = 0;
+    let mut vectors = 0;
+    for n in arr(get(result, "nodes")) {
+        if !has(n, "value") { continue; }
+        let value = get(n, "value");
+        let fields: &[&str] = if has(value, "columns") && has(value, "source") {
+            maps += 1;
+            &["source", "target"]
+        } else if has(value, "coordinates") && has(value, "module") {
+            vectors += 1;
+            &["module"]
+        } else { continue; };
+        let ty = arr(get(n, "type"));
+        assert_eq!(s(&ty[0]), if fields.len() == 2 { "ModuleMap" } else { "Vector" });
+        assert_eq!(ty.len(), fields.len() + 1);
+        for (i, field) in fields.iter().enumerate() {
+            assert_eq!(s(get(&ty[i + 1], "node")), s(get(get(value, field), "node")));
+            assert_eq!(s(get(node(result, &ty[i + 1]), "type")), "Module");
+        }
+    }
+    assert!(maps > 0 && vectors > 0);
+}
+
+#[test]
+fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
+    use archsig::observed::{control::{Checkpoint, Control, Limits, Usage},
+        input::InputSources, evaluate::evaluate_observed_bytes};
+    use std::{cell::Cell, rc::Rc};
+    let dir = input("integer-stop", "change setpair(s:State,a:Z,b:Z)=s with{x=a,y=b};");
+    for mode in 0..3 {
+        let seen = Rc::new(Cell::new(0));
+        let count = seen.clone();
+        let mut c = Control::new(Limits {time_ms: Some(1), memory_mib: Some(1)}, move |point| {
+            if point == Checkpoint::ChangeWitness { count.set(count.get() + 1); }
+            if count.get() == 2 {
+                match mode {
+                    0 => Usage {elapsed_ms: 2, ..Usage::default()},
+                    1 => Usage {memory_mib: 2, ..Usage::default()},
+                    _ => Usage {signal: Some(archsig::result::Signal::Term), ..Usage::default()},
+                }
+            } else { Usage::default() }
+        });
+        let source = InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],
+            std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
+        let result = evaluate_observed_bytes(source, &[
+            "r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
+            "later=check(Pair.total,s=@pair/s)"], &mut c).unwrap();
+        assert_eq!(seen.get(), 2);
+        let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+        let answers = arr(get(&wire, "answers"));
+        let first = &answers[0];
+        assert_eq!(s(get(first,"status")), "undetermined");
+        assert!(!has(get(first,"outputs"), "object"));
+        assert!(!has(get(first,"outputs"), "repair"));
+        assert!(!has(get(first,"outputs"), "proposition"));
+        assert_eq!(s(get(get(output(&wire,0,"existence"),"judgment"),"status")), "established");
+        assert_eq!(s(get(&answers[1],"status")), "undetermined");
+        let code = if mode == 2 {"cancelled"} else {"budget_exhausted"};
+        for answer in answers {
+            assert!(arr(get(answer,"reasons")).iter().any(|r| s(get(r,"code")) == code));
+        }
+    }
 }

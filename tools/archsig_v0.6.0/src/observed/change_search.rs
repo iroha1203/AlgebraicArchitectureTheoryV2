@@ -318,9 +318,9 @@ pub(in crate::observed) fn search(
                 control.checkpoint(Checkpoint::PrimitiveValuation)?;
                 let parameters=point.into_iter().map(Scalar::Z).collect::<Vec<_>>();
                 let candidate=change_evaluation::candidate(&environment,change,&candidates.subjects,&parameters)?;
-                let row=change_evaluation::solution_row(&environment,&candidate,i,&result.requirements)?;
-                if row.member!=Some(true) {return Err("整数全解の点が元change/Lawへの再代入を満たさない".into());}
-                candidates.rows.push(candidate);result.solutions.push(row);
+                // この段階は線形系の全解表示を準備する。具体点の通常Law再検査と
+                // その確定直後の公開はchange_resultが順に行う。
+                candidates.rows.push(candidate);result.solutions.push(SolutionRow{candidate:i,member:Some(true)});
             }
             result.candidates=Some(candidates);result.linear=Some(linear);result.complete=true;
             return Ok(());
@@ -361,4 +361,19 @@ pub(in crate::observed) fn search(
             partial: result,
         }),
     }
+}
+
+pub(in crate::observed) fn verify_point(
+    original:&Environment<'_>, witness:&ArchitectureWitness, search:&Search,
+    point:usize, control:&mut Control,
+) -> Result<(),ValidationFailure> {
+    control.checkpoint(Checkpoint::ChangeWitness)?;
+    let assignments=original.architecture_values();
+    let mut environment=Environment::try_primitive_valuation(original.inputs,&assignments,control)?
+        .ok_or("元修復Architectureの代入が不適合")?;
+    environment.object=Some(Arc::new(ObjectDomain::from_readings(original.inputs,witness.readings(),0,control)?));
+    let candidate=search.candidates.as_ref().and_then(|c|c.rows.get(point)).ok_or("整数再検査の点がない")?;
+    let row=change_evaluation::solution_row(&environment,candidate,point,&search.requirements)?;
+    if row.member!=Some(true) {return Err("整数全解の点が元change/Lawへの再代入を満たさない".into());}
+    Ok(())
 }
