@@ -268,7 +268,7 @@ fn deliver(
         });
     }
     // 型付き結果の最終表示。以後このJSONから値・命題を評価しない。
-    let mut wire = evaluation.wire();
+    let mut wire = evaluation.result_wire();
     let Json::Obj(document) = &mut wire else {
         unreachable!("結果表示はobject")
     };
@@ -277,7 +277,7 @@ fn deliver(
         Json::Arr(identities.iter().map(|i| i.wire()).collect()),
     );
     for (key, value) in [
-        ("format", Json::str("archsig.result/2")),
+        ("format", Json::str(crate::result::RESULT_FORMAT)),
         ("semantics", Json::str(crate::law::SEMANTICS)),
         (
             "producer",

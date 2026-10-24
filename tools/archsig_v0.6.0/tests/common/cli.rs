@@ -85,7 +85,7 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(s(get(&r.receipt, "status")), status);
     assert_eq!(num(get(&r.receipt, "exit_code")), code as u64);
     let res = result_json(dir, r);
-    assert_eq!(s(get(&res, "format")), "archsig.result/2");
+    assert_eq!(s(get(&res, "format")), "archsig.result/3");
     assert_eq!(s(get(&res, "command")), "check");
     assert_eq!(s(get(&res, "status")), status);
     assert_eq!(num(get(&res, "exit_code")), code as u64);

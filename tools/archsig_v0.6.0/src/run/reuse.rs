@@ -173,7 +173,7 @@ fn nat(node: &JNode) -> Checked<()> {
 }
 fn header(document: &JNode, control: &mut Control) -> Checked<()> {
     control.checkpoint(Checkpoint::Reuse)?;
-    if text(field(document, "format")?)? != "archsig.result/2"
+    if text(field(document, "format")?)? != crate::result::RESULT_FORMAT
         || text(field(document, "semantics")?)? != crate::law::SEMANTICS
     {
         return Err(invalid("format/semanticsが対応版と異なる"));
@@ -188,8 +188,6 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
             "status",
             "exit_code",
             "inputs",
-            "declarations",
-            "vocabularies",
             "requests",
             "answers",
             "nodes",
@@ -198,7 +196,11 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
             "usage",
             "limits",
         ],
-        &[],
+        if text(field(document, "command")?)? == "check" {
+            &["declarations", "vocabularies"]
+        } else {
+            &[]
+        },
     )?;
     if text(field(document, "command")?)? != "run" && text(field(document, "command")?)? != "check"
     {
@@ -388,9 +390,9 @@ fn node_content(mut node: Json, control: &mut Control) -> Checked<String> {
 }
 fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Control) -> Checked<()> {
     control.checkpoint(Checkpoint::Reuse)?;
-    let replay = evaluation.wire_controlled(control, Checkpoint::Reuse)?;
+    let replay = evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
     let empty = BTreeMap::new();
-    // 元byte列・全宣言・語彙・解決済み要求を現在の三表へ照合する。
+    // 元byte列のidentityと解決済み要求を照合する。宣言・型は現在の三入力から再検査する。
     // 候補が別の入力/問いのものでも、通常評価は既に現在入力から実行済みである。
     let mut inputs = normalized_candidate(field(document, "inputs")?, &empty, control)?;
     let Json::Arr(identities) = &mut inputs else {
@@ -421,7 +423,7 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
     if inputs != *wire_field(&replay, "inputs")? {
         return Err(invalid("現在の入力identityと一致しない"));
     }
-    for name in ["declarations", "vocabularies", "requests", "status"] {
+    for name in ["requests", "status"] {
         let candidate = normalized_candidate(field(document, name)?, &empty, control)?;
         if candidate != *wire_field(&replay, name)? {
             return Err(invalid(format!("{name}を現在の検査済み結果へ照合できない")));

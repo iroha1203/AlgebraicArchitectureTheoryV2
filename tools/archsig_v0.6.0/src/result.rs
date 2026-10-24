@@ -7,6 +7,8 @@ use crate::law::ast::Role;
 use crate::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
 use std::collections::{BTreeMap, BTreeSet};
 
+pub(crate) const RESULT_FORMAT: &str = "archsig.result/3";
+
 /// RunStatus と終了コード(実行仕様 §6)。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Status {
@@ -540,6 +542,12 @@ pub fn exit_code(status: Status, signal: Option<Signal>, issues: &[ResultIssue])
     }
 }
 
+pub(crate) fn input_identities_wire(inputs: &[InputIdentity]) -> Json {
+    let mut inputs: Vec<_> = inputs.iter().collect();
+    inputs.sort_by(|a, b| a.id.cmp(&b.id));
+    Json::Arr(inputs.into_iter().map(InputIdentity::wire).collect())
+}
+
 /// CLI と観測 API で共有する、識別・宣言・語彙の表示。
 pub(crate) fn metadata_wire<'a>(
     inputs: &[InputIdentity],
@@ -593,7 +601,7 @@ impl CheckResult {
         issues.sort_by_key(|i| i.sort_key());
         fields.extend(
             [
-                ("format", Json::str("archsig.result/2")),
+                ("format", Json::str(RESULT_FORMAT)),
                 ("semantics", Json::str(crate::law::SEMANTICS)),
                 (
                     "producer",

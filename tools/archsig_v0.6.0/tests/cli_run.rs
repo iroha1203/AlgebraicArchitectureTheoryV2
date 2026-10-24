@@ -58,7 +58,7 @@ fn result(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
     assert_eq!(s(get(&run.receipt, "status")), status);
     assert_eq!(num(get(&run.receipt, "exit_code")), code as u64);
     let res = result_json(dir, run);
-    assert_eq!(s(get(&res, "format")), "archsig.result/2");
+    assert_eq!(s(get(&res, "format")), "archsig.result/3");
     assert_eq!(s(get(&res, "semantics")), "archsig/0.6.0");
     assert_eq!(s(get(&res, "command")), "run");
     assert_eq!(s(get(&res, "status")), status);
@@ -77,8 +77,6 @@ fn result(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
             "status",
             "exit_code",
             "inputs",
-            "declarations",
-            "vocabularies",
             "requests",
             "answers",
             "nodes",
@@ -117,8 +115,9 @@ fn result(dir: &Path, run: &Run, status: &str, code: i32) -> JNode {
                 assert!(prior.contains(s(get(r, "node"))), "DAGの先行node: {refs}");
             }
         }
+        assert!(!has(n, "support"));
         assert!(prior.insert(s(get(n, "id"))));
-        for key in ["rule", "scope", "support", "reasons", "type", "state"] {
+        for key in ["rule", "scope", "reasons", "type", "state"] {
             get(n, key);
         }
     }
@@ -168,7 +167,7 @@ fn counter_value_refutation_and_missing_are_results() {
             let n = node(&res, get(get(answer(&res, "n"), "outputs"), "value"));
             assert_eq!(s(get(n, "type")), "Z");
             assert_eq!(s(get(n, "value")), count);
-            assert!(!arr(get(n, "support")).is_empty());
+            assert!(!arr(get(n, "arguments")).is_empty());
             assert!(!has(&r.receipt, "issues"));
         } else {
             for a in arr(get(&res, "answers")) {
@@ -831,4 +830,44 @@ fn run_delivery_failure_cleans_only_its_temp_and_existing_out_is_protected() {
     let r = requests(&dir, &ASKS);
     notified(&dir, &r, "invalid", 64);
     assert_eq!(std::fs::read(dir.join("out/keep")).unwrap(), b"keep");
+}
+
+#[test]
+fn saved_counterexample_reaches_the_input_atom_and_origin_without_node_support() {
+    let dir = inputs("counterexample-origin", Some("12"), L);
+    let r = requests(&dir, &["audit=check(CountAudit.bounded)"]);
+    let res = result(&dir, &r, "complete", 1);
+    let claim = node(&res, get(answer(&res, "audit"), "claim"));
+    let evidence = arr(get(get(claim, "judgment"), "evidence"))
+        .iter()
+        .map(|r| get(node(&res, r), "value"))
+        .find(|e| s(get(e, "kind")) == "counterexample")
+        .unwrap();
+    let data = get(evidence, "data");
+    let binding = &arr(get(data, "bindings"))[0];
+    assert_eq!(s(get(binding, "name")), "s");
+    let subject = get(node(&res, get(binding, "value")), "value");
+    let saved =
+        archsig::json::parse(&std::fs::read(dir.join("out/inputs/archmap.json")).unwrap()).unwrap();
+    let snapshot = arr(get(&saved, "snapshots"))
+        .iter()
+        .find(|v| s(get(v, "id")) == s(&arr(subject)[0]))
+        .unwrap();
+    let fact = arr(get(data, "facts"))
+        .iter()
+        .find(|f| has(f, "atom"))
+        .unwrap();
+    let atom = arr(get(snapshot, "atoms"))
+        .iter()
+        .find(|a| s(get(a, "id")) == s(get(fact, "atom")))
+        .unwrap();
+    assert_eq!(s(get(atom, "subject")), s(&arr(subject)[1]));
+    assert_eq!(s(get(atom, "field")), "Counter.State.count");
+    assert_eq!(s(get(atom, "value")), "12");
+    let origin = arr(get(&saved, "origins"))
+        .iter()
+        .find(|o| s(get(o, "id")) == s(get(atom, "origin")))
+        .unwrap();
+    assert_eq!(s(get(origin, "mode")), "specification");
+    assert!(arr(get(origin, "locations")).is_empty());
 }

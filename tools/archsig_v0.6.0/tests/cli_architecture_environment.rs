@@ -665,9 +665,9 @@ law required dependentScope(a:System,s:State[a]):true;
         &j,
         get(get(answer(&j, "constant"), "outputs"), "evaluation"),
     );
-    assert!(arr(get(constant, "support")).is_empty());
+    assert!(!has(constant, "support"));
     let primitive = node(&j, get(get(answer(&j, "constant"), "outputs"), "value"));
-    assert!(arr(get(primitive, "support")).is_empty());
+    assert!(!has(primitive, "support"));
     let observed = get(answer(&j, "observed"), "scope");
     assert!(arr(get(observed, "snapshots")).is_empty());
     assert!(arr(get(observed, "modes")).is_empty());
