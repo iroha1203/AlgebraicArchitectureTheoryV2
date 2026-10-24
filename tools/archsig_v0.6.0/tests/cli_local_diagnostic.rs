@@ -683,7 +683,7 @@ fn conditional_law_localization_preserves_guard_and_nonapplication() {
         ("true", "s.flag", Some(false), "refuted"),
         ("true", "s.flag", None, "undetermined"),
         ("false", "s.flag", Some(false), "established"),
-        ("false", "s.flag", None, "established"),
+        ("false", "s.flag", None, "undetermined"),
         ("s.flag", "false", Some(true), "refuted"),
         ("s.flag", "false", Some(false), "established"),
         ("s.flag", "false", None, "undetermined"),
@@ -756,6 +756,19 @@ fn conditional_law_localization_preserves_guard_and_nonapplication() {
         let instance = get(
             node(&result, &arr(get(context, "law_coordinates"))[0]),
             "value",
+        );
+        assert!(
+            arr(get(context, "dependencies"))
+                .iter()
+                .any(|slot| s(get(slot, "field")) == "Fixed.State.flag")
+        );
+        let diagnostic = get(output(&result, 2, "diagnostic"), "value");
+        let solutions = get(node(&result, get(diagnostic, "global")), "value");
+        let equations = get(node(&result, get(solutions, "domain")), "value");
+        assert!(
+            arr(get(equations, "fixed"))
+                .iter()
+                .any(|slot| s(get(slot, "field")) == "Fixed.State.flag")
         );
         assert!(has(instance, "guard"));
         assert_eq!(

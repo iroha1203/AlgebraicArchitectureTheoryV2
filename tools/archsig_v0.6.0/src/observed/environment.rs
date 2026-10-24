@@ -431,7 +431,7 @@ impl<'a> Environment<'a> {
         let crate::law::model::Signature::Law{body,guard,..}=declaration.signature else{return Err("局所評価の元Lawがない".into())};
         let outer=self.missing_slot_reads.replace(Some(BTreeSet::new()));
         let prior=self.evaluation_capture.replace(Some(quotient_evaluation::EvaluationCapture{selected:std::iter::once(body).chain(guard).collect(),nodes:vec![],roots:vec![],stack:vec![]}));
-        let result=finite_law_valuations::evaluate_point(self,declaration,bindings,0);
+        let result=finite_law_valuations::evaluate_local_point(self,declaration,bindings);
         let capture=self.evaluation_capture.replace(prior).ok_or("局所読取りの記録がない")?;
         let reads=self.missing_slot_reads.replace(outer).ok_or("局所Lawの欠測収集がない")?;
         if let Some(outer)=self.missing_slot_reads.borrow_mut().as_mut(){outer.extend(reads.iter().cloned());}
