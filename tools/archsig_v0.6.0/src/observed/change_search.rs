@@ -6,6 +6,7 @@ use change_evaluation::{Candidates, SolutionRow};
 use std::sync::Arc;
 
 pub(in crate::observed) struct Search {
+    pub linear: Option<change_affine::Linear>,
     pub candidates: Option<Candidates>,
     pub solutions: Vec<SolutionRow>,
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
@@ -198,6 +199,7 @@ pub(in crate::observed) fn search(
     control: &mut Control,
 ) -> Result<Search, SearchFailure> {
     let mut result = Search {
+        linear: None,
         candidates: None,
         solutions: vec![],
         requirements: vec![],
@@ -302,6 +304,27 @@ pub(in crate::observed) fn search(
             rows = next;
         }
         result.requirements = rows.into_iter().map(|b| (law_name.to_owned(), b)).collect();
+        if change_params.iter().skip(1).any(|p| p.ty==Type::Z) {
+            let linear=change_affine::compute(&environment,change,&subjects,&result.requirements)?;
+            let mut points=vec![];
+            if let Some(particular)=&linear.fiber.particular {
+                points.push(particular.clone());
+                if linear.fiber.rank < particular.len() {
+                    points.push(particular.iter().zip(&linear.fiber.kernel).map(|(p,k)|p+&k[0]).collect());
+                }
+            }
+            let mut candidates=Candidates { parameter_types: vec![Type::Z;subjects.len()*(change_params.len()-1)],subjects,rows:vec![],complete:true };
+            for (i,point) in points.into_iter().enumerate() {
+                control.checkpoint(Checkpoint::PrimitiveValuation)?;
+                let parameters=point.into_iter().map(Scalar::Z).collect::<Vec<_>>();
+                let candidate=change_evaluation::candidate(&environment,change,&candidates.subjects,&parameters)?;
+                // この段階は線形系の全解表示を準備する。具体点の通常Law再検査と
+                // その確定直後の公開はchange_resultが順に行う。
+                candidates.rows.push(candidate);result.solutions.push(SolutionRow{candidate:i,member:Some(true)});
+            }
+            result.candidates=Some(candidates);result.linear=Some(linear);result.complete=true;
+            return Ok(());
+        }
         let table = match change_evaluation::candidates(&environment, change, &subjects) {
             Ok(table) => table,
             Err(failure) => {
@@ -338,4 +361,19 @@ pub(in crate::observed) fn search(
             partial: result,
         }),
     }
+}
+
+pub(in crate::observed) fn verify_point(
+    original:&Environment<'_>, witness:&ArchitectureWitness, search:&Search,
+    point:usize, control:&mut Control,
+) -> Result<(),ValidationFailure> {
+    control.checkpoint(Checkpoint::ChangeWitness)?;
+    let assignments=original.architecture_values();
+    let mut environment=Environment::try_primitive_valuation(original.inputs,&assignments,control)?
+        .ok_or("元修復Architectureの代入が不適合")?;
+    environment.object=Some(Arc::new(ObjectDomain::from_readings(original.inputs,witness.readings(),0,control)?));
+    let candidate=search.candidates.as_ref().and_then(|c|c.rows.get(point)).ok_or("整数再検査の点がない")?;
+    let row=change_evaluation::solution_row(&environment,candidate,point,&search.requirements)?;
+    if row.member!=Some(true) {return Err("整数全解の点が元change/Lawへの再代入を満たさない".into());}
+    Ok(())
 }

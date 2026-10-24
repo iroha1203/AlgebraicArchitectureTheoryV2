@@ -338,13 +338,36 @@ pub(in crate::observed) fn candidates(
             &mut |_| {},
         )?;
         for point in domain.values {
-            environment
-                .control
-                .clone()
-                .checkpoint(Checkpoint::PrimitiveValuation)?;
+            environment.control.clone().checkpoint(Checkpoint::PrimitiveValuation)?;
             let Scalar::Tuple(parameters) = &point else {
                 return Err("change parameterの直積がTupleでない".into());
             };
+            result.rows.push(candidate(environment,declaration,subjects,&parameters)?);
+        }
+        result.complete = true;
+        Ok(())
+    })();
+    match computed {
+        Ok(()) => Ok(result),
+        Err(cause) => Err(CandidateFailure {
+            cause,
+            partial: result,
+        }),
+    }
+}
+
+/// 一つの元parameter点を全instanceへ同時代入する。全域の算法と再代入で共用する。
+pub(in crate::observed) fn candidate(
+    environment: &Environment<'_>, declaration: &Declaration,
+    subjects: &[Scalar], parameters: &[Scalar],
+) -> Result<Candidate, ValidationFailure> {
+    let Signature::Change { params, .. } = &declaration.signature else {
+        return Err("候補の元宣言がchangeでない".into());
+    };
+    let first=params.first().ok_or("changeの第一parameterがない")?;
+    if parameters.len()!=subjects.len()*(params.len()-1) {
+        return Err("元parameter点の次元が違う".into());
+    }
             let mut update = Update {
                 state: State::Ready,
                 values: vec![],
@@ -385,21 +408,7 @@ pub(in crate::observed) fn candidates(
             update.values = values.into_iter().collect();
             update.missing.sort();
             update.missing.dedup();
-            result.rows.push(Candidate {
-                parameters: parameters.clone(),
-                update,
-            });
-        }
-        result.complete = true;
-        Ok(())
-    })();
-    match computed {
-        Ok(()) => Ok(result),
-        Err(cause) => Err(CandidateFailure {
-            cause,
-            partial: result,
-        }),
-    }
+    Ok(Candidate { parameters: parameters.to_vec(), update })
 }
 
 #[derive(Clone, PartialEq, Eq)]

@@ -61,6 +61,7 @@ pub(crate) enum ConstructionType {
     StateMap,
     Assignment,
     Repair,
+    Module,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -101,6 +102,7 @@ impl ConstructionType {
             Self::StateMap => "StateMap",
             Self::Assignment => "Assignment",
             Self::Repair => "Repair",
+            Self::Module => "Module",
         }
     }
 }
@@ -589,6 +591,7 @@ impl ConstructionValue {
                 ConstructionType::StateMap => "state_map",
                 ConstructionType::Assignment => "assignment",
                 ConstructionType::Repair => "repair",
+                ConstructionType::Module => "module",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",

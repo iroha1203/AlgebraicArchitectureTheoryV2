@@ -15,6 +15,8 @@ use super::{
 };
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
+#[path = "change_linear_result.rs"]
+mod linear_result;
 
 #[derive(Debug)]
 pub(super) struct Source {
@@ -270,7 +272,7 @@ fn compute(
     base: usize,
     request: &Request,
     c: &mut Control,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     env.validation_graph_session(g, || compute_inner(env, g, architecture, base, request, c))
 }
 fn compute_inner(
@@ -280,7 +282,7 @@ fn compute_inner(
     base: usize,
     request: &Request,
     c: &mut Control,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     if !architecture.complete {
         return Err(ValidationFailure::UnsupportedExpression {
             location: Location::Law { span: (0, 0) },
@@ -441,6 +443,9 @@ fn compute_inner(
         }
     }
     slots.sort();
+    if search.linear.as_ref().is_some_and(|linear|linear.slots!=slots) {
+        return Err(ValidationFailure::UnsupportedExpression { location:Location::Law {span:declaration.span}, feature:"整数changeの実更新先と公開slot集合が異なる".into() });
+    }
     for (index, row) in candidates.rows.iter().enumerate() {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
         if row.update.state == State::Excluded {
@@ -477,7 +482,8 @@ fn compute_inner(
         }
     }
     let parameter_type = Type::Tuple(candidates.parameter_types.clone());
-    let parameters = b.push(
+    let linear_parts=search.linear.as_ref().map(|linear|linear_result::build(&mut b,linear,&requirements,c)).transpose()?;
+    let parameters = if let Some(linear)=&linear_parts {linear.parameters} else { b.push(
         NodeType::Domain,
         "domain",
         Json::obj([
@@ -488,7 +494,7 @@ fn compute_inner(
         points.clone(),
         None,
         None,
-    )?;
+    )? };
     let mut slot_values = vec![];
     let mut state_types = vec![];
     let mut state_args = vec![architecture.reference];
@@ -529,7 +535,7 @@ fn compute_inner(
         state_order.insert(b.parts[state.0 - base].wire.canonical(), state);
     }
     let states = state_order.into_values().collect::<Vec<_>>();
-    let state_domain = b.push(
+    let state_domain = if let Some(linear)=&linear_parts {linear.states} else { b.push(
         NodeType::Domain,
         "domain",
         Json::obj([
@@ -540,11 +546,11 @@ fn compute_inner(
         states.clone(),
         None,
         None,
-    )?;
+    )? };
     let mut action_args = vec![parameters, state_domain];
     action_args.extend(&points);
     action_args.extend(&states);
-    let action = b.push(
+    let action = if let Some(linear)=&linear_parts {linear.action} else { b.push(
         NodeType::Construction(T::StateMap),
         "state_map",
         Json::obj([
@@ -556,7 +562,7 @@ fn compute_inner(
         action_args,
         None,
         None,
-    )?;
+    )? };
     let mut domain_args = vec![architecture.reference, parameters, state_space, action];
     domain_args.extend(&subjects);
     domain_args.extend(&requirements);
@@ -600,7 +606,7 @@ fn compute_inner(
         None,
     )?;
     // 検査済み全候補表の再計算が全域性を担う。出力に各試行のtraceを複製しない。
-    let certificate = b.push(
+    let certificate = if let Some(linear)=&linear_parts {linear.certificate} else { b.push(
         NodeType::Evidence,
         "evidence",
         Json::obj([
@@ -617,8 +623,8 @@ fn compute_inner(
         vec![domain, parameters],
         None,
         None,
-    )?;
-    let representation = if solutions.is_empty() {
+    )? };
+    let representation = if let Some(linear)=&linear_parts {linear.representation.clone()} else if solutions.is_empty() {
         Json::obj([
             ("kind", Json::str("empty")),
             ("certificate", certificate.wire()),
@@ -627,6 +633,7 @@ fn compute_inner(
         Json::obj([("kind", Json::str("finite")), ("values", refs(&solutions))])
     };
     let mut solution_args = vec![domain, certificate];
+    if let Some(linear)=&linear_parts {solution_args.extend(&linear.representation_args);}
     solution_args.extend(&requirements);
     solution_args.extend(&solutions);
     let set = b.push(
@@ -966,6 +973,7 @@ fn compute_inner(
             reasons,
             scope,
         },
+        search.linear.is_some().then_some(search),
     ))
 }
 pub(super) fn evaluate(
@@ -987,7 +995,7 @@ pub(super) fn evaluate(
     }
     let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
     let base = g.nodes.len();
-    let (parts, answer) = compute(env, g, &architecture, base, request, c)?;
+    let (parts, answer, verification) = compute(env, g, &architecture, base, request, c)?;
     let source = Arc::new(Source {
         architecture,
         boundary,
@@ -995,8 +1003,18 @@ pub(super) fn evaluate(
         parts,
         answer,
     });
+    let points = verification.as_ref().and_then(|s| s.candidates.as_ref())
+        .map_or(0, |table| table.rows.len());
+    if points > 0 {
+        change_search::verify_point(env, &source.architecture.witness,
+            verification.as_ref().unwrap(), 0, c)?;
+    }
+    let existence = source.answer.outputs.get("existence")
+        .or_else(|| source.answer.outputs.get("proposition"))
+        .copied().ok_or("changeの存在命題がない")?;
     for index in 0..source.parts.len() {
-        c.checkpoint(Checkpoint::PrimitiveValuation)?;
+        // 完了済みnative構成の転送だけを行う。停止後に新しい導出はしない。
+
         let part = &source.parts[index];
         native::retain(
             g,
@@ -1011,6 +1029,24 @@ pub(super) fn evaluate(
             part.evidence.clone(),
             part.judgment.clone(),
         )?;
+        if base + index == existence.0 && points > 1 {
+            for point in 1..points {
+                if let Err(failure) = change_search::verify_point(env,
+                    &source.architecture.witness, verification.as_ref().unwrap(), point, c) {
+                    let ValidationFailure::Stop(reason) = failure else {return Err(failure)};
+                    let mut answer = source.answer.clone();
+                    if request.kind == QuestionKind::Repair {
+                        answer.status = Decision::Undetermined;
+                        answer.claim = None;
+                        answer.outputs.retain(|key, _| matches!(key.as_str(), "domain" | "solutions" | "existence"));
+                        answer.reasons.clear();
+                        answer.scope = source.parts[existence.0 - base].scope.clone();
+                    }
+                    answer.reasons.push(Reason::stopped(&request.id, reason));
+                    return Ok(answer);
+                }
+            }
+        }
     }
     Ok(source.answer.clone())
 }
@@ -1064,7 +1100,7 @@ impl Environment<'_> {
         }
         let origin = Witness::Architecture(d.source.architecture.witness.clone());
         let request = origin.request();
-        let (parts, answer) = compute(
+        let (parts, answer, verification) = compute(
             self,
             g,
             &d.source.architecture,
@@ -1072,6 +1108,11 @@ impl Environment<'_> {
             request,
             &mut c,
         )?;
+        if let Some(search) = verification {
+            for point in 0..search.candidates.as_ref().map_or(0, |table| table.rows.len()) {
+                change_search::verify_point(self, &d.source.architecture.witness, &search, point, &mut c)?;
+            }
+        }
         if parts != d.source.parts || answer != d.source.answer {
             return Err("changeの再構成が違う".into());
         }
