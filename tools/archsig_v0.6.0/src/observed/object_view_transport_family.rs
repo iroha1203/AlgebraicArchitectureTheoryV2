@@ -446,6 +446,7 @@ pub(super) fn evaluate(
         )));
     } else if !finite::supported(&source_type, inputs.law(), c).map_err(invalid)?
         && let Some(identity) = PrimitiveValueIdentity::checked(
+            &inputs,
             &r.declarations,
             &source_instance.declaration().name,
             c,

@@ -1023,3 +1023,257 @@ fn finite_container_parameter_map_checks_the_nonempty_parameter_rows() {
         assert_eq!(s(get(answer(&result, "same"), "status")), "established");
     }
 }
+
+fn data_view_inputs(
+    name: &str,
+    preserve: bool,
+    parameter: bool,
+    reference_payload: bool,
+) -> PathBuf {
+    let dir = finite_view_inputs(name, preserve);
+    let old = include_str!("fixtures/reservations.atoms.json");
+    let extra = if reference_payload {
+        r#",{"name":"Held","arguments":[["Ref","Reservations.System"]],"meaning":"参照を含む値"}"#
+    } else {
+        ""
+    };
+    let declaration = format!(
+        r#""declarations": [{{"kind":"data","name":"Reservations.Packet","meaning":"値を区別するconstructor","constructors":[{{"name":"Empty","arguments":[],"meaning":"空"}},{{"name":"Full","arguments":["Z"],"meaning":"整数"}},{{"name":"Flag","arguments":["Bool"],"meaning":"真偽"}}{extra}]}},"#
+    );
+    let definition = old.replacen("\"declarations\": [", &declaration, 1);
+    let old_checked =
+        archsig::definition::check_definitions(&[("definition0", old.as_bytes())]).unwrap();
+    let checked =
+        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+    let digest = &checked.vocabularies["Reservations"].digest;
+    let map = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .replace(&old_checked.vocabularies["Reservations"].digest, digest);
+    std::fs::write(dir.join("d.json"), definition).unwrap();
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    let (sp, tp, sc, tc) = if parameter {
+        (",take:Bool", ",keep:Bool", "take", "keep")
+    } else {
+        ("", "", "s.free>1", "s.free>1")
+    };
+    let body = |condition| {
+        format!(
+            "(if {condition} then Full(s.free) else Empty,list<Packet>[Full(s.free),Flag(false)],if {condition} then some(Full(s.held)) else none<Packet>,s.free)"
+        )
+    };
+    let law = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary Reservations version "1" digest "{digest}";
+view packets(s:State{sp}):(Packet,List<Packet>,Option<Packet>,Z)={};}}
+reading After {{use vocabulary Reservations version "1" digest "{digest}";
+view packets(s:State{tp}):(Packet,List<Packet>,Option<Packet>,Z)={};
+view yes():Bool=true;view no():Bool=false;}}"#,
+        body(sc),
+        body(tc)
+    );
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    dir
+}
+
+#[test]
+fn data_values_and_containers_map_build_and_feed_later_evaluation() {
+    for parameter in [false, true] {
+        let dir = data_view_inputs(
+            if parameter {
+                "data-family"
+            } else {
+                "data-closed"
+            },
+            true,
+            parameter,
+            false,
+        );
+        let p = if parameter {
+            "p=evaluate(After.packets,on=$b.object,s=@v/r,keep=$yes.value)"
+        } else {
+            "p=evaluate(After.packets,on=$b.object,s=@v/r)"
+        };
+        let n = if parameter {
+            "n=evaluate(After.packets,on=$b.object,s=@v/s,keep=$no.value)"
+        } else {
+            "n=evaluate(After.packets,on=$b.object,s=@v/s)"
+        };
+        let r = asks(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "b=build(After,on=$m.map.target.base.subject)",
+                "yes=evaluate(After.yes)",
+                "no=evaluate(After.no)",
+                p,
+                n,
+            ],
+        );
+        assert_eq!(r.code, 0, "{}", r.stdout);
+        let result = result_json(&dir, &r);
+        for id in ["m", "b", "p", "n"] {
+            assert_eq!(s(get(answer(&result, id), "status")), "established");
+        }
+        let p = arr(value(
+            &result,
+            get(get(answer(&result, "p"), "outputs"), "value"),
+        ));
+        assert_eq!(s(get(&p[0], "tag")), "Full");
+        assert_eq!(s(&arr(get(&p[0], "args"))[0]), "2");
+        assert_eq!(s(get(&arr(&p[1])[1], "tag")), "Flag");
+        assert_eq!(s(get(get(&p[2], "some"), "tag")), "Full");
+        assert_eq!(s(&p[3]), "2");
+        let n = arr(value(
+            &result,
+            get(get(answer(&result, "n"), "outputs"), "value"),
+        ));
+        assert_eq!(s(get(&n[0], "tag")), "Empty");
+        assert!(matches!(
+            get(&n[2], "none").value,
+            archsig::json::JValue::Bool(true)
+        ));
+        let maps:Vec<_> = arr(get(&result,"nodes")).iter().filter(|node| matches!(&get(node,"type").value,archsig::json::JValue::Str(t) if t=="ValueMap")).collect();
+        assert!(!maps.is_empty());
+        for map in maps {
+            let pairs = arr(get(get(map, "value"), "declarations"));
+            let names: std::collections::BTreeSet<_> = pairs
+                .iter()
+                .map(|pair| {
+                    let pair = arr(pair);
+                    assert_eq!(s(&pair[0]), s(&pair[1]));
+                    s(&pair[0])
+                })
+                .collect();
+            assert_eq!(
+                names,
+                [
+                    "Reservations.Packet",
+                    "Reservations.Packet.Empty",
+                    "Reservations.Packet.Flag",
+                    "Reservations.Packet.Full"
+                ]
+                .into_iter()
+                .collect()
+            );
+        }
+    }
+}
+
+#[test]
+fn changed_data_payload_refutes_map_and_preserves_configuration_operation() {
+    let dir = data_view_inputs("data-changed", false, true, false);
+    let r = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+        ],
+    );
+    assert_eq!(r.code, 1, "{}", r.stdout);
+    let result = result_json(&dir, &r);
+    assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
+    assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+    assert!(has(get(answer(&result, "m"), "outputs"), "operation"));
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+}
+
+#[test]
+fn an_unused_reference_constructor_does_not_become_an_identity_value_map() {
+    let dir = data_view_inputs("data-hidden-reference", true, false, true);
+    let r = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        ],
+    );
+    assert_eq!(r.code, 70, "{}", r.stdout);
+    assert!(has(&r.receipt, "issues"));
+}
+
+fn finite_data_view_inputs(name: &str) -> PathBuf {
+    let dir = data_view_inputs(name, true, true, false);
+    let old = std::fs::read_to_string(dir.join("d.json")).unwrap();
+    let definition = old.replacen("\"declarations\": [", r#""declarations": [{"kind":"data","name":"Reservations.Choice","meaning":"選択値","constructors":[{"name":"On","arguments":[],"meaning":"選択"},{"name":"Off","arguments":[],"meaning":"非選択"},{"name":"Other","arguments":[],"meaning":"別の非選択"}]},"#, 1);
+    let old_checked =
+        archsig::definition::check_definitions(&[("definition0", old.as_bytes())]).unwrap();
+    let checked =
+        archsig::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
+    let old_digest = &old_checked.vocabularies["Reservations"].digest;
+    let digest = &checked.vocabularies["Reservations"].digest;
+    let map = std::fs::read_to_string(dir.join("a.json"))
+        .unwrap()
+        .replace(old_digest, digest);
+    let law = std::fs::read_to_string(dir.join("l.law"))
+        .unwrap()
+        .replace(old_digest, digest)
+        .replace("take:Bool", "take:Choice")
+        .replace("keep:Bool", "keep:Choice")
+        .replace("if take then", "if take=On then")
+        .replace("if keep then", "if keep=On then")
+        .replace("yes():Bool=true", "yes():Choice=On")
+        .replace("no():Bool=false", "no():Choice=Other");
+    std::fs::write(dir.join("d.json"), definition).unwrap();
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    dir
+}
+
+#[test]
+fn finite_data_parameters_preserve_all_constructors_and_later_bindings() {
+    let dir = finite_data_view_inputs("data-parameter");
+    let r = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "b=build(After,on=$m.map.target.base.subject)",
+            "yes=evaluate(After.yes)",
+            "no=evaluate(After.no)",
+            "p=evaluate(After.packets,on=$b.object,s=@v/r,keep=$yes.value)",
+            "n=evaluate(After.packets,on=$b.object,s=@v/r,keep=$no.value)",
+        ],
+    );
+    assert_eq!(r.code, 0, "{}", r.stdout);
+    let result = result_json(&dir, &r);
+    let p = arr(value(
+        &result,
+        get(get(answer(&result, "p"), "outputs"), "value"),
+    ));
+    let n = arr(value(
+        &result,
+        get(get(answer(&result, "n"), "outputs"), "value"),
+    ));
+    assert_eq!(s(get(&p[0], "tag")), "Full");
+    assert_eq!(s(&arr(get(&p[0], "args"))[0]), "2");
+    assert_eq!(s(get(&n[0], "tag")), "Empty");
+    let m = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+    let invariant = value(&result, &arr(get(m, "invariants"))[0]);
+    for row in arr(get(invariant, "checks")) {
+        let qs = arr(get(value(&result, get(row, "commutes")), "quantifiers"));
+        assert_eq!(qs.len(), 1);
+        assert_eq!(s(get(&qs[0], "name")), "take");
+        assert_eq!(
+            arr(get(&qs[0], "type")).iter().map(s).collect::<Vec<_>>(),
+            ["Data", "Reservations.Choice"]
+        );
+    }
+}
+
+#[test]
+fn a_changed_third_data_parameter_row_refutes_the_whole_map() {
+    let dir = finite_data_view_inputs("data-parameter-third-row");
+    let law = std::fs::read_to_string(dir.join("l.law"))
+        .unwrap()
+        .replace("if keep=On then", "if keep!=Off then");
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let r = asks(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        ],
+    );
+    assert_eq!(r.code, 1, "{}", r.stdout);
+    let result = result_json(&dir, &r);
+    assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
+    assert!(has(get(answer(&result, "m"), "outputs"), "operation"));
+    assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+}

@@ -93,20 +93,6 @@ fn wire(g: &Graph, r: NodeRef) -> Result<Json, ValidationFailure> {
     };
     Ok(v.wire())
 }
-// 参照/data/Path等を空のsubject/宣言表で運ばない。原始値の型構造だけを接続する。
-fn primitive_value_shape(ty: &Type, c: &mut Control) -> Result<bool, ValidationFailure> {
-    let mut todo = vec![ty];
-    while let Some(t) = todo.pop() {
-        tick(c)?;
-        match t {
-            Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text | Type::Fp(_) => {}
-            Type::Tuple(ts) => todo.extend(ts),
-            Type::List(t) | Type::Set(t) | Type::Option(t) => todo.push(t),
-            _ => return Ok(false),
-        }
-    }
-    Ok(true)
-}
 fn proposition(
     b: &mut Builder<'_>,
     out: &mut Output,
@@ -128,18 +114,9 @@ fn proposition(
     out.conditions.push(r);
     Ok(r)
 }
-fn finite_parameter(ty: &Type, c: &mut Control) -> Result<bool, ValidationFailure> {
-    let mut todo = vec![ty];
-    while let Some(ty) = todo.pop() {
-        tick(c)?;
-        match ty {
-            Type::Unit | Type::Bool | Type::Fp(_) => {}
-            Type::Tuple(ts) => todo.extend(ts),
-            Type::Set(t) | Type::Option(t) => todo.push(t),
-            _ => return Ok(false),
-        }
-    }
-    Ok(true)
+fn finite_parameter(ty: &Type, inputs: &CheckedInputs, c: &mut Control) -> Result<bool, ValidationFailure> {
+    Ok(super::finite::supported(ty, inputs.law(), c)?
+        && super::value_transport::identity_declarations(ty, inputs.law(), c)?.is_some())
 }
 fn quantify_parameters(b: &mut Builder<'_>, r: NodeRef, parameters: &[crate::law::model::Param]) {
     let p = &mut b.parts[r.0 - b.base];
@@ -202,6 +179,7 @@ fn equivalence(
     ty: &Type,
     source: NodeRef,
     target: NodeRef,
+    declarations: &[(String, String)],
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
     let mut domains = vec![];
     for origin in [source, target] {
@@ -225,7 +203,7 @@ fn equivalence(
                 ("source_type", ty.wire()),
                 ("target_type", ty.wire()),
                 ("subjects", Json::Arr(vec![])),
-                ("declarations", Json::Arr(vec![])),
+                ("declarations", Json::Arr(declarations.iter().map(|(a,z)| Json::Arr(vec![Json::str(a),Json::str(z)])).collect())),
                 ("generators", Json::Arr(vec![])),
             ]),
             vec![a, z],
@@ -233,7 +211,7 @@ fn equivalence(
             None,
         )?);
     }
-    // 原始値の型構造の恒等をOptionへ持ち上げる。NoneもSomeの全元も固定する。
+    // 値型・constructorの恒等をOptionへ持ち上げる。NoneもSomeの全元も固定する。
     let left = inverse(b, out, [maps[0], maps[1]], ty, source)?;
     let right = inverse(b, out, [maps[1], maps[0]], ty, source)?;
     let r = b.push(
@@ -313,7 +291,7 @@ pub(super) fn retain(
             .get(axis.instance)
             .ok_or("元view instanceがない")?;
         for p in instance.parameters() {
-            if !finite_parameter(&p.ty, c)? {
+            if !finite_parameter(&p.ty, inputs, c)? {
                 return Err("このparameter型のview移送配送は未実装".into());
             }
         }
@@ -322,9 +300,9 @@ pub(super) fn retain(
             .returns
             .as_ref()
             .ok_or("元viewの返り型がない")?;
-        if !primitive_value_shape(returns, c)? {
+        let Some(value_declarations) = super::value_transport::identity_declarations(returns, inputs.law(), c)? else {
             return Err("このview値型の全域写像配送は未実装".into());
-        }
+        };
         let ty = Type::Option(Box::new(returns.clone()));
         let mut target_axis = None;
         let mut rows = vec![];
@@ -392,7 +370,7 @@ pub(super) fn retain(
         {
             return Err("viewのOption読取り型が元返り型と違う".into());
         }
-        let (values, forward) = equivalence(b, &mut out, &ty, axis.invariant, target_invariant)?;
+        let (values, forward) = equivalence(b, &mut out, &ty, axis.invariant, target_invariant, &value_declarations)?;
         let mut checks = vec![];
         let mut coordinate_checks = vec![];
         for (so, to, _, _, holds) in rows {

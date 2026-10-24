@@ -869,3 +869,37 @@ mod tests {
         ));
     }
 }
+
+// 同一の検査済み値型の全元を固定する対応。参照やPathの作用はここで補わない。
+pub(super) fn identity_declarations(
+    ty: &Type,
+    law: &crate::law::CheckedLaw,
+    control: &mut Control,
+) -> Result<Option<Vec<(String, String)>>, ValidationFailure> {
+    let mut todo = vec![ty];
+    let mut families = BTreeSet::new();
+    let mut names = BTreeSet::new();
+    while let Some(ty) = todo.pop() {
+        control.checkpoint(Checkpoint::ObjectViewTransport)?;
+        match ty {
+            Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text | Type::Fp(_) => {}
+            Type::Tuple(items) => todo.extend(items),
+            Type::List(item) | Type::Set(item) | Type::Option(item) => todo.push(item),
+            Type::Data(family) => {
+                if !families.insert(family.clone()) {
+                    continue;
+                }
+                names.insert(family.clone());
+                for constructor in data::constructors(law, family)? {
+                    control.checkpoint(Checkpoint::ObjectViewTransport)?;
+                    names.insert(format!("{family}.{}", constructor.name));
+                    todo.extend(&constructor.arguments);
+                }
+            }
+            _ => return Ok(None),
+        }
+    }
+    Ok(Some(
+        names.into_iter().map(|name| (name.clone(), name)).collect(),
+    ))
+}
