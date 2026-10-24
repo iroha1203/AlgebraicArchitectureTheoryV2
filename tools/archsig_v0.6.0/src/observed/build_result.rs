@@ -222,6 +222,17 @@ fn compute(
     request: &Request,
     c: &mut Control,
 ) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+    env.validation_graph_session(g, || compute_inner(env, g, plan, base, request, c))
+}
+
+fn compute_inner(
+    env: &Environment<'_>,
+    g: &Graph,
+    plan: &Plan,
+    base: usize,
+    request: &Request,
+    c: &mut Control,
+) -> Result<(Vec<Part>, Answer), ValidationFailure> {
     tick(c)?;
     let mut b = Builder {
         g,

@@ -48,6 +48,8 @@ pub(crate) enum ConstructionType {
     ObjectAlgebra,
     ObjectAlgebraMap,
     EquationMap,
+    CircuitMap,
+    InvariantMap,
     SignatureMap,
     Invariant,
     SignatureAxis,
@@ -78,6 +80,8 @@ impl ConstructionType {
             Self::ObjectAlgebra => "ObjectAlgebra",
             Self::ObjectAlgebraMap => "ObjectAlgebraMap",
             Self::EquationMap => "EquationMap",
+            Self::CircuitMap => "CircuitMap",
+            Self::InvariantMap => "InvariantMap",
             Self::SignatureMap => "SignatureMap",
             Self::Invariant => "Invariant",
             Self::SignatureAxis => "SignatureAxis",
@@ -550,6 +554,8 @@ impl ConstructionValue {
                 ConstructionType::ObjectAlgebra => "object_algebra",
                 ConstructionType::ObjectAlgebraMap => "object_algebra_map",
                 ConstructionType::EquationMap => "equation_map",
+                ConstructionType::CircuitMap => "circuit_map",
+                ConstructionType::InvariantMap => "invariant_map",
                 ConstructionType::SignatureMap => "signature_map",
                 ConstructionType::Invariant => "invariant",
                 ConstructionType::SignatureAxis => "signature_axis",
@@ -927,7 +933,7 @@ fn subject_fact(graph: &Graph, r: NodeRef) -> Result<Fact, ValidationFailure> {
     }
 }
 impl Witness {
-    fn shared_inputs(&self) -> Arc<CheckedInputs> {
+    pub(super) fn shared_inputs(&self) -> Arc<CheckedInputs> {
         match self {
             Self::Architecture(a) => a.inputs.clone(),
             Self::Map(m) => m.inputs.clone(),

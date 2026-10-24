@@ -27,6 +27,9 @@ fn inputs(name: &str) -> PathBuf {
     dir
 }
 fn asks(dir: &Path, requests: &[&str]) -> Run {
+    asks_with_limit(dir, requests, "120000")
+}
+fn asks_with_limit(dir: &Path, requests: &[&str], time: &str) -> Run {
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -38,7 +41,7 @@ fn asks(dir: &Path, requests: &[&str]) -> Run {
         "--out",
         "out",
         "--time-ms",
-        "120000",
+        time,
     ];
     for request in requests {
         args.extend(["--ask", request]);
@@ -318,5 +321,238 @@ fn interruption_during_additional_transport_keeps_the_checked_operation() {
         assert!(!has(get(a, "outputs"), "map"));
         assert!(!has(get(a, "outputs"), "proposition"));
         assert!(control.stop_reason().is_some());
+    }
+}
+
+#[test]
+fn closed_law_map_preserves_refutations_all_components_and_following_checks() {
+    let dir = inputs("public-closed-law-map");
+    std::fs::write(
+        dir.join("a.json"),
+        include_bytes!("fixtures/object-configuration-map.archmap.json"),
+    )
+    .unwrap();
+    std::fs::write(dir.join("l.law"), r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Alternative {
+use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+law required zero(s: State): (s.free, s.held) = (0, 0);
+}"#).unwrap();
+    let run = asks_with_limit(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
+            "b=build(Alternative,on=$m.map.target.base.subject)",
+            "bad=check(Alternative.zero,on=$b.object,s=@v/r)",
+            "base=map(Reservations.Migration,on=@v/m,reading=Alternative)",
+            "same=compare($m.operation,to=$base.operation,kind=action)",
+        ],
+        "360000",
+    );
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(&result, "status")), "complete");
+    for id in ["m", "b", "base", "same"] {
+        assert_eq!(s(get(answer(&result, id), "status")), "established");
+    }
+    assert_eq!(s(get(answer(&result, "bad"), "status")), "refuted");
+    let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+    let equations = value(&result, get(map, "equations"));
+    assert_eq!(arr(get(equations, "indices")).len(), 3);
+    for row in arr(get(equations, "indices")) {
+        assert_eq!(arr(get(row, "holds")).len(), 4);
+        assert_eq!(arr(get(row, "components")).len(), 2);
+        for component in arr(get(row, "components")) {
+            assert_eq!(arr(get(component, "zeros")).len(), 4);
+        }
+    }
+    assert_eq!(arr(get(map, "circuits")).len(), 6);
+    assert_eq!(arr(get(map, "invariants")).len(), 3);
+    assert!(
+        arr(get(map, "circuits"))
+            .iter()
+            .any(|r| !arr(get(value(&result, r), "cases")).is_empty())
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn closed_law_map_refutes_changed_truth_without_losing_operation() {
+    let dir = inputs("public-closed-law-map-refuted");
+    std::fs::write(
+        dir.join("a.json"),
+        include_bytes!("fixtures/object-configuration-map.archmap.json"),
+    )
+    .unwrap();
+    let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required zero(s:State):s.free=0;}}
+reading After {{{uses} law required zero(s:State):s.free=4;}}"#
+        ),
+    )
+    .unwrap();
+    let run = asks_with_limit(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "why=needed($m)",
+        ],
+        "360000",
+    );
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(&result, "status")), "complete");
+    assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
+    for id in ["same", "why"] {
+        assert_eq!(s(get(answer(&result, id), "status")), "established");
+    }
+    let outputs = get(answer(&result, "m"), "outputs");
+    assert!(has(outputs, "operation"));
+    assert!(!has(outputs, "map"));
+    let predicates = arr(get(&result, "nodes"))
+        .iter()
+        .filter(|n| matches!(&get(n, "type").value, archsig::json::JValue::Str(t) if t == "Proposition"))
+        .collect::<Vec<_>>();
+    assert!(
+        predicates.iter().any(
+            |n| s(get(get(n, "value"), "predicate")) == "equation_holds_iff"
+                && s(get(get(n, "judgment"), "status")) == "refuted"
+        )
+    );
+    assert!(predicates.iter().any(
+        |n| s(get(get(n, "value"), "predicate")) == "residual_zero_iff"
+            && s(get(get(n, "judgment"), "status")) == "refuted"
+    ));
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn closed_law_transport_stop_keeps_operation_without_claiming_a_map() {
+    use archsig::observed::{
+        control::{Checkpoint, Control, Limits, Usage},
+        evaluate_observed_bytes,
+        input::InputSources,
+    };
+    let law = r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Alternative {
+use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+law required zero(s:State):s.free=0;
+}"#;
+    let mut control = Control::new(Limits::default(), |point| Usage {
+        elapsed_ms: 0,
+        memory_mib: 0,
+        signal: (point == Checkpoint::ObjectLawCircuitTransport)
+            .then_some(archsig::result::Signal::Term),
+    });
+    let result = evaluate_observed_bytes(
+        InputSources::from_bytes(
+            vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],
+            law.as_bytes().to_vec(),
+            include_bytes!("fixtures/object-configuration-map.archmap.json").to_vec(),
+        ),
+        &["m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)"],
+        &mut control,
+    )
+    .unwrap();
+    assert_eq!(result.status(), "interrupted");
+    let result = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
+    let a = answer(&result, "m");
+    assert_eq!(s(get(a, "status")), "undetermined");
+    assert!(has(get(a, "outputs"), "operation"));
+    assert!(!has(get(a, "outputs"), "map"));
+    assert!(!has(get(a, "outputs"), "proposition"));
+}
+
+#[test]
+fn equal_law_truth_does_not_hide_a_changed_zero_component() {
+    let dir = inputs("public-law-map-component-refuted");
+    std::fs::write(
+        dir.join("a.json"),
+        include_bytes!("fixtures/object-configuration-map.archmap.json"),
+    )
+    .unwrap();
+    let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(
+        dir.join("l.law"),
+        format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required zero(s:State):(s.free,s.held)=(0,0);}}
+reading After {{{uses} law required zero(s:State):(s.held,s.free)=(0,0);}}"#
+        ),
+    )
+    .unwrap();
+    let run = asks_with_limit(
+        &dir,
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        ],
+        "360000",
+    );
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(&result, "status")), "complete");
+    let a = answer(&result, "m");
+    assert_eq!(s(get(a, "status")), "refuted");
+    assert!(!has(get(a, "outputs"), "map"));
+    let mut holds = 0;
+    let mut nonzero = 0;
+    for n in arr(get(&result, "nodes")) {
+        if !matches!(&get(n, "type").value, archsig::json::JValue::Str(t) if t == "Proposition") {
+            continue;
+        }
+        let predicate = s(get(get(n, "value"), "predicate"));
+        if predicate == "equation_holds_iff" {
+            holds += 1;
+            assert_eq!(s(get(get(n, "judgment"), "status")), "established");
+        }
+        if predicate == "residual_zero_iff" && s(get(get(n, "judgment"), "status")) == "refuted" {
+            nonzero += 1;
+        }
+    }
+    assert_eq!(holds, 12);
+    assert!(nonzero > 0);
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn closed_law_map_refutes_required_status_and_component_type_changes() {
+    for (name, role, body) in [
+        ("required", "optional", "s.free=0"),
+        ("component-type", "required", "rat(2,1)=rat(0,1)"),
+    ] {
+        let dir = inputs(&format!("public-law-map-{name}"));
+        std::fs::write(
+            dir.join("a.json"),
+            include_bytes!("fixtures/object-configuration-map.archmap.json"),
+        )
+        .unwrap();
+        let uses = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+        std::fs::write(
+            dir.join("l.law"),
+            format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{uses} law required zero(s:State):s.free=0;}}
+reading After {{{uses} law {role} zero(s:State):{body};}}"#
+            ),
+        )
+        .unwrap();
+        let run = asks_with_limit(
+            &dir,
+            &[
+                "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+                "same=compare($m.operation,to=$m.operation,kind=action)",
+            ],
+            "360000",
+        );
+        assert_eq!(run.code, 1, "{name}: {}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(&result, "status")), "complete");
+        assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
+        assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+        std::fs::remove_dir_all(dir).unwrap();
     }
 }
