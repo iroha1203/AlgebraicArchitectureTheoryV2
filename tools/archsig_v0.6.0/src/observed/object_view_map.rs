@@ -93,14 +93,15 @@ fn wire(g: &Graph, r: NodeRef) -> Result<Json, ValidationFailure> {
     };
     Ok(v.wire())
 }
-// 参照/data/Path等を空のsubject/宣言表で運ばない。原始値と有限積だけを接続する。
-fn primitive_product(ty: &Type, c: &mut Control) -> Result<bool, ValidationFailure> {
+// 参照/data/Path等を空のsubject/宣言表で運ばない。原始値の型構造だけを接続する。
+fn primitive_value_shape(ty: &Type, c: &mut Control) -> Result<bool, ValidationFailure> {
     let mut todo = vec![ty];
     while let Some(t) = todo.pop() {
         tick(c)?;
         match t {
-            Type::Bool | Type::Z | Type::Q | Type::Fp(_) => {}
+            Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text | Type::Fp(_) => {}
             Type::Tuple(ts) => todo.extend(ts),
+            Type::List(t) | Type::Set(t) | Type::Option(t) => todo.push(t),
             _ => return Ok(false),
         }
     }
@@ -132,8 +133,9 @@ fn finite_parameter(ty: &Type, c: &mut Control) -> Result<bool, ValidationFailur
     while let Some(ty) = todo.pop() {
         tick(c)?;
         match ty {
-            Type::Bool | Type::Fp(_) => {}
+            Type::Unit | Type::Bool | Type::Fp(_) => {}
             Type::Tuple(ts) => todo.extend(ts),
+            Type::Set(t) | Type::Option(t) => todo.push(t),
             _ => return Ok(false),
         }
     }
@@ -231,7 +233,7 @@ fn equivalence(
             None,
         )?);
     }
-    // primitive/tupleの恒等をOptionへ持ち上げる。NoneもSomeの全元も固定する。
+    // 原始値の型構造の恒等をOptionへ持ち上げる。NoneもSomeの全元も固定する。
     let left = inverse(b, out, [maps[0], maps[1]], ty, source)?;
     let right = inverse(b, out, [maps[1], maps[0]], ty, source)?;
     let r = b.push(
@@ -320,7 +322,7 @@ pub(super) fn retain(
             .returns
             .as_ref()
             .ok_or("元viewの返り型がない")?;
-        if !primitive_product(returns, c)? {
+        if !primitive_value_shape(returns, c)? {
             return Err("このview値型の全域写像配送は未実装".into());
         }
         let ty = Type::Option(Box::new(returns.clone()));

@@ -128,8 +128,9 @@ impl PrimitiveValueIdentity {
         while let Some(ty) = todo.pop() {
             tick(c)?;
             match ty {
-                Type::Bool | Type::Z | Type::Q | Type::Fp(_) => {}
+                Type::Unit | Type::Bool | Type::Z | Type::Q | Type::Text | Type::Fp(_) => {}
                 Type::Tuple(ts) => todo.extend(ts),
+                Type::List(t) | Type::Set(t) | Type::Option(t) => todo.push(t),
                 _ => return Ok(None),
             }
         }
@@ -142,7 +143,7 @@ impl PrimitiveValueIdentity {
                 "原始値の恒等写像と実値の型が違う".into(),
             ));
         }
-        // 参照を含まない原始型の積。型の全元を固定するので順逆とも恒等となる。
+        // 原始値とその型構造。型の全元を固定するので順逆とも恒等となる。
         Ok(value.clone())
     }
 }

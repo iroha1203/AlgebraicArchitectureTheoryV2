@@ -838,3 +838,188 @@ fn mixed_product_view_map_refutes_changed_numeric_coordinate() {
     assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
     assert_eq!(s(get(answer(&result, "same"), "status")), "established");
 }
+
+fn container_view_inputs(name: &str, preserve: bool, parameter: bool) -> PathBuf {
+    let dir = finite_view_inputs(name, preserve);
+    let (sp, tp, sc, tc) = if parameter {
+        (",take:Bool", ",keep:Bool", "take", "keep")
+    } else { ("", "", "s.free>1", "s.free>1") };
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    let body = |condition| format!(r#"(if {condition} then list<Z>[s.free,s.held] else list<Z>[],if {condition} then some(rat(3,2)) else none<Q>,if {condition} then set<Z>{{s.free,s.held}} else set<Z>{{}},if {condition} then "present" else "empty",unit)"#);
+    let law = format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{
+{vocabulary}
+view metrics(s:State{sp}):(List<Z>,Option<Q>,Set<Z>,Text,Unit)={};
+}}
+reading After {{
+{vocabulary}
+view metrics(s:State{tp}):(List<Z>,Option<Q>,Set<Z>,Text,Unit)={};
+view yes():Bool=true;
+view no():Bool=false;
+}}"#, body(sc), body(tc));
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    dir
+}
+
+#[test]
+fn container_views_map_build_and_evaluate_known_empty_and_present_values() {
+    for parameter in [false, true] {
+        let dir = container_view_inputs(if parameter { "container-family-view" } else { "container-closed-view" }, true, parameter);
+        let present = if parameter { "p=evaluate(After.metrics,on=$b.object,s=@v/r,keep=$yes.value)" } else { "p=evaluate(After.metrics,on=$b.object,s=@v/r)" };
+        let empty = if parameter { "n=evaluate(After.metrics,on=$b.object,s=@v/r,keep=$no.value)" } else { "n=evaluate(After.metrics,on=$b.object,s=@v/s)" };
+        let run = asks(&dir, &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "b=build(After,on=$m.map.target.base.subject)",
+            "yes=evaluate(After.yes)", "no=evaluate(After.no)", present, empty,
+        ]);
+        assert_eq!(run.code, 0, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        for id in ["m", "b", "yes", "no", "p", "n"] { assert_eq!(s(get(answer(&result, id), "status")), "established"); }
+        let p = arr(value(&result, get(get(answer(&result, "p"), "outputs"), "value")));
+        assert_eq!(arr(&p[0]).iter().map(s).collect::<Vec<_>>(), vec!["2","0"]);
+        assert_eq!(arr(get(&p[1], "some")).iter().map(s).collect::<Vec<_>>(), vec!["3","2"]);
+        assert_eq!(arr(&p[2]).iter().map(s).collect::<std::collections::BTreeSet<_>>(), ["0","2"].into_iter().collect());
+        assert_eq!(s(&p[3]), "present");
+        assert!(arr(&p[4]).is_empty());
+        let n = arr(value(&result, get(get(answer(&result, "n"), "outputs"), "value")));
+        assert!(arr(&n[0]).is_empty());
+        assert!(matches!(get(&n[1], "none").value, archsig::json::JValue::Bool(true)));
+        assert!(arr(&n[2]).is_empty());
+        assert_eq!(s(&n[3]), "empty");
+        assert!(arr(&n[4]).is_empty());
+        let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+        let axes = arr(get(value(&result, get(map, "signature")), "axes"));
+        assert_eq!(axes.len(), 3);
+        assert_eq!(arr(get(map, "invariants")).len(), 3);
+        for table in arr(get(map, "invariants")).iter().map(|r| value(&result, r)).chain(axes.iter()) {
+            let rows = arr(get(table, "checks"));
+            assert_eq!(rows.len(), 4);
+            for row in rows {
+                let qs = arr(get(value(&result, get(row, "commutes")), "quantifiers"));
+                assert_eq!(qs.len(), usize::from(parameter));
+                if parameter {
+                    assert_eq!(s(get(&qs[0], "name")), "take");
+                    assert_eq!(s(get(&qs[0], "kind")), "forall");
+                    assert!(!has(&qs[0], "domain"));
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn container_view_map_refutes_changed_list_entries_and_keeps_the_operation() {
+    let dir = container_view_inputs("container-view-changed", false, true);
+    let run = asks(&dir, &[
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        "same=compare($m.operation,to=$m.operation,kind=action)",
+    ]);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
+    assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+}
+
+#[test]
+fn reference_containers_do_not_use_same_nominal_type_identity() {
+    let dir = finite_view_inputs("reference-container-view", true);
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}
+reading After {{{vocabulary} view refs(s:State):List<State> = list<State>[s];}}"#)).unwrap();
+    let run = asks(&dir, &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"]);
+    assert_eq!(run.code, 70, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(answer(&result, "m"), "status")), "undetermined");
+    assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+}
+
+fn finite_container_parameter_inputs(name: &str, preserve: bool, kind: &str) -> PathBuf {
+    let dir = finite_view_inputs(name, preserve);
+    let (ty, source, target, empty, picked) = match kind {
+        "Option" => ("Option<Bool>", "choice=some(true)", "keep=some(true)", "none<Bool>", "some(true)"),
+        "Set" => ("Set<Bool>", "true in choice", "true in keep", "set<Bool>{}", "set<Bool>{true}"),
+        "Unit" => ("Unit", "true", "true", "unit", "unit"),
+        _ => panic!("finite parameter fixture"),
+    };
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    std::fs::write(dir.join("l.law"), format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{
+{vocabulary}
+view metrics(s:State,choice:{ty}):(Z,{ty})=(if {source} then s.free else s.held,choice);
+}}
+reading After {{
+{vocabulary}
+view metrics(s:State,keep:{ty}):(Z,{ty})=(if {target} then s.free else s.held,keep);
+view empty():{ty} = {empty};
+view picked():{ty} = {picked};
+}}"#)).unwrap();
+    dir
+}
+
+#[test]
+fn finite_container_parameters_drive_map_build_and_following_values() {
+    for kind in ["Option", "Set", "Unit"] {
+        let dir = finite_container_parameter_inputs(&format!("finite-container-{kind}"), true, kind);
+        let run = asks(&dir, &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "b=build(After,on=$m.map.target.base.subject)",
+            "empty=evaluate(After.empty)", "picked=evaluate(After.picked)",
+            "p=evaluate(After.metrics,on=$b.object,s=@v/r,keep=$picked.value)",
+            "n=evaluate(After.metrics,on=$b.object,s=@v/r,keep=$empty.value)",
+        ]);
+        assert_eq!(run.code, 0, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        for id in ["m", "b", "empty", "picked", "p", "n"] { assert_eq!(s(get(answer(&result, id), "status")), "established"); }
+        let p = arr(value(&result, get(get(answer(&result, "p"), "outputs"), "value")));
+        let n = arr(value(&result, get(get(answer(&result, "n"), "outputs"), "value")));
+        assert_eq!(s(&p[0]), "2");
+        assert_eq!(s(&n[0]), if kind == "Unit" { "2" } else { "0" });
+        match kind {
+            "Option" => {
+                assert!(matches!(get(&p[1], "some").value, archsig::json::JValue::Bool(true)));
+                assert!(matches!(get(&n[1], "none").value, archsig::json::JValue::Bool(true)));
+            }
+            "Set" => {
+                assert_eq!(arr(&p[1]).len(), 1);
+                assert!(matches!(arr(&p[1])[0].value, archsig::json::JValue::Bool(true)));
+                assert!(arr(&n[1]).is_empty());
+            }
+            "Unit" => { assert!(arr(&p[1]).is_empty()); assert!(arr(&n[1]).is_empty()); }
+            _ => unreachable!(),
+        }
+        let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+        let axes = arr(get(value(&result, get(map, "signature")), "axes"));
+        assert_eq!(axes.len(), 3);
+        for axis in axes {
+            assert_eq!(arr(get(axis, "checks")).len(), 4);
+            for row in arr(get(axis, "checks")) {
+                let qs = arr(get(value(&result, get(row, "commutes")), "quantifiers"));
+                assert_eq!(qs.len(), 1);
+                assert_eq!(s(get(&qs[0], "name")), "choice");
+                assert_eq!(s(get(&qs[0], "kind")), "forall");
+                assert!(!has(&qs[0], "domain"));
+                let ty = get(&qs[0], "type");
+                if kind == "Unit" { assert_eq!(s(ty), "Unit"); }
+                else { assert_eq!(s(&arr(ty)[0]), kind); assert_eq!(s(&arr(ty)[1]), "Bool"); }
+            }
+        }
+    }
+}
+
+#[test]
+fn finite_container_parameter_map_checks_the_nonempty_parameter_rows() {
+    for kind in ["Option", "Set", "Unit"] {
+        let dir = finite_container_parameter_inputs(&format!("finite-container-changed-{kind}"), false, kind);
+        let run = asks(&dir, &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+        ]);
+        assert_eq!(run.code, 1, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
+        assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+        assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+    }
+}

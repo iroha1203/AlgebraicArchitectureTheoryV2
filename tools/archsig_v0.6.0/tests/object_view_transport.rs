@@ -332,28 +332,32 @@ fn missing_declaration_and_unimplemented_families_keep_verified_operation() {
         })
     );
     r.operation().recheck(&i, &mut quiet()).unwrap();
-    let i = inputs(L, A);
+    let law = L
+        .replace(
+            "List<Z> = list<Z>[c.count]",
+            "List<(Z,Left.Child)> = list<(Z,Left.Child)>[(c.count,c)]",
+        )
+        .replace(
+            "List<Z> = list<Z>[2]",
+            "List<(Z,Right.Child)> = list<(Z,Right.Child)>[(2,d)]",
+        );
+    let i = inputs(&law, A);
     let d = declarations(&i);
-    for view in ["sequence"] {
-        let (o, r) = indices(&i, "p", view, "p");
-        let Error::NotImplemented {
-            operation,
-            object,
-            instance,
-            returns,
-            ..
-        } = object_view_transport(Arc::clone(&i), &d, o, r, &mut quiet()).unwrap_err()
-        else {
-            panic!()
-        };
-        operation.recheck(&i, &mut quiet()).unwrap();
-        assert_eq!(object.subject().subject, "p");
-        assert_eq!(instance.declaration().name, format!("Before.{view}"));
-        assert_eq!(Some(returns), instance.declaration().returns);
-        if view == "family" {
-            assert_eq!(instance.parameters().len(), 1);
-        }
-    }
+    let (o, r) = indices(&i, "p", "sequence", "p");
+    let Err(Error::NotImplemented {
+        operation,
+        object,
+        instance,
+        returns,
+        ..
+    }) = object_view_transport(Arc::clone(&i), &d, o, r, &mut quiet())
+    else {
+        panic!("reference container requires a value transport");
+    };
+    operation.recheck(&i, &mut quiet()).unwrap();
+    assert_eq!(object.subject().subject, "p");
+    assert_eq!(instance.declaration().name, "Before.sequence");
+    assert_eq!(Some(returns), instance.declaration().returns);
 }
 #[test]
 fn current_values_mapping_and_law_body_are_rechecked() {
@@ -1306,8 +1310,8 @@ fn finite_view_parameter_outside_target_is_rejected_even_for_two_absent_axes() {
 #[test]
 fn unsupported_family_return_transport_keeps_the_already_computed_view_values() {
     let law = family_law(
-        "view family(c:Left.Child,b:Bool):List<Z> = list<Z>[if b then c.count+1 else c.count];",
-        "view family(d:Right.Child,q:Bool):List<Z> = list<Z>[if q then 3 else 2];",
+        "view family(c:Left.Child,b:Bool):List<(Z,Left.Child)> = list<(Z,Left.Child)>[(if b then c.count+1 else c.count,c)];",
+        "view family(d:Right.Child,q:Bool):List<(Z,Right.Child)> = list<(Z,Right.Child)>[(if q then 3 else 2,d)];",
     );
     let i = inputs(&law, A);
     let d = declarations(&i);
@@ -1323,7 +1327,10 @@ fn unsupported_family_return_transport_keeps_the_already_computed_view_values() 
     };
     assert_eq!(
         returns,
-        archsig::types::Type::List(Box::new(archsig::types::Type::Z))
+        archsig::types::Type::List(Box::new(archsig::types::Type::Tuple(vec![
+            archsig::types::Type::Z,
+            archsig::types::Type::Ref("Left.Child".into()),
+        ])))
     );
     assert!(p.outcome().is_none());
     assert!(!p.family().unwrap().is_complete());
@@ -1346,7 +1353,12 @@ fn unsupported_family_return_transport_keeps_the_already_computed_view_values() 
                 .iter()
                 .find(|node| f(node, "id") == id)
                 .unwrap();
-            assert_eq!(f(node, "value"), &Json::Arr(vec![Json::str(expected)]));
+            let items = arr(f(node, "value"));
+            assert_eq!(items.len(), 1);
+            let pair = arr(&items[0]);
+            assert_eq!(pair.len(), 2);
+            assert_eq!(pair[0], Json::str(expected));
+            assert_eq!(arr(&pair[1])[0], Json::str("v"));
         }
     }
     operation.recheck(&i, &mut quiet()).unwrap();
@@ -1372,22 +1384,121 @@ fn mixed_primitive_products_keep_whole_type_identity_for_closed_and_finite_views
         assert_eq!(r.outcome(), &Outcome::Preserved);
         if parameter {
             let f = r.family().unwrap();
-            assert!(matches!(f.returns(), Some(ViewFamilyReturnMap::PrimitiveIdentity(_))));
+            assert!(matches!(
+                f.returns(),
+                Some(ViewFamilyReturnMap::PrimitiveIdentity(_))
+            ));
             assert!(f.is_complete());
             assert_eq!(f.rows().len(), 2);
             for (row, (b, n)) in f.rows().iter().zip([(false, "2"), (true, "3")]) {
-                let expected = Json::Arr(vec![Json::Bool(b), Json::Arr(vec![Json::str(n), Json::Arr(vec![Json::str("1"),Json::str("2")])])]);
+                let expected = Json::Arr(vec![
+                    Json::Bool(b),
+                    Json::Arr(vec![
+                        Json::str(n),
+                        Json::Arr(vec![Json::str("1"), Json::str("2")]),
+                    ]),
+                ]);
                 assert_eq!(row.source().unwrap().wire(), expected);
                 assert_eq!(row.image().unwrap().wire(), expected);
                 assert_eq!(row.target().unwrap().wire(), expected);
             }
         } else {
-            let Some(ViewValueEquivalence::PrimitiveIdentity(identity)) = r.equivalence() else { panic!("mixed product identity missing") };
-            assert_eq!(Some(identity.ty()), r.instance().declaration().returns.as_ref());
+            let Some(ViewValueEquivalence::PrimitiveIdentity(identity)) = r.equivalence() else {
+                panic!("mixed product identity missing")
+            };
+            assert_eq!(
+                Some(identity.ty()),
+                r.instance().declaration().returns.as_ref()
+            );
         }
         r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
         let changed = run(Arc::clone(&i), "r", "family", "r");
         assert_eq!(changed.outcome(), &Outcome::Refuted(Failed::Value));
         changed.recheck(i, &mut quiet()).unwrap();
+    }
+}
+
+#[test]
+fn primitive_containers_preserve_known_empty_values_without_filling_missing_values() {
+    use archsig::construction::maps::ViewFamilyReturnMap;
+    for parameter in [false, true] {
+        let (sp, tp, sc, tc) = if parameter {
+            (",b:Bool", ",q:Bool", "b", "q")
+        } else {
+            ("", "", "true", "true")
+        };
+        let law = family_law(
+            &format!(
+                r#"view family(c:Left.Child{sp}):(List<Z>,Option<Q>,Set<Z>,Text,Unit)=(if {sc} then list<Z>[c.count,c.count+1] else list<Z>[],if {sc} then some(rat(1,2)) else none<Q>,if {sc} then set<Z>{{c.count,c.count}} else set<Z>{{}},if {sc} then "known" else "empty",unit);"#
+            ),
+            &format!(
+                r#"view family(d:Right.Child{tp}):(List<Z>,Option<Q>,Set<Z>,Text,Unit)=(if {tc} then list<Z>[2,3] else list<Z>[],if {tc} then some(rat(1,2)) else none<Q>,if {tc} then set<Z>{{2}} else set<Z>{{}},if {tc} then "known" else "empty",unit);"#
+            ),
+        );
+        let expected = |present| {
+            Json::Arr(if present {
+                vec![
+                    Json::Arr(vec![Json::str("2"), Json::str("3")]),
+                    Json::obj([("some", Json::Arr(vec![Json::str("1"), Json::str("2")]))]),
+                    Json::Arr(vec![Json::str("2")]),
+                    Json::str("known"),
+                    Json::Arr(vec![]),
+                ]
+            } else {
+                vec![
+                    Json::Arr(vec![]),
+                    Json::obj([("none", Json::Bool(true))]),
+                    Json::Arr(vec![]),
+                    Json::str("empty"),
+                    Json::Arr(vec![]),
+                ]
+            })
+        };
+        let i = inputs(&law, A);
+        let r = run(Arc::clone(&i), "p", "family", "p");
+        assert_eq!(r.outcome(), &Outcome::Preserved);
+        if parameter {
+            let f = r.family().unwrap();
+            assert!(matches!(
+                f.returns(),
+                Some(ViewFamilyReturnMap::PrimitiveIdentity(_))
+            ));
+            assert!(f.is_complete());
+            assert_eq!(f.rows().len(), 2);
+            for (row, present) in f.rows().iter().zip([false, true]) {
+                assert_eq!(row.source().unwrap().wire(), expected(present));
+                assert_eq!(row.image().unwrap().wire(), expected(present));
+                assert_eq!(row.target().unwrap().wire(), expected(present));
+            }
+        } else {
+            assert!(matches!(
+                r.equivalence(),
+                Some(ViewValueEquivalence::PrimitiveIdentity(_))
+            ));
+            assert_eq!(r.source_value().unwrap().wire(), expected(true));
+            assert_eq!(r.image().unwrap().wire(), expected(true));
+            assert_eq!(r.target_value().unwrap().wire(), expected(true));
+        }
+        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        let changed = run(Arc::clone(&i), "r", "family", "r");
+        assert_eq!(changed.outcome(), &Outcome::Refuted(Failed::Value));
+        changed.recheck(i, &mut quiet()).unwrap();
+        let i = inputs(&law, &remove(A, "p-count"));
+        let missing = run(Arc::clone(&i), "p", "family", "p");
+        assert_eq!(missing.outcome(), &Outcome::Undetermined);
+        if parameter {
+            let rows = missing.family().unwrap().rows();
+            assert_eq!(rows[0].outcome(), &Outcome::Preserved);
+            assert_eq!(rows[0].source().unwrap().wire(), expected(false));
+            assert_eq!(rows[1].outcome(), &Outcome::Undetermined);
+            assert!(rows[1].source().is_none());
+            assert!(rows[1].image().is_none());
+            assert_eq!(rows[1].target().unwrap().wire(), expected(true));
+        } else {
+            assert!(missing.source_value().is_none());
+            assert!(missing.image().is_none());
+        }
+        missing.operation().recheck(&i, &mut quiet()).unwrap();
+        missing.recheck(i, &mut quiet()).unwrap();
     }
 }
