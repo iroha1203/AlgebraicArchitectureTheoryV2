@@ -518,6 +518,15 @@ fn integer_quotient_uses_actual_image_offset_and_solution_parameter_domain() {
     for (field,rank) in [("image",1),("kernel",1)] {assert_eq!(num(get(get(node(&result,get(all,field)),"value"),"free_rank")),rank);}
     let image_module=get(node(&result,get(all,"image")),"value");
     assert_eq!(s(get(&arr(get(image_module,"generators"))[0],"value")).parse::<i64>().unwrap().abs(),2);
+    let original_map=get(node(&result,get(all,"map")),"value");
+    let inclusions=arr(get(&result,"nodes")).iter().filter(|n| {
+        if !has(n,"value") {return false;} let v=get(n,"value");
+        has(v,"columns") && get(v,"source").value==get(all,"image").value && get(v,"target").value==get(original_map,"target").value
+    }).collect::<Vec<_>>();
+    assert_eq!(inclusions.len(),1,"実像の包含ModuleMapが必要");
+    let coefficient=s(get(node(&result,&arr(&arr(get(get(inclusions[0],"value"),"columns"))[0])[0]),"value")).parse::<i64>().unwrap();
+    assert_eq!(coefficient,s(get(&arr(get(image_module,"generators"))[0],"value")).parse::<i64>().unwrap());
+
     let classes=node(&result,get(get(output(&result,1,"quotient"),"value"),"classes"));
     assert_eq!(s(get(get(classes,"value"),"kind")),"image");
     let actual_map=node(&result,get(get(classes,"value"),"map"));
@@ -592,4 +601,17 @@ fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
         assert_eq!(s(get(&answers[1],"status")),"undetermined");
         assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))==if mode==2 {"cancelled"}else{"budget_exhausted"}));
     }
+}
+
+#[test]
+fn integer_quotient_missing_unmodified_view_field_is_not_a_zero_image() {
+    let dir=input("integer-quotient-missing","change setpair(s:State,a:Z)=s with{x=a};law optional first_zero(s:State):s.x=0;view second(s:State):Z=s.y;");
+    let path=dir.join("a.json");let before=std::fs::read_to_string(&path).unwrap();
+    let after=before.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,"");assert_ne!(before,after);std::fs::write(path,after).unwrap();
+    let r=execute(&dir,"out",&["s=solve(Pair.first_zero,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.second,on=$s.domain,s=@pair/s)","later=evaluate(Pair.first,s=@pair/s)"]);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[1],"status")),"undetermined");assert!(!has(get(&answers[1],"outputs"),"quotient"));
+    assert!(arr(get(&answers[1],"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation" && !arr(get(r,"missing")).is_empty()));
+    assert_eq!(s(get(&answers[2],"status")),"established");
 }

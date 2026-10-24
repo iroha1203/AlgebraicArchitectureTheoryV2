@@ -198,6 +198,9 @@ pub(super) fn compute(
             wire.insert("generators".into(), Json::Arr(generators));
         }
         let inclusion = linear::map(&mut b, kernel, parameters, &fiber.kernel, n - fiber.rank, c)?;
+        let image_basis = basis.iter().map(|row| row[..fiber.rank].to_vec()).collect();
+        let image_inclusion =
+            linear::map(&mut b, actual_image, ambient, &image_basis, fiber.rank, c)?;
         let ambient_domain = linear::domain(&mut b, ambient)?;
         let view = b.push(
             NodeType::Construction(T::StateMap),
@@ -235,7 +238,16 @@ pub(super) fn compute(
                 ("linear", map.wire()),
                 ("offset", offset.wire()),
             ]),
-            vec![source, classes, map, offset, embedding, origin, inclusion],
+            vec![
+                source,
+                classes,
+                map,
+                offset,
+                embedding,
+                origin,
+                inclusion,
+                image_inclusion,
+            ],
             None,
             None,
         )?;
