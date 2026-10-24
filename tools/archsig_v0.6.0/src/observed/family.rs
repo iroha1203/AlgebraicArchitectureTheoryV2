@@ -480,6 +480,7 @@ impl Environment<'_> {
         graph: &Graph,
         index: usize,
     ) -> Result<FrameInputs, ValidationFailure> {
+        if let Some(inputs) = self.native_view_source_inputs(graph,index)? { return Ok(inputs); }
         if let Some(inputs) = self.native_law_source_inputs(graph,index)? { return Ok(inputs); }
         if let Some(inputs) = self.relation_source_inputs(graph, index)? {
             return Ok(inputs);

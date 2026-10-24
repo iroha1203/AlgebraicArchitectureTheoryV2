@@ -15,6 +15,8 @@ use crate::{
 };
 #[path = "object_view_family_environment.rs"]
 mod object_view_family;
+#[path = "object_reading_environment.rs"]
+mod object_reading_environment;
 #[path = "law_evaluation_environment.rs"]
 mod law_evaluation;
 #[path = "architecture_environment.rs"]
@@ -763,6 +765,7 @@ impl<'a> Environment<'a> {
                     if let super::construction_result::ConstructionData::PolynomialLaw(data) = &value.data { data.position(limit)?; }
                     self.recheck_polynomial_law_diagram(graph, value)?;
                     self.recheck_law_frame(graph, value)?;
+                    self.recheck_object_reading_frame(graph, value, limit)?;
                     if let super::construction_result::ConstructionData::LawFamily(data) = &value.data {
                         data.position(limit)?;
                         graph.expect(data.template, &NodeType::LawInstance)?;
