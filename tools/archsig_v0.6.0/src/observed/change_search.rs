@@ -116,7 +116,7 @@ pub(in crate::observed) struct SearchFailure {
     pub cause: ValidationFailure,
     pub partial: Search,
 }
-fn domain(
+pub(in crate::observed) fn domain(
     environment: &Environment<'_>,
     ty: &Type,
     span: (usize, usize),

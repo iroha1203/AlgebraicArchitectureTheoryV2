@@ -186,8 +186,9 @@ fn quotient_rejects_wrong_domain_missing_bindings_private_fields_and_cycles() {
 fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
     use archsig::observed::{control::{Checkpoint,Control,Limits,Usage},input::InputSources,evaluate::evaluate_observed_bytes};
     use std::{cell::Cell,rc::Rc};
-    let dir=input("quotient-stop");
-    for mode in 0..3 {
+    let dir=law_input("quotient-stop","law optional same(s:State,b:Bool):s.x=b;");
+    for case in 0..6 {
+        let mode=case%3;
         let seen=Rc::new(Cell::new(0));let count=seen.clone();
         let mut c=Control::new(Limits{time_ms:Some(1),memory_mib:Some(1)},move|point|{
             if point==Checkpoint::Quotient {count.set(count.get()+1);}
@@ -197,7 +198,8 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
             }}else{Usage::default()}
         });
         let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
-        let result=evaluate_observed_bytes(sources,&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s)","later=evaluate(Pair.last,s=@v/s)"],&mut c).unwrap();
+        let quotient=if case<3 {"q=quotient(Pair.last,on=$s.domain,s=@v/s)"} else {"q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.same)"};
+        let result=evaluate_observed_bytes(sources,&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",quotient,"later=evaluate(Pair.last,s=@v/s)"],&mut c).unwrap();
         assert_eq!(seen.get(),2);
         let wire=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();let answers=arr(get(&wire,"answers"));
         assert_eq!(s(get(&answers[0],"status")),"established");assert!(has(get(&answers[0],"outputs"),"solutions"));
@@ -357,4 +359,174 @@ fn inapplicable_view_binding_preserves_projection_condition_and_followup() {
     assert_eq!(reused.code,0,"{} {}",reused.stdout,reused.stderr);
     let repeated=result_json(&dir,&reused);
     for key in ["answers","nodes"] {assert_eq!(get(&complete,key).value,get(&repeated,key).value);}
+}
+
+fn law_input(name: &str, extra: &str) -> std::path::PathBuf {
+    let dir = input(name);
+    let path = dir.join("l.law");
+    let mut law = std::fs::read_to_string(&path).unwrap();
+    law.pop(); law.push_str(extra); law.push('}');
+    std::fs::write(path,law).unwrap(); dir
+}
+#[test]
+fn law_descent_compares_typed_pairs_instead_of_truth_and_reuses() {
+    let dir = law_input("quotient-law-pairs", "law optional same(s:State):s.x=s.x;law optional last_eq(s:State):s.y=s.y;");
+    let asks = ["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "bad=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.same)",
+        "good=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.last_eq)",
+        "solutions=quotient(Pair.last,on=$s.solutions,s=@v/s,law=Pair.same)"];
+    let r=execute(&dir,"out",&asks,None);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);
+    let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[1],"status")),"refuted");
+    for index in [2,3] {
+        assert_eq!(s(get(&answers[index],"status")),"established");
+        let q=quotient(&result,index);
+        let map=node(&result,get(q,"descent"));
+        assert_eq!(arr(get(get(map,"value"),"pairs")).len(),2);
+        for entry in arr(get(get(map,"value"),"pairs")) {
+            let entry=arr(entry);
+            let class=members(get(node(&result,&entry[0]),"value"));
+            let family=arr(get(node(&result,&entry[1]),"value"));assert_eq!(family.len(),1);
+            let value=arr(get(&arr(&family[0])[1],"some"));assert_eq!(value.len(),2);
+            let expected=if index==2 {class[0].1} else {true};
+            for side in value {assert_eq!(side.value,JValue::Bool(expected));}
+        }
+    }
+    let evidence=node(&result,&arr(get(&answers[1],"evidence"))[0]);
+    assert_eq!(s(get(get(evidence,"value"),"kind")),"separating_pair");
+    let data=get(get(evidence,"value"),"data");
+    let points=[pair(get(node(&result,get(data,"first")),"value")),pair(get(node(&result,get(data,"second")),"value"))];
+    assert_eq!(points[0].1,points[1].1);assert_ne!(points[0].0,points[1].0);
+    let values=arr(get(data,"law_values"));
+    assert_ne!(get(node(&result,&values[0]),"value").value,get(node(&result,&values[1]),"value").value);
+    for evaluation in arr(get(quotient(&result,1),"evaluations")) {
+        let evaluation=get(node(&result,evaluation),"value");
+        assert_eq!(get(node(&result,get(evaluation,"value")),"value").value,JValue::Bool(true));
+        let environment=get(node(&result,get(evaluation,"environment")),"value");
+        assert_eq!(arr(get(environment,"overrides")).len(),2);
+    }
+    let repeated=execute(&dir,"reused",&asks,Some("out"));
+    assert_eq!(repeated.code,1,"{} {}",repeated.stdout,repeated.stderr);
+    let reused=result_json(&dir,&repeated);
+    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
+}
+#[test]
+fn law_descent_preserves_unbound_instance_keys_and_additional_binding() {
+    let dir=law_input("quotient-law-quantified","law optional indexed(s:State,b:Bool):s.y=b;view fixed():Bool=false;view yes():Bool=true;");
+    let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "v=evaluate(Pair.yes)",
+        "q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.indexed)",
+        "bound=quotient(Pair.last,on=$s.domain,s=@v/s,b=$v.value,law=Pair.indexed)",
+        "bad=quotient(Pair.fixed,on=$s.domain,s=@v/s,law=Pair.indexed)"];
+    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[2],"status")),"established");
+    assert_eq!(s(get(&answers[3],"status")),"established");
+    assert_eq!(s(get(&answers[4],"status")),"refuted");
+    assert!(arr(get(get(&answers[2],"scope"),"quantifiers")).iter().any(|q| s(get(q,"name"))=="b"&&s(get(q,"kind"))=="forall"));
+    assert_eq!(arr(get(quotient(&result,2),"evaluations")).len(),8);
+    assert_eq!(arr(get(quotient(&result,3),"evaluations")).len(),4);
+    let map=get(node(&result,get(quotient(&result,2),"descent")),"value");
+    for entry in arr(get(map,"pairs")) {
+        let family=get(node(&result,&arr(entry)[1]),"value");
+        assert_eq!(arr(family).len(),2);
+        let keys=arr(family).iter().map(|item| matches!(arr(&arr(item)[0])[1].value,JValue::Bool(true))).collect::<Vec<_>>();
+        assert!(keys.contains(&false)&&keys.contains(&true));
+    }
+}
+#[test]
+fn law_descent_distinguishes_guard_and_preserves_empty_domain_type() {
+    let dir=law_input("quotient-law-guard","law optional guarded(s:State) when s.x:s.y=s.y;");
+    let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "bad=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.guarded)",
+        "good=quotient(Pair.last,on=$s.solutions,s=@v/s,law=Pair.guarded)",
+        "empty=solve(Pair.empty,on=@v/s,using=Pair.choose,s=@v/s)",
+        "q=quotient(Pair.last,on=$empty.solutions,s=@v/s,law=Pair.guarded)"];
+    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[1],"status")),"refuted");
+    assert_eq!(s(get(&answers[2],"status")),"established");
+    assert_eq!(s(get(&answers[4],"status")),"established");
+    let q=quotient(&result,4);
+    assert!(arr(get(q,"evaluations")).is_empty());
+    let map=get(node(&result,get(q,"descent")),"value");
+    assert!(arr(get(map,"pairs")).is_empty());
+    let target=get(node(&result,get(map,"target")),"value");
+    assert!(arr(get(target,"elements")).is_empty());
+    assert_eq!(s(&arr(get(target,"type"))[0]),"Set");
+    let evaluations=arr(get(quotient(&result,1),"evaluations"));
+    let inactive=evaluations.iter().map(|r|get(node(&result,r),"value"))
+        .filter(|e|s(get(e,"applicability"))=="not_applicable").collect::<Vec<_>>();
+    assert_eq!(inactive.len(),2);
+    for e in inactive {
+        assert!(!has(e,"value"));
+        let parts=arr(get(e,"parts"));assert_eq!(parts.len(),2);
+        assert!(arr(get(&parts[1],"children")).is_empty());assert!(!has(&parts[1],"value"));
+    }
+}
+#[test]
+fn missing_law_values_remain_missing_and_independent_followup_runs() {
+    let dir=law_input("quotient-law-missing","law optional both(s:State):s.y=s.y;view fixed(s:State):Bool=false;");
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap().replace("with{x=a,y=b}","with{x=a}");std::fs::write(path,law).unwrap();
+    let path=dir.join("a.json");let map=std::fs::read_to_string(&path).unwrap().replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":false,"origin":"o"}"#,"");std::fs::write(path,map).unwrap();
+    let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.fixed,on=$s.domain,s=@v/s,law=Pair.both)","later=check(Pair.valid,s=@v/s)"];
+    let r=execute(&dir,"out",&asks,None);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[1],"status")),"undetermined");
+    assert!(!has(get(&answers[1],"outputs"),"quotient"));
+    assert_eq!(s(get(&answers[2],"status")),"refuted");
+    assert!(format!("{:?}",get(&answers[1],"reasons")).contains("Pair.State.y"));
+    let repeated=execute(&dir,"reused",&asks,Some("out"));assert_eq!(repeated.code,2);
+    let reused=result_json(&dir,&repeated);assert_eq!(get(&result,"answers").value,get(&reused,"answers").value);
+}
+#[test]
+fn quotient_law_rejects_wrong_kind_and_shared_parameter_type() {
+    let dir=law_input("quotient-law-usage","law optional other(s:Bool):s=s;");
+    for ask in ["q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.last)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.other)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.valid,law=Pair.valid)"] {
+        let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",ask],None);
+        assert_eq!(r.code,64,"{} {}",r.stdout,r.stderr);
+    }
+}
+#[test]
+fn quotient_law_preserves_composite_operand_and_guard_evaluation_children() {
+    let dir=law_input("quotient-law-children","law optional composite(s:State) when s.x or s.y:(s.x and s.y)=s.y;");
+    let r=execute(&dir,"out",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.composite)"],None);
+    assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);
+    let result=result_json(&dir,&r);
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap();
+    let check_children=|children:&[JNode],expected:&[bool]| {
+        assert_eq!(children.len(),2);
+        for ((child,source),expected) in children.iter().zip(["s.x","s.y"]).zip(expected) {
+            let evaluation=get(node(&result,child),"value");
+            assert_eq!(get(node(&result,get(evaluation,"value")),"value").value,JValue::Bool(*expected));
+            let expression=get(node(&result,get(evaluation,"expression")),"value");
+            let span=arr(get(get(expression,"location"),"span"));
+            assert_eq!(&law[num(&span[0]) as usize..num(&span[1]) as usize],source);
+        }
+    };
+    for reference in arr(get(quotient(&result,1),"evaluations")) {
+        let evaluation=get(node(&result,reference),"value");
+        let environment=get(node(&result,get(evaluation,"environment")),"value");
+        let mut values=std::collections::BTreeMap::new();
+        for row in arr(get(environment,"overrides")) {
+            values.insert(s(get(get(row,"slot"),"field")),matches!(get(node(&result,get(row,"value")),"value").value,JValue::Bool(true)));
+        }
+        let expected=[values["Pair.State.x"],values["Pair.State.y"]];
+        let parts=arr(get(evaluation,"parts"));
+        let guard=get(node(&result,&arr(get(&parts[0],"children"))[0]),"value");
+        check_children(arr(get(&arr(get(guard,"parts"))[0],"children")),&expected);
+        if s(get(evaluation,"applicability"))=="applicable" {
+            let body=arr(get(&parts[1],"children"));assert_eq!(body.len(),2);
+            let group=get(node(&result,&body[0]),"value");
+            let and=get(node(&result,&arr(get(&arr(get(group,"parts"))[0],"children"))[0]),"value");
+            check_children(arr(get(&arr(get(and,"parts"))[0],"children")),&expected);
+            assert_eq!(get(node(&result,get(and,"value")),"value").value,JValue::Bool(expected[0]&&expected[1]));
+        }
+    }
+    let reused=execute(&dir,"reused",&["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)","q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.composite)"],Some("out"));
+    assert_eq!(reused.code,1,"{} {}",reused.stdout,reused.stderr);
+    let reused=result_json(&dir,&reused);
+    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
 }

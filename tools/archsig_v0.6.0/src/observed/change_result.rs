@@ -78,55 +78,9 @@ impl Data {
         &self,
         g: &Graph,
     ) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
-        if self.ty() != NodeType::Construction(T::Architecture) {
-            return Err("修復対象がArchitectureでない".into());
-        }
-        let Json::Obj(wire) = &self.part().wire else {
-            return Err("修復対象のrecordがない".into());
-        };
-        let Some(Json::Arr(rows)) = wire.get("overrides") else {
-            return Err("修復対象の更新表がない".into());
-        };
-        let reference = |wire: &Json| {
-            self.part()
-                .arguments
-                .iter()
-                .copied()
-                .find(|r| r.wire() == *wire)
-                .ok_or_else(|| ValidationFailure::Internal("更新の型付き辺がない".into()))
-        };
-        let mut result = vec![];
-        for row in rows {
-            let Json::Obj(row) = row else {
-                return Err("更新recordがない".into());
-            };
-            let Some(Json::Obj(slot)) = row.get("slot") else {
-                return Err("更新slotがない".into());
-            };
-            let subject = reference(slot.get("subject").ok_or("更新subjectがない")?)?;
-            let Some(Json::Str(field)) = slot.get("field") else {
-                return Err("更新fieldがない".into());
-            };
-            let Scalar::Subject {
-                snapshot, subject, ..
-            } = g.scalar(subject)?
-            else {
-                return Err("更新subjectが参照でない".into());
-            };
-            let updated = reference(row.get("value").ok_or("更新値がない")?)?;
-            result.push((
-                Fact {
-                    snapshot: snapshot.clone(),
-                    subject: subject.clone(),
-                    field: Some(field.clone()),
-                    atom: None,
-                },
-                updated,
-                g.scalar(updated)?.clone(),
-            ));
-        }
-        Ok(result)
+        architecture_overrides(g, self.part())
     }
+
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
     }
@@ -1175,6 +1129,7 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
 
 
 pub(super) struct CandidateInput {
+    pub architecture: NodeRef,
     pub witness: Arc<native::ArchitectureWitness>,
     pub assignments: Vec<(Fact, Scalar)>,
     pub search: change_search::Search,
@@ -1193,7 +1148,58 @@ pub(super) fn candidate_input(env: &Environment<'_>, g: &Graph, reference: NodeR
         let _selected=env.enter_architecture(g)?;
         let assignments=env.architecture_values();
         let search=change_search::search(env,g,&d.source.architecture.witness,request,c).map_err(|f|f.cause)?;
-        Ok(CandidateInput {witness:d.source.architecture.witness.clone(),assignments,search,
+        Ok(CandidateInput {architecture:d.source.architecture.reference,witness:d.source.architecture.witness.clone(),assignments,search,
             domain_type:d.projection_type().ok_or("商の候補域の公開型がない")?})
     })
+}
+
+pub(super) fn architecture_overrides(g: &Graph, part: &Part) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
+        if part.ty != NodeType::Construction(T::Architecture) {
+            return Err("修復対象がArchitectureでない".into());
+        }
+        let Json::Obj(wire) = &part.wire else {
+            return Err("修復対象のrecordがない".into());
+        };
+        let Some(Json::Arr(rows)) = wire.get("overrides") else {
+            return Err("修復対象の更新表がない".into());
+        };
+        let reference = |wire: &Json| {
+            part
+                .arguments
+                .iter()
+                .copied()
+                .find(|r| r.wire() == *wire)
+                .ok_or_else(|| ValidationFailure::Internal("更新の型付き辺がない".into()))
+        };
+        let mut result = vec![];
+        for row in rows {
+            let Json::Obj(row) = row else {
+                return Err("更新recordがない".into());
+            };
+            let Some(Json::Obj(slot)) = row.get("slot") else {
+                return Err("更新slotがない".into());
+            };
+            let subject = reference(slot.get("subject").ok_or("更新subjectがない")?)?;
+            let Some(Json::Str(field)) = slot.get("field") else {
+                return Err("更新fieldがない".into());
+            };
+            let Scalar::Subject {
+                snapshot, subject, ..
+            } = g.scalar(subject)?
+            else {
+                return Err("更新subjectが参照でない".into());
+            };
+            let updated = reference(row.get("value").ok_or("更新値がない")?)?;
+            result.push((
+                Fact {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: Some(field.clone()),
+                    atom: None,
+                },
+                updated,
+                g.scalar(updated)?.clone(),
+            ));
+        }
+        Ok(result)
 }
