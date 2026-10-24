@@ -51,6 +51,8 @@ pub(crate) enum ConstructionType {
     CircuitMap,
     InvariantMap,
     SignatureMap,
+    ValueMap,
+    ValueEquivalence,
     Invariant,
     SignatureAxis,
 }
@@ -83,6 +85,8 @@ impl ConstructionType {
             Self::CircuitMap => "CircuitMap",
             Self::InvariantMap => "InvariantMap",
             Self::SignatureMap => "SignatureMap",
+            Self::ValueMap => "ValueMap",
+            Self::ValueEquivalence => "ValueEquivalence",
             Self::Invariant => "Invariant",
             Self::SignatureAxis => "SignatureAxis",
         }
@@ -557,6 +561,8 @@ impl ConstructionValue {
                 ConstructionType::CircuitMap => "circuit_map",
                 ConstructionType::InvariantMap => "invariant_map",
                 ConstructionType::SignatureMap => "signature_map",
+                ConstructionType::ValueMap => "value_map",
+                ConstructionType::ValueEquivalence => "value_equivalence",
                 ConstructionType::Invariant => "invariant",
                 ConstructionType::SignatureAxis => "signature_axis",
             },

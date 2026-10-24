@@ -334,6 +334,9 @@ pub(super) fn retain(
             ("fields", Json::Arr(vec![])),
         ]));
     }
+    if !declarations.candidates().iter().any(|d| d.source().kind == "law") {
+        return Ok(out);
+    }
     let [a, z] = plans;
     let at = a.laws.as_ref().ok_or("元Law表がない")?;
     let zt = z.laws.as_ref().ok_or("先Law表がない")?;

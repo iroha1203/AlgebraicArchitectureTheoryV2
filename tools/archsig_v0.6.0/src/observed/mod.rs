@@ -202,4 +202,5 @@ mod build_plan;
 mod build_result;
 mod object_map_result;
 mod object_law_map;
+mod object_view_map;
 mod native_source;
