@@ -15,6 +15,8 @@ use super::{
 };
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
+#[path = "change_linear_result.rs"]
+mod linear_result;
 
 #[derive(Debug)]
 pub(super) struct Source {
@@ -441,6 +443,9 @@ fn compute_inner(
         }
     }
     slots.sort();
+    if search.linear.as_ref().is_some_and(|linear|linear.slots!=slots) {
+        return Err(ValidationFailure::UnsupportedExpression { location:Location::Law {span:declaration.span}, feature:"整数changeの実更新先と公開slot集合が異なる".into() });
+    }
     for (index, row) in candidates.rows.iter().enumerate() {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
         if row.update.state == State::Excluded {
@@ -477,7 +482,8 @@ fn compute_inner(
         }
     }
     let parameter_type = Type::Tuple(candidates.parameter_types.clone());
-    let parameters = b.push(
+    let linear_parts=search.linear.as_ref().map(|linear|linear_result::build(&mut b,linear,&requirements,c)).transpose()?;
+    let parameters = if let Some(linear)=&linear_parts {linear.parameters} else { b.push(
         NodeType::Domain,
         "domain",
         Json::obj([
@@ -488,7 +494,7 @@ fn compute_inner(
         points.clone(),
         None,
         None,
-    )?;
+    )? };
     let mut slot_values = vec![];
     let mut state_types = vec![];
     let mut state_args = vec![architecture.reference];
@@ -529,7 +535,7 @@ fn compute_inner(
         state_order.insert(b.parts[state.0 - base].wire.canonical(), state);
     }
     let states = state_order.into_values().collect::<Vec<_>>();
-    let state_domain = b.push(
+    let state_domain = if let Some(linear)=&linear_parts {linear.states} else { b.push(
         NodeType::Domain,
         "domain",
         Json::obj([
@@ -540,11 +546,11 @@ fn compute_inner(
         states.clone(),
         None,
         None,
-    )?;
+    )? };
     let mut action_args = vec![parameters, state_domain];
     action_args.extend(&points);
     action_args.extend(&states);
-    let action = b.push(
+    let action = if let Some(linear)=&linear_parts {linear.action} else { b.push(
         NodeType::Construction(T::StateMap),
         "state_map",
         Json::obj([
@@ -556,7 +562,7 @@ fn compute_inner(
         action_args,
         None,
         None,
-    )?;
+    )? };
     let mut domain_args = vec![architecture.reference, parameters, state_space, action];
     domain_args.extend(&subjects);
     domain_args.extend(&requirements);
@@ -600,7 +606,7 @@ fn compute_inner(
         None,
     )?;
     // 検査済み全候補表の再計算が全域性を担う。出力に各試行のtraceを複製しない。
-    let certificate = b.push(
+    let certificate = if let Some(linear)=&linear_parts {linear.certificate} else { b.push(
         NodeType::Evidence,
         "evidence",
         Json::obj([
@@ -617,8 +623,8 @@ fn compute_inner(
         vec![domain, parameters],
         None,
         None,
-    )?;
-    let representation = if solutions.is_empty() {
+    )? };
+    let representation = if let Some(linear)=&linear_parts {linear.representation.clone()} else if solutions.is_empty() {
         Json::obj([
             ("kind", Json::str("empty")),
             ("certificate", certificate.wire()),
@@ -627,6 +633,7 @@ fn compute_inner(
         Json::obj([("kind", Json::str("finite")), ("values", refs(&solutions))])
     };
     let mut solution_args = vec![domain, certificate];
+    if let Some(linear)=&linear_parts {solution_args.extend(&linear.representation_args);}
     solution_args.extend(&requirements);
     solution_args.extend(&solutions);
     let set = b.push(

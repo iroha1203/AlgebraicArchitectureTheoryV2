@@ -6,6 +6,7 @@ use change_evaluation::{Candidates, SolutionRow};
 use std::sync::Arc;
 
 pub(in crate::observed) struct Search {
+    pub linear: Option<change_affine::Linear>,
     pub candidates: Option<Candidates>,
     pub solutions: Vec<SolutionRow>,
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
@@ -198,6 +199,7 @@ pub(in crate::observed) fn search(
     control: &mut Control,
 ) -> Result<Search, SearchFailure> {
     let mut result = Search {
+        linear: None,
         candidates: None,
         solutions: vec![],
         requirements: vec![],
@@ -302,6 +304,27 @@ pub(in crate::observed) fn search(
             rows = next;
         }
         result.requirements = rows.into_iter().map(|b| (law_name.to_owned(), b)).collect();
+        if change_params.iter().skip(1).any(|p| p.ty==Type::Z) {
+            let linear=change_affine::compute(&environment,change,&subjects,&result.requirements)?;
+            let mut points=vec![];
+            if let Some(particular)=&linear.fiber.particular {
+                points.push(particular.clone());
+                if linear.fiber.rank < particular.len() {
+                    points.push(particular.iter().zip(&linear.fiber.kernel).map(|(p,k)|p+&k[0]).collect());
+                }
+            }
+            let mut candidates=Candidates { parameter_types: vec![Type::Z;subjects.len()*(change_params.len()-1)],subjects,rows:vec![],complete:true };
+            for (i,point) in points.into_iter().enumerate() {
+                control.checkpoint(Checkpoint::PrimitiveValuation)?;
+                let parameters=point.into_iter().map(Scalar::Z).collect::<Vec<_>>();
+                let candidate=change_evaluation::candidate(&environment,change,&candidates.subjects,&parameters)?;
+                let row=change_evaluation::solution_row(&environment,&candidate,i,&result.requirements)?;
+                if row.member!=Some(true) {return Err("整数全解の点が元change/Lawへの再代入を満たさない".into());}
+                candidates.rows.push(candidate);result.solutions.push(row);
+            }
+            result.candidates=Some(candidates);result.linear=Some(linear);result.complete=true;
+            return Ok(());
+        }
         let table = match change_evaluation::candidates(&environment, change, &subjects) {
             Ok(table) => table,
             Err(failure) => {

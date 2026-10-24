@@ -62,6 +62,8 @@ mod primitive_valuation;
 pub(super) mod change_evaluation;
 #[path = "change_search.rs"]
 pub(super) mod change_search;
+#[path = "change_affine.rs"]
+pub(super) mod change_affine;
 #[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
 #[path = "relation_instances.rs"]
@@ -398,6 +400,8 @@ pub(crate) struct Environment<'a> {
     completion_values: RefCell<CompletionValues>,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
     primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
+    // 整数changeの式を読む内部環境。観測slotと元parameterを区別する。
+    affine_valuation: BTreeMap<Fact, super::affine::Form>,
     primitive_input_valuation: Option<BTreeMap<Fact, Value>>,
     primitive_reads: RefCell<Option<BTreeSet<Fact>>>,
     missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
@@ -556,6 +560,7 @@ impl<'a> Environment<'a> {
             context: Cell::new(None),
             completion_values: RefCell::new(Vec::new()),
             primitive_valuation: None,
+            affine_valuation: BTreeMap::new(),
             primitive_input_valuation: None,
             primitive_reads: RefCell::new(None),
             missing_slot_reads: RefCell::new(None),
@@ -8373,6 +8378,21 @@ impl<'a> Environment<'a> {
             field: Some(field.name.clone()),
             atom: None,
         };
+        if let Some(form) = self.affine_valuation.get(&position) {
+            scope.assignments = true;
+            let known_value = form.value(&self.control)?;
+            return Ok(SourceValue {
+                condition_failed: false,
+                condition_pending: false,
+                symbolic: None,
+                comparison: None,
+                scalar_scope: known_value.as_ref().map(|_| scope.clone()),
+                scope,
+                known_value,
+                affine: Some(Box::new(form.clone())),
+                support,
+            });
+        }
         let repaired=self.architecture_value(&position);
         let assigned = self
             .primitive_valuation

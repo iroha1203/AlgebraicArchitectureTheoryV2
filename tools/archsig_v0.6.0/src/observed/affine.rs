@@ -184,6 +184,30 @@ fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
 }
 
 impl Form {
+    /// 元changeの全parameter軸だけを持つ整数式を係数列へ移す。
+    /// 欠測や別binderを候補の自由軸へ取り込まない。
+    pub(in crate::observed) fn integer_coordinates(
+        &self, axes: &[Parameter], c: &Control,
+    ) -> Result<Option<(BigInt, Vec<BigInt>)>, ValidationFailure> {
+        self.check(c)?;
+        let Scalar::Z(constant) = &self.constant else { return Ok(None) };
+        for key in self.coefficients.keys() {
+            tick(c)?;
+            if !matches!(key, Symbol::Parameter(axis) if axes.contains(axis)) {
+                return Ok(None);
+            }
+        }
+        let mut coefficients = vec![];
+        for axis in axes {
+            tick(c)?;
+            coefficients.push(match self.coefficients.get(&Symbol::Parameter(axis.clone())) {
+                Some(Scalar::Z(value)) => value.clone(),
+                None => BigInt::zero(),
+                _ => return Err("整数式の係数がZでない".into()),
+            });
+        }
+        Ok(Some((constant.clone(), coefficients)))
+    }
     /// 元引数・Tuple成分の辞書式順で、定数項と全係数を型付き表示する。
     pub(in crate::observed) fn term_coordinates(
         &self,
