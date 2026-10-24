@@ -241,6 +241,7 @@ impl ValidationSnapshot {
             || g.contexts.len() != g.nodes.len()
             || g.frames.len() < self.frames.len()
             || g.cases.len() < self.cases.len()
+            || g.instances.len() < self.instances.len()
         {
             return Ok(false);
         }
@@ -252,7 +253,7 @@ impl ValidationSnapshot {
         if !Self::same(&g.contexts[..self.contexts.len()], &self.contexts, control)?
             || !Self::same(&g.frames[..self.frames.len()], &self.frames, control)?
             || !Self::same(&g.cases[..self.cases.len()], &self.cases, control)?
-            || !Self::same(&g.instances, &self.instances, control)?
+            || !Self::same(&g.instances[..self.instances.len()], &self.instances, control)?
             || !Self::same(&g.universal_witnesses, &self.witnesses, control)?
             || !Self::same(&g.requests, &self.requests, control)?
             || !Self::same(&g.checked_answers, &self.answers, control)?
@@ -272,6 +273,16 @@ impl ValidationSnapshot {
                 std::iter::once(frame.source).chain(frame.arguments.iter().copied()),
                 self.nodes.len(),
                 control,
+            )? {
+                return Ok(false);
+            }
+        }
+        // 既存instanceの全内容は上で照合済み。新しいmember/domainを参照する
+        // 追加instanceは古いnodeのContextを変えないため、成功を破棄しない。
+        for instance in &g.instances[self.instances.len()..] {
+            if !Self::after(
+                [instance.source, instance.domain, instance.member].into_iter(),
+                self.nodes.len(), control,
             )? {
                 return Ok(false);
             }
@@ -348,6 +359,7 @@ pub(crate) struct Environment<'a> {
     expressions: BTreeMap<(usize, usize), usize>,
     dotted_candidates: BTreeMap<(usize, usize), Vec<DottedOccurrence>>,
     // 元三入力にのみ依存する不変族。Arcを保持し、同一性の再利用を防ぐ。
+    pub(super) verified_law_transports: RefCell<Vec<super::object_law_map::KernelCacheEntry>>,
     verified_relation_families: RefCell<Vec<std::sync::Arc<crate::observed::public_compare::relation_sources::Family>>>,
     pub(super) verified_finite_law_diagrams: RefCell<Vec<std::sync::Arc<super::finite_law_diagram::Source>>>,
     pub(super) verified_polynomial_law_diagrams: RefCell<Vec<std::sync::Arc<super::polynomial_law_diagram::Source>>>,
@@ -505,6 +517,7 @@ impl<'a> Environment<'a> {
             snapshot_origins,
             expressions,
             dotted_candidates,
+            verified_law_transports: RefCell::new(vec![]),
             verified_relation_families: RefCell::new(vec![]),
             verified_finite_law_diagrams: RefCell::new(vec![]),
             verified_polynomial_law_diagrams: RefCell::new(vec![]),
@@ -922,7 +935,7 @@ impl<'a> Environment<'a> {
             result
         })
     }
-    fn validation_graph_session<T>(
+    pub(super) fn validation_graph_session<T>(
         &self,
         graph: &Graph,
         run: impl FnOnce() -> Result<T, ValidationFailure>,

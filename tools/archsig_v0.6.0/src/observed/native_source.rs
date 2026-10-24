@@ -69,33 +69,37 @@ impl Boundary {
         at: usize,
         c: &mut Control,
     ) -> Result<(), ValidationFailure> {
-        tick(c)?;
-        // 保存済みnodeと挿入位置のcandidateを区別し、欠落Contextをactiveで補わない。
-        let actual = if at < g.nodes.len() {
-            saved_context(g, NodeRef(at))?
-        } else if at == g.nodes.len() && g.contexts.len() == g.nodes.len() {
-            g.active
-        } else {
-            return Err("native構成の保存位置またはContextがない".into());
-        };
-        if self.start > at
-            || actual != self.producer
-            || saved_context(g, self.architecture)? != self.producer
-        {
-            return Err("native構成の開始位置または元producerが違う".into());
-        }
-        // 全参照を検査してから再帰する。後続wrapperや自己参照へ再入しない。
-        for r in std::iter::once(&self.architecture).chain(&self.inputs) {
+        // この不変Graph借用内では全参照を同じ検査sessionで確認できる。
+        // 参照ごとの全Graph snapshot複製を避け、出口で一度だけ保存する。
+        env.validation_graph_session(g, || {
             tick(c)?;
-            if r.0 >= self.start {
-                return Err("native構成の元入力が構成開始より前でない".into());
+            // 保存済みnodeと挿入位置のcandidateを区別し、欠落Contextをactiveで補わない。
+            let actual = if at < g.nodes.len() {
+                saved_context(g, NodeRef(at))?
+            } else if at == g.nodes.len() && g.contexts.len() == g.nodes.len() {
+                g.active
+            } else {
+                return Err("native構成の保存位置またはContextがない".into());
+            };
+            if self.start > at
+                || actual != self.producer
+                || saved_context(g, self.architecture)? != self.producer
+            {
+                return Err("native構成の開始位置または元producerが違う".into());
             }
-            saved_context(g, *r)?;
-        }
-        for r in std::iter::once(&self.architecture).chain(&self.inputs) {
-            tick(c)?;
-            env.recheck_node(g, g.get(*r)?, r.0)?;
-        }
-        Ok(())
+            // 全参照を検査してから再帰する。後続wrapperや自己参照へ再入しない。
+            for r in std::iter::once(&self.architecture).chain(&self.inputs) {
+                tick(c)?;
+                if r.0 >= self.start {
+                    return Err("native構成の元入力が構成開始より前でない".into());
+                }
+                saved_context(g, *r)?;
+            }
+            for r in std::iter::once(&self.architecture).chain(&self.inputs) {
+                tick(c)?;
+                env.recheck_node(g, g.get(*r)?, r.0)?;
+            }
+            Ok(())
+        })
     }
 }

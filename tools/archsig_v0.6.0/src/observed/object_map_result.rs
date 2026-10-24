@@ -73,7 +73,14 @@ impl Data {
     pub(super) fn conditions(&self) -> Vec<NodeRef> {
         if !matches!(
             self.ty(),
-            NodeType::Construction(T::ConfigurationMap | T::ObjectAlgebraMap)
+            NodeType::Construction(
+                T::ConfigurationMap
+                    | T::ObjectAlgebraMap
+                    | T::EquationMap
+                    | T::CircuitMap
+                    | T::InvariantMap
+                    | T::SignatureMap
+            )
         ) {
             return vec![];
         }
@@ -182,9 +189,13 @@ pub(super) fn extend(
     )
     .map_err(failure)?;
     let algebras = if declarations.all_signatures_compatible() {
-        // 読取り宣言がある場合は、値・方程式・circuit移送の配送まで必要。
-        // 空の表へ置換して構造保存を宣言しない。
-        if !declarations.candidates().is_empty() {
+        // Law以外の読取りには値・signature・句の移送配送も必要。
+        // 未対応の宣言を空の表へ置換しない。
+        if declarations
+            .candidates()
+            .iter()
+            .any(|d| d.source().kind != "law")
+        {
             return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
         }
         let mut result = vec![];
@@ -214,7 +225,7 @@ pub(super) fn extend(
     dependencies.extend(algebras.into_iter().flatten());
     let boundary = Boundary::capture(env, g, source, dependencies, c)?;
     let base = g.nodes.len();
-    let (parts, answer) = compute(g, &witness, &configuration, algebras, base, request, c)?;
+    let (parts, answer) = compute(env, g, &witness, &configuration, algebras, base, request, c)?;
     let source = Arc::new(Source {
         witness,
         configuration,
@@ -245,6 +256,22 @@ pub(super) fn extend(
 }
 
 fn compute(
+    env: &Environment<'_>,
+    g: &Graph,
+    witness: &Arc<MapWitness>,
+    configuration: &Answer,
+    algebras: Option<[NodeRef; 2]>,
+    base: usize,
+    request: &Request,
+    c: &mut Control,
+) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+    env.validation_graph_session(g, || {
+        compute_inner(env, g, witness, configuration, algebras, base, request, c)
+    })
+}
+
+fn compute_inner(
+    env: &Environment<'_>,
     g: &Graph,
     witness: &Arc<MapWitness>,
     configuration: &Answer,
@@ -276,9 +303,15 @@ fn compute(
     let mut declaration_rows = vec![];
     let mut equation_map = None;
     let mut signature = None;
+    let mut circuit_maps = vec![];
+    let mut invariant_maps = vec![];
     let mut preserved = declarations.all_signatures_compatible();
     if preserved {
-        if !declarations.candidates().is_empty() {
+        if declarations
+            .candidates()
+            .iter()
+            .any(|d| d.source().kind != "law")
+        {
             return Err("ObjectAlgebra mapの読取り宣言配送は未実装".into());
         }
         let [left, right] = algebras.ok_or("ObjectAlgebra mapの端点がない")?;
@@ -489,18 +522,36 @@ fn compute(
             }
             let se = a.equations.ok_or("元方程式族がない")?;
             let te = z.equations.ok_or("先方程式族がない")?;
-            equation_map = Some(b.push(
-                NodeType::Construction(T::EquationMap),
-                "equation_map",
-                Json::obj([
-                    ("source", se.wire()),
-                    ("target", te.wire()),
-                    ("indices", Json::Arr(vec![])),
-                ]),
-                vec![se, te],
-                None,
-                None,
-            )?);
+            let laws = super::object_law_map::retain(
+                env,
+                &mut b,
+                &origin.shared_inputs(),
+                &declarations,
+                [left, right],
+                [a, z],
+                c,
+            )?;
+            preserved &= laws.preserved;
+            declaration_rows.extend(laws.declarations);
+            circuit_maps = laws.circuits;
+            invariant_maps = laws.invariants;
+            dependencies.extend(laws.conditions);
+            dependencies.extend(circuit_maps.iter().copied());
+            dependencies.extend(invariant_maps.iter().copied());
+            if laws.preserved {
+                equation_map = Some(b.push(
+                    NodeType::Construction(T::EquationMap),
+                    "equation_map",
+                    Json::obj([
+                        ("source", se.wire()),
+                        ("target", te.wire()),
+                        ("indices", Json::Arr(laws.indices)),
+                    ]),
+                    dependencies.iter().copied().chain([se, te]).collect(),
+                    None,
+                    None,
+                )?);
+            }
             signature = Some(b.push(
                 NodeType::Construction(T::SignatureMap),
                 "signature_map",
@@ -571,9 +622,15 @@ fn compute(
                 ("declarations", Json::Arr(declaration_rows)),
                 ("object_maps", Json::Arr(object_rows)),
                 ("equations", equation_map.ok_or("EquationMapがない")?.wire()),
-                ("circuits", Json::Arr(vec![])),
+                (
+                    "circuits",
+                    Json::Arr(circuit_maps.iter().map(|r| r.wire()).collect()),
+                ),
                 ("operation_maps", Json::Arr(operation_rows)),
-                ("invariants", Json::Arr(vec![])),
+                (
+                    "invariants",
+                    Json::Arr(invariant_maps.iter().map(|r| r.wire()).collect()),
+                ),
                 ("signature", signature.ok_or("SignatureMapがない")?.wire()),
                 ("transports", Json::Arr(vec![])),
             ]),
@@ -655,6 +712,7 @@ impl Environment<'_> {
             &d.source.configuration,
         )?;
         let (parts, answer) = compute(
+            self,
             g,
             &d.source.witness,
             &d.source.configuration,

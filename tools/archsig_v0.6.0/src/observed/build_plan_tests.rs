@@ -535,3 +535,37 @@ fn outside_polynomial_keeps_the_original_symbolic_difference_without_an_evaluate
         prefix.push(n.clone()).unwrap();
     }
 }
+
+#[test]
+fn checked_build_rejects_changed_existing_instance_and_accepts_restoration() {
+    let p = prepared(false);
+    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let mut g = graph(&p);
+    let plan = prepare(
+        &env,
+        &mut g,
+        p.shared_inputs(),
+        &p.requests().requests()[0],
+        &mut quiet(),
+    )
+    .unwrap();
+    let equation = plan.equations.unwrap();
+    env.recheck_node(&g, g.get(equation).unwrap(), equation.0)
+        .unwrap();
+    assert!(!g.instances.is_empty());
+    let saved = g.instances[0].clone();
+    g.instances[0].caller.request += 1;
+    assert!(
+        env.recheck_node(&g, g.get(equation).unwrap(), equation.0)
+            .is_err()
+    );
+    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    assert!(
+        fresh
+            .recheck_node(&g, g.get(equation).unwrap(), equation.0)
+            .is_err()
+    );
+    g.instances[0] = saved;
+    env.recheck_node(&g, g.get(equation).unwrap(), equation.0)
+        .unwrap();
+}
