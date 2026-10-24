@@ -357,12 +357,12 @@ impl Data {
     pub(super) fn wire(&self) -> Json {
         self.part().wire()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn metadata(&self) -> (&[Fact], Scope) {
         let mut scope = self.source.scope.clone();
         if let Part::Reading { quantifiers, .. } = self.part() {
             scope.quantifiers.extend_from_slice(quantifiers);
         }
-        (self.source.support.clone(), scope)
+        (&self.source.support, scope)
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         if self.index >= self.source.parts.len()
@@ -887,7 +887,7 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support != support
+        || n.support.as_slice() != support
         || n.scope != scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()

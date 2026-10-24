@@ -118,14 +118,7 @@ fn valid_reuse_recomputes_current_values_with_exact_counts() {
     let result = checked(&dir, &reused, 0, true);
     assert_eq!(value(&result), "2");
     assert!(arr(get(get(&result, "reuse"), "rejected")).is_empty());
-    for field in [
-        "requests",
-        "answers",
-        "nodes",
-        "inputs",
-        "declarations",
-        "vocabularies",
-    ] {
+    for field in ["requests", "answers", "nodes", "inputs"] {
         assert_eq!(get(&plain, field), get(&result, field), "{field}");
     }
     assert_eq!(
@@ -194,6 +187,7 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
     let source = result_json(&dir, &previous);
     for kind in [
         "version",
+        "legacy_format",
         "unknown_type",
         "wrong_payload",
         "forward",
@@ -229,7 +223,7 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
         let bytes = match kind {
             "syntax" => b"{".to_vec(),
             "duplicate_key" => {
-                b"{\"format\":\"archsig.result/2\",\"format\":\"archsig.result/2\"}".to_vec()
+                b"{\"format\":\"archsig.result/3\",\"format\":\"archsig.result/3\"}".to_vec()
             }
             "nat_huge" => owned(&source)
                 .canonical()
@@ -240,6 +234,9 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                 .into_bytes(),
             _ => {
                 match kind {
+                    "legacy_format" => {
+                        *field_mut(&mut candidate, "format") = Json::str("archsig.result/2");
+                    }
                     "command_check" => {
                         *field_mut(&mut candidate, "command") = Json::str("check");
                     }
@@ -292,8 +289,10 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                         *field_mut(first_node(&mut candidate), kind) = Json::obj([])
                     }
                     "support" => {
-                        *field_mut(first_node(&mut candidate), kind) =
-                            Json::Arr(vec![Json::Bool(true)])
+                        let Json::Obj(fields) = first_node(&mut candidate) else {
+                            panic!("node")
+                        };
+                        fields.insert(kind.into(), Json::Arr(vec![Json::Bool(true)]));
                     }
                     "reasons" => {
                         *field_mut(first_node(&mut candidate), kind) =
@@ -306,8 +305,14 @@ fn invalid_candidate_versions_types_dag_and_json_are_rejected_without_failure() 
                         };
                         fields.insert("extra".into(), Json::Bool(true));
                     }
-                    "inputs" | "requests" | "declarations" | "vocabularies" | "issues" => {
+                    "inputs" | "requests" | "issues" => {
                         *field_mut(&mut candidate, kind) = Json::Arr(vec![Json::Bool(true)])
+                    }
+                    "declarations" | "vocabularies" => {
+                        let Json::Obj(fields) = &mut candidate else {
+                            panic!("result")
+                        };
+                        fields.insert(kind.into(), Json::Arr(vec![]));
                     }
                     "ref_type" => {
                         let node = typed_node(&mut candidate, "Z");
@@ -394,8 +399,18 @@ fn reuse_never_imports_old_values_bindings_laws_or_provenance() {
     assert!(
         arr(get(&result, "nodes"))
             .iter()
-            .flat_map(|n| arr(get(n, "support")))
-            .all(|p| s(get(p, "subject")) == "t")
+            .all(|n| !has(n, "support"))
+    );
+    let saved = archsig::json::parse(
+        &std::fs::read(dir.join("binding-changed/inputs/archmap.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        s(get(
+            &arr(get(&arr(get(&saved, "snapshots"))[0], "subjects"))[0],
+            "id"
+        )),
+        "t"
     );
 }
 

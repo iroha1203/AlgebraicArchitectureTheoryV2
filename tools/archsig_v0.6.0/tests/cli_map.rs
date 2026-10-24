@@ -599,7 +599,7 @@ fn map_dependency_cycles_report_edges_without_calculating_or_writing_results() {
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
-fn architecture_scope_retains_the_owner_fact_used_to_exclude_another_roots_subject() {
+fn architecture_scope_keeps_classification_without_exporting_support() {
     let dir = inputs("map-classification-scope", A);
     let r = asks(&dir, &[ASK]);
     let result = saved(&dir, &r, "complete", 0);
@@ -613,13 +613,21 @@ fn architecture_scope_retains_the_owner_fact_used_to_exclude_another_roots_subje
         .map(s)
         .collect::<Vec<_>>();
     assert_eq!(modes, ["specification"]);
-    let support = arr(get(architecture, "support"));
-    assert!(support.iter().any(|f| has(f, "field")
-        && s(get(f, "subject")) == "r"
-        && s(get(f, "field")) == "Reservations.State.owner"));
-    assert!(!support.iter().any(|f| has(f, "field")
-        && s(get(f, "subject")) == "r"
-        && s(get(f, "field")) == "Reservations.State.free"));
+    assert!(!has(architecture, "support"));
+    let configuration = value(&result, get(get(architecture, "value"), "configuration"));
+    assert!(
+        !arr(get(configuration, "family"))
+            .iter()
+            .any(|f| s(get(f, "subject")) == "r")
+    );
+    let saved = archsig::json::parse(&std::fs::read(dir.join("out/inputs/archmap.json")).unwrap()).unwrap();
+    assert!(
+        arr(get(&arr(get(&saved, "snapshots"))[0], "atoms"))
+            .iter()
+            .any(
+                |a| s(get(a, "subject")) == "r" && s(get(a, "field")) == "Reservations.State.owner"
+            )
+    );
     std::fs::remove_dir_all(dir).unwrap();
 }
 

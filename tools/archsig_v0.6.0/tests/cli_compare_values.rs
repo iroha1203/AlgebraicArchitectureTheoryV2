@@ -151,7 +151,8 @@ fn all_ground_primitive_types_follow_value_semantics_and_keep_original_refs() {
             get(v, "right"),
             get(get(answer(&j, &format!("b_{name}")), "outputs"), "value")
         );
-        assert!(!arr(get(c, "support")).is_empty());
+        assert!(!has(c, "support"));
+        assert!(!arr(get(c, "arguments")).is_empty());
     }
     for (id, status) in [
         ("same_ref", "established"),
@@ -177,10 +178,10 @@ fn value_comparison_rejects_invalid_handles_types_and_arguments_without_artifact
         "x=compare($y.comparison,to=$y.comparison,kind=value);y=compare($x.comparison,to=$x.comparison,kind=value)",
         "x=compare(@v/a,to=@v/b,kind=value);y=compare($x.comparison.left,to=@v/a,kind=value)",
     ] {
-        let dir=structured_inputs("compare-values-reject",false,"");
-        let r=asks(&dir,&q.split(';').collect::<Vec<_>>());
-        assert_eq!(r.code,64,"{q}: {}",r.stdout);
-        assert_eq!(s(get(&r.receipt,"status")),"invalid");
+        let dir = structured_inputs("compare-values-reject", false, "");
+        let r = asks(&dir, &q.split(';').collect::<Vec<_>>());
+        assert_eq!(r.code, 64, "{q}: {}", r.stdout);
+        assert_eq!(s(get(&r.receipt, "status")), "invalid");
         assert!(!dir.join("out").exists());
         std::fs::remove_dir_all(dir).unwrap();
     }
@@ -406,7 +407,11 @@ fn value_comparison_rejects_paths_instead_of_equating_their_display_or_action() 
 }
 #[test]
 fn dynamic_primitive_projection_types_are_checked_after_selecting_constructor_values() {
-    let dir=structured_inputs("compare-values-dynamic-types",false,"view flagged():Packet=Flag(false); view empty():Packet=Empty; view seven():Z=7; view no():Bool=false;");
+    let dir = structured_inputs(
+        "compare-values-dynamic-types",
+        false,
+        "view flagged():Packet=Flag(false); view empty():Packet=Empty; view seven():Z=7; view no():Bool=false;",
+    );
     let r = asks(
         &dir,
         &[
@@ -446,12 +451,16 @@ fn dynamic_primitive_projection_types_are_checked_after_selecting_constructor_va
         assert_eq!(s(get(a, "status")), "undetermined", "{id}");
         assert!(!has(get(a, "outputs"), "comparison"));
         let reasons = arr(get(a, "reasons"));
-        assert!(reasons
-            .iter()
-            .any(|x| s(get(x, "code")) == "condition_failed"));
-        assert!(reasons
-            .iter()
-            .any(|x| s(get(x, "code")) == "dependency_blocked"));
+        assert!(
+            reasons
+                .iter()
+                .any(|x| s(get(x, "code")) == "condition_failed")
+        );
+        assert!(
+            reasons
+                .iter()
+                .any(|x| s(get(x, "code")) == "dependency_blocked")
+        );
     }
     let p = node(&j, get(get(answer(&j, "left"), "outputs"), "comparison"));
     let selected = node(&j, get(get(p, "value"), "left"));
@@ -463,7 +472,11 @@ fn dynamic_primitive_projection_types_are_checked_after_selecting_constructor_va
 fn head_only_inapplicable_projection_keeps_partial_reasons_needed_and_known_results() {
     for (view, head) in [("absent", "$x.value.some"), ("emptyrefs", "$x.value[0]")] {
         for reverse in [false, true] {
-            let dir=structured_inputs("compare-values-head-projection",false,"view absent():Option<Sample> = none<Sample>; view emptyrefs():List<Sample> = list<Sample>[];");
+            let dir = structured_inputs(
+                "compare-values-head-projection",
+                false,
+                "view absent():Option<Sample> = none<Sample>; view emptyrefs():List<Sample> = list<Sample>[];",
+            );
             let x = format!("x=evaluate(Values.{view})");
             let q = if reverse {
                 format!("c=compare(@v/a,to={head},kind=value)")
@@ -484,9 +497,11 @@ fn head_only_inapplicable_projection_keeps_partial_reasons_needed_and_known_resu
             assert_eq!(s(get(a, "status")), "undetermined");
             assert!(!has(get(a, "outputs"), "comparison"));
             for kind in ["condition_failed", "dependency_blocked"] {
-                assert!(arr(get(a, "reasons"))
-                    .iter()
-                    .any(|r| s(get(r, "code")) == kind));
+                assert!(
+                    arr(get(a, "reasons"))
+                        .iter()
+                        .any(|r| s(get(r, "code")) == kind)
+                );
             }
             for id in ["known", "plan"] {
                 assert_eq!(s(get(answer(&j, id), "status")), "established");

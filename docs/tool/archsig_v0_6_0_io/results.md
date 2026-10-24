@@ -13,10 +13,10 @@ Pは同文書のTypeの別名であり、宣言metadataではOwnedを許し、�
 
 ```text
 Result = {
-  format:"archsig.result/2", semantics:"archsig/0.6.0",
+  format:"archsig.result/3", semantics:"archsig/0.6.0",
   producer:{version:String,build:String}, command:"check"|"run",
   status:RunStatus, exit_code:Nat, inputs:InputIdentity[],
-  declarations:DeclarationInfo[], vocabularies:{manifest:Vocabulary,digest:Digest,location:Location}[],
+  declarations?:DeclarationInfo[], vocabularies?:{manifest:Vocabulary,digest:Digest,location:Location}[],
   requests:Request[], answers:Answer[], nodes:Node[], issues:Issue[],
   reuse:{requested:Bool,accepted_nodes:Nat,recomputed_nodes:Nat,rejected:Issue[]},
   usage:{elapsed_ms:DecimalNat,peak_bytes:DecimalNat},
@@ -52,7 +52,7 @@ Answer = {id:String,status:Decision,outputs:{Field:Ref},claim?:Ref,
 Decision = "established"|"refuted"|"undetermined"
 Ref = {node:String}
 Node = {id:String,type:Type,state:"value"|"blocked",value?:Payload,
-        partial?:Partial,rule:Rule,arguments:Ref[],support:FactPointer[],
+        partial?:Partial,rule:Rule,arguments:Ref[],
         conditions:Ref[],evidence:Ref[],judgment?:Judgment,scope:Scope,reasons:Issue[]}
 Judgment = {status:Decision,evidence:Ref[],reasons:Issue[]}
 Rule = {kind:"definition"|"subject"|"atom"|"law",location:Location}
@@ -90,13 +90,16 @@ map の to_reading 省略時は reading と同じ選択を arguments に origin=
 同じruleを重複させず、universal_parametersはparametersが非空のときだけ記録する。
 defaultsはruleの辞書順。required_lawsの実際のLaw instanceと量化域は生成したLocalSystem/Scopeへ残す。
 これらの既定は要求idとtextに結び付き、CLIへ新しい値や引数名を追加する規則ではない。
+静的検査を依頼する command=check は declarations/vocabularies を必須とし、
+command=run は両欄を持たない。run の型・宣言は同梱の入力と semantics から再検査する。
+全宣言の references、expressions、supplied、依存一覧を run の回答へ複製しない。
+以下の宣言 metadata の規則は check に適用する。
 declarations は完全名順、vocabularies は manifest.namespace 順。parametersとfieldsは宣言順を保持する。
 宣言metadataのTypeは下記のLawの結果型Tに限る。依存参照Ownedは宣言metadataだけで保持する。
 dataのconstructorは完全名のDeclarationInfo（kind=data、parametersに引数型）にも列挙する。
 名前のないconstructor引数名は`arg0`からの位置名とする。
 全 Atom 定義と Law 全体の静的検査が完了した場合だけdeclarations/vocabulariesを全件返す。
 指定された全入力の検査が不正・非対応・中断で終わった場合は、この結果ファイルを生成しない。
-runの部分成果を保存する場合は、確認済みの全宣言・語彙を保持し、検査前の部分宣言を混ぜない。
 保存するcheckの結果はrequests/answers/nodesが空。checkでAを省略した場合、inputsにAの欄を作らない。
 inputs.path は出力 directory からの固定相対 path で、読めた入力だけに付ける。
 InputIdentity.id は Law=`law`、ArchMap=`archmap`、定義ファイルは CLI の指定順に
@@ -143,7 +146,15 @@ Law は宣言全体の span、Atom 定義は該当宣言 object の JSON Pointer
 省略されたguardや生成した対応に架空の入力位置を与えず、補完の出所を規則名で区別する。
 constructorのDeclarationInfo.locationは定義の該当 constructor object、readingはそのreading全体を指す。
 FactPointerのfieldなしはsubject存在、fieldあり・atomなしは未観測slot。
-由来を表すsupportから、inputsのArchMapを通してorigin/sourceへ戻れる。
+ノードごとの支持集合は出力しない。反例は judgment.evidence から種類ごとの Evidence を辿る。
+counterexample では bindings と facts から subject・field・入力 Atom を特定し、origin/source へ戻る。
+他の証拠も下記の型付き参照と元の式・入力コピーを使って検査する。
+欠測は Issue.missing と needed の requirements から元の未観測 slot を辿る。
+値と条件の根拠は rule.location、型付き arguments、conditions、evidence と入力コピーで検査する。
+この DAG は正当化の依存関係を表し、実行履歴ではない。
+
+保存形式は archsig.result/3。result/2 の再利用候補は版不一致として記録し、現在の三入力から
+再計算する。semantics は archsig/0.6.0 のままであり、問いや Law の意味は変更しない。
 
 ## 2. 回答、条件、導出
 
@@ -406,7 +417,7 @@ Construction名を持つText nodeとする。これらは結果上の命題表�
 `CircuitQuery={kind:"atom",atom:FactPointer,present:Bool}`または
 `{kind:"relation"|"identification",left:FactPointer,right:FactPointer,present:Bool}`。
 `DeclarationPair={source:QName,target:QName,parameters:[String,String][],fields:[QName,QName][]}`。
-parametersは宣言順の引数名対応、fieldsは実際のalign/同名対応とし、型はdeclarationsから得る。
+parametersは宣言順の引数名対応、fieldsは実際のalign/同名対応とし、型は入力の検査済み宣言から得る。
 source/target は [宣言対応の規則](computations.md#1-対象作用law-instance)で選んだ完全名を保持する。
 reading の prefix が違っても短名・kind・移送後の署名で対応を照合し、Law の保存証拠は別に保持する。
 

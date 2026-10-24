@@ -1390,6 +1390,9 @@ impl Node {
         }
     }
     pub(super) fn wire(&self, id: usize, prior: &[Node]) -> Json {
+        self.wire_with_support(id, prior, true)
+    }
+    fn wire_with_support(&self, id: usize, prior: &[Node], include_support: bool) -> Json {
         let mut wire =
             BTreeMap::from([
                 ("id".into(), Json::str(format!("n{id}"))),
@@ -1408,10 +1411,6 @@ impl Node {
                 ),
                 ("rule".into(), self.rule.wire()),
                 ("arguments".into(), refs(&self.arguments)),
-                (
-                    "support".into(),
-                    Json::Arr(self.support.iter().map(Fact::wire).collect()),
-                ),
                 ("conditions".into(), refs(&self.conditions())),
                 ("evidence".into(), refs(&self.evidence)),
                 ("scope".into(), self.scope.wire()),
@@ -1420,6 +1419,12 @@ impl Node {
                     Json::Arr(self.reasons.iter().map(Reason::wire).collect()),
                 ),
             ]);
+        if include_support {
+            wire.insert(
+                "support".into(),
+                Json::Arr(self.support.iter().map(Fact::wire).collect()),
+            );
+        }
         if let Some(Payload::Construction(v)) = &self.payload
             && let Some(partial) = v.partial(&self.reasons)
         {
@@ -1562,8 +1567,35 @@ impl ObservedEvaluation {
         control: &mut Control,
         point: Checkpoint,
     ) -> Result<Json, StopReason> {
+        self.wire_with_metadata(control, point, true)
+    }
+    /// 保存成果物。内部照合用の支持と静的解決表を複製しない。
+    pub(crate) fn result_wire(&self) -> Json {
+        self.result_wire_controlled(&mut Control::unlimited(), Checkpoint::Expression)
+            .expect("通常の表示は中断しない")
+    }
+    pub(crate) fn result_wire_controlled(
+        &self,
+        control: &mut Control,
+        point: Checkpoint,
+    ) -> Result<Json, StopReason> {
+        self.wire_with_metadata(control, point, false)
+    }
+    fn wire_with_metadata(
+        &self,
+        control: &mut Control,
+        point: Checkpoint,
+        inspection: bool,
+    ) -> Result<Json, StopReason> {
         control.checkpoint(point)?;
-        let mut result = self.prepared.inputs().metadata_wire();
+        let mut result = if inspection {
+            self.prepared.inputs().metadata_wire()
+        } else {
+            Json::obj([(
+                "inputs",
+                crate::result::input_identities_wire(self.prepared.inputs().inputs()),
+            )])
+        };
         let Json::Obj(wire) = &mut result else {
             unreachable!()
         };
@@ -1602,7 +1634,7 @@ impl ObservedEvaluation {
                     .enumerate()
                     .map(|(i, n)| {
                         control.checkpoint(point)?;
-                        Ok(n.wire(i, &self.nodes[..i]))
+                        Ok(n.wire_with_support(i, &self.nodes[..i], inspection))
                     })
                     .collect::<Result<_, StopReason>>()?,
             ),

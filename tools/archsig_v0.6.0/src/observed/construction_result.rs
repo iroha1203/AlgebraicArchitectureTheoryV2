@@ -1339,7 +1339,8 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         return Ok(data.metadata());
     }
     if let ConstructionData::ObjectComponents(data) = &value.data {
-        return Ok(data.metadata());
+        let (support, scope) = data.metadata();
+        return Ok((support.to_vec(), scope));
     }
     if let ConstructionData::InternalArrows(data) = &value.data {
         return Ok(data.metadata());
