@@ -576,7 +576,7 @@ impl Evaluator<'_, '_> {
                         ty: p.ty.erase(),
                     });
                 }
-                Selector::Declaration { .. } | Selector::Enum { .. } => {
+                Selector::Declaration { .. } | Selector::Enum { .. } | Selector::Degree { .. } => {
                     return Err(Failure::Internal(
                         "parameter に宣言 selector が残っている".into(),
                     ));
@@ -2891,7 +2891,7 @@ fn evaluate_observed_with_validator(
             if matches!(
                 request.kind,
                 QuestionKind::Build
-                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient
+                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose
                     | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
@@ -2900,6 +2900,8 @@ fn evaluate_observed_with_validator(
                     super::build_result::evaluate
                 } else if matches!(request.kind,QuestionKind::Solve|QuestionKind::Repair) {
                     super::change_result::evaluate
+                } else if matches!(request.kind,QuestionKind::Localize|QuestionKind::Diagnose) {
+                    super::local_result::evaluate
                 } else if request.kind == QuestionKind::Quotient {
                     super::quotient_result::evaluate
                 } else if request.kind == QuestionKind::Compose {
@@ -2957,8 +2959,8 @@ fn evaluate_observed_with_validator(
                         let reason = match failure {
                             ValidationFailure::Stop(stop) => Reason::stopped(&request.id, stop),
                             ValidationFailure::UnsupportedExpression { location, feature }
-                                if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient) => {
-                                not_implemented = Some((request.declaration().expect("検査済みchangeのLaw").to_owned(), location, feature.clone()));
+                                if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose) => {
+                                not_implemented = Some((request.declaration().unwrap_or(request.kind.wire()).to_owned(), location, feature.clone()));
                                 internal = true;
                                 Reason::internal(&request.id, format!("未実装の評価経路: {feature}"))
                             }

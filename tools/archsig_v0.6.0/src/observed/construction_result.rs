@@ -63,6 +63,15 @@ pub(crate) enum ConstructionType {
     Repair,
     Module,
     Quotient,
+    LocalSystem,
+    Diagnostic,
+    Cover,
+    Topology,
+    ContextMap,
+    Overlap,
+    EquationSpace,
+    EquationSolutionSet,
+
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -105,6 +114,15 @@ impl ConstructionType {
             Self::Repair => "Repair",
             Self::Module => "Module",
             Self::Quotient => "Quotient",
+            Self::LocalSystem => "LocalSystem",
+            Self::Diagnostic => "Diagnostic",
+            Self::Cover => "Cover",
+            Self::Topology => "Topology",
+            Self::ContextMap => "ContextMap",
+            Self::Overlap => "Overlap",
+            Self::EquationSpace => "EquationSpace",
+            Self::EquationSolutionSet => "EquationSolutionSet",
+
         }
     }
 }
@@ -199,6 +217,7 @@ pub(crate) enum ConstructionData {
     ObjectMap(super::object_map_result::Data),
     Change(super::change_result::Data),
     Quotient(super::quotient_result::Data),
+    Local(super::local_result::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -311,6 +330,7 @@ impl ConstructionValue {
             ConstructionData::Build(data) => data.scalar(),
             ConstructionData::Change(data) => data.scalar(),
             ConstructionData::Quotient(data) => data.scalar(),
+            ConstructionData::Local(data) => data.scalar(),
             ConstructionData::ObjectMap(data) => data.scalar(),
             ConstructionData::OutsideLaw(data) => data.scalar(),
             ConstructionData::LawInstantiation(data) => data.scalar(),
@@ -395,6 +415,7 @@ impl ConstructionValue {
             D::Build(data) => return data.ty(),
             D::Change(data) => return data.ty(),
             D::Quotient(data) => return data.ty(),
+            D::Local(data) => return data.ty(),
             D::ObjectMap(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
@@ -440,6 +461,7 @@ impl ConstructionValue {
             D::Build(data) => data.arguments(),
             D::Change(data) => data.arguments(),
             D::Quotient(data) => data.arguments(),
+            D::Local(data) => data.arguments(),
             D::ObjectMap(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
@@ -525,6 +547,7 @@ impl ConstructionValue {
         match &self.data {
             ConstructionData::Change(data) => data.conditions(),
             ConstructionData::Quotient(data) => data.conditions(),
+            ConstructionData::Local(data) => data.conditions(),
             ConstructionData::ObjectMap(data) => data.conditions(),
             ConstructionData::Composition(part) => part.conditions(),
             ConstructionData::PathComposition(part) => part.conditions(),
@@ -554,6 +577,7 @@ impl ConstructionValue {
             D::Build(ref data) => data.construction(),
             D::Change(ref data) => data.construction(),
             D::Quotient(ref data) => data.construction(),
+            D::Local(ref data) => data.construction(),
             D::ObjectMap(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
@@ -601,6 +625,14 @@ impl ConstructionValue {
                 ConstructionType::Repair => "repair",
                 ConstructionType::Module => "module",
                 ConstructionType::Quotient => "quotient",
+                ConstructionType::LocalSystem => "local_system",
+                ConstructionType::Diagnostic => "diagnostic",
+                ConstructionType::Cover => "cover",
+                ConstructionType::Topology => "topology",
+                ConstructionType::ContextMap => "context_map",
+                ConstructionType::Overlap => "overlap",
+                ConstructionType::EquationSpace => "equation_space",
+                ConstructionType::EquationSolutionSet => "equation_solution_set",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -622,6 +654,7 @@ impl ConstructionValue {
         match (&self.data, &self.witness) {
             (D::Change(data), _) => data.projection_type(),
             (D::Quotient(data), _) => data.projection_type(),
+            (D::Local(data), _) => data.projection_type(),
             (D::ObjectMap(data), _) => data.projection_type(),
             (D::Build(data), Witness::Architecture(a)) if data.algebra_base().is_some() => {
                 Some(ProjectionType::ObjectAlgebraRoot(
@@ -691,6 +724,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         if let D::Change(data) = &self.data { return data.project(path); }
         if let D::Quotient(data) = &self.data { return data.project(path); }
+        if let D::Local(data) = &self.data { return data.project(path); }
         if let D::ObjectMap(data) = &self.data { return data.project(path); }
         if let D::Build(data) = &self.data {
             return match path.first()? {
@@ -767,6 +801,7 @@ impl ConstructionValue {
             D::Build(data) => data.wire(),
             D::Change(data) => data.wire(),
             D::Quotient(data) => data.wire(),
+            D::Local(data) => data.wire(),
             D::ObjectMap(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
@@ -1348,6 +1383,7 @@ pub fn atom_value(
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     if let ConstructionData::Change(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::Quotient(data) = &value.data { return Ok(data.metadata()); }
+    if let ConstructionData::Local(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::ObjectMap(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::Build(data) = &value.data {
         return Ok(data.metadata());
@@ -1908,6 +1944,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     }
     if let ConstructionData::Change(data) = &v.data { return super::change_result::validate_node(graph, node, v, data); }
     if let ConstructionData::Quotient(data) = &v.data { return super::quotient_result::validate_node(graph, node, v, data); }
+    if let ConstructionData::Local(data) = &v.data { return super::local_result::validate_node(graph, node, v, data); }
     if let ConstructionData::ObjectMap(data) = &v.data { return super::object_map_result::validate_node(graph, node, v, data); }
     if let ConstructionData::Build(data) = &v.data {
         return super::build_result::validate_node(graph, node, v, data);

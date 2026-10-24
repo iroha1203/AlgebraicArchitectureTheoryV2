@@ -43,6 +43,15 @@ pub enum ProjectionType {
     StateSpace(String),
     StateMap,
     Domain,
+    LocalSystem,
+    FixedSolutionSet,
+    FixedCandidateSpace,
+    FixedStateSpace,
+    EquationSpace,
+    EquationSolutionSet,
+    Diagnostic,
+    Cover,
+    Topology,
     Quotient(Box<ProjectionType>),
     /// 実値の constructor や異種生成元によって決まる候補型。
     Dynamic(Vec<ProjectionType>),
@@ -183,6 +192,16 @@ fn project_inner(
         ))
     };
     match (ty, &path[0]) {
+        (ProjectionType::FixedSolutionSet,Field(f)) if f=="domain"=>exact(ProjectionType::FixedCandidateSpace),
+        (ProjectionType::EquationSolutionSet,Field(f)) if f=="domain"=>exact(ProjectionType::EquationSpace),
+        (ProjectionType::FixedCandidateSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),"states"=>exact(ProjectionType::FixedStateSpace),"action"=>exact(ProjectionType::StateMap),_=>Err("CandidateSpaceの非公開射影".into())},
+        (ProjectionType::EquationSpace,Field(f))=>match f.as_str(){"base"=>exact(ProjectionType::Architecture),"parameters"=>exact(ProjectionType::Domain),_=>Err("EquationSpaceの非公開射影".into())},
+        (ProjectionType::LocalSystem,Field(f)) => match f.as_str() {
+            "base"=>exact(ProjectionType::Architecture), "cover"=>exact(ProjectionType::Cover), "topology"=>exact(ProjectionType::Topology),_=>Err("LocalSystemの非公開射影".into()),
+        },
+        (ProjectionType::Diagnostic,Field(f)) => match f.as_str() {
+            "system"=>exact(ProjectionType::LocalSystem), "global"=>exact(ProjectionType::Dynamic(vec![ProjectionType::FixedSolutionSet,ProjectionType::EquationSolutionSet])), "matching"=>exact(ProjectionType::Domain), "restriction"=>exact(ProjectionType::StateMap),_=>Err("Diagnosticの未実装射影".into()),
+        },
         (ProjectionType::Quotient(domain),Field(f)) => match f.as_str() {
             "domain"=>exact((**domain).clone()),
             "classes"=>exact(ProjectionType::Domain),

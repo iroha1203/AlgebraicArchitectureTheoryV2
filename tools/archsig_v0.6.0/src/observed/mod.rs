@@ -22,6 +22,7 @@ mod law_inapplicable;
 mod law_instantiation;
 mod law_proposition;
 mod law_table;
+mod local_result;
 mod needed;
 mod numeric;
 pub(crate) mod numeric_transport;

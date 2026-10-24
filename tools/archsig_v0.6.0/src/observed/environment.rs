@@ -347,6 +347,7 @@ impl ValidationSnapshot {
 struct ValidationCache {
     changes: Vec<std::sync::Arc<super::change_result::Source>>,
     quotients: Vec<std::sync::Arc<super::quotient_result::Source>>,
+    locals: Vec<std::sync::Arc<super::local_result::Source>>,
     object_maps: Vec<std::sync::Arc<super::object_map_result::Source>>,
     builds: Vec<std::sync::Arc<super::build_result::Source>>,
     checked: BTreeSet<NodeRefKey>,
@@ -426,8 +427,23 @@ pub(crate) struct Environment<'a> {
 impl<'a> Environment<'a> {
     pub(super) fn change_source_checked(&self, source:&std::sync::Arc<super::change_result::Source>)->bool { self.cache.borrow().changes.iter().any(|s|std::sync::Arc::ptr_eq(s,source)) }
     pub(super) fn remember_change_source(&self,source:std::sync::Arc<super::change_result::Source>) { self.cache.borrow_mut().changes.push(source); }
+    pub(super) fn local_point(&self, declaration:&crate::law::model::Declaration,bindings:&[(String,Scalar)]) -> Result<(finite_law_valuations::FiniteLawRow,Vec<Fact>,Vec<quotient_evaluation::EvaluationNode>),ValidationFailure> {
+        let crate::law::model::Signature::Law{body,..}=declaration.signature else{return Err("局所評価の元Lawがない".into())};
+        let outer=self.missing_slot_reads.replace(Some(BTreeSet::new()));
+        let prior=self.evaluation_capture.replace(Some(quotient_evaluation::EvaluationCapture{selected:vec![body],nodes:vec![],roots:vec![],stack:vec![]}));
+        let result=finite_law_valuations::evaluate_point(self,declaration,bindings,0);
+        let capture=self.evaluation_capture.replace(prior).ok_or("局所読取りの記録がない")?;
+        let reads=self.missing_slot_reads.replace(outer).ok_or("局所Lawの欠測収集がない")?;
+        if let Some(outer)=self.missing_slot_reads.borrow_mut().as_mut(){outer.extend(reads.iter().cloned());}
+        Ok((result?,reads.into_iter().filter(|f|!self.primitive_valuation.as_ref().is_some_and(|v|v.contains_key(f))).collect(),capture.nodes))
+    }
+    pub(super) fn select_local_object(&mut self, w:&super::construction_result::ArchitectureWitness,c:&mut Control)->Result<(),ValidationFailure>{
+        self.object=Some(std::sync::Arc::new(super::object_evaluate::ObjectDomain::from_readings(self.inputs,w.readings(),0,c)?)); Ok(())
+    }
     pub(super) fn quotient_source_checked(&self, source:&std::sync::Arc<super::quotient_result::Source>)->bool { self.cache.borrow().quotients.iter().any(|s|std::sync::Arc::ptr_eq(s,source)) }
+    pub(super) fn local_source_checked(&self, source:&std::sync::Arc<super::local_result::Source>)->bool { self.cache.borrow().locals.iter().any(|s|std::sync::Arc::ptr_eq(s,source)) }
     pub(super) fn remember_quotient_source(&self,source:std::sync::Arc<super::quotient_result::Source>) { self.cache.borrow_mut().quotients.push(source); }
+    pub(super) fn remember_local_source(&self,source:std::sync::Arc<super::local_result::Source>) { self.cache.borrow_mut().locals.push(source); }
     pub(super) fn object_map_source_checked(&self, source: &std::sync::Arc<super::object_map_result::Source>) -> bool {
         self.cache.borrow().object_maps.iter().any(|s| std::sync::Arc::ptr_eq(s,source))
     }
@@ -902,6 +918,7 @@ impl<'a> Environment<'a> {
                     self.recheck_object_map(graph, value, limit)?;
                     self.recheck_change(graph, value, limit)?;
                     self.recheck_quotient(graph, value, limit)?;
+                    self.recheck_local(graph, value, limit)?;
                     self.recheck_view_invariant(graph, value, limit)?;
                     self.recheck_predicate_invariant(graph, value, limit)?;
                     for r in node
@@ -4141,7 +4158,7 @@ impl<'a> Environment<'a> {
             if matches!(
                 request.kind,
                 QuestionKind::Build
-                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient
+                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose
                     | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
@@ -4151,6 +4168,8 @@ impl<'a> Environment<'a> {
                         super::build_result::validate_answer(self, graph, request, answer)?;
                     } else if matches!(request.kind,QuestionKind::Solve|QuestionKind::Repair) {
                         super::change_result::validate_answer(self,graph,request,answer)?;
+                    } else if matches!(request.kind,QuestionKind::Localize|QuestionKind::Diagnose) {
+                        super::local_result::validate_answer(self,graph,request,answer)?;
                     } else if request.kind == QuestionKind::Quotient {
                         super::quotient_result::validate_answer(self,graph,request,answer)?;
                     } else if request.kind == QuestionKind::Compose {

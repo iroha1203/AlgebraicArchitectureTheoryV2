@@ -135,6 +135,7 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
+    if matches!(request.kind,QuestionKind::Localize|QuestionKind::Diagnose) {return super::local_result::validate_origin(environment,request,value);}
     if request.kind == QuestionKind::Quotient {return super::quotient_result::validate_origin(environment,request,value);}
     if matches!(request.kind,QuestionKind::Build|QuestionKind::Solve|QuestionKind::Repair) {
         return super::architecture_result::validate_build_origin(
@@ -347,7 +348,7 @@ pub(super) fn unavailable(
         );
     }
     let selectors = request.arguments.iter().map(|a| &a.value).chain(
-        matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare)
+        matches!(request.kind, QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Localize | QuestionKind::Diagnose)
             .then_some(&request.head),
     );
     for selector in selectors {
@@ -365,7 +366,7 @@ pub(super) fn unavailable(
             .any(|a| a.name == "on" && &a.value == selector)
             && !matches!(
                 request.kind,
-                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient
+                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose
             )
             && !matches!(
                 graph.requests[producer_index].kind,
@@ -408,7 +409,7 @@ pub(super) fn unavailable(
             location: None,
         });
     }
-    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient) {
+    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient | QuestionKind::Localize | QuestionKind::Diagnose) {
         let (projection_reasons, projection_scope) =
             environment.projection_failure_reasons(graph, request)?;
         reasons.extend(projection_reasons);
