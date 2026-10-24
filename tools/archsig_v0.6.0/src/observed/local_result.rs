@@ -276,13 +276,13 @@ fn compute(
         let Signature::Law {
             role,
             params,
-            guard: None,
+            guard,
             body,
         } = &declaration.signature
         else {
-            return Err(unsupported("条件付きLawの局所系は未実装"));
+            return Err("局所系の指定宣言がLawでない".into());
         };
-        let reading_roots = match env.inputs.law().exprs[*body].kind {
+        let mut reading_roots = match env.inputs.law().exprs[*body].kind {
             ExprKind::Binary {
                 op: BinOp::Eq,
                 lhs,
@@ -290,6 +290,7 @@ fn compute(
             } => vec![lhs, rhs],
             _ => vec![*body],
         };
+        reading_roots.extend(*guard);
         let assignments = match &original.data {
             D::Change(d) => d.overrides(g)?,
             D::Quotient(d) => d.overrides(g)?,
@@ -379,6 +380,9 @@ fn compute(
                 context: Some(env.current_context(g)),
             });
         }
+        let guard_expression = guard
+            .map(|id| change_result::source_expression(&mut b, env, id, &bindings, &[]))
+            .transpose()?;
         let expression = change_result::source_expression(&mut b, env, *body, &bindings, &[])?;
         b.parts[expression.0 - base]
             .arguments
@@ -392,10 +396,13 @@ fn compute(
             .scope
             .merge(&g.get(target)?.scope);
         b.parts[expression.0 - base].scope.merge(&row.scope);
+        if let Some(reference) = guard_expression {
+            b.parts[expression.0 - base].arguments.push(reference);
+        }
         let known = row.application == Some(true)
             && !row.condition_failed
             && !row.condition_pending
-            && row.predicate.is_some()
+            && (row.guard == Some(false) || (row.guard == Some(true) && row.predicate.is_some()))
             && missing.is_empty();
         if !known {
             missing.extend(row.application_missing);
@@ -439,7 +446,7 @@ fn compute(
                 system: None,
             });
         }
-        let inhabited = row.predicate == Some(true);
+        let inhabited = row.guard == Some(false) || row.predicate == Some(true);
         let law = b.push(
             NodeType::LawInstance,
             "law_instance",
@@ -476,6 +483,13 @@ fn compute(
             None,
             None,
         )?;
+        if let Some(guard) = guard_expression {
+            let part = &mut b.parts[law.0 - base];
+            if let Json::Obj(wire) = &mut part.wire {
+                wire.insert("guard".into(), guard.wire());
+            }
+            part.arguments.push(guard);
+        }
         let mut positions = row
             .support
             .iter()

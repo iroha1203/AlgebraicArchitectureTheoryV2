@@ -675,3 +675,156 @@ fn fixed_integer_comparison_is_a_finite_local_condition() {
         assert!(!arr(get(context, "readings")).is_empty());
     }
 }
+
+#[test]
+fn conditional_law_localization_preserves_guard_and_nonapplication() {
+    for (guard, body, value, expected) in [
+        ("true", "s.flag", Some(true), "established"),
+        ("true", "s.flag", Some(false), "refuted"),
+        ("true", "s.flag", None, "undetermined"),
+        ("false", "s.flag", Some(false), "established"),
+        ("false", "s.flag", None, "undetermined"),
+        ("s.flag", "false", Some(true), "refuted"),
+        ("s.flag", "false", Some(false), "established"),
+        ("s.flag", "false", None, "undetermined"),
+    ] {
+        let dir = input("local-conditional", value);
+        let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+        std::fs::write(
+            dir.join("l.law"),
+            law.replace(
+                "law required valid(s:State):s.flag=true;",
+                &format!("law required valid(s:State) when {guard}:{body};"),
+            ),
+        )
+        .unwrap();
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system,side=equation)",
+                "s=diagnose($l.system,side=semantic)",
+                "n=needed($l)",
+            ],
+        );
+        assert_eq!(
+            r.code,
+            match expected {
+                "established" if value.is_none() => 2, // build の公開 view は欠測のまま。
+                "established" => 0,
+                "refuted" => 1,
+                _ => 2,
+            },
+            "{guard} / {body} / {value:?}: {} {}",
+            r.stdout,
+            r.stderr
+        );
+        let result = result_json(&dir, &r);
+        let answers = arr(get(&result, "answers"));
+        assert_eq!(
+            s(get(&answers[1], "status")),
+            if expected == "undetermined" {
+                expected
+            } else {
+                "established"
+            }
+        );
+        assert_eq!(s(get(&answers[4], "status")), "established");
+        if expected == "undetermined" {
+            assert!(!has(get(&answers[1], "outputs"), "system"));
+            let plan = get(output(&result, 4, "plan"), "value");
+            assert!(
+                arr(get(plan, "requirements"))
+                    .iter()
+                    .any(|r| s(get(get(r, "field"), "field")) == "Fixed.State.flag")
+            );
+            continue;
+        }
+        for index in [2, 3] {
+            assert_eq!(s(get(&answers[index], "status")), expected);
+            let diagnostic = get(output(&result, index, "diagnostic"), "value");
+            let global = get(node(&result, get(diagnostic, "global")), "value");
+            assert_eq!(
+                arr(get(get(global, "representation"), "values")).len(),
+                usize::from(expected == "established")
+            );
+        }
+        let system = get(output(&result, 1, "system"), "value");
+        let context = get(node(&result, &arr(get(system, "contexts"))[0]), "value");
+        let instance = get(
+            node(&result, &arr(get(context, "law_coordinates"))[0]),
+            "value",
+        );
+        assert!(
+            arr(get(context, "dependencies"))
+                .iter()
+                .any(|slot| s(get(slot, "field")) == "Fixed.State.flag")
+        );
+        let diagnostic = get(output(&result, 2, "diagnostic"), "value");
+        let solutions = get(node(&result, get(diagnostic, "global")), "value");
+        let equations = get(node(&result, get(solutions, "domain")), "value");
+        assert!(
+            arr(get(equations, "fixed"))
+                .iter()
+                .any(|slot| s(get(slot, "field")) == "Fixed.State.flag")
+        );
+        assert!(has(instance, "guard"));
+        assert_eq!(
+            s(get(node(&result, get(instance, "guard")), "type")),
+            "Expression"
+        );
+    }
+}
+
+#[test]
+fn conditional_local_system_saved_reuse_keeps_guarded_instance() {
+    let dir = input("local-conditional-reuse", Some(false));
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    std::fs::write(
+        dir.join("l.law"),
+        law.replace(
+            "law required valid(s:State):s.flag=true;",
+            "law required valid(s:State) when s.flag:false;",
+        ),
+    )
+    .unwrap();
+    let asks = [
+        "a=build(Fixed,on=@fixed/s)",
+        "l=localize($a.object)",
+        "d=diagnose($l.system)",
+        "v=evaluate(Fixed.current,on=$d.diagnostic.global.domain.base,s=@fixed/s)",
+    ];
+    let first = execute(&dir, "out", &asks);
+    assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
+    let before = result_json(&dir, &first);
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        "again",
+        "--reuse",
+        "out",
+        "--time-ms",
+        "120000",
+    ];
+    for ask in asks {
+        args.extend(["--ask", ask]);
+    }
+    let second = run(&dir, &args);
+    assert_eq!(second.code, 0, "{} {}", second.stdout, second.stderr);
+    let after = result_json(&dir, &second);
+    for field in ["answers", "nodes"] {
+        assert_eq!(get(&before, field).value, get(&after, field).value);
+    }
+    assert_eq!(
+        get(output(&after, 3, "value"), "value").value,
+        archsig::json::JValue::Bool(false)
+    );
+}

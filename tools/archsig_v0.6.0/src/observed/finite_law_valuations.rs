@@ -1113,6 +1113,23 @@ pub(in crate::observed) fn evaluate_point(
     bindings: &[(String, Scalar)],
     point: usize,
 ) -> Result<FiniteLawRow, ValidationFailure> {
+    evaluate_point_mode(environment, declaration, bindings, point, true)
+}
+/// 局所系は非適用bodyも含めた原式の読取り位置を必要とする。
+pub(in crate::observed) fn evaluate_local_point(
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: &[(String, Scalar)],
+) -> Result<FiniteLawRow, ValidationFailure> {
+    evaluate_point_mode(environment, declaration, bindings, 0, false)
+}
+fn evaluate_point_mode(
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: &[(String, Scalar)],
+    point: usize,
+    conditional: bool,
+) -> Result<FiniteLawRow, ValidationFailure> {
     let Signature::Law { params, .. } = &declaration.signature else {
         return Err("候補の判定元がLawでない".into());
     };
@@ -1120,7 +1137,7 @@ pub(in crate::observed) fn evaluate_point(
         .any(|(p,(name,value))| p.name != *name || p.ty.erase() != value.ty()) {
         return Err("候補のLaw束縛の名前・数・型が違う".into());
     }
-    Ok(probe_mode(environment, declaration, bindings, point, true)?.row)
+    Ok(probe_mode(environment, declaration, bindings, point, conditional)?.row)
 }
 fn probe(
     e: &Environment<'_>,
