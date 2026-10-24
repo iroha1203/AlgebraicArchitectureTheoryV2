@@ -193,7 +193,7 @@ impl Data {
 fn refs(values: &[NodeRef]) -> Json {
     Json::Arr(values.iter().map(|r| r.wire()).collect())
 }
-fn value(b: &mut Builder<'_>, scalar: &Scalar) -> Result<NodeRef, ValidationFailure> {
+pub(super) fn value(b: &mut Builder<'_>, scalar: &Scalar) -> Result<NodeRef, ValidationFailure> {
     for (index, part) in b.parts.iter().enumerate() {
         b.g.tick()?;
         if part.scalar.as_ref() == Some(scalar) {
@@ -209,7 +209,7 @@ fn value(b: &mut Builder<'_>, scalar: &Scalar) -> Result<NodeRef, ValidationFail
         None,
     )
 }
-fn source_expression(
+pub(super) fn source_expression(
     b: &mut Builder<'_>,
     environment: &Environment<'_>,
     expression: usize,
@@ -1171,4 +1171,29 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
         return Err("修復反証の元全解が違う".into());
     }
     validate_node(g, n, v, d)
+}
+
+
+pub(super) struct CandidateInput {
+    pub witness: Arc<native::ArchitectureWitness>,
+    pub assignments: Vec<(Fact, Scalar)>,
+    pub search: change_search::Search,
+    pub domain_type: ProjectionType,
+}
+pub(super) fn candidate_input(env: &Environment<'_>, g: &Graph, reference: NodeRef,
+    c: &mut Control) -> Result<CandidateInput, ValidationFailure> {
+    let node=g.get(reference)?;
+    let Some(Payload::Construction(v))=&node.payload else {return Err("商の候補域がnativeでない".into())};
+    let D::Change(d)=&v.data else {return Err("商の候補域がchange由来でない".into())};
+    if !matches!(d.ty(),NodeType::Construction(T::CandidateSpace|T::SolutionSet)) {return Err("商の候補域の型が違う".into())}
+    env.recheck_node(g,node,reference.0)?;
+    let origin=Witness::Architecture(d.source.architecture.witness.clone());
+    let request=origin.request();
+    env.with_request_context(g,request,|| {
+        let _selected=env.enter_architecture(g)?;
+        let assignments=env.architecture_values();
+        let search=change_search::search(env,g,&d.source.architecture.witness,request,c).map_err(|f|f.cause)?;
+        Ok(CandidateInput {witness:d.source.architecture.witness.clone(),assignments,search,
+            domain_type:d.projection_type().ok_or("商の候補域の公開型がない")?})
+    })
 }

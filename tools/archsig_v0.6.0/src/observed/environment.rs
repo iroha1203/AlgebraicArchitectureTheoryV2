@@ -64,6 +64,8 @@ pub(super) mod change_evaluation;
 pub(super) mod change_search;
 #[path = "change_affine.rs"]
 pub(super) mod change_affine;
+#[path = "quotient_evaluation.rs"]
+pub(super) mod quotient_evaluation;
 #[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
 #[path = "relation_instances.rs"]
@@ -342,6 +344,7 @@ impl ValidationSnapshot {
 #[derive(Default)]
 struct ValidationCache {
     changes: Vec<std::sync::Arc<super::change_result::Source>>,
+    quotients: Vec<std::sync::Arc<super::quotient_result::Source>>,
     object_maps: Vec<std::sync::Arc<super::object_map_result::Source>>,
     builds: Vec<std::sync::Arc<super::build_result::Source>>,
     checked: BTreeSet<NodeRefKey>,
@@ -420,6 +423,8 @@ pub(crate) struct Environment<'a> {
 impl<'a> Environment<'a> {
     pub(super) fn change_source_checked(&self, source:&std::sync::Arc<super::change_result::Source>)->bool { self.cache.borrow().changes.iter().any(|s|std::sync::Arc::ptr_eq(s,source)) }
     pub(super) fn remember_change_source(&self,source:std::sync::Arc<super::change_result::Source>) { self.cache.borrow_mut().changes.push(source); }
+    pub(super) fn quotient_source_checked(&self, source:&std::sync::Arc<super::quotient_result::Source>)->bool { self.cache.borrow().quotients.iter().any(|s|std::sync::Arc::ptr_eq(s,source)) }
+    pub(super) fn remember_quotient_source(&self,source:std::sync::Arc<super::quotient_result::Source>) { self.cache.borrow_mut().quotients.push(source); }
     pub(super) fn object_map_source_checked(&self, source: &std::sync::Arc<super::object_map_result::Source>) -> bool {
         self.cache.borrow().object_maps.iter().any(|s| std::sync::Arc::ptr_eq(s,source))
     }
@@ -892,6 +897,7 @@ impl<'a> Environment<'a> {
                     self.recheck_build(graph, value, limit)?;
                     self.recheck_object_map(graph, value, limit)?;
                     self.recheck_change(graph, value, limit)?;
+                    self.recheck_quotient(graph, value, limit)?;
                     self.recheck_view_invariant(graph, value, limit)?;
                     self.recheck_predicate_invariant(graph, value, limit)?;
                     for r in node
@@ -4131,7 +4137,7 @@ impl<'a> Environment<'a> {
             if matches!(
                 request.kind,
                 QuestionKind::Build
-                    | QuestionKind::Solve | QuestionKind::Repair
+                    | QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Quotient
                     | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
@@ -4141,6 +4147,8 @@ impl<'a> Environment<'a> {
                         super::build_result::validate_answer(self, graph, request, answer)?;
                     } else if matches!(request.kind,QuestionKind::Solve|QuestionKind::Repair) {
                         super::change_result::validate_answer(self,graph,request,answer)?;
+                    } else if request.kind == QuestionKind::Quotient {
+                        super::quotient_result::validate_answer(self,graph,request,answer)?;
                     } else if request.kind == QuestionKind::Compose {
                         super::public_compose::validate_answer(self, graph, request, answer)?;
                     } else if request.kind == QuestionKind::Compare {

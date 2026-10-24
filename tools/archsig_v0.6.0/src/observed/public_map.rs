@@ -135,6 +135,7 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
+    if request.kind == QuestionKind::Quotient {return super::quotient_result::validate_origin(environment,request,value);}
     if matches!(request.kind,QuestionKind::Build|QuestionKind::Solve|QuestionKind::Repair) {
         return super::architecture_result::validate_build_origin(
             environment,
@@ -364,7 +365,7 @@ pub(super) fn unavailable(
             .any(|a| a.name == "on" && &a.value == selector)
             && !matches!(
                 request.kind,
-                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
+                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient
             )
             && !matches!(
                 graph.requests[producer_index].kind,
@@ -407,7 +408,7 @@ pub(super) fn unavailable(
             location: None,
         });
     }
-    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare) {
+    if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient) {
         let (projection_reasons, projection_scope) =
             environment.projection_failure_reasons(graph, request)?;
         reasons.extend(projection_reasons);
