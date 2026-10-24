@@ -248,3 +248,39 @@ fn missing_view_keeps_quotient_undetermined_and_independent_followup_available()
     let reused=result_json(&dir,&second);
     for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
 }
+
+#[test]
+fn unavailable_view_binding_blocks_quotient_without_breaking_independent_requests() {
+    let dir=input("quotient-binding-missing");
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap()
+        .replace("x=a,y=b","x=a").replace("view last", "view echo(b:Bool):Bool=b;view first(s:State):Bool=s.x;view last");
+    std::fs::write(dir.join("l.law"),law).unwrap();
+    let map=std::fs::read_to_string(dir.join("a.json")).unwrap()
+        .replace(",{\"id\":\"y\",\"subject\":\"s\",\"field\":\"Pair.State.y\",\"value\":false,\"origin\":\"o\"}","");
+    std::fs::write(dir.join("a.json"),map).unwrap();
+    let asks=["s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+        "v=evaluate(Pair.last,s=@v/s)","q=quotient(Pair.echo,on=$s.domain,b=$v.value)",
+        "later=check(Pair.empty,s=@v/s)"];
+    let first=execute(&dir,"out",&asks,None);
+    assert_eq!(first.code,2,"{} {}",first.stdout,first.stderr);
+    let result=result_json(&dir,&first);let answers=arr(get(&result,"answers"));
+    assert_eq!(s(get(&answers[0],"status")),"established");
+    assert_eq!(s(get(&answers[2],"status")),"undetermined");
+    assert!(!has(get(&answers[2],"outputs"),"quotient"));
+    assert_eq!(s(get(&answers[3],"status")),"refuted");
+    let reasons=arr(get(&answers[2],"reasons"));
+    assert!(reasons.iter().any(|r|s(get(r,"code"))=="dependency_blocked"));
+    assert!(reasons.iter().any(|r|s(get(r,"code"))=="missing_observation" &&
+        arr(get(r,"missing")).iter().any(|f|s(get(f,"field"))=="Pair.State.y")));
+    let second=execute(&dir,"out2",&asks,Some("out"));
+    assert_eq!(second.code,2,"{} {}",second.stdout,second.stderr);
+    let reused=result_json(&dir,&second);
+    for key in ["answers","nodes"] {assert_eq!(get(&result,key).value,get(&reused,key).value);}
+    let mut known=asks;
+    known[1]="v=evaluate(Pair.first,s=@v/s)";
+    let available=execute(&dir,"known",&known,None);
+    assert_eq!(available.code,1,"{} {}",available.stdout,available.stderr);
+    let complete=result_json(&dir,&available);
+    assert_eq!(s(get(&arr(get(&complete,"answers"))[2],"status")),"established");
+    exact_fibers(&complete,2,vec![vec![(false,false),(false,true),(true,false),(true,true)]]);
+}

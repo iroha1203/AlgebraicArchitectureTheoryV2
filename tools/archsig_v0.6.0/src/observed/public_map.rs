@@ -365,7 +365,7 @@ pub(super) fn unavailable(
             .any(|a| a.name == "on" && &a.value == selector)
             && !matches!(
                 request.kind,
-                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare
+                QuestionKind::Map | QuestionKind::Compose | QuestionKind::Compare | QuestionKind::Quotient
             )
             && !matches!(
                 graph.requests[producer_index].kind,
