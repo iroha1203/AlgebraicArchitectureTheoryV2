@@ -13,6 +13,15 @@ use super::{
 };
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::sync::Arc;
+fn saved_context(g: &Graph, r: NodeRef) -> Result<super::call::Context, ValidationFailure> {
+    if g.contexts.len() != g.nodes.len() {
+        return Err("述語不変量の保存Context表とnode表の長さが違う".into());
+    }
+    g.contexts
+        .get(r.0)
+        .copied()
+        .ok_or_else(|| "述語不変量の保存Contextがない".into())
+}
 fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
@@ -87,6 +96,7 @@ fn metadata(
     let mut reasons = vec![];
     for r in arguments {
         tick(c)?;
+        saved_context(g, *r)?;
         let n = g.get(*r)?;
         support.extend(n.support.iter().cloned());
         scope.merge(&n.scope);
@@ -222,6 +232,9 @@ fn compute(
             let [source] = rs.as_slice() else {
                 return Err("述語不変量の対象の元object_readingが一つでない".into());
             };
+            if saved_context(g, source.expression)? != saved_context(g, t.architecture)? {
+                return Err("述語の元object_readingの保存Contextが違う".into());
+            }
             let n = g.get(source.expression)?;
             env.recheck_node(g, n, source.expression.0)?;
             g.expect(source.expression, &NodeType::Expression(Type::Bool))?;
@@ -384,6 +397,25 @@ impl Data {
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
         (self.part.support.clone(), self.part.scope.clone())
     }
+    fn context(&self, g: &Graph) -> Result<(), ValidationFailure> {
+        let expected = saved_context(g, self.source.table.architecture)?;
+        let at = self
+            .source
+            .base
+            .checked_add(self.index)
+            .ok_or("述語不変量のContext位置が域外")?;
+        let actual = if at < g.nodes.len() {
+            saved_context(g, NodeRef(at))?
+        } else if at == g.nodes.len() {
+            g.active
+        } else {
+            return Err("述語不変量のContextが未生成位置を指す".into());
+        };
+        if actual != expected {
+            return Err("述語不変量の元producer Contextが違う".into());
+        }
+        Ok(())
+    }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         if self.source.base.checked_add(self.index) != Some(at)
             || self.arguments().iter().any(|r| r.0 >= at)
@@ -416,7 +448,7 @@ pub(super) fn retain(
     c: &mut Control,
 ) -> Result<Vec<Invariant>, ValidationFailure> {
     tick(c)?;
-    if g.active != g.context_at(t.architecture.0) {
+    if g.active != saved_context(g, t.architecture)? {
         return Err("述語不変量の生成が元Request Contextでない".into());
     }
     t.recheck(env, g, c)?;
@@ -452,6 +484,7 @@ pub(super) fn validate_node(
     v: &ConstructionValue,
     d: &Data,
 ) -> Result<(), ValidationFailure> {
+    d.context(g)?;
     let Witness::Architecture(a) = &v.witness else {
         return Err("述語不変量のconsumerが別種".into());
     };
@@ -478,6 +511,7 @@ impl Environment<'_> {
             return Ok(());
         };
         d.position(at)?;
+        d.context(g)?;
         let mut c = self.control.clone();
         d.source.table.recheck(self, g, &mut c)?;
         let (a, components, objects) = components(g, &d.source.table)?;

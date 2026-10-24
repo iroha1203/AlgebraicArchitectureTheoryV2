@@ -616,3 +616,70 @@ fn changed_original_reading_nodes_are_rejected_before_any_native_transfer() {
         assert!(env.architecture_ref().is_none());
     }
 }
+#[test]
+fn saved_context_is_required_and_uninserted_candidates_keep_their_producer_context() {
+    let p = prepared(
+        fixture::inputs(
+            false,
+            false,
+            "law required zero(c:Part):c.quantity=0;law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
+        ),
+        "root",
+    );
+    let (mut full, t) = table(&p);
+    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let out = retain(&env, &mut full, t.clone(), &mut quiet()).unwrap();
+    let last = out.last().unwrap();
+    assert_eq!(last.invariant.0 + 1, full.nodes.len());
+    let mut bad = copy_graph(&full, &quiet());
+    bad.contexts.pop();
+    assert_eq!(bad.active, full.contexts[last.invariant.0]);
+    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let result = fresh.recheck_node(&bad, bad.get(last.invariant).unwrap(), last.invariant.0);
+    assert!(result.is_err(), "missing final saved Context: {result:?}");
+    for target in [last.evaluations[0], last.invariant] {
+        let mut prefix = copy_graph(&full, &quiet());
+        prefix.nodes.truncate(target.0);
+        prefix.contexts.truncate(target.0);
+        prefix.active = full.contexts[target.0];
+        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let candidate = full.get(target).unwrap();
+        assert!(
+            fresh.validate(&prefix, candidate).is_ok(),
+            "valid uninserted {target:?}"
+        );
+        for mode in 0..3 {
+            let mut bad = copy_graph(&full, &quiet());
+            bad.nodes.truncate(target.0 + 1);
+            bad.contexts.truncate(target.0);
+            if mode == 1 {
+                bad.contexts.clear();
+            } else if mode == 2 {
+                bad.contexts = full.contexts[..target.0 + 1].to_vec();
+                bad.contexts.push(bad.active);
+            }
+            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            assert!(
+                fresh
+                    .recheck_node(&bad, bad.get(target).unwrap(), target.0)
+                    .is_err(),
+                "target{target:?}/mode{mode}"
+            );
+        }
+    }
+    let (initial, t) = table(&p);
+    for mode in 0..2 {
+        let mut g = copy_graph(&initial, &quiet());
+        if mode == 0 {
+            g.contexts.pop();
+        } else {
+            g.contexts.push(g.active);
+        }
+        let before = copy_graph(&g, &quiet());
+        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        assert!(retain(&env, &mut g, t.clone(), &mut quiet()).is_err());
+        assert_eq!(g.nodes, before.nodes);
+        assert_eq!(g.contexts, before.contexts);
+        assert_eq!(g.active, before.active);
+    }
+}
