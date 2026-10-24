@@ -447,9 +447,6 @@ fn resolve_inner(
             phase(control, Checkpoint::RequestBinding)?;
             continue;
         }
-        if kind == QuestionKind::Quotient && raw.arguments.iter().any(|(key,_)|key=="law") {
-            return Err(ResolveFailure::NotApplicable {request:raw.id,kind:raw.kind,architecture_environment:false});
-        }
         let Selector::Declaration { name } = &raw.head else {
             return Err(invalid(problem(
                 RequestIssueCode::Reference,
@@ -467,10 +464,42 @@ fn resolve_inner(
                 "問いと宣言の種類が合わない",
             ))
         })?;
+        let view_params = params;
+        let selected_law = if kind == QuestionKind::Quotient {
+            raw.arguments.iter().find(|(key, _)| key == "law").map(|(_, value)| {
+                let Selector::Declaration { name } = value else {
+                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "lawはLaw宣言名を指定する")));
+                };
+                declaration(law, name, control, &raw.id)
+            }).transpose()?
+        } else { None };
+        let mut all_params = params.to_vec();
+        if let Some(name) = &selected_law {
+            let Signature::Law { params, .. } = &law.declarations[name].signature else {
+                return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "lawはLaw宣言を指定する")));
+            };
+            for param in params {
+                if let Some(shared) = all_params.iter().find(|p| p.name == param.name) {
+                    if shared.ty != param.ty {
+                        return Err(invalid(problem(RequestIssueCode::Type, &raw.id, &param.name, "viewとLawの同名parameter型が異なる")));
+                    }
+                } else { all_params.push(param.clone()); }
+            }
+        }
+        let params = all_params.as_slice();
         let mut arguments = BTreeMap::new();
         let mut dependencies = BTreeSet::new();
         for (key, value) in raw.arguments {
             phase(control, Checkpoint::RequestBinding)?;
+            if key == "law" && kind == QuestionKind::Quotient {
+                if arguments.insert("law".into(), RequestArgument {
+                    name: "law".into(), value: Selector::Declaration { name: selected_law.clone().ok_or_else(|| invalid(problem(RequestIssueCode::Reference, &raw.id, "law", "Lawがない")))? },
+                    origin: ArgumentOrigin::Explicit,
+                }).is_some() {
+                    return Err(invalid(problem(RequestIssueCode::DuplicateArgument, &raw.id, "law", "lawが重複している")));
+                }
+                continue;
+            }
             if key == "using" && matches!(kind, QuestionKind::Solve | QuestionKind::Repair) {
                 let Selector::Declaration { name } = &value else {
                     return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "usingはchangeの完全名")));
@@ -596,7 +625,7 @@ fn resolve_inner(
         for param in params {
             phase(control, Checkpoint::RequestBinding)?;
             if !arguments.contains_key(&format!("bind.{}", param.name)) {
-                if (kind == QuestionKind::Quotient || kind == QuestionKind::Evaluate)
+                if ((kind == QuestionKind::Quotient && view_params.iter().any(|p| p.name == param.name)) || kind == QuestionKind::Evaluate)
                     && !object_view.is_some_and(|instance| {
                         instance.declaration().kind == "view"
                             && instance.declaration().name == full
@@ -620,7 +649,7 @@ fn resolve_inner(
             }
             phase(control, Checkpoint::RequestBinding)?;
         }
-        let mut defaults = if kind == QuestionKind::Quotient {
+        let mut defaults = if kind == QuestionKind::Quotient && selected_law.is_none() {
             vec![RequestDefault::NoLawCheck]
         } else if arguments.contains_key("on") {
             vec![]
@@ -629,7 +658,7 @@ fn resolve_inner(
         };
         if !unbound.is_empty() {
             defaults.push(RequestDefault::UniversalParameters {
-                declaration: full.clone(),
+                declaration: selected_law.clone().unwrap_or_else(|| full.clone()),
                 parameters: unbound,
             });
         }
@@ -737,6 +766,17 @@ fn resolve_inner(
             req.kind,
         )
         .unwrap();
+        let mut all_params = params.to_vec();
+        if req.kind == QuestionKind::Quotient {
+            if let Some(RequestArgument { value: Selector::Declaration { name }, .. }) = req.arguments.iter().find(|a| a.name == "law") {
+                if let Signature::Law { params, .. } = &law.declarations[name].signature {
+                    for param in params {
+                        if !all_params.iter().any(|p| p.name == param.name) { all_params.push(param.clone()); }
+                    }
+                }
+            }
+        }
+        let params = all_params.as_slice();
         if let Some(on) = checked_find(
             &req.arguments,
             |a| a.name == "on",
@@ -1145,10 +1185,14 @@ fn selector_type(
                     if types.len()==1 {types.into_iter().next().expect("一件")}else{ProjectionType::Dynamic(types)}
                 }
             } else if r.kind == QuestionKind::Quotient {
+                if field == "proposition" && r.arguments.iter().any(|a| a.name == "law") {
+                    ProjectionType::Proposition
+                } else {
                 if field != "quotient" { return Err(failure(RequestIssueCode::Projection,"quotientの非公開出力")); }
                 let on=&r.arguments.iter().find(|a|a.name=="on").ok_or_else(||failure(RequestIssueCode::MissingBinding,"quotientのonがない"))?.value;
                 let (plan,_)=selector_type(law,map,requests,names,on,control,(request,"on"))?;
                 ProjectionType::Quotient(Box::new(plan.ty))
+                }
             } else if r.kind == QuestionKind::Compare {
                 comparison::output_type(r, field)?
             } else if r.kind == QuestionKind::Compose {

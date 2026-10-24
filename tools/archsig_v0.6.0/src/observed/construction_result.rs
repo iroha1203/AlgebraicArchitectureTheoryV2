@@ -1533,6 +1533,14 @@ pub(super) fn architecture_origin(
             }
             Ok(a)
         }
+        (Witness::Architecture(a), ConstructionData::Quotient(d)) if v.ty()==NodeType::Construction(ConstructionType::Architecture) => {
+            let context = graph.context_at(reference.0);
+            if context.frame.is_some() || context.iteration.is_some() || context.instance.is_some() || context.case.is_some()
+                || graph.requests.get(context.request) != Some(d.request()) {
+                return Err("商の候補Architectureの元Requestが違う".into());
+            }
+            Ok(a)
+        }
         (_, ConstructionData::ObjectComponents(_)) => {
             super::object_component_diagram::architecture_origin(graph, reference, object)
         }

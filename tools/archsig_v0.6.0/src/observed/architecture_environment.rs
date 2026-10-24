@@ -111,7 +111,7 @@ impl<'i> Environment<'i> {
         }
         if !matches!(
             value.data,
-            ConstructionData::Architecture { .. } | ConstructionData::ObjectComponents(_) | ConstructionData::Change(_)
+            ConstructionData::Architecture { .. } | ConstructionData::ObjectComponents(_) | ConstructionData::Change(_) | ConstructionData::Quotient(_)
         ) {
             return Ok(None);
         }
@@ -120,7 +120,7 @@ impl<'i> Environment<'i> {
             return Err("環境Architectureの元構成がない".into());
         };
         let object = match &value.data {
-            ConstructionData::Architecture { .. } | ConstructionData::Change(_) => 0,
+            ConstructionData::Architecture { .. } | ConstructionData::Change(_) | ConstructionData::Quotient(_) => 0,
             ConstructionData::ObjectComponents(data) => data.architecture_object(reference)?,
             _ => return Err("環境Architectureの構成が違う".into()),
         };
@@ -131,7 +131,7 @@ impl<'i> Environment<'i> {
             reference,
             domain: Arc::new(domain),
             scope: node.scope.clone(),
-            overrides:match &value.data {ConstructionData::Change(d)=>d.overrides(graph)?.into_iter().map(|(f,r,v)|Ok((f,(r,v,graph.get(r)?.scope.clone())))).collect::<Result<_,ValidationFailure>>()?,_=>BTreeMap::new()},
+            overrides:match &value.data {ConstructionData::Change(d)=>d.overrides(graph)?.into_iter().map(|(f,r,v)|Ok((f,(r,v,graph.get(r)?.scope.clone())))).collect::<Result<_,ValidationFailure>>()?,ConstructionData::Quotient(d)=>d.overrides(graph)?.into_iter().map(|(f,r,v)|Ok((f,(r,v,graph.get(r)?.scope.clone())))).collect::<Result<_,ValidationFailure>>()?,_=>BTreeMap::new()},
         }))
     }
     pub(super) fn validate_evaluation_environment(

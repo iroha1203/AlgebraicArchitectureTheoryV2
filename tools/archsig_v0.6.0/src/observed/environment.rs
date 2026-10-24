@@ -408,6 +408,7 @@ pub(crate) struct Environment<'a> {
     primitive_input_valuation: Option<BTreeMap<Fact, Value>>,
     primitive_reads: RefCell<Option<BTreeSet<Fact>>>,
     missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
+    evaluation_capture: RefCell<Option<quotient_evaluation::EvaluationCapture>>,
     scoped_context: Cell<Option<super::call::Context>>,
     validation_depth: Cell<usize>,
     cutoff: Cell<usize>,
@@ -569,6 +570,7 @@ impl<'a> Environment<'a> {
             primitive_input_valuation: None,
             primitive_reads: RefCell::new(None),
             missing_slot_reads: RefCell::new(None),
+            evaluation_capture: RefCell::new(None),
             scoped_context: Cell::new(None),
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
@@ -7254,6 +7256,35 @@ impl<'a> Environment<'a> {
         f.apply_symbolic(&args, law, &self.control)
     }
     fn scoped_ast(
+        &self, id: usize, variables: &BTreeMap<String, SourceValue>, base: &Scope, reading: &str,
+    ) -> Result<SourceValue, ValidationFailure> {
+        let recording = self.evaluation_capture.borrow().as_ref()
+            .is_some_and(|capture| !capture.stack.is_empty() || capture.selected.contains(&id));
+        if !recording { return self.scoped_ast_cached(id, variables, base, reading); }
+        self.evaluation_capture.borrow_mut().as_mut().ok_or("評価出現収集がない")?.stack.push(vec![]);
+        let result = self.scoped_ast_cached(id, variables, base, reading);
+        let mut capture = self.evaluation_capture.borrow_mut();
+        let capture = capture.as_mut().ok_or("評価出現収集が消えた")?;
+        let children = capture.stack.pop().ok_or("評価出現の親がない")?;
+        if let Ok(value) = &result {
+            let residual = if let ExprKind::Binary {op:BinOp::Eq,lhs,rhs} = self.inputs.law().exprs[id].kind {
+                let ty = self.inputs.law().expr_type(lhs).ok_or("残差の元型がない")?;
+                if numeric::is_numeric_type(ty,&self.control)? {
+                    let child_value = |id| children.iter().map(|i|&capture.nodes[*i]).find(|n|n.expression==id).and_then(|n|n.value.as_ref());
+                    child_value(lhs).zip(child_value(rhs)).map(|(left,right)|numeric::binary(BinOp::Sub,left,right,&self.control)).transpose()?
+                } else {None}
+            } else {None};
+            let index = capture.nodes.len();
+            capture.nodes.push(quotient_evaluation::EvaluationNode {
+                expression:id,
+                bindings:variables.iter().filter_map(|(name,v)|v.known_value.as_ref().map(|v|(name.clone(),v.clone()))).collect(),
+                value:value.known_value.clone(),residual,scope:value.scope.clone(),children,
+            });
+            if let Some(parent) = capture.stack.last_mut() { parent.push(index); } else { capture.roots.push(index); }
+        }
+        result
+    }
+    fn scoped_ast_cached(
         &self,
         id: usize,
         variables: &BTreeMap<String, SourceValue>,
@@ -7283,7 +7314,9 @@ impl<'a> Environment<'a> {
                 }
                 found
             };
-            if let Some((value, missing)) = cached {
+            let previously_cached = cached.is_some();
+            let recording = self.evaluation_capture.borrow().as_ref().is_some_and(|capture| !capture.stack.is_empty());
+            if let Some((value, missing)) = cached && !recording {
                 if let Some(reads) = self.missing_slot_reads.borrow_mut().as_mut() {
                     reads.extend(missing);
                 }
@@ -7301,9 +7334,9 @@ impl<'a> Environment<'a> {
             }
             let value = value?;
             self.tick()?;
-            self.scoped_values
-                .borrow_mut()
-                .push((key, value.clone(), missing));
+            if !previously_cached {
+                self.scoped_values.borrow_mut().push((key, value.clone(), missing));
+            }
             Ok(value)
         })
     }
