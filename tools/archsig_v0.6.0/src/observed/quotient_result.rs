@@ -17,6 +17,8 @@ use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type
 use std::{collections::BTreeMap, sync::Arc};
 #[path = "quotient_law_result.rs"]
 mod law_result;
+#[path = "quotient_affine_result.rs"]
+mod affine_result;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -143,6 +145,9 @@ fn compute(
             return Err("商のonが既出参照でない".into());
         };
         let input = change_result::candidate_input(env, g, reference, c)?;
+        if input.search.linear.is_some() {
+            return affine_result::compute(env, g, input, reference, request, base, c);
+        }
         let table = quotient_evaluation::compute(env, g, &input, request, c)?;
         let declaration =
             &env.inputs.law().declarations[request.declaration().ok_or("商のviewがない")?];

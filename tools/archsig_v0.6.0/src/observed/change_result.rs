@@ -16,7 +16,7 @@ use super::{
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 #[path = "change_linear_result.rs"]
-mod linear_result;
+pub(super) mod linear_result;
 
 #[derive(Debug)]
 pub(super) struct Source {

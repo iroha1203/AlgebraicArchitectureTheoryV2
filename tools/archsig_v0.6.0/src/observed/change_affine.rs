@@ -17,6 +17,8 @@ pub(in crate::observed) struct Guard {
 #[derive(Clone, Debug)]
 pub(in crate::observed) struct Linear {
     pub parameter_count: usize,
+    pub axes: Vec<Parameter>,
+    pub candidates_empty: bool,
     pub guard: Option<Guard>,
     pub particular: Option<Vec<Z>>,
     pub kernel: Matrix,
@@ -282,6 +284,8 @@ pub(in crate::observed) fn compute(
         if fiber.particular.is_none() {
             return Ok(Linear {
                 parameter_count: axes.len(),
+                axes,
+                candidates_empty: true,
                 guard: None,
                 particular: None,
                 kernel: fiber.kernel.clone(),
@@ -419,6 +423,8 @@ pub(in crate::observed) fn compute(
     };
     Ok(Linear {
         parameter_count: axes.len(),
+        axes,
+        candidates_empty: false,
         guard,
         particular,
         kernel,
