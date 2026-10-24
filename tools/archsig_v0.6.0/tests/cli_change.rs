@@ -82,6 +82,78 @@ fn finite_solve_returns_original_assignments_for_all_local_subjects() {
     let representation = get(get(node, "value"), "representation");
     assert_eq!(s(get(representation, "kind")), "finite");
     assert_eq!(arr(get(representation, "values")).len(), 1);
+    let constructions = [
+        "binding",
+        "projection",
+        "expression",
+        "evaluation",
+        "law_instance",
+        "configuration",
+        "architecture",
+        "atom_universe",
+        "atom_map",
+        "map_candidate",
+        "configuration_map",
+        "object_component",
+        "object_algebra",
+        "equation_family",
+        "equation_map",
+        "circuit_pattern",
+        "circuit_case",
+        "circuit_detector",
+        "circuit_map",
+        "invariant",
+        "invariant_map",
+        "signature_axis",
+        "signature_map",
+        "value_map",
+        "value_equivalence",
+        "declaration_transport",
+        "object_algebra_map",
+        "operation",
+        "composition",
+        "comparison",
+        "domain",
+        "state_space",
+        "state_map",
+        "candidate_space",
+        "solution_set",
+        "equation_space",
+        "equation_solutions",
+        "path",
+        "context",
+        "context_map",
+        "cover",
+        "topology",
+        "local_system",
+        "equation_presentation",
+        "ring",
+        "polynomial",
+        "finite_function",
+        "ring_map",
+        "ideal",
+        "module",
+        "module_map",
+        "vector",
+        "action",
+        "complex",
+        "cochain_map",
+        "cohomology",
+        "class",
+        "diagnostic",
+        "assignment",
+        "repair",
+        "quotient",
+        "observation_plan",
+        "proposition",
+        "evidence",
+    ];
+    for node in arr(get(&result, "nodes")) {
+        let rule = get(node, "rule");
+        if s(get(rule, "kind")) == "construction" {
+            assert!(constructions.contains(&s(get(rule, "name"))), "{:?}", rule);
+        }
+    }
 }
 
 #[test]
@@ -338,4 +410,90 @@ fn nonunique_repair_blocks_only_consumption_of_its_uncreated_object() {
             .iter()
             .any(|r| s(get(r, "code")) == "dependency_blocked")
     );
+}
+
+#[test]
+fn change_dependency_cycles_are_rejected_before_output_type_resolution() {
+    let input = input();
+    let dir = workdir("change-cycles");
+    for (name, data) in [
+        ("d.json", input.sources().definitions()[0].bytes()),
+        ("a.json", input.sources().archmap().bytes()),
+        ("l.law", input.sources().law().bytes()),
+    ] {
+        std::fs::write(dir.join(name), data).unwrap();
+    }
+    for asks in [
+        vec!["s=solve(Selected.valid,on=$s.domain.base,using=Selected.choose)"],
+        vec!["r=repair(Selected.valid,on=$r.object,using=Selected.choose)"],
+        vec![
+            "s=solve(Selected.valid,on=$r.object,using=Selected.choose)",
+            "r=repair(Selected.valid,on=$s.domain.base,using=Selected.choose)",
+        ],
+    ] {
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "out",
+            "--time-ms",
+            "100",
+        ];
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        let result = run(&dir, &args);
+        assert_eq!(result.code, 64, "{}", result.stdout);
+        assert!(result.stdout.contains("cycle"), "{}", result.stdout);
+    }
+}
+
+#[test]
+fn unimplemented_change_preserves_the_evaluation_api_failure_class() {
+    let input = input();
+    for missing in [false, true] {
+        let law = String::from_utf8(input.sources().law().bytes().to_vec()).unwrap();
+        let map = String::from_utf8(input.sources().archmap().bytes().to_vec()).unwrap();
+        let law = if missing {
+            law
+        } else {
+            law.replace("b:Bool)=c with {flag=b}", "b:Z)=c with {flag=true}")
+        };
+        let map = if missing {
+            map.replace(r#"{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#,"")
+        } else {
+            map
+        };
+        let sources = observed::input::InputSources::from_bytes(
+            vec![input.sources().definitions()[0].bytes().to_vec()],
+            law.into_bytes(),
+            map.into_bytes(),
+        );
+        let mut control =
+            observed::control::Control::new(observed::control::Limits::default(), |_| {
+                observed::control::Usage::default()
+            });
+        let prepared = observed::prepare_observed(
+            sources,
+            &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
+            &mut control,
+        )
+        .unwrap();
+        let failure = observed::evaluate_observed(prepared, &mut control).unwrap_err();
+        let observed::EvaluationFailure::NotImplemented {
+            declaration,
+            partial,
+            ..
+        } = failure
+        else {
+            panic!("未実装の分類を保持する");
+        };
+        assert_eq!(declaration, "Selected.valid");
+        assert_eq!(partial.status(), "error");
+    }
 }

@@ -2954,6 +2954,12 @@ fn evaluate_observed_with_validator(
                     Err(failure) => {
                         let reason = match failure {
                             ValidationFailure::Stop(stop) => Reason::stopped(&request.id, stop),
+                            ValidationFailure::UnsupportedExpression { location, feature }
+                                if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) => {
+                                not_implemented = Some((request.declaration().expect("検査済みchangeのLaw").to_owned(), location, feature.clone()));
+                                internal = true;
+                                Reason::internal(&request.id, format!("未実装の評価経路: {feature}"))
+                            }
                             other => {
                                 internal = true;
                                 Reason::internal(

@@ -653,6 +653,7 @@ fn resolve_inner(
             matches!(
                 r.kind,
                 QuestionKind::Build | QuestionKind::Compose | QuestionKind::Compare
+                    | QuestionKind::Solve | QuestionKind::Repair
             )
         })
     {

@@ -200,7 +200,7 @@ fn value(b: &mut Builder<'_>, scalar: &Scalar) -> Result<NodeRef, ValidationFail
     }
     b.push(
         NodeType::Value(scalar.ty()),
-        "value",
+        "binding",
         scalar.wire(),
         vec![],
         Some(scalar.clone()),
