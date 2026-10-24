@@ -109,12 +109,14 @@ impl FiniteViewTypeMap {
 pub enum ViewFamilyReturnMap {
     Finite(Box<FiniteViewTypeMap>),
     Numeric(Box<NumericValueTransport>),
+    PrimitiveIdentity(PrimitiveValueIdentity),
 }
 impl ViewFamilyReturnMap {
     fn image(&self, value: &Scalar, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
         match self {
             Self::Finite(map) => map.image(value, c),
             Self::Numeric(map) => Ok(map.forward().apply_scalar(value, c)?.scalar().clone()),
+            Self::PrimitiveIdentity(map) => map.image(value, c),
         }
     }
 }
@@ -442,6 +444,14 @@ pub(super) fn evaluate(
                 c,
             )?,
         )));
+    } else if !finite::supported(&source_type, inputs.law(), c).map_err(invalid)?
+        && let Some(identity) = PrimitiveValueIdentity::checked(
+            &r.declarations,
+            &source_instance.declaration().name,
+            c,
+        )?
+    {
+        f.returns = Some(ViewFamilyReturnMap::PrimitiveIdentity(identity));
     } else {
         let a = Param {
             name: "return".into(),
@@ -776,6 +786,11 @@ pub(super) fn same(
             }
         }
         (Some(ViewFamilyReturnMap::Numeric(a)), Some(ViewFamilyReturnMap::Numeric(b))) => {
+            if a != b {
+                return Ok(false);
+            }
+        }
+        (Some(ViewFamilyReturnMap::PrimitiveIdentity(a)), Some(ViewFamilyReturnMap::PrimitiveIdentity(b))) => {
             if a != b {
                 return Ok(false);
             }

@@ -779,3 +779,62 @@ fn finite_view_map_refutes_a_changed_nonzero_parameter_row() {
     assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
     assert_eq!(s(get(answer(&result, "same"), "status")), "established");
 }
+
+fn mixed_view_inputs(name: &str, preserve: bool, parameter: bool) -> PathBuf {
+    let dir = finite_view_inputs(name, preserve);
+    let (source_parameter, target_parameter, source_value, target_value) = if parameter {
+        (", take: Bool", ", keep: Bool", "(take,(if take then s.free else s.held,rat(3,2)),if take then 1 else 0)", "(keep,(if keep then s.free else s.held,rat(3,2)),if keep then 1 else 0)")
+    } else {
+        ("", "", "(s.free>=0,(s.free,rat(3,2)),if s.held=0 then 1 else 0)", "(s.free>=0,(s.free,rat(3,2)),if s.held=0 then 1 else 0)")
+    };
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    let law = format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{
+{vocabulary}
+view metrics(s: State{source_parameter}): (Bool,(Z,Q),Fp(2)) = {source_value};
+}}
+reading After {{
+{vocabulary}
+view metrics(s: State{target_parameter}): (Bool,(Z,Q),Fp(2)) = {target_value};
+view yes(): Bool = true;
+}}"#);
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    dir
+}
+#[test]
+fn mixed_product_views_map_build_and_evaluate_with_and_without_parameters() {
+    for parameter in [false, true] {
+        let dir = mixed_view_inputs(if parameter { "mixed-parameter-view" } else { "mixed-closed-view" }, true, parameter);
+        let query = if parameter { "n=evaluate(After.metrics,on=$b.object,s=@v/r,keep=$yes.value)" } else { "n=evaluate(After.metrics,on=$b.object,s=@v/r)" };
+        let run = asks_with_limit(&dir, &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "b=build(After,on=$m.map.target.base.subject)",
+            "yes=evaluate(After.yes)", query,
+        ], "120000");
+        assert_eq!(run.code, 0, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        for id in ["m", "b", "yes", "n"] { assert_eq!(s(get(answer(&result, id), "status")), "established"); }
+        let v = arr(value(&result, get(get(answer(&result, "n"), "outputs"), "value")));
+        assert!(matches!(v[0].value, archsig::json::JValue::Bool(true)));
+        assert_eq!(s(&arr(&v[1])[0]), "2");
+        assert_eq!(arr(&arr(&v[1])[1]).iter().map(s).collect::<Vec<_>>(), vec!["3","2"]);
+        assert_eq!(s(&v[2]), "1");
+        let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+        let axes = arr(get(value(&result, get(map, "signature")), "axes"));
+        assert_eq!(axes.len(), 3);
+        for axis in axes { assert_eq!(arr(get(axis,"checks")).len(), 4); }
+    }
+}
+#[test]
+fn mixed_product_view_map_refutes_changed_numeric_coordinate() {
+    let dir = mixed_view_inputs("mixed-view-changed", false, false);
+    let run = asks_with_limit(&dir, &[
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        "same=compare($m.operation,to=$m.operation,kind=action)",
+    ], "120000");
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
+    assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+}
