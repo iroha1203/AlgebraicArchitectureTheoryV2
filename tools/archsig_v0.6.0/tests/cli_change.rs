@@ -497,3 +497,39 @@ fn unimplemented_change_preserves_the_evaluation_api_failure_class() {
         assert_eq!(partial.status(), "error");
     }
 }
+
+#[test]
+fn unused_let_cannot_erase_an_invalid_path_condition() {
+    let input = input();
+    let definitions=String::from_utf8(input.sources().definitions()[0].bytes().to_vec()).unwrap().replace(r#""fields":[{"name":"flag","type":"Bool","meaning":"条件。"}]"#,r#""fields":[{"name":"flag","type":"Bool","meaning":"条件。"},{"name":"link","type":["Ref","Pattern.Part"],"meaning":"接続。"}]"#);
+    let defs = definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
+    let old = &input.definitions().vocabularies["Pattern"].digest;
+    let new = &defs.vocabularies["Pattern"].digest;
+    assert_ne!(old, new);
+    let map=String::from_utf8(input.sources().archmap().bytes().to_vec()).unwrap().replace(old,new).replace(r#""atoms":["#,r#""atoms":[{"id":"lp","subject":"p","field":"Pattern.Part.link","value":["v","q"],"origin":"model"},{"id":"lq","subject":"q","field":"Pattern.Part.link","value":["v","p"],"origin":"model"},"#);
+    let law=String::from_utf8(input.sources().law().bytes().to_vec()).unwrap().replace(old,new).replace("change choose(c:Part,b:Bool)=c with {flag=b};","change choose(c:Part)=let ignored=then(identity(c),identity(c.link)) in c with {flag=true};");
+    let dir = workdir("change-invalid-let");
+    for (name, data) in [("d.json", definitions), ("a.json", map), ("l.law", law)] {
+        std::fs::write(dir.join(name), data).unwrap();
+    }
+    let result = run(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "out",
+            "--time-ms",
+            "120000",
+            "--ask",
+            "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+        ],
+    );
+    // 条件不成立候補の公開配送は未実装。一意な成立修復へは昇格しない。
+    assert_eq!(result.code, 70, "{}", result.stdout);
+}

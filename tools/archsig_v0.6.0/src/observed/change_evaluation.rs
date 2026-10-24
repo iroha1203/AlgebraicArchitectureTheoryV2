@@ -151,7 +151,11 @@ fn evaluate_inner(
             ExprKind::Group(inner) => current = *inner,
             ExprKind::Let { name, value, body } => {
                 let value = environment.scoped_ast(*value, &vars, &base, &declaration.reading)?;
-                // 未使用のlet値が欠測でも、更新がその値に依存しなければ決まる。
+                // 未使用の値そのものは強制しないが、式の適合条件は通常letと同じく残す。
+                if value.condition_failed || value.condition_pending {
+                    result.retain(&value);
+                    break;
+                }
                 vars.insert(name.name.clone(), value);
                 current = *body;
             }
@@ -492,6 +496,53 @@ mod tests {
                 entity: "Pattern.Part".into(),
             },
         )]
+    }
+    #[test]
+    fn unused_let_keeps_failed_and_pending_owned_call_conditions() {
+        for pending in [false, true] {
+            let map = fixture::MAP.replace(
+                r#""field":"Pattern.Part.link","value":["v","p"]"#,
+                r#""field":"Pattern.Part.link","value":["v","q"]"#,
+            );
+            let map = if pending {
+                map.replace(r#"{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#, "")
+            } else {
+                map.replace(
+                    r#""id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"]"#,
+                    r#""id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","r2"]"#,
+                )
+            };
+            assert_ne!(map, fixture::MAP);
+            let inputs = fixture::with_body(
+                &map,
+                "view accept(r:Root,x:Part[r]):Bool=true;change bad(c:Part)=let ignored=accept(c.owner,c.link) in c with {flag=true};",
+            );
+            let environment = Environment::new(&inputs, &mut quiet()).unwrap();
+            let update = evaluate(
+                &environment,
+                &inputs.law().declarations["Selected.bad"],
+                &bindings(),
+            )
+            .unwrap();
+            assert_eq!(
+                update.state,
+                if pending {
+                    State::Undetermined
+                } else {
+                    State::ConditionFailed
+                }
+            );
+            assert!(update.values.is_empty());
+            if pending {
+                assert!(
+                    update
+                        .missing
+                        .iter()
+                        .any(|f| f.subject == "q"
+                            && f.field.as_deref() == Some("Pattern.Part.owner"))
+                );
+            }
+        }
     }
     #[test]
     fn simultaneous_updates_read_the_same_original_state() {
