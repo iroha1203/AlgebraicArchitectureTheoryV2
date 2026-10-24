@@ -297,6 +297,7 @@ struct Reader<'a, 'b, E> {
     roster: &'b Roster<'b>,
     /// 値を読む field が属する宣言の namespace。Term の本体の名前の解決に使う。
     namespace: &'a str,
+    rebases: &'b [(String, String)],
 }
 
 impl<E: InputError> Reader<'_, '_, E> {
@@ -372,7 +373,13 @@ impl<E: InputError> Reader<'_, '_, E> {
             Type::Text => Value::Text(string()?),
             Type::Ref(e) | Type::Owned(e, _) => {
                 let items = arr(2)?;
-                let snapshot = as_string(&items[0], &pointer_push(ptr, "0"))?;
+                let mut snapshot = as_string(&items[0], &pointer_push(ptr, "0"))?;
+                for (from, to) in self.rebases {
+                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    if &snapshot == from {
+                        snapshot = to.clone();
+                    }
+                }
                 let subject = as_string(&items[1], &pointer_push(ptr, "1"))?;
                 let Some(actual) = self
                     .roster
@@ -706,6 +713,7 @@ pub(crate) fn check_assignment<E: InputError>(
         definitions,
         roster,
         namespace,
+        rebases: &[],
     }
     .read(&node, ty, "")
 }
@@ -830,6 +838,7 @@ fn check_snapshots_inner<E: InputError>(
                 definitions,
                 roster: &roster,
                 namespace: &definitions.declarations[subject_ty].namespace,
+                rebases: &a.rebases,
             };
             let vptr = format!("{}/value", a.pointer);
             let ty = &subjects[si].fields[fi].ty;

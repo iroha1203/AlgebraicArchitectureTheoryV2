@@ -43,6 +43,9 @@ Origin = {id: Id, mode: "observed"|"proposed"|"specification",
           method: String, locations: Location[], note?: String}
 Location = {source: Id, path: String, span?: [Nat,Nat]}
 Snapshot = {id: Id, origin: Id, subjects: Subject[], atoms: Atom[]}
+         | {id: Id, origin: Id, base: Id,
+            subjects?: {put?: Subject[], remove?: Id[]},
+            atoms?: {put?: Atom[], remove?: Id[]}}
 Subject = {id: Id, type: QName, origin: Id}
 Atom = {id: Id, subject: Id, field: QName, value: Value, origin: Id}
 ```
@@ -68,6 +71,28 @@ snapshot とその subjects/atoms の origin.mode は一致させる。
 同じ型・同じ ID でも別 snapshot の subject は別物。参照は必ず snapshot を含む。
 候補設計や候補対応は proposed、合成した仕様例は specification とする。
 これらの成立を observed の実装についての成立へ付け替えない。
+
+`base` を持つ snapshot は同じ ArchMap 内の基準 snapshot の略記である。
+読込み時に基準の全表を継承し、`put` は ID ごとの追加またはレコード全体の置換、
+`remove` は既存 ID の削除として展開する。省略した差分表・操作は変更なしとする。
+基準には差分 snapshot も指定でき、表の順序は問わない。不存在の基準、基準の循環、
+同一操作内の ID 重複、同じ ID の put/remove 併記、不存在 ID の削除を拒否する。
+subject の削除は、その subject 自身の Atom も除く。他の subject からの参照は削除せず、
+展開後の通常の参照検査で確認する。連動して除かれる Atom を remove に重ねて指定しない。
+
+継承した Atom の値に含まれる型付き Ref のうち、基準 snapshot 自身を指すものは
+新しい snapshot の同じ subject ID への参照とする。Tuple/List/Set/Option/Map/Data 内も
+型に沿って同じ規則を適用し、Text や Term の本文を書き換えない。
+put で明示した値の Ref は記述した snapshot を指し、暗黙に移さない。
+継承レコードの origin は保持し、新規・置換レコードは明示した origin を使う。
+snapshot 自身の origin と各レコードの mode の一致も通常どおり検査する。
+これは入力の略記であり、版間の subject の数学的同一性や保存写像を生成しない。
+
+例えば `{"id":"v2","origin":"model","base":"v1","atoms":{"remove":["count"]}}`
+は v1 の表を継承し count Atom だけを除く。subject は残り、その field は未知に戻る。
+false・零・空集合は補給しない。check/run は共通の読込で展開し、既存の型・参照・補完検査と
+評価を使う。model digest は展開後の全量表から計算するため、同じ全量記述と一致する。
+byte digest と保存する入力コピーは元の差分記述そのものを保持する。
 
 ## 3. 型と値
 
