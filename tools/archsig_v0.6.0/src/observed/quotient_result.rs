@@ -15,6 +15,8 @@ use super::{
 };
 use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
+#[path = "quotient_law_result.rs"]
+mod law_result;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -36,6 +38,10 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn overrides(&self, g: &Graph) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
+        change_result::architecture_overrides(g, self.part())
+    }
+    pub(super) fn request(&self) -> &Request { &self.source.request }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
@@ -66,6 +72,9 @@ impl Data {
                 self.source.domain_type.clone(),
             ))),
             NodeType::Construction(T::StateMap) => Some(ProjectionType::StateMap),
+            NodeType::Construction(T::Architecture) => Some(ProjectionType::Architecture),
+            NodeType::Evaluation(ty) => Some(ProjectionType::Evaluation(ty)),
+            NodeType::Proposition => Some(ProjectionType::Proposition),
             NodeType::Domain => Some(ProjectionType::Domain),
             NodeType::Value(ty) => Some(ProjectionType::Law(ty)),
             _ => None,
@@ -81,6 +90,8 @@ impl Data {
                 "domain" | "classes" | "projection" | "descent"
             ),
             NodeType::Construction(T::StateMap) => matches!(field.as_str(), "source" | "target"),
+            NodeType::Construction(T::Architecture) => field == "root",
+            NodeType::Evaluation(_) => matches!(field.as_str(), "value" | "environment"),
             _ => false,
         };
         if !allowed {
@@ -190,6 +201,20 @@ fn compute(
                 domain_type: input.domain_type,
             });
         }
+        let mut evaluations = vec![];
+        let mut families = BTreeMap::new();
+        let mut images = BTreeMap::new();
+        if let Some((name, ty, lhs, rhs)) = &table.law {
+            for row in &table.rows {
+                let (family, rows) = law_result::row(&mut b, env, &input, row, name, ty, *lhs, *rhs, expression)?;
+                evaluations.extend(rows);
+                families.insert(row.parameters.wire().canonical(), family);
+                images.insert(row.parameters.wire().canonical(), row.image.clone());
+            }
+        }
+        let mut descent_pairs = vec![];
+        let mut family_values = vec![];
+        let mut separating = None;
         let mut fibers = BTreeMap::<String, Vec<Scalar>>::new();
         for row in table.rows {
             g.tick()?;
@@ -211,6 +236,20 @@ fn compute(
                 .iter()
                 .map(|v| change_result::value(&mut b, v))
                 .collect::<Result<Vec<_>, _>>()?;
+            if table.law.is_some() {
+                let first = &members[0];
+                let first_family = &families[&first.wire().canonical()];
+                let first_ref = change_result::value(&mut b, first_family)?;
+                family_values.push(first_ref);
+                for (member, point) in members.iter().zip(&points) {
+                    let family = &families[&member.wire().canonical()];
+                    if separating.is_none() && family != first_family {
+                        let other = change_result::value(&mut b, family)?;
+                        let view = change_result::value(&mut b, &images[&member.wire().canonical()])?;
+                        separating = Some((points[0], *point, view, first_ref, other));
+                    }
+                }
+            }
             let class = change_result::value(
                 &mut b,
                 &Scalar::Set {
@@ -218,6 +257,9 @@ fn compute(
                     items: members,
                 },
             )?;
+            if let Some(family) = family_values.last().filter(|_| table.law.is_some()) {
+                descent_pairs.push(Json::Arr(vec![class.wire(), family.wire()]));
+            }
             let preimage = domain(&mut b, &table.parameter_type, &points, &[reference, expression])?;
             for point in &points {
                 projection_pairs.push(Json::Arr(vec![point.wire(), class.wire()]));
@@ -264,6 +306,18 @@ fn compute(
             None,
         )?;
         arguments.push(projection);
+        arguments.extend(&evaluations);
+        let descent = if let Some((name, ty, _, _)) = &table.law {
+            if separating.is_none() {
+                family_values.sort_by_key(|r|r.0); family_values.dedup();
+                let target = domain(&mut b, &law_result::family_type(env, name, ty)?, &family_values, &[reference, expression])?;
+                let mut args = vec![classes_domain, target]; args.extend(&family_values);
+                let map = b.push(NodeType::Construction(T::StateMap), "state_map", Json::obj([
+                    ("source",classes_domain.wire()),("target",target.wire()),("kind",Json::str("finite")),("pairs",Json::Arr(descent_pairs)),
+                ]),args,None,None)?;
+                arguments.push(map); Some(map)
+            } else {None}
+        } else {None};
         let quotient = b.push(
             NodeType::Construction(T::Quotient),
             "quotient",
@@ -291,22 +345,44 @@ fn compute(
                         ("fibers", Json::Arr(fibers_wire)),
                     ]),
                 ),
-                ("evaluations", Json::Arr(vec![])),
+                ("evaluations", refs(&evaluations)),
             ]),
             arguments,
             None,
             None,
         )?;
+        let mut outputs = BTreeMap::from([("quotient".into(), quotient)]);
+        let mut evidence = vec![];
+        let mut claim = None;
+        let mut status = Decision::Established;
+        if let Some((name, _, _, _)) = &table.law {
+            let Json::Obj(wire) = &mut b.parts[quotient.0-base].wire else {unreachable!()};
+            wire.insert("law".into(), Json::str(name));
+            if let Some(descent) = descent { wire.insert("descent".into(), descent.wire()); }
+            if let Some((first, second, view, left, right)) = separating {
+                status = Decision::Refuted;
+                evidence.push(b.push(NodeType::Evidence,"evidence",Json::obj([
+                    ("kind",Json::str("separating_pair")),("data",Json::obj([
+                        ("domain",reference.wire()),("first",first.wire()),("second",second.wire()),
+                        ("view_values",refs(&[view,view])),("law_values",refs(&[left,right])),
+                    ])),
+                ]),vec![reference,first,second,view,left,right],None,None)?);
+            }
+            let proposition = b.proposition("sufficient",vec![quotient],evidence.clone(),status)?;
+            let part = &mut b.parts[proposition.0-base];
+            part.evidence = evidence.clone(); part.judgment.as_mut().ok_or("十分性判断がない")?.evidence = evidence.clone();
+            outputs.insert("proposition".into(),proposition); claim=Some(proposition);
+        }
         let scope = b.parts[quotient.0 - base].scope.clone();
         Ok(Source {
             base,
             parts: b.parts,
             answer: Answer {
                 id: request.id.clone(),
-                status: Decision::Established,
-                outputs: BTreeMap::from([("quotient".into(), quotient)]),
-                claim: None,
-                evidence: vec![],
+                status,
+                outputs,
+                claim,
+                evidence,
                 reasons: vec![],
                 scope,
             },
