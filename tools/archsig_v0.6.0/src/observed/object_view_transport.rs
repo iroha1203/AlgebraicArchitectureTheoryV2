@@ -103,21 +103,68 @@ impl ViewTransportValue {
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PrimitiveValueIdentity {
+    ty: Type,
+}
+impl PrimitiveValueIdentity {
+    pub fn ty(&self) -> &Type {
+        &self.ty
+    }
+    fn checked(
+        declarations: &DeclarationCorrespondence,
+        declaration: &str,
+        c: &mut Control,
+    ) -> Result<Option<Self>, ConstructionFailure> {
+        let (source, target) = super::value_transport::selected_types(
+            declarations,
+            declaration,
+            DeclarationValuePosition::Return,
+            c,
+        )?;
+        if source != target {
+            return Ok(None);
+        }
+        let mut todo = vec![&source];
+        while let Some(ty) = todo.pop() {
+            tick(c)?;
+            match ty {
+                Type::Bool | Type::Z | Type::Q | Type::Fp(_) => {}
+                Type::Tuple(ts) => todo.extend(ts),
+                _ => return Ok(None),
+            }
+        }
+        Ok(Some(Self { ty: source }))
+    }
+    fn image(&self, value: &Scalar, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
+        tick(c)?;
+        if value.ty() != self.ty {
+            return Err(ConstructionFailure::Inconsistent(
+                "原始値の恒等写像と実値の型が違う".into(),
+            ));
+        }
+        // 参照を含まない原始型の積。型の全元を固定するので順逆とも恒等となる。
+        Ok(value.clone())
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ViewValueEquivalence {
     Finite(Box<FiniteValueTransport>),
     Numeric(Box<NumericValueTransport>),
+    PrimitiveIdentity(PrimitiveValueIdentity),
 }
 impl ViewValueEquivalence {
     fn complete(&self) -> bool {
         match self {
             Self::Finite(r) => r.bijection().is_some(),
             Self::Numeric(_) => true,
+            Self::PrimitiveIdentity(_) => true,
         }
     }
     fn image(&self, v: &Scalar, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
         match self {
             Self::Finite(r) => r.transport_scalar(v, c),
             Self::Numeric(r) => Ok(r.forward().apply_scalar(v, c)?.scalar().clone()),
+            Self::PrimitiveIdentity(r) => r.image(v, c),
         }
     }
 }
@@ -531,6 +578,12 @@ fn checked_view_transport(
                 DeclarationValuePosition::Return,
                 c,
             )?))
+        } else if let Some(identity) = PrimitiveValueIdentity::checked(
+            declarations,
+            &r.instance().declaration().name,
+            c,
+        )? {
+            ViewValueEquivalence::PrimitiveIdentity(identity)
         } else {
             return Err(not_implemented(&r)?);
         });

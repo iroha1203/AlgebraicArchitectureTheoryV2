@@ -1351,3 +1351,43 @@ fn unsupported_family_return_transport_keeps_the_already_computed_view_values() 
     }
     operation.recheck(&i, &mut quiet()).unwrap();
 }
+
+#[test]
+fn mixed_primitive_products_keep_whole_type_identity_for_closed_and_finite_views() {
+    use archsig::construction::maps::ViewFamilyReturnMap;
+    for parameter in [false, true] {
+        let law = if parameter {
+            family_law(
+                "view family(c:Left.Child,b:Bool):(Bool,(Z,Q))=(b,(if b then c.count+1 else c.count,rat(1,2)));",
+                "view family(d:Right.Child,q:Bool):(Bool,(Z,Q))=(q,(if q then 3 else 2,rat(1,2)));",
+            )
+        } else {
+            family_law(
+                "view family(c:Left.Child):(Bool,(Z,Q))=(true,(c.count,rat(1,2)));",
+                "view family(d:Right.Child):(Bool,(Z,Q))=(true,(2,rat(1,2)));",
+            )
+        };
+        let i = inputs(&law, A);
+        let r = run(Arc::clone(&i), "p", "family", "p");
+        assert_eq!(r.outcome(), &Outcome::Preserved);
+        if parameter {
+            let f = r.family().unwrap();
+            assert!(matches!(f.returns(), Some(ViewFamilyReturnMap::PrimitiveIdentity(_))));
+            assert!(f.is_complete());
+            assert_eq!(f.rows().len(), 2);
+            for (row, (b, n)) in f.rows().iter().zip([(false, "2"), (true, "3")]) {
+                let expected = Json::Arr(vec![Json::Bool(b), Json::Arr(vec![Json::str(n), Json::Arr(vec![Json::str("1"),Json::str("2")])])]);
+                assert_eq!(row.source().unwrap().wire(), expected);
+                assert_eq!(row.image().unwrap().wire(), expected);
+                assert_eq!(row.target().unwrap().wire(), expected);
+            }
+        } else {
+            let Some(ViewValueEquivalence::PrimitiveIdentity(identity)) = r.equivalence() else { panic!("mixed product identity missing") };
+            assert_eq!(Some(identity.ty()), r.instance().declaration().returns.as_ref());
+        }
+        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        let changed = run(Arc::clone(&i), "r", "family", "r");
+        assert_eq!(changed.outcome(), &Outcome::Refuted(Failed::Value));
+        changed.recheck(i, &mut quiet()).unwrap();
+    }
+}
