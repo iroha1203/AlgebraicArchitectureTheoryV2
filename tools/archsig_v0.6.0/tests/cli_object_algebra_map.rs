@@ -697,3 +697,85 @@ view holdings(s: State): (Z,Z) = (s.free,s.held);
     assert!(!has(get(m, "outputs"), "map"));
     assert!(!has(get(m, "outputs"), "proposition"));
 }
+
+fn finite_view_inputs(name: &str, preserve: bool) -> PathBuf {
+    let dir = inputs(name);
+    let mut a = include_str!("fixtures/object-configuration-map.archmap.json").to_string();
+    if preserve {
+        a = a.replace(r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"4""#, r#""id":"r-free","subject":"r","field":"Reservations.State.free","value":"2""#)
+            .replace(r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"3""#, r#""id":"s-free","subject":"s","field":"Reservations.State.free","value":"1""#);
+    }
+    std::fs::write(dir.join("a.json"), a).unwrap();
+    let vocabulary = r#"use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";"#;
+    let law = format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{
+{vocabulary}
+view choice(s: State, take: Bool, mode: Fp(2)): Z = if take then (if mode = 0 then s.free else s.held) else 0;
+}}
+reading After {{
+{vocabulary}
+view choice(s: State, keep: Bool, which: Fp(2)): Z = if keep then (if which = 0 then s.free else s.held) else 0;
+view yes(): Bool = true;
+view zero(): Fp(2) = 0;
+view one(): Fp(2) = 1;
+}}"#);
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    dir
+}
+
+#[test]
+fn finite_view_map_preserves_all_parameters_with_renamed_target_and_following_queries() {
+    let dir = finite_view_inputs("finite-view-map", true);
+    let run = asks_with_limit(&dir, &[
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        "b=build(After,on=$m.map.target.base.subject)",
+        "yes=evaluate(After.yes)", "zero=evaluate(After.zero)", "one=evaluate(After.one)",
+        "free=evaluate(After.choice,on=$b.object,s=@v/r,keep=$yes.value,which=$zero.value)",
+        "held=evaluate(After.choice,on=$b.object,s=@v/r,keep=$yes.value,which=$one.value)",
+    ], "120000");
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(&result, "status")), "complete");
+    for id in ["m", "b", "yes", "zero", "one", "free", "held"] {
+        assert_eq!(s(get(answer(&result, id), "status")), "established");
+    }
+    for (id, expected) in [("free", "2"), ("held", "0")] {
+        assert_eq!(s(value(&result, get(get(answer(&result, id), "outputs"), "value"))), expected);
+    }
+    let map = value(&result, get(get(answer(&result, "m"), "outputs"), "map"));
+    let declaration = arr(get(map, "declarations")).iter().find(|d| s(get(d, "source")) == "Before.choice").unwrap();
+    let pairs = arr(get(declaration, "parameters"));
+    assert!(pairs.iter().any(|p| s(&arr(p)[0]) == "take" && s(&arr(p)[1]) == "keep"));
+    assert!(pairs.iter().any(|p| s(&arr(p)[0]) == "mode" && s(&arr(p)[1]) == "which"));
+    let invariants = arr(get(map, "invariants"));
+    let axes = arr(get(value(&result, get(map, "signature")), "axes"));
+    assert_eq!(invariants.len(), 3);
+    assert_eq!(axes.len(), 3);
+    for table in invariants.iter().map(|r| value(&result, r)).chain(axes.iter()) {
+        let rows = arr(get(table, "checks"));
+        assert_eq!(rows.len(), 4);
+        for row in rows {
+            let proof = value(&result, get(row, "commutes"));
+            let quantifiers = arr(get(proof, "quantifiers"));
+            assert_eq!(quantifiers.len(), 2);
+            for name in ["take", "mode"] {
+                assert!(quantifiers.iter().any(|q| s(get(q, "name")) == name && s(get(q, "kind")) == "forall" && !has(q, "domain")));
+            }
+        }
+    }
+}
+
+#[test]
+fn finite_view_map_refutes_a_changed_nonzero_parameter_row() {
+    let dir = finite_view_inputs("finite-view-map-changed", false);
+    let run = asks_with_limit(&dir, &[
+        "m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+        "same=compare($m.operation,to=$m.operation,kind=action)",
+    ], "120000");
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(&result, "status")), "complete");
+    assert_eq!(s(get(answer(&result, "m"), "status")), "refuted");
+    assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+}

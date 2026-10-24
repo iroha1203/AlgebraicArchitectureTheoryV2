@@ -1,4 +1,4 @@
-//! 閉じたviewの値保存と型全域の構造的恒等を公開Invariant/Signatureへ接続する。
+//! viewの値保存と型全域の構造的恒等を公開Invariant/Signatureへ接続する。
 use super::{
     build_plan::Plan,
     build_result::Builder,
@@ -127,6 +127,43 @@ fn proposition(
     out.conditions.push(r);
     Ok(r)
 }
+fn finite_parameter(ty: &Type, c: &mut Control) -> Result<bool, ValidationFailure> {
+    let mut todo = vec![ty];
+    while let Some(ty) = todo.pop() {
+        tick(c)?;
+        match ty {
+            Type::Bool | Type::Fp(_) => {}
+            Type::Tuple(ts) => todo.extend(ts),
+            _ => return Ok(false),
+        }
+    }
+    Ok(true)
+}
+fn quantify_parameters(b: &mut Builder<'_>, r: NodeRef, parameters: &[crate::law::model::Param]) {
+    let p = &mut b.parts[r.0 - b.base];
+    let mut quantifiers = vec![];
+    for parameter in parameters {
+        p.scope.assignments = true;
+        let q = Quantifier {
+            kind: crate::law::ast::QuantKind::Forall,
+            name: parameter.name.clone(),
+            ty: parameter.ty.erase(),
+            domain: None,
+            occurrence: parameter.span,
+            context: None,
+        };
+        p.scope.quantifiers.push(q.clone());
+        quantifiers.push(q);
+    }
+    // Scopeは元評価の全域を保持する。命題のbinderは元parameterだけであり、
+    // 先parameterはDeclarationPairの位置対応で束縛する。独立には量化しない。
+    if let Json::Obj(wire) = &mut p.wire {
+        wire.insert(
+            "quantifiers".into(),
+            Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),
+        );
+    }
+}
 fn inverse(
     b: &mut Builder<'_>,
     out: &mut Output,
@@ -138,24 +175,22 @@ fn inverse(
     let p = &mut b.parts[r.0 - b.base];
     // 恒等の両逆性は標本ではなく、このOption型の全域について成立する。
     p.scope.assignments = true;
-    p.scope.quantifiers.push(Quantifier {
+    let q = Quantifier {
         kind: crate::law::ast::QuantKind::Forall,
         name: "value".into(),
         ty: ty.clone(),
         domain: None,
         occurrence: (origin.0, 0),
         context: None,
-    });
+    };
+    p.scope.quantifiers.push(q.clone());
     p.wire = Json::obj([
         ("predicate", Json::str("inverse_maps")),
         (
             "operands",
             Json::Arr(maps.iter().map(|r| r.wire()).collect()),
         ),
-        (
-            "quantifiers",
-            Json::Arr(p.scope.quantifiers.iter().map(Quantifier::wire).collect()),
-        ),
+        ("quantifiers", Json::Arr(vec![q.wire()])),
     ]);
     Ok(r)
 }
@@ -275,8 +310,10 @@ pub(super) fn retain(
             .instances()
             .get(axis.instance)
             .ok_or("元view instanceがない")?;
-        if !instance.parameters().is_empty() {
-            return Err("parameterを残すview移送の配送は未実装".into());
+        for p in instance.parameters() {
+            if !finite_parameter(&p.ty, c)? {
+                return Err("このparameter型のview移送配送は未実装".into());
+            }
         }
         let returns = instance
             .declaration()
@@ -295,8 +332,14 @@ pub(super) fn retain(
             let ti = t
                 .target_instance()
                 .ok_or("先view instance未完成の配送は未実装")?;
-            if !ti.parameters().is_empty() {
-                return Err("先viewのparameter配送は未実装".into());
+            if instance.parameters().len() != ti.parameters().len()
+                || instance
+                    .parameters()
+                    .iter()
+                    .zip(ti.parameters())
+                    .any(|(s, t)| s.ty.erase() != t.ty.erase())
+            {
+                return Err("対応parameterの型が異なるview移送配送は未実装".into());
             }
             if ti.declaration().returns.as_ref() != Some(returns) {
                 out.preserved = false;
@@ -356,7 +399,9 @@ pub(super) fn retain(
             let te = expression(b.g, target_invariant, to)?;
             let args = vec![se, te, forward];
             let commutes = proposition(b, &mut out, "invariant_transport", args.clone(), holds)?;
+            quantify_parameters(b, commutes, instance.parameters());
             let coordinate = proposition(b, &mut out, "signature_transport", args, holds)?;
+            quantify_parameters(b, coordinate, instance.parameters());
             checks.push(Json::obj([
                 ("source", so.wire()),
                 ("target", to.wire()),
