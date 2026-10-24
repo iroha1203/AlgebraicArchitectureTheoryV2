@@ -100,7 +100,7 @@ impl Data {
 fn refs(items: &[NodeRef]) -> Json {
     Json::Arr(items.iter().map(|r| r.wire()).collect())
 }
-fn domain(b: &mut Builder<'_>, ty: &Type, items: &[NodeRef]) -> Result<NodeRef, ValidationFailure> {
+fn domain(b: &mut Builder<'_>, ty: &Type, items: &[NodeRef], dependencies: &[NodeRef]) -> Result<NodeRef, ValidationFailure> {
     b.push(
         NodeType::Domain,
         "domain",
@@ -109,7 +109,7 @@ fn domain(b: &mut Builder<'_>, ty: &Type, items: &[NodeRef]) -> Result<NodeRef, 
             ("type", ty.wire()),
             ("elements", refs(items)),
         ]),
-        items.to_vec(),
+        items.iter().chain(dependencies).copied().collect(),
         None,
         None,
     )
@@ -218,7 +218,7 @@ fn compute(
                     items: members,
                 },
             )?;
-            let preimage = domain(&mut b, &table.parameter_type, &points)?;
+            let preimage = domain(&mut b, &table.parameter_type, &points, &[reference, expression])?;
             for point in &points {
                 projection_pairs.push(Json::Arr(vec![point.wire(), class.wire()]));
             }
@@ -230,7 +230,7 @@ fn compute(
                 ("preimage", preimage.wire()),
             ]));
         }
-        let classes_domain = domain(&mut b, &class_type, &classes)?;
+        let classes_domain = domain(&mut b, &class_type, &classes, &[reference, expression])?;
         let source_domain = b.push(
             NodeType::Domain,
             "domain",

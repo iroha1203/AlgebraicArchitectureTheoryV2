@@ -159,6 +159,8 @@ fn empty_solution_quotient_keeps_its_type_and_has_no_fibers() {
     let classes = node(&result, get(quotient(&result, 1), "classes"));
     assert_eq!(s(&arr(get(get(classes, "value"), "type"))[0]), "Set");
     assert!(arr(get(get(classes, "value"), "elements")).is_empty());
+    assert!(!arr(get(classes,"arguments")).is_empty());
+    assert_eq!(get(classes,"scope").value,get(&arr(get(&result,"answers"))[1],"scope").value);
     assert_eq!(
         s(get(&arr(get(&result, "answers"))[1], "status")),
         "established"
@@ -304,15 +306,27 @@ fn quotient_keeps_view_quantifiers_and_binding_producer_scope() {
     assert_eq!(r.code,0,"{} {} {answers:?}",r.stdout,r.stderr);
     assert!(arr(get(get(&answers[2],"scope"),"readings")).iter().any(|x|s(x)=="Other"));
     let producer=s(get(get(get(&answers[1],"outputs"),"value"),"node"));
-    let mut pending=vec![get(get(&answers[2],"outputs"),"quotient")];let mut seen=std::collections::BTreeSet::new();
-    while let Some(reference)=pending.pop(){
-        if seen.insert(s(get(reference,"node"))) {pending.extend(arr(get(node(&result,reference),"arguments")));}
+    let q=get(get(&answers[2],"outputs"),"quotient");
+    let classes=get(quotient(&result,2),"classes");
+    let projection=node(&result,get(quotient(&result,2),"projection"));
+    let target=get(get(projection,"value"),"target");
+    for root in [q,classes,target] {
+        let scope=get(node(&result,root),"scope");
+        assert!(arr(get(scope,"readings")).iter().any(|x|s(x)=="Other"));
+        assert!(arr(get(scope,"snapshots")).iter().any(|x|s(x)=="v"));
+        let mut pending=vec![root];let mut seen=std::collections::BTreeSet::new();
+        while let Some(reference)=pending.pop(){
+            if seen.insert(s(get(reference,"node"))) {pending.extend(arr(get(node(&result,reference),"arguments")));}
+        }
+        assert!(seen.contains(producer));
     }
-    assert!(seen.contains(producer));
     let ordinary=arr(get(get(&answers[4],"scope"),"quantifiers"));assert!(!ordinary.is_empty());
-    let quotient_scope=arr(get(get(&answers[3],"scope"),"quantifiers"));
-    for q in ordinary {assert!(quotient_scope.iter().any(|actual|
-        ["kind","name","type"].iter().all(|key|get(actual,key).value==get(q,key).value)));}
+    let class_scope=get(node(&result,get(quotient(&result,3),"classes")),"scope");
+    for scope in [get(&answers[3],"scope"),class_scope] {
+        let quantifiers=arr(get(scope,"quantifiers"));
+        for q in ordinary {assert!(quantifiers.iter().any(|actual|
+            ["kind","name","type"].iter().all(|key|get(actual,key).value==get(q,key).value)));}
+    }
 }
 
 #[test]
