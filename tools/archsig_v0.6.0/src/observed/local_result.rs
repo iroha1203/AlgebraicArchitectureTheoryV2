@@ -109,7 +109,6 @@ impl Data {
             NodeType::Construction(T::EquationSpace) => {
                 matches!(field.as_str(), "base" | "parameters")
             }
-            NodeType::Construction(T::StateSpace) => field == "base",
             NodeType::Construction(T::LocalSystem) => {
                 matches!(field.as_str(), "base" | "cover" | "topology")
             }
@@ -475,7 +474,29 @@ fn compute(
             .collect::<Vec<_>>();
         positions.sort();
         positions.dedup();
-        let slots = Json::Arr(positions.iter().map(Fact::wire).collect());
+        let mut slot_values = vec![];
+        let mut slot_subjects = vec![];
+        for position in &positions {
+            c.checkpoint(super::control::Checkpoint::Localize)?;
+            let subject = env.subject(&position.snapshot, &position.subject)?;
+            let reference = change_result::value(
+                &mut b,
+                &Scalar::Subject {
+                    snapshot: position.snapshot.clone(),
+                    subject: position.subject.clone(),
+                    entity: subject.ty.clone(),
+                },
+            )?;
+            slot_subjects.push(reference);
+            slot_values.push(Json::obj([
+                ("subject", reference.wire()),
+                (
+                    "field",
+                    Json::str(position.field.as_ref().ok_or("固定位置にfieldがない")?),
+                ),
+            ]));
+        }
+        let slots = Json::Arr(slot_values);
         let unit = change_result::value(&mut b, &Scalar::Unit)?;
         let point = domain(&mut b, &Type::Unit, &[unit])?;
         let elements = if inhabited { vec![unit] } else { vec![] };
@@ -535,13 +556,16 @@ fn compute(
                 ("parameters", point.wire()),
                 ("requirements", refs(&[law])),
             ]),
-            vec![target, point, law],
+            [target, point, law]
+                .into_iter()
+                .chain(slot_subjects.iter().copied())
+                .collect(),
             None,
             None,
         )?;
         let equation = b.push(
             NodeType::Construction(T::EquationSolutionSet),
-            "equation_solution_set",
+            "equation_solutions",
             Json::obj([
                 ("domain", equations.wire()),
                 ("representation", representation),
@@ -606,6 +630,7 @@ fn compute(
             std::iter::once(target)
                 .chain([law])
                 .chain(reading_refs)
+                .chain(slot_subjects)
                 .collect(),
             None,
             None,
@@ -630,7 +655,8 @@ fn compute(
         )?;
         let overlap = b.push(
             NodeType::Construction(T::Overlap),
-            "overlap",
+            // 恒等contextの引戻しとその射影はcontextの閉包構成である。
+            "context",
             Json::obj([
                 ("left", context.wire()),
                 ("right", context.wire()),

@@ -181,6 +181,37 @@ fn localize_defaults_select_required_law_and_fixed_unit_candidate() {
     let space = get(node(&json, get(equation, "space")), "value");
     assert!(arr(get(space, "variables")).is_empty());
     assert!(!arr(get(space, "fixed")).is_empty());
+    let context = get(node(&json, &arr(get(system, "contexts"))[0]), "value");
+    for slots in [get(space, "fixed"), get(context, "dependencies")] {
+        for slot in arr(slots) {
+            assert!(!has(slot, "snapshot"));
+            assert_eq!(s(get(slot, "field")), "Fixed.State.flag");
+            let subject = node(&json, get(slot, "subject"));
+            let value = arr(get(subject, "value"));
+            assert_eq!(s(&value[0]), "fixed");
+            assert_eq!(s(&value[1]), "s");
+        }
+    }
+    let equation_solution = node(&json, get(equation, "solutions"));
+    assert_eq!(
+        s(get(get(equation_solution, "rule"), "name")),
+        "equation_solutions"
+    );
+    let cover = get(node(&json, get(system, "cover")), "value");
+    for overlap in arr(get(cover, "overlaps")) {
+        assert_eq!(s(get(get(node(&json, overlap), "rule"), "name")), "context");
+    }
+    let rejected = execute(
+        &dir,
+        "private-path",
+        &[
+            "a=build(Fixed,on=@fixed/s)",
+            "l=localize($a.object)",
+            "d=diagnose($l.system,side=semantic)",
+            "v=evaluate(Fixed.current,on=$d.diagnostic.global.domain.states.base,s=@fixed/s)",
+        ],
+    );
+    assert_eq!(rejected.code, 64, "{} {}", rejected.stdout, rejected.stderr);
 }
 #[test]
 fn unknown_fixed_value_is_not_a_free_coordinate_or_empty_solution() {
@@ -415,8 +446,14 @@ fn localize_checks_answer_bound_owners_before_using_the_values() {
         assert_eq!(r.code, code, "{} {}", r.stdout, r.stderr);
         let json = result_json(&dir, &r);
         if name == "valid" {
-            assert_eq!(s(get(&arr(get(&json, "answers"))[2], "status")), "established");
-            assert_eq!(s(get(&arr(get(&json, "answers"))[3], "status")), "established");
+            assert_eq!(
+                s(get(&arr(get(&json, "answers"))[2], "status")),
+                "established"
+            );
+            assert_eq!(
+                s(get(&arr(get(&json, "answers"))[3], "status")),
+                "established"
+            );
             assert!(has(
                 get(&arr(get(&json, "answers"))[2], "outputs"),
                 "system"
