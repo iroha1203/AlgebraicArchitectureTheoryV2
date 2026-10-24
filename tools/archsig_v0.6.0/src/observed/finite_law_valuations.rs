@@ -1106,6 +1106,22 @@ struct Probe {
     admissible: bool,
     blocked: bool,
 }
+/// 指定した変更後環境で元Lawの一つの完全束縛を読む。
+pub(in crate::observed) fn evaluate_point(
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: &[(String, Scalar)],
+    point: usize,
+) -> Result<FiniteLawRow, ValidationFailure> {
+    let Signature::Law { params, .. } = &declaration.signature else {
+        return Err("候補の判定元がLawでない".into());
+    };
+    if params.len() != bindings.len() || params.iter().zip(bindings)
+        .any(|(p,(name,value))| p.name != *name || p.ty.erase() != value.ty()) {
+        return Err("候補のLaw束縛の名前・数・型が違う".into());
+    }
+    Ok(probe_mode(environment, declaration, bindings, point, true)?.row)
+}
 fn probe(
     e: &Environment<'_>,
     decl: &Declaration,

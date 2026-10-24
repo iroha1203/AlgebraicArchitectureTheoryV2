@@ -32,6 +32,8 @@ pub enum QuestionKind {
     Map,
     Compose,
     Compare,
+    Solve,
+    Repair,
 }
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
@@ -43,6 +45,8 @@ impl QuestionKind {
             Self::Map => "map",
             Self::Compose => "compose",
             Self::Compare => "compare",
+            Self::Solve => "solve",
+            Self::Repair => "repair",
         }
     }
 }
@@ -346,7 +350,7 @@ fn resolve_inner(
         prefix.expect(b'(')?;
         if matches!(
             prefix_kind.as_str(),
-            "localize" | "diagnose" | "repair" | "solve" | "quotient"
+            "localize" | "diagnose" | "quotient"
         ) {
             return Err(ResolveFailure::NotApplicable {
                 request: prefix.id,
@@ -366,6 +370,8 @@ fn resolve_inner(
         }
         let kind = match raw.kind.as_str() {
             "build" => QuestionKind::Build,
+            "solve" => QuestionKind::Solve,
+            "repair" => QuestionKind::Repair,
             "evaluate" => QuestionKind::Evaluate,
             "check" => QuestionKind::Check,
             "needed" => QuestionKind::Needed,
@@ -457,6 +463,23 @@ fn resolve_inner(
         let mut dependencies = BTreeSet::new();
         for (key, value) in raw.arguments {
             phase(control, Checkpoint::RequestBinding)?;
+            if key == "using" && matches!(kind, QuestionKind::Solve | QuestionKind::Repair) {
+                let Selector::Declaration { name } = &value else {
+                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "usingはchangeの完全名")));
+                };
+                let change = declaration(law, name, control, &raw.id)?;
+                if !matches!(law.declarations[&change].signature, Signature::Change { .. })
+                    || law.declarations[&change].reading != law.declarations[&full].reading {
+                    return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "同じreadingのchangeを指定する")));
+                }
+                arguments.insert("using".into(), RequestArgument {name:"using".into(), value:Selector::Declaration {name:change}, origin:ArgumentOrigin::Explicit});
+                continue;
+            }
+            if key == "on" && matches!(kind, QuestionKind::Solve | QuestionKind::Repair)
+                && matches!(value, Selector::Subject { .. }) {
+                arguments.insert("on".into(),RequestArgument {name:"on".into(),value,origin:ArgumentOrigin::Explicit});
+                continue;
+            }
             if key == "on" {
                 let Selector::Answer { id, path } = &value else {
                     return Err(invalid(problem(
@@ -554,6 +577,10 @@ fn resolve_inner(
             };
             finish_request(result, control, Checkpoint::RequestBinding)?;
         }
+        if matches!(kind, QuestionKind::Solve | QuestionKind::Repair)
+            && (!arguments.contains_key("on") || !arguments.contains_key("using")) {
+            return Err(invalid(problem(RequestIssueCode::MissingBinding, &raw.id, "on/using", "solve/repairはonとusingを指定する")));
+        }
         let mut unbound = Vec::new();
         for param in params {
             phase(control, Checkpoint::RequestBinding)?;
@@ -626,6 +653,7 @@ fn resolve_inner(
             matches!(
                 r.kind,
                 QuestionKind::Build | QuestionKind::Compose | QuestionKind::Compare
+                    | QuestionKind::Solve | QuestionKind::Repair
             )
         })
     {
@@ -726,7 +754,15 @@ fn resolve_inner(
                     _ => Ok(false),
                 }
             }
-            if !architecture(&plan.ty, control)? {
+            let change_root = if matches!(req.kind, QuestionKind::Solve | QuestionKind::Repair)
+                && !architecture(&plan.ty, control)? {
+                let declaration=&law.declarations[req.declaration().expect("Lawのhead")];
+                let mut root_request=req.clone();
+                root_request.head=Selector::Declaration {name:declaration.reading.clone()};
+                build::check_on(law,map,&requests,&names,&root_request,control)?;
+                true
+            } else {false};
+            if !change_root && !architecture(&plan.ty, control)? {
                 return Err(invalid(problem(
                     RequestIssueCode::Type,
                     &req.id,
@@ -995,7 +1031,7 @@ fn declaration(
 fn parameters(sig: &Signature, kind: QuestionKind) -> Option<&[Param]> {
     match (sig, kind) {
         (Signature::View { params, .. }, QuestionKind::Evaluate)
-        | (Signature::Law { params, .. }, QuestionKind::Check) => Some(params),
+        | (Signature::Law { params, .. }, QuestionKind::Check | QuestionKind::Solve | QuestionKind::Repair) => Some(params),
         _ => None,
     }
 }
@@ -1077,6 +1113,20 @@ fn selector_type(
             owners = owner_bindings(r, control)?;
             let initial = if r.kind == QuestionKind::Build {
                 build::output_type(law, map, requests, names, r, field, control)?
+            } else if matches!(r.kind,QuestionKind::Solve|QuestionKind::Repair) {
+                if field=="proposition" || (field=="existence" && r.kind==QuestionKind::Repair) {ProjectionType::Proposition} else {
+                    let mut root_request=r.clone();
+                    root_request.head=Selector::Declaration{name:law.declarations[r.declaration().expect("changeのLaw")].reading.clone()};
+                    let root_types=build::root_types(law,map,requests,names,&root_request,control)?;
+                    let types=root_types.into_iter().map(|root|match field.as_str() {
+                        "domain"=>Ok(ProjectionType::CandidateSpace(root)),
+                        "solutions"=>Ok(ProjectionType::SolutionSet(root)),
+                        "object" if r.kind==QuestionKind::Repair=>Ok(ProjectionType::ArchitectureRoot(root)),
+                        "repair" if r.kind==QuestionKind::Repair=>Ok(ProjectionType::Repair(root)),
+                        _=>Err(failure(RequestIssueCode::Projection,"このchange問いの非公開出力")),
+                    }).collect::<Result<Vec<_>,_>>()?;
+                    if types.len()==1 {types.into_iter().next().expect("一件")}else{ProjectionType::Dynamic(types)}
+                }
             } else if r.kind == QuestionKind::Compare {
                 comparison::output_type(r, field)?
             } else if r.kind == QuestionKind::Compose {

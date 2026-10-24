@@ -1653,7 +1653,7 @@ impl Environment<'_> {
             (Rule::Input {kind:"law",location:Location::Law {span}},
              Some(Payload::Expression {location:Location::Law {span:source_span},parameters,..}))
             if span==source_span && parameters.is_empty()
-                && self.completion_field_owner_span(*source_span)?.is_some())
+                && self.field_owner_span(*source_span)?.is_some())
         {
             self.completion_field_node(graph, node, limit)?;
             return Ok(true);
@@ -1957,7 +1957,7 @@ impl Environment<'_> {
         }
         Ok(())
     }
-    fn completion_field_owner_span(
+    pub(super) fn field_owner_span(
         &self,
         span: (usize, usize),
     ) -> Result<Option<(usize, usize)>, ValidationFailure> {
@@ -2002,7 +2002,7 @@ impl Environment<'_> {
         };
         let a = self.analyze_source(graph, *span, bindings)?;
         let owner_span = self
-            .completion_field_owner_span(*span)?
+            .field_owner_span(*span)?
             .ok_or("補完field Sourceが元field構文でない")?;
         let mut owner_evaluation = None;
         for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {

@@ -78,10 +78,12 @@ fn roots(
     visible: &BTreeSet<String>,
     c: &mut Control,
     found: &mut BTreeSet<String>,
+    architecture: bool,
 ) -> Result<(), ResolveFailure> {
     phase(c, Checkpoint::RequestBinding)?;
     match ty {
-        ProjectionType::Law(Type::Ref(name)) => {
+        ProjectionType::ArchitectureRoot(_) if !architecture => {},
+        ProjectionType::Law(Type::Ref(name)) | ProjectionType::ArchitectureRoot(name) => {
             if let Some(declaration) = law.definitions.declarations.get(name) {
                 if visible.contains(&declaration.namespace)
                     && matches!(
@@ -95,14 +97,14 @@ fn roots(
         }
         ProjectionType::Dynamic(options) => {
             for option in options {
-                roots(law, option, visible, c, found)?;
+                roots(law, option, visible, c, found,architecture)?;
             }
         }
         _ => {}
     }
     Ok(())
 }
-fn root_types(
+pub(super) fn root_types(
     law: &CheckedLaw,
     map: &CheckedArchMap,
     requests: &[Request],
@@ -123,7 +125,7 @@ fn root_types(
             .ok_or_else(|| error(&r.id, "on", "buildのonがない"))?;
         let (plan, _) = selector_type(law, map, requests, names, &on.value, c, (&r.id, "on"))?;
         let mut found = BTreeSet::new();
-        roots(law, &plan.ty, &visible, c, &mut found)?;
+        roots(law, &plan.ty, &visible, c, &mut found,matches!(r.kind,QuestionKind::Solve|QuestionKind::Repair))?;
         if found.is_empty() {
             return Err(error(
                 &r.id,

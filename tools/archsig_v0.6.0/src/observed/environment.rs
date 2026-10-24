@@ -58,6 +58,10 @@ mod path_composition;
 mod path_condition;
 #[path = "primitive_valuation.rs"]
 mod primitive_valuation;
+#[path = "change_evaluation.rs"]
+pub(super) mod change_evaluation;
+#[path = "change_search.rs"]
+pub(super) mod change_search;
 #[path = "finite_law_valuations.rs"]
 pub(super) mod finite_law_valuations;
 #[path = "relation_instances.rs"]
@@ -335,6 +339,7 @@ impl ValidationSnapshot {
 
 #[derive(Default)]
 struct ValidationCache {
+    changes: Vec<std::sync::Arc<super::change_result::Source>>,
     object_maps: Vec<std::sync::Arc<super::object_map_result::Source>>,
     builds: Vec<std::sync::Arc<super::build_result::Source>>,
     checked: BTreeSet<NodeRefKey>,
@@ -409,6 +414,8 @@ pub(crate) struct Environment<'a> {
     name_token_observer: RefCell<Option<NameTokenObserver>>,
 }
 impl<'a> Environment<'a> {
+    pub(super) fn change_source_checked(&self, source:&std::sync::Arc<super::change_result::Source>)->bool { self.cache.borrow().changes.iter().any(|s|std::sync::Arc::ptr_eq(s,source)) }
+    pub(super) fn remember_change_source(&self,source:std::sync::Arc<super::change_result::Source>) { self.cache.borrow_mut().changes.push(source); }
     pub(super) fn object_map_source_checked(&self, source: &std::sync::Arc<super::object_map_result::Source>) -> bool {
         self.cache.borrow().object_maps.iter().any(|s| std::sync::Arc::ptr_eq(s,source))
     }
@@ -588,7 +595,7 @@ impl<'a> Environment<'a> {
             .get(&(snapshot.into(), subject.into(), name.into()))
             .copied()
             .ok_or_else(|| String::from("field がない"))?;
-        if matches!(field.slot, Slot::Missing) {
+        if matches!(field.slot, Slot::Missing) && self.architecture_value(&Fact{snapshot:snapshot.into(),subject:subject.into(),field:Some(field.name.clone()),atom:None}).is_none() {
             if let Some(reads) = self.missing_slot_reads.borrow_mut().as_mut() {
                 reads.insert(Fact {
                     snapshot: snapshot.into(),
@@ -879,6 +886,7 @@ impl<'a> Environment<'a> {
                     self.recheck_circuit_pattern(graph, value)?;
                     self.recheck_build(graph, value, limit)?;
                     self.recheck_object_map(graph, value, limit)?;
+                    self.recheck_change(graph, value, limit)?;
                     self.recheck_view_invariant(graph, value, limit)?;
                     self.recheck_predicate_invariant(graph, value, limit)?;
                     for r in node
@@ -1897,6 +1905,12 @@ impl<'a> Environment<'a> {
                     self.validate_at(graph, graph.get(original)?, original.0)?;
                     analysis.scalar_scope = Some(graph.get(original)?.scope.clone());
                 }
+                let repaired_field=self.field_owner_span(span)?.is_some()
+                    && value.is_some_and(|r|self.architecture_has_value(r));
+                if repaired_field {
+                    let r=value.ok_or("修復field値がない")?;
+                    analysis.scalar_scope=Some(graph.get(r)?.scope.clone());
+                }
                 let expected_scope = analysis.scope;
                 if node.scope != expected_scope
                     || !graph
@@ -2000,7 +2014,9 @@ impl<'a> Environment<'a> {
                     }
                     _ => false,
                 };
-                if generated_here
+                // 修復fieldだけは選択Architectureの既出override値を読む。
+                // 後続check_fieldが実owner・fieldから同じRefを要求する。
+                if generated_here && !repaired_field
                     && value.is_some_and(|reference| {
                         graph.context_at(reference.0) != self.current_context(graph)
                     })
@@ -4110,6 +4126,7 @@ impl<'a> Environment<'a> {
             if matches!(
                 request.kind,
                 QuestionKind::Build
+                    | QuestionKind::Solve | QuestionKind::Repair
                     | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
@@ -4117,6 +4134,8 @@ impl<'a> Environment<'a> {
                 return self.with_request_context(graph, request, || {
                     if request.kind == QuestionKind::Build {
                         super::build_result::validate_answer(self, graph, request, answer)?;
+                    } else if matches!(request.kind,QuestionKind::Solve|QuestionKind::Repair) {
+                        super::change_result::validate_answer(self,graph,request,answer)?;
                     } else if request.kind == QuestionKind::Compose {
                         super::public_compose::validate_answer(self, graph, request, answer)?;
                     } else if request.kind == QuestionKind::Compare {
@@ -8354,11 +8373,16 @@ impl<'a> Environment<'a> {
             field: Some(field.name.clone()),
             atom: None,
         };
+        let repaired=self.architecture_value(&position);
         let assigned = self
             .primitive_valuation
             .as_ref()
             .and_then(|values| values.get(&position));
-        let (known_value, scalar_scope) = if let Some(value) = assigned {
+        let (known_value, scalar_scope) = if assigned.is_none() && repaired.is_some() {
+            let (_,value)=repaired.ok_or("修復slot値がない")?;
+            scope.merge(&self.architecture_scope());
+            (Some(value),self.architecture_scalar_scope(&position))
+        } else if let Some(value) = assigned {
             let owner_scope = self.scope(owner, reading, None)?;
             scope.merge(&owner_scope);
             scope.assignments = true;
@@ -8758,6 +8782,12 @@ impl<'a> Environment<'a> {
             return Err("field の base 型不一致".into());
         };
         let field = self.field(snapshot, subject, &format!("{entity}.{name}"))?;
+        let fact=Fact{snapshot:snapshot.clone(),subject:subject.clone(),field:Some(field.name.clone()),atom:None};
+        if let Some((assigned,_))=self.architecture_value(&fact) {
+            if value!=Some(assigned) {return Err("field評価が修復Architectureの値を読まない".into());}
+            self.validate_at(graph,graph.get(assigned)?,assigned.0)?;
+            return Ok(());
+        }
         match (&field.slot, value) {
             (Slot::Missing, Some(actual)) if self.completion_type_supported(&field.ty)? => {
                 let fact = Fact {

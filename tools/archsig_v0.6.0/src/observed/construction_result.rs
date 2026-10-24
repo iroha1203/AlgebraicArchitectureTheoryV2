@@ -55,6 +55,12 @@ pub(crate) enum ConstructionType {
     ValueEquivalence,
     Invariant,
     SignatureAxis,
+    CandidateSpace,
+    SolutionSet,
+    StateSpace,
+    StateMap,
+    Assignment,
+    Repair,
 }
 impl ConstructionType {
     pub fn name(self) -> &'static str {
@@ -89,6 +95,12 @@ impl ConstructionType {
             Self::ValueEquivalence => "ValueEquivalence",
             Self::Invariant => "Invariant",
             Self::SignatureAxis => "SignatureAxis",
+            Self::CandidateSpace => "CandidateSpace",
+            Self::SolutionSet => "SolutionSet",
+            Self::StateSpace => "StateSpace",
+            Self::StateMap => "StateMap",
+            Self::Assignment => "Assignment",
+            Self::Repair => "Repair",
         }
     }
 }
@@ -181,6 +193,7 @@ pub(crate) enum ConstructionData {
     CircuitPattern(super::circuit_pattern::Data),
     Build(super::build_result::Data),
     ObjectMap(super::object_map_result::Data),
+    Change(super::change_result::Data),
     Composition(super::public_compose::Part),
     PathComposition(super::public_path_compose::Part),
     Comparison(super::public_compare::Part),
@@ -291,6 +304,7 @@ impl ConstructionValue {
             ConstructionData::ObjectReadingFrame(data) => data.scalar(),
             ConstructionData::ViewFamily(data) => data.scalar(),
             ConstructionData::Build(data) => data.scalar(),
+            ConstructionData::Change(data) => data.scalar(),
             ConstructionData::ObjectMap(data) => data.scalar(),
             ConstructionData::OutsideLaw(data) => data.scalar(),
             ConstructionData::LawInstantiation(data) => data.scalar(),
@@ -373,6 +387,7 @@ impl ConstructionValue {
             D::EquationFamily(data) => return data.ty(),
             D::CircuitPattern(data) => return data.ty(),
             D::Build(data) => return data.ty(),
+            D::Change(data) => return data.ty(),
             D::ObjectMap(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
@@ -416,6 +431,7 @@ impl ConstructionValue {
             D::EquationFamily(data) => data.arguments(),
             D::CircuitPattern(data) => data.arguments(),
             D::Build(data) => data.arguments(),
+            D::Change(data) => data.arguments(),
             D::ObjectMap(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
@@ -499,6 +515,7 @@ impl ConstructionValue {
     }
     pub fn conditions(&self) -> Vec<NodeRef> {
         match &self.data {
+            ConstructionData::Change(data) => data.conditions(),
             ConstructionData::ObjectMap(data) => data.conditions(),
             ConstructionData::Composition(part) => part.conditions(),
             ConstructionData::PathComposition(part) => part.conditions(),
@@ -526,6 +543,7 @@ impl ConstructionValue {
             D::EquationFamily(_) => "equation_family",
             D::CircuitPattern(_) => "circuit_pattern",
             D::Build(ref data) => data.construction(),
+            D::Change(ref data) => data.construction(),
             D::ObjectMap(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
@@ -565,6 +583,12 @@ impl ConstructionValue {
                 ConstructionType::ValueEquivalence => "value_equivalence",
                 ConstructionType::Invariant => "invariant",
                 ConstructionType::SignatureAxis => "signature_axis",
+                ConstructionType::CandidateSpace => "candidate_space",
+                ConstructionType::SolutionSet => "solution_set",
+                ConstructionType::StateSpace => "state_space",
+                ConstructionType::StateMap => "state_map",
+                ConstructionType::Assignment => "assignment",
+                ConstructionType::Repair => "repair",
             },
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
@@ -584,6 +608,7 @@ impl ConstructionValue {
     pub fn projection_type(&self) -> Option<ProjectionType> {
         use ConstructionData as D;
         match (&self.data, &self.witness) {
+            (D::Change(data), _) => data.projection_type(),
             (D::ObjectMap(data), _) => data.projection_type(),
             (D::Build(data), Witness::Architecture(a)) if data.algebra_base().is_some() => {
                 Some(ProjectionType::ObjectAlgebraRoot(
@@ -651,6 +676,7 @@ impl ConstructionValue {
     }
     pub fn project(&self, path: &[ProjectionStep]) -> Option<(NodeRef, usize)> {
         use ConstructionData as D;
+        if let D::Change(data) = &self.data { return data.project(path); }
         if let D::ObjectMap(data) = &self.data { return data.project(path); }
         if let D::Build(data) = &self.data {
             return match path.first()? {
@@ -725,6 +751,7 @@ impl ConstructionValue {
             D::EquationFamily(data) => data.wire(),
             D::CircuitPattern(data) => data.wire(),
             D::Build(data) => data.wire(),
+            D::Change(data) => data.wire(),
             D::ObjectMap(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
@@ -1304,6 +1331,7 @@ pub fn atom_value(
     })
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    if let ConstructionData::Change(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::ObjectMap(data) = &value.data { return Ok(data.metadata()); }
     if let ConstructionData::Build(data) = &value.data {
         return Ok(data.metadata());
@@ -1476,7 +1504,7 @@ pub(super) fn architecture_origin(
         return Err("有限Lawの元Architectureがない".into());
     };
     match (&v.witness, &v.data) {
-        (Witness::Architecture(a), ConstructionData::Architecture { .. }) => {
+        (Witness::Architecture(a), ConstructionData::Architecture { .. } | ConstructionData::Change(_)) if v.ty()==NodeType::Construction(ConstructionType::Architecture) => {
             let context = graph.context_at(reference.0);
             if context.frame.is_some()
                 || context.iteration.is_some()
@@ -1854,6 +1882,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     if let ConstructionData::CircuitPattern(data) = &v.data {
         return super::circuit_pattern::validate_node(graph, node, data);
     }
+    if let ConstructionData::Change(data) = &v.data { return super::change_result::validate_node(graph, node, v, data); }
     if let ConstructionData::ObjectMap(data) = &v.data { return super::object_map_result::validate_node(graph, node, v, data); }
     if let ConstructionData::Build(data) = &v.data {
         return super::build_result::validate_node(graph, node, v, data);

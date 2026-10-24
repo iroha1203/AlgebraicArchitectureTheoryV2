@@ -1840,6 +1840,7 @@ impl Graph {
             } = reason.kind
             {
                 let proposition = self.get(condition)?;
+                if construction == "repair" {super::change_result::validate_failure(self,reason)?;continue;}
                 if construction == "object_algebra_map" {
                     super::object_map_result::validate_failure(self, reason)?;
                     continue;

@@ -135,7 +135,7 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
-    if request.kind == QuestionKind::Build {
+    if matches!(request.kind,QuestionKind::Build|QuestionKind::Solve|QuestionKind::Repair) {
         return super::architecture_result::validate_build_origin(
             environment,
             graph,
