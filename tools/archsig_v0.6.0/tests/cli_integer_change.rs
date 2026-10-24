@@ -373,3 +373,125 @@ fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
         }
     }
 }
+
+fn coordinates(result: &JNode, vector: &JNode) -> Vec<i64> {
+    arr(get(get(node(result, vector), "value"), "coordinates"))
+        .iter()
+        .map(|r| s(get(node(result, r), "value")).parse().unwrap())
+        .collect()
+}
+#[test]
+fn integer_guard_restores_original_parameters_for_solve_repair_and_followup() {
+    for (name, guard, expected) in [
+        ("guard-zero", "a=0 and b=1", vec![0, 1]),
+        ("guard-nonunit", "2*a-3*b=2", vec![1, 0]),
+    ] {
+        let dir = input(
+            name,
+            &format!("change setpair(s:State,a:Z,b:Z) when {guard}=s with{{x=a,y=b}};"),
+        );
+        let run = execute(
+            &dir,
+            "out",
+            &[
+                "s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
+                "r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
+                "x=evaluate(Pair.first,on=$r.object,s=@pair/s)",
+                "c=check(Pair.total,on=$r.object,s=@pair/s)",
+            ],
+        );
+        assert_eq!(run.code, 0, "{} {}", run.stdout, run.stderr);
+        let result = result_json(&dir, &run);
+        assert_module_owners(&result);
+        for index in [0, 1] {
+            let rep = get(
+                get(output(&result, index, "solutions"), "value"),
+                "representation",
+            );
+            assert_eq!(coordinates(&result, get(rep, "particular")), expected);
+            let directions = node(&result, get(rep, "directions"));
+            assert_eq!(num(get(get(directions, "value"), "free_rank")), 0);
+        }
+        assert_eq!(
+            s(get(output(&result, 2, "value"), "value")),
+            expected[0].to_string()
+        );
+        assert!(
+            arr(get(&result, "answers"))
+                .iter()
+                .all(|a| s(get(a, "status")) == "established")
+        );
+    }
+}
+#[test]
+fn integer_guard_keeps_original_free_direction_and_rejects_empty_integer_fiber() {
+    let dir = input(
+        "guard-free",
+        "change setpair(s:State,a:Z,b:Z) when a+b=1=s with{x=0,y=1};",
+    );
+    let run = execute(
+        &dir,
+        "out",
+        &["r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"],
+    );
+    assert_eq!(run.code, 1, "{} {}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    assert!(!has(
+        get(&arr(get(&result, "answers"))[0], "outputs"),
+        "object"
+    ));
+    let rep = get(
+        get(output(&result, 0, "solutions"), "value"),
+        "representation",
+    );
+    let p = coordinates(&result, get(rep, "particular"));
+    assert_eq!(p.len(), 2);
+    assert_eq!(p.iter().sum::<i64>(), 1);
+    let embedding = node(&result, get(rep, "embedding"));
+    let cols = arr(get(get(embedding, "value"), "columns"));
+    assert_eq!(cols.len(), 1);
+    let k = arr(&cols[0])
+        .iter()
+        .map(|r| s(get(node(&result, r), "value")).parse::<i64>().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(k.len(), 2);
+    assert_eq!(k.iter().sum::<i64>(), 0);
+    assert!(k.iter().any(|x| *x != 0));
+    let dir = input(
+        "guard-empty",
+        "change setpair(s:State,a:Z,b:Z) when 2*a=1=s with{x=a,y=b};",
+    );
+    let run = execute(
+        &dir,
+        "out",
+        &["s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"],
+    );
+    assert_eq!(run.code, 1, "{} {}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    assert_eq!(
+        s(get(
+            get(
+                get(output(&result, 0, "solutions"), "value"),
+                "representation"
+            ),
+            "kind"
+        )),
+        "empty"
+    );
+}
+
+#[test]
+fn guarded_integer_repair_reuse_preserves_restored_solution_and_followup() {
+    let dir = input("guard-reuse", "change setpair(s:State,a:Z,b:Z) when 2*a-3*b=2=s with{x=a,y=b};");
+    let asks = ["r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
+        "x=evaluate(Pair.first,on=$r.object,s=@pair/s)"];
+    let first = execute(&dir, "out", &asks);
+    assert_eq!(first.code, 0, "{} {}", first.stdout, first.stderr);
+    let original = result_json(&dir, &first);
+    let repeated = run(&dir, &["run", "--atom-definition", "d.json", "--archmap", "a.json",
+        "--law", "l.law", "--out", "out2", "--reuse", "out", "--time-ms", "120000",
+        "--ask", asks[0], "--ask", asks[1]]);
+    assert_eq!(repeated.code, 0, "{} {}", repeated.stdout, repeated.stderr);
+    let reused = result_json(&dir, &repeated);
+    for field in ["answers", "nodes"] { assert_eq!(get(&original, field).value, get(&reused, field).value); }
+}
