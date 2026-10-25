@@ -73,8 +73,8 @@ pub(in crate::observed) fn compute(
     request: &Request,
     c: &mut Control,
 ) -> Result<Table, ValidationFailure> {
-    if input.search.linear.is_some() {
-        return Err(unsupported(request, "整数アフィン商の公開配送は未実装"));
+    if input.search.linear.is_some() || input.search.rational.is_some() {
+        return Err(unsupported(request, "この係数体のアフィン商の公開配送は未実装"));
     }
     let candidates = input.search.candidates.as_ref().ok_or("商の候補表がない")?;
     if !input.search.complete || !candidates.complete {

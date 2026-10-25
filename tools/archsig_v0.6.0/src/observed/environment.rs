@@ -62,6 +62,8 @@ mod primitive_valuation;
 pub(super) mod change_evaluation;
 #[path = "change_search.rs"]
 pub(super) mod change_search;
+#[path = "field_change.rs"]
+pub(super) mod field_change;
 #[path = "change_affine.rs"]
 pub(super) mod change_affine;
 #[path = "quotient_affine.rs"]

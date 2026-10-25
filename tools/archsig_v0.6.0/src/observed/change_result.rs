@@ -17,6 +17,8 @@ use crate::{canonical::Json, issue::Location, law::model::Signature, types::Type
 use std::{collections::BTreeMap, sync::Arc};
 #[path = "change_linear_result.rs"]
 pub(super) mod linear_result;
+#[path = "field_linear_result.rs"]
+mod field_linear_result;
 
 #[derive(Debug)]
 pub(super) struct Source {
@@ -261,7 +263,7 @@ fn compute_inner(
                     let scope = part.scope.clone();
                     let reasons = vec![
                         Reason {kind:ReasonKind::Missing,request:request.id.clone(),dependencies:vec![expression],missing:failure.partial.missing,location:Some(location.clone())},
-                        Reason {kind:ReasonKind::UnsupportedAlgorithm {question:request.kind,operand_types:vec![Type::Z],method:"integer_change".into()},request:request.id.clone(),dependencies:vec![expression],missing:vec![],location:Some(location)},
+                        Reason {kind:ReasonKind::UnsupportedAlgorithm {question:request.kind,operand_types:vec![pending.coefficient_type.clone().unwrap_or(Type::Z)],method:if pending.coefficient_type==Some(Type::Q) {"rational_change".into()} else {"integer_change".into()}},request:request.id.clone(),dependencies:vec![expression],missing:vec![],location:Some(location)},
                     ];
                     return Ok((b.parts,Answer {id:request.id.clone(),status:Decision::Undetermined,outputs:BTreeMap::new(),claim:None,evidence:vec![],reasons,scope},None));
                 }
@@ -421,7 +423,7 @@ fn compute_inner(
         }
     }
     slots.sort();
-    if search.linear.as_ref().is_some_and(|linear|linear.slots!=slots) {
+    if search.linear.as_ref().is_some_and(|linear|linear.slots!=slots) || search.rational.as_ref().is_some_and(|linear|linear.slots!=slots) {
         return Err(ValidationFailure::UnsupportedExpression { location:Location::Law {span:declaration.span}, feature:"整数changeの実更新先と公開slot集合が異なる".into() });
     }
     for (index, row) in candidates.rows.iter().enumerate() {
@@ -460,7 +462,7 @@ fn compute_inner(
         }
     }
     let parameter_type = Type::Tuple(candidates.parameter_types.clone());
-    let linear_parts=search.linear.as_ref().map(|linear|linear_result::build(&mut b,linear,&requirements,c)).transpose()?;
+    let linear_parts=if let Some(linear)=&search.rational {Some(field_linear_result::build(&mut b,linear,&requirements,c)?)}else{search.linear.as_ref().map(|linear|linear_result::build(&mut b,linear,&requirements,c)).transpose()?};
     let parameters = if let Some(linear)=&linear_parts {linear.parameters} else { b.push(
         NodeType::Domain,
         "domain",
@@ -951,7 +953,7 @@ fn compute_inner(
             reasons,
             scope,
         },
-        search.linear.is_some().then_some(search),
+        (search.linear.is_some() || search.rational.is_some()).then_some(search),
     ))
 }
 pub(super) fn evaluate(

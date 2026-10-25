@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 pub(in crate::observed) struct Search {
     pub linear: Option<change_affine::Linear>,
+    pub rational: Option<field_change::Linear>,
     pub pending_integer: Option<change_affine::Pending>,
     pub candidates: Option<Candidates>,
     pub solutions: Vec<SolutionRow>,
@@ -201,6 +202,7 @@ pub(in crate::observed) fn search(
 ) -> Result<Search, SearchFailure> {
     let mut result = Search {
         linear: None,
+        rational: None,
         pending_integer: None,
         candidates: None,
         solutions: vec![],
@@ -331,6 +333,32 @@ pub(in crate::observed) fn search(
                 candidates.rows.push(candidate);result.solutions.push(SolutionRow{candidate:i,member:Some(true)});
             }
             result.candidates=Some(candidates);result.linear=Some(linear);result.complete=true;
+            return Ok(());
+        }
+        if change_params.iter().skip(1).any(|p|p.ty==Type::Q) {
+            let mut pending=change_affine::Pending::default();
+            let computed=field_change::compute(&environment,change,&subjects,&result.requirements,&mut pending);
+            if !pending.facts.is_empty() {
+                result.missing.extend(pending.facts.iter().cloned());
+                result.pending_integer=Some(pending);
+            }
+            let linear=computed?;
+            let mut points=vec![];
+            if let Some(particular)=&linear.particular {
+                points.push(particular.clone());
+                if linear.fiber.pivots.len()<linear.parameter_count {
+                    points.push(particular.iter().zip(&linear.kernel).map(|(p,k)|
+                        crate::observed::numeric::binary(BinOp::Add,p,&k[0],control)
+                    ).collect::<Result<Vec<_>,_>>()?);
+                }
+            }
+            let mut candidates=Candidates{parameter_types:vec![Type::Q;subjects.len()*(change_params.len()-1)],subjects,rows:vec![],complete:true};
+            for (i,parameters) in points.into_iter().enumerate() {
+                control.checkpoint(Checkpoint::PrimitiveValuation)?;
+                candidates.rows.push(change_evaluation::candidate(&environment,change,&candidates.subjects,&parameters)?);
+                result.solutions.push(SolutionRow{candidate:i,member:Some(true)});
+            }
+            result.candidates=Some(candidates);result.rational=Some(linear);result.complete=true;
             return Ok(());
         }
         let table = match change_evaluation::candidates(&environment, change, &subjects) {
