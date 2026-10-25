@@ -1,10 +1,12 @@
 //! 局所診断を、指定されたOperationの実作用に沿って比較する。
 use super::*;
 use crate::observed::public_compose;
-#[path = "local_integer_compare.rs"]
-mod integer;
 #[path = "local_finite_transport.rs"]
 mod finite_transport;
+#[path = "local_integer_compare.rs"]
+mod integer;
+#[path = "local_rational_compare.rs"]
+mod rational;
 fn local(g: &Graph, r: NodeRef) -> Result<&Data, ValidationFailure> {
     match &g.get(r)?.payload {
         Some(Payload::Construction(v)) => match &v.data {
@@ -175,10 +177,20 @@ pub(super) fn compute(
         .system
         .as_ref()
         .ok_or("比較先の局所系がない")?;
-    let equation_side = integer::record(g,left)?.get("side") != Some(&Json::str("semantic"));
-    let integer_side = system.integer.as_ref().is_some_and(|d|!d.equation_only||equation_side);
-    let right_integer_side = right_plan.integer.as_ref().is_some_and(|d|!d.equation_only||equation_side);
-    let equivalent_finite = !integer_side
+    let equation_side = integer::record(g, left)?.get("side") != Some(&Json::str("semantic"));
+    let integer_side = system
+        .integer
+        .as_ref()
+        .is_some_and(|d| !d.equation_only || equation_side);
+    let right_integer_side = right_plan
+        .integer
+        .as_ref()
+        .is_some_and(|d| !d.equation_only || equation_side);
+    let rational_side = system.rational.is_some();
+    let right_rational_side = right_plan.rational.is_some();
+    let equivalent_finite = !rational_side
+        && !right_rational_side
+        && !integer_side
         && !right_integer_side
         && field(g, right_system, "base")? == object
         && same_plan(&data.source.request, &right_data.source.request);
@@ -190,22 +202,43 @@ pub(super) fn compute(
         && (object == from || object == to);
     let transported = if !supported && integer_side {
         integer::between(env, g, left, right, along, c)?
-    } else { None };
-    let finite_transported = if !supported && !integer_side {
+    } else {
+        None
+    };
+    let rational_transported = if !supported && rational_side {
+        rational::between(env, g, left, right, along, c)?
+    } else {
+        None
+    };
+    let finite_transported = if !supported && !integer_side && !rational_side {
         finite_transport::between(env, g, left, right, along, c)?
-    } else { None };
+    } else {
+        None
+    };
     let mut b = Builder {
         g,
         base,
         parts: vec![],
     };
-    let answer = if !supported && transported.is_none() && finite_transported.is_none() {
+    let answer = if !supported
+        && transported.is_none()
+        && rational_transported.is_none()
+        && finite_transported.is_none()
+    {
         let (dependencies, scope) = if let Some(expression) = system.expression {
             let original = &data.source.parts[expression.0 - data.source.base];
             let expression = b.push(
-                original.ty.clone(), original.construction, original.wire.clone(),
-                original.arguments.iter().copied().chain([left, right, along]).collect(),
-                None, None,
+                original.ty.clone(),
+                original.construction,
+                original.wire.clone(),
+                original
+                    .arguments
+                    .iter()
+                    .copied()
+                    .chain([left, right, along])
+                    .collect(),
+                None,
+                None,
             )?;
             (vec![expression], b.parts[0].scope.clone())
         } else {
@@ -225,7 +258,9 @@ pub(super) fn compute(
             missing: vec![],
             location: None,
         };
-        if let Some(part) = b.parts.first_mut() { part.reasons.push(reason.clone()); }
+        if let Some(part) = b.parts.first_mut() {
+            part.reasons.push(reason.clone());
+        }
         Answer {
             id: request.id.clone(),
             status: Decision::Undetermined,
@@ -235,18 +270,40 @@ pub(super) fn compute(
             reasons: vec![reason],
             scope,
         }
-    } else if integer_side {
-        match integer::compare(&mut b, request, left, right, along, transported.as_ref(), c) {
+    } else if integer_side || rational_side {
+        let result = if rational_side {
+            rational::compare(
+                &mut b,
+                request,
+                left,
+                right,
+                along,
+                rational_transported.as_ref(),
+                c,
+            )
+        } else {
+            integer::compare(&mut b, request, left, right, along, transported.as_ref(), c)
+        };
+        match result {
             Ok(answer) => answer,
             Err(ValidationFailure::Stop(stop)) => {
                 let mut scope = g.get(left)?.scope.clone();
                 scope.merge(&g.get(right)?.scope);
                 scope.merge(&g.get(along)?.scope);
                 Answer {
-                    id: request.id.clone(), status: Decision::Undetermined,
-                    outputs: BTreeMap::new(), claim: None, evidence: vec![],
-                    reasons: vec![Reason {kind: ReasonKind::Stop(stop),request:request.id.clone(),
-                        dependencies:vec![left,right,along],missing:vec![],location:None}], scope,
+                    id: request.id.clone(),
+                    status: Decision::Undetermined,
+                    outputs: BTreeMap::new(),
+                    claim: None,
+                    evidence: vec![],
+                    reasons: vec![Reason {
+                        kind: ReasonKind::Stop(stop),
+                        request: request.id.clone(),
+                        dependencies: vec![left, right, along],
+                        missing: vec![],
+                        location: None,
+                    }],
+                    scope,
                 }
             }
             Err(error) => return Err(error),
@@ -254,12 +311,20 @@ pub(super) fn compute(
     } else {
         let lm = field(g, left, "matching")?;
         let rm = field(g, right, "matching")?;
-        let correspondence = if let Some(maps) = &finite_transported { maps.matching.clone() } else { identity_pairs(g, lm, rm, c)? };
+        let correspondence = if let Some(maps) = &finite_transported {
+            maps.matching.clone()
+        } else {
+            identity_pairs(g, lm, rm, c)?
+        };
         let lr = field(g, left, "restriction")?;
         let rr = field(g, right, "restriction")?;
         let global_domain = field(g, lr, "source")?;
         let target_domain = field(g, rr, "source")?;
-        let global_pairs = if let Some(maps) = &finite_transported { maps.global.clone() } else { identity_pairs(g, global_domain, target_domain, c)? };
+        let global_pairs = if let Some(maps) = &finite_transported {
+            maps.global.clone()
+        } else {
+            identity_pairs(g, global_domain, target_domain, c)?
+        };
         let global_map = state_map(&mut b, global_domain, target_domain, &global_pairs)?;
         let matching_map = state_map(&mut b, lm, rm, &correspondence)?;
         let lp = pairs(g, lr)?;
@@ -275,23 +340,29 @@ pub(super) fn compute(
             }
             let transported = transported.ok_or("matchingの像がない")?;
             let mut global_image = None;
-            for (a,z) in &global_pairs {
+            for (a, z) in &global_pairs {
                 c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-                if g.scalar(*a)? == g.scalar(*x)? { global_image = Some(*z); }
+                if g.scalar(*a)? == g.scalar(*x)? {
+                    global_image = Some(*z);
+                }
             }
             let global_image = global_image.ok_or("大域状態の像がない")?;
             let mut commutes = false;
             for (a, z) in &rp {
                 c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
-                commutes |=
-                    g.scalar(*a)? == g.scalar(global_image)? && g.scalar(*z)? == g.scalar(transported)?;
+                commutes |= g.scalar(*a)? == g.scalar(global_image)?
+                    && g.scalar(*z)? == g.scalar(transported)?;
             }
             if !commutes {
                 return Err("診断の制限写像が可換でない".into());
             }
         }
         let outside_image = finite_transported.as_ref().and_then(|m| m.outside_image);
-        let status = if outside_image.is_none() { Decision::Established } else { Decision::Refuted };
+        let status = if outside_image.is_none() {
+            Decision::Established
+        } else {
+            Decision::Refuted
+        };
         let mut conditions = if outside_image.is_none() {
             let global_inverse = if global_domain == target_domain && finite_transported.is_none() {
                 global_map
@@ -316,16 +387,47 @@ pub(super) fn compute(
                     .collect::<Vec<_>>(),
             )?;
             vec![
-                b.proposition("inverse_maps", vec![global_map, global_inverse], vec![along], Decision::Established)?,
-                b.proposition("inverse_maps", vec![matching_map, inverse], vec![along], Decision::Established)?,
+                b.proposition(
+                    "inverse_maps",
+                    vec![global_map, global_inverse],
+                    vec![along],
+                    Decision::Established,
+                )?,
+                b.proposition(
+                    "inverse_maps",
+                    vec![matching_map, inverse],
+                    vec![along],
+                    Decision::Established,
+                )?,
             ]
         } else {
-            let count = change_result::value(&mut b, &Scalar::Z(finite_transported.as_ref().ok_or("有限輸送の像がない")?.outside_count.clone()))?;
+            let count = change_result::value(
+                &mut b,
+                &Scalar::Z(
+                    finite_transported
+                        .as_ref()
+                        .ok_or("有限輸送の像がない")?
+                        .outside_count
+                        .clone(),
+                ),
+            )?;
             let zero = change_result::value(&mut b, &Scalar::Z(num_bigint::BigInt::from(0)))?;
-            vec![b.proposition("equal", vec![count, zero],
-                [global_map, matching_map].into_iter().chain(outside_image.iter().copied()).collect(), status)?]
+            vec![b.proposition(
+                "equal",
+                vec![count, zero],
+                [global_map, matching_map]
+                    .into_iter()
+                    .chain(outside_image.iter().copied())
+                    .collect(),
+                status,
+            )?]
         };
-        conditions.push(b.proposition("naturality", vec![global_map, matching_map, lr, rr], vec![along], Decision::Established)?);
+        conditions.push(b.proposition(
+            "naturality",
+            vec![global_map, matching_map, lr, rr],
+            vec![along],
+            Decision::Established,
+        )?);
         let comparison = b.push(
             NodeType::Construction(T::Comparison),
             "comparison",
@@ -344,12 +446,8 @@ pub(super) fn compute(
             None,
             None,
         )?;
-        let proposition = b.proposition(
-            "diagnostics_preserved",
-            vec![comparison],
-            vec![],
-            status,
-        )?;
+        let proposition =
+            b.proposition("diagnostics_preserved", vec![comparison], vec![], status)?;
         Answer {
             id: request.id.clone(),
             status,

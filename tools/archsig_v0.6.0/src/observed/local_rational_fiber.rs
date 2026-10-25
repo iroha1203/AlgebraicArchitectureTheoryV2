@@ -1,9 +1,9 @@
 //! 体上の消去を共通局所計算の基底変換へ接続する。
 use super::*;
 use num_traits::One;
-pub(super) type Matrix = Vec<Vec<Z>>;
+pub(in crate::observed::local_result) type Matrix = Vec<Vec<Z>>;
 #[derive(Clone, Debug)]
-pub(super) struct Fiber {
+pub(in crate::observed::local_result) struct Fiber {
     pub diagonal: Matrix,
     pub left: Matrix,
     pub right: Matrix,
@@ -13,20 +13,20 @@ pub(super) struct Fiber {
     pub kernel: Matrix,
     pub obstruction: Option<usize>,
 }
-pub(super) fn scalars(a: &Matrix) -> crate::observed::field_fiber::Matrix {
+pub(in crate::observed::local_result) fn scalars(a: &Matrix) -> crate::observed::field_fiber::Matrix {
     a.iter()
         .map(|r| r.iter().map(Z::scalar).collect())
         .collect()
 }
-pub(super) fn vector(a: &[Scalar]) -> Result<Vec<Z>, ValidationFailure> {
+pub(in crate::observed::local_result) fn vector(a: &[Scalar]) -> Result<Vec<Z>, ValidationFailure> {
     a.iter().map(Z::from_scalar).collect()
 }
-pub(super) fn matrix(
+pub(in crate::observed::local_result) fn matrix(
     a: &crate::observed::field_fiber::Matrix,
 ) -> Result<Matrix, ValidationFailure> {
     a.iter().map(|r| vector(r)).collect()
 }
-pub(super) fn solve(
+pub(in crate::observed::local_result) fn solve(
     a: &Matrix,
     n: usize,
     b: &[Z],
@@ -65,7 +65,7 @@ pub(super) fn solve(
         obstruction: f.obstruction,
     })
 }
-pub(super) fn multiply(
+pub(in crate::observed::local_result) fn multiply(
     a: &Matrix,
     b: &Matrix,
     cols: usize,

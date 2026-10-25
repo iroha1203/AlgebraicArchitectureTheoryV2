@@ -4,7 +4,7 @@ use num_integer::Integer;
 use num_traits::{One, Signed, Zero};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) struct Q(BigInt, BigInt);
+pub(in crate::observed::local_result) struct Q(BigInt, BigInt);
 impl Q {
     fn new(n: BigInt, d: BigInt) -> Self {
         assert!(!d.is_zero());
@@ -16,7 +16,7 @@ impl Q {
         }
         Self(n, d)
     }
-    pub(super) fn scalar(&self) -> crate::observed::result::Scalar {
+    pub(in crate::observed::local_result) fn scalar(&self) -> crate::observed::result::Scalar {
         crate::observed::result::Scalar::Q(self.0.clone(), self.1.clone())
     }
     pub(super) fn from_scalar(
@@ -114,5 +114,12 @@ impl Sub<Q> for &Q {
     type Output = Q;
     fn sub(self, r: Q) -> Q {
         self - &r
+    }
+}
+
+impl std::ops::Neg for &Q {
+    type Output = Q;
+    fn neg(self) -> Q {
+        Q(-&self.0, self.1.clone())
     }
 }
