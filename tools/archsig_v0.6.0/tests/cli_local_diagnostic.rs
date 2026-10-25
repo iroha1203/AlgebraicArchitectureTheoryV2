@@ -3923,3 +3923,25 @@ fn integer_diagnostic_inclusion_computes_torsion_cokernel_and_keeps_the_map() {
         let again=result_json(&dir,&reused);for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
     }}
 }
+
+#[test]
+fn integer_diagnostic_inclusion_keeps_unavailable_classes_blocked() {
+    let dir=integer_transport_input("integer-inclusion-missing-class",false);
+    let path=dir.join("l.law");let law=std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path,law.replace("law optional localValid",
+        "change four(s:State,d:Z)=s with{free=s.free+4*d}; change two(s:State,d:Z)=s with{free=s.free+2*d}; law optional loopShift(e:Reserve):e.to.free-e.from.free=0; local Edge(e:Reserve) reads e.from.free,e.to.free; law optional localValid")).unwrap();
+    let asks=["m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+        "l=localize($m.candidate.source,law=Reservations.loopShift,using=Reservations.four)",
+        "r=localize($m.candidate.target,law=Reservations.loopShift,using=Reservations.two)",
+        "d=diagnose($l.system,side=semantic)","e=diagnose($r.system,side=semantic)",
+        "c=compare($d.diagnostic,to=$e.diagnostic,kind=diagnostics,along=$m.operation)","n=needed($c)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    for i in [3,4] {assert!(!has(get(&arr(get(&j,"answers"))[i],"outputs"),"class"));}
+    let answer=&arr(get(&j,"answers"))[5];
+    assert_eq!(s(get(answer,"status")),"undetermined");
+    assert!(!has(get(answer,"outputs"),"comparison"));
+    assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="dependency_blocked"));
+    assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="condition_failed"));
+    assert_eq!(s(get(&arr(get(&j,"answers"))[6],"status")),"established");
+}

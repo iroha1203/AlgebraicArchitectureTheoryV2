@@ -529,11 +529,7 @@ pub(super) fn compare(
                 class_status,
             )?
         } else {
-            status = if group_status == Decision::Refuted {
-                Decision::Refuted
-            } else {
-                Decision::Undetermined
-            };
+            status = Decision::Undetermined;
             let condition = b.proposition(
                 "constructible",
                 vec![left, right],
