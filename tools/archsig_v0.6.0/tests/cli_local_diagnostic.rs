@@ -2588,6 +2588,21 @@ fn finite_change_local_states_distinguish_the_action_image_from_free_equations()
         for field in ["answers", "nodes"] {
             assert_eq!(get(&j, field).value, get(&after, field).value);
         }
+        for scope in ["cover", "topology"] {
+            let checks = arr(get(system, "sheaf_checks"));
+            let propositions = ["semantic", "equation"].map(|side| {
+                let check = checks.iter().find(|v| s(get(v,"scope"))==scope && s(get(v,"side"))==side).unwrap();
+                let proposition = get(node(&j,get(check,"proposition")),"value");
+                let operands = arr(get(proposition,"operands"));
+                let maps = arr(get(system,"restrictions")).iter().filter(|v| s(get(v,"side"))==side).map(|v| get(v,"map")).collect::<Vec<_>>();
+                assert_eq!(operands.len(), maps.len()+1);
+                for operand in &operands[1..] {
+                    assert!(maps.iter().any(|map| map.value==operand.value));
+                }
+                proposition
+            });
+            assert_ne!(propositions[0].value,propositions[1].value);
+        }
         let check = arr(get(system, "sheaf_checks"))
             .iter()
             .find(|v| s(get(v, "scope")) == "cover" && s(get(v, "side")) == "semantic")

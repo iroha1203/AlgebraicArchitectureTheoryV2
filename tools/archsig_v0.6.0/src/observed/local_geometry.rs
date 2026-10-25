@@ -634,7 +634,7 @@ pub(super) fn build(
             let proposition = b.proposition(
                 "sheaf_condition",
                 std::iter::once(object)
-                    .chain(restriction_refs.iter().copied())
+                    .chain(restriction_refs.iter().skip(usize::from(equation_side)).step_by(2).copied())
                     .collect(),
                 vec![],
                 if holds {

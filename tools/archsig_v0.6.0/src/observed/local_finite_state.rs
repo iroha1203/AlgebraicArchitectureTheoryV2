@@ -165,9 +165,11 @@ fn scalar_domain(
     b: &mut Builder<'_>,
     ty: &Type,
     values: &[Scalar],
+    c: &mut Control,
 ) -> Result<(NodeRef, Vec<(Scalar, NodeRef)>), ValidationFailure> {
     let mut elements = vec![];
     for value in values {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
         if !elements.iter().any(|(v, _)| v == value) {
             elements.push((value.clone(), change_result::value(b, value)?));
         }
@@ -203,20 +205,19 @@ pub(super) fn build(
             .map(|i| model.slot_types[*i].clone())
             .collect(),
     );
-    let projected = model
-        .points
-        .iter()
-        .map(|p| Scalar::Tuple(indexes.iter().map(|i| p[*i].clone()).collect()))
-        .collect::<Vec<_>>();
+    let mut projected = vec![];
+    let mut equation_values = vec![];
     let holds = |i: usize| selected.iter().all(|law| model.truth[i][*law]);
-    let (equation_parameters, _) = scalar_domain(b, &ty, &projected)?;
-    let equation_values = projected
-        .iter()
-        .enumerate()
-        .filter(|(i, _)| holds(*i))
-        .map(|(_, v)| v.clone())
-        .collect::<Vec<_>>();
-    let (equation_domain, equation_values) = scalar_domain(b, &ty, &equation_values)?;
+    for (i, point) in model.points.iter().enumerate() {
+        c.checkpoint(crate::observed::control::Checkpoint::Localize)?;
+        let value = Scalar::Tuple(indexes.iter().map(|i| point[*i].clone()).collect());
+        if holds(i) {
+            equation_values.push(value.clone());
+        }
+        projected.push(value);
+    }
+    let (equation_parameters, _) = scalar_domain(b, &ty, &projected, c)?;
+    let (equation_domain, equation_values) = scalar_domain(b, &ty, &equation_values, c)?;
     let mut all_parameters = vec![];
     let mut all_images = vec![];
     let mut solution_parameters = vec![];
@@ -233,8 +234,8 @@ pub(super) fn build(
         }
     }
     let parameter_type = Type::Tuple(model.candidates.parameter_types.clone());
-    let (point, parameter_values) = scalar_domain(b, &parameter_type, &all_parameters)?;
-    let (image, image_values) = scalar_domain(b, &ty, &all_images)?;
+    let (point, parameter_values) = scalar_domain(b, &parameter_type, &all_parameters, c)?;
+    let (image, image_values) = scalar_domain(b, &ty, &all_images, c)?;
     let pair_refs = all_parameters
         .iter()
         .zip(&all_images)
@@ -390,7 +391,7 @@ pub(super) fn build(
         None,
     )?;
     let (solution_parameter_domain, solution_parameter_values) =
-        scalar_domain(b, &parameter_type, &solution_parameters)?;
+        scalar_domain(b, &parameter_type, &solution_parameters, c)?;
     let semantic = b.push(
         NodeType::Construction(T::SolutionSet),
         "solution_set",
@@ -420,7 +421,7 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let (states, semantic_values) = scalar_domain(b, &ty, &solution_images)?;
+    let (states, semantic_values) = scalar_domain(b, &ty, &solution_images, c)?;
     let mut semantic_parameters = vec![];
     let mut semantic_pairs = vec![];
     for (v, r) in &semantic_values {
