@@ -2386,3 +2386,91 @@ fn tuple_intersections_retain_typed_component_projections() {
         }
     }
 }
+
+#[test]
+fn tuple_component_support_excludes_other_bound_subjects() {
+    for declaration in [
+        "local left(t:State,u:Left[t]) reads (t.flag,u.flag); local right(t:State,v:Right[t]) reads (t.flag,v.flag);",
+        "local left(t:State,u:Left[t]) reads t.flag,u.flag; local right(t:State,v:Right[t]) reads t.flag,v.flag;",
+    ] {
+        let dir = input("tuple-component-bindings", Some(true));
+        let mut entities = String::new();
+        for entity in ["Left", "Right"] {
+            entities.push_str(&format!(r#"{{"kind":"entity","name":"Fixed.{entity}","meaning":"補助対象。","parameters":[{{"name":"owner","type":["Ref","Fixed.State"],"meaning":"所属。"}}],"fields":[{{"name":"flag","type":"Bool","meaning":"補助値。"}}],"alignments":[]}},"#));
+        }
+        let definition = D.replace(
+            r#""declarations":["#,
+            &format!(r#""declarations":[{entities}"#),
+        );
+        let old = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
+        let new = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+        std::fs::write(dir.join("d.json"), definition).unwrap();
+        for file in ["a.json", "l.law"] {
+            let mut text = std::fs::read_to_string(dir.join(file)).unwrap().replace(
+                &old.vocabularies["Fixed"].digest,
+                &new.vocabularies["Fixed"].digest,
+            );
+            if file == "a.json" {
+                for (subject, ty) in [("u", "Left"), ("v", "Right")] {
+                    text = text.replace(
+                    r#""subjects":["#,
+                    &format!(
+                        r#""subjects":[{{"id":"{subject}","type":"Fixed.{ty}","origin":"model"}},"#
+                    ),
+                );
+                    text = text.replace(r#""atoms":["#,&format!(r#""atoms":[{{"id":"{subject}-owner","subject":"{subject}","field":"Fixed.{ty}.owner","value":["fixed","s"],"origin":"model"}},{{"id":"{subject}-flag","subject":"{subject}","field":"Fixed.{ty}.flag","value":true,"origin":"model"}},"#));
+                }
+            }
+            std::fs::write(dir.join(file), text).unwrap();
+        }
+        explicit_local(
+            &dir,
+            &format!(
+                "view left_value(u:Left):Bool=u.flag; view right_value(v:Right):Bool=v.flag; {declaration}"
+            ),
+        );
+        let r = execute(
+            &dir,
+            "out",
+            &[
+                "a=build(Fixed,on=@fixed/s)",
+                "l=localize($a.object)",
+                "e=diagnose($l.system)",
+            ],
+        );
+        assert_eq!(r.code, 0, "{} {}", r.stdout, r.stderr);
+        let j = result_json(&dir, &r);
+        let system = get(output(&j, 1, "system"), "value");
+        assert_eq!(arr(get(system, "contexts")).len(), 4);
+        let intersection = arr(get(system, "contexts"))
+            .iter()
+            .map(|r| get(node(&j, r), "value"))
+            .find(|v| arr(get(v, "carrier")).len() == 1)
+            .unwrap();
+        assert_eq!(arr(get(intersection, "law_coordinates")).len(), 1);
+        assert_eq!(
+            arr(get(intersection, "readings")).len(),
+            if declaration.contains("reads (") {
+                1
+            } else {
+                2
+            }
+        );
+        let reading = &arr(get(intersection, "readings"))[0];
+        assert_eq!(s(get(reading, "type")), "Bool");
+        if declaration.contains("reads (") {
+            assert_eq!(
+                s(get(
+                    get(node(&j, get(reading, "expression")), "value"),
+                    "operation"
+                )),
+                "project"
+            );
+        }
+        let image = get(node(&j, get(reading, "domain")), "value");
+        assert_eq!(
+            get(node(&j, &arr(get(image, "elements"))[0]), "value").value,
+            archsig::json::JValue::Bool(true)
+        );
+    }
+}

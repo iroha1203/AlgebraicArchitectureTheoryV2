@@ -143,44 +143,73 @@ pub(in crate::observed) fn implicit_support(
     dependencies.dedup();
     Ok((carrier, dependencies))
 }
+fn read_bindings(
+    env: &Environment<'_>,
+    id: usize,
+    bindings: &[(String, Scalar)],
+    c: &mut Control,
+) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
+    let mut names = BTreeSet::new();
+    let mut pending = vec![id];
+    while let Some(id) = pending.pop() {
+        c.checkpoint(Checkpoint::Localize)?;
+        match &env.inputs.law().exprs[id].kind {
+            ExprKind::Group(child) | ExprKind::Field { base: child, .. } => pending.push(*child),
+            ExprKind::Tuple(items) => pending.extend(items),
+            ExprKind::Dotted(parts) => {
+                if let Some(first) = parts.first() {
+                    names.insert(first.name.as_str());
+                }
+            }
+            _ => {}
+        }
+    }
+    Ok(bindings
+        .iter()
+        .filter(|(name, _)| names.contains(name.as_str()))
+        .cloned()
+        .collect())
+}
 // Tuple全体を読めない交差でだけ使う成分。公開ノードは必要になるまで作らない。
 fn projections(
     env: &Environment<'_>,
     id: usize,
     value: &Scalar,
-    path: &mut Vec<usize>,
     read: usize,
     bindings: &[(String, Scalar)],
     reading: &str,
     out: &mut Vec<local_result::geometry::Projection>,
     c: &mut Control,
 ) -> Result<(), ValidationFailure> {
-    c.checkpoint(Checkpoint::Localize)?;
-    match (&env.inputs.law().exprs[id].kind, value) {
-        (ExprKind::Group(child), _) => {
-            projections(env, *child, value, path, read, bindings, reading, out, c)?
-        }
-        (ExprKind::Tuple(items), Scalar::Tuple(values)) => {
-            for (i, (child, value)) in items.iter().zip(values).enumerate() {
-                path.push(i);
-                projections(env, *child, value, path, read, bindings, reading, out, c)?;
-                path.pop();
+    let mut pending = vec![(id, value, vec![])];
+    while let Some((id, value, path)) = pending.pop() {
+        c.checkpoint(Checkpoint::Localize)?;
+        match (&env.inputs.law().exprs[id].kind, value) {
+            (ExprKind::Group(child), _) => pending.push((*child, value, path)),
+            (ExprKind::Tuple(items), Scalar::Tuple(values)) => {
+                for (i, (child, value)) in items.iter().zip(values).enumerate().rev() {
+                    let mut child_path = path.clone();
+                    child_path.push(i);
+                    pending.push((*child, value, child_path));
+                }
             }
+            _ if !path.is_empty() => {
+                // 成分を読むための束縛だけを残す。他成分の参照は射影の支持ではない。
+                let used = read_bindings(env, id, bindings, c)?;
+                let (carrier, positions) = implicit_support(env, id, &used, reading, c)?;
+                out.push(local_result::geometry::Projection {
+                    read,
+                    path,
+                    value: value.clone(),
+                    support: local_result::geometry::Support {
+                        carrier,
+                        positions,
+                        visible: visible_slots(env, id, &used)?,
+                    },
+                });
+            }
+            _ => {}
         }
-        _ if !path.is_empty() => {
-            let (carrier, positions) = implicit_support(env, id, bindings, reading, c)?;
-            out.push(local_result::geometry::Projection {
-                read,
-                path: path.clone(),
-                value: value.clone(),
-                support: local_result::geometry::Support {
-                    carrier,
-                    positions,
-                    visible: visible_slots(env, id, bindings)?,
-                },
-            });
-        }
-        _ => {}
     }
     Ok(())
 }
@@ -483,7 +512,6 @@ fn materialize_instance(
             env,
             *id,
             &value,
-            &mut vec![],
             out.readings.len(),
             bindings,
             &declaration.reading,
@@ -498,7 +526,7 @@ fn materialize_instance(
         out.arguments.push(image);
         out.read_refs.extend([expression, image]);
         let mut carrier = vec![];
-        for (_, v) in bindings {
+        for (_, v) in &read_bindings(env, *id, bindings, c)? {
             subject_carrier(v, &mut carrier, c)?;
         }
         subject_carrier(&value, &mut carrier, c)?;
