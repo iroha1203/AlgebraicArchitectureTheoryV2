@@ -5037,3 +5037,35 @@ fn finite_integer_localization_reads_repaired_fixed_values() {
 fn finite_integer_declared_read_keeps_repaired_guard_and_affine_offset() {
     finite_integer_repaired_fixed_values(true);
 }
+
+#[test]
+fn finite_integer_noninjective_read_retains_fixed_missing_requirement() {
+    let definitions=r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Pair","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Pair.State","meaning":"二つの自由整数と固定値。","parameters":[],"fields":[{"name":"x","type":"Z","meaning":"第一座標。"},{"name":"y","type":"Z","meaning":"第二座標。"},{"name":"z","type":"Z","meaning":"固定値。"}],"alignments":[]}]}]}"#;
+    let checked=definition::check_definitions(&[("d",definitions.as_bytes())]).unwrap();
+    let digest=&checked.vocabularies["Pair"].digest;
+    let law=format!("law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Pair {{ use vocabulary Pair version \"1\" digest \"{digest}\"; local Sum(s:State) reads s.x+s.y,s.z; change choose(s:State,b:Bool)=s with{{x=if b then 0 else 1,y=if b then 1 else 0}}; }}");
+    let map=format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Pair","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"非単射readと欠測の独立試験。","locations":[],"note":"固定値zは未観測。"}}],"snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Pair.State","origin":"model"}}],"atoms":[{{"id":"x","subject":"s","field":"Pair.State.x","value":"0","origin":"model"}},{{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}}]}}]}}"#);
+    let dir=workdir("finite-integer-noninjective-missing");
+    for (name,text) in [("d.json",definitions),("l.law",&law),("a.json",&map)] {std::fs::write(dir.join(name),text).unwrap();}
+    let asks=["a=build(Pair,on=@v/s)","l=localize($a.object,using=Pair.choose)","n=needed($l)"];
+    let r=execute(&dir,"out",&asks);
+    assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);
+    let j=result_json(&dir,&r);
+    let answer=&arr(get(&j,"answers"))[1];
+    assert!(!has(get(answer,"outputs"),"system"));
+    let reasons=arr(get(answer,"reasons"));
+    for code in ["missing_observation","unsupported_algorithm"] {
+        assert!(reasons.iter().any(|r|s(get(r,"code"))==code),"{code}: {reasons:?}");
+    }
+    let plan=get(output(&j,2,"plan"),"value");
+    assert!(arr(get(plan,"requirements")).iter().any(|r| {
+        let field=get(r,"field");
+        s(get(field,"snapshot"))=="v" && s(get(field,"subject"))=="s" && s(get(field,"field"))=="Pair.State.z"
+    }));
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+    for ask in asks {args.extend(["--ask",ask]);}
+    let reused=run(&dir,&args);
+    assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
+    let again=result_json(&dir,&reused);
+    for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+}

@@ -322,6 +322,10 @@ pub(super) fn compute(
                     )?
                 };
                 for explicit in contexts {
+                    local_scope.merge(&explicit.scope);
+                    let stopped = explicit.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
+                    reasons.extend(explicit.reasons);
+                    if stopped { return Ok((None, vec![])); }
                     if model.integer_equations {
                         for information in explicit.read_information.iter().flatten() {
                             let (slots, matrix) = information;
@@ -333,10 +337,6 @@ pub(super) fn compute(
                             }
                         }
                     }
-                    local_scope.merge(&explicit.scope);
-                    let stopped = explicit.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
-                    reasons.extend(explicit.reasons);
-                    if stopped { return Ok((None, vec![])); }
                     if explicit.locals.is_empty() { continue; }
                     let support = geometry::Support { carrier: explicit.carrier, positions: explicit.positions, visible: explicit.visible };
                     projections.extend(explicit.projections.into_iter().map(|mut p| { p.read += readings.len(); p }));
