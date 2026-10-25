@@ -120,6 +120,45 @@ fn rational_unique_repair_keeps_exact_fraction_and_original_observations() {
     }
 }
 
+fn verify_inconsistent_wire(j: &JNode, proof: &JNode) {
+    use num_bigint::BigInt;
+    let scalar = |reference: &JNode| {
+        let parts = arr(get(node(j, reference), "value"));
+        (
+            s(&parts[0]).parse::<BigInt>().unwrap(),
+            s(&parts[1]).parse::<BigInt>().unwrap(),
+        )
+    };
+    let data = get(proof, "data");
+    let u = arr(get(
+        get(node(j, get(data, "annihilator")), "value"),
+        "coordinates",
+    ))
+    .iter()
+    .map(&scalar)
+    .collect::<Vec<_>>();
+    let dot = |v: &[JNode]| {
+        assert_eq!(v.len(), u.len());
+        v.iter().zip(&u).fold(
+            (BigInt::from(0), BigInt::from(1)),
+            |(n, d), (x, (un, ud))| {
+                let (xn, xd) = scalar(x);
+                (n * &xd * ud + un * xn * &d, d * xd * ud)
+            },
+        )
+    };
+    let columns = arr(get(get(node(j, get(data, "map")), "value"), "columns"));
+    for column in columns {
+        assert_eq!(dot(arr(column)).0, BigInt::from(0));
+    }
+    let paired = dot(arr(get(
+        get(node(j, get(data, "rhs")), "value"),
+        "coordinates",
+    )));
+    assert_ne!(paired.0, BigInt::from(0));
+    let claimed = scalar(get(data, "pairing"));
+    assert_eq!(paired.0 * claimed.1, claimed.0 * paired.1);
+}
 #[test]
 fn rational_fibers_keep_nonunique_assignments_and_inconsistency() {
     for (label, change, law, rank) in [
@@ -188,6 +227,7 @@ fn rational_fibers_keep_nonunique_assignments_and_inconsistency() {
             assert_eq!(s(get(repr, "kind")), "empty");
             let proof = get(node(&j, get(repr, "certificate")), "value");
             assert_eq!(s(get(proof, "kind")), "linear_inconsistent");
+            verify_inconsistent_wire(&j, proof);
             assert_eq!(
                 s(get(get(output(&j, 0, "existence"), "judgment"), "status")),
                 "refuted"
