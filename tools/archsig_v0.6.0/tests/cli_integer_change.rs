@@ -733,3 +733,39 @@ fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_s
         for field in ["answers","nodes"] { assert_eq!(get(&j,field).value,get(&again,field).value); }
     }
 }
+
+#[test]
+fn missing_integer_change_keeps_the_cause_expression_and_subject_binding() {
+    for (label,change,expected) in [
+        ("update","change setpair(s:State,a:Z)=s with{x=s.y+a};law optional first_zero(s:State):s.x=0;","s.y+a"),
+        ("guard","change setpair(s:State,a:Z) when a=s.y=s with{x=a};law optional first_zero(s:State):s.x=0;","a=s.y"),
+        ("law","change setpair(s:State,a:Z)=s with{x=a};law optional first_zero(s:State):s.x=s.y;","s.x=s.y"),
+    ] {
+        let dir=input(label,change);
+        let map=std::fs::read_to_string(dir.join("a.json")).unwrap().replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":"0","origin":"model"}"#,"");
+        std::fs::write(dir.join("a.json"),map).unwrap();
+        let asks=["r=repair(Pair.first_zero,using=Pair.setpair,on=@pair/s,s=@pair/s)","n=needed($r)"];
+        let result=execute(&dir,"out",&asks);
+        assert_eq!(result.code,2,"{label}: {} {}",result.stdout,result.stderr);
+        let j=result_json(&dir,&result);
+        let answer=&arr(get(&j,"answers"))[0];
+        let reason=arr(get(answer,"reasons")).iter().find(|r|s(get(r,"code"))=="missing_observation").unwrap();
+        let expression=get(node(&j,&arr(get(reason,"dependencies"))[0]),"value");
+        let law=std::fs::read_to_string(dir.join("l.law")).unwrap();
+        let span=arr(get(get(expression,"location"),"span"));
+        let text=&law[num(&span[0]) as usize..num(&span[1]) as usize];
+        assert!(text.contains(expected),"{label}: dependency {text}");
+        let binding=arr(get(expression,"bindings")).iter().find(|b|s(get(b,"name"))=="s").expect("subject binding");
+        let subject=arr(get(node(&j,get(binding,"value")),"value"));
+        assert_eq!((s(&subject[0]),s(&subject[1])),("pair","s"));
+        assert_eq!(arr(get(expression,"parameters")).len(),if label=="law" {0} else {1});
+        let plan=get(output(&j,1,"plan"),"value");
+        assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))=="Pair.State.y"));
+        let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];
+        for ask in asks {args.extend(["--ask",ask]);}
+        let reused=run(&dir,&args);
+        assert_eq!(reused.code,2,"{} {}",reused.stdout,reused.stderr);
+        let again=result_json(&dir,&reused);
+        for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+    }
+}

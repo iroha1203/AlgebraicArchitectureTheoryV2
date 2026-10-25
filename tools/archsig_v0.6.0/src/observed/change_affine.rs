@@ -29,6 +29,13 @@ pub(in crate::observed) struct Linear {
     pub rhs: Vec<Z>,
     pub fiber: Fiber,
 }
+#[derive(Default)]
+pub(in crate::observed) struct Pending {
+    pub facts: Vec<Fact>,
+    pub expression: Option<usize>,
+    pub bindings: Vec<(String, Scalar)>,
+    pub parameters: Vec<(String, Type)>,
+}
 fn unsupported(env: &Environment<'_>, id: usize, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
         location: Location::Law {
@@ -61,11 +68,11 @@ fn coordinates(
     id: usize,
     form: &Form,
     axes: &[Parameter],
-    missing: &mut Vec<Fact>,
+    missing: &mut Pending,
 ) -> Result<(Z, Vec<Z>), ValidationFailure> {
     form.integer_coordinates(axes, &env.control)?
         .ok_or_else(|| {
-            missing.extend(form.missing_facts());
+            missing.facts.extend(form.missing_facts());
             unsupported(
                 env,
                 id,
@@ -81,7 +88,7 @@ fn equations(
     axes: &[Parameter],
     matrix: &mut Matrix,
     rhs: &mut Vec<Z>,
-    missing: &mut Vec<Fact>,
+    missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         env.tick()?;
@@ -139,7 +146,7 @@ pub(in crate::observed) fn compute(
     change: &Declaration,
     subjects: &[Scalar],
     requirements: &[(String, Vec<(String, Scalar)>)],
-    missing: &mut Vec<Fact>,
+    missing: &mut Pending,
 ) -> Result<Linear, ValidationFailure> {
     let Signature::Change {
         params,
@@ -187,7 +194,10 @@ pub(in crate::observed) fn compute(
             v.affine = affine::parameter(&Type::Z, axis, &env.control)?.map(Box::new);
             vars.insert(p.name.clone(), v);
         }
+        missing.bindings = vec![(params[0].name.clone(), subject.clone())];
+        missing.parameters = params[1..].iter().map(|p| (p.name.clone(), p.ty.clone())).collect();
         if let Some(guard) = guard {
+            missing.expression = Some(*guard);
             equations(
                 env,
                 *guard,
@@ -199,6 +209,7 @@ pub(in crate::observed) fn compute(
                 missing,
             )?;
         }
+        missing.expression = Some(*body);
         let mut current = *body;
         loop {
             env.tick()?;
@@ -377,6 +388,9 @@ pub(in crate::observed) fn compute(
                 }
             }
         }
+        missing.expression = Some(*body);
+        missing.bindings = bindings.clone();
+        missing.parameters.clear();
         equations(
             &updated,
             *body,

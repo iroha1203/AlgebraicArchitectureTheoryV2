@@ -246,16 +246,20 @@ fn compute_inner(
     let search = match change_search::search(env, g, &architecture.witness, request, c) {
         Ok(search) => search,
         Err(failure) => {
-            if !failure.partial.missing.is_empty() {
+            if let Some(pending) = &failure.partial.pending_integer {
                 if let ValidationFailure::UnsupportedExpression { location, .. } = failure.cause {
-                    let declaration = &env.inputs.law().declarations[request.declaration().ok_or("変更の元Lawがない")?];
-                    let Signature::Law { body, params, .. } = &declaration.signature else { return Err("変更の元宣言がLawでない".into()); };
-                    let mut b = Builder { g, base, parts:vec![] };
-                    let expression = source_expression(&mut b,env,*body,&[],&params.iter().map(|p|(p.name.clone(),p.ty.clone())).collect::<Vec<_>>())?;
-                    b.parts[0].arguments.push(architecture.reference);
-                    b.parts[0].scope.merge(&g.get(architecture.reference)?.scope);
-                    let scope=b.parts[0].scope.clone();
-                    let reasons=vec![
+                    let mut b = Builder { g, base, parts: vec![] };
+                    let bindings = pending.bindings.iter()
+                        .map(|(name, scalar)| Ok((name.clone(), value(&mut b, scalar)?)))
+                        .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                    let expression = source_expression(&mut b, env,
+                        pending.expression.ok_or("整数欠測の元式がない")?,
+                        &bindings, &pending.parameters)?;
+                    let part = &mut b.parts[expression.0 - base];
+                    part.arguments.push(architecture.reference);
+                    part.scope.merge(&g.get(architecture.reference)?.scope);
+                    let scope = part.scope.clone();
+                    let reasons = vec![
                         Reason {kind:ReasonKind::Missing,request:request.id.clone(),dependencies:vec![expression],missing:failure.partial.missing,location:Some(location.clone())},
                         Reason {kind:ReasonKind::UnsupportedAlgorithm {question:request.kind,operand_types:vec![Type::Z],method:"integer_change".into()},request:request.id.clone(),dependencies:vec![expression],missing:vec![],location:Some(location)},
                     ];

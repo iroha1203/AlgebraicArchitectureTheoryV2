@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 pub(in crate::observed) struct Search {
     pub linear: Option<change_affine::Linear>,
+    pub pending_integer: Option<change_affine::Pending>,
     pub candidates: Option<Candidates>,
     pub solutions: Vec<SolutionRow>,
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
@@ -200,6 +201,7 @@ pub(in crate::observed) fn search(
 ) -> Result<Search, SearchFailure> {
     let mut result = Search {
         linear: None,
+        pending_integer: None,
         candidates: None,
         solutions: vec![],
         requirements: vec![],
@@ -305,7 +307,13 @@ pub(in crate::observed) fn search(
         }
         result.requirements = rows.into_iter().map(|b| (law_name.to_owned(), b)).collect();
         if change_params.iter().skip(1).any(|p| p.ty==Type::Z) {
-            let linear=change_affine::compute(&environment,change,&subjects,&result.requirements,&mut result.missing)?;
+            let mut pending = change_affine::Pending::default();
+            let computed = change_affine::compute(&environment,change,&subjects,&result.requirements,&mut pending);
+            if !pending.facts.is_empty() {
+                result.missing.extend(pending.facts.iter().cloned());
+                result.pending_integer = Some(pending);
+            }
+            let linear = computed?;
             let mut points=vec![];
             if let Some(particular)=&linear.particular {
                 points.push(particular.clone());
