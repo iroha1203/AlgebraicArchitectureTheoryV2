@@ -4766,12 +4766,12 @@ fn finite_diagnostic_identifies_positions_only_when_all_values_agree() {
     }
 }
 
-#[test]
-fn finite_change_on_integer_fields_keeps_both_local_state_systems() {
+fn finite_integer_local_system_cases(reads: Option<&str>) {
+    let explicit = reads.is_some();
     for mode in [0, 1, 2] {
         for degree in [0, 1] {
             let dir = diagnostic_compare_input(
-                &format!("finite-change-integer-fields-{mode}-{degree}"),
+                &format!("finite-change-integer-fields-{explicit}-{mode}-{degree}"),
                 true,
                 true,
             );
@@ -4788,6 +4788,7 @@ fn finite_change_on_integer_fields_keeps_both_local_state_systems() {
                 "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3}}; law optional localValid(s:State):s.free={}; }}",
                 if mode == 1 { 4 } else { 2 }
             );
+            let law = if let Some(reads) = reads { law.replace("change choose", &format!("local here(s:State) reads {reads}; change choose")) } else {law};
             std::fs::write(path, law).unwrap();
             let local = if mode == 2 {
                 "l=localize($m.candidate.source,using=Reservations.choose)"
@@ -4893,6 +4894,17 @@ fn finite_change_on_integer_fields_keeps_both_local_state_systems() {
 }
 
 #[test]
+fn finite_change_on_integer_fields_keeps_both_local_state_systems() {
+    finite_integer_local_system_cases(None);
+}
+#[test]
+fn finite_integer_localization_uses_declared_local_reads() {
+    for reads in ["s.free,s.held", "(s.free,s.held)"] {
+        finite_integer_local_system_cases(Some(reads));
+    }
+}
+
+#[test]
 fn finite_integer_localization_keeps_missing_fixed_fields() {
     #[path = "common/architecture_environment.rs"]
     mod fixture;
@@ -4952,14 +4964,18 @@ fn finite_integer_localization_keeps_missing_fixed_fields() {
     }
 }
 
-#[test]
-fn finite_integer_localization_reads_repaired_fixed_values() {
+fn finite_integer_repaired_fixed_values(explicit: bool) {
     let dir = diagnostic_compare_input("finite-integer-repaired-fixed", true, true);
     let digest = definition::check_definitions(&[("d", &std::fs::read(dir.join("d.json")).unwrap())])
         .unwrap().vocabularies["Reservations"].digest.clone();
     std::fs::write(dir.join("l.law"), format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change setHeld(s:State)=s with{{held=3}}; change choose(s:State,b:Bool)=s with{{free=if b then 2 else 3}}; law optional ready(s:State):s.held=3; law optional localValid(s:State):s.free=s.held; view held(s:State):Z=s.held; }}"
     )).unwrap();
+    if explicit {
+        let path=dir.join("l.law");
+        let law=std::fs::read_to_string(&path).unwrap().replace("change setHeld", "local here(s:State) when s.held=3 reads 2*s.free+s.held,s.held; change setHeld");
+        std::fs::write(path,law).unwrap();
+    }
     let asks = [
         "a=map(Reservations.Migration,on=@v/m,reading=Reservations)",
         "r=repair(Reservations.ready,on=$a.candidate.source,using=Reservations.setHeld)",
@@ -4973,6 +4989,25 @@ fn finite_integer_localization_reads_repaired_fixed_values() {
     let r = execute(&dir,"out",&asks);
     assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);
     let j=result_json(&dir,&r);
+    if explicit {
+        let system=get(output(&j,2,"system"),"value");
+        let mut checked=false;
+        for context in arr(get(system,"contexts")) {
+            for read in arr(get(get(node(&j,context),"value"),"readings")) {
+                let domain=get(node(&j,get(read,"domain")),"value");
+                if s(get(domain,"kind"))!="image" {continue;}
+                let map=get(node(&j,get(domain,"map")),"value");
+                let linear=get(node(&j,get(map,"linear")),"value");
+                let columns=arr(get(linear,"columns"));
+                assert_eq!(columns.len(),1);
+                assert_eq!(s(get(node(&j,&arr(&columns[0])[0]),"value")),"2");
+                let offset=get(node(&j,get(map,"offset")),"value");
+                assert_eq!(s(get(node(&j,&arr(get(offset,"coordinates"))[0]),"value")),"3");
+                checked=true;
+            }
+        }
+        assert!(checked,"修復値をoffsetとする整数read像がない");
+    }
     assert_eq!(s(get(output(&j,6,"value"),"value")),"3");
     assert_eq!(s(get(output(&j,7,"value"),"value")),"0");
     let space=get(output(&j,3,"space"),"value");
@@ -4992,4 +5027,13 @@ fn finite_integer_localization_reads_repaired_fixed_values() {
     assert_eq!(reused.code,r.code,"{} {}",reused.stdout,reused.stderr);
     let again=result_json(&dir,&reused);
     for field in ["answers","nodes"] {assert_eq!(get(&j,field).value,get(&again,field).value);}
+}
+
+#[test]
+fn finite_integer_localization_reads_repaired_fixed_values() {
+    finite_integer_repaired_fixed_values(false);
+}
+#[test]
+fn finite_integer_declared_read_keeps_repaired_guard_and_affine_offset() {
+    finite_integer_repaired_fixed_values(true);
 }

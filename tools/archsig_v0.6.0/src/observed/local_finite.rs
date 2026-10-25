@@ -303,7 +303,7 @@ pub(super) fn compute(
             let mut states = vec![];
             for point in &model.points {
                 c.checkpoint(super::super::control::Checkpoint::Localize)?;
-                let mut assignments = fixed.architecture_values().into_iter().collect::<BTreeMap<_, _>>();
+                let mut assignments = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
                 assignments.extend(model.slots.iter().cloned().zip(point.iter().cloned()));
                 let mut state = Environment::try_primitive_valuation(env.inputs, &assignments.into_iter().collect::<Vec<_>>(), c)?
                     .ok_or_else(|| unsupported("明示localの自由状態が不適合"))?;
@@ -311,9 +311,28 @@ pub(super) fn compute(
                 states.push(state);
             }
             for declaration in &locals {
-                for explicit in super::super::environment::local_read::materialize(
-                    &fixed, &mut b, declaration, request, &expressions, &states, c,
-                )? {
+                let contexts = if model.integer_equations {
+                    super::super::environment::local_read::materialize_with_free(
+                        &fixed, &mut b, declaration, request, &expressions, &states,
+                        &model.slots, Some(target), c,
+                    )?
+                } else {
+                    super::super::environment::local_read::materialize(
+                        &fixed, &mut b, declaration, request, &expressions, &states, c,
+                    )?
+                };
+                for explicit in contexts {
+                    if model.integer_equations {
+                        for information in explicit.read_information.iter().flatten() {
+                            let (slots, matrix) = information;
+                            let fiber = super::super::integer_fiber::solve(
+                                matrix, slots.len(), &vec![0.into(); matrix.len()], c,
+                            )?;
+                            if fiber.rank != slots.len() {
+                                return Err(unsupported("有限作用と整数方程式を持つ非単射local readは未実装"));
+                            }
+                        }
+                    }
                     local_scope.merge(&explicit.scope);
                     let stopped = explicit.reasons.iter().any(|r| matches!(r.kind, ReasonKind::Stop(_)));
                     reasons.extend(explicit.reasons);
