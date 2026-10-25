@@ -1,13 +1,12 @@
 //! Z/Q Viewの実アフィン像。終域を周囲の格子全体に置き換えない。
 use super::*;
 use crate::observed::{
+    change_result::field_linear_result as scalar_wire,
     change_result::{CandidateInput, linear_result as linear},
     environment::quotient_affine,
     environment::quotient_affine::coefficients,
-    change_result::field_linear_result as scalar_wire,
     numeric,
 };
-
 
 pub(super) fn compute(
     env: &Environment<'_>,
@@ -69,7 +68,7 @@ pub(super) fn compute(
     part.scope.readings.insert(declaration.reading.clone());
     let law_expression = if let Some(law) = &image.law {
         let declaration = &env.inputs.law().declarations[&law.name];
-        let Signature::Law { body, .. } = &declaration.signature else {
+        let Signature::Law { body, params, .. } = &declaration.signature else {
             return Err("アフィン商のLaw署名がない".into());
         };
         let bindings = bindings
@@ -77,7 +76,18 @@ pub(super) fn compute(
             .filter(|(name, _)| law.bindings.iter().any(|(n, _)| n == name))
             .cloned()
             .collect::<Vec<_>>();
-        let r = change_result::source_expression(&mut b, env, *body, &bindings, &[])?;
+        let parameters = params
+            .iter()
+            .filter(|p| !bindings.iter().any(|(name, _)| name == &p.name))
+            .map(|p| (p.name.clone(), p.ty.clone()))
+            .collect::<Vec<_>>();
+        let r = change_result::source_expression(
+            &mut b,
+            env,
+            law.pending_expression.unwrap_or(*body),
+            &bindings,
+            &parameters,
+        )?;
         let part = &mut b.parts[r.0 - base];
         part.arguments.push(reference);
         part.arguments.sort_by_key(|r| r.0);
@@ -140,9 +150,7 @@ pub(super) fn compute(
     let mut evidence = vec![];
     let mut evaluations = vec![];
     let (classes, projection, representation) = if image.empty {
-        let parameter_type = Type::Tuple(vec![
-            ty.clone(); image.parameter_count
-        ]);
+        let parameter_type = Type::Tuple(vec![ty.clone(); image.parameter_count]);
         let classes = domain(
             &mut b,
             &Type::Set(Box::new(parameter_type)),
@@ -206,25 +214,23 @@ pub(super) fn compute(
         let ambient = linear::module(&mut b, ring, image.matrix.len(), "free", vec![expression])?;
         let map = scalar_wire::map(&mut b, parameters, ambient, &image.matrix, n, c)?;
         let offset = scalar_wire::vector(&mut b, ambient, &image.offset, c)?;
-        let fiber = coefficients::fiber(ty,&image.matrix,n,c)?;
+        let fiber = coefficients::fiber(ty, &image.matrix, n, c)?;
         let actual_image = linear::module(&mut b, ring, fiber.rank, "image", vec![map])?;
         let kernel = linear::module(&mut b, ring, n - fiber.rank, "kernel", vec![map])?;
         let basis = &fiber.image;
         let image_generators = (0..fiber.rank)
             .map(|j| {
-                let column=basis.iter().map(|row|row[j].clone()).collect::<Vec<_>>();
-                let generator=coefficients::view_value(&image.view_type,&column,c)?;
-                Ok(Json::obj([("type",image.view_type.wire()),("value",generator.wire())]))
-            }).collect::<Result<Vec<_>,ValidationFailure>>()?;
+                let column = basis.iter().map(|row| row[j].clone()).collect::<Vec<_>>();
+                let generator = coefficients::view_value(&image.view_type, &column, c)?;
+                Ok(Json::obj([
+                    ("type", image.view_type.wire()),
+                    ("value", generator.wire()),
+                ]))
+            })
+            .collect::<Result<Vec<_>, ValidationFailure>>()?;
         let kernel_generators = (0..n - fiber.rank)
             .map(|j| {
-                let value = Scalar::Tuple(
-                    fiber
-                        .kernel
-                        .iter()
-                        .map(|row| row[j].clone())
-                        .collect(),
-                );
+                let value = Scalar::Tuple(fiber.kernel.iter().map(|row| row[j].clone()).collect());
                 Json::obj([("type", value.ty().wire()), ("value", value.wire())])
             })
             .collect();
@@ -237,7 +243,8 @@ pub(super) fn compute(
             };
             wire.insert("generators".into(), Json::Arr(generators));
         }
-        let inclusion = scalar_wire::map(&mut b, kernel, parameters, &fiber.kernel, n - fiber.rank, c)?;
+        let inclusion =
+            scalar_wire::map(&mut b, kernel, parameters, &fiber.kernel, n - fiber.rank, c)?;
         let image_basis = basis.iter().map(|row| row[..fiber.rank].to_vec()).collect();
         let image_inclusion =
             scalar_wire::map(&mut b, actual_image, ambient, &image_basis, fiber.rank, c)?;
@@ -412,9 +419,9 @@ fn law_descent(
     let ty = &image.ty;
     let law = image.law.as_ref().ok_or("アフィン商のLawがない")?;
     let free = image.dimensions - fiber.rank;
-    let differences = coefficients::multiply(ty,&law.matrix, &fiber.kernel, free, c)?;
-    let zero=numeric::zero(ty,c)?;
-    if let Some(j) = (0..free).find(|j| differences.iter().any(|row| row[*j]!=zero)) {
+    let differences = coefficients::multiply(ty, &law.matrix, &fiber.kernel, free, c)?;
+    let zero = numeric::zero(ty, c)?;
+    if let Some(j) = (0..free).find(|j| differences.iter().any(|row| row[*j] != zero)) {
         let points = [
             vec![zero; image.dimensions],
             fiber.kernel.iter().map(|row| row[j].clone()).collect(),
@@ -460,24 +467,57 @@ fn law_descent(
         return Ok((None, vec![evidence], evaluations));
     }
     // 固定したinstance keyの左右値を座標とする係数加群。成立Boolや残差には縮めない。
-    let family = linear::module(b, ring, law.matrix.len(), "free", vec![expression])?;
-    let key = Scalar::Tuple(
-        law.bindings
+    let mut arguments = vec![expression];
+    // 不適用のinstanceも族の固定成分であり、キーを落として空族へ変えない。
+    if law.instances.iter().any(|i| !i.guard) {
+        let Signature::Law { params, .. } = &env.inputs.law().declarations[&law.name].signature
+        else {
+            return Err("商のLaw署名がない".into());
+        };
+        let key_type = Type::Tuple(params.iter().map(|p| p.ty.erase()).collect());
+        let mut items = law
+            .instances
             .iter()
-            .map(|(_, value)| value.clone())
-            .collect(),
-    );
-    let mut labels=coefficients::coordinate_names(&law.value_type,"lhs",c)?;
-    labels.extend(coefficients::coordinate_names(&law.value_type,"rhs",c)?);
-    let generators = labels.into_iter().map(|side| {
-        let label=Scalar::Tuple(vec![key.clone(),Scalar::Text(side)]);
-        Json::obj([("type",label.ty().wire()),("value",label.wire())])
-    }).collect();
+            .map(|instance| {
+                Scalar::Tuple(vec![
+                    Scalar::Tuple(instance.bindings.iter().map(|(_, v)| v.clone()).collect()),
+                    Scalar::Bool(instance.guard),
+                ])
+            })
+            .collect::<Vec<_>>();
+        items.sort_by_key(|v| v.wire().canonical());
+        items.dedup();
+        let pattern = Scalar::Set {
+            element: Type::Tuple(vec![key_type, Type::Bool]),
+            items,
+        };
+        arguments.push(change_result::value(b, &pattern)?);
+    }
+    let family = linear::module(b, ring, law.matrix.len(), "free", arguments)?;
+    let mut labels = coefficients::coordinate_names(&law.value_type, "lhs", c)?;
+    labels.extend(coefficients::coordinate_names(&law.value_type, "rhs", c)?);
+    let mut generators = vec![];
+    for instance in law.instances.iter().filter(|i| i.guard) {
+        let key = Scalar::Tuple(
+            instance
+                .bindings
+                .iter()
+                .map(|(_, value)| value.clone())
+                .collect(),
+        );
+        for side in &labels {
+            let label = Scalar::Tuple(vec![key.clone(), Scalar::Text(side.clone())]);
+            generators.push(Json::obj([
+                ("type", label.ty().wire()),
+                ("value", label.wire()),
+            ]));
+        }
+    }
     let Json::Obj(wire) = &mut b.parts[family.0 - b.base].wire else {
         return Err("アフィン商の評価族加群がrecordでない".into());
     };
     wire.insert("generators".into(), Json::Arr(generators));
-    let transformed = coefficients::multiply(ty,&law.matrix, &fiber.lifts, fiber.rank, c)?;
+    let transformed = coefficients::multiply(ty, &law.matrix, &fiber.lifts, fiber.rank, c)?;
     let matrix = transformed
         .iter()
         .map(|row| row[..fiber.rank].to_vec())

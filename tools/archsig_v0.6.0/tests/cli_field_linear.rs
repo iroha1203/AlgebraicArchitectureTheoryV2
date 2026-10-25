@@ -598,3 +598,51 @@ fn rational_tuple_law_missing_and_empty_keep_the_original_family_type() {
     let empty=input("tuple-law-empty",body);let r=execute(&empty,"out",&["s=solve(Pair.impossible,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.solutions,s=@v/s,law=Pair.nested)"]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&empty,&r);let q=get(output(&j,1,"quotient"),"value");assert!(arr(get(get(q,"representation"),"fibers")).is_empty());let d=get(node(&j,get(q,"descent")),"value");assert!(arr(get(d,"pairs")).is_empty());
     let dir=input("tuple-law-missing",body);let path=dir.join("a.json");let old=std::fs::read_to_string(&path).unwrap();let new=old.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,"");assert_ne!(new,old);std::fs::write(path,new).unwrap();let r=execute(&dir,"out",&["s=solve(Pair.first,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.nested)"]);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let answer=&arr(get(&j,"answers"))[1];assert!(!has(get(answer,"outputs"),"quotient"));assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
 }
+
+#[test]
+fn rational_quotient_finite_law_instances_keep_guard_false_keys() {
+    let dir=input("rational-finite-law-family","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;view pair(s:State):(Q,Q)=(s.x,s.y);view combined(s:State):Q=s.x+s.y;law optional indexed(s:State,b:Bool) when b:s.x=s.x;");
+    let asks=["s=solve(Pair.total,on=@v/s,using=Pair.choose)","good=quotient(Pair.pair,on=$s.domain,s=@v/s,law=Pair.indexed)","bad=quotient(Pair.combined,on=$s.domain,s=@v/s,law=Pair.indexed)"];
+    let r=execute(&dir,"out",&asks);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),2);
+    let pattern=&arr(get(get(family,"construction"),"arguments"))[1];let tags=arr(get(node(&j,pattern),"value"));assert_eq!(tags.len(),2);assert!(tags.iter().any(|v|get_bool(&arr(v)[1])==false));assert!(tags.iter().any(|v|get_bool(&arr(v)[1])));
+    let answer=&arr(get(&j,"answers"))[2];assert_eq!(s(get(answer,"status")),"refuted");let evidence=get(node(&j,&arr(get(answer,"evidence"))[0]),"value");let data=get(evidence,"data");let values=arr(get(data,"law_values"));for reference in values {let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
+    let mut args=vec!["run","--atom-definition","d.json","--archmap","a.json","--law","l.law","--out","again","--reuse","out","--time-ms","120000"];for ask in asks{args.extend(["--ask",ask]);}let reuse=run(&dir,&args);assert_eq!(reuse.code,1,"{} {}",reuse.stdout,reuse.stderr);let again=result_json(&dir,&reuse);for key in ["answers","nodes"]{assert_eq!(get(&j,key).value,get(&again,key).value);}
+
+}
+
+fn get_bool(value:&JNode)->bool {if let archsig::json::JValue::Bool(value)=value.value{value}else{panic!("Boolが必要")}}
+#[test]
+fn rational_quotient_guards_are_restricted_to_the_selected_solution_fiber() {
+    let dir=input("rational-fixed-guard","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;view combined(s:State):Q=s.x+s.y;law optional active(s:State) when s.x+s.y=1:s.x=s.x;law optional inactive(s:State) when s.x+s.y=2:s.x=s.x;");
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","a=quotient(Pair.combined,on=$s.solutions,s=@v/s,law=Pair.active)","b=quotient(Pair.combined,on=$s.solutions,s=@v/s,law=Pair.inactive)"]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"refuted");assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"established");
+    let q=get(output(&j,2,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),0);let tags=arr(get(node(&j,&arr(get(get(family,"construction"),"arguments"))[1]),"value"));assert_eq!(tags.len(),1);assert!(!get_bool(&arr(&tags[0])[1]));
+}
+#[test]
+fn rational_quotient_missing_guard_does_not_drop_its_instances() {
+    let dir=input("rational-missing-guard","change choose(s:State,a:Q)=s with{x=a};law required first(s:State):s.x=0;law optional guarded(s:State,b:Bool) when s.y>0:s.x=s.x;");let path=dir.join("a.json");let old=std::fs::read_to_string(&path).unwrap();let new=old.replace(r#",{"id":"y","subject":"s","field":"Pair.State.y","value":["0","1"],"origin":"model"}"#,"");assert_ne!(new,old);std::fs::write(path,new).unwrap();let r=execute(&dir,"out",&["s=solve(Pair.first,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.guarded)","n=needed($q)"]);assert_eq!(r.code,2,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let answer=&arr(get(&j,"answers"))[1];assert!(!has(get(answer,"outputs"),"quotient"));assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="missing_observation"));
+    let reason=arr(get(answer,"reasons")).iter().find(|r|s(get(r,"code"))=="missing_observation").unwrap();
+    let law=std::fs::read_to_string(dir.join("l.law")).unwrap();
+    assert!(arr(get(reason,"dependencies")).iter().any(|reference| {
+        let expression=get(node(&j,reference),"value");let span=arr(get(get(expression,"location"),"span"));
+        &law[num(&span[0]) as usize..num(&span[1]) as usize]=="s.y>0" && arr(get(expression,"parameters")).len()==1
+    }));
+    let plan=get(output(&j,2,"plan"),"value");
+    assert!(arr(get(plan,"requirements")).iter().any(|r|s(get(get(r,"field"),"field"))=="Pair.State.y"));
+
+}
+
+#[test]
+fn rational_quotient_unguarded_and_empty_instance_families() {
+    let dir=input("rational-unguarded-instances","change choose(s:State,a:Q,b:Q)=s with{x=a,y=b};law required total(s:State):s.x+s.y=1;view pair(s:State):(Q,Q)=(s.x,s.y);law optional indexed(s:State,b:Bool):(if b then s.x else s.y)=0;");
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@v/s,using=Pair.choose)","good=quotient(Pair.pair,on=$s.domain,s=@v/s,law=Pair.indexed)","bad=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.indexed)"]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);
+    let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),4);
+    let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"evidence"))[0]),"value");for reference in arr(get(get(proof,"data"),"law_values")){let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert!(rows.iter().all(|row|has(&arr(row)[1],"some")));}
+
+    let dir=input("rational-empty-instances","change choose(s:State,a:Q)=s with{x=a};law required first(s:State):s.x=0;law optional empty(s:State,t:Ghost):s.x=s.x;");
+    let path=dir.join("d.json");let old=std::fs::read_to_string(&path).unwrap();let before=definition::check_definitions(&[("d",old.as_bytes())]).unwrap();
+    let new=old.replace(r#""alignments":[]}]}]}"#,r#""alignments":[]},{"kind":"entity","name":"Pair.Ghost","meaning":"観測個体のない型。","parameters":[],"fields":[],"alignments":[]}]}]}"#);assert_ne!(new,old);
+    let after=definition::check_definitions(&[("d",new.as_bytes())]).unwrap();std::fs::write(path,new).unwrap();
+    for name in ["a.json","l.law"]{let path=dir.join(name);let text=std::fs::read_to_string(&path).unwrap().replace(&before.vocabularies["Pair"].digest,&after.vocabularies["Pair"].digest);std::fs::write(path,text).unwrap();}
+    let r=execute(&dir,"out",&["s=solve(Pair.first,on=@v/s,using=Pair.choose)","q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.empty)"]);assert_eq!(r.code,0,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);let q=get(output(&j,1,"quotient"),"value");let descent=get(node(&j,get(q,"descent")),"value");let map=get(node(&j,get(descent,"linear")),"value");let family=get(node(&j,get(map,"target")),"value");assert_eq!(num(get(family,"free_rank")),0);assert!(arr(get(family,"generators")).is_empty());assert_eq!(arr(get(get(family,"construction"),"arguments")).len(),1);
+}

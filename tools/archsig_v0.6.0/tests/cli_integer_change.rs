@@ -815,3 +815,10 @@ fn integer_tuple_law_descent_uses_all_values_on_the_lattice_image() {
     let q=get(output(&j,1,"quotient"),"value");let d=get(node(&j,get(q,"descent")),"value");assert_eq!(coordinates(&j,get(d,"offset")),vec![1,0,7,1,0,7]);let columns=integer_columns(&j,get(d,"linear"));assert_eq!(columns.len(),2);for column in columns{assert_eq!(column.len(),6);assert_eq!(&column[..3],&column[3..]);assert_eq!(column[2],0);assert_eq!(column[0]%2,0);}
     assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");assert_eq!(s(get(&arr(get(&j,"answers"))[2],"status")),"refuted");
 }
+
+#[test]
+fn integer_quotient_finite_law_instances_preserve_lattice_and_false_keys() {
+    let dir=input("integer-finite-law","change setpair(s:State,a:Z,b:Z)=s with{x=2*a+1,y=b};view pair(s:State):(Z,Z)=(s.x,s.y);law optional indexed(s:State,b:Bool) when b:s.y=s.y;");
+    let r=execute(&dir,"out",&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","good=quotient(Pair.pair,on=$s.domain,s=@pair/s,law=Pair.indexed)","bad=quotient(Pair.first,on=$s.domain,s=@pair/s,law=Pair.indexed)"]);assert_eq!(r.code,1,"{} {}",r.stdout,r.stderr);let j=result_json(&dir,&r);assert_module_owners(&j);
+    assert_eq!(s(get(&arr(get(&j,"answers"))[1],"status")),"established");let bad=&arr(get(&j,"answers"))[2];assert_eq!(s(get(bad,"status")),"refuted");let proof=get(node(&j,&arr(get(bad,"evidence"))[0]),"value");let data=get(proof,"data");let views=arr(get(data,"view_values"));assert_eq!(get(node(&j,&views[0]),"value").value,get(node(&j,&views[1]),"value").value);let laws=arr(get(data,"law_values"));assert_ne!(get(node(&j,&laws[0]),"value").value,get(node(&j,&laws[1]),"value").value);for reference in laws{let rows=arr(get(node(&j,reference),"value"));assert_eq!(rows.len(),2);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"none")).count(),1);assert_eq!(rows.iter().filter(|row|has(&arr(row)[1],"some")).count(),1);}
+}
